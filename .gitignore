@@ -1,0 +1,16 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vs/
+.idea/
+.vscode/
+
+# Editor
+*.swp
+*~
+
+# ASG
+.asg/project/

@@ -1,0 +1,87 @@
+---
+name: asd-phase-design-review
+description: "Runs the ASD design-review phase iteratively until DoD met. Updates state.json to phase=design-review and increments iteration. In parallel dispatches asd-reviewer-documentation, asd-reviewer-ui, asd-reviewer-simplification, and (when review.external_review=enabled) asd-external-review against the current sprint design drafts in <sprint>/design/. Each reviewer writes its verdict file under <sprint>/reviews/iter-NN/ with a first-line gate verdict token. Aggregates verdicts: all APPROVE on same iteration → DoD met → COMPLETED. Any CONCERNS → asd-pm dispatches the appropriate creator (asd-ba, asd-ux-designer, asd-architect) to autofix, then iteration advances. Any FAIL → escalation via AskUserQuestion (Complication Approval). Applies iteration severity floor per review-policy.md; stops and escalates when cap reached. Use when asd-sprint dispatches design-review, or when the user explicitly asks to run or re-run design-review for the active sprint."
+metadata:
+  asd-role: phase
+  asd-order: "4"
+  version: "0.1"
+allowed-tools: "Read AskUserQuestion Task"
+---
+
+# ASD Phase: Design Review
+
+## Preconditions
+- Active sprint at `.asd/sprints/<NNN-slug>/`
+- Required design drafts present in `<sprint>/design/`: prd.html, ux-spec.html, adr.html (per checkpoints precondition chain)
+- Optional drafts honored: design-md-delta.yaml, c4-full/
+- `state.json.phase` advanced from `design`
+
+## Tool policy
+- Read — `.asd/config.yaml`, `state.json`, drafts in `<sprint>/design/`, review files
+- AskUserQuestion — escalation on FAIL or iteration cap reached
+- Task — parallel reviewer dispatch; sequential creator dispatch for autofix; PM for state + decisions-log
+
+## Workflow
+
+1. Read `.asd/config.yaml` (`review.external_review`, `review.iterations_low/medium/high/critical`, `language.chat`, `language.docs`)
+2. Read `<sprint>/state.json` → set `phase=design-review`, initialize or increment `iteration` (start at 1 on first entry)
+3. Compute severity floor for current iteration per `review-policy.md` cumulative-budget algorithm
+4. Create folder `<sprint>/reviews/iter-NN/` if absent
+5. **Parallel dispatch** via Task:
+   - `asd-reviewer-documentation` — SSoT, template adherence, traceability across drafts
+   - `asd-reviewer-ui` — ux-spec compliance with DESIGN.md + accessibility.html
+   - `asd-reviewer-simplification` — over-engineering smells + design-principles.md adherence
+   - if `review.external_review=enabled` → `asd-external-review` with phase=`design-review`
+   - payload to each: drafts paths, iteration N, severity floor, `language.chat`, `language.docs`
+   - each reviewer writes `<sprint>/reviews/iter-NN/<reviewer>.md` per `t_review.md` (or `t_review-report.md` for external) with first-line verdict token `[REVIEW-design-<reviewer>]: ...`
+6. Wait all REVIEW_DONE signals
+7. Parse first-line tokens from all reviewer files; aggregate:
+   - **All APPROVE** → DoD met; PM appends decisions-log entry "design-review iter NN: APPROVE"; emit phase COMPLETED
+   - **Any FAIL** → escalation:
+     - parse FAIL findings; group by escalation cause (concept change / new abstraction / scope expansion / contract change)
+     - AskUserQuestion in `language.chat`: present each FAIL using Complication Approval format from `core.md`; collect decisions
+     - on user override → mark resolved, continue
+     - on user accept → dispatch corresponding creator (BA / UX Designer / Architect) via Task to apply approved changes; on creator COMPLETED → loop step 2 (increment iteration)
+   - **Only CONCERNS** (no FAIL) → autofix loop:
+     - dispatch responsible creator(s) via Task with finding list; each creator autofixes per `review-policy.md` (no escalation needed)
+     - on all creator COMPLETED → loop step 2
+8. Iteration cap reached (no severity tier has remaining budget for next iter):
+   - AskUserQuestion: override cap and continue / accept current findings / abort sprint
+   - on override → reset relevant counter, loop
+   - on accept → COMPLETED with note "iteration cap reached, user accepted"
+   - on abort → emit ABORT
+9. Any reviewer QUESTION / FAILED / ABORT → relay, halt
+
+## Iteration severity floor (reference)
+See `.asd/rules/review-policy.md` for the cumulative-budget algorithm. Phase skill computes floor and passes to reviewer payload so reviewers drop findings below floor.
+
+## Artefacts produced
+- `<sprint>/reviews/iter-NN/documentation.md`
+- `<sprint>/reviews/iter-NN/ui.md`
+- `<sprint>/reviews/iter-NN/simplification.md`
+- `<sprint>/reviews/iter-NN/external.md` (when `external_review=enabled`)
+- Updated `<sprint>/design/` artifacts after autofix or escalation-approved fixes
+- Updated `state.json` (phase, iteration, reviews map)
+- decisions-log entry on DoD met or override
+
+## Agents dispatched
+- 3 internal reviewers (Documentation, UI, Simplification) — parallel
+- External Review — parallel (when enabled)
+- Creators (BA, UX Designer, Architect) — sequential, only when autofix or escalation requires
+- PM — state updates + decisions-log
+
+## Skills dispatched
+None.
+
+## Return contract (single line)
+```
+PHASE: design-review | SPRINT: <NNN-slug> | ITER: <N> | STATUS: <complete|blocked|aborted> | NEXT: design-promote
+```
+
+## References
+- `.asd/rules/sprint-lifecycle.md` (design-review phase contract)
+- `.asd/rules/review-policy.md` (severity floor, autofix, escalation, gate verdict format, DoD per phase)
+- `.asd/rules/design-principles.md`
+- `.asd/rules/checkpoints.md`
+- `.asd/rules/language-policy.md`
+- Templates: `t_review.md`, `t_review-report.md`

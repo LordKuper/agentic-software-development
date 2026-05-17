@@ -1,0 +1,18 @@
+# commands.yaml — machine-only SSoT for project build/test/run commands
+# read by Backend Dev, Frontend Dev, Test Engineer, and review agents
+
+test: "{{command to run all tests}}"
+lint: "{{command to run linters}}"
+build: "{{command to build artifacts}}"
+run: "{{command to start application locally}}"
+
+custom:
+  # optional named commands beyond the required four
+  # examples: format, typecheck, migrate, seed, e2e, coverage, docker-build, deploy-staging
+  {{name}}: "{{command}}"
+
+  # design.md tooling (set by /asd-init per OS and tool detection):
+  # lint-design: "designmd lint design/ux/DESIGN.md"            # windows + unix alias
+  # lint-design: "npx @google/design.md lint design/ux/DESIGN.md"   # unix npx fallback
+  # diff-design: "designmd diff"                                # path args supplied at call time
+  # export-design: "designmd export --format json-tailwind design/ux/DESIGN.md"

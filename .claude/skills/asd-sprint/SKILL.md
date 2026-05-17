@@ -1,0 +1,70 @@
+---
+name: asd-sprint
+description: "Starts a new ASD sprint or resumes the active one, dispatching to the appropriate phase skill (asd-phase-scope, asd-phase-audit, asd-phase-design, asd-phase-design-review, asd-phase-design-promote, asd-phase-plan, asd-phase-impl, asd-phase-impl-review, asd-phase-pr). Detects active sprint by scanning .asd/sprints/ (excluding archived/), reads state.json for current phase and iteration, then dispatches the matching phase skill via the Skill tool. When no active sprint exists, asks user for scope and dispatches asd-phase-scope. Routes phase signals (COMPLETED, FAILED, QUESTION, ABORT) back to the user and advances to the next phase only after the prior one signals COMPLETED. Use when the user runs /asd-sprint or asks to start, continue, resume, or work on an ASD sprint."
+metadata:
+  asd-role: dispatcher
+  version: "0.1"
+allowed-tools: "Read Glob Grep Bash AskUserQuestion Skill"
+---
+
+# ASD Sprint
+
+## Preconditions
+- `.asd/config.yaml` exists (else: tell user to run `/asd-init`)
+- One or zero active sprints in `.asd/sprints/<NNN-slug>/` (archived/ excluded)
+
+## Tool policy
+- Read/Glob/Grep — detect active sprint, read state.json, config.yaml, custom-rules.md
+- Bash — `git status` (uncommitted check), `git branch --show-current`
+- AskUserQuestion — new-sprint confirmation, resume/abort choice
+- Skill — dispatch phase skills only
+- No Write/Edit — phase skills and PM agent own all writes
+
+## Workflow
+
+### Step 1: detect active sprint
+- Glob `.asd/sprints/*/state.json` (skip `archived/`)
+- 0 active → new-sprint flow
+- 1 active → resume flow
+- >1 active → emit FAILED "multiple active sprints found, manual cleanup needed"
+
+### Step 2A: new-sprint flow
+1. Read `.asd/config.yaml` to confirm init complete
+2. Check `git status` — if dirty, AskUserQuestion: commit / stash / abort
+3. AskUserQuestion: confirm start new sprint; collect scope (free-form)
+4. Dispatch `asd-phase-scope` via Skill, passing scope text
+5. On COMPLETED from `asd-phase-scope` → advance per Step 3
+
+### Step 2B: resume flow
+1. Read `.asd/sprints/<NNN-slug>/state.json`
+2. Show user: sprint id, current phase, iteration, last review verdict (if any)
+3. AskUserQuestion: resume (default) | re-run current phase | re-run earlier phase | abort sprint
+4. Dispatch matching phase skill via Skill
+
+### Step 3: phase chain advancement
+After any phase skill returns:
+- `COMPLETED` → dispatch the next phase per the chain defined in `.asd/rules/sprint-lifecycle.md`; on `pr` COMPLETED, sprint is archived and chain ends
+- `FAILED` → relay to user, halt
+- `QUESTION` → relay pending question to user, halt until reply
+- `ABORT — precondition not met` → relay, halt
+
+User may interrupt at any time; asd-sprint re-detects state on next invocation.
+
+## Artefacts produced
+None directly. All file writes happen inside phase skills (via PM, creators, reviewers).
+
+## Agents dispatched
+None directly. Phase skills dispatch agents via Task.
+
+## Skills dispatched
+Phase skills listed in `.asd/rules/sprint-lifecycle.md`. No other skill set.
+
+## Return contract (single line)
+```
+SPRINT: <NNN-slug> | PHASE: <phase> | STATUS: <complete|in-progress|blocked|aborted> | NEXT: <next-phase|done|halted-on-question|halted-on-failure>
+```
+
+## References
+- `.asd/rules/sprint-lifecycle.md` (phase chain, signals, exit criteria)
+- `.asd/rules/checkpoints.md` (precondition chain, auto-abort)
+- `.asd/rules/core.md` (interaction protocol)

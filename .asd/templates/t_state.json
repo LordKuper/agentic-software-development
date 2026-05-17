@@ -1,0 +1,12 @@
+{
+  "sprint_id": "{{SPRINT_ID}}",
+  "branch": "{{BRANCH}}",
+  "phase": "scope",
+  "iteration": 0,
+  "created_at": "{{ISO8601}}",
+  "updated_at": "{{ISO8601}}",
+  "reviews": {},
+  "subsystems_touched": [],
+  "new_subsystems": [],
+  "escalations": []
+}

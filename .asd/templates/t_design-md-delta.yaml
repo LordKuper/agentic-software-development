@@ -1,0 +1,22 @@
+# proposed changes to design/ux/DESIGN.md
+# applied in design-promote phase after user approval
+
+add:
+  - path: {{token path, e.g. colors.primary}}
+    new_value: {{value}}
+    reason: {{why}}
+    affects_components: []      # optional
+    breaking: false             # optional
+
+update:
+  - path: {{token path}}
+    new_value: {{new value}}
+    reason: {{why}}
+    affects_components: []
+    breaking: false
+
+remove:
+  - path: {{token path}}
+    reason: {{why no longer needed}}
+    affects_components: []
+    breaking: true
