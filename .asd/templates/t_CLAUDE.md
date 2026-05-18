@@ -6,6 +6,10 @@
 
 @.asd/project/custom-rules.md
 
+### Language policy
+
+@.asd/rules/language-policy.md
+
 ### Slash commands
 
 - `/asd-init` — initialize workflow or edit settings
