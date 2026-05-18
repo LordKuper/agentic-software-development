@@ -11,11 +11,15 @@ allowed-tools: "Read Write Edit Glob Grep Bash WebFetch AskUserQuestion"
 
 ## Preconditions
 - Repo at project root
-- Infra present: `.asd/rules/`, `.asd/templates/`, `.claude/`, `CLAUDE.md`
+- Infra present: `.asd/rules/`, `.asd/templates/`, `.claude/`
 
 ## Modes
 - **Fresh**: no `.asd/config.yaml` → full setup
 - **Re-init**: config exists → diff editor
+
+## Always first (both modes)
+
+0. **Sync `CLAUDE.md` ASD section** before any other step (see "CLAUDE.md sync" below). Runs unconditionally on every invocation, fresh or re-init, regardless of subsequent user choices or aborts.
 
 ## Workflow (fresh)
 
@@ -41,7 +45,6 @@ allowed-tools: "Read Write Edit Glob Grep Bash WebFetch AskUserQuestion"
     - Missing required tools (designmd always; likec4 if decomp+likec4; codex if external_review) → must be resolved here: install / override path / disable feature. Do NOT silently proceed with missing required tools.
     Only after `accept-all` proceed to write.
 9. Write `.asd/config.yaml` from `t_config.yaml` with all approved fields (including `project.diagram_tool` when decomp enabled)
-9a. **Sync `CLAUDE.md` ASD section** (see "CLAUDE.md sync" below)
 10. Ask user what custom rules to add; write `.asd/project/custom-rules.md`
 11. Write `.asd/project/decisions-log.md` from `t_decisions-log.md`
 12. Seed minimal `design/` persistent (concept and stack handled by dedicated skills, NOT seeded here):
@@ -62,13 +65,12 @@ allowed-tools: "Read Write Edit Glob Grep Bash WebFetch AskUserQuestion"
 ## Workflow (re-init)
 
 1. Read current `.asd/config.yaml`
-2. Show settings to user
-3. AskUserQuestion which sections to edit: language | review | git | tools | concept | custom-rules | diagram-tool | subsystem-decomposition
+2. **Dump full current config to chat** in `language.chat` before any edit prompt. Render every field as a structured block. User MUST see complete current state before being asked what to change. Do NOT skip or summarise — full values verbatim.
+3. AskUserQuestion which sections to edit
 4. Per section: ask new value → add to pending change-set (do not write yet)
 5. Show consolidated diff of all pending edits → AskUserQuestion: `accept-all` | `edit-section` | `abort`; loop until accepted
 6. Apply diff; write config
-7. Sync `CLAUDE.md` ASD section (see "CLAUDE.md sync" below)
-8. Append decisions-log entry per change
+7. Append decisions-log entry per change
 
 ## CLAUDE.md sync
 
