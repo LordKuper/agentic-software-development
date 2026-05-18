@@ -54,7 +54,7 @@ allowed-tools: "Read AskUserQuestion Task"
      - emit COMPLETED
    - **`asd-ux-designer`** with payload (ux-spec.html, design-md-delta.yaml if present, decomposition map for ux domain, migration items tagged ux):
      - per subsystem (or flat): split ux-spec content into `design/ux/<subsystem>.html` (or `ux-spec.html`); merge with existing
-     - if `design-md-delta.yaml` present: apply add/update/remove ops to `design/ux/DESIGN.md`; if `system.tools.designmd` available, run designmd lint; halt on lint errors
+     - if `design-md-delta.yaml` present: apply add/update/remove ops to `design/ux/DESIGN.md`; if `system.tools.designmd` is true, run `designmd-lint` from `commands.yaml`; halt on lint errors. On Windows, run `designmd-install` once per session before the first `designmd-lint`/`-diff`/`-export` invocation (no-op on Linux/macOS). Never inline the linter binary — always go through the `designmd-*` commands.
      - regenerate `design/ux/design-system.html` from patched DESIGN.md (only if DESIGN.md changed)
      - process ux migration items
      - AskUserQuestion before each persistent write

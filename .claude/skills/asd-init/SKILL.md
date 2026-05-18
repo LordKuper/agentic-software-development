@@ -25,9 +25,7 @@ allowed-tools: "Read Write Edit Glob Grep Bash WebFetch AskUserQuestion"
 4. Detect OS via Bash (silent; no confirm yet)
 5. Detect external tools (silent; record results, do not prompt per-tool yet):
    - `likec4 --version` (only if diagram_tool=likec4)
-   - designmd (always):
-     - **Windows**: only `designmd` alias works (`.md` file association blocks `npx @google/design.md`); if missing → mark missing
-     - **Linux/macOS**: try `designmd --version`; fall back to `npx @google/design.md --version`
+   - designmd (always): check `node --version` and `npm --version`. Tooling itself is invoked via `commands.yaml` (`designmd-*`); no `designmd` binary on PATH is required.
    - `codex --version` (only if external_review=enabled)
    Record paths and missing flags for the consolidated proposal
 6. Pick review iteration defaults (low=1 medium=1 high=2 critical=10) — include in proposal, do not prompt yet
@@ -47,7 +45,7 @@ allowed-tools: "Read Write Edit Glob Grep Bash WebFetch AskUserQuestion"
 10. Ask user what custom rules to add; write `.asd/project/custom-rules.md`
 11. Write `.asd/project/decisions-log.md` from `t_decisions-log.md`
 12. Seed minimal `design/` persistent (concept and stack handled by dedicated skills, NOT seeded here):
-    - `architecture/commands.yaml` (from `t_commands.yaml` + detected + OS-specific `custom.lint-design`)
+    - `architecture/commands.yaml` (from `t_commands.yaml` + detected + OS-specific `custom.designmd-*`)
     - `ux/accessibility.html` (from `t_accessibility.html`, ask key inputs)
     - `ux/DESIGN.md` (fetch Google Labs spec via WebFetch, write minimal seed per spec)
     - `ux/design-system.html` (render from DESIGN.md seed via `t_design-system.html`)
@@ -106,13 +104,19 @@ Rules:
 
 ## OS-specific commands written to commands.yaml
 
-`custom.lint-design`:
-- Windows: `designmd lint design\ux\DESIGN.md`
-- Linux/macOS (alias): `designmd lint design/ux/DESIGN.md`
-- Linux/macOS (npx fallback): `npx @google/design.md lint design/ux/DESIGN.md`
+Four custom commands always emitted. Linter is always invoked via `designmd-lint`; `designmd-install` is a session-scoped prerequisite on Windows (no-op elsewhere).
 
-`custom.diff-design`: `<designmd-cmd> diff` (path args at call time)
-`custom.export-design`: `<designmd-cmd> export --format json-tailwind design/ux/DESIGN.md`
+**Windows** (run from project root):
+- `designmd-install: "npm install @google/design.md"`
+- `designmd-lint: "node_modules\\.bin\\design.md.cmd lint design\\ux\\DESIGN.md"`
+- `designmd-diff: "node_modules\\.bin\\design.md.cmd diff"` (path args supplied at call time)
+- `designmd-export: "node_modules\\.bin\\design.md.cmd export --format json-tailwind design\\ux\\DESIGN.md"`
+
+**Linux/macOS**:
+- `designmd-install: ""` (no-op; `npx` fetches on demand)
+- `designmd-lint: "npx @google/design.md lint design/ux/DESIGN.md"`
+- `designmd-diff: "npx @google/design.md diff"`
+- `designmd-export: "npx @google/design.md export --format json-tailwind design/ux/DESIGN.md"`
 
 ## Artefacts produced
 

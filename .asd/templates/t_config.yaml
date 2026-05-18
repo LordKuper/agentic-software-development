@@ -53,11 +53,12 @@ system:
     # Empty string disables likec4 generation.
     likec4: "likec4"
 
-    # @google/design.md CLI for DESIGN.md lint and export.
-    # Windows: MUST use 'designmd' alias (npx @google/design.md fails on .md file association).
-    # Linux/macOS: 'designmd' alias if installed, otherwise 'npx @google/design.md'.
-    # Empty string disables design.md tooling (agents still read/write DESIGN.md manually).
-    designmd: "designmd"
+    # @google/design.md tooling availability flag.
+    # Actual commands live in design/architecture/commands.yaml as
+    # `designmd-install`, `designmd-lint`, `designmd-diff`, `designmd-export`
+    # (OS-specific; written by /asd-init).
+    # Set to false to disable design.md tooling (agents still read/write DESIGN.md manually).
+    designmd: true
 
     # Codex CLI command path. Empty for default per-OS lookup (codex / codex.exe).
     codex_command: ""

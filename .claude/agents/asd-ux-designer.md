@@ -65,6 +65,7 @@ Creator:
 - Include states (empty, loading, error) when mockup has them
 - Regenerate design-system.html after every DESIGN.md change with: color swatches, typography samples, spacing scale, component previews, UI composition preview, full token reference
 - Fetch latest DESIGN.md spec before editing if cached spec is stale
+- Lint/diff/export DESIGN.md only through `commands.yaml` aliases (`designmd-lint`, `designmd-diff`, `designmd-export`). On Windows, run `designmd-install` once per session before the first invocation (no-op on Linux/macOS). Never call the design.md binary inline.
 
 ## Don'ts
 
