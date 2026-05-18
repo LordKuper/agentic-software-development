@@ -7,9 +7,16 @@ responsibility:
 
 <section id="index">
   <h2>Index</h2>
-  <ul>
-    <li><a href="#endpoint-{{slug}}">{{METHOD}} {{path}}</a></li>
-  </ul>
+  <table>
+    <thead><tr><th>Method</th><th>Path</th><th>Summary</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="http-method http-{{method-lower}}">{{METHOD}}</span></td>
+        <td><a href="#endpoint-{{slug}}"><code>{{path}}</code></a></td>
+        <td>{{one-line summary}}</td>
+      </tr>
+    </tbody>
+  </table>
 </section>
 
 <section id="auth">
@@ -23,7 +30,7 @@ responsibility:
   <table>
     <thead><tr><th>Code</th><th>Meaning</th><th>Retryable</th></tr></thead>
     <tbody>
-      <tr><td>{{code}}</td><td>{{meaning}}</td><td>{{yes/no}}</td></tr>
+      <tr><td><code>{{code}}</code></td><td>{{meaning}}</td><td><span class="chip prio-may">{{yes/no}}</span></td></tr>
     </tbody>
   </table>
 </section>
@@ -41,24 +48,23 @@ responsibility:
 <section id="endpoints">
   <h2>Endpoints</h2>
 
-  <article id="endpoint-{{slug}}">
-    <h3>{{METHOD}} {{path}}</h3>
-    <p>{{one-line description}}</p>
+  <article class="endpoint" id="endpoint-{{slug}}">
+    <h3><span class="http-method http-{{method-lower}}">{{METHOD}}</span> <code>{{path}}</code></h3>
+    <p class="lede">{{one-line description}}</p>
 
     <h4>Request</h4>
-    <ul>
-      <li><strong>Params</strong>: {{path/query params}}</li>
-      <li><strong>Headers</strong>: {{required headers}}</li>
-      <li><strong>Body</strong>:
-        <pre><code>{{json schema or example}}</code></pre>
-      </li>
-    </ul>
+    <dl class="def-list">
+      <dt>Params</dt><dd>{{path/query params}}</dd>
+      <dt>Headers</dt><dd>{{required headers}}</dd>
+    </dl>
+    <p><b>Body</b>:</p>
+    <pre><code>{{json schema or example}}</code></pre>
 
     <h4>Response</h4>
     <table>
       <thead><tr><th>Status</th><th>Body</th><th>Notes</th></tr></thead>
       <tbody>
-        <tr><td>{{code}}</td><td><code>{{shape}}</code></td><td>{{notes}}</td></tr>
+        <tr><td><code>{{code}}</code></td><td><code>{{shape}}</code></td><td>{{notes}}</td></tr>
       </tbody>
     </table>
   </article>

@@ -60,7 +60,8 @@ Reviewer:
 
 - **SSoT**: each fact has one home; downstream docs link not copy
 - **Template adherence**: responsibility frontmatter present; sections respect declared `owns` / `excludes`
-- **Provenance**: `provenance` field correct (`original` default; `reverse-engineered` or `migrated` with `source`)
+- **HTML shell wrapping** (`artifact-layout.md`): every user-facing HTML artifact wrapped in `t_html-shell.html`; all required placeholders filled (DOC_TYPE, SUBSYSTEM, SPRINT_ID where applicable, STATUS, UPDATED_AT, RESPONSIBILITY, PROVENANCE, TITLE, STATS, TOC, CONTENT); no bare fragments committed; no duplicated `<html>`/`<head>`/`<style>` chrome inside fragments
+- **Provenance**: `provenance` field correct (`original` default; `reverse-engineered` or `migrated` with `source`); provenance badge omitted when `original`
 - **Traceability**: PRD ACs map to ADRs (where architectural choice involved) and to code (in impl-review)
 - **Persistent actuality (impl-review)**: stack, commands, api, adr/, requirements/ reflect what code actually does; no drift
 - **Custom rules consistency**: respect custom-rules.md domain glossary, naming, conventions

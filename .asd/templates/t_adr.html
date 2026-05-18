@@ -10,40 +10,37 @@ source: ""                    # optional path/URL when provenance != original
 <!-- repeat this <article> per decision in sprint draft; persistent file has one <article> -->
 
 <article class="adr">
-  <section id="meta">
-    <p><strong>Status</strong>: {{proposed | accepted | superseded by ADR-NNNN}}</p>
-    <p><strong>Subsystem</strong>: {{subsystem id, or "N/A" when decomposition disabled}}</p>
-  </section>
+  <div class="meta">
+    <span class="status-chip status-proposed">{{proposed | accepted | superseded | deprecated}}</span>
+    <span class="chip area">subsystem: {{subsystem id, or "N/A"}}</span>
+    <span class="chip">{{ADR-NNNN}}</span>
+  </div>
 
-  <section id="context">
-    <h2>Context</h2>
-    <p>{{why decision needed, forces in play, constraints}}</p>
-  </section>
+  <h2 id="context">Context</h2>
+  <p>{{why decision needed, forces in play, constraints}}</p>
 
-  <section id="decision">
-    <h2>Decision</h2>
-    <p>{{what we decided to do}}</p>
-  </section>
+  <h2 id="decision">Decision</h2>
+  <p class="lede">{{what we decided to do}}</p>
 
-  <section id="consequences">
-    <h2>Consequences</h2>
-    <h3>Positive</h3>
-    <ul><li>{{benefit}}</li></ul>
-    <h3>Negative</h3>
-    <ul><li>{{cost or tradeoff}}</li></ul>
-  </section>
+  <h2 id="consequences">Consequences</h2>
+  <div class="consequences">
+    <div class="pros">
+      <h3>Positive</h3>
+      <ul><li>{{benefit}}</li></ul>
+    </div>
+    <div class="cons">
+      <h3>Negative</h3>
+      <ul><li>{{cost or tradeoff}}</li></ul>
+    </div>
+  </div>
 
-  <section id="alternatives">
-    <h2>Alternatives considered (optional)</h2>
-    <ul>
-      <li><strong>{{alternative}}</strong>: rejected because {{reason}}</li>
-    </ul>
-  </section>
+  <h2 id="alternatives">Alternatives considered (optional)</h2>
+  <ul class="alt-list">
+    <li><strong>{{alternative}}</strong> — rejected because {{reason}}</li>
+  </ul>
 
-  <section id="related">
-    <h2>Related ADRs (optional)</h2>
-    <ul>
-      <li><a href="../adr-NNNN-slug.html">ADR-NNNN</a>: {{relation}}</li>
-    </ul>
-  </section>
+  <h2 id="related">Related ADRs (optional)</h2>
+  <ul>
+    <li><a href="../adr-NNNN-slug.html">ADR-NNNN</a>: {{relation}}</li>
+  </ul>
 </article>
