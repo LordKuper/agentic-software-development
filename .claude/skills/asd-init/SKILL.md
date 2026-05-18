@@ -1,10 +1,10 @@
 ---
 name: asd-init
-description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Detects greenfield vs brownfield, asks the user for languages (chat and docs), subsystem decomposition mode, diagram tool (LikeC4 vs Mermaid), backward compatibility policy, operating system, external tool availability (LikeC4 CLI, design.md CLI, Codex CLI), git strategy, and review iteration limits. Auto-detects build/test/lint/run commands from manifests and code analysis. Generates .asd/config.yaml, .asd/project/custom-rules.md, .asd/project/decisions-log.md, and seeds design/ persistent docs (concept.html, stack.html, commands.yaml with OS-specific design.md lint command, DESIGN.md, design-system.html, accessibility.html, and either LikeC4 model or Mermaid subsystem registry). Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
+description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Detects greenfield vs brownfield, asks the user for languages (chat and docs), subsystem decomposition mode, diagram tool (LikeC4 vs Mermaid), backward compatibility policy, operating system, external tool availability (LikeC4 CLI, design.md CLI, Codex CLI), git strategy, and review iteration limits. Auto-detects build/test/lint/run commands from manifests and code analysis. Generates .asd/config.yaml, .asd/project/custom-rules.md, .asd/project/decisions-log.md, and seeds infrastructure-only design/ docs (commands.yaml with OS-specific design.md lint command, and either LikeC4 model or Mermaid subsystem registry). Concept, stack, and the design system (DESIGN.md, design-system.html, accessibility.html) are NOT seeded here — they are owned by dedicated skills /asd-concept, /asd-stack, /asd-design-system, suggested at the end of init. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 metadata:
   asd-role: init
   version: "0.1"
-allowed-tools: "Read Write Edit Glob Grep Bash WebFetch AskUserQuestion"
+allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
 ---
 
 # ASD Init
@@ -47,18 +47,16 @@ allowed-tools: "Read Write Edit Glob Grep Bash WebFetch AskUserQuestion"
 9. Write `.asd/config.yaml` from `t_config.yaml` with all approved fields (including `project.diagram_tool` when decomp enabled)
 10. Ask user what custom rules to add; write `.asd/project/custom-rules.md`
 11. Write `.asd/project/decisions-log.md` from `t_decisions-log.md`
-12. Seed minimal `design/` persistent (concept and stack handled by dedicated skills, NOT seeded here):
+12. Seed infrastructure-only `design/` files (concept, stack, and design-system files handled by dedicated skills, NOT seeded here):
     - `architecture/commands.yaml` (from `t_commands.yaml` + detected + OS-specific `custom.designmd-*`)
-    - `ux/accessibility.html` (from `t_accessibility.html`, ask key inputs)
-    - `ux/DESIGN.md` (fetch Google Labs spec via WebFetch, write minimal seed per spec)
-    - `ux/design-system.html` (render from DESIGN.md seed via `t_design-system.html`)
 13. If decomp enabled:
     - **likec4 mode**: seed `c4/model/main.c4`, `c4/views.c4` from templates; run `likec4 build` → `c4/dist/`
     - **mermaid mode**: seed `c4/subsystems.yaml` from `t_subsystems.yaml`; render `c4/architecture.html` with initial mermaid context view
 14. Append decisions-log entry ("ASD initialized for project; decomposition=X, diagram_tool=Y, OS=Z")
-15. **Post-init artefact checks** — suggest dedicated skill for each missing required artefact (do NOT auto-dispatch):
+15. **Post-init artefact checks** — suggest dedicated skill for each missing required artefact (do NOT auto-dispatch). Order: concept → stack → design-system:
     - `design/product/concept.html` absent → suggest `/asd-concept`
-    - `design/architecture/stack.html` absent → suggest `/asd-stack` (when that skill exists)
+    - `design/architecture/stack.html` absent → suggest `/asd-stack`
+    - `design/ux/DESIGN.md` OR `design/ux/design-system.html` OR `design/ux/accessibility.html` absent → suggest `/asd-design-system`
 16. Brownfield: prompt user to start sprint with audit-only scope (optional)
 17. Print summary + return contract
 
@@ -126,10 +124,9 @@ Four custom commands always emitted. Linter is always invoked via `designmd-lint
 - `CLAUDE.md` (created or ASD-section synced from `t_CLAUDE.md`)
 - `.asd/project/custom-rules.md`, `decisions-log.md`
 - `design/architecture/commands.yaml`
-- `design/ux/DESIGN.md`, `design-system.html`, `accessibility.html`
 - `design/architecture/c4/` content per `diagram_tool` (decomp only)
 
-Concept and stack are NOT produced here; they are owned by `/asd-concept` and `/asd-stack` respectively.
+Concept, stack, and design system are NOT produced here; they are owned by `/asd-concept`, `/asd-stack`, and `/asd-design-system` respectively.
 
 ## Agents dispatched
 

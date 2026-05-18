@@ -38,10 +38,10 @@ Agents produce a unified draft set for the entire sprint scope in `<sprint>/desi
 - `prd.html` — requirements + acceptance criteria
 - `ux-spec.html` — flows + accessibility notes for sprint scope
 - `adr.html` — architecture decisions
-- `design-md-delta.yaml` — proposed token changes to DESIGN.md (if any)
+- `design-md-delta.yaml` — proposed token changes to DESIGN.md, produced inline by UX-spec authoring (only when a token gap surfaces during mockup work; each entry user-approved before mockup resumes)
 - `c4-full/` — full LikeC4 schema covering sprint scope, rendered inline (`model/*.c4`, `views.c4`, `dist/`)
 
-Order: PRD blocks UX-spec. UX-spec blocks ADR. ADR blocks c4-full and design-md-delta.
+Order: PRD blocks design-system gate. Design-system gate (existence check on `design/ux/DESIGN.md`, `design-system.html`, `accessibility.html`; dispatches `/asd-design-system` when any missing) blocks UX-spec. UX-spec blocks ADR. ADR blocks c4-full. `design-md-delta.yaml` is produced inline during UX-spec, not as a separate post-ADR step.
 
 If `project.subsystem_decomposition: disabled`, `c4-full/` is omitted.
 

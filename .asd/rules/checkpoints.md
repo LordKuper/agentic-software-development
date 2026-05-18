@@ -8,7 +8,7 @@ Every pause is a HARD gate: the responsible agent MUST call `AskUserQuestion` an
 |---|---|---|
 | scope | `sprint.md` | BEFORE writing `sprint.md` / `state.json` — refined scope is presented in chat first |
 | audit | `audit.md` | BEFORE advancing to `design` |
-| design (per artifact) | `prd.html`, then `ux-spec.html`, then `adr.html`, then `c4-full/` + `design-md-delta.yaml` |
+| design (per artifact) | `prd.html`, then design-system gate (existence of `design/ux/DESIGN.md` + `design-system.html` + `accessibility.html`; missing → `/asd-design-system`), then `ux-spec.html` (with inline per-entry approval for any `design-md-delta.yaml` addition), then `adr.html`, then `c4-full/` |
 | design-review (final) | reviewer verdicts before promotion |
 | design-promote (decomposition) | proposed per-subsystem split |
 | design-promote (new subsystem) | each new subsystem before C4 registry update |
