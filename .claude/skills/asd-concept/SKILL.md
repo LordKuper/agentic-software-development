@@ -69,7 +69,7 @@ Phase 1 brownfield candidates auto-suggest D as default; user may override.
 
 Section-by-section discussion in `language.chat`:
 - BA presents current section content
-- AskUserQuestion (options form): **A) Lock in / B) Revise this section / C) Skip (optional sections only)**
+- AskUserQuestion (options form): **A) Lock in / B) Revise this section / C) Skip (optional sections only)** — labels and descriptions rendered in `language.chat` per `language-policy.md`
 - on B: collect feedback, BA revises, re-present, re-ask
 - repeat until A
 - proceed to next section per `t_concept.html` order (required first, then per-optional inclusion choice)
@@ -77,7 +77,7 @@ Section-by-section discussion in `language.chat`:
 ## Phase 5 — final approval + write
 
 - BA shows full assembled concept summary
-- AskUserQuestion: **A) Approve and write / B) Revise specific section** (on B re-enter Phase 4 for chosen section)
+- AskUserQuestion: **A) Approve and write / B) Revise specific section** (on B re-enter Phase 4 for chosen section) — labels and descriptions rendered in `language.chat`
 - on A: translate to `language.docs`, write `design/product/concept.html` per `t_concept.html`
 - emit COMPLETED
 

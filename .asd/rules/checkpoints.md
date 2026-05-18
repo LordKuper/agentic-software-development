@@ -2,10 +2,12 @@
 
 ## Mandatory pauses (user approval required)
 
-| After phase / event | Approves |
-|---|---|
-| scope | `sprint.md` |
-| audit | `audit.md` |
+Every pause is a HARD gate: the responsible agent MUST call `AskUserQuestion` and receive an explicit `approve` (or equivalent discrete option) BEFORE writing the gated artefact or advancing phase. Inferring approval from the user's earlier free-text — including the original sprint request — is forbidden. Batching "produce + write + advance" into a single turn without the intermediate `AskUserQuestion` is a protocol violation; the agent MUST emit `FAILED` and halt if it notices itself doing so.
+
+| After phase / event | Approves | Gate position |
+|---|---|---|
+| scope | `sprint.md` | BEFORE writing `sprint.md` / `state.json` — refined scope is presented in chat first |
+| audit | `audit.md` | BEFORE advancing to `design` |
 | design (per artifact) | `prd.html`, then `ux-spec.html`, then `adr.html`, then `c4-full/` + `design-md-delta.yaml` |
 | design-review (final) | reviewer verdicts before promotion |
 | design-promote (decomposition) | proposed per-subsystem split |

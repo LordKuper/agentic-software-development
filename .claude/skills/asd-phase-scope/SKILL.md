@@ -35,15 +35,19 @@ allowed-tools: "Read Glob Bash AskUserQuestion Task"
    - **raw scope text** from user (treated as draft, not final)
    - sprint id, branch
    - templates: `t_sprint.md`, `t_state.json`
-   - instruction:
-     - **refine** the raw scope into a coherent, finished statement of the sprint goal (full sentences, written in `language.docs`, not caveman); preserve every concrete requirement the user mentioned
-     - ask clarifying questions via AskUserQuestion when the raw text is ambiguous, contradictory, or missing concrete acceptance signals
-     - present the refined version for user approval (approve / edit / reject)
-     - if rejected → re-refine with feedback; loop until approved
-     - if slug should change based on refined goal, propose new slug and rename the sprint folder/branch (confirm with user)
-     - write the approved refined scope as `<sprint>/sprint.md` per `t_sprint.md`
-     - write initial `state.json` (phase=scope, iteration=0, branch, created_at) per `t_state.json`
-     - emit COMPLETED
+   - instruction (MUST follow in this exact order; skipping any step is a protocol violation):
+     1. **Refine** the raw scope into a coherent, finished statement of the sprint goal (full sentences, written in `language.docs`, not caveman); preserve every concrete requirement the user mentioned. Refinement happens in chat only — DO NOT write any file yet.
+     2. **Clarify** via AskUserQuestion when the raw text is ambiguous, contradictory, or missing concrete acceptance signals. Mandatory if any of: scope verb is vague ("improve", "refactor", "support X"), no measurable outcome, ≥2 plausible interpretations, missing target users/surface/data shape.
+     3. **Present** the refined version to the user for explicit approval via AskUserQuestion with options `approve` / `edit` / `reject`. The approval call is mandatory even when the user's raw text looked complete — implicit approval is NOT allowed.
+     4. If `edit` or `reject` → re-refine with feedback; loop back to step 3 until explicit `approve`.
+     5. If the refined goal implies a better slug, propose new slug via AskUserQuestion and rename folder/branch only after confirmation.
+     6. **Only after explicit `approve`**: write `<sprint>/sprint.md` per `t_sprint.md` and initial `state.json` (phase=scope, iteration=0, branch, created_at) per `t_state.json`. Append a decisions-log entry recording the approved scope.
+     7. Emit COMPLETED.
+
+   Hard gates (any violation → emit FAILED and halt):
+   - No `Write`/`Edit` to `sprint.md` or `state.json` before AskUserQuestion approval has returned `approve`.
+   - No phase advance signal (`COMPLETED`) before the file write has happened.
+   - No batching of "refine + write" into a single turn without the intermediate AskUserQuestion.
 9. On PM `COMPLETED` → emit COMPLETED with return contract
 10. On PM `QUESTION` → relay to user, halt
 11. On PM `FAILED` / `ABORT` → relay, halt

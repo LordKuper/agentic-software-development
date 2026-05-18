@@ -74,7 +74,7 @@ Phase 1 brownfield candidates auto-suggest D as default.
 Section-by-section discussion in `language.chat`:
 - Architect presents current section content
 - For each entry: verify current latest version via WebFetch; flag if user's choice lags or is ahead
-- AskUserQuestion (options form): **A) Lock in / B) Revise this section / C) Skip (optional sections only)**
+- AskUserQuestion (options form): **A) Lock in / B) Revise this section / C) Skip (optional sections only)** — labels and descriptions rendered in `language.chat` per `language-policy.md`
 - on B: collect feedback, architect revises, re-present, re-ask
 - repeat until A
 - proceed to next section per `t_stack.html` order
@@ -99,7 +99,7 @@ For each technology in approved stack:
 ## Phase 7 — final approval + write stack.html
 
 - Architect shows full assembled stack + risk summary
-- AskUserQuestion: **A) Approve, write stack.html / B) Revise specific section** (on B re-enter Phase 4)
+- AskUserQuestion: **A) Approve, write stack.html / B) Revise specific section** (on B re-enter Phase 4) — labels and descriptions rendered in `language.chat`
 - on A: translate to `language.docs`, write `design/architecture/stack.html` per `t_stack.html`
 - emit COMPLETED
 
