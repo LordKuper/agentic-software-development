@@ -22,21 +22,28 @@ allowed-tools: "Read Write Edit Glob Grep Bash WebFetch AskUserQuestion"
 1. Detect greenfield vs brownfield via Glob on source files
 2. AskUserQuestion batch: chat lang, docs lang, subsystem_decomposition, backward_compat, external_review
 3. If decomposition enabled → AskUserQuestion: diagram_tool (`likec4` | `mermaid`)
-4. Detect OS via Bash; confirm with user
-5. Detect external tools:
+4. Detect OS via Bash (silent; no confirm yet)
+5. Detect external tools (silent; record results, do not prompt per-tool yet):
    - `likec4 --version` (only if diagram_tool=likec4)
    - designmd (always):
-     - **Windows**: only `designmd` alias works (`.md` file association blocks `npx @google/design.md`); if missing → ask user to install alias
+     - **Windows**: only `designmd` alias works (`.md` file association blocks `npx @google/design.md`); if missing → mark missing
      - **Linux/macOS**: try `designmd --version`; fall back to `npx @google/design.md --version`
    - `codex --version` (only if external_review=enabled)
-   Record paths; offer override if missing
-6. Ask review iteration limits (defaults: low=1 medium=1 high=2 critical=10)
-7. Ask git settings (base_branch, branch_pattern, gh_enabled, auto_pr)
+   Record paths and missing flags for the consolidated proposal
+6. Pick review iteration defaults (low=1 medium=1 high=2 critical=10) — include in proposal, do not prompt yet
+7. Pick git defaults (base_branch from `git symbolic-ref refs/remotes/origin/HEAD` or `main`; branch_pattern `sprint/<NNN>-<slug>`; gh_enabled from `gh --version`; auto_pr=false) — include in proposal
 8. Auto-detect build commands from:
    - manifests: package.json scripts, Cargo.toml, pyproject.toml, go.mod, Makefile
    - code analysis: CI configs (.github/workflows, .gitlab-ci.yml, etc.), Dockerfile RUN lines, README command patterns
-   Confirm with user
-9. Write `.asd/config.yaml` from `t_config.yaml` with all filled fields (including `project.diagram_tool` when decomp enabled)
+   Record into proposal; do not prompt per-command yet
+8a. **Consolidated proposal & edit gate** — present every auto-detected/defaulted value in one structured block in `language.chat`:
+    - OS, external tools (with missing flags + install hint), review iteration limits, git settings, detected build/test/lint/run commands
+    Then AskUserQuestion: `accept-all` | `edit-section` | `abort`.
+    - `edit-section` → AskUserQuestion which section (os | tools | review | git | commands), collect new values, re-show proposal, loop until `accept-all`
+    - Missing required tools (designmd always; likec4 if decomp+likec4; codex if external_review) → must be resolved here: install / override path / disable feature. Do NOT silently proceed with missing required tools.
+    Only after `accept-all` proceed to write.
+9. Write `.asd/config.yaml` from `t_config.yaml` with all approved fields (including `project.diagram_tool` when decomp enabled)
+9a. **Sync `CLAUDE.md` ASD section** (see "CLAUDE.md sync" below)
 10. Ask user what custom rules to add; write `.asd/project/custom-rules.md`
 11. Write `.asd/project/decisions-log.md` from `t_decisions-log.md`
 12. Seed minimal `design/` persistent (concept and stack handled by dedicated skills, NOT seeded here):
@@ -59,9 +66,43 @@ allowed-tools: "Read Write Edit Glob Grep Bash WebFetch AskUserQuestion"
 1. Read current `.asd/config.yaml`
 2. Show settings to user
 3. AskUserQuestion which sections to edit: language | review | git | tools | concept | custom-rules | diagram-tool | subsystem-decomposition
-4. Per section: ask new value → show diff → confirm
-5. Apply diff; write config
-6. Append decisions-log entry per change
+4. Per section: ask new value → add to pending change-set (do not write yet)
+5. Show consolidated diff of all pending edits → AskUserQuestion: `accept-all` | `edit-section` | `abort`; loop until accepted
+6. Apply diff; write config
+7. Sync `CLAUDE.md` ASD section (see "CLAUDE.md sync" below)
+8. Append decisions-log entry per change
+
+## CLAUDE.md sync
+
+Idempotent. Section is delimited by exact marker lines:
+
+```
+<!-- BEGIN: Agentic Software Development Rules -->
+<!-- END: Agentic Software Development Rules -->
+```
+
+Body between markers = verbatim contents of `.asd/templates/t_CLAUDE.md` (no transformation).
+
+Algorithm:
+
+1. If `CLAUDE.md` absent at repo root → create it with:
+   ```
+   # CLAUDE.md
+
+   ## Agentic Software Development Rules
+
+   <!-- BEGIN: Agentic Software Development Rules -->
+   <contents of .asd/templates/t_CLAUDE.md>
+   <!-- END: Agentic Software Development Rules -->
+   ```
+2. If present and both markers found → extract body between markers, byte-compare to template. If equal → no-op. If different → replace body in place (preserve everything outside markers, including the `## Agentic Software Development Rules` heading and any other user content).
+3. If present but markers missing → append the `## Agentic Software Development Rules` section (with markers and template body) to end of file. Do NOT modify pre-existing content.
+4. If only one marker is found (malformed) → STOP, ask user via AskUserQuestion: `repair` (replace from first marker to EOF) | `abort` | `manual`. Never silently guess.
+
+Rules:
+- Marker lines are exact, case-sensitive, no trailing spaces.
+- Never touch content outside markers.
+- Trailing newline of template preserved.
 
 ## OS-specific commands written to commands.yaml
 
@@ -76,6 +117,7 @@ allowed-tools: "Read Write Edit Glob Grep Bash WebFetch AskUserQuestion"
 ## Artefacts produced
 
 - `.asd/config.yaml`
+- `CLAUDE.md` (created or ASD-section synced from `t_CLAUDE.md`)
 - `.asd/project/custom-rules.md`, `decisions-log.md`
 - `design/architecture/commands.yaml`
 - `design/ux/DESIGN.md`, `design-system.html`, `accessibility.html`
