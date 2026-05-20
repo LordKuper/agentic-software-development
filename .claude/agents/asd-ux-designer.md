@@ -4,7 +4,7 @@ description: "Use this agent when designing user flows, defining ui mockups, evo
 tools: [Read, Glob, Grep, Edit, Write, WebFetch, AskUserQuestion]
 disallowedTools: [Bash]
 model: opus
-maxTurns: 30
+maxTurns: 50
 memory: project
 ---
 

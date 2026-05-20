@@ -3,7 +3,7 @@ name: asd-pm
 description: "Use this agent when orchestrating an ASD sprint, advancing phase transitions, managing sprint state, recording approved decisions, archiving completed sprints, or opening the final PR. Covers: phase routing, state.json maintenance, decisions-log appends, sprint archival, branch and PR ops via gh, approval gates via AskUserQuestion. Does NOT handle: writing PRD/UX/ADR (delegates to asd-ba/asd-ux-designer/asd-architect), reviewing artifacts (delegates to reviewer agents), implementation (delegates to dev agents)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, AskUserQuestion, Skill]
 model: opus
-maxTurns: 30
+maxTurns: 50
 memory: project
 ---
 

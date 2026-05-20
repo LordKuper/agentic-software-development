@@ -4,7 +4,7 @@ description: "Use this agent during impl-review phase to verify implemented code
 tools: [Read, Glob, Grep, Write, AskUserQuestion]
 disallowedTools: [Edit, Bash, WebFetch]
 model: haiku
-maxTurns: 15
+maxTurns: 50
 memory: project
 ---
 

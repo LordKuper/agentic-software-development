@@ -4,7 +4,7 @@ description: "Use this agent during both design-review and impl-review phases to
 tools: [Read, Glob, Grep, Write, Bash, AskUserQuestion]
 disallowedTools: [Edit, WebFetch]
 model: opus
-maxTurns: 30
+maxTurns: 50
 memory: project
 ---
 

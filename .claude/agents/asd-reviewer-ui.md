@@ -4,7 +4,7 @@ description: "Use this agent during design-review phase for sprint ux-spec draft
 tools: [Read, Glob, Grep, Write, AskUserQuestion]
 disallowedTools: [Edit, Bash, WebFetch]
 model: haiku
-maxTurns: 15
+maxTurns: 50
 memory: project
 ---
 

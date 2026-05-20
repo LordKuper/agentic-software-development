@@ -4,7 +4,7 @@ description: "Use this agent during design-review (verify sprint design drafts r
 tools: [Read, Glob, Grep, Write, AskUserQuestion]
 disallowedTools: [Edit, Bash, WebFetch]
 model: opus
-maxTurns: 30
+maxTurns: 50
 memory: project
 ---
 

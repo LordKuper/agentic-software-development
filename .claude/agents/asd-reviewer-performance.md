@@ -4,7 +4,7 @@ description: "Use this agent during impl-review phase to assess performance agai
 tools: [Read, Glob, Grep, Write, AskUserQuestion]
 disallowedTools: [Edit, Bash, WebFetch]
 model: opus
-maxTurns: 30
+maxTurns: 50
 memory: project
 ---
 
