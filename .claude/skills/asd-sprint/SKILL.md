@@ -43,7 +43,7 @@ allowed-tools: "Read Glob Grep Bash AskUserQuestion Skill"
 
 ### Step 3: phase chain advancement
 After any phase skill returns:
-- `COMPLETED` → dispatch the next phase per the chain defined in `.asd/rules/sprint-lifecycle.md`; on `pr` COMPLETED, sprint is archived and chain ends
+- `COMPLETED` → read the `NEXT:` field of the phase skill's return contract and dispatch that phase skill. `NEXT:` is authoritative — it follows the default linear order in `.asd/rules/sprint-lifecycle.md` except that `impl` and `impl-review` cycle: `impl-review` returns `NEXT: impl` when it found unresolved findings (routes the sprint to impl fix mode) or `NEXT: pr` on DoD met; `impl` always returns `NEXT: impl-review`. On `pr` COMPLETED the sprint is archived and the chain ends.
 - `FAILED` → relay to user, halt
 - `QUESTION` → relay pending question to user, halt until reply
 - `ABORT — precondition not met` → relay, halt

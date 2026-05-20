@@ -3,8 +3,10 @@
 ## Phases (all mandatory)
 
 ```
-scope → audit → design → design-review → design-promote → plan → impl → impl-review → pr
+scope → audit → design → design-review → design-promote → plan → impl ⇄ impl-review → pr
 ```
+
+`impl` and `impl-review` form a cycle: when impl-review finds issues it does NOT fix them itself — it routes the sprint back to `impl` (fix mode) to resolve the findings, then impl returns to `impl-review`. The cycle repeats until impl-review reaches DoD (all reviewers APPROVE) or the iteration cap is hit. Phase routing follows the `NEXT:` token in each phase skill's return contract, not a fixed linear chain.
 
 | Phase | Owner | Input | Output | Exit criteria |
 |---|---|---|---|---|
@@ -14,8 +16,8 @@ scope → audit → design → design-review → design-promote → plan → imp
 | design-review | Documentation + UI + Simplification + External Review | `<sprint>/design/` | `reviews/iter-NN/<reviewer>.md` | DoD met |
 | design-promote | PM + Architect + BA + UX Designer | approved drafts | persistent docs in `design/` | drafts merged, decisions-log entry |
 | plan | PM | promoted persistent docs | `plan.md` | plan approved |
-| impl | Backend Dev + Frontend Dev + Test Engineer | `plan.md` | code + tests, `manual-steps.md` | all tasks done |
-| impl-review | Quality + Implementation + Testing + UI + Simplification + Documentation + Performance + External Review | code + tests | `reviews/iter-NN/<reviewer>.md` | DoD met |
+| impl | Backend Dev + Frontend Dev + Test Engineer | `plan.md` (initial) or `reviews/iter-NN/` findings (fix mode) | code + tests, `manual-steps.md` | all tasks/findings done; build + tests run and pass (completion gate) |
+| impl-review | Quality + Implementation + Testing + UI + Simplification + Documentation + Performance + External Review | code + tests | `reviews/iter-NN/<reviewer>.md` | DoD met → `pr`; else route to `impl` fix mode |
 | pr | PM | everything | sprint archive + PR | PR opened (or push summary if `gh_enabled=false`) |
 
 ## Audit phase details
@@ -67,6 +69,24 @@ If `project.subsystem_decomposition: disabled`: drafts merge into single project
 Devs implement plan tasks. When a subtask needs a human-only operational action (a secret, cloud resource, migration run by hand, env var, third-party account), the dev registers an `MS-N` entry in `<sprint>/manual-steps.md`, marks the subtask `BLOCKED: MS-N` in `plan.md`, emits `BLOCKED_MANUAL`, and continues with all unblocked work.
 
 PM validates each new `MS-N` for necessity (see `artifact-layout.md` Manual steps); entries the agent could do autonomously are rejected and returned to the dev. Once all unblocked work is COMPLETED and validated `pending` entries remain, the impl phase halts: PM presents `manual-steps.md` to the user and waits for a continue command. On resume, the dev verifies each entry per its `Verification` field, flips it to `done`, and finishes the blocked subtasks before the impl assessment gate.
+
+### Impl modes
+
+The impl phase runs in one of two modes, detected from `state.json.review_fixes_pending`:
+
+- **Initial mode** (`review_fixes_pending` null/absent) — devs implement `plan.md` tasks as above. Ends with the user-facing impl assessment gate, then `NEXT: impl-review`.
+- **Fix mode** (`review_fixes_pending` set to `iter-NN`) — entered when impl-review routed the sprint back. Devs read the reviewer findings in `<sprint>/reviews/iter-NN/`, resolve every CONCERNS finding plus every FAIL finding whose escalation the user approved in impl-review, then return `NEXT: impl-review`. Fix mode skips the user-facing impl assessment gate (the cycle stays silent between review iterations); blockers (dev QUESTION / FAILED, Simplicity Default trigger) escalate exactly as in initial mode. On completion the phase clears `review_fixes_pending`.
+
+### Impl completion gate
+
+In **both modes**, the impl phase MUST NOT emit `COMPLETED` until all of the following hold, verified via `commands.yaml`:
+
+- the `build` command was executed
+- `build` finished with no errors and no warnings
+- the `test` command was executed
+- every test passed
+
+If any condition fails, impl cannot complete: devs fix and re-run; an unrecoverable failure escalates as a blocker (`FAILED`). This gate is an automatic verification, not a user pause.
 
 ## Signal vocabulary
 

@@ -1,6 +1,6 @@
 ---
 name: asd-phase-impl
-description: "Runs the ASD impl phase. Updates state.json to phase=impl. Parses Task N blocks from plan.md and dispatches each task to its assigned dev (asd-backend-dev, asd-frontend-dev, or asd-test-engineer per Task body owner field), respecting declared dependencies (sequential where dependent, parallel where independent). Each dev verifies tech-reference exists for every library/framework/runtime/external service touched (refuses with FAILED if missing), reads context (plan, requirements, ADR, custom-rules, accessibility), proposes approach (Complication Approval if non-trivial), writes code and unit tests, runs test/lint/build per commands.yaml, commits per Conventional Commits, ticks plan.md checkboxes, registers TODO stubs in project-global .asd/project/stubs.md (append-only). When a plan subtask needs a human-only manual action, the dev registers it in <sprint>/manual-steps.md, defers that subtask, and continues unblocked work; PM validates each manual entry for necessity and the phase halts at the manual-steps gate until the user performs the actions and confirms. After all tasks complete, asd-pm presents impl summary for user assessment before phase exit. Use when asd-sprint dispatches the impl phase, or when the user explicitly asks to run or re-run impl for the active sprint."
+description: "Runs the ASD impl phase in one of two modes, detected from state.json.review_fixes_pending. Initial mode (review_fixes_pending null): parses Task N blocks from plan.md and dispatches each task to its assigned dev (asd-backend-dev, asd-frontend-dev, or asd-test-engineer per Task body owner field), respecting declared dependencies (sequential where dependent, parallel where independent). Fix mode (review_fixes_pending set to iter-NN): reads the impl-review findings in <sprint>/reviews/iter-NN/ and dispatches devs to resolve every CONCERNS finding plus every user-accepted FAIL finding, then returns the sprint to impl-review; fix mode skips the user-facing impl assessment gate, forming an impl⇄impl-review cycle. Updates state.json to phase=impl. Each dev verifies tech-reference exists for every library/framework/runtime/external service touched (refuses with FAILED if missing), reads context (plan or review findings, requirements, ADR, custom-rules, accessibility), proposes approach (Complication Approval if non-trivial), writes code and unit tests, runs build/test/lint per commands.yaml, commits per Conventional Commits, ticks plan.md checkboxes, registers TODO stubs in project-global .asd/project/stubs.md (append-only). When a plan subtask needs a human-only manual action, the dev registers it in <sprint>/manual-steps.md, defers that subtask, and continues unblocked work; PM validates each manual entry for necessity and the phase halts at the manual-steps gate until the user performs the actions and confirms. In both modes the phase MUST NOT emit COMPLETED until the build and test commands from commands.yaml were run and both passed with no errors or warnings (impl completion gate). After all tasks complete, in initial mode asd-pm presents impl summary for user assessment before phase exit. Use when asd-sprint dispatches the impl phase, or when the user explicitly asks to run or re-run impl for the active sprint."
 metadata:
   asd-role: phase
   asd-order: "7"
@@ -12,19 +12,28 @@ allowed-tools: "Read AskUserQuestion Task"
 
 ## Preconditions
 - Active sprint at `.asd/sprints/<NNN-slug>/`
-- `plan.md` approved (per checkpoints precondition chain)
-- `state.json.phase` advanced from `plan`
+- **Initial mode**: `plan.md` approved (per checkpoints precondition chain); `state.json.phase` advanced from `plan`
+- **Fix mode**: `state.json.review_fixes_pending` is set to an `iter-NN` value; `<sprint>/reviews/iter-NN/` reviewer files exist
 
 ## Tool policy
-- Read — `.asd/config.yaml`, `state.json`, `plan.md`, persistent design/ docs, `.asd/project/custom-rules.md`, `.asd/project/stubs.md`, `<sprint>/manual-steps.md`
+- Read — `.asd/config.yaml`, `state.json`, `plan.md`, `<sprint>/reviews/iter-NN/` (fix mode), persistent design/ docs, `.asd/project/custom-rules.md`, `.asd/project/stubs.md`, `<sprint>/manual-steps.md`
 - AskUserQuestion — escalation only (see Execution mode)
-- Task — dispatch devs per task owner; PM for state + assessment + decisions-log
+- Task — dispatch devs per task owner / finding owner; PM for state + assessment + decisions-log
+
+## Modes
+
+The phase runs in one of two modes, detected at step 2 from `state.json.review_fixes_pending`:
+
+- **Initial mode** (`review_fixes_pending` null/absent) — implement `plan.md` Task blocks. Ends with the user-facing impl assessment gate (step 9).
+- **Fix mode** (`review_fixes_pending` = `iter-NN`) — entered when impl-review routed the sprint back. Resolve the reviewer findings in `<sprint>/reviews/iter-NN/`. **Skips the impl assessment gate** — fix mode returns straight to impl-review so the impl⇄impl-review cycle stays silent between review iterations. On completion the phase clears `review_fixes_pending`.
+
+The impl completion gate (step 9b) applies in **both** modes.
 
 ## Execution mode
 
-Impl runs **autonomously**. Once tasks are dispatched, devs work without user contact until **one** of:
+Impl runs **autonomously** in both modes. Once tasks/fixes are dispatched, devs work without user contact until **one** of:
 
-- **all plan tasks signal COMPLETED** — then the impl assessment gate (step 9) is the first and only user pause; or
+- **all plan tasks (initial) or all findings (fix) signal COMPLETED** — then in initial mode the impl assessment gate (step 9) is the first and only user pause; fix mode has no such pause; or
 - **all unblocked work is COMPLETED and validated manual steps remain pending** — the impl phase halts at the manual-steps gate (step 8); or
 - **a blocker requiring escalation arises** — execution halts and the blocker is relayed to the user.
 
@@ -40,16 +49,22 @@ Devs do **not** pause the user for routine "non-trivial approach" decisions. Wit
 ## Workflow
 
 1. Read `.asd/config.yaml` (`backward_compat`, `system.tools`, `language.chat`, `language.docs`)
-2. Read `<sprint>/state.json` → confirm plan approved
-3. Read `<sprint>/plan.md` → parse Task blocks: title, owner (backend-dev / frontend-dev / test-engineer), subtask checkboxes, dependencies
+2. Read `<sprint>/state.json` → **detect mode** from `review_fixes_pending`:
+   - null/absent → **initial mode**; confirm `plan.md` approved
+   - set to `iter-NN` → **fix mode**; confirm `<sprint>/reviews/iter-NN/` exists (else `ABORT — precondition not met: reviews/iter-NN missing`)
+3. **Build the work set** per mode:
+   - **initial mode** — read `<sprint>/plan.md` → parse Task blocks: title, owner (backend-dev / frontend-dev / test-engineer), subtask checkboxes, dependencies
+   - **fix mode** — read every reviewer file in `<sprint>/reviews/iter-NN/`; collect all CONCERNS findings plus all FAIL findings the user accepted for fix (skip FAIL findings noted resolved-by-override); from each finding's `Location` (file:line) determine the owning dev (backend-dev / frontend-dev / test-engineer); group findings by owner into fix tasks
 4. Dispatch `asd-pm` via Task: update `state.json` (phase=impl)
-5. **Build execution graph** from Task dependencies; topological sort; mark independent tasks parallelisable
+5. **Build execution graph**:
+   - initial mode — from Task dependencies; topological sort; mark independent tasks parallelisable
+   - fix mode — fix tasks are independent unless two touch the same file; parallel where independent, sequential where they collide
 6. **Dispatch tasks** per execution graph:
    - sequential where dependent
    - parallel where independent (caller schedules concurrent Task calls)
    - per task: dispatch to assigned dev (`asd-backend-dev` | `asd-frontend-dev` | `asd-test-engineer`) via Task with payload:
-     - Task block excerpt (title + subtasks + dependencies)
-     - relevant context paths (PRD AC-N referenced, ADRs, ux-spec, DESIGN.md, accessibility, stack, commands.yaml, tech-reference/, custom-rules.md)
+     - initial mode — Task block excerpt (title + subtasks + dependencies); fix mode — the grouped finding list (each finding's severity, location, description, suggested fix; plus the user-approved change note for accepted FAIL findings)
+     - relevant context paths (PRD AC-N referenced, ADRs, ux-spec, DESIGN.md, accessibility, stack, commands.yaml, tech-reference/, custom-rules.md; fix mode also: the reviewer files in `reviews/iter-NN/`)
      - `language.chat`, `language.docs`
      - instruction:
        - read context first
@@ -61,16 +76,16 @@ Devs do **not** pause the user for routine "non-trivial approach" decisions. Wit
          - mark the affected subtask `- [ ] <subtask> — BLOCKED: MS-N` in `<sprint>/plan.md`
          - emit `BLOCKED_MANUAL` for that subtask and continue all unblocked work in the task
          - registering a manual step is a last resort — only when the action genuinely cannot be done with agent tools (code, `commands.yaml` commands, file ops); PM may bounce an entry back to be implemented autonomously
-       - write code + unit tests (or integration/e2e for test-engineer)
-       - run `lint`, `test` per `commands.yaml`; do not advance with failures unreported
+       - write code + unit tests (or integration/e2e for test-engineer); fix mode — apply the suggested fix for each finding, or an equivalent correct fix, and add/adjust tests so the finding cannot recur
+       - run `build`, `lint`, `test` per `commands.yaml`; do not advance with failures or warnings unreported
        - **stub handling**:
          - when introducing new TODO: insert `// TODO(sprint-<NNN-slug>): <reason>` marker in code AND add row to `.asd/project/stubs.md` (Sprint, File:Line, Reason, Owner)
          - when resolving an existing stub (current task is "Resolve stub X" or as side effect): remove `// TODO(sprint-...)` marker from code AND delete the row from `.asd/project/stubs.md`
          - never edit-in-place a stub row; always delete + (optionally) re-add under new sprint id for migration
        
        - commit per Conventional Commits (one logical change per commit; subject ≤50 chars; body describes WHY)
-       - tick corresponding checkboxes in `<sprint>/plan.md`
-       - emit COMPLETED with summary (files touched, AC-N satisfied, stubs added) when all subtasks done; when some subtasks are manual-blocked, emit COMPLETED for the unblocked portion plus `BLOCKED_MANUAL` listing the deferred `MS-N`
+       - initial mode — tick corresponding checkboxes in `<sprint>/plan.md`
+       - emit COMPLETED with summary (files touched; initial mode: AC-N satisfied, stubs added; fix mode: findings resolved by id) when all subtasks/findings done; when some subtasks are manual-blocked, emit COMPLETED for the unblocked portion plus `BLOCKED_MANUAL` listing the deferred `MS-N`
 7. Wait all task signals (COMPLETED and/or BLOCKED_MANUAL)
 8. **Manual-steps validation + gate** — when any `BLOCKED_MANUAL` was emitted:
    - dispatch `asd-pm` via Task to validate each new `MS-N` entry for necessity:
@@ -84,37 +99,46 @@ Devs do **not** pause the user for routine "non-trivial approach" decisions. Wit
      - if verified → flip the entry `Status` to `done`, finish the `BLOCKED:` subtasks, tick `plan.md` checkboxes, emit COMPLETED
      - if not verified → emit `BLOCKED_MANUAL` again (entry stays `pending`); relay to user
    - loop until every `MS-N` is `done` and every deferred task COMPLETED
-9. **Impl assessment checkpoint** — dispatch `asd-pm` via Task:
+9. **Impl completion gate** (both modes) — dispatch `asd-pm` via Task to verify, via `commands.yaml`:
+   - the `build` command was executed and finished with no errors and no warnings
+   - the `test` command was executed and every test passed
+   - if any condition fails → the phase MUST NOT advance: PM relays the specific failure to the owning dev(s) via Task to fix and re-run; loop step 7. An unrecoverable failure escalates as a blocker (`FAILED`).
+   - this gate is an automatic verification — no user pause
+10. **Impl assessment checkpoint** — **initial mode only** (fix mode skips to step 11) — dispatch `asd-pm` via Task:
    - read updated `<sprint>/plan.md` → verify all checkboxes ticked
    - read `.asd/project/stubs.md` → list stubs introduced this sprint (filter by Sprint=<NNN-slug>; all rows are open by definition since delete-on-resolve)
-   - compose impl summary: tasks done, AC-N coverage map, files changed, tests added, lint status, sprint-introduced stubs
+   - compose impl summary: tasks done, AC-N coverage map, files changed, tests added, build + test status, sprint-introduced stubs
    - present to user via AskUserQuestion: approve (advance to impl-review) / request changes / abort
-   - on approve: update `state.json`, append decisions-log entry ("impl assessment approved"); emit COMPLETED
+   - on approve: update `state.json`, append decisions-log entry ("impl assessment approved")
    - on request changes: relay specific feedback to relevant dev(s) via Task; loop step 7
    - on abort: emit ABORT
-10. Emit phase COMPLETED with return contract
+11. **Fix-mode finalize** — fix mode only — dispatch `asd-pm` via Task: clear `state.json.review_fixes_pending` (set null), append decisions-log entry "impl fix for iter-NN: findings resolved"
+12. Emit phase COMPLETED with return contract (`NEXT: impl-review` in both modes)
 
-## Escalation (only interruptions before the impl assessment gate)
+## Escalation (interruptions before phase exit)
 
-Per Execution mode, these are the **only** reasons impl contacts the user before all tasks complete:
+Per Execution mode, these are the **only** reasons impl contacts the user before all tasks/findings complete (same in both modes):
 
 - Any dev `QUESTION` (unresolvable requirement ambiguity) → relay to user, halt; resume on answer
 - Any dev Complication Approval request (Simplicity Default trigger) → relay to user, halt; resume on decision
 - Any dev `FAILED` / `ABORT` → relay, halt
 - Manual-steps gate (step 8) — after all unblocked work is COMPLETED and PM-validated `MS-N` entries remain, PM presents `manual-steps.md`; resume on the user's continue command
 
+The impl completion gate (step 9) and, in initial mode only, the impl assessment gate (step 10) are the post-work gates. Fix mode has no user-facing assessment gate.
+
 ## Artefacts produced
 - Source code + unit tests in repo
 - Integration / e2e tests in repo (from test-engineer tasks)
 - Updated `.asd/project/stubs.md` (project-global, append-only)
 - `<sprint>/manual-steps.md` when a manual action arose (per-sprint, append-only)
-- Updated `<sprint>/plan.md` checkboxes
-- Updated `state.json` (phase=impl)
+- Updated `<sprint>/plan.md` checkboxes (initial mode)
+- Updated reviewer files in `<sprint>/reviews/iter-NN/` with user-approved change notes (fix mode)
+- Updated `state.json` (phase=impl; `review_fixes_pending` cleared on fix-mode exit)
 - Git commits per Conventional Commits
-- decisions-log entry on impl assessment approval
+- decisions-log entry on impl assessment approval (initial) or fix-mode finalize
 
 ## Agents dispatched
-- `asd-pm` (state, impl assessment, decisions-log)
+- `asd-pm` (state, impl completion gate, impl assessment, fix-mode finalize, decisions-log)
 - `asd-backend-dev` (per Task with owner=backend-dev)
 - `asd-frontend-dev` (per Task with owner=frontend-dev)
 - `asd-test-engineer` (per Task with owner=test-engineer)
@@ -128,9 +152,10 @@ PHASE: impl | SPRINT: <NNN-slug> | STATUS: <complete|blocked|aborted> | NEXT: im
 ```
 
 ## References
-- `.asd/rules/sprint-lifecycle.md` (impl phase contract)
-- `.asd/rules/checkpoints.md` (impl assessment gate)
+- `.asd/rules/sprint-lifecycle.md` (impl phase contract, impl modes, completion gate, impl⇄impl-review cycle)
+- `.asd/rules/checkpoints.md` (impl assessment gate, fix-mode precondition)
+- `.asd/rules/review-policy.md` (severity, finding format consumed in fix mode)
 - `.asd/rules/git-strategy.md` (commits, project-global stubs, dirty tree)
 - `.asd/rules/artifact-layout.md` (tech-reference refuse-to-implement rule, project stubs path)
 - `.asd/rules/language-policy.md`
-- Templates: `t_plan.md` (Task parsing reference), `t_stubs.md`, `t_manual-steps.md`
+- Templates: `t_plan.md` (Task parsing reference), `t_review.md` (reviewer finding format, fix mode), `t_stubs.md`, `t_manual-steps.md`

@@ -72,8 +72,10 @@ After cloning, open the project in Claude Code. The SessionStart hook will print
 Each sprint runs through nine mandatory phases in order:
 
 ```
-scope → audit → design → design-review → design-promote → plan → impl → impl-review → pr
+scope → audit → design → design-review → design-promote → plan → impl ⇄ impl-review → pr
 ```
+
+`impl` and `impl-review` form a cycle: when impl-review finds issues it routes the sprint back to `impl` (fix mode) to resolve them, then returns to `impl-review`. The cycle repeats until all reviewers APPROVE or the iteration cap is hit.
 
 | Phase | What happens |
 |---|---|
@@ -83,8 +85,8 @@ scope → audit → design → design-review → design-promote → plan → imp
 | **design-review** | 3 internal reviewers (Documentation, UI, Simplification) plus External Review iterate to APPROVE |
 | **design-promote** | Approved sprint drafts get decomposed per subsystem and promoted to persistent `design/` |
 | **plan** | PM decomposes work into Tasks with checkbox subtasks, traces each to PRD acceptance criteria |
-| **impl** | Devs (Backend, Frontend, Test Engineer) implement Tasks, run lint/test, commit per Conventional Commits |
-| **impl-review** | 7 internal reviewers (Quality, Implementation, Testing, UI, Simplification, Documentation, Performance) plus External Review |
+| **impl** | Devs (Backend, Frontend, Test Engineer) implement Tasks (or fix impl-review findings in fix mode), run build/lint/test, commit per Conventional Commits |
+| **impl-review** | 7 internal reviewers (Quality, Implementation, Testing, UI, Simplification, Documentation, Performance) plus External Review; routes findings back to `impl` fix mode |
 | **pr** | DoD verification + sprint archive + `gh pr create` (or push + summary if gh disabled) |
 
 You can resume an interrupted sprint at any time: `/asd-sprint` reads `state.json`, detects the current phase, and dispatches the matching phase skill.

@@ -3,7 +3,7 @@ name: asd-backend-dev
 description: "Use this agent when implementing server-side code, CLI tools, libraries, background workers, or data access layers — and the matching unit tests. Covers: backend code authoring per plan tasks, unit test authoring for backend code, running test/lint/build/run commands from commands.yaml, registering TODO stubs in stubs.md. Does NOT handle: UI code (delegates to asd-frontend-dev), integration/e2e tests (delegates to asd-test-engineer), architecture decisions (delegates to asd-architect), code review (delegates to reviewer agents)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
 model: sonnet
-maxTurns: 20
+maxTurns: 1000
 memory: project
 ---
 

@@ -47,6 +47,10 @@ Simplification reviewer flags any of these as `critical`:
 
 Default: the responsible creator agent autofixes any reviewer issue without user prompt.
 
+**Where the fix happens per phase:**
+- **design-review** — the creator (asd-ba / asd-ux-designer / asd-architect) autofixes within the design-review loop; the iteration advances.
+- **impl-review** — fixes are NOT applied inside the review phase. impl-review routes the sprint back to the `impl` phase (fix mode), where the responsible dev resolves the findings; the sprint then re-enters impl-review for the next iteration. See `asd-phase-impl-review` and `asd-phase-impl`.
+
 **Escalation required** (must ask user before fix):
 
 - Change to approved concept, PRD requirement, or API contract

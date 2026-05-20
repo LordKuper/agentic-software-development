@@ -6,6 +6,7 @@
   "created_at": "{{ISO8601}}",
   "updated_at": "{{ISO8601}}",
   "reviews": {},
+  "review_fixes_pending": null,
   "subsystems_touched": [],
   "new_subsystems": [],
   "escalations": []

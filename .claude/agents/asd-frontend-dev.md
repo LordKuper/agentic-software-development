@@ -3,7 +3,7 @@ name: asd-frontend-dev
 description: "Use this agent when implementing UI code, client-side logic, components, and the matching unit tests. Covers: frontend code authoring per plan tasks, component implementation using DESIGN.md tokens, unit test authoring for UI logic, running test/lint/build/dev commands from commands.yaml, registering TODO stubs. Does NOT handle: backend code (delegates to asd-backend-dev), integration/e2e tests (delegates to asd-test-engineer), design system token edits (delegates to asd-ux-designer), accessibility requirements (read-only consumer of accessibility.html), code review (delegates to reviewer agents)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
 model: sonnet
-maxTurns: 20
+maxTurns: 1000
 memory: project
 ---
 

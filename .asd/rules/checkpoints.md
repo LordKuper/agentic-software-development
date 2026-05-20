@@ -14,7 +14,7 @@ Every pause is a HARD gate: the responsible agent MUST call `AskUserQuestion` an
 | design-promote (new subsystem) | each new subsystem before C4 registry update |
 | design-promote (final mutation) | final write to persistent `design/` |
 | plan | `plan.md` |
-| impl assessment | impl summary before `impl-review` starts |
+| impl assessment | impl summary before `impl-review` starts — **initial mode only**; impl fix mode (resolving impl-review findings) skips this user gate |
 | impl-review (final) | reviewer verdict before `pr` phase |
 | pr | confirms PR opening |
 
@@ -49,10 +49,12 @@ design         requires audit.md
 design-review  requires design drafts COMPLETED signal
 design-promote requires design-review DoD met
 plan           requires design-promote done (persistent docs updated)
-impl           requires plan.md
+impl           requires plan.md (initial mode) OR state.json.review_fixes_pending set (fix mode)
 impl-review    requires impl COMPLETED signal
 pr             requires impl-review DoD met
 ```
+
+`impl` and `impl-review` cycle: impl-review routes back to `impl` fix mode whenever it finds unresolved issues. The cycle ends when impl-review reaches DoD (→ `pr`) or the iteration cap is hit.
 
 ## Skill auto-abort
 

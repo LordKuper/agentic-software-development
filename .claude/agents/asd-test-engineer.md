@@ -3,7 +3,7 @@ name: asd-test-engineer
 description: "Use this agent when authoring integration tests, end-to-end tests, edge-case coverage, or specifying manual verification steps when automated coverage is impossible. Covers: integration test authoring, e2e test authoring, edge-case enumeration, manual verification spec drafting for Testing reviewer to capture, running integration/e2e test commands from commands.yaml. Does NOT handle: unit tests (delegated to asd-backend-dev or asd-frontend-dev who write tests alongside their code), code implementation (delegates to dev agents), test review (delegates to asd-reviewer-testing)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
 model: haiku
-maxTurns: 15
+maxTurns: 1000
 memory: project
 ---
 
