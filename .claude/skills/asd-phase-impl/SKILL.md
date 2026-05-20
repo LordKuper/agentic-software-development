@@ -17,8 +17,22 @@ allowed-tools: "Read AskUserQuestion Task"
 
 ## Tool policy
 - Read — `.asd/config.yaml`, `state.json`, `plan.md`, persistent design/ docs, `.asd/project/custom-rules.md`, `.asd/project/stubs.md`
-- AskUserQuestion — escalation only (devs handle Complication Approval per task)
+- AskUserQuestion — escalation only (see Execution mode)
 - Task — dispatch devs per task owner; PM for state + assessment + decisions-log
+
+## Execution mode
+
+Impl runs **autonomously**. Once tasks are dispatched, devs work without user contact until **one** of:
+
+- **all plan tasks signal COMPLETED** — then the impl assessment gate (step 8) is the first and only user pause; or
+- **a blocker requiring escalation arises** — execution halts and the blocker is relayed to the user.
+
+A blocker is exactly one of:
+- dev `QUESTION` — requirement ambiguity that cannot be resolved from plan + design docs;
+- dev `FAILED` / `ABORT` — missing tech-reference, or unrecoverable lint / test / build failure;
+- a Simplicity Default trigger (`core.md`) — new abstraction, dependency, config flag, or generalization — which needs Complication Approval before proceeding.
+
+Devs do **not** pause the user for routine "non-trivial approach" decisions. Within plan + design-doc scope they make the reasonable call and proceed. Pausing mid-impl for anything other than a blocker above is a protocol violation.
 
 ## Workflow
 
@@ -37,7 +51,8 @@ allowed-tools: "Read AskUserQuestion Task"
      - instruction:
        - read context first
        - verify `design/architecture/tech-reference/<tech>-<version>.md` exists for every tech touched; if missing → emit `FAILED — tech-reference missing for <tech>@<version>` (Architect creates it via design re-run or out-of-band step)
-       - propose approach if non-trivial (Complication Approval format via AskUserQuestion in `language.chat`); wait approval
+       - work autonomously within plan + design-doc scope; do NOT pause the user for routine approach choices — make the reasonable call and proceed
+       - escalate only on a blocker (see Execution mode): emit `QUESTION` for unresolvable requirement ambiguity, `FAILED` for missing tech-reference / unrecoverable failure, or raise Complication Approval via AskUserQuestion **only** when a Simplicity Default trigger fires (new abstraction / dependency / config flag / generalization)
        - write code + unit tests (or integration/e2e for test-engineer)
        - run `lint`, `test` per `commands.yaml`; do not advance with failures unreported
        - **stub handling**:
@@ -58,8 +73,14 @@ allowed-tools: "Read AskUserQuestion Task"
    - on request changes: relay specific feedback to relevant dev(s) via Task; loop step 7
    - on abort: emit ABORT
 9. Emit phase COMPLETED with return contract
-10. Any dev QUESTION (e.g., requirement ambiguity) → relay to user, halt; resume on answer
-11. Any dev FAILED / ABORT → relay, halt
+
+## Escalation (only interruptions before the impl assessment gate)
+
+Per Execution mode, these are the **only** reasons impl contacts the user before all tasks complete:
+
+- Any dev `QUESTION` (unresolvable requirement ambiguity) → relay to user, halt; resume on answer
+- Any dev Complication Approval request (Simplicity Default trigger) → relay to user, halt; resume on decision
+- Any dev `FAILED` / `ABORT` → relay, halt
 
 ## Artefacts produced
 - Source code + unit tests in repo
