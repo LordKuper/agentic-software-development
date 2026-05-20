@@ -12,6 +12,7 @@ Format rules (parser-critical):
 - Overview, Context, Definition of Done — prose only, NO checkboxes
 - Checkboxes (- [ ]/- [x]) appear ONLY inside `### Task N:` sections
 - Checkboxes in any non-task section break orchestrator task parsing
+- A subtask deferred for a manual action stays `- [ ]` and is suffixed ` — BLOCKED: MS-N` (see manual-steps.md)
 -->
 
 ## Overview

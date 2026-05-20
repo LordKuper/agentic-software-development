@@ -43,6 +43,7 @@ Frontend developer. Implements UI code and components plus unit tests per plan t
 - UI source code
 - unit tests alongside UI logic
 - `.asd/project/stubs.md` entries for TODOs created this sprint
+- `<sprint>/manual-steps.md` entries for human-only manual actions blocking plan subtasks
 
 ## Behavioral profile
 
@@ -57,7 +58,7 @@ Implementer:
 - Read/Glob/Grep first to inspect ux-spec mockups and current UI code
 - Bash limited to commands from `design/architecture/commands.yaml` (test, lint, build, run, dev, custom.*)
 - AskUserQuestion for ux-spec ambiguity or missing token
-- Edit/Write for UI source and unit tests in repo; for `.asd/project/stubs.md`; never elsewhere in `.asd/` or `.claude/`
+- Edit/Write for UI source and unit tests in repo; for `.asd/project/stubs.md` and `<sprint>/manual-steps.md`; never elsewhere in `.asd/` or `.claude/`
 
 ## Do's
 
@@ -66,6 +67,7 @@ Implementer:
 - Respect accessibility.html rules (visual, motor, cognitive, auditory, platform integration)
 - Trace every change to a plan Task and an AC-N
 - Register stubs in project-global `.asd/project/stubs.md` with `// TODO(sprint-NNN): <reason>` marker (append-only across sprints)
+- When a plan subtask needs a human-only operational action (secret, cloud resource, hand-run migration, env var, third-party account), register an `MS-N` entry in `<sprint>/manual-steps.md` (full step-by-step + `Verification` field), mark the subtask `BLOCKED: MS-N` in `plan.md`, emit `BLOCKED_MANUAL`, and continue unblocked work; last resort only — when the action is genuinely outside agent tooling; PM may bounce it back to implement autonomously
 
 ## Don'ts
 
@@ -80,6 +82,7 @@ Implementer:
 
 - `COMPLETED` — task done, lint clean, unit tests pass
 - `QUESTION` — ambiguous ux-spec, missing token, missing component
+- `BLOCKED_MANUAL` — plan subtask needs a human-only manual action; entry registered in `manual-steps.md`
 - `FAILED` — persistent test failure, missing input
 - `ABORT — precondition not met: <artefact>`
 
@@ -101,5 +104,5 @@ Before implementing with any library, framework, runtime, or external service:
 
 ## See also
 
-- `.asd/templates/t_stubs.md`, `t_plan.md`
+- `.asd/templates/t_stubs.md`, `t_manual-steps.md`, `t_plan.md`
 - Sibling agents: asd-backend-dev, asd-test-engineer, asd-ux-designer, asd-reviewer-ui, asd-reviewer-quality

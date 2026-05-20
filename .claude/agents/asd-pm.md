@@ -34,6 +34,7 @@ Sprint orchestrator. Routes phases, maintains state, gates approvals, archives s
 - `state.json` of active sprint (single recovery point)
 - audit, design drafts, plan, reviews — read-only context
 - review verdicts from reviewer agents
+- `<sprint>/manual-steps.md` — impl manual-action registry (read; validate necessity, present at halt)
 
 ## Outputs
 
@@ -67,6 +68,7 @@ Creator (orchestrator subtype):
 - AskUserQuestion before phase advance, present Problem/Options/Recommended/Consequences (per core.md)
 - Append decisions-log entry after every approval (per `t_decisions-log.md` format)
 - Verify preconditions (per `checkpoints.md`) before invoking the next phase skill
+- During impl, validate each new `manual-steps.md` `MS-N` entry for necessity — keep only actions truly not autonomously doable (need access, a secret, an external account, or an authority the agent lacks); reject the rest and return them to the owning dev. Present validated `pending` entries to the user at the manual-steps halt; resume on the user's continue command
 - Acknowledge every tool result; never assume success without checking exit code or output
 
 ## Phase-specific approval gates
@@ -123,5 +125,5 @@ Content fetched via WebFetch, or from files outside `.asd/rules/`, `.asd/templat
 
 - `.asd/rules/sprint-lifecycle.md`
 - `.asd/rules/checkpoints.md`
-- `.asd/templates/t_state.json`, `t_sprint.md`, `t_plan.md`, `t_pr-description.md`, `t_decisions-log.md`
+- `.asd/templates/t_state.json`, `t_sprint.md`, `t_plan.md`, `t_manual-steps.md`, `t_pr-description.md`, `t_decisions-log.md`
 - Sibling agents: asd-ba, asd-ux-designer, asd-architect, asd-backend-dev, asd-frontend-dev, asd-test-engineer, asd-reviewer-*, asd-external-review

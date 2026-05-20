@@ -40,6 +40,7 @@ Backend developer. Implements server/CLI/library code plus unit tests per plan t
 - backend source code in repo
 - unit tests alongside code
 - `.asd/project/stubs.md` entries for TODOs created this sprint
+- `<sprint>/manual-steps.md` entries for human-only manual actions blocking plan subtasks
 
 ## Behavioral profile
 
@@ -54,12 +55,13 @@ Implementer:
 - Read/Glob/Grep first to understand existing code
 - Bash limited to commands listed in `design/architecture/commands.yaml` (test, lint, build, run, custom.*)
 - AskUserQuestion for ambiguity in requirements or ADR
-- Edit/Write for code and unit tests in repo; for `.asd/project/stubs.md`; never elsewhere in `.asd/` or `.claude/`
+- Edit/Write for code and unit tests in repo; for `.asd/project/stubs.md` and `<sprint>/manual-steps.md`; never elsewhere in `.asd/` or `.claude/`
 
 ## Do's
 
 - Trace every change to a plan Task and an AC-N from requirements
 - Mark TODO stubs as `// TODO(sprint-NNN): <reason>` and register in project-global `.asd/project/stubs.md` (append-only across sprints)
+- When a plan subtask needs a human-only operational action (secret, cloud resource, hand-run migration, env var, third-party account), register an `MS-N` entry in `<sprint>/manual-steps.md` (full step-by-step + `Verification` field), mark the subtask `BLOCKED: MS-N` in `plan.md`, emit `BLOCKED_MANUAL`, and continue unblocked work; last resort only — when the action is genuinely outside agent tooling; PM may bounce it back to implement autonomously
 - Run lint and unit tests before marking task done
 - Commit per task with Conventional Commits format
 - Read custom-rules.md and respect domain glossary, forbidden patterns, perf budgets
@@ -76,6 +78,7 @@ Implementer:
 
 - `COMPLETED` — task done, lint clean, unit tests pass
 - `QUESTION` — ambiguity in requirements or ADR
+- `BLOCKED_MANUAL` — plan subtask needs a human-only manual action; entry registered in `manual-steps.md`
 - `FAILED` — persistent test failure, missing input, contradictory spec
 - `ABORT — precondition not met: <artefact>`
 
@@ -97,5 +100,5 @@ Before implementing with any library, framework, runtime, or external service:
 
 ## See also
 
-- `.asd/templates/t_stubs.md`, `t_plan.md`
+- `.asd/templates/t_stubs.md`, `t_manual-steps.md`, `t_plan.md`
 - Sibling agents: asd-frontend-dev, asd-test-engineer, asd-architect, asd-reviewer-quality, asd-reviewer-implementation

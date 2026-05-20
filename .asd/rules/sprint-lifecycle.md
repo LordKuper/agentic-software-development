@@ -14,7 +14,7 @@ scope → audit → design → design-review → design-promote → plan → imp
 | design-review | Documentation + UI + Simplification + External Review | `<sprint>/design/` | `reviews/iter-NN/<reviewer>.md` | DoD met |
 | design-promote | PM + Architect + BA + UX Designer | approved drafts | persistent docs in `design/` | drafts merged, decisions-log entry |
 | plan | PM | promoted persistent docs | `plan.md` | plan approved |
-| impl | Backend Dev + Frontend Dev + Test Engineer | `plan.md` | code + tests | all tasks done |
+| impl | Backend Dev + Frontend Dev + Test Engineer | `plan.md` | code + tests, `manual-steps.md` | all tasks done |
 | impl-review | Quality + Implementation + Testing + UI + Simplification + Documentation + Performance + External Review | code + tests | `reviews/iter-NN/<reviewer>.md` | DoD met |
 | pr | PM | everything | sprint archive + PR | PR opened (or push summary if `gh_enabled=false`) |
 
@@ -62,6 +62,12 @@ PM orchestrates; three domain creators perform actual promotion (Documentation r
 
 If `project.subsystem_decomposition: disabled`: drafts merge into single project-level docs (`design/product/requirements.html`, `design/architecture/adr/adr-NNNN-<slug>.html` flat, `design/architecture/api.html`, `design/ux/ux-spec.html`). No subsystem folders. No c4 model.
 
+## Impl phase details
+
+Devs implement plan tasks. When a subtask needs a human-only operational action (a secret, cloud resource, migration run by hand, env var, third-party account), the dev registers an `MS-N` entry in `<sprint>/manual-steps.md`, marks the subtask `BLOCKED: MS-N` in `plan.md`, emits `BLOCKED_MANUAL`, and continues with all unblocked work.
+
+PM validates each new `MS-N` for necessity (see `artifact-layout.md` Manual steps); entries the agent could do autonomously are rejected and returned to the dev. Once all unblocked work is COMPLETED and validated `pending` entries remain, the impl phase halts: PM presents `manual-steps.md` to the user and waits for a continue command. On resume, the dev verifies each entry per its `Verification` field, flips it to `done`, and finishes the blocked subtasks before the impl assessment gate.
+
 ## Signal vocabulary
 
 - `COMPLETED` — phase work done, ready for next phase
@@ -70,6 +76,7 @@ If `project.subsystem_decomposition: disabled`: drafts merge into single project
 - `QUESTION` — needs user input, body contains options
 - `PLAN_DRAFT` — plan written but not approved
 - `PLAN_READY` — plan approved by user
+- `BLOCKED_MANUAL` — task cannot proceed without a human-performed manual action; entry registered in `manual-steps.md`
 
 ## Plan file format
 

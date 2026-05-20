@@ -31,6 +31,7 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │       │   │       ├── views.c4
 │       │   │       └── dist/
 │       │   ├── plan.md
+│       │   ├── manual-steps.md
 │       │   └── reviews/iter-NN/<reviewer>.md
 │       └── archived/<NNN-slug>/
 ├── .claude/
@@ -156,6 +157,20 @@ Every user-facing HTML artifact (prd, ux-spec, adr, concept, stack, accessibilit
 Architect creates a tech-reference doc for every chosen library, framework, runtime, or external service. Doc includes canonical source URL, API surface used in project, version specifics, deprecations, project conventions.
 
 **Refuse-to-implement rule**: Backend Dev, Frontend Dev, and Test Engineer MUST verify that `tech-reference/<tech>-<version>.md` exists before implementing with a given tech. If missing, they emit `FAILED — tech-reference missing for <tech>@<version>` and request the doc from Architect. No implementation without verified reference.
+
+## Manual steps
+
+`.asd/sprints/<NNN-slug>/manual-steps.md` per `t_manual-steps.md`. Per-sprint, created lazily. Owners: Backend Dev, Frontend Dev, Test Engineer (append entries); PM (validates necessity).
+
+A manual step is an operational action a human must perform for the plan to complete — provisioning a secret, creating a cloud resource, running a migration by hand, setting an env var, registering a third-party account. It is NOT a code stub (`stubs.md`) nor manual QA verification of behaviour (reviews `testing.md`).
+
+Rules:
+
+- When a plan subtask cannot proceed without a human-only operational action, the dev appends an `MS-N` entry (full step-by-step instructions plus a `Verification` field) and marks the subtask `BLOCKED: MS-N` in `plan.md`.
+- The `Verification` field is mandatory: it states how the workflow confirms the action was actually done (a `commands.yaml` check, observable state, or explicit user confirmation).
+- PM validates every new entry for necessity before the impl phase halts. An entry is kept only when the action genuinely cannot be done autonomously (needs access, a secret, an external account, or an authority the agent lacks). If PM judges it autonomously doable, the entry is rejected and the task returns to the dev to implement directly.
+- Entry status is `pending` → `done`. The dev that registered an entry flips it to `done` only after running its `Verification`.
+- The file is sprint-scoped and archived with the sprint.
 
 ## Single Source of Truth (iron rule)
 

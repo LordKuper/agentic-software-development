@@ -42,6 +42,7 @@ Test engineer. Authors integration/e2e tests, enumerates edge cases, and specifi
 - integration test code in repo (per project test layout)
 - e2e test code in repo
 - `.asd/project/stubs.md` entries for skipped tests with reason (project-global, append-only)
+- `<sprint>/manual-steps.md` entries for human-only manual actions blocking plan subtasks
 - Manual verification spec — passed back to asd-reviewer-testing for Manual verification section of `testing.md`
 
 ## Behavioral profile
@@ -56,7 +57,7 @@ Implementer:
 - Read/Glob/Grep first to map existing test patterns
 - Bash limited to commands from `design/architecture/commands.yaml` (test, custom.e2e, custom.coverage, etc.)
 - AskUserQuestion when acceptance criterion ambiguous about expected behaviour
-- Edit/Write for test code in repo; for `.asd/project/stubs.md`; never elsewhere in `.asd/` or `.claude/`
+- Edit/Write for test code in repo; for `.asd/project/stubs.md` and `<sprint>/manual-steps.md`; never elsewhere in `.asd/` or `.claude/`
 
 ## Do's
 
@@ -74,10 +75,17 @@ Implementer:
 - Never assert implementation details; assert observable behaviour
 - Never skip tests silently — register skip in stubs.md with reason
 
+## Manual steps
+
+- When a plan subtask needs a human-only operational action (secret, cloud resource, hand-run migration, env var, third-party account), register an `MS-N` entry in `<sprint>/manual-steps.md` (full step-by-step + `Verification` field), mark the subtask `BLOCKED: MS-N` in `plan.md`, emit `BLOCKED_MANUAL`, and continue unblocked work
+- Last resort only — when the action is genuinely outside agent tooling; PM may bounce it back to implement autonomously
+- Distinct from a Manual verification spec: manual steps are operational *setup* actions; a verification spec is manual QA of *behaviour*
+
 ## Signals emitted
 
 - `COMPLETED` — test suite for task done, runs green
 - `QUESTION` — ambiguous AC behaviour
+- `BLOCKED_MANUAL` — plan subtask needs a human-only manual action; entry registered in `manual-steps.md`
 - `FAILED` — test runner broken, environment missing
 - `ABORT — precondition not met: <artefact>`
 
@@ -116,5 +124,5 @@ BLOCKING gates block DoD. ADVISORY gates surface concerns but don't block; recor
 
 ## See also
 
-- `.asd/templates/t_stubs.md`, `t_review.md` (Manual verification section)
+- `.asd/templates/t_stubs.md`, `t_manual-steps.md`, `t_review.md` (Manual verification section)
 - Sibling agents: asd-backend-dev, asd-frontend-dev, asd-reviewer-testing
