@@ -21,7 +21,9 @@
       "Bash(designmd:*)",
       "Bash(npx @google/design.md:*)",
       "Bash(codex:*)",
-      "Bash(codex.exe:*)"
+      "Bash(codex.exe:*)",
+      "Bash(npm install @google/design.md)",
+      "Bash(npm install @google/design.md:*)"
     ]
   },
   "hooks": {
