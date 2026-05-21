@@ -8,16 +8,39 @@ scope → audit → design → design-review → design-promote → plan → imp
 
 `impl` and `impl-review` form a cycle: when impl-review finds issues it does NOT fix them itself — it routes the sprint back to `impl` (fix mode) to resolve the findings, then impl returns to `impl-review`. The cycle repeats until impl-review reaches DoD (all reviewers APPROVE) or the iteration cap is hit. Phase routing follows the `NEXT:` token in each phase skill's return contract, not a fixed linear chain.
 
+## Review iteration counters
+
+There are **two independent review iteration counters**, one per review phase, held in `state.json`:
+
+- `reviews.design.iteration` — design-review iterations
+- `reviews.impl.iteration` — impl-review iterations
+
+Each review phase reads, increments, and reports only its own counter. They never share a value, so a design-review round and an impl-review round are always distinguishable, and the severity-floor cumulative budget (see `review-policy.md`) is computed per counter — design-review iterations never consume impl-review's budget and vice versa.
+
+**Lifecycle and reset rules:**
+
+- Both counters are created at `0` when the sprint is initialised in the `scope` phase (per `t_state.json`).
+- `reviews.design.iteration` is incremented at the start of every design-review iteration (`1` on first entry). `design-review` is entered once per sprint and loops internally until DoD.
+- `reviews.impl.iteration` is incremented at the start of every `impl-review` **entry** (`1` on first entry). The `impl⇄impl-review` cycle re-enters `impl-review` repeatedly; each re-entry increments the counter. The intervening `impl` fix-mode phase does **not** touch it.
+- A new sprint starts both counters at `0` (a fresh `state.json`).
+- **Rollback reset.** When `state.json.phase` is set to a phase positioned in the chain **strictly earlier than** the phase that produces a review's input, that review's counter resets to `0` — and with it the severity floor (the floor is derived from the counter) — and that review's `verdicts` are cleared. The two input-producing phases are: `design` for design-review, `impl` for impl-review. So:
+  - `reviews.design.iteration` resets when the phase is set to `scope` or `audit`.
+  - `reviews.impl.iteration` resets when the phase is set to any of `scope`, `audit`, `design`, `design-review`, `design-promote`, `plan`.
+  - Setting the phase to `impl` itself is **not** earlier than `impl` — the normal `impl⇄impl-review` fix-mode re-entry therefore never resets `reviews.impl.iteration`; the counter accumulates across the whole cycle as intended. The reset fires only on a genuine rollback (the `asd-sprint` resume menu's *re-run earlier phase*), never on a forward or cycle transition. Rationale: once the artifact under review is going to be re-created from an earlier phase, all prior review rounds against the old artifact are void, so the budget starts clean.
+- On an iteration-cap override (user chooses to continue past the cap), the counter keeps incrementing — it is **not** reset to `0`. The severity floor stays pinned at `critical` rather than dropping back to `low`, so the extra iterations do not re-admit lower-severity findings.
+
+Each review phase writes its verdict files under a counter-specific folder: design-review → `<sprint>/reviews/design/iter-NN/`, impl-review → `<sprint>/reviews/impl/iter-NN/`, where `NN` is that phase's own counter. The two trees never collide.
+
 | Phase | Owner | Input | Output | Exit criteria |
 |---|---|---|---|---|
 | scope | PM | user request | `sprint.md`, sprint id, branch | scope approved, branch created |
 | audit | Architect + BA | `sprint.md`, codebase, `design/`, existing docs in any format/location | `audit.md` (findings + documentation migration plan); optional reverse-engineered/migrated drafts in `<sprint>/design/` | audit approved |
 | design | BA → UX Designer → Architect | `audit.md` | drafts in `<sprint>/design/` | drafts complete |
-| design-review | Documentation + UI + Simplification + External Review | `<sprint>/design/` | `reviews/iter-NN/<reviewer>.md` | DoD met |
+| design-review | Documentation + UI + Simplification + External Review | `<sprint>/design/` | `reviews/design/iter-NN/<reviewer>.md` | DoD met |
 | design-promote | PM + Architect + BA + UX Designer | approved drafts | persistent docs in `design/` | drafts merged, decisions-log entry |
 | plan | PM | promoted persistent docs | `plan.md` | plan approved |
-| impl | Backend Dev + Frontend Dev + Test Engineer | `plan.md` (initial) or `reviews/iter-NN/` findings (fix mode) | code + tests, `manual-steps.md` | all tasks/findings done; build + tests run and pass (completion gate) |
-| impl-review | Quality + Implementation + Testing + UI + Simplification + Documentation + Performance + External Review | code + tests | `reviews/iter-NN/<reviewer>.md` | DoD met → `pr`; else route to `impl` fix mode |
+| impl | Backend Dev + Frontend Dev + Test Engineer | `plan.md` (initial) or `reviews/impl/iter-NN/` findings (fix mode) | code + tests, `manual-steps.md` | all tasks/findings done; build + tests run and pass (completion gate) |
+| impl-review | Quality + Implementation + Testing + UI + Simplification + Documentation + Performance + External Review | code + tests | `reviews/impl/iter-NN/<reviewer>.md` | DoD met → `pr`; else route to `impl` fix mode |
 | pr | PM | everything | sprint archive + PR | PR opened (or push summary if `gh_enabled=false`) |
 
 ## Audit phase details
@@ -75,7 +98,7 @@ PM validates each new `MS-N` for necessity (see `artifact-layout.md` Manual step
 The impl phase runs in one of two modes, detected from `state.json.review_fixes_pending`:
 
 - **Initial mode** (`review_fixes_pending` null/absent) — devs implement `plan.md` tasks as above. Ends with the user-facing impl assessment gate, then `NEXT: impl-review`.
-- **Fix mode** (`review_fixes_pending` set to `iter-NN`) — entered when impl-review routed the sprint back. Devs read the reviewer findings in `<sprint>/reviews/iter-NN/`, resolve every CONCERNS finding plus every FAIL finding whose escalation the user approved in impl-review, then return `NEXT: impl-review`. Fix mode skips the user-facing impl assessment gate (the cycle stays silent between review iterations); blockers (dev QUESTION / FAILED, Simplicity Default trigger) escalate exactly as in initial mode. On completion the phase clears `review_fixes_pending`.
+- **Fix mode** (`review_fixes_pending` set to `iter-NN`) — entered when impl-review routed the sprint back. Devs read the reviewer findings in `<sprint>/reviews/impl/iter-NN/`, resolve every CONCERNS finding plus every FAIL finding whose escalation the user approved in impl-review, then return `NEXT: impl-review`. Fix mode skips the user-facing impl assessment gate (the cycle stays silent between review iterations); blockers (dev QUESTION / FAILED, Simplicity Default trigger) escalate exactly as in initial mode. On completion the phase clears `review_fixes_pending`.
 
 ### Impl completion gate
 

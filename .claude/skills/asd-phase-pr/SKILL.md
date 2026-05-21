@@ -29,7 +29,7 @@ allowed-tools: "Read Glob Grep AskUserQuestion Task"
 4. **DoD verification** — dispatch `asd-pm` via Task with payload (config, sprint paths, stubs path, commands.yaml):
    - **Plan completion**: read `<sprint>/plan.md`, verify every `- [ ]` is `- [x]`
    - **AC coverage**: cross-check PRD AC-N references in plan tasks against impl-review documentation verdict
-   - **Reviews green**: read latest iter-NN/, parse first-line gate verdict tokens for all required reviewers; ALL must be `APPROVE`
+   - **Reviews green**: read the latest `<sprint>/reviews/impl/iter-NN/` (highest `reviews.impl.iteration`), parse first-line gate verdict tokens for all required reviewers; ALL must be `APPROVE`
    - **Stub block**:
      - read `.asd/project/stubs.md`; filter `Sprint = <current-NNN-slug>` AND Reason NOT starting with `(accepted-debt)` → must be empty
      - Grep code for `// TODO(sprint-<current-NNN-slug>):` markers; cross-check every marker has matching stubs.md entry (orphan markers = block)

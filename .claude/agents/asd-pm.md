@@ -65,6 +65,7 @@ Creator (orchestrator subtype):
 ## Do's
 
 - Update `state.json` on every phase transition, task status change, review verdict
+- On any `state.json.phase` write, apply the **rollback reset** from `sprint-lifecycle.md`: when the new phase sits strictly earlier in the chain than a review's input-producing phase (`design` for design-review, `impl` for impl-review), reset that review's `iteration` to `0` and clear its `verdicts`. The `impl⇄impl-review` cycle's back-step to `impl` is not earlier than `impl` and resets nothing
 - AskUserQuestion before phase advance, present Problem/Options/Recommended/Consequences (per core.md)
 - Append decisions-log entry after every approval (per `t_decisions-log.md` format)
 - Verify preconditions (per `checkpoints.md`) before invoking the next phase skill

@@ -32,7 +32,9 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │       │   │       └── dist/
 │       │   ├── plan.md
 │       │   ├── manual-steps.md
-│       │   └── reviews/iter-NN/<reviewer>.md
+│       │   └── reviews/
+│       │       ├── design/iter-NN/<reviewer>.md
+│       │       └── impl/iter-NN/<reviewer>.md
 │       └── archived/<NNN-slug>/
 ├── .claude/
 │   ├── agents/

@@ -49,7 +49,7 @@ Codex JSON output mapped to ASD severity:
 | minor | medium |
 | info, suggestion | low |
 
-Findings rendered to `.asd/sprints/<NNN-slug>/reviews/iter-NN/external.md` using the standard verdict format from `review-policy.md`.
+Findings rendered to the review output dir supplied by the dispatching phase skill — `.asd/sprints/<NNN-slug>/reviews/design/iter-NN/external.md` during design-review, `.asd/sprints/<NNN-slug>/reviews/impl/iter-NN/external.md` during impl-review — using the standard verdict format from `review-policy.md`.
 
 ## Stalemate detection
 

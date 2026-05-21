@@ -15,6 +15,8 @@ Config sets `iterations_<severity>` (default: low=1, medium=1, high=2, critical=
 
 Each severity tier gets its own consecutive iteration budget in order low → medium → high → critical. On iteration N, the floor is the tier whose **cumulative budget** first covers N. Only findings at floor severity or higher are considered.
 
+`N` is the **phase-local** review counter — `reviews.design.iteration` during design-review, `reviews.impl.iteration` during impl-review (see `sprint-lifecycle.md` "Review iteration counters"). Each review phase computes its floor from its own counter; the two never interfere.
+
 Cumulative budgets with defaults:
 
 - low: cum = 1 → iter 1 → floor=low (all)
@@ -23,7 +25,7 @@ Cumulative budgets with defaults:
 - critical: cum = 1+1+2+10 = 14 → iters 5-14 → floor=critical (drop low, medium, high)
 - iter ≥ 15 → stop, escalate to user
 
-User may override the cap and continue.
+User may override the cap and continue. On override the phase-local counter keeps incrementing (it is not reset); the severity floor stays pinned at `critical` for every further iteration, so the extra rounds do not re-admit lower-severity findings.
 
 ## Over-engineering checklist (critical, undroppable)
 

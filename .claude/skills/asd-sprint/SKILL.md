@@ -37,9 +37,9 @@ allowed-tools: "Read Glob Grep Bash AskUserQuestion Skill"
 
 ### Step 2B: resume flow
 1. Read `.asd/sprints/<NNN-slug>/state.json`
-2. Show user: sprint id, current phase, iteration, last review verdict (if any)
+2. Show user: sprint id, current phase, review iteration (`reviews.design.iteration` when phase is `design-review`, `reviews.impl.iteration` when phase is `impl-review`), last review verdict (if any)
 3. AskUserQuestion: resume (default) | re-run current phase | re-run earlier phase | abort sprint
-4. Dispatch matching phase skill via Skill
+4. Dispatch matching phase skill via Skill. *re-run earlier phase* is a rollback: when the target phase is strictly earlier than a review's input-producing phase, the target phase skill's PM state update resets that review counter and severity floor per the **rollback reset** rule in `sprint-lifecycle.md` (`reviews.design.iteration` resets when rolling back to `scope`/`audit`; `reviews.impl.iteration` resets when rolling back to `scope`…`plan`).
 
 ### Step 3: phase chain advancement
 After any phase skill returns:

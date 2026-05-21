@@ -1,6 +1,6 @@
 ---
 name: asd-phase-design-review
-description: "Runs the ASD design-review phase iteratively until DoD met. Updates state.json to phase=design-review and increments iteration. In parallel dispatches asd-reviewer-documentation, asd-reviewer-ui, asd-reviewer-simplification, and (when review.external_review=enabled) asd-external-review against the current sprint design drafts in <sprint>/design/. Each reviewer writes its verdict file under <sprint>/reviews/iter-NN/ with a first-line gate verdict token. Aggregates verdicts: all APPROVE on same iteration → DoD met → COMPLETED. Any CONCERNS → asd-pm dispatches the appropriate creator (asd-ba, asd-ux-designer, asd-architect) to autofix, then iteration advances. Any FAIL → escalation via AskUserQuestion (Complication Approval). Applies iteration severity floor per review-policy.md; stops and escalates when cap reached. Use when asd-sprint dispatches design-review, or when the user explicitly asks to run or re-run design-review for the active sprint."
+description: "Runs the ASD design-review phase iteratively until DoD met. Updates state.json to phase=design-review and increments the design-review counter reviews.design.iteration. In parallel dispatches asd-reviewer-documentation, asd-reviewer-ui, asd-reviewer-simplification, and (when review.external_review=enabled) asd-external-review against the current sprint design drafts in <sprint>/design/. Each reviewer writes its verdict file under <sprint>/reviews/design/iter-NN/ with a first-line gate verdict token. Aggregates verdicts: all APPROVE on same iteration → DoD met → COMPLETED. Any CONCERNS → asd-pm dispatches the appropriate creator (asd-ba, asd-ux-designer, asd-architect) to autofix, then iteration advances. Any FAIL → escalation via AskUserQuestion (Complication Approval). Applies iteration severity floor per review-policy.md; stops and escalates when cap reached. Use when asd-sprint dispatches design-review, or when the user explicitly asks to run or re-run design-review for the active sprint."
 metadata:
   asd-role: phase
   asd-order: "4"
@@ -24,18 +24,18 @@ allowed-tools: "Read AskUserQuestion Task"
 ## Workflow
 
 1. Read `.asd/config.yaml` (`review.external_review`, `review.iterations_low/medium/high/critical`, `language.chat`, `language.docs`)
-2. Read `<sprint>/state.json` → set `phase=design-review`, initialize or increment `iteration` (start at 1 on first entry)
-3. Compute severity floor for current iteration per `review-policy.md` cumulative-budget algorithm
-4. Create folder `<sprint>/reviews/iter-NN/` if absent
+2. Read `<sprint>/state.json` → set `phase=design-review`, increment `reviews.design.iteration` (it is `0` at sprint creation, so `1` on first entry; see `sprint-lifecycle.md` "Review iteration counters" for increment and rollback-reset rules). `NN` = the resulting value, zero-padded.
+3. Compute severity floor for current iteration per `review-policy.md` cumulative-budget algorithm (uses `reviews.design.iteration`)
+4. Create folder `<sprint>/reviews/design/iter-NN/` if absent
 5. **Parallel dispatch** via Task:
    - `asd-reviewer-documentation` — SSoT, template adherence, traceability across drafts
    - `asd-reviewer-ui` — ux-spec compliance with DESIGN.md + accessibility.html
    - `asd-reviewer-simplification` — over-engineering smells + design-principles.md adherence
    - if `review.external_review=enabled` → `asd-external-review` with phase=`design-review`
-   - payload to each: drafts paths, iteration N, severity floor, `language.chat`, `language.docs`
-   - each reviewer writes `<sprint>/reviews/iter-NN/<reviewer>.md` per `t_review.md` (or `t_review-report.md` for external) with first-line verdict token `[REVIEW-design-<reviewer>]: ...`
+   - payload to each: drafts paths, iteration N, review output dir `<sprint>/reviews/design/iter-NN/`, severity floor, `language.chat`, `language.docs`
+   - each reviewer writes `<sprint>/reviews/design/iter-NN/<reviewer>.md` per `t_review.md` (or `t_review-report.md` for external) with first-line verdict token `[REVIEW-design-<reviewer>]: ...`
 6. Wait all REVIEW_DONE signals
-7. Parse first-line tokens from all reviewer files; aggregate:
+7. Parse first-line tokens from all reviewer files; record the per-reviewer verdicts under `state.json` `reviews.design.verdicts["iter-NN"]`; aggregate:
    - **All APPROVE** → DoD met; PM appends decisions-log entry "design-review iter NN: APPROVE"; emit phase COMPLETED
    - **Any FAIL** → escalation:
      - parse FAIL findings; group by escalation cause (concept change / new abstraction / scope expansion / contract change)
@@ -47,7 +47,7 @@ allowed-tools: "Read AskUserQuestion Task"
      - on all creator COMPLETED → loop step 2
 8. Iteration cap reached (no severity tier has remaining budget for next iter):
    - AskUserQuestion: override cap and continue / accept current findings / abort sprint
-   - on override → reset relevant counter, loop
+   - on override → loop step 2 (`reviews.design.iteration` keeps incrementing — not reset; severity floor stays pinned at `critical`)
    - on accept → COMPLETED with note "iteration cap reached, user accepted"
    - on abort → emit ABORT
 9. Any reviewer QUESTION / FAILED / ABORT → relay, halt
@@ -56,12 +56,12 @@ allowed-tools: "Read AskUserQuestion Task"
 See `.asd/rules/review-policy.md` for the cumulative-budget algorithm. Phase skill computes floor and passes to reviewer payload so reviewers drop findings below floor.
 
 ## Artefacts produced
-- `<sprint>/reviews/iter-NN/documentation.md`
-- `<sprint>/reviews/iter-NN/ui.md`
-- `<sprint>/reviews/iter-NN/simplification.md`
-- `<sprint>/reviews/iter-NN/external.md` (when `external_review=enabled`)
+- `<sprint>/reviews/design/iter-NN/documentation.md`
+- `<sprint>/reviews/design/iter-NN/ui.md`
+- `<sprint>/reviews/design/iter-NN/simplification.md`
+- `<sprint>/reviews/design/iter-NN/external.md` (when `external_review=enabled`)
 - Updated `<sprint>/design/` artifacts after autofix or escalation-approved fixes
-- Updated `state.json` (phase, iteration, reviews map)
+- Updated `state.json` (phase, `reviews.design.iteration`, `reviews.design.verdicts`)
 - decisions-log entry on DoD met or override
 
 ## Agents dispatched

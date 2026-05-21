@@ -35,11 +35,11 @@ Performance reviewer. Assesses code against perf budgets and detects regressions
 - `design/architecture/adr/` (perf-related ADRs)
 - `design/architecture/stack.html` (stack constraints)
 - test results showing perf measurements (when available)
-- iteration number from PM
+- iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from the dispatching phase skill
 
 ## Outputs
 
-- `<sprint>/reviews/iter-NN/performance.md` via `t_review.md`
+- `<sprint>/reviews/impl/iter-NN/performance.md` via `t_review.md`
 - First-line verdict token: `[REVIEW-impl-performance]: APPROVE|CONCERNS|FAIL`
 
 ## Behavioral profile
@@ -51,7 +51,7 @@ Reviewer:
 ## Tool policy
 
 - Read/Glob/Grep only; no Bash, no Edit, no WebFetch
-- Write only to `<sprint>/reviews/iter-NN/performance.md`
+- Write only to `<sprint>/reviews/impl/iter-NN/performance.md`
 - AskUserQuestion only when budget interpretation ambiguous
 
 ## Review rubric

@@ -1,6 +1,6 @@
 ---
 name: asd-phase-impl
-description: "Runs the ASD impl phase in one of two modes, detected from state.json.review_fixes_pending. Initial mode (review_fixes_pending null): parses Task N blocks from plan.md and dispatches each task to its assigned dev (asd-backend-dev, asd-frontend-dev, or asd-test-engineer per Task body owner field), respecting declared dependencies (sequential where dependent, parallel where independent). Fix mode (review_fixes_pending set to iter-NN): reads the impl-review findings in <sprint>/reviews/iter-NN/ and dispatches devs to resolve every CONCERNS finding plus every user-accepted FAIL finding, then returns the sprint to impl-review; fix mode skips the user-facing impl assessment gate, forming an impl⇄impl-review cycle. Updates state.json to phase=impl. Each dev verifies tech-reference exists for every library/framework/runtime/external service touched (refuses with FAILED if missing), reads context (plan or review findings, requirements, ADR, custom-rules, accessibility), proposes approach (Complication Approval if non-trivial), writes code and unit tests, runs build/test/lint per commands.yaml, commits per Conventional Commits, ticks plan.md checkboxes, registers TODO stubs in project-global .asd/project/stubs.md (open stubs only, deleted on resolution). When a plan subtask needs a human-only manual action, the dev registers it in <sprint>/manual-steps.md, defers that subtask, and continues unblocked work; PM validates each manual entry for necessity and the phase halts at the manual-steps gate until the user performs the actions and confirms. In both modes the phase MUST NOT emit COMPLETED until the build and test commands from commands.yaml were run and both passed with no errors or warnings (impl completion gate). After all tasks complete, in initial mode asd-pm presents impl summary for user assessment before phase exit. Use when asd-sprint dispatches the impl phase, or when the user explicitly asks to run or re-run impl for the active sprint."
+description: "Runs the ASD impl phase in one of two modes, detected from state.json.review_fixes_pending. Initial mode (review_fixes_pending null): parses Task N blocks from plan.md and dispatches each task to its assigned dev (asd-backend-dev, asd-frontend-dev, or asd-test-engineer per Task body owner field), respecting declared dependencies (sequential where dependent, parallel where independent). Fix mode (review_fixes_pending set to iter-NN): reads the impl-review findings in <sprint>/reviews/impl/iter-NN/ and dispatches devs to resolve every CONCERNS finding plus every user-accepted FAIL finding, then returns the sprint to impl-review; fix mode skips the user-facing impl assessment gate, forming an impl⇄impl-review cycle. Updates state.json to phase=impl. Each dev verifies tech-reference exists for every library/framework/runtime/external service touched (refuses with FAILED if missing), reads context (plan or review findings, requirements, ADR, custom-rules, accessibility), proposes approach (Complication Approval if non-trivial), writes code and unit tests, runs build/test/lint per commands.yaml, commits per Conventional Commits, ticks plan.md checkboxes, registers TODO stubs in project-global .asd/project/stubs.md (open stubs only, deleted on resolution). When a plan subtask needs a human-only manual action, the dev registers it in <sprint>/manual-steps.md, defers that subtask, and continues unblocked work; PM validates each manual entry for necessity and the phase halts at the manual-steps gate until the user performs the actions and confirms. In both modes the phase MUST NOT emit COMPLETED until the build and test commands from commands.yaml were run and both passed with no errors or warnings (impl completion gate). After all tasks complete, in initial mode asd-pm presents impl summary for user assessment before phase exit. Use when asd-sprint dispatches the impl phase, or when the user explicitly asks to run or re-run impl for the active sprint."
 metadata:
   asd-role: phase
   asd-order: "7"
@@ -13,10 +13,10 @@ allowed-tools: "Read AskUserQuestion Task"
 ## Preconditions
 - Active sprint at `.asd/sprints/<NNN-slug>/`
 - **Initial mode**: `plan.md` approved (per checkpoints precondition chain); `state.json.phase` advanced from `plan`
-- **Fix mode**: `state.json.review_fixes_pending` is set to an `iter-NN` value; `<sprint>/reviews/iter-NN/` reviewer files exist
+- **Fix mode**: `state.json.review_fixes_pending` is set to an `iter-NN` value; `<sprint>/reviews/impl/iter-NN/` reviewer files exist
 
 ## Tool policy
-- Read — `.asd/config.yaml`, `state.json`, `plan.md`, `<sprint>/reviews/iter-NN/` (fix mode), persistent design/ docs, `.asd/project/custom-rules.md`, `.asd/project/stubs.md`, `<sprint>/manual-steps.md`
+- Read — `.asd/config.yaml`, `state.json`, `plan.md`, `<sprint>/reviews/impl/iter-NN/` (fix mode), persistent design/ docs, `.asd/project/custom-rules.md`, `.asd/project/stubs.md`, `<sprint>/manual-steps.md`
 - AskUserQuestion — escalation only (see Execution mode)
 - Task — dispatch devs per task owner / finding owner; PM for state + assessment + decisions-log
 
@@ -25,7 +25,7 @@ allowed-tools: "Read AskUserQuestion Task"
 The phase runs in one of two modes, detected at step 2 from `state.json.review_fixes_pending`:
 
 - **Initial mode** (`review_fixes_pending` null/absent) — implement `plan.md` Task blocks. Ends with the user-facing impl assessment gate (step 9).
-- **Fix mode** (`review_fixes_pending` = `iter-NN`) — entered when impl-review routed the sprint back. Resolve the reviewer findings in `<sprint>/reviews/iter-NN/`. **Skips the impl assessment gate** — fix mode returns straight to impl-review so the impl⇄impl-review cycle stays silent between review iterations. On completion the phase clears `review_fixes_pending`.
+- **Fix mode** (`review_fixes_pending` = `iter-NN`) — entered when impl-review routed the sprint back. Resolve the reviewer findings in `<sprint>/reviews/impl/iter-NN/`. **Skips the impl assessment gate** — fix mode returns straight to impl-review so the impl⇄impl-review cycle stays silent between review iterations. On completion the phase clears `review_fixes_pending`.
 
 The impl completion gate (step 9b) applies in **both** modes.
 
@@ -51,10 +51,10 @@ Devs do **not** pause the user for routine "non-trivial approach" decisions. Wit
 1. Read `.asd/config.yaml` (`backward_compat`, `system.tools`, `language.chat`, `language.docs`)
 2. Read `<sprint>/state.json` → **detect mode** from `review_fixes_pending`:
    - null/absent → **initial mode**; confirm `plan.md` approved
-   - set to `iter-NN` → **fix mode**; confirm `<sprint>/reviews/iter-NN/` exists (else `ABORT — precondition not met: reviews/iter-NN missing`)
+   - set to `iter-NN` → **fix mode**; confirm `<sprint>/reviews/impl/iter-NN/` exists (else `ABORT — precondition not met: reviews/impl/iter-NN missing`)
 3. **Build the work set** per mode:
    - **initial mode** — read `<sprint>/plan.md` → parse Task blocks: title, owner (backend-dev / frontend-dev / test-engineer), subtask checkboxes, dependencies
-   - **fix mode** — read every reviewer file in `<sprint>/reviews/iter-NN/`; collect all CONCERNS findings plus all FAIL findings the user accepted for fix (skip FAIL findings noted resolved-by-override); from each finding's `Location` (file:line) determine the owning dev (backend-dev / frontend-dev / test-engineer); group findings by owner into fix tasks
+   - **fix mode** — read every reviewer file in `<sprint>/reviews/impl/iter-NN/`; collect all CONCERNS findings plus all FAIL findings the user accepted for fix (skip FAIL findings noted resolved-by-override); from each finding's `Location` (file:line) determine the owning dev (backend-dev / frontend-dev / test-engineer); group findings by owner into fix tasks
 4. Dispatch `asd-pm` via Task: update `state.json` (phase=impl)
 5. **Build execution graph**:
    - initial mode — from Task dependencies; topological sort; mark independent tasks parallelisable
@@ -64,7 +64,7 @@ Devs do **not** pause the user for routine "non-trivial approach" decisions. Wit
    - parallel where independent (caller schedules concurrent Task calls)
    - per task: dispatch to assigned dev (`asd-backend-dev` | `asd-frontend-dev` | `asd-test-engineer`) via Task with payload:
      - initial mode — Task block excerpt (title + subtasks + dependencies); fix mode — the grouped finding list (each finding's severity, location, description, suggested fix; plus the user-approved change note for accepted FAIL findings)
-     - relevant context paths (PRD AC-N referenced, ADRs, ux-spec, DESIGN.md, accessibility, stack, commands.yaml, tech-reference/, custom-rules.md; fix mode also: the reviewer files in `reviews/iter-NN/`)
+     - relevant context paths (PRD AC-N referenced, ADRs, ux-spec, DESIGN.md, accessibility, stack, commands.yaml, tech-reference/, custom-rules.md; fix mode also: the reviewer files in `reviews/impl/iter-NN/`)
      - `language.chat`, `language.docs`
      - instruction:
        - read context first
@@ -132,7 +132,7 @@ The impl completion gate (step 9) and, in initial mode only, the impl assessment
 - Updated `.asd/project/stubs.md` (project-global; open stubs only, deleted on resolution)
 - `<sprint>/manual-steps.md` when a manual action arose (per-sprint, append-only)
 - Updated `<sprint>/plan.md` checkboxes (initial mode)
-- Updated reviewer files in `<sprint>/reviews/iter-NN/` with user-approved change notes (fix mode)
+- Updated reviewer files in `<sprint>/reviews/impl/iter-NN/` with user-approved change notes (fix mode)
 - Updated `state.json` (phase=impl; `review_fixes_pending` cleared on fix-mode exit)
 - Git commits per Conventional Commits
 - decisions-log entry on impl assessment approval (initial) or fix-mode finalize
