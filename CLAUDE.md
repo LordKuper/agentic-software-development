@@ -23,7 +23,7 @@ ASD drives a consumer project through numerous phases per sprint.
 Three layers, all under `.asd/` and `.claude/`:
 
 - **Rules** (`.asd/rules/*.md`) — the single source of truth for workflow behavior. `core.md` is the hub and links every other rule doc. Rules are read by *all* agents. Changing a rule changes behavior everywhere.
-- **Skills** (`.claude/skills/*/SKILL.md`) — 13 skills. `asd-sprint` detects the active sprint from `state.json` and dispatches the matching `asd-phase-*` skill. Phase skills dispatch agents. `asd-init`, `asd-concept`, `asd-stack`, `asd-design-system` are user-facing setup skills.
+- **Skills** (`.claude/skills/*/SKILL.md`) — 14 skills. `asd-sprint` detects the active sprint from `state.json` and dispatches the matching `asd-phase-*` skill. Phase skills dispatch agents. `asd-init`, `asd-concept`, `asd-stack`, `asd-design-system` are user-facing setup skills.
 - **Agents** (`.claude/agents/*.md`) — 15 agents: 7 creators (PM, BA, UX Designer, Architect, Backend/Frontend Dev, Test Engineer) and 8 reviewers (7 internal + External Review wrapping Codex CLI). Each agent file has YAML frontmatter declaring `model`, `tools`, and `description`.
 - **Templates** (`.asd/templates/t_*`) — every artifact a consumer project produces has a `t_`-prefixed template here (e.g. `t_prd.html`, `t_plan.md`, `t_state.json`).
 

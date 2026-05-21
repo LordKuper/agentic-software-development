@@ -2,7 +2,7 @@
 
 A multi-agent workflow for Claude Code that drives software projects end-to-end through fixed-shape sprints: from concept and tech-stack definition, through design and review, all the way to a green PR.
 
-ASD is **stack-agnostic** — it works on any language, framework, or runtime. The workflow itself never touches your application code directly; it dispatches 15 specialized agents (PM, BA, UX Designer, Architect, devs, reviewers) coordinated by 13 skills.
+ASD is **stack-agnostic** — it works on any language, framework, or runtime. The workflow itself never touches your application code directly; it dispatches 15 specialized agents (PM, BA, UX Designer, Architect, devs, reviewers) coordinated by 14 skills.
 
 ---
 
@@ -57,10 +57,11 @@ After cloning, open the project in Claude Code. The SessionStart hook will print
 ## Quick start
 
 ```text
-/asd-init       # interactive setup: language, decomposition mode, OS, tools, git
-/asd-concept    # define the project concept (vision, users, value)
-/asd-stack      # define the tech stack (architect proposes from concept)
-/asd-sprint     # start your first sprint
+/asd-init           # interactive setup: language, decomposition mode, OS, tools, git
+/asd-concept        # define the project concept (vision, users, value)
+/asd-stack          # define the tech stack (architect proposes from concept)
+/asd-design-system  # define the design system (tokens, components, a11y) — optional, also auto-gated in the design phase
+/asd-sprint         # start your first sprint
 ```
 
 `/asd-sprint` then walks you through the nine sprint phases automatically, pausing for your approval at every checkpoint.
@@ -71,8 +72,23 @@ After cloning, open the project in Claude Code. The SessionStart hook will print
 
 Each sprint runs through nine mandatory phases in order:
 
-```
-scope → audit → design → design-review → design-promote → plan → impl ⇄ impl-review → pr
+```mermaid
+flowchart TD
+    scope["scope<br/><i>PM</i>"] --> audit["audit<br/><i>BA · Architect</i>"]
+    audit --> design["design<br/><i>BA · UX Designer · Architect</i>"]
+    design --> dreview["design-review<br/><i>Documentation · UI · Simplification · External</i>"]
+    dreview -->|CONCERNS — autofix & re-iterate| design
+    dreview -->|all APPROVE| dpromote["design-promote<br/><i>PM · BA · UX Designer · Architect</i>"]
+    dpromote --> plan["plan<br/><i>PM</i>"]
+    plan --> impl["impl<br/><i>Backend Dev · Frontend Dev · Test Engineer</i>"]
+    impl --> ireview["impl-review<br/><i>Quality · Implementation · Testing · UI ·<br/>Simplification · Documentation · Performance · External</i>"]
+    ireview -->|findings — back to fix mode| impl
+    ireview -->|all APPROVE| pr["pr<br/><i>PM</i>"]
+
+    classDef review fill:#fff3cd,stroke:#d39e00,color:#1a1a1a;
+    classDef done fill:#d4edda,stroke:#28a745,color:#1a1a1a;
+    class dreview,ireview review;
+    class pr done;
 ```
 
 `impl` and `impl-review` form a cycle: when impl-review finds issues it routes the sprint back to `impl` (fix mode) to resolve them, then returns to `impl-review`. The cycle repeats until all reviewers APPROVE or the iteration cap is hit.
@@ -102,6 +118,7 @@ User-facing commands available at any time:
 | `/asd-init` | Initialize the workflow, or edit settings later in diff mode |
 | `/asd-concept` | Form or edit `design/product/concept.html` (4 entry variants: no-idea / vague / clear / brownfield) |
 | `/asd-stack` | Form or edit `design/architecture/stack.html` (architect proposes from concept; same 4 variants) |
+| `/asd-design-system` | Form or edit `design/ux/DESIGN.md`, `design-system.html`, `accessibility.html` (3 entry variants: greenfield / constraints / brownfield) |
 | `/asd-sprint` | Start a new sprint or resume the active one |
 
 Phase skills (`asd-phase-*`) are dispatched internally by `/asd-sprint`. You usually do not invoke them directly, but you can use them to re-run a specific phase of the active sprint.
@@ -166,8 +183,8 @@ review:
 system:
   os: linux                           # windows | linux | macos
   tools:
-    likec4: "likec4"
-    designmd: "designmd"              # on Windows always use the alias
+    likec4: "likec4"                  # empty string disables likec4 generation
+    designmd: true                    # availability flag; actual commands live in commands.yaml
     codex_command: ""
 
 git:
@@ -200,7 +217,7 @@ your-project/
 │       └── archived/<NNN-slug>/     # closed sprints (immutable)
 ├── .claude/
 │   ├── agents/                      # 15 agent definitions
-│   ├── skills/                      # 13 skill definitions
+│   ├── skills/                      # 14 skill definitions
 │   ├── hooks/                       # SessionStart + Stop hooks (Node.js)
 │   └── settings.json                # hook registration + permissions allowlist
 ├── design/                          # persistent design docs (grow across sprints)
