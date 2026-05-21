@@ -318,7 +318,7 @@ No, audit is mandatory — but it runs fast on empty projects (no existing code 
 Yes. Set `project.subsystem_decomposition: disabled` during `/asd-init`. Persistent docs become flat project-wide files. No C4 registry is maintained.
 
 **What if my project already has a CLAUDE.md?**
-Keep it. `/asd-init` does not overwrite it — it syncs only the ASD section between marker comments, leaving the rest of your file untouched. Note that this is *your project's* `CLAUDE.md`, generated from `.asd/templates/t_CLAUDE.md`; the `CLAUDE.md` in the ASD repo is a separate file for developing the framework and must not be used in a consumer project.
+Either works. Keep it, and `/asd-init` adds the ASD rules into it as a section between marker comments, leaving the rest of your file untouched. Or delete it, and `/asd-init` creates a fresh one from `.asd/templates/t_CLAUDE.md`. Either way, do not reuse the `CLAUDE.md` from the ASD repo — that file is for developing the framework and is meaningless in a consumer project.
 
 **Where do TODO stubs live?**
 Project-globally in `.asd/project/stubs.md`; it holds only open stubs, and a stub is deleted on resolution. The registry persists across sprint archival. The PR phase blocks if any stub introduced by the current sprint remains unresolved without an `(accepted-debt)` Reason prefix.
