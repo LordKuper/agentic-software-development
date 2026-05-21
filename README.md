@@ -301,7 +301,7 @@ Yes. Set `project.subsystem_decomposition: disabled` during `/asd-init`. Persist
 Back it up before cloning ASD; ASD ships its own CLAUDE.md. You can merge custom sections after init.
 
 **Where do TODO stubs live?**
-Project-globally in `.asd/project/stubs.md`, append-only across sprints. The PR phase blocks if any stub introduced by the current sprint remains unresolved without an `(accepted-debt)` Reason prefix.
+Project-globally in `.asd/project/stubs.md`; it holds only open stubs, and a stub is deleted on resolution. The registry persists across sprint archival. The PR phase blocks if any stub introduced by the current sprint remains unresolved without an `(accepted-debt)` Reason prefix.
 
 ---
 

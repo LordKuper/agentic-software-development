@@ -89,4 +89,5 @@ Before context compaction, agent dumps minimal recovery state to `state.json`. A
 - `review-policy.md` — review loop semantics
 - `external-review.md` — Codex CLI integration
 - `git-strategy.md` — branches, commits, PR
+- `code-style.md` — implementation-level code-writing rules
 - `language-policy.md` — languages per artifact type

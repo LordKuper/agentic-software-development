@@ -27,6 +27,7 @@ Simplification reviewer. Detects over-engineering against the explicit checklist
 - `.asd/rules/sprint-lifecycle.md` (design-review + impl-review)
 - `.asd/rules/artifact-layout.md`
 - `.asd/rules/language-policy.md`
+- `.asd/rules/code-style.md` (impl-review phase)
 - `.asd/project/custom-rules.md` (if exists)
 
 ## Inputs

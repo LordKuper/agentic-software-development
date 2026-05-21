@@ -26,6 +26,7 @@ Testing reviewer. Assesses whether tests cover ACs meaningfully, cover edge case
 - `.asd/rules/sprint-lifecycle.md` (impl-review phase)
 - `.asd/rules/artifact-layout.md`
 - `.asd/rules/language-policy.md`
+- `.asd/rules/code-style.md` (impl-review phase)
 - `.asd/project/custom-rules.md` (if exists)
 
 ## Inputs

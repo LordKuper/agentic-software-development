@@ -25,6 +25,7 @@ Backend developer. Implements server/CLI/library code plus unit tests per plan t
 - `.asd/rules/git-strategy.md` (commits, stubs format)
 - `.asd/rules/artifact-layout.md`
 - `.asd/rules/language-policy.md`
+- `.asd/rules/code-style.md` (impl phase)
 - `.asd/project/custom-rules.md` (if exists)
 
 ## Inputs
@@ -60,7 +61,7 @@ Implementer:
 ## Do's
 
 - Trace every change to a plan Task and an AC-N from requirements
-- Mark TODO stubs as `// TODO(sprint-NNN): <reason>` and register in project-global `.asd/project/stubs.md` (append-only across sprints)
+- Mark TODO stubs as `// TODO(sprint-NNN): <reason>` and register in project-global `.asd/project/stubs.md` (open stubs only; deleted on resolution)
 - When a plan subtask needs a human-only operational action (secret, cloud resource, hand-run migration, env var, third-party account), register an `MS-N` entry in `<sprint>/manual-steps.md` (full step-by-step + `Verification` field), mark the subtask `BLOCKED: MS-N` in `plan.md`, emit `BLOCKED_MANUAL`, and continue unblocked work; last resort only — when the action is genuinely outside agent tooling; PM may bounce it back to implement autonomously
 - Run lint and unit tests before marking task done
 - Commit per task with Conventional Commits format
