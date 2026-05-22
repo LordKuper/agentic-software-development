@@ -1,6 +1,6 @@
 ---
 name: asd-phase-impl
-description: "Runs the ASD impl phase in one of two modes, detected from state.json.review_fixes_pending. Initial mode (review_fixes_pending null): parses Task N blocks from plan.md and dispatches each task to its assigned dev (asd-backend-dev, asd-frontend-dev, or asd-test-engineer per Task body owner field), respecting declared dependencies (sequential where dependent, parallel where independent). Fix mode (review_fixes_pending set to iter-NN): reads the impl-review findings in <sprint>/reviews/impl/iter-NN/ and dispatches devs to resolve every CONCERNS finding plus every user-accepted FAIL finding, then returns the sprint to impl-review; fix mode skips the user-facing impl assessment gate, forming an impl⇄impl-review cycle. Updates state.json to phase=impl. Each dev verifies tech-reference exists for every library/framework/runtime/external service touched (refuses with FAILED if missing), reads context (plan or review findings, requirements, ADR, custom-rules, accessibility), proposes approach (Complication Approval if non-trivial), writes code and unit tests, runs build/test/lint per commands.yaml, commits per Conventional Commits, ticks plan.md checkboxes, registers TODO stubs in project-global .asd/project/stubs.md (open stubs only, deleted on resolution). When a plan subtask needs a human-only manual action, the dev registers it in <sprint>/manual-steps.md, defers that subtask, and continues unblocked work; PM validates each manual entry for necessity and the phase halts at the manual-steps gate until the user performs the actions and confirms. In both modes the phase MUST NOT emit COMPLETED until the build and test commands from commands.yaml were run and both passed with no errors or warnings (impl completion gate). After all tasks complete, in initial mode asd-pm presents impl summary for user assessment before phase exit. Use when asd-sprint dispatches the impl phase, or when the user explicitly asks to run or re-run impl for the active sprint."
+description: "Runs the ASD impl phase in one of two modes detected from state.json.review_fixes_pending: initial mode dispatches plan.md Task blocks to devs, fix mode resolves impl-review findings and returns to impl-review (the impl⇄impl-review cycle). Devs write code and tests, run build/test/lint, and commit; the phase enforces an impl completion gate before COMPLETED. Use when asd-sprint dispatches the impl phase, or when the user explicitly asks to run or re-run impl for the active sprint."
 metadata:
   asd-role: phase
   asd-order: "7"
@@ -22,10 +22,10 @@ allowed-tools: "Read AskUserQuestion Task"
 
 ## Modes
 
-The phase runs in one of two modes, detected at step 2 from `state.json.review_fixes_pending`:
+Detected at step 2 from `state.json.review_fixes_pending`:
 
 - **Initial mode** (`review_fixes_pending` null/absent) — implement `plan.md` Task blocks. Ends with the user-facing impl assessment gate (step 9).
-- **Fix mode** (`review_fixes_pending` = `iter-NN`) — entered when impl-review routed the sprint back. Resolve the reviewer findings in `<sprint>/reviews/impl/iter-NN/`. **Skips the impl assessment gate** — fix mode returns straight to impl-review so the impl⇄impl-review cycle stays silent between review iterations. On completion the phase clears `review_fixes_pending`.
+- **Fix mode** (`review_fixes_pending` = `iter-NN`) — entered when impl-review routed the sprint back. Resolve reviewer findings in `<sprint>/reviews/impl/iter-NN/`. **Skips the impl assessment gate** — returns straight to impl-review. On completion clears `review_fixes_pending`.
 
 The impl completion gate (step 9b) applies in **both** modes.
 
@@ -34,17 +34,17 @@ The impl completion gate (step 9b) applies in **both** modes.
 Impl runs **autonomously** in both modes. Once tasks/fixes are dispatched, devs work without user contact until **one** of:
 
 - **all plan tasks (initial) or all findings (fix) signal COMPLETED** — then in initial mode the impl assessment gate (step 9) is the first and only user pause; fix mode has no such pause; or
-- **all unblocked work is COMPLETED and validated manual steps remain pending** — the impl phase halts at the manual-steps gate (step 8); or
-- **a blocker requiring escalation arises** — execution halts and the blocker is relayed to the user.
+- **all unblocked work is COMPLETED and validated manual steps remain pending** — phase halts at the manual-steps gate (step 8); or
+- **a blocker requiring escalation arises** — execution halts, blocker relayed to user.
 
 A blocker is exactly one of:
-- dev `QUESTION` — requirement ambiguity that cannot be resolved from plan + design docs;
+- dev `QUESTION` — requirement ambiguity unresolvable from plan + design docs;
 - dev `FAILED` / `ABORT` — missing tech-reference, or unrecoverable lint / test / build failure;
-- a Simplicity Default trigger (`core.md`) — new abstraction, dependency, config flag, or generalization — which needs Complication Approval before proceeding.
+- a Simplicity Default trigger (`core.md`) — new abstraction, dependency, config flag, or generalization — needs Complication Approval before proceeding.
 
-A dev `BLOCKED_MANUAL` signal is **not** a blocker that halts immediately: the dev registers the manual action, defers only the affected subtasks, and continues all unblocked work. The phase halts at the manual-steps gate (step 8) only after every unblocked task is COMPLETED.
+A dev `BLOCKED_MANUAL` signal does **not** halt immediately: the dev registers the manual action, defers only the affected subtasks, continues all unblocked work. Phase halts at the manual-steps gate (step 8) only after every unblocked task is COMPLETED.
 
-Devs do **not** pause the user for routine "non-trivial approach" decisions. Within plan + design-doc scope they make the reasonable call and proceed. Pausing mid-impl for anything other than a blocker above (or the manual-steps gate) is a protocol violation.
+Devs do **not** pause the user for routine "non-trivial approach" decisions. Within plan + design-doc scope, make the reasonable call and proceed. Pausing mid-impl for anything other than a blocker above (or the manual-steps gate) is a protocol violation.
 
 ## Workflow
 

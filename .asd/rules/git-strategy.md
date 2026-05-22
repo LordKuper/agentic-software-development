@@ -2,13 +2,13 @@
 
 ## Branch
 
-Created in `scope` phase from `git.base_branch` per `git.branch_pattern`. Default pattern: `sprint/{n}-{slug}`. `{n}` zero-padded to 3 digits. `{slug}` kebab-case, max 30 chars, derived from scope.
+Created in `scope` from `git.base_branch` per `git.branch_pattern`. Default pattern `sprint/{n}-{slug}`. `{n}` zero-padded to 3 digits. `{slug}` kebab-case, max 30 chars, derived from scope.
 
 ## Commits
 
-- Conventional Commits format: `<type>(<scope>): <subject>`
+- Conventional Commits: `<type>(<scope>): <subject>`
 - Subject ≤ 50 chars, imperative mood, English
-- Commit message body describes WHY, not WHAT
+- Body describes WHY, not WHAT
 - One commit per task when possible; phase-grouped acceptable for small tasks
 
 ## Forbidden
@@ -16,30 +16,19 @@ Created in `scope` phase from `git.base_branch` per `git.branch_pattern`. Defaul
 - Never force-push
 - Never rebase published commits
 - Never use `--no-verify` or skip hooks
-- Never commit `.env`, credentials, or files matching `.gitignore`
+- Never commit `.env`, credentials, or `.gitignore`-matching files
 
 ## TODO stubs
 
-In-code TODO created during a sprint must be marked:
+An in-code TODO created during a sprint must be marked `// TODO(sprint-NNN): <reason>` and registered in **project-global** `.asd/project/stubs.md` (open stubs only) with: sprint of origin (NNN-slug), file path and line, reason (prefix `(accepted-debt)` for known debt that should not block PR), owner agent.
 
-```
-// TODO(sprint-NNN): <reason>
-```
+On resolution: row **deleted** from stubs.md (no status column; deletion = resolution). On migration: deleted, new row created under the receiving sprint.
 
-and registered in **project-global** `.asd/project/stubs.md` (contains only currently open stubs) with:
-
-- sprint of origin (NNN-slug)
-- file path and line
-- reason (prefix with `(accepted-debt)` for known debt that should not block PR)
-- owner agent
-
-On resolution: entry is **deleted** from stubs.md (no status column; deletion = resolution). On migration: deleted, new entry created under the receiving sprint.
-
-`pr` phase blocks if any stub in stubs.md has `Sprint = <current-NNN-slug>` and Reason does NOT start with `(accepted-debt)`. Devs must either resolve (delete row), migrate (move to new sprint via decisions-log entry), or mark accepted-debt before PR.
+`pr` phase blocks if any stub has `Sprint = <current-NNN-slug>` and Reason does NOT start with `(accepted-debt)`. Devs must resolve, migrate, or mark accepted-debt before PR.
 
 ## PR self-review checklist
 
-PM must confirm before opening PR:
+PM confirms before opening PR:
 
 - Studied existing code in touched areas
 - Can explain every changed line
@@ -52,9 +41,9 @@ PM must confirm before opening PR:
 
 Triggered only after DoD met AND user confirmation.
 
-- `git.gh_enabled: true` and `git.auto_pr: true`: `gh pr create` with body from `t_pr-description.md`
-- `git.gh_enabled: false`: push branch, print PR-ready summary (title, body, link to compare URL)
-- `git.auto_pr: false`: push, prepare summary, wait for user to open PR manually
+- `gh_enabled: true` + `auto_pr: true` → `gh pr create` with body from `t_pr-description.md`
+- `gh_enabled: false` → push branch, print PR-ready summary (title, body, compare URL)
+- `auto_pr: false` → push, prepare summary, wait for the user to open the PR manually
 
 ## Pre-existing uncommitted changes
 

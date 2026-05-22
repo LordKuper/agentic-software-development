@@ -1,6 +1,6 @@
 ---
 name: asd-phase-pr
-description: "Runs the final ASD pr phase. Updates state.json to phase=pr and dispatches asd-pm to verify DoD (all PRD acceptance criteria covered, all plan.md task checkboxes ticked, all impl-review reviewers APPROVE in the final iteration, no open stubs from current sprint without (accepted-debt) prefix in .asd/project/stubs.md, no orphan TODO markers in code without matching stubs.md entry, all tests pass via commands.yaml test, PR self-review checklist confirmed). Then composes the PR title and body from t_pr-description.md, asks user to confirm PR opening, and per git config: when gh_enabled and auto_pr → runs gh pr create; when gh_enabled and not auto_pr → pushes branch and prints PR-ready summary; when not gh_enabled → pushes and prints summary. Finally moves the sprint folder from .asd/sprints/<NNN-slug>/ to .asd/sprints/archived/<NNN-slug>/, appends decisions-log entry, sets state.json phase=done. Use when asd-sprint dispatches the pr phase, or when the user explicitly asks to run or re-run pr for the active sprint."
+description: "Runs the final ASD pr phase: dispatches asd-pm to verify the Definition of Done, compose and open (or prepare) the PR per git config, then archive the sprint folder and finalize state. Use when asd-sprint dispatches the pr phase, or when the user explicitly asks to run or re-run pr for the active sprint."
 metadata:
   asd-role: phase
   asd-order: "9"

@@ -1,6 +1,6 @@
 ---
 name: asd-phase-design
-description: "Runs the ASD design phase for the active sprint. Updates state.json to phase=design, then dispatches creators sequentially per the precondition chain: asd-ba for prd.html, design-system gate (dispatches /asd-design-system skill when DESIGN.md/design-system.html/accessibility.html missing), asd-ux-designer for ux-spec.html (authors design-md-delta.yaml inline when token gaps surface during mockup work), asd-architect for adr.html. Each creator discusses content with the user in language.chat (section by section), then writes the approved version to file in language.docs. After ADR approved, dispatches asd-architect for c4-full/ (when project.subsystem_decomposition is enabled; layout depends on project.diagram_tool — likec4 model files or mermaid subsystems.yaml plus architecture.html). Creators must integrate any reverse-engineered or migrated drafts left in <sprint>/design/ by the audit phase rather than duplicate. Use when asd-sprint dispatches the design phase, or when the user explicitly asks to run or re-run design for the active sprint."
+description: "Runs the ASD design phase for the active sprint: dispatches creators sequentially per the precondition chain (asd-ba for prd.html, a design-system gate, asd-ux-designer for ux-spec.html, asd-architect for adr.html and optional c4-full/) to author sprint design drafts. Use when asd-sprint dispatches the design phase, or when the user explicitly asks to run or re-run design for the active sprint."
 metadata:
   asd-role: phase
   asd-order: "3"

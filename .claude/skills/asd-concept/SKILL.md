@@ -1,6 +1,6 @@
 ---
 name: asd-concept
-description: "Forms or edits the project concept document. Silent detection branches into one of four flows: (A) no idea — divergent brainstorm with universal product lenses (problem-first, user-first, market-first, tech-first, capability-first), generate 3 candidate directions, converge via lock-in loop; (B) vague idea — skip lens, seed asd-ba with user hint, jump to 3 directions; (C) clear vision — user describes, asd-ba authors per template section-by-section; (D) brownfield work-in-progress — scan README, docs, manifests, top-level source, recent commits and produce a reverse-engineered draft with provenance frontmatter, user walks each section to confirm or correct. All flows converge via per-section lock-in-or-revise loop, then final approval before writing in language.docs. Re-runs detect existing concept.html and enter diff-edit mode per section. Suggests next skill on handoff; does not auto-dispatch. Use when the user runs /asd-concept, when asd-init detects a missing concept.html and suggests this skill, or when the user asks to define, draft, refine, edit, rewrite, or reverse-engineer the project concept, vision, target users, or value proposition."
+description: "Forms or edits the project concept document via asd-ba, branching by silent detection into one of four flows (no idea / vague idea / clear vision / brownfield extraction) and converging through a per-section lock-in loop. Use when the user runs /asd-concept, when asd-init detects a missing concept.html and suggests this skill, or when the user asks to define, draft, refine, edit, rewrite, or reverse-engineer the project concept, vision, target users, or value proposition."
 metadata:
   asd-role: artifact
   version: "0.1"
@@ -56,12 +56,12 @@ Phase 1 brownfield candidates auto-suggest D as default; user may override.
 
 **Variant C — clear vision**
 - Dispatch `asd-ba` to ask user to describe in own words
-- BA drafts per `t_concept.html` template (required sections first; optional offered per-section)
+- BA drafts per `t_concept.html` (required sections first; optional offered per-section)
 - Proceed to Phase 4
 
 **Variant D — brownfield extraction**
 - Dispatch `asd-ba` with payload: candidate paths (Glob results), template
-- BA scans, extracts draft per template; each filled section tagged with `source: <path:line>` or `source: inferred`
+- BA scans, extracts draft per template; each filled section tagged `source: <path:line>` or `source: inferred`
 - Draft sets `provenance: reverse-engineered` and `source: <primary origin>` in frontmatter
 - Proceed to Phase 4
 

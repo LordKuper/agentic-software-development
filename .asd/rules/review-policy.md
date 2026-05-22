@@ -11,33 +11,29 @@
 
 ## Iteration severity floor
 
-Config sets `iterations_<severity>` (default: low=1, medium=1, high=2, critical=10).
+Config sets `iterations_<severity>` (default: low=1, medium=1, high=2, critical=10). Each tier gets its own consecutive iteration budget in order low → medium → high → critical. On iteration N, the floor is the tier whose **cumulative budget** first covers N. Only findings at floor severity or higher count.
 
-Each severity tier gets its own consecutive iteration budget in order low → medium → high → critical. On iteration N, the floor is the tier whose **cumulative budget** first covers N. Only findings at floor severity or higher are considered.
-
-`N` is the **phase-local** review counter — `reviews.design.iteration` during design-review, `reviews.impl.iteration` during impl-review (see `sprint-lifecycle.md` "Review iteration counters"). Each review phase computes its floor from its own counter; the two never interfere.
+`N` is the **phase-local** counter — `reviews.design.iteration` or `reviews.impl.iteration` (see `sprint-lifecycle.md`). Each review phase computes its floor from its own counter.
 
 Cumulative budgets with defaults:
 
-- low: cum = 1 → iter 1 → floor=low (all)
-- medium: cum = 1+1 = 2 → iter 2 → floor=medium (drop low)
-- high: cum = 1+1+2 = 4 → iters 3-4 → floor=high (drop low, medium)
-- critical: cum = 1+1+2+10 = 14 → iters 5-14 → floor=critical (drop low, medium, high)
+- low: cum 1 → iter 1 → floor=low (all)
+- medium: cum 2 → iter 2 → floor=medium (drop low)
+- high: cum 4 → iters 3-4 → floor=high (drop low, medium)
+- critical: cum 14 → iters 5-14 → floor=critical (drop low, medium, high)
 - iter ≥ 15 → stop, escalate to user
 
-User may override the cap and continue. On override the phase-local counter keeps incrementing (it is not reset); the severity floor stays pinned at `critical` for every further iteration, so the extra rounds do not re-admit lower-severity findings.
+User may override the cap. On override the counter keeps incrementing (not reset); floor stays pinned at `critical`, so extra rounds do not re-admit lower-severity findings.
 
 ## Clean-context review iteration
 
-Every review iteration dispatches each reviewer as a **fresh agent invocation** — a new context with no carry-over from authoring (the design or impl phase that produced the artifact) or from prior review iterations. This isolates each verdict from the creator's reasoning and from earlier rounds.
+Every iteration dispatches each reviewer as a **fresh agent invocation** — new context, no carry-over from authoring or prior iterations. Isolates each verdict from creator reasoning and earlier rounds.
 
-Rules:
-
-- The dispatching phase skill spawns every reviewer (and External Review) anew on each iteration. No reviewer agent is reused or resumed across iterations.
-- Reviewer payload carries only: the artifact or diff under review, rule references, severity floor, iteration number, and context paths. It never carries authoring rationale or prior-iteration verdicts.
-- Reviewers MUST NOT read prior `reviews/<phase>/iter-*/` files. The current `iter-NN/` directory is the only review directory a reviewer reads or writes.
-- Incremental diff scoping (iter 2+ reviews only what changed since the last round — see `external-review.md` "Iteration-aware diff") is permitted: it narrows the *input*, not the reviewer's context. The reviewer agent is still fresh.
-- Where a reviewer genuinely needs prior-iteration data (External Review stalemate detection), the dispatching phase skill supplies it as an explicit payload input — scoped data, not context carry-over or review-history reading.
+- The dispatching phase skill spawns every reviewer (and External Review) anew each iteration. No reviewer is reused or resumed.
+- Reviewer payload carries only: the artifact/diff under review, rule references, severity floor, iteration number, context paths. Never authoring rationale or prior verdicts.
+- Reviewers MUST NOT read prior `reviews/<phase>/iter-*/` files. Only the current `iter-NN/` directory.
+- Incremental diff scoping (iter 2+ reviews only what changed — see `external-review.md`) narrows the *input*, not context. The agent is still fresh.
+- Where a reviewer genuinely needs prior-iteration data (External Review stalemate detection), the phase skill supplies it as explicit payload input — scoped data, not context carry-over.
 
 ## Over-engineering checklist (critical, undroppable)
 
@@ -59,20 +55,18 @@ Simplification reviewer flags any of these as `critical`:
 
 ## Autofix vs escalation
 
-Default: the responsible creator agent autofixes any reviewer issue without user prompt.
+Default: the responsible creator autofixes any reviewer issue without user prompt.
 
-**Where the fix happens per phase:**
-- **design-review** — the creator (asd-ba / asd-ux-designer / asd-architect) autofixes within the design-review loop; the iteration advances.
-- **impl-review** — fixes are NOT applied inside the review phase. impl-review routes the sprint back to the `impl` phase (fix mode), where the responsible dev resolves the findings; the sprint then re-enters impl-review for the next iteration. See `asd-phase-impl-review` and `asd-phase-impl`.
+**Where the fix happens:**
+- **design-review** — the creator (asd-ba / asd-ux-designer / asd-architect) autofixes within the loop; iteration advances.
+- **impl-review** — fixes NOT applied inside the review phase. impl-review routes the sprint back to `impl` (fix mode); the responsible dev resolves findings; sprint re-enters impl-review.
 
-**Escalation required** (must ask user before fix):
+**Escalation required** (ask user before fix), format = Complication Approval (`core.md`):
 
 - Change to approved concept, PRD requirement, or API contract
 - New abstraction, layer, interface, or dependency
 - Scope expansion beyond `sprint.md`
 - Complexity increase (any over-engineering check trips)
-
-Escalation format = Complication Approval (from `core.md`).
 
 ## Nitpick drop list (reviewers must NOT raise)
 
@@ -90,30 +84,22 @@ Every reviewer ends with exactly one:
 - `CONCERNS: <list>` — issues exist but the creator can autofix without escalation
 - `FAIL: <list>` — issues require escalation or block DoD
 
-Next action:
-
-- APPROVE → reviewer phase done for this reviewer
-- CONCERNS → creator autofixes, next iteration
-- FAIL → escalate to user, await decision
+Next action: APPROVE → reviewer done · CONCERNS → creator autofixes, next iteration · FAIL → escalate to user.
 
 ## Gate Verdict Format (machine-parseable first line)
 
-Every reviewer output file MUST begin (after frontmatter) with a single-line verdict token PM parses mechanically:
+Every reviewer output file MUST begin (after frontmatter) with a single-line verdict token:
 
 ```
 [REVIEW-<phase>-<reviewer>]: <APPROVE | CONCERNS | FAIL>
 ```
 
-Where:
-- `<phase>` is `design` (during design-review phase) or `impl` (during impl-review phase)
-- `<reviewer>` is `quality | implementation | testing | ui | simplification | documentation | performance | external`
+- `<phase>` = `design` (design-review) or `impl` (impl-review)
+- `<reviewer>` = `quality | implementation | testing | ui | simplification | documentation | performance | external`
 
-Examples:
-- `[REVIEW-impl-quality]: APPROVE`
-- `[REVIEW-design-documentation]: FAIL`
-- `[REVIEW-impl-external]: CONCERNS`
+Examples: `[REVIEW-impl-quality]: APPROVE` · `[REVIEW-design-documentation]: FAIL` · `[REVIEW-impl-external]: CONCERNS`
 
-Never bury the verdict in prose. PM reads the first non-empty content line for verdict.
+Never bury the verdict in prose. PM reads the first non-empty content line.
 
 ## DoD per review phase
 

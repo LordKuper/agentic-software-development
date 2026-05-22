@@ -1,6 +1,6 @@
 ---
 name: asd-init
-description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Detects greenfield vs brownfield, asks the user for languages (chat and docs), subsystem decomposition mode, diagram tool (LikeC4 vs Mermaid), backward compatibility policy, operating system, external tool availability (LikeC4 CLI, design.md CLI, Codex CLI), git strategy, and review iteration limits. Auto-detects build/test/lint/run commands from manifests and code analysis. Generates .asd/config.yaml, .asd/project/custom-rules.md, .asd/project/decisions-log.md, and seeds infrastructure-only design/ docs (commands.yaml with OS-specific design.md lint command, and either LikeC4 model or Mermaid subsystem registry). Concept, stack, and the design system (DESIGN.md, design-system.html, accessibility.html) are NOT seeded here — they are owned by dedicated skills /asd-concept, /asd-stack, /asd-design-system, suggested at the end of init. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
+description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Auto-detects build commands and external tools, collects config via AskUserQuestion, generates .asd/config.yaml and seeds infrastructure-only design/ docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 metadata:
   asd-role: init
   version: "0.1"
@@ -29,7 +29,7 @@ allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
 4. Detect OS via Bash (silent; no confirm yet)
 5. Detect external tools (silent; record results, do not prompt per-tool yet):
    - `likec4 --version` (only if diagram_tool=likec4)
-   - designmd (always): check `node --version` and `npm --version`. Tooling itself is invoked via `commands.yaml` (`designmd-*`); no `designmd` binary on PATH is required.
+   - designmd (always): check `node --version` and `npm --version`. Tooling invoked via `commands.yaml` (`designmd-*`); no `designmd` binary on PATH required.
    - `codex --version` (only if external_review=enabled)
    Record paths and missing flags for the consolidated proposal
 6. Pick review iteration defaults (low=1 medium=1 high=2 critical=10) — include in proposal, do not prompt yet
@@ -47,7 +47,7 @@ allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
 9. Write `.asd/config.yaml` from `t_config.yaml` with all approved fields (including `project.diagram_tool` when decomp enabled)
 10. Ask user what custom rules to add; write `.asd/project/custom-rules.md`
 11. Write `.asd/project/decisions-log.md` from `t_decisions-log.md`
-12. Seed infrastructure-only `design/` files (concept, stack, and design-system files handled by dedicated skills, NOT seeded here):
+12. Seed infrastructure-only `design/` files (concept, stack, design-system handled by dedicated skills, NOT seeded here):
     - `architecture/commands.yaml` (from `t_commands.yaml` + detected + OS-specific `custom.designmd-*`)
 13. If decomp enabled:
     - **likec4 mode**: seed `c4/model/main.c4`, `c4/views.c4` from templates; run `likec4 build` → `c4/dist/`

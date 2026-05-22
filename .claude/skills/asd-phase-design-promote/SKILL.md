@@ -1,6 +1,6 @@
 ---
 name: asd-phase-design-promote
-description: "Runs the ASD design-promote phase. Updates state.json to phase=design-promote and dispatches asd-pm to orchestrate per-subsystem decomposition proposals (user-approved) and any new subsystem additions (user-approved each). Then in parallel dispatches three domain creators to promote their drafts to persistent design/: asd-architect for architecture (adr per subsystem, c4 patch, stack/api/tech-reference updates), asd-ba for product (requirements per subsystem), asd-ux-designer for ux (ux per subsystem, DESIGN.md patch from delta, design-system.html regeneration). Distributes Documentation migration plan items from audit.md to the matching domain creator. Each creator asks user approval before each persistent write. Final user confirmation gates mutation. PM composes decisions-log entries and finalises state. When subsystem_decomposition is disabled, writes go to flat project-wide files. Use when asd-sprint dispatches design-promote, or when the user explicitly asks to run or re-run design-promote for the active sprint."
+description: "Runs the ASD design-promote phase: asd-pm orchestrates user-approved per-subsystem decomposition, then asd-architect, asd-ba, and asd-ux-designer promote sprint drafts to persistent design/ in parallel, gated by a final user confirmation. Use when asd-sprint dispatches design-promote, or when the user explicitly asks to run or re-run design-promote for the active sprint."
 metadata:
   asd-role: phase
   asd-order: "5"

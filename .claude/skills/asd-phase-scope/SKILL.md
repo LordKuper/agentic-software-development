@@ -1,6 +1,6 @@
 ---
 name: asd-phase-scope
-description: "Runs the ASD scope phase of a sprint. Computes the next sprint number, derives a kebab-case slug, creates the sprint folder under .asd/sprints/<NNN-slug>/, initializes state.json with phase=scope, creates the sprint git branch per git.branch_pattern, and dispatches asd-pm to refine the raw user scope into a coherent finished sprint goal (asking clarifying questions when needed), present the refined version for user approval, and write the approved version as sprint.md. Use when asd-sprint dispatches the scope phase for a new sprint, or when the user explicitly asks to run or re-run the scope phase for the active sprint."
+description: "Runs the ASD scope phase of a sprint: creates the sprint folder, state.json, and git branch, then dispatches asd-pm to refine the raw user scope into an approved sprint.md. Use when asd-sprint dispatches the scope phase for a new sprint, or when the user explicitly asks to run or re-run the scope phase for the active sprint."
 metadata:
   asd-role: phase
   asd-order: "1"

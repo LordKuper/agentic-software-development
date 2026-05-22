@@ -1,6 +1,6 @@
 ---
 name: asd-sprint
-description: "Starts a new ASD sprint or resumes the active one, dispatching to the appropriate phase skill (asd-phase-scope, asd-phase-audit, asd-phase-design, asd-phase-design-review, asd-phase-design-promote, asd-phase-plan, asd-phase-impl, asd-phase-impl-review, asd-phase-pr). Detects active sprint by scanning .asd/sprints/ (excluding archived/), reads state.json for current phase and iteration, then dispatches the matching phase skill via the Skill tool. When no active sprint exists, asks user for scope and dispatches asd-phase-scope. Routes phase signals (COMPLETED, FAILED, QUESTION, ABORT) back to the user and advances to the next phase only after the prior one signals COMPLETED. Use when the user runs /asd-sprint or asks to start, continue, resume, or work on an ASD sprint."
+description: "Starts a new ASD sprint or resumes the active one, dispatching the matching asd-phase-* skill and routing phase signals back to the user. Use when the user runs /asd-sprint or asks to start, continue, resume, or work on an ASD sprint."
 metadata:
   asd-role: dispatcher
   version: "0.1"

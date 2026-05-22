@@ -1,6 +1,6 @@
 ---
 name: asd-stack
-description: "Forms or edits the project tech stack document at design/architecture/stack.html. Reads the project concept and any existing code/manifests, then dispatches asd-architect to propose a stack tailored to the concept and existing constraints. Silent detection branches into one of four flows: (A) clean slate — architect proposes stack from scratch based on concept; (B) constraints in mind — user supplies preferences (language, runtime, hosting) and architect proposes within them; (C) clear stack — user describes, architect validates and fills gaps; (D) brownfield — extract from manifests (package.json, Cargo.toml, pyproject.toml, go.mod, Makefile), source files, recent commits, with provenance frontmatter. All flows: verify each proposed component's current version via WebFetch, perform LLM-cutoff knowledge-gap analysis (LOW/MEDIUM/HIGH risk), create or update design/architecture/tech-reference/<tech>-<version>.md for every chosen tech. Section-by-section lock-in-or-revise loop with the user in language.chat; write approved version in language.docs. Re-runs detect existing stack.html and enter diff-edit mode. Suggests next skill on handoff; does not auto-dispatch. Use when the user runs /asd-stack, when asd-init or asd-concept detects a missing stack.html and suggests this skill, or when the user asks to define, draft, refine, edit, upgrade, or reverse-engineer the project technology stack."
+description: "Forms or edits the project tech stack document at design/architecture/stack.html via asd-architect, branching by silent detection into one of four flows (clean slate / constraints / clear stack / brownfield extraction). Verifies versions via WebFetch, runs knowledge-gap analysis, and maintains a tech-reference doc per chosen tech. Use when the user runs /asd-stack, when asd-init or asd-concept detects a missing stack.html and suggests this skill, or when the user asks to define, draft, refine, edit, upgrade, or reverse-engineer the project technology stack."
 metadata:
   asd-role: artifact
   version: "0.1"
@@ -60,7 +60,7 @@ Phase 1 brownfield candidates auto-suggest D as default.
 **Variant C — clear stack**
 - Dispatch architect to ask user to describe chosen stack
 - Architect validates compatibility with concept; flags conflicts (e.g., "concept implies mobile but stack is server-only")
-- Architect fills any unstated gaps per `t_stack.html` template (proposes defaults; user approves)
+- Architect fills unstated gaps per `t_stack.html` (proposes defaults; user approves)
 - Proceed to Phase 4
 
 **Variant D — brownfield extraction**

@@ -1,6 +1,6 @@
 ---
 name: asd-phase-audit
-description: "Runs the ASD audit phase for the active sprint. Updates state.json to phase=audit, dispatches asd-ba to scan existing documentation in any format/location and produce the Existing docs found and Documentation migration plan sections of audit.md, then dispatches asd-architect to scan existing source code and produce the Existing implementation found, Gaps, Risks, and Subsystems map sections. Optionally either agent may pre-formulate reverse-engineered or migrated drafts in <sprint>/design/ when sprint scope directly overlaps with found content (with provenance frontmatter). Finally dispatches asd-pm to present the merged audit.md for user approval. Use when asd-sprint dispatches the audit phase, or when the user explicitly asks to run or re-run audit for the active sprint."
+description: "Runs the ASD audit phase for the active sprint: dispatches asd-ba to scan existing docs and asd-architect to scan existing code, merges findings into audit.md, then dispatches asd-pm for user approval. Use when asd-sprint dispatches the audit phase, or when the user explicitly asks to run or re-run audit for the active sprint."
 metadata:
   asd-role: phase
   asd-order: "2"

@@ -1,6 +1,6 @@
 ---
 name: asd-phase-plan
-description: "Runs the ASD plan phase. Updates state.json to phase=plan and dispatches asd-pm to author plan.md from t_plan.md based on the sprint scope and the persistent design/ docs touched by the sprint (requirements per subsystem, ADRs, UX, API, c4 model). PM decomposes work into Task N sections with checkbox subtasks, traces each Task to PRD acceptance criteria (AC-N), and writes Definition of Done as prose. Discusses each section with the user in language.chat before writing the file in language.docs. Use when asd-sprint dispatches the plan phase, or when the user explicitly asks to run or re-run plan for the active sprint."
+description: "Runs the ASD plan phase: dispatches asd-pm to author plan.md from the sprint design docs, decomposing work into Task N sections with checkbox subtasks traced to PRD acceptance criteria. Use when asd-sprint dispatches the plan phase, or when the user explicitly asks to run or re-run plan for the active sprint."
 metadata:
   asd-role: phase
   asd-order: "6"

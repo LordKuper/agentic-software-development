@@ -1,6 +1,6 @@
 ---
 name: asd-phase-design-review
-description: "Runs the ASD design-review phase iteratively until DoD met. Updates state.json to phase=design-review and increments the design-review counter reviews.design.iteration. In parallel dispatches asd-reviewer-documentation, asd-reviewer-ui, asd-reviewer-simplification, and (when review.external_review=enabled) asd-external-review against the current sprint design drafts in <sprint>/design/. Each reviewer writes its verdict file under <sprint>/reviews/design/iter-NN/ with a first-line gate verdict token. Aggregates verdicts: all APPROVE on same iteration → DoD met → COMPLETED. Any CONCERNS → asd-pm dispatches the appropriate creator (asd-ba, asd-ux-designer, asd-architect) to autofix, then iteration advances. Any FAIL → escalation via AskUserQuestion (Complication Approval). Applies iteration severity floor per review-policy.md; stops and escalates when cap reached. Use when asd-sprint dispatches design-review, or when the user explicitly asks to run or re-run design-review for the active sprint."
+description: "Runs the ASD design-review phase iteratively until DoD met: dispatches asd-reviewer-documentation, asd-reviewer-ui, asd-reviewer-simplification (and asd-external-review when enabled) in parallel against the sprint design drafts, aggregates verdicts, and routes CONCERNS to creator autofix or FAIL to user escalation. Use when asd-sprint dispatches design-review, or when the user explicitly asks to run or re-run design-review for the active sprint."
 metadata:
   asd-role: phase
   asd-order: "4"
