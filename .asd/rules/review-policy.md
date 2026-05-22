@@ -27,6 +27,18 @@ Cumulative budgets with defaults:
 
 User may override the cap and continue. On override the phase-local counter keeps incrementing (it is not reset); the severity floor stays pinned at `critical` for every further iteration, so the extra rounds do not re-admit lower-severity findings.
 
+## Clean-context review iteration
+
+Every review iteration dispatches each reviewer as a **fresh agent invocation** — a new context with no carry-over from authoring (the design or impl phase that produced the artifact) or from prior review iterations. This isolates each verdict from the creator's reasoning and from earlier rounds.
+
+Rules:
+
+- The dispatching phase skill spawns every reviewer (and External Review) anew on each iteration. No reviewer agent is reused or resumed across iterations.
+- Reviewer payload carries only: the artifact or diff under review, rule references, severity floor, iteration number, and context paths. It never carries authoring rationale or prior-iteration verdicts.
+- Reviewers MUST NOT read prior `reviews/<phase>/iter-*/` files. The current `iter-NN/` directory is the only review directory a reviewer reads or writes.
+- Incremental diff scoping (iter 2+ reviews only what changed since the last round — see `external-review.md` "Iteration-aware diff") is permitted: it narrows the *input*, not the reviewer's context. The reviewer agent is still fresh.
+- Where a reviewer genuinely needs prior-iteration data (External Review stalemate detection), the dispatching phase skill supplies it as an explicit payload input — scoped data, not context carry-over or review-history reading.
+
 ## Over-engineering checklist (critical, undroppable)
 
 Simplification reviewer flags any of these as `critical`:

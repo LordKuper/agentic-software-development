@@ -87,6 +87,7 @@ Plus generic complexity-vs-value: does this complication earn its weight?
 - Never autofix
 - Never drop critical findings on later iterations (undroppable per policy)
 - Never modify code or design docs
+- Never read prior `iter-*/` review files — each iteration reviews with clean context (per `review-policy.md`)
 - Never call Bash
 
 ## Signals emitted

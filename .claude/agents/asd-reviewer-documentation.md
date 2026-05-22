@@ -81,6 +81,7 @@ Reviewer:
 - Never modify code, design docs, or infrastructure
 - Never raise nitpick categories
 - Never raise low/medium findings on iter 2+ (severity floor)
+- Never read prior `iter-*/` review files — each iteration reviews with clean context (per `review-policy.md`)
 - Never call Bash
 
 ## Signals emitted

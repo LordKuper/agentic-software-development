@@ -42,6 +42,7 @@ External review wrapper. Runs Codex CLI in parallel with internal reviewers, nor
   - design-review iter 2+: per-file diff since last iteration snapshot
   - impl-review iter 1: `git diff <base>...HEAD`
   - impl-review iter 2+: `git diff` (uncommitted) + `git show HEAD`
+- previous iteration finding set (iter ≥ 2 only) — supplied by the dispatching phase skill for stalemate detection; the agent never reads prior `iter-*/` files itself
 
 ## Outputs
 
@@ -92,6 +93,7 @@ Probe before invocation: `codex --version`. On failure: write log message for PM
 - Never fix findings
 - Never silently retry on Codex failure beyond one retry (then skip + log)
 - Never modify infrastructure or design docs
+- Never read prior `iter-*/` review files — each iteration runs with clean context; the previous finding set arrives via payload (per `review-policy.md`)
 - Never proceed without prompt template loaded
 
 ## Signals emitted

@@ -27,7 +27,7 @@ allowed-tools: "Read AskUserQuestion Task"
 2. Read `<sprint>/state.json` → set `phase=impl-review`, increment `reviews.impl.iteration` (it is `0` at sprint creation, so `1` on first entry; +1 on every impl-review entry of the `impl⇄impl-review` cycle; the intervening `impl` fix-mode phase never touches it; see `sprint-lifecycle.md` "Review iteration counters" for increment and rollback-reset rules). `NN` = the resulting value, zero-padded.
 3. Compute severity floor for current iteration per `review-policy.md` cumulative-budget algorithm (uses `reviews.impl.iteration`)
 4. Create folder `<sprint>/reviews/impl/iter-NN/` if absent
-5. **Parallel dispatch** via Task:
+5. **Parallel dispatch** via Task — every reviewer is spawned as a **fresh agent** each iteration (clean-context dispatch per `review-policy.md`); no reviewer is reused across iterations:
    - `asd-reviewer-quality` — bugs, security, best-practice, contract drift
    - `asd-reviewer-implementation` — PRD AC-N coverage trace vs code/tests
    - `asd-reviewer-testing` — test coverage, edge cases, determinism, stub-resolution verification, manual verification capture
@@ -36,7 +36,7 @@ allowed-tools: "Read AskUserQuestion Task"
    - `asd-reviewer-documentation` — persistent design/ actuality vs implementation, SSoT, traceability
    - `asd-reviewer-performance` — perf budgets, regression, anti-patterns
    - if `review.external_review=enabled` → `asd-external-review` with phase=`impl-review`
-   - payload to each: diff (iter 1 = `git diff <base>...HEAD`; iter 2+ = `git diff` + last commit), iteration N, review output dir `<sprint>/reviews/impl/iter-NN/`, severity floor, relevant context paths, `language.chat`, `language.docs`
+   - payload to each: diff (iter 1 = `git diff <base>...HEAD`; iter 2+ = `git diff` + last commit), iteration N, review output dir `<sprint>/reviews/impl/iter-NN/`, severity floor, relevant context paths, `language.chat`, `language.docs`. The payload carries no authoring rationale and no prior-iteration verdicts; the incremental diff scopes the *input*, not the reviewer's context. For `asd-external-review` on iter ≥ 2, also pass the previous iteration's finding set (for stalemate detection)
    - each reviewer writes `<sprint>/reviews/impl/iter-NN/<reviewer>.md` per `t_review.md` (or `t_review-report.md` for external) with first-line verdict token `[REVIEW-impl-<reviewer>]: ...`
 6. Wait all REVIEW_DONE signals
 7. Parse first-line verdict tokens from all reviewer files; record the per-reviewer verdicts under `state.json` `reviews.impl.verdicts["iter-NN"]`; aggregate. impl-review does NOT fix findings itself — fixes are routed to the impl phase (fix mode):

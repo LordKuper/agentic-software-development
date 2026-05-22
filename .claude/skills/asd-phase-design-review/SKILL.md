@@ -27,12 +27,12 @@ allowed-tools: "Read AskUserQuestion Task"
 2. Read `<sprint>/state.json` → set `phase=design-review`, increment `reviews.design.iteration` (it is `0` at sprint creation, so `1` on first entry; see `sprint-lifecycle.md` "Review iteration counters" for increment and rollback-reset rules). `NN` = the resulting value, zero-padded.
 3. Compute severity floor for current iteration per `review-policy.md` cumulative-budget algorithm (uses `reviews.design.iteration`)
 4. Create folder `<sprint>/reviews/design/iter-NN/` if absent
-5. **Parallel dispatch** via Task:
+5. **Parallel dispatch** via Task — every reviewer is spawned as a **fresh agent** each iteration (clean-context dispatch per `review-policy.md`); no reviewer is reused across iterations:
    - `asd-reviewer-documentation` — SSoT, template adherence, traceability across drafts
    - `asd-reviewer-ui` — ux-spec compliance with DESIGN.md + accessibility.html
    - `asd-reviewer-simplification` — over-engineering smells + design-principles.md adherence
    - if `review.external_review=enabled` → `asd-external-review` with phase=`design-review`
-   - payload to each: drafts paths, iteration N, review output dir `<sprint>/reviews/design/iter-NN/`, severity floor, `language.chat`, `language.docs`
+   - payload to each: drafts paths, iteration N, review output dir `<sprint>/reviews/design/iter-NN/`, severity floor, `language.chat`, `language.docs`. The payload carries no authoring rationale and no prior-iteration verdicts. For `asd-external-review` on iter ≥ 2, also pass the previous iteration's finding set (for stalemate detection)
    - each reviewer writes `<sprint>/reviews/design/iter-NN/<reviewer>.md` per `t_review.md` (or `t_review-report.md` for external) with first-line verdict token `[REVIEW-design-<reviewer>]: ...`
 6. Wait all REVIEW_DONE signals
 7. Parse first-line tokens from all reviewer files; record the per-reviewer verdicts under `state.json` `reviews.design.verdicts["iter-NN"]`; aggregate:

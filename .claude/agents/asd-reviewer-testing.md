@@ -74,6 +74,7 @@ Reviewer:
 - Never raise nitpick categories
 - Never raise low/medium findings on iter 2+
 - Never specify manual verification when automation IS possible — prefer automated
+- Never read prior `iter-*/` review files — each iteration reviews with clean context (per `review-policy.md`)
 - Never call Bash
 
 ## Signals emitted

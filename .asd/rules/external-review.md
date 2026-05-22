@@ -36,7 +36,9 @@ At review phase start, External Review agent runs the probe. If it fails (non-ze
 | impl-review | 1 | `git diff <git.base_branch>...HEAD` |
 | impl-review | 2+ | `git diff` (uncommitted) plus the last commit (`git show HEAD`) |
 
-Rationale: iteration 1 covers all sprint work in that phase; subsequent iterations cover only what changed since last review round. For design-review, the agent snapshots files at iteration N start and diffs at N+1.
+Rationale: iteration 1 covers all sprint work in that phase; subsequent iterations cover only what changed since last review round. For design-review, each iteration persists a file snapshot to disk at iteration end; the next iteration's agent reads that persisted snapshot to compute its diff.
+
+The External Review agent is dispatched fresh each iteration per `review-policy.md` "Clean-context review iteration". The incremental diff narrows the *input* the agent reviews — a persisted snapshot or supplied diff is scoped input, not context carried across iterations.
 
 ## Output mapping
 
@@ -52,6 +54,8 @@ Codex JSON output mapped to ASD severity:
 Findings rendered to the review output dir supplied by the dispatching phase skill — `.asd/sprints/<NNN-slug>/reviews/design/iter-NN/external.md` during design-review, `.asd/sprints/<NNN-slug>/reviews/impl/iter-NN/external.md` during impl-review — using the standard verdict format from `review-policy.md`.
 
 ## Stalemate detection
+
+The dispatching phase skill supplies the previous iteration's finding set as an explicit payload input (from iteration 2 onward). The External Review agent compares against that supplied set only — it does not read prior `iter-*/` review files, preserving clean-context dispatch per `review-policy.md`.
 
 If two consecutive iterations produce an identical issue set (same files, lines, messages), External Review agent:
 

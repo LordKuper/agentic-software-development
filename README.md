@@ -10,7 +10,7 @@ ASD is **stack-agnostic** — it works on any language, framework, or runtime. T
 
 - **Repeatable structure.** Every sprint follows the same 9 phases — no improvisation, no forgotten steps.
 - **Documentation that stays alive.** Persistent design docs (concept, stack, ADRs, UX) update on every sprint instead of rotting.
-- **Reviews that converge.** Iteration severity floor stops reviewers from nitpicking the same low-severity issue forever.
+- **Reviews that converge.** Iteration severity floor stops reviewers from nitpicking the same low-severity issue forever. Each iteration dispatches reviewers with clean context, so verdicts aren't biased by the authoring that produced the artifact.
 - **Brownfield-friendly.** The audit phase reads any existing docs and code (in any format and location) and reverse-engineers them into the workflow's structure.
 - **One source of truth.** SSoT iron rule is enforced by a dedicated Documentation reviewer.
 - **Subsystem-aware.** Optional LikeC4 (or Mermaid) registry organises persistent docs per subsystem.

@@ -80,6 +80,7 @@ Reviewer:
 - Never raise nitpick categories
 - Never raise issues against Known Intentional Limitations from accessibility.html
 - Never modify code, ux-spec, or DESIGN.md
+- Never read prior `iter-*/` review files — each iteration reviews with clean context (per `review-policy.md`)
 - Never call Bash
 
 ## Signals emitted
