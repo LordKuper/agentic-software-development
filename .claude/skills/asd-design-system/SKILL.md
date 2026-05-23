@@ -131,7 +131,7 @@ After all DESIGN.md sections approved:
 
 - EVERY `AskUserQuestion` call (question text, header, all option labels, all option descriptions, tab field labels and hints) MUST be rendered in `language.chat` from `.asd/config.yaml`. Applies to control options too (Lock in / Revise / Skip / Approve / etc.). Per `.asd/rules/language-policy.md` §AskUserQuestion options. Internal signal tokens (`COMPLETED`, `FAILED`, `QUESTION`, `ABORT`) stay English — they are machine signals.
 - NEVER author accessibility rules without checking concept's target users
-- NEVER write raw hex/px outside DESIGN.md — everywhere else must reference tokens
+- Token authoring + review bound by `.asd/rules/design-system.md`; UX shaping bound by `.asd/rules/ux-principles.md`
 - design-system.html MUST be regenerated whenever DESIGN.md changes; stale render = FAIL
 - `designmd-lint` MUST pass before write
 - Every component listed in DESIGN.md MUST have a live preview in design-system.html

@@ -27,6 +27,8 @@ UI reviewer. Checks ux-spec drafts against DESIGN.md and accessibility baseline 
 - `.asd/rules/artifact-layout.md`
 - `.asd/rules/language-policy.md`
 - `.asd/rules/code-style.md` (impl-review phase)
+- `.asd/rules/design-system.md`
+- `.asd/rules/ux-principles.md`
 - `.asd/project/custom-rules.md` (if exists)
 
 ## Inputs
@@ -62,9 +64,11 @@ Reviewer:
 
 ## Review rubric
 
-- **Token usage**: no raw hex, px, em, or rem in mockups or UI code; all visual values cite DESIGN.md tokens
-- **Component fidelity**: UI matches ux-spec mockup structure and states (empty, loading, error)
+- **Token usage**: per `design-system.md` §6
+- **Token comment**: per `design-system.md` §4
+- **Component fidelity**: UI matches ux-spec mockup structure and states (empty, loading, error); disabled state per `design-system.md` §7
 - **Design system completeness**: every component used exists in DESIGN.md, no ad-hoc components
+- **UX principles**: readability, hierarchy, progressive disclosure, cross-theme consistency per `ux-principles.md`
 - **Accessibility**: rules from accessibility.html applied (visual, motor, cognitive, auditory, platform integration); Known Intentional Limitations respected (no false reports against declared exclusions)
 
 ## Do's

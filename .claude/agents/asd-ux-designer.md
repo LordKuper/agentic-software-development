@@ -23,6 +23,8 @@ UX designer. Owns ux flows, ui mockups, design system source (DESIGN.md), render
 
 - `.asd/rules/core.md`
 - `.asd/rules/design-principles.md`
+- `.asd/rules/design-system.md`
+- `.asd/rules/ux-principles.md`
 - `.asd/rules/sprint-lifecycle.md` (design + design-promote phases)
 - `.asd/rules/checkpoints.md`
 - `.asd/rules/artifact-layout.md`

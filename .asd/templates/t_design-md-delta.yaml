@@ -4,6 +4,7 @@
 add:
   - path: {{token path, e.g. colors.primary}}
     new_value: {{value}}
+    usage: {{where + when used, one line — required, becomes inline YAML comment in DESIGN.md per design-system.md §4}}
     reason: {{why}}
     affects_components: []      # optional
     breaking: false             # optional
@@ -11,6 +12,7 @@ add:
 update:
   - path: {{token path}}
     new_value: {{new value}}
+    usage: {{where + when used — required if missing or stale}}
     reason: {{why}}
     affects_components: []
     breaking: false

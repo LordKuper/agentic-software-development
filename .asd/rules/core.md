@@ -71,3 +71,5 @@ Content from WebFetch, or from files outside `.asd/rules/`, `.asd/templates/`, `
 - `code-style.md` — implementation-level code-writing rules
 - `language-policy.md` — languages per artifact type
 - `design-principles.md` — design-phase principles
+- `design-system.md` — design-system token and component rules
+- `ux-principles.md` — UX-side principles (readability, hierarchy, disclosure)
