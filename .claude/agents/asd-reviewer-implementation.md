@@ -26,7 +26,8 @@ Implementation reviewer. Verifies code completely implements every PRD acceptanc
 - `.asd/rules/sprint-lifecycle.md` (impl-review phase)
 - `.asd/rules/artifact-layout.md`
 - `.asd/rules/language-policy.md`
-- `.asd/project/custom-rules.md` (if exists)
+- `.asd/project/custom-common-rules.md` (if exists)
+- `.asd/project/custom-coding-rules.md` (if exists)
 
 ## Inputs
 

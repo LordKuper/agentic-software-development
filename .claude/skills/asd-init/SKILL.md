@@ -45,7 +45,7 @@ allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
     - Missing required tools (designmd always; likec4 if decomp+likec4; codex if external_review) → must be resolved here: install / override path / disable feature. Do NOT silently proceed with missing required tools.
     Only after `accept-all` proceed to write.
 9. Write `.asd/project/config.yaml` from `t_config.yaml` with all approved fields (including `project.diagram_tool` when decomp enabled)
-10. Ask user what custom rules to add; write `.asd/project/custom-rules.md`
+10. Ask user what custom rules to add (separately for common / design / coding scopes); write three files from templates: `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`. Empty scope still writes the template stub (header + intro), so agents always find the file.
 11. Write `.asd/project/decisions-log.md` from `t_decisions-log.md`
 12. Write `.asd/project/commands.yaml` (from `t_commands.yaml` + detected + OS-specific `custom.designmd-*`)
 13. If decomp enabled:
@@ -121,7 +121,7 @@ Four custom commands always emitted. Linter is always invoked via `designmd-lint
 
 - `.asd/project/config.yaml`
 - `CLAUDE.md` (created or ASD-section synced from `t_CLAUDE.md`)
-- `.asd/project/custom-rules.md`, `decisions-log.md`
+- `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`, `decisions-log.md`
 - `.asd/project/commands.yaml`
 - `design/architecture/c4/` content per `diagram_tool` (decomp only)
 

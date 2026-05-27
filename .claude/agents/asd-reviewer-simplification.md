@@ -28,7 +28,9 @@ Simplification reviewer. Detects over-engineering against the explicit checklist
 - `.asd/rules/artifact-layout.md`
 - `.asd/rules/language-policy.md`
 - `.asd/rules/code-style.md` (impl-review phase)
-- `.asd/project/custom-rules.md` (if exists)
+- `.asd/project/custom-common-rules.md` (if exists)
+- `.asd/project/custom-design-rules.md` (design-review phase, if exists)
+- `.asd/project/custom-coding-rules.md` (impl-review phase, if exists)
 
 ## Inputs
 

@@ -26,7 +26,7 @@ Sprint orchestrator. Routes phases, maintains state, gates approvals, archives s
 - `.asd/rules/git-strategy.md`
 - `.asd/rules/artifact-layout.md`
 - `.asd/rules/language-policy.md`
-- `.asd/project/custom-rules.md` (if exists)
+- `.asd/project/custom-common-rules.md` (if exists)
 
 ## Inputs
 

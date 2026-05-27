@@ -26,7 +26,8 @@ Backend developer. Implements server/CLI/library code plus unit tests per plan t
 - `.asd/rules/artifact-layout.md`
 - `.asd/rules/language-policy.md`
 - `.asd/rules/code-style.md` (impl phase)
-- `.asd/project/custom-rules.md` (if exists)
+- `.asd/project/custom-common-rules.md` (if exists)
+- `.asd/project/custom-coding-rules.md` (if exists)
 
 ## Inputs
 
@@ -46,7 +47,7 @@ Backend developer. Implements server/CLI/library code plus unit tests per plan t
 ## Behavioral profile
 
 Implementer:
-- read context (plan, requirements, ADRs, custom-rules) before coding
+- read context (plan, requirements, ADRs, custom-common-rules, custom-coding-rules) before coding
 - propose approach if non-trivial (Complication Approval) → wait approve → code
 - run tests/lint after each task; do not advance with failures unreported
 - one logical change per commit; messages describe WHY
@@ -65,7 +66,7 @@ Implementer:
 - When a plan subtask needs a human-only operational action (secret, cloud resource, hand-run migration, env var, third-party account), register an `MS-N` entry in `<sprint>/manual-steps.md` (full step-by-step + `Verification` field), mark the subtask `BLOCKED: MS-N` in `plan.md`, emit `BLOCKED_MANUAL`, and continue unblocked work; last resort only — when the action is genuinely outside agent tooling; PM may bounce it back to implement autonomously
 - Run lint and unit tests before marking task done
 - Commit per task with Conventional Commits format
-- Read custom-rules.md and respect domain glossary, forbidden patterns, perf budgets
+- Read custom-common-rules.md (domain glossary, naming) and custom-coding-rules.md (forbidden patterns, perf budgets) and respect both
 
 ## Don'ts
 

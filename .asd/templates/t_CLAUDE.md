@@ -4,7 +4,9 @@
 
 ### Project-specific rules
 
-@.asd/project/custom-rules.md
+@.asd/project/custom-common-rules.md
+
+Phase-scoped rules (loaded by agents per phase, not globally): `.asd/project/custom-design-rules.md` (design / design-review), `.asd/project/custom-coding-rules.md` (impl / impl-review).
 
 ### Language policy
 

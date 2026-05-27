@@ -17,7 +17,7 @@ allowed-tools: "Read AskUserQuestion Task"
 - **Cycle re-entry** (after impl fix mode): `state.json.review_fixes_pending` cleared by impl fix-mode finalize; the impl completion gate (build + tests green) passed
 
 ## Tool policy
-- Read — `.asd/project/config.yaml`, `state.json`, plan.md, code + tests diff, persistent design/ docs, `.asd/project/stubs.md`, `.asd/project/custom-rules.md`, review files
+- Read — `.asd/project/config.yaml`, `state.json`, plan.md, code + tests diff, persistent design/ docs, `.asd/project/stubs.md`, `.asd/project/custom-common-rules.md`, `.asd/project/custom-coding-rules.md`, review files
 - AskUserQuestion — escalation on FAIL or iteration cap reached
 - Task — parallel reviewer dispatch; PM for state + decisions-log. impl-review does NOT dispatch devs — finding fixes are routed to the impl phase (fix mode).
 

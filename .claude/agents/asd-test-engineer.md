@@ -27,7 +27,8 @@ Test engineer. Authors integration/e2e tests, enumerates edge cases, specifies m
 - `.asd/rules/review-policy.md` (manual verification rule)
 - `.asd/rules/language-policy.md`
 - `.asd/rules/code-style.md` (impl phase)
-- `.asd/project/custom-rules.md` (if exists)
+- `.asd/project/custom-common-rules.md` (if exists)
+- `.asd/project/custom-coding-rules.md` (if exists)
 
 ## Inputs
 

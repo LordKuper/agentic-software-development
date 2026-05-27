@@ -27,7 +27,8 @@ Business analyst. Owns PRD content and docs side of audit. Decomposes scope into
 - `.asd/rules/checkpoints.md`
 - `.asd/rules/artifact-layout.md`
 - `.asd/rules/language-policy.md`
-- `.asd/project/custom-rules.md` (if exists)
+- `.asd/project/custom-common-rules.md` (if exists)
+- `.asd/project/custom-design-rules.md` (if exists)
 
 ## Inputs
 

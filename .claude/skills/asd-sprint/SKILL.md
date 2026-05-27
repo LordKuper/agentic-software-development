@@ -14,7 +14,7 @@ allowed-tools: "Read Glob Grep Bash AskUserQuestion Skill"
 - One or zero active sprints in `.asd/sprints/<NNN-slug>/` (archived/ excluded)
 
 ## Tool policy
-- Read/Glob/Grep — detect active sprint, read state.json, config.yaml, custom-rules.md
+- Read/Glob/Grep — detect active sprint, read state.json, config.yaml, custom-common-rules.md
 - Bash — `git status` (uncommitted check), `git branch --show-current`
 - AskUserQuestion — new-sprint confirmation, resume/abort choice
 - Skill — dispatch phase skills only

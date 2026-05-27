@@ -27,7 +27,9 @@ External review wrapper. Runs Codex CLI in parallel with internal reviewers, nor
 - `.asd/rules/sprint-lifecycle.md` (design-review + impl-review)
 - `.asd/rules/artifact-layout.md`
 - `.asd/rules/language-policy.md`
-- `.asd/project/custom-rules.md` (if exists)
+- `.asd/project/custom-common-rules.md` (if exists)
+- `.asd/project/custom-design-rules.md` (design-review phase, if exists)
+- `.asd/project/custom-coding-rules.md` (impl-review phase, if exists)
 
 ## Inputs
 
@@ -36,7 +38,7 @@ External review wrapper. Runs Codex CLI in parallel with internal reviewers, nor
 - prompt template:
   - design-review → `.asd/templates/external-review/t_prompt-external-design.md`
   - impl-review → `.asd/templates/external-review/t_prompt-external-impl.md`
-- context for prompt slots: language.docs, concept/stack/custom-rules paths, accessibility baseline, backward_compat, commands
+- context for prompt slots: language.docs, concept/stack/custom-common-rules + phase-scoped custom rules paths, accessibility baseline, backward_compat, commands
 - diff payload:
   - design-review iter 1: full content of `<sprint>/design/` files
   - design-review iter 2+: per-file diff since last iteration snapshot

@@ -28,14 +28,15 @@ Quality reviewer. Scans code and tests for bugs, security issues, best-practice 
 - `.asd/rules/artifact-layout.md`
 - `.asd/rules/language-policy.md`
 - `.asd/rules/code-style.md` (impl-review phase)
-- `.asd/project/custom-rules.md` (if exists)
+- `.asd/project/custom-common-rules.md` (if exists)
+- `.asd/project/custom-coding-rules.md` (if exists)
 
 ## Inputs
 
 - diff payload (iter 1: `git diff <base>...HEAD`; iter 2+: `git diff` + last commit)
 - `design/architecture/adr/<subsystem>/` (decisions for contract checks)
 - `design/architecture/stack.html` (stack constraints)
-- `.asd/project/custom-rules.md` (forbidden patterns, security policy)
+- `.asd/project/custom-coding-rules.md` (forbidden patterns, security policy)
 - iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from the dispatching phase skill
 
 ## Outputs

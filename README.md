@@ -213,7 +213,9 @@ your-project/
 │   ├── project/
 │   │   ├── config.yaml              # workflow settings
 │   │   ├── commands.yaml            # build/test/lint/run + design.md lint
-│   │   ├── custom-rules.md          # project-specific rules (you edit)
+│   │   ├── custom-common-rules.md   # universal rules — all agents, all phases
+│   │   ├── custom-design-rules.md   # design / design-review rules
+│   │   ├── custom-coding-rules.md   # impl / impl-review rules (incl. perf budgets)
 │   │   ├── decisions-log.md         # append-only chronology of approved decisions
 │   │   └── stubs.md                 # project-global TODO registry
 │   └── sprints/
@@ -288,7 +290,13 @@ Enables External Review in parallel with internal reviewers. ASD auto-skips and 
 
 ### Custom rules
 
-`/asd-init` creates `.asd/project/custom-rules.md`. Add anything project-specific: naming conventions, forbidden libraries, domain glossary, compliance requirements, performance budgets. Every agent reads this file alongside the standard rules.
+`/asd-init` creates three scoped rule files in `.asd/project/`. Agents read only what matches their phase, keeping irrelevant rules out of context:
+
+- `custom-common-rules.md` — universal (domain glossary, naming, compliance). Read by every agent in every phase; @-included from `CLAUDE.md`.
+- `custom-design-rules.md` — design / design-review only (PRD format, ADR sections, UX constraints). Read by `asd-ba`, `asd-ux-designer`, `asd-architect`, design-review reviewers, and external review (design).
+- `custom-coding-rules.md` — impl / impl-review only (forbidden libraries, perf budgets, security policy, test thresholds). Read by dev/test agents, impl-review reviewers, and external review (impl).
+
+Reviewers active in both phases (`documentation`, `ui`, `simplification`, `external-review`) load the phase-scoped file matching the dispatching phase.
 
 ### Hooks
 

@@ -26,7 +26,8 @@ Frontend developer. Implements UI code and components plus unit tests per plan t
 - `.asd/rules/artifact-layout.md`
 - `.asd/rules/language-policy.md`
 - `.asd/rules/code-style.md` (impl phase)
-- `.asd/project/custom-rules.md` (if exists)
+- `.asd/project/custom-common-rules.md` (if exists)
+- `.asd/project/custom-coding-rules.md` (if exists)
 
 ## Inputs
 

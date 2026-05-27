@@ -28,7 +28,9 @@ Documentation reviewer. Reviews design drafts in design-review and code-vs-persi
 - `.asd/rules/checkpoints.md`
 - `.asd/rules/artifact-layout.md` (SSoT iron rule, document responsibility, provenance)
 - `.asd/rules/language-policy.md`
-- `.asd/project/custom-rules.md` (if exists)
+- `.asd/project/custom-common-rules.md` (if exists)
+- `.asd/project/custom-design-rules.md` (design-review phase, if exists)
+- `.asd/project/custom-coding-rules.md` (impl-review phase, if exists)
 
 ## Inputs
 
@@ -66,7 +68,7 @@ Reviewer:
 - **Provenance**: `provenance` field correct (`original` default; `reverse-engineered` or `migrated` with `source`); provenance badge omitted when `original`
 - **Traceability**: PRD ACs map to ADRs (where architectural choice involved) and to code (in impl-review)
 - **Persistent actuality (impl-review)**: stack, commands, api, adr/, requirements/ reflect what code actually does; no drift
-- **Custom rules consistency**: respect custom-rules.md domain glossary, naming, conventions
+- **Custom rules consistency**: respect custom-common-rules.md domain glossary/naming and the phase-scoped file (custom-design-rules.md in design-review, custom-coding-rules.md in impl-review)
 
 ## Do's
 

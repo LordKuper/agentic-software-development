@@ -16,7 +16,7 @@ allowed-tools: "Read AskUserQuestion Task"
 - **Fix mode**: `state.json.review_fixes_pending` is set to an `iter-NN` value; `<sprint>/reviews/impl/iter-NN/` reviewer files exist
 
 ## Tool policy
-- Read — `.asd/project/config.yaml`, `state.json`, `plan.md`, `<sprint>/reviews/impl/iter-NN/` (fix mode), persistent design/ docs, `.asd/project/custom-rules.md`, `.asd/project/stubs.md`, `<sprint>/manual-steps.md`
+- Read — `.asd/project/config.yaml`, `state.json`, `plan.md`, `<sprint>/reviews/impl/iter-NN/` (fix mode), persistent design/ docs, `.asd/project/custom-common-rules.md`, `.asd/project/custom-coding-rules.md`, `.asd/project/stubs.md`, `<sprint>/manual-steps.md`
 - AskUserQuestion — escalation only (see Execution mode)
 - Task — dispatch devs per task owner / finding owner; PM for state + assessment + decisions-log
 
@@ -64,7 +64,7 @@ Devs do **not** pause the user for routine "non-trivial approach" decisions. Wit
    - parallel where independent (caller schedules concurrent Task calls)
    - per task: dispatch to assigned dev (`asd-backend-dev` | `asd-frontend-dev` | `asd-test-engineer`) via Task with payload:
      - initial mode — Task block excerpt (title + subtasks + dependencies); fix mode — the grouped finding list (each finding's severity, location, description, suggested fix; plus the user-approved change note for accepted FAIL findings)
-     - relevant context paths (PRD AC-N referenced, ADRs, ux-spec, DESIGN.md, accessibility, stack, commands.yaml, tech-reference/, custom-rules.md; fix mode also: the reviewer files in `reviews/impl/iter-NN/`)
+     - relevant context paths (PRD AC-N referenced, ADRs, ux-spec, DESIGN.md, accessibility, stack, commands.yaml, tech-reference/, custom-common-rules.md, custom-coding-rules.md; fix mode also: the reviewer files in `reviews/impl/iter-NN/`)
      - `language.chat`, `language.docs`
      - instruction:
        - read context first

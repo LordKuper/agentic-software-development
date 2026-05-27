@@ -17,7 +17,7 @@ Performance reviewer. Assesses code against perf budgets and detects regressions
 - **Scope**: read-only review of code and tests for performance issues during impl-review.
 - **Authority**: produces verdict and findings; never modifies code.
 - **Approval triggers**: rare — perf budget interpretation ambiguity.
-- **Stop conditions**: code under review missing → ABORT; no perf budgets defined in `.asd/project/custom-rules.md` → emit APPROVE with note "no budgets to enforce".
+- **Stop conditions**: code under review missing → ABORT; no perf budgets defined in `.asd/project/custom-coding-rules.md` → emit APPROVE with note "no budgets to enforce".
 
 ## Mandatory rules
 
@@ -26,12 +26,13 @@ Performance reviewer. Assesses code against perf budgets and detects regressions
 - `.asd/rules/sprint-lifecycle.md` (impl-review phase)
 - `.asd/rules/artifact-layout.md`
 - `.asd/rules/language-policy.md`
-- `.asd/project/custom-rules.md` (perf budgets section)
+- `.asd/project/custom-common-rules.md` (if exists)
+- `.asd/project/custom-coding-rules.md` (perf budgets section)
 
 ## Inputs
 
 - diff payload (iter 1: full sprint diff; iter 2+: incremental)
-- perf budgets from `.asd/project/custom-rules.md`
+- perf budgets from `.asd/project/custom-coding-rules.md`
 - `design/architecture/adr/` (perf-related ADRs)
 - `design/architecture/stack.html` (stack constraints)
 - test results showing perf measurements (when available)
@@ -56,15 +57,15 @@ Reviewer:
 
 ## Review rubric
 
-- **Budget compliance**: latency, memory, throughput against project budgets from custom-rules.md
+- **Budget compliance**: latency, memory, throughput against project budgets from custom-coding-rules.md
 - **Anti-patterns**: n+1 queries; sync IO on hot path; unbounded allocations; copy-on-large-collection; deep object cloning; unneeded serialize/parse roundtrips; blocking work on UI thread
 - **Algorithmic complexity**: nested loops on user-input-sized collections; naive search where index or map exists; quadratic-on-list when streaming/lazy is possible
-- **Regression**: compare to baseline (when available); flag deltas exceeding tolerance from custom-rules.md
+- **Regression**: compare to baseline (when available); flag deltas exceeding tolerance from custom-coding-rules.md
 - **Hot path identification**: heuristic flagging of hot paths lacking measurement or caching
 
 ## Do's
 
-- Cite budget source from `custom-rules.md` for every budget finding
+- Cite budget source from `custom-coding-rules.md` for every budget finding
 - Cite file:line for every finding
 - Suggest concrete fix per finding (specific algorithm, caching point, batching strategy)
 - Apply iteration severity floor

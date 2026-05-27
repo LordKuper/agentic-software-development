@@ -14,7 +14,9 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │   ├── project/
 │   │   ├── config.yaml
 │   │   ├── commands.yaml
-│   │   ├── custom-rules.md
+│   │   ├── custom-common-rules.md
+│   │   ├── custom-design-rules.md
+│   │   ├── custom-coding-rules.md
 │   │   ├── decisions-log.md
 │   │   └── stubs.md
 │   └── sprints/

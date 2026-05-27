@@ -2,7 +2,7 @@
 responsibility:
   owns: append-only chronology of approved decisions across project lifetime
   excludes: sprint state, code review notes, custom rules
-  delegates_to: .asd/sprints/ (sprint state), reviews/ (review notes), custom-rules.md (rules)
+  delegates_to: .asd/sprints/ (sprint state), reviews/ (review notes), custom-common-rules.md / custom-design-rules.md / custom-coding-rules.md (rules)
 ---
 
 # Decisions Log
