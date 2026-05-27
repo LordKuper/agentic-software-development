@@ -16,7 +16,7 @@ allowed-tools: "Read Glob AskUserQuestion Task Skill"
 - `state.json.phase` advanced from `audit`
 
 ## Tool policy
-- Read — `.asd/config.yaml`, `state.json`, `sprint.md`, `audit.md`, any audit-produced reverse/migrated drafts in `<sprint>/design/`
+- Read — `.asd/project/config.yaml`, `state.json`, `sprint.md`, `audit.md`, any audit-produced reverse/migrated drafts in `<sprint>/design/`
 - Glob — design-system gate: check existence of `design/ux/DESIGN.md`, `design/ux/design-system.html`, `design/ux/accessibility.html`
 - AskUserQuestion — rare, only on phase-level user escalation
 - Task — sequential dispatch: BA, UX Designer, Architect, optional Architect (c4-full); plus PM for state update
@@ -24,7 +24,7 @@ allowed-tools: "Read Glob AskUserQuestion Task Skill"
 
 ## Workflow
 
-1. Read `.asd/config.yaml` (`project.subsystem_decomposition`, `project.diagram_tool`, `language.chat`, `language.docs`)
+1. Read `.asd/project/config.yaml` (`project.subsystem_decomposition`, `project.diagram_tool`, `language.chat`, `language.docs`)
 2. Read `<sprint>/state.json`, `<sprint>/sprint.md`, `<sprint>/audit.md`
 3. List existing drafts in `<sprint>/design/` (from audit phase, with `provenance` flag)
 4. Dispatch `asd-pm` via Task: update `state.json` (phase=design)

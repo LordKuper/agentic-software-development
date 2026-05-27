@@ -10,12 +10,12 @@ allowed-tools: "Read Glob Grep AskUserQuestion Task"
 # ASD Stack
 
 ## Preconditions
-- `.asd/config.yaml` exists (run `/asd-init` first)
+- `.asd/project/config.yaml` exists (run `/asd-init` first)
 - `design/product/concept.html` exists (run `/asd-concept` first; concept is mandatory input)
 - No active sprint required
 
 ## Tool policy
-- Read — `.asd/config.yaml`, concept.html, existing stack.html, manifests, source files
+- Read — `.asd/project/config.yaml`, concept.html, existing stack.html, manifests, source files
 - Glob/Grep — silent scan for brownfield signals (manifests, lockfiles, Dockerfile, CI configs)
 - AskUserQuestion — variant choice, constraints tabs, section approvals, lock-in/revise loop
 - Task — dispatch `asd-architect` (author, WebFetch verify versions, create tech-references), `asd-pm` (decisions-log)

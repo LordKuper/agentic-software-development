@@ -10,13 +10,13 @@ allowed-tools: "Read Glob Grep AskUserQuestion Task"
 # ASD Design System
 
 ## Preconditions
-- `.asd/config.yaml` exists (run `/asd-init` first)
+- `.asd/project/config.yaml` exists (run `/asd-init` first)
 - `design/product/concept.html` exists (run `/asd-concept` first; concept seeds visual direction)
 - `design/architecture/stack.html` exists (run `/asd-stack` first; stack constrains UI platform — web/native/cli)
 - No active sprint required
 
 ## Tool policy
-- Read — `.asd/config.yaml`, concept.html, stack.html, existing DESIGN.md/design-system.html/accessibility.html, source CSS/components, theme files
+- Read — `.asd/project/config.yaml`, concept.html, stack.html, existing DESIGN.md/design-system.html/accessibility.html, source CSS/components, theme files
 - Glob/Grep — silent scan for brownfield signals (CSS, SCSS, Tailwind config, theme.ts, styled-components, design exports)
 - AskUserQuestion — variant choice, constraints, section approvals, lock-in/revise loop
 - Task — dispatch `asd-ux-designer` (author, WebFetch spec, lint, render previews, accessibility baseline), `asd-pm` (decisions-log)
@@ -129,7 +129,7 @@ After all DESIGN.md sections approved:
 
 ## Hard rules
 
-- EVERY `AskUserQuestion` call (question text, header, all option labels, all option descriptions, tab field labels and hints) MUST be rendered in `language.chat` from `.asd/config.yaml`. Applies to control options too (Lock in / Revise / Skip / Approve / etc.). Per `.asd/rules/language-policy.md` §AskUserQuestion options. Internal signal tokens (`COMPLETED`, `FAILED`, `QUESTION`, `ABORT`) stay English — they are machine signals.
+- EVERY `AskUserQuestion` call (question text, header, all option labels, all option descriptions, tab field labels and hints) MUST be rendered in `language.chat` from `.asd/project/config.yaml`. Applies to control options too (Lock in / Revise / Skip / Approve / etc.). Per `.asd/rules/language-policy.md` §AskUserQuestion options. Internal signal tokens (`COMPLETED`, `FAILED`, `QUESTION`, `ABORT`) stay English — they are machine signals.
 - NEVER author accessibility rules without checking concept's target users
 - Token authoring + review bound by `.asd/rules/design-system.md`; UX shaping bound by `.asd/rules/ux-principles.md`
 - design-system.html MUST be regenerated whenever DESIGN.md changes; stale render = FAIL

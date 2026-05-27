@@ -17,13 +17,13 @@ allowed-tools: "Read AskUserQuestion Task"
 - `state.json.phase` advanced from `design`
 
 ## Tool policy
-- Read — `.asd/config.yaml`, `state.json`, drafts in `<sprint>/design/`, review files
+- Read — `.asd/project/config.yaml`, `state.json`, drafts in `<sprint>/design/`, review files
 - AskUserQuestion — escalation on FAIL or iteration cap reached
 - Task — parallel reviewer dispatch; sequential creator dispatch for autofix; PM for state + decisions-log
 
 ## Workflow
 
-1. Read `.asd/config.yaml` (`review.external_review`, `review.iterations_low/medium/high/critical`, `language.chat`, `language.docs`)
+1. Read `.asd/project/config.yaml` (`review.external_review`, `review.iterations_low/medium/high/critical`, `language.chat`, `language.docs`)
 2. Read `<sprint>/state.json` → set `phase=design-review`, increment `reviews.design.iteration` (it is `0` at sprint creation, so `1` on first entry; see `sprint-lifecycle.md` "Review iteration counters" for increment and rollback-reset rules). `NN` = the resulting value, zero-padded.
 3. Compute severity floor for current iteration per `review-policy.md` cumulative-budget algorithm (uses `reviews.design.iteration`)
 4. Create folder `<sprint>/reviews/design/iter-NN/` if absent

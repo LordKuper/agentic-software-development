@@ -10,11 +10,11 @@ allowed-tools: "Read Glob Grep AskUserQuestion Task"
 # ASD Concept
 
 ## Preconditions
-- `.asd/config.yaml` exists (run `/asd-init` first)
+- `.asd/project/config.yaml` exists (run `/asd-init` first)
 - No active sprint required (concept is a project-lifetime artefact)
 
 ## Tool policy
-- Read — `.asd/config.yaml`, existing concept.html, candidate brownfield sources
+- Read — `.asd/project/config.yaml`, existing concept.html, candidate brownfield sources
 - Glob/Grep — silent scan for brownfield signals + candidate content
 - AskUserQuestion — variant choice (only when no silent signal), lens choice, section approvals, lock-in/revise loop
 - Task — dispatch `asd-ba` (author), `asd-pm` (decisions-log)

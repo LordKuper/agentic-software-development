@@ -16,7 +16,7 @@ allowed-tools: "Read AskUserQuestion Task"
 - **Fix mode**: `state.json.review_fixes_pending` is set to an `iter-NN` value; `<sprint>/reviews/impl/iter-NN/` reviewer files exist
 
 ## Tool policy
-- Read — `.asd/config.yaml`, `state.json`, `plan.md`, `<sprint>/reviews/impl/iter-NN/` (fix mode), persistent design/ docs, `.asd/project/custom-rules.md`, `.asd/project/stubs.md`, `<sprint>/manual-steps.md`
+- Read — `.asd/project/config.yaml`, `state.json`, `plan.md`, `<sprint>/reviews/impl/iter-NN/` (fix mode), persistent design/ docs, `.asd/project/custom-rules.md`, `.asd/project/stubs.md`, `<sprint>/manual-steps.md`
 - AskUserQuestion — escalation only (see Execution mode)
 - Task — dispatch devs per task owner / finding owner; PM for state + assessment + decisions-log
 
@@ -48,7 +48,7 @@ Devs do **not** pause the user for routine "non-trivial approach" decisions. Wit
 
 ## Workflow
 
-1. Read `.asd/config.yaml` (`backward_compat`, `system.tools`, `language.chat`, `language.docs`)
+1. Read `.asd/project/config.yaml` (`backward_compat`, `system.tools`, `language.chat`, `language.docs`)
 2. Read `<sprint>/state.json` → **detect mode** from `review_fixes_pending`:
    - null/absent → **initial mode**; confirm `plan.md` approved
    - set to `iter-NN` → **fix mode**; confirm `<sprint>/reviews/impl/iter-NN/` exists (else `ABORT — precondition not met: reviews/impl/iter-NN missing`)

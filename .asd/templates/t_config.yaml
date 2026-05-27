@@ -54,7 +54,7 @@ system:
     likec4: "likec4"
 
     # @google/design.md tooling availability flag.
-    # Actual commands live in design/architecture/commands.yaml as
+    # Actual commands live in .asd/project/commands.yaml as
     # `designmd-install`, `designmd-lint`, `designmd-diff`, `designmd-export`
     # (OS-specific; written by /asd-init).
     # Set to false to disable design.md tooling (agents still read/write DESIGN.md manually).

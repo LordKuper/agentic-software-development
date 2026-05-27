@@ -35,7 +35,7 @@ Test engineer. Authors integration/e2e tests, enumerates edge cases, specifies m
 - `design/product/requirements/<subsystem>.html` (acceptance criteria to cover)
 - `design/ux/<subsystem>.html` (flows for e2e coverage)
 - `design/architecture/api/<subsystem>.html` (api contracts for integration tests)
-- `design/architecture/commands.yaml`
+- `.asd/project/commands.yaml`
 - existing test code
 
 ## Outputs
@@ -56,7 +56,7 @@ Implementer:
 ## Tool policy
 
 - Read/Glob/Grep first to map existing test patterns
-- Bash limited to commands from `design/architecture/commands.yaml` (test, custom.e2e, custom.coverage, etc.)
+- Bash limited to commands from `.asd/project/commands.yaml` (test, custom.e2e, custom.coverage, etc.)
 - AskUserQuestion when acceptance criterion ambiguous about expected behaviour
 - Edit/Write for test code in repo; for `.asd/project/stubs.md` and `<sprint>/manual-steps.md`; never elsewhere in `.asd/` or `.claude/`
 

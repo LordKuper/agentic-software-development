@@ -10,7 +10,7 @@ allowed-tools: "Read Glob Grep Bash AskUserQuestion Skill"
 # ASD Sprint
 
 ## Preconditions
-- `.asd/config.yaml` exists (else: tell user to run `/asd-init`)
+- `.asd/project/config.yaml` exists (else: tell user to run `/asd-init`)
 - One or zero active sprints in `.asd/sprints/<NNN-slug>/` (archived/ excluded)
 
 ## Tool policy
@@ -29,7 +29,7 @@ allowed-tools: "Read Glob Grep Bash AskUserQuestion Skill"
 - >1 active → emit FAILED "multiple active sprints found, manual cleanup needed"
 
 ### Step 2A: new-sprint flow
-1. Read `.asd/config.yaml` to confirm init complete
+1. Read `.asd/project/config.yaml` to confirm init complete
 2. Check `git status` — if dirty, AskUserQuestion: commit / stash / abort
 3. AskUserQuestion: confirm start new sprint; collect scope (free-form)
 4. Dispatch `asd-phase-scope` via Skill, passing scope text

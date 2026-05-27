@@ -32,7 +32,7 @@ Architect. Owns ADRs, C4 model, stack/api persistent docs, code side of audit. D
 
 - `<sprint>/design/prd.html` (requirements)
 - `<sprint>/design/ux-spec.html` (ux flows informing architecture)
-- existing `design/architecture/` docs (stack, commands.yaml, c4 model, adrs, api)
+- existing `design/architecture/` docs (stack, c4 model, adrs, api) and `.asd/project/commands.yaml`
 - existing source code (for audit)
 - backward_compat policy from config
 

@@ -11,12 +11,12 @@ allowed-tools: "Read Glob Bash AskUserQuestion Task"
 # ASD Phase: Scope
 
 ## Preconditions
-- `.asd/config.yaml` exists
+- `.asd/project/config.yaml` exists
 - No active sprint OR user explicitly re-runs scope for current sprint
 - `git status` clean (else: bail with FAILED)
 
 ## Tool policy
-- Read — `.asd/config.yaml`, `.asd/sprints/` listing
+- Read — `.asd/project/config.yaml`, `.asd/sprints/` listing
 - Glob — count existing sprints (active + archived) for next NNN
 - Bash — `git status`, `git rev-parse`, `git checkout -b <branch>`
 - AskUserQuestion — only if raw scope text was not provided by `asd-sprint`
@@ -24,7 +24,7 @@ allowed-tools: "Read Glob Bash AskUserQuestion Task"
 
 ## Workflow
 
-1. Read `.asd/config.yaml` (`git.base_branch`, `git.branch_pattern`)
+1. Read `.asd/project/config.yaml` (`git.base_branch`, `git.branch_pattern`)
 2. Verify `git status` clean; if dirty → FAILED
 3. Count existing sprints (`.asd/sprints/*/` + `.asd/sprints/archived/*/`) → NNN = max + 1, zero-padded
 4. Derive slug from raw scope text (kebab-case, ≤30 chars) — provisional, may change after refinement

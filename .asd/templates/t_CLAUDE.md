@@ -17,7 +17,7 @@
 
 ### Configuration
 
-Workflow settings live in `.asd/config.yaml`.
+Workflow settings live in `.asd/project/config.yaml`.
 
 ### Folder structure
 

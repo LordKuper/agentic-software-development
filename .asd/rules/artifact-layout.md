@@ -9,10 +9,11 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 ```
 <repo root>/
 ├── .asd/
-│   ├── config.yaml
 │   ├── rules/
 │   ├── templates/
 │   ├── project/
+│   │   ├── config.yaml
+│   │   ├── commands.yaml
 │   │   ├── custom-rules.md
 │   │   ├── decisions-log.md
 │   │   └── stubs.md
@@ -40,7 +41,6 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │   │   └── requirements/<subsystem>.html
 │   ├── architecture/
 │   │   ├── stack.html
-│   │   ├── commands.yaml
 │   │   ├── c4/                          # subsystem registry + views; layout per project.diagram_tool
 │   │   │   # likec4 mode: model/*.c4, views.c4, dist/
 │   │   │   # mermaid mode: subsystems.yaml, architecture.html
@@ -64,7 +64,6 @@ design/
 ├── product/{concept.html, requirements.html}
 ├── architecture/
 │   ├── stack.html
-│   ├── commands.yaml
 │   ├── adr/adr-NNNN-<slug>.html
 │   ├── api.html
 │   └── tech-reference/<tech>-<version>.md

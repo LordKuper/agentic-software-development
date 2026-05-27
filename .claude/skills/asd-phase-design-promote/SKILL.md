@@ -16,13 +16,13 @@ allowed-tools: "Read AskUserQuestion Task"
 - `state.json.phase` advanced from `design-review`
 
 ## Tool policy
-- Read — `.asd/config.yaml`, `state.json`, sprint design drafts, audit.md, persistent `design/`
+- Read — `.asd/project/config.yaml`, `state.json`, sprint design drafts, audit.md, persistent `design/`
 - AskUserQuestion — rare, phase-level escalation only (PM and creators handle per-doc/per-subsystem approvals)
 - Task — dispatch PM (orchestrator), Architect, BA, UX Designer (domain promoters)
 
 ## Workflow
 
-1. Read `.asd/config.yaml` (`project.subsystem_decomposition`, `project.diagram_tool`, `system.tools.likec4`, `system.tools.designmd`, `language.chat`, `language.docs`)
+1. Read `.asd/project/config.yaml` (`project.subsystem_decomposition`, `project.diagram_tool`, `system.tools.likec4`, `system.tools.designmd`, `language.chat`, `language.docs`)
 2. Read `<sprint>/state.json` → confirm design-review DoD met
 3. Read sprint drafts + audit migration plan
 4. **PM orchestration step** — dispatch `asd-pm` via Task:

@@ -17,13 +17,13 @@ allowed-tools: "Read AskUserQuestion Task"
 - **Cycle re-entry** (after impl fix mode): `state.json.review_fixes_pending` cleared by impl fix-mode finalize; the impl completion gate (build + tests green) passed
 
 ## Tool policy
-- Read — `.asd/config.yaml`, `state.json`, plan.md, code + tests diff, persistent design/ docs, `.asd/project/stubs.md`, `.asd/project/custom-rules.md`, review files
+- Read — `.asd/project/config.yaml`, `state.json`, plan.md, code + tests diff, persistent design/ docs, `.asd/project/stubs.md`, `.asd/project/custom-rules.md`, review files
 - AskUserQuestion — escalation on FAIL or iteration cap reached
 - Task — parallel reviewer dispatch; PM for state + decisions-log. impl-review does NOT dispatch devs — finding fixes are routed to the impl phase (fix mode).
 
 ## Workflow
 
-1. Read `.asd/config.yaml` (`review.external_review`, `review.iterations_low/medium/high/critical`, `backward_compat`, `language.chat`, `language.docs`)
+1. Read `.asd/project/config.yaml` (`review.external_review`, `review.iterations_low/medium/high/critical`, `backward_compat`, `language.chat`, `language.docs`)
 2. Read `<sprint>/state.json` → set `phase=impl-review`, increment `reviews.impl.iteration` (it is `0` at sprint creation, so `1` on first entry; +1 on every impl-review entry of the `impl⇄impl-review` cycle; the intervening `impl` fix-mode phase never touches it; see `sprint-lifecycle.md` "Review iteration counters" for increment and rollback-reset rules). `NN` = the resulting value, zero-padded.
 3. Compute severity floor for current iteration per `review-policy.md` cumulative-budget algorithm (uses `reviews.impl.iteration`)
 4. Create folder `<sprint>/reviews/impl/iter-NN/` if absent

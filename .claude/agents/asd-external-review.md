@@ -31,7 +31,7 @@ External review wrapper. Runs Codex CLI in parallel with internal reviewers, nor
 
 ## Inputs
 
-- `.asd/config.yaml` (`review.external_review`, `system.os`, `system.tools.codex_command`)
+- `.asd/project/config.yaml` (`review.external_review`, `system.os`, `system.tools.codex_command`)
 - phase, iteration, and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from the dispatching phase skill
 - prompt template:
   - design-review → `.asd/templates/external-review/t_prompt-external-design.md`

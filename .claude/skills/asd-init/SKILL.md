@@ -1,6 +1,6 @@
 ---
 name: asd-init
-description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Auto-detects build commands and external tools, collects config via AskUserQuestion, generates .asd/config.yaml and seeds infrastructure-only design/ docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
+description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Auto-detects build commands and external tools, collects config via AskUserQuestion, generates .asd/project/config.yaml and seeds infrastructure-only design/ docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 metadata:
   asd-role: init
   version: "0.1"
@@ -14,7 +14,7 @@ allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
 - Infra present: `.asd/rules/`, `.asd/templates/`, `.claude/`
 
 ## Modes
-- **Fresh**: no `.asd/config.yaml` → full setup
+- **Fresh**: no `.asd/project/config.yaml` → full setup
 - **Re-init**: config exists → diff editor
 
 ## Always first (both modes)
@@ -44,11 +44,10 @@ allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
     - `edit-section` → AskUserQuestion which section (os | tools | review | git | commands), collect new values, re-show proposal, loop until `accept-all`
     - Missing required tools (designmd always; likec4 if decomp+likec4; codex if external_review) → must be resolved here: install / override path / disable feature. Do NOT silently proceed with missing required tools.
     Only after `accept-all` proceed to write.
-9. Write `.asd/config.yaml` from `t_config.yaml` with all approved fields (including `project.diagram_tool` when decomp enabled)
+9. Write `.asd/project/config.yaml` from `t_config.yaml` with all approved fields (including `project.diagram_tool` when decomp enabled)
 10. Ask user what custom rules to add; write `.asd/project/custom-rules.md`
 11. Write `.asd/project/decisions-log.md` from `t_decisions-log.md`
-12. Seed infrastructure-only `design/` files (concept, stack, design-system handled by dedicated skills, NOT seeded here):
-    - `architecture/commands.yaml` (from `t_commands.yaml` + detected + OS-specific `custom.designmd-*`)
+12. Write `.asd/project/commands.yaml` (from `t_commands.yaml` + detected + OS-specific `custom.designmd-*`)
 13. If decomp enabled:
     - **likec4 mode**: seed `c4/model/main.c4`, `c4/views.c4` from templates; run `likec4 build` → `c4/dist/`
     - **mermaid mode**: seed `c4/subsystems.yaml` from `t_subsystems.yaml`; render `c4/architecture.html` with initial mermaid context view
@@ -62,7 +61,7 @@ allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
 
 ## Workflow (re-init)
 
-1. Read current `.asd/config.yaml`
+1. Read current `.asd/project/config.yaml`
 2. **Dump full current config to chat** in `language.chat` before any edit prompt. Render every field as a structured block. User MUST see complete current state before being asked what to change. Do NOT skip or summarise — full values verbatim.
 3. AskUserQuestion which sections to edit
 4. Per section: ask new value → add to pending change-set (do not write yet)
@@ -102,7 +101,7 @@ Rules:
 - Never touch content outside markers.
 - Trailing newline of template preserved.
 
-## OS-specific commands written to commands.yaml
+## OS-specific commands written to .asd/project/commands.yaml
 
 Four custom commands always emitted. Linter is always invoked via `designmd-lint`; `designmd-install` is a session-scoped prerequisite on Windows (no-op elsewhere).
 
@@ -120,10 +119,10 @@ Four custom commands always emitted. Linter is always invoked via `designmd-lint
 
 ## Artefacts produced
 
-- `.asd/config.yaml`
+- `.asd/project/config.yaml`
 - `CLAUDE.md` (created or ASD-section synced from `t_CLAUDE.md`)
 - `.asd/project/custom-rules.md`, `decisions-log.md`
-- `design/architecture/commands.yaml`
+- `.asd/project/commands.yaml`
 - `design/architecture/c4/` content per `diagram_tool` (decomp only)
 
 Concept, stack, and design system are NOT produced here; they are owned by `/asd-concept`, `/asd-stack`, and `/asd-design-system` respectively.

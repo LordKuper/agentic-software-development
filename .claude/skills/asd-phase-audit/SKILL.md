@@ -16,13 +16,13 @@ allowed-tools: "Read AskUserQuestion Task"
 - `state.json.phase` advanced from `scope`
 
 ## Tool policy
-- Read — `.asd/config.yaml`, `state.json`, `sprint.md`
+- Read — `.asd/project/config.yaml`, `state.json`, `sprint.md`
 - AskUserQuestion — only on user-facing escalation from agents
 - Task — dispatch `asd-ba`, `asd-architect`, `asd-pm` sequentially
 
 ## Workflow
 
-1. Read `.asd/config.yaml` (note `project.subsystem_decomposition`, `language.docs`)
+1. Read `.asd/project/config.yaml` (note `project.subsystem_decomposition`, `language.docs`)
 2. Read `<sprint>/state.json` — confirm phase predecessor done; phase will be set to `audit` by PM in step 6
 3. Read `<sprint>/sprint.md` (refined scope)
 4. Dispatch `asd-ba` via Task with payload:

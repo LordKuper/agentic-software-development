@@ -16,14 +16,14 @@ allowed-tools: "Read Glob Grep AskUserQuestion Task"
 - `state.json.phase` advanced from `impl-review`
 
 ## Tool policy
-- Read — `.asd/config.yaml`, `state.json`, plan.md, reviews/, `.asd/project/stubs.md`
+- Read — `.asd/project/config.yaml`, `state.json`, plan.md, reviews/, `.asd/project/stubs.md`
 - Glob/Grep — scan code for `// TODO(sprint-<NNN-slug>):` markers; verify against stubs.md
 - AskUserQuestion — final PR-opening confirmation, rollback on failure
 - Task — dispatch `asd-pm` for DoD check, PR creation, archival, decisions-log
 
 ## Workflow
 
-1. Read `.asd/config.yaml` (`git.base_branch`, `git.branch_pattern`, `git.gh_enabled`, `git.auto_pr`, `language.chat`, `language.docs`)
+1. Read `.asd/project/config.yaml` (`git.base_branch`, `git.branch_pattern`, `git.gh_enabled`, `git.auto_pr`, `language.chat`, `language.docs`)
 2. Read `<sprint>/state.json` → confirm impl-review DoD met
 3. Dispatch `asd-pm` via Task: update `state.json` (phase=pr)
 4. **DoD verification** — dispatch `asd-pm` via Task with payload (config, sprint paths, stubs path, commands.yaml):

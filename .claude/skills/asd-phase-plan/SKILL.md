@@ -16,15 +16,15 @@ allowed-tools: "Read AskUserQuestion Task"
 - `state.json.phase` advanced from `design-promote`
 
 ## Tool policy
-- Read — `.asd/config.yaml`, `state.json`, sprint.md, persistent design/ docs touched by sprint
+- Read — `.asd/project/config.yaml`, `state.json`, sprint.md, persistent design/ docs touched by sprint
 - AskUserQuestion — rare, phase-level escalation only (PM handles section approvals)
 - Task — dispatch `asd-pm` (author + state + decisions-log)
 
 ## Workflow
 
-1. Read `.asd/config.yaml` (`language.chat`, `language.docs`, `project.subsystem_decomposition`)
+1. Read `.asd/project/config.yaml` (`language.chat`, `language.docs`, `project.subsystem_decomposition`)
 2. Read `<sprint>/state.json` → confirm design-promote done
-3. Read `<sprint>/sprint.md`, persistent design/ docs referenced (per-subsystem files updated this sprint, plus shared concept.html, stack.html, commands.yaml, DESIGN.md, accessibility.html)
+3. Read `<sprint>/sprint.md`, persistent design/ docs referenced (per-subsystem files updated this sprint, plus shared concept.html, stack.html, DESIGN.md, accessibility.html) and `.asd/project/commands.yaml`
 4. Dispatch `asd-pm` via Task with payload:
    - sprint.md path, list of relevant persistent doc paths, `language.chat`, `language.docs`
    - template: `t_plan.md`

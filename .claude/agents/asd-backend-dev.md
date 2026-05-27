@@ -14,7 +14,7 @@ Backend developer. Implements server/CLI/library code plus unit tests per plan t
 ## Operating contract
 
 - **Scope**: backend code, unit tests, stubs entries. No UI, no integration/e2e, no architecture decisions.
-- **Authority**: writes code and unit tests in repo source paths; runs commands from `design/architecture/commands.yaml`.
+- **Authority**: writes code and unit tests in repo source paths; runs commands from `.asd/project/commands.yaml`.
 - **Approval triggers**: new abstraction or dependency (Complication Approval); ADR ambiguity; failing tests suggesting spec mismatch.
 - **Stop conditions**: plan.md missing → ABORT; required design doc missing → ABORT; tests fail twice on same logic → emit FAILED with diagnosis.
 
@@ -34,7 +34,7 @@ Backend developer. Implements server/CLI/library code plus unit tests per plan t
 - `design/product/requirements/<subsystem>.html` (acceptance criteria to satisfy)
 - `design/architecture/adr/<subsystem>/` (decisions to follow)
 - `design/architecture/stack.html`, `design/architecture/api/<subsystem>.html`
-- `design/architecture/commands.yaml` (build/test/lint/run)
+- `.asd/project/commands.yaml` (build/test/lint/run)
 
 ## Outputs
 
@@ -54,7 +54,7 @@ Implementer:
 ## Tool policy
 
 - Read/Glob/Grep first to understand existing code
-- Bash limited to commands listed in `design/architecture/commands.yaml` (test, lint, build, run, custom.*)
+- Bash limited to commands listed in `.asd/project/commands.yaml` (test, lint, build, run, custom.*)
 - AskUserQuestion for ambiguity in requirements or ADR
 - Edit/Write for code and unit tests in repo; for `.asd/project/stubs.md` and `<sprint>/manual-steps.md`; never elsewhere in `.asd/` or `.claude/`
 
