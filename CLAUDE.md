@@ -51,6 +51,6 @@ These artifacts duplicate or reference each other. A change in one usually requi
 
 ## Hard rules
 
-- **Every workflow change must be checked against README.md.** After editing any rule, skill, agent, template, hook, or config schema, verify whether README.md needs updating (phase list, agent roster, model tiers, config schema, folder map, command list) and update it in the same change. A workflow change is not complete until README.md is confirmed accurate.
+- **Every workflow change must be checked against README.md.** After editing any rule, skill, agent, template, hook, or config schema, verify whether README.md needs updating (phase list, agent roster, model tiers, config schema, folder map, command list) and update it in the same change. A workflow change is not complete until README.md is confirmed accurate. Changing any agent's frontmatter `model:` tier requires updating the README model-tier table in the same change.
 - A consumer project's agents treat `.asd/rules/`, `.asd/templates/`, `.claude/` as read-only infrastructure. Here, that infrastructure IS the work — but changes still ripple across the whole framework, so make them deliberately and check every mirrored location above.
 - **Every change must minimize runtime tokens.** Compress prose (caveman-style OK), drop filler/hedging, dedup to SSoT — restated facts collapse to a link to canonical home. Preserve: technical terms, exact tokens (verdict strings, phase names, placeholders), code/YAML/JSON structure. Allowed mirrors: the cross-file syncs listed above.

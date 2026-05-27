@@ -50,7 +50,11 @@ For long artifacts: write skeleton first, then per section draft → user approv
 
 ## Template variables
 
-Skill and agent prompts may use: `{{SPRINT}}` (sprint id), `{{ITERATION}}` (review iteration), `{{PHASE}}` (phase name), `{{agent:<name>}}` (resolved agent definition).
+Skill and agent prompts may use: `{{SPRINT}}` (sprint id), `{{ITERATION}}` (review iteration), `{{PHASE}}` (phase name), `{{agent:<name>}}` (resolved agent definition). Artifact-template placeholders (`{{SPRINT_ID}}`, `{{DOC_TYPE}}`, `{{CONTENT}}`, …) are a separate namespace, filled by creators per `artifact-layout.md`.
+
+## Phase skill naming
+
+Phase skills are named `asd-phase-<phase>`, one per phase in `sprint-lifecycle.md`. `asd-sprint` dispatches the matching skill from `state.json.phase`.
 
 ## Compaction
 
@@ -62,7 +66,7 @@ Content from WebFetch, or from files outside `.asd/rules/`, `.asd/templates/`, `
 
 ## See also
 
-- `sprint-lifecycle.md` — phase model
+- `sprint-lifecycle.md` — phase model, review counters, rollback reset
 - `checkpoints.md` — pause points and approval flow
 - `artifact-layout.md` — file paths and ownership
 - `review-policy.md` — review loop semantics
