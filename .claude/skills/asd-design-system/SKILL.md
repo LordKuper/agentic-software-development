@@ -84,8 +84,9 @@ For each section:
 
 After all DESIGN.md sections approved:
 - Designer runs `designmd-lint` via Bash (`commands.yaml` alias). On Windows, ensure `designmd-install` ran once this session.
-- Lint fail → designer fixes, re-lint
-- Lint pass → continue
+- Pass criteria per `.asd/rules/design-system.md` §11: ≥1 error OR ≥1 un-excluded warning = fail.
+- Fail → designer fixes, re-lint. For each persistent warning, AskUserQuestion to exclude; on approval record decision + rationale in DESIGN.md lint-exclusions block.
+- Clean pass → continue
 
 ## Phase 5 — design-system.html regeneration
 
@@ -133,7 +134,7 @@ After all DESIGN.md sections approved:
 - NEVER author accessibility rules without checking concept's target users
 - Token authoring + review bound by `.asd/rules/design-system.md`; UX shaping bound by `.asd/rules/ux-principles.md`
 - design-system.html MUST be regenerated whenever DESIGN.md changes; stale render = FAIL
-- `designmd-lint` MUST pass before write
+- `designmd-lint` MUST pass before write (clean pass per `.asd/rules/design-system.md` §11); warning exclusions need user approval + recorded rationale
 - Every component listed in DESIGN.md MUST have a live preview in design-system.html
 
 ## Artefacts produced

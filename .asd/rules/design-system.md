@@ -74,6 +74,12 @@ Theme MUST NOT change: grid, component size, hit targets, base spacing, notifica
 6. Verify contrast and accessibility (`accessibility.html`).
 7. Update consumer components to reference new token.
 
+## 11. Linter Pass Criteria
+
+`designmd-lint` result with ≥1 **error** OR ≥1 **warning** (not in exclusion list) = FAIL → fixes required, re-lint. Clean pass = zero errors + zero un-excluded warnings.
+
+Errors never excludable. Each **warning** exclusion MUST be approved by user (AskUserQuestion) and the decision + short rationale recorded in DESIGN.md (lint-exclusions block). Reviewer (`asd-reviewer-ui`) FAIL if excluded warning lacks recorded rationale.
+
 ## See also
 
 - `core.md` — Simplicity Default

@@ -70,6 +70,7 @@ Reviewer:
 - **Token comment**: per `design-system.md` §4
 - **Component fidelity**: UI matches ux-spec mockup structure and states (empty, loading, error); disabled state per `design-system.md` §7
 - **Design system completeness**: every component used exists in DESIGN.md, no ad-hoc components
+- **Lint exclusions**: per `design-system.md` §11 — any excluded `designmd-lint` warning MUST have user-approved rationale recorded in DESIGN.md lint-exclusions block; missing rationale = FAIL
 - **UX principles**: readability, hierarchy, progressive disclosure, cross-theme consistency per `ux-principles.md`
 - **Accessibility**: rules from accessibility.html applied (visual, motor, cognitive, auditory, platform integration); Known Intentional Limitations respected (no false reports against declared exclusions)
 
