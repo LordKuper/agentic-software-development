@@ -9,7 +9,7 @@ Pull latest ASD framework files into this consumer project. Overwrites **framewo
 
 ## What it touches
 
-Managed set = SSoT in `update-manifest.json` at project root:
+Managed set = SSoT in `.asd/update-manifest.json`:
 - `managed.trees` — dirs ASD owns fully, replaced wholesale (`.asd/rules`, `.asd/templates`).
 - `managed.paths` — individual ASD agents, skill dirs, hook files. Listed one-by-one because they share `.claude/agents`, `.claude/skills`, `.claude/hooks` with the user's own custom items — those are never deleted.
 
@@ -20,7 +20,7 @@ Never touched: `.asd/project/**`, `.asd/sprints/**`, `design/**`, `CLAUDE.md`, `
 1. Confirm with user (it overwrites framework files): show what will update, offer dry run.
 2. From project root: `node .claude/skills/asd-update/update.js`
    - Preview first: append `--dry-run` (lists deletes/copies, mutates nothing).
-3. Updater flow (atomic-ish): fetch tarball from `repo`@`branch` → extract → validate every new managed path exists → **then** delete by local manifest list → copy by new list → refresh local `update-manifest.json`.
+3. Updater flow (atomic-ish): fetch tarball from `repo`@`branch` → extract → validate every new managed path exists → **then** delete by local manifest list → copy by new list → refresh local `.asd/update-manifest.json`.
    - Fetch/validation failure = nothing changed.
 4. Report version `old -> new` + count from script output.
 

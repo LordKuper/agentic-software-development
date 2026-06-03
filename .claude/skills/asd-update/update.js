@@ -19,7 +19,7 @@ const { execFileSync } = require('child_process');
 
 const ROOT = process.cwd();
 const DRY = process.argv.includes('--dry-run');
-const LOCAL_MANIFEST = path.join(ROOT, 'update-manifest.json');
+const LOCAL_MANIFEST = path.join(ROOT, '.asd', 'update-manifest.json');
 const log = (m) => process.stdout.write(m + '\n');
 const die = (m) => { process.stderr.write('asd-update: ' + m + '\n'); process.exit(1); };
 
@@ -57,7 +57,7 @@ function checkTar() {
 }
 
 async function main() {
-  if (!fs.existsSync(LOCAL_MANIFEST)) die(`no update-manifest.json in ${ROOT}. Run from the project root.`);
+  if (!fs.existsSync(LOCAL_MANIFEST)) die(`no .asd/update-manifest.json in ${ROOT}. Run from the project root.`);
   checkTar();
 
   const local = JSON.parse(fs.readFileSync(LOCAL_MANIFEST, 'utf8'));
@@ -81,8 +81,8 @@ async function main() {
   const SRC = path.join(exdir, top[0]);
 
   // New manifest from the freshly fetched source = authoritative copy list.
-  const newManifestPath = path.join(SRC, 'update-manifest.json');
-  if (!fs.existsSync(newManifestPath)) die('fetched source has no update-manifest.json — aborting, nothing changed.');
+  const newManifestPath = path.join(SRC, '.asd', 'update-manifest.json');
+  if (!fs.existsSync(newManifestPath)) die('fetched source has no .asd/update-manifest.json — aborting, nothing changed.');
   const remote = JSON.parse(fs.readFileSync(newManifestPath, 'utf8'));
   const newList = [...(remote.managed.trees || []), ...(remote.managed.paths || [])];
 
@@ -117,7 +117,7 @@ async function main() {
     copied++;
   }
 
-  // Refresh the local manifest itself (lives at root, outside managed trees/paths).
+  // Refresh the local manifest itself (lives at .asd/, outside managed trees/paths).
   fs.copyFileSync(newManifestPath, LOCAL_MANIFEST);
 
   cleanup(work);

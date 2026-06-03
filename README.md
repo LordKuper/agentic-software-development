@@ -39,7 +39,7 @@ Clone ASD into the root of your project (NOT into a subdirectory):
 ```bash
 cd /path/to/your-project
 git clone https://github.com/<owner>/agentic-software-development.git .asd-tmp
-cp -R .asd-tmp/.asd .asd-tmp/.claude .asd-tmp/update-manifest.json .
+cp -R .asd-tmp/.asd .asd-tmp/.claude .
 rm -rf .asd-tmp
 ```
 
@@ -71,11 +71,11 @@ This fetches the latest framework files from the ASD repo's `main` branch and re
 |---|---|
 | `.asd/rules/`, `.asd/templates/` | `.asd/project/` (your config, custom rules) |
 | ASD agents, skills, and hooks | `.asd/sprints/` (your sprint work) |
-| `update-manifest.json` itself | `design/` (your persistent docs) |
+| `.asd/update-manifest.json` itself | `design/` (your persistent docs) |
 | | `CLAUDE.md`, `.claude/settings.json` |
 | | your own custom skills / agents / hooks |
 
-The managed set is the SSoT list in `update-manifest.json` at your project root (installed by the steps above). Each ASD skill, agent, and hook is listed by exact path, so your own custom skills/agents/hooks living beside them are never deleted.
+The managed set is the SSoT list in `.asd/update-manifest.json` (installed by the steps above). Each ASD skill, agent, and hook is listed by exact path, so your own custom skills/agents/hooks living beside them are never deleted.
 
 **How it stays safe:** the updater fetches and validates the full new file set *before* it deletes anything. A failed or partial download changes nothing.
 
@@ -243,6 +243,7 @@ After `/asd-init`, your project looks like:
 ```
 your-project/
 ├── .asd/
+│   ├── update-manifest.json         # framework-managed path list + version; drives /asd-update
 │   ├── rules/                       # workflow rules (read by all agents)
 │   ├── templates/                   # artifact templates (t_*.html / .md / .yaml / .c4)
 │   ├── project/
@@ -276,7 +277,6 @@ your-project/
 │       ├── design-system.html       # rendered live preview
 │       ├── accessibility.html
 │       └── <subsystem>.html         # ux-spec per subsystem
-├── update-manifest.json             # framework-managed path list + version; drives /asd-update
 ├── CLAUDE.md                        # entry-point pointers for Claude Code
 ├── README.md                        # this file
 └── <your project source>
