@@ -56,19 +56,21 @@ Reviewer (external wrapper):
 - detect Codex availability → skip + log if missing
 - compose prompt by reading the per-phase template + injecting context
 - invoke Codex CLI per OS pattern
-- parse JSON output → map severity → drop nitpick categories → apply severity floor → write report
+- parse `<out-file>` text verdict → map severity → drop nitpick categories → apply severity floor → write report
 
 ## Tool policy
 
 - Read/Glob/Grep for context gathering
-- Bash limited to `codex` / `codex.exe` invocations (and `system.tools.codex_command` override); no arbitrary commands
+- Bash limited to `codex` / `codex.exe` (and `system.tools.codex_command` override), stdin-pipe helper (`cat` / `Get-Content`), and deleting `codex-input.tmp` (`rm` / `Remove-Item`); no arbitrary commands
 - AskUserQuestion only for stalemate escalation
-- Edit/Write only for `<sprint>/reviews/<design|impl>/iter-NN/external.md`
+- Edit/Write only for `<sprint>/reviews/<design|impl>/iter-NN/external.md` and the transient `codex-input.tmp` in the same dir
 
 ## Codex invocation (per system.os)
 
-- windows: `codex.exe review --json --input <diff-file> --output <out-file>` (or `system.tools.codex_command`)
-- linux: `codex review --json --input <diff-file> --output <out-file>` (or override)
+Prompt passed via temp file: write rendered prompt + diff payload to `<in-file>` = `<sprint>/reviews/<design|impl>/iter-NN/codex-input.tmp`, pipe to Codex stdin (`-`), then delete after run. `<out-file>` = Codex final message; `-o` writes it to file. No `--json` (prompt yields text verdict).
+
+- windows: `Get-Content <in-file> -Raw | codex.exe exec -o <out-file> -` (or `system.tools.codex_command`)
+- linux: `cat <in-file> | codex exec -o <out-file> -` (or override)
 - macos: same as linux
 
 Probe before invocation: `codex --version`. On failure: write log message for PM, return APPROVE with note "external review skipped, codex unavailable".

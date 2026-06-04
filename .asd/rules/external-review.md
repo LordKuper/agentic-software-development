@@ -10,13 +10,17 @@ Controlled by `review.external_review` in config (`enabled` | `disabled`). If `d
 
 OS read from `system.os` in config (set by `/asd-init`).
 
+Prompt is passed via a **temp file**, not inline: agent writes rendered prompt template + diff payload concatenated to `<in-file>` = `<sprint>/reviews/<design|impl>/iter-NN/codex-input.tmp`, pipes it to Codex stdin, then deletes it after the run. `<out-file>` = Codex final message (text verdict per prompt), parsed by agent.
+
 | OS | Probe | Review command |
 |---|---|---|
-| windows | `codex.exe --version` (PowerShell) | `codex.exe review --json --input <diff-file> --output <out-file>` |
-| linux | `codex --version` (bash) | `codex review --json --input <diff-file> --output <out-file>` |
-| macos | `codex --version` (bash) | `codex review --json --input <diff-file> --output <out-file>` |
+| windows | `codex.exe --version` (PowerShell) | `Get-Content <in-file> -Raw \| codex.exe exec -o <out-file> -` |
+| linux | `codex --version` (bash) | `cat <in-file> \| codex exec -o <out-file> -` |
+| macos | `codex --version` (bash) | `cat <in-file> \| codex exec -o <out-file> -` |
 
-If `system.codex_command` is set in config, it overrides the default command path for all OSes.
+`codex exec -` reads prompt+diff from stdin; `-o <out-file>` writes Codex's final message to file. No `--json` — prompt yields text verdict, not event stream.
+
+If `system.tools.codex_command` is set in config, it overrides the default command path (`codex`/`codex.exe`) for all OSes.
 
 ## Detection
 
@@ -40,7 +44,7 @@ The agent is dispatched fresh each iteration (`review-policy.md` clean-context).
 
 ## Output mapping
 
-Codex JSON output mapped to ASD severity:
+Codex severity terms in `<out-file>` mapped to ASD severity:
 
 | Codex | ASD |
 |---|---|
