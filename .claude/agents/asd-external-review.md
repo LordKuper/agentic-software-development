@@ -3,7 +3,7 @@ name: asd-external-review
 description: "External reviewer wrapping Codex CLI, run in parallel with internal reviewers during design-review and impl-review. Covers: Codex CLI availability detection per system.os, iteration-aware diff payload preparation (full vs incremental), prompt selection per phase (design or impl), output parsing and ASD severity mapping, kept/dropped accounting per severity floor, stalemate detection across iterations. Does NOT handle: internal review (delegates to asd-reviewer-* agents), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, Write, Bash, AskUserQuestion]
 disallowedTools: [Edit, WebFetch]
-model: opus
+model: haiku
 maxTurns: 50
 memory: project
 ---
