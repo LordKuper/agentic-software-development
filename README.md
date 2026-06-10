@@ -165,7 +165,7 @@ Phase skills (`asd-phase-*`) are dispatched internally by `/asd-sprint`. You usu
 
 ## Agents
 
-Fifteen specialized agents live in `.claude/agents/`. Each declares its `model` preference (opus / sonnet / haiku); Claude Code falls back to the default model if the requested tier is unavailable.
+Fifteen specialized agents live in `.claude/agents/`. Each declares its `model` preference (fable / opus / sonnet / haiku); Claude Code falls back to the default model if the requested tier is unavailable.
 
 ### Creators (7)
 
@@ -174,23 +174,23 @@ Fifteen specialized agents live in `.claude/agents/`. Each declares its `model` 
 | `asd-pm` | opus | Sprint orchestrator: state, phase routing, decisions-log, PR ops |
 | `asd-ba` | opus | Business analyst: PRD, audit on the docs side, acceptance criteria |
 | `asd-ux-designer` | opus | UX flows, UI mockups, DESIGN.md tokens, design-system.html |
-| `asd-architect` | opus | ADRs, C4 model, stack, API contracts, tech-reference docs |
+| `asd-architect` | fable | ADRs, C4 model, stack, API contracts, tech-reference docs |
 | `asd-backend-dev` | sonnet | Server/CLI/library code plus unit tests |
 | `asd-frontend-dev` | sonnet | UI code plus unit tests (consumes DESIGN.md tokens) |
-| `asd-test-engineer` | haiku | Integration/e2e tests, edge-case coverage, manual verification specs |
+| `asd-test-engineer` | sonnet | Integration/e2e tests, edge-case coverage, manual verification specs |
 
 ### Reviewers (7 internal + 1 external)
 
 | Agent | Model | Phase(s) | Scope |
 |---|---|---|---|
-| `asd-reviewer-quality` | opus | impl-review | Bugs, security, best-practice, contract drift |
-| `asd-reviewer-implementation` | haiku | impl-review | PRD acceptance criteria coverage in code |
-| `asd-reviewer-testing` | haiku | impl-review | Test coverage, edge cases, manual verification capture |
+| `asd-reviewer-quality` | fable | impl-review | Bugs, security, best-practice, contract drift |
+| `asd-reviewer-implementation` | sonnet | impl-review | PRD acceptance criteria coverage in code |
+| `asd-reviewer-testing` | sonnet | impl-review | Test coverage, edge cases, manual verification capture |
 | `asd-reviewer-ui` | haiku | design-review + impl-review | UX-spec compliance, design-system tokens, a11y |
 | `asd-reviewer-simplification` | opus | design-review + impl-review | Over-engineering detection (13-item checklist) |
 | `asd-reviewer-documentation` | opus | design-review + impl-review | SSoT integrity, template adherence, traceability |
 | `asd-reviewer-performance` | opus | impl-review | Perf budgets, regression, anti-patterns |
-| `asd-external-review` | opus | both | Wraps Codex CLI, parses output, applies severity floor |
+| `asd-external-review` | haiku | both | Wraps Codex CLI, parses output, applies severity floor |
 
 Reviewers emit a machine-parseable first-line verdict token: `[REVIEW-<phase>-<reviewer>]: APPROVE|CONCERNS|FAIL`, where `<phase>` is `design` or `impl`.
 

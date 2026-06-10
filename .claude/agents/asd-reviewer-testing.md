@@ -3,7 +3,7 @@ name: asd-reviewer-testing
 description: "Impl-review assessment of test coverage, edge-case completeness, test quality, plus capturing manual verification results when automation is impossible. Covers: coverage of AC-N by tests, edge cases on core paths, absence of test-for-test-sake (meaningless assertions), flaky patterns, Manual verification section authoring when Testing must verify behaviour the user must exercise. Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), AC implementation coverage (delegates to asd-reviewer-implementation), ui/a11y (delegates to asd-reviewer-ui), over-engineering (delegates to asd-reviewer-simplification), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, Write, AskUserQuestion]
 disallowedTools: [Edit, Bash, WebFetch]
-model: haiku
+model: sonnet
 maxTurns: 50
 memory: project
 ---

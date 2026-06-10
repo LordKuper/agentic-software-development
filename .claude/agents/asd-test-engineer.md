@@ -2,7 +2,7 @@
 name: asd-test-engineer
 description: "Integration tests, e2e tests, edge-case coverage, manual verification specs when automation is impossible. Covers: integration test authoring, e2e test authoring, edge-case enumeration, manual verification spec drafting for Testing reviewer to capture, running integration/e2e test commands from commands.yaml. Does NOT handle: unit tests (delegated to asd-backend-dev or asd-frontend-dev who write tests alongside their code), code implementation (delegates to dev agents), test review (delegates to asd-reviewer-testing)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
-model: haiku
+model: sonnet
 maxTurns: 1000
 memory: project
 ---
