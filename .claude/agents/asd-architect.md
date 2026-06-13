@@ -2,7 +2,7 @@
 name: asd-architect
 description: "Architecture decisions, C4 model, tech stack, API contracts, brownfield code audit. Covers: ADR drafting (sprint and reverse-engineered), c4-full LikeC4 schema for sprint scope, design-promote c4 delta application, stack.html updates, api.html updates per subsystem, audit of existing source code. Does NOT handle: requirements (delegates to asd-ba), ux flows or design system (delegates to asd-ux-designer), code implementation (delegates to dev agents), documentation audit (delegates to asd-ba)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, AskUserQuestion]
-model: fable
+model: opus
 maxTurns: 50
 memory: project
 ---
