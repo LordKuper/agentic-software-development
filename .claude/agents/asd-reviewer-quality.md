@@ -3,7 +3,7 @@ name: asd-reviewer-quality
 description: "Impl-review scan of code and tests for bugs, security vulnerabilities, best-practice violations. Covers: bug patterns (off-by-one, null paths, race conditions, resource leaks), security holes (secrets, injection, auth bypass, crypto misuse, input validation), language/framework best practices, contract violations vs ADR. Does NOT handle: requirement coverage (delegates to asd-reviewer-implementation), test coverage (delegates to asd-reviewer-testing), ui/a11y (delegates to asd-reviewer-ui), over-engineering (delegates to asd-reviewer-simplification), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, Write, AskUserQuestion]
 disallowedTools: [Edit, Bash, WebFetch]
-model: fable
+model: opus
 maxTurns: 50
 memory: project
 ---
