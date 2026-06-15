@@ -78,6 +78,9 @@ The caller passes the computed floor; report only at floor severity or higher.
 - defensive code for impossible cases
 - dead code "in case"
 
+### Structure / cohesion (from review-policy.md checklist)
+- god / sprawling type: one type carrying ≥2 unrelated responsibilities (≥2 independent reasons to change). Responsibility-based, not size-based — name the distinct responsibility clusters; fix = split along responsibility seams
+
 ### Style (low severity, dropped on iter 2+)
 - naming consistency within file
 - imports order matches project convention

@@ -38,13 +38,13 @@ Persisted formats (DB schema, on-disk state, public API, wire protocol) are vers
 
 Defer commitment where the cost of reversal is high. Every ADR documents reversibility (easy / moderate / hard) and the trigger condition for re-evaluation. Architecture is grown, not poured.
 
-## 10. Over-Engineering Smells
+## 10. Over-Engineering & Structure Smells
 
-Apply the over-engineering checklist from `review-policy.md` PROACTIVELY during design, not only at review — flag during ADR drafting. Each item is `critical` and undroppable.
+Apply the over-engineering checklist AND the structure/cohesion checklist from `review-policy.md` PROACTIVELY during design, not only at review — flag during ADR drafting. Each item is `critical` and undroppable. The structure checklist (god/sprawling type) enforces #3 and #4 at the type level.
 
 ## See also
 
 - `core.md` — Simplicity Default, Complication Approval, QODDA
 - `artifact-layout.md` — SSoT iron rule, document responsibility
-- `review-policy.md` — over-engineering checklist, severity floor
+- `review-policy.md` — over-engineering checklist, structure/cohesion checklist, severity floor
 - `external-review.md` — Codex prompts encode several of these as checks
