@@ -187,7 +187,7 @@ Fifteen specialized agents live in `.claude/agents/`. Each declares its `model` 
 | `asd-reviewer-implementation` | sonnet | impl-review | PRD acceptance criteria coverage in code |
 | `asd-reviewer-testing` | sonnet | impl-review | Test coverage, edge cases, manual verification capture |
 | `asd-reviewer-ui` | haiku | design-review + impl-review | UX-spec compliance, design-system tokens, a11y |
-| `asd-reviewer-simplification` | opus | design-review + impl-review | Over-engineering detection (13-item checklist) |
+| `asd-reviewer-simplification` | opus | design-review + impl-review | Over-engineering (13-item checklist) + structure/cohesion (god/sprawling type) detection |
 | `asd-reviewer-documentation` | opus | design-review + impl-review | SSoT integrity, template adherence, traceability |
 | `asd-reviewer-performance` | opus | impl-review | Perf budgets, regression, anti-patterns |
 | `asd-external-review` | haiku | both | Wraps Codex CLI, parses output, applies severity floor |

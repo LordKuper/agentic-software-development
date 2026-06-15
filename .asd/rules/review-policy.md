@@ -53,6 +53,16 @@ Simplification reviewer flags any of these as `critical`:
 - Comment that restates code
 - Dead code left "in case we need it"
 
+## Structure / cohesion checklist (critical, undroppable)
+
+Simplification reviewer flags as `critical` — the under-design counterpart to over-engineering:
+
+- God / sprawling type: one type (class/module) carrying ≥2 unrelated responsibilities, i.e. ≥2 independent reasons to change (e.g. parsing + persistence + transport in one type)
+
+Detection is responsibility-based (SRP), not size-based: evidence = name the distinct responsibility clusters the type mixes. Size alone never flags.
+
+Fix = split along responsibility seams into cohesive types → category `simplify` (decomposition, not new abstraction). Escalate only when the split changes ADR-declared subsystem boundaries.
+
 ## Autofix vs escalation
 
 Default: the responsible creator autofixes any reviewer issue without user prompt.
