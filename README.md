@@ -140,7 +140,7 @@ flowchart TD
 | **plan** | PM decomposes work into Tasks with checkbox subtasks, traces each to PRD acceptance criteria |
 | **impl** | Devs (Backend, Frontend, Test Engineer) implement Tasks (or fix impl-review findings in fix mode), run build/lint/test, commit per Conventional Commits |
 | **impl-review** | 7 internal reviewers (Quality, Implementation, Testing, UI, Simplification, Documentation, Performance) plus External Review; routes findings back to `impl` fix mode |
-| **pr** | DoD verification + sprint archive + `gh pr create` (or push + summary if gh disabled) |
+| **pr** | DoD verification + `gh pr create` (or push + summary if gh disabled); sprint is archived on a later re-entry once the PR is merged |
 
 You can resume an interrupted sprint at any time: `/asd-sprint` reads `state.json`, detects the current phase, and dispatches the matching phase skill.
 
@@ -347,7 +347,7 @@ The SessionStart hook (`.claude/hooks/session-start.js`) prints a one-block summ
 ## FAQ
 
 **Can I run multiple sprints in parallel?**
-No. ASD enforces one active sprint at a time. The PR phase archives the sprint folder; only then can a new one start. This keeps state recovery simple.
+No. ASD enforces one active sprint at a time. The sprint folder is archived once its PR is merged (re-run `/asd-sprint` after merging to trigger archival); only then can a new one start. This keeps state recovery simple.
 
 **What if a reviewer keeps blocking the same finding?**
 The iteration severity floor uses cumulative budgets: by default iter 1 considers all severities, iter 2 considers medium+, iter 3-4 considers high+, iter 5-14 considers only critical, iter 15+ escalates to you. Tune the limits in `config.yaml`.

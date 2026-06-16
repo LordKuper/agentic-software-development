@@ -46,7 +46,7 @@ Verdict files: design-review → `<sprint>/reviews/design/iter-NN/`, impl-review
 | plan | PM | promoted persistent docs | `plan.md` | plan approved |
 | impl | Backend Dev + Frontend Dev + Test Engineer | `plan.md` (initial) or `reviews/impl/iter-NN/` findings (fix mode) | code + tests, `manual-steps.md` | all tasks/findings done; build + tests pass (completion gate) |
 | impl-review | Quality + Implementation + Testing + UI + Simplification + Documentation + Performance + External Review | code + tests | `reviews/impl/iter-NN/<reviewer>.md` | DoD met → `pr`; else route to `impl` fix mode |
-| pr | PM | everything | sprint archive + PR | PR opened (or push summary if `gh_enabled=false`) |
+| pr | PM | everything | PR (open mode), then sprint archive (merge mode) | PR opened; sprint archived on a later re-entry once PR merged |
 
 ## Audit phase
 
@@ -95,6 +95,15 @@ Devs implement plan tasks. When a subtask needs a human-only operational action 
 - **Fix** (`review_fixes_pending` = `iter-NN`) — entered when impl-review routed back. Devs read findings in `<sprint>/reviews/impl/iter-NN/`, resolve every CONCERNS finding plus every user-approved FAIL finding, return `NEXT: impl-review`. Skips the impl assessment gate; blockers escalate as in initial mode. Clears `review_fixes_pending` on completion.
 
 **Completion gate** (both modes) — impl MUST NOT emit `COMPLETED` until, verified via `commands.yaml`: `build` ran with no errors/warnings, `test` ran, every test passed. On failure: devs fix and re-run; unrecoverable failure escalates as `FAILED`. Automatic verification, not a user pause.
+
+## PR phase
+
+Two modes, detected from `state.json.pr`:
+
+- **Open** (`pr` null) — DoD verification, then compose + open (or prepare) the PR. On success records `state.json.pr = {number, url, state:"open"}`, keeps `phase=pr`, emits `STATUS=pr-open NEXT=await-merge`. **No archival.** Sprint stays active.
+- **Merge** (`pr.state="open"`) — entered on a later `/asd-sprint` resume. Checks merge (`gh pr view` state, or user confirm when `gh_enabled=false`); only when merged does it archive the sprint (`pr.state="merged"`, `phase=done`). Not merged → halt, retry after merge.
+
+Archival is gated on merge, never on PR creation.
 
 ## Signal vocabulary
 

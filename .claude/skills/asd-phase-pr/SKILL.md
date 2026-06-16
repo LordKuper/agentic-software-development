@@ -1,6 +1,6 @@
 ---
 name: asd-phase-pr
-description: "Runs the final ASD pr phase: dispatches asd-pm to verify the Definition of Done, compose and open (or prepare) the PR per git config, then archive the sprint folder and finalize state. Use when asd-sprint dispatches the pr phase, or when the user explicitly asks to run or re-run pr for the active sprint."
+description: "Runs the final ASD pr phase: dispatches asd-pm to verify the Definition of Done and compose+open (or prepare) the PR per git config, then on a later re-entry archives the sprint folder once the PR is merged. Use when asd-sprint dispatches the pr phase, or when the user explicitly asks to run or re-run pr for the active sprint."
 metadata:
   asd-role: phase
   asd-order: "9"
@@ -19,9 +19,18 @@ allowed-tools: "Read Glob Grep AskUserQuestion Task"
 - Read — `.asd/project/config.yaml`, `state.json`, plan.md, reviews/, `.asd/project/stubs.md`
 - Glob/Grep — scan code for `// TODO(sprint-<NNN-slug>):` markers; verify against stubs.md
 - AskUserQuestion — final PR-opening confirmation, rollback on failure
-- Task — dispatch `asd-pm` for DoD check, PR creation, archival, decisions-log
+- Task — dispatch `asd-pm` for DoD check, PR creation, merge check, archival, decisions-log
 
-## Workflow
+## Mode detection
+
+Read `<sprint>/state.json` first:
+- `pr` absent/null → **open mode** (DoD + create PR; no archival)
+- `pr.state = "open"` → **merge mode** (check merge; archive when merged)
+- `pr.state = "merged"` → already archived; emit COMPLETED, NEXT=done
+
+Archival never happens at PR creation — only on a later re-entry after the PR is merged. Re-entry is driven by `/asd-sprint` resume (sprint stays active while `pr.state="open"`).
+
+## Workflow — open mode
 
 1. Read `.asd/project/config.yaml` (`git.base_branch`, `git.branch_pattern`, `git.gh_enabled`, `git.auto_pr`, `language.chat`, `language.docs`)
 2. Read `<sprint>/state.json` → confirm impl-review DoD met
@@ -46,12 +55,20 @@ allowed-tools: "Read Glob Grep AskUserQuestion Task"
      - **`git.gh_enabled=false`**: push branch, print PR-ready summary (title, body, compare URL hint)
    - on edit: re-compose with feedback, loop
    - on abort: emit ABORT
-6. **Sprint archival** — dispatch `asd-pm` via Task:
+   - on success: write `state.json.pr` = `{ number, url, state: "open" }` (number null when `gh_enabled=false`); keep `phase=pr`; append decisions-log entry ("sprint <NNN-slug> PR opened: <url-or-summary>")
+6. Emit COMPLETED, STATUS=pr-open, NEXT=await-merge. Sprint stays active awaiting merge; do NOT archive.
+
+## Workflow — merge mode
+
+1. **Merge check** — dispatch `asd-pm` via Task:
+   - `git.gh_enabled=true`: run `gh pr view <pr.number> --json state -q .state` via Bash. `MERGED` → proceed to archival. Any other state (`OPEN`/`CLOSED`) → relay "PR #<number> not merged yet (state: <state>)" and halt (re-run pr after merging). `CLOSED` without merge → relay; user decides reopen or abort.
+   - `git.gh_enabled=false`: AskUserQuestion in `language.chat` — "PR merged?" yes / not yet. `not yet` → halt. `yes` → proceed.
+2. **Sprint archival** — dispatch `asd-pm` via Task:
    - move folder `.asd/sprints/<NNN-slug>/` → `.asd/sprints/archived/<NNN-slug>/` (git mv)
    - commit move with message `chore: archive sprint <NNN-slug>` and push to sprint branch
-   - update `state.json` (phase=done, archived_at)
+   - update `state.json` (`pr.state="merged"`, phase=done, archived_at)
    - append decisions-log entry ("sprint <NNN-slug> completed, archived, PR <url-or-summary>")
-7. Emit phase COMPLETED with return contract
+   - emit COMPLETED, STATUS=complete, NEXT=done
 
 ## Block-on-fail behaviour
 
@@ -66,22 +83,27 @@ Action: <suggested next step>
 User decides: fix and retry, accept-debt (stubs only), or abort sprint.
 
 ## Artefacts produced
+Open mode:
 - Pushed git branch (and PR when `gh_enabled+auto_pr`)
+- `state.json.pr` = `{number, url, state:"open"}`; decisions-log PR-opened entry
+
+Merge mode:
 - Archived sprint at `.asd/sprints/archived/<NNN-slug>/`
 - Archive commit on sprint branch
 - decisions-log final entry
-- Updated `state.json` (phase=done, archived_at)
+- Updated `state.json` (`pr.state="merged"`, phase=done, archived_at)
 
 ## Agents dispatched
-- `asd-pm` (DoD verification, PR composition, archival, decisions-log)
+- `asd-pm` (DoD verification, PR composition, merge check, archival, decisions-log)
 
 ## Skills dispatched
 None.
 
 ## Return contract (single line)
 ```
-PHASE: pr | SPRINT: <NNN-slug> | STATUS: <complete|blocked|aborted> | NEXT: done | PR: <url-or-summary-or-none>
+PHASE: pr | SPRINT: <NNN-slug> | STATUS: <pr-open|complete|blocked|aborted> | NEXT: <await-merge|done|halted> | PR: <url-or-summary-or-none>
 ```
+`pr-open` (open mode success): PR opened, sprint awaits merge, NEXT=await-merge. `complete` (merge mode success): merged + archived, NEXT=done.
 
 ## References
 - `.asd/rules/sprint-lifecycle.md` (pr phase contract, sprint immutability)
