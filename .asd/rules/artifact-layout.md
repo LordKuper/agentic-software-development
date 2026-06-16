@@ -177,7 +177,7 @@ Agents preserve the block. Reviewers verify content respects the declared scope.
 
 ## Sprint archival
 
-On `pr` success, sprint folder moves from `.asd/sprints/<NNN-slug>/` to `.asd/sprints/archived/<NNN-slug>/`. Archived sprints never modified.
+Once the sprint PR is merged (`pr` merge mode, not at PR creation), sprint folder moves from `.asd/sprints/<NNN-slug>/` to `.asd/sprints/archived/<NNN-slug>/`. Archived sprints never modified.
 
 ## Decisions log
 
