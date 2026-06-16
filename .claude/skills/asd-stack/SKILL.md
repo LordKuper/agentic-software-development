@@ -23,9 +23,9 @@ allowed-tools: "Read Glob Grep AskUserQuestion Task"
 ## Phase 1 — silent detection (NO asking)
 
 Scan in order:
-1. `design/architecture/stack.html` exists with non-empty content → mode = **edit**, skip to Edit-mode flow
-2. Manifests / lockfiles / Dockerfile / CI configs detected → flag as brownfield candidate (default variant D)
-3. No code, no manifests → flag as greenfield candidate (no default)
+1. `design/architecture/stack.html` exists, non-empty → mode = **edit**, skip to Edit-mode flow
+2. Manifests / lockfiles / Dockerfile / CI configs detected → brownfield candidate (default variant D)
+3. No code, no manifests → greenfield candidate (no default)
 4. Continue to Phase 2
 
 ## Phase 2 — variant choice (only if Phase 1 did not route to edit)
@@ -48,7 +48,7 @@ Phase 1 brownfield candidates auto-suggest D as default.
 - Proceed to Phase 4
 
 **Variant B — constrained**
-- AskUserQuestion with `tabs` form (multi-field one-shot):
+- AskUserQuestion `tabs` form (multi-field one-shot):
   - Primary language preference (free-text or "no preference")
   - Runtime/platform target (web / desktop / mobile / server / cli / embedded / no preference)
   - Hosting preference (cloud / self-host / local-only / no preference)
@@ -71,27 +71,27 @@ Phase 1 brownfield candidates auto-suggest D as default.
 
 ## Phase 4 — convergence (universal across variants)
 
-Section-by-section discussion in `language.chat`:
+Section-by-section in `language.chat`:
 - Architect presents current section content
-- For each entry: verify current latest version via WebFetch; flag if user's choice lags or is ahead
-- AskUserQuestion (options form): **A) Lock in / B) Revise this section / C) Skip (optional sections only)** — labels and descriptions rendered in `language.chat` per `language-policy.md`
+- Per entry: verify current latest version via WebFetch; flag if user's choice lags or is ahead
+- AskUserQuestion (options): **A) Lock in / B) Revise this section / C) Skip (optional sections only)** — labels/descriptions in `language.chat` per `language-policy.md`
 - on B: collect feedback, architect revises, re-present, re-ask
 - repeat until A
-- proceed to next section per `t_stack.html` order
+- next section per `t_stack.html` order
 
 ## Phase 5 — knowledge gap analysis
 
-For each technology entry in approved stack:
+Per technology entry in approved stack:
 - Architect compares chosen version against LLM training cutoff
 - Risk:
   - **LOW** — version pre-dates cutoff, well-known
   - **MEDIUM** — version close to or shortly after cutoff
   - **HIGH** — version released after cutoff; may have breaking changes LLM does not know
-- For MEDIUM/HIGH: architect WebFetches official changelog / release notes; records breaking changes and deprecations in the tech-reference doc
+- MEDIUM/HIGH: architect WebFetches official changelog / release notes; records breaking changes and deprecations in tech-reference doc
 
 ## Phase 6 — tech-reference creation/update
 
-For each technology in approved stack:
+Per technology in approved stack:
 - Architect creates or updates `design/architecture/tech-reference/<tech>-<version>.md` per `t_tech-reference.md`
 - Includes canonical source URL, API surface used, version-specific notes, deprecations, project conventions, "Last verified" ISO date
 - AskUserQuestion before each persistent write
@@ -99,7 +99,7 @@ For each technology in approved stack:
 ## Phase 7 — final approval + write stack.html
 
 - Architect shows full assembled stack + risk summary
-- AskUserQuestion: **A) Approve, write stack.html / B) Revise specific section** (on B re-enter Phase 4) — labels and descriptions rendered in `language.chat`
+- AskUserQuestion: **A) Approve, write stack.html / B) Revise specific section** (on B re-enter Phase 4) — labels/descriptions in `language.chat`
 - on A: translate to `language.docs`, write `design/architecture/stack.html` per `t_stack.html`
 - emit COMPLETED
 
@@ -118,8 +118,8 @@ For each technology in approved stack:
 
 ## AskUserQuestion form rules
 
-- Multi-field one-shot (constraints tabs) → use `tabs` field
-- Single-choice branching (A/B/C/D, lock-in/revise) → use `options` field
+- Multi-field one-shot (constraints tabs) → `tabs` field
+- Single-choice branching (A/B/C/D, lock-in/revise) → `options` field
 - Never mix; mixing produces "Invalid tool parameters" error
 
 ## Hard rules

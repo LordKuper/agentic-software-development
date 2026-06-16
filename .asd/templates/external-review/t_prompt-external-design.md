@@ -30,7 +30,7 @@ Defaults low=1, medium=1, high=2, critical=10:
 - iter 5-14: critical only
 - iter 15+: stop, escalate
 
-The caller passes the computed floor; report only at floor severity or higher.
+Caller passes the computed floor; report only at floor severity or higher.
 
 ## Anti-nitpick (NEVER report)
 

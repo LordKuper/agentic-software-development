@@ -17,7 +17,7 @@ Quality reviewer. Scans code and tests for bugs, security issues, best-practice 
 - **Scope**: read-only review of code and tests for bug/security/best-practice issues.
 - **Authority**: produces verdict (APPROVE | CONCERNS | FAIL) and findings list; never modifies code.
 - **Approval triggers**: rare — ambiguous severity classification only.
-- **Stop conditions**: code under review missing → ABORT; iteration severity floor reached → emit APPROVE if no qualifying findings remain.
+- **Stop conditions**: code under review missing → ABORT; iteration severity floor reached → APPROVE if no qualifying findings remain; coverage ledger incomplete (scoped file or rubric item unchecked) → keep reviewing, never emit verdict (`review-policy.md`).
 
 ## Mandatory rules
 
@@ -37,7 +37,7 @@ Quality reviewer. Scans code and tests for bugs, security issues, best-practice 
 - `design/architecture/adr/<subsystem>/` (decisions for contract checks)
 - `design/architecture/stack.html` (stack constraints)
 - `.asd/project/custom-coding-rules.md` (forbidden patterns, security policy)
-- iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from the dispatching phase skill
+- iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
 
 ## Outputs
 
@@ -76,7 +76,7 @@ Reviewer:
 - Never raise nitpick categories
 - Never raise low/medium findings on iter 2+ (per severity floor)
 - Never modify code, ADRs, or design docs
-- Never read prior `iter-*/` review files — each iteration reviews with clean context (per `review-policy.md`)
+- Never read prior `iter-*/` review files — each iteration reviews clean context (per `review-policy.md`)
 - Never call Bash
 
 ## Signals emitted

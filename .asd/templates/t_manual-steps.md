@@ -7,9 +7,9 @@ responsibility:
 
 # Manual Steps
 
-Per-sprint registry of manual operational actions a human MUST perform for the sprint plan to complete — provisioning a secret or API key, creating a cloud resource, running a migration by hand, setting an env var, registering a third-party account.
+Per-sprint registry of manual operational actions a human MUST perform for the sprint plan to complete — provisioning a secret/API key, creating a cloud resource, running a migration by hand, setting an env var, registering a third-party account.
 
-Created lazily: the file exists only when at least one manual action arose. Devs append entries (append-only; never edit-in-place an existing entry's identity). Entry content is `language.docs`.
+Created lazily: exists only when at least one manual action arose. Devs append entries (append-only; never edit-in-place an existing entry's identity). Entry content is `language.docs`.
 
 Not the same as:
 
@@ -18,9 +18,9 @@ Not the same as:
 
 Manual steps = operational *setup* actions the agent cannot perform autonomously.
 
-PM validates every new entry for necessity before the impl phase halts. An entry is kept only when the action genuinely cannot be done autonomously (needs access, a secret, an external account, or an authority the agent lacks). If PM judges it autonomously doable, the entry is rejected and the task returns to the dev to implement directly.
+PM validates every new entry for necessity before the impl phase halts. Kept only when the action genuinely cannot be done autonomously (needs access, a secret, an external account, or an authority the agent lacks). If PM judges it autonomously doable, the entry is rejected and the task returns to the dev to implement directly.
 
-Status is `pending` → `done`. The dev that registered an entry flips it to `done` only after running its `Verification`. File is sprint-scoped and archived with the sprint.
+Status `pending` → `done`. The registering dev flips to `done` only after running its `Verification`. Sprint-scoped; archived with the sprint.
 
 ## Summary
 
@@ -46,4 +46,4 @@ Status is `pending` → `done`. The dev that registered an entry flips it to `do
 
 ### Verification
 
-{{how the workflow confirms completion — a commands.yaml check command, observable state to inspect, or explicit user confirmation when no automated check exists}}
+{{how workflow confirms completion — a commands.yaml check command, observable state to inspect, or explicit user confirmation when no automated check exists}}

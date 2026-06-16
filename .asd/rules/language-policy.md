@@ -18,7 +18,7 @@ Agents may reason internally in `language.chat`. Before `Write`/`Edit` to a user
 
 ## Quote translation
 
-When an agent quotes a user-facing artefact during chat, the quote MUST be rendered in `language.chat`, even if the source file is in another language. Translate inline. Cite the source path so the user can open the original.
+When an agent quotes a user-facing artefact during chat, the quote MUST be rendered in `language.chat`, even if the source file is in another language. Translate inline. Cite the source path so user can open the original.
 
 ## AskUserQuestion options
 

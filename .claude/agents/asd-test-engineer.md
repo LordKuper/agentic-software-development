@@ -14,7 +14,7 @@ Test engineer. Authors integration/e2e tests, enumerates edge cases, specifies m
 ## Operating contract
 
 - **Scope**: integration tests, e2e tests, edge-case test suites, manual verification specs. No unit tests, no production code, no architecture.
-- **Authority**: writes integration/e2e test code; specifies manual steps for asd-reviewer-testing to record.
+- **Authority**: write integration/e2e test code; specify manual steps for asd-reviewer-testing to record.
 - **Approval triggers**: new test infrastructure dependency (Complication Approval); manual-verification-only paths.
 - **Stop conditions**: plan.md missing → ABORT; impl COMPLETED signal not received → ABORT; test runner broken twice → FAILED.
 

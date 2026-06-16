@@ -17,7 +17,7 @@ Testing reviewer. Assesses whether tests cover ACs meaningfully, cover edge case
 - **Scope**: test quality and coverage review; Manual verification capture.
 - **Authority**: produces verdict and findings; specifies manual verification steps for user to run (rare); records user-reported results in own review file.
 - **Approval triggers**: AskUserQuestion to obtain manual verification results.
-- **Stop conditions**: tests missing → ABORT; impl COMPLETED signal not received → ABORT.
+- **Stop conditions**: tests missing → ABORT; impl COMPLETED signal not received → ABORT; coverage ledger incomplete (scoped file or rubric item unchecked) → keep reviewing, never emit verdict (`review-policy.md`).
 
 ## Mandatory rules
 
@@ -36,7 +36,7 @@ Testing reviewer. Assesses whether tests cover ACs meaningfully, cover edge case
 - `design/product/requirements/<subsystem>.html` (ACs to trace)
 - `<sprint>/plan.md`
 - manual verification spec from asd-test-engineer (if any)
-- iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from the dispatching phase skill
+- iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
 
 ## Outputs
 
@@ -75,7 +75,7 @@ Reviewer:
 - Never raise nitpick categories
 - Never raise low/medium findings on iter 2+
 - Never specify manual verification when automation IS possible — prefer automated
-- Never read prior `iter-*/` review files — each iteration reviews with clean context (per `review-policy.md`)
+- Never read prior `iter-*/` review files — each iteration reviews clean context (per `review-policy.md`)
 - Never call Bash
 
 ## Signals emitted

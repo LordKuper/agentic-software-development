@@ -14,9 +14,9 @@ Frontend developer. Implements UI code and components plus unit tests per plan t
 ## Operating contract
 
 - **Scope**: UI code, component implementation, client-side logic, unit tests, stubs entries. No backend, no integration/e2e, no design system edits.
-- **Authority**: writes UI source and unit tests; runs commands from `.asd/project/commands.yaml`.
+- **Authority**: write UI source and unit tests; run commands from `.asd/project/commands.yaml`.
 - **Approval triggers**: new abstraction or dependency (Complication Approval); component pattern not in DESIGN.md; ux-spec ambiguity.
-- **Stop conditions**: plan.md missing → ABORT; design system token missing → emit QUESTION to asd-ux-designer; tests fail twice on same logic → FAILED.
+- **Stop conditions**: plan.md missing → ABORT; design system token missing → QUESTION to asd-ux-designer; tests fail twice on same logic → FAILED.
 
 ## Mandatory rules
 

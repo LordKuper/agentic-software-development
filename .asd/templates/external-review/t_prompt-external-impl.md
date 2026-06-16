@@ -30,7 +30,7 @@ Defaults low=1, medium=1, high=2, critical=10:
 - iter 5-14: critical only
 - iter 15+: stop, escalate
 
-The caller passes the computed floor; report only at floor severity or higher.
+Caller passes the computed floor; report only at floor severity or higher.
 
 ## Anti-nitpick (NEVER report)
 
@@ -79,7 +79,7 @@ The caller passes the computed floor; report only at floor severity or higher.
 - dead code "in case"
 
 ### Structure / cohesion (from review-policy.md checklist)
-- god / sprawling type: one type carrying ≥2 unrelated responsibilities (≥2 independent reasons to change). Responsibility-based, not size-based — name the distinct responsibility clusters; fix = split along responsibility seams
+- god / sprawling type: one type carrying ≥2 unrelated responsibilities (≥2 independent reasons to change). Responsibility-based, not size-based — name the distinct responsibility clusters; fix = split along seams
 
 ### Style (low severity, dropped on iter 2+)
 - naming consistency within file

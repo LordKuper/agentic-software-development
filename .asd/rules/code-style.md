@@ -1,6 +1,6 @@
 # Code Style
 
-Implementation-level rules for code-writing agents (Backend Dev, Frontend Dev, Test Engineer). Binding during `impl`, verified during `impl-review`. Governs how code is written; architecture-level rules are out of scope. All code in English.
+Implementation-level rules for code-writing agents (Backend Dev, Frontend Dev, Test Engineer). Binding during `impl`, verified during `impl-review`. Governs how code is written; architecture-level rules out of scope. All code in English.
 
 ## 1. Engineering Principles
 
@@ -45,6 +45,9 @@ Implementation-level rules for code-writing agents (Backend Dev, Frontend Dev, T
 
 - Comments explain WHY, not WHAT. Code needing a comment to be understood should usually be rewritten.
 - Doc comments mandatory on every public/exported type and member. Internal code documents only what a clear name cannot carry.
+- Comments concise and clear. Every extra word is cognitive load and wasted context — cut filler, hedging, restated code.
+- No duplicated comments. A type's doc does not describe its members — each member carries its own doc. State each fact once.
+- Inherit docs (`<inheritdoc/>`, `@inheritDoc`, etc.) wherever an override or implementation matches the base contract; do not restate inherited text.
 - Use the language-native doc format (XML-doc C#, docstrings Python, JSDoc TypeScript, etc.).
 - Update doc comments when code changes.
 - No commented-out code, no dead code kept "in case".

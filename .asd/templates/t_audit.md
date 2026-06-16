@@ -36,7 +36,7 @@ responsibility:
 
 ## Related open stubs (optional)
 
-Open stubs from `.asd/project/stubs.md` that touch files or subsystems in this sprint's scope. Surfaced for user decision in plan phase: include resolution in this sprint, defer, or migrate.
+Open stubs from `.asd/project/stubs.md` touching files/subsystems in this sprint's scope. Surfaced for user decision in plan phase: resolve this sprint, defer, or migrate.
 
 | Sprint of origin | File:Line | Reason | Owner |
 |---|---|---|---|
@@ -47,9 +47,9 @@ Open stubs from `.asd/project/stubs.md` that touch files or subsystems in this s
 
 ## Documentation migration plan
 
-Items found outside ASD format/location that should become persistent docs in `design/`.
-Items addressed by sprint design drafts are NOT listed here (they flow through design → design-promote).
-Items NOT covered by sprint scope but worth promoting wait for design-promote handling.
+Items outside ASD format/location that should become persistent docs in `design/`.
+Items addressed by sprint design drafts NOT listed here (they flow through design → design-promote).
+Items outside sprint scope but worth promoting wait for design-promote.
 
 | # | Source (path/URL) | Format | Proposed target in `design/` | Type | Notes |
 |---|---|---|---|---|---|
