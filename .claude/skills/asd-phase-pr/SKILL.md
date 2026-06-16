@@ -29,22 +29,22 @@ allowed-tools: "Read Glob Grep AskUserQuestion Task"
 4. **DoD verification** — dispatch `asd-pm` via Task with payload (config, sprint paths, stubs path, commands.yaml):
    - **Plan completion**: read `<sprint>/plan.md`, verify every `- [ ]` is `- [x]`
    - **AC coverage**: cross-check PRD AC-N references in plan tasks against impl-review documentation verdict
-   - **Reviews green**: read the latest `<sprint>/reviews/impl/iter-NN/` (highest `reviews.impl.iteration`), parse first-line gate verdict tokens for all required reviewers; ALL must be `APPROVE`
+   - **Reviews green**: read latest `<sprint>/reviews/impl/iter-NN/` (highest `reviews.impl.iteration`), parse first-line gate verdict tokens for all required reviewers; ALL must be `APPROVE`
    - **Stub block**:
      - read `.asd/project/stubs.md`; filter `Sprint = <current-NNN-slug>` AND Reason NOT starting with `(accepted-debt)` → must be empty
      - Grep code for `// TODO(sprint-<current-NNN-slug>):` markers; cross-check every marker has matching stubs.md entry (orphan markers = block)
-   - **Tests pass**: run `commands.yaml` `test` command via Bash; non-zero exit = block
+   - **Tests pass**: run `commands.yaml` `test` via Bash; non-zero exit = block
    - **Lint clean**: run `commands.yaml` `lint`; non-zero exit = block
    - **PR self-review checklist** (per `git-strategy.md`): PM confirms each item explicitly (studied existing code, can explain every line, scoped to feature, why-not-what commits)
-   - on ANY block: relay specific failure to user; halt phase until fixed (user may dispatch fix or accept-debt)
+   - on ANY block: relay specific failure; halt phase until fixed (user may dispatch fix or accept-debt)
 5. **PR creation confirmation** — dispatch `asd-pm` via Task:
-   - compose PR title and body via `t_pr-description.md`
+   - compose PR title + body via `t_pr-description.md`
    - AskUserQuestion in `language.chat`: confirm open PR / edit body / abort
    - on confirm:
      - **`git.gh_enabled=true` and `git.auto_pr=true`**: stage uncommitted (none should remain), push branch, run `gh pr create --title <title> --body <body> --base <base_branch>`
      - **`git.gh_enabled=true` and `git.auto_pr=false`**: push branch, print PR-ready summary (title, body, compare URL); wait for user to open PR manually
      - **`git.gh_enabled=false`**: push branch, print PR-ready summary (title, body, compare URL hint)
-   - on edit: re-compose with user feedback, loop
+   - on edit: re-compose with feedback, loop
    - on abort: emit ABORT
 6. **Sprint archival** — dispatch `asd-pm` via Task:
    - move folder `.asd/sprints/<NNN-slug>/` → `.asd/sprints/archived/<NNN-slug>/` (git mv)

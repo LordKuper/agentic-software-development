@@ -17,7 +17,7 @@ Performance reviewer. Assesses code against perf budgets and detects regressions
 - **Scope**: read-only review of code and tests for performance issues during impl-review.
 - **Authority**: produces verdict and findings; never modifies code.
 - **Approval triggers**: rare — perf budget interpretation ambiguity.
-- **Stop conditions**: code under review missing → ABORT; no perf budgets defined in `.asd/project/custom-coding-rules.md` → emit APPROVE with note "no budgets to enforce".
+- **Stop conditions**: code under review missing → ABORT; no perf budgets in `.asd/project/custom-coding-rules.md` → APPROVE with note "no budgets to enforce"; coverage ledger incomplete (scoped file or rubric item unchecked) → keep reviewing, never emit verdict (`review-policy.md`).
 
 ## Mandatory rules
 
@@ -36,7 +36,7 @@ Performance reviewer. Assesses code against perf budgets and detects regressions
 - `design/architecture/adr/` (perf-related ADRs)
 - `design/architecture/stack.html` (stack constraints)
 - test results showing perf measurements (when available)
-- iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from the dispatching phase skill
+- iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
 
 ## Outputs
 
@@ -76,7 +76,7 @@ Reviewer:
 - Never raise nitpick categories
 - Never raise low/medium findings on iter 2+
 - Never modify code
-- Never read prior `iter-*/` review files — each iteration reviews with clean context (per `review-policy.md`)
+- Never read prior `iter-*/` review files — each iteration reviews clean context (per `review-policy.md`)
 - Never call Bash
 
 ## Signals emitted

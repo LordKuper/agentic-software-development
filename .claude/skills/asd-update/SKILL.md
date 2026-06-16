@@ -11,7 +11,7 @@ Pull latest ASD framework files into this consumer project. Overwrites **framewo
 
 Managed set = SSoT in `.asd/update-manifest.json`:
 - `managed.trees` — dirs ASD owns fully, replaced wholesale (`.asd/rules`, `.asd/templates`).
-- `managed.paths` — individual ASD agents, skill dirs, hook files. Listed one-by-one because they share `.claude/agents`, `.claude/skills`, `.claude/hooks` with the user's own custom items — those are never deleted.
+- `managed.paths` — individual ASD agents, skill dirs, hook files. Listed one-by-one because they share `.claude/agents`, `.claude/skills`, `.claude/hooks` with user's own custom items — those never deleted.
 
 Never touched: `.asd/project/**`, `.asd/sprints/**`, `design/**`, `CLAUDE.md`, `.claude/settings.json`, any non-ASD skill/agent/hook.
 
@@ -26,5 +26,5 @@ Never touched: `.asd/project/**`, `.asd/sprints/**`, `design/**`, `CLAUDE.md`, `
 
 ## After
 
-- Remind user: `.claude/settings.json` is **not** auto-updated (holds their permissions + hook registration). If the update changed hook files or added skills, they may need to reconcile it manually.
+- Remind user: `.claude/settings.json` is **not** auto-updated (holds their permissions + hook registration). If update changed hook files or added skills, they may need to reconcile manually.
 - Requires `tar` on PATH (ships with Win10 1803+/macOS/Linux) and Node >= 16.7.

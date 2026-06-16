@@ -19,7 +19,7 @@ allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
 
 ## Always first (both modes)
 
-0. **Sync `CLAUDE.md` ASD section** before any other step (see "CLAUDE.md sync" below). Runs unconditionally on every invocation, fresh or re-init, regardless of subsequent user choices or aborts.
+0. **Sync `CLAUDE.md` ASD section** before any other step (see "CLAUDE.md sync"). Runs unconditionally every invocation, fresh or re-init, regardless of subsequent user choices or aborts.
 
 ## Workflow (fresh)
 
@@ -42,10 +42,10 @@ allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
     - OS, external tools (with missing flags + install hint), review iteration limits, git settings, detected build/test/lint/run commands
     Then AskUserQuestion: `accept-all` | `edit-section` | `abort`.
     - `edit-section` → AskUserQuestion which section (os | tools | review | git | commands), collect new values, re-show proposal, loop until `accept-all`
-    - Missing required tools (designmd always; likec4 if decomp+likec4; codex if external_review) → must be resolved here: install / override path / disable feature. Do NOT silently proceed with missing required tools.
+    - Missing required tools (designmd always; likec4 if decomp+likec4; codex if external_review) → must resolve here: install / override path / disable feature. Do NOT silently proceed with missing required tools.
     Only after `accept-all` proceed to write.
 9. Write `.asd/project/config.yaml` from `t_config.yaml` with all approved fields (including `project.diagram_tool` when decomp enabled)
-10. Ask user what custom rules to add (separately for common / design / coding scopes); write three files from templates: `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`. Empty scope still writes the template stub (header + intro), so agents always find the file.
+10. Ask user what custom rules to add (separately for common / design / coding scopes); write three files from templates: `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`. Empty scope still writes template stub (header + intro), so agents always find the file.
 11. Write `.asd/project/decisions-log.md` from `t_decisions-log.md`
 12. Write `.asd/project/commands.yaml` (from `t_commands.yaml` + detected + OS-specific `custom.designmd-*`)
 13. If decomp enabled:
@@ -62,7 +62,7 @@ allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
 ## Workflow (re-init)
 
 1. Read current `.asd/project/config.yaml`
-2. **Dump full current config to chat** in `language.chat` before any edit prompt. Render every field as a structured block. User MUST see complete current state before being asked what to change. Do NOT skip or summarise — full values verbatim.
+2. **Dump full current config to chat** in `language.chat` before any edit prompt. Render every field as structured block. User MUST see complete current state before being asked what to change. Do NOT skip or summarise — full values verbatim.
 3. AskUserQuestion which sections to edit
 4. Per section: ask new value → add to pending change-set (do not write yet)
 5. Show consolidated diff of all pending edits → AskUserQuestion: `accept-all` | `edit-section` | `abort`; loop until accepted
@@ -71,7 +71,7 @@ allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
 
 ## CLAUDE.md sync
 
-Idempotent. Section is delimited by exact marker lines:
+Idempotent. Section delimited by exact marker lines:
 
 ```
 <!-- BEGIN: Agentic Software Development Rules -->
@@ -82,7 +82,7 @@ Body between markers = verbatim contents of `.asd/templates/t_CLAUDE.md` (no tra
 
 Algorithm:
 
-1. If `CLAUDE.md` absent at repo root → create it with:
+1. If `CLAUDE.md` absent at repo root → create with:
    ```
    # CLAUDE.md
 
@@ -92,18 +92,18 @@ Algorithm:
    <contents of .asd/templates/t_CLAUDE.md>
    <!-- END: Agentic Software Development Rules -->
    ```
-2. If present and both markers found → extract body between markers, byte-compare to template. If equal → no-op. If different → replace body in place (preserve everything outside markers, including the `## Agentic Software Development Rules` heading and any other user content).
+2. If present and both markers found → extract body between markers, byte-compare to template. Equal → no-op. Different → replace body in place (preserve everything outside markers, including the `## Agentic Software Development Rules` heading and any other user content).
 3. If present but markers missing → append the `## Agentic Software Development Rules` section (with markers and template body) to end of file. Do NOT modify pre-existing content.
-4. If only one marker is found (malformed) → STOP, ask user via AskUserQuestion: `repair` (replace from first marker to EOF) | `abort` | `manual`. Never silently guess.
+4. If only one marker found (malformed) → STOP, ask user via AskUserQuestion: `repair` (replace from first marker to EOF) | `abort` | `manual`. Never silently guess.
 
 Rules:
-- Marker lines are exact, case-sensitive, no trailing spaces.
+- Marker lines exact, case-sensitive, no trailing spaces.
 - Never touch content outside markers.
 - Trailing newline of template preserved.
 
 ## OS-specific commands written to .asd/project/commands.yaml
 
-Four custom commands always emitted. Linter is always invoked via `designmd-lint`; `designmd-install` is a session-scoped prerequisite on Windows (no-op elsewhere).
+Four custom commands always emitted. Linter always invoked via `designmd-lint`; `designmd-install` is session-scoped prerequisite on Windows (no-op elsewhere).
 
 **Windows** (run from project root):
 - `designmd-install: "npm install @google/design.md"`
@@ -125,7 +125,7 @@ Four custom commands always emitted. Linter is always invoked via `designmd-lint
 - `.asd/project/commands.yaml`
 - `design/architecture/c4/` content per `diagram_tool` (decomp only)
 
-Concept, stack, and design system are NOT produced here; they are owned by `/asd-concept`, `/asd-stack`, and `/asd-design-system` respectively.
+Concept, stack, design system NOT produced here; owned by `/asd-concept`, `/asd-stack`, `/asd-design-system` respectively.
 
 ## Agents dispatched
 

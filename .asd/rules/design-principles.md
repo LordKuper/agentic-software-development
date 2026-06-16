@@ -1,10 +1,10 @@
 # Design Principles
 
-Applied during design-shaping phases (design, design-review, design-promote) and verified against during impl-review.
+Applied during design-shaping phases (design, design-review, design-promote); verified against during impl-review.
 
 ## 1. Evidence over Speculation
 
-Do not build systems before the user-facing need is validated. Prefer a vertical slice over horizontal scaffolding. A new system, layer, or module proposed in ADR requires concrete usage evidence: a PRD scenario, measured pain, a named consumer. "We might need it later" does not qualify.
+Don't build systems before user-facing need is validated. Prefer vertical slice over horizontal scaffolding. New system/layer/module in ADR requires concrete usage evidence: a PRD scenario, measured pain, a named consumer. "Might need it later" does not qualify.
 
 ## 2. KISS — Simple Core
 
@@ -12,11 +12,11 @@ Simplest design that solves the validated problem. Three similar lines beat a pr
 
 ## 3. Separation of Concerns
 
-Identify the natural layers (presentation / domain / data / integration). Each gets its own module with explicit contracts captured in the ADR. Cross-layer calls only through those contracts. No domain logic in UI, no persistence concerns in domain code, no business rules in transport adapters.
+Identify natural layers (presentation / domain / data / integration). Each gets its own module with explicit contracts in the ADR. Cross-layer calls only through those contracts. No domain logic in UI, no persistence in domain code, no business rules in transport adapters.
 
 ## 4. Loose Coupling / High Cohesion
 
-A module groups things that change together (cohesion); modules depend through narrow contracts (coupling). Test: replacing one module must not require editing unrelated ones. One change touching many unrelated places signals broken cohesion or leaked coupling.
+Module groups things that change together (cohesion); modules depend through narrow contracts (coupling). Test: replacing one module must not require editing unrelated ones. One change touching many unrelated places signals broken cohesion or leaked coupling.
 
 ## 5. Single Source of Truth
 
@@ -24,7 +24,7 @@ Each fact has exactly one home file or module. Other places link or import, neve
 
 ## 6. Fail Fast on Load
 
-Validate content, data, and configuration at load time, not in runtime hot paths. Crash beats corrupt save. Crash beats silent fallback masking broken state.
+Validate content, data, config at load time, not in runtime hot paths. Crash beats corrupt save. Crash beats silent fallback masking broken state.
 
 ## 7. Observability by Design
 
@@ -32,11 +32,11 @@ Every long-lived component ships from day one: structured logs (with context), m
 
 ## 8. Backward Compatibility
 
-Persisted formats (DB schema, on-disk state, public API, wire protocol) are versioned. A breaking change requires an ADR, a migration plan, and a version bump. Additive changes preferred. A release must not invalidate existing user data or integrations without a migration path. Gated by `config.backward_compat` (`strict` | `migration` | `none`).
+Persisted formats (DB schema, on-disk state, public API, wire protocol) are versioned. A breaking change requires an ADR, a migration plan, a version bump. Additive changes preferred. A release must not invalidate existing user data or integrations without a migration path. Gated by `config.backward_compat` (`strict` | `migration` | `none`).
 
 ## 9. Evolutionary Architecture
 
-Defer commitment where the cost of reversal is high. Every ADR documents reversibility (easy / moderate / hard) and the trigger condition for re-evaluation. Architecture is grown, not poured.
+Defer commitment where cost of reversal is high. Every ADR documents reversibility (easy / moderate / hard) and the trigger condition for re-evaluation. Architecture is grown, not poured.
 
 ## 10. Over-Engineering & Structure Smells
 

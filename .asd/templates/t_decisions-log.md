@@ -7,7 +7,7 @@ responsibility:
 
 # Decisions Log
 
-Append-only. Never edited or removed. New entries appended below.
+Append-only. Never edited or removed.
 
 ## Entry format
 

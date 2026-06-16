@@ -11,7 +11,7 @@ allowed-tools: "Read Glob Grep AskUserQuestion Task"
 
 ## Preconditions
 - `.asd/project/config.yaml` exists (run `/asd-init` first)
-- No active sprint required (concept is a project-lifetime artefact)
+- No active sprint required (concept is project-lifetime artefact)
 
 ## Tool policy
 - Read — `.asd/project/config.yaml`, existing concept.html, candidate brownfield sources
@@ -22,16 +22,16 @@ allowed-tools: "Read Glob Grep AskUserQuestion Task"
 ## Phase 1 — silent detection (NO asking)
 
 Scan in order:
-1. `design/product/concept.html` exists with non-empty content → mode = **edit**, skip to Edit-mode flow
-2. Brownfield signals: `README*`, `docs/**`, root `*.md`, any source files, recent git commits → flag as brownfield candidate (default variant D)
-3. Greenfield (no code, no docs) → flag as greenfield candidate (no default)
+1. `design/product/concept.html` exists, non-empty → mode = **edit**, skip to Edit-mode flow
+2. Brownfield signals: `README*`, `docs/**`, root `*.md`, any source files, recent git commits → brownfield candidate (default variant D)
+3. Greenfield (no code, no docs) → greenfield candidate (no default)
 4. Continue to Phase 2
 
 ## Phase 2 — variant choice (only if Phase 1 did not route to edit)
 
-AskUserQuestion with four options:
+AskUserQuestion, four options:
 - **A** — No idea yet, want to explore
-- **B** — Have a vague idea, need shaping
+- **B** — Vague idea, need shaping
 - **C** — Clear vision, will describe
 - **D** — Work already started (brownfield), extract what exists
 
@@ -40,12 +40,12 @@ Phase 1 brownfield candidates auto-suggest D as default; user may override.
 ## Phase 3 — flow per variant (each dispatches `asd-ba`)
 
 **Variant A — divergent brainstorm**
-- AskUserQuestion with `tabs` form (multi-field one-shot):
+- AskUserQuestion `tabs` form (multi-field one-shot):
   - Lens: Problem-first / User-first / Market-first / Tech-first / Capability-first
   - Horizon: weeks / months / 1-2 years / multi-year
   - Maturity: first product / shipped before / domain expert
-- Dispatch `asd-ba` to generate 3 distinct concept directions anchored on chosen lens
-- AskUserQuestion (single-choice options): pick 1 of 3 / regenerate
+- Dispatch `asd-ba`: generate 3 distinct concept directions anchored on chosen lens
+- AskUserQuestion (options): pick 1 of 3 / regenerate
 - Proceed to Phase 4
 
 **Variant B — seeded brainstorm**
@@ -67,17 +67,17 @@ Phase 1 brownfield candidates auto-suggest D as default; user may override.
 
 ## Phase 4 — convergence (universal across variants)
 
-Section-by-section discussion in `language.chat`:
+Section-by-section in `language.chat`:
 - BA presents current section content
-- AskUserQuestion (options form): **A) Lock in / B) Revise this section / C) Skip (optional sections only)** — labels and descriptions rendered in `language.chat` per `language-policy.md`
+- AskUserQuestion (options): **A) Lock in / B) Revise this section / C) Skip (optional sections only)** — labels/descriptions in `language.chat` per `language-policy.md`
 - on B: collect feedback, BA revises, re-present, re-ask
 - repeat until A
-- proceed to next section per `t_concept.html` order (required first, then per-optional inclusion choice)
+- next section per `t_concept.html` order (required first, then per-optional inclusion choice)
 
 ## Phase 5 — final approval + write
 
 - BA shows full assembled concept summary
-- AskUserQuestion: **A) Approve and write / B) Revise specific section** (on B re-enter Phase 4 for chosen section) — labels and descriptions rendered in `language.chat`
+- AskUserQuestion: **A) Approve and write / B) Revise specific section** (on B re-enter Phase 4 for chosen section) — labels/descriptions in `language.chat`
 - on A: translate to `language.docs`, write `design/product/concept.html` per `t_concept.html`
 - emit COMPLETED
 
@@ -92,14 +92,14 @@ Section-by-section discussion in `language.chat`:
 ## Edit mode (Phase 1 routed here)
 
 - Show existing concept summary
-- AskUserQuestion: multi-select which sections to edit (per template) or add a new optional
+- AskUserQuestion: multi-select which sections to edit (per template) or add new optional
 - per chosen section: enter Phase 4 lock-in loop
 - Phase 5 + 6 as usual
 
 ## AskUserQuestion form rules (encoded)
 
-- Multi-field one-shot (e.g. Lens + Horizon + Maturity) → use `tabs` field
-- Single-choice branching (A/B/C/D, lock-in/revise) → use `options` field
+- Multi-field one-shot (e.g. Lens + Horizon + Maturity) → `tabs` field
+- Single-choice branching (A/B/C/D, lock-in/revise) → `options` field
 - Never mix; mixing produces "Invalid tool parameters" error
 
 ## Artefacts produced

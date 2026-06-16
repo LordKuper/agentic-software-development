@@ -29,10 +29,10 @@ User may override the cap. On override the counter keeps incrementing (not reset
 
 Every iteration dispatches each reviewer as a **fresh agent invocation** — new context, no carry-over from authoring or prior iterations. Isolates each verdict from creator reasoning and earlier rounds.
 
-- The dispatching phase skill spawns every reviewer (and External Review) anew each iteration. No reviewer is reused or resumed.
+- The dispatching phase skill spawns every reviewer (and External Review) anew each iteration. No reviewer reused or resumed.
 - Reviewer payload carries only: the artifact/diff under review, rule references, severity floor, iteration number, context paths. Never authoring rationale or prior verdicts.
 - Reviewers MUST NOT read prior `reviews/<phase>/iter-*/` files. Only the current `iter-NN/` directory.
-- Incremental diff scoping (iter 2+ reviews only what changed — see `external-review.md`) narrows the *input*, not context. The agent is still fresh.
+- Incremental diff scoping (iter 2+ reviews only what changed — see `external-review.md`) narrows the *input*, not context. Agent still fresh.
 - Where a reviewer genuinely needs prior-iteration data (External Review stalemate detection), the phase skill supplies it as explicit payload input — scoped data, not context carry-over.
 
 ## Over-engineering checklist (critical, undroppable)
@@ -61,7 +61,7 @@ Simplification reviewer flags as `critical` — the under-design counterpart to 
 
 Detection is responsibility-based (SRP), not size-based: evidence = name the distinct responsibility clusters the type mixes. Size alone never flags.
 
-Fix = split along responsibility seams into cohesive types → category `simplify` (decomposition, not new abstraction). Escalate only when the split changes ADR-declared subsystem boundaries.
+Fix = split along responsibility seams into cohesive types → category `simplify` (decomposition, not new abstraction). Escalate only when split changes ADR-declared subsystem boundaries.
 
 ## Autofix vs escalation
 
@@ -85,6 +85,19 @@ Default: the responsible creator autofixes any reviewer issue without user promp
 - Alternative naming with no concrete bug
 - `you could also` without identifying a defect
 - Speculative future-proofing
+
+## Coverage ledger (mandatory — blocks verdict)
+
+Applies to all 7 internal reviewers (NOT External Review — Codex self-scopes). Before any verdict, the reviewer MUST emit a coverage ledger proving exhaustive review. Reviewer MUST NOT stop or emit a final verdict while its ledger is incomplete — keep reviewing until every row resolved.
+
+Two parts, both required (template `t_review.md`):
+
+1. **File coverage** — every file in review scope listed once. Scope = the iteration's diff file list (impl-review) or the draft set under review (design-review), supplied in dispatch payload. Each file marked `checked` (reviewed against every applicable rubric item) or `n/a: <reason>` (outside this reviewer's concern, e.g. UI reviewer on a backend-only file). No scoped file omitted or left blank.
+2. **Rule coverage** — every item in this reviewer's checklist (its agent Review rubric + any `.asd/project/custom-*-rules.md`) listed once, each marked `pass`, `finding #<n>`, or `n/a: <reason>`. No item omitted or blank.
+
+A verdict whose ledger omits a scoped file, omits a checklist item, or leaves any row blank/unresolved is INVALID — counts as review-incomplete, never as APPROVE.
+
+**Enforcement (phase-skill gate):** the aggregating phase skill validates each internal reviewer's ledger against the known scope file list. Any reviewer whose ledger omits a scoped file or has an unresolved/blank row → review rejected → re-dispatch that reviewer (fresh) this same iteration. Verdict not counted until ledger complete. Makes coverage fail-proof: a skipped file or unchecked rule cannot pass silently.
 
 ## Verdict format
 

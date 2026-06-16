@@ -2,7 +2,7 @@
 
 ## Mandatory pauses (user approval required)
 
-Every pause is a HARD gate: the responsible agent MUST call `AskUserQuestion` and receive an explicit `approve` (or equivalent discrete option) BEFORE writing the gated artefact or advancing phase. Inferring approval from earlier free-text — including the original sprint request — is forbidden. Batching "produce + write + advance" into one turn without the intermediate `AskUserQuestion` is a protocol violation; the agent MUST emit `FAILED` and halt if it notices itself doing so.
+Every pause is a HARD gate: responsible agent MUST call `AskUserQuestion` and receive explicit `approve` (or equivalent discrete option) BEFORE writing the gated artefact or advancing phase. Inferring approval from earlier free-text — including the original sprint request — is forbidden. Batching "produce + write + advance" into one turn without the intermediate `AskUserQuestion` is a protocol violation; agent MUST emit `FAILED` and halt if it notices itself doing so.
 
 | After phase / event | Approves | Gate position |
 |---|---|---|
@@ -20,7 +20,7 @@ Every pause is a HARD gate: the responsible agent MUST call `AskUserQuestion` an
 
 ## Pause message format
 
-Every pause uses the user-decision format from `core.md` (Problem / Options / Recommended / Consequences). Use AskUserQuestion when options are discrete. Free-form approval (`approve / request changes / reject`) is acceptable for artifact reviews.
+Every pause uses the user-decision format from `core.md` (Problem / Options / Recommended / Consequences). Use AskUserQuestion when options are discrete. Free-form approval (`approve / request changes / reject`) acceptable for artifact reviews.
 
 ## Approval recording
 
@@ -39,7 +39,7 @@ impl-review    requires impl COMPLETED signal
 pr             requires impl-review DoD met
 ```
 
-`impl`⇄`impl-review` cycle: impl-review routes back to `impl` fix mode on unresolved issues. Cycle ends when impl-review reaches DoD (→ `pr`) or the iteration cap is hit.
+`impl`⇄`impl-review` cycle: impl-review routes back to `impl` fix mode on unresolved issues. Cycle ends when impl-review reaches DoD (→ `pr`) or iteration cap is hit.
 
 ## Skill auto-abort
 
@@ -47,4 +47,4 @@ If a phase skill detects a missing or unapproved predecessor, it MUST emit `ABOR
 
 ## Re-running a phase
 
-User may instruct re-run of a completed phase. The phase skill re-runs, downstream artifacts invalidated, `state.json.phase` resets. Decisions-log records the reset.
+User may instruct re-run of a completed phase. Phase skill re-runs, downstream artifacts invalidated, `state.json.phase` resets. Decisions-log records the reset.

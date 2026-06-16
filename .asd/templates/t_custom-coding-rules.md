@@ -7,6 +7,6 @@ responsibility:
 
 # Custom Coding Rules
 
-Project rules that apply only to code and tests. Read by `asd-backend-dev`, `asd-frontend-dev`, `asd-test-engineer`, and impl-review reviewers.
+Project rules applying only to code and tests. Read by `asd-backend-dev`, `asd-frontend-dev`, `asd-test-engineer`, impl-review reviewers.
 
 Put here: forbidden libraries/APIs, perf budgets (latency, memory, throughput, regression tolerances), security policy, test coverage thresholds, code-style constraints beyond `.asd/rules/code-style.md`. ASD never overwrites this file.

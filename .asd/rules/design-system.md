@@ -23,14 +23,14 @@ Test: rename underlying color → token name still true? If `red-button` cannot 
 
 ## 4. Token Usage Comment
 
-Every token MUST carry inline YAML comment: where used + when used. One line. No essay.
+Every token MUST carry inline YAML comment: where + when used. One line. No essay.
 
 ```yaml
 button-danger: "#c0392b"   # primary destructive actions (delete, discard, irreversible ops)
 surface-raised: "#2a2a2a"  # elevated panels, modals, popovers
 ```
 
-Comment absent → reviewer FAIL. Comment that only restate name (`button-danger: # danger button`) → reviewer FAIL.
+Comment absent → reviewer FAIL. Comment that only restates name (`button-danger: # danger button`) → reviewer FAIL.
 
 ## 5. Token Add Checklist
 
@@ -78,7 +78,7 @@ Theme MUST NOT change: grid, component size, hit targets, base spacing, notifica
 
 `designmd-lint` result with ≥1 **error** OR ≥1 **warning** (not in exclusion list) = FAIL → fixes required, re-lint. Clean pass = zero errors + zero un-excluded warnings.
 
-Errors never excludable. Each **warning** exclusion MUST be approved by user (AskUserQuestion) and the decision + short rationale recorded in DESIGN.md (lint-exclusions block). Reviewer (`asd-reviewer-ui`) FAIL if excluded warning lacks recorded rationale.
+Errors never excludable. Each **warning** exclusion MUST be user-approved (AskUserQuestion) and the decision + short rationale recorded in DESIGN.md (lint-exclusions block). Reviewer (`asd-reviewer-ui`) FAIL if excluded warning lacks recorded rationale.
 
 ## See also
 

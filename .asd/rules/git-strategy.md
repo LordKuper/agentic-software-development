@@ -20,7 +20,7 @@ Created in `scope` from `git.base_branch` per `git.branch_pattern`. Default patt
 
 ## TODO stubs
 
-An in-code TODO created during a sprint must be marked `// TODO(sprint-NNN): <reason>` and registered in **project-global** `.asd/project/stubs.md` (open stubs only) with: sprint of origin (NNN-slug), file path and line, reason (prefix `(accepted-debt)` for known debt that should not block PR), owner agent.
+In-code TODO created during a sprint must be marked `// TODO(sprint-NNN): <reason>` and registered in **project-global** `.asd/project/stubs.md` (open stubs only) with: sprint of origin (NNN-slug), file path and line, reason (prefix `(accepted-debt)` for known debt that should not block PR), owner agent.
 
 On resolution: row **deleted** from stubs.md (no status column; deletion = resolution). On migration: deleted, new row created under the receiving sprint.
 
@@ -43,8 +43,8 @@ Triggered only after DoD met AND user confirmation.
 
 - `gh_enabled: true` + `auto_pr: true` → `gh pr create` with body from `t_pr-description.md`
 - `gh_enabled: false` → push branch, print PR-ready summary (title, body, compare URL)
-- `auto_pr: false` → push, prepare summary, wait for the user to open the PR manually
+- `auto_pr: false` → push, prepare summary, wait for user to open PR manually
 
 ## Pre-existing uncommitted changes
 
-If the working tree is dirty at `/asd-sprint` start, PM stops and asks the user to commit or stash before sprint creation. No silent stashing.
+If working tree is dirty at `/asd-sprint` start, PM stops and asks user to commit or stash before sprint creation. No silent stashing.

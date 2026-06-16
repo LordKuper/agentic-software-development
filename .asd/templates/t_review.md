@@ -21,6 +21,20 @@ responsibility:
 <!-- when no findings, leave one row: -->
 <!-- | — | — | — | no findings | — | -->
 
+## Coverage ledger (mandatory — verdict INVALID if incomplete; see `review-policy.md`)
+
+Every scoped file + every rubric item, no row blank. Internal reviewers only.
+
+### File coverage
+| File | Status |
+|---|---|
+| {{path}} | {{checked / n/a: reason}} |
+
+### Rule coverage
+| Rubric item | Status |
+|---|---|
+| {{checklist item}} | {{pass / finding #N / n/a: reason}} |
+
 ## Verdict
 {{APPROVE | CONCERNS: <count> | FAIL: <count>}}
 
@@ -32,7 +46,7 @@ responsibility:
 
 ## Manual verification (optional, Testing reviewer only)
 
-Used only when automated verification is impossible (visual ui, third-party integration, ux interaction).
+Only when automated verification is impossible (visual ui, third-party integration, ux interaction).
 
 | # | Requirement (AC-ID) | Steps for user | Result reported by user |
 |---|---|---|---|

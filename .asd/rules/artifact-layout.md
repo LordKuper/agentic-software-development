@@ -89,7 +89,7 @@ User-facing artifacts may carry a `provenance` frontmatter field:
 
 - `original` (default) — designed within an ASD sprint from scratch
 - `reverse-engineered` — built from existing code without source docs
-- `migrated` — translated from an external document in another format/location
+- `migrated` — translated from an external doc in another format/location
 
 When `provenance != original`, set `source: <path or URL>`. HTML shows a provenance badge. Reviewers apply lighter checks on absent alternatives for non-original docs.
 
@@ -97,17 +97,17 @@ When `provenance != original`, set `source: <path or URL>`. HTML shows a provena
 
 User-facing artifacts are HTML only. No parallel Markdown source. Exceptions:
 
-- `DESIGN.md` — Google Labs format (YAML + Markdown), machine source for the design system. Spec: https://github.com/google-labs-code/design.md — agents fetch the current spec from upstream when creating/editing it.
+- `DESIGN.md` — Google Labs format (YAML + Markdown), machine source for the design system. Spec: https://github.com/google-labs-code/design.md — agents fetch current spec from upstream when creating/editing it.
 - `commands.yaml` — machine source, not user-facing
 - LikeC4 `.c4` files — DSL source
 
-`design-system.html` is generated from DESIGN.md by the Documentation agent: all tokens/rules with live examples (color swatches with hex, typography samples, spacing scale, component previews). Regenerated when DESIGN.md changes.
+`design-system.html` generated from DESIGN.md by the Documentation agent: all tokens/rules with live examples (color swatches with hex, typography samples, spacing scale, component previews). Regenerated when DESIGN.md changes.
 
 ## HTML shell wrapping (mandatory)
 
 Every user-facing HTML artifact (prd, ux-spec, adr, concept, stack, accessibility, api, design-system, architecture) MUST be wrapped in `t_html-shell.html`. The fragment template (`t_prd.html`, …) supplies the `<section>` content filling `{{CONTENT}}`. Creators emit a complete HTML document, not a bare fragment.
 
-**Placeholder fill** — creators compute and inline these when writing:
+**Placeholder fill** — creators compute and inline when writing:
 
 | Placeholder | Source / value |
 |---|---|
@@ -129,7 +129,7 @@ Every user-facing HTML artifact (prd, ux-spec, adr, concept, stack, accessibilit
 
 **Badge omission**: omit the provenance badge when `PROVENANCE == original` (do not emit the `<span class="provenance-original">` block).
 
-**Fragment invariants**: fragment files in `.asd/templates/` (`t_prd.html` etc.) must NOT include `<html>`, `<head>`, `<body>`, `<style>`, `<script>` — content-only, rely on the shell for chrome/styling. Reviewers FAIL fragments that duplicate shell chrome.
+**Fragment invariants**: fragment files in `.asd/templates/` (`t_prd.html` etc.) must NOT include `<html>`, `<head>`, `<body>`, `<style>`, `<script>` — content-only, rely on shell for chrome/styling. Reviewers FAIL fragments that duplicate shell chrome.
 
 ## Tech reference docs (mandatory for every chosen tech)
 
@@ -141,11 +141,11 @@ Every user-facing HTML artifact (prd, ux-spec, adr, concept, stack, accessibilit
 
 `<sprint>/manual-steps.md` per `t_manual-steps.md`. Per-sprint, created lazily. Owners: dev agents (append entries); PM (validates necessity).
 
-A manual step = an operational action a human must perform for the plan to complete (provision a secret, create a cloud resource, hand-run a migration, set an env var, register a third-party account). NOT a code stub (`stubs.md`) nor manual QA verification (reviews `testing.md`).
+Manual step = operational action a human must perform for the plan to complete (provision a secret, create a cloud resource, hand-run a migration, set an env var, register a third-party account). NOT a code stub (`stubs.md`) nor manual QA verification (reviews `testing.md`).
 
 - When a subtask cannot proceed without a human-only operational action, the dev appends an `MS-N` entry (full step-by-step instructions + a `Verification` field) and marks the subtask `BLOCKED: MS-N` in `plan.md`.
-- `Verification` is mandatory: states how the workflow confirms the action was done (a `commands.yaml` check, observable state, or explicit user confirmation).
-- PM validates every new entry before the phase halts. Kept only when the action genuinely cannot be done autonomously (needs access, a secret, an external account, an authority the agent lacks). Otherwise rejected, returned to the dev to implement directly.
+- `Verification` mandatory: states how the workflow confirms the action was done (a `commands.yaml` check, observable state, or explicit user confirmation).
+- PM validates every new entry before the phase halts. Kept only when the action genuinely cannot be done autonomously (needs access, a secret, an external account, an authority the agent lacks). Else rejected, returned to the dev to implement directly.
 - Status `pending` → `done`. The registering dev flips to `done` only after running `Verification`.
 - Sprint-scoped; archived with the sprint.
 

@@ -8,6 +8,7 @@ scope → audit → design → design-review → design-promote → plan → imp
 
 `impl` and `impl-review` form a cycle: when impl-review finds issues it does NOT fix them — it routes the sprint back to `impl` (fix mode), then impl returns to `impl-review`. Repeats until impl-review reaches DoD (all reviewers APPROVE) or the iteration cap is hit. Phase routing follows the `NEXT:` token in each phase skill's return contract, not a fixed linear chain.
 
+
 ## Review iteration counters
 
 Two independent counters in `state.json`, one per review phase:
@@ -15,12 +16,12 @@ Two independent counters in `state.json`, one per review phase:
 - `reviews.design.iteration` — design-review iterations
 - `reviews.impl.iteration` — impl-review iterations
 
-Each review phase reads, increments, and reports only its own counter. They never share a value; the severity-floor budget (`review-policy.md`) is computed per counter.
+Each review phase reads, increments, and reports only its own counter. Never shared; severity-floor budget (`review-policy.md`) computed per counter.
 
 **Lifecycle:**
 
 - Both created at `0` when the sprint is initialised in `scope` (per `t_state.json`).
-- Each is incremented at the **start of every entry** of its phase (`1` on first entry). `design-review` is entered once and loops internally. `impl-review` is re-entered each `impl⇄impl-review` cycle; the intervening `impl` fix-mode phase does not touch the counter — it accumulates across the whole cycle.
+- Each incremented at the **start of every entry** of its phase (`1` on first entry). `design-review` entered once, loops internally. `impl-review` re-entered each `impl⇄impl-review` cycle; the intervening `impl` fix-mode phase does not touch the counter — it accumulates across the whole cycle.
 - **Rollback reset.** When `state.json.phase` is set strictly earlier in the chain than a review's input-producing phase, that counter resets to `0`, its severity floor resets, and its `verdicts` clear. Input-producing phases: `design` for design-review, `impl` for impl-review.
 
   | Counter | Resets when phase set to |
@@ -53,6 +54,7 @@ Scans: existing source in touched areas; existing docs in **any format/location*
 
 Output `audit.md` — findings (touched areas, existing docs/code, gaps, risks) plus **Documentation migration plan** listing found external docs to promote into ASD format. Where sprint scope directly overlaps found content, the agent may pre-formulate reverse-engineered/migrated drafts in `<sprint>/design/` (prd/ux-spec/adr.html) with `provenance` + `source` frontmatter; these flow through design and design-review like any draft. Migration items not covered by drafts wait for design-promote.
 
+
 ## Design phase
 
 Agents produce a unified draft set for the whole sprint scope in `<sprint>/design/`:
@@ -64,6 +66,7 @@ Agents produce a unified draft set for the whole sprint scope in `<sprint>/desig
 - `c4-full/` — full LikeC4 schema for sprint scope (`model/*.c4`, `views.c4`, `dist/`)
 
 Order: PRD blocks design-system gate. Design-system gate (existence check on `design/ux/DESIGN.md`, `design-system.html`, `accessibility.html`; dispatches `/asd-design-system` when any missing) blocks UX-spec. UX-spec blocks ADR. ADR blocks c4-full. If `subsystem_decomposition: disabled`, `c4-full/` omitted.
+
 
 ## Design-promote phase
 
@@ -84,7 +87,7 @@ If `subsystem_decomposition: disabled`: drafts merge into flat project-level doc
 
 ## Impl phase
 
-Devs implement plan tasks. When a subtask needs a human-only operational action (secret, cloud resource, hand-run migration, env var, third-party account), the dev registers an `MS-N` entry in `<sprint>/manual-steps.md`, marks the subtask `BLOCKED: MS-N` in `plan.md`, emits `BLOCKED_MANUAL`, continues all unblocked work. PM validates each `MS-N` for necessity (`artifact-layout.md`); autonomously-doable entries are rejected and returned to the dev. Once all unblocked work is COMPLETED and validated `pending` entries remain, the phase halts: PM presents `manual-steps.md`, waits for a continue command. On resume the dev verifies each entry per its `Verification` field, flips it to `done`, finishes the blocked subtasks.
+Devs implement plan tasks. When a subtask needs a human-only operational action (secret, cloud resource, hand-run migration, env var, third-party account), the dev registers an `MS-N` entry in `<sprint>/manual-steps.md`, marks the subtask `BLOCKED: MS-N` in `plan.md`, emits `BLOCKED_MANUAL`, continues all unblocked work. PM validates each `MS-N` for necessity (`artifact-layout.md`); autonomously-doable entries rejected and returned to the dev. Once all unblocked work COMPLETED and validated `pending` entries remain, the phase halts: PM presents `manual-steps.md`, waits for a continue command. On resume the dev verifies each entry per its `Verification` field, flips it to `done`, finishes the blocked subtasks.
 
 **Modes** — detected from `state.json.review_fixes_pending`:
 
