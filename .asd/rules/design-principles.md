@@ -42,6 +42,10 @@ Defer commitment where cost of reversal is high. Every ADR documents reversibili
 
 Apply the over-engineering checklist AND the structure/cohesion checklist from `review-policy.md` PROACTIVELY during design, not only at review — flag during ADR drafting. Each item is `critical` and undroppable. The structure checklist (god/sprawling type) enforces #3 and #4 at the type level.
 
+## 11. Research Current Best Practices
+
+Every design decision researches current best practices for implementing such a solution (cite sources, verify currency via WebSearch + WebFetch). On doubt between approaches: document each option with detailed pros/cons, mark the recommended one, escalate to user via AskUserQuestion for final choice. Don't pick silently when alternatives are real.
+
 ## See also
 
 - `core.md` — Simplicity Default, Complication Approval, QODDA
