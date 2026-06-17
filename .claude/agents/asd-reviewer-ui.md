@@ -66,7 +66,7 @@ Reviewer:
 
 ## Review rubric
 
-- **Token usage**: per `design-system.md` §6
+- **Token usage**: per `design-system.md` §6 — covers ux-spec mockup previews too; raw hex/px/rem/font in a mockup or UI = `high` finding
 - **Token comment**: per `design-system.md` §4
 - **Component fidelity**: UI matches ux-spec mockup structure and states (empty, loading, error); disabled state per `design-system.md` §7
 - **Design system completeness**: every component used exists in DESIGN.md, no ad-hoc components

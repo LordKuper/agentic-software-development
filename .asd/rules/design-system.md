@@ -46,7 +46,7 @@ Reject if: one-off decoration, experimental, near-duplicate of existing, illustr
 
 ## 6. No Hardcoded Values
 
-No raw hex / px / rem / font-family in UI code. Always token reference. Exception: DESIGN.md primitive layer itself.
+No raw hex / px / rem / font-family in UI code **or ux-spec mockup previews**. Always token reference. Exception: DESIGN.md primitive layer itself.
 
 ## 7. Component States
 

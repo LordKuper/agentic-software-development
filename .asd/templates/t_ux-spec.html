@@ -18,7 +18,7 @@ flowchart TD
 
 <section id="ui-mockups">
   <h2>UI mockups</h2>
-  <p class="lede">One article per implemented or modified screen. Each mockup uses tokens from DESIGN.md and renders an interactive preview of the actual interface.</p>
+  <p class="lede">One article per implemented or modified screen. Each mockup MUST reference DESIGN.md tokens only — no raw hex/px/rem/font (<code>design-system.md</code> §6) — and renders an interactive preview of the actual interface.</p>
 
   <article class="mockup">
     <h3>{{screen name}}</h3>
@@ -28,7 +28,7 @@ flowchart TD
       <dt><b>Exit to</b></dt><dd>{{next screen or terminal state}}</dd>
     </dl>
     <div class="mockup-preview">
-      <!-- inline html/css preview of the screen, built with DESIGN.md tokens -->
+      <!-- inline html/css preview; DESIGN.md token refs only — no raw hex/px/rem/font (design-system.md §6) -->
     </div>
     <p><b>Notes</b>: {{states, edge cases, empty/loading/error}}</p>
   </article>
