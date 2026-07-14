@@ -38,12 +38,14 @@ External review wrapper. Runs Codex CLI parallel to internal reviewers, normalis
 - prompt template:
   - design-review → `.asd/templates/external-review/t_prompt-external-design.md`
   - impl-review → `.asd/templates/external-review/t_prompt-external-impl.md`
-- prompt-slot context: language.docs, concept/stack/custom-common-rules + phase-scoped custom rules paths, accessibility baseline, backward_compat, commands
-- diff payload:
-  - design-review iter 1: full content of `<sprint>/design/` files
+- prompt-slot context (paths only, phase-scoped): language.docs, custom-common-rules + phase-scoped custom rules
+  - design-review: concept, accessibility baseline
+  - impl-review: sprint prd.html + adr.html (reference for AC/contract cross-ref), stack, backward_compat, commands
+- diff payload — phase-scoped, no cross-phase content, no generated output (`external-review.md` § Phase-scoped payload). `<pathspec>` = `-- . ':(exclude).asd/**' ':(exclude)design/**'` — also keeps c4 schemas out of impl-review
+  - design-review iter 1: full content of `<sprint>/design/` files (no code, no `c4-full/dist/`)
   - design-review iter 2+: per-file diff since last iteration snapshot
-  - impl-review iter 1: `git diff <base>...HEAD`
-  - impl-review iter 2+: `git diff` (uncommitted) + `git show HEAD`
+  - impl-review iter 1: `git diff <base>...HEAD <pathspec>` (code+tests, no docs)
+  - impl-review iter 2+: `git diff <pathspec>` (uncommitted) + `git show HEAD <pathspec>`
 - previous iteration finding set (iter ≥ 2 only) — supplied by dispatching phase skill for stalemate detection; agent never reads prior `iter-*/` files itself
 
 ## Outputs
@@ -61,7 +63,7 @@ Reviewer (external wrapper):
 ## Tool policy
 
 - Read/Glob/Grep for context
-- Bash limited to `codex` / `codex.exe` (and `system.tools.codex_command` override), stdin-pipe helper (`cat` / `Get-Content`), deleting `codex-input.tmp` (`rm` / `Remove-Item`); no arbitrary commands
+- Bash limited to `codex` (and `system.tools.codex_command` override), stdin-pipe helper (`cat` / `Get-Content`), deleting `codex-input.tmp` (`rm` / `Remove-Item`); no arbitrary commands
 - AskUserQuestion only for stalemate escalation
 - Edit/Write only for `<sprint>/reviews/<design|impl>/iter-NN/external.md` and transient `codex-input.tmp` in same dir
 
@@ -69,7 +71,7 @@ Reviewer (external wrapper):
 
 Prompt via temp file: write rendered prompt + diff payload to `<in-file>` = `<sprint>/reviews/<design|impl>/iter-NN/codex-input.tmp`, pipe to Codex stdin (`-`), delete after run. `<out-file>` = Codex final message; `-o` writes it to file. No `--json` (prompt yields text verdict).
 
-- windows: `Get-Content <in-file> -Raw | codex.exe exec -o <out-file> -` (or `system.tools.codex_command`)
+- windows: `Get-Content <in-file> -Raw | codex exec -o <out-file> -` (or `system.tools.codex_command`)
 - linux: `cat <in-file> | codex exec -o <out-file> -` (or override)
 - macos: same as linux
 

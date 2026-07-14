@@ -60,7 +60,7 @@ system:
     # Set to false to disable design.md tooling (agents still read/write DESIGN.md manually).
     designmd: true
 
-    # Codex CLI command path. Empty for default per-OS lookup (codex / codex.exe).
+    # Codex CLI command path. Empty for default lookup (`codex` on all OSes).
     codex_command: ""
 
 git:
