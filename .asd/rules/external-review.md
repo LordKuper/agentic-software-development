@@ -14,13 +14,13 @@ Prompt passed via **temp file**, not inline: agent writes rendered prompt templa
 
 | OS | Probe | Review command |
 |---|---|---|
-| windows | `codex.exe --version` (PowerShell) | `Get-Content <in-file> -Raw \| codex.exe exec -o <out-file> -` |
+| windows | `codex --version` (PowerShell) | `Get-Content <in-file> -Raw \| codex exec -o <out-file> -` |
 | linux | `codex --version` (bash) | `cat <in-file> \| codex exec -o <out-file> -` |
 | macos | `codex --version` (bash) | `cat <in-file> \| codex exec -o <out-file> -` |
 
 `codex exec -` reads prompt+diff from stdin; `-o <out-file>` writes Codex final message to file. No `--json` — prompt yields text verdict, not event stream.
 
-`system.tools.codex_command` in config overrides default command path (`codex`/`codex.exe`) for all OSes.
+Command is `codex` on every OS (npm ships a shell shim plus `codex.cmd`/`codex.ps1` on Windows; there is no `codex.exe`). `system.tools.codex_command` in config overrides that path.
 
 ## Detection
 
@@ -29,14 +29,29 @@ At review phase start, agent runs the probe. On failure (non-zero exit, command 
 - Append to `decisions-log.md`: `Codex CLI unavailable, external review skipped for sprint <NNN-slug> iter <N>`
 - Continue without external review, no user prompt
 
+## Phase-scoped payload
+
+Diff payload carries only what the phase reviews. Cross-phase artifacts, when needed, go in as **reference paths** (read-only context), never as diff.
+
+| Phase | Diff payload | Reference (paths only, not diffed) |
+|---|---|---|
+| design-review | sprint design drafts only — `<sprint>/design/**`, minus generated output | concept, custom rules, accessibility baseline |
+| impl-review | code and tests only — `.asd/**` and `design/**` excluded | prd.html, adr.html, stack, custom rules, commands |
+
+design-review payload never contains source code; impl-review payload never contains design/doc diffs (a doc-vs-code drift finding belongs to the internal Documentation reviewer). Both exclusions also keep C4 schemas out of impl-review: likec4 lives under `<sprint>/design/c4-full/` and `design/architecture/c4/`.
+
+**Generated output never enters any payload.** Excluded everywhere: `**/dist/**` (likec4 build), `design-system.html`, `architecture.html` — all derived from a source the reviewer already sees (`*.c4`, `DESIGN.md`, `subsystems.yaml`). Review the source, not the build.
+
+`<pathspec>` for impl-review: `-- . ':(exclude).asd/**' ':(exclude)design/**'`
+
 ## Iteration-aware diff
 
 | Phase | Iteration | Diff source |
 |---|---|---|
-| design-review | 1 | full content of `<sprint>/design/` files |
+| design-review | 1 | full content of `<sprint>/design/` files, minus `c4-full/dist/` |
 | design-review | 2+ | per-file diff since previous iteration snapshot |
-| impl-review | 1 | `git diff <git.base_branch>...HEAD` |
-| impl-review | 2+ | `git diff` (uncommitted) plus last commit (`git show HEAD`) |
+| impl-review | 1 | `git diff <git.base_branch>...HEAD <pathspec>` |
+| impl-review | 2+ | `git diff <pathspec>` (uncommitted) plus last commit (`git show HEAD <pathspec>`) |
 
 Iteration 1 covers all sprint work in that phase; later iterations cover only changes since the last round. design-review persists a file snapshot each iteration; next iteration reads it to compute its diff.
 

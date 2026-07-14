@@ -11,9 +11,12 @@ You are external reviewer for ASD workflow. Review sprint code and tests.
 
 ## Inputs
 
-- diff payload: `git diff <base>...HEAD` (iter 1) or `git diff` + last commit (iter 2+)
+- diff payload: code and tests only — `.asd/**` and `design/**` excluded. `git diff <base>...HEAD <pathspec>` (iter 1) or `git diff <pathspec>` + last commit (iter 2+)
+- out of scope: design/doc content (reviewed in design-review) — do not report doc wording, PRD/ADR/UX drafting, or doc-vs-code drift. Design docs below are reference only, for cross-ref (AC coverage, ADR contract drift in *code*)
 - project context:
   - docs language: {{LANG_DOCS}}
+  - sprint requirements (reference): {{PRD_PATH}}
+  - sprint architecture decisions (reference): {{ADR_PATH}}
   - tech stack: {{STACK_PATH}}
   - custom rules: {{CUSTOM_RULES_PATH}}
   - commands: {{COMMANDS_PATH}}
