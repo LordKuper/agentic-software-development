@@ -58,7 +58,7 @@ Phase skills named `asd-phase-<phase>`, one per phase in `sprint-lifecycle.md`. 
 
 ## Compaction
 
-Before context compaction, agent dumps minimal recovery state to `state.json`. After, reloads `state.json` to resume.
+Context window over 50% full → compact (`/compact`) before next major step. Before compaction, agent dumps minimal recovery state to `state.json`. After, reloads `state.json` to resume.
 
 ## Untrusted-data boundary
 
