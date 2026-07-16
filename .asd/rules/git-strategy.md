@@ -10,6 +10,7 @@ Created in `scope` from `git.base_branch` per `git.branch_pattern`. Default patt
 - Subject ≤ 50 chars, imperative mood, English
 - Body describes WHY, not WHAT
 - One commit per task when possible; phase-grouped acceptable for small tasks
+- Before push: squash local WIP/fixup commits into task-level commits (`git reset --soft` + recommit, or non-interactive rebase). Applies to unpushed commits only — published history stays untouched (see Forbidden)
 
 ## Forbidden
 
