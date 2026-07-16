@@ -2,7 +2,7 @@
   "$comment": "ASD framework update manifest. SSoT for which paths /asd-update overwrites. trees = dirs ASD owns fully (replaced wholesale). paths = files/dirs that live beside user-owned files (skills/agents/hooks) and so are listed individually — never blanket their parent dir or a user's custom skill/agent/hook gets deleted. Bump version on every framework change. update.js deletes by the LOCAL copy of this list, then copies by the freshly fetched list.",
   "repo": "https://github.com/LordKuper/agentic-software-development",
   "branch": "main",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "managed": {
     "trees": [
       ".asd/rules",
