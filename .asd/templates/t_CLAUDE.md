@@ -6,7 +6,7 @@
 
 @.asd/project/custom-common-rules.md
 
-Phase-scoped rules (loaded per phase, not globally): `.asd/project/custom-design-rules.md` (design / design-review), `.asd/project/custom-coding-rules.md` (impl / impl-review).
+Phase-scoped rules (loaded per phase, not globally): `.asd/project/custom-design-rules.md` (design / design-review), `.asd/project/custom-coding-rules.md` (impl / impl-test / impl-review).
 
 ### Language policy
 

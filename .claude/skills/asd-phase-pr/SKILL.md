@@ -3,7 +3,7 @@ name: asd-phase-pr
 description: "Runs the final ASD pr phase: dispatches asd-pm to verify the Definition of Done and compose+open (or prepare) the PR per git config, then on a later re-entry archives the sprint folder once the PR is merged. Use when asd-sprint dispatches the pr phase, or when the user explicitly asks to run or re-run pr for the active sprint."
 metadata:
   asd-role: phase
-  asd-order: "9"
+  asd-order: "10"
   version: "0.1"
 allowed-tools: "Read Glob Grep AskUserQuestion Task"
 ---

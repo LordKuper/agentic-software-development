@@ -35,7 +35,7 @@ PM confirms before opening PR:
 - Can explain every changed line
 - PR scoped to requested feature; no unrelated improvements
 - Commit messages describe why, not what
-- All tests pass locally
+- Full test suite green at `impl-test` (per `test-plan.md` `Suite run`)
 - Documentation reviewer verdict = APPROVE
 
 ## PR creation

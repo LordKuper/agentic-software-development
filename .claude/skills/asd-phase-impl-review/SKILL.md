@@ -1,9 +1,9 @@
 ---
 name: asd-phase-impl-review
-description: "Runs the ASD impl-review phase iteratively until DoD met: dispatches seven internal reviewers (and asd-external-review when enabled) in parallel against the sprint's code and tests, aggregates verdicts, and on unresolved findings sets state.json.review_fixes_pending and routes back to impl fix mode. Use when asd-sprint dispatches impl-review, or when the user explicitly asks to run or re-run impl-review for the active sprint."
+description: "Runs the ASD impl-review phase iteratively until DoD met: dispatches seven internal reviewers (and asd-external-review when enabled) in parallel against the sprint's code and tests, aggregates verdicts, and on unresolved findings sets state.json.review_fixes_pending and routes back to impl review-fix mode. Use when asd-sprint dispatches impl-review, or when the user explicitly asks to run or re-run impl-review for the active sprint."
 metadata:
   asd-role: phase
-  asd-order: "8"
+  asd-order: "9"
   version: "0.1"
 allowed-tools: "Read AskUserQuestion Task"
 ---
@@ -12,14 +12,14 @@ allowed-tools: "Read AskUserQuestion Task"
 
 ## Preconditions
 - Active sprint at `.asd/sprints/<NNN-slug>/`
-- impl COMPLETED signal received; `state.json.phase` advanced from `impl`
+- impl-test COMPLETED signal received with a green full suite; `state.json.phase` advanced from `impl-test`
 - **First entry** (after initial impl): all plan.md Task checkboxes ticked; impl assessment approved
-- **Cycle re-entry** (after impl fix mode): `state.json.review_fixes_pending` cleared by impl fix-mode finalize; impl completion gate (build + tests green) passed
+- **Cycle re-entry** (after impl review-fix + impl-test): `state.json.review_fixes_pending` cleared by impl fix-mode finalize; `test_defects_pending` null; `<sprint>/test-plan.md` `Suite run` records a pass
 
 ## Tool policy
-- Read — `.asd/project/config.yaml`, `state.json`, plan.md, code + tests diff, persistent design/ docs, `.asd/project/stubs.md`, `custom-common-rules.md`, `custom-coding-rules.md`, review files
+- Read — `.asd/project/config.yaml`, `state.json`, plan.md, `test-plan.md`, code + tests diff, persistent design/ docs, `.asd/project/stubs.md`, `custom-common-rules.md`, `custom-coding-rules.md`, review files
 - AskUserQuestion — escalation on FAIL or iteration cap
-- Task — parallel reviewer dispatch; PM for state + decisions-log. impl-review does NOT dispatch devs — finding fixes route to impl phase (fix mode).
+- Task — parallel reviewer dispatch; PM for state + decisions-log. impl-review does NOT dispatch devs — finding fixes route to impl phase (review-fix mode), which returns via impl-test.
 
 ## Workflow
 
@@ -30,13 +30,13 @@ allowed-tools: "Read AskUserQuestion Task"
 5. **Parallel dispatch** via Task — every reviewer spawned as **fresh agent** each iteration (clean-context dispatch per `review-policy.md`); no reviewer reused across iterations:
    - `asd-reviewer-quality` — bugs, security, best-practice, contract drift
    - `asd-reviewer-implementation` — PRD AC-N coverage trace vs code/tests
-   - `asd-reviewer-testing` — test coverage, edge cases, determinism, stub-resolution verification, manual verification capture
+   - `asd-reviewer-testing` — `test-plan.md` decisions (risk→check fit, justified removals, justified `none` decisions, fail-first regression proof), test quality and determinism, stub-resolution verification, manual verification capture
    - `asd-reviewer-ui` — UI code vs ux-spec mockups + accessibility compliance
    - `asd-reviewer-simplification` — over-engineering smells in code; design-principles adherence
    - `asd-reviewer-documentation` — persistent design/ actuality vs implementation, SSoT, traceability
    - `asd-reviewer-performance` — perf budgets, regression, anti-patterns
    - if `review.external_review=enabled` → `asd-external-review` with phase=`impl-review`
-   - payload to each: diff (iter 1 = `git diff <base>...HEAD`; iter 2+ = `git diff` + last commit), the **scope file list** (the diff's changed files — set each internal reviewer must cover in its `review-policy.md` coverage ledger), iteration N, review output dir `<sprint>/reviews/impl/iter-NN/`, severity floor, relevant context paths, `language.chat`, `language.docs`. Payload carries no authoring rationale, no prior-iteration verdicts; incremental diff scopes the *input*, not reviewer's context. For `asd-external-review` on iter ≥ 2, also pass previous iteration's finding set (stalemate detection)
+   - payload to each: diff (iter 1 = `git diff <base>...HEAD`; iter 2+ = `git diff` + last commit), the **scope file list** (the diff's changed files — set each internal reviewer must cover in its `review-policy.md` coverage ledger), iteration N, review output dir `<sprint>/reviews/impl/iter-NN/`, severity floor, relevant context paths (`<sprint>/test-plan.md` included — Testing reviewer's primary input), `language.chat`, `language.docs`. Payload carries no authoring rationale, no prior-iteration verdicts; incremental diff scopes the *input*, not reviewer's context. For `asd-external-review` on iter ≥ 2, also pass previous iteration's finding set (stalemate detection)
    - each reviewer writes `<sprint>/reviews/impl/iter-NN/<reviewer>.md` per `t_review.md` (or `external-review/t_review-report.md` for external) with first-line verdict token `[REVIEW-impl-<reviewer>]: ...`
 6. Wait all REVIEW_DONE, then **coverage-ledger gate** (per `review-policy.md`): per internal reviewer file, validate File-coverage ledger lists every file in scope file list and no ledger row (file or rule) blank/unresolved. Any reviewer with missing scoped file or unresolved row → reject + re-dispatch fresh, same iteration; wait again. Only complete-ledger reviews proceed. External Review exempt.
 7. Parse first-line verdict tokens from all reviewer files; record per-reviewer verdicts under `state.json` `reviews.impl.verdicts["iter-NN"]`; aggregate. impl-review does NOT fix findings itself — fixes route to impl phase (fix mode):
@@ -49,13 +49,13 @@ allowed-tools: "Read AskUserQuestion Task"
      - on override → mark that finding resolved (no fix needed); exclude from fix set
      - on accept → keep finding in fix set; note approved change in its reviewer file
      - then continue to routing step below with surviving findings
-   - **Any unresolved finding remains** (CONCERNS findings, plus FAIL findings user accepted for fix) → route to impl fix mode:
-     - dispatch `asd-pm` via Task: set `state.json.review_fixes_pending = "iter-NN"` (current impl-review iteration; impl fix-mode phase reads findings from `<sprint>/reviews/impl/iter-NN/`); append decisions-log "impl-review iter NN: <CONCERNS/FAIL summary> → impl fix"
+   - **Any unresolved finding remains** (CONCERNS findings, plus FAIL findings user accepted for fix) → route to impl review-fix mode (the sprint returns here via impl-test):
+     - dispatch `asd-pm` via Task: set `state.json.review_fixes_pending = "iter-NN"` (current impl-review iteration; impl review-fix mode reads findings from `<sprint>/reviews/impl/iter-NN/`); append decisions-log "impl-review iter NN: <CONCERNS/FAIL summary> → impl fix"
      - emit phase COMPLETED with `NEXT: impl`
    - **All FAIL overridden, no CONCERNS** (escalation left zero unresolved findings) → treat as DoD met by user override: PM appends decisions-log "impl-review iter NN: APPROVE by override", clears `review_fixes_pending`; emit COMPLETED with `NEXT: pr`
-8. Iteration cap reached (next impl-review iteration would exceed all severity-tier budgets per `review-policy.md`) — checked when step 7 would route to impl fix mode:
+8. Iteration cap reached (next impl-review iteration would exceed all severity-tier budgets per `review-policy.md`) — checked when step 7 would route to impl review-fix mode:
    - AskUserQuestion: override cap and continue / accept current findings / abort sprint
-   - on override → route to impl fix mode (`reviews.impl.iteration` keeps incrementing — not reset; severity floor pinned at `critical`; PM sets `review_fixes_pending`, emit COMPLETED `NEXT: impl`)
+   - on override → route to impl review-fix mode (`reviews.impl.iteration` keeps incrementing — not reset; severity floor pinned at `critical`; PM sets `review_fixes_pending`, emit COMPLETED `NEXT: impl`)
    - on accept → emit COMPLETED with `NEXT: pr`, note "iteration cap reached, user accepted"
    - on abort → emit ABORT
 9. Any reviewer QUESTION / FAILED / ABORT → relay, halt
@@ -75,13 +75,13 @@ See `.asd/rules/review-policy.md` cumulative-budget algorithm. Phase skill compu
 - Updated `state.json` (phase, `reviews.impl.iteration`, `reviews.impl.verdicts`, `review_fixes_pending`)
 - decisions-log entry on DoD met, route-to-impl-fix, or override
 
-Note: impl-review produces no code/test/stub changes — those are made by the impl phase (fix mode) on the next cycle.
+Note: impl-review produces no code/test/stub changes — those are made by the impl phase (review-fix mode) on the next cycle, followed by impl-test.
 
 ## Agents dispatched
 - 6 internal reviewers (Quality, Implementation, Testing, UI, Simplification, Documentation) + Performance — parallel
 - External Review — parallel (when enabled)
 - PM — state updates + decisions-log + `review_fixes_pending` routing
-- No devs — finding fixes performed by impl phase (fix mode)
+- No devs — finding fixes performed by impl phase (review-fix mode)
 
 ## Skills dispatched
 None.
@@ -90,7 +90,7 @@ None.
 ```
 PHASE: impl-review | SPRINT: <NNN-slug> | ITER: <N> | STATUS: <complete|blocked|aborted> | NEXT: <pr|impl>
 ```
-`NEXT: pr` on DoD met (or cap-accept); `NEXT: impl` when unresolved findings route the sprint to impl fix mode.
+`NEXT: pr` on DoD met (or cap-accept); `NEXT: impl` when unresolved findings route the sprint to impl review-fix mode.
 
 ## References
 - `.asd/rules/sprint-lifecycle.md` (impl-review phase contract)

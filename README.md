@@ -2,7 +2,7 @@
 
 A multi-agent workflow for Claude Code that drives software projects end-to-end through fixed-shape sprints: from concept and tech-stack definition, through design and review, all the way to a green PR.
 
-ASD is **stack-agnostic** — it works on any language, framework, or runtime. The workflow itself never touches your application code directly; it dispatches 15 specialized agents (PM, BA, UX Designer, Architect, devs, reviewers) coordinated by 15 skills.
+ASD is **stack-agnostic** — it works on any language, framework, or runtime. The workflow itself never touches your application code directly; it dispatches 15 specialized agents (PM, BA, UX Designer, Architect, devs, reviewers) coordinated by 16 skills.
 
 ---
 
@@ -20,7 +20,7 @@ ASD is **stack-agnostic** — it works on any language, framework, or runtime. T
 ## Requirements
 
 - **Claude Code** — desktop or CLI
-- **Node.js** — used by the SessionStart/Stop hooks and by the optional Google Labs `designmd` and `LikeC4` CLIs
+- **Node.js** — used by the SessionStart hook and by the optional Google Labs `designmd` and `LikeC4` CLIs
 - **Git** — required (sprint = branch)
 - **gh CLI** — optional, only if you want ASD to open PRs for you
 
@@ -107,7 +107,7 @@ That command is also the manual fallback if you prefer running it outside Claude
 
 ## Workflow overview
 
-Each sprint runs through nine mandatory phases in order:
+Each sprint runs through ten mandatory phases in order:
 
 ```mermaid
 flowchart TD
@@ -117,18 +117,20 @@ flowchart TD
     dreview -->|CONCERNS — autofix & re-iterate| design
     dreview -->|all APPROVE| dpromote["design-promote<br/><i>PM · BA · UX Designer · Architect</i>"]
     dpromote --> plan["plan<br/><i>PM</i>"]
-    plan --> impl["impl<br/><i>Backend Dev · Frontend Dev · Test Engineer</i>"]
-    impl --> ireview["impl-review<br/><i>Quality · Implementation · Testing · UI ·<br/>Simplification · Documentation · Performance · External</i>"]
-    ireview -->|findings — back to fix mode| impl
+    plan --> impl["impl<br/><i>Backend Dev · Frontend Dev</i>"]
+    impl --> itest["impl-test<br/><i>Test Engineer</i>"]
+    itest -->|code defects — back to test-fix mode| impl
+    itest -->|full suite green| ireview["impl-review<br/><i>Quality · Implementation · Testing · UI ·<br/>Simplification · Documentation · Performance · External</i>"]
+    ireview -->|findings — back to review-fix mode| impl
     ireview -->|all APPROVE| pr["pr<br/><i>PM</i>"]
 
     classDef review fill:#fff3cd,stroke:#d39e00,color:#1a1a1a;
     classDef done fill:#d4edda,stroke:#28a745,color:#1a1a1a;
-    class dreview,ireview review;
+    class dreview,ireview,itest review;
     class pr done;
 ```
 
-`impl` and `impl-review` form a cycle: when impl-review finds issues it routes the sprint back to `impl` (fix mode) to resolve them, then returns to `impl-review`. The cycle repeats until all reviewers APPROVE or the iteration cap is hit.
+`impl`, `impl-test`, and `impl-review` form one cycle. `impl` writes production code only — its gate is build + lint. `impl-test` then picks the test approach for the whole change scope (after the code exists), prunes tests that no longer earn their keep, writes the missing ones, and runs the full suite: code defects route back to `impl` (test-fix mode), a green suite advances to `impl-review`. Review findings route back to `impl` (review-fix mode) and return through `impl-test`. The `impl⇄impl-test` loop is uncapped — it ends on a green suite or an escalated blocker; `impl-review` keeps its iteration cap.
 
 | Phase | What happens |
 |---|---|
@@ -138,8 +140,9 @@ flowchart TD
 | **design-review** | 3 internal reviewers (Documentation, UI, Simplification) plus External Review iterate to APPROVE |
 | **design-promote** | Approved sprint drafts get decomposed per subsystem and promoted to persistent `design/` |
 | **plan** | PM decomposes work into Tasks with checkbox subtasks, traces each to PRD acceptance criteria |
-| **impl** | Devs (Backend, Frontend, Test Engineer) implement Tasks (or fix impl-review findings in fix mode), run build/lint/test, commit per Conventional Commits |
-| **impl-review** | 7 internal reviewers (Quality, Implementation, Testing, UI, Simplification, Documentation, Performance) plus External Review; routes findings back to `impl` fix mode |
+| **impl** | Devs (Backend, Frontend) implement Tasks — or fix impl-review findings (review-fix mode) or impl-test defects (test-fix mode); no tests written here; run build/lint, commit per Conventional Commits |
+| **impl-test** | Test Engineer picks the risk-based test approach for the change scope, deletes redundant/flaky/implementation-coupled tests, writes the missing ones, runs the full suite; records everything in `test-plan.md`; code defects route back to `impl` |
+| **impl-review** | 7 internal reviewers (Quality, Implementation, Testing, UI, Simplification, Documentation, Performance) plus External Review; routes findings back to `impl` review-fix mode |
 | **pr** | DoD verification + `gh pr create` (or push + summary if gh disabled); sprint is archived on a later re-entry once the PR is merged |
 
 You can resume an interrupted sprint at any time: `/asd-sprint` reads `state.json`, detects the current phase, and dispatches the matching phase skill.
@@ -175,9 +178,9 @@ Fifteen specialized agents live in `.claude/agents/`. Each declares its `model` 
 | `asd-ba` | opus | Business analyst: PRD, audit on the docs side, acceptance criteria |
 | `asd-ux-designer` | opus | UX flows, UI mockups, DESIGN.md tokens, design-system.html |
 | `asd-architect` | opus | ADRs, C4 model, stack, API contracts, tech-reference docs |
-| `asd-backend-dev` | sonnet | Server/CLI/library code plus unit tests |
-| `asd-frontend-dev` | sonnet | UI code plus unit tests (consumes DESIGN.md tokens) |
-| `asd-test-engineer` | sonnet | Integration/e2e tests, edge-case coverage, manual verification specs |
+| `asd-backend-dev` | sonnet | Server/CLI/library code (no tests) |
+| `asd-frontend-dev` | sonnet | UI code (no tests; consumes DESIGN.md tokens) |
+| `asd-test-engineer` | sonnet | All tests: risk-based selection, pruning, authoring at every level, suite runs, manual verification specs |
 
 ### Reviewers (7 internal + 1 external)
 
@@ -185,7 +188,7 @@ Fifteen specialized agents live in `.claude/agents/`. Each declares its `model` 
 |---|---|---|---|
 | `asd-reviewer-quality` | opus | impl-review | Bugs, security, best-practice, contract drift |
 | `asd-reviewer-implementation` | sonnet | impl-review | PRD acceptance criteria coverage in code |
-| `asd-reviewer-testing` | sonnet | impl-review | Test coverage, edge cases, manual verification capture |
+| `asd-reviewer-testing` | sonnet | impl-review | `test-plan.md` decisions (risk fit, justified removals and no-test calls, fail-first proof), test quality, manual verification capture |
 | `asd-reviewer-ui` | haiku | design-review + impl-review | UX-spec compliance, design-system tokens, a11y |
 | `asd-reviewer-simplification` | opus | design-review + impl-review | Over-engineering (13-item checklist) + structure/cohesion (god/sprawling type) detection |
 | `asd-reviewer-documentation` | opus | design-review + impl-review | SSoT integrity, template adherence, traceability |
@@ -251,7 +254,7 @@ your-project/
 │   │   ├── commands.yaml            # build/test/lint/run + design.md lint
 │   │   ├── custom-common-rules.md   # universal rules — all agents, all phases
 │   │   ├── custom-design-rules.md   # design / design-review rules
-│   │   ├── custom-coding-rules.md   # impl / impl-review rules (incl. perf budgets)
+│   │   ├── custom-coding-rules.md   # impl / impl-test / impl-review rules (incl. perf budgets)
 │   │   ├── decisions-log.md         # append-only chronology of approved decisions
 │   │   └── stubs.md                 # project-global TODO registry
 │   └── sprints/
@@ -259,8 +262,8 @@ your-project/
 │       └── archived/<NNN-slug>/     # closed sprints (immutable)
 ├── .claude/
 │   ├── agents/                      # 15 agent definitions
-│   ├── skills/                      # 15 skill definitions
-│   ├── hooks/                       # SessionStart + Stop hooks (Node.js)
+│   ├── skills/                      # 16 skill definitions
+│   ├── hooks/                       # SessionStart hook (Node.js)
 │   └── settings.json                # hook registration + permissions allowlist
 ├── design/                          # persistent design docs (grow across sprints)
 │   ├── product/
@@ -330,13 +333,13 @@ Enables External Review in parallel with internal reviewers. ASD auto-skips and 
 
 - `custom-common-rules.md` — universal (domain glossary, naming, compliance). Read by every agent in every phase; @-included from `CLAUDE.md`.
 - `custom-design-rules.md` — design / design-review only (PRD format, ADR sections, UX constraints). Read by `asd-ba`, `asd-ux-designer`, `asd-architect`, design-review reviewers, and external review (design).
-- `custom-coding-rules.md` — impl / impl-review only (forbidden libraries, perf budgets, security policy, test thresholds). Read by dev/test agents, impl-review reviewers, and external review (impl).
+- `custom-coding-rules.md` — impl / impl-test / impl-review only (forbidden libraries, perf budgets, security policy, testing constraints). Read by dev/test agents, impl-review reviewers, and external review (impl).
 
 Reviewers active in both phases (`documentation`, `ui`, `simplification`, `external-review`) load the phase-scoped file matching the dispatching phase.
 
 ### Hooks
 
-The SessionStart hook (`.claude/hooks/session-start.js`) prints a one-block summary of your active sprint into Claude's context on every session resume. The Stop hook touches `state.json.updated_at`. Both fail silently if Node is unavailable.
+The SessionStart hook (`.claude/hooks/session-start.js`) prints a one-block summary of your active sprint into Claude's context on every session resume. Fails silently if Node is unavailable.
 
 ### Settings.json
 

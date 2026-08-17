@@ -13,6 +13,7 @@ Format rules (parser-critical):
 - Checkboxes (- [ ]/- [x]) appear ONLY inside `### Task N:` sections
 - Checkboxes in any non-task section break orchestrator task parsing
 - Subtask deferred for a manual action stays `- [ ]`, suffixed ` — BLOCKED: MS-N` (see manual-steps.md)
+- No test-authoring tasks or subtasks: tests are selected and written in impl-test, after the code exists
 -->
 
 ## Overview

@@ -3,10 +3,17 @@
 ## Phases (all mandatory)
 
 ```
-scope → audit → design → design-review → design-promote → plan → impl ⇄ impl-review → pr
+scope → audit → design → design-review → design-promote → plan → impl ⇄ impl-test → impl-review → pr
+                                                                   ↑______________________________|
 ```
 
-`impl` and `impl-review` form a cycle: when impl-review finds issues it does NOT fix them — it routes the sprint back to `impl` (fix mode), then impl returns to `impl-review`. Repeats until impl-review reaches DoD (all reviewers APPROVE) or the iteration cap is hit. Phase routing follows the `NEXT:` token in each phase skill's return contract, not a fixed linear chain.
+`impl`, `impl-test`, `impl-review` form one cycle:
+
+- `impl` always routes to `impl-test`. impl writes **no tests and runs none** — its gate is build + lint.
+- `impl-test` selects the test approach for the whole change scope, prunes redundant tests, writes missing ones, runs the full suite. Code defects → back to `impl` (test-fix mode), then `impl-test` again. Suite green → `impl-review`.
+- `impl-review` does NOT fix findings — routes back to `impl` (review-fix mode); the sprint then re-enters `impl-test` (code changed → tests re-selected + re-run) before returning to `impl-review`.
+
+No cap on `impl⇄impl-test` rounds: loop until the suite is green or a dev blocker escalates (`FAILED`/`QUESTION`). `impl-review` keeps its iteration cap. Phase routing follows the `NEXT:` token in each phase skill's return contract, not a fixed linear chain.
 
 
 ## Review iteration counters
@@ -21,7 +28,7 @@ Each review phase reads, increments, and reports only its own counter. Never sha
 **Lifecycle:**
 
 - Both created at `0` when the sprint is initialised in `scope` (per `t_state.json`).
-- Each incremented at the **start of every entry** of its phase (`1` on first entry). `design-review` entered once, loops internally. `impl-review` re-entered each `impl⇄impl-review` cycle; the intervening `impl` fix-mode phase does not touch the counter — it accumulates across the whole cycle.
+- Each incremented at the **start of every entry** of its phase (`1` on first entry). `design-review` entered once, loops internally. `impl-review` re-entered each cycle; the intervening `impl` and `impl-test` phases do not touch the counter — it accumulates across the whole cycle.
 - **Rollback reset.** When `state.json.phase` is set strictly earlier in the chain than a review's input-producing phase, that counter resets to `0`, its severity floor resets, and its `verdicts` clear. Input-producing phases: `design` for design-review, `impl` for impl-review.
 
   | Counter | Resets when phase set to |
@@ -29,7 +36,7 @@ Each review phase reads, increments, and reports only its own counter. Never sha
   | `reviews.design.iteration` | `scope`, `audit` |
   | `reviews.impl.iteration` | `scope`, `audit`, `design`, `design-review`, `design-promote`, `plan` |
 
-  Setting phase to `impl` is not earlier than `impl` — the normal `impl⇄impl-review` re-entry never resets. Reset fires only on a genuine rollback (the `asd-sprint` resume menu's *re-run earlier phase*). Rationale: once the artifact under review is re-created from an earlier phase, prior review rounds are void.
+  Setting phase to `impl` or `impl-test` is not earlier than `impl` — normal cycle re-entry never resets. Reset fires only on a genuine rollback (the `asd-sprint` resume menu's *re-run earlier phase*). Rationale: once the artifact under review is re-created from an earlier phase, prior review rounds are void.
 - On iteration-cap override, the counter keeps incrementing — not reset. Severity floor stays pinned at `critical`.
 
 Verdict files: design-review → `<sprint>/reviews/design/iter-NN/`, impl-review → `<sprint>/reviews/impl/iter-NN/`, `NN` = that phase's own counter.
@@ -44,8 +51,9 @@ Verdict files: design-review → `<sprint>/reviews/design/iter-NN/`, impl-review
 | design-review | Documentation + UI + Simplification + External Review | `<sprint>/design/` | `reviews/design/iter-NN/<reviewer>.md` | DoD met |
 | design-promote | PM + Architect + BA + UX Designer | approved drafts | persistent docs in `design/` | drafts merged, decisions-log entry |
 | plan | PM | promoted persistent docs | `plan.md` | plan approved |
-| impl | Backend Dev + Frontend Dev + Test Engineer | `plan.md` (initial) or `reviews/impl/iter-NN/` findings (fix mode) | code + tests, `manual-steps.md` | all tasks/findings done; build + tests pass (completion gate) |
-| impl-review | Quality + Implementation + Testing + UI + Simplification + Documentation + Performance + External Review | code + tests | `reviews/impl/iter-NN/<reviewer>.md` | DoD met → `pr`; else route to `impl` fix mode |
+| impl | Backend Dev + Frontend Dev | `plan.md` (initial), `reviews/impl/iter-NN/` findings (review-fix), or `test-plan.md` Defects (test-fix) | code, `manual-steps.md` | all tasks/findings/defects done; build + lint pass (completion gate) |
+| impl-test | Test Engineer | code diff, `plan.md`, PRD ACs, existing tests | `test-plan.md`, tests in repo | full suite green → `impl-review`; code defects → `impl` test-fix mode |
+| impl-review | Quality + Implementation + Testing + UI + Simplification + Documentation + Performance + External Review | code + tests + `test-plan.md` | `reviews/impl/iter-NN/<reviewer>.md` | DoD met → `pr`; else route to `impl` review-fix mode |
 | pr | PM | everything | PR (open mode), then sprint archive (merge mode) | PR opened; sprint archived on a later re-entry once PR merged |
 
 ## Audit phase
@@ -89,12 +97,40 @@ If `subsystem_decomposition: disabled`: drafts merge into flat project-level doc
 
 Devs implement plan tasks. When a subtask needs a human-only operational action (secret, cloud resource, hand-run migration, env var, third-party account), the dev registers an `MS-N` entry in `<sprint>/manual-steps.md`, marks the subtask `BLOCKED: MS-N` in `plan.md`, emits `BLOCKED_MANUAL`, continues all unblocked work. PM validates each `MS-N` for necessity (`artifact-layout.md`); autonomously-doable entries rejected and returned to the dev. Once all unblocked work COMPLETED and validated `pending` entries remain, the phase halts: PM presents `manual-steps.md`, waits for a continue command. On resume the dev verifies each entry per its `Verification` field, flips it to `done`, finishes the blocked subtasks.
 
-**Modes** — detected from `state.json.review_fixes_pending`:
+Devs write **production code only** — no tests, no test runs. All test work belongs to `impl-test`.
 
-- **Initial** (`review_fixes_pending` null/absent) — implement `plan.md` tasks. Ends with the user-facing impl assessment gate, then `NEXT: impl-review`.
-- **Fix** (`review_fixes_pending` = `iter-NN`) — entered when impl-review routed back. Devs read findings in `<sprint>/reviews/impl/iter-NN/`, resolve every CONCERNS finding plus every user-approved FAIL finding, return `NEXT: impl-review`. Skips the impl assessment gate; blockers escalate as in initial mode. Clears `review_fixes_pending` on completion.
+**Modes** — detected from `state.json`:
 
-**Completion gate** (both modes) — impl MUST NOT emit `COMPLETED` until, verified via `commands.yaml`: `build` ran with no errors/warnings, `test` ran, every test passed. On failure: devs fix and re-run; unrecoverable failure escalates as `FAILED`. Automatic verification, not a user pause.
+- **Initial** (`review_fixes_pending` and `test_defects_pending` both null) — implement `plan.md` tasks. Ends with the user-facing impl assessment gate.
+- **Review-fix** (`review_fixes_pending` = `iter-NN`) — entered when impl-review routed back. Devs read findings in `<sprint>/reviews/impl/iter-NN/`, resolve every CONCERNS finding plus every user-approved FAIL finding. Clears `review_fixes_pending` on completion.
+- **Test-fix** (`test_defects_pending` = `true`) — entered when impl-test found code defects. Devs resolve every open defect in the `Defects` section of `<sprint>/test-plan.md`, marking each `fixed` with the fixing commit. Clears `test_defects_pending` on completion.
+
+Only one fix flag is ever set: each fix mode clears its own before routing on. Fix modes skip the impl assessment gate; blockers escalate as in initial mode. All modes return `NEXT: impl-test`.
+
+**Completion gate** (all modes) — impl MUST NOT emit `COMPLETED` until, verified via `commands.yaml`: `build` and `lint` ran with no errors and no warnings. Tests are not run here. On failure: devs fix and re-run; unrecoverable failure escalates as `FAILED`. Automatic verification, not a user pause.
+
+## Impl-test phase
+
+Owner: Test Engineer. Runs after every `impl` exit. Selects the test approach **after** the implementation exists, so tests follow the real change surface instead of a speculative one.
+
+**Principles** (binding; rubric detail in `code-style.md` §17):
+
+- Risk-based and change-scoped: cheapest reliable check per material risk — static/architecture check → focused unit or property test for logic → component or contract test at boundaries → only essential e2e journeys.
+- Prune: delete trivial, implementation-coupled, mock-confirming, redundant, and flaky tests within the change scope.
+- A **no-new-test decision** is legitimate only when the change adds no behaviour or existing checks already cover the material risk — and must be recorded with its reason in `test-plan.md`.
+- Coverage numbers are a signal for finding untested code, never a quota.
+- Every fixed defect leaves a regression test proven against the pre-fix behaviour (fail-first run recorded) or an equivalent targeted mutation.
+
+**Workflow**: change-surface analysis → `test-plan.md` (risk → chosen check → decision) → prune + author → full suite run.
+
+**Removal gate** — deleting a test **outside** the sprint change scope needs user approval (Complication Approval format, `core.md`). In-scope removals proceed autonomously with a recorded reason.
+
+**Suite gate** — verdict comes from the actual `test` runner output (exit code plus report), never from an agent's claim. Failures triaged:
+
+- **test defect** (bad assertion, wrong fixture, flaky pattern) → fixed inside impl-test, suite re-run.
+- **code defect** → appended to the `Defects` section of `test-plan.md`, `state.json.test_defects_pending = true`, `NEXT: impl` (test-fix mode).
+
+Loops until the full suite passes. No iteration cap — an unfixable state surfaces as a dev/test-engineer `FAILED`, not as a silent exit.
 
 ## PR phase
 
