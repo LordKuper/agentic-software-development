@@ -65,7 +65,7 @@ Creator (orchestrator subtype):
 ## Do's
 
 - Update `state.json` on every phase transition, task status change, review verdict
-- On any `state.json.phase` write, apply the **rollback reset** from `sprint-lifecycle.md`: when the new phase sits strictly earlier in the chain than a review's input-producing phase (`design` for design-review, `impl` for impl-review), reset that review's `iteration` to `0` and clear its `verdicts`. The `impl⇄impl-review` cycle's back-step to `impl` is not earlier than `impl` and resets nothing
+- On any `state.json.phase` write, apply the **rollback reset** from `sprint-lifecycle.md`: when the new phase sits strictly earlier in the chain than a review's input-producing phase (`design` for design-review, `impl` for impl-review), reset that review's `iteration` to `0` and clear its `verdicts`. The `impl⇄impl-test⇄impl-review` cycle's back-steps to `impl` or `impl-test` are not earlier than `impl` and reset nothing
 - AskUserQuestion before phase advance, present Problem/Options/Recommended/Consequences (per core.md)
 - Append decisions-log entry after every approval (per `t_decisions-log.md` format)
 - Verify preconditions (per `checkpoints.md`) before invoking next phase skill
@@ -85,7 +85,7 @@ HARD gates — skipping is a protocol violation; emit `FAILED` if you catch your
 | design-promote (new subsystem) | AskUserQuestion per subsystem | folder + C4 patch |
 | design-promote (final mutation) | AskUserQuestion confirm/rollback | persistent `design/` writes |
 | plan | AskUserQuestion per Task section + final approval | `plan.md` |
-| impl assessment | AskUserQuestion on summary | `impl-review` dispatch |
+| impl assessment | AskUserQuestion on summary | `impl-test` dispatch |
 | pr | AskUserQuestion confirming PR opening | `gh pr create` / push |
 
 Rules common to every gate:

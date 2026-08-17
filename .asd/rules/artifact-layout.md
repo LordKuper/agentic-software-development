@@ -31,6 +31,7 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │       │   │   ├── design-md-delta.yaml
 │       │   │   └── c4-full/{model/*.c4, views.c4, dist/}
 │       │   ├── plan.md
+│       │   ├── test-plan.md
 │       │   ├── manual-steps.md
 │       │   └── reviews/
 │       │       ├── design/iter-NN/<reviewer>.md
@@ -148,6 +149,12 @@ Manual step = operational action a human must perform for the plan to complete (
 - PM validates every new entry before the phase halts. Kept only when the action genuinely cannot be done autonomously (needs access, a secret, an external account, an authority the agent lacks). Else rejected, returned to the dev to implement directly.
 - Status `pending` → `done`. The registering dev flips to `done` only after running `Verification`.
 - Sprint-scoped; archived with the sprint.
+
+## Test plan
+
+`<sprint>/test-plan.md` per `t_test-plan.md`. Per-sprint, created in `impl-test`, overwritten each impl-test entry (Defects section carried over with resolved entries kept for the record). Owner: Test Engineer.
+
+SSoT for two things invisible in the diff: **why** a test was removed, and **why** a change needed no new test. Also the handoff channel for code defects to `impl` test-fix mode (`Defects` section). Not a task list (that is `plan.md`) and not a review verdict (that is `reviews/impl/iter-NN/testing.md`).
 
 ## Single Source of Truth (iron rule)
 

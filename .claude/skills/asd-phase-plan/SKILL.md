@@ -41,11 +41,12 @@ allowed-tools: "Read AskUserQuestion Task"
        - one Task per coherent unit of work
        - each Task references AC-N from PRD it satisfies (cite in Task body or Context link)
        - subtasks as checkboxes inside `### Task N:` block only (parser-critical)
-       - assign owner role per Task in body (backend-dev / frontend-dev / test-engineer)
+       - assign owner role per Task in body (backend-dev / frontend-dev)
+       - no test-authoring Tasks or subtasks — tests are selected and written in `impl-test`, after the code exists; note per Task only the **material risk** the change carries, as input for impl-test
        - list non-trivial dependencies between tasks
      - **Definition of Done**:
        - all PRD acceptance criteria covered by Tasks
-       - test scope explicit (unit / integration / e2e / manual)
+       - full test suite green at impl-test phase
        - all reviewers green at impl-review phase
      - on approval translate to `language.docs` + write `<sprint>/plan.md`
      - append decisions-log entry ("plan approved for sprint <NNN-slug>")

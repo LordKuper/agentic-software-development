@@ -12,7 +12,7 @@ All project work goes through `/asd-sprint`.
 ## Glossary
 
 - **Sprint** — one unit of scoped work. One active at a time. Closed sprints archived, immutable.
-- **Phase** — fixed step in sprint lifecycle. Nine mandatory: scope, audit, design, design-review, design-promote, plan, impl, impl-review, pr.
+- **Phase** — fixed step in sprint lifecycle. Ten mandatory: scope, audit, design, design-review, design-promote, plan, impl, impl-test, impl-review, pr.
 - **Iteration** — one pass of the review loop in a `*-review` phase. Each dispatches every reviewer fresh with clean context (`review-policy.md`).
 - **Creator agent** — produces artifacts (PM, BA, UX Designer, Architect, Backend Dev, Frontend Dev, Test Engineer).
 - **Reviewer agent** — evaluates artifacts (Quality, Implementation, Testing, UI, Simplification, Documentation, Performance, External Review).

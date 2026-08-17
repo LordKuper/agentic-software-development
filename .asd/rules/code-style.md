@@ -1,6 +1,6 @@
 # Code Style
 
-Implementation-level rules for code-writing agents (Backend Dev, Frontend Dev, Test Engineer). Binding during `impl`, verified during `impl-review`. Governs how code is written; architecture-level rules out of scope. All code in English.
+Implementation-level rules for code-writing agents (Backend Dev, Frontend Dev, Test Engineer). Binding during `impl` and `impl-test`, verified during `impl-review`. Governs how code is written; architecture-level rules out of scope. All code in English.
 
 ## 1. Engineering Principles
 
@@ -108,17 +108,22 @@ Implementation-level rules for code-writing agents (Backend Dev, Frontend Dev, T
 
 ## 17. Tests
 
-- Tests for a new system are written before its implementation (verification-driven): expected output compared against actual before the work is marked complete.
-- Every acceptance criterion has test coverage.
+Written and run in `impl-test`, never in `impl`. Selection happens **after** the implementation is accepted, against the real change surface.
+
+- Risk-based and change-scoped: pick the cheapest reliable check per material risk — static/architecture check → focused unit or property test for logic → component or contract test at boundaries → only essential e2e journeys.
+- Every acceptance criterion is covered by a check at some level; the level is chosen by risk, not by rule.
 - Tests verify observable behavior, not implementation detail.
-- No meaningless assertions, no tests written only to inflate coverage.
+- Forbidden: trivial, implementation-coupled, mock-confirming, redundant, flaky tests. Duplicates of an existing check are deleted, not kept "for safety".
+- Skipping new tests is allowed only when the change adds no behavior or existing checks already cover the risk — record the decision and its reason in `test-plan.md`.
+- Every fixed defect leaves a regression test proven against the pre-fix behavior (fail-first run recorded) or an equivalent targeted mutation.
+- Coverage numbers locate untested code; they are never a quota or a gate.
 - Deterministic: no `sleep`, wall-clock timing, random seeds, or execution-order reliance.
 - Isolated: no real external APIs, databases, or file I/O; use dependency injection.
 - No hardcoded test data: build fixtures from named constants or factories (exception: boundary-value tests where the literal is the point).
 - Test files named `<system>_<feature>_test.<ext>`; test functions `test_<scenario>_<expected>`.
 - A test mutating global/static state saves and restores it in setup/teardown.
 - Structure each test as Arrange — Act — Assert.
-- Global test coverage must not fall below 80%.
+- A test whose only value is raising the coverage number is deleted.
 
 ## 18. Concurrency
 
@@ -130,7 +135,7 @@ Implementation-level rules for code-writing agents (Backend Dev, Frontend Dev, T
 
 - The project formatter and linter decide style; no manual style debate.
 - Style consistent within a file.
-- Build, test, and lint must pass before any commit.
+- Build and lint must pass before any commit; the full test suite gates `impl-test`, not each commit.
 
 ## 20. Per-Language Rules
 

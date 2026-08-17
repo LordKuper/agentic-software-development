@@ -16,6 +16,7 @@ const PHASE_CHAIN = [
   'design-promote',
   'plan',
   'impl',
+  'impl-test',
   'impl-review',
   'pr',
   'done',

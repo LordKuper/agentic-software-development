@@ -69,7 +69,7 @@ Default: the responsible creator autofixes any reviewer issue without user promp
 
 **Where the fix happens:**
 - **design-review** — the creator (asd-ba / asd-ux-designer / asd-architect) autofixes within the loop; iteration advances.
-- **impl-review** — fixes NOT applied inside the review phase. impl-review routes the sprint back to `impl` (fix mode); the responsible dev resolves findings; sprint re-enters impl-review.
+- **impl-review** — fixes NOT applied inside the review phase. impl-review routes the sprint back to `impl` (review-fix mode); the responsible dev resolves findings; sprint re-enters impl-review via `impl-test`.
 
 **Escalation required** (ask user before fix), format = Complication Approval (`core.md`):
 

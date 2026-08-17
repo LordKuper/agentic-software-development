@@ -14,7 +14,8 @@ Every pause is a HARD gate: responsible agent MUST call `AskUserQuestion` and re
 | design-promote (new subsystem) | each new subsystem before C4 registry update |
 | design-promote (final mutation) | final write to persistent `design/` |
 | plan | `plan.md` |
-| impl assessment | impl summary before `impl-review` — **initial mode only**; fix mode skips this gate |
+| impl assessment | impl summary before `impl-test` — **initial mode only**; fix modes skip this gate |
+| impl-test (removal) | deletion of any test **outside** the sprint change scope — conditional gate, skipped when no such removal proposed |
 | impl-review (final) | reviewer verdict before `pr` |
 | pr | confirms PR opening |
 
@@ -34,12 +35,13 @@ design         requires audit.md
 design-review  requires design drafts COMPLETED signal
 design-promote requires design-review DoD met
 plan           requires design-promote done (persistent docs updated)
-impl           requires plan.md (initial mode) OR state.json.review_fixes_pending set (fix mode)
-impl-review    requires impl COMPLETED signal
+impl           requires plan.md (initial) OR state.json.review_fixes_pending set (review-fix) OR state.json.test_defects_pending set (test-fix)
+impl-test      requires impl COMPLETED signal (build + lint green)
+impl-review    requires impl-test COMPLETED signal (full suite green)
 pr             requires impl-review DoD met
 ```
 
-`impl`⇄`impl-review` cycle: impl-review routes back to `impl` fix mode on unresolved issues. Cycle ends when impl-review reaches DoD (→ `pr`) or iteration cap is hit.
+`impl`⇄`impl-test` cycle: impl-test routes back to `impl` test-fix mode on code defects, uncapped; ends when the full suite is green (→ `impl-review`). `impl-review` routes back to `impl` review-fix mode on unresolved issues; the sprint returns via `impl-test`. Cycle ends when impl-review reaches DoD (→ `pr`) or its iteration cap is hit.
 
 ## Skill auto-abort
 
