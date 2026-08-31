@@ -1,6 +1,6 @@
 # External Review
 
-External Review agent runs Codex CLI in parallel with internal reviewers during `design-review` and `impl-review`, merging findings into the common issue pool.
+External Review agent runs the wrapped CLI — Codex when running under Claude Code, Claude CLI when running under Codex (`.asd/rules/providers.md` § External review symmetry) — in parallel with internal reviewers during `design-review` and `impl-review`, merging findings into the common issue pool.
 
 ## Enablement
 
@@ -10,23 +10,28 @@ Controlled by `review.external_review` in config (`enabled` | `disabled`). If `d
 
 OS read from `system.os` in config (set by `/asd-init`).
 
-Prompt passed via **temp file**, not inline: agent writes rendered prompt template + diff payload concatenated to `<in-file>` = `<sprint>/reviews/<design|impl>/iter-NN/codex-input.tmp`, pipes it to Codex stdin, deletes it after the run. `<out-file>` = Codex final message (text verdict per prompt), parsed by agent.
+Prompt passed via **heredoc/here-string straight into the wrapped CLI's stdin — never written to disk**. This agent runs read-only on both providers (`codex.sandbox_mode: read-only`, Claude's `tools` drop `Write`), so no step in the invocation may touch the filesystem. The wrapped CLI's own stdout is captured directly as its final message (the text verdict) — no `-o <out-file>`, no temp file, no cleanup step, because nothing was ever created on disk.
+
+The command TAIL differs per wrapped CLI — this is a real syntax difference (each CLI's own non-interactive/scripted mode takes different arguments), not just a binary-name swap:
+
+- Wrapping **Codex** (running under Claude Code): `codex exec -` — `exec` is Codex's non-interactive subcommand; `-` reads the entire prompt+diff from stdin as the task, no separate instruction argument needed.
+- Wrapping **Claude CLI** (running under Codex): `claude -p "Follow the review instructions and diff payload provided via stdin above; output only the review report in the required format." --output-format text` — Claude Code CLI has no `exec` subcommand; `-p`/`--print` is its non-interactive mode and always takes an instruction argument, with piped stdin treated as additional context alongside it (`--output-format text` is the default but stated explicitly to guarantee plain text, not JSON).
 
 | OS | Probe | Review command |
 |---|---|---|
-| windows | `codex --version` (PowerShell) | `Get-Content <in-file> -Raw \| codex exec -o <out-file> -` |
-| linux | `codex --version` (bash) | `cat <in-file> \| codex exec -o <out-file> -` |
-| macos | `codex --version` (bash) | `cat <in-file> \| codex exec -o <out-file> -` |
+| windows | `<wrapped-cli> --version` (PowerShell) | `@'<rendered prompt + diff payload>'@ \| <wrapped-cli> <tail above>` (here-string piped to stdin) |
+| linux | `<wrapped-cli> --version` (bash) | `<wrapped-cli> <tail above> <<'EOF'` / `<rendered prompt + diff payload>` / `EOF` (heredoc piped to stdin) |
+| macos | `<wrapped-cli> --version` (bash) | same as linux |
 
-`codex exec -` reads prompt+diff from stdin; `-o <out-file>` writes Codex final message to file. No `--json` — prompt yields text verdict, not event stream.
+Both forms read prompt+diff from stdin; the command's own stdout is the final message text verdict. No `-o <out-file>` for either CLI.
 
-Command is `codex` on every OS (npm ships a shell shim plus `codex.cmd`/`codex.ps1` on Windows; there is no `codex.exe`). `system.tools.codex_command` in config overrides that path.
+`<wrapped-cli>` is `codex` under Claude Code / `claude` under Codex — command name on every OS (each ships a shell shim plus OS-specific wrappers on Windows; no compiled `.exe`). The config override (`system.tools.codex_command` under Claude, `system.tools.claude_command` under Codex) replaces that lookup path.
 
 ## Detection
 
 At review phase start, agent runs the probe. On failure (non-zero exit, command not found):
 
-- Append to `decisions-log.md`: `Codex CLI unavailable, external review skipped for sprint <NNN-slug> iter <N>`
+- Append to `decisions-log.md`: `<wrapped-cli> CLI unavailable, external review skipped for sprint <NNN-slug> iter <N>`
 - Continue without external review, no user prompt
 
 ## Phase-scoped payload
@@ -59,9 +64,9 @@ Agent dispatched fresh each iteration (`review-policy.md` clean-context). Increm
 
 ## Output mapping
 
-Codex severity terms in `<out-file>` mapped to ASD severity:
+Wrapped-CLI severity terms in the captured stdout mapped to ASD severity:
 
-| Codex | ASD |
+| Wrapped CLI | ASD |
 |---|---|
 | blocker, critical | critical |
 | major | high |

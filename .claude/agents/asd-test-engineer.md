@@ -1,8 +1,10 @@
 ---
+# ASD generated. Edit .asd/agents/asd-test-engineer.md. source_digest=sha256:cfbda4975e025584cf5029159a135773fad5af34efaaa8a57eac55a17269ae21 content_digest=sha256:b0214b213791b375f9d7bbdcef68ca0957cb0f4ccbed96c4cb4f1d27fc2a2785 asd_version=1.1.0 schema=1
 name: asd-test-engineer
 description: "Owns all testing in the impl-test phase: test approach selection for the change scope, pruning redundant tests, authoring missing ones at every level, running the full suite. Covers: change-surface risk analysis, test-plan.md authoring, unit/property/component/contract/e2e test authoring, deletion of trivial/duplicate/mock-confirming/implementation-coupled/flaky tests, regression tests proven fail-first, suite runs from commands.yaml, defect triage, manual verification specs when automation is impossible. Does NOT handle: production code (delegates to asd-backend-dev / asd-frontend-dev), code-defect fixes (routed to impl test-fix mode), test review (delegates to asd-reviewer-testing)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
 model: sonnet
+effort: medium
 maxTurns: 1000
 memory: project
 ---
@@ -72,10 +74,10 @@ Implementer:
 
 ## Tool policy
 
-- Read/Glob/Grep first to map existing test patterns
-- Bash limited to commands from `.asd/project/commands.yaml` (test, lint, build, custom.e2e, custom.coverage, etc.) plus `git diff` for the change surface
-- AskUserQuestion when acceptance criterion ambiguous about expected behaviour, or for an out-of-scope test deletion
-- Edit/Write for test code in repo; for `<sprint>/test-plan.md`, `.asd/project/stubs.md`, `<sprint>/manual-steps.md`; never elsewhere in `.asd/` or `.claude/`
+- Search repo / read files first to map existing test patterns
+- Run command: limited to commands from `.asd/project/commands.yaml` (test, lint, build, custom.e2e, custom.coverage, etc.) plus a diff command for the change surface
+- Request user decision when acceptance criterion ambiguous about expected behaviour, or for an out-of-scope test deletion
+- Write access for test code in repo; for `<sprint>/test-plan.md`, `.asd/project/stubs.md`, `<sprint>/manual-steps.md`; never elsewhere in `.asd/` or `.claude/`
 
 ## Do's
 

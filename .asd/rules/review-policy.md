@@ -29,11 +29,11 @@ User may override the cap. On override the counter keeps incrementing (not reset
 
 Every iteration dispatches each reviewer as a **fresh agent invocation** — new context, no carry-over from authoring or prior iterations. Isolates each verdict from creator reasoning and earlier rounds.
 
-- The dispatching phase skill spawns every reviewer (and External Review) anew each iteration. No reviewer reused or resumed.
+- The dispatching phase workflow spawns every reviewer (and External Review) anew each iteration. No reviewer reused or resumed.
 - Reviewer payload carries only: the artifact/diff under review, rule references, severity floor, iteration number, context paths. Never authoring rationale or prior verdicts.
 - Reviewers MUST NOT read prior `reviews/<phase>/iter-*/` files. Only the current `iter-NN/` directory.
 - Incremental diff scoping (iter 2+ reviews only what changed — see `external-review.md`) narrows the *input*, not context. Agent still fresh.
-- Where a reviewer genuinely needs prior-iteration data (External Review stalemate detection), the phase skill supplies it as explicit payload input — scoped data, not context carry-over.
+- Where a reviewer genuinely needs prior-iteration data (External Review stalemate detection), the phase workflow supplies it as explicit payload input — scoped data, not context carry-over.
 
 ## Over-engineering checklist (critical, undroppable)
 
@@ -97,7 +97,7 @@ Two parts, both required (template `t_review.md`):
 
 A verdict whose ledger omits a scoped file, omits a checklist item, or leaves any row blank/unresolved is INVALID — counts as review-incomplete, never as APPROVE.
 
-**Enforcement (phase-skill gate):** the aggregating phase skill validates each internal reviewer's ledger against the known scope file list. Any reviewer whose ledger omits a scoped file or has an unresolved/blank row → review rejected → re-dispatch that reviewer (fresh) this same iteration. Verdict not counted until ledger complete. Makes coverage fail-proof: a skipped file or unchecked rule cannot pass silently.
+**Enforcement (phase-workflow gate):** the dispatching phase workflow validates each internal reviewer's ledger — read from the reviewer's returned text, before that text is written to the review file — against the known scope file list. Any reviewer whose ledger omits a scoped file or has an unresolved/blank row → review rejected, nothing written → re-dispatch that reviewer (fresh) this same iteration. Verdict not counted, file not written, until ledger complete. Makes coverage fail-proof: a skipped file or unchecked rule cannot pass silently.
 
 ## Verdict format
 
@@ -111,7 +111,7 @@ Next action: APPROVE → reviewer done · CONCERNS → creator autofixes, next i
 
 ## Gate Verdict Format (machine-parseable first line)
 
-Every reviewer output file MUST begin (after frontmatter) with a single-line verdict token:
+Reviewers are read-only (`providers.md`): a reviewer never writes its own review file. Every reviewer's **returned findings text** (its final text output) MUST begin (after any preamble) with a single-line verdict token:
 
 ```
 [REVIEW-<phase>-<reviewer>]: <APPROVE | CONCERNS | FAIL>
@@ -122,7 +122,7 @@ Every reviewer output file MUST begin (after frontmatter) with a single-line ver
 
 Examples: `[REVIEW-impl-quality]: APPROVE` · `[REVIEW-design-documentation]: FAIL` · `[REVIEW-impl-external]: CONCERNS`
 
-Never bury the verdict in prose. PM reads the first non-empty content line.
+Never bury the verdict in prose. The dispatching phase workflow writes the reviewer's returned text verbatim to `<sprint>/reviews/<phase>/iter-NN/<reviewer>.md`; PM reads the first non-empty content line of that written file.
 
 ## DoD per review phase
 

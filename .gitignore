@@ -11,3 +11,6 @@ desktop.ini
 # Editor
 *.swp
 *~
+
+# Local planning docs (not part of the framework)
+plans/

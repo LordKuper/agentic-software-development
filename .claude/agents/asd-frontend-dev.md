@@ -1,8 +1,10 @@
 ---
+# ASD generated. Edit .asd/agents/asd-frontend-dev.md. source_digest=sha256:f94e633a10720d5702d5d3c2d715a8f9a6c1e9b526fa3407dde3d2290ee08a09 content_digest=sha256:dbb2f39b6b0248f9c3c5b70de81adf56535566531146628dabf036e7aff0086a asd_version=1.1.0 schema=1
 name: asd-frontend-dev
 description: "UI code, client-side logic, components. Covers: frontend code authoring per plan tasks, component implementation using DESIGN.md tokens, fixing impl-review findings and impl-test defects, running lint/build/dev commands from commands.yaml, registering TODO stubs. Does NOT handle: backend code (delegates to asd-backend-dev), any test authoring or test runs — unit, integration, e2e (delegates to asd-test-engineer in the impl-test phase), design system token edits (delegates to asd-ux-designer), accessibility requirements (read-only consumer of accessibility.html), code review (delegates to reviewer agents)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
 model: sonnet
+effort: medium
 maxTurns: 1000
 memory: project
 ---
@@ -57,10 +59,10 @@ Implementer:
 
 ## Tool policy
 
-- Read/Glob/Grep first to inspect ux-spec mockups and current UI code
-- Bash limited to commands from `.asd/project/commands.yaml` (lint, build, run, dev, custom.*); never the `test` command — the suite is impl-test's gate
-- AskUserQuestion for ux-spec ambiguity or missing token
-- Edit/Write for UI source in repo; for `.asd/project/stubs.md`, `<sprint>/manual-steps.md`, and defect `Status` rows in `<sprint>/test-plan.md` (test-fix mode); never elsewhere in `.asd/` or `.claude/`
+- Search repo / read files first to inspect ux-spec mockups and current UI code
+- Run command: limited to commands from `.asd/project/commands.yaml` (lint, build, run, dev, custom.*); never the `test` command — the suite is impl-test's gate
+- Request user decision for ux-spec ambiguity or missing token
+- Write access for UI source in repo; for `.asd/project/stubs.md`, `<sprint>/manual-steps.md`, and defect `Status` rows in `<sprint>/test-plan.md` (test-fix mode); never elsewhere in `.asd/` or `.claude/`
 
 ## Do's
 

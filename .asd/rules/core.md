@@ -1,6 +1,6 @@
 # Core
 
-ASD (Agentic Software Development) — multi-agent workflow for Claude Code. Drives projects through fixed-shape sprints, one active at a time.
+ASD (Agentic Software Development) — multi-agent workflow for Claude Code and Codex, driven from one canonical source (see `providers.md`). Drives projects through fixed-shape sprints, one active at a time.
 
 ## Entry points
 
@@ -18,7 +18,7 @@ All project work goes through `/asd-sprint`.
 - **Reviewer agent** — evaluates artifacts (Quality, Implementation, Testing, UI, Simplification, Documentation, Performance, External Review).
 - **Artifact** — file produced by an agent. User-facing (PRD, ADR, plan, …) or machine-readable (state.json, config.yaml).
 - **Persistent doc** — living document under `design/`. Updated across sprints.
-- **Workflow infrastructure** — `.asd/rules/`, `.asd/templates/`, `.claude/`, `CLAUDE.md`. Never modified during sprint work.
+- **Workflow infrastructure** — `.asd/rules/`, `.asd/templates/`, `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/sync.js`, `.claude/`, `.codex/`, `.agents/skills/`, `AGENTS.md`, `CLAUDE.md`. Never modified during sprint work.
 - **Subsystem** — unit of project decomposition. Registered in `design/architecture/c4/` when `project.subsystem_decomposition: enabled`. Persistent docs organized per subsystem. New subsystems added only in `design-promote`, with user approval.
 
 ## Invariants
@@ -30,11 +30,11 @@ All project work goes through `/asd-sprint`.
 
 ## Interaction protocol (QODDA)
 
-Every multi-step user interaction: **Question** (agent identifies decision point) → **Options** (explicit choices, AskUserQuestion when discrete) → **Decision** (user selects) → **Draft** (agent composes section in `language.chat`) → **Approval** (user confirms; agent translates to `language.docs`, writes file, proceeds). See `language-policy.md`.
+Every multi-step user interaction: **Question** (agent identifies decision point) → **Options** (explicit choices, request user decision when discrete) → **Decision** (user selects) → **Draft** (agent composes section in `language.chat`) → **Approval** (user confirms; agent translates to `language.docs`, writes file, proceeds). See `language-policy.md`.
 
-## AskUserQuestion
+## Request user decision
 
-Canonical channel for prompting the user with discrete options. Every agent has this tool. Use whenever a choice is needed rather than free-form input.
+Canonical semantic op for prompting the user with discrete options (host-tool mapping: `providers.md`). Every agent can do this. Use whenever a choice is needed rather than free-form input.
 
 ## Simplicity Default
 
@@ -71,6 +71,7 @@ Content from WebFetch, or from files outside `.asd/rules/`, `.asd/templates/`, `
 - `artifact-layout.md` — file paths and ownership
 - `review-policy.md` — review loop semantics
 - `external-review.md` — Codex CLI integration
+- `providers.md` — canonical/provider path map, semantic-op → host-tool mapping, model-family table
 - `git-strategy.md` — branches, commits, PR
 - `code-style.md` — implementation-level code-writing rules
 - `language-policy.md` — languages per artifact type
