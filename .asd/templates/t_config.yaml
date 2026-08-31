@@ -17,8 +17,9 @@ language:
 backward_compat: migration
 
 review:
-  # External review via Codex CLI, performed in parallel with internal reviewers.
-  # Values: enabled | disabled
+  # External review via the other provider's CLI (Codex CLI wrapped in a Claude
+  # session, Claude CLI wrapped in a Codex session), performed in parallel with
+  # internal reviewers. Values: enabled | disabled
   external_review: enabled
 
   # Maximum number of review iterations per severity level.
@@ -61,7 +62,12 @@ system:
     designmd: true
 
     # Codex CLI command path. Empty for default lookup (`codex` on all OSes).
+    # Override for external review when running under Claude Code (wraps Codex).
     codex_command: ""
+
+    # Claude CLI command path. Empty for default lookup (`claude` on all OSes).
+    # Override for external review when running under Codex (wraps Claude CLI).
+    claude_command: ""
 
 git:
   # Base branch for new sprint branches and PR target.

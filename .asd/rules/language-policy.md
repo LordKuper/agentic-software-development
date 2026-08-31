@@ -20,10 +20,10 @@ Agents may reason internally in `language.chat`. Before `Write`/`Edit` to a user
 
 When an agent quotes a user-facing artefact during chat, the quote MUST be rendered in `language.chat`, even if the source file is in another language. Translate inline. Cite the source path so user can open the original.
 
-## AskUserQuestion options
+## User-decision options
 
-Every interactive option presented to the user — `AskUserQuestion` `question`, `header`, every option `label`/`description`, the Problem/Options/Recommended/Consequences block, any free-text approval prompt — MUST be rendered in `language.chat`. Includes standard control options (`Lock in` / `Revise this section` / `Skip` / `Approve` / `Edit` / `Reject` / `Confirm` / `Rollback` / etc.). Translate at the call site; never emit English option labels when `language.chat` is non-English.
+Every interactive option presented to the user — a user-decision request's `question`, `header`, every option `label`/`description`, the Problem/Options/Recommended/Consequences block, any free-text approval prompt — MUST be rendered in `language.chat`. Includes standard control options (`Lock in` / `Revise this section` / `Skip` / `Approve` / `Edit` / `Reject` / `Confirm` / `Rollback` / etc.). Translate at the call site; never emit English option labels when `language.chat` is non-English.
 
 Internal signal tokens crossing the agent boundary (`COMPLETED`, `FAILED`, `QUESTION`, `ABORT`, `APPROVE`, `CONCERNS`, return-contract strings) stay in English — machine signals, not user-facing text.
 
-Free-text approval ("ok", "да", "approve") is NOT a substitute for `AskUserQuestion` at any HARD gate in `checkpoints.md`. The gate requires a discrete-option call so approval is unambiguous and auditable.
+Free-text approval ("ok", "да", "approve") is NOT a substitute for a user-decision request at any HARD gate in `checkpoints.md`. The gate requires a discrete-option call so approval is unambiguous and auditable.

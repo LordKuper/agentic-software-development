@@ -87,7 +87,7 @@ PM orchestrates; three domain creators promote (Documentation reviewer NOT invol
    - `asd-ba` → per-subsystem (or flat) `design/product/requirements/<subsystem>.html` from prd draft; product migration items.
    - `asd-architect` → `design/architecture/adr/<subsystem>/adr-NNNN-<slug>.html`; updates `api/<subsystem>.html`, `stack.html`, `tech-reference/`; applies c4 delta to persistent `design/architecture/c4/`; regenerates `dist/` (likec4) or `architecture.html` (mermaid); architecture migration items.
    - `asd-ux-designer` → `design/ux/<subsystem>.html` from ux-spec draft; patches `DESIGN.md` from `design-md-delta.yaml`; regenerates `design-system.html`; ux migration items.
-   - Each creator AskUserQuestion before each persistent write.
+   - Each creator requests user decision before each persistent write.
 5. PM final user confirmation before persistent mutation (confirm / rollback / partial rollback).
 6. PM appends decisions-log entries, finalises `state.json`.
 

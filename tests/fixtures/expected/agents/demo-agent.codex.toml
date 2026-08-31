@@ -1,0 +1,16 @@
+# ASD generated. Edit .asd/agents/demo-agent.md. source_digest=sha256:2b4ab6273b26818263b14a6960d9913e55e7b8ee716d2143cc911078004404e3 content_digest=sha256:837aae35cbdc88b845ba3dca12680a2d524fe1d30fc6d2c14e55642f06cd3434 asd_version=1.1.0 schema=1
+name = "asd-demo"
+description = "Demo agent used only by tests/run.js fixtures for sync.js transforms."
+model = "gpt-5.6"
+model_reasoning_effort = "high"
+sandbox_mode = "workspace-write"
+developer_instructions = """
+# Role
+
+Demo agent. Exists only to exercise sync.js canonical-agent transforms in tests/run.js.
+
+## Operating contract
+
+- Scope: fixture testing only.
+- Authority: none - never dispatched by real workflows.
+"""

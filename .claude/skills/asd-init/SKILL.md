@@ -1,11 +1,11 @@
 ---
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:64eccc117a1c0ccea40305e32d2546a769e30acf4d9ec1699af0a50a7d271c35 content_digest=sha256:4ad28df35a00b561e27f1f69fb4a83f924257eae1e377af3924eac22f7e3718a asd_version=1.1.0 schema=1
 name: asd-init
-description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Auto-detects build commands and external tools, collects config via AskUserQuestion, generates .asd/project/config.yaml and seeds infrastructure-only design/ docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
-metadata:
-  asd-role: init
-  version: "0.1"
+description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only design/ docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
 ---
+
+Operation mapping: see `.asd/rules/providers.md`.
 
 # ASD Init
 
@@ -19,18 +19,18 @@ allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
 
 ## Always first (both modes)
 
-0. **Sync `CLAUDE.md` ASD section** before any other step (see "CLAUDE.md sync"). Runs unconditionally every invocation, fresh or re-init, regardless of subsequent user choices or aborts.
+0. **Sync `AGENTS.md`/`CLAUDE.md` managed blocks** before any other step (see "AGENTS.md sync"). Runs unconditionally every invocation, fresh or re-init, regardless of subsequent user choices or aborts.
 
 ## Workflow (fresh)
 
-1. Detect greenfield vs brownfield via Glob on source files
-2. AskUserQuestion batch: chat lang, docs lang, subsystem_decomposition, backward_compat, external_review
-3. If decomposition enabled → AskUserQuestion: diagram_tool (`likec4` | `mermaid`)
-4. Detect OS via Bash (silent; no confirm yet)
+1. Detect greenfield vs brownfield via repo search on source files
+2. Request user input, batch: chat lang, docs lang, subsystem_decomposition, backward_compat, external_review
+3. If decomposition enabled → request user decision: diagram_tool (`likec4` | `mermaid`)
+4. Detect OS via command execution (silent; no confirm yet)
 5. Detect external tools (silent; record results, do not prompt per-tool yet):
    - `likec4 --version` (only if diagram_tool=likec4)
    - designmd (always): check `node --version` and `npm --version`. Tooling invoked via `commands.yaml` (`designmd-*`); no `designmd` binary on PATH required.
-   - `codex --version` (only if external_review=enabled)
+   - the *other* provider's CLI, wrapped by External Review (only if external_review=enabled): probe `codex --version` when this init is running under Claude Code, `claude --version` when running under Codex (`.asd/rules/providers.md` § External review symmetry) — never probe the running host's own CLI
    Record paths and missing flags for the consolidated proposal
 6. Pick review iteration defaults (low=1 medium=1 high=2 critical=10) — include in proposal, do not prompt yet
 7. Pick git defaults (base_branch from `git symbolic-ref refs/remotes/origin/HEAD` or `main`; branch_pattern `sprint/<NNN>-<slug>`; gh_enabled from `gh --version`; auto_pr=false) — include in proposal
@@ -40,9 +40,9 @@ allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
    Record into proposal; do not prompt per-command yet
 8a. **Consolidated proposal & edit gate** — present every auto-detected/defaulted value in one structured block in `language.chat`:
     - OS, external tools (with missing flags + install hint), review iteration limits, git settings, detected build/test/lint/run commands
-    Then AskUserQuestion: `accept-all` | `edit-section` | `abort`.
-    - `edit-section` → AskUserQuestion which section (os | tools | review | git | commands), collect new values, re-show proposal, loop until `accept-all`
-    - Missing required tools (designmd always; likec4 if decomp+likec4; codex if external_review) → must resolve here: install / override path / disable feature. Do NOT silently proceed with missing required tools.
+    Then request user decision: `accept-all` | `edit-section` | `abort`.
+    - `edit-section` → request user decision on which section (os | tools | review | git | commands), collect new values, re-show proposal, loop until `accept-all`
+    - Missing required tools (designmd always; likec4 if decomp+likec4; the wrapped external-review CLI if external_review) → must resolve here: install / override path / disable feature. Do NOT silently proceed with missing required tools.
     Only after `accept-all` proceed to write.
 9. Write `.asd/project/config.yaml` from `t_config.yaml` with all approved fields (including `project.diagram_tool` when decomp enabled)
 10. Ask user what custom rules to add (separately for common / design / coding scopes); write three files from templates: `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`. Empty scope still writes template stub (header + intro), so agents always find the file.
@@ -57,49 +57,38 @@ allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
     - `design/architecture/stack.html` absent → suggest `/asd-stack`
     - `design/ux/DESIGN.md` OR `design/ux/design-system.html` OR `design/ux/accessibility.html` absent → suggest `/asd-design-system`
 16. Brownfield: prompt user to start sprint with audit-only scope (optional)
-17. Print summary + return contract
+17. **Run sync** — invoke the sync engine (`.asd/sync.js --check`) to confirm the bundled provider-view trees (`.claude/agents`, `.claude/skills`, `.claude/hooks`, `.agents/skills`, `.codex/agents`, `.codex/hooks`) are `current` against the shipped canon. Report any `stale`/`modified-foreign` finding to the user — do not silently apply.
+18. **Codex trust warning** — unconditional (every project gets a generated `.codex/hooks.json`, regardless of which provider is primary or whether external review is enabled): warn the user that Codex requires explicitly trusting this project's `.codex/hooks.json` before its hooks run (Codex refuses untrusted project-level hooks by design). Point to Codex's own trust-approval step; do not attempt to bypass it.
+19. Print summary + return contract
 
 ## Workflow (re-init)
 
 1. Read current `.asd/project/config.yaml`
 2. **Dump full current config to chat** in `language.chat` before any edit prompt. Render every field as structured block. User MUST see complete current state before being asked what to change. Do NOT skip or summarise — full values verbatim.
-3. AskUserQuestion which sections to edit
+3. Request user decision on which sections to edit
 4. Per section: ask new value → add to pending change-set (do not write yet)
-5. Show consolidated diff of all pending edits → AskUserQuestion: `accept-all` | `edit-section` | `abort`; loop until accepted
+5. Show consolidated diff of all pending edits → request user decision: `accept-all` | `edit-section` | `abort`; loop until accepted
 6. Apply diff; write config
 7. Append decisions-log entry per change
 
-## CLAUDE.md sync
+## AGENTS.md sync
 
-Idempotent. Section delimited by exact marker lines:
+Idempotent, ownership-class **managed block** (`.asd/rules/providers.md` ownership table). Uses the sync engine's managed-block functions (`.asd/sync.js`: `findManagedBlock`, `statusManagedBlock`, `applyManagedBlock`) — do not hand-roll marker parsing.
 
-```
-<!-- BEGIN: Agentic Software Development Rules -->
-<!-- END: Agentic Software Development Rules -->
-```
+- `AGENTS.md` at repo root: managed-block body = verbatim contents of `.asd/templates/t_AGENTS.md`. Block delimited by `<!-- asd:begin v=1 -->` / `<!-- asd:end -->`.
+- `CLAUDE.md` at repo root: managed-block body = verbatim contents of `.asd/templates/t_CLAUDE.md` (thin — just an `@AGENTS.md` import). Same block markers, same mechanism.
 
-Body between markers = verbatim contents of `.asd/templates/t_CLAUDE.md` (no transformation).
+Algorithm (per file, both files every run):
 
-Algorithm:
-
-1. If `CLAUDE.md` absent at repo root → create with:
-   ```
-   # CLAUDE.md
-
-   ## Agentic Software Development Rules
-
-   <!-- BEGIN: Agentic Software Development Rules -->
-   <contents of .asd/templates/t_CLAUDE.md>
-   <!-- END: Agentic Software Development Rules -->
-   ```
-2. If present and both markers found → extract body between markers, byte-compare to template. Equal → no-op. Different → replace body in place (preserve everything outside markers, including the `## Agentic Software Development Rules` heading and any other user content).
-3. If present but markers missing → append the `## Agentic Software Development Rules` section (with markers and template body) to end of file. Do NOT modify pre-existing content.
-4. If only one marker found (malformed) → STOP, ask user via AskUserQuestion: `repair` (replace from first marker to EOF) | `abort` | `manual`. Never silently guess.
+1. Compute status via `statusManagedBlock(targetPath, relKey, templateBody, syncState)` → `missing | modified-foreign | current | stale`.
+2. `missing` → `applyManagedBlock` creates the file (or appends the block to an existing foreign file, preserving all its other content byte-for-byte).
+3. `stale` → `applyManagedBlock` replaces only the block body, in place, leaving everything outside the markers untouched.
+4. `current` → no-op.
+5. `modified-foreign` (block exists but `.asd/sync-state.json` holds no matching record, or its recorded digest doesn't match — someone hand-edited inside the block) → STOP, request user decision: `overwrite` (accept sync's version) | `keep-local` (record current content as the new baseline) | `abort`. Never silently overwrite a hand-edit.
 
 Rules:
-- Marker lines exact, case-sensitive, no trailing spaces.
-- Never touch content outside markers.
-- Trailing newline of template preserved.
+- Never touch content outside the block markers.
+- Record the applied block's digest in `.asd/sync-state.json` after every write (this is what lets step 1 detect a later hand-edit).
 
 ## OS-specific commands written to .asd/project/commands.yaml
 
@@ -120,7 +109,7 @@ Four custom commands always emitted. Linter always invoked via `designmd-lint`; 
 ## Artefacts produced
 
 - `.asd/project/config.yaml`
-- `CLAUDE.md` (created or ASD-section synced from `t_CLAUDE.md`)
+- `AGENTS.md`, `CLAUDE.md` (created or managed block synced from `t_AGENTS.md`/`t_CLAUDE.md`)
 - `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`, `decisions-log.md`
 - `.asd/project/commands.yaml`
 - `design/architecture/c4/` content per `diagram_tool` (decomp only)
@@ -134,7 +123,7 @@ None. Init runs solo; no sprint context yet.
 ## Return contract (single line)
 
 ```
-INIT: <fresh|re-init> | MODE: <greenfield|brownfield> | DECOMP: <enabled|disabled> | DIAGRAM: <likec4|mermaid|n/a> | TOOLS: likec4=<ok|missing|skip|n/a> designmd=<ok|missing|skip> codex=<ok|missing|skip>
+INIT: <fresh|re-init> | MODE: <greenfield|brownfield> | DECOMP: <enabled|disabled> | DIAGRAM: <likec4|mermaid|n/a> | TOOLS: likec4=<ok|missing|skip|n/a> designmd=<ok|missing|skip> external_review_wrapped_cli=<ok|missing|skip|n/a>
 ```
 
 Followed by file-creation summary.
@@ -142,5 +131,5 @@ Followed by file-creation summary.
 ## References
 
 - Templates in `.asd/templates/`
-- `.asd/rules/core.md`, `.asd/rules/artifact-layout.md`
+- `.asd/rules/core.md`, `.asd/rules/artifact-layout.md`, `.asd/rules/providers.md`
 - Google Labs DESIGN.md spec: https://github.com/google-labs-code/design.md

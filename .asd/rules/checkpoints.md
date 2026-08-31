@@ -2,7 +2,7 @@
 
 ## Mandatory pauses (user approval required)
 
-Every pause is a HARD gate: responsible agent MUST call `AskUserQuestion` and receive explicit `approve` (or equivalent discrete option) BEFORE writing the gated artefact or advancing phase. Inferring approval from earlier free-text — including the original sprint request — is forbidden. Batching "produce + write + advance" into one turn without the intermediate `AskUserQuestion` is a protocol violation; agent MUST emit `FAILED` and halt if it notices itself doing so.
+Every pause is a HARD gate: responsible agent MUST request user decision and receive explicit `approve` (or equivalent discrete option) BEFORE writing the gated artefact or advancing phase. Inferring approval from earlier free-text — including the original sprint request — is forbidden. Batching "produce + write + advance" into one turn without the intermediate user-decision request is a protocol violation; agent MUST emit `FAILED` and halt if it notices itself doing so.
 
 | After phase / event | Approves | Gate position |
 |---|---|---|
@@ -21,7 +21,7 @@ Every pause is a HARD gate: responsible agent MUST call `AskUserQuestion` and re
 
 ## Pause message format
 
-Every pause uses the user-decision format from `core.md` (Problem / Options / Recommended / Consequences). Use AskUserQuestion when options are discrete. Free-form approval (`approve / request changes / reject`) acceptable for artifact reviews.
+Every pause uses the user-decision format from `core.md` (Problem / Options / Recommended / Consequences). Request user decision when options are discrete. Free-form approval (`approve / request changes / reject`) acceptable for artifact reviews.
 
 ## Approval recording
 

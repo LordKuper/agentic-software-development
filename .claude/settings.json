@@ -28,11 +28,12 @@
   "hooks": {
     "SessionStart": [
       {
+        "_asd": true,
         "matcher": ".*",
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/session-start.js"
+            "command": "node \"$CLAUDE_PROJECT_DIR/.asd/hooks/session-start.js\" --provider claude"
           }
         ]
       }

@@ -1,0 +1,31 @@
+name: sync-check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  sync-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Verify generated provider views match canonical sources
+        run: |
+          node .asd/sync.js --check > sync-check.json
+          cat sync-check.json
+          node -e "
+            const report = require('./sync-check.json');
+            const drifted = report.items.filter((item) => item.status !== 'current');
+            if (drifted.length > 0) {
+              console.error('Drift detected (' + drifted.length + ' item(s) not current):');
+              for (const item of drifted) console.error('  ' + item.status + '  ' + item.target);
+              console.error('Run the asd-sync skill (or node .asd/sync.js --apply <file...>) and commit the result.');
+              process.exit(1);
+            }
+            console.log('All ' + report.items.length + ' provider-view items are current.');
+          "
