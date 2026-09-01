@@ -9,7 +9,7 @@ Orchestration body for the `asd-phase-design` skill. Operation-mapping to host t
 
 ## Operations used
 - read: `.asd/project/config.yaml`, `state.json`, `sprint.md`, `audit.md`, audit-produced reverse/migrated drafts in `<sprint>/design/`
-- search repo: design-system gate — existence of `design/ux/DESIGN.md`, `design/ux/design-system.html`, `design/ux/accessibility.html`
+- search repo: design-system gate — existence of `docs/ux/DESIGN.md`, `docs/ux/design-system.html`, `docs/ux/accessibility.html`
 - request user decision: rare, phase-level escalation only
 - delegate to agent, sequential: BA, UX Designer, Architect, optional Architect (c4-full); plus PM for state
 - dispatch skill `asd-design-system` when gate detects missing files
@@ -25,19 +25,19 @@ Orchestration body for the `asd-phase-design` skill. Operation-mapping to host t
    - inputs: sprint.md, audit.md (if present), existing prd draft if any, `language.chat`, `language.docs`; template `t_prd.html`
    - instruction: integrate existing draft (preserve `provenance` + `source` if present); author full sprint PRD covering all scope; discuss each section in `language.chat`; on approval translate to `language.docs` + write `<sprint>/design/prd.html`; emit COMPLETED
    - if `prd` disabled → skip to step 7 (downstream steps read `sprint.md` directly instead of `prd.html`)
-7. **Step Design-system gate** — only if `ux_spec` enabled: on PRD step done → search repo for existence of all three: `design/ux/DESIGN.md`, `design/ux/design-system.html`, `design/ux/accessibility.html`
+7. **Step Design-system gate** — only if `ux_spec` enabled: on PRD step done → search repo for existence of all three: `docs/ux/DESIGN.md`, `docs/ux/design-system.html`, `docs/ux/accessibility.html`
    - if ANY missing → dispatch skill `asd-design-system`; halt until COMPLETED; on FAILED/aborted → relay + halt phase
    - if all present, or `ux_spec` disabled → Step 8
 8. **Step UX-spec** — only if `ux_spec` enabled: on gate cleared → delegate to agent `asd-ux-designer`:
-   - inputs: prd.html if enabled else sprint.md, audit.md (if present), existing ux-spec draft if any, current `design/ux/DESIGN.md`, `design-system.html`, `accessibility.html`; templates `t_ux-spec.html`, `t_design-md-delta.yaml`
+   - inputs: prd.html if enabled else sprint.md, audit.md (if present), existing ux-spec draft if any, current `docs/ux/DESIGN.md`, `design-system.html`, `accessibility.html`; templates `t_ux-spec.html`, `t_design-md-delta.yaml`
    - instruction: integrate existing draft; author flows + UI mockups using ONLY existing DESIGN.md tokens; when a needed token missing/must change, pause mockup, request user decision to approve token add/update, append entry to `<sprint>/design/design-md-delta.yaml` (create on first entry per `t_design-md-delta.yaml`), THEN continue mockup referencing new token; discuss each section in `language.chat`; on approval translate + write `<sprint>/design/ux-spec.html`; emit COMPLETED (delta file produced inline iff a token gap surfaced — else omitted)
    - if `ux_spec` disabled → skip to step 9
 9. **Step ADR** — only if `adr` enabled: on UX step done → delegate to agent `asd-architect`:
-   - inputs: whichever of prd.html/ux-spec.html exist, else sprint.md; audit.md (if present); existing adr draft if any, `design/architecture/stack.html`, existing adr/, `tech-reference/`; template `t_adr.html`
+   - inputs: whichever of prd.html/ux-spec.html exist, else sprint.md; audit.md (if present); existing adr draft if any, `docs/architecture/stack.html`, existing adr/, `tech-reference/`; template `t_adr.html`
    - instruction: integrate existing draft; author one+ ADRs for sprint scope (repeated `<article>` blocks); for any new tech, create/update `tech-reference/<tech>-<version>.md` via fetch-external-doc-by-URL + `t_tech-reference.md`; discuss each decision in `language.chat`; on approval translate + write `<sprint>/design/adr.html`; emit COMPLETED
    - if `adr` disabled → skip to step 10
 10. **Step c4-full** — only if frozen `documents.c4` (already effective, from `state.json`) enabled: on ADR step done → delegate to agent `asd-architect`
-    - inputs: whichever design drafts exist, `design/architecture/stack.html`, sprint.md; ADR not required
+    - inputs: whichever design drafts exist, `docs/architecture/stack.html`, sprint.md; ADR not required
     - templates per `project.diagram_tool`:
       - likec4: `t_c4-model.c4`, `t_c4-views.c4`; produce `<sprint>/design/c4-full/model/*.c4`, `views.c4`, run `likec4 build` → `dist/`
       - mermaid: `t_subsystems.yaml`; produce `<sprint>/design/c4-full/subsystems.yaml` + `architecture.html` (mermaid-rendered)
@@ -54,9 +54,9 @@ Orchestration body for the `asd-phase-design` skill. Operation-mapping to host t
 - `<sprint>/design/adr.html` (if `documents.adr` enabled)
 - `<sprint>/design/design-md-delta.yaml` (optional, produced inline by UX-spec step iff token gaps surfaced)
 - `<sprint>/design/c4-full/` (if frozen `documents.c4` enabled; layout per `diagram_tool`)
-- New/updated `design/architecture/tech-reference/<tech>-<version>.md` (when new tech in ADR)
+- New/updated `docs/architecture/tech-reference/<tech>-<version>.md` (when new tech in ADR)
 
-Indirect (via design-system gate): `design/ux/DESIGN.md`, `design-system.html`, `accessibility.html` (when gate dispatches `asd-design-system`).
+Indirect (via design-system gate): `docs/ux/DESIGN.md`, `design-system.html`, `accessibility.html` (when gate dispatches `asd-design-system`).
 
 ## Agents delegated to
 - `asd-pm` (state + decisions-log)

@@ -8,7 +8,7 @@ Orchestration body for the `asd-phase-design-promote` skill. Operation-mapping t
 - `state.json.phase` advanced from `design-review`
 
 ## Operations used
-- read: `.asd/project/config.yaml`, `state.json`, sprint design drafts, audit.md, persistent `design/`
+- read: `.asd/project/config.yaml`, `state.json`, sprint design drafts, audit.md, persistent `docs/`
 - request user decision: rare, phase-level escalation only (PM + creators handle per-doc/per-subsystem approvals)
 - delegate to agent: PM (orchestrator), Architect, BA, UX Designer (domain promoters)
 
@@ -34,22 +34,22 @@ Orchestration body for the `asd-phase-design-promote` skill. Operation-mapping t
    - emit COMPLETED
 8. **Parallel domain promotion** — delegate to agent in parallel, **only for domains whose sprint draft exists**:
    - **`asd-ba`** — only if `prd.html` is in scope (step 1 intersection) — payload (prd.html, decomposition map for product domain, migration items tagged product):
-     - per subsystem (or flat): write decomposed PRD into `design/product/requirements/<subsystem>.html` (or `requirements.html`); merge with existing if present
+     - per subsystem (or flat): write decomposed PRD into `docs/product/requirements/<subsystem>.html` (or `requirements.html`); merge with existing if present
      - process product migration items (`provenance: migrated|reverse-engineered` + `source`)
      - request user decision before each persistent write; show diff vs existing
      - emit COMPLETED
    - **`asd-architect`** — only if `adr.html` or `c4-full/` is in scope (step 1 intersection, independently — a repo can promote c4 without adr, or vice versa) — payload (adr.html if in scope, c4-full if in scope, decomposition map for architecture domain, migration items tagged architecture):
-     - per subsystem (or flat): split adr.html decisions into `design/architecture/adr/<subsystem>/adr-NNNN-<slug>.html` (new files; NNNN globally unique)
-     - merge new API contracts into `design/architecture/api/<subsystem>.html` (or `api.html`)
-     - update `design/architecture/stack.html` + `tech-reference/` entries if sprint introduced new tech
-     - compute c4 delta from `<sprint>/design/c4-full/` vs persistent `design/architecture/c4/`; apply patches; regenerate `c4/dist/` (likec4) or `architecture.html` (mermaid)
+     - per subsystem (or flat): split adr.html decisions into `docs/architecture/adr/<subsystem>/adr-NNNN-<slug>.html` (new files; NNNN globally unique)
+     - merge new API contracts into `docs/architecture/api/<subsystem>.html` (or `api.html`)
+     - update `docs/architecture/stack.html` + `tech-reference/` entries if sprint introduced new tech
+     - compute c4 delta from `<sprint>/design/c4-full/` vs persistent `docs/architecture/c4/`; apply patches; regenerate `c4/dist/` (likec4) or `architecture.html` (mermaid)
      - process architecture migration items
      - request user decision before each persistent write
      - emit COMPLETED
    - **`asd-ux-designer`** — only if `ux-spec.html` is in scope (step 1 intersection) — payload (ux-spec.html, design-md-delta.yaml if present, decomposition map for ux domain, migration items tagged ux):
-     - per subsystem (or flat): split ux-spec into `design/ux/<subsystem>.html` (or `ux-spec.html`); merge with existing
-     - if `design-md-delta.yaml` present: apply add/update/remove ops to `design/ux/DESIGN.md`; if `system.tools.designmd` true, run `designmd-lint` from `commands.yaml`; halt on lint errors. On Windows run `designmd-install` once per session before first `designmd-lint`/`-diff`/`-export` (no-op on Linux/macOS). Never inline the linter binary — always go through `designmd-*` commands.
-     - regenerate `design/ux/design-system.html` from patched DESIGN.md (only if DESIGN.md changed)
+     - per subsystem (or flat): split ux-spec into `docs/ux/<subsystem>.html` (or `ux-spec.html`); merge with existing
+     - if `design-md-delta.yaml` present: apply add/update/remove ops to `docs/ux/DESIGN.md`; if `system.tools.designmd` true, run `designmd-lint` from `commands.yaml`; halt on lint errors. On Windows run `designmd-install` once per session before first `designmd-lint`/`-diff`/`-export` (no-op on Linux/macOS). Never inline the linter binary — always go through `designmd-*` commands.
+     - regenerate `docs/ux/design-system.html` from patched DESIGN.md (only if DESIGN.md changed)
      - process ux migration items
      - request user decision before each persistent write
      - emit COMPLETED
@@ -64,11 +64,11 @@ Orchestration body for the `asd-phase-design-promote` skill. Operation-mapping t
 12. Any agent QUESTION / FAILED / ABORT → relay, halt
 
 ## Artefacts produced
-- Persistent docs under `design/` per domain (per subsystem when decomposition enabled, flat when disabled)
-- Patched `design/ux/DESIGN.md` (when delta present)
-- Regenerated `design/ux/design-system.html` (when DESIGN.md changed)
-- Patched `design/architecture/c4/` (when c4-full present); regenerated `c4/dist/` (likec4) or `architecture.html` (mermaid)
-- New `design/architecture/tech-reference/<tech>-<version>.md` if applicable
+- Persistent docs under `docs/` per domain (per subsystem when decomposition enabled, flat when disabled)
+- Patched `docs/ux/DESIGN.md` (when delta present)
+- Regenerated `docs/ux/design-system.html` (when DESIGN.md changed)
+- Patched `docs/architecture/c4/` (when c4-full present); regenerated `c4/dist/` (likec4) or `architecture.html` (mermaid)
+- New `docs/architecture/tech-reference/<tech>-<version>.md` if applicable
 - Appended decisions-log entries
 
 ## Agents delegated to

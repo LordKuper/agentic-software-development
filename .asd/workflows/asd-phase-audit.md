@@ -21,7 +21,7 @@ Orchestration body for the `asd-phase-audit` skill. Operation-mapping to host to
 5. Delegate to agent `asd-ba` with payload:
    - sprint.md path, decomposition mode, language.docs, frozen `documents.prd`; template `t_audit.md`
    - instruction:
-     - scan project for existing docs any format/location (MD, TXT, DOC, DOCX, RST, HTML, PDF text, wiki exports, Confluence dumps, README outside `design/`, `.asd/project/`)
+     - scan project for existing docs any format/location (MD, TXT, DOC, DOCX, RST, HTML, PDF text, wiki exports, Confluence dumps, README outside `docs/`, `.asd/project/`)
      - create/append `<sprint>/audit.md` per `t_audit.md`: Scope reference, Touched areas (docs side), Existing docs found, Documentation migration plan
      - **only if `documents.prd` enabled**: optionally produce reverse-engineered/migrated draft PRDs in `<sprint>/design/` (with `provenance` + `source` frontmatter) when overlap with sprint scope obvious; if `documents.prd` disabled, never write `<sprint>/design/prd.html` — findings that would have seeded a draft go into the migration plan text instead
      - emit COMPLETED
@@ -31,7 +31,7 @@ Orchestration body for the `asd-phase-audit` skill. Operation-mapping to host to
      - scan project source code in touched areas
      - append to `<sprint>/audit.md`: Touched areas (code side, merge), Existing implementation found, Gaps, Risks; if `decomposition=enabled` also Subsystems map
      - **only if `documents.adr` enabled**: optionally produce reverse-engineered draft ADRs in `<sprint>/design/`; if `documents.adr` disabled, never write `<sprint>/design/adr.html` — record the architectural finding as migration-plan/gaps text instead
-     - for any tech identified, verify `design/architecture/tech-reference/<tech>-<version>.md` exists; if missing, create reverse-engineered references via fetch-external-doc-by-URL + `t_tech-reference.md`
+     - for any tech identified, verify `docs/architecture/tech-reference/<tech>-<version>.md` exists; if missing, create reverse-engineered references via fetch-external-doc-by-URL + `t_tech-reference.md`
      - read `.asd/project/stubs.md`; filter entries whose File:Line points to touched-area files or whose Owner indicates relevance; append matching rows to audit.md "Related open stubs" section (or "no related open stubs")
      - emit COMPLETED
 7. On Architect COMPLETED → delegate to agent `asd-pm` with payload:
@@ -47,7 +47,7 @@ Orchestration body for the `asd-phase-audit` skill. Operation-mapping to host to
 ## Artefacts produced
 - `<sprint>/audit.md` (merged BA + Architect findings, user-approved)
 - Optional reverse-engineered/migrated drafts in `<sprint>/design/` with `provenance: reverse-engineered | migrated`
-- Optional new `design/architecture/tech-reference/<tech>-<version>.md` entries (reverse-engineered)
+- Optional new `docs/architecture/tech-reference/<tech>-<version>.md` entries (reverse-engineered)
 
 ## Agents delegated to
 - `asd-ba` (docs scan)

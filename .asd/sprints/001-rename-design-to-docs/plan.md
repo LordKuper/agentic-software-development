@@ -100,15 +100,15 @@ Owner: `backend-dev`. Satisfies AC-1. Material risk for impl-test: skill `descri
 ### Task 5: Rename the docs root across `.asd/workflows/`
 Owner: `backend-dev`. Satisfies AC-1 (preserving AC-3). `.asd/workflows/` has no generated counterpart, so these edits are canon-only and — per audit G-10 — are invisible to `sync.js --check`.
 
-- [ ] `asd-phase-design-promote.md` — lines 11, 37, 42–45, 50–52, 67–71 (heaviest)
-- [ ] `asd-phase-design.md` — lines 12, 28, 32, 36, 40, 57, 59
-- [ ] `asd-phase-plan.md` — lines 7, 11, 19
-- [ ] `asd-phase-impl.md` — lines 12, 68
-- [ ] `asd-phase-impl-test.md` — lines 11, 28
-- [ ] `asd-phase-impl-review.md` — lines 12, 32
-- [ ] `asd-phase-audit.md` — lines 24, 34
-- [ ] Do NOT edit `asd-phase-design-review.md` (all 12 hits are `<sprint>/design/` or `reviews/design/`), `asd-phase-scope.md`, or `asd-phase-pr.md`
-- [ ] Keep every `asd-phase-design*` file name, phase name, and dispatch reference literally unchanged (AC-3)
+- [x] `asd-phase-design-promote.md` — lines 11, 37, 42–45, 50–52, 67–71 (heaviest)
+- [x] `asd-phase-design.md` — lines 12, 28, 32, 36, 40, 57, 59
+- [x] `asd-phase-plan.md` — lines 7, 11, 19
+- [x] `asd-phase-impl.md` — lines 12, 68
+- [x] `asd-phase-impl-test.md` — lines 11, 28
+- [x] `asd-phase-impl-review.md` — lines 12, 32
+- [x] `asd-phase-audit.md` — lines 24, 34 (plus line 50, a same-class in-scope occurrence the line enumeration missed)
+- [x] Do NOT edit `asd-phase-design-review.md` (all 12 hits are `<sprint>/design/` or `reviews/design/`), `asd-phase-scope.md`, or `asd-phase-pr.md`
+- [x] Keep every `asd-phase-design*` file name, phase name, and dispatch reference literally unchanged (AC-3)
 
 ### Task 6: Update `.asd/project/` and confirm the manifest needs no hand edit
 Owner: `backend-dev`. Satisfies AC-1. Material risk for impl-test: this task's main content is a set of things that must NOT change — a hand edit to `release-manifest.json` corrupts the hash ledger.

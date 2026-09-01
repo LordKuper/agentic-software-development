@@ -9,7 +9,7 @@ Orchestration body for the `asd-phase-impl` skill. Operation-mapping to host too
 - **Test-fix mode**: `state.json.test_defects_pending` set; `<sprint>/test-plan.md` has pending `Defects` rows
 
 ## Operations used
-- read: `.asd/project/config.yaml`, `state.json`, `plan.md`, `<sprint>/reviews/impl/iter-NN/` (review-fix), `<sprint>/test-plan.md` (test-fix), persistent design/ docs, `.asd/project/custom-common-rules.md`, `custom-coding-rules.md`, `stubs.md`, `<sprint>/manual-steps.md`
+- read: `.asd/project/config.yaml`, `state.json`, `plan.md`, `<sprint>/reviews/impl/iter-NN/` (review-fix), `<sprint>/test-plan.md` (test-fix), persistent docs/ docs, `.asd/project/custom-common-rules.md`, `custom-coding-rules.md`, `stubs.md`, `<sprint>/manual-steps.md`
 - request user decision: escalation only (see Execution mode)
 - delegate to agent: devs per task owner / finding owner / defect owner; PM for state + assessment + decisions-log
 
@@ -65,7 +65,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
      - `language.chat`, `language.docs`
      - instruction:
        - read context first
-       - verify `design/architecture/tech-reference/<tech>-<version>.md` exists per tech touched; if missing → emit `FAILED — tech-reference missing for <tech>@<version>` (Architect creates it via design re-run or out-of-band)
+       - verify `docs/architecture/tech-reference/<tech>-<version>.md` exists per tech touched; if missing → emit `FAILED — tech-reference missing for <tech>@<version>` (Architect creates it via design re-run or out-of-band)
        - work autonomously within plan + design-doc scope; do NOT pause user for routine approach choices — make the reasonable call and proceed
        - escalate only on a blocker (see Execution mode): emit `QUESTION` for unresolvable requirement ambiguity, `FAILED` for missing tech-reference / unrecoverable failure, or raise Complication Approval via request for user decision **only** when a Simplicity Default trigger fires (new abstraction / dependency / config flag / generalization)
        - **manual-steps handling**: when a plan subtask cannot proceed without a human-only operational action (secret, cloud resource, hand-run migration, env var, third-party account):

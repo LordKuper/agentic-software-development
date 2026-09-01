@@ -9,7 +9,7 @@ Orchestration body for the `asd-phase-impl-review` skill. Operation-mapping to h
 - **Cycle re-entry** (after impl review-fix + impl-test): `state.json.review_fixes_pending` cleared by impl fix-mode finalize; `test_defects_pending` null; `<sprint>/test-plan.md` `Suite run` records a pass
 
 ## Operations used
-- read: `.asd/project/config.yaml`, `state.json`, plan.md, `test-plan.md`, code + tests diff, persistent design/ docs, `.asd/project/stubs.md`, `custom-common-rules.md`, `custom-coding-rules.md`, review files
+- read: `.asd/project/config.yaml`, `state.json`, plan.md, `test-plan.md`, code + tests diff, persistent docs/ docs, `.asd/project/stubs.md`, `custom-common-rules.md`, `custom-coding-rules.md`, review files
 - request user decision: escalation on FAIL or iteration cap
 - delegate to agent in parallel: reviewers; delegate to agent: PM for state + decisions-log. impl-review does NOT delegate to devs — finding fixes route to impl phase (review-fix mode), which returns via impl-test.
 
@@ -29,7 +29,7 @@ Every reviewer dispatched below is read-only: it evaluates its scope and returns
    - `asd-reviewer-testing` — `test-plan.md` decisions (risk→check fit, justified removals, justified `none` decisions, fail-first regression proof), test quality and determinism, stub-resolution verification, manual verification capture
    - `asd-reviewer-ui` — UI code vs ux-spec mockups + accessibility compliance
    - `asd-reviewer-simplification` — over-engineering smells in code; design-principles adherence
-   - `asd-reviewer-documentation` — persistent design/ actuality vs implementation, SSoT, traceability
+   - `asd-reviewer-documentation` — persistent docs/ actuality vs implementation, SSoT, traceability
    - `asd-reviewer-performance` — perf budgets, regression, anti-patterns
    - if `review.external_review=enabled` → `asd-external-review` with phase=`impl-review`
    - payload to each: diff (iter 1 = `git diff <base>...HEAD`; iter 2+ = `git diff` + last commit), the **scope file list** (the diff's changed files — set each internal reviewer must cover in its `review-policy.md` coverage ledger), iteration N, review output dir `<sprint>/reviews/impl/iter-NN/`, severity floor, relevant context paths (`<sprint>/test-plan.md` included — Testing reviewer's primary input), `language.chat`, `language.docs`. Payload carries no authoring rationale, no prior-iteration verdicts; incremental diff scopes the *input*, not reviewer's context. For `asd-external-review` on iter ≥ 2, also pass previous iteration's finding set (stalemate detection)
