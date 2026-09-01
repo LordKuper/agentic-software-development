@@ -92,7 +92,7 @@ Creator:
 
 All HTML outputs MUST be wrapped in `t_html-shell.html` per `artifact-layout.md` HTML shell wrapping rule. Fill placeholders from that rule's mapping table.
 
-- ADR: fragment per `t_adr.html`, wrapped in shell. DOC_TYPE=ADR, SUBSYSTEM=subsystem id (or `N/A`), STATUS reflects ADR status (`proposed`/`accepted`), TITLE=`ADR-N · <decision title>` (sprint-local number), STATS=`status · subsystem · updated YYYY-MM-DD`
+- ADR: fragment per `t_adr.html` (one `<article class="adr" id="adr-{{N}}">` per decision, ids prefixed `adr-{{N}}-*`), wrapped in shell. Doc-level meta is set-level, not per-decision: DOC_TYPE=ADR, SUBSYSTEM=subsystem id (or `N/A`) when every ADR shares one, else `project`; STATUS=document lifecycle value (`draft`/`in-review`/`approved`/`locked`), never an individual ADR's `proposed`/`accepted`; TITLE=`ADRs — Sprint NNN · <slug>`; STATS=`N decisions · subsystems · updated YYYY-MM-DD`. Each ADR's own `proposed`/`accepted` status lives only on its `.status-chip status-{{proposed | accepted}}` inside `{{CONTENT}}`
 - c4 model: LikeC4 DSL per upstream spec (not HTML, no shell)
 - Audit code-side sections: returned as final text per `t_audit.md` "Touched areas" (code side), "Existing implementation found", "Gaps" (incl. dependency/migration findings), "Risks", "Subsystems map", "Related open stubs" (markdown, no shell); omit an optional section entirely when empty, never emit a placeholder row
 - stack.html: fragment per `t_stack.html`, wrapped in shell. DOC_TYPE=Stack, SUBSYSTEM=project

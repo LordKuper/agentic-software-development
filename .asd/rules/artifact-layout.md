@@ -117,16 +117,16 @@ The shell trims two blocks per document instead of always emitting them: the mer
 | `{{DOC_TYPE}}` | one of `PRD`, `ADR`, `UX-spec`, `Concept`, `Stack`, `Accessibility`, `Design-system`, `Architecture` |
 | `{{SUBSYSTEM}}` | subsystem id when persistent per-subsystem; `sprint` for sprint drafts; `project` for project-wide docs |
 | `{{SPRINT_ID}}` | active `state.json.sprint_id` for sprint drafts; empty for persistent docs |
-| `{{STATUS}}` | `draft` (design) / `in-review` (design-review) / `approved` (post design-promote) / `locked` (archived). ADR also reflects ADR status: `proposed`/`accepted` |
+| `{{STATUS}}` | `draft` (design) / `in-review` (design-review) / `approved` (post design-promote) / `locked` (archived). `adr.html` is a set of decisions (one `<article>` each, `t_adr.html` "repeat this article per decision") — `{{STATUS}}` here is this document-lifecycle value, not an individual ADR's `proposed`/`accepted` status, which lives solely on that ADR's `.status-chip` |
 | `{{UPDATED_AT}}` | ISO date (YYYY-MM-DD) of last write |
 | `{{RESPONSIBILITY}}` | the `owns:` line from the fragment's responsibility frontmatter |
 | `{{PROVENANCE}}` | `original` \| `reverse-engineered` \| `migrated` (from fragment frontmatter) |
 | `{{SOURCE}}` | the `source:` field; empty when provenance=original |
 | `{{SOURCE_SUFFIX}}` | ` (from {{SOURCE}})` in the provenance badge when source non-empty; else empty |
-| `{{TITLE}}` | doc title — e.g. `PRD — Sprint 001 · <slug>` or `ADR-7 · <decision title>` (sprint-local number) |
-| `{{STATS}}` | doc-type chip strip; PRD sprint draft (`SUBSYSTEM=sprint`): `N stories · N AC · updated …`; PRD persistent doc: `N goals · N stories · N AC · N non-goals · updated …`; ADR: `status · subsystem · updated`; UX-spec: `N flows · N mockups`; Stack: `N langs · N frameworks · N components`; others: at least `updated …` |
-| `{{TOC_NAV}}` | full `<nav class="toc">…</nav>` block (title + `<ol>` of links to each `<section id>` in fragment order, auto-generated from `<h2>` text) when the fragment has **3 or more** `<h2>` sections; empty string below that threshold — the nav is omitted entirely, not emitted empty |
-| `{{LAYOUT_CLASS}}` | `" no-toc"` when `{{TOC_NAV}}` is empty; empty string otherwise |
+| `{{TITLE}}` | doc title — e.g. `PRD — Sprint 001 · <slug>` or `ADRs — Sprint 001 · <slug>` (set-level; ADR doc holds one or more decisions, so no single decision title fits doc-level `{{TITLE}}` — the individual decision title lives on each ADR's own `<h2>`/chip inside `{{CONTENT}}`) |
+| `{{STATS}}` | doc-type chip strip; PRD sprint draft (`SUBSYSTEM=sprint`): `N stories · N AC · updated …`; PRD persistent doc: `N goals · N stories · N AC · N non-goals · updated …`; ADR: `N decisions · subsystems · updated …` (set-level; per-ADR status/subsystem stays on that ADR's own chips, not doc-level STATS); UX-spec: `N flows · N mockups`; Stack: `N langs · N frameworks · N components`; others: at least `updated …` |
+| `{{TOC_NAV}}` | full `<nav class="toc">…</nav>` block (title + `<ol>` of links to each `<section id>` in fragment order, auto-generated from `<h2>` text) when the fragment has **3 or more** `<h2>` sections; empty string below that threshold — the nav is omitted entirely, not emitted empty. The shell derives the two-column layout purely from this via CSS (`.layout:has(> nav.toc)`) — no separate layout-class placeholder needed. For a multi-ADR `adr.html` (one `<article class="adr">` per decision, each with `id`-prefixed headings `adr-{{N}}-*`), the TOC lists one entry per ADR article (linking `#adr-{{N}}`), not one entry per `<h2>` — each ADR's internal Context/Decision/Consequences/… headings nest as sub-entries or stay unlinked in the TOC, since the id-prefixing already disambiguates them for direct anchors and the shell's scrollspy |
+| `{{TOC_ASSETS}}` | TOC/scrollspy `<style>` block + scrollspy `<script>`, filled with the same non-empty condition as `{{TOC_NAV}}` (3+ `<h2>` sections); empty string otherwise — keeps the doc self-contained with no dead CSS/script when there's no TOC |
 | `{{MERMAID_SCRIPT}}` | the mermaid CDN `<script src>` + init `<script>` tag pair when `{{CONTENT}}` contains a `.mermaid` diagram block; empty string when the fragment has no diagram |
 | `{{CONTENT}}` | fragment body (everything after the frontmatter comment) |
 | `{{GENERATED_BY}}` | `ASD workflow` |
@@ -186,7 +186,7 @@ Agents preserve the block. Reviewers verify content respects the declared scope.
 - kebab-case English filenames
 - Sprint slug derived from scope, max 30 chars
 - Sprint number zero-padded to 3 digits
-- ADR numbering is sprint-local (`ADR-1`, `ADR-2`, …) inside `<sprint>/design/adr.html` — never globally unique, never reused across sprints; ADRs are never promoted as a standalone persistent document, so no persistent ADR filename convention exists
+- ADR numbering is sprint-local (`ADR-1`, `ADR-2`, …) inside `<sprint>/design/adr.html` — unique only within the sprint, may repeat across sprints; ADRs are never promoted as a standalone persistent document, so no persistent ADR filename convention exists
 
 ## Sprint archival
 
