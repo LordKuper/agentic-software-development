@@ -213,4 +213,4 @@ A sprint folder under `.asd/sprints/archived/<NNN-slug>/` is read-only, with one
 
 ## State recovery
 
-`state.json` is the single recovery point. Updated on every phase transition, task status change, review verdict. Session-start hook reads it and prints a summary into context.
+`state.json` is the single recovery point. Updated on every phase transition, task status change, review verdict. Session-start hook reads it and prints a summary into context. `archived_at` (ISO8601, null until then) is set by `asd-phase-pr.md`'s merge-mode step when the sprint folder moves to `.asd/sprints/archived/<NNN-slug>/`; `phase`/`pr.state` stay unchanged at that point (still `pr`/`"open"` — folder moved, not yet merged). A sprint archived before this sprint's schema change may still carry now-removed fields (`subsystems_touched`, `new_subsystems`); the resume path and session-start hook must assume neither their presence nor their absence.

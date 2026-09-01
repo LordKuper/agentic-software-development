@@ -103,11 +103,11 @@ Verdict: **A-2**, plus the residue defect (2) recorded in the project decisions 
 Affected canonical files: `.asd/templates/t_state.json`, `.asd/rules/sprint-lifecycle.md` (State recovery), `.asd/workflows/asd-phase-scope.md` (step 8.6), `.asd/workflows/asd-phase-pr.md` (step 6), `.asd/release-manifest.json` (`canon_hashes`).
 Material risk: audit R-8 — archived sprints keep the removed fields, so the resume path must assume neither their presence nor their absence. Breaks `node tests/run.js` / `sync.js --check` if `canon_hashes` is not updated in this same task.
 
-- [ ] `t_state.json`: delete `subsystems_touched` and `new_subsystems` (declared, written, read by nothing)
-- [ ] `sprint-lifecycle.md` "State recovery": document `archived_at` — it is written by `asd-phase-pr.md` but described nowhere, closing the second half of the standing defect
-- [ ] `asd-phase-scope.md` step 8.6: stop seeding the removed fields
-- [ ] Verify the resume path and `session-start.js` read neither field; make no assumption about archived sprints that still carry them
-- [ ] Update `release-manifest.json` `canon_hashes`; confirm `node tests/run.js` green and `sync.js --check` clean
+- [x] `t_state.json`: delete `subsystems_touched` and `new_subsystems` (declared, written, read by nothing)
+- [x] `sprint-lifecycle.md` "State recovery": document `archived_at` — it is written by `asd-phase-pr.md` but described nowhere, closing the second half of the standing defect
+- [x] `asd-phase-scope.md` step 8.6: stop seeding the removed fields (verified — current step 8.6 already never seeded them; nothing to remove)
+- [x] Verify the resume path and `session-start.js` read neither field; make no assumption about archived sprints that still carry them (grep confirmed no references in `.asd/hooks/`)
+- [x] Update `release-manifest.json` `canon_hashes`; confirm `node tests/run.js` green and `sync.js --check` clean (recomputed `upstream_hashes` for `t_state.json`/`sprint-lifecycle.md` — `canon_hashes` does not track templates/rules, only agents/skills; `sync.js --check` clean, hashes computed via the same `sync.sha256Hex(sync.readNormalized())` the self-consistency test uses — `node tests/run.js` itself is impl-test's gate, not run here per role scope)
 
 ### Task 6: Make the decisions log sprint-scoped and deprecate the project log
 
