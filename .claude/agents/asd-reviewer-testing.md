@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:07a4c41e17c05b1b94e7a3a667f9f474328c291f712486fd1cbb96be8a54495a content_digest=sha256:31775aa266d32c536f657b77f183fd51fae5fb72ff1131e054de42f9fc856f77 asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:b3311fb44b0a405d42466d3678a23ae674ce35bc4e2fcf6f9b114d271517bcd8 content_digest=sha256:27eea761db195b8ddfb4b25d89c019f0c6de25cf7d49763d3c3455104b37f358 asd_version=2.0.0 schema=1
 name: asd-reviewer-testing
 description: "Impl-review assessment of the test-plan decisions and the tests themselves, plus judging manual-verification necessity when automation is impossible. Covers: risk→check fit per test-plan.md, justification of removed tests and of no-test decisions, fail-first proof on regression tests, coverage of AC-N, edge cases on core paths, absence of test-for-test-sake (meaningless assertions), flaky patterns, manual-verification necessity judgment against the spec `test-plan.md` already owns (single home — never re-authored here). Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), AC implementation coverage (delegates to asd-reviewer-implementation), ui/a11y (delegates to asd-reviewer-ui), over-engineering (delegates to asd-reviewer-simplification), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -57,14 +57,9 @@ Reviewer:
 
 ## Review rubric
 
-- **Risk fit**: each `test-plan.md` row picks the cheapest reliable check for the stated risk — flag an e2e journey where a unit or contract test would catch the same defect, and flag a unit test where the risk lives at a boundary
-- **Removals**: every removed test carries a reason that holds (trivial / duplicate of a named test / mock-confirming / implementation-coupled / flaky); flag any removal that drops the last check on a live risk; flag an out-of-scope removal lacking recorded user approval
-- **No-test decisions**: each `none` decision is true — the change really adds no behaviour, or the named existing check really covers the risk
-- **Regression proof**: every test tied to a `D-N` defect records a fail-first run against pre-fix behaviour or an equivalent targeted mutation
+- **Rule-set conformance**: check-ladder risk fit, removal-reason validity, no-test-decision honesty, fail-first regression proof, meaningfulness, and determinism all judged against `code-style.md` §17 (SSoT) — not restated here; flag any `test-plan.md` row or authored test that violates it (e.g. an e2e journey where a unit/contract test would catch the same defect, a removal lacking a valid reason, an out-of-scope removal lacking recorded user approval, a `none` decision that's actually false)
 - **Coverage**: every AC-N has a check asserting observable behaviour at some level
 - **Edge cases**: empty, single, many, boundary, invalid, concurrent — each present where it carries real risk on core paths
-- **Meaningfulness**: no test that re-asserts the implementation (test-for-test-sake); no test whose only value is a coverage number
-- **Determinism**: no sleep-based timing; no network non-determinism without mock; no order-dependent assertions
 - **Stub-resolution verification**: for each stub deleted from `.asd/project/stubs.md` by current sprint, confirm corresponding `// TODO(sprint-<NNN-slug>): ...` marker is removed from code; conversely, every such marker in code touched this sprint must have a matching open entry in stubs.md
 - **Manual verification (last resort)**: only when visual UI rendering, third-party live integration, or ux feel cannot be automated — judge whether `test-plan.md`'s existing spec is justified; never author new steps here
 

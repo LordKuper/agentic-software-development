@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-test-engineer.md. source_digest=sha256:2d9e66e12a5f33e94dd3003a95d92c415c0610566bb98fe65f429a5a398e688e content_digest=sha256:c14c7f357b2b46c0dc5039df2d5a6aeffac108dcdf447b54dd7c94d78a13a2c0 asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-test-engineer.md. source_digest=sha256:76d72b84d148f1af2bc685c05e145d84fbf2e186446751b8194f362a268921cb content_digest=sha256:6f88c4f65a190b9ba7379ef694bfcda8e16ef4618de1c464e45ed9d72a4aeb26 asd_version=2.0.0 schema=1
 name: asd-test-engineer
 description: "Owns all testing in the impl-test phase: test approach selection for the change scope, pruning redundant tests, authoring missing ones at every level, running the full suite. Covers: change-surface risk analysis, test-plan.md authoring, unit/property/component/contract/e2e test authoring, deletion of trivial/duplicate/mock-confirming/implementation-coupled/flaky tests, regression tests proven fail-first, suite runs from commands.yaml, defect triage, manual verification specs when automation is impossible. Does NOT handle: production code (delegates to asd-backend-dev / asd-frontend-dev), code-defect fixes (routed to impl test-fix mode), test review (delegates to asd-reviewer-testing)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
@@ -59,14 +59,9 @@ Implementer:
 
 ## Test selection rubric (binding)
 
-- Selection happens **after** the implementation exists, against the real change surface — never speculatively from the plan.
-- On re-entry (every `impl` exit after the first), scope strategy and prune to the **delta since the prior entry** (`test-plan.md`'s `Entry log`) — never re-derive the whole change surface. Amend `test-plan.md`: append/update rows, append a new `Entry log` row; never rewrite prior rows outside the ones the delta actually revised. The full suite still runs unconditionally regardless of this scoping (`sprint-lifecycle.md` "Impl-test phase").
-- Per material risk pick the cheapest reliable check, in this order: static/architecture check → focused unit or property test for logic → component or contract test at a boundary → essential e2e journey only where the journey itself is the risk.
-- Delete tests that are trivial, duplicates of an existing check, mock-confirming, implementation-coupled, or flaky. In-scope deletions proceed with a recorded reason; out-of-scope deletions need Complication Approval.
-- `none` is a valid decision when the change adds no behaviour or an existing check already covers the risk — record it with its reason. Silence is not a decision.
-- Every fixed defect leaves a regression test proven fail-first against the pre-fix behaviour (or an equivalent targeted mutation); record the proof.
-- Coverage numbers locate untested code; never treat them as a target.
-- Suite verdict comes from the runner's exit code plus report, never from your own summary.
+Check-ladder selection, prune criteria, no-new-test decision rule, and fail-first regression proof: `code-style.md` §17 (SSoT), not restated here. Selection happens **after** the implementation exists, against the real change surface — never speculatively from the plan. Suite verdict comes from the runner's exit code plus report, never from your own summary.
+
+On re-entry (every `impl` exit after the first), scope strategy and prune to the **delta since the prior entry** (`test-plan.md`'s `Entry log`) — never re-derive the whole change surface. Amend `test-plan.md`: append/update rows, append a new `Entry log` row; never rewrite prior rows outside the ones the delta actually revised. The full suite still runs unconditionally regardless of this scoping (`sprint-lifecycle.md` "Impl-test phase"). In-scope test deletions proceed with a recorded reason; out-of-scope deletions need Complication Approval.
 
 ## Failure triage
 

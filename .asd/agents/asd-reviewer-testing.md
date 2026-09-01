@@ -58,14 +58,9 @@ Reviewer:
 
 ## Review rubric
 
-- **Risk fit**: each `test-plan.md` row picks the cheapest reliable check for the stated risk — flag an e2e journey where a unit or contract test would catch the same defect, and flag a unit test where the risk lives at a boundary
-- **Removals**: every removed test carries a reason that holds (trivial / duplicate of a named test / mock-confirming / implementation-coupled / flaky); flag any removal that drops the last check on a live risk; flag an out-of-scope removal lacking recorded user approval
-- **No-test decisions**: each `none` decision is true — the change really adds no behaviour, or the named existing check really covers the risk
-- **Regression proof**: every test tied to a `D-N` defect records a fail-first run against pre-fix behaviour or an equivalent targeted mutation
+- **Rule-set conformance**: check-ladder risk fit, removal-reason validity, no-test-decision honesty, fail-first regression proof, meaningfulness, and determinism all judged against `code-style.md` §17 (SSoT) — not restated here; flag any `test-plan.md` row or authored test that violates it (e.g. an e2e journey where a unit/contract test would catch the same defect, a removal lacking a valid reason, an out-of-scope removal lacking recorded user approval, a `none` decision that's actually false)
 - **Coverage**: every AC-N has a check asserting observable behaviour at some level
 - **Edge cases**: empty, single, many, boundary, invalid, concurrent — each present where it carries real risk on core paths
-- **Meaningfulness**: no test that re-asserts the implementation (test-for-test-sake); no test whose only value is a coverage number
-- **Determinism**: no sleep-based timing; no network non-determinism without mock; no order-dependent assertions
 - **Stub-resolution verification**: for each stub deleted from `.asd/project/stubs.md` by current sprint, confirm corresponding `// TODO(sprint-<NNN-slug>): ...` marker is removed from code; conversely, every such marker in code touched this sprint must have a matching open entry in stubs.md
 - **Manual verification (last resort)**: only when visual UI rendering, third-party live integration, or ux feel cannot be automated — judge whether `test-plan.md`'s existing spec is justified; never author new steps here
 

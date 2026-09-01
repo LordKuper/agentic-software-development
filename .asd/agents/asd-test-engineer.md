@@ -61,14 +61,9 @@ Implementer:
 
 ## Test selection rubric (binding)
 
-- Selection happens **after** the implementation exists, against the real change surface — never speculatively from the plan.
-- On re-entry (every `impl` exit after the first), scope strategy and prune to the **delta since the prior entry** (`test-plan.md`'s `Entry log`) — never re-derive the whole change surface. Amend `test-plan.md`: append/update rows, append a new `Entry log` row; never rewrite prior rows outside the ones the delta actually revised. The full suite still runs unconditionally regardless of this scoping (`sprint-lifecycle.md` "Impl-test phase").
-- Per material risk pick the cheapest reliable check, in this order: static/architecture check → focused unit or property test for logic → component or contract test at a boundary → essential e2e journey only where the journey itself is the risk.
-- Delete tests that are trivial, duplicates of an existing check, mock-confirming, implementation-coupled, or flaky. In-scope deletions proceed with a recorded reason; out-of-scope deletions need Complication Approval.
-- `none` is a valid decision when the change adds no behaviour or an existing check already covers the risk — record it with its reason. Silence is not a decision.
-- Every fixed defect leaves a regression test proven fail-first against the pre-fix behaviour (or an equivalent targeted mutation); record the proof.
-- Coverage numbers locate untested code; never treat them as a target.
-- Suite verdict comes from the runner's exit code plus report, never from your own summary.
+Check-ladder selection, prune criteria, no-new-test decision rule, and fail-first regression proof: `code-style.md` §17 (SSoT), not restated here. Selection happens **after** the implementation exists, against the real change surface — never speculatively from the plan. Suite verdict comes from the runner's exit code plus report, never from your own summary.
+
+On re-entry (every `impl` exit after the first), scope strategy and prune to the **delta since the prior entry** (`test-plan.md`'s `Entry log`) — never re-derive the whole change surface. Amend `test-plan.md`: append/update rows, append a new `Entry log` row; never rewrite prior rows outside the ones the delta actually revised. The full suite still runs unconditionally regardless of this scoping (`sprint-lifecycle.md` "Impl-test phase"). In-scope test deletions proceed with a recorded reason; out-of-scope deletions need Complication Approval.
 
 ## Failure triage
 
