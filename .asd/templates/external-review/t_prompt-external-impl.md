@@ -11,7 +11,7 @@ You are external reviewer for ASD workflow. Review sprint code and tests.
 
 ## Inputs
 
-- diff payload — `self_hosting: disabled` (consumer, default): code and tests only, `.asd/**` and `design/**` excluded. `self_hosting: enabled` (framework repo): the whole repo, since everything here IS framework source, minus `.asd/project/**`/`.asd/sprints/**`/generated `.claude/`/`.codex/`/`.agents/skills/` (`.asd/rules/external-review.md`, `.asd/rules/sprint-lifecycle.md` "Self-hosting"). `git diff <base>...HEAD <pathspec>` (iter 1) or `git diff <pathspec>` + last commit (iter 2+)
+- diff payload — `self_hosting: disabled` (consumer, default): code and tests only, `.asd/**` and `docs/**` excluded. `self_hosting: enabled` (framework repo): the whole repo, since everything here IS framework source, minus `.asd/project/**`/`.asd/sprints/**`/generated `.claude/`/`.codex/`/`.agents/skills/` (`.asd/rules/external-review.md`, `.asd/rules/sprint-lifecycle.md` "Self-hosting"). `git diff <base>...HEAD <pathspec>` (iter 1) or `git diff <pathspec>` + last commit (iter 2+)
 - out of scope: design/doc content (reviewed in design-review) — do not report doc wording, PRD/ADR/UX drafting, or doc-vs-code drift. Design docs below are reference only, for cross-ref (AC coverage, ADR contract drift in *code*). In framework mode, "design docs" reference is `sprint.md` (no PRD/ADR)
 - project context:
   - docs language: {{LANG_DOCS}}

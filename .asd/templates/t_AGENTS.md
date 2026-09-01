@@ -31,7 +31,7 @@ Workflow settings: `.asd/project/config.yaml`.
 
 Authoritative path map: `.asd/rules/artifact-layout.md`.
 
-When subsystem decomposition is enabled (`project.subsystem_decomposition`), persistent design docs are organized per subsystem.
+When subsystem decomposition is enabled (`project.subsystem_decomposition`), persistent docs are organized per subsystem.
 
 ### Rule docs (`.asd/rules/`)
 

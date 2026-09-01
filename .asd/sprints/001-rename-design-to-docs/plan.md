@@ -52,17 +52,17 @@ Owner: `backend-dev`. Satisfies AC-1 (and preserves AC-3, AC-4). Start here — 
 ### Task 2: Rename the docs root across `.asd/templates/`
 Owner: `backend-dev`. Satisfies AC-1, AC-2, AC-4. Material risk for impl-test: two relative links and four separator-blind occurrences that the `design/` pattern cannot see.
 
-- [ ] `t_config.yaml` — lines 13, 54, 55; plus prose lines 8, 48 per the G-1 convention
-- [ ] `t_plan.md` — lines 5, 23, 24, 25. G-5: change **only** the path segment; preserve the `../../` prefix on lines 23–25 exactly
-- [ ] `t_ux-spec.html` — line 49; same `../../` preservation rule
-- [ ] `t_audit.md` — lines 50, 54, 56 (Documentation-migration-plan boilerplate)
-- [ ] `t_commands.yaml` — POSIX lines 27, 29 **and** backslash lines 21, 23 (`design\\ux\\DESIGN.md`, audit R-10 — invisible to a `design/` grep). The `@google/design.md` package name in the same lines is NOT part of the rename
-- [ ] `t_test-plan.md` — line 5
-- [ ] `t_sprint.md` — line 5
-- [ ] `t_design-md-delta.yaml` — line 1; the file name itself stays (AC-4)
-- [ ] `external-review/t_prompt-external-impl.md` — line 14 (member of atomic set R-4); do NOT touch line 15 (`design/doc content` — an "or" pair)
-- [ ] `t_AGENTS.md` — line 34, prose only, per the G-1 convention; no path occurrence exists here
-- [ ] Do NOT touch: `t_custom-common-rules.md:5`, `t_custom-coding-rules.md:5` (the `design/design-review` phase pair — 100% out of scope despite matching the raw grep), `external-review/t_prompt-external-design.md:14`, and the file names `t_custom-design-rules.md` / `t_design-system.html`
+- [x] `t_config.yaml` — lines 13, 54, 55; plus prose lines 8, 48 per the G-1 convention
+- [x] `t_plan.md` — lines 5, 23, 24, 25. G-5: change **only** the path segment; preserve the `../../` prefix on lines 23–25 exactly
+- [x] `t_ux-spec.html` — line 49; same `../../` preservation rule
+- [x] `t_audit.md` — lines 50, 54, 56 (Documentation-migration-plan boilerplate)
+- [x] `t_commands.yaml` — POSIX lines 27, 29 **and** backslash lines 21, 23 (`design\\ux\\DESIGN.md`, audit R-10 — invisible to a `design/` grep). The `@google/design.md` package name in the same lines is NOT part of the rename
+- [x] `t_test-plan.md` — line 5
+- [x] `t_sprint.md` — line 5
+- [x] `t_design-md-delta.yaml` — line 1; the file name itself stays (AC-4)
+- [x] `external-review/t_prompt-external-impl.md` — line 14 (member of atomic set R-4); do NOT touch line 15 (`design/doc content` — an "or" pair)
+- [x] `t_AGENTS.md` — line 34, prose only, per the G-1 convention; no path occurrence exists here
+- [x] Do NOT touch: `t_custom-common-rules.md:5`, `t_custom-coding-rules.md:5` (the `design/design-review` phase pair — 100% out of scope despite matching the raw grep), `external-review/t_prompt-external-design.md:14`, and the file names `t_custom-design-rules.md` / `t_design-system.html`
 
 ### Task 3: Rename the docs root across `.asd/agents/`
 Owner: `backend-dev`. Satisfies AC-1. Material risk for impl-test: three of these lines are write-access allowlists — a missed rename there silently revokes an agent's permission to write the promoted doc and only surfaces sprints later (audit R-5).

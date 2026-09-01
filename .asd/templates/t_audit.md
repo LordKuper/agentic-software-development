@@ -47,13 +47,13 @@ Open stubs from `.asd/project/stubs.md` touching files/subsystems in this sprint
 
 ## Documentation migration plan
 
-Items outside ASD format/location that should become persistent docs in `design/`.
+Items outside ASD format/location that should become persistent docs in `docs/`.
 Items addressed by sprint design drafts NOT listed here (they flow through design → design-promote).
 Items outside sprint scope but worth promoting wait for design-promote.
 
-| # | Source (path/URL) | Format | Proposed target in `design/` | Type | Notes |
+| # | Source (path/URL) | Format | Proposed target in `docs/` | Type | Notes |
 |---|---|---|---|---|---|
-| 1 | {{path}} | {{md/rst/html/wiki/...}} | {{design/.../*.html}} | {{migrated / reverse-engineered}} | {{notes}} |
+| 1 | {{path}} | {{md/rst/html/wiki/...}} | {{docs/.../*.html}} | {{migrated / reverse-engineered}} | {{notes}} |
 
 <!-- when no migrations needed: -->
 <!-- | — | — | — | — | — | no migrations | -->

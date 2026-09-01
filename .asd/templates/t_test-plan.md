@@ -2,7 +2,7 @@
 responsibility:
   owns: test approach for sprint change scope, removal reasons, no-test decisions, suite run result, code defects found by tests
   excludes: task breakdown, requirements, review verdicts, code
-  delegates_to: plan.md (tasks), design/ docs (requirements), reviews/impl/iter-NN/testing.md (verdict)
+  delegates_to: plan.md (tasks), docs/ docs (requirements), reviews/impl/iter-NN/testing.md (verdict)
 ---
 
 # Test plan — sprint {{SPRINT_ID}}
