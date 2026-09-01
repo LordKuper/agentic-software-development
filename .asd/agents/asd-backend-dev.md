@@ -62,6 +62,7 @@ Implementer:
 - Run command: limited to commands in `.asd/project/commands.yaml` (lint, build, run, custom.*); never the `test` command — the suite is impl-test's gate
 - Request user decision for ambiguity in requirements or ADR
 - Write access for production code in repo; for `.asd/project/stubs.md`, `<sprint>/manual-steps.md`, and defect `Status` rows in `<sprint>/test-plan.md` (test-fix mode); never elsewhere in `.asd/` or `.claude/`
+- **`self_hosting: enabled` only** (`sprint-lifecycle.md` "Self-hosting"): also write canonical `.asd/rules/`, `.asd/templates/` (non-UI/HTML), `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/sync.js`, `.asd/release-manifest.json`, root `AGENTS.md`, `README.md`, `tests/**` per plan scope; run `node .asd/sync.js --apply <targets>` after; never hand-edit generated `.claude/`, `.codex/`, `.agents/skills/`
 
 ## Do's
 

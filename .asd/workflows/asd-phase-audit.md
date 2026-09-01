@@ -14,34 +14,35 @@ Orchestration body for the `asd-phase-audit` skill. Operation-mapping to host to
 
 ## Workflow
 
-1. Read `.asd/project/config.yaml` (`project.subsystem_decomposition`, `language.docs`)
-2. Read `<sprint>/state.json` — confirm predecessor done; phase set to `audit` by PM in step 6
-3. Read `<sprint>/sprint.md` (refined scope)
-4. Delegate to agent `asd-ba` with payload:
-   - sprint.md path, decomposition mode, language.docs; template `t_audit.md`
+1. Read `<sprint>/state.json` — confirm predecessor done; read frozen `documents.audit`, `documents.prd`, `documents.adr`
+2. **No-op path** — if `documents.audit: disabled`: delegate to agent `asd-pm` to set `phase=audit`, append `"audit"` to `state.json.skipped_phases`, append decisions-log "audit skipped (documents.audit disabled)" — **no user decision requested** (`sprint-lifecycle.md` "No-op phase rule"); emit phase COMPLETED with return contract; skip remaining steps
+3. Read `.asd/project/config.yaml` (`project.subsystem_decomposition`, `language.docs`)
+4. Read `<sprint>/sprint.md` (refined scope)
+5. Delegate to agent `asd-ba` with payload:
+   - sprint.md path, decomposition mode, language.docs, frozen `documents.prd`; template `t_audit.md`
    - instruction:
      - scan project for existing docs any format/location (MD, TXT, DOC, DOCX, RST, HTML, PDF text, wiki exports, Confluence dumps, README outside `design/`, `.asd/project/`)
      - create/append `<sprint>/audit.md` per `t_audit.md`: Scope reference, Touched areas (docs side), Existing docs found, Documentation migration plan
-     - optionally produce reverse-engineered/migrated draft PRDs in `<sprint>/design/` (with `provenance` + `source` frontmatter) when overlap with sprint scope obvious
+     - **only if `documents.prd` enabled**: optionally produce reverse-engineered/migrated draft PRDs in `<sprint>/design/` (with `provenance` + `source` frontmatter) when overlap with sprint scope obvious; if `documents.prd` disabled, never write `<sprint>/design/prd.html` — findings that would have seeded a draft go into the migration plan text instead
      - emit COMPLETED
-5. On BA COMPLETED → delegate to agent `asd-architect` with payload:
-   - sprint.md path, audit.md path (partial), decomposition mode, `.asd/project/stubs.md` path; template `t_audit.md` (append)
+6. On BA COMPLETED → delegate to agent `asd-architect` with payload:
+   - sprint.md path, audit.md path (partial), decomposition mode, `.asd/project/stubs.md` path, frozen `documents.adr`; template `t_audit.md` (append)
    - instruction:
      - scan project source code in touched areas
      - append to `<sprint>/audit.md`: Touched areas (code side, merge), Existing implementation found, Gaps, Risks; if `decomposition=enabled` also Subsystems map
-     - optionally produce reverse-engineered draft ADRs in `<sprint>/design/`
+     - **only if `documents.adr` enabled**: optionally produce reverse-engineered draft ADRs in `<sprint>/design/`; if `documents.adr` disabled, never write `<sprint>/design/adr.html` — record the architectural finding as migration-plan/gaps text instead
      - for any tech identified, verify `design/architecture/tech-reference/<tech>-<version>.md` exists; if missing, create reverse-engineered references via fetch-external-doc-by-URL + `t_tech-reference.md`
      - read `.asd/project/stubs.md`; filter entries whose File:Line points to touched-area files or whose Owner indicates relevance; append matching rows to audit.md "Related open stubs" section (or "no related open stubs")
      - emit COMPLETED
-6. On Architect COMPLETED → delegate to agent `asd-pm` with payload:
+7. On Architect COMPLETED → delegate to agent `asd-pm` with payload:
    - audit.md path
    - instruction:
      - update `state.json` (phase=audit, updated_at)
      - present audit.md to user for approval per checkpoints.md (approve / request changes / reject)
      - on approve → append decisions-log entry, emit COMPLETED
      - on request changes → relay feedback to BA or Architect (caller decides which), loop
-7. On PM COMPLETED → emit COMPLETED with return contract
-8. On any agent QUESTION / FAILED / ABORT → relay, halt
+8. On PM COMPLETED → emit COMPLETED with return contract
+9. On any agent QUESTION / FAILED / ABORT → relay, halt
 
 ## Artefacts produced
 - `<sprint>/audit.md` (merged BA + Architect findings, user-approved)

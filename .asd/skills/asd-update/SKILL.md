@@ -9,6 +9,10 @@
 
 Pull latest ASD framework files into this consumer project. Overwrites **framework-managed** paths only; leaves consumer-owned files intact.
 
+## Self-hosting guard
+
+Read `self_hosting` from `.asd/project/config.yaml` first (`sync.js`'s `isSelfHostingRepo`). If `enabled`: this command is for pulling framework files INTO a consumer project — this repo IS the framework. Print a one-line message ("asd-update is for consumer projects; this repo develops ASD directly — use a self-hosting sprint instead") and stop. No mutation, no fetch.
+
 ## What it touches
 
 Managed set = SSoT in `.asd/release-manifest.json`'s `managed_paths` (canonical `.asd/` trees + `sync.js` itself, walked recursively file-by-file) — replacing the old wholesale tree-delete approach with a per-file state machine (`add | update | delete | conflict | conflict-foreign | keep-local-modified | noop`, driven by `classifyUpdateItem` in `.asd/sync.js`). A file whose local hash still matches the last-fetched release is safe to update or delete; a file that diverged is a **conflict** and is never touched without explicit confirmation.

@@ -14,10 +14,12 @@ Orchestration body for the `asd-phase-design-promote` skill. Operation-mapping t
 
 ## Workflow
 
-1. Read `.asd/project/config.yaml` (`project.subsystem_decomposition`, `project.diagram_tool`, `system.tools.likec4`, `system.tools.designmd`, `language.chat`, `language.docs`)
-2. Read `<sprint>/state.json` → confirm design-review DoD met
-3. Read sprint drafts + audit migration plan
-4. **PM orchestration** — delegate to agent `asd-pm`:
+1. Read `<sprint>/state.json` — read frozen `documents.prd`/`ux_spec`/`adr`/`c4`. Compute promotion scope as the **intersection** of (a) frozen `documents.*` enabled and (b) the file actually existing in `<sprint>/design/` (mirrors design-review's scope rule, `sprint-lifecycle.md` "Optional documents") — a draft whose flag is disabled is never promoted even if it physically exists
+2. **No-op path** — if the intersected scope is empty: delegate to agent `asd-pm` to set `phase=design-promote`, append `"design-promote"` to `state.json.skipped_phases`, append decisions-log "design-promote skipped (nothing to promote)" — **no user decision requested** (`sprint-lifecycle.md` "No-op phase rule"); emit phase COMPLETED with return contract; skip remaining steps
+3. Read `.asd/project/config.yaml` (`project.subsystem_decomposition`, `project.diagram_tool`, `system.tools.likec4`, `system.tools.designmd`, `language.chat`, `language.docs`)
+4. Confirm design-review DoD met
+5. Read sprint drafts + audit migration plan (if `audit.md` exists)
+6. **PM orchestration** — delegate to agent `asd-pm`:
    - update `state.json` (phase=design-promote)
    - if `subsystem_decomposition: enabled`:
      - propose overall per-subsystem split (which subsystems touched, which fragments go where); request user decision; iterate
@@ -25,18 +27,18 @@ Orchestration body for the `asd-phase-design-promote` skill. Operation-mapping t
      - distribute migration plan items to domain (architecture / product / ux / api)
    - if `disabled`: skip decomposition, mark all writes flat
    - emit decomposition map (per-domain target paths + new subsystems + migration distribution) to caller
-5. **New subsystem registry update** (only if new subsystems approved in step 4) — delegate to agent `asd-architect`:
+7. **New subsystem registry update** (only if new subsystems approved in step 6) — delegate to agent `asd-architect`:
    - patch c4 registry per `project.diagram_tool` (likec4 model OR subsystems.yaml)
    - create empty domain folders per new subsystem
    - run `likec4 build` for likec4 mode (regen `c4/dist/`)
    - emit COMPLETED
-6. **Parallel domain promotion** — delegate to agent in parallel:
-   - **`asd-ba`** payload (prd.html, decomposition map for product domain, migration items tagged product):
+8. **Parallel domain promotion** — delegate to agent in parallel, **only for domains whose sprint draft exists**:
+   - **`asd-ba`** — only if `prd.html` is in scope (step 1 intersection) — payload (prd.html, decomposition map for product domain, migration items tagged product):
      - per subsystem (or flat): write decomposed PRD into `design/product/requirements/<subsystem>.html` (or `requirements.html`); merge with existing if present
      - process product migration items (`provenance: migrated|reverse-engineered` + `source`)
      - request user decision before each persistent write; show diff vs existing
      - emit COMPLETED
-   - **`asd-architect`** payload (adr.html, c4-full, decomposition map for architecture domain, migration items tagged architecture):
+   - **`asd-architect`** — only if `adr.html` or `c4-full/` is in scope (step 1 intersection, independently — a repo can promote c4 without adr, or vice versa) — payload (adr.html if in scope, c4-full if in scope, decomposition map for architecture domain, migration items tagged architecture):
      - per subsystem (or flat): split adr.html decisions into `design/architecture/adr/<subsystem>/adr-NNNN-<slug>.html` (new files; NNNN globally unique)
      - merge new API contracts into `design/architecture/api/<subsystem>.html` (or `api.html`)
      - update `design/architecture/stack.html` + `tech-reference/` entries if sprint introduced new tech
@@ -44,22 +46,22 @@ Orchestration body for the `asd-phase-design-promote` skill. Operation-mapping t
      - process architecture migration items
      - request user decision before each persistent write
      - emit COMPLETED
-   - **`asd-ux-designer`** payload (ux-spec.html, design-md-delta.yaml if present, decomposition map for ux domain, migration items tagged ux):
+   - **`asd-ux-designer`** — only if `ux-spec.html` is in scope (step 1 intersection) — payload (ux-spec.html, design-md-delta.yaml if present, decomposition map for ux domain, migration items tagged ux):
      - per subsystem (or flat): split ux-spec into `design/ux/<subsystem>.html` (or `ux-spec.html`); merge with existing
      - if `design-md-delta.yaml` present: apply add/update/remove ops to `design/ux/DESIGN.md`; if `system.tools.designmd` true, run `designmd-lint` from `commands.yaml`; halt on lint errors. On Windows run `designmd-install` once per session before first `designmd-lint`/`-diff`/`-export` (no-op on Linux/macOS). Never inline the linter binary — always go through `designmd-*` commands.
      - regenerate `design/ux/design-system.html` from patched DESIGN.md (only if DESIGN.md changed)
      - process ux migration items
      - request user decision before each persistent write
      - emit COMPLETED
-7. Wait all three creator COMPLETED
-8. **Final mutation confirmation** — delegate to agent `asd-pm`:
+9. Wait all dispatched creators COMPLETED
+10. **Final mutation confirmation** — delegate to agent `asd-pm`:
    - present summary of all persistent writes (per-domain counts + new subsystems + files touched)
    - request user decision: confirm finalize / rollback / partial rollback
    - on confirm: compose decisions-log entries (decomposition, each new subsystem, each promoted artefact, DESIGN.md patch, c4 patch) and append to `.asd/project/decisions-log.md`
    - update `state.json` (phase=design-promote done)
    - emit COMPLETED
-9. Emit phase COMPLETED with return contract
-10. Any agent QUESTION / FAILED / ABORT → relay, halt
+11. Emit phase COMPLETED with return contract
+12. Any agent QUESTION / FAILED / ABORT → relay, halt
 
 ## Artefacts produced
 - Persistent docs under `design/` per domain (per subsystem when decomposition enabled, flat when disabled)

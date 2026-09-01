@@ -16,7 +16,7 @@ Orchestration body for the `asd-phase-scope` skill. Operation-mapping to host to
 
 ## Workflow
 
-1. Read `.asd/project/config.yaml` (`git.base_branch`, `git.branch_pattern`)
+1. Read `.asd/project/config.yaml` (`git.base_branch`, `git.branch_pattern`, `documents.*`). Normalize per `sprint-lifecycle.md` "Optional documents": missing `documents` group → all `enabled`; group present but a field missing → that field `disabled`. Effective `documents.c4` = `documents.c4 AND project.subsystem_decomposition == enabled`.
 2. Run command to check working-tree status; if dirty → FAILED
 3. Count existing sprints (`.asd/sprints/*/` + `.asd/sprints/archived/*/`) → NNN = max + 1, zero-padded
 4. Derive slug from raw scope (kebab-case, ≤30 chars) — provisional, may change after refinement
@@ -32,7 +32,7 @@ Orchestration body for the `asd-phase-scope` skill. Operation-mapping to host to
      3. **Present** refined version for explicit approval via request for user decision, options `approve` / `edit` / `reject`. Mandatory even when raw text looked complete — implicit approval NOT allowed.
      4. If `edit`/`reject` → re-refine with feedback; loop to step 3 until explicit `approve`.
      5. If refined goal implies better slug, propose via request for user decision; rename folder/branch only after confirmation.
-     6. **Only after explicit `approve`**: write `<sprint>/sprint.md` per `t_sprint.md` + initial `state.json` (phase=scope, iteration=0, branch, created_at) per `t_state.json`. Append decisions-log entry recording approved scope.
+     6. **Only after explicit `approve`**: write `<sprint>/sprint.md` per `t_sprint.md` (top-level Acceptance criteria numbered `AC-1`, `AC-2`, … — stable ids, used as the acceptance-criteria source whenever `documents.prd` is disabled) + initial `state.json` per `t_state.json` (phase=scope, iteration=0, branch, created_at). Fill `documents.{{DOC_AUDIT}}`/`{{DOC_PRD}}`/`{{DOC_UX_SPEC}}`/`{{DOC_ADR}}`/`{{DOC_C4}}` placeholders with the JSON boolean (`true`/`false`) matching each normalized `enabled`/`disabled` value from step 1 — never leave a placeholder literal in the written file (`sprint-lifecycle.md` "Optional documents"). Append decisions-log entry recording approved scope; if any `documents.*` disabled, one line noting which.
      7. Emit COMPLETED.
 
    Hard gates (any violation → FAILED + halt):

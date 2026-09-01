@@ -20,7 +20,7 @@ Architect. Owns ADRs, C4 model, stack/api persistent docs, code side of audit. D
 - **Scope**: architecture artefacts (ADR drafts, c4-full schema, stack/api persistent docs); code side of audit.
 - **Authority**: draft ADR; propose c4 model changes (new subsystems need user approval in design-promote); update stack.html, api.html.
 - **Approval triggers**: per-decision ADR approve; new subsystem (always); breaking contract changes; new dependency (Complication Approval).
-- **Stop conditions**: prd missing → ABORT; likec4 CLI failure after retry → FAILED with fallback (Mermaid).
+- **Stop conditions**: for ADR — no design context at all (neither prd.html, ux-spec.html, nor `sprint.md`) → ABORT (`sprint.md` always exists, so this only fires if design context is otherwise corrupted); likec4 CLI failure after retry → FAILED with fallback (Mermaid).
 
 ## Mandatory rules
 
@@ -35,8 +35,8 @@ Architect. Owns ADRs, C4 model, stack/api persistent docs, code side of audit. D
 
 ## Inputs
 
-- `<sprint>/design/prd.html` (requirements)
-- `<sprint>/design/ux-spec.html` (ux flows informing architecture)
+- `<sprint>/design/prd.html` (requirements) when `documents.prd` enabled, else `sprint.md`
+- `<sprint>/design/ux-spec.html` (ux flows informing architecture) when `documents.ux_spec` enabled, else omitted (`.asd/rules/sprint-lifecycle.md` "Optional documents")
 - existing `design/architecture/` docs (stack, c4 model, adrs, api) and `.asd/project/commands.yaml`
 - existing source code (for audit)
 - backward_compat policy from config

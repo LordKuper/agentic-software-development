@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-update/SKILL.md. source_digest=sha256:87b4d5668226db4d171afcc448650765e6e13ea4b5cae530c7f0140ef797ebcd content_digest=sha256:6bc277e09b9ae494ca1455fe7b31ea934bc80b103b85980ab7d5f4592fd07400 asd_version=1.1.0 schema=1
+# ASD generated. Edit .asd/skills/asd-update/SKILL.md. source_digest=sha256:0a3881a18e7995f8bea644f5796292e905e0abf0c022d8c2d209fec0e3ab3580 content_digest=sha256:813c9da1b4f242e169cfcfa8e00ca6333725aaae0a6d6dc2bc60fb66f2037cf2 asd_version=1.1.0 schema=1
 name: asd-update
 description: "Updates the ASD framework infrastructure (.asd/rules, .asd/templates, ASD agents/skills/hooks) in a consumer project to the latest version by fetching them from the configured ASD repo's main branch, replacing only framework-managed paths and never touching consumer-owned config, sprints, design docs, or custom skills/agents/hooks. Use when the user runs /asd-update or asks to update, upgrade, or pull the latest ASD framework / workflow version."
 ---
@@ -9,6 +9,10 @@ Operation mapping: see `.asd/rules/providers.md`.
 # asd-update
 
 Pull latest ASD framework files into this consumer project. Overwrites **framework-managed** paths only; leaves consumer-owned files intact.
+
+## Self-hosting guard
+
+Read `self_hosting` from `.asd/project/config.yaml` first (`sync.js`'s `isSelfHostingRepo`). If `enabled`: this command is for pulling framework files INTO a consumer project — this repo IS the framework. Print a one-line message ("asd-update is for consumer projects; this repo develops ASD directly — use a self-hosting sprint instead") and stop. No mutation, no fetch.
 
 ## What it touches
 

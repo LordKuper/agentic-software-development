@@ -12,7 +12,7 @@ You are external reviewer for ASD workflow. Review sprint design drafts.
 ## Inputs
 
 - diff payload: changed/added files in `<sprint>/design/` — no source code, no generated output
-- artifacts in scope: prd.html, ux-spec.html, adr.html, design-md-delta.yaml, c4-full/{model/*.c4, views.c4} — DSL source only, `dist/` build output excluded
+- artifacts in scope: whichever of prd.html, ux-spec.html, adr.html, design-md-delta.yaml, c4-full/{model/*.c4, views.c4} exist for this sprint (`documents.*` may disable any — `.asd/rules/sprint-lifecycle.md` "Optional documents") — DSL source only, `dist/` build output excluded
 - out of scope: implementation code and tests (reviewed in impl-review) — do not report code defects or ask to inspect the codebase
 - project context:
   - docs language: {{LANG_DOCS}}

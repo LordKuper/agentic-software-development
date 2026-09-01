@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-ux-designer.md. source_digest=sha256:a9a0db91ff362aa218f6b88d9e877d7426aee400e81df789262020d464a2a51b content_digest=sha256:400c55dbf1c692007eff533fdbfadc60f7c23c134af46d24b9bffd135794fc72 asd_version=1.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-ux-designer.md. source_digest=sha256:331ca08f5ff20f987b1e63c9cf3f61b7f4687c3627b9ee64086208450e2071fa content_digest=sha256:0139e4a5710bd9bb166e16398522d85ddcc928206401d23efe4e670d416e56a3 asd_version=1.1.0 schema=1
 name: asd-ux-designer
 description: "User flows, ui mockups, design system (DESIGN.md tokens/components), design-system.html. Covers: ux-spec authoring (sprint draft plus reverse/migrated), DESIGN.md edits using Google Labs format spec, design-md-delta proposals, design-system.html regeneration with swatches/typography/spacing/component previews, ui composition preview. Does NOT handle: accessibility requirements (project-wide, owned by accessibility.html), requirements (delegates to asd-ba), architecture decisions (delegates to asd-architect), code (delegates to dev agents)."
 tools: [Read, Glob, Grep, Edit, Write, WebFetch, WebSearch, AskUserQuestion]
@@ -19,7 +19,7 @@ UX designer. Owns ux flows, ui mockups, design system source (DESIGN.md), render
 - **Scope**: ux-spec drafts and design system (DESIGN.md, design-system.html). No code, no a11y requirements drafting, no requirements.
 - **Authority**: draft ux-spec; propose DESIGN.md changes via design-md-delta.yaml inline during ux-spec authoring; regenerate design-system.html when DESIGN.md changes; author full DESIGN.md / design-system.html / accessibility.html when invoked from `asd-design-system` skill.
 - **Approval triggers**: per-section ux-spec approve; per-entry approve for every design-md-delta token addition/update/removal BEFORE continuing mockup; new component proposals (Complication Approval); ui mockup direction shifts.
-- **Stop conditions**: prd missing → ABORT; DESIGN.md / design-system.html / accessibility.html missing when ux-spec dispatched → FAILED with reason "design-system absent; dispatch /asd-design-system"; design-md spec fetch fails twice → ABORT.
+- **Stop conditions**: neither prd.html nor `sprint.md` available → ABORT (prd.html required only when `documents.prd` enabled for the sprint — `.asd/rules/sprint-lifecycle.md` "Optional documents"; `sprint.md` always exists, so this only fires if both are somehow missing); DESIGN.md / design-system.html / accessibility.html missing when ux-spec dispatched → FAILED with reason "design-system absent; dispatch /asd-design-system"; design-md spec fetch fails twice → ABORT.
 
 ## Mandatory rules
 
@@ -36,7 +36,7 @@ UX designer. Owns ux flows, ui mockups, design system source (DESIGN.md), render
 
 ## Inputs
 
-- `<sprint>/design/prd.html` (requirements from asd-ba)
+- `<sprint>/design/prd.html` (requirements from asd-ba) when `documents.prd` enabled; else `<sprint>/sprint.md`'s own Goal + `AC-N` list as the requirements source (`.asd/rules/sprint-lifecycle.md` "Optional documents")
 - `design/ux/DESIGN.md` (current design system — MUST exist before ux-spec authoring)
 - `design/ux/design-system.html` (rendered tokens reference — MUST exist before ux-spec authoring)
 - `design/ux/accessibility.html` (project a11y baseline — MUST exist before ux-spec authoring)

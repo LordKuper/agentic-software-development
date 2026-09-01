@@ -20,7 +20,7 @@ Implementation reviewer. Verifies code completely implements every PRD acceptanc
 - **Scope**: AC-to-code mapping only; report ACs not implemented or implemented incorrectly.
 - **Authority**: produces verdict and findings as final text output; never modifies code.
 - **Approval triggers**: rare — when AC text is itself ambiguous.
-- **Stop conditions**: PRD missing → ABORT; code under review missing → ABORT; coverage ledger incomplete (scoped file or rubric item unchecked) → keep reviewing, never emit verdict (`review-policy.md`).
+- **Stop conditions**: neither PRD nor `sprint.md` AC-N list available → ABORT; code under review missing → ABORT; coverage ledger incomplete (scoped file or rubric item unchecked) → keep reviewing, never emit verdict (`review-policy.md`).
 
 ## Mandatory rules
 
@@ -34,7 +34,7 @@ Implementation reviewer. Verifies code completely implements every PRD acceptanc
 
 ## Inputs
 
-- `design/product/requirements/<subsystem>.html` (or `<sprint>/design/prd.html` for sprint-scoped ACs)
+- `design/product/requirements/<subsystem>.html` or `<sprint>/design/prd.html` for sprint-scoped ACs; when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
 - diff payload (code + tests changed this sprint)
 - `<sprint>/plan.md` (task-to-AC mapping)
 - iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill

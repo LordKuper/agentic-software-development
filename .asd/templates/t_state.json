@@ -2,6 +2,8 @@
   "sprint_id": "{{SPRINT_ID}}",
   "branch": "{{BRANCH}}",
   "phase": "scope",
+  "documents": { "audit": "{{DOC_AUDIT}}", "prd": "{{DOC_PRD}}", "ux_spec": "{{DOC_UX_SPEC}}", "adr": "{{DOC_ADR}}", "c4": "{{DOC_C4}}" },
+  "skipped_phases": [],
   "reviews": {
     "design": { "iteration": 0, "verdicts": {} },
     "impl": { "iteration": 0, "verdicts": {} }

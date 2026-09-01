@@ -40,14 +40,15 @@ Diff payload carries only what the phase reviews. Cross-phase artifacts, when ne
 
 | Phase | Diff payload | Reference (paths only, not diffed) |
 |---|---|---|
-| design-review | sprint design drafts only — `<sprint>/design/**`, minus generated output | concept, custom rules, accessibility baseline |
-| impl-review | code and tests only — `.asd/**` and `design/**` excluded | prd.html, adr.html, stack, custom rules, commands |
+| design-review | sprint design drafts only — `<sprint>/design/**`, minus generated output (only the drafts that exist per `documents.*`) | concept, custom rules, accessibility baseline |
+| impl-review, `self_hosting: disabled` (consumer, default) | code and tests only — `.asd/**` and `design/**` excluded | prd.html (if enabled), adr.html (if enabled), stack, custom rules, commands |
+| impl-review, `self_hosting: enabled` (this repo) | everything in the repo IS framework source (`sprint-lifecycle.md` "Self-hosting") — the whole diff, minus `.asd/project/**`, `.asd/sprints/**`, generated `.claude/**`/`.codex/**`/`.agents/skills/**` | sprint.md, custom rules, commands |
 
-design-review payload never contains source code; impl-review payload never contains design/doc diffs (a doc-vs-code drift finding belongs to the internal Documentation reviewer). Both exclusions also keep C4 schemas out of impl-review: likec4 lives under `<sprint>/design/c4-full/` and `design/architecture/c4/`.
+design-review payload never contains source code; consumer-mode impl-review payload never contains design/doc diffs (a doc-vs-code drift finding belongs to the internal Documentation reviewer). Both exclusions also keep C4 schemas out of consumer impl-review: likec4 lives under `<sprint>/design/c4-full/` and `design/architecture/c4/`.
 
 **Generated output never enters any payload.** Excluded everywhere: `**/dist/**` (likec4 build), `design-system.html`, `architecture.html` — all derived from a source the reviewer already sees (`*.c4`, `DESIGN.md`, `subsystems.yaml`). Review the source, not the build.
 
-`<pathspec>` for impl-review: `-- . ':(exclude).asd/**' ':(exclude)design/**'`
+`<pathspec>` for impl-review: `self_hosting: disabled` → `-- . ':(exclude).asd/**' ':(exclude)design/**'`; `self_hosting: enabled` → `-- . ':(exclude).asd/project/**' ':(exclude).asd/sprints/**' ':(exclude).claude/**' ':(exclude).codex/**' ':(exclude).agents/skills/**'` — starts from the whole repo, not an allow-list, so any real framework source (CI configs, root-level configs, anything else added later) is included automatically without needing a matching pathspec edit
 
 ## Iteration-aware diff
 

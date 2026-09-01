@@ -30,8 +30,8 @@ Archival never happens at PR creation — only on a later re-entry after the PR 
 3. Delegate to agent `asd-pm`: update `state.json` (phase=pr)
 4. **DoD verification** — delegate to agent `asd-pm` with payload (config, sprint paths, stubs path, commands.yaml):
    - **Plan completion**: read `<sprint>/plan.md`, verify every `- [ ]` is `- [x]`
-   - **AC coverage**: cross-check PRD AC-N references in plan tasks against impl-review documentation verdict
-   - **Reviews green**: read latest `<sprint>/reviews/impl/iter-NN/` (highest `reviews.impl.iteration`), parse first-line gate verdict tokens for all required reviewers; ALL must be `APPROVE`
+   - **AC coverage**: cross-check AC-N references in plan tasks (PRD AC-N if `documents.prd` enabled, else `sprint.md`'s own AC-N — `sprint-lifecycle.md` "Optional documents") against impl-review documentation verdict
+   - **Reviews green**: read latest `<sprint>/reviews/impl/iter-NN/` (highest `reviews.impl.iteration`), parse first-line gate verdict tokens for the reviewers actually required this sprint (`review-policy.md` DoD table — a reviewer never dispatched, e.g. design-review UI with no ux-spec, is not counted); ALL must be `APPROVE`
    - **Stub block**:
      - read `.asd/project/stubs.md`; filter `Sprint = <current-NNN-slug>` AND Reason NOT starting with `(accepted-debt)` → must be empty
      - search code for `// TODO(sprint-<current-NNN-slug>):` markers; cross-check every marker has matching stubs.md entry (orphan markers = block)

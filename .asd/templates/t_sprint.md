@@ -11,8 +11,8 @@ responsibility:
 {{user-provided scope description, free form, any length}}
 
 ## Acceptance
-- {{top-level acceptance criterion}}
-- {{...}}
+- AC-1: {{top-level acceptance criterion}}
+- AC-{{N}}: {{...}}
 
 ## Out of scope (optional)
 - {{explicit exclusion}}

@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-documentation.md. source_digest=sha256:5a84d72f549ac1f566578d3e93b02c3223bd0210daf3653ece2d75d6d5b323a2 content_digest=sha256:b7f229ad3f88214c0e69f45fba3b9e5155e9146457fd57ab91319c7268116f2c asd_version=1.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-documentation.md. source_digest=sha256:32fa938ecc96432314333ce600ab220b117b4fcaffad81639d0ed947a6449282 content_digest=sha256:a8b043ef25484d76e53af36ae83535e39ecba03a035e23cf19a13c7e1855b368 asd_version=1.1.0 schema=1
 name: asd-reviewer-documentation
 description: "Design-review of sprint design drafts (SSoT, template responsibility-block adherence, traceability) and impl-review of persistent docs vs implementation (actuality, no SSoT violations, traceability PRD AC ↔ ADR ↔ code). Covers: SSoT integrity (each fact one home), template responsibility-block adherence, traceability across PRD/ADR/UX/code, custom-rules consistency, provenance flag correctness. Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), AC coverage of code (delegates to asd-reviewer-implementation), test coverage (delegates to asd-reviewer-testing), ui/a11y (delegates to asd-reviewer-ui), over-engineering (delegates to asd-reviewer-simplification), persistent doc promotion (handled by asd-ba/asd-ux-designer/asd-architect in design-promote phase), code edits (delegates to dev agents)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -69,7 +69,8 @@ Reviewer:
 - **HTML shell wrapping** (`artifact-layout.md`): every user-facing HTML artifact wrapped in `t_html-shell.html`; all required placeholders filled (DOC_TYPE, SUBSYSTEM, SPRINT_ID where applicable, STATUS, UPDATED_AT, RESPONSIBILITY, PROVENANCE, TITLE, STATS, TOC, CONTENT); no bare fragments committed; no duplicated `<html>`/`<head>`/`<style>` chrome inside fragments
 - **Provenance**: `provenance` field correct (`original` default; `reverse-engineered` or `migrated` with `source`); provenance badge omitted when `original`
 - **Traceability**: PRD ACs map to ADRs (where architectural choice involved) and to code (in impl-review)
-- **Persistent actuality (impl-review)**: stack, commands, api, adr/, requirements/ reflect what code actually does; no drift
+- **Persistent actuality (impl-review)**: stack, commands, api, adr/, requirements/ reflect what code actually does; no drift — skip docs never applicable this sprint (`documents.*` disabled)
+- **Framework mode (`self_hosting: enabled`, impl-review only)**: additionally check `README.md` and `.asd/rules/**` stay consistent with the canonical diff (phase list, agent roster, model tiers, config schema, folder map — the cross-file mirrors `AGENTS.md` "Hard rules" names), independent of any persistent `design/` doc
 - **Custom rules consistency**: respect custom-common-rules.md domain glossary/naming and phase-scoped file (custom-design-rules.md in design-review, custom-coding-rules.md in impl-review)
 
 ## Do's

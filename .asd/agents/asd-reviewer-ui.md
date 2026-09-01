@@ -46,7 +46,7 @@ UI reviewer. Checks ux-spec drafts against DESIGN.md and accessibility baseline 
 
 **impl-review phase:**
 - UI code diff
-- `design/ux/<subsystem>.html` (promoted ux-spec)
+- `design/ux/<subsystem>.html` (promoted ux-spec) — when absent (`documents.ux_spec` was disabled for the sprint that wrote this code, or no promoted ux-spec exists yet), review against `design/ux/DESIGN.md` and `accessibility.html` directly; never skip impl-review UI review just because no ux-spec exists — absence of a spec doesn't mean absence of UI code
 - `design/ux/DESIGN.md`
 - `design/ux/accessibility.html`
 

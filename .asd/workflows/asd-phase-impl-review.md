@@ -19,13 +19,13 @@ Every reviewer dispatched below is read-only: it evaluates its scope and returns
 
 ## Workflow
 
-1. Read `.asd/project/config.yaml` (`review.external_review`, `review.iterations_low/medium/high/critical`, `backward_compat`, `language.chat`, `language.docs`)
+1. Read `.asd/project/config.yaml` (`review.external_review`, `review.iterations_low/medium/high/critical`, `backward_compat`, `self_hosting`, `language.chat`, `language.docs`); read `<sprint>/state.json` frozen `documents.prd`. Diff pathspec and payload scope: consumer mode per `external-review.md`'s consumer row; `self_hosting: enabled` per its self-hosting row (the whole repo, since everything here IS framework source, excluding `.asd/project/**`/`.asd/sprints/**`/generated views).
 2. Read `<sprint>/state.json` → set `phase=impl-review`, increment `reviews.impl.iteration` (it is `0` at sprint creation, so `1` on first entry; +1 on every impl-review entry of the `impl⇄impl-review` cycle; the intervening `impl` fix-mode phase never touches it; see `sprint-lifecycle.md` "Review iteration counters" for increment + rollback-reset rules). `NN` = resulting value, zero-padded.
 3. Compute severity floor for current iteration per `review-policy.md` cumulative-budget algorithm (uses `reviews.impl.iteration`)
 4. Create folder `<sprint>/reviews/impl/iter-NN/` if absent
 5. **Parallel dispatch** — every reviewer delegated to as a **fresh agent** each iteration (clean-context dispatch per `review-policy.md`); no reviewer reused across iterations:
    - `asd-reviewer-quality` — bugs, security, best-practice, contract drift
-   - `asd-reviewer-implementation` — PRD AC-N coverage trace vs code/tests
+   - `asd-reviewer-implementation` — AC-N coverage trace vs code/tests (PRD AC-N if `documents.prd` enabled, else `sprint.md`'s own AC-N)
    - `asd-reviewer-testing` — `test-plan.md` decisions (risk→check fit, justified removals, justified `none` decisions, fail-first regression proof), test quality and determinism, stub-resolution verification, manual verification capture
    - `asd-reviewer-ui` — UI code vs ux-spec mockups + accessibility compliance
    - `asd-reviewer-simplification` — over-engineering smells in code; design-principles adherence
