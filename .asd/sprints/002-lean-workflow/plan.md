@@ -65,12 +65,12 @@ Verdicts: **A-3**, gap **G-8**. AC: AC-1, AC-4, AC-6. Owner: **backend-dev**.
 Affected canonical files: `.asd/templates/t_audit.md`, `.asd/workflows/asd-phase-audit.md` (steps 5-6), `.asd/rules/sprint-lifecycle.md` (Audit phase), `.asd/agents/asd-ba.md`, `.asd/agents/asd-architect.md`.
 Material risk: without the G-8 rule landed in the same edit, the plan phase can no longer distinguish "no stubs found" from "BA never checked", because today only the placeholder row carries that distinction.
 
-- [ ] `t_audit.md`: remove every mandated placeholder row; an empty optional section is omitted entirely rather than emitted with `| — | — | none | — |`
-- [ ] `sprint-lifecycle.md` (Audit phase): add the explicit rule that an **absent section means an empty finding set**, not an unperformed check
-- [ ] `t_audit.md`: fold "Dependencies" and "Migration notes" into "Gaps"
-- [ ] Keep "Related open stubs" intact — it has a named downstream consumer in `asd-phase-plan.md` step 4
-- [ ] `asd-phase-audit.md` steps 5-6 and both creator agents' Outputs: match the reduced section set
-- [ ] Update the template's `responsibility` frontmatter for the folded sections
+- [x] `t_audit.md`: remove every mandated placeholder row; an empty optional section is omitted entirely rather than emitted with `| — | — | none | — |`
+- [x] `sprint-lifecycle.md` (Audit phase): add the explicit rule that an **absent section means an empty finding set**, not an unperformed check
+- [x] `t_audit.md`: fold "Dependencies" and "Migration notes" into "Gaps"
+- [x] Keep "Related open stubs" intact — it has a named downstream consumer in `asd-phase-plan.md` step 4
+- [x] `asd-phase-audit.md` steps 5-6 and both creator agents' Outputs: match the reduced section set
+- [x] Update the template's `responsibility` frontmatter for the folded sections
 
 ### Task 3: Compress plan.md and move the standing Definition of Done to the rule doc
 
