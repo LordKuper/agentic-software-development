@@ -50,6 +50,7 @@ Level and AC/risk covered are visible in the test file itself (name, path, comme
 - Command: {{`test` from commands.yaml}}
 - Result: {{pass \| fail}} — {{passed/failed/skipped counts}}
 - Lint / build: {{pass \| fail}}
+- HEAD: {{sha}} — commit the suite was verified at; pr phase compares current HEAD against this to decide whether to skip re-running
 
 ## Defects
 

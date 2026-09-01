@@ -38,7 +38,7 @@ No user gate on a green suite, and none on routing defects back to impl.
    - record `none` decisions (no behaviour added, or an existing check already covers the risk) with the reason — silence is not a decision
    - coverage numbers may be used to find untested code, never as a target
    - specify `Manual verification` only when automation is impossible (visual UI, third-party live integration, ux feel) — `test-plan.md` is its single home, never duplicated in a review file
-   - **entry 1**: write `<sprint>/test-plan.md` per `t_test-plan.md`, with the first `Entry log` row (`HEAD analysed` = current `HEAD`, scope = "full change surface"). **Re-entry**: amend it — append new/updated rows, append an `Entry log` row (`HEAD analysed` = current `HEAD`, scope = "delta since entry N-1"); never rewrite prior rows outside the ones actually revised. Emit COMPLETED
+   - **entry 1**: write `<sprint>/test-plan.md` per `t_test-plan.md` (Risk → check decisions etc.); leave the first `Entry log` row's `HEAD analysed` unfilled for now (scope = "full change surface"). **Re-entry**: amend it — append new/updated rows; leave the new `Entry log` row's `HEAD analysed` unfilled for now (scope = "delta since entry N-1"); never rewrite prior rows outside the ones actually revised. Emit COMPLETED. The `HEAD analysed` sha itself is written in step 9, after the prune/author commit (step 6) and the suite recording (step 7) — never before — so the next re-entry's delta excludes this entry's own test-authoring commits
 4. Read `test-plan.md` → collect proposed removals; split into in-scope (test file inside the change surface) and out-of-scope
 5. **Removal gate** — only when out-of-scope removals exist: request user decision in `language.chat`, Complication Approval format per `core.md`, one entry per test (what, why, what still covers the risk). Rejected removals are struck from `test-plan.md`; approved ones marked `yes — user approved`
 6. **Prune + author pass** — delegate to agent `asd-test-engineer` (parallel instances per independent area when the plan splits cleanly). Scope: the same set step 3 analysed (full on entry 1, delta on re-entry) — never a full re-derivation of the whole change surface on re-entry. Instruction:
@@ -46,12 +46,12 @@ No user gate on a green suite, and none on routing defects back to impl.
    - every regression test for a known defect must be proven fail-first against the pre-fix behaviour (or an equivalent targeted mutation) — record the proof in the `Added tests` table
    - never assert implementation detail; no sleep-based waits; no test whose only value is a coverage number
    - commit per Conventional Commits; emit COMPLETED
-7. **Suite gate** — delegate to agent `asd-test-engineer` to run `test`, then `lint` and `build` per `commands.yaml`, and write the raw result into the `Suite run` section of `test-plan.md`. Verdict is read from the runner's exit code plus report — an agent's summary alone never satisfies this gate
+7. **Suite gate** — delegate to agent `asd-test-engineer` to run `test`, then `lint` and `build` per `commands.yaml`, and write the raw result into the `Suite run` section of `test-plan.md`, including the `HEAD` field (current `git rev-parse HEAD`, i.e. the commit the suite was verified at — pr phase's gate compares against this). Verdict is read from the runner's exit code plus report — an agent's summary alone never satisfies this gate
 8. **Triage** on any failure:
    - **test defect** (bad assertion, wrong fixture, flaky pattern) → re-dispatch step 6 for the offending tests, then step 7 again
    - **code defect** → append a `D-N` row to the `Defects` section of `test-plan.md` (location, symptom, failing test, status `pending`); write `state.json.test_defects_pending = true` inline and append decisions-log "impl-test: defects <D-N list> → impl test-fix" (mechanical, no gate); emit COMPLETED with `NEXT: impl`
    - both kinds present → fix the test defects first, re-run, then route the remaining code defects back
-9. **Green suite** — write inline (mechanical, no gate): append decisions-log "impl-test: suite green (<counts>), <added>/<removed> tests"; confirm `test_defects_pending` null; emit COMPLETED with `NEXT: impl-review`
+9. **Green suite** — write inline (mechanical, no gate): fill this entry's `Entry log` row `HEAD analysed` with current `git rev-parse HEAD` (now that step 6's prune/author commit and step 7's suite recording have both landed, so the next re-entry's delta excludes this entry's own test-authoring commits); append decisions-log "impl-test: suite green (<counts>), <added>/<removed> tests"; confirm `test_defects_pending` null; emit COMPLETED with `NEXT: impl-review`
 10. test-engineer QUESTION / FAILED / ABORT → relay, halt
 
 ## Re-entry
@@ -71,7 +71,7 @@ Bounded risk (audit R-15): a defect introduced by a review-fix in a file outside
 
 ## Agents delegated to
 - `asd-test-engineer` (strategy, prune + author, suite run)
-- No PM dispatch — all `state.json`/decisions-log writes in this phase are mechanical, no-gate, and done inline by the workflow (Task 15)
+- No PM dispatch — all `state.json`/decisions-log writes in this phase are mechanical, no-gate, and done inline by the workflow
 - No reviewers — test quality is judged in impl-review by `asd-reviewer-testing`
 
 ## Skills/workflows dispatched
