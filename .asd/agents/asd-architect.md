@@ -45,8 +45,8 @@ Architect. Owns ADRs, C4 model, stack/api persistent docs, code side of audit. D
 
 - `<sprint>/audit.md` — code-side sections (existing implementation found, gaps, risks); paired with asd-ba on docs side
 - `<sprint>/design/adr.html` via `t_adr.html` — may contain multiple decisions; sprint-scoped only, never promoted as a standalone persistent document
-- `<sprint>/design/c4-full/` — LikeC4 model + views + dist covering sprint scope, when `subsystem_decomposition: enabled`
-- design-promote: patch `docs/architecture/c4/`; regenerate `c4/dist/` via likec4 CLI
+- `<sprint>/design/c4-full/` — LikeC4 model + views delta patch (full schema only when the persistent registry does not yet exist) covering sprint scope, when `subsystem_decomposition: enabled`; never `dist/`
+- design-promote: apply c4 delta patch (or full schema, only when the persistent registry did not yet exist) to `docs/architecture/c4/` — rendering (`dist/`/`architecture.html`) is build output, not regenerated here
 - design-promote: update `docs/architecture/stack.html`; fold approved ADRs and API contracts into whichever existing persistent doc's `owns` frontmatter matches (subsystem doc, `stack.html`, a project-generated OpenAPI/SDL/proto artifact, or — only via Complication Approval — a new doc with no pre-made template)
 
 ## Behavioral profile
@@ -103,8 +103,8 @@ All HTML outputs MUST be wrapped in `t_html-shell.html` per `artifact-layout.md`
 
 Two modes per `project.diagram_tool` in config:
 
-- **likec4**: write LikeC4 DSL in `docs/architecture/c4/model/*.c4` + `views.c4`; invoke `likec4 build` to generate `dist/`. Sprint draft: `<sprint>/design/c4-full/model/*.c4` + `views.c4` + `dist/`.
-- **mermaid**: maintain `docs/architecture/c4/subsystems.yaml` registry; render `docs/architecture/c4/architecture.html` with embedded Mermaid C4 blocks. Sprint draft: `<sprint>/design/c4-full/subsystems.yaml` + `architecture.html`. No likec4 CLI in mermaid mode.
+- **likec4**: write LikeC4 DSL in `docs/architecture/c4/model/*.c4` + `views.c4`. Sprint draft: `<sprint>/design/c4-full/model/*.c4` + `views.c4` — a delta patch against the persistent registry, full schema only when the registry does not yet exist. `dist/` is build output (`likec4 build`), never committed, never built inside the sprint draft — rendering happens on demand via the `commands.yaml` build-to-view command.
+- **mermaid**: maintain `docs/architecture/c4/subsystems.yaml` registry. Sprint draft: `<sprint>/design/c4-full/subsystems.yaml` — same delta-patch rule. `architecture.html` (embedded Mermaid C4 blocks) is likewise build output, never committed, never rendered inside the sprint draft — build on demand via the build-to-view command. No likec4 CLI in mermaid mode.
 
 Subsystem id semantics identical across modes; only DSL/format differs.
 

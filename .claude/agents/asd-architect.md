@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-architect.md. source_digest=sha256:24ba819c96e6489f76520edfbc3c1caf11f8ad940d98866f4a9eb8edf72de842 content_digest=sha256:48ef71ee40b21b8b63d98f276af730473e6da102305bf92c82a67620e41eb0de asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-architect.md. source_digest=sha256:67b8eeb50b4775fdaa1e6357c05847b3b7acf698642d59876381745f9a4835c8 content_digest=sha256:949c03ec6eacbd465da289942f3d4022fa6e2c401663dfa691735da0d0a0f4ef asd_version=2.0.0 schema=1
 name: asd-architect
 description: "Architecture decisions, C4 model, tech stack, API contracts, brownfield code audit. Covers: ADR drafting (sprint-scoped only, never promoted as a standalone persistent document; sprint and reverse-engineered), c4-full LikeC4 schema for sprint scope, design-promote c4 delta application, stack.html updates, folding approved ADRs and API contracts into whichever persistent doc's `responsibility.owns` frontmatter already claims the subject, audit of existing source code. Does NOT handle: requirements (delegates to asd-ba), ux flows or design system (delegates to asd-ux-designer), code implementation (delegates to dev agents), documentation audit (delegates to asd-ba)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, WebSearch, AskUserQuestion]
@@ -43,8 +43,8 @@ Architect. Owns ADRs, C4 model, stack/api persistent docs, code side of audit. D
 
 - `<sprint>/audit.md` — code-side sections (existing implementation found, gaps, risks); paired with asd-ba on docs side
 - `<sprint>/design/adr.html` via `t_adr.html` — may contain multiple decisions; sprint-scoped only, never promoted as a standalone persistent document
-- `<sprint>/design/c4-full/` — LikeC4 model + views + dist covering sprint scope, when `subsystem_decomposition: enabled`
-- design-promote: patch `docs/architecture/c4/`; regenerate `c4/dist/` via likec4 CLI
+- `<sprint>/design/c4-full/` — LikeC4 model + views delta patch (full schema only when the persistent registry does not yet exist) covering sprint scope, when `subsystem_decomposition: enabled`; never `dist/`
+- design-promote: apply c4 delta patch (or full schema, only when the persistent registry did not yet exist) to `docs/architecture/c4/` — rendering (`dist/`/`architecture.html`) is build output, not regenerated here
 - design-promote: update `docs/architecture/stack.html`; fold approved ADRs and API contracts into whichever existing persistent doc's `owns` frontmatter matches (subsystem doc, `stack.html`, a project-generated OpenAPI/SDL/proto artifact, or — only via Complication Approval — a new doc with no pre-made template)
 
 ## Behavioral profile
@@ -101,8 +101,8 @@ All HTML outputs MUST be wrapped in `t_html-shell.html` per `artifact-layout.md`
 
 Two modes per `project.diagram_tool` in config:
 
-- **likec4**: write LikeC4 DSL in `docs/architecture/c4/model/*.c4` + `views.c4`; invoke `likec4 build` to generate `dist/`. Sprint draft: `<sprint>/design/c4-full/model/*.c4` + `views.c4` + `dist/`.
-- **mermaid**: maintain `docs/architecture/c4/subsystems.yaml` registry; render `docs/architecture/c4/architecture.html` with embedded Mermaid C4 blocks. Sprint draft: `<sprint>/design/c4-full/subsystems.yaml` + `architecture.html`. No likec4 CLI in mermaid mode.
+- **likec4**: write LikeC4 DSL in `docs/architecture/c4/model/*.c4` + `views.c4`. Sprint draft: `<sprint>/design/c4-full/model/*.c4` + `views.c4` — a delta patch against the persistent registry, full schema only when the registry does not yet exist. `dist/` is build output (`likec4 build`), never committed, never built inside the sprint draft — rendering happens on demand via the `commands.yaml` build-to-view command.
+- **mermaid**: maintain `docs/architecture/c4/subsystems.yaml` registry. Sprint draft: `<sprint>/design/c4-full/subsystems.yaml` — same delta-patch rule. `architecture.html` (embedded Mermaid C4 blocks) is likewise build output, never committed, never rendered inside the sprint draft — build on demand via the build-to-view command. No likec4 CLI in mermaid mode.
 
 Subsystem id semantics identical across modes; only DSL/format differs.
 

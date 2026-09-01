@@ -119,7 +119,7 @@ Agents produce a draft set for the whole sprint scope in `<sprint>/design/`, one
 - `ux-spec.html` — flows + accessibility notes (`documents.ux_spec`)
 - `adr.html` — architecture decisions (`documents.adr`)
 - `design-md-delta.yaml` — proposed DESIGN.md token changes, produced inline during UX-spec authoring (only on token gap; each entry user-approved)
-- `c4-full/` — full LikeC4 schema for sprint scope (`model/*.c4`, `views.c4`, `dist/`) (effective `documents.c4`)
+- `c4-full/` — delta patch against the persistent C4 registry for sprint scope (`model/*.c4`, `views.c4`); full schema only when the persistent registry does not yet exist (effective `documents.c4`). Never build `dist/` here — generated output no reviewer sees (`external-review.md`).
 
 Order among enabled documents: PRD (if enabled) before design-system gate. Design-system gate (existence check on `docs/ux/DESIGN.md`, `design-system.html`, `accessibility.html`; dispatches `/asd-design-system` when any missing) applies only when `ux_spec` enabled, and blocks UX-spec. UX-spec (if enabled) before ADR. ADR (if enabled) before c4-full. If effective `documents.c4: disabled` (flag off, or `subsystem_decomposition: disabled`), `c4-full/` omitted.
 
@@ -135,7 +135,7 @@ PM orchestrates; three domain creators promote (Documentation reviewer NOT invol
 3. PM distributes `audit.md` migration items to the matching domain (architecture/product/ux).
 4. Parallel promotion:
    - `asd-ba` → per-subsystem (or flat) `docs/product/requirements/<subsystem>.html` from prd draft; product migration items.
-   - `asd-architect` → folds every ADR approved in `adr.html` into whichever existing persistent doc's `responsibility.owns` frontmatter already declares ownership of that decision's subject (see fold rule below); updates `stack.html`, `tech-reference/`; applies c4 delta to persistent `docs/architecture/c4/`; regenerates `dist/` (likec4) or `architecture.html` (mermaid); architecture migration items.
+   - `asd-architect` → folds every ADR approved in `adr.html` into whichever existing persistent doc's `responsibility.owns` frontmatter already declares ownership of that decision's subject (see fold rule below); updates `stack.html`, `tech-reference/`; applies the sprint's c4 delta patch (or, when the persistent registry did not exist before this sprint, writes the full schema directly) to persistent `docs/architecture/c4/`; architecture migration items. Rendering (`dist/` or `architecture.html`) is not regenerated here — build on demand via the `commands.yaml` build-to-view command.
    - `asd-ux-designer` → `docs/ux/<subsystem>.html` from ux-spec draft; patches `DESIGN.md` from `design-md-delta.yaml`; regenerates `design-system.html`; ux migration items.
    - Each creator requests user decision before each persistent write.
 5. PM final user confirmation before persistent mutation (confirm / rollback / partial rollback).

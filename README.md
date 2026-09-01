@@ -344,6 +344,8 @@ likec4 --version
 
 If absent, choose `diagram_tool: mermaid` instead — ASD will render architecture views as embedded Mermaid C4 blocks.
 
+Neither the LikeC4 `dist/` output nor the mermaid `architecture.html` is committed (build output, gitignored). `/asd-init` seeds a `c4-build` command in `.asd/project/commands.yaml`; run it to render the persistent C4 registry into a viewable artifact on demand.
+
 ### `@google/design.md`
 
 Lints and exports the DESIGN.md design-system source to Tailwind / W3C DTCG tokens.

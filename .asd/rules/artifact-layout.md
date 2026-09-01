@@ -33,7 +33,7 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │       │   │   ├── ux-spec.html
 │       │   │   ├── adr.html             # sprint-scoped only; never a standalone persistent document (folds at design-promote)
 │       │   │   ├── design-md-delta.yaml
-│       │   │   └── c4-full/{model/*.c4, views.c4, dist/}
+│       │   │   └── c4-full/{model/*.c4, views.c4}   # delta patch vs persistent registry; full schema only when registry absent; never build dist/ here
 │       │   ├── plan.md
 │       │   ├── test-plan.md
 │       │   ├── manual-steps.md
@@ -48,9 +48,9 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │   │   └── requirements/<subsystem>.html
 │   ├── architecture/
 │   │   ├── stack.html
-│   │   ├── c4/                          # subsystem registry + views; layout per project.diagram_tool
-│   │   │   # likec4 mode: model/*.c4, views.c4, dist/
-│   │   │   # mermaid mode: subsystems.yaml, architecture.html
+│   │   ├── c4/                          # subsystem registry + views; layout per project.diagram_tool (dist/, architecture.html are gitignored build output — build to view)
+│   │   │   # likec4 mode: model/*.c4, views.c4
+│   │   │   # mermaid mode: subsystems.yaml
 │   │   └── tech-reference/<tech>-<version>.md
 │   └── ux/
 │       ├── DESIGN.md
@@ -79,8 +79,8 @@ No `c4/` directory. No subsystem subfolders.
 
 When decomposition enabled, registry lives in `docs/architecture/c4/`. Layout per `project.diagram_tool`:
 
-- **likec4**: `model/*.c4` (LikeC4 DSL). Subsystem id = container/component id. `likec4 build` produces `dist/` interactive HTML.
-- **mermaid**: `subsystems.yaml` (machine registry). Subsystem id = entry id. Agent renders `architecture.html` with embedded Mermaid C4 views.
+- **likec4**: `model/*.c4` (LikeC4 DSL). Subsystem id = container/component id. `likec4 build` produces `dist/` interactive HTML — build output, gitignored, never committed; run the `commands.yaml` build-to-view command to render.
+- **mermaid**: `subsystems.yaml` (machine registry). Subsystem id = entry id. `architecture.html` (embedded Mermaid C4 views) is likewise build output, gitignored, never committed; run the build-to-view command to render.
 
 New subsystems added only via `design-promote`, with user approval, regardless of diagram tool.
 

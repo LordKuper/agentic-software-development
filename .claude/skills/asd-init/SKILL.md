@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:cbb872453cc3f2adf2581fb0000f939db78f66b628e2ebcc22190246659a56b0 content_digest=sha256:59edad39b380a1dd9db44942630137ff6300edc2a47a2dc7a9b8030a160126e4 asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:6eee0f0f7c46e87bd42600645e905b2b6a98503bfd7bf67eb377c26b7bca1bf1 content_digest=sha256:5335c60b9c8b7eb0c12b6d469c68ef80a28887b96038b76c8bd82b52aa5de6e9 asd_version=2.0.0 schema=1
 name: asd-init
 description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
@@ -50,8 +50,8 @@ Operation mapping: see `.asd/rules/providers.md`.
 11. Write `.asd/project/stubs.md` from `t_stubs.md` (empty registry — downstream phases expect the file to exist)
 12. Write `.asd/project/commands.yaml` (from `t_commands.yaml` + detected + OS-specific `custom.designmd-*` only when `documents.ux_spec: enabled`)
 13. If decomp enabled:
-    - **likec4 mode**: seed `c4/model/main.c4`, `c4/views.c4` from templates; run `likec4 build` → `c4/dist/`
-    - **mermaid mode**: seed `c4/subsystems.yaml` from `t_subsystems.yaml`; render `c4/architecture.html` with initial mermaid context view
+    - **likec4 mode**: seed `c4/model/main.c4`, `c4/views.c4` from templates. Seed `commands.yaml` with a `c4-build: "likec4 build docs/architecture/c4 --output docs/architecture/c4/dist"` build-to-view command — `dist/` itself is gitignored, not built here
+    - **mermaid mode**: seed `c4/subsystems.yaml` from `t_subsystems.yaml`. Seed `commands.yaml` with a `c4-build` command that renders `c4/architecture.html` from `subsystems.yaml` — `architecture.html` itself is gitignored, not rendered here
 14. **Post-init artefact checks** — suggest dedicated skill for each missing required artefact (do NOT auto-dispatch). Order: concept → stack → design-system:
     - `docs/product/concept.html` absent → suggest `/asd-concept`
     - `docs/architecture/stack.html` absent → suggest `/asd-stack`

@@ -37,11 +37,11 @@ Orchestration body for the `asd-phase-design` skill. Operation-mapping to host t
    - instruction: integrate existing draft; author one+ ADRs for sprint scope (repeated `<article>` blocks), sprint-local numbering (`ADR-1`, `ADR-2`, …), status `proposed`/`accepted` only; optionally name a candidate Fold target per decision; for any new tech, create/update `tech-reference/<tech>-<version>.md` via fetch-external-doc-by-URL + `t_tech-reference.md`; discuss each decision in `language.chat`; on approval translate + write `<sprint>/design/adr.html` — **one approval covers the whole sprint ADR set**; emit COMPLETED
    - if `adr` disabled → skip to step 10
 10. **Step c4-full** — only if frozen `documents.c4` (already effective, from `state.json`) enabled: on ADR step done → delegate to agent `asd-architect`
-    - inputs: whichever design drafts exist, `docs/architecture/stack.html`, sprint.md; ADR not required
+    - inputs: whichever design drafts exist, `docs/architecture/stack.html`, persistent `docs/architecture/c4/` (diff target), sprint.md; ADR not required
     - templates per `project.diagram_tool`:
-      - likec4: `t_c4-model.c4`, `t_c4-views.c4`; produce `<sprint>/design/c4-full/model/*.c4`, `views.c4`, run `likec4 build` → `dist/`
-      - mermaid: `t_subsystems.yaml`; produce `<sprint>/design/c4-full/subsystems.yaml` + `architecture.html` (mermaid-rendered)
-    - instruction: full schema covering sprint scope (not delta — delta computed in design-promote); discuss overall view in `language.chat`; on approval write files; emit COMPLETED
+      - likec4: `t_c4-model.c4`, `t_c4-views.c4`; produce `<sprint>/design/c4-full/model/*.c4`, `views.c4` — never build `dist/` here (generated output no reviewer sees, `external-review.md`)
+      - mermaid: `t_subsystems.yaml`; produce `<sprint>/design/c4-full/subsystems.yaml` — never render `architecture.html` here
+    - instruction: author a **delta patch** against the persistent registry covering sprint scope; author the **full schema** instead only when the persistent registry does not yet exist; discuss overall view in `language.chat`; on approval write files; emit COMPLETED
     - if `documents.c4` disabled → skip
 11. On all enabled steps COMPLETED → delegate to agent `asd-pm` to update `state.json` (drafts ready), append decisions-log entry summarising drafts actually produced (and which were skipped)
 12. Emit phase COMPLETED with return contract

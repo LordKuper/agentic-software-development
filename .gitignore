@@ -14,3 +14,7 @@ desktop.ini
 
 # Local planning docs (not part of the framework)
 plans/
+
+# C4 build output (render on demand via the commands.yaml build-to-view command)
+docs/architecture/c4/dist/
+docs/architecture/c4/architecture.html

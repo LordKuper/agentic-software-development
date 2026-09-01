@@ -174,12 +174,12 @@ Verdicts: **A-8**, **A-9**, **A-28**, risk **R-7**. AC: AC-1, AC-4, AC-6. Owner:
 Affected canonical files: `.asd/rules/sprint-lifecycle.md` (design phase, design-promote step 4), `.asd/rules/artifact-layout.md` (both path trees), `.asd/workflows/asd-phase-design.md` (step 10), `.asd/workflows/asd-phase-design-promote.md` (steps 7-8), `.asd/agents/asd-architect.md`, `.asd/skills/asd-init/SKILL.md` (lines 54-55, 60), `README.md` folder map, `.gitignore`.
 Material risk: audit R-7 — dropping the render removes the only human-viewable form of the C4 model, mitigated by the build-to-view command. The command must be added to `asd-init`'s **seeding template**, not written into the live `.asd/project/commands.yaml`, which is consumer-owned and out of scope per `sprint.md`.
 
-- [ ] `sprint-lifecycle.md` + `asd-phase-design.md` step 10: the sprint draft is a **delta patch** against the persistent registry; full-schema authoring survives only when the persistent registry does not yet exist
-- [ ] Never build `dist/` inside `<sprint>/design/` — the framework's own `external-review.md` already classifies it as generated output no reviewer sees
-- [ ] Persistent `docs/architecture/c4/dist/` and the mermaid `architecture.html` stop being committed: add to `.gitignore`, remove from `artifact-layout.md`'s tree and from the README folder map
-- [ ] `asd-init/SKILL.md`: seed a "build to view" command in the generated `commands.yaml` template and name it in README, so the render is one command away rather than absent
-- [ ] `asd-phase-design-promote.md` steps 7-8 and `asd-architect.md`: remove the mandated regeneration steps
-- [ ] Run `sync.js --apply` for the edited agent and skill files
+- [x] `sprint-lifecycle.md` + `asd-phase-design.md` step 10: the sprint draft is a **delta patch** against the persistent registry; full-schema authoring survives only when the persistent registry does not yet exist
+- [x] Never build `dist/` inside `<sprint>/design/` — the framework's own `external-review.md` already classifies it as generated output no reviewer sees
+- [x] Persistent `docs/architecture/c4/dist/` and the mermaid `architecture.html` stop being committed: add to `.gitignore`, remove from `artifact-layout.md`'s tree and from the README folder map
+- [x] `asd-init/SKILL.md`: seed a "build to view" command in the generated `commands.yaml` template and name it in README, so the render is one command away rather than absent
+- [x] `asd-phase-design-promote.md` steps 7-8 and `asd-architect.md`: remove the mandated regeneration steps
+- [x] Run `sync.js --apply` for the edited agent and skill files
 
 ### Task 11: Trim the inline HTML shell
 

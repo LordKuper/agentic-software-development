@@ -30,7 +30,6 @@ Orchestration body for the `asd-phase-design-promote` skill. Operation-mapping t
 7. **New subsystem registry update** (only if new subsystems approved in step 6) — delegate to agent `asd-architect`:
    - patch c4 registry per `project.diagram_tool` (likec4 model OR subsystems.yaml)
    - create empty domain folders per new subsystem
-   - run `likec4 build` for likec4 mode (regen `c4/dist/`)
    - emit COMPLETED
 8. **Parallel domain promotion** — delegate to agent in parallel, **only for domains whose sprint draft exists**:
    - **`asd-ba`** — only if `prd.html` is in scope (step 1 intersection) — payload (prd.html, decomposition map for product domain, migration items tagged product):
@@ -41,7 +40,7 @@ Orchestration body for the `asd-phase-design-promote` skill. Operation-mapping t
    - **`asd-architect`** — only if `adr.html` or `c4-full/` is in scope (step 1 intersection, independently — a repo can promote c4 without adr, or vice versa) — payload (adr.html if in scope, c4-full if in scope, decomposition map for architecture domain, migration items tagged architecture):
      - fold every approved ADR into whichever existing persistent doc's `responsibility.owns` frontmatter already declares ownership of that decision's subject (`sprint-lifecycle.md` "Design-promote phase" fold rule) — never a lookup table, never a new `adr/` tree; use the ADR's own "Fold target" line as the candidate, verify the `owns:` match before writing; binding rejected alternatives fold as one line into the target's Constraints-equivalent section; non-binding alternatives stay sprint-archive-only; API contracts fold the same way (subsystem doc, `stack.html`, a project-generated OpenAPI/SDL/proto artifact, or Complication Approval if nothing owns it — no pre-made template)
      - update `docs/architecture/stack.html` + `tech-reference/` entries if sprint introduced new tech
-     - compute c4 delta from `<sprint>/design/c4-full/` vs persistent `docs/architecture/c4/`; apply patches; regenerate `c4/dist/` (likec4) or `architecture.html` (mermaid)
+     - apply the sprint's c4 delta patch from `<sprint>/design/c4-full/` to persistent `docs/architecture/c4/` (or, when the persistent registry did not exist before this sprint, write the sprint's full schema directly as the registry) — never regenerate `dist/`/`architecture.html` here, build on demand via the `commands.yaml` build-to-view command
      - process architecture migration items
      - request user decision before each persistent write
      - emit COMPLETED
@@ -66,7 +65,7 @@ Orchestration body for the `asd-phase-design-promote` skill. Operation-mapping t
 - Persistent docs under `docs/` per domain (per subsystem when decomposition enabled, flat when disabled)
 - Patched `docs/ux/DESIGN.md` (when delta present)
 - Regenerated `docs/ux/design-system.html` (when DESIGN.md changed)
-- Patched `docs/architecture/c4/` (when c4-full present); regenerated `c4/dist/` (likec4) or `architecture.html` (mermaid)
+- Patched `docs/architecture/c4/` (when c4-full present) — `dist/`/`architecture.html` are build output, not regenerated here
 - New `docs/architecture/tech-reference/<tech>-<version>.md` if applicable
 - Appended decisions-log entries
 
