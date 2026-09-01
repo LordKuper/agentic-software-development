@@ -188,7 +188,7 @@ Agents preserve the block. Reviewers verify content respects the declared scope.
 
 ## Sprint archival
 
-Once the sprint PR is merged (`pr` merge mode, not at PR creation), sprint folder moves from `.asd/sprints/<NNN-slug>/` to `.asd/sprints/archived/<NNN-slug>/`. Archived sprints never modified.
+Sprint folder moves from `.asd/sprints/<NNN-slug>/` to `.asd/sprints/archived/<NNN-slug>/` in `pr` **open** mode, right after the PR is created (DoD already met) — a dedicated commit pushed to the same sprint branch, so it lands inside the PR itself and merges atomically with it (avoids a later "push to sprint branch" that squash-merge + auto-delete-branch would make impossible). The terminal signal (`phase=done`, `pr.state="merged"`) is written separately, in `pr` **merge** mode, only once the PR is confirmed merged — the sprint counts as active until then even though its folder already sits under `archived/`. Archived sprints are otherwise never modified; this one terminal write is the sole exception (`sprint-lifecycle.md` "Sprint immutability").
 
 ## Decisions log
 

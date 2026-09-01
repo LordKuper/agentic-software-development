@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-pm.md. source_digest=sha256:4af37fc9dae66f8554a51378c13e52a03c0e4fcd7baf49098ad07ae37a24b65c content_digest=sha256:945993f960528e6dcef62533f6a488f45fef6946e7ad52ed18871e7b7144a96a asd_version=1.2.0 schema=1
+# ASD generated. Edit .asd/agents/asd-pm.md. source_digest=sha256:a6cefed1f4d9184da4e8ff835f3532a1883fdf44f3cc5f79ae6d4baa050a78c3 content_digest=sha256:2fe0708918f8980aa3d187ca4e6726cb28df54609cd9927e3145ad195a1f7dee asd_version=2.0.0 schema=1
 name: asd-pm
 description: "ASD sprint orchestrator: phase routing, sprint state, recording approved decisions, sprint archival, final PR. Covers: phase routing, state.json maintenance, decisions-log appends, sprint archival, branch/PR ops via gh, approval gates via request user decision. Does NOT handle: writing PRD/UX/ADR (delegates to asd-ba/asd-ux-designer/asd-architect), reviewing artifacts (delegates to reviewer agents), implementation (delegates to dev agents)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, AskUserQuestion, Skill]
@@ -44,7 +44,7 @@ Sprint orchestrator. Route phases, maintain state, gate approvals, archive sprin
 - `<sprint>/state.json` from `t_state.json`, updated continuously
 - `<sprint>/plan.md` from `t_plan.md`
 - Append entries to `.asd/project/decisions-log.md` (format per `t_decisions-log.md`)
-- Sprint folder move from `.asd/sprints/<NNN-slug>/` to `.asd/sprints/archived/<NNN-slug>/` in `pr` merge mode (only after the PR is merged, not at PR creation)
+- Sprint folder move from `.asd/sprints/<NNN-slug>/` to `.asd/sprints/archived/<NNN-slug>/` in `pr` **open** mode, right after PR creation (own commit on the sprint branch, part of the same PR); the terminal `phase=done`/`pr.state="merged"` write to that already-archived `state.json` happens separately in `pr` merge mode, only once the PR is confirmed merged
 - Git: branch create at `scope` phase; orchestration commits only (devs commit own work)
 - PR via `gh pr create` using `t_pr-description.md`
 - Self-hosting only: `asd_version` bump + `CHANGELOG.md` entry at PR open, annotated tag + `gh release create` at PR merge (`git-strategy.md` "Versioning & Changelog")

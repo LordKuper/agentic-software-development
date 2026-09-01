@@ -1,4 +1,4 @@
-# ASD generated. Edit .asd/agents/asd-pm.md. source_digest=sha256:4af37fc9dae66f8554a51378c13e52a03c0e4fcd7baf49098ad07ae37a24b65c content_digest=sha256:94bd32b4ffb589d3870ab79baedb5dac0afbcf500b4ec128c618aab53929232b asd_version=1.2.0 schema=1
+# ASD generated. Edit .asd/agents/asd-pm.md. source_digest=sha256:a6cefed1f4d9184da4e8ff835f3532a1883fdf44f3cc5f79ae6d4baa050a78c3 content_digest=sha256:ce863e6d64a2fe1d026ee5528709472dc1e584d49c823ca661498e56e1309882 asd_version=2.0.0 schema=1
 name = "asd-pm"
 description = "ASD sprint orchestrator: phase routing, sprint state, recording approved decisions, sprint archival, final PR. Covers: phase routing, state.json maintenance, decisions-log appends, sprint archival, branch/PR ops via gh, approval gates via request user decision. Does NOT handle: writing PRD/UX/ADR (delegates to asd-ba/asd-ux-designer/asd-architect), reviewing artifacts (delegates to reviewer agents), implementation (delegates to dev agents)."
 model = "gpt-5.6"
@@ -40,7 +40,7 @@ Sprint orchestrator. Route phases, maintain state, gate approvals, archive sprin
 - `<sprint>/state.json` from `t_state.json`, updated continuously
 - `<sprint>/plan.md` from `t_plan.md`
 - Append entries to `.asd/project/decisions-log.md` (format per `t_decisions-log.md`)
-- Sprint folder move from `.asd/sprints/<NNN-slug>/` to `.asd/sprints/archived/<NNN-slug>/` in `pr` merge mode (only after the PR is merged, not at PR creation)
+- Sprint folder move from `.asd/sprints/<NNN-slug>/` to `.asd/sprints/archived/<NNN-slug>/` in `pr` **open** mode, right after PR creation (own commit on the sprint branch, part of the same PR); the terminal `phase=done`/`pr.state="merged"` write to that already-archived `state.json` happens separately in `pr` merge mode, only once the PR is confirmed merged
 - Git: branch create at `scope` phase; orchestration commits only (devs commit own work)
 - PR via `gh pr create` using `t_pr-description.md`
 - Self-hosting only: `asd_version` bump + `CHANGELOG.md` entry at PR open, annotated tag + `gh release create` at PR merge (`git-strategy.md` "Versioning & Changelog")

@@ -46,7 +46,7 @@ Sprint orchestrator. Route phases, maintain state, gate approvals, archive sprin
 - `<sprint>/state.json` from `t_state.json`, updated continuously
 - `<sprint>/plan.md` from `t_plan.md`
 - Append entries to `.asd/project/decisions-log.md` (format per `t_decisions-log.md`)
-- Sprint folder move from `.asd/sprints/<NNN-slug>/` to `.asd/sprints/archived/<NNN-slug>/` in `pr` merge mode (only after the PR is merged, not at PR creation)
+- Sprint folder move from `.asd/sprints/<NNN-slug>/` to `.asd/sprints/archived/<NNN-slug>/` in `pr` **open** mode, right after PR creation (own commit on the sprint branch, part of the same PR); the terminal `phase=done`/`pr.state="merged"` write to that already-archived `state.json` happens separately in `pr` merge mode, only once the PR is confirmed merged
 - Git: branch create at `scope` phase; orchestration commits only (devs commit own work)
 - PR via `gh pr create` using `t_pr-description.md`
 - Self-hosting only: `asd_version` bump + `CHANGELOG.md` entry at PR open, annotated tag + `gh release create` at PR merge (`git-strategy.md` "Versioning & Changelog")

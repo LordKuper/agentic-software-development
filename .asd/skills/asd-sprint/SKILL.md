@@ -12,7 +12,7 @@
 
 ## Preconditions
 - `.asd/project/config.yaml` exists (else: tell user `/asd-init`)
-- ≤1 active sprint in `.asd/sprints/<NNN-slug>/` (archived/ excluded)
+- ≤1 active sprint. A sprint counts as active while `state.json.phase != "done"`, whether its folder currently lives at `.asd/sprints/<NNN-slug>/` or already at `.asd/sprints/archived/<NNN-slug>/` (the `pr` phase moves the folder before the terminal `phase=done` write — see `sprint-lifecycle.md` "PR phase"). Only `phase=done` entries under `archived/` are excluded.
 
 ## Operations used
 - Read files / search repo — detect active sprint; read state.json, config.yaml, custom-common-rules.md
@@ -24,7 +24,7 @@
 ## Workflow
 
 ### Step 1: detect active sprint
-- Search repo for `.asd/sprints/*/state.json` (skip `archived/`)
+- Search repo for `.asd/sprints/*/state.json` (excluding `archived/`) UNION `.asd/sprints/archived/*/state.json` where `phase != "done"` (a sprint the `pr` phase already archived pre-merge, still awaiting merge confirmation)
 - 0 active → new-sprint flow
 - 1 active → resume flow
 - >1 → emit FAILED "multiple active sprints found, manual cleanup needed"
@@ -44,7 +44,7 @@
 
 ### Step 3: phase chain advancement
 After any phase skill returns:
-- `COMPLETED` → read the phase skill's `NEXT:` field and dispatch that phase skill. `NEXT:` is authoritative — follows default linear order in `.asd/rules/sprint-lifecycle.md` except the `impl`/`impl-test`/`impl-review` cycle: `impl` always returns `NEXT: impl-test`; `impl-test` returns `NEXT: impl` on code defects (routes to impl test-fix mode) or `NEXT: impl-review` on a green suite; `impl-review` returns `NEXT: impl` on unresolved findings (routes to impl review-fix mode) or `NEXT: pr` on DoD met. The `pr` phase ends the chain in two steps: open mode returns `NEXT: await-merge` (PR opened, sprint stays active awaiting merge — halt, no further dispatch); a later resume re-enters `pr` in merge mode and on `NEXT: done` the sprint archives and chain ends.
+- `COMPLETED` → read the phase skill's `NEXT:` field and dispatch that phase skill. `NEXT:` is authoritative — follows default linear order in `.asd/rules/sprint-lifecycle.md` except the `impl`/`impl-test`/`impl-review` cycle: `impl` always returns `NEXT: impl-test`; `impl-test` returns `NEXT: impl` on code defects (routes to impl test-fix mode) or `NEXT: impl-review` on a green suite; `impl-review` returns `NEXT: impl` on unresolved findings (routes to impl review-fix mode) or `NEXT: pr` on DoD met. The `pr` phase ends the chain in two steps: open mode returns `NEXT: await-merge` (PR opened, sprint folder already archived onto the same branch, `phase` still not `done` — halt, no further dispatch); a later resume re-enters `pr` in merge mode, reading `state.json` from its archived location, and on `NEXT: done` writes the terminal state and the chain ends.
 - `FAILED` → relay, halt
 - `QUESTION` → relay pending question, halt until reply
 - `ABORT — precondition not met` → relay, halt

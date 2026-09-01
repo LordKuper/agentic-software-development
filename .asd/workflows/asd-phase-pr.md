@@ -16,12 +16,12 @@ Orchestration body for the `asd-phase-pr` skill. Operation-mapping to host tools
 
 ## Mode detection
 
-Read `<sprint>/state.json` first:
-- `pr` absent/null → **open mode** (DoD + create PR; no archival)
-- `pr.state = "open"` → **merge mode** (check merge; archive when merged)
-- `pr.state = "merged"` → already archived; emit COMPLETED, NEXT=done
+Read `<sprint>/state.json` first — check both the active path `<sprint>/state.json` and, if absent there, `.asd/sprints/archived/<NNN-slug>/state.json` (the folder may already be archived pre-merge; see below):
+- `pr` absent/null → **open mode** (DoD + create PR + pre-merge archival)
+- `pr.state = "open"` → **merge mode** (check merge; on merged, finalize terminal state + tag/release)
+- `pr.state = "merged"` → already finalized; emit COMPLETED, NEXT=done
 
-Archival never happens at PR creation — only on a later re-entry after the PR is merged. Re-entry is driven by the sprint-resume dispatch (sprint stays active while `pr.state="open"`).
+The sprint folder physically moves to `.asd/sprints/archived/<NNN-slug>/` as part of **open mode**, immediately after the PR is created — bundled into the same PR as a dedicated commit, so it merges atomically with the sprint's own changes and survives squash-merge + auto-delete-branch strategies that would otherwise make a later "push to sprint branch" impossible. The terminal signal (`phase=done`, `pr.state="merged"`) is still gated on a confirmed merge and is written in **merge mode**, re-entered via the sprint-resume dispatch (sprint counts as active — see `sprint-lifecycle.md` "PR phase" — while `phase != done`, regardless of which of the two folder locations its `state.json` currently lives in).
 
 ## Workflow — open mode
 
@@ -49,23 +49,26 @@ Archival never happens at PR creation — only on a later re-entry after the PR 
      - **`git.gh_enabled=false`**: push branch, print PR-ready summary (title, body, compare URL hint)
    - on edit: re-compose with feedback, loop
    - on abort: emit ABORT
-   - on success: write `state.json.pr` = `{ number, url, state: "open" }` (number null when `gh_enabled=false`); keep `phase=pr`; append decisions-log entry ("sprint <NNN-slug> PR opened: <url-or-summary>")
-6. Emit COMPLETED, STATUS=pr-open, NEXT=await-merge. Sprint stays active awaiting merge; do NOT archive.
+   - on success: write `state.json.pr` = `{ number, url, state: "open" }` (number null when `gh_enabled=false`); keep `phase=pr`; append decisions-log entry ("sprint <NNN-slug> PR opened: <url-or-summary>"); commit and push this to the sprint branch
+6. **Pre-merge archival** — delegate to agent `asd-pm`, immediately after PR creation succeeds (DoD already passed, this is not a new gate):
+   - `git mv .asd/sprints/<NNN-slug>/` → `.asd/sprints/archived/<NNN-slug>/`
+   - in the moved `state.json`: add `archived_at` = now (ISO8601); leave `phase` and `pr.state` unchanged (still `pr` / `"open"` — the sprint is not yet actually merged, only its folder has moved)
+   - append decisions-log entry ("sprint <NNN-slug> files archived pre-merge, pending PR #<number> merge")
+   - commit (`chore: archive sprint <NNN-slug>`), push to the same sprint branch — this lands as an additional commit on the already-open PR, so it squash-merges together with the sprint's own changes
+7. Emit COMPLETED, STATUS=pr-open, NEXT=await-merge. Sprint stays active awaiting merge (`phase` is still `pr`, not `done`) even though its folder already lives under `archived/`.
 
 ## Workflow — merge mode
 
+Read `state.json` from `.asd/sprints/archived/<NNN-slug>/` (open mode already moved the folder there — see "Pre-merge archival" above; it stays at the active path only if `git.gh_enabled=false` prevented a PR object from ever being created, which the "Merge" mode detection above still handles the same way).
+
 1. **Merge check** — delegate to agent `asd-pm`:
-   - `git.gh_enabled=true`: run command `gh pr view <pr.number> --json state -q .state`. `MERGED` → proceed to archival. Any other state (`OPEN`/`CLOSED`) → relay "PR #<number> not merged yet (state: <state>)" and halt (re-run pr after merging). `CLOSED` without merge → relay; user decides reopen or abort.
+   - `git.gh_enabled=true`: run command `gh pr view <pr.number> --json state -q .state`. `MERGED` → proceed. Any other state (`OPEN`/`CLOSED`) → relay "PR #<number> not merged yet (state: <state>)" and halt (re-run pr after merging). `CLOSED` without merge → relay; user decides reopen or abort (an abort here leaves the folder pre-archived with `phase != done` — still detected as active on the next `/asd-sprint` invocation, so nothing is lost; a manual folder move back to the active path is a legitimate recovery action if the user wants to resume work under the original sprint id).
    - `git.gh_enabled=false`: request user decision in `language.chat` — "PR merged?" yes / not yet. `not yet` → halt. `yes` → proceed.
-2. **Tag + release** (`self_hosting: enabled` only, `git-strategy.md` "Versioning & Changelog") — delegate to agent `asd-pm`:
+2. **Terminal state update** — delegate to agent `asd-pm`: update the already-archived `state.json` — `pr.state="merged"`, `phase=done`, `updated_at`=now. This is the one deliberate exception to "archived sprints never modified" (`artifact-layout.md` "Sprint archival") — only this terminal transition, nothing else. Append decisions-log entry ("sprint <NNN-slug> completed, PR <url-or-summary> merged").
+3. **Tag + release** (`self_hosting: enabled` only, `git-strategy.md` "Versioning & Changelog") — delegate to agent `asd-pm`:
    - create annotated tag `v<asd_version>` on the merge commit; push tag
    - `gh release create v<asd_version> --title v<asd_version> --notes-file` the matching `CHANGELOG.md` section
-3. **Sprint archival** — delegate to agent `asd-pm`:
-   - move folder `.asd/sprints/<NNN-slug>/` → `.asd/sprints/archived/<NNN-slug>/` (`git mv`)
-   - commit move with message `chore: archive sprint <NNN-slug>` and push to sprint branch
-   - update `state.json` (`pr.state="merged"`, phase=done, archived_at)
-   - append decisions-log entry ("sprint <NNN-slug> completed, archived, PR <url-or-summary>")
-   - emit COMPLETED, STATUS=complete, NEXT=done
+4. Emit COMPLETED, STATUS=complete, NEXT=done.
 
 ## Block-on-fail behaviour
 
@@ -84,13 +87,12 @@ Open mode:
 - Pushed git branch (and PR when `gh_enabled+auto_pr`)
 - `state.json.pr` = `{number, url, state:"open"}`; decisions-log PR-opened entry
 - Self-hosting only: bumped `asd_version` in `.asd/release-manifest.json`, new `CHANGELOG.md` section
+- Sprint folder moved to `.asd/sprints/archived/<NNN-slug>/` (dedicated commit on the sprint branch, part of the same PR); `state.json.archived_at` set; decisions-log pre-merge-archival entry
 
 Merge mode:
 - Self-hosting only: annotated tag `v<asd_version>`, GitHub Release
-- Archived sprint at `.asd/sprints/archived/<NNN-slug>/`
-- Archive commit on sprint branch
 - decisions-log final entry
-- Updated `state.json` (`pr.state="merged"`, phase=done, archived_at)
+- Updated `state.json` (already at the archived path): `pr.state="merged"`, `phase=done`, `updated_at` — the one write an archived sprint's `state.json` still receives after its folder move
 
 ## Agents delegated to
 - `asd-pm` (DoD verification, PR composition, merge check, tag/release, archival, decisions-log)
@@ -102,7 +104,7 @@ None.
 ```
 PHASE: pr | SPRINT: <NNN-slug> | STATUS: <pr-open|complete|blocked|aborted> | NEXT: <await-merge|done|halted> | PR: <url-or-summary-or-none>
 ```
-`pr-open` (open mode success): PR opened, sprint awaits merge, NEXT=await-merge. `complete` (merge mode success): merged + archived, NEXT=done.
+`pr-open` (open mode success): PR opened, sprint folder already archived on the branch, awaits merge confirmation, NEXT=await-merge. `complete` (merge mode success): merge confirmed, terminal state finalized, NEXT=done.
 
 ## References
 - `.asd/rules/sprint-lifecycle.md` (pr phase contract, sprint immutability, self-hosting versioning)
