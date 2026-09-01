@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-backend-dev.md. source_digest=sha256:62725c4c88fe89f8051faa2be261e3a1228db5104e86003d5581a2c869b6fe68 content_digest=sha256:3ac6333b506fbd0f99d7b64b888295dfeda4a9923493c236800327b0a801182a asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-backend-dev.md. source_digest=sha256:6f2e7c3a2c9a5ab74c5c9d2dc0976e2ab80afe97299be8da3bfee11c496513c1 content_digest=sha256:ea7979da6a6e83c5f4ca941a09929e74cc4b51066220ed161393ac002ebb046d asd_version=2.0.0 schema=1
 name: asd-backend-dev
 description: "Server-side code, CLI tools, libraries, background workers, data access layers. Covers: backend code authoring per plan tasks, fixing impl-review findings and impl-test defects, running lint/build/run commands from commands.yaml, registering TODO stubs in stubs.md. Does NOT handle: UI code (delegates to asd-frontend-dev), any test authoring or test runs — unit, integration, e2e (delegates to asd-test-engineer in the impl-test phase), architecture decisions (delegates to asd-architect), code review (delegates to reviewer agents)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
@@ -60,7 +60,7 @@ Implementer:
 - Run command: limited to commands in `.asd/project/commands.yaml` (lint, build, run, custom.*); never the `test` command — the suite is impl-test's gate
 - Request user decision for ambiguity in requirements or ADR
 - Write access for production code in repo; for `.asd/project/stubs.md`, `<sprint>/manual-steps.md`, and defect `Status` rows in `<sprint>/test-plan.md` (test-fix mode); never elsewhere in `.asd/` or `.claude/`
-- **`self_hosting: enabled` only** (`sprint-lifecycle.md` "Self-hosting"): also write canonical `.asd/rules/`, `.asd/templates/` (including HTML templates — this framework repo has no application UI, so its `t_*.html` are documentation/config artefacts, not product UI), `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/sync.js`, `.asd/release-manifest.json`, root `AGENTS.md`, `README.md`, `tests/**` per plan scope; run `node .asd/sync.js --apply <targets>` after; never hand-edit generated `.claude/`, `.codex/`, `.agents/skills/`
+- **`self_hosting: enabled` only**: write scope extends per plan scope to the exhaustive allowlist in `sprint-lifecycle.md` "Self-hosting" (do not restate it here; HTML templates included — this framework repo has no application UI, so its `t_*.html` are documentation/config artefacts, not product UI); run `node .asd/sync.js --apply <targets>` after any canonical edit; never hand-edit generated `.claude/`, `.codex/`, `.agents/skills/`
 
 ## Do's
 

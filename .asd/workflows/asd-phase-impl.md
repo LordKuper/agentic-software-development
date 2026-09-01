@@ -45,7 +45,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
 
 ## Workflow
 
-1. Read `.asd/project/config.yaml` (`backward_compat`, `system.tools`, `self_hosting`, `language.chat`, `language.docs`). When `self_hosting: enabled`, devs' write scope extends to canonical `.asd/rules/`, `.asd/templates/`, `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/sync.js`, `.asd/release-manifest.json`, root `AGENTS.md`, `README.md`, `tests/**` per plan scope (`sprint-lifecycle.md` "Self-hosting"); dev instruction (step 6) adds: after any canonical edit, run `node .asd/sync.js --apply <targets>` before marking the task done; generated `.claude/`/`.codex/`/`.agents/skills/` stay off-limits always
+1. Read `.asd/project/config.yaml` (`backward_compat`, `system.tools`, `self_hosting`, `language.chat`, `language.docs`). When `self_hosting: enabled`, devs' write scope extends per plan scope to the exhaustive allowlist in `sprint-lifecycle.md` "Self-hosting" (do not restate it here); dev instruction (step 6) adds: after any canonical edit, run `node .asd/sync.js --apply <targets>` before marking the task done; generated `.claude/`/`.codex/`/`.agents/skills/` stay off-limits always
 2. Read `<sprint>/state.json` → **detect mode**:
    - both fix flags null/absent → **initial mode**; confirm `plan.md` approved
    - `review_fixes_pending` = `iter-NN` → **review-fix mode**; confirm `<sprint>/reviews/impl/iter-NN/` exists (else `ABORT — precondition not met: reviews/impl/iter-NN missing`)
