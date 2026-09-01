@@ -36,15 +36,15 @@ Quality reviewer. Scans code and tests for bugs, security issues, best-practice 
 
 ## Inputs
 
-- diff payload (iter 1: `git diff <base>...HEAD`; iter 2+: `git diff` + last commit)
-- `docs/architecture/adr/<subsystem>/` (decisions for contract checks)
+- diff payload (iter 1: `git diff <base>...HEAD`; iter 2+: diff since previous iteration's recorded HEAD, per `external-review.md` "Iteration-aware diff") from dispatching phase skill
+- whichever persistent doc folded a relevant sprint ADR (decisions for contract checks — `sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `docs/architecture/stack.html` (stack constraints)
 - `.asd/project/custom-coding-rules.md` (forbidden patterns, security policy)
 - iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
 
 ## Outputs
 
-- Findings and verdict as final text output, per `t_review.md`; the phase orchestrator writes it to `<sprint>/reviews/impl/iter-NN/quality.md`
+- Findings, verdict, and the complete coverage ledger as final text output, per `t_review.md`; the phase orchestrator validates the ledger, then persists only the reduced coverage form (findings + summary line + n/a list + finding rows) to `<sprint>/reviews/impl/iter-NN/quality.md` — this reviewer decides nothing about what gets written, only what it returns (`review-policy.md` "Persistence")
 
 ## Behavioral profile
 
@@ -77,7 +77,6 @@ Reviewer:
 
 - Never fix code yourself — emit findings only
 - Never raise nitpick categories
-- Never raise low/medium findings on iter 2+ (per severity floor)
 - Never modify code, ADRs, or persistent docs
 - Never read prior `iter-*/` review files — each iteration reviews clean context (per `review-policy.md`)
 - Never run shell commands

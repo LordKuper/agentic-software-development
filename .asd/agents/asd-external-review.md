@@ -49,17 +49,17 @@ External review wrapper. Runs `{{wraps_cli}}` CLI parallel to internal reviewers
   - impl-review → `.asd/templates/external-review/t_prompt-external-impl.md`
 - prompt-slot context (paths only, phase-scoped): language.docs, custom-common-rules + phase-scoped custom rules
   - design-review: concept, accessibility baseline
-  - impl-review: sprint prd.html + adr.html (reference for AC/contract cross-ref), stack, backward_compat, commands
-- diff payload — phase-scoped, no cross-phase content, no generated output (`external-review.md` § Phase-scoped payload). `<pathspec>` = `-- . ':(exclude).asd/**' ':(exclude)docs/**'` — also keeps c4 schemas out of impl-review
+  - impl-review: reference paths per `external-review.md` § Phase-scoped payload table (consumer row vs `self_hosting: enabled` row — differs, do not assume the consumer row)
+- diff payload — phase-scoped, no cross-phase content, no generated output. `<pathspec>` per `external-review.md` § Phase-scoped payload "`<pathspec>` for impl-review" (consumer row vs `self_hosting: enabled` row — differs, do not hardcode one) — also keeps c4 schemas out of impl-review
   - design-review iter 1: full content of `<sprint>/design/` files (no code, no `c4-full/dist/`)
   - design-review iter 2+: per-file diff since last iteration snapshot
   - impl-review iter 1: `git diff <base>...HEAD <pathspec>` (code+tests, no docs)
-  - impl-review iter 2+: `git diff <pathspec>` (uncommitted) + `git show HEAD <pathspec>`
+  - impl-review iter 2+: `git diff <state.json reviews.impl.iteration_heads["iter-(N-1)"]>...HEAD <pathspec>` (every commit since the previous iteration's recorded HEAD, not just the last one)
 - previous iteration finding set (iter ≥ 2 only) — supplied by dispatching phase skill for stalemate detection; agent never reads prior `iter-*/` files itself
 
 ## Outputs
 
-- Findings and verdict as final text output, per `.asd/templates/external-review/t_review-report.md` (kept/dropped accounting + verdict); the phase orchestrator writes it to `<sprint>/reviews/<design|impl>/iter-NN/external.md`
+- Findings and verdict as final text output, per `.asd/templates/external-review/t_review-report.md` (kept findings + dropped-category counts + verdict); the phase orchestrator writes it to `<sprint>/reviews/<design|impl>/iter-NN/external.md`
 
 ## Behavioral profile
 
@@ -67,7 +67,7 @@ Reviewer (external wrapper):
 - detect `{{wraps_cli}}` availability → skip + log if missing
 - compose prompt: read per-phase template + inject context
 - invoke `{{wraps_cli}}` CLI per OS pattern
-- parse captured stdout text verdict → map severity → drop nitpick categories → apply severity floor → return report as final text (never write it — the phase orchestrator does)
+- parse captured stdout text verdict → map severity → drop nitpick categories → apply severity floor → return report as final text with dropped findings collapsed to per-category counts (never write it — the phase orchestrator does)
 
 ## Tool policy
 
@@ -124,7 +124,7 @@ Probe before invocation: `{{wraps_cli}} --version`. On failure: write log messag
 
 ## Output format
 
-- Per `.asd/templates/external-review/t_review-report.md`: Kept / Dropped (below floor) / Dropped (nitpick) tables, Verdict, Next action
+- Per `.asd/templates/external-review/t_review-report.md`: Kept findings table, Dropped findings (counts only — below-floor count + nitpick count per category), Verdict, Next action
 
 ## Gate Verdict Format
 

@@ -11,8 +11,8 @@ Both providers run from one canonical source under `.asd/` (agents, skills, hook
 ## Why use it
 
 - **Repeatable structure.** Every sprint follows the same 10 phases — no improvisation, no forgotten steps.
-- **Documentation that stays alive.** Persistent docs (concept, stack, ADRs, UX) update on every sprint instead of rotting.
-- **Reviews that converge.** Iteration severity floor stops reviewers from nitpicking the same low-severity issue forever. Each iteration dispatches reviewers with clean context, so verdicts aren't biased by the authoring that produced the artifact. Each internal reviewer must emit a coverage ledger — every scoped file and every checklist rule accounted for — and the phase skill rejects and re-dispatches any reviewer whose ledger is incomplete, so no file or rule is skipped silently.
+- **Documentation that stays alive.** Persistent docs (concept, stack, UX) update on every sprint instead of rotting; architecture decisions fold into whichever of them already owns the subject.
+- **Reviews that converge.** Iteration severity floor stops reviewers from nitpicking the same low-severity issue forever. Each iteration dispatches reviewers with clean context, so verdicts aren't biased by the authoring that produced the artifact. Each internal reviewer must return a complete coverage ledger — every scoped file and every checklist rule accounted for — and the phase skill validates that full ledger before writing, rejecting and re-dispatching any reviewer whose ledger is incomplete, so no file or rule is skipped silently. Only a coverage summary line, the full n/a list, and non-passing rows are persisted to the review file — the gate runs on the full returned ledger regardless.
 - **Brownfield-friendly.** The audit phase reads any existing docs and code (in any format and location) and reverse-engineers them into the workflow's structure.
 - **One source of truth.** SSoT iron rule is enforced by a dedicated Documentation reviewer.
 - **Subsystem-aware.** Optional LikeC4 (or Mermaid) registry organises persistent docs per subsystem.
@@ -191,7 +191,7 @@ Fifteen specialized agents are canonically defined in `.asd/agents/` and generat
 | `asd-pm` | opus/medium | sol/medium | Sprint orchestrator: state, phase routing, decisions-log, PR ops |
 | `asd-ba` | opus/high | sol/high | Business analyst: PRD, audit on the docs side, acceptance criteria |
 | `asd-ux-designer` | opus/high | sol/high | UX flows, UI mockups, DESIGN.md tokens, design-system.html |
-| `asd-architect` | opus/high | sol/high | ADRs, C4 model, stack, API contracts, tech-reference docs |
+| `asd-architect` | opus/high | sol/high | ADRs (sprint-scoped, fold into existing docs), C4 model, stack, API contracts, tech-reference docs |
 | `asd-backend-dev` | sonnet/medium | terra/medium | Server/CLI/library code (no tests) |
 | `asd-frontend-dev` | sonnet/medium | terra/medium | UI code (no tests; consumes DESIGN.md tokens) |
 | `asd-test-engineer` | sonnet/medium | terra/medium | All tests: risk-based selection, pruning, authoring at every level, suite runs, manual verification specs |
@@ -205,13 +205,15 @@ Reviewers are read-only on every provider: the 7 internal Claude reviewer agents
 | `asd-reviewer-quality` | opus/high | sol/high | impl-review | Bugs, security, best-practice, contract drift |
 | `asd-reviewer-implementation` | opus/high | sol/high | impl-review | PRD acceptance criteria coverage in code |
 | `asd-reviewer-testing` | opus/high | sol/high | impl-review | `test-plan.md` decisions (risk fit, justified removals and no-test calls, fail-first proof), test quality, manual verification capture |
-| `asd-reviewer-ui` | opus/high | sol/high | design-review + impl-review | UX-spec compliance, design-system tokens, a11y |
+| `asd-reviewer-ui` | opus/high | sol/high | design-review + impl-review | UX-spec compliance, design-system tokens, a11y — impl-review dispatch conditional (see below) |
 | `asd-reviewer-simplification` | opus/high | sol/high | design-review + impl-review | Over-engineering (13-item checklist) + structure/cohesion (god/sprawling type) detection |
 | `asd-reviewer-documentation` | opus/high | sol/high | design-review + impl-review | SSoT integrity, template adherence, traceability |
-| `asd-reviewer-performance` | opus/high | sol/high | impl-review | Perf budgets, regression, anti-patterns |
+| `asd-reviewer-performance` | opus/high | sol/high | impl-review | Perf budgets, regression, anti-patterns — dispatch conditional (see below) |
 | `asd-external-review` | fable/high | sol/high | both | Wraps the *other* provider's CLI (Codex CLI under Claude Code, Claude CLI under Codex), parses output, applies severity floor |
 
 Reviewers emit a machine-parseable first-line verdict token: `[REVIEW-<phase>-<reviewer>]: APPROVE|CONCERNS|FAIL`, where `<phase>` is `design` or `impl`.
+
+**Diff-scoped impl-review fan-out** (`review.scoped_fan_out: enabled` — seeded `enabled` by `/asd-init` for NEW projects only; absent from an existing project's `config.yaml` means `disabled`, full fan-out — see `asd-phase-impl-review.md` step 5 for the SSoT): at impl-review, UI is skipped when no file in the diff's scope list is a UI surface (any UI-extension/path-segment file re-enables it automatically); Performance is skipped only when both no perf-budgets section exists in `custom-coding-rules.md` and the diff contains no executable file (conjunctive). A skipped reviewer is never dispatched; `state.json.reviews.impl.verdicts["iter-NN"]` records an explicit `"skipped: <predicate>"` value instead of a verdict token, counted as satisfied (not missing) at the DoD and pr-phase gates. `review.scoped_fan_out: disabled` restores unconditional dispatch of all 7 internal reviewers every iteration. `checkpoints.md`'s impl-review approval gate is unaffected either way (`review-policy.md` DoD table).
 
 ---
 
@@ -226,7 +228,7 @@ documents:                # optional sprint documents; absent group = all enable
   audit: enabled           # <sprint>/audit.md
   prd: enabled              # design/prd.html + persistent requirements
   ux_spec: enabled          # ux-spec, design-system gate, design-md-delta
-  adr: enabled               # adr.html + persistent ADR
+  adr: enabled               # adr.html (sprint-scoped only; folds into existing persistent docs at design-promote)
   c4: enabled                  # c4-full + persistent C4 (also needs project.subsystem_decomposition: enabled)
 
 language:
@@ -241,6 +243,7 @@ backward_compat: migration            # strict | migration | none
 
 review:
   external_review: enabled            # enabled | disabled
+  scoped_fan_out: enabled              # enabled | disabled — impl-review UI/Performance dispatch conditional on diff-derived predicates (disabled = unconditional fan-out, every reviewer every iteration)
   iterations_low: 1                   # cumulative-budget severity floor
   iterations_medium: 1
   iterations_high: 2
@@ -287,10 +290,9 @@ your-project/
 │   │   ├── custom-common-rules.md   # universal rules — all agents, all phases
 │   │   ├── custom-design-rules.md   # design / design-review rules
 │   │   ├── custom-coding-rules.md   # impl / impl-test / impl-review rules (incl. perf budgets)
-│   │   ├── decisions-log.md         # append-only chronology of approved decisions
 │   │   └── stubs.md                 # project-global TODO registry
 │   └── sprints/
-│       ├── <NNN-slug>/              # active sprint (one at a time)
+│       ├── <NNN-slug>/              # active sprint (one at a time); decisions-log.md created here at scope, archived with the sprint
 │       └── archived/<NNN-slug>/     # moved here on PR open (pre-merge); read-only except the terminal write on merge
 ├── .claude/                         # generated Claude Code view
 │   ├── agents/                      # 15 agent definitions (*.md)
@@ -310,8 +312,6 @@ your-project/
 │   ├── architecture/
 │   │   ├── stack.html
 │   │   ├── c4/                      # subsystem registry (likec4 model or mermaid yaml)
-│   │   ├── adr/<subsystem>/adr-NNNN-<slug>.html
-│   │   ├── api/<subsystem>.html
 │   │   └── tech-reference/<tech>-<version>.md
 │   └── ux/
 │       ├── DESIGN.md                # Google Labs format token source
@@ -346,6 +346,8 @@ likec4 --version
 ```
 
 If absent, choose `diagram_tool: mermaid` instead — ASD will render architecture views as embedded Mermaid C4 blocks.
+
+Neither the LikeC4 `dist/` output nor the mermaid `architecture.html` is committed (build output, gitignored). `/asd-init` seeds a `c4-build` command in `.asd/project/commands.yaml`; run it to render the persistent C4 registry into a viewable artifact on demand.
 
 ### `@google/design.md`
 
@@ -400,16 +402,16 @@ The iteration severity floor uses cumulative budgets: by default iter 1 consider
 FAIL findings trigger an explicit user-approval prompt (Complication Approval format). You can override or accept; the workflow records your decision in `decisions-log.md`.
 
 **Can I skip the audit phase on greenfield projects?**
-`documents.audit` defaults to `enabled` for backward compatibility, and it runs fast on empty projects (no existing code or docs to scan) — so most greenfield projects never need to touch it. Set `documents.audit: disabled` in `config.yaml` before a sprint's `scope` phase to make audit a no-op for that sprint (see "Can I skip PRD/UX-spec/ADR/C4 for a lean sprint?" above).
+`documents.audit` defaults to `enabled` for backward compatibility, and it runs fast on empty projects (no existing code or docs to scan) — so most greenfield projects never need to touch it. Set `documents.audit: disabled` in `config.yaml` before a sprint's `scope` phase to make audit a no-op for that sprint (see "Can I skip PRD/UX-spec/ADR/C4 for a lean sprint?" below).
 
 **Does ASD work without subsystem decomposition?**
 Yes. Set `project.subsystem_decomposition: disabled` during `/asd-init`. Persistent docs become flat project-wide files. No C4 registry is maintained.
 
 **Can I skip PRD/UX-spec/ADR/C4 for a lean sprint?**
-Yes. Each is independently toggleable under `documents.*` in `config.yaml`, frozen into the sprint's `state.json` at scope time (a later config edit never changes an active sprint's rules). A phase whose entire applicable-artifact set is empty for the sprint (design, design-review, design-promote — and audit, via `documents.audit`) becomes a fast no-op: it advances immediately, writes nothing, with one skip line in the decisions log. `plan`/`impl`/`impl-test`/`impl-review`/`pr` always run; acceptance criteria then come from `sprint.md`'s own `AC-N` list instead of the PRD. See `.asd/rules/sprint-lifecycle.md` "Optional documents".
+Yes. Each is independently toggleable under `documents.*` in `config.yaml`, frozen into the sprint's `state.json` at scope time (a later config edit never changes an active sprint's rules). `audit` becomes a fast no-op on its own when `documents.audit` is disabled: it advances immediately, writes nothing, with one skip line in the decisions log. When `prd`/`ux_spec`/`adr`/effective `c4` are **all** disabled, one deterministic check at design entry collapses `design`, `design-review`, and `design-promote` together — a single write records all three as skipped and advances straight to `plan`; the latter two are never separately dispatched. `plan`/`impl`/`impl-test`/`impl-review`/`pr` always run; acceptance criteria then come from `sprint.md`'s own `AC-N` list instead of the PRD. See `.asd/rules/sprint-lifecycle.md` "Optional documents" and "No-op phase rule".
 
 **Can ASD develop itself?**
-Yes — set `self_hosting: enabled` in `config.yaml` (this repo ships with it enabled, `documents.audit` only). `/asd-sprint` then edits ASD's own canonical `.asd/rules/`, `.asd/templates/`, `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/sync.js`, plus `README.md`/`AGENTS.md`/`tests/**` — generated `.claude/`/`.codex/`/`.agents/skills/` stay off-limits, resynced via `node .asd/sync.js --apply` after every canon edit. Root `AGENTS.md` stays self-sourced (never replaced by `t_AGENTS.md`), and `/asd-update` refuses to run (it pulls framework files INTO a consumer; a self-hosting repo IS the framework). See `.asd/rules/sprint-lifecycle.md` "Self-hosting".
+Yes — set `self_hosting: enabled` in `config.yaml` (this repo ships with it enabled, `documents.audit` only). `/asd-sprint` then edits ASD's own canonical sources per the exhaustive write allowlist in `.asd/rules/sprint-lifecycle.md` "Self-hosting" — generated `.claude/`/`.codex/`/`.agents/skills/` stay off-limits, resynced via `node .asd/sync.js --apply` after every canon edit. Root `AGENTS.md` stays self-sourced (never replaced by `t_AGENTS.md`), and `/asd-update` refuses to run (it pulls framework files INTO a consumer; a self-hosting repo IS the framework).
 
 **What if my project already has an AGENTS.md or CLAUDE.md?**
 Either works. `/asd-init` adds ASD's rules as a managed block (`<!-- asd:begin -->...<!-- asd:end -->`) inside your existing `AGENTS.md`/`CLAUDE.md`, leaving the rest of your file untouched; if either file doesn't exist yet, it's created from `.asd/templates/t_AGENTS.md`/`t_CLAUDE.md`. Either way, do not reuse the `AGENTS.md`/`CLAUDE.md` from the ASD repo itself — those document how to develop the framework and are meaningless in a consumer project.

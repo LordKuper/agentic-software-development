@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:2b4ef66ea7590d4fccd52c79b673b909fea376b8e3e0ce5951f6e98e006640f6 content_digest=sha256:232eda013926fc4c139fc4f833233843cc095573a80c0822f2aafd2db7f6fb44 asd_version=1.2.0 schema=1
+# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:1ab1c79586fe155af3f6c13328d233a518cc4d41a9254249257b99e462421254 content_digest=sha256:db9759f6bcbcb292e857ef8425faf4f8cd98adaad91f457d96a592d9bb6c2318 asd_version=2.0.0 schema=1
 name: asd-external-review
 description: "External reviewer wrapping the other provider's CLI (Codex under Claude Code, Claude under Codex), run in parallel with internal reviewers during design-review and impl-review. Covers: wrapped-CLI availability detection per system.os, iteration-aware diff payload preparation (full vs incremental), prompt selection per phase (design or impl), output parsing and ASD severity mapping, kept/dropped accounting per severity floor, stalemate detection across iterations. Does NOT handle: internal review (delegates to asd-reviewer-* agents), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, Bash, AskUserQuestion]
@@ -42,17 +42,17 @@ External review wrapper. Runs `codex` CLI parallel to internal reviewers, normal
   - impl-review → `.asd/templates/external-review/t_prompt-external-impl.md`
 - prompt-slot context (paths only, phase-scoped): language.docs, custom-common-rules + phase-scoped custom rules
   - design-review: concept, accessibility baseline
-  - impl-review: sprint prd.html + adr.html (reference for AC/contract cross-ref), stack, backward_compat, commands
-- diff payload — phase-scoped, no cross-phase content, no generated output (`external-review.md` § Phase-scoped payload). `<pathspec>` = `-- . ':(exclude).asd/**' ':(exclude)docs/**'` — also keeps c4 schemas out of impl-review
+  - impl-review: reference paths per `external-review.md` § Phase-scoped payload table (consumer row vs `self_hosting: enabled` row — differs, do not assume the consumer row)
+- diff payload — phase-scoped, no cross-phase content, no generated output. `<pathspec>` per `external-review.md` § Phase-scoped payload "`<pathspec>` for impl-review" (consumer row vs `self_hosting: enabled` row — differs, do not hardcode one) — also keeps c4 schemas out of impl-review
   - design-review iter 1: full content of `<sprint>/design/` files (no code, no `c4-full/dist/`)
   - design-review iter 2+: per-file diff since last iteration snapshot
   - impl-review iter 1: `git diff <base>...HEAD <pathspec>` (code+tests, no docs)
-  - impl-review iter 2+: `git diff <pathspec>` (uncommitted) + `git show HEAD <pathspec>`
+  - impl-review iter 2+: `git diff <state.json reviews.impl.iteration_heads["iter-(N-1)"]>...HEAD <pathspec>` (every commit since the previous iteration's recorded HEAD, not just the last one)
 - previous iteration finding set (iter ≥ 2 only) — supplied by dispatching phase skill for stalemate detection; agent never reads prior `iter-*/` files itself
 
 ## Outputs
 
-- Findings and verdict as final text output, per `.asd/templates/external-review/t_review-report.md` (kept/dropped accounting + verdict); the phase orchestrator writes it to `<sprint>/reviews/<design|impl>/iter-NN/external.md`
+- Findings and verdict as final text output, per `.asd/templates/external-review/t_review-report.md` (kept findings + dropped-category counts + verdict); the phase orchestrator writes it to `<sprint>/reviews/<design|impl>/iter-NN/external.md`
 
 ## Behavioral profile
 
@@ -60,7 +60,7 @@ Reviewer (external wrapper):
 - detect `codex` availability → skip + log if missing
 - compose prompt: read per-phase template + inject context
 - invoke `codex` CLI per OS pattern
-- parse captured stdout text verdict → map severity → drop nitpick categories → apply severity floor → return report as final text (never write it — the phase orchestrator does)
+- parse captured stdout text verdict → map severity → drop nitpick categories → apply severity floor → return report as final text with dropped findings collapsed to per-category counts (never write it — the phase orchestrator does)
 
 ## Tool policy
 
@@ -117,7 +117,7 @@ Probe before invocation: `codex --version`. On failure: write log message for PM
 
 ## Output format
 
-- Per `.asd/templates/external-review/t_review-report.md`: Kept / Dropped (below floor) / Dropped (nitpick) tables, Verdict, Next action
+- Per `.asd/templates/external-review/t_review-report.md`: Kept findings table, Dropped findings (counts only — below-floor count + nitpick count per category), Verdict, Next action
 
 ## Gate Verdict Format
 

@@ -6,13 +6,12 @@
 self_hosting: disabled
 
 # Optional sprint documents and their persistent docs counterpart.
-# Absent group (old config) = every value enabled (current behavior unchanged).
-# Absent field within an existing group = disabled (fail-closed).
+# Defaults: see .asd/rules/sprint-lifecycle.md "Optional documents".
 documents:
   audit: enabled      # <sprint>/audit.md
   prd: enabled         # design/prd.html + persistent requirements
   ux_spec: enabled     # ux-spec, design-system gate, design-md-delta
-  adr: enabled          # adr.html + persistent ADR
+  adr: enabled          # adr.html (sprint-scoped only; folds into existing persistent docs at design-promote)
   c4: enabled            # c4-full + persistent C4 (also requires project.subsystem_decomposition: enabled)
 
 # Language for user-facing interaction.
@@ -35,6 +34,18 @@ review:
   # session, Claude CLI wrapped in a Codex session), performed in parallel with
   # internal reviewers. Values: enabled | disabled
   external_review: enabled
+
+  # Diff-scoped reviewer fan-out at impl-review. When enabled (default), the UI
+  # reviewer is skipped when no file in the diff is a UI surface, and the
+  # Performance reviewer is skipped only when both no perf-budgets section
+  # exists in custom-coding-rules.md AND the diff has no executable file
+  # (conjunctive). Predicates are diff-derived only, never keyed on the
+  # `documents.*` flags above. A skip is recorded as an explicit
+  # "skipped: <predicate>" verdict value, never an absent key, and never
+  # counts as a missing reviewer at the impl-review or pr DoD gate. Disable to
+  # restore unconditional fan-out (every internal reviewer, every iteration).
+  # Values: enabled | disabled
+  scoped_fan_out: enabled
 
   # Maximum number of review iterations per severity level.
   # On iteration N, only issues of severity X or higher are considered.

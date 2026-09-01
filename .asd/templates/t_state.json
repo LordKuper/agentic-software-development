@@ -6,7 +6,7 @@
   "skipped_phases": [],
   "reviews": {
     "design": { "iteration": 0, "verdicts": {} },
-    "impl": { "iteration": 0, "verdicts": {} }
+    "impl": { "iteration": 0, "verdicts": {}, "iteration_heads": {} }
   },
   "created_at": "{{ISO8601}}",
   "updated_at": "{{ISO8601}}",
@@ -14,7 +14,5 @@
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null,
-  "subsystems_touched": [],
-  "new_subsystems": [],
   "escalations": []
 }

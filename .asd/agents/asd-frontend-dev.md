@@ -37,12 +37,13 @@ Frontend developer. Implements UI code and components per plan tasks; fixes impl
 
 - `<sprint>/plan.md`
 - `<sprint>/reviews/impl/iter-NN/` (review-fix mode) or `<sprint>/test-plan.md` `Defects` (test-fix mode)
-- `docs/product/requirements/<subsystem>.html`
+- `docs/product/requirements/<subsystem>.html`; when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
 - `docs/ux/<subsystem>.html` (ux-spec with flows + mockups)
 - `docs/ux/DESIGN.md` (tokens, components)
 - `docs/ux/design-system.html` (visual reference)
 - `docs/ux/accessibility.html` (a11y baseline)
-- `docs/architecture/api/<subsystem>.html`
+- **no-baseline carve-out** (`self_hosting: enabled` and no design-system/ux-spec exists for the touched surface — this repo has no application UI, no consumer product to hold these docs): implement against `docs/architecture/stack.html` conventions and existing UI code (e.g. `t_html-shell.html`, other `t_*.html`) instead; record the gap ("no design-system/ux-spec baseline, implemented against stack.html + existing template conventions") in the commit or plan notes rather than emitting QUESTION. §6 token-usage exception under this carve-out: for `t_html-shell.html`, its whole `<style>` block is this template's own primitive/definition layer — §6 applies there only to COLOR values outside the `:root`/`prefers-color-scheme` token blocks (raw px/rem/font-family are exempt entirely — there is no spacing/typography token layer in this repo to violate); code consuming those tokens elsewhere must reference `var(--*)` for color. Fragment templates (`t_adr.html` etc., no `<style>` of their own) stay fully subject to §6 as normal.
+- whichever persistent doc holds folded API contracts for the touched subsystem (`sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `.asd/project/commands.yaml`
 
 ## Outputs
@@ -74,8 +75,8 @@ Implementer:
 - Respect accessibility.html rules (visual, motor, cognitive, auditory, platform integration)
 - Trace every change to a plan Task and an AC-N
 - In test-fix mode: fix the root cause behind the failing test, never weaken or delete the test; flip the `D-N` row to `fixed` with the commit sha
-- Register stubs in project-global `.asd/project/stubs.md` with `// TODO(sprint-NNN): <reason>` marker (append-only across sprints)
-- When a plan subtask needs a human-only operational action (secret, cloud resource, hand-run migration, env var, third-party account), register an `MS-N` entry in `<sprint>/manual-steps.md` (full step-by-step + `Verification` field), mark the subtask `BLOCKED: MS-N` in `plan.md`, emit `BLOCKED_MANUAL`, and continue unblocked work; last resort only — when the action is genuinely outside agent tooling; PM may bounce it back to implement autonomously
+- Stub handling: see `git-strategy.md` "TODO stubs" — do not restate here
+- Manual-steps handling: see `sprint-lifecycle.md` "Impl phase" — do not restate here
 
 ## Don'ts
 
@@ -102,7 +103,4 @@ Implementer:
 
 ## Tech reference precondition
 
-Before implementing with any library, framework, runtime, or external service:
-- Verify `docs/architecture/tech-reference/<tech>-<version>.md` exists
-- If missing → emit `FAILED — tech-reference missing for <tech>@<version>` and request the doc from asd-architect
-- Never proceed without a verified reference
+Refuse-to-implement rule: see `artifact-layout.md` "Tech reference docs" — do not restate here.

@@ -1,6 +1,6 @@
 ---
 responsibility:
-  owns: codex cli prompt for design-review phase (reviews sprint design drafts)
+  owns: wrapped-CLI prompt for design-review phase (reviews sprint design drafts)
   excludes: impl-review prompts, output template
   delegates_to: t_prompt-external-impl.md (impl), t_review-report.md (output)
 ---
@@ -46,10 +46,8 @@ Caller passes the computed floor; report only at floor severity or higher.
 
 ### prd.html
 - problem clearly stated
-- goals measurable or testable
 - user stories complete (role + want + benefit)
 - acceptance criteria atomic, traceable, unambiguous
-- non-goals listed when scope ambiguity exists
 - consistency with project concept
 - consistency with custom rules
 
@@ -60,11 +58,13 @@ Caller passes the computed floor; report only at floor severity or higher.
 - no contradictions with DESIGN.md tokens
 
 ### adr.html
-- status valid (proposed | accepted | superseded by ...)
+- status valid (proposed | accepted)
+- numbering is sprint-local (ADR-1, ADR-2, …) — no cross-sprint or globally-unique numbering expected
 - context explains forces and constraints
 - decision concrete (not "we should consider")
 - consequences include negative impacts (not only benefits)
 - alternatives present when non-trivial choice
+- when a "Fold target" line is present, it names an existing doc and a plausible `owns:` clause (not verified against the doc itself — that is the Architect's job at design-promote)
 
 ### design-md-delta.yaml
 - add/update/remove paths valid against DESIGN.md spec

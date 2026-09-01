@@ -60,7 +60,7 @@ Verdict files: design-review → `<sprint>/reviews/design/iter-NN/`, impl-review
 
 `self_hosting: enabled` in `.asd/project/config.yaml` — sole source of truth, no marker file. Absent field or `disabled` = consumer mode (backward compatible, unchanged behavior).
 
-When enabled: Backend Dev / Frontend Dev may write canonical `.asd/rules/`, `.asd/templates/`, `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/sync.js`, `.asd/release-manifest.json`, root `AGENTS.md`, `README.md`, `tests/**` — the normal "infrastructure read-only during sprint work" invariant (`core.md`) lifts for exactly these paths. Generated `.claude/`, `.codex/`, `.agents/skills/` stay read-only always — edit canon, then `node .asd/sync.js --apply <targets>`; the generated diff is verified by `sync.js --check`, never re-reviewed as prose.
+When enabled: Backend Dev / Frontend Dev may write canonical `.asd/rules/`, `.asd/templates/`, `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/sync.js`, `.asd/release-manifest.json`, root `AGENTS.md`, `README.md`, `CHANGELOG.md`, `.gitignore`, `tests/**` — the normal "infrastructure read-only during sprint work" invariant (`core.md`) lifts for exactly these paths. This is the exhaustive allowlist — any other citation of the self-hosting write surface (`core.md`, `asd-pm.md`, this section's own versioning note below) points back here rather than restating it. Generated `.claude/`, `.codex/`, `.agents/skills/` stay read-only always — edit canon, then `node .asd/sync.js --apply <targets>`; the generated diff is verified by `sync.js --check`, never re-reviewed as prose.
 
 `asd-init`/`sync.js` never replace root `AGENTS.md`'s managed block from `t_AGENTS.md` while self-hosting — it stays self-sourced framework-dev prose (`providers.md` ownership table). `asd-update` is a no-op here (it pulls framework files INTO a consumer; this repo IS the framework).
 
@@ -70,20 +70,22 @@ Framework impl-review/External Review change surface: the whole repo diff (every
 
 ## Optional documents
 
-`documents.<name>` in config (`audit | prd | ux_spec | adr | c4`), frozen into `state.json.documents` at `scope` — phases read that frozen snapshot, never live config, so a mid-sprint config edit never changes an active sprint's preconditions. Old config without the `documents` group, or an active sprint's `state.json` without a `documents` snapshot, means every value `enabled` (no behavior change). Effective `documents.c4` (computed once, here, at `scope` — never recomputed later) is `enabled` only when `project.subsystem_decomposition: enabled` too; otherwise disabled regardless of the flag.
+`documents.<name>` in config (`audit | prd | ux_spec | adr | c4`), frozen into `state.json.documents` at `scope` — phases read that frozen snapshot, never live config, so a mid-sprint config edit never changes an active sprint's preconditions. Old config without the `documents` group, or an active sprint's `state.json` without a `documents` snapshot, means every value `enabled` (no behavior change). Fail-closed default is per-field, not per-group: when the `documents` group is present but a given field is absent from it, that field is `disabled` — only a wholly-absent group defaults everything to `enabled`. Effective `documents.c4` (computed once, here, at `scope` — never recomputed later) is `enabled` only when `project.subsystem_decomposition: enabled` too; otherwise disabled regardless of the flag.
 
 **Config string → state boolean**: `t_state.json`'s `documents` map holds `"{{DOC_AUDIT}}"`/`"{{DOC_PRD}}"`/`"{{DOC_UX_SPEC}}"`/`"{{DOC_ADR}}"`/`"{{DOC_C4}}"` as quoted placeholders — quoted so the template file itself stays valid, parseable JSON as shipped. At `scope` write time, replace each entire quoted token (**including its surrounding quotes**) with the bare JSON boolean `true`/`false` matching that document's normalized `enabled`/`disabled` value — the written `state.json` must end up with `"audit": true`, never `"audit": "{{DOC_AUDIT}}"` or `"audit": "true"`. Never leave a placeholder token, quoted or not, in a written `state.json`.
 
 **Skip record**: `t_state.json.skipped_phases` starts `[]`. A no-op phase (below) appends its own phase name to this array in the same write that advances `phase` — this is what lets a resumed sprint or a later audit tell "phase legitimately skipped, empty applicable-artifact set" apart from "phase ran and produced nothing," which the `phase`/`updated_at` fields alone cannot distinguish. Never removed or reordered; a phase re-run after a rollback (`checkpoints.md` "Re-running a phase") that turns out non-empty this time does not retroactively remove its earlier skip entry — the array is a historical record, not current status.
 
-Never optional: `sprint.md`, `state.json`, `plan.md`, `test-plan.md`, impl-review reports, `manual-steps.md` (already lazy), `.asd/project/decisions-log.md`, `stubs.md`. A disabled document is never written as an empty stub — skip recorded in `state.json` plus one decisions-log line.
+**Multi-phase skip**: when one deterministic check subsumes several consecutive no-op phases in a single write — the `design`/`design-review`/`design-promote` collapse below — that one write appends **every** subsumed phase name to `skipped_phases` (`["design", "design-review", "design-promote"]`) and sets `phase` to the **last** subsumed phase name, never one array append per phase and never the first. This way `PHASE_CHAIN[idx+1]` mechanically yields the next real phase and a resumed session cannot re-enter the collapsed block. The subsumed phases are never separately dispatched, so they never make their own individual `skipped_phases` write.
 
-**Acceptance-criteria source**: PRD AC-N when `documents.prd` enabled; else `sprint.md`'s own `AC-N` list (`t_sprint.md`). Every phase citing AC-N (plan, impl, impl-review, pr) uses whichever source the sprint's frozen `documents.prd` selects.
+Never optional: `sprint.md`, `state.json`, `plan.md`, `test-plan.md`, impl-review reports, `manual-steps.md` (already lazy), `<sprint>/decisions-log.md`, `stubs.md`. A disabled document is never written as an empty stub — skip recorded in `state.json` plus one decisions-log line.
+
+**Acceptance-criteria source**: PRD AC-N when `documents.prd` enabled; else `sprint.md`'s own `AC-N` list (`t_sprint.md`). Every phase citing AC-N (plan, impl, impl-test, impl-review, pr) uses whichever source the sprint's frozen `documents.prd` selects.
 
 **Independent design docs** (replaces the old hard PRD→UX→ADR chain):
 - PRD (`prd`) reads `sprint.md` + `audit.md` (if `audit` enabled).
 - UX-spec (`ux_spec`) reads PRD if enabled, else `sprint.md`; audit optional. Disabling `ux_spec` also disables the design-system gate, `design-md-delta.yaml`, and UX promotion.
-- ADR (`adr`) reads whichever of PRD/UX-spec exist, else `sprint.md`; audit optional.
+- ADR (`adr`) reads whichever of PRD/UX-spec exist, else `sprint.md`; audit optional. ADRs are sprint-scoped only (`<sprint>/design/adr.html`, sprint-local `ADR-1`, `ADR-2`, … numbering) and are never promoted as a standalone persistent document — see "Design-promote phase" fold rule.
 - C4 (effective `c4`) reads whichever design drafts exist, current stack, `sprint.md`; ADR not required.
 - Audit disabled → creators scan the repo themselves for context; Plan PM greps touched files and reads `.asd/project/stubs.md` directly instead of `audit.md`'s "Related open stubs" section.
 
@@ -98,9 +100,13 @@ Never optional: `sprint.md`, `state.json`, `plan.md`, `test-plan.md`, impl-revie
 
 `plan`, `impl`, `impl-test`, `impl-review`, `pr` are never no-op.
 
+**Design/design-review/design-promote collapse**: `design-review`'s and `design-promote`'s no-op conditions above are only ever true when `design`'s no-op condition is also true (design produces a draft for every enabled document, so an empty design-review/design-promote scope implies all four `documents.*` were disabled). `design`'s step 2 therefore performs **one** deterministic check for all three at design entry instead of three separate PM dispatches: it writes `phase="design-promote"`, `skipped_phases: ["design", "design-review", "design-promote"]`, and `NEXT: plan` in a single write ("Skip record" multi-phase case above) — `design-review` and `design-promote` are never separately entered in this case. Their own no-op steps remain only as a defensive fallback for a direct/explicit re-dispatch of one of those phases alone.
+
 ## Audit phase
 
 No-op when `documents.audit: disabled` (see "Optional documents").
+
+An absent optional section in `audit.md` (`t_audit.md`) means an empty finding set for that check — the check ran and found nothing — never that the check was skipped. BA/Architect omit an optional section entirely when it has no findings; they never emit a mandated placeholder row to signal "none". A check that could not run at all is a `FAILED`/`ABORT` from the responsible agent, not a silently-omitted section.
 
 Scans: existing source in touched areas; existing docs in **any format/location** (MD, RST, Confluence/Notion exports, HTML, Wiki, text-extractable PDF, READMEs outside ASD layout); persistent docs in `docs/`.
 
@@ -117,7 +123,7 @@ Agents produce a draft set for the whole sprint scope in `<sprint>/design/`, one
 - `ux-spec.html` — flows + accessibility notes (`documents.ux_spec`)
 - `adr.html` — architecture decisions (`documents.adr`)
 - `design-md-delta.yaml` — proposed DESIGN.md token changes, produced inline during UX-spec authoring (only on token gap; each entry user-approved)
-- `c4-full/` — full LikeC4 schema for sprint scope (`model/*.c4`, `views.c4`, `dist/`) (effective `documents.c4`)
+- `c4-full/` — delta patch against the persistent C4 registry for sprint scope (`model/*.c4`, `views.c4`); full schema only when the persistent registry does not yet exist (effective `documents.c4`). Never build `dist/` here — generated output no reviewer sees (`external-review.md`).
 
 Order among enabled documents: PRD (if enabled) before design-system gate. Design-system gate (existence check on `docs/ux/DESIGN.md`, `design-system.html`, `accessibility.html`; dispatches `/asd-design-system` when any missing) applies only when `ux_spec` enabled, and blocks UX-spec. UX-spec (if enabled) before ADR. ADR (if enabled) before c4-full. If effective `documents.c4: disabled` (flag off, or `subsystem_decomposition: disabled`), `c4-full/` omitted.
 
@@ -129,17 +135,19 @@ No-op when the design phase produced zero drafts (see "Optional documents"). Oth
 PM orchestrates; three domain creators promote (Documentation reviewer NOT involved):
 
 1. PM proposes per-subsystem decomposition (only when `subsystem_decomposition: enabled`); user approves split.
-2. PM proposes new subsystems inferred from drafts; user approves each (name, parent container, description). On approve: Architect patches C4 registry, creates folders, runs `likec4 build` if applicable.
-3. PM distributes `audit.md` migration items to the matching domain (architecture/product/ux/api).
+2. PM proposes new subsystems inferred from drafts; user approves each (name, parent container, description). On approve: Architect patches C4 registry, creates folders.
+3. PM distributes `audit.md` migration items to the matching domain (architecture/product/ux).
 4. Parallel promotion:
    - `asd-ba` → per-subsystem (or flat) `docs/product/requirements/<subsystem>.html` from prd draft; product migration items.
-   - `asd-architect` → `docs/architecture/adr/<subsystem>/adr-NNNN-<slug>.html`; updates `api/<subsystem>.html`, `stack.html`, `tech-reference/`; applies c4 delta to persistent `docs/architecture/c4/`; regenerates `dist/` (likec4) or `architecture.html` (mermaid); architecture migration items.
+   - `asd-architect` → folds every ADR approved in `adr.html` into whichever existing persistent doc's `responsibility.owns` frontmatter already declares ownership of that decision's subject (see fold rule below); updates `stack.html`, `tech-reference/`; applies the sprint's c4 delta patch (or, when the persistent registry did not exist before this sprint, writes the full schema directly) to persistent `docs/architecture/c4/`; architecture migration items. Rendering (`dist/` or `architecture.html`) is not regenerated here — build on demand via the `commands.yaml` build-to-view command.
    - `asd-ux-designer` → `docs/ux/<subsystem>.html` from ux-spec draft; patches `DESIGN.md` from `design-md-delta.yaml`; regenerates `design-system.html`; ux migration items.
    - Each creator requests user decision before each persistent write.
 5. PM final user confirmation before persistent mutation (confirm / rollback / partial rollback).
 6. PM appends decisions-log entries, finalises `state.json`.
 
-If `subsystem_decomposition: disabled`: drafts merge into flat project-level docs (`requirements.html`, `adr/adr-NNNN-<slug>.html`, `api.html`, `ux-spec.html`). No subsystem folders, no c4 model.
+**ADR fold rule**: every architectural decision approved in a sprint's `adr.html` is folded, at `design-promote`, into whichever existing persistent doc already declares ownership of that decision's subject in its `responsibility.owns` frontmatter — never from a lookup table. The `adr.html` article's optional "Fold target" line names the candidate and the matched `owns:` clause; the Architect verifies the match, not invents it. A binding rejected alternative folds as one line into the target doc's Constraints-equivalent section (or the fold target's nearest analogous section); a non-binding rejected alternative stays sprint-archive-only, never promoted. When no existing doc's `owns` matches, that is a Complication Approval, not a licence to invent a document — API contracts fold the same way: into a subsystem requirements/architecture doc, `stack.html`, a project-generated OpenAPI/SDL/proto artifact, or, only via Complication Approval, a brand-new doc with no pre-made template. The design gate stays **one approval for the sprint's whole ADR set** — fold-target selection happens after that gate, during promotion, and never re-opens it.
+
+If `subsystem_decomposition: disabled`: drafts merge into flat project-level docs (`requirements.html`, `ux-spec.html`); ADRs still fold per the rule above, never into a flat `adr/` tree. No subsystem folders, no c4 model.
 
 ## Impl phase
 
@@ -161,15 +169,11 @@ Only one fix flag is ever set: each fix mode clears its own before routing on. F
 
 Owner: Test Engineer. Runs after every `impl` exit. Selects the test approach **after** the implementation exists, so tests follow the real change surface instead of a speculative one.
 
-**Principles** (binding; rubric detail in `code-style.md` §17):
-
-- Risk-based and change-scoped: cheapest reliable check per material risk — static/architecture check → focused unit or property test for logic → component or contract test at boundaries → only essential e2e journeys.
-- Prune: delete trivial, implementation-coupled, mock-confirming, redundant, and flaky tests within the change scope.
-- A **no-new-test decision** is legitimate only when the change adds no behaviour or existing checks already cover the material risk — and must be recorded with its reason in `test-plan.md`.
-- Coverage numbers are a signal for finding untested code, never a quota.
-- Every fixed defect leaves a regression test proven against the pre-fix behaviour (fail-first run recorded) or an equivalent targeted mutation.
+**Principles**: check-ladder selection, prune criteria, no-new-test decision rule, and fail-first regression proof are all defined once in `code-style.md` §17 (SSoT) — binding here, not restated.
 
 **Workflow**: change-surface analysis → `test-plan.md` (risk → chosen check → decision) → prune + author → full suite run.
+
+**Re-entry** (every `impl` exit after the first re-enters this phase): the strategy and prune passes scope to the **delta since the prior entry** (the review-fix/test-fix commits, via `test-plan.md`'s `Entry log`), not the whole change surface again — `test-plan.md` is amended, not rewritten. The **suite gate stays full and unconditional on every entry**; incremental scoping never touches it. Bounded risk: a defect introduced by a fix outside its own diff isn't re-analysed by the analysis passes — the full suite gate is the backstop.
 
 **Removal gate** — deleting a test **outside** the sprint change scope needs user approval (Complication Approval format, `core.md`). In-scope removals proceed autonomously with a recorded reason.
 
@@ -189,6 +193,10 @@ Two modes, detected from `state.json.pr`:
 
 The folder move is gated on DoD + PR creation, not on merge; the `phase=done` terminal signal is still gated on a confirmed merge, never on PR creation or the folder move. A sprint whose folder already lives under `archived/` but whose `phase` is not yet `done` still counts as the one active sprint (`asd-sprint` step 1 checks both locations).
 
+**Open mode's DoD verification is conditional on two checks, neither a `checkpoints.md` gate** (`asd-phase-pr.md` step 4 — internal verification only, gates PR opening, never a user-facing pause):
+- **Tests/lint re-run**: content-scoped, not HEAD-sha-equality (HEAD always moves past the recorded sha — the recording commit itself, plus later phase-transition commits, guarantee it). Skipped when `git diff --quiet <recorded HEAD>...HEAD -- <code/test/stub pathspec, excluding .asd/sprints/** and .asd/project/**>` is empty, where `<recorded HEAD>` is the sha in test-plan.md's `Suite run` section (the commit impl-test step 7 verified the suite at) — impl-review makes no code/test/stub changes per its own workflow contract, so it never dirties this diff; re-run only when the diff is non-empty (e.g. a fix commit landed since).
+- **Reviews-green source**: read `state.json.reviews.impl.verdicts["iter-NN"]` for the highest iteration first; parse review files under `<sprint>/reviews/impl/iter-NN/` only as an explicit fallback when `state.json` data is missing or stale. Satisfied-vs-blocking semantics for each entry: "State recovery" below.
+
 ## Signal vocabulary
 
 - `COMPLETED` — phase work done, ready for next
@@ -203,10 +211,16 @@ The folder move is gated on DoD + PR creation, not on merge; the `phase=done` te
 
 See `t_plan.md` for canonical structure.
 
+**Standing Definition of Done** (constant across every sprint, never restated in `plan.md`): all AC-N from the acceptance-criteria source covered by Tasks; full test suite green at `impl-test`; all required reviewers green at `impl-review`. `plan.md`'s own Definition of Done section holds only sprint-specific additions to this standing set, referencing it rather than repeating it.
+
 ## Sprint immutability
 
 A sprint folder under `.asd/sprints/archived/<NNN-slug>/` is read-only, with one narrow exception: the `pr` phase's merge-mode terminal write (`pr.state="merged"`, `phase=done`, `updated_at`) to a sprint archived pre-merge (`sprint-lifecycle.md` "PR phase"). Once `phase=done`, truly immutable — follow-up work creates a new sprint.
 
 ## State recovery
 
-`state.json` is the single recovery point. Updated on every phase transition, task status change, review verdict. Session-start hook reads it and prints a summary into context.
+`state.json` is the single recovery point. Updated on every phase transition, task status change, review verdict. Session-start hook reads it and prints a summary into context. Two writers are permitted: `asd-pm`, for user-gated transitions (approval-gated phase advances, decisions-log entries tied to a gate); and the dispatching phase workflow itself, inline, for purely mechanical non-gate writes (phase-field bumps, decisions-log appends with no approval attached) — named per site in each `asd-phase-*.md`. No other agent writes `state.json`. `archived_at` (ISO8601, null until then) is set by `asd-phase-pr.md`'s **open**-mode step 6 (pre-merge archival), when the sprint folder moves to `.asd/sprints/archived/<NNN-slug>/`; `phase`/`pr.state` stay unchanged at that point (still `pr`/`"open"` — folder moved, not yet merged). A sprint archived before this sprint's schema change may still carry now-removed fields (`subsystems_touched`, `new_subsystems`); the resume path and session-start hook must assume neither their presence nor their absence.
+
+`reviews.impl.iteration_heads["iter-NN"]` (`t_state.json` schema) holds the `git rev-parse HEAD` sha recorded when iteration NN's review starts (written by `asd-phase-impl-review.md` step 2, same step that increments `reviews.impl.iteration`). Iteration NN's diff, for NN ≥ 2, is scoped `git diff reviews.impl.iteration_heads["iter-(NN-1)"]...HEAD <pathspec>` — every commit made during the intervening review-fix + impl-test cycle, not just the last one — mirroring `test-plan.md`'s `Entry log` → `HEAD analysed` pattern (`external-review.md` "Iteration-aware diff"). Iteration 1 has no prior entry to diff from; its diff stays `git diff <base_branch>...HEAD`. If `iteration_heads["iter-(NN-1)"]` is absent or empty (a sprint in flight when this field shipped), the same base-branch-diff fallback applies — never an empty left operand — with the widened scope noted in that iteration's decisions-log entry.
+
+`reviews.impl.verdicts["iter-NN"]` (`t_state.json` schema) holds one entry per reviewer name. Each value is one of three distinct things, never conflated: a verdict token string (`"APPROVE"`/`"CONCERNS"`/`"FAIL"`, parsed from that reviewer's written review file); the string `"skipped: <predicate>"` — written by `asd-phase-impl-review.md` step 5 when `review.scoped_fan_out: enabled` and the diff-derived predicate skipped UI and/or Performance that iteration, naming the predicate that fired; or an absent key, meaning the reviewer was required but its dispatch was lost, crashed, or ledger-rejected and never produced a recorded verdict. `null` is never written deliberately — any consumer of this map (`asd-phase-pr.md` step 4, DoD aggregation, `.asd/hooks/session-start.js`'s `lastReviewVerdict`) treats `"skipped: ..."` as satisfied and an absent key for a required reviewer as blocking.

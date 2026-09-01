@@ -10,20 +10,21 @@ Orchestration body for the `asd-phase-design` skill. Operation-mapping to host t
 ## Operations used
 - read: `.asd/project/config.yaml`, `state.json`, `sprint.md`, `audit.md`, audit-produced reverse/migrated drafts in `<sprint>/design/`
 - search repo: design-system gate — existence of `docs/ux/DESIGN.md`, `docs/ux/design-system.html`, `docs/ux/accessibility.html`
+- write a file: `state.json` and decisions-log inline, for the mechanical non-gate writes at steps 2, 5, 11 (`sprint-lifecycle.md` "State recovery")
 - request user decision: rare, phase-level escalation only
-- delegate to agent, sequential: BA, UX Designer, Architect, optional Architect (c4-full); plus PM for state
+- delegate to agent, sequential: BA, UX Designer, Architect, optional Architect (c4-full)
 - dispatch skill `asd-design-system` when gate detects missing files
 
 ## Workflow
 
 1. Read `<sprint>/state.json` — frozen `documents.prd`, `documents.ux_spec`, `documents.adr`, `documents.c4`. `state.json.documents.c4` already holds the EFFECTIVE value computed once at `scope` (`documents.c4 AND project.subsystem_decomposition==enabled` at scope time — `sprint-lifecycle.md` "Optional documents"); read it as-is here, never recompute against the live config — a mid-sprint `subsystem_decomposition` edit must not change this sprint's preconditions.
-2. **No-op path** — if `prd`, `ux_spec`, `adr`, and `documents.c4` (already effective) all disabled: delegate to agent `asd-pm` to set `phase=design`, append `"design"` to `state.json.skipped_phases`, append decisions-log "design skipped (no documents enabled)" — **no user decision requested** (`sprint-lifecycle.md` "No-op phase rule"); emit phase COMPLETED with return contract; skip remaining steps
+2. **Collapsed no-op path** — if `prd`, `ux_spec`, `adr`, and `documents.c4` (already effective) all disabled: perform **one** deterministic check covering all three no-op phases at once — never dispatch `design-review`/`design-promote` as separate steps for this sprint. Write inline (mechanical, no gate — no user decision requested, `sprint-lifecycle.md` "No-op phase rule" + "Skip record" multi-phase case), in a single write: set `phase="design-promote"` (the last of the three collapsed phases, so `PHASE_CHAIN[idx+1]` mechanically yields `plan` and a resumed session cannot re-enter this block), append `["design", "design-review", "design-promote"]` to `state.json.skipped_phases`, append **one** decisions-log line "design/design-review/design-promote skipped (no documents enabled)"; emit phase COMPLETED with `NEXT: plan` (return contract below covers both paths); skip remaining steps
 3. Read `.asd/project/config.yaml` (`project.diagram_tool`, `language.chat`, `language.docs`); read `<sprint>/sprint.md`, `audit.md` (if it exists)
 4. List existing drafts in `<sprint>/design/` (from audit, with `provenance` flag)
-5. Delegate to agent `asd-pm`: update `state.json` (phase=design)
+5. Write `state.json` (phase=design) inline (mechanical, no gate)
 6. **Step PRD** — only if `prd` enabled: delegate to agent `asd-ba`:
    - inputs: sprint.md, audit.md (if present), existing prd draft if any, `language.chat`, `language.docs`; template `t_prd.html`
-   - instruction: integrate existing draft (preserve `provenance` + `source` if present); author full sprint PRD covering all scope; discuss each section in `language.chat`; on approval translate to `language.docs` + write `<sprint>/design/prd.html`; emit COMPLETED
+   - instruction: integrate existing draft (preserve `provenance` + `source` if present); author sprint PRD draft covering all scope as User stories + Acceptance criteria (plus optional one-line Problem) — Goals/Non-goals omitted entirely, deferred to design-promote's persistent-doc fold; discuss each section in `language.chat`; on approval translate to `language.docs` + write `<sprint>/design/prd.html`; emit COMPLETED
    - if `prd` disabled → skip to step 7 (downstream steps read `sprint.md` directly instead of `prd.html`)
 7. **Step Design-system gate** — only if `ux_spec` enabled: on PRD step done → search repo for existence of all three: `docs/ux/DESIGN.md`, `docs/ux/design-system.html`, `docs/ux/accessibility.html`
    - if ANY missing → dispatch skill `asd-design-system`; halt until COMPLETED; on FAILED/aborted → relay + halt phase
@@ -33,17 +34,17 @@ Orchestration body for the `asd-phase-design` skill. Operation-mapping to host t
    - instruction: integrate existing draft; author flows + UI mockups using ONLY existing DESIGN.md tokens; when a needed token missing/must change, pause mockup, request user decision to approve token add/update, append entry to `<sprint>/design/design-md-delta.yaml` (create on first entry per `t_design-md-delta.yaml`), THEN continue mockup referencing new token; discuss each section in `language.chat`; on approval translate + write `<sprint>/design/ux-spec.html`; emit COMPLETED (delta file produced inline iff a token gap surfaced — else omitted)
    - if `ux_spec` disabled → skip to step 9
 9. **Step ADR** — only if `adr` enabled: on UX step done → delegate to agent `asd-architect`:
-   - inputs: whichever of prd.html/ux-spec.html exist, else sprint.md; audit.md (if present); existing adr draft if any, `docs/architecture/stack.html`, existing adr/, `tech-reference/`; template `t_adr.html`
-   - instruction: integrate existing draft; author one+ ADRs for sprint scope (repeated `<article>` blocks); for any new tech, create/update `tech-reference/<tech>-<version>.md` via fetch-external-doc-by-URL + `t_tech-reference.md`; discuss each decision in `language.chat`; on approval translate + write `<sprint>/design/adr.html`; emit COMPLETED
+   - inputs: whichever of prd.html/ux-spec.html exist, else sprint.md; audit.md (if present); existing adr draft if any, `docs/architecture/stack.html`, persistent `docs/` (to identify likely fold targets by `responsibility.owns`), `tech-reference/`; template `t_adr.html`
+   - instruction: integrate existing draft; author one+ ADRs for sprint scope (repeated `<article>` blocks), sprint-local numbering (`ADR-1`, `ADR-2`, …), status `proposed`/`accepted` only; optionally name a candidate Fold target per decision; for any new tech, create/update `tech-reference/<tech>-<version>.md` via fetch-external-doc-by-URL + `t_tech-reference.md`; discuss each decision in `language.chat`; on approval translate + write `<sprint>/design/adr.html` — **one approval covers the whole sprint ADR set**; emit COMPLETED
    - if `adr` disabled → skip to step 10
 10. **Step c4-full** — only if frozen `documents.c4` (already effective, from `state.json`) enabled: on ADR step done → delegate to agent `asd-architect`
-    - inputs: whichever design drafts exist, `docs/architecture/stack.html`, sprint.md; ADR not required
+    - inputs: whichever design drafts exist, `docs/architecture/stack.html`, persistent `docs/architecture/c4/` (diff target), sprint.md; ADR not required
     - templates per `project.diagram_tool`:
-      - likec4: `t_c4-model.c4`, `t_c4-views.c4`; produce `<sprint>/design/c4-full/model/*.c4`, `views.c4`, run `likec4 build` → `dist/`
-      - mermaid: `t_subsystems.yaml`; produce `<sprint>/design/c4-full/subsystems.yaml` + `architecture.html` (mermaid-rendered)
-    - instruction: full schema covering sprint scope (not delta — delta computed in design-promote); discuss overall view in `language.chat`; on approval write files; emit COMPLETED
+      - likec4: `t_c4-model.c4`, `t_c4-views.c4`; produce `<sprint>/design/c4-full/model/*.c4`, `views.c4` — never build `dist/` here (generated output no reviewer sees, `external-review.md`)
+      - mermaid: `t_subsystems.yaml`; produce `<sprint>/design/c4-full/subsystems.yaml` — never render `architecture.html` here
+    - instruction: author a **delta patch** against the persistent registry covering sprint scope; author the **full schema** instead only when the persistent registry does not yet exist; discuss overall view in `language.chat`; on approval write files; emit COMPLETED
     - if `documents.c4` disabled → skip
-11. On all enabled steps COMPLETED → delegate to agent `asd-pm` to update `state.json` (drafts ready), append decisions-log entry summarising drafts actually produced (and which were skipped)
+11. On all enabled steps COMPLETED → write `state.json` (drafts ready) inline and append decisions-log entry summarising drafts actually produced (and which were skipped) — mechanical, no gate
 12. Emit phase COMPLETED with return contract
 13. Any creator QUESTION → relay, halt; resumes on user answer
 14. Any creator FAILED / ABORT → relay, halt
@@ -59,7 +60,7 @@ Orchestration body for the `asd-phase-design` skill. Operation-mapping to host t
 Indirect (via design-system gate): `docs/ux/DESIGN.md`, `design-system.html`, `accessibility.html` (when gate dispatches `asd-design-system`).
 
 ## Agents delegated to
-- `asd-pm` (state + decisions-log)
+- No PM dispatch — all `state.json`/decisions-log writes in this phase are mechanical, no-gate, and done inline by the workflow (steps 2, 5, 11)
 - `asd-ba` (PRD)
 - `asd-ux-designer` (UX-spec; inline delta)
 - `asd-architect` (ADR; optional c4-full; tech-reference)
@@ -69,8 +70,9 @@ Indirect (via design-system gate): `docs/ux/DESIGN.md`, `design-system.html`, `a
 
 ## Return contract (single line)
 ```
-PHASE: design | SPRINT: <NNN-slug> | STATUS: <complete|blocked|aborted> | NEXT: design-review
+PHASE: design | SPRINT: <NNN-slug> | STATUS: <complete|blocked|aborted> | NEXT: <design-review | plan>
 ```
+`NEXT: plan` on the collapsed no-op path (step 2); `NEXT: design-review` otherwise.
 
 ## References
 - `.asd/rules/sprint-lifecycle.md` (design phase contract, in-phase precondition chain)

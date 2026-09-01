@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-quality.md. source_digest=sha256:d7b8e81eaff8de58690e6c15b6e7f84da78c68af36f908ae83d475070873db07 content_digest=sha256:89105bde2edd234fca9218bec36d844edd4ef1a4a1c0c924a854ef9a120b0b30 asd_version=1.2.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-quality.md. source_digest=sha256:aa5d7542f2c3206f94b906403bae578a4b16335898348c93d4f34b1e8256b561 content_digest=sha256:78e80a636b3a43a87cd3c1ee79ec6ac0d05e366cf4b7f0e90808171a85415ce7 asd_version=2.0.0 schema=1
 name: asd-reviewer-quality
 description: "Impl-review scan of code and tests for bugs, security vulnerabilities, best-practice violations. Covers: bug patterns (off-by-one, null paths, race conditions, resource leaks), security holes (secrets, injection, auth bypass, crypto misuse, input validation), language/framework best practices, contract violations vs ADR. Does NOT handle: requirement coverage (delegates to asd-reviewer-implementation), test coverage (delegates to asd-reviewer-testing), ui/a11y (delegates to asd-reviewer-ui), over-engineering (delegates to asd-reviewer-simplification), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -35,15 +35,15 @@ Quality reviewer. Scans code and tests for bugs, security issues, best-practice 
 
 ## Inputs
 
-- diff payload (iter 1: `git diff <base>...HEAD`; iter 2+: `git diff` + last commit)
-- `docs/architecture/adr/<subsystem>/` (decisions for contract checks)
+- diff payload (iter 1: `git diff <base>...HEAD`; iter 2+: diff since previous iteration's recorded HEAD, per `external-review.md` "Iteration-aware diff") from dispatching phase skill
+- whichever persistent doc folded a relevant sprint ADR (decisions for contract checks — `sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `docs/architecture/stack.html` (stack constraints)
 - `.asd/project/custom-coding-rules.md` (forbidden patterns, security policy)
 - iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
 
 ## Outputs
 
-- Findings and verdict as final text output, per `t_review.md`; the phase orchestrator writes it to `<sprint>/reviews/impl/iter-NN/quality.md`
+- Findings, verdict, and the complete coverage ledger as final text output, per `t_review.md`; the phase orchestrator validates the ledger, then persists only the reduced coverage form (findings + summary line + n/a list + finding rows) to `<sprint>/reviews/impl/iter-NN/quality.md` — this reviewer decides nothing about what gets written, only what it returns (`review-policy.md` "Persistence")
 
 ## Behavioral profile
 
@@ -76,7 +76,6 @@ Reviewer:
 
 - Never fix code yourself — emit findings only
 - Never raise nitpick categories
-- Never raise low/medium findings on iter 2+ (per severity floor)
 - Never modify code, ADRs, or persistent docs
 - Never read prior `iter-*/` review files — each iteration reviews clean context (per `review-policy.md`)
 - Never run shell commands

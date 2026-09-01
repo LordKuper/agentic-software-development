@@ -10,8 +10,9 @@ Orchestration body for the `asd-phase-impl` skill. Operation-mapping to host too
 
 ## Operations used
 - read: `.asd/project/config.yaml`, `state.json`, `plan.md`, `<sprint>/reviews/impl/iter-NN/` (review-fix), `<sprint>/test-plan.md` (test-fix), persistent docs, `.asd/project/custom-common-rules.md`, `custom-coding-rules.md`, `stubs.md`, `<sprint>/manual-steps.md`
+- write a file: `state.json` inline, for the mechanical non-gate writes at steps 4, 11 (`sprint-lifecycle.md` "State recovery")
 - request user decision: escalation only (see Execution mode)
-- delegate to agent: devs per task owner / finding owner / defect owner; PM for state + assessment + decisions-log
+- delegate to agent: devs per task owner / finding owner / defect owner; PM for manual-steps gate, impl completion gate, impl assessment gate, decisions-log tied to those gates
 
 ## Modes
 
@@ -44,7 +45,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
 
 ## Workflow
 
-1. Read `.asd/project/config.yaml` (`backward_compat`, `system.tools`, `self_hosting`, `language.chat`, `language.docs`). When `self_hosting: enabled`, devs' write scope extends to canonical `.asd/rules/`, `.asd/templates/`, `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/sync.js`, `.asd/release-manifest.json`, root `AGENTS.md`, `README.md`, `tests/**` per plan scope (`sprint-lifecycle.md` "Self-hosting"); dev instruction (step 6) adds: after any canonical edit, run `node .asd/sync.js --apply <targets>` before marking the task done; generated `.claude/`/`.codex/`/`.agents/skills/` stay off-limits always
+1. Read `.asd/project/config.yaml` (`backward_compat`, `system.tools`, `self_hosting`, `language.chat`, `language.docs`). When `self_hosting: enabled`, devs' write scope extends per plan scope to the exhaustive allowlist in `sprint-lifecycle.md` "Self-hosting" (do not restate it here); dev instruction (step 6) adds: after any canonical edit, run `node .asd/sync.js --apply <targets>` before marking the task done; generated `.claude/`/`.codex/`/`.agents/skills/` stay off-limits always
 2. Read `<sprint>/state.json` → **detect mode**:
    - both fix flags null/absent → **initial mode**; confirm `plan.md` approved
    - `review_fixes_pending` = `iter-NN` → **review-fix mode**; confirm `<sprint>/reviews/impl/iter-NN/` exists (else `ABORT — precondition not met: reviews/impl/iter-NN missing`)
@@ -53,7 +54,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
    - **initial** — read `<sprint>/plan.md` → parse Task blocks: title, owner (backend-dev / frontend-dev), subtask checkboxes, dependencies
    - **review-fix** — read every reviewer file in `<sprint>/reviews/impl/iter-NN/`; collect all CONCERNS findings plus all FAIL findings the user accepted for fix (skip FAIL noted resolved-by-override); from each finding's `Location` (file:line) determine owning dev; group findings by owner into fix tasks. Findings located in test files route to `asd-test-engineer`
    - **test-fix** — read `<sprint>/test-plan.md` `Defects` section; collect every `D-N` with status `pending`; from each `Location` determine owning dev; group by owner into fix tasks
-4. Delegate to agent `asd-pm`: update `state.json` (phase=impl)
+4. Write `state.json` (phase=impl) inline (mechanical, no gate)
 5. **Build execution graph**:
    - initial — from Task dependencies; topological sort; mark independent tasks parallelisable
    - fix modes — fix tasks independent unless two touch same file; parallel where independent, sequential where they collide
@@ -65,21 +66,14 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
      - `language.chat`, `language.docs`
      - instruction:
        - read context first
-       - verify `docs/architecture/tech-reference/<tech>-<version>.md` exists per tech touched; if missing → emit `FAILED — tech-reference missing for <tech>@<version>` (Architect creates it via design re-run or out-of-band)
+       - tech-reference precondition (refuse-to-implement rule): see `artifact-layout.md` "Tech reference docs" — do not restate here
        - work autonomously within plan + persistent docs scope; do NOT pause user for routine approach choices — make the reasonable call and proceed
        - escalate only on a blocker (see Execution mode): emit `QUESTION` for unresolvable requirement ambiguity, `FAILED` for missing tech-reference / unrecoverable failure, or raise Complication Approval via request for user decision **only** when a Simplicity Default trigger fires (new abstraction / dependency / config flag / generalization)
-       - **manual-steps handling**: when a plan subtask cannot proceed without a human-only operational action (secret, cloud resource, hand-run migration, env var, third-party account):
-         - append `MS-N` entry to `<sprint>/manual-steps.md` per `t_manual-steps.md` (full step-by-step instructions plus `Verification` field stating how completion is confirmed)
-         - mark affected subtask `- [ ] <subtask> — BLOCKED: MS-N` in `<sprint>/plan.md`
-         - emit `BLOCKED_MANUAL` for that subtask, continue all unblocked work
-         - registering a manual step is last resort — only when action genuinely cannot be done with agent tools (code, `commands.yaml` commands, file ops); PM may bounce an entry back to be implemented autonomously
+       - manual-steps handling: see `sprint-lifecycle.md` "Impl phase" — do not restate here
        - write production code only — **no tests**; test selection, authoring, pruning, and running belong to `impl-test`
        - review-fix — apply suggested fix per finding, or equivalent correct fix; test-fix — fix the root cause behind the failing test (never weaken or delete the test), then set the defect row `Status` to `fixed` with the fixing commit sha in `<sprint>/test-plan.md`
        - run `build` and `lint` per `commands.yaml`; do not advance with failures or warnings unreported
-       - **stub handling**:
-         - new TODO: insert `// TODO(sprint-<NNN-slug>): <reason>` marker in code AND add row to `.asd/project/stubs.md` (Sprint, File:Line, Reason, Owner)
-         - resolving existing stub (task is "Resolve stub X" or side effect): remove `// TODO(sprint-...)` marker AND delete the row from `.asd/project/stubs.md`
-         - never edit-in-place a stub row; always delete + (optionally) re-add under new sprint id for migration
+       - stub handling: see `git-strategy.md` "TODO stubs" — do not restate here
        - commit per Conventional Commits (one logical change per commit; subject ≤50 chars; body describes WHY)
        - initial — tick corresponding checkboxes in `<sprint>/plan.md`
        - emit COMPLETED with summary (files touched; initial: AC-N satisfied, stubs added; review-fix: findings resolved by id; test-fix: defects resolved by `D-N`) when all subtasks/findings/defects done; when some subtasks manual-blocked, emit COMPLETED for unblocked portion plus `BLOCKED_MANUAL` listing deferred `MS-N`
@@ -110,7 +104,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
    - on approve: update `state.json`, append decisions-log entry ("impl assessment approved")
    - on request changes: relay specific feedback to relevant dev(s); loop step 7
    - on abort: emit ABORT
-11. **Fix-mode finalize** — fix modes only — delegate to agent `asd-pm`:
+11. **Fix-mode finalize** — fix modes only — write inline (mechanical, no gate):
    - review-fix: clear `state.json.review_fixes_pending` (set null), append decisions-log entry "impl fix for iter-NN: findings resolved"
    - test-fix: clear `state.json.test_defects_pending` (set null), append decisions-log entry "impl test-fix: defects <D-N list> resolved"
 12. Emit phase COMPLETED with return contract (`NEXT: impl-test` in all modes)
@@ -138,7 +132,7 @@ Impl completion gate (step 9) and, initial mode only, impl assessment gate (step
 - decisions-log entry on impl assessment approval (initial) or fix-mode finalize
 
 ## Agents delegated to
-- `asd-pm` (state, impl completion gate, impl assessment, fix-mode finalize, decisions-log)
+- `asd-pm` (manual-steps gate, impl completion gate, impl assessment gate, decisions-log tied to those gates; mechanical writes at steps 4, 11 are inline workflow writes)
 - `asd-backend-dev` (per Task with owner=backend-dev)
 - `asd-frontend-dev` (per Task with owner=frontend-dev)
 - `asd-test-engineer` (review-fix mode only, for findings located in test files)

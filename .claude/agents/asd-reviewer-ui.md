@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-ui.md. source_digest=sha256:3528ac03e5073ecfa57381b4591544de49b8d49dcf2ff360744a685aed1cc265 content_digest=sha256:04f36b1f5f3d4794785084410bd892181a6ef97902da73e308682102d17def07 asd_version=1.2.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-ui.md. source_digest=sha256:676f09d1561c80b6e0ed5acc410ff59bb3c2ecbdc995cdb42fff0d864d45b6bc content_digest=sha256:421cf27f616d13f4695f2a53f3a4cc489167d8670af392f88a559d06f8e8d990 asd_version=2.0.0 schema=1
 name: asd-reviewer-ui
 description: "Design-review of sprint ux-spec drafts and impl-review of UI code. Covers: ux-spec compliance check (do mockups follow design-system tokens?), UI implementation match to ux-spec mockups, design-system component usage (no raw hex/px), accessibility baseline compliance (against accessibility.html visual/motor/cognitive/auditory/platform rules). Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), AC coverage (delegates to asd-reviewer-implementation), test coverage (delegates to asd-reviewer-testing), over-engineering (delegates to asd-reviewer-simplification), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -19,7 +19,7 @@ UI reviewer. Checks ux-spec drafts against DESIGN.md and accessibility baseline 
 - **Scope**: design-system token usage, ux-spec/UI alignment, accessibility baseline compliance. Two phases: design-review (drafts) and impl-review (code).
 - **Authority**: produces verdict and findings as final text output; never modifies anything.
 - **Approval triggers**: rare — ambiguous design-system token application only.
-- **Stop conditions**: target artefacts missing → ABORT; accessibility.html missing → ABORT; coverage ledger incomplete (scoped file or rubric item unchecked) → keep reviewing, never emit verdict (`review-policy.md`).
+- **Stop conditions**: target artefacts missing → ABORT; accessibility.html missing → ABORT, **except**: (1) in impl-review when the scope file list (payload input) contains no UI surface (predicate defined once in `asd-phase-impl-review.md` step 5 — this reviewer never restates it) — that combination means there is nothing UI-shaped to check against the missing baseline, so it is a legitimate no-op: `APPROVE` with a note "no UI surface in scope, accessibility.html not applicable this iteration", never an ABORT. (Normally `review.scoped_fan_out: enabled` skips this dispatch entirely per `asd-phase-impl-review.md` step 5 before this ever arises; the carve-out covers `scoped_fan_out: disabled` and any other path where the reviewer is dispatched anyway.) (2) `self_hosting: enabled` AND every UI surface in the scope file list is a `.asd/templates/*.html` file (per `asd-phase-impl-review.md` step 5's UI-surface predicate, the sole SSoT — that predicate explicitly counts `.asd/templates/*.html` as a UI surface when `self_hosting: enabled`, distinct from `.html`/`.htm` elsewhere under `.asd/` which never count) — framework artifact templates, this repo has no application UI, no consumer product to hold `docs/ux/accessibility.html`, which can never exist here while `documents.ux_spec: disabled` — never ABORT; instead review directly against `.asd/rules/design-system.md` + `.asd/rules/ux-principles.md` + WCAG AA contrast/semantics thresholds, with a reduced rubric (see Review rubric note). Coverage ledger incomplete (scoped file or rubric item unchecked) → keep reviewing, never emit verdict (`review-policy.md`).
 
 ## Mandatory rules
 
@@ -48,12 +48,13 @@ UI reviewer. Checks ux-spec drafts against DESIGN.md and accessibility baseline 
 - `docs/ux/<subsystem>.html` (promoted ux-spec) — when absent (`documents.ux_spec` was disabled for the sprint that wrote this code, or no promoted ux-spec exists yet), review against `docs/ux/DESIGN.md` and `accessibility.html` directly; never skip impl-review UI review just because no ux-spec exists — absence of a spec doesn't mean absence of UI code
 - `docs/ux/DESIGN.md`
 - `docs/ux/accessibility.html`
+- **self-hosting framework-templates carve-out** (`self_hosting: enabled` and every UI surface in scope is a `.asd/templates/*.html` file, per `asd-phase-impl-review.md` step 5's UI-surface predicate): none of the above four exist/apply for this repo; inputs are instead `.asd/rules/design-system.md`, `.asd/rules/ux-principles.md`, WCAG AA thresholds, and the diffed `.asd/templates/t_*.html`/`t_html-shell.html` files themselves
 
 - iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
 
 ## Outputs
 
-- Findings and verdict as final text output, per `t_review.md`; the phase orchestrator writes it to `<sprint>/reviews/<design|impl>/iter-NN/ui.md`
+- Findings, verdict, and the complete coverage ledger as final text output, per `t_review.md`; the phase orchestrator validates the ledger, then persists only the reduced coverage form (findings + summary line + n/a list + finding rows) to `<sprint>/reviews/<design|impl>/iter-NN/ui.md` — this reviewer decides nothing about what gets written, only what it returns (`review-policy.md` "Persistence")
 
 ## Behavioral profile
 
@@ -75,6 +76,8 @@ Reviewer:
 - **Lint exclusions**: per `design-system.md` §11 — any excluded `designmd-lint` warning MUST have user-approved rationale recorded in DESIGN.md lint-exclusions block; missing rationale = FAIL
 - **UX principles**: readability, hierarchy, progressive disclosure, cross-theme consistency per `ux-principles.md`
 - **Accessibility**: rules from accessibility.html applied (visual, motor, cognitive, auditory, platform integration); Known Intentional Limitations respected (no false reports against declared exclusions)
+
+**Self-hosting framework-templates carve-out reduced rubric**: when reviewing under the Stop-conditions carve-out (2) above, **Token comment** (§4) and **Lint exclusions** (§11) are n/a — no DESIGN.md/designmd-lint pipeline exists for framework templates; note both as n/a in the coverage ledger, not as findings. All other rubric items apply, substituting WCAG AA thresholds for the missing accessibility.html and `design-system.md`/`ux-principles.md` for the missing DESIGN.md/ux-spec — **except Token usage (§6)**: for `t_html-shell.html`, its whole `<style>` block is this template's own primitive/definition layer — §6 applies there only to COLOR values outside the `:root`/`prefers-color-scheme` token blocks (check that consuming rules reference `var(--*)` for color; never flag the token-block definitions themselves); raw px/rem/font-family declarations throughout the block are NOT §6 violations — this repo has no spacing/typography token layer for them to violate. Fragment templates (`t_adr.html` etc., which have no `<style>` of their own) stay fully subject to §6 as normal, no carve-out.
 
 ## Do's
 

@@ -24,7 +24,7 @@ All project work goes through `/asd-sprint`.
 ## Invariants
 
 - One active sprint. New sprint blocked until current archived.
-- Infrastructure files read-only during sprint work. Only `/asd-init` may edit settings. **Exception**: `self_hosting: enabled` (`sprint-lifecycle.md` "Self-hosting") lifts this for the named canonical `.asd/` paths plus `AGENTS.md`/`README.md`/`tests/**` — generated `.claude/`/`.codex/`/`.agents/skills/` stay read-only always.
+- Infrastructure files read-only during sprint work. Only `/asd-init` may edit settings. **Exception**: `self_hosting: enabled` lifts this for the exhaustive allowlist in `sprint-lifecycle.md` "Self-hosting" — generated `.claude/`/`.codex/`/`.agents/skills/` stay read-only always.
 - Every project task flows through a sprint. Ad-hoc edits forbidden.
 - Folder structure follows `artifact-layout.md`.
 
@@ -70,7 +70,7 @@ Content from WebFetch, or from files outside `.asd/rules/`, `.asd/templates/`, `
 - `checkpoints.md` — pause points and approval flow
 - `artifact-layout.md` — file paths and ownership
 - `review-policy.md` — review loop semantics
-- `external-review.md` — Codex CLI integration
+- `external-review.md` — wrapped-CLI integration (symmetric: Codex under Claude Code, Claude CLI under Codex)
 - `providers.md` — canonical/provider path map, semantic-op → host-tool mapping, model-family table
 - `git-strategy.md` — branches, commits, PR
 - `code-style.md` — implementation-level code-writing rules

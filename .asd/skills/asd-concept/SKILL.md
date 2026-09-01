@@ -18,7 +18,7 @@
 - Read files — `.asd/project/config.yaml`, existing concept.html, candidate brownfield sources
 - Search repo — silent scan for brownfield signals + candidate content
 - Request user decision/input — variant choice (only when no silent signal), lens choice, section approvals, lock-in/revise loop
-- Delegate to agents — `asd-ba` (author), `asd-pm` (decisions-log)
+- Delegate to agents — `asd-ba` (author)
 
 ## Phase 1 — silent detection (NO asking)
 
@@ -84,7 +84,6 @@ Section-by-section in `language.chat`:
 
 ## Phase 6 — handoff
 
-- Delegate to agent `asd-pm` to append decisions-log entry ("concept formed" / "concept edited: <sections>" / "concept reverse-engineered from brownfield")
 - Print handoff suggestion in `language.chat`:
   - if `docs/architecture/stack.html` absent → "Next: run `/asd-stack` to define the tech stack"
   - else → "Next: run `/asd-sprint` to start a sprint"
@@ -105,11 +104,9 @@ Section-by-section in `language.chat`:
 
 ## Artefacts produced
 - `docs/product/concept.html` (created, edited, or reverse-engineered)
-- decisions-log entry
 
 ## Agents dispatched
 - `asd-ba` (author / scanner / refiner)
-- `asd-pm` (decisions-log)
 
 ## Skills dispatched
 None.

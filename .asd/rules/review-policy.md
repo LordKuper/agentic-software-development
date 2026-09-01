@@ -97,7 +97,9 @@ Two parts, both required (template `t_review.md`):
 
 A verdict whose ledger omits a scoped file, omits a checklist item, or leaves any row blank/unresolved is INVALID — counts as review-incomplete, never as APPROVE.
 
-**Enforcement (phase-workflow gate):** the dispatching phase workflow validates each internal reviewer's ledger — read from the reviewer's returned text, before that text is written to the review file — against the known scope file list. Any reviewer whose ledger omits a scoped file or has an unresolved/blank row → review rejected, nothing written → re-dispatch that reviewer (fresh) this same iteration. Verdict not counted, file not written, until ledger complete. Makes coverage fail-proof: a skipped file or unchecked rule cannot pass silently.
+**Enforcement (phase-workflow gate):** the dispatching phase workflow validates each internal reviewer's ledger — read from the reviewer's returned text, before that text is written to the review file — against the known scope file list. Any reviewer whose ledger omits a scoped file or has an unresolved/blank row → review rejected, nothing written → re-dispatch that reviewer (fresh) this same iteration. Verdict not counted, file not written, until ledger complete. Makes coverage fail-proof: a skipped file or unchecked rule cannot pass silently. Gate always runs on the reviewer's full **returned** ledger — unaffected by what gets persisted below.
+
+**Persistence (compression, gate unaffected):** the returned ledger, once validated, is never written to disk in full. The dispatching phase workflow persists only: a coverage summary line (`files: {{checked}}/{{total}} checked, {{n/a}} n/a · rules: {{pass}}/{{total}}, {{findings}} findings`), the full `n/a` list verbatim (file and rule rows, with reason), and every rule-coverage row resolved `finding #N` verbatim. `checked`/`pass` rows carry no information beyond the count and are dropped from the written file. This is a write-time reduction only — the gate above always validates the reviewer's full returned text, never the reduced written form.
 
 ## Verdict format
 
@@ -122,15 +124,17 @@ Reviewers are read-only (`providers.md`): a reviewer never writes its own review
 
 Examples: `[REVIEW-impl-quality]: APPROVE` · `[REVIEW-design-documentation]: FAIL` · `[REVIEW-impl-external]: CONCERNS`
 
-Never bury the verdict in prose. The dispatching phase workflow writes the reviewer's returned text verbatim to `<sprint>/reviews/<phase>/iter-NN/<reviewer>.md`; PM reads the first non-empty content line of that written file.
+Never bury the verdict in prose. The dispatching phase workflow writes the verdict token, findings, and the reduced coverage form (above) to `<sprint>/reviews/<phase>/iter-NN/<reviewer>.md`; PM reads the first non-empty content line of that written file.
 
 ## DoD per review phase
 
 | Phase | Required reviewers (all APPROVE same iteration) |
 |---|---|
 | design-review | Documentation + Simplification (any non-empty draft set), UI (only when the draft set includes ux-spec or design-system artifacts), External Review (if enabled) |
-| impl-review | Quality, Implementation, Testing, UI, Simplification, Documentation, Performance, External Review (if enabled) |
+| impl-review | Quality, Implementation, Testing, UI (conditional — see below), Simplification, Documentation, Performance (conditional — see below), External Review (if enabled) |
 
 External Review counts as one reviewer when `review.external_review: enabled`, scoped to whichever draft set actually exists that iteration (`sprint-lifecycle.md` "Optional documents"). PR-phase DoD checks only the reviewers this table actually required for the sprint's document profile — a reviewer never dispatched (e.g. UI with no ux-spec) is not counted as missing. On DoD met, the phase advances.
 
-Implementation reviewer traces coverage against PRD AC-N when `documents.prd` enabled, else against `sprint.md`'s own AC-N list (`sprint-lifecycle.md` "Optional documents"). Impl-review's UI reviewer always runs regardless of `ux_spec` — absence of a ux-spec draft never implies absence of UI code to review; it checks against accessibility.html/DESIGN.md directly when no ux-spec exists. Documentation reviewer, in `self_hosting: enabled` mode, additionally checks `README.md`/`.asd/rules/**` consistency against the framework diff, independent of persistent docs.
+**Diff-scoped impl-review fan-out** (`review.scoped_fan_out: enabled` — seeded `enabled` by `/asd-init` for NEW projects only; absent from an existing project's `config.yaml` means `disabled` (full fan-out), see `asd-phase-impl-review.md` step 5 for the SSoT): UI and Performance are dispatched conditionally at impl-review, predicate strictly diff-derived, never keyed on `documents.*` — this preserves the paragraph below verbatim. UI is skipped only when no file in the iteration's scope list is a UI surface; Performance is skipped only when both no perf-budgets section exists in `custom-coding-rules.md` and the scope list contains no executable file (conjunctive). A skipped reviewer writes an explicit `"skipped: <predicate>"` value into `state.json.reviews.impl.verdicts["iter-NN"]` instead of a verdict token — satisfied-vs-blocking semantics for that value: `sprint-lifecycle.md` "State recovery" — and is re-enabled automatically the moment a qualifying file re-enters the diff. `review.scoped_fan_out: disabled` restores unconditional dispatch of every reviewer, exactly as if this paragraph did not exist.
+
+Implementation reviewer traces coverage against PRD AC-N when `documents.prd` enabled, else against `sprint.md`'s own AC-N list (`sprint-lifecycle.md` "Optional documents"). Impl-review's UI reviewer always runs regardless of `ux_spec` — absence of a ux-spec draft never implies absence of UI code to review; it checks against accessibility.html/DESIGN.md directly when no ux-spec exists; when `review.scoped_fan_out: enabled`, it is dispatched or skipped per the diff-derived UI-surface predicate above, never per `documents.ux_spec`. Documentation reviewer, in `self_hosting: enabled` mode, additionally checks `README.md`/`.asd/rules/**` consistency against the framework diff, independent of persistent docs.

@@ -12,15 +12,12 @@ OS read from `system.os` in config (set by `/asd-init`).
 
 Prompt passed via **heredoc/here-string straight into the wrapped CLI's stdin — never written to disk**. This agent runs read-only on both providers (`codex.sandbox_mode: read-only`, Claude's `tools` drop `Write`), so no step in the invocation may touch the filesystem. The wrapped CLI's own stdout is captured directly as its final message (the text verdict) — no `-o <out-file>`, no temp file, no cleanup step, because nothing was ever created on disk.
 
-The command TAIL differs per wrapped CLI — this is a real syntax difference (each CLI's own non-interactive/scripted mode takes different arguments), not just a binary-name swap:
-
-- Wrapping **Codex** (running under Claude Code): `codex exec -` — `exec` is Codex's non-interactive subcommand; `-` reads the entire prompt+diff from stdin as the task, no separate instruction argument needed.
-- Wrapping **Claude CLI** (running under Codex): `claude -p "Follow the review instructions and diff payload provided via stdin above; output only the review report in the required format." --output-format text` — Claude Code CLI has no `exec` subcommand; `-p`/`--print` is its non-interactive mode and always takes an instruction argument, with piped stdin treated as additional context alongside it (`--output-format text` is the default but stated explicitly to guarantee plain text, not JSON).
+The command TAIL differs per wrapped CLI — this is a real syntax difference (each CLI's own non-interactive/scripted mode takes different arguments, including the read-only enforcement flag), not just a binary-name swap. Canonical tail per CLI (including required sandbox/allowedTools flags) lives once, in the agent file's `wraps_invoke_args` (`asd-external-review.md` frontmatter, `claude`/`codex` blocks) — not restated here.
 
 | OS | Probe | Review command |
 |---|---|---|
-| windows | `<wrapped-cli> --version` (PowerShell) | `@'<rendered prompt + diff payload>'@ \| <wrapped-cli> <tail above>` (here-string piped to stdin) |
-| linux | `<wrapped-cli> --version` (bash) | `<wrapped-cli> <tail above> <<'EOF'` / `<rendered prompt + diff payload>` / `EOF` (heredoc piped to stdin) |
+| windows | `<wrapped-cli> --version` (PowerShell) | `@'<rendered prompt + diff payload>'@ \| <wrapped-cli> <wraps_invoke_args>` (here-string piped to stdin) |
+| linux | `<wrapped-cli> --version` (bash) | `<wrapped-cli> <wraps_invoke_args> <<'EOF'` / `<rendered prompt + diff payload>` / `EOF` (heredoc piped to stdin) |
 | macos | `<wrapped-cli> --version` (bash) | same as linux |
 
 Both forms read prompt+diff from stdin; the command's own stdout is the final message text verdict. No `-o <out-file>` for either CLI.
@@ -31,7 +28,7 @@ Both forms read prompt+diff from stdin; the command's own stdout is the final me
 
 At review phase start, agent runs the probe. On failure (non-zero exit, command not found):
 
-- Append to `decisions-log.md`: `<wrapped-cli> CLI unavailable, external review skipped for sprint <NNN-slug> iter <N>`
+- Return a skip note; the dispatching workflow appends it to `<sprint>/decisions-log.md`: `<wrapped-cli> CLI unavailable, external review skipped for sprint <NNN-slug> iter <N>`
 - Continue without external review, no user prompt
 
 ## Phase-scoped payload
@@ -57,9 +54,9 @@ design-review payload never contains source code; consumer-mode impl-review payl
 | design-review | 1 | full content of `<sprint>/design/` files, minus `c4-full/dist/` |
 | design-review | 2+ | per-file diff since previous iteration snapshot |
 | impl-review | 1 | `git diff <git.base_branch>...HEAD <pathspec>` |
-| impl-review | 2+ | `git diff <pathspec>` (uncommitted) plus last commit (`git show HEAD <pathspec>`) |
+| impl-review | 2+ | `git diff <state.json reviews.impl.iteration_heads["iter-(N-1)"]>...HEAD <pathspec>` |
 
-Iteration 1 covers all sprint work in that phase; later iterations cover only changes since the last round. design-review persists a file snapshot each iteration; next iteration reads it to compute its diff.
+Iteration 1 covers all sprint work in that phase; later iterations cover every commit since the sha recorded at the start of the previous iteration — not just the last commit, so a multi-commit review-fix cycle stays fully covered. Absent-key fallback (sprint in flight when `iteration_heads` shipped): `sprint-lifecycle.md` "State recovery" (sole SSoT). design-review persists a file snapshot each iteration; next iteration reads it to compute its diff.
 
 Agent dispatched fresh each iteration (`review-policy.md` clean-context). Incremental diff narrows *input*, not context.
 
@@ -74,7 +71,7 @@ Wrapped-CLI severity terms in the captured stdout mapped to ASD severity:
 | minor | medium |
 | info, suggestion | low |
 
-Findings rendered to the review output dir supplied by the dispatching phase skill (`reviews/design/iter-NN/external.md` or `reviews/impl/iter-NN/external.md`), using verdict format from `review-policy.md`.
+Findings rendered to the review output dir supplied by the dispatching phase skill (`reviews/design/iter-NN/external.md` or `reviews/impl/iter-NN/external.md`), using verdict format from `review-policy.md`. Dropped findings (below severity floor, nitpick) are never rendered as per-finding rows — only a count per category, per `t_review-report.md`; nothing downstream reads a dropped finding's detail.
 
 ## Stalemate detection
 

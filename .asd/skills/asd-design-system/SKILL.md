@@ -20,7 +20,7 @@
 - Read files — `.asd/project/config.yaml`, concept.html, stack.html, existing DESIGN.md/design-system.html/accessibility.html, source CSS/components, theme files
 - Search repo — silent scan for brownfield signals (CSS, SCSS, Tailwind config, theme.ts, styled-components, design exports)
 - Request user decision/input — variant choice, constraints, section approvals, lock-in/revise loop
-- Delegate to agents — `asd-ux-designer` (author, fetch external spec, lint, render previews, accessibility baseline), `asd-pm` (decisions-log)
+- Delegate to agents — `asd-ux-designer` (author, fetch external spec, lint, render previews, accessibility baseline)
 
 ## Phase 1 — silent detection (NO asking)
 
@@ -112,7 +112,6 @@ After all DESIGN.md sections approved:
 
 ## Phase 8 — handoff
 
-- Delegate to agent `asd-pm` to append decisions-log entry ("design system defined: <N tokens, M components>" / "design system edited" / "design system reverse-engineered, source: <path>")
 - Print handoff suggestion: "Next: run `/asd-sprint` to start the first sprint" (or continue current sprint if dispatched from `asd-phase-design`)
 - NO auto-dispatch
 
@@ -134,7 +133,7 @@ After all DESIGN.md sections approved:
 - EVERY user-decision/input request (question text, header, all option labels, all option descriptions, multi-field labels and hints) MUST be rendered in `language.chat` from `.asd/project/config.yaml`. Applies to control options too (Lock in / Revise / Skip / Approve / etc.). Per `.asd/rules/language-policy.md` §User-decision options. Internal signal tokens (`COMPLETED`, `FAILED`, `QUESTION`, `ABORT`) stay English — machine signals.
 - NEVER author accessibility rules without checking concept's target users
 - Token authoring + review bound by `.asd/rules/design-system.md`; UX shaping bound by `.asd/rules/ux-principles.md`
-- design-system.html MUST be regenerated whenever DESIGN.md changes; stale render = FAIL
+- Within this skill's own session, design-system.html MUST be regenerated once, at Phase 5, from the just-approved DESIGN.md (never left stale); this is orthogonal to the in-sprint cadence (`.asd/rules/design-system.md` §10: once per sprint, at design-promote, only if DESIGN.md was actually touched that sprint) — this skill runs standalone or via the design-system gate, not per token edit
 - `designmd-lint` MUST pass before write (clean pass per `.asd/rules/design-system.md` §11); warning exclusions need user approval + recorded rationale
 - Every component listed in DESIGN.md MUST have a live preview in design-system.html
 
@@ -142,11 +141,9 @@ After all DESIGN.md sections approved:
 - `docs/ux/DESIGN.md` (created, edited, or reverse-engineered)
 - `docs/ux/design-system.html` (regenerated from DESIGN.md)
 - `docs/ux/accessibility.html` (created or edited)
-- decisions-log entry
 
 ## Agents dispatched
 - `asd-ux-designer` (author / scanner / lint / preview render / accessibility baseline)
-- `asd-pm` (decisions-log)
 
 ## Skills dispatched
 None.

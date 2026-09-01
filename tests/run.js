@@ -1349,6 +1349,26 @@ test('release-manifest.json: every upstream_hashes entry matches the actual file
 });
 
 // ===========================================================================
+// 6c. .asd/templates/*.json must stay valid JSON - sync.js --check never
+// parses .asd/templates/ (it only classifies generated provider-view
+// targets), so nothing else in the pipeline would catch a template edit that
+// broke JSON syntax (e.g. a stray trailing comma left behind when deleting a
+// field). Placeholders like "{{SPRINT_ID}}" are quoted string values, so a
+// well-formed template parses fine as-is - this only guards syntax, not
+// placeholder semantics.
+// ===========================================================================
+
+test('every .asd/templates/*.json file parses as valid JSON', () => {
+  const templatesDir = path.join(REPO_ROOT, '.asd', 'templates');
+  const jsonFiles = fs.readdirSync(templatesDir).filter((f) => f.endsWith('.json'));
+  assert.ok(jsonFiles.length > 0, 'sanity: at least one template JSON file must exist for this guard to mean anything');
+  for (const f of jsonFiles) {
+    const abs = path.join(templatesDir, f);
+    assert.doesNotThrow(() => JSON.parse(fs.readFileSync(abs, 'utf8')), `.asd/templates/${f} must parse as valid JSON`);
+  }
+});
+
+// ===========================================================================
 // 7. SessionStart hook: --provider must change the printed skill form
 // ===========================================================================
 
@@ -1370,6 +1390,67 @@ test('SessionStart hook: Codex gets $asd-* form, never a Claude-only slash comma
   const text = runHook('codex');
   assert.ok(text.includes('$asd-sprint'), 'Codex has no /asd-sprint slash command - must see $asd-sprint');
   assert.ok(!text.includes('/asd-sprint'));
+});
+
+test('SessionStart hook: a "skipped: <predicate>" verdict counts as satisfied, not "mixed"', () => {
+  // A fresh temp repo with its own copy of the hook, so resolveRepoRoot's
+  // findUp(__dirname) walks up from the temp script location and finds this
+  // temp .asd/ - never the real repo's own active sprint state.
+  const tempRoot = mkTempDir();
+  const hookSrc = fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8');
+  writeFile(tempRoot, '.asd/hooks/session-start.js', hookSrc);
+  writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({
+    sprint_id: '999-fixture',
+    phase: 'impl-review',
+    branch: 'feat/999-fixture',
+    reviews: {
+      impl: {
+        iteration: 1,
+        verdicts: {
+          'iter-01': {
+            quality: 'APPROVE',
+            ui: 'skipped: no UI surface in scope',
+            performance: 'skipped: no perf budgets section and no executable file in scope',
+          },
+        },
+      },
+    },
+  }));
+  const out = execFileSync('node', [path.join(tempRoot, '.asd/hooks/session-start.js'), '--provider', 'claude'], {
+    cwd: tempRoot,
+    encoding: 'utf8',
+  });
+  const text = JSON.parse(out).hookSpecificOutput.additionalContext;
+  assert.ok(text.includes('Last review verdict: green'), `expected an all-satisfied verdict map (APPROVE + skipped) to print "green", got: ${text}`);
+});
+
+test('SessionStart hook: an all-"skipped:" verdict map (no genuine approval) is "mixed", not "green"', () => {
+  const tempRoot = mkTempDir();
+  const hookSrc = fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8');
+  writeFile(tempRoot, '.asd/hooks/session-start.js', hookSrc);
+  writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({
+    sprint_id: '999-fixture',
+    phase: 'impl-review',
+    branch: 'feat/999-fixture',
+    reviews: {
+      impl: {
+        iteration: 1,
+        verdicts: {
+          'iter-01': {
+            ui: 'skipped: no UI surface in scope',
+            performance: 'skipped: no perf budgets section and no executable file in scope',
+          },
+        },
+      },
+    },
+  }));
+  const out = execFileSync('node', [path.join(tempRoot, '.asd/hooks/session-start.js'), '--provider', 'claude'], {
+    cwd: tempRoot,
+    encoding: 'utf8',
+  });
+  const text = JSON.parse(out).hookSpecificOutput.additionalContext;
+  assert.ok(!text.includes('Last review verdict: green'), `expected an all-skipped verdict map (no genuine approval) to NOT print "green", got: ${text}`);
+  assert.ok(text.includes('Last review verdict: mixed'), `expected an all-skipped verdict map to print "mixed", got: ${text}`);
 });
 
 // ===========================================================================

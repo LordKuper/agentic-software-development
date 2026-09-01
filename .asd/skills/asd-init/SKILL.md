@@ -48,12 +48,12 @@
     Only after `accept-all` proceed to write.
 9. Write `.asd/project/config.yaml` from `t_config.yaml` with all approved fields (including `project.diagram_tool` when decomp enabled, `self_hosting`, `documents.*`)
 10. Ask user what custom rules to add (separately for common / design / coding scopes); write three files from templates: `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`. Empty scope still writes template stub (header + intro), so agents always find the file.
-11. Write `.asd/project/decisions-log.md` from `t_decisions-log.md`; write `.asd/project/stubs.md` from `t_stubs.md` (empty registry — downstream phases expect the file to exist)
+11. Write `.asd/project/stubs.md` from `t_stubs.md` (empty registry — downstream phases expect the file to exist)
 12. Write `.asd/project/commands.yaml` (from `t_commands.yaml` + detected + OS-specific `custom.designmd-*` only when `documents.ux_spec: enabled`)
 13. If decomp enabled:
-    - **likec4 mode**: seed `c4/model/main.c4`, `c4/views.c4` from templates; run `likec4 build` → `c4/dist/`
-    - **mermaid mode**: seed `c4/subsystems.yaml` from `t_subsystems.yaml`; render `c4/architecture.html` with initial mermaid context view
-14. Append decisions-log entry ("ASD initialized for project; decomposition=X, diagram_tool=Y, OS=Z")
+    - **likec4 mode**: seed `c4/model/main.c4`, `c4/views.c4` from templates. Seed `commands.yaml` with a `c4-build: "likec4 build docs/architecture/c4 --output docs/architecture/c4/dist"` build-to-view command — `dist/` itself is gitignored, not built here
+    - **mermaid mode**: seed `c4/subsystems.yaml` from `t_subsystems.yaml`. ASD ships no mermaid-to-HTML renderer (avoids a new dependency) — seed `commands.yaml`'s `c4-build` entry as an empty placeholder (`""`) with an inline comment: user supplies their own render command before first use (a project script, or manually wrapping the mermaid blocks in `t_html-shell.html` as the architect agent does for other artifacts); `architecture.html` itself stays gitignored either way, never rendered by ASD itself
+14. If decomp enabled: **seed `.gitignore`** for C4 build output — append (never clobber existing entries; create the file if absent) `docs/architecture/c4/dist/` and `docs/architecture/c4/architecture.html` if not already present
 15. **Post-init artefact checks** — suggest dedicated skill for each missing required artefact (do NOT auto-dispatch). Order: concept → stack → design-system:
     - `docs/product/concept.html` absent → suggest `/asd-concept`
     - `docs/architecture/stack.html` absent → suggest `/asd-stack`
@@ -71,7 +71,6 @@
 4. Per section: ask new value → add to pending change-set (do not write yet)
 5. Show consolidated diff of all pending edits → request user decision: `accept-all` | `edit-section` | `abort`; loop until accepted
 6. Apply diff; write config
-7. Append decisions-log entry per change
 
 ## AGENTS.md sync
 
@@ -112,9 +111,10 @@ Four custom commands emitted only when `documents.ux_spec: enabled` (else omitte
 
 - `.asd/project/config.yaml` (incl. `self_hosting`, `documents.*`)
 - `AGENTS.md`, `CLAUDE.md` — consumer mode: managed block synced from `t_AGENTS.md`/`t_CLAUDE.md`; self-hosting mode: `AGENTS.md` self-sourced (verified, never generated), `CLAUDE.md` still synced
-- `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`, `decisions-log.md`, `stubs.md`
+- `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`, `stubs.md`
 - `.asd/project/commands.yaml`
 - `docs/architecture/c4/` content per `diagram_tool` (decomp only)
+- `.gitignore` entries for C4 build output (decomp only; append-only, existing entries preserved)
 
 Concept, stack, design system NOT produced here; owned by `/asd-concept`, `/asd-stack`, `/asd-design-system` respectively.
 

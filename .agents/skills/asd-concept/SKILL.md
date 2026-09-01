@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-concept/SKILL.md. source_digest=sha256:05ba1c94c5c90251b7469696d294ad8990c0b3466fe11f91359dd7c1d8914a60 content_digest=sha256:12e79c768ec41d56c184e04170dd5a79d52f7c0497818ffeec1c2d64c3174455 asd_version=1.2.0 schema=1
+# ASD generated. Edit .asd/skills/asd-concept/SKILL.md. source_digest=sha256:c0cf9c2544a1d400e9493d81814d3ea506e1026caa309e184fde198ecbed3ff8 content_digest=sha256:5e17fac519183b645f05d35c5fd000d3476cec17e5d028c8475e1192223f9b61 asd_version=2.0.0 schema=1
 name: asd-concept
 description: "Forms or edits the project concept document via asd-ba, branching by silent detection into one of four flows (no idea / vague idea / clear vision / brownfield extraction) and converging through a per-section lock-in loop. Use when the user runs /asd-concept, when asd-init detects a missing concept.html and suggests this skill, or when the user asks to define, draft, refine, edit, rewrite, or reverse-engineer the project concept, vision, target users, or value proposition."
 ---
@@ -16,7 +16,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 - Read files — `.asd/project/config.yaml`, existing concept.html, candidate brownfield sources
 - Search repo — silent scan for brownfield signals + candidate content
 - Request user decision/input — variant choice (only when no silent signal), lens choice, section approvals, lock-in/revise loop
-- Delegate to agents — `asd-ba` (author), `asd-pm` (decisions-log)
+- Delegate to agents — `asd-ba` (author)
 
 ## Phase 1 — silent detection (NO asking)
 
@@ -82,7 +82,6 @@ Section-by-section in `language.chat`:
 
 ## Phase 6 — handoff
 
-- Delegate to agent `asd-pm` to append decisions-log entry ("concept formed" / "concept edited: <sections>" / "concept reverse-engineered from brownfield")
 - Print handoff suggestion in `language.chat`:
   - if `docs/architecture/stack.html` absent → "Next: run `/asd-stack` to define the tech stack"
   - else → "Next: run `/asd-sprint` to start a sprint"
@@ -103,11 +102,9 @@ Section-by-section in `language.chat`:
 
 ## Artefacts produced
 - `docs/product/concept.html` (created, edited, or reverse-engineered)
-- decisions-log entry
 
 ## Agents dispatched
 - `asd-ba` (author / scanner / refiner)
-- `asd-pm` (decisions-log)
 
 ## Skills dispatched
 None.

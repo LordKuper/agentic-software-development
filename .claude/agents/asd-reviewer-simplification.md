@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-simplification.md. source_digest=sha256:5db7d136d86ec5bbaa686dfe08aa8c5a62a0b5f2292fd0b939be26579054a2f0 content_digest=sha256:c0cb80be097252df76eb5cc69efd6879b3b47a33347f19e17872b0e4744268ac asd_version=1.2.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-simplification.md. source_digest=sha256:e53f58f85136c36941524af58162488e4c665a6205f83c794a50e988bd61bcff content_digest=sha256:bd86983f1f2f21117bfcceb895751b43144696962693907519f4da3e3cf24421 asd_version=2.0.0 schema=1
 name: asd-reviewer-simplification
 description: "Design-review of design drafts and impl-review of code for over-engineering and structure/cohesion defects. Covers: over-engineering smell detection per review-policy checklist (interface with one implementer, generic with one type, factory for < 3 classes, plugin without plugins, premature config flag, defensive code for impossible cases, dead code, deep inheritance, framework-on-framework, mock-of-mock, comment-restates-code), structure/cohesion smell detection (god/sprawling type carrying multiple unrelated responsibilities), complexity-vs-value tradeoff, escalation of any fix that adds complexity. Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), AC coverage (delegates to asd-reviewer-implementation), test quality (delegates to asd-reviewer-testing), ui/a11y (delegates to asd-reviewer-ui), documentation (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -46,7 +46,7 @@ Simplification reviewer. Detects over-engineering AND structure/cohesion defects
 
 ## Outputs
 
-- Findings and verdict as final text output, per `t_review.md`; the phase orchestrator writes it to `<sprint>/reviews/<design|impl>/iter-NN/simplification.md`
+- Findings, verdict, and the complete coverage ledger as final text output, per `t_review.md`; the phase orchestrator validates the ledger, then persists only the reduced coverage form (findings + summary line + n/a list + finding rows) to `<sprint>/reviews/<design|impl>/iter-NN/simplification.md` — this reviewer decides nothing about what gets written, only what it returns (`review-policy.md` "Persistence")
 
 ## Behavioral profile
 

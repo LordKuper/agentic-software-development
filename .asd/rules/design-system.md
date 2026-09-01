@@ -69,7 +69,7 @@ Theme MUST NOT change: grid, component size, hit targets, base spacing, notifica
 1. Find existing token/component fitting need.
 2. If none, run checklist (rule 5).
 3. Add to DESIGN.md with usage comment (rule 4).
-4. Regen `design-system.html`.
+4. Regen `design-system.html` once per sprint, at `design-promote`, and only if `DESIGN.md` was actually touched this sprint — never per individual token edit, never left unconditional.
 5. Run `designmd-lint`.
 6. Verify contrast and accessibility (`accessibility.html`).
 7. Update consumer components to reference new token.

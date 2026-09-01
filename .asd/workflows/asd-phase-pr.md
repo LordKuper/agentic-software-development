@@ -30,13 +30,12 @@ The sprint folder physically moves to `.asd/sprints/archived/<NNN-slug>/` as par
 3. Delegate to agent `asd-pm`: update `state.json` (phase=pr)
 4. **DoD verification** — delegate to agent `asd-pm` with payload (config, sprint paths, stubs path, commands.yaml):
    - **Plan completion**: read `<sprint>/plan.md`, verify every `- [ ]` is `- [x]`
-   - **AC coverage**: cross-check AC-N references in plan tasks (PRD AC-N if `documents.prd` enabled, else `sprint.md`'s own AC-N — `sprint-lifecycle.md` "Optional documents") against impl-review documentation verdict
-   - **Reviews green**: read latest `<sprint>/reviews/impl/iter-NN/` (highest `reviews.impl.iteration`), parse first-line gate verdict tokens for the reviewers actually required this sprint (`review-policy.md` DoD table — a reviewer never dispatched, e.g. design-review UI with no ux-spec, is not counted); ALL must be `APPROVE`
+   - **AC coverage**: cross-check AC-N references in plan tasks (PRD AC-N if `documents.prd` enabled, else `sprint.md`'s own AC-N — `sprint-lifecycle.md` "Optional documents") against impl-review Implementation reviewer's verdict/AC→code trace (exclusive owner of this trace — `asd-reviewer-implementation`)
+   - **Reviews green**: read `state.json.reviews.impl.verdicts["iter-NN"]` for the highest `reviews.impl.iteration` (fallback: parse first-line gate verdict tokens from `<sprint>/reviews/impl/iter-NN/` review files if `state.json` verdicts are stale or absent); for the reviewers actually required this sprint (`review-policy.md` DoD table — a reviewer never dispatched, e.g. design-review UI with no ux-spec, is not counted), every value must be either `APPROVE` or a `"skipped: <predicate>"` string (diff-scoped fan-out, `review.scoped_fan_out`); a `"skipped: ..."` value counts as satisfied, never as missing and never as a finding; any other value (`CONCERNS`, `FAIL`, `null`, or an absent key for a reviewer this table required) blocks
    - **Stub block**:
      - read `.asd/project/stubs.md`; filter `Sprint = <current-NNN-slug>` AND Reason NOT starting with `(accepted-debt)` → must be empty
      - search code for `// TODO(sprint-<current-NNN-slug>):` markers; cross-check every marker has matching stubs.md entry (orphan markers = block)
-   - **Tests pass**: run command `commands.yaml` `test`; non-zero exit = block
-   - **Lint clean**: run command `commands.yaml` `lint`; non-zero exit = block
+   - **Tests pass / Lint clean**: content-scoped, not sha-equality (raw `git rev-parse HEAD` equality never holds — the recording commit itself, plus later phase-transition commits, always move HEAD past the recorded sha). Run `git diff --quiet <recorded HEAD>...HEAD -- . ':(exclude).asd/sprints/**' ':(exclude).asd/project/**'`, where `<recorded HEAD>` is the `HEAD` field in `<sprint>/test-plan.md`'s `Suite run` section (the sha impl-test step 7 verified the suite at). Empty diff (exit 0) → no code/test/stub change since the verified run; trust the recorded `Suite run` pass, skip re-running — impl-review produces no code/test/stub changes per its own workflow contract, so it never invalidates this. Non-empty diff (exit 1) → a code/test/stub change landed since (e.g. a review-fix commit) → run command `commands.yaml` `test` then `lint`; non-zero exit on either = block
    - **PR self-review checklist** (per `git-strategy.md`): PM confirms each item explicitly (studied existing code, can explain every line, scoped to feature, why-not-what commits)
    - **Version + Changelog** (`self_hosting: enabled` only, `git-strategy.md` "Versioning & Changelog"): bump `asd_version` in `.asd/release-manifest.json` per SemVer inferred from this sprint's commit types; add matching `## v<version>` section to root `CHANGELOG.md`
    - on ANY block: relay specific failure; halt phase until fixed (user may dispatch fix or accept-debt)
@@ -64,7 +63,7 @@ Read `state.json` from `.asd/sprints/archived/<NNN-slug>/` — open mode's step 
 1. **Merge check** — delegate to agent `asd-pm`:
    - `git.gh_enabled=true`: run command `gh pr view <pr.number> --json state -q .state`. `MERGED` → proceed. Any other state (`OPEN`/`CLOSED`) → relay "PR #<number> not merged yet (state: <state>)" and halt (re-run pr after merging). `CLOSED` without merge → relay; user decides reopen or abort (an abort here leaves the folder pre-archived with `phase != done` — still detected as active on the next `/asd-sprint` invocation, so nothing is lost; a manual folder move back to the active path is a legitimate recovery action if the user wants to resume work under the original sprint id).
    - `git.gh_enabled=false`: request user decision in `language.chat` — "PR merged?" yes / not yet. `not yet` → halt. `yes` → proceed.
-2. **Terminal state update** — delegate to agent `asd-pm`: update the already-archived `state.json` — `pr.state="merged"`, `phase=done`, `updated_at`=now. This is the one deliberate exception to "archived sprints never modified" (`artifact-layout.md` "Sprint archival") — only this terminal transition, nothing else. Append decisions-log entry ("sprint <NNN-slug> completed, PR <url-or-summary> merged").
+2. **Terminal state update** — delegate to agent `asd-pm`: update the already-archived `state.json` — `pr.state="merged"`, `phase=done`, `updated_at`=now. This is the one deliberate exception to "archived sprints never modified" (`artifact-layout.md` "Sprint archival") — only this terminal transition, nothing else. No decisions-log append here: `<sprint>/decisions-log.md` already lives inside the archived, immutable folder — the merge fact is recorded in `state.json.pr.state`/`phase` and in the merged PR itself.
 3. **Tag + release** (`self_hosting: enabled` only, `git-strategy.md` "Versioning & Changelog") — delegate to agent `asd-pm`:
    - create annotated tag `v<asd_version>` on the merge commit; push tag
    - `gh release create v<asd_version> --title v<asd_version> --notes-file` the matching `CHANGELOG.md` section
@@ -91,7 +90,6 @@ Open mode:
 
 Merge mode:
 - Self-hosting only: annotated tag `v<asd_version>`, GitHub Release
-- decisions-log final entry
 - Updated `state.json` (already at the archived path): `pr.state="merged"`, `phase=done`, `updated_at` — the one write an archived sprint's `state.json` still receives after its folder move
 
 ## Agents delegated to

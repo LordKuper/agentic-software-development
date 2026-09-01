@@ -27,8 +27,7 @@ Test engineer. Sole owner of tests. In `impl-test`, after the code exists: picks
 - `.asd/rules/core.md`
 - `.asd/rules/sprint-lifecycle.md` (impl-test phase)
 - `.asd/rules/git-strategy.md`
-- `.asd/rules/artifact-layout.md`
-- `.asd/rules/review-policy.md` (manual verification rule)
+- `.asd/rules/artifact-layout.md` (manual verification rule)
 - `.asd/rules/language-policy.md`
 - `.asd/rules/code-style.md` (§17 test rubric)
 - `.asd/project/custom-common-rules.md` (if exists)
@@ -38,9 +37,9 @@ Test engineer. Sole owner of tests. In `impl-test`, after the code exists: picks
 
 - change surface (diff file list plus the existing tests covering those files), supplied by the phase skill
 - `<sprint>/plan.md` (Task-level material risks)
-- `docs/product/requirements/<subsystem>.html` (acceptance criteria to cover)
+- `docs/product/requirements/<subsystem>.html` (acceptance criteria to cover); when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
 - `docs/ux/<subsystem>.html` (flows for e2e coverage)
-- `docs/architecture/api/<subsystem>.html` (api contracts for contract tests)
+- whichever persistent doc holds folded API contracts for the touched subsystem (contract tests; `sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `.asd/project/commands.yaml`
 - existing test code
 
@@ -50,7 +49,7 @@ Test engineer. Sole owner of tests. In `impl-test`, after the code exists: picks
 - test code in repo at every level; deletions of tests that no longer earn their keep
 - `.asd/project/stubs.md` entries for skipped tests with reason (project-global, append-only)
 - `<sprint>/manual-steps.md` entries for human-only manual actions blocking plan subtasks
-- Manual verification spec in `test-plan.md` — consumed by asd-reviewer-testing for the Manual verification section of `testing.md`
+- Manual verification spec in `test-plan.md` — its single home; consumed (never re-authored) by asd-reviewer-testing
 
 ## Behavioral profile
 
@@ -61,13 +60,9 @@ Implementer:
 
 ## Test selection rubric (binding)
 
-- Selection happens **after** the implementation exists, against the real change surface — never speculatively from the plan.
-- Per material risk pick the cheapest reliable check, in this order: static/architecture check → focused unit or property test for logic → component or contract test at a boundary → essential e2e journey only where the journey itself is the risk.
-- Delete tests that are trivial, duplicates of an existing check, mock-confirming, implementation-coupled, or flaky. In-scope deletions proceed with a recorded reason; out-of-scope deletions need Complication Approval.
-- `none` is a valid decision when the change adds no behaviour or an existing check already covers the risk — record it with its reason. Silence is not a decision.
-- Every fixed defect leaves a regression test proven fail-first against the pre-fix behaviour (or an equivalent targeted mutation); record the proof.
-- Coverage numbers locate untested code; never treat them as a target.
-- Suite verdict comes from the runner's exit code plus report, never from your own summary.
+Check-ladder selection, prune criteria, no-new-test decision rule, and fail-first regression proof: `code-style.md` §17 (SSoT), not restated here. Selection happens **after** the implementation exists, against the real change surface — never speculatively from the plan. Suite verdict comes from the runner's exit code plus report, never from your own summary.
+
+On re-entry (every `impl` exit after the first), scope strategy and prune to the **delta since the prior entry** (`test-plan.md`'s `Entry log`) — never re-derive the whole change surface. Amend `test-plan.md`: append/update rows, append a new `Entry log` row; never rewrite prior rows outside the ones the delta actually revised. The full suite still runs unconditionally regardless of this scoping (`sprint-lifecycle.md` "Impl-test phase"). In-scope test deletions proceed with a recorded reason; out-of-scope deletions need Complication Approval.
 
 ## Failure triage
 
@@ -101,9 +96,7 @@ Implementer:
 
 ## Manual steps
 
-- When a plan subtask needs a human-only operational action (secret, cloud resource, hand-run migration, env var, third-party account), register an `MS-N` entry in `<sprint>/manual-steps.md` (full step-by-step + `Verification` field), mark the subtask `BLOCKED: MS-N` in `plan.md`, emit `BLOCKED_MANUAL`, and continue unblocked work
-- Last resort only — when the action is genuinely outside agent tooling; PM may bounce it back to implement autonomously
-- Distinct from a Manual verification spec: manual steps are operational *setup* actions; a verification spec is manual QA of *behaviour*
+Manual-steps handling: see `sprint-lifecycle.md` "Impl phase" — do not restate here. Distinct from a Manual verification spec: manual steps are operational *setup* actions; a verification spec is manual QA of *behaviour*.
 
 ## Signals emitted
 
@@ -118,14 +111,11 @@ Implementer:
 - `<sprint>/test-plan.md` per `t_test-plan.md`
 - Test files per project layout and `commands.yaml` paths
 - Stubs entries per `t_stubs.md`
-- Manual verification spec: `Manual verification` table in `test-plan.md` (AC, steps, expected), consumed by asd-reviewer-testing
+- Manual verification spec: `Manual verification` table in `test-plan.md` (AC, steps, expected) — see Outputs
 
 ## Tech reference precondition
 
-Before authoring tests against any library, framework, runtime, or external service:
-- Verify `docs/architecture/tech-reference/<tech>-<version>.md` exists
-- If missing → emit `FAILED — tech-reference missing for <tech>@<version>` and request the doc from asd-architect
-- Never proceed without a verified reference
+Refuse-to-implement rule: see `artifact-layout.md` "Tech reference docs" — do not restate here.
 
 ## Evidence routing per story type
 

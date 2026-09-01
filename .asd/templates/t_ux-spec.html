@@ -1,8 +1,8 @@
 <!--
 responsibility:
   owns: ux flows and ui mockups (sprint draft for full sprint scope, persistent for per-subsystem or project-wide ux)
-  excludes: requirements, accessibility (project-wide), design-system components and tokens
-  delegates_to: prd.html (requirements), accessibility.html (a11y), DESIGN.md (components and tokens)
+  excludes: requirements, accessibility (project-wide), design-system components and tokens, new component proposals
+  delegates_to: prd.html (requirements), accessibility.html (a11y), DESIGN.md (components and tokens), design-md-delta.yaml (new component proposals)
 provenance: original          # original | reverse-engineered | migrated
 source: ""                    # optional path/URL when provenance != original
 -->
@@ -42,19 +42,12 @@ flowchart TD
 </section>
 
 <section id="component-usage">
-  <h2>Component usage (optional)</h2>
+  <h2>Component usage (optional, off by default)</h2>
+  <p class="lede">Omit unless the mockups' token usage isn't self-evident from the previews themselves.</p>
   <table>
     <thead><tr><th>Component</th><th>Where used</th></tr></thead>
     <tbody>
-      <tr><td><a href="../../docs/ux/DESIGN.md">{{component}}</a></td><td>{{where used}}</td></tr>
+      <tr><td>{{component}}</td><td>{{where used}}</td></tr>
     </tbody>
   </table>
-</section>
-
-<section id="new-components">
-  <h2>New components (optional)</h2>
-  <p>Proposed additions to DESIGN.md (also captured in design-md-delta.yaml).</p>
-  <ul class="pillar-grid">
-    <li><strong>{{name}}</strong>{{purpose}}</li>
-  </ul>
 </section>

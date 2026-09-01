@@ -1,15 +1,15 @@
 ---
 responsibility:
-  owns: task breakdown, dod, task status (checkboxes)
-  excludes: requirements, design decisions, code, review findings
-  delegates_to: persistent docs (requirements/design), reviews/ (findings)
+  owns: task breakdown, task status (checkboxes), sprint-specific DoD additions
+  excludes: requirements, design decisions, code, review findings, the standing DoD (owned by sprint-lifecycle.md "Plan file format")
+  delegates_to: reviews/ (findings); persistent docs (requirements/design) are named in the impl dispatch payload, not linked here
 ---
 
 # Plan
 
 <!--
 Format rules (parser-critical):
-- Overview, Context, Definition of Done — prose only, NO checkboxes
+- Overview, Definition of Done — prose only, NO checkboxes
 - Checkboxes (- [ ]/- [x]) appear ONLY inside `### Task N:` sections
 - Checkboxes in any non-task section break orchestrator task parsing
 - Subtask deferred for a manual action stays `- [ ]`, suffixed ` — BLOCKED: MS-N` (see manual-steps.md)
@@ -19,13 +19,9 @@ Format rules (parser-critical):
 ## Overview
 {{what plan covers, prose}}
 
-## Context
-- [requirements/{{subsystem}}.html](../../../docs/product/requirements/{{subsystem}}.html)
-- [adr-{{NNNN}}-{{slug}}.html](../../../docs/architecture/adr/{{subsystem}}/adr-{{NNNN}}-{{slug}}.html)
-- [ux/{{subsystem}}.html](../../../docs/ux/{{subsystem}}.html)
-
 ## Definition of Done
-{{prose checklist of completion criteria — NO checkboxes here}}
+Standing DoD applies, never restated here (`sprint-lifecycle.md` "Plan file format").
+{{sprint-specific DoD additions, if any — prose, NO checkboxes; omit this line entirely when none}}
 
 ### Task 1: {{title}}
 - [ ] {{subtask}}

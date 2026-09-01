@@ -41,7 +41,7 @@ Implementation reviewer. Verifies code completely implements every PRD acceptanc
 
 ## Outputs
 
-- Findings and verdict as final text output, per `t_review.md`; the phase orchestrator writes it to `<sprint>/reviews/impl/iter-NN/implementation.md`
+- Findings, verdict, and the complete coverage ledger as final text output, per `t_review.md`; the phase orchestrator validates the ledger, then persists only the reduced coverage form (findings + summary line + n/a list + finding rows) to `<sprint>/reviews/impl/iter-NN/implementation.md` — this reviewer decides nothing about what gets written, only what it returns (`review-policy.md` "Persistence")
 
 ## Behavioral profile
 
@@ -57,7 +57,6 @@ Reviewer:
 ## Review rubric
 
 - Every AC-N has a corresponding code path
-- Every AC-N has at least one test asserting it (defer test quality to asd-reviewer-testing; just check presence)
 - No AC implemented partially without explicit follow-up (in stubs.md or migration entry)
 - No code change without traceable AC or plan Task
 
@@ -72,7 +71,6 @@ Reviewer:
 
 - Never assess bugs, security, or test quality (other reviewers)
 - Never raise nitpick categories
-- Never raise low/medium findings on iter 2+ (severity floor)
 - Never modify code, ACs, or persistent docs
 - Never read prior `iter-*/` review files — each iteration reviews clean context (per `review-policy.md`)
 - Never run shell commands
