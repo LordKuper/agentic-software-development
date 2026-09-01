@@ -10,6 +10,7 @@ Orchestration body for the `asd-phase-impl-review` skill. Operation-mapping to h
 
 ## Operations used
 - read: `.asd/project/config.yaml`, `state.json`, plan.md, `test-plan.md`, code + tests diff, persistent docs, `.asd/project/stubs.md`, `custom-common-rules.md`, `custom-coding-rules.md`, review files
+- write a file: reduced coverage form of each reviewer's returned text to `<sprint>/reviews/impl/iter-NN/<reviewer>.md` (step 7)
 - request user decision: escalation on FAIL or iteration cap
 - delegate to agent in parallel: reviewers; delegate to agent: PM for state + decisions-log. impl-review does NOT delegate to devs — finding fixes route to impl phase (review-fix mode), which returns via impl-test.
 

@@ -10,6 +10,7 @@ Orchestration body for the `asd-phase-design-review` skill. Operation-mapping to
 
 ## Operations used
 - read: `.asd/project/config.yaml`, `state.json`, drafts in `<sprint>/design/`, review files
+- write a file: reduced coverage form of each reviewer's returned text to `<sprint>/reviews/design/iter-NN/<reviewer>.md` (step 8)
 - request user decision: escalation on FAIL or iteration cap
 - delegate to agent in parallel: reviewers; delegate to agent sequentially: creator autofix; delegate to agent: PM for state + decisions-log
 
