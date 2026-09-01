@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:67523a84a037fbd08853e39e916920b5eeb287eb233c847b8e0266d1f9d892d8 content_digest=sha256:28fc88e224c66fd8503813298776b52cf901355b2eb39bb9ddebe44429b8fb01 asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:437366121554f002af00f078e470537b83c887ad328368e68e32c75ff34e3a85 content_digest=sha256:db862be20c01bc4a5505bc0e5b6d7a2a5512fcd5daa0cb20b70a6571cc7fbcf6 asd_version=2.0.0 schema=1
 name: asd-reviewer-testing
 description: "Impl-review assessment of the test-plan decisions and the tests themselves, plus judging manual-verification necessity when automation is impossible. Covers: risk→check fit per test-plan.md, justification of removed tests and of no-test decisions, fail-first proof on regression tests, coverage of AC-N, edge cases on core paths, absence of test-for-test-sake (meaningless assertions), flaky patterns, manual-verification necessity judgment against the spec `test-plan.md` already owns (single home — never re-authored here). Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), AC implementation coverage (delegates to asd-reviewer-implementation), ui/a11y (delegates to asd-reviewer-ui), over-engineering (delegates to asd-reviewer-simplification), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -36,7 +36,7 @@ Testing reviewer. Judges the test *decisions* recorded in `test-plan.md` and the
 
 - `<sprint>/test-plan.md` (primary input: risk→check decisions, removals, added tests, suite run, manual verification spec)
 - diff payload (code + tests)
-- `docs/product/requirements/<subsystem>.html` (ACs to trace)
+- `docs/product/requirements/<subsystem>.html` (ACs to trace); when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
 - `<sprint>/plan.md`
 - iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
 

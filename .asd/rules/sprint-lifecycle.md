@@ -80,7 +80,7 @@ Framework impl-review/External Review change surface: the whole repo diff (every
 
 Never optional: `sprint.md`, `state.json`, `plan.md`, `test-plan.md`, impl-review reports, `manual-steps.md` (already lazy), `<sprint>/decisions-log.md`, `stubs.md`. A disabled document is never written as an empty stub — skip recorded in `state.json` plus one decisions-log line.
 
-**Acceptance-criteria source**: PRD AC-N when `documents.prd` enabled; else `sprint.md`'s own `AC-N` list (`t_sprint.md`). Every phase citing AC-N (plan, impl, impl-review, pr) uses whichever source the sprint's frozen `documents.prd` selects.
+**Acceptance-criteria source**: PRD AC-N when `documents.prd` enabled; else `sprint.md`'s own `AC-N` list (`t_sprint.md`). Every phase citing AC-N (plan, impl, impl-test, impl-review, pr) uses whichever source the sprint's frozen `documents.prd` selects.
 
 **Independent design docs** (replaces the old hard PRD→UX→ADR chain):
 - PRD (`prd`) reads `sprint.md` + `audit.md` (if `audit` enabled).

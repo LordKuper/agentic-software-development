@@ -1,4 +1,4 @@
-# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:67523a84a037fbd08853e39e916920b5eeb287eb233c847b8e0266d1f9d892d8 content_digest=sha256:3dfd461e0cb6e570a159e123557e948c04374f0b7072f45856aae8a98f4aab5c asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:437366121554f002af00f078e470537b83c887ad328368e68e32c75ff34e3a85 content_digest=sha256:2b31746c793b3dc61c29ff3d889880dd4abd7275474c61085318773ffc4c0308 asd_version=2.0.0 schema=1
 name = "asd-reviewer-testing"
 description = "Impl-review assessment of the test-plan decisions and the tests themselves, plus judging manual-verification necessity when automation is impossible. Covers: risk→check fit per test-plan.md, justification of removed tests and of no-test decisions, fail-first proof on regression tests, coverage of AC-N, edge cases on core paths, absence of test-for-test-sake (meaningless assertions), flaky patterns, manual-verification necessity judgment against the spec `test-plan.md` already owns (single home — never re-authored here). Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), AC implementation coverage (delegates to asd-reviewer-implementation), ui/a11y (delegates to asd-reviewer-ui), over-engineering (delegates to asd-reviewer-simplification), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 model = "gpt-5.6"
@@ -31,7 +31,7 @@ Testing reviewer. Judges the test *decisions* recorded in `test-plan.md` and the
 
 - `<sprint>/test-plan.md` (primary input: risk→check decisions, removals, added tests, suite run, manual verification spec)
 - diff payload (code + tests)
-- `docs/product/requirements/<subsystem>.html` (ACs to trace)
+- `docs/product/requirements/<subsystem>.html` (ACs to trace); when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
 - `<sprint>/plan.md`
 - iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
 

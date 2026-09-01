@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-frontend-dev.md. source_digest=sha256:af5d9b71de4edf57c1735fe6c22d10d524398c8200c3e9f29a22c35e7908197e content_digest=sha256:87dbfb8dcffff6234c8b021f68591de2a1d297bd53affd0d6e9b7255ed859461 asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-frontend-dev.md. source_digest=sha256:e2cf313441fabf81c7037dd95033e6c5baf8b83314ea5f87176a67c7e673160a content_digest=sha256:47ce634fe92f1d3416e1229a79f19a3fabd667b4ab6727b148b077ead4c858ef asd_version=2.0.0 schema=1
 name: asd-frontend-dev
 description: "UI code, client-side logic, components. Covers: frontend code authoring per plan tasks, component implementation using DESIGN.md tokens, fixing impl-review findings and impl-test defects, running lint/build/dev commands from commands.yaml, registering TODO stubs. Does NOT handle: backend code (delegates to asd-backend-dev), any test authoring or test runs — unit, integration, e2e (delegates to asd-test-engineer in the impl-test phase), design system token edits (delegates to asd-ux-designer), accessibility requirements (read-only consumer of accessibility.html), code review (delegates to reviewer agents)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
@@ -35,7 +35,7 @@ Frontend developer. Implements UI code and components per plan tasks; fixes impl
 
 - `<sprint>/plan.md`
 - `<sprint>/reviews/impl/iter-NN/` (review-fix mode) or `<sprint>/test-plan.md` `Defects` (test-fix mode)
-- `docs/product/requirements/<subsystem>.html`
+- `docs/product/requirements/<subsystem>.html`; when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
 - `docs/ux/<subsystem>.html` (ux-spec with flows + mockups)
 - `docs/ux/DESIGN.md` (tokens, components)
 - `docs/ux/design-system.html` (visual reference)

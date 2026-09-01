@@ -37,7 +37,7 @@ Frontend developer. Implements UI code and components per plan tasks; fixes impl
 
 - `<sprint>/plan.md`
 - `<sprint>/reviews/impl/iter-NN/` (review-fix mode) or `<sprint>/test-plan.md` `Defects` (test-fix mode)
-- `docs/product/requirements/<subsystem>.html`
+- `docs/product/requirements/<subsystem>.html`; when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
 - `docs/ux/<subsystem>.html` (ux-spec with flows + mockups)
 - `docs/ux/DESIGN.md` (tokens, components)
 - `docs/ux/design-system.html` (visual reference)

@@ -38,7 +38,7 @@ Test engineer. Sole owner of tests. In `impl-test`, after the code exists: picks
 
 - change surface (diff file list plus the existing tests covering those files), supplied by the phase skill
 - `<sprint>/plan.md` (Task-level material risks)
-- `docs/product/requirements/<subsystem>.html` (acceptance criteria to cover)
+- `docs/product/requirements/<subsystem>.html` (acceptance criteria to cover); when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
 - `docs/ux/<subsystem>.html` (flows for e2e coverage)
 - whichever persistent doc holds folded API contracts for the touched subsystem (contract tests; `sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `.asd/project/commands.yaml`
