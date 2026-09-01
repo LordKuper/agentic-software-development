@@ -179,7 +179,7 @@ Owner: Test Engineer. Runs after every `impl` exit. Selects the test approach **
 
 **Workflow**: change-surface analysis → `test-plan.md` (risk → chosen check → decision) → prune + author → full suite run.
 
-**Re-entry** (every `impl` exit after the first re-enters this phase): the strategy and prune passes scope to the **delta since the prior entry** (the review-fix/test-fix commits, via `test-plan.md`'s `Entry log`), not the whole change surface again — `test-plan.md` is amended, not rewritten. The **suite gate stays full and unconditional on every entry**; incremental scoping never touches it. Bounded risk (audit R-15): a defect introduced by a fix outside its own diff isn't re-analysed by the analysis passes — the full suite gate is the backstop.
+**Re-entry** (every `impl` exit after the first re-enters this phase): the strategy and prune passes scope to the **delta since the prior entry** (the review-fix/test-fix commits, via `test-plan.md`'s `Entry log`), not the whole change surface again — `test-plan.md` is amended, not rewritten. The **suite gate stays full and unconditional on every entry**; incremental scoping never touches it. Bounded risk: a defect introduced by a fix outside its own diff isn't re-analysed by the analysis passes — the full suite gate is the backstop.
 
 **Removal gate** — deleting a test **outside** the sprint change scope needs user approval (Complication Approval format, `core.md`). In-scope removals proceed autonomously with a recorded reason.
 

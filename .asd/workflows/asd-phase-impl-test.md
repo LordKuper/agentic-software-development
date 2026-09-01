@@ -60,7 +60,7 @@ Every `impl` exit re-enters this phase. On re-entry the **strategy pass (step 3)
 
 The **suite gate (step 7) stays full and unconditional on every entry** — it is the actual test-execution gate, and this incremental scoping applies only to the analysis passes, never to it. The **removal gate (step 5)** is unaffected: it still fires whenever a proposed removal (in or out of the current pass's scope) falls outside the sprint's overall change surface.
 
-Bounded risk (audit R-15): a defect introduced by a review-fix in a file outside that fix's own diff is not re-analysed for coverage by steps 3/6 — the full, unconditional suite gate is what catches it. No iteration cap: the loop ends on a green suite or on an escalated blocker.
+Bounded risk: a defect introduced by a review-fix in a file outside that fix's own diff is not re-analysed for coverage by steps 3/6 — the full, unconditional suite gate is what catches it. No iteration cap: the loop ends on a green suite or on an escalated blocker.
 
 ## Artefacts produced
 - `<sprint>/test-plan.md` (risk→check decisions, removals, added tests, suite run, defects, optional manual verification spec)
