@@ -211,7 +211,7 @@ Material risk: audit R-1 concerned removing a file from a mandated gate; **this 
 ### Task 13: Diff-scoped reviewer fan-out at impl-review
 
 Verdicts: **P-9**, **AG-11**, **AG-14**, gap **G-12**, risk **R-10** — separately approved, with all mitigations mandatory. AC: AC-2, AC-3, AC-4, AC-6. Owner: **backend-dev**.
-Affected canonical files: `.asd/workflows/asd-phase-impl-review.md` (step 5), `.asd/rules/review-policy.md` (DoD table, lines 134 and 136), `.asd/agents/asd-reviewer-ui.md`, `.asd/agents/asd-reviewer-performance.md` (line 23), `.asd/workflows/asd-phase-pr.md` (step 4), `.asd/templates/t_state.json` (verdict slot), `README.md` reviewer table.
+Affected canonical files: `.asd/workflows/asd-phase-impl-review.md` (step 5), `.asd/rules/review-policy.md` (DoD table, lines 134 and 136), `.asd/agents/asd-reviewer-ui.md`, `.asd/agents/asd-reviewer-performance.md` (line 23), `.asd/workflows/asd-phase-pr.md` (step 4), `.asd/templates/t_state.json` (verdict slot), `.asd/templates/t_config.yaml` (`review.scoped_fan_out` switch), `README.md` reviewer table.
 Material risk: audit R-10 — this trades away guaranteed off-domain vigilance. In sprint 001 the UI reviewer, dispatched into a diff it described as containing zero UI surface, still found a real relative-link defect. The `checkpoints.md` line-19 impl-review gate is untouched. Every mitigation below is part of the accepted trade, not optional.
 
 - [x] Predicates are **strictly diff-derived, never keyed on `documents.*`** — this preserves `review-policy.md` line 136 verbatim ("absence of a ux-spec draft never implies absence of UI code to review")
