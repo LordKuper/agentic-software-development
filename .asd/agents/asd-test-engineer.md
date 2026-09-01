@@ -50,7 +50,7 @@ Test engineer. Sole owner of tests. In `impl-test`, after the code exists: picks
 - test code in repo at every level; deletions of tests that no longer earn their keep
 - `.asd/project/stubs.md` entries for skipped tests with reason (project-global, append-only)
 - `<sprint>/manual-steps.md` entries for human-only manual actions blocking plan subtasks
-- Manual verification spec in `test-plan.md` — consumed by asd-reviewer-testing for the Manual verification section of `testing.md`
+- Manual verification spec in `test-plan.md` — its single home; consumed (never re-authored) by asd-reviewer-testing
 
 ## Behavioral profile
 
@@ -118,7 +118,7 @@ Implementer:
 - `<sprint>/test-plan.md` per `t_test-plan.md`
 - Test files per project layout and `commands.yaml` paths
 - Stubs entries per `t_stubs.md`
-- Manual verification spec: `Manual verification` table in `test-plan.md` (AC, steps, expected), consumed by asd-reviewer-testing
+- Manual verification spec: `Manual verification` table in `test-plan.md` (AC, steps, expected) — single home, consumed by asd-reviewer-testing
 
 ## Tech reference precondition
 

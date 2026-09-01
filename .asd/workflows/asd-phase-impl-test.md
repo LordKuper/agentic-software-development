@@ -32,6 +32,7 @@ No user gate on a green suite, and none on routing defects back to impl.
    - classify every existing covering test: keep / remove (trivial, duplicate, mock-confirming, implementation-coupled, flaky) / adjust
    - record `none` decisions (no behaviour added, or an existing check already covers the risk) with the reason — silence is not a decision
    - coverage numbers may be used to find untested code, never as a target
+   - specify `Manual verification` only when automation is impossible (visual UI, third-party live integration, ux feel) — `test-plan.md` is its single home, never duplicated in a review file
    - write `<sprint>/test-plan.md` per `t_test-plan.md`; emit COMPLETED
 4. Read `test-plan.md` → collect proposed removals; split into in-scope (test file inside the change surface) and out-of-scope
 5. **Removal gate** — only when out-of-scope removals exist: request user decision in `language.chat`, Complication Approval format per `core.md`, one entry per test (what, why, what still covers the risk). Rejected removals are struck from `test-plan.md`; approved ones marked `yes — user approved`

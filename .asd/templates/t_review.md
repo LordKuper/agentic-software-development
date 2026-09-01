@@ -1,8 +1,8 @@
 ---
 responsibility:
   owns: single reviewer verdict for one iteration, persisted in reduced coverage form
-  excludes: other reviewers, other iterations, fixes, the reviewer's full returned ledger (validated pre-write, never persisted verbatim — `review-policy.md`)
-  delegates_to: creator agent (fixes), sibling review files (other reviewers)
+  excludes: other reviewers, other iterations, fixes, the reviewer's full returned ledger (validated pre-write, never persisted verbatim — `review-policy.md`), manual-verification spec (test-plan.md's single home)
+  delegates_to: creator agent (fixes), sibling review files (other reviewers), test-plan.md (manual-verification spec)
 ---
 
 [REVIEW-{{PHASE}}-{{REVIEWER}}]: {{APPROVE | CONCERNS | FAIL}}
@@ -46,10 +46,6 @@ Reviewer returns the complete file+rule coverage ledger (mandatory — verdict I
 ## Escalations (optional)
 - finding #{{N}}: requires user approval ({{reason: concept change / new abstraction / scope expansion / contract change}})
 
-## Manual verification (optional, Testing reviewer only)
-
-Only when automated verification is impossible (visual ui, third-party integration, ux interaction).
-
-| # | Requirement (AC-ID) | Steps for user | Result reported by user |
-|---|---|---|---|
-| 1 | AC-X | 1. {{step}}<br>2. {{step}} | {{pass / fail + notes, filled after user reports back}} |
+<!-- Manual verification has one home: <sprint>/test-plan.md. The Testing reviewer judges the
+spec found there and reports any manual-verification result as an ordinary finding row above —
+it never authors or duplicates a manual-verification section here. -->

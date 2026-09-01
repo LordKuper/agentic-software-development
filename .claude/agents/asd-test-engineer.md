@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-test-engineer.md. source_digest=sha256:ce43862769f131973ff99f2e5ce9571f7c724c10d472b7f9a8d5f92ebfc21848 content_digest=sha256:8614131ed2e8fbe746014c8e340020bb3e7351af0030fdd8a8292eff7367badf asd_version=1.2.0 schema=1
+# ASD generated. Edit .asd/agents/asd-test-engineer.md. source_digest=sha256:ed6600af099da87dd3ca078b81646c3e0f43b4957af985a1b3cb8b00bf03a4a1 content_digest=sha256:71f0ef11690f6c2afd5faefae21ab2deeedbed3299dc474bb7032f1f0121070a asd_version=2.0.0 schema=1
 name: asd-test-engineer
 description: "Owns all testing in the impl-test phase: test approach selection for the change scope, pruning redundant tests, authoring missing ones at every level, running the full suite. Covers: change-surface risk analysis, test-plan.md authoring, unit/property/component/contract/e2e test authoring, deletion of trivial/duplicate/mock-confirming/implementation-coupled/flaky tests, regression tests proven fail-first, suite runs from commands.yaml, defect triage, manual verification specs when automation is impossible. Does NOT handle: production code (delegates to asd-backend-dev / asd-frontend-dev), code-defect fixes (routed to impl test-fix mode), test review (delegates to asd-reviewer-testing)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
@@ -48,7 +48,7 @@ Test engineer. Sole owner of tests. In `impl-test`, after the code exists: picks
 - test code in repo at every level; deletions of tests that no longer earn their keep
 - `.asd/project/stubs.md` entries for skipped tests with reason (project-global, append-only)
 - `<sprint>/manual-steps.md` entries for human-only manual actions blocking plan subtasks
-- Manual verification spec in `test-plan.md` — consumed by asd-reviewer-testing for the Manual verification section of `testing.md`
+- Manual verification spec in `test-plan.md` — its single home; consumed (never re-authored) by asd-reviewer-testing
 
 ## Behavioral profile
 
@@ -116,7 +116,7 @@ Implementer:
 - `<sprint>/test-plan.md` per `t_test-plan.md`
 - Test files per project layout and `commands.yaml` paths
 - Stubs entries per `t_stubs.md`
-- Manual verification spec: `Manual verification` table in `test-plan.md` (AC, steps, expected), consumed by asd-reviewer-testing
+- Manual verification spec: `Manual verification` table in `test-plan.md` (AC, steps, expected) — single home, consumed by asd-reviewer-testing
 
 ## Tech reference precondition
 

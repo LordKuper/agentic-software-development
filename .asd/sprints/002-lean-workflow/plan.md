@@ -90,12 +90,12 @@ Verdict: **A-11**. AC: AC-1, AC-4, AC-6. Owner: **backend-dev**. Depends on Task
 Affected canonical files: `.asd/templates/t_test-plan.md`, `.asd/templates/t_review.md`, `.asd/rules/artifact-layout.md` (Test plan), `.asd/workflows/asd-phase-impl-test.md` (steps 3, 7), `.asd/agents/asd-test-engineer.md`, `.asd/agents/asd-reviewer-testing.md`.
 Material risk: the Testing reviewer loses an authoring slot it owns today — its rubric must be repointed at `test-plan.md` in the same edit or a mandated capture path silently disappears.
 
-- [ ] `t_test-plan.md`: drop "Change surface" (recomputable via `git diff --stat`, and `asd-phase-impl-test.md` step 2 computes it anyway)
-- [ ] `t_test-plan.md`: reduce "Added tests" to the Regression-proof column, the only part the Testing reviewer cannot derive from the diff
-- [ ] `t_review.md`: remove the Manual-verification section; `test-plan.md` becomes its single home
-- [ ] `asd-reviewer-testing.md`: rubric consumes the manual-verification spec from `test-plan.md` instead of authoring it
-- [ ] `artifact-layout.md` + `asd-test-engineer.md`: reflect the single home
-- [ ] Update both templates' `responsibility` frontmatter
+- [x] `t_test-plan.md`: drop "Change surface" (recomputable via `git diff --stat`, and `asd-phase-impl-test.md` step 2 computes it anyway)
+- [x] `t_test-plan.md`: reduce "Added tests" to the Regression-proof column, the only part the Testing reviewer cannot derive from the diff
+- [x] `t_review.md`: remove the Manual-verification section; `test-plan.md` becomes its single home
+- [x] `asd-reviewer-testing.md`: rubric consumes the manual-verification spec from `test-plan.md` instead of authoring it
+- [x] `artifact-layout.md` + `asd-test-engineer.md`: reflect the single home
+- [x] Update both templates' `responsibility` frontmatter
 
 ### Task 5: Fix the state.json schema — remove dead fields, document archived_at
 

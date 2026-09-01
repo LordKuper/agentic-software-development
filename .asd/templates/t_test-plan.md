@@ -1,7 +1,7 @@
 ---
 responsibility:
-  owns: test approach for sprint change scope, removal reasons, no-test decisions, suite run result, code defects found by tests
-  excludes: task breakdown, requirements, review verdicts, code
+  owns: test approach for sprint change scope, removal reasons, no-test decisions, suite run result, code defects found by tests, manual-verification spec (single home — never duplicated in a review file)
+  excludes: task breakdown, requirements, review verdicts, code, change surface (derivable from the diff)
   delegates_to: plan.md (tasks), persistent docs (requirements), reviews/impl/iter-NN/testing.md (verdict)
 ---
 
@@ -10,11 +10,9 @@ responsibility:
 <!--
 Written in impl-test, after the implementation exists. Rewritten on each impl-test entry;
 Defects rows persist (resolved ones kept for the record).
+Change surface is not restated here — it's the diff itself (`git diff --stat`), computed by asd-phase-impl-test.md step 2.
 Rules: .asd/rules/sprint-lifecycle.md (impl-test phase), .asd/rules/code-style.md §17.
 -->
-
-## Change surface
-{{files/behaviours changed this sprint, from the diff; one line each}}
 
 ## Risk → check decisions
 
@@ -30,9 +28,11 @@ Rules: .asd/rules/sprint-lifecycle.md (impl-test phase), .asd/rules/code-style.m
 
 ## Added tests
 
-| Test | Level | Covers | Regression proof |
-|---|---|---|---|
-| {{file:name}} | {{unit \| property \| component \| contract \| e2e}} | {{AC-N or risk}} | {{n/a \| fail-first vs D-N \| mutation <what was mutated>}} |
+Level and AC/risk covered are visible in the test file itself (name, path, comment) — not restated here.
+
+| Test | Regression proof |
+|---|---|
+| {{file:name}} | {{n/a \| fail-first vs D-N \| mutation <what was mutated>}} |
 
 ## Suite run
 

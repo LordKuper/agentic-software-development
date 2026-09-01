@@ -160,6 +160,8 @@ Manual step = operational action a human must perform for the plan to complete (
 
 SSoT for two things invisible in the diff: **why** a test was removed, and **why** a change needed no new test. Also the handoff channel for code defects to `impl` test-fix mode (`Defects` section). Not a task list (that is `plan.md`) and not a review verdict (that is `reviews/impl/iter-NN/testing.md`).
 
+**Manual verification — single home.** The optional `Manual verification` table (AC, steps, expected observation) is authored only here, by the Test Engineer, when automation is impossible (visual UI, third-party live integration, ux feel). No review file duplicates or re-authors this spec; `asd-reviewer-testing` judges whether the spec is justified and reports any result as an ordinary finding, never as a persisted section of its own.
+
 ## Single Source of Truth (iron rule)
 
 Each fact has exactly one home file. Other files link to it, never copy. Violation = `FAIL` from Documentation reviewer.
