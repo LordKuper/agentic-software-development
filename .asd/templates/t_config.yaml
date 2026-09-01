@@ -6,8 +6,7 @@
 self_hosting: disabled
 
 # Optional sprint documents and their persistent docs counterpart.
-# Absent group (old config) = every value enabled (current behavior unchanged).
-# Absent field within an existing group = disabled (fail-closed).
+# Defaults: see .asd/rules/sprint-lifecycle.md "Optional documents".
 documents:
   audit: enabled      # <sprint>/audit.md
   prd: enabled         # design/prd.html + persistent requirements

@@ -4,13 +4,13 @@ Orchestration body for the `asd-phase-design-review` skill. Operation-mapping to
 
 ## Preconditions
 - Active sprint at `.asd/sprints/<NNN-slug>/`
-- Whichever of prd.html/ux-spec.html/adr.html the sprint's frozen `documents.*` enabled are present in `<sprint>/design/` (per checkpoints precondition chain). When design was the Task 14 collapsed no-op (all four `documents.*` disabled), this phase is never separately dispatched — `state.json.phase` already advanced past it to `design-promote` — so this precondition is never evaluated in that case
+- Whichever of prd.html/ux-spec.html/adr.html the sprint's frozen `documents.*` enabled are present in `<sprint>/design/` (per checkpoints precondition chain). When design was the collapsed no-op (all four `documents.*` disabled), this phase is never separately dispatched — `state.json.phase` already advanced past it to `design-promote` — so this precondition is never evaluated in that case
 - Optional drafts honored: design-md-delta.yaml, c4-full/
 - `state.json.phase` advanced from `design`
 
 ## Operations used
 - read: `.asd/project/config.yaml`, `state.json`, drafts in `<sprint>/design/`, review files
-- write a file: reduced coverage form of each reviewer's returned text to `<sprint>/reviews/design/iter-NN/<reviewer>.md` (step 8)
+- write a file: reduced coverage form of each reviewer's returned text to `<sprint>/reviews/design/iter-NN/<reviewer>.md` (step 8); `state.json` and decisions-log inline for the no-op path's mechanical write (step 2)
 - request user decision: escalation on FAIL or iteration cap
 - delegate to agent in parallel: reviewers; delegate to agent sequentially: creator autofix; delegate to agent: PM for state + decisions-log
 
@@ -21,7 +21,7 @@ Every reviewer dispatched below is read-only: it evaluates its scope and returns
 ## Workflow
 
 1. Read `<sprint>/state.json` — read frozen `documents.prd`/`ux_spec`/`adr`/`c4`. Compute review scope as the **intersection** of (a) frozen `documents.*` enabled and (b) the file actually existing in `<sprint>/design/` — a draft that physically exists but whose flag is disabled (e.g. audit pre-formulated it before this repo's own logic gated that — `sprint-lifecycle.md` "Audit phase") is NOT in scope and is NOT reviewed or counted toward DoD; existence alone never puts a file in scope
-2. **No-op path** — the all-`documents.*`-disabled case is handled entirely by `asd-phase-design.md` step 2's collapsed check (Task 14, gap G-11) and never reaches this phase as a separate dispatch. This step is the defensive fallback for the residual case of an intersected scope somehow empty on direct/explicit re-dispatch of this phase alone: delegate to agent `asd-pm` to set `phase=design-review`, append `"design-review"` to `state.json.skipped_phases`, append decisions-log "design-review skipped (no in-scope drafts)" — **no user decision requested** (`sprint-lifecycle.md` "No-op phase rule"); emit phase COMPLETED with return contract; skip remaining steps
+2. **No-op path** — the all-`documents.*`-disabled case is handled entirely by `asd-phase-design.md` step 2's collapsed check and never reaches this phase as a separate dispatch. This step is the defensive fallback for the residual case of an intersected scope somehow empty on direct/explicit re-dispatch of this phase alone: write inline (mechanical, no gate — no user decision requested, `sprint-lifecycle.md` "No-op phase rule"): set `phase=design-review`, append `"design-review"` to `state.json.skipped_phases`, append decisions-log "design-review skipped (no in-scope drafts)"; emit phase COMPLETED with return contract; skip remaining steps
 3. Read `.asd/project/config.yaml` (`review.external_review`, `review.iterations_low/medium/high/critical`, `language.chat`, `language.docs`)
 4. Read `<sprint>/state.json` → set `phase=design-review`, increment `reviews.design.iteration` (it is `0` at sprint creation, so `1` on first entry; see `sprint-lifecycle.md` "Review iteration counters" for increment + rollback-reset rules). `NN` = resulting value, zero-padded.
 5. Compute severity floor for current iteration per `review-policy.md` cumulative-budget algorithm (uses `reviews.design.iteration`)
@@ -68,7 +68,7 @@ See `.asd/rules/review-policy.md` cumulative-budget algorithm. This workflow com
 - UI reviewer — parallel, only when a ux-spec/design-system draft is in scope this iteration (step 7)
 - External Review — parallel (when enabled)
 - Creators (BA, UX Designer, Architect) — sequential, only when autofix or escalation requires
-- PM — state updates + decisions-log
+- PM — state updates + decisions-log tied to DoD-met/override gates (step 9, 10); no-op path (step 2) is an inline workflow write, no PM dispatch
 
 ## Skills/workflows dispatched
 None.

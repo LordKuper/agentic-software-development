@@ -16,7 +16,7 @@ Orchestration body for the `asd-phase-scope` skill. Operation-mapping to host to
 
 ## Workflow
 
-1. Read `.asd/project/config.yaml` (`git.base_branch`, `git.branch_pattern`, `documents.*`). Normalize per `sprint-lifecycle.md` "Optional documents": missing `documents` group → all `enabled`; group present but a field missing → that field `disabled`. Effective `documents.c4` = `documents.c4 AND project.subsystem_decomposition == enabled`.
+1. Read `.asd/project/config.yaml` (`git.base_branch`, `git.branch_pattern`, `documents.*`). Normalize per `sprint-lifecycle.md` "Optional documents" (fail-closed defaults). Effective `documents.c4` = `documents.c4 AND project.subsystem_decomposition == enabled`.
 2. Run command to check working-tree status; if dirty → FAILED
 3. Count existing sprints (`.asd/sprints/*/` + `.asd/sprints/archived/*/`) → NNN = max + 1, zero-padded
 4. Derive slug from raw scope (kebab-case, ≤30 chars) — provisional, may change after refinement

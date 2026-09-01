@@ -132,7 +132,7 @@ Impl completion gate (step 9) and, initial mode only, impl assessment gate (step
 - decisions-log entry on impl assessment approval (initial) or fix-mode finalize
 
 ## Agents delegated to
-- `asd-pm` (manual-steps gate, impl completion gate, impl assessment gate, decisions-log tied to those gates; mechanical writes at steps 4, 11 are now inline workflow writes, Task 15)
+- `asd-pm` (manual-steps gate, impl completion gate, impl assessment gate, decisions-log tied to those gates; mechanical writes at steps 4, 11 are inline workflow writes)
 - `asd-backend-dev` (per Task with owner=backend-dev)
 - `asd-frontend-dev` (per Task with owner=frontend-dev)
 - `asd-test-engineer` (review-fix mode only, for findings located in test files)

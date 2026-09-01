@@ -28,7 +28,7 @@ Orchestration body for the `asd-phase-plan` skill. Operation-mapping to host too
        - if `documents.audit` disabled: grep touched-area files (from sprint.md scope) directly against `.asd/project/stubs.md` File:Line column for matches
        - if any found: request user decision per stub: include resolution this sprint / defer (leave open) / mark accepted-debt
        - per "include": add explicit `### Task N: Resolve stub <ref>` with owner derived from stub Owner column
-       - per "accepted-debt": delegate to agent creator to edit stubs.md Reason field prepending `(accepted-debt)`
+       - per "accepted-debt": delegate to agent `asd-pm` to edit stubs.md Reason field prepending `(accepted-debt)`
        - decisions-log entry summarising stub decisions
      - **Task decomposition rules**:
        - one Task per coherent unit of work

@@ -5,17 +5,18 @@ Orchestration body for the `asd-phase-design-promote` skill. Operation-mapping t
 ## Preconditions
 - Active sprint at `.asd/sprints/<NNN-slug>/`
 - Design drafts present and approved by design-review (DoD met)
-- `state.json.phase` advanced from `design-review`. When design was the Task 14 collapsed no-op (all four `documents.*` disabled), this phase is never separately dispatched — `state.json.phase` is written straight to `design-promote` by design's step 2, and `NEXT: plan` fires from there
+- `state.json.phase` advanced from `design-review`. When design was the collapsed no-op (all four `documents.*` disabled), this phase is never separately dispatched — `state.json.phase` is written straight to `design-promote` by design's step 2, and `NEXT: plan` fires from there
 
 ## Operations used
 - read: `.asd/project/config.yaml`, `state.json`, sprint design drafts, audit.md, persistent `docs/`
+- write a file: `state.json` and decisions-log inline, for the no-op path's mechanical write (step 2)
 - request user decision: rare, phase-level escalation only (PM + creators handle per-doc/per-subsystem approvals)
 - delegate to agent: PM (orchestrator), Architect, BA, UX Designer (domain promoters)
 
 ## Workflow
 
 1. Read `<sprint>/state.json` — read frozen `documents.prd`/`ux_spec`/`adr`/`c4`. Compute promotion scope as the **intersection** of (a) frozen `documents.*` enabled and (b) the file actually existing in `<sprint>/design/` (mirrors design-review's scope rule, `sprint-lifecycle.md` "Optional documents") — a draft whose flag is disabled is never promoted even if it physically exists
-2. **No-op path** — the all-`documents.*`-disabled case is handled entirely by `asd-phase-design.md` step 2's collapsed check (Task 14, gap G-11) and never reaches this phase as a separate dispatch. This step is the defensive fallback for the residual case of an intersected scope somehow empty on direct/explicit re-dispatch of this phase alone: delegate to agent `asd-pm` to set `phase=design-promote`, append `"design-promote"` to `state.json.skipped_phases`, append decisions-log "design-promote skipped (nothing to promote)" — **no user decision requested** (`sprint-lifecycle.md` "No-op phase rule"); emit phase COMPLETED with return contract; skip remaining steps
+2. **No-op path** — the all-`documents.*`-disabled case is handled entirely by `asd-phase-design.md` step 2's collapsed check and never reaches this phase as a separate dispatch. This step is the defensive fallback for the residual case of an intersected scope somehow empty on direct/explicit re-dispatch of this phase alone: write inline (mechanical, no gate — no user decision requested, `sprint-lifecycle.md` "No-op phase rule"): set `phase=design-promote`, append `"design-promote"` to `state.json.skipped_phases`, append decisions-log "design-promote skipped (nothing to promote)"; emit phase COMPLETED with return contract; skip remaining steps
 3. Read `.asd/project/config.yaml` (`project.subsystem_decomposition`, `project.diagram_tool`, `system.tools.likec4`, `system.tools.designmd`, `language.chat`, `language.docs`)
 4. Confirm design-review DoD met
 5. Read sprint drafts + audit migration plan (if `audit.md` exists)
@@ -70,7 +71,7 @@ Orchestration body for the `asd-phase-design-promote` skill. Operation-mapping t
 - Appended decisions-log entries
 
 ## Agents delegated to
-- `asd-pm` (orchestration, new subsystem proposals, state, decisions-log, final confirm)
+- `asd-pm` (orchestration, new subsystem proposals, state, decisions-log, final confirm); no-op path (step 2) is an inline workflow write, no PM dispatch
 - `asd-architect` (architecture domain + c4 registry updates)
 - `asd-ba` (product domain)
 - `asd-ux-designer` (ux domain)

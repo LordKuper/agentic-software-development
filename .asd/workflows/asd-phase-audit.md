@@ -9,14 +9,14 @@ Orchestration body for the `asd-phase-audit` skill. Operation-mapping to host to
 
 ## Operations used
 - read: `.asd/project/config.yaml`, `state.json`, `sprint.md`
-- write a file: `<sprint>/audit.md` (assembled by this workflow from BA + Architect returned text, per `t_audit.md` section ownership); `state.json` inline, for the mechanical non-gate phase-field write at step 7 (`sprint-lifecycle.md` "State recovery")
+- write a file: `<sprint>/audit.md` (assembled by this workflow from BA + Architect returned text, per `t_audit.md` section ownership); `state.json` and decisions-log inline, for the mechanical non-gate writes at steps 2 and 7 (`sprint-lifecycle.md` "State recovery")
 - request user decision: only on user-facing escalation from agents
 - delegate to agent in parallel: `asd-ba`, `asd-architect`; delegate to agent: `asd-pm`
 
 ## Workflow
 
 1. Read `<sprint>/state.json` — confirm predecessor done; read frozen `documents.audit`, `documents.prd`, `documents.adr`
-2. **No-op path** — if `documents.audit: disabled`: delegate to agent `asd-pm` to set `phase=audit`, append `"audit"` to `state.json.skipped_phases`, append decisions-log "audit skipped (documents.audit disabled)" — **no user decision requested** (`sprint-lifecycle.md` "No-op phase rule"); emit phase COMPLETED with return contract; skip remaining steps
+2. **No-op path** — if `documents.audit: disabled`: write inline (mechanical, no gate — no user decision requested, `sprint-lifecycle.md` "No-op phase rule"): set `phase=audit`, append `"audit"` to `state.json.skipped_phases`, append decisions-log "audit skipped (documents.audit disabled)"; emit phase COMPLETED with return contract; skip remaining steps
 3. Read `.asd/project/config.yaml` (`project.subsystem_decomposition`, `language.docs`)
 4. Read `<sprint>/sprint.md` (refined scope)
 5. **Parallel dispatch** — both creators write disjoint `t_audit.md` sections with no content dependency; delegate to agent `asd-ba` and agent `asd-architect` in parallel:
@@ -52,7 +52,7 @@ Orchestration body for the `asd-phase-audit` skill. Operation-mapping to host to
 ## Agents delegated to
 - `asd-ba` (docs scan) — parallel with Architect, returns text
 - `asd-architect` (code scan) — parallel with BA, returns text
-- `asd-pm` (state + user approval)
+- `asd-pm` (user approval, step 7); no-op path (step 2) is an inline workflow write, no PM dispatch
 
 ## Skills/workflows dispatched
 None.
