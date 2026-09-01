@@ -25,6 +25,7 @@ responsibility:
       --code-bg: #f4f6f8; --border: #d0d7de; --max: 1040px;
       --card-bg: #fafbfc;
       --ok: #1f883d; --warn: #b35900; --danger: #cf222e; --info: #0969da; --neutral: #5b6770;
+      --ok-tint: rgba(31,136,61,0.07); --ok-tint-strong: rgba(31,136,61,0.10); --danger-tint: rgba(207,34,46,0.06);
       --chip-must-bg: #ffebe9; --chip-must-fg: #cf222e;
       --chip-should-bg: #fff5e1; --chip-should-fg: #9a6700;
       --chip-may-bg: #ddf4ff; --chip-may-fg: #0969da;
@@ -33,6 +34,8 @@ responsibility:
       :root {
         --fg: #e6e6e6; --bg: #0e1116; --muted: #9aa4ad; --code-bg: #161b22; --border: #30363d;
         --card-bg: #161b22;
+        --accent: #58a6ff; --ok: #3fb950; --warn: #d29922; --danger: #f85149; --info: #58a6ff;
+        --ok-tint: rgba(63,185,80,0.12); --ok-tint-strong: rgba(63,185,80,0.16); --danger-tint: rgba(248,81,73,0.10);
         --chip-must-bg: #3b1416; --chip-must-fg: #ff7b72;
         --chip-should-bg: #2d2410; --chip-should-fg: #e3b341;
         --chip-may-bg: #0d2538; --chip-may-fg: #58a6ff;
@@ -41,8 +44,8 @@ responsibility:
     html, body { margin: 0; padding: 0; }
     * { box-sizing: border-box; }
     body { font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--fg); background: var(--bg); }
-    .layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 100vh; }
-    .layout.no-toc { grid-template-columns: minmax(0, 1fr); }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr); min-height: 100vh; }
+    .layout:has(> nav.toc) { grid-template-columns: 260px minmax(0, 1fr); }
     .content { min-width: 0; }
     header, main, footer { max-width: var(--max); margin: 0 auto; padding: 16px 24px; }
     header { border-bottom: 1px solid var(--border); }
@@ -55,17 +58,8 @@ responsibility:
     .badges .status-locked      { color: var(--info);    border-color: var(--info); }
     .stats { margin-top: 6px; font-size: 0.85rem; color: var(--muted); }
     .stats .chip { display: inline-block; padding: 1px 8px; margin-right: 6px; border-radius: 10px; background: var(--code-bg); border: 1px solid var(--border); }
-    nav.toc { position: sticky; top: 0; align-self: start; height: 100vh; overflow-y: auto; padding: 18px 14px; border-right: 1px solid var(--border); background: var(--card-bg); font-size: 0.9rem; }
-    nav.toc .toc-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 0 0 8px; padding-left: 6px; }
-    nav.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: tocn; }
-    nav.toc li { margin: 2px 0; counter-increment: tocn; }
-    nav.toc a { display: block; padding: 4px 8px; border-radius: 4px; color: var(--fg); text-decoration: none; border-left: 2px solid transparent; }
-    nav.toc a:hover { background: var(--code-bg); color: var(--accent); }
-    nav.toc a.active { background: var(--code-bg); color: var(--accent); border-left-color: var(--accent); font-weight: 600; }
-    nav.toc a::before { content: counter(tocn) ". "; color: var(--muted); font-variant-numeric: tabular-nums; }
     @media (max-width: 880px) {
       .layout { grid-template-columns: 1fr; }
-      nav.toc { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--border); }
     }
     h2, h3, h4 { line-height: 1.25; margin-top: 1.6em; }
     h2 { border-bottom: 1px solid var(--border); padding-bottom: 4px; }
@@ -123,13 +117,11 @@ responsibility:
     .adr h3 { margin-top: 1em; font-size: 1rem; color: var(--muted); }
     .status-chip { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.78rem; border: 1px solid var(--border); }
     .status-proposed   { color: var(--warn);    border-color: var(--warn);    background: var(--chip-should-bg); }
-    .status-accepted   { color: var(--ok);      border-color: var(--ok);      background: rgba(31,136,61,0.10); }
-    .status-superseded { color: var(--muted);   border-color: var(--muted);   background: var(--code-bg); text-decoration: line-through; }
-    .status-deprecated { color: var(--danger);  border-color: var(--danger);  background: var(--chip-must-bg); }
+    .status-accepted   { color: var(--ok);      border-color: var(--ok);      background: var(--ok-tint-strong); }
     .consequences { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .consequences .pros, .consequences .cons { padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border); }
-    .consequences .pros { background: rgba(31,136,61,0.07); border-left: 3px solid var(--ok); }
-    .consequences .cons { background: rgba(207,34,46,0.06); border-left: 3px solid var(--danger); }
+    .consequences .pros { background: var(--ok-tint); border-left: 3px solid var(--ok); }
+    .consequences .cons { background: var(--danger-tint); border-left: 3px solid var(--danger); }
     .consequences h3 { margin: 0 0 4px; }
     .consequences ul { margin: 0; padding-left: 20px; }
     @media (max-width: 720px) { .consequences { grid-template-columns: 1fr; } }
@@ -164,20 +156,8 @@ responsibility:
     /* Accessibility */
     section.a11y-domain { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 18px; margin: 14px 0; }
     section.a11y-domain h2 { border-bottom: 1px dashed var(--border); }
-    .a11y-domain .scope { font-size: 0.9rem; color: var(--muted); margin: 4px 0 8px; }
     .limitation { background: var(--chip-should-bg); border-left: 3px solid var(--warn); padding: 8px 12px; margin: 6px 0; border-radius: 4px; }
     .limitation b { color: var(--warn); }
-
-    /* API */
-    .http-method { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.78rem; font-weight: 700; font-family: ui-monospace, "Cascadia Code", Menlo, monospace; letter-spacing: 0.5px; border: 1px solid var(--border); }
-    .http-get    { color: var(--info);   background: var(--chip-may-bg);    border-color: var(--info); }
-    .http-post   { color: var(--ok);     background: rgba(31,136,61,0.10);  border-color: var(--ok); }
-    .http-put    { color: var(--warn);   background: var(--chip-should-bg); border-color: var(--warn); }
-    .http-patch  { color: var(--warn);   background: var(--chip-should-bg); border-color: var(--warn); }
-    .http-delete { color: var(--danger); background: var(--chip-must-bg);   border-color: var(--danger); }
-    article.endpoint { border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin: 14px 0; background: var(--card-bg); }
-    article.endpoint > h3 { margin-top: 0; font-family: ui-monospace, "Cascadia Code", Menlo, monospace; font-size: 1rem; }
-    article.endpoint h4 { margin: 12px 0 4px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); }
 
     /* Design system */
     .swatch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
@@ -191,7 +171,6 @@ responsibility:
     .preview { padding: 16px; border: 1px dashed var(--border); border-radius: 6px; background: var(--bg); }
 
     @media print {
-      nav.toc { background: none; border: 1px solid var(--border); }
       a { color: inherit; text-decoration: none; }
       footer { page-break-before: always; }
       details.role-group[open] > summary { list-style: none; }
@@ -199,13 +178,11 @@ responsibility:
       tr, li { break-inside: avoid; }
     }
   </style>
-  <!-- {{MERMAID_SCRIPT}}: mermaid CDN <script src> + init tag pair, filled only when CONTENT contains a `.mermaid` diagram block; empty string otherwise -->
   {{MERMAID_SCRIPT}}
+  {{TOC_ASSETS}}
 </head>
 <body>
-  <!-- {{LAYOUT_CLASS}}: " no-toc" when {{TOC_NAV}} is empty (fragment has fewer than 3 h2 sections); empty string otherwise -->
-  <div class="layout{{LAYOUT_CLASS}}">
-    <!-- {{TOC_NAV}}: full <nav class="toc">...</nav> block, omitted (empty string) when fragment has fewer than 3 h2 sections -->
+  <div class="layout">
     {{TOC_NAV}}
     <div class="content">
       <header>
@@ -223,24 +200,5 @@ responsibility:
       <footer>by {{GENERATED_BY}} | {{GENERATED_AT}} | sprint {{SPRINT_ID}}</footer>
     </div>
   </div>
-  <script>
-    // Scrollspy: highlight current section in TOC
-    (function () {
-      const links = Array.from(document.querySelectorAll('nav.toc a[href^="#"]'));
-      if (!links.length) return;
-      const map = new Map();
-      links.forEach(a => { const el = document.getElementById(a.getAttribute('href').slice(1)); if (el) map.set(el, a); });
-      const io = new IntersectionObserver(entries => {
-        entries.forEach(e => {
-          if (e.isIntersecting) {
-            links.forEach(a => a.classList.remove('active'));
-            const a = map.get(e.target);
-            if (a) a.classList.add('active');
-          }
-        });
-      }, { rootMargin: '-30% 0px -65% 0px', threshold: 0 });
-      map.forEach((_a, el) => io.observe(el));
-    })();
-  </script>
 </body>
 </html>
