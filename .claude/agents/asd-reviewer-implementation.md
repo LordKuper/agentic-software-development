@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-implementation.md. source_digest=sha256:ef6d07bb35c5a345328af8df83d1595ef568390fb0d219839762b3081399aa12 content_digest=sha256:731940bf0c9c7b7073d9d64d3780cd83d7e772277119d87456005ddb834b08c9 asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-implementation.md. source_digest=sha256:e30e4d154eac8d9b46c0c5a8a289b568f97b4eed4e4df81eea00cbddd62ab026 content_digest=sha256:01c082204250caea8fbd95ecb5916f70984f9a7511cbca9f5a81997b62f46259 asd_version=2.0.0 schema=1
 name: asd-reviewer-implementation
 description: "Impl-review verification that code covers every PRD acceptance criterion completely and correctly. Covers: PRD acceptance criteria coverage trace, requirement-to-code mapping, missing or partial implementations. Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), test coverage (delegates to asd-reviewer-testing), ui/a11y (delegates to asd-reviewer-ui), over-engineering (delegates to asd-reviewer-simplification), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -70,7 +70,6 @@ Reviewer:
 
 - Never assess bugs, security, or test quality (other reviewers)
 - Never raise nitpick categories
-- Never raise low/medium findings on iter 2+ (severity floor)
 - Never modify code, ACs, or persistent docs
 - Never read prior `iter-*/` review files — each iteration reviews clean context (per `review-policy.md`)
 - Never run shell commands

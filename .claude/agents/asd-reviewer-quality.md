@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-quality.md. source_digest=sha256:b8b020a93d339fbc9545972d776d1a219d9ce3dbf3caa3da670120bff1b42bad content_digest=sha256:728380b24439158b80f3af41d8a07d844dc7a7ae46d3920cbadc90f6f0891d19 asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-quality.md. source_digest=sha256:aa5d7542f2c3206f94b906403bae578a4b16335898348c93d4f34b1e8256b561 content_digest=sha256:78e80a636b3a43a87cd3c1ee79ec6ac0d05e366cf4b7f0e90808171a85415ce7 asd_version=2.0.0 schema=1
 name: asd-reviewer-quality
 description: "Impl-review scan of code and tests for bugs, security vulnerabilities, best-practice violations. Covers: bug patterns (off-by-one, null paths, race conditions, resource leaks), security holes (secrets, injection, auth bypass, crypto misuse, input validation), language/framework best practices, contract violations vs ADR. Does NOT handle: requirement coverage (delegates to asd-reviewer-implementation), test coverage (delegates to asd-reviewer-testing), ui/a11y (delegates to asd-reviewer-ui), over-engineering (delegates to asd-reviewer-simplification), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -35,7 +35,7 @@ Quality reviewer. Scans code and tests for bugs, security issues, best-practice 
 
 ## Inputs
 
-- diff payload (iter 1: `git diff <base>...HEAD`; iter 2+: `git diff` + last commit)
+- diff payload (iter 1: `git diff <base>...HEAD`; iter 2+: diff since previous iteration's recorded HEAD, per `external-review.md` "Iteration-aware diff") from dispatching phase skill
 - whichever persistent doc folded a relevant sprint ADR (decisions for contract checks — `sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `docs/architecture/stack.html` (stack constraints)
 - `.asd/project/custom-coding-rules.md` (forbidden patterns, security policy)
@@ -76,7 +76,6 @@ Reviewer:
 
 - Never fix code yourself — emit findings only
 - Never raise nitpick categories
-- Never raise low/medium findings on iter 2+ (per severity floor)
 - Never modify code, ADRs, or persistent docs
 - Never read prior `iter-*/` review files — each iteration reviews clean context (per `review-policy.md`)
 - Never run shell commands

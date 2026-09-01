@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:437366121554f002af00f078e470537b83c887ad328368e68e32c75ff34e3a85 content_digest=sha256:db862be20c01bc4a5505bc0e5b6d7a2a5512fcd5daa0cb20b70a6571cc7fbcf6 asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:206c8aae25f4c6df1ee291d996ac683f4d908e3524a0f5face6f1164973e57d4 content_digest=sha256:e1ff3398f1d07225e688a68f30206478695a7160e5ea09c319e444475a2fa667 asd_version=2.0.0 schema=1
 name: asd-reviewer-testing
 description: "Impl-review assessment of the test-plan decisions and the tests themselves, plus judging manual-verification necessity when automation is impossible. Covers: risk→check fit per test-plan.md, justification of removed tests and of no-test decisions, fail-first proof on regression tests, coverage of AC-N, edge cases on core paths, absence of test-for-test-sake (meaningless assertions), flaky patterns, manual-verification necessity judgment against the spec `test-plan.md` already owns (single home — never re-authored here). Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), AC implementation coverage (delegates to asd-reviewer-implementation), ui/a11y (delegates to asd-reviewer-ui), over-engineering (delegates to asd-reviewer-simplification), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -80,7 +80,6 @@ Reviewer:
 
 - Never write or modify tests yourself
 - Never raise nitpick categories
-- Never raise low/medium findings on iter 2+
 - Never specify manual verification when automation IS possible — prefer automated
 - Never read prior `iter-*/` review files — each iteration reviews clean context (per `review-policy.md`)
 - Never run shell commands

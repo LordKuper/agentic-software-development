@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-performance.md. source_digest=sha256:10c85f1c7f5db33290a52c8701768b70c5cceb91b10fe38d0f60597290b29ea4 content_digest=sha256:630ff6fa800f5788d5f4441be349421335428d31e310b993e60b839b6b25c66b asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-performance.md. source_digest=sha256:78eb682417d19decf8dd04443fe36553d933d34c17085f60438cfefd748ecd68 content_digest=sha256:e004664d5254885c640d3583c3a8eed20de1bcf9b600e30c6042887111ef488e asd_version=2.0.0 schema=1
 name: asd-reviewer-performance
 description: "Impl-review assessment of performance against project budgets and regression detection. Covers: latency/memory/throughput budget compliance, algorithmic complexity (nested loops on user-sized collections, naive search where index exists), perf anti-patterns (n+1 queries, sync IO on hot path, unbounded allocations, copy-on-large-collection, blocking work on UI thread), regression detection vs baseline, hot-path identification lacking measurement or caching. Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), AC coverage (delegates to asd-reviewer-implementation), test coverage (delegates to asd-reviewer-testing), ui/a11y (delegates to asd-reviewer-ui), over-engineering (delegates to asd-reviewer-simplification), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -75,7 +75,6 @@ Reviewer:
 
 - Never assess bugs, security, AC coverage, test quality, ui, or simplification
 - Never raise nitpick categories
-- Never raise low/medium findings on iter 2+
 - Never modify code
 - Never read prior `iter-*/` review files — each iteration reviews clean context (per `review-policy.md`)
 - Never run shell commands

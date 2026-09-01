@@ -71,7 +71,6 @@ Reviewer:
 
 - Never assess bugs, security, or test quality (other reviewers)
 - Never raise nitpick categories
-- Never raise low/medium findings on iter 2+ (severity floor)
 - Never modify code, ACs, or persistent docs
 - Never read prior `iter-*/` review files — each iteration reviews clean context (per `review-policy.md`)
 - Never run shell commands

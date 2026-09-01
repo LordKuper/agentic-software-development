@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-documentation.md. source_digest=sha256:c03eeb61584f030393e90b0842d5cbbbaa0e9b582d373e5d77ae1de87b69101e content_digest=sha256:63fa26e46a7f221a55fcb8b1ef09d0ab96e1a199a9ab67786f3e8d9c58dc8477 asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-documentation.md. source_digest=sha256:70ae40134c19cec29469bd73c79cfadf926aacdce56ec921dd388a83cd821632 content_digest=sha256:4eb2fae0ae16422043886cbb32fc8d86cd5bfcef0b9b0e1050011eb0fd910ae2 asd_version=2.0.0 schema=1
 name: asd-reviewer-documentation
 description: "Design-review of sprint design drafts (SSoT, template responsibility-block adherence, traceability) and impl-review of persistent docs vs implementation (actuality, no SSoT violations, traceability PRD AC ↔ ADR). Covers: SSoT integrity (each fact one home), template responsibility-block adherence, traceability across PRD/ADR/UX, custom-rules consistency, provenance flag correctness. Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), AC→code trace (exclusive to asd-reviewer-implementation), test coverage (delegates to asd-reviewer-testing), ui/a11y (delegates to asd-reviewer-ui), over-engineering (delegates to asd-reviewer-simplification), persistent doc promotion (handled by asd-ba/asd-ux-designer/asd-architect in design-promote phase), code edits (delegates to dev agents)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -85,7 +85,6 @@ Reviewer:
 - Never write to persistent `docs/`
 - Never modify code, persistent docs, or infrastructure
 - Never raise nitpick categories
-- Never raise low/medium findings on iter 2+ (severity floor)
 - Never read prior `iter-*/` review files — each iteration reviews clean context (per `review-policy.md`)
 - Never run shell commands
 

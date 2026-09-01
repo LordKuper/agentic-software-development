@@ -36,7 +36,7 @@ Quality reviewer. Scans code and tests for bugs, security issues, best-practice 
 
 ## Inputs
 
-- diff payload (iter 1: `git diff <base>...HEAD`; iter 2+: `git diff` + last commit)
+- diff payload (iter 1: `git diff <base>...HEAD`; iter 2+: diff since previous iteration's recorded HEAD, per `external-review.md` "Iteration-aware diff") from dispatching phase skill
 - whichever persistent doc folded a relevant sprint ADR (decisions for contract checks — `sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `docs/architecture/stack.html` (stack constraints)
 - `.asd/project/custom-coding-rules.md` (forbidden patterns, security policy)
@@ -77,7 +77,6 @@ Reviewer:
 
 - Never fix code yourself — emit findings only
 - Never raise nitpick categories
-- Never raise low/medium findings on iter 2+ (per severity floor)
 - Never modify code, ADRs, or persistent docs
 - Never read prior `iter-*/` review files — each iteration reviews clean context (per `review-policy.md`)
 - Never run shell commands
