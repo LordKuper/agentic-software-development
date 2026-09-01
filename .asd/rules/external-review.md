@@ -57,9 +57,9 @@ design-review payload never contains source code; consumer-mode impl-review payl
 | design-review | 1 | full content of `<sprint>/design/` files, minus `c4-full/dist/` |
 | design-review | 2+ | per-file diff since previous iteration snapshot |
 | impl-review | 1 | `git diff <git.base_branch>...HEAD <pathspec>` |
-| impl-review | 2+ | `git diff <pathspec>` (uncommitted) plus last commit (`git show HEAD <pathspec>`) |
+| impl-review | 2+ | `git diff <state.json reviews.impl.iteration_heads["iter-(N-1)"]>...HEAD <pathspec>` |
 
-Iteration 1 covers all sprint work in that phase; later iterations cover only changes since the last round. design-review persists a file snapshot each iteration; next iteration reads it to compute its diff.
+Iteration 1 covers all sprint work in that phase; later iterations cover every commit since the sha recorded at the start of the previous iteration (`state.json.reviews.impl.iteration_heads`, `sprint-lifecycle.md` "State recovery") — not just the last commit, so a multi-commit review-fix cycle stays fully covered. design-review persists a file snapshot each iteration; next iteration reads it to compute its diff.
 
 Agent dispatched fresh each iteration (`review-policy.md` clean-context). Incremental diff narrows *input*, not context.
 

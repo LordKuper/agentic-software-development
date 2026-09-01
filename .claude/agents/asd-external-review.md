@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:76c1f7bc35f095f2100cf72b59892b6f7a312c7046999a0c0ac4469a67ec585e content_digest=sha256:43ddc040dc404829fe70dd9e35d101b70d1c4d35d6bde9e3e45f63a671e757bc asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:1ab1c79586fe155af3f6c13328d233a518cc4d41a9254249257b99e462421254 content_digest=sha256:db9759f6bcbcb292e857ef8425faf4f8cd98adaad91f457d96a592d9bb6c2318 asd_version=2.0.0 schema=1
 name: asd-external-review
 description: "External reviewer wrapping the other provider's CLI (Codex under Claude Code, Claude under Codex), run in parallel with internal reviewers during design-review and impl-review. Covers: wrapped-CLI availability detection per system.os, iteration-aware diff payload preparation (full vs incremental), prompt selection per phase (design or impl), output parsing and ASD severity mapping, kept/dropped accounting per severity floor, stalemate detection across iterations. Does NOT handle: internal review (delegates to asd-reviewer-* agents), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, Bash, AskUserQuestion]
@@ -47,7 +47,7 @@ External review wrapper. Runs `codex` CLI parallel to internal reviewers, normal
   - design-review iter 1: full content of `<sprint>/design/` files (no code, no `c4-full/dist/`)
   - design-review iter 2+: per-file diff since last iteration snapshot
   - impl-review iter 1: `git diff <base>...HEAD <pathspec>` (code+tests, no docs)
-  - impl-review iter 2+: `git diff <pathspec>` (uncommitted) + `git show HEAD <pathspec>`
+  - impl-review iter 2+: `git diff <state.json reviews.impl.iteration_heads["iter-(N-1)"]>...HEAD <pathspec>` (every commit since the previous iteration's recorded HEAD, not just the last one)
 - previous iteration finding set (iter ≥ 2 only) — supplied by dispatching phase skill for stalemate detection; agent never reads prior `iter-*/` files itself
 
 ## Outputs

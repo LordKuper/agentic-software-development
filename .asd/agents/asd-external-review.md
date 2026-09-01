@@ -54,7 +54,7 @@ External review wrapper. Runs `{{wraps_cli}}` CLI parallel to internal reviewers
   - design-review iter 1: full content of `<sprint>/design/` files (no code, no `c4-full/dist/`)
   - design-review iter 2+: per-file diff since last iteration snapshot
   - impl-review iter 1: `git diff <base>...HEAD <pathspec>` (code+tests, no docs)
-  - impl-review iter 2+: `git diff <pathspec>` (uncommitted) + `git show HEAD <pathspec>`
+  - impl-review iter 2+: `git diff <state.json reviews.impl.iteration_heads["iter-(N-1)"]>...HEAD <pathspec>` (every commit since the previous iteration's recorded HEAD, not just the last one)
 - previous iteration finding set (iter ≥ 2 only) — supplied by dispatching phase skill for stalemate detection; agent never reads prior `iter-*/` files itself
 
 ## Outputs
