@@ -10,7 +10,7 @@ self_hosting: disabled
 # Absent field within an existing group = disabled (fail-closed).
 documents:
   audit: enabled      # <sprint>/audit.md
-  prd: enabled         # docs/prd.html + persistent requirements
+  prd: enabled         # design/prd.html + persistent requirements
   ux_spec: enabled     # ux-spec, design-system gate, design-md-delta
   adr: enabled          # adr.html + persistent ADR
   c4: enabled            # c4-full + persistent C4 (also requires project.subsystem_decomposition: enabled)

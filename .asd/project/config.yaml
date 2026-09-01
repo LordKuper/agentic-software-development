@@ -12,7 +12,7 @@ self_hosting: enabled
 # framework whose spec already lives in .asd/rules/ + this plan doc.
 documents:
   audit: enabled       # <sprint>/audit.md
-  prd: disabled         # docs/prd.html + persistent requirements
+  prd: disabled         # design/prd.html + persistent requirements
   ux_spec: disabled     # ux-spec, design-system gate, design-md-delta
   adr: disabled          # adr.html + persistent ADR
   c4: disabled             # c4-full + persistent C4

@@ -224,7 +224,7 @@ self_hosting: disabled   # enabled | disabled — ASD developing itself through 
 
 documents:                # optional sprint documents; absent group = all enabled (back-compat)
   audit: enabled           # <sprint>/audit.md
-  prd: enabled              # docs/prd.html + persistent requirements
+  prd: enabled              # design/prd.html + persistent requirements
   ux_spec: enabled          # ux-spec, design-system gate, design-md-delta
   adr: enabled               # adr.html + persistent ADR
   c4: enabled                  # c4-full + persistent C4 (also needs project.subsystem_decomposition: enabled)
