@@ -1,4 +1,4 @@
-# ASD generated. Edit .asd/agents/asd-ux-designer.md. source_digest=sha256:26eaf6cdbfdbf1d2220333605253ed8a1b145c32f04ce866715e39c1fbc3d9cd content_digest=sha256:c10b03c8c4bfb11818b9ffe54d44846288ef97668a4b14964880391ce3c3bd38 asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-ux-designer.md. source_digest=sha256:c2313b0dcc1a454150c821477f63045bf0c612e9bcd206e480b4dcaf96482bd1 content_digest=sha256:b67dff91095c0494d338259331f1f2aaec09d691906928fdb08ccaf335806dea asd_version=2.0.0 schema=1
 name = "asd-ux-designer"
 description = "User flows, ui mockups, design system (DESIGN.md tokens/components), design-system.html. Covers: ux-spec authoring (sprint draft plus reverse/migrated), DESIGN.md edits using Google Labs format spec, design-md-delta proposals, design-system.html regeneration with swatches/typography/spacing/component previews, ui composition preview. Does NOT handle: accessibility requirements (project-wide, owned by accessibility.html), requirements (delegates to asd-ba), architecture decisions (delegates to asd-architect), code (delegates to dev agents)."
 model = "gpt-5.6"
@@ -89,7 +89,7 @@ Creator:
 
 ## Output format
 
-- ux-spec: fragment per `t_ux-spec.html`, wrapped in `t_html-shell.html` per `artifact-layout.md` HTML shell wrapping rule (fill all placeholders: DOC_TYPE=UX-spec, STATUS, STATS=`N flows · N mockups · updated …`, TOC_NAV/LAYOUT_CLASS/MERMAID_SCRIPT per `artifact-layout.md` placeholder table (conditional), etc.)
+- ux-spec: fragment per `t_ux-spec.html`, wrapped in `t_html-shell.html` per `artifact-layout.md` HTML shell wrapping rule (fill all placeholders: DOC_TYPE=UX-spec, STATUS, STATS=`N flows · N mockups · updated …`, TOC_NAV/TOC_ASSETS/MERMAID_SCRIPT per `artifact-layout.md` placeholder table (conditional), etc.)
 - design-md-delta: per `t_design-md-delta.yaml`
 - DESIGN.md: per Google Labs format (upstream spec)
 - design-system.html: fragment per `t_design-system.html` with live data from DESIGN.md, wrapped in `t_html-shell.html` (DOC_TYPE=Design-system, SUBSYSTEM=project)

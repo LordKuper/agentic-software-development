@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-ux-designer.md. source_digest=sha256:26eaf6cdbfdbf1d2220333605253ed8a1b145c32f04ce866715e39c1fbc3d9cd content_digest=sha256:741bf27d1282ca750ac0e331670b36faf1a39e5e9199a5346e79bc5f90db79c9 asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-ux-designer.md. source_digest=sha256:c2313b0dcc1a454150c821477f63045bf0c612e9bcd206e480b4dcaf96482bd1 content_digest=sha256:3951d5b9fb0e5603a5f44d2c241b3a0f8bed606510c6aca436b06b052084c0ef asd_version=2.0.0 schema=1
 name: asd-ux-designer
 description: "User flows, ui mockups, design system (DESIGN.md tokens/components), design-system.html. Covers: ux-spec authoring (sprint draft plus reverse/migrated), DESIGN.md edits using Google Labs format spec, design-md-delta proposals, design-system.html regeneration with swatches/typography/spacing/component previews, ui composition preview. Does NOT handle: accessibility requirements (project-wide, owned by accessibility.html), requirements (delegates to asd-ba), architecture decisions (delegates to asd-architect), code (delegates to dev agents)."
 tools: [Read, Glob, Grep, Edit, Write, WebFetch, WebSearch, AskUserQuestion]
@@ -94,7 +94,7 @@ Creator:
 
 ## Output format
 
-- ux-spec: fragment per `t_ux-spec.html`, wrapped in `t_html-shell.html` per `artifact-layout.md` HTML shell wrapping rule (fill all placeholders: DOC_TYPE=UX-spec, STATUS, STATS=`N flows · N mockups · updated …`, TOC_NAV/LAYOUT_CLASS/MERMAID_SCRIPT per `artifact-layout.md` placeholder table (conditional), etc.)
+- ux-spec: fragment per `t_ux-spec.html`, wrapped in `t_html-shell.html` per `artifact-layout.md` HTML shell wrapping rule (fill all placeholders: DOC_TYPE=UX-spec, STATUS, STATS=`N flows · N mockups · updated …`, TOC_NAV/TOC_ASSETS/MERMAID_SCRIPT per `artifact-layout.md` placeholder table (conditional), etc.)
 - design-md-delta: per `t_design-md-delta.yaml`
 - DESIGN.md: per Google Labs format (upstream spec)
 - design-system.html: fragment per `t_design-system.html` with live data from DESIGN.md, wrapped in `t_html-shell.html` (DOC_TYPE=Design-system, SUBSYSTEM=project)

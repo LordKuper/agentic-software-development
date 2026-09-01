@@ -95,7 +95,7 @@ Creator:
 
 ## Output format
 
-- ux-spec: fragment per `t_ux-spec.html`, wrapped in `t_html-shell.html` per `artifact-layout.md` HTML shell wrapping rule (fill all placeholders: DOC_TYPE=UX-spec, STATUS, STATS=`N flows · N mockups · updated …`, TOC_NAV/LAYOUT_CLASS/MERMAID_SCRIPT per `artifact-layout.md` placeholder table (conditional), etc.)
+- ux-spec: fragment per `t_ux-spec.html`, wrapped in `t_html-shell.html` per `artifact-layout.md` HTML shell wrapping rule (fill all placeholders: DOC_TYPE=UX-spec, STATUS, STATS=`N flows · N mockups · updated …`, TOC_NAV/TOC_ASSETS/MERMAID_SCRIPT per `artifact-layout.md` placeholder table (conditional), etc.)
 - design-md-delta: per `t_design-md-delta.yaml`
 - DESIGN.md: per Google Labs format (upstream spec)
 - design-system.html: fragment per `t_design-system.html` with live data from DESIGN.md, wrapped in `t_html-shell.html` (DOC_TYPE=Design-system, SUBSYSTEM=project)
