@@ -88,14 +88,14 @@ Owner: `backend-dev`. Satisfies AC-1. Material risk for impl-test: three of thes
 ### Task 4: Rename the docs root across `.asd/skills/`
 Owner: `backend-dev`. Satisfies AC-1. Material risk for impl-test: skill `description` strings are the dispatch triggers and live inside JSON frontmatter — a malformed edit breaks dispatch on both providers (audit R-6).
 
-- [ ] `asd-init/SKILL.md` — line 4 (description), 58–60, 107, 109, **and backslash lines 101, 103** (`design\\ux\\DESIGN.md`, R-10)
-- [ ] `asd-design-system/SKILL.md` — line 4 (description), 15, 16, 28, 94, 101, 110, 142–144
-- [ ] `asd-stack/SKILL.md` — line 4 (description), 15, 27, 96, 104, 134, 135
-- [ ] `asd-concept/SKILL.md` — lines 26, 82, 89, 107
-- [ ] `asd-update/SKILL.md` — line 4 (description prose, G-1 convention) and line 20. Resolution of G-13: the "Never touched" line becomes `docs/**`; the migration window is covered by the CHANGELOG entry in Task 7, not by listing both roots
-- [ ] `asd-phase-design-promote/SKILL.md` — line 4 (description) only; the skill name and the phase name stay unchanged (AC-3)
-- [ ] After each frontmatter edit, confirm the JSON still parses
-- [ ] Never hand-edit the generated mirrors under `.claude/skills/` or `.agents/skills/` — they are the output of Task 9
+- [x] `asd-init/SKILL.md` — line 4 (description), 58–60, 107, 109, **and backslash lines 101, 103** (`design\\ux\\DESIGN.md`, R-10)
+- [x] `asd-design-system/SKILL.md` — line 4 (description), 15, 16, 28, 94, 101, 110, 142–144
+- [x] `asd-stack/SKILL.md` — line 4 (description), 15, 27, 96, 104, 134, 135
+- [x] `asd-concept/SKILL.md` — lines 26, 82, 89, 107
+- [x] `asd-update/SKILL.md` — line 4 (description prose, G-1 convention) and line 20. Resolution of G-13: the "Never touched" line becomes `docs/**`; the migration window is covered by the CHANGELOG entry in Task 7, not by listing both roots
+- [x] `asd-phase-design-promote/SKILL.md` — line 4 (description) only; the skill name and the phase name stay unchanged (AC-3)
+- [x] After each frontmatter edit, confirm the JSON still parses
+- [x] Never hand-edit the generated mirrors under `.claude/skills/` or `.agents/skills/` — they are the output of Task 9
 
 ### Task 5: Rename the docs root across `.asd/workflows/`
 Owner: `backend-dev`. Satisfies AC-1 (preserving AC-3). `.asd/workflows/` has no generated counterpart, so these edits are canon-only and — per audit G-10 — are invisible to `sync.js --check`.

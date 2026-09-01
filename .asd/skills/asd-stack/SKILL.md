@@ -1,7 +1,7 @@
 ---
 {
   "name": "asd-stack",
-  "description": "Forms or edits the project tech stack document at design/architecture/stack.html via asd-architect, branching by silent detection into one of four flows (clean slate / constraints / clear stack / brownfield extraction). Verifies versions via WebFetch, runs knowledge-gap analysis, and maintains a tech-reference doc per chosen tech. Use when the user runs /asd-stack, when asd-init or asd-concept detects a missing stack.html and suggests this skill, or when the user asks to define, draft, refine, edit, upgrade, or reverse-engineer the project technology stack.",
+  "description": "Forms or edits the project tech stack document at docs/architecture/stack.html via asd-architect, branching by silent detection into one of four flows (clean slate / constraints / clear stack / brownfield extraction). Verifies versions via WebFetch, runs knowledge-gap analysis, and maintains a tech-reference doc per chosen tech. Use when the user runs /asd-stack, when asd-init or asd-concept detects a missing stack.html and suggests this skill, or when the user asks to define, draft, refine, edit, upgrade, or reverse-engineer the project technology stack.",
   "claude": {
     "allowed-tools": "Read Glob Grep AskUserQuestion Task"
   }
@@ -12,7 +12,7 @@
 
 ## Preconditions
 - `.asd/project/config.yaml` exists (run `/asd-init` first)
-- `design/product/concept.html` exists (run `/asd-concept` first; concept is mandatory input)
+- `docs/product/concept.html` exists (run `/asd-concept` first; concept is mandatory input)
 - No active sprint required
 
 ## Operations used
@@ -24,7 +24,7 @@
 ## Phase 1 — silent detection (NO asking)
 
 Scan in order:
-1. `design/architecture/stack.html` exists, non-empty → mode = **edit**, skip to Edit-mode flow
+1. `docs/architecture/stack.html` exists, non-empty → mode = **edit**, skip to Edit-mode flow
 2. Manifests / lockfiles / Dockerfile / CI configs detected → brownfield candidate (default variant D)
 3. No code, no manifests → greenfield candidate (no default)
 4. Continue to Phase 2
@@ -93,7 +93,7 @@ Per technology entry in approved stack:
 ## Phase 6 — tech-reference creation/update
 
 Per technology in approved stack:
-- Architect creates or updates `design/architecture/tech-reference/<tech>-<version>.md` per `t_tech-reference.md`
+- Architect creates or updates `docs/architecture/tech-reference/<tech>-<version>.md` per `t_tech-reference.md`
 - Includes canonical source URL, API surface used, version-specific notes, deprecations, project conventions, "Last verified" ISO date
 - Request user decision before each persistent write
 
@@ -101,7 +101,7 @@ Per technology in approved stack:
 
 - Architect shows full assembled stack + risk summary
 - Request user decision: **A) Approve, write stack.html / B) Revise specific section** (on B re-enter Phase 4) — labels/descriptions in `language.chat`
-- on A: translate to `language.docs`, write `design/architecture/stack.html` per `t_stack.html`
+- on A: translate to `language.docs`, write `docs/architecture/stack.html` per `t_stack.html`
 - emit COMPLETED
 
 ## Phase 8 — handoff
@@ -131,8 +131,8 @@ Per technology in approved stack:
 - Every tech in stack MUST have a matching tech-reference doc before COMPLETED
 
 ## Artefacts produced
-- `design/architecture/stack.html` (created, edited, or reverse-engineered)
-- `design/architecture/tech-reference/<tech>-<version>.md` for every chosen tech
+- `docs/architecture/stack.html` (created, edited, or reverse-engineered)
+- `docs/architecture/tech-reference/<tech>-<version>.md` for every chosen tech
 - decisions-log entry (with risk summary)
 
 ## Agents dispatched
