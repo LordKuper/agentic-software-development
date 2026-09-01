@@ -1349,6 +1349,26 @@ test('release-manifest.json: every upstream_hashes entry matches the actual file
 });
 
 // ===========================================================================
+// 6c. .asd/templates/*.json must stay valid JSON - sync.js --check never
+// parses .asd/templates/ (it only classifies generated provider-view
+// targets), so nothing else in the pipeline would catch a template edit that
+// broke JSON syntax (e.g. a stray trailing comma left behind when deleting a
+// field). Placeholders like "{{SPRINT_ID}}" are quoted string values, so a
+// well-formed template parses fine as-is - this only guards syntax, not
+// placeholder semantics.
+// ===========================================================================
+
+test('every .asd/templates/*.json file parses as valid JSON', () => {
+  const templatesDir = path.join(REPO_ROOT, '.asd', 'templates');
+  const jsonFiles = fs.readdirSync(templatesDir).filter((f) => f.endsWith('.json'));
+  assert.ok(jsonFiles.length > 0, 'sanity: at least one template JSON file must exist for this guard to mean anything');
+  for (const f of jsonFiles) {
+    const abs = path.join(templatesDir, f);
+    assert.doesNotThrow(() => JSON.parse(fs.readFileSync(abs, 'utf8')), `.asd/templates/${f} must parse as valid JSON`);
+  }
+});
+
+// ===========================================================================
 // 7. SessionStart hook: --provider must change the printed skill form
 // ===========================================================================
 
