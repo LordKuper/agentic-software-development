@@ -270,11 +270,11 @@ Verdicts: **P-8**, **AG-7**, risk **R-15**. AC: AC-2, AC-3, AC-4, AC-6. Owner: *
 Affected canonical files: `.asd/workflows/asd-phase-impl-test.md` (steps 2-3, 6, Re-entry), `.asd/rules/sprint-lifecycle.md` (Impl-test phase), `.asd/templates/t_test-plan.md`, `.asd/agents/asd-test-engineer.md`.
 Material risk: audit R-15 — a defect introduced by a review-fix in a file outside the fix diff is not re-analysed for coverage. Bounded by the suite gate, which stays full-scope and unconditional.
 
-- [ ] On re-entry, scope the strategy and prune passes to the **delta since the previous entry** (the review-fix commits), not the whole change surface
-- [ ] **Amend** `test-plan.md` on re-entry instead of rewriting it from scratch
-- [ ] The suite gate (step 7) stays a **full, unconditional** run — it is the gate, and it is not narrowed
-- [ ] The removal gate (step 5) is unaffected
-- [ ] `sprint-lifecycle.md`, `t_test-plan.md`, `asd-test-engineer.md`: align; run `sync.js --apply` for the agent file
+- [x] On re-entry, scope the strategy and prune passes to the **delta since the previous entry** (the review-fix commits), not the whole change surface
+- [x] **Amend** `test-plan.md` on re-entry instead of rewriting it from scratch
+- [x] The suite gate (step 7) stays a **full, unconditional** run — it is the gate, and it is not narrowed
+- [x] The removal gate (step 5) is unaffected
+- [x] `sprint-lifecycle.md`, `t_test-plan.md`, `asd-test-engineer.md`: align; run `sync.js --apply` for the agent file
 
 ### Task 18: Make the two redundant pr DoD checks conditional
 
