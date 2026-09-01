@@ -113,9 +113,9 @@ Owner: `backend-dev`. Satisfies AC-1 (preserving AC-3). `.asd/workflows/` has no
 ### Task 6: Update `.asd/project/` and confirm the manifest needs no hand edit
 Owner: `backend-dev`. Satisfies AC-1. Material risk for impl-test: this task's main content is a set of things that must NOT change — a hand edit to `release-manifest.json` corrupts the hash ledger.
 
-- [ ] `config.yaml` — line 15 (comment); plus prose lines 8, 50 per the G-1 convention
-- [ ] Confirm (do not edit) `.asd/release-manifest.json`: every `design`-bearing string is an AC-3/AC-4 file name and `managed_paths` is `.asd/`-only (audit G-2). Its only legitimate change is the hash ledger, recomputed in Task 10
-- [ ] Do NOT touch `custom-common-rules.md:5`, `custom-coding-rules.md:5` (phase pair), `custom-design-rules.md` (file name, AC-4), `decisions-log.md` (append-only, excluded by AC-7), `stubs.md`, or `commands.yaml` (zero occurrences)
+- [x] `config.yaml` — line 15 (comment); plus prose lines 8, 50 per the G-1 convention
+- [x] Confirm (do not edit) `.asd/release-manifest.json`: every `design`-bearing string is an AC-3/AC-4 file name and `managed_paths` is `.asd/`-only (audit G-2). Its only legitimate change is the hash ledger, recomputed in Task 10
+- [x] Do NOT touch `custom-common-rules.md:5`, `custom-coding-rules.md:5` (phase pair), `custom-design-rules.md` (file name, AC-4), `decisions-log.md` (append-only, excluded by AC-7), `stubs.md`, or `commands.yaml` (zero occurrences)
 
 ### Task 7: Author the `CHANGELOG.md` migration entry
 Owner: `backend-dev`. Satisfies AC-9. This entry is the implementation of option (a) from escalation R-13 (documentation-only consumer migration); options (b) and (c) were rejected as out of scope.
