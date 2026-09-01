@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:9d6b97e4c0299381612dc6196bc41b3723675cdcdf86d0d5e5a45836874c332e content_digest=sha256:f0c14f6436a11a61bcd964ad0b486017812a3d65e70d3437cc88e2e81f4f6f63 asd_version=1.2.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:e1dc1cabe3c658df9a5a9be67b665d9845b0c6f12ed2ecaf66f84921d4ebb4bd content_digest=sha256:03458761ac69ccab8324fa1eba92d0f8d5d3c85b32d8c633fb6a03f8dd6209aa asd_version=2.0.0 schema=1
 name: asd-reviewer-testing
 description: "Impl-review assessment of the test-plan decisions and the tests themselves, plus capturing manual verification results when automation is impossible. Covers: risk→check fit per test-plan.md, justification of removed tests and of no-test decisions, fail-first proof on regression tests, coverage of AC-N, edge cases on core paths, absence of test-for-test-sake (meaningless assertions), flaky patterns, Manual verification section authoring when Testing must verify behaviour the user must exercise. Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), AC implementation coverage (delegates to asd-reviewer-implementation), ui/a11y (delegates to asd-reviewer-ui), over-engineering (delegates to asd-reviewer-simplification), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -42,7 +42,7 @@ Testing reviewer. Judges the test *decisions* recorded in `test-plan.md` and the
 
 ## Outputs
 
-- Findings and verdict as final text output, per `t_review.md` — including Manual verification section when applicable; the phase orchestrator writes it to `<sprint>/reviews/impl/iter-NN/testing.md`
+- Findings, verdict, and the complete coverage ledger as final text output, per `t_review.md` — including Manual verification section when applicable; the phase orchestrator validates the ledger, then persists only the reduced coverage form (findings + summary line + n/a list + finding rows) to `<sprint>/reviews/impl/iter-NN/testing.md` — this reviewer decides nothing about what gets written, only what it returns (`review-policy.md` "Persistence")
 
 ## Behavioral profile
 

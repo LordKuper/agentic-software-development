@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-quality.md. source_digest=sha256:d7b8e81eaff8de58690e6c15b6e7f84da78c68af36f908ae83d475070873db07 content_digest=sha256:89105bde2edd234fca9218bec36d844edd4ef1a4a1c0c924a854ef9a120b0b30 asd_version=1.2.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-quality.md. source_digest=sha256:7c3f95c0cee7b107f680a016e98996f3adc90758ac03645d09dd715fae53be7e content_digest=sha256:baa6a8ba884b7027c2e63fb4da5b745c7f6b351e3086f7c768f2f34cf69d56c7 asd_version=2.0.0 schema=1
 name: asd-reviewer-quality
 description: "Impl-review scan of code and tests for bugs, security vulnerabilities, best-practice violations. Covers: bug patterns (off-by-one, null paths, race conditions, resource leaks), security holes (secrets, injection, auth bypass, crypto misuse, input validation), language/framework best practices, contract violations vs ADR. Does NOT handle: requirement coverage (delegates to asd-reviewer-implementation), test coverage (delegates to asd-reviewer-testing), ui/a11y (delegates to asd-reviewer-ui), over-engineering (delegates to asd-reviewer-simplification), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -43,7 +43,7 @@ Quality reviewer. Scans code and tests for bugs, security issues, best-practice 
 
 ## Outputs
 
-- Findings and verdict as final text output, per `t_review.md`; the phase orchestrator writes it to `<sprint>/reviews/impl/iter-NN/quality.md`
+- Findings, verdict, and the complete coverage ledger as final text output, per `t_review.md`; the phase orchestrator validates the ledger, then persists only the reduced coverage form (findings + summary line + n/a list + finding rows) to `<sprint>/reviews/impl/iter-NN/quality.md` — this reviewer decides nothing about what gets written, only what it returns (`review-policy.md` "Persistence")
 
 ## Behavioral profile
 

@@ -15,7 +15,7 @@ Orchestration body for the `asd-phase-design-review` skill. Operation-mapping to
 
 ## Reviewer read-only contract
 
-Every reviewer dispatched below is read-only: it evaluates its scope and returns its findings + verdict as **final text output**. It never writes the review file itself. This workflow (the phase orchestrator) is what writes that returned text verbatim to `<sprint>/reviews/design/iter-NN/<reviewer>.md` per `t_review.md`, first-line verdict token `[REVIEW-design-<reviewer>]: ...` intact. The read-only guarantee is a host-level property of the reviewer agent (no write capability granted on either provider — `.asd/rules/providers.md`), not a textual instruction the reviewer could choose to ignore.
+Every reviewer dispatched below is read-only: it evaluates its scope and returns its findings + **complete coverage ledger** + verdict as **final text output**. It never writes the review file itself. This workflow (the phase orchestrator) validates the full returned ledger (step 8), then writes the **reduced coverage form** — findings table, coverage summary line, full n/a list, verbatim finding rows; `checked`/`pass` rows dropped — to `<sprint>/reviews/design/iter-NN/<reviewer>.md` per `t_review.md`, first-line verdict token `[REVIEW-design-<reviewer>]: ...` intact (`review-policy.md` "Persistence"). The read-only guarantee is a host-level property of the reviewer agent (no write capability granted on either provider — `.asd/rules/providers.md`), not a textual instruction the reviewer could choose to ignore.
 
 ## Workflow
 
@@ -31,8 +31,8 @@ Every reviewer dispatched below is read-only: it evaluates its scope and returns
    - `asd-reviewer-ui` — ux-spec compliance with DESIGN.md + accessibility.html — **only when `ux-spec.html` or design-system artifacts are in the draft set this iteration**; skipped entirely otherwise (not counted in DoD)
    - if `review.external_review=enabled` → `asd-external-review` with phase=`design-review`, scoped to whichever drafts are present
    - payload to each: in-scope draft paths (the flag-and-existence intersection from step 1 — the **scope set** each internal reviewer must cover in its `review-policy.md` coverage ledger), iteration N, review output dir `<sprint>/reviews/design/iter-NN/`, severity floor, `language.chat`, `language.docs`. Payload carries no authoring rationale, no prior-iteration verdicts. For `asd-external-review` on iter ≥ 2, also pass previous iteration's finding set (stalemate detection)
-   - each reviewer returns its findings + verdict as final text per `t_review.md` (or `external-review/t_review-report.md` for external), first-line verdict token `[REVIEW-design-<reviewer>]: ...`; **this workflow writes that text to `<sprint>/reviews/design/iter-NN/<reviewer>.md`** — the reviewer itself performs no write
-8. Wait all REVIEW_DONE, then **coverage-ledger gate** (per `review-policy.md`): per internal reviewer's returned text, validate File-coverage ledger lists every draft in scope set and no ledger row (file or rule) blank/unresolved. Any reviewer with missing scoped draft or unresolved row → reject + re-dispatch fresh, same iteration; wait again. Only complete-ledger reviews proceed (and only then are their files written per step 7). External Review exempt.
+   - each reviewer returns its findings + complete coverage ledger + verdict as final text per `t_review.md` (or `external-review/t_review-report.md` for external), first-line verdict token `[REVIEW-design-<reviewer>]: ...`; **this workflow writes the reduced coverage form of that text to `<sprint>/reviews/design/iter-NN/<reviewer>.md`** (step 8) — the reviewer itself performs no write
+8. Wait all REVIEW_DONE, then **coverage-ledger gate** (per `review-policy.md`): per internal reviewer's returned text, validate File-coverage ledger lists every draft in scope set and no ledger row (file or rule) blank/unresolved. Any reviewer with missing scoped draft or unresolved row → reject + re-dispatch fresh, same iteration; wait again. Only complete-ledger reviews proceed to write: this workflow persists findings + a coverage summary line + the full `n/a` list + every `finding #N` row verbatim — `checked`/`pass` rows dropped (`review-policy.md` "Persistence"). External Review exempt (no ledger).
 9. Parse first-line tokens from all written reviewer files; record per-reviewer verdicts under `state.json` `reviews.design.verdicts["iter-NN"]`; aggregate:
    - **All APPROVE** (across the reviewers actually dispatched this iteration) → DoD met; delegate to agent `asd-pm` to append decisions-log "design-review iter NN: APPROVE"; emit phase COMPLETED
    - **Any FAIL** → escalation:
@@ -54,7 +54,7 @@ Every reviewer dispatched below is read-only: it evaluates its scope and returns
 See `.asd/rules/review-policy.md` cumulative-budget algorithm. This workflow computes floor + passes to reviewer payload so reviewers drop findings below floor.
 
 ## Artefacts produced
-- `<sprint>/reviews/design/iter-NN/documentation.md` (written by this workflow from the reviewer's returned text)
+- `<sprint>/reviews/design/iter-NN/documentation.md` (written by this workflow, reduced coverage form of the reviewer's returned text)
 - `<sprint>/reviews/design/iter-NN/simplification.md` (written by this workflow)
 - `<sprint>/reviews/design/iter-NN/ui.md` (only when `ux-spec.html`/design-system artifacts are in scope this iteration — step 7; UI reviewer not dispatched otherwise, so this file does not exist that iteration)
 - `<sprint>/reviews/design/iter-NN/external.md` (when `external_review=enabled`; written by this workflow)

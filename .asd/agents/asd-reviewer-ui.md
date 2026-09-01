@@ -54,7 +54,7 @@ UI reviewer. Checks ux-spec drafts against DESIGN.md and accessibility baseline 
 
 ## Outputs
 
-- Findings and verdict as final text output, per `t_review.md`; the phase orchestrator writes it to `<sprint>/reviews/<design|impl>/iter-NN/ui.md`
+- Findings, verdict, and the complete coverage ledger as final text output, per `t_review.md`; the phase orchestrator validates the ledger, then persists only the reduced coverage form (findings + summary line + n/a list + finding rows) to `<sprint>/reviews/<design|impl>/iter-NN/ui.md` — this reviewer decides nothing about what gets written, only what it returns (`review-policy.md` "Persistence")
 
 ## Behavioral profile
 

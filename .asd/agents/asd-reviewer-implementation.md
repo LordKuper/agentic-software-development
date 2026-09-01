@@ -41,7 +41,7 @@ Implementation reviewer. Verifies code completely implements every PRD acceptanc
 
 ## Outputs
 
-- Findings and verdict as final text output, per `t_review.md`; the phase orchestrator writes it to `<sprint>/reviews/impl/iter-NN/implementation.md`
+- Findings, verdict, and the complete coverage ledger as final text output, per `t_review.md`; the phase orchestrator validates the ledger, then persists only the reduced coverage form (findings + summary line + n/a list + finding rows) to `<sprint>/reviews/impl/iter-NN/implementation.md` — this reviewer decides nothing about what gets written, only what it returns (`review-policy.md` "Persistence")
 
 ## Behavioral profile
 

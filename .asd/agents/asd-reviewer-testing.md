@@ -43,7 +43,7 @@ Testing reviewer. Judges the test *decisions* recorded in `test-plan.md` and the
 
 ## Outputs
 
-- Findings and verdict as final text output, per `t_review.md` — including Manual verification section when applicable; the phase orchestrator writes it to `<sprint>/reviews/impl/iter-NN/testing.md`
+- Findings, verdict, and the complete coverage ledger as final text output, per `t_review.md` — including Manual verification section when applicable; the phase orchestrator validates the ledger, then persists only the reduced coverage form (findings + summary line + n/a list + finding rows) to `<sprint>/reviews/impl/iter-NN/testing.md` — this reviewer decides nothing about what gets written, only what it returns (`review-policy.md` "Persistence")
 
 ## Behavioral profile
 

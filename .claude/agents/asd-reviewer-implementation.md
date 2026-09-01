@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-implementation.md. source_digest=sha256:9c25b74175c59db89e003fa334e15f3a3b1e98cdcf2e457abb558eb4d107c39b content_digest=sha256:28e0db804e4d560b7fb884e985b4f17b4cd52d37305482164c35eb4a46824874 asd_version=1.2.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-implementation.md. source_digest=sha256:6679d8bdcbf77de2cd8cd74a3cba3e6b88439be299a3455a2459e948ad9e6ab5 content_digest=sha256:38cdb8d6a76ea26ee4671551d759f179381d223281943d8590c2fa48feff073d asd_version=2.0.0 schema=1
 name: asd-reviewer-implementation
 description: "Impl-review verification that code covers every PRD acceptance criterion completely and correctly. Covers: PRD acceptance criteria coverage trace, requirement-to-code mapping, missing or partial implementations. Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), test coverage (delegates to asd-reviewer-testing), ui/a11y (delegates to asd-reviewer-ui), over-engineering (delegates to asd-reviewer-simplification), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -40,7 +40,7 @@ Implementation reviewer. Verifies code completely implements every PRD acceptanc
 
 ## Outputs
 
-- Findings and verdict as final text output, per `t_review.md`; the phase orchestrator writes it to `<sprint>/reviews/impl/iter-NN/implementation.md`
+- Findings, verdict, and the complete coverage ledger as final text output, per `t_review.md`; the phase orchestrator validates the ledger, then persists only the reduced coverage form (findings + summary line + n/a list + finding rows) to `<sprint>/reviews/impl/iter-NN/implementation.md` — this reviewer decides nothing about what gets written, only what it returns (`review-policy.md` "Persistence")
 
 ## Behavioral profile
 

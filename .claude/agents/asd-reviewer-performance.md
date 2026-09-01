@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-performance.md. source_digest=sha256:4ae816bb28280c32ab0fe87acaab54250d8441a76d68363f57a475a3d24d2506 content_digest=sha256:5141c1e8e115ced3f07244342a623f9c0a55ac51cf0ad8bb537cea73fe70f60d asd_version=1.2.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-performance.md. source_digest=sha256:79e3fc83a746121919f8d12c2a3b8dbe6f382598d24e8a392d6bdcddc8a2ae5f content_digest=sha256:44d50bc7154d945b3f213a46a4c46714d0fc49e8ad8299c72f4f5d1cff91b7d8 asd_version=2.0.0 schema=1
 name: asd-reviewer-performance
 description: "Impl-review assessment of performance against project budgets and regression detection. Covers: latency/memory/throughput budget compliance, algorithmic complexity (nested loops on user-sized collections, naive search where index exists), perf anti-patterns (n+1 queries, sync IO on hot path, unbounded allocations, copy-on-large-collection, blocking work on UI thread), regression detection vs baseline, hot-path identification lacking measurement or caching. Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), AC coverage (delegates to asd-reviewer-implementation), test coverage (delegates to asd-reviewer-testing), ui/a11y (delegates to asd-reviewer-ui), over-engineering (delegates to asd-reviewer-simplification), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -42,7 +42,7 @@ Performance reviewer. Assesses code against perf budgets and detects regressions
 
 ## Outputs
 
-- Findings and verdict as final text output, per `t_review.md`; the phase orchestrator writes it to `<sprint>/reviews/impl/iter-NN/performance.md`
+- Findings, verdict, and the complete coverage ledger as final text output, per `t_review.md`; the phase orchestrator validates the ledger, then persists only the reduced coverage form (findings + summary line + n/a list + finding rows) to `<sprint>/reviews/impl/iter-NN/performance.md` — this reviewer decides nothing about what gets written, only what it returns (`review-policy.md` "Persistence")
 - First-line verdict token: `[REVIEW-impl-performance]: APPROVE|CONCERNS|FAIL`
 
 ## Behavioral profile

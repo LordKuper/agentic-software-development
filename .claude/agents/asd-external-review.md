@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:2b4ef66ea7590d4fccd52c79b673b909fea376b8e3e0ce5951f6e98e006640f6 content_digest=sha256:232eda013926fc4c139fc4f833233843cc095573a80c0822f2aafd2db7f6fb44 asd_version=1.2.0 schema=1
+# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:aef76748e0805e611f1683c28dccac918a139ebea64924febfea11ef4e4abbd2 content_digest=sha256:7bc6d3789d2f5656890a3141a8af7bfaf3b68fb8ee6968276a2277bf62a3fba9 asd_version=2.0.0 schema=1
 name: asd-external-review
 description: "External reviewer wrapping the other provider's CLI (Codex under Claude Code, Claude under Codex), run in parallel with internal reviewers during design-review and impl-review. Covers: wrapped-CLI availability detection per system.os, iteration-aware diff payload preparation (full vs incremental), prompt selection per phase (design or impl), output parsing and ASD severity mapping, kept/dropped accounting per severity floor, stalemate detection across iterations. Does NOT handle: internal review (delegates to asd-reviewer-* agents), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, Bash, AskUserQuestion]
@@ -52,7 +52,7 @@ External review wrapper. Runs `codex` CLI parallel to internal reviewers, normal
 
 ## Outputs
 
-- Findings and verdict as final text output, per `.asd/templates/external-review/t_review-report.md` (kept/dropped accounting + verdict); the phase orchestrator writes it to `<sprint>/reviews/<design|impl>/iter-NN/external.md`
+- Findings and verdict as final text output, per `.asd/templates/external-review/t_review-report.md` (kept findings + dropped-category counts + verdict); the phase orchestrator writes it to `<sprint>/reviews/<design|impl>/iter-NN/external.md`
 
 ## Behavioral profile
 
@@ -60,7 +60,7 @@ Reviewer (external wrapper):
 - detect `codex` availability → skip + log if missing
 - compose prompt: read per-phase template + inject context
 - invoke `codex` CLI per OS pattern
-- parse captured stdout text verdict → map severity → drop nitpick categories → apply severity floor → return report as final text (never write it — the phase orchestrator does)
+- parse captured stdout text verdict → map severity → drop nitpick categories → apply severity floor → return report as final text with dropped findings collapsed to per-category counts (never write it — the phase orchestrator does)
 
 ## Tool policy
 
@@ -117,7 +117,7 @@ Probe before invocation: `codex --version`. On failure: write log message for PM
 
 ## Output format
 
-- Per `.asd/templates/external-review/t_review-report.md`: Kept / Dropped (below floor) / Dropped (nitpick) tables, Verdict, Next action
+- Per `.asd/templates/external-review/t_review-report.md`: Kept findings table, Dropped findings (counts only — below-floor count + nitpick count per category), Verdict, Next action
 
 ## Gate Verdict Format
 

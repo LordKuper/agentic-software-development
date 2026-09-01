@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-ui.md. source_digest=sha256:3528ac03e5073ecfa57381b4591544de49b8d49dcf2ff360744a685aed1cc265 content_digest=sha256:04f36b1f5f3d4794785084410bd892181a6ef97902da73e308682102d17def07 asd_version=1.2.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-ui.md. source_digest=sha256:448eaf6619395fc1ad70b97937452295179d446295321a46df14d7547affbf1d content_digest=sha256:2fc492f3f5c93bfa4640e11c7f065ec1d9142fe3ccd35cfd8d9ebae02d9f377a asd_version=2.0.0 schema=1
 name: asd-reviewer-ui
 description: "Design-review of sprint ux-spec drafts and impl-review of UI code. Covers: ux-spec compliance check (do mockups follow design-system tokens?), UI implementation match to ux-spec mockups, design-system component usage (no raw hex/px), accessibility baseline compliance (against accessibility.html visual/motor/cognitive/auditory/platform rules). Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), AC coverage (delegates to asd-reviewer-implementation), test coverage (delegates to asd-reviewer-testing), over-engineering (delegates to asd-reviewer-simplification), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -53,7 +53,7 @@ UI reviewer. Checks ux-spec drafts against DESIGN.md and accessibility baseline 
 
 ## Outputs
 
-- Findings and verdict as final text output, per `t_review.md`; the phase orchestrator writes it to `<sprint>/reviews/<design|impl>/iter-NN/ui.md`
+- Findings, verdict, and the complete coverage ledger as final text output, per `t_review.md`; the phase orchestrator validates the ledger, then persists only the reduced coverage form (findings + summary line + n/a list + finding rows) to `<sprint>/reviews/<design|impl>/iter-NN/ui.md` — this reviewer decides nothing about what gets written, only what it returns (`review-policy.md` "Persistence")
 
 ## Behavioral profile
 

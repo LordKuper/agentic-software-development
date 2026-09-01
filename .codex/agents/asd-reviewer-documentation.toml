@@ -1,4 +1,4 @@
-# ASD generated. Edit .asd/agents/asd-reviewer-documentation.md. source_digest=sha256:f7e9b0c19a7bb46a4bc1656b0184ad9a7f3d4170df28045bec05f977b3d1b536 content_digest=sha256:2494c37c18337a4214d56b038bae588e2e8eb2477680b469d4cb03836ce7ddb1 asd_version=1.2.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-documentation.md. source_digest=sha256:8e60677a6d91d627b6c0112cff1b354678745b8ac870b43cbaa8c75d98351959 content_digest=sha256:89f7fb4dfab0d0645629d0e0dde1cd10e836537ed4ed036930ac4b47e7a00070 asd_version=2.0.0 schema=1
 name = "asd-reviewer-documentation"
 description = "Design-review of sprint design drafts (SSoT, template responsibility-block adherence, traceability) and impl-review of persistent docs vs implementation (actuality, no SSoT violations, traceability PRD AC ↔ ADR ↔ code). Covers: SSoT integrity (each fact one home), template responsibility-block adherence, traceability across PRD/ADR/UX/code, custom-rules consistency, provenance flag correctness. Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), AC coverage of code (delegates to asd-reviewer-implementation), test coverage (delegates to asd-reviewer-testing), ui/a11y (delegates to asd-reviewer-ui), over-engineering (delegates to asd-reviewer-simplification), persistent doc promotion (handled by asd-ba/asd-ux-designer/asd-architect in design-promote phase), code edits (delegates to dev agents)."
 model = "gpt-5.6"
@@ -43,7 +43,7 @@ Documentation reviewer. Reviews design drafts in design-review and code-vs-persi
 
 ## Outputs
 
-- Findings and verdict as final text output, per `t_review.md`; the phase orchestrator writes it to `<sprint>/reviews/<design|impl>/iter-NN/documentation.md`
+- Findings, verdict, and the complete coverage ledger as final text output, per `t_review.md`; the phase orchestrator validates the ledger, then persists only the reduced coverage form (findings + summary line + n/a list + finding rows) to `<sprint>/reviews/<design|impl>/iter-NN/documentation.md` — this reviewer decides nothing about what gets written, only what it returns (`review-policy.md` "Persistence")
 
 ## Behavioral profile
 

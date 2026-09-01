@@ -1,7 +1,7 @@
 ---
 responsibility:
-  owns: single reviewer verdict for one iteration
-  excludes: other reviewers, other iterations, fixes
+  owns: single reviewer verdict for one iteration, persisted in reduced coverage form
+  excludes: other reviewers, other iterations, fixes, the reviewer's full returned ledger (validated pre-write, never persisted verbatim — `review-policy.md`)
   delegates_to: creator agent (fixes), sibling review files (other reviewers)
 ---
 
@@ -21,19 +21,21 @@ responsibility:
 <!-- when no findings, leave one row: -->
 <!-- | — | — | — | no findings | — | -->
 
-## Coverage ledger (mandatory — verdict INVALID if incomplete; see `review-policy.md`)
+## Coverage summary (internal reviewers only)
 
-Every scoped file + every rubric item, no row blank. Internal reviewers only.
+Reviewer returns the complete file+rule coverage ledger (mandatory — verdict INVALID if incomplete; see `review-policy.md`). This file persists only the reduced form below — the gate itself runs on the full returned ledger, before write.
 
-### File coverage
-| File | Status |
+**Summary**: `files: {{checked}}/{{total}} checked, {{n/a}} n/a · rules: {{pass}}/{{total}}, {{findings}} findings`
+
+**n/a rows** (verbatim, full list — file or rule, with reason):
+| Item | Reason |
 |---|---|
-| {{path}} | {{checked / n/a: reason}} |
+| {{path or checklist item}} | {{n/a reason}} |
 
-### Rule coverage
-| Rubric item | Status |
+**Findings rows** (verbatim, full list — rule-coverage rows resolved `finding #N`; `checked`/`pass` rows dropped):
+| Rubric item | Finding |
 |---|---|
-| {{checklist item}} | {{pass / finding #N / n/a: reason}} |
+| {{checklist item}} | finding #{{N}} |
 
 ## Verdict
 {{APPROVE | CONCERNS: <count> | FAIL: <count>}}

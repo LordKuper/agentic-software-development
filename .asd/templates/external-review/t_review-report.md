@@ -1,7 +1,7 @@
 ---
 responsibility:
-  owns: external review aggregation report (kept/dropped accounting per iteration)
-  excludes: codex raw prompt, internal reviewer output
+  owns: external review aggregation report (kept findings + dropped-category counts per iteration)
+  excludes: codex raw prompt, internal reviewer output, per-finding dropped accounting (category counts only)
   delegates_to: t_prompt-external-{design,impl}.md (prompts), t_review.md (internal reviewer output)
 ---
 
@@ -19,17 +19,10 @@ responsibility:
 |---|---|---|---|---|
 | 1 | {{sev}} | {{location}} | {{description}} | {{fix}} |
 
-## Dropped findings (below severity floor)
+## Dropped findings (counts only)
 
-| # | Severity | Location | Description | Drop reason |
-|---|---|---|---|---|
-| 1 | {{sev}} | {{location}} | {{description}} | below floor on iter {{N}} |
-
-## Dropped findings (nitpick)
-
-| # | Location | Description | Drop reason |
-|---|---|---|---|
-| 1 | {{location}} | {{description}} | {{nitpick category from prompt}} |
+- Below severity floor (iter {{N}}, floor {{floor}}): {{count}}
+- Nitpick, by category: {{nitpick category}}: {{count}}{{, ...}}
 
 ## Verdict
 {{APPROVE | CONCERNS: <count> | FAIL: <count>}}

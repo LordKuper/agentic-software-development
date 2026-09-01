@@ -59,7 +59,7 @@ External review wrapper. Runs `{{wraps_cli}}` CLI parallel to internal reviewers
 
 ## Outputs
 
-- Findings and verdict as final text output, per `.asd/templates/external-review/t_review-report.md` (kept/dropped accounting + verdict); the phase orchestrator writes it to `<sprint>/reviews/<design|impl>/iter-NN/external.md`
+- Findings and verdict as final text output, per `.asd/templates/external-review/t_review-report.md` (kept findings + dropped-category counts + verdict); the phase orchestrator writes it to `<sprint>/reviews/<design|impl>/iter-NN/external.md`
 
 ## Behavioral profile
 
@@ -67,7 +67,7 @@ Reviewer (external wrapper):
 - detect `{{wraps_cli}}` availability → skip + log if missing
 - compose prompt: read per-phase template + inject context
 - invoke `{{wraps_cli}}` CLI per OS pattern
-- parse captured stdout text verdict → map severity → drop nitpick categories → apply severity floor → return report as final text (never write it — the phase orchestrator does)
+- parse captured stdout text verdict → map severity → drop nitpick categories → apply severity floor → return report as final text with dropped findings collapsed to per-category counts (never write it — the phase orchestrator does)
 
 ## Tool policy
 
@@ -124,7 +124,7 @@ Probe before invocation: `{{wraps_cli}} --version`. On failure: write log messag
 
 ## Output format
 
-- Per `.asd/templates/external-review/t_review-report.md`: Kept / Dropped (below floor) / Dropped (nitpick) tables, Verdict, Next action
+- Per `.asd/templates/external-review/t_review-report.md`: Kept findings table, Dropped findings (counts only — below-floor count + nitpick count per category), Verdict, Next action
 
 ## Gate Verdict Format
 

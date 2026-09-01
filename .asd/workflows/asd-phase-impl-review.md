@@ -15,7 +15,7 @@ Orchestration body for the `asd-phase-impl-review` skill. Operation-mapping to h
 
 ## Reviewer read-only contract
 
-Every reviewer dispatched below is read-only: it evaluates its scope and returns its findings + verdict as **final text output**. It never writes the review file itself. This workflow (the phase orchestrator) is what writes that returned text verbatim to `<sprint>/reviews/impl/iter-NN/<reviewer>.md` per `t_review.md`, first-line verdict token `[REVIEW-impl-<reviewer>]: ...` intact. The read-only guarantee is a host-level property of the reviewer agent (no write capability granted on either provider — `.asd/rules/providers.md`), not a textual instruction the reviewer could choose to ignore.
+Every reviewer dispatched below is read-only: it evaluates its scope and returns its findings + **complete coverage ledger** + verdict as **final text output**. It never writes the review file itself. This workflow (the phase orchestrator) validates the full returned ledger (step 6), then writes the **reduced coverage form** — findings table, coverage summary line, full n/a list, verbatim finding rows; `checked`/`pass` rows dropped — to `<sprint>/reviews/impl/iter-NN/<reviewer>.md` per `t_review.md`, first-line verdict token `[REVIEW-impl-<reviewer>]: ...` intact (`review-policy.md` "Persistence"). The read-only guarantee is a host-level property of the reviewer agent (no write capability granted on either provider — `.asd/rules/providers.md`), not a textual instruction the reviewer could choose to ignore.
 
 ## Workflow
 
@@ -33,8 +33,8 @@ Every reviewer dispatched below is read-only: it evaluates its scope and returns
    - `asd-reviewer-performance` — perf budgets, regression, anti-patterns
    - if `review.external_review=enabled` → `asd-external-review` with phase=`impl-review`
    - payload to each: diff (iter 1 = `git diff <base>...HEAD`; iter 2+ = `git diff` + last commit), the **scope file list** (the diff's changed files — set each internal reviewer must cover in its `review-policy.md` coverage ledger), iteration N, review output dir `<sprint>/reviews/impl/iter-NN/`, severity floor, relevant context paths (`<sprint>/test-plan.md` included — Testing reviewer's primary input), `language.chat`, `language.docs`. Payload carries no authoring rationale, no prior-iteration verdicts; incremental diff scopes the *input*, not reviewer's context. For `asd-external-review` on iter ≥ 2, also pass previous iteration's finding set (stalemate detection)
-   - each reviewer returns its findings + verdict as final text per `t_review.md` (or `external-review/t_review-report.md` for external), first-line verdict token `[REVIEW-impl-<reviewer>]: ...`; **this workflow writes that text to `<sprint>/reviews/impl/iter-NN/<reviewer>.md`** — the reviewer itself performs no write
-6. Wait all REVIEW_DONE, then **coverage-ledger gate** (per `review-policy.md`): per internal reviewer's returned text, validate File-coverage ledger lists every file in scope file list and no ledger row (file or rule) blank/unresolved. Any reviewer with missing scoped file or unresolved row → reject + re-dispatch fresh, same iteration; wait again. Only complete-ledger reviews proceed (and only then are their files written per step 5). External Review exempt.
+   - each reviewer returns its findings + complete coverage ledger + verdict as final text per `t_review.md` (or `external-review/t_review-report.md` for external), first-line verdict token `[REVIEW-impl-<reviewer>]: ...`; **this workflow writes the reduced coverage form of that text to `<sprint>/reviews/impl/iter-NN/<reviewer>.md`** (step 6) — the reviewer itself performs no write
+6. Wait all REVIEW_DONE, then **coverage-ledger gate** (per `review-policy.md`): per internal reviewer's returned text, validate File-coverage ledger lists every file in scope file list and no ledger row (file or rule) blank/unresolved. Any reviewer with missing scoped file or unresolved row → reject + re-dispatch fresh, same iteration; wait again. Only complete-ledger reviews proceed to write: this workflow persists findings + a coverage summary line + the full `n/a` list + every `finding #N` row verbatim — `checked`/`pass` rows dropped (`review-policy.md` "Persistence"). External Review exempt (no ledger).
 7. Parse first-line verdict tokens from all written reviewer files; record per-reviewer verdicts under `state.json` `reviews.impl.verdicts["iter-NN"]`; aggregate. impl-review does NOT fix findings itself — fixes route to impl phase (fix mode):
    - **All APPROVE** → DoD met:
      - delegate to agent `asd-pm`: append decisions-log "impl-review iter NN: APPROVE", clear `state.json.review_fixes_pending` (set null)
@@ -60,7 +60,7 @@ Every reviewer dispatched below is read-only: it evaluates its scope and returns
 See `.asd/rules/review-policy.md` cumulative-budget algorithm. This workflow computes floor + passes to reviewer payload so reviewers drop findings below floor.
 
 ## Artefacts produced
-- `<sprint>/reviews/impl/iter-NN/quality.md` (written by this workflow from the reviewer's returned text)
+- `<sprint>/reviews/impl/iter-NN/quality.md` (written by this workflow, reduced coverage form of the reviewer's returned text)
 - `<sprint>/reviews/impl/iter-NN/implementation.md` (written by this workflow)
 - `<sprint>/reviews/impl/iter-NN/testing.md` (written by this workflow)
 - `<sprint>/reviews/impl/iter-NN/ui.md` (written by this workflow)

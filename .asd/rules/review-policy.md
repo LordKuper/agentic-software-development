@@ -97,7 +97,9 @@ Two parts, both required (template `t_review.md`):
 
 A verdict whose ledger omits a scoped file, omits a checklist item, or leaves any row blank/unresolved is INVALID — counts as review-incomplete, never as APPROVE.
 
-**Enforcement (phase-workflow gate):** the dispatching phase workflow validates each internal reviewer's ledger — read from the reviewer's returned text, before that text is written to the review file — against the known scope file list. Any reviewer whose ledger omits a scoped file or has an unresolved/blank row → review rejected, nothing written → re-dispatch that reviewer (fresh) this same iteration. Verdict not counted, file not written, until ledger complete. Makes coverage fail-proof: a skipped file or unchecked rule cannot pass silently.
+**Enforcement (phase-workflow gate):** the dispatching phase workflow validates each internal reviewer's ledger — read from the reviewer's returned text, before that text is written to the review file — against the known scope file list. Any reviewer whose ledger omits a scoped file or has an unresolved/blank row → review rejected, nothing written → re-dispatch that reviewer (fresh) this same iteration. Verdict not counted, file not written, until ledger complete. Makes coverage fail-proof: a skipped file or unchecked rule cannot pass silently. Gate always runs on the reviewer's full **returned** ledger — unaffected by what gets persisted below.
+
+**Persistence (compression, gate unaffected):** the returned ledger, once validated, is never written to disk in full. The dispatching phase workflow persists only: a coverage summary line (`files: {{checked}}/{{total}} checked, {{n/a}} n/a · rules: {{pass}}/{{total}}, {{findings}} findings`), the full `n/a` list verbatim (file and rule rows, with reason), and every rule-coverage row resolved `finding #N` verbatim. `checked`/`pass` rows carry no information beyond the count and are dropped from the written file. This is a write-time reduction only — the gate above always validates the reviewer's full returned text, never the reduced written form.
 
 ## Verdict format
 
@@ -122,7 +124,7 @@ Reviewers are read-only (`providers.md`): a reviewer never writes its own review
 
 Examples: `[REVIEW-impl-quality]: APPROVE` · `[REVIEW-design-documentation]: FAIL` · `[REVIEW-impl-external]: CONCERNS`
 
-Never bury the verdict in prose. The dispatching phase workflow writes the reviewer's returned text verbatim to `<sprint>/reviews/<phase>/iter-NN/<reviewer>.md`; PM reads the first non-empty content line of that written file.
+Never bury the verdict in prose. The dispatching phase workflow writes the verdict token, findings, and the reduced coverage form (above) to `<sprint>/reviews/<phase>/iter-NN/<reviewer>.md`; PM reads the first non-empty content line of that written file.
 
 ## DoD per review phase
 
