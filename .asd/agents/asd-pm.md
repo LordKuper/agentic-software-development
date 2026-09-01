@@ -49,6 +49,7 @@ Sprint orchestrator. Route phases, maintain state, gate approvals, archive sprin
 - Sprint folder move from `.asd/sprints/<NNN-slug>/` to `.asd/sprints/archived/<NNN-slug>/` in `pr` merge mode (only after the PR is merged, not at PR creation)
 - Git: branch create at `scope` phase; orchestration commits only (devs commit own work)
 - PR via `gh pr create` using `t_pr-description.md`
+- Self-hosting only: `asd_version` bump + `CHANGELOG.md` entry at PR open, annotated tag + `gh release create` at PR merge (`git-strategy.md` "Versioning & Changelog")
 
 ## Behavioral profile
 

@@ -4,6 +4,8 @@
 
 Created in `scope` from `git.base_branch` per `git.branch_pattern`. Default pattern `sprint/{n}-{slug}`. `{n}` zero-padded to 3 digits. `{slug}` kebab-case, max 30 chars, derived from scope.
 
+Before creating: `git fetch origin`, fast-forward local `git.base_branch` to `origin/<base_branch>` (diverged → halt, ask user to resolve), working tree clean (see "Pre-existing uncommitted changes"). Never commit or push directly to `git.base_branch` — every change lands via PR.
+
 ## Commits
 
 - Conventional Commits: `<type>(<scope>): <subject>`
@@ -18,6 +20,7 @@ Created in `scope` from `git.base_branch` per `git.branch_pattern`. Default patt
 - Never rebase published commits
 - Never use `--no-verify` or skip hooks
 - Never commit `.env`, credentials, or `.gitignore`-matching files
+- Never commit or push directly to `git.base_branch`
 
 ## TODO stubs
 
@@ -42,6 +45,7 @@ PM confirms before opening PR:
 
 Triggered only after DoD met AND user confirmation.
 
+- PR title MUST follow Conventional Commits (`<type>(<scope>): <subject>`) — becomes the squash-merge commit subject
 - `gh_enabled: true` + `auto_pr: true` → `gh pr create` with body from `t_pr-description.md`
 - `gh_enabled: false` → push branch, print PR-ready summary (title, body, compare URL)
 - `auto_pr: false` → push, prepare summary, wait for user to open PR manually
@@ -49,3 +53,11 @@ Triggered only after DoD met AND user confirmation.
 ## Pre-existing uncommitted changes
 
 If working tree is dirty at `/asd-sprint` start, PM stops and asks user to commit or stash before sprint creation. No silent stashing.
+
+## Versioning & Changelog (self-hosting only)
+
+Applies only when `self_hosting: enabled` (`sprint-lifecycle.md` "Self-hosting") — a consumer project's own app version is unrelated to ASD's `asd_version`.
+
+`pr` phase, open mode, before composing the PR: bump `asd_version` in `.asd/release-manifest.json` per [SemVer](https://semver.org/), inferred from the sprint's Conventional Commit types (highest wins): `fix`→PATCH, `feat`→MINOR, `!`/`BREAKING CHANGE` footer→MAJOR. Add a matching `## v<version>` section to root `CHANGELOG.md` (newest first, English), grouped `Added|Changed|Deprecated|Removed|Fixed|Security`, describing consumer-facing impact — not implementation detail.
+
+`pr` phase, merge mode, after confirming merge: create annotated tag `v<asd_version>` on the merge commit; `gh release create v<asd_version> --title v<asd_version> --notes-file <extracted CHANGELOG section>`.
