@@ -49,8 +49,8 @@ External review wrapper. Runs `{{wraps_cli}}` CLI parallel to internal reviewers
   - impl-review → `.asd/templates/external-review/t_prompt-external-impl.md`
 - prompt-slot context (paths only, phase-scoped): language.docs, custom-common-rules + phase-scoped custom rules
   - design-review: concept, accessibility baseline
-  - impl-review: sprint prd.html + adr.html (reference for AC/contract cross-ref), stack, backward_compat, commands
-- diff payload — phase-scoped, no cross-phase content, no generated output (`external-review.md` § Phase-scoped payload). `<pathspec>` = `-- . ':(exclude).asd/**' ':(exclude)docs/**'` — also keeps c4 schemas out of impl-review
+  - impl-review: reference paths per `external-review.md` § Phase-scoped payload table (consumer row vs `self_hosting: enabled` row — differs, do not assume the consumer row)
+- diff payload — phase-scoped, no cross-phase content, no generated output. `<pathspec>` per `external-review.md` § Phase-scoped payload "`<pathspec>` for impl-review" (consumer row vs `self_hosting: enabled` row — differs, do not hardcode one) — also keeps c4 schemas out of impl-review
   - design-review iter 1: full content of `<sprint>/design/` files (no code, no `c4-full/dist/`)
   - design-review iter 2+: per-file diff since last iteration snapshot
   - impl-review iter 1: `git diff <base>...HEAD <pathspec>` (code+tests, no docs)
