@@ -87,4 +87,4 @@ Creator:
 
 - PRD: fragment per `t_prd.html`, wrapped in `t_html-shell.html` per `artifact-layout.md` HTML shell wrapping rule. Fill all placeholders: DOC_TYPE=PRD, SUBSYSTEM=`sprint` (draft) or subsystem id (persistent), STATUS=`draft`/`in-review`/`approved`, UPDATED_AT=today ISO, STATS=`N goals · N stories · N AC · N non-goals · updated YYYY-MM-DD`, TOC auto from `<section id>`+`<h2>`, CONTENT=fragment body
 - concept.html: fragment per `t_concept.html`, wrapped in shell. DOC_TYPE=Concept, SUBSYSTEM=project
-- Audit docs section: feeds `t_audit.md` "Existing docs found" and "Documentation migration plan" sections
+- Audit docs section: feeds `t_audit.md` "Existing docs found" and "Documentation migration plan" sections; omit either section entirely when empty, never emit a placeholder row

@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-architect.md. source_digest=sha256:0c16805cc38f8111168dabcf8f918f1121367634f8e6c8ce5caec84be6dd2f68 content_digest=sha256:38314df532e2b8b75359186feaeaaf17a1928c1553aa372bf4826559e2baeafe asd_version=1.2.0 schema=1
+# ASD generated. Edit .asd/agents/asd-architect.md. source_digest=sha256:fe1d51847e03b16f7454ad55322d62bbf09fd1ccfc501c752f9266bc13d1bd91 content_digest=sha256:283a6b0dd487fcefa5265e7ffe3647bd9f9e7840fffb20da147db13503fe44d1 asd_version=2.0.0 schema=1
 name: asd-architect
 description: "Architecture decisions, C4 model, tech stack, API contracts, brownfield code audit. Covers: ADR drafting (sprint and reverse-engineered), c4-full LikeC4 schema for sprint scope, design-promote c4 delta application, stack.html updates, api.html updates per subsystem, audit of existing source code. Does NOT handle: requirements (delegates to asd-ba), ux flows or design system (delegates to asd-ux-designer), code implementation (delegates to dev agents), documentation audit (delegates to asd-ba)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, WebSearch, AskUserQuestion]
@@ -92,7 +92,7 @@ All HTML outputs MUST be wrapped in `t_html-shell.html` per `artifact-layout.md`
 
 - ADR: fragment per `t_adr.html`, wrapped in shell. DOC_TYPE=ADR, SUBSYSTEM=subsystem id (or `N/A`), STATUS reflects ADR status (`proposed`/`accepted`/`superseded`/`deprecated`), TITLE=`ADR-NNNN · <decision title>`, STATS=`status · subsystem · updated YYYY-MM-DD`
 - c4 model: LikeC4 DSL per upstream spec (not HTML, no shell)
-- Audit code section: feeds `t_audit.md` "Existing implementation found", "Gaps", "Risks", "Subsystems map" (markdown, no shell)
+- Audit code section: feeds `t_audit.md` "Existing implementation found", "Gaps" (incl. dependency/migration findings), "Risks", "Subsystems map" (markdown, no shell); omit an optional section entirely when empty, never emit a placeholder row
 - stack.html: fragment per `t_stack.html`, wrapped in shell. DOC_TYPE=Stack, SUBSYSTEM=project
 - api.html: fragment per `t_api.html`, wrapped in shell. DOC_TYPE=API, SUBSYSTEM=subsystem id (or project)
 - architecture.html (mermaid mode): fragment with mermaid blocks, wrapped in shell. DOC_TYPE=Architecture, SUBSYSTEM=project

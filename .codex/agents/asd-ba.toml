@@ -1,4 +1,4 @@
-# ASD generated. Edit .asd/agents/asd-ba.md. source_digest=sha256:431d6705f5b5df380789be35799000c72196fc3b865a93d486541f5e8ab44885 content_digest=sha256:d8075823a5f02a2d82bcf3e9d0bbba57535619e40563f889e1048d11be8ac912 asd_version=1.2.0 schema=1
+# ASD generated. Edit .asd/agents/asd-ba.md. source_digest=sha256:5135c89edc7b1d9bef05cfa6067ff52787924e486fded5270db7738e21d850b6 content_digest=sha256:7df1db2832c6e9d6a985f7da9ef8d693662a176027512d1afdaad52ecb66db82 asd_version=2.0.0 schema=1
 name = "asd-ba"
 description = "Product requirements: user stories, acceptance criteria, brownfield doc audit, PRD drafts. Covers: PRD authoring (sprint draft plus reverse-engineered/migrated), audit of existing docs (not code), user story decomposition, acceptance criteria formulation, ambiguity resolution via clarifying questions. Does NOT handle: ux flows or ui mockups (delegates to asd-ux-designer), architecture decisions (delegates to asd-architect), code (delegates to dev agents), code audit (delegates to asd-architect)."
 model = "gpt-5.6"
@@ -81,5 +81,5 @@ Creator:
 
 - PRD: fragment per `t_prd.html`, wrapped in `t_html-shell.html` per `artifact-layout.md` HTML shell wrapping rule. Fill all placeholders: DOC_TYPE=PRD, SUBSYSTEM=`sprint` (draft) or subsystem id (persistent), STATUS=`draft`/`in-review`/`approved`, UPDATED_AT=today ISO, STATS=`N goals · N stories · N AC · N non-goals · updated YYYY-MM-DD`, TOC auto from `<section id>`+`<h2>`, CONTENT=fragment body
 - concept.html: fragment per `t_concept.html`, wrapped in shell. DOC_TYPE=Concept, SUBSYSTEM=project
-- Audit docs section: feeds `t_audit.md` "Existing docs found" and "Documentation migration plan" sections
+- Audit docs section: feeds `t_audit.md` "Existing docs found" and "Documentation migration plan" sections; omit either section entirely when empty, never emit a placeholder row
 """

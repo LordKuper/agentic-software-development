@@ -29,10 +29,10 @@ Orchestration body for the `asd-phase-audit` skill. Operation-mapping to host to
    - sprint.md path, audit.md path (partial), decomposition mode, `.asd/project/stubs.md` path, frozen `documents.adr`; template `t_audit.md` (append)
    - instruction:
      - scan project source code in touched areas
-     - append to `<sprint>/audit.md`: Touched areas (code side, merge), Existing implementation found, Gaps, Risks; if `decomposition=enabled` also Subsystems map
+     - append to `<sprint>/audit.md`: Touched areas (code side, merge), Existing implementation found, Gaps (incl. dependency/migration findings), Risks; if `decomposition=enabled` also Subsystems map
      - **only if `documents.adr` enabled**: optionally produce reverse-engineered draft ADRs in `<sprint>/design/`; if `documents.adr` disabled, never write `<sprint>/design/adr.html` — record the architectural finding as migration-plan/gaps text instead
      - for any tech identified, verify `docs/architecture/tech-reference/<tech>-<version>.md` exists; if missing, create reverse-engineered references via fetch-external-doc-by-URL + `t_tech-reference.md`
-     - read `.asd/project/stubs.md`; filter entries whose File:Line points to touched-area files or whose Owner indicates relevance; append matching rows to audit.md "Related open stubs" section (or "no related open stubs")
+     - read `.asd/project/stubs.md`; filter entries whose File:Line points to touched-area files or whose Owner indicates relevance; append matching rows to audit.md "Related open stubs" section, or omit the section entirely when none match
      - emit COMPLETED
 7. On Architect COMPLETED → delegate to agent `asd-pm` with payload:
    - audit.md path

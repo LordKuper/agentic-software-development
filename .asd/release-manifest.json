@@ -27,8 +27,8 @@
     }
   },
   "canon_hashes": {
-    "agents/asd-architect.md": "sha256:0c16805cc38f8111168dabcf8f918f1121367634f8e6c8ce5caec84be6dd2f68",
-    "agents/asd-ba.md": "sha256:431d6705f5b5df380789be35799000c72196fc3b865a93d486541f5e8ab44885",
+    "agents/asd-architect.md": "sha256:fe1d51847e03b16f7454ad55322d62bbf09fd1ccfc501c752f9266bc13d1bd91",
+    "agents/asd-ba.md": "sha256:5135c89edc7b1d9bef05cfa6067ff52787924e486fded5270db7738e21d850b6",
     "agents/asd-backend-dev.md": "sha256:a59bf1e02568d45f0868bd9841ef0401d43a8184c45ccf9dfd4724529c90c2d2",
     "agents/asd-external-review.md": "sha256:aef76748e0805e611f1683c28dccac918a139ebea64924febfea11ef4e4abbd2",
     "agents/asd-frontend-dev.md": "sha256:fe48736e6aa497e8cb5c0f8cd5e047c91da8f1f020a78158b6aa24f117084322",
@@ -61,8 +61,8 @@
     "skills/asd-phase-pr/SKILL.md": "sha256:d00d66e90d5d1bb7949246ddc4715e4010ddaf6754c13f96241377bdbf4e4c06"
   },
   "upstream_hashes": {
-    ".asd/agents/asd-architect.md": "0c16805cc38f8111168dabcf8f918f1121367634f8e6c8ce5caec84be6dd2f68",
-    ".asd/agents/asd-ba.md": "431d6705f5b5df380789be35799000c72196fc3b865a93d486541f5e8ab44885",
+    ".asd/agents/asd-architect.md": "fe1d51847e03b16f7454ad55322d62bbf09fd1ccfc501c752f9266bc13d1bd91",
+    ".asd/agents/asd-ba.md": "5135c89edc7b1d9bef05cfa6067ff52787924e486fded5270db7738e21d850b6",
     ".asd/agents/asd-backend-dev.md": "a59bf1e02568d45f0868bd9841ef0401d43a8184c45ccf9dfd4724529c90c2d2",
     ".asd/agents/asd-external-review.md": "aef76748e0805e611f1683c28dccac918a139ebea64924febfea11ef4e4abbd2",
     ".asd/agents/asd-frontend-dev.md": "fe48736e6aa497e8cb5c0f8cd5e047c91da8f1f020a78158b6aa24f117084322",
@@ -88,7 +88,7 @@
     ".asd/rules/language-policy.md": "d1750b65f8352ed846509a8fc01e278ed432de66410244073a4158dade4d2c1e",
     ".asd/rules/providers.md": "064dbbd2dc36d538de8d0084535db7af681037975225157a7b1897dc6dcbabf6",
     ".asd/rules/review-policy.md": "a6707d84baaaf69482eeeb3dfe21940227a1d435923cbc3d5dfd3e7dd91fbb41",
-    ".asd/rules/sprint-lifecycle.md": "d335cf8564757b4b2b0c8d6b49dc9dfb1c7025f2cfff21f9ef25158f902f0df5",
+    ".asd/rules/sprint-lifecycle.md": "8151c2f1b0bfc3ac4a87333a043b80a982d26736a17e3979402478c8868dad8c",
     ".asd/rules/ux-principles.md": "a977031de9f7b2d480a4ea00a2ddd88d28bb8e683d0533cb9d37dbca65be5ad9",
     ".asd/skills/asd-concept/SKILL.md": "05ba1c94c5c90251b7469696d294ad8990c0b3466fe11f91359dd7c1d8914a60",
     ".asd/skills/asd-design-system/SKILL.md": "3829c9b611d1c9af20d6bdeaccf93ac775c480f9e9067bf1ec69e2fe1aaee0e1",
@@ -117,7 +117,7 @@
     ".asd/templates/t_accessibility.html": "7df6b0a055dc4b673b0970256e761b54235752d7fc6d0aa3739ba21cb3b0c57f",
     ".asd/templates/t_adr.html": "b356a170702a051d637483bdc6f497f4ca45b8623c8bc59acec2ff7d43399213",
     ".asd/templates/t_api.html": "62007f46ba22999fa64ac8081405d6f55407f8526188222a8d11fe2a93934738",
-    ".asd/templates/t_audit.md": "81a5c5bb7d5b740a8100146cd0ed42e0e4c3df97c82350969e896da8110506b8",
+    ".asd/templates/t_audit.md": "891ed509c266af65b00efcb13a192a3b012933f5a06555dcabf53bbd4044cb20",
     ".asd/templates/t_c4-model.c4": "5163e92e0eea18e89d4f6169b316548aec46c629d72cc39a69e4f9b06ff504b2",
     ".asd/templates/t_c4-views.c4": "af78bf82f31e08a3247dfec5abd1a58b6ebc94e8f49cd3984d80cf21782b8ac7",
     ".asd/templates/t_commands.yaml": "cfb911d913d0ebbb43b0c5e909f64892490c2a6d360c324ce4a6229187d5db2b",
@@ -143,7 +143,7 @@
     ".asd/templates/t_tech-reference.md": "1f65865cddf8cfa5d9c7247afd770c3b8cf0c75b7cd9d30d968ba9b71e29515b",
     ".asd/templates/t_test-plan.md": "6fb715d0a80c2b50b3aad8e7e0d1aa307edccdf07c9c8fef12c1ab7abb51f289",
     ".asd/templates/t_ux-spec.html": "23afee28bf20f020d98334f33e64cddb42b72b665441a7e76362948457761661",
-    ".asd/workflows/asd-phase-audit.md": "48e1006cf5f2572bb5f736f677c6cbfab61a10e6384b3bc8f2744b4bfb6cc0bf",
+    ".asd/workflows/asd-phase-audit.md": "0c598bb3c4bd369111a3e680c4d3dedf89f38def466bb4c247c404cfeedeae4f",
     ".asd/workflows/asd-phase-design-promote.md": "2df72bb0f64787819b5679bc7d55ccdb72bc08f22e579de96eac8771721ebde0",
     ".asd/workflows/asd-phase-design-review.md": "6b7bc80f55bf5391dd0ae9306bb19ad36fd8996e45a68c9a750aaf03e6368060",
     ".asd/workflows/asd-phase-design.md": "a88cff993f06fcf3f993cefc1245dc8e9faa8576af6f516d1d8a672b322478cb",
