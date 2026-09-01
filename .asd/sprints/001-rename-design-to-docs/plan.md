@@ -120,11 +120,11 @@ Owner: `backend-dev`. Satisfies AC-1. Material risk for impl-test: this task's m
 ### Task 7: Author the `CHANGELOG.md` migration entry
 Owner: `backend-dev`. Satisfies AC-9. This entry is the implementation of option (a) from escalation R-13 (documentation-only consumer migration); options (b) and (c) were rejected as out of scope.
 
-- [ ] Add the entry under a `## Unreleased` heading. Approved placement decision: authored now, in impl; the `pr` phase only renames the heading to the concrete version alongside the `asd_version` bump per `.asd/rules/git-strategy.md` "Versioning & Changelog". impl and pr therefore never contend for this file
-- [ ] Document the change as breaking: the project-wide persistent documentation root moves from `design/` to `docs/`
-- [ ] State the consumer migration steps in order: `git mv design docs` → fix the `designmd-lint` / `designmd-export` aliases in the consumer's own `.asd/project/commands.yaml` (never updated by `/asd-update`) → run `/asd-update` → run `/asd-sync`
-- [ ] Note the split-brain window (audit R-13, third order): between `/asd-update` and `/asd-sync` the consumer's `.asd/rules` say `docs/` while their generated agent/skill views still say `design/`, so `/asd-sync` must follow immediately
-- [ ] Note that nothing auto-migrates and nothing errors — the failure mode is a silently split documentation corpus, not a crash
+- [x] Add the entry under a `## Unreleased` heading. Approved placement decision: authored now, in impl; the `pr` phase only renames the heading to the concrete version alongside the `asd_version` bump per `.asd/rules/git-strategy.md` "Versioning & Changelog". impl and pr therefore never contend for this file
+- [x] Document the change as breaking: the project-wide persistent documentation root moves from `design/` to `docs/`
+- [x] State the consumer migration steps in order: `git mv design docs` → fix the `designmd-lint` / `designmd-export` aliases in the consumer's own `.asd/project/commands.yaml` (never updated by `/asd-update`) → run `/asd-update` → run `/asd-sync`
+- [x] Note the split-brain window (audit R-13, third order): between `/asd-update` and `/asd-sync` the consumer's `.asd/rules` say `docs/` while their generated agent/skill views still say `design/`, so `/asd-sync` must follow immediately
+- [x] Note that nothing auto-migrates and nothing errors — the failure mode is a silently split documentation corpus, not a crash
 
 ### Task 8: Update the `README.md` and `AGENTS.md` mirrors
 Owner: `backend-dev`. Satisfies AC-8 (and the `AGENTS.md` hard rule that every workflow change is checked against `README.md`). Last content edits of the sprint — they must reflect the final state of Tasks 1–7. Material risk for impl-test: the folder map and command table are easy to half-update (audit R-7).
