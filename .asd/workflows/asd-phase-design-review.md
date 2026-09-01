@@ -10,9 +10,9 @@ Orchestration body for the `asd-phase-design-review` skill. Operation-mapping to
 
 ## Operations used
 - read: `.asd/project/config.yaml`, `state.json`, drafts in `<sprint>/design/`, review files
-- write a file: reduced coverage form of each reviewer's returned text to `<sprint>/reviews/design/iter-NN/<reviewer>.md` (step 8); `state.json` and decisions-log inline for the no-op path's mechanical write (step 2)
+- write a file: reduced coverage form of each reviewer's returned text to `<sprint>/reviews/design/iter-NN/<reviewer>.md` (step 8); `state.json` and decisions-log inline for the no-op path's mechanical write (step 2); `state.json` inline (mechanical, no gate) at step 4 — no PM dispatch
 - request user decision: escalation on FAIL or iteration cap
-- delegate to agent in parallel: reviewers; delegate to agent sequentially: creator autofix; delegate to agent: PM for state + decisions-log
+- delegate to agent in parallel: reviewers; delegate to agent sequentially: creator autofix; delegate to agent: PM for state + decisions-log tied to DoD-met/override gates (step 9, 10) only
 
 ## Reviewer read-only contract
 
@@ -23,7 +23,7 @@ Every reviewer dispatched below is read-only: it evaluates its scope and returns
 1. Read `<sprint>/state.json` — read frozen `documents.prd`/`ux_spec`/`adr`/`c4`. Compute review scope as the **intersection** of (a) frozen `documents.*` enabled and (b) the file actually existing in `<sprint>/design/` — a draft that physically exists but whose flag is disabled (e.g. audit pre-formulated it before this repo's own logic gated that — `sprint-lifecycle.md` "Audit phase") is NOT in scope and is NOT reviewed or counted toward DoD; existence alone never puts a file in scope
 2. **No-op path** — the all-`documents.*`-disabled case is handled entirely by `asd-phase-design.md` step 2's collapsed check and never reaches this phase as a separate dispatch. This step is the defensive fallback for the residual case of an intersected scope somehow empty on direct/explicit re-dispatch of this phase alone: write inline (mechanical, no gate — no user decision requested, `sprint-lifecycle.md` "No-op phase rule"): set `phase=design-review`, append `"design-review"` to `state.json.skipped_phases`, append decisions-log "design-review skipped (no in-scope drafts)"; emit phase COMPLETED with return contract; skip remaining steps
 3. Read `.asd/project/config.yaml` (`review.external_review`, `review.iterations_low/medium/high/critical`, `language.chat`, `language.docs`)
-4. Read `<sprint>/state.json` → set `phase=design-review`, increment `reviews.design.iteration` (it is `0` at sprint creation, so `1` on first entry; see `sprint-lifecycle.md` "Review iteration counters" for increment + rollback-reset rules). `NN` = resulting value, zero-padded.
+4. **Inline (mechanical, no gate)** — write `<sprint>/state.json` → set `phase=design-review`, increment `reviews.design.iteration` (it is `0` at sprint creation, so `1` on first entry; see `sprint-lifecycle.md` "Review iteration counters" for increment + rollback-reset rules). `NN` = resulting value, zero-padded. No PM dispatch.
 5. Compute severity floor for current iteration per `review-policy.md` cumulative-budget algorithm (uses `reviews.design.iteration`)
 6. Create folder `<sprint>/reviews/design/iter-NN/` if absent
 7. **Parallel dispatch** — every reviewer delegated to as a **fresh agent** each iteration (clean-context dispatch per `review-policy.md`); no reviewer reused across iterations; dispatched reviewers per `review-policy.md` DoD table:
