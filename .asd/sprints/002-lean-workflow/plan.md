@@ -78,11 +78,11 @@ Verdicts: **A-10**, **P-6(a)**. AC: AC-1, AC-2, AC-4, AC-6. Owner: **backend-dev
 Affected canonical files: `.asd/templates/t_plan.md`, `.asd/workflows/asd-phase-plan.md` (step 4), `.asd/rules/sprint-lifecycle.md` (Plan file format), `.asd/agents/asd-pm.md`.
 Material risk: `plan.md` is parser-critical — checkboxes must stay confined to `### Task N:` blocks or impl task parsing breaks.
 
-- [ ] `sprint-lifecycle.md`: declare the three constant DoD clauses (AC coverage, green suite at impl-test, reviewers green at impl-review) as the **standing DoD** for every sprint
-- [ ] `asd-phase-plan.md` step 4: instruct the PM to author only sprint-specific DoD additions and reference the standing DoD
-- [ ] `t_plan.md`: drop the Context link list (the impl dispatch payload already carries those paths) and shrink the DoD section accordingly
-- [ ] `asd-pm.md`: align its plan-authoring output description
-- [ ] Re-confirm the parser-critical comment block in `t_plan.md` survives unchanged
+- [x] `sprint-lifecycle.md`: declare the three constant DoD clauses (AC coverage, green suite at impl-test, reviewers green at impl-review) as the **standing DoD** for every sprint
+- [x] `asd-phase-plan.md` step 4: instruct the PM to author only sprint-specific DoD additions and reference the standing DoD
+- [x] `t_plan.md`: drop the Context link list (the impl dispatch payload already carries those paths) and shrink the DoD section accordingly
+- [x] `asd-pm.md`: align its plan-authoring output description
+- [x] Re-confirm the parser-critical comment block in `t_plan.md` survives unchanged
 
 ### Task 4: Compress test-plan.md and give Manual verification a single home
 
