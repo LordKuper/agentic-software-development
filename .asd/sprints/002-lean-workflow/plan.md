@@ -144,12 +144,12 @@ Verdicts: **A-5**, **A-32**. AC: AC-1, AC-4, AC-6. Owner: **backend-dev**.
 Affected canonical files: `.asd/templates/t_ux-spec.html`, `.asd/templates/t_accessibility.html`, `.asd/agents/asd-ux-designer.md`, `.asd/agents/asd-reviewer-ui.md`, `.asd/rules/artifact-layout.md` (`{{STATS}}`), `.asd/skills/asd-design-system/SKILL.md`.
 Material risk: the UI reviewer's rubric is defined against flows and mockups — those must survive untouched, or a reviewer input disappears with no replacement.
 
-- [ ] `t_ux-spec.html`: drop "New components" — the template itself declares it duplicated by `design-md-delta.yaml`, which is the file design-promote actually applies
-- [ ] `t_ux-spec.html`: make "Component usage" optional and off by default (derivable from the mockups)
-- [ ] `t_accessibility.html`: drop the per-domain scope paragraphs (they describe the category, not the project) and make the i18n section opt-in; keep Overall commitment, the domain rule lists, Known intentional limitations, and Test plan — the UI reviewer checks against those
-- [ ] `artifact-layout.md`: fix the `N flows · N mockups` `{{STATS}}` string if the section set changed
-- [ ] `asd-ux-designer.md`, `asd-reviewer-ui.md`, `asd-design-system/SKILL.md`: align; run `sync.js --apply`
-- [ ] Update both templates' `responsibility` frontmatter
+- [x] `t_ux-spec.html`: drop "New components" — the template itself declares it duplicated by `design-md-delta.yaml`, which is the file design-promote actually applies
+- [x] `t_ux-spec.html`: make "Component usage" optional and off by default (derivable from the mockups)
+- [x] `t_accessibility.html`: drop the per-domain scope paragraphs (they describe the category, not the project) and make the i18n section opt-in; keep Overall commitment, the domain rule lists, Known intentional limitations, and Test plan — the UI reviewer checks against those
+- [x] `artifact-layout.md`: fix the `N flows · N mockups` `{{STATS}}` string if the section set changed (unchanged — stat already counts only flows/mockups, unaffected by the section-set edit)
+- [x] `asd-ux-designer.md`, `asd-reviewer-ui.md`, `asd-design-system/SKILL.md`: align; run `sync.js --apply` (no drift found — neither file references the dropped/optional sections; `sync.js --check` reports `ok: true`)
+- [x] Update both templates' `responsibility` frontmatter
 
 ### Task 9: ADRs become sprint-scoped and fold into existing docs; drop api.html entirely
 
