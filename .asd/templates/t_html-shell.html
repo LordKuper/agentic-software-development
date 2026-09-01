@@ -25,7 +25,7 @@ responsibility:
       --code-bg: #f4f6f8; --border: #d0d7de; --max: 1040px;
       --card-bg: #fafbfc;
       --ok: #1f883d; --warn: #b35900; --danger: #cf222e; --info: #0969da; --neutral: #5b6770;
-      --ok-tint: rgba(31,136,61,0.07); --ok-tint-strong: rgba(31,136,61,0.10); --danger-tint: rgba(207,34,46,0.06);
+      --ok-tint: rgba(31,136,61,0.07); --danger-tint: rgba(207,34,46,0.06);
       --chip-must-bg: #ffebe9; --chip-must-fg: #cf222e;
       --chip-should-bg: #fff5e1; --chip-should-fg: #9a6700;
       --chip-may-bg: #ddf4ff; --chip-may-fg: #0969da;
@@ -34,8 +34,8 @@ responsibility:
       :root {
         --fg: #e6e6e6; --bg: #0e1116; --muted: #9aa4ad; --code-bg: #161b22; --border: #30363d;
         --card-bg: #161b22;
-        --accent: #58a6ff; --ok: #3fb950; --warn: #d29922; --danger: #f85149; --info: #58a6ff;
-        --ok-tint: rgba(63,185,80,0.12); --ok-tint-strong: rgba(63,185,80,0.16); --danger-tint: rgba(248,81,73,0.10);
+        --accent: #58a6ff; --ok: #3fb950; --warn: #d29922; --danger: #f85149; --info: #79c0ff; --neutral: #8b949e;
+        --ok-tint: rgba(63,185,80,0.12); --danger-tint: rgba(248,81,73,0.10);
         --chip-must-bg: #3b1416; --chip-must-fg: #ff7b72;
         --chip-should-bg: #2d2410; --chip-should-fg: #e3b341;
         --chip-may-bg: #0d2538; --chip-may-fg: #58a6ff;
@@ -59,7 +59,7 @@ responsibility:
     .stats { margin-top: 6px; font-size: 0.85rem; color: var(--muted); }
     .stats .chip { display: inline-block; padding: 1px 8px; margin-right: 6px; border-radius: 10px; background: var(--code-bg); border: 1px solid var(--border); }
     @media (max-width: 880px) {
-      .layout { grid-template-columns: 1fr; }
+      .layout, .layout:has(> nav.toc) { grid-template-columns: 1fr; }
     }
     h2, h3, h4 { line-height: 1.25; margin-top: 1.6em; }
     h2 { border-bottom: 1px solid var(--border); padding-bottom: 4px; }
@@ -113,16 +113,16 @@ responsibility:
     /* ADR */
     .adr { border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; margin: 18px 0; background: var(--card-bg); }
     .adr > .meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 6px; }
-    .adr h2 { margin-top: 1.1em; border-bottom: none; font-size: 1.15rem; }
-    .adr h3 { margin-top: 1em; font-size: 1rem; color: var(--muted); }
+    .adr h2 { margin-top: 0.4em; border-bottom: none; font-size: 1.3rem; }
+    .adr h3 { margin-top: 1.1em; border-bottom: none; font-size: 1.15rem; }
     .status-chip { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.78rem; border: 1px solid var(--border); }
-    .status-proposed   { color: var(--warn);    border-color: var(--warn);    background: var(--chip-should-bg); }
-    .status-accepted   { color: var(--ok);      border-color: var(--ok);      background: var(--ok-tint-strong); }
+    .status-proposed   { color: var(--warn);    border-color: var(--warn); }
+    .status-accepted   { color: var(--ok);      border-color: var(--ok); }
     .consequences { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .consequences .pros, .consequences .cons { padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border); }
     .consequences .pros { background: var(--ok-tint); border-left: 3px solid var(--ok); }
     .consequences .cons { background: var(--danger-tint); border-left: 3px solid var(--danger); }
-    .consequences h3 { margin: 0 0 4px; }
+    .consequences h4 { margin: 0 0 4px; font-size: 1rem; color: var(--muted); }
     .consequences ul { margin: 0; padding-left: 20px; }
     @media (max-width: 720px) { .consequences { grid-template-columns: 1fr; } }
     ul.alt-list li { margin: 4px 0; }
@@ -171,6 +171,7 @@ responsibility:
     .preview { padding: 16px; border: 1px dashed var(--border); border-radius: 6px; background: var(--bg); }
 
     @media print {
+      .layout, .layout:has(> nav.toc) { grid-template-columns: 1fr; }
       a { color: inherit; text-decoration: none; }
       footer { page-break-before: always; }
       details.role-group[open] > summary { list-style: none; }
