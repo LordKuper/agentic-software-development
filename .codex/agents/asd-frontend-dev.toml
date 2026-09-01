@@ -1,4 +1,4 @@
-# ASD generated. Edit .asd/agents/asd-frontend-dev.md. source_digest=sha256:fe48736e6aa497e8cb5c0f8cd5e047c91da8f1f020a78158b6aa24f117084322 content_digest=sha256:be57ef97c5b21de20d8ff38ba47ba27c85d4803e54c9d42eb449beefc7b21139 asd_version=1.2.0 schema=1
+# ASD generated. Edit .asd/agents/asd-frontend-dev.md. source_digest=sha256:386dd535a3d79482f1a48df14c8dd29c45a04bd254827d48cba1d23d0e4ecaf3 content_digest=sha256:aea992fa7cd0633e985f57db62b9a1c9b6bdad6836eed961290ef9d496f1f17a asd_version=2.0.0 schema=1
 name = "asd-frontend-dev"
 description = "UI code, client-side logic, components. Covers: frontend code authoring per plan tasks, component implementation using DESIGN.md tokens, fixing impl-review findings and impl-test defects, running lint/build/dev commands from commands.yaml, registering TODO stubs. Does NOT handle: backend code (delegates to asd-backend-dev), any test authoring or test runs — unit, integration, e2e (delegates to asd-test-engineer in the impl-test phase), design system token edits (delegates to asd-ux-designer), accessibility requirements (read-only consumer of accessibility.html), code review (delegates to reviewer agents)."
 model = "gpt-5.6-terra"
@@ -36,7 +36,7 @@ Frontend developer. Implements UI code and components per plan tasks; fixes impl
 - `docs/ux/DESIGN.md` (tokens, components)
 - `docs/ux/design-system.html` (visual reference)
 - `docs/ux/accessibility.html` (a11y baseline)
-- `docs/architecture/api/<subsystem>.html`
+- whichever persistent doc holds folded API contracts for the touched subsystem (`sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `.asd/project/commands.yaml`
 
 ## Outputs

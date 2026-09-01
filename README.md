@@ -11,7 +11,7 @@ Both providers run from one canonical source under `.asd/` (agents, skills, hook
 ## Why use it
 
 - **Repeatable structure.** Every sprint follows the same 10 phases — no improvisation, no forgotten steps.
-- **Documentation that stays alive.** Persistent docs (concept, stack, ADRs, UX) update on every sprint instead of rotting.
+- **Documentation that stays alive.** Persistent docs (concept, stack, UX) update on every sprint instead of rotting; architecture decisions fold into whichever of them already owns the subject.
 - **Reviews that converge.** Iteration severity floor stops reviewers from nitpicking the same low-severity issue forever. Each iteration dispatches reviewers with clean context, so verdicts aren't biased by the authoring that produced the artifact. Each internal reviewer must return a complete coverage ledger — every scoped file and every checklist rule accounted for — and the phase skill validates that full ledger before writing, rejecting and re-dispatching any reviewer whose ledger is incomplete, so no file or rule is skipped silently. Only a coverage summary line, the full n/a list, and non-passing rows are persisted to the review file — the gate runs on the full returned ledger regardless.
 - **Brownfield-friendly.** The audit phase reads any existing docs and code (in any format and location) and reverse-engineers them into the workflow's structure.
 - **One source of truth.** SSoT iron rule is enforced by a dedicated Documentation reviewer.
@@ -191,7 +191,7 @@ Fifteen specialized agents are canonically defined in `.asd/agents/` and generat
 | `asd-pm` | opus/medium | sol/medium | Sprint orchestrator: state, phase routing, decisions-log, PR ops |
 | `asd-ba` | opus/high | sol/high | Business analyst: PRD, audit on the docs side, acceptance criteria |
 | `asd-ux-designer` | opus/high | sol/high | UX flows, UI mockups, DESIGN.md tokens, design-system.html |
-| `asd-architect` | opus/high | sol/high | ADRs, C4 model, stack, API contracts, tech-reference docs |
+| `asd-architect` | opus/high | sol/high | ADRs (sprint-scoped, fold into existing docs), C4 model, stack, API contracts, tech-reference docs |
 | `asd-backend-dev` | sonnet/medium | terra/medium | Server/CLI/library code (no tests) |
 | `asd-frontend-dev` | sonnet/medium | terra/medium | UI code (no tests; consumes DESIGN.md tokens) |
 | `asd-test-engineer` | sonnet/medium | terra/medium | All tests: risk-based selection, pruning, authoring at every level, suite runs, manual verification specs |
@@ -226,7 +226,7 @@ documents:                # optional sprint documents; absent group = all enable
   audit: enabled           # <sprint>/audit.md
   prd: enabled              # design/prd.html + persistent requirements
   ux_spec: enabled          # ux-spec, design-system gate, design-md-delta
-  adr: enabled               # adr.html + persistent ADR
+  adr: enabled               # adr.html (sprint-scoped only; folds into existing persistent docs at design-promote)
   c4: enabled                  # c4-full + persistent C4 (also needs project.subsystem_decomposition: enabled)
 
 language:
@@ -309,8 +309,6 @@ your-project/
 │   ├── architecture/
 │   │   ├── stack.html
 │   │   ├── c4/                      # subsystem registry (likec4 model or mermaid yaml)
-│   │   ├── adr/<subsystem>/adr-NNNN-<slug>.html
-│   │   ├── api/<subsystem>.html
 │   │   └── tech-reference/<tech>-<version>.md
 │   └── ux/
 │       ├── DESIGN.md                # Google Labs format token source

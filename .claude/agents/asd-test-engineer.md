@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-test-engineer.md. source_digest=sha256:ed6600af099da87dd3ca078b81646c3e0f43b4957af985a1b3cb8b00bf03a4a1 content_digest=sha256:71f0ef11690f6c2afd5faefae21ab2deeedbed3299dc474bb7032f1f0121070a asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-test-engineer.md. source_digest=sha256:aafcb21e41747be893eb72c264d53245bec335f96797c0f22031b1746a58fcdb content_digest=sha256:1465df9750db4dedcc5967a38b06c24ecebc3b725d02e52b75e11ec6d813b6ef asd_version=2.0.0 schema=1
 name: asd-test-engineer
 description: "Owns all testing in the impl-test phase: test approach selection for the change scope, pruning redundant tests, authoring missing ones at every level, running the full suite. Covers: change-surface risk analysis, test-plan.md authoring, unit/property/component/contract/e2e test authoring, deletion of trivial/duplicate/mock-confirming/implementation-coupled/flaky tests, regression tests proven fail-first, suite runs from commands.yaml, defect triage, manual verification specs when automation is impossible. Does NOT handle: production code (delegates to asd-backend-dev / asd-frontend-dev), code-defect fixes (routed to impl test-fix mode), test review (delegates to asd-reviewer-testing)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
@@ -38,7 +38,7 @@ Test engineer. Sole owner of tests. In `impl-test`, after the code exists: picks
 - `<sprint>/plan.md` (Task-level material risks)
 - `docs/product/requirements/<subsystem>.html` (acceptance criteria to cover)
 - `docs/ux/<subsystem>.html` (flows for e2e coverage)
-- `docs/architecture/api/<subsystem>.html` (api contracts for contract tests)
+- whichever persistent doc holds folded API contracts for the touched subsystem (contract tests; `sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `.asd/project/commands.yaml`
 - existing test code
 

@@ -83,7 +83,7 @@ Never optional: `sprint.md`, `state.json`, `plan.md`, `test-plan.md`, impl-revie
 **Independent design docs** (replaces the old hard PRD→UX→ADR chain):
 - PRD (`prd`) reads `sprint.md` + `audit.md` (if `audit` enabled).
 - UX-spec (`ux_spec`) reads PRD if enabled, else `sprint.md`; audit optional. Disabling `ux_spec` also disables the design-system gate, `design-md-delta.yaml`, and UX promotion.
-- ADR (`adr`) reads whichever of PRD/UX-spec exist, else `sprint.md`; audit optional.
+- ADR (`adr`) reads whichever of PRD/UX-spec exist, else `sprint.md`; audit optional. ADRs are sprint-scoped only (`<sprint>/design/adr.html`, sprint-local `ADR-1`, `ADR-2`, … numbering) and are never promoted as a standalone persistent document — see "Design-promote phase" fold rule.
 - C4 (effective `c4`) reads whichever design drafts exist, current stack, `sprint.md`; ADR not required.
 - Audit disabled → creators scan the repo themselves for context; Plan PM greps touched files and reads `.asd/project/stubs.md` directly instead of `audit.md`'s "Related open stubs" section.
 
@@ -132,16 +132,18 @@ PM orchestrates; three domain creators promote (Documentation reviewer NOT invol
 
 1. PM proposes per-subsystem decomposition (only when `subsystem_decomposition: enabled`); user approves split.
 2. PM proposes new subsystems inferred from drafts; user approves each (name, parent container, description). On approve: Architect patches C4 registry, creates folders, runs `likec4 build` if applicable.
-3. PM distributes `audit.md` migration items to the matching domain (architecture/product/ux/api).
+3. PM distributes `audit.md` migration items to the matching domain (architecture/product/ux).
 4. Parallel promotion:
    - `asd-ba` → per-subsystem (or flat) `docs/product/requirements/<subsystem>.html` from prd draft; product migration items.
-   - `asd-architect` → `docs/architecture/adr/<subsystem>/adr-NNNN-<slug>.html`; updates `api/<subsystem>.html`, `stack.html`, `tech-reference/`; applies c4 delta to persistent `docs/architecture/c4/`; regenerates `dist/` (likec4) or `architecture.html` (mermaid); architecture migration items.
+   - `asd-architect` → folds every ADR approved in `adr.html` into whichever existing persistent doc's `responsibility.owns` frontmatter already declares ownership of that decision's subject (see fold rule below); updates `stack.html`, `tech-reference/`; applies c4 delta to persistent `docs/architecture/c4/`; regenerates `dist/` (likec4) or `architecture.html` (mermaid); architecture migration items.
    - `asd-ux-designer` → `docs/ux/<subsystem>.html` from ux-spec draft; patches `DESIGN.md` from `design-md-delta.yaml`; regenerates `design-system.html`; ux migration items.
    - Each creator requests user decision before each persistent write.
 5. PM final user confirmation before persistent mutation (confirm / rollback / partial rollback).
 6. PM appends decisions-log entries, finalises `state.json`.
 
-If `subsystem_decomposition: disabled`: drafts merge into flat project-level docs (`requirements.html`, `adr/adr-NNNN-<slug>.html`, `api.html`, `ux-spec.html`). No subsystem folders, no c4 model.
+**ADR fold rule**: every architectural decision approved in a sprint's `adr.html` is folded, at `design-promote`, into whichever existing persistent doc already declares ownership of that decision's subject in its `responsibility.owns` frontmatter — never from a lookup table. The `adr.html` article's optional "Fold target" line names the candidate and the matched `owns:` clause; the Architect verifies the match, not invents it. A binding rejected alternative folds as one line into the target doc's Constraints-equivalent section (or the fold target's nearest analogous section); a non-binding rejected alternative stays sprint-archive-only, never promoted. When no existing doc's `owns` matches, that is a Complication Approval, not a licence to invent a document — API contracts fold the same way: into a subsystem requirements/architecture doc, `stack.html`, a project-generated OpenAPI/SDL/proto artifact, or, only via Complication Approval, a brand-new doc with no pre-made template. The design gate stays **one approval for the sprint's whole ADR set** — fold-target selection happens after that gate, during promotion, and never re-opens it.
+
+If `subsystem_decomposition: disabled`: drafts merge into flat project-level docs (`requirements.html`, `ux-spec.html`); ADRs still fold per the rule above, never into a flat `adr/` tree. No subsystem folders, no c4 model.
 
 ## Impl phase
 

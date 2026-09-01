@@ -40,7 +40,7 @@ Test engineer. Sole owner of tests. In `impl-test`, after the code exists: picks
 - `<sprint>/plan.md` (Task-level material risks)
 - `docs/product/requirements/<subsystem>.html` (acceptance criteria to cover)
 - `docs/ux/<subsystem>.html` (flows for e2e coverage)
-- `docs/architecture/api/<subsystem>.html` (api contracts for contract tests)
+- whichever persistent doc holds folded API contracts for the touched subsystem (contract tests; `sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `.asd/project/commands.yaml`
 - existing test code
 

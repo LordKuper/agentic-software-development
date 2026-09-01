@@ -31,7 +31,7 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │       │   ├── design/
 │       │   │   ├── prd.html
 │       │   │   ├── ux-spec.html
-│       │   │   ├── adr.html
+│       │   │   ├── adr.html             # sprint-scoped only; never a standalone persistent document (folds at design-promote)
 │       │   │   ├── design-md-delta.yaml
 │       │   │   └── c4-full/{model/*.c4, views.c4, dist/}
 │       │   ├── plan.md
@@ -51,8 +51,6 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │   │   ├── c4/                          # subsystem registry + views; layout per project.diagram_tool
 │   │   │   # likec4 mode: model/*.c4, views.c4, dist/
 │   │   │   # mermaid mode: subsystems.yaml, architecture.html
-│   │   ├── adr/<subsystem>/adr-NNNN-<slug>.html
-│   │   ├── api/<subsystem>.html
 │   │   └── tech-reference/<tech>-<version>.md
 │   └── ux/
 │       ├── DESIGN.md
@@ -71,8 +69,6 @@ docs/
 ├── product/{concept.html, requirements.html}
 ├── architecture/
 │   ├── stack.html
-│   ├── adr/adr-NNNN-<slug>.html
-│   ├── api.html
 │   └── tech-reference/<tech>-<version>.md
 └── ux/{DESIGN.md, design-system.html, accessibility.html, ux-spec.html}
 ```
@@ -110,22 +106,22 @@ User-facing artifacts are HTML only. No parallel Markdown source. Exceptions:
 
 ## HTML shell wrapping (mandatory)
 
-Every user-facing HTML artifact (prd, ux-spec, adr, concept, stack, accessibility, api, design-system, architecture) MUST be wrapped in `t_html-shell.html`. The fragment template (`t_prd.html`, …) supplies the `<section>` content filling `{{CONTENT}}`. Creators emit a complete HTML document, not a bare fragment.
+Every user-facing HTML artifact (prd, ux-spec, adr, concept, stack, accessibility, design-system, architecture) MUST be wrapped in `t_html-shell.html`. The fragment template (`t_prd.html`, …) supplies the `<section>` content filling `{{CONTENT}}`. Creators emit a complete HTML document, not a bare fragment.
 
 **Placeholder fill** — creators compute and inline when writing:
 
 | Placeholder | Source / value |
 |---|---|
-| `{{DOC_TYPE}}` | one of `PRD`, `ADR`, `UX-spec`, `Concept`, `Stack`, `Accessibility`, `API`, `Design-system`, `Architecture` |
+| `{{DOC_TYPE}}` | one of `PRD`, `ADR`, `UX-spec`, `Concept`, `Stack`, `Accessibility`, `Design-system`, `Architecture` |
 | `{{SUBSYSTEM}}` | subsystem id when persistent per-subsystem; `sprint` for sprint drafts; `project` for project-wide docs |
 | `{{SPRINT_ID}}` | active `state.json.sprint_id` for sprint drafts; empty for persistent docs |
-| `{{STATUS}}` | `draft` (design) / `in-review` (design-review) / `approved` (post design-promote) / `locked` (archived). ADR also reflects ADR status: `proposed`/`accepted`/`superseded`/`deprecated` |
+| `{{STATUS}}` | `draft` (design) / `in-review` (design-review) / `approved` (post design-promote) / `locked` (archived). ADR also reflects ADR status: `proposed`/`accepted` |
 | `{{UPDATED_AT}}` | ISO date (YYYY-MM-DD) of last write |
 | `{{RESPONSIBILITY}}` | the `owns:` line from the fragment's responsibility frontmatter |
 | `{{PROVENANCE}}` | `original` \| `reverse-engineered` \| `migrated` (from fragment frontmatter) |
 | `{{SOURCE}}` | the `source:` field; empty when provenance=original |
 | `{{SOURCE_SUFFIX}}` | ` (from {{SOURCE}})` in the provenance badge when source non-empty; else empty |
-| `{{TITLE}}` | doc title — e.g. `PRD — Sprint 001 · <slug>` or `ADR-0007 · <decision title>` |
+| `{{TITLE}}` | doc title — e.g. `PRD — Sprint 001 · <slug>` or `ADR-7 · <decision title>` (sprint-local number) |
 | `{{STATS}}` | doc-type chip strip; PRD sprint draft (`SUBSYSTEM=sprint`): `N stories · N AC · updated …`; PRD persistent doc: `N goals · N stories · N AC · N non-goals · updated …`; ADR: `status · subsystem · updated`; UX-spec: `N flows · N mockups`; Stack: `N langs · N frameworks · N components`; others: at least `updated …` |
 | `{{TOC}}` | `<ol>` of links to each `<section id>` in fragment order, auto-generated from `<h2>` text |
 | `{{CONTENT}}` | fragment body (everything after the frontmatter comment) |
@@ -186,7 +182,7 @@ Agents preserve the block. Reviewers verify content respects the declared scope.
 - kebab-case English filenames
 - Sprint slug derived from scope, max 30 chars
 - Sprint number zero-padded to 3 digits
-- ADR filenames `adr-NNNN-<slug>.html`, NNNN globally unique across the project
+- ADR numbering is sprint-local (`ADR-1`, `ADR-2`, …) inside `<sprint>/design/adr.html` — never globally unique, never reused across sprints; ADRs are never promoted as a standalone persistent document, so no persistent ADR filename convention exists
 
 ## Sprint archival
 

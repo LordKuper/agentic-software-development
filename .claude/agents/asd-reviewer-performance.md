@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-performance.md. source_digest=sha256:79e3fc83a746121919f8d12c2a3b8dbe6f382598d24e8a392d6bdcddc8a2ae5f content_digest=sha256:44d50bc7154d945b3f213a46a4c46714d0fc49e8ad8299c72f4f5d1cff91b7d8 asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-performance.md. source_digest=sha256:a4eff9ead14884b8038e5ae3b8377c37969d838daf45ad7efc0eae902fcce1a3 content_digest=sha256:42bcaf82352de9c0727cca616e96254b566454118c0963e17e1f2b5f33c207ad asd_version=2.0.0 schema=1
 name: asd-reviewer-performance
 description: "Impl-review assessment of performance against project budgets and regression detection. Covers: latency/memory/throughput budget compliance, algorithmic complexity (nested loops on user-sized collections, naive search where index exists), perf anti-patterns (n+1 queries, sync IO on hot path, unbounded allocations, copy-on-large-collection, blocking work on UI thread), regression detection vs baseline, hot-path identification lacking measurement or caching. Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), AC coverage (delegates to asd-reviewer-implementation), test coverage (delegates to asd-reviewer-testing), ui/a11y (delegates to asd-reviewer-ui), over-engineering (delegates to asd-reviewer-simplification), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -35,7 +35,7 @@ Performance reviewer. Assesses code against perf budgets and detects regressions
 
 - diff payload (iter 1: full sprint diff; iter 2+: incremental)
 - perf budgets from `.asd/project/custom-coding-rules.md`
-- `docs/architecture/adr/` (perf-related ADRs)
+- whichever persistent doc folded a perf-related sprint ADR (`sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `docs/architecture/stack.html` (stack constraints)
 - test results showing perf measurements (when available)
 - iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill

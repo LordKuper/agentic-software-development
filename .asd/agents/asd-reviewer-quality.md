@@ -37,7 +37,7 @@ Quality reviewer. Scans code and tests for bugs, security issues, best-practice 
 ## Inputs
 
 - diff payload (iter 1: `git diff <base>...HEAD`; iter 2+: `git diff` + last commit)
-- `docs/architecture/adr/<subsystem>/` (decisions for contract checks)
+- whichever persistent doc folded a relevant sprint ADR (decisions for contract checks — `sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `docs/architecture/stack.html` (stack constraints)
 - `.asd/project/custom-coding-rules.md` (forbidden patterns, security policy)
 - iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill

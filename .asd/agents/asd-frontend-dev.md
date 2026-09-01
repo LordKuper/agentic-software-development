@@ -42,7 +42,7 @@ Frontend developer. Implements UI code and components per plan tasks; fixes impl
 - `docs/ux/DESIGN.md` (tokens, components)
 - `docs/ux/design-system.html` (visual reference)
 - `docs/ux/accessibility.html` (a11y baseline)
-- `docs/architecture/api/<subsystem>.html`
+- whichever persistent doc holds folded API contracts for the touched subsystem (`sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `.asd/project/commands.yaml`
 
 ## Outputs

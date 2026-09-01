@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-backend-dev.md. source_digest=sha256:a59bf1e02568d45f0868bd9841ef0401d43a8184c45ccf9dfd4724529c90c2d2 content_digest=sha256:8ca06950ff90c2a38dfc644498461b899a312008a3cfc3612495caea753d7d07 asd_version=1.2.0 schema=1
+# ASD generated. Edit .asd/agents/asd-backend-dev.md. source_digest=sha256:0b999b620ce5da26f3cb91db942843b6dea4771f0d2788340a4d49bcaef35121 content_digest=sha256:74b59209ecc1efa5838a8219cf0505944c294290338e6e861bd92a228a0832de asd_version=2.0.0 schema=1
 name: asd-backend-dev
 description: "Server-side code, CLI tools, libraries, background workers, data access layers. Covers: backend code authoring per plan tasks, fixing impl-review findings and impl-test defects, running lint/build/run commands from commands.yaml, registering TODO stubs in stubs.md. Does NOT handle: UI code (delegates to asd-frontend-dev), any test authoring or test runs — unit, integration, e2e (delegates to asd-test-engineer in the impl-test phase), architecture decisions (delegates to asd-architect), code review (delegates to reviewer agents)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
@@ -36,8 +36,8 @@ Backend developer. Implements server/CLI/library code per plan tasks; fixes impl
 - `<sprint>/plan.md` (tasks)
 - `<sprint>/reviews/impl/iter-NN/` (review-fix mode) or `<sprint>/test-plan.md` `Defects` (test-fix mode)
 - `docs/product/requirements/<subsystem>.html` (acceptance criteria to satisfy)
-- `docs/architecture/adr/<subsystem>/` (decisions to follow)
-- `docs/architecture/stack.html`, `docs/architecture/api/<subsystem>.html`
+- whichever persistent doc folded a relevant sprint ADR (decisions to follow — architectural decisions are no longer a standalone `adr/` tree, `sprint-lifecycle.md` "Design-promote phase" fold rule)
+- `docs/architecture/stack.html` and whichever persistent doc holds folded API contracts for the touched subsystem
 - `.asd/project/commands.yaml` (build/lint/run)
 
 ## Outputs

@@ -39,8 +39,7 @@ Orchestration body for the `asd-phase-design-promote` skill. Operation-mapping t
      - request user decision before each persistent write; show diff vs existing
      - emit COMPLETED
    - **`asd-architect`** — only if `adr.html` or `c4-full/` is in scope (step 1 intersection, independently — a repo can promote c4 without adr, or vice versa) — payload (adr.html if in scope, c4-full if in scope, decomposition map for architecture domain, migration items tagged architecture):
-     - per subsystem (or flat): split adr.html decisions into `docs/architecture/adr/<subsystem>/adr-NNNN-<slug>.html` (new files; NNNN globally unique)
-     - merge new API contracts into `docs/architecture/api/<subsystem>.html` (or `api.html`)
+     - fold every approved ADR into whichever existing persistent doc's `responsibility.owns` frontmatter already declares ownership of that decision's subject (`sprint-lifecycle.md` "Design-promote phase" fold rule) — never a lookup table, never a new `adr/` tree; use the ADR's own "Fold target" line as the candidate, verify the `owns:` match before writing; binding rejected alternatives fold as one line into the target's Constraints-equivalent section; non-binding alternatives stay sprint-archive-only; API contracts fold the same way (subsystem doc, `stack.html`, a project-generated OpenAPI/SDL/proto artifact, or Complication Approval if nothing owns it — no pre-made template)
      - update `docs/architecture/stack.html` + `tech-reference/` entries if sprint introduced new tech
      - compute c4 delta from `<sprint>/design/c4-full/` vs persistent `docs/architecture/c4/`; apply patches; regenerate `c4/dist/` (likec4) or `architecture.html` (mermaid)
      - process architecture migration items
@@ -90,4 +89,4 @@ PHASE: design-promote | SPRINT: <NNN-slug> | STATUS: <complete|blocked|aborted> 
 - `.asd/rules/artifact-layout.md` (path map per decomposition mode, c4 modes, promotion rules)
 - `.asd/rules/checkpoints.md` (per-promotion approval, new-subsystem approval, final mutation confirm)
 - `.asd/rules/language-policy.md`
-- Templates: `t_prd.html`, `t_adr.html`, `t_ux-spec.html`, `t_api.html`, `t_design-system.html`, `t_subsystems.yaml`, `t_tech-reference.md`, `t_decisions-log.md`
+- Templates: `t_prd.html`, `t_adr.html`, `t_ux-spec.html`, `t_design-system.html`, `t_subsystems.yaml`, `t_tech-reference.md`, `t_decisions-log.md`

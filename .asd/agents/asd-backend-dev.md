@@ -38,8 +38,8 @@ Backend developer. Implements server/CLI/library code per plan tasks; fixes impl
 - `<sprint>/plan.md` (tasks)
 - `<sprint>/reviews/impl/iter-NN/` (review-fix mode) or `<sprint>/test-plan.md` `Defects` (test-fix mode)
 - `docs/product/requirements/<subsystem>.html` (acceptance criteria to satisfy)
-- `docs/architecture/adr/<subsystem>/` (decisions to follow)
-- `docs/architecture/stack.html`, `docs/architecture/api/<subsystem>.html`
+- whichever persistent doc folded a relevant sprint ADR (decisions to follow — architectural decisions are no longer a standalone `adr/` tree, `sprint-lifecycle.md` "Design-promote phase" fold rule)
+- `docs/architecture/stack.html` and whichever persistent doc holds folded API contracts for the touched subsystem
 - `.asd/project/commands.yaml` (build/lint/run)
 
 ## Outputs

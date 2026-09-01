@@ -8,7 +8,7 @@ Every pause is a HARD gate: responsible agent MUST request user decision and rec
 |---|---|---|
 | scope | `sprint.md` | BEFORE writing `sprint.md` / `state.json` — refined scope presented in chat first |
 | audit | `audit.md` | BEFORE advancing to `design` |
-| design (per artifact, enabled documents only — `sprint-lifecycle.md` "Optional documents") | `prd.html` (if `prd` enabled), then design-system gate (only if `ux_spec` enabled: existence of `DESIGN.md` + `design-system.html` + `accessibility.html`; missing → `/asd-design-system`), then `ux-spec.html` (if enabled; inline per-entry approval for any `design-md-delta.yaml` addition), then `adr.html` (if `adr` enabled), then `c4-full/` (if effective `c4` enabled) |
+| design (per artifact, enabled documents only — `sprint-lifecycle.md` "Optional documents") | `prd.html` (if `prd` enabled), then design-system gate (only if `ux_spec` enabled: existence of `DESIGN.md` + `design-system.html` + `accessibility.html`; missing → `/asd-design-system`), then `ux-spec.html` (if enabled; inline per-entry approval for any `design-md-delta.yaml` addition), then `adr.html` (if `adr` enabled — **one approval for the sprint's whole ADR set**, not per-decision; ADR count never multiplies this gate), then `c4-full/` (if effective `c4` enabled) |
 | design-review (final) | reviewer verdicts before promotion |
 | design-promote (decomposition) | proposed per-subsystem split |
 | design-promote (new subsystem) | each new subsystem before C4 registry update |
