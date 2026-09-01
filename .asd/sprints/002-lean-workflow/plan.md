@@ -307,16 +307,16 @@ Verdicts: none — verification only. AC: AC-6. Owner: **backend-dev**. Depends 
 Affected canonical files: none; this task reads and verifies, and must **not** absorb mirror duty from the tasks above (audit R-5, R-16 — mirrors land inside the task that owns the verdict).
 Material risk: per gap G-13, nothing on the phase or agent axis is machine-checkable. This sweep is inspection, and it is the last line before impl-review's Documentation reviewer, whose self-hosting mandate is the only automated backstop.
 
-- [ ] `node .asd/sync.js --check` clean
-- [ ] `node tests/run.js` green
-- [ ] `README.md` verified against the phase list, agent roster, model tiers (both provider columns), config schema, folder map and command table
-- [ ] `core.md` "See also" lists every rule doc that still exists
-- [ ] Reviewer verdict token `[REVIEW-<phase>-<reviewer>]: APPROVE|CONCERNS|FAIL` consistent across `review-policy.md`, both review workflows and all reviewer agent files
-- [ ] The phase list identical in all four homes: `session-start.js` `PHASE_CHAIN`, `sprint-lifecycle.md`, `core.md` glossary, `README.md`
-- [ ] Every agent named in a workflow dispatch site exists with matching capabilities; every delegation target named in an agent description is real
-- [ ] Only `{{SPRINT}}`, `{{ITERATION}}`, `{{PHASE}}`, `{{agent:<name>}}` appear as template variables in skill, agent and workflow bodies
-- [ ] `.asd/release-manifest.json`: `managed_paths` covers every canonical tree, `canon_hashes` has an entry per canonical source and none for deleted ones
-- [ ] Repo-wide grep for references to anything this sprint deleted (`t_api.html`, `api.html`, `docs/architecture/adr/`, `subsystems_touched`, `new_subsystems`) returns nothing
+- [x] `node .asd/sync.js --check` clean — 68 items, all `current` except the expected `AGENTS.md: modified-foreign` self-hosting exemption
+- [x] `node tests/run.js` green — 77/77 passed
+- [x] `README.md` verified against the phase list, agent roster, model tiers (both provider columns), config schema, folder map and command table — all reflect current canon (ledger-summary reviews, sprint-scoped decisions-log/ADR, api.html removed, C4 build-to-view command, trimmed HTML shell, sprint-gated design-system regen, diff-scoped fan-out, no residual drift)
+- [x] `core.md` "See also" lists every rule doc that still exists — 12 rule docs listed, all present on disk
+- [x] Reviewer verdict token `[REVIEW-<phase>-<reviewer>]: APPROVE|CONCERNS|FAIL` consistent across `review-policy.md`, both review workflows and all reviewer agent files — verified all 7 internal reviewers + external-review; Task 13's `"skipped: <predicate>"` value for UI/Performance at impl-review documented in `review-policy.md` line 138 as an additional value, not a replacement of the three-value scheme
+- [x] The phase list identical in all four homes: `session-start.js` `PHASE_CHAIN`, `sprint-lifecycle.md`, `core.md` glossary, `README.md` — all ten phases match, untouched this sprint as expected
+- [x] Every agent named in a workflow dispatch site exists with matching capabilities; every delegation target named in an agent description is real — 15/15 agent names referenced in workflows match the 15 files in `.asd/agents/`; `asd-architect.md` correctly describes ADR/API folding through the open-set rule with no standalone template
+- [x] Only `{{SPRINT}}`, `{{ITERATION}}`, `{{PHASE}}`, `{{agent:<name>}}` appear as template variables in skill, agent and workflow bodies — repo-wide scan found `{{wraps_cli}}`/`{{wraps_config_key}}`/`{{wraps_invoke_args}}` in `asd-external-review.md` and `{{DOC_*}}` in `t_state.json`; both predate this sprint (multi-provider-support feature, verified via `git log`), out of this sprint's scope to fix
+- [x] `.asd/release-manifest.json`: `managed_paths` covers every canonical tree, `canon_hashes` has an entry per canonical source and none for deleted ones — `t_api.html` fully absent from both `managed_paths` and `canon_hashes`; `node tests/run.js` hash-consistency checks green
+- [x] Repo-wide grep for references to anything this sprint deleted (`t_api.html`, `api.html`, `docs/architecture/adr/`, `subsystems_touched`, `new_subsystems`) returns nothing — confirmed; only hits are in `plan.md`/decisions-log historical records and one legitimate backward-compat mention in `sprint-lifecycle.md` "State recovery"
 
 ## Risks
 
