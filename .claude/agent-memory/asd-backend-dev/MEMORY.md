@@ -1,0 +1,2 @@
+- [Self-hosting repo canon/sync quirks](project_self-hosting-repo.md) — sync.js target-path gotcha, ledger recompute step, AGENTS.md exempt
+- [Sibling vs root docs-path disambiguation](feedback_docs-wording-sibling-vs-root.md) — check corroborating context before mechanical rename/wording sweeps
