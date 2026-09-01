@@ -293,13 +293,13 @@ Verdicts: **AG-9**, **AG-13**, gap **G-9**. AC: AC-3, AC-4, AC-6. Owner: **backe
 Affected canonical files: `.asd/agents/asd-reviewer-implementation.md` (rubric), `.asd/agents/asd-reviewer-testing.md` (rubric), `.asd/agents/asd-reviewer-documentation.md` (line 72), `.asd/agents/asd-backend-dev.md`, `.asd/agents/asd-frontend-dev.md`, `.asd/agents/asd-test-engineer.md`, `.asd/rules/sprint-lifecycle.md` (Impl phase), `.asd/workflows/asd-phase-impl.md` (step 6), `.asd/rules/git-strategy.md`.
 Material risk: the dedup must **link** to the rule-doc SSoT, never simply delete — a dev agent that loses the manual-steps or tech-reference precondition loses a mandated refuse-to-implement guard. Review coverage improves: the AC→code edge stops having three owners that could return contradictory verdicts.
 
-- [ ] `asd-reviewer-implementation.md` owns the AC→code trace **exclusively**; delete its test-presence rubric item (Testing owns it and judges the check, not its presence)
-- [ ] `asd-reviewer-documentation.md` line 72: delete "and to code (in impl-review)" from its traceability item
-- [ ] Gap G-9: dedupe the **manual-steps procedure** to its SSoT in `sprint-lifecycle.md` "Impl phase" and link from `asd-backend-dev.md`, `asd-frontend-dev.md`, `asd-test-engineer.md`, `asd-phase-impl.md` step 6 — five near-verbatim homes today
-- [ ] Same for the **tech-reference precondition** block duplicated across all three dev-side agents
-- [ ] Same for **stub handling**, duplicated across both dev agents, `asd-phase-impl.md` step 6 and `git-strategy.md`
-- [ ] Verify every deduped agent still lists the owning rule doc under its Mandatory rules block
-- [ ] Run `sync.js --apply` for all six edited agent files
+- [x] `asd-reviewer-implementation.md` owns the AC→code trace **exclusively**; delete its test-presence rubric item (Testing owns it and judges the check, not its presence)
+- [x] `asd-reviewer-documentation.md` line 72: delete "and to code (in impl-review)" from its traceability item
+- [x] Gap G-9: dedupe the **manual-steps procedure** to its SSoT in `sprint-lifecycle.md` "Impl phase" and link from `asd-backend-dev.md`, `asd-frontend-dev.md`, `asd-test-engineer.md`, `asd-phase-impl.md` step 6 — five near-verbatim homes today
+- [x] Same for the **tech-reference precondition** block duplicated across all three dev-side agents (SSoT is `artifact-layout.md` "Tech reference docs" — already full there; pointer added in all four consumer sites)
+- [x] Same for **stub handling**, duplicated across both dev agents, `asd-phase-impl.md` step 6 and `git-strategy.md` (SSoT is `git-strategy.md` "TODO stubs" — already full there; pointer added in the other consumer sites)
+- [x] Verify every deduped agent still lists the owning rule doc under its Mandatory rules block
+- [x] Run `sync.js --apply` for all six edited agent files
 
 ### Task 20: Final consistency sweep and verification (AC-6 closure)
 
