@@ -34,7 +34,7 @@ Orchestration body for the `asd-phase-design-promote` skill. Operation-mapping t
    - emit COMPLETED
 8. **Parallel domain promotion** — delegate to agent in parallel, **only for domains whose sprint draft exists**:
    - **`asd-ba`** — only if `prd.html` is in scope (step 1 intersection) — payload (prd.html, decomposition map for product domain, migration items tagged product):
-     - per subsystem (or flat): write decomposed PRD into `docs/product/requirements/<subsystem>.html` (or `requirements.html`); merge with existing if present
+     - per subsystem (or flat): fold the sprint draft's User stories + Acceptance criteria into `docs/product/requirements/<subsystem>.html` (or `requirements.html`); the sprint draft carries no Goals/Non-goals — author the persistent doc's required Goals (and optional Non-goals) now, merging with existing content if present
      - process product migration items (`provenance: migrated|reverse-engineered` + `source`)
      - request user decision before each persistent write; show diff vs existing
      - emit COMPLETED

@@ -131,12 +131,12 @@ Verdicts: **A-4**, gap **G-5**, risk **R-4**. AC: AC-1, AC-4, AC-6. Owner: **bac
 Affected canonical files: `.asd/templates/t_prd.html`, `.asd/rules/artifact-layout.md` (`{{STATS}}` row), `.asd/agents/asd-ba.md` (skeleton line 52, Output format line 88), `.asd/workflows/asd-phase-design.md` (step 6), `.asd/workflows/asd-phase-design-promote.md` (step 8), `.asd/agents/asd-reviewer-documentation.md`.
 Material risk: audit R-4 — `t_prd.html` serves both the sprint draft and the persistent per-subsystem requirements doc. An unconditional cut guts the persistent document, which has no `sprint.md` to link back to. Per G-4 this reshapes the artifact for every consumer on `/asd-update`; no per-project dial is introduced (that would be a new config surface requiring Complication Approval).
 
-- [ ] `t_prd.html`: sprint draft = User stories + Acceptance criteria, plus an optional one-line Problem. Goals / Non-goals become **required for the persistent requirements document only** — mark the conditional in the template
-- [ ] `asd-reviewer-documentation.md`: rubric must distinguish sprint draft from persistent document so it does not FAIL a correctly-reduced draft
-- [ ] `artifact-layout.md`: fix the hardcoded `{{STATS}}` string `N goals · N stories · N AC · N non-goals`
-- [ ] `asd-ba.md`: fix the hardcoded skeleton prose (line 52) and Output format (line 88), which name sections the draft no longer carries
-- [ ] `asd-phase-design.md` step 6 and `asd-phase-design-promote.md` step 8: align with the split
-- [ ] Update the template `responsibility` frontmatter; run `sync.js --apply` for the two edited agent files
+- [x] `t_prd.html`: sprint draft = User stories + Acceptance criteria, plus an optional one-line Problem. Goals / Non-goals become **required for the persistent requirements document only** — mark the conditional in the template
+- [x] `asd-reviewer-documentation.md`: rubric must distinguish sprint draft from persistent document so it does not FAIL a correctly-reduced draft
+- [x] `artifact-layout.md`: fix the hardcoded `{{STATS}}` string `N goals · N stories · N AC · N non-goals`
+- [x] `asd-ba.md`: fix the hardcoded skeleton prose (line 52) and Output format (line 88), which name sections the draft no longer carries
+- [x] `asd-phase-design.md` step 6 and `asd-phase-design-promote.md` step 8: align with the split
+- [x] Update the template `responsibility` frontmatter; run `sync.js --apply` for the two edited agent files
 
 ### Task 8: Compress ux-spec.html and accessibility.html
 

@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-documentation.md. source_digest=sha256:8e60677a6d91d627b6c0112cff1b354678745b8ac870b43cbaa8c75d98351959 content_digest=sha256:5ff4cf286b4a4fdced5afb10a6842de79293bf361a726e5a11a752843fd990e7 asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-documentation.md. source_digest=sha256:f38620291f78c9cd66c6a0b45b352ca4fb2025b881642c30cefc8aafcb5a45a4 content_digest=sha256:8bc8d01603dbbcb9a3cff5742d5ebf3ad5b09d557dd62c73c1033c7d86328c06 asd_version=2.0.0 schema=1
 name: asd-reviewer-documentation
 description: "Design-review of sprint design drafts (SSoT, template responsibility-block adherence, traceability) and impl-review of persistent docs vs implementation (actuality, no SSoT violations, traceability PRD AC ↔ ADR ↔ code). Covers: SSoT integrity (each fact one home), template responsibility-block adherence, traceability across PRD/ADR/UX/code, custom-rules consistency, provenance flag correctness. Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), AC coverage of code (delegates to asd-reviewer-implementation), test coverage (delegates to asd-reviewer-testing), ui/a11y (delegates to asd-reviewer-ui), over-engineering (delegates to asd-reviewer-simplification), persistent doc promotion (handled by asd-ba/asd-ux-designer/asd-architect in design-promote phase), code edits (delegates to dev agents)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -65,7 +65,7 @@ Reviewer:
 ## Review rubric
 
 - **SSoT**: each fact one home; downstream docs link not copy
-- **Template adherence**: responsibility frontmatter present; sections respect declared `owns` / `excludes`
+- **Template adherence**: responsibility frontmatter present; sections respect declared `owns` / `excludes`. PRD is scope-conditional (`t_prd.html`): a sprint draft (`SUBSYSTEM=sprint`) correctly omits Goals/Non-goals — never FAIL a draft for missing them; only the persistent per-subsystem doc requires Goals present (Non-goals stays optional there)
 - **HTML shell wrapping** (`artifact-layout.md`): every user-facing HTML artifact wrapped in `t_html-shell.html`; all required placeholders filled (DOC_TYPE, SUBSYSTEM, SPRINT_ID where applicable, STATUS, UPDATED_AT, RESPONSIBILITY, PROVENANCE, TITLE, STATS, TOC, CONTENT); no bare fragments committed; no duplicated `<html>`/`<head>`/`<style>` chrome inside fragments
 - **Provenance**: `provenance` field correct (`original` default; `reverse-engineered` or `migrated` with `source`); provenance badge omitted when `original`
 - **Traceability**: PRD ACs map to ADRs (where architectural choice involved) and to code (in impl-review)

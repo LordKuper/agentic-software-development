@@ -126,7 +126,7 @@ Every user-facing HTML artifact (prd, ux-spec, adr, concept, stack, accessibilit
 | `{{SOURCE}}` | the `source:` field; empty when provenance=original |
 | `{{SOURCE_SUFFIX}}` | ` (from {{SOURCE}})` in the provenance badge when source non-empty; else empty |
 | `{{TITLE}}` | doc title — e.g. `PRD — Sprint 001 · <slug>` or `ADR-0007 · <decision title>` |
-| `{{STATS}}` | doc-type chip strip; PRD: `N goals · N stories · N AC · N non-goals · updated …`; ADR: `status · subsystem · updated`; UX-spec: `N flows · N mockups`; Stack: `N langs · N frameworks · N components`; others: at least `updated …` |
+| `{{STATS}}` | doc-type chip strip; PRD sprint draft (`SUBSYSTEM=sprint`): `N stories · N AC · updated …`; PRD persistent doc: `N goals · N stories · N AC · N non-goals · updated …`; ADR: `status · subsystem · updated`; UX-spec: `N flows · N mockups`; Stack: `N langs · N frameworks · N components`; others: at least `updated …` |
 | `{{TOC}}` | `<ol>` of links to each `<section id>` in fragment order, auto-generated from `<h2>` text |
 | `{{CONTENT}}` | fragment body (everything after the frontmatter comment) |
 | `{{GENERATED_BY}}` | `ASD workflow` |

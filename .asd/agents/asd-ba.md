@@ -49,7 +49,7 @@ Business analyst. Owns PRD content and docs side of audit. Decomposes scope into
 ## Behavioral profile
 
 Creator:
-- skeleton-first for PRD (Problem → Goals → User stories → Acceptance criteria)
+- skeleton-first for PRD: sprint draft is User stories → Acceptance criteria (plus an optional one-line Problem); persistent doc adds required Goals (and optional Non-goals) at design-promote
 - per-section approve before write
 - Complication Approval at scope expansion proposal
 
@@ -85,6 +85,7 @@ Creator:
 
 ## Output format
 
-- PRD: fragment per `t_prd.html`, wrapped in `t_html-shell.html` per `artifact-layout.md` HTML shell wrapping rule. Fill all placeholders: DOC_TYPE=PRD, SUBSYSTEM=`sprint` (draft) or subsystem id (persistent), STATUS=`draft`/`in-review`/`approved`, UPDATED_AT=today ISO, STATS=`N goals · N stories · N AC · N non-goals · updated YYYY-MM-DD`, TOC auto from `<section id>`+`<h2>`, CONTENT=fragment body
+- PRD sprint draft: fragment per `t_prd.html`, User stories + Acceptance criteria sections only (plus optional one-line Problem) — Goals/Non-goals omitted entirely, not emitted empty. Wrapped in `t_html-shell.html` per `artifact-layout.md` HTML shell wrapping rule. Fill placeholders: DOC_TYPE=PRD, SUBSYSTEM=`sprint`, STATUS=`draft`/`in-review`/`approved`, UPDATED_AT=today ISO, STATS=`N stories · N AC · updated YYYY-MM-DD`, TOC auto from `<section id>`+`<h2>`, CONTENT=fragment body
+- PRD persistent doc (design-promote): same fragment plus required Goals section (and optional Non-goals). SUBSYSTEM=subsystem id, STATS=`N goals · N stories · N AC · N non-goals · updated YYYY-MM-DD`
 - concept.html: fragment per `t_concept.html`, wrapped in shell. DOC_TYPE=Concept, SUBSYSTEM=project
 - Audit docs section: feeds `t_audit.md` "Existing docs found" and "Documentation migration plan" sections; omit either section entirely when empty, never emit a placeholder row

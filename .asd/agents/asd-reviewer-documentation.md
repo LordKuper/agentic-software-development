@@ -66,7 +66,7 @@ Reviewer:
 ## Review rubric
 
 - **SSoT**: each fact one home; downstream docs link not copy
-- **Template adherence**: responsibility frontmatter present; sections respect declared `owns` / `excludes`
+- **Template adherence**: responsibility frontmatter present; sections respect declared `owns` / `excludes`. PRD is scope-conditional (`t_prd.html`): a sprint draft (`SUBSYSTEM=sprint`) correctly omits Goals/Non-goals — never FAIL a draft for missing them; only the persistent per-subsystem doc requires Goals present (Non-goals stays optional there)
 - **HTML shell wrapping** (`artifact-layout.md`): every user-facing HTML artifact wrapped in `t_html-shell.html`; all required placeholders filled (DOC_TYPE, SUBSYSTEM, SPRINT_ID where applicable, STATUS, UPDATED_AT, RESPONSIBILITY, PROVENANCE, TITLE, STATS, TOC, CONTENT); no bare fragments committed; no duplicated `<html>`/`<head>`/`<style>` chrome inside fragments
 - **Provenance**: `provenance` field correct (`original` default; `reverse-engineered` or `migrated` with `source`); provenance badge omitted when `original`
 - **Traceability**: PRD ACs map to ADRs (where architectural choice involved) and to code (in impl-review)

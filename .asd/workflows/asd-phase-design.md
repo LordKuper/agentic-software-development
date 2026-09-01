@@ -23,7 +23,7 @@ Orchestration body for the `asd-phase-design` skill. Operation-mapping to host t
 5. Delegate to agent `asd-pm`: update `state.json` (phase=design)
 6. **Step PRD** — only if `prd` enabled: delegate to agent `asd-ba`:
    - inputs: sprint.md, audit.md (if present), existing prd draft if any, `language.chat`, `language.docs`; template `t_prd.html`
-   - instruction: integrate existing draft (preserve `provenance` + `source` if present); author full sprint PRD covering all scope; discuss each section in `language.chat`; on approval translate to `language.docs` + write `<sprint>/design/prd.html`; emit COMPLETED
+   - instruction: integrate existing draft (preserve `provenance` + `source` if present); author sprint PRD draft covering all scope as User stories + Acceptance criteria (plus optional one-line Problem) — Goals/Non-goals omitted entirely, deferred to design-promote's persistent-doc fold; discuss each section in `language.chat`; on approval translate to `language.docs` + write `<sprint>/design/prd.html`; emit COMPLETED
    - if `prd` disabled → skip to step 7 (downstream steps read `sprint.md` directly instead of `prd.html`)
 7. **Step Design-system gate** — only if `ux_spec` enabled: on PRD step done → search repo for existence of all three: `docs/ux/DESIGN.md`, `docs/ux/design-system.html`, `docs/ux/accessibility.html`
    - if ANY missing → dispatch skill `asd-design-system`; halt until COMPLETED; on FAILED/aborted → relay + halt phase
