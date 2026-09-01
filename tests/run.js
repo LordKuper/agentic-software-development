@@ -953,6 +953,25 @@ test("`node .asd/sync.js --check` reports every item current (no drift), except 
   const parsed = JSON.parse(out);
   assert.strictEqual(parsed.ok, true);
   assert.ok(Array.isArray(parsed.items));
+  // Coverage guard: the drift filter below only inspects items `--check`
+  // actually enumerated, so it passes vacuously on an empty or partial
+  // plan (e.g. a canon dir silently dropped from buildSyncPlan()'s
+  // enumeration). Independently enumerate the expected full-file targets
+  // straight from disk (not via sync.js) and assert each one was planned.
+  const targets = new Set(parsed.items.map((item) => item.target));
+  const agentsDir = path.join(REPO_ROOT, '.asd', 'agents');
+  for (const f of fs.readdirSync(agentsDir)) {
+    if (!f.endsWith('.md')) continue;
+    const name = f.slice(0, -3);
+    assert.ok(targets.has(`.claude/agents/${name}.md`), `sync plan missing .claude/agents/${name}.md`);
+    assert.ok(targets.has(`.codex/agents/${name}.toml`), `sync plan missing .codex/agents/${name}.toml`);
+  }
+  const skillsDir = path.join(REPO_ROOT, '.asd', 'skills');
+  for (const name of fs.readdirSync(skillsDir)) {
+    if (!fs.existsSync(path.join(skillsDir, name, 'SKILL.md'))) continue;
+    assert.ok(targets.has(`.claude/skills/${name}/SKILL.md`), `sync plan missing .claude/skills/${name}/SKILL.md`);
+    assert.ok(targets.has(`.agents/skills/${name}/SKILL.md`), `sync plan missing .agents/skills/${name}/SKILL.md`);
+  }
   // `--check` always exits 0 with `ok: true`; drift only shows as a per-item
   // `status` string, so `ok`/`items` alone cannot catch a stale/modified
   // generated view. Assert every item is actually `current`. `AGENTS.md` is
