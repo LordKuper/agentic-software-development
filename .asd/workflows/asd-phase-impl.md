@@ -9,7 +9,7 @@ Orchestration body for the `asd-phase-impl` skill. Operation-mapping to host too
 - **Test-fix mode**: `state.json.test_defects_pending` set; `<sprint>/test-plan.md` has pending `Defects` rows
 
 ## Operations used
-- read: `.asd/project/config.yaml`, `state.json`, `plan.md`, `<sprint>/reviews/impl/iter-NN/` (review-fix), `<sprint>/test-plan.md` (test-fix), persistent docs/ docs, `.asd/project/custom-common-rules.md`, `custom-coding-rules.md`, `stubs.md`, `<sprint>/manual-steps.md`
+- read: `.asd/project/config.yaml`, `state.json`, `plan.md`, `<sprint>/reviews/impl/iter-NN/` (review-fix), `<sprint>/test-plan.md` (test-fix), persistent docs, `.asd/project/custom-common-rules.md`, `custom-coding-rules.md`, `stubs.md`, `<sprint>/manual-steps.md`
 - request user decision: escalation only (see Execution mode)
 - delegate to agent: devs per task owner / finding owner / defect owner; PM for state + assessment + decisions-log
 
@@ -32,7 +32,7 @@ Impl runs **autonomously** in all modes. Once tasks/fixes dispatched, devs work 
 - **a blocker requiring escalation arises** — execution halts, blocker relayed.
 
 A blocker is exactly one of:
-- dev `QUESTION` — requirement ambiguity unresolvable from plan + design docs;
+- dev `QUESTION` — requirement ambiguity unresolvable from plan + persistent docs;
 - dev `FAILED`/`ABORT` — missing tech-reference, or unrecoverable lint/build failure;
 - a Simplicity Default trigger (`core.md`) — new abstraction, dependency, config flag, or generalization — needs Complication Approval before proceeding.
 

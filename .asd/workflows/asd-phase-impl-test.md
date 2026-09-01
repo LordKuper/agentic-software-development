@@ -8,7 +8,7 @@ Orchestration body for the `asd-phase-impl-test` skill. Operation-mapping to hos
 - `state.json.review_fixes_pending` and `test_defects_pending` both cleared by the impl fix-mode finalize
 
 ## Operations used
-- read: `.asd/project/config.yaml`, `state.json`, `plan.md`, `test-plan.md`, persistent docs/ docs (PRD ACs, api, ux-spec), `commands.yaml`, `custom-common-rules.md`, `custom-coding-rules.md`, existing test sources
+- read: `.asd/project/config.yaml`, `state.json`, `plan.md`, `test-plan.md`, persistent docs (PRD ACs, api, ux-spec), `commands.yaml`, `custom-common-rules.md`, `custom-coding-rules.md`, existing test sources
 - run command: change-surface diff; `commands.yaml` `test`/`lint`/`build` for the suite gate
 - request user decision: out-of-scope test removal gate; escalation
 - delegate to agent `asd-test-engineer` (strategy, prune + author, suite run); `asd-pm` for state + decisions-log
