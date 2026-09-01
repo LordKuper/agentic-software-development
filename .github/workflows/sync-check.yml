@@ -19,8 +19,17 @@ jobs:
           node .asd/sync.js --check > sync-check.json
           cat sync-check.json
           node -e "
+            const fs = require('fs');
             const report = require('./sync-check.json');
-            const drifted = report.items.filter((item) => item.status !== 'current');
+            // AGENTS.md is self-sourced, hand-edited framework-dev prose while
+            // self_hosting: enabled (see AGENTS.md 'What this repo is') — sync.js
+            // never overwrites it, so it always reports modified-foreign here.
+            const selfHosting = /^self_hosting:\s*enabled\s*$/m.test(fs.readFileSync('.asd/project/config.yaml', 'utf8'));
+            const drifted = report.items.filter((item) => {
+              if (item.status === 'current') return false;
+              if (selfHosting && item.target === 'AGENTS.md' && item.status === 'modified-foreign') return false;
+              return true;
+            });
             if (drifted.length > 0) {
               console.error('Drift detected (' + drifted.length + ' item(s) not current):');
               for (const item of drifted) console.error('  ' + item.status + '  ' + item.target);
