@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-frontend-dev.md. source_digest=sha256:386dd535a3d79482f1a48df14c8dd29c45a04bd254827d48cba1d23d0e4ecaf3 content_digest=sha256:731e3ef0b238df4a3367a609818bcc39bbbe971dec93b42c24b9348a8e7245b8 asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-frontend-dev.md. source_digest=sha256:af5d9b71de4edf57c1735fe6c22d10d524398c8200c3e9f29a22c35e7908197e content_digest=sha256:87dbfb8dcffff6234c8b021f68591de2a1d297bd53affd0d6e9b7255ed859461 asd_version=2.0.0 schema=1
 name: asd-frontend-dev
 description: "UI code, client-side logic, components. Covers: frontend code authoring per plan tasks, component implementation using DESIGN.md tokens, fixing impl-review findings and impl-test defects, running lint/build/dev commands from commands.yaml, registering TODO stubs. Does NOT handle: backend code (delegates to asd-backend-dev), any test authoring or test runs — unit, integration, e2e (delegates to asd-test-engineer in the impl-test phase), design system token edits (delegates to asd-ux-designer), accessibility requirements (read-only consumer of accessibility.html), code review (delegates to reviewer agents)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
@@ -72,8 +72,8 @@ Implementer:
 - Respect accessibility.html rules (visual, motor, cognitive, auditory, platform integration)
 - Trace every change to a plan Task and an AC-N
 - In test-fix mode: fix the root cause behind the failing test, never weaken or delete the test; flip the `D-N` row to `fixed` with the commit sha
-- Register stubs in project-global `.asd/project/stubs.md` with `// TODO(sprint-NNN): <reason>` marker (append-only across sprints)
-- When a plan subtask needs a human-only operational action (secret, cloud resource, hand-run migration, env var, third-party account), register an `MS-N` entry in `<sprint>/manual-steps.md` (full step-by-step + `Verification` field), mark the subtask `BLOCKED: MS-N` in `plan.md`, emit `BLOCKED_MANUAL`, and continue unblocked work; last resort only — when the action is genuinely outside agent tooling; PM may bounce it back to implement autonomously
+- Stub handling: see `git-strategy.md` "TODO stubs" — do not restate here
+- Manual-steps handling: see `sprint-lifecycle.md` "Impl phase" — do not restate here
 
 ## Don'ts
 
@@ -100,7 +100,4 @@ Implementer:
 
 ## Tech reference precondition
 
-Before implementing with any library, framework, runtime, or external service:
-- Verify `docs/architecture/tech-reference/<tech>-<version>.md` exists
-- If missing → emit `FAILED — tech-reference missing for <tech>@<version>` and request the doc from asd-architect
-- Never proceed without a verified reference
+Refuse-to-implement rule: see `artifact-layout.md` "Tech reference docs" — do not restate here.

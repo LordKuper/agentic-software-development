@@ -66,21 +66,14 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
      - `language.chat`, `language.docs`
      - instruction:
        - read context first
-       - verify `docs/architecture/tech-reference/<tech>-<version>.md` exists per tech touched; if missing → emit `FAILED — tech-reference missing for <tech>@<version>` (Architect creates it via design re-run or out-of-band)
+       - tech-reference precondition (refuse-to-implement rule): see `artifact-layout.md` "Tech reference docs" — do not restate here
        - work autonomously within plan + persistent docs scope; do NOT pause user for routine approach choices — make the reasonable call and proceed
        - escalate only on a blocker (see Execution mode): emit `QUESTION` for unresolvable requirement ambiguity, `FAILED` for missing tech-reference / unrecoverable failure, or raise Complication Approval via request for user decision **only** when a Simplicity Default trigger fires (new abstraction / dependency / config flag / generalization)
-       - **manual-steps handling**: when a plan subtask cannot proceed without a human-only operational action (secret, cloud resource, hand-run migration, env var, third-party account):
-         - append `MS-N` entry to `<sprint>/manual-steps.md` per `t_manual-steps.md` (full step-by-step instructions plus `Verification` field stating how completion is confirmed)
-         - mark affected subtask `- [ ] <subtask> — BLOCKED: MS-N` in `<sprint>/plan.md`
-         - emit `BLOCKED_MANUAL` for that subtask, continue all unblocked work
-         - registering a manual step is last resort — only when action genuinely cannot be done with agent tools (code, `commands.yaml` commands, file ops); PM may bounce an entry back to be implemented autonomously
+       - manual-steps handling: see `sprint-lifecycle.md` "Impl phase" — do not restate here
        - write production code only — **no tests**; test selection, authoring, pruning, and running belong to `impl-test`
        - review-fix — apply suggested fix per finding, or equivalent correct fix; test-fix — fix the root cause behind the failing test (never weaken or delete the test), then set the defect row `Status` to `fixed` with the fixing commit sha in `<sprint>/test-plan.md`
        - run `build` and `lint` per `commands.yaml`; do not advance with failures or warnings unreported
-       - **stub handling**:
-         - new TODO: insert `// TODO(sprint-<NNN-slug>): <reason>` marker in code AND add row to `.asd/project/stubs.md` (Sprint, File:Line, Reason, Owner)
-         - resolving existing stub (task is "Resolve stub X" or side effect): remove `// TODO(sprint-...)` marker AND delete the row from `.asd/project/stubs.md`
-         - never edit-in-place a stub row; always delete + (optionally) re-add under new sprint id for migration
+       - stub handling: see `git-strategy.md` "TODO stubs" — do not restate here
        - commit per Conventional Commits (one logical change per commit; subject ≤50 chars; body describes WHY)
        - initial — tick corresponding checkboxes in `<sprint>/plan.md`
        - emit COMPLETED with summary (files touched; initial: AC-N satisfied, stubs added; review-fix: findings resolved by id; test-fix: defects resolved by `D-N`) when all subtasks/findings/defects done; when some subtasks manual-blocked, emit COMPLETED for unblocked portion plus `BLOCKED_MANUAL` listing deferred `MS-N`

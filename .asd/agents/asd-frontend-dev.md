@@ -74,8 +74,8 @@ Implementer:
 - Respect accessibility.html rules (visual, motor, cognitive, auditory, platform integration)
 - Trace every change to a plan Task and an AC-N
 - In test-fix mode: fix the root cause behind the failing test, never weaken or delete the test; flip the `D-N` row to `fixed` with the commit sha
-- Register stubs in project-global `.asd/project/stubs.md` with `// TODO(sprint-NNN): <reason>` marker (append-only across sprints)
-- When a plan subtask needs a human-only operational action (secret, cloud resource, hand-run migration, env var, third-party account), register an `MS-N` entry in `<sprint>/manual-steps.md` (full step-by-step + `Verification` field), mark the subtask `BLOCKED: MS-N` in `plan.md`, emit `BLOCKED_MANUAL`, and continue unblocked work; last resort only — when the action is genuinely outside agent tooling; PM may bounce it back to implement autonomously
+- Stub handling: see `git-strategy.md` "TODO stubs" — do not restate here
+- Manual-steps handling: see `sprint-lifecycle.md` "Impl phase" — do not restate here
 
 ## Don'ts
 
@@ -102,7 +102,4 @@ Implementer:
 
 ## Tech reference precondition
 
-Before implementing with any library, framework, runtime, or external service:
-- Verify `docs/architecture/tech-reference/<tech>-<version>.md` exists
-- If missing → emit `FAILED — tech-reference missing for <tech>@<version>` and request the doc from asd-architect
-- Never proceed without a verified reference
+Refuse-to-implement rule: see `artifact-layout.md` "Tech reference docs" — do not restate here.

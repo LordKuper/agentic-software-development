@@ -102,9 +102,7 @@ Implementer:
 
 ## Manual steps
 
-- When a plan subtask needs a human-only operational action (secret, cloud resource, hand-run migration, env var, third-party account), register an `MS-N` entry in `<sprint>/manual-steps.md` (full step-by-step + `Verification` field), mark the subtask `BLOCKED: MS-N` in `plan.md`, emit `BLOCKED_MANUAL`, and continue unblocked work
-- Last resort only — when the action is genuinely outside agent tooling; PM may bounce it back to implement autonomously
-- Distinct from a Manual verification spec: manual steps are operational *setup* actions; a verification spec is manual QA of *behaviour*
+Manual-steps handling: see `sprint-lifecycle.md` "Impl phase" — do not restate here. Distinct from a Manual verification spec: manual steps are operational *setup* actions; a verification spec is manual QA of *behaviour*.
 
 ## Signals emitted
 
@@ -123,10 +121,7 @@ Implementer:
 
 ## Tech reference precondition
 
-Before authoring tests against any library, framework, runtime, or external service:
-- Verify `docs/architecture/tech-reference/<tech>-<version>.md` exists
-- If missing → emit `FAILED — tech-reference missing for <tech>@<version>` and request the doc from asd-architect
-- Never proceed without a verified reference
+Refuse-to-implement rule: see `artifact-layout.md` "Tech reference docs" — do not restate here.
 
 ## Evidence routing per story type
 

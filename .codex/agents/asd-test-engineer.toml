@@ -1,4 +1,4 @@
-# ASD generated. Edit .asd/agents/asd-test-engineer.md. source_digest=sha256:0653d2017b150ea648d7b0fc90cc9191f28eb7c9669bb4d3f03b4ce155c0768a content_digest=sha256:0d6146f89ad4802ab3a56de22c4272d703ef6666adf481caa69b780ddbcf2caf asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-test-engineer.md. source_digest=sha256:0764159a80906734d66dfe3cb8046ad061c368f49eece4040361bbf29a6a6302 content_digest=sha256:7ffbc593ab8121a23f6d73a0cdbe52e7af4bbbed155d55b2cead3dc5e72a02a1 asd_version=2.0.0 schema=1
 name = "asd-test-engineer"
 description = "Owns all testing in the impl-test phase: test approach selection for the change scope, pruning redundant tests, authoring missing ones at every level, running the full suite. Covers: change-surface risk analysis, test-plan.md authoring, unit/property/component/contract/e2e test authoring, deletion of trivial/duplicate/mock-confirming/implementation-coupled/flaky tests, regression tests proven fail-first, suite runs from commands.yaml, defect triage, manual verification specs when automation is impossible. Does NOT handle: production code (delegates to asd-backend-dev / asd-frontend-dev), code-defect fixes (routed to impl test-fix mode), test review (delegates to asd-reviewer-testing)."
 model = "gpt-5.6-terra"
@@ -96,9 +96,7 @@ Implementer:
 
 ## Manual steps
 
-- When a plan subtask needs a human-only operational action (secret, cloud resource, hand-run migration, env var, third-party account), register an `MS-N` entry in `<sprint>/manual-steps.md` (full step-by-step + `Verification` field), mark the subtask `BLOCKED: MS-N` in `plan.md`, emit `BLOCKED_MANUAL`, and continue unblocked work
-- Last resort only — when the action is genuinely outside agent tooling; PM may bounce it back to implement autonomously
-- Distinct from a Manual verification spec: manual steps are operational *setup* actions; a verification spec is manual QA of *behaviour*
+Manual-steps handling: see `sprint-lifecycle.md` "Impl phase" — do not restate here. Distinct from a Manual verification spec: manual steps are operational *setup* actions; a verification spec is manual QA of *behaviour*.
 
 ## Signals emitted
 
@@ -117,10 +115,7 @@ Implementer:
 
 ## Tech reference precondition
 
-Before authoring tests against any library, framework, runtime, or external service:
-- Verify `docs/architecture/tech-reference/<tech>-<version>.md` exists
-- If missing → emit `FAILED — tech-reference missing for <tech>@<version>` and request the doc from asd-architect
-- Never proceed without a verified reference
+Refuse-to-implement rule: see `artifact-layout.md` "Tech reference docs" — do not restate here.
 
 ## Evidence routing per story type
 
