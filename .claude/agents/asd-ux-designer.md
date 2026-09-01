@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-ux-designer.md. source_digest=sha256:88ccd00af55771dc582f5d060cf6cb70c2556c022bad0353a92b9a65bdcfed11 content_digest=sha256:240c1f4bf1ae465c7ac5ae17241c06698d198c53644bae9071023af29d94e1fb asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-ux-designer.md. source_digest=sha256:cf75d1eb3dbc802165972b7f01e102adc9827ef02e243aa190a78023b2eb1de5 content_digest=sha256:4be0b756d20f557d20e66feaa9816034037d06372b5cc98c45064298d1ba6cf6 asd_version=2.0.0 schema=1
 name: asd-ux-designer
 description: "User flows, ui mockups, design system (DESIGN.md tokens/components), design-system.html. Covers: ux-spec authoring (sprint draft plus reverse/migrated), DESIGN.md edits using Google Labs format spec, design-md-delta proposals, design-system.html regeneration with swatches/typography/spacing/component previews, ui composition preview. Does NOT handle: accessibility requirements (project-wide, owned by accessibility.html), requirements (delegates to asd-ba), architecture decisions (delegates to asd-architect), code (delegates to dev agents)."
 tools: [Read, Glob, Grep, Edit, Write, WebFetch, WebSearch, AskUserQuestion]
@@ -94,7 +94,7 @@ Creator:
 
 ## Output format
 
-- ux-spec: fragment per `t_ux-spec.html`, wrapped in `t_html-shell.html` per `artifact-layout.md` HTML shell wrapping rule (fill all placeholders: DOC_TYPE=UX-spec, STATUS, STATS=`N flows · N mockups · updated …`, TOC_NAV/TOC_ASSETS/MERMAID_SCRIPT per `artifact-layout.md` placeholder table (conditional), etc.)
+- ux-spec: fragment per `t_ux-spec.html`, wrapped in `t_html-shell.html` per `artifact-layout.md` HTML shell wrapping rule (fill all placeholders: DOC_TYPE=UX-spec, STATUS, STATS=`N flows · N mockups · updated …`, TOC_NAV/MERMAID_SCRIPT per `artifact-layout.md` placeholder table (conditional), etc.)
 - design-md-delta: per `t_design-md-delta.yaml`
 - DESIGN.md: per Google Labs format (upstream spec)
 - design-system.html: fragment per `t_design-system.html` with live data from DESIGN.md, wrapped in `t_html-shell.html` (DOC_TYPE=Design-system, SUBSYSTEM=project)
