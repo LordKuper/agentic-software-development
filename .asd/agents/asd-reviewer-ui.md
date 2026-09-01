@@ -40,15 +40,15 @@ UI reviewer. Checks ux-spec drafts against DESIGN.md and accessibility baseline 
 
 **design-review phase:**
 - `<sprint>/design/ux-spec.html`
-- `design/ux/DESIGN.md`
-- `design/ux/design-system.html`
-- `design/ux/accessibility.html`
+- `docs/ux/DESIGN.md`
+- `docs/ux/design-system.html`
+- `docs/ux/accessibility.html`
 
 **impl-review phase:**
 - UI code diff
-- `design/ux/<subsystem>.html` (promoted ux-spec) — when absent (`documents.ux_spec` was disabled for the sprint that wrote this code, or no promoted ux-spec exists yet), review against `design/ux/DESIGN.md` and `accessibility.html` directly; never skip impl-review UI review just because no ux-spec exists — absence of a spec doesn't mean absence of UI code
-- `design/ux/DESIGN.md`
-- `design/ux/accessibility.html`
+- `docs/ux/<subsystem>.html` (promoted ux-spec) — when absent (`documents.ux_spec` was disabled for the sprint that wrote this code, or no promoted ux-spec exists yet), review against `docs/ux/DESIGN.md` and `accessibility.html` directly; never skip impl-review UI review just because no ux-spec exists — absence of a spec doesn't mean absence of UI code
+- `docs/ux/DESIGN.md`
+- `docs/ux/accessibility.html`
 
 - iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
 

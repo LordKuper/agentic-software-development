@@ -34,7 +34,7 @@ Implementation reviewer. Verifies code completely implements every PRD acceptanc
 
 ## Inputs
 
-- `design/product/requirements/<subsystem>.html` or `<sprint>/design/prd.html` for sprint-scoped ACs; when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
+- `docs/product/requirements/<subsystem>.html` or `<sprint>/design/prd.html` for sprint-scoped ACs; when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
 - diff payload (code + tests changed this sprint)
 - `<sprint>/plan.md` (task-to-AC mapping)
 - iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
@@ -73,7 +73,7 @@ Reviewer:
 - Never assess bugs, security, or test quality (other reviewers)
 - Never raise nitpick categories
 - Never raise low/medium findings on iter 2+ (severity floor)
-- Never modify code, ACs, or design docs
+- Never modify code, ACs, or persistent docs
 - Never read prior `iter-*/` review files — each iteration reviews clean context (per `review-policy.md`)
 - Never run shell commands
 

@@ -37,12 +37,12 @@ Frontend developer. Implements UI code and components per plan tasks; fixes impl
 
 - `<sprint>/plan.md`
 - `<sprint>/reviews/impl/iter-NN/` (review-fix mode) or `<sprint>/test-plan.md` `Defects` (test-fix mode)
-- `design/product/requirements/<subsystem>.html`
-- `design/ux/<subsystem>.html` (ux-spec with flows + mockups)
-- `design/ux/DESIGN.md` (tokens, components)
-- `design/ux/design-system.html` (visual reference)
-- `design/ux/accessibility.html` (a11y baseline)
-- `design/architecture/api/<subsystem>.html`
+- `docs/product/requirements/<subsystem>.html`
+- `docs/ux/<subsystem>.html` (ux-spec with flows + mockups)
+- `docs/ux/DESIGN.md` (tokens, components)
+- `docs/ux/design-system.html` (visual reference)
+- `docs/ux/accessibility.html` (a11y baseline)
+- `docs/architecture/api/<subsystem>.html`
 - `.asd/project/commands.yaml`
 
 ## Outputs
@@ -103,6 +103,6 @@ Implementer:
 ## Tech reference precondition
 
 Before implementing with any library, framework, runtime, or external service:
-- Verify `design/architecture/tech-reference/<tech>-<version>.md` exists
+- Verify `docs/architecture/tech-reference/<tech>-<version>.md` exists
 - If missing → emit `FAILED — tech-reference missing for <tech>@<version>` and request the doc from asd-architect
 - Never proceed without a verified reference

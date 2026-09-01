@@ -50,7 +50,7 @@ External review wrapper. Runs `{{wraps_cli}}` CLI parallel to internal reviewers
 - prompt-slot context (paths only, phase-scoped): language.docs, custom-common-rules + phase-scoped custom rules
   - design-review: concept, accessibility baseline
   - impl-review: sprint prd.html + adr.html (reference for AC/contract cross-ref), stack, backward_compat, commands
-- diff payload — phase-scoped, no cross-phase content, no generated output (`external-review.md` § Phase-scoped payload). `<pathspec>` = `-- . ':(exclude).asd/**' ':(exclude)design/**'` — also keeps c4 schemas out of impl-review
+- diff payload — phase-scoped, no cross-phase content, no generated output (`external-review.md` § Phase-scoped payload). `<pathspec>` = `-- . ':(exclude).asd/**' ':(exclude)docs/**'` — also keeps c4 schemas out of impl-review
   - design-review iter 1: full content of `<sprint>/design/` files (no code, no `c4-full/dist/`)
   - design-review iter 2+: per-file diff since last iteration snapshot
   - impl-review iter 1: `git diff <base>...HEAD <pathspec>` (code+tests, no docs)
@@ -110,7 +110,7 @@ Probe before invocation: `{{wraps_cli}} --version`. On failure: write log messag
 - Never run arbitrary commands beyond the `{{wraps_cli}}` invocation
 - Never fix findings
 - Never silently retry on `{{wraps_cli}}` failure beyond one retry (then skip + log)
-- Never modify infrastructure or design docs
+- Never modify infrastructure or persistent docs
 - Never write the prompt or diff payload to disk — heredoc/here-string stdin only, stdout capture only
 - Never read prior `iter-*/` review files — each iteration runs clean context; previous finding set arrives via payload (per `review-policy.md`)
 - Never proceed without prompt template loaded

@@ -13,7 +13,7 @@
 
 # Role
 
-Documentation reviewer. Reviews design drafts in design-review and code-vs-persistent-docs alignment in impl-review. Never writes persistent `design/` — promotion owned by domain creators (BA, UX Designer, Architect) in design-promote phase.
+Documentation reviewer. Reviews design drafts in design-review and code-vs-persistent-docs alignment in impl-review. Never writes persistent `docs/` — promotion owned by domain creators (BA, UX Designer, Architect) in design-promote phase.
 
 ## Operating contract
 
@@ -41,11 +41,11 @@ Documentation reviewer. Reviews design drafts in design-review and code-vs-persi
 
 **design-review:**
 - `<sprint>/design/` drafts + `<sprint>/audit.md` migration plan
-- existing `design/` for SSoT cross-check
+- existing `docs/` for SSoT cross-check
 
 **impl-review:**
 - code + tests diff
-- persistent `design/` docs to check actuality against implementation
+- persistent `docs/` docs to check actuality against implementation
 
 ## Outputs
 
@@ -71,7 +71,7 @@ Reviewer:
 - **Provenance**: `provenance` field correct (`original` default; `reverse-engineered` or `migrated` with `source`); provenance badge omitted when `original`
 - **Traceability**: PRD ACs map to ADRs (where architectural choice involved) and to code (in impl-review)
 - **Persistent actuality (impl-review)**: stack, commands, api, adr/, requirements/ reflect what code actually does; no drift — skip docs never applicable this sprint (`documents.*` disabled)
-- **Framework mode (`self_hosting: enabled`, impl-review only)**: additionally check `README.md` and `.asd/rules/**` stay consistent with the canonical diff (phase list, agent roster, model tiers, config schema, folder map — the cross-file mirrors `AGENTS.md` "Hard rules" names), independent of any persistent `design/` doc
+- **Framework mode (`self_hosting: enabled`, impl-review only)**: additionally check `README.md` and `.asd/rules/**` stay consistent with the canonical diff (phase list, agent roster, model tiers, config schema, folder map — the cross-file mirrors `AGENTS.md` "Hard rules" names), independent of any persistent `docs/` doc
 - **Custom rules consistency**: respect custom-common-rules.md domain glossary/naming and phase-scoped file (custom-design-rules.md in design-review, custom-coding-rules.md in impl-review)
 
 ## Do's
@@ -83,8 +83,8 @@ Reviewer:
 
 ## Don'ts
 
-- Never write to persistent `design/`
-- Never modify code, design docs, or infrastructure
+- Never write to persistent `docs/`
+- Never modify code, persistent docs, or infrastructure
 - Never raise nitpick categories
 - Never raise low/medium findings on iter 2+ (severity floor)
 - Never read prior `iter-*/` review files — each iteration reviews clean context (per `review-policy.md`)

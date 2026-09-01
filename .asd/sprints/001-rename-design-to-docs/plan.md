@@ -67,23 +67,23 @@ Owner: `backend-dev`. Satisfies AC-1, AC-2, AC-4. Material risk for impl-test: t
 ### Task 3: Rename the docs root across `.asd/agents/`
 Owner: `backend-dev`. Satisfies AC-1. Material risk for impl-test: three of these lines are write-access allowlists — a missed rename there silently revokes an agent's permission to write the promoted doc and only surfaces sprints later (audit R-5).
 
-- [ ] Write-access allowlist checklist (verify each individually): `asd-architect.md:65`, `asd-ux-designer.md:70`, `asd-ba.md:61`
-- [ ] `asd-architect.md` — lines 38–40, 47–50, 65, 106, 107, 115 (heaviest file)
-- [ ] `asd-ux-designer.md` — lines 41–44, 52, 53, 70
-- [ ] `asd-frontend-dev.md` — lines 40–45, 106
-- [ ] `asd-backend-dev.md` — lines 40–42, 102
-- [ ] `asd-test-engineer.md` — lines 41–43, 126
-- [ ] `asd-reviewer-ui.md` — lines 43–45, 49–51
-- [ ] `asd-reviewer-documentation.md` — lines 16, 44, 48, 74, 86; lines 44 and 48 mix in-scope and out-of-scope occurrences within the same line — edit character by character
-- [ ] `asd-reviewer-quality.md` — lines 40, 41
-- [ ] `asd-reviewer-performance.md` — lines 39, 40
-- [ ] `asd-reviewer-testing.md` — line 40
-- [ ] `asd-reviewer-implementation.md` — line 37
-- [ ] `asd-ba.md` — lines 39, 76
-- [ ] `asd-pm.md` — lines 93, 108
-- [ ] `asd-external-review.md` — line 53 (member of atomic set R-4)
-- [ ] Reword the ~8 reviewer "Never modify … design docs" prose lines per the G-1 convention
-- [ ] Do NOT edit `asd-reviewer-simplification.md` at all (line 41 is `<sprint>/design/`, line 98 is phase-scoped prose)
+- [x] Write-access allowlist checklist (verify each individually): `asd-architect.md:65`, `asd-ux-designer.md:70`, `asd-ba.md:61`
+- [x] `asd-architect.md` — lines 38–40, 47–50, 65, 106, 107, 115 (heaviest file)
+- [x] `asd-ux-designer.md` — lines 41–44, 52, 53, 70
+- [x] `asd-frontend-dev.md` — lines 40–45, 106
+- [x] `asd-backend-dev.md` — lines 40–42, 102
+- [x] `asd-test-engineer.md` — lines 41–43, 126
+- [x] `asd-reviewer-ui.md` — lines 43–45, 49–51
+- [x] `asd-reviewer-documentation.md` — lines 16, 44, 48, 74, 86; lines 44 and 48 mix in-scope and out-of-scope occurrences within the same line — edit character by character
+- [x] `asd-reviewer-quality.md` — lines 40, 41
+- [x] `asd-reviewer-performance.md` — lines 39, 40
+- [x] `asd-reviewer-testing.md` — line 40
+- [x] `asd-reviewer-implementation.md` — line 37
+- [x] `asd-ba.md` — lines 39, 76
+- [x] `asd-pm.md` — lines 93, 108
+- [x] `asd-external-review.md` — line 53 (member of atomic set R-4)
+- [x] Reword the ~8 reviewer "Never modify … design docs" prose lines per the G-1 convention
+- [x] Do NOT edit `asd-reviewer-simplification.md` at all (line 41 is `<sprint>/design/`, line 98 is phase-scoped prose)
 
 ### Task 4: Rename the docs root across `.asd/skills/`
 Owner: `backend-dev`. Satisfies AC-1. Material risk for impl-test: skill `description` strings are the dispatch triggers and live inside JSON frontmatter — a malformed edit breaks dispatch on both providers (audit R-6).

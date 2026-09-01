@@ -37,8 +37,8 @@ Quality reviewer. Scans code and tests for bugs, security issues, best-practice 
 ## Inputs
 
 - diff payload (iter 1: `git diff <base>...HEAD`; iter 2+: `git diff` + last commit)
-- `design/architecture/adr/<subsystem>/` (decisions for contract checks)
-- `design/architecture/stack.html` (stack constraints)
+- `docs/architecture/adr/<subsystem>/` (decisions for contract checks)
+- `docs/architecture/stack.html` (stack constraints)
 - `.asd/project/custom-coding-rules.md` (forbidden patterns, security policy)
 - iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
 
@@ -78,7 +78,7 @@ Reviewer:
 - Never fix code yourself — emit findings only
 - Never raise nitpick categories
 - Never raise low/medium findings on iter 2+ (per severity floor)
-- Never modify code, ADRs, or design docs
+- Never modify code, ADRs, or persistent docs
 - Never read prior `iter-*/` review files — each iteration reviews clean context (per `review-policy.md`)
 - Never run shell commands
 

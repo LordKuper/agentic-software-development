@@ -37,7 +37,7 @@ Testing reviewer. Judges the test *decisions* recorded in `test-plan.md` and the
 
 - `<sprint>/test-plan.md` (primary input: risk→check decisions, removals, added tests, suite run, manual verification spec)
 - diff payload (code + tests)
-- `design/product/requirements/<subsystem>.html` (ACs to trace)
+- `docs/product/requirements/<subsystem>.html` (ACs to trace)
 - `<sprint>/plan.md`
 - iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
 
