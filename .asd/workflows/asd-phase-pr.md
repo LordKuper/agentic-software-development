@@ -35,8 +35,7 @@ The sprint folder physically moves to `.asd/sprints/archived/<NNN-slug>/` as par
    - **Stub block**:
      - read `.asd/project/stubs.md`; filter `Sprint = <current-NNN-slug>` AND Reason NOT starting with `(accepted-debt)` → must be empty
      - search code for `// TODO(sprint-<current-NNN-slug>):` markers; cross-check every marker has matching stubs.md entry (orphan markers = block)
-   - **Tests pass**: run command `commands.yaml` `test`; non-zero exit = block
-   - **Lint clean**: run command `commands.yaml` `lint`; non-zero exit = block
+   - **Tests pass / Lint clean**: compare current `git rev-parse HEAD` against `git log -1 --format=%H -- <sprint>/test-plan.md` (the commit that last wrote its `Suite run` section — impl-test's own gate step commits right after writing it). Equal (HEAD hasn't moved) → trust the recorded `Suite run` pass, skip re-running; impl-review produces no code/test/stub changes per its own workflow contract, so an intervening impl-review phase cannot invalidate an already-green suite. Different (HEAD moved — e.g. a fix commit landed after the last recorded run) → run command `commands.yaml` `test` then `lint`; non-zero exit on either = block
    - **PR self-review checklist** (per `git-strategy.md`): PM confirms each item explicitly (studied existing code, can explain every line, scoped to feature, why-not-what commits)
    - **Version + Changelog** (`self_hosting: enabled` only, `git-strategy.md` "Versioning & Changelog"): bump `asd_version` in `.asd/release-manifest.json` per SemVer inferred from this sprint's commit types; add matching `## v<version>` section to root `CHANGELOG.md`
    - on ANY block: relay specific failure; halt phase until fixed (user may dispatch fix or accept-debt)

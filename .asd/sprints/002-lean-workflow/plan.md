@@ -282,10 +282,10 @@ Verdict: **P-10**. AC: AC-2, AC-4, AC-6. Owner: **backend-dev**. Depends on Task
 Affected canonical files: `.asd/workflows/asd-phase-pr.md` (step 4), `.asd/rules/sprint-lifecycle.md` (PR phase).
 Material risk: neither check is a `checkpoints.md` user pause — the pr row gates PR opening only, so nothing is weakened. If `state.json` verdicts are ever stale the file-parse fallback must actually fire, or a non-green review could pass the DoD.
 
-- [ ] Re-run tests and lint only when `HEAD` has moved since the `Suite run` recorded in `test-plan.md`; impl-review produces no code, test or stub changes, so the intervening phase cannot invalidate a green suite
-- [ ] Read review verdicts from `state.json.reviews.impl.verdicts["iter-NN"]`, with a review-file parse as the explicit fallback
-- [ ] Handle the Task 13 `"skipped: <predicate>"` verdict values correctly in that read
-- [ ] `sprint-lifecycle.md` (PR phase): document both conditionals
+- [x] Re-run tests and lint only when `HEAD` has moved since the `Suite run` recorded in `test-plan.md`; impl-review produces no code, test or stub changes, so the intervening phase cannot invalidate a green suite
+- [x] Read review verdicts from `state.json.reviews.impl.verdicts["iter-NN"]`, with a review-file parse as the explicit fallback
+- [x] Handle the Task 13 `"skipped: <predicate>"` verdict values correctly in that read
+- [x] `sprint-lifecycle.md` (PR phase): document both conditionals
 
 ### Task 19: Give each review edge one owner and dedupe the impl procedures
 
