@@ -1,7 +1,7 @@
 {
   "sprint_id": "002-lean-workflow",
   "branch": "sprint/002-lean-workflow",
-  "phase": "impl-review",
+  "phase": "impl-test",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "adr": false, "c4": false },
   "skipped_phases": ["design", "design-review", "design-promote"],
   "reviews": {
