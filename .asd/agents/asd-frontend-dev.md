@@ -42,6 +42,7 @@ Frontend developer. Implements UI code and components per plan tasks; fixes impl
 - `docs/ux/DESIGN.md` (tokens, components)
 - `docs/ux/design-system.html` (visual reference)
 - `docs/ux/accessibility.html` (a11y baseline)
+- **no-baseline carve-out** (`self_hosting: enabled` and no design-system/ux-spec exists for the touched surface — this repo has no application UI, no consumer product to hold these docs): implement against `docs/architecture/stack.html` conventions and existing UI code (e.g. `t_html-shell.html`, other `t_*.html`) instead; record the gap ("no design-system/ux-spec baseline, implemented against stack.html + existing template conventions") in the commit or plan notes rather than emitting QUESTION
 - whichever persistent doc holds folded API contracts for the touched subsystem (`sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `.asd/project/commands.yaml`
 

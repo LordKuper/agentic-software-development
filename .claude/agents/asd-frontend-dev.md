@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-frontend-dev.md. source_digest=sha256:e2cf313441fabf81c7037dd95033e6c5baf8b83314ea5f87176a67c7e673160a content_digest=sha256:47ce634fe92f1d3416e1229a79f19a3fabd667b4ab6727b148b077ead4c858ef asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-frontend-dev.md. source_digest=sha256:6617077ab56893c47995a61779e72b622a8a21b1b5ecce21f65d4c723323d0b4 content_digest=sha256:c931fb2a8bac9e638a695c7dca1bc3bf4372ca8557de01e135eca9806e400eda asd_version=2.0.0 schema=1
 name: asd-frontend-dev
 description: "UI code, client-side logic, components. Covers: frontend code authoring per plan tasks, component implementation using DESIGN.md tokens, fixing impl-review findings and impl-test defects, running lint/build/dev commands from commands.yaml, registering TODO stubs. Does NOT handle: backend code (delegates to asd-backend-dev), any test authoring or test runs — unit, integration, e2e (delegates to asd-test-engineer in the impl-test phase), design system token edits (delegates to asd-ux-designer), accessibility requirements (read-only consumer of accessibility.html), code review (delegates to reviewer agents)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
@@ -40,6 +40,7 @@ Frontend developer. Implements UI code and components per plan tasks; fixes impl
 - `docs/ux/DESIGN.md` (tokens, components)
 - `docs/ux/design-system.html` (visual reference)
 - `docs/ux/accessibility.html` (a11y baseline)
+- **no-baseline carve-out** (`self_hosting: enabled` and no design-system/ux-spec exists for the touched surface — this repo has no application UI, no consumer product to hold these docs): implement against `docs/architecture/stack.html` conventions and existing UI code (e.g. `t_html-shell.html`, other `t_*.html`) instead; record the gap ("no design-system/ux-spec baseline, implemented against stack.html + existing template conventions") in the commit or plan notes rather than emitting QUESTION
 - whichever persistent doc holds folded API contracts for the touched subsystem (`sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `.asd/project/commands.yaml`
 
