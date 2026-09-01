@@ -64,7 +64,7 @@ test('canonical agent -> Claude .md matches fixture', () => {
     'agents/demo-agent.md',
     manifest
   );
-  const expected = readRaw(path.join(FIXTURES, 'expected/agents/demo-agent.claude.md'));
+  const expected = sync.readNormalized(path.join(FIXTURES, 'expected/agents/demo-agent.claude.md'));
   assert.strictEqual(rendered.output, expected);
   assert.ok(rendered.output.startsWith('---\n# ASD generated. Edit .asd/agents/demo-agent.md.'));
 });
@@ -77,7 +77,7 @@ test('canonical agent -> Codex .toml matches fixture', () => {
     'agents/demo-agent.md',
     manifest
   );
-  const expected = readRaw(path.join(FIXTURES, 'expected/agents/demo-agent.codex.toml'));
+  const expected = sync.readNormalized(path.join(FIXTURES, 'expected/agents/demo-agent.codex.toml'));
   assert.strictEqual(rendered.output, expected);
   assert.ok(rendered.output.startsWith('# ASD generated. Edit .asd/agents/demo-agent.md.'));
   assert.ok(rendered.output.includes('model = "gpt-5.6"'), 'codex model family alias must resolve via release-manifest table');
@@ -92,7 +92,7 @@ test('canonical skill -> Claude SKILL.md matches fixture', () => {
     'skills/demo-skill/SKILL.md',
     manifest
   );
-  const expected = readRaw(path.join(FIXTURES, 'expected/skills/demo-skill/SKILL.claude.md'));
+  const expected = sync.readNormalized(path.join(FIXTURES, 'expected/skills/demo-skill/SKILL.claude.md'));
   assert.strictEqual(rendered.output, expected);
   assert.ok(rendered.output.includes('allowed-tools: "Read Grep"'));
 });
@@ -105,7 +105,7 @@ test('canonical skill -> Codex SKILL.md matches fixture', () => {
     'skills/demo-skill/SKILL.md',
     manifest
   );
-  const expected = readRaw(path.join(FIXTURES, 'expected/skills/demo-skill/SKILL.codex.md'));
+  const expected = sync.readNormalized(path.join(FIXTURES, 'expected/skills/demo-skill/SKILL.codex.md'));
   assert.strictEqual(rendered.output, expected);
   // Codex skill frontmatter must NOT carry Claude-only fields.
   assert.ok(!rendered.output.includes('allowed-tools'));
@@ -403,6 +403,72 @@ test('buildSyncPlan: WITHOUT .asd/project/config.yaml (the framework repo itself
   assert.strictEqual(status, 'current', 'self-sourced AGENTS.md must never be compared against t_AGENTS.md');
   sync.runApply(root, ['AGENTS.md']); // self-sourced: apply is a documented no-op
   assert.strictEqual(fs.readFileSync(path.join(root, 'AGENTS.md'), 'utf8'), authored, 'self-sourced AGENTS.md is never overwritten by --apply');
+});
+
+// ===========================================================================
+// 3d. self_hosting field detection (fail-closed line scanner, no YAML dep)
+// ===========================================================================
+
+test('readSelfHostingField: config.yaml absent -> disabled', () => {
+  const dir = mkTempDir();
+  assert.strictEqual(sync.readSelfHostingField(dir), 'disabled');
+  assert.strictEqual(sync.isSelfHostingRepo(dir), false);
+});
+
+test('readSelfHostingField: config.yaml exists but field absent -> disabled', () => {
+  const dir = mkTempDir();
+  fs.mkdirSync(path.join(dir, '.asd', 'project'), { recursive: true });
+  fs.writeFileSync(path.join(dir, '.asd', 'project', 'config.yaml'), 'language:\n  chat: en\n', 'utf8');
+  assert.strictEqual(sync.readSelfHostingField(dir), 'disabled');
+});
+
+test('readSelfHostingField: self_hosting: disabled -> disabled', () => {
+  const dir = mkTempDir();
+  fs.mkdirSync(path.join(dir, '.asd', 'project'), { recursive: true });
+  fs.writeFileSync(path.join(dir, '.asd', 'project', 'config.yaml'), 'self_hosting: disabled\n', 'utf8');
+  assert.strictEqual(sync.readSelfHostingField(dir), 'disabled');
+});
+
+test('readSelfHostingField: self_hosting: enabled -> enabled', () => {
+  const dir = mkTempDir();
+  fs.mkdirSync(path.join(dir, '.asd', 'project'), { recursive: true });
+  fs.writeFileSync(path.join(dir, '.asd', 'project', 'config.yaml'), 'self_hosting: enabled # ASD develops itself\n', 'utf8');
+  assert.strictEqual(sync.readSelfHostingField(dir), 'enabled');
+  assert.strictEqual(sync.isSelfHostingRepo(dir), true);
+});
+
+test('readSelfHostingField: malformed/unknown value fails closed to disabled', () => {
+  const dir = mkTempDir();
+  fs.mkdirSync(path.join(dir, '.asd', 'project'), { recursive: true });
+  fs.writeFileSync(path.join(dir, '.asd', 'project', 'config.yaml'), 'self_hosting: yes-please\n', 'utf8');
+  assert.strictEqual(sync.readSelfHostingField(dir), 'disabled');
+});
+
+test('readSelfHostingField: duplicated top-level key is ambiguous, fails closed to disabled (never "first" or "last" wins)', () => {
+  const dir = mkTempDir();
+  fs.mkdirSync(path.join(dir, '.asd', 'project'), { recursive: true });
+  fs.writeFileSync(path.join(dir, '.asd', 'project', 'config.yaml'), 'self_hosting: enabled\nself_hosting: disabled\n', 'utf8');
+  assert.strictEqual(sync.readSelfHostingField(dir), 'disabled');
+
+  const dir2 = mkTempDir();
+  fs.mkdirSync(path.join(dir2, '.asd', 'project'), { recursive: true });
+  fs.writeFileSync(path.join(dir2, '.asd', 'project', 'config.yaml'), 'self_hosting: enabled\nself_hosting: enabled\n', 'utf8');
+  assert.strictEqual(sync.readSelfHostingField(dir2), 'disabled', 'even two IDENTICAL duplicates are ambiguous malformed YAML, not a confirmation');
+});
+
+test('isSelfSourcedAgentsMd: no config -> self-sourced; consumer config -> generated; self_hosting:enabled -> self-sourced even though config exists', () => {
+  const noConfig = mkTempDir();
+  assert.strictEqual(sync.isSelfSourcedAgentsMd(noConfig), true);
+
+  const consumer = mkTempDir();
+  fs.mkdirSync(path.join(consumer, '.asd', 'project'), { recursive: true });
+  fs.writeFileSync(path.join(consumer, '.asd', 'project', 'config.yaml'), 'self_hosting: disabled\n', 'utf8');
+  assert.strictEqual(sync.isSelfSourcedAgentsMd(consumer), false);
+
+  const framework = mkTempDir();
+  fs.mkdirSync(path.join(framework, '.asd', 'project'), { recursive: true });
+  fs.writeFileSync(path.join(framework, '.asd', 'project', 'config.yaml'), 'self_hosting: enabled\n', 'utf8');
+  assert.strictEqual(sync.isSelfSourcedAgentsMd(framework), true);
 });
 
 // ===========================================================================

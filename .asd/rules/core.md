@@ -24,7 +24,7 @@ All project work goes through `/asd-sprint`.
 ## Invariants
 
 - One active sprint. New sprint blocked until current archived.
-- Infrastructure files read-only during sprint work. Only `/asd-init` may edit settings.
+- Infrastructure files read-only during sprint work. Only `/asd-init` may edit settings. **Exception**: `self_hosting: enabled` (`sprint-lifecycle.md` "Self-hosting") lifts this for the named canonical `.asd/` paths plus `AGENTS.md`/`README.md`/`tests/**` — generated `.claude/`/`.codex/`/`.agents/skills/` stay read-only always.
 - Every project task flows through a sprint. Ad-hoc edits forbidden.
 - Folder structure follows `artifact-layout.md`.
 

@@ -1,5 +1,9 @@
 # Artifact Layout
 
+## Optional documents
+
+`prd.html`/`ux-spec.html`/`adr.html`/`c4-full`+`c4/` and `audit.md` are omitted entirely (sprint draft, promoted persistent doc, and any promotion folder) when their `documents.*` flag is disabled — see `sprint-lifecycle.md` "Optional documents" for the flags, defaults, and no-op phase rule. A disabled document is never written as an empty placeholder file.
+
 ## Subsystem decomposition modes
 
 Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Layout differs.

@@ -7,7 +7,7 @@ Guidance for coding agents in this repo.
 
 This repo **IS the ASD (Agentic Software Development) framework** — its source, not a project that *uses* ASD. No application code: every file is workflow infrastructure (rules, templates, agent/skill defs, hooks). Work = authoring/editing that infrastructure.
 
-Don't run `/asd-sprint` or `/asd-init` to "develop" this repo — those drive a *consumer* project. SessionStart hook reporting "No active sprint" is expected here.
+This repo **self-hosts**: `.asd/project/config.yaml` sets `self_hosting: enabled`, so `/asd-sprint` develops ASD itself, dispatching normally through the ten phases. `documents.*` here is a lean profile (`audit: enabled`, `prd`/`ux_spec`/`adr`/`c4` disabled) — no PRD/UX-spec/ADR churn for a framework whose spec already lives in `.asd/rules/`; `plan`/`impl`/`impl-test`/`impl-review`/`pr` still run in full. In self-hosting mode, `impl`'s normal "infrastructure is read-only during sprint work" rule (`core.md`) lifts for exactly the canonical paths named in `.asd/rules/sprint-lifecycle.md` "Self-hosting" — generated `.claude/`, `.codex/`, `.agents/skills/` stay read-only always, resynced via `.asd/sync.js --apply` after every canon edit. `asd-init`/`sync.js` never replace this file's managed block from `t_AGENTS.md` while self-hosting (`providers.md` ownership table) — it stays self-sourced, hand-edited framework-dev prose like the rest of this document. `/asd-update` refuses to run here (it pulls framework files INTO a consumer; this repo IS the framework).
 
 ## No build / test / lint
 

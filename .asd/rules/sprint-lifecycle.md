@@ -56,27 +56,73 @@ Verdict files: design-review → `<sprint>/reviews/design/iter-NN/`, impl-review
 | impl-review | Quality + Implementation + Testing + UI + Simplification + Documentation + Performance + External Review | code + tests + `test-plan.md` | `reviews/impl/iter-NN/<reviewer>.md` | DoD met → `pr`; else route to `impl` review-fix mode |
 | pr | PM | everything | PR (open mode), then sprint archive (merge mode) | PR opened; sprint archived on a later re-entry once PR merged |
 
+## Self-hosting
+
+`self_hosting: enabled` in `.asd/project/config.yaml` — sole source of truth, no marker file. Absent field or `disabled` = consumer mode (backward compatible, unchanged behavior).
+
+When enabled: Backend Dev / Frontend Dev may write canonical `.asd/rules/`, `.asd/templates/`, `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/sync.js`, `.asd/release-manifest.json`, root `AGENTS.md`, `README.md`, `tests/**` — the normal "infrastructure read-only during sprint work" invariant (`core.md`) lifts for exactly these paths. Generated `.claude/`, `.codex/`, `.agents/skills/` stay read-only always — edit canon, then `node .asd/sync.js --apply <targets>`; the generated diff is verified by `sync.js --check`, never re-reviewed as prose.
+
+`asd-init`/`sync.js` never replace root `AGENTS.md`'s managed block from `t_AGENTS.md` while self-hosting — it stays self-sourced framework-dev prose (`providers.md` ownership table). `asd-update` is a no-op here (it pulls framework files INTO a consumer; this repo IS the framework).
+
+Framework impl-review/External Review change surface: the whole repo diff (everything here IS framework source — canonical `.asd/**`, `README.md`, `AGENTS.md`, `tests/**`, and anything else added later, e.g. CI configs), minus `.asd/project/**`, `.asd/sprints/**`, generated `.claude/**`/`.codex/**`/`.agents/skills/**`, build output — never an allow-list of named paths, so nothing new needs a matching rule edit to be reviewed.
+
+## Optional documents
+
+`documents.<name>` in config (`audit | prd | ux_spec | adr | c4`), frozen into `state.json.documents` at `scope` — phases read that frozen snapshot, never live config, so a mid-sprint config edit never changes an active sprint's preconditions. Old config without the `documents` group, or an active sprint's `state.json` without a `documents` snapshot, means every value `enabled` (no behavior change). Effective `documents.c4` (computed once, here, at `scope` — never recomputed later) is `enabled` only when `project.subsystem_decomposition: enabled` too; otherwise disabled regardless of the flag.
+
+**Config string → state boolean**: `t_state.json`'s `documents` map holds `"{{DOC_AUDIT}}"`/`"{{DOC_PRD}}"`/`"{{DOC_UX_SPEC}}"`/`"{{DOC_ADR}}"`/`"{{DOC_C4}}"` as quoted placeholders — quoted so the template file itself stays valid, parseable JSON as shipped. At `scope` write time, replace each entire quoted token (**including its surrounding quotes**) with the bare JSON boolean `true`/`false` matching that document's normalized `enabled`/`disabled` value — the written `state.json` must end up with `"audit": true`, never `"audit": "{{DOC_AUDIT}}"` or `"audit": "true"`. Never leave a placeholder token, quoted or not, in a written `state.json`.
+
+**Skip record**: `t_state.json.skipped_phases` starts `[]`. A no-op phase (below) appends its own phase name to this array in the same write that advances `phase` — this is what lets a resumed sprint or a later audit tell "phase legitimately skipped, empty applicable-artifact set" apart from "phase ran and produced nothing," which the `phase`/`updated_at` fields alone cannot distinguish. Never removed or reordered; a phase re-run after a rollback (`checkpoints.md` "Re-running a phase") that turns out non-empty this time does not retroactively remove its earlier skip entry — the array is a historical record, not current status.
+
+Never optional: `sprint.md`, `state.json`, `plan.md`, `test-plan.md`, impl-review reports, `manual-steps.md` (already lazy), `.asd/project/decisions-log.md`, `stubs.md`. A disabled document is never written as an empty stub — skip recorded in `state.json` plus one decisions-log line.
+
+**Acceptance-criteria source**: PRD AC-N when `documents.prd` enabled; else `sprint.md`'s own `AC-N` list (`t_sprint.md`). Every phase citing AC-N (plan, impl, impl-review, pr) uses whichever source the sprint's frozen `documents.prd` selects.
+
+**Independent design docs** (replaces the old hard PRD→UX→ADR chain):
+- PRD (`prd`) reads `sprint.md` + `audit.md` (if `audit` enabled).
+- UX-spec (`ux_spec`) reads PRD if enabled, else `sprint.md`; audit optional. Disabling `ux_spec` also disables the design-system gate, `design-md-delta.yaml`, and UX promotion.
+- ADR (`adr`) reads whichever of PRD/UX-spec exist, else `sprint.md`; audit optional.
+- C4 (effective `c4`) reads whichever design drafts exist, current stack, `sprint.md`; ADR not required.
+- Audit disabled → creators scan the repo themselves for context; Plan PM greps touched files and reads `.asd/project/stubs.md` directly instead of `audit.md`'s "Related open stubs" section.
+
+**No-op phase rule**: a phase whose entire applicable-artifact set is empty for this sprint skips agent dispatch, writes no artifact, appends its phase name to `state.json.skipped_phases` and one line to decisions-log, then returns `COMPLETED` immediately — same phase-chain position, same return-contract shape. **No user approval gate** — a no-op is a deterministic consequence of frozen `state.json.documents`, not a decision; PM advances `phase` and records the skip without requesting user decision (contrast with a phase that DID produce artifacts, which still goes through its normal gate in `checkpoints.md`).
+
+| Phase | No-op when |
+|---|---|
+| audit | `audit` disabled |
+| design | `prd`, `ux_spec`, `adr`, effective `c4` all disabled |
+| design-review | design phase produced zero drafts |
+| design-promote | zero approved drafts to promote |
+
+`plan`, `impl`, `impl-test`, `impl-review`, `pr` are never no-op.
+
 ## Audit phase
+
+No-op when `documents.audit: disabled` (see "Optional documents").
 
 Scans: existing source in touched areas; existing docs in **any format/location** (MD, RST, Confluence/Notion exports, HTML, Wiki, text-extractable PDF, READMEs outside ASD layout); persistent docs in `design/`.
 
-Output `audit.md` — findings (touched areas, existing docs/code, gaps, risks) plus **Documentation migration plan** listing found external docs to promote into ASD format. Where sprint scope directly overlaps found content, the agent may pre-formulate reverse-engineered/migrated drafts in `<sprint>/design/` (prd/ux-spec/adr.html) with `provenance` + `source` frontmatter; these flow through design and design-review like any draft. Migration items not covered by drafts wait for design-promote.
+Output `audit.md` — findings (touched areas, existing docs/code, gaps, risks) plus **Documentation migration plan** listing found external docs to promote into ASD format. Where sprint scope directly overlaps found content, the agent may pre-formulate reverse-engineered/migrated drafts in `<sprint>/design/` (prd.html / adr.html) — **only for documents whose frozen `documents.*` flag is enabled**; a disabled document is never draft-created here either, its finding stays migration-plan text — with `provenance` + `source` frontmatter; these flow through design and design-review like any draft. Migration items not covered by drafts wait for design-promote.
 
 
 ## Design phase
 
-Agents produce a unified draft set for the whole sprint scope in `<sprint>/design/`:
+No-op when `prd`, `ux_spec`, `adr`, and effective `c4` are all disabled (see "Optional documents").
 
-- `prd.html` — requirements + acceptance criteria
-- `ux-spec.html` — flows + accessibility notes
-- `adr.html` — architecture decisions
+Agents produce a draft set for the whole sprint scope in `<sprint>/design/`, one artifact per enabled document only — a disabled document produces no draft, no gate, no dependency on it:
+
+- `prd.html` — requirements + acceptance criteria (`documents.prd`)
+- `ux-spec.html` — flows + accessibility notes (`documents.ux_spec`)
+- `adr.html` — architecture decisions (`documents.adr`)
 - `design-md-delta.yaml` — proposed DESIGN.md token changes, produced inline during UX-spec authoring (only on token gap; each entry user-approved)
-- `c4-full/` — full LikeC4 schema for sprint scope (`model/*.c4`, `views.c4`, `dist/`)
+- `c4-full/` — full LikeC4 schema for sprint scope (`model/*.c4`, `views.c4`, `dist/`) (effective `documents.c4`)
 
-Order: PRD blocks design-system gate. Design-system gate (existence check on `design/ux/DESIGN.md`, `design-system.html`, `accessibility.html`; dispatches `/asd-design-system` when any missing) blocks UX-spec. UX-spec blocks ADR. ADR blocks c4-full. If `subsystem_decomposition: disabled`, `c4-full/` omitted.
+Order among enabled documents: PRD (if enabled) before design-system gate. Design-system gate (existence check on `design/ux/DESIGN.md`, `design-system.html`, `accessibility.html`; dispatches `/asd-design-system` when any missing) applies only when `ux_spec` enabled, and blocks UX-spec. UX-spec (if enabled) before ADR. ADR (if enabled) before c4-full. If effective `documents.c4: disabled` (flag off, or `subsystem_decomposition: disabled`), `c4-full/` omitted.
 
 
 ## Design-promote phase
+
+No-op when the design phase produced zero drafts (see "Optional documents"). Otherwise each domain creator promotes only the draft(s) that exist for its domain.
 
 PM orchestrates; three domain creators promote (Documentation reviewer NOT involved):
 

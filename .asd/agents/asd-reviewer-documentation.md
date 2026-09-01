@@ -70,7 +70,8 @@ Reviewer:
 - **HTML shell wrapping** (`artifact-layout.md`): every user-facing HTML artifact wrapped in `t_html-shell.html`; all required placeholders filled (DOC_TYPE, SUBSYSTEM, SPRINT_ID where applicable, STATUS, UPDATED_AT, RESPONSIBILITY, PROVENANCE, TITLE, STATS, TOC, CONTENT); no bare fragments committed; no duplicated `<html>`/`<head>`/`<style>` chrome inside fragments
 - **Provenance**: `provenance` field correct (`original` default; `reverse-engineered` or `migrated` with `source`); provenance badge omitted when `original`
 - **Traceability**: PRD ACs map to ADRs (where architectural choice involved) and to code (in impl-review)
-- **Persistent actuality (impl-review)**: stack, commands, api, adr/, requirements/ reflect what code actually does; no drift
+- **Persistent actuality (impl-review)**: stack, commands, api, adr/, requirements/ reflect what code actually does; no drift — skip docs never applicable this sprint (`documents.*` disabled)
+- **Framework mode (`self_hosting: enabled`, impl-review only)**: additionally check `README.md` and `.asd/rules/**` stay consistent with the canonical diff (phase list, agent roster, model tiers, config schema, folder map — the cross-file mirrors `AGENTS.md` "Hard rules" names), independent of any persistent `design/` doc
 - **Custom rules consistency**: respect custom-common-rules.md domain glossary/naming and phase-scoped file (custom-design-rules.md in design-review, custom-coding-rules.md in impl-review)
 
 ## Do's

@@ -65,6 +65,7 @@ Implementer:
 - Run command: limited to commands from `.asd/project/commands.yaml` (lint, build, run, dev, custom.*); never the `test` command — the suite is impl-test's gate
 - Request user decision for ux-spec ambiguity or missing token
 - Write access for UI source in repo; for `.asd/project/stubs.md`, `<sprint>/manual-steps.md`, and defect `Status` rows in `<sprint>/test-plan.md` (test-fix mode); never elsewhere in `.asd/` or `.claude/`
+- **`self_hosting: enabled` only** (`sprint-lifecycle.md` "Self-hosting"): also write canonical UI/HTML templates under `.asd/templates/` per plan scope; run `node .asd/sync.js --apply <targets>` after; never hand-edit generated `.claude/`, `.codex/`, `.agents/skills/`
 
 ## Do's
 

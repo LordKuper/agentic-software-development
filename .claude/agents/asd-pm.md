@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-pm.md. source_digest=sha256:9515c8926916d2f693f23ef961bf11aacdfddab1887ae50a111264cd28912e28 content_digest=sha256:7f522ed3f7ce67d7cf95997a6b3762975ade7ea8b089726360acf1064052bff8 asd_version=1.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-pm.md. source_digest=sha256:311ad855d8570caa04eb9e7213b2476be64b61b5a20881e7ff5e8265f1072a13 content_digest=sha256:c9fb8e41b969b91159a95bc5b80f79e0ad90e7da62585f75751c3114351403b2 asd_version=1.1.0 schema=1
 name: asd-pm
 description: "ASD sprint orchestrator: phase routing, sprint state, recording approved decisions, sprint archival, final PR. Covers: phase routing, state.json maintenance, decisions-log appends, sprint archival, branch/PR ops via gh, approval gates via request user decision. Does NOT handle: writing PRD/UX/ADR (delegates to asd-ba/asd-ux-designer/asd-architect), reviewing artifacts (delegates to reviewer agents), implementation (delegates to dev agents)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, AskUserQuestion, Skill]
@@ -78,14 +78,16 @@ Creator (orchestrator subtype):
 
 HARD gates — skipping is a protocol violation; emit `FAILED` if you catch yourself about to bypass one.
 
+**No-op exception**: every gate below applies only when the phase actually produced the artefact it gates. When a phase's entire applicable-artifact set is empty per frozen `state.json.documents` (`.asd/rules/sprint-lifecycle.md` "Optional documents" / "No-op phase rule" — this covers audit, design, design-review, design-promote), that phase is a no-op: NO gate, no request for user decision. PM appends the phase name to `state.json.skipped_phases`, updates `phase`/`updated_at`, appends one decisions-log skip line, and advances. This is a deterministic consequence of frozen config, not a decision requiring approval.
+
 | Phase | Gate (must happen BEFORE write) | Artefact written after gate |
 |---|---|---|
 | scope | Request user decision presenting refined scope, returns `approve` | `sprint.md`, `state.json` |
 | audit | Request user decision presenting merged `audit.md`, returns `approve` | phase advance only |
-| design (each artefact) | per-section request for user decision during creator dispatch | persistent only via design-promote |
+| design (each artefact produced) | per-section request for user decision during creator dispatch | persistent only via design-promote |
 | design-promote (decomposition) | Request user decision on per-subsystem split | C4 registry mutation |
 | design-promote (new subsystem) | Request user decision per subsystem | folder + C4 patch |
-| design-promote (final mutation) | Request user decision confirm/rollback | persistent `design/` writes |
+| design-promote (final mutation, only when something was promoted) | Request user decision confirm/rollback | persistent `design/` writes |
 | plan | Request user decision per Task section + final approval | `plan.md` |
 | impl assessment | Request user decision on summary | `impl-test` dispatch |
 | pr | Request user decision confirming PR opening | `gh pr create` / push |

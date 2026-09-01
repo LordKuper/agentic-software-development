@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-phase-design-promote/SKILL.md. source_digest=sha256:51ee882701a32d2cce8f7804287d25729ca56960d420cb66441282943855e363 content_digest=sha256:dd90f763e10674779f0daa85bd0504913f3bbd1565fc4b8d820e9fd537bb475f asd_version=1.1.0 schema=1
+# ASD generated. Edit .asd/skills/asd-phase-design-promote/SKILL.md. source_digest=sha256:1cd6282690f9b5ac51c8ba77e1ae86a6d6b9ffc7d97f1b2b9be09a4b383554f9 content_digest=sha256:fb768efddb70de30555b49c17e6eb8bce4a3d084cfb099f95507615d21a4e89e asd_version=1.1.0 schema=1
 name: asd-phase-design-promote
-description: "Runs the ASD design-promote phase: asd-pm orchestrates user-approved per-subsystem decomposition, then asd-architect, asd-ba, and asd-ux-designer promote sprint drafts to persistent design/ in parallel, gated by a final user confirmation. Use when asd-sprint dispatches design-promote, or when the user explicitly asks to run or re-run design-promote for the active sprint."
+description: "Runs the ASD design-promote phase: asd-pm orchestrates user-approved per-subsystem decomposition, then only the domain creators (asd-architect, asd-ba, asd-ux-designer) whose sprint draft is actually in scope this sprint promote to persistent design/ in parallel, gated by a final user confirmation — no-op when nothing is in scope to promote. Use when asd-sprint dispatches design-promote, or when the user explicitly asks to run or re-run design-promote for the active sprint."
 ---
 
 Operation mapping: see `.asd/rules/providers.md`.

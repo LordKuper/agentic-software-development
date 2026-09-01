@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:64eccc117a1c0ccea40305e32d2546a769e30acf4d9ec1699af0a50a7d271c35 content_digest=sha256:0df062a4f755e88a5ee9cb2a93d8ab5b98b4168986075ea167db5d70d32c0cb7 asd_version=1.1.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:9feca7cc71366fb24a549ed503d197ac037881406ecb5270fa9b185743ba56e8 content_digest=sha256:8bd4bae79de6c76fc6cc9a26d6c20c85a6226f8aa2903572978edf5458e4a12a asd_version=1.1.0 schema=1
 name: asd-init
 description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only design/ docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 ---
@@ -18,17 +18,18 @@ Operation mapping: see `.asd/rules/providers.md`.
 
 ## Always first (both modes)
 
-0. **Sync `AGENTS.md`/`CLAUDE.md` managed blocks** before any other step (see "AGENTS.md sync"). Runs unconditionally every invocation, fresh or re-init, regardless of subsequent user choices or aborts.
+0. **Determine self-hosting mode** (`self_hosting` field in `.asd/project/config.yaml` if it exists; else `disabled` — `sync.js`'s `isSelfHostingRepo`) BEFORE any AGENTS.md mutation — self-hosting must never be decided after the sync in step 0a below has already run against the wrong mode.
+0a. **Sync `AGENTS.md`/`CLAUDE.md` managed blocks** (see "AGENTS.md sync"). Runs unconditionally every invocation, fresh or re-init, regardless of subsequent user choices or aborts. In self-hosting mode, AGENTS.md is self-sourced (`providers.md` ownership table) — this step only verifies it, via `statusSelfSourcedManagedBlock`, never replaces its content with `t_AGENTS.md`.
 
 ## Workflow (fresh)
 
 1. Detect greenfield vs brownfield via repo search on source files
-2. Request user input, batch: chat lang, docs lang, subsystem_decomposition, backward_compat, external_review
+2. Request user input, batch: chat lang, docs lang, subsystem_decomposition, backward_compat, external_review, self_hosting (default `disabled`; only offer `enabled` when this clone is the ASD framework repo itself — detect via presence of `.asd/rules/core.md` + absence of application source outside `.asd/`, or let the user override), and per-document toggles under `documents.*` (`audit`/`prd`/`ux_spec`/`adr`/`c4`; default all `enabled`; when `self_hosting: enabled` proposed, recommend `audit: enabled` with the rest `disabled` as the lean framework-dev profile, user may accept or customize)
 3. If decomposition enabled → request user decision: diagram_tool (`likec4` | `mermaid`)
 4. Detect OS via command execution (silent; no confirm yet)
 5. Detect external tools (silent; record results, do not prompt per-tool yet):
    - `likec4 --version` (only if diagram_tool=likec4)
-   - designmd (always): check `node --version` and `npm --version`. Tooling invoked via `commands.yaml` (`designmd-*`); no `designmd` binary on PATH required.
+   - designmd (only if `documents.ux_spec: enabled` — the design-system gate that needs it is skipped entirely otherwise, `sprint-lifecycle.md` "Optional documents"): check `node --version` and `npm --version`. Tooling invoked via `commands.yaml` (`designmd-*`); no `designmd` binary on PATH required. When `documents.ux_spec: disabled`, skip detection, write `system.tools.designmd: false`, omit the `designmd-*` custom commands entirely.
    - the *other* provider's CLI, wrapped by External Review (only if external_review=enabled): probe `codex --version` when this init is running under Claude Code, `claude --version` when running under Codex (`.asd/rules/providers.md` § External review symmetry) — never probe the running host's own CLI
    Record paths and missing flags for the consolidated proposal
 6. Pick review iteration defaults (low=1 medium=1 high=2 critical=10) — include in proposal, do not prompt yet
@@ -41,12 +42,12 @@ Operation mapping: see `.asd/rules/providers.md`.
     - OS, external tools (with missing flags + install hint), review iteration limits, git settings, detected build/test/lint/run commands
     Then request user decision: `accept-all` | `edit-section` | `abort`.
     - `edit-section` → request user decision on which section (os | tools | review | git | commands), collect new values, re-show proposal, loop until `accept-all`
-    - Missing required tools (designmd always; likec4 if decomp+likec4; the wrapped external-review CLI if external_review) → must resolve here: install / override path / disable feature. Do NOT silently proceed with missing required tools.
+    - Missing required tools (designmd if `documents.ux_spec: enabled`; likec4 if decomp+likec4; the wrapped external-review CLI if external_review) → must resolve here: install / override path / disable feature. Do NOT silently proceed with missing required tools.
     Only after `accept-all` proceed to write.
-9. Write `.asd/project/config.yaml` from `t_config.yaml` with all approved fields (including `project.diagram_tool` when decomp enabled)
+9. Write `.asd/project/config.yaml` from `t_config.yaml` with all approved fields (including `project.diagram_tool` when decomp enabled, `self_hosting`, `documents.*`)
 10. Ask user what custom rules to add (separately for common / design / coding scopes); write three files from templates: `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`. Empty scope still writes template stub (header + intro), so agents always find the file.
-11. Write `.asd/project/decisions-log.md` from `t_decisions-log.md`
-12. Write `.asd/project/commands.yaml` (from `t_commands.yaml` + detected + OS-specific `custom.designmd-*`)
+11. Write `.asd/project/decisions-log.md` from `t_decisions-log.md`; write `.asd/project/stubs.md` from `t_stubs.md` (empty registry — downstream phases expect the file to exist)
+12. Write `.asd/project/commands.yaml` (from `t_commands.yaml` + detected + OS-specific `custom.designmd-*` only when `documents.ux_spec: enabled`)
 13. If decomp enabled:
     - **likec4 mode**: seed `c4/model/main.c4`, `c4/views.c4` from templates; run `likec4 build` → `c4/dist/`
     - **mermaid mode**: seed `c4/subsystems.yaml` from `t_subsystems.yaml`; render `c4/architecture.html` with initial mermaid context view
@@ -91,7 +92,7 @@ Rules:
 
 ## OS-specific commands written to .asd/project/commands.yaml
 
-Four custom commands always emitted. Linter always invoked via `designmd-lint`; `designmd-install` is session-scoped prerequisite on Windows (no-op elsewhere).
+Four custom commands emitted only when `documents.ux_spec: enabled` (else omitted entirely — no design-system gate to serve them). Linter always invoked via `designmd-lint`; `designmd-install` is session-scoped prerequisite on Windows (no-op elsewhere).
 
 **Windows** (run from project root):
 - `designmd-install: "npm install @google/design.md"`
@@ -107,9 +108,9 @@ Four custom commands always emitted. Linter always invoked via `designmd-lint`; 
 
 ## Artefacts produced
 
-- `.asd/project/config.yaml`
-- `AGENTS.md`, `CLAUDE.md` (created or managed block synced from `t_AGENTS.md`/`t_CLAUDE.md`)
-- `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`, `decisions-log.md`
+- `.asd/project/config.yaml` (incl. `self_hosting`, `documents.*`)
+- `AGENTS.md`, `CLAUDE.md` — consumer mode: managed block synced from `t_AGENTS.md`/`t_CLAUDE.md`; self-hosting mode: `AGENTS.md` self-sourced (verified, never generated), `CLAUDE.md` still synced
+- `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`, `decisions-log.md`, `stubs.md`
 - `.asd/project/commands.yaml`
 - `design/architecture/c4/` content per `diagram_tool` (decomp only)
 

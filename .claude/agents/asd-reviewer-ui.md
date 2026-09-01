@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-ui.md. source_digest=sha256:8971689f7c161a504cc5d21664772d867b071610a2a316fa4c8421226461a855 content_digest=sha256:fb13070087520097e246d5c1e5dcc9e883ab69232d7a951daa4d30ed3b5a1d21 asd_version=1.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-ui.md. source_digest=sha256:87589bdc53c4e7c10c1dbc9e6abd03896d4e71b5034e1d4cae316036235046c9 content_digest=sha256:9f9981aa955b0a2ef278e11bfbaf961ee7d43e0f0b1e45106d49d90635dc2fa9 asd_version=1.1.0 schema=1
 name: asd-reviewer-ui
 description: "Design-review of sprint ux-spec drafts and impl-review of UI code. Covers: ux-spec compliance check (do mockups follow design-system tokens?), UI implementation match to ux-spec mockups, design-system component usage (no raw hex/px), accessibility baseline compliance (against accessibility.html visual/motor/cognitive/auditory/platform rules). Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), AC coverage (delegates to asd-reviewer-implementation), test coverage (delegates to asd-reviewer-testing), over-engineering (delegates to asd-reviewer-simplification), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -45,7 +45,7 @@ UI reviewer. Checks ux-spec drafts against DESIGN.md and accessibility baseline 
 
 **impl-review phase:**
 - UI code diff
-- `design/ux/<subsystem>.html` (promoted ux-spec)
+- `design/ux/<subsystem>.html` (promoted ux-spec) — when absent (`documents.ux_spec` was disabled for the sprint that wrote this code, or no promoted ux-spec exists yet), review against `design/ux/DESIGN.md` and `accessibility.html` directly; never skip impl-review UI review just because no ux-spec exists — absence of a spec doesn't mean absence of UI code
 - `design/ux/DESIGN.md`
 - `design/ux/accessibility.html`
 

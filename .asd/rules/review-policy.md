@@ -128,7 +128,9 @@ Never bury the verdict in prose. The dispatching phase workflow writes the revie
 
 | Phase | Required reviewers (all APPROVE same iteration) |
 |---|---|
-| design-review | Documentation, UI, Simplification, External Review (if enabled) |
+| design-review | Documentation + Simplification (any non-empty draft set), UI (only when the draft set includes ux-spec or design-system artifacts), External Review (if enabled) |
 | impl-review | Quality, Implementation, Testing, UI, Simplification, Documentation, Performance, External Review (if enabled) |
 
-External Review counts as one reviewer when `review.external_review: enabled`. On DoD met, the phase advances.
+External Review counts as one reviewer when `review.external_review: enabled`, scoped to whichever draft set actually exists that iteration (`sprint-lifecycle.md` "Optional documents"). PR-phase DoD checks only the reviewers this table actually required for the sprint's document profile — a reviewer never dispatched (e.g. UI with no ux-spec) is not counted as missing. On DoD met, the phase advances.
+
+Implementation reviewer traces coverage against PRD AC-N when `documents.prd` enabled, else against `sprint.md`'s own AC-N list (`sprint-lifecycle.md` "Optional documents"). Impl-review's UI reviewer always runs regardless of `ux_spec` — absence of a ux-spec draft never implies absence of UI code to review; it checks against accessibility.html/DESIGN.md directly when no ux-spec exists. Documentation reviewer, in `self_hosting: enabled` mode, additionally checks `README.md`/`.asd/rules/**` consistency against the framework diff, independent of persistent `design/` docs.

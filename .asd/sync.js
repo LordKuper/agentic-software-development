@@ -869,6 +869,47 @@ function isInitializedConsumerProject(repoRoot) {
   return fs.existsSync(path.join(repoRoot, '.asd', 'project', 'config.yaml'));
 }
 
+// Fail-closed top-level `self_hosting:` field reader - a minimal line scanner,
+// not a YAML parser (this repo has none). Returns 'enabled' only when the
+// field occurs EXACTLY ONCE at top level (column 0) with exactly that value;
+// every other case (file missing, field missing, any other/malformed value,
+// OR a duplicated top-level key - ambiguous, must not silently take "the
+// first" or "the last" match) returns 'disabled' - the safe default that
+// never mistakes an ordinary consumer project for the framework repo. Plan
+// SSoT: self_hosting is the ONLY signal for self-hosting mode, no separate
+// marker file.
+function readSelfHostingField(repoRoot) {
+  const p = path.join(repoRoot, '.asd', 'project', 'config.yaml');
+  if (!fs.existsSync(p)) return 'disabled';
+  let text;
+  try {
+    text = readNormalized(p);
+  } catch (_) {
+    return 'disabled';
+  }
+  const matches = [];
+  for (const line of text.split('\n')) {
+    const m = /^self_hosting:\s*([^\s#]+)/.exec(line);
+    if (m) matches.push(m[1]);
+  }
+  if (matches.length !== 1) return 'disabled';
+  return matches[0] === 'enabled' ? 'enabled' : 'disabled';
+}
+
+function isSelfHostingRepo(repoRoot) {
+  return readSelfHostingField(repoRoot) === 'enabled';
+}
+
+// AGENTS.md ownership: self-sourced (framework-dev guidance, never generated)
+// when EITHER no config.yaml exists yet (pre-init consumer clone - nothing to
+// generate from until /asd-init runs) OR the project explicitly declares
+// self_hosting: enabled (this repo, post-bootstrap, even though its own
+// config.yaml exists). Otherwise (initialized consumer project, self_hosting
+// disabled/absent) AGENTS.md is generated from t_AGENTS.md as before.
+function isSelfSourcedAgentsMd(repoRoot) {
+  return !isInitializedConsumerProject(repoRoot) || isSelfHostingRepo(repoRoot);
+}
+
 function readAgentsMdTemplateBody(repoRoot) {
   const templatePath = path.join(repoRoot, '.asd', 'templates', 't_AGENTS.md');
   return readNormalized(templatePath);
@@ -963,19 +1004,19 @@ function buildSyncPlan(repoRoot) {
     targetPath: path.join(repoRoot, 'CLAUDE.md'),
     renderBody: () => readClaudeMdBlockBody(repoRoot),
   });
-  if (isInitializedConsumerProject(repoRoot)) {
+  if (isSelfSourcedAgentsMd(repoRoot)) {
     plan.push({
       class: 'managed-block',
       relKey: 'AGENTS.md',
       targetPath: path.join(repoRoot, 'AGENTS.md'),
-      renderBody: () => readAgentsMdTemplateBody(repoRoot),
+      selfSourced: true,
     });
   } else {
     plan.push({
       class: 'managed-block',
       relKey: 'AGENTS.md',
       targetPath: path.join(repoRoot, 'AGENTS.md'),
-      selfSourced: true,
+      renderBody: () => readAgentsMdTemplateBody(repoRoot),
     });
   }
   plan.push({
@@ -1234,6 +1275,9 @@ module.exports = {
   CLAUDE_MD_BLOCK_BODY_FALLBACK,
   readClaudeMdBlockBody,
   isInitializedConsumerProject,
+  readSelfHostingField,
+  isSelfHostingRepo,
+  isSelfSourcedAgentsMd,
   readAgentsMdTemplateBody,
   claudeSessionStartOwnedEntries,
   codexSessionStartOwnedEntries,

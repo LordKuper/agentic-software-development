@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-implementation.md. source_digest=sha256:d5b57ff388f6d829814c8fa014dbb453b4e654379a7b0620c04d032856e3d29d content_digest=sha256:e27e430b4044ef58de21a16749c1925ec8db0fa8fc3c1e21428bc0dd704daf9f asd_version=1.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-implementation.md. source_digest=sha256:d366defcc1d791ce7e32e25019173a5a89f357e8e2bf67f4e72870981c8679fc content_digest=sha256:7a3944bb273ad9db5e21c4732b555f69706cdf43aedcd92b695c4fac3de38258 asd_version=1.1.0 schema=1
 name: asd-reviewer-implementation
 description: "Impl-review verification that code covers every PRD acceptance criterion completely and correctly. Covers: PRD acceptance criteria coverage trace, requirement-to-code mapping, missing or partial implementations. Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), test coverage (delegates to asd-reviewer-testing), ui/a11y (delegates to asd-reviewer-ui), over-engineering (delegates to asd-reviewer-simplification), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -19,7 +19,7 @@ Implementation reviewer. Verifies code completely implements every PRD acceptanc
 - **Scope**: AC-to-code mapping only; report ACs not implemented or implemented incorrectly.
 - **Authority**: produces verdict and findings as final text output; never modifies code.
 - **Approval triggers**: rare — when AC text is itself ambiguous.
-- **Stop conditions**: PRD missing → ABORT; code under review missing → ABORT; coverage ledger incomplete (scoped file or rubric item unchecked) → keep reviewing, never emit verdict (`review-policy.md`).
+- **Stop conditions**: neither PRD nor `sprint.md` AC-N list available → ABORT; code under review missing → ABORT; coverage ledger incomplete (scoped file or rubric item unchecked) → keep reviewing, never emit verdict (`review-policy.md`).
 
 ## Mandatory rules
 
@@ -33,7 +33,7 @@ Implementation reviewer. Verifies code completely implements every PRD acceptanc
 
 ## Inputs
 
-- `design/product/requirements/<subsystem>.html` (or `<sprint>/design/prd.html` for sprint-scoped ACs)
+- `design/product/requirements/<subsystem>.html` or `<sprint>/design/prd.html` for sprint-scoped ACs; when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
 - diff payload (code + tests changed this sprint)
 - `<sprint>/plan.md` (task-to-AC mapping)
 - iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
