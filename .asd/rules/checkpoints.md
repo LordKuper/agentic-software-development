@@ -32,16 +32,16 @@ Approval advances `phase` in `state.json` and appends an entry to `<sprint>/deci
 ```
 audit          requires sprint.md
 design         requires audit.md OR (documents.audit disabled) sprint.md directly
-design-review  requires design drafts COMPLETED signal, OR (design was no-op) design COMPLETED signal alone
-design-promote requires design-review DoD met, OR (design-review was no-op) design-review COMPLETED signal alone
-plan           requires design-promote done (persistent docs updated), OR (design-promote was no-op) design-promote COMPLETED signal alone
+design-review  requires design drafts COMPLETED signal (never dispatched when design was the Task 14 collapsed no-op — see below)
+design-promote requires design-review DoD met (never dispatched when design was the Task 14 collapsed no-op — see below)
+plan           requires design-promote done (persistent docs updated), OR (all four documents.* disabled) design's Task 14 collapsed no-op write (phase=design-promote, skipped_phases=[design, design-review, design-promote]) alone
 impl           requires plan.md (initial) OR state.json.review_fixes_pending set (review-fix) OR state.json.test_defects_pending set (test-fix)
 impl-test      requires impl COMPLETED signal (build + lint green)
 impl-review    requires impl-test COMPLETED signal (full suite green)
 pr             requires impl-review DoD met
 ```
 
-A no-op phase (`sprint-lifecycle.md` "Optional documents") satisfies the next phase's precondition via its `COMPLETED` signal alone — no artifact-existence check on a document that was never applicable this sprint.
+A no-op phase (`sprint-lifecycle.md` "Optional documents") satisfies the next phase's precondition via its `COMPLETED` signal alone — no artifact-existence check on a document that was never applicable this sprint. When all four `documents.*` flags are disabled, `design`'s **collapsed** no-op check (gap G-11) satisfies `design-review`'s, `design-promote`'s, AND `plan`'s precondition in that same single write — `design-review` and `design-promote` are never separately dispatched, so their own precondition lines above never fire in this case.
 
 `impl`⇄`impl-test` cycle: impl-test routes back to `impl` test-fix mode on code defects, uncapped; ends when the full suite is green (→ `impl-review`). `impl-review` routes back to `impl` review-fix mode on unresolved issues; the sprint returns via `impl-test`. Cycle ends when impl-review reaches DoD (→ `pr`) or its iteration cap is hit.
 

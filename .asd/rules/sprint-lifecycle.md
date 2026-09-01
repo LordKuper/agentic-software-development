@@ -76,6 +76,8 @@ Framework impl-review/External Review change surface: the whole repo diff (every
 
 **Skip record**: `t_state.json.skipped_phases` starts `[]`. A no-op phase (below) appends its own phase name to this array in the same write that advances `phase` — this is what lets a resumed sprint or a later audit tell "phase legitimately skipped, empty applicable-artifact set" apart from "phase ran and produced nothing," which the `phase`/`updated_at` fields alone cannot distinguish. Never removed or reordered; a phase re-run after a rollback (`checkpoints.md` "Re-running a phase") that turns out non-empty this time does not retroactively remove its earlier skip entry — the array is a historical record, not current status.
 
+**Multi-phase skip** (Task 14, gap G-11): when one deterministic check subsumes several consecutive no-op phases in a single write — the `design`/`design-review`/`design-promote` collapse below — that one write appends **every** subsumed phase name to `skipped_phases` (`["design", "design-review", "design-promote"]`) and sets `phase` to the **last** subsumed phase name, never one array append per phase and never the first. This way `PHASE_CHAIN[idx+1]` mechanically yields the next real phase and a resumed session cannot re-enter the collapsed block. The subsumed phases are never separately dispatched, so they never make their own individual `skipped_phases` write.
+
 Never optional: `sprint.md`, `state.json`, `plan.md`, `test-plan.md`, impl-review reports, `manual-steps.md` (already lazy), `<sprint>/decisions-log.md`, `stubs.md`. A disabled document is never written as an empty stub — skip recorded in `state.json` plus one decisions-log line.
 
 **Acceptance-criteria source**: PRD AC-N when `documents.prd` enabled; else `sprint.md`'s own `AC-N` list (`t_sprint.md`). Every phase citing AC-N (plan, impl, impl-review, pr) uses whichever source the sprint's frozen `documents.prd` selects.
@@ -97,6 +99,8 @@ Never optional: `sprint.md`, `state.json`, `plan.md`, `test-plan.md`, impl-revie
 | design-promote | zero approved drafts to promote |
 
 `plan`, `impl`, `impl-test`, `impl-review`, `pr` are never no-op.
+
+**Design/design-review/design-promote collapse** (Task 14, gap G-11, risk R-13): `design-review`'s and `design-promote`'s no-op conditions above are only ever true when `design`'s no-op condition is also true (design produces a draft for every enabled document, so an empty design-review/design-promote scope implies all four `documents.*` were disabled). `design`'s step 2 therefore performs **one** deterministic check for all three at design entry instead of three separate PM dispatches: it writes `phase="design-promote"`, `skipped_phases: ["design", "design-review", "design-promote"]`, and `NEXT: plan` in a single write ("Skip record" multi-phase case above) — `design-review` and `design-promote` are never separately entered in this case. Their own no-op steps remain only as a defensive fallback for a direct/explicit re-dispatch of one of those phases alone.
 
 ## Audit phase
 

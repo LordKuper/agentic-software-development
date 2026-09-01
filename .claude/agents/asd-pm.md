@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-pm.md. source_digest=sha256:14a271019b036eacf18cc1a786bcd01cfa56bbbbe56781dafd487cfa6b16e271 content_digest=sha256:cc23c5d168dca3bed97012c6ce83427e88f810e856d7e86a4c1204fcb5901ade asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-pm.md. source_digest=sha256:3116af1f75c3db68809536f0bf519622fb18528c7ef99cf40f954ff82497d965 content_digest=sha256:235a89b22ab8b90d92283a5c3a9ab07bccebef6b15ea5649b071c26fd6e31fd2 asd_version=2.0.0 schema=1
 name: asd-pm
 description: "ASD sprint orchestrator: phase routing, sprint state, recording approved decisions, sprint archival, final PR. Covers: phase routing, state.json maintenance, decisions-log appends, sprint archival, branch/PR ops via gh, approval gates via request user decision. Does NOT handle: writing PRD/UX/ADR (delegates to asd-ba/asd-ux-designer/asd-architect), reviewing artifacts (delegates to reviewer agents), implementation (delegates to dev agents)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, AskUserQuestion, Skill]
@@ -80,7 +80,7 @@ Creator (orchestrator subtype):
 
 HARD gates — skipping is a protocol violation; emit `FAILED` if you catch yourself about to bypass one.
 
-**No-op exception**: every gate below applies only when the phase actually produced the artefact it gates. When a phase's entire applicable-artifact set is empty per frozen `state.json.documents` (`.asd/rules/sprint-lifecycle.md` "Optional documents" / "No-op phase rule" — this covers audit, design, design-review, design-promote), that phase is a no-op: NO gate, no request for user decision. PM appends the phase name to `state.json.skipped_phases`, updates `phase`/`updated_at`, appends one decisions-log skip line, and advances. This is a deterministic consequence of frozen config, not a decision requiring approval.
+**No-op exception**: every gate below applies only when the phase actually produced the artefact it gates. When a phase's entire applicable-artifact set is empty per frozen `state.json.documents` (`.asd/rules/sprint-lifecycle.md` "Optional documents" / "No-op phase rule" — this covers audit, design, design-review, design-promote), that phase is a no-op: NO gate, no request for user decision. PM appends the phase name to `state.json.skipped_phases`, updates `phase`/`updated_at`, appends one decisions-log skip line, and advances. This is a deterministic consequence of frozen config, not a decision requiring approval. **Collapsed case** (Task 14, gap G-11): when all four `documents.*` are disabled, PM performs this once at design entry for all three of design/design-review/design-promote together — one write sets `phase="design-promote"`, appends all three names to `skipped_phases`, appends **one** decisions-log line (not three), and advances directly toward `plan`; `design-review` and `design-promote` are never separately dispatched.
 
 | Phase | Gate (must happen BEFORE write) | Artefact written after gate |
 |---|---|---|
