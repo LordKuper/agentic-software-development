@@ -214,15 +214,15 @@ Verdicts: **P-9**, **AG-11**, **AG-14**, gap **G-12**, risk **R-10** — separat
 Affected canonical files: `.asd/workflows/asd-phase-impl-review.md` (step 5), `.asd/rules/review-policy.md` (DoD table, lines 134 and 136), `.asd/agents/asd-reviewer-ui.md`, `.asd/agents/asd-reviewer-performance.md` (line 23), `.asd/workflows/asd-phase-pr.md` (step 4), `.asd/templates/t_state.json` (verdict slot), `README.md` reviewer table.
 Material risk: audit R-10 — this trades away guaranteed off-domain vigilance. In sprint 001 the UI reviewer, dispatched into a diff it described as containing zero UI surface, still found a real relative-link defect. The `checkpoints.md` line-19 impl-review gate is untouched. Every mitigation below is part of the accepted trade, not optional.
 
-- [ ] Predicates are **strictly diff-derived, never keyed on `documents.*`** — this preserves `review-policy.md` line 136 verbatim ("absence of a ux-spec draft never implies absence of UI code to review")
-- [ ] UI reviewer skipped only when **no file in the iteration's scope list is a UI surface**; any UI-extension file entering the diff re-enables it automatically
-- [ ] Performance reviewer skipped only when **both** no perf-budgets section exists in `custom-coding-rules.md` **and** the diff contains no executable file (conjunctive — three of its five rubric items are budget-independent)
-- [ ] Gap G-12: every skip writes an **explicit verdict value** `"ui": "skipped: <predicate>"` into `state.json.reviews.impl.verdicts["iter-NN"]` — distinct from an absent key (dispatch lost / crashed / ledger-rejected) and from `null`. Document the slot in `t_state.json`
-- [ ] `asd-phase-pr.md` step 4: teach the "reviewers actually required this sprint" parse to read the skip value
-- [ ] `asd-reviewer-ui.md`: add the no-UI-surface carve-out to its `accessibility.html missing → ABORT` guard
-- [ ] `asd-reviewer-performance.md` line 23: promote the existing stop condition to a dispatch-time predicate, conjunctively
-- [ ] Make the whole scoping **switchable off**, so a user preferring full fan-out keeps today's behaviour
-- [ ] `review-policy.md` DoD table and `README.md` reviewer table: mirror the conditional dispatch; run `sync.js --apply`
+- [x] Predicates are **strictly diff-derived, never keyed on `documents.*`** — this preserves `review-policy.md` line 136 verbatim ("absence of a ux-spec draft never implies absence of UI code to review")
+- [x] UI reviewer skipped only when **no file in the iteration's scope list is a UI surface**; any UI-extension file entering the diff re-enables it automatically
+- [x] Performance reviewer skipped only when **both** no perf-budgets section exists in `custom-coding-rules.md` **and** the diff contains no executable file (conjunctive — three of its five rubric items are budget-independent)
+- [x] Gap G-12: every skip writes an **explicit verdict value** `"ui": "skipped: <predicate>"` into `state.json.reviews.impl.verdicts["iter-NN"]` — distinct from an absent key (dispatch lost / crashed / ledger-rejected) and from `null`. Document the slot in `t_state.json`
+- [x] `asd-phase-pr.md` step 4: teach the "reviewers actually required this sprint" parse to read the skip value
+- [x] `asd-reviewer-ui.md`: add the no-UI-surface carve-out to its `accessibility.html missing → ABORT` guard
+- [x] `asd-reviewer-performance.md` line 23: promote the existing stop condition to a dispatch-time predicate, conjunctively
+- [x] Make the whole scoping **switchable off**, so a user preferring full fan-out keeps today's behaviour
+- [x] `review-policy.md` DoD table and `README.md` reviewer table: mirror the conditional dispatch; run `sync.js --apply`
 
 ### Task 14: Collapse the three no-op design phases into one deterministic check
 

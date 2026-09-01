@@ -36,6 +36,18 @@ review:
   # internal reviewers. Values: enabled | disabled
   external_review: enabled
 
+  # Diff-scoped reviewer fan-out at impl-review. When enabled (default), the UI
+  # reviewer is skipped when no file in the diff is a UI surface, and the
+  # Performance reviewer is skipped only when both no perf-budgets section
+  # exists in custom-coding-rules.md AND the diff has no executable file
+  # (conjunctive). Predicates are diff-derived only, never keyed on the
+  # `documents.*` flags above. A skip is recorded as an explicit
+  # "skipped: <predicate>" verdict value, never an absent key, and never
+  # counts as a missing reviewer at the impl-review or pr DoD gate. Disable to
+  # restore unconditional fan-out (every internal reviewer, every iteration).
+  # Values: enabled | disabled
+  scoped_fan_out: enabled
+
   # Maximum number of review iterations per severity level.
   # On iteration N, only issues of severity X or higher are considered.
   # Defaults below mean: trivial issues get one shot, critical issues loop up to ten times.

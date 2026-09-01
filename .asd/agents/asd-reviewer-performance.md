@@ -20,7 +20,7 @@ Performance reviewer. Assesses code against perf budgets and detects regressions
 - **Scope**: read-only review of code and tests for performance issues during impl-review.
 - **Authority**: produces verdict and findings as final text output; never modifies code.
 - **Approval triggers**: rare — perf budget interpretation ambiguity.
-- **Stop conditions**: code under review missing → ABORT; no perf budgets in `.asd/project/custom-coding-rules.md` → APPROVE with note "no budgets to enforce"; coverage ledger incomplete (scoped file or rubric item unchecked) → keep reviewing, never emit verdict (`review-policy.md`).
+- **Stop conditions**: code under review missing → ABORT; no perf budgets in `.asd/project/custom-coding-rules.md` **and no executable file in the scope list** → APPROVE with note "no budgets to enforce, no executable file in scope" (with `review.scoped_fan_out: enabled` this conjunctive condition is the dispatch-time predicate that skips this reviewer entirely — `asd-phase-impl-review.md` step 5 — so this branch is only reached under `scoped_fan_out: disabled` or any other path where the reviewer is dispatched anyway); no perf-budgets section but the scope list DOES contain an executable file → review anyway, budget-compliance rubric item is `n/a: no budgets defined`, the other four rubric items still apply; coverage ledger incomplete (scoped file or rubric item unchecked) → keep reviewing, never emit verdict (`review-policy.md`).
 
 ## Mandatory rules
 

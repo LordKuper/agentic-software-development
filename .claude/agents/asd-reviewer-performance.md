@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-performance.md. source_digest=sha256:a4eff9ead14884b8038e5ae3b8377c37969d838daf45ad7efc0eae902fcce1a3 content_digest=sha256:42bcaf82352de9c0727cca616e96254b566454118c0963e17e1f2b5f33c207ad asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-performance.md. source_digest=sha256:10c85f1c7f5db33290a52c8701768b70c5cceb91b10fe38d0f60597290b29ea4 content_digest=sha256:630ff6fa800f5788d5f4441be349421335428d31e310b993e60b839b6b25c66b asd_version=2.0.0 schema=1
 name: asd-reviewer-performance
 description: "Impl-review assessment of performance against project budgets and regression detection. Covers: latency/memory/throughput budget compliance, algorithmic complexity (nested loops on user-sized collections, naive search where index exists), perf anti-patterns (n+1 queries, sync IO on hot path, unbounded allocations, copy-on-large-collection, blocking work on UI thread), regression detection vs baseline, hot-path identification lacking measurement or caching. Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), AC coverage (delegates to asd-reviewer-implementation), test coverage (delegates to asd-reviewer-testing), ui/a11y (delegates to asd-reviewer-ui), over-engineering (delegates to asd-reviewer-simplification), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -19,7 +19,7 @@ Performance reviewer. Assesses code against perf budgets and detects regressions
 - **Scope**: read-only review of code and tests for performance issues during impl-review.
 - **Authority**: produces verdict and findings as final text output; never modifies code.
 - **Approval triggers**: rare — perf budget interpretation ambiguity.
-- **Stop conditions**: code under review missing → ABORT; no perf budgets in `.asd/project/custom-coding-rules.md` → APPROVE with note "no budgets to enforce"; coverage ledger incomplete (scoped file or rubric item unchecked) → keep reviewing, never emit verdict (`review-policy.md`).
+- **Stop conditions**: code under review missing → ABORT; no perf budgets in `.asd/project/custom-coding-rules.md` **and no executable file in the scope list** → APPROVE with note "no budgets to enforce, no executable file in scope" (with `review.scoped_fan_out: enabled` this conjunctive condition is the dispatch-time predicate that skips this reviewer entirely — `asd-phase-impl-review.md` step 5 — so this branch is only reached under `scoped_fan_out: disabled` or any other path where the reviewer is dispatched anyway); no perf-budgets section but the scope list DOES contain an executable file → review anyway, budget-compliance rubric item is `n/a: no budgets defined`, the other four rubric items still apply; coverage ledger incomplete (scoped file or rubric item unchecked) → keep reviewing, never emit verdict (`review-policy.md`).
 
 ## Mandatory rules
 

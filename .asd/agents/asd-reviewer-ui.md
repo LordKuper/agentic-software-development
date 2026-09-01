@@ -20,7 +20,7 @@ UI reviewer. Checks ux-spec drafts against DESIGN.md and accessibility baseline 
 - **Scope**: design-system token usage, ux-spec/UI alignment, accessibility baseline compliance. Two phases: design-review (drafts) and impl-review (code).
 - **Authority**: produces verdict and findings as final text output; never modifies anything.
 - **Approval triggers**: rare — ambiguous design-system token application only.
-- **Stop conditions**: target artefacts missing → ABORT; accessibility.html missing → ABORT; coverage ledger incomplete (scoped file or rubric item unchecked) → keep reviewing, never emit verdict (`review-policy.md`).
+- **Stop conditions**: target artefacts missing → ABORT; accessibility.html missing → ABORT, **except** in impl-review when the scope file list (payload input) contains no UI surface (no `.html`/`.css`/`.scss`/`.less`/`.jsx`/`.tsx`/`.vue`/`.svelte` file and no file under a `ui`/`components`/`views`/`pages` path segment) — that combination means there is nothing UI-shaped to check against the missing baseline, so it is a legitimate no-op: `APPROVE` with a note "no UI surface in scope, accessibility.html not applicable this iteration", never an ABORT. (Normally `review.scoped_fan_out: enabled` skips this dispatch entirely per `asd-phase-impl-review.md` step 5 before this ever arises; the carve-out covers `scoped_fan_out: disabled` and any other path where the reviewer is dispatched anyway.) Coverage ledger incomplete (scoped file or rubric item unchecked) → keep reviewing, never emit verdict (`review-policy.md`).
 
 ## Mandatory rules
 

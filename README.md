@@ -205,13 +205,15 @@ Reviewers are read-only on every provider: the 7 internal Claude reviewer agents
 | `asd-reviewer-quality` | opus/high | sol/high | impl-review | Bugs, security, best-practice, contract drift |
 | `asd-reviewer-implementation` | opus/high | sol/high | impl-review | PRD acceptance criteria coverage in code |
 | `asd-reviewer-testing` | opus/high | sol/high | impl-review | `test-plan.md` decisions (risk fit, justified removals and no-test calls, fail-first proof), test quality, manual verification capture |
-| `asd-reviewer-ui` | opus/high | sol/high | design-review + impl-review | UX-spec compliance, design-system tokens, a11y |
+| `asd-reviewer-ui` | opus/high | sol/high | design-review + impl-review | UX-spec compliance, design-system tokens, a11y — impl-review dispatch conditional (see below) |
 | `asd-reviewer-simplification` | opus/high | sol/high | design-review + impl-review | Over-engineering (13-item checklist) + structure/cohesion (god/sprawling type) detection |
 | `asd-reviewer-documentation` | opus/high | sol/high | design-review + impl-review | SSoT integrity, template adherence, traceability |
-| `asd-reviewer-performance` | opus/high | sol/high | impl-review | Perf budgets, regression, anti-patterns |
+| `asd-reviewer-performance` | opus/high | sol/high | impl-review | Perf budgets, regression, anti-patterns — dispatch conditional (see below) |
 | `asd-external-review` | fable/high | sol/high | both | Wraps the *other* provider's CLI (Codex CLI under Claude Code, Claude CLI under Codex), parses output, applies severity floor |
 
 Reviewers emit a machine-parseable first-line verdict token: `[REVIEW-<phase>-<reviewer>]: APPROVE|CONCERNS|FAIL`, where `<phase>` is `design` or `impl`.
+
+**Diff-scoped impl-review fan-out** (`review.scoped_fan_out: enabled`, default): at impl-review, UI is skipped when no file in the diff's scope list is a UI surface (any UI-extension/path-segment file re-enables it automatically); Performance is skipped only when both no perf-budgets section exists in `custom-coding-rules.md` and the diff contains no executable file (conjunctive). A skipped reviewer is never dispatched; `state.json.reviews.impl.verdicts["iter-NN"]` records an explicit `"skipped: <predicate>"` value instead of a verdict token, counted as satisfied (not missing) at the DoD and pr-phase gates. `review.scoped_fan_out: disabled` restores unconditional dispatch of all 7 internal reviewers every iteration. `checkpoints.md`'s impl-review approval gate is unaffected either way (`review-policy.md` DoD table).
 
 ---
 
@@ -241,6 +243,7 @@ backward_compat: migration            # strict | migration | none
 
 review:
   external_review: enabled            # enabled | disabled
+  scoped_fan_out: enabled              # enabled | disabled — impl-review UI/Performance dispatch conditional on diff-derived predicates (disabled = unconditional fan-out, every reviewer every iteration)
   iterations_low: 1                   # cumulative-budget severity floor
   iterations_medium: 1
   iterations_high: 2
