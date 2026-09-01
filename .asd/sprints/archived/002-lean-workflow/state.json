@@ -58,7 +58,7 @@
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": { "number": 16, "url": "https://github.com/LordKuper/agentic-software-development/pull/16", "state": "open" },
-  "archived_at": null,
+  "archived_at": "2026-09-02T01:00:00Z",
   "subsystems_touched": [],
   "new_subsystems": [],
   "escalations": []
