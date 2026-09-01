@@ -38,7 +38,7 @@ A blocker is exactly one of:
 
 A dev `BLOCKED_MANUAL` does **not** halt immediately: dev registers the manual action, defers only affected subtasks, continues all unblocked work. Phase halts at manual-steps gate (step 8) only after every unblocked task COMPLETED.
 
-Devs do **not** pause user for routine "non-trivial approach" decisions. Within plan + design-doc scope, make the reasonable call and proceed. Pausing mid-impl for anything other than a blocker above (or manual-steps gate) is a protocol violation.
+Devs do **not** pause user for routine "non-trivial approach" decisions. Within plan + persistent docs scope, make the reasonable call and proceed. Pausing mid-impl for anything other than a blocker above (or manual-steps gate) is a protocol violation.
 
 Fix modes are unbounded by design: impl-test may route defects back any number of times. A dev that cannot fix a defect emits `FAILED` rather than looping silently.
 
@@ -66,7 +66,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
      - instruction:
        - read context first
        - verify `docs/architecture/tech-reference/<tech>-<version>.md` exists per tech touched; if missing → emit `FAILED — tech-reference missing for <tech>@<version>` (Architect creates it via design re-run or out-of-band)
-       - work autonomously within plan + design-doc scope; do NOT pause user for routine approach choices — make the reasonable call and proceed
+       - work autonomously within plan + persistent docs scope; do NOT pause user for routine approach choices — make the reasonable call and proceed
        - escalate only on a blocker (see Execution mode): emit `QUESTION` for unresolvable requirement ambiguity, `FAILED` for missing tech-reference / unrecoverable failure, or raise Complication Approval via request for user decision **only** when a Simplicity Default trigger fires (new abstraction / dependency / config flag / generalization)
        - **manual-steps handling**: when a plan subtask cannot proceed without a human-only operational action (secret, cloud resource, hand-run migration, env var, third-party account):
          - append `MS-N` entry to `<sprint>/manual-steps.md` per `t_manual-steps.md` (full step-by-step instructions plus `Verification` field stating how completion is confirmed)
