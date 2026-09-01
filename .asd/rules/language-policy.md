@@ -5,7 +5,7 @@
 | Artifact type | Language |
 |---|---|
 | Chat with user | `language.chat` from config |
-| User-facing artifacts (PRD, ADR, UX-spec, plan.md, sprint.md, reviews, design/* docs) | `language.docs` from config |
+| User-facing artifacts (PRD, ADR, UX-spec, plan.md, sprint.md, reviews, docs/* docs) | `language.docs` from config |
 | Machine-readable files (state.json, config.yaml, settings.json, env files) | English, dense, always |
 | Workflow infrastructure (rules, agents, skills, hooks, CLAUDE.md) | English, dense imperative prose, always |
 | File names, git branches, commit subjects, PR titles | English, always |

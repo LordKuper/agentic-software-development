@@ -4,7 +4,7 @@ Binding for `asd-ux-designer` (author) and `asd-reviewer-ui` (verify). Applies w
 
 ## 1. Source of Truth
 
-`design/ux/DESIGN.md` = SSoT for tokens, components, states, theme rules. Conflict between mockup, spec, and DESIGN.md → DESIGN.md win until explicitly changed.
+`docs/ux/DESIGN.md` = SSoT for tokens, components, states, theme rules. Conflict between mockup, spec, and DESIGN.md → DESIGN.md win until explicitly changed.
 
 ## 2. Token Layers
 

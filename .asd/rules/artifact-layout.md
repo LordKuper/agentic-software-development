@@ -42,7 +42,7 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │       │       └── impl/iter-NN/<reviewer>.md
 │       └── archived/<NNN-slug>/
 ├── .claude/{agents/, skills/, hooks/, settings.json}
-├── design/
+├── docs/
 │   ├── product/
 │   │   ├── concept.html
 │   │   └── requirements/<subsystem>.html
@@ -64,10 +64,10 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 
 ## Paths (decomposition disabled)
 
-`design/` becomes flat:
+`docs/` becomes flat:
 
 ```
-design/
+docs/
 ├── product/{concept.html, requirements.html}
 ├── architecture/
 │   ├── stack.html
@@ -81,7 +81,7 @@ No `c4/` directory. No subsystem subfolders.
 
 ## Subsystem registry
 
-When decomposition enabled, registry lives in `design/architecture/c4/`. Layout per `project.diagram_tool`:
+When decomposition enabled, registry lives in `docs/architecture/c4/`. Layout per `project.diagram_tool`:
 
 - **likec4**: `model/*.c4` (LikeC4 DSL). Subsystem id = container/component id. `likec4 build` produces `dist/` interactive HTML.
 - **mermaid**: `subsystems.yaml` (machine registry). Subsystem id = entry id. Agent renders `architecture.html` with embedded Mermaid C4 views.
@@ -138,7 +138,7 @@ Every user-facing HTML artifact (prd, ux-spec, adr, concept, stack, accessibilit
 
 ## Tech reference docs (mandatory for every chosen tech)
 
-`design/architecture/tech-reference/<tech>-<version>.md` per `t_tech-reference.md`. Owner: Architect. Created for every chosen library, framework, runtime, external service. Includes canonical source URL, API surface used, version specifics, deprecations, project conventions.
+`docs/architecture/tech-reference/<tech>-<version>.md` per `t_tech-reference.md`. Owner: Architect. Created for every chosen library, framework, runtime, external service. Includes canonical source URL, API surface used, version specifics, deprecations, project conventions.
 
 **Refuse-to-implement rule**: Backend Dev, Frontend Dev, Test Engineer MUST verify `tech-reference/<tech>-<version>.md` exists before implementing with a tech. If missing → emit `FAILED — tech-reference missing for <tech>@<version>` and request it from Architect. No implementation without verified reference.
 

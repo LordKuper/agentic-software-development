@@ -46,10 +46,10 @@ Verdict files: design-review → `<sprint>/reviews/design/iter-NN/`, impl-review
 | Phase | Owner | Input | Output | Exit criteria |
 |---|---|---|---|---|
 | scope | PM | user request | `sprint.md`, sprint id, branch | scope approved, branch created |
-| audit | Architect + BA | `sprint.md`, codebase, `design/`, existing docs any format/location | `audit.md`; optional reverse-engineered/migrated drafts in `<sprint>/design/` | audit approved |
+| audit | Architect + BA | `sprint.md`, codebase, `docs/`, existing docs any format/location | `audit.md`; optional reverse-engineered/migrated drafts in `<sprint>/design/` | audit approved |
 | design | BA → UX Designer → Architect | `audit.md` | drafts in `<sprint>/design/` | drafts complete |
 | design-review | Documentation + UI + Simplification + External Review | `<sprint>/design/` | `reviews/design/iter-NN/<reviewer>.md` | DoD met |
-| design-promote | PM + Architect + BA + UX Designer | approved drafts | persistent docs in `design/` | drafts merged, decisions-log entry |
+| design-promote | PM + Architect + BA + UX Designer | approved drafts | persistent docs in `docs/` | drafts merged, decisions-log entry |
 | plan | PM | promoted persistent docs | `plan.md` | plan approved |
 | impl | Backend Dev + Frontend Dev | `plan.md` (initial), `reviews/impl/iter-NN/` findings (review-fix), or `test-plan.md` Defects (test-fix) | code, `manual-steps.md` | all tasks/findings/defects done; build + lint pass (completion gate) |
 | impl-test | Test Engineer | code diff, `plan.md`, PRD ACs, existing tests | `test-plan.md`, tests in repo | full suite green → `impl-review`; code defects → `impl` test-fix mode |
@@ -102,7 +102,7 @@ Never optional: `sprint.md`, `state.json`, `plan.md`, `test-plan.md`, impl-revie
 
 No-op when `documents.audit: disabled` (see "Optional documents").
 
-Scans: existing source in touched areas; existing docs in **any format/location** (MD, RST, Confluence/Notion exports, HTML, Wiki, text-extractable PDF, READMEs outside ASD layout); persistent docs in `design/`.
+Scans: existing source in touched areas; existing docs in **any format/location** (MD, RST, Confluence/Notion exports, HTML, Wiki, text-extractable PDF, READMEs outside ASD layout); persistent docs in `docs/`.
 
 Output `audit.md` — findings (touched areas, existing docs/code, gaps, risks) plus **Documentation migration plan** listing found external docs to promote into ASD format. Where sprint scope directly overlaps found content, the agent may pre-formulate reverse-engineered/migrated drafts in `<sprint>/design/` (prd.html / adr.html) — **only for documents whose frozen `documents.*` flag is enabled**; a disabled document is never draft-created here either, its finding stays migration-plan text — with `provenance` + `source` frontmatter; these flow through design and design-review like any draft. Migration items not covered by drafts wait for design-promote.
 
@@ -119,7 +119,7 @@ Agents produce a draft set for the whole sprint scope in `<sprint>/design/`, one
 - `design-md-delta.yaml` — proposed DESIGN.md token changes, produced inline during UX-spec authoring (only on token gap; each entry user-approved)
 - `c4-full/` — full LikeC4 schema for sprint scope (`model/*.c4`, `views.c4`, `dist/`) (effective `documents.c4`)
 
-Order among enabled documents: PRD (if enabled) before design-system gate. Design-system gate (existence check on `design/ux/DESIGN.md`, `design-system.html`, `accessibility.html`; dispatches `/asd-design-system` when any missing) applies only when `ux_spec` enabled, and blocks UX-spec. UX-spec (if enabled) before ADR. ADR (if enabled) before c4-full. If effective `documents.c4: disabled` (flag off, or `subsystem_decomposition: disabled`), `c4-full/` omitted.
+Order among enabled documents: PRD (if enabled) before design-system gate. Design-system gate (existence check on `docs/ux/DESIGN.md`, `design-system.html`, `accessibility.html`; dispatches `/asd-design-system` when any missing) applies only when `ux_spec` enabled, and blocks UX-spec. UX-spec (if enabled) before ADR. ADR (if enabled) before c4-full. If effective `documents.c4: disabled` (flag off, or `subsystem_decomposition: disabled`), `c4-full/` omitted.
 
 
 ## Design-promote phase
@@ -132,9 +132,9 @@ PM orchestrates; three domain creators promote (Documentation reviewer NOT invol
 2. PM proposes new subsystems inferred from drafts; user approves each (name, parent container, description). On approve: Architect patches C4 registry, creates folders, runs `likec4 build` if applicable.
 3. PM distributes `audit.md` migration items to the matching domain (architecture/product/ux/api).
 4. Parallel promotion:
-   - `asd-ba` → per-subsystem (or flat) `design/product/requirements/<subsystem>.html` from prd draft; product migration items.
-   - `asd-architect` → `design/architecture/adr/<subsystem>/adr-NNNN-<slug>.html`; updates `api/<subsystem>.html`, `stack.html`, `tech-reference/`; applies c4 delta to persistent `design/architecture/c4/`; regenerates `dist/` (likec4) or `architecture.html` (mermaid); architecture migration items.
-   - `asd-ux-designer` → `design/ux/<subsystem>.html` from ux-spec draft; patches `DESIGN.md` from `design-md-delta.yaml`; regenerates `design-system.html`; ux migration items.
+   - `asd-ba` → per-subsystem (or flat) `docs/product/requirements/<subsystem>.html` from prd draft; product migration items.
+   - `asd-architect` → `docs/architecture/adr/<subsystem>/adr-NNNN-<slug>.html`; updates `api/<subsystem>.html`, `stack.html`, `tech-reference/`; applies c4 delta to persistent `docs/architecture/c4/`; regenerates `dist/` (likec4) or `architecture.html` (mermaid); architecture migration items.
+   - `asd-ux-designer` → `docs/ux/<subsystem>.html` from ux-spec draft; patches `DESIGN.md` from `design-md-delta.yaml`; regenerates `design-system.html`; ux migration items.
    - Each creator requests user decision before each persistent write.
 5. PM final user confirmation before persistent mutation (confirm / rollback / partial rollback).
 6. PM appends decisions-log entries, finalises `state.json`.
