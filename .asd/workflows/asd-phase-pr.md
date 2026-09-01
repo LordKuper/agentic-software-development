@@ -38,9 +38,10 @@ Archival never happens at PR creation — only on a later re-entry after the PR 
    - **Tests pass**: run command `commands.yaml` `test`; non-zero exit = block
    - **Lint clean**: run command `commands.yaml` `lint`; non-zero exit = block
    - **PR self-review checklist** (per `git-strategy.md`): PM confirms each item explicitly (studied existing code, can explain every line, scoped to feature, why-not-what commits)
+   - **Version + Changelog** (`self_hosting: enabled` only, `git-strategy.md` "Versioning & Changelog"): bump `asd_version` in `.asd/release-manifest.json` per SemVer inferred from this sprint's commit types; add matching `## v<version>` section to root `CHANGELOG.md`
    - on ANY block: relay specific failure; halt phase until fixed (user may dispatch fix or accept-debt)
 5. **PR creation confirmation** — delegate to agent `asd-pm`:
-   - compose PR title + body via `t_pr-description.md`
+   - compose PR title (Conventional Commits format) + body via `t_pr-description.md` (fill Version section when `self_hosting: enabled`, drop it otherwise)
    - request user decision in `language.chat`: confirm open PR / edit body / abort
    - on confirm:
      - **`git.gh_enabled=true` and `git.auto_pr=true`**: stage uncommitted (none should remain), push branch, run command `gh pr create --title <title> --body <body> --base <base_branch>`
@@ -56,7 +57,10 @@ Archival never happens at PR creation — only on a later re-entry after the PR 
 1. **Merge check** — delegate to agent `asd-pm`:
    - `git.gh_enabled=true`: run command `gh pr view <pr.number> --json state -q .state`. `MERGED` → proceed to archival. Any other state (`OPEN`/`CLOSED`) → relay "PR #<number> not merged yet (state: <state>)" and halt (re-run pr after merging). `CLOSED` without merge → relay; user decides reopen or abort.
    - `git.gh_enabled=false`: request user decision in `language.chat` — "PR merged?" yes / not yet. `not yet` → halt. `yes` → proceed.
-2. **Sprint archival** — delegate to agent `asd-pm`:
+2. **Tag + release** (`self_hosting: enabled` only, `git-strategy.md` "Versioning & Changelog") — delegate to agent `asd-pm`:
+   - create annotated tag `v<asd_version>` on the merge commit; push tag
+   - `gh release create v<asd_version> --title v<asd_version> --notes-file` the matching `CHANGELOG.md` section
+3. **Sprint archival** — delegate to agent `asd-pm`:
    - move folder `.asd/sprints/<NNN-slug>/` → `.asd/sprints/archived/<NNN-slug>/` (`git mv`)
    - commit move with message `chore: archive sprint <NNN-slug>` and push to sprint branch
    - update `state.json` (`pr.state="merged"`, phase=done, archived_at)
@@ -79,15 +83,17 @@ User decides: fix and retry, accept-debt (stubs only), or abort sprint.
 Open mode:
 - Pushed git branch (and PR when `gh_enabled+auto_pr`)
 - `state.json.pr` = `{number, url, state:"open"}`; decisions-log PR-opened entry
+- Self-hosting only: bumped `asd_version` in `.asd/release-manifest.json`, new `CHANGELOG.md` section
 
 Merge mode:
+- Self-hosting only: annotated tag `v<asd_version>`, GitHub Release
 - Archived sprint at `.asd/sprints/archived/<NNN-slug>/`
 - Archive commit on sprint branch
 - decisions-log final entry
 - Updated `state.json` (`pr.state="merged"`, phase=done, archived_at)
 
 ## Agents delegated to
-- `asd-pm` (DoD verification, PR composition, merge check, archival, decisions-log)
+- `asd-pm` (DoD verification, PR composition, merge check, tag/release, archival, decisions-log)
 
 ## Skills/workflows dispatched
 None.
@@ -99,8 +105,8 @@ PHASE: pr | SPRINT: <NNN-slug> | STATUS: <pr-open|complete|blocked|aborted> | NE
 `pr-open` (open mode success): PR opened, sprint awaits merge, NEXT=await-merge. `complete` (merge mode success): merged + archived, NEXT=done.
 
 ## References
-- `.asd/rules/sprint-lifecycle.md` (pr phase contract, sprint immutability)
-- `.asd/rules/git-strategy.md` (PR self-review checklist, branch ops, stubs block rule)
+- `.asd/rules/sprint-lifecycle.md` (pr phase contract, sprint immutability, self-hosting versioning)
+- `.asd/rules/git-strategy.md` (PR self-review checklist, branch ops, stubs block rule, versioning & changelog)
 - `.asd/rules/checkpoints.md` (final PR confirmation gate)
 - `.asd/rules/artifact-layout.md` (sprint archival path)
 - `.asd/rules/language-policy.md` (PR title English, body docs-lang)

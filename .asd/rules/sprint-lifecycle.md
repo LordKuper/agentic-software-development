@@ -64,6 +64,8 @@ When enabled: Backend Dev / Frontend Dev may write canonical `.asd/rules/`, `.as
 
 `asd-init`/`sync.js` never replace root `AGENTS.md`'s managed block from `t_AGENTS.md` while self-hosting — it stays self-sourced framework-dev prose (`providers.md` ownership table). `asd-update` is a no-op here (it pulls framework files INTO a consumer; this repo IS the framework).
 
+Versioning: self-hosting sprints bump `asd_version` and update `CHANGELOG.md` at `pr` open, tag+release at `pr` merge — `git-strategy.md` "Versioning & Changelog".
+
 Framework impl-review/External Review change surface: the whole repo diff (everything here IS framework source — canonical `.asd/**`, `README.md`, `AGENTS.md`, `tests/**`, and anything else added later, e.g. CI configs), minus `.asd/project/**`, `.asd/sprints/**`, generated `.claude/**`/`.codex/**`/`.agents/skills/**`, build output — never an allow-list of named paths, so nothing new needs a matching rule edit to be reviewed.
 
 ## Optional documents

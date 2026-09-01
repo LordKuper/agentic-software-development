@@ -52,6 +52,55 @@ function writeNormalized(filePath, text) {
 }
 
 // ---------------------------------------------------------------------------
+// File tree utilities - shared by this file's hash-ledger recompute and by
+// update.js's managed_paths expansion (which requires this module, so these
+// live here, not there, to keep the dependency direction one-way).
+// ---------------------------------------------------------------------------
+
+function posixJoin(a, b) {
+  return a ? `${a}/${b}` : b;
+}
+
+function walkDir(absDir, relDir, out) {
+  for (const entry of fs.readdirSync(absDir, { withFileTypes: true })) {
+    const rel = posixJoin(relDir, entry.name);
+    const abs = path.join(absDir, entry.name);
+    if (entry.isSymbolicLink()) {
+      out.push(rel); // leaf; caller decides how to treat a symlink target
+      continue;
+    }
+    if (entry.isDirectory()) {
+      walkDir(abs, rel, out);
+      continue;
+    }
+    if (entry.isFile()) out.push(rel);
+  }
+}
+
+// Expands one manifest entry against one root directory. Returns [] if the
+// entry does not exist under that particular root.
+function expandManagedPath(rootDir, relPath) {
+  const abs = path.join(rootDir, relPath);
+  if (!fs.existsSync(abs)) return [];
+  if (isSymlink(abs)) return [relPath];
+  const stat = fs.statSync(abs);
+  if (stat.isFile()) return [relPath];
+  if (stat.isDirectory()) {
+    const out = [];
+    walkDir(abs, relPath, out);
+    return out;
+  }
+  return [];
+}
+
+function hashIfFile(absPath) {
+  if (!fs.existsSync(absPath)) return null;
+  if (isSymlink(absPath)) return null;
+  if (!fs.statSync(absPath).isFile()) return null;
+  return sha256Hex(readNormalized(absPath));
+}
+
+// ---------------------------------------------------------------------------
 // Path safety (reject traversal / absolute / drive / UNC / symlink targets)
 // ---------------------------------------------------------------------------
 
@@ -828,6 +877,88 @@ function saveSyncState(repoRoot, state) {
 }
 
 // ---------------------------------------------------------------------------
+// release-manifest.json hash-ledger recompute (canon_hashes, upstream_hashes)
+// - both are pure functions of on-disk file content, so `--apply` recomputes
+// them fresh every run instead of relying on whoever edited canon to
+// hand-compute a digest (AGENTS.md: "run node .asd/sync.js --apply <file...>
+// after editing canon" - this IS that step, not a separate manual one).
+// ---------------------------------------------------------------------------
+
+// Same discovery as buildSyncPlan()'s agent/skill full-file items, but
+// producing [key, digestTag] pairs instead of sync targets.
+function computeCanonHashes(repoRoot) {
+  const entries = [];
+  const agentsDir = path.join(repoRoot, '.asd', 'agents');
+  if (fs.existsSync(agentsDir)) {
+    for (const f of fs.readdirSync(agentsDir)) {
+      if (!f.endsWith('.md')) continue;
+      entries.push([`agents/${f}`, digestTag(readNormalized(path.join(agentsDir, f)))]);
+    }
+  }
+  const skillsDir = path.join(repoRoot, '.asd', 'skills');
+  if (fs.existsSync(skillsDir)) {
+    for (const name of fs.readdirSync(skillsDir)) {
+      const abs = path.join(skillsDir, name, 'SKILL.md');
+      if (!fs.existsSync(abs)) continue;
+      entries.push([`skills/${name}/SKILL.md`, digestTag(readNormalized(abs))]);
+    }
+  }
+  return entries;
+}
+
+// Every real file under every manifest.managed_paths entry (repo-root
+// relative, posix), bare sha256 hex - matches update.js's upstream_hashes
+// convention exactly (it's the same file-identity contract, just recomputed
+// from THIS repo's own working tree instead of a fetched-upstream tarball).
+function computeUpstreamHashes(repoRoot, manifest) {
+  const entries = [];
+  const seen = new Set();
+  for (const relRoot of manifest.managed_paths || []) {
+    for (const relPath of expandManagedPath(repoRoot, relRoot)) {
+      if (seen.has(relPath)) continue;
+      seen.add(relPath);
+      const hash = hashIfFile(path.join(repoRoot, relPath));
+      if (hash) entries.push([relPath, hash]);
+    }
+  }
+  return entries;
+}
+
+// Rebuilds a ledger object: existing keys keep their original position
+// (updated in place if their fresh value differs), keys whose file vanished
+// are dropped, newly discovered keys are appended in discovery order. Keeps
+// re-runs diff-quiet when nothing actually changed.
+function rebuildHashMap(oldMap, freshEntries) {
+  const fresh = new Map(freshEntries);
+  const next = {};
+  for (const key of Object.keys(oldMap || {})) {
+    if (fresh.has(key)) {
+      next[key] = fresh.get(key);
+      fresh.delete(key);
+    }
+  }
+  for (const [key, value] of fresh) next[key] = value;
+  return next;
+}
+
+// Recomputes both ledgers and writes release-manifest.json only if either
+// actually changed (order-independent comparison via stableStringify; the
+// written object itself stays order-preserving, see rebuildHashMap). Returns
+// which ledger(s) changed so callers can report it.
+function recomputeAndWriteHashLedgers(repoRoot) {
+  const manifest = loadReleaseManifest(repoRoot);
+  const canon_hashes = rebuildHashMap(manifest.canon_hashes, computeCanonHashes(repoRoot));
+  const upstream_hashes = rebuildHashMap(manifest.upstream_hashes, computeUpstreamHashes(repoRoot, manifest));
+  const canonChanged = stableStringify(manifest.canon_hashes || {}) !== stableStringify(canon_hashes);
+  const upstreamChanged = stableStringify(manifest.upstream_hashes || {}) !== stableStringify(upstream_hashes);
+  if (!canonChanged && !upstreamChanged) return { changed: false, canonChanged: false, upstreamChanged: false };
+  const next = Object.assign({}, manifest, { canon_hashes, upstream_hashes });
+  const p = path.join(repoRoot, '.asd', 'release-manifest.json');
+  writeNormalized(p, JSON.stringify(next, null, 2) + '\n');
+  return { changed: true, canonChanged, upstreamChanged };
+}
+
+// ---------------------------------------------------------------------------
 // CLI (Stage 0: engine only - real canon trees land in Stage 1, so an empty
 // canon directory is a normal, green outcome here, not an error).
 // ---------------------------------------------------------------------------
@@ -1222,7 +1353,14 @@ function main(argv) {
     const files = force ? rest.filter((_, i) => i !== forceIdx) : rest;
     const forceRels = force ? files.map((f) => path.relative(repoRoot, path.resolve(repoRoot, f)).replace(/\\/g, '/')) : [];
     const results = runApply(repoRoot, files, { force: forceRels });
-    process.stdout.write(JSON.stringify({ ok: true, applied: results }, null, 2) + '\n');
+    // AGENTS.md: "run node .asd/sync.js --apply <file...> after editing
+    // canon" - recomputing release-manifest.json's hash ledgers is now part
+    // of that same step, not a separate manual script (see comment above
+    // recomputeAndWriteHashLedgers). Applies whole-repo, independent of which
+    // targets were requested, since both ledgers are pure functions of
+    // current on-disk canon content.
+    const hashLedger = recomputeAndWriteHashLedgers(repoRoot);
+    process.stdout.write(JSON.stringify({ ok: true, applied: results, hashLedger }, null, 2) + '\n');
     return 0;
   }
   process.stdout.write('usage: node .asd/sync.js --check | --apply <file...> [--force]\n');
@@ -1242,6 +1380,10 @@ module.exports = {
   digestTag,
   readNormalized,
   writeNormalized,
+  posixJoin,
+  walkDir,
+  expandManagedPath,
+  hashIfFile,
   isSafeRelPath,
   isSymlink,
   parseCanonicalFrontmatter,
@@ -1272,6 +1414,10 @@ module.exports = {
   buildSyncPlan,
   runCheck,
   runApply,
+  computeCanonHashes,
+  computeUpstreamHashes,
+  rebuildHashMap,
+  recomputeAndWriteHashLedgers,
   CLAUDE_MD_BLOCK_BODY_FALLBACK,
   readClaudeMdBlockBody,
   isInitializedConsumerProject,

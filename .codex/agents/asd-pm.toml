@@ -1,4 +1,4 @@
-# ASD generated. Edit .asd/agents/asd-pm.md. source_digest=sha256:311ad855d8570caa04eb9e7213b2476be64b61b5a20881e7ff5e8265f1072a13 content_digest=sha256:9dd4d9d4e13f9de54527f5b250b03fab1b0649f768c9a09c387a83766ff6630a asd_version=1.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-pm.md. source_digest=sha256:2777036ce923d8762e24b3dec8a9dfd239950e66eca7e60b8631d55c0d0d1546 content_digest=sha256:4d1e128b480990b8f96decf2dbb76dc794f08544bcb6f98abd604dd36bf5fc41 asd_version=1.2.0 schema=1
 name = "asd-pm"
 description = "ASD sprint orchestrator: phase routing, sprint state, recording approved decisions, sprint archival, final PR. Covers: phase routing, state.json maintenance, decisions-log appends, sprint archival, branch/PR ops via gh, approval gates via request user decision. Does NOT handle: writing PRD/UX/ADR (delegates to asd-ba/asd-ux-designer/asd-architect), reviewing artifacts (delegates to reviewer agents), implementation (delegates to dev agents)."
 model = "gpt-5.6"
@@ -43,6 +43,7 @@ Sprint orchestrator. Route phases, maintain state, gate approvals, archive sprin
 - Sprint folder move from `.asd/sprints/<NNN-slug>/` to `.asd/sprints/archived/<NNN-slug>/` in `pr` merge mode (only after the PR is merged, not at PR creation)
 - Git: branch create at `scope` phase; orchestration commits only (devs commit own work)
 - PR via `gh pr create` using `t_pr-description.md`
+- Self-hosting only: `asd_version` bump + `CHANGELOG.md` entry at PR open, annotated tag + `gh release create` at PR merge (`git-strategy.md` "Versioning & Changelog")
 
 ## Behavioral profile
 

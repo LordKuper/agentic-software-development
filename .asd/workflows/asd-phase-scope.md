@@ -21,7 +21,7 @@ Orchestration body for the `asd-phase-scope` skill. Operation-mapping to host to
 3. Count existing sprints (`.asd/sprints/*/` + `.asd/sprints/archived/*/`) → NNN = max + 1, zero-padded
 4. Derive slug from raw scope (kebab-case, ≤30 chars) — provisional, may change after refinement
 5. Construct sprint id `<NNN>-<slug>` + branch from `git.branch_pattern`
-6. Run command to check out `git.base_branch`, pull (optional, confirm with user), create branch
+6. Run command: `git fetch origin`, check out `git.base_branch`, fast-forward to `origin/<base_branch>` (diverged → FAILED, ask user to resolve), re-verify working tree clean, create branch (`git-strategy.md` "Branch")
 7. Create folder `.asd/sprints/<NNN-slug>/`
 8. Delegate to agent `asd-pm` with payload:
    - **raw scope text** (draft, not final); sprint id, branch

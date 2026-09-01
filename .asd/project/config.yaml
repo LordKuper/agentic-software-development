@@ -36,16 +36,15 @@ review:
   # External review via the other provider's CLI (Codex CLI wrapped in a Claude
   # session, Claude CLI wrapped in a Codex session), performed in parallel with
   # internal reviewers. Values: enabled | disabled
-  # Disabled until wrapped-CLI availability is confirmed in this environment.
-  external_review: disabled
+  # Wrapped-CLI availability confirmed: codex-cli 0.150.1 on PATH.
+  external_review: enabled
 
   # Maximum number of review iterations per severity level.
   # On iteration N, only issues of severity X or higher are considered.
-  # Defaults below mean: trivial issues get one shot, critical issues loop up to ten times.
   iterations_low: 1
   iterations_medium: 1
   iterations_high: 2
-  iterations_critical: 10
+  iterations_critical: 3
 
 project:
   # Subsystem decomposition. When enabled, persistent design docs are organized per subsystem.
@@ -88,4 +87,4 @@ git:
   gh_enabled: true
 
   # Automatically open PR after Definition of Done is met and user confirms.
-  auto_pr: false
+  auto_pr: true
