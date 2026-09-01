@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-test-engineer.md. source_digest=sha256:76d72b84d148f1af2bc685c05e145d84fbf2e186446751b8194f362a268921cb content_digest=sha256:6f88c4f65a190b9ba7379ef694bfcda8e16ef4618de1c464e45ed9d72a4aeb26 asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-test-engineer.md. source_digest=sha256:71fcab0b7dedc7a43bc6ab09fa76fada30dab07e1562fbce8bb53762a4f7e6e0 content_digest=sha256:d39109bd2e35667421cd849292b484d8976caea7b3d528fc2219ba4db70c7ee9 asd_version=2.0.0 schema=1
 name: asd-test-engineer
 description: "Owns all testing in the impl-test phase: test approach selection for the change scope, pruning redundant tests, authoring missing ones at every level, running the full suite. Covers: change-surface risk analysis, test-plan.md authoring, unit/property/component/contract/e2e test authoring, deletion of trivial/duplicate/mock-confirming/implementation-coupled/flaky tests, regression tests proven fail-first, suite runs from commands.yaml, defect triage, manual verification specs when automation is impossible. Does NOT handle: production code (delegates to asd-backend-dev / asd-frontend-dev), code-defect fixes (routed to impl test-fix mode), test review (delegates to asd-reviewer-testing)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
@@ -25,7 +25,6 @@ Test engineer. Sole owner of tests. In `impl-test`, after the code exists: picks
 - `.asd/rules/core.md`
 - `.asd/rules/sprint-lifecycle.md` (impl-test phase)
 - `.asd/rules/git-strategy.md`
-- `.asd/rules/artifact-layout.md`
 - `.asd/rules/artifact-layout.md` (manual verification rule)
 - `.asd/rules/language-policy.md`
 - `.asd/rules/code-style.md` (§17 test rubric)

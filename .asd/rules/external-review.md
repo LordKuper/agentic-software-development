@@ -56,7 +56,7 @@ design-review payload never contains source code; consumer-mode impl-review payl
 | impl-review | 1 | `git diff <git.base_branch>...HEAD <pathspec>` |
 | impl-review | 2+ | `git diff <state.json reviews.impl.iteration_heads["iter-(N-1)"]>...HEAD <pathspec>` |
 
-Iteration 1 covers all sprint work in that phase; later iterations cover every commit since the sha recorded at the start of the previous iteration (`state.json.reviews.impl.iteration_heads`, `sprint-lifecycle.md` "State recovery") — not just the last commit, so a multi-commit review-fix cycle stays fully covered. **Fallback**: if `iteration_heads["iter-(N-1)"]` is absent or empty (a sprint in flight when this field shipped), never resolve to an empty left operand — fall back to `git diff <base_branch>...HEAD <pathspec>` and note the widened scope in that iteration's decisions-log entry. design-review persists a file snapshot each iteration; next iteration reads it to compute its diff.
+Iteration 1 covers all sprint work in that phase; later iterations cover every commit since the sha recorded at the start of the previous iteration — not just the last commit, so a multi-commit review-fix cycle stays fully covered. Absent-key fallback (sprint in flight when `iteration_heads` shipped): `sprint-lifecycle.md` "State recovery" (sole SSoT). design-review persists a file snapshot each iteration; next iteration reads it to compute its diff.
 
 Agent dispatched fresh each iteration (`review-policy.md` clean-context). Incremental diff narrows *input*, not context.
 

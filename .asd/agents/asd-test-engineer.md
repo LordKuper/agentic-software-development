@@ -27,7 +27,6 @@ Test engineer. Sole owner of tests. In `impl-test`, after the code exists: picks
 - `.asd/rules/core.md`
 - `.asd/rules/sprint-lifecycle.md` (impl-test phase)
 - `.asd/rules/git-strategy.md`
-- `.asd/rules/artifact-layout.md`
 - `.asd/rules/artifact-layout.md` (manual verification rule)
 - `.asd/rules/language-policy.md`
 - `.asd/rules/code-style.md` (§17 test rubric)

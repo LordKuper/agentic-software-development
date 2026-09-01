@@ -195,7 +195,7 @@ The folder move is gated on DoD + PR creation, not on merge; the `phase=done` te
 
 **Open mode's DoD verification is conditional on two checks, neither a `checkpoints.md` gate** (`asd-phase-pr.md` step 4 — internal verification only, gates PR opening, never a user-facing pause):
 - **Tests/lint re-run**: content-scoped, not HEAD-sha-equality (HEAD always moves past the recorded sha — the recording commit itself, plus later phase-transition commits, guarantee it). Skipped when `git diff --quiet <recorded HEAD>...HEAD -- <code/test/stub pathspec, excluding .asd/sprints/** and .asd/project/**>` is empty, where `<recorded HEAD>` is the sha in test-plan.md's `Suite run` section (the commit impl-test step 7 verified the suite at) — impl-review makes no code/test/stub changes per its own workflow contract, so it never dirties this diff; re-run only when the diff is non-empty (e.g. a fix commit landed since).
-- **Reviews-green source**: read `state.json.reviews.impl.verdicts["iter-NN"]` for the highest iteration first; parse review files under `<sprint>/reviews/impl/iter-NN/` only as an explicit fallback when `state.json` data is missing or stale. A `"skipped: <predicate>"` value (diff-scoped fan-out, `review.scoped_fan_out`) satisfies that reviewer's requirement same as `APPROVE`; only `CONCERNS`/`FAIL`/`null`/absent blocks.
+- **Reviews-green source**: read `state.json.reviews.impl.verdicts["iter-NN"]` for the highest iteration first; parse review files under `<sprint>/reviews/impl/iter-NN/` only as an explicit fallback when `state.json` data is missing or stale. Satisfied-vs-blocking semantics for each entry: "State recovery" below.
 
 ## Signal vocabulary
 
