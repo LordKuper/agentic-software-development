@@ -88,44 +88,15 @@ const die = (m) => { process.stderr.write('asd-update: ' + m + '\n'); process.ex
 // (walked recursively). Every emitted relPath uses '/' separators regardless
 // of host OS, so it matches consistently between the local root and the
 // fetched-upstream root and can key the upstream_hashes ledger stably.
+//
+// posixJoin/walkDir/expandManagedPath/hashIfFile live in sync.js (this
+// module already requires it, and sync.js's own release-manifest.json
+// hash-ledger recompute needs them too - defining them there and aliasing
+// here keeps one implementation instead of two, without sync.js requiring
+// this module back).
 // ---------------------------------------------------------------------------
 
-function posixJoin(a, b) {
-  return a ? `${a}/${b}` : b;
-}
-
-function walkDir(absDir, relDir, out) {
-  for (const entry of fs.readdirSync(absDir, { withFileTypes: true })) {
-    const rel = posixJoin(relDir, entry.name);
-    const abs = path.join(absDir, entry.name);
-    if (entry.isSymbolicLink()) {
-      out.push(rel); // leaf; classify() flags it foreign via the symlink check
-      continue;
-    }
-    if (entry.isDirectory()) {
-      walkDir(abs, rel, out);
-      continue;
-    }
-    if (entry.isFile()) out.push(rel);
-  }
-}
-
-// Expands one manifest entry against one root directory. Returns [] if the
-// entry does not exist under that particular root (normal for e.g. an
-// "add" - the path exists only upstream, not locally yet).
-function expandManagedPath(rootDir, relPath) {
-  const abs = path.join(rootDir, relPath);
-  if (!fs.existsSync(abs)) return [];
-  if (sync.isSymlink(abs)) return [relPath];
-  const stat = fs.statSync(abs);
-  if (stat.isFile()) return [relPath];
-  if (stat.isDirectory()) {
-    const out = [];
-    walkDir(abs, relPath, out);
-    return out;
-  }
-  return [];
-}
+const { posixJoin, walkDir, expandManagedPath, hashIfFile } = sync;
 
 // Union of every real file under every managed_paths entry, expanded against
 // BOTH roots (old local checkout, freshly fetched upstream) so paths that
@@ -172,13 +143,6 @@ function checkCaseCollisions(relPaths) {
 // Classification: hash local + upstream, look up the old recorded hash,
 // delegate the actual decision to sync.js's classifyUpdateItem.
 // ---------------------------------------------------------------------------
-
-function hashIfFile(absPath) {
-  if (!fs.existsSync(absPath)) return null;
-  if (sync.isSymlink(absPath)) return null;
-  if (!fs.statSync(absPath).isFile()) return null;
-  return sync.sha256Hex(sync.readNormalized(absPath));
-}
 
 function classifyAll(repoRoot, sourceRoot, oldManifest, newManifest, relPaths) {
   const oldHashes = oldManifest.upstream_hashes || {};
