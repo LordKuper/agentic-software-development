@@ -57,7 +57,6 @@ Reviewer:
 ## Review rubric
 
 - Every AC-N has a corresponding code path
-- Every AC-N has at least one test asserting it (defer test quality to asd-reviewer-testing; just check presence)
 - No AC implemented partially without explicit follow-up (in stubs.md or migration entry)
 - No code change without traceable AC or plan Task
 

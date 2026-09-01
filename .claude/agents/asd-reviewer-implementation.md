@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-implementation.md. source_digest=sha256:6679d8bdcbf77de2cd8cd74a3cba3e6b88439be299a3455a2459e948ad9e6ab5 content_digest=sha256:38cdb8d6a76ea26ee4671551d759f179381d223281943d8590c2fa48feff073d asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-implementation.md. source_digest=sha256:ef6d07bb35c5a345328af8df83d1595ef568390fb0d219839762b3081399aa12 content_digest=sha256:731940bf0c9c7b7073d9d64d3780cd83d7e772277119d87456005ddb834b08c9 asd_version=2.0.0 schema=1
 name: asd-reviewer-implementation
 description: "Impl-review verification that code covers every PRD acceptance criterion completely and correctly. Covers: PRD acceptance criteria coverage trace, requirement-to-code mapping, missing or partial implementations. Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), test coverage (delegates to asd-reviewer-testing), ui/a11y (delegates to asd-reviewer-ui), over-engineering (delegates to asd-reviewer-simplification), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -56,7 +56,6 @@ Reviewer:
 ## Review rubric
 
 - Every AC-N has a corresponding code path
-- Every AC-N has at least one test asserting it (defer test quality to asd-reviewer-testing; just check presence)
 - No AC implemented partially without explicit follow-up (in stubs.md or migration entry)
 - No code change without traceable AC or plan Task
 
