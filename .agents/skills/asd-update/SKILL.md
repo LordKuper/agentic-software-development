@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-update/SKILL.md. source_digest=sha256:0a3881a18e7995f8bea644f5796292e905e0abf0c022d8c2d209fec0e3ab3580 content_digest=sha256:813c9da1b4f242e169cfcfa8e00ca6333725aaae0a6d6dc2bc60fb66f2037cf2 asd_version=1.1.0 schema=1
+# ASD generated. Edit .asd/skills/asd-update/SKILL.md. source_digest=sha256:c0bb71407378434f8bc17b6b8a9c23686f98e2e74cdccf1cd6de18eb29100c8d content_digest=sha256:1a3fa01c56706a79dac4d6fe5221d5c76734098f621d30c9170a64d8a11fdf30 asd_version=1.2.0 schema=1
 name: asd-update
-description: "Updates the ASD framework infrastructure (.asd/rules, .asd/templates, ASD agents/skills/hooks) in a consumer project to the latest version by fetching them from the configured ASD repo's main branch, replacing only framework-managed paths and never touching consumer-owned config, sprints, design docs, or custom skills/agents/hooks. Use when the user runs /asd-update or asks to update, upgrade, or pull the latest ASD framework / workflow version."
+description: "Updates the ASD framework infrastructure (.asd/rules, .asd/templates, ASD agents/skills/hooks) in a consumer project to the latest version by fetching them from the configured ASD repo's main branch, replacing only framework-managed paths and never touching consumer-owned config, sprints, persistent docs, or custom skills/agents/hooks. Use when the user runs /asd-update or asks to update, upgrade, or pull the latest ASD framework / workflow version."
 ---
 
 Operation mapping: see `.asd/rules/providers.md`.
@@ -18,7 +18,7 @@ Read `self_hosting` from `.asd/project/config.yaml` first (`sync.js`'s `isSelfHo
 
 Managed set = SSoT in `.asd/release-manifest.json`'s `managed_paths` (canonical `.asd/` trees + `sync.js` itself, walked recursively file-by-file) — replacing the old wholesale tree-delete approach with a per-file state machine (`add | update | delete | conflict | conflict-foreign | keep-local-modified | noop`, driven by `classifyUpdateItem` in `.asd/sync.js`). A file whose local hash still matches the last-fetched release is safe to update or delete; a file that diverged is a **conflict** and is never touched without explicit confirmation.
 
-Never touched: `.asd/project/**`, `.asd/sprints/**`, `design/**`, `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json`, any non-ASD skill/agent/hook, anything outside `managed_paths`.
+Never touched: `.asd/project/**`, `.asd/sprints/**`, `docs/**`, `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json`, any non-ASD skill/agent/hook, anything outside `managed_paths`.
 
 ## Run
 

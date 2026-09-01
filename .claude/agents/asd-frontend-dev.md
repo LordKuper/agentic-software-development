@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-frontend-dev.md. source_digest=sha256:48996a1b979d0065b9294aa0f9303f0a1fd05386a44e17911646066103b928bb content_digest=sha256:bc6fad33ed542173e4d897c6f54960ffc3f3f5b12e1725b66660e2afacb0a09a asd_version=1.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-frontend-dev.md. source_digest=sha256:fe48736e6aa497e8cb5c0f8cd5e047c91da8f1f020a78158b6aa24f117084322 content_digest=sha256:d5a1a9d02970d0dd1aebb5157850217f7f75a16395ece197b82e828a3a35f890 asd_version=1.2.0 schema=1
 name: asd-frontend-dev
 description: "UI code, client-side logic, components. Covers: frontend code authoring per plan tasks, component implementation using DESIGN.md tokens, fixing impl-review findings and impl-test defects, running lint/build/dev commands from commands.yaml, registering TODO stubs. Does NOT handle: backend code (delegates to asd-backend-dev), any test authoring or test runs — unit, integration, e2e (delegates to asd-test-engineer in the impl-test phase), design system token edits (delegates to asd-ux-designer), accessibility requirements (read-only consumer of accessibility.html), code review (delegates to reviewer agents)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
@@ -35,12 +35,12 @@ Frontend developer. Implements UI code and components per plan tasks; fixes impl
 
 - `<sprint>/plan.md`
 - `<sprint>/reviews/impl/iter-NN/` (review-fix mode) or `<sprint>/test-plan.md` `Defects` (test-fix mode)
-- `design/product/requirements/<subsystem>.html`
-- `design/ux/<subsystem>.html` (ux-spec with flows + mockups)
-- `design/ux/DESIGN.md` (tokens, components)
-- `design/ux/design-system.html` (visual reference)
-- `design/ux/accessibility.html` (a11y baseline)
-- `design/architecture/api/<subsystem>.html`
+- `docs/product/requirements/<subsystem>.html`
+- `docs/ux/<subsystem>.html` (ux-spec with flows + mockups)
+- `docs/ux/DESIGN.md` (tokens, components)
+- `docs/ux/design-system.html` (visual reference)
+- `docs/ux/accessibility.html` (a11y baseline)
+- `docs/architecture/api/<subsystem>.html`
 - `.asd/project/commands.yaml`
 
 ## Outputs
@@ -101,6 +101,6 @@ Implementer:
 ## Tech reference precondition
 
 Before implementing with any library, framework, runtime, or external service:
-- Verify `design/architecture/tech-reference/<tech>-<version>.md` exists
+- Verify `docs/architecture/tech-reference/<tech>-<version>.md` exists
 - If missing → emit `FAILED — tech-reference missing for <tech>@<version>` and request the doc from asd-architect
 - Never proceed without a verified reference

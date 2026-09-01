@@ -141,11 +141,11 @@ Owner: `backend-dev`. Satisfies AC-8 (and the `AGENTS.md` hard rule that every w
 ### Task 9: Regenerate the provider views
 Owner: `backend-dev`. Satisfies AC-5. Must run after every canon edit in Tasks 1–8. Material risk for impl-test: the obvious invocation is a no-op, and an accidental edit under `.claude/` poisons a `json-merge` target.
 
-- [ ] Run `node .asd/sync.js --check` and capture every target whose status is not `current`
-- [ ] Run `node .asd/sync.js --apply <file...>` **passing those targets explicitly** (or every touched canonical agent/skill file). A bare `node .asd/sync.js --apply` with no file arguments writes zero targets — it only recomputes the hash ledgers (audit G-9), so it is useless as a regeneration step
-- [ ] Confirm the regenerated set covers the expected ~40 views: `.claude/agents/*.md` and `.codex/agents/*.toml` (14 each), `.claude/skills/*/SKILL.md` and `.agents/skills/*/SKILL.md` (6 each)
-- [ ] Never hand-edit anything under `.claude/`, `.codex/`, or `.agents/`. In particular, `.claude/settings.json` is a `json-merge` target holding `Bash(designmd:*)` / `@google/design.md` permission strings — those are package and CLI names, never paths; editing them flips the file to `modified-foreign` (audit R-14)
-- [ ] Record in the task notes that `.asd/rules`, `.asd/templates`, and `.asd/workflows` have **no sync target at all** (audit G-10): a green `--check` proves nothing about those ~24 files
+- [x] Run `node .asd/sync.js --check` and capture every target whose status is not `current`
+- [x] Run `node .asd/sync.js --apply <file...>` **passing those targets explicitly** (or every touched canonical agent/skill file). A bare `node .asd/sync.js --apply` with no file arguments writes zero targets — it only recomputes the hash ledgers (audit G-9), so it is useless as a regeneration step
+- [x] Confirm the regenerated set covers the expected ~40 views: `.claude/agents/*.md` and `.codex/agents/*.toml` (14 each), `.claude/skills/*/SKILL.md` and `.agents/skills/*/SKILL.md` (6 each)
+- [x] Never hand-edit anything under `.claude/`, `.codex/`, or `.agents/`. In particular, `.claude/settings.json` is a `json-merge` target holding `Bash(designmd:*)` / `@google/design.md` permission strings — those are package and CLI names, never paths; editing them flips the file to `modified-foreign` (audit R-14)
+- [x] Record in the task notes that `.asd/rules`, `.asd/templates`, and `.asd/workflows` have **no sync target at all** (audit G-10): a green `--check` proves nothing about those ~24 files
 
 ### Task 10: Recompute the release-manifest hash ledgers
 Owner: `backend-dev`. Satisfies AC-5. Runs after every per-file apply in Task 9. Material risk for impl-test: skipping this is invisible in this repo and only manifests as a broken `/asd-update` in a consumer.

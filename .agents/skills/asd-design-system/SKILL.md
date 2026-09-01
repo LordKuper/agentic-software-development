@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-design-system/SKILL.md. source_digest=sha256:f96a2088bc71e08de35ba806c9d2cd001bb6ef88901a2da23b91912503e787a8 content_digest=sha256:f5ef540165cef92cece5b86d1ced78c0df711c75ecb25ccdeb64040b937f291a asd_version=1.1.0 schema=1
+# ASD generated. Edit .asd/skills/asd-design-system/SKILL.md. source_digest=sha256:3829c9b611d1c9af20d6bdeaccf93ac775c480f9e9067bf1ec69e2fe1aaee0e1 content_digest=sha256:56f9d10af8e0dadfa65918f70ccb6f88c970216cfa1b921027129b8580e77edc asd_version=1.2.0 schema=1
 name: asd-design-system
-description: "Forms or edits the project design system (design/ux/DESIGN.md, design-system.html, accessibility.html) via asd-ux-designer, branching by silent detection into one of three flows (greenfield / constraints / brownfield extraction). Fetches the Google Labs DESIGN.md spec, lints tokens, regenerates design-system.html previews, and authors the accessibility baseline. Use when the user runs /asd-design-system, when asd-init or asd-phase-design detects missing DESIGN.md/design-system.html/accessibility.html and suggests this skill, or when the user asks to define, draft, refine, edit, augment, or reverse-engineer the project design system, design tokens, or accessibility baseline."
+description: "Forms or edits the project design system (docs/ux/DESIGN.md, design-system.html, accessibility.html) via asd-ux-designer, branching by silent detection into one of three flows (greenfield / constraints / brownfield extraction). Fetches the Google Labs DESIGN.md spec, lints tokens, regenerates design-system.html previews, and authors the accessibility baseline. Use when the user runs /asd-design-system, when asd-init or asd-phase-design detects missing DESIGN.md/design-system.html/accessibility.html and suggests this skill, or when the user asks to define, draft, refine, edit, augment, or reverse-engineer the project design system, design tokens, or accessibility baseline."
 ---
 
 Operation mapping: see `.asd/rules/providers.md`.
@@ -10,8 +10,8 @@ Operation mapping: see `.asd/rules/providers.md`.
 
 ## Preconditions
 - `.asd/project/config.yaml` exists (run `/asd-init` first)
-- `design/product/concept.html` exists (run `/asd-concept` first; concept seeds visual direction)
-- `design/architecture/stack.html` exists (run `/asd-stack` first; stack constrains UI platform — web/native/cli)
+- `docs/product/concept.html` exists (run `/asd-concept` first; concept seeds visual direction)
+- `docs/architecture/stack.html` exists (run `/asd-stack` first; stack constrains UI platform — web/native/cli)
 - No active sprint required
 
 ## Operations used
@@ -23,7 +23,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 ## Phase 1 — silent detection (NO asking)
 
 Scan in order:
-1. `design/ux/DESIGN.md` exists, non-empty → mode = **edit**, skip to Edit-mode flow
+1. `docs/ux/DESIGN.md` exists, non-empty → mode = **edit**, skip to Edit-mode flow
 2. CSS / SCSS / theme files / Tailwind config / styled-components / design-system package detected → brownfield candidate (default variant C)
 3. No code, no styles → greenfield candidate (no default)
 4. Continue to Phase 2
@@ -89,14 +89,14 @@ After all DESIGN.md sections approved:
 
 ## Phase 5 — design-system.html regeneration
 
-- Designer renders `design/ux/design-system.html` per `t_design-system.html` from approved DESIGN.md
+- Designer renders `docs/ux/design-system.html` per `t_design-system.html` from approved DESIGN.md
 - Live previews: color swatches with hex, typography samples, spacing scale, component previews using applied tokens
 - Request user decision before write — labels/descriptions in `language.chat`
 - Wrap in `t_html-shell.html` (DOC_TYPE=Design-system, SUBSYSTEM=project)
 
 ## Phase 6 — accessibility baseline
 
-- Designer authors `design/ux/accessibility.html` per `t_accessibility.html`
+- Designer authors `docs/ux/accessibility.html` per `t_accessibility.html`
 - Sections: visual (contrast, color-blind, motion), motor (target size, keyboard), cognitive (language, predictability), auditory (captions, transcripts), platform (focus order, ARIA, screen reader)
 - Section-by-section request user decision lock-in — labels/descriptions in `language.chat`
 - Wrap in `t_html-shell.html` (DOC_TYPE=Accessibility, SUBSYSTEM=project)
@@ -105,7 +105,7 @@ After all DESIGN.md sections approved:
 
 - Designer shows full assembled design system + accessibility summary
 - Request user decision — labels/descriptions in `language.chat`: **A) Approve, write all three files / B) Revise specific section** (on B re-enter Phase 4 or Phase 6)
-- on A: translate to `language.docs`, write `design/ux/DESIGN.md`, `design/ux/design-system.html`, `design/ux/accessibility.html`
+- on A: translate to `language.docs`, write `docs/ux/DESIGN.md`, `docs/ux/design-system.html`, `docs/ux/accessibility.html`
 - emit COMPLETED
 
 ## Phase 8 — handoff
@@ -137,9 +137,9 @@ After all DESIGN.md sections approved:
 - Every component listed in DESIGN.md MUST have a live preview in design-system.html
 
 ## Artefacts produced
-- `design/ux/DESIGN.md` (created, edited, or reverse-engineered)
-- `design/ux/design-system.html` (regenerated from DESIGN.md)
-- `design/ux/accessibility.html` (created or edited)
+- `docs/ux/DESIGN.md` (created, edited, or reverse-engineered)
+- `docs/ux/design-system.html` (regenerated from DESIGN.md)
+- `docs/ux/accessibility.html` (created or edited)
 - decisions-log entry
 
 ## Agents dispatched

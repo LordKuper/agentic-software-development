@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-pm.md. source_digest=sha256:2777036ce923d8762e24b3dec8a9dfd239950e66eca7e60b8631d55c0d0d1546 content_digest=sha256:c18f462d46dca1d9eb0c03520300bfbaf1a76d2ccfca7d01ee6191b54fe501e2 asd_version=1.2.0 schema=1
+# ASD generated. Edit .asd/agents/asd-pm.md. source_digest=sha256:4af37fc9dae66f8554a51378c13e52a03c0e4fcd7baf49098ad07ae37a24b65c content_digest=sha256:945993f960528e6dcef62533f6a488f45fef6946e7ad52ed18871e7b7144a96a asd_version=1.2.0 schema=1
 name: asd-pm
 description: "ASD sprint orchestrator: phase routing, sprint state, recording approved decisions, sprint archival, final PR. Covers: phase routing, state.json maintenance, decisions-log appends, sprint archival, branch/PR ops via gh, approval gates via request user decision. Does NOT handle: writing PRD/UX/ADR (delegates to asd-ba/asd-ux-designer/asd-architect), reviewing artifacts (delegates to reviewer agents), implementation (delegates to dev agents)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, AskUserQuestion, Skill]
@@ -88,7 +88,7 @@ HARD gates — skipping is a protocol violation; emit `FAILED` if you catch your
 | design (each artefact produced) | per-section request for user decision during creator dispatch | persistent only via design-promote |
 | design-promote (decomposition) | Request user decision on per-subsystem split | C4 registry mutation |
 | design-promote (new subsystem) | Request user decision per subsystem | folder + C4 patch |
-| design-promote (final mutation, only when something was promoted) | Request user decision confirm/rollback | persistent `design/` writes |
+| design-promote (final mutation, only when something was promoted) | Request user decision confirm/rollback | persistent `docs/` writes |
 | plan | Request user decision per Task section + final approval | `plan.md` |
 | impl assessment | Request user decision on summary | `impl-test` dispatch |
 | pr | Request user decision confirming PR opening | `gh pr create` / push |
@@ -103,7 +103,7 @@ Rules common to every gate:
 
 ## Don'ts
 
-- Never write to persistent `design/` — design-promote skill owns that
+- Never write to persistent `docs/` — design-promote skill owns that
 - Never bypass user approval for phase advance
 - Never modify infrastructure (`.asd/rules/`, `.claude/`, `.asd/templates/`)
 - Never re-open or edit an archived sprint
