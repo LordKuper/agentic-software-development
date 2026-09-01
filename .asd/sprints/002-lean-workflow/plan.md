@@ -230,13 +230,13 @@ Verdicts: **P-3** (covering **P-4**, **P-5**), gap **G-11**, risk **R-13**. AC: 
 Affected canonical files: `.asd/workflows/asd-phase-design.md` (step 2), `.asd/workflows/asd-phase-design-review.md` (step 2), `.asd/workflows/asd-phase-design-promote.md` (step 2), `.asd/rules/sprint-lifecycle.md` (no-op phase rule, no-op table, line 77), `.asd/rules/checkpoints.md` (precondition chain), `.asd/agents/asd-pm.md` (No-op exception), the three `.asd/skills/asd-phase-{design,design-review,design-promote}/SKILL.md` dispatch triggers, `README.md` phase table.
 Material risk: audit R-13 — this changes an observable phase sequence that three consumers read: `nextPhase()` in `session-start.js`, the `asd-sprint` resume menu, and the rollback-reset table. **`PHASE_CHAIN` and `nextPhase()` are not edited**, so per G-13 no `tests/run.js` case is required or possible; verification is inspection. Phase count stays at ten and no gate is removed — a no-op phase has none by rule.
 
-- [ ] At design entry, when all four `documents.*` flags are false, perform **one** deterministic check instead of three separate PM dispatches
-- [ ] Gap G-11 resolution: the collapsed write sets **`phase = "design-promote"`** — the last collapsed phase — so `PHASE_CHAIN[idx+1]` mechanically yields `plan` and a resumed session cannot re-enter the collapsed block
-- [ ] The same write puts all three names in `skipped_phases: ["design","design-review","design-promote"]` and emits `NEXT: plan`
-- [ ] `sprint-lifecycle.md` line 77: extend the one-phase-at-a-time contract with the explicit multi-phase case
-- [ ] Emit exactly **one** decisions-log line for the collapse, not three
-- [ ] Verify the rollback-reset table still behaves correctly for a sprint that never individually entered the three phases
-- [ ] `checkpoints.md` precondition chain, `asd-pm.md` No-op exception, the three SKILL.md triggers, `README.md` phase table: align; run `sync.js --apply`
+- [x] At design entry, when all four `documents.*` flags are false, perform **one** deterministic check instead of three separate PM dispatches
+- [x] Gap G-11 resolution: the collapsed write sets **`phase = "design-promote"`** — the last collapsed phase — so `PHASE_CHAIN[idx+1]` mechanically yields `plan` and a resumed session cannot re-enter the collapsed block
+- [x] The same write puts all three names in `skipped_phases: ["design","design-review","design-promote"]` and emits `NEXT: plan`
+- [x] `sprint-lifecycle.md` line 77: extend the one-phase-at-a-time contract with the explicit multi-phase case
+- [x] Emit exactly **one** decisions-log line for the collapse, not three
+- [x] Verify the rollback-reset table still behaves correctly for a sprint that never individually entered the three phases (verified — `reviews.design.iteration`/`reviews.impl.iteration` reset triggers already key on phase names `design`/`design-review`/`design-promote` in `sprint-lifecycle.md`'s "Review iteration counters" table regardless of whether those phases were individually entered or collapsed; no counter is ever incremented for a collapsed sprint since the incrementing step lives inside the never-dispatched design-review workflow, so it correctly stays `0`)
+- [x] `checkpoints.md` precondition chain, `asd-pm.md` No-op exception, the three SKILL.md triggers, `README.md` phase table: align; run `sync.js --apply`
 
 ### Task 15: Phase workflows write state.json inline for non-gate writes
 
