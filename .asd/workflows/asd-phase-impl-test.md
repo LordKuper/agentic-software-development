@@ -25,19 +25,23 @@ No user gate on a green suite, and none on routing defects back to impl.
 
 ## Workflow
 
-1. Read `.asd/project/config.yaml` (`language.chat`, `language.docs`, `backward_compat`, `self_hosting`), `<sprint>/state.json` → write `phase=impl-test` inline (mechanical, no gate)
-2. **Change surface** — run command for `git diff <git.base_branch>...HEAD --stat <pathspec>` plus file list, using the same `<pathspec>` as impl-review's self-hosting-aware scoping (`.asd/rules/external-review.md` "`<pathspec>` for impl-review" — consumer default excludes `.asd/**`/`docs/**`; `self_hosting: enabled` includes the whole repo minus `.asd/project/**`/`.asd/sprints/**`/generated views). Add the existing test files that cover those production files (search repo by test naming convention). This set is the review scope for the whole phase
-3. **Strategy pass** — delegate to agent `asd-test-engineer` with payload: change surface, `plan.md`, AC list (PRD AC-N if `documents.prd` enabled, else `sprint.md`'s own AC-N — `sprint-lifecycle.md` "Optional documents"), API contract fold target(s) + ux-spec paths (if present), `commands.yaml`, custom rules, `t_test-plan.md`, `language.docs`. Instruction:
+1. Read `.asd/project/config.yaml` (`language.chat`, `language.docs`, `backward_compat`, `self_hosting`), `<sprint>/state.json` → write `phase=impl-test` inline (mechanical, no gate). Check `<sprint>/test-plan.md` for an `Entry log` with a prior row: none → this is **entry 1** (first entry this sprint); a prior row exists → this is a **re-entry**, and its `HEAD analysed` is `<prior-sha>`
+2. **Change surface**:
+   - **Entry 1**: run command for `git diff <git.base_branch>...HEAD --stat <pathspec>` plus file list, using the same `<pathspec>` as impl-review's self-hosting-aware scoping (`.asd/rules/external-review.md` "`<pathspec>` for impl-review" — consumer default excludes `.asd/**`/`docs/**`; `self_hosting: enabled` includes the whole repo minus `.asd/project/**`/`.asd/sprints/**`/generated views). This is the **full change surface**
+   - **Re-entry**: run command for `git diff <prior-sha>...HEAD --stat <pathspec>` (same `<pathspec>`) — the review-fix or test-fix commits made since the prior entry. This **delta** is the scope for steps 3 and 6 only; it never substitutes for the suite gate (step 7), which stays full-repo
+   - Either way: add the existing test files that cover the resulting file set (search repo by test naming convention)
+3. **Strategy pass** — delegate to agent `asd-test-engineer` with payload: change surface (full on entry 1, delta on re-entry), the prior `test-plan.md` (re-entry only, for context — never rewritten from scratch), `plan.md`, AC list (PRD AC-N if `documents.prd` enabled, else `sprint.md`'s own AC-N — `sprint-lifecycle.md` "Optional documents"), API contract fold target(s) + ux-spec paths (if present), `commands.yaml`, custom rules, `t_test-plan.md`, `language.docs`. Instruction:
    - test selection happens **now**, after the implementation exists — never speculatively from the plan
-   - for each change, name the material risk and pick the cheapest reliable check: static/architecture check → focused unit or property test → component or contract test at a boundary → essential e2e journey only where a full journey is the risk
-   - classify every existing covering test: keep / remove (trivial, duplicate, mock-confirming, implementation-coupled, flaky) / adjust
+   - **re-entry**: analyse only the delta — the material risk introduced or changed by the fix commits; leave prior `Risk → check decisions` rows untouched unless a fix actually changed that risk's behaviour, in which case update that row in place
+   - for each change in scope, name the material risk and pick the cheapest reliable check: static/architecture check → focused unit or property test → component or contract test at a boundary → essential e2e journey only where a full journey is the risk
+   - classify every existing covering test **in scope**: keep / remove (trivial, duplicate, mock-confirming, implementation-coupled, flaky) / adjust
    - record `none` decisions (no behaviour added, or an existing check already covers the risk) with the reason — silence is not a decision
    - coverage numbers may be used to find untested code, never as a target
    - specify `Manual verification` only when automation is impossible (visual UI, third-party live integration, ux feel) — `test-plan.md` is its single home, never duplicated in a review file
-   - write `<sprint>/test-plan.md` per `t_test-plan.md`; emit COMPLETED
+   - **entry 1**: write `<sprint>/test-plan.md` per `t_test-plan.md`, with the first `Entry log` row (`HEAD analysed` = current `HEAD`, scope = "full change surface"). **Re-entry**: amend it — append new/updated rows, append an `Entry log` row (`HEAD analysed` = current `HEAD`, scope = "delta since entry N-1"); never rewrite prior rows outside the ones actually revised. Emit COMPLETED
 4. Read `test-plan.md` → collect proposed removals; split into in-scope (test file inside the change surface) and out-of-scope
 5. **Removal gate** — only when out-of-scope removals exist: request user decision in `language.chat`, Complication Approval format per `core.md`, one entry per test (what, why, what still covers the risk). Rejected removals are struck from `test-plan.md`; approved ones marked `yes — user approved`
-6. **Prune + author pass** — delegate to agent `asd-test-engineer` (parallel instances per independent area when the plan splits cleanly). Instruction:
+6. **Prune + author pass** — delegate to agent `asd-test-engineer` (parallel instances per independent area when the plan splits cleanly). Scope: the same set step 3 analysed (full on entry 1, delta on re-entry) — never a full re-derivation of the whole change surface on re-entry. Instruction:
    - delete the approved removals; write the `add` decisions at the chosen level
    - every regression test for a known defect must be proven fail-first against the pre-fix behaviour (or an equivalent targeted mutation) — record the proof in the `Added tests` table
    - never assert implementation detail; no sleep-based waits; no test whose only value is a coverage number
@@ -52,7 +56,11 @@ No user gate on a green suite, and none on routing defects back to impl.
 
 ## Re-entry
 
-Every `impl` exit re-enters this phase. `test-plan.md` is rewritten each entry from the current change surface; `Defects` rows persist — resolved rows stay `fixed` for the record, and a defect that reappears gets a new `D-N` row rather than a reopened one. No iteration cap: the loop ends on a green suite or on an escalated blocker.
+Every `impl` exit re-enters this phase. On re-entry the **strategy pass (step 3) and prune pass (step 6)** are scoped to the **delta since the prior entry** — the review-fix or test-fix commits, `git diff <prior HEAD analysed>...HEAD` — never a full re-derivation of the whole change surface. `test-plan.md` is **amended**, not rewritten: prior `Risk → check decisions` / `Added tests` / `Removed tests` rows stand unless a fix actually revised that risk, and a new `Entry log` row records the delta scope and the `HEAD` it was analysed through. `Defects` rows persist — resolved rows stay `fixed` for the record, and a defect that reappears gets a new `D-N` row rather than a reopened one.
+
+The **suite gate (step 7) stays full and unconditional on every entry** — it is the actual test-execution gate, and this incremental scoping applies only to the analysis passes, never to it. The **removal gate (step 5)** is unaffected: it still fires whenever a proposed removal (in or out of the current pass's scope) falls outside the sprint's overall change surface.
+
+Bounded risk (audit R-15): a defect introduced by a review-fix in a file outside that fix's own diff is not re-analysed for coverage by steps 3/6 — the full, unconditional suite gate is what catches it. No iteration cap: the loop ends on a green suite or on an escalated blocker.
 
 ## Artefacts produced
 - `<sprint>/test-plan.md` (risk→check decisions, removals, added tests, suite run, defects, optional manual verification spec)
