@@ -29,7 +29,7 @@ ASD drives a consumer project through phases per sprint, for **both Claude Code 
 
 `t_AGENTS.md` (+ thin `t_CLAUDE.md`, just a `@AGENTS.md` import) = templates for the **consumer's** `AGENTS.md`/`CLAUDE.md` (generated/synced by `/asd-init`). NOT this file — don't conflate: this documents the framework repo; `t_AGENTS.md` documents a project built with it. Canonical bodies (agents, skills, workflows) are provider-neutral — no host-tool names, no `@`-imports (Codex doesn't support them, plain concatenation only) — written as semantic operations mapped per-provider in `providers.md`.
 
-Flow: `/asd-sprint`(Claude)/`$asd-sprint`(Codex) → phase skill → workflow → creator/reviewer agents → artifacts into consumer's `.asd/sprints/<NNN-slug>/` and `design/`. State recovery via per-sprint `state.json`.
+Flow: `/asd-sprint`(Claude)/`$asd-sprint`(Codex) → phase skill → workflow → creator/reviewer agents → artifacts into consumer's `.asd/sprints/<NNN-slug>/` and `docs/`. State recovery via per-sprint `state.json`.
 
 ## Cross-file consistency (main editing hazard)
 

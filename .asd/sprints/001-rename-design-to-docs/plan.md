@@ -129,14 +129,14 @@ Owner: `backend-dev`. Satisfies AC-9. This entry is the implementation of option
 ### Task 8: Update the `README.md` and `AGENTS.md` mirrors
 Owner: `backend-dev`. Satisfies AC-8 (and the `AGENTS.md` hard rule that every workflow change is checked against `README.md`). Last content edits of the sprint — they must reflect the final state of Tasks 1–7. Material risk for impl-test: the folder map and command table are easy to half-update (audit R-7).
 
-- [ ] `README.md` line 83 — never-touched table
-- [ ] `README.md` line 154 — design-promote row
-- [ ] `README.md` lines 172, 173, 174 — `/asd-concept`, `/asd-stack`, `/asd-design-system` command-table target paths
-- [ ] `README.md` line 227 — config-schema excerpt
-- [ ] `README.md` lines 306–320 — the whole folder-map block
-- [ ] `README.md` prose lines 14, 176, 306 per the G-1 convention
-- [ ] `AGENTS.md` line 32
-- [ ] Diff the finished README folder map line for line against the final `artifact-layout.md`; README is a mirror, not a second SSoT
+- [x] `README.md` line 83 — never-touched table
+- [x] `README.md` line 154 — design-promote row
+- [x] `README.md` lines 172, 173, 174 — `/asd-concept`, `/asd-stack`, `/asd-design-system` command-table target paths
+- [x] `README.md` line 227 — config-schema excerpt
+- [x] `README.md` lines 306–320 — the whole folder-map block
+- [x] `README.md` prose lines 14, 176, 306 per the G-1 convention
+- [x] `AGENTS.md` line 32
+- [x] Diff the finished README folder map line for line against the final `artifact-layout.md`; README is a mirror, not a second SSoT
 
 ### Task 9: Regenerate the provider views
 Owner: `backend-dev`. Satisfies AC-5. Must run after every canon edit in Tasks 1–8. Material risk for impl-test: the obvious invocation is a no-op, and an accidental edit under `.claude/` poisons a `json-merge` target.

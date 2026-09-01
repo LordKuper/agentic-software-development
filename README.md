@@ -11,7 +11,7 @@ Both providers run from one canonical source under `.asd/` (agents, skills, hook
 ## Why use it
 
 - **Repeatable structure.** Every sprint follows the same 10 phases — no improvisation, no forgotten steps.
-- **Documentation that stays alive.** Persistent design docs (concept, stack, ADRs, UX) update on every sprint instead of rotting.
+- **Documentation that stays alive.** Persistent docs (concept, stack, ADRs, UX) update on every sprint instead of rotting.
 - **Reviews that converge.** Iteration severity floor stops reviewers from nitpicking the same low-severity issue forever. Each iteration dispatches reviewers with clean context, so verdicts aren't biased by the authoring that produced the artifact. Each internal reviewer must emit a coverage ledger — every scoped file and every checklist rule accounted for — and the phase skill rejects and re-dispatches any reviewer whose ledger is incomplete, so no file or rule is skipped silently.
 - **Brownfield-friendly.** The audit phase reads any existing docs and code (in any format and location) and reverse-engineers them into the workflow's structure.
 - **One source of truth.** SSoT iron rule is enforced by a dedicated Documentation reviewer.
@@ -80,7 +80,7 @@ This fetches the latest framework files from the ASD repo's `main` branch and re
 |---|---|
 | `.asd/rules/`, `.asd/templates/` | `.asd/project/` (your config, custom rules) |
 | `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/sync.js` | `.asd/sprints/` (your sprint work) |
-| `.asd/release-manifest.json` itself | `design/` (your persistent docs) |
+| `.asd/release-manifest.json` itself | `docs/` (your persistent docs) |
 | | `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json` |
 | | your own custom skills / agents / hooks |
 
@@ -151,7 +151,7 @@ flowchart TD
 | **audit** | BA + Architect scan existing docs and code; identify gaps, risks, stubs to resolve |
 | **design** | BA writes PRD, UX Designer writes UX-spec and UI mockups, Architect writes ADRs and C4 schema |
 | **design-review** | 3 internal reviewers (Documentation, UI, Simplification) plus External Review iterate to APPROVE |
-| **design-promote** | Approved sprint drafts get decomposed per subsystem and promoted to persistent `design/` |
+| **design-promote** | Approved sprint drafts get decomposed per subsystem and promoted to persistent `docs/` |
 | **plan** | PM decomposes work into Tasks with checkbox subtasks, traces each to PRD acceptance criteria |
 | **impl** | Devs (Backend, Frontend) implement Tasks — or fix impl-review findings (review-fix mode) or impl-test defects (test-fix mode); no tests written here; run build/lint, commit per Conventional Commits |
 | **impl-test** | Test Engineer picks the risk-based test approach for the change scope, deletes redundant/flaky/implementation-coupled tests, writes the missing ones, runs the full suite; records everything in `test-plan.md`; code defects route back to `impl` |
@@ -169,11 +169,11 @@ User-facing commands available at any time. Invocation form differs per provider
 | Claude Code | Codex | Purpose |
 |---|---|---|
 | `/asd-init` | `$asd-init` | Initialize the workflow, or edit settings later in diff mode |
-| `/asd-concept` | `$asd-concept` | Form or edit `design/product/concept.html` (4 entry variants: no-idea / vague / clear / brownfield) |
-| `/asd-stack` | `$asd-stack` | Form or edit `design/architecture/stack.html` (architect proposes from concept; same 4 variants) |
-| `/asd-design-system` | `$asd-design-system` | Form or edit `design/ux/DESIGN.md`, `design-system.html`, `accessibility.html` (3 entry variants: greenfield / constraints / brownfield) |
+| `/asd-concept` | `$asd-concept` | Form or edit `docs/product/concept.html` (4 entry variants: no-idea / vague / clear / brownfield) |
+| `/asd-stack` | `$asd-stack` | Form or edit `docs/architecture/stack.html` (architect proposes from concept; same 4 variants) |
+| `/asd-design-system` | `$asd-design-system` | Form or edit `docs/ux/DESIGN.md`, `design-system.html`, `accessibility.html` (3 entry variants: greenfield / constraints / brownfield) |
 | `/asd-sprint` | `$asd-sprint` | Start a new sprint or resume the active one |
-| `/asd-update` | `$asd-update` | Update framework infrastructure (rules, templates, ASD agents/skills/hooks) to the latest version from the ASD repo's main branch; never touches your config, sprints, design docs, or custom skills/agents/hooks |
+| `/asd-update` | `$asd-update` | Update framework infrastructure (rules, templates, ASD agents/skills/hooks) to the latest version from the ASD repo's main branch; never touches your config, sprints, persistent docs, or custom skills/agents/hooks |
 | `/asd-sync` | `$asd-sync` | Reconcile generated provider views (`.claude/`, `.codex/`, `.agents/skills/`) with canonical `.asd/` sources — per-file overwrite/keep/diff confirmation, never a silent bulk overwrite |
 
 Phase skills (`asd-phase-*`) are dispatched internally by `/asd-sprint`/`$asd-sprint`. You usually do not invoke them directly, but you can use them to re-run a specific phase of the active sprint.
@@ -224,7 +224,7 @@ self_hosting: disabled   # enabled | disabled — ASD developing itself through 
 
 documents:                # optional sprint documents; absent group = all enabled (back-compat)
   audit: enabled           # <sprint>/audit.md
-  prd: enabled              # design/prd.html + persistent requirements
+  prd: enabled              # docs/prd.html + persistent requirements
   ux_spec: enabled          # ux-spec, design-system gate, design-md-delta
   adr: enabled               # adr.html + persistent ADR
   c4: enabled                  # c4-full + persistent C4 (also needs project.subsystem_decomposition: enabled)
@@ -303,7 +303,7 @@ your-project/
 │   └── hooks.json                   # hook registration (JSON-merge: ASD owns only its own entry); requires trust before hooks run
 ├── .agents/
 │   └── skills/                      # 17 skill definitions for Codex (SKILL.md) — Codex only reads skills from here, not .codex/
-├── design/                          # persistent design docs (grow across sprints)
+├── docs/                            # persistent docs (grow across sprints)
 │   ├── product/
 │   │   ├── concept.html
 │   │   └── requirements/<subsystem>.html
