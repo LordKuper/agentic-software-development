@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-design-system/SKILL.md. source_digest=sha256:86e78d72f2c929ee1c0ada3692b695768961c79a44511d4efd552f00e850bf43 content_digest=sha256:8f958c05780ae4fbadc6a1ccc9d8b56b88c81c9a9625e43c171ec8a34266afac asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-design-system/SKILL.md. source_digest=sha256:c77b7e8c0c348efd822e20fac7c180694f4f965e7042aca21f5308d0cbf8d580 content_digest=sha256:355285c403efb6e6f089bde49f480555ae4317a26af3130798c852fa860ad288 asd_version=2.0.0 schema=1
 name: asd-design-system
 description: "Forms or edits the project design system (docs/ux/DESIGN.md, design-system.html, accessibility.html) via asd-ux-designer, branching by silent detection into one of three flows (greenfield / constraints / brownfield extraction). Fetches the Google Labs DESIGN.md spec, lints tokens, regenerates design-system.html previews, and authors the accessibility baseline. Use when the user runs /asd-design-system, when asd-init or asd-phase-design detects missing DESIGN.md/design-system.html/accessibility.html and suggests this skill, or when the user asks to define, draft, refine, edit, augment, or reverse-engineer the project design system, design tokens, or accessibility baseline."
 allowed-tools: "Read Glob Grep AskUserQuestion Task"
@@ -132,7 +132,7 @@ After all DESIGN.md sections approved:
 - EVERY user-decision/input request (question text, header, all option labels, all option descriptions, multi-field labels and hints) MUST be rendered in `language.chat` from `.asd/project/config.yaml`. Applies to control options too (Lock in / Revise / Skip / Approve / etc.). Per `.asd/rules/language-policy.md` §User-decision options. Internal signal tokens (`COMPLETED`, `FAILED`, `QUESTION`, `ABORT`) stay English — machine signals.
 - NEVER author accessibility rules without checking concept's target users
 - Token authoring + review bound by `.asd/rules/design-system.md`; UX shaping bound by `.asd/rules/ux-principles.md`
-- design-system.html MUST be regenerated whenever DESIGN.md changes; stale render = FAIL
+- Within this skill's own session, design-system.html MUST be regenerated once, at Phase 5, from the just-approved DESIGN.md (never left stale); this is orthogonal to the in-sprint cadence (`.asd/rules/design-system.md` §10: once per sprint, at design-promote, only if DESIGN.md was actually touched that sprint) — this skill runs standalone or via the design-system gate, not per token edit
 - `designmd-lint` MUST pass before write (clean pass per `.asd/rules/design-system.md` §11); warning exclusions need user approval + recorded rationale
 - Every component listed in DESIGN.md MUST have a live preview in design-system.html
 

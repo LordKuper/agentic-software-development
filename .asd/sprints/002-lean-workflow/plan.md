@@ -200,13 +200,13 @@ Verdict: **A-31**, risk **R-1** — narrowed variant, separately approved. AC: A
 Affected canonical files: `.asd/rules/design-system.md` (§10 step 4), `.asd/workflows/asd-phase-design-promote.md`, `.asd/workflows/asd-phase-design.md`, `.asd/agents/asd-ux-designer.md` (line 77), `.asd/skills/asd-design-system/SKILL.md` (phase 5), `README.md`.
 Material risk: audit R-1 concerned removing a file from a mandated gate; **this variant does not do that**. The `checkpoints.md` design-gate file-existence triple stays exactly as it is — the same three files are required, and `checkpoints.md` is not edited by this task. Only the regeneration trigger granularity changes. Any edit that widens this into a gate change is out of scope and must be escalated.
 
-- [ ] `design-system.md` §10: change the regeneration trigger from "every `DESIGN.md` token change" to **once per sprint, at `design-promote`, and only if `DESIGN.md` was actually touched this sprint**
-- [ ] Do **not** make generation fully on-demand / manual-only, and do **not** leave it unconditional-per-change
-- [ ] `asd-phase-design-promote.md`: add the conditional regeneration step keyed on `DESIGN.md` having changed this sprint
-- [ ] `asd-phase-design.md` and `asd-ux-designer.md` line 77: remove the per-token-change re-emit mandate
-- [ ] `asd-design-system/SKILL.md` phase 5: align with the new trigger
-- [ ] Verify `checkpoints.md` design row is **unchanged** and still requires `DESIGN.md` + `design-system.html` + `accessibility.html`
-- [ ] `README.md`: align; run `sync.js --apply` for the edited agent and skill files
+- [x] `design-system.md` §10: change the regeneration trigger from "every `DESIGN.md` token change" to **once per sprint, at `design-promote`, and only if `DESIGN.md` was actually touched this sprint**
+- [x] Do **not** make generation fully on-demand / manual-only, and do **not** leave it unconditional-per-change
+- [x] `asd-phase-design-promote.md`: add the conditional regeneration step keyed on `DESIGN.md` having changed this sprint
+- [x] `asd-phase-design.md` and `asd-ux-designer.md` line 77: remove the per-token-change re-emit mandate
+- [x] `asd-design-system/SKILL.md` phase 5: align with the new trigger
+- [x] Verify `checkpoints.md` design row is **unchanged** and still requires `DESIGN.md` + `design-system.html` + `accessibility.html`
+- [x] `README.md`: align; run `sync.js --apply` for the edited agent and skill files
 
 ### Task 13: Diff-scoped reviewer fan-out at impl-review
 

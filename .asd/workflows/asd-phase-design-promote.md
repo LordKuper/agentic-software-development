@@ -47,7 +47,7 @@ Orchestration body for the `asd-phase-design-promote` skill. Operation-mapping t
    - **`asd-ux-designer`** — only if `ux-spec.html` is in scope (step 1 intersection) — payload (ux-spec.html, design-md-delta.yaml if present, decomposition map for ux domain, migration items tagged ux):
      - per subsystem (or flat): split ux-spec into `docs/ux/<subsystem>.html` (or `ux-spec.html`); merge with existing
      - if `design-md-delta.yaml` present: apply add/update/remove ops to `docs/ux/DESIGN.md`; if `system.tools.designmd` true, run `designmd-lint` from `commands.yaml`; halt on lint errors. On Windows run `designmd-install` once per session before first `designmd-lint`/`-diff`/`-export` (no-op on Linux/macOS). Never inline the linter binary — always go through `designmd-*` commands.
-     - regenerate `docs/ux/design-system.html` from patched DESIGN.md (only if DESIGN.md changed)
+     - regenerate `docs/ux/design-system.html` from patched DESIGN.md — this is the sprint's **one** regeneration point (`design-system.md` §10), triggered only if `DESIGN.md` was actually touched this sprint (i.e. `design-md-delta.yaml` present and applied); no DESIGN.md change → skip regeneration entirely
      - process ux migration items
      - request user decision before each persistent write
      - emit COMPLETED
@@ -64,7 +64,7 @@ Orchestration body for the `asd-phase-design-promote` skill. Operation-mapping t
 ## Artefacts produced
 - Persistent docs under `docs/` per domain (per subsystem when decomposition enabled, flat when disabled)
 - Patched `docs/ux/DESIGN.md` (when delta present)
-- Regenerated `docs/ux/design-system.html` (when DESIGN.md changed)
+- Regenerated `docs/ux/design-system.html` (once per sprint, only when DESIGN.md changed this sprint — `design-system.md` §10)
 - Patched `docs/architecture/c4/` (when c4-full present) — `dist/`/`architecture.html` are build output, not regenerated here
 - New `docs/architecture/tech-reference/<tech>-<version>.md` if applicable
 - Appended decisions-log entries

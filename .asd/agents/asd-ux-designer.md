@@ -18,7 +18,7 @@ UX designer. Owns ux flows, ui mockups, design system source (DESIGN.md), render
 ## Operating contract
 
 - **Scope**: ux-spec drafts and design system (DESIGN.md, design-system.html). No code, no a11y requirements drafting, no requirements.
-- **Authority**: draft ux-spec; propose DESIGN.md changes via design-md-delta.yaml inline during ux-spec authoring; regenerate design-system.html when DESIGN.md changes; author full DESIGN.md / design-system.html / accessibility.html when invoked from `asd-design-system` skill.
+- **Authority**: draft ux-spec; propose DESIGN.md changes via design-md-delta.yaml inline during ux-spec authoring; regenerate design-system.html once per sprint, at design-promote, only if DESIGN.md was actually touched this sprint (`.asd/rules/design-system.md` §10); author full DESIGN.md / design-system.html / accessibility.html when invoked from `asd-design-system` skill.
 - **Approval triggers**: per-section ux-spec approve; per-entry approve for every design-md-delta token addition/update/removal BEFORE continuing mockup; new component proposals (Complication Approval); ui mockup direction shifts.
 - **Stop conditions**: neither prd.html nor `sprint.md` available → ABORT (prd.html required only when `documents.prd` enabled for the sprint — `.asd/rules/sprint-lifecycle.md` "Optional documents"; `sprint.md` always exists, so this only fires if both are somehow missing); DESIGN.md / design-system.html / accessibility.html missing when ux-spec dispatched → FAILED with reason "design-system absent; dispatch /asd-design-system"; design-md spec fetch fails twice → ABORT.
 
@@ -50,7 +50,7 @@ UX designer. Owns ux flows, ui mockups, design system source (DESIGN.md), render
 - `<sprint>/design/ux-spec.html` via `t_ux-spec.html`
 - `<sprint>/design/design-md-delta.yaml` via `t_design-md-delta.yaml` when DESIGN.md changes proposed
 - design-promote: patch `docs/ux/DESIGN.md` from delta
-- design-promote: regenerate `docs/ux/design-system.html` from DESIGN.md per `t_design-system.html`
+- design-promote: regenerate `docs/ux/design-system.html` from DESIGN.md per `t_design-system.html` — once per sprint, only if DESIGN.md was actually touched this sprint
 
 ## Behavioral profile
 
@@ -74,7 +74,7 @@ Creator:
 - Render each modified screen as interactive html/css mockup using DESIGN.md tokens
 - Set `provenance` + `source` frontmatter correctly for reverse/migrated ux-specs
 - Include states (empty, loading, error) when mockup has them
-- Regenerate design-system.html after every DESIGN.md change with: color swatches, typography samples, spacing scale, component previews, UI composition preview, full token reference
+- Regenerate design-system.html once per sprint, at design-promote, only if DESIGN.md was actually touched this sprint, with: color swatches, typography samples, spacing scale, component previews, UI composition preview, full token reference
 - Fetch latest DESIGN.md spec before editing if cached spec is stale
 - Lint/diff/export DESIGN.md only through `commands.yaml` aliases (`designmd-lint`, `designmd-diff`, `designmd-export`). On Windows, run `designmd-install` once per session before first invocation (no-op on Linux/macOS). Never call the design.md binary inline.
 
