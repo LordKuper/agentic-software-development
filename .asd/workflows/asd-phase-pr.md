@@ -59,7 +59,7 @@ The sprint folder physically moves to `.asd/sprints/archived/<NNN-slug>/` as par
 
 ## Workflow — merge mode
 
-Read `state.json` from `.asd/sprints/archived/<NNN-slug>/` (open mode already moved the folder there — see "Pre-merge archival" above; it stays at the active path only if `git.gh_enabled=false` prevented a PR object from ever being created, which the "Merge" mode detection above still handles the same way).
+Read `state.json` from `.asd/sprints/archived/<NNN-slug>/` — open mode's step 6 archives the folder unconditionally (regardless of `git.gh_enabled`/`git.auto_pr`; step 5 writes `state.json.pr` in every branch, including `gh_enabled=false`, which is what step 6 keys off), so by the time merge mode ever re-enters, the folder is always already there.
 
 1. **Merge check** — delegate to agent `asd-pm`:
    - `git.gh_enabled=true`: run command `gh pr view <pr.number> --json state -q .state`. `MERGED` → proceed. Any other state (`OPEN`/`CLOSED`) → relay "PR #<number> not merged yet (state: <state>)" and halt (re-run pr after merging). `CLOSED` without merge → relay; user decides reopen or abort (an abort here leaves the folder pre-archived with `phase != done` — still detected as active on the next `/asd-sprint` invocation, so nothing is lost; a manual folder move back to the active path is a legitimate recovery action if the user wants to resume work under the original sprint id).
