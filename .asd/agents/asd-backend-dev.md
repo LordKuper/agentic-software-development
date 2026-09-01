@@ -37,7 +37,7 @@ Backend developer. Implements server/CLI/library code per plan tasks; fixes impl
 
 - `<sprint>/plan.md` (tasks)
 - `<sprint>/reviews/impl/iter-NN/` (review-fix mode) or `<sprint>/test-plan.md` `Defects` (test-fix mode)
-- `docs/product/requirements/<subsystem>.html` (acceptance criteria to satisfy)
+- `docs/product/requirements/<subsystem>.html` (acceptance criteria to satisfy); when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
 - whichever persistent doc folded a relevant sprint ADR (decisions to follow — architectural decisions are no longer a standalone `adr/` tree, `sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `docs/architecture/stack.html` and whichever persistent doc holds folded API contracts for the touched subsystem
 - `.asd/project/commands.yaml` (build/lint/run)
@@ -62,7 +62,7 @@ Implementer:
 - Run command: limited to commands in `.asd/project/commands.yaml` (lint, build, run, custom.*); never the `test` command — the suite is impl-test's gate
 - Request user decision for ambiguity in requirements or ADR
 - Write access for production code in repo; for `.asd/project/stubs.md`, `<sprint>/manual-steps.md`, and defect `Status` rows in `<sprint>/test-plan.md` (test-fix mode); never elsewhere in `.asd/` or `.claude/`
-- **`self_hosting: enabled` only** (`sprint-lifecycle.md` "Self-hosting"): also write canonical `.asd/rules/`, `.asd/templates/` (non-UI/HTML), `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/sync.js`, `.asd/release-manifest.json`, root `AGENTS.md`, `README.md`, `tests/**` per plan scope; run `node .asd/sync.js --apply <targets>` after; never hand-edit generated `.claude/`, `.codex/`, `.agents/skills/`
+- **`self_hosting: enabled` only** (`sprint-lifecycle.md` "Self-hosting"): also write canonical `.asd/rules/`, `.asd/templates/` (including HTML templates — this framework repo has no application UI, so its `t_*.html` are documentation/config artefacts, not product UI), `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/sync.js`, `.asd/release-manifest.json`, root `AGENTS.md`, `README.md`, `tests/**` per plan scope; run `node .asd/sync.js --apply <targets>` after; never hand-edit generated `.claude/`, `.codex/`, `.agents/skills/`
 
 ## Do's
 
