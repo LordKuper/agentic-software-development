@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:8d28fbc5aa11c66e52838b060df8f85409d5576e5aa561bbea8d49fd3f09855d content_digest=sha256:b8f50af5f54b4df813793ad77fcb6b3447f27372adfb606114974bffc6e99805 asd_version=1.2.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:189ae571f6874deaaa0847c717df30235654f4f8cefa6e37dba5dcde80ef14e8 content_digest=sha256:b8bd5ad64e584ebb4f855bc5171f8ba2c4242c27a682bffa1bfaba0ae76daecd asd_version=1.2.0 schema=1
 name: asd-init
-description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only docs/ docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
+description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 ---
 
 Operation mapping: see `.asd/rules/providers.md`.

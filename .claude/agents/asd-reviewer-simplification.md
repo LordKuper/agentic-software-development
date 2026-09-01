@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-simplification.md. source_digest=sha256:5a953a4a6db810e744256202f26aee8fd76afb517e9d2db3711ab2aba5cea407 content_digest=sha256:002bb5bd003e86e92e67f84be4e5020fb60d6ee1fbf7c913204e876dc1ad4743 asd_version=1.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-simplification.md. source_digest=sha256:5db7d136d86ec5bbaa686dfe08aa8c5a62a0b5f2292fd0b939be26579054a2f0 content_digest=sha256:c0cb80be097252df76eb5cc69efd6879b3b47a33347f19e17872b0e4744268ac asd_version=1.2.0 schema=1
 name: asd-reviewer-simplification
 description: "Design-review of design drafts and impl-review of code for over-engineering and structure/cohesion defects. Covers: over-engineering smell detection per review-policy checklist (interface with one implementer, generic with one type, factory for < 3 classes, plugin without plugins, premature config flag, defensive code for impossible cases, dead code, deep inheritance, framework-on-framework, mock-of-mock, comment-restates-code), structure/cohesion smell detection (god/sprawling type carrying multiple unrelated responsibilities), complexity-vs-value tradeoff, escalation of any fix that adds complexity. Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), AC coverage (delegates to asd-reviewer-implementation), test quality (delegates to asd-reviewer-testing), ui/a11y (delegates to asd-reviewer-ui), documentation (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -94,7 +94,7 @@ Plus generic complexity-vs-value: does this complication earn its weight?
 - Never raise nitpick categories
 - Never autofix
 - Never drop critical findings on later iterations (undroppable per policy)
-- Never modify code or design docs
+- Never modify code or persistent docs
 - Never read prior `iter-*/` review files — each iteration reviews clean context (per `review-policy.md`)
 - Never run shell commands
 

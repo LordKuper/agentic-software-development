@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:8d28fbc5aa11c66e52838b060df8f85409d5576e5aa561bbea8d49fd3f09855d content_digest=sha256:f423fed3ade4bc33a810322d752fcd5070ef3809988ec090df7ad3e4b204f53b asd_version=1.2.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:189ae571f6874deaaa0847c717df30235654f4f8cefa6e37dba5dcde80ef14e8 content_digest=sha256:9d464bf2db482948edaffb7276dc9748f58e8f55df611a01e53b4de004698e1e asd_version=1.2.0 schema=1
 name: asd-init
-description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only docs/ docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
+description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
 ---
 
