@@ -57,7 +57,7 @@ Orchestration body for the `asd-phase-design-promote` skill. Operation-mapping t
 10. **Final mutation confirmation** — delegate to agent `asd-pm`:
    - present summary of all persistent writes (per-domain counts + new subsystems + files touched)
    - request user decision: confirm finalize / rollback / partial rollback
-   - on confirm: compose decisions-log entries (decomposition, each new subsystem, each promoted artefact, DESIGN.md patch, c4 patch) and append to `.asd/project/decisions-log.md`
+   - on confirm: compose decisions-log entries (decomposition, each new subsystem, each promoted artefact, DESIGN.md patch, c4 patch) and append to `<sprint>/decisions-log.md`
    - update `state.json` (phase=design-promote done)
    - emit COMPLETED
 11. Emit phase COMPLETED with return contract

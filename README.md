@@ -287,10 +287,9 @@ your-project/
 │   │   ├── custom-common-rules.md   # universal rules — all agents, all phases
 │   │   ├── custom-design-rules.md   # design / design-review rules
 │   │   ├── custom-coding-rules.md   # impl / impl-test / impl-review rules (incl. perf budgets)
-│   │   ├── decisions-log.md         # append-only chronology of approved decisions
 │   │   └── stubs.md                 # project-global TODO registry
 │   └── sprints/
-│       ├── <NNN-slug>/              # active sprint (one at a time)
+│       ├── <NNN-slug>/              # active sprint (one at a time); decisions-log.md created here at scope, archived with the sprint
 │       └── archived/<NNN-slug>/     # moved here on PR open (pre-merge); read-only except the terminal write on merge
 ├── .claude/                         # generated Claude Code view
 │   ├── agents/                      # 15 agent definitions (*.md)

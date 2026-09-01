@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-concept/SKILL.md. source_digest=sha256:05ba1c94c5c90251b7469696d294ad8990c0b3466fe11f91359dd7c1d8914a60 content_digest=sha256:590b1e20b9a35869ef886b65fb334d6a98dc1c6a77ed0db0050046af63f1951a asd_version=1.2.0 schema=1
+# ASD generated. Edit .asd/skills/asd-concept/SKILL.md. source_digest=sha256:c0cf9c2544a1d400e9493d81814d3ea506e1026caa309e184fde198ecbed3ff8 content_digest=sha256:3f4d4becc319711aa0232a38dc34d4b7fc9a7062c917a984f5581db37e801820 asd_version=2.0.0 schema=1
 name: asd-concept
 description: "Forms or edits the project concept document via asd-ba, branching by silent detection into one of four flows (no idea / vague idea / clear vision / brownfield extraction) and converging through a per-section lock-in loop. Use when the user runs /asd-concept, when asd-init detects a missing concept.html and suggests this skill, or when the user asks to define, draft, refine, edit, rewrite, or reverse-engineer the project concept, vision, target users, or value proposition."
 allowed-tools: "Read Glob Grep AskUserQuestion Task"
@@ -17,7 +17,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 - Read files — `.asd/project/config.yaml`, existing concept.html, candidate brownfield sources
 - Search repo — silent scan for brownfield signals + candidate content
 - Request user decision/input — variant choice (only when no silent signal), lens choice, section approvals, lock-in/revise loop
-- Delegate to agents — `asd-ba` (author), `asd-pm` (decisions-log)
+- Delegate to agents — `asd-ba` (author)
 
 ## Phase 1 — silent detection (NO asking)
 
@@ -83,7 +83,6 @@ Section-by-section in `language.chat`:
 
 ## Phase 6 — handoff
 
-- Delegate to agent `asd-pm` to append decisions-log entry ("concept formed" / "concept edited: <sections>" / "concept reverse-engineered from brownfield")
 - Print handoff suggestion in `language.chat`:
   - if `docs/architecture/stack.html` absent → "Next: run `/asd-stack` to define the tech stack"
   - else → "Next: run `/asd-sprint` to start a sprint"
@@ -104,11 +103,9 @@ Section-by-section in `language.chat`:
 
 ## Artefacts produced
 - `docs/product/concept.html` (created, edited, or reverse-engineered)
-- decisions-log entry
 
 ## Agents dispatched
 - `asd-ba` (author / scanner / refiner)
-- `asd-pm` (decisions-log)
 
 ## Skills dispatched
 None.

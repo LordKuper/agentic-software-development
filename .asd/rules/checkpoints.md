@@ -25,7 +25,7 @@ Every pause uses the user-decision format from `core.md` (Problem / Options / Re
 
 ## Approval recording
 
-Approval advances `phase` in `state.json` and appends a decisions-log entry. No frontmatter status field.
+Approval advances `phase` in `state.json` and appends an entry to `<sprint>/decisions-log.md`. No frontmatter status field.
 
 ## Precondition chain
 

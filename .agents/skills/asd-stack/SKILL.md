@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-stack/SKILL.md. source_digest=sha256:a9f4f13862863e5c86844d0dbf107f6e173ad4740f510ab427bfaaafc2fdb04f content_digest=sha256:45d20f5d4094b47b9f90927288fe7313307378f6db5b2007e2b77b158865419a asd_version=1.2.0 schema=1
+# ASD generated. Edit .asd/skills/asd-stack/SKILL.md. source_digest=sha256:84fcc1c7e3591dfb5472fdf5afe6e931c777195fcbd87e68ccdd9e47a44c55b7 content_digest=sha256:9b77fc541362e9abf81bbf9015b5c7c14e187bc53c8697a925f623ebffedb50f asd_version=2.0.0 schema=1
 name: asd-stack
 description: "Forms or edits the project tech stack document at docs/architecture/stack.html via asd-architect, branching by silent detection into one of four flows (clean slate / constraints / clear stack / brownfield extraction). Verifies versions via WebFetch, runs knowledge-gap analysis, and maintains a tech-reference doc per chosen tech. Use when the user runs /asd-stack, when asd-init or asd-concept detects a missing stack.html and suggests this skill, or when the user asks to define, draft, refine, edit, upgrade, or reverse-engineer the project technology stack."
 ---
@@ -17,7 +17,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 - Read files — `.asd/project/config.yaml`, concept.html, existing stack.html, manifests, source files
 - Search repo — silent scan for brownfield signals (manifests, lockfiles, Dockerfile, CI configs)
 - Request user decision/input — variant choice, constraints, section approvals, lock-in/revise loop
-- Delegate to agents — `asd-architect` (author, fetch external doc to verify versions, create tech-references), `asd-pm` (decisions-log)
+- Delegate to agents — `asd-architect` (author, fetch external doc to verify versions, create tech-references)
 
 ## Phase 1 — silent detection (NO asking)
 
@@ -104,7 +104,6 @@ Per technology in approved stack:
 
 ## Phase 8 — handoff
 
-- Delegate to agent `asd-pm` to append decisions-log entry ("stack defined: <techs>" / "stack edited" / "stack reverse-engineered, risk summary: ...")
 - Print handoff suggestion: "Next: run `/asd-sprint` to start the first sprint"
 - NO auto-dispatch
 
@@ -131,11 +130,9 @@ Per technology in approved stack:
 ## Artefacts produced
 - `docs/architecture/stack.html` (created, edited, or reverse-engineered)
 - `docs/architecture/tech-reference/<tech>-<version>.md` for every chosen tech
-- decisions-log entry (with risk summary)
 
 ## Agents dispatched
 - `asd-architect` (author / scanner / version verifier / tech-reference creator)
-- `asd-pm` (decisions-log)
 
 ## Skills dispatched
 None.

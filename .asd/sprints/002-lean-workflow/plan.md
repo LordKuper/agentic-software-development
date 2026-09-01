@@ -115,15 +115,15 @@ Verdicts: **A-16**, **A-17**, gap **G-1** (final redesigned resolution — super
 Affected canonical files: `.asd/rules/artifact-layout.md`, `.asd/rules/sprint-lifecycle.md:79`, `.asd/rules/checkpoints.md:28`, `.asd/rules/external-review.md:34`, `.asd/templates/t_decisions-log.md` (rewrite), `.asd/templates/t_stubs.md:5`, `.asd/agents/asd-pm.md`, `.asd/workflows/asd-phase-scope.md` (step 6), `.asd/workflows/asd-phase-design-promote.md:60`, `.asd/workflows/asd-phase-pr.md` (merge-mode step 2), `.asd/skills/asd-init/SKILL.md`, `.asd/skills/asd-concept/SKILL.md`, `.asd/skills/asd-stack/SKILL.md`, `.asd/skills/asd-design-system/SKILL.md`, `README.md:290`, `CHANGELOG.md`, `sync.js --apply`.
 Material risk: this reverses an already-recorded resolution, so a half-landed edit leaves two contradictory rules about where approvals are recorded. The durability rule is the load-bearing part — without it, a decision that must outlive the sprint is archived out of reach.
 
-- [ ] `<sprint>/decisions-log.md` becomes the sole canonical decisions log: created at `scope`, archived with the sprint. Land this in `artifact-layout.md`, `sprint-lifecycle.md:79`, `checkpoints.md:28`, `external-review.md:34`, `README.md:290`
-- [ ] `asd-phase-scope.md` step 6: create the sprint-local log as part of sprint setup
-- [ ] Deprecate `.asd/project/decisions-log.md`: freeze it with one closing entry. Sprint 001's entries are immutable and stay untouched; sprint 002's six existing entries relocate **verbatim** into `.asd/sprints/002-lean-workflow/decisions-log.md`
-- [ ] `t_decisions-log.md`: rewrite for the new entry format — Decision ≤ 3 sentences, Rationale ≤ 3 sentences, Affected docs unrestricted, one-line form for no-op skips. Not retroactive; relocated entries keep their original shape
-- [ ] Add the **durability rule**: a decision whose value must survive archival is ALSO written into an existing persistent home (a `docs/` fold target, `CHANGELOG.md`, `.asd/project/stubs.md`). Never invent a new document type for this. Reflect in `t_stubs.md:5`
-- [ ] `asd-phase-pr.md` merge-mode step 2: **delete** the terminal decisions-log append outright — it writes into an already-archived folder, and `state.json` plus the merged PR already record that fact. Do not extend the immutability exception
-- [ ] Drop the decisions-log dispatch entirely from `asd-concept`, `asd-stack`, `asd-design-system` (the authored document IS the record) and from `asd-init` (config changes get no durable trail; do not add explanatory comments to `config.yaml` either — it holds settings only)
-- [ ] `asd-phase-design-promote.md:60` and `asd-pm.md`: repoint every append site at the sprint-local log
-- [ ] `CHANGELOG.md`: note the deprecation; run `sync.js --apply` for the four edited skill files and `asd-pm.md`
+- [x] `<sprint>/decisions-log.md` becomes the sole canonical decisions log: created at `scope`, archived with the sprint. Land this in `artifact-layout.md`, `sprint-lifecycle.md:79`, `checkpoints.md:28`, `external-review.md:34`, `README.md:290`
+- [x] `asd-phase-scope.md` step 6: create the sprint-local log as part of sprint setup
+- [x] Deprecate `.asd/project/decisions-log.md`: freeze it with one closing entry. Sprint 001's entries are immutable and stay untouched; sprint 002's six existing entries relocate **verbatim** into `.asd/sprints/002-lean-workflow/decisions-log.md`
+- [x] `t_decisions-log.md`: rewrite for the new entry format — Decision ≤ 3 sentences, Rationale ≤ 3 sentences, Affected docs unrestricted, one-line form for no-op skips. Not retroactive; relocated entries keep their original shape
+- [x] Add the **durability rule**: a decision whose value must survive archival is ALSO written into an existing persistent home (a `docs/` fold target, `CHANGELOG.md`, `.asd/project/stubs.md`). Never invent a new document type for this. Reflect in `t_stubs.md:5`
+- [x] `asd-phase-pr.md` merge-mode step 2: **delete** the terminal decisions-log append outright — it writes into an already-archived folder, and `state.json` plus the merged PR already record that fact. Do not extend the immutability exception
+- [x] Drop the decisions-log dispatch entirely from `asd-concept`, `asd-stack`, `asd-design-system` (the authored document IS the record) and from `asd-init` (config changes get no durable trail; do not add explanatory comments to `config.yaml` either — it holds settings only)
+- [x] `asd-phase-design-promote.md:60` and `asd-pm.md`: repoint every append site at the sprint-local log
+- [x] `CHANGELOG.md`: note the deprecation; run `sync.js --apply` for the four edited skill files and `asd-pm.md`
 
 ### Task 7: Scope the PRD compression to the sprint draft only
 

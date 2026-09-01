@@ -19,7 +19,7 @@
 - Read files — `.asd/project/config.yaml`, concept.html, existing stack.html, manifests, source files
 - Search repo — silent scan for brownfield signals (manifests, lockfiles, Dockerfile, CI configs)
 - Request user decision/input — variant choice, constraints, section approvals, lock-in/revise loop
-- Delegate to agents — `asd-architect` (author, fetch external doc to verify versions, create tech-references), `asd-pm` (decisions-log)
+- Delegate to agents — `asd-architect` (author, fetch external doc to verify versions, create tech-references)
 
 ## Phase 1 — silent detection (NO asking)
 
@@ -106,7 +106,6 @@ Per technology in approved stack:
 
 ## Phase 8 — handoff
 
-- Delegate to agent `asd-pm` to append decisions-log entry ("stack defined: <techs>" / "stack edited" / "stack reverse-engineered, risk summary: ...")
 - Print handoff suggestion: "Next: run `/asd-sprint` to start the first sprint"
 - NO auto-dispatch
 
@@ -133,11 +132,9 @@ Per technology in approved stack:
 ## Artefacts produced
 - `docs/architecture/stack.html` (created, edited, or reverse-engineered)
 - `docs/architecture/tech-reference/<tech>-<version>.md` for every chosen tech
-- decisions-log entry (with risk summary)
 
 ## Agents dispatched
 - `asd-architect` (author / scanner / version verifier / tech-reference creator)
-- `asd-pm` (decisions-log)
 
 ## Skills dispatched
 None.

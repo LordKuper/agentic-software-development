@@ -32,7 +32,7 @@ Orchestration body for the `asd-phase-scope` skill. Operation-mapping to host to
      3. **Present** refined version for explicit approval via request for user decision, options `approve` / `edit` / `reject`. Mandatory even when raw text looked complete — implicit approval NOT allowed.
      4. If `edit`/`reject` → re-refine with feedback; loop to step 3 until explicit `approve`.
      5. If refined goal implies better slug, propose via request for user decision; rename folder/branch only after confirmation.
-     6. **Only after explicit `approve`**: write `<sprint>/sprint.md` per `t_sprint.md` (top-level Acceptance criteria numbered `AC-1`, `AC-2`, … — stable ids, used as the acceptance-criteria source whenever `documents.prd` is disabled) + initial `state.json` per `t_state.json` (phase=scope, iteration=0, branch, created_at). Fill `documents.{{DOC_AUDIT}}`/`{{DOC_PRD}}`/`{{DOC_UX_SPEC}}`/`{{DOC_ADR}}`/`{{DOC_C4}}` placeholders with the JSON boolean (`true`/`false`) matching each normalized `enabled`/`disabled` value from step 1 — never leave a placeholder literal in the written file (`sprint-lifecycle.md` "Optional documents"). Append decisions-log entry recording approved scope; if any `documents.*` disabled, one line noting which.
+     6. **Only after explicit `approve`**: write `<sprint>/sprint.md` per `t_sprint.md` (top-level Acceptance criteria numbered `AC-1`, `AC-2`, … — stable ids, used as the acceptance-criteria source whenever `documents.prd` is disabled) + initial `state.json` per `t_state.json` (phase=scope, iteration=0, branch, created_at) + `<sprint>/decisions-log.md` from `t_decisions-log.md` (empty entries section — the sprint-local log, created here, archived with the sprint). Fill `documents.{{DOC_AUDIT}}`/`{{DOC_PRD}}`/`{{DOC_UX_SPEC}}`/`{{DOC_ADR}}`/`{{DOC_C4}}` placeholders with the JSON boolean (`true`/`false`) matching each normalized `enabled`/`disabled` value from step 1 — never leave a placeholder literal in the written file (`sprint-lifecycle.md` "Optional documents"). Append decisions-log entry recording approved scope; if any `documents.*` disabled, one line noting which.
      7. Emit COMPLETED.
 
    Hard gates (any violation → FAILED + halt):
@@ -46,6 +46,7 @@ Orchestration body for the `asd-phase-scope` skill. Operation-mapping to host to
 ## Artefacts produced
 - `.asd/sprints/<NNN-slug>/sprint.md` — approved refined scope
 - `.asd/sprints/<NNN-slug>/state.json` — initial state
+- `.asd/sprints/<NNN-slug>/decisions-log.md` — sprint-local decisions log, seeded from `t_decisions-log.md`
 - git branch `sprint/<NNN>-<slug>` (slug may have been renamed during refinement)
 
 ## Agents delegated to
@@ -64,4 +65,4 @@ PHASE: scope | SPRINT: <NNN-slug> | STATUS: <complete|blocked|aborted> | NEXT: a
 - `.asd/rules/checkpoints.md` (approval gates)
 - `.asd/rules/git-strategy.md` (branch creation, dirty tree rule)
 - `.asd/rules/language-policy.md` (refined scope in `language.docs`)
-- Templates: `t_sprint.md`, `t_state.json`
+- Templates: `t_sprint.md`, `t_state.json`, `t_decisions-log.md`

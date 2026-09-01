@@ -21,12 +21,12 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │   │   ├── custom-common-rules.md
 │   │   ├── custom-design-rules.md
 │   │   ├── custom-coding-rules.md
-│   │   ├── decisions-log.md
 │   │   └── stubs.md
 │   └── sprints/
 │       ├── <NNN-slug>/
 │       │   ├── sprint.md
 │       │   ├── state.json
+│       │   ├── decisions-log.md
 │       │   ├── audit.md
 │       │   ├── design/
 │       │   │   ├── prd.html
@@ -194,14 +194,18 @@ Sprint folder moves from `.asd/sprints/<NNN-slug>/` to `.asd/sprints/archived/<N
 
 ## Decisions log
 
-Every approved decision (concept change, new subsystem, ADR, scope shift, custom-rule update) appends one entry to `.asd/project/decisions-log.md`:
+Every approved decision (concept change, new subsystem, ADR, scope shift, custom-rule update) appends one entry to `<sprint>/decisions-log.md`. Per-sprint file, created at `scope` from `t_decisions-log.md`, archived with the sprint (`sprint-lifecycle.md` "Sprint immutability"). Owner: PM agent. Append-only, never edited or removed.
 
 ```markdown
 ## YYYY-MM-DD — <one-line summary>
 
-- **Decision**: <what was decided>
-- **Rationale**: <why>
-- **Affected docs**: <links> (optional)
+- **Decision**: <what was decided> (≤3 sentences)
+- **Rationale**: <why> (≤3 sentences)
+- **Affected docs**: <links> (unrestricted)
 ```
 
-Owner: PM agent. Never edited or removed.
+A no-op skip or other zero-content decision uses the one-line form instead: `- YYYY-MM-DD — <phase> skipped: <reason>`.
+
+**Durability rule**: a decision whose value must survive the sprint's archival is ALSO written into an existing persistent home — a `docs/` fold target, `CHANGELOG.md`, or `.asd/project/stubs.md` — never a new document type invented for this. The sprint log records that the decision was made; the persistent home is what a later sprint can still read.
+
+**Legacy log**: `.asd/project/decisions-log.md` is historical only — the project-wide log used before this rule, frozen as of sprint `002-lean-workflow`. Never appended to again.

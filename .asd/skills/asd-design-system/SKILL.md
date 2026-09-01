@@ -20,7 +20,7 @@
 - Read files — `.asd/project/config.yaml`, concept.html, stack.html, existing DESIGN.md/design-system.html/accessibility.html, source CSS/components, theme files
 - Search repo — silent scan for brownfield signals (CSS, SCSS, Tailwind config, theme.ts, styled-components, design exports)
 - Request user decision/input — variant choice, constraints, section approvals, lock-in/revise loop
-- Delegate to agents — `asd-ux-designer` (author, fetch external spec, lint, render previews, accessibility baseline), `asd-pm` (decisions-log)
+- Delegate to agents — `asd-ux-designer` (author, fetch external spec, lint, render previews, accessibility baseline)
 
 ## Phase 1 — silent detection (NO asking)
 
@@ -112,7 +112,6 @@ After all DESIGN.md sections approved:
 
 ## Phase 8 — handoff
 
-- Delegate to agent `asd-pm` to append decisions-log entry ("design system defined: <N tokens, M components>" / "design system edited" / "design system reverse-engineered, source: <path>")
 - Print handoff suggestion: "Next: run `/asd-sprint` to start the first sprint" (or continue current sprint if dispatched from `asd-phase-design`)
 - NO auto-dispatch
 
@@ -142,11 +141,9 @@ After all DESIGN.md sections approved:
 - `docs/ux/DESIGN.md` (created, edited, or reverse-engineered)
 - `docs/ux/design-system.html` (regenerated from DESIGN.md)
 - `docs/ux/accessibility.html` (created or edited)
-- decisions-log entry
 
 ## Agents dispatched
 - `asd-ux-designer` (author / scanner / lint / preview render / accessibility baseline)
-- `asd-pm` (decisions-log)
 
 ## Skills dispatched
 None.

@@ -64,7 +64,7 @@ Read `state.json` from `.asd/sprints/archived/<NNN-slug>/` — open mode's step 
 1. **Merge check** — delegate to agent `asd-pm`:
    - `git.gh_enabled=true`: run command `gh pr view <pr.number> --json state -q .state`. `MERGED` → proceed. Any other state (`OPEN`/`CLOSED`) → relay "PR #<number> not merged yet (state: <state>)" and halt (re-run pr after merging). `CLOSED` without merge → relay; user decides reopen or abort (an abort here leaves the folder pre-archived with `phase != done` — still detected as active on the next `/asd-sprint` invocation, so nothing is lost; a manual folder move back to the active path is a legitimate recovery action if the user wants to resume work under the original sprint id).
    - `git.gh_enabled=false`: request user decision in `language.chat` — "PR merged?" yes / not yet. `not yet` → halt. `yes` → proceed.
-2. **Terminal state update** — delegate to agent `asd-pm`: update the already-archived `state.json` — `pr.state="merged"`, `phase=done`, `updated_at`=now. This is the one deliberate exception to "archived sprints never modified" (`artifact-layout.md` "Sprint archival") — only this terminal transition, nothing else. Append decisions-log entry ("sprint <NNN-slug> completed, PR <url-or-summary> merged").
+2. **Terminal state update** — delegate to agent `asd-pm`: update the already-archived `state.json` — `pr.state="merged"`, `phase=done`, `updated_at`=now. This is the one deliberate exception to "archived sprints never modified" (`artifact-layout.md` "Sprint archival") — only this terminal transition, nothing else. No decisions-log append here: `<sprint>/decisions-log.md` already lives inside the archived, immutable folder — the merge fact is recorded in `state.json.pr.state`/`phase` and in the merged PR itself.
 3. **Tag + release** (`self_hosting: enabled` only, `git-strategy.md` "Versioning & Changelog") — delegate to agent `asd-pm`:
    - create annotated tag `v<asd_version>` on the merge commit; push tag
    - `gh release create v<asd_version> --title v<asd_version> --notes-file` the matching `CHANGELOG.md` section
@@ -91,7 +91,6 @@ Open mode:
 
 Merge mode:
 - Self-hosting only: annotated tag `v<asd_version>`, GitHub Release
-- decisions-log final entry
 - Updated `state.json` (already at the archived path): `pr.state="merged"`, `phase=done`, `updated_at` — the one write an archived sprint's `state.json` still receives after its folder move
 
 ## Agents delegated to
