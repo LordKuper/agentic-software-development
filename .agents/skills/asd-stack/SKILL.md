@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-stack/SKILL.md. source_digest=sha256:84fcc1c7e3591dfb5472fdf5afe6e931c777195fcbd87e68ccdd9e47a44c55b7 content_digest=sha256:9b77fc541362e9abf81bbf9015b5c7c14e187bc53c8697a925f623ebffedb50f asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-stack/SKILL.md. source_digest=sha256:f0b31b8637940aa101d700d526d1aded38c13ea98dd32314f28949458b185a48 content_digest=sha256:13c3a766dba6b878a684d393ac4e60175332c800223dd9b1b81926aeb429ade9 asd_version=2.0.0 schema=1
 name: asd-stack
 description: "Forms or edits the project tech stack document at docs/architecture/stack.html via asd-architect, branching by silent detection into one of four flows (clean slate / constraints / clear stack / brownfield extraction). Verifies versions via WebFetch, runs knowledge-gap analysis, and maintains a tech-reference doc per chosen tech. Use when the user runs /asd-stack, when asd-init or asd-concept detects a missing stack.html and suggests this skill, or when the user asks to define, draft, refine, edit, upgrade, or reverse-engineer the project technology stack."
 ---
@@ -124,7 +124,7 @@ Per technology in approved stack:
 
 - NEVER guess a version — always verify via fetching external doc (architect handles)
 - Only add tech to stack when actively integrated, not speculatively
-- Speculative additions belong in ADR future-considerations, not stack.html
+- Speculative additions belong in stack.html's own "considered/not adopted" section or `.asd/project/stubs.md`, not the main stack list (ADRs are sprint-scoped and lost at archival — not a durable home)
 - Every tech in stack MUST have a matching tech-reference doc before COMPLETED
 
 ## Artefacts produced

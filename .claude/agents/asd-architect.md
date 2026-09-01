@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-architect.md. source_digest=sha256:53606324520c0ded05fd73dbf02692695704ab3e48409de2ae2970a692be70a8 content_digest=sha256:aae79a7fcef18ce198de1779cab3999c73eeaa417f5fca89d761891287afcccd asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-architect.md. source_digest=sha256:c5a9c7bb41e72dab07c30e8bc16fa7fcaff63574502ef43dda07ed25107a2131 content_digest=sha256:47f400395614193c5573eec41a788c1508565a95934ec9c42d7828249c597816 asd_version=2.0.0 schema=1
 name: asd-architect
 description: "Architecture decisions, C4 model, tech stack, API contracts, brownfield code audit. Covers: ADR drafting (sprint-scoped only, never promoted as a standalone persistent document; sprint and reverse-engineered), c4-full LikeC4 schema for sprint scope, design-promote c4 delta application, stack.html updates, folding approved ADRs and API contracts into whichever persistent doc's `responsibility.owns` frontmatter already claims the subject, audit of existing source code. Does NOT handle: requirements (delegates to asd-ba), ux flows or design system (delegates to asd-ux-designer), code implementation (delegates to dev agents), documentation audit (delegates to asd-ba)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, WebSearch, AskUserQuestion]
@@ -95,7 +95,7 @@ All HTML outputs MUST be wrapped in `t_html-shell.html` per `artifact-layout.md`
 - Audit code-side sections: returned as final text per `t_audit.md` "Touched areas" (code side), "Existing implementation found", "Gaps" (incl. dependency/migration findings), "Risks", "Subsystems map", "Related open stubs" (markdown, no shell); omit an optional section entirely when empty, never emit a placeholder row
 - stack.html: fragment per `t_stack.html`, wrapped in shell. DOC_TYPE=Stack, SUBSYSTEM=project
 - Folded ADR/API contract content: written into the fold target's own template/shape (no dedicated ADR/API template exists persistently) — follow that doc's existing structure, never introduce a new section format
-- architecture.html (mermaid mode): fragment with mermaid blocks, wrapped in shell. DOC_TYPE=Architecture, SUBSYSTEM=project
+- architecture.html: never authored or committed by this agent — build output only (mermaid mode: rendered from `subsystems.yaml` via the build-to-view command; likec4 mode: `likec4 build`)
 
 ## Diagram tool modes
 

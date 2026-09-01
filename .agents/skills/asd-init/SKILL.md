@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:6eee0f0f7c46e87bd42600645e905b2b6a98503bfd7bf67eb377c26b7bca1bf1 content_digest=sha256:2fb49361dae598600c4275eb31d15710818dc791f8ead4d5c9c042b70eb2213a asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:6a93849e9123b96651e6bcb9fa878421349174eb0bc2566deb4eb5197de148bc content_digest=sha256:cd220d4f4d7fd1fe76ad0260b42797bc37a22968735efc6b8d57a87f35f1e7cc asd_version=2.0.0 schema=1
 name: asd-init
 description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 ---
@@ -50,7 +50,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 12. Write `.asd/project/commands.yaml` (from `t_commands.yaml` + detected + OS-specific `custom.designmd-*` only when `documents.ux_spec: enabled`)
 13. If decomp enabled:
     - **likec4 mode**: seed `c4/model/main.c4`, `c4/views.c4` from templates. Seed `commands.yaml` with a `c4-build: "likec4 build docs/architecture/c4 --output docs/architecture/c4/dist"` build-to-view command — `dist/` itself is gitignored, not built here
-    - **mermaid mode**: seed `c4/subsystems.yaml` from `t_subsystems.yaml`. Seed `commands.yaml` with a `c4-build` command that renders `c4/architecture.html` from `subsystems.yaml` — `architecture.html` itself is gitignored, not rendered here
+    - **mermaid mode**: seed `c4/subsystems.yaml` from `t_subsystems.yaml`. ASD ships no mermaid-to-HTML renderer (avoids a new dependency) — seed `commands.yaml`'s `c4-build` entry as an empty placeholder (`""`) with an inline comment: user supplies their own render command before first use (a project script, or manually wrapping the mermaid blocks in `t_html-shell.html` as the architect agent does for other artifacts); `architecture.html` itself stays gitignored either way, never rendered by ASD itself
 14. **Post-init artefact checks** — suggest dedicated skill for each missing required artefact (do NOT auto-dispatch). Order: concept → stack → design-system:
     - `docs/product/concept.html` absent → suggest `/asd-concept`
     - `docs/architecture/stack.html` absent → suggest `/asd-stack`
