@@ -38,6 +38,16 @@ function loadManifest() {
   return sync.loadReleaseManifest(REPO_ROOT);
 }
 
+function readExpectedFixture(expectedPath, manifest) {
+  // Expected fixtures bake the ownership marker's asd_version field as the
+  // placeholder token below rather than a literal version string, so any
+  // future self-hosting asd_version bump (release-manifest.json) does not
+  // require touching these fixtures - the live manifest value is substituted
+  // in at comparison time, mirroring how sync.js stamps it into real output.
+  const raw = sync.readNormalized(expectedPath);
+  return raw.replace(/\{\{FIXTURE_ASD_VERSION\}\}/g, manifest.asd_version);
+}
+
 function renderFixture(kind, canonPath, sourceRelPath, manifest) {
   const canonRawNormalized = sync.readNormalized(canonPath);
   const { meta, body } = sync.parseCanonicalFrontmatter(canonRawNormalized);
@@ -64,7 +74,7 @@ test('canonical agent -> Claude .md matches fixture', () => {
     'agents/demo-agent.md',
     manifest
   );
-  const expected = sync.readNormalized(path.join(FIXTURES, 'expected/agents/demo-agent.claude.md'));
+  const expected = readExpectedFixture(path.join(FIXTURES, 'expected/agents/demo-agent.claude.md'), manifest);
   assert.strictEqual(rendered.output, expected);
   assert.ok(rendered.output.startsWith('---\n# ASD generated. Edit .asd/agents/demo-agent.md.'));
 });
@@ -77,7 +87,7 @@ test('canonical agent -> Codex .toml matches fixture', () => {
     'agents/demo-agent.md',
     manifest
   );
-  const expected = sync.readNormalized(path.join(FIXTURES, 'expected/agents/demo-agent.codex.toml'));
+  const expected = readExpectedFixture(path.join(FIXTURES, 'expected/agents/demo-agent.codex.toml'), manifest);
   assert.strictEqual(rendered.output, expected);
   assert.ok(rendered.output.startsWith('# ASD generated. Edit .asd/agents/demo-agent.md.'));
   assert.ok(rendered.output.includes('model = "gpt-5.6"'), 'codex model family alias must resolve via release-manifest table');
@@ -92,7 +102,7 @@ test('canonical skill -> Claude SKILL.md matches fixture', () => {
     'skills/demo-skill/SKILL.md',
     manifest
   );
-  const expected = sync.readNormalized(path.join(FIXTURES, 'expected/skills/demo-skill/SKILL.claude.md'));
+  const expected = readExpectedFixture(path.join(FIXTURES, 'expected/skills/demo-skill/SKILL.claude.md'), manifest);
   assert.strictEqual(rendered.output, expected);
   assert.ok(rendered.output.includes('allowed-tools: "Read Grep"'));
 });
@@ -105,7 +115,7 @@ test('canonical skill -> Codex SKILL.md matches fixture', () => {
     'skills/demo-skill/SKILL.md',
     manifest
   );
-  const expected = sync.readNormalized(path.join(FIXTURES, 'expected/skills/demo-skill/SKILL.codex.md'));
+  const expected = readExpectedFixture(path.join(FIXTURES, 'expected/skills/demo-skill/SKILL.codex.md'), manifest);
   assert.strictEqual(rendered.output, expected);
   // Codex skill frontmatter must NOT carry Claude-only fields.
   assert.ok(!rendered.output.includes('allowed-tools'));
