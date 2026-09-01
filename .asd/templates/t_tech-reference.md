@@ -2,7 +2,7 @@
 responsibility:
   owns: project-vetted reference for one technology version (apis used, version specifics, project conventions)
   excludes: adr rationale, code, full stack overview, build commands
-  delegates_to: stack.html (overview), adr/ (decisions), commands.yaml (commands)
+  delegates_to: stack.html (overview), commands.yaml (commands); decisions fold per sprint-lifecycle.md "Design-promote phase" fold rule into whichever persistent doc's owns matches
 ---
 
 # {{TECH_NAME}} @ {{VERSION}}
