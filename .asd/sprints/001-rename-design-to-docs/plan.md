@@ -150,9 +150,9 @@ Owner: `backend-dev`. Satisfies AC-5. Must run after every canon edit in Tasks 1
 ### Task 10: Recompute the release-manifest hash ledgers
 Owner: `backend-dev`. Satisfies AC-5. Runs after every per-file apply in Task 9. Material risk for impl-test: skipping this is invisible in this repo and only manifests as a broken `/asd-update` in a consumer.
 
-- [ ] Run a single bare `node .asd/sync.js --apply` (no arguments) — the one thing this form does is run `recomputeAndWriteHashLedgers` whole-repo
-- [ ] Assert `git diff .asd/release-manifest.json` is non-empty and that the changed entries cover the canonical files touched in Tasks 1–6
-- [ ] Do not hand-edit any ledger value (audit G-2). Rationale for the step: stale `upstream_hashes` make a consumer's `update.js` classify untouched files as locally modified, so it **skips** them and the consumer never receives the renamed rules (audit R-12)
+- [x] Run a single bare `node .asd/sync.js --apply` (no arguments) — the one thing this form does is run `recomputeAndWriteHashLedgers` whole-repo
+- [x] Assert `git diff .asd/release-manifest.json` is non-empty and that the changed entries cover the canonical files touched in Tasks 1–6
+- [x] Do not hand-edit any ledger value (audit G-2). Rationale for the step: stale `upstream_hashes` make a consumer's `update.js` classify untouched files as locally modified, so it **skips** them and the consumer never receives the renamed rules (audit R-12)
 
 ### Task 11: Final verification
 Owner: `backend-dev`. Satisfies AC-5, AC-6, AC-7. Strictly the last task in the sprint. Material risk for impl-test: this is the sprint's only real completeness gate — `--check` and `tests/run.js` prove nothing about rename completeness (audit R-11).
