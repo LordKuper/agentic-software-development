@@ -46,10 +46,8 @@ Caller passes the computed floor; report only at floor severity or higher.
 
 ### prd.html
 - problem clearly stated
-- goals measurable or testable
 - user stories complete (role + want + benefit)
 - acceptance criteria atomic, traceable, unambiguous
-- non-goals listed when scope ambiguity exists
 - consistency with project concept
 - consistency with custom rules
 
