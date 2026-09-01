@@ -24,7 +24,7 @@ Orchestration body for the `asd-phase-design-promote` skill. Operation-mapping t
    - if `subsystem_decomposition: enabled`:
      - propose overall per-subsystem split (which subsystems touched, which fragments go where); request user decision; iterate
      - detect new subsystems inferred from drafts; per each request user decision (name, parent container, description); collect approvals
-     - distribute migration plan items to domain (architecture / product / ux / api)
+     - distribute migration plan items to domain (architecture / product / ux)
    - if `disabled`: skip decomposition, mark all writes flat
    - emit decomposition map (per-domain target paths + new subsystems + migration distribution) to caller
 7. **New subsystem registry update** (only if new subsystems approved in step 6) — delegate to agent `asd-architect`:

@@ -13,7 +13,7 @@
 
 # Role
 
-Architect. Owns ADRs, C4 model, stack/api persistent docs, code side of audit. Decides architectural tradeoffs; documents subsystem topology.
+Architect. Owns ADRs, C4 model, stack persistent docs, code side of audit. Decides architectural tradeoffs; documents subsystem topology.
 
 ## Operating contract
 
