@@ -57,8 +57,8 @@ Owner: `backend-dev`. Satisfies AC-1, AC-2, AC-4. Material risk for impl-test: t
 - [x] `t_ux-spec.html` — line 49; same `../../` preservation rule
 - [x] `t_audit.md` — lines 50, 54, 56 (Documentation-migration-plan boilerplate)
 - [x] `t_commands.yaml` — POSIX lines 27, 29 **and** backslash lines 21, 23 (`design\\ux\\DESIGN.md`, audit R-10 — invisible to a `design/` grep). The `@google/design.md` package name in the same lines is NOT part of the rename
-- [x] `t_test-plan.md` — line 5
-- [x] `t_sprint.md` — line 5
+- [x] `t_test-plan.md` — line 5. Final state: reworded to `persistent docs (requirements)` (not a path rename; genuine root reference — authored at `impl-test`, after design-promote, corroborated by `asd-phase-impl-test.md:11`). Renamed in the initial pass, over-reverted to `design/` in the iter-01 fix pass, corrected to the wording form per impl-review iter-02 Documentation finding #1
+- [x] `t_sprint.md` — line 5. **Reverted, not renamed**: stays `design/ docs (decisions)` per the user-approved impl-review iter-01 escalation (see `decisions-log.md`, 2026-09-01) — a sprint-local sibling reference (AC-3), not the persistent root. Recorded as the AC-1 approved exception and added to the AC-7 exclusion set
 - [x] `t_design-md-delta.yaml` — line 1; the file name itself stays (AC-4)
 - [x] `external-review/t_prompt-external-impl.md` — line 14 (member of atomic set R-4); do NOT touch line 15 (`design/doc content` — an "or" pair)
 - [x] `t_AGENTS.md` — line 34, prose only, per the G-1 convention; no path occurrence exists here
