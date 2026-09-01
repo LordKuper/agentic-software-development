@@ -128,3 +128,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: `.asd/sprints/002-lean-workflow/reviews/impl/iter-03/{quality,implementation,testing,ui,simplification,documentation,performance,external}.md` (all 8 written), `.asd/sprints/002-lean-workflow/state.json` (`reviews.impl.verdicts["iter-03"]`, `review_fixes_pending`, `updated_at`).
 
 - 2026-09-01 — impl fix for iter-03: all 9 unique findings resolved in one batch (iteration_heads fallback, session-start.js skipped-verdict handling + regression test, scoped_fan_out wording, TOC_ASSETS placeholder deleted and merged into shell CSS, stale scrollspy reference, UI-predicate dedup, E-1 token-usage scoping, test-selection rule dedup, light-mode contrast fix). 79/79 tests passing (78 + 1 new). `review_fixes_pending` cleared.
+
+- 2026-09-01 — impl-test entry 4 (re-entry, delta scope): suite green (79/79, lint clean, build clean), fail-first proof for the session-start.js fix independently re-verified (reverted the fix, confirmed the new test fails, restored, confirmed 79/79), `test_defects_pending` confirmed null
