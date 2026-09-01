@@ -141,7 +141,7 @@
     ".asd/templates/t_stubs.md": "c49cee451b195d9db824d6bcaf5960a510826fb758e2386adde72215992e8457",
     ".asd/templates/t_subsystems.yaml": "26fa96999de930616a93a4289f5f5d19a15c5d61ac863c3320f0750caf6a84a8",
     ".asd/templates/t_tech-reference.md": "1f65865cddf8cfa5d9c7247afd770c3b8cf0c75b7cd9d30d968ba9b71e29515b",
-    ".asd/templates/t_test-plan.md": "cdd4ea4e7181f9f0e8b7e2455957c96443b37ca8f1893852ff8a7c425bdd4a9f",
+    ".asd/templates/t_test-plan.md": "6fb715d0a80c2b50b3aad8e7e0d1aa307edccdf07c9c8fef12c1ab7abb51f289",
     ".asd/templates/t_ux-spec.html": "23afee28bf20f020d98334f33e64cddb42b72b665441a7e76362948457761661",
     ".asd/workflows/asd-phase-audit.md": "48e1006cf5f2572bb5f736f677c6cbfab61a10e6384b3bc8f2744b4bfb6cc0bf",
     ".asd/workflows/asd-phase-design-promote.md": "2df72bb0f64787819b5679bc7d55ccdb72bc08f22e579de96eac8771721ebde0",
@@ -149,7 +149,7 @@
     ".asd/workflows/asd-phase-design.md": "a88cff993f06fcf3f993cefc1245dc8e9faa8576af6f516d1d8a672b322478cb",
     ".asd/workflows/asd-phase-impl-review.md": "dcca0961ef63c262943f75c5e622ed950b9ff27c0acc3a282b5a93b289f79121",
     ".asd/workflows/asd-phase-impl-test.md": "fac7498da93861fd7b968b99b26c868e8e0658c62bf1befbecc4351c7db961b4",
-    ".asd/workflows/asd-phase-impl.md": "f047607f2291ce5173cf6c5b4492360e19848d392cbaf3c218d182986739dc89",
+    ".asd/workflows/asd-phase-impl.md": "ed2ed67d45887e1166e02b2796070dc4b1e3f291825d6034c4b066325581c48d",
     ".asd/workflows/asd-phase-plan.md": "36192ce8e28906634e9b3c05b11e85e09d6e0b0aa7b537cdca3c2f2f6fca8bf1",
     ".asd/workflows/asd-phase-pr.md": "dbae27f64c59819e4261367608bf8183cf40fb6159b8f5f679dee12b169d3247",
     ".asd/workflows/asd-phase-scope.md": "4772fad9b25f2bd9a1474525f38e212c46b2b6a0807a1d0df9cbb5de7b86d5f2"
