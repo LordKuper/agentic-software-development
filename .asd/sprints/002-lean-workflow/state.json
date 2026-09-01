@@ -1,12 +1,12 @@
 {
   "sprint_id": "002-lean-workflow",
   "branch": "sprint/002-lean-workflow",
-  "phase": "impl-test",
+  "phase": "impl-review",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "adr": false, "c4": false },
   "skipped_phases": ["design", "design-review", "design-promote"],
   "reviews": {
     "design": { "iteration": 0, "verdicts": {} },
-    "impl": { "iteration": 2, "iteration_heads": { "iter-01": "b13d77c70e171e34abea6e3a52ed777fa51e3577", "iter-02": "8146860" }, "verdicts": { "iter-01": {
+    "impl": { "iteration": 3, "iteration_heads": { "iter-01": "b13d77c70e171e34abea6e3a52ed777fa51e3577", "iter-02": "8146860" }, "verdicts": { "iter-01": {
       "quality": "CONCERNS",
       "implementation": "CONCERNS",
       "testing": "CONCERNS",
