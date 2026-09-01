@@ -32,15 +32,12 @@ Orchestration body for the `asd-phase-plan` skill. Operation-mapping to host too
        - decisions-log entry summarising stub decisions
      - **Task decomposition rules**:
        - one Task per coherent unit of work
-       - each Task references an AC-N from the acceptance-criteria source it satisfies (cite in Task body or Context link)
+       - each Task references an AC-N from the acceptance-criteria source it satisfies (cite in Task body)
        - subtasks as checkboxes inside `### Task N:` block only (parser-critical)
        - assign owner role per Task in body (backend-dev / frontend-dev)
        - no test-authoring Tasks or subtasks — tests are selected and written in `impl-test`, after the code exists; note per Task only the **material risk** the change carries, as input for impl-test
        - list non-trivial dependencies between tasks
-     - **Definition of Done**:
-       - all PRD acceptance criteria covered by Tasks
-       - full test suite green at impl-test phase
-       - all reviewers green at impl-review phase
+     - **Definition of Done**: reference the standing DoD (`sprint-lifecycle.md` "Plan file format") instead of restating it; author only sprint-specific additions, if any
      - on approval translate to `language.docs` + write `<sprint>/plan.md`
      - append decisions-log entry ("plan approved for sprint <NNN-slug>")
      - emit COMPLETED
