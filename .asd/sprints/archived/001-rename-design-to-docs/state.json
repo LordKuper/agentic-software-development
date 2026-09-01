@@ -1,7 +1,7 @@
 {
   "sprint_id": "001-rename-design-to-docs",
   "branch": "sprint/001-rename-design-to-docs",
-  "phase": "pr",
+  "phase": "done",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "adr": false, "c4": false },
   "skipped_phases": ["design", "design-review", "design-promote"],
   "reviews": {
@@ -43,13 +43,14 @@
     }
   },
   "created_at": "2026-09-01T07:52:31Z",
-  "updated_at": "2026-09-01T15:10:00Z",
+  "updated_at": "2026-09-01T11:57:22Z",
+  "archived_at": "2026-09-01T11:57:22Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": {
     "number": 14,
     "url": "https://github.com/LordKuper/agentic-software-development/pull/14",
-    "state": "open"
+    "state": "merged"
   },
   "subsystems_touched": [],
   "new_subsystems": [],

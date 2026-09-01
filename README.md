@@ -156,7 +156,7 @@ flowchart TD
 | **impl** | Devs (Backend, Frontend) implement Tasks — or fix impl-review findings (review-fix mode) or impl-test defects (test-fix mode); no tests written here; run build/lint, commit per Conventional Commits |
 | **impl-test** | Test Engineer picks the risk-based test approach for the change scope, deletes redundant/flaky/implementation-coupled tests, writes the missing ones, runs the full suite; records everything in `test-plan.md`; code defects route back to `impl` |
 | **impl-review** | 7 internal reviewers (Quality, Implementation, Testing, UI, Simplification, Documentation, Performance) plus External Review; routes findings back to `impl` review-fix mode |
-| **pr** | DoD verification + `gh pr create` (or push + summary if gh disabled); sprint is archived on a later re-entry once the PR is merged |
+| **pr** | DoD verification + `gh pr create` (or push + summary if gh disabled); sprint folder archived onto the same branch right after; a later re-entry sets the terminal state once the PR is merged |
 
 You can resume an interrupted sprint at any time: `/asd-sprint` reads `state.json`, detects the current phase, and dispatches the matching phase skill.
 
@@ -291,7 +291,7 @@ your-project/
 │   │   └── stubs.md                 # project-global TODO registry
 │   └── sprints/
 │       ├── <NNN-slug>/              # active sprint (one at a time)
-│       └── archived/<NNN-slug>/     # closed sprints (immutable)
+│       └── archived/<NNN-slug>/     # moved here on PR open (pre-merge); read-only except the terminal write on merge
 ├── .claude/                         # generated Claude Code view
 │   ├── agents/                      # 15 agent definitions (*.md)
 │   ├── skills/                      # 17 skill definitions (SKILL.md)
@@ -391,7 +391,7 @@ The canonical SessionStart hook (`.asd/hooks/session-start.js`) prints a one-blo
 ## FAQ
 
 **Can I run multiple sprints in parallel?**
-No. ASD enforces one active sprint at a time. The sprint folder is archived once its PR is merged (re-run `/asd-sprint` after merging to trigger archival); only then can a new one start. This keeps state recovery simple.
+No. ASD enforces one active sprint at a time. The sprint folder is archived onto the branch right after its PR is opened, but it still counts as active — and blocks a new one — until the PR is actually merged (re-run `/asd-sprint` after merging to write the terminal state). This keeps state recovery simple.
 
 **What if a reviewer keeps blocking the same finding?**
 The iteration severity floor uses cumulative budgets: by default iter 1 considers all severities, iter 2 considers medium+, iter 3-4 considers high+, iter 5-14 considers only critical, iter 15+ escalates to you. Tune the limits in `config.yaml`.

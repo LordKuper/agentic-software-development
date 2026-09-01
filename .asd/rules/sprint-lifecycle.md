@@ -54,7 +54,7 @@ Verdict files: design-review → `<sprint>/reviews/design/iter-NN/`, impl-review
 | impl | Backend Dev + Frontend Dev | `plan.md` (initial), `reviews/impl/iter-NN/` findings (review-fix), or `test-plan.md` Defects (test-fix) | code, `manual-steps.md` | all tasks/findings/defects done; build + lint pass (completion gate) |
 | impl-test | Test Engineer | code diff, `plan.md`, PRD ACs, existing tests | `test-plan.md`, tests in repo | full suite green → `impl-review`; code defects → `impl` test-fix mode |
 | impl-review | Quality + Implementation + Testing + UI + Simplification + Documentation + Performance + External Review | code + tests + `test-plan.md` | `reviews/impl/iter-NN/<reviewer>.md` | DoD met → `pr`; else route to `impl` review-fix mode |
-| pr | PM | everything | PR (open mode), then sprint archive (merge mode) | PR opened; sprint archived on a later re-entry once PR merged |
+| pr | PM | everything | PR + sprint archive (open mode), then terminal state (merge mode) | PR opened, folder archived on the branch; `phase=done` set on a later re-entry once PR merged |
 
 ## Self-hosting
 
@@ -184,10 +184,10 @@ Loops until the full suite passes. No iteration cap — an unfixable state surfa
 
 Two modes, detected from `state.json.pr`:
 
-- **Open** (`pr` null) — DoD verification, then compose + open (or prepare) the PR. On success records `state.json.pr = {number, url, state:"open"}`, keeps `phase=pr`, emits `STATUS=pr-open NEXT=await-merge`. **No archival.** Sprint stays active.
-- **Merge** (`pr.state="open"`) — entered on a later `/asd-sprint` resume. Checks merge (`gh pr view` state, or user confirm when `gh_enabled=false`); only when merged does it archive the sprint (`pr.state="merged"`, `phase=done`). Not merged → halt, retry after merge.
+- **Open** (`pr` null) — DoD verification, then compose + open (or prepare) the PR; records `state.json.pr = {number, url, state:"open"}`. Immediately after, moves the sprint folder to `.asd/sprints/archived/<NNN-slug>/` as a dedicated commit on the same branch — bundled into the same PR so it survives squash-merge + auto-delete-branch (a later push to a merged-and-deleted sprint branch is impossible). `phase` stays `pr` (not `done` — the folder moved, the sprint has not actually merged yet). Emits `STATUS=pr-open NEXT=await-merge`. Sprint still counts as active.
+- **Merge** (`pr.state="open"`) — entered on a later `/asd-sprint` resume, reading `state.json` from wherever it now lives (usually already `archived/`). Checks merge (`gh pr view` state, or user confirm when `gh_enabled=false`); only when merged does it write the terminal state (`pr.state="merged"`, `phase=done`) — the one deliberate exception to "archived sprints never modified" (`artifact-layout.md` "Sprint archival"). Not merged → halt, retry after merge.
 
-Archival is gated on merge, never on PR creation.
+The folder move is gated on DoD + PR creation, not on merge; the `phase=done` terminal signal is still gated on a confirmed merge, never on PR creation or the folder move. A sprint whose folder already lives under `archived/` but whose `phase` is not yet `done` still counts as the one active sprint (`asd-sprint` step 1 checks both locations).
 
 ## Signal vocabulary
 
@@ -205,7 +205,7 @@ See `t_plan.md` for canonical structure.
 
 ## Sprint immutability
 
-A closed sprint folder under `.asd/sprints/archived/<NNN-slug>/` is read-only. Follow-up work creates a new sprint.
+A sprint folder under `.asd/sprints/archived/<NNN-slug>/` is read-only, with one narrow exception: the `pr` phase's merge-mode terminal write (`pr.state="merged"`, `phase=done`, `updated_at`) to a sprint archived pre-merge (`sprint-lifecycle.md` "PR phase"). Once `phase=done`, truly immutable — follow-up work creates a new sprint.
 
 ## State recovery
 
