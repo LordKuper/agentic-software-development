@@ -10,8 +10,9 @@ Orchestration body for the `asd-phase-impl-test` skill. Operation-mapping to hos
 ## Operations used
 - read: `.asd/project/config.yaml`, `state.json`, `plan.md`, `test-plan.md`, persistent docs (PRD ACs, api, ux-spec), `commands.yaml`, `custom-common-rules.md`, `custom-coding-rules.md`, existing test sources
 - run command: change-surface diff; `commands.yaml` `test`/`lint`/`build` for the suite gate
+- write a file: `state.json` and decisions-log inline, for the mechanical non-gate writes at steps 1, 8, 9 (`sprint-lifecycle.md` "State recovery") — no PM dispatch in this phase
 - request user decision: out-of-scope test removal gate; escalation
-- delegate to agent `asd-test-engineer` (strategy, prune + author, suite run); `asd-pm` for state + decisions-log
+- delegate to agent `asd-test-engineer` (strategy, prune + author, suite run)
 
 ## Execution mode
 
@@ -24,7 +25,7 @@ No user gate on a green suite, and none on routing defects back to impl.
 
 ## Workflow
 
-1. Read `.asd/project/config.yaml` (`language.chat`, `language.docs`, `backward_compat`, `self_hosting`), `<sprint>/state.json` → set `phase=impl-test` via delegation to `asd-pm`
+1. Read `.asd/project/config.yaml` (`language.chat`, `language.docs`, `backward_compat`, `self_hosting`), `<sprint>/state.json` → write `phase=impl-test` inline (mechanical, no gate)
 2. **Change surface** — run command for `git diff <git.base_branch>...HEAD --stat <pathspec>` plus file list, using the same `<pathspec>` as impl-review's self-hosting-aware scoping (`.asd/rules/external-review.md` "`<pathspec>` for impl-review" — consumer default excludes `.asd/**`/`docs/**`; `self_hosting: enabled` includes the whole repo minus `.asd/project/**`/`.asd/sprints/**`/generated views). Add the existing test files that cover those production files (search repo by test naming convention). This set is the review scope for the whole phase
 3. **Strategy pass** — delegate to agent `asd-test-engineer` with payload: change surface, `plan.md`, AC list (PRD AC-N if `documents.prd` enabled, else `sprint.md`'s own AC-N — `sprint-lifecycle.md` "Optional documents"), API contract fold target(s) + ux-spec paths (if present), `commands.yaml`, custom rules, `t_test-plan.md`, `language.docs`. Instruction:
    - test selection happens **now**, after the implementation exists — never speculatively from the plan
@@ -44,9 +45,9 @@ No user gate on a green suite, and none on routing defects back to impl.
 7. **Suite gate** — delegate to agent `asd-test-engineer` to run `test`, then `lint` and `build` per `commands.yaml`, and write the raw result into the `Suite run` section of `test-plan.md`. Verdict is read from the runner's exit code plus report — an agent's summary alone never satisfies this gate
 8. **Triage** on any failure:
    - **test defect** (bad assertion, wrong fixture, flaky pattern) → re-dispatch step 6 for the offending tests, then step 7 again
-   - **code defect** → append a `D-N` row to the `Defects` section of `test-plan.md` (location, symptom, failing test, status `pending`); delegate to agent `asd-pm`: set `state.json.test_defects_pending = true`, append decisions-log "impl-test: defects <D-N list> → impl test-fix"; emit COMPLETED with `NEXT: impl`
+   - **code defect** → append a `D-N` row to the `Defects` section of `test-plan.md` (location, symptom, failing test, status `pending`); write `state.json.test_defects_pending = true` inline and append decisions-log "impl-test: defects <D-N list> → impl test-fix" (mechanical, no gate); emit COMPLETED with `NEXT: impl`
    - both kinds present → fix the test defects first, re-run, then route the remaining code defects back
-9. **Green suite** — delegate to agent `asd-pm`: append decisions-log "impl-test: suite green (<counts>), <added>/<removed> tests"; confirm `test_defects_pending` null; emit COMPLETED with `NEXT: impl-review`
+9. **Green suite** — write inline (mechanical, no gate): append decisions-log "impl-test: suite green (<counts>), <added>/<removed> tests"; confirm `test_defects_pending` null; emit COMPLETED with `NEXT: impl-review`
 10. test-engineer QUESTION / FAILED / ABORT → relay, halt
 
 ## Re-entry
@@ -62,7 +63,7 @@ Every `impl` exit re-enters this phase. `test-plan.md` is rewritten each entry f
 
 ## Agents delegated to
 - `asd-test-engineer` (strategy, prune + author, suite run)
-- `asd-pm` (state, decisions-log)
+- No PM dispatch — all `state.json`/decisions-log writes in this phase are mechanical, no-gate, and done inline by the workflow (Task 15)
 - No reviewers — test quality is judged in impl-review by `asd-reviewer-testing`
 
 ## Skills/workflows dispatched

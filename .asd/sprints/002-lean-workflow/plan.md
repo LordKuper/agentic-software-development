@@ -244,12 +244,12 @@ Verdicts: **P-11**, **AG-1**, gap **G-10**, risk **R-14**. AC: AC-2, AC-3, AC-4,
 Affected canonical files: `.asd/workflows/asd-phase-audit.md` (step 7), `.asd/workflows/asd-phase-design.md` (steps 5, 11), `.asd/workflows/asd-phase-plan.md` (step 4), `.asd/workflows/asd-phase-impl.md` (steps 4, 11), `.asd/workflows/asd-phase-impl-test.md` (steps 1, 8, 9), `.asd/rules/sprint-lifecycle.md` (State recovery), `.asd/agents/asd-pm.md`.
 Material risk: audit R-14 — without the G-10 writer sentence landed in the **same** change, the framework describes one writer while two exist, and the next workflow edit re-introduces the split. PM's write allowlist must stay unchanged: it keeps the right, it merely stops being dispatched for it.
 
-- [ ] Convert pure `state.json` field writes and mechanical decisions-log appends to inline workflow writes at all five sites
-- [ ] Keep the `asd-pm` dispatch wherever a **user gate** is involved: audit approval, plan approval, impl assessment, PR confirmation, design-promote confirmations
-- [ ] Gap G-10: add the explicit writer sentence to `sprint-lifecycle.md` "State recovery" naming the phase workflow as a permitted writer, in this same change
-- [ ] Leave `asd-pm.md`'s write allowlist untouched
-- [ ] Update the "Agents delegated to" block in every workflow file whose dispatch set changed
-- [ ] Run `sync.js --apply` for `asd-pm.md`
+- [x] Convert pure `state.json` field writes and mechanical decisions-log appends to inline workflow writes at all five sites
+- [x] Keep the `asd-pm` dispatch wherever a **user gate** is involved: audit approval, plan approval, impl assessment, PR confirmation, design-promote confirmations
+- [x] Gap G-10: add the explicit writer sentence to `sprint-lifecycle.md` "State recovery" naming the phase workflow as a permitted writer, in this same change
+- [x] Leave `asd-pm.md`'s write allowlist untouched
+- [x] Update the "Agents delegated to" block in every workflow file whose dispatch set changed
+- [x] Run `sync.js --apply` for `asd-pm.md` (not needed — `asd-pm.md` untouched this task; verified via `sync.js --check`, still `current`)
 
 ### Task 16: Parallelize the audit phase
 

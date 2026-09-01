@@ -9,18 +9,18 @@ Orchestration body for the `asd-phase-plan` skill. Operation-mapping to host too
 
 ## Operations used
 - read: `.asd/project/config.yaml`, `state.json`, sprint.md, persistent docs touched by sprint
+- write a file: `state.json` inline, for the mechanical non-gate phase-field write at step 4 (`sprint-lifecycle.md` "State recovery")
 - request user decision: rare, phase-level escalation only (PM handles section approvals)
-- delegate to agent `asd-pm` (author + state + decisions-log)
+- delegate to agent `asd-pm` (author + gated approval + decisions-log)
 
 ## Workflow
 
 1. Read `.asd/project/config.yaml` (`language.chat`, `language.docs`, `project.subsystem_decomposition`); read `<sprint>/state.json` — frozen `documents.prd`, `documents.audit`
 2. Read `<sprint>/state.json` → confirm design-promote done
 3. Read `<sprint>/sprint.md`, persistent docs referenced (per-subsystem files updated this sprint, plus shared concept.html, stack.html, DESIGN.md, accessibility.html — only whichever exist), `.asd/project/commands.yaml`. Acceptance-criteria source: PRD AC-N when `documents.prd` enabled, else `sprint.md`'s own `AC-N` list (`sprint-lifecycle.md` "Optional documents").
-4. Delegate to agent `asd-pm` with payload:
+4. Write `state.json` (phase=plan) inline (mechanical, no gate); delegate to agent `asd-pm` with payload:
    - sprint.md path, list of relevant persistent doc paths, acceptance-criteria source, `language.chat`, `language.docs`; template `t_plan.md`
    - instruction:
-     - update `state.json` (phase=plan)
      - author plan.md skeleton first
      - per-section discussion with user in `language.chat` per QODDA + language-policy section approval flow
      - **Stub inclusion step** (before task decomposition):

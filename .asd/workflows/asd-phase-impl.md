@@ -10,8 +10,9 @@ Orchestration body for the `asd-phase-impl` skill. Operation-mapping to host too
 
 ## Operations used
 - read: `.asd/project/config.yaml`, `state.json`, `plan.md`, `<sprint>/reviews/impl/iter-NN/` (review-fix), `<sprint>/test-plan.md` (test-fix), persistent docs, `.asd/project/custom-common-rules.md`, `custom-coding-rules.md`, `stubs.md`, `<sprint>/manual-steps.md`
+- write a file: `state.json` inline, for the mechanical non-gate writes at steps 4, 11 (`sprint-lifecycle.md` "State recovery")
 - request user decision: escalation only (see Execution mode)
-- delegate to agent: devs per task owner / finding owner / defect owner; PM for state + assessment + decisions-log
+- delegate to agent: devs per task owner / finding owner / defect owner; PM for manual-steps gate, impl completion gate, impl assessment gate, decisions-log tied to those gates
 
 ## Modes
 
@@ -53,7 +54,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
    - **initial** — read `<sprint>/plan.md` → parse Task blocks: title, owner (backend-dev / frontend-dev), subtask checkboxes, dependencies
    - **review-fix** — read every reviewer file in `<sprint>/reviews/impl/iter-NN/`; collect all CONCERNS findings plus all FAIL findings the user accepted for fix (skip FAIL noted resolved-by-override); from each finding's `Location` (file:line) determine owning dev; group findings by owner into fix tasks. Findings located in test files route to `asd-test-engineer`
    - **test-fix** — read `<sprint>/test-plan.md` `Defects` section; collect every `D-N` with status `pending`; from each `Location` determine owning dev; group by owner into fix tasks
-4. Delegate to agent `asd-pm`: update `state.json` (phase=impl)
+4. Write `state.json` (phase=impl) inline (mechanical, no gate)
 5. **Build execution graph**:
    - initial — from Task dependencies; topological sort; mark independent tasks parallelisable
    - fix modes — fix tasks independent unless two touch same file; parallel where independent, sequential where they collide
@@ -110,7 +111,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
    - on approve: update `state.json`, append decisions-log entry ("impl assessment approved")
    - on request changes: relay specific feedback to relevant dev(s); loop step 7
    - on abort: emit ABORT
-11. **Fix-mode finalize** — fix modes only — delegate to agent `asd-pm`:
+11. **Fix-mode finalize** — fix modes only — write inline (mechanical, no gate):
    - review-fix: clear `state.json.review_fixes_pending` (set null), append decisions-log entry "impl fix for iter-NN: findings resolved"
    - test-fix: clear `state.json.test_defects_pending` (set null), append decisions-log entry "impl test-fix: defects <D-N list> resolved"
 12. Emit phase COMPLETED with return contract (`NEXT: impl-test` in all modes)
@@ -138,7 +139,7 @@ Impl completion gate (step 9) and, initial mode only, impl assessment gate (step
 - decisions-log entry on impl assessment approval (initial) or fix-mode finalize
 
 ## Agents delegated to
-- `asd-pm` (state, impl completion gate, impl assessment, fix-mode finalize, decisions-log)
+- `asd-pm` (manual-steps gate, impl completion gate, impl assessment gate, decisions-log tied to those gates; mechanical writes at steps 4, 11 are now inline workflow writes, Task 15)
 - `asd-backend-dev` (per Task with owner=backend-dev)
 - `asd-frontend-dev` (per Task with owner=frontend-dev)
 - `asd-test-engineer` (review-fix mode only, for findings located in test files)

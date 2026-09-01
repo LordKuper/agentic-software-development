@@ -9,6 +9,7 @@ Orchestration body for the `asd-phase-audit` skill. Operation-mapping to host to
 
 ## Operations used
 - read: `.asd/project/config.yaml`, `state.json`, `sprint.md`
+- write a file: `state.json` inline, for the mechanical non-gate phase-field write at step 7 (`sprint-lifecycle.md` "State recovery")
 - request user decision: only on user-facing escalation from agents
 - delegate to agent, sequential: `asd-ba`, `asd-architect`, `asd-pm`
 
@@ -34,10 +35,9 @@ Orchestration body for the `asd-phase-audit` skill. Operation-mapping to host to
      - for any tech identified, verify `docs/architecture/tech-reference/<tech>-<version>.md` exists; if missing, create reverse-engineered references via fetch-external-doc-by-URL + `t_tech-reference.md`
      - read `.asd/project/stubs.md`; filter entries whose File:Line points to touched-area files or whose Owner indicates relevance; append matching rows to audit.md "Related open stubs" section, or omit the section entirely when none match
      - emit COMPLETED
-7. On Architect COMPLETED → delegate to agent `asd-pm` with payload:
+7. On Architect COMPLETED → write `state.json` (phase=audit, updated_at) inline (mechanical, no gate); delegate to agent `asd-pm` with payload:
    - audit.md path
    - instruction:
-     - update `state.json` (phase=audit, updated_at)
      - present audit.md to user for approval per checkpoints.md (approve / request changes / reject)
      - on approve → append decisions-log entry, emit COMPLETED
      - on request changes → relay feedback to BA or Architect (caller decides which), loop

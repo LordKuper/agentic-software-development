@@ -10,8 +10,9 @@ Orchestration body for the `asd-phase-design` skill. Operation-mapping to host t
 ## Operations used
 - read: `.asd/project/config.yaml`, `state.json`, `sprint.md`, `audit.md`, audit-produced reverse/migrated drafts in `<sprint>/design/`
 - search repo: design-system gate — existence of `docs/ux/DESIGN.md`, `docs/ux/design-system.html`, `docs/ux/accessibility.html`
+- write a file: `state.json` and decisions-log inline, for the mechanical non-gate writes at steps 5, 11 (`sprint-lifecycle.md` "State recovery")
 - request user decision: rare, phase-level escalation only
-- delegate to agent, sequential: BA, UX Designer, Architect, optional Architect (c4-full); plus PM for state
+- delegate to agent, sequential: BA, UX Designer, Architect, optional Architect (c4-full); plus PM for the collapsed no-op path (step 2)
 - dispatch skill `asd-design-system` when gate detects missing files
 
 ## Workflow
@@ -20,7 +21,7 @@ Orchestration body for the `asd-phase-design` skill. Operation-mapping to host t
 2. **Collapsed no-op path** (Task 14, gap G-11) — if `prd`, `ux_spec`, `adr`, and `documents.c4` (already effective) all disabled: perform **one** deterministic check covering all three no-op phases at once — never dispatch `design-review`/`design-promote` as separate steps for this sprint. Delegate to agent `asd-pm` to, in a single write: set `phase="design-promote"` (the last of the three collapsed phases, so `PHASE_CHAIN[idx+1]` mechanically yields `plan` and a resumed session cannot re-enter this block), append `["design", "design-review", "design-promote"]` to `state.json.skipped_phases`, append **one** decisions-log line "design/design-review/design-promote skipped (no documents enabled)" — **no user decision requested** (`sprint-lifecycle.md` "No-op phase rule" + "Skip record" multi-phase case); emit phase COMPLETED with `NEXT: plan` (return contract below only covers the non-collapsed path); skip remaining steps
 3. Read `.asd/project/config.yaml` (`project.diagram_tool`, `language.chat`, `language.docs`); read `<sprint>/sprint.md`, `audit.md` (if it exists)
 4. List existing drafts in `<sprint>/design/` (from audit, with `provenance` flag)
-5. Delegate to agent `asd-pm`: update `state.json` (phase=design)
+5. Write `state.json` (phase=design) inline (mechanical, no gate)
 6. **Step PRD** — only if `prd` enabled: delegate to agent `asd-ba`:
    - inputs: sprint.md, audit.md (if present), existing prd draft if any, `language.chat`, `language.docs`; template `t_prd.html`
    - instruction: integrate existing draft (preserve `provenance` + `source` if present); author sprint PRD draft covering all scope as User stories + Acceptance criteria (plus optional one-line Problem) — Goals/Non-goals omitted entirely, deferred to design-promote's persistent-doc fold; discuss each section in `language.chat`; on approval translate to `language.docs` + write `<sprint>/design/prd.html`; emit COMPLETED
@@ -43,7 +44,7 @@ Orchestration body for the `asd-phase-design` skill. Operation-mapping to host t
       - mermaid: `t_subsystems.yaml`; produce `<sprint>/design/c4-full/subsystems.yaml` — never render `architecture.html` here
     - instruction: author a **delta patch** against the persistent registry covering sprint scope; author the **full schema** instead only when the persistent registry does not yet exist; discuss overall view in `language.chat`; on approval write files; emit COMPLETED
     - if `documents.c4` disabled → skip
-11. On all enabled steps COMPLETED → delegate to agent `asd-pm` to update `state.json` (drafts ready), append decisions-log entry summarising drafts actually produced (and which were skipped)
+11. On all enabled steps COMPLETED → write `state.json` (drafts ready) inline and append decisions-log entry summarising drafts actually produced (and which were skipped) — mechanical, no gate
 12. Emit phase COMPLETED with return contract
 13. Any creator QUESTION → relay, halt; resumes on user answer
 14. Any creator FAILED / ABORT → relay, halt
@@ -59,7 +60,7 @@ Orchestration body for the `asd-phase-design` skill. Operation-mapping to host t
 Indirect (via design-system gate): `docs/ux/DESIGN.md`, `design-system.html`, `accessibility.html` (when gate dispatches `asd-design-system`).
 
 ## Agents delegated to
-- `asd-pm` (state + decisions-log)
+- `asd-pm` (collapsed no-op path only, step 2 — state + decisions-log; mechanical writes at steps 5, 11 are now inline workflow writes, Task 15)
 - `asd-ba` (PRD)
 - `asd-ux-designer` (UX-spec; inline delta)
 - `asd-architect` (ADR; optional c4-full; tech-reference)
