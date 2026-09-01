@@ -2,7 +2,7 @@
 responsibility:
   owns: task breakdown, dod, task status (checkboxes)
   excludes: requirements, design decisions, code, review findings
-  delegates_to: docs/ docs (requirements/design), reviews/ (findings)
+  delegates_to: persistent docs (requirements/design), reviews/ (findings)
 ---
 
 # Plan
@@ -20,9 +20,9 @@ Format rules (parser-critical):
 {{what plan covers, prose}}
 
 ## Context
-- [requirements/{{subsystem}}.html](../../docs/product/requirements/{{subsystem}}.html)
-- [adr-{{NNNN}}-{{slug}}.html](../../docs/architecture/adr/{{subsystem}}/adr-{{NNNN}}-{{slug}}.html)
-- [ux/{{subsystem}}.html](../../docs/ux/{{subsystem}}.html)
+- [requirements/{{subsystem}}.html](../../../docs/product/requirements/{{subsystem}}.html)
+- [adr-{{NNNN}}-{{slug}}.html](../../../docs/architecture/adr/{{subsystem}}/adr-{{NNNN}}-{{slug}}.html)
+- [ux/{{subsystem}}.html](../../../docs/ux/{{subsystem}}.html)
 
 ## Definition of Done
 {{prose checklist of completion criteria — NO checkboxes here}}
