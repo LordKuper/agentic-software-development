@@ -947,12 +947,21 @@ test('update state machine: unsafe manifest path is rejected regardless of hashe
 // 9. sync.js --check CLI is green with no real canon trees yet (Stage 0)
 // ===========================================================================
 
-test("`node .asd/sync.js --check` runs clean on this repo before Stage 1 migration", () => {
+test("`node .asd/sync.js --check` reports every item current (no drift), except the self-sourced AGENTS.md", () => {
   const { execFileSync } = require('node:child_process');
   const out = execFileSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), '--check'], { cwd: REPO_ROOT, encoding: 'utf8' });
   const parsed = JSON.parse(out);
   assert.strictEqual(parsed.ok, true);
   assert.ok(Array.isArray(parsed.items));
+  // `--check` always exits 0 with `ok: true`; drift only shows as a per-item
+  // `status` string, so `ok`/`items` alone cannot catch a stale/modified
+  // generated view. Assert every item is actually `current`. `AGENTS.md` is
+  // allowlisted: under `self_hosting: enabled` it is self-sourced/hand-edited
+  // (per AGENTS.md's own documented rule), so sync.js legitimately reports it
+  // `modified-foreign` rather than syncing it - that is not drift.
+  const SELF_SOURCED_ALLOWLIST = new Set(['AGENTS.md']);
+  const drifted = parsed.items.filter((item) => item.status !== 'current' && !SELF_SOURCED_ALLOWLIST.has(item.target));
+  assert.deepStrictEqual(drifted, []);
 });
 
 // ===========================================================================
