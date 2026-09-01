@@ -157,15 +157,15 @@ Owner: `backend-dev`. Satisfies AC-5. Runs after every per-file apply in Task 9.
 ### Task 11: Final verification
 Owner: `backend-dev`. Satisfies AC-5, AC-6, AC-7. Strictly the last task in the sprint. Material risk for impl-test: this is the sprint's only real completeness gate — `--check` and `tests/run.js` prove nothing about rename completeness (audit R-11).
 
-- [ ] `node tests/run.js` — green (AC-6). Note: it contains no `design` fixture, so it provides zero regression cover for the rename
-- [ ] `node .asd/sync.js --check` — no drift (AC-5). Informational only, per the G-10 caveat above
-- [ ] AC-7 repository-wide grep, pattern `design/`, with the AC-7 exclusion set: `<sprint>/design/`, `reviews/design/`, `asd-phase-design*`, the `design/design-review` phase pair, `design-system*`, `design-principles*`, `t_design-md-delta.yaml`, `.asd/sprints/**`, `decisions-log.md`, `CHANGELOG.md`. Zero in-scope hits required
-- [ ] AC-7 repository-wide grep, pattern `design\\`, same exclusion set. Zero in-scope hits required (audit R-10 — the `design/` pattern is separator-blind)
-- [ ] Targeted grep `exclude)design` — must return zero (atomic set R-4 fully applied)
-- [ ] Targeted grep `design\\ux` — must return zero (atomic set R-10 fully applied)
-- [ ] Re-read `.asd/hooks/session-start.js` and `.claude/settings.json` and confirm their `design` occurrences are phase names (`PHASE_CHAIN`, `reviews.design`) and package/CLI names respectively — both out of scope. Do not edit; this corrects audit §9's "zero occurrences" claim, which would otherwise cause the files to be skipped unread
-- [ ] Confirm AC-2 by inspection: every renamed path keeps its subtree intact (`docs/product/…`, `docs/architecture/…`, `docs/ux/…`) and only the leading segment changed
-- [ ] Confirm AC-4 by inspection: `DESIGN.md`, `design-system.html`, `design-principles.md`, `design-system.md`, `custom-design-rules.md` file names are unchanged
+- [x] `node tests/run.js` — green (AC-6). Note: it contains no `design` fixture, so it provides zero regression cover for the rename
+- [x] `node .asd/sync.js --check` — no drift (AC-5). Informational only, per the G-10 caveat above
+- [x] AC-7 repository-wide grep, pattern `design/`, with the AC-7 exclusion set: `<sprint>/design/`, `reviews/design/`, `asd-phase-design*`, the `design/design-review` phase pair, `design-system*`, `design-principles*`, `t_design-md-delta.yaml`, `.asd/sprints/**`, `decisions-log.md`, `CHANGELOG.md`. Zero in-scope hits required
+- [x] AC-7 repository-wide grep, pattern `design\\`, same exclusion set. Zero in-scope hits required (audit R-10 — the `design/` pattern is separator-blind)
+- [x] Targeted grep `exclude)design` — must return zero (atomic set R-4 fully applied)
+- [x] Targeted grep `design\\ux` — must return zero (atomic set R-10 fully applied)
+- [x] Re-read `.asd/hooks/session-start.js` and `.claude/settings.json` and confirm their `design` occurrences are phase names (`PHASE_CHAIN`, `reviews.design`) and package/CLI names respectively — both out of scope. Do not edit; this corrects audit §9's "zero occurrences" claim, which would otherwise cause the files to be skipped unread
+- [x] Confirm AC-2 by inspection: every renamed path keeps its subtree intact (`docs/product/…`, `docs/architecture/…`, `docs/ux/…`) and only the leading segment changed
+- [x] Confirm AC-4 by inspection: `DESIGN.md`, `design-system.html`, `design-principles.md`, `design-system.md`, `custom-design-rules.md` file names are unchanged
 
 ## Risks
 
