@@ -12,7 +12,7 @@ Every pause is a HARD gate: responsible agent MUST request user decision and rec
 | design-review (final) | reviewer verdicts before promotion |
 | design-promote (decomposition) | proposed per-subsystem split |
 | design-promote (new subsystem) | each new subsystem before C4 registry update |
-| design-promote (final mutation) | final write to persistent `design/` |
+| design-promote (final mutation) | final write to persistent `docs/` |
 | plan | `plan.md` |
 | impl assessment | impl summary before `impl-test` — **initial mode only**; fix modes skip this gate |
 | impl-test (removal) | deletion of any test **outside** the sprint change scope — conditional gate, skipped when no such removal proposed |

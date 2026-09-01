@@ -17,9 +17,9 @@ All project work goes through `/asd-sprint`.
 - **Creator agent** — produces artifacts (PM, BA, UX Designer, Architect, Backend Dev, Frontend Dev, Test Engineer).
 - **Reviewer agent** — evaluates artifacts (Quality, Implementation, Testing, UI, Simplification, Documentation, Performance, External Review).
 - **Artifact** — file produced by an agent. User-facing (PRD, ADR, plan, …) or machine-readable (state.json, config.yaml).
-- **Persistent doc** — living document under `design/`. Updated across sprints.
+- **Persistent doc** — living document under `docs/`. Updated across sprints.
 - **Workflow infrastructure** — `.asd/rules/`, `.asd/templates/`, `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/sync.js`, `.claude/`, `.codex/`, `.agents/skills/`, `AGENTS.md`, `CLAUDE.md`. Never modified during sprint work.
-- **Subsystem** — unit of project decomposition. Registered in `design/architecture/c4/` when `project.subsystem_decomposition: enabled`. Persistent docs organized per subsystem. New subsystems added only in `design-promote`, with user approval.
+- **Subsystem** — unit of project decomposition. Registered in `docs/architecture/c4/` when `project.subsystem_decomposition: enabled`. Persistent docs organized per subsystem. New subsystems added only in `design-promote`, with user approval.
 
 ## Invariants
 

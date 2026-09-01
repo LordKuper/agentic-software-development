@@ -18,12 +18,12 @@ custom:
   #
   # Windows (run from project root):
   # designmd-install: "npm install @google/design.md"
-  # designmd-lint:    "node_modules\\.bin\\design.md.cmd lint design\\ux\\DESIGN.md"
+  # designmd-lint:    "node_modules\\.bin\\design.md.cmd lint docs\\ux\\DESIGN.md"
   # designmd-diff:    "node_modules\\.bin\\design.md.cmd diff"            # path args supplied at call time
-  # designmd-export:  "node_modules\\.bin\\design.md.cmd export --format json-tailwind design\\ux\\DESIGN.md"
+  # designmd-export:  "node_modules\\.bin\\design.md.cmd export --format json-tailwind docs\\ux\\DESIGN.md"
   #
   # Linux/macOS:
   # designmd-install: ""
-  # designmd-lint:    "npx @google/design.md lint design/ux/DESIGN.md"
+  # designmd-lint:    "npx @google/design.md lint docs/ux/DESIGN.md"
   # designmd-diff:    "npx @google/design.md diff"
-  # designmd-export:  "npx @google/design.md export --format json-tailwind design/ux/DESIGN.md"
+  # designmd-export:  "npx @google/design.md export --format json-tailwind docs/ux/DESIGN.md"

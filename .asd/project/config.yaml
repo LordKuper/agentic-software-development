@@ -5,7 +5,7 @@
 # Values: enabled | disabled. See .asd/rules/sprint-lifecycle.md "Self-hosting".
 self_hosting: enabled
 
-# Optional sprint documents and their persistent design-artifact counterpart.
+# Optional sprint documents and their persistent docs counterpart.
 # Absent group (old config) = every value enabled (current behavior unchanged).
 # Absent field within an existing group = disabled (fail-closed).
 # Lean framework-dev profile: only audit; PRD/UX/ADR/C4 add no value for a
@@ -47,7 +47,7 @@ review:
   iterations_critical: 3
 
 project:
-  # Subsystem decomposition. When enabled, persistent design docs are organized per subsystem.
+  # Subsystem decomposition. When enabled, persistent docs are organized per subsystem.
   # When disabled, single project-wide docs.
   # Values: enabled | disabled
   # Framework repo is one cohesive workflow tree, not multiple subsystems.

@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-test-engineer.md. source_digest=sha256:cfbda4975e025584cf5029159a135773fad5af34efaaa8a57eac55a17269ae21 content_digest=sha256:b0214b213791b375f9d7bbdcef68ca0957cb0f4ccbed96c4cb4f1d27fc2a2785 asd_version=1.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-test-engineer.md. source_digest=sha256:ce43862769f131973ff99f2e5ce9571f7c724c10d472b7f9a8d5f92ebfc21848 content_digest=sha256:8614131ed2e8fbe746014c8e340020bb3e7351af0030fdd8a8292eff7367badf asd_version=1.2.0 schema=1
 name: asd-test-engineer
 description: "Owns all testing in the impl-test phase: test approach selection for the change scope, pruning redundant tests, authoring missing ones at every level, running the full suite. Covers: change-surface risk analysis, test-plan.md authoring, unit/property/component/contract/e2e test authoring, deletion of trivial/duplicate/mock-confirming/implementation-coupled/flaky tests, regression tests proven fail-first, suite runs from commands.yaml, defect triage, manual verification specs when automation is impossible. Does NOT handle: production code (delegates to asd-backend-dev / asd-frontend-dev), code-defect fixes (routed to impl test-fix mode), test review (delegates to asd-reviewer-testing)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
@@ -36,9 +36,9 @@ Test engineer. Sole owner of tests. In `impl-test`, after the code exists: picks
 
 - change surface (diff file list plus the existing tests covering those files), supplied by the phase skill
 - `<sprint>/plan.md` (Task-level material risks)
-- `design/product/requirements/<subsystem>.html` (acceptance criteria to cover)
-- `design/ux/<subsystem>.html` (flows for e2e coverage)
-- `design/architecture/api/<subsystem>.html` (api contracts for contract tests)
+- `docs/product/requirements/<subsystem>.html` (acceptance criteria to cover)
+- `docs/ux/<subsystem>.html` (flows for e2e coverage)
+- `docs/architecture/api/<subsystem>.html` (api contracts for contract tests)
 - `.asd/project/commands.yaml`
 - existing test code
 
@@ -121,7 +121,7 @@ Implementer:
 ## Tech reference precondition
 
 Before authoring tests against any library, framework, runtime, or external service:
-- Verify `design/architecture/tech-reference/<tech>-<version>.md` exists
+- Verify `docs/architecture/tech-reference/<tech>-<version>.md` exists
 - If missing → emit `FAILED — tech-reference missing for <tech>@<version>` and request the doc from asd-architect
 - Never proceed without a verified reference
 

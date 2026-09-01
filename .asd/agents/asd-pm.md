@@ -90,7 +90,7 @@ HARD gates — skipping is a protocol violation; emit `FAILED` if you catch your
 | design (each artefact produced) | per-section request for user decision during creator dispatch | persistent only via design-promote |
 | design-promote (decomposition) | Request user decision on per-subsystem split | C4 registry mutation |
 | design-promote (new subsystem) | Request user decision per subsystem | folder + C4 patch |
-| design-promote (final mutation, only when something was promoted) | Request user decision confirm/rollback | persistent `design/` writes |
+| design-promote (final mutation, only when something was promoted) | Request user decision confirm/rollback | persistent `docs/` writes |
 | plan | Request user decision per Task section + final approval | `plan.md` |
 | impl assessment | Request user decision on summary | `impl-test` dispatch |
 | pr | Request user decision confirming PR opening | `gh pr create` / push |
@@ -105,7 +105,7 @@ Rules common to every gate:
 
 ## Don'ts
 
-- Never write to persistent `design/` — design-promote skill owns that
+- Never write to persistent `docs/` — design-promote skill owns that
 - Never bypass user approval for phase advance
 - Never modify infrastructure (`.asd/rules/`, `.claude/`, `.asd/templates/`)
 - Never re-open or edit an archived sprint

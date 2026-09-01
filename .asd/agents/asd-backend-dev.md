@@ -37,9 +37,9 @@ Backend developer. Implements server/CLI/library code per plan tasks; fixes impl
 
 - `<sprint>/plan.md` (tasks)
 - `<sprint>/reviews/impl/iter-NN/` (review-fix mode) or `<sprint>/test-plan.md` `Defects` (test-fix mode)
-- `design/product/requirements/<subsystem>.html` (acceptance criteria to satisfy)
-- `design/architecture/adr/<subsystem>/` (decisions to follow)
-- `design/architecture/stack.html`, `design/architecture/api/<subsystem>.html`
+- `docs/product/requirements/<subsystem>.html` (acceptance criteria to satisfy)
+- `docs/architecture/adr/<subsystem>/` (decisions to follow)
+- `docs/architecture/stack.html`, `docs/architecture/api/<subsystem>.html`
 - `.asd/project/commands.yaml` (build/lint/run)
 
 ## Outputs
@@ -99,6 +99,6 @@ Implementer:
 ## Tech reference precondition
 
 Before implementing with any library, framework, runtime, or external service:
-- Verify `design/architecture/tech-reference/<tech>-<version>.md` exists
+- Verify `docs/architecture/tech-reference/<tech>-<version>.md` exists
 - If missing → emit `FAILED — tech-reference missing for <tech>@<version>` and request the doc from asd-architect
 - Never proceed without a verified reference

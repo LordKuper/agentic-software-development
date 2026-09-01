@@ -1,7 +1,7 @@
 ---
 {
   "name": "asd-update",
-  "description": "Updates the ASD framework infrastructure (.asd/rules, .asd/templates, ASD agents/skills/hooks) in a consumer project to the latest version by fetching them from the configured ASD repo's main branch, replacing only framework-managed paths and never touching consumer-owned config, sprints, design docs, or custom skills/agents/hooks. Use when the user runs /asd-update or asks to update, upgrade, or pull the latest ASD framework / workflow version."
+  "description": "Updates the ASD framework infrastructure (.asd/rules, .asd/templates, ASD agents/skills/hooks) in a consumer project to the latest version by fetching them from the configured ASD repo's main branch, replacing only framework-managed paths and never touching consumer-owned config, sprints, persistent docs, or custom skills/agents/hooks. Use when the user runs /asd-update or asks to update, upgrade, or pull the latest ASD framework / workflow version."
 }
 ---
 
@@ -17,7 +17,7 @@ Read `self_hosting` from `.asd/project/config.yaml` first (`sync.js`'s `isSelfHo
 
 Managed set = SSoT in `.asd/release-manifest.json`'s `managed_paths` (canonical `.asd/` trees + `sync.js` itself, walked recursively file-by-file) — replacing the old wholesale tree-delete approach with a per-file state machine (`add | update | delete | conflict | conflict-foreign | keep-local-modified | noop`, driven by `classifyUpdateItem` in `.asd/sync.js`). A file whose local hash still matches the last-fetched release is safe to update or delete; a file that diverged is a **conflict** and is never touched without explicit confirmation.
 
-Never touched: `.asd/project/**`, `.asd/sprints/**`, `design/**`, `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json`, any non-ASD skill/agent/hook, anything outside `managed_paths`.
+Never touched: `.asd/project/**`, `.asd/sprints/**`, `docs/**`, `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json`, any non-ASD skill/agent/hook, anything outside `managed_paths`.
 
 ## Run
 

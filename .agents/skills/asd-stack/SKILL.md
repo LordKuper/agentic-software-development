@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-stack/SKILL.md. source_digest=sha256:e585fd133d1bdca9e4f2a9ede6aac1f4486880b021cb8657580dd32cb8e80b91 content_digest=sha256:888ddd9ffa0bfffbe6519d94bd43799c2c5d950e36d0d4b4a624a49c9dab175d asd_version=1.1.0 schema=1
+# ASD generated. Edit .asd/skills/asd-stack/SKILL.md. source_digest=sha256:a9f4f13862863e5c86844d0dbf107f6e173ad4740f510ab427bfaaafc2fdb04f content_digest=sha256:45d20f5d4094b47b9f90927288fe7313307378f6db5b2007e2b77b158865419a asd_version=1.2.0 schema=1
 name: asd-stack
-description: "Forms or edits the project tech stack document at design/architecture/stack.html via asd-architect, branching by silent detection into one of four flows (clean slate / constraints / clear stack / brownfield extraction). Verifies versions via WebFetch, runs knowledge-gap analysis, and maintains a tech-reference doc per chosen tech. Use when the user runs /asd-stack, when asd-init or asd-concept detects a missing stack.html and suggests this skill, or when the user asks to define, draft, refine, edit, upgrade, or reverse-engineer the project technology stack."
+description: "Forms or edits the project tech stack document at docs/architecture/stack.html via asd-architect, branching by silent detection into one of four flows (clean slate / constraints / clear stack / brownfield extraction). Verifies versions via WebFetch, runs knowledge-gap analysis, and maintains a tech-reference doc per chosen tech. Use when the user runs /asd-stack, when asd-init or asd-concept detects a missing stack.html and suggests this skill, or when the user asks to define, draft, refine, edit, upgrade, or reverse-engineer the project technology stack."
 ---
 
 Operation mapping: see `.asd/rules/providers.md`.
@@ -10,7 +10,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 
 ## Preconditions
 - `.asd/project/config.yaml` exists (run `/asd-init` first)
-- `design/product/concept.html` exists (run `/asd-concept` first; concept is mandatory input)
+- `docs/product/concept.html` exists (run `/asd-concept` first; concept is mandatory input)
 - No active sprint required
 
 ## Operations used
@@ -22,7 +22,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 ## Phase 1 — silent detection (NO asking)
 
 Scan in order:
-1. `design/architecture/stack.html` exists, non-empty → mode = **edit**, skip to Edit-mode flow
+1. `docs/architecture/stack.html` exists, non-empty → mode = **edit**, skip to Edit-mode flow
 2. Manifests / lockfiles / Dockerfile / CI configs detected → brownfield candidate (default variant D)
 3. No code, no manifests → greenfield candidate (no default)
 4. Continue to Phase 2
@@ -91,7 +91,7 @@ Per technology entry in approved stack:
 ## Phase 6 — tech-reference creation/update
 
 Per technology in approved stack:
-- Architect creates or updates `design/architecture/tech-reference/<tech>-<version>.md` per `t_tech-reference.md`
+- Architect creates or updates `docs/architecture/tech-reference/<tech>-<version>.md` per `t_tech-reference.md`
 - Includes canonical source URL, API surface used, version-specific notes, deprecations, project conventions, "Last verified" ISO date
 - Request user decision before each persistent write
 
@@ -99,7 +99,7 @@ Per technology in approved stack:
 
 - Architect shows full assembled stack + risk summary
 - Request user decision: **A) Approve, write stack.html / B) Revise specific section** (on B re-enter Phase 4) — labels/descriptions in `language.chat`
-- on A: translate to `language.docs`, write `design/architecture/stack.html` per `t_stack.html`
+- on A: translate to `language.docs`, write `docs/architecture/stack.html` per `t_stack.html`
 - emit COMPLETED
 
 ## Phase 8 — handoff
@@ -129,8 +129,8 @@ Per technology in approved stack:
 - Every tech in stack MUST have a matching tech-reference doc before COMPLETED
 
 ## Artefacts produced
-- `design/architecture/stack.html` (created, edited, or reverse-engineered)
-- `design/architecture/tech-reference/<tech>-<version>.md` for every chosen tech
+- `docs/architecture/stack.html` (created, edited, or reverse-engineered)
+- `docs/architecture/tech-reference/<tech>-<version>.md` for every chosen tech
 - decisions-log entry (with risk summary)
 
 ## Agents dispatched

@@ -23,7 +23,7 @@
 ## Phase 1 — silent detection (NO asking)
 
 Scan in order:
-1. `design/product/concept.html` exists, non-empty → mode = **edit**, skip to Edit-mode flow
+1. `docs/product/concept.html` exists, non-empty → mode = **edit**, skip to Edit-mode flow
 2. Brownfield signals: `README*`, `docs/**`, root `*.md`, any source files, recent git commits → brownfield candidate (default variant D)
 3. Greenfield (no code, no docs) → greenfield candidate (no default)
 4. Continue to Phase 2
@@ -79,14 +79,14 @@ Section-by-section in `language.chat`:
 
 - BA shows full assembled concept summary
 - Request user decision: **A) Approve and write / B) Revise specific section** (on B re-enter Phase 4 for chosen section) — labels/descriptions in `language.chat`
-- on A: translate to `language.docs`, write `design/product/concept.html` per `t_concept.html`
+- on A: translate to `language.docs`, write `docs/product/concept.html` per `t_concept.html`
 - emit COMPLETED
 
 ## Phase 6 — handoff
 
 - Delegate to agent `asd-pm` to append decisions-log entry ("concept formed" / "concept edited: <sections>" / "concept reverse-engineered from brownfield")
 - Print handoff suggestion in `language.chat`:
-  - if `design/architecture/stack.html` absent → "Next: run `/asd-stack` to define the tech stack"
+  - if `docs/architecture/stack.html` absent → "Next: run `/asd-stack` to define the tech stack"
   - else → "Next: run `/asd-sprint` to start a sprint"
 - NO auto-dispatch
 
@@ -104,7 +104,7 @@ Section-by-section in `language.chat`:
 - Never mix the two shapes in one request
 
 ## Artefacts produced
-- `design/product/concept.html` (created, edited, or reverse-engineered)
+- `docs/product/concept.html` (created, edited, or reverse-engineered)
 - decisions-log entry
 
 ## Agents dispatched

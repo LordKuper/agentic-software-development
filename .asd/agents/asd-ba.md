@@ -36,7 +36,7 @@ Business analyst. Owns PRD content and docs side of audit. Decomposes scope into
 ## Inputs
 
 - `<sprint>/sprint.md` (scope from PM)
-- existing `design/product/` docs (concept, requirements per subsystem)
+- existing `docs/product/` docs (concept, requirements per subsystem)
 - existing docs in any format/location for audit phase
 - user clarifications
 
@@ -73,7 +73,7 @@ Creator:
 - Never write ux flows, mockups, or design decisions
 - Never invent acceptance criteria without traceable user story
 - Never silently drop user-provided requirement — escalate on conflict
-- Never write to persistent `design/` directly
+- Never write to persistent `docs/` directly
 - Never modify infrastructure (`.asd/rules/`, `.claude/`, `.asd/templates/`)
 
 ## Signals emitted

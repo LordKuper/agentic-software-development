@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-concept/SKILL.md. source_digest=sha256:88675f6120818b16645a007614aa324bb3ba231625f2dca56dc2befcf47f7fa1 content_digest=sha256:c9977cf60e88cda4ed4dc6d838f11da14f7a46db9c3647f4b994a333cf4f4c39 asd_version=1.1.0 schema=1
+# ASD generated. Edit .asd/skills/asd-concept/SKILL.md. source_digest=sha256:05ba1c94c5c90251b7469696d294ad8990c0b3466fe11f91359dd7c1d8914a60 content_digest=sha256:12e79c768ec41d56c184e04170dd5a79d52f7c0497818ffeec1c2d64c3174455 asd_version=1.2.0 schema=1
 name: asd-concept
 description: "Forms or edits the project concept document via asd-ba, branching by silent detection into one of four flows (no idea / vague idea / clear vision / brownfield extraction) and converging through a per-section lock-in loop. Use when the user runs /asd-concept, when asd-init detects a missing concept.html and suggests this skill, or when the user asks to define, draft, refine, edit, rewrite, or reverse-engineer the project concept, vision, target users, or value proposition."
 ---
@@ -21,7 +21,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 ## Phase 1 — silent detection (NO asking)
 
 Scan in order:
-1. `design/product/concept.html` exists, non-empty → mode = **edit**, skip to Edit-mode flow
+1. `docs/product/concept.html` exists, non-empty → mode = **edit**, skip to Edit-mode flow
 2. Brownfield signals: `README*`, `docs/**`, root `*.md`, any source files, recent git commits → brownfield candidate (default variant D)
 3. Greenfield (no code, no docs) → greenfield candidate (no default)
 4. Continue to Phase 2
@@ -77,14 +77,14 @@ Section-by-section in `language.chat`:
 
 - BA shows full assembled concept summary
 - Request user decision: **A) Approve and write / B) Revise specific section** (on B re-enter Phase 4 for chosen section) — labels/descriptions in `language.chat`
-- on A: translate to `language.docs`, write `design/product/concept.html` per `t_concept.html`
+- on A: translate to `language.docs`, write `docs/product/concept.html` per `t_concept.html`
 - emit COMPLETED
 
 ## Phase 6 — handoff
 
 - Delegate to agent `asd-pm` to append decisions-log entry ("concept formed" / "concept edited: <sections>" / "concept reverse-engineered from brownfield")
 - Print handoff suggestion in `language.chat`:
-  - if `design/architecture/stack.html` absent → "Next: run `/asd-stack` to define the tech stack"
+  - if `docs/architecture/stack.html` absent → "Next: run `/asd-stack` to define the tech stack"
   - else → "Next: run `/asd-sprint` to start a sprint"
 - NO auto-dispatch
 
@@ -102,7 +102,7 @@ Section-by-section in `language.chat`:
 - Never mix the two shapes in one request
 
 ## Artefacts produced
-- `design/product/concept.html` (created, edited, or reverse-engineered)
+- `docs/product/concept.html` (created, edited, or reverse-engineered)
 - decisions-log entry
 
 ## Agents dispatched

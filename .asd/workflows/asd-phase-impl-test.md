@@ -8,7 +8,7 @@ Orchestration body for the `asd-phase-impl-test` skill. Operation-mapping to hos
 - `state.json.review_fixes_pending` and `test_defects_pending` both cleared by the impl fix-mode finalize
 
 ## Operations used
-- read: `.asd/project/config.yaml`, `state.json`, `plan.md`, `test-plan.md`, persistent design/ docs (PRD ACs, api, ux-spec), `commands.yaml`, `custom-common-rules.md`, `custom-coding-rules.md`, existing test sources
+- read: `.asd/project/config.yaml`, `state.json`, `plan.md`, `test-plan.md`, persistent docs (PRD ACs, api, ux-spec), `commands.yaml`, `custom-common-rules.md`, `custom-coding-rules.md`, existing test sources
 - run command: change-surface diff; `commands.yaml` `test`/`lint`/`build` for the suite gate
 - request user decision: out-of-scope test removal gate; escalation
 - delegate to agent `asd-test-engineer` (strategy, prune + author, suite run); `asd-pm` for state + decisions-log
@@ -25,7 +25,7 @@ No user gate on a green suite, and none on routing defects back to impl.
 ## Workflow
 
 1. Read `.asd/project/config.yaml` (`language.chat`, `language.docs`, `backward_compat`, `self_hosting`), `<sprint>/state.json` → set `phase=impl-test` via delegation to `asd-pm`
-2. **Change surface** — run command for `git diff <git.base_branch>...HEAD --stat <pathspec>` plus file list, using the same `<pathspec>` as impl-review's self-hosting-aware scoping (`.asd/rules/external-review.md` "`<pathspec>` for impl-review" — consumer default excludes `.asd/**`/`design/**`; `self_hosting: enabled` includes the whole repo minus `.asd/project/**`/`.asd/sprints/**`/generated views). Add the existing test files that cover those production files (search repo by test naming convention). This set is the review scope for the whole phase
+2. **Change surface** — run command for `git diff <git.base_branch>...HEAD --stat <pathspec>` plus file list, using the same `<pathspec>` as impl-review's self-hosting-aware scoping (`.asd/rules/external-review.md` "`<pathspec>` for impl-review" — consumer default excludes `.asd/**`/`docs/**`; `self_hosting: enabled` includes the whole repo minus `.asd/project/**`/`.asd/sprints/**`/generated views). Add the existing test files that cover those production files (search repo by test naming convention). This set is the review scope for the whole phase
 3. **Strategy pass** — delegate to agent `asd-test-engineer` with payload: change surface, `plan.md`, AC list (PRD AC-N if `documents.prd` enabled, else `sprint.md`'s own AC-N — `sprint-lifecycle.md` "Optional documents"), api/ux-spec paths (if present), `commands.yaml`, custom rules, `t_test-plan.md`, `language.docs`. Instruction:
    - test selection happens **now**, after the implementation exists — never speculatively from the plan
    - for each change, name the material risk and pick the cheapest reliable check: static/architecture check → focused unit or property test → component or contract test at a boundary → essential e2e journey only where a full journey is the risk

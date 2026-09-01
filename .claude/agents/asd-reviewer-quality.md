@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-quality.md. source_digest=sha256:0979998edab0285cf1e2c74fa4c411a76d3e6a43c2da2db801f2a8a2fcbcd120 content_digest=sha256:c6792515864389447465b6356640ab92fd30b8d93c4eb7c16e87f7e8143589fc asd_version=1.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-quality.md. source_digest=sha256:d7b8e81eaff8de58690e6c15b6e7f84da78c68af36f908ae83d475070873db07 content_digest=sha256:89105bde2edd234fca9218bec36d844edd4ef1a4a1c0c924a854ef9a120b0b30 asd_version=1.2.0 schema=1
 name: asd-reviewer-quality
 description: "Impl-review scan of code and tests for bugs, security vulnerabilities, best-practice violations. Covers: bug patterns (off-by-one, null paths, race conditions, resource leaks), security holes (secrets, injection, auth bypass, crypto misuse, input validation), language/framework best practices, contract violations vs ADR. Does NOT handle: requirement coverage (delegates to asd-reviewer-implementation), test coverage (delegates to asd-reviewer-testing), ui/a11y (delegates to asd-reviewer-ui), over-engineering (delegates to asd-reviewer-simplification), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -36,8 +36,8 @@ Quality reviewer. Scans code and tests for bugs, security issues, best-practice 
 ## Inputs
 
 - diff payload (iter 1: `git diff <base>...HEAD`; iter 2+: `git diff` + last commit)
-- `design/architecture/adr/<subsystem>/` (decisions for contract checks)
-- `design/architecture/stack.html` (stack constraints)
+- `docs/architecture/adr/<subsystem>/` (decisions for contract checks)
+- `docs/architecture/stack.html` (stack constraints)
 - `.asd/project/custom-coding-rules.md` (forbidden patterns, security policy)
 - iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
 
@@ -77,7 +77,7 @@ Reviewer:
 - Never fix code yourself — emit findings only
 - Never raise nitpick categories
 - Never raise low/medium findings on iter 2+ (per severity floor)
-- Never modify code, ADRs, or design docs
+- Never modify code, ADRs, or persistent docs
 - Never read prior `iter-*/` review files — each iteration reviews clean context (per `review-policy.md`)
 - Never run shell commands
 

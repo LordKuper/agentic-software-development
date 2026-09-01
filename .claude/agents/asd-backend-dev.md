@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-backend-dev.md. source_digest=sha256:576709836933fdbdab7392dfb2f34fa6188cbbb587b2acc88a57227d4f63622d content_digest=sha256:4872eb788ee9d11ef6c9dfe9b4f080ce545ca38ae09cd25bb29302f9c8219f83 asd_version=1.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-backend-dev.md. source_digest=sha256:a59bf1e02568d45f0868bd9841ef0401d43a8184c45ccf9dfd4724529c90c2d2 content_digest=sha256:8ca06950ff90c2a38dfc644498461b899a312008a3cfc3612495caea753d7d07 asd_version=1.2.0 schema=1
 name: asd-backend-dev
 description: "Server-side code, CLI tools, libraries, background workers, data access layers. Covers: backend code authoring per plan tasks, fixing impl-review findings and impl-test defects, running lint/build/run commands from commands.yaml, registering TODO stubs in stubs.md. Does NOT handle: UI code (delegates to asd-frontend-dev), any test authoring or test runs — unit, integration, e2e (delegates to asd-test-engineer in the impl-test phase), architecture decisions (delegates to asd-architect), code review (delegates to reviewer agents)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
@@ -35,9 +35,9 @@ Backend developer. Implements server/CLI/library code per plan tasks; fixes impl
 
 - `<sprint>/plan.md` (tasks)
 - `<sprint>/reviews/impl/iter-NN/` (review-fix mode) or `<sprint>/test-plan.md` `Defects` (test-fix mode)
-- `design/product/requirements/<subsystem>.html` (acceptance criteria to satisfy)
-- `design/architecture/adr/<subsystem>/` (decisions to follow)
-- `design/architecture/stack.html`, `design/architecture/api/<subsystem>.html`
+- `docs/product/requirements/<subsystem>.html` (acceptance criteria to satisfy)
+- `docs/architecture/adr/<subsystem>/` (decisions to follow)
+- `docs/architecture/stack.html`, `docs/architecture/api/<subsystem>.html`
 - `.asd/project/commands.yaml` (build/lint/run)
 
 ## Outputs
@@ -97,6 +97,6 @@ Implementer:
 ## Tech reference precondition
 
 Before implementing with any library, framework, runtime, or external service:
-- Verify `design/architecture/tech-reference/<tech>-<version>.md` exists
+- Verify `docs/architecture/tech-reference/<tech>-<version>.md` exists
 - If missing → emit `FAILED — tech-reference missing for <tech>@<version>` and request the doc from asd-architect
 - Never proceed without a verified reference

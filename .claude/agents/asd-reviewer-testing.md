@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:19a944b2a9d5b8cff55a9c11bdf53823599f28b50063706bef61a63593adf75e content_digest=sha256:e890f8c08ea100dec39bf40a6ef9769758136aeed313ae3e8472a83f2dd957ac asd_version=1.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:9d6b97e4c0299381612dc6196bc41b3723675cdcdf86d0d5e5a45836874c332e content_digest=sha256:f0c14f6436a11a61bcd964ad0b486017812a3d65e70d3437cc88e2e81f4f6f63 asd_version=1.2.0 schema=1
 name: asd-reviewer-testing
 description: "Impl-review assessment of the test-plan decisions and the tests themselves, plus capturing manual verification results when automation is impossible. Covers: risk→check fit per test-plan.md, justification of removed tests and of no-test decisions, fail-first proof on regression tests, coverage of AC-N, edge cases on core paths, absence of test-for-test-sake (meaningless assertions), flaky patterns, Manual verification section authoring when Testing must verify behaviour the user must exercise. Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), AC implementation coverage (delegates to asd-reviewer-implementation), ui/a11y (delegates to asd-reviewer-ui), over-engineering (delegates to asd-reviewer-simplification), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -36,7 +36,7 @@ Testing reviewer. Judges the test *decisions* recorded in `test-plan.md` and the
 
 - `<sprint>/test-plan.md` (primary input: risk→check decisions, removals, added tests, suite run, manual verification spec)
 - diff payload (code + tests)
-- `design/product/requirements/<subsystem>.html` (ACs to trace)
+- `docs/product/requirements/<subsystem>.html` (ACs to trace)
 - `<sprint>/plan.md`
 - iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
 

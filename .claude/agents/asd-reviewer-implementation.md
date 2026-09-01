@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-implementation.md. source_digest=sha256:d366defcc1d791ce7e32e25019173a5a89f357e8e2bf67f4e72870981c8679fc content_digest=sha256:7a3944bb273ad9db5e21c4732b555f69706cdf43aedcd92b695c4fac3de38258 asd_version=1.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-implementation.md. source_digest=sha256:9c25b74175c59db89e003fa334e15f3a3b1e98cdcf2e457abb558eb4d107c39b content_digest=sha256:28e0db804e4d560b7fb884e985b4f17b4cd52d37305482164c35eb4a46824874 asd_version=1.2.0 schema=1
 name: asd-reviewer-implementation
 description: "Impl-review verification that code covers every PRD acceptance criterion completely and correctly. Covers: PRD acceptance criteria coverage trace, requirement-to-code mapping, missing or partial implementations. Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), test coverage (delegates to asd-reviewer-testing), ui/a11y (delegates to asd-reviewer-ui), over-engineering (delegates to asd-reviewer-simplification), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -33,7 +33,7 @@ Implementation reviewer. Verifies code completely implements every PRD acceptanc
 
 ## Inputs
 
-- `design/product/requirements/<subsystem>.html` or `<sprint>/design/prd.html` for sprint-scoped ACs; when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
+- `docs/product/requirements/<subsystem>.html` or `<sprint>/design/prd.html` for sprint-scoped ACs; when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
 - diff payload (code + tests changed this sprint)
 - `<sprint>/plan.md` (task-to-AC mapping)
 - iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
@@ -72,7 +72,7 @@ Reviewer:
 - Never assess bugs, security, or test quality (other reviewers)
 - Never raise nitpick categories
 - Never raise low/medium findings on iter 2+ (severity floor)
-- Never modify code, ACs, or design docs
+- Never modify code, ACs, or persistent docs
 - Never read prior `iter-*/` review files — each iteration reviews clean context (per `review-policy.md`)
 - Never run shell commands
 

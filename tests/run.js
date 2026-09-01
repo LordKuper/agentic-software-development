@@ -38,6 +38,16 @@ function loadManifest() {
   return sync.loadReleaseManifest(REPO_ROOT);
 }
 
+function readExpectedFixture(expectedPath, manifest) {
+  // Expected fixtures bake the ownership marker's asd_version field as the
+  // placeholder token below rather than a literal version string, so any
+  // future self-hosting asd_version bump (release-manifest.json) does not
+  // require touching these fixtures - the live manifest value is substituted
+  // in at comparison time, mirroring how sync.js stamps it into real output.
+  const raw = sync.readNormalized(expectedPath);
+  return raw.replace(/\{\{FIXTURE_ASD_VERSION\}\}/g, manifest.asd_version);
+}
+
 function renderFixture(kind, canonPath, sourceRelPath, manifest) {
   const canonRawNormalized = sync.readNormalized(canonPath);
   const { meta, body } = sync.parseCanonicalFrontmatter(canonRawNormalized);
@@ -64,7 +74,7 @@ test('canonical agent -> Claude .md matches fixture', () => {
     'agents/demo-agent.md',
     manifest
   );
-  const expected = sync.readNormalized(path.join(FIXTURES, 'expected/agents/demo-agent.claude.md'));
+  const expected = readExpectedFixture(path.join(FIXTURES, 'expected/agents/demo-agent.claude.md'), manifest);
   assert.strictEqual(rendered.output, expected);
   assert.ok(rendered.output.startsWith('---\n# ASD generated. Edit .asd/agents/demo-agent.md.'));
 });
@@ -77,7 +87,7 @@ test('canonical agent -> Codex .toml matches fixture', () => {
     'agents/demo-agent.md',
     manifest
   );
-  const expected = sync.readNormalized(path.join(FIXTURES, 'expected/agents/demo-agent.codex.toml'));
+  const expected = readExpectedFixture(path.join(FIXTURES, 'expected/agents/demo-agent.codex.toml'), manifest);
   assert.strictEqual(rendered.output, expected);
   assert.ok(rendered.output.startsWith('# ASD generated. Edit .asd/agents/demo-agent.md.'));
   assert.ok(rendered.output.includes('model = "gpt-5.6"'), 'codex model family alias must resolve via release-manifest table');
@@ -92,7 +102,7 @@ test('canonical skill -> Claude SKILL.md matches fixture', () => {
     'skills/demo-skill/SKILL.md',
     manifest
   );
-  const expected = sync.readNormalized(path.join(FIXTURES, 'expected/skills/demo-skill/SKILL.claude.md'));
+  const expected = readExpectedFixture(path.join(FIXTURES, 'expected/skills/demo-skill/SKILL.claude.md'), manifest);
   assert.strictEqual(rendered.output, expected);
   assert.ok(rendered.output.includes('allowed-tools: "Read Grep"'));
 });
@@ -105,7 +115,7 @@ test('canonical skill -> Codex SKILL.md matches fixture', () => {
     'skills/demo-skill/SKILL.md',
     manifest
   );
-  const expected = sync.readNormalized(path.join(FIXTURES, 'expected/skills/demo-skill/SKILL.codex.md'));
+  const expected = readExpectedFixture(path.join(FIXTURES, 'expected/skills/demo-skill/SKILL.codex.md'), manifest);
   assert.strictEqual(rendered.output, expected);
   // Codex skill frontmatter must NOT carry Claude-only fields.
   assert.ok(!rendered.output.includes('allowed-tools'));
@@ -947,12 +957,40 @@ test('update state machine: unsafe manifest path is rejected regardless of hashe
 // 9. sync.js --check CLI is green with no real canon trees yet (Stage 0)
 // ===========================================================================
 
-test("`node .asd/sync.js --check` runs clean on this repo before Stage 1 migration", () => {
+test("`node .asd/sync.js --check` reports every item current (no drift), except the self-sourced AGENTS.md", () => {
   const { execFileSync } = require('node:child_process');
   const out = execFileSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), '--check'], { cwd: REPO_ROOT, encoding: 'utf8' });
   const parsed = JSON.parse(out);
   assert.strictEqual(parsed.ok, true);
   assert.ok(Array.isArray(parsed.items));
+  // Coverage guard: the drift filter below only inspects items `--check`
+  // actually enumerated, so it passes vacuously on an empty or partial
+  // plan (e.g. a canon dir silently dropped from buildSyncPlan()'s
+  // enumeration). Independently enumerate the expected full-file targets
+  // straight from disk (not via sync.js) and assert each one was planned.
+  const targets = new Set(parsed.items.map((item) => item.target));
+  const agentsDir = path.join(REPO_ROOT, '.asd', 'agents');
+  for (const f of fs.readdirSync(agentsDir)) {
+    if (!f.endsWith('.md')) continue;
+    const name = f.slice(0, -3);
+    assert.ok(targets.has(`.claude/agents/${name}.md`), `sync plan missing .claude/agents/${name}.md`);
+    assert.ok(targets.has(`.codex/agents/${name}.toml`), `sync plan missing .codex/agents/${name}.toml`);
+  }
+  const skillsDir = path.join(REPO_ROOT, '.asd', 'skills');
+  for (const name of fs.readdirSync(skillsDir)) {
+    if (!fs.existsSync(path.join(skillsDir, name, 'SKILL.md'))) continue;
+    assert.ok(targets.has(`.claude/skills/${name}/SKILL.md`), `sync plan missing .claude/skills/${name}/SKILL.md`);
+    assert.ok(targets.has(`.agents/skills/${name}/SKILL.md`), `sync plan missing .agents/skills/${name}/SKILL.md`);
+  }
+  // `--check` always exits 0 with `ok: true`; drift only shows as a per-item
+  // `status` string, so `ok`/`items` alone cannot catch a stale/modified
+  // generated view. Assert every item is actually `current`. `AGENTS.md` is
+  // allowlisted: under `self_hosting: enabled` it is self-sourced/hand-edited
+  // (per AGENTS.md's own documented rule), so sync.js legitimately reports it
+  // `modified-foreign` rather than syncing it - that is not drift.
+  const SELF_SOURCED_ALLOWLIST = new Set(['AGENTS.md']);
+  const drifted = parsed.items.filter((item) => item.status !== 'current' && !SELF_SOURCED_ALLOWLIST.has(item.target));
+  assert.deepStrictEqual(drifted, []);
 });
 
 // ===========================================================================

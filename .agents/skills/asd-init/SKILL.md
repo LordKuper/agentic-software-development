@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:9feca7cc71366fb24a549ed503d197ac037881406ecb5270fa9b185743ba56e8 content_digest=sha256:8bd4bae79de6c76fc6cc9a26d6c20c85a6226f8aa2903572978edf5458e4a12a asd_version=1.1.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:189ae571f6874deaaa0847c717df30235654f4f8cefa6e37dba5dcde80ef14e8 content_digest=sha256:b8bd5ad64e584ebb4f855bc5171f8ba2c4242c27a682bffa1bfaba0ae76daecd asd_version=1.2.0 schema=1
 name: asd-init
-description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only design/ docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
+description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 ---
 
 Operation mapping: see `.asd/rules/providers.md`.
@@ -53,9 +53,9 @@ Operation mapping: see `.asd/rules/providers.md`.
     - **mermaid mode**: seed `c4/subsystems.yaml` from `t_subsystems.yaml`; render `c4/architecture.html` with initial mermaid context view
 14. Append decisions-log entry ("ASD initialized for project; decomposition=X, diagram_tool=Y, OS=Z")
 15. **Post-init artefact checks** — suggest dedicated skill for each missing required artefact (do NOT auto-dispatch). Order: concept → stack → design-system:
-    - `design/product/concept.html` absent → suggest `/asd-concept`
-    - `design/architecture/stack.html` absent → suggest `/asd-stack`
-    - `design/ux/DESIGN.md` OR `design/ux/design-system.html` OR `design/ux/accessibility.html` absent → suggest `/asd-design-system`
+    - `docs/product/concept.html` absent → suggest `/asd-concept`
+    - `docs/architecture/stack.html` absent → suggest `/asd-stack`
+    - `docs/ux/DESIGN.md` OR `docs/ux/design-system.html` OR `docs/ux/accessibility.html` absent → suggest `/asd-design-system`
 16. Brownfield: prompt user to start sprint with audit-only scope (optional)
 17. **Run sync** — invoke the sync engine (`.asd/sync.js --check`) to confirm the bundled provider-view trees (`.claude/agents`, `.claude/skills`, `.claude/hooks`, `.agents/skills`, `.codex/agents`, `.codex/hooks`) are `current` against the shipped canon. Report any `stale`/`modified-foreign` finding to the user — do not silently apply.
 18. **Codex trust warning** — unconditional (every project gets a generated `.codex/hooks.json`, regardless of which provider is primary or whether external review is enabled): warn the user that Codex requires explicitly trusting this project's `.codex/hooks.json` before its hooks run (Codex refuses untrusted project-level hooks by design). Point to Codex's own trust-approval step; do not attempt to bypass it.
@@ -96,15 +96,15 @@ Four custom commands emitted only when `documents.ux_spec: enabled` (else omitte
 
 **Windows** (run from project root):
 - `designmd-install: "npm install @google/design.md"`
-- `designmd-lint: "node_modules\\.bin\\design.md.cmd lint design\\ux\\DESIGN.md"`
+- `designmd-lint: "node_modules\\.bin\\design.md.cmd lint docs\\ux\\DESIGN.md"`
 - `designmd-diff: "node_modules\\.bin\\design.md.cmd diff"` (path args supplied at call time)
-- `designmd-export: "node_modules\\.bin\\design.md.cmd export --format json-tailwind design\\ux\\DESIGN.md"`
+- `designmd-export: "node_modules\\.bin\\design.md.cmd export --format json-tailwind docs\\ux\\DESIGN.md"`
 
 **Linux/macOS**:
 - `designmd-install: ""` (no-op; `npx` fetches on demand)
-- `designmd-lint: "npx @google/design.md lint design/ux/DESIGN.md"`
+- `designmd-lint: "npx @google/design.md lint docs/ux/DESIGN.md"`
 - `designmd-diff: "npx @google/design.md diff"`
-- `designmd-export: "npx @google/design.md export --format json-tailwind design/ux/DESIGN.md"`
+- `designmd-export: "npx @google/design.md export --format json-tailwind docs/ux/DESIGN.md"`
 
 ## Artefacts produced
 
@@ -112,7 +112,7 @@ Four custom commands emitted only when `documents.ux_spec: enabled` (else omitte
 - `AGENTS.md`, `CLAUDE.md` — consumer mode: managed block synced from `t_AGENTS.md`/`t_CLAUDE.md`; self-hosting mode: `AGENTS.md` self-sourced (verified, never generated), `CLAUDE.md` still synced
 - `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`, `decisions-log.md`, `stubs.md`
 - `.asd/project/commands.yaml`
-- `design/architecture/c4/` content per `diagram_tool` (decomp only)
+- `docs/architecture/c4/` content per `diagram_tool` (decomp only)
 
 Concept, stack, design system NOT produced here; owned by `/asd-concept`, `/asd-stack`, `/asd-design-system` respectively.
 

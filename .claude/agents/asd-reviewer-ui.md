@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-ui.md. source_digest=sha256:87589bdc53c4e7c10c1dbc9e6abd03896d4e71b5034e1d4cae316036235046c9 content_digest=sha256:9f9981aa955b0a2ef278e11bfbaf961ee7d43e0f0b1e45106d49d90635dc2fa9 asd_version=1.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-ui.md. source_digest=sha256:3528ac03e5073ecfa57381b4591544de49b8d49dcf2ff360744a685aed1cc265 content_digest=sha256:04f36b1f5f3d4794785084410bd892181a6ef97902da73e308682102d17def07 asd_version=1.2.0 schema=1
 name: asd-reviewer-ui
 description: "Design-review of sprint ux-spec drafts and impl-review of UI code. Covers: ux-spec compliance check (do mockups follow design-system tokens?), UI implementation match to ux-spec mockups, design-system component usage (no raw hex/px), accessibility baseline compliance (against accessibility.html visual/motor/cognitive/auditory/platform rules). Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), AC coverage (delegates to asd-reviewer-implementation), test coverage (delegates to asd-reviewer-testing), over-engineering (delegates to asd-reviewer-simplification), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -39,15 +39,15 @@ UI reviewer. Checks ux-spec drafts against DESIGN.md and accessibility baseline 
 
 **design-review phase:**
 - `<sprint>/design/ux-spec.html`
-- `design/ux/DESIGN.md`
-- `design/ux/design-system.html`
-- `design/ux/accessibility.html`
+- `docs/ux/DESIGN.md`
+- `docs/ux/design-system.html`
+- `docs/ux/accessibility.html`
 
 **impl-review phase:**
 - UI code diff
-- `design/ux/<subsystem>.html` (promoted ux-spec) — when absent (`documents.ux_spec` was disabled for the sprint that wrote this code, or no promoted ux-spec exists yet), review against `design/ux/DESIGN.md` and `accessibility.html` directly; never skip impl-review UI review just because no ux-spec exists — absence of a spec doesn't mean absence of UI code
-- `design/ux/DESIGN.md`
-- `design/ux/accessibility.html`
+- `docs/ux/<subsystem>.html` (promoted ux-spec) — when absent (`documents.ux_spec` was disabled for the sprint that wrote this code, or no promoted ux-spec exists yet), review against `docs/ux/DESIGN.md` and `accessibility.html` directly; never skip impl-review UI review just because no ux-spec exists — absence of a spec doesn't mean absence of UI code
+- `docs/ux/DESIGN.md`
+- `docs/ux/accessibility.html`
 
 - iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
 

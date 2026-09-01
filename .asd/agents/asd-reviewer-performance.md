@@ -36,8 +36,8 @@ Performance reviewer. Assesses code against perf budgets and detects regressions
 
 - diff payload (iter 1: full sprint diff; iter 2+: incremental)
 - perf budgets from `.asd/project/custom-coding-rules.md`
-- `design/architecture/adr/` (perf-related ADRs)
-- `design/architecture/stack.html` (stack constraints)
+- `docs/architecture/adr/` (perf-related ADRs)
+- `docs/architecture/stack.html` (stack constraints)
 - test results showing perf measurements (when available)
 - iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
 

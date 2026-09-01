@@ -38,9 +38,9 @@ Test engineer. Sole owner of tests. In `impl-test`, after the code exists: picks
 
 - change surface (diff file list plus the existing tests covering those files), supplied by the phase skill
 - `<sprint>/plan.md` (Task-level material risks)
-- `design/product/requirements/<subsystem>.html` (acceptance criteria to cover)
-- `design/ux/<subsystem>.html` (flows for e2e coverage)
-- `design/architecture/api/<subsystem>.html` (api contracts for contract tests)
+- `docs/product/requirements/<subsystem>.html` (acceptance criteria to cover)
+- `docs/ux/<subsystem>.html` (flows for e2e coverage)
+- `docs/architecture/api/<subsystem>.html` (api contracts for contract tests)
 - `.asd/project/commands.yaml`
 - existing test code
 
@@ -123,7 +123,7 @@ Implementer:
 ## Tech reference precondition
 
 Before authoring tests against any library, framework, runtime, or external service:
-- Verify `design/architecture/tech-reference/<tech>-<version>.md` exists
+- Verify `docs/architecture/tech-reference/<tech>-<version>.md` exists
 - If missing → emit `FAILED — tech-reference missing for <tech>@<version>` and request the doc from asd-architect
 - Never proceed without a verified reference
 

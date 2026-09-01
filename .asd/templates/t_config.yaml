@@ -5,7 +5,7 @@
 # Values: enabled | disabled. See .asd/rules/sprint-lifecycle.md "Self-hosting".
 self_hosting: disabled
 
-# Optional sprint documents and their persistent design-artifact counterpart.
+# Optional sprint documents and their persistent docs counterpart.
 # Absent group (old config) = every value enabled (current behavior unchanged).
 # Absent field within an existing group = disabled (fail-closed).
 documents:
@@ -45,14 +45,14 @@ review:
   iterations_critical: 10
 
 project:
-  # Subsystem decomposition. When enabled, persistent design docs are organized per subsystem.
+  # Subsystem decomposition. When enabled, persistent docs are organized per subsystem.
   # When disabled, single project-wide docs.
   # Values: enabled | disabled
   subsystem_decomposition: enabled
 
   # Diagram tool for the subsystem registry and architecture views. Only used when decomposition enabled.
-  # likec4 — text DSL in design/architecture/c4/model/*.c4 + likec4 CLI builds dist/
-  # mermaid — yaml registry in design/architecture/c4/subsystems.yaml + agent-rendered architecture.html with mermaid blocks
+  # likec4 — text DSL in docs/architecture/c4/model/*.c4 + likec4 CLI builds dist/
+  # mermaid — yaml registry in docs/architecture/c4/subsystems.yaml + agent-rendered architecture.html with mermaid blocks
   # Values: likec4 | mermaid
   diagram_tool: likec4
 

@@ -95,7 +95,7 @@ Plus generic complexity-vs-value: does this complication earn its weight?
 - Never raise nitpick categories
 - Never autofix
 - Never drop critical findings on later iterations (undroppable per policy)
-- Never modify code or design docs
+- Never modify code or persistent docs
 - Never read prior `iter-*/` review files — each iteration reviews clean context (per `review-policy.md`)
 - Never run shell commands
 
