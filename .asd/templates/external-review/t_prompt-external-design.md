@@ -1,6 +1,6 @@
 ---
 responsibility:
-  owns: codex cli prompt for design-review phase (reviews sprint design drafts)
+  owns: wrapped-CLI prompt for design-review phase (reviews sprint design drafts)
   excludes: impl-review prompts, output template
   delegates_to: t_prompt-external-impl.md (impl), t_review-report.md (output)
 ---

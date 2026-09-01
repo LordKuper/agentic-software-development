@@ -31,7 +31,7 @@ Both forms read prompt+diff from stdin; the command's own stdout is the final me
 
 At review phase start, agent runs the probe. On failure (non-zero exit, command not found):
 
-- Append to `<sprint>/decisions-log.md`: `<wrapped-cli> CLI unavailable, external review skipped for sprint <NNN-slug> iter <N>`
+- Return a skip note; the dispatching workflow appends it to `<sprint>/decisions-log.md`: `<wrapped-cli> CLI unavailable, external review skipped for sprint <NNN-slug> iter <N>`
 - Continue without external review, no user prompt
 
 ## Phase-scoped payload

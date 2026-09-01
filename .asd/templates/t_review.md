@@ -5,7 +5,7 @@ responsibility:
   delegates_to: creator agent (fixes), sibling review files (other reviewers), test-plan.md (manual-verification spec)
 ---
 
-[REVIEW-{{PHASE}}-{{REVIEWER}}]: {{APPROVE | CONCERNS | FAIL}}
+[REVIEW-{{REVIEW_PHASE}}-{{REVIEWER}}]: {{APPROVE | CONCERNS | FAIL}}
 
 # Review — {{REVIEWER}}
 

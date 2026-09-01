@@ -132,6 +132,10 @@ The shell trims two blocks per document instead of always emitting them: the mer
 | `{{GENERATED_BY}}` | `ASD workflow` |
 | `{{GENERATED_AT}}` | same as `{{UPDATED_AT}}` |
 
+## Review verdict placeholder namespace
+
+The verdict-token line in `t_review.md`/`t_review-report.md` (`[REVIEW-{{REVIEW_PHASE}}-{{REVIEWER}}]: ...`) uses `{{REVIEW_PHASE}}`, a distinct placeholder from core.md's `{{PHASE}}` template variable (full phase name, e.g. `impl-review`). `{{REVIEW_PHASE}}` is restricted to `design` \| `impl` only (`review-policy.md` verdict-token format) — literal substitution of `{{PHASE}}` there would emit an unparseable `impl-review`/`design-review` token. Dispatching workflow fills `{{REVIEW_PHASE}}` from its own phase (`impl-review`→`impl`, `design-review`→`design`), never copies `{{PHASE}}` verbatim.
+
 **Badge omission**: omit the provenance badge when `PROVENANCE == original` (do not emit the `<span class="provenance-original">` block).
 
 **Fragment invariants**: fragment files in `.asd/templates/` (`t_prd.html` etc.) must NOT include `<html>`, `<head>`, `<body>`, `<style>`, `<script>` — content-only, rely on shell for chrome/styling. Reviewers FAIL fragments that duplicate shell chrome.
@@ -156,7 +160,7 @@ Manual step = operational action a human must perform for the plan to complete (
 
 ## Test plan
 
-`<sprint>/test-plan.md` per `t_test-plan.md`. Per-sprint, created in `impl-test`, overwritten each impl-test entry (Defects section carried over with resolved entries kept for the record). Owner: Test Engineer.
+`<sprint>/test-plan.md` per `t_test-plan.md`. Per-sprint: entry 1 writes it fresh; every re-entry amends it (Defects section carried over with resolved entries kept for the record). Owner: Test Engineer.
 
 SSoT for two things invisible in the diff: **why** a test was removed, and **why** a change needed no new test. Also the handoff channel for code defects to `impl` test-fix mode (`Defects` section). Not a task list (that is `plan.md`) and not a review verdict (that is `reviews/impl/iter-NN/testing.md`).
 
@@ -194,18 +198,6 @@ Sprint folder moves from `.asd/sprints/<NNN-slug>/` to `.asd/sprints/archived/<N
 
 ## Decisions log
 
-Every approved decision (concept change, new subsystem, ADR, scope shift, custom-rule update) appends one entry to `<sprint>/decisions-log.md`. Per-sprint file, created at `scope` from `t_decisions-log.md`, archived with the sprint (`sprint-lifecycle.md` "Sprint immutability"). Owner: PM agent. Append-only, never edited or removed.
-
-```markdown
-## YYYY-MM-DD — <one-line summary>
-
-- **Decision**: <what was decided> (≤3 sentences)
-- **Rationale**: <why> (≤3 sentences)
-- **Affected docs**: <links> (unrestricted)
-```
-
-A no-op skip or other zero-content decision uses the one-line form instead: `- YYYY-MM-DD — <phase> skipped: <reason>`.
-
-**Durability rule**: a decision whose value must survive the sprint's archival is ALSO written into an existing persistent home — a `docs/` fold target, `CHANGELOG.md`, or `.asd/project/stubs.md` — never a new document type invented for this. The sprint log records that the decision was made; the persistent home is what a later sprint can still read.
+Every approved decision (concept change, new subsystem, ADR, scope shift, custom-rule update) appends one entry to `<sprint>/decisions-log.md`. Per-sprint file, created at `scope` from `t_decisions-log.md`, archived with the sprint (`sprint-lifecycle.md` "Sprint immutability"). Owner: PM agent. Append-only, never edited or removed. Entry format and the durability rule are normative in `t_decisions-log.md` — not restated here.
 
 **Legacy log**: `.asd/project/decisions-log.md` is historical only — the project-wide log used before this rule, frozen as of sprint `002-lean-workflow`. Never appended to again.
