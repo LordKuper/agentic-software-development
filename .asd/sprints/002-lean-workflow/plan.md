@@ -257,12 +257,12 @@ Verdict: **P-2**. AC: AC-2, AC-3, AC-4, AC-6. Owner: **backend-dev**. Depends on
 Affected canonical files: `.asd/workflows/asd-phase-audit.md` (steps 5-7), `.asd/agents/asd-ba.md` (Outputs, write allowlist), `.asd/agents/asd-architect.md` (Outputs, write allowlist), `.asd/templates/t_audit.md` (section ownership).
 Material risk: this removes a write right from two agents — the same allowlist trap class as R-14. A permission fact that lives in a file whose diff is elsewhere is exactly what half-lands.
 
-- [ ] BA and Architect **return** their audit sections as text; the workflow assembles `audit.md` — the pattern the framework already uses for reviewer files
-- [ ] Dispatch both creators in parallel; they write disjoint sections and share no content dependency
-- [ ] PM keeps only the approval gate at step 7
-- [ ] Remove `audit.md` from both agents' write allowlists and update their Outputs sections
-- [ ] `t_audit.md`: state section ownership explicitly so the assembly is unambiguous
-- [ ] Run `sync.js --apply` for both agent files
+- [x] BA and Architect **return** their audit sections as text; the workflow assembles `audit.md` — the pattern the framework already uses for reviewer files
+- [x] Dispatch both creators in parallel; they write disjoint sections and share no content dependency
+- [x] PM keeps only the approval gate at step 7
+- [x] Remove `audit.md` from both agents' write allowlists and update their Outputs sections
+- [x] `t_audit.md`: state section ownership explicitly so the assembly is unambiguous
+- [x] Run `sync.js --apply` for both agent files
 
 ### Task 17: Make impl-test re-entry incremental
 
