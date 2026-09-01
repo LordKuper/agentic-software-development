@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:206c8aae25f4c6df1ee291d996ac683f4d908e3524a0f5face6f1164973e57d4 content_digest=sha256:e1ff3398f1d07225e688a68f30206478695a7160e5ea09c319e444475a2fa667 asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:07a4c41e17c05b1b94e7a3a667f9f474328c291f712486fd1cbb96be8a54495a content_digest=sha256:31775aa266d32c536f657b77f183fd51fae5fb72ff1131e054de42f9fc856f77 asd_version=2.0.0 schema=1
 name: asd-reviewer-testing
 description: "Impl-review assessment of the test-plan decisions and the tests themselves, plus judging manual-verification necessity when automation is impossible. Covers: risk→check fit per test-plan.md, justification of removed tests and of no-test decisions, fail-first proof on regression tests, coverage of AC-N, edge cases on core paths, absence of test-for-test-sake (meaningless assertions), flaky patterns, manual-verification necessity judgment against the spec `test-plan.md` already owns (single home — never re-authored here). Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), AC implementation coverage (delegates to asd-reviewer-implementation), ui/a11y (delegates to asd-reviewer-ui), over-engineering (delegates to asd-reviewer-simplification), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -42,7 +42,7 @@ Testing reviewer. Judges the test *decisions* recorded in `test-plan.md` and the
 
 ## Outputs
 
-- Findings, verdict, and the complete coverage ledger as final text output, per `t_review.md` — a manual-verification result (when applicable) is reported as an ordinary finding, never a dedicated section; the phase orchestrator validates the ledger, then persists only the reduced coverage form (findings + summary line + n/a list + finding rows) to `<sprint>/reviews/impl/iter-NN/testing.md` — this reviewer decides nothing about what gets written, only what it returns (`review-policy.md` "Persistence")
+- Findings, verdict, and the complete coverage ledger as final text output, per `t_review.md`; the phase orchestrator validates the ledger, then persists only the reduced coverage form (findings + summary line + n/a list + finding rows) to `<sprint>/reviews/impl/iter-NN/testing.md` — this reviewer decides nothing about what gets written, only what it returns (`review-policy.md` "Persistence")
 
 ## Behavioral profile
 
@@ -93,7 +93,7 @@ Reviewer:
 
 ## Output format
 
-- Per `t_review.md`: Findings table, Verdict, Next action, Escalations (manual-verification results reported as a finding, never a dedicated section)
+- Per `t_review.md`: Findings table, Verdict, Next action, Escalations
 
 ## Gate Verdict Format
 

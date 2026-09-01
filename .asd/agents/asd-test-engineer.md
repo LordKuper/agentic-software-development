@@ -117,7 +117,7 @@ Manual-steps handling: see `sprint-lifecycle.md` "Impl phase" — do not restate
 - `<sprint>/test-plan.md` per `t_test-plan.md`
 - Test files per project layout and `commands.yaml` paths
 - Stubs entries per `t_stubs.md`
-- Manual verification spec: `Manual verification` table in `test-plan.md` (AC, steps, expected) — single home, consumed by asd-reviewer-testing
+- Manual verification spec: `Manual verification` table in `test-plan.md` (AC, steps, expected) — see Outputs
 
 ## Tech reference precondition
 

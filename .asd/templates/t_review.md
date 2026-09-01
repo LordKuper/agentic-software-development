@@ -45,7 +45,3 @@ Reviewer returns the complete file+rule coverage ledger (mandatory — verdict I
 
 ## Escalations (optional)
 - finding #{{N}}: requires user approval ({{reason: concept change / new abstraction / scope expansion / contract change}})
-
-<!-- Manual verification has one home: <sprint>/test-plan.md. The Testing reviewer judges the
-spec found there and reports any manual-verification result as an ordinary finding row above —
-it never authors or duplicates a manual-verification section here. -->

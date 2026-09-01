@@ -43,7 +43,7 @@ Testing reviewer. Judges the test *decisions* recorded in `test-plan.md` and the
 
 ## Outputs
 
-- Findings, verdict, and the complete coverage ledger as final text output, per `t_review.md` — a manual-verification result (when applicable) is reported as an ordinary finding, never a dedicated section; the phase orchestrator validates the ledger, then persists only the reduced coverage form (findings + summary line + n/a list + finding rows) to `<sprint>/reviews/impl/iter-NN/testing.md` — this reviewer decides nothing about what gets written, only what it returns (`review-policy.md` "Persistence")
+- Findings, verdict, and the complete coverage ledger as final text output, per `t_review.md`; the phase orchestrator validates the ledger, then persists only the reduced coverage form (findings + summary line + n/a list + finding rows) to `<sprint>/reviews/impl/iter-NN/testing.md` — this reviewer decides nothing about what gets written, only what it returns (`review-policy.md` "Persistence")
 
 ## Behavioral profile
 
@@ -94,7 +94,7 @@ Reviewer:
 
 ## Output format
 
-- Per `t_review.md`: Findings table, Verdict, Next action, Escalations (manual-verification results reported as a finding, never a dedicated section)
+- Per `t_review.md`: Findings table, Verdict, Next action, Escalations
 
 ## Gate Verdict Format
 

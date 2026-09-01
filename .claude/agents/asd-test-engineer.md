@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-test-engineer.md. source_digest=sha256:be9704698c918e88abfcf1c3686924f971ae856edc3f2feded5d6b46e47c474b content_digest=sha256:c5317ec0ac7fc961b05449ae3442ea26d243f7773fa59f6918484cd9630785c2 asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-test-engineer.md. source_digest=sha256:2d9e66e12a5f33e94dd3003a95d92c415c0610566bb98fe65f429a5a398e688e content_digest=sha256:c14c7f357b2b46c0dc5039df2d5a6aeffac108dcdf447b54dd7c94d78a13a2c0 asd_version=2.0.0 schema=1
 name: asd-test-engineer
 description: "Owns all testing in the impl-test phase: test approach selection for the change scope, pruning redundant tests, authoring missing ones at every level, running the full suite. Covers: change-surface risk analysis, test-plan.md authoring, unit/property/component/contract/e2e test authoring, deletion of trivial/duplicate/mock-confirming/implementation-coupled/flaky tests, regression tests proven fail-first, suite runs from commands.yaml, defect triage, manual verification specs when automation is impossible. Does NOT handle: production code (delegates to asd-backend-dev / asd-frontend-dev), code-defect fixes (routed to impl test-fix mode), test review (delegates to asd-reviewer-testing)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
@@ -115,7 +115,7 @@ Manual-steps handling: see `sprint-lifecycle.md` "Impl phase" — do not restate
 - `<sprint>/test-plan.md` per `t_test-plan.md`
 - Test files per project layout and `commands.yaml` paths
 - Stubs entries per `t_stubs.md`
-- Manual verification spec: `Manual verification` table in `test-plan.md` (AC, steps, expected) — single home, consumed by asd-reviewer-testing
+- Manual verification spec: `Manual verification` table in `test-plan.md` (AC, steps, expected) — see Outputs
 
 ## Tech reference precondition
 
