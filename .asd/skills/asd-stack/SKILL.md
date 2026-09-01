@@ -126,7 +126,7 @@ Per technology in approved stack:
 
 - NEVER guess a version — always verify via fetching external doc (architect handles)
 - Only add tech to stack when actively integrated, not speculatively
-- Speculative additions belong in ADR future-considerations, not stack.html
+- Speculative additions belong in stack.html's own "considered/not adopted" section or `.asd/project/stubs.md`, not the main stack list (ADRs are sprint-scoped and lost at archival — not a durable home)
 - Every tech in stack MUST have a matching tech-reference doc before COMPLETED
 
 ## Artefacts produced

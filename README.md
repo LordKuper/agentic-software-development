@@ -402,7 +402,7 @@ The iteration severity floor uses cumulative budgets: by default iter 1 consider
 FAIL findings trigger an explicit user-approval prompt (Complication Approval format). You can override or accept; the workflow records your decision in `decisions-log.md`.
 
 **Can I skip the audit phase on greenfield projects?**
-`documents.audit` defaults to `enabled` for backward compatibility, and it runs fast on empty projects (no existing code or docs to scan) — so most greenfield projects never need to touch it. Set `documents.audit: disabled` in `config.yaml` before a sprint's `scope` phase to make audit a no-op for that sprint (see "Can I skip PRD/UX-spec/ADR/C4 for a lean sprint?" above).
+`documents.audit` defaults to `enabled` for backward compatibility, and it runs fast on empty projects (no existing code or docs to scan) — so most greenfield projects never need to touch it. Set `documents.audit: disabled` in `config.yaml` before a sprint's `scope` phase to make audit a no-op for that sprint (see "Can I skip PRD/UX-spec/ADR/C4 for a lean sprint?" below).
 
 **Does ASD work without subsystem decomposition?**
 Yes. Set `project.subsystem_decomposition: disabled` during `/asd-init`. Persistent docs become flat project-wide files. No C4 registry is maintained.

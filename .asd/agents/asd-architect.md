@@ -97,7 +97,7 @@ All HTML outputs MUST be wrapped in `t_html-shell.html` per `artifact-layout.md`
 - Audit code-side sections: returned as final text per `t_audit.md` "Touched areas" (code side), "Existing implementation found", "Gaps" (incl. dependency/migration findings), "Risks", "Subsystems map", "Related open stubs" (markdown, no shell); omit an optional section entirely when empty, never emit a placeholder row
 - stack.html: fragment per `t_stack.html`, wrapped in shell. DOC_TYPE=Stack, SUBSYSTEM=project
 - Folded ADR/API contract content: written into the fold target's own template/shape (no dedicated ADR/API template exists persistently) — follow that doc's existing structure, never introduce a new section format
-- architecture.html (mermaid mode): fragment with mermaid blocks, wrapped in shell. DOC_TYPE=Architecture, SUBSYSTEM=project
+- architecture.html: never authored or committed by this agent — build output only (mermaid mode: rendered from `subsystems.yaml` via the build-to-view command; likec4 mode: `likec4 build`)
 
 ## Diagram tool modes
 
