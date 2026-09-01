@@ -1424,6 +1424,35 @@ test('SessionStart hook: a "skipped: <predicate>" verdict counts as satisfied, n
   assert.ok(text.includes('Last review verdict: green'), `expected an all-satisfied verdict map (APPROVE + skipped) to print "green", got: ${text}`);
 });
 
+test('SessionStart hook: an all-"skipped:" verdict map (no genuine approval) is "mixed", not "green"', () => {
+  const tempRoot = mkTempDir();
+  const hookSrc = fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8');
+  writeFile(tempRoot, '.asd/hooks/session-start.js', hookSrc);
+  writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({
+    sprint_id: '999-fixture',
+    phase: 'impl-review',
+    branch: 'feat/999-fixture',
+    reviews: {
+      impl: {
+        iteration: 1,
+        verdicts: {
+          'iter-01': {
+            ui: 'skipped: no UI surface in scope',
+            performance: 'skipped: no perf budgets section and no executable file in scope',
+          },
+        },
+      },
+    },
+  }));
+  const out = execFileSync('node', [path.join(tempRoot, '.asd/hooks/session-start.js'), '--provider', 'claude'], {
+    cwd: tempRoot,
+    encoding: 'utf8',
+  });
+  const text = JSON.parse(out).hookSpecificOutput.additionalContext;
+  assert.ok(!text.includes('Last review verdict: green'), `expected an all-skipped verdict map (no genuine approval) to NOT print "green", got: ${text}`);
+  assert.ok(text.includes('Last review verdict: mixed'), `expected an all-skipped verdict map to print "mixed", got: ${text}`);
+});
+
 // ===========================================================================
 // Runner
 // ===========================================================================

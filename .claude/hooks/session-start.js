@@ -1,4 +1,4 @@
-// ASD generated. Edit .asd/hooks/session-start.js. source_digest=sha256:ad7a4fcc94106fcd7324e21cf2d5eae51ab97b515a78592740bcd14a694a4aac content_digest=sha256:ad7a4fcc94106fcd7324e21cf2d5eae51ab97b515a78592740bcd14a694a4aac asd_version=2.0.0 schema=1
+// ASD generated. Edit .asd/hooks/session-start.js. source_digest=sha256:a01df9dbb7d4974dae349b5aa63c812ac4687c53fa71ca066372cb86ff2edc4d content_digest=sha256:a01df9dbb7d4974dae349b5aa63c812ac4687c53fa71ca066372cb86ff2edc4d asd_version=2.0.0 schema=1
 // ASD SessionStart hook (canonical, provider-agnostic).
 // No shebang: this file is never executed directly (`./session-start.js`),
 // always invoked as `node <path> --provider ...`, and every generated
@@ -110,9 +110,10 @@ function lastReviewVerdict(node) {
   if (!latest || typeof latest !== 'object') return 'n/a';
   const verdicts = Object.values(latest);
   const isSkipped = v => typeof v === 'string' && /^skipped:/.test(v);
+  const approved = v => v === 'green' || v === 'APPROVE';
   if (verdicts.some(v => v === 'red' || v === 'FAIL')) return 'red';
   if (verdicts.some(v => v === 'yellow' || v === 'CONCERNS')) return 'yellow';
-  if (verdicts.length > 0 && verdicts.every(v => v === 'green' || v === 'APPROVE' || isSkipped(v))) return 'green';
+  if (verdicts.length > 0 && verdicts.some(approved) && verdicts.every(v => approved(v) || isSkipped(v))) return 'green';
   return 'mixed';
 }
 

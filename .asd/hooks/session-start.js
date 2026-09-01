@@ -109,9 +109,10 @@ function lastReviewVerdict(node) {
   if (!latest || typeof latest !== 'object') return 'n/a';
   const verdicts = Object.values(latest);
   const isSkipped = v => typeof v === 'string' && /^skipped:/.test(v);
+  const approved = v => v === 'green' || v === 'APPROVE';
   if (verdicts.some(v => v === 'red' || v === 'FAIL')) return 'red';
   if (verdicts.some(v => v === 'yellow' || v === 'CONCERNS')) return 'yellow';
-  if (verdicts.length > 0 && verdicts.every(v => v === 'green' || v === 'APPROVE' || isSkipped(v))) return 'green';
+  if (verdicts.length > 0 && verdicts.some(approved) && verdicts.every(v => approved(v) || isSkipped(v))) return 'green';
   return 'mixed';
 }
 

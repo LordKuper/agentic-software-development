@@ -76,7 +76,7 @@
     ".asd/agents/asd-reviewer-ui.md": "0997ec7ba29b9b944925185566f13ae3cee03522a9c499440ef70d63a15e5282",
     ".asd/agents/asd-test-engineer.md": "76d72b84d148f1af2bc685c05e145d84fbf2e186446751b8194f362a268921cb",
     ".asd/agents/asd-ux-designer.md": "cf75d1eb3dbc802165972b7f01e102adc9827ef02e243aa190a78023b2eb1de5",
-    ".asd/hooks/session-start.js": "ad7a4fcc94106fcd7324e21cf2d5eae51ab97b515a78592740bcd14a694a4aac",
+    ".asd/hooks/session-start.js": "a01df9dbb7d4974dae349b5aa63c812ac4687c53fa71ca066372cb86ff2edc4d",
     ".asd/rules/artifact-layout.md": "b1f093ef1f93bdf660cfe168f35e7ab3a03c68059c4af9d170bdae66fb78d937",
     ".asd/rules/checkpoints.md": "0d172decf03b6112bb9491a65a9feed5bcee6a7cddbca4562bf16913440488a4",
     ".asd/rules/code-style.md": "f6c4355ec912913352460c404b5e5ab5195426000c3a902fb014c5505165fe4d",
