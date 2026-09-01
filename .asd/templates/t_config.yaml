@@ -12,7 +12,7 @@ documents:
   audit: enabled      # <sprint>/audit.md
   prd: enabled         # design/prd.html + persistent requirements
   ux_spec: enabled     # ux-spec, design-system gate, design-md-delta
-  adr: enabled          # adr.html + persistent ADR
+  adr: enabled          # adr.html (sprint-scoped only; folds into existing persistent docs at design-promote)
   c4: enabled            # c4-full + persistent C4 (also requires project.subsystem_decomposition: enabled)
 
 # Language for user-facing interaction.
