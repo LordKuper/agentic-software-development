@@ -106,7 +106,9 @@ User-facing artifacts are HTML only. No parallel Markdown source. Exceptions:
 
 ## HTML shell wrapping (mandatory)
 
-Every user-facing HTML artifact (prd, ux-spec, adr, concept, stack, accessibility, design-system, architecture) MUST be wrapped in `t_html-shell.html`. The fragment template (`t_prd.html`, …) supplies the `<section>` content filling `{{CONTENT}}`. Creators emit a complete HTML document, not a bare fragment.
+Every user-facing HTML artifact (prd, ux-spec, adr, concept, stack, accessibility, design-system, architecture) MUST be wrapped in `t_html-shell.html`. The fragment template (`t_prd.html`, …) supplies the `<section>` content filling `{{CONTENT}}`. Creators emit a complete HTML document, not a bare fragment. Each artifact stays a **self-contained single file** — no `docs/assets/*` stylesheet or other sibling-file dependency; the shell inlines its own `<style>`.
+
+The shell trims two blocks per document instead of always emitting them: the mermaid CDN script (only when the fragment actually contains a diagram) and the auto-TOC nav (only when the fragment has enough sections to need one). Both are ordinary computed placeholders, filled by the creator at write time — see table below.
 
 **Placeholder fill** — creators compute and inline when writing:
 
@@ -123,7 +125,9 @@ Every user-facing HTML artifact (prd, ux-spec, adr, concept, stack, accessibilit
 | `{{SOURCE_SUFFIX}}` | ` (from {{SOURCE}})` in the provenance badge when source non-empty; else empty |
 | `{{TITLE}}` | doc title — e.g. `PRD — Sprint 001 · <slug>` or `ADR-7 · <decision title>` (sprint-local number) |
 | `{{STATS}}` | doc-type chip strip; PRD sprint draft (`SUBSYSTEM=sprint`): `N stories · N AC · updated …`; PRD persistent doc: `N goals · N stories · N AC · N non-goals · updated …`; ADR: `status · subsystem · updated`; UX-spec: `N flows · N mockups`; Stack: `N langs · N frameworks · N components`; others: at least `updated …` |
-| `{{TOC}}` | `<ol>` of links to each `<section id>` in fragment order, auto-generated from `<h2>` text |
+| `{{TOC_NAV}}` | full `<nav class="toc">…</nav>` block (title + `<ol>` of links to each `<section id>` in fragment order, auto-generated from `<h2>` text) when the fragment has **3 or more** `<h2>` sections; empty string below that threshold — the nav is omitted entirely, not emitted empty |
+| `{{LAYOUT_CLASS}}` | `" no-toc"` when `{{TOC_NAV}}` is empty; empty string otherwise |
+| `{{MERMAID_SCRIPT}}` | the mermaid CDN `<script src>` + init `<script>` tag pair when `{{CONTENT}}` contains a `.mermaid` diagram block; empty string when the fragment has no diagram |
 | `{{CONTENT}}` | fragment body (everything after the frontmatter comment) |
 | `{{GENERATED_BY}}` | `ASD workflow` |
 | `{{GENERATED_AT}}` | same as `{{UPDATED_AT}}` |

@@ -48,7 +48,7 @@ These artifacts mirror/reference each other. A change in one usually needs match
 - Skill/agent files use JSON frontmatter (not YAML) between `---` fences — `name`/`description` required, provider-specific config under `claude`/`codex` keys. Description is the trigger, must be specific.
 - Templates carry `t_` prefix, live only in `.asd/templates/`.
 - Rule docs terse, imperative. `.asd/rules/code-style.md` governs code written *by consumer dev agents* — not this repo.
-- HTML artifact templates share the `t_html-shell.html` shell (sticky TOC sidebar); keep that structure when editing other `t_*.html`.
+- HTML artifact templates share the `t_html-shell.html` shell (sticky TOC sidebar, conditionally trimmed below a section-count threshold; mermaid script likewise conditional on diagram presence — self-contained single file, no sibling stylesheet); keep that structure when editing other `t_*.html`.
 - Never hand-edit a generated file (`.claude/`, `.codex/`, `.agents/skills/`, or a full-file target's ownership-marker comment) — edit its `.asd/` canonical source and run `node "$(git rev-parse --show-toplevel)/.asd/sync.js" --apply <file...>` (self-locating — a bare relative path only resolves from the repo root).
 
 ## Hard rules

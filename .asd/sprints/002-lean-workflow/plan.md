@@ -187,12 +187,12 @@ Verdict: **A-34**, risk **R-6** (trim variant; the shared-stylesheet variant is 
 Affected canonical files: `.asd/templates/t_html-shell.html`, `.asd/rules/artifact-layout.md` (HTML shell wrapping, placeholder table), `.asd/agents/asd-ba.md`, `.asd/agents/asd-architect.md`, `.asd/agents/asd-ux-designer.md`, `.asd/agents/asd-reviewer-documentation.md`, `.asd/skills/asd-design-system/SKILL.md`, `AGENTS.md` (conventions).
 Material risk: the rejected shared-`docs/assets/asd.css` variant would have broken self-contained single-file artifacts and added a path `/asd-update` does not manage. The trim variant preserves self-containment; the residual risk is that reviewers are instructed to FAIL fragments duplicating shell chrome, so the reviewer rubric must move with the shell.
 
-- [ ] `t_html-shell.html`: drop the mermaid CDN `<script>` from documents that contain no diagram (make it conditional, not unconditional)
-- [ ] `t_html-shell.html`: drop the auto-TOC for documents below a stated section count
-- [ ] Artifacts stay **self-contained single files** — do not introduce `docs/assets/asd.css` or any sibling-file dependency
-- [ ] `artifact-layout.md`: update the HTML-shell wrapping rule and the placeholder table for any placeholder that is no longer always computed
-- [ ] `asd-reviewer-documentation.md`: align the duplicate-chrome FAIL rule with the trimmed shell
-- [ ] `asd-ba.md`, `asd-architect.md`, `asd-ux-designer.md`, `asd-design-system/SKILL.md`, `AGENTS.md` conventions: align; run `sync.js --apply`
+- [x] `t_html-shell.html`: drop the mermaid CDN `<script>` from documents that contain no diagram (make it conditional, not unconditional)
+- [x] `t_html-shell.html`: drop the auto-TOC for documents below a stated section count
+- [x] Artifacts stay **self-contained single files** — do not introduce `docs/assets/asd.css` or any sibling-file dependency
+- [x] `artifact-layout.md`: update the HTML-shell wrapping rule and the placeholder table for any placeholder that is no longer always computed
+- [x] `asd-reviewer-documentation.md`: align the duplicate-chrome FAIL rule with the trimmed shell
+- [x] `asd-ba.md`, `asd-architect.md`, `asd-ux-designer.md`, `asd-design-system/SKILL.md`, `AGENTS.md` conventions: align; run `sync.js --apply`
 
 ### Task 12: Change design-system.html regeneration frequency (gate untouched)
 

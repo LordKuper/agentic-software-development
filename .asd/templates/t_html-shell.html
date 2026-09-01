@@ -42,6 +42,7 @@ responsibility:
     * { box-sizing: border-box; }
     body { font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--fg); background: var(--bg); }
     .layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 100vh; }
+    .layout.no-toc { grid-template-columns: minmax(0, 1fr); }
     .content { min-width: 0; }
     header, main, footer { max-width: var(--max); margin: 0 auto; padding: 16px 24px; }
     header { border-bottom: 1px solid var(--border); }
@@ -198,15 +199,14 @@ responsibility:
       tr, li { break-inside: avoid; }
     }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-  <script>mermaid.initialize({ startOnLoad: true, theme: 'default' });</script>
+  <!-- {{MERMAID_SCRIPT}}: mermaid CDN <script src> + init tag pair, filled only when CONTENT contains a `.mermaid` diagram block; empty string otherwise -->
+  {{MERMAID_SCRIPT}}
 </head>
 <body>
-  <div class="layout">
-    <nav class="toc" aria-label="Table of contents">
-      <p class="toc-title">Contents</p>
-      {{TOC}}
-    </nav>
+  <!-- {{LAYOUT_CLASS}}: " no-toc" when {{TOC_NAV}} is empty (fragment has fewer than 3 h2 sections); empty string otherwise -->
+  <div class="layout{{LAYOUT_CLASS}}">
+    <!-- {{TOC_NAV}}: full <nav class="toc">...</nav> block, omitted (empty string) when fragment has fewer than 3 h2 sections -->
+    {{TOC_NAV}}
     <div class="content">
       <header>
         <div class="badges">

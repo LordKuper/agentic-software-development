@@ -85,7 +85,7 @@ Creator:
 
 ## Output format
 
-- PRD sprint draft: fragment per `t_prd.html`, User stories + Acceptance criteria sections only (plus optional one-line Problem) — Goals/Non-goals omitted entirely, not emitted empty. Wrapped in `t_html-shell.html` per `artifact-layout.md` HTML shell wrapping rule. Fill placeholders: DOC_TYPE=PRD, SUBSYSTEM=`sprint`, STATUS=`draft`/`in-review`/`approved`, UPDATED_AT=today ISO, STATS=`N stories · N AC · updated YYYY-MM-DD`, TOC auto from `<section id>`+`<h2>`, CONTENT=fragment body
+- PRD sprint draft: fragment per `t_prd.html`, User stories + Acceptance criteria sections only (plus optional one-line Problem) — Goals/Non-goals omitted entirely, not emitted empty. Wrapped in `t_html-shell.html` per `artifact-layout.md` HTML shell wrapping rule. Fill placeholders: DOC_TYPE=PRD, SUBSYSTEM=`sprint`, STATUS=`draft`/`in-review`/`approved`, UPDATED_AT=today ISO, STATS=`N stories · N AC · updated YYYY-MM-DD`, TOC_NAV/LAYOUT_CLASS/MERMAID_SCRIPT per `artifact-layout.md` placeholder table (conditional), CONTENT=fragment body
 - PRD persistent doc (design-promote): same fragment plus required Goals section (and optional Non-goals). SUBSYSTEM=subsystem id, STATS=`N goals · N stories · N AC · N non-goals · updated YYYY-MM-DD`
 - concept.html: fragment per `t_concept.html`, wrapped in shell. DOC_TYPE=Concept, SUBSYSTEM=project
 - Audit docs section: feeds `t_audit.md` "Existing docs found" and "Documentation migration plan" sections; omit either section entirely when empty, never emit a placeholder row

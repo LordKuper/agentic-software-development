@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-ba.md. source_digest=sha256:1a698e211aced98ec74106dc69fe179276a8b078f264d4978f24987f471b3a67 content_digest=sha256:efc4356d2cca7068ddcbd24d506485a0794b09b41994204e119e7fc599ba1d44 asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-ba.md. source_digest=sha256:a592371e6491de59b52bb1fd659d698f36e3e7fe95bc068f44d5fdbd48d211a1 content_digest=sha256:bd34b34b7b897d1006dadbb22958e08e4473f2c77ffcd885ff3495b63b3c35e7 asd_version=2.0.0 schema=1
 name: asd-ba
 description: "Product requirements: user stories, acceptance criteria, brownfield doc audit, PRD drafts. Covers: PRD authoring (sprint draft plus reverse-engineered/migrated), audit of existing docs (not code), user story decomposition, acceptance criteria formulation, ambiguity resolution via clarifying questions. Does NOT handle: ux flows or ui mockups (delegates to asd-ux-designer), architecture decisions (delegates to asd-architect), code (delegates to dev agents), code audit (delegates to asd-architect)."
 tools: [Read, Glob, Grep, Edit, Write, WebFetch, WebSearch, AskUserQuestion]
@@ -84,7 +84,7 @@ Creator:
 
 ## Output format
 
-- PRD sprint draft: fragment per `t_prd.html`, User stories + Acceptance criteria sections only (plus optional one-line Problem) — Goals/Non-goals omitted entirely, not emitted empty. Wrapped in `t_html-shell.html` per `artifact-layout.md` HTML shell wrapping rule. Fill placeholders: DOC_TYPE=PRD, SUBSYSTEM=`sprint`, STATUS=`draft`/`in-review`/`approved`, UPDATED_AT=today ISO, STATS=`N stories · N AC · updated YYYY-MM-DD`, TOC auto from `<section id>`+`<h2>`, CONTENT=fragment body
+- PRD sprint draft: fragment per `t_prd.html`, User stories + Acceptance criteria sections only (plus optional one-line Problem) — Goals/Non-goals omitted entirely, not emitted empty. Wrapped in `t_html-shell.html` per `artifact-layout.md` HTML shell wrapping rule. Fill placeholders: DOC_TYPE=PRD, SUBSYSTEM=`sprint`, STATUS=`draft`/`in-review`/`approved`, UPDATED_AT=today ISO, STATS=`N stories · N AC · updated YYYY-MM-DD`, TOC_NAV/LAYOUT_CLASS/MERMAID_SCRIPT per `artifact-layout.md` placeholder table (conditional), CONTENT=fragment body
 - PRD persistent doc (design-promote): same fragment plus required Goals section (and optional Non-goals). SUBSYSTEM=subsystem id, STATS=`N goals · N stories · N AC · N non-goals · updated YYYY-MM-DD`
 - concept.html: fragment per `t_concept.html`, wrapped in shell. DOC_TYPE=Concept, SUBSYSTEM=project
 - Audit docs section: feeds `t_audit.md` "Existing docs found" and "Documentation migration plan" sections; omit either section entirely when empty, never emit a placeholder row
