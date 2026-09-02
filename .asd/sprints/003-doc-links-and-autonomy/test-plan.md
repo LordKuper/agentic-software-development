@@ -13,6 +13,7 @@ responsibility:
 |---|---|---|
 | 1 | 54176d0172cd8d6683109d12c11c85f1eedf2c02 | full change surface |
 | 2 | 7347537fa851ae8970cf24306b323be77e8b5474 | delta since entry 1 (impl review-fix iter-1) |
+| 3 | 852e70bb5fa6c122643366e3120f9939193818ad | delta since entry 2 (impl review-fix iter-2) |
 
 ## Strategy summary
 
@@ -91,6 +92,53 @@ assertions (not assumed):
 
 No test was removed or found to no longer earn its keep in this delta.
 
+### Entry 3 (delta since entry 2 — impl review-fix iter-2)
+
+Delta scope: 13 files — `reviews/impl/iter-2/testing.md` (T1-T4 from the review-fix note above,
+already applied to `tests/run.js`/`test-plan.md`/`decisions-log.md` before this entry opened),
+`checkpoints.md`/`core.md`/`sprint-lifecycle.md` gate-mechanic corrections, `ADVICE_NEEDED`
+de-duplication in 4 agent files, `asd-concept`/`asd-design-system`/`asd-stack` skill edits, and a
+centralized `sync.js --apply` re-render. Re-verified (not assumed) the four things this entry was
+asked to check:
+
+1. **`tests/run.js`'s read-only-agent test, `tools`-array guard** — read the actual assertion
+   (`tests/run.js:1016`): `assert.ok(Array.isArray(meta.claude && meta.claude.tools), ...)` runs
+   *before* the `Write`/`Edit`/`Bash` absence checks, so a deleted `claude.tools` key now fails loud
+   instead of falling back to `[]` and passing vacuously. Confirmed non-vacuous by inspection of
+   execution order (line 1016 before 1018-1024) — this was already fixed in the iter-2 review-fix
+   round (review-fix note above, "testing #1"); nothing further needed this entry.
+2. **Roster-count test, all 5 README claims** — read the actual assertion (`tests/run.js:1037-1071`):
+   asserts `dispatches N specialized agents`, the word-form `"<Word> specialized agents are
+   canonically defined"`, `N canonical agent specs`, both `N agent definitions` occurrences (via
+   `matchAll`, asserted count === 2), and `AGENTS.md`'s `**Agents** (...) — N:` line — 5 README
+   claims + 1 AGENTS.md claim, all compared against the live `.asd/agents/*.md` count. Confirmed
+   complete; already fixed in iter-2 (review-fix note above, "quality #4").
+3. **`readRaw` removal** — grepped the whole repo: zero occurrences in `tests/run.js` or any other
+   executable file; the only remaining hits are inert prose mentions in sprint docs (this
+   `test-plan.md`, `decisions-log.md`, `reviews/impl/iter-2/simplification.md`, and an archived
+   sprint's review file) recording that the removal happened. Nothing broke — full suite run below
+   confirms (83/83, same count as before removal, since `readRaw` had zero call sites left to lose
+   coverage over).
+4. **`core.md`'s `Lock in`/`Revise this section` token swap** — read the actual line
+   (`core.md:57`): pure prose in a rule doc consumed by agents at dispatch time. Grepped
+   `tests/run.js` for any assertion touching `core.md` content — none exists (the file greps
+   `t_AGENTS.md`/`AGENTS.md` for a fixed string in an unrelated fixture-generation test, not
+   `core.md`'s actual body). No executable path parses `core.md` for this token; prose-only,
+   consistent with entries 1-2's finding for the rest of the gate-mechanic rewrite. No test added.
+5. **`checkpoints.md`'s two new gate-table rows** (`/asd-concept`→concept.html,
+   `/asd-stack`→stack.html) — same reasoning: `checkpoints.md` is read by agents at dispatch, not
+   parsed by any test. `tests/run.js` has no assertion against `checkpoints.md` content. Prose-only,
+   no test added — consistent with entry 2's identical row for the rest of `checkpoints.md`'s
+   gate-mechanic rewrite (Risk → check decisions table above).
+6. **`sprint-lifecycle.md`'s consult-cap fix + new "State recovery" carve-out sentence** — same
+   reasoning: no executable path parses `sprint-lifecycle.md`; prose consumed by agent runtime only.
+   Prose-only, no test added.
+
+Conclusion: this delta needed zero new tests. The four hardenings requested for re-verification
+(items 1-3 above) were already correctly and completely applied during the iter-2 review-fix round
+itself — this entry's job was confirmation, not further code change, and confirmation is done by
+reading the actual assertions/greps above rather than re-trusting the prior entry's own claim.
+
 ## Risk → check decisions
 
 | Change | Material risk | Chosen check | Decision | Reason |
@@ -107,6 +155,10 @@ No test was removed or found to no longer earn its keep in this delta.
 | `.asd/rules/checkpoints.md`, `core.md`, `language-policy.md`, `providers.md`, `sprint-lifecycle.md` (gate-mechanic rewrite) — restated for entry 2 (T-6 correction) | dangling references to dropped c4 gate / stale approve-before-write phrasing | manual grep sweep (impl Task 12) **+ static** (`upstream_hashes` freshness, existing) | none | corrected from entry 1: "nothing for an automated test to assert against" was inaccurate — every edited rule/workflow file carries an `upstream_hashes` entry asserted fresh by the existing ledger-consistency test; that check catches a hash mismatch (file changed but ledger not updated), not prose *correctness*, which remains manual |
 | generated `.claude/agents/`, `.codex/agents/`, `.claude/skills/`, `.agents/skills/`, `AGENTS.md` views | drift between canon and generated/self-sourced view | build (`node .asd/sync.js --check`) | keep, **hardened** (entry 2, T-4) | corrected from entry 1: "byte-for-byte" was not true for `AGENTS.md` — it was allowlisted out of the drift check entirely (`SELF_SOURCED_ALLOWLIST`), so the DoD's "re-baselined, not merely tolerated" claim had no automated backing. Verified `AGENTS.md`'s `--check` status is genuinely `current` now (Task 13's re-baseline); removed the allowlist exemption so the test requires every item `current` with none exempted — fail-first: fails at parent `317aa50`, passes at HEAD |
 | `.asd/skills/asd-concept/SKILL.md`, `asd-stack/SKILL.md`, `asd-design-system/SKILL.md`, `asd-phase-scope/SKILL.md` (AC-3 completion: final gates converted to write-then-review-accept) | gate-mechanic prose drifts from `checkpoints.md`'s SSoT | manual cross-file consistency check (impl-review reviewers) | none | prose consumed by the agent runtime; no executable path parses SKILL.md bodies; frontmatter render/`--check` already covered by the directory-driven skills assertion in `tests/run.js` |
+| `.asd/agents/asd-architect.md`, `asd-ba.md`, `asd-pm.md`, `asd-ux-designer.md` (entry 3: `ADVICE_NEEDED` de-duplication) | frontmatter still valid, generated views still render; read-only/tool contract unaffected (none of these 4 are read-only agents) | static (same generic per-agent assertion + read-only-agent test, which correctly excludes these 4) | none | prose de-dup only, no frontmatter/tool change; confirmed still `current` via `sync.js --check` below |
+| `.asd/release-manifest.json` (entry 3: centralized `sync.js --apply` re-render) | stale recorded hash entry for one of the 13 touched files | static (existing) | keep | already covered — `release-manifest.json: every canon_hashes/upstream_hashes entry matches the actual file`; confirmed green below |
+| `.asd/rules/checkpoints.md` (entry 3: 2 new gate-table rows for `/asd-concept`→concept.html, `/asd-stack`→stack.html), `core.md` (entry 3: `Lock in`/`Revise this section` token swap replacing `accept` for per-section lock-in), `sprint-lifecycle.md` (entry 3: consult-cap counter-ownership fix + new "State recovery" carve-out sentence) | dangling references / stale token usage | manual grep + read of actual lines (this entry, items 4-6 above) + static `upstream_hashes` freshness (existing) | none | verified prose-only by reading the actual changed lines and confirming `tests/run.js` has zero assertions parsing these 3 files' content (only unrelated fixture-generation tests reference `core.md` by path) — same category as entry 2's identical row, extended to this delta's specific new lines rather than assumed to still apply |
+| `tests/run.js` (entry 3: `readRaw` deletion, `tools`-array guard, `Bash` check, roster-count extension to 5 claims — all applied in the iter-2 review-fix round, before this entry opened) | test-file-only change could itself regress the suite | full suite run (this entry) | none, re-verified | re-ran `node tests/run.js` clean (83/83) in this entry to confirm the review-fix round's own test-file edits didn't break anything; see Suite run |
 
 ## Removed tests
 
@@ -124,6 +176,12 @@ Entry 1: none. Entry 2 (per `reviews/impl/iter-1/testing.md` T-1/T-3/T-5), all i
 | `release-manifest.json canon_hashes has an entry for every .asd/agents/*.md file` | n/a — new invariant; verified it fails when a `canon_hashes` key is deleted during authoring, reverted |
 | `` `node .asd/sync.js --check` reports every item current (no drift), including AGENTS.md `` (hardened, not new) | fail-first — fails at parent `317aa50` (`AGENTS.md` was `modified-foreign`), passes at current HEAD after Task 13's re-baseline |
 
+Entry 3: none added. The iter-2 review-fix round's hardenings to the 3 tests above (`tools`-array
+guard, `Bash` check, roster-count extended to 5 claims, `readRaw` deletion) were already applied and
+recorded in the "Review-fix note (iter-2)" section below before this entry opened; this entry
+re-verified them by reading the actual assertions (Entry 3 strategy, items 1-3) rather than adding
+new test code.
+
 ## Suite run
 
 **Entry 1** (superseded by entry 2 below; kept for record):
@@ -135,7 +193,7 @@ Entry 1: none. Entry 2 (per `reviews/impl/iter-1/testing.md` T-1/T-3/T-5), all i
   result stayed representative (no code changed underneath it), but the stamped HEAD undersold how
   stale the record was by the time entry 2 opened.
 
-**Entry 2** (current, latest — this is the result the `pr` phase compares against):
+**Entry 2** (superseded by entry 3 below; kept for record):
 - Command: `node tests/run.js`
 - Result: pass — 83/83 passed, 0 failed, 0 skipped (80 pre-existing + 3 added this entry: T-1/T-3/T-5)
 - Lint / build: pass — `git diff --check` exit 0 (no whitespace errors, warnings only for
@@ -143,6 +201,18 @@ Entry 1: none. Entry 2 (per `reviews/impl/iter-1/testing.md` T-1/T-3/T-5), all i
   items, 0 with non-`current` status (zero drift, `AGENTS.md` included — no longer exempted, T-4)
 - HEAD: 03b492036c4c46f284651235daa980871e9d6aaa (commit `test: add read-only agent, roster-count,
   and ledger-completeness guards; harden AGENTS.md drift check`)
+- Note: the review-fix note below records a *partial* interim run (80/83, 3 pre-existing failures
+  from in-flight parallel canon edits) taken mid-round, before this entry's formal full run.
+
+**Entry 3** (current, latest — this is the result the `pr` phase compares against):
+- Command: `node tests/run.js`
+- Result: pass — 83/83 passed, 0 failed, 0 skipped (no tests added or removed this entry; the 3
+  tests hardened during the iter-2 review-fix round — `tools`-array guard, `Bash` check,
+  roster-count extended to 5 README claims — all pass)
+- Lint / build: pass — `git diff --check` exit 0 (no diff-check errors; warnings only for
+  line-ending-normalization notices on unrelated `.claude/agent-memory/` files);
+  `node .asd/sync.js --check` `ok: true`, 72 items, 0 with non-`current` status (zero drift)
+- HEAD: 852e70bb5fa6c122643366e3120f9939193818ad
 
 ## Defects
 

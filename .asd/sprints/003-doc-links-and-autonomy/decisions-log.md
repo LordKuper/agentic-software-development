@@ -109,6 +109,13 @@ Per-sprint, append-only. Never edited or removed. Created at `scope`, archived w
 - **Verification**: `node .asd/sync.js --check` 72/72 current; `node tests/run.js` 83/83; `git diff --check` clean (CRLF notices only).
 - **Affected docs**: `.asd/rules/{checkpoints.md,core.md,sprint-lifecycle.md}`, `.asd/agents/{asd-pm.md,asd-ba.md,asd-architect.md,asd-ux-designer.md}`, `.asd/workflows/asd-phase-design.md`, `.asd/skills/{asd-concept,asd-stack,asd-design-system}/SKILL.md`, `tests/run.js`, `test-plan.md`, generated provider views.
 
+## 2026-09-02 — impl-test entry 3: suite green (83/83), no new tests
+
+- **Decision**: delta since iter-2's fix round (13 files) re-verified as prose-only (no application code path parses `core.md`/`checkpoints.md`/`sprint-lifecycle.md` content) except the test-guard hardenings themselves, which were already correctly applied during the iter-2 review-fix round — re-confirmed fresh (tools-array guard non-vacuous, all 5 README count claims checked, `readRaw` fully removed with zero call sites).
+- **Rationale**: three consecutive impl-test entries have now independently reached the same conclusion for this sprint's canon-only diffs — no gap to paper over, just a stable characteristic of a framework-rule-prose sprint.
+- **Suite run**: `node tests/run.js` 83/83; `git diff --check` clean; `node .asd/sync.js --check` 72/72 current. HEAD `852e70bb5`.
+- **Affected docs**: [test-plan.md](./test-plan.md)
+
 ## 2026-09-02 — impl-test entry 2: suite green (83/83), 3 added tests, T-1/T-3/T-4/T-5 resolved
 
 - **Decision**: added 3 new `tests/run.js` assertions closing the gaps `reviews/impl/iter-1/testing.md` found (T-1: read-only-agent contract, directory-driven over 9 agents; T-3: README/AGENTS.md roster-count vs `.asd/agents/` directory count; T-5: `release-manifest.json` `canon_hashes` completeness for the agents tree). T-4 hardened an existing test by removing the `SELF_SOURCED_ALLOWLIST` exemption for `AGENTS.md`, now that its digest is genuinely `current` — a real fail-first regression guard (fails at parent `317aa50`, passes at HEAD). T-2/T-6/T-7 resolved as `test-plan.md` record corrections (deferred-verification table for AC-4/AC-5's unexercised rows; corrected coverage claims), no code change.
