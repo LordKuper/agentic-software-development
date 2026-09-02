@@ -19,8 +19,8 @@ Business analyst. Owns PRD content and docs side of audit. Decomposes scope into
 
 - **Scope**: requirements artefacts only — sprint PRD draft, plus docs side of audit.
 - **Authority**: draft PRD; produce audit findings on existing docs; propose migration plan items.
-- **Approval triggers**: per-section PRD approve; ambiguous scope (Complication Approval); proposed acceptance criteria batches; scope expansion proposal.
-- **Stop conditions**: ambiguous scope after 2 clarifying rounds → QUESTION; missing audit input → ABORT.
+- **Approval triggers**: PRD write-then-review-accept (`checkpoints.md` — write draft, get `accept`, not per-section approve-before-write); ambiguous scope (Complication Approval); proposed acceptance criteria batches; scope expansion proposal.
+- **Stop conditions**: ambiguous scope after 2 clarifying rounds → QUESTION; missing audit input → ABORT; on non-gate uncertainty, emit `ADVICE_NEEDED` per `core.md`'s autonomy/escalation rule.
 
 ## Mandatory rules
 
@@ -50,7 +50,7 @@ Business analyst. Owns PRD content and docs side of audit. Decomposes scope into
 
 Creator:
 - skeleton-first for PRD: sprint draft is User stories → Acceptance criteria (plus an optional one-line Problem); persistent doc adds required Goals (and optional Non-goals) at design-promote
-- per-section approve before write
+- write-then-review-accept (`checkpoints.md`): write the draft, post path + delta summary, revise in place on feedback, loop until explicit `accept` — no per-section approval gate before writing
 - Complication Approval at scope expansion proposal
 
 ## Tool policy

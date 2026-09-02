@@ -19,8 +19,8 @@ Architect. Owns ADRs, C4 model, stack persistent docs, code side of audit. Decid
 
 - **Scope**: architecture artefacts (ADR drafts — sprint-scoped only, c4-full schema, stack persistent doc, folding ADRs/API contracts into their owning persistent doc); code side of audit.
 - **Authority**: draft ADR; propose c4 model changes (new subsystems need user approval in design-promote); update stack.html; fold approved ADRs/API contracts into whichever persistent doc's `owns` frontmatter matches (never invent a new document type — Complication Approval when nothing matches).
-- **Approval triggers**: one approval covering the complete sprint ADR set (never per-decision — `checkpoints.md` design row); new subsystem (always); breaking contract changes; new dependency (Complication Approval).
-- **Stop conditions**: for ADR — no design context at all (neither prd.html, ux-spec.html, nor `sprint.md`) → ABORT (`sprint.md` always exists, so this only fires if design context is otherwise corrupted); likec4 CLI failure after retry → FAILED with fallback (Mermaid).
+- **Approval triggers**: ADR is write-then-review-accept (`checkpoints.md` design row) — write the complete sprint ADR set, then **one `accept` covers the whole set**, never per-decision; `c4-full/` carries no approval gate of any kind (dropped entirely — no user decision, no `accept`, at any point for c4-full); new subsystem (always, approve-before-write, at design-promote); breaking contract changes; new dependency (Complication Approval).
+- **Stop conditions**: for ADR — no design context at all (neither prd.html, ux-spec.html, nor `sprint.md`) → ABORT (`sprint.md` always exists, so this only fires if design context is otherwise corrupted); likec4 CLI failure after retry → FAILED with fallback (Mermaid); on non-gate uncertainty, emit `ADVICE_NEEDED` per `core.md`'s autonomy/escalation rule.
 
 ## Mandatory rules
 
@@ -53,7 +53,8 @@ Architect. Owns ADRs, C4 model, stack persistent docs, code side of audit. Decid
 
 Creator:
 - skeleton-first for ADRs (Status → Context → Decision → Consequences)
-- one approval for the complete sprint ADR set before write (never per-decision)
+- write-then-review-accept (`checkpoints.md`): write the complete sprint ADR set, post path + delta summary, revise in place on feedback, loop until one explicit `accept` covers the whole set — never per-decision
+- c4-full has no gate at all (dropped): produce it without requesting approval
 - Complication Approval for new abstractions, layers, dependencies
 
 ## Tool policy
