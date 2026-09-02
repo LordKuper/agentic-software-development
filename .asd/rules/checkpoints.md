@@ -19,9 +19,9 @@ Approval stays explicit and recorded (see "Approval recording") — silence or a
 
 ### Approve-before-write gates
 
-| After phase / event | Approves | Gate position |
-|---|---|---|
-| audit | `audit.md` | BEFORE advancing to `design` |
+| After phase / event | Approves |
+|---|---|
+| audit | `audit.md` — BEFORE advancing to `design` |
 | design-review (final) | reviewer verdicts before promotion |
 | design-promote (decomposition) | proposed per-subsystem split |
 | design-promote (new subsystem) | each new subsystem before C4 registry update |
@@ -34,14 +34,16 @@ Approval stays explicit and recorded (see "Approval recording") — silence or a
 
 ### Write-then-review-accept gates
 
-| After phase / event | Approves | Gate position |
-|---|---|---|
-| scope | `sprint.md` | write-then-review-accept (see mechanic above) |
-| design | `prd.html` (if `prd` enabled) | write-then-review-accept |
-| design | design-system gate: `DESIGN.md` + `design-system.html` + `accessibility.html` (if `ux_spec` enabled; missing → dispatch `/asd-design-system`) | write-then-review-accept |
-| design | `ux-spec.html` (if enabled; inline per-entry approval for any `design-md-delta.yaml` addition remains its own approve-before-write micro-gate, unaffected by this change) | write-then-review-accept |
-| design | `adr.html` (if `adr` enabled — **one approval for the sprint's whole ADR set**, not per-decision; ADR count never multiplies this gate) | write-then-review-accept |
-| plan | `plan.md` | write-then-review-accept |
+All rows use the write-then-review-accept mechanic above.
+
+| After phase / event | Approves |
+|---|---|
+| scope | `sprint.md` |
+| design | `prd.html` (if `prd` enabled) |
+| design | design-system gate: `DESIGN.md` + `design-system.html` + `accessibility.html` (if `ux_spec` enabled; missing → dispatch `/asd-design-system`) |
+| design | `ux-spec.html` (if enabled; inline per-entry approval for any `design-md-delta.yaml` addition remains its own approve-before-write micro-gate, unaffected by this change) |
+| design | `adr.html` (if `adr` enabled — **one approval for the sprint's whole ADR set**, not per-decision; ADR count never multiplies this gate) |
+| plan | `plan.md` |
 
 `c4-full/` carries no approval gate of any kind (neither class) — dropped entirely. `design-promote (final mutation)` is dropped as a separate gate — its content was already accepted per-artifact under write-then-review-accept during `design`; re-confirming the same content at final persistent-write time is redundant.
 
