@@ -31,3 +31,9 @@ Per-sprint, append-only. Never edited or removed. Created at `scope`, archived w
   - **R-2** — advisor consults have no audit trail; needs a durable home (decisions-log line per consult, `<sprint>/advisories/`, or read-only-analysis-only). The clause "never authorizes, never substitutes for a HARD gate" is mandatory regardless.
   - **G-9 / R-6** — `.asd/sync.js --check` is already unclean (`AGENTS.md` `modified-foreign`, pre-existing drift from sprint 002 commit `317aa50`). AC-8 demands a clean `--check`, so the sprint must re-baseline the digest in `.asd/sync-state.json` — a path outside `sprint-lifecycle.md` "Self-hosting"'s exhaustive write allowlist. Route via `/asd-sync`'s `keep-local` path or amend the allowlist; settle at plan time, not mid-impl.
   - **R-5** — live for this repo: `language.chat: ru`, `language.docs: en`, so under write-then-review the user reviews files in a language they do not interact in. Needs a `language-policy.md` rule (self-sufficient delta summary, or key passages quoted-and-translated per the existing quote-translation precedent, without dumping the body).
+
+## 2026-09-02 — design/design-review/design-promote skipped (no documents enabled)
+
+- **Decision**: mechanical, no gate — frozen `state.json.documents` has `prd`/`ux_spec`/`adr`/`c4` all `false`, so per `sprint-lifecycle.md` "No-op phase rule" the three phases collapse to one deterministic skip.
+- **Rationale**: no applicable artifact exists for any of the three phases under this sprint's document profile; nothing to gate.
+- **Affected docs**: none — `phase` set to `design-promote`, `skipped_phases` gains `["design", "design-review", "design-promote"]`.
