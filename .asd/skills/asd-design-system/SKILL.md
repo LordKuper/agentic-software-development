@@ -75,7 +75,7 @@ Order per Google Labs DESIGN.md spec:
 6. Motion / timing
 7. Components (button, input, card, etc.) — only those needed per concept
 
-- Before the first section: write skeleton `docs/ux/DESIGN.md` (Google Labs format) with placeholder sections
+- Create mode only, before the first section: write skeleton `docs/ux/DESIGN.md` (Google Labs format) with placeholder sections. Edit mode: skip skeleton write, enter the per-section loop directly against the existing file.
 - Fetch latest Google Labs DESIGN.md spec (external doc) on first section; cache for session
 - For each section:
   - Designer drafts the section, writes it into `docs/ux/DESIGN.md` on disk
@@ -93,13 +93,13 @@ After all DESIGN.md sections approved:
 
 ## Phase 5 — design-system.html regeneration
 
-- Designer renders and writes `docs/ux/design-system.html` per `t_design-system.html` from approved DESIGN.md now (write is not deferred — only the artifact-level `accept` gate is deferred to Phase 7's combined gate, avoiding a duplicate approval on the same file)
+- Designer renders and writes `docs/ux/design-system.html` per `t_design-system.html` from approved DESIGN.md now (write is not deferred — only the artifact-level `accept` gate is deferred to Phase 7's combined gate)
 - Live previews: color swatches with hex, typography samples, spacing scale, component previews using applied tokens
 - Wrap in `t_html-shell.html` (DOC_TYPE=Design-system, SUBSYSTEM=project)
 
 ## Phase 6 — accessibility baseline
 
-- Before the first section: write skeleton `docs/ux/accessibility.html` (wrapped in `t_html-shell.html`, DOC_TYPE=Accessibility, SUBSYSTEM=project) with placeholder sections
+- Create mode only, before the first section: write skeleton `docs/ux/accessibility.html` (wrapped in `t_html-shell.html`, DOC_TYPE=Accessibility, SUBSYSTEM=project) with placeholder sections. Edit mode: skip skeleton write, enter the per-section loop directly against the existing file.
 - Sections: visual (contrast, color-blind, motion), motor (target size, keyboard), cognitive (language, predictability), auditory (captions, transcripts), platform (focus order, ARIA, screen reader)
 - For each section:
   - Designer drafts the section, translates to `language.docs`, writes it into `docs/ux/accessibility.html` on disk
@@ -108,12 +108,11 @@ After all DESIGN.md sections approved:
   - on B: collect feedback, designer revises, rewrites the section in place, re-posts delta summary, re-ask
   - repeat until A
   - next section
-- Write of section content happens now, per section (not deferred) — only the artifact-level `accept` gate is deferred to Phase 7's combined gate, avoiding a duplicate approval on the same file
 
 ## Phase 7 — final artifact-level gate: all three files
 
 - `docs/ux/DESIGN.md`, `docs/ux/design-system.html`, `docs/ux/accessibility.html` already reflect every locked-in section from Phases 4-6
-- write-then-review-accept (`checkpoints.md` mechanic): post the three absolute paths + one combined delta summary in chat (never the body); user reviews the files and replies `accept` (advance) or feedback (revise in place, re-post) — feedback naming a specific section may re-enter Phase 4 or Phase 6 for that section before rewriting; single loop covers all three files, loop until explicit `accept`
+- write-then-review-accept (`checkpoints.md` mechanic): post the three absolute paths + one combined delta summary in chat (never the body); user reviews the files and replies `accept` (advance) or feedback (revise in place, re-post) — feedback naming a specific section may re-enter Phase 4 or Phase 6 for that section before rewriting; if the re-entered phase is Phase 4 (any DESIGN.md section revised), re-run `designmd-lint` to a clean pass AND Phase 5's design-system.html regeneration before re-posting the combined summary — `accept` may not be requested again until both are done; single loop covers all three files, loop until explicit `accept`
 - emit COMPLETED
 
 ## Phase 8 — handoff
@@ -140,7 +139,7 @@ After all DESIGN.md sections approved:
 - NEVER author accessibility rules without checking concept's target users
 - Token authoring + review bound by `.asd/rules/design-system.md`; UX shaping bound by `.asd/rules/ux-principles.md`
 - Within this skill's own session, design-system.html MUST be regenerated once, at Phase 5, from the just-approved DESIGN.md (never left stale); this is orthogonal to the in-sprint cadence (`.asd/rules/design-system.md` §10: once per sprint, at design-promote, only if DESIGN.md was actually touched that sprint) — this skill runs standalone or via the design-system gate, not per token edit
-- `designmd-lint` MUST pass before write (clean pass per `.asd/rules/design-system.md` §11); warning exclusions need user approval + recorded rationale
+- `designmd-lint` MUST reach a clean pass (per `.asd/rules/design-system.md` §11) before Phase 5 regeneration and before Phase 7's `accept` gate — section writes to DESIGN.md are not gated on it (write-first per `.asd/rules/checkpoints.md`); warning exclusions need user approval + recorded rationale
 - Every component listed in DESIGN.md MUST have a live preview in design-system.html
 
 ## Artefacts produced
