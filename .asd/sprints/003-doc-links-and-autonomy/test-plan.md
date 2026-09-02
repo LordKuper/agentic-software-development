@@ -14,6 +14,7 @@ responsibility:
 | 1 | 54176d0172cd8d6683109d12c11c85f1eedf2c02 | full change surface |
 | 2 | 7347537fa851ae8970cf24306b323be77e8b5474 | delta since entry 1 (impl review-fix iter-1) |
 | 3 | 852e70bb5fa6c122643366e3120f9939193818ad | delta since entry 2 (impl review-fix iter-2) |
+| 4 |  | delta since entry 3 (impl review-fix iter-3) |
 
 ## Strategy summary
 
@@ -139,6 +140,69 @@ Conclusion: this delta needed zero new tests. The four hardenings requested for 
 itself — this entry's job was confirmation, not further code change, and confirmation is done by
 reading the actual assertions/greps above rather than re-trusting the prior entry's own claim.
 
+### Entry 4 (delta since entry 3 — impl review-fix iter-3)
+
+Delta scope: 6 files — `.asd/release-manifest.json` (ledger re-render for the 5 edited canon files
+below), `.asd/rules/checkpoints.md` (reworded "Approval recording" rule: one decisions-log entry per
+accepted *gate* naming every covered path, not per artifact; new "Recording scope" clause
+distinguishing sprint-phase gates from standalone skill gates run outside an active sprint),
+`.asd/skills/asd-concept/SKILL.md` / `asd-design-system/SKILL.md` / `asd-stack/SKILL.md` (Phase 4/6
+section loops converted from present-in-chat-then-write to write-first: each section is now written
+to the target file on disk *before* the user is asked to lock in / revise, with a skeleton write
+before the first section), `.asd/workflows/asd-phase-design.md` (one sprint-local `AC-2` citation
+replaced with a canonical `checkpoints.md` reference — the "link-and-summary" rule, not a new rule).
+
+This is the first delta since the write-then-review-accept mechanic landed (entry 1) where the
+actual *user-facing behaviour* of a setup skill's section loop changed shape, not just gate
+vocabulary — worth checking fresh rather than pattern-matching to entries 2/3's "prose-only"
+conclusion.
+
+1. **Does anything in `tests/run.js` verify a skill's section-loop write-order (write-before-lock-in,
+   not lock-in-before-write)?** Grepped `tests/run.js` for any reference to `SKILL.md`, `checkpoints.md`,
+   `Lock in`, or `write-then-review` (output above): the only `SKILL.md`-touching tests are (a) two
+   fixture-render tests comparing a synthetic `canon/skills/demo-skill/SKILL.md` fixture against its
+   generated `.claude`/`.agents` output — fixture content is static test data, unrelated to the 3
+   real setup skills' bodies — and (b) the directory-driven skills-coverage assertion
+   (`tests/run.js:977-979`) that only checks `.claude/skills/<name>/SKILL.md` and
+   `.agents/skills/<name>/SKILL.md` exist in the sync plan and are `current` (byte-identical render of
+   canon, nothing about the prose sequence inside). No test parses a real SKILL.md's Markdown body,
+   walks its numbered Phase/bullet structure, or asserts one instruction precedes another semantically.
+2. **Could a genuinely new automatable invariant be written here?** Considered and rejected: verifying
+   "write happens before the lock-in question" would require either (a) parsing SKILL.md prose for
+   ordering between two English sentences — a string-position heuristic, not a real invariant (would
+   pass/fail on paraphrasing, not on behaviour), or (b) actually running the skill (dispatching a BA/
+   architect/designer agent through Phase 4, simulating a mock user session, and asserting the target
+   file's mtime/content changed before the lock-in prompt was emitted) — a live agent-dispatch
+   simulation, which is new test infrastructure of a kind this repo has never had (no harness anywhere
+   drives an agent skill end-to-end; `tests/run.js` only tests `sync.js`/`update.js`, per this sprint's
+   Strategy summary and the project memory on this repo's test scope) and would be a Complication
+   Approval-gated addition, not something to add unilaterally for a wording-order change. No code path
+   simulates or replays a skill's phase sequence — only frontmatter + render is asserted, and that
+   remains true after this delta exactly as before it. Conclusion: still prose-only, no new
+   automatable invariant exists for this specific risk (write-before-lock-in ordering) — confirmed by
+   inspection of the actual grep hits, not assumed by analogy to prior entries.
+3. **`checkpoints.md`'s reworded "Approval recording" rule + new "Recording scope" clause** — grepped
+   `tests/run.js` for `checkpoints.md` (output above): zero hits. Same as entries 2-3's finding for
+   the rest of this file's gate-mechanic prose: read by agents at dispatch time, parsed by no
+   executable path in this repo. Prose-only, no test added — this delta's specific new clauses (gate-
+   level vs artifact-level entry granularity; sprint-phase vs standalone-skill decisions-log routing)
+   don't change that; they're the same category of un-testable prose as every prior `checkpoints.md`
+   edit this sprint.
+4. **`asd-phase-design.md`'s `AC-2` → `checkpoints.md` citation swap** — a reference-target rename in
+   a code comment-equivalent (a citation string), not a behaviour change; the underlying rule
+   (link-and-summary, never a content dump) is unchanged. No test surface.
+5. **`release-manifest.json` re-render for the 5 edited files** — covered by the existing
+   ledger-consistency check (`release-manifest.json: every canon_hashes/upstream_hashes entry matches
+   the actual file`), confirmed green below; no gap, same as every prior entry's identical finding.
+
+Conclusion: this delta needed zero new tests. The write-first conversion is a genuine, deliberate
+user-facing behaviour change, but it has no automatable invariant available without new agent-dispatch
+simulation infrastructure — out of scope for a wording/ordering fix and not requested. Manual
+cross-file consistency review (impl-review reviewers) remains the only verification for this class of
+change, consistent with the existing Risk → check decisions row for these same 3 skill files (added
+entry 3, row: "AC-3 completion: final gates converted to write-then-review-accept" — this delta
+extends that same row's reasoning to the earlier per-section loop, not a new risk category).
+
 ## Risk → check decisions
 
 | Change | Material risk | Chosen check | Decision | Reason |
@@ -159,6 +223,10 @@ reading the actual assertions/greps above rather than re-trusting the prior entr
 | `.asd/release-manifest.json` (entry 3: centralized `sync.js --apply` re-render) | stale recorded hash entry for one of the 13 touched files | static (existing) | keep | already covered — `release-manifest.json: every canon_hashes/upstream_hashes entry matches the actual file`; confirmed green below |
 | `.asd/rules/checkpoints.md` (entry 3: 2 new gate-table rows for `/asd-concept`→concept.html, `/asd-stack`→stack.html), `core.md` (entry 3: `Lock in`/`Revise this section` token swap replacing `accept` for per-section lock-in), `sprint-lifecycle.md` (entry 3: consult-cap counter-ownership fix + new "State recovery" carve-out sentence) | dangling references / stale token usage | manual grep + read of actual lines (this entry, items 4-6 above) + static `upstream_hashes` freshness (existing) | none | verified prose-only by reading the actual changed lines and confirming `tests/run.js` has zero assertions parsing these 3 files' content (only unrelated fixture-generation tests reference `core.md` by path) — same category as entry 2's identical row, extended to this delta's specific new lines rather than assumed to still apply |
 | `tests/run.js` (entry 3: `readRaw` deletion, `tools`-array guard, `Bash` check, roster-count extension to 5 claims — all applied in the iter-2 review-fix round, before this entry opened) | test-file-only change could itself regress the suite | full suite run (this entry) | none, re-verified | re-ran `node tests/run.js` clean (83/83) in this entry to confirm the review-fix round's own test-file edits didn't break anything; see Suite run |
+| `.asd/skills/asd-concept/SKILL.md`, `asd-design-system/SKILL.md`, `asd-stack/SKILL.md` (entry 4: Phase 4/6 section loops converted write-first — write to disk before the lock-in question, was present-then-write) | a skill silently reverts to lock-in-before-write, or the write-first ordering drifts from `checkpoints.md`'s mechanic | manual cross-file consistency check (impl-review reviewers) | none | genuinely re-investigated (entry 4 strategy, item 1-2): no executable path in this repo parses SKILL.md prose or simulates a skill's phase sequence — only fixture-render + frontmatter/`current`-status coverage exists; a real invariant would require new agent-dispatch simulation infrastructure, out of scope here. Same category as the existing "AC-3 completion" row above, extended to the earlier per-section loop |
+| `.asd/rules/checkpoints.md` (entry 4: "Approval recording" reworded to gate-level entry granularity + new "Recording scope" clause) | decisions-log entries silently regress to per-artifact (not per-gate), or standalone-skill gates write to a nonexistent sprint's decisions-log | manual grep + read of actual lines (this entry) + static `upstream_hashes` freshness (existing) | none | prose-only, confirmed by grep — zero `checkpoints.md` references in `tests/run.js`; same as every prior entry's finding for this file |
+| `.asd/workflows/asd-phase-design.md` (entry 4: `AC-2` citation replaced with canonical `checkpoints.md` reference) | dangling reference to a sprint-local AC number outside sprint scope | manual grep sweep | none | citation-target rename only, underlying rule unchanged; no test surface |
+| `.asd/release-manifest.json` (entry 4: re-render for the 5 files above) | stale recorded hash entry for one of the 5 touched files | static (existing) | keep | already covered — `release-manifest.json: every canon_hashes/upstream_hashes entry matches the actual file`; confirmed green below |
 
 ## Removed tests
 
@@ -182,6 +250,11 @@ recorded in the "Review-fix note (iter-2)" section below before this entry opene
 re-verified them by reading the actual assertions (Entry 3 strategy, items 1-3) rather than adding
 new test code.
 
+Entry 4: none added. Investigated fresh whether the write-first section-loop conversion in the 3
+setup skills introduces a check-ladder-eligible invariant (Entry 4 strategy, items 1-2) — concluded no
+executable path exists to assert prose ordering without new agent-dispatch simulation infrastructure,
+which is out of scope for this delta. No test removed.
+
 ## Suite run
 
 **Entry 1** (superseded by entry 2 below; kept for record):
@@ -204,7 +277,7 @@ new test code.
 - Note: the review-fix note below records a *partial* interim run (80/83, 3 pre-existing failures
   from in-flight parallel canon edits) taken mid-round, before this entry's formal full run.
 
-**Entry 3** (current, latest — this is the result the `pr` phase compares against):
+**Entry 3** (superseded by entry 4 below; kept for record):
 - Command: `node tests/run.js`
 - Result: pass — 83/83 passed, 0 failed, 0 skipped (no tests added or removed this entry; the 3
   tests hardened during the iter-2 review-fix round — `tools`-array guard, `Bash` check,
@@ -213,6 +286,14 @@ new test code.
   line-ending-normalization notices on unrelated `.claude/agent-memory/` files);
   `node .asd/sync.js --check` `ok: true`, 72 items, 0 with non-`current` status (zero drift)
 - HEAD: 852e70bb5fa6c122643366e3120f9939193818ad
+
+**Entry 4** (current, latest — this is the result the `pr` phase compares against):
+- Command: `node tests/run.js`
+- Result: pass — 83/83 passed, 0 failed, 0 skipped (no tests added or removed this entry)
+- Lint / build: pass — `git diff --check` exit 0 (no diff-check errors; warnings only for
+  line-ending-normalization notices on unrelated `.claude/agent-memory/` files);
+  `node .asd/sync.js --check` `ok: true`, 72 items, 0 with non-`current` status (zero drift)
+- HEAD: 487e65fc81221b6ad91c06d19e28523f7c9db049
 
 ## Defects
 
