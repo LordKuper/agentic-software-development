@@ -52,3 +52,10 @@ Per-sprint, append-only. Never edited or removed. Created at `scope`, archived w
 - **D-3 (audit G-9/R-6) — `.asd/sync-state.json` added to `sprint-lifecycle.md`'s self-hosting write allowlist (option ii).** **Rationale**: it is generated state already written by the sanctioned `sync.js --apply` path, so naming it documents existing behavior rather than loosening the allowlist; that paragraph self-describes as exhaustive, making the omission a defect in the claim. Unblocks AC-8's clean `--check`, which cannot pass while `AGENTS.md` carries pre-existing `modified-foreign` drift from sprint 002 (`317aa50`).
 - **G-8 — unlisted gates stay approve-before-write** (clarification, not a user decision). AC-3's artifact list is closed and `sprint.md`'s Out-of-scope section contains nothing contradicting the reading. So `design-md-delta.yaml`'s per-entry gate and `/asd-stack` Phase 6's per-tech-reference write gate are unchanged. **Known seam accepted**: this leaves `/asd-stack` internally mixed (`stack.html` write-then-review, sibling tech-reference writes approve-before-write); recorded in `plan.md` Task 8 so a later reviewer does not "fix" it.
 - **G-5 — decisions-log provenance under revise-in-place**: one entry per artifact at `accept`, not one per revision round (revision rounds are not decisions). To be written as an explicit rule in `checkpoints.md` "Approval recording" by Task 1.
+
+## 2026-09-02 — impl assessment approved
+
+- **Phase**: impl
+- **Decision**: impl assessment approved — 13/13 tasks complete, AC-1..AC-8 covered, build (`sync.js --check` 72/72) and lint (`git diff --check`) clean, no sprint-introduced stubs. Advance to impl-test.
+- **Rationale**: All plan.md checkboxes ticked; Task 12 grep sweep returned zero stale approve-before-write hits; Task 13 re-baseline landed with a clean `--check`. Two beyond-literal-plan judgment calls presented and accepted: design-promote bookkeeping relocated inline (T3/T9, audit G-6) and the non-blocking post-promotion summary retained as the audit-R-3 compensating control.
+- **Alternatives considered**: request changes (no defect found to justify); abort (no blocker).
