@@ -187,3 +187,10 @@ Per-sprint, append-only. Never edited or removed. Created at `scope`, archived w
 - **Fixes**: Phase 4/Phase 6 skeleton guards reworded to key on each artifact's OWN existence (not the shared session-mode flag), closing the reachable path where accessibility.html could go uncreated or be written unwrapped; Edit mode now force-includes any of the three artifacts missing on disk into the section-loop set; Phase 4's `Skip (C)` option gained the same removal handler already present in the two sibling skills; the Hard rule's false "regenerated once, at Phase 5" claim reworded to match Phase 7's actual re-run requirement.
 - **Verification**: `node .asd/sync.js --check` all items current; `node tests/run.js` 83/83.
 - **Affected docs**: `.asd/skills/asd-design-system/SKILL.md`, generated provider views, `.asd/release-manifest.json`.
+
+## 2026-09-02 — impl-test entry 6: suite green (83/83), no new tests
+
+- **Decision**: delta since iter-5's fix round (2 files) re-verified fresh — same runtime-state-conditioned prose category as prior entries. Noted this round is itself a live instance of the exact failure mode entry 5 warned about: the words "create mode only" were present in the buggy prior version too, reinforcing that a static anchor-phrase check would have passed both the buggy and fixed versions equally. Spot-checked `release-manifest.json`'s asd-design-system hash entries genuinely changed value (not stale).
+- **Rationale**: no code path parses SKILL.md phase logic; manual cross-file review remains the correct verification path.
+- **Suite run**: `node tests/run.js` 83/83; `git diff --check` clean; `node .asd/sync.js --check` 72/72 current. HEAD `8567b47d2`.
+- **Affected docs**: [test-plan.md](./test-plan.md)
