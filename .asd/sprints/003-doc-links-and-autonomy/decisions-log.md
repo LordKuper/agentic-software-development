@@ -102,6 +102,13 @@ Per-sprint, append-only. Never edited or removed. Created at `scope`, archived w
 - **Affected docs**: [reviews/impl/iter-2/*](./reviews/impl/iter-2/), [state.json](./state.json)
 - **Alternatives considered**: none — no FAIL, no override to consider.
 
+## 2026-09-02 — impl fix for iter-3: findings resolved
+
+- **Decision**: all 4 iter-3 findings resolved via 2 parallel dev dispatches on disjoint files (checkpoints.md+asd-phase-design.md; the 3 setup skills), followed by centralized `sync.js --apply` on 6 stale skill-view targets.
+- **Fixes**: replaced the sprint-local `AC-2` citation in `asd-phase-design.md`'s c4-full step with the canonical `checkpoints.md` reference; reworded `checkpoints.md`'s "Approval recording" rule to "one entry per accepted gate, naming every path it covers" (making the design-system gate's combined 3-artifact entry correct by rule); added a "Recording scope" clause to `checkpoints.md` distinguishing sprint-phase gates (advance phase + log) from standalone skill gates with no active sprint (log if one exists, else the accepted file is the record); converted `asd-concept`/`asd-stack`/`asd-design-system` skills' per-section loops from present-in-chat-then-write to write-first order matching `core.md`'s Incremental-writing pattern, closing the AC-2 violation quality found in 5 of AC-3's 10 artifacts.
+- **Verification**: `node .asd/sync.js --check` 72/72 current; `node tests/run.js` 83/83; `git diff --check` clean.
+- **Affected docs**: `.asd/rules/checkpoints.md`, `.asd/workflows/asd-phase-design.md`, `.asd/skills/{asd-concept,asd-stack,asd-design-system}/SKILL.md`, generated provider views.
+
 ## 2026-09-02 — impl fix for iter-2: findings resolved
 
 - **Decision**: all 33 findings across the 7 non-clean iter-2 reviewer files resolved via 5 parallel dev dispatches on disjoint file sets (sprint-lifecycle.md+core.md; 4 creator agents; checkpoints.md+asd-phase-design.md+asd-design-system/SKILL.md; asd-concept/asd-stack skill dedup; tests/run.js+test-plan.md via asd-test-engineer per the test-file routing rule), followed by one centralized `node .asd/sync.js --apply` pass covering 14 stale generated targets.
