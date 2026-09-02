@@ -97,7 +97,7 @@ After all DESIGN.md sections approved:
 
 ## Phase 6 — accessibility baseline
 
-- Designer authors `docs/ux/accessibility.html` per `t_accessibility.html`
+- Designer authors `docs/ux/accessibility.html` per `t_accessibility.html` (draft only — write deferred to Phase 7's combined gate, avoiding a duplicate approval on the same file)
 - Sections: visual (contrast, color-blind, motion), motor (target size, keyboard), cognitive (language, predictability), auditory (captions, transcripts), platform (focus order, ARIA, screen reader)
 - Section-by-section request user decision lock-in — labels/descriptions in `language.chat`
 - Wrap in `t_html-shell.html` (DOC_TYPE=Accessibility, SUBSYSTEM=project)
