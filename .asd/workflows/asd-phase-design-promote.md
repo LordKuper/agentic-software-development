@@ -9,7 +9,8 @@ Orchestration body for the `asd-phase-design-promote` skill. Operation-mapping t
 
 ## Operations used
 - read: `.asd/project/config.yaml`, `state.json`, sprint design drafts, audit.md, persistent `docs/`
-- write a file: `state.json` and decisions-log inline, for the no-op path's mechanical write (step 2)
+- write a file: `state.json` and decisions-log inline, for the no-op path's mechanical write (step 2) and the post-promotion bookkeeping write (step 10)
+- post chat message: non-blocking post-promotion summary (step 11), no response awaited
 - request user decision: rare, phase-level escalation only (PM + creators handle per-doc/per-subsystem approvals)
 - delegate to agent: PM (orchestrator), Architect, BA, UX Designer (domain promoters)
 
@@ -36,31 +37,25 @@ Orchestration body for the `asd-phase-design-promote` skill. Operation-mapping t
    - **`asd-ba`** — only if `prd.html` is in scope (step 1 intersection) — payload (prd.html, decomposition map for product domain, migration items tagged product):
      - per subsystem (or flat): fold the sprint draft's User stories + Acceptance criteria into `docs/product/requirements/<subsystem>.html` (or `requirements.html`); the sprint draft carries no Goals/Non-goals — author the persistent doc's required Goals (and optional Non-goals) now, merging with existing content if present
      - process product migration items (`provenance: migrated|reverse-engineered` + `source`)
-     - request user decision before each persistent write; show diff vs existing
+     - show diff vs existing (informational, no approval gate)
      - emit COMPLETED
    - **`asd-architect`** — only if `adr.html` or `c4-full/` is in scope (step 1 intersection, independently — a repo can promote c4 without adr, or vice versa) — payload (adr.html if in scope, c4-full if in scope, decomposition map for architecture domain, migration items tagged architecture):
      - fold every approved ADR into whichever existing persistent doc's `responsibility.owns` frontmatter already declares ownership of that decision's subject (`sprint-lifecycle.md` "Design-promote phase" fold rule) — never a lookup table, never a new `adr/` tree; use the ADR's own "Fold target" line as the candidate, verify the `owns:` match before writing; binding rejected alternatives fold as one line into the target's Constraints-equivalent section; non-binding alternatives stay sprint-archive-only; API contracts fold the same way (subsystem doc, `stack.html`, a project-generated OpenAPI/SDL/proto artifact, or Complication Approval if nothing owns it — no pre-made template)
      - update `docs/architecture/stack.html` + `tech-reference/` entries if sprint introduced new tech
      - apply the sprint's c4 delta patch from `<sprint>/design/c4-full/` to persistent `docs/architecture/c4/` (or, when the persistent registry did not exist before this sprint, write the sprint's full schema directly as the registry) — never regenerate `dist/`/`architecture.html` here, build on demand via the `commands.yaml` build-to-view command
      - process architecture migration items
-     - request user decision before each persistent write
      - emit COMPLETED
    - **`asd-ux-designer`** — only if `ux-spec.html` is in scope (step 1 intersection) — payload (ux-spec.html, design-md-delta.yaml if present, decomposition map for ux domain, migration items tagged ux):
      - per subsystem (or flat): split ux-spec into `docs/ux/<subsystem>.html` (or `ux-spec.html`); merge with existing
      - if `design-md-delta.yaml` present: apply add/update/remove ops to `docs/ux/DESIGN.md`; if `system.tools.designmd` true, run `designmd-lint` from `commands.yaml`; halt on lint errors. On Windows run `designmd-install` once per session before first `designmd-lint`/`-diff`/`-export` (no-op on Linux/macOS). Never inline the linter binary — always go through `designmd-*` commands.
      - regenerate `docs/ux/design-system.html` from patched DESIGN.md — this is the sprint's **one** regeneration point (`design-system.md` §10), triggered only if `DESIGN.md` was actually touched this sprint (i.e. `design-md-delta.yaml` present and applied); no DESIGN.md change → skip regeneration entirely
      - process ux migration items
-     - request user decision before each persistent write
      - emit COMPLETED
 9. Wait all dispatched creators COMPLETED
-10. **Final mutation confirmation** — delegate to agent `asd-pm`:
-   - present summary of all persistent writes (per-domain counts + new subsystems + files touched)
-   - request user decision: confirm finalize / rollback / partial rollback
-   - on confirm: compose decisions-log entries (decomposition, each new subsystem, each promoted artefact, DESIGN.md patch, c4 patch) and append to `<sprint>/decisions-log.md`
-   - update `state.json` (phase=design-promote done)
-   - emit COMPLETED
-11. Emit phase COMPLETED with return contract
-12. Any agent QUESTION / FAILED / ABORT → relay, halt
+10. **Bookkeeping** — mechanical inline write by this workflow (no PM dispatch, no gate): compose decisions-log entries (decomposition, each new subsystem, each promoted artefact, DESIGN.md patch, c4 patch) and append to `<sprint>/decisions-log.md`; update `state.json` (phase=design-promote done)
+11. **Post-promotion summary** — non-blocking chat message: path/file list of everything promoted this run (per-domain counts + new subsystems + files touched); informational only, no decision requested, no wait for response (compensating control for the dropped final-mutation/partial-rollback gate, `sprint-lifecycle.md` "Design-promote phase")
+12. Emit phase COMPLETED with return contract
+13. Any agent QUESTION / FAILED / ABORT → relay, halt
 
 ## Artefacts produced
 - Persistent docs under `docs/` per domain (per subsystem when decomposition enabled, flat when disabled)
@@ -71,7 +66,7 @@ Orchestration body for the `asd-phase-design-promote` skill. Operation-mapping t
 - Appended decisions-log entries
 
 ## Agents delegated to
-- `asd-pm` (orchestration, new subsystem proposals, state, decisions-log, final confirm); no-op path (step 2) is an inline workflow write, no PM dispatch
+- `asd-pm` (orchestration, new subsystem proposals); no-op path (step 2) and post-promotion bookkeeping (step 10) are inline workflow writes, no PM dispatch
 - `asd-architect` (architecture domain + c4 registry updates)
 - `asd-ba` (product domain)
 - `asd-ux-designer` (ux domain)
@@ -87,6 +82,6 @@ PHASE: design-promote | SPRINT: <NNN-slug> | STATUS: <complete|blocked|aborted> 
 ## References
 - `.asd/rules/sprint-lifecycle.md` (design-promote phase contract)
 - `.asd/rules/artifact-layout.md` (path map per decomposition mode, c4 modes, promotion rules)
-- `.asd/rules/checkpoints.md` (per-promotion approval, new-subsystem approval, final mutation confirm)
+- `.asd/rules/checkpoints.md` (decomposition + new-subsystem approval gates; no-content-dumps shape for the post-promotion summary)
 - `.asd/rules/language-policy.md`
 - Templates: `t_prd.html`, `t_adr.html`, `t_ux-spec.html`, `t_design-system.html`, `t_subsystems.yaml`, `t_tech-reference.md`, `t_decisions-log.md`
