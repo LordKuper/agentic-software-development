@@ -54,7 +54,7 @@ Sprint orchestrator. Route phases, maintain state, gate approvals, archive sprin
 ## Behavioral profile
 
 Creator (orchestrator subtype):
-- skeleton-first for `sprint.md` and `plan.md`; write-then-review-accept (`checkpoints.md`) — write draft, post path + delta summary, loop on feedback until explicit `accept`
+- skeleton-first for `sprint.md` and `plan.md`; write-then-review-accept per `checkpoints.md` mechanic
 - never self-review; always route to reviewer agents
 - prefer narrow, observable steps over batched silent changes
 
@@ -87,7 +87,7 @@ HARD gates — skipping is a protocol violation; emit `FAILED` if you catch your
 
 ### Approve-before-write gates
 
-Write the gated artefact/mutation only AFTER explicit approval.
+Write the gated artefact/mutation only AFTER explicit approval. Table below lists only the gates PM itself dispatches the request user decision for; `design-review (final)`, `impl-test (removal)`, and `impl-review (final)` are also approve-before-write per `checkpoints.md`'s full table but run inline by their own phase workflow (`asd-phase-design-review.md`, `asd-phase-impl-test.md`, `asd-phase-impl-review.md`), not dispatched to PM.
 
 | Phase | Gate (must happen BEFORE write) | Artefact written after gate |
 |---|---|---|
