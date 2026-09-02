@@ -38,8 +38,9 @@ Orchestration body for the `asd-phase-plan` skill. Operation-mapping to host too
        - no test-authoring Tasks or subtasks — tests are selected and written in `impl-test`, after the code exists; note per Task only the **material risk** the change carries, as input for impl-test
        - list non-trivial dependencies between tasks
      - **Definition of Done**: reference the standing DoD (`sprint-lifecycle.md` "Plan file format") instead of restating it; author only sprint-specific additions, if any
-     - on approval translate to `language.docs` + write `<sprint>/plan.md`
-     - append decisions-log entry ("plan approved for sprint <NNN-slug>")
+     - **write-then-review-accept** (`checkpoints.md` mechanic): translate skeleton + full draft to `language.docs` and write `<sprint>/plan.md`; post the absolute path + a short delta summary in chat — never the artifact body
+     - user reviews `plan.md` on disk and replies `accept` (advance) or gives feedback (revise the same file in place, no `-v2`, and re-post path + summary); loop until explicit `accept`
+     - on explicit `accept`: append decisions-log entry ("plan accepted for sprint <NNN-slug>")
      - emit COMPLETED
 5. On PM COMPLETED → emit phase COMPLETED with return contract
 6. On PM QUESTION / FAILED / ABORT → relay, halt
