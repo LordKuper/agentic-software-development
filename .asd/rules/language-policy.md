@@ -26,4 +26,8 @@ Every interactive option presented to the user — a user-decision request's `qu
 
 Internal signal tokens crossing the agent boundary (`COMPLETED`, `FAILED`, `QUESTION`, `ABORT`, `APPROVE`, `CONCERNS`, return-contract strings) stay in English — machine signals, not user-facing text.
 
-Free-text approval ("ok", "да", "approve") is NOT a substitute for a user-decision request at any HARD gate in `checkpoints.md`. The gate requires a discrete-option call so approval is unambiguous and auditable.
+Free-text approval ("ok", "да", "approve") is NOT a substitute for a user-decision request at any HARD gate in `checkpoints.md`. For **approve-before-write** gates, the gate requires a discrete-option call so approval is unambiguous and auditable. For **write-then-review-accept** gates (`checkpoints.md`), the gate still requires the discrete explicit token `accept` — never inferred from vague free-text — but this applies only to the acceptance signal itself. Revision-round feedback (the user's response when they are NOT accepting) is deliberately unstructured free-text describing what to change; that content needs no discrete-option structure, since it is not the approval act.
+
+## Write-then-review-accept: chat-language self-sufficiency
+
+For `write-then-review-accept` gates, the written artifact is in `language.docs`, which may differ from `language.chat`. The delta summary posted in chat (`checkpoints.md` step 2) MUST be self-sufficient for the user to give informed feedback in `language.chat` — do not just say "see the file"; summarize what changed and why, in `language.chat`. Key changed passages MAY be quoted-and-translated per "Quote translation" above, but never the full artifact body (`checkpoints.md` no-content-dumps rule).
