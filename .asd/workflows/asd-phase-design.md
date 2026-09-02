@@ -48,7 +48,7 @@ Orchestration body for the `asd-phase-design` skill. Operation-mapping to host t
       - mermaid: `t_subsystems.yaml`; produce `<sprint>/design/c4-full/subsystems.yaml` — never render `architecture.html` here
     - instruction: author a **delta patch** against the persistent registry covering sprint scope; author the **full schema** instead only when the persistent registry does not yet exist; write the files directly — `c4-full/` carries no approval gate of any kind (neither class, `checkpoints.md`), so there is no discuss/approve step here; post the absolute path(s) + a brief summary in chat (still no content dumps — `AC-2` applies even without a gate); emit COMPLETED
     - if `documents.c4` disabled → skip
-11. On all enabled steps COMPLETED → write `state.json` (drafts ready) inline; post a non-blocking rollup SUMMARY chat note listing drafts produced and skipped (informational only — per-artifact decisions-log entries already recorded at each step's `accept`, steps 6/8/9) — mechanical, no gate
+11. On all enabled steps COMPLETED → write `state.json` (drafts ready) inline; post a non-blocking rollup SUMMARY chat note listing drafts produced and skipped (informational only — per-artifact decisions-log entries already recorded at each step's `accept`, steps 6/7/8/9) — mechanical, no gate
 12. Emit phase COMPLETED with return contract
 13. Any creator QUESTION → relay, halt; resumes on user answer
 14. Any creator FAILED / ABORT → relay, halt
