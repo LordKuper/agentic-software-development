@@ -102,6 +102,13 @@ Per-sprint, append-only. Never edited or removed. Created at `scope`, archived w
 - **Affected docs**: [reviews/impl/iter-2/*](./reviews/impl/iter-2/), [state.json](./state.json)
 - **Alternatives considered**: none — no FAIL, no override to consider.
 
+## 2026-09-02 — impl fix for iter-2: findings resolved
+
+- **Decision**: all 33 findings across the 7 non-clean iter-2 reviewer files resolved via 5 parallel dev dispatches on disjoint file sets (sprint-lifecycle.md+core.md; 4 creator agents; checkpoints.md+asd-phase-design.md+asd-design-system/SKILL.md; asd-concept/asd-stack skill dedup; tests/run.js+test-plan.md via asd-test-engineer per the test-file routing rule), followed by one centralized `node .asd/sync.js --apply` pass covering 14 stale generated targets.
+- **Key architectural call made this round**: `ADVICE_NEEDED` emission mentions were REMOVED from the 4 agent files that had them (`asd-pm.md`, `asd-ba.md`, `asd-architect.md`, `asd-ux-designer.md`), rather than added to the other 11 dispatchable agents — matching `plan.md` Task 7's original "one canonical rule referenced from `core.md`, not duplicated into each file" instruction; `core.md`'s autonomy/escalation rule (a Mandatory rule loaded by every agent) is now the sole source.
+- **Verification**: `node .asd/sync.js --check` 72/72 current; `node tests/run.js` 83/83; `git diff --check` clean (CRLF notices only).
+- **Affected docs**: `.asd/rules/{checkpoints.md,core.md,sprint-lifecycle.md}`, `.asd/agents/{asd-pm.md,asd-ba.md,asd-architect.md,asd-ux-designer.md}`, `.asd/workflows/asd-phase-design.md`, `.asd/skills/{asd-concept,asd-stack,asd-design-system}/SKILL.md`, `tests/run.js`, `test-plan.md`, generated provider views.
+
 ## 2026-09-02 — impl-test entry 2: suite green (83/83), 3 added tests, T-1/T-3/T-4/T-5 resolved
 
 - **Decision**: added 3 new `tests/run.js` assertions closing the gaps `reviews/impl/iter-1/testing.md` found (T-1: read-only-agent contract, directory-driven over 9 agents; T-3: README/AGENTS.md roster-count vs `.asd/agents/` directory count; T-5: `release-manifest.json` `canon_hashes` completeness for the agents tree). T-4 hardened an existing test by removing the `SELF_SOURCED_ALLOWLIST` exemption for `AGENTS.md`, now that its digest is genuinely `current` — a real fail-first regression guard (fails at parent `317aa50`, passes at HEAD). T-2/T-6/T-7 resolved as `test-plan.md` record corrections (deferred-verification table for AC-4/AC-5's unexercised rows; corrected coverage claims), no code change.
