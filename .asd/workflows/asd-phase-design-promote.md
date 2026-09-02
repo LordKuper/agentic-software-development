@@ -10,8 +10,7 @@ Orchestration body for the `asd-phase-design-promote` skill. Operation-mapping t
 ## Operations used
 - read: `.asd/project/config.yaml`, `state.json`, sprint design drafts, audit.md, persistent `docs/`
 - write a file: `state.json` and decisions-log inline, for the no-op path's mechanical write (step 2) and the post-promotion bookkeeping write (step 10)
-- post chat message: non-blocking post-promotion summary (step 11), no response awaited
-- request user decision: rare, phase-level escalation only (PM + creators handle per-doc/per-subsystem approvals)
+- request user decision: rare, phase-level escalation only (PM handles decomposition + new-subsystem approvals)
 - delegate to agent: PM (orchestrator), Architect, BA, UX Designer (domain promoters)
 
 ## Workflow
@@ -52,8 +51,8 @@ Orchestration body for the `asd-phase-design-promote` skill. Operation-mapping t
      - process ux migration items
      - emit COMPLETED
 9. Wait all dispatched creators COMPLETED
-10. **Bookkeeping** — mechanical inline write by this workflow (no PM dispatch, no gate): compose decisions-log entries (decomposition, each new subsystem, each promoted artefact, DESIGN.md patch, c4 patch) and append to `<sprint>/decisions-log.md`; update `state.json` (phase=design-promote done)
-11. **Post-promotion summary** — non-blocking chat message: path/file list of everything promoted this run (per-domain counts + new subsystems + files touched); informational only, no decision requested, no wait for response (compensating control for the dropped final-mutation/partial-rollback gate, `sprint-lifecycle.md` "Design-promote phase")
+10. **Bookkeeping** — mechanical inline write by this workflow (no PM dispatch, no gate): compose decisions-log entries for the **ungated** items only (each promoted artefact, DESIGN.md patch, c4 patch) and append to `<sprint>/decisions-log.md` — decomposition and each new subsystem already got their own decisions-log entry from `asd-pm` at step 6/7's own approval, never re-recorded here; update `state.json` (phase=design-promote done)
+11. **Post-promotion summary** — ordinary phase output, no operation of its own: post a non-blocking chat note listing path/file list of everything promoted this run (per-domain counts + new subsystems + files touched); informational only, no decision requested, no wait for response (compensating control for the dropped final-mutation/partial-rollback gate, `sprint-lifecycle.md` "Design-promote phase")
 12. Emit phase COMPLETED with return contract
 13. Any agent QUESTION / FAILED / ABORT → relay, halt
 14. On `ADVICE_NEEDED` from any dispatched agent → relay per `sprint-lifecycle.md`'s `ADVICE_NEEDED` protocol; execution resumes, no halt.
