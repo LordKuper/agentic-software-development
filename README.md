@@ -2,7 +2,7 @@
 
 A multi-agent workflow for **Claude Code and Codex** that drives software projects end-to-end through fixed-shape sprints: from concept and tech-stack definition, through design and review, all the way to a green PR.
 
-ASD is **stack-agnostic** — it works on any language, framework, or runtime. The workflow itself never touches your application code directly; it dispatches 15 specialized agents (PM, BA, UX Designer, Architect, devs, reviewers) coordinated by 17 skills.
+ASD is **stack-agnostic** — it works on any language, framework, or runtime. The workflow itself never touches your application code directly; it dispatches 16 specialized agents (PM, BA, UX Designer, Architect, devs, reviewers, advisor) coordinated by 17 skills.
 
 Both providers run from one canonical source under `.asd/` (agents, skills, hooks); `.asd/sync.js` generates each provider's own view (`.claude/`, `.codex/`, `.agents/skills/`) and keeps them in sync. See [`.asd/rules/providers.md`](.asd/rules/providers.md) for the canonical/provider path map and semantic-operation mapping.
 
@@ -113,7 +113,7 @@ This repo (the ASD framework source itself) runs `node .asd/sync.js --check` in 
 /asd-sprint         # start your first sprint
 ```
 
-`/asd-sprint` then walks you through the ten sprint phases automatically, pausing for your approval at every checkpoint.
+`/asd-sprint` then walks you through the ten sprint phases automatically, gating on your approval at every checkpoint — some gates pause before writing the artifact, others write it first and gate on your review of the file (see `.asd/rules/checkpoints.md`).
 
 ---
 
@@ -181,7 +181,7 @@ Phase skills (`asd-phase-*`) are dispatched internally by `/asd-sprint`/`$asd-sp
 
 ## Agents
 
-Fifteen specialized agents are canonically defined in `.asd/agents/` and generated per provider: `.claude/agents/*.md` for Claude Code, `.codex/agents/*.toml` for Codex. Each declares a model family alias per provider (Claude: fable/opus/sonnet/haiku; Codex: sol/terra/luna) plus a required reasoning effort; `.asd/sync.js` resolves aliases to concrete model ids via `.asd/release-manifest.json`'s `model_families` table (mirrored in [`.asd/rules/providers.md`](.asd/rules/providers.md)). Effort is shown as `model/effort`.
+Sixteen specialized agents are canonically defined in `.asd/agents/` and generated per provider: `.claude/agents/*.md` for Claude Code, `.codex/agents/*.toml` for Codex. Each declares a model family alias per provider (Claude: fable/opus/sonnet/haiku; Codex: sol/terra/luna) plus a required reasoning effort; `.asd/sync.js` resolves aliases to concrete model ids via `.asd/release-manifest.json`'s `model_families` table (mirrored in [`.asd/rules/providers.md`](.asd/rules/providers.md)). Effort is shown as `model/effort`.
 
 ### Creators (7)
 
@@ -213,6 +213,14 @@ Reviewers are read-only on every provider: the 7 internal Claude reviewer agents
 Reviewers emit a machine-parseable first-line verdict token: `[REVIEW-<phase>-<reviewer>]: APPROVE|CONCERNS|FAIL`, where `<phase>` is `design` or `impl`.
 
 **Diff-scoped impl-review fan-out** (`review.scoped_fan_out: enabled` — seeded `enabled` by `/asd-init` for NEW projects only; absent from an existing project's `config.yaml` means `disabled`, full fan-out — see `asd-phase-impl-review.md` step 5 for the SSoT): at impl-review, UI is skipped when no file in the diff's scope list is a UI surface (any UI-extension/path-segment file re-enables it automatically); Performance is skipped only when both no perf-budgets section exists in `custom-coding-rules.md` and the diff contains no executable file (conjunctive). A skipped reviewer is never dispatched; `state.json.reviews.impl.verdicts["iter-NN"]` records an explicit `"skipped: <predicate>"` value instead of a verdict token, counted as satisfied (not missing) at the DoD and pr-phase gates. `review.scoped_fan_out: disabled` restores unconditional dispatch of all 7 internal reviewers every iteration. `checkpoints.md`'s impl-review approval gate is unaffected either way (`review-policy.md` DoD table).
+
+### Advisor (1)
+
+Read-only, consulted by any agent on non-gate uncertainty — an open question about approach, interpretation, tradeoff, or fact-finding that doesn't itself gate writing an artifact or advancing a phase. Never authorizes a HARD gate (`checkpoints.md`), never emits a verdict token, never writes or edits anything; returns a free-text recommendation with rationale that the consulting agent may accept, adapt, or override. Consults are not logged — no review file, no ledger entry.
+
+| Agent | Claude | Codex | Role |
+|---|---|---|---|
+| `asd-advisor` | fable/medium | sol/medium | Advisory consultation on non-gate uncertainty during any phase |
 
 ---
 
@@ -279,7 +287,7 @@ your-project/
 │   ├── sync.js                      # generator: canon -> .claude/ + .codex/ + .agents/skills/ (--check / --apply)
 │   ├── rules/                       # workflow rules (read by all agents on both providers), incl. providers.md
 │   ├── templates/                   # artifact templates (t_*.html / .md / .yaml / .c4), incl. t_AGENTS.md / t_CLAUDE.md
-│   ├── agents/                      # 15 canonical agent specs (JSON frontmatter: claude{} + codex{} blocks)
+│   ├── agents/                      # 16 canonical agent specs (JSON frontmatter: claude{} + codex{} blocks)
 │   ├── skills/                      # 17 canonical skill specs (SKILL.md)
 │   ├── workflows/                   # 10 phase orchestration files (referenced by path, not generated)
 │   ├── hooks/                       # canonical session-start.js (--provider claude|codex)
@@ -294,12 +302,12 @@ your-project/
 │       ├── <NNN-slug>/              # active sprint (one at a time); decisions-log.md created here at scope, archived with the sprint
 │       └── archived/<NNN-slug>/     # moved here on PR open (pre-merge); read-only except the terminal write on merge
 ├── .claude/                         # generated Claude Code view
-│   ├── agents/                      # 15 agent definitions (*.md)
+│   ├── agents/                      # 16 agent definitions (*.md)
 │   ├── skills/                      # 17 skill definitions (SKILL.md)
 │   ├── hooks/                       # SessionStart hook (Node.js)
 │   └── settings.json                # hook registration + permissions allowlist (JSON-merge: ASD owns only its own entry)
 ├── .codex/                          # generated Codex view
-│   ├── agents/                      # 15 agent definitions (*.toml)
+│   ├── agents/                      # 16 agent definitions (*.toml)
 │   ├── hooks/                       # SessionStart hook (Node.js)
 │   └── hooks.json                   # hook registration (JSON-merge: ASD owns only its own entry); requires trust before hooks run
 ├── .agents/
