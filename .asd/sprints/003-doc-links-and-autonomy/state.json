@@ -1,7 +1,7 @@
 {
   "sprint_id": "003-doc-links-and-autonomy",
   "branch": "sprint/003-doc-links-and-autonomy",
-  "phase": "impl",
+  "phase": "impl-test",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "adr": false, "c4": false },
   "skipped_phases": ["design", "design-review", "design-promote"],
   "reviews": {
