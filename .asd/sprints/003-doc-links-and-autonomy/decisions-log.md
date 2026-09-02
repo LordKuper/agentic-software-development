@@ -143,3 +143,10 @@ Per-sprint, append-only. Never edited or removed. Created at `scope`, archived w
 - **Decision**: correction: impl-test entry 2's suite-run HEAD is `03b492036c4c46f284651235daa980871e9d6aaa`, not `7347537fa851ae8970cf24306b323be77e8b5474` — the earlier sha was the entry's delta BASE (pre-test-authoring), conflated with the suite-run commit in the original entry above. `test-plan.md`'s Suite-run section stamps the correct commit (the one 83/83 was actually verified at); this entry is append-only and left as originally written.
 - **Rationale**: two records must not disagree about which commit the suite-run result attests to, since that is what the `pr`-phase gate reads.
 - **Affected docs**: [test-plan.md](./test-plan.md)
+
+## 2026-09-02 — impl-test entry 4: suite green (83/83), no new tests
+
+- **Decision**: delta since iter-3's fix round (6 files) re-verified as prose-only. Considered and rejected adding a genuinely new automatable invariant for the write-first section-order change (would need either a brittle string-position heuristic or a full agent-dispatch simulation harness — new test infrastructure requiring Complication Approval, out of scope for a wording/ordering fix). `checkpoints.md`'s reworded recording rule + new scope clause likewise prose-only, same category as every prior `checkpoints.md` edit this sprint.
+- **Rationale**: no code path simulates or replays a skill's phase sequence — only frontmatter + render is asserted; manual cross-file consistency review (impl-review reviewers) remains the correct verification path for this class of change.
+- **Suite run**: `node tests/run.js` 83/83; `git diff --check` clean; `node .asd/sync.js --check` 72/72 current. HEAD `487e65fc8`.
+- **Affected docs**: [test-plan.md](./test-plan.md)
