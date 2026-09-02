@@ -30,7 +30,7 @@ Approval stays explicit and recorded (see "Approval recording") — silence or a
 | impl-review (final) | reviewer verdict before `pr` |
 | pr | confirms PR opening |
 
-`design-promote (decomposition)` and `design-promote (new subsystem)` stay approve-before-write, unchanged: both are structural decisions about persistent-doc/C4-registry layout that were never shown to the user at draft-acceptance time, so the write-then-review-accept acceptance on the source drafts doesn't cover them — a separate approval is not an oversight here.
+`design-promote (decomposition)` and `design-promote (new subsystem)` are approve-before-write: both are structural decisions about persistent-doc/C4-registry layout never shown to the user at draft-acceptance time, so the write-then-review-accept acceptance on the source drafts doesn't cover them — a separate approval is required.
 
 ### Write-then-review-accept gates
 
@@ -38,14 +38,16 @@ All rows use the write-then-review-accept mechanic above.
 
 | After phase / event | Approves |
 |---|---|
+| `/asd-concept` | `concept.html` |
+| `/asd-stack` | `stack.html` (sibling `tech-reference/` writes are a separate approve-before-write micro-gate, per-tech, not covered by this row) |
 | scope | `sprint.md` |
 | design | `prd.html` (if `prd` enabled) |
 | design | design-system gate: `DESIGN.md` + `design-system.html` + `accessibility.html` (if `ux_spec` enabled; missing → dispatch `/asd-design-system`) |
-| design | `ux-spec.html` (if enabled; inline per-entry approval for any `design-md-delta.yaml` addition remains its own approve-before-write micro-gate, unaffected by this change) |
+| design | `ux-spec.html` (if enabled; inline per-entry approval for any `design-md-delta.yaml` addition is its own separate approve-before-write micro-gate) |
 | design | `adr.html` (if `adr` enabled — **one approval for the sprint's whole ADR set**, not per-decision; ADR count never multiplies this gate) |
 | plan | `plan.md` |
 
-`c4-full/` carries no approval gate of any kind (neither class) — dropped entirely. `design-promote (final mutation)` is dropped as a separate gate — its content was already accepted per-artifact under write-then-review-accept during `design`; re-confirming the same content at final persistent-write time is redundant.
+`c4-full/` carries no approval gate of any kind (neither class). `design-promote (final mutation)` carries no separate gate — its content was already accepted per-artifact under write-then-review-accept during `design`; re-confirming the same content at final persistent-write time would be redundant.
 
 ## Pause message format
 
