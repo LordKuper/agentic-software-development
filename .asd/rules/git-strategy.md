@@ -50,6 +50,10 @@ Triggered only after DoD met AND user confirmation.
 - `gh_enabled: false` → push branch, print PR-ready summary (title, body, compare URL)
 - `auto_pr: false` → push, prepare summary, wait for user to open PR manually
 
+## Finalize PR (autonomous)
+
+The `pr` phase merge-mode terminal-state write (`sprint-lifecycle.md` "PR phase") still lands on `git.base_branch` only via a PR — the branch rule above has no exceptions. What's different for this one PR class: PM opens **and merges it itself**, no user confirmation gate. Scope is fixed and mechanical — a `chore(sprint-<NNN-slug>): finalize terminal state — PR #<N> merged` branch off `git.base_branch` touching only the archived sprint's own `state.json` (`phase`/`pr.state`/`updated_at`), created after the sprint's own PR is already confirmed merged. `gh_enabled: true` → `gh pr create` then `gh pr merge --squash` immediately; merge failure (branch protection this agent can't satisfy) → halt, leave the PR open for manual merge, do not retry indefinitely. `gh_enabled: false` → no autonomous path exists (no `gh` to merge with); falls back to the standard push + manual PR flow, same as any other PR under this config. Every other PR — the sprint's own — is unaffected: always requires user confirmation per "PR creation" above.
+
 ## Pre-existing uncommitted changes
 
 If working tree is dirty at `/asd-sprint` start, PM stops and asks user to commit or stash before sprint creation. No silent stashing.
