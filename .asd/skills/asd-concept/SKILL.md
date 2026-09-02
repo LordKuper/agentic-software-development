@@ -68,18 +68,20 @@ Phase 1 brownfield candidates auto-suggest D as default; user may override.
 
 ## Phase 4 — convergence (universal across variants)
 
-Section-by-section in `language.chat`:
-- BA presents current section content
-- Request user decision (options): **A) Lock in / B) Revise this section / C) Skip (optional sections only)** — labels/descriptions in `language.chat` per `language-policy.md`
-- on B: collect feedback, BA revises, re-present, re-ask
-- repeat until A
-- next section per `t_concept.html` order (required first, then per-optional inclusion choice)
+- Before the first section, ONLY when `docs/product/concept.html` does not yet exist (create mode) — write a skeleton per `t_concept.html`, with placeholder sections. In edit mode (file already exists), skip this step and enter the per-section loop directly against the existing file.
+- Section-by-section:
+  - BA drafts the section, translates to `language.docs`, writes it into `docs/product/concept.html` on disk
+  - Post the file path + a short delta summary of what the section now says in `language.chat` (never the full section body) per `language-policy.md`
+  - Request user decision (options): **A) Lock in / B) Revise this section / C) Skip (optional sections only)** — labels/descriptions in `language.chat` per `language-policy.md`
+  - on B: collect feedback, BA revises, rewrites the section in place, re-posts delta summary, re-ask
+  - on C: remove that section (heading + placeholder content) from the on-disk file entirely, then continue to the next section
+  - repeat until A
+  - next section per `t_concept.html` order (required first, then per-optional inclusion choice)
 
-## Phase 5 — final approval + write
+## Phase 5 — final artifact-level gate
 
-- BA shows full assembled concept summary
-- Request user decision: **A) Approve and write / B) Revise specific section** (on B re-enter Phase 4 for chosen section) — labels/descriptions in `language.chat`
-- on A: translate to `language.docs`, write `docs/product/concept.html` per `t_concept.html`
+- `docs/product/concept.html` already reflects every locked-in section from Phase 4 (content write is not deferred — only this gate's `accept` is)
+- write-then-review-accept per `checkpoints.md` mechanic: post the path + a combined delta summary in chat (never the body); user replies `accept` (advance) or feedback (revise in place, re-post) — feedback naming a specific section may re-enter Phase 4 for that section before rewriting
 - emit COMPLETED
 
 ## Phase 6 — handoff

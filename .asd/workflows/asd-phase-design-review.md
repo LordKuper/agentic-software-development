@@ -50,6 +50,7 @@ Every reviewer dispatched below is read-only: it evaluates its scope and returns
    - on accept → COMPLETED note "iteration cap reached, user accepted"
    - on abort → emit ABORT
 11. Any reviewer QUESTION / FAILED / ABORT → relay, halt
+12. On `ADVICE_NEEDED` from any dispatched agent → relay per `sprint-lifecycle.md`'s `ADVICE_NEEDED` protocol; execution resumes, no halt.
 
 ## Iteration severity floor (reference)
 See `.asd/rules/review-policy.md` cumulative-budget algorithm. This workflow computes floor + passes to reviewer payload so reviewers drop findings below floor.

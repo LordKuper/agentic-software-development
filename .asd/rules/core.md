@@ -16,6 +16,7 @@ All project work goes through `/asd-sprint`.
 - **Iteration** — one pass of the review loop in a `*-review` phase. Each dispatches every reviewer fresh with clean context (`review-policy.md`).
 - **Creator agent** — produces artifacts (PM, BA, UX Designer, Architect, Backend Dev, Frontend Dev, Test Engineer).
 - **Reviewer agent** — evaluates artifacts (Quality, Implementation, Testing, UI, Simplification, Documentation, Performance, External Review).
+- **Advisor agent** (`asd-advisor.md`) — read-only, consulted on non-gate uncertainty via a workflow-mediated `ADVICE_NEEDED` signal (never agent-to-agent). Returns a free-text recommendation, never binding — never authorizes a HARD gate or substitutes for user approval.
 - **Artifact** — file produced by an agent. User-facing (PRD, ADR, plan, …) or machine-readable (state.json, config.yaml).
 - **Persistent doc** — living document under `docs/`. Updated across sprints.
 - **Workflow infrastructure** — `.asd/rules/`, `.asd/templates/`, `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/sync.js`, `.claude/`, `.codex/`, `.agents/skills/`, `AGENTS.md`, `CLAUDE.md`. Never modified during sprint work.
@@ -30,11 +31,18 @@ All project work goes through `/asd-sprint`.
 
 ## Interaction protocol (QODDA)
 
-Every multi-step user interaction: **Question** (agent identifies decision point) → **Options** (explicit choices, request user decision when discrete) → **Decision** (user selects) → **Draft** (agent composes section in `language.chat`) → **Approval** (user confirms; agent translates to `language.docs`, writes file, proceeds). See `language-policy.md`.
+Every multi-step user interaction: **Question** (agent identifies decision point) → **Options** (explicit choices, request user decision when discrete) → **Decision** (user selects) → **Draft** (agent composes section in `language.chat`) → **Approval**. Step 5's mechanic depends on the gate class (`checkpoints.md`): approve-before-write gates run Approval before the write; write-then-review-accept gates write first and get `accept` on the written file. Either way the agent translates to `language.docs` before/at write time. See `language-policy.md`.
 
 ## Request user decision
 
 Canonical semantic op for prompting the user with discrete options (host-tool mapping: `providers.md`). Every agent can do this. Use whenever a choice is needed rather than free-form input.
+
+## Autonomy and escalation
+
+Uncertainty splits into two kinds:
+
+- **Gate uncertainty** — the open question is, or bears on, one of the HARD gates in `checkpoints.md`'s approval-gates tables. Always escalates to the user via Request user decision; no substitute.
+- **Non-gate uncertainty** — an open question about approach, interpretation, tradeoff, or fact-finding that does not itself gate writing an artefact or advancing a phase. May be routed to `asd-advisor` via a workflow-mediated `ADVICE_NEEDED` signal instead of escalating to the user. The advisor's answer is advice only, never binding — the consulting agent may accept, adapt, or override it, and remains responsible for the outcome.
 
 ## Simplicity Default
 
@@ -46,7 +54,7 @@ When asking the user to choose, always present: **Problem** (one sentence), **Op
 
 ## Incremental writing
 
-Long artifacts: write skeleton first, then per section draft → user approval → write → next. Keeps live context small.
+Long artifacts under a write-then-review-accept gate: write skeleton first, then per section draft → write → user reviews the file on disk → `Lock in` or `Revise this section` (`language-policy.md` "User-decision options") → next section or revise. `accept` is reserved for the final artifact-level gate-advance (`checkpoints.md` mechanic) — never reuse it for per-section lock-in. Keeps live context small.
 
 ## Template variables
 

@@ -1,0 +1,1 @@
+- [Quality rubric in a docs-only repo](project_quality-rubric-in-docs-only-repo.md) — how bug/security/contract maps to Markdown specs here, plus known non-findings

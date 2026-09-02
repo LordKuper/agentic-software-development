@@ -2,6 +2,25 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v3.1.0
+
+Doc-links-and-autonomy revision: gated artifacts are now written to disk first and reviewed in the real file via a path link instead of being dumped into chat, and non-gate agent uncertainty routes to a new read-only advisor agent instead of interrupting the user. No user approval was removed from any gate that decides a phase advance.
+
+### Added
+- **`asd-advisor` agent** (`.asd/agents/asd-advisor.md`) — a read-only consultation agent (no `Write`/`Edit`/`Bash`; `sandbox_mode: "read-only"`; `fable`/`sol` model families) that any agent may dispatch when it is uncertain about a non-gate decision. It gives advice only; it cannot write files and it never stands in for a user-facing HARD gate. Agent roster goes 15 → 16.
+- **`ADVICE_NEEDED` signal** with a uniform relay branch in all ten `asd-phase-*` workflows: a dispatched agent emitting it gets an advisor consult and execution resumes — it never halts the phase and never becomes a user question. Consults are capped per workflow and the advisor cannot recurse into itself.
+- **Write-then-review-accept gate class** defined once in `checkpoints.md`: the creator writes the artifact to its path, posts the absolute path plus a short delta summary in chat, the user reviews the actual file, and an explicit `accept` advances the phase while any other feedback revises the same file in place. Revision is always in place — no `-v2` files, no duplicate drafts — and each `accept` appends a decisions-log entry naming the artifact path.
+
+### Changed
+- **Gate table rewritten row by row** in `checkpoints.md` and `asd-pm`'s mirror of it, splitting every gate into two explicit classes (approve-before-write vs write-then-review-accept). Moved to write-then-review-accept: `sprint.md` (scope), `plan.md` (plan), and the design phase's per-artifact rows for `prd.html` / design-system / `ux-spec.html` / `adr.html`, plus `concept.html`, `stack.html`, `DESIGN.md`, `design-system.html`, `accessibility.html` in the standalone setup skills. Unchanged as approve-before-write: `audit` merge approval, `impl` assessment, `impl-test` removal approval, `impl-review` final verdict, `pr` opening confirmation — these gate a decision or phase advance, not an artifact draft.
+- **Chat no longer carries artifact bodies.** For every write-then-review-accept gate the chat message is a path link, a brief delta summary, and any open questions. Approval stays explicit and stays recorded in the decisions-log.
+- `asd-concept`, `asd-stack`, `asd-design-system` section loops are write-first: each section is written to disk before its lock-in question, and their skeleton writes are now guarded on the target file's own on-disk existence so an edit-mode dispatch can no longer overwrite real content with a placeholder. A revision loop re-runs the affected regeneration/lint passes before re-accepting, so derived artifacts are never accepted stale.
+- `language-policy.md` reconciles the accept vocabulary and the chat/docs language split for review messages: the artifact stays in `language.docs`, the link-and-summary message in `language.chat`.
+
+### Removed
+- **design-promote's final-mutation gate and its step-8 per-persistent-write gate**, both redundant re-confirmations of draft content the user already accepted at draft time. design-promote's **decomposition** and **new-subsystem** gates are explicitly retained as approve-before-write — they are structural decisions about persistent-doc/C4-registry layout that draft acceptance never showed the user. The phase now writes its own decisions-log entries and `state.json`, then posts a non-blocking post-promotion summary.
+- The design phase's `c4-full/` artifact gate — `c4-full/` now carries no approval gate of any kind.
+
 ## v3.0.0
 
 Lean-workflow revision: a full audit of the framework's artifacts, phases, and agents, implemented as compressions and conditional dispatch. Sprints produce materially less text per artifact and dispatch fewer agents on unrelated changes; no `checkpoints.md` user approval gate was removed.

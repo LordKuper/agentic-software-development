@@ -72,13 +72,16 @@ Phase 1 brownfield candidates auto-suggest D as default.
 
 ## Phase 4 — convergence (universal across variants)
 
-Section-by-section in `language.chat`:
-- Architect presents current section content
-- Per entry: verify current latest version via fetching external doc; flag if user's choice lags or is ahead
-- Request user decision (options): **A) Lock in / B) Revise this section / C) Skip (optional sections only)** — labels/descriptions in `language.chat` per `language-policy.md`
-- on B: collect feedback, architect revises, re-present, re-ask
-- repeat until A
-- next section per `t_stack.html` order
+- Create mode only (target file does not yet exist): before the first section, write skeleton `docs/architecture/stack.html` per `t_stack.html`, with placeholder sections. Edit mode (target file already exists) skips this write and enters the per-section loop directly against the existing file.
+- Section-by-section:
+  - Per entry: verify current latest version via fetching external doc; flag if user's choice lags or is ahead
+  - Architect drafts the section, translates to `language.docs`, writes it into `docs/architecture/stack.html` on disk
+  - Post the file path + a short delta summary of what the section now says in `language.chat` (never the full section body) per `language-policy.md`
+  - Request user decision (options): **A) Lock in / B) Revise this section / C) Skip (optional sections only)** — labels/descriptions in `language.chat` per `language-policy.md`
+  - on B: collect feedback, architect revises, rewrites the section in place, re-posts delta summary, re-ask
+  - on C: remove that section (heading + placeholder content) from the on-disk file entirely, then continue
+  - repeat until A
+  - next section per `t_stack.html` order
 
 ## Phase 5 — knowledge gap analysis
 
@@ -97,11 +100,11 @@ Per technology in approved stack:
 - Includes canonical source URL, API surface used, version-specific notes, deprecations, project conventions, "Last verified" ISO date
 - Request user decision before each persistent write
 
-## Phase 7 — final approval + write stack.html
+## Phase 7 — final artifact-level gate: stack.html
 
-- Architect shows full assembled stack + risk summary
-- Request user decision: **A) Approve, write stack.html / B) Revise specific section** (on B re-enter Phase 4) — labels/descriptions in `language.chat`
-- on A: translate to `language.docs`, write `docs/architecture/stack.html` per `t_stack.html`
+- `docs/architecture/stack.html` already reflects every locked-in section from Phase 4 (content write is not deferred — only this gate's `accept` is)
+- write-then-review-accept per `checkpoints.md` mechanic (delta summary includes risk summary): post the path + a combined delta summary in chat; user replies `accept` (advance) or feedback (revise in place, re-post) — feedback naming a specific section may re-enter Phase 4 for that section before rewriting
+- if feedback changes a tech entry or its version (not just prose in an already-chosen section): after Phase 4's re-entry, also re-run Phases 5-6 for the affected tech entries (including the per-tech approve-before-write micro-gate) before the delta summary is re-posted and before COMPLETED can be emitted
 - emit COMPLETED
 
 ## Phase 8 — handoff

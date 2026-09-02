@@ -118,6 +118,8 @@ Per Execution mode, the **only** reasons impl contacts user before all tasks/fin
 - Any dev `FAILED`/`ABORT` → relay, halt
 - Manual-steps gate (step 8) — after all unblocked work COMPLETED and PM-validated `MS-N` remain, PM presents `manual-steps.md`; resume on user continue command
 
+On `ADVICE_NEEDED` from any dispatched agent → relay per `sprint-lifecycle.md`'s `ADVICE_NEEDED` protocol; execution resumes, no halt. Not a blocker — the branches above are the only ones that halt.
+
 Impl completion gate (step 9) and, initial mode only, impl assessment gate (step 10) are the post-work gates. Fix modes have no user-facing assessment gate.
 
 ## Artefacts produced

@@ -66,7 +66,7 @@ Phase 1 brownfield candidates auto-suggest C as default.
 
 ## Phase 4 — convergence (universal across variants)
 
-Section-by-section in `language.chat`. Order per Google Labs DESIGN.md spec:
+Order per Google Labs DESIGN.md spec:
 1. Colors (palette + semantic tokens)
 2. Typography (scale + families)
 3. Spacing scale
@@ -75,39 +75,45 @@ Section-by-section in `language.chat`. Order per Google Labs DESIGN.md spec:
 6. Motion / timing
 7. Components (button, input, card, etc.) — only those needed per concept
 
-For each section:
-- Designer presents current content
+- Before the first section, ONLY when `docs/ux/DESIGN.md` does not yet exist — write a skeleton (Google Labs format) with placeholder sections. When the file already exists, skip this step and enter the per-section loop directly against the existing file.
 - Fetch latest Google Labs DESIGN.md spec (external doc) on first section; cache for session
-- Request user decision (options) — labels/descriptions in `language.chat`: **A) Lock in / B) Revise this section / C) Skip (optional sections only)**
-- on B: collect feedback, designer revises, re-present, re-ask
-- repeat until A
-- next section
+- For each section:
+  - Designer drafts the section, writes it into `docs/ux/DESIGN.md` on disk
+  - Post the file path + a short delta summary of what the section now says in `language.chat` (never the full section body) per `language-policy.md`
+  - Request user decision (options) — labels/descriptions in `language.chat`: **A) Lock in / B) Revise this section / C) Skip (optional sections only)**
+  - on B: collect feedback, designer revises, rewrites the section in place, re-posts delta summary, re-ask
+  - on C: remove that section (heading + placeholder content) from the on-disk file entirely, then continue to the next section
+  - repeat until A
+  - next section
 
 After all DESIGN.md sections approved:
 - Designer runs `designmd-lint` via command execution (`commands.yaml` alias). On Windows, ensure `designmd-install` ran once this session.
 - Pass criteria per `.asd/rules/design-system.md` §11: ≥1 error OR ≥1 un-excluded warning = fail.
-- Fail → designer fixes, re-lint. Per persistent warning, request user decision to exclude; on approval record decision + rationale in DESIGN.md lint-exclusions block.
+- Fail → designer fixes on disk, re-lint. Per persistent warning, request user decision to exclude; on approval record decision + rationale in DESIGN.md lint-exclusions block, written on disk.
 - Clean pass → continue
 
 ## Phase 5 — design-system.html regeneration
 
-- Designer renders `docs/ux/design-system.html` per `t_design-system.html` from approved DESIGN.md
+- Designer renders and writes `docs/ux/design-system.html` per `t_design-system.html` from approved DESIGN.md now (write is not deferred — only the artifact-level `accept` gate is deferred to Phase 7's combined gate)
 - Live previews: color swatches with hex, typography samples, spacing scale, component previews using applied tokens
-- Request user decision before write — labels/descriptions in `language.chat`
 - Wrap in `t_html-shell.html` (DOC_TYPE=Design-system, SUBSYSTEM=project)
 
 ## Phase 6 — accessibility baseline
 
-- Designer authors `docs/ux/accessibility.html` per `t_accessibility.html`
+- Before the first section, ONLY when `docs/ux/accessibility.html` does not yet exist — write a skeleton (wrapped in `t_html-shell.html`, DOC_TYPE=Accessibility, SUBSYSTEM=project) with placeholder sections. When the file already exists, skip this step and enter the per-section loop directly against the existing file.
 - Sections: visual (contrast, color-blind, motion), motor (target size, keyboard), cognitive (language, predictability), auditory (captions, transcripts), platform (focus order, ARIA, screen reader)
-- Section-by-section request user decision lock-in — labels/descriptions in `language.chat`
-- Wrap in `t_html-shell.html` (DOC_TYPE=Accessibility, SUBSYSTEM=project)
+- For each section:
+  - Designer drafts the section, translates to `language.docs`, writes it into `docs/ux/accessibility.html` on disk
+  - Post the file path + a short delta summary of what the section now says in `language.chat` (never the full section body) per `language-policy.md`
+  - Request user decision lock-in (options) — labels/descriptions in `language.chat`: **A) Lock in / B) Revise this section**
+  - on B: collect feedback, designer revises, rewrites the section in place, re-posts delta summary, re-ask
+  - repeat until A
+  - next section
 
-## Phase 7 — final approval + write
+## Phase 7 — final artifact-level gate: all three files
 
-- Designer shows full assembled design system + accessibility summary
-- Request user decision — labels/descriptions in `language.chat`: **A) Approve, write all three files / B) Revise specific section** (on B re-enter Phase 4 or Phase 6)
-- on A: translate to `language.docs`, write `docs/ux/DESIGN.md`, `docs/ux/design-system.html`, `docs/ux/accessibility.html`
+- `docs/ux/DESIGN.md`, `docs/ux/design-system.html`, `docs/ux/accessibility.html` already reflect every locked-in section from Phases 4-6
+- write-then-review-accept (`checkpoints.md` mechanic): post the three absolute paths + one combined delta summary in chat (never the body); user reviews the files and replies `accept` (advance) or feedback (revise in place, re-post) — feedback naming a specific section may re-enter Phase 4 or Phase 6 for that section before rewriting; if the re-entered phase is Phase 4 (any DESIGN.md section revised), re-run `designmd-lint` to a clean pass AND Phase 5's design-system.html regeneration before re-posting the combined summary — `accept` may not be requested again until both are done; single loop covers all three files, loop until explicit `accept`
 - emit COMPLETED
 
 ## Phase 8 — handoff
@@ -118,6 +124,7 @@ After all DESIGN.md sections approved:
 ## Edit mode (Phase 1 routed here)
 
 - Show existing DESIGN.md token summary, design-system.html freshness, accessibility.html sections
+- Force-include in the edit/section-loop set any of the three artifacts (`docs/ux/DESIGN.md`, `docs/ux/design-system.html`, `docs/ux/accessibility.html`) that is missing on disk, regardless of user selection — a gate-triggered dispatch (this skill was invoked because one file was missing) must not reach COMPLETED without producing it
 - Request user decision: multi-select which files / sections to edit (DESIGN.md sections, regenerate design-system.html only, accessibility.html sections) — labels/descriptions in `language.chat`
 - per chosen section: enter Phase 4 or Phase 6 loop
 - Phase 5, 7, 8 as usual
@@ -133,8 +140,8 @@ After all DESIGN.md sections approved:
 - EVERY user-decision/input request (question text, header, all option labels, all option descriptions, multi-field labels and hints) MUST be rendered in `language.chat` from `.asd/project/config.yaml`. Applies to control options too (Lock in / Revise / Skip / Approve / etc.). Per `.asd/rules/language-policy.md` §User-decision options. Internal signal tokens (`COMPLETED`, `FAILED`, `QUESTION`, `ABORT`) stay English — machine signals.
 - NEVER author accessibility rules without checking concept's target users
 - Token authoring + review bound by `.asd/rules/design-system.md`; UX shaping bound by `.asd/rules/ux-principles.md`
-- Within this skill's own session, design-system.html MUST be regenerated once, at Phase 5, from the just-approved DESIGN.md (never left stale); this is orthogonal to the in-sprint cadence (`.asd/rules/design-system.md` §10: once per sprint, at design-promote, only if DESIGN.md was actually touched that sprint) — this skill runs standalone or via the design-system gate, not per token edit
-- `designmd-lint` MUST pass before write (clean pass per `.asd/rules/design-system.md` §11); warning exclusions need user approval + recorded rationale
+- Within this skill's own session, design-system.html MUST be regenerated from the currently-approved DESIGN.md before Phase 7's `accept` gate — never left stale (see Phase 7's re-run requirement on any Phase-4 re-entry); this is orthogonal to the in-sprint cadence (`.asd/rules/design-system.md` §10: once per sprint, at design-promote, only if DESIGN.md was actually touched that sprint) — this skill runs standalone or via the design-system gate, not per token edit
+- `designmd-lint` MUST reach a clean pass (per `.asd/rules/design-system.md` §11) before Phase 5 regeneration and before Phase 7's `accept` gate — section writes to DESIGN.md are not gated on it (write-first per `.asd/rules/checkpoints.md`); warning exclusions need user approval + recorded rationale
 - Every component listed in DESIGN.md MUST have a live preview in design-system.html
 
 ## Artefacts produced

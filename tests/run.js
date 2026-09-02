@@ -26,10 +26,6 @@ function mkTempDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'asd-sync-test-'));
 }
 
-function readRaw(p) {
-  return fs.readFileSync(p, 'utf8');
-}
-
 // ---------------------------------------------------------------------------
 // Helpers shared across tests
 // ---------------------------------------------------------------------------
@@ -957,7 +953,7 @@ test('update state machine: unsafe manifest path is rejected regardless of hashe
 // 9. sync.js --check CLI is green with no real canon trees yet (Stage 0)
 // ===========================================================================
 
-test("`node .asd/sync.js --check` reports every item current (no drift), except the self-sourced AGENTS.md", () => {
+test('`node .asd/sync.js --check` reports every item current (no drift), including AGENTS.md', () => {
   const { execFileSync } = require('node:child_process');
   const out = execFileSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), '--check'], { cwd: REPO_ROOT, encoding: 'utf8' });
   const parsed = JSON.parse(out);
@@ -984,13 +980,114 @@ test("`node .asd/sync.js --check` reports every item current (no drift), except 
   }
   // `--check` always exits 0 with `ok: true`; drift only shows as a per-item
   // `status` string, so `ok`/`items` alone cannot catch a stale/modified
-  // generated view. Assert every item is actually `current`. `AGENTS.md` is
-  // allowlisted: under `self_hosting: enabled` it is self-sourced/hand-edited
-  // (per AGENTS.md's own documented rule), so sync.js legitimately reports it
-  // `modified-foreign` rather than syncing it - that is not drift.
-  const SELF_SOURCED_ALLOWLIST = new Set(['AGENTS.md']);
-  const drifted = parsed.items.filter((item) => item.status !== 'current' && !SELF_SOURCED_ALLOWLIST.has(item.target));
+  // generated view. Assert every item is actually `current` - no exemption.
+  // `AGENTS.md` is self-sourced/hand-edited under `self_hosting: enabled`
+  // (per AGENTS.md's own documented rule) but MUST still be re-baselined to
+  // `current` after each hand-edit (sprint 003 plan.md Task 13 / DoD: "not
+  // merely tolerated"); previously this assertion allowlisted it out
+  // entirely, which would have silently accepted permanent drift instead of
+  // proving the re-baseline actually happened. Fails at parent 317aa50
+  // (AGENTS.md was `modified-foreign`); passes at HEAD.
+  const drifted = parsed.items.filter((item) => item.status !== 'current');
   assert.deepStrictEqual(drifted, []);
+});
+
+// ===========================================================================
+// 9a. Read-only agent contract (AC-6): the 8 reviewers + asd-advisor must
+// never carry a write tool and must declare sandbox_mode read-only on Codex.
+// Directory-driven (derives the read-only set from .asd/agents/ filenames,
+// not a hardcoded list) so a future 9th read-only agent is covered for free.
+// ===========================================================================
+
+test('read-only agents (8 reviewers + asd-advisor): no Write/Edit tool, codex sandbox_mode read-only', () => {
+  const agentsDir = path.join(REPO_ROOT, '.asd', 'agents');
+  const files = fs.readdirSync(agentsDir).filter((f) => f.endsWith('.md'));
+  const readOnlyNames = files
+    .map((f) => f.slice(0, -3))
+    .filter((name) => name === 'asd-external-review' || name === 'asd-advisor' || name.startsWith('asd-reviewer-'));
+  assert.strictEqual(readOnlyNames.length, 9, `expected 9 read-only agents (8 reviewers + advisor), found ${readOnlyNames.length}: ${readOnlyNames.join(', ')}`);
+  for (const name of readOnlyNames) {
+    const raw = sync.readNormalized(path.join(agentsDir, `${name}.md`));
+    const { meta } = sync.parseCanonicalFrontmatter(raw);
+    // Assert tools is an EXPLICIT allowlist before checking absence below - a
+    // Claude subagent with no explicit claude.tools inherits the full parent
+    // tool set (incl. Write/Edit/Bash), so a deleted `tools` key would make
+    // the absence assertions below pass vacuously against a fallback [].
+    assert.ok(Array.isArray(meta.claude && meta.claude.tools), `${name}: claude.tools must be an explicit allowlist`);
+    const claudeTools = meta.claude.tools;
+    assert.ok(!claudeTools.includes('Write'), `${name}: claude.tools must not include "Write"`);
+    assert.ok(!claudeTools.includes('Edit'), `${name}: claude.tools must not include "Edit"`);
+    // asd-external-review is the one read-only agent that legitimately needs
+    // Bash: it invokes the wrapped Codex CLI as a subprocess (`codex exec
+    // --sandbox read-only -`), which is not itself a write capability.
+    if (name !== 'asd-external-review') {
+      assert.ok(!claudeTools.includes('Bash'), `${name}: claude.tools must not include "Bash"`);
+    }
+    assert.strictEqual(meta.codex && meta.codex.sandbox_mode, 'read-only', `${name}: codex.sandbox_mode must be "read-only"`);
+  }
+});
+
+// ===========================================================================
+// 9b. Roster-count guard (AC-7): README.md / AGENTS.md's stated agent count
+// must match the actual number of files under .asd/agents/ - directory-driven,
+// same pattern as the sync-plan coverage guard above (section 9), so a future
+// added/removed agent fails loud here instead of only via manual review.
+// ===========================================================================
+
+test('README.md / AGENTS.md agent-count claims match the actual .asd/agents/*.md file count', () => {
+  const agentsDir = path.join(REPO_ROOT, '.asd', 'agents');
+  const actualCount = fs.readdirSync(agentsDir).filter((f) => f.endsWith('.md')).length;
+
+  const readmeText = fs.readFileSync(path.join(REPO_ROOT, 'README.md'), 'utf8');
+
+  const readmeMatch = readmeText.match(/dispatches (\d+) specialized agents/);
+  assert.ok(readmeMatch, 'README.md must state "dispatches N specialized agents"');
+  assert.strictEqual(Number(readmeMatch[1]), actualCount, `README.md claims ${readmeMatch[1]} agents, .asd/agents/ has ${actualCount}`);
+
+  // Word-form count in the "## Agents" section intro. A plain literal match
+  // on the current word (not a general number-word parser) - it's a guard
+  // against silent drift, not a parser: bumping the count must also bump
+  // this literal, or the assertion fails loud instead of staying vacuous.
+  const WORD_TO_NUMBER = { Fourteen: 14, Fifteen: 15, Sixteen: 16, Seventeen: 17, Eighteen: 18 };
+  const wordMatch = readmeText.match(/(\w+) specialized agents are canonically defined/);
+  assert.ok(wordMatch, 'README.md must state "<Word> specialized agents are canonically defined"');
+  assert.ok(Object.prototype.hasOwnProperty.call(WORD_TO_NUMBER, wordMatch[1]), `README.md word-form agent count "${wordMatch[1]}" is not in the known word->number map - update the map or the wording`);
+  assert.strictEqual(WORD_TO_NUMBER[wordMatch[1]], actualCount, `README.md claims "${wordMatch[1]}" agents, .asd/agents/ has ${actualCount}`);
+
+  const specsMatch = readmeText.match(/(\d+) canonical agent specs/);
+  assert.ok(specsMatch, 'README.md folder map must state "N canonical agent specs"');
+  assert.strictEqual(Number(specsMatch[1]), actualCount, `README.md folder map claims ${specsMatch[1]} agent specs, .asd/agents/ has ${actualCount}`);
+
+  const definitionMatches = [...readmeText.matchAll(/(\d+) agent definitions/g)];
+  assert.strictEqual(definitionMatches.length, 2, `README.md folder map must state "N agent definitions" exactly twice (one per provider view), found ${definitionMatches.length}`);
+  for (const m of definitionMatches) {
+    assert.strictEqual(Number(m[1]), actualCount, `README.md folder map claims ${m[1]} agent definitions, .asd/agents/ has ${actualCount}`);
+  }
+
+  const agentsMdText = fs.readFileSync(path.join(REPO_ROOT, 'AGENTS.md'), 'utf8');
+  const agentsMdMatch = agentsMdText.match(/\*\*Agents\*\* \(`\.asd\/agents\/\*\.md`, canonical\) — (\d+):/);
+  assert.ok(agentsMdMatch, 'AGENTS.md must state "**Agents** (`.asd/agents/*.md`, canonical) — N:"');
+  assert.strictEqual(Number(agentsMdMatch[1]), actualCount, `AGENTS.md claims ${agentsMdMatch[1]} agents, .asd/agents/ has ${actualCount}`);
+});
+
+// ===========================================================================
+// 9c. release-manifest.json canon_hashes completeness for the agents tree
+// (T-5): the existing "every recorded entry matches its file" check (6b) is
+// vacuous for a MISSING entry - exactly the risk a new agent file introduces.
+// Assert every .asd/agents/*.md file has a canon_hashes["agents/<name>.md"]
+// entry (not the reverse - a stale-but-present entry for a deleted file is
+// already caught by 6b, since sync.js's normalizeText read would throw).
+// ===========================================================================
+
+test('release-manifest.json canon_hashes has an entry for every .asd/agents/*.md file', () => {
+  const manifest = loadManifest();
+  const agentsDir = path.join(REPO_ROOT, '.asd', 'agents');
+  const missing = fs
+    .readdirSync(agentsDir)
+    .filter((f) => f.endsWith('.md'))
+    .map((f) => `agents/${f}`)
+    .filter((key) => !(key in (manifest.canon_hashes || {})));
+  assert.deepStrictEqual(missing, [], `canon_hashes missing entries for: ${missing.join(', ')}`);
 });
 
 // ===========================================================================

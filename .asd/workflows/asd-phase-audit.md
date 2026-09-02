@@ -4,7 +4,7 @@ Orchestration body for the `asd-phase-audit` skill. Operation-mapping to host to
 
 ## Preconditions
 - Active sprint at `.asd/sprints/<NNN-slug>/`
-- `sprint.md` approved (per checkpoints precondition chain)
+- `sprint.md` accepted (per checkpoints precondition chain)
 - `state.json.phase` advanced from `scope`
 
 ## Operations used
@@ -43,6 +43,7 @@ Orchestration body for the `asd-phase-audit` skill. Operation-mapping to host to
      - on request changes → relay feedback to BA or Architect (caller decides which), loop (re-dispatch only the agent(s) whose section needs revision; this workflow re-assembles/updates audit.md with the revised text)
 8. On PM COMPLETED → emit COMPLETED with return contract
 9. On any agent QUESTION / FAILED / ABORT → relay, halt
+10. On `ADVICE_NEEDED` from any dispatched agent → relay per `sprint-lifecycle.md`'s `ADVICE_NEEDED` protocol; execution resumes, no halt.
 
 ## Artefacts produced
 - `<sprint>/audit.md` (written by this workflow, assembled from BA + Architect returned text, user-approved)
