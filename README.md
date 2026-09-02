@@ -26,16 +26,15 @@ Both providers run from one canonical source under `.asd/` (agents, skills, hook
 - **Git** — required (sprint = branch)
 - **gh CLI** — optional, only if you want ASD to open PRs for you
 
-Codex shows up twice, in two different roles — don't conflate them:
+Each provider can show up in two different roles — don't conflate them:
 
-- **Codex as your primary runtime** — run sprints from Codex itself, driven by the generated `.codex/agents/*.toml` + `.agents/skills/` view of the same canonical workflow.
-- **Codex CLI as the External Review tool** — when running under Claude Code, ASD shells out to Codex CLI as a second opinion during design-review/impl-review (and symmetrically, Claude CLI is wrapped when running under Codex). This works independently of which provider is your primary runtime.
+- **As your primary runtime** — run sprints from Claude Code (`.claude/agents/*.md` + `.claude/skills/`) or Codex (`.codex/agents/*.toml` + `.agents/skills/`), both driving the same canonical workflow.
+- **As the External Review tool** — ASD shells out to the CLI of whichever provider is NOT your primary runtime, as a second opinion during design-review/impl-review (Codex CLI under Claude Code, Claude CLI under Codex). Works independently of which provider is your primary runtime.
 
 Optional external tools auto-detected by `/asd-init`:
 
 - **LikeC4 CLI** — for C4 architecture model rendering (subsystem-decomposition mode `likec4`)
 - **`@google/design.md`** — for DESIGN.md token lint and Tailwind/DTCG export
-- **Codex CLI** — for parallel external code review (see above)
 
 ---
 
