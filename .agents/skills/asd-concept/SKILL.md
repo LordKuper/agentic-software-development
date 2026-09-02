@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-concept/SKILL.md. source_digest=sha256:7ca1da9778b897ec24a90a37583e252d00b03b3d29b64508d03b5cda5658996f content_digest=sha256:766578db1f9d42e878fef340f361c0ff8de2ce3b830b80068d6950007e8f3a77 asd_version=3.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-concept/SKILL.md. source_digest=sha256:c93d7b1300fa2930ee20a4aa370474fb53f7f1c69b31c5bddcb917b0ee517098 content_digest=sha256:73fefe6fba58b37dc37197a0ae84224de515cd26a91ae1002f3405a48ecddcbc asd_version=3.0.0 schema=1
 name: asd-concept
 description: "Forms or edits the project concept document via asd-ba, branching by silent detection into one of four flows (no idea / vague idea / clear vision / brownfield extraction) and converging through a per-section lock-in loop. Use when the user runs /asd-concept, when asd-init detects a missing concept.html and suggests this skill, or when the user asks to define, draft, refine, edit, rewrite, or reverse-engineer the project concept, vision, target users, or value proposition."
 ---
@@ -66,12 +66,13 @@ Phase 1 brownfield candidates auto-suggest D as default; user may override.
 
 ## Phase 4 — convergence (universal across variants)
 
-- Before the first section: write skeleton `docs/product/concept.html` per `t_concept.html`, with placeholder sections
+- Before the first section, ONLY when `docs/product/concept.html` does not yet exist (create mode) — write a skeleton per `t_concept.html`, with placeholder sections. In edit mode (file already exists), skip this step and enter the per-section loop directly against the existing file.
 - Section-by-section:
   - BA drafts the section, translates to `language.docs`, writes it into `docs/product/concept.html` on disk
   - Post the file path + a short delta summary of what the section now says in `language.chat` (never the full section body) per `language-policy.md`
   - Request user decision (options): **A) Lock in / B) Revise this section / C) Skip (optional sections only)** — labels/descriptions in `language.chat` per `language-policy.md`
   - on B: collect feedback, BA revises, rewrites the section in place, re-posts delta summary, re-ask
+  - on C: remove that section (heading + placeholder content) from the on-disk file entirely, then continue to the next section
   - repeat until A
   - next section per `t_concept.html` order (required first, then per-optional inclusion choice)
 

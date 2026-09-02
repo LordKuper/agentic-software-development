@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-stack/SKILL.md. source_digest=sha256:679f3de82b881208272fdf986c93aa3fe70339923b6855cadc813255e79c83b4 content_digest=sha256:62444944356a6955dfa4588cb05d4d5523e7289868cdc2ca52b3ee06b5474893 asd_version=3.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-stack/SKILL.md. source_digest=sha256:e0d7c0cfebba1de8274ab92628a2b8440867e413110f1c70a57d1fda6717db78 content_digest=sha256:ce0b692e23b2f38defad83cbd22776a65db8aaff3fade03b82dda0f4b191a777 asd_version=3.0.0 schema=1
 name: asd-stack
 description: "Forms or edits the project tech stack document at docs/architecture/stack.html via asd-architect, branching by silent detection into one of four flows (clean slate / constraints / clear stack / brownfield extraction). Verifies versions via WebFetch, runs knowledge-gap analysis, and maintains a tech-reference doc per chosen tech. Use when the user runs /asd-stack, when asd-init or asd-concept detects a missing stack.html and suggests this skill, or when the user asks to define, draft, refine, edit, upgrade, or reverse-engineer the project technology stack."
 allowed-tools: "Read Glob Grep AskUserQuestion Task"
@@ -71,13 +71,14 @@ Phase 1 brownfield candidates auto-suggest D as default.
 
 ## Phase 4 — convergence (universal across variants)
 
-- Before the first section: write skeleton `docs/architecture/stack.html` per `t_stack.html`, with placeholder sections
+- Create mode only (target file does not yet exist): before the first section, write skeleton `docs/architecture/stack.html` per `t_stack.html`, with placeholder sections. Edit mode (target file already exists) skips this write and enters the per-section loop directly against the existing file.
 - Section-by-section:
   - Per entry: verify current latest version via fetching external doc; flag if user's choice lags or is ahead
   - Architect drafts the section, translates to `language.docs`, writes it into `docs/architecture/stack.html` on disk
   - Post the file path + a short delta summary of what the section now says in `language.chat` (never the full section body) per `language-policy.md`
   - Request user decision (options): **A) Lock in / B) Revise this section / C) Skip (optional sections only)** — labels/descriptions in `language.chat` per `language-policy.md`
   - on B: collect feedback, architect revises, rewrites the section in place, re-posts delta summary, re-ask
+  - on C: remove that section (heading + placeholder content) from the on-disk file entirely, then continue
   - repeat until A
   - next section per `t_stack.html` order
 
@@ -102,6 +103,7 @@ Per technology in approved stack:
 
 - `docs/architecture/stack.html` already reflects every locked-in section from Phase 4 (content write is not deferred — only this gate's `accept` is)
 - write-then-review-accept per `checkpoints.md` mechanic (delta summary includes risk summary): post the path + a combined delta summary in chat; user replies `accept` (advance) or feedback (revise in place, re-post) — feedback naming a specific section may re-enter Phase 4 for that section before rewriting
+- if feedback changes a tech entry or its version (not just prose in an already-chosen section): after Phase 4's re-entry, also re-run Phases 5-6 for the affected tech entries (including the per-tech approve-before-write micro-gate) before the delta summary is re-posted and before COMPLETED can be emitted
 - emit COMPLETED
 
 ## Phase 8 — handoff
