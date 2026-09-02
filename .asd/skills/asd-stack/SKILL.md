@@ -100,7 +100,7 @@ Per technology in approved stack:
 ## Phase 7 — final write + review-accept: stack.html
 
 - Architect translates to `language.docs`, writes `docs/architecture/stack.html` per `t_stack.html`
-- write-then-review-accept (`checkpoints.md` mechanic): post absolute path + short delta summary (incl. risk summary) in chat (never the body); user reviews the file and replies `accept` (advance) or feedback (revise in place, re-post) — feedback naming a specific section may re-enter Phase 4 for that section before rewriting; loop until explicit `accept`
+- write-then-review-accept per `checkpoints.md` mechanic (delta summary includes risk summary) — feedback naming a specific section may re-enter Phase 4 for that section before rewriting
 - emit COMPLETED
 
 ## Phase 8 — handoff

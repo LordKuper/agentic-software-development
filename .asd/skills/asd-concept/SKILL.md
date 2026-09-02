@@ -78,7 +78,7 @@ Section-by-section in `language.chat`:
 ## Phase 5 — final write + review-accept
 
 - BA translates to `language.docs`, writes `docs/product/concept.html` per `t_concept.html`
-- write-then-review-accept (`checkpoints.md` mechanic): post absolute path + short delta summary in chat (never the body); user reviews the file and replies `accept` (advance) or feedback (revise in place, re-post) — feedback naming a specific section may re-enter Phase 4 for that section before rewriting; loop until explicit `accept`
+- write-then-review-accept per `checkpoints.md` mechanic — feedback naming a specific section may re-enter Phase 4 for that section before rewriting
 - emit COMPLETED
 
 ## Phase 6 — handoff
