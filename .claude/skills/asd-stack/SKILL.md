@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-stack/SKILL.md. source_digest=sha256:d6c43defe1d87ad7169c911c13fcc3f2b57c47938da6ae88c8eaca07a23507dd content_digest=sha256:730537b049254c987473642b4f01a4ec41db1916a07f0b860921a93fca6c08a9 asd_version=3.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-stack/SKILL.md. source_digest=sha256:402600c18dd542906b428698bf1df380d7d21fdfe21978b661c8ca5f96ec2320 content_digest=sha256:db99003e3bf8eabdc36ae664bbcf7b3d1a63e9dd1d14f5c5c410cb3aeb857960 asd_version=3.0.0 schema=1
 name: asd-stack
 description: "Forms or edits the project tech stack document at docs/architecture/stack.html via asd-architect, branching by silent detection into one of four flows (clean slate / constraints / clear stack / brownfield extraction). Verifies versions via WebFetch, runs knowledge-gap analysis, and maintains a tech-reference doc per chosen tech. Use when the user runs /asd-stack, when asd-init or asd-concept detects a missing stack.html and suggests this skill, or when the user asks to define, draft, refine, edit, upgrade, or reverse-engineer the project technology stack."
 allowed-tools: "Read Glob Grep AskUserQuestion Task"
@@ -99,7 +99,7 @@ Per technology in approved stack:
 ## Phase 7 — final write + review-accept: stack.html
 
 - Architect translates to `language.docs`, writes `docs/architecture/stack.html` per `t_stack.html`
-- write-then-review-accept (`checkpoints.md` mechanic): post absolute path + short delta summary (incl. risk summary) in chat (never the body); user reviews the file and replies `accept` (advance) or feedback (revise in place, re-post) — feedback naming a specific section may re-enter Phase 4 for that section before rewriting; loop until explicit `accept`
+- write-then-review-accept per `checkpoints.md` mechanic (delta summary includes risk summary) — feedback naming a specific section may re-enter Phase 4 for that section before rewriting
 - emit COMPLETED
 
 ## Phase 8 — handoff

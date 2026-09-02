@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-design-system/SKILL.md. source_digest=sha256:850cdce2946448fd02e34a33ba6994571e78e5206cffe4d7d12e170ab2030a36 content_digest=sha256:d32bf6a5ab113bba06b8e39c0fd0d02a96c3e80822239521f7c461dbf0343d3c asd_version=3.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-design-system/SKILL.md. source_digest=sha256:1bb5dcc3f5232ed7cb7f779c51541f9ab10187e3f90569260654485a747a6e21 content_digest=sha256:ae18b179ed78db830258486939baf06dc9bb81f4fd2a4b6b3f237301b4d1f3ea asd_version=3.0.0 schema=1
 name: asd-design-system
 description: "Forms or edits the project design system (docs/ux/DESIGN.md, design-system.html, accessibility.html) via asd-ux-designer, branching by silent detection into one of three flows (greenfield / constraints / brownfield extraction). Fetches the Google Labs DESIGN.md spec, lints tokens, regenerates design-system.html previews, and authors the accessibility baseline. Use when the user runs /asd-design-system, when asd-init or asd-phase-design detects missing DESIGN.md/design-system.html/accessibility.html and suggests this skill, or when the user asks to define, draft, refine, edit, augment, or reverse-engineer the project design system, design tokens, or accessibility baseline."
 allowed-tools: "Read Glob Grep AskUserQuestion Task"
@@ -96,7 +96,7 @@ After all DESIGN.md sections approved:
 
 ## Phase 6 — accessibility baseline
 
-- Designer authors `docs/ux/accessibility.html` per `t_accessibility.html`
+- Designer authors `docs/ux/accessibility.html` per `t_accessibility.html` (draft only — write deferred to Phase 7's combined gate, avoiding a duplicate approval on the same file)
 - Sections: visual (contrast, color-blind, motion), motor (target size, keyboard), cognitive (language, predictability), auditory (captions, transcripts), platform (focus order, ARIA, screen reader)
 - Section-by-section request user decision lock-in — labels/descriptions in `language.chat`
 - Wrap in `t_html-shell.html` (DOC_TYPE=Accessibility, SUBSYSTEM=project)
