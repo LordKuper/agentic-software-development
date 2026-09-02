@@ -10,7 +10,7 @@ Orchestration body for the `asd-phase-plan` skill. Operation-mapping to host too
 ## Operations used
 - read: `.asd/project/config.yaml`, `state.json`, sprint.md, persistent docs touched by sprint
 - write a file: `state.json` inline, for the mechanical non-gate phase-field write at step 4 (`sprint-lifecycle.md` "State recovery")
-- request user decision: rare, phase-level escalation only (PM handles section approvals)
+- request user decision: rare, phase-level escalation only
 - delegate to agent `asd-pm` (author + gated approval + decisions-log)
 
 ## Workflow
@@ -22,7 +22,7 @@ Orchestration body for the `asd-phase-plan` skill. Operation-mapping to host too
    - sprint.md path, list of relevant persistent doc paths, acceptance-criteria source, `language.chat`, `language.docs`; template `t_plan.md`
    - instruction:
      - author plan.md skeleton first
-     - per-section discussion with user in `language.chat` per QODDA + language-policy section approval flow
+     - per-section discussion in `language.chat` per QODDA (`core.md`) + `core.md`'s "Incremental writing"
      - **Stub inclusion step** (before task decomposition):
        - if `documents.audit` enabled: read `<sprint>/audit.md` "Related open stubs" section
        - if `documents.audit` disabled: grep touched-area files (from sprint.md scope) directly against `.asd/project/stubs.md` File:Line column for matches
@@ -38,9 +38,8 @@ Orchestration body for the `asd-phase-plan` skill. Operation-mapping to host too
        - no test-authoring Tasks or subtasks — tests are selected and written in `impl-test`, after the code exists; note per Task only the **material risk** the change carries, as input for impl-test
        - list non-trivial dependencies between tasks
      - **Definition of Done**: reference the standing DoD (`sprint-lifecycle.md` "Plan file format") instead of restating it; author only sprint-specific additions, if any
-     - **write-then-review-accept** (`checkpoints.md` mechanic): translate skeleton + full draft to `language.docs` and write `<sprint>/plan.md`; post the absolute path + a short delta summary in chat — never the artifact body
-     - user reviews `plan.md` on disk and replies `accept` (advance) or gives feedback (revise the same file in place, no `-v2`, and re-post path + summary); loop until explicit `accept`
-     - on explicit `accept`: append decisions-log entry ("plan accepted for sprint <NNN-slug>")
+     - **write-then-review-accept** (`checkpoints.md` mechanic): translate skeleton + full draft to `language.docs`, write `<sprint>/plan.md`; loop until explicit `accept`
+     - on explicit `accept`: append decisions-log entry ("`<sprint>/plan.md` accepted")
      - emit COMPLETED
 5. On PM COMPLETED → emit phase COMPLETED with return contract
 6. On PM QUESTION / FAILED / ABORT → relay, halt
@@ -65,6 +64,6 @@ PHASE: plan | SPRINT: <NNN-slug> | STATUS: <complete|blocked|aborted> | NEXT: im
 ## References
 - `.asd/rules/sprint-lifecycle.md` (plan phase contract)
 - `.asd/rules/checkpoints.md` (plan approval gate)
-- `.asd/rules/language-policy.md` (section approval flow)
+- `.asd/rules/language-policy.md` ("Write-then-review-accept: chat-language self-sufficiency")
 - `.asd/rules/artifact-layout.md`
 - Templates: `t_plan.md` (canonical plan structure)
