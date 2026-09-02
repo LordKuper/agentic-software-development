@@ -27,19 +27,15 @@ Orchestration body for the `asd-phase-scope` skill. Operation-mapping to host to
    - **raw scope text** (draft, not final); sprint id, branch
    - templates: `t_sprint.md`, `t_state.json`
    - instruction (MUST follow in this exact order; skipping any step = protocol violation):
-     1. **Refine** raw scope into coherent finished sprint goal (full sentences, `language.docs`, not caveman); preserve every concrete requirement user mentioned. Chat only — DO NOT write any file yet.
+     1. **Refine** raw scope into coherent finished sprint goal (full sentences, `language.docs`, not caveman) internally — think it through, preserve every concrete requirement user mentioned; do NOT post the refined body into chat during this sub-step (that is step 3's write-then-review-accept write, followed by posting the path + a delta SUMMARY, never the full refined text).
      2. **Clarify** via request for user decision when raw text ambiguous/contradictory/missing concrete acceptance signals. Mandatory if any: vague scope verb ("improve", "refactor", "support X"), no measurable outcome, ≥2 plausible interpretations, missing target users/surface/data shape.
-     3. **Write-then-review-accept** (`checkpoints.md` mechanic): write `<sprint>/sprint.md` per `t_sprint.md` (top-level Acceptance criteria numbered `AC-1`, `AC-2`, … — stable ids, used as the acceptance-criteria source whenever `documents.prd` is disabled) + initial `state.json` per `t_state.json` (phase=scope, iteration=0, branch, created_at) + `<sprint>/decisions-log.md` from `t_decisions-log.md` (empty entries section — the sprint-local log, created here, archived with the sprint). Fill `documents.{{DOC_AUDIT}}`/`{{DOC_PRD}}`/`{{DOC_UX_SPEC}}`/`{{DOC_ADR}}`/`{{DOC_C4}}` placeholders with the JSON boolean (`true`/`false`) matching each normalized `enabled`/`disabled` value from step 1 — never leave a placeholder literal in the written file (`sprint-lifecycle.md` "Optional documents"). Post the absolute path + a short delta summary in chat — never the artifact body.
-     4. User reviews `sprint.md` on disk and replies `accept` (advance) or gives feedback (revise the same file in place — no `-v2`, no duplicate draft — and return to step 3's post-and-summary). Loop until explicit `accept`.
+     3. **Write-then-review-accept** (`checkpoints.md` mechanic): write `<sprint>/sprint.md` per `t_sprint.md` (top-level Acceptance criteria numbered `AC-1`, `AC-2`, … — stable ids, used as the acceptance-criteria source whenever `documents.prd` is disabled) + initial `state.json` per `t_state.json` (phase=scope, iteration=0, branch, created_at) + `<sprint>/decisions-log.md` from `t_decisions-log.md` (empty entries section — the sprint-local log, created here, archived with the sprint). Fill `documents.{{DOC_AUDIT}}`/`{{DOC_PRD}}`/`{{DOC_UX_SPEC}}`/`{{DOC_ADR}}`/`{{DOC_C4}}` placeholders with the JSON boolean (`true`/`false`) matching each normalized `enabled`/`disabled` value from step 1 — never leave a placeholder literal in the written file (`sprint-lifecycle.md` "Optional documents").
+     4. Loop per `checkpoints.md`'s write-then-review-accept mechanic until explicit `accept` on `sprint.md`.
      5. If refined goal implies better slug, propose via request for user decision; rename folder/branch only after confirmation.
      6. **On explicit `accept`**: append decisions-log entry recording the accepted scope (naming `sprint.md`); if any `documents.*` disabled, one line noting which.
      7. Emit COMPLETED.
 
-   Hard gates (any violation → FAILED + halt):
-   - This gate is write-then-review-accept (`checkpoints.md`): the write in step 3 legitimately precedes `accept` — that is the mechanic, not a violation.
-   - No `COMPLETED` before an explicit `accept` was received on the written file.
-   - No advancing phase, and no decisions-log entry, on feedback short of explicit `accept` — loop instead.
-   - Never re-summarize from memory in place of posting the actual current file's path — every round (write, and every revision) must point at the real file on disk, never a chat-body dump of its content.
+   Hard gates (any violation → FAILED + halt): follow `checkpoints.md`'s write-then-review-accept mechanic exactly — step 3's write legitimately precedes `accept` (that's the mechanic, not a violation); no `COMPLETED` before explicit `accept`; no advancing phase and no decisions-log entry on feedback short of `accept`.
 9. On PM COMPLETED → emit COMPLETED with return contract
 10. On PM QUESTION → relay, halt
 11. On PM FAILED/ABORT → relay, halt
