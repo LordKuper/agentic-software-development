@@ -206,14 +206,15 @@ The folder move is gated on DoD + PR creation, not on merge; the `phase=done` te
 - `PLAN_DRAFT` — plan written, not approved
 - `PLAN_READY` — plan approved
 - `BLOCKED_MANUAL` — task needs a human-performed manual action; entry registered in `manual-steps.md`
-- `ADVICE_NEEDED` — emitter: any agent, on non-gate uncertainty only (analysis/judgment question, never a HARD-gate approval decision — see `core.md`'s autonomy/escalation rule for the gate-vs-non-gate distinction). Payload: the question plus relevant context paths. Relay obligation: the dispatching phase workflow catches the signal, dispatches `asd-advisor`, relays its answer back to the consulting agent, execution resumes — the per-workflow relay branch is implemented in each `asd-phase-*.md`.
+- `ADVICE_NEEDED` — emitter: any dispatched agent other than `asd-advisor`, on non-gate uncertainty only (analysis/judgment question, never a HARD-gate approval decision — see `core.md`'s autonomy/escalation rule for the gate-vs-non-gate distinction). Payload: the question plus relevant context paths. Relay obligation: the dispatching phase workflow catches the signal, dispatches `asd-advisor`, then re-dispatches the consulting agent with its answer appended — the per-workflow relay branch is implemented in each `asd-phase-*.md`.
 
 **`ADVICE_NEEDED` protocol** (every `asd-phase-*.md`'s relay branch is this exact sequence, invoked as "relay per `sprint-lifecycle.md`'s `ADVICE_NEEDED` protocol"):
-1. Dispatching phase workflow catches `ADVICE_NEEDED` from an agent it dispatched, mid-task.
+1. Dispatching phase workflow catches `ADVICE_NEEDED` from a dispatched agent other than `asd-advisor`, mid-task.
 2. Dispatches `asd-advisor` with the question plus the context paths as given by the consulting agent — no other context injected.
-3. On `asd-advisor` `ADVICE_GIVEN` → relay the free-text answer back to the consulting agent as additional context to its same in-flight turn; the consulting agent resumes and continues its task — this is a round-trip within the consulting agent's existing dispatch, never a fresh re-dispatch from scratch (same resume pattern as a `QUESTION`/user-answer relay elsewhere in these workflows, minus the user contact).
+3. On the advisor's returned recommendation → re-dispatch the consulting agent (`delegate to agent X`, `providers.md`) with its original task context plus the advisor's answer appended; no other context injected. Not a same-turn resume (no host tool suspends and resumes a dispatched agent mid-execution — `providers.md` has no such operation); it is a fresh dispatch carrying forward the same task.
 4. On `asd-advisor` `FAILED` (question turned out to be a HARD gate) → relay that finding to the consulting agent unchanged; the consulting agent then treats it as gate uncertainty per `core.md`'s Autonomy and escalation rule and escalates to the user normally.
 5. No halt, no user contact, no logged trail — the round-trip is autonomous and intra-phase (`asd-advisor.md` Do's: consults are not logged).
+6. Capped at 3 consults per consulting-agent dispatch. Beyond that, the agent proceeds on its own judgment or re-classifies the question as gate uncertainty and escalates per `core.md`'s Autonomy and escalation rule.
 
 ## Plan file format
 
