@@ -43,6 +43,7 @@ Orchestration body for the `asd-phase-scope` skill. Operation-mapping to host to
 9. On PM COMPLETED → emit COMPLETED with return contract
 10. On PM QUESTION → relay, halt
 11. On PM FAILED/ABORT → relay, halt
+12. On `ADVICE_NEEDED` from any dispatched agent → relay per `sprint-lifecycle.md`'s `ADVICE_NEEDED` protocol; execution resumes, no halt.
 
 ## Artefacts produced
 - `.asd/sprints/<NNN-slug>/sprint.md` — approved refined scope

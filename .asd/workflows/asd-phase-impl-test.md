@@ -47,6 +47,7 @@ No user gate on a green suite, and none on routing defects back to impl.
    - both kinds present → fix the test defects first, re-run, then route the remaining code defects back
 9. **Green suite** — write inline (mechanical, no gate): fill this entry's `Entry log` row `HEAD analysed` with current `git rev-parse HEAD` (now that step 6's prune/author commit and step 7's suite recording have both landed, so the next re-entry's delta excludes this entry's own test-authoring commits); append decisions-log "impl-test: suite green (<counts>), <added>/<removed> tests"; confirm `test_defects_pending` null; emit COMPLETED with `NEXT: impl-review`
 10. test-engineer QUESTION / FAILED / ABORT → relay, halt
+11. On `ADVICE_NEEDED` from any dispatched agent → relay per `sprint-lifecycle.md`'s `ADVICE_NEEDED` protocol; execution resumes, no halt.
 
 ## Re-entry
 

@@ -48,6 +48,7 @@ Orchestration body for the `asd-phase-design` skill. Operation-mapping to host t
 12. Emit phase COMPLETED with return contract
 13. Any creator QUESTION → relay, halt; resumes on user answer
 14. Any creator FAILED / ABORT → relay, halt
+15. On `ADVICE_NEEDED` from any dispatched agent → relay per `sprint-lifecycle.md`'s `ADVICE_NEEDED` protocol; execution resumes, no halt.
 
 ## Artefacts produced
 - `<sprint>/design/prd.html` (if `documents.prd` enabled)

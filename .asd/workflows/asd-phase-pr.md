@@ -81,6 +81,10 @@ Action: <suggested next step>
 
 User decides: fix and retry, accept-debt (stubs only), or abort sprint.
 
+## Escalation
+
+On `ADVICE_NEEDED` from any dispatched agent → relay per `sprint-lifecycle.md`'s `ADVICE_NEEDED` protocol; execution resumes, no halt.
+
 ## Artefacts produced
 Open mode:
 - Pushed git branch (and PR when `gh_enabled+auto_pr`)

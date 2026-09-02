@@ -44,6 +44,7 @@ Orchestration body for the `asd-phase-plan` skill. Operation-mapping to host too
      - emit COMPLETED
 5. On PM COMPLETED → emit phase COMPLETED with return contract
 6. On PM QUESTION / FAILED / ABORT → relay, halt
+7. On `ADVICE_NEEDED` from any dispatched agent → relay per `sprint-lifecycle.md`'s `ADVICE_NEEDED` protocol; execution resumes, no halt.
 
 ## Artefacts produced
 - `<sprint>/plan.md`

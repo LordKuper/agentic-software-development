@@ -56,6 +56,7 @@ Orchestration body for the `asd-phase-design-promote` skill. Operation-mapping t
 11. **Post-promotion summary** — non-blocking chat message: path/file list of everything promoted this run (per-domain counts + new subsystems + files touched); informational only, no decision requested, no wait for response (compensating control for the dropped final-mutation/partial-rollback gate, `sprint-lifecycle.md` "Design-promote phase")
 12. Emit phase COMPLETED with return contract
 13. Any agent QUESTION / FAILED / ABORT → relay, halt
+14. On `ADVICE_NEEDED` from any dispatched agent → relay per `sprint-lifecycle.md`'s `ADVICE_NEEDED` protocol; execution resumes, no halt.
 
 ## Artefacts produced
 - Persistent docs under `docs/` per domain (per subsystem when decomposition enabled, flat when disabled)
