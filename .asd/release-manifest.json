@@ -85,11 +85,11 @@
     ".asd/rules/design-principles.md": "dc52da294a70aba27d8076cfec7dd6917e90603892e7424eadc3a5bd8045da41",
     ".asd/rules/design-system.md": "40deefc7b65265a12033babc007066e38994a242c774c53efa1ca08e8b14b78b",
     ".asd/rules/external-review.md": "13393698522ef6835464e094ec5e01a55d535b7634b813a6d50e83a4313a8bb1",
-    ".asd/rules/git-strategy.md": "055248e65e66681f15cbd9dabc185c86a4e21948a9d0b386496193af0df25457",
+    ".asd/rules/git-strategy.md": "bb9588b65d365e39d11907bd2bbc44da7306a183927d58ae9fae18f454f6d68c",
     ".asd/rules/language-policy.md": "c01b94526ba2cb70a7e51ee1a8b1ce0ac799c00d6868992185609f5bac887ee6",
     ".asd/rules/providers.md": "6d0b8d70d338e72d4b793e61c50e1e88177cdda8e163133c76a0bb1cc038adb0",
     ".asd/rules/review-policy.md": "cd68085a8e3b219156c5b5cbe9eba4bcc7091892141d54822b83301fb4e87880",
-    ".asd/rules/sprint-lifecycle.md": "04c4d0a5411ccd677275cd5a8b6db615b2b4c97bfa7e58231c4f066c963e166e",
+    ".asd/rules/sprint-lifecycle.md": "15828dec2a6170475c206b3d0f0be9225f831c52c00bd73dbd7746513e1a72fa",
     ".asd/rules/ux-principles.md": "a977031de9f7b2d480a4ea00a2ddd88d28bb8e683d0533cb9d37dbca65be5ad9",
     ".asd/skills/asd-concept/SKILL.md": "c93d7b1300fa2930ee20a4aa370474fb53f7f1c69b31c5bddcb917b0ee517098",
     ".asd/skills/asd-design-system/SKILL.md": "f66dc2f41d8fe81b911eed185de31e074c7d8db6de27718c1e814f0c4d9dff21",
@@ -151,7 +151,7 @@
     ".asd/workflows/asd-phase-impl-test.md": "efac5ed4af409b42c24844aa3146627adbe991bf47654f939b560a042429ec24",
     ".asd/workflows/asd-phase-impl.md": "f6f6b3653c3b7b7dc3e80a7172e745a861220d32dc37ff39c318bee01d06c3b4",
     ".asd/workflows/asd-phase-plan.md": "7a68fd974075a402d39207d8322cddb833baf8e7409ab56f3ae71bda2433e3c4",
-    ".asd/workflows/asd-phase-pr.md": "3b19139440bd82cdfe5d0e440b6cef54c9133aaeb9842580bff4def360217462",
+    ".asd/workflows/asd-phase-pr.md": "d724b43a656154771c9e3252d4e9f9566b1c4e04571e00318eac5ed5c6d72234",
     ".asd/workflows/asd-phase-scope.md": "2a1fae334d464c62211bbb5dd66e5f20ff6acf714416e50fc89655e9c1517f7d",
     ".asd/agents/asd-advisor.md": "8f4697b4559816858506c2fe77c23f346e35144dc96c7304f856de1d33009dc2"
   }
