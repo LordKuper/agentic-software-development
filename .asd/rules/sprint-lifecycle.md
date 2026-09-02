@@ -45,12 +45,12 @@ Verdict files: design-review → `<sprint>/reviews/design/iter-NN/`, impl-review
 
 | Phase | Owner | Input | Output | Exit criteria |
 |---|---|---|---|---|
-| scope | PM | user request | `sprint.md`, sprint id, branch | scope approved, branch created |
+| scope | PM | user request | `sprint.md`, sprint id, branch | `sprint.md` accepted, branch created |
 | audit | Architect + BA | `sprint.md`, codebase, `docs/`, existing docs any format/location | `audit.md`; optional reverse-engineered/migrated drafts in `<sprint>/design/` | audit approved |
 | design | BA → UX Designer → Architect | `audit.md` | drafts in `<sprint>/design/` | drafts complete |
 | design-review | Documentation + UI + Simplification + External Review | `<sprint>/design/` | `reviews/design/iter-NN/<reviewer>.md` | DoD met |
 | design-promote | PM + Architect + BA + UX Designer | approved drafts | persistent docs in `docs/` | drafts merged, decisions-log entry |
-| plan | PM | promoted persistent docs | `plan.md` | plan approved |
+| plan | PM | promoted persistent docs | `plan.md` | `plan.md` accepted |
 | impl | Backend Dev + Frontend Dev | `plan.md` (initial), `reviews/impl/iter-NN/` findings (review-fix), or `test-plan.md` Defects (test-fix) | code, `manual-steps.md` | all tasks/findings/defects done; build + lint pass (completion gate) |
 | impl-test | Test Engineer | code diff, `plan.md`, PRD ACs, existing tests | `test-plan.md`, tests in repo | full suite green → `impl-review`; code defects → `impl` test-fix mode |
 | impl-review | Quality + Implementation + Testing + UI + Simplification + Documentation + Performance + External Review | code + tests + `test-plan.md` | `reviews/impl/iter-NN/<reviewer>.md` | DoD met → `pr`; else route to `impl` review-fix mode |
@@ -60,7 +60,7 @@ Verdict files: design-review → `<sprint>/reviews/design/iter-NN/`, impl-review
 
 `self_hosting: enabled` in `.asd/project/config.yaml` — sole source of truth, no marker file. Absent field or `disabled` = consumer mode (backward compatible, unchanged behavior).
 
-When enabled: Backend Dev / Frontend Dev may write canonical `.asd/rules/`, `.asd/templates/`, `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/sync.js`, `.asd/release-manifest.json`, root `AGENTS.md`, `README.md`, `CHANGELOG.md`, `.gitignore`, `tests/**` — the normal "infrastructure read-only during sprint work" invariant (`core.md`) lifts for exactly these paths. This is the exhaustive allowlist — any other citation of the self-hosting write surface (`core.md`, `asd-pm.md`, this section's own versioning note below) points back here rather than restating it. Generated `.claude/`, `.codex/`, `.agents/skills/` stay read-only always — edit canon, then `node .asd/sync.js --apply <targets>`; the generated diff is verified by `sync.js --check`, never re-reviewed as prose.
+When enabled: Backend Dev / Frontend Dev may write canonical `.asd/rules/`, `.asd/templates/`, `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/sync.js`, `.asd/sync-state.json`, `.asd/release-manifest.json`, root `AGENTS.md`, `README.md`, `CHANGELOG.md`, `.gitignore`, `tests/**` — the normal "infrastructure read-only during sprint work" invariant (`core.md`) lifts for exactly these paths. This is the exhaustive allowlist — any other citation of the self-hosting write surface (`core.md`, `asd-pm.md`, this section's own versioning note below) points back here rather than restating it. Generated `.claude/`, `.codex/`, `.agents/skills/` stay read-only always — edit canon, then `node .asd/sync.js --apply <targets>`; the generated diff is verified by `sync.js --check`, never re-reviewed as prose.
 
 `asd-init`/`sync.js` never replace root `AGENTS.md`'s managed block from `t_AGENTS.md` while self-hosting — it stays self-sourced framework-dev prose (`providers.md` ownership table). `asd-update` is a no-op here (it pulls framework files INTO a consumer; this repo IS the framework).
 
@@ -89,7 +89,7 @@ Never optional: `sprint.md`, `state.json`, `plan.md`, `test-plan.md`, impl-revie
 - C4 (effective `c4`) reads whichever design drafts exist, current stack, `sprint.md`; ADR not required.
 - Audit disabled → creators scan the repo themselves for context; Plan PM greps touched files and reads `.asd/project/stubs.md` directly instead of `audit.md`'s "Related open stubs" section.
 
-**No-op phase rule**: a phase whose entire applicable-artifact set is empty for this sprint skips agent dispatch, writes no artifact, appends its phase name to `state.json.skipped_phases` and one line to decisions-log, then returns `COMPLETED` immediately — same phase-chain position, same return-contract shape. **No user approval gate** — a no-op is a deterministic consequence of frozen `state.json.documents`, not a decision; PM advances `phase` and records the skip without requesting user decision (contrast with a phase that DID produce artifacts, which still goes through its normal gate in `checkpoints.md`).
+**No-op phase rule**: a phase whose entire applicable-artifact set is empty for this sprint skips agent dispatch, writes no artifact, appends its phase name to `state.json.skipped_phases` and one line to decisions-log, then returns `COMPLETED` immediately — same phase-chain position, same return-contract shape. **No user approval gate** — a no-op is a deterministic consequence of frozen `state.json.documents`, not a decision; PM advances `phase` and records the skip without requesting user decision (contrast with a phase that DID produce artifacts, which still goes through its normal approve-before-write or write-then-review-accept gate — the two gate classes defined in `checkpoints.md`).
 
 | Phase | No-op when |
 |---|---|
@@ -141,9 +141,9 @@ PM orchestrates; three domain creators promote (Documentation reviewer NOT invol
    - `asd-ba` → per-subsystem (or flat) `docs/product/requirements/<subsystem>.html` from prd draft; product migration items.
    - `asd-architect` → folds every ADR approved in `adr.html` into whichever existing persistent doc's `responsibility.owns` frontmatter already declares ownership of that decision's subject (see fold rule below); updates `stack.html`, `tech-reference/`; applies the sprint's c4 delta patch (or, when the persistent registry did not exist before this sprint, writes the full schema directly) to persistent `docs/architecture/c4/`; architecture migration items. Rendering (`dist/` or `architecture.html`) is not regenerated here — build on demand via the `commands.yaml` build-to-view command.
    - `asd-ux-designer` → `docs/ux/<subsystem>.html` from ux-spec draft; patches `DESIGN.md` from `design-md-delta.yaml`; regenerates `design-system.html`; ux migration items.
-   - Each creator requests user decision before each persistent write.
-5. PM final user confirmation before persistent mutation (confirm / rollback / partial rollback).
-6. PM appends decisions-log entries, finalises `state.json`.
+5. The dispatching phase workflow (`asd-phase-design-promote.md`) composes the decisions-log entries for this promotion and writes `state.json` phase-done — a mechanical non-gate write, not a PM-gated step; per this file's "State recovery" two-writers rule (dispatching phase workflow writes inline for non-gate mechanical writes, site named there).
+
+Dropping the per-persistent-write and final-mutation gates (former steps 4's trailing sentence and step 5) also drops the **partial rollback** affordance they used to offer (confirm / rollback / partial rollback on the whole batch) — no direct replacement exists at this gate level. The compensating control is a non-blocking post-promotion summary the dispatching workflow posts after all writes land (implemented in `asd-phase-design-promote.md`, not this rule doc).
 
 **ADR fold rule**: every architectural decision approved in a sprint's `adr.html` is folded, at `design-promote`, into whichever existing persistent doc already declares ownership of that decision's subject in its `responsibility.owns` frontmatter — never from a lookup table. The `adr.html` article's optional "Fold target" line names the candidate and the matched `owns:` clause; the Architect verifies the match, not invents it. A binding rejected alternative folds as one line into the target doc's Constraints-equivalent section (or the fold target's nearest analogous section); a non-binding rejected alternative stays sprint-archive-only, never promoted. When no existing doc's `owns` matches, that is a Complication Approval, not a licence to invent a document — API contracts fold the same way: into a subsystem requirements/architecture doc, `stack.html`, a project-generated OpenAPI/SDL/proto artifact, or, only via Complication Approval, a brand-new doc with no pre-made template. The design gate stays **one approval for the sprint's whole ADR set** — fold-target selection happens after that gate, during promotion, and never re-opens it.
 
@@ -206,6 +206,7 @@ The folder move is gated on DoD + PR creation, not on merge; the `phase=done` te
 - `PLAN_DRAFT` — plan written, not approved
 - `PLAN_READY` — plan approved
 - `BLOCKED_MANUAL` — task needs a human-performed manual action; entry registered in `manual-steps.md`
+- `ADVICE_NEEDED` — emitter: any agent, on non-gate uncertainty only (analysis/judgment question, never a HARD-gate approval decision — see `core.md`'s autonomy/escalation rule for the gate-vs-non-gate distinction). Payload: the question plus relevant context paths. Relay obligation: the dispatching phase workflow catches the signal, dispatches `asd-advisor`, relays its answer back to the consulting agent, execution resumes — the per-workflow relay branch is implemented in each `asd-phase-*.md`.
 
 ## Plan file format
 
