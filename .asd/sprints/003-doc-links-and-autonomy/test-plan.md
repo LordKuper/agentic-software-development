@@ -16,6 +16,7 @@ responsibility:
 | 3 | 852e70bb5fa6c122643366e3120f9939193818ad | delta since entry 2 (impl review-fix iter-2) |
 | 4 | 487e65fc81221b6ad91c06d19e28523f7c9db049 | delta since entry 3 (impl review-fix iter-3) |
 | 5 | 1b9e49fd283ca7dca98c78eec19397e3b14fb4a7 | delta since entry 4 (impl review-fix iter-4) |
+| 6 |  | delta since entry 5 (impl review-fix iter-5) |
 
 ## Strategy summary
 
@@ -272,6 +273,63 @@ in this round are runtime-state-conditioned, which no static string/structural c
 can express without becoming either vacuous or paraphrase-fragile; a real invariant still requires
 agent-dispatch simulation infrastructure this repo doesn't have, unrequested and out of scope here.
 
+### Entry 6 (delta since entry 5 — impl review-fix iter-5)
+
+Delta scope: 2 files — `.asd/release-manifest.json` (ledger re-render for the 1 edited canon file
+below), `.asd/skills/asd-design-system/SKILL.md` (fixed 3 critical findings from
+`reviews/impl/iter-5/`: (a) the create-mode-only skeleton guards added in entry 5 were keyed on the
+*skill's own* create/edit-mode flag rather than each artifact's actual on-disk existence — a reachable
+content-creation gap where, e.g., a DESIGN.md-missing-but-accessibility.html-present dispatch could
+still skip the DESIGN.md skeleton write; reworded both Phase 4 and Phase 6 guards to test the specific
+target file's existence directly (`ONLY when docs/ux/DESIGN.md does not yet exist`) and added a
+Force-include clause to Edit mode requiring any of the 3 artifacts missing on disk to enter the
+edit/section-loop set regardless of user selection; (b) Phase 4's per-section loop had lock-in (A) and
+revise (B) branches but no `on C: skip` handler — added one, deleting the skipped section from disk
+rather than leaving an orphaned placeholder; (c) the design-system.html regeneration Hard rule read
+"regenerated once, at Phase 5" which self-contradicted the write-first-with-Phase-7-rerun mechanic
+entry 5 had just introduced — reworded to "before Phase 5 regeneration and before Phase 7's accept
+gate").
+
+Same reasoning approach as entries 2-5, re-verified fresh rather than assumed by analogy:
+
+1. **Does this delta's specific fix (existence-keyed guards replacing mode-keyed guards, a new `on C`
+   handler, a reworded Hard rule) cross into check-ladder-eligible territory now, where entry 5's
+   mode-keyed version didn't?** Re-grepped `tests/run.js` for `SKILL.md`, `asd-design-system`,
+   `skeleton`, `Force-include`, `on C`, `docs/ux/DESIGN.md` (fresh grep, this entry) — same two hits
+   as every prior entry: the two static fixture-render tests (unrelated synthetic `demo-skill`
+   fixture) and the directory-driven skills-coverage assertion (file-exists + `current`-status only,
+   no content parsing). No new hits. The fix itself doesn't change the *category* of risk from entry
+   5's finding — it's the same class of runtime-state-conditioned behavior (does the specific target
+   file exist on disk at dispatch time), just with the condition keyed correctly instead of
+   incorrectly. Entry 5's behavioral-invariant-expressibility argument (a string/structural check
+   can't distinguish "the guard is present and correct" from "the guard's words are present but the
+   condition is subtly wrong," which is exactly the bug this round fixed) applies with equal or
+   greater force here — this round *is* an instance of that exact failure mode (the words "create
+   mode only" were present in entry 5's version, but the guard's *actual condition* was wrong). A
+   static anchor-phrase check would have passed on entry 5's buggy wording just as readily as on this
+   round's fix — it cannot express file-existence-at-dispatch-time, confirmed again by direct
+   inspection rather than inherited from entry 5's conclusion.
+2. **The new `on C: skip` handler and Force-include clause — any different verdict?** Both are prose
+   additions to the same per-section/per-artifact loop structure already judged unparseable without
+   agent-dispatch simulation infrastructure (entries 4-5). No different category: deleting a section
+   from disk on Skip and force-including a missing artifact in the edit set are both dispatch-time
+   behaviors with no static representation. No test surface.
+3. **`release-manifest.json` re-render for the 1 edited file** — covered by the existing
+   ledger-consistency check (`release-manifest.json: every canon_hashes/upstream_hashes entry matches
+   the actual file`); confirmed green below (83/83, that assertion included).
+4. **Spot-check requested**: does the manifest's `asd-design-system` hash entry reflect the *new*
+   content, not stale from before this round's fix? Verified two ways — (a) diffed
+   `release-manifest.json` itself: both the `canon_hashes` entry (`skills/asd-design-system/SKILL.md`)
+   and the `upstream_hashes` entry (`.asd/skills/asd-design-system/SKILL.md`) changed value between
+   `1bdf568` and HEAD (old `6ba82cf6...`, new `f66dc2f4...`), i.e. the manifest was genuinely
+   re-rendered, not left stale; (b) ran `node .asd/sync.js --check` directly: `ok: true`, 0 of 72 items
+   non-`current` — the recompute-from-actual-file check (not a manual re-hash) confirms the recorded
+   hash matches the file on disk exactly as it stands now. Not stale.
+
+Conclusion: this delta needed zero new tests, confirmed by a fresh re-examination specific to this
+round's fix shape (existence-keyed guard correction, not mode-keyed), not inherited from entry 5's
+conclusion by default. Manifest spot-check passed — hash entry reflects current content.
+
 ## Risk → check decisions
 
 | Change | Material risk | Chosen check | Decision | Reason |
@@ -300,6 +358,8 @@ agent-dispatch simulation infrastructure this repo doesn't have, unrequested and
 | `.asd/skills/asd-stack/SKILL.md`, `asd-design-system/SKILL.md` (entry 5: Phase 7 loop-back now re-runs Phase 5-6 regeneration/lint for affected entries before re-accepting, was silently re-accepting over stale derived artifacts) | a revision round leaves `design-system.html`/`stack.html` stale relative to the just-revised source, but the gate re-accepts anyway | manual cross-file consistency review (impl-review reviewers) | none | same reasoning — re-run-on-loop-back is a runtime sequencing requirement, unverifiable by static SKILL.md parsing without simulating the dispatch |
 | `.asd/rules/checkpoints.md` (entry 5: dropped unreachable decisions-log branch for standalone gates) | dangling/contradictory recording-scope clause | manual grep + read of actual lines (this entry) + static `upstream_hashes` freshness (existing) | none | zero `checkpoints.md` references in `tests/run.js`; same as every prior entry's finding for this file |
 | `.asd/release-manifest.json` (entry 5: re-render for the 5 files above) | stale recorded hash entry for one of the 5 touched files | static (existing) | keep | already covered — `release-manifest.json: every canon_hashes/upstream_hashes entry matches the actual file`; confirmed green below |
+| `.asd/skills/asd-design-system/SKILL.md` (entry 6: skeleton guards re-keyed from own-mode flag to per-artifact on-disk existence — closes a reachable content-creation gap; new `on C: skip` handler deletes the section from disk; reworded regeneration Hard rule to remove self-contradiction with the Phase-7 rerun mechanic) | a guard keyed on the wrong condition (skill mode instead of the specific target file's existence) silently skips or performs a skeleton write incorrectly; a Skip choice leaves an orphaned placeholder; the regeneration rule's stale wording misleads a future reader into skipping the Phase-7 rerun | manual cross-file consistency review (impl-review reviewers) | none | re-investigated fresh (entry 6 strategy, items 1-2): same category as entries 4-5's rows for this file — a runtime file-existence/user-choice-conditioned behavior with no static representation; entry 5's behavioral-invariant-expressibility argument applies with equal force since this round is itself an instance of "guard wording present, guard condition wrong," which no anchor-phrase check could have caught either version of |
+| `.asd/release-manifest.json` (entry 6: re-render for the 1 touched file) | stale recorded hash entry for `asd-design-system/SKILL.md`, or manifest left stale from before the fix | static (existing) + manual spot-check (this entry) | keep | covered by the existing ledger-consistency check, confirmed green below; additionally spot-checked per this entry's brief — diffed the manifest to confirm both `canon_hashes`/`upstream_hashes` entries changed value from the pre-fix hash, and re-ran `node .asd/sync.js --check` (`ok: true`, 0 drift) to confirm the recorded hash matches the file exactly as it stands now, not stale |
 
 ## Removed tests
 
@@ -333,6 +393,14 @@ conditional-logic fixes (create-mode-only skeleton guards, Phase-7-loop-back re-
 cross into check-ladder-eligible territory now that they're real behavior, not vocabulary (Entry 5
 strategy, item 2) — concluded a structural anchor-phrase check would be vacuous-or-fragile, not a real
 invariant, since none of the guard conditions exist at static-analysis time. No test removed.
+
+Entry 6: none added. Re-examined fresh (not inherited from entry 5) whether re-keying the skeleton
+guards from mode-flag to per-artifact existence, plus the new `on C: skip` handler, crosses into
+check-ladder-eligible territory (Entry 6 strategy, items 1-2) — concluded no, same
+behavioral-invariant-expressibility reasoning as entry 5, applying with equal force since this round
+is itself an instance of the exact failure mode (guard wording correct, guard condition wrong) that a
+static check cannot distinguish. No test removed. Manifest hash spot-check (item 4) confirmed the
+`asd-design-system` ledger entry reflects the post-fix content, not stale.
 
 ## Suite run
 
@@ -374,13 +442,23 @@ invariant, since none of the guard conditions exist at static-analysis time. No 
   `node .asd/sync.js --check` `ok: true`, 72 items, 0 with non-`current` status (zero drift)
 - HEAD: 487e65fc81221b6ad91c06d19e28523f7c9db049
 
-**Entry 5** (current, latest — this is the result the `pr` phase compares against):
+**Entry 5** (superseded by entry 6 below; kept for record):
 - Command: `node tests/run.js`
 - Result: pass — 83/83 passed, 0 failed, 0 skipped (no tests added or removed this entry)
 - Lint / build: pass — `git diff --check` exit 0 (no diff-check errors; warnings only for
   line-ending-normalization notices on unrelated `.claude/agent-memory/` files);
   `node .asd/sync.js --check` `ok: true`, 72 items, 0 with non-`current` status (zero drift)
 - HEAD: 1b9e49fd283ca7dca98c78eec19397e3b14fb4a7
+
+**Entry 6** (current, latest — this is the result the `pr` phase compares against):
+- Command: `node tests/run.js`
+- Result: pass — 83/83 passed, 0 failed, 0 skipped (no tests added or removed this entry;
+  release-manifest ledger-consistency assertions included and green, confirming the `asd-design-system`
+  hash spot-check)
+- Lint / build: pass — `git diff --check` exit 0 (no diff-check errors; warnings only for
+  line-ending-normalization notices on unrelated `.claude/agent-memory/` files);
+  `node .asd/sync.js --check` `ok: true`, 72 items, 0 with non-`current` status (zero drift)
+- HEAD: 8567b47d2db470ed1d0ef0e8e16f97b9d9c5b2b9
 
 ## Defects
 
