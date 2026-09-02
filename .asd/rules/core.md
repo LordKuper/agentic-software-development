@@ -54,7 +54,7 @@ When asking the user to choose, always present: **Problem** (one sentence), **Op
 
 ## Incremental writing
 
-Long artifacts under a write-then-review-accept gate: write skeleton first, then per section draft → write → user reviews the file on disk → `accept` or feedback (`checkpoints.md` mechanic) → next section. Keeps live context small.
+Long artifacts under a write-then-review-accept gate: write skeleton first, then per section draft → write → user reviews the file on disk → `Lock in` or `Revise this section` (`language-policy.md` "User-decision options") → next section or revise. `accept` is reserved for the final artifact-level gate-advance (`checkpoints.md` mechanic) — never reuse it for per-section lock-in. Keeps live context small.
 
 ## Template variables
 
