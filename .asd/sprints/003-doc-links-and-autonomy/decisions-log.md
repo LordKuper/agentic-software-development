@@ -165,3 +165,10 @@ Per-sprint, append-only. Never edited or removed. Created at `scope`, archived w
 - **Fixes**: `checkpoints.md`'s "Recording scope" clause dropped the unreachable "append if sprint exists" branch entirely (no skill detects sprint state) and added `/asd-design-system` to the standalone-gate list; all three setup skills' skeleton-write step now fires create-mode-only (edit mode skips it, preventing the content-loss bug); all three skills' `Skip` option now removes the section's placeholder from disk instead of leaving a stub; `asd-design-system` and `asd-stack`'s Phase 7 loop-back now re-runs the derived-artifact regeneration (design-system.html + lint; tech-reference + lint) before re-accepting; `asd-design-system`'s lint Hard rule reworded to gate Phase 5/7, not section writes; the triple-restated deferral fact trimmed to one instance.
 - **Verification**: `node .asd/sync.js --check` 72/72 current; `node tests/run.js` 83/83; `git diff --check` clean.
 - **Affected docs**: `.asd/rules/checkpoints.md`, `.asd/skills/{asd-concept,asd-stack,asd-design-system}/SKILL.md`, generated provider views.
+
+## 2026-09-02 — impl-test entry 5: suite green (83/83), no new tests
+
+- **Decision**: delta since iter-4's fix round (5 files) re-examined fresh — this round fixed real conditional-logic bugs (create-mode-only guards, loop-back regeneration requirements), not just wording. Considered a structural anchor-phrase check but rejected it: such a check can't fail on the actual bug class this round fixed (an incorrectly-wired guard) while passing on correct prose — it would only assert word presence, not correct wiring. A real invariant would need an agent-dispatch simulation harness this repo has never had — still out of scope, still Complication-Approval territory.
+- **Rationale**: the rejection basis is round-specific (runtime/filesystem-state-dependent behavior, not merely absent test infrastructure), re-derived rather than restated from entries 2-4.
+- **Suite run**: `node tests/run.js` 83/83; `git diff --check` clean; `node .asd/sync.js --check` 72/72 current. HEAD `1b9e49fd2`.
+- **Affected docs**: [test-plan.md](./test-plan.md)

@@ -15,7 +15,7 @@ responsibility:
 | 2 | 7347537fa851ae8970cf24306b323be77e8b5474 | delta since entry 1 (impl review-fix iter-1) |
 | 3 | 852e70bb5fa6c122643366e3120f9939193818ad | delta since entry 2 (impl review-fix iter-2) |
 | 4 | 487e65fc81221b6ad91c06d19e28523f7c9db049 | delta since entry 3 (impl review-fix iter-3) |
-| 5 |  | delta since entry 4 (impl review-fix iter-4) |
+| 5 | 1b9e49fd283ca7dca98c78eec19397e3b14fb4a7 | delta since entry 4 (impl review-fix iter-4) |
 
 ## Strategy summary
 
