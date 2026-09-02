@@ -158,3 +158,10 @@ Per-sprint, append-only. Never edited or removed. Created at `scope`, archived w
 - **Rationale**: all seven fixes are autofixable — bug fixes and clarifying rewordings inside files already in sprint scope, no new abstraction, no AC change.
 - **Affected docs**: [reviews/impl/iter-4/*](./reviews/impl/iter-4/), [state.json](./state.json)
 - **Alternatives considered**: none — no FAIL, no override to consider.
+
+## 2026-09-02 — impl fix for iter-4: findings resolved
+
+- **Decision**: all 7 iter-4 findings resolved via 4 parallel dev dispatches on disjoint files (`checkpoints.md`; and one each for `asd-concept`/`asd-stack`/`asd-design-system` SKILL.md, since `asd-design-system` alone carried 4 findings), followed by centralized `sync.js --apply` on 6 stale skill-view targets.
+- **Fixes**: `checkpoints.md`'s "Recording scope" clause dropped the unreachable "append if sprint exists" branch entirely (no skill detects sprint state) and added `/asd-design-system` to the standalone-gate list; all three setup skills' skeleton-write step now fires create-mode-only (edit mode skips it, preventing the content-loss bug); all three skills' `Skip` option now removes the section's placeholder from disk instead of leaving a stub; `asd-design-system` and `asd-stack`'s Phase 7 loop-back now re-runs the derived-artifact regeneration (design-system.html + lint; tech-reference + lint) before re-accepting; `asd-design-system`'s lint Hard rule reworded to gate Phase 5/7, not section writes; the triple-restated deferral fact trimmed to one instance.
+- **Verification**: `node .asd/sync.js --check` 72/72 current; `node tests/run.js` 83/83; `git diff --check` clean.
+- **Affected docs**: `.asd/rules/checkpoints.md`, `.asd/skills/{asd-concept,asd-stack,asd-design-system}/SKILL.md`, generated provider views.
