@@ -4,7 +4,7 @@
   "entries": {
     "AGENTS.md": {
       "kind": "managed-block",
-      "content_digest": "sha256:ec8879f9088e5a1709f9e6aa6fd198328a07073aaf0b7c3a9a8b3974e38c7031"
+      "content_digest": "sha256:f3b17e63213c46c60d59e964c57ec86ab5d6ab2bfa0ea25a83e4e4c80dae5ede"
     },
     "CLAUDE.md": {
       "kind": "managed-block",
