@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-stack/SKILL.md. source_digest=sha256:402600c18dd542906b428698bf1df380d7d21fdfe21978b661c8ca5f96ec2320 content_digest=sha256:ed5b4b0456279456e05996368b48b546ba8d7ad71bad4e2d822c29f9ba68f84e asd_version=3.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-stack/SKILL.md. source_digest=sha256:679f3de82b881208272fdf986c93aa3fe70339923b6855cadc813255e79c83b4 content_digest=sha256:b4a0919dcd2f5de60d6e928a1bc46bf91754ee3719090311e4bcd4b75ae7e471 asd_version=3.0.0 schema=1
 name: asd-stack
 description: "Forms or edits the project tech stack document at docs/architecture/stack.html via asd-architect, branching by silent detection into one of four flows (clean slate / constraints / clear stack / brownfield extraction). Verifies versions via WebFetch, runs knowledge-gap analysis, and maintains a tech-reference doc per chosen tech. Use when the user runs /asd-stack, when asd-init or asd-concept detects a missing stack.html and suggests this skill, or when the user asks to define, draft, refine, edit, upgrade, or reverse-engineer the project technology stack."
 ---
@@ -70,13 +70,15 @@ Phase 1 brownfield candidates auto-suggest D as default.
 
 ## Phase 4 — convergence (universal across variants)
 
-Section-by-section in `language.chat`:
-- Architect presents current section content
-- Per entry: verify current latest version via fetching external doc; flag if user's choice lags or is ahead
-- Request user decision (options): **A) Lock in / B) Revise this section / C) Skip (optional sections only)** — labels/descriptions in `language.chat` per `language-policy.md`
-- on B: collect feedback, architect revises, re-present, re-ask
-- repeat until A
-- next section per `t_stack.html` order
+- Before the first section: write skeleton `docs/architecture/stack.html` per `t_stack.html`, with placeholder sections
+- Section-by-section:
+  - Per entry: verify current latest version via fetching external doc; flag if user's choice lags or is ahead
+  - Architect drafts the section, translates to `language.docs`, writes it into `docs/architecture/stack.html` on disk
+  - Post the file path + a short delta summary of what the section now says in `language.chat` (never the full section body) per `language-policy.md`
+  - Request user decision (options): **A) Lock in / B) Revise this section / C) Skip (optional sections only)** — labels/descriptions in `language.chat` per `language-policy.md`
+  - on B: collect feedback, architect revises, rewrites the section in place, re-posts delta summary, re-ask
+  - repeat until A
+  - next section per `t_stack.html` order
 
 ## Phase 5 — knowledge gap analysis
 
@@ -95,10 +97,10 @@ Per technology in approved stack:
 - Includes canonical source URL, API surface used, version-specific notes, deprecations, project conventions, "Last verified" ISO date
 - Request user decision before each persistent write
 
-## Phase 7 — final write + review-accept: stack.html
+## Phase 7 — final artifact-level gate: stack.html
 
-- Architect translates to `language.docs`, writes `docs/architecture/stack.html` per `t_stack.html`
-- write-then-review-accept per `checkpoints.md` mechanic (delta summary includes risk summary) — feedback naming a specific section may re-enter Phase 4 for that section before rewriting
+- `docs/architecture/stack.html` already reflects every locked-in section from Phase 4 (content write is not deferred — only this gate's `accept` is)
+- write-then-review-accept per `checkpoints.md` mechanic (delta summary includes risk summary): post the path + a combined delta summary in chat; user replies `accept` (advance) or feedback (revise in place, re-post) — feedback naming a specific section may re-enter Phase 4 for that section before rewriting
 - emit COMPLETED
 
 ## Phase 8 — handoff
