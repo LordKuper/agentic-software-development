@@ -1,16 +1,16 @@
 {
   "sprint_id": "003-doc-links-and-autonomy",
   "branch": "sprint/003-doc-links-and-autonomy",
-  "phase": "impl-review",
+  "phase": "impl",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "adr": false, "c4": false },
   "skipped_phases": ["design", "design-review", "design-promote"],
   "reviews": {
     "design": { "iteration": 0, "verdicts": {} },
-    "impl": { "iteration": 4, "verdicts": { "iter-1": { "quality": "CONCERNS", "implementation": "FAIL", "testing": "CONCERNS", "simplification": "CONCERNS", "documentation": "FAIL", "performance": "CONCERNS", "ui": "APPROVE", "external": "CONCERNS" }, "iter-2": { "quality": "CONCERNS", "implementation": "CONCERNS", "testing": "CONCERNS", "simplification": "CONCERNS", "documentation": "CONCERNS", "performance": "CONCERNS", "ui": "APPROVE", "external": "CONCERNS" }, "iter-3": { "quality": "CONCERNS", "implementation": "APPROVE", "testing": "APPROVE", "simplification": "APPROVE", "documentation": "CONCERNS", "performance": "APPROVE", "ui": "APPROVE", "external": "CONCERNS" } }, "iteration_heads": { "iter-1": "de740cef811769dcac16ff97e73cb7c349eee592", "iter-2": "5cf51eb6eca99cc01a08045d088ad627a4feeb05", "iter-3": "07f2c9bff25fe8883a1a5527a28120b157da2da6", "iter-4": "d818a28c10581700721a707df1767436476c0f36" } }
+    "impl": { "iteration": 4, "verdicts": { "iter-1": { "quality": "CONCERNS", "implementation": "FAIL", "testing": "CONCERNS", "simplification": "CONCERNS", "documentation": "FAIL", "performance": "CONCERNS", "ui": "APPROVE", "external": "CONCERNS" }, "iter-2": { "quality": "CONCERNS", "implementation": "CONCERNS", "testing": "CONCERNS", "simplification": "CONCERNS", "documentation": "CONCERNS", "performance": "CONCERNS", "ui": "APPROVE", "external": "CONCERNS" }, "iter-3": { "quality": "CONCERNS", "implementation": "APPROVE", "testing": "APPROVE", "simplification": "APPROVE", "documentation": "CONCERNS", "performance": "APPROVE", "ui": "APPROVE", "external": "CONCERNS" }, "iter-4": { "quality": "CONCERNS", "implementation": "CONCERNS", "testing": "APPROVE", "simplification": "CONCERNS", "documentation": "APPROVE", "performance": "APPROVE", "ui": "APPROVE", "external": "CONCERNS" } }, "iteration_heads": { "iter-1": "de740cef811769dcac16ff97e73cb7c349eee592", "iter-2": "5cf51eb6eca99cc01a08045d088ad627a4feeb05", "iter-3": "07f2c9bff25fe8883a1a5527a28120b157da2da6", "iter-4": "d818a28c10581700721a707df1767436476c0f36" } }
   },
   "created_at": "2026-09-02T00:00:00Z",
-  "updated_at": "2026-09-02T22:00:00Z",
-  "review_fixes_pending": null,
+  "updated_at": "2026-09-02T23:00:00Z",
+  "review_fixes_pending": "iter-4",
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null,
