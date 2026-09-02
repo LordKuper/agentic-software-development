@@ -68,17 +68,19 @@ Phase 1 brownfield candidates auto-suggest D as default; user may override.
 
 ## Phase 4 — convergence (universal across variants)
 
-Section-by-section in `language.chat`:
-- BA presents current section content
-- Request user decision (options): **A) Lock in / B) Revise this section / C) Skip (optional sections only)** — labels/descriptions in `language.chat` per `language-policy.md`
-- on B: collect feedback, BA revises, re-present, re-ask
-- repeat until A
-- next section per `t_concept.html` order (required first, then per-optional inclusion choice)
+- Before the first section: write skeleton `docs/product/concept.html` per `t_concept.html`, with placeholder sections
+- Section-by-section:
+  - BA drafts the section, translates to `language.docs`, writes it into `docs/product/concept.html` on disk
+  - Post the file path + a short delta summary of what the section now says in `language.chat` (never the full section body) per `language-policy.md`
+  - Request user decision (options): **A) Lock in / B) Revise this section / C) Skip (optional sections only)** — labels/descriptions in `language.chat` per `language-policy.md`
+  - on B: collect feedback, BA revises, rewrites the section in place, re-posts delta summary, re-ask
+  - repeat until A
+  - next section per `t_concept.html` order (required first, then per-optional inclusion choice)
 
-## Phase 5 — final write + review-accept
+## Phase 5 — final artifact-level gate
 
-- BA translates to `language.docs`, writes `docs/product/concept.html` per `t_concept.html`
-- write-then-review-accept per `checkpoints.md` mechanic — feedback naming a specific section may re-enter Phase 4 for that section before rewriting
+- `docs/product/concept.html` already reflects every locked-in section from Phase 4 (content write is not deferred — only this gate's `accept` is)
+- write-then-review-accept per `checkpoints.md` mechanic: post the path + a combined delta summary in chat (never the body); user replies `accept` (advance) or feedback (revise in place, re-post) — feedback naming a specific section may re-enter Phase 4 for that section before rewriting
 - emit COMPLETED
 
 ## Phase 6 — handoff

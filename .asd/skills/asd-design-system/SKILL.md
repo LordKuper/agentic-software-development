@@ -66,7 +66,7 @@ Phase 1 brownfield candidates auto-suggest C as default.
 
 ## Phase 4 — convergence (universal across variants)
 
-Section-by-section in `language.chat`. Order per Google Labs DESIGN.md spec:
+Order per Google Labs DESIGN.md spec:
 1. Colors (palette + semantic tokens)
 2. Typography (scale + families)
 3. Spacing scale
@@ -75,36 +75,44 @@ Section-by-section in `language.chat`. Order per Google Labs DESIGN.md spec:
 6. Motion / timing
 7. Components (button, input, card, etc.) — only those needed per concept
 
-For each section:
-- Designer presents current content
+- Before the first section: write skeleton `docs/ux/DESIGN.md` (Google Labs format) with placeholder sections
 - Fetch latest Google Labs DESIGN.md spec (external doc) on first section; cache for session
-- Request user decision (options) — labels/descriptions in `language.chat`: **A) Lock in / B) Revise this section / C) Skip (optional sections only)**
-- on B: collect feedback, designer revises, re-present, re-ask
-- repeat until A
-- next section
+- For each section:
+  - Designer drafts the section, writes it into `docs/ux/DESIGN.md` on disk
+  - Post the file path + a short delta summary of what the section now says in `language.chat` (never the full section body) per `language-policy.md`
+  - Request user decision (options) — labels/descriptions in `language.chat`: **A) Lock in / B) Revise this section / C) Skip (optional sections only)**
+  - on B: collect feedback, designer revises, rewrites the section in place, re-posts delta summary, re-ask
+  - repeat until A
+  - next section
 
 After all DESIGN.md sections approved:
 - Designer runs `designmd-lint` via command execution (`commands.yaml` alias). On Windows, ensure `designmd-install` ran once this session.
 - Pass criteria per `.asd/rules/design-system.md` §11: ≥1 error OR ≥1 un-excluded warning = fail.
-- Fail → designer fixes, re-lint. Per persistent warning, request user decision to exclude; on approval record decision + rationale in DESIGN.md lint-exclusions block.
+- Fail → designer fixes on disk, re-lint. Per persistent warning, request user decision to exclude; on approval record decision + rationale in DESIGN.md lint-exclusions block, written on disk.
 - Clean pass → continue
 
 ## Phase 5 — design-system.html regeneration
 
-- Designer renders `docs/ux/design-system.html` per `t_design-system.html` from approved DESIGN.md (draft only — write deferred to Phase 7's combined gate, avoiding a duplicate approval on the same file)
+- Designer renders and writes `docs/ux/design-system.html` per `t_design-system.html` from approved DESIGN.md now (write is not deferred — only the artifact-level `accept` gate is deferred to Phase 7's combined gate, avoiding a duplicate approval on the same file)
 - Live previews: color swatches with hex, typography samples, spacing scale, component previews using applied tokens
 - Wrap in `t_html-shell.html` (DOC_TYPE=Design-system, SUBSYSTEM=project)
 
 ## Phase 6 — accessibility baseline
 
-- Designer authors `docs/ux/accessibility.html` per `t_accessibility.html` (draft only — write deferred to Phase 7's combined gate, avoiding a duplicate approval on the same file)
+- Before the first section: write skeleton `docs/ux/accessibility.html` (wrapped in `t_html-shell.html`, DOC_TYPE=Accessibility, SUBSYSTEM=project) with placeholder sections
 - Sections: visual (contrast, color-blind, motion), motor (target size, keyboard), cognitive (language, predictability), auditory (captions, transcripts), platform (focus order, ARIA, screen reader)
-- Section-by-section request user decision lock-in — labels/descriptions in `language.chat`
-- Wrap in `t_html-shell.html` (DOC_TYPE=Accessibility, SUBSYSTEM=project)
+- For each section:
+  - Designer drafts the section, translates to `language.docs`, writes it into `docs/ux/accessibility.html` on disk
+  - Post the file path + a short delta summary of what the section now says in `language.chat` (never the full section body) per `language-policy.md`
+  - Request user decision lock-in (options) — labels/descriptions in `language.chat`: **A) Lock in / B) Revise this section**
+  - on B: collect feedback, designer revises, rewrites the section in place, re-posts delta summary, re-ask
+  - repeat until A
+  - next section
+- Write of section content happens now, per section (not deferred) — only the artifact-level `accept` gate is deferred to Phase 7's combined gate, avoiding a duplicate approval on the same file
 
-## Phase 7 — final write + review-accept: all three files
+## Phase 7 — final artifact-level gate: all three files
 
-- Designer translates to `language.docs`, writes `docs/ux/DESIGN.md`, `docs/ux/design-system.html`, `docs/ux/accessibility.html`
+- `docs/ux/DESIGN.md`, `docs/ux/design-system.html`, `docs/ux/accessibility.html` already reflect every locked-in section from Phases 4-6
 - write-then-review-accept (`checkpoints.md` mechanic): post the three absolute paths + one combined delta summary in chat (never the body); user reviews the files and replies `accept` (advance) or feedback (revise in place, re-post) — feedback naming a specific section may re-enter Phase 4 or Phase 6 for that section before rewriting; single loop covers all three files, loop until explicit `accept`
 - emit COMPLETED
 
