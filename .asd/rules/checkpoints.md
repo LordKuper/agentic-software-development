@@ -57,7 +57,9 @@ All rows use the write-then-review-accept mechanic above.
 
 ## Approval recording
 
-Approval advances `phase` in `state.json` and appends an entry to `<sprint>/decisions-log.md` naming the approved/accepted artifact's path. No frontmatter status field. For write-then-review-accept gates: revision rounds are not decisions — only the final explicit `accept` per artifact appends a decisions-log entry (**one entry per artifact**, not one per round).
+Approval advances `phase` in `state.json` and appends an entry to `<sprint>/decisions-log.md` naming the approved/accepted artifact's path. No frontmatter status field. For write-then-review-accept gates: revision rounds are not decisions — only the final explicit `accept` appends a decisions-log entry (**one entry per accepted gate, naming every path the gate covers**, not one per round — a gate that combines several artifacts under one `accept`, e.g. the design-system gate's `DESIGN.md` + `design-system.html` + `accessibility.html`, records as a single combined entry naming all covered paths).
+
+Recording scope: (a) sprint-phase gates — dispatched from within an active sprint's phase workflow (`scope`, `plan`, `design`'s prd/ux-spec/adr/design-system rows) — advance `phase` and append to that sprint's `decisions-log.md`, as above. (b) standalone skill gates with no active sprint (`/asd-concept`, `/asd-stack` when run outside a sprint phase) — if an active sprint happens to exist, append to its `decisions-log.md`; if none exists, no decisions-log write is attempted — the accepted file itself, now on disk and in git history, is the record.
 
 ## Precondition chain
 
