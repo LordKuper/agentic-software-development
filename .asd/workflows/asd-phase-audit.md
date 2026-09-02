@@ -4,7 +4,7 @@ Orchestration body for the `asd-phase-audit` skill. Operation-mapping to host to
 
 ## Preconditions
 - Active sprint at `.asd/sprints/<NNN-slug>/`
-- `sprint.md` approved (per checkpoints precondition chain)
+- `sprint.md` accepted (per checkpoints precondition chain)
 - `state.json.phase` advanced from `scope`
 
 ## Operations used
