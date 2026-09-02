@@ -15,6 +15,7 @@ responsibility:
 | 2 | 7347537fa851ae8970cf24306b323be77e8b5474 | delta since entry 1 (impl review-fix iter-1) |
 | 3 | 852e70bb5fa6c122643366e3120f9939193818ad | delta since entry 2 (impl review-fix iter-2) |
 | 4 | 487e65fc81221b6ad91c06d19e28523f7c9db049 | delta since entry 3 (impl review-fix iter-3) |
+| 5 |  | delta since entry 4 (impl review-fix iter-4) |
 
 ## Strategy summary
 
@@ -203,6 +204,74 @@ change, consistent with the existing Risk → check decisions row for these same
 entry 3, row: "AC-3 completion: final gates converted to write-then-review-accept" — this delta
 extends that same row's reasoning to the earlier per-section loop, not a new risk category).
 
+### Entry 5 (delta since entry 4 — impl review-fix iter-4)
+
+Delta scope: 5 files — `.asd/release-manifest.json` (ledger re-render), `.asd/rules/checkpoints.md`
+(dropped the unreachable "if an active sprint happens to exist, append to its decisions-log.md"
+branch from the standalone-skill "Recording scope" clause — standalone skill gates now unconditionally
+never write to a decisions-log or advance `phase`), `.asd/skills/asd-concept/SKILL.md` /
+`asd-design-system/SKILL.md` / `asd-stack/SKILL.md` (Phase 4/6 skeleton-write guarded to create-mode-
+only, was unconditional and reachable in Edit mode — a genuine content-loss bug, since Edit mode means
+the file already has real content the skeleton write would have clobbered; `asd-concept`/`asd-stack`
+Skip option now deletes the section from disk instead of leaving an orphaned placeholder; `asd-stack`
+Phase 7 loop-back now re-runs Phases 5-6 — including the per-tech approve-before-write micro-gate —
+for affected tech entries before re-accepting, was silently re-accepting over stale derived artifacts;
+`asd-design-system` Phase 7 loop-back now re-runs `designmd-lint` to a clean pass and Phase 5's
+regeneration before re-accepting, same stale-derived-artifact bug; `asd-design-system`'s lint-before-
+write Hard rule reworded from "before write" (contradicted the write-first per-section mechanic) to
+"before Phase 5 regeneration and before Phase 7's accept gate").
+
+Explicitly re-examined, not assumed from entries 2-4's pattern, per this entry's brief:
+
+1. **Did anything add a simulation/parsing harness for SKILL.md phase logic?** Re-grepped
+   `tests/run.js` for `SKILL.md`, `checkpoints.md`, `skeleton`, `Edit mode`, `create-mode`,
+   `loop-back`, `Phase 7` (fresh grep, this entry, not carried over from entry 4's grep) — same two
+   hits as entry 4: the two static fixture-render tests (`canonical skill -> Claude/Codex SKILL.md
+   matches fixture`, lines 93/106, comparing a synthetic `demo-skill` fixture, unrelated to the 3 real
+   setup skills' bodies) and the directory-driven skills-coverage assertion (lines 977-979, file-
+   exists + `current`-status only). Zero hits for `checkpoints.md` content anywhere in `tests/run.js`.
+   Confirmed: still true that no code path parses or simulates a real SKILL.md's phase logic — nothing
+   in this delta (or any prior delta) added one.
+2. **Fresh call, not a restated conclusion: given this round is genuine conditional logic (create-
+   mode-only guards, re-run-on-loop-back requirements), not just gate vocabulary — is a cheap,
+   non-heuristic, non-simulation check available now that wasn't before?** Considered specifically the
+   option raised in the brief: a structural anchor-phrase check (e.g., assert the string "create mode"
+   or "Edit mode" appears near "skeleton" in each of the 3 SKILL.md files) as a fail-first regression
+   guard, the way entry 2's T-4 added a fail-first `AGENTS.md`-drift assertion. Rejected, on a
+   materially different basis than "no infra exists" — the T-4 precedent doesn't transfer: T-4 asserted
+   an *external, observable state* (`sync.js --check`'s computed `current`/`modified-foreign` status,
+   a real value the render engine produces), not the *presence of specific wording* in prose the test
+   itself would have to string-match. A "create mode" anchor-phrase test has none of a real invariant's
+   properties: (a) it doesn't verify the guard actually gates the write — a SKILL.md could contain the
+   phrase "create mode" anywhere (e.g. in this very entry's own risk-row prose if copied into the file)
+   and pass vacuously; (b) it rot-fails on any correct rewording (e.g. "only if the target file doesn't
+   already exist" is equivalent behavior, wrong test result); (c) it can't express the actual guard
+   condition (file-existence-at-dispatch-time) at all — only a live dispatch checking the real
+   filesystem state before/after Phase 4 could verify that, which is exactly the agent-dispatch
+   simulation harness entry 4 correctly identified as out-of-scope new infrastructure. Concretely: the
+   3 fixes this round (skeleton-write guard, Skip-deletes-section, Phase-7-reruns-regeneration) are
+   each a runtime behavior conditioned on prior conversation/filesystem state (does the target file
+   exist yet; did the user pick Skip; did a loop-back land in Phase 4 vs Phase 6) — none of that state
+   exists at static-analysis time, so no string-level check on the SKILL.md file, however carefully
+   anchored, can distinguish "the guard is present and correct" from "the guard's words are present but
+   the logic is subtly wrong (e.g. inverted condition)." A test that can't fail on the actual bug this
+   round fixed (an inverted or missing condition) while still passing on correct prose isn't a
+   regression guard, it's decoration. Conclusion unchanged from entry 4, but arrived at via a different,
+   round-specific argument (behavioral-invariant-expressibility, not merely "infra doesn't exist yet")
+   as the brief asked for.
+3. **`checkpoints.md`'s dropped unreachable branch** — same as every prior entry's finding for this
+   file: zero `checkpoints.md` references anywhere in `tests/run.js`; prose consumed by agent runtime
+   at dispatch time only.
+4. **`release-manifest.json` re-render for the 5 files** — covered by the existing ledger-consistency
+   check (`release-manifest.json: every canon_hashes/upstream_hashes entry matches the actual file`),
+   confirmed green below.
+
+Conclusion: this delta needed zero new tests, including after a fresh, round-specific re-examination
+of the automatable-check question (not a default to entries 2-4's conclusion) — the behavioral fixes
+in this round are runtime-state-conditioned, which no static string/structural check on SKILL.md prose
+can express without becoming either vacuous or paraphrase-fragile; a real invariant still requires
+agent-dispatch simulation infrastructure this repo doesn't have, unrequested and out of scope here.
+
 ## Risk → check decisions
 
 | Change | Material risk | Chosen check | Decision | Reason |
@@ -227,6 +296,10 @@ extends that same row's reasoning to the earlier per-section loop, not a new ris
 | `.asd/rules/checkpoints.md` (entry 4: "Approval recording" reworded to gate-level entry granularity + new "Recording scope" clause) | decisions-log entries silently regress to per-artifact (not per-gate), or standalone-skill gates write to a nonexistent sprint's decisions-log | manual grep + read of actual lines (this entry) + static `upstream_hashes` freshness (existing) | none | prose-only, confirmed by grep — zero `checkpoints.md` references in `tests/run.js`; same as every prior entry's finding for this file |
 | `.asd/workflows/asd-phase-design.md` (entry 4: `AC-2` citation replaced with canonical `checkpoints.md` reference) | dangling reference to a sprint-local AC number outside sprint scope | manual grep sweep | none | citation-target rename only, underlying rule unchanged; no test surface |
 | `.asd/release-manifest.json` (entry 4: re-render for the 5 files above) | stale recorded hash entry for one of the 5 touched files | static (existing) | keep | already covered — `release-manifest.json: every canon_hashes/upstream_hashes entry matches the actual file`; confirmed green below |
+| `.asd/skills/asd-concept/SKILL.md`, `asd-design-system/SKILL.md`, `asd-stack/SKILL.md` (entry 5: skeleton-write gated to create-mode-only, was unconditionally reachable in Edit mode — content-loss bug) | Edit-mode dispatch silently overwrites real section content with a placeholder skeleton | manual cross-file consistency review (impl-review reviewers) | none | genuinely re-investigated this entry (strategy items 1-2): no static check can express a runtime file-existence-at-dispatch condition without either being vacuous (word-presence only) or requiring an agent-dispatch simulation harness this repo doesn't have — same conclusion as entry 4's row above, reached via a fresh round-specific argument since this round is real conditional logic, not gate vocabulary |
+| `.asd/skills/asd-stack/SKILL.md`, `asd-design-system/SKILL.md` (entry 5: Phase 7 loop-back now re-runs Phase 5-6 regeneration/lint for affected entries before re-accepting, was silently re-accepting over stale derived artifacts) | a revision round leaves `design-system.html`/`stack.html` stale relative to the just-revised source, but the gate re-accepts anyway | manual cross-file consistency review (impl-review reviewers) | none | same reasoning — re-run-on-loop-back is a runtime sequencing requirement, unverifiable by static SKILL.md parsing without simulating the dispatch |
+| `.asd/rules/checkpoints.md` (entry 5: dropped unreachable decisions-log branch for standalone gates) | dangling/contradictory recording-scope clause | manual grep + read of actual lines (this entry) + static `upstream_hashes` freshness (existing) | none | zero `checkpoints.md` references in `tests/run.js`; same as every prior entry's finding for this file |
+| `.asd/release-manifest.json` (entry 5: re-render for the 5 files above) | stale recorded hash entry for one of the 5 touched files | static (existing) | keep | already covered — `release-manifest.json: every canon_hashes/upstream_hashes entry matches the actual file`; confirmed green below |
 
 ## Removed tests
 
@@ -254,6 +327,12 @@ Entry 4: none added. Investigated fresh whether the write-first section-loop con
 setup skills introduces a check-ladder-eligible invariant (Entry 4 strategy, items 1-2) — concluded no
 executable path exists to assert prose ordering without new agent-dispatch simulation infrastructure,
 which is out of scope for this delta. No test removed.
+
+Entry 5: none added. Re-examined fresh (not by analogy to entry 4) whether the round's genuine
+conditional-logic fixes (create-mode-only skeleton guards, Phase-7-loop-back re-run requirements)
+cross into check-ladder-eligible territory now that they're real behavior, not vocabulary (Entry 5
+strategy, item 2) — concluded a structural anchor-phrase check would be vacuous-or-fragile, not a real
+invariant, since none of the guard conditions exist at static-analysis time. No test removed.
 
 ## Suite run
 
@@ -287,13 +366,21 @@ which is out of scope for this delta. No test removed.
   `node .asd/sync.js --check` `ok: true`, 72 items, 0 with non-`current` status (zero drift)
 - HEAD: 852e70bb5fa6c122643366e3120f9939193818ad
 
-**Entry 4** (current, latest — this is the result the `pr` phase compares against):
+**Entry 4** (superseded by entry 5 below; kept for record):
 - Command: `node tests/run.js`
 - Result: pass — 83/83 passed, 0 failed, 0 skipped (no tests added or removed this entry)
 - Lint / build: pass — `git diff --check` exit 0 (no diff-check errors; warnings only for
   line-ending-normalization notices on unrelated `.claude/agent-memory/` files);
   `node .asd/sync.js --check` `ok: true`, 72 items, 0 with non-`current` status (zero drift)
 - HEAD: 487e65fc81221b6ad91c06d19e28523f7c9db049
+
+**Entry 5** (current, latest — this is the result the `pr` phase compares against):
+- Command: `node tests/run.js`
+- Result: pass — 83/83 passed, 0 failed, 0 skipped (no tests added or removed this entry)
+- Lint / build: pass — `git diff --check` exit 0 (no diff-check errors; warnings only for
+  line-ending-normalization notices on unrelated `.claude/agent-memory/` files);
+  `node .asd/sync.js --check` `ok: true`, 72 items, 0 with non-`current` status (zero drift)
+- HEAD: 1b9e49fd283ca7dca98c78eec19397e3b14fb4a7
 
 ## Defects
 
