@@ -12,7 +12,7 @@ responsibility:
 | Entry | HEAD analysed | Scope |
 |---|---|---|
 | 1 | 54176d0172cd8d6683109d12c11c85f1eedf2c02 | full change surface |
-| 2 |  | delta since entry 1 (impl review-fix iter-1) |
+| 2 | 7347537fa851ae8970cf24306b323be77e8b5474 | delta since entry 1 (impl review-fix iter-1) |
 
 ## Strategy summary
 
