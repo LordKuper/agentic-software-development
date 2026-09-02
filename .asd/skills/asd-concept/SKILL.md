@@ -75,11 +75,10 @@ Section-by-section in `language.chat`:
 - repeat until A
 - next section per `t_concept.html` order (required first, then per-optional inclusion choice)
 
-## Phase 5 — final approval + write
+## Phase 5 — final write + review-accept
 
-- BA shows full assembled concept summary
-- Request user decision: **A) Approve and write / B) Revise specific section** (on B re-enter Phase 4 for chosen section) — labels/descriptions in `language.chat`
-- on A: translate to `language.docs`, write `docs/product/concept.html` per `t_concept.html`
+- BA translates to `language.docs`, writes `docs/product/concept.html` per `t_concept.html`
+- write-then-review-accept (`checkpoints.md` mechanic): post absolute path + short delta summary in chat (never the body); user reviews the file and replies `accept` (advance) or feedback (revise in place, re-post) — feedback naming a specific section may re-enter Phase 4 for that section before rewriting; loop until explicit `accept`
 - emit COMPLETED
 
 ## Phase 6 — handoff

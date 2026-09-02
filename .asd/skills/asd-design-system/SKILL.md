@@ -91,9 +91,8 @@ After all DESIGN.md sections approved:
 
 ## Phase 5 — design-system.html regeneration
 
-- Designer renders `docs/ux/design-system.html` per `t_design-system.html` from approved DESIGN.md
+- Designer renders `docs/ux/design-system.html` per `t_design-system.html` from approved DESIGN.md (draft only — write deferred to Phase 7's combined gate, avoiding a duplicate approval on the same file)
 - Live previews: color swatches with hex, typography samples, spacing scale, component previews using applied tokens
-- Request user decision before write — labels/descriptions in `language.chat`
 - Wrap in `t_html-shell.html` (DOC_TYPE=Design-system, SUBSYSTEM=project)
 
 ## Phase 6 — accessibility baseline
@@ -103,11 +102,10 @@ After all DESIGN.md sections approved:
 - Section-by-section request user decision lock-in — labels/descriptions in `language.chat`
 - Wrap in `t_html-shell.html` (DOC_TYPE=Accessibility, SUBSYSTEM=project)
 
-## Phase 7 — final approval + write
+## Phase 7 — final write + review-accept: all three files
 
-- Designer shows full assembled design system + accessibility summary
-- Request user decision — labels/descriptions in `language.chat`: **A) Approve, write all three files / B) Revise specific section** (on B re-enter Phase 4 or Phase 6)
-- on A: translate to `language.docs`, write `docs/ux/DESIGN.md`, `docs/ux/design-system.html`, `docs/ux/accessibility.html`
+- Designer translates to `language.docs`, writes `docs/ux/DESIGN.md`, `docs/ux/design-system.html`, `docs/ux/accessibility.html`
+- write-then-review-accept (`checkpoints.md` mechanic): post the three absolute paths + one combined delta summary in chat (never the body); user reviews the files and replies `accept` (advance) or feedback (revise in place, re-post) — feedback naming a specific section may re-enter Phase 4 or Phase 6 for that section before rewriting; single loop covers all three files, loop until explicit `accept`
 - emit COMPLETED
 
 ## Phase 8 — handoff

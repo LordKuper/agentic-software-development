@@ -97,11 +97,10 @@ Per technology in approved stack:
 - Includes canonical source URL, API surface used, version-specific notes, deprecations, project conventions, "Last verified" ISO date
 - Request user decision before each persistent write
 
-## Phase 7 — final approval + write stack.html
+## Phase 7 — final write + review-accept: stack.html
 
-- Architect shows full assembled stack + risk summary
-- Request user decision: **A) Approve, write stack.html / B) Revise specific section** (on B re-enter Phase 4) — labels/descriptions in `language.chat`
-- on A: translate to `language.docs`, write `docs/architecture/stack.html` per `t_stack.html`
+- Architect translates to `language.docs`, writes `docs/architecture/stack.html` per `t_stack.html`
+- write-then-review-accept (`checkpoints.md` mechanic): post absolute path + short delta summary (incl. risk summary) in chat (never the body); user reviews the file and replies `accept` (advance) or feedback (revise in place, re-post) — feedback naming a specific section may re-enter Phase 4 for that section before rewriting; loop until explicit `accept`
 - emit COMPLETED
 
 ## Phase 8 — handoff
