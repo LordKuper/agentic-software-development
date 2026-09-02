@@ -1,4 +1,4 @@
-# ASD generated. Edit .asd/agents/asd-pm.md. source_digest=sha256:1da6c7c6edd10068d17a723d3b0dd99e63e8e148b98df3f3d95b4ee0892ea82b content_digest=sha256:91093f001a8e916652b6eab8f5d1fcab7992edef1baee8a8acf2484add035fdb asd_version=3.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-pm.md. source_digest=sha256:0fc4f0fe49a9ee82601a966f9dbd45308e2249f0618b9677921110f3aaa5006b content_digest=sha256:4036f7188f93f8ca982d35532ac3ea5ff5d83a3d7ea58caa8bf1c8534f5810ee asd_version=3.0.0 schema=1
 name = "asd-pm"
 description = "ASD sprint orchestrator: phase routing, sprint state, recording approved decisions, sprint archival, final PR. Covers: phase routing, state.json maintenance, decisions-log appends, sprint archival, branch/PR ops via gh, approval gates via request user decision. Does NOT handle: writing PRD/UX/ADR (delegates to asd-ba/asd-ux-designer/asd-architect), reviewing artifacts (delegates to reviewer agents), implementation (delegates to dev agents)."
 model = "gpt-5.6"
@@ -48,7 +48,7 @@ Sprint orchestrator. Route phases, maintain state, gate approvals, archive sprin
 ## Behavioral profile
 
 Creator (orchestrator subtype):
-- skeleton-first for `sprint.md` and `plan.md`; write-then-review-accept (`checkpoints.md`) — write draft, post path + delta summary, loop on feedback until explicit `accept`
+- skeleton-first for `sprint.md` and `plan.md`; write-then-review-accept per `checkpoints.md` mechanic
 - never self-review; always route to reviewer agents
 - prefer narrow, observable steps over batched silent changes
 
@@ -81,7 +81,7 @@ HARD gates — skipping is a protocol violation; emit `FAILED` if you catch your
 
 ### Approve-before-write gates
 
-Write the gated artefact/mutation only AFTER explicit approval.
+Write the gated artefact/mutation only AFTER explicit approval. Table below lists only the gates PM itself dispatches the request user decision for; `design-review (final)`, `impl-test (removal)`, and `impl-review (final)` are also approve-before-write per `checkpoints.md`'s full table but run inline by their own phase workflow (`asd-phase-design-review.md`, `asd-phase-impl-test.md`, `asd-phase-impl-review.md`), not dispatched to PM.
 
 | Phase | Gate (must happen BEFORE write) | Artefact written after gate |
 |---|---|---|

@@ -66,3 +66,21 @@ Per-sprint, append-only. Never edited or removed. Created at `scope`, archived w
 - **Decision**: impl assessment approved — 13/13 tasks complete, AC-1..AC-8 covered, build (`sync.js --check` 72/72) and lint (`git diff --check`) clean, no sprint-introduced stubs. Advance to impl-test.
 - **Rationale**: All plan.md checkboxes ticked; Task 12 grep sweep returned zero stale approve-before-write hits; Task 13 re-baseline landed with a clean `--check`. Two beyond-literal-plan judgment calls presented and accepted: design-promote bookkeeping relocated inline (T3/T9, audit G-6) and the non-blocking post-promotion summary retained as the audit-R-3 compensating control.
 - **Alternatives considered**: request changes (no defect found to justify); abort (no blocker).
+
+## 2026-09-02 — impl-review iter-1: FAIL(implementation, documentation) + CONCERNS(quality, testing, simplification, performance, external) → impl fix
+
+- **Phase**: impl-review, iteration 1
+- **Decision**: route back to `impl` in review-fix mode. `review_fixes_pending = "iter-1"`; fix set = every finding across all 8 reviewer files, no override, no deferral.
+- **FAIL escalation resolved with user** (Complication Approval format, presented and answered): both FAILs share one root cause. AC-3 names 10 in-scope artifacts (`concept.html`, `stack.html`, `DESIGN.md`, `design-system.html`, `accessibility.html`, `prd.html`, `ux-spec.html`, `adr.html`, `sprint.md`, `plan.md`), but only 5 were converted to write-then-review-accept; the five owned by `/asd-concept`, `/asd-stack`, `/asd-design-system` were never touched, leaving `checkpoints.md`'s design-system gate row contradicting the very skill it dispatches. **User chose: implement now** — convert those three skills' final gates to write-then-review-accept in this sprint, honoring AC-3 as originally written rather than narrowing scope. Both FAIL review files carry an "Escalation resolved" note recording this.
+- **Rationale**: narrowing AC-3 would ship a rule set whose SSoT (`checkpoints.md`) disagrees with its own dispatch targets — the exact stale-mirror risk (R-1) this sprint exists to eliminate. The gap is mechanical conversion of already-designed mechanics, not new design.
+- **Fix-set totals per reviewer** (findings live in the already-written review files, not restated here):
+  - [quality.md](./reviews/impl/iter-1/quality.md) — CONCERNS, 11 findings
+  - [implementation.md](./reviews/impl/iter-1/implementation.md) — FAIL, 1 high + 5 lower
+  - [testing.md](./reviews/impl/iter-1/testing.md) — CONCERNS, 7 findings
+  - [simplification.md](./reviews/impl/iter-1/simplification.md) — CONCERNS, 4 findings
+  - [documentation.md](./reviews/impl/iter-1/documentation.md) — FAIL, 2 high + 5 lower
+  - [performance.md](./reviews/impl/iter-1/performance.md) — CONCERNS, 2 findings
+  - [ui.md](./reviews/impl/iter-1/ui.md) — APPROVE, 0 findings (clean; no UI-surface regression from the gate-mechanic change)
+  - [external.md](./reviews/impl/iter-1/external.md) — CONCERNS, 8 findings
+- **Affected docs**: [state.json](./state.json), [plan.md](./plan.md), `reviews/impl/iter-1/*`; fix targets add `.asd/skills/asd-concept/SKILL.md`, `.asd/skills/asd-stack/SKILL.md`, `.asd/skills/asd-design-system/SKILL.md` to the existing `checkpoints.md` mirror set.
+- **Alternatives considered**: narrow AC-3 to the 5 sprint-artifact gates and defer the three skills to a follow-up sprint (rejected by user — leaves `checkpoints.md` self-contradictory in the shipped state); override the FAILs (not offered; no reviewer finding was disputed).

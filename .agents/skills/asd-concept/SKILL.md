@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-concept/SKILL.md. source_digest=sha256:c0cf9c2544a1d400e9493d81814d3ea506e1026caa309e184fde198ecbed3ff8 content_digest=sha256:5e17fac519183b645f05d35c5fd000d3476cec17e5d028c8475e1192223f9b61 asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-concept/SKILL.md. source_digest=sha256:00b803f3bd09bb4dece25d4874cf1b4cd7bc802258005c19bf525b39b93e01bd content_digest=sha256:267580e3fb61c467d557fa440676c92d4ec5bfc33adc99b4e693cc53296f9f46 asd_version=3.0.0 schema=1
 name: asd-concept
 description: "Forms or edits the project concept document via asd-ba, branching by silent detection into one of four flows (no idea / vague idea / clear vision / brownfield extraction) and converging through a per-section lock-in loop. Use when the user runs /asd-concept, when asd-init detects a missing concept.html and suggests this skill, or when the user asks to define, draft, refine, edit, rewrite, or reverse-engineer the project concept, vision, target users, or value proposition."
 ---
@@ -73,11 +73,10 @@ Section-by-section in `language.chat`:
 - repeat until A
 - next section per `t_concept.html` order (required first, then per-optional inclusion choice)
 
-## Phase 5 — final approval + write
+## Phase 5 — final write + review-accept
 
-- BA shows full assembled concept summary
-- Request user decision: **A) Approve and write / B) Revise specific section** (on B re-enter Phase 4 for chosen section) — labels/descriptions in `language.chat`
-- on A: translate to `language.docs`, write `docs/product/concept.html` per `t_concept.html`
+- BA translates to `language.docs`, writes `docs/product/concept.html` per `t_concept.html`
+- write-then-review-accept (`checkpoints.md` mechanic): post absolute path + short delta summary in chat (never the body); user reviews the file and replies `accept` (advance) or feedback (revise in place, re-post) — feedback naming a specific section may re-enter Phase 4 for that section before rewriting; loop until explicit `accept`
 - emit COMPLETED
 
 ## Phase 6 — handoff

@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-stack/SKILL.md. source_digest=sha256:c2b9c613184a8d65cc2e97665405408987daa1f21ce44e76a9febcebf13317f4 content_digest=sha256:26ae91f892fa7db91e08f1d4978447433d49682e01439351906c2ecf646ddf31 asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-stack/SKILL.md. source_digest=sha256:d6c43defe1d87ad7169c911c13fcc3f2b57c47938da6ae88c8eaca07a23507dd content_digest=sha256:4f89197680c6fc4709aa68d02c061f518491a0f73d7c601fc2d3d116ea3d7660 asd_version=3.0.0 schema=1
 name: asd-stack
 description: "Forms or edits the project tech stack document at docs/architecture/stack.html via asd-architect, branching by silent detection into one of four flows (clean slate / constraints / clear stack / brownfield extraction). Verifies versions via WebFetch, runs knowledge-gap analysis, and maintains a tech-reference doc per chosen tech. Use when the user runs /asd-stack, when asd-init or asd-concept detects a missing stack.html and suggests this skill, or when the user asks to define, draft, refine, edit, upgrade, or reverse-engineer the project technology stack."
 ---
@@ -95,11 +95,10 @@ Per technology in approved stack:
 - Includes canonical source URL, API surface used, version-specific notes, deprecations, project conventions, "Last verified" ISO date
 - Request user decision before each persistent write
 
-## Phase 7 — final approval + write stack.html
+## Phase 7 — final write + review-accept: stack.html
 
-- Architect shows full assembled stack + risk summary
-- Request user decision: **A) Approve, write stack.html / B) Revise specific section** (on B re-enter Phase 4) — labels/descriptions in `language.chat`
-- on A: translate to `language.docs`, write `docs/architecture/stack.html` per `t_stack.html`
+- Architect translates to `language.docs`, writes `docs/architecture/stack.html` per `t_stack.html`
+- write-then-review-accept (`checkpoints.md` mechanic): post absolute path + short delta summary (incl. risk summary) in chat (never the body); user reviews the file and replies `accept` (advance) or feedback (revise in place, re-post) — feedback naming a specific section may re-enter Phase 4 for that section before rewriting; loop until explicit `accept`
 - emit COMPLETED
 
 ## Phase 8 — handoff
