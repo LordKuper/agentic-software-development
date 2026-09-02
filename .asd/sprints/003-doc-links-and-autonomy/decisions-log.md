@@ -194,3 +194,10 @@ Per-sprint, append-only. Never edited or removed. Created at `scope`, archived w
 - **Rationale**: no code path parses SKILL.md phase logic; manual cross-file review remains the correct verification path.
 - **Suite run**: `node tests/run.js` 83/83; `git diff --check` clean; `node .asd/sync.js --check` 72/72 current. HEAD `8567b47d2`.
 - **Affected docs**: [test-plan.md](./test-plan.md)
+
+## 2026-09-03 — impl-review iter-6: APPROVE(all 8) → DoD met, advance to pr
+
+- **Decision**: all 8 reviewers APPROVE, zero findings — first fully-clean iteration after 5 rounds of real fixes (iter-1 FAIL×2, iter-2 CONCERNS×7, iter-3 CONCERNS×3, iter-4 CONCERNS×4, iter-5 CONCERNS×2 critical). Definition of Done met per `asd-phase-impl-review.md` step 8; `review_fixes_pending` stays `null`; phase advances to `pr`.
+- **Rationale**: iter-5's two critical findings (skeleton-guard mis-keying, missing Skip handler) were the last real defects in the `asd-design-system` cluster; iter-6's 2-file diff (`release-manifest.json`, `asd-design-system/SKILL.md`) was re-reviewed at the same critical floor by all 8 reviewers and external independently confirmed convergence, not stalemate.
+- **Affected docs**: [reviews/impl/iter-6/*](./reviews/impl/iter-6/), [state.json](./state.json)
+- **Alternatives considered**: none — unanimous APPROVE, no override to consider.
