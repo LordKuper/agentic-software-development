@@ -180,3 +180,10 @@ Per-sprint, append-only. Never edited or removed. Created at `scope`, archived w
 - **Rationale**: all three are autofixable single-file corrections; each is a real, previously-unnoticed defect surviving despite 4 prior fix rounds on the same file, caught only because the review floor forces fresh eyes every iteration.
 - **Affected docs**: [reviews/impl/iter-5/*](./reviews/impl/iter-5/), [state.json](./state.json)
 - **Alternatives considered**: none — no FAIL, no override to consider.
+
+## 2026-09-02 — impl fix for iter-5: findings resolved
+
+- **Decision**: all 3 iter-5 findings resolved in one dispatch, all confined to `.asd/skills/asd-design-system/SKILL.md`.
+- **Fixes**: Phase 4/Phase 6 skeleton guards reworded to key on each artifact's OWN existence (not the shared session-mode flag), closing the reachable path where accessibility.html could go uncreated or be written unwrapped; Edit mode now force-includes any of the three artifacts missing on disk into the section-loop set; Phase 4's `Skip (C)` option gained the same removal handler already present in the two sibling skills; the Hard rule's false "regenerated once, at Phase 5" claim reworded to match Phase 7's actual re-run requirement.
+- **Verification**: `node .asd/sync.js --check` all items current; `node tests/run.js` 83/83.
+- **Affected docs**: `.asd/skills/asd-design-system/SKILL.md`, generated provider views, `.asd/release-manifest.json`.
