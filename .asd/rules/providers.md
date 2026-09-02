@@ -61,6 +61,7 @@ A provider's id is always its rolling alias (newest model in the family), so a f
 | asd-backend-dev, asd-frontend-dev, asd-test-engineer | sonnet / medium | terra / medium | workspace-write |
 | asd-reviewer-* (7) | opus / high | sol / high | read-only |
 | asd-external-review | fable / high | sol / high | read-only |
+| asd-advisor | fable / medium | sol / medium | read-only |
 
 ## External review symmetry
 
