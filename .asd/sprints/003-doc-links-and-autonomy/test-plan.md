@@ -106,6 +106,7 @@ No test was removed or found to no longer earn its keep in this delta.
 | `AGENTS.md`, `README.md` (cross-file consistency prose, incl. agent-count claim) | roster/gate-table drift vs actual agent/rule files | manual cross-file check (impl, already performed) + static (agent-count claim only) | **partially add** (entry 2, T-3) | the agent-count claim (README "dispatches N specialized agents", AGENTS.md "Agents (...) — N:") is a directory-driven invariant like the sync-plan coverage guard already in `tests/run.js` — added "README.md / AGENTS.md agent-count claims match the actual .asd/agents/*.md file count". Remaining prose (roster tables, gate descriptions, `checkpoints.md` mirror rows) has no comparable single-number invariant to assert and stays a manual cross-file check — residual risk accepted, not a gap |
 | `.asd/rules/checkpoints.md`, `core.md`, `language-policy.md`, `providers.md`, `sprint-lifecycle.md` (gate-mechanic rewrite) — restated for entry 2 (T-6 correction) | dangling references to dropped c4 gate / stale approve-before-write phrasing | manual grep sweep (impl Task 12) **+ static** (`upstream_hashes` freshness, existing) | none | corrected from entry 1: "nothing for an automated test to assert against" was inaccurate — every edited rule/workflow file carries an `upstream_hashes` entry asserted fresh by the existing ledger-consistency test; that check catches a hash mismatch (file changed but ledger not updated), not prose *correctness*, which remains manual |
 | generated `.claude/agents/`, `.codex/agents/`, `.claude/skills/`, `.agents/skills/`, `AGENTS.md` views | drift between canon and generated/self-sourced view | build (`node .asd/sync.js --check`) | keep, **hardened** (entry 2, T-4) | corrected from entry 1: "byte-for-byte" was not true for `AGENTS.md` — it was allowlisted out of the drift check entirely (`SELF_SOURCED_ALLOWLIST`), so the DoD's "re-baselined, not merely tolerated" claim had no automated backing. Verified `AGENTS.md`'s `--check` status is genuinely `current` now (Task 13's re-baseline); removed the allowlist exemption so the test requires every item `current` with none exempted — fail-first: fails at parent `317aa50`, passes at HEAD |
+| `.asd/skills/asd-concept/SKILL.md`, `asd-stack/SKILL.md`, `asd-design-system/SKILL.md`, `asd-phase-scope/SKILL.md` (AC-3 completion: final gates converted to write-then-review-accept) | gate-mechanic prose drifts from `checkpoints.md`'s SSoT | manual cross-file consistency check (impl-review reviewers) | none | prose consumed by the agent runtime; no executable path parses SKILL.md bodies; frontmatter render/`--check` already covered by the directory-driven skills assertion in `tests/run.js` |
 
 ## Removed tests
 
@@ -146,6 +147,42 @@ Entry 1: none. Entry 2 (per `reviews/impl/iter-1/testing.md` T-1/T-3/T-5), all i
 ## Defects
 
 None found.
+
+## Review-fix note (iter-2, addresses testing/quality/simplification findings)
+
+Not a fresh Entry-log row — a formal entry N+1 follows at next impl-test once this review-fix round
+completes. Findings resolved here, all in `tests/run.js` / this file / `decisions-log.md`:
+
+- **testing #1** — the read-only-agent test's `claudeTools` fallback (`|| []`) made the Write/Edit
+  absence assertions vacuous if `claude.tools` were deleted entirely. Added an explicit
+  `assert.ok(Array.isArray(...))` allowlist check before the absence assertions.
+- **testing #2 / quality #3** — the same test checked `Write`/`Edit` but not `Bash` (AC-6: "no
+  Write/Edit/Bash"). Added a `Bash` absence check for all 9 read-only agents except
+  `asd-external-review`, which legitimately invokes `Bash` to shell out to the wrapped Codex CLI
+  (confirmed its `claude.tools` includes `Bash`) — commented inline.
+- **quality #4** — the roster-count guard only checked one README claim and one AGENTS.md claim;
+  README has 4 more count occurrences (`Sixteen specialized agents...`, `16 canonical agent specs`,
+  two `16 agent definitions`). Extended the test to assert all of them against the live
+  `.asd/agents/` count.
+- **simplification #1** — deleted dead `readRaw()` helper (verified zero call sites beyond its own
+  definition).
+- **testing #3** — `test-plan.md`'s Suite-run HEAD and `decisions-log.md`'s stamped HEAD for entry 2
+  disagreed. Kept `test-plan.md`'s Suite-run HEAD as authoritative (the actual suite-run commit);
+  appended a new, non-destructive correction entry to `decisions-log.md` (append-only) rather than
+  editing the original.
+- **testing #4** — added a Risk → check decisions row for the 4 setup-skill files
+  (`asd-concept`/`asd-stack`/`asd-design-system`/`asd-phase-scope` `SKILL.md`) that were part of
+  entry 2's actual diff but had no recorded decision.
+
+**Suite run (this pass)**: `node tests/run.js` — 80/83 passed. The 3 failures
+(`release-manifest.json canon_hashes`/`upstream_hashes` freshness for `asd-architect.md`,
+`asd-ba.md`, `asd-pm.md`, `asd-ux-designer.md`, and 3 setup-skill files/2 rule docs/1 workflow) are
+pre-existing drift from parallel iter-2 review-fix dispatches editing those non-test canon files
+concurrently with this pass — not caused by, or fixable from, this test-file-only change. The two
+new/hardened assertions from this pass (`read-only agents...`, `agent-count claims...`) both pass.
+`git diff --check`: clean (no whitespace errors). `node .asd/sync.js --check`: not re-run standalone
+here — result depends on the same in-flight canon edits; deferred to the formal entry N+1 suite run
+once all parallel iter-2 fixes land.
 
 ## Manual verification (optional)
 

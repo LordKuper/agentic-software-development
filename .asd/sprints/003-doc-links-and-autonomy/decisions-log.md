@@ -108,3 +108,9 @@ Per-sprint, append-only. Never edited or removed. Created at `scope`, archived w
 - **Rationale**: all four additions are directory-driven static checks matching the check-ladder's cheapest applicable rung, per `code-style.md` §17 — none re-litigates the sprint's core no-application-code-changed conclusion, they close specific, independently-verified gaps.
 - **Suite run**: `node tests/run.js` 83/83 pass; `git diff --check` clean; `node .asd/sync.js --check` 72/72 current, 0 drift. HEAD `7347537fa`.
 - **Affected docs**: [test-plan.md](./test-plan.md)
+
+## 2026-09-02 — correction: impl-test entry 2's suite-run HEAD
+
+- **Decision**: correction: impl-test entry 2's suite-run HEAD is `03b492036c4c46f284651235daa980871e9d6aaa`, not `7347537fa851ae8970cf24306b323be77e8b5474` — the earlier sha was the entry's delta BASE (pre-test-authoring), conflated with the suite-run commit in the original entry above. `test-plan.md`'s Suite-run section stamps the correct commit (the one 83/83 was actually verified at); this entry is append-only and left as originally written.
+- **Rationale**: two records must not disagree about which commit the suite-run result attests to, since that is what the `pr`-phase gate reads.
+- **Affected docs**: [test-plan.md](./test-plan.md)

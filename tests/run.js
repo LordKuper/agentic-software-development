@@ -26,10 +26,6 @@ function mkTempDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'asd-sync-test-'));
 }
 
-function readRaw(p) {
-  return fs.readFileSync(p, 'utf8');
-}
-
 // ---------------------------------------------------------------------------
 // Helpers shared across tests
 // ---------------------------------------------------------------------------
@@ -1013,9 +1009,20 @@ test('read-only agents (8 reviewers + asd-advisor): no Write/Edit tool, codex sa
   for (const name of readOnlyNames) {
     const raw = sync.readNormalized(path.join(agentsDir, `${name}.md`));
     const { meta } = sync.parseCanonicalFrontmatter(raw);
-    const claudeTools = (meta.claude && meta.claude.tools) || [];
+    // Assert tools is an EXPLICIT allowlist before checking absence below - a
+    // Claude subagent with no explicit claude.tools inherits the full parent
+    // tool set (incl. Write/Edit/Bash), so a deleted `tools` key would make
+    // the absence assertions below pass vacuously against a fallback [].
+    assert.ok(Array.isArray(meta.claude && meta.claude.tools), `${name}: claude.tools must be an explicit allowlist`);
+    const claudeTools = meta.claude.tools;
     assert.ok(!claudeTools.includes('Write'), `${name}: claude.tools must not include "Write"`);
     assert.ok(!claudeTools.includes('Edit'), `${name}: claude.tools must not include "Edit"`);
+    // asd-external-review is the one read-only agent that legitimately needs
+    // Bash: it invokes the wrapped Codex CLI as a subprocess (`codex exec
+    // --sandbox read-only -`), which is not itself a write capability.
+    if (name !== 'asd-external-review') {
+      assert.ok(!claudeTools.includes('Bash'), `${name}: claude.tools must not include "Bash"`);
+    }
     assert.strictEqual(meta.codex && meta.codex.sandbox_mode, 'read-only', `${name}: codex.sandbox_mode must be "read-only"`);
   }
 });
@@ -1032,9 +1039,30 @@ test('README.md / AGENTS.md agent-count claims match the actual .asd/agents/*.md
   const actualCount = fs.readdirSync(agentsDir).filter((f) => f.endsWith('.md')).length;
 
   const readmeText = fs.readFileSync(path.join(REPO_ROOT, 'README.md'), 'utf8');
+
   const readmeMatch = readmeText.match(/dispatches (\d+) specialized agents/);
   assert.ok(readmeMatch, 'README.md must state "dispatches N specialized agents"');
   assert.strictEqual(Number(readmeMatch[1]), actualCount, `README.md claims ${readmeMatch[1]} agents, .asd/agents/ has ${actualCount}`);
+
+  // Word-form count in the "## Agents" section intro. A plain literal match
+  // on the current word (not a general number-word parser) - it's a guard
+  // against silent drift, not a parser: bumping the count must also bump
+  // this literal, or the assertion fails loud instead of staying vacuous.
+  const WORD_TO_NUMBER = { Fourteen: 14, Fifteen: 15, Sixteen: 16, Seventeen: 17, Eighteen: 18 };
+  const wordMatch = readmeText.match(/(\w+) specialized agents are canonically defined/);
+  assert.ok(wordMatch, 'README.md must state "<Word> specialized agents are canonically defined"');
+  assert.ok(Object.prototype.hasOwnProperty.call(WORD_TO_NUMBER, wordMatch[1]), `README.md word-form agent count "${wordMatch[1]}" is not in the known word->number map - update the map or the wording`);
+  assert.strictEqual(WORD_TO_NUMBER[wordMatch[1]], actualCount, `README.md claims "${wordMatch[1]}" agents, .asd/agents/ has ${actualCount}`);
+
+  const specsMatch = readmeText.match(/(\d+) canonical agent specs/);
+  assert.ok(specsMatch, 'README.md folder map must state "N canonical agent specs"');
+  assert.strictEqual(Number(specsMatch[1]), actualCount, `README.md folder map claims ${specsMatch[1]} agent specs, .asd/agents/ has ${actualCount}`);
+
+  const definitionMatches = [...readmeText.matchAll(/(\d+) agent definitions/g)];
+  assert.strictEqual(definitionMatches.length, 2, `README.md folder map must state "N agent definitions" exactly twice (one per provider view), found ${definitionMatches.length}`);
+  for (const m of definitionMatches) {
+    assert.strictEqual(Number(m[1]), actualCount, `README.md folder map claims ${m[1]} agent definitions, .asd/agents/ has ${actualCount}`);
+  }
 
   const agentsMdText = fs.readFileSync(path.join(REPO_ROOT, 'AGENTS.md'), 'utf8');
   const agentsMdMatch = agentsMdText.match(/\*\*Agents\*\* \(`\.asd\/agents\/\*\.md`, canonical\) — (\d+):/);
