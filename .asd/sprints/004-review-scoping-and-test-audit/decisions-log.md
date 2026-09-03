@@ -75,4 +75,13 @@ A decision whose value must survive this sprint's archival is ALSO written into 
   - `core.md`'s existing 50%-compaction rule must be ABSORBED by the new `Context hygiene` section (AC-9), not left sitting beside it as a second, conflicting threshold.
 - **Affected docs**: [`audit.md`](audit.md), [`state.json`](state.json)
 
+## 2026-09-03 — Plan accepted
+
+- **Decision**: User accepted [`plan.md`](plan.md) — 15 tasks covering AC-1..AC-15, decomposed along `audit.md`'s twelve fact-owner rows, owner `backend-dev` throughout, with sprint-specific DoD additions (green `tests/run.js`, clean `sync.js --check` with no orphaned views, the nine-name grep excluding `.asd/project/decisions-log.md` and `.asd/sprints/archived/**`, and a no-fact-stated-twice check). Three narrowing decisions were folded into the task bodies before acceptance closed.
+- **Rationale**: Grouping by fact-owner rather than file type keeps every rename/merge wave atomic — no task leaves the repo half-renamed. Test work stays out of the plan entirely; `impl-test` owns the three breaking roster tests and the new migration-runner coverage.
+- **Task 12 — `sync.js` orphan handling**: detect + delete, marker-gated. `--check` reports orphaned generated views and exits non-zero; `--apply` deletes only files carrying the ASD ownership marker; an unmarked file in a generated tree is reported and never touched. Rationale: the marker gate is what prevents deleting a consumer's own agent or skill, which is otherwise indistinguishable from an orphan by path alone.
+- **Task 6 — latch invalidation**: the red-full-suite clause is written explicitly, clearing every latch sprint-wide, with a note on whether the rollback reset happens to cover the same route. Rationale: an explicit clause beats an implicit chain-position argument that a later edit to the phase chain could silently break.
+- **Task 14 — consumer sprints**: stale reviewer keys in an in-flight sprint are tolerated and no sprint state is rewritten; the migration prints a warning when the active sprint's phase is a review phase, telling the user to finish or re-run that iteration. Rationale: sprint state stays untouched per AC-13, and a warning covers the consequence without a migration reaching into sprint data.
+- **Affected docs**: [`plan.md`](plan.md), [`state.json`](state.json)
+
 - 2026-09-03 — design/design-review/design-promote skipped (no documents enabled)
