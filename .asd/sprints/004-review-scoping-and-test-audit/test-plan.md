@@ -135,10 +135,10 @@ Plus, as **fixes to existing tests** (test-defect fixes, not new authoring — s
 ## Suite run
 
 - Command: `node tests/run.js`
-- Scope: full (safety valve, `sprint-lifecycle.md` "Impacted test set" — shared infrastructure, same as entry 1)
-- Result: **fail** — 100/101 passed, 1 failed (`node .asd/sync.js --check` reports every item current…`, filed as D-1 — a repo-state drift left by other in-flight canon edits, unrelated to entry 2's testing findings)
-- Lint / build: pass — `lint` (`git diff --check`) exit 0; `build` (`node .asd/sync.js --check`) `ok: true`, exit 0 (its own exit-code contract gates only marker-owned orphans, so D-1's `modified-foreign` drift on `AGENTS.md` does not turn it red — see Defects)
-- HEAD: `42c00fe65114be2d30aa13d9241b9df24f7962b0`
+- Scope: full (safety valve, `sprint-lifecycle.md` "Impacted test set" — shared infrastructure, same as entry 1/entry 2)
+- Result: **pass** — 102/102 passed, 0 failed (102 = entry 2's 101 + 1 added at entry 3, `sync.js orphan detection: --apply on a NESTED per-skill orphan…removes the now-emptied skill directory too, via sync.js's OWN removeIfEmptyDir call`; D-1 confirmed fixed — `AGENTS.md` reads `current` again)
+- Lint / build: pass — `lint` (`git diff --check`) exit 0; `build` (`node .asd/sync.js --check`) `ok: true`, exit 0, all 62 items `current`
+- HEAD: `62f0d266a05da22d6ad4967bf24503c9c77c4470`
 
 **AC-15 no-test-decision evidence (testing #5)** — the `none` row (Entry 1, "the other ~50 files") leans on this grep; recording the command and its result so the substitute check has evidence, not just an assertion:
 
@@ -493,6 +493,139 @@ Same 62 items as entry 1's record above, `ok: true`, with exactly one status cha
 Exit code: `0` (`--check`'s exit code gates only marker-owned orphans, not `modified-foreign` drift — see D-1)
 
 **Gate verdict: RED.** `test` 100/101 (1 failed, filed as D-1), `lint` clean (exit 0), `build` `ok: true` (exit 0, but see D-1 for the drift its own coarser exit code misses). D-1 is unrelated to entry 2's nine testing findings — it is a repo-state drift (a self-sourced `AGENTS.md` hand-edit whose `sync.js --apply AGENTS.md` follow-up was not yet run) surfaced independently by re-running the impacted set. Routes to `impl`.
+
+### Impacted-set suite gate (step 8, entry 3)
+
+- HEAD: `62f0d266a05da22d6ad4967bf24503c9c77c4470`
+
+**`test` — `node tests/run.js`** (102 tests: 101 from entry 2 + 1 added at entry 3 — see `Added tests` Entry 3)
+
+```
+ok - canonical agent -> Claude .md matches fixture
+ok - canonical agent -> Codex .toml matches fixture
+ok - canonical skill -> Claude SKILL.md matches fixture
+ok - canonical skill -> Codex SKILL.md matches fixture
+ok - substitutePlaceholders: known key substituted, unknown/typo placeholders left untouched
+ok - agent-claude / agent-codex transforms resolve {{wraps_cli}}/{{wraps_config_key}} from claude{}/codex{} respectively
+ok - asd-external-review: the wrapped CLI subprocess carries an explicit read-only flag on both providers
+ok - agents whose meta never sets wraps_cli/wraps_config_key are unaffected (substitution is a no-op)
+ok - CRLF+BOM canonical input normalizes to the same output as LF/no-BOM
+ok - full-file status: missing target
+ok - full-file status: current after apply, then idempotent (zero byte diff) on re-check
+ok - full-file status: stale when an UNTAMPERED body just needs re-render (canon changed)
+ok - full-file status: modified-foreign when body no longer matches ITS OWN marker digest (tampered)
+ok - full-file status: modified-foreign when target has no ownership marker (conflict, refuse to overwrite)
+ok - full-file status: invalid JSON frontmatter fails closed before any write
+ok - runApply: force overwrites a modified-foreign target only after explicit confirmation
+ok - runApply: preflight aborts the WHOLE batch before any write when one canon source is invalid
+ok - buildSyncPlan: CLAUDE.md tracks t_CLAUDE.md - editing the template makes it stale
+ok - buildSyncPlan: an INITIALIZED CONSUMER project generates AGENTS.md from t_AGENTS.md, and tracks edits to it
+ok - buildSyncPlan: WITHOUT .asd/project/config.yaml (the framework repo itself), AGENTS.md stays self-sourced
+ok - readSelfHostingField: config.yaml absent -> disabled
+ok - readSelfHostingField: config.yaml exists but field absent -> disabled
+ok - readSelfHostingField: self_hosting: disabled -> disabled
+ok - readSelfHostingField: self_hosting: enabled -> enabled
+ok - readSelfHostingField: malformed/unknown value fails closed to disabled
+ok - readSelfHostingField: duplicated top-level key is ambiguous, fails closed to disabled (never "first" or "last" wins)
+ok - isSelfSourcedAgentsMd: no config -> self-sourced; consumer config -> generated; self_hosting:enabled -> self-sourced even though config exists
+ok - managed-block: missing file -> apply creates it containing just the block
+ok - managed-block: inserted into existing foreign content without touching it
+ok - managed-block: stale when tracked block content no longer matches a fresh render
+ok - managed-block: CRLF around a pre-existing block does not corrupt the boundary or double the line break
+ok - managed-block: modified-foreign when block exists but sync-state has no record (refuse to overwrite)
+ok - managed-block: modified-foreign when block was hand-edited after last tracked write
+ok - json-merge: missing file -> apply creates it with only the owned entries
+ok - json-merge: unrelated keys are preserved BYTE-FOR-BYTE, including unusual formatting
+ok - json-merge: a leading BOM on the target file survives untouched
+ok - json-merge: EACH foreign array element keeps its own exact bytes, even with unusual internal formatting
+ok - json-merge: missing key path is spliced in, not a whole-document reformat
+ok - json-merge: invalid pre-existing JSON with --force still aborts the WHOLE runApply batch before any write
+ok - json-merge: statusJsonMerge stays safe (modified-foreign) on invalid JSON even though renderJsonMerge throws
+ok - json-merge: stale when tracked owned entries differ from a fresh render
+ok - json-merge: modified-foreign when owned-looking entries exist but sync-state has no record
+ok - json-merge: invalid JSON target fails closed (treated as foreign, never parsed/written)
+ok - isSafeRelPath rejects traversal, absolute, drive, and UNC paths; accepts plain relative paths
+ok - symlinked target is treated as foreign for full-file, managed-block and json-merge
+ok - unknown release-manifest schema_version fails closed
+ok - unknown sync-state schema_version fails closed
+ok - this repo's own release-manifest.json and sync-state.json load cleanly
+ok - update state machine: upstream unchanged / local untouched -> noop
+ok - update state machine: new upstream file, not present locally -> add
+ok - update state machine: local unchanged since last release, upstream changed -> update
+ok - update state machine: local changed vs old release hash -> conflict (must not silently overwrite)
+ok - update state machine: new upstream path lands on pre-existing untracked local file -> conflict-foreign
+ok - update state machine: upstream removed the file, local matches old release -> delete
+ok - update state machine: upstream removed the file, local diverged -> keep-local-modified
+ok - update state machine: unsafe manifest path is rejected regardless of hashes
+ok - `node .asd/sync.js --check` reports every item current (no drift), including AGENTS.md
+ok - read-only agents (5 reviewers + asd-advisor): no Write/Edit tool, codex sandbox_mode read-only
+ok - README.md / AGENTS.md agent-count claims match the actual .asd/agents/*.md file count
+ok - release-manifest.json canon_hashes has an entry for every .asd/agents/*.md file
+ok - update driver: new upstream file with nothing local -> add, written on apply
+ok - update driver: local unchanged since last release, upstream changed -> update overwrites
+ok - update driver: local hand-edited vs old release hash -> conflict, never overwritten
+ok - update driver: --force overwrites a conflict only when the caller explicitly names it
+ok - update driver: new upstream path lands on a pre-existing untracked local file -> conflict-foreign
+ok - update driver: upstream removed the file, local untouched -> deleted on apply
+ok - update driver: upstream removed the file, local diverged -> kept + reported, nothing deleted
+ok - update driver: --dry-run mode reports the full plan but writes nothing at all
+ok - update driver: order of operations - every conflict is knowable from the plan before any write occurs
+ok - update driver: unsafe managed_paths entry aborts the whole run before any write
+ok - update driver: case-collision between managed paths is rejected fail-closed
+ok - update driver: symlinked local target is treated as foreign, never overwritten
+ok - update driver: unknown schema_version in fetched upstream manifest fails closed, zero writes
+ok - update driver: sync.js --check runs automatically after a real apply
+ok - update driver: post-apply check loads the FRESHLY WRITTEN sync.js, never a stale require() cache
+ok - update driver: a genuinely BROKEN freshly-written sync.js fails loud, never masked by the old engine
+ok - update driver: applyPlan writes the manifest at the LAST SUCCESSFUL migration version, never the unreached target, and names which migration failed
+ok - sync.js orphan detection (AC-14): --check reports a marked orphan as "orphan" (fails) and an unmarked one as "orphan-unmarked" (informational, never a failure)
+ok - sync.js orphan detection: --apply deletes an explicitly-requested marked orphan but refuses an unmarked one, unmarked file survives
+ok - sync.js orphan detection: a symlinked orphan target fails closed - treated as unmarked, never deleted
+ok - sync.js runApply (fail-open fix, decisions-log 2026-09-04): a target matching no plan entry and no orphan reports not-found, aborts the WHOLE batch (no partial write)
+ok - sync.js orphan detection: --apply on a NESTED per-skill orphan (.agents/skills/<name>/SKILL.md) removes the now-emptied skill directory too, via sync.js's OWN removeIfEmptyDir call - not just the 4.0.0 migration's
+ok - sync.js CLI: --check exits 1 when a marked orphan is present, 0 when only an unmarked one is
+ok - sync.js CLI: --apply on a not-found target aborts the whole batch (exit 1) and skips the hash-ledger recompute - manifest and sync-state.json stay byte-for-byte untouched
+ok - update.js migration runner (AC-12): pending migrations execute in ascending version order
+ok - update.js migration runner (AC-12): a migration at or below the consumer's current version is skipped, never run
+ok - update.js migration runner (AC-12): stop-on-first-failure pins reachedVersion at the last success, not the target
+ok - update.js migration runner (AC-12): no pending migrations advances reachedVersion straight to the target
+ok - update.js applyPlan (regression): a migration requiring .asd/sync.js from ctx.repoRoot sees the JUST-WRITTEN engine, never a require.cache copy poisoned before this same apply ran
+ok - 4.0.0 migration (AC-7/AC-10/AC-11): deletes marked generated views of a retired agent, including the per-skill directory once emptied; a missing target is success; a surviving non-retired sibling is untouched; re-running is a no-op
+asd-migration 4.0.0: warning: left 1 unmarked file(s) untouched (not ASD-generated, likely a consumer's own agent/skill sharing a retired name): .claude/agents/asd-ux-designer.md
+ok - 4.0.0 migration: leaves an unmarked (consumer-owned) file sharing a retired agent name untouched
+ok - 4.0.0 migration (AC-5): adds test_affected to a realistic commands.yaml (commented placeholder line present) additively when a supported test runner is detected; never touches config.yaml/sprints/custom rules
+ok - 4.0.0 migration: commands.yaml test_affected -> "undetectable" when no supported test runner is present, file left byte-for-byte untouched
+ok - 4.0.0 migration: commands.yaml test_affected -> "missing" status when the file does not exist at all
+asd-migration 4.0.0: warning: sprint "999-fixture" is mid-"impl-review" and may hold retired reviewer keys under state.json.reviews.*.verdicts (agent roster changed in ASD 4.0.0) - finish or re-run that review iteration before relying on the APPROVE latch for this sprint.
+ok - 4.0.0 migration: reports (never rewrites) an active sprint sitting in a review phase
+ok - release-manifest.json: every canon_hashes entry matches the actual file (relative to .asd/)
+ok - release-manifest.json: every upstream_hashes entry matches the actual file (relative to repo root)
+ok - every .asd/templates/*.json file parses as valid JSON
+ok - SessionStart hook: Claude gets /asd-* slash-command form
+ok - SessionStart hook: Codex gets $asd-* form, never a Claude-only slash command
+ok - SessionStart hook: a "skipped: <predicate>" verdict counts as satisfied, not "mixed"
+ok - SessionStart hook: an all-legacy-"skipped:" verdict map (no bare APPROVE anywhere) still reads "green" - the legacy carve-out treats every "skipped: <predicate>" value identically to APPROVE
+
+102/102 passed
+```
+
+Exit code: `0`
+
+**`lint` — `git diff --check`**
+
+```
+(no output)
+```
+
+Exit code: `0`
+
+**`build` — `node .asd/sync.js --check`**
+
+Same 62 items as entry 1/entry 2's record above, all `status: "current"` (`AGENTS.md` included — D-1's drift confirmed fixed), `ok: true`.
+
+Exit code: `0`
+
+**Gate verdict: GREEN.** `test` 102/102 passed (exit 0), `lint` clean (exit 0), `build` all 62 items `current` (exit 0). D-1 confirmed fixed. No new failures, no code defects surfaced — triage (step 9) has nothing to act on this entry.
 
 ## Defects
 
