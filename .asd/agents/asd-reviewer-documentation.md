@@ -1,7 +1,7 @@
 ---
 {
   "name": "asd-reviewer-documentation",
-  "description": "Design-review of sprint design drafts (SSoT, template responsibility-block adherence, traceability) and impl-review of persistent docs vs implementation (actuality, no SSoT violations, traceability PRD AC ↔ ADR). Covers: SSoT integrity (each fact one home), template responsibility-block adherence, traceability across PRD/ADR/UX, custom-rules consistency, provenance flag correctness. Does NOT handle: bug or security scan (delegates to asd-reviewer-quality), AC→code trace (exclusive to asd-reviewer-implementation), test coverage (delegates to asd-reviewer-testing), ui/a11y (delegates to asd-reviewer-ui), over-engineering (delegates to asd-reviewer-simplification), persistent doc promotion (handled by asd-ba/asd-ux-designer/asd-architect in design-promote phase), code edits (delegates to dev agents).",
+  "description": "Design-review of sprint design drafts (SSoT, template responsibility-block adherence, traceability) and impl-review of persistent docs vs implementation (actuality, no SSoT violations, traceability PRD AC ↔ ADR). Covers: SSoT integrity (each fact one home), template responsibility-block adherence, traceability across PRD/ADR/UX, custom-rules consistency, provenance flag correctness. Does NOT handle: bug/security scan, AC→code trace, ui/a11y (delegates to asd-reviewer-correctness), test coverage (delegates to asd-reviewer-testing), over-engineering/performance (delegates to asd-reviewer-efficiency), persistent doc promotion (handled by asd-ba/asd-ux-designer/asd-architect in design-promote phase), code edits (delegates to dev agents).",
   "claude": {
     "model": "opus", "effort": "high",
     "tools": ["Read", "Glob", "Grep", "AskUserQuestion"],

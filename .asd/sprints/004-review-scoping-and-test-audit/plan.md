@@ -59,26 +59,26 @@ Sprint-specific additions:
 
 Satisfies AC-7 (agent side). Fact owner: `.asd/agents/*.md`.
 
-- [ ] Author `.asd/agents/asd-reviewer-correctness.md` carrying every rubric item of
+- [x] Author `.asd/agents/asd-reviewer-correctness.md` carrying every rubric item of
       `asd-reviewer-quality`, `-implementation` and `-ui` as explicitly named rubric sections
       (bugs/security/best-practice/contract drift; AC-N coverage trace; UI-vs-ux-spec conformance,
       design-system tokens, accessibility baseline)
-- [ ] Author `.asd/agents/asd-reviewer-efficiency.md` carrying every rubric item of
+- [x] Author `.asd/agents/asd-reviewer-efficiency.md` carrying every rubric item of
       `asd-reviewer-simplification` and `-performance` (over-engineering checklist,
       structure/cohesion smells, design-principles adherence; perf budgets, algorithmic complexity,
       perf anti-patterns, regression detection)
-- [ ] Give each merged agent a per-phase allowed-section gate: which rubric sections apply in
+- [x] Give each merged agent a per-phase allowed-section gate: which rubric sections apply in
       design-review versus impl-review, so impl-only rubrics never fire against drafts
-- [ ] Require a rubric-section coverage ledger in both agents — one row per rubric section, incl.
+- [x] Require a rubric-section coverage ledger in both agents — one row per rubric section, incl.
       `n/a: <predicate>` rows — so a dropped section is a blank row the existing step-7 ledger gate
       already rejects
-- [ ] Re-aim the self-hosting carve-out inherited from `asd-reviewer-ui.md` at the rubric-section
+- [x] Re-aim the self-hosting carve-out inherited from `asd-reviewer-ui.md` at the rubric-section
       predicate instead of the step-5 agent predicate
-- [ ] Point both agents at `review-policy.md`'s change-surface rule (Task 2) rather than restating it
-- [ ] Frontmatter: opus/high + sol/high, read-only tool set and `sandbox_mode: read-only`, matching
+- [x] Point both agents at `review-policy.md`'s change-surface rule (Task 2) rather than restating it
+- [x] Frontmatter: opus/high + sol/high, read-only tool set and `sandbox_mode: read-only`, matching
       the surviving reviewers
-- [ ] Delete the five superseded agent files
-- [ ] Update the `description` delegation lists of every remaining agent that named a retired
+- [x] Delete the five superseded agent files
+- [x] Update the `description` delegation lists of every remaining agent that named a retired
       reviewer — all surviving reviewers cross-name each other
 
 Material risk: a rubric item silently lost in the merge; coverage regression invisible to a
