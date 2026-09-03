@@ -18,6 +18,10 @@ ASD runs from one canonical source (`.asd/`) generated into two host views: Clau
 
 Codex has no project-level equivalent of `.claude/skills` — a separate `.agents/skills/` tree is generated because Codex only reads skills from `.agents/skills` (see `plans/multi-provider-support.md`, "Закрытые вопросы" #1). One skill tree cannot serve both hosts.
 
+### Orphan detection
+
+`buildSyncPlan` is source-driven: a deleted or renamed canonical agent/skill simply stops appearing in the plan, so `.asd/sync.js` also diffs the actual contents of `.claude/agents/`, `.claude/skills/`, `.codex/agents/`, `.agents/skills/` against what the current plan expects there. A file present in one of those trees with no matching plan entry is an orphan. `--check` reports every orphan and exits non-zero. `--apply` deletes an orphan only when it carries the ASD ownership marker; an unmarked file is reported (`orphan-unmarked`) and never touched — it's a consumer's own agent or skill, indistinguishable from an orphan by path alone.
+
 ## Semantic operations -> host convention
 
 Canonical agent/skill/workflow bodies never name a host tool directly. They use the semantic verbs below; each host's dispatcher resolves the verb to its own tool at runtime.

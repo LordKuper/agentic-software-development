@@ -292,13 +292,13 @@ Material risk: leaving both thresholds live gives agents two conflicting rules a
 Satisfies AC-14. Today `sync.js` does neither detect nor delete: `buildSyncPlan` is source-driven, so
 a deleted canonical agent produces no plan item and both generated views survive silently.
 
-- [ ] Implement detect + delete, marker-gated: enumerate the generated trees, compare against canon,
+- [x] Implement detect + delete, marker-gated: enumerate the generated trees, compare against canon,
       and treat a generated file with no surviving canonical source as an orphan
-- [ ] `--check` reports every orphan and exits non-zero
-- [ ] `--apply` deletes an orphan ONLY when the file carries the ASD ownership marker
-- [ ] A file in a generated tree without the marker is reported and never touched — it is a
+- [x] `--check` reports every orphan and exits non-zero
+- [x] `--apply` deletes an orphan ONLY when the file carries the ASD ownership marker
+- [x] A file in a generated tree without the marker is reported and never touched — it is a
       consumer's own agent or skill, not an orphan
-- [ ] Document the behaviour where `sync.js` behaviour is described (`providers.md`, `AGENTS.md`,
+- [x] Document the behaviour where `sync.js` behaviour is described (`providers.md`, `AGENTS.md`,
       README if it states the contract)
 
 Material risk: deletion logic that walks generated trees can remove a consumer's custom

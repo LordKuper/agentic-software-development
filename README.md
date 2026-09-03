@@ -99,7 +99,7 @@ After a successful update, it automatically runs `node .asd/sync.js --check` —
 
 > **After updating, reconcile `.claude/settings.json` and `.codex/hooks.json` yourself.** They hold your permission allowlist and hook registration; the updater and sync only ever merge in their own hook entries, never rewrite the rest of the file. If an update added a hook or skill, you may need to register it there manually.
 
-This repo (the ASD framework source itself) runs `node .asd/sync.js --check` in CI on every push/PR to `main` (`.github/workflows/sync-check.yml`), failing the build if any generated provider-view file drifts from canon.
+This repo (the ASD framework source itself) runs `node .asd/sync.js --check` in CI on every push/PR to `main` (`.github/workflows/sync-check.yml`), failing the build if any generated provider-view file drifts from canon — including an **orphan**: a file under `.claude/agents/`, `.claude/skills/`, `.codex/agents/`, or `.agents/skills/` whose canonical source was deleted or renamed. `--check` reports every orphan and exits non-zero; `--apply` deletes an orphan only when it still carries the ASD ownership marker — an unmarked file in those trees is always a consumer's own agent/skill, reported but never touched.
 
 ---
 

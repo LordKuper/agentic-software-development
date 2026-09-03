@@ -959,6 +959,77 @@ function recomputeAndWriteHashLedgers(repoRoot) {
 }
 
 // ---------------------------------------------------------------------------
+// Orphan detection - generated views whose canonical source no longer exists.
+// buildSyncPlan is source-driven (walks .asd/agents, .asd/skills): a deleted
+// or renamed canonical file simply stops appearing in the plan, so the
+// generated file(s) it used to produce are never visited by check/apply and
+// survive silently (audit.md finding, AC-14). This walks the generated trees
+// themselves and diffs their actual contents against what the plan currently
+// expects there, to catch that class of drift.
+// ---------------------------------------------------------------------------
+
+// The four generated trees plan.md Task 12 names explicitly. Hook targets
+// (.claude/hooks, .codex/hooks) are out of scope for this task.
+const ORPHAN_TREES = [
+  ['.claude', 'agents'],
+  ['.claude', 'skills'],
+  ['.codex', 'agents'],
+  ['.agents', 'skills'],
+];
+
+// Every target path buildSyncPlan currently expects to write - managed-block
+// and json-merge targets are single fixed files outside the four generated
+// trees, so only full-file items matter here.
+function expectedGeneratedTargets(plan) {
+  const set = new Set();
+  for (const item of plan) {
+    if (item.class !== 'full-file') continue;
+    set.add(item.targetPath);
+  }
+  return set;
+}
+
+// Fail-closed marker read: a symlink, an unreadable file, or anything that
+// throws is treated as "no marker" - the safety property this exists for is
+// "a marker-read failure means do not delete", never "assume ownership and
+// delete anyway".
+function hasOwnershipMarker(absPath) {
+  try {
+    if (isSymlink(absPath)) return false;
+    const text = readNormalized(absPath);
+    const { parsed } = splitMarkerAndBody(text);
+    return !!parsed;
+  } catch (_) {
+    return false;
+  }
+}
+
+// Returns [{ target, marked }] for every file that sits inside one of the
+// four generated trees but has no matching entry in the current sync plan.
+// `marked` = the file carries the ASD ownership marker (apply may delete it);
+// unmarked = indistinguishable from a consumer's own hand-authored agent or
+// skill living in the same directory - reported, never touched.
+function findOrphans(repoRoot, plan) {
+  const expected = expectedGeneratedTargets(plan);
+  const orphans = [];
+  for (const treeParts of ORPHAN_TREES) {
+    const absDir = path.join(repoRoot, ...treeParts);
+    if (!fs.existsSync(absDir)) continue;
+    const relFiles = [];
+    walkDir(absDir, '', relFiles);
+    for (const rel of relFiles) {
+      const absPath = path.join(absDir, rel);
+      if (expected.has(absPath)) continue;
+      orphans.push({
+        target: path.relative(repoRoot, absPath).replace(/\\/g, '/'),
+        marked: hasOwnershipMarker(absPath),
+      });
+    }
+  }
+  return orphans;
+}
+
+// ---------------------------------------------------------------------------
 // CLI (Stage 0: engine only - real canon trees land in Stage 1, so an empty
 // canon directory is a normal, green outcome here, not an error).
 // ---------------------------------------------------------------------------
@@ -1228,6 +1299,13 @@ function runCheck(repoRoot) {
     const { status } = statusForPlanItem(item, repoRoot, manifest, syncState);
     report.push({ target: path.relative(repoRoot, item.targetPath).replace(/\\/g, '/'), status });
   }
+  // 'orphan' = marked, no surviving canon source - a real defect, fails the
+  // check. 'orphan-unmarked' = same absence of a plan match but no ownership
+  // proof, so it's reported for visibility only, never counted as a failure -
+  // per plan.md Task 12, that's a consumer's own file, not an orphan.
+  for (const orphan of findOrphans(repoRoot, plan)) {
+    report.push({ target: orphan.target, status: orphan.marked ? 'orphan' : 'orphan-unmarked' });
+  }
   return report;
 }
 
@@ -1257,6 +1335,11 @@ function runApply(repoRoot, requestedFiles, options) {
     planByRel.set(rel, item);
   }
   const forceSet = new Set((options && options.force) || []);
+  // Orphans aren't in the plan by construction (buildSyncPlan is source-
+  // driven) - computed once up front from the generated trees themselves, so
+  // a requested file that resolves to no plan item can still be recognized
+  // as an orphan below instead of falling through to 'unknown'.
+  const orphanByRel = new Map(findOrphans(repoRoot, plan).map((o) => [o.target, o]));
 
   // Pass 1: resolve + render/status every request. Throws here (invalid
   // canon) propagates before any write in pass 2 runs.
@@ -1266,7 +1349,7 @@ function runApply(repoRoot, requestedFiles, options) {
     const rel = path.relative(repoRoot, reqAbs).replace(/\\/g, '/');
     const item = planByRel.get(rel);
     if (!item) {
-      resolved.push({ rel, item: null });
+      resolved.push({ rel, item: null, orphan: orphanByRel.get(rel) || null });
       continue;
     }
     if (item.class === 'full-file') {
@@ -1301,7 +1384,19 @@ function runApply(repoRoot, requestedFiles, options) {
   let stateChanged = false;
   for (const r of resolved) {
     if (!r.item) {
-      results.push({ target: r.rel, status: 'unknown', applied: false });
+      // Marker gate: an orphan is deleted ONLY when it carries the ASD
+      // ownership marker. Unmarked = a consumer's own agent/skill sitting in
+      // the same generated tree, indistinguishable from an orphan by path
+      // alone - reported, never touched (plan.md Task 12's whole safety
+      // property).
+      if (r.orphan && r.orphan.marked) {
+        fs.unlinkSync(path.join(repoRoot, r.rel));
+        results.push({ target: r.rel, status: 'orphan', applied: true });
+      } else if (r.orphan) {
+        results.push({ target: r.rel, status: 'orphan-unmarked', applied: false });
+      } else {
+        results.push({ target: r.rel, status: 'unknown', applied: false });
+      }
       continue;
     }
     if (r.selfSourced) {
@@ -1338,8 +1433,13 @@ function main(argv) {
   const args = argv.slice(2);
   if (args[0] === '--check') {
     const report = runCheck(repoRoot);
-    process.stdout.write(JSON.stringify({ ok: true, items: report }, null, 2) + '\n');
-    return 0;
+    // A marked orphan (generated view whose canonical source no longer
+    // exists) fails the check - it was silent before this task (AC-14).
+    // 'orphan-unmarked' entries stay informational only: no ownership proof,
+    // so they're a consumer's own file, not a defect to fail on.
+    const hasOrphans = report.some((r) => r.status === 'orphan');
+    process.stdout.write(JSON.stringify({ ok: !hasOrphans, items: report }, null, 2) + '\n');
+    return hasOrphans ? 1 : 0;
   }
   if (args[0] === '--apply') {
     // `--force` is a trailing bare flag: when present, every listed file is
@@ -1428,4 +1528,8 @@ module.exports = {
   claudeSessionStartOwnedEntries,
   codexSessionStartOwnedEntries,
   statusSelfSourcedManagedBlock,
+  ORPHAN_TREES,
+  expectedGeneratedTargets,
+  hasOwnershipMarker,
+  findOrphans,
 };
