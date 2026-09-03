@@ -108,9 +108,9 @@ Reviewer:
 
 **Self-hosting framework-templates carve-out reduced rubric**: when reviewing under the impl-review self-hosting carve-out above, **Token comment** (§4) and **Lint exclusions** (§11) are n/a — no DESIGN.md/designmd-lint pipeline exists for framework templates; note both as n/a in the rule-coverage ledger, not as findings. All other rubric items apply, substituting WCAG AA thresholds for the missing accessibility.html and `design-system.md`/`ux-principles.md` for the missing DESIGN.md/ux-spec — **except Token usage (§6)**: for `t_html-shell.html`, its whole `<style>` block is this template's own primitive/definition layer — §6 applies there only to COLOR values outside the `:root`/`prefers-color-scheme` token blocks (check that consuming rules reference `var(--*)` for color; never flag the token-block definitions themselves); raw px/rem/font-family declarations throughout the block are NOT §6 violations — this repo has no spacing/typography token layer for them to violate. Fragment templates (`t_adr.html` etc., which have no `<style>` of their own) stay fully subject to §6 as normal, no carve-out.
 
-## Section coverage ledger (additional to `review-policy.md`'s file/rule ledger)
+## Section coverage ledger
 
-One row per named rubric section above, every dispatch: `reviewed` (findings/pass recorded under file+rule coverage) or `n/a: <reason>` — reason is one of: `outside phase gate` (section not on this phase's allowed-section list), the diff-derived UI-surface predicate name (impl-review, no UI surface in scope), or a target-artefact-missing note. No section omitted or left blank — a dropped section is a blank row, which the existing step-7 coverage-ledger gate (`review-policy.md`) already rejects.
+Contract, format, and gate: `review-policy.md` "Coverage ledger" part 3 (SSoT, not restated here). This reviewer's `n/a` reasons: `outside phase gate` (section not on this phase's allowed-section list), the diff-derived UI-surface predicate name (impl-review, no UI surface in scope), or a target-artefact-missing note.
 
 ## Do's
 

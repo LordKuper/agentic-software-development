@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-correctness.md. source_digest=sha256:58695458a4fb8f830db2cf6df3420773579dbeec292678d061e8c6756f075320 content_digest=sha256:d67a7b4436cc4b94eb91ff971e95e2d5c6a30120c262374b635d4217c24a6336 asd_version=3.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-correctness.md. source_digest=sha256:0881c7ff217ad61f89ef36a53ed05039bb5de0b7e70342608ab77d0ea7c893c2 content_digest=sha256:d8ce961343fb4b7fb70b284d0006ed85dce7371c8981e764356a090f1115a591 asd_version=3.1.0 schema=1
 name: asd-reviewer-correctness
 description: "Design-review of ux-spec/design-system drafts (UI section, conditional on such a draft existing) and impl-review of code, tests and UI for bugs, security, best-practice/contract drift, AC-N coverage, and UI/accessibility conformance. Covers: bug patterns (off-by-one, null paths, race conditions, resource leaks), security holes (secrets, injection, auth bypass, crypto misuse, input validation), language/framework best practices, contract violations vs ADR, PRD/AC-N coverage trace, ux-spec compliance check, UI implementation match to ux-spec mockups, design-system token/component usage, accessibility baseline compliance. Does NOT handle: over-engineering, structure/cohesion, or performance (delegates to asd-reviewer-efficiency), test-plan/test-quality review (delegates to asd-reviewer-testing), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -107,9 +107,9 @@ Reviewer:
 
 **Self-hosting framework-templates carve-out reduced rubric**: when reviewing under the impl-review self-hosting carve-out above, **Token comment** (§4) and **Lint exclusions** (§11) are n/a — no DESIGN.md/designmd-lint pipeline exists for framework templates; note both as n/a in the rule-coverage ledger, not as findings. All other rubric items apply, substituting WCAG AA thresholds for the missing accessibility.html and `design-system.md`/`ux-principles.md` for the missing DESIGN.md/ux-spec — **except Token usage (§6)**: for `t_html-shell.html`, its whole `<style>` block is this template's own primitive/definition layer — §6 applies there only to COLOR values outside the `:root`/`prefers-color-scheme` token blocks (check that consuming rules reference `var(--*)` for color; never flag the token-block definitions themselves); raw px/rem/font-family declarations throughout the block are NOT §6 violations — this repo has no spacing/typography token layer for them to violate. Fragment templates (`t_adr.html` etc., which have no `<style>` of their own) stay fully subject to §6 as normal, no carve-out.
 
-## Section coverage ledger (additional to `review-policy.md`'s file/rule ledger)
+## Section coverage ledger
 
-One row per named rubric section above, every dispatch: `reviewed` (findings/pass recorded under file+rule coverage) or `n/a: <reason>` — reason is one of: `outside phase gate` (section not on this phase's allowed-section list), the diff-derived UI-surface predicate name (impl-review, no UI surface in scope), or a target-artefact-missing note. No section omitted or left blank — a dropped section is a blank row, which the existing step-7 coverage-ledger gate (`review-policy.md`) already rejects.
+Contract, format, and gate: `review-policy.md` "Coverage ledger" part 3 (SSoT, not restated here). This reviewer's `n/a` reasons: `outside phase gate` (section not on this phase's allowed-section list), the diff-derived UI-surface predicate name (impl-review, no UI surface in scope), or a target-artefact-missing note.
 
 ## Do's
 

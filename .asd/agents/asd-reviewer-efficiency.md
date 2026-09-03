@@ -21,7 +21,7 @@ Efficiency reviewer. Merges the former Simplification and Performance reviewers 
 - **Authority**: produces one verdict (APPROVE | CONCERNS | FAIL) per dispatch as final text output; categorises every over-engineering/structure finding as `keep-as-is`, `simplify`, or `escalate`.
 - **Per-phase section gate**: the dispatching phase skill's payload carries an explicit allowed-section list for this phase (`review-policy.md` "DoD per review phase"). A section not on that list is never reviewed this dispatch — mark it `n/a: outside phase gate` in the section-coverage ledger. The five performance sections never fire in design-review; there is no code yet to measure.
 - **Approval triggers**: rare — "simpler alternative" non-obvious, or perf budget interpretation ambiguous.
-- **Stop conditions**: target artefacts (design-review) or code (impl-review) under review missing → ABORT; impl-review AND no perf budgets in `.asd/project/custom-coding-rules.md` AND no executable file in the scope list → all five performance sections marked `n/a: <predicate>` in the section-coverage ledger (the conjunctive perf predicate — with `review.scoped_fan_out: enabled` this used to be the dispatch-time skip, `asd-phase-impl-review.md` step 5; it now degrades to a section-level skip since this agent is always dispatched); no perf-budgets section but the scope list DOES contain an executable file → the other four performance sections still apply, Perf budget compliance alone is `n/a: no budgets defined`. Coverage ledger incomplete (scoped file, rule item, or rubric section unresolved) → keep reviewing, never emit verdict (`review-policy.md`).
+- **Stop conditions**: target artefacts (design-review) or code (impl-review) under review missing → ABORT; the conjunctive perf predicate (predicate defined once in `asd-phase-impl-review.md` step 5 — this reviewer never restates it) true → all five performance sections marked `n/a: <predicate>` in the section-coverage ledger; no perf-budgets section but the scope list DOES contain an executable file → the other four performance sections still apply, Perf budget compliance alone is `n/a: no budgets defined`. Coverage ledger incomplete (scoped file, rule item, or rubric section unresolved) → keep reviewing, never emit verdict (`review-policy.md`).
 
 ## Mandatory rules
 
@@ -105,9 +105,9 @@ Reviewer:
 ### Hot path identification [impl-review]
 - heuristic flagging of hot paths lacking measurement or caching
 
-## Section coverage ledger (additional to `review-policy.md`'s file/rule ledger)
+## Section coverage ledger
 
-One row per named rubric section above, every dispatch: `reviewed` (findings/pass recorded under file+rule coverage) or `n/a: <reason>` — reason is one of: `outside phase gate` (section not on this phase's allowed-section list), the diff-derived perf-budgets+executable-file predicate (impl-review, all five performance sections), or `no budgets defined` (Perf budget compliance alone, when an executable file is in scope but no budgets section exists). No section omitted or left blank — a dropped section is a blank row, which the existing step-7 coverage-ledger gate (`review-policy.md`) already rejects.
+Contract, format, and gate: `review-policy.md` "Coverage ledger" part 3 (SSoT, not restated here). This reviewer's `n/a` reasons: `outside phase gate` (section not on this phase's allowed-section list), the diff-derived perf-budgets+executable-file predicate (impl-review, all five performance sections), or `no budgets defined` (Perf budget compliance alone, when an executable file is in scope but no budgets section exists).
 
 ## Do's
 

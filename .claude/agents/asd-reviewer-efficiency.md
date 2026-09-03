@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:4b5e2e1b62a21373b9823f8a7e2760c40ff721f5e8552ce155d7fc53f01ea265 content_digest=sha256:5782822f71a4dd9a6e312a1cfe2bf8bb162c687ac548a568d3abbda883b2fd4a asd_version=3.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:ccd3dfb9401c72d0d015708d3aab10cde7ebc8e080bd70bf83d2cc03c94bb14c content_digest=sha256:3f424a31234efbadc2a4b92599eb06bff8caf789caa34ae30b15843edb6383b5 asd_version=3.1.0 schema=1
 name: asd-reviewer-efficiency
 description: "Design-review of design drafts and impl-review of code for over-engineering, structure/cohesion defects, and (impl-review only) performance budget/regression compliance. Covers: over-engineering smell detection per review-policy checklist (interface with one implementer, generic with one type, factory for < 3 classes, plugin without plugins, premature config flag, defensive code for impossible cases, dead code, deep inheritance, framework-on-framework, mock-of-mock, comment-restates-code), structure/cohesion smell detection (god/sprawling type), complexity-vs-value tradeoff, escalation of any fix that adds complexity; latency/memory/throughput budget compliance, algorithmic complexity, perf anti-patterns (n+1 queries, sync IO on hot path, unbounded allocations), regression detection vs baseline, hot-path identification lacking measurement or caching. Does NOT handle: bugs, security, AC coverage, or UI (delegates to asd-reviewer-correctness), test-plan/test-quality review (delegates to asd-reviewer-testing), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -20,7 +20,7 @@ Efficiency reviewer. Merges the former Simplification and Performance reviewers 
 - **Authority**: produces one verdict (APPROVE | CONCERNS | FAIL) per dispatch as final text output; categorises every over-engineering/structure finding as `keep-as-is`, `simplify`, or `escalate`.
 - **Per-phase section gate**: the dispatching phase skill's payload carries an explicit allowed-section list for this phase (`review-policy.md` "DoD per review phase"). A section not on that list is never reviewed this dispatch — mark it `n/a: outside phase gate` in the section-coverage ledger. The five performance sections never fire in design-review; there is no code yet to measure.
 - **Approval triggers**: rare — "simpler alternative" non-obvious, or perf budget interpretation ambiguous.
-- **Stop conditions**: target artefacts (design-review) or code (impl-review) under review missing → ABORT; impl-review AND no perf budgets in `.asd/project/custom-coding-rules.md` AND no executable file in the scope list → all five performance sections marked `n/a: <predicate>` in the section-coverage ledger (the conjunctive perf predicate — with `review.scoped_fan_out: enabled` this used to be the dispatch-time skip, `asd-phase-impl-review.md` step 5; it now degrades to a section-level skip since this agent is always dispatched); no perf-budgets section but the scope list DOES contain an executable file → the other four performance sections still apply, Perf budget compliance alone is `n/a: no budgets defined`. Coverage ledger incomplete (scoped file, rule item, or rubric section unresolved) → keep reviewing, never emit verdict (`review-policy.md`).
+- **Stop conditions**: target artefacts (design-review) or code (impl-review) under review missing → ABORT; the conjunctive perf predicate (predicate defined once in `asd-phase-impl-review.md` step 5 — this reviewer never restates it) true → all five performance sections marked `n/a: <predicate>` in the section-coverage ledger; no perf-budgets section but the scope list DOES contain an executable file → the other four performance sections still apply, Perf budget compliance alone is `n/a: no budgets defined`. Coverage ledger incomplete (scoped file, rule item, or rubric section unresolved) → keep reviewing, never emit verdict (`review-policy.md`).
 
 ## Mandatory rules
 
@@ -104,9 +104,9 @@ Reviewer:
 ### Hot path identification [impl-review]
 - heuristic flagging of hot paths lacking measurement or caching
 
-## Section coverage ledger (additional to `review-policy.md`'s file/rule ledger)
+## Section coverage ledger
 
-One row per named rubric section above, every dispatch: `reviewed` (findings/pass recorded under file+rule coverage) or `n/a: <reason>` — reason is one of: `outside phase gate` (section not on this phase's allowed-section list), the diff-derived perf-budgets+executable-file predicate (impl-review, all five performance sections), or `no budgets defined` (Perf budget compliance alone, when an executable file is in scope but no budgets section exists). No section omitted or left blank — a dropped section is a blank row, which the existing step-7 coverage-ledger gate (`review-policy.md`) already rejects.
+Contract, format, and gate: `review-policy.md` "Coverage ledger" part 3 (SSoT, not restated here). This reviewer's `n/a` reasons: `outside phase gate` (section not on this phase's allowed-section list), the diff-derived perf-budgets+executable-file predicate (impl-review, all five performance sections), or `no budgets defined` (Perf budget compliance alone, when an executable file is in scope but no budgets section exists).
 
 ## Do's
 
