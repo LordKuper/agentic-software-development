@@ -85,3 +85,13 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: [`plan.md`](plan.md), [`state.json`](state.json)
 
 - 2026-09-03 — design/design-review/design-promote skipped (no documents enabled)
+
+## 2026-09-04 — Impl assessment approved
+
+- **Decision**: User approved the impl assessment (initial mode). All 15 `plan.md` tasks COMPLETED, every checkbox ticked; 26 commits on the sprint branch (117 files, +3274/−2618). Completion gate passed: `node .asd/sync.js --check` exit 0 (64/64 `current`), `git diff --check` exit 0. No stubs introduced. Sprint routes to `impl-test`.
+- **Rationale**: Tasks by AC — T1/T2 reviewer merge + change-surface rule (AC-7, AC-3); T3 `asd-dev` (AC-10); T4 renames to `asd-tester`/`asd-ux` (AC-11); T5 tiers (AC-6); T6 APPROVE latch (AC-2); T7/T8 two-tier running + selector field (AC-5); T9 authoring bar + §17 (AC-1, AC-4); T10 `code-style.md` §7 (AC-8); T11 `Context hygiene` (AC-9); T12 `sync.js` orphan handling and T15 sweep (AC-14); T13/T14 migrations (AC-12, AC-13). Agent roster 16 → 12.
+- **Carried forward to impl-test** (never impl's to resolve):
+  - `node tests/run.js` is 73/83. Two roster tests fail by design of this change — the read-only-agents test still expects 9 agents, and the README/AGENTS count test has no word→number entry for "Twelve". Eight update-driver tests fail because the Task 13/14 migration mechanism outpaced them. All ten are impl-test's.
+  - An unplanned `sync.js --apply` fail-open fix landed during impl: a target matching no plan entry used to report `applied: true`; it now reports `not-found`, `ok: false`, exit 1, and the whole batch aborts. Needs test coverage.
+  - `.claude/agent-memory/` still holds directories for deleted agents (`asd-reviewer-performance`, `-quality`, `-implementation`, `-simplification`, `-ui`, `asd-backend-dev`, `asd-test-engineer`, `asd-ux-designer`). Outside the dev's write scope and outside AC-15's grep surface. User was asked at this gate and did not answer — unresolved; raise again at the pr gate if nothing settles it sooner.
+- **Affected docs**: [`plan.md`](plan.md), [`state.json`](state.json)
