@@ -13,4 +13,5 @@ Persists across sprint archival.
 
 | Sprint | File:Line | Reason | Owner |
 |---|---|---|---|
-| — | — | no open stubs | — |
+| 004-review-scoping-and-test-audit | `.claude/agent-memory/asd-reviewer-performance/` | (accepted-debt) leftover agent-memory dir for a reviewer retired this sprint (merged into asd-reviewer-efficiency); agent-memory is per-agent private state outside `.asd/` canon, outside the dev's write scope, and outside AC-15's grep surface — no automated migration path exists | asd-dev |
+| 004-review-scoping-and-test-audit | `.claude/agent-memory/asd-pm/feedback_flag-gate-semantics-before-applying.md` | (accepted-debt) memory entry referencing the retired `scoped_fan_out` agent-level dispatch skip semantics; same out-of-scope reasoning as the row above | asd-dev |
