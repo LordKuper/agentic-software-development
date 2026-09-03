@@ -59,3 +59,18 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: (1) AC-12 sequencing — migrations always run AFTER the managed-path replacement; no `pre`/`post` mode knob is introduced. (2) AC-13 applicability — the cleanup migration is the mechanism for CONSUMER projects only; this self-hosted repo does its equivalent cleanup by editing canon and running `.asd/sync.js --apply`, covered by AC-14. (3) AC-10 — `asd-dev` needs no extra UI clause; it inherits `asd-frontend-dev`'s existing conditional wording about consuming DESIGN.md tokens.
 - **Rationale**: (1) After replacement the files are current, and this release's migration exists precisely to remove what has just fallen out of `managed_paths`; a future migration needing pre-replacement state can add a mode knob when such a case actually exists. (2) Keeps one cleanup mechanism per audience and avoids a second, script-driven path into this repo's own canon. (3) The inherited wording is already conditional, so no new rule is needed.
 - **Affected docs**: [`sprint.md`](sprint.md) (accepted and committed — recorded here rather than reopened)
+
+## 2026-09-03 — Audit approved
+
+- **Decision**: User accepted [`audit.md`](audit.md) (BA + Architect sections merged by the audit workflow). Audit phase closed; sprint advances toward design, which is a collapsed no-op for this sprint (only `documents.audit` enabled).
+- **Rationale**: The merged findings cover the full AC-1..AC-15 touch surface and surface several constraints that change how the work must be planned; they are carried forward below rather than re-derived at plan time.
+- **Carried forward to plan**:
+  - `sync.js` has no orphan detection — a deleted or renamed canonical agent leaves BOTH generated views behind silently. AC-14's expectation therefore resolves to new work in `sync.js` or to explicit manual deletion; the plan must choose.
+  - The consumer's installed version already lives in `release-manifest.json.asd_version`, which settles AC-12's open storage decision — but `writeUpdatedManifest` writes the whole manifest atomically, conflicting with AC-12's requirement to record the version after each individual migration. Reconciling the two is plan work.
+  - `.asd/migrations` must be added to `managed_paths`, otherwise the mechanism cannot bootstrap into a consumer at all.
+  - The migration runner must be loaded from the freshly written tree, the way `loadFreshSync` already does for `sync.js`.
+  - No latch storage and no dispatch filter exist today — AC-2 is net-new state plus net-new dispatch logic, not a tweak.
+  - `impl-review` is read-only today, and the pr gate's justification depends on that; AC-5's end-of-phase full-suite run via `asd-tester` must not break that property.
+  - Three roster tests in `tests/run.js` will fail on the agent churn (AC-7, AC-10, AC-11) and must be updated in the same change.
+  - `core.md`'s existing 50%-compaction rule must be ABSORBED by the new `Context hygiene` section (AC-9), not left sitting beside it as a second, conflicting threshold.
+- **Affected docs**: [`audit.md`](audit.md), [`state.json`](state.json)
