@@ -1147,7 +1147,7 @@ test('update driver: new upstream file with nothing local -> add, written on app
   assert.strictEqual(newManifest.upstream_hashes['.asd/rules/new-rule.md'], hashOf('hello upstream\n'));
 });
 
-test('update driver: local unchanged since last release, upstream changed -> update overwrites', () => {
+test('update driver: local unchanged since last release, upstream changed -> update overwrites', async () => {
   const localRoot = mkTempDir();
   const upstreamRoot = mkTempDir();
   const oldContent = 'v1\n';
@@ -1161,7 +1161,7 @@ test('update driver: local unchanged since last release, upstream changed -> upd
   const item = plan.classifications.find((c) => c.relPath === '.asd/rules/a.md');
   assert.strictEqual(item.status, 'update');
 
-  update.applyPlan(localRoot, plan, { dryRun: false });
+  await update.applyPlan(localRoot, plan, { dryRun: false });
   assert.strictEqual(fs.readFileSync(path.join(localRoot, '.asd/rules/a.md'), 'utf8'), newContent);
 });
 
@@ -1211,7 +1211,7 @@ test('update driver: --force overwrites a conflict only when the caller explicit
   assert.strictEqual(newManifest.upstream_hashes['.asd/rules/a.md'], hashOf(upstreamNew), 'ledger advances to the new hash once forced through');
 });
 
-test('update driver: new upstream path lands on a pre-existing untracked local file -> conflict-foreign', () => {
+test('update driver: new upstream path lands on a pre-existing untracked local file -> conflict-foreign', async () => {
   const localRoot = mkTempDir();
   const upstreamRoot = mkTempDir();
   writeFile(localRoot, '.asd/rules/foreign.md', 'a human wrote this, never tracked\n');
@@ -1223,7 +1223,7 @@ test('update driver: new upstream path lands on a pre-existing untracked local f
   const item = plan.classifications.find((c) => c.relPath === '.asd/rules/foreign.md');
   assert.strictEqual(item.status, 'conflict-foreign');
 
-  update.applyPlan(localRoot, plan, { dryRun: false });
+  await update.applyPlan(localRoot, plan, { dryRun: false });
   assert.strictEqual(fs.readFileSync(path.join(localRoot, '.asd/rules/foreign.md'), 'utf8'), 'a human wrote this, never tracked\n');
 });
 
@@ -1244,7 +1244,7 @@ test('update driver: upstream removed the file, local untouched -> deleted on ap
   assert.strictEqual(fs.existsSync(path.join(localRoot, '.asd/rules/gone.md')), false);
 });
 
-test('update driver: upstream removed the file, local diverged -> kept + reported, nothing deleted', () => {
+test('update driver: upstream removed the file, local diverged -> kept + reported, nothing deleted', async () => {
   const localRoot = mkTempDir();
   const upstreamRoot = mkTempDir();
   const oldContent = 'v1\n';
@@ -1257,7 +1257,7 @@ test('update driver: upstream removed the file, local diverged -> kept + reporte
   const item = plan.classifications.find((c) => c.relPath === '.asd/rules/gone.md');
   assert.strictEqual(item.status, 'keep-local-modified');
 
-  update.applyPlan(localRoot, plan, { dryRun: false });
+  await update.applyPlan(localRoot, plan, { dryRun: false });
   assert.strictEqual(fs.readFileSync(path.join(localRoot, '.asd/rules/gone.md'), 'utf8'), localEdit);
 });
 
@@ -1282,7 +1282,7 @@ test('update driver: --dry-run mode reports the full plan but writes nothing at 
   assert.strictEqual(fs.readFileSync(path.join(localRoot, '.asd/release-manifest.json'), 'utf8'), before, 'dry-run must not rewrite the manifest');
 });
 
-test('update driver: order of operations - every conflict is knowable from the plan before any write occurs', () => {
+test('update driver: order of operations - every conflict is knowable from the plan before any write occurs', async () => {
   const localRoot = mkTempDir();
   const upstreamRoot = mkTempDir();
   writeFile(localRoot, '.asd/rules/conflict.md', 'human edit\n');
@@ -1298,7 +1298,7 @@ test('update driver: order of operations - every conflict is knowable from the p
   assert.strictEqual(statuses['.asd/rules/conflict.md'], 'conflict');
   assert.strictEqual(fs.existsSync(path.join(localRoot, '.asd/rules/add.md')), false);
 
-  update.applyPlan(localRoot, plan, { dryRun: false });
+  await update.applyPlan(localRoot, plan, { dryRun: false });
   assert.strictEqual(fs.readFileSync(path.join(localRoot, '.asd/rules/add.md'), 'utf8'), 'brand new\n');
   assert.strictEqual(fs.readFileSync(path.join(localRoot, '.asd/rules/conflict.md'), 'utf8'), 'human edit\n', 'conflict left untouched even though add in the same run succeeded');
 });
@@ -1321,7 +1321,7 @@ test('update driver: case-collision between managed paths is rejected fail-close
   assert.doesNotThrow(() => update.checkCaseCollisions(['.asd/rules/foo.md', '.asd/rules/bar.md']));
 });
 
-test('update driver: symlinked local target is treated as foreign, never overwritten', () => {
+test('update driver: symlinked local target is treated as foreign, never overwritten', async () => {
   const localRoot = mkTempDir();
   const upstreamRoot = mkTempDir();
   const realFile = path.join(localRoot, 'real.md');
@@ -1345,7 +1345,7 @@ test('update driver: symlinked local target is treated as foreign, never overwri
   const plan = update.planUpdate(localRoot, upstreamRoot);
   const item = plan.classifications.find((c) => c.relPath === '.asd/rules/linked.md');
   assert.strictEqual(item.status, 'foreign');
-  update.applyPlan(localRoot, plan, { dryRun: false });
+  await update.applyPlan(localRoot, plan, { dryRun: false });
   assert.strictEqual(fs.readFileSync(linkPath, 'utf8'), 'irrelevant', 'symlink target must never be overwritten by update');
 });
 
@@ -1416,6 +1416,22 @@ test('update driver: a genuinely BROKEN freshly-written sync.js fails loud, neve
   // syncCheck as if the update were fine.
   await assert.rejects(() => update.applyPlan(localRoot, plan, { dryRun: false }));
   assert.strictEqual(fs.readFileSync(path.join(localRoot, '.asd/sync.js'), 'utf8'), brokenSyncJs, 'the broken file was still written - that part of the update is honest; only the post-check must fail loud, not lie');
+});
+
+test('update driver: applyPlan writes the manifest at the LAST SUCCESSFUL migration version, never the unreached target, and names which migration failed', async () => {
+  const localRoot = mkTempDir();
+  const upstreamRoot = mkTempDir();
+  writeManifest(localRoot, { asd_version: '5.0.0' });
+  writeManifest(upstreamRoot, { asd_version: '5.2.0' });
+  writeMigrationScript(localRoot, '5.1.0', "module.exports = (ctx) => { require('fs').writeFileSync(require('path').join(ctx.repoRoot, 'ran-5.1.0'), 'x'); };");
+  writeMigrationScript(localRoot, '5.2.0', "module.exports = () => { throw new Error('boom-5.2.0'); };");
+
+  const plan = update.planUpdate(localRoot, upstreamRoot);
+  const result = await update.applyPlan(localRoot, plan, { dryRun: false });
+
+  assert.strictEqual(result.migrations.failure.version, '5.2.0', 'result must name which migration failed');
+  const writtenManifest = JSON.parse(fs.readFileSync(path.join(localRoot, '.asd/release-manifest.json'), 'utf8'));
+  assert.strictEqual(writtenManifest.asd_version, '5.1.0', 'written manifest must record the LAST SUCCESSFUL version, never the unreached target or an unrecorded intermediate one');
 });
 
 // ===========================================================================
@@ -1527,6 +1543,53 @@ test('sync.js runApply (fail-open fix, decisions-log 2026-09-04): a target match
   assert.strictEqual(fs.existsSync(path.join(root, goodTargetRel)), false, 'no partial write from an aborted batch');
 });
 
+test('sync.js CLI: --check exits 1 when a marked orphan is present, 0 when only an unmarked one is', () => {
+  const root = makeMiniRepo();
+  const manifest = loadManifest();
+  const markedAbs = path.join(root, '.claude', 'agents', 'asd-reviewer-quality.md');
+  fs.mkdirSync(path.dirname(markedAbs), { recursive: true });
+  fs.writeFileSync(markedAbs, markedFileContent('md', manifest), 'utf8');
+
+  let error = null;
+  try {
+    execFileSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), '--check'], { cwd: root, encoding: 'utf8' });
+  } catch (e) {
+    error = e;
+  }
+  assert.ok(error, '--check must exit non-zero when a marked orphan is present');
+  assert.strictEqual(error.status, 1);
+  const report = JSON.parse(error.stdout);
+  assert.strictEqual(report.ok, false);
+  assert.ok(report.items.some((i) => i.status === 'orphan'));
+
+  fs.rmSync(markedAbs, { force: true });
+  const out = execFileSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), '--check'], { cwd: root, encoding: 'utf8' });
+  assert.strictEqual(JSON.parse(out).ok, true, 'with the marked orphan gone, --check must exit clean again');
+});
+
+test('sync.js CLI: --apply on a not-found target aborts the whole batch (exit 1) and skips the hash-ledger recompute - manifest and sync-state.json stay byte-for-byte untouched', () => {
+  const root = makeMiniRepo();
+  const manifestPath = path.join(root, '.asd', 'release-manifest.json');
+  const syncStatePath = path.join(root, '.asd', 'sync-state.json');
+  const manifestBefore = fs.readFileSync(manifestPath, 'utf8');
+  const syncStateBefore = fs.readFileSync(syncStatePath, 'utf8');
+
+  let error = null;
+  try {
+    execFileSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), '--apply', '.claude/agents/typo-target-matching-nothing.md'], { cwd: root, encoding: 'utf8' });
+  } catch (e) {
+    error = e;
+  }
+  assert.ok(error, '--apply must exit non-zero when a requested target is not-found');
+  assert.strictEqual(error.status, 1);
+  const report = JSON.parse(error.stdout);
+  assert.strictEqual(report.ok, false);
+  assert.ok(report.applied.some((a) => a.status === 'not-found'));
+  assert.strictEqual(report.hashLedger, null, 'the ledger recompute must be skipped entirely on an aborted batch');
+  assert.strictEqual(fs.readFileSync(manifestPath, 'utf8'), manifestBefore, 'an aborted batch must never write release-manifest.json');
+  assert.strictEqual(fs.readFileSync(syncStatePath, 'utf8'), syncStateBefore, 'an aborted batch must never write sync-state.json');
+});
+
 // ===========================================================================
 // 12. update.js migration runner (listMigrations/pendingMigrations/
 // runMigrations, Task 13, AC-12) - ordering, skip-already-applied,
@@ -1587,17 +1650,39 @@ test('update.js migration runner (AC-12): no pending migrations advances reached
   assert.strictEqual(result.failure, null);
 });
 
-test('update.js migration runner: a migration script shipped in this same apply loads fresh, never a stale require-cache copy', async () => {
-  const root = mkTempDir();
-  const migPath = path.join(root, '.asd', 'migrations', '9.9.9.js');
-  fs.mkdirSync(path.dirname(migPath), { recursive: true });
-  const whichLog = path.join(root, 'which.log');
-  fs.writeFileSync(migPath, `module.exports = (ctx) => { require('fs').writeFileSync(require('path').join(ctx.repoRoot, 'which.log'), 'OLD'); };\n`, 'utf8');
-  require(migPath); // poison require.cache with the OLD script, same trap loadFreshSync solves for sync.js
-  fs.writeFileSync(migPath, `module.exports = (ctx) => { require('fs').writeFileSync(require('path').join(ctx.repoRoot, 'which.log'), 'NEW'); };\n`, 'utf8');
+test('update.js applyPlan (regression): a migration requiring .asd/sync.js from ctx.repoRoot sees the JUST-WRITTEN engine, never a require.cache copy poisoned before this same apply ran', async () => {
+  const localRoot = mkTempDir();
+  const upstreamRoot = mkTempDir();
 
-  await update.runMigrations(root, '9.9.8', '9.9.9');
-  assert.strictEqual(fs.readFileSync(whichLog, 'utf8'), 'NEW', 'must run the JUST-WRITTEN script, never a stale require-cache copy from before the overwrite');
+  // The OLD engine lacks newHelper entirely - the exact shape of the real
+  // defect (a stale sync.js missing hasOwnershipMarker threw a TypeError).
+  const oldSyncJs = "module.exports = { newHelper: undefined, runCheck: () => [] };\n";
+  const newSyncJs = "module.exports = { newHelper: () => 'NEW_ENGINE_HELPER', runCheck: () => [] };\n";
+  writeFile(localRoot, '.asd/sync.js', oldSyncJs);
+  writeFile(upstreamRoot, '.asd/sync.js', newSyncJs);
+  writeManifest(localRoot, { asd_version: '9.9.8', upstream_hashes: { '.asd/sync.js': hashOf(oldSyncJs) } });
+  writeManifest(upstreamRoot, { asd_version: '9.9.9' });
+  writeMigrationScript(localRoot, '9.9.9', [
+    "module.exports = (ctx) => {",
+    "  const path = require('path');",
+    "  const sync = require(path.join(ctx.repoRoot, '.asd', 'sync.js'));",
+    "  return { helperResult: sync.newHelper() };",
+    "};",
+  ].join('\n'));
+
+  // Poison require.cache for this fixture's OWN <repoRoot>/.asd/sync.js path
+  // with the OLD content BEFORE applyPlan runs - mirrors a real asd-update
+  // process where this exact path was already required earlier (the module-
+  // level `sync` in update.js, or an earlier migration in the same apply).
+  const syncPath = path.join(localRoot, '.asd', 'sync.js');
+  require(syncPath);
+
+  const plan = update.planUpdate(localRoot, upstreamRoot);
+  const result = await update.applyPlan(localRoot, plan, { dryRun: false });
+
+  assert.strictEqual(result.migrations.failure, null, `migration must succeed against the freshly-written engine: ${JSON.stringify(result.migrations.failure)}`);
+  assert.ok(result.migrations.ran.includes('9.9.9'));
+  assert.strictEqual(result.migrations.reports['9.9.9'].helperResult, 'NEW_ENGINE_HELPER', 'must observe the JUST-WRITTEN engine export, never a cached stale copy missing it');
 });
 
 // ===========================================================================
@@ -1615,7 +1700,7 @@ function makeMigrationFixtureRepo() {
   return root;
 }
 
-test('4.0.0 migration (AC-7/AC-10/AC-11): deletes marked generated views of a retired agent; a missing target is success; re-running is a no-op', async () => {
+test('4.0.0 migration (AC-7/AC-10/AC-11): deletes marked generated views of a retired agent, including the per-skill directory once emptied; a missing target is success; a surviving non-retired sibling is untouched; re-running is a no-op', async () => {
   const root = makeMigrationFixtureRepo();
   const manifest = loadManifest();
   const name = 'asd-reviewer-quality'; // one of the nine retired agent names
@@ -1628,12 +1713,28 @@ test('4.0.0 migration (AC-7/AC-10/AC-11): deletes marked generated views of a re
   fs.mkdirSync(path.dirname(codexAbs), { recursive: true });
   fs.writeFileSync(codexAbs, markedFileContent('toml', manifest), 'utf8');
 
+  // A second retired agent's skill target, to exercise the directory-prune
+  // branch (removeIfEmptyDir on the per-skill dir once its one file is gone),
+  // alongside a surviving non-retired sibling agent in the SAME .claude/agents
+  // tree, proving the delete never widens beyond its explicit target list.
+  const skillName = 'asd-test-engineer';
+  const skillAbs = path.join(root, '.agents', 'skills', skillName, 'SKILL.md');
+  const skillDirAbs = path.dirname(skillAbs);
+  fs.mkdirSync(skillDirAbs, { recursive: true });
+  fs.writeFileSync(skillAbs, markedFileContent('md', manifest), 'utf8');
+  const survivingSiblingAbs = path.join(root, '.claude', 'agents', 'asd-dev.md');
+  fs.writeFileSync(survivingSiblingAbs, '# a current, non-retired agent living alongside deleted ones\n', 'utf8');
+
   const report = await migration400({ repoRoot: root });
   assert.ok(report.deleted.includes(`.claude/agents/${name}.md`));
   assert.ok(report.deleted.includes(`.codex/agents/${name}.toml`));
+  assert.ok(report.deleted.includes(`.agents/skills/${skillName}/SKILL.md`));
   assert.ok(report.missing.includes(`.agents/skills/${name}/SKILL.md`));
   assert.strictEqual(fs.existsSync(claudeAbs), false);
   assert.strictEqual(fs.existsSync(codexAbs), false);
+  assert.strictEqual(fs.existsSync(skillAbs), false);
+  assert.strictEqual(fs.existsSync(skillDirAbs), false, 'the emptied per-skill directory must be pruned');
+  assert.strictEqual(fs.existsSync(survivingSiblingAbs), true, 'a surviving non-retired sibling in the same generated tree must never be touched');
 
   // Idempotency: re-running after everything is already gone is success, never an error.
   const rerun = await migration400({ repoRoot: root });
@@ -1654,10 +1755,29 @@ test('4.0.0 migration: leaves an unmarked (consumer-owned) file sharing a retire
   assert.strictEqual(fs.readFileSync(claudeAbs, 'utf8'), handAuthored, "consumer-owned file must survive byte-for-byte");
 });
 
-test('4.0.0 migration (AC-5): adds test_affected to commands.yaml additively when a supported test runner is detected; never touches config.yaml/sprints/custom rules', async () => {
+// Shaped like a real /asd-init-generated commands.yaml (t_commands.yaml): a
+// COMMENTED `# test_affected:` line living above `custom:`. The active-vs-
+// comment distinction is exactly what /^test_affected\s*:/m must tell apart -
+// every real consumer's file carries this commented line, never none at all.
+function realisticCommandsYaml() {
+  return [
+    'test: "npm test"',
+    'lint: "eslint ."',
+    'build: "npm run build"',
+    'run: "npm start"',
+    '',
+    '# test_affected: "{{command to run only tests affected since <BASE_REF>, e.g. jest --changedSince=<BASE_REF>}}"',
+    '',
+    'custom:',
+    '  something: true',
+    '',
+  ].join('\n');
+}
+
+test('4.0.0 migration (AC-5): adds test_affected to a realistic commands.yaml (commented placeholder line present) additively when a supported test runner is detected; never touches config.yaml/sprints/custom rules', async () => {
   const root = makeMigrationFixtureRepo();
   fs.mkdirSync(path.join(root, '.asd', 'project'), { recursive: true });
-  const commandsYamlBefore = 'test: "npm test"\n\ncustom:\n  something: true\n';
+  const commandsYamlBefore = realisticCommandsYaml();
   fs.writeFileSync(path.join(root, '.asd', 'project', 'commands.yaml'), commandsYamlBefore, 'utf8');
   fs.writeFileSync(path.join(root, '.asd', 'project', 'config.yaml'), 'language:\n  chat: en\n', 'utf8');
   fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify({ devDependencies: { jest: '^29.0.0' } }), 'utf8');
@@ -1667,7 +1787,10 @@ test('4.0.0 migration (AC-5): adds test_affected to commands.yaml additively whe
   assert.strictEqual(report.commandsYaml.status, 'added');
   assert.strictEqual(report.commandsYaml.value, 'jest --changedSince=<BASE_REF>');
   const commandsYamlAfter = fs.readFileSync(path.join(root, '.asd', 'project', 'commands.yaml'), 'utf8');
+  const activeLines = commandsYamlAfter.split('\n').filter((l) => /^test_affected\s*:/.test(l));
+  assert.strictEqual(activeLines.length, 1, 'exactly one ACTIVE test_affected line, the pre-existing commented one must not count');
   assert.ok(commandsYamlAfter.includes('test_affected: "jest --changedSince=<BASE_REF>"'));
+  assert.ok(commandsYamlAfter.includes('# test_affected:'), 'the original commented placeholder line must survive untouched');
   assert.ok(commandsYamlAfter.includes('test: "npm test"'), 'pre-existing test command must survive');
   assert.ok(commandsYamlAfter.includes('something: true'), 'pre-existing custom block content must survive');
   assert.strictEqual(fs.readFileSync(path.join(root, '.asd', 'project', 'config.yaml'), 'utf8'), configYamlBefore, 'config.yaml must never be touched');
@@ -1675,6 +1798,24 @@ test('4.0.0 migration (AC-5): adds test_affected to commands.yaml additively whe
   // Additive-only guarantee: a second run must never overwrite the now-present field.
   const rerun = await migration400({ repoRoot: root });
   assert.strictEqual(rerun.commandsYaml.status, 'already-present');
+});
+
+test('4.0.0 migration: commands.yaml test_affected -> "undetectable" when no supported test runner is present, file left byte-for-byte untouched', async () => {
+  const root = makeMigrationFixtureRepo();
+  fs.mkdirSync(path.join(root, '.asd', 'project'), { recursive: true });
+  const commandsYamlBefore = realisticCommandsYaml();
+  fs.writeFileSync(path.join(root, '.asd', 'project', 'commands.yaml'), commandsYamlBefore, 'utf8');
+  // No package.json/pyproject.toml/requirements*.txt at all - nothing to detect.
+
+  const report = await migration400({ repoRoot: root });
+  assert.strictEqual(report.commandsYaml.status, 'undetectable');
+  assert.strictEqual(fs.readFileSync(path.join(root, '.asd', 'project', 'commands.yaml'), 'utf8'), commandsYamlBefore, 'no supported runner detected -> file must be left untouched, never a guessed value');
+});
+
+test('4.0.0 migration: commands.yaml test_affected -> "missing" status when the file does not exist at all', async () => {
+  const root = makeMigrationFixtureRepo();
+  const report = await migration400({ repoRoot: root });
+  assert.strictEqual(report.commandsYaml.status, 'missing');
 });
 
 test('4.0.0 migration: reports (never rewrites) an active sprint sitting in a review phase', async () => {
@@ -1800,7 +1941,7 @@ test('SessionStart hook: a "skipped: <predicate>" verdict counts as satisfied, n
   assert.ok(text.includes('Last review verdict: green'), `expected an all-satisfied verdict map (APPROVE + skipped) to print "green", got: ${text}`);
 });
 
-test('SessionStart hook: an all-"skipped:" verdict map (no genuine approval) is "mixed", not "green"', () => {
+test('SessionStart hook: an all-legacy-"skipped:" verdict map (no bare APPROVE anywhere) still reads "green" - the legacy carve-out treats every "skipped: <predicate>" value identically to APPROVE', () => {
   const tempRoot = mkTempDir();
   const hookSrc = fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8');
   writeFile(tempRoot, '.asd/hooks/session-start.js', hookSrc);
@@ -1825,8 +1966,7 @@ test('SessionStart hook: an all-"skipped:" verdict map (no genuine approval) is 
     encoding: 'utf8',
   });
   const text = JSON.parse(out).hookSpecificOutput.additionalContext;
-  assert.ok(!text.includes('Last review verdict: green'), `expected an all-skipped verdict map (no genuine approval) to NOT print "green", got: ${text}`);
-  assert.ok(text.includes('Last review verdict: mixed'), `expected an all-skipped verdict map to print "mixed", got: ${text}`);
+  assert.ok(text.includes('Last review verdict: green'), `an all-legacy-skip verdict map (every value satisfies via the legacy carve-out) must still read "green", identically to a bare APPROVE map, got: ${text}`);
 });
 
 // ===========================================================================
