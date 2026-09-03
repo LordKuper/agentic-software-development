@@ -43,10 +43,10 @@ Implementation-level rules for code-writing agents (Dev, Tester). Binding during
 
 ## 7. Comments and Documentation
 
-- Comments explain WHY, not WHAT. Code needing a comment to be understood should usually be rewritten.
-- Doc comments mandatory on every public/exported type and member. Internal code documents only what a clear name cannot carry.
+- No comments inside method/function bodies, ever. Meaning belongs in the name, the signature, or the member's doc comment — a body that needs narration is renamed, split, or rewritten instead of commented. The sole permitted in-body marker is `// TODO(sprint-<NNN-slug>): <reason>` (see below).
+- Doc comments mandatory on every public/exported type and member. Internal code documents only what a clear name cannot carry. Doc comments explain WHY, not WHAT — this WHY allowance applies to doc comments only, never to in-body comments (which are banned above).
+- Type-level doc: short, states the type's purpose ONLY — never duplicates or summarizes its members' docs. Member-level doc: short, states the member's purpose, never its implementation. Each member carries its own doc; state each fact once.
 - Comments concise and clear. Every extra word is cognitive load and wasted context — cut filler, hedging, restated code.
-- No duplicated comments. A type's doc does not describe its members — each member carries its own doc. State each fact once.
 - Inherit docs (`<inheritdoc/>`, `@inheritDoc`, etc.) wherever an override or implementation matches the base contract; do not restate inherited text.
 - Use the language-native doc format (XML-doc C#, docstrings Python, JSDoc TypeScript, etc.).
 - Update doc comments when code changes.

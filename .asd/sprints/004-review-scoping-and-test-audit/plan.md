@@ -264,15 +264,17 @@ recorded justification, not to the agent's discretion.
 
 Satisfies AC-8. Fact owner: `code-style.md` §7.
 
-- [ ] Ban comments inside method/function bodies; sole permitted marker stays
+- [x] Ban comments inside method/function bodies; sole permitted marker stays
       `// TODO(sprint-<NNN-slug>): <reason>`; a body needing narration is renamed, split or rewritten
-- [ ] Reconcile "Comments explain WHY, not WHAT" — the WHY allowance applies to doc comments only
-- [ ] Tighten the type-doc bullet (purpose only, never summarising members) and the member-doc bullet
+- [x] Reconcile "Comments explain WHY, not WHAT" — the WHY allowance applies to doc comments only
+- [x] Tighten the type-doc bullet (purpose only, never summarising members) and the member-doc bullet
       (purpose, never implementation)
-- [ ] `asd-reviewer-documentation`: explicit rubric item enforcing all three, and a `description`
+- [x] `asd-reviewer-documentation`: explicit rubric item enforcing all three, and a `description`
       widened to state it also reviews in-code doc comments
-- [ ] `review-policy.md` severity taxonomy: a violation is `high`
-- [ ] `t_custom-coding-rules.md` if it mirrors §7
+- [ ] `review-policy.md` severity taxonomy: a violation is `high` — owned by a parallel task already
+      touching `review-policy.md`; this task's rubric item cites the taxonomy without restating it
+- [x] `t_custom-coding-rules.md` if it mirrors §7 — verified: neither `t_custom-coding-rules.md` nor
+      the project's own `custom-coding-rules.md` restates §7 content, so no edit needed
 
 Material risk: §8 and §17 are cross-link anchors for AC-4 and AC-6 — renumbering or removing bullets
 breaks those links.
