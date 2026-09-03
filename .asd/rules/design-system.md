@@ -1,6 +1,6 @@
 # Design System Rules
 
-Binding for `asd-ux` (author) and `asd-reviewer-ui` (verify). Applies whenever `DESIGN.md`, `design-system.html`, or UI code touched.
+Binding for `asd-ux` (author) and `asd-reviewer-correctness` (verify, UI conformance section). Applies whenever `DESIGN.md`, `design-system.html`, or UI code touched.
 
 ## 1. Source of Truth
 
@@ -78,7 +78,7 @@ Theme MUST NOT change: grid, component size, hit targets, base spacing, notifica
 
 `designmd-lint` result with ≥1 **error** OR ≥1 **warning** (not in exclusion list) = FAIL → fixes required, re-lint. Clean pass = zero errors + zero un-excluded warnings.
 
-Errors never excludable. Each **warning** exclusion MUST be user-approved (request user decision) and the decision + short rationale recorded in DESIGN.md (lint-exclusions block). Reviewer (`asd-reviewer-ui`) FAIL if excluded warning lacks recorded rationale.
+Errors never excludable. Each **warning** exclusion MUST be user-approved (request user decision) and the decision + short rationale recorded in DESIGN.md (lint-exclusions block). Reviewer (`asd-reviewer-correctness`) FAIL if excluded warning lacks recorded rationale.
 
 ## See also
 

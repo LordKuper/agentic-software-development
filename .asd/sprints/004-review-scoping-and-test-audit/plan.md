@@ -377,21 +377,37 @@ where `update.js`'s own `delete` classification cannot reach.
 
 Satisfies AC-14, and prepares AC-15's verification.
 
-- [ ] README: agent roster (Creators / Reviewers / Advisor tables), both provider tier columns,
+- [x] README: agent roster (Creators / Reviewers / Advisor tables), both provider tier columns,
       "Sixteen specialized agents" and every other count string, verdict-token line, fan-out
       paragraph ("all 7 internal reviewers"), mermaid, phase table, folder map (`agents/ # 16`,
-      `skills/ # 17`, new `migrations/`)
-- [ ] `AGENTS.md`: agent counts (16 → 11, 7 creators → 6, 8 reviewers → 5), reviewer verdict-token
-      bullet, release-manifest hard rule, `/asd-update` self-hosting refusal note
-- [ ] `release-manifest.json`: `managed_paths` (`.asd/migrations`), `model_families` if touched, and
-      `canon_hashes` / `upstream_hashes` ending consistent — one entry per surviving agent file, no
-      entry for a deleted one
-- [ ] Run `node "$(git rev-parse --show-toplevel)/.asd/sync.js" --apply <file...>` for every canonical
-      edit, and remove this repo's own orphaned generated views of the nine retired agents
-- [ ] Verify no fact acquired a second home: each rule sits in the SSoT named by `audit.md`'s change
-      map, every other mention a cross-link
-- [ ] Run the AC-15 grep (nine names, excluding `.asd/project/decisions-log.md` and
-      `.asd/sprints/archived/**`) and fix what it finds
+      `skills/ # 17`, new `migrations/`) — corrected count is **12** agents (6 creators + 4 internal
+      reviewers + external + advisor), not the plan bullet's "11"; verified against actual
+      `.asd/agents/*.md` file count, not assumed
+- [x] `AGENTS.md`: agent counts (16 → 12: 6 creators, 5 reviewers incl. external, 1 advisor), reviewer
+      verdict-token bullet (already generic, no edit needed), release-manifest hard rule (already
+      generic), `/asd-update` self-hosting refusal note (already present) — skills bullet updated to
+      mention `.asd/migrations` sequencing
+- [x] `release-manifest.json`: `managed_paths` (`.asd/migrations` — already present from Task 13,
+      verified), `model_families` unchanged this task, and `canon_hashes` / `upstream_hashes` ending
+      consistent — one entry per surviving agent file (12), no entry for a deleted one (verified,
+      already correct from Tasks 1-14)
+- [x] Run `node "$(git rev-parse --show-toplevel)/.asd/sync.js" --apply <file...>` for every canonical
+      edit, and remove this repo's own orphaned generated views of the nine retired agents (none
+      found — already clean from Task 12's orphan detection work in earlier tasks)
+- [x] Verify no fact acquired a second home: each rule sits in the SSoT named by `audit.md`'s change
+      map, every other mention a cross-link — found and fixed two additional stale mirrors beyond the
+      dispatcher-flagged pair: `.asd/rules/design-system.md` and `.asd/rules/ux-principles.md` named
+      `asd-reviewer-ui` (now `asd-reviewer-correctness`); `.asd/templates/t_commands.yaml` and this
+      repo's own `.asd/project/commands.yaml` header comment named "Backend Dev, Frontend Dev, Tester"
+      (now "Dev, Tester"); `.asd/rules/sprint-lifecycle.md` "Self-hosting" section's write-allowlist
+      sentence named "Backend Dev / Frontend Dev" (now "Dev") — none of these were caught by the
+      `asd-<name>` identifier grep since they used descriptive role words, not agent identifiers
+- [x] Run the AC-15 grep (nine names, excluding `.asd/project/decisions-log.md` and
+      `.asd/sprints/**`) and fix what it finds — zero remaining outside the excluded paths, the
+      legitimate `.asd/migrations/4.0.0.js` hardcoded deletion list, and two out-of-scope agent-memory
+      files (`.claude/agent-memory/asd-pm/`, `.claude/agent-memory/asd-reviewer-performance/`) that are
+      neither canonical sources, generated views, README, nor templates, and outside this agent's write
+      access
 
 Material risk: `canon_hashes` is auto-maintained by `--apply` but `managed_paths` is hand-maintained;
 a missed hand edit is invisible until a consumer updates.

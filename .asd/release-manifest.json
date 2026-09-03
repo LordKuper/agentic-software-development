@@ -71,14 +71,14 @@
     ".asd/rules/code-style.md": "5a260a9d9d8d030ff42335b5d031f068aac3f4983c8c51cbcb99a9692e5e1196",
     ".asd/rules/core.md": "2e453890b73c269172f49db2515a42ee18021ae3d2b252df3db00948d2b5920a",
     ".asd/rules/design-principles.md": "dc52da294a70aba27d8076cfec7dd6917e90603892e7424eadc3a5bd8045da41",
-    ".asd/rules/design-system.md": "cb698fd2ad456a846fa5ca13c71f802ef8b74c1b45e980015aa00a15d0ca5e25",
+    ".asd/rules/design-system.md": "5ea1e98d5bfb07521258d9c379f72e92e7e1b3065e372e258adc940bbc9e8af3",
     ".asd/rules/external-review.md": "13393698522ef6835464e094ec5e01a55d535b7634b813a6d50e83a4313a8bb1",
     ".asd/rules/git-strategy.md": "58c73020ea678645cb52d27c649c850657ec457023b82a97a3db8aefbf168275",
     ".asd/rules/language-policy.md": "c01b94526ba2cb70a7e51ee1a8b1ce0ac799c00d6868992185609f5bac887ee6",
     ".asd/rules/providers.md": "826208e991fdf5af4c7c9845db2f617d262af586439a976d18a1834bdaed69f1",
     ".asd/rules/review-policy.md": "14225c20f71a83fd3fc300c594da786c0efcb28dd89a0e262542a2de90f0bd5a",
-    ".asd/rules/sprint-lifecycle.md": "d0ef01f4e3bcd061220a9a0f98cd134549c7f1494af03850566402b4c300af90",
-    ".asd/rules/ux-principles.md": "a977031de9f7b2d480a4ea00a2ddd88d28bb8e683d0533cb9d37dbca65be5ad9",
+    ".asd/rules/sprint-lifecycle.md": "101f0cfdbb45f380536f08fc73784732fdaad2f07d43ab5c31571916288733f2",
+    ".asd/rules/ux-principles.md": "9f2af8c90d969c73654812b80e523e33b4c5696f506acf49e4bacb4c0dc6750c",
     ".asd/skills/asd-concept/SKILL.md": "c93d7b1300fa2930ee20a4aa370474fb53f7f1c69b31c5bddcb917b0ee517098",
     ".asd/skills/asd-design-system/SKILL.md": "ce83ced9bf32255e8c381c3a325e89c6d1a41c69277d5226a3f38f386264dc0d",
     ".asd/skills/asd-init/SKILL.md": "bd6e828fb311a2e7507643b87f80f928f5910a5dae56ff9237851bfdd493151f",
@@ -108,7 +108,7 @@
     ".asd/templates/t_audit.md": "8faf103c0d955e91a08b98673ad3c2879fa6a219196e4c1ced37c297baf177db",
     ".asd/templates/t_c4-model.c4": "5163e92e0eea18e89d4f6169b316548aec46c629d72cc39a69e4f9b06ff504b2",
     ".asd/templates/t_c4-views.c4": "af78bf82f31e08a3247dfec5abd1a58b6ebc94e8f49cd3984d80cf21782b8ac7",
-    ".asd/templates/t_commands.yaml": "54d23dc52f1b8c51d532b129bdc7ad42919f0686a348a192245cdbd3dbdba551",
+    ".asd/templates/t_commands.yaml": "98c4902758ab98a3992bdb03fc5db2f39b64d5abf7c4c39de7145327fe90b4f1",
     ".asd/templates/t_concept.html": "352eebce830f9de3205e3f80c5037e25b9e554a0530bcc2ca3aa31edecea197f",
     ".asd/templates/t_config.yaml": "94bd5ffe9059bfb75922a39d36efabb12a09c626a8d156f3d38d3efc99600d83",
     ".asd/templates/t_custom-coding-rules.md": "0d2b33b14599c4f60f3c6fb9a410e10eda94a96784ff46c6403ac720faabb209",
@@ -146,6 +146,7 @@
     ".asd/agents/asd-reviewer-efficiency.md": "4b5e2e1b62a21373b9823f8a7e2760c40ff721f5e8552ce155d7fc53f01ea265",
     ".asd/agents/asd-dev.md": "331f686039761b39e0b7b10d919f2325c20bec09e3f5b9c257986851377ac8ff",
     ".asd/agents/asd-tester.md": "f77d9838827d7d2d932fe9338ffb9b473a33356dc2d62cf01836c29804a81d42",
-    ".asd/agents/asd-ux.md": "fc9c6ea0d8c2d600b74de6a2773b0253637d844686c21215f2ef0d45d7cd8453"
+    ".asd/agents/asd-ux.md": "fc9c6ea0d8c2d600b74de6a2773b0253637d844686c21215f2ef0d45d7cd8453",
+    ".asd/migrations/4.0.0.js": "87d89453d91aaa5d567d76ff9f0d48407104d52c9a5eb73e03f36107fac68633"
   }
 }
