@@ -963,13 +963,13 @@ function recomputeAndWriteHashLedgers(repoRoot) {
 // buildSyncPlan is source-driven (walks .asd/agents, .asd/skills): a deleted
 // or renamed canonical file simply stops appearing in the plan, so the
 // generated file(s) it used to produce are never visited by check/apply and
-// survive silently (audit.md finding, AC-14). This walks the generated trees
-// themselves and diffs their actual contents against what the plan currently
-// expects there, to catch that class of drift.
+// survive silently. This walks the generated trees themselves and diffs
+// their actual contents against what the plan currently expects there, to
+// catch that class of drift.
 // ---------------------------------------------------------------------------
 
-// The four generated trees plan.md Task 12 names explicitly. Hook targets
-// (.claude/hooks, .codex/hooks) are out of scope for this task.
+// The four generated trees under active management. Hook targets
+// (.claude/hooks, .codex/hooks) are out of scope.
 const ORPHAN_TREES = [
   ['.claude', 'agents'],
   ['.claude', 'skills'],
@@ -1027,6 +1027,15 @@ function findOrphans(repoRoot, plan) {
     }
   }
   return orphans;
+}
+
+// Removes a generated view's parent directory once emptied by a delete -
+// covers the `.agents/skills/<name>/` case, where the per-skill directory
+// would otherwise survive the single file it existed to hold.
+function removeIfEmptyDir(absDir) {
+  if (!fs.existsSync(absDir)) return;
+  if (fs.readdirSync(absDir).length > 0) return;
+  fs.rmdirSync(absDir);
 }
 
 // ---------------------------------------------------------------------------
@@ -1290,6 +1299,11 @@ function statusForPlanItem(item, repoRoot, manifest, syncState) {
   throw new Error(`unknown sync plan item class "${item.class}"`);
 }
 
+// Every managed target's status, plus any orphaned generated view (a file
+// still on disk after its canonical source moved or was deleted). An
+// ownership-marked orphan reports as a real defect ('orphan'); an unmarked
+// one is informational only ('orphan-unmarked') - a consumer's own file, not
+// this tool's to flag.
 function runCheck(repoRoot) {
   const manifest = loadReleaseManifest(repoRoot);
   const syncState = loadSyncState(repoRoot);
@@ -1299,10 +1313,6 @@ function runCheck(repoRoot) {
     const { status } = statusForPlanItem(item, repoRoot, manifest, syncState);
     report.push({ target: path.relative(repoRoot, item.targetPath).replace(/\\/g, '/'), status });
   }
-  // 'orphan' = marked, no surviving canon source - a real defect, fails the
-  // check. 'orphan-unmarked' = same absence of a plan match but no ownership
-  // proof, so it's reported for visibility only, never counted as a failure -
-  // per plan.md Task 12, that's a consumer's own file, not an orphan.
   for (const orphan of findOrphans(repoRoot, plan)) {
     report.push({ target: orphan.target, status: orphan.marked ? 'orphan' : 'orphan-unmarked' });
   }
@@ -1318,6 +1328,14 @@ function runCheck(repoRoot) {
 // overwrite silently" - force is the one explicit exception to "silently").
 // Self-sourced managed blocks (AGENTS.md) have no generator to apply from -
 // they are authored directly and only ever checked, never auto-applied here.
+//
+// A requested target that matches no plan entry may still be an orphan - a
+// generated view whose canonical source no longer exists, so it never
+// appears in buildSyncPlan's source-driven output. An orphan is deleted only
+// when it carries the ASD ownership marker (a consumer's own file of the
+// same name never does); a target matching neither the plan nor a detected
+// orphan aborts every write in the whole batch, so one bad target never
+// half-applies the rest.
 //
 // Two-pass: every requested item is resolved AND rendered/statused in pass 1,
 // before pass 2 writes anything. A bad canon source (invalid JSON/TOML
@@ -1335,10 +1353,6 @@ function runApply(repoRoot, requestedFiles, options) {
     planByRel.set(rel, item);
   }
   const forceSet = new Set((options && options.force) || []);
-  // Orphans aren't in the plan by construction (buildSyncPlan is source-
-  // driven) - computed once up front from the generated trees themselves, so
-  // a requested file that resolves to no plan item can still be recognized
-  // as an orphan below instead of falling through to 'unknown'.
   const orphanByRel = new Map(findOrphans(repoRoot, plan).map((o) => [o.target, o]));
 
   // Pass 1: resolve + render/status every request. Throws here (invalid
@@ -1379,31 +1393,18 @@ function runApply(repoRoot, requestedFiles, options) {
     }
   }
 
-  // A requested target that matches neither a plan entry nor a detected
-  // orphan is bogus (typo, stale list, trailing whitespace from the caller,
-  // etc.) - previously this silently no-op'd per-target while the overall
-  // call still reported success, indistinguishable from a clean apply. Same
-  // "decide before writing anything" preflight contract as an invalid canon
-  // source (above): ANY bogus target in the batch aborts every write in the
-  // WHOLE batch, not just its own, so a batch naming one bogus target
-  // alongside good ones never half-applies.
   const hasInvalidTarget = resolved.some((r) => !r.item && !r.orphan);
 
-  // Pass 2: every render above already succeeded - write, unless the batch
-  // was aborted by hasInvalidTarget above.
   const results = [];
   let stateChanged = false;
   for (const r of resolved) {
     if (!r.item) {
-      // Marker gate: an orphan is deleted ONLY when it carries the ASD
-      // ownership marker. Unmarked = a consumer's own agent/skill sitting in
-      // the same generated tree, indistinguishable from an orphan by path
-      // alone - reported, never touched (plan.md Task 12's whole safety
-      // property).
       if (!r.orphan) {
         results.push({ target: r.rel, status: 'not-found', applied: false });
       } else if (r.orphan.marked && !hasInvalidTarget) {
-        fs.unlinkSync(path.join(repoRoot, r.rel));
+        const absOrphan = path.join(repoRoot, r.rel);
+        fs.unlinkSync(absOrphan);
+        removeIfEmptyDir(path.dirname(absOrphan));
         results.push({ target: r.rel, status: 'orphan', applied: true });
       } else if (r.orphan.marked) {
         results.push({ target: r.rel, status: 'orphan', applied: false });
@@ -1441,15 +1442,19 @@ function runApply(repoRoot, requestedFiles, options) {
   return results;
 }
 
+// CLI entry: `--check` reports every managed target's status, exiting
+// non-zero if any generated view is an ownership-marked orphan - an
+// unmarked orphan is informational only. `--apply <file...> [--force]`
+// writes only the requested targets, exiting non-zero if any of them
+// matched neither a plan entry nor a detected orphan, so a bogus target is
+// never silently treated as success; the hash-ledger recompute that follows
+// a real apply is skipped on that same abort, so it never records a ledger
+// for a batch that wrote nothing.
 function main(argv) {
   const repoRoot = findRepoRoot(process.cwd());
   const args = argv.slice(2);
   if (args[0] === '--check') {
     const report = runCheck(repoRoot);
-    // A marked orphan (generated view whose canonical source no longer
-    // exists) fails the check - it was silent before this task (AC-14).
-    // 'orphan-unmarked' entries stay informational only: no ownership proof,
-    // so they're a consumer's own file, not a defect to fail on.
     const hasOrphans = report.some((r) => r.status === 'orphan');
     process.stdout.write(JSON.stringify({ ok: !hasOrphans, items: report }, null, 2) + '\n');
     return hasOrphans ? 1 : 0;
@@ -1466,21 +1471,14 @@ function main(argv) {
     const files = force ? rest.filter((_, i) => i !== forceIdx) : rest;
     const forceRels = force ? files.map((f) => path.relative(repoRoot, path.resolve(repoRoot, f)).replace(/\\/g, '/')) : [];
     const results = runApply(repoRoot, files, { force: forceRels });
+    const hasInvalidTargets = results.some((r) => r.status === 'not-found');
     // AGENTS.md: "run node .asd/sync.js --apply <file...> after editing
     // canon" - recomputing release-manifest.json's hash ledgers is now part
     // of that same step, not a separate manual script (see comment above
     // recomputeAndWriteHashLedgers). Applies whole-repo, independent of which
     // targets were requested, since both ledgers are pure functions of
     // current on-disk canon content.
-    const hashLedger = recomputeAndWriteHashLedgers(repoRoot);
-    // A 'not-found' entry means a requested target matched neither a plan
-    // entry nor a detected orphan (typo, stale list, stray whitespace) -
-    // runApply already refused to write anything in that batch for it; ok/
-    // exit code must say so too, or a bogus target looks identical to a
-    // clean apply to whatever's reading this JSON (AC-15's verification, the
-    // batched regeneration step - the exact silent-drift class Task 12
-    // exists to close).
-    const hasInvalidTargets = results.some((r) => r.status === 'not-found');
+    const hashLedger = hasInvalidTargets ? null : recomputeAndWriteHashLedgers(repoRoot);
     process.stdout.write(JSON.stringify({ ok: !hasInvalidTargets, applied: results, hashLedger }, null, 2) + '\n');
     return hasInvalidTargets ? 1 : 0;
   }
@@ -1553,4 +1551,5 @@ module.exports = {
   expectedGeneratedTargets,
   hasOwnershipMarker,
   findOrphans,
+  removeIfEmptyDir,
 };
