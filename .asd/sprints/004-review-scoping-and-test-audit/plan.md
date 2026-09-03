@@ -249,12 +249,12 @@ every scoped run.
 
 Satisfies AC-1, AC-4. `asd-reviewer-testing` stays in the impl-review fan-out, scope unchanged.
 
-- [ ] `asd-tester` agent + `asd-phase-impl-test.md` strategy pass: author a test only for a real,
+- [x] `asd-tester` agent + `asd-phase-impl-test.md` strategy pass: author a test only for a real,
       material risk on the change surface; do not author when the risk is hypothetical, the behaviour
       is already covered, or the only value is a coverage number
-- [ ] Make "no new test needed" a first-class recorded outcome, stated and justified in
+- [x] Make "no new test needed" a first-class recorded outcome, stated and justified in
       `test-plan.md`, never a silent fallback
-- [ ] `code-style.md` §17: the hypothetical-risk bullet, governing pruning (removal candidate) and
+- [x] `code-style.md` §17: the hypothetical-risk bullet, governing pruning (removal candidate) and
       authoring (not written at all)
 
 Material risk: the bar reads as licence to skip tests; it must bind to the change surface and to a

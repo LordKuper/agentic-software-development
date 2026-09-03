@@ -113,8 +113,9 @@ Written and run in `impl-test`, never in `impl`. Selection happens **after** the
 - Risk-based and change-scoped: pick the cheapest reliable check per material risk — static/architecture check → focused unit or property test for logic → component or contract test at boundaries → only essential e2e journeys.
 - Every acceptance criterion is covered by a check at some level; the level is chosen by risk, not by rule.
 - Tests verify observable behavior, not implementation detail.
-- Forbidden: trivial, implementation-coupled, mock-confirming, redundant, flaky tests. Duplicates of an existing check are deleted, not kept "for safety".
-- Skipping new tests is allowed only when the change adds no behavior or existing checks already cover the risk — record the decision and its reason in `test-plan.md`.
+- **Hypothetical-risk criterion — single home, governs both authoring and pruning:** a test earns its place only by covering a real, material risk on the change surface, evidenced by actual behavior, an identified failure mode, or a stated requirement. A test verifying a hypothetical rather than a real risk — including one whose behavior an existing check already covers, or whose only value is a coverage number — is not authored in the first place, and is a removal candidate wherever it already exists.
+- Forbidden: trivial, implementation-coupled, mock-confirming, redundant, flaky tests, and any test failing the hypothetical-risk criterion above. Duplicates of an existing check are deleted, not kept "for safety".
+- Authoring is never the default: write a test only when the hypothetical-risk criterion above is met. When it is not, "no new test needed" is a first-class outcome of the strategy pass, not a silent fallback — record the decision (`none`) and its reason in `test-plan.md`.
 - Every fixed defect leaves a regression test proven against the pre-fix behavior (fail-first run recorded) or an equivalent targeted mutation.
 - Coverage numbers locate untested code; they are never a quota or a gate.
 - Deterministic: no `sleep`, wall-clock timing, random seeds, or execution-order reliance.
@@ -123,7 +124,6 @@ Written and run in `impl-test`, never in `impl`. Selection happens **after** the
 - Test files named `<system>_<feature>_test.<ext>`; test functions `test_<scenario>_<expected>`.
 - A test mutating global/static state saves and restores it in setup/teardown.
 - Structure each test as Arrange — Act — Assert.
-- A test whose only value is raising the coverage number is deleted.
 
 ## 18. Concurrency
 

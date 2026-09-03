@@ -60,7 +60,9 @@ Implementer:
 
 ## Test selection rubric (binding)
 
-Check-ladder selection, prune criteria, no-new-test decision rule, and fail-first regression proof: `code-style.md` §17 (SSoT), not restated here. Selection happens **after** the implementation exists, against the real change surface — never speculatively from the plan. Suite verdict comes from the runner's exit code plus report, never from your own summary.
+**Authoring bar**: author a test only when it covers a real, material risk on the change surface. Do not author when the risk is hypothetical, an existing check already covers the behavior, or the only value would be a coverage number — full criterion at `code-style.md` §17 (SSoT). "No new test needed" is a first-class outcome of the strategy pass, recorded as decision `none` with its reason in `test-plan.md` — never a silent fallback.
+
+Check-ladder selection, prune criteria, and fail-first regression proof: `code-style.md` §17 (SSoT), not restated here. Selection happens **after** the implementation exists, against the real change surface — never speculatively from the plan. Suite verdict comes from the runner's exit code plus report, never from your own summary.
 
 On re-entry (every `impl` exit after the first), scope strategy and prune to the **delta since the prior entry** (`test-plan.md`'s `Entry log`) — never re-derive the whole change surface. Amend `test-plan.md`: append/update rows, append a new `Entry log` row; never rewrite prior rows outside the ones the delta actually revised. The impacted-set suite gate still re-runs on every entry regardless of this scoping (`sprint-lifecycle.md` "Impl-test phase") — it is never the full repo; the full suite runs once, at the end of `impl-review`, when you are dispatched there for that one check. In-scope test deletions proceed with a recorded reason; out-of-scope deletions need Complication Approval.
 
