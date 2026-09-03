@@ -13,6 +13,7 @@ const { execFileSync } = require('node:child_process');
 
 const sync = require('../.asd/sync.js');
 const update = require('../.asd/skills/asd-update/update.js');
+const migration400 = require('../.asd/migrations/4.0.0.js');
 
 const REPO_ROOT = path.resolve(__dirname, '..');
 const FIXTURES = path.join(__dirname, 'fixtures');
@@ -993,19 +994,22 @@ test('`node .asd/sync.js --check` reports every item current (no drift), includi
 });
 
 // ===========================================================================
-// 9a. Read-only agent contract (AC-6): the 8 reviewers + asd-advisor must
+// 9a. Read-only agent contract (AC-6): the 5 reviewers + asd-advisor must
 // never carry a write tool and must declare sandbox_mode read-only on Codex.
 // Directory-driven (derives the read-only set from .asd/agents/ filenames,
-// not a hardcoded list) so a future 9th read-only agent is covered for free.
+// not a hardcoded list) so a future 7th read-only agent is covered for free.
+// Count updated 9 -> 6 for sprint 004's reviewer-merge roster (AC-7/AC-11):
+// asd-advisor, asd-external-review, asd-reviewer-correctness,
+// asd-reviewer-documentation, asd-reviewer-efficiency, asd-reviewer-testing.
 // ===========================================================================
 
-test('read-only agents (8 reviewers + asd-advisor): no Write/Edit tool, codex sandbox_mode read-only', () => {
+test('read-only agents (5 reviewers + asd-advisor): no Write/Edit tool, codex sandbox_mode read-only', () => {
   const agentsDir = path.join(REPO_ROOT, '.asd', 'agents');
   const files = fs.readdirSync(agentsDir).filter((f) => f.endsWith('.md'));
   const readOnlyNames = files
     .map((f) => f.slice(0, -3))
     .filter((name) => name === 'asd-external-review' || name === 'asd-advisor' || name.startsWith('asd-reviewer-'));
-  assert.strictEqual(readOnlyNames.length, 9, `expected 9 read-only agents (8 reviewers + advisor), found ${readOnlyNames.length}: ${readOnlyNames.join(', ')}`);
+  assert.strictEqual(readOnlyNames.length, 6, `expected 6 read-only agents (5 reviewers + advisor), found ${readOnlyNames.length}: ${readOnlyNames.join(', ')}`);
   for (const name of readOnlyNames) {
     const raw = sync.readNormalized(path.join(agentsDir, `${name}.md`));
     const { meta } = sync.parseCanonicalFrontmatter(raw);
@@ -1048,7 +1052,7 @@ test('README.md / AGENTS.md agent-count claims match the actual .asd/agents/*.md
   // on the current word (not a general number-word parser) - it's a guard
   // against silent drift, not a parser: bumping the count must also bump
   // this literal, or the assertion fails loud instead of staying vacuous.
-  const WORD_TO_NUMBER = { Fourteen: 14, Fifteen: 15, Sixteen: 16, Seventeen: 17, Eighteen: 18 };
+  const WORD_TO_NUMBER = { Twelve: 12, Fourteen: 14, Fifteen: 15, Sixteen: 16, Seventeen: 17, Eighteen: 18 };
   const wordMatch = readmeText.match(/(\w+) specialized agents are canonically defined/);
   assert.ok(wordMatch, 'README.md must state "<Word> specialized agents are canonically defined"');
   assert.ok(Object.prototype.hasOwnProperty.call(WORD_TO_NUMBER, wordMatch[1]), `README.md word-form agent count "${wordMatch[1]}" is not in the known word->number map - update the map or the wording`);
@@ -1123,7 +1127,7 @@ function hashOf(text) {
   return sync.sha256Hex(sync.normalizeText(text));
 }
 
-test('update driver: new upstream file with nothing local -> add, written on apply', () => {
+test('update driver: new upstream file with nothing local -> add, written on apply', async () => {
   const localRoot = mkTempDir();
   const upstreamRoot = mkTempDir();
   writeManifest(localRoot, {});
@@ -1135,7 +1139,7 @@ test('update driver: new upstream file with nothing local -> add, written on app
   assert.strictEqual(item.status, 'add');
   assert.strictEqual(fs.existsSync(path.join(localRoot, '.asd/rules/new-rule.md')), false, 'planUpdate must not write anything');
 
-  const result = update.applyPlan(localRoot, plan, { dryRun: false });
+  const result = await update.applyPlan(localRoot, plan, { dryRun: false });
   assert.strictEqual(result.applied.some((a) => a.relPath === '.asd/rules/new-rule.md' && a.action === 'add'), true);
   assert.strictEqual(fs.readFileSync(path.join(localRoot, '.asd/rules/new-rule.md'), 'utf8'), 'hello upstream\n');
 
@@ -1161,7 +1165,7 @@ test('update driver: local unchanged since last release, upstream changed -> upd
   assert.strictEqual(fs.readFileSync(path.join(localRoot, '.asd/rules/a.md'), 'utf8'), newContent);
 });
 
-test('update driver: local hand-edited vs old release hash -> conflict, never overwritten', () => {
+test('update driver: local hand-edited vs old release hash -> conflict, never overwritten', async () => {
   const localRoot = mkTempDir();
   const upstreamRoot = mkTempDir();
   const oldContent = 'v1\n';
@@ -1177,7 +1181,7 @@ test('update driver: local hand-edited vs old release hash -> conflict, never ov
   assert.strictEqual(item.status, 'conflict');
   assert.ok(plan.report.needsAttention.some((n) => n.relPath === '.asd/rules/a.md' && n.status === 'conflict'));
 
-  const result = update.applyPlan(localRoot, plan, { dryRun: false });
+  const result = await update.applyPlan(localRoot, plan, { dryRun: false });
   assert.strictEqual(result.applied.some((a) => a.relPath === '.asd/rules/a.md'), false, 'conflicted file must not be applied');
   assert.strictEqual(fs.readFileSync(path.join(localRoot, '.asd/rules/a.md'), 'utf8'), localEdit, 'local edit must survive untouched');
 
@@ -1185,7 +1189,7 @@ test('update driver: local hand-edited vs old release hash -> conflict, never ov
   assert.strictEqual(newManifest.upstream_hashes['.asd/rules/a.md'], hashOf(oldContent), 'ledger keeps the OLD hash for an unresolved conflict');
 });
 
-test('update driver: --force overwrites a conflict only when the caller explicitly names it', () => {
+test('update driver: --force overwrites a conflict only when the caller explicitly names it', async () => {
   const localRoot = mkTempDir();
   const upstreamRoot = mkTempDir();
   const oldContent = 'v1\n';
@@ -1199,7 +1203,7 @@ test('update driver: --force overwrites a conflict only when the caller explicit
   const plan = update.planUpdate(localRoot, upstreamRoot);
   assert.strictEqual(plan.classifications.find((c) => c.relPath === '.asd/rules/a.md').status, 'conflict');
 
-  const result = update.applyPlan(localRoot, plan, { dryRun: false, force: ['.asd/rules/a.md'] });
+  const result = await update.applyPlan(localRoot, plan, { dryRun: false, force: ['.asd/rules/a.md'] });
   assert.strictEqual(result.applied.some((a) => a.relPath === '.asd/rules/a.md' && a.action === 'conflict-forced'), true);
   assert.strictEqual(fs.readFileSync(path.join(localRoot, '.asd/rules/a.md'), 'utf8'), upstreamNew, 'forced conflict is overwritten with upstream content');
 
@@ -1223,7 +1227,7 @@ test('update driver: new upstream path lands on a pre-existing untracked local f
   assert.strictEqual(fs.readFileSync(path.join(localRoot, '.asd/rules/foreign.md'), 'utf8'), 'a human wrote this, never tracked\n');
 });
 
-test('update driver: upstream removed the file, local untouched -> deleted on apply', () => {
+test('update driver: upstream removed the file, local untouched -> deleted on apply', async () => {
   const localRoot = mkTempDir();
   const upstreamRoot = mkTempDir();
   const content = 'to be removed upstream\n';
@@ -1235,7 +1239,7 @@ test('update driver: upstream removed the file, local untouched -> deleted on ap
   const item = plan.classifications.find((c) => c.relPath === '.asd/rules/gone.md');
   assert.strictEqual(item.status, 'delete');
 
-  const result = update.applyPlan(localRoot, plan, { dryRun: false });
+  const result = await update.applyPlan(localRoot, plan, { dryRun: false });
   assert.strictEqual(result.applied.some((a) => a.relPath === '.asd/rules/gone.md' && a.action === 'delete'), true);
   assert.strictEqual(fs.existsSync(path.join(localRoot, '.asd/rules/gone.md')), false);
 });
@@ -1257,7 +1261,7 @@ test('update driver: upstream removed the file, local diverged -> kept + reporte
   assert.strictEqual(fs.readFileSync(path.join(localRoot, '.asd/rules/gone.md'), 'utf8'), localEdit);
 });
 
-test('update driver: --dry-run mode reports the full plan but writes nothing at all', () => {
+test('update driver: --dry-run mode reports the full plan but writes nothing at all', async () => {
   const localRoot = mkTempDir();
   const upstreamRoot = mkTempDir();
   writeFile(localRoot, '.asd/rules/a.md', 'v1\n');
@@ -1270,7 +1274,7 @@ test('update driver: --dry-run mode reports the full plan but writes nothing at 
   const plan = update.planUpdate(localRoot, upstreamRoot);
   assert.strictEqual(plan.report.plannedWrites, 2);
 
-  const result = update.applyPlan(localRoot, plan, { dryRun: true });
+  const result = await update.applyPlan(localRoot, plan, { dryRun: true });
   assert.strictEqual(result.dryRun, true);
   assert.strictEqual(result.applied.length, 0);
   assert.strictEqual(fs.readFileSync(path.join(localRoot, '.asd/rules/a.md'), 'utf8'), 'v1\n', 'dry-run must not touch existing files');
@@ -1355,7 +1359,7 @@ test('update driver: unknown schema_version in fetched upstream manifest fails c
   assert.throws(() => update.planUpdate(localRoot, upstreamRoot), /schema_version 999.*not supported/);
 });
 
-test('update driver: sync.js --check runs automatically after a real apply', () => {
+test('update driver: sync.js --check runs automatically after a real apply', async () => {
   const localRoot = mkTempDir();
   const upstreamRoot = mkTempDir();
   fs.mkdirSync(path.join(localRoot, '.claude'), { recursive: true }); // repo-root marker consumed by sync.findRepoRoot elsewhere; not required by runCheck itself
@@ -1367,11 +1371,11 @@ test('update driver: sync.js --check runs automatically after a real apply', () 
   writeFile(upstreamRoot, '.asd/rules/a.md', 'v1\n');
 
   const plan = update.planUpdate(localRoot, upstreamRoot);
-  const result = update.applyPlan(localRoot, plan, { dryRun: false });
+  const result = await update.applyPlan(localRoot, plan, { dryRun: false });
   assert.ok(Array.isArray(result.syncCheck), 'applyPlan must run sync.js --check (runCheck) after a real apply and surface its report');
 });
 
-test('update driver: post-apply check loads the FRESHLY WRITTEN sync.js, never a stale require() cache', () => {
+test('update driver: post-apply check loads the FRESHLY WRITTEN sync.js, never a stale require() cache', async () => {
   const localRoot = mkTempDir();
   const upstreamRoot = mkTempDir();
 
@@ -1390,12 +1394,12 @@ test('update driver: post-apply check loads the FRESHLY WRITTEN sync.js, never a
   const plan = update.planUpdate(localRoot, upstreamRoot);
   assert.strictEqual(plan.classifications.find((c) => c.relPath === '.asd/sync.js').status, 'update');
 
-  const result = update.applyPlan(localRoot, plan, { dryRun: false });
+  const result = await update.applyPlan(localRoot, plan, { dryRun: false });
   assert.strictEqual(fs.readFileSync(path.join(localRoot, '.asd/sync.js'), 'utf8'), newSyncJs, 'sanity: the new engine was actually written');
   assert.strictEqual(result.syncCheck, 'NEW_ENGINE_RAN', 'post-apply check must reflect the JUST-WRITTEN engine, not a cached stale one');
 });
 
-test('update driver: a genuinely BROKEN freshly-written sync.js fails loud, never masked by the old engine', () => {
+test('update driver: a genuinely BROKEN freshly-written sync.js fails loud, never masked by the old engine', async () => {
   const localRoot = mkTempDir();
   const upstreamRoot = mkTempDir();
 
@@ -1410,8 +1414,283 @@ test('update driver: a genuinely BROKEN freshly-written sync.js fails loud, neve
   // A broken engine must surface as a thrown error from applyPlan - never
   // silently fall back to running the OLD engine and reporting a false-green
   // syncCheck as if the update were fine.
-  assert.throws(() => update.applyPlan(localRoot, plan, { dryRun: false }));
+  await assert.rejects(() => update.applyPlan(localRoot, plan, { dryRun: false }));
   assert.strictEqual(fs.readFileSync(path.join(localRoot, '.asd/sync.js'), 'utf8'), brokenSyncJs, 'the broken file was still written - that part of the update is honest; only the post-check must fail loud, not lie');
+});
+
+// ===========================================================================
+// 11. sync.js orphan detection (plan.md Task 12, AC-14): generated views whose
+// canonical source no longer exists. Marker-gated - only a file carrying the
+// ASD ownership marker may ever be deleted; an unmarked file sharing the same
+// path is indistinguishable from a consumer's own hand-authored agent/skill
+// and must survive untouched. Built on makeMiniRepo() (empty .asd/agents), so
+// ANY file dropped into one of the four generated trees is automatically
+// unexpected by buildSyncPlan() - no need to first delete a real canon source.
+// ===========================================================================
+
+// Builds ownership-marker-bearing file content for a generated-view fixture.
+// 'md' format needs the marker on line 2 (after the opening '---' fence,
+// splitMarkerAndBody's frontmatter-safe convention); 'toml' keeps it as the
+// literal first line. Uses the real buildFullFileMarker/sha256Hex so this
+// stays byte-compatible with whatever sync.js itself considers a valid
+// marker, instead of hand-rolling a regex-matching string that could drift.
+function markedFileContent(format, manifest) {
+  const marker = sync.buildFullFileMarker({
+    format,
+    sourceRelPath: 'agents/retired-fixture-agent.md',
+    sourceDigest: sync.sha256Hex('fixture-source'),
+    contentDigest: sync.sha256Hex('fixture-content'),
+    asdVersion: manifest.asd_version,
+  });
+  if (format === 'md') return '---\n' + marker + '\nbody\n---\nrest of body\n';
+  return marker + '\nbody\n';
+}
+
+test('sync.js orphan detection (AC-14): --check reports a marked orphan as "orphan" (fails) and an unmarked one as "orphan-unmarked" (informational, never a failure)', () => {
+  const root = makeMiniRepo();
+  const manifest = loadManifest();
+  const markedAbs = path.join(root, '.claude', 'agents', 'asd-reviewer-quality.md');
+  const unmarkedAbs = path.join(root, '.claude', 'agents', 'consumer-owned.md');
+  fs.mkdirSync(path.dirname(markedAbs), { recursive: true });
+  fs.writeFileSync(markedAbs, markedFileContent('md', manifest), 'utf8');
+  fs.writeFileSync(unmarkedAbs, "# a consumer's own hand-authored agent, no ownership marker\n", 'utf8');
+
+  const report = sync.runCheck(root);
+  assert.strictEqual(report.find((i) => i.target === '.claude/agents/asd-reviewer-quality.md').status, 'orphan');
+  assert.strictEqual(report.find((i) => i.target === '.claude/agents/consumer-owned.md').status, 'orphan-unmarked');
+  // Mirrors main()'s own CLI exit-code rule: only a marked orphan fails --check.
+  assert.strictEqual(report.some((i) => i.status === 'orphan'), true, 'a marked orphan must fail the check');
+});
+
+test('sync.js orphan detection: --apply deletes an explicitly-requested marked orphan but refuses an unmarked one, unmarked file survives', () => {
+  const root = makeMiniRepo();
+  const manifest = loadManifest();
+  const markedAbs = path.join(root, '.claude', 'agents', 'asd-reviewer-quality.md');
+  const unmarkedAbs = path.join(root, '.claude', 'agents', 'consumer-owned.md');
+  fs.mkdirSync(path.dirname(markedAbs), { recursive: true });
+  fs.writeFileSync(markedAbs, markedFileContent('md', manifest), 'utf8');
+  fs.writeFileSync(unmarkedAbs, "# a consumer's own hand-authored agent, no ownership marker\n", 'utf8');
+
+  const results = sync.runApply(root, ['.claude/agents/asd-reviewer-quality.md', '.claude/agents/consumer-owned.md']);
+  const markedResult = results.find((r) => r.target === '.claude/agents/asd-reviewer-quality.md');
+  const unmarkedResult = results.find((r) => r.target === '.claude/agents/consumer-owned.md');
+
+  assert.strictEqual(markedResult.status, 'orphan');
+  assert.strictEqual(markedResult.applied, true);
+  assert.strictEqual(fs.existsSync(markedAbs), false, 'marked orphan must be deleted');
+
+  assert.strictEqual(unmarkedResult.status, 'orphan-unmarked');
+  assert.strictEqual(unmarkedResult.applied, false);
+  assert.strictEqual(fs.existsSync(unmarkedAbs), true, 'unmarked file sharing the path must never be deleted');
+});
+
+test('sync.js orphan detection: a symlinked orphan target fails closed - treated as unmarked, never deleted', () => {
+  const root = makeMiniRepo();
+  const manifest = loadManifest();
+  const realFile = path.join(root, 'real-marked-elsewhere.md');
+  fs.writeFileSync(realFile, markedFileContent('md', manifest), 'utf8');
+  const linkAbs = path.join(root, '.claude', 'agents', 'symlinked-orphan.md');
+  fs.mkdirSync(path.dirname(linkAbs), { recursive: true });
+  let symlinkSupported = true;
+  try {
+    fs.symlinkSync(realFile, linkAbs, 'file');
+  } catch (_) {
+    symlinkSupported = false; // e.g. Windows without dev mode / elevated perms
+  }
+  if (!symlinkSupported) {
+    console.log('  (skipped symlink assertions: fs.symlinkSync unsupported in this environment)');
+    return;
+  }
+
+  const report = sync.runCheck(root);
+  const item = report.find((i) => i.target === '.claude/agents/symlinked-orphan.md');
+  assert.strictEqual(item.status, 'orphan-unmarked', 'a symlink must fail closed to "no marker", never be treated as deletable, regardless of what it points at');
+
+  const results = sync.runApply(root, ['.claude/agents/symlinked-orphan.md']);
+  assert.strictEqual(results[0].applied, false);
+  assert.strictEqual(fs.existsSync(linkAbs), true, 'symlinked target must never be deleted');
+});
+
+test('sync.js runApply (fail-open fix, decisions-log 2026-09-04): a target matching no plan entry and no orphan reports not-found, aborts the WHOLE batch (no partial write)', () => {
+  const root = makeMiniRepo();
+  writeAgentCanon(root, 'good-agent', GOOD_AGENT_CANON);
+  const goodTargetRel = '.claude/agents/good-agent.md';
+  const bogusTargetRel = '.claude/agents/typo-target-matching-nothing.md';
+
+  const results = sync.runApply(root, [goodTargetRel, bogusTargetRel]);
+  const bogusResult = results.find((r) => r.target === bogusTargetRel);
+  const goodResult = results.find((r) => r.target === goodTargetRel);
+
+  assert.strictEqual(bogusResult.status, 'not-found');
+  assert.strictEqual(bogusResult.applied, false);
+  assert.strictEqual(goodResult.applied, false, 'a bogus target anywhere in the batch must abort the whole batch, not just its own entry - previously this reported a false-green apply');
+  assert.strictEqual(fs.existsSync(path.join(root, goodTargetRel)), false, 'no partial write from an aborted batch');
+});
+
+// ===========================================================================
+// 12. update.js migration runner (listMigrations/pendingMigrations/
+// runMigrations, Task 13, AC-12) - ordering, skip-already-applied,
+// stop-on-first-failure, no-migrations-needed, and fresh-tree loading.
+// Fixture migrations are plain Node scripts written directly under
+// <root>/.asd/migrations/<version>.js - no network, same local-fixture
+// convention already used for the update driver above.
+// ===========================================================================
+
+function writeMigrationScript(root, version, scriptSrc) {
+  writeFile(root, `.asd/migrations/${version}.js`, scriptSrc);
+}
+
+test('update.js migration runner (AC-12): pending migrations execute in ascending version order', async () => {
+  const root = mkTempDir();
+  const logPath = path.join(root, 'order.log');
+  writeMigrationScript(root, '1.1.0', "module.exports = (ctx) => { require('fs').appendFileSync(require('path').join(ctx.repoRoot, 'order.log'), '1.1.0\\n'); };");
+  writeMigrationScript(root, '1.0.1', "module.exports = (ctx) => { require('fs').appendFileSync(require('path').join(ctx.repoRoot, 'order.log'), '1.0.1\\n'); };");
+
+  const result = await update.runMigrations(root, '1.0.0', '1.1.0');
+  assert.deepStrictEqual(result.ran, ['1.0.1', '1.1.0']);
+  assert.strictEqual(result.reachedVersion, '1.1.0');
+  assert.strictEqual(fs.readFileSync(logPath, 'utf8'), '1.0.1\n1.1.0\n', 'the older-versioned migration must have run FIRST, regardless of filesystem listing order');
+});
+
+test('update.js migration runner (AC-12): a migration at or below the consumer\'s current version is skipped, never run', async () => {
+  const root = mkTempDir();
+  // Version equal to oldVersion must be skipped (compareVersions > 0 excludes
+  // it) - if it ran anyway, this script would throw and fail the whole run.
+  writeMigrationScript(root, '1.0.0', "module.exports = () => { throw new Error('must never run - at-or-below current version'); };");
+  writeMigrationScript(root, '1.1.0', "module.exports = (ctx) => { require('fs').writeFileSync(require('path').join(ctx.repoRoot, 'ran.log'), 'yes'); };");
+
+  const result = await update.runMigrations(root, '1.0.0', '1.1.0');
+  assert.deepStrictEqual(result.ran, ['1.1.0']);
+  assert.strictEqual(result.failure, null);
+  assert.strictEqual(fs.readFileSync(path.join(root, 'ran.log'), 'utf8'), 'yes');
+});
+
+test('update.js migration runner (AC-12): stop-on-first-failure pins reachedVersion at the last success, not the target', async () => {
+  const root = mkTempDir();
+  writeMigrationScript(root, '1.0.1', "module.exports = (ctx) => { require('fs').writeFileSync(require('path').join(ctx.repoRoot, 'ran-1.0.1'), 'x'); };");
+  writeMigrationScript(root, '1.0.2', "module.exports = () => { throw new Error('boom'); };");
+  writeMigrationScript(root, '1.0.3', "module.exports = (ctx) => { require('fs').writeFileSync(require('path').join(ctx.repoRoot, 'ran-1.0.3'), 'x'); };");
+
+  const result = await update.runMigrations(root, '1.0.0', '1.0.3');
+  assert.strictEqual(result.reachedVersion, '1.0.1', 'must pin to the last SUCCESSFUL version, never the target version');
+  assert.deepStrictEqual(result.ran, ['1.0.1']);
+  assert.strictEqual(result.failure.version, '1.0.2');
+  assert.ok(result.failure.error.includes('boom'));
+  assert.strictEqual(fs.existsSync(path.join(root, 'ran-1.0.3')), false, 'a migration after the failed one must never run');
+});
+
+test('update.js migration runner (AC-12): no pending migrations advances reachedVersion straight to the target', async () => {
+  const root = mkTempDir(); // no .asd/migrations directory at all
+  const result = await update.runMigrations(root, '2.0.0', '2.1.0');
+  assert.strictEqual(result.reachedVersion, '2.1.0');
+  assert.deepStrictEqual(result.ran, []);
+  assert.strictEqual(result.failure, null);
+});
+
+test('update.js migration runner: a migration script shipped in this same apply loads fresh, never a stale require-cache copy', async () => {
+  const root = mkTempDir();
+  const migPath = path.join(root, '.asd', 'migrations', '9.9.9.js');
+  fs.mkdirSync(path.dirname(migPath), { recursive: true });
+  const whichLog = path.join(root, 'which.log');
+  fs.writeFileSync(migPath, `module.exports = (ctx) => { require('fs').writeFileSync(require('path').join(ctx.repoRoot, 'which.log'), 'OLD'); };\n`, 'utf8');
+  require(migPath); // poison require.cache with the OLD script, same trap loadFreshSync solves for sync.js
+  fs.writeFileSync(migPath, `module.exports = (ctx) => { require('fs').writeFileSync(require('path').join(ctx.repoRoot, 'which.log'), 'NEW'); };\n`, 'utf8');
+
+  await update.runMigrations(root, '9.9.8', '9.9.9');
+  assert.strictEqual(fs.readFileSync(whichLog, 'utf8'), 'NEW', 'must run the JUST-WRITTEN script, never a stale require-cache copy from before the overwrite');
+});
+
+// ===========================================================================
+// 13. .asd/migrations/4.0.0.js (Task 14, AC-7/AC-10/AC-11 roster cleanup) -
+// the sprint's one piece of destructive, outside-managed_paths code. Fixture
+// repos carry a real copy of .asd/sync.js (the migration requires it from
+// ctx.repoRoot, not from this test file's own location) so hasOwnershipMarker/
+// readNormalized/writeNormalized behave exactly as in a real consumer tree.
+// ===========================================================================
+
+function makeMigrationFixtureRepo() {
+  const root = mkTempDir();
+  fs.mkdirSync(path.join(root, '.asd'), { recursive: true });
+  fs.writeFileSync(path.join(root, '.asd', 'sync.js'), fs.readFileSync(path.join(REPO_ROOT, '.asd', 'sync.js'), 'utf8'), 'utf8');
+  return root;
+}
+
+test('4.0.0 migration (AC-7/AC-10/AC-11): deletes marked generated views of a retired agent; a missing target is success; re-running is a no-op', async () => {
+  const root = makeMigrationFixtureRepo();
+  const manifest = loadManifest();
+  const name = 'asd-reviewer-quality'; // one of the nine retired agent names
+  const claudeAbs = path.join(root, '.claude', 'agents', `${name}.md`);
+  const codexAbs = path.join(root, '.codex', 'agents', `${name}.toml`);
+  // The third target (.agents/skills/<name>/SKILL.md) is deliberately left
+  // absent, to prove a missing target is reported as success, not failure.
+  fs.mkdirSync(path.dirname(claudeAbs), { recursive: true });
+  fs.writeFileSync(claudeAbs, markedFileContent('md', manifest), 'utf8');
+  fs.mkdirSync(path.dirname(codexAbs), { recursive: true });
+  fs.writeFileSync(codexAbs, markedFileContent('toml', manifest), 'utf8');
+
+  const report = await migration400({ repoRoot: root });
+  assert.ok(report.deleted.includes(`.claude/agents/${name}.md`));
+  assert.ok(report.deleted.includes(`.codex/agents/${name}.toml`));
+  assert.ok(report.missing.includes(`.agents/skills/${name}/SKILL.md`));
+  assert.strictEqual(fs.existsSync(claudeAbs), false);
+  assert.strictEqual(fs.existsSync(codexAbs), false);
+
+  // Idempotency: re-running after everything is already gone is success, never an error.
+  const rerun = await migration400({ repoRoot: root });
+  assert.deepStrictEqual(rerun.deleted, []);
+  assert.ok(rerun.missing.includes(`.claude/agents/${name}.md`));
+});
+
+test('4.0.0 migration: leaves an unmarked (consumer-owned) file sharing a retired agent name untouched', async () => {
+  const root = makeMigrationFixtureRepo();
+  const name = 'asd-ux-designer';
+  const claudeAbs = path.join(root, '.claude', 'agents', `${name}.md`);
+  fs.mkdirSync(path.dirname(claudeAbs), { recursive: true });
+  const handAuthored = "# hand-authored, no ownership marker - a consumer coincidentally reused this name\n";
+  fs.writeFileSync(claudeAbs, handAuthored, 'utf8');
+
+  const report = await migration400({ repoRoot: root });
+  assert.ok(report.skippedUnmarked.includes(`.claude/agents/${name}.md`));
+  assert.strictEqual(fs.readFileSync(claudeAbs, 'utf8'), handAuthored, "consumer-owned file must survive byte-for-byte");
+});
+
+test('4.0.0 migration (AC-5): adds test_affected to commands.yaml additively when a supported test runner is detected; never touches config.yaml/sprints/custom rules', async () => {
+  const root = makeMigrationFixtureRepo();
+  fs.mkdirSync(path.join(root, '.asd', 'project'), { recursive: true });
+  const commandsYamlBefore = 'test: "npm test"\n\ncustom:\n  something: true\n';
+  fs.writeFileSync(path.join(root, '.asd', 'project', 'commands.yaml'), commandsYamlBefore, 'utf8');
+  fs.writeFileSync(path.join(root, '.asd', 'project', 'config.yaml'), 'language:\n  chat: en\n', 'utf8');
+  fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify({ devDependencies: { jest: '^29.0.0' } }), 'utf8');
+  const configYamlBefore = fs.readFileSync(path.join(root, '.asd', 'project', 'config.yaml'), 'utf8');
+
+  const report = await migration400({ repoRoot: root });
+  assert.strictEqual(report.commandsYaml.status, 'added');
+  assert.strictEqual(report.commandsYaml.value, 'jest --changedSince=<BASE_REF>');
+  const commandsYamlAfter = fs.readFileSync(path.join(root, '.asd', 'project', 'commands.yaml'), 'utf8');
+  assert.ok(commandsYamlAfter.includes('test_affected: "jest --changedSince=<BASE_REF>"'));
+  assert.ok(commandsYamlAfter.includes('test: "npm test"'), 'pre-existing test command must survive');
+  assert.ok(commandsYamlAfter.includes('something: true'), 'pre-existing custom block content must survive');
+  assert.strictEqual(fs.readFileSync(path.join(root, '.asd', 'project', 'config.yaml'), 'utf8'), configYamlBefore, 'config.yaml must never be touched');
+
+  // Additive-only guarantee: a second run must never overwrite the now-present field.
+  const rerun = await migration400({ repoRoot: root });
+  assert.strictEqual(rerun.commandsYaml.status, 'already-present');
+});
+
+test('4.0.0 migration: reports (never rewrites) an active sprint sitting in a review phase', async () => {
+  const root = makeMigrationFixtureRepo();
+  const sprintDir = path.join(root, '.asd', 'sprints', '999-fixture');
+  fs.mkdirSync(sprintDir, { recursive: true });
+  const stateBefore = JSON.stringify({
+    sprint_id: '999-fixture',
+    phase: 'impl-review',
+    reviews: { impl: { verdicts: { 'iter-01': { quality: 'APPROVE' } } } },
+  });
+  fs.writeFileSync(path.join(sprintDir, 'state.json'), stateBefore, 'utf8');
+
+  const report = await migration400({ repoRoot: root });
+  assert.ok(report.activeReviewSprints.includes('999-fixture'));
+  assert.strictEqual(fs.readFileSync(path.join(sprintDir, 'state.json'), 'utf8'), stateBefore, 'state.json must never be rewritten by the migration');
 });
 
 // ===========================================================================
@@ -1554,17 +1833,25 @@ test('SessionStart hook: an all-"skipped:" verdict map (no genuine approval) is 
 // Runner
 // ===========================================================================
 
-let failures = 0;
-for (const t of tests) {
-  try {
-    t.fn();
-    console.log(`ok - ${t.name}`);
-  } catch (err) {
-    failures++;
-    console.error(`FAIL - ${t.name}`);
-    console.error('   ' + (err && err.stack ? err.stack.split('\n').join('\n   ') : String(err)));
+// Test bodies may be sync or async (`update.applyPlan`/migration-runner tests
+// need to `await` real async production functions) - `await`ing a plain
+// (non-Promise) return value is a no-op, so this loop stays correct for
+// every existing sync test body too, zero behavior change for them.
+async function runAll() {
+  let failures = 0;
+  for (const t of tests) {
+    try {
+      await t.fn();
+      console.log(`ok - ${t.name}`);
+    } catch (err) {
+      failures++;
+      console.error(`FAIL - ${t.name}`);
+      console.error('   ' + (err && err.stack ? err.stack.split('\n').join('\n   ') : String(err)));
+    }
   }
+
+  console.log(`\n${tests.length - failures}/${tests.length} passed`);
+  process.exitCode = failures > 0 ? 1 : 0;
 }
 
-console.log(`\n${tests.length - failures}/${tests.length} passed`);
-process.exitCode = failures > 0 ? 1 : 0;
+runAll();
