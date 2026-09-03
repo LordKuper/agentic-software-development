@@ -1543,6 +1543,31 @@ test('sync.js runApply (fail-open fix, decisions-log 2026-09-04): a target match
   assert.strictEqual(fs.existsSync(path.join(root, goodTargetRel)), false, 'no partial write from an aborted batch');
 });
 
+test('sync.js orphan detection: --apply on a NESTED per-skill orphan (.agents/skills/<name>/SKILL.md) removes the now-emptied skill directory too, via sync.js\'s OWN removeIfEmptyDir call - not just the 4.0.0 migration\'s', () => {
+  // removeIfEmptyDir is one shared implementation (sync.js) called from two
+  // different sites with independently-constructed absolute paths: this
+  // orphan-apply path (findOrphans' recursive walk over ORPHAN_TREES, which
+  // includes .agents/skills) and the 4.0.0 migration's hardcoded target list
+  // (already covered by its own test). Proving THIS caller's path-construction
+  // also reaches a real, now-empty nested directory is not redundant with
+  // that other test - the two callers compute absOrphan/absPath differently
+  // and only this one is reachable through --apply's orphan branch at all.
+  const root = makeMiniRepo();
+  const manifest = loadManifest();
+  const skillAbs = path.join(root, '.agents', 'skills', 'asd-reviewer-quality', 'SKILL.md');
+  const skillDirAbs = path.dirname(skillAbs);
+  fs.mkdirSync(skillDirAbs, { recursive: true });
+  fs.writeFileSync(skillAbs, markedFileContent('md', manifest), 'utf8');
+
+  const results = sync.runApply(root, ['.agents/skills/asd-reviewer-quality/SKILL.md']);
+  const result = results.find((r) => r.target === '.agents/skills/asd-reviewer-quality/SKILL.md');
+
+  assert.strictEqual(result.status, 'orphan');
+  assert.strictEqual(result.applied, true);
+  assert.strictEqual(fs.existsSync(skillAbs), false, 'marked orphan file must be deleted');
+  assert.strictEqual(fs.existsSync(skillDirAbs), false, 'the now-empty per-skill directory must be pruned too, not left behind');
+});
+
 test('sync.js CLI: --check exits 1 when a marked orphan is present, 0 when only an unmarked one is', () => {
   const root = makeMiniRepo();
   const manifest = loadManifest();
