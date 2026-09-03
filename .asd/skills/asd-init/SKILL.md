@@ -39,7 +39,7 @@
 8. Auto-detect build commands from:
    - manifests: package.json scripts, Cargo.toml, pyproject.toml, go.mod, Makefile
    - code analysis: CI configs (.github/workflows, .gitlab-ci.yml, etc.), Dockerfile RUN lines, README command patterns
-   - native affected/changed-test selector (`test_affected`, AC-5 — `sprint-lifecycle.md` "Impacted
+   - native affected/changed-test selector (`test_affected` — `sprint-lifecycle.md` "Impacted
      test set"): keyed on the detected test *runner*, never on a command string. package.json
      `devDependencies`/test script naming `jest` → `jest --changedSince=<BASE_REF>`; naming `vitest`
      → `vitest run --changed <BASE_REF>`; pyproject.toml/requirements.txt naming a picked/testmon-

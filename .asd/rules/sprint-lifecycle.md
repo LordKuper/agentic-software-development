@@ -29,7 +29,7 @@ Each review phase reads, increments, and reports only its own counter. Never sha
 
 - Both created at `0` when the sprint is initialised in `scope` (per `t_state.json`).
 - Each incremented at the **start of every entry** of its phase (`1` on first entry). `design-review` entered once, loops internally. `impl-review` re-entered each cycle; the intervening `impl` and `impl-test` phases do not touch the counter — it accumulates across the whole cycle.
-- **Rollback reset.** When `state.json.phase` is set strictly earlier in the chain than a review's input-producing phase, that counter resets to `0`, its severity floor resets, its `verdicts` clear, and its `latched` map clears to `{}` (AC-2 APPROVE latch, below — same reset, no second mechanism). Input-producing phases: `design` for design-review, `impl` for impl-review.
+- **Rollback reset.** When `state.json.phase` is set strictly earlier in the chain than a review's input-producing phase, that counter resets to `0`, its severity floor resets, its `verdicts` clear, and its `latched` map clears to `{}` (APPROVE latch, below — same reset, no second mechanism). Input-producing phases: `design` for design-review, `impl` for impl-review.
 
   | Counter | Resets when phase set to |
   |---|---|
@@ -41,7 +41,7 @@ Each review phase reads, increments, and reports only its own counter. Never sha
 
 Verdict files: design-review → `<sprint>/reviews/design/iter-NN/`, impl-review → `<sprint>/reviews/impl/iter-NN/`, `NN` = that phase's own counter.
 
-## APPROVE latch (AC-2)
+## APPROVE latch
 
 Persisted per phase per reviewer key in `state.json.reviews.<phase>.latched` (`t_state.json`) — a map from reviewer key (the same keys used in `verdicts["iter-NN"]`: `correctness`/`efficiency`/`testing`/`documentation`/`external` for impl-review, `correctness`/`efficiency`/`documentation`/`external` for design-review) to the iteration number at which that reviewer returned `APPROVE`. An absent key means that reviewer has never latched, or its latch was cleared. A sprint in flight when this field shipped carries no `latched` object at all under one or both phase nodes — treat a wholly absent `latched` object the same as an empty one (`{}`, no latches), mirroring the `iteration_heads` absent-key fallback above; never an error.
 
@@ -53,16 +53,16 @@ The dispatching phase workflow writes a reviewer's latch entry the moment that r
 
 **Reset.** The rollback reset above already clears `latched` to `{}` alongside `iteration`/`verdicts` for the affected phase — no second mechanism for that route.
 
-**Red-full-suite invalidation.** A red full suite (the end-of-`impl-review` terminal suite run added under AC-5) proves previously-approved code was wrong: on that failure, clear BOTH `reviews.design.latched` and `reviews.impl.latched` to `{}` sprint-wide — not only the reviewer(s) whose domain the regression touched — before the sprint routes back to `impl`. The next `impl-review` entry then re-dispatches its full required roster, with no latch surviving from before the failure. This is a DISTINCT clearing route from the rollback reset above, not a consequence of it: a red-suite failure routes to `impl` in test-fix mode, and re-entering `impl`/`impl-test` from `impl-review` is normal cycle re-entry, never a rollback — "Setting phase to `impl` or `impl-test` is not earlier than `impl`" above, so the rollback-reset table never fires for this route. The full-suite step's own implementation (where in the workflow this clearing happens, alongside the rest of its red path) is out of this rule's scope; this paragraph is the contract that step must satisfy.
+**Red-full-suite invalidation.** A red full suite (the end-of-`impl-review` terminal suite run) proves previously-approved code was wrong: on that failure, clear BOTH `reviews.design.latched` and `reviews.impl.latched` to `{}` sprint-wide — not only the reviewer(s) whose domain the regression touched — before the sprint routes back to `impl`. The next `impl-review` entry then re-dispatches its full required roster, with no latch surviving from before the failure. This is a DISTINCT clearing route from the rollback reset above, not a consequence of it: a red-suite failure routes to `impl` in test-fix mode, and re-entering `impl`/`impl-test` from `impl-review` is normal cycle re-entry, never a rollback — "Setting phase to `impl` or `impl-test` is not earlier than `impl`" above, so the rollback-reset table never fires for this route. The full-suite step's own implementation (where in the workflow this clearing happens, alongside the rest of its red path) is out of this rule's scope; this paragraph is the contract that step must satisfy.
 
-## Impacted test set (AC-5)
+## Impacted test set
 
-Every test run inside `impl`, `impl-test`, and `impl-review` is scoped to the **impacted set** — defined once, here; every other file cross-links this section, never restates it.
+Every scoped test run in `impl` and `impl-test` uses the **impacted set** — defined once, here; every other file cross-links this section, never restates it. `impl-review`'s one terminal run is deliberately unscoped (below).
 
 **Definition.** The impacted set is the union of:
 1. test files present in the change-surface diff;
 2. tests exercising a changed unit, resolved by repo search over references/imports of the changed modules;
-3. tests tagged with an AC-N the change touches (the existing AC-citation convention, `code-style.md` §17).
+3. tests tagged with an AC-N the change touches (the AC-citation convention — the tag lives in the test's name/path, `t_test-plan.md` "Added tests"; the one exception to `code-style.md` §8's in-code document-reference ban).
 
 **Native selector override.** When `commands.yaml` carries a `test_affected` field (a native runner flag such as `--changedSince`/`--onlyChanged`, or a filter expression), that field's result REPLACES the search-derived set above — the runner's own answer is used, not a second derivation. Field absent → fall back to the search-derived set. The field's shape and `t_commands.yaml`/`asd-init` detection are defined where `commands.yaml` is — this section only names the override mechanism and its key.
 
@@ -267,6 +267,6 @@ A sprint folder under `.asd/sprints/archived/<NNN-slug>/` is read-only, with one
 - a bare verdict token string (`"APPROVE"`/`"CONCERNS"`/`"FAIL"`, parsed from that reviewer's written review file, covering whatever rubric sections it reviewed that dispatch — a section the reviewer itself marked `n/a: <predicate>` in its own returned section-coverage ledger per `review.scoped_fan_out` is bookkeeping internal to that reviewer's file, never a separate state value);
 - External Review's availability-skip verdict, `"APPROVE (skipped: <reason>)"` — never the bare token — written when its wrapped-CLI probe fails (`external-review.md` "Detection"); satisfies DoD identically to a bare `"APPROVE"` but is never written to `latched` ("APPROVE latch" "Availability-skip carve-out" above);
 - a legacy `"skipped: <predicate>"` string (no `APPROVE` prefix, never written by any current-version workflow) — may still be present in `state.json` when a consumer upgrades mid-sprint from a pre-4.0.0 `scoped_fan_out`-driven agent-level dispatch skip; every consumer of this map treats it as **satisfied**, identically to `APPROVE` (`asd-phase-pr.md` step 4's legacy branch);
-- an absent key for the current iteration, meaning one of two distinct things, never conflated: the reviewer was required, dispatched, and its dispatch was lost, crashed, or ledger-rejected without ever producing a recorded verdict (**blocking**); or the reviewer carries an entry in `reviews.impl.latched[<key>]` (APPROVE latch, AC-2 above) and so was not dispatched this iteration by design (**satisfied**, counts exactly as `APPROVE`).
+- an absent key for the current iteration, meaning one of two distinct things, never conflated: the reviewer was required, dispatched, and its dispatch was lost, crashed, or ledger-rejected without ever producing a recorded verdict (**blocking**); or the reviewer carries an entry in `reviews.impl.latched[<key>]` (APPROVE latch above) and so was not dispatched this iteration by design (**satisfied**, counts exactly as `APPROVE`).
 
 `null` is never written deliberately. Two gating consumers of this map — `asd-phase-pr.md` step 4, and impl-review's own DoD aggregation (this rule's "Impl-review" phase-table row / `review-policy.md` "DoD per review phase") — treat an absent key for a required reviewer as blocking UNLESS `reviews.impl.latched` carries that key, in which case it is satisfied. `.asd/hooks/session-start.js`'s `lastReviewVerdict` is a third, display-only consumer (session-summary text, never a gate): it reads both `verdicts["iter-NN"]` and `latched` for the relevant review node, counts a bare/skip-APPROVE token or a legacy `"skipped: ..."` value as satisfied and any present `latched` key as satisfied even with no matching `verdicts` entry, and — like every hook — must keep failing silently (exit 0, never throw) on any malformed or missing shape.

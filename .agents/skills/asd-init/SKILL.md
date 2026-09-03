@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:bd6e828fb311a2e7507643b87f80f928f5910a5dae56ff9237851bfdd493151f content_digest=sha256:5176889e2d3c9c826fdfdd82983e0344fce2f0db982e2241228ef5ba4dc1a06b asd_version=3.1.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:8d435c548c1d54f81213fae219850c2449833980e4c997f790620ad470d283ac content_digest=sha256:e6fddbebe320e7ae8e41083ac55d8572acb0e963c416a729942b343453a465ef asd_version=3.1.0 schema=1
 name: asd-init
 description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 ---
@@ -37,7 +37,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 8. Auto-detect build commands from:
    - manifests: package.json scripts, Cargo.toml, pyproject.toml, go.mod, Makefile
    - code analysis: CI configs (.github/workflows, .gitlab-ci.yml, etc.), Dockerfile RUN lines, README command patterns
-   - native affected/changed-test selector (`test_affected`, AC-5 — `sprint-lifecycle.md` "Impacted
+   - native affected/changed-test selector (`test_affected` — `sprint-lifecycle.md` "Impacted
      test set"): keyed on the detected test *runner*, never on a command string. package.json
      `devDependencies`/test script naming `jest` → `jest --changedSince=<BASE_REF>`; naming `vitest`
      → `vitest run --changed <BASE_REF>`; pyproject.toml/requirements.txt naming a picked/testmon-
