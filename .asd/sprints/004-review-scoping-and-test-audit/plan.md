@@ -348,20 +348,26 @@ consumer at a version that does not describe its files — the one outcome AC-12
 Satisfies AC-13. Consumer projects only — this repo does its own cleanup by editing canon and running
 `sync.js --apply` (Task 15), never by running this script (decisions-log, 2026-09-03).
 
-- [ ] Author the migration for the version this sprint produces, satisfying Task 13's contract
-- [ ] Delete the generated views of the nine retired agents — five merged reviewers, two merged devs,
+- [x] Author the migration for the version this sprint produces, satisfying Task 13's contract —
+      `.asd/migrations/4.0.0.js` (MAJOR bump from `3.1.0`: agent renames/merges break a consumer's
+      `state.json.reviews.*.verdicts` keys and agent references, per `git-strategy.md`'s SemVer rule;
+      the `pr` phase performs the actual bump and must land on this exact filename)
+- [x] Delete the generated views of the nine retired agents — five merged reviewers, two merged devs,
       two old names of the renamed agents — across `.claude/agents/*.md`, `.codex/agents/*.toml` and
       any stale `.agents/skills/` entry
-- [ ] Delete only from an explicit hardcoded name list; verify the ownership marker before removing;
+- [x] Delete only from an explicit hardcoded name list; verify the ownership marker before removing;
       treat a missing file as success
-- [ ] Remove other ASD files left over from earlier versions that are no longer in `managed_paths`
-- [ ] Add the affected-test-selector field to a consumer's `commands.yaml` when absent — additive and
+- [x] Remove other ASD files left over from earlier versions that are no longer in `managed_paths` —
+      mechanism provided (`OTHER_STALE_RELPATHS`, same marker-gated helper), list empty for 4.0.0:
+      audit.md/plan.md found no other file dropped from `managed_paths` this release beyond the nine
+      agent views
+- [x] Add the affected-test-selector field to a consumer's `commands.yaml` when absent — additive and
       idempotent
-- [ ] Never touch consumer-owned content: `config.yaml` values, sprints, persistent docs, custom
+- [x] Never touch consumer-owned content: `config.yaml` values, sprints, persistent docs, custom
       rules, custom skills/agents/hooks
-- [ ] Stale reviewer keys in a consumer's in-flight sprint are TOLERATED — sprints stay out of
+- [x] Stale reviewer keys in a consumer's in-flight sprint are TOLERATED — sprints stay out of
       migration scope and no sprint state is rewritten
-- [ ] Print a warning when the consumer has an active sprint whose phase is a review phase, telling
+- [x] Print a warning when the consumer has an active sprint whose phase is a review phase, telling
       them to finish that review iteration or re-run it
 
 Material risk: this is the only destructive code in the sprint, and it runs outside `managed_paths`
