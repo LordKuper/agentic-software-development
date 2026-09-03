@@ -101,7 +101,7 @@ After a successful update, it automatically runs `node .asd/sync.js --check` —
 
 > **After updating, reconcile `.claude/settings.json` and `.codex/hooks.json` yourself.** They hold your permission allowlist and hook registration; the updater and sync only ever merge in their own hook entries, never rewrite the rest of the file. If an update added a hook or skill, you may need to register it there manually.
 
-This repo (the ASD framework source itself) runs `node .asd/sync.js --check` in CI on every push/PR to `main` (`.github/workflows/sync-check.yml`), failing the build if any generated provider-view file drifts from canon — including an **orphan**: a file under `.claude/agents/`, `.claude/skills/`, `.codex/agents/`, or `.agents/skills/` whose canonical source was deleted or renamed. `--check` reports every orphan and exits non-zero; `--apply` deletes an orphan only when it still carries the ASD ownership marker — an unmarked file in those trees is always a consumer's own agent/skill, reported but never touched.
+This repo (the ASD framework source itself) runs `node .asd/sync.js --check` in CI on every push/PR to `main` (`.github/workflows/sync-check.yml`), failing the build if any generated provider-view file drifts from canon — including an **orphan**: a file under `.claude/agents/`, `.claude/skills/`, `.codex/agents/`, or `.agents/skills/` whose canonical source was deleted or renamed. `--check` reports every orphan and exits non-zero; `--apply` deletes an orphan only when it still carries the ASD ownership marker AND is explicitly named in the `--apply <file...>` target list — an unmarked file in those trees is always a consumer's own agent/skill, reported but never touched; deleting a marker-owned orphan also prunes its now-empty parent directory.
 
 ---
 
@@ -203,8 +203,8 @@ Reviewers are read-only on every provider: the 4 internal Claude reviewer agents
 
 | Agent | Claude | Codex | Phase(s) | Scope |
 |---|---|---|---|---|
-| `asd-reviewer-correctness` | opus/high | sol/high | design-review (UI section) + impl-review | Bugs, security, best-practice, contract drift; PRD/AC-N coverage trace; UX-spec compliance, design-system tokens, a11y — UI section dispatch conditional (see below) |
-| `asd-reviewer-efficiency` | opus/high | sol/high | design-review + impl-review | Over-engineering (13-item checklist) + structure/cohesion (god/sprawling type) detection; impl-review-only perf budgets, regression, anti-patterns — perf sections dispatch conditional (see below) |
+| `asd-reviewer-correctness` | opus/high | sol/high | design-review (UI section) + impl-review | Bugs, security, best-practice, contract drift; PRD/AC-N coverage trace; UX-spec compliance, design-system tokens, a11y — UI conformance section n/a-able (see below) |
+| `asd-reviewer-efficiency` | opus/high | sol/high | design-review + impl-review | Over-engineering (13-item checklist) + structure/cohesion (god/sprawling type) detection; impl-review-only perf budgets, regression, anti-patterns — perf sections n/a-able (see below) |
 | `asd-reviewer-testing` | opus/high | sol/high | impl-review | `test-plan.md` decisions (risk fit, justified removals and no-test calls, fail-first proof), test quality, manual verification capture |
 | `asd-reviewer-documentation` | opus/high | sol/high | design-review + impl-review | SSoT integrity, template adherence, traceability, in-code doc comments (impl-review) |
 | `asd-external-review` | fable/high | sol/high | both | Wraps the *other* provider's CLI (Codex CLI under Claude Code, Claude CLI under Codex), parses output, applies severity floor |
@@ -251,7 +251,7 @@ backward_compat: migration            # strict | migration | none
 
 review:
   external_review: enabled            # enabled | disabled
-  scoped_fan_out: enabled              # enabled | disabled — impl-review UI/Performance dispatch conditional on diff-derived predicates (disabled = unconditional fan-out, every reviewer every iteration)
+  scoped_fan_out: enabled              # enabled | disabled — impl-review UI/Performance rubric sections n/a-able per diff-derived predicates (disabled = every section reviewed in full, every iteration)
   iterations_low: 1                   # cumulative-budget severity floor
   iterations_medium: 1
   iterations_high: 2

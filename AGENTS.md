@@ -11,16 +11,16 @@ This repo **self-hosts**: `.asd/project/config.yaml` sets `self_hosting: enabled
 
 ## No build / test / lint
 
-Ships as Markdown, YAML, JSON, HTML, Node hook scripts. No package.json, compiler, or build step. `tests/run.js` is a real zero-dependency test runner, but it only covers `.asd/sync.js`/`update.js` (the sync engine) — it does not test rules/agents/skills/templates content. "Verification" of a change:
+Ships as Markdown, YAML, JSON, HTML, Node hook scripts. No package.json, compiler, or build step. `tests/run.js` is a real zero-dependency test runner, but it only covers `.asd/sync.js`/`update.js`/`.asd/migrations/**` (the sync engine + migration runner) — it does not test rules/agents/skills/templates content. "Verification" of a change:
 
-- `node tests/run.js` stays green for anything touching `.asd/sync.js` or `.asd/skills/asd-update/update.js`.
+- `node tests/run.js` stays green for anything touching `.asd/sync.js`, `.asd/skills/asd-update/update.js`, or `.asd/migrations/**`.
 - Hooks run clean: exit 0, never throw (designed to fail silently).
 - Edited YAML/JSON parses; edited HTML templates keep structure.
 - Cross-file consistency holds (below).
 
 ## Architecture
 
-ASD drives a consumer project through phases per sprint, for **both Claude Code and Codex** from one canonical source under `.asd/`. `.asd/sync.js` generates each provider's own view (`.claude/`, `.codex/`, `.agents/skills/`) and keeps them in sync (`--check`/`--apply`); see `.asd/rules/providers.md` for the canonical/provider path map, the semantic-operation → host-tool mapping, and the orphan-detection contract (a generated view whose canonical source was deleted/renamed fails `--check` and is deleted by `--apply` only when marker-owned).
+ASD drives a consumer project through phases per sprint, for **both Claude Code and Codex** from one canonical source under `.asd/`. `.asd/sync.js` generates each provider's own view (`.claude/`, `.codex/`, `.agents/skills/`) and keeps them in sync (`--check`/`--apply`); see `.asd/rules/providers.md` for the canonical/provider path map, the semantic-operation → host-tool mapping, and the orphan-detection contract (a generated view whose canonical source was deleted/renamed fails `--check`; `--apply` deletes it only when marker-owned AND explicitly named in the `--apply` target list, also pruning the now-empty parent directory).
 
 - **Rules** (`.asd/rules/*.md`) — SSoT for workflow behavior. `core.md` is the hub, links every other rule doc. Read by *all* agents on both providers; changing a rule changes behavior everywhere.
 - **Skills** (`.asd/skills/<name>/SKILL.md`, canonical) — 17. JSON frontmatter (`name`, `description`, optional `claude`/`codex` blocks). `asd-sprint` detects active sprint from `state.json`, dispatches matching `asd-phase-*` skill. The 10 `asd-phase-*` skills are thin triggers delegating to `.asd/workflows/asd-phase-*.md` (the actual orchestration, extracted so it isn't duplicated per provider). `asd-init`, `asd-concept`, `asd-stack`, `asd-design-system` = user-facing setup; `asd-update` (bundles `update.js`) pulls latest framework files into a consumer per `.asd/release-manifest.json`'s `managed_paths`, then runs any pending `.asd/migrations/<version>.js` scripts in ascending order (each named by its target version, skipped once applied, stop-on-first-failure); `asd-sync` reconciles a consumer's generated provider views against canon. Generated to `.claude/skills/<name>/SKILL.md` (Claude) and `.agents/skills/<name>/SKILL.md` (Codex — NOT `.codex/`, Codex only reads project skills from `.agents/skills/`).
@@ -41,13 +41,13 @@ These artifacts mirror/reference each other. A change in one usually needs match
 - **Phase chain**: in `session-start.js` (`PHASE_CHAIN`), `sprint-lifecycle.md`, `core.md` glossary, README — all list the same ten phases.
 - **Agent ↔ skill/workflow dispatch**: a phase workflow names agents it dispatches; those agent files must exist with matching capabilities. An agent's `description` lists what it does/does NOT handle (delegating to named agents) — keep delegation targets real.
 - **Template variables** `{{SPRINT}}`, `{{ITERATION}}`, `{{PHASE}}`, `{{agent:<name>}}` resolve at dispatch; use only these in skill/agent/workflow bodies.
-- **`.asd/release-manifest.json`**: `managed_paths` must list every canonical tree/file update.js should track; `model_families` mirrors `providers.md`'s table; a new canonical source needs a `canon_hashes` entry.
+- **`.asd/release-manifest.json`**: `managed_paths` must list every canonical tree/file update.js should track; `model_families` mirrors `providers.md`'s table; a new canonical agent or skill (the render sources `computeCanonHashes` walks) needs a `canon_hashes` entry — non-render canon (e.g. `.asd/migrations/`) is tracked via `managed_paths` + `upstream_hashes` only, no `canon_hashes` entry.
 
 ## Conventions
 
 - Skill/agent files use JSON frontmatter (not YAML) between `---` fences — `name`/`description` required, provider-specific config under `claude`/`codex` keys. Description is the trigger, must be specific.
 - Templates carry `t_` prefix, live only in `.asd/templates/`.
-- Rule docs terse, imperative. `.asd/rules/code-style.md` governs code written *by consumer dev agents* — not this repo.
+- Rule docs terse, imperative. `.asd/rules/code-style.md` governs code written by consumer dev agents AND this repo's own Node code (`.asd/sync.js`, `update.js`, `.asd/migrations/**`, `tests/run.js`, hooks) — no exemption for framework code.
 - HTML artifact templates share the `t_html-shell.html` shell (sticky TOC sidebar, conditionally trimmed below a section-count threshold; mermaid script likewise conditional on diagram presence — self-contained single file, no sibling stylesheet); keep that structure when editing other `t_*.html`.
 - Never hand-edit a generated file (`.claude/`, `.codex/`, `.agents/skills/`, or a full-file target's ownership-marker comment) — edit its `.asd/` canonical source and run `node "$(git rev-parse --show-toplevel)/.asd/sync.js" --apply <file...>` (self-locating — a bare relative path only resolves from the repo root).
 
