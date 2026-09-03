@@ -7,7 +7,7 @@ responsibility:
 
 # Custom Coding Rules
 
-Project rules applying only to code and tests. Read by `asd-backend-dev`, `asd-frontend-dev`, `asd-test-engineer`, impl-review reviewers.
+Project rules applying only to code and tests. Read by `asd-dev`, `asd-test-engineer`, impl-review reviewers.
 
 Framework repo specifics (`self_hosting: enabled`):
 - No YAML parser dependency in `.asd/sync.js` or `.asd/skills/*/update.js` — stay zero-dependency Node (`fs`, `path`, `crypto` only); config field reads use minimal fail-closed line scanners, never a full YAML library.

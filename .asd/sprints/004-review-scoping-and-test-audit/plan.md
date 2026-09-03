@@ -118,20 +118,23 @@ treats a required reviewer as absent (blocking) or a stale key as satisfied.
 
 Satisfies AC-10. Fact owners: `.asd/agents/`, `asd-phase-impl.md`.
 
-- [ ] Author `.asd/agents/asd-dev.md` as the union of both devs: server/CLI/library plus UI work,
+- [x] Author `.asd/agents/asd-dev.md` as the union of both devs: server/CLI/library plus UI work,
       inputs merged (`stack.html`, folded ADR targets, ux docs, DESIGN.md, design-system.html,
       accessibility.html), the frontend self-hosting no-baseline carve-out and its `code-style.md` §6
       token exception for `t_html-shell.html` preserved verbatim
-- [ ] Keep authority unchanged: production code only, never tests. No new UI clause — the inherited
+- [x] Keep authority unchanged: production code only, never tests. No new UI clause — the inherited
       conditional DESIGN.md-token wording stands (decisions-log, 2026-09-03)
-- [ ] Frontmatter sonnet/high + terra/high (AC-6), workspace-write sandbox as today
-- [ ] Delete `asd-backend-dev.md` and `asd-frontend-dev.md`
-- [ ] `asd-phase-impl.md`: collapse the owner vocabulary — step 3's `owner (backend-dev / frontend-dev)`
+- [ ] Frontmatter sonnet/high + terra/high (AC-6), workspace-write sandbox as today — family +
+      sandbox carried over this task; effort raise to `high` deferred to Task 5 per orchestrator
+      instruction (avoid pre-applying a parallel task's change)
+- [x] Delete `asd-backend-dev.md` and `asd-frontend-dev.md`
+- [x] `asd-phase-impl.md`: collapse the owner vocabulary — step 3's `owner (backend-dev / frontend-dev)`
       parse and step 6's owner→agent map, in initial, review-fix and test-fix modes alike
-- [ ] Update every `description` delegation list that named either dev
-- [ ] `sprint-lifecycle.md` phase table owner column (`impl | Backend Dev + Frontend Dev`),
-      `core.md` glossary creator list, `code-style.md` §3 audience, `artifact-layout.md`
-      refuse-to-implement rule
+- [x] Update every `description` delegation list that named either dev
+- [x] `sprint-lifecycle.md` phase table owner column (`impl | Backend Dev + Frontend Dev`) — left to
+      Task 4's sweep of that same file (parallel-task collision avoidance, per orchestrator
+      instruction); `core.md` glossary creator list, `code-style.md` §3 audience, `artifact-layout.md`
+      refuse-to-implement rule — done
 
 Material risk: `asd-phase-impl.md` parses owner tokens literally out of `plan.md`; a missed token
 form silently routes a task to no agent. `t_plan.md` and `asd-phase-plan.md` carry no dev names —

@@ -1,6 +1,6 @@
 # Code Style
 
-Implementation-level rules for code-writing agents (Backend Dev, Frontend Dev, Test Engineer). Binding during `impl` and `impl-test`, verified during `impl-review`. Governs how code is written; architecture-level rules out of scope. All code in English.
+Implementation-level rules for code-writing agents (Dev, Test Engineer). Binding during `impl` and `impl-test`, verified during `impl-review`. Governs how code is written; architecture-level rules out of scope. All code in English.
 
 ## 1. Engineering Principles
 
