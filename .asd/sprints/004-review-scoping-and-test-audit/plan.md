@@ -126,7 +126,7 @@ Satisfies AC-10. Fact owners: `.asd/agents/`, `asd-phase-impl.md`.
       token exception for `t_html-shell.html` preserved verbatim
 - [x] Keep authority unchanged: production code only, never tests. No new UI clause — the inherited
       conditional DESIGN.md-token wording stands (decisions-log, 2026-09-03)
-- [ ] Frontmatter sonnet/high + terra/high (AC-6), workspace-write sandbox as today — family +
+- [x] Frontmatter sonnet/high + terra/high (AC-6), workspace-write sandbox as today — family +
       sandbox carried over this task; effort raise to `high` deferred to Task 5 per orchestrator
       instruction (avoid pre-applying a parallel task's change)
 - [x] Delete `asd-backend-dev.md` and `asd-frontend-dev.md`
@@ -271,7 +271,7 @@ Satisfies AC-8. Fact owner: `code-style.md` §7.
       (purpose, never implementation)
 - [x] `asd-reviewer-documentation`: explicit rubric item enforcing all three, and a `description`
       widened to state it also reviews in-code doc comments
-- [ ] `review-policy.md` severity taxonomy: a violation is `high` — owned by a parallel task already
+- [x] `review-policy.md` severity taxonomy: a violation is `high` — stated in the documentation reviewer's rubric citing the taxonomy (one home, no per-rule list in review-policy)
       touching `review-policy.md`; this task's rubric item cites the taxonomy without restating it
 - [x] `t_custom-coding-rules.md` if it mirrors §7 — verified: neither `t_custom-coding-rules.md` nor
       the project's own `custom-coding-rules.md` restates §7 content, so no edit needed
