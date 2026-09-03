@@ -108,3 +108,12 @@ A decision whose value must survive this sprint's archival is ALSO written into 
   2. **Latch on an availability skip.** External returned skip-APPROVE because the codex quota is exhausted until 2026-09-07. Under AC-2 as written that would latch `external` and remove external review from every later iteration of this sprint. The latch was deliberately not written; the rule needs an explicit carve-out — only a verdict from an actual review latches.
 - **External review**: codex CLI unavailable (usage limit, resets 2026-09-07 09:54); external review skipped for iteration 1, no user prompt required per `external-review.md`.
 - **Affected docs**: [`state.json`](state.json), [`reviews/impl/iter-01/`](reviews/impl/iter-01/), `AGENTS.md` (exemption removal, in review-fix)
+
+## 2026-09-04 — impl review-fix for iter-01: findings resolved
+
+- **Decision**: All 46 iter-01 findings resolved across four fix groups (code, phase contracts, SSoT/mirrors, tests) plus defect D-1. Both criticals fixed: the stale-`sync.js` require-cache that would have broken the 4.0.0 migration for every consumer (now `invalidateSyncCache` before each migration, covered by a fail-first regression test), and the availability-skip latch (carve-out written: only a verdict from an actual review latches).
+- **Rationale**: `code-style.md` now governs framework code per the user decision, so this sprint own code was cleaned of in-body comments and document references. Suite is 101/101, `sync.js --check` all-current.
+- **Affected docs**: reviews/impl/iter-01/*, test-plan.md, stubs.md (two accepted-debt rows for agent-memory leftovers)
+
+- 2026-09-04 — carried to next impl-review iteration: `--apply` no-ops on self-sourced `AGENTS.md`, so its `sync-state.json` digest has no supported reconciliation command and every hand-edit turns the suite red until someone patches the JSON by hand. `AGENTS.md`'s own hard rule ("run sync --apply after editing canon") is false for that target.
+
