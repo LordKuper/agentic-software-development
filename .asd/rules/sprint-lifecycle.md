@@ -62,7 +62,7 @@ Every test run inside `impl`, `impl-test`, and `impl-review` is scoped to the **
 2. tests exercising a changed unit, resolved by repo search over references/imports of the changed modules;
 3. tests tagged with an AC-N the change touches (the existing AC-citation convention, `code-style.md` §17).
 
-**Native selector override.** When `commands.yaml` carries a native affected/changed-test selector (a runner flag such as `--changedSince`/`--onlyChanged`, or a filter expression), that selector's result REPLACES the search-derived set above — the runner's own answer is used, not a second derivation. Field absent → fall back to the search-derived set. The field itself (name, shape, `t_commands.yaml`/`asd-init` detection) is defined where `commands.yaml` is — this section only names the override mechanism.
+**Native selector override.** When `commands.yaml` carries a `test_affected` field (a native runner flag such as `--changedSince`/`--onlyChanged`, or a filter expression), that field's result REPLACES the search-derived set above — the runner's own answer is used, not a second derivation. Field absent → fall back to the search-derived set. The field's shape and `t_commands.yaml`/`asd-init` detection are defined where `commands.yaml` is — this section only names the override mechanism and its key.
 
 **Safety valve — mandatory, not heuristic, checked BEFORE the selector or the search-derived set is used.** `asd-tester` MUST apply this test before every scoped run: when the change surface touches shared infrastructure — build config, CI config, shared/common modules, any framework-wide file — the impacted set degrades to the **full suite** for that run. A rule the tester applies on every run, never a judgment call.
 

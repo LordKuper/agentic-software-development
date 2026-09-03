@@ -236,11 +236,11 @@ impacted set defers a real regression to the single end-of-cycle run.
 
 Satisfies AC-5 (config surface).
 
-- [ ] Add the selector field to `t_commands.yaml` and document it as optional; absent → fall back to
+- [x] Add the selector field to `t_commands.yaml` and document it as optional; absent → fall back to
       the search-derived impacted set
-- [ ] `asd-init` steps 8/8a/12: detect the runner's affected/changed flag where detectable, surface
+- [x] `asd-init` steps 8/8a/12: detect the runner's affected/changed flag where detectable, surface
       it in the consolidated proposal, write it
-- [ ] Populate this repo's own `.asd/project/commands.yaml` if its runner supports one
+- [x] Populate this repo's own `.asd/project/commands.yaml` if its runner supports one
 
 Material risk: detection keyed on runner strings rather than flags; a wrong flag silently narrows
 every scoped run.
