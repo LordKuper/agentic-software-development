@@ -89,27 +89,29 @@ file-level ledger gate.
 Satisfies AC-7 (mirrors), AC-3. Fact owners: `review-policy.md`, `artifact-layout.md`,
 `asd-phase-impl-review.md` step 5.
 
-- [ ] `review-policy.md` DoD table: impl-review internal = correctness + efficiency + documentation +
+- [x] `review-policy.md` DoD table: impl-review internal = correctness + efficiency + documentation +
       testing; design-review internal = correctness (UI section, conditional on a ux-spec /
       design-system draft) + efficiency + documentation; External Review unchanged
-- [ ] `review-policy.md` verdict grammar: `<reviewer>` enum becomes
+- [x] `review-policy.md` verdict grammar: `<reviewer>` enum becomes
       `correctness | efficiency | testing | documentation | external`; update every example
-- [ ] Re-attribute the over-engineering and structure/cohesion checklists from "Simplification
+- [x] Re-attribute the over-engineering and structure/cohesion checklists from "Simplification
       reviewer" to the efficiency reviewer, keeping their "critical, undroppable" status
-- [ ] Add the change-surface rule to `review-policy.md` (AC-3): review covers the iteration's diff
+- [x] Add the change-surface rule to `review-policy.md` (AC-3): review covers the iteration's diff
       only; a finding about unchanged code is invalid unless the change made it incorrect
-- [ ] `artifact-layout.md`: review-file names `correctness.md` / `efficiency.md`, verdict placeholder
-      namespace, and the test-plan note citing `reviews/impl/iter-NN/testing.md`
-- [ ] `t_review.md` and `t_state.json`: reviewer keys and verdict placeholders follow the rename
-- [ ] `asd-phase-impl-review.md`: steps 5-6 dispatch list; convert both diff-derived predicates from
+- [x] `artifact-layout.md`: review-file names `correctness.md` / `efficiency.md`, verdict placeholder
+      namespace, and the test-plan note citing `reviews/impl/iter-NN/testing.md` (already generic
+      placeholders — verified, no edit needed)
+- [x] `t_review.md` and `t_state.json`: reviewer keys and verdict placeholders follow the rename
+      (already generic `{{REVIEWER}}` placeholder / dynamic `verdicts` map — verified, no edit needed)
+- [x] `asd-phase-impl-review.md`: steps 5-6 dispatch list; convert both diff-derived predicates from
       agent skip to rubric-section skip — the predicate is still evaluated in the workflow, the
       `n/a` verdict is passed into the payload so the agent never loads that domain's inputs; step 8
       parse/aggregate against the new keys
-- [ ] `asd-phase-design-review.md`: step 7 dispatch list and step 9 verdict recording; payload
+- [x] `asd-phase-design-review.md`: step 7 dispatch list and step 9 verdict recording; payload
       carries the explicit allowed-section list
-- [ ] `sprint-lifecycle.md` "State recovery": restate `"skipped: <predicate>"` semantics as
+- [x] `sprint-lifecycle.md` "State recovery": restate `"skipped: <predicate>"` semantics as
       section-level, and `review.scoped_fan_out` accordingly (incl. `t_config.yaml`)
-- [ ] Affected `asd-phase-*` SKILL descriptions naming reviewers
+- [x] Affected `asd-phase-*` SKILL descriptions naming reviewers
 
 Material risk: verdict tokens, state keys and file names drifting apart, so aggregation silently
 treats a required reviewer as absent (blocking) or a stale key as satisfied.
