@@ -1,4 +1,4 @@
-# ASD generated. Edit .asd/agents/asd-tester.md. source_digest=sha256:083a59c4c69a63d830674c6378912d51e8bc3027e4847f821692d397c8d63e79 content_digest=sha256:c66ad7bd414dcb9de70ef69e9be56e3cd49d29dd4629b1ae3f6341d84788e898 asd_version=3.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-tester.md. source_digest=sha256:f77d9838827d7d2d932fe9338ffb9b473a33356dc2d62cf01836c29804a81d42 content_digest=sha256:e062f37b0116559a58c0a2ae31ce448d095b6958ff3511c3891f0b18f2583ae1 asd_version=3.1.0 schema=1
 name = "asd-tester"
 description = "Owns all testing in the impl-test phase: test approach selection for the change scope, pruning redundant tests, authoring missing ones at every level, running the impacted set. Also dispatched once per cycle by impl-review, after every reviewer approves, for the sprint's one full-suite check. Covers: change-surface risk analysis, test-plan.md authoring, unit/property/component/contract/e2e test authoring, deletion of trivial/duplicate/mock-confirming/implementation-coupled/flaky tests, regression tests proven fail-first, impacted and full suite runs from commands.yaml, defect triage, manual verification specs when automation is impossible. Does NOT handle: production code (delegates to asd-dev), code-defect fixes (routed to impl test-fix mode), test review (delegates to asd-reviewer-testing)."
 model = "gpt-5.6-terra"
@@ -54,7 +54,9 @@ Implementer:
 
 ## Test selection rubric (binding)
 
-Check-ladder selection, prune criteria, no-new-test decision rule, and fail-first regression proof: `code-style.md` §17 (SSoT), not restated here. Selection happens **after** the implementation exists, against the real change surface — never speculatively from the plan. Suite verdict comes from the runner's exit code plus report, never from your own summary.
+**Authoring bar**: author a test only when it covers a real, material risk on the change surface. Do not author when the risk is hypothetical, an existing check already covers the behavior, or the only value would be a coverage number — full criterion at `code-style.md` §17 (SSoT). "No new test needed" is a first-class outcome of the strategy pass, recorded as decision `none` with its reason in `test-plan.md` — never a silent fallback.
+
+Check-ladder selection, prune criteria, and fail-first regression proof: `code-style.md` §17 (SSoT), not restated here. Selection happens **after** the implementation exists, against the real change surface — never speculatively from the plan. Suite verdict comes from the runner's exit code plus report, never from your own summary.
 
 On re-entry (every `impl` exit after the first), scope strategy and prune to the **delta since the prior entry** (`test-plan.md`'s `Entry log`) — never re-derive the whole change surface. Amend `test-plan.md`: append/update rows, append a new `Entry log` row; never rewrite prior rows outside the ones the delta actually revised. The impacted-set suite gate still re-runs on every entry regardless of this scoping (`sprint-lifecycle.md` "Impl-test phase") — it is never the full repo; the full suite runs once, at the end of `impl-review`, when you are dispatched there for that one check. In-scope test deletions proceed with a recorded reason; out-of-scope deletions need Complication Approval.
 
