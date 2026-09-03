@@ -40,7 +40,7 @@ Every reviewer dispatched below is read-only: it evaluates its scope and returns
      - parse FAIL findings; group by escalation cause (concept change / new abstraction / scope expansion / contract change)
      - request user decision in `language.chat`: present each FAIL using Complication Approval format from `core.md`; collect decisions
      - on override → mark resolved, continue
-     - on accept → delegate to agent corresponding creator (BA / UX Designer / Architect) to apply approved changes; on creator COMPLETED → loop step 4 (increment iteration)
+     - on accept → delegate to agent corresponding creator (BA / UX / Architect) to apply approved changes; on creator COMPLETED → loop step 4 (increment iteration)
    - **Only CONCERNS** (no FAIL) → autofix loop:
      - delegate to agent responsible creator(s) with finding list; each autofixes per `review-policy.md` (no escalation needed)
      - on all creator COMPLETED → loop step 4
@@ -68,7 +68,7 @@ See `.asd/rules/review-policy.md` cumulative-budget algorithm. This workflow com
 - 2 internal reviewers (Documentation, Simplification) — parallel, always for any non-empty draft set
 - UI reviewer — parallel, only when a ux-spec/design-system draft is in scope this iteration (step 7)
 - External Review — parallel (when enabled)
-- Creators (BA, UX Designer, Architect) — sequential, only when autofix or escalation requires
+- Creators (BA, UX, Architect) — sequential, only when autofix or escalation requires
 - PM — state updates + decisions-log tied to DoD-met/override gates (step 9, 10); no-op path (step 2) is an inline workflow write, no PM dispatch
 
 ## Skills/workflows dispatched

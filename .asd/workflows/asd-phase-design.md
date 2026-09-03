@@ -12,7 +12,7 @@ Orchestration body for the `asd-phase-design` skill. Operation-mapping to host t
 - search repo: design-system gate — existence of `docs/ux/DESIGN.md`, `docs/ux/design-system.html`, `docs/ux/accessibility.html`
 - write a file: `state.json` inline, mechanical non-gate writes at steps 2, 5, 11 (`sprint-lifecycle.md` "State recovery"); decisions-log inline, per-artifact entries at steps 6/7/8/9, triggered by that artifact's `accept`
 - request user decision: rare, phase-level escalation only
-- delegate to agent, sequential: BA, UX Designer, Architect, optional Architect (c4-full)
+- delegate to agent, sequential: BA, UX, Architect, optional Architect (c4-full)
 - dispatch skill `asd-design-system` when gate detects missing files
 
 ## Workflow
@@ -31,10 +31,10 @@ Orchestration body for the `asd-phase-design` skill. Operation-mapping to host t
    - if ANY missing → dispatch skill `asd-design-system`; halt until COMPLETED; on FAILED/aborted → relay + halt phase
    - on `asd-design-system` COMPLETED → workflow appends decisions-log entry inline, one combined entry naming all three accepted paths ("`docs/ux/DESIGN.md`, `docs/ux/design-system.html`, `docs/ux/accessibility.html` accepted")
    - if all present, or `ux_spec` disabled → Step 8
-8. **Step UX-spec** — only if `ux_spec` enabled: on gate cleared → delegate to agent `asd-ux-designer`:
+8. **Step UX-spec** — only if `ux_spec` enabled: on gate cleared → delegate to agent `asd-ux`:
    - inputs: prd.html if enabled else sprint.md, audit.md (if present), existing ux-spec draft if any, current `docs/ux/DESIGN.md`, `design-system.html`, `accessibility.html`; templates `t_ux-spec.html`, `t_design-md-delta.yaml`
    - instruction: integrate existing draft; author flows + UI mockups using ONLY existing DESIGN.md tokens; when a needed token missing/must change, pause mockup, request user decision to approve token add/update, append entry to `<sprint>/design/design-md-delta.yaml` (create on first entry per `t_design-md-delta.yaml`), THEN continue mockup referencing new token — this per-entry token gate is approve-before-write per `checkpoints.md`'s `design | ux-spec.html` row, separate from the ux-spec write-then-review-accept gate below; discuss each section in `language.chat`; **write-then-review-accept** (`checkpoints.md` mechanic): translate + write `<sprint>/design/ux-spec.html`; loop until explicit `accept`; emit COMPLETED (delta file produced inline iff a token gap surfaced — else omitted)
-   - on UX Designer COMPLETED → workflow appends decisions-log entry inline ("`<sprint>/design/ux-spec.html` accepted")
+   - on UX COMPLETED → workflow appends decisions-log entry inline ("`<sprint>/design/ux-spec.html` accepted")
    - if `ux_spec` disabled → skip to step 9
 9. **Step ADR** — only if `adr` enabled: on UX step done → delegate to agent `asd-architect`:
    - inputs: whichever of prd.html/ux-spec.html exist, else sprint.md; audit.md (if present); existing adr draft if any, `docs/architecture/stack.html`, persistent `docs/` (to identify likely fold targets by `responsibility.owns`), `tech-reference/`; template `t_adr.html`
@@ -67,7 +67,7 @@ Indirect (via design-system gate): `docs/ux/DESIGN.md`, `design-system.html`, `a
 ## Agents delegated to
 - No PM dispatch — `state.json` writes (steps 2, 5, 11) are mechanical, no-gate, done inline by the workflow; per-artifact decisions-log entries (steps 6, 7, 8, 9) are inline workflow writes triggered by that artifact's own write-then-review-accept `accept` (step 7's covers the design-system gate's three files as one combined entry, matching `asd-design-system`'s single combined gate); step 11's decisions-log note is a no-gate rollup SUMMARY only, not the sole log entry
 - `asd-ba` (PRD)
-- `asd-ux-designer` (UX-spec; inline delta)
+- `asd-ux` (UX-spec; inline delta)
 - `asd-architect` (ADR; optional c4-full; tech-reference)
 
 ## Skills/workflows dispatched

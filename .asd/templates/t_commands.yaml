@@ -1,5 +1,5 @@
 # commands.yaml — machine-only SSoT for project build/test/run commands
-# read by Backend Dev, Frontend Dev, Test Engineer, and review agents
+# read by Backend Dev, Frontend Dev, Tester, and review agents
 
 test: "{{command to run all tests}}"
 lint: "{{command to run linters}}"

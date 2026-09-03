@@ -1,7 +1,7 @@
 ---
 {
   "name": "asd-design-system",
-  "description": "Forms or edits the project design system (docs/ux/DESIGN.md, design-system.html, accessibility.html) via asd-ux-designer, branching by silent detection into one of three flows (greenfield / constraints / brownfield extraction). Fetches the Google Labs DESIGN.md spec, lints tokens, regenerates design-system.html previews, and authors the accessibility baseline. Use when the user runs /asd-design-system, when asd-init or asd-phase-design detects missing DESIGN.md/design-system.html/accessibility.html and suggests this skill, or when the user asks to define, draft, refine, edit, augment, or reverse-engineer the project design system, design tokens, or accessibility baseline.",
+  "description": "Forms or edits the project design system (docs/ux/DESIGN.md, design-system.html, accessibility.html) via asd-ux, branching by silent detection into one of three flows (greenfield / constraints / brownfield extraction). Fetches the Google Labs DESIGN.md spec, lints tokens, regenerates design-system.html previews, and authors the accessibility baseline. Use when the user runs /asd-design-system, when asd-init or asd-phase-design detects missing DESIGN.md/design-system.html/accessibility.html and suggests this skill, or when the user asks to define, draft, refine, edit, augment, or reverse-engineer the project design system, design tokens, or accessibility baseline.",
   "claude": {
     "allowed-tools": "Read Glob Grep AskUserQuestion Task"
   }
@@ -20,7 +20,7 @@
 - Read files — `.asd/project/config.yaml`, concept.html, stack.html, existing DESIGN.md/design-system.html/accessibility.html, source CSS/components, theme files
 - Search repo — silent scan for brownfield signals (CSS, SCSS, Tailwind config, theme.ts, styled-components, design exports)
 - Request user decision/input — variant choice, constraints, section approvals, lock-in/revise loop
-- Delegate to agents — `asd-ux-designer` (author, fetch external spec, lint, render previews, accessibility baseline)
+- Delegate to agents — `asd-ux` (author, fetch external spec, lint, render previews, accessibility baseline)
 
 ## Phase 1 — silent detection (NO asking)
 
@@ -39,10 +39,10 @@ Request user decision (3 options) — question text, header, all option labels/d
 
 Phase 1 brownfield candidates auto-suggest C as default.
 
-## Phase 3 — flow per variant (each delegates to `asd-ux-designer`)
+## Phase 3 — flow per variant (each delegates to `asd-ux`)
 
 **Variant A — greenfield**
-- Delegate to agent `asd-ux-designer` with payload: concept.html, stack.html, language settings, targets = `t_design-system.html`, `t_accessibility.html`
+- Delegate to agent `asd-ux` with payload: concept.html, stack.html, language settings, targets = `t_design-system.html`, `t_accessibility.html`
 - Designer reads concept (vision, target users, value prop, tone) and stack (UI platform, framework constraints)
 - Proposes 2-3 candidate token sets per section (color palette, typography scale, spacing scale, radii, motion)
 - Request user decision: pick set or request alternatives — labels/descriptions in `language.chat`
@@ -54,12 +54,12 @@ Phase 1 brownfield candidates auto-suggest C as default.
   - Typography preference (system / serif / sans-serif / monospace / specific family / "no preference")
   - Density (compact / comfortable / spacious / "no preference")
   - Target platform (web / native-mobile / native-desktop / cli / mixed)
-- Delegate to agent `asd-ux-designer` with concept + stack + constraints
+- Delegate to agent `asd-ux` with concept + stack + constraints
 - Designer proposes within constraints
 - Proceed to Phase 4
 
 **Variant C — brownfield extraction**
-- Delegate to agent `asd-ux-designer` with style/component paths (repo-search results)
+- Delegate to agent `asd-ux` with style/component paths (repo-search results)
 - Designer extracts tokens from CSS variables, Tailwind config, theme objects, styled-components themes, design exports
 - Draft sets `provenance: reverse-engineered` + `source: <primary file>` in frontmatter
 - Proceed to Phase 4
@@ -150,7 +150,7 @@ After all DESIGN.md sections approved:
 - `docs/ux/accessibility.html` (created or edited)
 
 ## Agents dispatched
-- `asd-ux-designer` (author / scanner / lint / preview render / accessibility baseline)
+- `asd-ux` (author / scanner / lint / preview render / accessibility baseline)
 
 ## Skills dispatched
 None.

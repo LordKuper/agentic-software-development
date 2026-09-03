@@ -12,7 +12,7 @@ Orchestration body for the `asd-phase-impl` skill. Operation-mapping to host too
 - read: `.asd/project/config.yaml`, `state.json`, `plan.md`, `<sprint>/reviews/impl/iter-NN/` (review-fix), `<sprint>/test-plan.md` (test-fix), persistent docs, `.asd/project/custom-common-rules.md`, `custom-coding-rules.md`, `stubs.md`, `<sprint>/manual-steps.md`
 - write a file: `state.json` inline, for the mechanical non-gate writes at steps 4, 11 (`sprint-lifecycle.md` "State recovery")
 - request user decision: escalation only (see Execution mode)
-- delegate to agent: `asd-dev` per task / finding group / defect group (test-file findings to `asd-test-engineer`); PM for manual-steps gate, impl completion gate, impl assessment gate, decisions-log tied to those gates
+- delegate to agent: `asd-dev` per task / finding group / defect group (test-file findings to `asd-tester`); PM for manual-steps gate, impl completion gate, impl assessment gate, decisions-log tied to those gates
 
 ## Modes
 
@@ -52,7 +52,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
    - `test_defects_pending` set → **test-fix mode**; confirm `<sprint>/test-plan.md` exists with pending `D-N` rows (else `ABORT — precondition not met: test-plan.md defects missing`)
 3. **Build work set** per mode:
    - **initial** — read `<sprint>/plan.md` → parse Task blocks: title, subtask checkboxes, dependencies
-   - **review-fix** — read every reviewer file in `<sprint>/reviews/impl/iter-NN/`; collect all CONCERNS findings plus all FAIL findings the user accepted for fix (skip FAIL noted resolved-by-override); group into fix tasks, one dev task per independent group; findings located in test files route to `asd-test-engineer` instead
+   - **review-fix** — read every reviewer file in `<sprint>/reviews/impl/iter-NN/`; collect all CONCERNS findings plus all FAIL findings the user accepted for fix (skip FAIL noted resolved-by-override); group into fix tasks, one dev task per independent group; findings located in test files route to `asd-tester` instead
    - **test-fix** — read `<sprint>/test-plan.md` `Defects` section; collect every `D-N` with status `pending`; group into fix tasks, one dev task per independent group
 4. Write `state.json` (phase=impl) inline (mechanical, no gate)
 5. **Build execution graph**:
@@ -60,7 +60,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
    - fix modes — fix tasks independent unless two touch same file; parallel where independent, sequential where they collide
 6. **Dispatch tasks** per execution graph:
    - sequential where dependent; parallel where independent (caller schedules concurrent delegations)
-   - per task: delegate to `asd-dev` (`asd-test-engineer` only for review findings in test files) with payload:
+   - per task: delegate to `asd-dev` (`asd-tester` only for review findings in test files) with payload:
      - initial — Task block excerpt (title + subtasks + dependencies); review-fix — grouped finding list (each finding's severity, location, description, suggested fix; plus user-approved change note for accepted FAIL findings); test-fix — grouped defect list (`D-N`, location, symptom, failing test)
      - relevant context paths (PRD AC-N referenced, ADRs, ux-spec, DESIGN.md, accessibility, stack, commands.yaml, tech-reference/, custom-common-rules.md, custom-coding-rules.md; review-fix also: reviewer files in `reviews/impl/iter-NN/`; test-fix also: `test-plan.md`)
      - `language.chat`, `language.docs`
@@ -136,7 +136,7 @@ Impl completion gate (step 9) and, initial mode only, impl assessment gate (step
 ## Agents delegated to
 - `asd-pm` (manual-steps gate, impl completion gate, impl assessment gate, decisions-log tied to those gates; mechanical writes at steps 4, 11 are inline workflow writes)
 - `asd-dev` (per Task, finding group, or defect group)
-- `asd-test-engineer` (review-fix mode only, for findings located in test files)
+- `asd-tester` (review-fix mode only, for findings located in test files)
 
 ## Skills/workflows dispatched
 None.

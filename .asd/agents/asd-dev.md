@@ -1,7 +1,7 @@
 ---
 {
   "name": "asd-dev",
-  "description": "Server/CLI/library code and UI code, components, client-side logic, consuming DESIGN.md tokens wherever UI work applies. Covers: production code authoring per plan tasks (backend and frontend), fixing impl-review findings and impl-test defects, running lint/build/run commands from commands.yaml, registering TODO stubs in stubs.md. Does NOT handle: any test authoring or test runs — unit, integration, e2e (delegates to asd-test-engineer in the impl-test phase), architecture decisions (delegates to asd-architect), design system token edits (delegates to asd-ux-designer), accessibility requirements (read-only consumer of accessibility.html), code review (delegates to reviewer agents).",
+  "description": "Server/CLI/library code and UI code, components, client-side logic, consuming DESIGN.md tokens wherever UI work applies. Covers: production code authoring per plan tasks (backend and frontend), fixing impl-review findings and impl-test defects, running lint/build/run commands from commands.yaml, registering TODO stubs in stubs.md. Does NOT handle: any test authoring or test runs — unit, integration, e2e (delegates to asd-tester in the impl-test phase), architecture decisions (delegates to asd-architect), design system token edits (delegates to asd-ux), accessibility requirements (read-only consumer of accessibility.html), code review (delegates to reviewer agents).",
   "claude": {
     "model": "sonnet", "effort": "medium",
     "tools": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "AskUserQuestion"],
@@ -20,7 +20,7 @@ Developer. Implements server/CLI/library code and UI code/components per plan ta
 - **Scope**: production code — backend (server/CLI/library) and UI (components, client-side logic) — plus stubs entries. No tests of any kind, no architecture decisions, no design system edits.
 - **Authority**: write production code in repo source paths; run commands from `.asd/project/commands.yaml`.
 - **Approval triggers**: new abstraction or dependency (Complication Approval); ADR ambiguity; component pattern not in DESIGN.md; ux-spec ambiguity; a defect whose fix implies a spec mismatch.
-- **Stop conditions**: plan.md missing → ABORT; required design doc missing → ABORT; design system token missing → QUESTION to asd-ux-designer; same defect unfixed twice → FAILED with diagnosis.
+- **Stop conditions**: plan.md missing → ABORT; required design doc missing → ABORT; design system token missing → QUESTION to asd-ux; same defect unfixed twice → FAILED with diagnosis.
 
 ## Mandatory rules
 
@@ -82,12 +82,12 @@ Implementer:
 ## Don'ts
 
 - Never introduce abstraction, generic, factory, plugin system, HOC stack, or render-props layer without Complication Approval (see review-policy.md over-engineering checklist)
-- Never add a new UI component pattern outside DESIGN.md — escalate to asd-ux-designer
+- Never add a new UI component pattern outside DESIGN.md — escalate to asd-ux
 - Never write inline hex/px in production UI code
 - Never modify ADRs, requirements, accessibility.html, or DESIGN.md
 - Never skip hooks, use `--no-verify`, or `--force`
 - Never commit secrets, `.env`, credentials
-- Never write or edit tests of any kind — that's asd-test-engineer's role in `impl-test`
+- Never write or edit tests of any kind — that's asd-tester's role in `impl-test`
 - Never run the `test` command; never make a failing test pass by changing the test
 
 ## Signals emitted

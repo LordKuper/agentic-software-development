@@ -47,12 +47,12 @@ Verdict files: design-review → `<sprint>/reviews/design/iter-NN/`, impl-review
 |---|---|---|---|---|
 | scope | PM | user request | `sprint.md`, sprint id, branch | `sprint.md` accepted, branch created |
 | audit | Architect + BA | `sprint.md`, codebase, `docs/`, existing docs any format/location | `audit.md`; optional reverse-engineered/migrated drafts in `<sprint>/design/` | audit approved |
-| design | BA → UX Designer → Architect | `audit.md` | drafts in `<sprint>/design/` | drafts complete |
+| design | BA → UX → Architect | `audit.md` | drafts in `<sprint>/design/` | drafts complete |
 | design-review | Documentation + UI + Simplification + External Review | `<sprint>/design/` | `reviews/design/iter-NN/<reviewer>.md` | DoD met |
-| design-promote | PM + Architect + BA + UX Designer | approved drafts | persistent docs in `docs/` | drafts merged, decisions-log entry |
+| design-promote | PM + Architect + BA + UX | approved drafts | persistent docs in `docs/` | drafts merged, decisions-log entry |
 | plan | PM | promoted persistent docs | `plan.md` | `plan.md` accepted |
-| impl | Backend Dev + Frontend Dev | `plan.md` (initial), `reviews/impl/iter-NN/` findings (review-fix), or `test-plan.md` Defects (test-fix) | code, `manual-steps.md` | all tasks/findings/defects done; build + lint pass (completion gate) |
-| impl-test | Test Engineer | code diff, `plan.md`, PRD ACs, existing tests | `test-plan.md`, tests in repo | full suite green → `impl-review`; code defects → `impl` test-fix mode |
+| impl | Dev | `plan.md` (initial), `reviews/impl/iter-NN/` findings (review-fix), or `test-plan.md` Defects (test-fix) | code, `manual-steps.md` | all tasks/findings/defects done; build + lint pass (completion gate) |
+| impl-test | Tester | code diff, `plan.md`, PRD ACs, existing tests | `test-plan.md`, tests in repo | full suite green → `impl-review`; code defects → `impl` test-fix mode |
 | impl-review | Quality + Implementation + Testing + UI + Simplification + Documentation + Performance + External Review | code + tests + `test-plan.md` | `reviews/impl/iter-NN/<reviewer>.md` | DoD met → `pr`; else route to `impl` review-fix mode |
 | pr | PM | everything | PR + sprint archive (open mode), then terminal state (merge mode) | PR opened, folder archived on the branch; `phase=done` set on a later re-entry once PR merged |
 
@@ -140,7 +140,7 @@ PM orchestrates; three domain creators promote (Documentation reviewer NOT invol
 4. Parallel promotion:
    - `asd-ba` → per-subsystem (or flat) `docs/product/requirements/<subsystem>.html` from prd draft; product migration items.
    - `asd-architect` → folds every ADR approved in `adr.html` into whichever existing persistent doc's `responsibility.owns` frontmatter already declares ownership of that decision's subject (see fold rule below); updates `stack.html`, `tech-reference/`; applies the sprint's c4 delta patch (or, when the persistent registry did not exist before this sprint, writes the full schema directly) to persistent `docs/architecture/c4/`; architecture migration items. Rendering (`dist/` or `architecture.html`) is not regenerated here — build on demand via the `commands.yaml` build-to-view command.
-   - `asd-ux-designer` → `docs/ux/<subsystem>.html` from ux-spec draft; patches `DESIGN.md` from `design-md-delta.yaml`; regenerates `design-system.html`; ux migration items.
+   - `asd-ux` → `docs/ux/<subsystem>.html` from ux-spec draft; patches `DESIGN.md` from `design-md-delta.yaml`; regenerates `design-system.html`; ux migration items.
 5. The dispatching phase workflow (`asd-phase-design-promote.md`) composes the decisions-log entries for this promotion and writes `state.json` phase-done — a mechanical non-gate write, not a PM-gated step; per this file's "State recovery" two-writers rule (dispatching phase workflow writes inline for non-gate mechanical writes, site named there).
 
 Dropping the per-persistent-write and final-mutation gates (former steps 4's trailing sentence and step 5) also drops the **partial rollback** affordance they used to offer (confirm / rollback / partial rollback on the whole batch) — no direct replacement exists at this gate level. The compensating control is a non-blocking post-promotion summary the dispatching workflow posts after all writes land (implemented in `asd-phase-design-promote.md`, not this rule doc).
@@ -167,7 +167,7 @@ Only one fix flag is ever set: each fix mode clears its own before routing on. F
 
 ## Impl-test phase
 
-Owner: Test Engineer. Runs after every `impl` exit. Selects the test approach **after** the implementation exists, so tests follow the real change surface instead of a speculative one.
+Owner: Tester. Runs after every `impl` exit. Selects the test approach **after** the implementation exists, so tests follow the real change surface instead of a speculative one.
 
 **Principles**: check-ladder selection, prune criteria, no-new-test decision rule, and fail-first regression proof are all defined once in `code-style.md` §17 (SSoT) — binding here, not restated.
 
@@ -182,7 +182,7 @@ Owner: Test Engineer. Runs after every `impl` exit. Selects the test approach **
 - **test defect** (bad assertion, wrong fixture, flaky pattern) → fixed inside impl-test, suite re-run.
 - **code defect** → appended to the `Defects` section of `test-plan.md`, `state.json.test_defects_pending = true`, `NEXT: impl` (test-fix mode).
 
-Loops until the full suite passes. No iteration cap — an unfixable state surfaces as a dev/test-engineer `FAILED`, not as a silent exit.
+Loops until the full suite passes. No iteration cap — an unfixable state surfaces as a dev/tester `FAILED`, not as a silent exit.
 
 ## PR phase
 

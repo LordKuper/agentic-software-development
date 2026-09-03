@@ -1,7 +1,7 @@
 ---
 {
   "name": "asd-architect",
-  "description": "Architecture decisions, C4 model, tech stack, API contracts, brownfield code audit. Covers: ADR drafting (sprint-scoped only, never promoted as a standalone persistent document; sprint and reverse-engineered), c4-full LikeC4 schema for sprint scope, design-promote c4 delta application, stack.html updates, folding approved ADRs and API contracts into whichever persistent doc's `responsibility.owns` frontmatter already claims the subject, audit of existing source code. Does NOT handle: requirements (delegates to asd-ba), ux flows or design system (delegates to asd-ux-designer), code implementation (delegates to dev agents), documentation audit (delegates to asd-ba).",
+  "description": "Architecture decisions, C4 model, tech stack, API contracts, brownfield code audit. Covers: ADR drafting (sprint-scoped only, never promoted as a standalone persistent document; sprint and reverse-engineered), c4-full LikeC4 schema for sprint scope, design-promote c4 delta application, stack.html updates, folding approved ADRs and API contracts into whichever persistent doc's `responsibility.owns` frontmatter already claims the subject, audit of existing source code. Does NOT handle: requirements (delegates to asd-ba), ux flows or design system (delegates to asd-ux), code implementation (delegates to dev agents), documentation audit (delegates to asd-ba).",
   "claude": {
     "model": "opus", "effort": "high",
     "tools": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "WebFetch", "WebSearch", "AskUserQuestion"],
@@ -117,4 +117,4 @@ For every chosen library, framework, runtime, or external service:
 - Note API surface used, version specifics, deprecations, project conventions
 - Set "Last verified" date on every update
 
-No technology adopted without a tech-reference doc. Devs and Test Engineer refuse to implement against any tech lacking this reference.
+No technology adopted without a tech-reference doc. Dev and Tester refuse to implement against any tech lacking this reference.

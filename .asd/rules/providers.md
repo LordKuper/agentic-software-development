@@ -61,8 +61,8 @@ A provider's id is always its rolling alias (newest model in the family), so a f
 | Agent | Claude model / effort | Codex model / effort | Codex sandbox |
 |---|---|---|---|
 | asd-pm | opus / medium | sol / medium | workspace-write |
-| asd-ba, asd-ux-designer, asd-architect | opus / high | sol / high | workspace-write |
-| asd-backend-dev, asd-frontend-dev, asd-test-engineer | sonnet / medium | terra / medium | workspace-write |
+| asd-ba, asd-ux, asd-architect | opus / high | sol / high | workspace-write |
+| asd-backend-dev, asd-frontend-dev, asd-tester | sonnet / medium | terra / medium | workspace-write |
 | asd-reviewer-* (7) | opus / high | sol / high | read-only |
 | asd-external-review | fable / high | sol / high | read-only |
 | asd-advisor | fable / medium | sol / medium | read-only |

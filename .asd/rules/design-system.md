@@ -1,6 +1,6 @@
 # Design System Rules
 
-Binding for `asd-ux-designer` (author) and `asd-reviewer-ui` (verify). Applies whenever `DESIGN.md`, `design-system.html`, or UI code touched.
+Binding for `asd-ux` (author) and `asd-reviewer-ui` (verify). Applies whenever `DESIGN.md`, `design-system.html`, or UI code touched.
 
 ## 1. Source of Truth
 

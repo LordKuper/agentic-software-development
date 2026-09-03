@@ -11,7 +11,7 @@ Orchestration body for the `asd-phase-design-promote` skill. Operation-mapping t
 - read: `.asd/project/config.yaml`, `state.json`, sprint design drafts, audit.md, persistent `docs/`
 - write a file: `state.json` and decisions-log inline, for the no-op path's mechanical write (step 2) and the post-promotion bookkeeping write (step 10)
 - request user decision: rare, phase-level escalation only (PM handles decomposition + new-subsystem approvals)
-- delegate to agent: PM (orchestrator), Architect, BA, UX Designer (domain promoters)
+- delegate to agent: PM (orchestrator), Architect, BA, UX (domain promoters)
 
 ## Workflow
 
@@ -44,7 +44,7 @@ Orchestration body for the `asd-phase-design-promote` skill. Operation-mapping t
      - apply the sprint's c4 delta patch from `<sprint>/design/c4-full/` to persistent `docs/architecture/c4/` (or, when the persistent registry did not exist before this sprint, write the sprint's full schema directly as the registry) — never regenerate `dist/`/`architecture.html` here, build on demand via the `commands.yaml` build-to-view command
      - process architecture migration items
      - emit COMPLETED
-   - **`asd-ux-designer`** — only if `ux-spec.html` is in scope (step 1 intersection) — payload (ux-spec.html, design-md-delta.yaml if present, decomposition map for ux domain, migration items tagged ux):
+   - **`asd-ux`** — only if `ux-spec.html` is in scope (step 1 intersection) — payload (ux-spec.html, design-md-delta.yaml if present, decomposition map for ux domain, migration items tagged ux):
      - per subsystem (or flat): split ux-spec into `docs/ux/<subsystem>.html` (or `ux-spec.html`); merge with existing
      - if `design-md-delta.yaml` present: apply add/update/remove ops to `docs/ux/DESIGN.md`; if `system.tools.designmd` true, run `designmd-lint` from `commands.yaml`; halt on lint errors. On Windows run `designmd-install` once per session before first `designmd-lint`/`-diff`/`-export` (no-op on Linux/macOS). Never inline the linter binary — always go through `designmd-*` commands.
      - regenerate `docs/ux/design-system.html` from patched DESIGN.md — this is the sprint's **one** regeneration point (`design-system.md` §10), triggered only if `DESIGN.md` was actually touched this sprint (i.e. `design-md-delta.yaml` present and applied); no DESIGN.md change → skip regeneration entirely
@@ -69,7 +69,7 @@ Orchestration body for the `asd-phase-design-promote` skill. Operation-mapping t
 - `asd-pm` (orchestration, new subsystem proposals); no-op path (step 2) and post-promotion bookkeeping (step 10) are inline workflow writes, no PM dispatch
 - `asd-architect` (architecture domain + c4 registry updates)
 - `asd-ba` (product domain)
-- `asd-ux-designer` (ux domain)
+- `asd-ux` (ux domain)
 
 ## Skills/workflows dispatched
 None.

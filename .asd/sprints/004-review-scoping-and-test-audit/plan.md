@@ -144,20 +144,20 @@ verify, do not assume an edit is needed.
 
 Satisfies AC-11. Pure renames — no scope, rubric or authority change.
 
-- [ ] Rename both agent files; content edits limited to the identifier
-- [ ] Workflows: every `asd-phase-*` dispatch list, plus the impl review-fix rule routing findings in
+- [x] Rename both agent files; content edits limited to the identifier
+- [x] Workflows: every `asd-phase-*` dispatch list, plus the impl review-fix rule routing findings in
       test files to the test agent
-- [ ] Rules: `sprint-lifecycle.md` (phase table, owners), `review-policy.md`, `artifact-layout.md`
+- [x] Rules: `sprint-lifecycle.md` (phase table, owners), `review-policy.md`, `artifact-layout.md`
       ("Owner: Test Engineer" for test-plan), `code-style.md` §3, `design-system.md`,
       `ux-principles.md`, `providers.md`
-- [ ] Other agents' `description` delegation lists, including `asd-reviewer-documentation`'s
+- [x] Other agents' `description` delegation lists, including `asd-reviewer-documentation`'s
       reference to the ux agent
-- [ ] Skill descriptions and bodies; templates incl. `t_commands.yaml`'s header and
+- [x] Skill descriptions and bodies; templates incl. `t_commands.yaml`'s header and
       `t_custom-coding-rules.md` / `t_custom-design-rules.md`; verify no `{{agent:<name>}}`
       placeholder resolves to a retired name after the merge
-- [ ] This repo's consumer-side copies: `.asd/project/custom-coding-rules.md`,
+- [x] This repo's consumer-side copies: `.asd/project/custom-coding-rules.md`,
       `.asd/project/custom-design-rules.md`
-- [ ] Leave `.asd/project/decisions-log.md` and `.asd/sprints/archived/**` untouched — facts-of-record
+- [x] Leave `.asd/project/decisions-log.md` and `.asd/sprints/archived/**` untouched — facts-of-record
 
 Material risk: 37 canonical files carry at least one retired name; a partial pass leaves a dangling
 identifier that no build step catches, only the AC-15 grep.
