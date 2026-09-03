@@ -201,32 +201,32 @@ regress its domain silently; the red-suite invalidation is the only backstop.
 
 Satisfies AC-5. Fact owner: `sprint-lifecycle.md`.
 
-- [ ] Author the impacted-set definition once in `sprint-lifecycle.md`: diff test files + tests
+- [x] Author the impacted-set definition once in `sprint-lifecycle.md`: diff test files + tests
       exercising a changed unit via reference/import search + tests tagged with a touched AC-N +
       native runner selector when present, and the mandatory shared-infrastructure safety valve
       degrading to the full suite, checked before every scoped run
-- [ ] Scope every test run in `impl`, `impl-test` and `impl-review` to the impacted set; every other
+- [x] Scope every test run in `impl`, `impl-test` and `impl-review` to the impacted set; every other
       mention cross-links the definition, never restates it (`asd-phase-{impl,impl-test,impl-review}.md`,
       `code-style.md` §17, `review-policy.md`)
-- [ ] `asd-phase-impl-test.md`: step 7 gate becomes impacted-only; rewrite the Re-entry paragraph
+- [x] `asd-phase-impl-test.md`: step 7 gate becomes impacted-only; rewrite the Re-entry paragraph
       asserting the suite "stays full and unconditional on every entry"; keep the pre-strategy
       impacted run that lets risk analysis see post-impl behaviour
-- [ ] `asd-phase-impl-review.md`: new terminal step, after every dispatched reviewer returned
+- [x] `asd-phase-impl-review.md`: new terminal step, after every dispatched reviewer returned
       APPROVE and before `NEXT: pr` — dispatch `asd-tester` to run the full suite; record the result
       in `test-plan.md`'s existing `Suite run` incl. `HEAD`. Reviewers stay read-only; the phase
       gains the capability only through that dispatch
-- [ ] Red path: test defects → `asd-tester` fixes and re-runs; code defects → `D-N` rows,
+- [x] Red path: test defects → `asd-tester` fixes and re-runs; code defects → `D-N` rows,
       `state.json.test_defects_pending`, exit to `impl` test-fix mode. Never fix code in place inside
       impl-review
-- [ ] Green full suite becomes part of impl-review's DoD (`review-policy.md`, `sprint-lifecycle.md`)
-- [ ] `asd-phase-impl.md`: completion gate stays build + lint; state explicitly that a dev may run the
+- [x] Green full suite becomes part of impl-review's DoD (`review-policy.md`, `sprint-lifecycle.md`)
+- [x] `asd-phase-impl.md`: completion gate stays build + lint; state explicitly that a dev may run the
       impacted subset for self-verification but never authors, modifies or prunes tests
-- [ ] `checkpoints.md` precondition chain and cycle prose; `code-style.md` §19; `git-strategy.md`
+- [x] `checkpoints.md` precondition chain and cycle prose; `code-style.md` §19; `git-strategy.md`
       PR self-review checklist line ("full test suite green at `impl-test`")
-- [ ] `asd-phase-pr.md`: restate the gate's justification in terms of its own sha-independent diff
+- [x] `asd-phase-pr.md`: restate the gate's justification in terms of its own sha-independent diff
       check — "impl-review produces no code/test/stub changes" is now false; the `HEAD` read itself is
       unchanged
-- [ ] `t_test-plan.md`, README mermaid edge and phase table, `asd-phase-impl-test` SKILL description
+- [x] `t_test-plan.md`, README mermaid edge and phase table, `asd-phase-impl-test` SKILL description
 
 Material risk: moving the suite breaks impl-review's read-only-ness, which the pr gate's
 justification and impl-test's precondition text both lean on; under-selection by the search-derived

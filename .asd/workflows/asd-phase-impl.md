@@ -22,7 +22,7 @@ Detected at step 2 from `state.json`:
 - **Review-fix mode** (`review_fixes_pending` = `iter-NN`) — entered when impl-review routed sprint back. Resolve reviewer findings in `<sprint>/reviews/impl/iter-NN/`. On completion clears `review_fixes_pending`.
 - **Test-fix mode** (`test_defects_pending` set) — entered when impl-test found code defects. Resolve pending `D-N` rows in `<sprint>/test-plan.md`. On completion clears `test_defects_pending`.
 
-Fix modes **skip the impl assessment gate**. Impl completion gate (step 9) applies in **all** modes. Devs write production code only — tests are authored and run in `impl-test`.
+Fix modes **skip the impl assessment gate**. Impl completion gate (step 9) applies in **all** modes and stays build + lint only — this is a scoping rule, not a new gate: a dev may run the impacted set (`sprint-lifecycle.md` "Impacted test set") to self-check work in progress, in any mode, but never authors, modifies, or prunes a test, and that run neither satisfies nor substitutes for this gate. Test authoring, pruning, and running belong to `impl-test`.
 
 ## Execution mode
 
@@ -70,7 +70,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
        - work autonomously within plan + persistent docs scope; do NOT pause user for routine approach choices — make the reasonable call and proceed
        - escalate only on a blocker (see Execution mode): emit `QUESTION` for unresolvable requirement ambiguity, `FAILED` for missing tech-reference / unrecoverable failure, or raise Complication Approval via request for user decision **only** when a Simplicity Default trigger fires (new abstraction / dependency / config flag / generalization)
        - manual-steps handling: see `sprint-lifecycle.md` "Impl phase" — do not restate here
-       - write production code only — **no tests**; test selection, authoring, pruning, and running belong to `impl-test`
+       - write production code only — **no tests, no authoring, no modifying, no pruning**; the impacted set (`sprint-lifecycle.md` "Impacted test set") may be run for self-verification only, never as a substitute for `impl-test`'s gate; test selection, authoring, pruning, and running belong to `impl-test`
        - review-fix — apply suggested fix per finding, or equivalent correct fix; test-fix — fix the root cause behind the failing test (never weaken or delete the test), then set the defect row `Status` to `fixed` with the fixing commit sha in `<sprint>/test-plan.md`
        - run `build` and `lint` per `commands.yaml`; do not advance with failures or warnings unreported
        - stub handling: see `git-strategy.md` "TODO stubs" — do not restate here
@@ -93,7 +93,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
 9. **Impl completion gate** (all modes) — delegate to agent `asd-pm` to verify, via `commands.yaml`:
    - `build` command executed and finished with no errors and no warnings
    - `lint` command executed and finished with no errors and no warnings
-   - tests are NOT run here — the suite is the `impl-test` gate
+   - the gate itself never runs tests — a dev's optional impacted-set self-verification run (`sprint-lifecycle.md` "Impacted test set") is not part of it; the suite/impacted-set gates belong to `impl-test`/`impl-review`
    - if any condition fails → phase MUST NOT advance: PM relays specific failure to owning dev(s) to fix and re-run; loop step 7. Unrecoverable failure escalates as a blocker (`FAILED`).
    - automatic verification — no user pause
 10. **Impl assessment checkpoint** — **initial mode only** (fix modes skip to step 11) — delegate to agent `asd-pm`:
@@ -147,7 +147,7 @@ PHASE: impl | SPRINT: <NNN-slug> | STATUS: <complete|blocked|aborted> | NEXT: im
 ```
 
 ## References
-- `.asd/rules/sprint-lifecycle.md` (impl phase contract, impl modes, completion gate, impl⇄impl-test⇄impl-review cycle)
+- `.asd/rules/sprint-lifecycle.md` (impl phase contract, impl modes, completion gate, impl⇄impl-test⇄impl-review cycle, impacted test set)
 - `.asd/rules/checkpoints.md` (impl assessment gate, fix-mode preconditions)
 - `.asd/rules/review-policy.md` (severity, finding format consumed in review-fix mode)
 - `.asd/rules/git-strategy.md` (commits, project-global stubs, dirty tree)

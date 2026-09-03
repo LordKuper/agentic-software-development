@@ -9,11 +9,11 @@ scope → audit → design → design-review → design-promote → plan → imp
 
 `impl`, `impl-test`, `impl-review` form one cycle:
 
-- `impl` always routes to `impl-test`. impl writes **no tests and runs none** — its gate is build + lint.
-- `impl-test` selects the test approach for the whole change scope, prunes redundant tests, writes missing ones, runs the full suite. Code defects → back to `impl` (test-fix mode), then `impl-test` again. Suite green → `impl-review`.
-- `impl-review` does NOT fix findings — routes back to `impl` (review-fix mode); the sprint then re-enters `impl-test` (code changed → tests re-selected + re-run) before returning to `impl-review`.
+- `impl` always routes to `impl-test`. impl writes **no tests** — its gate is build + lint; a dev may run the impacted set (below) for self-verification only, never as a substitute for `impl-test`/`impl-review`.
+- `impl-test` selects the test approach for the whole change scope, prunes redundant tests, writes missing ones, runs the **impacted set** (below) as its suite gate. Code defects → back to `impl` (test-fix mode), then `impl-test` again. Impacted set green → `impl-review`.
+- `impl-review` does NOT fix findings — routes back to `impl` (review-fix mode) on unresolved findings; the sprint then re-enters `impl-test` (code changed → tests re-selected + re-run) before returning to `impl-review`. Once every required reviewer returns `APPROVE` or is latched, `impl-review` runs the **full suite exactly once** — the cycle's only full-suite run — via `asd-tester`, before `NEXT: pr`. On red: test defects are fixed by `asd-tester` and the suite re-run; code defects instead become `D-N` rows in `test-plan.md` + `state.json.test_defects_pending`, and the phase exits to `impl` test-fix mode rather than fixing code in place. Either red path also clears every APPROVE latch sprint-wide (`APPROVE latch` below).
 
-No cap on `impl⇄impl-test` rounds: loop until the suite is green or a dev blocker escalates (`FAILED`/`QUESTION`). `impl-review` keeps its iteration cap. Phase routing follows the `NEXT:` token in each phase skill's return contract, not a fixed linear chain.
+No cap on `impl⇄impl-test` rounds: loop until the impacted set is green or a dev blocker escalates (`FAILED`/`QUESTION`). `impl-review` keeps its iteration cap. Phase routing follows the `NEXT:` token in each phase skill's return contract, not a fixed linear chain.
 
 
 ## Review iteration counters
@@ -53,6 +53,23 @@ The dispatching phase workflow writes a reviewer's latch entry the moment that r
 
 **Red-full-suite invalidation.** A red full suite (the end-of-`impl-review` terminal suite run added under AC-5) proves previously-approved code was wrong: on that failure, clear BOTH `reviews.design.latched` and `reviews.impl.latched` to `{}` sprint-wide — not only the reviewer(s) whose domain the regression touched — before the sprint routes back to `impl`. The next `impl-review` entry then re-dispatches its full required roster, with no latch surviving from before the failure. This is a DISTINCT clearing route from the rollback reset above, not a consequence of it: a red-suite failure routes to `impl` in test-fix mode, and re-entering `impl`/`impl-test` from `impl-review` is normal cycle re-entry, never a rollback — "Setting phase to `impl` or `impl-test` is not earlier than `impl`" above, so the rollback-reset table never fires for this route. The full-suite step's own implementation (where in the workflow this clearing happens, alongside the rest of its red path) is out of this rule's scope; this paragraph is the contract that step must satisfy.
 
+## Impacted test set (AC-5)
+
+Every test run inside `impl`, `impl-test`, and `impl-review` is scoped to the **impacted set** — defined once, here; every other file cross-links this section, never restates it.
+
+**Definition.** The impacted set is the union of:
+1. test files present in the change-surface diff;
+2. tests exercising a changed unit, resolved by repo search over references/imports of the changed modules;
+3. tests tagged with an AC-N the change touches (the existing AC-citation convention, `code-style.md` §17).
+
+**Native selector override.** When `commands.yaml` carries a native affected/changed-test selector (a runner flag such as `--changedSince`/`--onlyChanged`, or a filter expression), that selector's result REPLACES the search-derived set above — the runner's own answer is used, not a second derivation. Field absent → fall back to the search-derived set. The field itself (name, shape, `t_commands.yaml`/`asd-init` detection) is defined where `commands.yaml` is — this section only names the override mechanism.
+
+**Safety valve — mandatory, not heuristic, checked BEFORE the selector or the search-derived set is used.** `asd-tester` MUST apply this test before every scoped run: when the change surface touches shared infrastructure — build config, CI config, shared/common modules, any framework-wide file — the impacted set degrades to the **full suite** for that run. A rule the tester applies on every run, never a judgment call.
+
+**Where impacted-only applies**: `impl` (self-verification only, below — devs never author/modify/prune a test); `impl-test`'s suite gate (below).
+
+**Where the full suite still runs**: exactly once per sprint cycle, at the end of `impl-review`, after every required reviewer returns `APPROVE` or is latched and before `NEXT: pr` — dispatched to `asd-tester` (reviewers are read-only, `providers.md`; the phase gains this capability only through that one dispatch). Recorded in `test-plan.md`'s existing `Suite run` section including `HEAD`; the `pr` gate keeps reading it from there, wording unchanged (`PR phase` below). Red path and latch-clearing: `impl` bullet above and `APPROVE latch` above. Green full suite is part of impl-review's DoD (`review-policy.md` "DoD per review phase").
+
 ## Phase table
 
 | Phase | Owner | Input | Output | Exit criteria |
@@ -60,12 +77,12 @@ The dispatching phase workflow writes a reviewer's latch entry the moment that r
 | scope | PM | user request | `sprint.md`, sprint id, branch | `sprint.md` accepted, branch created |
 | audit | Architect + BA | `sprint.md`, codebase, `docs/`, existing docs any format/location | `audit.md`; optional reverse-engineered/migrated drafts in `<sprint>/design/` | audit approved |
 | design | BA → UX → Architect | `audit.md` | drafts in `<sprint>/design/` | drafts complete |
-| design-review | Documentation + UI + Simplification + External Review | `<sprint>/design/` | `reviews/design/iter-NN/<reviewer>.md` | DoD met |
+| design-review | Correctness (UI section, conditional) + Efficiency + Documentation + External Review | `<sprint>/design/` | `reviews/design/iter-NN/<reviewer>.md` | DoD met |
 | design-promote | PM + Architect + BA + UX | approved drafts | persistent docs in `docs/` | drafts merged, decisions-log entry |
 | plan | PM | promoted persistent docs | `plan.md` | `plan.md` accepted |
 | impl | Dev | `plan.md` (initial), `reviews/impl/iter-NN/` findings (review-fix), or `test-plan.md` Defects (test-fix) | code, `manual-steps.md` | all tasks/findings/defects done; build + lint pass (completion gate) |
-| impl-test | Tester | code diff, `plan.md`, PRD ACs, existing tests | `test-plan.md`, tests in repo | full suite green → `impl-review`; code defects → `impl` test-fix mode |
-| impl-review | Quality + Implementation + Testing + UI + Simplification + Documentation + Performance + External Review | code + tests + `test-plan.md` | `reviews/impl/iter-NN/<reviewer>.md` | DoD met → `pr`; else route to `impl` review-fix mode |
+| impl-test | Tester | code diff, `plan.md`, PRD ACs, existing tests | `test-plan.md`, tests in repo | impacted set green (`Impacted test set` above) → `impl-review`; code defects → `impl` test-fix mode |
+| impl-review | Correctness + Efficiency + Testing + Documentation + External Review | code + tests + `test-plan.md` | `reviews/impl/iter-NN/<reviewer>.md` | all reviewers APPROVE/latched AND terminal full suite green (`Impacted test set` above) → `pr`; red suite → `impl` test-fix mode, latches cleared; unresolved findings → `impl` review-fix mode |
 | pr | PM | everything | PR + sprint archive (open mode), then terminal state (merge mode) | PR opened, folder archived on the branch; `phase=done` set on a later re-entry once PR merged |
 
 ## Self-hosting
@@ -165,7 +182,7 @@ If `subsystem_decomposition: disabled`: drafts merge into flat project-level doc
 
 Devs implement plan tasks. When a subtask needs a human-only operational action (secret, cloud resource, hand-run migration, env var, third-party account), the dev registers an `MS-N` entry in `<sprint>/manual-steps.md`, marks the subtask `BLOCKED: MS-N` in `plan.md`, emits `BLOCKED_MANUAL`, continues all unblocked work. PM validates each `MS-N` for necessity (`artifact-layout.md`); autonomously-doable entries rejected and returned to the dev. Once all unblocked work COMPLETED and validated `pending` entries remain, the phase halts: PM presents `manual-steps.md`, waits for a continue command. On resume the dev verifies each entry per its `Verification` field, flips it to `done`, finishes the blocked subtasks.
 
-Devs write **production code only** — no tests, no test runs. All test work belongs to `impl-test`.
+Devs write **production code only** — no tests, no test runs, except self-verification: a dev may run the impacted set (`Impacted test set` above) to self-check work in progress, but never authors, modifies, or prunes a test, and this run never substitutes for or satisfies the `impl-test`/`impl-review` gates. All test work belongs to `impl-test`.
 
 **Modes** — detected from `state.json`:
 
@@ -175,26 +192,26 @@ Devs write **production code only** — no tests, no test runs. All test work be
 
 Only one fix flag is ever set: each fix mode clears its own before routing on. Fix modes skip the impl assessment gate; blockers escalate as in initial mode. All modes return `NEXT: impl-test`.
 
-**Completion gate** (all modes) — impl MUST NOT emit `COMPLETED` until, verified via `commands.yaml`: `build` and `lint` ran with no errors and no warnings. Tests are not run here. On failure: devs fix and re-run; unrecoverable failure escalates as `FAILED`. Automatic verification, not a user pause.
+**Completion gate** (all modes) — impl MUST NOT emit `COMPLETED` until, verified via `commands.yaml`: `build` and `lint` ran with no errors and no warnings. The gate itself never runs tests — the optional self-verification run above is not part of it. On failure: devs fix and re-run; unrecoverable failure escalates as `FAILED`. Automatic verification, not a user pause.
 
 ## Impl-test phase
 
-Owner: Tester. Runs after every `impl` exit. Selects the test approach **after** the implementation exists, so tests follow the real change surface instead of a speculative one.
+Owner: Tester. Runs after every `impl` exit. Selects the test approach **after** the implementation exists, so tests follow the real change surface instead of a speculative one. Before selecting anything new, it runs the existing impacted tests (`Impacted test set` above) so the strategy pass observes actual post-impl behaviour and catches an `impl` regression before any new test is authored.
 
 **Principles**: check-ladder selection, prune criteria, no-new-test decision rule, and fail-first regression proof are all defined once in `code-style.md` §17 (SSoT) — binding here, not restated.
 
-**Workflow**: change-surface analysis → `test-plan.md` (risk → chosen check → decision) → prune + author → full suite run.
+**Workflow**: change-surface analysis → pre-strategy impacted run (existing tests) → `test-plan.md` (risk → chosen check → decision) → prune + author → impacted-set suite run.
 
-**Re-entry** (every `impl` exit after the first re-enters this phase): the strategy and prune passes scope to the **delta since the prior entry** (the review-fix/test-fix commits, via `test-plan.md`'s `Entry log`), not the whole change surface again — `test-plan.md` is amended, not rewritten. The **suite gate stays full and unconditional on every entry**; incremental scoping never touches it. Bounded risk: a defect introduced by a fix outside its own diff isn't re-analysed by the analysis passes — the full suite gate is the backstop.
+**Re-entry** (every `impl` exit after the first re-enters this phase): the strategy and prune passes scope to the **delta since the prior entry** (the review-fix/test-fix commits, via `test-plan.md`'s `Entry log`), not the whole change surface again — `test-plan.md` is amended, not rewritten. The **suite gate re-runs on every entry**, scoped per `Impacted test set` above (never the whole repo, subject to its safety valve). Bounded risk: a defect introduced by a fix outside the impacted set's reach is not caught here — the end-of-`impl-review` full suite (`Impacted test set` above) is the backstop.
 
 **Removal gate** — deleting a test **outside** the sprint change scope needs user approval (Complication Approval format, `core.md`). In-scope removals proceed autonomously with a recorded reason.
 
-**Suite gate** — verdict comes from the actual `test` runner output (exit code plus report), never from an agent's claim. Failures triaged:
+**Suite gate** — verdict comes from the actual `test` runner output (exit code plus report), never from an agent's claim, scoped to the impacted set (`Impacted test set` above) — the full suite runs only once, at the end of `impl-review`. Failures triaged:
 
 - **test defect** (bad assertion, wrong fixture, flaky pattern) → fixed inside impl-test, suite re-run.
 - **code defect** → appended to the `Defects` section of `test-plan.md`, `state.json.test_defects_pending = true`, `NEXT: impl` (test-fix mode).
 
-Loops until the full suite passes. No iteration cap — an unfixable state surfaces as a dev/tester `FAILED`, not as a silent exit.
+Loops until the impacted set passes. No iteration cap — an unfixable state surfaces as a dev/tester `FAILED`, not as a silent exit.
 
 ## PR phase
 
@@ -206,7 +223,7 @@ Two modes, detected from `state.json.pr`:
 The folder move is gated on DoD + PR creation, not on merge; the `phase=done` terminal signal is still gated on a confirmed merge, never on PR creation or the folder move. A sprint whose folder already lives under `archived/` but whose `phase` is not yet `done` still counts as the one active sprint (`asd-sprint` step 1 checks both locations).
 
 **Open mode's DoD verification is conditional on two checks, neither a `checkpoints.md` gate** (`asd-phase-pr.md` step 4 — internal verification only, gates PR opening, never a user-facing pause):
-- **Tests/lint re-run**: content-scoped, not HEAD-sha-equality (HEAD always moves past the recorded sha — the recording commit itself, plus later phase-transition commits, guarantee it). Skipped when `git diff --quiet <recorded HEAD>...HEAD -- <code/test/stub pathspec, excluding .asd/sprints/** and .asd/project/**>` is empty, where `<recorded HEAD>` is the sha in test-plan.md's `Suite run` section (the commit impl-test step 7 verified the suite at) — impl-review makes no code/test/stub changes per its own workflow contract, so it never dirties this diff; re-run only when the diff is non-empty (e.g. a fix commit landed since).
+- **Tests/lint re-run**: content-scoped, not HEAD-sha-equality (HEAD always moves past the recorded sha — the recording commit itself, plus later phase-transition commits, guarantee it). Skipped when `git diff --quiet <recorded HEAD>...HEAD -- <code/test/stub pathspec, excluding .asd/sprints/** and .asd/project/**>` is empty, where `<recorded HEAD>` is the sha in test-plan.md's `Suite run` section — the commit impl-review's terminal full-suite step (`Impacted test set` above) last verified the full suite at, which is also the last point any code/test/stub file can change before `pr`. The check is sha-independent, not read-only-dependent: whatever landed since that recording — a review-fix commit, or the rare in-phase test-defect fix — shows up as a non-empty diff and forces a re-run; an empty diff means nothing changed, full stop.
 - **Reviews-green source**: read `state.json.reviews.impl.verdicts["iter-NN"]` for the highest iteration first; parse review files under `<sprint>/reviews/impl/iter-NN/` only as an explicit fallback when `state.json` data is missing or stale. Satisfied-vs-blocking semantics for each entry: "State recovery" below.
 
 ## Signal vocabulary
@@ -232,7 +249,7 @@ The folder move is gated on DoD + PR creation, not on merge; the `phase=done` te
 
 See `t_plan.md` for canonical structure.
 
-**Standing Definition of Done** (constant across every sprint, never restated in `plan.md`): all AC-N from the acceptance-criteria source covered by Tasks; full test suite green at `impl-test`; all required reviewers green at `impl-review`. `plan.md`'s own Definition of Done section holds only sprint-specific additions to this standing set, referencing it rather than repeating it.
+**Standing Definition of Done** (constant across every sprint, never restated in `plan.md`): all AC-N from the acceptance-criteria source covered by Tasks; impacted test set green at `impl-test` (`Impacted test set` above); full test suite green once, at the end of `impl-review`; all required reviewers green at `impl-review`. `plan.md`'s own Definition of Done section holds only sprint-specific additions to this standing set, referencing it rather than repeating it.
 
 ## Sprint immutability
 

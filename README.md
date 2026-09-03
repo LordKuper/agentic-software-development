@@ -132,9 +132,10 @@ flowchart TD
     plan --> impl["impl<br/><i>Backend Dev · Frontend Dev</i>"]
     impl --> itest["impl-test<br/><i>Test Engineer</i>"]
     itest -->|code defects — back to test-fix mode| impl
-    itest -->|full suite green| ireview["impl-review<br/><i>Quality · Implementation · Testing · UI ·<br/>Simplification · Documentation · Performance · External</i>"]
+    itest -->|impacted set green| ireview["impl-review<br/><i>Quality · Implementation · Testing · UI ·<br/>Simplification · Documentation · Performance · External</i>"]
     ireview -->|findings — back to review-fix mode| impl
-    ireview -->|all APPROVE| pr["pr<br/><i>PM</i>"]
+    ireview -->|terminal suite red — code defects| impl
+    ireview -->|all APPROVE + terminal full suite green| pr["pr<br/><i>PM</i>"]
 
     classDef review fill:#fff3cd,stroke:#d39e00,color:#1a1a1a;
     classDef done fill:#d4edda,stroke:#28a745,color:#1a1a1a;
@@ -142,7 +143,7 @@ flowchart TD
     class pr done;
 ```
 
-`impl`, `impl-test`, and `impl-review` form one cycle. `impl` writes production code only — its gate is build + lint. `impl-test` then picks the test approach for the whole change scope (after the code exists), prunes tests that no longer earn their keep, writes the missing ones, and runs the full suite: code defects route back to `impl` (test-fix mode), a green suite advances to `impl-review`. Review findings route back to `impl` (review-fix mode) and return through `impl-test`. The `impl⇄impl-test` loop is uncapped — it ends on a green suite or an escalated blocker; `impl-review` keeps its iteration cap.
+`impl`, `impl-test`, and `impl-review` form one cycle. `impl` writes production code only — its gate is build + lint. `impl-test` then picks the test approach for the whole change scope (after the code exists), prunes tests that no longer earn their keep, writes the missing ones, and runs the **impacted set** (tests touched by the change surface, not the whole repo): code defects route back to `impl` (test-fix mode), a green impacted run advances to `impl-review`. Review findings route back to `impl` (review-fix mode) and return through `impl-test`. Once every required reviewer is APPROVE (or already latched from an earlier iteration), `impl-review` runs the sprint's **one full-suite check** before advancing to `pr` — a red run there fixes test defects in place and re-runs, or, for code defects, exits to `impl` (test-fix mode) and clears every reviewer's APPROVE latch. The `impl⇄impl-test` loop is uncapped — it ends on a green impacted run or an escalated blocker; `impl-review` keeps its iteration cap.
 
 | Phase | What happens |
 |---|---|
@@ -153,8 +154,8 @@ flowchart TD
 | **design-promote** | Approved sprint drafts get decomposed per subsystem and promoted to persistent `docs/` |
 | **plan** | PM decomposes work into Tasks with checkbox subtasks, traces each to PRD acceptance criteria |
 | **impl** | Devs (Backend, Frontend) implement Tasks — or fix impl-review findings (review-fix mode) or impl-test defects (test-fix mode); no tests written here; run build/lint, commit per Conventional Commits |
-| **impl-test** | Test Engineer picks the risk-based test approach for the change scope, deletes redundant/flaky/implementation-coupled tests, writes the missing ones, runs the full suite; records everything in `test-plan.md`; code defects route back to `impl` |
-| **impl-review** | 7 internal reviewers (Quality, Implementation, Testing, UI, Simplification, Documentation, Performance) plus External Review; routes findings back to `impl` review-fix mode |
+| **impl-test** | Test Engineer picks the risk-based test approach for the change scope, deletes redundant/flaky/implementation-coupled tests, writes the missing ones, runs the impacted set; records everything in `test-plan.md`; code defects route back to `impl` |
+| **impl-review** | 7 internal reviewers (Quality, Implementation, Testing, UI, Simplification, Documentation, Performance) plus External Review; routes findings back to `impl` review-fix mode; once reviewers approve, runs the sprint's one full-suite check — green advances to `pr`, red exits to `impl` test-fix mode and clears every APPROVE latch |
 | **pr** | DoD verification + `gh pr create` (or push + summary if gh disabled); sprint folder archived onto the same branch right after; a later re-entry sets the terminal state once the PR is merged |
 
 You can resume an interrupted sprint at any time: `/asd-sprint` reads `state.json`, detects the current phase, and dispatches the matching phase skill.

@@ -135,7 +135,7 @@ Written and run in `impl-test`, never in `impl`. Selection happens **after** the
 
 - The project formatter and linter decide style; no manual style debate.
 - Style consistent within a file.
-- Build and lint must pass before any commit; the full test suite gates `impl-test`, not each commit.
+- Build and lint must pass before any commit; the impacted test set (`sprint-lifecycle.md` "Impacted test set") gates `impl-test`, not each commit — the full suite runs once, at the end of `impl-review`.
 
 ## 20. Per-Language Rules
 

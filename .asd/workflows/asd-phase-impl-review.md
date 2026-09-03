@@ -4,16 +4,16 @@ Orchestration body for the `asd-phase-impl-review` skill. Operation-mapping to h
 
 ## Preconditions
 - Active sprint at `.asd/sprints/<NNN-slug>/`
-- impl-test COMPLETED signal received with a green full suite; `state.json.phase` advanced from `impl-test`
+- impl-test COMPLETED signal received with a green impacted-set run (`sprint-lifecycle.md` "Impacted test set"); `state.json.phase` advanced from `impl-test`
 - **First entry** (after initial impl): all plan.md Task checkboxes ticked; impl assessment approved
 - **Cycle re-entry** (after impl review-fix + impl-test): `state.json.review_fixes_pending` cleared by impl fix-mode finalize; `test_defects_pending` null; `<sprint>/test-plan.md` `Suite run` records a pass
 
 ## Operations used
 - read: `.asd/project/config.yaml`, `state.json`, plan.md, `test-plan.md`, code + tests diff, persistent docs, `.asd/project/stubs.md`, `custom-common-rules.md`, `custom-coding-rules.md`, review files
-- run command: `git diff`/`git show` to compute the iteration diff + scope file list (step 1)
-- write a file: reduced coverage form of each reviewer's returned text to `<sprint>/reviews/impl/iter-NN/<reviewer>.md` (step 7); `state.json` inline (mechanical, no gate) at steps 2 and 5 — no PM dispatch
+- run command: `git diff`/`git show` to compute the iteration diff + scope file list (step 1); `commands.yaml` `test`/`lint`/`build`, unscoped, for the terminal full-suite gate (step 9) — dispatched to `asd-tester`, never run by this workflow or a reviewer directly
+- write a file: reduced coverage form of each reviewer's returned text to `<sprint>/reviews/impl/iter-NN/<reviewer>.md` (step 7); `state.json` inline (mechanical, no gate) at steps 2, 5, and 9's red-path latch clear — no PM dispatch for those
 - request user decision: escalation on FAIL or iteration cap
-- delegate to agent in parallel: reviewers; delegate to agent: PM for state + decisions-log + `review_fixes_pending` routing tied to DoD gates (step 8, 9) only. impl-review does NOT delegate to devs — finding fixes route to impl phase (review-fix mode), which returns via impl-test.
+- delegate to agent in parallel: reviewers; delegate to agent: PM for state + decisions-log + `review_fixes_pending` routing tied to DoD gates (step 8, 9, 10) only; `asd-tester` for the terminal full-suite gate (step 9) — the phase gains this one capability only through that dispatch, reviewers stay read-only. impl-review does NOT delegate to devs — finding fixes route to impl phase (review-fix mode), which returns via impl-test.
 
 ## Reviewer read-only contract
 
@@ -42,26 +42,29 @@ Every reviewer dispatched below is read-only: it evaluates its scope and returns
    - each reviewer returns its findings + complete coverage ledger (file, rule, and section) + verdict as final text per `t_review.md` (or `external-review/t_review-report.md` for external), first-line verdict token `[REVIEW-impl-<reviewer>]: ...`; **this workflow writes the reduced coverage form of that text to `<sprint>/reviews/impl/iter-NN/<reviewer>.md`** (step 7) — the reviewer itself performs no write
 7. Wait REVIEW_DONE from every dispatched reviewer, then **coverage-ledger gate** (per `review-policy.md`): per internal reviewer's returned text, validate File-coverage ledger lists every file in scope file list, Rule-coverage ledger has no blank/unresolved row, and (for `asd-reviewer-correctness`/`asd-reviewer-efficiency`) the section-coverage ledger has one row per rubric section with no row omitted or blank (an n/a row from step 5 counts as resolved). Any reviewer with missing scoped file, unresolved rule row, or unresolved/missing section row → reject + re-dispatch fresh, same iteration; wait again. Only complete-ledger reviews proceed to write: this workflow persists findings + a coverage summary line + the full `n/a` list + every `finding #N` row verbatim — `checked`/`pass` rows dropped (`review-policy.md` "Persistence"). External Review exempt (no ledger).
 8. Parse first-line verdict tokens from all written reviewer files; record per-reviewer verdicts under `state.json` `reviews.impl.verdicts["iter-NN"]` keyed `correctness`/`efficiency`/`testing`/`documentation`/`external`, one entry per reviewer actually dispatched this iteration — a latch-skipped reviewer (step 6) gets no entry here, per `sprint-lifecycle.md` "State recovery"'s absent-key branch. For any reviewer whose parsed token this iteration is `APPROVE`, also write `state.json.reviews.impl.latched[<key>] = N` (current iteration; AC-2 APPROVE latch — `sprint-lifecycle.md` "APPROVE latch"). Aggregate per `sprint-lifecycle.md` "State recovery" satisfied-vs-blocking semantics, where a `latched` entry counts as satisfied exactly as a fresh `APPROVE` would. impl-review does NOT fix findings itself — fixes route to impl phase (fix mode):
-   - **All APPROVE or latched** → DoD met:
-     - delegate to agent `asd-pm`: append decisions-log "impl-review iter NN: APPROVE", clear `state.json.review_fixes_pending` (set null)
-     - emit phase COMPLETED with `NEXT: pr`
+   - **All APPROVE or latched** → reviewer DoD met → proceed to step 9 (terminal full-suite gate)
    - **Any FAIL** → escalation (impl-review owns review escalation):
      - parse FAIL findings; group by escalation cause (concept / requirement / contract change; new abstraction; scope expansion; complexity increase)
      - request user decision in `language.chat`: present each FAIL using Complication Approval format from `core.md`; collect decisions
      - on override → mark that finding resolved (no fix needed); exclude from fix set
      - on accept → keep finding in fix set; note approved change in its reviewer file
      - then continue to routing step below with surviving findings
-   - **Any unresolved finding remains** (CONCERNS findings, plus FAIL findings user accepted for fix) → route to impl review-fix mode (the sprint returns here via impl-test):
+   - **Any unresolved finding remains** (CONCERNS findings, plus FAIL findings user accepted for fix) → route to impl review-fix mode (the sprint returns here via impl-test) — the terminal suite gate (step 9) is skipped, reviewer DoD was not met:
      - delegate to agent `asd-pm`: set `state.json.review_fixes_pending = "iter-NN"` (current impl-review iteration; impl review-fix mode reads findings from `<sprint>/reviews/impl/iter-NN/`); append decisions-log "impl-review iter NN: <CONCERNS/FAIL summary> → impl fix"
      - emit phase COMPLETED with `NEXT: impl`
-   - **All FAIL overridden, no CONCERNS** (escalation left zero unresolved findings) → treat as DoD met by user override: delegate to agent `asd-pm` to append decisions-log "impl-review iter NN: APPROVE by override", clear `review_fixes_pending`; emit COMPLETED with `NEXT: pr`
-9. Iteration cap reached (next impl-review iteration would exceed all severity-tier budgets per `review-policy.md`) — checked when step 8 would route to impl review-fix mode:
-   - request user decision: override cap and continue / accept current findings / abort sprint
-   - on override → route to impl review-fix mode (`reviews.impl.iteration` keeps incrementing — not reset; severity floor pinned at `critical`; PM sets `review_fixes_pending`, emit COMPLETED `NEXT: impl`)
-   - on accept → emit COMPLETED with `NEXT: pr`, note "iteration cap reached, user accepted"
-   - on abort → emit ABORT
-10. Any reviewer QUESTION / FAILED / ABORT → relay, halt
-11. On `ADVICE_NEEDED` from any dispatched agent → relay per `sprint-lifecycle.md`'s `ADVICE_NEEDED` protocol; execution resumes, no halt.
+   - **All FAIL overridden, no CONCERNS** (escalation left zero unresolved findings) → reviewer DoD met by user override → proceed to step 9 (terminal full-suite gate)
+9. **Terminal full-suite gate** — dispatched only when step 8 (or step 10's cap-accept branch) reaches reviewer DoD met; skipped entirely on any route to impl review-fix mode. Delegate to agent `asd-tester` (the phase's one non-reviewer, non-read-only dispatch — reviewers stay read-only throughout, `providers.md`): run `test` **unscoped** — the sprint cycle's one full-suite run, never the impacted set (`sprint-lifecycle.md` "Impacted test set") — then `lint` and `build` per `commands.yaml`; write the raw result into `test-plan.md`'s `Suite run` section including `HEAD` (current `git rev-parse HEAD`), overwriting the impacted-run record `impl-test` left there. Verdict from the runner's exit code plus report, never an agent's summary:
+   - **Green** → DoD met: delegate to agent `asd-pm`: append decisions-log "impl-review iter NN: <APPROVE | APPROVE by override | iteration cap accepted>, full suite green" (whichever step 8/10 branch led here), clear `state.json.review_fixes_pending` (set null); emit phase COMPLETED with `NEXT: pr`
+   - **Red, test defect** (bad assertion, wrong fixture, flaky pattern) → `asd-tester` fixes it in place and re-runs this step; loop until green or an unfixable state surfaces as `FAILED`. Never a code fix — only the test itself
+   - **Red, code defect** → exit the phase rather than fixing it here: append a `D-N` row to `test-plan.md`'s `Defects` section (location, symptom, failing test, status `pending`); write inline (mechanical, no gate) `state.json.test_defects_pending = true` and clear BOTH `state.json.reviews.design.latched` and `reviews.impl.latched` to `{}` sprint-wide (AC-2 red-full-suite invalidation, `sprint-lifecycle.md` "APPROVE latch" — the next impl-review entry re-dispatches its full required roster); delegate to agent `asd-pm`: append decisions-log "impl-review iter NN: terminal full suite red — defects <D-N list> → impl test-fix, all APPROVE latches cleared"; emit phase COMPLETED with `NEXT: impl` (test-fix mode)
+   - both kinds present → fix the test defects first (sub-bullet above), re-run, then route the remaining code defects back per the code-defect sub-bullet
+10. Iteration cap reached (next impl-review iteration would exceed all severity-tier budgets per `review-policy.md`) — checked when step 8 would route to impl review-fix mode:
+    - request user decision: override cap and continue / accept current findings / abort sprint
+    - on override → route to impl review-fix mode (`reviews.impl.iteration` keeps incrementing — not reset; severity floor pinned at `critical`; PM sets `review_fixes_pending`, emit COMPLETED `NEXT: impl`) — step 9 skipped, same as any review-fix route
+    - on accept → reviewer DoD met by cap-accept → proceed to step 9 (terminal full-suite gate); its own COMPLETED note folds in "iteration cap reached, user accepted"
+    - on abort → emit ABORT
+11. Any reviewer or `asd-tester` QUESTION / FAILED / ABORT → relay, halt
+12. On `ADVICE_NEEDED` from any dispatched agent → relay per `sprint-lifecycle.md`'s `ADVICE_NEEDED` protocol; execution resumes, no halt.
 
 ## Iteration severity floor (reference)
 See `.asd/rules/review-policy.md` cumulative-budget algorithm. This workflow computes floor + passes to reviewer payload so reviewers drop findings below floor.
@@ -72,15 +75,17 @@ See `.asd/rules/review-policy.md` cumulative-budget algorithm. This workflow com
 - `<sprint>/reviews/impl/iter-NN/testing.md` (written by this workflow when dispatched; not written this iteration when latch-skipped — step 6)
 - `<sprint>/reviews/impl/iter-NN/documentation.md` (written by this workflow when dispatched; not written this iteration when latch-skipped — step 6)
 - `<sprint>/reviews/impl/iter-NN/external.md` (when `external_review=enabled` and not latch-skipped; written by this workflow)
-- Updated `state.json` (phase, `reviews.impl.iteration`, `reviews.impl.verdicts`, `reviews.impl.latched`, `review_fixes_pending`)
-- decisions-log entry on DoD met, route-to-impl-fix, or override
+- Updated `<sprint>/test-plan.md` `Suite run` section (step 9, overwriting the impacted-run record) and, on a code-defect red, a new `Defects` `D-N` row
+- Updated `state.json` (phase, `reviews.impl.iteration`, `reviews.impl.verdicts`, `reviews.impl.latched`, `review_fixes_pending`, `test_defects_pending` on a step-9 code-defect red)
+- decisions-log entry on DoD met (full suite green), route-to-impl-fix, override, or terminal-suite-red
 
-Note: impl-review produces no code/test/stub changes — those are made by the impl phase (review-fix mode) on the next cycle, followed by impl-test.
+Note: impl-review fixes no CODE finding itself — those route to the impl phase (review-fix mode) on the next cycle, followed by impl-test. The one exception is the terminal full-suite gate (step 9): a test defect surfaced there is fixed in place by `asd-tester` and re-run; a code defect never is — it always exits the phase to `impl` test-fix mode.
 
 ## Agents delegated to
 - 4 internal reviewers (Correctness, Efficiency, Testing, Documentation) — parallel, dispatched unless APPROVE-latched (step 6, AC-2); `review.scoped_fan_out` degrades a rubric section within Correctness or Efficiency to `n/a` for a dispatched reviewer, never skips the agent by itself (step 5) — the latch is the only agent-level skip
 - External Review — parallel (when enabled and not latch-skipped)
-- PM — decisions-log + `review_fixes_pending` routing tied to DoD gates (step 8, 9); no-op mechanical state writes (steps 2, 5) are inline workflow writes, no PM dispatch
+- `asd-tester` — terminal full-suite gate only (step 9), reached only on reviewer DoD met; the phase's sole non-reviewer dispatch and its only capability to run commands
+- PM — decisions-log + `review_fixes_pending`/`test_defects_pending` routing tied to DoD gates (step 8, 9, 10); no-op mechanical state writes (steps 2, 5, and step 9's latch clear) are inline workflow writes, no PM dispatch
 - No devs — finding fixes performed by impl phase (review-fix mode)
 
 ## Skills/workflows dispatched
@@ -90,13 +95,13 @@ None.
 ```
 PHASE: impl-review | SPRINT: <NNN-slug> | ITER: <N> | STATUS: <complete|blocked|aborted> | NEXT: <pr|impl>
 ```
-`NEXT: pr` on DoD met (or cap-accept); `NEXT: impl` when unresolved findings route the sprint to impl review-fix mode.
+`NEXT: pr` on reviewer DoD met AND terminal full suite green (step 9); `NEXT: impl` when unresolved findings route the sprint to impl review-fix mode, OR when the terminal full suite is red with code defects (test-fix mode).
 
 ## References
-- `.asd/rules/sprint-lifecycle.md` (impl-review phase contract)
+- `.asd/rules/sprint-lifecycle.md` (impl-review phase contract, impacted test set / terminal full-suite gate, APPROVE latch)
 - `.asd/rules/review-policy.md` (severity floor, autofix, escalation, gate verdict format, DoD per phase, reviewer authorship)
 - `.asd/rules/design-principles.md`
 - `.asd/rules/checkpoints.md`
 - `.asd/rules/language-policy.md`
 - `.asd/rules/git-strategy.md` (stubs handling)
-- Templates: `t_review.md`, `external-review/t_review-report.md`
+- Templates: `t_review.md`, `external-review/t_review-report.md`, `t_test-plan.md`
