@@ -29,7 +29,7 @@
  * Migrations (`.asd/migrations/<version>.js`, see runMigrations below) run
  * as the last step of applyPlan(): AFTER the managed-path replacement above,
  * BEFORE the manifest write that records the reached asd_version - fixed
- * sequencing per decisions-log 2026-09-03, no pre/post mode knob.
+ * sequencing, no pre/post mode knob.
  *
  * Manifest-schema decision: no new "last known upstream state" file was
  * invented. `.asd/release-manifest.json` already ships `canon_hashes` +
@@ -204,12 +204,15 @@ function planUpdate(repoRoot, sourceRoot) {
   }
   checkCaseCollisions(relPaths);
   const classifications = classifyAll(repoRoot, sourceRoot, oldManifest, newManifest, relPaths);
+  const migrationsDir = path.join(repoRoot, '.asd', 'migrations');
+  const pendingMigrationVersions = pendingMigrations(listMigrations(migrationsDir), oldManifest.asd_version, newManifest.asd_version).map((m) => m.version);
   return {
     oldManifest,
     newManifest,
     oldVersion: oldManifest.asd_version,
     newVersion: newManifest.asd_version,
     classifications,
+    pendingMigrationVersions,
     report: summarize(classifications),
   };
 }
@@ -262,17 +265,12 @@ function buildNextUpstreamHashes(oldManifest, classifications, forceRelPaths) {
   return next;
 }
 
-// `versionOverride`: the asd_version actually reached (see runMigrations below)
-// - may be lower than newManifest.asd_version when a migration failed partway.
-// Recording it here, in the SAME atomic write as the rest of the manifest,
-// is what resolves the "atomic whole-manifest copy vs. per-migration version"
-// conflict: there is still exactly one write, but the version field it
-// carries is computed from migration outcomes first, so a failed migration
-// never lets the version field jump past the last one that actually
-// succeeded (AC-12: "never left at an unrecorded intermediate version").
-function writeUpdatedManifest(repoRoot, newManifest, nextUpstreamHashes, versionOverride) {
+// Writes the manifest with the version migrations actually reached, never
+// newManifest.asd_version outright, so a failed migration can't be recorded
+// as fully applied.
+function writeUpdatedManifest(repoRoot, newManifest, nextUpstreamHashes, reachedVersion) {
   const merged = Object.assign({}, newManifest, {
-    asd_version: versionOverride !== undefined ? versionOverride : newManifest.asd_version,
+    asd_version: reachedVersion,
     upstream_hashes: nextUpstreamHashes,
   });
   const p = path.join(repoRoot, '.asd', 'release-manifest.json');
@@ -281,19 +279,22 @@ function writeUpdatedManifest(repoRoot, newManifest, nextUpstreamHashes, version
 
 // ---------------------------------------------------------------------------
 // Migrations: `.asd/migrations/<version>.js`, one zero-dependency Node script
-// per target ASD version. Contract (also documented in
-// `.asd/skills/asd-update/SKILL.md` and each script's own header comment):
+// per target ASD version, run against a consumer checkout. Contract, also
+// documented in each script's own header comment:
 //   - Filename (minus `.js`) is the exact target `asd_version` string the
 //     script migrates a consumer TO, e.g. `3.2.0.js`.
-//   - `module.exports = (ctx) => void | Promise<void>`, where `ctx.repoRoot`
-//     is the CONSUMER project root. A script needing sync.js's helpers
-//     `require`s `.asd/sync.js` from `ctx.repoRoot` itself.
+//   - `module.exports = (ctx) => MigrationReport | Promise<MigrationReport>`,
+//     where `ctx.repoRoot` is the CONSUMER project root and `MigrationReport`
+//     is a plain object the script defines for its own tests to assert
+//     against; runMigrations collects it per version and never inspects its
+//     shape. A script needing sync.js's helpers `require`s `.asd/sync.js`
+//     from `ctx.repoRoot` itself.
 //   - Idempotent: re-running an already-applied migration is a no-op, never
 //     an error - check current state before mutating (e.g. "file already
 //     absent" is success, not failure).
 //   - Throwing fails the migration; the runner stops there (see below).
-// Sequencing is fixed (decisions-log, 2026-09-03): migrations always run
-// AFTER managed-path replacement, never before - no pre/post mode knob.
+// Migrations always run AFTER managed-path replacement, never before - no
+// pre/post mode knob.
 // ---------------------------------------------------------------------------
 
 // Plain dotted-numeric version compare (asd_version is always e.g. "3.1.0" -
@@ -340,41 +341,59 @@ function loadFreshMigration(absPath) {
   return require(absPath);
 }
 
+// Same rationale, applied to `.asd/sync.js` itself: the module-level `sync`
+// required at the top of this file is loaded once per process, so without
+// this, a migration requiring `.asd/sync.js` from `ctx.repoRoot` (the
+// pattern the contract above mandates) would receive whatever copy an
+// earlier require in this same process cached - stale the moment a prior
+// managed-path write already replaced the file on disk.
+function invalidateSyncCache(repoRoot) {
+  const syncPath = path.join(repoRoot, '.asd', 'sync.js');
+  if (fs.existsSync(syncPath)) delete require.cache[require.resolve(syncPath)];
+}
+
 // Runs every pending migration in ascending order against the consumer at
 // `repoRoot` (already updated to the new managed-path content by the time
 // this is called). Stops at the first failure and reports which migration
-// failed and which ones had already succeeded. `reachedVersion` is what the
-// caller should record: `newVersion` when every pending migration succeeded
-// (including the "no migrations were pending" case - nothing blocks
-// advancing straight to the target), otherwise the last migration that
-// actually succeeded (or `oldVersion` if none did).
+// failed, which ones had already succeeded, and each succeeded migration's
+// own report keyed by version. `reachedVersion` is what the caller should
+// record: `newVersion` when every pending migration succeeded (including the
+// "no migrations were pending" case - nothing blocks advancing straight to
+// the target), otherwise the last migration that actually succeeded (or
+// `oldVersion` if none did).
 async function runMigrations(repoRoot, oldVersion, newVersion) {
   const migrationsDir = path.join(repoRoot, '.asd', 'migrations');
   const pending = pendingMigrations(listMigrations(migrationsDir), oldVersion, newVersion);
   const ran = [];
+  const reports = {};
   for (const m of pending) {
+    invalidateSyncCache(repoRoot);
     const absPath = path.join(migrationsDir, m.file);
     try {
       const migrate = loadFreshMigration(absPath);
       if (typeof migrate !== 'function') throw new Error('migration does not export a function');
-      await migrate({ repoRoot });
+      reports[m.version] = await migrate({ repoRoot });
     } catch (e) {
       return {
         reachedVersion: ran.length > 0 ? ran[ran.length - 1] : oldVersion,
         ran,
-        failure: { version: m.version, error: e.message },
+        reports,
+        failure: { version: m.version, error: String(e && e.message ? e.message : e) },
       };
     }
     ran.push(m.version);
   }
-  return { reachedVersion: newVersion, ran, failure: null };
+  return { reachedVersion: newVersion, ran, reports, failure: null };
 }
 
 // Applies a plan from planUpdate(). No-op (report only) when dryRun.
 // `options.force`: relPaths (array or Set) whose 'conflict'/'conflict-foreign'
 // classification the user has explicitly confirmed overwriting - the other
 // half of "never touch a conflict WITHOUT explicit confirmation". Runs
-// `sync.js --check` after a real apply (plan: canon changed upstream means
+// pending migrations (see runMigrations) after the managed-path write and
+// before the manifest write below, so a migration shipped in this very
+// release is the one that runs against the tree it just produced. Runs
+// `sync.js --check` after a real apply (canon changed upstream means
 // provider-views are now stale and need a subsequent `sync.js --apply`,
 // which this function deliberately does NOT do automatically).
 async function applyPlan(repoRoot, plan, options) {
@@ -383,10 +402,6 @@ async function applyPlan(repoRoot, plan, options) {
   if (dryRun) return { dryRun: true, applied: [], syncCheck: null, migrations: null };
   const applied = applyClassifications(plan.classifications, force);
   const nextHashes = buildNextUpstreamHashes(plan.oldManifest, plan.classifications, force);
-  // Migrations run AFTER managed-path replacement (decisions-log, 2026-09-03)
-  // and BEFORE the manifest write below, loaded from the tree `applied` just
-  // wrote - a migration shipped in this very release must be the one that
-  // runs (same trap loadFreshSync solves for sync.js).
   const migrations = await runMigrations(repoRoot, plan.oldVersion, plan.newVersion);
   writeUpdatedManifest(repoRoot, plan.newManifest, nextHashes, migrations.reachedVersion);
   const syncCheck = loadFreshSync(repoRoot).runCheck(repoRoot);
@@ -471,6 +486,9 @@ function printPlan(plan) {
     if (status === 'noop') continue;
     log(`  ${status}: ${plan.report.byStatus[status].length}`);
     for (const relPath of plan.report.byStatus[status]) log(`    - ${relPath}`);
+  }
+  if (plan.pendingMigrationVersions.length > 0) {
+    log(`\nMigrations that will run: ${plan.pendingMigrationVersions.join(', ')}`);
   }
   if (plan.report.needsAttention.length > 0) {
     log('\nNeeds manual attention (left untouched):');
