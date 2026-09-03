@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-phase-impl-test/SKILL.md. source_digest=sha256:6f6cfb233540a8740f4047d13b644b52eb02ddb50c2992ad28cbc358b63daa9d content_digest=sha256:515224b2961f214c63d8382cc2cc961e42cec6e78a38420f453497cc42d8b0e2 asd_version=1.1.0 schema=1
+# ASD generated. Edit .asd/skills/asd-phase-impl-test/SKILL.md. source_digest=sha256:21e41bb90741941d0fc52daf651803e94708665c52da85712bf3c3f0bc88b37f content_digest=sha256:37d8fff8ae7cbcd989a3ccf435f555b8b65fd084152c96a7bf0f7d9d897a1261 asd_version=3.1.0 schema=1
 name: asd-phase-impl-test
-description: "Runs the ASD impl-test phase: dispatches asd-test-engineer to pick the test approach for the whole change scope after the code exists, prune redundant tests, author missing ones, and run the full suite. Green suite routes to impl-review; code defects are recorded in test-plan.md and route back to impl test-fix mode. Use when asd-sprint dispatches the impl-test phase, or when the user explicitly asks to run or re-run impl-test for the active sprint."
+description: "Runs the ASD impl-test phase: dispatches asd-tester to pick the test approach for the whole change scope after the code exists, prune redundant tests, author missing ones, and run the full suite. Green suite routes to impl-review; code defects are recorded in test-plan.md and route back to impl test-fix mode. Use when asd-sprint dispatches the impl-test phase, or when the user explicitly asks to run or re-run impl-test for the active sprint."
 ---
 
 Operation mapping: see `.asd/rules/providers.md`.

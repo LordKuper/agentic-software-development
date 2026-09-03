@@ -1,6 +1,6 @@
 ---
-# ASD generated. Edit .asd/agents/asd-ux-designer.md. source_digest=sha256:78ba058f7d34d8da7068984e5be9fc904d6f3602f671fbb03778660c15cf0604 content_digest=sha256:6fe46818c1f723aaee5a39271af118fabf35abdcd1f8c23052b9a2804f47bbfd asd_version=3.0.0 schema=1
-name: asd-ux-designer
+# ASD generated. Edit .asd/agents/asd-ux.md. source_digest=sha256:fc9c6ea0d8c2d600b74de6a2773b0253637d844686c21215f2ef0d45d7cd8453 content_digest=sha256:a241987765f1b3c9343710b07a339c468c6d5b789669fae2f6f418004d8467b0 asd_version=3.1.0 schema=1
+name: asd-ux
 description: "User flows, ui mockups, design system (DESIGN.md tokens/components), design-system.html. Covers: ux-spec authoring (sprint draft plus reverse/migrated), DESIGN.md edits using Google Labs format spec, design-md-delta proposals, design-system.html regeneration with swatches/typography/spacing/component previews, ui composition preview. Does NOT handle: accessibility requirements (project-wide, owned by accessibility.html), requirements (delegates to asd-ba), architecture decisions (delegates to asd-architect), code (delegates to dev agents)."
 tools: [Read, Glob, Grep, Edit, Write, WebFetch, WebSearch, AskUserQuestion]
 disallowedTools: [Bash]

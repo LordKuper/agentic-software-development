@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/agents/asd-architect.md. source_digest=sha256:2f2ff9efde04d02159836bb47363d902f35644a21409d0a3f4ba06247f83d6db content_digest=sha256:8af03455da5fb53f5efa0488a4ac24948fb92d46947e51e80c29301db8ed697d asd_version=3.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-architect.md. source_digest=sha256:97e00425d32189cf62795b12f9bb962b835ac32783d93a5f113e85cd1d603df6 content_digest=sha256:3c9191bfe1f971f1c136674b61493fb829f6643466b18ab9236483a897d648a5 asd_version=3.1.0 schema=1
 name: asd-architect
-description: "Architecture decisions, C4 model, tech stack, API contracts, brownfield code audit. Covers: ADR drafting (sprint-scoped only, never promoted as a standalone persistent document; sprint and reverse-engineered), c4-full LikeC4 schema for sprint scope, design-promote c4 delta application, stack.html updates, folding approved ADRs and API contracts into whichever persistent doc's `responsibility.owns` frontmatter already claims the subject, audit of existing source code. Does NOT handle: requirements (delegates to asd-ba), ux flows or design system (delegates to asd-ux-designer), code implementation (delegates to dev agents), documentation audit (delegates to asd-ba)."
+description: "Architecture decisions, C4 model, tech stack, API contracts, brownfield code audit. Covers: ADR drafting (sprint-scoped only, never promoted as a standalone persistent document; sprint and reverse-engineered), c4-full LikeC4 schema for sprint scope, design-promote c4 delta application, stack.html updates, folding approved ADRs and API contracts into whichever persistent doc's `responsibility.owns` frontmatter already claims the subject, audit of existing source code. Does NOT handle: requirements (delegates to asd-ba), ux flows or design system (delegates to asd-ux), code implementation (delegates to dev agents), documentation audit (delegates to asd-ba)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, WebSearch, AskUserQuestion]
 model: opus
 effort: high
@@ -115,4 +115,4 @@ For every chosen library, framework, runtime, or external service:
 - Note API surface used, version specifics, deprecations, project conventions
 - Set "Last verified" date on every update
 
-No technology adopted without a tech-reference doc. Devs and Test Engineer refuse to implement against any tech lacking this reference.
+No technology adopted without a tech-reference doc. Dev and Tester refuse to implement against any tech lacking this reference.

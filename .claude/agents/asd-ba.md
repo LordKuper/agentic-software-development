@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/agents/asd-ba.md. source_digest=sha256:516b6d03281b906ad3f003c07b1d82260eebf37443d4aed4a1eb8c22a59a079d content_digest=sha256:32ab5e6f604c9b4ed26582215093f5fbff568ff594effe6faa983b01b714c15c asd_version=3.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-ba.md. source_digest=sha256:618ee73971a068f88487c9a148661ee2377ad0700f8e834aa9250b3bfe099f89 content_digest=sha256:3db3babbad37710b3a18ad7d6ca79ac128189d656e97968ed67df595d41c3687 asd_version=3.1.0 schema=1
 name: asd-ba
-description: "Product requirements: user stories, acceptance criteria, brownfield doc audit, PRD drafts. Covers: PRD authoring (sprint draft plus reverse-engineered/migrated), audit of existing docs (not code), user story decomposition, acceptance criteria formulation, ambiguity resolution via clarifying questions. Does NOT handle: ux flows or ui mockups (delegates to asd-ux-designer), architecture decisions (delegates to asd-architect), code (delegates to dev agents), code audit (delegates to asd-architect)."
+description: "Product requirements: user stories, acceptance criteria, brownfield doc audit, PRD drafts. Covers: PRD authoring (sprint draft plus reverse-engineered/migrated), audit of existing docs (not code), user story decomposition, acceptance criteria formulation, ambiguity resolution via clarifying questions. Does NOT handle: ux flows or ui mockups (delegates to asd-ux), architecture decisions (delegates to asd-architect), code (delegates to dev agents), code audit (delegates to asd-architect)."
 tools: [Read, Glob, Grep, Edit, Write, WebFetch, WebSearch, AskUserQuestion]
 disallowedTools: [Bash]
 model: opus
