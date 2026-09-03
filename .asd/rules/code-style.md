@@ -59,6 +59,7 @@ Implementation-level rules for code-writing agents (Dev, Tester). Binding during
 - Code is the SSoT for behavior; in-code document references rot once those documents move.
 - Do not quote or paraphrase document text in code; replace with a brief standalone rationale (e.g. `not deterministic by design`).
 - Exception: `TODO` markers may carry a reference, since they are tracked and removed.
+- Exception: a test file's name or path may carry an `AC-N` id (the impacted-set AC-citation convention, `sprint-lifecycle.md` "Impacted test set") — an id only, never prose referencing a document.
 
 ## 9. Types and Contracts
 
@@ -113,9 +114,8 @@ Written and run in `impl-test`, never in `impl`. Selection happens **after** the
 - Risk-based and change-scoped: pick the cheapest reliable check per material risk — static/architecture check → focused unit or property test for logic → component or contract test at boundaries → only essential e2e journeys.
 - Every acceptance criterion is covered by a check at some level; the level is chosen by risk, not by rule.
 - Tests verify observable behavior, not implementation detail.
-- **Hypothetical-risk criterion — single home, governs both authoring and pruning:** a test earns its place only by covering a real, material risk on the change surface, evidenced by actual behavior, an identified failure mode, or a stated requirement. A test verifying a hypothetical rather than a real risk — including one whose behavior an existing check already covers, or whose only value is a coverage number — is not authored in the first place, and is a removal candidate wherever it already exists.
+- **Hypothetical-risk criterion — single home, governs both authoring and pruning:** a test earns its place only by covering a real, material risk on the change surface, evidenced by actual behavior, an identified failure mode, or a stated requirement. A test verifying a hypothetical rather than a real risk — including one whose behavior an existing check already covers, or whose only value is a coverage number — is not authored in the first place, and is a removal candidate wherever it already exists. Authoring is never the default: absent a qualifying risk, "no new test needed" is a first-class outcome of the strategy pass, not a silent fallback — record the decision (`none`) and its reason in `test-plan.md`.
 - Forbidden: trivial, implementation-coupled, mock-confirming, redundant, flaky tests, and any test failing the hypothetical-risk criterion above. Duplicates of an existing check are deleted, not kept "for safety".
-- Authoring is never the default: write a test only when the hypothetical-risk criterion above is met. When it is not, "no new test needed" is a first-class outcome of the strategy pass, not a silent fallback — record the decision (`none`) and its reason in `test-plan.md`.
 - Every fixed defect leaves a regression test proven against the pre-fix behavior (fail-first run recorded) or an equivalent targeted mutation.
 - Coverage numbers locate untested code; they are never a quota or a gate.
 - Deterministic: no `sleep`, wall-clock timing, random seeds, or execution-order reliance.
