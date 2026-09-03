@@ -53,3 +53,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Open decision deferred to plan**: where a consumer's current ASD version is stored (its `release-manifest.json` vs `config.yaml`); whatever holds it is written only after a migration succeeds (AC-12).
 - **Affected docs**: [`sprint.md`](sprint.md), [`state.json`](state.json)
 - **Documents config**: only `audit` enabled; `prd`, `ux_spec`, `adr`, `c4` disabled — design/design-review/design-promote collapse into a single no-op at design entry.
+
+## 2026-09-03 — Three scope clarifications answered after acceptance
+
+- **Decision**: (1) AC-12 sequencing — migrations always run AFTER the managed-path replacement; no `pre`/`post` mode knob is introduced. (2) AC-13 applicability — the cleanup migration is the mechanism for CONSUMER projects only; this self-hosted repo does its equivalent cleanup by editing canon and running `.asd/sync.js --apply`, covered by AC-14. (3) AC-10 — `asd-dev` needs no extra UI clause; it inherits `asd-frontend-dev`'s existing conditional wording about consuming DESIGN.md tokens.
+- **Rationale**: (1) After replacement the files are current, and this release's migration exists precisely to remove what has just fallen out of `managed_paths`; a future migration needing pre-replacement state can add a mode knob when such a case actually exists. (2) Keeps one cleanup mechanism per audience and avoids a second, script-driven path into this repo's own canon. (3) The inherited wording is already conditional, so no new rule is needed.
+- **Affected docs**: [`sprint.md`](sprint.md) (accepted and committed — recorded here rather than reopened)
