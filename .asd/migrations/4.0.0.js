@@ -1,30 +1,26 @@
 #!/usr/bin/env node
 /*
- * ASD migration -> 4.0.0. Cleanup for sprint 004-review-scoping-and-test-audit's agent-roster
- * churn (AC-13): five internal code reviewers merged into asd-reviewer-correctness /
- * asd-reviewer-efficiency (AC-7), the two dev agents merged into asd-dev (AC-10), and
- * asd-test-engineer / asd-ux-designer renamed to asd-tester / asd-ux (AC-11). Consumer projects
- * only - this repo does its own equivalent cleanup by editing canon and running
- * `sync.js --apply` (decisions-log 2026-09-03), never by running this script.
+ * ASD migration -> 4.0.0. Cleanup for this release's agent-roster churn: five internal code
+ * reviewers merged into asd-reviewer-correctness / asd-reviewer-efficiency, the two dev agents
+ * merged into asd-dev, and asd-test-engineer / asd-ux-designer renamed to asd-tester / asd-ux.
+ * Consumer projects only - this repo does its own equivalent cleanup by editing canon and running
+ * `sync.js --apply`, never by running this script.
  *
- * Contract (see .asd/skills/asd-update/update.js's own header comment + SKILL.md "Migrations"):
- * filename (minus .js) is the target asd_version; module.exports = (ctx) => void | Promise<void>
+ * Contract (see .asd/skills/asd-update/update.js's own header comment): filename (minus .js) is
+ * the target asd_version; module.exports = (ctx) => MigrationReport | Promise<MigrationReport>
  * with ctx.repoRoot = the consumer project root; zero-dependency Node; idempotent - re-running an
- * already-applied migration is a no-op, never an error.
+ * already-applied migration is a no-op, never an error. This script's MigrationReport shape is
+ * `{ deleted, skippedUnmarked, missing, commandsYaml, activeReviewSprints }` (see `migrate` below).
  *
  * Scope, in order:
  *   1. Delete the generated provider views of the nine agents this release retires, gated on the
  *      ASD ownership marker so a consumer's own hand-authored agent of the same name is never
- *      touched (audit.md's own stated mitigation for this being the sprint's only destructive
- *      code: an explicit hardcoded name list, never a generic scan of the generated trees - that
- *      broader scan already exists, marker-gated, in `.asd/sync.js`'s orphan detection, which a
- *      consumer reaches via a separate `sync.js --apply`, not this migration).
- *   2. Delete any other file this release retires that sits outside `managed_paths` (same
- *      hardcoded, marker-gated mechanism) - empty for 4.0.0: nothing besides the nine agent views
- *      falls out of managed_paths this release.
- *   3. Add `test_affected` to the consumer's `.asd/project/commands.yaml` when absent and a
- *      supported test runner is detected; leave it alone otherwise (AC-5).
- *   4. Warn (never rewrite) when an active sprint sits in a review phase, since its
+ *      touched - an explicit hardcoded name list, never a generic scan of the generated trees
+ *      (that broader scan already exists, marker-gated, in `.asd/sync.js`'s orphan detection,
+ *      which a consumer reaches via a separate `sync.js --apply`, not this migration).
+ *   2. Add `test_affected` to the consumer's `.asd/project/commands.yaml` when absent and a
+ *      supported test runner is detected; leave it alone otherwise.
+ *   3. Warn (never rewrite) when an active sprint sits in a review phase, since its
  *      `state.json.reviews.*.verdicts` may carry retired reviewer keys - sprint state is out of
  *      migration scope.
  * Never touches: `.asd/project/config.yaml` values, `.asd/sprints/**` content, `docs/**`, custom
@@ -35,9 +31,8 @@
 const fs = require('fs');
 const path = require('path');
 
-// The nine agent names this release retires - AC-7 (five reviewers merged), AC-10 (two devs
-// merged), AC-11 (two renamed). Hardcoded rather than derived from current canon, so a later
-// canon edit can never silently change what THIS migration deletes.
+// The nine agent names this release retires. Hardcoded rather than derived from current canon, so
+// a later canon edit can never silently change what THIS migration deletes.
 const RETIRED_AGENTS = [
   'asd-reviewer-quality',
   'asd-reviewer-implementation',
@@ -49,12 +44,6 @@ const RETIRED_AGENTS = [
   'asd-test-engineer',
   'asd-ux-designer',
 ];
-
-// Any other generated-view path this release leaves behind outside `managed_paths`, beyond the
-// nine retired agents above. Empty for 4.0.0 (audit.md/plan.md found no other file dropped from
-// `managed_paths` this release) - kept as its own list so a future migration copying this file's
-// structure has a named place for its own leftovers rather than overloading RETIRED_AGENTS.
-const OTHER_STALE_RELPATHS = [];
 
 function retiredAgentTargets(repoRoot) {
   const targets = [];
@@ -68,15 +57,6 @@ function retiredAgentTargets(repoRoot) {
 
 function toRepoRel(repoRoot, absPath) {
   return path.relative(repoRoot, absPath).replace(/\\/g, '/');
-}
-
-// Removes the parent directory only when deleting its file left it empty - safe because an empty
-// directory has no content to lose, and covers the `.agents/skills/<name>/SKILL.md` case where the
-// per-skill directory would otherwise survive the file it existed to hold.
-function removeIfEmptyDir(absDir) {
-  if (!fs.existsSync(absDir)) return;
-  if (fs.readdirSync(absDir).length > 0) return;
-  fs.rmdirSync(absDir);
 }
 
 // Deletes exactly one generated-view file, gated on the ASD ownership marker. A missing file is
@@ -94,7 +74,7 @@ function deleteMarkedView(sync, repoRoot, absPath, report) {
     return;
   }
   fs.rmSync(absPath, { force: true });
-  removeIfEmptyDir(path.dirname(absPath));
+  sync.removeIfEmptyDir(path.dirname(absPath));
   report.deleted.push(rel);
 }
 
@@ -104,15 +84,9 @@ function deleteRetiredAgentViews(sync, repoRoot, report) {
   }
 }
 
-function deleteOtherStaleFiles(sync, repoRoot, report) {
-  for (const relPath of OTHER_STALE_RELPATHS) {
-    deleteMarkedView(sync, repoRoot, path.join(repoRoot, relPath), report);
-  }
-}
-
-// Runner keyed on the test runner actually present in the consumer project, mirroring
-// asd-init step 8's own detection convention (SKILL.md) so both paths agree on what counts as
-// "detectable". No match, or a matched runner with no such flag, returns null - never guess.
+// Runner keyed on the test runner actually present in the consumer project, matching the same
+// detection convention used at project setup so both paths agree on what counts as "detectable".
+// No match, or a matched runner with no such flag, returns null - never guess.
 function detectTestAffected(repoRoot) {
   const pkgPath = path.join(repoRoot, 'package.json');
   if (fs.existsSync(pkgPath)) {
@@ -173,9 +147,9 @@ function migrateCommandsYaml(sync, repoRoot, report) {
 }
 
 // Warn-only, never rewrites: an active sprint sitting in a review phase may have retired reviewer
-// keys under `state.json.reviews.<phase>.verdicts` (AC-2's latch, AC-7's rename). Sprint state is
-// out of migration scope (decisions-log 2026-09-03) - the fix is finishing or re-running that
-// review iteration, which the consumer does themselves.
+// keys under `state.json.reviews.<phase>.verdicts` from the agent-roster rename/merge above.
+// Sprint state is out of migration scope - the fix is finishing or re-running that review
+// iteration, which the consumer does themselves.
 const REVIEW_PHASES = new Set(['design-review', 'impl-review']);
 
 function warnActiveReviewSprints(repoRoot, report, warn) {
@@ -214,7 +188,6 @@ module.exports = function migrate(ctx) {
   };
 
   deleteRetiredAgentViews(sync, repoRoot, report);
-  deleteOtherStaleFiles(sync, repoRoot, report);
   migrateCommandsYaml(sync, repoRoot, report);
   warnActiveReviewSprints(repoRoot, report, warn);
 
