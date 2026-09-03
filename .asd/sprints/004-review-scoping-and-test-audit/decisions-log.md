@@ -95,3 +95,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
   - An unplanned `sync.js --apply` fail-open fix landed during impl: a target matching no plan entry used to report `applied: true`; it now reports `not-found`, `ok: false`, exit 1, and the whole batch aborts. Needs test coverage.
   - `.claude/agent-memory/` still holds directories for deleted agents (`asd-reviewer-performance`, `-quality`, `-implementation`, `-simplification`, `-ui`, `asd-backend-dev`, `asd-test-engineer`, `asd-ux-designer`). Outside the dev's write scope and outside AC-15's grep surface. User was asked at this gate and did not answer — unresolved; raise again at the pr gate if nothing settles it sooner.
 - **Affected docs**: [`plan.md`](plan.md), [`state.json`](state.json)
+
+- 2026-09-04 — impl-test: impacted set green (96/96 tests, lint clean, build clean), 13 tests added / 10 fixed / 0 removed
