@@ -26,6 +26,11 @@ Quality side: dev/test/orchestration agents get raised reasoning tiers, `code-st
 in-body comments outright and constrains doc comments to purpose-only, and `core.md` gains a
 `Context hygiene` section making disk — not the transcript — the single memory of a sprint.
 
+Roster and upgrade path: the two devs merge into one `asd-dev`, `asd-test-engineer` and
+`asd-ux-designer` are renamed to `asd-tester` and `asd-ux`, and — because that churn strands files
+in every consumer project — ASD gains a versioned migration mechanism (`.asd/migrations/`, run in
+order by `asd-update`) plus the first migration, which cleans up after this release.
+
 ## Acceptance
 
 - AC-1: **authoring bar in `impl-test` — no test without a real risk.** The test audit STAYS in
@@ -169,10 +174,62 @@ in-body comments outright and constrains doc comments to purpose-only, and `core
   7. Threshold: past ~70% context with no phase boundary in reach → compact; boundary in reach →
      finish the phase, then clear.
 
-- AC-10: **cross-file consistency.** Expected touch set: `.asd/workflows/asd-phase-impl-test.md`,
+- AC-10: **dev agents merged — `asd-backend-dev` + `asd-frontend-dev` → `asd-dev`.** One agent whose
+  scope is the union of both: server / CLI / library code and UI code, consuming DESIGN.md tokens
+  wherever UI work applies. Authority unchanged — production code only, never tests. Tier per AC-6:
+  sonnet + `high` (claude), terra + `high` (codex). Every consumer of the dev pair updates: `plan.md`
+  Task ownership and the "determine owning dev" grouping in `asd-phase-impl.md` (initial, review-fix
+  and test-fix modes alike), all workflow dispatch lists, other agents' `description` delegation
+  targets, README agent roster and BOTH provider model-tier columns, `release-manifest.json`, and the
+  generated views of the two removed agents.
+
+- AC-11: **agent renames — `asd-test-engineer` → `asd-tester`, `asd-ux-designer` → `asd-ux`.** Pure
+  renames: scope, rubric and authority unchanged. Earlier ACs in this file that use the old names
+  (AC-1, AC-5, AC-6) mean the renamed agents. Every reference updates: workflows — including the
+  impl review-fix rule that routes findings in test files to the test agent, and every `asd-phase-*`
+  dispatch list; other agents' `description` delegation lists; rules (`sprint-lifecycle.md`,
+  `review-policy.md`, `artifact-layout.md`, and `code-style.md` if it names them); skill descriptions
+  and skill bodies; templates, including any `{{agent:<name>}}` placeholder; README roster and tier
+  table; `release-manifest.json` (`managed_paths`, `canon_hashes`); and the generated provider views.
+
+- AC-12: **ASD migration mechanism — new `.asd/migrations/`.** One script per ASD version, migrating
+  a consumer project from the previous version to that version.
+  - Script contract: named by its target version; zero-dependency Node in the style of `.asd/sync.js`
+    and `.asd/skills/asd-update/update.js`; exports a function the runner invokes; idempotent —
+    re-running an already-applied migration is a no-op, never an error.
+  - Runner: `asd-update` (`update.js`) determines the consumer's current ASD version, builds the
+    ordered list of migrations greater than it up to the target version, and executes them in
+    ascending order, sequenced against the managed-path replacement as the design requires.
+  - Failure handling: stop at the first failing migration; leave the recorded version at the last
+    successfully applied one; report which migration failed and what it had already done. A consumer
+    is never left at an unrecorded intermediate version.
+  - Tests in `tests/run.js` cover the runner and its ordering logic: ascending order, skip
+    already-applied, stop-on-failure, and the no-migrations-needed path.
+  - **Open decision for the plan phase**: where the consumer's current ASD version is stored — its
+    copy of `release-manifest.json` versus `config.yaml`. Not fixed here. Whichever holds it is
+    written only after a migration succeeds.
+  - `/asd-update`'s skill description and README (`/asd-update` behavior, folder map) reflect the new
+    folder and the sequential-migration behavior.
+
+- AC-13: **cleanup migration for the version this sprint produces.** The first script in
+  `.asd/migrations/`, satisfying AC-12's contract, which must:
+  - delete the generated provider views of every agent removed this sprint — the two devs merged into
+    `asd-dev` (AC-10) and the five reviewers merged into `asd-reviewer-correctness` /
+    `asd-reviewer-efficiency` (AC-7) — plus the old names of the two renamed agents
+    (`asd-test-engineer`, `asd-ux-designer`, AC-11), across `.claude/agents/*.md`,
+    `.codex/agents/*.toml`, and any stale `.agents/skills/` entries;
+  - remove any other ASD file left over from earlier versions that is no longer part of
+    `managed_paths`;
+  - perform whatever else a consumer needs to land on the current version — e.g. adding the
+    impacted-selector field to `commands.yaml` (AC-5) where it is absent.
+  - Never touches consumer-owned content: `config.yaml` values, sprints, persistent docs, custom
+    rules, custom skills/agents/hooks.
+
+- AC-14: **cross-file consistency.** Expected touch set: `.asd/workflows/asd-phase-impl-test.md`,
   `asd-phase-impl-review.md` (full-suite step + DoD), `asd-phase-design-review.md`,
   `asd-phase-impl.md`, `asd-phase-pr.md` (only if its gate wording names impl-test as the phase that
-  records the suite run), `.asd/agents/asd-test-engineer.md`, `.asd/rules/review-policy.md`
+  records the suite run), `.asd/agents/` (the renamed `asd-tester`, the merged `asd-dev` and the two
+  merged reviewers, plus deletion of every superseded agent file), `.asd/rules/review-policy.md`
   (DoD per review phase), `.asd/rules/sprint-lifecycle.md` (impl / impl-test / impl-review phase
   contracts and the impl⇄impl-test⇄impl-review cycle), `.asd/rules/checkpoints.md` (only if its
   precondition chain references the suite), `.asd/rules/code-style.md` §17,
@@ -181,7 +238,7 @@ in-body comments outright and constrains doc comments to purpose-only, and `core
   detection (native affected-test selector field, AC-5), `README.md`, plus
   `.asd/release-manifest.json` (`canon_hashes`) and `node .asd/sync.js --apply` for every edited
   canonical source. Related skill descriptions (`asd-phase-impl-test`, `asd-phase-impl-review`)
-  must match the new dispatch and suite-run topology. Widened by AC-6..AC-9 to additionally cover:
+  must match the new dispatch and suite-run topology. Widened by AC-6..AC-13 to additionally cover:
   - README agent roster and BOTH provider model-tier columns;
   - `core.md` "See also" / section list, if the new `Context hygiene` section affects it;
   - `.asd/release-manifest.json`: `managed_paths`, `canon_hashes`, and `model_families` if touched;
@@ -190,15 +247,25 @@ in-body comments outright and constrains doc comments to purpose-only, and `core
     paragraph, simplification checklist, severity taxonomy), `.asd/rules/artifact-layout.md`,
     `.asd/templates/t_review.md`;
   - `node .asd/sync.js --apply` for every canonical edit, plus deletion of the generated views of
-    the five removed agents (`.claude/agents/*.md`, `.codex/agents/*.toml`).
+    every removed agent — five merged reviewers (AC-7), two merged devs (AC-10), two renamed agents'
+    old names (AC-11) — in `.claude/agents/*.md` and `.codex/agents/*.toml`;
+  - `sync.js` behaviour for a *deleted* canonical agent: confirm it removes (or reports) the orphaned
+    generated view rather than silently leaving it;
+  - the new `.asd/migrations/` tree in `release-manifest.json` `managed_paths` and `canon_hashes`
+    (AC-12, AC-13), and `tests/run.js` gaining the migration-runner tests;
+  - README folder map (new `.asd/migrations/`, `/asd-update` behaviour) alongside the agent roster
+    and both provider tier columns;
+  - `.asd/templates/t_plan.md` if it names dev agents, and `.asd/skills/asd-update/` (skill
+    description + `update.js`).
 
-- AC-11: **verification.** `node tests/run.js` green; `node .asd/sync.js --check` clean; no place
-  left where the full suite is still described as `impl-test`'s gate, and `asd-reviewer-testing`
-  still enumerated wherever the impl-review fan-out is listed. Additionally: a repo-wide grep
-  proving zero dangling
-  references to the five deleted agent names (`asd-reviewer-quality`, `asd-reviewer-implementation`,
-  `asd-reviewer-ui`, `asd-reviewer-simplification`, `asd-reviewer-performance`) across canonical
-  sources, generated provider views, README, and templates.
+- AC-15: **verification.** `node tests/run.js` green — including the new migration-runner tests
+  (AC-12); `node .asd/sync.js --check` clean; no place left where the full suite is still described
+  as `impl-test`'s gate, and `asd-reviewer-testing` still enumerated wherever the impl-review fan-out
+  is listed. Additionally: a repo-wide grep proving zero dangling references to any retired agent
+  name — `asd-reviewer-quality`, `asd-reviewer-implementation`, `asd-reviewer-ui`,
+  `asd-reviewer-simplification`, `asd-reviewer-performance`, `asd-backend-dev`, `asd-frontend-dev`,
+  `asd-test-engineer`, `asd-ux-designer` — across canonical sources, generated provider views,
+  README, and templates.
 
 ## Out of scope
 
@@ -207,12 +274,18 @@ in-body comments outright and constrains doc comments to purpose-only, and `core
 - A test-audit step, `Audit` section, round cap, or fix loop inside `impl-test` (AC-1).
 - Any change to iteration counters or severity-floor semantics for design-review and impl-review.
 - Re-litigating the merged reviewer names or their scope split (AC-7 — decided).
-- Merging, renaming, or retiring `asd-reviewer-documentation`, `asd-external-review`, or any
-  non-reviewer agent; the merge in AC-7 covers exactly the five named agents.
+- Merging, renaming, or retiring `asd-reviewer-documentation`, `asd-external-review`, or any agent
+  not named in AC-7, AC-10 or AC-11.
+- Scope, rubric or authority changes to `asd-tester` / `asd-ux` (AC-11 — pure renames), or to
+  `asd-dev` beyond the union of the two merged devs (AC-10).
+- Migration scripts for versions other than the one this sprint produces (AC-12, AC-13 — the
+  mechanism plus exactly one script), and any migration touching consumer-owned content.
+- Deciding where the consumer's ASD version is stored (AC-12 — an explicit open decision left to the
+  plan phase).
 - Removing either diff-derived skip predicate (AC-7 — they degrade to rubric-section skips, they do
   not disappear).
-- Model-family changes for `asd-backend-dev` / `asd-frontend-dev` / `asd-test-engineer` (AC-6 —
-  effort only), and tier changes for any agent not named in AC-6.
+- Model-family changes for the dev and test agents (AC-6 — effort only; the merged `asd-dev` inherits
+  sonnet/terra per AC-10), and tier changes for any agent not named in AC-6.
 - A new rule doc for context management (AC-9 — a section inside `core.md`, nothing else).
 - Rewriting existing in-code comments anywhere in this repo: AC-8 changes the rule and its reviewer
   rubric; it is not a cleanup pass over prior code.

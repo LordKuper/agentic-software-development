@@ -39,3 +39,17 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: Cut review-loop and test-run cost without weakening any gate, while raising the quality floor of each remaining dispatch. Slug `004-review-scoping-and-test-audit` still fits the widened scope; no rename.
 - **Affected docs**: [`sprint.md`](sprint.md), [`state.json`](state.json)
 - **Documents config**: only `audit` enabled; `prd`, `ux_spec`, `adr`, `c4` disabled — design/design-review/design-promote will collapse into a single no-op at design entry.
+
+## 2026-09-03 — Rollback audit → scope, sprint.md re-opened
+
+- **Decision**: The `audit` phase was interrupted by the user before producing anything — no `audit.md`, no drafts, working tree clean at `beca8d8`. `state.json.phase` set back to `scope` and `sprint.md` re-opened for revision and a fresh `accept`.
+- **Rationale**: The user has further scope to add; revising the accepted `sprint.md` is only legitimate from the `scope` phase. Rollback-reset rules (`sprint-lifecycle.md`) applied — both review counters and their `verdicts` were already empty, so the reset was a confirmation, not a change.
+- **Affected docs**: [`sprint.md`](sprint.md), [`state.json`](state.json)
+
+## 2026-09-03 — Revised sprint 004 scope accepted (AC-1..AC-15)
+
+- **Decision**: User accepted the revised `sprint.md`. It keeps AC-1..AC-9 (test-authoring bar, APPROVE latch cleared by a red full suite, impl-review change-surface rule, two-tier test running with a canonical impacted-set definition, raised agent tiers, five reviewers merged into `asd-reviewer-correctness` + `asd-reviewer-efficiency`, tightened `code-style.md` §7, `Context hygiene` in `core.md`) and adds AC-10 `asd-backend-dev` + `asd-frontend-dev` → `asd-dev`, AC-11 renames `asd-test-engineer` → `asd-tester` and `asd-ux-designer` → `asd-ux`, AC-12 a versioned `.asd/migrations/` mechanism run in order by `asd-update`, and AC-13 the cleanup migration for this release; AC-14 (cross-file consistency) and AC-15 (verification) close the set.
+- **Rationale**: Cut review-loop and test-run cost without weakening any gate, raise the quality floor of each remaining dispatch, and give consumer projects a supported upgrade path for the resulting agent-roster churn. Slug unchanged — it still fits.
+- **Open decision deferred to plan**: where a consumer's current ASD version is stored (its `release-manifest.json` vs `config.yaml`); whatever holds it is written only after a migration succeeds (AC-12).
+- **Affected docs**: [`sprint.md`](sprint.md), [`state.json`](state.json)
+- **Documents config**: only `audit` enabled; `prd`, `ux_spec`, `adr`, `c4` disabled — design/design-review/design-promote collapse into a single no-op at design entry.
