@@ -1379,7 +1379,18 @@ function runApply(repoRoot, requestedFiles, options) {
     }
   }
 
-  // Pass 2: every render above already succeeded - write.
+  // A requested target that matches neither a plan entry nor a detected
+  // orphan is bogus (typo, stale list, trailing whitespace from the caller,
+  // etc.) - previously this silently no-op'd per-target while the overall
+  // call still reported success, indistinguishable from a clean apply. Same
+  // "decide before writing anything" preflight contract as an invalid canon
+  // source (above): ANY bogus target in the batch aborts every write in the
+  // WHOLE batch, not just its own, so a batch naming one bogus target
+  // alongside good ones never half-applies.
+  const hasInvalidTarget = resolved.some((r) => !r.item && !r.orphan);
+
+  // Pass 2: every render above already succeeded - write, unless the batch
+  // was aborted by hasInvalidTarget above.
   const results = [];
   let stateChanged = false;
   for (const r of resolved) {
@@ -1389,13 +1400,15 @@ function runApply(repoRoot, requestedFiles, options) {
       // the same generated tree, indistinguishable from an orphan by path
       // alone - reported, never touched (plan.md Task 12's whole safety
       // property).
-      if (r.orphan && r.orphan.marked) {
+      if (!r.orphan) {
+        results.push({ target: r.rel, status: 'not-found', applied: false });
+      } else if (r.orphan.marked && !hasInvalidTarget) {
         fs.unlinkSync(path.join(repoRoot, r.rel));
         results.push({ target: r.rel, status: 'orphan', applied: true });
-      } else if (r.orphan) {
-        results.push({ target: r.rel, status: 'orphan-unmarked', applied: false });
+      } else if (r.orphan.marked) {
+        results.push({ target: r.rel, status: 'orphan', applied: false });
       } else {
-        results.push({ target: r.rel, status: 'unknown', applied: false });
+        results.push({ target: r.rel, status: 'orphan-unmarked', applied: false });
       }
       continue;
     }
@@ -1408,7 +1421,7 @@ function runApply(repoRoot, requestedFiles, options) {
       });
       continue;
     }
-    const writable = r.status === 'missing' || r.status === 'stale' || (r.status === 'modified-foreign' && forceSet.has(r.rel));
+    const writable = !hasInvalidTarget && (r.status === 'missing' || r.status === 'stale' || (r.status === 'modified-foreign' && forceSet.has(r.rel)));
     if (!writable) {
       results.push({ target: r.rel, status: r.status, applied: false });
       continue;
@@ -1460,8 +1473,16 @@ function main(argv) {
     // targets were requested, since both ledgers are pure functions of
     // current on-disk canon content.
     const hashLedger = recomputeAndWriteHashLedgers(repoRoot);
-    process.stdout.write(JSON.stringify({ ok: true, applied: results, hashLedger }, null, 2) + '\n');
-    return 0;
+    // A 'not-found' entry means a requested target matched neither a plan
+    // entry nor a detected orphan (typo, stale list, stray whitespace) -
+    // runApply already refused to write anything in that batch for it; ok/
+    // exit code must say so too, or a bogus target looks identical to a
+    // clean apply to whatever's reading this JSON (AC-15's verification, the
+    // batched regeneration step - the exact silent-drift class Task 12
+    // exists to close).
+    const hasInvalidTargets = results.some((r) => r.status === 'not-found');
+    process.stdout.write(JSON.stringify({ ok: !hasInvalidTargets, applied: results, hashLedger }, null, 2) + '\n');
+    return hasInvalidTargets ? 1 : 0;
   }
   process.stdout.write('usage: node .asd/sync.js --check | --apply <file...> [--force]\n');
   return 0;
