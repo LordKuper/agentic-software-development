@@ -1,4 +1,4 @@
-// ASD generated. Edit .asd/hooks/session-start.js. source_digest=sha256:a01df9dbb7d4974dae349b5aa63c812ac4687c53fa71ca066372cb86ff2edc4d content_digest=sha256:a01df9dbb7d4974dae349b5aa63c812ac4687c53fa71ca066372cb86ff2edc4d asd_version=2.0.0 schema=1
+// ASD generated. Edit .asd/hooks/session-start.js. source_digest=sha256:89cbc234c6533301871b5346f4914100cc0628180c920649554ec8045856fc32 content_digest=sha256:89cbc234c6533301871b5346f4914100cc0628180c920649554ec8045856fc32 asd_version=3.1.0 schema=1
 // ASD SessionStart hook (canonical, provider-agnostic).
 // No shebang: this file is never executed directly (`./session-start.js`),
 // always invoked as `node <path> --provider ...`, and every generated
@@ -100,20 +100,29 @@ function reviewNodeForPhase(reviews, phase) {
   return null;
 }
 
+// Honours state.json's reviews.<phase>.latched map (AC-2 APPROVE latch,
+// sprint-lifecycle.md "APPROVE latch") and its verdict-value forms (same
+// doc's "State recovery"): a bare "APPROVE"/"green" token from a completed
+// review, External Review's availability-skip "APPROVE (skipped: <reason>)"
+// form, and a legacy pre-4.0.0 "skipped: <predicate>" string (no APPROVE
+// prefix) all count as satisfied - same as a latched key with no matching
+// verdicts entry at all. Display-only summary, never a gate; must keep
+// failing silently (exit 0, never throw) on any malformed/missing shape.
 function lastReviewVerdict(node) {
   if (!node || typeof node !== 'object') return 'n/a';
+  const latched = node.latched && typeof node.latched === 'object' ? node.latched : {};
+  const hasLatched = Object.keys(latched).length > 0;
   const verdictsByIter = node.verdicts;
-  if (!verdictsByIter || typeof verdictsByIter !== 'object') return 'n/a';
+  if (!verdictsByIter || typeof verdictsByIter !== 'object') return hasLatched ? 'green' : 'n/a';
   const iters = Object.keys(verdictsByIter).sort();
-  if (iters.length === 0) return 'n/a';
+  if (iters.length === 0) return hasLatched ? 'green' : 'n/a';
   const latest = verdictsByIter[iters[iters.length - 1]];
-  if (!latest || typeof latest !== 'object') return 'n/a';
+  if (!latest || typeof latest !== 'object') return hasLatched ? 'green' : 'n/a';
   const verdicts = Object.values(latest);
-  const isSkipped = v => typeof v === 'string' && /^skipped:/.test(v);
-  const approved = v => v === 'green' || v === 'APPROVE';
+  const satisfied = v => v === 'green' || (typeof v === 'string' && (v.indexOf('APPROVE') === 0 || /^skipped:/.test(v)));
   if (verdicts.some(v => v === 'red' || v === 'FAIL')) return 'red';
   if (verdicts.some(v => v === 'yellow' || v === 'CONCERNS')) return 'yellow';
-  if (verdicts.length > 0 && verdicts.some(approved) && verdicts.every(v => approved(v) || isSkipped(v))) return 'green';
+  if ((verdicts.length > 0 || hasLatched) && verdicts.every(satisfied)) return 'green';
   return 'mixed';
 }
 
