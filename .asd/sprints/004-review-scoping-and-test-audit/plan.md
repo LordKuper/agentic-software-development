@@ -312,24 +312,29 @@ Material risk: deletion logic that walks generated trees can remove a consumer's
 Satisfies AC-12. Sequencing is fixed: migrations run AFTER the managed-path replacement
 (decisions-log, 2026-09-03); no `pre`/`post` mode knob is introduced.
 
-- [ ] Create `.asd/migrations/` — one zero-dependency Node script per target ASD version, named by
-      that version, exporting a function the runner invokes, idempotent (re-run = no-op, never error)
-- [ ] Add `.asd/migrations` to `release-manifest.json` `managed_paths`, without which the mechanism
+- [x] Create `.asd/migrations/` — one zero-dependency Node script per target ASD version, named by
+      that version, exporting a function the runner invokes, idempotent (re-run = no-op, never error).
+      Contract documented via a header-comment convention (in `update.js`'s own doc comment and
+      `SKILL.md`) plus `ctx = { repoRoot }` passed to the exported function; no script exists yet in
+      this tree since the sole file this release ships is Task 14's cleanup migration
+- [x] Add `.asd/migrations` to `release-manifest.json` `managed_paths`, without which the mechanism
       cannot bootstrap into a consumer at all
-- [ ] Runner in `update.js`: read the consumer's installed version from
+- [x] Runner in `update.js`: read the consumer's installed version from
       `release-manifest.json.asd_version` (it already exists and is already read by `planUpdate`),
       build the ordered list of migrations greater than it up to the target, execute ascending
-- [ ] Load the runner and the scripts from the freshly written tree, the way `loadFreshSync` already
+- [x] Load the runner and the scripts from the freshly written tree, the way `loadFreshSync` already
       does for `sync.js` — the scripts arrive in the same apply they sequence against
-- [ ] Resolve the version-recording conflict: `writeUpdatedManifest` copies the whole new manifest
+- [x] Resolve the version-recording conflict: `writeUpdatedManifest` copies the whole new manifest
       atomically, which cannot record a per-migration version. Split the write or give it a
       version-override parameter, so the recorded version is the last successfully applied migration
       and never an unrecorded intermediate
-- [ ] Failure handling: stop at the first failing migration, report which one failed and what it had
+- [x] Failure handling: stop at the first failing migration, report which one failed and what it had
       already done, leave the recorded version at the last success
-- [ ] Keep the self-hosting guard short-circuiting `/asd-update` before any migration runs
-- [ ] `asd-update` SKILL description, README `## Updating ASD` + folder map (`migrations/`), AGENTS.md
-      skills bullet
+- [x] Keep the self-hosting guard short-circuiting `/asd-update` before any migration runs — guard is
+      unchanged, gates the whole skill invocation before `update.js` (and thus any migration) runs
+- [x] `asd-update` SKILL description done (frontmatter + body, incl. migration script contract); README
+      `## Updating ASD` + folder map (`migrations/`) and AGENTS.md skills bullet left to Task 15
+      (cross-file consistency sweep owns README/AGENTS.md, per orchestrator task boundary)
 
 Material risk: a half-applied migration set combined with an all-or-nothing version write leaves a
 consumer at a version that does not describe its files — the one outcome AC-12 forbids.
