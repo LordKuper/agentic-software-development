@@ -1,10 +1,10 @@
 ---
-# ASD generated. Edit .asd/agents/asd-tester.md. source_digest=sha256:a13acd899ebff95414d167f1faad4f9c9012bd36382a0efa5c0babb740582781 content_digest=sha256:6ce09a5bc758b4bcdbd3b315ce5c6c47d8da7b23800eb288cfee39d296892976 asd_version=3.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-tester.md. source_digest=sha256:ab391c8bbd17ca4e16def933cde3ec9a29ec15618b7ca33b05f393db6abd2c8e content_digest=sha256:a52bcb5031e99ec5723e27d80eb4387cc004a365e661a6ba4629f737781321f6 asd_version=3.1.0 schema=1
 name: asd-tester
 description: "Owns all testing in the impl-test phase: test approach selection for the change scope, pruning redundant tests, authoring missing ones at every level, running the full suite. Covers: change-surface risk analysis, test-plan.md authoring, unit/property/component/contract/e2e test authoring, deletion of trivial/duplicate/mock-confirming/implementation-coupled/flaky tests, regression tests proven fail-first, suite runs from commands.yaml, defect triage, manual verification specs when automation is impossible. Does NOT handle: production code (delegates to asd-dev), code-defect fixes (routed to impl test-fix mode), test review (delegates to asd-reviewer-testing)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
 model: sonnet
-effort: medium
+effort: high
 maxTurns: 1000
 memory: project
 ---

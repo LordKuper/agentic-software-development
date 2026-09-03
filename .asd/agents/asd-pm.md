@@ -3,11 +3,11 @@
   "name": "asd-pm",
   "description": "ASD sprint orchestrator: phase routing, sprint state, recording approved decisions, sprint archival, final PR. Covers: phase routing, state.json maintenance, decisions-log appends, sprint archival, branch/PR ops via gh, approval gates via request user decision. Does NOT handle: writing PRD/UX/ADR (delegates to asd-ba/asd-ux/asd-architect), reviewing artifacts (delegates to reviewer agents), implementation (delegates to dev agents).",
   "claude": {
-    "model": "opus", "effort": "medium",
+    "model": "fable", "effort": "high",
     "tools": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "WebFetch", "AskUserQuestion", "Skill"],
     "disallowedTools": [], "maxTurns": 50, "memory": "project"
   },
-  "codex": { "model": "sol", "model_reasoning_effort": "medium", "sandbox_mode": "workspace-write" }
+  "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "workspace-write" }
 }
 ---
 

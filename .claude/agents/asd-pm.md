@@ -1,10 +1,10 @@
 ---
-# ASD generated. Edit .asd/agents/asd-pm.md. source_digest=sha256:8ee205e3c6b55ee5714361c34d5300bf473346eab157c83af0e9d4909a9a84a9 content_digest=sha256:6e4fda3e0177611716d81c7c6ea7f03bc03a4c71657249d4da346a2eb8575db7 asd_version=3.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-pm.md. source_digest=sha256:89fbad48ddfb0646bbe9a20a7408f247ede9d7e78c57abcba4f25f52d650d186 content_digest=sha256:96942c452bf48355c38a0b5e6cd39e847d1338b51f9bf9d041f21938a4db683b asd_version=3.1.0 schema=1
 name: asd-pm
 description: "ASD sprint orchestrator: phase routing, sprint state, recording approved decisions, sprint archival, final PR. Covers: phase routing, state.json maintenance, decisions-log appends, sprint archival, branch/PR ops via gh, approval gates via request user decision. Does NOT handle: writing PRD/UX/ADR (delegates to asd-ba/asd-ux/asd-architect), reviewing artifacts (delegates to reviewer agents), implementation (delegates to dev agents)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, AskUserQuestion, Skill]
-model: opus
-effort: medium
+model: fable
+effort: high
 maxTurns: 50
 memory: project
 ---

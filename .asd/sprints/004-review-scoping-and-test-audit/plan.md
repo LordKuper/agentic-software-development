@@ -166,11 +166,11 @@ identifier that no build step catches, only the AC-15 grep.
 
 Satisfies AC-6.
 
-- [ ] `asd-dev` and `asd-tester`: effort `high` on both providers, family unchanged (sonnet / terra)
-- [ ] `asd-pm`: fable + high (claude), sol + high (codex)
-- [ ] `asd-advisor`: fable + high (claude), sol + high (codex)
-- [ ] `providers.md` agent tier matrix — a second tier mirror not named in AC-14, per `audit.md` row 8
-- [ ] README model-tier table, BOTH provider columns
+- [x] `asd-dev` and `asd-tester`: effort `high` on both providers, family unchanged (sonnet / terra)
+- [x] `asd-pm`: fable + high (claude), sol + high (codex)
+- [x] `asd-advisor`: fable + high (claude), sol + high (codex)
+- [x] `providers.md` agent tier matrix — a second tier mirror not named in AC-14, per `audit.md` row 8
+- [x] README model-tier table, BOTH provider columns
 
 Material risk: `providers.md` and README drift from frontmatter; only a human reading three files
 catches it.

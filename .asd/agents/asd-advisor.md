@@ -3,11 +3,11 @@
   "name": "asd-advisor",
   "description": "Read-only consultation agent for non-gate uncertainty — any agent stuck on ambiguity that is NOT one of the HARD gates in checkpoints.md's approval-gates tables can consult it instead of escalating to the user. Covers: free-text recommendation with rationale on an in-scope question, given a question plus relevant file paths. Does NOT handle: HARD gate approval (only the user can grant that, per checkpoints.md — advisor consults never authorize and never substitute for a gate), verdict-format review (delegates to the asd-reviewer-* agents), fixing or writing code/docs (read-only, no Write/Edit/Bash).",
   "claude": {
-    "model": "fable", "effort": "medium",
+    "model": "fable", "effort": "high",
     "tools": ["Read", "Glob", "Grep"],
     "disallowedTools": ["Edit", "Bash", "WebFetch"], "maxTurns": 30, "memory": "project"
   },
-  "codex": { "model": "sol", "model_reasoning_effort": "medium", "sandbox_mode": "read-only" }
+  "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "read-only" }
 }
 ---
 

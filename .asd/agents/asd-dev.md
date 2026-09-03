@@ -3,11 +3,11 @@
   "name": "asd-dev",
   "description": "Server/CLI/library code and UI code, components, client-side logic, consuming DESIGN.md tokens wherever UI work applies. Covers: production code authoring per plan tasks (backend and frontend), fixing impl-review findings and impl-test defects, running lint/build/run commands from commands.yaml, registering TODO stubs in stubs.md. Does NOT handle: any test authoring or test runs — unit, integration, e2e (delegates to asd-tester in the impl-test phase), architecture decisions (delegates to asd-architect), design system token edits (delegates to asd-ux), accessibility requirements (read-only consumer of accessibility.html), code review (delegates to reviewer agents).",
   "claude": {
-    "model": "sonnet", "effort": "medium",
+    "model": "sonnet", "effort": "high",
     "tools": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "AskUserQuestion"],
     "disallowedTools": [], "maxTurns": 1000, "memory": "project"
   },
-  "codex": { "model": "terra", "model_reasoning_effort": "medium", "sandbox_mode": "workspace-write" }
+  "codex": { "model": "terra", "model_reasoning_effort": "high", "sandbox_mode": "workspace-write" }
 }
 ---
 

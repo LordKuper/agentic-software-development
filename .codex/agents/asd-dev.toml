@@ -1,8 +1,8 @@
-# ASD generated. Edit .asd/agents/asd-dev.md. source_digest=sha256:31e7d620d34b5ce71035482324e2ca6d057abc61fbc69674f87b30e3f5b4f799 content_digest=sha256:18bb22f6d1877b18a677dc797d752384f1ccb212ea058f671f02bdf99a96b7a6 asd_version=3.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-dev.md. source_digest=sha256:331f686039761b39e0b7b10d919f2325c20bec09e3f5b9c257986851377ac8ff content_digest=sha256:a4a73a086f21f3098acc0d7e4ac547ada6e748128490cce899e4c4c81a946211 asd_version=3.1.0 schema=1
 name = "asd-dev"
 description = "Server/CLI/library code and UI code, components, client-side logic, consuming DESIGN.md tokens wherever UI work applies. Covers: production code authoring per plan tasks (backend and frontend), fixing impl-review findings and impl-test defects, running lint/build/run commands from commands.yaml, registering TODO stubs in stubs.md. Does NOT handle: any test authoring or test runs — unit, integration, e2e (delegates to asd-tester in the impl-test phase), architecture decisions (delegates to asd-architect), design system token edits (delegates to asd-ux), accessibility requirements (read-only consumer of accessibility.html), code review (delegates to reviewer agents)."
 model = "gpt-5.6-terra"
-model_reasoning_effort = "medium"
+model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 developer_instructions = """
 # Role

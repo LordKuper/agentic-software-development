@@ -1,10 +1,10 @@
 ---
-# ASD generated. Edit .asd/agents/asd-dev.md. source_digest=sha256:31e7d620d34b5ce71035482324e2ca6d057abc61fbc69674f87b30e3f5b4f799 content_digest=sha256:8e144c100d06f84cc632c4b28113fcb2f930afa53f255e2061e8756f8a3e1504 asd_version=3.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-dev.md. source_digest=sha256:331f686039761b39e0b7b10d919f2325c20bec09e3f5b9c257986851377ac8ff content_digest=sha256:9d7de31ccd965832a964bc76b222a0b7d385728b6411e8ad700d543aa4c83c57 asd_version=3.1.0 schema=1
 name: asd-dev
 description: "Server/CLI/library code and UI code, components, client-side logic, consuming DESIGN.md tokens wherever UI work applies. Covers: production code authoring per plan tasks (backend and frontend), fixing impl-review findings and impl-test defects, running lint/build/run commands from commands.yaml, registering TODO stubs in stubs.md. Does NOT handle: any test authoring or test runs — unit, integration, e2e (delegates to asd-tester in the impl-test phase), architecture decisions (delegates to asd-architect), design system token edits (delegates to asd-ux), accessibility requirements (read-only consumer of accessibility.html), code review (delegates to reviewer agents)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
 model: sonnet
-effort: medium
+effort: high
 maxTurns: 1000
 memory: project
 ---

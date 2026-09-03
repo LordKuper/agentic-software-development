@@ -187,13 +187,13 @@ Sixteen specialized agents are canonically defined in `.asd/agents/` and generat
 
 | Agent | Claude | Codex | Role |
 |---|---|---|---|
-| `asd-pm` | opus/medium | sol/medium | Sprint orchestrator: state, phase routing, decisions-log, PR ops |
+| `asd-pm` | fable/high | sol/high | Sprint orchestrator: state, phase routing, decisions-log, PR ops |
 | `asd-ba` | opus/high | sol/high | Business analyst: PRD, audit on the docs side, acceptance criteria |
 | `asd-ux-designer` | opus/high | sol/high | UX flows, UI mockups, DESIGN.md tokens, design-system.html |
 | `asd-architect` | opus/high | sol/high | ADRs (sprint-scoped, fold into existing docs), C4 model, stack, API contracts, tech-reference docs |
-| `asd-backend-dev` | sonnet/medium | terra/medium | Server/CLI/library code (no tests) |
-| `asd-frontend-dev` | sonnet/medium | terra/medium | UI code (no tests; consumes DESIGN.md tokens) |
-| `asd-test-engineer` | sonnet/medium | terra/medium | All tests: risk-based selection, pruning, authoring at every level, suite runs, manual verification specs |
+| `asd-backend-dev` | sonnet/high | terra/high | Server/CLI/library code (no tests) |
+| `asd-frontend-dev` | sonnet/high | terra/high | UI code (no tests; consumes DESIGN.md tokens) |
+| `asd-test-engineer` | sonnet/high | terra/high | All tests: risk-based selection, pruning, authoring at every level, suite runs, manual verification specs |
 
 ### Reviewers (7 internal + 1 external)
 
@@ -220,7 +220,7 @@ Read-only, consulted by any agent on non-gate uncertainty — an open question a
 
 | Agent | Claude | Codex | Role |
 |---|---|---|---|
-| `asd-advisor` | fable/medium | sol/medium | Advisory consultation on non-gate uncertainty during any phase |
+| `asd-advisor` | fable/high | sol/high | Advisory consultation on non-gate uncertainty during any phase |
 
 ---
 
