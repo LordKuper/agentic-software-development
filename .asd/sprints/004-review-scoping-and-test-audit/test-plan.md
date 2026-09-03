@@ -11,7 +11,7 @@ responsibility:
 
 | Entry | HEAD analysed | Scope |
 |---|---|---|
-| 1 | *(unfilled — written at step 10, after prune/author commit + suite recording)* | full change surface |
+| 1 | `21d342022868d5a35b15a87a8418782713164eb0` | full change surface |
 
 **Impacted-set derivation (AC-5 safety valve, `sprint-lifecycle.md` "Impacted test set"):** change surface = 57 non-generated files; only three carry executable code (`.asd/sync.js`, `.asd/skills/asd-update/update.js`, `.asd/migrations/4.0.0.js`) — everything else is prose/rule/template/config. `commands.yaml` has no `test_affected` selector (by design — see its own comment). The change surface touches framework-wide shared infrastructure (`sync.js`, the update driver, agent roster) — the mandatory safety valve (`sprint-lifecycle.md`) fires: impacted set **degrades to the full suite**, i.e. `node tests/run.js` exactly. This is the first real exercise of the valve this sprint's own change wrote.
 
@@ -81,6 +81,203 @@ Plus, as **fixes to existing tests** (test-defect fixes, not new authoring — s
 - Result: **96/96 passed** (73 pre-existing + 10 fixed test-defects + 13 newly authored). Zero failures.
 - Also run per `commands.yaml` this pass (not the step-8 gate, informational): `lint` (`git diff --check`) — clean, exit 0. `build` (`node .asd/sync.js --check`) — `ok: true`, 0 non-`current` items, exit 0.
 - The formal impacted-set suite gate (workflow step 8, full suite per the safety valve above) is a separate dispatch; this run is evidence that the prune + author pass left the suite green, not that gate's own record.
+
+### Impacted-set suite gate (step 8, entry 1)
+
+- HEAD: `21d342022868d5a35b15a87a8418782713164eb0`
+
+**`test` — `node tests/run.js`**
+
+```
+ok - canonical agent -> Claude .md matches fixture
+ok - canonical agent -> Codex .toml matches fixture
+ok - canonical skill -> Claude SKILL.md matches fixture
+ok - canonical skill -> Codex SKILL.md matches fixture
+ok - substitutePlaceholders: known key substituted, unknown/typo placeholders left untouched
+ok - agent-claude / agent-codex transforms resolve {{wraps_cli}}/{{wraps_config_key}} from claude{}/codex{} respectively
+ok - asd-external-review: the wrapped CLI subprocess carries an explicit read-only flag on both providers
+ok - agents whose meta never sets wraps_cli/wraps_config_key are unaffected (substitution is a no-op)
+ok - CRLF+BOM canonical input normalizes to the same output as LF/no-BOM
+ok - full-file status: missing target
+ok - full-file status: current after apply, then idempotent (zero byte diff) on re-check
+ok - full-file status: stale when an UNTAMPERED body just needs re-render (canon changed)
+ok - full-file status: modified-foreign when body no longer matches ITS OWN marker digest (tampered)
+ok - full-file status: modified-foreign when target has no ownership marker (conflict, refuse to overwrite)
+ok - full-file status: invalid JSON frontmatter fails closed before any write
+ok - runApply: force overwrites a modified-foreign target only after explicit confirmation
+ok - runApply: preflight aborts the WHOLE batch before any write when one canon source is invalid
+ok - buildSyncPlan: CLAUDE.md tracks t_CLAUDE.md - editing the template makes it stale
+ok - buildSyncPlan: an INITIALIZED CONSUMER project generates AGENTS.md from t_AGENTS.md, and tracks edits to it
+ok - buildSyncPlan: WITHOUT .asd/project/config.yaml (the framework repo itself), AGENTS.md stays self-sourced
+ok - readSelfHostingField: config.yaml absent -> disabled
+ok - readSelfHostingField: config.yaml exists but field absent -> disabled
+ok - readSelfHostingField: self_hosting: disabled -> disabled
+ok - readSelfHostingField: self_hosting: enabled -> enabled
+ok - readSelfHostingField: malformed/unknown value fails closed to disabled
+ok - readSelfHostingField: duplicated top-level key is ambiguous, fails closed to disabled (never "first" or "last" wins)
+ok - isSelfSourcedAgentsMd: no config -> self-sourced; consumer config -> generated; self_hosting:enabled -> self-sourced even though config exists
+ok - managed-block: missing file -> apply creates it containing just the block
+ok - managed-block: inserted into existing foreign content without touching it
+ok - managed-block: stale when tracked block content no longer matches a fresh render
+ok - managed-block: CRLF around a pre-existing block does not corrupt the boundary or double the line break
+ok - managed-block: modified-foreign when block exists but sync-state has no record (refuse to overwrite)
+ok - managed-block: modified-foreign when block was hand-edited after last tracked write
+ok - json-merge: missing file -> apply creates it with only the owned entries
+ok - json-merge: unrelated keys are preserved BYTE-FOR-BYTE, including unusual formatting
+ok - json-merge: a leading BOM on the target file survives untouched
+ok - json-merge: EACH foreign array element keeps its own exact bytes, even with unusual internal formatting
+ok - json-merge: missing key path is spliced in, not a whole-document reformat
+ok - json-merge: invalid pre-existing JSON with --force still aborts the WHOLE runApply batch before any write
+ok - json-merge: statusJsonMerge stays safe (modified-foreign) on invalid JSON even though renderJsonMerge throws
+ok - json-merge: stale when tracked owned entries differ from a fresh render
+ok - json-merge: modified-foreign when owned-looking entries exist but sync-state has no record
+ok - json-merge: invalid JSON target fails closed (treated as foreign, never parsed/written)
+ok - isSafeRelPath rejects traversal, absolute, drive, and UNC paths; accepts plain relative paths
+ok - symlinked target is treated as foreign for full-file, managed-block and json-merge
+ok - unknown release-manifest schema_version fails closed
+ok - unknown sync-state schema_version fails closed
+ok - this repo's own release-manifest.json and sync-state.json load cleanly
+ok - update state machine: upstream unchanged / local untouched -> noop
+ok - update state machine: new upstream file, not present locally -> add
+ok - update state machine: local unchanged since last release, upstream changed -> update
+ok - update state machine: local changed vs old release hash -> conflict (must not silently overwrite)
+ok - update state machine: new upstream path lands on pre-existing untracked local file -> conflict-foreign
+ok - update state machine: upstream removed the file, local matches old release -> delete
+ok - update state machine: upstream removed the file, local diverged -> keep-local-modified
+ok - update state machine: unsafe manifest path is rejected regardless of hashes
+ok - `node .asd/sync.js --check` reports every item current (no drift), including AGENTS.md
+ok - read-only agents (5 reviewers + asd-advisor): no Write/Edit tool, codex sandbox_mode read-only
+ok - README.md / AGENTS.md agent-count claims match the actual .asd/agents/*.md file count
+ok - release-manifest.json canon_hashes has an entry for every .asd/agents/*.md file
+ok - update driver: new upstream file with nothing local -> add, written on apply
+ok - update driver: local unchanged since last release, upstream changed -> update overwrites
+ok - update driver: local hand-edited vs old release hash -> conflict, never overwritten
+ok - update driver: --force overwrites a conflict only when the caller explicitly names it
+ok - update driver: new upstream path lands on a pre-existing untracked local file -> conflict-foreign
+ok - update driver: upstream removed the file, local untouched -> deleted on apply
+ok - update driver: upstream removed the file, local diverged -> kept + reported, nothing deleted
+ok - update driver: --dry-run mode reports the full plan but writes nothing at all
+ok - update driver: order of operations - every conflict is knowable from the plan before any write occurs
+ok - update driver: unsafe managed_paths entry aborts the whole run before any write
+ok - update driver: case-collision between managed paths is rejected fail-closed
+ok - update driver: symlinked local target is treated as foreign, never overwritten
+ok - update driver: unknown schema_version in fetched upstream manifest fails closed, zero writes
+ok - update driver: sync.js --check runs automatically after a real apply
+ok - update driver: post-apply check loads the FRESHLY WRITTEN sync.js, never a stale require() cache
+ok - update driver: a genuinely BROKEN freshly-written sync.js fails loud, never masked by the old engine
+ok - sync.js orphan detection (AC-14): --check reports a marked orphan as "orphan" (fails) and an unmarked one as "orphan-unmarked" (informational, never a failure)
+ok - sync.js orphan detection: --apply deletes an explicitly-requested marked orphan but refuses an unmarked one, unmarked file survives
+ok - sync.js orphan detection: a symlinked orphan target fails closed - treated as unmarked, never deleted
+ok - sync.js runApply (fail-open fix, decisions-log 2026-09-04): a target matching no plan entry and no orphan reports not-found, aborts the WHOLE batch (no partial write)
+ok - update.js migration runner (AC-12): pending migrations execute in ascending version order
+ok - update.js migration runner (AC-12): a migration at or below the consumer's current version is skipped, never run
+ok - update.js migration runner (AC-12): stop-on-first-failure pins reachedVersion at the last success, not the target
+ok - update.js migration runner (AC-12): no pending migrations advances reachedVersion straight to the target
+ok - update.js migration runner: a migration script shipped in this same apply loads fresh, never a stale require-cache copy
+ok - 4.0.0 migration (AC-7/AC-10/AC-11): deletes marked generated views of a retired agent; a missing target is success; re-running is a no-op
+asd-migration 4.0.0: warning: left 1 unmarked file(s) untouched (not ASD-generated, likely a consumer's own agent/skill sharing a retired name): .claude/agents/asd-ux-designer.md
+ok - 4.0.0 migration: leaves an unmarked (consumer-owned) file sharing a retired agent name untouched
+ok - 4.0.0 migration (AC-5): adds test_affected to commands.yaml additively when a supported test runner is detected; never touches config.yaml/sprints/custom rules
+asd-migration 4.0.0: warning: sprint "999-fixture" is mid-"impl-review" and may hold retired reviewer keys under state.json.reviews.*.verdicts (agent roster changed in ASD 4.0.0) - finish or re-run that review iteration before relying on the APPROVE latch for this sprint.
+ok - 4.0.0 migration: reports (never rewrites) an active sprint sitting in a review phase
+ok - release-manifest.json: every canon_hashes entry matches the actual file (relative to .asd/)
+ok - release-manifest.json: every upstream_hashes entry matches the actual file (relative to repo root)
+ok - every .asd/templates/*.json file parses as valid JSON
+ok - SessionStart hook: Claude gets /asd-* slash-command form
+ok - SessionStart hook: Codex gets $asd-* form, never a Claude-only slash command
+ok - SessionStart hook: a "skipped: <predicate>" verdict counts as satisfied, not "mixed"
+ok - SessionStart hook: an all-"skipped:" verdict map (no genuine approval) is "mixed", not "green"
+
+96/96 passed
+```
+
+Exit code: `0`
+
+**`lint` — `git diff --check`**
+
+```
+(no output)
+```
+
+Exit code: `0`
+
+**`build` — `node .asd/sync.js --check`**
+
+```json
+{
+  "ok": true,
+  "items": [
+    { "target": ".claude/agents/asd-advisor.md", "status": "current" },
+    { "target": ".codex/agents/asd-advisor.toml", "status": "current" },
+    { "target": ".claude/agents/asd-architect.md", "status": "current" },
+    { "target": ".codex/agents/asd-architect.toml", "status": "current" },
+    { "target": ".claude/agents/asd-ba.md", "status": "current" },
+    { "target": ".codex/agents/asd-ba.toml", "status": "current" },
+    { "target": ".claude/agents/asd-dev.md", "status": "current" },
+    { "target": ".codex/agents/asd-dev.toml", "status": "current" },
+    { "target": ".claude/agents/asd-external-review.md", "status": "current" },
+    { "target": ".codex/agents/asd-external-review.toml", "status": "current" },
+    { "target": ".claude/agents/asd-pm.md", "status": "current" },
+    { "target": ".codex/agents/asd-pm.toml", "status": "current" },
+    { "target": ".claude/agents/asd-reviewer-correctness.md", "status": "current" },
+    { "target": ".codex/agents/asd-reviewer-correctness.toml", "status": "current" },
+    { "target": ".claude/agents/asd-reviewer-documentation.md", "status": "current" },
+    { "target": ".codex/agents/asd-reviewer-documentation.toml", "status": "current" },
+    { "target": ".claude/agents/asd-reviewer-efficiency.md", "status": "current" },
+    { "target": ".codex/agents/asd-reviewer-efficiency.toml", "status": "current" },
+    { "target": ".claude/agents/asd-reviewer-testing.md", "status": "current" },
+    { "target": ".codex/agents/asd-reviewer-testing.toml", "status": "current" },
+    { "target": ".claude/agents/asd-tester.md", "status": "current" },
+    { "target": ".codex/agents/asd-tester.toml", "status": "current" },
+    { "target": ".claude/agents/asd-ux.md", "status": "current" },
+    { "target": ".codex/agents/asd-ux.toml", "status": "current" },
+    { "target": ".claude/skills/asd-concept/SKILL.md", "status": "current" },
+    { "target": ".agents/skills/asd-concept/SKILL.md", "status": "current" },
+    { "target": ".claude/skills/asd-design-system/SKILL.md", "status": "current" },
+    { "target": ".agents/skills/asd-design-system/SKILL.md", "status": "current" },
+    { "target": ".claude/skills/asd-init/SKILL.md", "status": "current" },
+    { "target": ".agents/skills/asd-init/SKILL.md", "status": "current" },
+    { "target": ".claude/skills/asd-phase-audit/SKILL.md", "status": "current" },
+    { "target": ".agents/skills/asd-phase-audit/SKILL.md", "status": "current" },
+    { "target": ".claude/skills/asd-phase-design/SKILL.md", "status": "current" },
+    { "target": ".agents/skills/asd-phase-design/SKILL.md", "status": "current" },
+    { "target": ".claude/skills/asd-phase-design-promote/SKILL.md", "status": "current" },
+    { "target": ".agents/skills/asd-phase-design-promote/SKILL.md", "status": "current" },
+    { "target": ".claude/skills/asd-phase-design-review/SKILL.md", "status": "current" },
+    { "target": ".agents/skills/asd-phase-design-review/SKILL.md", "status": "current" },
+    { "target": ".claude/skills/asd-phase-impl/SKILL.md", "status": "current" },
+    { "target": ".agents/skills/asd-phase-impl/SKILL.md", "status": "current" },
+    { "target": ".claude/skills/asd-phase-impl-review/SKILL.md", "status": "current" },
+    { "target": ".agents/skills/asd-phase-impl-review/SKILL.md", "status": "current" },
+    { "target": ".claude/skills/asd-phase-impl-test/SKILL.md", "status": "current" },
+    { "target": ".agents/skills/asd-phase-impl-test/SKILL.md", "status": "current" },
+    { "target": ".claude/skills/asd-phase-plan/SKILL.md", "status": "current" },
+    { "target": ".agents/skills/asd-phase-plan/SKILL.md", "status": "current" },
+    { "target": ".claude/skills/asd-phase-pr/SKILL.md", "status": "current" },
+    { "target": ".agents/skills/asd-phase-pr/SKILL.md", "status": "current" },
+    { "target": ".claude/skills/asd-phase-scope/SKILL.md", "status": "current" },
+    { "target": ".agents/skills/asd-phase-scope/SKILL.md", "status": "current" },
+    { "target": ".claude/skills/asd-sprint/SKILL.md", "status": "current" },
+    { "target": ".agents/skills/asd-sprint/SKILL.md", "status": "current" },
+    { "target": ".claude/skills/asd-stack/SKILL.md", "status": "current" },
+    { "target": ".agents/skills/asd-stack/SKILL.md", "status": "current" },
+    { "target": ".claude/skills/asd-sync/SKILL.md", "status": "current" },
+    { "target": ".agents/skills/asd-sync/SKILL.md", "status": "current" },
+    { "target": ".claude/skills/asd-update/SKILL.md", "status": "current" },
+    { "target": ".agents/skills/asd-update/SKILL.md", "status": "current" },
+    { "target": ".claude/hooks/session-start.js", "status": "current" },
+    { "target": ".codex/hooks/session-start.js", "status": "current" },
+    { "target": "CLAUDE.md", "status": "current" },
+    { "target": "AGENTS.md", "status": "current" },
+    { "target": ".claude/settings.json", "status": "current" },
+    { "target": ".codex/hooks.json", "status": "current" }
+  ]
+}
+```
+
+Exit code: `0`
+
+**Gate verdict: GREEN.** `test` 96/96 passed (exit 0), `lint` clean (exit 0), `build` all 62 items `current` (exit 0). No failures, no code defects surfaced — triage (step 9) has nothing to act on this entry.
 
 ## Defects
 
