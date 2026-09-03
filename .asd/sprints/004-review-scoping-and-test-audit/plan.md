@@ -181,18 +181,18 @@ catches it.
 
 Satisfies AC-2. Net-new state plus net-new dispatch logic — no latch storage or filter exists today.
 
-- [ ] Add the latch to the `reviews.<phase>` shape in `t_state.json`, keyed per phase per reviewer
+- [x] Add the latch to the `reviews.<phase>` shape in `t_state.json`, keyed per phase per reviewer
       key, so the existing rollback reset clears it with `verdicts`
-- [ ] Dispatch filter in `asd-phase-impl-review.md` and `asd-phase-design-review.md`: a reviewer that
+- [x] Dispatch filter in `asd-phase-impl-review.md` and `asd-phase-design-review.md`: a reviewer that
       returned APPROVE on iteration N is not dispatched on N+1 and later within the same phase
-- [ ] Aggregation rule: a latched reviewer counts as satisfied, so DoD can still be met
-- [ ] `sprint-lifecycle.md` "State recovery": add the latch value beside `"skipped: …"` in the
+- [x] Aggregation rule: a latched reviewer counts as satisfied, so DoD can still be met
+- [x] `sprint-lifecycle.md` "State recovery": add the latch value beside `"skipped: …"` in the
       satisfied-vs-blocking enumeration
-- [ ] Red-full-suite invalidation (AC-5, Task 7): write the clause explicitly — a red full suite
+- [x] Red-full-suite invalidation (AC-5, Task 7): write the clause explicitly — a red full suite
       clears every latch sprint-wide, not only the failing reviewer's. Do not infer it from `impl`
       sitting earlier in the chain than impl-review's input-producing phase. Note in the rule whether
       the rollback reset also happens to cover the same route
-- [ ] `review-policy.md` DoD table gains the latch satisfied clause
+- [x] `review-policy.md` DoD table gains the latch satisfied clause
 
 Material risk: a reviewer that approved iteration 1 never sees later fix commits, so a fix can
 regress its domain silently; the red-suite invalidation is the only backstop.

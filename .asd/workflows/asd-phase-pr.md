@@ -4,7 +4,7 @@ Orchestration body for the `asd-phase-pr` skill. Operation-mapping to host tools
 
 ## Preconditions
 - Active sprint at `.asd/sprints/<NNN-slug>/`
-- impl-review DoD met (all required reviewers APPROVE same iteration)
+- impl-review DoD met (all required reviewers APPROVE or APPROVE-latched, `sprint-lifecycle.md` "APPROVE latch")
 - `state.json.phase` advanced from `impl-review`
 
 ## Operations used
@@ -30,8 +30,8 @@ The sprint folder physically moves to `.asd/sprints/archived/<NNN-slug>/` as par
 3. Delegate to agent `asd-pm`: update `state.json` (phase=pr)
 4. **DoD verification** — delegate to agent `asd-pm` with payload (config, sprint paths, stubs path, commands.yaml):
    - **Plan completion**: read `<sprint>/plan.md`, verify every `- [ ]` is `- [x]`
-   - **AC coverage**: cross-check AC-N references in plan tasks (PRD AC-N if `documents.prd` enabled, else `sprint.md`'s own AC-N — `sprint-lifecycle.md` "Optional documents") against impl-review Implementation reviewer's verdict/AC→code trace (exclusive owner of this trace — `asd-reviewer-implementation`)
-   - **Reviews green**: read `state.json.reviews.impl.verdicts["iter-NN"]` for the highest `reviews.impl.iteration` (fallback: parse first-line gate verdict tokens from `<sprint>/reviews/impl/iter-NN/` review files if `state.json` verdicts are stale or absent); for the reviewers actually required this sprint (`review-policy.md` DoD table — a reviewer never dispatched, e.g. design-review UI with no ux-spec, is not counted), every value must be either `APPROVE` or a `"skipped: <predicate>"` string (diff-scoped fan-out, `review.scoped_fan_out`); a `"skipped: ..."` value counts as satisfied, never as missing and never as a finding; any other value (`CONCERNS`, `FAIL`, `null`, or an absent key for a reviewer this table required) blocks
+   - **AC coverage**: cross-check AC-N references in plan tasks (PRD AC-N if `documents.prd` enabled, else `sprint.md`'s own AC-N — `sprint-lifecycle.md` "Optional documents") against impl-review Correctness reviewer's verdict/AC→code trace (exclusive owner of this trace — `asd-reviewer-correctness`)
+   - **Reviews green**: read `state.json.reviews.impl.verdicts["iter-NN"]` for the highest `reviews.impl.iteration` (fallback: parse first-line gate verdict tokens from `<sprint>/reviews/impl/iter-NN/` review files if `state.json` verdicts are stale or absent); for the reviewers actually required this sprint (`review-policy.md` DoD table — a reviewer never dispatched, e.g. design-review UI with no ux-spec, is not counted), satisfied-vs-blocking semantics per `sprint-lifecycle.md` "State recovery" (sole SSoT, not restated here): `APPROVE` satisfies; an absent key satisfies only when `reviews.impl.latched` carries that reviewer's key (AC-2 APPROVE latch — `sprint-lifecycle.md` "APPROVE latch"), otherwise it blocks; `CONCERNS`, `FAIL`, or `null` always blocks
    - **Stub block**:
      - read `.asd/project/stubs.md`; filter `Sprint = <current-NNN-slug>` AND Reason NOT starting with `(accepted-debt)` → must be empty
      - search code for `// TODO(sprint-<current-NNN-slug>):` markers; cross-check every marker has matching stubs.md entry (orphan markers = block)
