@@ -74,3 +74,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
   - Three roster tests in `tests/run.js` will fail on the agent churn (AC-7, AC-10, AC-11) and must be updated in the same change.
   - `core.md`'s existing 50%-compaction rule must be ABSORBED by the new `Context hygiene` section (AC-9), not left sitting beside it as a second, conflicting threshold.
 - **Affected docs**: [`audit.md`](audit.md), [`state.json`](state.json)
+
+- 2026-09-03 — design/design-review/design-promote skipped (no documents enabled)
