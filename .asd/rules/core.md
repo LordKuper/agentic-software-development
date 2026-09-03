@@ -64,9 +64,25 @@ Skill/agent prompts may use: `{{SPRINT}}` (sprint id), `{{ITERATION}}` (review i
 
 Phase skills named `asd-phase-<phase>`, one per phase in `sprint-lifecycle.md`. `asd-sprint` dispatches the matching skill from `state.json.phase`.
 
-## Compaction
+## Context hygiene
 
-Context window over 50% full → compact (`/compact`) before next major step. Before compaction, agent dumps minimal recovery state to `state.json`. After, reloads `state.json` to resume.
+1. Disk is the memory. Decision → `decisions-log.md`; state → `state.json`; artifact → its real path.
+   Anything living only in the transcript is not done. Corollary: any session is clearable at a phase
+   boundary without loss.
+2. Clear at phase boundaries. Once a phase emits COMPLETED and its state write lands, the orchestrator
+   transcript holds nothing unique — prefer clear over compaction; re-enter via the sprint orchestrator,
+   recovering from `state.json` per `sprint-lifecycle.md` "State recovery".
+3. Compact only within a phase (long `impl` runs, fix loops). The compaction summary MUST preserve:
+   sprint id; phase and mode; outstanding signals (`QUESTION`, `BLOCKED_MANUAL`, `ADVICE_NEEDED`); any
+   gate answer not yet written to disk; paths written this phase; remaining task/finding/defect ids.
+4. Never clear or compact mid-gate — between posting a gate message and recording the answer. Record
+   the answer to `decisions-log.md`/`state.json` first, then compact.
+5. Dispatch payloads carry paths and explicit parameters, never transcript excerpts. A dispatched agent
+   never inherits the orchestrator's conversation.
+6. Reviewers get fresh context per iteration and never receive prior-iteration findings (external
+   review's stalemate set excepted) — see `review-policy.md`, never restated here.
+7. Threshold: past ~70% context with no phase boundary in reach → compact; boundary in reach → finish
+   the phase, then clear.
 
 ## Untrusted-data boundary
 

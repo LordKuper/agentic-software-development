@@ -276,13 +276,13 @@ breaks those links.
 
 Satisfies AC-9.
 
-- [ ] Add `## Context hygiene` to `core.md` with the seven rules from AC-9, in core.md's terse
+- [x] Add `## Context hygiene` to `core.md` with the seven rules from AC-9, in core.md's terse
       imperative style
-- [ ] **Absorb and replace** the existing `## Compaction` section (50% threshold) — it directly
+- [x] **Absorb and replace** the existing `## Compaction` section (50% threshold) — it directly
       contradicts rule 7's ~70%/prefer-clear. One threshold survives, not two
-- [ ] Rule 6 cross-links `review-policy.md`'s clean-context rule; never restates it
-- [ ] Update `core.md`'s `## See also` / section order if the new section changes it
-- [ ] Verify the fresh-dispatch lines in `asd-phase-design-review.md` step 7,
+- [x] Rule 6 cross-links `review-policy.md`'s clean-context rule; never restates it
+- [x] Update `core.md`'s `## See also` / section order if the new section changes it
+- [x] Verify the fresh-dispatch lines in `asd-phase-design-review.md` step 7,
       `asd-phase-impl-review.md` step 6 and `external-review.md` still agree with rule 6
 
 Material risk: leaving both thresholds live gives agents two conflicting rules and no tie-breaker.
