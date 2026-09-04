@@ -117,3 +117,11 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 - 2026-09-04 — carried to next impl-review iteration: `--apply` no-ops on self-sourced `AGENTS.md`, so its `sync-state.json` digest has no supported reconciliation command and every hand-edit turns the suite red until someone patches the JSON by hand. `AGENTS.md`'s own hard rule ("run sync --apply after editing canon") is false for that target.
 
+## 2026-09-04 — impl review-fix for iter-02: findings resolved
+
+- **Decision**: All 18 iter-02 findings resolved in four groups. The APPROVE latch was rewritten around an invariant rather than patched a fourth time (user decision): a reviewer key is ALWAYS written to `verdicts["iter-NN"]`, a latch-skipped reviewer gets an inherited APPROVE recorded without dispatch, and `latched` never participates in aggregation. Every latch consultation for satisfaction was removed from State recovery, the pr gate, both review workflows and `session-start.js`, which rolled back to its pre-sprint shape plus one prefix check.
+- **Rationale**: the latch had produced four defects in a row because it drove both dispatch and aggregation, forcing three-way state reconciliation. The invariant deletes the class. Migration safety kept the narrow fix (local fallback in `4.0.0.js`) over a broad `runMigrations` guard that would block unrelated future migrations. `asd-test-engineer`'s memory was migrated to `asd-tester` (pure rename), while two merged-away agents' memory was registered as accepted debt.
+- **Affected docs**: reviews/impl/iter-02/*, test-plan.md (D-1, D-2 fixed), stubs.md, .claude/agent-memory/asd-tester/
+
+- 2026-09-04 — carried to iter-03 reviewers: hash-ledger drift is a recurring class, three occurrences this sprint (D-1 AGENTS.md digest, D-2 upstream_hashes for four prose files, plus the self-sourced AGENTS.md gap a dev reported). Editing a managed-path prose file leaves `upstream_hashes` stale; `sync.js --check` does not detect it (only `tests/run.js` does), and the only remedy is running `--apply` on an unrelated target for its side-effect recompute. Reviewers to judge whether a fix belongs in this sprint (e.g. `--check` reporting ledger drift, or a targetless `--apply` meaning recompute-only) or in a follow-up.
+
