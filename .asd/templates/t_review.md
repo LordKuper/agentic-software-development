@@ -25,12 +25,7 @@ responsibility:
 
 Reviewer returns the complete file+rule(+section, Correctness/Efficiency only) coverage ledger (mandatory — verdict INVALID if incomplete; see `review-policy.md` "Coverage ledger"). This file persists only the reduced form below — the gate itself runs on the full returned ledger, before write.
 
-**Summary**: `files: {{checked}}/{{total}} checked, {{n/a}} n/a · rules: {{pass}}/{{total}}, {{findings}} findings`{{ · sections: {{reviewed}}/{{total}}, none blank — Correctness/Efficiency only}}
-
-**Section-coverage ledger** (Correctness, Efficiency only — one row per named rubric section, every dispatch):
-| Rubric section | Status |
-|---|---|
-| {{section name}} | {{reviewed — findings/pass \| n/a: <reason>}} |
+**Summary**: `files: {{checked}}/{{total}} checked, {{n/a}} n/a · rules: {{pass}}/{{total}}, {{findings}} findings` (Correctness/Efficiency append `· sections: {{reviewed}}/{{total}}, none blank`)
 
 **n/a rows** (verbatim, full list — file, rule, or section, with reason):
 | Item | Reason |
