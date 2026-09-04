@@ -135,3 +135,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: `asd_version` bumped 3.1.0 → 4.0.0 on substance (nine agent names retired, verdict tokens / review file names / `state.json` reviewer keys changed) although no sprint commit carried a `!` or `BREAKING CHANGE` footer; the PR title carries `feat!` so the squash-merge subject records the break, and a 3.x bump would have left `.asd/migrations/4.0.0.js` inert for every consumer. External Review never ran this sprint (codex quota until 2026-09-07) — stated in the PR body, not hidden.
 - **Affected docs**: [`state.json`](state.json), `.asd/release-manifest.json`, `CHANGELOG.md`
 
+## 2026-09-05 — Sprint 004-review-scoping-and-test-audit files archived pre-merge, pending PR #21 merge
+
+- **Decision**: Sprint folder moved `.asd/sprints/004-review-scoping-and-test-audit/` → `.asd/sprints/archived/004-review-scoping-and-test-audit/` as a dedicated commit on the sprint branch, landing on the already-open PR #21 so it squash-merges atomically with the sprint's own changes. `archived_at` set; `phase` stays `pr` and `pr.state` stays `"open"` — the sprint is not merged, only its folder has moved.
+- **Rationale**: Pre-merge archival survives squash-merge + auto-delete-branch strategies that would otherwise make a later push to the sprint branch impossible. The sprint remains active (`phase != done`) until a later resume enters merge mode, confirms the merge, and writes the terminal state — the one write this archived `state.json` still receives.
+- **Affected docs**: [`state.json`](state.json)
+
