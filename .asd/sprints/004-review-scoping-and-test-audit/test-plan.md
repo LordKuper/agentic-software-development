@@ -15,6 +15,7 @@ responsibility:
 | 2 | `42c00fe65114be2d30aa13d9241b9df24f7962b0` | delta since entry 1: impl-review iter-01 findings routed to `asd-tester` — testing #1–#9, correctness #8/#9/#12 |
 | 3 | | delta since entry 1 (`git diff 21d342022868...HEAD`) — review-fix for iter-01 is now fully finalized (D-1 fixed; every remaining critical/finding resolved by `impl`, `decisions-log.md` 2026-09-04 "impl review-fix for iter-01: findings resolved"). This pass judges the handful of production-code changes in that full span not already covered by entry 2's own rows: `invalidateSyncCache`, the newly-shared `removeIfEmptyDir`, `--apply`'s `hashLedger: null`, `session-start.js`'s `latched`/legacy-`skipped:` awareness, and the migration contract's `MigrationReport`/`reports[version]` widening |
 | 4 | | delta since entry 3 — impl-review iteration 2 review-fix for `testing.md` #1-#3, plus test-side coverage of the other iter-2 fix groups' production changes: `session-start.js` rolled back to its pre-sprint shape (one widening kept: `APPROVE (skipped: …)` recognised), `update.js`'s `planUpdate` migration-preview union, `4.0.0.js`'s `removeIfEmptyDir` local fallback, `update.js`'s `main()` per-migration report line |
+| 5 | `<filled at close>` | delta since entry 4's own authoring commit (`git diff 0d67c96...HEAD`): the D-2 ledger-recompute finalize commit (`7d21dd5`), plus fresh judgment — not itemized by entry 4's own rows — on the prose-group edits landed earlier in the same iter-02 fix cycle (`review-policy.md` DoD row/paragraph, `asd-phase-design-review.md` step 7 section names, `t_review.md` table removal, `t_test-plan.md` "(name, path)" wording) and confirmation the APPROVE-latch invariant's aggregation consequence and `session-start.js`'s rolled-back fixture coverage still hold after the cycle's final wording |
 
 **Impacted-set derivation (AC-5 safety valve, `sprint-lifecycle.md` "Impacted test set"):** change surface = 57 non-generated files; only three carry executable code (`.asd/sync.js`, `.asd/skills/asd-update/update.js`, `.asd/migrations/4.0.0.js`) — everything else is prose/rule/template/config. `commands.yaml` has no `test_affected` selector (by design — see its own comment). The change surface touches framework-wide shared infrastructure (`sync.js`, the update driver, agent roster) — the mandatory safety valve (`sprint-lifecycle.md`) fires: impacted set **degrades to the full suite**, i.e. `node tests/run.js` exactly. This is the first real exercise of the valve this sprint's own change wrote.
 
@@ -90,7 +91,23 @@ Pre-strategy impacted run (step 3, before authoring): the code changed under thi
 | `update.js`'s `main()` logging each migration's report (`result.migrations.reports[version]`) after apply (efficiency #4's resolution) | Traced directly: `main()` is this file's own documented untested surface ("Not exercised by tests/run.js - tests point planUpdate/applyPlan at a second local fixture directory standing in for upstream instead") — it requires a real network fetch (`fetchUpstreamTarball`) with no fixture seam, and the value it logs (`reports[version]`) is already asserted directly by the existing manifest test and the engine-cache regression test. Exercising this one `log()` line would mean building CLI/network-mocking infrastructure for a straight `JSON.stringify` of an already-proven value. | n/a | none | Fails the hypothetical-risk/no-coverage-theatre bar (`code-style.md` §17): the underlying value is already covered; the only uncovered part is string formatting behind an untestable, out-of-fixture-reach entry point. New test infrastructure to reach it would itself need Complication Approval for a near-zero risk payoff. |
 | The APPROVE-latch invariant's executable consequence — "aggregation reads `verdicts` alone" (dispatch item 6) | The invariant itself (a latch-skipped reviewer's key is always materialized into `verdicts["iter-NN"]`) is implemented across `asd-phase-impl-review.md`/`asd-phase-design-review.md`/`asd-phase-pr.md` — workflow prose consumed by a dispatched agent at runtime, not Node code this repo's own test runner parses. `session-start.js`'s `lastReviewVerdict` is a different, explicitly non-gating display reader (`latched` awareness was removed from it entirely by the rollback) — it is not "aggregation" in the DoD-gate sense the invariant is about, so pointing a test at it would not exercise the invariant at all. | n/a | none | No Node code in this repo implements the gate-aggregation the invariant describes — same reasoning as the "other ~50 files" `none` row (Entry 1): prose interpreted by a dispatched agent, no parser exists or is warranted. |
 
+### Entry 5 (post iter-02 fix-cycle: D-2 ledger recompute confirmed, prose group + latch invariant judged fresh)
+
+Pre-strategy impacted run (step 3, before authoring): `node tests/run.js` → **105/105 passed** — confirms D-2's `fixed (ledger recompute)` status (the `upstream_hashes` integrity test, previously red, now green) and that nothing regressed since entry 4's own 3 additions. Impacted-set derivation unchanged: this delta's own diff (`.asd/release-manifest.json`, `decisions-log.md`, `state.json`, `test-plan.md`) still touches shared infrastructure (the release manifest's hash ledgers, read by both `sync.js` and `update.js`), `commands.yaml` still carries no `test_affected` selector, so the mandatory safety valve fires and the impacted set is `node tests/run.js` (the full suite) again.
+
+Most of the iter-02 fix cycle was already judged at entry 4; this pass covers only what entry 4's own rows did not name and what the dispatch instructed to re-verify:
+
+| Change | Material risk | Chosen check | Decision | Reason |
+|---|---|---|---|---|
+| `.asd/release-manifest.json`'s `upstream_hashes` recompute (`7d21dd5`, D-2's fix) | None beyond what D-2's own dedicated test already guards: this commit only updates four hash strings to match the four already-reviewed prose files; no schema or logic change. | unit | none | Already covered — the pre-strategy 105/105 run above IS the fail-first→pass proof (this exact test was the one red entry in entry 4's gate); no second test would add coverage. |
+| The prose group's own edits, judged fresh (`c9867cb` `review-policy.md` DoD row/paragraph; `0819911` `asd-phase-design-review.md` step 7 section name; `fa744e7` `t_review.md` redundant table; `f3cc268` `t_test-plan.md` "(name, path)" wording) | None executable: verified each commit's diff directly (`git show --stat`) — all four touch only `.asd/rules/*.md` / `.asd/workflows/*.md` / `.asd/templates/*.md` prose, zero lines of Node. Same class as Entry 1's "other ~50 files" row: interpreted by a dispatched agent at runtime, no parser in `tests/run.js` reads rule/workflow/template prose and none is warranted. | n/a | none | No behaviour added that this repo's own test runner can observe; inventing a prose-content assertion would be coverage theatre (`code-style.md` §17). Cross-file mirror correctness for these four is `sync.js --check`'s and the `canon_hashes`/`upstream_hashes` integrity tests' job (already green, confirmed above), not a new test's. |
+| APPROVE-latch invariant's "aggregation reads `verdicts` alone" consequence, re-checked against the cycle's FINAL landed wording (`sprint-lifecycle.md` "APPROVE latch" + "State recovery" lines 44-56, 268-272, all four workflow files) | Traced directly, fresh: `sprint-lifecycle.md`'s `verdicts["iter-NN"]` value-form enumeration (four forms: bare token, external's availability-skip, legacy `skipped:`, absent-key-always-blocking) and the latch-write/no-second-mechanism prose are internally consistent across `sprint-lifecycle.md`, `asd-phase-impl-review.md`, `asd-phase-design-review.md`, `asd-phase-pr.md` — grepped all four for `latched`/`verdicts\["iter` to confirm no drift. Still zero Node code in this repo implements or aggregates against this invariant (same conclusion as Entry 4's own row). | n/a | none | Reconfirms Entry 4's row rather than superseding it — the wording that landed after entry 4's dispatch (this cycle's finalize commit) added no executable surface, only ledger-hash bookkeeping. |
+| `session-start.js`'s rolled-back `lastReviewVerdict` shape — fixture-completeness check (dispatch instruction: "confirm the hook's rolled-back shape is fully covered by the fixtures you have") | Traced against the current function (`.asd/hooks/session-start.js:102-118`): three branches exist beyond the pre-existing red/yellow/`n/a` guards — `approved` (bare `"green"`/`APPROVE`-prefixed, covers both bare `APPROVE` and the availability-skip form), `isSkipped` (legacy `skipped:` carve-out), and the `some(approved) && every(approved‖isSkipped)` combinator that requires at least one genuine approval before reading "green". All three existing SessionStart hook tests (`a "skipped: <predicate>" verdict counts as satisfied`, `an availability-skip "APPROVE (skipped: <reason>)" value counts as satisfied`, `an all-legacy-"skipped:" verdict map … reads "mixed"`) each drive a distinct one of these branches end-to-end against the real hook via a spawned subprocess. | n/a | none | Fixture coverage confirmed complete for the rolled-back shape — no branch of the current `lastReviewVerdict` lacks a driving fixture; adding a fourth would duplicate an existing check. |
+| `D-2`'s ledger-drift class itself — hash-ledger drift after a canon prose edit is missing its `sync.js --apply <file>` housekeeping follow-up, three occurrences this sprint (D-1, D-2, and the dev-reported self-sourced `AGENTS.md` gap; `decisions-log.md` 2026-09-04 "carried to iter-03 reviewers") | Real as a recurring pattern, but not something a test authored today can close: the only thing that already catches every occurrence is the dedicated `canon_hashes`/`upstream_hashes` integrity tests (they caught both D-1 and D-2, and the pre-strategy 105/105 run above confirms D-2's instance is now clean). Closing the CLASS — e.g. making `sync.js --check`'s own exit code gate ledger drift, or giving `--apply` a recompute-only no-target mode — is a production-code change (`sync.js`'s CLI contract), which this agent has no authority to write regardless of the outcome. | n/a | none (design gap, not a test gap) | The existing check is already the cheapest reliable one and already proved itself twice; authoring a second copy of the same assertion would not close the recurring class, only duplicate coverage. Whether `sync.js`'s own gate should widen is a design decision already routed to the iter-03 reviewers (`decisions-log.md` 2026-09-04) — outside this agent's authority to resolve by writing a test against behaviour that does not exist yet. |
+
 ## Removed tests
+
+**Entry 5**: None — every item this entry judged resolved to `none`; nothing proposed for removal.
 
 **Entry 4**: None — the red-test fix (dispatch item 1) is an in-place assertion/name flip on an existing test, not a removal (see `Added tests` Entry 4).
 
@@ -163,13 +180,17 @@ Plus, as **fixes to existing tests** (test-defect fixes, not new authoring), don
 - `sync.js CLI: --check exits 1 when a marked orphan is present, 0 when only an unmarked one is` (testing #1) — extended in place: writes an unmarked file alongside the marked one from the start, asserts `ok: true` and the `orphan-unmarked` item is present on the second invocation, instead of running that invocation against a zero-orphan repo. **Fail-first**: reverting the fixture back to its pre-fix shape (marked orphan simply deleted, no unmarked file ever written) still passes today's production code trivially — confirming the ORIGINAL test's own failure mode was coverage theatre (green for the wrong reason), not a code defect; the new fixture is what actually exercises the `orphan-unmarked` branch, verified by hand-toggling `sync.js`'s marker check to always report `orphan` (never `orphan-unmarked`) — turned this test red as expected, reverted, green again.
 - `SessionStart hook: an all-legacy-"skipped:" verdict map (no bare APPROVE anywhere) reads "mixed", not "green"` (red-test decision, dispatch item 1) — renamed and flipped back to `mixed`, matching `session-start.js`'s rolled-back, current `satisfied` predicate (see `Risk → check decisions` Entry 4 above for the full decision). Fail-first is the observed regression itself: this test failed pre-fix (green-expecting assertion against code now requiring at least one genuine approval); passes now against the current, intentional contract.
 
+### Entry 5
+
+No tests added, modified, or removed — every item this entry judged (the D-2 ledger recompute, the prose-group edits, the latch-invariant final wording, `session-start.js`'s fixture-completeness check) resolved to `none` (see `Risk → check decisions` Entry 5 above for reasons). `code-style.md` §17's no-new-test decision rule applies to all five rows; none is regression-shaped, so no fail-first proof is owed.
+
 ## Suite run
 
 - Command: `node tests/run.js`
-- Scope: full (safety valve, `sprint-lifecycle.md` "Impacted test set" — shared infrastructure, same as entry 1/entry 2/entry 3)
-- Result: **RED** — 104/105 passed, 1 failed (105 = entry 3's 102 + 3 added at entry 4: the migration-preview union test, the 4.0.0.js fallback test, and the `APPROVE (skipped: …)` SessionStart fixture; failure is D-2, a repo-state drift unrelated to any of entry 4's own test authoring — see `Defects`)
-- Lint / build: pass — `lint` (`git diff --check`) exit 0; `build` (`node .asd/sync.js --check`) `ok: true`, exit 0, all 62 items `current` (D-2's drift is invisible to `--check`, same class as D-1 — only the dedicated `upstream_hashes` integrity test catches it)
-- HEAD: `f3cc26861509a821adc1832ac24635b7b35508bb`
+- Scope: full (safety valve, `sprint-lifecycle.md` "Impacted test set" — shared infrastructure, same as every prior entry)
+- Result: **GREEN** — 105/105 passed (unchanged from entry 4's 105 total: entry 5 added zero tests; D-2's previously-failing test now passes, confirming its ledger-recompute fix)
+- Lint / build: pass — `lint` (`git diff --check`) exit 0; `build` (`node .asd/sync.js --check`) `ok: true`, exit 0, all 62 items `current`
+- HEAD: `<filled at close>`
 
 **AC-15 no-test-decision evidence (testing #5)** — the `none` row (Entry 1, "the other ~50 files") leans on this grep; recording the command and its result so the substitute check has evidence, not just an assertion:
 
@@ -807,6 +828,142 @@ Exit code: `0`
 
 **Gate verdict: RED.** `test` 104/105 (1 failed, filed as D-2), `lint` clean (exit 0), `build` `ok: true` (exit 0, but see D-2 — its own coarser exit code misses this class of drift too). D-2 is unrelated to entry 4's own test authoring — a repo-state drift left behind by the OTHER iter-2 fix groups (correctness #4/#5, efficiency #3 edits to `review-policy.md`/`t_review.md`/`t_test-plan.md`/`asd-phase-design-review.md`) whose `node .asd/sync.js --apply <file...>` housekeeping follow-up was never run. `.asd/release-manifest.json` is outside this agent's write scope (`.asd/` write access limited to `test-plan.md`/`stubs.md`/`manual-steps.md`) — routes to `impl` for a dev to run `sync-apply` and recompute the ledger.
 
+### Impacted-set suite gate (step 8, entry 5)
+
+- HEAD: `<filled at close, see Entry log>`
+
+**`test` — `node tests/run.js`** (105 tests, unchanged from entry 4's total — entry 5 added none)
+
+```
+ok - canonical agent -> Claude .md matches fixture
+ok - canonical agent -> Codex .toml matches fixture
+ok - canonical skill -> Claude SKILL.md matches fixture
+ok - canonical skill -> Codex SKILL.md matches fixture
+ok - substitutePlaceholders: known key substituted, unknown/typo placeholders left untouched
+ok - agent-claude / agent-codex transforms resolve {{wraps_cli}}/{{wraps_config_key}} from claude{}/codex{} respectively
+ok - asd-external-review: the wrapped CLI subprocess carries an explicit read-only flag on both providers
+ok - agents whose meta never sets wraps_cli/wraps_config_key are unaffected (substitution is a no-op)
+ok - CRLF+BOM canonical input normalizes to the same output as LF/no-BOM
+ok - full-file status: missing target
+ok - full-file status: current after apply, then idempotent (zero byte diff) on re-check
+ok - full-file status: stale when an UNTAMPERED body just needs re-render (canon changed)
+ok - full-file status: modified-foreign when body no longer matches ITS OWN marker digest (tampered)
+ok - full-file status: modified-foreign when target has no ownership marker (conflict, refuse to overwrite)
+ok - full-file status: invalid JSON frontmatter fails closed before any write
+ok - runApply: force overwrites a modified-foreign target only after explicit confirmation
+ok - runApply: preflight aborts the WHOLE batch before any write when one canon source is invalid
+ok - buildSyncPlan: CLAUDE.md tracks t_CLAUDE.md - editing the template makes it stale
+ok - buildSyncPlan: an INITIALIZED CONSUMER project generates AGENTS.md from t_AGENTS.md, and tracks edits to it
+ok - buildSyncPlan: WITHOUT .asd/project/config.yaml (the framework repo itself), AGENTS.md stays self-sourced
+ok - readSelfHostingField: config.yaml absent -> disabled
+ok - readSelfHostingField: config.yaml exists but field absent -> disabled
+ok - readSelfHostingField: self_hosting: disabled -> disabled
+ok - readSelfHostingField: self_hosting: enabled -> enabled
+ok - readSelfHostingField: malformed/unknown value fails closed to disabled
+ok - readSelfHostingField: duplicated top-level key is ambiguous, fails closed to disabled (never "first" or "last" wins)
+ok - isSelfSourcedAgentsMd: no config -> self-sourced; consumer config -> generated; self_hosting:enabled -> self-sourced even though config exists
+ok - managed-block: missing file -> apply creates it containing just the block
+ok - managed-block: inserted into existing foreign content without touching it
+ok - managed-block: stale when tracked block content no longer matches a fresh render
+ok - managed-block: CRLF around a pre-existing block does not corrupt the boundary or double the line break
+ok - managed-block: modified-foreign when block exists but sync-state has no record (refuse to overwrite)
+ok - managed-block: modified-foreign when block was hand-edited after last tracked write
+ok - json-merge: missing file -> apply creates it with only the owned entries
+ok - json-merge: unrelated keys are preserved BYTE-FOR-BYTE, including unusual formatting
+ok - json-merge: a leading BOM on the target file survives untouched
+ok - json-merge: EACH foreign array element keeps its own exact bytes, even with unusual internal formatting
+ok - json-merge: missing key path is spliced in, not a whole-document reformat
+ok - json-merge: invalid pre-existing JSON with --force still aborts the WHOLE runApply batch before any write
+ok - json-merge: statusJsonMerge stays safe (modified-foreign) on invalid JSON even though renderJsonMerge throws
+ok - json-merge: stale when tracked owned entries differ from a fresh render
+ok - json-merge: modified-foreign when owned-looking entries exist but sync-state has no record
+ok - json-merge: invalid JSON target fails closed (treated as foreign, never parsed/written)
+ok - isSafeRelPath rejects traversal, absolute, drive, and UNC paths; accepts plain relative paths
+ok - symlinked target is treated as foreign for full-file, managed-block and json-merge
+ok - unknown release-manifest schema_version fails closed
+ok - unknown sync-state schema_version fails closed
+ok - this repo's own release-manifest.json and sync-state.json load cleanly
+ok - update state machine: upstream unchanged / local untouched -> noop
+ok - update state machine: new upstream file, not present locally -> add
+ok - update state machine: local unchanged since last release, upstream changed -> update
+ok - update state machine: local changed vs old release hash -> conflict (must not silently overwrite)
+ok - update state machine: new upstream path lands on pre-existing untracked local file -> conflict-foreign
+ok - update state machine: upstream removed the file, local matches old release -> delete
+ok - update state machine: upstream removed the file, local diverged -> keep-local-modified
+ok - update state machine: unsafe manifest path is rejected regardless of hashes
+ok - `node .asd/sync.js --check` reports every item current (no drift), including AGENTS.md
+ok - read-only agents (5 reviewers + asd-advisor): no Write/Edit tool, codex sandbox_mode read-only
+ok - README.md / AGENTS.md agent-count claims match the actual .asd/agents/*.md file count
+ok - release-manifest.json canon_hashes has an entry for every .asd/agents/*.md file
+ok - update driver: new upstream file with nothing local -> add, written on apply
+ok - update driver: local unchanged since last release, upstream changed -> update overwrites
+ok - update driver: local hand-edited vs old release hash -> conflict, never overwritten
+ok - update driver: --force overwrites a conflict only when the caller explicitly names it
+ok - update driver: new upstream path lands on a pre-existing untracked local file -> conflict-foreign
+ok - update driver: upstream removed the file, local untouched -> deleted on apply
+ok - update driver: upstream removed the file, local diverged -> kept + reported, nothing deleted
+ok - update driver: --dry-run mode reports the full plan but writes nothing at all
+ok - update driver: order of operations - every conflict is knowable from the plan before any write occurs
+ok - update driver: unsafe managed_paths entry aborts the whole run before any write
+ok - update driver: case-collision between managed paths is rejected fail-closed
+ok - update driver: symlinked local target is treated as foreign, never overwritten
+ok - update driver: unknown schema_version in fetched upstream manifest fails closed, zero writes
+ok - update driver: sync.js --check runs automatically after a real apply
+ok - update driver: post-apply check loads the FRESHLY WRITTEN sync.js, never a stale require() cache
+ok - update driver: a genuinely BROKEN freshly-written sync.js fails loud, never masked by the old engine
+ok - update driver: applyPlan writes the manifest at the LAST SUCCESSFUL migration version, never the unreached target, and names which migration failed
+ok - update driver: planUpdate's pending-migration preview unions migrations from BOTH the pre-update local tree and the incoming upstream tree
+ok - sync.js orphan detection (AC-14): --check reports a marked orphan as "orphan" (fails) and an unmarked one as "orphan-unmarked" (informational, never a failure)
+ok - sync.js orphan detection: --apply deletes an explicitly-requested marked orphan but refuses an unmarked one, unmarked file survives
+ok - sync.js orphan detection: a symlinked orphan target fails closed - treated as unmarked, never deleted
+ok - sync.js runApply (fail-open fix, decisions-log 2026-09-04): a target matching no plan entry and no orphan reports not-found, aborts the WHOLE batch (no partial write)
+ok - sync.js orphan detection: --apply on a NESTED per-skill orphan (.agents/skills/<name>/SKILL.md) removes the now-emptied skill directory too, via sync.js's OWN removeIfEmptyDir call - not just the 4.0.0 migration's
+ok - sync.js CLI: --check exits 1 when a marked orphan is present, 0 when only an unmarked one is
+ok - sync.js CLI: --apply on a not-found target aborts the whole batch (exit 1) and skips the hash-ledger recompute - manifest and sync-state.json stay byte-for-byte untouched
+ok - update.js migration runner (AC-12): pending migrations execute in ascending version order
+ok - update.js migration runner (AC-12): a migration at or below the consumer's current version is skipped, never run
+ok - update.js migration runner (AC-12): stop-on-first-failure pins reachedVersion at the last success, not the target
+ok - update.js migration runner (AC-12): no pending migrations advances reachedVersion straight to the target
+ok - update.js applyPlan (regression): a migration requiring .asd/sync.js from ctx.repoRoot sees the JUST-WRITTEN engine, never a require.cache copy poisoned before this same apply ran
+ok - 4.0.0 migration: falls back to a local removeIfEmptyDir when the consumer's sync.js predates the helper - delete still completes, directory still pruned
+ok - 4.0.0 migration (AC-7/AC-10/AC-11): deletes marked generated views of a retired agent, including the per-skill directory once emptied; a missing target is success; a surviving non-retired sibling is untouched; re-running is a no-op
+asd-migration 4.0.0: warning: left 1 unmarked file(s) untouched (not ASD-generated, likely a consumer's own agent/skill sharing a retired name): .claude/agents/asd-ux-designer.md
+ok - 4.0.0 migration: leaves an unmarked (consumer-owned) file sharing a retired agent name untouched
+ok - 4.0.0 migration (AC-5): adds test_affected to a realistic commands.yaml (commented placeholder line present) additively when a supported test runner is detected; never touches config.yaml/sprints/custom rules
+ok - 4.0.0 migration: commands.yaml test_affected -> "undetectable" when no supported test runner is present, file left byte-for-byte untouched
+ok - 4.0.0 migration: commands.yaml test_affected -> "missing" status when the file does not exist at all
+asd-migration 4.0.0: warning: sprint "999-fixture" is mid-"impl-review" and may hold retired reviewer keys under state.json.reviews.*.verdicts (agent roster changed in ASD 4.0.0) - finish or re-run that review iteration before relying on the APPROVE latch for this sprint.
+ok - 4.0.0 migration: reports (never rewrites) an active sprint sitting in a review phase
+ok - release-manifest.json: every canon_hashes entry matches the actual file (relative to .asd/)
+ok - release-manifest.json: every upstream_hashes entry matches the actual file (relative to repo root)
+ok - every .asd/templates/*.json file parses as valid JSON
+ok - SessionStart hook: Claude gets /asd-* slash-command form
+ok - SessionStart hook: Codex gets $asd-* form, never a Claude-only slash command
+ok - SessionStart hook: a "skipped: <predicate>" verdict counts as satisfied, not "mixed"
+ok - SessionStart hook: an availability-skip "APPROVE (skipped: <reason>)" value counts as satisfied - verdict map reads "green"
+ok - SessionStart hook: an all-legacy-"skipped:" verdict map (no bare APPROVE anywhere) reads "mixed", not "green"
+
+105/105 passed
+```
+
+Exit code: `0`
+
+**`lint` — `git diff --check`**
+
+```
+(no output)
+```
+
+Exit code: `0`
+
+**`build` — `node .asd/sync.js --check`**
+
+Same 62 items as entry 1/2/3/4's record, all `status: "current"`, `ok: true`.
+
+Exit code: `0`
+
+**Gate verdict: GREEN.** `test` 105/105 passed (exit 0) — D-2's previously-failing `upstream_hashes` integrity test now passes, confirming the ledger recompute. `lint` clean (exit 0), `build` all 62 items `current` (exit 0). No new failures, no code defects surfaced — triage (step 9) has nothing to act on this entry.
+
 ## Defects
 
 None filed against entry 1 (all 10 pre-strategy failures triaged as test defects — see `Risk → check decisions`).
@@ -814,7 +971,7 @@ None filed against entry 1 (all 10 pre-strategy failures triaged as test defects
 | ID | Location | Symptom | Failing test | Status | Fix commit |
 |---|---|---|---|---|---|
 | D-1 | `AGENTS.md` (self-sourced managed-block target, `.asd/sync-state.json`'s tracked digest for it) | `sync.js --check` reports `AGENTS.md` as `modified-foreign` — a self-sourced hand-edit to `AGENTS.md` (content is correct, verified by reading the file) whose required `sync.js --apply AGENTS.md` follow-up (`AGENTS.md`'s own "Hard rules": run `sync.js --apply` after editing canon) was never run, so `sync-state.json`'s tracked digest is stale. Not one of the nine testing findings; not a logic bug in test or production code — a one-line missed housekeeping step from earlier in this same review-fix cycle. `sync.js --check`'s own CLI exit code stays green regardless (it gates only marker-owned orphans), so only this dedicated repo-integrity unit test catches the drift. | "`node .asd/sync.js --check` reports every item current (no drift), including AGENTS.md" | fixed | `c8e0756` |
-| D-2 | `.asd/release-manifest.json`'s `upstream_hashes` ledger (four entries: `.asd/rules/review-policy.md`, `.asd/templates/t_review.md`, `.asd/templates/t_test-plan.md`, `.asd/workflows/asd-phase-design-review.md`) | The dedicated `upstream_hashes` integrity test reports all four entries stale — the four files were edited by the OTHER iter-2 review-fix groups (correctness #4/#5, efficiency #3) but the required `node .asd/sync.js --apply <file...>` housekeeping follow-up (`AGENTS.md` "Hard rules": run `sync.js --apply` after editing canon) was never run afterward, so the ledger recompute never happened. Same defect class and same root cause as D-1, on a different ledger and different files. Confirmed by direct trace: this repo's own `sync.js --check` stays `ok: true`/exit 0 regardless (its exit code gates only marker-owned orphans, never `upstream_hashes`/`canon_hashes` ledger drift) — only this dedicated `tests/run.js` assertion catches it. Not a logic bug in test or production code; `.asd/release-manifest.json` is outside this agent's write scope, so the recompute (`sync-apply`) must be run by a dev. | "release-manifest.json: every upstream_hashes entry matches the actual file (relative to repo root)" | fixed (ledger recompute) | — |
+| D-2 | `.asd/release-manifest.json`'s `upstream_hashes` ledger (four entries: `.asd/rules/review-policy.md`, `.asd/templates/t_review.md`, `.asd/templates/t_test-plan.md`, `.asd/workflows/asd-phase-design-review.md`) | The dedicated `upstream_hashes` integrity test reports all four entries stale — the four files were edited by the OTHER iter-2 review-fix groups (correctness #4/#5, efficiency #3) but the required `node .asd/sync.js --apply <file...>` housekeeping follow-up (`AGENTS.md` "Hard rules": run `sync.js --apply` after editing canon) was never run afterward, so the ledger recompute never happened. Same defect class and same root cause as D-1, on a different ledger and different files. Confirmed by direct trace: this repo's own `sync.js --check` stays `ok: true`/exit 0 regardless (its exit code gates only marker-owned orphans, never `upstream_hashes`/`canon_hashes` ledger drift) — only this dedicated `tests/run.js` assertion catches it. Not a logic bug in test or production code; `.asd/release-manifest.json` is outside this agent's write scope, so the recompute (`sync-apply`) must be run by a dev. | "release-manifest.json: every upstream_hashes entry matches the actual file (relative to repo root)" | fixed (ledger recompute), confirmed green at entry 5's pre-strategy run (105/105) | `7d21dd5` |
 
 ## Manual verification (optional)
 
