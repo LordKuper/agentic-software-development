@@ -43,7 +43,7 @@ Acceptance: AC-2, AC-4, AC-6, AC-7.
 Material risk for impl-test: inconsistent reviewer routing or iteration baselines can omit correctness coverage or review the wrong commit range.
 
 - [x] Replace the host-specific `via Bash` instruction in `.asd/workflows/asd-phase-impl-review.md` with the canonical run-command operation from `.asd/rules/providers.md`.
-- [ ] Correct `.asd/workflows/asd-phase-design-review.md` so Correctness is dispatched for every non-empty draft set, with only its UI-conformance section conditional; align the workflow with `.asd/skills/asd-phase-design-review/SKILL.md`, `.asd/rules/review-policy.md`, and the reviewer contract without duplicating their SSoT.
+- [x] Correct `.asd/workflows/asd-phase-design-review.md` so Correctness is dispatched for every non-empty draft set, with only its UI-conformance section conditional; align the workflow with `.asd/skills/asd-phase-design-review/SKILL.md`, `.asd/rules/review-policy.md`, and the reviewer contract without duplicating their SSoT.
 - [x] Correct `.asd/templates/external-review/t_prompt-external-impl.md` so iteration 2+ uses the previous iteration HEAD recorded in `state.json`, matching `.asd/rules/external-review.md`, `.asd/agents/asd-external-review.md`, and the phase workflow.
 - [x] Regenerate only provider views affected by any canonical agent or skill edit and preserve read-only reviewer constraints for both providers.
 
