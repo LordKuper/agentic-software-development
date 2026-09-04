@@ -39,7 +39,7 @@ were scoped through; the next re-entry's delta is `git diff <this sha>...HEAD`.
 
 ## Added tests
 
-Level and AC/risk covered are visible in the test file itself (name, path, comment) — not restated here.
+Level and AC/risk covered are visible in the test file itself (name, path) — not restated here.
 
 | Test | Regression proof |
 |---|---|
