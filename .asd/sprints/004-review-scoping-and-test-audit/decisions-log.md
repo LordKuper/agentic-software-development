@@ -125,3 +125,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 - 2026-09-04 — carried to iter-03 reviewers: hash-ledger drift is a recurring class, three occurrences this sprint (D-1 AGENTS.md digest, D-2 upstream_hashes for four prose files, plus the self-sourced AGENTS.md gap a dev reported). Editing a managed-path prose file leaves `upstream_hashes` stale; `sync.js --check` does not detect it (only `tests/run.js` does), and the only remedy is running `--apply` on an unrelated target for its side-effect recompute. Reviewers to judge whether a fix belongs in this sprint (e.g. `--check` reporting ledger drift, or a targetless `--apply` meaning recompute-only) or in a follow-up.
 
+- 2026-09-05 — impl-test entry 6: impacted set green (105/105), 0 added / 0 removed — comment-only delta, decision none
+
