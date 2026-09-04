@@ -50,7 +50,7 @@ Canonical agent frontmatter speaks in family aliases only (`claude.model`, `code
 | opus | opus | — |
 | sonnet | sonnet | — |
 | haiku | haiku | — |
-| sol | — | gpt-5.6 |
+| sol | — | gpt-5.6-sol |
 | terra | — | gpt-5.6-terra |
 | luna | — | gpt-5.6-luna |
 

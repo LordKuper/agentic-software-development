@@ -1,7 +1,7 @@
-# ASD generated. Edit .asd/agents/asd-reviewer-documentation.md. source_digest=sha256:8a9249062fdf97b6ab2483dbf75965ac9d336af8c0b7c697e1cbcf79d99774bc content_digest=sha256:6f82029f25eb22a568e4b3ddbb80a2f33d4b9312a87331878d1fd2ec61ae886a asd_version=3.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-documentation.md. source_digest=sha256:8a9249062fdf97b6ab2483dbf75965ac9d336af8c0b7c697e1cbcf79d99774bc content_digest=sha256:3656f21507b2b235353a1c009f1d157ae709cae8500c8df76713eafc40463c67 asd_version=4.0.0 schema=1
 name = "asd-reviewer-documentation"
 description = "Design-review of sprint design drafts (SSoT, template responsibility-block adherence, traceability) and impl-review of persistent docs vs implementation (actuality, no SSoT violations, traceability PRD AC ↔ ADR), plus in-code doc comments (impl-review). Covers: SSoT integrity (each fact one home), template responsibility-block adherence, traceability across PRD/ADR/UX, custom-rules consistency, provenance flag correctness, in-body comment ban and doc-comment purpose-only scope (`code-style.md` §7). Does NOT handle: bug/security scan, AC→code trace, ui/a11y (delegates to asd-reviewer-correctness), test coverage (delegates to asd-reviewer-testing), over-engineering/performance (delegates to asd-reviewer-efficiency), persistent doc promotion (handled by asd-ba/asd-ux/asd-architect in design-promote phase), code edits (delegates to dev agents)."
-model = "gpt-5.6"
+model = "gpt-5.6-sol"
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 developer_instructions = """

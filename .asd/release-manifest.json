@@ -22,7 +22,7 @@
       "haiku": "haiku"
     },
     "codex": {
-      "sol": "gpt-5.6",
+      "sol": "gpt-5.6-sol",
       "terra": "gpt-5.6-terra",
       "luna": "gpt-5.6-luna"
     }
@@ -75,7 +75,7 @@
     ".asd/rules/external-review.md": "13393698522ef6835464e094ec5e01a55d535b7634b813a6d50e83a4313a8bb1",
     ".asd/rules/git-strategy.md": "58c73020ea678645cb52d27c649c850657ec457023b82a97a3db8aefbf168275",
     ".asd/rules/language-policy.md": "c01b94526ba2cb70a7e51ee1a8b1ce0ac799c00d6868992185609f5bac887ee6",
-    ".asd/rules/providers.md": "c35c84170f01751eb48bf723f747d4089b668f0f6fba180a8b45c0de135289eb",
+    ".asd/rules/providers.md": "3ffbcaaa169401dbddb620af6765ee79ed420c893b004ffe6c3404487f2ae32f",
     ".asd/rules/review-policy.md": "fe3e17301d6d94728a3197cdbd71e0788ad2742485790b2ef05e68b9d6b4fbcf",
     ".asd/rules/sprint-lifecycle.md": "94ac1f577e0ef28350893cc956073261f664ca2d8bdcd92cc78933a93ede1349",
     ".asd/rules/ux-principles.md": "9f2af8c90d969c73654812b80e523e33b4c5696f506acf49e4bacb4c0dc6750c",

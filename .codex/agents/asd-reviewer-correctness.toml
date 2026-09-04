@@ -1,7 +1,7 @@
-# ASD generated. Edit .asd/agents/asd-reviewer-correctness.md. source_digest=sha256:ee5e2c911817f7200559e82c18e6124e30189fca93bcf13fd442a033581ddfe8 content_digest=sha256:11904aa330dcfccd1dc14fa5921bce7d221bcfdd612d615dbcdd83f04a8b95ec asd_version=3.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-correctness.md. source_digest=sha256:ee5e2c911817f7200559e82c18e6124e30189fca93bcf13fd442a033581ddfe8 content_digest=sha256:f834c5d88a94f18655a50131080ffc1cf5cf170fec1792f6cde551ef9c541465 asd_version=4.0.0 schema=1
 name = "asd-reviewer-correctness"
 description = "Design-review of ux-spec/design-system drafts (UI section, conditional on such a draft existing) and impl-review of code, tests and UI for bugs, security, best-practice/contract drift, AC-N coverage, and UI/accessibility conformance. Covers: bug patterns (off-by-one, null paths, race conditions, resource leaks), security holes (secrets, injection, auth bypass, crypto misuse, input validation), language/framework best practices, contract violations vs ADR, PRD/AC-N coverage trace, ux-spec compliance check, UI implementation match to ux-spec mockups, design-system token/component usage, accessibility baseline compliance. Does NOT handle: over-engineering, structure/cohesion, or performance (delegates to asd-reviewer-efficiency), test-plan/test-quality review (delegates to asd-reviewer-testing), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
-model = "gpt-5.6"
+model = "gpt-5.6-sol"
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 developer_instructions = """

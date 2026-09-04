@@ -87,7 +87,7 @@ test('canonical agent -> Codex .toml matches fixture', () => {
   const expected = readExpectedFixture(path.join(FIXTURES, 'expected/agents/demo-agent.codex.toml'), manifest);
   assert.strictEqual(rendered.output, expected);
   assert.ok(rendered.output.startsWith('# ASD generated. Edit .asd/agents/demo-agent.md.'));
-  assert.ok(rendered.output.includes('model = "gpt-5.6"'), 'codex model family alias must resolve via release-manifest table');
+  assert.ok(rendered.output.includes('model = "gpt-5.6-sol"'), 'codex model family alias must resolve via release-manifest table');
   assert.ok(rendered.output.includes('developer_instructions = """'));
 });
 
