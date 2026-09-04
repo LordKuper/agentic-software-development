@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:8d435c548c1d54f81213fae219850c2449833980e4c997f790620ad470d283ac content_digest=sha256:e6fddbebe320e7ae8e41083ac55d8572acb0e963c416a729942b343453a465ef asd_version=3.1.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:8d435c548c1d54f81213fae219850c2449833980e4c997f790620ad470d283ac content_digest=sha256:18c05b46b01f41bbe02b9257303e012724a0c4a0062ac4aa1711dd8385e782ba asd_version=4.0.0 schema=1
 name: asd-init
-description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
+description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs $asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 ---
 
 Operation mapping: see `.asd/rules/providers.md`.
@@ -61,9 +61,9 @@ Operation mapping: see `.asd/rules/providers.md`.
     - **mermaid mode**: seed `c4/subsystems.yaml` from `t_subsystems.yaml`. ASD ships no mermaid-to-HTML renderer (avoids a new dependency) — seed `commands.yaml`'s `c4-build` entry as an empty placeholder (`""`) with an inline comment: user supplies their own render command before first use (a project script, or manually wrapping the mermaid blocks in `t_html-shell.html` as the architect agent does for other artifacts); `architecture.html` itself stays gitignored either way, never rendered by ASD itself
 14. If decomp enabled: **seed `.gitignore`** for C4 build output — append (never clobber existing entries; create the file if absent) `docs/architecture/c4/dist/` and `docs/architecture/c4/architecture.html` if not already present
 15. **Post-init artefact checks** — suggest dedicated skill for each missing required artefact (do NOT auto-dispatch). Order: concept → stack → design-system:
-    - `docs/product/concept.html` absent → suggest `/asd-concept`
-    - `docs/architecture/stack.html` absent → suggest `/asd-stack`
-    - `docs/ux/DESIGN.md` OR `docs/ux/design-system.html` OR `docs/ux/accessibility.html` absent → suggest `/asd-design-system`
+    - `docs/product/concept.html` absent → suggest `$asd-concept`
+    - `docs/architecture/stack.html` absent → suggest `$asd-stack`
+    - `docs/ux/DESIGN.md` OR `docs/ux/design-system.html` OR `docs/ux/accessibility.html` absent → suggest `$asd-design-system`
 16. Brownfield: prompt user to start sprint with audit-only scope (optional)
 17. **Run sync** — invoke the sync engine (`.asd/sync.js --check`) to confirm the bundled provider-view trees (`.claude/agents`, `.claude/skills`, `.claude/hooks`, `.agents/skills`, `.codex/agents`, `.codex/hooks`) are `current` against the shipped canon. Report any `stale`/`modified-foreign` finding to the user — do not silently apply.
 18. **Codex trust warning** — unconditional (every project gets a generated `.codex/hooks.json`, regardless of which provider is primary or whether external review is enabled): warn the user that Codex requires explicitly trusting this project's `.codex/hooks.json` before its hooks run (Codex refuses untrusted project-level hooks by design). Point to Codex's own trust-approval step; do not attempt to bypass it.
@@ -122,7 +122,7 @@ Four custom commands emitted only when `documents.ux_spec: enabled` (else omitte
 - `docs/architecture/c4/` content per `diagram_tool` (decomp only)
 - `.gitignore` entries for C4 build output (decomp only; append-only, existing entries preserved)
 
-Concept, stack, design system NOT produced here; owned by `/asd-concept`, `/asd-stack`, `/asd-design-system` respectively.
+Concept, stack, design system NOT produced here; owned by `$asd-concept`, `$asd-stack`, `$asd-design-system` respectively.
 
 ## Agents dispatched
 

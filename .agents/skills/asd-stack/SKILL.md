@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-stack/SKILL.md. source_digest=sha256:e0d7c0cfebba1de8274ab92628a2b8440867e413110f1c70a57d1fda6717db78 content_digest=sha256:8eac21a803dabda79925978ffd4f828487647c959a21a36fb46cd3dd81ad48ad asd_version=3.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-stack/SKILL.md. source_digest=sha256:e0d7c0cfebba1de8274ab92628a2b8440867e413110f1c70a57d1fda6717db78 content_digest=sha256:865c929bfcf50fade86864667ae2a02acde32761d1250f391015c899970a48f3 asd_version=4.0.0 schema=1
 name: asd-stack
-description: "Forms or edits the project tech stack document at docs/architecture/stack.html via asd-architect, branching by silent detection into one of four flows (clean slate / constraints / clear stack / brownfield extraction). Verifies versions via WebFetch, runs knowledge-gap analysis, and maintains a tech-reference doc per chosen tech. Use when the user runs /asd-stack, when asd-init or asd-concept detects a missing stack.html and suggests this skill, or when the user asks to define, draft, refine, edit, upgrade, or reverse-engineer the project technology stack."
+description: "Forms or edits the project tech stack document at docs/architecture/stack.html via asd-architect, branching by silent detection into one of four flows (clean slate / constraints / clear stack / brownfield extraction). Verifies versions via WebFetch, runs knowledge-gap analysis, and maintains a tech-reference doc per chosen tech. Use when the user runs $asd-stack, when asd-init or asd-concept detects a missing stack.html and suggests this skill, or when the user asks to define, draft, refine, edit, upgrade, or reverse-engineer the project technology stack."
 ---
 
 Operation mapping: see `.asd/rules/providers.md`.
@@ -9,8 +9,8 @@ Operation mapping: see `.asd/rules/providers.md`.
 # ASD Stack
 
 ## Preconditions
-- `.asd/project/config.yaml` exists (run `/asd-init` first)
-- `docs/product/concept.html` exists (run `/asd-concept` first; concept is mandatory input)
+- `.asd/project/config.yaml` exists (run `$asd-init` first)
+- `docs/product/concept.html` exists (run `$asd-concept` first; concept is mandatory input)
 - No active sprint required
 
 ## Operations used
@@ -107,7 +107,7 @@ Per technology in approved stack:
 
 ## Phase 8 — handoff
 
-- Print handoff suggestion: "Next: run `/asd-sprint` to start the first sprint"
+- Print handoff suggestion: "Next: run `$asd-sprint` to start the first sprint"
 - NO auto-dispatch
 
 ## Edit mode (Phase 1 routed here)

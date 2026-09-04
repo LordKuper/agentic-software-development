@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-concept/SKILL.md. source_digest=sha256:c93d7b1300fa2930ee20a4aa370474fb53f7f1c69b31c5bddcb917b0ee517098 content_digest=sha256:73fefe6fba58b37dc37197a0ae84224de515cd26a91ae1002f3405a48ecddcbc asd_version=3.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-concept/SKILL.md. source_digest=sha256:c93d7b1300fa2930ee20a4aa370474fb53f7f1c69b31c5bddcb917b0ee517098 content_digest=sha256:45626373d9008019d195ffc40fd110a26f02c38f2119bf0c28272dda29a6938a asd_version=4.0.0 schema=1
 name: asd-concept
-description: "Forms or edits the project concept document via asd-ba, branching by silent detection into one of four flows (no idea / vague idea / clear vision / brownfield extraction) and converging through a per-section lock-in loop. Use when the user runs /asd-concept, when asd-init detects a missing concept.html and suggests this skill, or when the user asks to define, draft, refine, edit, rewrite, or reverse-engineer the project concept, vision, target users, or value proposition."
+description: "Forms or edits the project concept document via asd-ba, branching by silent detection into one of four flows (no idea / vague idea / clear vision / brownfield extraction) and converging through a per-section lock-in loop. Use when the user runs $asd-concept, when asd-init detects a missing concept.html and suggests this skill, or when the user asks to define, draft, refine, edit, rewrite, or reverse-engineer the project concept, vision, target users, or value proposition."
 ---
 
 Operation mapping: see `.asd/rules/providers.md`.
@@ -9,7 +9,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 # ASD Concept
 
 ## Preconditions
-- `.asd/project/config.yaml` exists (run `/asd-init` first)
+- `.asd/project/config.yaml` exists (run `$asd-init` first)
 - No active sprint required (concept is project-lifetime artefact)
 
 ## Operations used
@@ -85,8 +85,8 @@ Phase 1 brownfield candidates auto-suggest D as default; user may override.
 ## Phase 6 — handoff
 
 - Print handoff suggestion in `language.chat`:
-  - if `docs/architecture/stack.html` absent → "Next: run `/asd-stack` to define the tech stack"
-  - else → "Next: run `/asd-sprint` to start a sprint"
+  - if `docs/architecture/stack.html` absent → "Next: run `$asd-stack` to define the tech stack"
+  - else → "Next: run `$asd-sprint` to start a sprint"
 - NO auto-dispatch
 
 ## Edit mode (Phase 1 routed here)

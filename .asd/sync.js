@@ -352,15 +352,19 @@ function transformSkillClaude(meta, body) {
   return lines.join('\n');
 }
 
+function codexSkillText(text) {
+  return String(text).replace(/(^|[^.\w/])\/asd-([a-z0-9-]+)/gm, (_match, prefix, name) => `${prefix}$asd-${name}`);
+}
+
 function transformSkillCodex(meta, body) {
   const lines = ['---'];
   lines.push(`name: ${meta.name}`);
-  lines.push(`description: ${yamlQuote(meta.description)}`);
+  lines.push(`description: ${yamlQuote(codexSkillText(meta.description))}`);
   lines.push('---');
   lines.push('');
   lines.push(PROVIDERS_PREAMBLE);
   lines.push('');
-  lines.push(body.replace(/\n+$/, ''));
+  lines.push(codexSkillText(body.replace(/\n+$/, '')));
   lines.push('');
   return lines.join('\n');
 }

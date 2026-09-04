@@ -32,9 +32,9 @@ Acceptance: AC-2, AC-4, AC-5, AC-7, AC-8.
 
 Material risk for impl-test: a broad text replacement can corrupt non-command prose or leave a Codex handoff stranded on Claude-only `/asd-*` syntax.
 
-- [ ] Implement the smallest centralized provider-rendering rule in `.asd/sync.js` that emits Codex `$asd-*` invocations for user-visible command and handoff text while retaining Claude `/asd-*` output from the same `.asd/skills/*/SKILL.md` canon.
-- [ ] Regenerate the affected Codex `.agents/skills/*/SKILL.md` views and confirm corresponding `.claude/skills/*/SKILL.md` views retain valid Claude invocation syntax.
-- [ ] Keep phase dispatch names and implicit skill descriptions provider-neutral; do not fork workflow logic by provider.
+- [x] Implement the smallest centralized provider-rendering rule in `.asd/sync.js` that emits Codex `$asd-*` invocations for user-visible command and handoff text while retaining Claude `/asd-*` output from the same `.asd/skills/*/SKILL.md` canon.
+- [x] Regenerate the affected Codex `.agents/skills/*/SKILL.md` views and confirm corresponding `.claude/skills/*/SKILL.md` views retain valid Claude invocation syntax.
+- [x] Keep phase dispatch names and implicit skill descriptions provider-neutral; do not fork workflow logic by provider.
 
 ### Task 3: Align review workflow contracts
 

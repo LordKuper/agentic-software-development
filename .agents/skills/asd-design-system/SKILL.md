@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-design-system/SKILL.md. source_digest=sha256:ce83ced9bf32255e8c381c3a325e89c6d1a41c69277d5226a3f38f386264dc0d content_digest=sha256:aedd23d718fdcb3918a391eb6e2666275871fdb2f78928120a3db0bed0fe8ebf asd_version=3.1.0 schema=1
+# ASD generated. Edit .asd/skills/asd-design-system/SKILL.md. source_digest=sha256:ce83ced9bf32255e8c381c3a325e89c6d1a41c69277d5226a3f38f386264dc0d content_digest=sha256:b0fa0df8adcf5a62d76ef84fd18edac56e64e2dd28a9eba9009ef7b60567d101 asd_version=4.0.0 schema=1
 name: asd-design-system
-description: "Forms or edits the project design system (docs/ux/DESIGN.md, design-system.html, accessibility.html) via asd-ux, branching by silent detection into one of three flows (greenfield / constraints / brownfield extraction). Fetches the Google Labs DESIGN.md spec, lints tokens, regenerates design-system.html previews, and authors the accessibility baseline. Use when the user runs /asd-design-system, when asd-init or asd-phase-design detects missing DESIGN.md/design-system.html/accessibility.html and suggests this skill, or when the user asks to define, draft, refine, edit, augment, or reverse-engineer the project design system, design tokens, or accessibility baseline."
+description: "Forms or edits the project design system (docs/ux/DESIGN.md, design-system.html, accessibility.html) via asd-ux, branching by silent detection into one of three flows (greenfield / constraints / brownfield extraction). Fetches the Google Labs DESIGN.md spec, lints tokens, regenerates design-system.html previews, and authors the accessibility baseline. Use when the user runs $asd-design-system, when asd-init or asd-phase-design detects missing DESIGN.md/design-system.html/accessibility.html and suggests this skill, or when the user asks to define, draft, refine, edit, augment, or reverse-engineer the project design system, design tokens, or accessibility baseline."
 ---
 
 Operation mapping: see `.asd/rules/providers.md`.
@@ -9,9 +9,9 @@ Operation mapping: see `.asd/rules/providers.md`.
 # ASD Design System
 
 ## Preconditions
-- `.asd/project/config.yaml` exists (run `/asd-init` first)
-- `docs/product/concept.html` exists (run `/asd-concept` first; concept seeds visual direction)
-- `docs/architecture/stack.html` exists (run `/asd-stack` first; stack constrains UI platform — web/native/cli)
+- `.asd/project/config.yaml` exists (run `$asd-init` first)
+- `docs/product/concept.html` exists (run `$asd-concept` first; concept seeds visual direction)
+- `docs/architecture/stack.html` exists (run `$asd-stack` first; stack constrains UI platform — web/native/cli)
 - No active sprint required
 
 ## Operations used
@@ -116,7 +116,7 @@ After all DESIGN.md sections approved:
 
 ## Phase 8 — handoff
 
-- Print handoff suggestion: "Next: run `/asd-sprint` to start the first sprint" (or continue current sprint if dispatched from `asd-phase-design`)
+- Print handoff suggestion: "Next: run `$asd-sprint` to start the first sprint" (or continue current sprint if dispatched from `asd-phase-design`)
 - NO auto-dispatch
 
 ## Edit mode (Phase 1 routed here)
