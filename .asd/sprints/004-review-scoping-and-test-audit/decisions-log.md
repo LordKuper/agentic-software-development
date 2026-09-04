@@ -127,3 +127,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 - 2026-09-05 — impl-test entry 6: impacted set green (105/105), 0 added / 0 removed — comment-only delta, decision none
 
+- 2026-09-05 — impl-review iter 4: DoD met (correctness/efficiency/testing latched APPROVE at iter 3, documentation APPROVE at iter 4, external availability-skip), terminal full suite green 105/105 at f74ca60 → pr
+

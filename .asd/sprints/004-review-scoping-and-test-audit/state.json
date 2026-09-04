@@ -1,7 +1,7 @@
 {
   "sprint_id": "004-review-scoping-and-test-audit",
   "branch": "sprint/004-review-scoping-and-test-audit",
-  "phase": "impl-review",
+  "phase": "pr",
   "documents": {
     "audit": true,
     "prd": false,
@@ -67,7 +67,7 @@
     }
   },
   "created_at": "2026-09-03T19:20:52Z",
-  "updated_at": "2026-09-05T02:00:00Z",
+  "updated_at": "2026-09-05T03:00:00Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
