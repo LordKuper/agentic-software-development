@@ -1434,6 +1434,21 @@ test('update driver: applyPlan writes the manifest at the LAST SUCCESSFUL migrat
   assert.strictEqual(writtenManifest.asd_version, '5.1.0', 'written manifest must record the LAST SUCCESSFUL version, never the unreached target or an unrecorded intermediate one');
 });
 
+test('update driver: planUpdate\'s pending-migration preview unions migrations from BOTH the pre-update local tree and the incoming upstream tree', () => {
+  const localRoot = mkTempDir();
+  const upstreamRoot = mkTempDir();
+  writeManifest(localRoot, { asd_version: '6.0.0' });
+  writeManifest(upstreamRoot, { asd_version: '6.2.0' });
+  // .asd/migrations is itself a managed path - a migration this very release
+  // delivers is absent from the local tree at plan time, present only upstream.
+  writeMigrationScript(upstreamRoot, '6.1.0', "module.exports = () => {};");
+  // A migration a consumer authored ahead of upstream, present only locally.
+  writeMigrationScript(localRoot, '6.2.0', "module.exports = () => {};");
+
+  const plan = update.planUpdate(localRoot, upstreamRoot);
+  assert.deepStrictEqual(plan.pendingMigrationVersions, ['6.1.0', '6.2.0'], 'both the upstream-only and the local-only migration must appear in the preview');
+});
+
 // ===========================================================================
 // 11. sync.js orphan detection (plan.md Task 12, AC-14): generated views whose
 // canonical source no longer exists. Marker-gated - only a file carrying the
@@ -1572,8 +1587,10 @@ test('sync.js CLI: --check exits 1 when a marked orphan is present, 0 when only 
   const root = makeMiniRepo();
   const manifest = loadManifest();
   const markedAbs = path.join(root, '.claude', 'agents', 'asd-reviewer-quality.md');
+  const unmarkedAbs = path.join(root, '.claude', 'agents', 'consumer-owned.md');
   fs.mkdirSync(path.dirname(markedAbs), { recursive: true });
   fs.writeFileSync(markedAbs, markedFileContent('md', manifest), 'utf8');
+  fs.writeFileSync(unmarkedAbs, "# a consumer's own hand-authored agent, no ownership marker\n", 'utf8');
 
   let error = null;
   try {
@@ -1589,7 +1606,9 @@ test('sync.js CLI: --check exits 1 when a marked orphan is present, 0 when only 
 
   fs.rmSync(markedAbs, { force: true });
   const out = execFileSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), '--check'], { cwd: root, encoding: 'utf8' });
-  assert.strictEqual(JSON.parse(out).ok, true, 'with the marked orphan gone, --check must exit clean again');
+  const secondReport = JSON.parse(out);
+  assert.strictEqual(secondReport.ok, true, 'an unmarked orphan alone must never fail --check');
+  assert.ok(secondReport.items.some((i) => i.target === '.claude/agents/consumer-owned.md' && i.status === 'orphan-unmarked'), 'the unmarked file must still be reported as orphan-unmarked, just never as a failure');
 });
 
 test('sync.js CLI: --apply on a not-found target aborts the whole batch (exit 1) and skips the hash-ledger recompute - manifest and sync-state.json stay byte-for-byte untouched', () => {
@@ -1724,6 +1743,36 @@ function makeMigrationFixtureRepo() {
   fs.writeFileSync(path.join(root, '.asd', 'sync.js'), fs.readFileSync(path.join(REPO_ROOT, '.asd', 'sync.js'), 'utf8'), 'utf8');
   return root;
 }
+
+// Stub engine lacking removeIfEmptyDir entirely - stands in for a consumer's
+// pre-4.0.0 sync.js, the shape the migration's own local fallback must handle.
+function makeMigrationFixtureRepoWithPreRemoveIfEmptyDirSync() {
+  const root = mkTempDir();
+  fs.mkdirSync(path.join(root, '.asd'), { recursive: true });
+  fs.writeFileSync(path.join(root, '.asd', 'sync.js'), [
+    "module.exports = {",
+    "  hasOwnershipMarker: () => true,",
+    "  readNormalized: (p) => require('fs').readFileSync(p, 'utf8'),",
+    "  writeNormalized: (p, c) => require('fs').writeFileSync(p, c, 'utf8'),",
+    "};",
+  ].join('\n'), 'utf8');
+  return root;
+}
+
+test('4.0.0 migration: falls back to a local removeIfEmptyDir when the consumer\'s sync.js predates the helper - delete still completes, directory still pruned', async () => {
+  const root = makeMigrationFixtureRepoWithPreRemoveIfEmptyDirSync();
+  const skillName = 'asd-test-engineer';
+  const skillAbs = path.join(root, '.agents', 'skills', skillName, 'SKILL.md');
+  const skillDirAbs = path.dirname(skillAbs);
+  fs.mkdirSync(skillDirAbs, { recursive: true });
+  fs.writeFileSync(skillAbs, 'stub hasOwnershipMarker always returns true for this fixture\n', 'utf8');
+
+  const report = await migration400({ repoRoot: root });
+
+  assert.ok(report.deleted.includes(`.agents/skills/${skillName}/SKILL.md`));
+  assert.strictEqual(fs.existsSync(skillAbs), false);
+  assert.strictEqual(fs.existsSync(skillDirAbs), false, 'the local fallback must still prune the now-empty directory, never leave a half-applied delete');
+});
 
 test('4.0.0 migration (AC-7/AC-10/AC-11): deletes marked generated views of a retired agent, including the per-skill directory once emptied; a missing target is success; a surviving non-retired sibling is untouched; re-running is a no-op', async () => {
   const root = makeMigrationFixtureRepo();
@@ -1966,7 +2015,35 @@ test('SessionStart hook: a "skipped: <predicate>" verdict counts as satisfied, n
   assert.ok(text.includes('Last review verdict: green'), `expected an all-satisfied verdict map (APPROVE + skipped) to print "green", got: ${text}`);
 });
 
-test('SessionStart hook: an all-legacy-"skipped:" verdict map (no bare APPROVE anywhere) still reads "green" - the legacy carve-out treats every "skipped: <predicate>" value identically to APPROVE', () => {
+test('SessionStart hook: an availability-skip "APPROVE (skipped: <reason>)" value counts as satisfied - verdict map reads "green"', () => {
+  const tempRoot = mkTempDir();
+  const hookSrc = fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8');
+  writeFile(tempRoot, '.asd/hooks/session-start.js', hookSrc);
+  writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({
+    sprint_id: '999-fixture',
+    phase: 'impl-review',
+    branch: 'feat/999-fixture',
+    reviews: {
+      impl: {
+        iteration: 1,
+        verdicts: {
+          'iter-01': {
+            correctness: 'APPROVE',
+            external: 'APPROVE (skipped: codex quota exhausted)',
+          },
+        },
+      },
+    },
+  }));
+  const out = execFileSync('node', [path.join(tempRoot, '.asd/hooks/session-start.js'), '--provider', 'claude'], {
+    cwd: tempRoot,
+    encoding: 'utf8',
+  });
+  const text = JSON.parse(out).hookSpecificOutput.additionalContext;
+  assert.ok(text.includes('Last review verdict: green'), `an availability-skip "APPROVE (skipped: ...)" value must count as satisfied, got: ${text}`);
+});
+
+test('SessionStart hook: an all-legacy-"skipped:" verdict map (no bare APPROVE anywhere) reads "mixed", not "green"', () => {
   const tempRoot = mkTempDir();
   const hookSrc = fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8');
   writeFile(tempRoot, '.asd/hooks/session-start.js', hookSrc);
@@ -1991,7 +2068,7 @@ test('SessionStart hook: an all-legacy-"skipped:" verdict map (no bare APPROVE a
     encoding: 'utf8',
   });
   const text = JSON.parse(out).hookSpecificOutput.additionalContext;
-  assert.ok(text.includes('Last review verdict: green'), `an all-legacy-skip verdict map (every value satisfies via the legacy carve-out) must still read "green", identically to a bare APPROVE map, got: ${text}`);
+  assert.ok(text.includes('Last review verdict: mixed'), `an all-legacy-skip verdict map with no genuine approval must read "mixed", got: ${text}`);
 });
 
 // ===========================================================================
