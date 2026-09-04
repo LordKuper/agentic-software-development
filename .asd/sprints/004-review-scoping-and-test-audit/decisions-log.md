@@ -129,3 +129,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 - 2026-09-05 — impl-review iter 4: DoD met (correctness/efficiency/testing latched APPROVE at iter 3, documentation APPROVE at iter 4, external availability-skip), terminal full suite green 105/105 at f74ca60 → pr
 
+## 2026-09-05 — Sprint 004-review-scoping-and-test-audit PR opened
+
+- **Decision**: User confirmed at the pr gate; PR #21 opened against `main`: https://github.com/LordKuper/agentic-software-development/pull/21 — title `feat!: merge reviewers and devs, two-tier test runs, APPROVE latch, versioned migrations`. All DoD checks passed (plan 98/98 boxes, AC-1..15 traced, iter-4 verdicts all satisfied, stubs empty after `(accepted-debt)` filter, no TODO markers, suite re-run after the version bump 105/105 + lint + `sync --check` clean, `max(migrations)` 4.0.0 ≤ `asd_version` 4.0.0).
+- **Rationale**: `asd_version` bumped 3.1.0 → 4.0.0 on substance (nine agent names retired, verdict tokens / review file names / `state.json` reviewer keys changed) although no sprint commit carried a `!` or `BREAKING CHANGE` footer; the PR title carries `feat!` so the squash-merge subject records the break, and a 3.x bump would have left `.asd/migrations/4.0.0.js` inert for every consumer. External Review never ran this sprint (codex quota until 2026-09-07) — stated in the PR body, not hidden.
+- **Affected docs**: [`state.json`](state.json), `.asd/release-manifest.json`, `CHANGELOG.md`
+
