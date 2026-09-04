@@ -1,4 +1,4 @@
-// ASD generated. Edit .asd/hooks/session-start.js. source_digest=sha256:76eaa1655eaca11126713922acd7efa19cec198781bad0a56f48cf43d4fc2110 content_digest=sha256:76eaa1655eaca11126713922acd7efa19cec198781bad0a56f48cf43d4fc2110 asd_version=3.1.0 schema=1
+// ASD generated. Edit .asd/hooks/session-start.js. source_digest=sha256:43dd9ddbd6e1834031cc11773699d0199480219bbdb40fb516a22c45fec55f17 content_digest=sha256:43dd9ddbd6e1834031cc11773699d0199480219bbdb40fb516a22c45fec55f17 asd_version=4.0.0 schema=1
 // ASD SessionStart hook (canonical, provider-agnostic).
 // No shebang: this file is never executed directly (`./session-start.js`),
 // always invoked as `node <path> --provider ...`, and every generated
@@ -63,18 +63,31 @@ function parseProvider(argv) {
 function findActiveSprints(repoRoot) {
   const sprintsDir = path.join(repoRoot, '.asd', 'sprints');
   if (!fs.existsSync(sprintsDir)) return [];
-  const entries = fs.readdirSync(sprintsDir, { withFileTypes: true });
   const active = [];
+  const addState = (folder, statePath, archived) => {
+    try {
+      const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+      if (!state || typeof state !== 'object' || Array.isArray(state)) return;
+      if (archived && (!PHASE_CHAIN.includes(state.phase) || state.phase === 'done')) return;
+      active.push({ folder, state });
+    } catch (_) {
+      return;
+    }
+  };
+  const entries = fs.readdirSync(sprintsDir, { withFileTypes: true });
   for (const entry of entries) {
     if (!entry.isDirectory() || entry.name === 'archived') continue;
     const statePath = path.join(sprintsDir, entry.name, 'state.json');
     if (!fs.existsSync(statePath)) continue;
-    try {
-      const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
-      active.push({ folder: entry.name, state });
-    } catch (_) {
-      // skip malformed state.json
-    }
+    addState(entry.name, statePath, false);
+  }
+  const archivedDir = path.join(sprintsDir, 'archived');
+  if (!fs.existsSync(archivedDir)) return active;
+  for (const entry of fs.readdirSync(archivedDir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const statePath = path.join(archivedDir, entry.name, 'state.json');
+    if (!fs.existsSync(statePath)) continue;
+    addState(entry.name, statePath, true);
   }
   return active;
 }

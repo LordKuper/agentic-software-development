@@ -65,7 +65,7 @@
     ".asd/agents/asd-pm.md": "89fbad48ddfb0646bbe9a20a7408f247ede9d7e78c57abcba4f25f52d650d186",
     ".asd/agents/asd-reviewer-documentation.md": "8a9249062fdf97b6ab2483dbf75965ac9d336af8c0b7c697e1cbcf79d99774bc",
     ".asd/agents/asd-reviewer-testing.md": "0845039c5f3b3d1c4b62eb61938e37bae8b428e8902ed6721cc2d1549d596a00",
-    ".asd/hooks/session-start.js": "76eaa1655eaca11126713922acd7efa19cec198781bad0a56f48cf43d4fc2110",
+    ".asd/hooks/session-start.js": "43dd9ddbd6e1834031cc11773699d0199480219bbdb40fb516a22c45fec55f17",
     ".asd/rules/artifact-layout.md": "e169b9294c86bc0f6986041d6866ac4eb6e287743768406c71e80e0723201293",
     ".asd/rules/checkpoints.md": "efb640237c1f0053658da4cb318ef708041e86301bfded24d7200e5a0218cbeb",
     ".asd/rules/code-style.md": "8afa6666b8b89588bb03c099540e2a778319af34de152f231d3ef304be0411e9",

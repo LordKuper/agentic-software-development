@@ -53,9 +53,9 @@ Acceptance: AC-2, AC-4, AC-5, AC-6, AC-7.
 
 Material risk for impl-test: scanning archived state can falsely revive completed sprints or choose ambiguously when repository state is inconsistent.
 
-- [ ] Update canonical `.asd/hooks/session-start.js` to detect the single archived sprint whose `state.json.phase` is not `done`, while continuing to ignore completed archived sprints and fail silently on malformed entries.
-- [ ] Preserve current active-folder precedence and the one-active-sprint invariant when normal and archived candidates conflict.
-- [ ] Regenerate `.claude/hooks/session-start.js` and `.codex/hooks/session-start.js` from canon and keep provider-specific command hints correct.
+- [x] Update canonical `.asd/hooks/session-start.js` to detect the single archived sprint whose `state.json.phase` is not `done`, while continuing to ignore completed archived sprints and fail silently on malformed entries.
+- [x] Preserve current active-folder precedence and the one-active-sprint invariant when normal and archived candidates conflict.
+- [x] Regenerate `.claude/hooks/session-start.js` and `.codex/hooks/session-start.js` from canon and keep provider-specific command hints correct.
 
 ### Task 5: Make Codex-primary gates and External Review observable
 

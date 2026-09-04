@@ -62,18 +62,31 @@ function parseProvider(argv) {
 function findActiveSprints(repoRoot) {
   const sprintsDir = path.join(repoRoot, '.asd', 'sprints');
   if (!fs.existsSync(sprintsDir)) return [];
-  const entries = fs.readdirSync(sprintsDir, { withFileTypes: true });
   const active = [];
+  const addState = (folder, statePath, archived) => {
+    try {
+      const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+      if (!state || typeof state !== 'object' || Array.isArray(state)) return;
+      if (archived && (!PHASE_CHAIN.includes(state.phase) || state.phase === 'done')) return;
+      active.push({ folder, state });
+    } catch (_) {
+      return;
+    }
+  };
+  const entries = fs.readdirSync(sprintsDir, { withFileTypes: true });
   for (const entry of entries) {
     if (!entry.isDirectory() || entry.name === 'archived') continue;
     const statePath = path.join(sprintsDir, entry.name, 'state.json');
     if (!fs.existsSync(statePath)) continue;
-    try {
-      const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
-      active.push({ folder: entry.name, state });
-    } catch (_) {
-      // skip malformed state.json
-    }
+    addState(entry.name, statePath, false);
+  }
+  const archivedDir = path.join(sprintsDir, 'archived');
+  if (!fs.existsSync(archivedDir)) return active;
+  for (const entry of fs.readdirSync(archivedDir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const statePath = path.join(archivedDir, entry.name, 'state.json');
+    if (!fs.existsSync(statePath)) continue;
+    addState(entry.name, statePath, true);
   }
   return active;
 }
