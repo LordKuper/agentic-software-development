@@ -74,11 +74,11 @@ Acceptance: AC-2, AC-4, AC-5, AC-7, AC-8.
 
 Material risk for impl-test: documentation or generated-view drift can conceal a correct canonical fix behind stale consumer-facing instructions or runtime files.
 
-- [ ] Remove the unavailable `plans/multi-provider-support.md` reference from `.asd/rules/providers.md` and keep all durable provider behavior in existing canonical rule homes.
-- [ ] Update `README.md` with verified ChatGPT-account Codex model compatibility, delegate-startup diagnostics and recovery, provider-correct skill invocations, External Review prerequisites, session recovery, semantic mappings, and generated layout only where final behavior changed.
-- [ ] Update root `AGENTS.md` and `.asd/templates/t_AGENTS.md` only for framework/consumer guidance that their existing responsibility requires; keep `CLAUDE.md` and generated ownership boundaries intact.
-- [ ] Review all `.asd/agents/*.md`, `.asd/skills/*/SKILL.md`, and `.asd/workflows/*.md` against the accepted phase-by-phase audit, applying only confirmed compatibility corrections and retaining one shared canonical workflow.
-- [ ] Regenerate every affected `.claude/`, `.codex/`, and `.agents/skills/` mirror through `.asd/sync.js`, leaving no stale or orphaned generated output for the final synchronization check.
+- [x] Remove the unavailable `plans/multi-provider-support.md` reference from `.asd/rules/providers.md` and keep all durable provider behavior in existing canonical rule homes.
+- [x] Update `README.md` with verified ChatGPT-account Codex model compatibility, delegate-startup diagnostics and recovery, provider-correct skill invocations, External Review prerequisites, session recovery, semantic mappings, and generated layout only where final behavior changed.
+- [x] Update root `AGENTS.md` and `.asd/templates/t_AGENTS.md` only for framework/consumer guidance that their existing responsibility requires; keep `CLAUDE.md` and generated ownership boundaries intact.
+- [x] Review all `.asd/agents/*.md`, `.asd/skills/*/SKILL.md`, and `.asd/workflows/*.md` against the accepted phase-by-phase audit, applying only confirmed compatibility corrections and retaining one shared canonical workflow.
+- [x] Regenerate every affected `.claude/`, `.codex/`, and `.agents/skills/` mirror through `.asd/sync.js`, leaving no stale or orphaned generated output for the final synchronization check.
 
 ## Dependencies
 

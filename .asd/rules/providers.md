@@ -16,7 +16,7 @@ ASD runs from one canonical source (`.asd/`) generated into two host views: Clau
 | `.claude/settings.json` (JSON-merge, ASD owns only its hook entry) | native Claude Code settings | — |
 | `.codex/hooks.json` (JSON-merge, ASD owns only its hook entry) | — | native Codex hooks registration |
 
-Codex has no project-level equivalent of `.claude/skills` — a separate `.agents/skills/` tree is generated because Codex only reads skills from `.agents/skills` (see `plans/multi-provider-support.md`, "Закрытые вопросы" #1). One skill tree cannot serve both hosts.
+Codex has no project-level equivalent of `.claude/skills` — a separate `.agents/skills/` tree is generated because Codex only reads skills from `.agents/skills`. One skill tree cannot serve both hosts.
 
 ### Orphan detection
 
