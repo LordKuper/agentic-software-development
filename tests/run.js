@@ -118,6 +118,55 @@ test('canonical skill -> Codex SKILL.md matches fixture', () => {
   assert.ok(!rendered.output.includes('allowed-tools'));
 });
 
+test('AC-1/3/5/6/7: Codex renderer rejects invalid delegate config with context', () => {
+  const manifest = loadManifest();
+  const meta = {
+    name: 'runtime-fixture',
+    description: 'fixture',
+    codex: { model: 'sol', model_reasoning_effort: 'high', sandbox_mode: 'workspace-write' },
+  };
+  const cases = [
+    ['missing Codex block', { ...meta, codex: null }, manifest, 'missing or malformed Codex configuration'],
+    ['unknown family', { ...meta, codex: { ...meta.codex, model: 'unknown' } }, manifest, 'unknown model family'],
+    ['legacy unsuffixed model', meta, { ...manifest, model_families: { ...manifest.model_families, codex: { ...manifest.model_families.codex, sol: 'gpt-5.6' } } }, 'unsupported ChatGPT-runtime model mapping'],
+    ['mismatched family model', meta, { ...manifest, model_families: { ...manifest.model_families, codex: { ...manifest.model_families.codex, sol: 'gpt-5.6-terra' } } }, 'unsupported ChatGPT-runtime model mapping'],
+    ['invalid effort', { ...meta, codex: { ...meta.codex, model_reasoning_effort: 'fast' } }, manifest, 'invalid model reasoning effort'],
+    ['invalid sandbox', { ...meta, codex: { ...meta.codex, sandbox_mode: 'unsafe' } }, manifest, 'invalid sandbox mode'],
+  ];
+  for (const [label, invalidMeta, invalidManifest, reason] of cases) {
+    assert.throws(
+      () => sync.transformAgentCodexToml(invalidMeta, '', invalidManifest),
+      err => err.message.includes(reason) && err.message.includes('runtime-fixture') && err.message.includes('family') && err.message.includes('resolved model') && err.message.includes('effort'),
+      label
+    );
+  }
+});
+
+test('AC-3/6/7: every canonical Codex agent renders a supported delegate config', () => {
+  const manifest = loadManifest();
+  const agentsDir = path.join(REPO_ROOT, '.asd', 'agents');
+  const files = fs.readdirSync(agentsDir).filter(f => f.endsWith('.md'));
+  assert.strictEqual(files.length, 12, 'sanity: every dispatched role must be covered');
+  for (const file of files) {
+    const { meta, body } = sync.parseCanonicalFrontmatter(sync.readNormalized(path.join(agentsDir, file)));
+    const output = sync.transformAgentCodexToml(meta, body, manifest);
+    assert.match(output, /^model = "gpt-5\.6-(sol|terra|luna)"$/m, `${meta.name}: supported model`);
+    assert.match(output, /^model_reasoning_effort = "(low|medium|high|xhigh|max|ultra)"$/m, `${meta.name}: supported effort`);
+    assert.match(output, /^sandbox_mode = "(workspace-write|read-only)"$/m, `${meta.name}: supported sandbox`);
+  }
+});
+
+test('AC-2/4/5/7/8: Codex skill rendering rewrites only standalone invocations', () => {
+  const meta = { name: 'fixture', description: 'Run /asd-sprint; preserve /guide/asd-sprint and https://example.test/asd-sprint.' };
+  const body = 'Then run (/asd-init). Existing $asd-sync, /docs/asd-sync, and https://example.test/asd-sync stay unchanged.';
+  const codex = sync.transformSkillCodex(meta, body);
+  const claude = sync.transformSkillClaude(meta, body);
+  assert.ok(codex.includes('$asd-sprint') && codex.includes('($asd-init)'), 'Codex standalone invocations must use skill syntax');
+  assert.ok(codex.includes('/guide/asd-sprint') && codex.includes('https://example.test/asd-sprint') && codex.includes('/docs/asd-sync'), 'paths and URLs must remain literal');
+  assert.ok(claude.includes('/asd-sprint') && claude.includes('(/asd-init)'), 'Claude commands must remain slash commands');
+  assert.ok(!claude.includes('$asd-sprint'), 'Claude output must not inherit Codex syntax');
+});
+
 // ===========================================================================
 // 1b. {{wraps_cli}}/{{wraps_config_key}} per-provider body substitution
 //     (asd-sync.js generic templating step - asd-external-review.md is the
@@ -152,6 +201,17 @@ test('asd-external-review: the wrapped CLI subprocess carries an explicit read-o
   const codexAgent = fs.readFileSync(path.join(REPO_ROOT, '.codex/agents/asd-external-review.toml'), 'utf8');
   assert.ok(claudeAgent.includes('codex exec --sandbox read-only -'), 'Claude-side must invoke the wrapped Codex CLI with an explicit --sandbox read-only, not rely on ambient project config');
   assert.ok(codexAgent.includes('--allowedTools "Read,Grep,Glob"'), 'Codex-side must invoke the wrapped Claude CLI with explicit read-only tool restriction, not rely on ambient project permissions');
+});
+
+test('AC-2/4/6/8: External Review CLI availability stays provider-symmetric', () => {
+  const init = fs.readFileSync(path.join(REPO_ROOT, '.asd', 'skills/asd-init/SKILL.md'), 'utf8');
+  const config = fs.readFileSync(path.join(REPO_ROOT, '.asd', 'templates/t_config.yaml'), 'utf8');
+  const claudeAgent = fs.readFileSync(path.join(REPO_ROOT, '.claude/agents/asd-external-review.md'), 'utf8');
+  const codexAgent = fs.readFileSync(path.join(REPO_ROOT, '.codex/agents/asd-external-review.toml'), 'utf8');
+  assert.ok(init.includes('system.tools.codex_command') && init.includes('system.tools.claude_command') && init.includes('resolved command and availability'));
+  assert.ok(config.includes('codex_command: ""') && config.includes('claude_command: ""'));
+  assert.ok(claudeAgent.includes('system.tools.codex_command') && claudeAgent.includes('`codex` with `--version`') && claudeAgent.includes('external review unavailable: <resolved command>'));
+  assert.ok(codexAgent.includes('system.tools.claude_command') && codexAgent.includes('`claude` with `--version`') && codexAgent.includes('external review unavailable: <resolved command>'));
 });
 
 test('agents whose meta never sets wraps_cli/wraps_config_key are unaffected (substitution is a no-op)', () => {
@@ -1978,6 +2038,32 @@ test('SessionStart hook: Codex gets $asd-* form, never a Claude-only slash comma
   const text = runHook('codex');
   assert.ok(text.includes('$asd-sprint'), 'Codex has no /asd-sprint slash command - must see $asd-sprint');
   assert.ok(!text.includes('/asd-sprint'));
+});
+
+test('AC-2/4/5/6/7: SessionStart recovers only archived active sprints and reports conflicts', () => {
+  const tempRoot = mkTempDir();
+  const hookPath = path.join(tempRoot, '.asd/hooks/session-start.js');
+  writeFile(tempRoot, '.asd/hooks/session-start.js', fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8'));
+  writeFile(tempRoot, '.asd/sprints/archived/777-open/state.json', JSON.stringify({ sprint_id: '777-open', phase: 'pr', branch: 'sprint/777-open' }));
+  writeFile(tempRoot, '.asd/sprints/archived/778-done/state.json', JSON.stringify({ sprint_id: '778-done', phase: 'done', branch: 'sprint/778-done' }));
+  writeFile(tempRoot, '.asd/sprints/archived/779-bad/state.json', '{');
+  const run = () => JSON.parse(execFileSync('node', [hookPath, '--provider', 'codex'], { cwd: tempRoot, encoding: 'utf8' })).hookSpecificOutput.additionalContext;
+  const recovered = run();
+  assert.ok(recovered.includes('Active sprint: 777-open'), `expected archived non-done sprint, got: ${recovered}`);
+  assert.ok(!recovered.includes('778-done') && !recovered.includes('779-bad'));
+  writeFile(tempRoot, '.asd/sprints/111-current/state.json', JSON.stringify({ sprint_id: '111-current', phase: 'impl', branch: 'sprint/111-current' }));
+  const conflict = run();
+  assert.ok(conflict.includes('WARNING: multiple active sprints found (111-current, 777-open)'), `expected active/archive conflict warning, got: ${conflict}`);
+});
+
+test('AC-2/4/6/7: review workflow contracts retain Correctness and incremental diff scope', () => {
+  const workflow = fs.readFileSync(path.join(REPO_ROOT, '.asd/workflows/asd-phase-design-review.md'), 'utf8');
+  const prompt = fs.readFileSync(path.join(REPO_ROOT, '.asd/templates/external-review/t_prompt-external-impl.md'), 'utf8');
+  const implReview = fs.readFileSync(path.join(REPO_ROOT, '.asd/workflows/asd-phase-impl-review.md'), 'utf8');
+  assert.ok(workflow.includes('Every internal reviewer is dispatched when not latch-skipped'));
+  assert.ok(workflow.includes('reviewer still dispatches and is counted toward DoD'));
+  assert.ok(prompt.includes('git diff <state.json reviews.impl.iteration_heads["iter-(N-1)"]>...HEAD <pathspec>'));
+  assert.ok(implReview.includes('run command') && !implReview.includes('via Bash'));
 });
 
 test('SessionStart hook: a "skipped: <predicate>" verdict counts as satisfied, not "mixed"', () => {
