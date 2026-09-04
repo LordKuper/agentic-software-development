@@ -159,12 +159,21 @@ function parseCanonicalFrontmatter(rawNormalizedText) {
 // Model family resolution (release-manifest table; canon speaks in aliases)
 // ---------------------------------------------------------------------------
 
-function resolveModelFamily(manifest, provider, familyAlias) {
+function resolveModelFamily(manifest, provider, familyAlias, codexAgent = {}) {
   const table = manifest && manifest.model_families && manifest.model_families[provider];
+  const resolvedModel = table && typeof familyAlias === 'string' ? table[familyAlias] : undefined;
+  const codexDiagnostic = (reason) => `Codex agent "${codexAgent.name || '<missing>'}": ${reason} (family "${familyAlias === undefined ? '<missing>' : familyAlias}", resolved model "${resolvedModel === undefined ? '<unresolved>' : resolvedModel}", effort "${codexAgent.effort === undefined ? '<missing>' : codexAgent.effort}")`;
   if (!table || !Object.prototype.hasOwnProperty.call(table, familyAlias)) {
+    if (provider === 'codex') throw new Error(codexDiagnostic('unknown model family'));
     throw new Error(`unknown model family "${familyAlias}" for provider "${provider}"`);
   }
-  return table[familyAlias];
+  if (provider === 'codex' && (typeof resolvedModel !== 'string' || !/^gpt-5\.6-(sol|terra|luna)$/.test(resolvedModel) || !resolvedModel.endsWith(`-${familyAlias}`))) {
+    throw new Error(codexDiagnostic('unsupported ChatGPT-runtime model mapping'));
+  }
+  if (provider === 'codex' && codexAgent.effort !== undefined && (!/^(low|medium|high|xhigh|max|ultra)$/.test(codexAgent.effort) || (resolvedModel.endsWith('-luna') && codexAgent.effort === 'ultra'))) {
+    throw new Error(codexDiagnostic('invalid model reasoning effort'));
+  }
+  return resolvedModel;
 }
 
 // ---------------------------------------------------------------------------
@@ -292,13 +301,22 @@ function tomlMultilineBody(body) {
 }
 
 function transformAgentCodexToml(meta, body, manifest) {
-  const c = meta.codex || {};
+  const c = meta && meta.codex;
+  const fail = (reason, resolvedModel = '<unresolved>') => {
+    const family = !c || c.model === undefined ? '<missing>' : c.model;
+    const effort = !c || c.model_reasoning_effort === undefined ? '<missing>' : c.model_reasoning_effort;
+    throw new Error(`Codex agent "${meta && meta.name || '<missing>'}": ${reason} (family "${family}", resolved model "${resolvedModel}", effort "${effort}")`);
+  };
+  if (!c || typeof c !== 'object' || Array.isArray(c)) fail('missing or malformed Codex configuration');
+  const model = resolveModelFamily(manifest, 'codex', c.model, { name: meta && meta.name, effort: c.model_reasoning_effort });
+  if (c.model_reasoning_effort === undefined) fail('missing model reasoning effort', model);
+  if (c.sandbox_mode !== 'workspace-write' && c.sandbox_mode !== 'read-only') fail('invalid sandbox mode', model);
   const lines = [];
   lines.push(`name = "${tomlEscapeBasic(meta.name)}"`);
   lines.push(`description = "${tomlEscapeBasic(meta.description)}"`);
-  if (c.model) lines.push(`model = "${tomlEscapeBasic(resolveModelFamily(manifest, 'codex', c.model))}"`);
-  if (c.model_reasoning_effort) lines.push(`model_reasoning_effort = "${tomlEscapeBasic(c.model_reasoning_effort)}"`);
-  if (c.sandbox_mode) lines.push(`sandbox_mode = "${tomlEscapeBasic(c.sandbox_mode)}"`);
+  lines.push(`model = "${tomlEscapeBasic(model)}"`);
+  lines.push(`model_reasoning_effort = "${tomlEscapeBasic(c.model_reasoning_effort)}"`);
+  lines.push(`sandbox_mode = "${tomlEscapeBasic(c.sandbox_mode)}"`);
   const substitutedBody = substitutePlaceholders(body, wrapsCliValues(c));
   lines.push(`developer_instructions = ${tomlMultilineBody(substitutedBody)}`);
   lines.push('');
