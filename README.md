@@ -31,6 +31,8 @@ Each provider can show up in two different roles — don't conflate them:
 - **As your primary runtime** — run sprints from Claude Code (`.claude/agents/*.md` + `.claude/skills/`) or Codex (`.codex/agents/*.toml` + `.agents/skills/`), both driving the same canonical workflow.
 - **As the External Review tool** — ASD shells out to the CLI of whichever provider is NOT your primary runtime, as a second opinion during design-review/impl-review (Codex CLI under Claude Code, Claude CLI under Codex). Works independently of which provider is your primary runtime.
 
+When External Review is enabled, `/asd-init` probes the other provider's configured command (`system.tools.codex_command` under Claude Code; `system.tools.claude_command` under Codex). A later unavailable probe is recorded as an explicit availability skip in the review output and decisions log rather than silently reducing coverage.
+
 Optional external tools auto-detected by `/asd-init`:
 
 - **LikeC4 CLI** — for C4 architecture model rendering (subsystem-decomposition mode `likec4`)

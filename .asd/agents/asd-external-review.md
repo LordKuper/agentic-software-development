@@ -24,9 +24,9 @@ External review wrapper. Runs `{{wraps_cli}}` CLI parallel to internal reviewers
 ## Operating contract
 
 - **Scope**: `{{wraps_cli}}` CLI invocation, output parsing, aggregation. No code/design changes, no internal reviewing.
-- **Authority**: produces external verdict as final text output; auto-skips when `{{wraps_cli}}` unavailable; escalates stalemate to user.
+- **Authority**: produces external verdict as final text output; auto-skips with an explicit resolved-command reason when `{{wraps_cli}}` unavailable; escalates stalemate to user.
 - **Approval triggers**: stalemate (2 consecutive iters identical findings) → request user decision (accept as-is / override / abort sprint).
-- **Stop conditions**: `review.external_review: disabled` → noop; `{{wraps_cli}}` binary unavailable → log to decisions-log (via PM), skip without prompt; severity floor exhausted → APPROVE if no qualifying findings.
+- **Stop conditions**: `review.external_review: disabled` → noop; resolved `{{wraps_config_key}}` override or `{{wraps_cli}}` binary unavailable → log explicit reason to decisions-log (via PM), skip without prompt; severity floor exhausted → APPROVE if no qualifying findings.
 
 ## Mandatory rules
 
@@ -64,7 +64,7 @@ External review wrapper. Runs `{{wraps_cli}}` CLI parallel to internal reviewers
 ## Behavioral profile
 
 Reviewer (external wrapper):
-- detect `{{wraps_cli}}` availability → skip + log if missing
+- resolve `{{wraps_config_key}}` override or `{{wraps_cli}}` → probe it → skip + log the resolved command if missing
 - compose prompt: read per-phase template + inject context
 - invoke `{{wraps_cli}}` CLI per OS pattern
 - parse captured stdout text verdict → map severity → drop nitpick categories → apply severity floor → return report as final text with dropped findings collapsed to per-category counts (never write it — the phase orchestrator does)
@@ -87,7 +87,7 @@ Command tail is provider-specific (`{{wraps_invoke_args}}` — the two CLIs take
 
 Both forms feed prompt+diff via stdin and capture the command's own stdout as the final message — a plain-text verdict, never structured/streaming output. No `-o <out-file>`.
 
-Probe before invocation: `{{wraps_cli}} --version`. On failure: write log message for PM, return APPROVE with note "external review skipped, {{wraps_cli}} unavailable".
+Probe before invocation: resolved `{{wraps_config_key}}` override or `{{wraps_cli}}` with `--version`. On failure: write log message for PM, return `APPROVE (skipped: external review unavailable: <resolved command>)`.
 
 ## Severity mapping (`{{wraps_cli}}` → ASD)
 

@@ -63,10 +63,10 @@ Acceptance: AC-2, AC-4, AC-6, AC-8.
 
 Material risk for impl-test: a missing Claude CLI or broken decision operation can silently reduce review coverage or strand a sprint at a hard gate.
 
-- [ ] Reconcile `.asd/skills/asd-init/SKILL.md`, `.asd/templates/t_config.yaml`, `.asd/rules/providers.md`, `.asd/rules/external-review.md`, and `.asd/agents/asd-external-review.md` so a Codex-primary run probes or honors the configured Claude CLI command and surfaces an explicit availability-skip reason when unavailable.
-- [ ] Verify the Codex semantic mappings used by all ten `.asd/workflows/asd-phase-*.md` files, correcting only confirmed gaps in delegation, run-command, file, wait, and user-decision operations.
-- [ ] Ensure the mapped Codex decision path can represent write-then-review `accept` gates for scope and plan, the audit approval gate, other discrete hard gates, and state-based resume without embedding host-tool names in canonical workflows.
-- [ ] Regenerate affected agent and skill views from canon, preserving the symmetric Codex-under-Claude External Review path.
+- [x] Reconcile `.asd/skills/asd-init/SKILL.md`, `.asd/templates/t_config.yaml`, `.asd/rules/providers.md`, `.asd/rules/external-review.md`, and `.asd/agents/asd-external-review.md` so a Codex-primary run probes or honors the configured Claude CLI command and surfaces an explicit availability-skip reason when unavailable.
+- [x] Verify the Codex semantic mappings used by all ten `.asd/workflows/asd-phase-*.md` files, correcting only confirmed gaps in delegation, run-command, file, wait, and user-decision operations.
+- [x] Ensure the mapped Codex decision path can represent write-then-review `accept` gates for scope and plan, the audit approval gate, other discrete hard gates, and state-based resume without embedding host-tool names in canonical workflows.
+- [x] Regenerate affected agent and skill views from canon, preserving the symmetric Codex-under-Claude External Review path.
 
 ### Task 6: Synchronize documentation and provider views
 
