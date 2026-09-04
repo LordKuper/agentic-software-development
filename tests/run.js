@@ -1439,10 +1439,7 @@ test('update driver: planUpdate\'s pending-migration preview unions migrations f
   const upstreamRoot = mkTempDir();
   writeManifest(localRoot, { asd_version: '6.0.0' });
   writeManifest(upstreamRoot, { asd_version: '6.2.0' });
-  // .asd/migrations is itself a managed path - a migration this very release
-  // delivers is absent from the local tree at plan time, present only upstream.
   writeMigrationScript(upstreamRoot, '6.1.0', "module.exports = () => {};");
-  // A migration a consumer authored ahead of upstream, present only locally.
   writeMigrationScript(localRoot, '6.2.0', "module.exports = () => {};");
 
   const plan = update.planUpdate(localRoot, upstreamRoot);
