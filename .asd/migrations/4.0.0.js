@@ -59,6 +59,19 @@ function toRepoRel(repoRoot, absPath) {
   return path.relative(repoRoot, absPath).replace(/\\/g, '/');
 }
 
+// A consumer's `.asd/sync.js` may still be the pre-4.0.0 engine (any classification that leaves it
+// unwritten this apply), which predates this helper - falls back to an equivalent local
+// implementation so the destructive delete below always completes rather than throwing mid-way.
+function removeIfEmptyDir(sync, absDir) {
+  if (typeof sync.removeIfEmptyDir === 'function') {
+    sync.removeIfEmptyDir(absDir);
+    return;
+  }
+  if (!fs.existsSync(absDir)) return;
+  if (fs.readdirSync(absDir).length > 0) return;
+  fs.rmdirSync(absDir);
+}
+
 // Deletes exactly one generated-view file, gated on the ASD ownership marker. A missing file is
 // success (idempotency: re-running after a prior successful run finds nothing left to delete). A
 // file without the marker is a consumer's own agent/skill sharing the retired name by coincidence
@@ -74,7 +87,7 @@ function deleteMarkedView(sync, repoRoot, absPath, report) {
     return;
   }
   fs.rmSync(absPath, { force: true });
-  sync.removeIfEmptyDir(path.dirname(absPath));
+  removeIfEmptyDir(sync, path.dirname(absPath));
   report.deleted.push(rel);
 }
 
