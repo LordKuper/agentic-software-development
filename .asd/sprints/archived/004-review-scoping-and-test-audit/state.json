@@ -1,7 +1,7 @@
 {
   "sprint_id": "004-review-scoping-and-test-audit",
   "branch": "sprint/004-review-scoping-and-test-audit",
-  "phase": "pr",
+  "phase": "done",
   "documents": {
     "audit": true,
     "prd": false,
@@ -67,10 +67,10 @@
     }
   },
   "created_at": "2026-09-03T19:20:52Z",
-  "updated_at": "2026-09-05T03:50:00Z",
+  "updated_at": "2026-09-04T20:19:44+03:00",
   "review_fixes_pending": null,
   "test_defects_pending": null,
-  "pr": { "number": 21, "url": "https://github.com/LordKuper/agentic-software-development/pull/21", "state": "open" },
+  "pr": { "number": 21, "url": "https://github.com/LordKuper/agentic-software-development/pull/21", "state": "merged" },
   "archived_at": "2026-09-05T03:50:00Z",
   "escalations": []
 }
