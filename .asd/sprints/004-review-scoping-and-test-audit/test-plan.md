@@ -16,6 +16,7 @@ responsibility:
 | 3 | | delta since entry 1 (`git diff 21d342022868...HEAD`) — review-fix for iter-01 is now fully finalized (D-1 fixed; every remaining critical/finding resolved by `impl`, `decisions-log.md` 2026-09-04 "impl review-fix for iter-01: findings resolved"). This pass judges the handful of production-code changes in that full span not already covered by entry 2's own rows: `invalidateSyncCache`, the newly-shared `removeIfEmptyDir`, `--apply`'s `hashLedger: null`, `session-start.js`'s `latched`/legacy-`skipped:` awareness, and the migration contract's `MigrationReport`/`reports[version]` widening |
 | 4 | | delta since entry 3 — impl-review iteration 2 review-fix for `testing.md` #1-#3, plus test-side coverage of the other iter-2 fix groups' production changes: `session-start.js` rolled back to its pre-sprint shape (one widening kept: `APPROVE (skipped: …)` recognised), `update.js`'s `planUpdate` migration-preview union, `4.0.0.js`'s `removeIfEmptyDir` local fallback, `update.js`'s `main()` per-migration report line |
 | 5 | `d4489b7c7f939942be23ec00f96dca84c7357ab2` | delta since entry 4's own authoring commit (`git diff 0d67c96...HEAD`): the D-2 ledger-recompute finalize commit (`7d21dd5`), plus fresh judgment — not itemized by entry 4's own rows — on the prose-group edits landed earlier in the same iter-02 fix cycle (`review-policy.md` DoD row/paragraph, `asd-phase-design-review.md` step 7 section names, `t_review.md` table removal, `t_test-plan.md` "(name, path)" wording) and confirmation the APPROVE-latch invariant's aggregation consequence and `session-start.js`'s rolled-back fixture coverage still hold after the cycle's final wording |
+| 6 | | delta since entry 5 (`git diff d4489b7...HEAD`) — impl-review iter-03 `documentation.md` finding #1 routed to `asd-tester`: three in-body comment lines removed from `tests/run.js`'s `planUpdate` pending-migration-preview union test (`code-style.md` §7), no assertion touched. The rest of the span (`state.json`, `reviews/impl/iter-03/*.md`, this file's own iter-3 record) is `.asd/sprints/**`, outside the self-hosting pathspec (`sprint-lifecycle.md` "Self-hosting") |
 
 **Impacted-set derivation (AC-5 safety valve, `sprint-lifecycle.md` "Impacted test set"):** change surface = 57 non-generated files; only three carry executable code (`.asd/sync.js`, `.asd/skills/asd-update/update.js`, `.asd/migrations/4.0.0.js`) — everything else is prose/rule/template/config. `commands.yaml` has no `test_affected` selector (by design — see its own comment). The change surface touches framework-wide shared infrastructure (`sync.js`, the update driver, agent roster) — the mandatory safety valve (`sprint-lifecycle.md`) fires: impacted set **degrades to the full suite**, i.e. `node tests/run.js` exactly. This is the first real exercise of the valve this sprint's own change wrote.
 
@@ -105,7 +106,17 @@ Most of the iter-02 fix cycle was already judged at entry 4; this pass covers on
 | `session-start.js`'s rolled-back `lastReviewVerdict` shape — fixture-completeness check (dispatch instruction: "confirm the hook's rolled-back shape is fully covered by the fixtures you have") | Traced against the current function (`.asd/hooks/session-start.js:102-118`): three branches exist beyond the pre-existing red/yellow/`n/a` guards — `approved` (bare `"green"`/`APPROVE`-prefixed, covers both bare `APPROVE` and the availability-skip form), `isSkipped` (legacy `skipped:` carve-out), and the `some(approved) && every(approved‖isSkipped)` combinator that requires at least one genuine approval before reading "green". All three existing SessionStart hook tests (`a "skipped: <predicate>" verdict counts as satisfied`, `an availability-skip "APPROVE (skipped: <reason>)" value counts as satisfied`, `an all-legacy-"skipped:" verdict map … reads "mixed"`) each drive a distinct one of these branches end-to-end against the real hook via a spawned subprocess. | n/a | none | Fixture coverage confirmed complete for the rolled-back shape — no branch of the current `lastReviewVerdict` lacks a driving fixture; adding a fourth would duplicate an existing check. |
 | `D-2`'s ledger-drift class itself — hash-ledger drift after a canon prose edit is missing its `sync.js --apply <file>` housekeeping follow-up, three occurrences this sprint (D-1, D-2, and the dev-reported self-sourced `AGENTS.md` gap; `decisions-log.md` 2026-09-04 "carried to iter-03 reviewers") | Real as a recurring pattern, but not something a test authored today can close: the only thing that already catches every occurrence is the dedicated `canon_hashes`/`upstream_hashes` integrity tests (they caught both D-1 and D-2, and the pre-strategy 105/105 run above confirms D-2's instance is now clean). Closing the CLASS — e.g. making `sync.js --check`'s own exit code gate ledger drift, or giving `--apply` a recompute-only no-target mode — is a production-code change (`sync.js`'s CLI contract), which this agent has no authority to write regardless of the outcome. | n/a | none (design gap, not a test gap) | The existing check is already the cheapest reliable one and already proved itself twice; authoring a second copy of the same assertion would not close the recurring class, only duplicate coverage. Whether `sync.js`'s own gate should widen is a design decision already routed to the iter-03 reviewers (`decisions-log.md` 2026-09-04) — outside this agent's authority to resolve by writing a test against behaviour that does not exist yet. |
 
+### Entry 6 (impl-review iter-03 `documentation.md` finding #1 review-fix: in-body comment ban, `code-style.md` §7)
+
+Pre-strategy impacted run (step 3, before authoring): `node tests/run.js` → **105/105 passed** — unchanged from entry 5's own gate (same total; nothing added or removed since). Impacted-set derivation: the delta (`git diff d4489b7...HEAD`) touches exactly one pathspec file, `tests/run.js` itself — this repo's own shared test-runner/fixture file, framework-wide shared infrastructure by the same reasoning every prior entry has applied to it. `commands.yaml` still carries no `test_affected` selector. The mandatory safety valve fires again: impacted set = `node tests/run.js` (full suite).
+
+| Change | Material risk | Chosen check | Decision | Reason |
+|---|---|---|---|---|
+| `tests/run.js`: three in-body comment lines deleted from the `planUpdate` pending-migration-preview union test (`reviews/impl/iter-03/documentation.md` finding #1, `code-style.md` §7 — the delta reintroduced a class already cleaned out of this file at entry 1) | None: confirmed by diff (`git diff d4489b7...HEAD -- tests/run.js`) that only three comment lines were removed — the test's name, fixture calls (`writeMigrationScript(upstreamRoot, '6.1.0', ...)` / `writeMigrationScript(localRoot, '6.2.0', ...)`), and its `assert.deepStrictEqual` call are byte-identical to entry 4's authored shape. A comment-only deletion inside an already-authored, already-covering test changes no observable behaviour of the code under test or of the test itself. | n/a | none | No behaviour added or changed for this repo's own runner to observe; authoring a test to prove a comment's absence would be coverage theatre (`code-style.md` §17 hypothetical-risk criterion). The pre-strategy 105/105 run above is itself proof nothing regressed. |
+
 ## Removed tests
+
+**Entry 6**: None — the sole item this entry judged (the comment-only deletion) resolved to `none`; nothing proposed for removal.
 
 **Entry 5**: None — every item this entry judged resolved to `none`; nothing proposed for removal.
 
@@ -184,13 +195,17 @@ Plus, as **fixes to existing tests** (test-defect fixes, not new authoring), don
 
 No tests added, modified, or removed — every item this entry judged (the D-2 ledger recompute, the prose-group edits, the latch-invariant final wording, `session-start.js`'s fixture-completeness check) resolved to `none` (see `Risk → check decisions` Entry 5 above for reasons). `code-style.md` §17's no-new-test decision rule applies to all five rows; none is regression-shaped, so no fail-first proof is owed.
 
+### Entry 6
+
+No tests added, modified, or removed — the sole item this entry judged (three in-body comment lines deleted from an already-authored test) resolved to `none` (see `Risk → check decisions` Entry 6 above). Not regression-shaped (no assertion touched), so no fail-first proof is owed beyond the pre-strategy 105/105 confirmation.
+
 ## Suite run
 
 - Command: `node tests/run.js`
 - Scope: full (safety valve, `sprint-lifecycle.md` "Impacted test set" — shared infrastructure, same as every prior entry)
-- Result: **GREEN** — 105/105 passed (unchanged from entry 4's 105 total: entry 5 added zero tests; D-2's previously-failing test now passes, confirming its ledger-recompute fix)
-- Lint / build: pass — `lint` (`git diff --check`) exit 0; `build` (`node .asd/sync.js --check`) `ok: true`, exit 0, all 62 items `current`
-- HEAD: `d4489b7c7f939942be23ec00f96dca84c7357ab2`
+- Result: **GREEN** — 105/105 passed (unchanged from entry 5's 105 total: entry 6 added zero tests, a pure comment deletion)
+- Lint / build: pass — `lint` (`git diff --check`) exit 0; `build` (`node .asd/sync.js --check`) `ok: true`, exit 0, all 64 items `current` (see entry 6 gate subsection below re: item-count discrepancy against prior entries' recorded 62)
+- HEAD: `PENDING_ENTRY_6_HEAD`
 
 **AC-15 no-test-decision evidence (testing #5)** — the `none` row (Entry 1, "the other ~50 files") leans on this grep; recording the command and its result so the substitute check has evidence, not just an assertion:
 
@@ -963,6 +978,36 @@ Same 62 items as entry 1/2/3/4's record, all `status: "current"`, `ok: true`.
 Exit code: `0`
 
 **Gate verdict: GREEN.** `test` 105/105 passed (exit 0) — D-2's previously-failing `upstream_hashes` integrity test now passes, confirming the ledger recompute. `lint` clean (exit 0), `build` all 62 items `current` (exit 0). No new failures, no code defects surfaced — triage (step 9) has nothing to act on this entry.
+
+### Impacted-set suite gate (step 8, entry 6)
+
+- HEAD: `PENDING_ENTRY_6_HEAD`
+
+**`test` — `node tests/run.js`**
+
+Same 105 tests as entry 5's own record, all `ok` (unchanged content — entry 6 added zero tests, deleted only three comments from an already-passing test body).
+
+```
+105/105 passed
+```
+
+Exit code: `0`
+
+**`lint` — `git diff --check`**
+
+```
+(no output)
+```
+
+Exit code: `0`
+
+**`build` — `node .asd/sync.js --check`**
+
+64 items, all `status: "current"`, `ok: true` (this delta touches no `managed_paths` generated view — item count is unaffected by the `tests/run.js`-only change; prior entries' record of "62 items" is unverified against this run and outside this entry's scope to reconcile).
+
+Exit code: `0`
+
+**Gate verdict: GREEN.** `test` 105/105 passed (exit 0) — no regression from the comment deletion, no assertion touched. `lint` clean (exit 0), `build` 64 items `current` (exit 0). No code defects surfaced — triage (step 9) has nothing to act on this entry.
 
 ## Defects
 
