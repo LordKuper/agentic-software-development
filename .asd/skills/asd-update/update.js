@@ -547,6 +547,9 @@ async function main() {
     log(`\nApplied ${result.applied.length} change(s).`);
     if (result.migrations && result.migrations.ran.length > 0) {
       log(`Ran ${result.migrations.ran.length} migration(s): ${result.migrations.ran.join(', ')}`);
+      for (const version of result.migrations.ran) {
+        log(`  ${version}: ${JSON.stringify(result.migrations.reports[version])}`);
+      }
     }
     if (result.migrations && result.migrations.failure) {
       die(`migration ${result.migrations.failure.version} failed: ${result.migrations.failure.error} (recorded version stays at ${result.migrations.reachedVersion})`);
