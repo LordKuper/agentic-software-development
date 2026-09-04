@@ -43,6 +43,13 @@
           "testing": "APPROVE",
           "documentation": "CONCERNS",
           "external": "APPROVE (skipped: codex quota exhausted until 2026-09-07)"
+        },
+        "iter-04": {
+          "correctness": "APPROVE",
+          "efficiency": "APPROVE",
+          "testing": "APPROVE",
+          "documentation": "APPROVE",
+          "external": "APPROVE (skipped: codex quota exhausted until 2026-09-07)"
         }
       },
       "iteration_heads": {
@@ -54,12 +61,13 @@
       "latched": {
         "correctness": 3,
         "efficiency": 3,
-        "testing": 3
+        "testing": 3,
+        "documentation": 4
       }
     }
   },
   "created_at": "2026-09-03T19:20:52Z",
-  "updated_at": "2026-09-05T01:00:00Z",
+  "updated_at": "2026-09-05T02:00:00Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
