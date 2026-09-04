@@ -201,11 +201,13 @@ No tests added, modified, or removed — the sole item this entry judged (three 
 
 ## Suite run
 
+**Terminal impl-review gate (step 9) — the cycle's one unscoped full-suite run, per `t_test-plan.md`'s "written twice per cycle" rule; this record supersedes every prior entry's impacted-set bullet list above for the purpose of the `pr`-phase gate, which reads whatever is recorded here last.**
+
 - Command: `node tests/run.js`
-- Scope: full (safety valve, `sprint-lifecycle.md` "Impacted test set" — shared infrastructure, same as every prior entry)
-- Result: **GREEN** — 105/105 passed (unchanged from entry 5's 105 total: entry 6 added zero tests, a pure comment deletion)
-- Lint / build: pass — `lint` (`git diff --check`) exit 0; `build` (`node .asd/sync.js --check`) `ok: true`, exit 0, all 64 items `current` (see entry 6 gate subsection below re: item-count discrepancy against prior entries' recorded 62)
-- HEAD: `ef2d2df82b066d9a54189925e98b8a33b12e742b`
+- Scope: full (terminal, unscoped — impl-review's own once-per-cycle full-suite check, `sprint-lifecycle.md` "Impacted test set"; not the impacted-set safety-valve degradation entries 1-6 above each separately recorded)
+- Result: **GREEN** — 105/105 passed (identical count to entry 6's own impacted-set run — confirms zero drift between the last impacted-set gate and this terminal check)
+- Lint / build: pass — `lint` (`git diff --check`) exit 0, no output; `build` (`node .asd/sync.js --check`) `ok: true`, exit 0, all 64 items `current`
+- HEAD: `f74ca60dc80fb1781021b71ef1a034196ccc015c`
 
 **AC-15 no-test-decision evidence (testing #5)** — the `none` row (Entry 1, "the other ~50 files") leans on this grep; recording the command and its result so the substitute check has evidence, not just an assertion:
 
@@ -1008,6 +1010,38 @@ Exit code: `0`
 Exit code: `0`
 
 **Gate verdict: GREEN.** `test` 105/105 passed (exit 0) — no regression from the comment deletion, no assertion touched. `lint` clean (exit 0), `build` 64 items `current` (exit 0). No code defects surfaced — triage (step 9) has nothing to act on this entry.
+
+### Terminal full-suite gate (impl-review step 9)
+
+DoD precondition met per `state.json`: `correctness`/`efficiency`/`testing` APPROVE-latched at iteration 3, `documentation` APPROVE at iteration 4, `external` recorded as an availability skip (codex quota exhausted until 2026-09-07). This is the deliberate once-per-cycle exception to the impacted-only rule (`sprint-lifecycle.md` "Impacted test set") — run unscoped, not against any delta.
+
+- HEAD: `f74ca60dc80fb1781021b71ef1a034196ccc015c` (current HEAD at dispatch time — no commits made between entry 6's gate and this run)
+
+**`test` — `node tests/run.js`**
+
+Same 105 tests as entry 6's own impacted-set record, all `ok` — byte-identical roster, zero drift since the last impacted-set gate.
+
+```
+105/105 passed
+```
+
+Exit code: `0`
+
+**`lint` — `git diff --check`**
+
+```
+(no output)
+```
+
+Exit code: `0`
+
+**`build` — `node .asd/sync.js --check`**
+
+64 items, all `status: "current"`, `ok: true` — matches entry 6's own recorded item count exactly.
+
+Exit code: `0`
+
+**Gate verdict: GREEN.** `test` 105/105 passed (exit 0), `lint` clean (exit 0), `build` 64/64 items `current` (exit 0). No code defects surfaced, no test defects surfaced — nothing to triage. Reviewer DoD (all four internal reviewers APPROVE/latched, external recorded as availability skip) plus this green terminal gate together satisfy `impl-review`'s exit condition; phase completes to `pr`.
 
 ## Defects
 
