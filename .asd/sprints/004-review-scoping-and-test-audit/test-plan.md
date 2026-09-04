@@ -16,7 +16,7 @@ responsibility:
 | 3 | | delta since entry 1 (`git diff 21d342022868...HEAD`) — review-fix for iter-01 is now fully finalized (D-1 fixed; every remaining critical/finding resolved by `impl`, `decisions-log.md` 2026-09-04 "impl review-fix for iter-01: findings resolved"). This pass judges the handful of production-code changes in that full span not already covered by entry 2's own rows: `invalidateSyncCache`, the newly-shared `removeIfEmptyDir`, `--apply`'s `hashLedger: null`, `session-start.js`'s `latched`/legacy-`skipped:` awareness, and the migration contract's `MigrationReport`/`reports[version]` widening |
 | 4 | | delta since entry 3 — impl-review iteration 2 review-fix for `testing.md` #1-#3, plus test-side coverage of the other iter-2 fix groups' production changes: `session-start.js` rolled back to its pre-sprint shape (one widening kept: `APPROVE (skipped: …)` recognised), `update.js`'s `planUpdate` migration-preview union, `4.0.0.js`'s `removeIfEmptyDir` local fallback, `update.js`'s `main()` per-migration report line |
 | 5 | `d4489b7c7f939942be23ec00f96dca84c7357ab2` | delta since entry 4's own authoring commit (`git diff 0d67c96...HEAD`): the D-2 ledger-recompute finalize commit (`7d21dd5`), plus fresh judgment — not itemized by entry 4's own rows — on the prose-group edits landed earlier in the same iter-02 fix cycle (`review-policy.md` DoD row/paragraph, `asd-phase-design-review.md` step 7 section names, `t_review.md` table removal, `t_test-plan.md` "(name, path)" wording) and confirmation the APPROVE-latch invariant's aggregation consequence and `session-start.js`'s rolled-back fixture coverage still hold after the cycle's final wording |
-| 6 | | delta since entry 5 (`git diff d4489b7...HEAD`) — impl-review iter-03 `documentation.md` finding #1 routed to `asd-tester`: three in-body comment lines removed from `tests/run.js`'s `planUpdate` pending-migration-preview union test (`code-style.md` §7), no assertion touched. The rest of the span (`state.json`, `reviews/impl/iter-03/*.md`, this file's own iter-3 record) is `.asd/sprints/**`, outside the self-hosting pathspec (`sprint-lifecycle.md` "Self-hosting") |
+| 6 | `ef2d2df82b066d9a54189925e98b8a33b12e742b` | delta since entry 5 (`git diff d4489b7...HEAD`) — impl-review iter-03 `documentation.md` finding #1 routed to `asd-tester`: three in-body comment lines removed from `tests/run.js`'s `planUpdate` pending-migration-preview union test (`code-style.md` §7), no assertion touched. The rest of the span (`state.json`, `reviews/impl/iter-03/*.md`, this file's own iter-3 record) is `.asd/sprints/**`, outside the self-hosting pathspec (`sprint-lifecycle.md` "Self-hosting") |
 
 **Impacted-set derivation (AC-5 safety valve, `sprint-lifecycle.md` "Impacted test set"):** change surface = 57 non-generated files; only three carry executable code (`.asd/sync.js`, `.asd/skills/asd-update/update.js`, `.asd/migrations/4.0.0.js`) — everything else is prose/rule/template/config. `commands.yaml` has no `test_affected` selector (by design — see its own comment). The change surface touches framework-wide shared infrastructure (`sync.js`, the update driver, agent roster) — the mandatory safety valve (`sprint-lifecycle.md`) fires: impacted set **degrades to the full suite**, i.e. `node tests/run.js` exactly. This is the first real exercise of the valve this sprint's own change wrote.
 
@@ -205,7 +205,7 @@ No tests added, modified, or removed — the sole item this entry judged (three 
 - Scope: full (safety valve, `sprint-lifecycle.md` "Impacted test set" — shared infrastructure, same as every prior entry)
 - Result: **GREEN** — 105/105 passed (unchanged from entry 5's 105 total: entry 6 added zero tests, a pure comment deletion)
 - Lint / build: pass — `lint` (`git diff --check`) exit 0; `build` (`node .asd/sync.js --check`) `ok: true`, exit 0, all 64 items `current` (see entry 6 gate subsection below re: item-count discrepancy against prior entries' recorded 62)
-- HEAD: `PENDING_ENTRY_6_HEAD`
+- HEAD: `ef2d2df82b066d9a54189925e98b8a33b12e742b`
 
 **AC-15 no-test-decision evidence (testing #5)** — the `none` row (Entry 1, "the other ~50 files") leans on this grep; recording the command and its result so the substitute check has evidence, not just an assertion:
 
@@ -981,7 +981,7 @@ Exit code: `0`
 
 ### Impacted-set suite gate (step 8, entry 6)
 
-- HEAD: `PENDING_ENTRY_6_HEAD`
+- HEAD: `ef2d2df82b066d9a54189925e98b8a33b12e742b`
 
 **`test` — `node tests/run.js`**
 
