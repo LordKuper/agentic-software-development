@@ -1,0 +1,1 @@
+- [AGENTS.md sync-state drift](project_agents-md-sync-state-drift.md) — self-sourced AGENTS.md hand-edits red tests/run.js until sync-state.json digest is manually re-baselined; `--apply` can't do it.

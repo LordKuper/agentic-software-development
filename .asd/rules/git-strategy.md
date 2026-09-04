@@ -38,7 +38,7 @@ PM confirms before opening PR:
 - Can explain every changed line
 - PR scoped to requested feature; no unrelated improvements
 - Commit messages describe why, not what
-- Full test suite green at `impl-test` (per `test-plan.md` `Suite run`)
+- Full test suite green, once, at the end of `impl-review` (per `test-plan.md` `Suite run`; `sprint-lifecycle.md` "Impacted test set")
 - Documentation reviewer verdict = APPROVE
 
 ## PR creation

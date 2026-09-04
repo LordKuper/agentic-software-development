@@ -1,4 +1,4 @@
-// ASD generated. Edit .asd/hooks/session-start.js. source_digest=sha256:a01df9dbb7d4974dae349b5aa63c812ac4687c53fa71ca066372cb86ff2edc4d content_digest=sha256:a01df9dbb7d4974dae349b5aa63c812ac4687c53fa71ca066372cb86ff2edc4d asd_version=2.0.0 schema=1
+// ASD generated. Edit .asd/hooks/session-start.js. source_digest=sha256:76eaa1655eaca11126713922acd7efa19cec198781bad0a56f48cf43d4fc2110 content_digest=sha256:76eaa1655eaca11126713922acd7efa19cec198781bad0a56f48cf43d4fc2110 asd_version=3.1.0 schema=1
 // ASD SessionStart hook (canonical, provider-agnostic).
 // No shebang: this file is never executed directly (`./session-start.js`),
 // always invoked as `node <path> --provider ...`, and every generated
@@ -100,6 +100,7 @@ function reviewNodeForPhase(reviews, phase) {
   return null;
 }
 
+// Display-only session summary, never a gate. "APPROVE"-prefixed values (bare or availability-skip) count as satisfied.
 function lastReviewVerdict(node) {
   if (!node || typeof node !== 'object') return 'n/a';
   const verdictsByIter = node.verdicts;
@@ -110,7 +111,7 @@ function lastReviewVerdict(node) {
   if (!latest || typeof latest !== 'object') return 'n/a';
   const verdicts = Object.values(latest);
   const isSkipped = v => typeof v === 'string' && /^skipped:/.test(v);
-  const approved = v => v === 'green' || v === 'APPROVE';
+  const approved = v => v === 'green' || (typeof v === 'string' && v.indexOf('APPROVE') === 0);
   if (verdicts.some(v => v === 'red' || v === 'FAIL')) return 'red';
   if (verdicts.some(v => v === 'yellow' || v === 'CONCERNS')) return 'yellow';
   if (verdicts.length > 0 && verdicts.some(approved) && verdicts.every(v => approved(v) || isSkipped(v))) return 'green';

@@ -1,7 +1,7 @@
 ---
 {
   "name": "asd-update",
-  "description": "Updates the ASD framework infrastructure (.asd/rules, .asd/templates, ASD agents/skills/hooks) in a consumer project to the latest version by fetching them from the configured ASD repo's main branch, replacing only framework-managed paths and never touching consumer-owned config, sprints, persistent docs, or custom skills/agents/hooks. Use when the user runs /asd-update or asks to update, upgrade, or pull the latest ASD framework / workflow version."
+  "description": "Updates the ASD framework infrastructure (.asd/rules, .asd/templates, ASD agents/skills/hooks, .asd/migrations) in a consumer project to the latest version by fetching them from the configured ASD repo's main branch, replacing only framework-managed paths, running any pending `.asd/migrations/<version>.js` scripts in ascending order, and never touching consumer-owned config, sprints, persistent docs, or custom skills/agents/hooks. Use when the user runs /asd-update or asks to update, upgrade, or pull the latest ASD framework / workflow version."
 }
 ---
 
@@ -15,7 +15,7 @@ Read `self_hosting` from `.asd/project/config.yaml` first (`sync.js`'s `isSelfHo
 
 ## What it touches
 
-Managed set = SSoT in `.asd/release-manifest.json`'s `managed_paths` (canonical `.asd/` trees + `sync.js` itself, walked recursively file-by-file) — replacing the old wholesale tree-delete approach with a per-file state machine (`add | update | delete | conflict | conflict-foreign | keep-local-modified | noop`, driven by `classifyUpdateItem` in `.asd/sync.js`). A file whose local hash still matches the last-fetched release is safe to update or delete; a file that diverged is a **conflict** and is never touched without explicit confirmation.
+Managed set = SSoT in `.asd/release-manifest.json`'s `managed_paths` (canonical `.asd/` trees, `.asd/migrations`, and `sync.js` itself, walked recursively file-by-file) — replacing the old wholesale tree-delete approach with a per-file state machine (`add | update | delete | conflict | conflict-foreign | keep-local-modified | noop`, driven by `classifyUpdateItem` in `.asd/sync.js`). A file whose local hash still matches the last-fetched release is safe to update or delete; a file that diverged is a **conflict** and is never touched without explicit confirmation.
 
 Never touched: `.asd/project/**`, `.asd/sprints/**`, `docs/**`, `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json`, any non-ASD skill/agent/hook, anything outside `managed_paths`.
 
@@ -24,11 +24,13 @@ Never touched: `.asd/project/**`, `.asd/sprints/**`, `docs/**`, `AGENTS.md`, `CL
 1. Confirm with user (it overwrites framework files): show what will update, offer dry run.
 2. Run command `node "$(git rev-parse --show-toplevel)/.asd/skills/asd-update/update.js"` — self-locating, so this works from any directory in the repo (a bare relative path only resolves from the repo root).
    - Preview first: append `--dry-run` (reports the full classification — add/update/delete/conflict — mutates nothing).
-3. Updater flow: fetch tarball from `repo`@`branch` → compute the full classification for every `managed_paths` entry (fail-closed on an unfamiliar `schema_version`, unsafe path, or case-collision) → show every conflict and planned action → only THEN write (add/update/delete) → rewrite `upstream_hashes` in `.asd/release-manifest.json`.
+3. Updater flow: fetch tarball from `repo`@`branch` → compute the full classification for every `managed_paths` entry (fail-closed on an unfamiliar `schema_version`, unsafe path, or case-collision) → show every conflict and planned action → only THEN write (add/update/delete) → run pending migrations → rewrite `.asd/release-manifest.json` (`asd_version` + `upstream_hashes`).
    - Fetch/validation failure, or any conflict left unresolved = that file is skipped, everything else proceeds.
    - A conflict the user explicitly confirms overwriting is re-run with `--force <relPath...>` (one or more of the reported conflict paths) — this is the only way a `conflict`/`conflict-foreign` file is ever written; never force without asking first.
-4. Automatically runs `node .asd/sync.js --check` afterward — canon changed upstream means the provider-views (`.claude/`, `.codex/`, `.agents/`) are now stale; report this, do not auto-apply.
-5. Report version `old -> new` + counts from script output.
+4. Migrations (`.asd/migrations/<version>.js`): run AFTER the managed-path replacement above, in ascending version order, for every migration strictly newer than the consumer's current `release-manifest.json.asd_version` up to this release's target version. Each already-applied version is skipped (never re-run past its own target). The runner stops at the first failing migration and reports which one failed and what it had already done; the recorded `asd_version` afterward is the last migration that succeeded (never an unrecorded intermediate) — or the release's full target version if every pending migration succeeded, including when none were pending.
+   - Script contract (also in each script's own header comment): filename (minus `.js`) is the exact target version it migrates a consumer TO, e.g. `.asd/migrations/3.2.0.js`; `module.exports = (ctx) => void | Promise<void>` with `ctx.repoRoot` = the consumer's project root; zero-dependency Node (may `require` `.asd/sync.js` from `ctx.repoRoot` for helpers); idempotent — re-running an already-applied migration is a no-op, never an error.
+5. Automatically runs `node .asd/sync.js --check` afterward — canon changed upstream means the provider-views (`.claude/`, `.codex/`, `.agents/`) are now stale; report this, do not auto-apply.
+6. Report version `old -> new` (or the version actually reached, if a migration failed) + counts from script output.
 
 ## After
 

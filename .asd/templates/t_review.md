@@ -23,11 +23,11 @@ responsibility:
 
 ## Coverage summary (internal reviewers only)
 
-Reviewer returns the complete file+rule coverage ledger (mandatory — verdict INVALID if incomplete; see `review-policy.md`). This file persists only the reduced form below — the gate itself runs on the full returned ledger, before write.
+Reviewer returns the complete file+rule(+section, Correctness/Efficiency only) coverage ledger (mandatory — verdict INVALID if incomplete; see `review-policy.md` "Coverage ledger"). This file persists only the reduced form below — the gate itself runs on the full returned ledger, before write.
 
-**Summary**: `files: {{checked}}/{{total}} checked, {{n/a}} n/a · rules: {{pass}}/{{total}}, {{findings}} findings`
+**Summary**: `files: {{checked}}/{{total}} checked, {{n/a}} n/a · rules: {{pass}}/{{total}}, {{findings}} findings` (Correctness/Efficiency append `· sections: {{reviewed}}/{{total}}, none blank`)
 
-**n/a rows** (verbatim, full list — file or rule, with reason):
+**n/a rows** (verbatim, full list — file, rule, or section, with reason):
 | Item | Reason |
 |---|---|
 | {{path or checklist item}} | {{n/a reason}} |

@@ -1,6 +1,6 @@
-# ASD generated. Edit .asd/agents/asd-ba.md. source_digest=sha256:516b6d03281b906ad3f003c07b1d82260eebf37443d4aed4a1eb8c22a59a079d content_digest=sha256:c8fbdaf9c38ad5c1456758f2a08a49837a78be8de1a26118c43f9533fce5b766 asd_version=3.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-ba.md. source_digest=sha256:618ee73971a068f88487c9a148661ee2377ad0700f8e834aa9250b3bfe099f89 content_digest=sha256:af53947fd8f361936737d87b7d03d79d79b6740f8fe6426074e9a49c0014c014 asd_version=3.1.0 schema=1
 name = "asd-ba"
-description = "Product requirements: user stories, acceptance criteria, brownfield doc audit, PRD drafts. Covers: PRD authoring (sprint draft plus reverse-engineered/migrated), audit of existing docs (not code), user story decomposition, acceptance criteria formulation, ambiguity resolution via clarifying questions. Does NOT handle: ux flows or ui mockups (delegates to asd-ux-designer), architecture decisions (delegates to asd-architect), code (delegates to dev agents), code audit (delegates to asd-architect)."
+description = "Product requirements: user stories, acceptance criteria, brownfield doc audit, PRD drafts. Covers: PRD authoring (sprint draft plus reverse-engineered/migrated), audit of existing docs (not code), user story decomposition, acceptance criteria formulation, ambiguity resolution via clarifying questions. Does NOT handle: ux flows or ui mockups (delegates to asd-ux), architecture decisions (delegates to asd-architect), code (delegates to dev agents), code audit (delegates to asd-architect)."
 model = "gpt-5.6"
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"

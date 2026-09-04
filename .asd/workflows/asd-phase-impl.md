@@ -12,7 +12,7 @@ Orchestration body for the `asd-phase-impl` skill. Operation-mapping to host too
 - read: `.asd/project/config.yaml`, `state.json`, `plan.md`, `<sprint>/reviews/impl/iter-NN/` (review-fix), `<sprint>/test-plan.md` (test-fix), persistent docs, `.asd/project/custom-common-rules.md`, `custom-coding-rules.md`, `stubs.md`, `<sprint>/manual-steps.md`
 - write a file: `state.json` inline, for the mechanical non-gate writes at steps 4, 11 (`sprint-lifecycle.md` "State recovery")
 - request user decision: escalation only (see Execution mode)
-- delegate to agent: devs per task owner / finding owner / defect owner; PM for manual-steps gate, impl completion gate, impl assessment gate, decisions-log tied to those gates
+- delegate to agent: `asd-dev` per task / finding group / defect group (test-file findings to `asd-tester`); PM for manual-steps gate, impl completion gate, impl assessment gate, decisions-log tied to those gates
 
 ## Modes
 
@@ -22,7 +22,7 @@ Detected at step 2 from `state.json`:
 - **Review-fix mode** (`review_fixes_pending` = `iter-NN`) — entered when impl-review routed sprint back. Resolve reviewer findings in `<sprint>/reviews/impl/iter-NN/`. On completion clears `review_fixes_pending`.
 - **Test-fix mode** (`test_defects_pending` set) — entered when impl-test found code defects. Resolve pending `D-N` rows in `<sprint>/test-plan.md`. On completion clears `test_defects_pending`.
 
-Fix modes **skip the impl assessment gate**. Impl completion gate (step 9) applies in **all** modes. Devs write production code only — tests are authored and run in `impl-test`.
+Fix modes **skip the impl assessment gate**. Impl completion gate (step 9) applies in **all** modes and stays build + lint only — this is a scoping rule, not a new gate: a dev may run the impacted set (`sprint-lifecycle.md` "Impacted test set") to self-check work in progress, in any mode, but never authors, modifies, or prunes a test, and that run neither satisfies nor substitutes for this gate. Test authoring, pruning, and running belong to `impl-test`.
 
 ## Execution mode
 
@@ -51,16 +51,16 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
    - `review_fixes_pending` = `iter-NN` → **review-fix mode**; confirm `<sprint>/reviews/impl/iter-NN/` exists (else `ABORT — precondition not met: reviews/impl/iter-NN missing`)
    - `test_defects_pending` set → **test-fix mode**; confirm `<sprint>/test-plan.md` exists with pending `D-N` rows (else `ABORT — precondition not met: test-plan.md defects missing`)
 3. **Build work set** per mode:
-   - **initial** — read `<sprint>/plan.md` → parse Task blocks: title, owner (backend-dev / frontend-dev), subtask checkboxes, dependencies
-   - **review-fix** — read every reviewer file in `<sprint>/reviews/impl/iter-NN/`; collect all CONCERNS findings plus all FAIL findings the user accepted for fix (skip FAIL noted resolved-by-override); from each finding's `Location` (file:line) determine owning dev; group findings by owner into fix tasks. Findings located in test files route to `asd-test-engineer`
-   - **test-fix** — read `<sprint>/test-plan.md` `Defects` section; collect every `D-N` with status `pending`; from each `Location` determine owning dev; group by owner into fix tasks
+   - **initial** — read `<sprint>/plan.md` → parse Task blocks: title, subtask checkboxes, dependencies
+   - **review-fix** — read every reviewer file in `<sprint>/reviews/impl/iter-NN/`; collect all CONCERNS findings plus all FAIL findings the user accepted for fix (skip FAIL noted resolved-by-override); group into fix tasks, one dev task per independent group; findings located in test files route to `asd-tester` instead
+   - **test-fix** — read `<sprint>/test-plan.md` `Defects` section; collect every `D-N` with status `pending`; group into fix tasks, one dev task per independent group
 4. Write `state.json` (phase=impl) inline (mechanical, no gate)
 5. **Build execution graph**:
    - initial — from Task dependencies; topological sort; mark independent tasks parallelisable
    - fix modes — fix tasks independent unless two touch same file; parallel where independent, sequential where they collide
 6. **Dispatch tasks** per execution graph:
    - sequential where dependent; parallel where independent (caller schedules concurrent delegations)
-   - per task: delegate to assigned dev (`asd-backend-dev` | `asd-frontend-dev`; `asd-test-engineer` only for review findings in test files) with payload:
+   - per task: delegate to `asd-dev` (`asd-tester` only for review findings in test files) with payload:
      - initial — Task block excerpt (title + subtasks + dependencies); review-fix — grouped finding list (each finding's severity, location, description, suggested fix; plus user-approved change note for accepted FAIL findings); test-fix — grouped defect list (`D-N`, location, symptom, failing test)
      - relevant context paths (PRD AC-N referenced, ADRs, ux-spec, DESIGN.md, accessibility, stack, commands.yaml, tech-reference/, custom-common-rules.md, custom-coding-rules.md; review-fix also: reviewer files in `reviews/impl/iter-NN/`; test-fix also: `test-plan.md`)
      - `language.chat`, `language.docs`
@@ -70,7 +70,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
        - work autonomously within plan + persistent docs scope; do NOT pause user for routine approach choices — make the reasonable call and proceed
        - escalate only on a blocker (see Execution mode): emit `QUESTION` for unresolvable requirement ambiguity, `FAILED` for missing tech-reference / unrecoverable failure, or raise Complication Approval via request for user decision **only** when a Simplicity Default trigger fires (new abstraction / dependency / config flag / generalization)
        - manual-steps handling: see `sprint-lifecycle.md` "Impl phase" — do not restate here
-       - write production code only — **no tests**; test selection, authoring, pruning, and running belong to `impl-test`
+       - write production code only — **no tests, no authoring, no modifying, no pruning**; the impacted set (`sprint-lifecycle.md` "Impacted test set") may be run for self-verification only, never as a substitute for `impl-test`'s gate; test selection, authoring, pruning, and running belong to `impl-test`
        - review-fix — apply suggested fix per finding, or equivalent correct fix; test-fix — fix the root cause behind the failing test (never weaken or delete the test), then set the defect row `Status` to `fixed` with the fixing commit sha in `<sprint>/test-plan.md`
        - run `build` and `lint` per `commands.yaml`; do not advance with failures or warnings unreported
        - stub handling: see `git-strategy.md` "TODO stubs" — do not restate here
@@ -93,7 +93,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
 9. **Impl completion gate** (all modes) — delegate to agent `asd-pm` to verify, via `commands.yaml`:
    - `build` command executed and finished with no errors and no warnings
    - `lint` command executed and finished with no errors and no warnings
-   - tests are NOT run here — the suite is the `impl-test` gate
+   - the gate itself never runs tests — a dev's optional impacted-set self-verification run (`sprint-lifecycle.md` "Impacted test set") is not part of it; the suite/impacted-set gates belong to `impl-test`/`impl-review`
    - if any condition fails → phase MUST NOT advance: PM relays specific failure to owning dev(s) to fix and re-run; loop step 7. Unrecoverable failure escalates as a blocker (`FAILED`).
    - automatic verification — no user pause
 10. **Impl assessment checkpoint** — **initial mode only** (fix modes skip to step 11) — delegate to agent `asd-pm`:
@@ -135,9 +135,8 @@ Impl completion gate (step 9) and, initial mode only, impl assessment gate (step
 
 ## Agents delegated to
 - `asd-pm` (manual-steps gate, impl completion gate, impl assessment gate, decisions-log tied to those gates; mechanical writes at steps 4, 11 are inline workflow writes)
-- `asd-backend-dev` (per Task with owner=backend-dev)
-- `asd-frontend-dev` (per Task with owner=frontend-dev)
-- `asd-test-engineer` (review-fix mode only, for findings located in test files)
+- `asd-dev` (per Task, finding group, or defect group)
+- `asd-tester` (review-fix mode only, for findings located in test files)
 
 ## Skills/workflows dispatched
 None.
@@ -148,7 +147,7 @@ PHASE: impl | SPRINT: <NNN-slug> | STATUS: <complete|blocked|aborted> | NEXT: im
 ```
 
 ## References
-- `.asd/rules/sprint-lifecycle.md` (impl phase contract, impl modes, completion gate, impl⇄impl-test⇄impl-review cycle)
+- `.asd/rules/sprint-lifecycle.md` (impl phase contract, impl modes, completion gate, impl⇄impl-test⇄impl-review cycle, impacted test set)
 - `.asd/rules/checkpoints.md` (impl assessment gate, fix-mode preconditions)
 - `.asd/rules/review-policy.md` (severity, finding format consumed in review-fix mode)
 - `.asd/rules/git-strategy.md` (commits, project-global stubs, dirty tree)

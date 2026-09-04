@@ -143,7 +143,7 @@ The verdict-token line in `t_review.md`/`t_review-report.md` (`[REVIEW-{{REVIEW_
 
 `docs/architecture/tech-reference/<tech>-<version>.md` per `t_tech-reference.md`. Owner: Architect. Created for every chosen library, framework, runtime, external service. Includes canonical source URL, API surface used, version specifics, deprecations, project conventions.
 
-**Refuse-to-implement rule**: Backend Dev, Frontend Dev, Test Engineer MUST verify `tech-reference/<tech>-<version>.md` exists before implementing with a tech. If missing → emit `FAILED — tech-reference missing for <tech>@<version>` and request it from Architect. No implementation without verified reference.
+**Refuse-to-implement rule**: Dev, Tester MUST verify `tech-reference/<tech>-<version>.md` exists before implementing with a tech. If missing → emit `FAILED — tech-reference missing for <tech>@<version>` and request it from Architect. No implementation without verified reference.
 
 ## Manual steps
 
@@ -159,11 +159,11 @@ Manual step = operational action a human must perform for the plan to complete (
 
 ## Test plan
 
-`<sprint>/test-plan.md` per `t_test-plan.md`. Per-sprint: entry 1 writes it fresh; every re-entry amends it (Defects section carried over with resolved entries kept for the record). Owner: Test Engineer.
+`<sprint>/test-plan.md` per `t_test-plan.md`. Per-sprint: entry 1 writes it fresh; every re-entry amends it (Defects section carried over with resolved entries kept for the record). Owner: Tester.
 
 SSoT for two things invisible in the diff: **why** a test was removed, and **why** a change needed no new test. Also the handoff channel for code defects to `impl` test-fix mode (`Defects` section). Not a task list (that is `plan.md`) and not a review verdict (that is `reviews/impl/iter-NN/testing.md`).
 
-**Manual verification — single home.** The optional `Manual verification` table (AC, steps, expected observation) is authored only here, by the Test Engineer, when automation is impossible (visual UI, third-party live integration, ux feel). No review file duplicates or re-authors this spec; `asd-reviewer-testing` judges whether the spec is justified and reports any result as an ordinary finding, never as a persisted section of its own.
+**Manual verification — single home.** The optional `Manual verification` table (AC, steps, expected observation) is authored only here, by the Tester, when automation is impossible (visual UI, third-party live integration, ux feel). No review file duplicates or re-authors this spec; `asd-reviewer-testing` judges whether the spec is justified and reports any result as an ordinary finding, never as a persisted section of its own.
 
 ## Single Source of Truth (iron rule)
 

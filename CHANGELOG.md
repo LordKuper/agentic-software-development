@@ -2,6 +2,35 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v4.0.0
+
+Review-loop cost revision: fewer reviewer dispatches, fewer test runs, fewer re-asks — without removing a gate — plus a versioned migration mechanism so the consumer-side churn this causes has a supported upgrade path. **Breaking** for any consumer automation keyed on agent names, reviewer verdict tokens, review file names, or `state.json`'s reviewer-keyed shape. Run `/asd-update`; the bundled `4.0.0` migration performs the consumer-side cleanup.
+
+### Added
+- **APPROVE latch** for design-review and impl-review (`sprint-lifecycle.md` "APPROVE latch", `state.json.reviews.<phase>.latched`): a reviewer that returned `APPROVE` on iteration N is not re-dispatched on later iterations of the same phase; its inherited `APPROVE` is still written to `verdicts["iter-NN"]` every iteration (the invariant every consumer of the verdict map relies on — DoD aggregation, the pr gate and the session-start hook never read `latched` for satisfaction). Cleared sprint-wide by a red full suite or by the existing rollback reset. External Review's availability-skip verdict never latches.
+- **Two-tier test running** (`sprint-lifecycle.md` "Impacted test set"): every run in `impl`, `impl-test` and `impl-review` is scoped to the impacted set — diff test files, tests of changed units by reference search, AC-tagged tests, or the runner's native affected selector when `commands.yaml` names one — with a mandatory shared-infrastructure valve that degrades to the full suite. The full suite runs once per cycle, as impl-review's terminal step after every reviewer approved, dispatched to `asd-tester` and recorded in `test-plan.md` `Suite run`.
+- **`commands.yaml` affected-test selector field** (`t_commands.yaml`), detected by `/asd-init` where the runner exposes one; absent → search-derived fallback.
+- **Test-authoring bar** in `asd-tester` and `asd-phase-impl-test.md`: a test is written only for a real, material risk on the change surface; "no new test needed" is a recorded outcome. `code-style.md` §17's hypothetical-risk criterion governs both authoring and pruning.
+- **Change-surface rule** in `review-policy.md`: a finding about unchanged code is invalid unless the change made it incorrect.
+- **`core.md` "Context hygiene"** — seven rules making disk, not the transcript, a sprint's memory: clear at phase boundaries, compact only within a phase with a mandated summary shape, never mid-gate, dispatch by path not excerpt, fresh reviewer context per iteration, ~70% threshold. Replaces the old `## Compaction` 50% rule.
+- **Versioned migrations** — `.asd/migrations/<version>.js`, one idempotent zero-dependency script per target version; `/asd-update` runs the pending ones ascending after the managed-path replacement, loaded from the freshly written tree, stops at the first failure and records `asd_version` only as far as the last success. Migration runner and ordering covered by `tests/run.js`.
+- **`4.0.0` migration** — deletes the marker-carrying generated views of the nine retired agents (`.claude/agents/`, `.codex/agents/`, `.agents/skills/`), adds the selector field to `commands.yaml` when absent, warns when an active sprint sits in a review phase. Never touches `config.yaml` values, sprints, persistent docs, or custom rules/skills/agents/hooks.
+- **`sync.js` orphan handling**: `--check` reports generated views with no canonical source and exits non-zero; `--apply` deletes them only when they carry the ASD ownership marker — an unmarked file is a consumer's own and is reported, never touched.
+
+### Changed
+- **Internal code reviewers 5 → 2.** `asd-reviewer-correctness` (bugs, security, best practice, contract drift, AC coverage trace, UI conformance / tokens / accessibility) and `asd-reviewer-efficiency` (over-engineering, structure/cohesion, design principles, performance budgets, complexity, anti-patterns, regressions) carry every predecessor rubric item as a named section with a section-coverage ledger. Verdict tokens `[REVIEW-<phase>-correctness|efficiency]`; review files `correctness.md` / `efficiency.md`; same keys in `state.json`. `review.scoped_fan_out`'s diff-derived predicates now skip a rubric *section* (`n/a: <predicate>` in the ledger), never the agent. impl-review internal roster = correctness + efficiency + documentation + testing; design-review = correctness (UI section, only with a ux-spec/design-system draft) + efficiency + documentation.
+- **Dev agents merged** into `asd-dev` (server/CLI/library and UI, consuming `DESIGN.md` tokens where UI applies; production code only). `plan.md` tasks no longer carry a backend/frontend owner split.
+- **Renamed** `asd-test-engineer` → `asd-tester`, `asd-ux-designer` → `asd-ux` (scope unchanged). Agent roster 16 → 12.
+- **Model/effort tiers**: `asd-dev`, `asd-tester` → `high` effort (sonnet / terra); `asd-pm` and `asd-advisor` → `fable` / `high` and `sol` / `high`.
+- **`code-style.md` §7**: no comments inside function bodies (the `// TODO(sprint-…)` marker is the sole exception); "WHY not WHAT" applies to doc comments only; type docs state purpose only, member docs state purpose never implementation. Enforced by `asd-reviewer-documentation` at severity `high`. The rule governs the framework's own Node code too — the former `AGENTS.md` exemption is gone.
+- `impl-test`'s suite gate is impacted-only; `impl`'s gate stays build + lint (a dev may run the impacted subset, never authors or prunes tests); the pr gate's "tests pass" check is content-scoped against the recorded `Suite run` `HEAD` and re-runs on any diff — it no longer relies on impl-review being read-only. Pre-4.0.0 `"skipped: <predicate>"` verdict strings still count as satisfied at that gate.
+- `sync.js --apply` fails closed: a target matching no plan entry is `not-found`, `ok: false`, exit 1, and the whole batch aborts (previously reported `applied: true`).
+
+### Removed
+- Agents `asd-reviewer-quality`, `asd-reviewer-implementation`, `asd-reviewer-ui`, `asd-reviewer-simplification`, `asd-reviewer-performance`, `asd-backend-dev`, `asd-frontend-dev`, and the old names `asd-test-engineer`, `asd-ux-designer` — canonical sources and generated views (the `4.0.0` migration removes a consumer's).
+- `core.md` `## Compaction` (absorbed by "Context hygiene").
+- Agent-level dispatch skips under `review.scoped_fan_out` (now section-level).
+
 ## v3.1.0
 
 Doc-links-and-autonomy revision: gated artifacts are now written to disk first and reviewed in the real file via a path link instead of being dumped into chat, and non-gate agent uncertainty routes to a new read-only advisor agent instead of interrupting the user. No user approval was removed from any gate that decides a phase advance.

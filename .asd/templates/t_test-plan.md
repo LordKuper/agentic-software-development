@@ -39,7 +39,7 @@ were scoped through; the next re-entry's delta is `git diff <this sha>...HEAD`.
 
 ## Added tests
 
-Level and AC/risk covered are visible in the test file itself (name, path, comment) — not restated here.
+Level and AC/risk covered are visible in the test file itself (name, path) — not restated here.
 
 | Test | Regression proof |
 |---|---|
@@ -47,10 +47,16 @@ Level and AC/risk covered are visible in the test file itself (name, path, comme
 
 ## Suite run
 
-- Command: {{`test` from commands.yaml}}
+Written twice per cycle: `impl-test`'s suite gate records an **impacted-set** run here each entry
+(`.asd/rules/sprint-lifecycle.md` "Impacted test set"); `impl-review`'s terminal step overwrites
+it with the cycle's one **full-suite** run once every reviewer is APPROVE/latched. The `pr` gate
+always reads whatever is recorded here last — the full-suite record, by the time `pr` runs.
+
+- Command: {{`test` from commands.yaml, impacted-scoped or unscoped per Scope below}}
+- Scope: {{impacted \| full}}
 - Result: {{pass \| fail}} — {{passed/failed/skipped counts}}
 - Lint / build: {{pass \| fail}}
-- HEAD: {{sha}} — commit the suite was verified at; pr phase compares current HEAD against this to decide whether to skip re-running
+- HEAD: {{sha}} — commit this run was verified at; pr phase compares current HEAD against this to decide whether to skip re-running
 
 ## Defects
 

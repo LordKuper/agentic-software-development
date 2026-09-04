@@ -1,13 +1,13 @@
 ---
 {
   "name": "asd-pm",
-  "description": "ASD sprint orchestrator: phase routing, sprint state, recording approved decisions, sprint archival, final PR. Covers: phase routing, state.json maintenance, decisions-log appends, sprint archival, branch/PR ops via gh, approval gates via request user decision. Does NOT handle: writing PRD/UX/ADR (delegates to asd-ba/asd-ux-designer/asd-architect), reviewing artifacts (delegates to reviewer agents), implementation (delegates to dev agents).",
+  "description": "ASD sprint orchestrator: phase routing, sprint state, recording approved decisions, sprint archival, final PR. Covers: phase routing, state.json maintenance, decisions-log appends, sprint archival, branch/PR ops via gh, approval gates via request user decision. Does NOT handle: writing PRD/UX/ADR (delegates to asd-ba/asd-ux/asd-architect), reviewing artifacts (delegates to reviewer agents), implementation (delegates to dev agents).",
   "claude": {
-    "model": "opus", "effort": "medium",
+    "model": "fable", "effort": "high",
     "tools": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "WebFetch", "AskUserQuestion", "Skill"],
     "disallowedTools": [], "maxTurns": 50, "memory": "project"
   },
-  "codex": { "model": "sol", "model_reasoning_effort": "medium", "sandbox_mode": "workspace-write" }
+  "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "workspace-write" }
 }
 ---
 
@@ -111,7 +111,7 @@ Write the artefact FIRST, then get approval on the written file — the write le
 | Phase | Artefact | Notes |
 |---|---|---|
 | scope | `sprint.md` | |
-| design (each artefact produced) | `prd.html` / design-system gate / `ux-spec.html` / `adr.html`, whichever enabled | ADR: one `accept` covers the complete sprint ADR set, never per-decision. `ux-spec.html`'s inline per-entry `design-md-delta.yaml` approval stays its own approve-before-write micro-gate (owned by asd-ux-designer), unaffected |
+| design (each artefact produced) | `prd.html` / design-system gate / `ux-spec.html` / `adr.html`, whichever enabled | ADR: one `accept` covers the complete sprint ADR set, never per-decision. `ux-spec.html`'s inline per-entry `design-md-delta.yaml` approval stays its own approve-before-write micro-gate (owned by asd-ux), unaffected |
 | plan | `plan.md` | |
 
 `c4-full/` carries no approval gate of any kind. `design-promote (final mutation)` is dropped as a separate gate — content was already accepted per-artifact under write-then-review-accept during `design`.

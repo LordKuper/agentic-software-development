@@ -1,6 +1,6 @@
 # Code Style
 
-Implementation-level rules for code-writing agents (Backend Dev, Frontend Dev, Test Engineer). Binding during `impl` and `impl-test`, verified during `impl-review`. Governs how code is written; architecture-level rules out of scope. All code in English.
+Implementation-level rules for code-writing agents (Dev, Tester). Binding during `impl` and `impl-test`, verified during `impl-review`. Governs how code is written; architecture-level rules out of scope. All code in English.
 
 ## 1. Engineering Principles
 
@@ -43,10 +43,10 @@ Implementation-level rules for code-writing agents (Backend Dev, Frontend Dev, T
 
 ## 7. Comments and Documentation
 
-- Comments explain WHY, not WHAT. Code needing a comment to be understood should usually be rewritten.
-- Doc comments mandatory on every public/exported type and member. Internal code documents only what a clear name cannot carry.
+- No comments inside method/function bodies, ever. Meaning belongs in the name, the signature, or the member's doc comment — a body that needs narration is renamed, split, or rewritten instead of commented. The sole permitted in-body marker is `// TODO(sprint-<NNN-slug>): <reason>` (see below).
+- Doc comments mandatory on every public/exported type and member. Internal code documents only what a clear name cannot carry. Doc comments explain WHY, not WHAT — this WHY allowance applies to doc comments only, never to in-body comments (which are banned above).
+- Type-level doc: short, states the type's purpose ONLY — never duplicates or summarizes its members' docs. Member-level doc: short, states the member's purpose, never its implementation. Each member carries its own doc; state each fact once.
 - Comments concise and clear. Every extra word is cognitive load and wasted context — cut filler, hedging, restated code.
-- No duplicated comments. A type's doc does not describe its members — each member carries its own doc. State each fact once.
 - Inherit docs (`<inheritdoc/>`, `@inheritDoc`, etc.) wherever an override or implementation matches the base contract; do not restate inherited text.
 - Use the language-native doc format (XML-doc C#, docstrings Python, JSDoc TypeScript, etc.).
 - Update doc comments when code changes.
@@ -59,6 +59,7 @@ Implementation-level rules for code-writing agents (Backend Dev, Frontend Dev, T
 - Code is the SSoT for behavior; in-code document references rot once those documents move.
 - Do not quote or paraphrase document text in code; replace with a brief standalone rationale (e.g. `not deterministic by design`).
 - Exception: `TODO` markers may carry a reference, since they are tracked and removed.
+- Exception: a test file's name or path may carry an `AC-N` id (the impacted-set AC-citation convention, `sprint-lifecycle.md` "Impacted test set") — an id only, never prose referencing a document.
 
 ## 9. Types and Contracts
 
@@ -113,8 +114,8 @@ Written and run in `impl-test`, never in `impl`. Selection happens **after** the
 - Risk-based and change-scoped: pick the cheapest reliable check per material risk — static/architecture check → focused unit or property test for logic → component or contract test at boundaries → only essential e2e journeys.
 - Every acceptance criterion is covered by a check at some level; the level is chosen by risk, not by rule.
 - Tests verify observable behavior, not implementation detail.
-- Forbidden: trivial, implementation-coupled, mock-confirming, redundant, flaky tests. Duplicates of an existing check are deleted, not kept "for safety".
-- Skipping new tests is allowed only when the change adds no behavior or existing checks already cover the risk — record the decision and its reason in `test-plan.md`.
+- **Hypothetical-risk criterion — single home, governs both authoring and pruning:** a test earns its place only by covering a real, material risk on the change surface, evidenced by actual behavior, an identified failure mode, or a stated requirement. A test verifying a hypothetical rather than a real risk — including one whose behavior an existing check already covers, or whose only value is a coverage number — is not authored in the first place, and is a removal candidate wherever it already exists. Authoring is never the default: absent a qualifying risk, "no new test needed" is a first-class outcome of the strategy pass, not a silent fallback — record the decision (`none`) and its reason in `test-plan.md`.
+- Forbidden: trivial, implementation-coupled, mock-confirming, redundant, flaky tests, and any test failing the hypothetical-risk criterion above. Duplicates of an existing check are deleted, not kept "for safety".
 - Every fixed defect leaves a regression test proven against the pre-fix behavior (fail-first run recorded) or an equivalent targeted mutation.
 - Coverage numbers locate untested code; they are never a quota or a gate.
 - Deterministic: no `sleep`, wall-clock timing, random seeds, or execution-order reliance.
@@ -123,7 +124,6 @@ Written and run in `impl-test`, never in `impl`. Selection happens **after** the
 - Test files named `<system>_<feature>_test.<ext>`; test functions `test_<scenario>_<expected>`.
 - A test mutating global/static state saves and restores it in setup/teardown.
 - Structure each test as Arrange — Act — Assert.
-- A test whose only value is raising the coverage number is deleted.
 
 ## 18. Concurrency
 
@@ -135,7 +135,7 @@ Written and run in `impl-test`, never in `impl`. Selection happens **after** the
 
 - The project formatter and linter decide style; no manual style debate.
 - Style consistent within a file.
-- Build and lint must pass before any commit; the full test suite gates `impl-test`, not each commit.
+- Build and lint must pass before any commit; the impacted test set (`sprint-lifecycle.md` "Impacted test set") gates `impl-test`, not each commit — the full suite runs once, at the end of `impl-review`.
 
 ## 20. Per-Language Rules
 

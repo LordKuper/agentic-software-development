@@ -99,6 +99,7 @@ function reviewNodeForPhase(reviews, phase) {
   return null;
 }
 
+// Display-only session summary, never a gate. "APPROVE"-prefixed values (bare or availability-skip) count as satisfied.
 function lastReviewVerdict(node) {
   if (!node || typeof node !== 'object') return 'n/a';
   const verdictsByIter = node.verdicts;
@@ -109,7 +110,7 @@ function lastReviewVerdict(node) {
   if (!latest || typeof latest !== 'object') return 'n/a';
   const verdicts = Object.values(latest);
   const isSkipped = v => typeof v === 'string' && /^skipped:/.test(v);
-  const approved = v => v === 'green' || v === 'APPROVE';
+  const approved = v => v === 'green' || (typeof v === 'string' && v.indexOf('APPROVE') === 0);
   if (verdicts.some(v => v === 'red' || v === 'FAIL')) return 'red';
   if (verdicts.some(v => v === 'yellow' || v === 'CONCERNS')) return 'yellow';
   if (verdicts.length > 0 && verdicts.some(approved) && verdicts.every(v => approved(v) || isSkipped(v))) return 'green';

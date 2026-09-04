@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:8739d5094278e831af3b5771394246c6e64e7a2cb25f07793b0f67f548b2f16a content_digest=sha256:4015dda705945e1160fa93b798d9520a9e728fa536dcb3730f850f05f5d54c16 asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:8d435c548c1d54f81213fae219850c2449833980e4c997f790620ad470d283ac content_digest=sha256:7715900850cea0b6b6b4b9ffacc7bd70dd40d440ecb3be74eb67186e5cb346e1 asd_version=3.1.0 schema=1
 name: asd-init
 description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
@@ -38,9 +38,17 @@ Operation mapping: see `.asd/rules/providers.md`.
 8. Auto-detect build commands from:
    - manifests: package.json scripts, Cargo.toml, pyproject.toml, go.mod, Makefile
    - code analysis: CI configs (.github/workflows, .gitlab-ci.yml, etc.), Dockerfile RUN lines, README command patterns
+   - native affected/changed-test selector (`test_affected` — `sprint-lifecycle.md` "Impacted
+     test set"): keyed on the detected test *runner*, never on a command string. package.json
+     `devDependencies`/test script naming `jest` → `jest --changedSince=<BASE_REF>`; naming `vitest`
+     → `vitest run --changed <BASE_REF>`; pyproject.toml/requirements.txt naming a picked/testmon-
+     style pytest plugin → that plugin's ref-based invocation. No runner match, or a matched runner
+     with no such flag (e.g. a bare pytest, `dotnet test --filter`'s name-filter, Go package
+     selection) → omit the field entirely; never guess a flag for an undetected/unsupported runner —
+     the search-derived impacted set is the safe fallback
    Record into proposal; do not prompt per-command yet
 8a. **Consolidated proposal & edit gate** — present every auto-detected/defaulted value in one structured block in `language.chat`:
-    - OS, external tools (with missing flags + install hint), review iteration limits, git settings, detected build/test/lint/run commands
+    - OS, external tools (with missing flags + install hint), review iteration limits, git settings, detected build/test/lint/run commands, detected `test_affected` selector or "none detected — falls back to search-derived impacted set"
     Then request user decision: `accept-all` | `edit-section` | `abort`.
     - `edit-section` → request user decision on which section (os | tools | review | git | commands), collect new values, re-show proposal, loop until `accept-all`
     - Missing required tools (designmd if `documents.ux_spec: enabled`; likec4 if decomp+likec4; the wrapped external-review CLI if external_review) → must resolve here: install / override path / disable feature. Do NOT silently proceed with missing required tools.
@@ -48,7 +56,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 9. Write `.asd/project/config.yaml` from `t_config.yaml` with all approved fields (including `project.diagram_tool` when decomp enabled, `self_hosting`, `documents.*`)
 10. Ask user what custom rules to add (separately for common / design / coding scopes); write three files from templates: `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`. Empty scope still writes template stub (header + intro), so agents always find the file.
 11. Write `.asd/project/stubs.md` from `t_stubs.md` (empty registry — downstream phases expect the file to exist)
-12. Write `.asd/project/commands.yaml` (from `t_commands.yaml` + detected + OS-specific `custom.designmd-*` only when `documents.ux_spec: enabled`)
+12. Write `.asd/project/commands.yaml` (from `t_commands.yaml` + detected + OS-specific `custom.designmd-*` only when `documents.ux_spec: enabled`); `test_affected` written only when detected, omitted (not written empty/guessed) otherwise — a `.asd/project/commands.yaml` from an older ASD version without the field keeps working unchanged since the impacted set falls back to the search-derived definition
 13. If decomp enabled:
     - **likec4 mode**: seed `c4/model/main.c4`, `c4/views.c4` from templates. Seed `commands.yaml` with a `c4-build: "likec4 build docs/architecture/c4 --output docs/architecture/c4/dist"` build-to-view command — `dist/` itself is gitignored, not built here
     - **mermaid mode**: seed `c4/subsystems.yaml` from `t_subsystems.yaml`. ASD ships no mermaid-to-HTML renderer (avoids a new dependency) — seed `commands.yaml`'s `c4-build` entry as an empty placeholder (`""`) with an inline comment: user supplies their own render command before first use (a project script, or manually wrapping the mermaid blocks in `t_html-shell.html` as the architect agent does for other artifacts); `architecture.html` itself stays gitignored either way, never rendered by ASD itself

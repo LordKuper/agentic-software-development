@@ -959,6 +959,86 @@ function recomputeAndWriteHashLedgers(repoRoot) {
 }
 
 // ---------------------------------------------------------------------------
+// Orphan detection - generated views whose canonical source no longer exists.
+// buildSyncPlan is source-driven (walks .asd/agents, .asd/skills): a deleted
+// or renamed canonical file simply stops appearing in the plan, so the
+// generated file(s) it used to produce are never visited by check/apply and
+// survive silently. This walks the generated trees themselves and diffs
+// their actual contents against what the plan currently expects there, to
+// catch that class of drift.
+// ---------------------------------------------------------------------------
+
+// The four generated trees under active management. Hook targets
+// (.claude/hooks, .codex/hooks) are out of scope.
+const ORPHAN_TREES = [
+  ['.claude', 'agents'],
+  ['.claude', 'skills'],
+  ['.codex', 'agents'],
+  ['.agents', 'skills'],
+];
+
+// Every target path buildSyncPlan currently expects to write - managed-block
+// and json-merge targets are single fixed files outside the four generated
+// trees, so only full-file items matter here.
+function expectedGeneratedTargets(plan) {
+  const set = new Set();
+  for (const item of plan) {
+    if (item.class !== 'full-file') continue;
+    set.add(item.targetPath);
+  }
+  return set;
+}
+
+// Fail-closed marker read: a symlink, an unreadable file, or anything that
+// throws is treated as "no marker" - the safety property this exists for is
+// "a marker-read failure means do not delete", never "assume ownership and
+// delete anyway".
+function hasOwnershipMarker(absPath) {
+  try {
+    if (isSymlink(absPath)) return false;
+    const text = readNormalized(absPath);
+    const { parsed } = splitMarkerAndBody(text);
+    return !!parsed;
+  } catch (_) {
+    return false;
+  }
+}
+
+// Returns [{ target, marked }] for every file that sits inside one of the
+// four generated trees but has no matching entry in the current sync plan.
+// `marked` = the file carries the ASD ownership marker (apply may delete it);
+// unmarked = indistinguishable from a consumer's own hand-authored agent or
+// skill living in the same directory - reported, never touched.
+function findOrphans(repoRoot, plan) {
+  const expected = expectedGeneratedTargets(plan);
+  const orphans = [];
+  for (const treeParts of ORPHAN_TREES) {
+    const absDir = path.join(repoRoot, ...treeParts);
+    if (!fs.existsSync(absDir)) continue;
+    const relFiles = [];
+    walkDir(absDir, '', relFiles);
+    for (const rel of relFiles) {
+      const absPath = path.join(absDir, rel);
+      if (expected.has(absPath)) continue;
+      orphans.push({
+        target: path.relative(repoRoot, absPath).replace(/\\/g, '/'),
+        marked: hasOwnershipMarker(absPath),
+      });
+    }
+  }
+  return orphans;
+}
+
+// Removes a generated view's parent directory once emptied by a delete -
+// covers the `.agents/skills/<name>/` case, where the per-skill directory
+// would otherwise survive the single file it existed to hold.
+function removeIfEmptyDir(absDir) {
+  if (!fs.existsSync(absDir)) return;
+  if (fs.readdirSync(absDir).length > 0) return;
+  fs.rmdirSync(absDir);
+}
+
+// ---------------------------------------------------------------------------
 // CLI (Stage 0: engine only - real canon trees land in Stage 1, so an empty
 // canon directory is a normal, green outcome here, not an error).
 // ---------------------------------------------------------------------------
@@ -1219,6 +1299,11 @@ function statusForPlanItem(item, repoRoot, manifest, syncState) {
   throw new Error(`unknown sync plan item class "${item.class}"`);
 }
 
+// Every managed target's status, plus any orphaned generated view (a file
+// still on disk after its canonical source moved or was deleted). An
+// ownership-marked orphan reports as a real defect ('orphan'); an unmarked
+// one is informational only ('orphan-unmarked') - a consumer's own file, not
+// this tool's to flag.
 function runCheck(repoRoot) {
   const manifest = loadReleaseManifest(repoRoot);
   const syncState = loadSyncState(repoRoot);
@@ -1227,6 +1312,9 @@ function runCheck(repoRoot) {
   for (const item of plan) {
     const { status } = statusForPlanItem(item, repoRoot, manifest, syncState);
     report.push({ target: path.relative(repoRoot, item.targetPath).replace(/\\/g, '/'), status });
+  }
+  for (const orphan of findOrphans(repoRoot, plan)) {
+    report.push({ target: orphan.target, status: orphan.marked ? 'orphan' : 'orphan-unmarked' });
   }
   return report;
 }
@@ -1240,6 +1328,14 @@ function runCheck(repoRoot) {
 // overwrite silently" - force is the one explicit exception to "silently").
 // Self-sourced managed blocks (AGENTS.md) have no generator to apply from -
 // they are authored directly and only ever checked, never auto-applied here.
+//
+// A requested target that matches no plan entry may still be an orphan - a
+// generated view whose canonical source no longer exists, so it never
+// appears in buildSyncPlan's source-driven output. An orphan is deleted only
+// when it carries the ASD ownership marker (a consumer's own file of the
+// same name never does); a target matching neither the plan nor a detected
+// orphan aborts every write in the whole batch, so one bad target never
+// half-applies the rest.
 //
 // Two-pass: every requested item is resolved AND rendered/statused in pass 1,
 // before pass 2 writes anything. A bad canon source (invalid JSON/TOML
@@ -1257,6 +1353,7 @@ function runApply(repoRoot, requestedFiles, options) {
     planByRel.set(rel, item);
   }
   const forceSet = new Set((options && options.force) || []);
+  const orphanByRel = new Map(findOrphans(repoRoot, plan).map((o) => [o.target, o]));
 
   // Pass 1: resolve + render/status every request. Throws here (invalid
   // canon) propagates before any write in pass 2 runs.
@@ -1266,7 +1363,7 @@ function runApply(repoRoot, requestedFiles, options) {
     const rel = path.relative(repoRoot, reqAbs).replace(/\\/g, '/');
     const item = planByRel.get(rel);
     if (!item) {
-      resolved.push({ rel, item: null });
+      resolved.push({ rel, item: null, orphan: orphanByRel.get(rel) || null });
       continue;
     }
     if (item.class === 'full-file') {
@@ -1296,12 +1393,24 @@ function runApply(repoRoot, requestedFiles, options) {
     }
   }
 
-  // Pass 2: every render above already succeeded - write.
+  const hasInvalidTarget = resolved.some((r) => !r.item && !r.orphan);
+
   const results = [];
   let stateChanged = false;
   for (const r of resolved) {
     if (!r.item) {
-      results.push({ target: r.rel, status: 'unknown', applied: false });
+      if (!r.orphan) {
+        results.push({ target: r.rel, status: 'not-found', applied: false });
+      } else if (r.orphan.marked && !hasInvalidTarget) {
+        const absOrphan = path.join(repoRoot, r.rel);
+        fs.unlinkSync(absOrphan);
+        removeIfEmptyDir(path.dirname(absOrphan));
+        results.push({ target: r.rel, status: 'orphan', applied: true });
+      } else if (r.orphan.marked) {
+        results.push({ target: r.rel, status: 'orphan', applied: false });
+      } else {
+        results.push({ target: r.rel, status: 'orphan-unmarked', applied: false });
+      }
       continue;
     }
     if (r.selfSourced) {
@@ -1313,7 +1422,7 @@ function runApply(repoRoot, requestedFiles, options) {
       });
       continue;
     }
-    const writable = r.status === 'missing' || r.status === 'stale' || (r.status === 'modified-foreign' && forceSet.has(r.rel));
+    const writable = !hasInvalidTarget && (r.status === 'missing' || r.status === 'stale' || (r.status === 'modified-foreign' && forceSet.has(r.rel)));
     if (!writable) {
       results.push({ target: r.rel, status: r.status, applied: false });
       continue;
@@ -1333,13 +1442,22 @@ function runApply(repoRoot, requestedFiles, options) {
   return results;
 }
 
+// CLI entry: `--check` reports every managed target's status, exiting
+// non-zero if any generated view is an ownership-marked orphan - an
+// unmarked orphan is informational only. `--apply <file...> [--force]`
+// writes only the requested targets, exiting non-zero if any of them
+// matched neither a plan entry nor a detected orphan, so a bogus target is
+// never silently treated as success; the hash-ledger recompute that follows
+// a real apply is skipped on that same abort, so it never records a ledger
+// for a batch that wrote nothing.
 function main(argv) {
   const repoRoot = findRepoRoot(process.cwd());
   const args = argv.slice(2);
   if (args[0] === '--check') {
     const report = runCheck(repoRoot);
-    process.stdout.write(JSON.stringify({ ok: true, items: report }, null, 2) + '\n');
-    return 0;
+    const hasOrphans = report.some((r) => r.status === 'orphan');
+    process.stdout.write(JSON.stringify({ ok: !hasOrphans, items: report }, null, 2) + '\n');
+    return hasOrphans ? 1 : 0;
   }
   if (args[0] === '--apply') {
     // `--force` is a trailing bare flag: when present, every listed file is
@@ -1353,15 +1471,16 @@ function main(argv) {
     const files = force ? rest.filter((_, i) => i !== forceIdx) : rest;
     const forceRels = force ? files.map((f) => path.relative(repoRoot, path.resolve(repoRoot, f)).replace(/\\/g, '/')) : [];
     const results = runApply(repoRoot, files, { force: forceRels });
+    const hasInvalidTargets = results.some((r) => r.status === 'not-found');
     // AGENTS.md: "run node .asd/sync.js --apply <file...> after editing
     // canon" - recomputing release-manifest.json's hash ledgers is now part
     // of that same step, not a separate manual script (see comment above
     // recomputeAndWriteHashLedgers). Applies whole-repo, independent of which
     // targets were requested, since both ledgers are pure functions of
     // current on-disk canon content.
-    const hashLedger = recomputeAndWriteHashLedgers(repoRoot);
-    process.stdout.write(JSON.stringify({ ok: true, applied: results, hashLedger }, null, 2) + '\n');
-    return 0;
+    const hashLedger = hasInvalidTargets ? null : recomputeAndWriteHashLedgers(repoRoot);
+    process.stdout.write(JSON.stringify({ ok: !hasInvalidTargets, applied: results, hashLedger }, null, 2) + '\n');
+    return hasInvalidTargets ? 1 : 0;
   }
   process.stdout.write('usage: node .asd/sync.js --check | --apply <file...> [--force]\n');
   return 0;
@@ -1428,4 +1547,9 @@ module.exports = {
   claudeSessionStartOwnedEntries,
   codexSessionStartOwnedEntries,
   statusSelfSourcedManagedBlock,
+  ORPHAN_TREES,
+  expectedGeneratedTargets,
+  hasOwnershipMarker,
+  findOrphans,
+  removeIfEmptyDir,
 };

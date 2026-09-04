@@ -18,6 +18,10 @@ ASD runs from one canonical source (`.asd/`) generated into two host views: Clau
 
 Codex has no project-level equivalent of `.claude/skills` — a separate `.agents/skills/` tree is generated because Codex only reads skills from `.agents/skills` (see `plans/multi-provider-support.md`, "Закрытые вопросы" #1). One skill tree cannot serve both hosts.
 
+### Orphan detection
+
+`buildSyncPlan` is source-driven: a deleted or renamed canonical agent/skill simply stops appearing in the plan, so `.asd/sync.js` also diffs the actual contents of `.claude/agents/`, `.claude/skills/`, `.codex/agents/`, `.agents/skills/` against what the current plan expects there. A file present in one of those trees with no matching plan entry is an orphan. `--check` is what enumerates every orphan — reports each, exits non-zero; it is the only place a caller discovers them. `--apply` deletes an orphan only when BOTH conditions hold: (1) it carries the ASD ownership marker — an unmarked file is reported (`orphan-unmarked`) and never touched, it's a consumer's own agent or skill, indistinguishable from an orphan by path alone; and (2) it is explicitly named in the `--apply <file...>` target list — `runApply` only inspects the requested targets, never sweeps the whole orphan set on its own initiative, so a caller regenerating only changed canon never automatically sweeps orphans, even marker-owned ones, unless it names them. Deleting a marker-owned orphan this way also prunes its now-empty parent directory, mirroring the migration runner's own empty-parent prune for the same file class.
+
 ## Semantic operations -> host convention
 
 Canonical agent/skill/workflow bodies never name a host tool directly. They use the semantic verbs below; each host's dispatcher resolves the verb to its own tool at runtime.
@@ -56,12 +60,12 @@ A provider's id is always its rolling alias (newest model in the family), so a f
 
 | Agent | Claude model / effort | Codex model / effort | Codex sandbox |
 |---|---|---|---|
-| asd-pm | opus / medium | sol / medium | workspace-write |
-| asd-ba, asd-ux-designer, asd-architect | opus / high | sol / high | workspace-write |
-| asd-backend-dev, asd-frontend-dev, asd-test-engineer | sonnet / medium | terra / medium | workspace-write |
-| asd-reviewer-* (7) | opus / high | sol / high | read-only |
+| asd-pm | fable / high | sol / high | workspace-write |
+| asd-ba, asd-ux, asd-architect | opus / high | sol / high | workspace-write |
+| asd-dev, asd-tester | sonnet / high | terra / high | workspace-write |
+| asd-reviewer-* (4) | opus / high | sol / high | read-only |
 | asd-external-review | fable / high | sol / high | read-only |
-| asd-advisor | fable / medium | sol / medium | read-only |
+| asd-advisor | fable / high | sol / high | read-only |
 
 ## External review symmetry
 

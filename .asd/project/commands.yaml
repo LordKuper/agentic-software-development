@@ -1,10 +1,15 @@
 # commands.yaml — machine-only SSoT for project build/test/run commands
-# read by Backend Dev, Frontend Dev, Test Engineer, and review agents
+# read by Dev, Tester, and review agents
 
 test: "node tests/run.js"
 lint: "git diff --check"
 build: "node .asd/sync.js --check"
 run: "node .asd/hooks/session-start.js --provider codex"
+
+# test_affected: intentionally omitted. `tests/run.js` is this repo's own zero-dependency runner
+# (a flat sequential `test(name, fn)` array, tests/run.js) with no affected/changed-test flag to
+# detect or invoke — inventing one would silently narrow every scoped run. The impacted set falls
+# back to the search-derived definition (sprint-lifecycle.md "Impacted test set").
 
 custom:
   sync-check: "node .asd/sync.js --check"
