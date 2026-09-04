@@ -204,8 +204,9 @@ function planUpdate(repoRoot, sourceRoot) {
   }
   checkCaseCollisions(relPaths);
   const classifications = classifyAll(repoRoot, sourceRoot, oldManifest, newManifest, relPaths);
-  const migrationsDir = path.join(repoRoot, '.asd', 'migrations');
-  const pendingMigrationVersions = pendingMigrations(listMigrations(migrationsDir), oldManifest.asd_version, newManifest.asd_version).map((m) => m.version);
+  const localMigrations = listMigrations(path.join(repoRoot, '.asd', 'migrations'));
+  const incomingMigrations = listMigrations(path.join(sourceRoot, '.asd', 'migrations'));
+  const pendingMigrationVersions = pendingMigrations(unionMigrationsByVersion(localMigrations, incomingMigrations), oldManifest.asd_version, newManifest.asd_version).map((m) => m.version);
   return {
     oldManifest,
     newManifest,
@@ -330,6 +331,19 @@ function listMigrations(migrationsDir) {
 // and including the release's target version - ascending order.
 function pendingMigrations(migrations, oldVersion, newVersion) {
   return migrations.filter((m) => compareVersions(m.version, oldVersion) > 0 && compareVersions(m.version, newVersion) <= 0);
+}
+
+// A migration the incoming release delivers may not exist in the consumer's
+// PRE-update tree at all (`.asd/migrations` is itself a managed path); one a
+// consumer authored ahead of upstream may exist only locally. Union by
+// version, local wins on a name collision, so a plan built before the
+// managed-path write still names every migration that will actually be
+// found and run afterward.
+function unionMigrationsByVersion(localMigrations, incomingMigrations) {
+  const byVersion = new Map();
+  for (const m of incomingMigrations) byVersion.set(m.version, m);
+  for (const m of localMigrations) byVersion.set(m.version, m);
+  return Array.from(byVersion.values()).sort((a, b) => compareVersions(a.version, b.version));
 }
 
 // Same rationale as loadFreshSync: a migration script shipped in THIS apply
@@ -567,6 +581,7 @@ module.exports = {
   compareVersions,
   listMigrations,
   pendingMigrations,
+  unionMigrationsByVersion,
   runMigrations,
   fetchUpstreamTarball,
   cleanupFetch,
