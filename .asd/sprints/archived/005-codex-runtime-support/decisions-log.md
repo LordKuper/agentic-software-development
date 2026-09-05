@@ -84,3 +84,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Approved and opened the sprint PR against `main` with the accepted title and description.
 - **Rationale**: The Definition of Done is satisfied and release `v4.0.1` is ready for review and merge.
 - **Affected docs**: [PR #23](https://github.com/LordKuper/agentic-software-development/pull/23), [state.json](state.json)
+
+- 2026-09-05 — sprint 005-codex-runtime-support files archived pre-merge, pending PR #23 merge
