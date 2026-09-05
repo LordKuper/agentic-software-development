@@ -353,7 +353,7 @@ function transformSkillClaude(meta, body) {
 }
 
 function codexSkillText(text) {
-  return String(text).replace(/(^|[^.\w/])\/asd-([a-z0-9-]+)(?=$|[^a-z0-9-/.])/gm, (_match, prefix, name) => `${prefix}$asd-${name}`);
+  return String(text).replace(/(^|[^.\w/])\/asd-([a-z0-9-]+)(?=$|[^.\w/-])/gm, (_match, prefix, name) => `${prefix}$asd-${name}`);
 }
 
 function transformSkillCodex(meta, body) {
