@@ -11,7 +11,9 @@ responsibility:
 
 | Entry | HEAD analysed | Scope |
 |---|---|---|
-| 1 |  | full change surface |
+| 1 | ea2fe4fc8ee91e4ae9129ba8e06a0ddc620dbe31 | full change surface |
+| 2 | 5c9e546 | impl review-fix: root-relative skill paths and fail-first proof for added AC checks |
+| 3 | 09a40fe | impl review-fix: uppercase and underscore command continuations |
 
 ## Risk → check decisions
 
@@ -37,14 +39,39 @@ responsibility:
 
 | Test | Regression proof |
 |---|---|
-| `tests/run.js: AC-1/3/5/6/7: Codex renderer rejects invalid delegate config with context` | Targeted input mutations: legacy `gpt-5.6`, mismatched family, unknown family, invalid effort/sandbox, and missing Codex block all reject with full diagnostic context. |
-| `tests/run.js: AC-3/6/7: every canonical Codex agent renders a supported delegate config` | Broad invariant; all 12 dispatched canonical agents must render a supported model, effort, and sandbox. The legacy unsuffixed mapping is proven rejected by the preceding targeted mutation. |
-| `tests/run.js: AC-2/4/5/7/8: Codex skill rendering rewrites only standalone invocations` | Demonstrable pre-fix behavior: identity/Claude rendering leaves `/asd-*`; the check requires `$asd-*` only for standalone invocations and preserves path/URL text. |
-| `tests/run.js: AC-2/4/5/6/7: SessionStart recovers only archived active sprints and reports conflicts` | Demonstrable pre-fix behavior: the prior top-level-only scan omitted archived `pr` state; isolated archive fixtures now require recovery and conflict warning. |
-| `tests/run.js: AC-2/4/6/7: review workflow contracts retain Correctness and incremental diff scope` | Demonstrable pre-fix source behavior: Correctness had a non-UI dispatch skip and the prompt used last commit; required canonical clauses reject both regressions. |
-| `tests/run.js: AC-2/4/6/8: External Review CLI availability stays provider-symmetric` | Targeted contract mutation: either provider's command key, `--version` probe, or availability-skip text removal fails the generated-view symmetry check. |
+| `tests/run.js: AC-1/3/5/6/7: Codex renderer rejects invalid delegate config with context` | E1 fail-first: disable ChatGPT-model validation; legacy `gpt-5.6` no longer throws and this check fails. |
+| `tests/run.js: AC-3/6/7: every canonical Codex agent renders a supported delegate config` | E2 fail-first: change `asd-pm` sandbox to `unsafe`; canonical-role rendering fails for `asd-pm`. |
+| `tests/run.js: AC-2/4/5/7/8: Codex skill rendering rewrites only standalone invocations` | E3 fail-first: restore the greedy pre-fix matcher; root-relative `/asd-sprint/usage` and `/asd-sprint.md` corrupt. |
+| `tests/run.js: AC-2/4/5/6/7: SessionStart recovers only archived active sprints and reports conflicts` | E4 fail-first: return before archived scan; isolated archived `pr` sprint is not recovered. |
+| `tests/run.js: AC-2/4/6/7: review workflow contracts retain Correctness and incremental diff scope` | E5 fail-first: remove the required all-reviewer dispatch clause; static contract check fails. |
+| `tests/run.js: AC-2/4/6/8: External Review CLI availability stays provider-symmetric` | E6 fail-first: alter the Claude availability-skip phrase; generated-view symmetry check fails. |
+
+## Fail-first evidence — entry 2
+
+The zero-dependency runner has no single-test filter, so each command below executes `node tests/run.js`; the named failing AC check is the targeted observation. Every mutation was temporary and restored before the final pass.
+
+| Evidence | Temporary mutant and command | Observed fail | Restored result |
+|---|---|---|---|
+| E1 | In `.asd/sync.js`, replace the ChatGPT-runtime mapping validation branch with `if (false)`; `node tests/run.js`. | `AC-1/3/5/6/7` failed: `Missing expected exception: legacy unsuffixed model` (109/111). | `node tests/run.js`: 111/111 passed. |
+| E2 | In `.asd/agents/asd-pm.md`, change `sandbox_mode` from `workspace-write` to `unsafe`; `node tests/run.js`. | `AC-3/6/7` failed: `asd-pm: invalid sandbox mode` (107/111). | `node tests/run.js`: 111/111 passed. |
+| E3 | In `.asd/sync.js`, restore the pre-fix matcher without the terminal/path lookahead; `node tests/run.js`. | `AC-2/4/5/7/8` failed: `paths and URLs must remain literal` (109/111). | `node tests/run.js`: 111/111 passed. |
+| E4 | In `.asd/hooks/session-start.js`, return before the archived-sprint scan; `node tests/run.js`. | `AC-2/4/5/6/7` SessionStart check failed: expected archived `777-open`, got no active sprint (108/111). | `node tests/run.js`: 111/111 passed. |
+| E5 | In `.asd/workflows/asd-phase-design-review.md`, remove `Every internal reviewer is dispatched`; `node tests/run.js`. | `AC-2/4/6/7` workflow check failed on its required dispatch assertion (109/111). | `node tests/run.js`: 111/111 passed. |
+| E6 | In generated `.claude/agents/asd-external-review.md`, alter `external review unavailable: <resolved command>`; `node tests/run.js`. | `AC-2/4/6/8` External Review check failed on the Claude availability-skip assertion (109/111). | `node tests/run.js`: 111/111 passed. |
+
+## Fail-first evidence — entry 3
+
+| Evidence | Temporary mutant and command | Observed fail | Restored result |
+|---|---|---|---|
+| E7 | In `.asd/sync.js`, replace the terminal lookahead `(?=$|[^.\\w/-])` with `(?=$|[^a-z0-9-/.])`; `node tests/run.js`. | `AC-2/4/5/7/8` failed: `paths, continuations, and URLs must remain literal` (109/111); the mutant rewrote uppercase/underscore continuations. | `node tests/run.js`: 111/111 passed. |
 
 ## Suite run
+
+- Command: `node tests/run.js`
+- Scope: full — safety-valve impacted set (shared framework infrastructure)
+- Result: pass — 111/111 passed, 0 failed (two expected fixture warnings)
+- Lint / build: pass / pass (`git diff --check`; `node .asd/sync.js --check`, 64/64 current)
+- HEAD analysed: `09a40fe` (test delta committed separately)
 
 ## Defects
 
