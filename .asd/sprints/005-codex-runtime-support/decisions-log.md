@@ -78,3 +78,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-05 — external review unavailable at invocation: claude — OAuth session expired; workspace trust not accepted; retry failed
 
 - 2026-09-05 — impl-review iter 03: APPROVE, full suite green
+
+## 2026-09-05 — Opened PR #23
+
+- **Decision**: Approved and opened the sprint PR against `main` with the accepted title and description.
+- **Rationale**: The Definition of Done is satisfied and release `v4.0.1` is ready for review and merge.
+- **Affected docs**: [PR #23](https://github.com/LordKuper/agentic-software-development/pull/23), [state.json](state.json)
