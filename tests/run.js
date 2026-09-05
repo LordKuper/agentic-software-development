@@ -157,12 +157,12 @@ test('AC-3/6/7: every canonical Codex agent renders a supported delegate config'
 });
 
 test('AC-2/4/5/7/8: Codex skill rendering rewrites only standalone invocations', () => {
-  const meta = { name: 'fixture', description: 'Run /asd-sprint; preserve /guide/asd-sprint and https://example.test/asd-sprint.' };
-  const body = 'Then run (/asd-init). Existing $asd-sync, /docs/asd-sync, and https://example.test/asd-sync stay unchanged.';
+  const meta = { name: 'fixture', description: 'Run /asd-sprint; preserve /guide/asd-sprint, /asd-sprint/usage, /asd-sprint.md, and https://example.test/asd-sprint.' };
+  const body = 'Then run (/asd-init). Existing $asd-sync, /docs/asd-sync, /asd-sync/usage, /asd-sync.md, and https://example.test/asd-sync stay unchanged.';
   const codex = sync.transformSkillCodex(meta, body);
   const claude = sync.transformSkillClaude(meta, body);
   assert.ok(codex.includes('$asd-sprint') && codex.includes('($asd-init)'), 'Codex standalone invocations must use skill syntax');
-  assert.ok(codex.includes('/guide/asd-sprint') && codex.includes('https://example.test/asd-sprint') && codex.includes('/docs/asd-sync'), 'paths and URLs must remain literal');
+  assert.ok(codex.includes('/guide/asd-sprint') && codex.includes('/asd-sprint/usage') && codex.includes('/asd-sprint.md') && codex.includes('https://example.test/asd-sprint') && codex.includes('/docs/asd-sync') && codex.includes('/asd-sync/usage') && codex.includes('/asd-sync.md'), 'paths and URLs must remain literal');
   assert.ok(claude.includes('/asd-sprint') && claude.includes('(/asd-init)'), 'Claude commands must remain slash commands');
   assert.ok(!claude.includes('$asd-sprint'), 'Claude output must not inherit Codex syntax');
 });
