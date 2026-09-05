@@ -16,19 +16,19 @@ The command TAIL differs per wrapped CLI — this is a real syntax difference (e
 
 | OS | Probe | Review command |
 |---|---|---|
-| windows | `<wrapped-cli> --version` (PowerShell) | `@'<rendered prompt + diff payload>'@ \| <wrapped-cli> <wraps_invoke_args>` (here-string piped to stdin) |
-| linux | `<wrapped-cli> --version` (bash) | `<wrapped-cli> <wraps_invoke_args> <<'EOF'` / `<rendered prompt + diff payload>` / `EOF` (heredoc piped to stdin) |
+| windows | `<resolved-command> --version` (PowerShell) | `@'<rendered prompt + diff payload>'@ \| <resolved-command> <wraps_invoke_args>` (here-string piped to stdin) |
+| linux | `<resolved-command> --version` (bash) | `<resolved-command> <wraps_invoke_args> <<'EOF'` / `<rendered prompt + diff payload>` / `EOF` (heredoc piped to stdin) |
 | macos | `<wrapped-cli> --version` (bash) | same as linux |
 
 Both forms read prompt+diff from stdin; the command's own stdout is the final message text verdict. No `-o <out-file>` for either CLI.
 
-`<wrapped-cli>` is `codex` under Claude Code / `claude` under Codex — command name on every OS (each ships a shell shim plus OS-specific wrappers on Windows; no compiled `.exe`). The config override (`system.tools.codex_command` under Claude, `system.tools.claude_command` under Codex) replaces that lookup path.
+`<wrapped-cli>` is `codex` under Claude Code / `claude` under Codex — command name on every OS (each ships a shell shim plus OS-specific wrappers on Windows; no compiled `.exe`). `<resolved-command>` is that default unless the config override (`system.tools.codex_command` under Claude, `system.tools.claude_command` under Codex) is non-empty, in which case it replaces the lookup path for both probe and review.
 
 ## Detection
 
-At review phase start, agent runs the probe. On failure (non-zero exit, command not found):
+At review phase start, agent probes `<resolved-command> --version`. On failure (non-zero exit, command not found):
 
-- Return a skip note; the dispatching workflow appends it to `<sprint>/decisions-log.md`: `<wrapped-cli> CLI unavailable, external review skipped for sprint <NNN-slug> iter <N>`
+- Return `APPROVE (skipped: external review unavailable: <resolved-command>)`; the dispatching workflow persists that exact reason in the external review output and appends it to `<sprint>/decisions-log.md` for sprint `<NNN-slug>` iteration `<N>`
 - Continue without external review, no user prompt
 
 ## Phase-scoped payload

@@ -32,8 +32,8 @@
 5. Detect external tools (silent; record results, do not prompt per-tool yet):
    - `likec4 --version` (only if diagram_tool=likec4)
    - designmd (only if `documents.ux_spec: enabled` — the design-system gate that needs it is skipped entirely otherwise, `sprint-lifecycle.md` "Optional documents"): check `node --version` and `npm --version`. Tooling invoked via `commands.yaml` (`designmd-*`); no `designmd` binary on PATH required. When `documents.ux_spec: disabled`, skip detection, write `system.tools.designmd: false`, omit the `designmd-*` custom commands entirely.
-   - the *other* provider's CLI, wrapped by External Review (only if external_review=enabled): probe `codex --version` when this init is running under Claude Code, `claude --version` when running under Codex (`.asd/rules/providers.md` § External review symmetry) — never probe the running host's own CLI
-   Record paths and missing flags for the consolidated proposal
+   - the *other* provider's CLI, wrapped by External Review (only if external_review=enabled): resolve its configured command or default lookup, then probe it — `system.tools.codex_command` or `codex` under Claude Code; `system.tools.claude_command` or `claude` under Codex (`.asd/rules/providers.md` § External review symmetry). Never probe the running host's own CLI.
+   Record the resolved command and availability for the consolidated proposal
 6. Pick review iteration defaults (low=1 medium=1 high=2 critical=10) — include in proposal, do not prompt yet
 7. Pick git defaults (base_branch from `git symbolic-ref refs/remotes/origin/HEAD` or `main`; branch_pattern `sprint/<NNN>-<slug>`; gh_enabled from `gh --version`; auto_pr=false) — include in proposal
 8. Auto-detect build commands from:
@@ -79,6 +79,7 @@
 4. Per section: ask new value → add to pending change-set (do not write yet)
 5. Show consolidated diff of all pending edits → request user decision: `accept-all` | `edit-section` | `abort`; loop until accepted
 6. Apply diff; write config
+7. If `review.external_review=enabled`, resolve and probe the wrapped CLI from the final config exactly as fresh init does; report the resolved command and availability. An unavailable probe leaves the setting intact but is surfaced as the explicit runtime availability-skip reason (`external-review.md` "Detection").
 
 ## AGENTS.md sync
 

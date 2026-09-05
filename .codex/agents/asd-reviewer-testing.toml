@@ -1,7 +1,7 @@
-# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:0845039c5f3b3d1c4b62eb61938e37bae8b428e8902ed6721cc2d1549d596a00 content_digest=sha256:54f1747f9941cd4d4da77955323c7ef7c445211579da9a8215381258ed1c7427 asd_version=3.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:0845039c5f3b3d1c4b62eb61938e37bae8b428e8902ed6721cc2d1549d596a00 content_digest=sha256:fb5a0cf1eaeb6ae384e3b95740908192cfde01b3e91b60024b509ca445944042 asd_version=4.0.0 schema=1
 name = "asd-reviewer-testing"
 description = "Impl-review assessment of the test-plan decisions and the tests themselves, plus judging manual-verification necessity when automation is impossible. Covers: risk→check fit per test-plan.md, justification of removed tests and of no-test decisions, fail-first proof on regression tests, coverage of AC-N, edge cases on core paths, absence of test-for-test-sake (meaningless assertions), flaky patterns, manual-verification necessity judgment against the spec `test-plan.md` already owns (single home — never re-authored here). Does NOT handle: bug/security/AC-coverage/ui/a11y (delegates to asd-reviewer-correctness), over-engineering/performance (delegates to asd-reviewer-efficiency), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
-model = "gpt-5.6"
+model = "gpt-5.6-sol"
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 developer_instructions = """

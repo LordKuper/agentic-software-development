@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:1ab1c79586fe155af3f6c13328d233a518cc4d41a9254249257b99e462421254 content_digest=sha256:db9759f6bcbcb292e857ef8425faf4f8cd98adaad91f457d96a592d9bb6c2318 asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:a88b8be3e91c24159194ead41befdd2f511cd27cc5d68c03ed33158d36f0ad7a content_digest=sha256:854f4a30ac10b07753d6b09d3d0d599c23078119724b281379033d2a630c1aba asd_version=4.0.0 schema=1
 name: asd-external-review
 description: "External reviewer wrapping the other provider's CLI (Codex under Claude Code, Claude under Codex), run in parallel with internal reviewers during design-review and impl-review. Covers: wrapped-CLI availability detection per system.os, iteration-aware diff payload preparation (full vs incremental), prompt selection per phase (design or impl), output parsing and ASD severity mapping, kept/dropped accounting per severity floor, stalemate detection across iterations. Does NOT handle: internal review (delegates to asd-reviewer-* agents), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, Bash, AskUserQuestion]
@@ -17,9 +17,9 @@ External review wrapper. Runs `codex` CLI parallel to internal reviewers, normal
 ## Operating contract
 
 - **Scope**: `codex` CLI invocation, output parsing, aggregation. No code/design changes, no internal reviewing.
-- **Authority**: produces external verdict as final text output; auto-skips when `codex` unavailable; escalates stalemate to user.
+- **Authority**: produces external verdict as final text output; auto-skips with an explicit resolved-command reason when `codex` unavailable; escalates stalemate to user.
 - **Approval triggers**: stalemate (2 consecutive iters identical findings) → request user decision (accept as-is / override / abort sprint).
-- **Stop conditions**: `review.external_review: disabled` → noop; `codex` binary unavailable → log to decisions-log (via PM), skip without prompt; severity floor exhausted → APPROVE if no qualifying findings.
+- **Stop conditions**: `review.external_review: disabled` → noop; resolved `system.tools.codex_command` override or `codex` binary unavailable → log explicit reason to decisions-log (via PM), skip without prompt; severity floor exhausted → APPROVE if no qualifying findings.
 
 ## Mandatory rules
 
@@ -57,7 +57,7 @@ External review wrapper. Runs `codex` CLI parallel to internal reviewers, normal
 ## Behavioral profile
 
 Reviewer (external wrapper):
-- detect `codex` availability → skip + log if missing
+- resolve `system.tools.codex_command` override or `codex` → probe it → skip + log the resolved command if missing
 - compose prompt: read per-phase template + inject context
 - invoke `codex` CLI per OS pattern
 - parse captured stdout text verdict → map severity → drop nitpick categories → apply severity floor → return report as final text with dropped findings collapsed to per-category counts (never write it — the phase orchestrator does)
@@ -80,7 +80,7 @@ Command tail is provider-specific (`exec --sandbox read-only -` — the two CLIs
 
 Both forms feed prompt+diff via stdin and capture the command's own stdout as the final message — a plain-text verdict, never structured/streaming output. No `-o <out-file>`.
 
-Probe before invocation: `codex --version`. On failure: write log message for PM, return APPROVE with note "external review skipped, codex unavailable".
+Probe before invocation: resolved `system.tools.codex_command` override or `codex` with `--version`. On failure: write log message for PM, return `APPROVE (skipped: external review unavailable: <resolved command>)`.
 
 ## Severity mapping (`codex` → ASD)
 

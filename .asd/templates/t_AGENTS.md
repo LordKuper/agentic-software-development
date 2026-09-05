@@ -27,6 +27,8 @@ Codex also supports `/skills` (picker) and implicit invocation by matching the s
 
 Workflow settings: `.asd/project/config.yaml`.
 
+External Review wraps the other provider's CLI. `system.tools.codex_command` (Claude Code) and `system.tools.claude_command` (Codex) override PATH lookup; an unavailable resolved command is recorded as an explicit review skip.
+
 ### Folder structure
 
 Authoritative path map: `.asd/rules/artifact-layout.md`.

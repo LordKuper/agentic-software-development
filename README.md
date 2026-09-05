@@ -31,6 +31,12 @@ Each provider can show up in two different roles — don't conflate them:
 - **As your primary runtime** — run sprints from Claude Code (`.claude/agents/*.md` + `.claude/skills/`) or Codex (`.codex/agents/*.toml` + `.agents/skills/`), both driving the same canonical workflow.
 - **As the External Review tool** — ASD shells out to the CLI of whichever provider is NOT your primary runtime, as a second opinion during design-review/impl-review (Codex CLI under Claude Code, Claude CLI under Codex). Works independently of which provider is your primary runtime.
 
+When External Review is enabled, `/asd-init` probes the other provider's configured command (`system.tools.codex_command` under Claude Code; `system.tools.claude_command` under Codex). A later unavailable probe is recorded as an explicit availability skip in the review output and decisions log rather than silently reducing coverage.
+
+### Codex with a ChatGPT account
+
+Codex delegates use the concrete model IDs in the canonical family map: `sol` → `gpt-5.6-sol`, `terra` → `gpt-5.6-terra`, and `luna` → `gpt-5.6-luna`. Do not substitute the API-style `gpt-5.6` identifier: a delegate-startup error naming an unsupported model means the canonical map or generated agent view is stale. Update ASD or correct the canonical mapping, regenerate the affected view with `node .asd/sync.js --apply <file...>`, then run `node .asd/sync.js --check`.
+
 Optional external tools auto-detected by `/asd-init`:
 
 - **LikeC4 CLI** — for C4 architecture model rendering (subsystem-decomposition mode `likec4`)
@@ -262,8 +268,8 @@ system:
   tools:
     likec4: "likec4"                  # empty string disables likec4 generation
     designmd: true                    # availability flag; actual commands live in .asd/project/commands.yaml
-    codex_command: ""                 # override when wrapping Codex under Claude Code
-    claude_command: ""                # override when wrapping Claude CLI under Codex
+    codex_command: ""                 # override when wrapping Codex under Claude Code; empty = PATH lookup
+    claude_command: ""                # override when wrapping Claude CLI under Codex; empty = PATH lookup
 
 git:
   base_branch: main
@@ -373,7 +379,7 @@ designmd --version
 
 ### Codex CLI / Claude CLI
 
-Enables External Review in parallel with internal reviewers: install **Codex CLI** if Claude Code is your primary runtime, or **Claude CLI** if Codex is your primary runtime — External Review always wraps the *other* provider's CLI, never its own host's. ASD auto-skips and logs to the decisions log if the wrapped CLI is unavailable, so the workflow keeps running.
+Enables External Review in parallel with internal reviewers: install **Codex CLI** if Claude Code is your primary runtime, or **Claude CLI** if Codex is your primary runtime — External Review always wraps the *other* provider's CLI, never its own host's. Set `system.tools.codex_command` or `system.tools.claude_command` when it is not on PATH. ASD records an explicit availability skip in the review output and decisions log if the resolved command is unavailable, so the workflow keeps running.
 
 ---
 

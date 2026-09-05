@@ -1,7 +1,7 @@
-# ASD generated. Edit .asd/agents/asd-pm.md. source_digest=sha256:89fbad48ddfb0646bbe9a20a7408f247ede9d7e78c57abcba4f25f52d650d186 content_digest=sha256:b16bd7007edfa91c337ec009cfb13d1fe182a46a51d6987e555b3c16aac7b913 asd_version=3.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-pm.md. source_digest=sha256:89fbad48ddfb0646bbe9a20a7408f247ede9d7e78c57abcba4f25f52d650d186 content_digest=sha256:471dd71adee434bb454b8b43099f2d90acb664966d9f6a5036659cc6736c647f asd_version=4.0.0 schema=1
 name = "asd-pm"
 description = "ASD sprint orchestrator: phase routing, sprint state, recording approved decisions, sprint archival, final PR. Covers: phase routing, state.json maintenance, decisions-log appends, sprint archival, branch/PR ops via gh, approval gates via request user decision. Does NOT handle: writing PRD/UX/ADR (delegates to asd-ba/asd-ux/asd-architect), reviewing artifacts (delegates to reviewer agents), implementation (delegates to dev agents)."
-model = "gpt-5.6"
+model = "gpt-5.6-sol"
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 developer_instructions = """

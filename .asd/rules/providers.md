@@ -16,7 +16,7 @@ ASD runs from one canonical source (`.asd/`) generated into two host views: Clau
 | `.claude/settings.json` (JSON-merge, ASD owns only its hook entry) | native Claude Code settings | — |
 | `.codex/hooks.json` (JSON-merge, ASD owns only its hook entry) | — | native Codex hooks registration |
 
-Codex has no project-level equivalent of `.claude/skills` — a separate `.agents/skills/` tree is generated because Codex only reads skills from `.agents/skills` (see `plans/multi-provider-support.md`, "Закрытые вопросы" #1). One skill tree cannot serve both hosts.
+Codex has no project-level equivalent of `.claude/skills` — a separate `.agents/skills/` tree is generated because Codex only reads skills from `.agents/skills`. One skill tree cannot serve both hosts.
 
 ### Orphan detection
 
@@ -50,7 +50,7 @@ Canonical agent frontmatter speaks in family aliases only (`claude.model`, `code
 | opus | opus | — |
 | sonnet | sonnet | — |
 | haiku | haiku | — |
-| sol | — | gpt-5.6 |
+| sol | — | gpt-5.6-sol |
 | terra | — | gpt-5.6-terra |
 | luna | — | gpt-5.6-luna |
 
@@ -74,4 +74,4 @@ External Review always wraps the CLI of the *other* provider, never its own host
 - Running under Claude Code -> wraps **Codex CLI** (`codex exec`, per `.asd/rules/external-review.md`).
 - Running under Codex -> wraps **Claude CLI** the same way (probe, stdin-piped prompt+diff, text-verdict output, severity mapping, stalemate detection — mirror the Claude-under-Codex case symmetrically against `.asd/rules/external-review.md`'s Codex-under-Claude contract).
 
-Which CLI to invoke is resolved per-provider at generation time, not detected at runtime: `asd-external-review.md`'s canonical frontmatter sets `claude.wraps_cli: "codex"` / `codex.wraps_cli: "claude"` (plus a matching `wraps_config_key` naming the config override — `system.tools.codex_command` / `system.tools.claude_command` in `.asd/templates/t_config.yaml`, empty = default lookup on PATH). `.asd/sync.js` substitutes `{{wraps_cli}}`/`{{wraps_config_key}}` in the body per provider when generating `.claude/agents/asd-external-review.md` vs `.codex/agents/asd-external-review.toml` — the canonical body text itself stays identical and host-neutral; only these two values differ.
+Which CLI to wrap is resolved per-provider at generation time: `asd-external-review.md`'s canonical frontmatter sets `claude.wraps_cli: "codex"` / `codex.wraps_cli: "claude"` (plus a matching `wraps_config_key` naming the runtime config override — `system.tools.codex_command` / `system.tools.claude_command` in `.asd/templates/t_config.yaml`, empty = default lookup on PATH). At runtime, External Review probes that resolved command; failure is recorded as an explicit availability-skip reason, not a silent fallback. `.asd/sync.js` substitutes `{{wraps_cli}}`/`{{wraps_config_key}}` in the body per provider when generating `.claude/agents/asd-external-review.md` vs `.codex/agents/asd-external-review.toml` — the canonical body text itself stays identical and host-neutral; only these two values differ.

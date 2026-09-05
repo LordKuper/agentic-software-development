@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-sync/SKILL.md. source_digest=sha256:b085762c4fc2d0455effadf2312e8544225d888c8987c1e28b19a9fd24c1292a content_digest=sha256:9c33871ca599e9bace9809b125dc6267f7999f9afa6f37bc39184d33c2dfec3c asd_version=1.1.0 schema=1
+# ASD generated. Edit .asd/skills/asd-sync/SKILL.md. source_digest=sha256:b085762c4fc2d0455effadf2312e8544225d888c8987c1e28b19a9fd24c1292a content_digest=sha256:b75fc44a6d98dd99b8a331e0edde38ab67ebd3b114b00c3e89553e5d119addf0 asd_version=4.0.0 schema=1
 name: asd-sync
-description: "Reconciles this project's generated provider views (.claude/, .codex/, .agents/skills/) with the canonical ASD sources (.asd/agents, .asd/skills, .asd/hooks) via .asd/sync.js's check/apply flow, asking per-file whether to overwrite, keep, or diff before writing anything. Use when the user runs /asd-sync or asks to sync, regenerate, or reconcile the Claude/Codex agent and skill files after editing canonical ASD sources."
+description: "Reconciles this project's generated provider views (.claude/, .codex/, .agents/skills/) with the canonical ASD sources (.asd/agents, .asd/skills, .asd/hooks) via .asd/sync.js's check/apply flow, asking per-file whether to overwrite, keep, or diff before writing anything. Use when the user runs $asd-sync or asks to sync, regenerate, or reconcile the Claude/Codex agent and skill files after editing canonical ASD sources."
 ---
 
 Operation mapping: see `.asd/rules/providers.md`.

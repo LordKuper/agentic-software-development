@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:8d435c548c1d54f81213fae219850c2449833980e4c997f790620ad470d283ac content_digest=sha256:7715900850cea0b6b6b4b9ffacc7bd70dd40d440ecb3be74eb67186e5cb346e1 asd_version=3.1.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:0b7fd6cd791c77724960a2bdc0717745724051d04973678fb0b638c6b912df5c content_digest=sha256:59e6a640a0297cb2feb1af2c052c0208394214cfd36acf9790eba147b30c328f asd_version=4.0.0 schema=1
 name: asd-init
 description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
@@ -31,8 +31,8 @@ Operation mapping: see `.asd/rules/providers.md`.
 5. Detect external tools (silent; record results, do not prompt per-tool yet):
    - `likec4 --version` (only if diagram_tool=likec4)
    - designmd (only if `documents.ux_spec: enabled` — the design-system gate that needs it is skipped entirely otherwise, `sprint-lifecycle.md` "Optional documents"): check `node --version` and `npm --version`. Tooling invoked via `commands.yaml` (`designmd-*`); no `designmd` binary on PATH required. When `documents.ux_spec: disabled`, skip detection, write `system.tools.designmd: false`, omit the `designmd-*` custom commands entirely.
-   - the *other* provider's CLI, wrapped by External Review (only if external_review=enabled): probe `codex --version` when this init is running under Claude Code, `claude --version` when running under Codex (`.asd/rules/providers.md` § External review symmetry) — never probe the running host's own CLI
-   Record paths and missing flags for the consolidated proposal
+   - the *other* provider's CLI, wrapped by External Review (only if external_review=enabled): resolve its configured command or default lookup, then probe it — `system.tools.codex_command` or `codex` under Claude Code; `system.tools.claude_command` or `claude` under Codex (`.asd/rules/providers.md` § External review symmetry). Never probe the running host's own CLI.
+   Record the resolved command and availability for the consolidated proposal
 6. Pick review iteration defaults (low=1 medium=1 high=2 critical=10) — include in proposal, do not prompt yet
 7. Pick git defaults (base_branch from `git symbolic-ref refs/remotes/origin/HEAD` or `main`; branch_pattern `sprint/<NNN>-<slug>`; gh_enabled from `gh --version`; auto_pr=false) — include in proposal
 8. Auto-detect build commands from:
@@ -78,6 +78,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 4. Per section: ask new value → add to pending change-set (do not write yet)
 5. Show consolidated diff of all pending edits → request user decision: `accept-all` | `edit-section` | `abort`; loop until accepted
 6. Apply diff; write config
+7. If `review.external_review=enabled`, resolve and probe the wrapped CLI from the final config exactly as fresh init does; report the resolved command and availability. An unavailable probe leaves the setting intact but is surfaced as the explicit runtime availability-skip reason (`external-review.md` "Detection").
 
 ## AGENTS.md sync
 

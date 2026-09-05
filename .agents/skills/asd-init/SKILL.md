@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:8d435c548c1d54f81213fae219850c2449833980e4c997f790620ad470d283ac content_digest=sha256:e6fddbebe320e7ae8e41083ac55d8572acb0e963c416a729942b343453a465ef asd_version=3.1.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:0b7fd6cd791c77724960a2bdc0717745724051d04973678fb0b638c6b912df5c content_digest=sha256:46fe7a60c7d1a3e6fdbe57b693ccee51e06bf81f2ad5abb8ba69994f3d83b982 asd_version=4.0.0 schema=1
 name: asd-init
-description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
+description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs $asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 ---
 
 Operation mapping: see `.asd/rules/providers.md`.
@@ -30,8 +30,8 @@ Operation mapping: see `.asd/rules/providers.md`.
 5. Detect external tools (silent; record results, do not prompt per-tool yet):
    - `likec4 --version` (only if diagram_tool=likec4)
    - designmd (only if `documents.ux_spec: enabled` — the design-system gate that needs it is skipped entirely otherwise, `sprint-lifecycle.md` "Optional documents"): check `node --version` and `npm --version`. Tooling invoked via `commands.yaml` (`designmd-*`); no `designmd` binary on PATH required. When `documents.ux_spec: disabled`, skip detection, write `system.tools.designmd: false`, omit the `designmd-*` custom commands entirely.
-   - the *other* provider's CLI, wrapped by External Review (only if external_review=enabled): probe `codex --version` when this init is running under Claude Code, `claude --version` when running under Codex (`.asd/rules/providers.md` § External review symmetry) — never probe the running host's own CLI
-   Record paths and missing flags for the consolidated proposal
+   - the *other* provider's CLI, wrapped by External Review (only if external_review=enabled): resolve its configured command or default lookup, then probe it — `system.tools.codex_command` or `codex` under Claude Code; `system.tools.claude_command` or `claude` under Codex (`.asd/rules/providers.md` § External review symmetry). Never probe the running host's own CLI.
+   Record the resolved command and availability for the consolidated proposal
 6. Pick review iteration defaults (low=1 medium=1 high=2 critical=10) — include in proposal, do not prompt yet
 7. Pick git defaults (base_branch from `git symbolic-ref refs/remotes/origin/HEAD` or `main`; branch_pattern `sprint/<NNN>-<slug>`; gh_enabled from `gh --version`; auto_pr=false) — include in proposal
 8. Auto-detect build commands from:
@@ -61,9 +61,9 @@ Operation mapping: see `.asd/rules/providers.md`.
     - **mermaid mode**: seed `c4/subsystems.yaml` from `t_subsystems.yaml`. ASD ships no mermaid-to-HTML renderer (avoids a new dependency) — seed `commands.yaml`'s `c4-build` entry as an empty placeholder (`""`) with an inline comment: user supplies their own render command before first use (a project script, or manually wrapping the mermaid blocks in `t_html-shell.html` as the architect agent does for other artifacts); `architecture.html` itself stays gitignored either way, never rendered by ASD itself
 14. If decomp enabled: **seed `.gitignore`** for C4 build output — append (never clobber existing entries; create the file if absent) `docs/architecture/c4/dist/` and `docs/architecture/c4/architecture.html` if not already present
 15. **Post-init artefact checks** — suggest dedicated skill for each missing required artefact (do NOT auto-dispatch). Order: concept → stack → design-system:
-    - `docs/product/concept.html` absent → suggest `/asd-concept`
-    - `docs/architecture/stack.html` absent → suggest `/asd-stack`
-    - `docs/ux/DESIGN.md` OR `docs/ux/design-system.html` OR `docs/ux/accessibility.html` absent → suggest `/asd-design-system`
+    - `docs/product/concept.html` absent → suggest `$asd-concept`
+    - `docs/architecture/stack.html` absent → suggest `$asd-stack`
+    - `docs/ux/DESIGN.md` OR `docs/ux/design-system.html` OR `docs/ux/accessibility.html` absent → suggest `$asd-design-system`
 16. Brownfield: prompt user to start sprint with audit-only scope (optional)
 17. **Run sync** — invoke the sync engine (`.asd/sync.js --check`) to confirm the bundled provider-view trees (`.claude/agents`, `.claude/skills`, `.claude/hooks`, `.agents/skills`, `.codex/agents`, `.codex/hooks`) are `current` against the shipped canon. Report any `stale`/`modified-foreign` finding to the user — do not silently apply.
 18. **Codex trust warning** — unconditional (every project gets a generated `.codex/hooks.json`, regardless of which provider is primary or whether external review is enabled): warn the user that Codex requires explicitly trusting this project's `.codex/hooks.json` before its hooks run (Codex refuses untrusted project-level hooks by design). Point to Codex's own trust-approval step; do not attempt to bypass it.
@@ -77,6 +77,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 4. Per section: ask new value → add to pending change-set (do not write yet)
 5. Show consolidated diff of all pending edits → request user decision: `accept-all` | `edit-section` | `abort`; loop until accepted
 6. Apply diff; write config
+7. If `review.external_review=enabled`, resolve and probe the wrapped CLI from the final config exactly as fresh init does; report the resolved command and availability. An unavailable probe leaves the setting intact but is surfaced as the explicit runtime availability-skip reason (`external-review.md` "Detection").
 
 ## AGENTS.md sync
 
@@ -122,7 +123,7 @@ Four custom commands emitted only when `documents.ux_spec: enabled` (else omitte
 - `docs/architecture/c4/` content per `diagram_tool` (decomp only)
 - `.gitignore` entries for C4 build output (decomp only; append-only, existing entries preserved)
 
-Concept, stack, design system NOT produced here; owned by `/asd-concept`, `/asd-stack`, `/asd-design-system` respectively.
+Concept, stack, design system NOT produced here; owned by `$asd-concept`, `$asd-stack`, `$asd-design-system` respectively.
 
 ## Agents dispatched
 

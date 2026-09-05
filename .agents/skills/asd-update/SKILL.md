@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-update/SKILL.md. source_digest=sha256:89e2c33dafb04aaa8cc4af3ee921f68f7950e5842e7a304b6d23f2619acb59eb content_digest=sha256:1b272b686d4404187a45fab579c2657c2e292e36c5da82e8c8527ddf97c31f7f asd_version=3.1.0 schema=1
+# ASD generated. Edit .asd/skills/asd-update/SKILL.md. source_digest=sha256:89e2c33dafb04aaa8cc4af3ee921f68f7950e5842e7a304b6d23f2619acb59eb content_digest=sha256:5a0fd4582afc8d0f06e87d97e71ecc8775f591bc7a00bdc8087924c3af6d14cb asd_version=4.0.0 schema=1
 name: asd-update
-description: "Updates the ASD framework infrastructure (.asd/rules, .asd/templates, ASD agents/skills/hooks, .asd/migrations) in a consumer project to the latest version by fetching them from the configured ASD repo's main branch, replacing only framework-managed paths, running any pending `.asd/migrations/<version>.js` scripts in ascending order, and never touching consumer-owned config, sprints, persistent docs, or custom skills/agents/hooks. Use when the user runs /asd-update or asks to update, upgrade, or pull the latest ASD framework / workflow version."
+description: "Updates the ASD framework infrastructure (.asd/rules, .asd/templates, ASD agents/skills/hooks, .asd/migrations) in a consumer project to the latest version by fetching them from the configured ASD repo's main branch, replacing only framework-managed paths, running any pending `.asd/migrations/<version>.js` scripts in ascending order, and never touching consumer-owned config, sprints, persistent docs, or custom skills/agents/hooks. Use when the user runs $asd-update or asks to update, upgrade, or pull the latest ASD framework / workflow version."
 ---
 
 Operation mapping: see `.asd/rules/providers.md`.

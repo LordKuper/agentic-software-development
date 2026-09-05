@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:ee74b0c897de563347eb3e876352b153d9555013db45a88ec052b3b7af87b7f7 content_digest=sha256:9a88a9cbf90b6fad4114ebe166aa641eee50570e5cac6f29b6c355647f123956 asd_version=2.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:ee74b0c897de563347eb3e876352b153d9555013db45a88ec052b3b7af87b7f7 content_digest=sha256:293ac7b7ff77cc1b95267552b85ad808024cef5d5d53c572454efa930c249125 asd_version=4.0.0 schema=1
 name: asd-sprint
-description: "Starts a new ASD sprint or resumes the active one, dispatching the matching asd-phase-* skill and routing phase signals back to the user. Use when the user runs /asd-sprint or asks to start, continue, resume, or work on an ASD sprint."
+description: "Starts a new ASD sprint or resumes the active one, dispatching the matching asd-phase-* skill and routing phase signals back to the user. Use when the user runs $asd-sprint or asks to start, continue, resume, or work on an ASD sprint."
 ---
 
 Operation mapping: see `.asd/rules/providers.md`.
@@ -9,7 +9,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 # ASD Sprint
 
 ## Preconditions
-- `.asd/project/config.yaml` exists (else: tell user `/asd-init`)
+- `.asd/project/config.yaml` exists (else: tell user `$asd-init`)
 - ≤1 active sprint. A sprint counts as active while `state.json.phase != "done"`, whether its folder currently lives at `.asd/sprints/<NNN-slug>/` or already at `.asd/sprints/archived/<NNN-slug>/` (the `pr` phase moves the folder before the terminal `phase=done` write — see `sprint-lifecycle.md` "PR phase"). Only `phase=done` entries under `archived/` are excluded.
 
 ## Operations used

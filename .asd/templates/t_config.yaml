@@ -90,11 +90,11 @@ system:
     designmd: true
 
     # Codex CLI command path. Empty for default lookup (`codex` on all OSes).
-    # Override for external review when running under Claude Code (wraps Codex).
+    # Override for external review when running under Claude Code (wraps Codex); init/runtime probe this resolved command.
     codex_command: ""
 
     # Claude CLI command path. Empty for default lookup (`claude` on all OSes).
-    # Override for external review when running under Codex (wraps Claude CLI).
+    # Override for external review when running under Codex (wraps Claude CLI); init/runtime probe this resolved command.
     claude_command: ""
 
 git:
