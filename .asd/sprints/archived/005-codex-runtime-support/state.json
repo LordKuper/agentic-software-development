@@ -1,7 +1,7 @@
 {
   "sprint_id": "005-codex-runtime-support",
   "branch": "sprint/005-codex-runtime-support",
-  "phase": "pr",
+  "phase": "done",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "adr": false, "c4": false },
   "skipped_phases": ["design", "design-review", "design-promote"],
   "reviews": {
@@ -40,13 +40,13 @@
     }
   },
   "created_at": "2026-09-04T20:31:23+03:00",
-  "updated_at": "2026-09-05T23:14:49+03:00",
+  "updated_at": "2026-09-05T23:23:58+03:00",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": {
     "number": 23,
     "url": "https://github.com/LordKuper/agentic-software-development/pull/23",
-    "state": "open"
+    "state": "merged"
   },
   "archived_at": "2026-09-05T23:14:49+03:00",
   "escalations": []
