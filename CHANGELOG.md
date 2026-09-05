@@ -2,6 +2,16 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v4.0.1
+
+Codex-primary compatibility release for ChatGPT-backed runtimes. Delegate configuration now fails early with actionable diagnostics, generated skills use each provider's native invocation syntax, and cross-provider review behavior stays observable.
+
+### Fixed
+- Codex `sol` delegates now resolve to the supported `gpt-5.6-sol` model ID; all Codex agent model, effort, and sandbox combinations are validated before generation.
+- Codex-generated skills render `$asd-*` commands without rewriting paths, URLs, or longer identifiers; Claude-generated skills retain `/asd-*` commands.
+- Session recovery finds archived pre-merge sprints without reviving completed or malformed archives.
+- Design and implementation review routing, incremental External Review scope, and wrapped-CLI availability reporting now match the canonical cross-provider contracts.
+
 ## v4.0.0
 
 Review-loop cost revision: fewer reviewer dispatches, fewer test runs, fewer re-asks — without removing a gate — plus a versioned migration mechanism so the consumer-side churn this causes has a supported upgrade path. **Breaking** for any consumer automation keyed on agent names, reviewer verdict tokens, review file names, or `state.json`'s reviewer-keyed shape. Run `/asd-update`; the bundled `4.0.0` migration performs the consumer-side cleanup.
