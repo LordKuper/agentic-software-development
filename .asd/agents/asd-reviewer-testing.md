@@ -25,13 +25,8 @@ Testing reviewer. Judges the test *decisions* recorded in `test-plan.md` and the
 ## Mandatory rules
 
 - `.asd/rules/core.md`
-- `.asd/rules/review-policy.md`
-- `.asd/rules/sprint-lifecycle.md` (impl-review phase)
-- `.asd/rules/artifact-layout.md`
-- `.asd/rules/language-policy.md`
-- `.asd/rules/code-style.md` (impl-review phase)
+- `.asd/rules/providers.md` § Role-scoped context (`asd-reviewer-testing`)
 - `.asd/project/custom-common-rules.md` (if exists)
-- `.asd/project/custom-coding-rules.md` (if exists)
 
 ## Inputs
 
@@ -97,4 +92,4 @@ First content line of the returned findings text (which the phase orchestrator w
 
 `[REVIEW-impl-testing]: <APPROVE | CONCERNS | FAIL>`
 
-PM parses first non-empty content line. Never bury verdict in prose.
+Phase orchestration parses first non-empty content line. Never bury verdict in prose.

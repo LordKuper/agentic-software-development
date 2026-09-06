@@ -26,7 +26,7 @@
 ## Workflow (fresh)
 
 1. Detect greenfield vs brownfield via repo search on source files
-2. Request user input, batch: chat lang, docs lang, subsystem_decomposition, backward_compat, external_review, self_hosting (default `disabled`; only offer `enabled` when this clone is the ASD framework repo itself — detect via presence of `.asd/rules/core.md` + absence of application source outside `.asd/`, or let the user override), and per-document toggles under `documents.*` (`audit`/`prd`/`ux_spec`/`adr`/`c4`; default all `enabled`; when `self_hosting: enabled` proposed, recommend `audit: enabled` with the rest `disabled` as the lean framework-dev profile, user may accept or customize)
+2. Request user input, batch: chat/docs language, decomposition, compatibility, external review, self-hosting, `user_gates` (`strict` default or `adaptive`), and document settings. `documents.audit` is `auto|always|off` (`auto` default; legacy enabled/disabled normalize to always/off); other document flags keep their existing values. For self-hosting recommend audit `auto` and other documents disabled.
 3. If decomposition enabled → request user decision: diagram_tool (`likec4` | `mermaid`)
 4. Detect OS via command execution (silent; no confirm yet)
 5. Detect external tools (silent; record results, do not prompt per-tool yet):
@@ -49,12 +49,12 @@
      the search-derived impacted set is the safe fallback
    Record into proposal; do not prompt per-command yet
 8a. **Consolidated proposal & edit gate** — present every auto-detected/defaulted value in one structured block in `language.chat`:
-    - OS, external tools (with missing flags + install hint), review iteration limits, git settings, detected build/test/lint/run commands, detected `test_affected` selector or "none detected — falls back to search-derived impacted set"
+    - OS, tools, review limits, git settings, `user_gates`, normalized audit mode, detected build/test/lint/run commands and any affected-test selector
     Then request user decision: `accept-all` | `edit-section` | `abort`.
     - `edit-section` → request user decision on which section (os | tools | review | git | commands), collect new values, re-show proposal, loop until `accept-all`
     - Missing required tools (designmd if `documents.ux_spec: enabled`; likec4 if decomp+likec4; the wrapped external-review CLI if external_review) → must resolve here: install / override path / disable feature. Do NOT silently proceed with missing required tools.
     Only after `accept-all` proceed to write.
-9. Write `.asd/project/config.yaml` from `t_config.yaml` with all approved fields (including `project.diagram_tool` when decomp enabled, `self_hosting`, `documents.*`)
+9. Write `.asd/project/config.yaml` from `t_config.yaml` with approved `user_gates`, audit mode and other fields.
 10. Ask user what custom rules to add (separately for common / design / coding scopes); write three files from templates: `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`. Empty scope still writes template stub (header + intro), so agents always find the file.
 11. Write `.asd/project/stubs.md` from `t_stubs.md` (empty registry — downstream phases expect the file to exist)
 12. Write `.asd/project/commands.yaml` (from `t_commands.yaml` + detected + OS-specific `custom.designmd-*` only when `documents.ux_spec: enabled`); `test_affected` written only when detected, omitted (not written empty/guessed) otherwise — a `.asd/project/commands.yaml` from an older ASD version without the field keeps working unchanged since the impacted set falls back to the search-derived definition
@@ -118,7 +118,7 @@ Four custom commands emitted only when `documents.ux_spec: enabled` (else omitte
 
 ## Artefacts produced
 
-- `.asd/project/config.yaml` (incl. `self_hosting`, `documents.*`)
+- `.asd/project/config.yaml` (incl. `self_hosting`, `user_gates`, `documents.*`)
 - `AGENTS.md`, `CLAUDE.md` — consumer mode: managed block synced from `t_AGENTS.md`/`t_CLAUDE.md`; self-hosting mode: `AGENTS.md` self-sourced (verified, never generated), `CLAUDE.md` still synced
 - `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`, `stubs.md`
 - `.asd/project/commands.yaml`

@@ -3,16 +3,16 @@
   "name": "asd-external-review",
   "description": "External reviewer wrapping the other provider's CLI (Codex under Claude Code, Claude under Codex), run in parallel with internal reviewers during design-review and impl-review. Covers: wrapped-CLI availability detection per system.os, iteration-aware diff payload preparation (full vs incremental), prompt selection per phase (design or impl), output parsing and ASD severity mapping, kept/dropped accounting per severity floor, stalemate detection across iterations. Does NOT handle: internal review (delegates to asd-reviewer-* agents), fixing (creators autofix per review-policy).",
   "claude": {
-    "model": "fable", "effort": "high",
+    "model": "sonnet", "effort": "medium",
     "tools": ["Read", "Glob", "Grep", "Bash", "AskUserQuestion"],
     "disallowedTools": ["Edit", "WebFetch"], "maxTurns": 50, "memory": "project",
     "wraps_cli": "codex", "wraps_config_key": "system.tools.codex_command",
-    "wraps_invoke_args": "exec --sandbox read-only -"
+    "wraps_invoke_args": "exec --model gpt-5.6-sol -c model_reasoning_effort=\"high\" --sandbox read-only -"
   },
   "codex": {
-    "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "read-only",
+    "model": "terra", "model_reasoning_effort": "medium", "sandbox_mode": "read-only",
     "wraps_cli": "claude", "wraps_config_key": "system.tools.claude_command",
-    "wraps_invoke_args": "-p \"Follow the review instructions and diff payload provided via stdin above; output only the review report in the required format.\" --output-format text --allowedTools \"Read,Grep,Glob\""
+    "wraps_invoke_args": "-p \"Follow the review instructions and diff payload provided via stdin above; output only the review report in the required format.\" --model opus --effort high --restricted --tools \"Read,Grep,Glob\" --strict-mcp-config --disable-slash-commands --no-session-persistence --output-format text"
   }
 }
 ---
@@ -26,19 +26,13 @@ External review wrapper. Runs `{{wraps_cli}}` CLI parallel to internal reviewers
 - **Scope**: `{{wraps_cli}}` CLI invocation, output parsing, aggregation. No code/design changes, no internal reviewing.
 - **Authority**: produces external verdict as final text output; auto-skips with an explicit resolved-command reason when `{{wraps_cli}}` unavailable; escalates stalemate to user.
 - **Approval triggers**: stalemate (2 consecutive iters identical findings) → request user decision (accept as-is / override / abort sprint).
-- **Stop conditions**: `review.external_review: disabled` → noop; resolved `{{wraps_config_key}}` override or `{{wraps_cli}}` binary unavailable → log explicit reason to decisions-log (via PM), skip without prompt; severity floor exhausted → APPROVE if no qualifying findings.
+- **Stop conditions**: `review.external_review: disabled` → noop; resolved `{{wraps_config_key}}` override or `{{wraps_cli}}` binary unavailable → log explicit reason to decisions-log (via phase orchestrator), skip without prompt; severity floor exhausted → APPROVE if no qualifying findings.
 
 ## Mandatory rules
 
 - `.asd/rules/core.md`
-- `.asd/rules/external-review.md` (detection, invocation per OS, iteration-aware diff, stalemate, output mapping)
-- `.asd/rules/review-policy.md` (severity, floor, verdict format)
-- `.asd/rules/sprint-lifecycle.md` (design-review + impl-review)
-- `.asd/rules/artifact-layout.md`
-- `.asd/rules/language-policy.md`
+- `.asd/rules/providers.md` § Role-scoped context (`asd-external-review`)
 - `.asd/project/custom-common-rules.md` (if exists)
-- `.asd/project/custom-design-rules.md` (design-review phase, if exists)
-- `.asd/project/custom-coding-rules.md` (impl-review phase, if exists)
 
 ## Inputs
 
@@ -64,7 +58,7 @@ External review wrapper. Runs `{{wraps_cli}}` CLI parallel to internal reviewers
 ## Behavioral profile
 
 Reviewer (external wrapper):
-- resolve `{{wraps_config_key}}` override or `{{wraps_cli}}` → probe it → skip + log the resolved command if missing
+- consume phase-supplied preflight → skip + log its specific unavailable status when non-ready
 - compose prompt: read per-phase template + inject context
 - invoke `{{wraps_cli}}` CLI per OS pattern
 - parse captured stdout text verdict → map severity → drop nitpick categories → apply severity floor → return report as final text with dropped findings collapsed to per-category counts (never write it — the phase orchestrator does)
@@ -76,7 +70,7 @@ Reviewer (external wrapper):
 - Request user decision only for stalemate escalation
 - Return findings and verdict as final text output; no file writes at all — prompt goes in via heredoc/here-string stdin, review text comes out via captured stdout; never write the review file itself (phase orchestrator does)
 
-Read-only is enforced on the WRAPPED CLI subprocess itself, explicitly, per invocation (baked into `{{wraps_invoke_args}}` below) — not left to depend on project-level config the user might set differently, and not merely a claim about this agent's own tool list (which necessarily includes a command-runner to invoke the subprocess at all — that alone doesn't make the reviewed work read-only, the flag on the child process does). Codex's `exec` takes `--sandbox read-only`, overriding its own `config.toml`/project `sandbox_mode` for this one invocation; Claude CLI's `-p` takes `--allowedTools "Read,Grep,Glob"`, restricting it to read-only tools regardless of the ambient project's own Claude Code permission settings — whichever one `{{wraps_cli}}` actually is here carries its own such flag.
+Read-only is enforced on the WRAPPED CLI subprocess itself, explicitly, per invocation (baked into `{{wraps_invoke_args}}` below) — not left to depend on project-level config the user might set differently, and not merely a claim about this agent's own tool list. Codex `exec` uses `--sandbox read-only`; Claude uses `--restricted --tools "Read,Grep,Glob" --strict-mcp-config --disable-slash-commands --no-session-persistence`, which limits builtin tools, ignores user/project customizations, accepts no inherited MCP configuration, and leaves no review session artifact.
 
 ## `{{wraps_cli}}` invocation (per system.os)
 
@@ -87,7 +81,7 @@ Command tail is provider-specific (`{{wraps_invoke_args}}` — the two CLIs take
 
 Both forms feed prompt+diff via stdin and capture the command's own stdout as the final message — a plain-text verdict, never structured/streaming output. No `-o <out-file>`.
 
-Probe before invocation: resolved `{{wraps_config_key}}` override or `{{wraps_cli}}` with `--version`. On failure: write log message for PM, return `APPROVE (skipped: external review unavailable: <resolved command>)`.
+Before invocation, phase orchestration supplies a runtime preflight result. On a non-ready result, return `APPROVE (skipped: external review unavailable: <specific status>)`; phase orchestration records it and creates no latch. Local readiness never proves model access.
 
 ## Severity mapping (`{{wraps_cli}}` → ASD)
 
@@ -98,7 +92,7 @@ Probe before invocation: resolved `{{wraps_config_key}}` override or `{{wraps_cl
 
 ## Do's
 
-- Probe `{{wraps_cli}}` at start; log skip outcome
+- Use the phase-supplied preflight; do not make an extra availability probe
 - Right prompt per phase
 - Apply iteration severity floor
 - Drop nitpick categories explicitly
@@ -132,4 +126,4 @@ First content line of the returned findings text (which the phase orchestrator w
 
 `[REVIEW-<phase>-external]: <APPROVE | CONCERNS | FAIL>`
 
-Where `<phase>` is `design` (design-review) or `impl` (impl-review). PM parses first non-empty content line. Never bury verdict in prose.
+Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line. Never bury verdict in prose.

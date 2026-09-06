@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-correctness.md. source_digest=sha256:7c53970ef66d1527d43a1a170762818b32ed235208a0c1a3627089eee2838f26 content_digest=sha256:5ee7dd531604ef032760ea8bf38798e5fb6b225b8fe8914e94f121fe0af29916 asd_version=4.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-correctness.md. source_digest=sha256:b9461213b57c5559dc3c6c827c497d3030957298ca686d1ba49b69a1b8338b52 content_digest=sha256:ddad9bce3bd672bd8554c23584e96a71294c7084c2a70da5cc6def442478aebf asd_version=5.0.0 schema=1
 name: asd-reviewer-correctness
 description: "Design-review for every non-empty draft set (UI section n/a without a ux-spec/design-system draft) and impl-review of code, tests and UI for bugs, security, best-practice/contract drift, AC-N coverage, and UI/accessibility conformance. Covers: bug patterns (off-by-one, null paths, race conditions, resource leaks), security holes (secrets, injection, auth bypass, crypto misuse, input validation), language/framework best practices, contract violations vs ADR, PRD/AC-N coverage trace, ux-spec compliance check, UI implementation match to ux-spec mockups, design-system token/component usage, accessibility baseline compliance. Does NOT handle: over-engineering, structure/cohesion, or performance (delegates to asd-reviewer-efficiency), test-plan/test-quality review (delegates to asd-reviewer-testing), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -25,17 +25,8 @@ Correctness reviewer. Merges the former Quality, Implementation and UI reviewers
 ## Mandatory rules
 
 - `.asd/rules/core.md`
-- `.asd/rules/design-principles.md`
-- `.asd/rules/review-policy.md` (severity floor, autofix vs escalation, nitpick drop list, verdict format, change-surface rule — reviews the iteration's diff/draft only, never restated here)
-- `.asd/rules/sprint-lifecycle.md` (design-review + impl-review phases)
-- `.asd/rules/artifact-layout.md`
-- `.asd/rules/language-policy.md`
-- `.asd/rules/code-style.md` (impl-review phase)
-- `.asd/rules/design-system.md`
-- `.asd/rules/ux-principles.md`
+- `.asd/rules/providers.md` § Role-scoped context (`asd-reviewer-correctness`)
 - `.asd/project/custom-common-rules.md` (if exists)
-- `.asd/project/custom-design-rules.md` (design-review phase, if exists)
-- `.asd/project/custom-coding-rules.md` (impl-review phase, if exists)
 
 ## Inputs
 
@@ -146,4 +137,4 @@ First content line of the returned findings text (which the phase orchestrator w
 
 `[REVIEW-<phase>-correctness]: <APPROVE | CONCERNS | FAIL>`
 
-Where `<phase>` is `design` (design-review) or `impl` (impl-review). PM parses first non-empty content line. Never bury verdict in prose.
+Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line. Never bury verdict in prose.

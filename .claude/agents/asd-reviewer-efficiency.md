@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:ccd3dfb9401c72d0d015708d3aab10cde7ebc8e080bd70bf83d2cc03c94bb14c content_digest=sha256:3f424a31234efbadc2a4b92599eb06bff8caf789caa34ae30b15843edb6383b5 asd_version=3.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:7b68775183bd143eb0416f67883ea5828a036fb95477a236b2c3c08e31f0d1c9 content_digest=sha256:7ab51d82dc7365d707e76264edb9849147e6ad0e949713af38c86a35390f5c1e asd_version=5.0.0 schema=1
 name: asd-reviewer-efficiency
 description: "Design-review of design drafts and impl-review of code for over-engineering, structure/cohesion defects, and (impl-review only) performance budget/regression compliance. Covers: over-engineering smell detection per review-policy checklist (interface with one implementer, generic with one type, factory for < 3 classes, plugin without plugins, premature config flag, defensive code for impossible cases, dead code, deep inheritance, framework-on-framework, mock-of-mock, comment-restates-code), structure/cohesion smell detection (god/sprawling type), complexity-vs-value tradeoff, escalation of any fix that adds complexity; latency/memory/throughput budget compliance, algorithmic complexity, perf anti-patterns (n+1 queries, sync IO on hot path, unbounded allocations), regression detection vs baseline, hot-path identification lacking measurement or caching. Does NOT handle: bugs, security, AC coverage, or UI (delegates to asd-reviewer-correctness), test-plan/test-quality review (delegates to asd-reviewer-testing), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -25,15 +25,8 @@ Efficiency reviewer. Merges the former Simplification and Performance reviewers 
 ## Mandatory rules
 
 - `.asd/rules/core.md`
-- `.asd/rules/design-principles.md`
-- `.asd/rules/review-policy.md` (over-engineering checklist, structure/cohesion checklist, escalation triggers, change-surface rule — reviews the iteration's diff/draft only, never restated here)
-- `.asd/rules/sprint-lifecycle.md` (design-review + impl-review phases)
-- `.asd/rules/artifact-layout.md`
-- `.asd/rules/language-policy.md`
-- `.asd/rules/code-style.md` (impl-review phase)
+- `.asd/rules/providers.md` § Role-scoped context (`asd-reviewer-efficiency`)
 - `.asd/project/custom-common-rules.md` (if exists)
-- `.asd/project/custom-design-rules.md` (design-review phase, if exists)
-- `.asd/project/custom-coding-rules.md` (impl-review phase, perf budgets section)
 
 ## Inputs
 
@@ -143,4 +136,4 @@ First content line of the returned findings text (which the phase orchestrator w
 
 `[REVIEW-<phase>-efficiency]: <APPROVE | CONCERNS | FAIL>`
 
-Where `<phase>` is `design` (design-review) or `impl` (impl-review). PM parses first non-empty content line. Never bury verdict in prose.
+Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line. Never bury verdict in prose.

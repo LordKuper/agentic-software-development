@@ -72,7 +72,7 @@ Phase 1 brownfield candidates auto-suggest D as default; user may override.
 - Section-by-section:
   - BA drafts the section, translates to `language.docs`, writes it into `docs/product/concept.html` on disk
   - Post the file path + a short delta summary of what the section now says in `language.chat` (never the full section body) per `language-policy.md`
-  - Request user decision (options): **A) Lock in / B) Revise this section / C) Skip (optional sections only)** — labels/descriptions in `language.chat` per `language-policy.md`
+  - Apply `checkpoints.md`: lock in automatically only when adaptive authority/evidence covers this routine section; otherwise request **Lock in / Revise / Skip**.
   - on B: collect feedback, BA revises, rewrites the section in place, re-posts delta summary, re-ask
   - on C: remove that section (heading + placeholder content) from the on-disk file entirely, then continue to the next section
   - repeat until A

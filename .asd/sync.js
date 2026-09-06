@@ -928,6 +928,39 @@ function computeCanonHashes(repoRoot) {
   return entries;
 }
 
+function variantMeta(baseMeta, suffix) {
+  const variants = baseMeta.variants;
+  if (variants === undefined) return null;
+  if (!variants || typeof variants !== 'object' || Array.isArray(variants)) throw new Error(`agent "${baseMeta.name}": variants must be an object`);
+  const spec = variants[suffix];
+  if (!spec || typeof spec !== 'object' || Array.isArray(spec)) throw new Error(`agent "${baseMeta.name}": variant "${suffix}" malformed`);
+  for (const key of Object.keys(spec)) {
+    if (key !== 'claude' && key !== 'codex') throw new Error(`agent "${baseMeta.name}": variant "${suffix}" changes unsupported field "${key}"`);
+  }
+  if (!spec.claude || !spec.codex || typeof spec.claude !== 'object' || typeof spec.codex !== 'object') throw new Error(`agent "${baseMeta.name}": variant "${suffix}" requires Claude and Codex model metadata`);
+  for (const key of Object.keys(spec.claude)) {
+    if (key !== 'model' && key !== 'effort') throw new Error(`agent "${baseMeta.name}": variant "${suffix}" changes Claude permission metadata`);
+  }
+  for (const key of Object.keys(spec.codex)) {
+    if (key !== 'model' && key !== 'model_reasoning_effort') throw new Error(`agent "${baseMeta.name}": variant "${suffix}" changes Codex permission metadata`);
+  }
+  if (typeof spec.claude.model !== 'string' || typeof spec.codex.model !== 'string' || typeof spec.codex.model_reasoning_effort !== 'string') throw new Error(`agent "${baseMeta.name}": variant "${suffix}" model metadata incomplete`);
+  const claude = Object.assign({}, baseMeta.claude, spec.claude);
+  const codex = Object.assign({}, baseMeta.codex, spec.codex);
+  if (spec.claude.effort === undefined) delete claude.effort;
+  return Object.assign({}, baseMeta, { name: `${baseMeta.name}-${suffix}`, description: `${baseMeta.description} Task class: ${suffix}.`, claude, codex });
+}
+
+function agentVariants(meta) {
+  if (meta.variants === undefined) return [];
+  const suffixes = Object.keys(meta.variants).sort();
+  if (suffixes.length === 0) throw new Error(`agent "${meta.name}": variants cannot be empty`);
+  for (const suffix of suffixes) {
+    if (!/^(mechanical|standard|critical)$/.test(suffix)) throw new Error(`agent "${meta.name}": unsupported variant suffix "${suffix}"`);
+  }
+  return suffixes.map((suffix) => variantMeta(meta, suffix));
+}
+
 // Every real file under every manifest.managed_paths entry (repo-root
 // relative, posix), bare sha256 hex - matches update.js's upstream_hashes
 // convention exactly (it's the same file-identity contract, just recomputed
@@ -1198,12 +1231,29 @@ function buildSyncPlan(repoRoot) {
   const plan = [];
   const agentsDir = path.join(repoRoot, '.asd', 'agents');
   if (fs.existsSync(agentsDir)) {
+    const agents = [];
+    const names = new Set();
     for (const f of fs.readdirSync(agentsDir)) {
       if (!f.endsWith('.md')) continue;
       const canonPath = path.join(agentsDir, f);
       const name = f.slice(0, -3);
-      plan.push({ class: 'full-file', kind: 'agent-claude', canonPath, parse: true, targetPath: path.join(repoRoot, '.claude', 'agents', `${name}.md`) });
-      plan.push({ class: 'full-file', kind: 'agent-codex', canonPath, parse: true, targetPath: path.join(repoRoot, '.codex', 'agents', `${name}.toml`) });
+      const meta = parseCanonicalFrontmatter(readNormalized(canonPath)).meta;
+      if (meta.name !== name || !/^[a-z0-9-]+$/.test(name)) throw new Error(`agent filename and frontmatter name must match: ${f}`);
+      agents.push({ canonPath, name, meta });
+      if (names.has(name)) throw new Error(`agent name collision: ${name}`);
+      names.add(name);
+    }
+    for (const agent of agents) {
+      const variants = agentVariants(agent.meta);
+      for (const meta of variants) {
+        if (names.has(meta.name)) throw new Error(`agent name collision: ${meta.name}`);
+        names.add(meta.name);
+      }
+      const rendered = [{ name: agent.name, meta: null }].concat(variants.map((meta) => ({ name: meta.name, meta })));
+      for (const item of rendered) {
+        plan.push({ class: 'full-file', kind: 'agent-claude', canonPath: agent.canonPath, parse: true, metaOverride: item.meta, targetPath: path.join(repoRoot, '.claude', 'agents', `${item.name}.md`) });
+        plan.push({ class: 'full-file', kind: 'agent-codex', canonPath: agent.canonPath, parse: true, metaOverride: item.meta, targetPath: path.join(repoRoot, '.codex', 'agents', `${item.name}.toml`) });
+      }
     }
   }
   // Every .asd/skills/<name>/SKILL.md is a canonical skill source, regardless
@@ -1275,7 +1325,7 @@ function renderFullFileItem(item, repoRoot, manifest) {
   let body = canonRawNormalized;
   if (item.parse) {
     const parsed = parseCanonicalFrontmatter(canonRawNormalized);
-    meta = parsed.meta;
+    meta = item.metaOverride || parsed.meta;
     body = parsed.body;
   }
   const sourceRelPath = path.relative(path.join(repoRoot, '.asd'), item.canonPath).replace(/\\/g, '/');

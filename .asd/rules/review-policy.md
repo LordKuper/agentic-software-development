@@ -94,17 +94,15 @@ Default: the responsible creator autofixes any reviewer issue without user promp
 
 Applies to all 4 internal reviewers (NOT External Review — Codex self-scopes). Before any verdict, the reviewer MUST emit a coverage ledger proving exhaustive review. Reviewer MUST NOT stop or emit a final verdict while its ledger is incomplete — keep reviewing until every row resolved.
 
-Three parts (template `t_review.md`); the third applies only to a reviewer that declares named rubric sections (Correctness, Efficiency — Testing and Documentation have none):
+The phase orchestrator derives an ordered machine manifest before dispatch. It enumerates every scoped file, every stable reviewer-rubric/custom-rule ID, named sections where applicable, and the **allowed `n/a` predicates per individual ID**. The manifest contains its SHA-256 digest, calculated by `.asd/runtime.js` over the manifest excluding `digest`; a reviewer cannot replace it.
 
-1. **File coverage** — every file in review scope listed once. Scope = the iteration's diff file list (impl-review) or the draft set under review (design-review), supplied in dispatch payload. Each file marked `checked` (reviewed against every applicable rubric item) or `n/a: <reason>` (outside this reviewer's concern, e.g. the correctness reviewer's UI section on a backend-only file). No scoped file omitted or left blank.
-2. **Rule coverage** — every item in this reviewer's checklist (its agent Review rubric + any `.asd/project/custom-*-rules.md`) listed once, each marked `pass`, `finding #<n>`, or `n/a: <reason>`. No item omitted or blank.
-3. **Section coverage** (Correctness, Efficiency only) — one row per named rubric section in the reviewer's own agent file, every dispatch: `reviewed` (findings/pass already recorded under file+rule coverage above) or `n/a: <reason>`, reason one of `outside phase gate` (section not on this phase's allowed-section list), the diff-derived predicate name that n/a'd it (`review-policy.md` "Diff-scoped impl-review fan-out"), or a target-artefact-missing note. No section omitted or left blank, regardless of `review.scoped_fan_out`.
+The reviewer returns one compact JSON ledger: `manifest_digest`, `findings` (the exact finding IDs), and `files`/`rules`/`sections` row arrays. A row is `{i:<manifest id>,s:<status>,p?:<allowed n/a predicate>,f?:<finding id>}`. File status is `checked|n/a`; rule status is `pass|finding|n/a`; section status is `reviewed|n/a`. Only `n/a` has `p`; only `finding` has `f`. The phase parser derives the actual IDs from the returned findings, then invokes `node .asd/runtime.js validate-ledger --manifest <path> --ledger <path> --findings <path>`. The helper rejects a digest mismatch, duplicate, missing, unknown, blank, unauthorized `n/a`, or invented/missing finding reference.
 
 A verdict whose ledger omits a scoped file, omits a checklist item, omits a required section row, or leaves any row blank/unresolved is INVALID — counts as review-incomplete, never as APPROVE.
 
-**Enforcement (phase-workflow gate):** the dispatching phase workflow validates each internal reviewer's ledger — read from the reviewer's returned text, before that text is written to the review file — against the known scope file list, and, for Correctness/Efficiency, against that phase's rubric-section list. Any reviewer whose ledger omits a scoped file, has an unresolved/blank rule row, or (Correctness/Efficiency) omits/blanks a section row → review rejected, nothing written → re-dispatch that reviewer (fresh) this same iteration. Verdict not counted, file not written, until ledger complete. Makes coverage fail-proof: a skipped file, unchecked rule, or unresolved section cannot pass silently. Gate always runs on the reviewer's full **returned** ledger — unaffected by what gets persisted below.
+**Enforcement (phase-workflow gate):** validation runs before the review file is written. Any invalid ledger is rejected and the same reviewer is re-dispatched fresh in the same iteration; its verdict never counts. The generated manifest, not model prose or totals, defines completeness.
 
-**Persistence (compression, gate unaffected):** the returned ledger, once validated, is never written to disk in full. The dispatching phase workflow persists only: a coverage summary line (`files: {{checked}}/{{total}} checked, {{n/a}} n/a · rules: {{pass}}/{{total}}, {{findings}} findings`, plus for Correctness/Efficiency `· sections: {{reviewed}}/{{total}}, none blank`), the full `n/a` list verbatim (file, rule, and section rows, with reason), and every rule-coverage row resolved `finding #N` verbatim. `checked`/`pass`/`reviewed` rows carry no information beyond the count and are dropped from the written file. This is a write-time reduction only — the gate above always validates the reviewer's full returned text, never the reduced written form.
+**Persistence (compression, gate unaffected):** the returned ledger is never persisted in full. The phase stores summary counts, `n/a` rows, and finding-linked rule rows only. The manifest digest and validated finding IDs remain resumable evidence; checked/pass/reviewed rows are dropped.
 
 ## Verdict format
 
@@ -129,7 +127,7 @@ Reviewers are read-only (`providers.md`): a reviewer never writes its own review
 
 Examples: `[REVIEW-impl-correctness]: APPROVE` · `[REVIEW-design-documentation]: FAIL` · `[REVIEW-impl-external]: CONCERNS`
 
-Never bury the verdict in prose. The dispatching phase workflow writes the verdict token, findings, and the reduced coverage form (above) to `<sprint>/reviews/<phase>/iter-NN/<reviewer>.md`; PM reads the first non-empty content line of that written file.
+Never bury the verdict in prose. The dispatching phase workflow writes the verdict token, findings, and the reduced coverage form (above) to `<sprint>/reviews/<phase>/iter-NN/<reviewer>.md`; phase orchestration reads the first non-empty content line of that written file.
 
 ## DoD per review phase
 

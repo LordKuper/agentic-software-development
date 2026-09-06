@@ -1,10 +1,10 @@
 ---
-# ASD generated. Edit .asd/agents/asd-dev.md. source_digest=sha256:331f686039761b39e0b7b10d919f2325c20bec09e3f5b9c257986851377ac8ff content_digest=sha256:9d7de31ccd965832a964bc76b222a0b7d385728b6411e8ad700d543aa4c83c57 asd_version=3.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-dev.md. source_digest=sha256:9cf0dbee1775a027f544775986ad06f717df1989c0f8a2687f50609a71c50b98 content_digest=sha256:38af335bed3d7c482030b4535573070d43d1ac750aa8b9ea24f03aab22938b4a asd_version=5.0.0 schema=1
 name: asd-dev
 description: "Server/CLI/library code and UI code, components, client-side logic, consuming DESIGN.md tokens wherever UI work applies. Covers: production code authoring per plan tasks (backend and frontend), fixing impl-review findings and impl-test defects, running lint/build/run commands from commands.yaml, registering TODO stubs in stubs.md. Does NOT handle: any test authoring or test runs — unit, integration, e2e (delegates to asd-tester in the impl-test phase), architecture decisions (delegates to asd-architect), design system token edits (delegates to asd-ux), accessibility requirements (read-only consumer of accessibility.html), code review (delegates to reviewer agents)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
 model: sonnet
-effort: high
+effort: medium
 maxTurns: 1000
 memory: project
 ---
@@ -23,13 +23,8 @@ Developer. Implements server/CLI/library code and UI code/components per plan ta
 ## Mandatory rules
 
 - `.asd/rules/core.md`
-- `.asd/rules/sprint-lifecycle.md` (impl phase, impl modes)
-- `.asd/rules/git-strategy.md` (commits, stubs format)
-- `.asd/rules/artifact-layout.md`
-- `.asd/rules/language-policy.md`
-- `.asd/rules/code-style.md` (impl phase)
+- `.asd/rules/providers.md` § Role-scoped context (`asd-dev`)
 - `.asd/project/custom-common-rules.md` (if exists)
-- `.asd/project/custom-coding-rules.md` (if exists)
 
 ## Inputs
 

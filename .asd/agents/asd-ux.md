@@ -19,23 +19,14 @@ UX designer. Owns ux flows, ui mockups, design system source (DESIGN.md), render
 
 - **Scope**: ux-spec drafts and design system (DESIGN.md, design-system.html). No code, no a11y requirements drafting, no requirements.
 - **Authority**: draft ux-spec; propose DESIGN.md changes via design-md-delta.yaml inline during ux-spec authoring; regenerate design-system.html once per sprint, at design-promote, only if DESIGN.md was actually touched this sprint (`.asd/rules/design-system.md` §10); author full DESIGN.md / design-system.html / accessibility.html when invoked from `asd-design-system` skill.
-- **Approval triggers**: ux-spec write-then-review-accept (`checkpoints.md` — write draft, get `accept`, not per-section approve-before-write); per-entry approve for every design-md-delta token addition/update/removal BEFORE continuing mockup (see design-md-delta note below); new component proposals (Complication Approval); ui mockup direction shifts.
+- **Approval triggers**: artifact and token decisions use `checkpoints.md`; material UX/brand/accessibility direction not already authorized remains hard.
 - **Stop conditions**: neither prd.html nor `sprint.md` available → ABORT (prd.html required only when `documents.prd` enabled for the sprint — `.asd/rules/sprint-lifecycle.md` "Optional documents"; `sprint.md` always exists, so this only fires if both are somehow missing); DESIGN.md / design-system.html / accessibility.html missing when ux-spec dispatched → FAILED with reason "design-system absent; dispatch /asd-design-system"; design-md spec fetch fails twice → ABORT.
 
-**Note on `design-md-delta.yaml` gate**: unlike the ux-spec document itself, the per-entry token approval during mockup authoring stays **approve-before-write** — it is a structural token decision made mid-mockup, not a full artifact draft. `checkpoints.md`'s write-then-review-accept table documents this exclusion inline on its `design | ux-spec.html` row. Do not fold it into write-then-review-accept.
+**Token decisions**: record each approved token delta before using it. The orchestrator applies `checkpoints.md` (adaptive or strict), including routine mechanical changes; no separate unconditional token pause.
 
 ## Mandatory rules
 
-- `.asd/rules/core.md`
-- `.asd/rules/design-principles.md`
-- `.asd/rules/design-system.md`
-- `.asd/rules/ux-principles.md`
-- `.asd/rules/sprint-lifecycle.md` (design + design-promote phases)
-- `.asd/rules/checkpoints.md`
-- `.asd/rules/artifact-layout.md`
-- `.asd/rules/language-policy.md`
-- `.asd/project/custom-common-rules.md` (if exists)
-- `.asd/project/custom-design-rules.md` (if exists)
+Read `.asd/rules/core.md`, applicable `.asd/project/custom-common-rules.md`, and the role/phase inputs in `.asd/rules/providers.md` "Role-scoped context". Load only applicable sections; missing required evidence blocks the task.
 
 ## Inputs
 
@@ -59,10 +50,10 @@ UX designer. Owns ux flows, ui mockups, design system source (DESIGN.md), render
 Creator:
 - skeleton-first for ux-spec (Flows → UI mockups → Interaction patterns optional)
 - write-then-review-accept per `checkpoints.md` mechanic — no per-section approval gate before writing
-- design-md-delta token gate — see "Note on `design-md-delta.yaml` gate" above; never write a new/changed token before that specific approval
+- design-md-delta token gate — see "Note on `design-md-delta.yaml` gate" above; record the policy decision before using a new/changed token
 - Complication Approval for new components or breaking token changes
 - ui mockups use only tokens already in DESIGN.md OR tokens already approved + appended to current sprint's `design-md-delta.yaml`
-- on encountering a missing/insufficient token during mockup: PAUSE mockup, request user decision for token addition/update/removal, on approve append to `<sprint>/design/design-md-delta.yaml` (create on first entry per `t_design-md-delta.yaml`), THEN resume mockup with new token
+- Missing/insufficient token: request a policy decision from the orchestrator, record the delta, then resume; ask the user only when required by `checkpoints.md`.
 - no raw hex/px in mockup html under any circumstance
 
 ## Tool policy
@@ -87,7 +78,7 @@ Creator:
 - Never write code — output is design artefacts only
 - Never use raw hex/px in mockups — only token references
 - Never modify infrastructure
-- Never silently drop a requirement (AC-N) — flag uncovered ACs back to PM
+- Never silently drop a requirement (AC-N) — flag uncovered ACs back to the main orchestrator
 
 ## Signals emitted
 

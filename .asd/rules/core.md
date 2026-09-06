@@ -14,12 +14,13 @@ All project work goes through `/asd-sprint`.
 - **Sprint** — one unit of scoped work. One active at a time. Closed sprints archived, immutable.
 - **Phase** — fixed step in sprint lifecycle. Ten mandatory: scope, audit, design, design-review, design-promote, plan, impl, impl-test, impl-review, pr.
 - **Iteration** — one pass of the review loop in a `*-review` phase. Each dispatches every reviewer fresh with clean context (`review-policy.md`).
-- **Creator agent** — produces artifacts (PM, BA, UX, Architect, Dev, Tester).
+- **Creator agent** — produces artifacts (BA, UX, Architect, Dev, Tester). The main phase orchestrator owns routing, state, gates, logs, Git, PR, archival and release.
 - **Reviewer agent** — evaluates artifacts (Correctness, Efficiency, Testing, Documentation, External Review).
 - **Advisor agent** (`asd-advisor.md`) — read-only, consulted on non-gate uncertainty via a workflow-mediated `ADVICE_NEEDED` signal (never agent-to-agent). Returns a free-text recommendation, never binding — never authorizes a HARD gate or substitutes for user approval.
 - **Artifact** — file produced by an agent. User-facing (PRD, ADR, plan, …) or machine-readable (state.json, config.yaml).
 - **Persistent doc** — living document under `docs/`. Updated across sprints.
-- **Workflow infrastructure** — `.asd/rules/`, `.asd/templates/`, `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/sync.js`, `.claude/`, `.codex/`, `.agents/skills/`, `AGENTS.md`, `CLAUDE.md`. Never modified during sprint work.
+- **Workflow infrastructure** — `.asd/rules/`, `.asd/templates/`, `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/runtime.js`, `.asd/migrations/`, `.asd/sync.js`, `.claude/`, `.codex/`, `.agents/skills/`, `AGENTS.md`, `CLAUDE.md`. Never modified during sprint work.
+- **Runtime helper** — `.asd/runtime.js` performs deterministic routing, external readiness and ledger validation; it is not a model or authority source.
 - **Subsystem** — unit of project decomposition. Registered in `docs/architecture/c4/` when `project.subsystem_decomposition: enabled`. Persistent docs organized per subsystem. New subsystems added only in `design-promote`, with user approval.
 
 ## Invariants
@@ -31,7 +32,7 @@ All project work goes through `/asd-sprint`.
 
 ## Interaction protocol (QODDA)
 
-Every multi-step user interaction: **Question** (agent identifies decision point) → **Options** (explicit choices, request user decision when discrete) → **Decision** (user selects) → **Draft** (agent composes section in `language.chat`) → **Approval**. Step 5's mechanic depends on the gate class (`checkpoints.md`): approve-before-write gates run Approval before the write; write-then-review-accept gates write first and get `accept` on the written file. Either way the agent translates to `language.docs` before/at write time. See `language-policy.md`.
+For a hard or unresolved decision: **Question** → **Options** → **Decision** → **Draft** → **Approval**. Routine gates use that interaction only when `checkpoints.md` does not permit an evidence-based adaptive pass. Translate to `language.docs` before/at write time.
 
 ## Request user decision
 
@@ -41,12 +42,12 @@ Canonical semantic op for prompting the user with discrete options (host-tool ma
 
 Uncertainty splits into two kinds:
 
-- **Gate uncertainty** — the open question is, or bears on, one of the HARD gates in `checkpoints.md`'s approval-gates tables. Always escalates to the user via Request user decision; no substitute.
-- **Non-gate uncertainty** — an open question about approach, interpretation, tradeoff, or fact-finding that does not itself gate writing an artefact or advancing a phase. May be routed to `asd-advisor` via a workflow-mediated `ADVICE_NEEDED` signal instead of escalating to the user. The advisor's answer is advice only, never binding — the consulting agent may accept, adapt, or override it, and remains responsible for the outcome.
+- **Gate uncertainty** — determine the active policy under `checkpoints.md`. A hard, authority, preference or material-tradeoff uncertainty escalates to the user. A routine fact gap is investigated first; advice never supplies missing authority.
+- **Non-gate uncertainty** — may be routed to `asd-advisor` via `ADVICE_NEEDED`. Advice is non-binding.
 
 ## Simplicity Default
 
-No new abstraction, layer, interface, dependency, config flag, or generalization without explicit user approval via **Complication Approval** format: **What** (exact change), **Why** (problem solved), **Justification** (why simpler options fail), **Alternatives** (simpler options considered).
+Use **Complication Approval** format for an abstraction, layer, interface, dependency, config flag or generalization only when `checkpoints.md` classifies it hard or adaptive evidence is insufficient: **What**, **Why**, **Justification**, **Alternatives**. A bounded in-scope choice may be recorded adaptively.
 
 ## User-decision presentation format
 

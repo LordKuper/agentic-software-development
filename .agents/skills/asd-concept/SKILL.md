@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-concept/SKILL.md. source_digest=sha256:c93d7b1300fa2930ee20a4aa370474fb53f7f1c69b31c5bddcb917b0ee517098 content_digest=sha256:45626373d9008019d195ffc40fd110a26f02c38f2119bf0c28272dda29a6938a asd_version=4.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-concept/SKILL.md. source_digest=sha256:bf4b60a0fd27c777e62d16cc74eacb0bb3f68a022f7d294c81e43fc99a02abfd content_digest=sha256:d447146b4b2ae0f652d784eaf3f2b234947e479578c28b82575a0120abd63cf6 asd_version=5.0.0 schema=1
 name: asd-concept
 description: "Forms or edits the project concept document via asd-ba, branching by silent detection into one of four flows (no idea / vague idea / clear vision / brownfield extraction) and converging through a per-section lock-in loop. Use when the user runs $asd-concept, when asd-init detects a missing concept.html and suggests this skill, or when the user asks to define, draft, refine, edit, rewrite, or reverse-engineer the project concept, vision, target users, or value proposition."
 ---
@@ -70,7 +70,7 @@ Phase 1 brownfield candidates auto-suggest D as default; user may override.
 - Section-by-section:
   - BA drafts the section, translates to `language.docs`, writes it into `docs/product/concept.html` on disk
   - Post the file path + a short delta summary of what the section now says in `language.chat` (never the full section body) per `language-policy.md`
-  - Request user decision (options): **A) Lock in / B) Revise this section / C) Skip (optional sections only)** — labels/descriptions in `language.chat` per `language-policy.md`
+  - Apply `checkpoints.md`: lock in automatically only when adaptive authority/evidence covers this routine section; otherwise request **Lock in / Revise / Skip**.
   - on B: collect feedback, BA revises, rewrites the section in place, re-posts delta summary, re-ask
   - on C: remove that section (heading + placeholder content) from the on-disk file entirely, then continue to the next section
   - repeat until A

@@ -10,26 +10,34 @@ Controlled by `review.external_review` in config (`enabled` | `disabled`). If `d
 
 OS read from `system.os` in config (set by `/asd-init`).
 
-Prompt passed via **heredoc/here-string straight into the wrapped CLI's stdin — never written to disk**. This agent runs read-only on both providers (`codex.sandbox_mode: read-only`, Claude's `tools` drop `Write`), so no step in the invocation may touch the filesystem. The wrapped CLI's own stdout is captured directly as its final message (the text verdict) — no `-o <out-file>`, no temp file, no cleanup step, because nothing was ever created on disk.
+Prompt passed via **heredoc/here-string straight into the wrapped CLI's stdin — never written to disk**. This agent runs read-only on both providers, so no step in the invocation may touch the filesystem. The wrapped CLI's own stdout is captured directly as its final message (the text verdict) — no `-o <out-file>`, no temp file, no cleanup step, because nothing was ever created on disk.
 
-The command TAIL differs per wrapped CLI — this is a real syntax difference (each CLI's own non-interactive/scripted mode takes different arguments, including the read-only enforcement flag), not just a binary-name swap. Canonical tail per CLI (including required sandbox/allowedTools flags) lives once, in the agent file's `wraps_invoke_args` (`asd-external-review.md` frontmatter, `claude`/`codex` blocks) — not restated here.
+The command TAIL differs per wrapped CLI — this is a real syntax difference. Canonical tail per CLI, including explicit model, effort, and read-only boundary, lives once in the agent file's `wraps_invoke_args` (`asd-external-review.md` frontmatter) — not restated here.
 
-| OS | Probe | Review command |
+The tails were verified against local Codex CLI 0.150.1 (`exec --help`: `--model`, `--config`, `--sandbox`) and Claude CLI 2.1.250 (`--help`: `--model`, `--effort`, `--restricted`, `--tools`, `--strict-mcp-config`, `--disable-slash-commands`, `--no-session-persistence`), and Anthropic's CLI reference for print/model/tool flags. `--allowedTools` alone is not a read-only boundary.
+
+| OS | Preflight | Review command |
 |---|---|---|
-| windows | `<resolved-command> --version` (PowerShell) | `@'<rendered prompt + diff payload>'@ \| <resolved-command> <wraps_invoke_args>` (here-string piped to stdin) |
-| linux | `<resolved-command> --version` (bash) | `<resolved-command> <wraps_invoke_args> <<'EOF'` / `<rendered prompt + diff payload>` / `EOF` (heredoc piped to stdin) |
-| macos | `<wrapped-cli> --version` (bash) | same as linux |
+| windows | runtime helper with direct arguments or its fixed PowerShell shim | `@'<rendered prompt + diff payload>'@ \| <resolved-command> <wraps_invoke_args>` (here-string piped to stdin) |
+| linux | runtime helper with direct arguments | `<resolved-command> <wraps_invoke_args> <<'EOF'` / `<rendered prompt + diff payload>` / `EOF` (heredoc piped to stdin) |
+| macos | runtime helper with direct arguments | same as linux |
 
 Both forms read prompt+diff from stdin; the command's own stdout is the final message text verdict. No `-o <out-file>` for either CLI.
 
 `<wrapped-cli>` is `codex` under Claude Code / `claude` under Codex — command name on every OS (each ships a shell shim plus OS-specific wrappers on Windows; no compiled `.exe`). `<resolved-command>` is that default unless the config override (`system.tools.codex_command` under Claude, `system.tools.claude_command` under Codex) is non-empty, in which case it replaces the lookup path for both probe and review.
 
-## Detection
+## Detection and negative cache
 
-At review phase start, agent probes `<resolved-command> --version`. On failure (non-zero exit, command not found):
+Before wrapper dispatch or diff assembly, phase orchestration calls `node .asd/runtime.js external-preflight --input <json>`. Input supplies provider, strong wrapped model, resolved command, cache path, and non-secret authentication generation or credential-file metadata reference. The helper uses direct bounded process arguments, never a shell-interpolated command; on Windows it uses only a fixed PowerShell shim when direct executable lookup fails. It runs `--version`, then `codex login status` or `claude auth status --json`; command/auth text is never persisted. `local-ready` means only that the executable and local authentication status were observed. Model access, quota, and reachability remain `unknown` until the first real review request.
 
-- Return `APPROVE (skipped: external review unavailable: <resolved-command>)`; the dispatching workflow persists that exact reason in the external review output and appends it to `<sprint>/decisions-log.md` for sprint `<NNN-slug>` iteration `<N>`
+On a real-request authentication, quota, reachability, or command failure, phase orchestration calls `node .asd/runtime.js external-record-failure --input <json>` with the preflight fingerprint and a finite retry-after. The cache stores only status and retry-after. Its identity binds the selected model, resolved command, auth arguments, auth status, and non-secret auth generation; expiry or a changed identity restores an attempt. Preflight always reruns local executable and auth checks before honoring a negative cache. It never sends a paid probe.
+
+On command/auth failure or an active negative cache:
+
+- Return `APPROVE (skipped: external review unavailable: <specific status>)`; the dispatching workflow persists the exact status in the external review output and appends it to `<sprint>/decisions-log.md` for sprint `<NNN-slug>` iteration `<N>`
 - Continue without external review, no user prompt
+
+An availability skip satisfies only that iteration and never creates an APPROVE latch. A later local-ready result dispatches External Review normally.
 
 ## Phase-scoped payload
 

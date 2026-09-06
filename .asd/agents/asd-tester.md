@@ -3,11 +3,16 @@
   "name": "asd-tester",
   "description": "Owns all testing in the impl-test phase: test approach selection for the change scope, pruning redundant tests, authoring missing ones at every level, running the impacted set. Also dispatched once per cycle by impl-review, after every reviewer approves, for the sprint's one full-suite check. Covers: change-surface risk analysis, test-plan.md authoring, unit/property/component/contract/e2e test authoring, deletion of trivial/duplicate/mock-confirming/implementation-coupled/flaky tests, regression tests proven fail-first, impacted and full suite runs from commands.yaml, defect triage, manual verification specs when automation is impossible. Does NOT handle: production code (delegates to asd-dev), code-defect fixes (routed to impl test-fix mode), test review (delegates to asd-reviewer-testing).",
   "claude": {
-    "model": "sonnet", "effort": "high",
+    "model": "sonnet", "effort": "medium",
     "tools": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "AskUserQuestion"],
     "disallowedTools": [], "maxTurns": 1000, "memory": "project"
   },
-  "codex": { "model": "terra", "model_reasoning_effort": "high", "sandbox_mode": "workspace-write" }
+  "codex": { "model": "terra", "model_reasoning_effort": "medium", "sandbox_mode": "workspace-write" },
+  "variants": {
+    "mechanical": { "claude": { "model": "haiku" }, "codex": { "model": "luna", "model_reasoning_effort": "low" } },
+    "standard": { "claude": { "model": "sonnet", "effort": "medium" }, "codex": { "model": "terra", "model_reasoning_effort": "medium" } },
+    "critical": { "claude": { "model": "opus", "effort": "high" }, "codex": { "model": "sol", "model_reasoning_effort": "high" } }
+  }
 }
 ---
 
@@ -25,13 +30,8 @@ Test engineer. Sole owner of tests. In `impl-test`, after the code exists: picks
 ## Mandatory rules
 
 - `.asd/rules/core.md`
-- `.asd/rules/sprint-lifecycle.md` (impl-test phase)
-- `.asd/rules/git-strategy.md`
-- `.asd/rules/artifact-layout.md` (manual verification rule)
-- `.asd/rules/language-policy.md`
-- `.asd/rules/code-style.md` (§17 test rubric)
+- `.asd/rules/providers.md` § Role-scoped context (`asd-tester`)
 - `.asd/project/custom-common-rules.md` (if exists)
-- `.asd/project/custom-coding-rules.md` (if exists)
 
 ## Inputs
 

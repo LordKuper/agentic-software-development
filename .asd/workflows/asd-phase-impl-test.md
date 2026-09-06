@@ -10,9 +10,9 @@ Orchestration body for the `asd-phase-impl-test` skill. Operation-mapping to hos
 ## Operations used
 - read: `.asd/project/config.yaml`, `state.json`, `plan.md`, `test-plan.md`, persistent docs (PRD ACs, ux-spec), `commands.yaml`, `custom-common-rules.md`, `custom-coding-rules.md`, existing test sources
 - run command: change-surface diff; `commands.yaml` `test`/`lint`/`build`, impacted-scoped (`sprint-lifecycle.md` "Impacted test set") for the pre-strategy run and the suite gate alike
-- write a file: `state.json` and decisions-log inline, for the mechanical non-gate writes at steps 1, 9, 10 (`sprint-lifecycle.md` "State recovery") — no PM dispatch in this phase
+- write `state.json` and decisions-log inline for mechanical phase work
 - request user decision: out-of-scope test removal gate; escalation
-- delegate to agent `asd-tester` (pre-strategy run, strategy, prune + author, suite run)
+- delegate one live `asd-tester` instance for the whole phase (pre-strategy run, strategy, prune/author and suite run); recover from on-disk evidence only after session loss
 
 ## Execution mode
 
@@ -26,23 +26,24 @@ No user gate on a green impacted-set run, and none on routing defects back to im
 ## Workflow
 
 1. Read `.asd/project/config.yaml` (`language.chat`, `language.docs`, `backward_compat`, `self_hosting`), `<sprint>/state.json` → write `phase=impl-test` inline (mechanical, no gate). Check `<sprint>/test-plan.md` for an `Entry log` with a prior row: none → this is **entry 1** (first entry this sprint); a prior row exists → this is a **re-entry**, and its `HEAD analysed` is `<prior-sha>`
+1a. Route Tester work through `node .asd/runtime.js route-task --input <path>` and persist its result. Deterministic state work runs directly; agent work uses the returned variant. Risks and a failed objective check after one correction are critical and never later downgraded.
 2. **Change surface**:
    - **Entry 1**: run command for `git diff <git.base_branch>...HEAD --stat <pathspec>` plus file list, using the same `<pathspec>` as impl-review's self-hosting-aware scoping (`.asd/rules/external-review.md` "`<pathspec>` for impl-review" — consumer default excludes `.asd/**`/`docs/**`; `self_hosting: enabled` includes the whole repo minus `.asd/project/**`/`.asd/sprints/**`/generated views). This is the **full change surface**
    - **Re-entry**: run command for `git diff <prior-sha>...HEAD --stat <pathspec>` (same `<pathspec>`) — the review-fix or test-fix commits made since the prior entry. This **delta** is the scope for steps 4 and 7 only
    - Either way: derive the **impacted set** per `sprint-lifecycle.md` "Impacted test set" (diff test files + reference/import search + AC-tag search, native selector override when `commands.yaml` carries one, mandatory shared-infrastructure safety valve checked before use) — this is the scope for steps 3 and 8
-3. **Pre-strategy impacted run** — delegate to agent `asd-tester` to run the impacted set of already-existing tests (step 2) via `commands.yaml` `test`, before any new test is authored. Not a gate — no triage, no routing here: the raw pass/fail result (including any failure detail) is passed into the strategy pass (step 4) as evidence of actual post-impl behaviour, so risk analysis sees what `impl` actually did instead of a speculative read of the diff. Any regression this surfaces reconfirms as a code defect at the suite gate (step 8) if it stays unfixed by the time that gate runs
-4. **Strategy pass** — delegate to agent `asd-tester` with payload: change surface (full on entry 1, delta on re-entry), the pre-strategy impacted-run result (step 3), the prior `test-plan.md` (re-entry only, for context — never rewritten from scratch), `plan.md`, AC list (PRD AC-N if `documents.prd` enabled, else `sprint.md`'s own AC-N — `sprint-lifecycle.md` "Optional documents"), API contract fold target(s) + ux-spec paths (if present), `commands.yaml`, custom rules, `t_test-plan.md`, `language.docs`. Instruction:
+3. **Pre-strategy impacted run** — the same live `asd-tester` runs the impacted existing tests before authoring. Its raw result feeds the strategy pass.
+4. **Strategy pass** — the same live `asd-tester` receives: change surface, prior plan evidence, ACs, contracts, commands and rules. It:
    - **authoring bar + no-new-test decision rule**: `code-style.md` §17 (SSoT), not restated here — write decision `none` with its reason in `test-plan.md` when no test qualifies
    - test selection happens **now**, after the implementation exists — never speculatively from the plan; check-ladder selection and prune criteria per `code-style.md` §17 (SSoT), not restated here
    - **re-entry**: analyse only the delta — the material risk introduced or changed by the fix commits; leave prior `Risk → check decisions` rows untouched unless a fix actually changed that risk's behaviour, in which case update that row in place
    - specify `Manual verification` only when automation is impossible (visual UI, third-party live integration, ux feel) — `test-plan.md` is its single home, never duplicated in a review file
    - **entry 1**: write `<sprint>/test-plan.md` per `t_test-plan.md` (Risk → check decisions etc.); leave the first `Entry log` row's `HEAD analysed` unfilled for now (scope = "full change surface"). **Re-entry**: amend it — append new/updated rows; leave the new `Entry log` row's `HEAD analysed` unfilled for now (scope = "delta since entry N-1"); never rewrite prior rows outside the ones actually revised. Emit COMPLETED. The `HEAD analysed` sha itself is written in step 10, after the prune/author commit (step 7) and the suite recording (step 8) — never before — so the next re-entry's delta excludes this entry's own test-authoring commits
 5. Read `test-plan.md` → collect proposed removals; split into in-scope (test file inside the change surface) and out-of-scope
-6. **Removal gate** — only when out-of-scope removals exist: request user decision in `language.chat`, Complication Approval format per `core.md`, one entry per test (what, why, what still covers the risk). Rejected removals are struck from `test-plan.md`; approved ones marked `yes — user approved`
-7. **Prune + author pass** — delegate to agent `asd-tester` (parallel instances per independent area when the plan splits cleanly). Scope: the same set step 4 analysed (full on entry 1, delta on re-entry) — never a full re-derivation of the whole change surface on re-entry. Instruction:
+6. **Removal gate** — only when out-of-scope removals exist: apply `checkpoints.md`; strict requests the user, adaptive needs recorded authority/evidence. Rejected removals are struck from `test-plan.md`.
+7. **Prune + author pass** — the same live `asd-tester` handles every independent area serially. Scope is the same set step 4 analysed. It:
    - delete the approved removals; write the `add` decisions at the chosen level; fail-first regression proof and test-quality bars per `code-style.md` §17 (SSoT) — record the proof in the `Added tests` table
    - commit per Conventional Commits; emit COMPLETED
-8. **Suite gate** — delegate to agent `asd-tester` to run `test` scoped to the impacted set (step 2, `sprint-lifecycle.md` "Impacted test set" — not the full suite, which runs exactly once, at the end of `impl-review`), then `lint` and `build` per `commands.yaml`, and write the raw result into the `Suite run` section of `test-plan.md`, including the `HEAD` field (current `git rev-parse HEAD`, i.e. the commit the impacted run was verified at). Verdict is read from the runner's exit code plus report — an agent's summary alone never satisfies this gate
+8. **Suite gate** — the same live `asd-tester` runs the impacted suite, lint/build and records raw results. Verdict is runner evidence, not its summary.
 9. **Triage** on any failure:
    - **test defect** (bad assertion, wrong fixture, flaky pattern) → re-dispatch step 7 for the offending tests, then step 8 again
    - **code defect** → append a `D-N` row to the `Defects` section of `test-plan.md` (location, symptom, failing test, status `pending`); write `state.json.test_defects_pending = true` inline and append decisions-log "impl-test: defects <D-N list> → impl test-fix" (mechanical, no gate); emit COMPLETED with `NEXT: impl`
@@ -67,8 +68,8 @@ Bounded risk: a defect outside the impacted set's reach is not caught by this ph
 - decisions-log entry on green impacted run or defect routing
 
 ## Agents delegated to
-- `asd-tester` (pre-strategy run, strategy, prune + author, suite run)
-- No PM dispatch — all `state.json`/decisions-log writes in this phase are mechanical, no-gate, and done inline by the workflow
+- One live `asd-tester` (pre-strategy, strategy, prune/author, suite); after session loss re-dispatch from disk evidence
+- No orchestration dispatch — state/log writes are inline.
 - No reviewers — test quality is judged in impl-review by `asd-reviewer-testing`
 
 ## Skills/workflows dispatched

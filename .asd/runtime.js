@@ -1,0 +1,245 @@
+'use strict';
+
+const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
+const { spawnSync } = require('child_process');
+
+const CACHE_SCHEMA = 1;
+const MAX_TIMEOUT_MS = 10000;
+const NEGATIVE_TTL_MS = 300000;
+
+function stable(value) {
+  if (Array.isArray(value)) return '[' + value.map(stable).join(',') + ']';
+  if (value && typeof value === 'object') return '{' + Object.keys(value).sort().map((key) => JSON.stringify(key) + ':' + stable(value[key])).join(',') + '}';
+  return JSON.stringify(value);
+}
+
+/** Returns a stable SHA-256 identity for resumable runtime evidence. */
+function fingerprint(value) {
+  return crypto.createHash('sha256').update(stable(value)).digest('hex');
+}
+
+function fail(message) {
+  throw new Error(message);
+}
+
+function stringArray(value, name) {
+  if (!Array.isArray(value) || value.some((item) => typeof item !== 'string' || item.includes('\0'))) fail(`${name} must be a string array`);
+  return value;
+}
+
+function runLocal(command, args, timeoutMs) {
+  if (typeof command !== 'string' || command.length === 0 || command.includes('\0')) fail('command must be a non-empty executable path');
+  stringArray(args, 'args');
+  let result = spawnSync(command, args, {
+    encoding: 'utf8',
+    shell: false,
+    timeout: Math.min(Math.max(Number(timeoutMs) || 0, 1), MAX_TIMEOUT_MS),
+    windowsHide: true,
+  });
+  if (process.platform === 'win32' && result.error && result.error.code === 'ENOENT') {
+    result = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', '& $args[0] @($args[1..($args.Length - 1)])', command].concat(args), {
+      encoding: 'utf8', shell: false, timeout: Math.min(Math.max(Number(timeoutMs) || 0, 1), MAX_TIMEOUT_MS), windowsHide: true,
+    });
+  }
+  return { ok: !result.error && result.status === 0, timedOut: result.error && result.error.code === 'ETIMEDOUT', status: result.status === null ? null : result.status };
+}
+
+function defaultAuthArgs(provider) {
+  if (provider === 'codex') return ['login', 'status'];
+  if (provider === 'claude') return ['auth', 'status', '--json'];
+  fail('provider must be codex or claude');
+}
+
+function readCache(cachePath) {
+  if (!cachePath || !fs.existsSync(cachePath)) return { schema: CACHE_SCHEMA, entries: {} };
+  let parsed;
+  try {
+    parsed = JSON.parse(fs.readFileSync(cachePath, 'utf8'));
+  } catch (_) {
+    return { schema: CACHE_SCHEMA, entries: {} };
+  }
+  if (!parsed || parsed.schema !== CACHE_SCHEMA || !parsed.entries || typeof parsed.entries !== 'object' || Array.isArray(parsed.entries)) return { schema: CACHE_SCHEMA, entries: {} };
+  const entries = {};
+  for (const [key, entry] of Object.entries(parsed.entries)) {
+    if (/^[a-f0-9]{64}$/.test(key) && entry && typeof entry.status === 'string' && Number.isFinite(entry.retry_after)) entries[key] = { status: entry.status, retry_after: entry.retry_after };
+  }
+  return { schema: CACHE_SCHEMA, entries };
+}
+
+function writeCache(cachePath, cache) {
+  if (!cachePath) return;
+  fs.mkdirSync(path.dirname(cachePath), { recursive: true });
+  fs.writeFileSync(cachePath, JSON.stringify(cache) + '\n', 'utf8');
+}
+
+function authGeneration(input) {
+  if (typeof input.authGeneration === 'string') return input.authGeneration;
+  if (typeof input.credentialPath !== 'string' || !fs.existsSync(input.credentialPath)) return 'unknown';
+  const stat = fs.statSync(input.credentialPath);
+  return `${stat.mtimeMs}:${stat.size}`;
+}
+
+function cacheKey(input, authReady) {
+  return fingerprint({ provider: input.provider, model: input.model, command: input.command, auth_args: input.authArgs || defaultAuthArgs(input.provider), auth_ready: authReady, auth_generation: authGeneration(input) });
+}
+
+/** Checks executable and authentication locally without making a model request. */
+function externalPreflight(input) {
+  if (!input || typeof input !== 'object') fail('preflight input required');
+  const provider = input.provider;
+  const model = input.model;
+  if (typeof model !== 'string' || model.length === 0) fail('model required');
+  const authArgs = input.authArgs || defaultAuthArgs(provider);
+  const timeoutMs = input.timeoutMs || 3000;
+  const version = runLocal(input.command, ['--version'], timeoutMs);
+  if (!version.ok) {
+    return { status: 'command-unavailable', model_access: 'unknown', fingerprint: cacheKey({ ...input, provider, model, authArgs }, false) };
+  }
+  const auth = runLocal(input.command, authArgs, timeoutMs);
+  const key = cacheKey({ ...input, provider, model, authArgs }, auth.ok);
+  if (!auth.ok) return { status: 'authentication-unavailable', model_access: 'unknown', fingerprint: key };
+  const cached = readCache(input.cachePath).entries[key];
+  if (cached && cached.retry_after > (input.now || Date.now())) {
+    return { status: 'negative-cache', reason: cached.status, retry_after: cached.retry_after, model_access: 'unknown', fingerprint: key };
+  }
+  return { status: 'local-ready', model_access: 'unknown', fingerprint: key };
+}
+
+/** Stores one bounded, sanitized external-model failure for later retry control. */
+function recordExternalFailure(input) {
+  if (!input || !/^[a-f0-9]{64}$/.test(input.fingerprint || '')) fail('valid fingerprint required');
+  if (!['authentication', 'quota', 'reachability', 'command'].includes(input.status)) fail('unsupported external failure status');
+  const now = input.now || Date.now();
+  const retryAfter = input.retryAfter || now + NEGATIVE_TTL_MS;
+  if (!Number.isFinite(retryAfter) || retryAfter <= now) fail('retryAfter must be in the future');
+  const cache = readCache(input.cachePath);
+  cache.entries[input.fingerprint] = { status: input.status, retry_after: retryAfter };
+  writeCache(input.cachePath, cache);
+  return cache.entries[input.fingerprint];
+}
+
+/** Selects a task class without allowing a task to move to a weaker class. */
+function routeTask(input) {
+  if (!input || typeof input !== 'object') fail('routing input required');
+  if (!['command', 'mechanical', 'standard'].includes(input.kind)) fail('routing kind invalid');
+  if (typeof input.objectiveInputs !== 'boolean' || typeof input.failedObjectiveCheck !== 'boolean') fail('routing evidence incomplete');
+  const risks = stringArray(input.risks, 'risks');
+  const checks = stringArray(input.checks, 'checks');
+  if (!Number.isInteger(input.correctionAttempts) || input.correctionAttempts < 0) fail('correctionAttempts invalid');
+  const attempted = input.correctionAttempts;
+  const ranks = { mechanical: 0, standard: 1, critical: 2 };
+  if (input.priorTier !== undefined && !Object.prototype.hasOwnProperty.call(ranks, input.priorTier)) fail('priorTier invalid');
+  const hasRisk = risks.length > 0;
+  const deterministicCommand = input.kind === 'command' && input.objectiveInputs === true && checks.includes('deterministic-state');
+  const mechanical = input.kind === 'mechanical' && input.objectiveInputs === true && checks.includes('deterministic-check') && checks.includes('exhaustive-match-validation');
+  let tier = hasRisk || (input.failedObjectiveCheck && attempted >= 1) ? 'critical' : deterministicCommand || mechanical ? 'mechanical' : 'standard';
+  if (input.priorTier && ranks[input.priorTier] > ranks[tier]) tier = input.priorTier;
+  const reason = hasRisk ? `risk:${risks[0]}` : input.failedObjectiveCheck && attempted >= 1 ? 'failed-objective-check' : tier === input.priorTier ? 'no-downgrade' : tier === 'mechanical' ? deterministicCommand ? 'deterministic-command' : 'objective-mechanical' : 'normal';
+  return { tier, reason, selector: 'orchestrator' };
+}
+
+function rowsById(rows, expected, allowedStatuses, allowedNa, findings, label) {
+  if (!Array.isArray(rows)) fail(`${label} rows must be an array`);
+  const seen = new Set();
+  for (const row of rows) {
+    if (!row || typeof row.i !== 'string' || typeof row.s !== 'string') fail(`${label} row malformed`);
+    if (!expected.has(row.i) || seen.has(row.i)) fail(`${label} row identity invalid: ${row.i}`);
+    if (!allowedStatuses.has(row.s)) fail(`${label} status invalid: ${row.s}`);
+    if (row.s === 'n/a' && (typeof row.p !== 'string' || !allowedNa.get(row.i).has(row.p))) fail(`${label} n/a predicate invalid: ${row.i}`);
+    if (row.s !== 'n/a' && row.p !== undefined) fail(`${label} predicate only allowed for n/a: ${row.i}`);
+    if (row.s === 'finding' && (typeof row.f !== 'string' || !findings.has(row.f))) fail(`${label} finding reference invalid: ${row.i}`);
+    if (row.s !== 'finding' && row.f !== undefined) fail(`${label} finding reference only allowed for finding: ${row.i}`);
+    seen.add(row.i);
+  }
+  if (seen.size !== expected.size) fail(`${label} rows incomplete`);
+}
+
+/** Returns the required manifest digest for a review coverage ledger. */
+function coverageManifestDigest(manifest) {
+  if (!manifest || typeof manifest !== 'object') fail('manifest required');
+  const copy = Object.assign({}, manifest);
+  delete copy.digest;
+  return fingerprint(copy);
+}
+
+/** Validates one complete compact review ledger against phase-derived evidence. */
+function validateCoverageLedger(manifest, ledger, actualFindings) {
+  if (!manifest || !ledger) fail('manifest and ledger required');
+  const digest = coverageManifestDigest(manifest);
+  if (manifest.digest !== digest || ledger.manifest_digest !== digest) fail('ledger manifest identity invalid');
+  const ids = (name) => {
+    if (!Array.isArray(manifest[name]) || manifest[name].some((item) => typeof item !== 'string')) fail(`manifest ${name} invalid`);
+    const set = new Set(manifest[name]);
+    if (set.size !== manifest[name].length) fail(`manifest ${name} duplicates`);
+    return set;
+  };
+  const allowedNa = (label, expected) => {
+    const entries = manifest.n_a && manifest.n_a[label] || {};
+    if (!entries || typeof entries !== 'object' || Array.isArray(entries)) fail(`manifest n_a.${label} invalid`);
+    const out = new Map();
+    for (const id of expected) {
+      const predicates = entries[id] || [];
+      if (!Array.isArray(predicates) || predicates.some((value) => typeof value !== 'string' || value.length === 0)) fail(`manifest n_a.${label}.${id} invalid`);
+      out.set(id, new Set(predicates));
+    }
+    for (const id of Object.keys(entries)) if (!expected.has(id)) fail(`manifest n_a.${label} unknown id: ${id}`);
+    return out;
+  };
+  const findingIds = Array.isArray(ledger.findings) ? ledger.findings : [];
+  if (!Array.isArray(actualFindings) || actualFindings.some((id) => typeof id !== 'string' || id.length === 0)) fail('actual findings invalid');
+  if (findingIds.some((id) => typeof id !== 'string' || id.length === 0) || new Set(findingIds).size !== findingIds.length || stable(findingIds.slice().sort()) !== stable(actualFindings.slice().sort())) fail('ledger findings invalid');
+  const findings = new Set(findingIds);
+  const files = ids('files');
+  const rules = ids('rules');
+  const sections = ids('sections');
+  rowsById(ledger.files, files, new Set(['checked', 'n/a']), allowedNa('files', files), findings, 'files');
+  rowsById(ledger.rules, rules, new Set(['pass', 'n/a', 'finding']), allowedNa('rules', rules), findings, 'rules');
+  rowsById(ledger.sections || [], sections, new Set(['reviewed', 'n/a']), allowedNa('sections', sections), findings, 'sections');
+  return { ok: true };
+}
+
+function parseFlagArgs(argv) {
+  const out = {};
+  for (let i = 0; i < argv.length; i += 2) {
+    if (!argv[i].startsWith('--') || argv[i + 1] === undefined) fail('flags require values');
+    out[argv[i].slice(2)] = argv[i + 1];
+  }
+  return out;
+}
+
+function inputJson(flags) {
+  if (typeof flags.input !== 'string') fail('--input <path|-> required');
+  return JSON.parse(flags.input === '-' ? fs.readFileSync(0, 'utf8') : fs.readFileSync(flags.input, 'utf8'));
+}
+
+function main(argv) {
+  const command = argv[2];
+  const flags = parseFlagArgs(argv.slice(3));
+  if (command === 'validate-ledger') {
+    const result = validateCoverageLedger(JSON.parse(fs.readFileSync(flags.manifest, 'utf8')), JSON.parse(fs.readFileSync(flags.ledger, 'utf8')), JSON.parse(fs.readFileSync(flags.findings, 'utf8')));
+    process.stdout.write(JSON.stringify(result) + '\n');
+    return 0;
+  }
+  if (command === 'external-preflight') {
+    const result = externalPreflight(inputJson(flags));
+    process.stdout.write(JSON.stringify(result) + '\n');
+    return result.status === 'local-ready' ? 0 : 1;
+  }
+  if (command === 'external-record-failure') {
+    process.stdout.write(JSON.stringify(recordExternalFailure(inputJson(flags))) + '\n');
+    return 0;
+  }
+  if (command === 'route-task') {
+    process.stdout.write(JSON.stringify(routeTask(inputJson(flags))) + '\n');
+    return 0;
+  }
+  fail('usage: validate-ledger or external-preflight');
+}
+
+if (require.main === module) {
+  try { process.exitCode = main(process.argv); } catch (error) { process.stderr.write(`${error.message}\n`); process.exitCode = 2; }
+}
+
+module.exports = { coverageManifestDigest, externalPreflight, recordExternalFailure, routeTask, validateCoverageLedger, fingerprint };

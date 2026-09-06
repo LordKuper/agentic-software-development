@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-phase-scope/SKILL.md. source_digest=sha256:3402aeb17b410578797ee5abc09a44388149f25ac14c8fd70451f0f80fb5051b content_digest=sha256:a5bad5720b1e461974f4f569ca0088fb720656a006d0cfefd6c73932aa9f83d7 asd_version=3.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-phase-scope/SKILL.md. source_digest=sha256:95a7b432aa17e331d7d744bda1f2e2dfd502d5cbfa80a9237432d6d6f503b523 content_digest=sha256:025834e24e9fe6677009f37454cfd7ab4b85c8b5ca45dca964fc6f3607d7f2e5 asd_version=5.0.0 schema=1
 name: asd-phase-scope
-description: "Runs the ASD scope phase of a sprint: creates the sprint folder, state.json, and git branch, then dispatches asd-pm to refine the raw user scope into a sprint.md accepted via write-then-review-accept (write, then user replies accept). Use when asd-sprint dispatches the scope phase for a new sprint, or when the user explicitly asks to run or re-run the scope phase for the active sprint."
+description: "Runs the ASD scope phase of a sprint: the phase orchestrator creates the sprint folder, state.json, branch, and refined scope under the active gate policy. Use when asd-sprint dispatches the scope phase for a new sprint, or when the user explicitly asks to run or re-run the scope phase for the active sprint."
 allowed-tools: "Read Glob Bash AskUserQuestion Task"
 ---
 

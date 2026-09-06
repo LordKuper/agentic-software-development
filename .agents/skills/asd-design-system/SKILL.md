@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-design-system/SKILL.md. source_digest=sha256:ce83ced9bf32255e8c381c3a325e89c6d1a41c69277d5226a3f38f386264dc0d content_digest=sha256:b0fa0df8adcf5a62d76ef84fd18edac56e64e2dd28a9eba9009ef7b60567d101 asd_version=4.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-design-system/SKILL.md. source_digest=sha256:f0328b550aa0fa11f03c2177c45ffa628f5942580d1f39689a212136fd3efa7f content_digest=sha256:75833031c13e1c10d5a9e73158062fe9d228fa6ef29df4e6d190f54cd12b61d3 asd_version=5.0.0 schema=1
 name: asd-design-system
 description: "Forms or edits the project design system (docs/ux/DESIGN.md, design-system.html, accessibility.html) via asd-ux, branching by silent detection into one of three flows (greenfield / constraints / brownfield extraction). Fetches the Google Labs DESIGN.md spec, lints tokens, regenerates design-system.html previews, and authors the accessibility baseline. Use when the user runs $asd-design-system, when asd-init or asd-phase-design detects missing DESIGN.md/design-system.html/accessibility.html and suggests this skill, or when the user asks to define, draft, refine, edit, augment, or reverse-engineer the project design system, design tokens, or accessibility baseline."
 ---
@@ -78,7 +78,7 @@ Order per Google Labs DESIGN.md spec:
 - For each section:
   - Designer drafts the section, writes it into `docs/ux/DESIGN.md` on disk
   - Post the file path + a short delta summary of what the section now says in `language.chat` (never the full section body) per `language-policy.md`
-  - Request user decision (options) — labels/descriptions in `language.chat`: **A) Lock in / B) Revise this section / C) Skip (optional sections only)**
+  - Apply `checkpoints.md`: adaptive pass only for mechanical/already-authorized content; initial or material UX, brand or accessibility direction remains hard.
   - on B: collect feedback, designer revises, rewrites the section in place, re-posts delta summary, re-ask
   - on C: remove that section (heading + placeholder content) from the on-disk file entirely, then continue to the next section
   - repeat until A
@@ -103,7 +103,7 @@ After all DESIGN.md sections approved:
 - For each section:
   - Designer drafts the section, translates to `language.docs`, writes it into `docs/ux/accessibility.html` on disk
   - Post the file path + a short delta summary of what the section now says in `language.chat` (never the full section body) per `language-policy.md`
-  - Request user decision lock-in (options) — labels/descriptions in `language.chat`: **A) Lock in / B) Revise this section**
+  - Apply `checkpoints.md`; material accessibility direction remains hard.
   - on B: collect feedback, designer revises, rewrites the section in place, re-posts delta summary, re-ask
   - repeat until A
   - next section

@@ -1,88 +1,53 @@
 # Checkpoints
 
-## Mandatory pauses (user approval required)
+## Gate policy
 
-Every pause is a HARD gate: responsible agent MUST receive explicit user approval before advancing phase. Inferring approval from earlier free-text — including the original sprint request — is forbidden. Two gate classes exist, distinguished by *when* the write happens relative to approval:
+`state.json.user_gates` is `strict` or `adaptive`; absent legacy value means `strict`. Invalid or unreadable policy blocks. `strict` uses the gate classes below with explicit approval. In `adaptive`, the orchestrator may advance a routine gate only when exact user authority and documented constraints cover the choice, effects/resources are understood, applicable checks pass, and no unresolved material alternative remains. It records `{gate, decision_actor:"orchestrator", reason, evidence, artifact_revision}` in `state.json.gate_decisions` and the decisions log. Confidence alone is insufficient. Missing facts require investigation; missing authority, preference or material trade-off requires the user. A semantic revision makes its prior decision stale. Exact existing user authorization may be reused.
 
-- **approve-before-write** — write the gated artefact/mutation only AFTER explicit approval. Batching "produce + write + advance" into one turn without the intermediate user-decision request is a protocol violation; agent MUST emit `FAILED` and halt if it notices itself doing so.
-- **write-then-review-accept** — write the artefact FIRST, then get approval on the written file. Not a protocol violation for this class; it's the mechanic.
+Hard in both modes: new or changed scope, acceptance criteria or user value not already explicitly authorized; initial/material UX, brand, accessibility or stack direction not already authorized; a new subsystem boundary; material architecture, public contract or compatibility change; debt or any reviewer/coverage/quality waiver; review-cap override; abort; and sprint closure. Machine checks never become approvals.
 
-### Write-then-review-accept mechanic (canonical definition)
+Routine candidates: audit/plan acceptance, initial impl assessment, green review handoff, in-bounds ADR, factual tech reference, mechanical docs/design-system update, approved decomposition, and bounded complication decisions. Expenses, external actions, out-of-scope test deletion and PR publication use the same evidence rule; host permissions and machine checks remain mandatory.
 
-1. Creator writes the artifact to its real path.
-2. Creator posts the absolute path + a short delta summary in chat — **never the artifact body** (no content dumps; chat carries link + brief summary + open questions only).
-3. User reviews the actual file on disk.
-4. User replies `accept` → phase/gate advances. User replies with feedback instead → creator revises the **same file in place** (no `-v2`, no duplicate drafts) and returns to step 2.
-5. Repeat until explicit `accept`.
+## Gate mechanics
 
-Approval stays explicit and recorded (see "Approval recording") — silence or an unrelated later message is never `accept`.
+For a hard gate, or a routine gate that does not qualify adaptively:
 
-### Approve-before-write gates
+- **approve-before-write**: request a decision before the gated mutation.
+- **write-then-review-accept**: write the artifact, post its absolute path and short delta summary, then revise in place until explicit `accept`.
 
-| After phase / event | Approves |
-|---|---|
-| audit | `audit.md` — BEFORE advancing to `design` |
-| design-review (final) | reviewer verdicts before promotion |
-| design-promote (decomposition) | proposed per-subsystem split |
-| design-promote (new subsystem) | each new subsystem before C4 registry update |
-| impl assessment | impl summary before `impl-test` — **initial mode only**; fix modes skip this gate |
-| impl-test (removal) | deletion of any test **outside** the sprint change scope — conditional gate, skipped when no such removal proposed |
-| impl-review (final) | reviewer verdict before `pr` |
-| pr | confirms PR opening |
-
-`design-promote (decomposition)` and `design-promote (new subsystem)` are approve-before-write: both are structural decisions about persistent-doc/C4-registry layout never shown to the user at draft-acceptance time, so the write-then-review-accept acceptance on the source drafts doesn't cover them — a separate approval is required.
-
-### Write-then-review-accept gates
-
-All rows use the write-then-review-accept mechanic above.
-
-| After phase / event | Approves |
-|---|---|
-| `/asd-concept` | `concept.html` |
-| `/asd-stack` | `stack.html` (sibling `tech-reference/` writes are a separate approve-before-write micro-gate, per-tech, not covered by this row) |
-| scope | `sprint.md` |
-| design | `prd.html` (if `prd` enabled) |
-| design | design-system gate: `DESIGN.md` + `design-system.html` + `accessibility.html` (if `ux_spec` enabled; missing → dispatch `/asd-design-system`) |
-| design | `ux-spec.html` (if enabled; inline per-entry approval for any `design-md-delta.yaml` addition is its own separate approve-before-write micro-gate) |
-| design | `adr.html` (if `adr` enabled — **one approval for the sprint's whole ADR set**, not per-decision; ADR count never multiplies this gate) |
-| plan | `plan.md` |
-
-`c4-full/` carries no approval gate of any kind (neither class). `design-promote (final mutation)` carries no separate gate — its content was already accepted per-artifact under write-then-review-accept during `design`; re-confirming the same content at final persistent-write time would be redundant.
-
-## Pause message format
-
-**Approve-before-write** gates use the user-decision format from `core.md` (Problem / Options / Recommended / Consequences). Request user decision when options are discrete; free-form approval (`approve / request changes / reject`) acceptable otherwise.
-
-**Write-then-review-accept** gates use the link-and-summary message from the mechanic above: absolute path + short delta summary + open questions, never the artifact body. User responds `accept` to advance, or gives feedback to trigger a revise-in-place loop.
+Record user decisions with `decision_actor=user`; silence and unrelated text are never approval. A routine adaptive pass is recorded as above instead. A policy mode change never approves a pending hard gate. No-op phases have no artifact gate.
 
 ## Approval recording
 
-Approval advances `phase` in `state.json` and appends an entry to `<sprint>/decisions-log.md` naming the approved/accepted artifact's path. No frontmatter status field. For write-then-review-accept gates: revision rounds are not decisions — only the final explicit `accept` appends a decisions-log entry (**one entry per accepted gate, naming every path the gate covers**, not one per round — a gate that combines several artifacts under one `accept`, e.g. the design-system gate's `DESIGN.md` + `design-system.html` + `accessibility.html`, records as a single combined entry naming all covered paths).
+For an active sprint, record the actor, gate, artifact revision, evidence and reason in `state.json.gate_decisions` and append the sprint decision log. A standalone `/asd-concept`, `/asd-stack` or `/asd-design-system` has no state/log write: the accepted artifact and git history are its evidence. A material semantic change invalidates only the decision governing that artifact.
 
-Recording scope: (a) sprint-phase gates — dispatched from within an active sprint's phase workflow (`scope`, `plan`, `design`'s prd/ux-spec/adr/design-system rows) — advance `phase` and append to that sprint's `decisions-log.md`, as above. (b) standalone skill gates (`/asd-concept`, `/asd-stack`, `/asd-design-system` when run with no active sprint) never advance `phase` and never write to a decisions-log — the accepted file on disk, and its git history, is the record.
+## Gate inventory
+
+The normal gate class is retained for `strict`, and is the fallback when an adaptive decision cannot be justified:
+
+| Gate | Class |
+|---|---|
+| audit, design/impl-review green handoff, initial impl assessment, decomposition | approve-before-write |
+| new subsystem or material ADR/contract/compatibility choice | hard approve-before-write |
+| scope, plan, concept, stack, PRD, UX, design-system, ADR draft | write-then-review-accept |
+| factual tech-reference and mechanical design-system update | approve-before-write in strict; routine in adaptive |
+| test removal, PR publication, expense or external action | approve-before-write in strict; evidence rule in adaptive; never bypass host permissions/checks |
+| sprint closure | hard approve-before-finalize/archive |
+
+`c4-full/` has no standalone artifact gate. Per-section QODDA uses this same policy; it does not create a second mandatory pause.
+
+## Write-then-review-accept mechanic
+
+Write the artifact to its real path, post its absolute path with a short delta summary, and revise that same artifact until explicit `accept`. In strict this is mandatory for its listed inventory rows; in adaptive it is the fallback when routine evidence is insufficient.
 
 ## Precondition chain
 
 ```
-audit          requires sprint.md
-design         requires audit.md OR (documents.audit disabled) sprint.md directly
-design-review  requires design drafts COMPLETED signal (never dispatched when design was the collapsed no-op — see below)
-design-promote requires design-review DoD met (never dispatched when design was the collapsed no-op — see below)
-plan           requires design-promote done (persistent docs updated), OR (all four documents.* disabled) design's collapsed no-op write (phase=design-promote, skipped_phases=[design, design-review, design-promote]) alone
-impl           requires plan.md (initial) OR state.json.review_fixes_pending set (review-fix) OR state.json.test_defects_pending set (test-fix)
-impl-test      requires impl COMPLETED signal (build + lint green)
-impl-review    requires impl-test COMPLETED signal (impacted set green, sprint-lifecycle.md "Impacted test set")
-pr             requires impl-review DoD met
+audit → design → design-review → design-promote → plan → impl ⇄ impl-test → impl-review → pr
 ```
 
-A no-op phase (`sprint-lifecycle.md` "Optional documents") satisfies the next phase's precondition via its `COMPLETED` signal alone — no artifact-existence check on a document that was never applicable this sprint. When all four `documents.*` flags are disabled, `design`'s **collapsed** no-op check satisfies `design-review`'s, `design-promote`'s, AND `plan`'s precondition in that same single write — `design-review` and `design-promote` are never separately dispatched, so their own precondition lines above never fire in this case.
+`audit` requires accepted scope; `design` requires audit or an audit skip; `design-review` requires produced in-scope drafts; `design-promote` requires review DoD; `plan` requires promotion or collapsed design no-op; `impl` requires plan or pending fix state; `impl-test` requires impl build/lint; `impl-review` requires impacted tests; `pr` requires review DoD. Missing predecessor emits `ABORT — precondition not met: <artifact>`.
 
-`impl`⇄`impl-test` cycle: impl-test routes back to `impl` test-fix mode on code defects, uncapped; ends when the impacted set is green (→ `impl-review`; `sprint-lifecycle.md` "Impacted test set" — the full suite runs once, inside `impl-review`'s own terminal step, not here). `impl-review` routes back to `impl` review-fix mode on unresolved issues; the sprint returns via `impl-test`. It also routes back to `impl` test-fix mode when its own terminal full-suite step is red with code defects. Cycle ends when impl-review reaches DoD (reviewer roster APPROVE/latched AND terminal full suite green → `pr`) or its iteration cap is hit.
+## Re-run
 
-## Skill auto-abort
-
-If a phase skill detects a missing or unapproved predecessor, it MUST emit `ABORT — precondition not met: <missing artifact>` and stop. No silent fallback. PM presents the gap to the user.
-
-## Re-running a phase
-
-User may instruct re-run of a completed phase. Phase skill re-runs, downstream artifacts invalidated, `state.json.phase` resets. Decisions-log records the reset.
+Re-running a phase invalidates downstream artifacts and records the reset. A no-op phase satisfies its successor via its `COMPLETED` signal.

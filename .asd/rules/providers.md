@@ -60,11 +60,12 @@ A provider's id is always its rolling alias (newest model in the family), so a f
 
 | Agent | Claude model / effort | Codex model / effort | Codex sandbox |
 |---|---|---|---|
-| asd-pm | fable / high | sol / high | workspace-write |
 | asd-ba, asd-ux, asd-architect | opus / high | sol / high | workspace-write |
-| asd-dev, asd-tester | sonnet / high | terra / high | workspace-write |
+| asd-dev, asd-tester (base) | sonnet / medium | terra / medium | workspace-write |
+| asd-dev-*, asd-tester-* | mechanical: haiku / none; standard: sonnet / medium; critical: opus / high | mechanical: luna / low; standard: terra / medium; critical: sol / high | workspace-write |
 | asd-reviewer-* (4) | opus / high | sol / high | read-only |
-| asd-external-review | fable / high | sol / high | read-only |
+| asd-external-review wrapper | sonnet / medium | terra / medium | read-only |
+| asd-external-review wrapped reviewer | sol / high | opus / high | read-only |
 | asd-advisor | fable / high | sol / high | read-only |
 
 ## External review symmetry
@@ -74,4 +75,30 @@ External Review always wraps the CLI of the *other* provider, never its own host
 - Running under Claude Code -> wraps **Codex CLI** (`codex exec`, per `.asd/rules/external-review.md`).
 - Running under Codex -> wraps **Claude CLI** the same way (probe, stdin-piped prompt+diff, text-verdict output, severity mapping, stalemate detection — mirror the Claude-under-Codex case symmetrically against `.asd/rules/external-review.md`'s Codex-under-Claude contract).
 
-Which CLI to wrap is resolved per-provider at generation time: `asd-external-review.md`'s canonical frontmatter sets `claude.wraps_cli: "codex"` / `codex.wraps_cli: "claude"` (plus a matching `wraps_config_key` naming the runtime config override — `system.tools.codex_command` / `system.tools.claude_command` in `.asd/templates/t_config.yaml`, empty = default lookup on PATH). At runtime, External Review probes that resolved command; failure is recorded as an explicit availability-skip reason, not a silent fallback. `.asd/sync.js` substitutes `{{wraps_cli}}`/`{{wraps_config_key}}` in the body per provider when generating `.claude/agents/asd-external-review.md` vs `.codex/agents/asd-external-review.toml` — the canonical body text itself stays identical and host-neutral; only these two values differ.
+Which CLI to wrap is resolved per-provider at generation time: `asd-external-review.md`'s canonical frontmatter sets `claude.wraps_cli: "codex"` / `codex.wraps_cli: "claude"` (plus a matching `wraps_config_key` naming the runtime config override — `system.tools.codex_command` / `system.tools.claude_command` in `.asd/templates/t_config.yaml`, empty = default lookup on PATH). Phase orchestration performs the bounded runtime preflight before the wrapper and records a specific availability skip when it is non-ready. `.asd/sync.js` substitutes `{{wraps_cli}}`/`{{wraps_config_key}}` in the body per provider when generating `.claude/agents/asd-external-review.md` vs `.codex/agents/asd-external-review.toml` — the canonical body text itself stays identical and host-neutral; only these two values differ.
+
+## Role-scoped context
+
+Every role loads `core.md` and `custom-common-rules.md` when it exists. It then reads only the row for its current responsibility and phase; a gate proposal additionally reads `checkpoints.md`. Inputs named by the phase payload remain mandatory.
+
+| Role | Additional context |
+|---|---|
+| `asd-ba` | Current scope/audit/design/design-promote section of `sprint-lifecycle.md`, `artifact-layout.md`, `language-policy.md`, `design-principles.md`, and applicable custom design rules. |
+| `asd-architect` | Current audit/design/design-promote section of `sprint-lifecycle.md`, `artifact-layout.md`, `language-policy.md`, `design-principles.md`, `code-style.md` for code audit, and applicable custom design/coding rules. |
+| `asd-ux` | Current design/design-promote section of `sprint-lifecycle.md`, `artifact-layout.md`, `language-policy.md`, `design-system.md`, `ux-principles.md`, accessibility baseline, and applicable custom design rules. |
+| `asd-advisor` | `checkpoints.md` only to classify a gate; otherwise only the exact role/phase rules and files named by the consulting question. |
+| `asd-dev` | `sprint-lifecycle.md` impl section, `git-strategy.md`, `artifact-layout.md`, `language-policy.md`, full `code-style.md`, applicable `custom-coding-rules.md`; design-system and accessibility rules only for UI input. |
+| `asd-tester` | `sprint-lifecycle.md` impl-test or impl-review terminal section, `git-strategy.md`, `artifact-layout.md`, `language-policy.md`, full `code-style.md`, applicable `custom-coding-rules.md`. |
+| `asd-external-review` | `external-review.md`, `review-policy.md`, current review-phase section of `sprint-lifecycle.md`, `artifact-layout.md`, `language-policy.md`, and the applicable custom design or coding rule file. |
+| `asd-reviewer-correctness` | `review-policy.md`, current review-phase section of `sprint-lifecycle.md`, `design-principles.md`, `artifact-layout.md`, `language-policy.md`, full `code-style.md` in impl review, applicable custom design/coding rules, and design-system/UX rules only for its UI section. |
+| `asd-reviewer-efficiency` | `review-policy.md`, current review-phase section of `sprint-lifecycle.md`, `design-principles.md`, `artifact-layout.md`, `language-policy.md`, full `code-style.md` in impl review, and applicable custom design/coding rules. |
+| `asd-reviewer-documentation` | `review-policy.md`, current review-phase section of `sprint-lifecycle.md`, `design-principles.md`, `artifact-layout.md`, `language-policy.md`, full `code-style.md` in impl review, and applicable custom design/coding rules. |
+| `asd-reviewer-testing` | `review-policy.md`, impl-review section of `sprint-lifecycle.md`, `artifact-layout.md`, `language-policy.md`, full `code-style.md`, and applicable `custom-coding-rules.md`. |
+
+## Task-class variants and routing
+
+An agent may declare `variants` in its canonical JSON frontmatter. Each fixed suffix is `mechanical`, `standard`, or `critical`; it changes only Claude `model`/optional `effort` and Codex `model`/`model_reasoning_effort`. `.asd/sync.js` emits `<base>-<suffix>` from the base body and permissions, rejects malformed metadata and name collisions, and keeps the base ID for compatibility. No dispatcher mutates generated configuration.
+
+Only `asd-dev` and `asd-tester` declare all three variants: mechanical uses haiku without an effort override or luna/low; standard uses sonnet/medium or terra/medium; critical uses opus/high or sol/high. Reviewers remain strong and fresh. The phase orchestrator calls `node .asd/runtime.js route-task --input <json>` before dispatch and persists its returned tier, reason, selector, and resolved model identifier when exposed.
+
+Routing input requires objective evidence. A deterministic zero-judgment command with `deterministic-state` runs without an agent. Mechanical agent work requires `deterministic-check` and `exhaustive-match-validation`. Any declared risk, one failed objective check after its correction attempt, invalid evidence, or an unknown class is critical or fails closed. `priorTier` prevents a task from being downgraded. A cheap creator never determines reviewer tier; reviewer scope and risks are classified independently.

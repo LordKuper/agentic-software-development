@@ -26,15 +26,8 @@ Efficiency reviewer. Merges the former Simplification and Performance reviewers 
 ## Mandatory rules
 
 - `.asd/rules/core.md`
-- `.asd/rules/design-principles.md`
-- `.asd/rules/review-policy.md` (over-engineering checklist, structure/cohesion checklist, escalation triggers, change-surface rule — reviews the iteration's diff/draft only, never restated here)
-- `.asd/rules/sprint-lifecycle.md` (design-review + impl-review phases)
-- `.asd/rules/artifact-layout.md`
-- `.asd/rules/language-policy.md`
-- `.asd/rules/code-style.md` (impl-review phase)
+- `.asd/rules/providers.md` § Role-scoped context (`asd-reviewer-efficiency`)
 - `.asd/project/custom-common-rules.md` (if exists)
-- `.asd/project/custom-design-rules.md` (design-review phase, if exists)
-- `.asd/project/custom-coding-rules.md` (impl-review phase, perf budgets section)
 
 ## Inputs
 
@@ -144,4 +137,4 @@ First content line of the returned findings text (which the phase orchestrator w
 
 `[REVIEW-<phase>-efficiency]: <APPROVE | CONCERNS | FAIL>`
 
-Where `<phase>` is `design` (design-review) or `impl` (impl-review). PM parses first non-empty content line. Never bury verdict in prose.
+Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line. Never bury verdict in prose.

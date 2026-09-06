@@ -65,7 +65,7 @@ Orchestration body for the `asd-phase-design` skill. Operation-mapping to host t
 Indirect (via design-system gate): `docs/ux/DESIGN.md`, `design-system.html`, `accessibility.html` (when gate dispatches `asd-design-system`).
 
 ## Agents delegated to
-- No PM dispatch — `state.json` writes (steps 2, 5, 11) are mechanical, no-gate, done inline by the workflow; per-artifact decisions-log entries (steps 6, 7, 8, 9) are inline workflow writes triggered by that artifact's own write-then-review-accept `accept` (step 7's covers the design-system gate's three files as one combined entry, matching `asd-design-system`'s single combined gate); step 11's decisions-log note is a no-gate rollup SUMMARY only, not the sole log entry
+- State and decision-log writes are inline; artifact gates follow `checkpoints.md`.
 - `asd-ba` (PRD)
 - `asd-ux` (UX-spec; inline delta)
 - `asd-architect` (ADR; optional c4-full; tech-reference)

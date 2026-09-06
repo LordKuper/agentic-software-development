@@ -1,10 +1,10 @@
 ---
-# ASD generated. Edit .asd/agents/asd-tester.md. source_digest=sha256:39a2dfbaaf2ddf4e7e945db76beb7a508d1a51e6f19a92eeb8a1813638b5fdb8 content_digest=sha256:06404720186d29704db793763e108239abdbd76eff8835978b4e3a97d477cb9b asd_version=3.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-tester.md. source_digest=sha256:df1315d0881373ba3e8508ba5518d70a683c802ca38e333866343869f40d77eb content_digest=sha256:b601586c2164308b406bde0d4d1a80ca8f8200b5574a5265f600ae64cd869e2d asd_version=5.0.0 schema=1
 name: asd-tester
 description: "Owns all testing in the impl-test phase: test approach selection for the change scope, pruning redundant tests, authoring missing ones at every level, running the impacted set. Also dispatched once per cycle by impl-review, after every reviewer approves, for the sprint's one full-suite check. Covers: change-surface risk analysis, test-plan.md authoring, unit/property/component/contract/e2e test authoring, deletion of trivial/duplicate/mock-confirming/implementation-coupled/flaky tests, regression tests proven fail-first, impacted and full suite runs from commands.yaml, defect triage, manual verification specs when automation is impossible. Does NOT handle: production code (delegates to asd-dev), code-defect fixes (routed to impl test-fix mode), test review (delegates to asd-reviewer-testing)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
 model: sonnet
-effort: high
+effort: medium
 maxTurns: 1000
 memory: project
 ---
@@ -23,13 +23,8 @@ Test engineer. Sole owner of tests. In `impl-test`, after the code exists: picks
 ## Mandatory rules
 
 - `.asd/rules/core.md`
-- `.asd/rules/sprint-lifecycle.md` (impl-test phase)
-- `.asd/rules/git-strategy.md`
-- `.asd/rules/artifact-layout.md` (manual verification rule)
-- `.asd/rules/language-policy.md`
-- `.asd/rules/code-style.md` (§17 test rubric)
+- `.asd/rules/providers.md` § Role-scoped context (`asd-tester`)
 - `.asd/project/custom-common-rules.md` (if exists)
-- `.asd/project/custom-coding-rules.md` (if exists)
 
 ## Inputs
 

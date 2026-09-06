@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:0845039c5f3b3d1c4b62eb61938e37bae8b428e8902ed6721cc2d1549d596a00 content_digest=sha256:9d9ffb3e2d3dc059f655f5f0cde490de940695c7cb121fcc072e0c2e81616884 asd_version=3.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:c43608d0de6273d145d71d3ffa52fce2083eb56dc5208e8d0fca3cbf0f503f29 content_digest=sha256:185e85667c312b14bfc24c3365fdbc8c95916961e7a8e2bd9010058a0df4526e asd_version=5.0.0 schema=1
 name: asd-reviewer-testing
 description: "Impl-review assessment of the test-plan decisions and the tests themselves, plus judging manual-verification necessity when automation is impossible. Covers: risk→check fit per test-plan.md, justification of removed tests and of no-test decisions, fail-first proof on regression tests, coverage of AC-N, edge cases on core paths, absence of test-for-test-sake (meaningless assertions), flaky patterns, manual-verification necessity judgment against the spec `test-plan.md` already owns (single home — never re-authored here). Does NOT handle: bug/security/AC-coverage/ui/a11y (delegates to asd-reviewer-correctness), over-engineering/performance (delegates to asd-reviewer-efficiency), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -24,13 +24,8 @@ Testing reviewer. Judges the test *decisions* recorded in `test-plan.md` and the
 ## Mandatory rules
 
 - `.asd/rules/core.md`
-- `.asd/rules/review-policy.md`
-- `.asd/rules/sprint-lifecycle.md` (impl-review phase)
-- `.asd/rules/artifact-layout.md`
-- `.asd/rules/language-policy.md`
-- `.asd/rules/code-style.md` (impl-review phase)
+- `.asd/rules/providers.md` § Role-scoped context (`asd-reviewer-testing`)
 - `.asd/project/custom-common-rules.md` (if exists)
-- `.asd/project/custom-coding-rules.md` (if exists)
 
 ## Inputs
 
@@ -96,4 +91,4 @@ First content line of the returned findings text (which the phase orchestrator w
 
 `[REVIEW-impl-testing]: <APPROVE | CONCERNS | FAIL>`
 
-PM parses first non-empty content line. Never bury verdict in prose.
+Phase orchestration parses first non-empty content line. Never bury verdict in prose.

@@ -1,4 +1,4 @@
-# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:0845039c5f3b3d1c4b62eb61938e37bae8b428e8902ed6721cc2d1549d596a00 content_digest=sha256:fb5a0cf1eaeb6ae384e3b95740908192cfde01b3e91b60024b509ca445944042 asd_version=4.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:c43608d0de6273d145d71d3ffa52fce2083eb56dc5208e8d0fca3cbf0f503f29 content_digest=sha256:498ba06804ede778eacfae94477e17728adf550e06cab7ba741292ae55cf22be asd_version=5.0.0 schema=1
 name = "asd-reviewer-testing"
 description = "Impl-review assessment of the test-plan decisions and the tests themselves, plus judging manual-verification necessity when automation is impossible. Covers: risk→check fit per test-plan.md, justification of removed tests and of no-test decisions, fail-first proof on regression tests, coverage of AC-N, edge cases on core paths, absence of test-for-test-sake (meaningless assertions), flaky patterns, manual-verification necessity judgment against the spec `test-plan.md` already owns (single home — never re-authored here). Does NOT handle: bug/security/AC-coverage/ui/a11y (delegates to asd-reviewer-correctness), over-engineering/performance (delegates to asd-reviewer-efficiency), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 model = "gpt-5.6-sol"
@@ -19,13 +19,8 @@ Testing reviewer. Judges the test *decisions* recorded in `test-plan.md` and the
 ## Mandatory rules
 
 - `.asd/rules/core.md`
-- `.asd/rules/review-policy.md`
-- `.asd/rules/sprint-lifecycle.md` (impl-review phase)
-- `.asd/rules/artifact-layout.md`
-- `.asd/rules/language-policy.md`
-- `.asd/rules/code-style.md` (impl-review phase)
+- `.asd/rules/providers.md` § Role-scoped context (`asd-reviewer-testing`)
 - `.asd/project/custom-common-rules.md` (if exists)
-- `.asd/project/custom-coding-rules.md` (if exists)
 
 ## Inputs
 
@@ -91,5 +86,5 @@ First content line of the returned findings text (which the phase orchestrator w
 
 `[REVIEW-impl-testing]: <APPROVE | CONCERNS | FAIL>`
 
-PM parses first non-empty content line. Never bury verdict in prose.
+Phase orchestration parses first non-empty content line. Never bury verdict in prose.
 """
