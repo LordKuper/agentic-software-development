@@ -13,7 +13,7 @@ responsibility:
 |---|---|---|
 | 1 | 78e67f1 | full change surface (`git diff main...HEAD`, minus `.asd/project/**`, `.asd/sprints/**`, generated `.claude/`/`.codex/`/`.agents/skills/`) |
 | 2 | cf7b182 | delta since entry 1 — the three impl review-fix commits (`b187059` migration rewrite, `c12e173` retro contract, `46d14be` README/AGENTS/template) plus `reviews/impl/iter-01/testing.md` TST-01..TST-08 |
-| 3 | 7243641 | delta since entry 2 — `reviews/impl/iter-02/{testing.md,efficiency.md}` TST2-01, TST2-02, EFF2-3 and the three below-floor record fixes, against the three iteration-2 fix commits (`f3fe52f` friction-writer narrowing, `cf00a67` AGENTS/README rewrite, `7243641` migration header trim). Test code and this file only |
+| 3 | bd69c1d | delta since entry 2 — `reviews/impl/iter-02/{testing.md,efficiency.md}` TST2-01, TST2-02, EFF2-3 and the three below-floor record fixes, against the three iteration-2 fix commits (`f3fe52f` friction-writer narrowing, `cf00a67` AGENTS/README rewrite, `7243641` migration header trim). Test code and this file only |
 
 ## Risk → check decisions
 
@@ -79,7 +79,7 @@ entry 1's `dropTrailingCommaBefore` mutation no longer exists to perform.
 - Scope: full — shared-infrastructure safety valve (`sprint-lifecycle.md` "Impacted test set"): the change touches a hook, a migration and the release manifest, and `commands.yaml` has no `test_affected` selector, so the impacted set degrades to the whole suite
 - Result: pass — 136 passed / 0 failed / 0 skipped (entry 1: 132/132; entry 2: 137/137; entry 3 folded one migration test away and added no test file or test case — the three iteration-2 fixes are assertions inside tests that already existed, so the count drops by one while coverage grows)
 - Lint / build: pass (`git diff --check` clean; `node .asd/sync.js --check` clean, exit 0)
-- HEAD: 7243641
+- HEAD: bd69c1d
 
 ## Defects
 
