@@ -91,9 +91,9 @@ Material risk: the append reference must stay a reference; ten near-identical re
 
 ### Task 6: Migration (AC-9)
 
-- [ ] Author `.asd/migrations/<major>.js` matching the migration contract (`module.exports = (ctx) => report`, zero dependency, idempotent, helpers from the consumer's own `.asd/sync.js`)
-- [ ] Strip the stale `escalations` key from a consumer's active-sprint `state.json` if present; leave `.asd/sprints/**` otherwise untouched, per the `4.0.0.js` precedent
-- [ ] Confirm no sprint-state mutation is needed for the chain change — an in-flight sprint reaches `retro` through the new chain and lands on the Task 3 empty-log branch
+- [x] Author `.asd/migrations/<major>.js` matching the migration contract (`module.exports = (ctx) => report`, zero dependency, idempotent, helpers from the consumer's own `.asd/sync.js`)
+- [x] Strip the stale `escalations` key from a consumer's active-sprint `state.json` if present; leave `.asd/sprints/**` otherwise untouched, per the `4.0.0.js` precedent
+- [x] Confirm no sprint-state mutation is needed for the chain change — an in-flight sprint reaches `retro` through the new chain and lands on the Task 3 empty-log branch
 
 Depends on Tasks 3 and 5.
 
