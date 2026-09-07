@@ -11,8 +11,8 @@ Use `checkpoints.md` for every user-gate decision. A closure request is mandator
 ## Phases (all mandatory)
 
 ```
-scope → audit → design → design-review → design-promote → plan → impl ⇄ impl-test → impl-review → pr
-                                                                   ↑______________________________|
+scope → audit → design → design-review → design-promote → plan → impl ⇄ impl-test → impl-review → retro → pr
+                                                                   ↑__________________________|
 ```
 
 `impl`, `impl-test`, `impl-review` form one cycle:
@@ -99,6 +99,7 @@ Every scoped test run in `impl` and `impl-test` uses the **impacted set** — de
 | impl | Dev | `plan.md` (initial), `reviews/impl/iter-NN/` findings (review-fix), or `test-plan.md` Defects (test-fix) | code, `manual-steps.md` | all tasks/findings/defects done; build + lint pass (completion gate) |
 | impl-test | Tester | code diff, `plan.md`, PRD ACs, existing tests | `test-plan.md`, tests in repo | impacted set green (`Impacted test set` above) → `impl-review`; code defects → `impl` test-fix mode |
 | impl-review | Correctness + Efficiency + Testing + Documentation + External Review | code + tests + `test-plan.md` | `reviews/impl/iter-NN/<reviewer>.md` | all reviewers APPROVE/latched AND terminal full suite green (`Impacted test set` above) → `pr`; red suite → `impl` test-fix mode, latches cleared; unresolved findings → `impl` review-fix mode |
+| retro | Main orchestrator | `friction-log.md` (may be absent) | `retrospective.html` | retrospective written, empty-log branch included → `pr` |
 | pr | Main orchestrator | everything | PR, then terminal archive | merged and explicit closure approval |
 
 ## Self-hosting
@@ -123,7 +124,7 @@ Framework impl-review/External Review change surface: the whole repo diff (every
 
 **Multi-phase skip**: when one deterministic check subsumes several consecutive no-op phases in a single write — the `design`/`design-review`/`design-promote` collapse below — that one write appends **every** subsumed phase name to `skipped_phases` (`["design", "design-review", "design-promote"]`) and sets `phase` to the **last** subsumed phase name, never one array append per phase and never the first. This way `PHASE_CHAIN[idx+1]` mechanically yields the next real phase and a resumed session cannot re-enter the collapsed block. The subsumed phases are never separately dispatched, so they never make their own individual `skipped_phases` write.
 
-Never optional: `sprint.md`, `state.json`, `plan.md`, `test-plan.md`, impl-review reports, `manual-steps.md` (already lazy), `<sprint>/decisions-log.md`, `stubs.md`. A disabled document is never written as an empty stub — skip recorded in `state.json` plus one decisions-log line.
+Never optional: `sprint.md`, `state.json`, `plan.md`, `test-plan.md`, impl-review reports, `manual-steps.md` (already lazy), `friction-log.md` (already lazy), `retrospective.html`, `<sprint>/decisions-log.md`, `stubs.md`. A disabled document is never written as an empty stub — skip recorded in `state.json` plus one decisions-log line.
 
 **Acceptance-criteria source**: PRD AC-N when `documents.prd` enabled; else `sprint.md`'s own `AC-N` list (`t_sprint.md`). Every phase citing AC-N (plan, impl, impl-test, impl-review, pr) uses whichever source the sprint's frozen `documents.prd` selects.
 
@@ -143,7 +144,7 @@ Never optional: `sprint.md`, `state.json`, `plan.md`, `test-plan.md`, impl-revie
 | design-review | design phase produced zero drafts |
 | design-promote | zero approved drafts to promote |
 
-`plan`, `impl`, `impl-test`, `impl-review`, `pr` are never no-op.
+`plan`, `impl`, `impl-test`, `impl-review`, `retro`, `pr` are never no-op.
 
 **Design/design-review/design-promote collapse**: the design workflow performs one deterministic no-op write when all documents are disabled; design-review and design-promote are not dispatched.
 
@@ -228,6 +229,37 @@ Owner: Tester. Runs after every `impl` exit. Selects the test approach **after**
 - **code defect** → appended to the `Defects` section of `test-plan.md`, `state.json.test_defects_pending = true`, `NEXT: impl` (test-fix mode).
 
 Loops until the impacted set passes. No iteration cap — an unfixable state surfaces as a dev/tester `FAILED`, not as a silent exit.
+
+## Friction log
+
+`<sprint>/friction-log.md` per `t_friction-log.md`. Sprint-scoped, created lazily on the first entry, append-only, archived with the sprint. Never promoted; no cross-sprint history. Entry id `F-N`, sequential, never reused; every entry names the phase it arose in.
+
+**Records** workflow malfunction only: an ambiguous, contradictory or unfollowable rule; a phase, gate or routing step that misfired; an agent or skill that behaved wrong; a template or artefact shape that could not be conformed to; a provider CLI or host tool that failed. One entry per distinct problem.
+
+**Never records** what another file owns — the entry cites that owner's id and stops:
+
+| Owner | Log may record | Log never records |
+|---|---|---|
+| `test-plan.md` `D-N` | that finding or fixing the defect was obstructed | the symptom or the fix |
+| `reviews/<phase>/iter-NN/` | that the review process itself misbehaved | the finding or the verdict |
+| `manual-steps.md` `MS-N` | that the step was unexpected or unworkable | the steps or their verification |
+| `decisions-log.md` | that deciding was blocked | the decision |
+
+One problem that is both a code defect and a workflow malfunction (routine under `self_hosting`, where workflow source IS the code) gets a `D-N` row for the defect and an `F-N` entry for the malfunction, cross-referenced by id — never the same content twice.
+
+**Writer mechanism** — stated once here, referenced by every phase workflow, restated by none: a dispatched agent returns its friction observations in its final text and the dispatching phase workflow appends them as `F-N` entries; the main orchestrator appends its own directly. No dispatched agent writes the file itself — reviewers cannot write at all, by host guarantee (`providers.md`), so returns-text/workflow-appends is the only mechanism available in every phase. This is the single channel for workflow friction; `state.json` holds no parallel escalation list.
+
+## Retro phase
+
+Runs between `impl-review` and `pr`. Unconditional — no `documents` flag, never no-op, never skipped. Owner: main orchestrator (`asd-phase-retro.md`).
+
+Input `<sprint>/friction-log.md`; output `<sprint>/retrospective.html` per `t_retrospective.html` — derived analysis, sprint-scoped, archived with the sprint. Nothing is promoted to a persistent doc.
+
+Every `F-N` entry is analysed into recommendations, split into consumer-project actions and ASD-framework actions, each traced to the entry id it addresses. Recommendations are proposals; the phase never executes them.
+
+**Empty-log branch**: an absent or entry-free log is a legitimate outcome — record "no friction recorded", write the artefact, advance. Never invent findings; never mutate sprint state to reach this branch.
+
+Closes with a short `language.chat` summary of the problems and the proposed approaches, then `NEXT: pr`. Adds no gate of its own; only `checkpoints.md`'s existing gates apply.
 
 ## PR phase
 
