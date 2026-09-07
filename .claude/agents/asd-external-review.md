@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:bc5d8ccd71ed3cbcfba2f40bc7ff0ba3d679139abb83ab4ddc1e381cb201472e content_digest=sha256:5854f91cf08ab563cad5064a71e2786f9ed21a8a4068ce9b891bb5386fd5bf1c asd_version=5.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:f21c9c547e80ccc483a0aa489ace2be6a5c476b376ff2ab1b7e114e115b4374a content_digest=sha256:ae3663b82090e4442d490e28e0503f469749cef771ea38ff7bdac5d7cd4aba17 asd_version=5.0.0 schema=1
 name: asd-external-review
 description: "External reviewer wrapping the other provider's CLI (Codex under Claude Code, Claude under Codex), run in parallel with internal reviewers during design-review and impl-review. Covers: wrapped-CLI availability detection per system.os, iteration-aware scope manifest rendering (full vs incremental), prompt selection per phase (design or impl), output parsing and ASD severity mapping, kept/dropped accounting per severity floor, stalemate detection across iterations. Does NOT handle: internal review (delegates to asd-reviewer-* agents), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, Bash, AskUserQuestion]
@@ -37,7 +37,7 @@ External review wrapper. Runs `codex` CLI parallel to internal reviewers, normal
 - prompt-slot context (paths only, phase-scoped): language.docs, custom-common-rules + phase-scoped custom rules
   - design-review: concept, accessibility baseline
   - impl-review: reference paths per `external-review.md` § Phase-scoped payload table (consumer row vs `self_hosting: enabled` row — differs, do not assume the consumer row)
-- scope manifest (`external-review/t_review-scope.json`, rendered into the prompt, never a diff) — `phase`, `iteration`, `base_ref`, `head_ref` (impl-review only, empty on design-review), `files[]` (changed-path list), `exclude_paths[]`. Agent reads current content of the listed `files[]` itself, using its own read-only filesystem tools, honoring `exclude_paths` — never from manifest payload bytes, never a path outside `files[]`. Full contract, per-phase table and iteration semantics: `external-review.md` § Phase-scoped payload / § Iteration semantics (consumer row vs `self_hosting: enabled` row differs for impl-review — do not hardcode one)
+- scope manifest (`external-review/t_review-scope.json`, rendered into the prompt, never a diff) — `phase`, `iteration`, `base_ref`, `head_ref` (impl-review only, empty on design-review), `files[]` (changed-path list), `exclude_paths[]`. Agent reads current content of the listed `files[]` itself, using its own read-only filesystem tools, honoring `exclude_paths` as a scope bound — never a finding location, never a path outside `files[]` or the prompt's named project-context reference paths — never from manifest payload bytes. Full contract, per-phase table and iteration semantics: `external-review.md` § Phase-scoped payload / § Iteration semantics (consumer row vs `self_hosting: enabled` row differs for impl-review — do not hardcode one)
 - previous iteration finding set (iter ≥ 2 only) — supplied by dispatching phase skill for stalemate detection; agent never reads prior `iter-*/` files itself
 
 ## Outputs
@@ -95,7 +95,7 @@ Before invocation, phase orchestration supplies a runtime preflight result, back
 - Never silently retry on `codex` failure beyond one retry (then skip + log)
 - Never modify infrastructure or persistent docs
 - Never write the prompt or scope manifest to disk — heredoc/here-string stdin only, stdout capture only
-- Never read a path outside the manifest's `files[]` or inside `exclude_paths`
+- Never treat a path inside `exclude_paths` or outside `files[]` — including the prompt's named project-context reference paths — as review scope or a valid finding location
 - Never read prior `iter-*/` review files — each iteration runs clean context; previous finding set arrives via payload (per `review-policy.md`)
 - Never proceed without prompt template loaded
 

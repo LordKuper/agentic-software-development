@@ -44,7 +44,7 @@ External review wrapper. Runs `{{wraps_cli}}` CLI parallel to internal reviewers
 - prompt-slot context (paths only, phase-scoped): language.docs, custom-common-rules + phase-scoped custom rules
   - design-review: concept, accessibility baseline
   - impl-review: reference paths per `external-review.md` § Phase-scoped payload table (consumer row vs `self_hosting: enabled` row — differs, do not assume the consumer row)
-- scope manifest (`external-review/t_review-scope.json`, rendered into the prompt, never a diff) — `phase`, `iteration`, `base_ref`, `head_ref` (impl-review only, empty on design-review), `files[]` (changed-path list), `exclude_paths[]`. Agent reads current content of the listed `files[]` itself, using its own read-only filesystem tools, honoring `exclude_paths` — never from manifest payload bytes, never a path outside `files[]`. Full contract, per-phase table and iteration semantics: `external-review.md` § Phase-scoped payload / § Iteration semantics (consumer row vs `self_hosting: enabled` row differs for impl-review — do not hardcode one)
+- scope manifest (`external-review/t_review-scope.json`, rendered into the prompt, never a diff) — `phase`, `iteration`, `base_ref`, `head_ref` (impl-review only, empty on design-review), `files[]` (changed-path list), `exclude_paths[]`. Agent reads current content of the listed `files[]` itself, using its own read-only filesystem tools, honoring `exclude_paths` as a scope bound — never a finding location, never a path outside `files[]` or the prompt's named project-context reference paths — never from manifest payload bytes. Full contract, per-phase table and iteration semantics: `external-review.md` § Phase-scoped payload / § Iteration semantics (consumer row vs `self_hosting: enabled` row differs for impl-review — do not hardcode one)
 - previous iteration finding set (iter ≥ 2 only) — supplied by dispatching phase skill for stalemate detection; agent never reads prior `iter-*/` files itself
 
 ## Outputs
@@ -102,7 +102,7 @@ Before invocation, phase orchestration supplies a runtime preflight result, back
 - Never silently retry on `{{wraps_cli}}` failure beyond one retry (then skip + log)
 - Never modify infrastructure or persistent docs
 - Never write the prompt or scope manifest to disk — heredoc/here-string stdin only, stdout capture only
-- Never read a path outside the manifest's `files[]` or inside `exclude_paths`
+- Never treat a path inside `exclude_paths` or outside `files[]` — including the prompt's named project-context reference paths — as review scope or a valid finding location
 - Never read prior `iter-*/` review files — each iteration runs clean context; previous finding set arrives via payload (per `review-policy.md`)
 - Never proceed without prompt template loaded
 
