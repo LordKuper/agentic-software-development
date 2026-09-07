@@ -247,7 +247,7 @@ Loops until the impacted set passes. No iteration cap — an unfixable state sur
 
 One problem that is both a code defect and a workflow malfunction (routine under `self_hosting`, where workflow source IS the code) gets a `D-N` row for the defect and an `F-N` entry for the malfunction, cross-referenced by id — never the same content twice.
 
-**Writer mechanism** — stated once here, referenced by every phase workflow, restated by none: a dispatched agent returns its friction observations in its final text and the dispatching phase workflow appends them as `F-N` entries; the main orchestrator appends its own directly. No dispatched agent writes the file itself — reviewers cannot write at all, by host guarantee (`providers.md`), so returns-text/workflow-appends is the only mechanism available in every phase. This is the single channel for workflow friction; `state.json` holds no parallel escalation list.
+**Writer mechanism** — stated once here, referenced by every phase workflow, restated by none: the main orchestrator running the phase workflow appends every entry itself, from what it observes — including what a dispatched agent's return text, signal or failure reveals. No agent writes the file and none is asked to self-report friction; reviewers cannot write at all, by host guarantee (`providers.md`). This is the single channel for workflow friction; `state.json` holds no parallel escalation list.
 
 ## Retro phase
 

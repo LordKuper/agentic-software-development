@@ -77,7 +77,7 @@
     ".asd/rules/language-policy.md": "e9b488a4cff5ed193208a52324601bede1a41e2512f2a6f06d0660576940f322",
     ".asd/rules/providers.md": "9a60ca33235f8a2473420f48bba0560b5d89b01fc1a84fe0caa6c1c765669e34",
     ".asd/rules/review-policy.md": "d28f12c4e195075dff5eeebef7c7644ef8d19dc72c8010e3bb1f7f811a9298a0",
-    ".asd/rules/sprint-lifecycle.md": "b30472fa1b28e9f02f558fa15d25eebaced1db74dda9ddb8f87065f81a31af1d",
+    ".asd/rules/sprint-lifecycle.md": "856873a3731b15f2d4ef53e2655b01a68f754f5ca88f73ae3fdb5b0bbe5096a6",
     ".asd/rules/ux-principles.md": "9f2af8c90d969c73654812b80e523e33b4c5696f506acf49e4bacb4c0dc6750c",
     ".asd/skills/asd-concept/SKILL.md": "bf4b60a0fd27c777e62d16cc74eacb0bb3f68a022f7d294c81e43fc99a02abfd",
     ".asd/skills/asd-design-system/SKILL.md": "f0328b550aa0fa11f03c2177c45ffa628f5942580d1f39689a212136fd3efa7f",
@@ -155,6 +155,6 @@
     ".asd/templates/t_friction-log.md": "be5dfa34ef73a1ffee70799b39a6d9d08eaa440e71a4cd8ec8c287e32b697ad5",
     ".asd/templates/t_retrospective.html": "82d0095c5289ae14ee481084a3955540fadb518ac0129bd9c2c945f7fbe82d28",
     ".asd/skills/asd-phase-retro/SKILL.md": "d72a91da05c632bbffdec7a3585c4ce0547d292930dfb0b4a3f5a4f76a3e72d8",
-    ".asd/workflows/asd-phase-retro.md": "51eb51a83df771b892fe91b41673fe460a0d5640b180118c2fa1c996bcf8cc1e"
+    ".asd/workflows/asd-phase-retro.md": "8d73df2044917498e2d46a5ce99aee55c55b47b7dddd9e34a2d80cf39532246e"
   }
 }
