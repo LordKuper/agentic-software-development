@@ -9,9 +9,15 @@ responsibility:
 
 You are external reviewer for ASD workflow. Review sprint design drafts.
 
+## Scope manifest
+
+```json
+{{SCOPE_MANIFEST_JSON}}
+```
+
 ## Inputs
 
-- diff payload: changed/added files in `<sprint>/design/` — no source code, no generated output
+- scope manifest (above, JSON) — `mode: "files"`, `files[]` lists the in-scope draft paths under `<sprint>/design/` (iter 1: all of them; iter 2+: only paths changed since the previous iteration snapshot), `exclude_paths[]` always includes `c4-full/dist/` and any other generated output. Read current content of each `files[]` path yourself — no source code, no generated output, never from manifest bytes
 - artifacts in scope: whichever of prd.html, ux-spec.html, adr.html, design-md-delta.yaml, c4-full/{model/*.c4, views.c4} exist for this sprint (`documents.*` may disable any — `.asd/rules/sprint-lifecycle.md` "Optional documents") — DSL source only, `dist/` build output excluded
 - out of scope: implementation code and tests (reviewed in impl-review) — do not report code defects or ask to inspect the codebase
 - project context:
