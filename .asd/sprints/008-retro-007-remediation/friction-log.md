@@ -19,6 +19,7 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 | ID | Phase | Problem | Refs |
 |---|---|---|---|
 | F-1 | impl | A dispatched dev staged the whole worktree, sweeping a concurrently running dev's in-progress edit into its own commit | — |
+| F-3 | impl | A dispatched agent authored its own memory files and left them uncommitted, blocking the next phase gate | F-1 |
 | F-2 | scope | Three of fourteen acceptance criteria were written against a stale premise and only the audit caught it | — |
 
 ## F-1 — A dispatched dev staged the whole worktree, sweeping a concurrent dev's edit into its own commit
@@ -38,3 +39,12 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 - **Impact**: One extra hard gate and one scope revision. Had the audit not caught it, the impl phase would have re-implemented a working fail-closed path and added a third assertion of an already-doubly-asserted behaviour.
 - **Root shape**: a retrospective's recommendations are written against the HEAD of the sprint that produced them and carry no recorded verification that they are still unresolved when a later sprint picks them up. F-4's root cause in that retrospective was itself derived from a stale agent-memory note rather than from the current source.
 - **Refs**: —
+
+## F-3 — A dispatched agent authored its own memory files and left them uncommitted
+
+- **Phase**: impl (review-fix mode)
+- **Surface**: rule — `.asd/rules/git-strategy.md` "Commit before review"
+- **What happened**: Three dev agents wrote to `.claude/agent-memory/asd-dev-critical/` during the review-fix round and left the files unstaged, each explicitly declining to stage them because a sibling had the same directory modified concurrently. The orchestrator found them dirty at the impl completion gate and had to commit files it did not author — the exact act the rule added this sprint (AC-9) forbids in the other direction.
+- **Impact**: One extra orchestrator commit of agent-authored content, and a near-miss on impl-review's clean-worktree precondition, which would have refused entry.
+- **Root shape**: AC-9 assigns orchestrator-owned bookkeeping to the orchestrator and forbids an agent committing what it did not author. Neither half covers the converse — an agent that authored a file and did not commit it. Under parallel dispatch onto one worktree, agents correctly avoid a directory another agent is also writing, so the files reliably end up ownerless. Same root as F-1: parallel dispatch onto a shared worktree has no staging-ownership rule.
+- **Refs**: F-1
