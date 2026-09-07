@@ -1,0 +1,62 @@
+{
+  "sprint_id": "007-retrospective-phase",
+  "branch": "sprint/007-retrospective-phase",
+  "phase": "plan",
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "adr": false,
+    "c4": false
+  },
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "Explicit scope acceptance after AC-5 revision",
+      "evidence": "decisions-log.md: Scope accepted",
+      "artifact_revision": "0ff5d791b21322829ae8e192d32e3143f2e24f80e6fedb8ee1d8f62bce5d507d"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "user",
+      "reason": "Audit accepted; retro unconditional, no persistent promotion, escalations retired",
+      "evidence": "audit.md; decisions-log.md",
+      "artifact_revision": "1cdf5a1dc9b880bb2cdba3e3a3fbfa03a97226c8b439e23ed5faed76eb5632f4"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "orchestrator",
+      "reason": "Routine plan acceptance; all tasks trace to user-authorized AC-1..AC-9 and the three audit-gate answers",
+      "evidence": "plan.md; audit.md; decisions-log.md",
+      "artifact_revision": "bcb2f5c65c02590a68ef4ab2c9721d74db3bb039633125d113a8bb58ddda6e1c"
+    }
+  ],
+  "task_routing": {},
+  "skipped_phases": [
+    "design",
+    "design-review",
+    "design-promote"
+  ],
+  "reviews": {
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "iteration": 0,
+      "verdicts": {},
+      "iteration_heads": {},
+      "latched": {}
+    }
+  },
+  "created_at": "2026-09-07T13:21:33Z",
+  "updated_at": "2026-09-07T13:41:57Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": null,
+  "archived_at": null,
+  "escalations": []
+}

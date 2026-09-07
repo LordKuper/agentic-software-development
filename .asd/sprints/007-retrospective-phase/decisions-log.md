@@ -1,0 +1,54 @@
+---
+responsibility:
+  owns: approved decisions for THIS sprint
+  excludes: cross-sprint/durable decisions, sprint state, review notes
+  delegates_to: docs/** + adr fold targets (durable design decisions), CHANGELOG.md (releases), .asd/project/stubs.md (standing open defects), state.json (state), reviews/ (verdicts)
+---
+
+# Decisions Log
+
+Per-sprint, append-only. Never edited or removed. Created at `scope`, archived with the sprint.
+
+## Entry format
+
+```markdown
+## YYYY-MM-DD — <one-line summary>
+
+- **Decision**: <what was decided> (≤3 sentences)
+- **Rationale**: <why> (≤3 sentences)
+- **Affected docs**: <links> (unrestricted)
+```
+
+A no-op skip or other zero-content decision uses the one-line form instead:
+
+```markdown
+- YYYY-MM-DD — <phase> skipped: <reason>
+```
+
+## Durability rule
+
+A decision whose value must survive this sprint's archival is ALSO written into an existing persistent home — a `docs/` fold target, `CHANGELOG.md`, or `.asd/project/stubs.md`. Never invent a new document type for this. This log records that the decision was made; the persistent home is what a later sprint can still read.
+
+## Entries
+
+<!-- entries appended below this line -->
+
+## 2026-09-07 — Scope accepted
+
+- **Decision**: Sprint 007 adds a per-sprint friction log (workflow/tooling/agent problems, not feature defects) and a new `retro` phase between `impl-review` and `pr` that analyses it, emits consumer-side and ASD-side recommendations into a templated user-facing HTML artifact, posts a chat summary, then routes to `pr`. Two templates are in scope: friction log and retrospective output.
+- **Rationale**: Process friction is currently lost with the transcript; nothing in the sprint shape captures or acts on it. Explicit user acceptance after one revision tightening AC-5 to require a dedicated output template.
+- **Affected docs**: `sprint.md`, `state.json`
+
+## 2026-09-07 — Audit accepted; three material design questions resolved
+
+- **Decision**: Audit accepted. (1) `retro` is an UNCONDITIONAL phase — no `documents.retro` flag; an empty friction log is handled by the phase itself, not by a config skip. (2) Retro output is sprint-scoped only — nothing is promoted to a persistent home, matching sprint.md Out-of-scope; cross-sprint friction memory is explicitly not delivered. (3) `state.json.escalations` is RETIRED and subsumed by the friction log: drop the key from `t_state.json`, rewrite `asd-phase-impl.md:87` to append a friction entry, refresh `upstream_hashes`, and clear the stale key via the AC-9 migration.
+- **Rationale**: Unconditional avoids a config flag, a no-op-table row, a state field and a migration branch for a phase that is cheap when empty. Skipping persistence keeps the sprint inside its declared scope. Retiring `escalations` removes a second, unread channel for the same fact and prevents an SSoT violation the Documentation reviewer would FAIL.
+- **Affected docs**: `audit.md` (G-2, G-6, G-7), `sprint.md`, `state.json`
+
+- 2026-09-07 — design/design-review/design-promote skipped (no documents enabled)
+
+## 2026-09-07 — plan.md accepted (adaptive pass)
+
+- **Decision**: `plan.md` accepted with seven tasks; advance to impl. Version target recorded as MAJOR, confirmed at pr per git-strategy.
+- **Rationale**: Routine plan-acceptance gate under `user_gates: adaptive`. Every task traces to an AC the user already authorized at the scope gate, and the three material questions the audit surfaced were answered by the user before planning. No unresolved material alternative remains; no new scope, subsystem, contract or waiver introduced.
+- **Affected docs**: `plan.md`, `state.json`
