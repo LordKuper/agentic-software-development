@@ -2,6 +2,23 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v6.0.0
+
+Sprints now keep a record of their own process friction and act on it. A per-sprint friction log captures workflow problems as they happen — a tool that would not launch, an agent that stalled, a rule that could not be followed — and a new `retro` phase analyses that log before the sprint closes, producing remediation and systemic improvement proposals split into consumer-project and ASD-framework actions. **Breaking:** the phase chain gains an eleventh phase between `impl-review` and `pr`, and the unused `state.json.escalations` field is removed. Update through `/asd-update`; the bundled `6.0.0` migration strips the retired key from an active sprint's state.
+
+### Added
+- **Friction log** (`<sprint>/friction-log.md`, `t_friction-log.md`): a per-sprint, append-only record of workflow malfunctions — rules, phases, gates, agents, skills, templates or provider tools that misbehaved or could not be followed. Created lazily on the first entry, archived with the sprint. Its boundary against the adjacent owners is explicit: code defects stay in `test-plan.md`, verdicts in `reviews/`, manual actions in `manual-steps.md`, decisions in `decisions-log.md`; an entry cites those ids and never copies what they hold.
+- **`retro` phase**, unconditional and never no-op, running between `impl-review` and `pr`. It reads the friction log and writes `<sprint>/retrospective.html` (`t_retrospective.html`), then posts a short chat summary and advances to `pr`. Output is sprint-scoped and never promoted to a persistent doc.
+- Two retrospective output classes, both split consumer-project vs ASD-framework so every row names the side that acts: **remediation**, one root cause and recommendation per friction entry; and **systemic proposals**, derived from how the sprint actually ran rather than from the entries, so an entry-free log still yields a non-empty retrospective.
+- Test coverage for content contracts, not only Node sources: the suite now asserts the phase chain across `session-start.js`, the rule docs and README, every workflow's routing tokens and friction-append reference, the skill/workflow file set, the retrospective template's section shape, and that every managed file carries a hash-ledger entry.
+
+### Changed
+- **BREAKING:** `impl-review` emits `NEXT: retro` instead of `NEXT: pr` on a green terminal suite, and `pr` requires a completed `retro` — `<sprint>/retrospective.html` is a blocking DoD input. Consumer automation keyed on the ten-phase chain or on `impl-review` handing off directly to `pr` must be updated.
+- The friction log's writer is the main orchestrator running each phase workflow, appending from what it observes — including what a dispatched agent's return text, signal or failure reveals. No agent writes the log and none is asked to self-report.
+
+### Removed
+- **BREAKING:** `state.json.escalations` — declared but never read by anything, and empty in every sprint that ever ran. The friction log is the single channel for an abnormal workflow event. Run `/asd-update`; the bundled `6.0.0` migration removes the key from an active sprint's state file, warning first if it somehow holds entries.
+
 ## v5.0.0
 
 Workflow cost routing and adaptive user decisions. **Breaking:** standalone `asd-pm` removed; the main orchestrator owns its responsibilities. Update through `/asd-update`; migration removes unchanged framework-owned PM views while retaining consumer customizations for reconciliation.
