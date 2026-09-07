@@ -194,3 +194,9 @@ Recorded by the phase orchestrator because no reviewer can see it — `.asd/proj
 - **Design choice worth recording** (documentation F6): rather than inventing `base_ref`/`head_ref` for design-review manifests, the "every manifest" claim was scoped to impl-review. Design-review scopes by on-disk draft snapshot, not a commit range, so there is no ref to name — the alternative would have been two empty fields carried for symmetry alone.
 - **Gate**: `node .asd/sync.js --check` exit 0; `node tests/run.js` 126/126; worktree clean; no open stubs. 19 commits.
 - **Routing**: `review_fixes_pending` cleared; phase exits to `impl-test`.
+
+## 2026-09-07 — impl-test entry 6: impacted set green (126/126), 0 added / 0 removed
+
+- Delta since entry 5 (`b8b801b...d646c50`) carries no production source — only `tests/run.js` from entry 5's own authoring and sprint bookkeeping. Routed `tier: mechanical`, `execution: command` (`deterministic-command`), so the entry ran with no `asd-tester` dispatch — the second time this sprint's cost routing has avoided an agent on a case that genuinely qualifies.
+- `node tests/run.js` 126/126 at `d646c5009052cea39a490fffa6c74e9cb3295a57`; `node .asd/sync.js --check` exit 0. `test_defects_pending` null.
+- Routes to `impl-review` iteration 3, floor `high`.
