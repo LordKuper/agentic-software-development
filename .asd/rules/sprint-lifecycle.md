@@ -98,7 +98,7 @@ Every scoped test run in `impl` and `impl-test` uses the **impacted set** — de
 | plan | Main orchestrator | promoted persistent docs | `plan.md` | plan gate passed |
 | impl | Dev | `plan.md` (initial), `reviews/impl/iter-NN/` findings (review-fix), or `test-plan.md` Defects (test-fix) | code, `manual-steps.md` | all tasks/findings/defects done; build + lint pass (completion gate) |
 | impl-test | Tester | code diff, `plan.md`, PRD ACs, existing tests | `test-plan.md`, tests in repo | impacted set green (`Impacted test set` above) → `impl-review`; code defects → `impl` test-fix mode |
-| impl-review | Correctness + Efficiency + Testing + Documentation + External Review | code + tests + `test-plan.md` | `reviews/impl/iter-NN/<reviewer>.md` | all reviewers APPROVE/latched AND terminal full suite green (`Impacted test set` above) → `pr`; red suite → `impl` test-fix mode, latches cleared; unresolved findings → `impl` review-fix mode |
+| impl-review | Correctness + Efficiency + Testing + Documentation + External Review | code + tests + `test-plan.md` | `reviews/impl/iter-NN/<reviewer>.md` | all reviewers APPROVE/latched AND terminal full suite green (`Impacted test set` above) → `retro`; red suite → `impl` test-fix mode, latches cleared; unresolved findings → `impl` review-fix mode |
 | retro | Main orchestrator | `friction-log.md` (may be absent) | `retrospective.html` | retrospective written, empty-log branch included → `pr` |
 | pr | Main orchestrator | everything | PR, then terminal archive | merged and explicit closure approval |
 
@@ -251,7 +251,7 @@ One problem that is both a code defect and a workflow malfunction (routine under
 
 ## Retro phase
 
-Runs between `impl-review` and `pr`. Unconditional — no `documents` flag, never no-op, never skipped. Owner: main orchestrator (`asd-phase-retro.md`).
+Runs between `impl-review` and `pr`. Unconditional (never no-op). Owner: main orchestrator (`asd-phase-retro.md`).
 
 Input `<sprint>/friction-log.md`; output `<sprint>/retrospective.html` per `t_retrospective.html` — derived analysis, sprint-scoped, archived with the sprint. Nothing is promoted to a persistent doc.
 
@@ -260,7 +260,7 @@ Input `<sprint>/friction-log.md`; output `<sprint>/retrospective.html` per `t_re
 1. **Remediation** — answers *what went wrong*. Every `F-N` entry analysed to a root cause and a recommendation, each traced to the entry id it addresses. Bounded by the log.
 2. **Systemic proposals** — answers *what would have made this sprint cheaper*, never *what went wrong*. Evidence is how the sprint actually ran (review iterations, rework loops, gate waits, task churn, dispatch cost), not the entry set: a proposal may cite an `F-N` as supporting evidence, but is neither derived from nor limited by the log. A fact a friction entry already owns is remediation only — rewording it as a proposal is the double-channel duplication this split exists to prevent.
 
-**Empty-log branch**: an absent or entry-free log is a legitimate outcome — record "no friction recorded" and skip class 1; class 2 is still produced, so an entry-free log is never an empty retrospective. Write the artefact, advance. Never invent friction entries; never mutate sprint state to reach this branch.
+**Empty-log branch**: an absent or entry-free log is a legitimate outcome — record "no friction recorded" and skip class 1; class 2 is still produced, so an entry-free log is never an empty retrospective. Never invent friction entries; never mutate sprint state to reach this branch.
 
 Closes with a short `language.chat` summary covering both classes, then `NEXT: pr`. Adds no gate of its own; only `checkpoints.md`'s existing gates apply.
 

@@ -8,9 +8,9 @@ responsibility:
 # Friction log — sprint {{SPRINT_ID}}
 
 <!--
-Created lazily on the first entry. Append-only: never edit, reorder or renumber an existing entry.
-What qualifies, what never does, the F-N id scheme and who appends: .asd/rules/sprint-lifecycle.md
-"Friction log" — normative there, not restated here. Entry content is language.docs.
+Lifecycle, what qualifies, what never does, the F-N id scheme and who appends:
+.asd/rules/sprint-lifecycle.md "Friction log" — normative there, not restated here.
+Entry content is language.docs.
 Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 -->
 
@@ -19,8 +19,6 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 | ID | Phase | Problem | Refs |
 |---|---|---|---|
 | {{F-N}} | {{phase}} | {{one-line problem}} | {{D-N \| MS-N \| reviews/<phase>/iter-NN/<reviewer> \| —}} |
-
-<!-- when no friction arose, this file is not created -->
 
 ## F-{{N}} — {{one-line problem}}
 

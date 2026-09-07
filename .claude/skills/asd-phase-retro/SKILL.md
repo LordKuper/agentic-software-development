@@ -1,8 +1,8 @@
 ---
-# ASD generated. Edit .asd/skills/asd-phase-retro/SKILL.md. source_digest=sha256:3dfe067abca4bb49216b5c53a88cb401f7c570e9e7c75b2b272849748592df7d content_digest=sha256:7edaa883c23ad0e58b20a5bb64aa9a021a0907f686641a948c56dc629daad8e6 asd_version=5.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-phase-retro/SKILL.md. source_digest=sha256:d72a91da05c632bbffdec7a3585c4ce0547d292930dfb0b4a3f5a4f76a3e72d8 content_digest=sha256:3652a959b427dec531677693aab754b13b65f9bde941748cf3f2e78db71972b7 asd_version=5.0.0 schema=1
 name: asd-phase-retro
-description: "Runs the ASD retro phase: the phase orchestrator reads the sprint friction log, derives a root cause per F-N entry plus consumer-project and ASD-framework recommendations traced to those ids, writes retrospective.html and posts a short chat summary. Unconditional and never no-op — an absent or entry-free log takes the empty-log branch and still completes to pr. Use when asd-sprint dispatches the retro phase, or when the user explicitly asks to run or re-run retro for the active sprint."
-allowed-tools: "Read Write Edit AskUserQuestion Task"
+description: "Runs the ASD retro phase: the phase orchestrator reads the sprint friction log, derives a root cause per F-N entry with consumer-project and ASD-framework remediation traced to those ids, plus systemic proposals from how the sprint actually ran, writes retrospective.html and posts a short chat summary. An absent or entry-free log takes the empty-log branch — remediation skipped, systemic proposals still produced — and still completes to pr. Use when asd-sprint dispatches the retro phase, or when the user explicitly asks to run or re-run retro for the active sprint."
+allowed-tools: "Read Write Edit"
 ---
 
 Operation mapping: see `.asd/rules/providers.md`.

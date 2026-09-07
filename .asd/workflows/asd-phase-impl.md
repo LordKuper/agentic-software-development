@@ -85,7 +85,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
      - keep only when action genuinely cannot be done autonomously (needs access, secret, external account, or authority agent lacks)
      - reject any entry agent could do with own tools → re-dispatch its owning dev with feedback "implement autonomously, remove MS-N"; dev deletes entry, unmarks `BLOCKED:` subtask, implements it; loop step 7
    - once all remaining `MS-N` are validated and all unblocked tasks COMPLETED, the main orchestrator:
-     - record the manual-steps halt as an `F-N` friction entry citing the blocking `MS-N` ids (`sprint-lifecycle.md` "Friction log"), append decisions-log entry
+     - append decisions-log entry; add an `F-N` citing the blocking `MS-N` ids only when the halt itself was a malfunction — the step was unexpected, unworkable, or raised at the wrong point (`sprint-lifecycle.md` "Friction log"); a validated, genuinely necessary halt records no `F-N`
      - present `manual-steps.md` to user (per `checkpoints.md` "Gate mechanics"); wait for explicit continue command
    - on user continue: re-dispatch each deferred task to owning dev with instruction:
      - verify referenced `MS-N` per its `Verification` field
