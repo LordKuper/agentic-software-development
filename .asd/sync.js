@@ -1203,6 +1203,16 @@ function codexSessionStartOwnedEntries() {
   ];
 }
 
+// One canonical source file read and parsed once, then shared by every plan
+// item generated from it (two provider views per skill or hook, and two more
+// per agent task variant), instead of re-read and re-parsed per view.
+function readCanonSource(canonPath, parse) {
+  const canonRawNormalized = readNormalized(canonPath);
+  if (!parse) return { canonRawNormalized, meta: {}, body: canonRawNormalized };
+  const parsed = parseCanonicalFrontmatter(canonRawNormalized);
+  return { canonRawNormalized, meta: parsed.meta, body: parsed.body };
+}
+
 function buildSyncPlan(repoRoot) {
   // Discovers full-file-generated sources under .asd/agents, .asd/skills, and
   // .asd/hooks, plus the fixed repo-root managed-block (AGENTS.md/CLAUDE.md)
@@ -1218,9 +1228,10 @@ function buildSyncPlan(repoRoot) {
       if (!f.endsWith('.md')) continue;
       const canonPath = path.join(agentsDir, f);
       const name = f.slice(0, -3);
-      const meta = parseCanonicalFrontmatter(readNormalized(canonPath)).meta;
+      const source = readCanonSource(canonPath, true);
+      const meta = source.meta;
       if (meta.name !== name || !/^[a-z0-9-]+$/.test(name)) throw new Error(`agent filename and frontmatter name must match: ${f}`);
-      agents.push({ canonPath, name, meta });
+      agents.push({ canonPath, name, meta, source });
       if (names.has(name)) throw new Error(`agent name collision: ${name}`);
       names.add(name);
     }
@@ -1232,8 +1243,8 @@ function buildSyncPlan(repoRoot) {
       }
       const rendered = [{ name: agent.name, meta: null }].concat(variants.map((meta) => ({ name: meta.name, meta })));
       for (const item of rendered) {
-        plan.push({ class: 'full-file', kind: 'agent-claude', canonPath: agent.canonPath, parse: true, metaOverride: item.meta, targetPath: path.join(repoRoot, '.claude', 'agents', `${item.name}.md`) });
-        plan.push({ class: 'full-file', kind: 'agent-codex', canonPath: agent.canonPath, parse: true, metaOverride: item.meta, targetPath: path.join(repoRoot, '.codex', 'agents', `${item.name}.toml`) });
+        plan.push({ class: 'full-file', kind: 'agent-claude', canonPath: agent.canonPath, parse: true, source: agent.source, metaOverride: item.meta, targetPath: path.join(repoRoot, '.claude', 'agents', `${item.name}.md`) });
+        plan.push({ class: 'full-file', kind: 'agent-codex', canonPath: agent.canonPath, parse: true, source: agent.source, metaOverride: item.meta, targetPath: path.join(repoRoot, '.codex', 'agents', `${item.name}.toml`) });
       }
     }
   }
@@ -1246,8 +1257,9 @@ function buildSyncPlan(repoRoot) {
     for (const name of fs.readdirSync(skillsDir)) {
       const canonPath = path.join(skillsDir, name, 'SKILL.md');
       if (!fs.existsSync(canonPath)) continue;
-      plan.push({ class: 'full-file', kind: 'skill-claude', canonPath, parse: true, targetPath: path.join(repoRoot, '.claude', 'skills', name, 'SKILL.md') });
-      plan.push({ class: 'full-file', kind: 'skill-codex', canonPath, parse: true, targetPath: path.join(repoRoot, '.agents', 'skills', name, 'SKILL.md') });
+      const source = readCanonSource(canonPath, true);
+      plan.push({ class: 'full-file', kind: 'skill-claude', canonPath, parse: true, source, targetPath: path.join(repoRoot, '.claude', 'skills', name, 'SKILL.md') });
+      plan.push({ class: 'full-file', kind: 'skill-codex', canonPath, parse: true, source, targetPath: path.join(repoRoot, '.agents', 'skills', name, 'SKILL.md') });
     }
   }
   const hooksDir = path.join(repoRoot, '.asd', 'hooks');
@@ -1258,8 +1270,9 @@ function buildSyncPlan(repoRoot) {
       const name = f.slice(0, -3);
       // No frontmatter on hook sources - the whole file is JS, runnable
       // directly as `node .asd/hooks/<name>.js` (plan's invocation contract).
-      plan.push({ class: 'full-file', kind: 'hook-claude', canonPath, parse: false, targetPath: path.join(repoRoot, '.claude', 'hooks', `${name}.js`) });
-      plan.push({ class: 'full-file', kind: 'hook-codex', canonPath, parse: false, targetPath: path.join(repoRoot, '.codex', 'hooks', `${name}.js`) });
+      const source = readCanonSource(canonPath, false);
+      plan.push({ class: 'full-file', kind: 'hook-claude', canonPath, parse: false, source, targetPath: path.join(repoRoot, '.claude', 'hooks', `${name}.js`) });
+      plan.push({ class: 'full-file', kind: 'hook-codex', canonPath, parse: false, source, targetPath: path.join(repoRoot, '.codex', 'hooks', `${name}.js`) });
     }
   }
   plan.push({
@@ -1293,15 +1306,13 @@ function buildSyncPlan(repoRoot) {
   return plan;
 }
 
+// Renders from the plan item's pre-read canonical source when the plan
+// builder attached one, and falls back to reading it for a hand-built item.
 function renderFullFileItem(item, repoRoot, manifest) {
-  const canonRawNormalized = readNormalized(item.canonPath);
-  let meta = {};
-  let body = canonRawNormalized;
-  if (item.parse) {
-    const parsed = parseCanonicalFrontmatter(canonRawNormalized);
-    meta = item.metaOverride || parsed.meta;
-    body = parsed.body;
-  }
+  const source = item.source || readCanonSource(item.canonPath, item.parse);
+  const canonRawNormalized = source.canonRawNormalized;
+  const meta = item.metaOverride || source.meta;
+  const body = source.body;
   const sourceRelPath = path.relative(path.join(repoRoot, '.asd'), item.canonPath).replace(/\\/g, '/');
   return renderFullFile({
     kind: item.kind,
