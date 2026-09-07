@@ -2022,6 +2022,31 @@ test('AC-2/4/6/7: review workflow contracts retain Correctness and incremental d
   assert.ok(implReview.includes('run command') && !implReview.includes('via Bash'));
 });
 
+// iteration-3 review (sprint 006): exclude_paths[] bounds what the reviewer
+// judges, not what it may read - a prior wording pass over-reached and
+// implied the named project-context reference paths (PRD, ADR, stack, etc.)
+// were unreadable. Guards the scope-vs-readability distinction against
+// reappearing in any of the three places that state it.
+test('AC-2/4/6/7: exclude_paths[] scope-vs-readability distinction holds in the rule doc and both prompts', () => {
+  const rule = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/external-review.md'), 'utf8');
+  const implPrompt = fs.readFileSync(path.join(REPO_ROOT, '.asd/templates/external-review/t_prompt-external-impl.md'), 'utf8');
+  const designPrompt = fs.readFileSync(path.join(REPO_ROOT, '.asd/templates/external-review/t_prompt-external-design.md'), 'utf8');
+  const carveOut = 'the project-context reference paths below, which are always readable and are never valid finding locations either';
+
+  assert.ok(rule.includes('bounds what the reviewer judges, not what it may read'), 'external-review.md must state exclude_paths[] bounds judgment scope, not readability');
+  assert.ok(rule.includes('stay readable regardless and are never valid finding locations either'), 'external-review.md must state the named project-context reference paths remain readable and are never findable-against');
+
+  for (const [name, prompt, placeholders] of [
+    ['impl', implPrompt, ['{{PRD_PATH}}', '{{ADR_PATH}}', '{{STACK_PATH}}', '{{CUSTOM_RULES_PATH}}', '{{COMMANDS_PATH}}']],
+    ['design', designPrompt, ['{{CONCEPT_PATH}}', '{{CUSTOM_RULES_PATH}}', '{{ACCESSIBILITY_PATH}}']],
+  ]) {
+    assert.ok(prompt.includes(carveOut), `t_prompt-external-${name}.md must state the exclude_paths readability carve-out`);
+    for (const ph of placeholders) {
+      assert.ok(prompt.includes(ph), `t_prompt-external-${name}.md must still pass ${ph} as project context (readability carve-out is meaningless without it)`);
+    }
+  }
+});
+
 test('SessionStart hook: a "skipped: <predicate>" verdict counts as satisfied, not "mixed"', () => {
   // A fresh temp repo with its own copy of the hook, so resolveRepoRoot's
   // findUp(__dirname) walks up from the temp script location and finds this
@@ -2145,13 +2170,13 @@ test('AC-21: SessionStart reports "Next phase: await-merge" for an ordinary pr p
   assert.ok(text.includes('Next phase: await-merge'), `expected the default pr-phase path to report await-merge, got: ${text}`);
 });
 
-test('AC-7: no canonical rule, workflow, or agent file references the retired asd-pm role', () => {
-  const labels = ['rules', 'workflows', 'agents'];
+test('AC-7: no canonical rule, workflow, agent, or skill file references the retired asd-pm role', () => {
+  const labels = ['rules', 'workflows', 'agents', 'skills'];
   const offenders = [];
   for (const label of labels) {
     const dir = path.join(REPO_ROOT, '.asd', label);
     if (!fs.existsSync(dir)) continue;
-    for (const f of fs.readdirSync(dir)) {
+    for (const f of fs.readdirSync(dir, { recursive: true })) {
       if (!f.endsWith('.md')) continue;
       const text = fs.readFileSync(path.join(dir, f), 'utf8');
       if (/asd-pm/.test(text)) offenders.push(`${label}/${f}`);
