@@ -3095,7 +3095,7 @@ test('T-2: `.claude/agent-memory/**` is stated as NOT excluded from the self-hos
   assert.strictEqual(totalMatches, 4, 'external-review.md carries the statement twice (table row + exclude_paths sentence), the other two files once each - a dropped copy anywhere must be caught');
 });
 
-test('T-2: AGENTS.md is sole SSoT for the --apply <generated-view-path...> explanatory parenthetical; asd-dev.md, asd-update/SKILL.md, asd-phase-impl.md and README.md cite providers.md instead of restating it', () => {
+test('T-2: AGENTS.md is sole SSoT for the --apply <generated-view-path...> explanatory parenthetical; asd-dev.md, asd-update/SKILL.md, asd-phase-impl.md, custom-coding-rules.md and README.md cite providers.md instead of restating it', () => {
   const fullParenthetical = 'pass generated view paths, never `.asd/` canon: `.claude/agents/<name>.md`, `.codex/agents/<name>.toml`, `.claude/skills/<name>/SKILL.md`, `.agents/skills/<name>/SKILL.md`';
   const citation = 'Canonical path -> per-provider path';
   const agents = fs.readFileSync(path.join(REPO_ROOT, 'AGENTS.md'), 'utf8');
@@ -3105,6 +3105,7 @@ test('T-2: AGENTS.md is sole SSoT for the --apply <generated-view-path...> expla
     '.asd/agents/asd-dev.md',
     '.asd/skills/asd-update/SKILL.md',
     '.asd/workflows/asd-phase-impl.md',
+    '.asd/project/custom-coding-rules.md',
     'README.md',
   ];
   for (const rel of otherSites) {
