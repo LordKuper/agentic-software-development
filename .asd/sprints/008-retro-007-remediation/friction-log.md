@@ -20,6 +20,8 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 |---|---|---|---|
 | F-1 | impl | A dispatched dev staged the whole worktree, sweeping a concurrently running dev's in-progress edit into its own commit | — |
 | F-3 | impl | A dispatched agent authored its own memory files and left them uncommitted, blocking the next phase gate | F-1 |
+| F-4 | impl-review | All five reviewer dispatches of one iteration were lost at once to a session rate limit | — |
+| F-5 | impl-review | A reviewer returned a substantively complete ledger using status words the validator rejects | — |
 | F-2 | scope | Three of fourteen acceptance criteria were written against a stale premise and only the audit caught it | — |
 
 ## F-1 — A dispatched dev staged the whole worktree, sweeping a concurrent dev's edit into its own commit
@@ -48,3 +50,21 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 - **Impact**: One extra orchestrator commit of agent-authored content, and a near-miss on impl-review's clean-worktree precondition, which would have refused entry.
 - **Root shape**: AC-9 assigns orchestrator-owned bookkeeping to the orchestrator and forbids an agent committing what it did not author. Neither half covers the converse — an agent that authored a file and did not commit it. Under parallel dispatch onto one worktree, agents correctly avoid a directory another agent is also writing, so the files reliably end up ownerless. Same root as F-1: parallel dispatch onto a shared worktree has no staging-ownership rule.
 - **Refs**: F-1
+
+## F-4 — All five reviewer dispatches of one iteration were lost at once to a session rate limit
+
+- **Phase**: impl-review (iteration 2)
+- **Surface**: provider tool — the host session rate limit; rule — `.asd/rules/review-policy.md` "Interrupted dispatch and split dispatch"
+- **What happened**: All five reviewers were dispatched in parallel for iteration 2 and every one of them died mid-run on a single session-wide rate limit, each having read its inputs and produced nothing. The contract this sprint wrote for exactly this case applied cleanly: no verdict recorded, no latch, the interruption logged to `decisions-log.md` at the moment it happened, and each reviewer re-dispatched fresh on the same manifest digest.
+- **Impact**: One full parallel review round of work discarded and repeated. No artefact was corrupted and no gate was bypassed, because the contract had a defined outcome for it.
+- **Root shape**: the contract treats interruption as a per-reviewer event, but the actual failure mode here was correlated — a session-wide limit takes every concurrent dispatch at once. The split trigger counts consecutive interruptions per reviewer per digest, so a repeated correlated failure escalates five separate reviewers independently rather than being recognised as one condition. Worth noting for the retro: sprint 007 lost dispatches to the same class of limit (F-6), and this sprint fixed the record-keeping without addressing the correlation.
+- **Refs**: —
+
+## F-5 — A reviewer returned a substantively complete ledger using status words the validator rejects
+
+- **Phase**: impl-review (iteration 2)
+- **Surface**: rule — `.asd/rules/review-policy.md` "Coverage ledger"; runtime — `.asd/runtime.js` `rowsById`
+- **What happened**: The Testing reviewer returned four well-evidenced findings and a ledger covering every scoped file, rule and section — but wrote `finding` as a *file* row status (files accept only `checked`/`n/a`) and `covered` as a *rule* row status (rules accept only `pass`/`finding`/`n/a`). `validate-ledger` rejected it with `files status invalid: finding`, so by contract the verdict does not count and the reviewer is re-dispatched fresh.
+- **Impact**: A complete review discarded and repeated over a vocabulary slip, not a coverage gap. The findings themselves were sound and three of them converged with other reviewers.
+- **Root shape**: the per-row-type status vocabulary is stated once, in one sentence of `review-policy.md` prose, and nowhere in the machine artefact the reviewer is handed. The dispatcher supplies a manifest listing every id but nothing about which statuses each row type accepts, so the reviewer has to recall the sentence rather than read it off its own input. The validator knows the vocabulary; the manifest could carry it.
+- **Refs**: —

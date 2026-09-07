@@ -106,3 +106,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: The re-entry impacted run is green (150/150) with 2 tests added and 0 removed; the sprint returns to `impl-review` for iteration 2. No `D-N` defect was raised.
 - **Rationale**: The delta introduced exactly two new executable branches — `sync.js`'s bare-`--apply` fail-closed guard (C-1) and `runtime.js`'s reserved-risk-class guard (C-4) — and both got a check with fail-first proven against `a0eac63`. Everything else in the delta is prose, already covered, or a documented future-helper contract with no code surface yet. The impacted-set safety valve fired again and degraded to the full suite, as it must whenever the change surface touches framework-wide trees.
 - **Affected docs**: [test-plan.md](test-plan.md), [state.json](state.json)
+
+## 2026-09-07 — impl-review iter-02: all five dispatches interrupted, re-dispatched fresh
+
+- **Decision**: Every reviewer dispatched for iteration 2 was lost to a session rate limit before returning a verdict. Per `review-policy.md` "Interrupted dispatch and split dispatch", none is recorded as a verdict, none latches, and each is re-dispatched fresh within the same iteration on the same manifest digest. Interrupted attempts: 1 (session rate limit) for correctness, efficiency, testing, documentation and external.
+- **Rationale**: This is the first interruption for each reviewer on its digest, so the contract calls for a plain re-dispatch, not a split. Recording it here at the moment of interruption — rather than at the verdict-parse step a lost dispatch never reaches — is the durable record the contract requires, and is exactly the mechanism this sprint added in response to sprint 007 friction F-6.
+- **Affected docs**: [reviews/impl/iter-02/](reviews/impl/iter-02/), [friction-log.md](friction-log.md)
