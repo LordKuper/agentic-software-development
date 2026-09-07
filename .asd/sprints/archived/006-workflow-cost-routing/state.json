@@ -1,7 +1,7 @@
 {
   "sprint_id": "006-workflow-cost-routing",
   "branch": "sprint/006-workflow-cost-routing",
-  "phase": "pr",
+  "phase": "done",
   "documents": {
     "audit": true,
     "prd": false,
@@ -67,16 +67,18 @@
     }
   },
   "created_at": "2026-09-06T11:16:29.213Z",
-  "updated_at": "2026-09-07T11:05:34.557Z",
+  "updated_at": "2026-09-07T11:08:35.498Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": {
     "number": 25,
     "url": "https://github.com/LordKuper/agentic-software-development/pull/25",
-    "state": "open",
-    "opened_at": "2026-09-07T11:05:34.557Z"
+    "state": "merged",
+    "opened_at": "2026-09-07T11:05:34.557Z",
+    "merged_at": "2026-09-07T11:07:43Z",
+    "merge_commit": "8298f150207db31c6ef533e07e5a34b1d82638d0"
   },
-  "archived_at": null,
+  "archived_at": "2026-09-07T11:08:35.498Z",
   "escalations": [],
   "user_gates": "adaptive",
   "gate_decisions": [
@@ -113,6 +115,13 @@
       "decision_actor": "user",
       "reason": "Explicit instruction to open the PR accepting the unvalidated external-review transport as residual risk",
       "evidence": "decisions-log.md 2026-09-07 PR open mode; PR #25",
+      "artifact_revision": null
+    },
+    {
+      "gate": "closure",
+      "decision_actor": "user",
+      "reason": "Explicit instruction to merge and finalize after PR #25 was opened with the residual risk accepted",
+      "evidence": "PR #25 merged as 8298f15; decisions-log.md closure entry",
       "artifact_revision": null
     }
   ],
