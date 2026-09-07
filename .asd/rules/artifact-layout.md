@@ -43,7 +43,10 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │       │       ├── design/iter-NN/<reviewer>.md
 │       │       └── impl/iter-NN/<reviewer>.md
 │       └── archived/<NNN-slug>/
-├── .claude/{agents/, skills/, hooks/, settings.json}
+├── .claude/{agents/, skills/, hooks/, settings.json}   # generated provider view
+├── .claude/agent-memory/<agent>/                       # hand-authored, never generated — see "Agent memory"
+├── .codex/{agents/, hooks/, hooks.json}                # generated provider view
+├── .agents/skills/<name>/SKILL.md                      # generated provider view (Codex reads skills only here)
 ├── docs/
 │   ├── product/
 │   │   ├── concept.html
@@ -62,6 +65,8 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 └── CLAUDE.md
 ```
 
+A sprint folder holds **only** the artifacts named above. Nothing else is written under `.asd/sprints/<NNN-slug>/` — the tree is archived read-only at closure, so any stray file is frozen there and lost to whoever wrote it.
+
 ## Paths (decomposition disabled)
 
 `docs/` becomes flat:
@@ -76,6 +81,12 @@ docs/
 ```
 
 No `c4/` directory. No subsystem subfolders.
+
+## Agent memory
+
+Agent memory lives at the provider-view root — `.claude/agent-memory/<agent>/` (`MEMORY.md` index + one file per memory) — always, whatever working directory a dispatch names. Never inside a sprint tree: `.asd/sprints/**` holds only the path-map artifacts above.
+
+**Carve-out to the read-only generated-view rule**: `agent-memory/` is not generated output. It is hand-authored, tracked in git, has no canonical source under `.asd/`, and `sync.js` neither generates nor reconciles it (no row in `providers.md` "Canonical path -> per-provider path"), so the read-only rule does not reach it. Everything else under `.claude/`, `.codex/` and `.agents/skills/` stays read-only — edit canon, then sync.
 
 ## Subsystem registry
 

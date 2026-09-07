@@ -65,12 +65,12 @@ hand-edited.
 - [x] Covers AC-2. No material risk: additive statement over an existing table
 
 ### Task 5: Agent memory location and sprint-folder contents in artifact-layout.md
-- [ ] State in `.asd/rules/artifact-layout.md` that agent memory lives at the provider-view root and never inside a sprint tree (AC-3)
-- [ ] State that a sprint folder holds only the artifacts the path map names
-- [ ] Add the `.claude/agent-memory/` carve-out to the read-only-generated-view rule, phrased once here; link to it from where the read-only rule is stated rather than restating it in `asd-dev.md` or `asd-phase-impl.md`
-- [ ] Add `.codex/` and `.agents/skills/` to the paths tree, which lists neither today, so "provider-view root" points at a complete tree
-- [ ] Add `.claude/agent-memory/**` to the `sprint-lifecycle.md` "Self-hosting" dev write allowlist, which omits it while the directory is legitimately written and tracked
-- [ ] Covers AC-3. Material risk: three canonical files state `.claude/` is read-only always; an unreconciled carve-out creates a rule conflict
+- [x] State in `.asd/rules/artifact-layout.md` that agent memory lives at the provider-view root and never inside a sprint tree (AC-3)
+- [x] State that a sprint folder holds only the artifacts the path map names
+- [x] Add the `.claude/agent-memory/` carve-out to the read-only-generated-view rule, phrased once here; link to it from where the read-only rule is stated rather than restating it in `asd-dev.md` or `asd-phase-impl.md`
+- [x] Add `.codex/` and `.agents/skills/` to the paths tree, which lists neither today, so "provider-view root" points at a complete tree
+- [x] Add `.claude/agent-memory/**` to the `sprint-lifecycle.md` "Self-hosting" dev write allowlist, which omits it while the directory is legitimately written and tracked
+- [x] Covers AC-3. Material risk: three canonical files state `.claude/` is read-only always; an unreconciled carve-out creates a rule conflict
 
 ### Task 6: Correct the sync-step argument wording at every real occurrence
 - [ ] Fix the wording at `AGENTS.md:74`, `.asd/agents/asd-dev.md:66`, `.asd/workflows/asd-phase-impl.md:49`, `README.md:38/106/439`, `.asd/skills/asd-update/SKILL.md:37` (AC-5)

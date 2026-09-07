@@ -106,7 +106,7 @@ Every scoped test run in `impl` and `impl-test` uses the **impacted set** — de
 
 `self_hosting: enabled` in `.asd/project/config.yaml` — sole source of truth, no marker file. Absent field or `disabled` = consumer mode (backward compatible, unchanged behavior).
 
-When enabled: Dev may write canonical `.asd/rules/`, `.asd/templates/`, `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/runtime.js`, `.asd/migrations/`, `.asd/sync.js`, `.asd/sync-state.json`, `.asd/release-manifest.json`, root `AGENTS.md`, `README.md`, `CHANGELOG.md`, `.gitignore`, `tests/**`. Generated provider views stay read-only; edit canon then sync.
+When enabled: Dev may write canonical `.asd/rules/`, `.asd/templates/`, `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/runtime.js`, `.asd/migrations/`, `.asd/sync.js`, `.asd/sync-state.json`, `.asd/release-manifest.json`, root `AGENTS.md`, `README.md`, `CHANGELOG.md`, `.gitignore`, `tests/**`, plus its own `.claude/agent-memory/<agent>/` (not generated output — `artifact-layout.md` "Agent memory"). Generated provider views stay read-only; edit canon then sync.
 
 Root `AGENTS.md`'s managed-block/hand-edited-tail split: `providers.md` "Canonical path -> per-provider path" (ownership home). `asd-update` is a no-op here (it pulls framework files INTO a consumer; this repo IS the framework).
 
