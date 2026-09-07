@@ -18,3 +18,6 @@ plans/
 # C4 build output (render on demand via the commands.yaml build-to-view command)
 docs/architecture/c4/dist/
 docs/architecture/c4/architecture.html
+
+# External review negative cache (machine-local retry/failure state, never shipped)
+.asd/project/external-cache.json
