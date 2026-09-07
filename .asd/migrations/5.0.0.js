@@ -7,20 +7,7 @@
  * Contract (see .asd/skills/asd-update/update.js's own header comment): filename (minus .js) is
  * the target asd_version; module.exports = (ctx) => MigrationReport | Promise<MigrationReport>
  * with ctx.repoRoot = the consumer project root; zero-dependency Node; idempotent - re-running an
- * already-applied migration is a no-op, never an error. This script's MigrationReport shape is
- * `{ deleted, missing, skippedUnmarked, skippedModified, skippedUnsafe }`: `skippedModified` is a
- * generated view that carries the ownership marker but whose body digest no longer matches it (a
- * consumer hand-edited it after generation) - left in place, reported, never deleted, distinct
- * from `skippedUnmarked` (marker absent entirely, a consumer's own same-named file); `skippedUnsafe`
- * is a target whose real path resolves outside the repo root (symlink escape) - also left alone.
- *
- * Scope: delete the generated `.claude`/`.codex` views of the retired `asd-pm` agent, gated on the
- * ASD ownership marker AND an unmodified body digest AND a within-repo real path - an explicit
- * hardcoded name list, never a generic scan of the generated trees (that broader scan already
- * exists, marker-gated, in `.asd/sync.js`'s orphan detection, reached via a separate `sync.js
- * --apply`, not this migration).
- * Never touches: `.asd/project/config.yaml` values, `.asd/sprints/**` content, `docs/**`, custom
- * rules, custom skills/agents/hooks, any file lacking the retired-agent name.
+ * already-applied migration is a no-op, never an error.
  */
 'use strict';
 
@@ -31,11 +18,6 @@ const RETIRED_TARGETS = [
   ['.claude', 'agents', 'asd-pm.md'],
   ['.codex', 'agents', 'asd-pm.toml'],
 ];
-
-function removeIfEmpty(sync, directory) {
-  if (typeof sync.removeIfEmptyDir === 'function') return sync.removeIfEmptyDir(directory);
-  if (fs.existsSync(directory) && fs.readdirSync(directory).length === 0) fs.rmdirSync(directory);
-}
 
 // True only when `target` still carries an ASD full-file marker whose recorded content digest
 // matches the file's current body - i.e. nothing hand-edited it since generation.
@@ -75,7 +57,7 @@ module.exports = function migrate(ctx) {
     if (!sync.hasOwnershipMarker(target)) { report.skippedUnmarked.push(rel); continue; }
     if (!intactGeneratedView(sync, target)) { report.skippedModified.push(rel); continue; }
     fs.rmSync(target, { force: true });
-    removeIfEmpty(sync, path.dirname(target));
+    sync.removeIfEmptyDir(path.dirname(target));
     report.deleted.push(rel);
   }
   return report;
