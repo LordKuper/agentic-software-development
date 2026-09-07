@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:f8bf4189a76fa9b07feb802a9ca4db56c8e2120518b65fdc880d2a6503f43558 content_digest=sha256:0685259ac1a464541dece4d4c7ffb2b9b20563e9405967aaa50bc81a1131cbc4 asd_version=5.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:bc5d8ccd71ed3cbcfba2f40bc7ff0ba3d679139abb83ab4ddc1e381cb201472e content_digest=sha256:5854f91cf08ab563cad5064a71e2786f9ed21a8a4068ce9b891bb5386fd5bf1c asd_version=5.0.0 schema=1
 name: asd-external-review
 description: "External reviewer wrapping the other provider's CLI (Codex under Claude Code, Claude under Codex), run in parallel with internal reviewers during design-review and impl-review. Covers: wrapped-CLI availability detection per system.os, iteration-aware scope manifest rendering (full vs incremental), prompt selection per phase (design or impl), output parsing and ASD severity mapping, kept/dropped accounting per severity floor, stalemate detection across iterations. Does NOT handle: internal review (delegates to asd-reviewer-* agents), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, Bash, AskUserQuestion]
@@ -37,7 +37,7 @@ External review wrapper. Runs `codex` CLI parallel to internal reviewers, normal
 - prompt-slot context (paths only, phase-scoped): language.docs, custom-common-rules + phase-scoped custom rules
   - design-review: concept, accessibility baseline
   - impl-review: reference paths per `external-review.md` § Phase-scoped payload table (consumer row vs `self_hosting: enabled` row — differs, do not assume the consumer row)
-- scope manifest (`external-review/t_review-scope.json`, rendered into the prompt, never a diff) — `phase`, `iteration`, `base_ref`, `head_ref`, `mode: "files"`, `files[]` (changed-path list), `exclude_paths[]`. Agent reads current content of the listed `files[]` itself, using its own read-only filesystem tools, honoring `exclude_paths` — never from manifest payload bytes, never a path outside `files[]`. Full contract, per-phase table and iteration semantics: `external-review.md` § Phase-scoped payload / § Iteration semantics (consumer row vs `self_hosting: enabled` row differs for impl-review — do not hardcode one)
+- scope manifest (`external-review/t_review-scope.json`, rendered into the prompt, never a diff) — `phase`, `iteration`, `base_ref`, `head_ref` (impl-review only, empty on design-review), `files[]` (changed-path list), `exclude_paths[]`. Agent reads current content of the listed `files[]` itself, using its own read-only filesystem tools, honoring `exclude_paths` — never from manifest payload bytes, never a path outside `files[]`. Full contract, per-phase table and iteration semantics: `external-review.md` § Phase-scoped payload / § Iteration semantics (consumer row vs `self_hosting: enabled` row differs for impl-review — do not hardcode one)
 - previous iteration finding set (iter ≥ 2 only) — supplied by dispatching phase skill for stalemate detection; agent never reads prior `iter-*/` files itself
 
 ## Outputs
@@ -70,7 +70,7 @@ Command tail is provider-specific (`exec --model gpt-5.6-sol -c model_reasoning_
 
 Both forms feed prompt+scope manifest via stdin; the wrapped CLI's own `Read`/`Glob`/`Grep` (Claude) or read-only shell (Codex `exec`) tools resolve `files[]` content from the repo itself. The command's own stdout is captured as the final message — a plain-text verdict, never structured/streaming output. No `-o <out-file>`.
 
-Before invocation, phase orchestration supplies a runtime preflight result. On a non-ready result, return `APPROVE (skipped: external review unavailable: <specific status>)`; phase orchestration records it and creates no latch. Local readiness never proves model access.
+Before invocation, phase orchestration supplies a runtime preflight result, backed by the negative cache at its canonical path (`external-review.md` "Detection and negative cache", sole SSoT — this agent never calls `runtime.js` or names the path itself). On a non-ready result, return `APPROVE (skipped: external review unavailable: <specific status>)`; phase orchestration records it and creates no latch. Local readiness never proves model access.
 
 ## Severity mapping (`codex` → ASD)
 

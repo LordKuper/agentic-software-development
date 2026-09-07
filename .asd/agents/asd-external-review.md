@@ -44,7 +44,7 @@ External review wrapper. Runs `{{wraps_cli}}` CLI parallel to internal reviewers
 - prompt-slot context (paths only, phase-scoped): language.docs, custom-common-rules + phase-scoped custom rules
   - design-review: concept, accessibility baseline
   - impl-review: reference paths per `external-review.md` § Phase-scoped payload table (consumer row vs `self_hosting: enabled` row — differs, do not assume the consumer row)
-- scope manifest (`external-review/t_review-scope.json`, rendered into the prompt, never a diff) — `phase`, `iteration`, `base_ref`, `head_ref`, `mode: "files"`, `files[]` (changed-path list), `exclude_paths[]`. Agent reads current content of the listed `files[]` itself, using its own read-only filesystem tools, honoring `exclude_paths` — never from manifest payload bytes, never a path outside `files[]`. Full contract, per-phase table and iteration semantics: `external-review.md` § Phase-scoped payload / § Iteration semantics (consumer row vs `self_hosting: enabled` row differs for impl-review — do not hardcode one)
+- scope manifest (`external-review/t_review-scope.json`, rendered into the prompt, never a diff) — `phase`, `iteration`, `base_ref`, `head_ref` (impl-review only, empty on design-review), `files[]` (changed-path list), `exclude_paths[]`. Agent reads current content of the listed `files[]` itself, using its own read-only filesystem tools, honoring `exclude_paths` — never from manifest payload bytes, never a path outside `files[]`. Full contract, per-phase table and iteration semantics: `external-review.md` § Phase-scoped payload / § Iteration semantics (consumer row vs `self_hosting: enabled` row differs for impl-review — do not hardcode one)
 - previous iteration finding set (iter ≥ 2 only) — supplied by dispatching phase skill for stalemate detection; agent never reads prior `iter-*/` files itself
 
 ## Outputs
@@ -77,7 +77,7 @@ Command tail is provider-specific (`{{wraps_invoke_args}}` — the two CLIs take
 
 Both forms feed prompt+scope manifest via stdin; the wrapped CLI's own `Read`/`Glob`/`Grep` (Claude) or read-only shell (Codex `exec`) tools resolve `files[]` content from the repo itself. The command's own stdout is captured as the final message — a plain-text verdict, never structured/streaming output. No `-o <out-file>`.
 
-Before invocation, phase orchestration supplies a runtime preflight result. On a non-ready result, return `APPROVE (skipped: external review unavailable: <specific status>)`; phase orchestration records it and creates no latch. Local readiness never proves model access.
+Before invocation, phase orchestration supplies a runtime preflight result, backed by the negative cache at its canonical path (`external-review.md` "Detection and negative cache", sole SSoT — this agent never calls `runtime.js` or names the path itself). On a non-ready result, return `APPROVE (skipped: external review unavailable: <specific status>)`; phase orchestration records it and creates no latch. Local readiness never proves model access.
 
 ## Severity mapping (`{{wraps_cli}}` → ASD)
 
