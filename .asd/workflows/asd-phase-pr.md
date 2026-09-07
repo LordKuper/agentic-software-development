@@ -1,6 +1,6 @@
 # ASD Workflow: PR
 
-The main phase orchestrator owns this workflow and delegates no orchestration role.
+The main orchestrator owns this workflow and delegates no orchestration role.
 
 ## Open mode
 
