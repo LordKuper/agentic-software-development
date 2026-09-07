@@ -110,12 +110,12 @@ hand-edited.
 - [x] Covers AC-11. Material risk: state-schema change against sprints in flight in consumer projects
 
 ### Task 11: Cross-file consistency sweep and out-of-surface verification
-- [ ] Add the `agent-memory/` line to `README.md`'s `.claude/` folder-map block, required by Task 5 (AC-12)
-- [ ] Check `core.md` "See also" — a no-op unless a task added a rule doc; if one did, mirror it there, in `t_AGENTS.md`'s rule-doc list, in `README.md` and in `managed_paths`
-- [ ] Re-check every README mirror named in `AGENTS.md` "Cross-file consistency" against what this sprint actually changed: phase list, agent roster and model tiers, config schema, folder map, command list
-- [ ] Run `node .asd/sync.js --apply <file...>` for every edited render source and confirm `canon_hashes` is current
-- [ ] Grep-verify Task 6's `.asd/project/custom-coding-rules.md` edit, which the review surface excludes
-- [ ] Covers AC-12, AC-14. No material risk to the change: verification only. Depends on every other task
+- [x] Add the `agent-memory/` line to `README.md`'s `.claude/` folder-map block, required by Task 5 (AC-12)
+- [x] Check `core.md` "See also" — a no-op unless a task added a rule doc; if one did, mirror it there, in `t_AGENTS.md`'s rule-doc list, in `README.md` and in `managed_paths`
+- [x] Re-check every README mirror named in `AGENTS.md` "Cross-file consistency" against what this sprint actually changed: phase list, agent roster and model tiers, config schema, folder map, command list
+- [x] Run `node .asd/sync.js --apply <file...>` for every edited render source and confirm `canon_hashes` is current
+- [x] Grep-verify Task 6's `.asd/project/custom-coding-rules.md` edit, which the review surface excludes
+- [x] Covers AC-12, AC-14. No material risk to the change: verification only. Depends on every other task
 
 ## Risks
 
