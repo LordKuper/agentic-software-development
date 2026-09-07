@@ -34,6 +34,8 @@ On resolution: row **deleted** from stubs.md (no status column; deletion = resol
 
 `impl` (and its review-fix/test-fix modes) and `impl-test` each commit all work before the sprint advances to `impl-review` — the clean-worktree precondition there (`sprint-lifecycle.md` "Impl-review clean-worktree precondition") blocks entry on any uncommitted change, since the reviewed diff is computed from commits. `impl-test`'s own commit obligation is stated once, in `sprint-lifecycle.md` "Impl-test commits its own output".
 
+`impl-review` itself also commits: when it dispatches `asd-tester` to fix a test in place, that fix must land as a commit before the phase's `Suite run` records its `HEAD` and before `pr` open-mode's `git diff --quiet` skip check runs — an uncommitted in-place fix is invisible to both.
+
 ## PR self-review checklist
 
 The main orchestrator confirms before opening PR:
