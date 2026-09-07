@@ -66,3 +66,7 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: `plan.md`, `state.json`
 
 - 2026-09-07 — impl-test: impacted set green (132/132, full-suite scope via shared-infrastructure safety valve), 5 tests added, 0 removed
+
+- 2026-09-07 — impl-review iter-1: external review skipped (unavailable: quota; codex CLI usage limit, negative cache set, retry-after +1h)
+
+- 2026-09-07 — impl-review iter-1: 4 internal reviewers CONCERNS (33 findings), external skipped; routing to impl review-fix mode
