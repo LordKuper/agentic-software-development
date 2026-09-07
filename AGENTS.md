@@ -75,11 +75,11 @@ The block's "never modify workflow infrastructure" hard rule is **lifted** for e
 
 Root `AGENTS.md`'s managed block is generated from `t_AGENTS.md` exactly as in any consumer project; this repo's own prose lives below `<!-- asd:end -->`, where sync never reaches it.
 
-### No build / test / lint
+### No build / lint; one test suite
 
-Ships as Markdown, YAML, JSON, HTML, Node hook scripts. No package.json, compiler, or build step. `tests/run.js` is a real zero-dependency test runner, but it only covers `.asd/sync.js`/`update.js`/`.asd/migrations/**` (the sync engine + migration runner) — it does not test rules/agents/skills/templates content. "Verification" of a change:
+Ships as Markdown, YAML, JSON, HTML, Node hook scripts. No package.json, compiler, or build step. `tests/run.js` is a real zero-dependency test runner covering both the Node sources (`.asd/sync.js`, `update.js`, `.asd/migrations/**`, hooks) and content contracts in rule docs, README, templates, skills and workflows (phase-chain mirrors, template section shapes, file sets). "Verification" of a change:
 
-- `node tests/run.js` stays green for anything touching `.asd/sync.js`, `.asd/skills/asd-update/update.js`, or `.asd/migrations/**`.
+- `node tests/run.js` stays green for any canonical edit — Node source, rule doc, README, template, skill, workflow, hook.
 - Hooks run clean: exit 0, never throw (designed to fail silently).
 - Edited YAML/JSON parses; edited HTML templates keep structure.
 - Cross-file consistency holds (below).
@@ -104,7 +104,7 @@ These artifacts mirror/reference each other. A change in one usually needs match
 - **README.md** mirrors phase list, agent roster + model tiers (both Claude and Codex columns), config schema, folder map. Keep synced with `.asd/rules/` and actual agent/skill files.
 - **`core.md` "See also"** lists every rule doc — add/remove a rule doc → update list.
 - **Reviewer verdict token**: first-line `[REVIEW-<phase>-<reviewer>]: APPROVE|CONCERNS|FAIL`, `<phase>` = `design` or `impl`. Aggregating phase workflow, `review-policy.md`, and agent file must agree.
-- **Phase chain**: every chain assertion names the same eleven phases in the same order. Assertions live in `session-start.js` (`PHASE_CHAIN`); every `asd-phase-*` workflow (precondition + `NEXT:` return contract); every `asd-phase-*` skill description; `asd-sprint/SKILL.md`; and every phase table or enumeration in the rule docs and README. Enumerating the sites has proven incomplete twice — grep the phase names, update every hit together.
+- **Phase chain**: every chain assertion names the same eleven phases in the same order. `tests/run.js` §16 machine-checks the mirrors it reaches (`PHASE_CHAIN`, skill/workflow file set, workflow `NEXT:`, rule-doc chain lines, README table/flowchart/count words); for prose it cannot reach, grep the phase names and update every hit together.
 - **Agent ↔ skill/workflow dispatch**: a phase workflow names agents it dispatches; those agent files must exist with matching capabilities. An agent's `description` lists what it does/does NOT handle (delegating to named agents) — keep delegation targets real.
 - **Template variables** `{{SPRINT}}`, `{{ITERATION}}`, `{{PHASE}}`, `{{agent:<name>}}` resolve at dispatch; use only these in skill/agent/workflow bodies.
 - **`.asd/release-manifest.json`**: `managed_paths` must list every canonical tree/file update.js should track; `model_families` mirrors `providers.md`'s table; a new canonical agent or skill (the render sources `computeCanonHashes` walks) needs a `canon_hashes` entry — non-render canon (e.g. `.asd/migrations/`) is tracked via `managed_paths` + `upstream_hashes` only, no `canon_hashes` entry.
