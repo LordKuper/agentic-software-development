@@ -15,7 +15,9 @@ Workflow cost routing and adaptive user decisions. **Breaking:** standalone `asd
 ### Changed
 - Architect owns the complete audit; BA participates only for material domain ambiguity. Tester reuse and phase-scoped rule reads reduce repeated context.
 - PR publication and sprint closure are separate. Confirmed merge and all technical quality checks remain mandatory.
-- This framework enables adaptive gates and scoped review coverage. Batch integration was evaluated and rejected; no Batch transport is added.
+
+### Removed
+- **BREAKING:** standalone `asd-pm` agent — canonical source and generated views (`.claude/agents/asd-pm.md`, `.codex/agents/asd-pm.toml`); the main orchestrator absorbs its responsibilities, no spawned agent replaces it. Run `/asd-update`; the bundled `5.0.0` migration removes a consumer's unmodified generated PM views while leaving any hand-edited copy in place for manual reconciliation.
 
 ## v4.0.1
 
