@@ -1,0 +1,22 @@
+{
+  "phase": "impl-review",
+  "iteration": "3",
+  "base_ref": "352b529b83cef29930fe73c4458792242149e7fb",
+  "head_ref": "1436ef751467c5e53c409d4639e17800ff4db515",
+  "files": [
+    ".asd/migrations/6.0.0.js",
+    ".asd/release-manifest.json",
+    ".asd/rules/sprint-lifecycle.md",
+    ".asd/workflows/asd-phase-retro.md",
+    "AGENTS.md",
+    "README.md",
+    "tests/run.js"
+  ],
+  "exclude_paths": [
+    ".asd/project/**",
+    ".asd/sprints/**",
+    ".claude/**",
+    ".codex/**",
+    ".agents/**"
+  ]
+}
