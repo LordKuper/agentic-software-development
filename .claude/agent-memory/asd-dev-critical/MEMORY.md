@@ -1,1 +1,2 @@
 - [sync --apply ledger gotcha](project_sync-apply-ledger-gotcha.md) — `--apply` rewrites release-manifest hashes repo-wide; affects split commits and parallel agents
+- [sync.js --apply target form](project_sync-apply-target-form.md) — `--apply` wants generated view paths, not `.asd/` canonical paths; use `--check` output to pick targets.

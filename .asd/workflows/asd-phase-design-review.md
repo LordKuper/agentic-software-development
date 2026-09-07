@@ -13,6 +13,7 @@ Orchestration body for the `asd-phase-design-review` skill. Operation-mapping to
 - write validated compact reviewer coverage and orchestrator state inline
 - request user decision: escalation on FAIL or iteration cap
 - delegate to agent in parallel: reviewers; delegate to agent sequentially: creator autofix; the orchestrator writes state and decisions-log inline
+- append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log"
 
 ## Reviewer read-only contract
 

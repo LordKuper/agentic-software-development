@@ -9,6 +9,8 @@ The main orchestrator owns this phase inline.
 4. The initial scope is hard until it is explicitly accepted, because it establishes authority for the adaptive policy. Afterwards record the accepted user decision. A fully specified already-authorized outcome is recorded without inventing another decision.
 5. Emit `NEXT: audit`.
 
+Append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log".
+
 ## Artefacts
 
 - `.asd/sprints/<NNN-slug>/sprint.md`

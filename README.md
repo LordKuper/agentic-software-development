@@ -2,7 +2,7 @@
 
 A multi-agent workflow for **Claude Code and Codex** that drives software projects end-to-end through fixed-shape sprints: from concept and tech-stack definition, through design and review, all the way to a green PR.
 
-ASD is **stack-agnostic** — it works on any language, framework, or runtime. The workflow itself never touches your application code directly; it dispatches 11 specialized agents (BA, UX, Architect, Dev, Tester, reviewers, advisor), coordinated by the main orchestrator and 17 skills.
+ASD is **stack-agnostic** — it works on any language, framework, or runtime. The workflow itself never touches your application code directly; it dispatches 11 specialized agents (BA, UX, Architect, Dev, Tester, reviewers, advisor), coordinated by the main orchestrator and 18 skills.
 
 Both providers run from one canonical source under `.asd/` (agents, skills, hooks); `.asd/sync.js` generates each provider's own view (`.claude/`, `.codex/`, `.agents/skills/`) and keeps them in sync. See [`.asd/rules/providers.md`](.asd/rules/providers.md) for the canonical/provider path map and semantic-operation mapping.
 
@@ -10,7 +10,7 @@ Both providers run from one canonical source under `.asd/` (agents, skills, hook
 
 ## Why use it
 
-- **Repeatable structure.** Every sprint follows the same 10 phases — no improvisation, no forgotten steps.
+- **Repeatable structure.** Every sprint follows the same 11 phases — no improvisation, no forgotten steps.
 - **Documentation that stays alive.** Persistent docs (concept, stack, UX) update on every sprint instead of rotting; architecture decisions fold into whichever of them already owns the subject.
 - **Reviews that converge.** Iteration severity floor stops reviewers from nitpicking the same low-severity issue forever. Each iteration dispatches reviewers with clean context, so verdicts aren't biased by the authoring that produced the artifact. Each internal reviewer must return a complete coverage ledger — every scoped file and every checklist rule accounted for — and the phase skill validates that full ledger before writing, rejecting and re-dispatching any reviewer whose ledger is incomplete, so no file or rule is skipped silently. Only a coverage summary line, the full n/a list, and non-passing rows are persisted to the review file — the gate runs on the full returned ledger regardless.
 - **Brownfield-friendly.** The audit phase reads any existing docs and code (in any format and location) and reverse-engineers them into the workflow's structure.
@@ -121,13 +121,13 @@ This repo (the ASD framework source itself) runs `node .asd/sync.js --check` in 
 /asd-sprint         # start your first sprint
 ```
 
-`/asd-sprint` then walks you through the ten sprint phases automatically, gating on your approval at every checkpoint — some gates pause before writing the artifact, others write it first and gate on your review of the file (see `.asd/rules/checkpoints.md`).
+`/asd-sprint` then walks you through the eleven sprint phases automatically, gating on your approval at every checkpoint — some gates pause before writing the artifact, others write it first and gate on your review of the file (see `.asd/rules/checkpoints.md`).
 
 ---
 
 ## Workflow overview
 
-Each sprint runs through ten mandatory phases in order:
+Each sprint runs through eleven mandatory phases in order:
 
 ```mermaid
 flowchart TD
@@ -143,7 +143,8 @@ flowchart TD
     itest -->|impacted set green| ireview["impl-review<br/><i>Correctness · Efficiency · Testing · Documentation · External</i>"]
     ireview -->|findings — back to review-fix mode| impl
     ireview -->|terminal suite red — code defects| impl
-    ireview -->|all APPROVE + terminal full suite green| pr["pr<br/><i>Orchestrator</i>"]
+    ireview -->|all APPROVE + terminal full suite green| retro["retro<br/><i>Orchestrator</i>"]
+    retro --> pr["pr<br/><i>Orchestrator</i>"]
 
     classDef review fill:#fff3cd,stroke:#d39e00,color:#1a1a1a;
     classDef done fill:#d4edda,stroke:#28a745,color:#1a1a1a;
@@ -151,7 +152,7 @@ flowchart TD
     class pr done;
 ```
 
-`impl`, `impl-test`, and `impl-review` form one cycle. `impl` writes production code only — its gate is build + lint. `impl-test` then picks the test approach for the whole change scope (after the code exists), prunes tests that no longer earn their keep, writes the missing ones, and runs the **impacted set** (tests touched by the change surface, not the whole repo): code defects route back to `impl` (test-fix mode), a green impacted run advances to `impl-review`. Review findings route back to `impl` (review-fix mode) and return through `impl-test`. Once every required reviewer is APPROVE (or already latched from an earlier iteration), `impl-review` runs the sprint's **one full-suite check** before advancing to `pr` — a red run there fixes test defects in place and re-runs, or, for code defects, exits to `impl` (test-fix mode) and clears every reviewer's APPROVE latch. The `impl⇄impl-test` loop is uncapped — it ends on a green impacted run or an escalated blocker; `impl-review` keeps its iteration cap.
+`impl`, `impl-test`, and `impl-review` form one cycle. `impl` writes production code only — its gate is build + lint. `impl-test` then picks the test approach for the whole change scope (after the code exists), prunes tests that no longer earn their keep, writes the missing ones, and runs the **impacted set** (tests touched by the change surface, not the whole repo): code defects route back to `impl` (test-fix mode), a green impacted run advances to `impl-review`. Review findings route back to `impl` (review-fix mode) and return through `impl-test`. Once every required reviewer is APPROVE (or already latched from an earlier iteration), `impl-review` runs the sprint's **one full-suite check** before advancing to `retro` — a red run there fixes test defects in place and re-runs, or, for code defects, exits to `impl` (test-fix mode) and clears every reviewer's APPROVE latch. The `impl⇄impl-test` loop is uncapped — it ends on a green impacted run or an escalated blocker; `impl-review` keeps its iteration cap.
 
 | Phase | What happens |
 |---|---|
@@ -163,7 +164,8 @@ flowchart TD
 | **plan** | Orchestrator decomposes work into Tasks with checkbox subtasks, traces each to PRD acceptance criteria |
 | **impl** | Dev implements Tasks — or fixes impl-review findings (review-fix mode) or impl-test defects (test-fix mode); no tests written here; run build/lint, commit per Conventional Commits |
 | **impl-test** | Tester picks the risk-based test approach for the change scope, deletes redundant/flaky/implementation-coupled tests, writes the missing ones, runs the impacted set; records everything in `test-plan.md`; code defects route back to `impl` |
-| **impl-review** | 4 internal reviewers (Correctness, Efficiency, Testing, Documentation) plus External Review; routes findings back to `impl` review-fix mode; once reviewers approve, runs the sprint's one full-suite check — green advances to `pr`, red exits to `impl` test-fix mode and clears every APPROVE latch |
+| **impl-review** | 4 internal reviewers (Correctness, Efficiency, Testing, Documentation) plus External Review; routes findings back to `impl` review-fix mode; once reviewers approve, runs the sprint's one full-suite check — green advances to `retro`, red exits to `impl` test-fix mode and clears every APPROVE latch |
+| **retro** | Orchestrator reads the sprint's friction log and writes `retrospective.html` in two classes: root cause plus remediation per `F-N` entry, and systemic proposals for a cheaper next sprint (derived from how the sprint ran, not bounded by the entries) — every row marked as acting on the consumer project or the ASD framework; an entry-free log skips remediation only, proposals still ship; closes with a chat summary |
 | **pr** | DoD verification + `gh pr create` (or push + summary if gh disabled); explicit user closure approval before finalization/archival; terminal state additionally requires confirmed merge |
 
 You can resume an interrupted sprint at any time: `/asd-sprint` reads `state.json`, detects the current phase, and dispatches the matching phase skill.
@@ -303,8 +305,8 @@ your-project/
 │   ├── rules/                       # workflow rules (role/phase-scoped reads), incl. providers.md
 │   ├── templates/                   # artifact templates (t_*.html / .md / .yaml / .c4), incl. t_AGENTS.md / t_CLAUDE.md
 │   ├── agents/                      # 11 canonical agent specs plus declared tier variants (JSON frontmatter: claude{} + codex{} blocks)
-│   ├── skills/                      # 17 canonical skill specs (SKILL.md)
-│   ├── workflows/                   # 10 phase orchestration files (referenced by path, not generated)
+│   ├── skills/                      # 18 canonical skill specs (SKILL.md)
+│   ├── workflows/                   # 11 phase orchestration files (referenced by path, not generated)
 │   ├── hooks/                       # canonical session-start.js (--provider claude|codex)
 │   ├── migrations/                  # one zero-dependency Node script per ASD version, run by /asd-update in ascending order
 │   ├── project/
@@ -319,7 +321,7 @@ your-project/
 │       └── archived/<NNN-slug>/     # moved here after explicit closure approval; completed sprints immutable
 ├── .claude/                         # generated Claude Code view
 │   ├── agents/                      # 15 agent definitions: 11 roles + 4 tier variants (*.md)
-│   ├── skills/                      # 17 skill definitions (SKILL.md)
+│   ├── skills/                      # 18 skill definitions (SKILL.md)
 │   ├── hooks/                       # SessionStart hook (Node.js)
 │   └── settings.json                # hook registration + permissions allowlist (JSON-merge: ASD owns only its own entry)
 ├── .codex/                          # generated Codex view
@@ -327,7 +329,7 @@ your-project/
 │   ├── hooks/                       # SessionStart hook (Node.js)
 │   └── hooks.json                   # hook registration (JSON-merge: ASD owns only its own entry); requires trust before hooks run
 ├── .agents/
-│   └── skills/                      # 17 skill definitions for Codex (SKILL.md) — Codex only reads skills from here, not .codex/
+│   └── skills/                      # 18 skill definitions for Codex (SKILL.md) — Codex only reads skills from here, not .codex/
 ├── docs/                            # persistent docs (grow across sprints)
 │   ├── product/
 │   │   ├── concept.html
@@ -431,7 +433,7 @@ FAIL findings block progression. Fixes within scope may proceed under the active
 Yes. Set `project.subsystem_decomposition: disabled` during `/asd-init`. Persistent docs become flat project-wide files. No C4 registry is maintained.
 
 **Can I skip PRD/UX-spec/ADR/C4 for a lean sprint?**
-Yes. Each is independently toggleable under `documents.*` in `config.yaml`, frozen into the sprint's `state.json` at scope time (a later config edit never changes an active sprint's rules). `audit` becomes a fast no-op on its own when `documents.audit` is disabled: it advances immediately, writes nothing, with one skip line in the decisions log. When `prd`/`ux_spec`/`adr`/effective `c4` are **all** disabled, one deterministic check at design entry collapses `design`, `design-review`, and `design-promote` together — a single write records all three as skipped and advances straight to `plan`; the latter two are never separately dispatched. `plan`/`impl`/`impl-test`/`impl-review`/`pr` always run; acceptance criteria then come from `sprint.md`'s own `AC-N` list instead of the PRD. See `.asd/rules/sprint-lifecycle.md` "Optional documents" and "No-op phase rule".
+Yes. Each is independently toggleable under `documents.*` in `config.yaml`, frozen into the sprint's `state.json` at scope time (a later config edit never changes an active sprint's rules). `audit` becomes a fast no-op on its own when `documents.audit` is disabled: it advances immediately, writes nothing, with one skip line in the decisions log. When `prd`/`ux_spec`/`adr`/effective `c4` are **all** disabled, one deterministic check at design entry collapses `design`, `design-review`, and `design-promote` together — a single write records all three as skipped and advances straight to `plan`; the latter two are never separately dispatched. `plan`/`impl`/`impl-test`/`impl-review`/`retro`/`pr` always run; acceptance criteria then come from `sprint.md`'s own `AC-N` list instead of the PRD. See `.asd/rules/sprint-lifecycle.md` "Optional documents" and "No-op phase rule".
 
 **Can ASD develop itself?**
 Yes — set `self_hosting: enabled` in `config.yaml` (this repo ships with it enabled, `documents.audit` only). `/asd-sprint` then edits ASD's own canonical sources per the exhaustive write allowlist in `.asd/rules/sprint-lifecycle.md` "Self-hosting" — generated `.claude/`/`.codex/`/`.agents/skills/` stay off-limits, resynced via `node .asd/sync.js --apply` after every canon edit. Root `AGENTS.md`'s managed-block/hand-edited-tail split: `.asd/rules/providers.md` "Canonical path -> per-provider path" (ownership home). `/asd-update` refuses to run here (it pulls framework files INTO a consumer; a self-hosting repo IS the framework).

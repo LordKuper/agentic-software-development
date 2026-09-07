@@ -8,6 +8,8 @@ The main phase orchestrator owns decomposition, state and gates inline.
 4. Dispatch only applicable domain creators in parallel: BA promotes PRD, Architect promotes ADR/C4/stack/tech references, UX promotes UX/DESIGN and regenerates its view when changed.
 5. Wait for creators; append artifact records and update `state.json` inline. Post a non-blocking summary and emit `NEXT: plan`.
 
+Append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log".
+
 ## Delegates
 
 - `asd-ba`, `asd-architect`, `asd-ux` only for their domain artifacts

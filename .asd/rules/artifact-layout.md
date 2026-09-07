@@ -37,6 +37,8 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │       │   ├── plan.md
 │       │   ├── test-plan.md
 │       │   ├── manual-steps.md
+│       │   ├── friction-log.md
+│       │   ├── retrospective.html
 │       │   └── reviews/
 │       │       ├── design/iter-NN/<reviewer>.md
 │       │       └── impl/iter-NN/<reviewer>.md
@@ -106,7 +108,7 @@ User-facing artifacts are HTML only. No parallel Markdown source. Exceptions:
 
 ## HTML shell wrapping (mandatory)
 
-Every user-facing HTML artifact (prd, ux-spec, adr, concept, stack, accessibility, design-system, architecture) MUST be wrapped in `t_html-shell.html`. The fragment template (`t_prd.html`, …) supplies the `<section>` content filling `{{CONTENT}}`. Creators emit a complete HTML document, not a bare fragment. Each artifact stays a **self-contained single file** — no `docs/assets/*` stylesheet or other sibling-file dependency; the shell inlines its own `<style>`.
+Every user-facing HTML artifact (prd, ux-spec, adr, concept, stack, accessibility, design-system, architecture, retrospective) MUST be wrapped in `t_html-shell.html`. The fragment template (`t_prd.html`, …) supplies the `<section>` content filling `{{CONTENT}}`. Creators emit a complete HTML document, not a bare fragment. Each artifact stays a **self-contained single file** — no `docs/assets/*` stylesheet or other sibling-file dependency; the shell inlines its own `<style>`.
 
 The shell trims two blocks per document instead of always emitting them: the mermaid CDN script (only when the fragment actually contains a diagram) and the auto-TOC nav (only when the fragment has enough sections to need one). Both are ordinary computed placeholders, filled by the creator at write time — see table below.
 
@@ -114,10 +116,10 @@ The shell trims two blocks per document instead of always emitting them: the mer
 
 | Placeholder | Source / value |
 |---|---|
-| `{{DOC_TYPE}}` | one of `PRD`, `ADR`, `UX-spec`, `Concept`, `Stack`, `Accessibility`, `Design-system`, `Architecture` |
-| `{{SUBSYSTEM}}` | subsystem id when persistent per-subsystem; `sprint` for sprint drafts; `project` for project-wide docs |
-| `{{SPRINT_ID}}` | active `state.json.sprint_id` for sprint drafts; empty for persistent docs |
-| `{{STATUS}}` | `draft` (design) / `in-review` (design-review) / `approved` (post design-promote) / `locked` (archived). `adr.html` is a set of decisions (one `<article>` each, `t_adr.html` "repeat this article per decision") — `{{STATUS}}` here is this document-lifecycle value, not an individual ADR's `proposed`/`accepted` status, which lives solely on that ADR's `.status-chip` |
+| `{{DOC_TYPE}}` | one of `PRD`, `ADR`, `UX-spec`, `Concept`, `Stack`, `Accessibility`, `Design-system`, `Architecture`, `Retrospective` |
+| `{{SUBSYSTEM}}` | subsystem id when persistent per-subsystem; `sprint` for any sprint-scoped artifact (drafts, `retrospective.html`); `project` for project-wide docs |
+| `{{SPRINT_ID}}` | active `state.json.sprint_id` for any sprint-scoped artifact (drafts, `retrospective.html`); empty for persistent docs |
+| `{{STATUS}}` | `draft` (design) / `in-review` (design-review) / `approved` (post design-promote) / `locked` (archived); `final` for a terminal report with no draft/review lifecycle (`retrospective.html`). `adr.html` is a set of decisions (one `<article>` each, `t_adr.html` "repeat this article per decision") — `{{STATUS}}` here is this document-lifecycle value, not an individual ADR's `proposed`/`accepted` status, which lives solely on that ADR's `.status-chip` |
 | `{{UPDATED_AT}}` | ISO date (YYYY-MM-DD) of last write |
 | `{{RESPONSIBILITY}}` | the `owns:` line from the fragment's responsibility frontmatter |
 | `{{PROVENANCE}}` | `original` \| `reverse-engineered` \| `migrated` (from fragment frontmatter) |
@@ -164,6 +166,14 @@ Manual step = operational action a human must perform for the plan to complete (
 SSoT for two things invisible in the diff: **why** a test was removed, and **why** a change needed no new test. Also the handoff channel for code defects to `impl` test-fix mode (`Defects` section). Not a task list (that is `plan.md`) and not a review verdict (that is `reviews/impl/iter-NN/testing.md`).
 
 **Manual verification — single home.** The optional `Manual verification` table (AC, steps, expected observation) is authored only here, by the Tester, when automation is impossible (visual UI, third-party live integration, ux feel). No review file duplicates or re-authors this spec; `asd-reviewer-testing` judges whether the spec is justified and reports any result as an ordinary finding, never as a persisted section of its own.
+
+## Friction log
+
+`<sprint>/friction-log.md` per `t_friction-log.md`. Workflow/machine Markdown — same class as `plan.md`, `test-plan.md`, `manual-steps.md`, so the HTML-only representation rule above does not reach it. Owner: the dispatching phase workflow (appends). Scope, entry format, boundary against adjacent owners and writer mechanism are normative in `sprint-lifecycle.md` "Friction log".
+
+## Retrospective
+
+`<sprint>/retrospective.html` per `t_retrospective.html`. User-facing HTML, shell-wrapped like every other. **Derived analysis, never a rendering of the log** — references `F-N` ids, never a second copy of the entries. Owner: `retro` phase; semantics in `sprint-lifecycle.md` "Retro phase".
 
 ## Single Source of Truth (iron rule)
 

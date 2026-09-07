@@ -15,6 +15,7 @@ Orchestration body for the `asd-phase-impl-review` skill. Operation-mapping to h
 - write a file: validated compact coverage evidence of each reviewer's returned text to `<sprint>/reviews/impl/iter-NN/<reviewer>.md`; the orchestrator updates state inline
 - request user decision: escalation on FAIL or iteration cap
 - delegate to agent in parallel: reviewers; the orchestrator writes state, routing and decisions inline; `asd-tester` runs the terminal full-suite gate. Reviewers stay read-only.
+- append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log"
 
 ## Reviewer read-only contract
 
@@ -56,7 +57,7 @@ Every reviewer is read-only and returns its verdict, findings and compact machin
      - emit phase COMPLETED with `NEXT: impl`
    - **All FAIL overridden, no CONCERNS** (escalation left zero unresolved findings) → reviewer DoD met by user override → proceed to step 9 (terminal full-suite gate)
 9. **Terminal full-suite gate** — dispatched only when step 8 (or step 10's cap-accept branch) reaches reviewer DoD met; skipped entirely on any route to impl review-fix mode. Delegate to agent `asd-tester` (the phase's one non-reviewer, non-read-only dispatch — reviewers stay read-only throughout, `providers.md`): run `test` **unscoped** — the sprint cycle's one full-suite run, never the impacted set (`sprint-lifecycle.md` "Impacted test set") — then `lint` and `build` per `commands.yaml`; write the raw result into `test-plan.md`'s `Suite run` section including `HEAD` (current `git rev-parse HEAD`), overwriting the impacted-run record `impl-test` left there. Verdict from the runner's exit code plus report, never an agent's summary:
-   - **Green** → DoD met: append the decisions-log, clear `review_fixes_pending` inline, apply the green-handoff gate policy, emit `NEXT: pr`.
+   - **Green** → DoD met: append the decisions-log, clear `review_fixes_pending` inline, apply the green-handoff gate policy, emit `NEXT: retro`.
    - **Red, test defect** (bad assertion, wrong fixture, flaky pattern) → write inline (mechanical, no gate) clear BOTH `state.json.reviews.design.latched` and `reviews.impl.latched` to `{}` sprint-wide (red-full-suite invalidation, `sprint-lifecycle.md` "APPROVE latch" — every red full suite clears every latch sprint-wide regardless of which triage branch follows; a no-op if the code-defect sub-bullet below already cleared them this same red event) — then `asd-tester` fixes the test in place, **commits the fix** (Conventional Commits, per `git-strategy.md` "Commit before review") before re-running, and re-runs this step; loop until green or an unfixable state surfaces as `FAILED`. Never a code fix — only the test itself. The commit is mandatory before the re-run's `HEAD` is recorded — an uncommitted fix would leave `Suite run`'s `HEAD` predating it and the `pr`-phase skip check blind to it
    - **Red, code defect** → record pending defect, clear latches and append the routing log inline; emit `NEXT: impl` (test-fix mode).
    - both kinds present → fix the test defects first (sub-bullet above), re-run, then route the remaining code defects back per the code-defect sub-bullet
@@ -95,9 +96,9 @@ None.
 
 ## Return contract (single line)
 ```
-PHASE: impl-review | SPRINT: <NNN-slug> | ITER: <N> | STATUS: <complete|blocked|aborted> | NEXT: <pr|impl>
+PHASE: impl-review | SPRINT: <NNN-slug> | ITER: <N> | STATUS: <complete|blocked|aborted> | NEXT: <retro|impl>
 ```
-`NEXT: pr` on reviewer DoD met AND terminal full suite green (step 9); `NEXT: impl` when unresolved findings route the sprint to impl review-fix mode, OR when the terminal full suite is red with code defects (test-fix mode).
+`NEXT: retro` on reviewer DoD met AND terminal full suite green (step 9); `NEXT: impl` when unresolved findings route the sprint to impl review-fix mode, OR when the terminal full suite is red with code defects (test-fix mode).
 
 ## References
 - `.asd/rules/sprint-lifecycle.md` (impl-review phase contract, impacted test set / terminal full-suite gate, APPROVE latch)

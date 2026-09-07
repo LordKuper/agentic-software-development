@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="generator" content="ASD workflow">
+  <meta name="doc-type" content="Retrospective">
+  <meta name="subsystem" content="sprint">
+  <meta name="sprint-id" content="007-retrospective-phase">
+  <meta name="status" content="final">
+  <meta name="updated" content="2026-09-07">
+  <meta name="responsibility" content="retro-phase analysis of the sprint — root cause plus remediation per F-N entry, and systemic proposals for a cheaper future sprint, both split consumer-project vs ASD-framework">
+  <meta name="provenance" content="original">
+  <meta name="source" content="">
+  <title>Retrospective — Sprint 007 · retrospective-phase</title>
+  <style>
+    :root {
+      --fg: #1a1c1e; --bg: #fff; --muted: #5b6770; --accent: #0066cc;
+      --code-bg: #f4f6f8; --border: #d0d7de; --max: 1040px;
+      --card-bg: #fafbfc;
+      --ok: #1a7f37; --warn: #b35900; --danger: #cf222e; --info: #0969da; --neutral: #5b6770;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --fg: #e6e6e6; --bg: #0e1116; --muted: #9aa4ad; --code-bg: #161b22; --border: #30363d;
+        --card-bg: #161b22;
+        --accent: #58a6ff; --ok: #3fb950; --warn: #d29922; --danger: #f85149; --info: #79c0ff; --neutral: #8b949e;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .layout { display: grid; grid-template-columns: 1fr; }
+    .layout:has(> nav.toc) { grid-template-columns: 260px minmax(0, 1fr); }
+    nav.toc { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; padding: 16px 12px; border-right: 1px solid var(--border); font-size: 0.85rem; }
+    nav.toc .toc-title { font-weight: 600; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.04em; }
+    nav.toc ol { list-style: none; margin: 0; padding: 0; }
+    nav.toc li { margin: 2px 0; }
+    nav.toc a { color: var(--fg); text-decoration: none; display: block; padding: 3px 6px; border-radius: 4px; }
+    nav.toc a:hover { background: var(--code-bg); color: var(--accent); }
+    @media (max-width: 880px) { nav.toc { position: static; max-height: none; border-right: none; border-bottom: 1px solid var(--border); } }
+    @media print { nav.toc { display: none; } }
+    .content { min-width: 0; }
+    header, main, footer { max-width: var(--max); margin: 0 auto; padding: 16px 24px; }
+    header { border-bottom: 1px solid var(--border); }
+    header h1 { margin: 4px 0 8px; font-size: 1.9rem; }
+    .badges span { display: inline-block; padding: 2px 8px; margin-right: 6px; font-size: 0.75rem; border: 1px solid var(--border); border-radius: 4px; color: var(--muted); background: var(--bg); }
+    .stats { color: var(--muted); font-size: 0.9rem; }
+    @media (max-width: 880px) {
+      .layout, .layout:has(> nav.toc) { grid-template-columns: 1fr; }
+    }
+    h2, h3 { line-height: 1.25; margin-top: 1.6em; }
+    h2 { border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+    a { color: var(--accent); }
+    code { font-family: ui-monospace, "Cascadia Code", Menlo, monospace; background: var(--code-bg); padding: 1px 5px; border-radius: 3px; font-size: 0.9em; }
+    table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 0.94rem; }
+    th, td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+    th { background: var(--card-bg); font-weight: 600; }
+    tr, li { break-inside: avoid; }
+    .hero .lede { font-size: 1.05rem; color: var(--muted); }
+    .chip { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 0.75rem; border: 1px solid var(--border); white-space: nowrap; }
+    .chip.area { background: var(--code-bg); color: var(--muted); }
+    footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <nav class="toc">
+      <div class="toc-title">Contents</div>
+      <ol>
+        <li><a href="#outcome">Outcome</a></li>
+        <li><a href="#analysis">Analysis</a></li>
+        <li><a href="#actions">Actions</a></li>
+        <li><a href="#systemic-proposals">Systemic proposals</a></li>
+      </ol>
+    </nav>
+    <div class="content">
+      <header>
+        <div class="badges">
+          <span>Retrospective</span>
+          <span>sprint</span>
+          <span class="status-final">final</span>
+        </div>
+        <h1>Retrospective — Sprint 007 · retrospective-phase</h1>
+        <div class="stats">7 entries · 8 actions · 5 systemic proposals · updated 2026-09-07</div>
+      </header>
+      <main>
+
+<section id="outcome" class="hero">
+  <h2>Outcome</h2>
+  <p class="lede">7 entries analysed, 2 consumer actions, 6 framework actions, 5 systemic proposals.</p>
+  <p>Every entry was recorded by the main orchestrator, which is what the writer mechanism narrowed to mid-sprint. Two entries are recurrences of an earlier entry in the same sprint (<a href="#F-5">F-5</a> of <a href="#F-1">F-1</a>, <a href="#F-7">F-7</a> of <a href="#F-3">F-3</a>), so recurrence — not novelty — is this sprint's dominant signal: a correction that lands only in one agent's memory does not survive the next dispatch.</p>
+</section>
+
+<section id="analysis">
+  <h2>Analysis</h2>
+  <table>
+    <thead>
+      <tr><th>Entry</th><th>Root cause</th><th>Scope</th></tr>
+    </thead>
+    <tbody>
+      <tr id="F-1"><td><a href="#F-1">F-1</a></td><td>A read-only agent was dispatched against a repository-wide scope with a rubric requiring it to open many files before concluding anything; the turn budget was spent reading, and no host operation exists to resume a subagent, so the work could only be discarded.</td><td><span class="chip area">asd</span></td></tr>
+      <tr id="F-2"><td><a href="#F-2">F-2</a></td><td>A large artifact was composed inline through a shell heredoc rather than the file-write operation; the shell layer imposes quoting constraints the content does not justify.</td><td><span class="chip area">asd</span></td></tr>
+      <tr id="F-3"><td><a href="#F-3">F-3</a></td><td>Nothing in the layout rules or in any dispatch payload states where agent memory belongs, so an agent defaulted to the working directory it was given — which was the sprint tree.</td><td><span class="chip area">asd</span></td></tr>
+      <tr id="F-4"><td><a href="#F-4">F-4</a></td><td>The documented argument form for the sync step names the canonical path while the tool matches generated view paths, and an unmatched target is reported as success — so following the documentation produces a silent no-op.</td><td><span class="chip area">both</span></td></tr>
+      <tr id="F-5"><td><a href="#F-5">F-5</a></td><td>Same cause as <a href="#F-1">F-1</a>, recurring because the first occurrence was corrected by improvising a split rather than by changing the dispatch contract. The phase workflow has no notion of a split review, so the split, the two half-verdicts and their merge were all outside the documented contract.</td><td><span class="chip area">asd</span></td></tr>
+      <tr id="F-6"><td><a href="#F-6">F-6</a></td><td>A dispatched reviewer's partial work is persisted nowhere, and the fresh-context-per-iteration rule leaves no checkpoint to fall back on, so any interruption is a total loss rather than a partial one.</td><td><span class="chip area">asd</span></td></tr>
+      <tr id="F-7"><td><a href="#F-7">F-7</a></td><td>Same cause as <a href="#F-3">F-3</a>, recurring across a different agent because the first correction was written into one agent's memory and into no rule — and this time the misplaced files were committed, so the sprint tree would have frozen them at archival.</td><td><span class="chip area">asd</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="actions">
+  <h2>Actions</h2>
+  <table>
+    <thead>
+      <tr><th>Addresses</th><th>Recommendation</th><th>Acts on</th><th>Target</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><a href="#F-1">F-1</a>, <a href="#F-5">F-5</a></td><td>Make the split a contract rather than an improvisation: define when a read-only dispatch is too large and how a reviewer's rubric is partitioned, so the halves and their merged verdict have a documented shape instead of being invented after a failure.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/review-policy.md</code>, <code>.asd/workflows/asd-phase-*-review.md</code></td></tr>
+      <tr><td><a href="#F-1">F-1</a>, <a href="#F-5">F-5</a></td><td>Keep sprint scope small enough that one reviewer dispatch covers the diff; a scope that needs splitting to be reviewable is usually a scope that should have been two sprints.</td><td><span class="chip area">consumer</span></td><td><code>&lt;sprint&gt;/sprint.md</code> scoping practice</td></tr>
+      <tr><td><a href="#F-2">F-2</a></td><td>State that a large artifact write uses the file-write operation, never a shell heredoc — the shell path adds a failure mode the operation does not have.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/providers.md</code></td></tr>
+      <tr><td><a href="#F-3">F-3</a>, <a href="#F-7">F-7</a></td><td>State in the layout rules that agent memory lives at the provider-view root and never inside a sprint tree, and that a sprint folder holds only the artifacts the path map names. A rule is what survives the next dispatch; an entry in one agent's memory is not.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/artifact-layout.md</code></td></tr>
+      <tr><td><a href="#F-4">F-4</a></td><td>Make the tool refuse silently-wrong input: an <code>--apply</code> target that matches nothing should be reported as an error rather than folded into an <code>ok</code> result. The documentation fix below is worth less than removing the silent-success shape.</td><td><span class="chip area">asd</span></td><td><code>.asd/sync.js</code></td></tr>
+      <tr><td><a href="#F-4">F-4</a></td><td>Correct the argument wording wherever the sync step is described, including the consumer-facing template, so a fresh project does not inherit the same misleading instruction.</td><td><span class="chip area">asd</span></td><td><code>.asd/templates/t_AGENTS.md</code>, <code>AGENTS.md</code></td></tr>
+      <tr><td><a href="#F-4">F-4</a></td><td>Apply the same correction to the project's own coding rules, which carry a copy of the wording.</td><td><span class="chip area">consumer</span></td><td><code>.asd/project/custom-coding-rules.md</code></td></tr>
+      <tr><td><a href="#F-6">F-6</a></td><td>Give an interrupted reviewer dispatch a defined outcome: record it as an availability skip for that iteration, the way an unavailable external reviewer already is, instead of requiring a full re-run with no record that the first attempt happened.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/review-policy.md</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="systemic-proposals">
+  <h2>Systemic proposals</h2>
+  <p>What would have made this sprint cheaper, read off how it actually ran — three review iterations, forty-two findings, eight implementation dispatches — rather than off the entries above.</p>
+  <table>
+    <thead>
+      <tr><th>Proposal</th><th>Acts on</th><th>Target</th><th>Expected saving</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Give implementation dispatches the over-engineering and SSoT checklists that reviewers judge against. The design-time rules already say to apply them proactively during design; nothing says so during authoring. A large share of iteration-1 and iteration-2 findings were prose duplication and restatement in always-loaded files — defects the author could have avoided by knowing the exact checklist that would be run against the text.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/code-style.md</code>, <code>.asd/workflows/asd-phase-impl.md</code></td><td>Review iterations. Two of this sprint's three were driven mostly by findings of this class.</td></tr>
+      <tr><td>Check the external-review negative cache before assembling the scope manifest and dispatching the agent, not after. Two iterations paid for manifest assembly and an agent dispatch before discovering an unavailability that the previous iteration had already recorded.</td><td><span class="chip area">asd</span></td><td><code>.asd/workflows/asd-phase-impl-review.md</code>, <code>.asd/rules/external-review.md</code></td><td>One agent dispatch per iteration while a provider is unavailable.</td></tr>
+      <tr><td>Say plainly that the orchestrator commits its own bookkeeping at phase exit. Twice a dispatched agent committed orchestrator-owned files it did not author, purely so the next gate would see a clean tree — each time flagging it as a deviation it was unsure it was allowed to make.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/git-strategy.md</code></td><td>Ambiguity at every phase boundary, plus the commits an agent makes defensively outside its scope.</td></tr>
+      <tr><td>Distinguish risk-to-the-change from risk-to-the-artifact when the plan declares a task's material risk. Task routing reads that declaration, so in a sprint where every task edits a workflow contract, every task declares a risk and every task routes to the most expensive tier — six of seven here — regardless of how mechanical the edit itself is.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/sprint-lifecycle.md</code> plan format, <code>.asd/runtime.js</code> routing input</td><td>Model cost across a whole sprint's implementation dispatches.</td></tr>
+      <tr><td>Let a phase state the artifacts it hands to the next one, so a re-entry does not have to re-derive them. Each impl-test re-entry and each review iteration began by rebuilding a scope list and a diff base that the previous phase already knew; the state file records the heads but not the derived sets.</td><td><span class="chip area">asd</span></td><td><code>.asd/templates/t_state.json</code>, <code>.asd/rules/sprint-lifecycle.md</code></td><td>Orchestrator round-trips at every cycle re-entry.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+      </main>
+      <footer>by ASD workflow | 2026-09-07 | sprint 007-retrospective-phase</footer>
+    </div>
+  </div>
+</body>
+</html>

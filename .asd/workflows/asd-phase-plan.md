@@ -12,6 +12,7 @@ Orchestration body for the `asd-phase-plan` skill. Operation-mapping to host too
 - write a file: `state.json` inline, for the mechanical non-gate phase-field write at step 4 (`sprint-lifecycle.md` "State recovery")
 - request user decision: rare, phase-level escalation only
 - the main orchestrator authors, gates and logs plan.md inline
+- append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log"
 
 ## Workflow
 

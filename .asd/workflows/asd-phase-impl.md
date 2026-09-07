@@ -13,6 +13,7 @@ Orchestration body for the `asd-phase-impl` skill. Operation-mapping to host too
 - write a file: `state.json` inline, for the mechanical non-gate writes at steps 4, 11 (`sprint-lifecycle.md` "State recovery")
 - request user decision: escalation only (see Execution mode)
 - delegate to agent: `asd-dev` per task / finding group / defect group (test-file findings to `asd-tester`); the main orchestrator owns manual-step validation, gates and decisions-log inline
+- append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log"
 
 ## Modes
 
@@ -84,7 +85,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
      - keep only when action genuinely cannot be done autonomously (needs access, secret, external account, or authority agent lacks)
      - reject any entry agent could do with own tools → re-dispatch its owning dev with feedback "implement autonomously, remove MS-N"; dev deletes entry, unmarks `BLOCKED:` subtask, implements it; loop step 7
    - once all remaining `MS-N` are validated and all unblocked tasks COMPLETED, the main orchestrator:
-     - record manual-steps halt in `state.json` `escalations[]`, append decisions-log entry
+     - append decisions-log entry; add an `F-N` citing the blocking `MS-N` ids only when the halt itself was a malfunction — the step was unexpected, unworkable, or raised at the wrong point (`sprint-lifecycle.md` "Friction log"); a validated, genuinely necessary halt records no `F-N`
      - present `manual-steps.md` to user (per `checkpoints.md` "Gate mechanics"); wait for explicit continue command
    - on user continue: re-dispatch each deferred task to owning dev with instruction:
      - verify referenced `MS-N` per its `Verification` field

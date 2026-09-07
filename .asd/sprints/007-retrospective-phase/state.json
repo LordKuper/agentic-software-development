@@ -1,0 +1,160 @@
+{
+  "sprint_id": "007-retrospective-phase",
+  "branch": "sprint/007-retrospective-phase",
+  "phase": "pr",
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "adr": false,
+    "c4": false
+  },
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "Explicit scope acceptance after AC-5 revision",
+      "evidence": "decisions-log.md: Scope accepted",
+      "artifact_revision": "0ff5d791b21322829ae8e192d32e3143f2e24f80e6fedb8ee1d8f62bce5d507d"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "user",
+      "reason": "Audit accepted; retro unconditional, no persistent promotion, escalations retired",
+      "evidence": "audit.md; decisions-log.md",
+      "artifact_revision": "1cdf5a1dc9b880bb2cdba3e3a3fbfa03a97226c8b439e23ed5faed76eb5632f4"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "orchestrator",
+      "reason": "Routine plan acceptance; all tasks trace to user-authorized AC-1..AC-9 and the three audit-gate answers",
+      "evidence": "plan.md; audit.md; decisions-log.md",
+      "artifact_revision": "bcb2f5c65c02590a68ef4ab2c9721d74db3bb039633125d113a8bb58ddda6e1c"
+    },
+    {
+      "gate": "impl-assessment",
+      "decision_actor": "user",
+      "reason": "Impl approved at assessment gate",
+      "evidence": "plan.md all checkboxes ticked; sync --check ok; git diff --check clean; decisions-log.md",
+      "artifact_revision": "181fc4cd4c34371ed3cbf32463d0c9950bd01234"
+    },
+    {
+      "gate": "pr-publication",
+      "decision_actor": "user",
+      "reason": "Explicit authorization to run finalization and open the PR",
+      "evidence": "plan.md all tasks checked; reviews/impl/iter-03 all APPROVE; test-plan.md Suite run 136/136 at 1436ef7; retrospective.html present; stubs.md clean",
+      "artifact_revision": "d2f005db737686e711b45b32e98ca9dc7c5fbaaf"
+    }
+  ],
+  "task_routing": {
+    "Task 1": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:workflow-gate-contract",
+      "resolved_model": "opus"
+    },
+    "Task 2": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:workflow-gate-contract",
+      "resolved_model": "opus"
+    },
+    "Task 3": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:workflow-gate-contract",
+      "resolved_model": "opus"
+    },
+    "Task 4": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:workflow-gate-contract",
+      "resolved_model": "opus"
+    },
+    "Task 5": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:workflow-gate-contract",
+      "resolved_model": "opus"
+    },
+    "Task 6": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:workflow-gate-contract",
+      "resolved_model": "opus"
+    },
+    "Task 7": {
+      "execution": "agent",
+      "tier": "mechanical",
+      "reason": "objective-mechanical",
+      "resolved_model": "haiku"
+    },
+    "impl-test": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:migration-correctness",
+      "resolved_model": "opus"
+    }
+  },
+  "skipped_phases": [
+    "design",
+    "design-review",
+    "design-promote"
+  ],
+  "reviews": {
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "iteration": 3,
+      "verdicts": {
+        "iter-01": {
+          "correctness": "CONCERNS",
+          "efficiency": "CONCERNS",
+          "testing": "CONCERNS",
+          "documentation": "CONCERNS",
+          "external": "APPROVE (skipped: external review unavailable: quota)"
+        },
+        "iter-02": {
+          "correctness": "APPROVE",
+          "efficiency": "CONCERNS",
+          "testing": "CONCERNS",
+          "documentation": "CONCERNS",
+          "external": "APPROVE (skipped: external review unavailable: quota)"
+        },
+        "iter-03": {
+          "correctness": "APPROVE",
+          "efficiency": "APPROVE",
+          "testing": "APPROVE",
+          "documentation": "APPROVE",
+          "external": "APPROVE (skipped: external review unavailable: quota)"
+        }
+      },
+      "iteration_heads": {
+        "iter-01": "bb9b7608f0764dc7b4ddb7c39ae498540c54e0af",
+        "iter-02": "352b529b83cef29930fe73c4458792242149e7fb",
+        "iter-03": "1436ef751467c5e53c409d4639e17800ff4db515"
+      },
+      "latched": {
+        "correctness": 2,
+        "efficiency": 3,
+        "testing": 3,
+        "documentation": 3
+      }
+    }
+  },
+  "created_at": "2026-09-07T13:21:33Z",
+  "updated_at": "2026-09-07T16:38:02Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": {
+    "number": 27,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/27",
+    "state": "open"
+  },
+  "archived_at": null,
+  "escalations": []
+}

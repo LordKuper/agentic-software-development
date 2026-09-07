@@ -15,6 +15,7 @@ const sync = require('../.asd/sync.js');
 const update = require('../.asd/skills/asd-update/update.js');
 const migration400 = require('../.asd/migrations/4.0.0.js');
 const migration500 = require('../.asd/migrations/5.0.0.js');
+const migration600 = require('../.asd/migrations/6.0.0.js');
 const runtime = require('../.asd/runtime.js');
 
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -2490,6 +2491,372 @@ test('AC-14: PM migration deletes only intact generated views and remains idempo
   const unsafeReport = await migration500({ repoRoot: unsafeRoot });
   assert.ok(unsafeReport.skippedUnsafe.includes('.claude/agents/asd-pm.md'));
   assert.strictEqual(fs.existsSync(outside), true, 'migration must not follow or delete a target outside the consumer repo');
+});
+
+// ===========================================================================
+// 15. .asd/migrations/6.0.0.js - retirement of state.json.escalations.
+// The migration rewrites a consumer's LIVE sprint state file, so the risk is
+// data loss, not feature absence: every other member must survive with the
+// file's own line endings, only the TOP-LEVEL key may go, archived sprints
+// must not be touched at all, and input that does not parse must be left
+// byte-for-byte alone.
+// ===========================================================================
+
+test('6.0.0 migration: strips "escalations" from an ACTIVE sprint state, preserving every other member and CRLF line endings; archived sprints untouched; re-run is a no-op', async () => {
+  const root = mkTempDir();
+  const activeBefore = [
+    '{',
+    '  "sprint_id": "007-live",',
+    '  "phase": "impl",',
+    '  "escalations": [{"id": "E-1", "note": "tool would not launch"}],',
+    '  "skipped_phases": [],',
+    '  "updated_at": "2026-09-07"',
+    '}',
+    '',
+  ].join('\r\n');
+  const activeExpected = [
+    '{',
+    '  "sprint_id": "007-live",',
+    '  "phase": "impl",',
+    '  "skipped_phases": [],',
+    '  "updated_at": "2026-09-07"',
+    '}',
+    '',
+  ].join('\r\n');
+  const archivedBefore = '{\n  "sprint_id": "006-old",\n  "escalations": [],\n  "phase": "done"\n}\n';
+  writeFile(root, '.asd/sprints/007-live/state.json', activeBefore);
+  writeFile(root, '.asd/sprints/archived/006-old/state.json', archivedBefore);
+
+  const report = await migration600({ repoRoot: root });
+
+  const activePath = path.join(root, '.asd/sprints/007-live/state.json');
+  const archivedPath = path.join(root, '.asd/sprints/archived/006-old/state.json');
+  assert.deepStrictEqual(report.stripped, ['.asd/sprints/007-live/state.json']);
+  assert.strictEqual(
+    fs.readFileSync(activePath, 'utf8'),
+    activeExpected,
+    'only the escalations line may go - every other byte, CRLF included, must survive'
+  );
+  assert.deepStrictEqual(JSON.parse(fs.readFileSync(activePath, 'utf8')), {
+    sprint_id: '007-live',
+    phase: 'impl',
+    skipped_phases: [],
+    updated_at: '2026-09-07',
+  });
+  assert.strictEqual(
+    fs.readFileSync(archivedPath, 'utf8'),
+    archivedBefore,
+    'archived sprints are immutable history - the migration must never enter the archive subtree'
+  );
+  assert.ok(
+    ![...report.stripped, ...report.absent, ...report.skipped].some((p) => p.includes('/archived/')),
+    'no archived path may appear in the report at all'
+  );
+
+  const rerun = await migration600({ repoRoot: root });
+  assert.deepStrictEqual(rerun.stripped, [], 're-running an applied migration must be a no-op, never an error');
+  assert.deepStrictEqual(rerun.absent, ['.asd/sprints/007-live/state.json']);
+  assert.strictEqual(fs.readFileSync(activePath, 'utf8'), activeExpected, 'idempotent: second run leaves the file identical');
+});
+
+test('6.0.0 migration: removes the TOP-LEVEL "escalations" whatever shape it is written in - last member, populated array spanning lines, or shadowed by a nested member of the same name; only unparsable JSON is left byte-for-byte untouched and reported as skipped', async () => {
+  const root = mkTempDir();
+  const lastMember = '{\n  "sprint_id": "a",\n  "phase": "pr",\n  "escalations": []\n}\n';
+  const broken = '{\n  "sprint_id": "b",\n  "escalations": [],\n';
+  const multiLine = '{\n  "sprint_id": "c",\n  "escalations": [\n    {"id": "E-1"}\n  ],\n  "phase": "impl"\n}\n';
+  const nestedFirst = '{\n  "sprint_id": "d",\n  "reviews": {\n    "escalations": [],\n    "iteration": 1\n  },\n  "escalations": [{"id": "E-1"}],\n  "phase": "impl"\n}\n';
+  writeFile(root, '.asd/sprints/a/state.json', lastMember);
+  writeFile(root, '.asd/sprints/b/state.json', broken);
+  writeFile(root, '.asd/sprints/c/state.json', multiLine);
+  writeFile(root, '.asd/sprints/d/state.json', nestedFirst);
+
+  const report = await migration600({ repoRoot: root });
+
+  assert.deepStrictEqual(
+    JSON.parse(fs.readFileSync(path.join(root, '.asd/sprints/a/state.json'), 'utf8')),
+    { sprint_id: 'a', phase: 'pr' },
+    'dropping the final member must leave the state file parsable, with no dangling comma'
+  );
+  assert.deepStrictEqual(
+    JSON.parse(fs.readFileSync(path.join(root, '.asd/sprints/c/state.json'), 'utf8')),
+    { sprint_id: 'c', phase: 'impl' },
+    'an escalations array that actually accumulated entries is pretty-printed across lines - the most likely live shape, and it must still be removed'
+  );
+  assert.deepStrictEqual(
+    JSON.parse(fs.readFileSync(path.join(root, '.asd/sprints/d/state.json'), 'utf8')),
+    { sprint_id: 'd', reviews: { escalations: [], iteration: 1 }, phase: 'impl' },
+    'the retired key is the top-level one only - a same-named member at any other depth belongs to its owner and must survive'
+  );
+  assert.deepStrictEqual(report.stripped.sort(), ['.asd/sprints/a/state.json', '.asd/sprints/c/state.json', '.asd/sprints/d/state.json']);
+  assert.deepStrictEqual(
+    report.skipped,
+    ['.asd/sprints/b/state.json'],
+    'only input that cannot be parsed is skipped - nothing else is guessed at'
+  );
+  assert.strictEqual(fs.readFileSync(path.join(root, '.asd/sprints/b/state.json'), 'utf8'), broken, 'unparsable input left untouched');
+});
+
+test('AC-9: the 6.0.0 migration prints the escalations it dropped and where to re-record them - the run\'s only data-recovery affordance', async () => {
+  const root = mkTempDir();
+  const dropped = [{ id: 'E-1', note: 'tool would not launch' }, { id: 'E-2', note: 'gate fired at the wrong time' }];
+  const live = JSON.stringify({ sprint_id: '007-live', escalations: dropped, phase: 'impl' }, null, 2) + '\n';
+  writeFile(root, '.asd/sprints/007-live/state.json', live);
+  writeFile(root, '.asd/sprints/007-broken/state.json', '{\n  "sprint_id": "007-broken",\n  "escalations": [],\n');
+
+  const captured = [];
+  const realWrite = process.stdout.write;
+  process.stdout.write = (chunk) => {
+    captured.push(String(chunk));
+    return true;
+  };
+  let report;
+  try {
+    report = await migration600({ repoRoot: root });
+  } finally {
+    process.stdout.write = realWrite;
+  }
+  const output = captured.join('');
+
+  assert.deepStrictEqual(report.stripped, ['.asd/sprints/007-live/state.json']);
+  assert.ok(
+    output.includes(JSON.stringify(dropped)),
+    'the dropped escalations must be printed verbatim - the rewritten state file was their only other copy and it no longer holds them'
+  );
+  assert.ok(
+    /friction-log\.md/.test(output),
+    'the warning must name where the consumer re-records them, or the data is gone with no pointer to its replacement home'
+  );
+  assert.ok(
+    /007-broken\/state\.json.*by hand/.test(output),
+    'a state file left untouched because it does not parse must say so - silence reads as a successful migration'
+  );
+});
+
+// ===========================================================================
+// 16. Phase-chain consistency (AC-8, audit gap G-11). PHASE_CHAIN in the
+// SessionStart hook is the machine-readable phase set; roughly twenty other
+// sites mirror it by hand. These tests derive the chain from the hook source
+// and assert every mirror that is machine-checkable: the skill and workflow
+// files a phase needs to exist at all, the `NEXT:` token that does the actual
+// routing, the friction-append reference every workflow carries, the ordered
+// phase sequences in the rule docs, and the phase table, flowchart and count
+// words in README and AGENTS.md. PHASE_CHAIN only drives the session
+// hook's display, so a green chain array over a stale `NEXT:` or a stale
+// user-facing doc is exactly the silent desync these assertions exist for.
+// ===========================================================================
+
+const PHASE_COUNT_WORDS = [
+  'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven',
+  'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen',
+];
+const FRICTION_APPEND_REF = 'friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log"';
+
+function readTocH2Threshold() {
+  const layout = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/artifact-layout.md'), 'utf8');
+  const stated = /^\|\s*`\{\{TOC_NAV\}\}`.*?\*\*(\d+) or more\*\* `<h2>` sections/m.exec(layout);
+  assert.ok(stated, 'artifact-layout.md "Placeholder fill" owns the {{TOC_NAV}} h2 threshold - these tests derive it from there, never restate it');
+  return Number(stated[1]);
+}
+
+function readPhaseChain() {
+  const src = fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8');
+  const block = /const PHASE_CHAIN = \[([\s\S]*?)\];/.exec(src);
+  assert.ok(block, 'session-start.js must keep PHASE_CHAIN as a literal array - it is the chain SSoT');
+  return (block[1].match(/'([^']+)'/g) || []).map((quoted) => quoted.slice(1, -1));
+}
+
+function readWorkflow(phase) {
+  return fs.readFileSync(path.join(REPO_ROOT, `.asd/workflows/asd-phase-${phase}.md`), 'utf8');
+}
+
+function readReturnContractTargets(phase, src) {
+  const contract = new RegExp(`^PHASE: ${phase} \\|.*\\bNEXT:\\s*(.+?)\\s*$`, 'm').exec(src);
+  assert.ok(contract, `asd-phase-${phase}.md must keep its single-line "PHASE: ${phase} | ... | NEXT: <...>" return contract`);
+  return contract[1].replace(/[<>`]/g, '').split('|').map((target) => target.trim());
+}
+
+test('AC-8/G-11: PHASE_CHAIN is the single source for the phase set - every phase has a skill AND a workflow, every phase skill/workflow is in the chain, and retro sits between impl-review and pr', () => {
+  const chain = readPhaseChain();
+  assert.deepStrictEqual([...new Set(chain)], chain, 'PHASE_CHAIN must not repeat a phase');
+  assert.strictEqual(chain[chain.length - 1], 'done', 'the chain terminates at the pseudo-phase "done"');
+
+  const retro = chain.indexOf('retro');
+  assert.ok(retro > 0, 'retro must be in the chain');
+  assert.strictEqual(chain[retro - 1], 'impl-review', 'retro runs directly after impl-review');
+  assert.strictEqual(chain[retro + 1], 'pr', 'retro runs directly before pr');
+
+  const phases = chain.filter((phase) => phase !== 'done');
+  const missing = [];
+  for (const phase of phases) {
+    if (!fs.existsSync(path.join(REPO_ROOT, `.asd/skills/asd-phase-${phase}/SKILL.md`))) missing.push(`skill for ${phase}`);
+    if (!fs.existsSync(path.join(REPO_ROOT, `.asd/workflows/asd-phase-${phase}.md`))) missing.push(`workflow for ${phase}`);
+  }
+  assert.deepStrictEqual(missing, [], `a phase in the chain with no dispatch target routes into nothing: ${missing.join(', ')}`);
+
+  const workflowPhases = fs
+    .readdirSync(path.join(REPO_ROOT, '.asd/workflows'))
+    .filter((name) => name.startsWith('asd-phase-') && name.endsWith('.md'))
+    .map((name) => name.slice('asd-phase-'.length, -'.md'.length));
+  const skillPhases = fs
+    .readdirSync(path.join(REPO_ROOT, '.asd/skills'))
+    .filter((name) => name.startsWith('asd-phase-'))
+    .map((name) => name.slice('asd-phase-'.length));
+  assert.deepStrictEqual(
+    [...workflowPhases].sort(),
+    [...phases].sort(),
+    'phase workflows and PHASE_CHAIN must be in bijection - an orphaned workflow means the chain was edited or reverted without its dispatch targets, the same desync mirrored'
+  );
+  assert.deepStrictEqual([...skillPhases].sort(), [...phases].sort(), 'phase skills and PHASE_CHAIN must be in bijection, for the same reason');
+});
+
+test('AC-2/AC-3/AC-6/AC-8: every phase workflow offers its PHASE_CHAIN successor as a NEXT target and carries the friction-append reference - NEXT is what routes the sprint, PHASE_CHAIN only what the session hook displays', () => {
+  const chain = readPhaseChain();
+  const phases = chain.filter((phase) => phase !== 'done');
+  const knownTargets = new Set([...chain, 'await-merge', 'halted']);
+
+  for (const [index, phase] of phases.entries()) {
+    const successor = chain[index + 1];
+    const src = readWorkflow(phase);
+    assert.ok(
+      src.includes(FRICTION_APPEND_REF),
+      `asd-phase-${phase}.md must carry the friction-append reference line verbatim: the orchestrator running a phase with no such line records no friction at all, the retro phase then analyses a log that is silently partial, and every other assertion stays green (sprint-lifecycle.md "Friction log" states the mechanism once and every phase workflow references it)`
+    );
+    const targets = readReturnContractTargets(phase, src);
+    assert.ok(
+      targets.includes(successor),
+      `asd-phase-${phase}.md must offer "NEXT: ${successor}": PHASE_CHAIN routes ${phase} there, and a stale NEXT token skips the successor phase silently, with every chain assertion still green (got: ${targets.join(', ')})`
+    );
+    const unknown = targets.filter((target) => !knownTargets.has(target));
+    assert.deepStrictEqual(unknown, [], `asd-phase-${phase}.md names a NEXT target that is neither a phase nor a known terminal: ${unknown.join(', ')}`);
+  }
+});
+
+test('AC-8/G-11: the ordered phase-chain mirrors in core.md, sprint-lifecycle.md and checkpoints.md match PHASE_CHAIN exactly', () => {
+  const phases = readPhaseChain().filter((phase) => phase !== 'done');
+
+  const core = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/core.md'), 'utf8');
+  const glossary = /mandatory:\s*([^.]+)\./.exec(core);
+  assert.ok(glossary, 'core.md glossary must keep its "N mandatory: <phase>, <phase>, ..." phase list');
+  assert.deepStrictEqual(
+    glossary[1].split(',').map((phase) => phase.trim()),
+    phases,
+    'core.md glossary phase list drifted from PHASE_CHAIN'
+  );
+
+  const lifecycle = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/sprint-lifecycle.md'), 'utf8');
+  const arrowLine = /^scope\s*(?:→|⇄).*$/m.exec(lifecycle);
+  assert.ok(arrowLine, 'sprint-lifecycle.md must keep its "scope → ... → pr" chain line');
+  assert.deepStrictEqual(
+    arrowLine[0].split(/\s*(?:→|⇄)\s*/).map((phase) => phase.trim()),
+    phases,
+    'sprint-lifecycle.md chain line drifted from PHASE_CHAIN'
+  );
+
+  const checkpoints = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/checkpoints.md'), 'utf8');
+  const preconditions = /## Precondition chain\s*```\s*([\s\S]*?)\s*```/.exec(checkpoints);
+  assert.ok(preconditions, 'checkpoints.md must keep its fenced "## Precondition chain" block');
+  assert.deepStrictEqual(
+    preconditions[1].split(/\s*(?:→|⇄)\s*/).map((phase) => phase.trim()),
+    phases.slice(1),
+    'checkpoints.md precondition chain drifted from PHASE_CHAIN - it lists every phase that HAS a predecessor, so the first phase is excluded by construction'
+  );
+});
+
+test('AC-8: the always-loaded mirrors of PHASE_CHAIN - README\'s phase table and flowchart, and every phase-count word in README and AGENTS.md', () => {
+  const phases = readPhaseChain().filter((phase) => phase !== 'done');
+  const readme = fs.readFileSync(path.join(REPO_ROOT, 'README.md'), 'utf8');
+
+  const tableRows = [...readme.matchAll(/^\| \*\*([a-z-]+)\*\* \|/gm)].map((row) => row[1]);
+  assert.deepStrictEqual(tableRows, phases, 'README phase table drifted from PHASE_CHAIN - it is the user-facing entry point, and a stale row describes a workflow that no longer exists');
+
+  const graphNodes = [...new Set([...readme.matchAll(/\w+\["([a-z-]+)<br\//g)].map((node) => node[1]))];
+  assert.deepStrictEqual(
+    graphNodes.sort(),
+    [...phases].sort(),
+    'the README flowchart must declare a node for exactly the phases in PHASE_CHAIN - declaration order belongs to the graph author, the node set does not'
+  );
+
+  const countPattern = new RegExp(`\\b(\\d+|${PHASE_COUNT_WORDS.join('|')})\\s+(?:mandatory |sprint )?phases\\b`, 'gi');
+  const expected = new Set([String(phases.length), PHASE_COUNT_WORDS[phases.length]]);
+  for (const [file, minSites] of [['README.md', 3], ['AGENTS.md', 2]]) {
+    const counts = [...fs.readFileSync(path.join(REPO_ROOT, file), 'utf8').matchAll(countPattern)].map((count) => count[1].toLowerCase());
+    assert.ok(counts.length >= minSites, `${file} states the phase count in prose in at least ${minSites} places - only ${counts.length} found, so this pattern has itself drifted and asserts nothing`);
+    const stale = counts.filter((count) => !expected.has(count));
+    assert.deepStrictEqual(stale, [], `${file} phase-count word disagrees with PHASE_CHAIN's ${phases.length}: ${stale.join(', ')} - README is the user-facing entry point and AGENTS.md is loaded as project instructions on every turn, so a stale count in either describes a workflow that no longer exists`);
+  }
+});
+
+// ===========================================================================
+// 17. release-manifest.json reverse coverage (AC-5, audit gap G-12). Section
+// 6b asserts the forward direction (every recorded hash matches its file); an
+// added-but-unregistered file is invisible to it, and update.js only ships
+// what upstream_hashes lists - so a new template would never reach a consumer.
+// ===========================================================================
+
+test('AC-5/G-12: every file under release-manifest managed_paths HAS an upstream_hashes entry (reverse direction - an unregistered new template would otherwise never reach a consumer)', () => {
+  const manifest = loadManifest();
+  const recorded = new Set(Object.keys(manifest.upstream_hashes || {}));
+  const unregistered = [];
+
+  function walk(relPath) {
+    const abs = path.join(REPO_ROOT, relPath);
+    if (!fs.existsSync(abs)) return;
+    if (fs.statSync(abs).isFile()) {
+      if (!recorded.has(relPath)) unregistered.push(relPath);
+      return;
+    }
+    for (const entry of fs.readdirSync(abs).sort()) walk(`${relPath}/${entry}`);
+  }
+  for (const managed of manifest.managed_paths) walk(managed);
+
+  assert.deepStrictEqual(
+    unregistered,
+    [],
+    `managed files with no upstream_hashes entry (update.js would never deliver them): ${unregistered.join(', ')}`
+  );
+});
+
+// ===========================================================================
+// 18. t_retrospective.html section contract (AC-4, AC-5, AC-7, AC-10). The
+// retro phase has two branches and the template is the only place their
+// section sets are written down: an unclassified section leaves the empty-log
+// branch undefined, a dropped systemic section makes an entry-free log an
+// empty retrospective, and the h2 count on each branch is what decides
+// whether {{TOC_NAV}} is filled or correctly left empty.
+// ===========================================================================
+
+test('AC-4/AC-5/AC-7/AC-10: t_retrospective.html classifies every section for the empty-log branch, keeps the systemic class there, and sits on the right side of the TOC threshold on both branches', () => {
+  const template = fs.readFileSync(path.join(REPO_ROOT, '.asd/templates/t_retrospective.html'), 'utf8');
+  const sections = [...template.matchAll(/<section id="([a-z-]+)"[^>]*>\s*<h2>([^<]+)<\/h2>/g)].map((section) => section[2]);
+  assert.ok(sections.length > 0, 't_retrospective.html must keep its <section id> + <h2> fragment shape - every other assertion here reads it');
+
+  const branchNote = /<!-- EMPTY-LOG BRANCH:([\s\S]*?)-->/.exec(template);
+  assert.ok(branchNote, 't_retrospective.html must state which sections the empty-log branch keeps - it is the only written home for that split');
+  const omitAt = branchNote[1].indexOf('OMIT');
+  assert.ok(omitAt > 0, 'the empty-log note must separate kept from omitted sections with OMIT');
+
+  const unclassified = sections.filter((title) => !branchNote[1].includes(title));
+  assert.deepStrictEqual(unclassified, [], `a section the empty-log branch neither keeps nor omits leaves that branch's output to guesswork: ${unclassified.join(', ')}`);
+  const kept = sections.filter((title) => branchNote[1].indexOf(title) < omitAt);
+
+  assert.ok(
+    kept.some((title) => /systemic/i.test(title)),
+    'the systemic-proposals class ships on the empty-log branch too - an entry-free friction log is not an empty retrospective'
+  );
+  const threshold = readTocH2Threshold();
+  assert.ok(
+    kept.length < threshold,
+    `the empty-log branch keeps ${kept.length} h2 sections; at ${threshold} or more the manual AC-5 check must expect a TOC nav on this branch as well`
+  );
+  assert.ok(
+    sections.length >= threshold,
+    `the full branch has ${sections.length} h2 sections; below ${threshold} the shell omits the nav and the manual AC-5 check expecting one is wrong`
+  );
+
+  const actions = /<section id="actions">([\s\S]*?)<\/section>/.exec(template);
+  assert.ok(actions, 't_retrospective.html must keep the actions section - it is where recommendations live');
+  assert.ok(/F-\d/.test(actions[1]), 'every recommendation traces to the friction entry it addresses (AC-4), so the actions table carries an F-N reference');
+  assert.ok(/consumer\s*\|\s*asd/.test(actions[1]), 'recommendations split consumer-project vs ASD-framework (AC-4), so the actions table names the acting side');
 });
 
 // ===========================================================================
