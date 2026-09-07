@@ -62,3 +62,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Editing `.asd/project/custom-coding-rules.md` is authorized for this sprint only, for AC-5's wording fix. The `sprint-lifecycle.md` "Self-hosting" allowlist is not changed.
 - **Rationale**: The file carries the same misleading sync wording and is read on every impl dispatch, so leaving it would reproduce F-4; widening the allowlist to `.asd/project/**` would also cover `config.yaml` and `sprints/`, which is outside this sprint's scope. `.asd/project/**` is excluded from the review surface, so the plan verifies this edit by grep.
 - **Affected docs**: [sprint.md](sprint.md), [audit.md](audit.md)
+
+- 2026-09-07 — design/design-review/design-promote skipped (no documents enabled)
