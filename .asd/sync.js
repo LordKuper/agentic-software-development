@@ -1117,37 +1117,6 @@ function readClaudeMdBlockBody(repoRoot) {
   return readNormalized(templatePath);
 }
 
-// Fail-closed top-level `self_hosting:` field reader - a minimal line scanner,
-// not a YAML parser (this repo has none). Returns 'enabled' only when the
-// field occurs EXACTLY ONCE at top level (column 0) with exactly that value;
-// every other case (file missing, field missing, any other/malformed value,
-// OR a duplicated top-level key - ambiguous, must not silently take "the
-// first" or "the last" match) returns 'disabled' - the safe default that
-// never mistakes an ordinary consumer project for the framework repo. Plan
-// SSoT: self_hosting is the ONLY signal for self-hosting mode, no separate
-// marker file.
-function readSelfHostingField(repoRoot) {
-  const p = path.join(repoRoot, '.asd', 'project', 'config.yaml');
-  if (!fs.existsSync(p)) return 'disabled';
-  let text;
-  try {
-    text = readNormalized(p);
-  } catch (_) {
-    return 'disabled';
-  }
-  const matches = [];
-  for (const line of text.split('\n')) {
-    const m = /^self_hosting:\s*([^\s#]+)/.exec(line);
-    if (m) matches.push(m[1]);
-  }
-  if (matches.length !== 1) return 'disabled';
-  return matches[0] === 'enabled' ? 'enabled' : 'disabled';
-}
-
-function isSelfHostingRepo(repoRoot) {
-  return readSelfHostingField(repoRoot) === 'enabled';
-}
-
 // Canonical source of AGENTS.md's managed block. Absent, AGENTS.md is simply
 // left unmanaged - the same partial-plan outcome as a missing canon dir, not a
 // hard failure of the run.
@@ -1243,8 +1212,8 @@ function buildSyncPlan(repoRoot) {
       }
       const rendered = [{ name: agent.name, meta: null }].concat(variants.map((meta) => ({ name: meta.name, meta })));
       for (const item of rendered) {
-        plan.push({ class: 'full-file', kind: 'agent-claude', canonPath: agent.canonPath, parse: true, source: agent.source, metaOverride: item.meta, targetPath: path.join(repoRoot, '.claude', 'agents', `${item.name}.md`) });
-        plan.push({ class: 'full-file', kind: 'agent-codex', canonPath: agent.canonPath, parse: true, source: agent.source, metaOverride: item.meta, targetPath: path.join(repoRoot, '.codex', 'agents', `${item.name}.toml`) });
+        plan.push({ class: 'full-file', kind: 'agent-claude', canonPath: agent.canonPath, source: agent.source, metaOverride: item.meta, targetPath: path.join(repoRoot, '.claude', 'agents', `${item.name}.md`) });
+        plan.push({ class: 'full-file', kind: 'agent-codex', canonPath: agent.canonPath, source: agent.source, metaOverride: item.meta, targetPath: path.join(repoRoot, '.codex', 'agents', `${item.name}.toml`) });
       }
     }
   }
@@ -1258,8 +1227,8 @@ function buildSyncPlan(repoRoot) {
       const canonPath = path.join(skillsDir, name, 'SKILL.md');
       if (!fs.existsSync(canonPath)) continue;
       const source = readCanonSource(canonPath, true);
-      plan.push({ class: 'full-file', kind: 'skill-claude', canonPath, parse: true, source, targetPath: path.join(repoRoot, '.claude', 'skills', name, 'SKILL.md') });
-      plan.push({ class: 'full-file', kind: 'skill-codex', canonPath, parse: true, source, targetPath: path.join(repoRoot, '.agents', 'skills', name, 'SKILL.md') });
+      plan.push({ class: 'full-file', kind: 'skill-claude', canonPath, source, targetPath: path.join(repoRoot, '.claude', 'skills', name, 'SKILL.md') });
+      plan.push({ class: 'full-file', kind: 'skill-codex', canonPath, source, targetPath: path.join(repoRoot, '.agents', 'skills', name, 'SKILL.md') });
     }
   }
   const hooksDir = path.join(repoRoot, '.asd', 'hooks');
@@ -1271,8 +1240,8 @@ function buildSyncPlan(repoRoot) {
       // No frontmatter on hook sources - the whole file is JS, runnable
       // directly as `node .asd/hooks/<name>.js` (plan's invocation contract).
       const source = readCanonSource(canonPath, false);
-      plan.push({ class: 'full-file', kind: 'hook-claude', canonPath, parse: false, source, targetPath: path.join(repoRoot, '.claude', 'hooks', `${name}.js`) });
-      plan.push({ class: 'full-file', kind: 'hook-codex', canonPath, parse: false, source, targetPath: path.join(repoRoot, '.codex', 'hooks', `${name}.js`) });
+      plan.push({ class: 'full-file', kind: 'hook-claude', canonPath, source, targetPath: path.join(repoRoot, '.claude', 'hooks', `${name}.js`) });
+      plan.push({ class: 'full-file', kind: 'hook-codex', canonPath, source, targetPath: path.join(repoRoot, '.codex', 'hooks', `${name}.js`) });
     }
   }
   plan.push({
@@ -1306,10 +1275,10 @@ function buildSyncPlan(repoRoot) {
   return plan;
 }
 
-// Renders from the plan item's pre-read canonical source when the plan
-// builder attached one, and falls back to reading it for a hand-built item.
+// Renders from the plan item's pre-read canonical source - every full-file
+// item pushed by buildSyncPlan sets `source`.
 function renderFullFileItem(item, repoRoot, manifest) {
-  const source = item.source || readCanonSource(item.canonPath, item.parse);
+  const source = item.source;
   const canonRawNormalized = source.canonRawNormalized;
   const meta = item.metaOverride || source.meta;
   const body = source.body;
@@ -1565,8 +1534,6 @@ module.exports = {
   recomputeAndWriteHashLedgers,
   CLAUDE_MD_BLOCK_BODY_FALLBACK,
   readClaudeMdBlockBody,
-  readSelfHostingField,
-  isSelfHostingRepo,
   readAgentsMdTemplateBody,
   claudeSessionStartOwnedEntries,
   codexSessionStartOwnedEntries,
