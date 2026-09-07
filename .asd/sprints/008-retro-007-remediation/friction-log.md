@@ -22,6 +22,7 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 | F-3 | impl | A dispatched agent authored its own memory files and left them uncommitted, blocking the next phase gate | F-1 |
 | F-4 | impl-review | All five reviewer dispatches of one iteration were lost at once to a session rate limit | — |
 | F-5 | impl-review | A reviewer returned a substantively complete ledger using status words the validator rejects | — |
+| F-6 | impl-review | A reviewer declared read-only wrote a file, because its agent definition grants Write | — |
 | F-2 | scope | Three of fourteen acceptance criteria were written against a stale premise and only the audit caught it | — |
 
 ## F-1 — A dispatched dev staged the whole worktree, sweeping a concurrent dev's edit into its own commit
@@ -68,3 +69,12 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 - **Impact**: A complete review discarded and repeated over a vocabulary slip, not a coverage gap. The findings themselves were sound and three of them converged with other reviewers.
 - **Root shape**: the per-row-type status vocabulary is stated once, in one sentence of `review-policy.md` prose, and nowhere in the machine artefact the reviewer is handed. The dispatcher supplies a manifest listing every id but nothing about which statuses each row type accepts, so the reviewer has to recall the sentence rather than read it off its own input. The validator knows the vocabulary; the manifest could carry it.
 - **Refs**: —
+
+## F-6 — A reviewer declared read-only wrote a file, because its agent definition grants Write
+
+- **Phase**: impl-review (iteration 2)
+- **Surface**: agent — `.asd/agents/asd-reviewer-testing.md`; rule — `.asd/rules/providers.md` reviewer read-only contract
+- **What happened**: The Testing reviewer wrote `.claude/agent-memory/asd-reviewer-testing/feedback_no-shell-review-method.md` during its dispatch. Both  ("Reviewers stay read-only") and  ("Reviewers are read-only: a reviewer never writes its own review file") state the reviewer cannot write, and the workflow relies on that guarantee to justify writing review files itself — but the reviewer agent definitions grant the  tool, so the guarantee is prose, not a host guarantee. The file was left uncommitted and would have tripped the next phase's clean-worktree precondition.
+- **Impact**: None this sprint beyond one ownerless file. The concern is the standing claim: `review-policy.md` says reviewers "cannot write at all, by host guarantee", and that is currently false.
+- **Root shape**: the read-only property is asserted in three rule/workflow files and contradicted by the tool grant in four agent definitions. Nothing checks the two against each other, and the reviewer needed `Write` for memory while the rules meant it for review artefacts — one tool grant serving two purposes the rules distinguish.
+- **Refs**: F-3
