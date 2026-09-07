@@ -35,14 +35,14 @@ new section as `§19` without renumbering the existing collisions. AC-14 require
 hand-edited.
 
 ### Task 1: Split-dispatch contract and interrupted-dispatch outcome in review-policy.md
-- [ ] Add the split-dispatch contract to `.asd/rules/review-policy.md`: the objective trigger for an oversized read-only dispatch, how the reviewer's rubric partitions, the half-verdict shape, and how halves merge into the single `verdicts["iter-NN"]` string (AC-1)
-- [ ] State the split as two fresh dispatches over disjoint manifest partitions, each partition a complete digest-bearing manifest over its own subset — never a resume, so "No dispatched reviewer is ever reused or resumed" stands verbatim
-- [ ] State the union property: the two partitions' row sets must union to exactly the unpartitioned manifest's row set before verdicts merge
-- [ ] Define how two review files coexist under `reviews/<phase>/iter-NN/<reviewer>.md`, which is one path per reviewer today
-- [ ] Add the interrupted-dispatch outcome at the same insertion point (AC-6): the reviewer is re-dispatched fresh within the same iteration, reusing the invalid-coverage-ledger shape; the interrupted attempt is recorded so the loss is visible
-- [ ] State explicitly that an internal reviewer is never recorded as skipped and never satisfies DoD without a completed verdict; External Review's `APPROVE (skipped: ...)` stays exclusive to an unavailable provider
-- [ ] Verify `.asd/runtime.js` `validateCoverageLedger` / `rowsById` accept each partition as-is; if they do not, record what the workflow must pass instead — the contract must be implementable without loosening the ledger gate
-- [ ] Covers AC-1, AC-6. Material risk: this is a review-gate contract; a wrong statement here weakens the gate for every future sprint
+- [x] Add the split-dispatch contract to `.asd/rules/review-policy.md`: the objective trigger for an oversized read-only dispatch, how the reviewer's rubric partitions, the half-verdict shape, and how halves merge into the single `verdicts["iter-NN"]` string (AC-1)
+- [x] State the split as two fresh dispatches over disjoint manifest partitions, each partition a complete digest-bearing manifest over its own subset — never a resume, so "No dispatched reviewer is ever reused or resumed" stands verbatim
+- [x] State the union property: the two partitions' row sets must union to exactly the unpartitioned manifest's row set before verdicts merge
+- [x] Define how two review files coexist under `reviews/<phase>/iter-NN/<reviewer>.md`, which is one path per reviewer today
+- [x] Add the interrupted-dispatch outcome at the same insertion point (AC-6): the reviewer is re-dispatched fresh within the same iteration, reusing the invalid-coverage-ledger shape; the interrupted attempt is recorded so the loss is visible
+- [x] State explicitly that an internal reviewer is never recorded as skipped and never satisfies DoD without a completed verdict; External Review's `APPROVE (skipped: ...)` stays exclusive to an unavailable provider
+- [x] Verify `.asd/runtime.js` `validateCoverageLedger` / `rowsById` accept each partition as-is; if they do not, record what the workflow must pass instead — the contract must be implementable without loosening the ledger gate
+- [x] Covers AC-1, AC-6. Material risk: this is a review-gate contract; a wrong statement here weakens the gate for every future sprint
 
 ### Task 2: Implement the split and re-dispatch contract in both review workflows
 - [ ] Implement the Task 1 contract in `.asd/workflows/asd-phase-design-review.md` steps 7-9 (dispatch, ledger gate, verdict record)
