@@ -9,6 +9,7 @@ const CACHE_SCHEMA = 1;
 const PROBE_TIMEOUT_MS = 3000;
 const NEGATIVE_TTL_MS = 300000;
 const MAX_NEGATIVE_TTL_MS = 3600000;
+const RESERVED_CHANGE_RISKS = ['security', 'authentication', 'migration', 'public contract', 'workflow gate'];
 
 function stable(value) {
   if (Array.isArray(value)) return '[' + value.map(stable).join(',') + ']';
@@ -30,12 +31,13 @@ function stringArray(value, name) {
   return value;
 }
 
-/** Normalizes one declared risk; an untyped name carries the strictest target. */
+/** Normalizes one declared risk; an untyped name carries the strictest target, a reserved class fails closed unless declared against the change. */
 function riskEntry(value) {
   const entry = typeof value === 'string' ? { name: value, target: 'change' } : value;
   if (!entry || typeof entry !== 'object' || Array.isArray(entry)) fail('risks entry must be a name or a typed risk');
   if (typeof entry.name !== 'string' || entry.name.length === 0 || entry.name.includes('\0')) fail('risks entry name must be a non-empty string');
   if (entry.target !== 'change' && entry.target !== 'artifact') fail('risks entry target must be change or artifact');
+  if (entry.target === 'artifact' && RESERVED_CHANGE_RISKS.includes(entry.name.toLowerCase().replace(/[\s_-]+/g, ' ').trim())) fail(`reserved risk class is change by definition: ${entry.name}`);
   return { name: entry.name, target: entry.target };
 }
 
