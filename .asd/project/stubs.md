@@ -13,4 +13,4 @@ Persists across sprint archival.
 
 | Sprint | File:Line | Reason | Owner |
 |---|---|---|---|
-| — | — | no open stubs | — |
+| 006-workflow-cost-routing | tests/run.js: `AC-4: Windows .cmd preflight executes a metacharacter-containing path literally` | Only check for `runLocal`'s Windows `.cmd`/metacharacter PowerShell-fallback branch; guarded by `process.platform !== 'win32'` and prints an explicit skip on non-Windows hosts instead of silently passing. | asd-tester |
