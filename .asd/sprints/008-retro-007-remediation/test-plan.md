@@ -59,7 +59,7 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
 - Scope: impacted (safety valve fired → full suite, 145 tests)
 - Result: pass — 145/145 passed, 0 failed, 0 skipped (136 pre-existing + 9 added)
 - Lint / build: pass — `git diff --check` clean (only a pre-existing CRLF-normalization warning on an orchestrator-owned file, not an error); `node .asd/sync.js --check` reports `"ok": true` for every generated target
-- HEAD: {{filled at phase exit}} — commit this run was verified at
+- HEAD: `efd084474743da089ef3e7afddd661b36acf172f` — commit this run was verified at (impl-test's own test/test-plan commit; re-run at this sha after committing confirmed 145/145 unchanged)
 
 ## Defects
 
