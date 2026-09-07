@@ -75,7 +75,7 @@ entry 1's `dropTrailingCommaBefore` mutation no longer exists to perform.
 - Scope: full — shared-infrastructure safety valve (`sprint-lifecycle.md` "Impacted test set"): the change touches a hook, a migration and the release manifest, and `commands.yaml` has no `test_affected` selector, so the impacted set degrades to the whole suite
 - Result: pass — 137 passed / 0 failed / 0 skipped (entry 1: 132/132; entry 2 opened at 133 after `b187059` added the nested-key migration test, and added 4)
 - Lint / build: pass (`git diff --check` clean; `node .asd/sync.js --check` clean)
-- HEAD: {{ENTRY2_HEAD}}
+- HEAD: 9af53e2
 
 ## Defects
 
