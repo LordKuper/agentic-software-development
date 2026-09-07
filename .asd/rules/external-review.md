@@ -51,13 +51,13 @@ Both phase workflows populate `files[]` = changed-path list at the reviewer's cu
 |---|---|---|
 | design-review | sprint design drafts only — `<sprint>/design/**`, minus generated output (only the drafts that exist per `documents.*`) | `c4-full/dist/` |
 | impl-review, `self_hosting: disabled` (consumer, default) | changed code and test files | `.asd/**`, `docs/**` |
-| impl-review, `self_hosting: enabled` (this repo) | changed files anywhere in the repo — everything here IS framework source (`sprint-lifecycle.md` "Self-hosting") | `.asd/project/**`, `.asd/sprints/**`, generated `.claude/**`/`.codex/**`/`.agents/skills/**` |
+| impl-review, `self_hosting: enabled` (this repo) | changed files anywhere in the repo — everything here IS framework source (`sprint-lifecycle.md` "Self-hosting") | `.asd/project/**`, `.asd/sprints/**`, generated provider views per `sprint-lifecycle.md` "Self-hosting" (`.claude/agent-memory/**` not excluded) |
 
 Cross-phase reference material (concept, custom rules, accessibility baseline, prd/adr/stack/commands) travels as **paths only** in the rendered prompt (`t_prompt-external-{design,impl}.md` "project context"), never inside the scope manifest, never diffed. design-review scope never names source code; consumer-mode impl-review scope never names design/doc files (a doc-vs-code drift finding belongs to the internal Documentation reviewer). `exclude_paths` also keeps C4 schemas out of consumer impl-review: likec4 lives under `<sprint>/design/c4-full/` and `docs/architecture/c4/`.
 
 **Generated output is always in `exclude_paths`.** `**/dist/**` (likec4 build), `design-system.html`, `architecture.html` — all derived from a source the reviewer already sees (`*.c4`, `DESIGN.md`, `subsystems.yaml`). Review the source, not the build.
 
-`exclude_paths` for impl-review: `self_hosting: disabled` → `.asd/**`, `docs/**`; `self_hosting: enabled` → `.asd/project/**`, `.asd/sprints/**`, `.claude/**`, `.codex/**`, `.agents/skills/**` — the reviewer starts from the whole repo, not an allow-list, so any real framework source (CI configs, root-level configs, anything else added later) is included automatically without needing a matching manifest edit.
+`exclude_paths` for impl-review: `self_hosting: disabled` → `.asd/**`, `docs/**`; `self_hosting: enabled` → `.asd/project/**`, `.asd/sprints/**`, plus the generated provider views named in `sprint-lifecycle.md` "Self-hosting" (`.claude/agent-memory/**` not excluded) — the reviewer starts from the whole repo, not an allow-list, so any real framework source (CI configs, root-level configs, anything else added later) is included automatically without needing a matching manifest edit.
 
 ## Iteration semantics
 
