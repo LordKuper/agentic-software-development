@@ -71,7 +71,6 @@ Every reviewer is read-only and returns its verdict, findings and compact machin
     - on abort → emit ABORT
 11. Any reviewer or `asd-tester` QUESTION / FAILED / ABORT → relay, halt
 12. On `ADVICE_NEEDED` from any dispatched agent → relay per `sprint-lifecycle.md`'s `ADVICE_NEEDED` protocol; execution resumes, no halt.
-13. **Phase-exit re-record** — on every COMPLETED route (steps 8–10), re-run step 1's diff and rewrite `state.json.derived_handoff` per `sprint-lifecycle.md` "State recovery" (sole SSoT), before the orchestrator's exit bookkeeping commit (`git-strategy.md` "Commit before review") — that commit carries this write, so the worktree ends clean. This is the record the next phase reads; the phase writes the slot nowhere else.
 
 ## Iteration severity floor (reference)
 See `.asd/rules/review-policy.md` cumulative-budget algorithm. This workflow computes floor + passes to reviewer payload so reviewers drop findings below floor.
@@ -84,7 +83,7 @@ See `.asd/rules/review-policy.md` cumulative-budget algorithm. This workflow com
 - `<sprint>/reviews/impl/iter-NN/external.md` (when `external_review=enabled` and not latch-skipped; written by this workflow)
 - `<sprint>/reviews/impl/iter-NN/<reviewer>.part-1.md`/`.part-2.md` (only for a reviewer split at step 7a; its `<reviewer>.md` then holds the merged token plus links to both parts)
 - Updated `<sprint>/test-plan.md` `Suite run` section (step 9, overwriting the impacted-run record) and, on a code-defect red, a new `Defects` `D-N` row
-- Updated `state.json` (phase, `reviews.impl.iteration`, `reviews.impl.verdicts`, `reviews.impl.latched`, `derived_handoff`, `review_fixes_pending`, `test_defects_pending` on a step-9 code-defect red)
+- Updated `state.json` (phase, `reviews.impl.iteration`, `reviews.impl.verdicts`, `reviews.impl.latched`, `review_fixes_pending`, `test_defects_pending` on a step-9 code-defect red)
 - decisions-log entry on DoD met (full suite green), route-to-impl-fix, override, or terminal-suite-red
 
 Note: impl-review fixes no CODE finding itself — those route to the impl phase (review-fix mode) on the next cycle, followed by impl-test. The one exception is the terminal full-suite gate (step 9): a test defect surfaced there is fixed in place by `asd-tester` and re-run; a code defect never is — it always exits the phase to `impl` test-fix mode.
