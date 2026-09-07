@@ -2559,14 +2559,16 @@ test('6.0.0 migration: strips "escalations" from an ACTIVE sprint state, preserv
   assert.strictEqual(fs.readFileSync(activePath, 'utf8'), activeExpected, 'idempotent: second run leaves the file identical');
 });
 
-test('6.0.0 migration: removes "escalations" whatever shape it is written in - last member, or a populated array spanning lines; only unparsable JSON is left byte-for-byte untouched and reported as skipped', async () => {
+test('6.0.0 migration: removes the TOP-LEVEL "escalations" whatever shape it is written in - last member, populated array spanning lines, or shadowed by a nested member of the same name; only unparsable JSON is left byte-for-byte untouched and reported as skipped', async () => {
   const root = mkTempDir();
   const lastMember = '{\n  "sprint_id": "a",\n  "phase": "pr",\n  "escalations": []\n}\n';
   const broken = '{\n  "sprint_id": "b",\n  "escalations": [],\n';
   const multiLine = '{\n  "sprint_id": "c",\n  "escalations": [\n    {"id": "E-1"}\n  ],\n  "phase": "impl"\n}\n';
+  const nestedFirst = '{\n  "sprint_id": "d",\n  "reviews": {\n    "escalations": [],\n    "iteration": 1\n  },\n  "escalations": [{"id": "E-1"}],\n  "phase": "impl"\n}\n';
   writeFile(root, '.asd/sprints/a/state.json', lastMember);
   writeFile(root, '.asd/sprints/b/state.json', broken);
   writeFile(root, '.asd/sprints/c/state.json', multiLine);
+  writeFile(root, '.asd/sprints/d/state.json', nestedFirst);
 
   const report = await migration600({ repoRoot: root });
 
@@ -2580,40 +2582,18 @@ test('6.0.0 migration: removes "escalations" whatever shape it is written in - l
     { sprint_id: 'c', phase: 'impl' },
     'an escalations array that actually accumulated entries is pretty-printed across lines - the most likely live shape, and it must still be removed'
   );
-  assert.deepStrictEqual(report.stripped.sort(), ['.asd/sprints/a/state.json', '.asd/sprints/c/state.json']);
+  assert.deepStrictEqual(
+    JSON.parse(fs.readFileSync(path.join(root, '.asd/sprints/d/state.json'), 'utf8')),
+    { sprint_id: 'd', reviews: { escalations: [], iteration: 1 }, phase: 'impl' },
+    'the retired key is the top-level one only - a same-named member at any other depth belongs to its owner and must survive'
+  );
+  assert.deepStrictEqual(report.stripped.sort(), ['.asd/sprints/a/state.json', '.asd/sprints/c/state.json', '.asd/sprints/d/state.json']);
   assert.deepStrictEqual(
     report.skipped,
     ['.asd/sprints/b/state.json'],
     'only input that cannot be parsed is skipped - nothing else is guessed at'
   );
   assert.strictEqual(fs.readFileSync(path.join(root, '.asd/sprints/b/state.json'), 'utf8'), broken, 'unparsable input left untouched');
-});
-
-test('6.0.0 migration: strips the TOP-LEVEL "escalations" even when a nested member of the same name is serialized above it, and leaves that nested member intact', async () => {
-  const root = mkTempDir();
-  const nestedFirst = [
-    '{',
-    '  "sprint_id": "007-deep",',
-    '  "reviews": {',
-    '    "escalations": [],',
-    '    "iteration": 1',
-    '  },',
-    '  "escalations": [{"id": "E-1", "note": "tool would not launch"}],',
-    '  "phase": "impl"',
-    '}',
-    '',
-  ].join('\n');
-  writeFile(root, '.asd/sprints/007-deep/state.json', nestedFirst);
-
-  const report = await migration600({ repoRoot: root });
-
-  const after = JSON.parse(fs.readFileSync(path.join(root, '.asd/sprints/007-deep/state.json'), 'utf8'));
-  assert.deepStrictEqual(report.stripped, ['.asd/sprints/007-deep/state.json']);
-  assert.deepStrictEqual(
-    after,
-    { sprint_id: '007-deep', reviews: { escalations: [], iteration: 1 }, phase: 'impl' },
-    'the retired key is the top-level one only - a same-named member at any other depth belongs to its owner and must survive'
-  );
 });
 
 test('AC-9: the 6.0.0 migration prints the escalations it dropped and where to re-record them - the run\'s only data-recovery affordance', async () => {
@@ -2658,8 +2638,9 @@ test('AC-9: the 6.0.0 migration prints the escalations it dropped and where to r
 // sites mirror it by hand. These tests derive the chain from the hook source
 // and assert every mirror that is machine-checkable: the skill and workflow
 // files a phase needs to exist at all, the `NEXT:` token that does the actual
-// routing, the ordered phase sequences in the rule docs, and README's phase
-// table, flowchart and count words. PHASE_CHAIN only drives the session
+// routing, the friction-append reference every workflow carries, the ordered
+// phase sequences in the rule docs, and the phase table, flowchart and count
+// words in README and AGENTS.md. PHASE_CHAIN only drives the session
 // hook's display, so a green chain array over a stale `NEXT:` or a stale
 // user-facing doc is exactly the silent desync these assertions exist for.
 // ===========================================================================
@@ -2668,7 +2649,14 @@ const PHASE_COUNT_WORDS = [
   'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven',
   'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen',
 ];
-const TOC_H2_THRESHOLD = 3;
+const FRICTION_APPEND_REF = 'friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log"';
+
+function readTocH2Threshold() {
+  const layout = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/artifact-layout.md'), 'utf8');
+  const stated = /^\|\s*`\{\{TOC_NAV\}\}`.*?\*\*(\d+) or more\*\* `<h2>` sections/m.exec(layout);
+  assert.ok(stated, 'artifact-layout.md "Placeholder fill" owns the {{TOC_NAV}} h2 threshold - these tests derive it from there, never restate it');
+  return Number(stated[1]);
+}
 
 function readPhaseChain() {
   const src = fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8');
@@ -2677,8 +2665,11 @@ function readPhaseChain() {
   return (block[1].match(/'([^']+)'/g) || []).map((quoted) => quoted.slice(1, -1));
 }
 
-function readReturnContractTargets(phase) {
-  const src = fs.readFileSync(path.join(REPO_ROOT, `.asd/workflows/asd-phase-${phase}.md`), 'utf8');
+function readWorkflow(phase) {
+  return fs.readFileSync(path.join(REPO_ROOT, `.asd/workflows/asd-phase-${phase}.md`), 'utf8');
+}
+
+function readReturnContractTargets(phase, src) {
   const contract = new RegExp(`^PHASE: ${phase} \\|.*\\bNEXT:\\s*(.+?)\\s*$`, 'm').exec(src);
   assert.ok(contract, `asd-phase-${phase}.md must keep its single-line "PHASE: ${phase} | ... | NEXT: <...>" return contract`);
   return contract[1].replace(/[<>`]/g, '').split('|').map((target) => target.trim());
@@ -2718,14 +2709,19 @@ test('AC-8/G-11: PHASE_CHAIN is the single source for the phase set - every phas
   assert.deepStrictEqual([...skillPhases].sort(), [...phases].sort(), 'phase skills and PHASE_CHAIN must be in bijection, for the same reason');
 });
 
-test('AC-3/AC-6/AC-8: every phase workflow offers its PHASE_CHAIN successor as a NEXT target - NEXT is what routes the sprint, PHASE_CHAIN only what the session hook displays', () => {
+test('AC-2/AC-3/AC-6/AC-8: every phase workflow offers its PHASE_CHAIN successor as a NEXT target and carries the friction-append reference - NEXT is what routes the sprint, PHASE_CHAIN only what the session hook displays', () => {
   const chain = readPhaseChain();
   const phases = chain.filter((phase) => phase !== 'done');
   const knownTargets = new Set([...chain, 'await-merge', 'halted']);
 
   for (const [index, phase] of phases.entries()) {
     const successor = chain[index + 1];
-    const targets = readReturnContractTargets(phase);
+    const src = readWorkflow(phase);
+    assert.ok(
+      src.includes(FRICTION_APPEND_REF),
+      `asd-phase-${phase}.md must carry the friction-append reference line verbatim: the orchestrator running a phase with no such line records no friction at all, the retro phase then analyses a log that is silently partial, and every other assertion stays green (sprint-lifecycle.md "Friction log" states the mechanism once and every phase workflow references it)`
+    );
+    const targets = readReturnContractTargets(phase, src);
     assert.ok(
       targets.includes(successor),
       `asd-phase-${phase}.md must offer "NEXT: ${successor}": PHASE_CHAIN routes ${phase} there, and a stale NEXT token skips the successor phase silently, with every chain assertion still green (got: ${targets.join(', ')})`
@@ -2766,7 +2762,7 @@ test('AC-8/G-11: the ordered phase-chain mirrors in core.md, sprint-lifecycle.md
   );
 });
 
-test('AC-8: README mirrors PHASE_CHAIN - the phase table, the workflow flowchart and every phase-count word', () => {
+test('AC-8: the always-loaded mirrors of PHASE_CHAIN - README\'s phase table and flowchart, and every phase-count word in README and AGENTS.md', () => {
   const phases = readPhaseChain().filter((phase) => phase !== 'done');
   const readme = fs.readFileSync(path.join(REPO_ROOT, 'README.md'), 'utf8');
 
@@ -2781,11 +2777,13 @@ test('AC-8: README mirrors PHASE_CHAIN - the phase table, the workflow flowchart
   );
 
   const countPattern = new RegExp(`\\b(\\d+|${PHASE_COUNT_WORDS.join('|')})\\s+(?:mandatory |sprint )?phases\\b`, 'gi');
-  const counts = [...readme.matchAll(countPattern)].map((count) => count[1].toLowerCase());
-  assert.ok(counts.length >= 3, `README states the phase count in prose in at least three places - only ${counts.length} found, so this pattern has itself drifted and asserts nothing`);
   const expected = new Set([String(phases.length), PHASE_COUNT_WORDS[phases.length]]);
-  const stale = counts.filter((count) => !expected.has(count));
-  assert.deepStrictEqual(stale, [], `README phase-count word disagrees with PHASE_CHAIN's ${phases.length}: ${stale.join(', ')}`);
+  for (const [file, minSites] of [['README.md', 3], ['AGENTS.md', 2]]) {
+    const counts = [...fs.readFileSync(path.join(REPO_ROOT, file), 'utf8').matchAll(countPattern)].map((count) => count[1].toLowerCase());
+    assert.ok(counts.length >= minSites, `${file} states the phase count in prose in at least ${minSites} places - only ${counts.length} found, so this pattern has itself drifted and asserts nothing`);
+    const stale = counts.filter((count) => !expected.has(count));
+    assert.deepStrictEqual(stale, [], `${file} phase-count word disagrees with PHASE_CHAIN's ${phases.length}: ${stale.join(', ')} - README is the user-facing entry point and AGENTS.md is loaded as project instructions on every turn, so a stale count in either describes a workflow that no longer exists`);
+  }
 });
 
 // ===========================================================================
@@ -2845,13 +2843,14 @@ test('AC-4/AC-5/AC-7/AC-10: t_retrospective.html classifies every section for th
     kept.some((title) => /systemic/i.test(title)),
     'the systemic-proposals class ships on the empty-log branch too - an entry-free friction log is not an empty retrospective'
   );
+  const threshold = readTocH2Threshold();
   assert.ok(
-    kept.length < TOC_H2_THRESHOLD,
-    `the empty-log branch keeps ${kept.length} h2 sections; at ${TOC_H2_THRESHOLD} or more the manual AC-5 check must expect a TOC nav on this branch as well`
+    kept.length < threshold,
+    `the empty-log branch keeps ${kept.length} h2 sections; at ${threshold} or more the manual AC-5 check must expect a TOC nav on this branch as well`
   );
   assert.ok(
-    sections.length >= TOC_H2_THRESHOLD,
-    `the full branch has ${sections.length} h2 sections; below ${TOC_H2_THRESHOLD} the shell omits the nav and the manual AC-5 check expecting one is wrong`
+    sections.length >= threshold,
+    `the full branch has ${sections.length} h2 sections; below ${threshold} the shell omits the nav and the manual AC-5 check expecting one is wrong`
   );
 
   const actions = /<section id="actions">([\s\S]*?)<\/section>/.exec(template);
