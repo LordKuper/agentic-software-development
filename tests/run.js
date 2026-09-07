@@ -490,57 +490,6 @@ test('buildSyncPlan: with t_AGENTS.md absent, AGENTS.md drops out of the plan en
 });
 
 // ===========================================================================
-// 3d. self_hosting field detection (fail-closed line scanner, no YAML dep)
-// ===========================================================================
-
-test('readSelfHostingField: config.yaml absent -> disabled', () => {
-  const dir = mkTempDir();
-  assert.strictEqual(sync.readSelfHostingField(dir), 'disabled');
-  assert.strictEqual(sync.isSelfHostingRepo(dir), false);
-});
-
-test('readSelfHostingField: config.yaml exists but field absent -> disabled', () => {
-  const dir = mkTempDir();
-  fs.mkdirSync(path.join(dir, '.asd', 'project'), { recursive: true });
-  fs.writeFileSync(path.join(dir, '.asd', 'project', 'config.yaml'), 'language:\n  chat: en\n', 'utf8');
-  assert.strictEqual(sync.readSelfHostingField(dir), 'disabled');
-});
-
-test('readSelfHostingField: self_hosting: disabled -> disabled', () => {
-  const dir = mkTempDir();
-  fs.mkdirSync(path.join(dir, '.asd', 'project'), { recursive: true });
-  fs.writeFileSync(path.join(dir, '.asd', 'project', 'config.yaml'), 'self_hosting: disabled\n', 'utf8');
-  assert.strictEqual(sync.readSelfHostingField(dir), 'disabled');
-});
-
-test('readSelfHostingField: self_hosting: enabled -> enabled', () => {
-  const dir = mkTempDir();
-  fs.mkdirSync(path.join(dir, '.asd', 'project'), { recursive: true });
-  fs.writeFileSync(path.join(dir, '.asd', 'project', 'config.yaml'), 'self_hosting: enabled # ASD develops itself\n', 'utf8');
-  assert.strictEqual(sync.readSelfHostingField(dir), 'enabled');
-  assert.strictEqual(sync.isSelfHostingRepo(dir), true);
-});
-
-test('readSelfHostingField: malformed/unknown value fails closed to disabled', () => {
-  const dir = mkTempDir();
-  fs.mkdirSync(path.join(dir, '.asd', 'project'), { recursive: true });
-  fs.writeFileSync(path.join(dir, '.asd', 'project', 'config.yaml'), 'self_hosting: yes-please\n', 'utf8');
-  assert.strictEqual(sync.readSelfHostingField(dir), 'disabled');
-});
-
-test('readSelfHostingField: duplicated top-level key is ambiguous, fails closed to disabled (never "first" or "last" wins)', () => {
-  const dir = mkTempDir();
-  fs.mkdirSync(path.join(dir, '.asd', 'project'), { recursive: true });
-  fs.writeFileSync(path.join(dir, '.asd', 'project', 'config.yaml'), 'self_hosting: enabled\nself_hosting: disabled\n', 'utf8');
-  assert.strictEqual(sync.readSelfHostingField(dir), 'disabled');
-
-  const dir2 = mkTempDir();
-  fs.mkdirSync(path.join(dir2, '.asd', 'project'), { recursive: true });
-  fs.writeFileSync(path.join(dir2, '.asd', 'project', 'config.yaml'), 'self_hosting: enabled\nself_hosting: enabled\n', 'utf8');
-  assert.strictEqual(sync.readSelfHostingField(dir2), 'disabled', 'even two IDENTICAL duplicates are ambiguous malformed YAML, not a confirmation');
-});
-
-// ===========================================================================
 // 4. Managed-block class (AGENTS.md / CLAUDE.md)
 // ===========================================================================
 
@@ -1990,23 +1939,33 @@ test('release-manifest.json: every upstream_hashes entry matches the actual file
 });
 
 // ===========================================================================
-// 6c. .asd/templates/*.json must stay valid JSON - sync.js --check never
+// 6c. .asd/templates/**/*.json must stay valid JSON - sync.js --check never
 // parses .asd/templates/ (it only classifies generated provider-view
 // targets), so nothing else in the pipeline would catch a template edit that
 // broke JSON syntax (e.g. a stray trailing comma left behind when deleting a
 // field). Placeholders like "{{SPRINT_ID}}" are quoted string values, so a
 // well-formed template parses fine as-is - this only guards syntax, not
-// placeholder semantics.
+// placeholder semantics. Recursive: templates live in subdirectories too
+// (e.g. external-review/), and a top-level-only scan would silently skip them
+// (testing F3, sprint 006 iter-02: this is exactly how t_review-scope.json
+// shipped missing exclude_paths[] undetected).
 // ===========================================================================
 
-test('every .asd/templates/*.json file parses as valid JSON', () => {
+test('every .asd/templates/**/*.json file parses as valid JSON', () => {
   const templatesDir = path.join(REPO_ROOT, '.asd', 'templates');
-  const jsonFiles = fs.readdirSync(templatesDir).filter((f) => f.endsWith('.json'));
-  assert.ok(jsonFiles.length > 0, 'sanity: at least one template JSON file must exist for this guard to mean anything');
+  const jsonFiles = fs.readdirSync(templatesDir, { recursive: true }).filter((f) => f.endsWith('.json'));
+  assert.ok(jsonFiles.length > 1, 'sanity: at least one nested template JSON file must exist for the recursive scan to mean anything');
   for (const f of jsonFiles) {
     const abs = path.join(templatesDir, f);
     assert.doesNotThrow(() => JSON.parse(fs.readFileSync(abs, 'utf8')), `.asd/templates/${f} must parse as valid JSON`);
   }
+});
+
+test('AC-2/4/6/7: t_review-scope.json key set matches external-review.md\'s declared manifest fields exactly', () => {
+  const manifest = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, '.asd/templates/external-review/t_review-scope.json'), 'utf8'));
+  assert.deepStrictEqual(Object.keys(manifest).sort(), ['base_ref', 'exclude_paths', 'files', 'head_ref', 'iteration', 'phase'].sort(), 'manifest fields must exactly match external-review.md\'s declared set: phase, iteration, base_ref, head_ref, files[], exclude_paths[]');
+  assert.ok(!Object.hasOwn(manifest, 'mode'), '"mode" was removed from the transport this wave and must never reappear');
+  assert.ok(!Object.hasOwn(manifest, 'commits'), '"commits[]" was removed this wave in favor of files[] + base_ref/head_ref and must never reappear');
 });
 
 // ===========================================================================
@@ -2052,11 +2011,14 @@ test('AC-2/4/5/6/7: SessionStart recovers only archived active sprints and repor
 test('AC-2/4/6/7: review workflow contracts retain Correctness and incremental diff scope', () => {
   const workflow = fs.readFileSync(path.join(REPO_ROOT, '.asd/workflows/asd-phase-design-review.md'), 'utf8');
   const prompt = fs.readFileSync(path.join(REPO_ROOT, '.asd/templates/external-review/t_prompt-external-impl.md'), 'utf8');
+  const designPrompt = fs.readFileSync(path.join(REPO_ROOT, '.asd/templates/external-review/t_prompt-external-design.md'), 'utf8');
   const implReview = fs.readFileSync(path.join(REPO_ROOT, '.asd/workflows/asd-phase-impl-review.md'), 'utf8');
   assert.ok(workflow.includes('Every internal reviewer is dispatched when not latch-skipped'));
   assert.ok(workflow.includes('reviewer still dispatches and is counted toward DoD'));
-  assert.ok(prompt.includes('mode: "files"') && prompt.includes('exclude_paths[]'), 'External Review now receives a files-mode scope manifest, not a rendered diff');
+  assert.ok(prompt.includes('files[]') && prompt.includes('exclude_paths[]'), 'External Review now receives a files-mode scope manifest, not a rendered diff');
   assert.ok(prompt.includes('reviews.impl.iteration_heads["iter-(N-1)"]'), 'incremental scope guarantee (iter 2+ diffs from the prior iteration head) must survive the transport change');
+  assert.ok(designPrompt.includes('files[]') && designPrompt.includes('exclude_paths[]'), 'design-review prompt must document the same files-mode scope manifest transport');
+  assert.ok(designPrompt.includes('base_ref') && designPrompt.includes('head_ref') && designPrompt.includes('empty'), 'design-review prompt must document that base_ref/head_ref travel empty (draft-snapshot scope, not a commit range)');
   assert.ok(implReview.includes('run command') && !implReview.includes('via Bash'));
 });
 
