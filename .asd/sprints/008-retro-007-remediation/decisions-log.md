@@ -100,3 +100,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Fix `derived_handoff` per finding C-6 — re-record it at phase exit, after the final bookkeeping commit, keeping the derivation-time write as the intra-phase cache — rather than narrowing AC-11 to an intra-phase cache or deleting the field. E-2's prose compression applies on top.
 - **Rationale**: Correctness (C-6) and efficiency (E-2) independently established that the cross-phase hit AC-11 was scoped for is unreachable as delivered: impl-test must commit before impl-review's clean-worktree precondition, so `head` never matches. Re-recording after that commit makes impl-review's read actually hit, so the AC is satisfied as written instead of being reinterpreted after the fact.
 - **Affected docs**: [reviews/impl/iter-01/correctness.md](reviews/impl/iter-01/correctness.md), [reviews/impl/iter-01/efficiency.md](reviews/impl/iter-01/efficiency.md), [sprint.md](sprint.md)
+
+## 2026-09-07 — impl-test entry 3: impacted set green, 2 tests added
+
+- **Decision**: The re-entry impacted run is green (150/150) with 2 tests added and 0 removed; the sprint returns to `impl-review` for iteration 2. No `D-N` defect was raised.
+- **Rationale**: The delta introduced exactly two new executable branches — `sync.js`'s bare-`--apply` fail-closed guard (C-1) and `runtime.js`'s reserved-risk-class guard (C-4) — and both got a check with fail-first proven against `a0eac63`. Everything else in the delta is prose, already covered, or a documented future-helper contract with no code surface yet. The impacted-set safety valve fired again and degraded to the full suite, as it must whenever the change surface touches framework-wide trees.
+- **Affected docs**: [test-plan.md](test-plan.md), [state.json](state.json)

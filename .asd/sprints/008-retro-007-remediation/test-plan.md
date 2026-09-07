@@ -12,8 +12,8 @@ responsibility:
 | Entry | HEAD analysed | Scope |
 |---|---|---|
 | 1 | `a0eac63` | full change surface (base `39709446`, head `f886441`, 18 files, self-hosting exclusions applied) |
-| 2 | iter-01 review-fix (impl-review CONCERNS) | delta only: testing.md T-1..T-9, correctness.md C-7, documentation.md D-5, efficiency.md E-5 — decision-record corrections in this file plus `tests/run.js` §19 edits (no re-derivation of the whole change surface) |
-| 3 | (unfilled — orchestrator fills at phase exit; delta is `a0eac63...121485a`) | delta only: correctness.md C-1 and C-4 (`sync.js` fail-closed bare-`--apply` guard, `runtime.js` `RESERVED_CHANGE_RISKS` guard) — the two commits (`8423c32`, `139becf`) that shipped new executable branches without entry 2 reaching them, since entry 2 scoped itself to testing.md's own findings only. C-5/C-6/C-8/C-12/C-14 and the review-policy.md split-merge fourth condition analysed and found prose-only or already covered — see rows below; no re-derivation of the whole change surface |
+| 2 | `1cb6507` | delta only: testing.md T-1..T-9, correctness.md C-7, documentation.md D-5, efficiency.md E-5 — decision-record corrections in this file plus `tests/run.js` §19 edits (no re-derivation of the whole change surface) |
+| 3 | `d902245` | delta only: correctness.md C-1 and C-4 (`sync.js` fail-closed bare-`--apply` guard, `runtime.js` `RESERVED_CHANGE_RISKS` guard) — the two commits (`8423c32`, `139becf`) that shipped new executable branches without entry 2 reaching them, since entry 2 scoped itself to testing.md's own findings only. C-5/C-6/C-8/C-12/C-14 and the review-policy.md split-merge fourth condition analysed and found prose-only or already covered — see rows below; no re-derivation of the whole change surface |
 
 ## Risk → check decisions
 
