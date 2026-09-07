@@ -255,11 +255,14 @@ Runs between `impl-review` and `pr`. Unconditional — no `documents` flag, neve
 
 Input `<sprint>/friction-log.md`; output `<sprint>/retrospective.html` per `t_retrospective.html` — derived analysis, sprint-scoped, archived with the sprint. Nothing is promoted to a persistent doc.
 
-Every `F-N` entry is analysed into recommendations, split into consumer-project actions and ASD-framework actions, each traced to the entry id it addresses. Recommendations are proposals; the phase never executes them.
+**Two output classes.** Both are split into consumer-project and ASD-framework actions so every row names the side that acts and its target path; both are proposals the phase never executes and never promotes.
 
-**Empty-log branch**: an absent or entry-free log is a legitimate outcome — record "no friction recorded", write the artefact, advance. Never invent findings; never mutate sprint state to reach this branch.
+1. **Remediation** — answers *what went wrong*. Every `F-N` entry analysed to a root cause and a recommendation, each traced to the entry id it addresses. Bounded by the log.
+2. **Systemic proposals** — answers *what would have made this sprint cheaper*, never *what went wrong*. Evidence is how the sprint actually ran (review iterations, rework loops, gate waits, task churn, dispatch cost), not the entry set: a proposal may cite an `F-N` as supporting evidence, but is neither derived from nor limited by the log. A fact a friction entry already owns is remediation only — rewording it as a proposal is the double-channel duplication this split exists to prevent.
 
-Closes with a short `language.chat` summary of the problems and the proposed approaches, then `NEXT: pr`. Adds no gate of its own; only `checkpoints.md`'s existing gates apply.
+**Empty-log branch**: an absent or entry-free log is a legitimate outcome — record "no friction recorded" and skip class 1; class 2 is still produced, so an entry-free log is never an empty retrospective. Write the artefact, advance. Never invent friction entries; never mutate sprint state to reach this branch.
+
+Closes with a short `language.chat` summary covering both classes, then `NEXT: pr`. Adds no gate of its own; only `checkpoints.md`'s existing gates apply.
 
 ## PR phase
 

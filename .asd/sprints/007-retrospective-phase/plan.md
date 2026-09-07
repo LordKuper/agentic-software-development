@@ -108,6 +108,19 @@ Material risk: the filename version must equal the `asd_version` the `pr` phase 
 
 Depends on every preceding task.
 
+### Task 8: Systemic improvement proposals in retro (AC-10)
+
+Scope expansion accepted by the user after Tasks 1-3 were already complete, so it lands as its own task rather than as edits folded back into them.
+
+- [x] `sprint-lifecycle.md` `## Retro phase`: state that the phase emits two distinct output classes — remediation of recorded friction, and systemic proposals for running a future sprint faster and cheaper; the second class is not derived from, and not limited by, the friction entries
+- [x] `sprint-lifecycle.md` `## Retro phase`: state that the empty-log branch still produces the systemic-proposals class, so an entry-free log is not an empty retrospective
+- [x] `t_retrospective.html`: add the systemic-proposals section, keeping the existing consumer-project / ASD-framework split so a proposal names which side acts on it
+- [x] `.asd/workflows/asd-phase-retro.md`: derive the proposals in the analysis step and include them in the chat summary; both branches still return `NEXT: pr`
+
+Depends on Tasks 1, 2, 3 (all complete).
+
+Material risk: the proposals class must not become a second, looser channel for the same facts the friction entries already own — it answers "what would have made this sprint cheaper", not "what went wrong".
+
 ## Risks
 
 - Chain-mirror miss routes past `retro` silently (Task 4).
@@ -121,7 +134,8 @@ Depends on every preceding task.
 - Task 4 depends on Task 3
 - Task 5 depends on Task 1
 - Task 6 depends on Tasks 3 and 5
-- Task 7 depends on Tasks 1-6
+- Task 7 depends on Tasks 1-6, 8
+- Task 8 depends on Tasks 1, 2, 3
 
 ## Out of scope
 
