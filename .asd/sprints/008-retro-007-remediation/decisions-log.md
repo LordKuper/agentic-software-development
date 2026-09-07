@@ -64,3 +64,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: [sprint.md](sprint.md), [audit.md](audit.md)
 
 - 2026-09-07 — design/design-review/design-promote skipped (no documents enabled)
+
+## 2026-09-07 — plan.md accepted (adaptive)
+
+- **Decision**: `plan.md` accepted through an adaptive routine pass, with eleven tasks covering AC-1..AC-3 and AC-5..AC-14. AC-1 and AC-6 are one task because they share a file and an insertion point; AC-12's mirrors are one closing sweep because only the last writer sees the final state.
+- **Rationale**: The plan decomposes acceptance criteria the user accepted at the scope gate and revised at the audit gate; it introduces no scope, no new criteria and no unresolved material alternative, which is what `checkpoints.md` requires for a routine adaptive pass. No stubs needed routing — `.asd/project/stubs.md` is empty.
+- **Affected docs**: [plan.md](plan.md), [sprint.md](sprint.md), [audit.md](audit.md), [state.json](state.json)

@@ -1,7 +1,7 @@
 {
   "sprint_id": "008-retro-007-remediation",
   "branch": "sprint/008-retro-007-remediation",
-  "phase": "design-promote",
+  "phase": "impl",
   "documents": {
     "audit": true,
     "prd": false,
@@ -24,6 +24,13 @@
       "reason": "audit accepted; four scope adjustments decided by the user after stale-premise findings",
       "evidence": "AC-4 closed as satisfied at HEAD (sync.js fail-closed since v4.0.0, verified by running the tool); AC-5 retargeted to all real occurrences, t_AGENTS.md dropped as empty; one-off authorization to edit .asd/project/custom-coding-rules.md outside the self-hosting write allowlist, verified by grep; AC-6 tightened beyond the audit's proposal — an internal reviewer is never skipped, an interrupted dispatch is re-dispatched fresh within the same iteration",
       "artifact_revision": ".asd/sprints/008-retro-007-remediation/audit.md@2026-09-07"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "orchestrator",
+      "reason": "routine adaptive pass: plan decomposes already-accepted AC without introducing scope, criteria or material alternatives",
+      "evidence": "every task cites an AC from sprint.md accepted at the scope gate and revised by four user decisions at the audit gate; task grouping follows audit.md mitigations; no stubs to route (stubs.md empty); no test tasks per sprint-lifecycle plan format",
+      "artifact_revision": ".asd/sprints/008-retro-007-remediation/plan.md@2026-09-07T17:55:00Z"
     }
   ],
   "task_routing": {},
@@ -46,7 +53,7 @@
     }
   },
   "created_at": "2026-09-07T17:11:41Z",
-  "updated_at": "2026-09-07T17:45:00Z",
+  "updated_at": "2026-09-07T17:55:00Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
