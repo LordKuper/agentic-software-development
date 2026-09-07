@@ -248,3 +248,11 @@ Recorded by the phase orchestrator because no reviewer can see it — `.asd/proj
   - **What this does not cover**: whether `files[]` without a diff is sufficient input for a useful external review, and whether the prompt renders and parses correctly through a real `codex exec` invocation.
   - **What limits the exposure**: the transport is inert unless `review.external_review: enabled`; the manifest's field set is pinned by a contract test in both directions; the scope-vs-readability wording is pinned across the rule doc and both prompts; and an unavailable external reviewer degrades to a recorded availability skip rather than a wrong verdict.
   - **Follow-up**: validate against a live wrapped-CLI run once quota clears, before a consumer release leans on it.
+
+## 2026-09-07 — PR #25 opened
+
+- **Decision**: decision_actor=user; explicit instruction to open the PR with the unvalidated external-review transport accepted as residual risk (recorded in the entry above). Host permission for publication came from that same instruction.
+- **PR**: https://github.com/LordKuper/agentic-software-development/pull/25 — `sprint/006-workflow-cost-routing` → `main`, 63 commits.
+- The PR body states the accepted residual risk in full rather than burying it: what is unproven, what limits the exposure, and the follow-up needed before a consumer release leans on the transport.
+- **Not done, deliberately**: the sprint is neither archived nor marked `done`. `phase` stays `pr`, `pr.state` is `open`. Closure is a hard gate in both policies — merge, `auto_pr` and adaptive authority never satisfy it, only explicit user approval after confirmed merge.
+- **Routing**: `NEXT: await-merge`. The chain halts here until a resume re-enters `pr` in merge-and-closure mode.
