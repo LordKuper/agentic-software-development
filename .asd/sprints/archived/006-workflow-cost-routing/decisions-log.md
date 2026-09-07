@@ -256,3 +256,11 @@ Recorded by the phase orchestrator because no reviewer can see it — `.asd/proj
 - The PR body states the accepted residual risk in full rather than burying it: what is unproven, what limits the exposure, and the follow-up needed before a consumer release leans on the transport.
 - **Not done, deliberately**: the sprint is neither archived nor marked `done`. `phase` stays `pr`, `pr.state` is `open`. Closure is a hard gate in both policies — merge, `auto_pr` and adaptive authority never satisfy it, only explicit user approval after confirmed merge.
 - **Routing**: `NEXT: await-merge`. The chain halts here until a resume re-enters `pr` in merge-and-closure mode.
+
+## 2026-09-07 — Closure approved, sprint finalized
+
+- **Merge confirmed**: PR #25 squash-merged into `main` as `8298f150207db31c6ef533e07e5a34b1d82638d0` at 2026-09-07T11:07:43Z, verified through `gh pr view` rather than assumed from the merge command's exit status.
+- **Closure gate**: decision_actor=user — explicit instruction to merge and finalize, given after the PR was opened with the residual risk stated. Recorded in `state.json.gate_decisions` as gate `closure`. Neither the merge itself, `auto_pr`, nor the adaptive policy was treated as satisfying this gate.
+- **Terminal state written in the archived location**, not on the already-merged sprint branch: `phase="done"`, `pr.state="merged"`, `archived_at` set, delivered to `main` through this companion PR from an isolated worktree off the updated base branch.
+- **Sprint outcome**: ten phases, four impl-review iterations, 62 review findings resolved plus four user directives and three orchestrator findings. Suite 111 → 127, all green at closure; `asd_version` 5.0.0 with a reachable `5.0.0` migration.
+- **Carried forward, not resolved**: External Review never executed — four consecutive availability skips on one Codex account quota. The scope-manifest transport remains unvalidated end-to-end and was accepted as residual risk by the user before the PR opened. Revisit before a consumer release depends on it.
