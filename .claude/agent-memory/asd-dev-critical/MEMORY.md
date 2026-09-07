@@ -1,3 +1,3 @@
 - [sync --apply ledger gotcha](project_sync-apply-ledger-gotcha.md) — `--apply` rewrites release-manifest hashes repo-wide; affects split commits and parallel agents
 - [sync.js --apply target form](project_sync-apply-target-form.md) — `--apply` wants generated view paths, not `.asd/` canonical paths; use `--check` output to pick targets.
-- [Parallel-agent commit sweep](project_parallel-agent-commit-sweep.md) — a sibling task's broad `git add` can commit your uncommitted edits under its message
+- [Parallel-agent commit sweep](project_parallel-agent-commit-sweep.md) — shared worktree: a sibling’s broad `git add` can swallow your edits; never `git stash`

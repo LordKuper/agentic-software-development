@@ -1,6 +1,6 @@
 ---
 name: parallel-agent-commit-sweep
-description: In parallel impl dispatches on this repo, a sibling task's commit can swallow your still-uncommitted source edits under its own message
+description: Shared worktree in parallel impl dispatches - a sibling commit can swallow your uncommitted edits, and git stash sweeps away everyone else's work
 metadata:
   type: project
 ---
@@ -13,4 +13,5 @@ When `impl` dispatches several tasks concurrently on one working tree, a sibling
 - Stage explicitly by path, never `-A`/`-a`, so you never swallow a sibling's work.
 - Commit each file as soon as its edit is complete and verified, rather than batching all edits until the end of the task.
 - Before committing, check `git log -1 -- <your files>` / `git hash-object` against `HEAD:<path>`: an edit that shows no diff may already be inside a sibling's commit. Do not rewrite history to reclaim it — report the mix-up in the COMPLETED summary so the orchestrator can log the friction.
+- **Never `git stash` in this worktree.** It sweeps every uncommitted file — yours *and* every sibling's in-flight edit — into a stash they cannot see, and `--keep-index` does not protect anything you have not already staged. Observed 2026-09-07: a stash meant only to inspect HEAD state removed a whole task's work until popped. To compare against HEAD, read it directly (`git show HEAD:<path>`, `git diff HEAD -- <path>`) — never by moving the worktree.
 - Related ledger hazard: [[sync-apply-ledger-gotcha]].
