@@ -1,0 +1,27 @@
+{
+  "phase": "impl-review",
+  "iteration": "2",
+  "base_ref": "bb9b7608f0764dc7b4ddb7c39ae498540c54e0af",
+  "head_ref": "352b529b83cef29930fe73c4458792242149e7fb",
+  "files": [
+    ".asd/migrations/6.0.0.js",
+    ".asd/release-manifest.json",
+    ".asd/rules/artifact-layout.md",
+    ".asd/rules/sprint-lifecycle.md",
+    ".asd/skills/asd-phase-retro/SKILL.md",
+    ".asd/templates/t_friction-log.md",
+    ".asd/templates/t_retrospective.html",
+    ".asd/workflows/asd-phase-impl.md",
+    ".asd/workflows/asd-phase-retro.md",
+    "AGENTS.md",
+    "README.md",
+    "tests/run.js"
+  ],
+  "exclude_paths": [
+    ".asd/project/**",
+    ".asd/sprints/**",
+    ".claude/**",
+    ".codex/**",
+    ".agents/**"
+  ]
+}
