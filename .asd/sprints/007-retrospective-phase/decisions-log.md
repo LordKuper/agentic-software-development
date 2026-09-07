@@ -70,3 +70,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-07 — impl-review iter-1: external review skipped (unavailable: quota; codex CLI usage limit, negative cache set, retry-after +1h)
 
 - 2026-09-07 — impl-review iter-1: 4 internal reviewers CONCERNS (33 findings), external skipped; routing to impl review-fix mode
+
+- 2026-09-07 — impl fix for iter-01: all 33 findings resolved (CORR-A-01..08, CORR-B-1..2, EFF-1..6, TST-01..08, DOC-1..9); CORR-A-06/TST-06 deferred to pr as the asd_version bump
