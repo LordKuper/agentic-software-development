@@ -76,3 +76,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-07 — impl-test entry 2: impacted set green (137/137, full-suite scope via safety valve), 4 tests added, 0 removed, no defects
 
 - 2026-09-07 — impl-review iter-2: correctness APPROVE (latched), efficiency/testing/documentation CONCERNS (9 findings), external skipped (quota); routing to impl review-fix mode
+
+- 2026-09-07 — impl fix for iter-02: all 9 findings resolved (EFF2-1..4, TST2-01..02, DOC2-1..3); DOC2-3 resolved by narrowing the rule to the orchestrator, the only writer that exists

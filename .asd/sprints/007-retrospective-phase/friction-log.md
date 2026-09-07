@@ -24,6 +24,7 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 | F-4 | impl | `AGENTS.md` and the coding rules describe `sync.js --apply` as taking canonical paths; it takes generated view paths, so every agent editing canon loses a round-trip | — |
 | F-5 | impl-review | Correctness reviewer exhausted its turn budget on the full 29-file scope and returned nothing usable — the same failure as F-1, now recurring | — |
 | F-6 | impl-review | A session rate limit killed both split correctness dispatches mid-review; their partial work was discarded with no resume path | — |
+| F-7 | impl | An agent wrote its memory into the sprint folder a second time, and this occurrence reached version control | — |
 
 ## F-1 — Audit agent exhausted its turn budget and returned no usable output
 
@@ -71,4 +72,12 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 - **Surface**: provider tool — model session rate limit
 - **What happened**: after the split, both half-A and half-B dispatches terminated with an HTTP 429 session-limit error partway through. Both had already done substantial reading. Because a dispatched agent's partial work is not persisted anywhere, both halves were discarded entirely and re-dispatched from scratch after the limit cleared.
 - **Impact**: the full reading cost of two agents paid twice. More structurally: `review-policy.md` requires each reviewer to get fresh context per iteration, so there is no checkpointing to fall back on, and an interrupted reviewer is always a total loss rather than a partial one. The phase has no notion of a resumable or partially-complete review.
+- **Refs**: —
+
+## F-7 — Agent memory written into the sprint folder again, this time committed
+
+- **Phase**: impl
+- **Surface**: agent — `asd-tester-critical` memory placement, against `.asd/rules/artifact-layout.md`
+- **What happened**: a dispatched tester created `<sprint>/.claude/agent-memory/...` instead of writing to the repository-root memory location — the same misplacement as F-3, by a different agent, after F-3 had already been corrected once in this sprint. This occurrence went further than F-3: the files were staged and committed, so they entered the sprint's history rather than sitting untracked.
+- **Impact**: the sprint folder is archived read-only at closure, so committed agent memory would have been frozen there and lost to the agent that wrote it. Recovery required relocating both files, merging the index line into the root memory index, removing the tree from version control and deleting it. F-3's recurrence is the finding: correcting the placement once, in one agent's memory, does not prevent the next agent from repeating it, because nothing in the layout rules or the dispatch payload states where agent memory belongs.
 - **Refs**: —
