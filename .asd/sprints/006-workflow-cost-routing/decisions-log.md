@@ -147,3 +147,10 @@ decision_actor=user. Added to the iter-01 fix set after directive B landed; impl
 - **One open stub** registered: the AC-4 Windows `.cmd` preflight check remains platform-bound and now prints an explicit skip off-Windows instead of passing silently.
 - **Agent memory corrected**: `asd-dev`'s `project_agents-md-sync-state-drift` memory described the removed carve-out as current fact and prescribed hand-patching `sync-state.json`; rewritten to the new model. The orphaned `asd-dev-standard` memory directory was merged into `asd-dev` after the `standard` variant was dropped.
 - **Routing**: `review_fixes_pending` cleared; phase exits to `impl-test`.
+
+## 2026-09-07 — impl-test entry 3: impacted set green (127/127), 0 added / 0 removed
+
+- **Delta since entry 2** (`55292d1...e8dea42`) carries no production source — only `tests/run.js` from entry 2's own authoring, sprint bookkeeping, and agent-memory corrections. No new material risk, so the strategy and prune passes had nothing to analyse; the suite gate still re-ran, per the phase's every-entry rule.
+- **Routing**: `node .asd/runtime.js route-task` returned `tier: mechanical`, `execution: command`, `reason: deterministic-command`, so the entry ran directly with no `asd-tester` dispatch. First use of the cost-routing path this sprint added, on a case that genuinely qualifies: the "no new risk" conclusion follows from an objective input (the delta file list), leaving only a deterministic run-and-record.
+- **Result**: `node tests/run.js` 127/127 at `e8dea4225fcf97efbd8e95de8ea87b7e9ab23853`; `node .asd/sync.js --check` exit 0. `test_defects_pending` stays null.
+- Routes to `impl-review` iteration 2, where the severity floor rises to `medium`.

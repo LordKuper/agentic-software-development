@@ -13,6 +13,7 @@ responsibility:
 |---|---|---|
 | 1 | b31ea6dd297a9fc4fc065ea6d13a324878b41b34 | Full implementation diff; shared sync/update/migration harness requires unscoped `node tests/run.js` fallback. |
 | 2 | 55292d115c4374ab609799774457d8da493db18a | Review-fix wave landed (T1 dropped the AGENTS.md self-sourced carve-out, T2 rewrote `runtime.js` probe/cache/routing internals, T3 removed duplicate `-standard` agent variants, T4/T6 rewrote both review workflows around a scope-manifest transport). Delta scope: the four resulting baseline test failures, plus `reviews/impl/iter-01/testing.md` findings F1-F7 (drift-assertion narrowing, untested closure branch, missing fail-first evidence, unasserted AC-5/AC-10 clauses, ledger anti-forgery gap, silent Windows-only skip, untested CLI contract). |
+| 3 | e8dea4225fcf97efbd8e95de8ea87b7e9ab23853 | Delta since entry 2 carries no production source — only `tests/run.js` (entry 2's own authoring), sprint bookkeeping and agent memory. No new material risk, so no strategy pass: routed `execution: command` / tier `mechanical` by `runtime.js route-task` (reason `deterministic-command`), suite gate re-run directly per the phase's every-entry rule. |
 
 ## Risk → check decisions
 
@@ -63,6 +64,7 @@ responsibility:
 - Scope: impacted (unscoped fallback: shared sync/update/migration harness)
 - Result (entry 1): pass — 118/118. Initial run at `b31ea6dd297a9fc4fc065ea6d13a324878b41b34` was 103/111 while implementation and generated views were incomplete; rerun passed after runtime, sync, manifest, and README repairs.
 - Result (entry 2): pass — 127/127. Entry-2 delta added 9 new tests (F2/F4a/F4b/F4c/F5/F7 coverage: 2 SessionStart closure-branch cases, 1 asd-pm contract-string guard, 2 negative-cache recovery/shape cases, 1 haiku-effort assertion folded into an existing test, 1 forged-finding block folded into an existing test, 4 runtime.js CLI-contract cases) and replaced 2 obsolete tests (see Removed tests). Immediately before this entry's fixes, the same command reported 114/118 (the four baseline failures named in this cycle's dispatch — all four are addressed above, none by production changes).
+- Result (entry 3): pass — 127/127, unchanged from entry 2. No test authored, pruned or adjusted: the delta contained no production source. Verified at `e8dea4225fcf97efbd8e95de8ea87b7e9ab23853`.
 - `node .asd/sync.js --check` — clean, exit 0.
 - Lint / build: pass before impl-test, per impl completion signal; sync/hash checks are included in the passing runner.
 - HEAD: `55292d115c4374ab609799774457d8da493db18a` — analysed HEAD for this entry, before impl-test's own commits land on top; PR phase must compare its final HEAD before reuse.
