@@ -80,3 +80,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-07 — impl fix for iter-02: all 9 findings resolved (EFF2-1..4, TST2-01..02, DOC2-1..3); DOC2-3 resolved by narrowing the rule to the orchestrator, the only writer that exists
 
 - 2026-09-07 — impl-test entry 3: impacted set green (136/136, full-suite scope via safety valve), 0 tests added, 1 folded away, no defects
+
+- 2026-09-07 — impl-review iter-3: all reviewers APPROVE or latched (correctness latched at iter-2), external skipped (negative cache: quota); terminal full suite green 136/136 at 1436ef7
+- 2026-09-07 — impl-review DoD met; advancing to retro
