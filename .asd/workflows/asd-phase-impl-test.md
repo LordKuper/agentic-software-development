@@ -31,6 +31,7 @@ No user gate on a green impacted-set run, and none on routing defects back to im
 2. **Change surface**:
    - **Entry 1**: run command for `git diff <git.base_branch>...HEAD --stat <exclude_paths>` plus file list, using the same `exclude_paths` as impl-review's self-hosting-aware scoping (`.asd/rules/external-review.md` "Phase-scoped payload" — consumer default excludes `.asd/**`/`docs/**`; `self_hosting: enabled` includes the whole repo minus `.asd/project/**`/`.asd/sprints/**`/generated views). This is the **full change surface**
    - **Re-entry**: run command for `git diff <prior-sha>...HEAD --stat <exclude_paths>` (same `exclude_paths`) — the review-fix or test-fix commits made since the prior entry. This **delta** is the scope for steps 4 and 7 only
+   - Either branch, before running its diff: read `state.json.derived_handoff` (`sprint-lifecycle.md` "State recovery", sole SSoT for its shape, validity rule and absent-key fallback) — reuse its `files` when its `base`/`head`/`pathspec` all equal this branch's; on any mismatch, absence or empty object run the diff as written above. Write the resulting file list back to `state.json.derived_handoff` inline (mechanical, no gate) with the `base`/`head`/`pathspec` it came from, `head` = `git rev-parse HEAD` at derivation time; it is a cache only, so a miss costs exactly today's re-derivation and blocks nothing
    - Either way: derive the **impacted set** per `sprint-lifecycle.md` "Impacted test set" (diff test files + reference/import search + AC-tag search, native selector override when `commands.yaml` carries one, mandatory shared-infrastructure safety valve checked before use) — this is the scope for steps 3 and 8
 3. **Pre-strategy impacted run** — the same live `asd-tester` runs the impacted existing tests before authoring. Its raw result feeds the strategy pass.
 4. **Strategy pass** — the same live `asd-tester` receives: change surface, prior plan evidence, ACs, contracts, commands and rules. It:
@@ -64,7 +65,7 @@ Bounded risk: a defect outside the impacted set's reach is not caught by this ph
 ## Artefacts produced
 - `<sprint>/test-plan.md` (risk→check decisions, removals, added tests, suite run, defects, optional manual verification spec)
 - Tests added, adjusted, and deleted in repo
-- Updated `state.json` (phase=impl-test; `test_defects_pending` set when routing back to impl)
+- Updated `state.json` (phase=impl-test; `derived_handoff` at step 2; `test_defects_pending` set when routing back to impl)
 - Git commits per Conventional Commits
 - decisions-log entry on green impacted run or defect routing
 
