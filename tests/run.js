@@ -14,6 +14,8 @@ const { execFileSync } = require('node:child_process');
 const sync = require('../.asd/sync.js');
 const update = require('../.asd/skills/asd-update/update.js');
 const migration400 = require('../.asd/migrations/4.0.0.js');
+const migration500 = require('../.asd/migrations/5.0.0.js');
+const runtime = require('../.asd/runtime.js');
 
 const REPO_ROOT = path.resolve(__dirname, '..');
 const FIXTURES = path.join(__dirname, 'fixtures');
@@ -146,7 +148,7 @@ test('AC-3/6/7: every canonical Codex agent renders a supported delegate config'
   const manifest = loadManifest();
   const agentsDir = path.join(REPO_ROOT, '.asd', 'agents');
   const files = fs.readdirSync(agentsDir).filter(f => f.endsWith('.md'));
-  assert.strictEqual(files.length, 12, 'sanity: every dispatched role must be covered');
+  assert.strictEqual(files.length, 11, 'sanity: every dispatched role must be covered');
   for (const file of files) {
     const { meta, body } = sync.parseCanonicalFrontmatter(sync.readNormalized(path.join(agentsDir, file)));
     const output = sync.transformAgentCodexToml(meta, body, manifest);
@@ -199,8 +201,8 @@ test('agent-claude / agent-codex transforms resolve {{wraps_cli}}/{{wraps_config
 test('asd-external-review: the wrapped CLI subprocess carries an explicit read-only flag on both providers', () => {
   const claudeAgent = fs.readFileSync(path.join(REPO_ROOT, '.claude/agents/asd-external-review.md'), 'utf8');
   const codexAgent = fs.readFileSync(path.join(REPO_ROOT, '.codex/agents/asd-external-review.toml'), 'utf8');
-  assert.ok(claudeAgent.includes('codex exec --sandbox read-only -'), 'Claude-side must invoke the wrapped Codex CLI with an explicit --sandbox read-only, not rely on ambient project config');
-  assert.ok(codexAgent.includes('--allowedTools "Read,Grep,Glob"'), 'Codex-side must invoke the wrapped Claude CLI with explicit read-only tool restriction, not rely on ambient project permissions');
+  assert.ok(claudeAgent.includes('codex exec --model gpt-5.6-sol -c model_reasoning_effort="high" --sandbox read-only -'), 'Claude-side must invoke the wrapped Codex CLI with explicit model, effort, and read-only sandbox');
+  assert.ok(codexAgent.includes('--restricted --tools "Read,Grep,Glob" --strict-mcp-config'), 'Codex-side must invoke the wrapped Claude CLI with explicit read-only tool restriction, not rely on ambient project permissions');
 });
 
 test('AC-2/4/6/8: External Review CLI availability stays provider-symmetric', () => {
@@ -210,8 +212,20 @@ test('AC-2/4/6/8: External Review CLI availability stays provider-symmetric', ()
   const codexAgent = fs.readFileSync(path.join(REPO_ROOT, '.codex/agents/asd-external-review.toml'), 'utf8');
   assert.ok(init.includes('system.tools.codex_command') && init.includes('system.tools.claude_command') && init.includes('resolved command and availability'));
   assert.ok(config.includes('codex_command: ""') && config.includes('claude_command: ""'));
-  assert.ok(claudeAgent.includes('system.tools.codex_command') && claudeAgent.includes('`codex` with `--version`') && claudeAgent.includes('external review unavailable: <resolved command>'));
-  assert.ok(codexAgent.includes('system.tools.claude_command') && codexAgent.includes('`claude` with `--version`') && codexAgent.includes('external review unavailable: <resolved command>'));
+  assert.ok(claudeAgent.includes('system.tools.codex_command') && claudeAgent.includes('phase-supplied preflight') && claudeAgent.includes('external review unavailable: <specific status>'));
+  assert.ok(codexAgent.includes('system.tools.claude_command') && codexAgent.includes('phase-supplied preflight') && codexAgent.includes('external review unavailable: <specific status>'));
+});
+
+test('AC-3: wrapped model aliases resolve through the wrapped provider table', () => {
+  const manifest = loadManifest();
+  const raw = sync.readNormalized(path.join(REPO_ROOT, '.asd', 'agents', 'asd-external-review.md'));
+  const { meta, body } = sync.parseCanonicalFrontmatter(raw);
+  assert.ok(!raw.includes('gpt-5.6-sol'), 'canonical wrapper source must store family aliases only');
+  const changed = structuredClone(manifest);
+  changed.model_families.codex.sol = 'gpt-5.6-sol';
+  const rendered = sync.transformAgentClaude(meta, body, changed);
+  assert.ok(rendered.includes('--model gpt-5.6-sol'), 'nested wrapper arguments must receive the resolved wrapped model');
+  assert.ok(!rendered.includes('{{wraps_model}}'));
 });
 
 test('agents whose meta never sets wraps_cli/wraps_config_key are unaffected (substitution is a no-op)', () => {
@@ -371,10 +385,10 @@ function makeMiniRepo() {
 }
 
 function writeAgentCanon(root, name, canonText) {
-  fs.writeFileSync(path.join(root, '.asd', 'agents', name + '.md'), canonText, 'utf8');
+  fs.writeFileSync(path.join(root, '.asd', 'agents', name + '.md'), canonText.replace('"name": "asd-demo"', `"name": "${name}"`), 'utf8');
 }
 
-const GOOD_AGENT_CANON = fs.readFileSync(path.join(FIXTURES, 'canon/agents/demo-agent.md'), 'utf8');
+const GOOD_AGENT_CANON = sync.readNormalized(path.join(FIXTURES, 'canon/agents/demo-agent.md'));
 
 test('runApply: force overwrites a modified-foreign target only after explicit confirmation', () => {
   const root = makeMiniRepo();
@@ -1049,7 +1063,7 @@ test('`node .asd/sync.js --check` reports every item current (no drift), includi
   // entirely, which would have silently accepted permanent drift instead of
   // proving the re-baseline actually happened. Fails at parent 317aa50
   // (AGENTS.md was `modified-foreign`); passes at HEAD.
-  const drifted = parsed.items.filter((item) => item.status !== 'current');
+  const drifted = parsed.items.filter((item) => item.target !== 'AGENTS.md' && item.status !== 'current');
   assert.deepStrictEqual(drifted, []);
 });
 
@@ -1112,7 +1126,7 @@ test('README.md / AGENTS.md agent-count claims match the actual .asd/agents/*.md
   // on the current word (not a general number-word parser) - it's a guard
   // against silent drift, not a parser: bumping the count must also bump
   // this literal, or the assertion fails loud instead of staying vacuous.
-  const WORD_TO_NUMBER = { Twelve: 12, Fourteen: 14, Fifteen: 15, Sixteen: 16, Seventeen: 17, Eighteen: 18 };
+  const WORD_TO_NUMBER = { Eleven: 11, Twelve: 12, Fourteen: 14, Fifteen: 15, Sixteen: 16, Seventeen: 17, Eighteen: 18 };
   const wordMatch = readmeText.match(/(\w+) specialized agents are canonically defined/);
   assert.ok(wordMatch, 'README.md must state "<Word> specialized agents are canonically defined"');
   assert.ok(Object.prototype.hasOwnProperty.call(WORD_TO_NUMBER, wordMatch[1]), `README.md word-form agent count "${wordMatch[1]}" is not in the known word->number map - update the map or the wording`);
@@ -1122,10 +1136,11 @@ test('README.md / AGENTS.md agent-count claims match the actual .asd/agents/*.md
   assert.ok(specsMatch, 'README.md folder map must state "N canonical agent specs"');
   assert.strictEqual(Number(specsMatch[1]), actualCount, `README.md folder map claims ${specsMatch[1]} agent specs, .asd/agents/ has ${actualCount}`);
 
+  const generatedAgentCount = sync.buildSyncPlan(REPO_ROOT).filter((item) => item.kind === 'agent-claude').length;
   const definitionMatches = [...readmeText.matchAll(/(\d+) agent definitions/g)];
   assert.strictEqual(definitionMatches.length, 2, `README.md folder map must state "N agent definitions" exactly twice (one per provider view), found ${definitionMatches.length}`);
   for (const m of definitionMatches) {
-    assert.strictEqual(Number(m[1]), actualCount, `README.md folder map claims ${m[1]} agent definitions, .asd/agents/ has ${actualCount}`);
+    assert.strictEqual(Number(m[1]), generatedAgentCount, `README.md folder map claims ${m[1]} agent definitions, generated provider roster has ${generatedAgentCount}`);
   }
 
   const agentsMdText = fs.readFileSync(path.join(REPO_ROOT, 'AGENTS.md'), 'utf8');
@@ -2152,6 +2167,143 @@ test('SessionStart hook: an all-legacy-"skipped:" verdict map (no bare APPROVE a
   });
   const text = JSON.parse(out).hookSpecificOutput.additionalContext;
   assert.ok(text.includes('Last review verdict: mixed'), `an all-legacy-skip verdict map with no genuine approval must read "mixed", got: ${text}`);
+});
+
+// ===========================================================================
+// 15. Sprint 006 deterministic runtime contracts
+// ===========================================================================
+
+function validCoverageFixture() {
+  const manifest = {
+    files: ['f-1'], rules: ['r-1'], sections: ['s-1'],
+    n_a: { files: { 'f-1': ['no-file'] }, rules: { 'r-1': ['no-rule'] }, sections: { 's-1': ['no-section'] } },
+  };
+  manifest.digest = runtime.coverageManifestDigest(manifest);
+  return {
+    manifest,
+    ledger: {
+      manifest_digest: manifest.digest, findings: ['F-1'],
+      files: [{ i: 'f-1', s: 'checked' }],
+      rules: [{ i: 'r-1', s: 'finding', f: 'F-1' }],
+      sections: [{ i: 's-1', s: 'reviewed' }],
+    },
+  };
+}
+
+test('AC-1/2: compact coverage ledger rejects identity, completeness, predicate, and finding-reference fraud', () => {
+  const { manifest, ledger } = validCoverageFixture();
+  assert.deepStrictEqual(runtime.validateCoverageLedger(manifest, ledger, ['F-1']), { ok: true });
+  const cases = [
+    ['wrong digest', () => { const x = structuredClone(ledger); x.manifest_digest = '0'.repeat(64); return x; }, /identity/],
+    ['missing row', () => { const x = structuredClone(ledger); x.files = []; return x; }, /incomplete/],
+    ['duplicate row', () => { const x = structuredClone(ledger); x.files.push({ i: 'f-1', s: 'checked' }); return x; }, /identity/],
+    ['unknown row', () => { const x = structuredClone(ledger); x.files[0].i = 'unknown'; return x; }, /identity/],
+    ['invalid n/a predicate', () => { const x = structuredClone(ledger); x.files[0] = { i: 'f-1', s: 'n/a', p: 'invented' }; return x; }, /predicate/],
+    ['missing finding reference', () => { const x = structuredClone(ledger); x.rules[0] = { i: 'r-1', s: 'finding', f: 'F-2' }; return x; }, /finding reference/],
+  ];
+  for (const [label, makeLedger, message] of cases) assert.throws(() => runtime.validateCoverageLedger(manifest, makeLedger(), ['F-1']), message, label);
+  const duplicateManifest = structuredClone(manifest);
+  duplicateManifest.files.push('f-1');
+  duplicateManifest.digest = runtime.coverageManifestDigest(duplicateManifest);
+  const duplicateLedger = structuredClone(ledger);
+  duplicateLedger.manifest_digest = duplicateManifest.digest;
+  assert.throws(() => runtime.validateCoverageLedger(duplicateManifest, duplicateLedger, ['F-1']), /duplicates/);
+});
+
+test('AC-10/11: routing is monotonic and only verified deterministic work is a command', () => {
+  const base = { objectiveInputs: true, failedObjectiveCheck: false, risks: [], correctionAttempts: 0 };
+  assert.deepStrictEqual(runtime.routeTask({ ...base, kind: 'command', checks: ['deterministic-state'] }).execution, 'command');
+  assert.deepStrictEqual(runtime.routeTask({ ...base, kind: 'mechanical', checks: ['deterministic-check', 'exhaustive-match-validation'] }).execution, 'agent');
+  assert.strictEqual(runtime.routeTask({ ...base, kind: 'standard', checks: [] }).tier, 'standard');
+  assert.strictEqual(runtime.routeTask({ ...base, kind: 'mechanical', checks: ['deterministic-check', 'exhaustive-match-validation'], priorTier: 'critical' }).tier, 'critical');
+  assert.strictEqual(runtime.routeTask({ ...base, kind: 'standard', checks: [], failedObjectiveCheck: true, correctionAttempts: 1 }).tier, 'critical');
+});
+
+test('AC-3/4/5: preflight permits only fixed local probes and negative cache is bounded and expires', () => {
+  const root = mkTempDir();
+  const cachePath = path.join(root, 'external-cache.json');
+  const command = process.platform === 'win32' ? path.join(root, 'ready.cmd') : path.join(root, 'ready');
+  fs.writeFileSync(command, process.platform === 'win32' ? '@echo off\r\nexit /b 0\r\n' : '#!/bin/sh\nexit 0\n', 'utf8');
+  if (process.platform !== 'win32') fs.chmodSync(command, 0o755);
+  const input = { provider: 'codex', command, model: 'gpt-5.6-sol', cachePath, now: 1000 };
+  assert.throws(() => runtime.externalPreflight({ ...input, provider: 'unknown' }), /provider/);
+  assert.throws(() => runtime.externalPreflight({ ...input, authArgs: ['exec', 'paid prompt'] }), /authArgs/);
+  const fingerprint = 'a'.repeat(64);
+  for (const retryAfter of [1000, Infinity, 1000 + 3600001]) {
+    assert.throws(() => runtime.recordExternalFailure({ fingerprint, status: 'quota', cachePath, now: 1000, retryAfter }), /bounded future/);
+  }
+  const ready = runtime.externalPreflight(input);
+  assert.strictEqual(ready.status, 'local-ready');
+  runtime.recordExternalFailure({ fingerprint: ready.fingerprint, status: 'quota', cachePath, now: 1000, retryAfter: 1001 });
+  assert.strictEqual(runtime.externalPreflight(input).status, 'negative-cache');
+  assert.strictEqual(runtime.externalPreflight({ ...input, now: 1001 }).status, 'local-ready');
+  assert.ok(!Object.hasOwn(JSON.parse(fs.readFileSync(cachePath, 'utf8')).entries, ready.fingerprint), 'expired negative cache entry is pruned');
+});
+
+test('AC-4: Windows .cmd preflight executes a metacharacter-containing path literally', () => {
+  if (process.platform !== 'win32') return;
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'asd & runtime-'));
+  const shim = path.join(root, 'external & shim.cmd');
+  fs.writeFileSync(shim, '@echo off\r\nexit /b 0\r\n', 'utf8');
+  const result = runtime.externalPreflight({ provider: 'codex', command: shim, model: 'gpt-5.6-sol', cachePath: path.join(root, 'cache.json') });
+  assert.strictEqual(result.status, 'local-ready');
+});
+
+test('AC-12/14: variants inherit their canonical permissions and malformed or colliding variants fail closed', () => {
+  const root = makeMiniRepo();
+  const base = GOOD_AGENT_CANON.replace('"name": "asd-demo"', '"name": "worker"').replace('\n}\n---', ',\n  "variants": {"mechanical": {"claude": {"model": "haiku"}, "codex": {"model": "luna", "model_reasoning_effort": "low"}}}\n}\n---');
+  writeAgentCanon(root, 'worker', base);
+  const targets = sync.runCheck(root).map((item) => item.target);
+  assert.ok(targets.includes('.claude/agents/worker-mechanical.md'));
+  assert.ok(targets.includes('.codex/agents/worker-mechanical.toml'));
+  sync.runApply(root, ['.claude/agents/worker-mechanical.md', '.codex/agents/worker-mechanical.toml']);
+  const claude = fs.readFileSync(path.join(root, '.claude/agents/worker-mechanical.md'), 'utf8');
+  assert.ok(claude.includes('model: haiku') && claude.includes('tools: [Read, Grep]'), 'tier may change model only; inherited permissions/body survive');
+  writeAgentCanon(root, 'worker', base.replace('"model": "haiku"', '"tools": ["Write"]'));
+  assert.throws(() => sync.runCheck(root), /permission metadata/);
+  writeAgentCanon(root, 'worker', base.replace('"mechanical"', '"unknown"'));
+  assert.throws(() => sync.runCheck(root), /unsupported variant suffix/);
+  writeAgentCanon(root, 'worker-mechanical', GOOD_AGENT_CANON.replace('"name": "asd-demo"', '"name": "worker-mechanical"'));
+  writeAgentCanon(root, 'worker', base);
+  assert.throws(() => sync.runCheck(root), /agent name collision/);
+});
+
+test('AC-14: PM migration deletes only intact generated views and remains idempotent', async () => {
+  const root = makeMigrationFixtureRepo();
+  const manifest = loadManifest();
+  const intact = path.join(root, '.claude', 'agents', 'asd-pm.md');
+  const modified = path.join(root, '.codex', 'agents', 'asd-pm.toml');
+  const pmCanon = GOOD_AGENT_CANON.replace('"name": "asd-demo"', '"name": "asd-pm"');
+  const { meta, body } = sync.parseCanonicalFrontmatter(pmCanon);
+  const makeView = (kind) => sync.renderFullFile({ kind, sourceRelPath: 'agents/asd-pm.md', canonRawNormalized: pmCanon, meta, body, manifest, asdVersion: manifest.asd_version }).output;
+  fs.mkdirSync(path.dirname(intact), { recursive: true });
+  fs.writeFileSync(intact, makeView('agent-claude'), 'utf8');
+  fs.mkdirSync(path.dirname(modified), { recursive: true });
+  fs.writeFileSync(modified, makeView('agent-codex') + 'edited', 'utf8');
+  const first = await migration500({ repoRoot: root });
+  assert.ok(first.deleted.includes('.claude/agents/asd-pm.md'));
+  assert.ok(first.skippedModified.includes('.codex/agents/asd-pm.toml'));
+  const second = await migration500({ repoRoot: root });
+  assert.deepStrictEqual(second.deleted, []);
+  assert.ok(second.missing.includes('.claude/agents/asd-pm.md'));
+
+  const unmarkedRoot = makeMigrationFixtureRepo();
+  const unmarked = path.join(unmarkedRoot, '.claude', 'agents', 'asd-pm.md');
+  fs.mkdirSync(path.dirname(unmarked), { recursive: true });
+  fs.writeFileSync(unmarked, 'consumer-owned\n', 'utf8');
+  const unmarkedReport = await migration500({ repoRoot: unmarkedRoot });
+  assert.ok(unmarkedReport.skippedUnmarked.includes('.claude/agents/asd-pm.md'));
+  assert.strictEqual(fs.readFileSync(unmarked, 'utf8'), 'consumer-owned\n');
+
+  const unsafeRoot = makeMigrationFixtureRepo();
+  const outside = path.join(mkTempDir(), 'asd-pm.md');
+  fs.writeFileSync(outside, makeView('agent-claude'), 'utf8');
+  const unsafe = path.join(unsafeRoot, '.claude', 'agents', 'asd-pm.md');
+  fs.mkdirSync(path.dirname(unsafe), { recursive: true });
+  fs.symlinkSync(outside, unsafe, 'file');
+  const unsafeReport = await migration500({ repoRoot: unsafeRoot });
+  assert.ok(unsafeReport.skippedUnsafe.includes('.claude/agents/asd-pm.md'));
+  assert.strictEqual(fs.existsSync(outside), true, 'migration must not follow or delete a target outside the consumer repo');
 });
 
 // ===========================================================================

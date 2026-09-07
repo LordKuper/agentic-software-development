@@ -2,7 +2,7 @@
 
 A multi-agent workflow for **Claude Code and Codex** that drives software projects end-to-end through fixed-shape sprints: from concept and tech-stack definition, through design and review, all the way to a green PR.
 
-ASD is **stack-agnostic** — it works on any language, framework, or runtime. The workflow itself never touches your application code directly; it dispatches 12 specialized agents (Orchestrator, BA, UX, Architect, Dev, Tester, reviewers, advisor) coordinated by 17 skills.
+ASD is **stack-agnostic** — it works on any language, framework, or runtime. The workflow itself never touches your application code directly; it dispatches 11 specialized agents (BA, UX, Architect, Dev, Tester, reviewers, advisor), coordinated by the main orchestrator and 17 skills.
 
 Both providers run from one canonical source under `.asd/` (agents, skills, hooks); `.asd/sync.js` generates each provider's own view (`.claude/`, `.codex/`, `.agents/skills/`) and keeps them in sync. See [`.asd/rules/providers.md`](.asd/rules/providers.md) for the canonical/provider path map and semantic-operation mapping.
 
@@ -190,7 +190,7 @@ Phase skills (`asd-phase-*`) are dispatched internally by `/asd-sprint`/`$asd-sp
 
 ## Agents
 
-Eleven canonical role specifications are canonically defined in `.asd/agents/` and generated per provider: `.claude/agents/*.md` for Claude Code, `.codex/agents/*.toml` for Codex. Each declares a model family alias per provider (Claude: fable/opus/sonnet/haiku; Codex: sol/terra/luna) plus supported reasoning effort (omitted for Haiku); `.asd/sync.js` resolves aliases to concrete model ids via `.asd/release-manifest.json`'s `model_families` table (mirrored in [`.asd/rules/providers.md`](.asd/rules/providers.md)). Effort is shown as `model/effort`.
+Eleven specialized agents are canonically defined in `.asd/agents/` and generated per provider: `.claude/agents/*.md` for Claude Code, `.codex/agents/*.toml` for Codex. Each declares a model family alias per provider (Claude: fable/opus/sonnet/haiku; Codex: sol/terra/luna) plus supported reasoning effort (omitted for Haiku); `.asd/sync.js` resolves aliases to concrete model ids via `.asd/release-manifest.json`'s `model_families` table (mirrored in [`.asd/rules/providers.md`](.asd/rules/providers.md)). Effort is shown as `model/effort`.
 
 ### Creators (5)
 
@@ -299,7 +299,7 @@ your-project/
 │   ├── sync.js                      # generator: canon -> .claude/ + .codex/ + .agents/skills/ (--check / --apply)
 │   ├── rules/                       # workflow rules (role/phase-scoped reads), incl. providers.md
 │   ├── templates/                   # artifact templates (t_*.html / .md / .yaml / .c4), incl. t_AGENTS.md / t_CLAUDE.md
-│   ├── agents/                      # 11 canonical role specs plus declared tier variants (JSON frontmatter: claude{} + codex{} blocks)
+│   ├── agents/                      # 11 canonical agent specs plus declared tier variants (JSON frontmatter: claude{} + codex{} blocks)
 │   ├── skills/                      # 17 canonical skill specs (SKILL.md)
 │   ├── workflows/                   # 10 phase orchestration files (referenced by path, not generated)
 │   ├── hooks/                       # canonical session-start.js (--provider claude|codex)
@@ -315,12 +315,12 @@ your-project/
 │       ├── <NNN-slug>/              # active sprint (one at a time); decisions-log.md created here at scope, archived with the sprint
 │       └── archived/<NNN-slug>/     # moved here after explicit closure approval; completed sprints immutable
 ├── .claude/                         # generated Claude Code view
-│   ├── agents/                      # generated role and tier definitions (*.md)
+│   ├── agents/                      # 17 agent definitions: 11 roles + 6 tier variants (*.md)
 │   ├── skills/                      # 17 skill definitions (SKILL.md)
 │   ├── hooks/                       # SessionStart hook (Node.js)
 │   └── settings.json                # hook registration + permissions allowlist (JSON-merge: ASD owns only its own entry)
 ├── .codex/                          # generated Codex view
-│   ├── agents/                      # generated role and tier definitions (*.toml)
+│   ├── agents/                      # 17 agent definitions: 11 roles + 6 tier variants (*.toml)
 │   ├── hooks/                       # SessionStart hook (Node.js)
 │   └── hooks.json                   # hook registration (JSON-merge: ASD owns only its own entry); requires trust before hooks run
 ├── .agents/

@@ -39,7 +39,7 @@ function runLocal(command, args, timeoutMs) {
     encoding: 'utf8', shell: false, timeout, windowsHide: true,
   });
   if (process.platform === 'win32' && (throughPowerShell || (result.error && result.error.code === 'ENOENT'))) {
-    result = spawnSync('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', '$ErrorActionPreference = "Stop"; try { $request = [Console]::In.ReadToEnd() | ConvertFrom-Json; & $request.command @($request.args); exit $LASTEXITCODE } catch { exit 1 }'], {
+    result = spawnSync('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', '$ErrorActionPreference = "Stop"; try { $request = [Console]::In.ReadToEnd() | ConvertFrom-Json; $global:LASTEXITCODE = 0; & $request.command @($request.args); exit $LASTEXITCODE } catch { exit 1 }'], {
       encoding: 'utf8', input: JSON.stringify({ command, args }), shell: false, timeout, windowsHide: true,
     });
   }
