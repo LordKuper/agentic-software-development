@@ -45,11 +45,11 @@ hand-edited.
 - [x] Covers AC-1, AC-6. Material risk: this is a review-gate contract; a wrong statement here weakens the gate for every future sprint
 
 ### Task 2: Implement the split and re-dispatch contract in both review workflows
-- [ ] Implement the Task 1 contract in `.asd/workflows/asd-phase-design-review.md` steps 7-9 (dispatch, ledger gate, verdict record)
-- [ ] Implement it in `.asd/workflows/asd-phase-impl-review.md` steps 6-8
-- [ ] Record the interrupted-attempt trace in the same place each workflow records a verdict, without introducing a new state field
-- [ ] Keep both workflows' wording identical where the contract is identical; link to `review-policy.md` rather than restating the contract
-- [ ] Covers AC-1, AC-6. Material risk: workflow gate behaviour. Depends on Task 1
+- [x] Implement the Task 1 contract in `.asd/workflows/asd-phase-design-review.md` steps 7-9 (dispatch, ledger gate, verdict record)
+- [x] Implement it in `.asd/workflows/asd-phase-impl-review.md` steps 6-8
+- [x] Record the interrupted-attempt trace in the same place each workflow records a verdict, without introducing a new state field
+- [x] Keep both workflows' wording identical where the contract is identical; link to `review-policy.md` rather than restating the contract
+- [x] Covers AC-1, AC-6. Material risk: workflow gate behaviour. Depends on Task 1
 
 ### Task 3: Check the external-review negative cache before manifest assembly
 - [ ] In `.asd/workflows/asd-phase-impl-review.md`, move the External Review scope-manifest build out of step 1 to a step after 1a's preflight (AC-8)
