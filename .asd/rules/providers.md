@@ -6,7 +6,7 @@ ASD runs from one canonical source (`.asd/`) generated into two host views: Clau
 
 | Canonical (SSoT) | Claude Code view | Codex view |
 |---|---|---|
-| `AGENTS.md` (root) | `AGENTS.md` (read directly; no generation) | `AGENTS.md` (read directly; no generation) |
+| `AGENTS.md` (root, managed block generated from `t_AGENTS.md`; content below `<!-- asd:end -->` hand-edited, self-hosting only) | `AGENTS.md` (read directly) | `AGENTS.md` (read directly) |
 | `CLAUDE.md` (root, managed block: `@AGENTS.md`) | `CLAUDE.md` | — (Codex doesn't read CLAUDE.md) |
 | `.asd/rules/*.md` | read directly (referenced from agent bodies) | read directly (referenced from agent bodies) |
 | `.asd/agents/<name>.md` | `.claude/agents/<name>.md` (generated) | `.codex/agents/<name>.toml` (generated) |
@@ -38,7 +38,7 @@ Canonical agent/skill/workflow bodies never name a host tool directly. They use 
 | run a command | `Bash` | Codex shell tool (subject to `sandbox_mode`) |
 | write a file | `Write` / `Edit` | Codex file-write tool (blocked entirely for reviewer agents — `sandbox_mode: "read-only"`) |
 
-Reviewer agents are read-only on every host (`review-policy.md`): Claude reviewer agents carry no `Write` in `tools`; Codex reviewer agents set `sandbox_mode: "read-only"`. The reviewer returns its report as final text; the phase orchestrator (workflow) writes the review file. This is a host guarantee, not a textual instruction repeated in reviewer bodies.
+Reviewer agents are read-only on every host (`review-policy.md`): Claude reviewer agents carry no `Write` in `tools`; Codex reviewer agents set `sandbox_mode: "read-only"`. The reviewer returns its report as final text; the main orchestrator (workflow) writes the review file. This is a host guarantee, not a textual instruction repeated in reviewer bodies.
 
 ## Model family resolution
 
@@ -62,7 +62,7 @@ A provider's id is always its rolling alias (newest model in the family), so a f
 |---|---|---|---|
 | asd-ba, asd-ux, asd-architect | opus / high | sol / high | workspace-write |
 | asd-dev, asd-tester (base) | sonnet / medium | terra / medium | workspace-write |
-| asd-dev-*, asd-tester-* | mechanical: haiku / none; standard: sonnet / medium; critical: opus / high | mechanical: luna / low; standard: terra / medium; critical: sol / high | workspace-write |
+| asd-dev-*, asd-tester-* | mechanical: haiku / none; critical: opus / high (standard: no variant, dispatches base) | mechanical: luna / low; critical: sol / high (standard: no variant, dispatches base) | workspace-write |
 | asd-reviewer-* (4) | opus / high | sol / high | read-only |
 | asd-external-review wrapper | sonnet / medium | terra / medium | read-only |
 | asd-external-review wrapped reviewer | sol / high | opus / high | read-only |
@@ -83,6 +83,7 @@ Every role loads `core.md` and `custom-common-rules.md` when it exists. It then 
 
 | Role | Additional context |
 |---|---|
+| Main orchestrator | `checkpoints.md`, `sprint-lifecycle.md`, `git-strategy.md`, `artifact-layout.md`, `language-policy.md`, `review-policy.md`. |
 | `asd-ba` | Current scope/audit/design/design-promote section of `sprint-lifecycle.md`, `artifact-layout.md`, `language-policy.md`, `design-principles.md`, and applicable custom design rules. |
 | `asd-architect` | Current audit/design/design-promote section of `sprint-lifecycle.md`, `artifact-layout.md`, `language-policy.md`, `design-principles.md`, `code-style.md` for code audit, and applicable custom design/coding rules. |
 | `asd-ux` | Current design/design-promote section of `sprint-lifecycle.md`, `artifact-layout.md`, `language-policy.md`, `design-system.md`, `ux-principles.md`, accessibility baseline, and applicable custom design rules. |
@@ -97,8 +98,8 @@ Every role loads `core.md` and `custom-common-rules.md` when it exists. It then 
 
 ## Task-class variants and routing
 
-An agent may declare `variants` in its canonical JSON frontmatter. Each fixed suffix is `mechanical`, `standard`, or `critical`; it changes only Claude `model`/optional `effort` and Codex `model`/`model_reasoning_effort`. `.asd/sync.js` emits `<base>-<suffix>` from the base body and permissions, rejects malformed metadata and name collisions, and keeps the base ID for compatibility. No dispatcher mutates generated configuration.
+An agent may declare `variants` in its canonical JSON frontmatter. Each fixed suffix is `mechanical` or `critical`; it changes only Claude `model`/optional `effort` and Codex `model`/`model_reasoning_effort`. `.asd/sync.js` emits `<base>-<suffix>` from the base body and permissions, rejects malformed metadata and name collisions. No dispatcher mutates generated configuration. Tier `standard` has no variant — it dispatches the **base** agent id (`asd-dev`, `asd-tester`) directly, since a `standard` variant would only re-declare the base's own model/effort.
 
-Only `asd-dev` and `asd-tester` declare all three variants: mechanical uses haiku without an effort override or luna/low; standard uses sonnet/medium or terra/medium; critical uses opus/high or sol/high. Reviewers remain strong and fresh. The phase orchestrator calls `node .asd/runtime.js route-task --input <json>` before dispatch and persists `{execution,tier,reason,selector,resolved_model}` under `state.json.task_routing[taskId]`; re-entry passes its prior `tier` as `priorTier`.
+Only `asd-dev` and `asd-tester` declare variants: mechanical uses haiku without an effort override or luna/low; critical uses opus/high or sol/high. Reviewers remain strong and fresh. The main orchestrator calls `node .asd/runtime.js route-task --input <json>` before dispatch and persists `{execution,tier,reason,resolved_model}` under `state.json.task_routing[taskId]`; `resolved_model` is not returned by `route-task` — the main orchestrator derives it from `.asd/release-manifest.json`'s `model_families` for the dispatched agent/tier before persisting. Re-entry passes its prior `tier` as `priorTier`.
 
 Routing input requires objective evidence. A deterministic zero-judgment command with `deterministic-state` returns `execution: command`; mechanical agent work requires `deterministic-check` and `exhaustive-match-validation`. Security, authentication, migration, public contract, workflow gate, unfamiliar cross-domain work, ambiguous judgment, broad repository reasoning, and any other declared risk return `execution: agent, tier: critical`. One failed objective check after its correction attempt also becomes critical. Invalid evidence or an unknown class fails closed. `priorTier` prevents a task from being downgraded. A cheap creator never determines reviewer tier; reviewer scope and risks are classified independently.

@@ -10,7 +10,6 @@
   "codex": { "model": "terra", "model_reasoning_effort": "medium", "sandbox_mode": "workspace-write" },
   "variants": {
     "mechanical": { "claude": { "model": "haiku" }, "codex": { "model": "luna", "model_reasoning_effort": "low" } },
-    "standard": { "claude": { "model": "sonnet", "effort": "medium" }, "codex": { "model": "terra", "model_reasoning_effort": "medium" } },
     "critical": { "claude": { "model": "opus", "effort": "high" }, "codex": { "model": "sol", "model_reasoning_effort": "high" } }
   }
 }
