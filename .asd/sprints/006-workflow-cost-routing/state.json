@@ -1,7 +1,7 @@
 {
   "sprint_id": "006-workflow-cost-routing",
   "branch": "sprint/006-workflow-cost-routing",
-  "phase": "impl-test",
+  "phase": "impl",
   "documents": {
     "audit": true,
     "prd": false,
@@ -21,15 +21,25 @@
       "latched": {}
     },
     "impl": {
-      "iteration": 0,
-      "verdicts": {},
-      "iteration_heads": {},
+      "iteration": 1,
+      "verdicts": {
+        "iter-01": {
+          "correctness": "CONCERNS",
+          "efficiency": "FAIL",
+          "testing": "FAIL",
+          "documentation": "CONCERNS",
+          "external": "APPROVE (skipped: quota — Codex usage limit)"
+        }
+      },
+      "iteration_heads": {
+        "iter-01": "11333cb2330d689f14de1d116b30236888e09b20"
+      },
       "latched": {}
     }
   },
   "created_at": "2026-09-06T11:16:29.213Z",
-  "updated_at": "2026-09-06T22:01:09.637844+00:00",
-  "review_fixes_pending": null,
+  "updated_at": "2026-09-07T08:04:00.671Z",
+  "review_fixes_pending": "iter-01",
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null,
@@ -56,6 +66,13 @@
       "reason": "Within accepted scope; no new material alternative or waiver",
       "evidence": "plan.md; decisions-log.md",
       "artifact_revision": "bf62f52354af8a1dea68de6d6423b2837e11f383ff75159d5932100a0ba593cb"
+    },
+    {
+      "gate": "impl-review-escalation",
+      "decision_actor": "user",
+      "reason": "Two FAIL escalations resolved: keep .asd/runtime.js as one file (SC-1 override recorded); remove the self-sourced special case for AGENTS.md so its managed block syncs from t_AGENTS.md like any consumer, framework-dev prose moving below the end marker",
+      "evidence": "reviews/impl/iter-01/efficiency.md F1; reviews/impl/iter-01/testing.md F1; decisions-log.md",
+      "artifact_revision": null
     }
   ]
 }
