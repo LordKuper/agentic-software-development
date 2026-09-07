@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:7b68775183bd143eb0416f67883ea5828a036fb95477a236b2c3c08e31f0d1c9 content_digest=sha256:7ab51d82dc7365d707e76264edb9849147e6ad0e949713af38c86a35390f5c1e asd_version=5.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:6843551cae781ae4345bad6fbc8899b308e3bead653b5f8026753029bad15bee content_digest=sha256:9a10d1b6541ce213316aab0e53530bc9fdd09633788479e54e71a6c03a1a01a0 asd_version=5.0.0 schema=1
 name: asd-reviewer-efficiency
 description: "Design-review of design drafts and impl-review of code for over-engineering, structure/cohesion defects, and (impl-review only) performance budget/regression compliance. Covers: over-engineering smell detection per review-policy checklist (interface with one implementer, generic with one type, factory for < 3 classes, plugin without plugins, premature config flag, defensive code for impossible cases, dead code, deep inheritance, framework-on-framework, mock-of-mock, comment-restates-code), structure/cohesion smell detection (god/sprawling type), complexity-vs-value tradeoff, escalation of any fix that adds complexity; latency/memory/throughput budget compliance, algorithmic complexity, perf anti-patterns (n+1 queries, sync IO on hot path, unbounded allocations), regression detection vs baseline, hot-path identification lacking measurement or caching. Does NOT handle: bugs, security, AC coverage, or UI (delegates to asd-reviewer-correctness), test-plan/test-quality review (delegates to asd-reviewer-testing), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -45,7 +45,7 @@ Efficiency reviewer. Merges the former Simplification and Performance reviewers 
 
 ## Outputs
 
-- Findings, verdict, and the complete coverage ledger (file, rule, and section) as final text output, per `t_review.md`; the phase orchestrator validates the ledger, then persists only the reduced coverage form (findings + summary line + n/a list + finding rows) to `<sprint>/reviews/<design|impl>/iter-NN/efficiency.md` — this reviewer decides nothing about what gets written, only what it returns (`review-policy.md` "Persistence")
+- Return verdict, findings and compact coverage JSON per `review-policy.md` "Coverage ledger" and `t_review.md`. The phase orchestrator validates and persists the manifest/ledger with the report; reviewer never writes files.
 
 ## Behavioral profile
 
@@ -99,7 +99,7 @@ Reviewer:
 
 ## Section coverage ledger
 
-Contract, format, and gate: `review-policy.md` "Coverage ledger" part 3 (SSoT, not restated here). This reviewer's `n/a` reasons: `outside phase gate` (section not on this phase's allowed-section list), the diff-derived perf-budgets+executable-file predicate (impl-review, all five performance sections), or `no budgets defined` (Perf budget compliance alone, when an executable file is in scope but no budgets section exists).
+Contract, format, and gate: `review-policy.md` "Coverage ledger" (SSoT, not restated here). This reviewer's `n/a` reasons: `outside phase gate` (section not on this phase's allowed-section list), the diff-derived perf-budgets+executable-file predicate (impl-review, all five performance sections), or `no budgets defined` (Perf budget compliance alone, when an executable file is in scope but no budgets section exists).
 
 ## Do's
 

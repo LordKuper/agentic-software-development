@@ -24,13 +24,25 @@ function intactGeneratedView(sync, target) {
   return sync.sha256Hex(body) === marker.contentDigest;
 }
 
+function staysWithinRepo(repoRoot, target) {
+  try {
+    const root = fs.realpathSync(repoRoot);
+    const resolved = fs.realpathSync(target);
+    const relative = path.relative(root, resolved);
+    return relative !== '' && relative !== '..' && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative);
+  } catch (_) {
+    return false;
+  }
+}
+
 module.exports = function migrate(ctx) {
   const sync = require(path.join(ctx.repoRoot, '.asd', 'sync.js'));
-  const report = { deleted: [], missing: [], skippedUnmarked: [], skippedModified: [] };
+  const report = { deleted: [], missing: [], skippedUnmarked: [], skippedModified: [], skippedUnsafe: [] };
   for (const parts of RETIRED_TARGETS) {
     const target = path.join(ctx.repoRoot, ...parts);
     const rel = path.relative(ctx.repoRoot, target).replace(/\\/g, '/');
     if (!fs.existsSync(target)) { report.missing.push(rel); continue; }
+    if (!staysWithinRepo(ctx.repoRoot, target)) { report.skippedUnsafe.push(rel); continue; }
     if (!sync.hasOwnershipMarker(target)) { report.skippedUnmarked.push(rel); continue; }
     if (!intactGeneratedView(sync, target)) { report.skippedModified.push(rel); continue; }
     fs.rmSync(target, { force: true });

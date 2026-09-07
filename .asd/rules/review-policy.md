@@ -102,7 +102,7 @@ A verdict whose ledger omits a scoped file, omits a checklist item, omits a requ
 
 **Enforcement (phase-workflow gate):** validation runs before the review file is written. Any invalid ledger is rejected and the same reviewer is re-dispatched fresh in the same iteration; its verdict never counts. The generated manifest, not model prose or totals, defines completeness.
 
-**Persistence (compression, gate unaffected):** the returned ledger is never persisted in full. The phase stores summary counts, `n/a` rows, and finding-linked rule rows only. The manifest digest and validated finding IDs remain resumable evidence; checked/pass/reviewed rows are dropped.
+**Persistence:** persist the validated compact ledger and immutable manifest beside the verdict/findings report, with relative evidence links. No full prose ledger is generated first; no second compression pass discards the evidence needed for deterministic revalidation.
 
 ## Verdict format
 
@@ -127,7 +127,7 @@ Reviewers are read-only (`providers.md`): a reviewer never writes its own review
 
 Examples: `[REVIEW-impl-correctness]: APPROVE` · `[REVIEW-design-documentation]: FAIL` · `[REVIEW-impl-external]: CONCERNS`
 
-Never bury the verdict in prose. The dispatching phase workflow writes the verdict token, findings, and the reduced coverage form (above) to `<sprint>/reviews/<phase>/iter-NN/<reviewer>.md`; phase orchestration reads the first non-empty content line of that written file.
+Never bury the verdict in prose. The dispatching phase workflow writes the verdict token, findings, and the validated compact coverage evidence (above) to `<sprint>/reviews/<phase>/iter-NN/<reviewer>.md`; phase orchestration reads the first non-empty content line of that written file.
 
 ## DoD per review phase
 

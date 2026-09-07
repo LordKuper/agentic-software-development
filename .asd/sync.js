@@ -251,12 +251,15 @@ function substitutePlaceholders(body, values) {
 // wraps_invoke_args: the wrapped CLI's non-interactive-mode argument tail -
 // genuinely differs per CLI (Codex's `exec -` vs Claude Code's `-p "..."
 // --output-format text`), not just the binary name, so it's a separate key
-// from wraps_cli rather than assumed to be a fixed suffix.
-function wrapsCliValues(providerMeta) {
+// from wraps_cli rather than assumed to be a fixed suffix. wraps_model is
+// resolved against the wrapped provider's family table, never copied as a
+// concrete model id into canon.
+function wrapsCliValues(providerMeta, manifest, wrappedProvider) {
   const values = {};
   if (providerMeta.wraps_cli !== undefined) values.wraps_cli = providerMeta.wraps_cli;
   if (providerMeta.wraps_config_key !== undefined) values.wraps_config_key = providerMeta.wraps_config_key;
-  if (providerMeta.wraps_invoke_args !== undefined) values.wraps_invoke_args = providerMeta.wraps_invoke_args;
+  if (providerMeta.wraps_model !== undefined) values.wraps_model = resolveModelFamily(manifest, wrappedProvider, providerMeta.wraps_model);
+  if (providerMeta.wraps_invoke_args !== undefined) values.wraps_invoke_args = substitutePlaceholders(providerMeta.wraps_invoke_args, values);
   return values;
 }
 
@@ -282,7 +285,7 @@ function transformAgentClaude(meta, body, manifest) {
   if (c.memory) lines.push(`memory: ${c.memory}`);
   lines.push('---');
   lines.push('');
-  const substitutedBody = substitutePlaceholders(body, wrapsCliValues(c));
+  const substitutedBody = substitutePlaceholders(body, wrapsCliValues(c, manifest, 'codex'));
   lines.push(substitutedBody.replace(/\n+$/, ''));
   lines.push('');
   return lines.join('\n');
@@ -317,7 +320,7 @@ function transformAgentCodexToml(meta, body, manifest) {
   lines.push(`model = "${tomlEscapeBasic(model)}"`);
   lines.push(`model_reasoning_effort = "${tomlEscapeBasic(c.model_reasoning_effort)}"`);
   lines.push(`sandbox_mode = "${tomlEscapeBasic(c.sandbox_mode)}"`);
-  const substitutedBody = substitutePlaceholders(body, wrapsCliValues(c));
+  const substitutedBody = substitutePlaceholders(body, wrapsCliValues(c, manifest, 'claude'));
   lines.push(`developer_instructions = ${tomlMultilineBody(substitutedBody)}`);
   lines.push('');
   return lines.join('\n');

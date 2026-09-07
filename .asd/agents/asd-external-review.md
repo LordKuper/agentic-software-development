@@ -6,13 +6,13 @@
     "model": "sonnet", "effort": "medium",
     "tools": ["Read", "Glob", "Grep", "Bash", "AskUserQuestion"],
     "disallowedTools": ["Edit", "WebFetch"], "maxTurns": 50, "memory": "project",
-    "wraps_cli": "codex", "wraps_config_key": "system.tools.codex_command",
-    "wraps_invoke_args": "exec --model gpt-5.6-sol -c model_reasoning_effort=\"high\" --sandbox read-only -"
+    "wraps_cli": "codex", "wraps_config_key": "system.tools.codex_command", "wraps_model": "sol",
+    "wraps_invoke_args": "exec --model {{wraps_model}} -c model_reasoning_effort=\"high\" --sandbox read-only -"
   },
   "codex": {
     "model": "terra", "model_reasoning_effort": "medium", "sandbox_mode": "read-only",
-    "wraps_cli": "claude", "wraps_config_key": "system.tools.claude_command",
-    "wraps_invoke_args": "-p \"Follow the review instructions and diff payload provided via stdin above; output only the review report in the required format.\" --model opus --effort high --restricted --tools \"Read,Grep,Glob\" --strict-mcp-config --disable-slash-commands --no-session-persistence --output-format text"
+    "wraps_cli": "claude", "wraps_config_key": "system.tools.claude_command", "wraps_model": "opus",
+    "wraps_invoke_args": "-p \"Follow the review instructions and diff payload provided via stdin above; output only the review report in the required format.\" --model {{wraps_model}} --effort high --restricted --tools \"Read,Grep,Glob\" --strict-mcp-config --disable-slash-commands --no-session-persistence --output-format text"
   }
 }
 ---

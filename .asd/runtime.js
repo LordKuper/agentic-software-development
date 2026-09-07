@@ -8,6 +8,7 @@ const { spawnSync } = require('child_process');
 const CACHE_SCHEMA = 1;
 const MAX_TIMEOUT_MS = 10000;
 const NEGATIVE_TTL_MS = 300000;
+const MAX_NEGATIVE_TTL_MS = 3600000;
 
 function stable(value) {
   if (Array.isArray(value)) return '[' + value.map(stable).join(',') + ']';
@@ -32,15 +33,14 @@ function stringArray(value, name) {
 function runLocal(command, args, timeoutMs) {
   if (typeof command !== 'string' || command.length === 0 || command.includes('\0')) fail('command must be a non-empty executable path');
   stringArray(args, 'args');
-  let result = spawnSync(command, args, {
-    encoding: 'utf8',
-    shell: false,
-    timeout: Math.min(Math.max(Number(timeoutMs) || 0, 1), MAX_TIMEOUT_MS),
-    windowsHide: true,
+  const timeout = Math.min(Math.max(Number(timeoutMs) || 0, 1), MAX_TIMEOUT_MS);
+  const throughPowerShell = process.platform === 'win32' && /\.(cmd|bat|ps1)$/i.test(command);
+  let result = throughPowerShell ? null : spawnSync(command, args, {
+    encoding: 'utf8', shell: false, timeout, windowsHide: true,
   });
-  if (process.platform === 'win32' && result.error && result.error.code === 'ENOENT') {
-    result = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', '& $args[0] @($args[1..($args.Length - 1)])', command].concat(args), {
-      encoding: 'utf8', shell: false, timeout: Math.min(Math.max(Number(timeoutMs) || 0, 1), MAX_TIMEOUT_MS), windowsHide: true,
+  if (process.platform === 'win32' && (throughPowerShell || (result.error && result.error.code === 'ENOENT'))) {
+    result = spawnSync('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', '$ErrorActionPreference = "Stop"; try { $request = [Console]::In.ReadToEnd() | ConvertFrom-Json; & $request.command @($request.args); exit $LASTEXITCODE } catch { exit 1 }'], {
+      encoding: 'utf8', input: JSON.stringify({ command, args }), shell: false, timeout, windowsHide: true,
     });
   }
   return { ok: !result.error && result.status === 0, timedOut: result.error && result.error.code === 'ETIMEDOUT', status: result.status === null ? null : result.status };
@@ -82,7 +82,7 @@ function authGeneration(input) {
 }
 
 function cacheKey(input, authReady) {
-  return fingerprint({ provider: input.provider, model: input.model, command: input.command, auth_args: input.authArgs || defaultAuthArgs(input.provider), auth_ready: authReady, auth_generation: authGeneration(input) });
+  return fingerprint({ provider: input.provider, model: input.model, command: input.command, auth_args: defaultAuthArgs(input.provider), auth_ready: authReady, auth_generation: authGeneration(input) });
 }
 
 /** Checks executable and authentication locally without making a model request. */
@@ -90,8 +90,10 @@ function externalPreflight(input) {
   if (!input || typeof input !== 'object') fail('preflight input required');
   const provider = input.provider;
   const model = input.model;
+  if (provider !== 'codex' && provider !== 'claude') fail('provider must be codex or claude');
+  if (input.authArgs !== undefined) fail('authArgs are not supported');
   if (typeof model !== 'string' || model.length === 0) fail('model required');
-  const authArgs = input.authArgs || defaultAuthArgs(provider);
+  const authArgs = defaultAuthArgs(provider);
   const timeoutMs = input.timeoutMs || 3000;
   const version = runLocal(input.command, ['--version'], timeoutMs);
   if (!version.ok) {
@@ -100,9 +102,15 @@ function externalPreflight(input) {
   const auth = runLocal(input.command, authArgs, timeoutMs);
   const key = cacheKey({ ...input, provider, model, authArgs }, auth.ok);
   if (!auth.ok) return { status: 'authentication-unavailable', model_access: 'unknown', fingerprint: key };
-  const cached = readCache(input.cachePath).entries[key];
-  if (cached && cached.retry_after > (input.now || Date.now())) {
+  const cache = readCache(input.cachePath);
+  const cached = cache.entries[key];
+  const now = Number.isFinite(input.now) ? input.now : Date.now();
+  if (cached && cached.retry_after > now) {
     return { status: 'negative-cache', reason: cached.status, retry_after: cached.retry_after, model_access: 'unknown', fingerprint: key };
+  }
+  if (cached) {
+    delete cache.entries[key];
+    writeCache(input.cachePath, cache);
   }
   return { status: 'local-ready', model_access: 'unknown', fingerprint: key };
 }
@@ -111,9 +119,9 @@ function externalPreflight(input) {
 function recordExternalFailure(input) {
   if (!input || !/^[a-f0-9]{64}$/.test(input.fingerprint || '')) fail('valid fingerprint required');
   if (!['authentication', 'quota', 'reachability', 'command'].includes(input.status)) fail('unsupported external failure status');
-  const now = input.now || Date.now();
+  const now = Number.isFinite(input.now) ? input.now : Date.now();
   const retryAfter = input.retryAfter || now + NEGATIVE_TTL_MS;
-  if (!Number.isFinite(retryAfter) || retryAfter <= now) fail('retryAfter must be in the future');
+  if (!Number.isFinite(retryAfter) || retryAfter <= now || retryAfter > now + MAX_NEGATIVE_TTL_MS) fail('retryAfter outside bounded future');
   const cache = readCache(input.cachePath);
   cache.entries[input.fingerprint] = { status: input.status, retry_after: retryAfter };
   writeCache(input.cachePath, cache);
@@ -136,8 +144,9 @@ function routeTask(input) {
   const mechanical = input.kind === 'mechanical' && input.objectiveInputs === true && checks.includes('deterministic-check') && checks.includes('exhaustive-match-validation');
   let tier = hasRisk || (input.failedObjectiveCheck && attempted >= 1) ? 'critical' : deterministicCommand || mechanical ? 'mechanical' : 'standard';
   if (input.priorTier && ranks[input.priorTier] > ranks[tier]) tier = input.priorTier;
-  const reason = hasRisk ? `risk:${risks[0]}` : input.failedObjectiveCheck && attempted >= 1 ? 'failed-objective-check' : tier === input.priorTier ? 'no-downgrade' : tier === 'mechanical' ? deterministicCommand ? 'deterministic-command' : 'objective-mechanical' : 'normal';
-  return { tier, reason, selector: 'orchestrator' };
+  const execution = deterministicCommand && tier === 'mechanical' && input.priorTier === undefined ? 'command' : 'agent';
+  const reason = hasRisk ? `risk:${risks[0]}` : input.failedObjectiveCheck && attempted >= 1 ? 'failed-objective-check' : tier === input.priorTier ? 'no-downgrade' : execution === 'command' ? 'deterministic-command' : tier === 'mechanical' ? 'objective-mechanical' : 'normal';
+  return { tier, execution, reason, selector: 'orchestrator' };
 }
 
 function rowsById(rows, expected, allowedStatuses, allowedNa, findings, label) {

@@ -1,7 +1,7 @@
 ---
 responsibility:
   owns: single reviewer verdict and validated compact coverage for one iteration
-  excludes: other reviewers, other iterations, fixes, the reviewer's full returned ledger (validated pre-write, never persisted verbatim — `review-policy.md`), manual-verification spec (test-plan.md's single home)
+  excludes: other reviewers, other iterations, fixes, manual-verification spec (test-plan.md's single home)
   delegates_to: creator agent (fixes), sibling review files (other reviewers), test-plan.md (manual-verification spec)
 ---
 
