@@ -3067,6 +3067,78 @@ test('AC-10: a reserved change-risk class name declared target:"artifact" fails 
   assert.doesNotThrow(() => runtime.routeTask({ ...base, risks: [{ name: 'config-file', target: 'artifact' }] }), 'a non-reserved artifact risk name must keep routing on evidence, unaffected by the new guard');
 });
 
+test('AC-11/T-1: neither asd-phase-impl-test.md nor asd-phase-impl-review.md ever inlines an alternate `head` = `git ...` formula for derived_handoff - sprint-lifecycle.md "State recovery" is sole SSoT, guarding the exact regression that shipped (`head` = `git rev-parse HEAD`, contradicting the canonical `git log -1 --format=%H <base>..HEAD -- <pathspec>`)', () => {
+  const lifecycle = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/sprint-lifecycle.md'), 'utf8');
+  assert.ok(lifecycle.includes('never raw `HEAD`'), 'sprint-lifecycle.md "State recovery" must still state the head formula never resolves to raw HEAD');
+
+  const inlineHeadFormula = /`head`\s*=\s*`git[^`]*`/i;
+  for (const phase of ['impl-test', 'impl-review']) {
+    const workflow = fs.readFileSync(path.join(REPO_ROOT, `.asd/workflows/asd-phase-${phase}.md`), 'utf8');
+    assert.strictEqual(workflow.match(inlineHeadFormula), null, `asd-phase-${phase}.md must never inline a \`head\` = \`git ...\` formula of its own - a disagreeing redefinition (e.g. raw git rev-parse HEAD) must be caught here rather than shipping green`);
+  }
+});
+
+test('T-2: `.claude/agent-memory/**` is stated as NOT excluded from the self-hosting review scope everywhere the exclude_paths list itself is restated - sprint-lifecycle.md "Self-hosting", external-review.md (both statements), and t_prompt-external-impl.md', () => {
+  const files = [
+    '.asd/rules/sprint-lifecycle.md',
+    '.asd/rules/external-review.md',
+    '.asd/templates/external-review/t_prompt-external-impl.md',
+  ];
+  const notExcluded = /`\.claude\/agent-memory\/\*\*`[^.]*?not[^.]*?excluded/i;
+  let totalMatches = 0;
+  for (const rel of files) {
+    const content = fs.readFileSync(path.join(REPO_ROOT, rel), 'utf8');
+    const matches = content.match(new RegExp(notExcluded.source, 'gi'));
+    assert.ok(matches, `${rel} must state that .claude/agent-memory/** is not excluded from the self-hosting review scope`);
+    totalMatches += matches.length;
+  }
+  assert.strictEqual(totalMatches, 4, 'external-review.md carries the statement twice (table row + exclude_paths sentence), the other two files once each - a dropped copy anywhere must be caught');
+});
+
+test('T-2: AGENTS.md is sole SSoT for the --apply <generated-view-path...> explanatory parenthetical; asd-dev.md, asd-update/SKILL.md, asd-phase-impl.md and README.md cite providers.md instead of restating it', () => {
+  const fullParenthetical = 'pass generated view paths, never `.asd/` canon: `.claude/agents/<name>.md`, `.codex/agents/<name>.toml`, `.claude/skills/<name>/SKILL.md`, `.agents/skills/<name>/SKILL.md`';
+  const citation = 'Canonical path -> per-provider path';
+  const agents = fs.readFileSync(path.join(REPO_ROOT, 'AGENTS.md'), 'utf8');
+  assert.ok(agents.includes(fullParenthetical), 'AGENTS.md must carry the full --apply explanatory parenthetical - the sole owner');
+
+  const otherSites = [
+    '.asd/agents/asd-dev.md',
+    '.asd/skills/asd-update/SKILL.md',
+    '.asd/workflows/asd-phase-impl.md',
+    'README.md',
+  ];
+  for (const rel of otherSites) {
+    const content = fs.readFileSync(path.join(REPO_ROOT, rel), 'utf8');
+    assert.ok(!content.includes(fullParenthetical), `${rel} must not restate the full --apply explanatory parenthetical - AGENTS.md is the sole SSoT`);
+    assert.ok(content.includes(citation), `${rel} must cite providers.md "${citation}" instead of restating the parenthetical`);
+  }
+});
+
+test('T-2/AC-3: artifact-layout.md documents the <reviewer>.part-N.md split-review naming and the sprint-folder-purity statement alongside the Agent-memory carve-out; README.md and t_review.md carry the matching mirrors', () => {
+  const artifactLayout = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/artifact-layout.md'), 'utf8');
+  assert.ok(artifactLayout.includes('design/iter-NN/<reviewer>.md, <reviewer>.part-N.md'), 'artifact-layout.md path map must name <reviewer>.part-N.md under design reviews');
+  assert.ok(artifactLayout.includes('impl/iter-NN/<reviewer>.md, <reviewer>.part-N.md'), 'artifact-layout.md path map must name <reviewer>.part-N.md under impl reviews');
+  assert.ok(artifactLayout.includes('A sprint folder holds **only** the artifacts named above'), 'artifact-layout.md must state the sprint-folder-purity contract');
+  assert.ok(artifactLayout.includes('`agent-memory/` has no canonical source under `.asd/` and `sync.js` neither generates nor reconciles it'), 'artifact-layout.md must state the Agent-memory read-only carve-out reasoning');
+
+  const readme = fs.readFileSync(path.join(REPO_ROOT, 'README.md'), 'utf8');
+  assert.ok(readme.includes('is hand-authored, not generated'), 'README.md must mirror the agent-memory hand-authored exception to the generated-view read-only rule');
+
+  const reviewTemplate = fs.readFileSync(path.join(REPO_ROOT, '.asd/templates/t_review.md'), 'utf8');
+  assert.ok(reviewTemplate.includes('Interrupted attempts: {{count}} ({{cause}})'), 't_review.md must ship the interrupted-attempts placeholder line the durable-record rule (review-policy.md) depends on');
+  assert.ok(reviewTemplate.includes('<reviewer>.part-N.md'), 't_review.md must ship the split-form note pointing to <reviewer>.part-N.md');
+});
+
+test('T-3/AC-2: providers.md states the never-heredoc file-write rule for artifact content', () => {
+  const providers = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/providers.md'), 'utf8');
+  assert.ok(providers.includes('never a shell heredoc/here-string'), 'providers.md must state that writing an artifact never goes through a shell heredoc/here-string');
+});
+
+test('T-3/AC-7: providers.md\'s asd-dev role-scoped-context row cites the review-policy.md over-engineering/structure-cohesion checklists', () => {
+  const providers = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/providers.md'), 'utf8');
+  assert.ok(providers.includes('`review-policy.md` over-engineering and structure/cohesion checklists'), 'providers.md must cite the over-engineering/structure-cohesion checklists in asd-dev\'s role-scoped-context row');
+});
+
 // ===========================================================================
 // Runner
 // ===========================================================================
