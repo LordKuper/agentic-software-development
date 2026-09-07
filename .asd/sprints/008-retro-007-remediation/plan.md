@@ -80,11 +80,11 @@ hand-edited.
 - [ ] Covers AC-5, AC-14. No material risk to the change: a documentation-wording correction whose target behaviour is already verified
 
 ### Task 7: Bind the over-engineering and SSoT checklists at authoring time
-- [ ] Add a link-plus-applicability statement to `.asd/rules/code-style.md` — the `review-policy.md` over-engineering and structure/cohesion checklists bind at authoring time, mirroring `design-principles.md` §10's wording (AC-7)
-- [ ] Name them in `.asd/workflows/asd-phase-impl.md` step 6's dev instruction block, by link
-- [ ] Add the rule doc carrying the proactive-application statement to `asd-dev`'s `providers.md` "Role-scoped context" row, which does not load it today
-- [ ] Copy zero checklist items — the body stays in `review-policy.md`, its single home
-- [ ] Covers AC-7. Material risk: this is the SSoT trap the sprint exists to fix; a copied checklist is an automatic Documentation-reviewer FAIL
+- [x] Add a link-plus-applicability statement to `.asd/rules/code-style.md` — the `review-policy.md` over-engineering and structure/cohesion checklists bind at authoring time, mirroring `design-principles.md` §10's wording (AC-7)
+- [x] Name them in `.asd/workflows/asd-phase-impl.md` step 6's dev instruction block, by link
+- [x] Add the rule doc carrying the proactive-application statement to `asd-dev`'s `providers.md` "Role-scoped context" row, which does not load it today
+- [x] Copy zero checklist items — the body stays in `review-policy.md`, its single home
+- [x] Covers AC-7. Material risk: this is the SSoT trap the sprint exists to fix; a copied checklist is an automatic Documentation-reviewer FAIL
 
 ### Task 8: The orchestrator commits its own bookkeeping at phase exit
 - [x] State in `.asd/rules/git-strategy.md` "Commit before review" that the main orchestrator commits its own bookkeeping — `state.json`, `decisions-log.md`, review files, `friction-log.md` — at phase exit (AC-9)

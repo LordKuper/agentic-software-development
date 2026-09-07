@@ -8,6 +8,7 @@ Implementation-level rules for code-writing agents (Dev, Tester). Binding during
 - Small atomic functions, single clear responsibility.
 - Readability over cleverness.
 - No hidden coupling, global state, or action at a distance.
+- Apply the over-engineering AND structure/cohesion checklists (`review-policy.md`) and the SSoT iron rule (`artifact-layout.md`) PROACTIVELY while authoring, not only at review — the same items impl-review judges against.
 
 ## 2. Naming
 

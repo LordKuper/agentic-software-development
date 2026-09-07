@@ -69,6 +69,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
      - instruction:
        - read context first
        - tech-reference precondition (refuse-to-implement rule): see `artifact-layout.md` "Tech reference docs" — do not restate here
+      - apply `review-policy.md`'s over-engineering and structure/cohesion checklists and `artifact-layout.md`'s SSoT iron rule while authoring, not only at review (`code-style.md` §1) — do not restate them here
        - work autonomously within plan + persistent docs scope; do NOT pause user for routine approach choices — make the reasonable call and proceed
        - escalate only on a blocker (see Execution mode): emit `QUESTION` for unresolvable requirement ambiguity, `FAILED` for missing tech-reference / unrecoverable failure, or raise Complication Approval via request for user decision **only** when a Simplicity Default trigger fires (new abstraction / dependency / config flag / generalization)
        - manual-steps handling: see `sprint-lifecycle.md` "Impl phase" — do not restate here
