@@ -1,0 +1,94 @@
+{
+  "reviewer": "documentation",
+  "phase": "impl",
+  "iteration": 2,
+  "severity_floor": "medium",
+  "files": [
+    ".asd/agents/asd-dev.md",
+    ".asd/agents/asd-external-review.md",
+    ".asd/agents/asd-tester.md",
+    ".asd/migrations/5.0.0.js",
+    ".asd/release-manifest.json",
+    ".asd/rules/artifact-layout.md",
+    ".asd/rules/checkpoints.md",
+    ".asd/rules/core.md",
+    ".asd/rules/external-review.md",
+    ".asd/rules/git-strategy.md",
+    ".asd/rules/providers.md",
+    ".asd/rules/review-policy.md",
+    ".asd/rules/sprint-lifecycle.md",
+    ".asd/runtime.js",
+    ".asd/skills/asd-init/SKILL.md",
+    ".asd/sync-state.json",
+    ".asd/sync.js",
+    ".asd/templates/external-review/t_prompt-external-design.md",
+    ".asd/templates/external-review/t_prompt-external-impl.md",
+    ".asd/templates/external-review/t_review-scope.json",
+    ".asd/templates/t_AGENTS.md",
+    ".asd/workflows/asd-phase-design-review.md",
+    ".asd/workflows/asd-phase-impl-review.md",
+    ".asd/workflows/asd-phase-impl-test.md",
+    ".asd/workflows/asd-phase-impl.md",
+    ".asd/workflows/asd-phase-plan.md",
+    ".asd/workflows/asd-phase-pr.md",
+    ".asd/workflows/asd-phase-scope.md",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "README.md",
+    "tests/run.js"
+  ],
+  "rules": [
+    "D-1",
+    "D-2",
+    "D-3",
+    "D-4",
+    "D-5",
+    "D-6",
+    "D-7",
+    "D-8",
+    "D-9"
+  ],
+  "sections": [
+    "SSOT",
+    "TEMPLATE_ADHERENCE",
+    "HTML_SHELL",
+    "PROVENANCE",
+    "TRACEABILITY",
+    "PERSISTENT_ACTUALITY",
+    "DOC_COMMENTS",
+    "FRAMEWORK_MODE",
+    "CUSTOM_RULES"
+  ],
+  "n_a": {
+    "files": {},
+    "rules": {
+      "D-3": [
+        "no-html-artifact-in-scope"
+      ],
+      "D-4": [
+        "no-html-artifact-in-scope"
+      ],
+      "D-5": [
+        "documents-disabled"
+      ],
+      "D-6": [
+        "documents-disabled"
+      ]
+    },
+    "sections": {
+      "HTML_SHELL": [
+        "no-html-artifact-in-scope"
+      ],
+      "PROVENANCE": [
+        "no-html-artifact-in-scope"
+      ],
+      "TRACEABILITY": [
+        "documents-disabled"
+      ],
+      "PERSISTENT_ACTUALITY": [
+        "documents-disabled"
+      ]
+    }
+  },
+  "digest": "787d415f406729e54f46e99946964a6d5132c192a4479e872c1838033c9677f5"
+}

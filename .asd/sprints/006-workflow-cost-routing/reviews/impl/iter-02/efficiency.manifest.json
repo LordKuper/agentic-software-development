@@ -1,0 +1,97 @@
+{
+  "reviewer": "efficiency",
+  "phase": "impl",
+  "iteration": 2,
+  "severity_floor": "medium",
+  "files": [
+    ".asd/agents/asd-dev.md",
+    ".asd/agents/asd-external-review.md",
+    ".asd/agents/asd-tester.md",
+    ".asd/migrations/5.0.0.js",
+    ".asd/release-manifest.json",
+    ".asd/rules/artifact-layout.md",
+    ".asd/rules/checkpoints.md",
+    ".asd/rules/core.md",
+    ".asd/rules/external-review.md",
+    ".asd/rules/git-strategy.md",
+    ".asd/rules/providers.md",
+    ".asd/rules/review-policy.md",
+    ".asd/rules/sprint-lifecycle.md",
+    ".asd/runtime.js",
+    ".asd/skills/asd-init/SKILL.md",
+    ".asd/sync-state.json",
+    ".asd/sync.js",
+    ".asd/templates/external-review/t_prompt-external-design.md",
+    ".asd/templates/external-review/t_prompt-external-impl.md",
+    ".asd/templates/external-review/t_review-scope.json",
+    ".asd/templates/t_AGENTS.md",
+    ".asd/workflows/asd-phase-design-review.md",
+    ".asd/workflows/asd-phase-impl-review.md",
+    ".asd/workflows/asd-phase-impl-test.md",
+    ".asd/workflows/asd-phase-impl.md",
+    ".asd/workflows/asd-phase-plan.md",
+    ".asd/workflows/asd-phase-pr.md",
+    ".asd/workflows/asd-phase-scope.md",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "README.md",
+    "tests/run.js"
+  ],
+  "rules": [
+    "OE-1",
+    "OE-2",
+    "OE-3",
+    "OE-4",
+    "OE-5",
+    "OE-6",
+    "OE-7",
+    "OE-8",
+    "OE-9",
+    "OE-10",
+    "OE-11",
+    "OE-12",
+    "OE-13",
+    "SC-1",
+    "CV-1",
+    "PB-1",
+    "PA-1",
+    "PA-2",
+    "PA-3",
+    "PA-4",
+    "PA-5",
+    "PA-6",
+    "PA-7",
+    "ALG-1",
+    "ALG-2",
+    "ALG-3",
+    "RG-1",
+    "HP-1"
+  ],
+  "sections": [
+    "OVER_ENGINEERING",
+    "STRUCTURE_COHESION",
+    "COMPLEXITY_VALUE",
+    "PERF_BUDGET",
+    "PERF_ANTIPATTERNS",
+    "ALGO_COMPLEXITY",
+    "REGRESSION",
+    "HOT_PATH"
+  ],
+  "n_a": {
+    "files": {},
+    "rules": {
+      "PB-1": [
+        "no budgets defined"
+      ],
+      "RG-1": [
+        "no budgets defined"
+      ]
+    },
+    "sections": {
+      "PERF_BUDGET": [
+        "no budgets defined"
+      ]
+    }
+  },
+  "digest": "fca483b2a7aeda4d30ef7ad7bd19ebc5e5e9ee1a51f00428956793f110b4c36e"
+}

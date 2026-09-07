@@ -154,3 +154,31 @@ decision_actor=user. Added to the iter-01 fix set after directive B landed; impl
 - **Routing**: `node .asd/runtime.js route-task` returned `tier: mechanical`, `execution: command`, `reason: deterministic-command`, so the entry ran directly with no `asd-tester` dispatch. First use of the cost-routing path this sprint added, on a case that genuinely qualifies: the "no new risk" conclusion follows from an objective input (the delta file list), leaving only a deterministic run-and-record.
 - **Result**: `node tests/run.js` 127/127 at `e8dea4225fcf97efbd8e95de8ea87b7e9ab23853`; `node .asd/sync.js --check` exit 0. `test_defects_pending` stays null.
 - Routes to `impl-review` iteration 2, where the severity floor rises to `medium`.
+
+## 2026-09-07 — Impl-review iteration 2: verdicts and routing
+
+- **Verdicts** (floor `medium`, HEAD `60a991a`, incremental scope of 32 paths since `11333cb`): correctness CONCERNS:6 · efficiency CONCERNS:4 · testing CONCERNS:4 · documentation CONCERNS:8 · external `APPROVE (skipped: quota)`. No FAIL, so no escalation gate fired; no APPROVE either, so no latch was written.
+- **Ledgers**: all four validated by `runtime.js validate-ledger` → `{"ok":true}`, 32 scoped files each.
+- **External Review skipped a second time** on the same Codex account limit. The scope-manifest transport is therefore still unvalidated end-to-end: the request died at the provider's quota gate before reading a single `files[]` path. Its invoking-side cost did drop sharply (~3.8 KB prompt + manifest versus a 3.5k-line piped diff), but whether `files[]` without a diff is sufficient for a good external review remains unproven.
+- **Character of the findings shifted**: iteration 1 found defects in the original implementation; iteration 2 finds debris left by iteration 1's own deletions (dead `isSelfHostingRepo`, unreachable `renderFullFileItem` fallback, vestigial `runLocal` return fields) plus inconsistencies the six parallel tasks introduced relative to each other. Expected for a wave of this size, and the reason the review loop exists.
+- **Routing**: `review_fixes_pending = "iter-02"`, phase `impl` (review-fix mode). Iteration 3's floor will be `high`.
+
+## 2026-09-07 — Decision: `execution` is AC-11's selector of record
+
+- **Decision**: decision_actor=user; the `selector` field stays removed from `routeTask`. AC-11's "selector" evidence requirement is satisfied by the persisted `{execution, tier, reason, resolved_model}` record.
+- **Rationale**: AC-11 wants a resumable trace of how the executor was chosen. `execution` (`command` vs `agent`) plus `tier` and `reason` determine that completely, while the removed field only ever held the constant `"orchestrator"` and so carried no information per record — in a repo whose hard rule is to minimise runtime tokens. Raised by correctness F5, which correctly refused to let an explicitly named AC element be narrowed silently.
+- **Implementation**: one clause in `providers.md` "Task-class variants and routing" naming `execution` as the selector of record. No code change.
+
+## 2026-09-07 — Decision: drop `mode`/`commits[]` from the scope manifest
+
+- **Decision**: decision_actor=orchestrator; efficiency F3 is accepted and it **supersedes** this sprint's earlier narrowing ("`mode: "commits"` stays a reserved value"), recorded 2026-09-07 under the impl fix entry.
+- **Rationale**: the earlier note explained why only `files` is *wired*; it never justified shipping the unused branch. A two-valued enum with one producer, plus an array no caller populates and a field-list rule that exists only to describe the empty branch, is exactly the premature-config-flag pattern `review-policy.md` makes critical and undroppable. Reintroduce a discriminator when a second producer actually exists. No user gate: this is deletion, not a new abstraction or a scope change.
+- **Affected**: `t_review-scope.json`, `external-review.md` field list and its `mode: "commits"` paragraph, both review workflows' manifest steps, `asd-external-review.md` prose.
+
+## 2026-09-07 — Orchestrator finding: the preflight cache path is undefined
+
+Recorded by the phase orchestrator because no reviewer can see it — `.asd/project/**` is excluded from every review scope by design, so this gap is structurally invisible to the fan-out.
+
+- **Defect**: `cachePath` for the external-review negative cache appears **nowhere** in canon — not in `external-review.md`, not in `asd-external-review.md`, not in `runtime.js`'s own docs. Only `tests/run.js` exercises it, against a throwaway temp path. Each caller therefore invents a location: this phase used `.asd/project/.external-cache.json` in iteration 1, the External Review agent used `.asd/project/external-cache.json` in iteration 2. A negative cache keyed by fingerprint is worthless if writers and readers disagree on where it lives — the iteration-1 quota entry could never have suppressed an iteration-2 probe.
+- **Second defect**: the repo has no `.gitignore` at all, so that machine-local cache — retry windows and failure statuses for one developer's account — would be committed and shipped to every other machine and consumer.
+- **Fix**: name the canonical path once in `external-review.md` (SSoT) and reference it from the agent and both review workflows; add a `.gitignore` entry for it. Flagged independently by the External Review agent in its iteration-2 report.
