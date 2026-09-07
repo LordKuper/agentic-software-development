@@ -77,7 +77,7 @@ Phase 1 brownfield candidates auto-suggest D as default.
   - Per entry: verify current latest version via fetching external doc; flag if user's choice lags or is ahead
   - Architect drafts the section, translates to `language.docs`, writes it into `docs/architecture/stack.html` on disk
   - Post the file path + a short delta summary of what the section now says in `language.chat` (never the full section body) per `language-policy.md`
-  - Request user decision (options): **A) Lock in / B) Revise this section / C) Skip (optional sections only)** — labels/descriptions in `language.chat` per `language-policy.md`
+  - Apply `checkpoints.md`: adaptive pass is allowed only for already-authorized factual/routine content; new or material stack direction remains a hard decision.
   - on B: collect feedback, architect revises, rewrites the section in place, re-posts delta summary, re-ask
   - on C: remove that section (heading + placeholder content) from the on-disk file entirely, then continue
   - repeat until A

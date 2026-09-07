@@ -154,7 +154,7 @@ function summary(active, provider) {
   const iter = reviewNode && reviewNode.iteration != null ? reviewNode.iteration : 0;
   const branch = state.branch || 'unknown';
   const verdict = lastReviewVerdict(reviewNode);
-  const next = nextPhase(phase);
+  const next = phase === 'pr' ? (state.pr && state.pr.state === 'closure-pending' ? 'await-user-closure' : 'await-merge') : nextPhase(phase);
   const iterPart = phase.endsWith('-review') ? ` (iter ${iter})` : '';
   return [
     `[ASD] Active sprint: ${id}`,

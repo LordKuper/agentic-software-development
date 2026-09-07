@@ -1,0 +1,8 @@
+{
+  "phase": "{{PHASE}}",
+  "iteration": "{{ITERATION}}",
+  "base_ref": "{{BASE_REF}}",
+  "head_ref": "{{HEAD_REF}}",
+  "files": ["{{PATH}}"],
+  "exclude_paths": ["{{EXCLUDE_PATH}}"]
+}

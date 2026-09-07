@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:0b7fd6cd791c77724960a2bdc0717745724051d04973678fb0b638c6b912df5c content_digest=sha256:59e6a640a0297cb2feb1af2c052c0208394214cfd36acf9790eba147b30c328f asd_version=4.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:6d6c27c534c698d2ba75ca9f83437ad1d035f39075c8662c4d28a6e7261f17a7 content_digest=sha256:f652c362dc46c1f9f11fbf8f5c3abc19218218859843bcd1e08e574729c4c8a0 asd_version=5.0.0 schema=1
 name: asd-init
 description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
@@ -19,13 +19,13 @@ Operation mapping: see `.asd/rules/providers.md`.
 
 ## Always first (both modes)
 
-0. **Determine self-hosting mode** (`self_hosting` field in `.asd/project/config.yaml` if it exists; else `disabled` — `sync.js`'s `isSelfHostingRepo`) BEFORE any AGENTS.md mutation — self-hosting must never be decided after the sync in step 0a below has already run against the wrong mode.
-0a. **Sync `AGENTS.md`/`CLAUDE.md` managed blocks** (see "AGENTS.md sync"). Runs unconditionally every invocation, fresh or re-init, regardless of subsequent user choices or aborts. In self-hosting mode, AGENTS.md is self-sourced (`providers.md` ownership table) — this step only verifies it, via `statusSelfSourcedManagedBlock`, never replaces its content with `t_AGENTS.md`.
+0. **Determine self-hosting mode** (`self_hosting` field in `.asd/project/config.yaml`; missing, unreadable, or duplicated key → `disabled`, fail closed).
+0a. **Sync `AGENTS.md`/`CLAUDE.md` managed blocks** (see "AGENTS.md sync"). Runs unconditionally every invocation, fresh or re-init, regardless of subsequent user choices or aborts, in both self-hosting and consumer mode — the managed block always generates from `t_AGENTS.md`/`t_CLAUDE.md` (`providers.md` ownership table).
 
 ## Workflow (fresh)
 
 1. Detect greenfield vs brownfield via repo search on source files
-2. Request user input, batch: chat lang, docs lang, subsystem_decomposition, backward_compat, external_review, self_hosting (default `disabled`; only offer `enabled` when this clone is the ASD framework repo itself — detect via presence of `.asd/rules/core.md` + absence of application source outside `.asd/`, or let the user override), and per-document toggles under `documents.*` (`audit`/`prd`/`ux_spec`/`adr`/`c4`; default all `enabled`; when `self_hosting: enabled` proposed, recommend `audit: enabled` with the rest `disabled` as the lean framework-dev profile, user may accept or customize)
+2. Request user input, batch: chat/docs language, decomposition, compatibility, external review, self-hosting, `user_gates` (`strict` default or `adaptive`), and document settings. `documents.audit` is `auto|always|off` (`auto` default; legacy enabled/disabled normalize to always/off); other document flags keep their existing values. For self-hosting recommend audit `auto` and other documents disabled.
 3. If decomposition enabled → request user decision: diagram_tool (`likec4` | `mermaid`)
 4. Detect OS via command execution (silent; no confirm yet)
 5. Detect external tools (silent; record results, do not prompt per-tool yet):
@@ -48,12 +48,12 @@ Operation mapping: see `.asd/rules/providers.md`.
      the search-derived impacted set is the safe fallback
    Record into proposal; do not prompt per-command yet
 8a. **Consolidated proposal & edit gate** — present every auto-detected/defaulted value in one structured block in `language.chat`:
-    - OS, external tools (with missing flags + install hint), review iteration limits, git settings, detected build/test/lint/run commands, detected `test_affected` selector or "none detected — falls back to search-derived impacted set"
+    - OS, tools, review limits, git settings, `user_gates`, normalized audit mode, detected build/test/lint/run commands and any affected-test selector
     Then request user decision: `accept-all` | `edit-section` | `abort`.
     - `edit-section` → request user decision on which section (os | tools | review | git | commands), collect new values, re-show proposal, loop until `accept-all`
     - Missing required tools (designmd if `documents.ux_spec: enabled`; likec4 if decomp+likec4; the wrapped external-review CLI if external_review) → must resolve here: install / override path / disable feature. Do NOT silently proceed with missing required tools.
     Only after `accept-all` proceed to write.
-9. Write `.asd/project/config.yaml` from `t_config.yaml` with all approved fields (including `project.diagram_tool` when decomp enabled, `self_hosting`, `documents.*`)
+9. Write `.asd/project/config.yaml` from `t_config.yaml` with approved `user_gates`, audit mode and other fields.
 10. Ask user what custom rules to add (separately for common / design / coding scopes); write three files from templates: `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`. Empty scope still writes template stub (header + intro), so agents always find the file.
 11. Write `.asd/project/stubs.md` from `t_stubs.md` (empty registry — downstream phases expect the file to exist)
 12. Write `.asd/project/commands.yaml` (from `t_commands.yaml` + detected + OS-specific `custom.designmd-*` only when `documents.ux_spec: enabled`); `test_affected` written only when detected, omitted (not written empty/guessed) otherwise — a `.asd/project/commands.yaml` from an older ASD version without the field keeps working unchanged since the impacted set falls back to the search-derived definition
@@ -78,7 +78,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 4. Per section: ask new value → add to pending change-set (do not write yet)
 5. Show consolidated diff of all pending edits → request user decision: `accept-all` | `edit-section` | `abort`; loop until accepted
 6. Apply diff; write config
-7. If `review.external_review=enabled`, resolve and probe the wrapped CLI from the final config exactly as fresh init does; report the resolved command and availability. An unavailable probe leaves the setting intact but is surfaced as the explicit runtime availability-skip reason (`external-review.md` "Detection").
+7. If `review.external_review=enabled`, resolve and probe the wrapped CLI from the final config exactly as fresh init does; report the resolved command and availability. An unavailable probe leaves the setting intact but is surfaced as the explicit runtime availability-skip reason (`external-review.md` "Detection and negative cache").
 
 ## AGENTS.md sync
 
@@ -117,8 +117,8 @@ Four custom commands emitted only when `documents.ux_spec: enabled` (else omitte
 
 ## Artefacts produced
 
-- `.asd/project/config.yaml` (incl. `self_hosting`, `documents.*`)
-- `AGENTS.md`, `CLAUDE.md` — consumer mode: managed block synced from `t_AGENTS.md`/`t_CLAUDE.md`; self-hosting mode: `AGENTS.md` self-sourced (verified, never generated), `CLAUDE.md` still synced
+- `.asd/project/config.yaml` (incl. `self_hosting`, `user_gates`, `documents.*`)
+- `AGENTS.md`, `CLAUDE.md` — managed block synced from `t_AGENTS.md`/`t_CLAUDE.md` in both consumer and self-hosting mode
 - `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`, `stubs.md`
 - `.asd/project/commands.yaml`
 - `docs/architecture/c4/` content per `diagram_tool` (decomp only)

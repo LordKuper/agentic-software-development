@@ -19,7 +19,7 @@
 - Run command — `git status`, `git branch --show-current`
 - Request user decision — new-sprint confirm, resume/abort choice
 - Delegate to skill — phase skills only
-- No direct writes — phase skills + PM own all writes
+- No direct writes — phase skills and their inline orchestrator own writes
 
 ## Workflow
 
@@ -40,7 +40,7 @@
 1. Read `.asd/sprints/<NNN-slug>/state.json`
 2. Show: sprint id, current phase, review iteration (`reviews.design.iteration` when phase=`design-review`, `reviews.impl.iteration` when phase=`impl-review`), last review verdict (if any)
 3. Request user decision: resume (default) | re-run current phase | re-run earlier phase | abort sprint
-4. Delegate to the matching phase skill. *re-run earlier phase* = rollback: when target phase strictly earlier than a review's input-producing phase, the target phase skill's PM state update resets that review counter + severity floor per **rollback reset** in `sprint-lifecycle.md` (`reviews.design.iteration` resets when rolling back to `scope`/`audit`; `reviews.impl.iteration` resets when rolling back to `scope`…`plan`)
+4. Delegate to the matching phase skill. *re-run earlier phase* = rollback: its inline state update resets the review counter + severity floor per **rollback reset** in `sprint-lifecycle.md`.
 
 ### Step 3: phase chain advancement
 After any phase skill returns:
@@ -52,7 +52,7 @@ After any phase skill returns:
 User may interrupt anytime; asd-sprint re-detects state on next invocation.
 
 ## Artefacts produced
-None directly. All writes inside phase skills (PM, creators, reviewers).
+None directly. All writes happen inside phase skills (orchestrator, creators, reviewers).
 
 ## Agents dispatched
 None directly. Phase skills delegate to agents.

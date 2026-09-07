@@ -10,55 +10,69 @@ Controlled by `review.external_review` in config (`enabled` | `disabled`). If `d
 
 OS read from `system.os` in config (set by `/asd-init`).
 
-Prompt passed via **heredoc/here-string straight into the wrapped CLI's stdin — never written to disk**. This agent runs read-only on both providers (`codex.sandbox_mode: read-only`, Claude's `tools` drop `Write`), so no step in the invocation may touch the filesystem. The wrapped CLI's own stdout is captured directly as its final message (the text verdict) — no `-o <out-file>`, no temp file, no cleanup step, because nothing was ever created on disk.
+Prompt passed via **heredoc/here-string straight into the wrapped CLI's stdin — never written to disk**. This agent runs read-only on both providers, so no step in the invocation may touch the filesystem. The wrapped CLI's own stdout is captured directly as its final message (the text verdict) — no `-o <out-file>`, no temp file, no cleanup step, because nothing was ever created on disk.
 
-The command TAIL differs per wrapped CLI — this is a real syntax difference (each CLI's own non-interactive/scripted mode takes different arguments, including the read-only enforcement flag), not just a binary-name swap. Canonical tail per CLI (including required sandbox/allowedTools flags) lives once, in the agent file's `wraps_invoke_args` (`asd-external-review.md` frontmatter, `claude`/`codex` blocks) — not restated here.
+The command TAIL differs per wrapped CLI — this is a real syntax difference. Canonical tail per CLI, including explicit model, effort, and read-only boundary, lives once in the agent file's `wraps_invoke_args` (`asd-external-review.md` frontmatter) — not restated here.
 
-| OS | Probe | Review command |
+The tails were verified against local Codex CLI 0.150.1 (`exec --help`: `--model`, `--config`, `--sandbox`) and Claude CLI 2.1.250 (`--help`: `--model`, `--effort`, `--restricted`, `--tools`, `--strict-mcp-config`, `--disable-slash-commands`, `--no-session-persistence`), and Anthropic's CLI reference for print/model/tool flags. `--allowedTools` alone is not a read-only boundary.
+
+| OS | Preflight | Review command |
 |---|---|---|
-| windows | `<resolved-command> --version` (PowerShell) | `@'<rendered prompt + diff payload>'@ \| <resolved-command> <wraps_invoke_args>` (here-string piped to stdin) |
-| linux | `<resolved-command> --version` (bash) | `<resolved-command> <wraps_invoke_args> <<'EOF'` / `<rendered prompt + diff payload>` / `EOF` (heredoc piped to stdin) |
-| macos | `<wrapped-cli> --version` (bash) | same as linux |
+| windows | runtime helper with direct arguments or its fixed PowerShell shim | `@'<rendered prompt + scope manifest>'@ \| <resolved-command> <wraps_invoke_args>` (here-string piped to stdin) |
+| linux | runtime helper with direct arguments | `<resolved-command> <wraps_invoke_args> <<'EOF'` / `<rendered prompt + scope manifest>` / `EOF` (heredoc piped to stdin) |
+| macos | runtime helper with direct arguments | same as linux |
 
-Both forms read prompt+diff from stdin; the command's own stdout is the final message text verdict. No `-o <out-file>` for either CLI.
+Both forms read prompt+scope manifest from stdin; the wrapped CLI's own read-only filesystem tools resolve `files[]` content from the repo (never from the manifest bytes) — the command's own stdout is the final message text verdict. No `-o <out-file>` for either CLI.
 
 `<wrapped-cli>` is `codex` under Claude Code / `claude` under Codex — command name on every OS (each ships a shell shim plus OS-specific wrappers on Windows; no compiled `.exe`). `<resolved-command>` is that default unless the config override (`system.tools.codex_command` under Claude, `system.tools.claude_command` under Codex) is non-empty, in which case it replaces the lookup path for both probe and review.
 
-## Detection
+## Detection and negative cache
 
-At review phase start, agent probes `<resolved-command> --version`. On failure (non-zero exit, command not found):
+Before wrapper dispatch or scope manifest assembly, phase orchestration calls `node .asd/runtime.js external-preflight --input <json>`. Input supplies provider, strong wrapped model, resolved command, cache path — canonical, single value for every caller: `.asd/project/external-cache.json` (gitignored, machine-local retry/failure state, never committed) — and non-secret authentication generation or credential-file metadata reference; custom authentication arguments are rejected. The helper uses direct bounded process arguments, never a shell-interpolated command; on Windows it uses only a fixed PowerShell shim when direct executable lookup fails. It runs `--version`, then fixed `codex login status` or `claude auth status --json`; command/auth text is never persisted. `local-ready` means only that the executable and local authentication status were observed. Model access, quota, and reachability remain `unknown` until the first real review request.
 
-- Return `APPROVE (skipped: external review unavailable: <resolved-command>)`; the dispatching workflow persists that exact reason in the external review output and appends it to `<sprint>/decisions-log.md` for sprint `<NNN-slug>` iteration `<N>`
+On a real-request authentication, quota, reachability, or command failure, phase orchestration calls `node .asd/runtime.js external-record-failure --input <json>` with the preflight fingerprint and a finite retry-after of at most one hour. The cache stores only status and retry-after. Its identity binds the selected model, resolved command, fixed auth check, auth status, and non-secret auth generation; expiry or a changed identity restores an attempt. Preflight always reruns local executable and auth checks before honoring a negative cache. It never sends a paid probe.
+
+On command/auth failure or an active negative cache:
+
+- Return `APPROVE (skipped: external review unavailable: <specific status>)`; the dispatching workflow persists the exact status in the external review output and appends it to `<sprint>/decisions-log.md` for sprint `<NNN-slug>` iteration `<N>`
 - Continue without external review, no user prompt
+
+An availability skip satisfies only that iteration and never creates an APPROVE latch. A later local-ready result dispatches External Review normally.
 
 ## Phase-scoped payload
 
-Diff payload carries only what the phase reviews. Cross-phase artifacts, when needed, go in as **reference paths** (read-only context), never as diff.
+The reviewer has direct repo read access and fetches its own content — it is handed a **scope manifest** (`external-review/t_review-scope.json`), never a rendered diff. This is the SSoT for the manifest contract; the agent and both review workflows link here rather than restating it.
 
-| Phase | Diff payload | Reference (paths only, not diffed) |
+Manifest fields: `phase`, `iteration`, `base_ref`, `head_ref` (impl-review only — see below), `files[]` (changed-path list), and `exclude_paths[]` (repo-relative pathspec exclusions on **review scope**: never listed in `files[]`, never a valid finding location, even if reachable another way). `exclude_paths[]` bounds what the reviewer judges, not what it may read — the prompt's named project-context reference paths (below) stay readable regardless and are never valid finding locations either. The reviewer resolves all content from the repo — never from manifest payload bytes.
+
+Both phase workflows populate `files[]` = changed-path list at the reviewer's current, post-change working tree — this works identically for both wrapped CLIs regardless of git/shell tool access, since it needs only a file read, never a historical `git show`/`git diff`. For **impl-review only**, `base_ref`/`head_ref` also travel on the manifest so a wrapped CLI with its own git access (e.g. Codex `exec`, unrestricted shell under `--sandbox read-only`) may sharpen scope with `git diff <base_ref>..<head_ref> -- <file>` if it chooses; a wrapped CLI without shell access (Claude `-p --tools "Read,Grep,Glob"`, no Bash) reads current file content directly. design-review's manifest carries `base_ref`/`head_ref` as empty strings — its scope is drafts as they exist per iteration snapshot, not a commit range, so there is no ref to name.
+
+| Phase | scope (`files[]`) | `exclude_paths` |
 |---|---|---|
-| design-review | sprint design drafts only — `<sprint>/design/**`, minus generated output (only the drafts that exist per `documents.*`) | concept, custom rules, accessibility baseline |
-| impl-review, `self_hosting: disabled` (consumer, default) | code and tests only — `.asd/**` and `docs/**` excluded | prd.html (if enabled), adr.html (if enabled), stack, custom rules, commands |
-| impl-review, `self_hosting: enabled` (this repo) | everything in the repo IS framework source (`sprint-lifecycle.md` "Self-hosting") — the whole diff, minus `.asd/project/**`, `.asd/sprints/**`, generated `.claude/**`/`.codex/**`/`.agents/skills/**` | sprint.md, custom rules, commands |
+| design-review | sprint design drafts only — `<sprint>/design/**`, minus generated output (only the drafts that exist per `documents.*`) | `c4-full/dist/` |
+| impl-review, `self_hosting: disabled` (consumer, default) | changed code and test files | `.asd/**`, `docs/**` |
+| impl-review, `self_hosting: enabled` (this repo) | changed files anywhere in the repo — everything here IS framework source (`sprint-lifecycle.md` "Self-hosting") | `.asd/project/**`, `.asd/sprints/**`, generated `.claude/**`/`.codex/**`/`.agents/skills/**` |
 
-design-review payload never contains source code; consumer-mode impl-review payload never contains design/doc diffs (a doc-vs-code drift finding belongs to the internal Documentation reviewer). Both exclusions also keep C4 schemas out of consumer impl-review: likec4 lives under `<sprint>/design/c4-full/` and `docs/architecture/c4/`.
+Cross-phase reference material (concept, custom rules, accessibility baseline, prd/adr/stack/commands) travels as **paths only** in the rendered prompt (`t_prompt-external-{design,impl}.md` "project context"), never inside the scope manifest, never diffed. design-review scope never names source code; consumer-mode impl-review scope never names design/doc files (a doc-vs-code drift finding belongs to the internal Documentation reviewer). `exclude_paths` also keeps C4 schemas out of consumer impl-review: likec4 lives under `<sprint>/design/c4-full/` and `docs/architecture/c4/`.
 
-**Generated output never enters any payload.** Excluded everywhere: `**/dist/**` (likec4 build), `design-system.html`, `architecture.html` — all derived from a source the reviewer already sees (`*.c4`, `DESIGN.md`, `subsystems.yaml`). Review the source, not the build.
+**Generated output is always in `exclude_paths`.** `**/dist/**` (likec4 build), `design-system.html`, `architecture.html` — all derived from a source the reviewer already sees (`*.c4`, `DESIGN.md`, `subsystems.yaml`). Review the source, not the build.
 
-`<pathspec>` for impl-review: `self_hosting: disabled` → `-- . ':(exclude).asd/**' ':(exclude)docs/**'`; `self_hosting: enabled` → `-- . ':(exclude).asd/project/**' ':(exclude).asd/sprints/**' ':(exclude).claude/**' ':(exclude).codex/**' ':(exclude).agents/skills/**'` — starts from the whole repo, not an allow-list, so any real framework source (CI configs, root-level configs, anything else added later) is included automatically without needing a matching pathspec edit
+`exclude_paths` for impl-review: `self_hosting: disabled` → `.asd/**`, `docs/**`; `self_hosting: enabled` → `.asd/project/**`, `.asd/sprints/**`, `.claude/**`, `.codex/**`, `.agents/skills/**` — the reviewer starts from the whole repo, not an allow-list, so any real framework source (CI configs, root-level configs, anything else added later) is included automatically without needing a matching manifest edit.
 
-## Iteration-aware diff
+## Iteration semantics
 
-| Phase | Iteration | Diff source |
+Only the transport changed (diff payload → scope manifest); the incremental rule itself did not.
+
+| Phase | Iteration | Manifest content |
 |---|---|---|
-| design-review | 1 | full content of `<sprint>/design/` files, minus `c4-full/dist/` |
-| design-review | 2+ | per-file diff since previous iteration snapshot |
-| impl-review | 1 | `git diff <git.base_branch>...HEAD <pathspec>` |
-| impl-review | 2+ | `git diff <state.json reviews.impl.iteration_heads["iter-(N-1)"]>...HEAD <pathspec>` |
+| design-review | 1 | `files[]` = full set of in-scope draft paths (reviewer reads full current content), minus `c4-full/dist/` |
+| design-review | 2+ | `files[]` = draft paths changed since previous iteration snapshot |
+| impl-review | 1 | `files[]` = changed files on `<git.base_branch>...HEAD <exclude_paths>`, `base_ref`=`<git.base_branch>`, `head_ref`=`HEAD` |
+| impl-review | 2+ | `files[]` = changed files on `<state.json reviews.impl.iteration_heads["iter-(N-1)"]>...HEAD <exclude_paths>`, `base_ref`=that sha, `head_ref`=`HEAD` |
 
-Iteration 1 covers all sprint work in that phase; later iterations cover every commit since the sha recorded at the start of the previous iteration — not just the last commit, so a multi-commit review-fix cycle stays fully covered. Absent-key fallback (sprint in flight when `iteration_heads` shipped): `sprint-lifecycle.md` "State recovery" (sole SSoT). design-review persists a file snapshot each iteration; next iteration reads it to compute its diff.
+Iteration 1 covers all sprint work in that phase; later iterations cover every commit since the sha recorded at the start of the previous iteration — not just the last commit, so a multi-commit review-fix cycle stays fully covered. Absent-key fallback (sprint in flight when `iteration_heads` shipped): `sprint-lifecycle.md` "State recovery" (sole SSoT). design-review persists a file snapshot each iteration; next iteration reads it to compute its manifest.
 
-Agent dispatched fresh each iteration (`review-policy.md` clean-context). Incremental diff narrows *input*, not context.
+Agent dispatched fresh each iteration (`review-policy.md` clean-context). Incremental manifest narrows *input*, not context.
 
 ## Output mapping
 

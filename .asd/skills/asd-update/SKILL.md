@@ -11,7 +11,7 @@ Pull latest ASD framework files into this consumer project. Overwrites **framewo
 
 ## Self-hosting guard
 
-Read `self_hosting` from `.asd/project/config.yaml` first (`sync.js`'s `isSelfHostingRepo`). If `enabled`: this command is for pulling framework files INTO a consumer project — this repo IS the framework. Print a one-line message ("asd-update is for consumer projects; this repo develops ASD directly — use a self-hosting sprint instead") and stop. No mutation, no fetch.
+Read `self_hosting` from `.asd/project/config.yaml` first; missing, unreadable, or a duplicated key → treat as `disabled` (fail closed). If `enabled`: this command is for pulling framework files INTO a consumer project — this repo IS the framework. Print a one-line message ("asd-update is for consumer projects; this repo develops ASD directly — use a self-hosting sprint instead") and stop. No mutation, no fetch.
 
 ## What it touches
 

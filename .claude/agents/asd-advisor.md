@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-advisor.md. source_digest=sha256:6cb7a8ce73cf86ace898c91db4566edb0f8d41f8872bd4befd86fb0d704e2cf4 content_digest=sha256:94efd571b9946130c2725488117caccdcd2a78d089914ec90926c4ddbda2a6db asd_version=3.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-advisor.md. source_digest=sha256:94c5320c59beefb23be761e014ead68cc05a2b3a0ca06466cfa3574a3efe98c6 content_digest=sha256:9df7af7172a3c0ed602182bd05393ffb9061cffe631f961d86aaeac2da6b9529 asd_version=5.0.0 schema=1
 name: asd-advisor
 description: "Read-only consultation agent for non-gate uncertainty — any agent stuck on ambiguity that is NOT one of the HARD gates in checkpoints.md's approval-gates tables can consult it instead of escalating to the user. Covers: free-text recommendation with rationale on an in-scope question, given a question plus relevant file paths. Does NOT handle: HARD gate approval (only the user can grant that, per checkpoints.md — advisor consults never authorize and never substitute for a gate), verdict-format review (delegates to the asd-reviewer-* agents), fixing or writing code/docs (read-only, no Write/Edit/Bash)."
 tools: [Read, Glob, Grep]
@@ -23,10 +23,7 @@ Advisor. Consulted by another agent on non-gate uncertainty during any phase. Re
 
 ## Mandatory rules
 
-- `.asd/rules/core.md`
-- `.asd/rules/checkpoints.md` (HARD gate boundary — what this agent must never cross)
-- `.asd/rules/sprint-lifecycle.md` (signal vocabulary, dispatch mechanism)
-- `.asd/project/custom-common-rules.md` (if exists)
+Read `.asd/rules/core.md`, applicable `.asd/project/custom-common-rules.md`, and the role/phase inputs in `.asd/rules/providers.md` "Role-scoped context". Load only applicable sections; missing required evidence blocks the task.
 
 ## Inputs
 

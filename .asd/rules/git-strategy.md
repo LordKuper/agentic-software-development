@@ -30,9 +30,15 @@ On resolution: row **deleted** from stubs.md (no status column; deletion = resol
 
 `pr` phase blocks if any stub has `Sprint = <current-NNN-slug>` and Reason does NOT start with `(accepted-debt)`. Devs must resolve, migrate, or mark accepted-debt before PR.
 
+## Commit before review
+
+`impl` (and its review-fix/test-fix modes) and `impl-test` each commit all work before the sprint advances to `impl-review` — the clean-worktree precondition there (`sprint-lifecycle.md` "Impl-review clean-worktree precondition") blocks entry on any uncommitted change, since the reviewed diff is computed from commits. `impl-test`'s own commit obligation is stated once, in `sprint-lifecycle.md` "Impl-test commits its own output".
+
+`impl-review` itself also commits: when it dispatches `asd-tester` to fix a test in place, that fix must land as a commit before the phase's `Suite run` records its `HEAD` and before `pr` open-mode's `git diff --quiet` skip check runs — an uncommitted in-place fix is invisible to both.
+
 ## PR self-review checklist
 
-PM confirms before opening PR:
+The main orchestrator confirms before opening PR:
 
 - Studied existing code in touched areas
 - Can explain every changed line
@@ -43,25 +49,25 @@ PM confirms before opening PR:
 
 ## PR creation
 
-Triggered only after DoD met AND user confirmation.
+Triggered only after DoD met and the active `checkpoints.md` policy permits publication. In strict this needs user confirmation; adaptive publication needs recorded authority/evidence and any host permission.
 
 - PR title MUST follow Conventional Commits (`<type>(<scope>): <subject>`) — becomes the squash-merge commit subject
 - `gh_enabled: true` + `auto_pr: true` → `gh pr create` with body from `t_pr-description.md`
 - `gh_enabled: false` → push branch, print PR-ready summary (title, body, compare URL)
 - `auto_pr: false` → push, prepare summary, wait for user to open PR manually
 
-## Finalize PR (autonomous)
+## Finalize after closure
 
-The `pr` phase merge-mode terminal-state write (`sprint-lifecycle.md` "PR phase") still lands on `git.base_branch` only via a PR — the branch rule above has no exceptions. What's different for this one PR class: PM opens **and merges it itself**, no user confirmation gate. Scope is fixed and mechanical — a `chore(sprint-<NNN-slug>): finalize terminal state — PR #<N> merged` branch off `git.base_branch` touching only the archived sprint's own `state.json` (`phase`/`pr.state`/`updated_at`), created after the sprint's own PR is already confirmed merged. `gh_enabled: true` → `gh pr create` then `gh pr merge --squash` immediately; merge failure (branch protection this agent can't satisfy) → halt, leave the PR open for manual merge, do not retry indefinitely. `gh_enabled: false` → no autonomous path exists (no `gh` to merge with); falls back to the standard push + manual PR flow, same as any other PR under this config. Every other PR — the sprint's own — is unaffected: always requires user confirmation per "PR creation" above.
+After confirmed merge and explicit hard closure approval, the main orchestrator creates `chore/finalize-sprint-<NNN-slug>` from `git.base_branch`. Its companion PR contains the terminal state and archive move, then merges through the normal configured Git path. No direct base push. If the companion PR cannot merge, leave it open and keep the sprint closure pending.
 
 ## Pre-existing uncommitted changes
 
-If working tree is dirty at `/asd-sprint` start, PM stops and asks user to commit or stash before sprint creation. No silent stashing.
+If working tree is dirty at `/asd-sprint` start, the main orchestrator stops and asks user to commit or stash before sprint creation. No silent stashing.
 
 ## Versioning & Changelog (self-hosting only)
 
 Applies only when `self_hosting: enabled` (`sprint-lifecycle.md` "Self-hosting") — a consumer project's own app version is unrelated to ASD's `asd_version`.
 
-`pr` phase, open mode, before composing the PR: bump `asd_version` in `.asd/release-manifest.json` per [SemVer](https://semver.org/), inferred from the sprint's Conventional Commit types (highest wins): `fix`→PATCH, `feat`→MINOR, `!`/`BREAKING CHANGE` footer→MAJOR. Add a matching `## v<version>` section to root `CHANGELOG.md` (newest first, English), grouped `Added|Changed|Deprecated|Removed|Fixed|Security`, describing consumer-facing impact — not implementation detail.
+`pr` phase, open mode, before composing the PR: bump `asd_version` in `.asd/release-manifest.json` per [SemVer](https://semver.org/), inferred from the sprint's Conventional Commit types (highest wins): `fix`→PATCH, `feat`→MINOR, `!`/`BREAKING CHANGE` footer→MAJOR. Add a matching `## v<version>` section to root `CHANGELOG.md` (newest first, English), grouped `Added|Changed|Deprecated|Removed|Fixed|Security`, describing consumer-facing impact — not implementation detail. Under `backward_compat: migration`, this bump is also the blocking DoD check that `max(.asd/migrations/*.js filename version) <= asd_version` — a migration a consumer never reaches because the version bump does not cover it fails the bump, not just the migration.
 
-`pr` phase, merge mode, after confirming merge: create annotated tag `v<asd_version>` on the merge commit; `gh release create v<asd_version> --title v<asd_version> --notes-file <extracted CHANGELOG section>`.
+After the companion closure PR merges: create annotated tag `v<asd_version>` on that merge commit; `gh release create v<asd_version> --title v<asd_version> --notes-file <extracted CHANGELOG section>`.

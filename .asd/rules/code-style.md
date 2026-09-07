@@ -86,7 +86,7 @@ Implementation-level rules for code-writing agents (Dev, Tester). Binding during
 
 ## 13. Dependencies
 
-- A new third-party dependency requires explicit user approval before use.
+- A new third-party dependency follows `checkpoints.md` decision policy before use; retain trust-boundary and compatibility checks.
 - Prefer the standard library. Pin dependency versions.
 
 ## 14. External API Verification

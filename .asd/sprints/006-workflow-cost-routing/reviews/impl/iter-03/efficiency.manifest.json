@@ -1,0 +1,87 @@
+{
+  "reviewer": "efficiency",
+  "phase": "impl",
+  "iteration": 3,
+  "severity_floor": "high",
+  "files": [
+    ".asd/agents/asd-external-review.md",
+    ".asd/agents/asd-tester.md",
+    ".asd/migrations/5.0.0.js",
+    ".asd/release-manifest.json",
+    ".asd/rules/external-review.md",
+    ".asd/rules/git-strategy.md",
+    ".asd/rules/providers.md",
+    ".asd/rules/sprint-lifecycle.md",
+    ".asd/runtime.js",
+    ".asd/sync.js",
+    ".asd/templates/external-review/t_prompt-external-design.md",
+    ".asd/templates/external-review/t_prompt-external-impl.md",
+    ".asd/templates/external-review/t_review-scope.json",
+    ".asd/workflows/asd-phase-design-review.md",
+    ".asd/workflows/asd-phase-impl-review.md",
+    ".asd/workflows/asd-phase-impl-test.md",
+    ".asd/workflows/asd-phase-impl.md",
+    ".gitignore",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "README.md",
+    "tests/run.js"
+  ],
+  "rules": [
+    "OE-1",
+    "OE-2",
+    "OE-3",
+    "OE-4",
+    "OE-5",
+    "OE-6",
+    "OE-7",
+    "OE-8",
+    "OE-9",
+    "OE-10",
+    "OE-11",
+    "OE-12",
+    "OE-13",
+    "SC-1",
+    "CV-1",
+    "PB-1",
+    "PA-1",
+    "PA-2",
+    "PA-3",
+    "PA-4",
+    "PA-5",
+    "PA-6",
+    "PA-7",
+    "ALG-1",
+    "ALG-2",
+    "ALG-3",
+    "RG-1",
+    "HP-1"
+  ],
+  "sections": [
+    "OVER_ENGINEERING",
+    "STRUCTURE_COHESION",
+    "COMPLEXITY_VALUE",
+    "PERF_BUDGET",
+    "PERF_ANTIPATTERNS",
+    "ALGO_COMPLEXITY",
+    "REGRESSION",
+    "HOT_PATH"
+  ],
+  "n_a": {
+    "files": {},
+    "rules": {
+      "PB-1": [
+        "no budgets defined"
+      ],
+      "RG-1": [
+        "no budgets defined"
+      ]
+    },
+    "sections": {
+      "PERF_BUDGET": [
+        "no budgets defined"
+      ]
+    }
+  },
+  "digest": "bb66305848278ffc29fd93ac86e60684eeaf017ba2e7547be534f1edbebbd114"
+}

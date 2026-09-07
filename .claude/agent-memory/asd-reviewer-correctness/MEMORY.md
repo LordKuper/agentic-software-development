@@ -1,0 +1,1 @@
+- [Review method: no shell](feedback_review-method-no-shell.md) — read manifest `files[]` directly, clean context per iteration, hunt cross-file dangling references

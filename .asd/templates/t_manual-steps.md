@@ -18,7 +18,7 @@ Not the same as:
 
 Manual steps = operational *setup* actions the agent cannot perform autonomously.
 
-PM validates every new entry for necessity before the impl phase halts. Kept only when the action genuinely cannot be done autonomously (needs access, a secret, an external account, or an authority the agent lacks). If PM judges it autonomously doable, the entry is rejected and the task returns to the dev to implement directly.
+Main orchestrator validates every new entry for necessity before the impl phase halts. Kept only when the action genuinely cannot be done autonomously (needs access, a secret, an external account, or an authority the agent lacks). If the orchestrator judges it autonomously doable, the entry is rejected and the task returns to the dev to implement directly.
 
 Status `pending` → `done`. The registering dev flips to `done` only after running its `Verification`. Sprint-scoped; archived with the sprint.
 

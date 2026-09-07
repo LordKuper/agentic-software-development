@@ -1,0 +1,192 @@
+{
+  "sprint_id": "006-workflow-cost-routing",
+  "branch": "sprint/006-workflow-cost-routing",
+  "phase": "pr",
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "adr": false,
+    "c4": false
+  },
+  "skipped_phases": [
+    "design",
+    "design-review",
+    "design-promote"
+  ],
+  "reviews": {
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "iteration": 4,
+      "verdicts": {
+        "iter-01": {
+          "correctness": "CONCERNS",
+          "efficiency": "FAIL",
+          "testing": "FAIL",
+          "documentation": "CONCERNS",
+          "external": "APPROVE (skipped: quota — Codex usage limit)"
+        },
+        "iter-02": {
+          "correctness": "CONCERNS",
+          "efficiency": "CONCERNS",
+          "testing": "CONCERNS",
+          "documentation": "CONCERNS",
+          "external": "APPROVE (skipped: quota — Codex usage limit)"
+        },
+        "iter-03": {
+          "correctness": "CONCERNS",
+          "efficiency": "APPROVE",
+          "testing": "APPROVE",
+          "documentation": "CONCERNS",
+          "external": "APPROVE (skipped: negative-cache — quota)"
+        },
+        "iter-04": {
+          "correctness": "APPROVE",
+          "efficiency": "APPROVE",
+          "testing": "APPROVE",
+          "documentation": "APPROVE",
+          "external": "APPROVE (skipped: negative-cache — quota)"
+        }
+      },
+      "iteration_heads": {
+        "iter-01": "11333cb2330d689f14de1d116b30236888e09b20",
+        "iter-02": "60a991af1af7636d233385c32d5dae11b9971541",
+        "iter-03": "08ea5d129d2dc5c0678c8e352c960974206206ed",
+        "iter-04": "f712229bec9f6b30b30c47c62d3dd4f297c23477"
+      },
+      "latched": {
+        "efficiency": 3,
+        "testing": 3,
+        "correctness": 4,
+        "documentation": 4
+      }
+    }
+  },
+  "created_at": "2026-09-06T11:16:29.213Z",
+  "updated_at": "2026-09-07T11:05:34.557Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": {
+    "number": 25,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/25",
+    "state": "open",
+    "opened_at": "2026-09-07T11:05:34.557Z"
+  },
+  "archived_at": null,
+  "escalations": [],
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "Explicit scope acceptance and continuation",
+      "evidence": "decisions-log.md: Scope accepted",
+      "artifact_revision": "e1c0ace28d17ebd40bddca3482849d3a0196beed1ac6a69d88fa0a1bcbec4ca2"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "Within accepted scope; no new material alternative or waiver",
+      "evidence": "audit.md; decisions-log.md",
+      "artifact_revision": "efd83df76b979ae79e242dd97bab32232d7319577958e3764d2fa8ae47a9b4ab"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "orchestrator",
+      "reason": "Within accepted scope; no new material alternative or waiver",
+      "evidence": "plan.md; decisions-log.md",
+      "artifact_revision": "bf62f52354af8a1dea68de6d6423b2837e11f383ff75159d5932100a0ba593cb"
+    },
+    {
+      "gate": "impl-review-escalation",
+      "decision_actor": "user",
+      "reason": "Two FAIL escalations resolved: keep .asd/runtime.js as one file (SC-1 override recorded); remove the self-sourced special case for AGENTS.md so its managed block syncs from t_AGENTS.md like any consumer, framework-dev prose moving below the end marker",
+      "evidence": "reviews/impl/iter-01/efficiency.md F1; reviews/impl/iter-01/testing.md F1; decisions-log.md",
+      "artifact_revision": null
+    },
+    {
+      "gate": "pr-publication",
+      "decision_actor": "user",
+      "reason": "Explicit instruction to open the PR accepting the unvalidated external-review transport as residual risk",
+      "evidence": "decisions-log.md 2026-09-07 PR open mode; PR #25",
+      "artifact_revision": null
+    }
+  ],
+  "task_routing": {
+    "T1": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:sync-ownership-model-change-affects-every-consumer-AGENTS.md",
+      "selector": "orchestrator",
+      "resolved_model": null
+    },
+    "T2": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "selector": "orchestrator",
+      "resolved_model": null
+    },
+    "T3": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "selector": "orchestrator",
+      "resolved_model": null
+    },
+    "T4": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "selector": "orchestrator",
+      "resolved_model": null
+    },
+    "T5": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "selector": "orchestrator",
+      "resolved_model": null
+    },
+    "W1": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "resolved_model": null
+    },
+    "W2": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "resolved_model": null
+    },
+    "W3": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "resolved_model": null
+    },
+    "W4": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "resolved_model": null
+    },
+    "W5": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "resolved_model": null
+    },
+    "W6": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "resolved_model": null
+    }
+  }
+}

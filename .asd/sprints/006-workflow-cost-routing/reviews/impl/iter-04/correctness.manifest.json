@@ -1,0 +1,79 @@
+{
+  "reviewer": "correctness",
+  "phase": "impl",
+  "iteration": 4,
+  "severity_floor": "high",
+  "files": [
+    ".asd/agents/asd-external-review.md",
+    ".asd/release-manifest.json",
+    ".asd/rules/external-review.md",
+    ".asd/skills/asd-init/SKILL.md",
+    ".asd/skills/asd-update/SKILL.md",
+    ".asd/templates/external-review/t_prompt-external-design.md",
+    ".asd/templates/external-review/t_prompt-external-impl.md",
+    "README.md",
+    "tests/run.js"
+  ],
+  "rules": [
+    "BUG-1",
+    "SEC-1",
+    "SEC-2",
+    "SEC-3",
+    "SEC-4",
+    "SEC-5",
+    "CON-1",
+    "CON-2",
+    "CON-3",
+    "BP-1",
+    "AC-1",
+    "AC-2",
+    "AC-3",
+    "UI-1",
+    "UI-2",
+    "UI-3",
+    "UI-4",
+    "UI-5",
+    "UI-6",
+    "UI-7"
+  ],
+  "sections": [
+    "BUGS",
+    "SECURITY",
+    "CONTRACTS",
+    "BEST_PRACTICES",
+    "AC_TRACE",
+    "UI_CONFORMANCE"
+  ],
+  "n_a": {
+    "files": {},
+    "rules": {
+      "UI-1": [
+        "no-ui-surface-in-scope"
+      ],
+      "UI-2": [
+        "no-ui-surface-in-scope"
+      ],
+      "UI-3": [
+        "no-ui-surface-in-scope"
+      ],
+      "UI-4": [
+        "no-ui-surface-in-scope"
+      ],
+      "UI-5": [
+        "no-ui-surface-in-scope"
+      ],
+      "UI-6": [
+        "no-ui-surface-in-scope"
+      ],
+      "UI-7": [
+        "no-ui-surface-in-scope"
+      ]
+    },
+    "sections": {
+      "UI_CONFORMANCE": [
+        "no-ui-surface-in-scope"
+      ]
+    }
+  },
+  "digest": "27d88491746859187d1bf2c63c27c7c053df1cf0faaa863c111cac18bd47e1c4"
+}

@@ -1,0 +1,102 @@
+{
+  "reviewer": "correctness",
+  "phase": "impl",
+  "iteration": 2,
+  "severity_floor": "medium",
+  "files": [
+    ".asd/agents/asd-dev.md",
+    ".asd/agents/asd-external-review.md",
+    ".asd/agents/asd-tester.md",
+    ".asd/migrations/5.0.0.js",
+    ".asd/release-manifest.json",
+    ".asd/rules/artifact-layout.md",
+    ".asd/rules/checkpoints.md",
+    ".asd/rules/core.md",
+    ".asd/rules/external-review.md",
+    ".asd/rules/git-strategy.md",
+    ".asd/rules/providers.md",
+    ".asd/rules/review-policy.md",
+    ".asd/rules/sprint-lifecycle.md",
+    ".asd/runtime.js",
+    ".asd/skills/asd-init/SKILL.md",
+    ".asd/sync-state.json",
+    ".asd/sync.js",
+    ".asd/templates/external-review/t_prompt-external-design.md",
+    ".asd/templates/external-review/t_prompt-external-impl.md",
+    ".asd/templates/external-review/t_review-scope.json",
+    ".asd/templates/t_AGENTS.md",
+    ".asd/workflows/asd-phase-design-review.md",
+    ".asd/workflows/asd-phase-impl-review.md",
+    ".asd/workflows/asd-phase-impl-test.md",
+    ".asd/workflows/asd-phase-impl.md",
+    ".asd/workflows/asd-phase-plan.md",
+    ".asd/workflows/asd-phase-pr.md",
+    ".asd/workflows/asd-phase-scope.md",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "README.md",
+    "tests/run.js"
+  ],
+  "rules": [
+    "BUG-1",
+    "SEC-1",
+    "SEC-2",
+    "SEC-3",
+    "SEC-4",
+    "SEC-5",
+    "CON-1",
+    "CON-2",
+    "CON-3",
+    "BP-1",
+    "AC-1",
+    "AC-2",
+    "AC-3",
+    "UI-1",
+    "UI-2",
+    "UI-3",
+    "UI-4",
+    "UI-5",
+    "UI-6",
+    "UI-7"
+  ],
+  "sections": [
+    "BUGS",
+    "SECURITY",
+    "CONTRACTS",
+    "BEST_PRACTICES",
+    "AC_TRACE",
+    "UI_CONFORMANCE"
+  ],
+  "n_a": {
+    "files": {},
+    "rules": {
+      "UI-1": [
+        "no-ui-surface-in-scope"
+      ],
+      "UI-2": [
+        "no-ui-surface-in-scope"
+      ],
+      "UI-3": [
+        "no-ui-surface-in-scope"
+      ],
+      "UI-4": [
+        "no-ui-surface-in-scope"
+      ],
+      "UI-5": [
+        "no-ui-surface-in-scope"
+      ],
+      "UI-6": [
+        "no-ui-surface-in-scope"
+      ],
+      "UI-7": [
+        "no-ui-surface-in-scope"
+      ]
+    },
+    "sections": {
+      "UI_CONFORMANCE": [
+        "no-ui-surface-in-scope"
+      ]
+    }
+  },
+  "digest": "356a80c4b36fa834aa7fcbb192a66a957aef3d0ad5117bf2d9d18fa466eb9e96"
+}

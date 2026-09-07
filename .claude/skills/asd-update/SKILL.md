@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-update/SKILL.md. source_digest=sha256:89e2c33dafb04aaa8cc4af3ee921f68f7950e5842e7a304b6d23f2619acb59eb content_digest=sha256:1b272b686d4404187a45fab579c2657c2e292e36c5da82e8c8527ddf97c31f7f asd_version=3.1.0 schema=1
+# ASD generated. Edit .asd/skills/asd-update/SKILL.md. source_digest=sha256:16e94e9f82c8b03eb78cfb2143f59aec8ffeb0ecbb8b106b5e96170d656bdf0c content_digest=sha256:765b1b1c719d1d7da3621da5a31e4d0c330c7d939bc570cbd2ccd03ee1855885 asd_version=5.0.0 schema=1
 name: asd-update
 description: "Updates the ASD framework infrastructure (.asd/rules, .asd/templates, ASD agents/skills/hooks, .asd/migrations) in a consumer project to the latest version by fetching them from the configured ASD repo's main branch, replacing only framework-managed paths, running any pending `.asd/migrations/<version>.js` scripts in ascending order, and never touching consumer-owned config, sprints, persistent docs, or custom skills/agents/hooks. Use when the user runs /asd-update or asks to update, upgrade, or pull the latest ASD framework / workflow version."
 ---
@@ -12,7 +12,7 @@ Pull latest ASD framework files into this consumer project. Overwrites **framewo
 
 ## Self-hosting guard
 
-Read `self_hosting` from `.asd/project/config.yaml` first (`sync.js`'s `isSelfHostingRepo`). If `enabled`: this command is for pulling framework files INTO a consumer project — this repo IS the framework. Print a one-line message ("asd-update is for consumer projects; this repo develops ASD directly — use a self-hosting sprint instead") and stop. No mutation, no fetch.
+Read `self_hosting` from `.asd/project/config.yaml` first; missing, unreadable, or a duplicated key → treat as `disabled` (fail closed). If `enabled`: this command is for pulling framework files INTO a consumer project — this repo IS the framework. Print a one-line message ("asd-update is for consumer projects; this repo develops ASD directly — use a self-hosting sprint instead") and stop. No mutation, no fetch.
 
 ## What it touches
 

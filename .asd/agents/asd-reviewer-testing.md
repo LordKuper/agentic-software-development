@@ -25,13 +25,8 @@ Testing reviewer. Judges the test *decisions* recorded in `test-plan.md` and the
 ## Mandatory rules
 
 - `.asd/rules/core.md`
-- `.asd/rules/review-policy.md`
-- `.asd/rules/sprint-lifecycle.md` (impl-review phase)
-- `.asd/rules/artifact-layout.md`
-- `.asd/rules/language-policy.md`
-- `.asd/rules/code-style.md` (impl-review phase)
+- `.asd/rules/providers.md` § Role-scoped context (`asd-reviewer-testing`)
 - `.asd/project/custom-common-rules.md` (if exists)
-- `.asd/project/custom-coding-rules.md` (if exists)
 
 ## Inputs
 
@@ -43,7 +38,7 @@ Testing reviewer. Judges the test *decisions* recorded in `test-plan.md` and the
 
 ## Outputs
 
-- Findings, verdict, and the complete coverage ledger as final text output, per `t_review.md`; the phase orchestrator validates the ledger, then persists only the reduced coverage form (findings + summary line + n/a list + finding rows) to `<sprint>/reviews/impl/iter-NN/testing.md` — this reviewer decides nothing about what gets written, only what it returns (`review-policy.md` "Persistence")
+- Return verdict, findings and compact coverage JSON per `review-policy.md` "Coverage ledger" and `t_review.md`. The phase orchestrator validates and persists the manifest/ledger with the report; reviewer never writes files.
 
 ## Behavioral profile
 
@@ -97,4 +92,4 @@ First content line of the returned findings text (which the phase orchestrator w
 
 `[REVIEW-impl-testing]: <APPROVE | CONCERNS | FAIL>`
 
-PM parses first non-empty content line. Never bury verdict in prose.
+Phase orchestration parses first non-empty content line. Never bury verdict in prose.

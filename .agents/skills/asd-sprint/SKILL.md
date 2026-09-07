@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:ee74b0c897de563347eb3e876352b153d9555013db45a88ec052b3b7af87b7f7 content_digest=sha256:293ac7b7ff77cc1b95267552b85ad808024cef5d5d53c572454efa930c249125 asd_version=4.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:db047fd9b2acf941e085c4e2034a18ccef6bdf57ad2d84a01bf1ff0f9efd305f content_digest=sha256:1c5cfd6e5146d079e0dab7edb9d4b66398f2b488108eeed291012133542bcd9e asd_version=5.0.0 schema=1
 name: asd-sprint
 description: "Starts a new ASD sprint or resumes the active one, dispatching the matching asd-phase-* skill and routing phase signals back to the user. Use when the user runs $asd-sprint or asks to start, continue, resume, or work on an ASD sprint."
 ---
@@ -17,7 +17,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 - Run command — `git status`, `git branch --show-current`
 - Request user decision — new-sprint confirm, resume/abort choice
 - Delegate to skill — phase skills only
-- No direct writes — phase skills + PM own all writes
+- No direct writes — phase skills and their inline orchestrator own writes
 
 ## Workflow
 
@@ -38,7 +38,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 1. Read `.asd/sprints/<NNN-slug>/state.json`
 2. Show: sprint id, current phase, review iteration (`reviews.design.iteration` when phase=`design-review`, `reviews.impl.iteration` when phase=`impl-review`), last review verdict (if any)
 3. Request user decision: resume (default) | re-run current phase | re-run earlier phase | abort sprint
-4. Delegate to the matching phase skill. *re-run earlier phase* = rollback: when target phase strictly earlier than a review's input-producing phase, the target phase skill's PM state update resets that review counter + severity floor per **rollback reset** in `sprint-lifecycle.md` (`reviews.design.iteration` resets when rolling back to `scope`/`audit`; `reviews.impl.iteration` resets when rolling back to `scope`…`plan`)
+4. Delegate to the matching phase skill. *re-run earlier phase* = rollback: its inline state update resets the review counter + severity floor per **rollback reset** in `sprint-lifecycle.md`.
 
 ### Step 3: phase chain advancement
 After any phase skill returns:
@@ -50,7 +50,7 @@ After any phase skill returns:
 User may interrupt anytime; asd-sprint re-detects state on next invocation.
 
 ## Artefacts produced
-None directly. All writes inside phase skills (PM, creators, reviewers).
+None directly. All writes happen inside phase skills (orchestrator, creators, reviewers).
 
 ## Agents dispatched
 None directly. Phase skills delegate to agents.

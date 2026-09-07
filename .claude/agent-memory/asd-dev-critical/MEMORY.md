@@ -1,0 +1,1 @@
+- [sync --apply ledger gotcha](project_sync-apply-ledger-gotcha.md) — `--apply` rewrites release-manifest hashes repo-wide; affects split commits and parallel agents

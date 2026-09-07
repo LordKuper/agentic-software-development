@@ -24,10 +24,7 @@ Advisor. Consulted by another agent on non-gate uncertainty during any phase. Re
 
 ## Mandatory rules
 
-- `.asd/rules/core.md`
-- `.asd/rules/checkpoints.md` (HARD gate boundary — what this agent must never cross)
-- `.asd/rules/sprint-lifecycle.md` (signal vocabulary, dispatch mechanism)
-- `.asd/project/custom-common-rules.md` (if exists)
+Read `.asd/rules/core.md`, applicable `.asd/project/custom-common-rules.md`, and the role/phase inputs in `.asd/rules/providers.md` "Role-scoped context". Load only applicable sections; missing required evidence blocks the task.
 
 ## Inputs
 

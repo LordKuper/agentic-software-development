@@ -1,66 +1,28 @@
 # ASD Workflow: Scope
 
-Orchestration body for the `asd-phase-scope` skill. Operation-mapping to host tools: `.asd/rules/providers.md`.
+The main orchestrator owns this phase inline.
 
-## Preconditions
-- `.asd/project/config.yaml` exists
-- No active sprint OR user explicitly re-runs scope for current sprint
-- working tree clean (else: FAILED)
+1. Read config and existing active/legacy archived sprints. Obtain raw scope when absent, fast-forward the base branch, require a clean tree, create the sprint branch and folder.
+2. Refine scope into `sprint.md` with stable `AC-N` ids; ask the user only for ambiguity that prevents a concrete scope. Seed state and decisions log.
+3. Normalize `documents.audit`: legacy `enabled` is `always`, `disabled` is `off`; `auto` skips only a complete mechanical scope with no behaviour, contract, migration or gate impact. Freeze the effective boolean into `state.json.documents.audit` (no separate reason field — the normalization rule is deterministic, per `sprint-lifecycle.md`). Reevaluate after an accepted scope expansion.
+3a. Seed the remaining state placeholders: `{{USER_GATES}}` from `config.user_gates` (accept only `adaptive|strict`; absent -> `strict`); `{{DOC_PRD}}`/`{{DOC_UX_SPEC}}`/`{{DOC_ADR}}`/`{{DOC_C4}}` from normalized `documents.*` (absent group -> all enabled). No placeholder literal may survive the write.
+4. The initial scope is hard until it is explicitly accepted, because it establishes authority for the adaptive policy. Afterwards record the accepted user decision. A fully specified already-authorized outcome is recorded without inventing another decision.
+5. Emit `NEXT: audit`.
 
-## Operations used
-- read: `.asd/project/config.yaml`, `.asd/sprints/` listing
-- search repo: count existing sprints (active + archived) for next NNN
-- run command: check working-tree status, resolve current branch, create branch
-- request user decision: only if raw scope text not provided by the caller
-- delegate to agent `asd-pm` (`.asd/agents/asd-pm.md`): refine scope + obtain approval
+## Artefacts
 
-## Workflow
+- `.asd/sprints/<NNN-slug>/sprint.md`
+- `state.json`, `decisions-log.md`, branch
 
-1. Read `.asd/project/config.yaml` (`git.base_branch`, `git.branch_pattern`, `documents.*`). Normalize per `sprint-lifecycle.md` "Optional documents" (fail-closed defaults). Effective `documents.c4` = `documents.c4 AND project.subsystem_decomposition == enabled`.
-2. Run command to check working-tree status; if dirty → FAILED
-3. Count existing sprints (`.asd/sprints/*/` + `.asd/sprints/archived/*/`) → NNN = max + 1, zero-padded
-4. Derive slug from raw scope (kebab-case, ≤30 chars) — provisional, may change after refinement
-5. Construct sprint id `<NNN>-<slug>` + branch from `git.branch_pattern`
-6. Run command: `git fetch origin`, check out `git.base_branch`, fast-forward to `origin/<base_branch>` (diverged → FAILED, ask user to resolve), re-verify working tree clean, create branch (`git-strategy.md` "Branch")
-7. Create folder `.asd/sprints/<NNN-slug>/`
-8. Delegate to agent `asd-pm` with payload:
-   - **raw scope text** (draft, not final); sprint id, branch
-   - templates: `t_sprint.md`, `t_state.json`
-   - instruction (MUST follow in this exact order; skipping any step = protocol violation):
-     1. **Refine** raw scope into coherent finished sprint goal (full sentences, `language.docs`, not caveman) internally — think it through, preserve every concrete requirement user mentioned; do NOT post the refined body into chat during this sub-step (that is step 3's write-then-review-accept write, followed by posting the path + a delta SUMMARY, never the full refined text).
-     2. **Clarify** via request for user decision when raw text ambiguous/contradictory/missing concrete acceptance signals. Mandatory if any: vague scope verb ("improve", "refactor", "support X"), no measurable outcome, ≥2 plausible interpretations, missing target users/surface/data shape.
-     3. **Write-then-review-accept** (`checkpoints.md` mechanic): write `<sprint>/sprint.md` per `t_sprint.md` (top-level Acceptance criteria numbered `AC-1`, `AC-2`, … — stable ids, used as the acceptance-criteria source whenever `documents.prd` is disabled) + initial `state.json` per `t_state.json` (phase=scope, iteration=0, branch, created_at) + `<sprint>/decisions-log.md` from `t_decisions-log.md` (empty entries section — the sprint-local log, created here, archived with the sprint). Fill `documents.{{DOC_AUDIT}}`/`{{DOC_PRD}}`/`{{DOC_UX_SPEC}}`/`{{DOC_ADR}}`/`{{DOC_C4}}` placeholders with the JSON boolean (`true`/`false`) matching each normalized `enabled`/`disabled` value from step 1 — never leave a placeholder literal in the written file (`sprint-lifecycle.md` "Optional documents").
-     4. Loop per `checkpoints.md`'s write-then-review-accept mechanic until explicit `accept` on `sprint.md`.
-     5. If refined goal implies better slug, propose via request for user decision; rename folder/branch only after confirmation.
-     6. **On explicit `accept`**: append decisions-log entry recording the accepted scope (naming `sprint.md`); if any `documents.*` disabled, one line noting which.
-     7. Emit COMPLETED.
+## Return contract
 
-   Hard gates (any violation → FAILED + halt): follow `checkpoints.md`'s write-then-review-accept mechanic exactly — step 3's write legitimately precedes `accept` (that's the mechanic, not a violation); no `COMPLETED` before explicit `accept`; no advancing phase and no decisions-log entry on feedback short of `accept`.
-9. On PM COMPLETED → emit COMPLETED with return contract
-10. On PM QUESTION → relay, halt
-11. On PM FAILED/ABORT → relay, halt
-12. On `ADVICE_NEEDED` from any dispatched agent → relay per `sprint-lifecycle.md`'s `ADVICE_NEEDED` protocol; execution resumes, no halt.
-
-## Artefacts produced
-- `.asd/sprints/<NNN-slug>/sprint.md` — approved refined scope
-- `.asd/sprints/<NNN-slug>/state.json` — initial state
-- `.asd/sprints/<NNN-slug>/decisions-log.md` — sprint-local decisions log, seeded from `t_decisions-log.md`
-- git branch `sprint/<NNN>-<slug>` (slug may have been renamed during refinement)
-
-## Agents delegated to
-- `asd-pm` (single delegation)
-
-## Skills/workflows dispatched
-None.
-
-## Return contract (single line)
 ```
 PHASE: scope | SPRINT: <NNN-slug> | STATUS: <complete|blocked|aborted> | NEXT: audit
 ```
 
 ## References
-- `.asd/rules/sprint-lifecycle.md` (scope phase contract — SSoT)
-- `.asd/rules/checkpoints.md` (approval gates)
-- `.asd/rules/git-strategy.md` (branch creation, dirty tree rule)
-- `.asd/rules/language-policy.md` (refined scope in `language.docs`)
-- Templates: `t_sprint.md`, `t_state.json`, `t_decisions-log.md`
+
+- `.asd/rules/checkpoints.md`
+- `.asd/rules/sprint-lifecycle.md`
+- `.asd/rules/git-strategy.md`
+- `t_sprint.md`, `t_state.json`, `t_decisions-log.md`

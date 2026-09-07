@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:0845039c5f3b3d1c4b62eb61938e37bae8b428e8902ed6721cc2d1549d596a00 content_digest=sha256:9d9ffb3e2d3dc059f655f5f0cde490de940695c7cb121fcc072e0c2e81616884 asd_version=3.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:af31d2c29bd4bd0e97801cdd9ac183aab356c216537a694d302db1c4c74c88be content_digest=sha256:40e091a5d7bdf162c6121c43509546d04b1b21d4ea3660df2fba7c36a81fbd55 asd_version=5.0.0 schema=1
 name: asd-reviewer-testing
 description: "Impl-review assessment of the test-plan decisions and the tests themselves, plus judging manual-verification necessity when automation is impossible. Covers: risk→check fit per test-plan.md, justification of removed tests and of no-test decisions, fail-first proof on regression tests, coverage of AC-N, edge cases on core paths, absence of test-for-test-sake (meaningless assertions), flaky patterns, manual-verification necessity judgment against the spec `test-plan.md` already owns (single home — never re-authored here). Does NOT handle: bug/security/AC-coverage/ui/a11y (delegates to asd-reviewer-correctness), over-engineering/performance (delegates to asd-reviewer-efficiency), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -24,13 +24,8 @@ Testing reviewer. Judges the test *decisions* recorded in `test-plan.md` and the
 ## Mandatory rules
 
 - `.asd/rules/core.md`
-- `.asd/rules/review-policy.md`
-- `.asd/rules/sprint-lifecycle.md` (impl-review phase)
-- `.asd/rules/artifact-layout.md`
-- `.asd/rules/language-policy.md`
-- `.asd/rules/code-style.md` (impl-review phase)
+- `.asd/rules/providers.md` § Role-scoped context (`asd-reviewer-testing`)
 - `.asd/project/custom-common-rules.md` (if exists)
-- `.asd/project/custom-coding-rules.md` (if exists)
 
 ## Inputs
 
@@ -42,7 +37,7 @@ Testing reviewer. Judges the test *decisions* recorded in `test-plan.md` and the
 
 ## Outputs
 
-- Findings, verdict, and the complete coverage ledger as final text output, per `t_review.md`; the phase orchestrator validates the ledger, then persists only the reduced coverage form (findings + summary line + n/a list + finding rows) to `<sprint>/reviews/impl/iter-NN/testing.md` — this reviewer decides nothing about what gets written, only what it returns (`review-policy.md` "Persistence")
+- Return verdict, findings and compact coverage JSON per `review-policy.md` "Coverage ledger" and `t_review.md`. The phase orchestrator validates and persists the manifest/ledger with the report; reviewer never writes files.
 
 ## Behavioral profile
 
@@ -96,4 +91,4 @@ First content line of the returned findings text (which the phase orchestrator w
 
 `[REVIEW-impl-testing]: <APPROVE | CONCERNS | FAIL>`
 
-PM parses first non-empty content line. Never bury verdict in prose.
+Phase orchestration parses first non-empty content line. Never bury verdict in prose.

@@ -251,12 +251,15 @@ function substitutePlaceholders(body, values) {
 // wraps_invoke_args: the wrapped CLI's non-interactive-mode argument tail -
 // genuinely differs per CLI (Codex's `exec -` vs Claude Code's `-p "..."
 // --output-format text`), not just the binary name, so it's a separate key
-// from wraps_cli rather than assumed to be a fixed suffix.
-function wrapsCliValues(providerMeta) {
+// from wraps_cli rather than assumed to be a fixed suffix. wraps_model is
+// resolved against the wrapped provider's family table, never copied as a
+// concrete model id into canon.
+function wrapsCliValues(providerMeta, manifest, wrappedProvider) {
   const values = {};
   if (providerMeta.wraps_cli !== undefined) values.wraps_cli = providerMeta.wraps_cli;
   if (providerMeta.wraps_config_key !== undefined) values.wraps_config_key = providerMeta.wraps_config_key;
-  if (providerMeta.wraps_invoke_args !== undefined) values.wraps_invoke_args = providerMeta.wraps_invoke_args;
+  if (providerMeta.wraps_model !== undefined) values.wraps_model = resolveModelFamily(manifest, wrappedProvider, providerMeta.wraps_model);
+  if (providerMeta.wraps_invoke_args !== undefined) values.wraps_invoke_args = substitutePlaceholders(providerMeta.wraps_invoke_args, values);
   return values;
 }
 
@@ -282,7 +285,7 @@ function transformAgentClaude(meta, body, manifest) {
   if (c.memory) lines.push(`memory: ${c.memory}`);
   lines.push('---');
   lines.push('');
-  const substitutedBody = substitutePlaceholders(body, wrapsCliValues(c));
+  const substitutedBody = substitutePlaceholders(body, wrapsCliValues(c, manifest, 'codex'));
   lines.push(substitutedBody.replace(/\n+$/, ''));
   lines.push('');
   return lines.join('\n');
@@ -317,7 +320,7 @@ function transformAgentCodexToml(meta, body, manifest) {
   lines.push(`model = "${tomlEscapeBasic(model)}"`);
   lines.push(`model_reasoning_effort = "${tomlEscapeBasic(c.model_reasoning_effort)}"`);
   lines.push(`sandbox_mode = "${tomlEscapeBasic(c.sandbox_mode)}"`);
-  const substitutedBody = substitutePlaceholders(body, wrapsCliValues(c));
+  const substitutedBody = substitutePlaceholders(body, wrapsCliValues(c, manifest, 'claude'));
   lines.push(`developer_instructions = ${tomlMultilineBody(substitutedBody)}`);
   lines.push('');
   return lines.join('\n');
@@ -928,6 +931,39 @@ function computeCanonHashes(repoRoot) {
   return entries;
 }
 
+function variantMeta(baseMeta, suffix) {
+  const variants = baseMeta.variants;
+  if (variants === undefined) return null;
+  if (!variants || typeof variants !== 'object' || Array.isArray(variants)) throw new Error(`agent "${baseMeta.name}": variants must be an object`);
+  const spec = variants[suffix];
+  if (!spec || typeof spec !== 'object' || Array.isArray(spec)) throw new Error(`agent "${baseMeta.name}": variant "${suffix}" malformed`);
+  for (const key of Object.keys(spec)) {
+    if (key !== 'claude' && key !== 'codex') throw new Error(`agent "${baseMeta.name}": variant "${suffix}" changes unsupported field "${key}"`);
+  }
+  if (!spec.claude || !spec.codex || typeof spec.claude !== 'object' || typeof spec.codex !== 'object') throw new Error(`agent "${baseMeta.name}": variant "${suffix}" requires Claude and Codex model metadata`);
+  for (const key of Object.keys(spec.claude)) {
+    if (key !== 'model' && key !== 'effort') throw new Error(`agent "${baseMeta.name}": variant "${suffix}" changes Claude permission metadata`);
+  }
+  for (const key of Object.keys(spec.codex)) {
+    if (key !== 'model' && key !== 'model_reasoning_effort') throw new Error(`agent "${baseMeta.name}": variant "${suffix}" changes Codex permission metadata`);
+  }
+  if (typeof spec.claude.model !== 'string' || typeof spec.codex.model !== 'string' || typeof spec.codex.model_reasoning_effort !== 'string') throw new Error(`agent "${baseMeta.name}": variant "${suffix}" model metadata incomplete`);
+  const claude = Object.assign({}, baseMeta.claude, spec.claude);
+  const codex = Object.assign({}, baseMeta.codex, spec.codex);
+  if (spec.claude.effort === undefined) delete claude.effort;
+  return Object.assign({}, baseMeta, { name: `${baseMeta.name}-${suffix}`, description: `${baseMeta.description} Task class: ${suffix}.`, claude, codex });
+}
+
+function agentVariants(meta) {
+  if (meta.variants === undefined) return [];
+  const suffixes = Object.keys(meta.variants).sort();
+  if (suffixes.length === 0) throw new Error(`agent "${meta.name}": variants cannot be empty`);
+  for (const suffix of suffixes) {
+    if (!/^(mechanical|standard|critical)$/.test(suffix)) throw new Error(`agent "${meta.name}": unsupported variant suffix "${suffix}"`);
+  }
+  return suffixes.map((suffix) => variantMeta(meta, suffix));
+}
+
 // Every real file under every manifest.managed_paths entry (repo-root
 // relative, posix), bare sha256 hex - matches update.js's upstream_hashes
 // convention exactly (it's the same file-identity contract, just recomputed
@@ -1081,71 +1117,18 @@ function readClaudeMdBlockBody(repoRoot) {
   return readNormalized(templatePath);
 }
 
-// AGENTS.md has two genuinely different sources depending on WHOSE repo this
-// is, and sync.js is the same script shipped to both:
-// - The ASD framework's OWN repo: AGENTS.md is hand-authored framework-dev
-//   guidance, unrelated to t_AGENTS.md (that template is for CONSUMERS, a
-//   completely different document/audience). No generator exists for this -
-//   it stays "self-sourced": sync.js can only verify nobody edited the block
-//   without going through sync (drift detection), never that the prose
-//   matches a formula.
-// - A consumer project: AGENTS.md's managed block IS generated from
-//   `.asd/templates/t_AGENTS.md`, exactly like CLAUDE.md's - so a template
-//   update actually reaches the consumer's file via the normal
-//   check/stale/apply flow instead of silently never propagating.
-//
-// Distinguishing signal: `.asd/project/config.yaml` only exists after
-// `/asd-init` has run - which never happens in the framework's own repo (its
-// own docs explicitly say so) and always happens before a consumer's
-// AGENTS.md is ever synced. No new file/flag needed.
-function isInitializedConsumerProject(repoRoot) {
-  return fs.existsSync(path.join(repoRoot, '.asd', 'project', 'config.yaml'));
+// Canonical source of AGENTS.md's managed block. Absent, AGENTS.md is simply
+// left unmanaged - the same partial-plan outcome as a missing canon dir, not a
+// hard failure of the run.
+function agentsMdTemplatePath(repoRoot) {
+  return path.join(repoRoot, '.asd', 'templates', 't_AGENTS.md');
 }
 
-// Fail-closed top-level `self_hosting:` field reader - a minimal line scanner,
-// not a YAML parser (this repo has none). Returns 'enabled' only when the
-// field occurs EXACTLY ONCE at top level (column 0) with exactly that value;
-// every other case (file missing, field missing, any other/malformed value,
-// OR a duplicated top-level key - ambiguous, must not silently take "the
-// first" or "the last" match) returns 'disabled' - the safe default that
-// never mistakes an ordinary consumer project for the framework repo. Plan
-// SSoT: self_hosting is the ONLY signal for self-hosting mode, no separate
-// marker file.
-function readSelfHostingField(repoRoot) {
-  const p = path.join(repoRoot, '.asd', 'project', 'config.yaml');
-  if (!fs.existsSync(p)) return 'disabled';
-  let text;
-  try {
-    text = readNormalized(p);
-  } catch (_) {
-    return 'disabled';
-  }
-  const matches = [];
-  for (const line of text.split('\n')) {
-    const m = /^self_hosting:\s*([^\s#]+)/.exec(line);
-    if (m) matches.push(m[1]);
-  }
-  if (matches.length !== 1) return 'disabled';
-  return matches[0] === 'enabled' ? 'enabled' : 'disabled';
-}
-
-function isSelfHostingRepo(repoRoot) {
-  return readSelfHostingField(repoRoot) === 'enabled';
-}
-
-// AGENTS.md ownership: self-sourced (framework-dev guidance, never generated)
-// when EITHER no config.yaml exists yet (pre-init consumer clone - nothing to
-// generate from until /asd-init runs) OR the project explicitly declares
-// self_hosting: enabled (this repo, post-bootstrap, even though its own
-// config.yaml exists). Otherwise (initialized consumer project, self_hosting
-// disabled/absent) AGENTS.md is generated from t_AGENTS.md as before.
-function isSelfSourcedAgentsMd(repoRoot) {
-  return !isInitializedConsumerProject(repoRoot) || isSelfHostingRepo(repoRoot);
-}
-
+// Body of AGENTS.md's managed block, in every repo without exception - the
+// framework's own repo included, since it is also a project developed with
+// ASD. Repo-specific prose lives outside the block, where sync never reaches.
 function readAgentsMdTemplateBody(repoRoot) {
-  const templatePath = path.join(repoRoot, '.asd', 'templates', 't_AGENTS.md');
-  return readNormalized(templatePath);
+  return readNormalized(agentsMdTemplatePath(repoRoot));
 }
 
 // Owned SessionStart hook-registration entries. Kept next to each other so
@@ -1189,6 +1172,16 @@ function codexSessionStartOwnedEntries() {
   ];
 }
 
+// One canonical source file read and parsed once, then shared by every plan
+// item generated from it (two provider views per skill or hook, and two more
+// per agent task variant), instead of re-read and re-parsed per view.
+function readCanonSource(canonPath, parse) {
+  const canonRawNormalized = readNormalized(canonPath);
+  if (!parse) return { canonRawNormalized, meta: {}, body: canonRawNormalized };
+  const parsed = parseCanonicalFrontmatter(canonRawNormalized);
+  return { canonRawNormalized, meta: parsed.meta, body: parsed.body };
+}
+
 function buildSyncPlan(repoRoot) {
   // Discovers full-file-generated sources under .asd/agents, .asd/skills, and
   // .asd/hooks, plus the fixed repo-root managed-block (AGENTS.md/CLAUDE.md)
@@ -1198,12 +1191,30 @@ function buildSyncPlan(repoRoot) {
   const plan = [];
   const agentsDir = path.join(repoRoot, '.asd', 'agents');
   if (fs.existsSync(agentsDir)) {
+    const agents = [];
+    const names = new Set();
     for (const f of fs.readdirSync(agentsDir)) {
       if (!f.endsWith('.md')) continue;
       const canonPath = path.join(agentsDir, f);
       const name = f.slice(0, -3);
-      plan.push({ class: 'full-file', kind: 'agent-claude', canonPath, parse: true, targetPath: path.join(repoRoot, '.claude', 'agents', `${name}.md`) });
-      plan.push({ class: 'full-file', kind: 'agent-codex', canonPath, parse: true, targetPath: path.join(repoRoot, '.codex', 'agents', `${name}.toml`) });
+      const source = readCanonSource(canonPath, true);
+      const meta = source.meta;
+      if (meta.name !== name || !/^[a-z0-9-]+$/.test(name)) throw new Error(`agent filename and frontmatter name must match: ${f}`);
+      agents.push({ canonPath, name, meta, source });
+      if (names.has(name)) throw new Error(`agent name collision: ${name}`);
+      names.add(name);
+    }
+    for (const agent of agents) {
+      const variants = agentVariants(agent.meta);
+      for (const meta of variants) {
+        if (names.has(meta.name)) throw new Error(`agent name collision: ${meta.name}`);
+        names.add(meta.name);
+      }
+      const rendered = [{ name: agent.name, meta: null }].concat(variants.map((meta) => ({ name: meta.name, meta })));
+      for (const item of rendered) {
+        plan.push({ class: 'full-file', kind: 'agent-claude', canonPath: agent.canonPath, source: agent.source, metaOverride: item.meta, targetPath: path.join(repoRoot, '.claude', 'agents', `${item.name}.md`) });
+        plan.push({ class: 'full-file', kind: 'agent-codex', canonPath: agent.canonPath, source: agent.source, metaOverride: item.meta, targetPath: path.join(repoRoot, '.codex', 'agents', `${item.name}.toml`) });
+      }
     }
   }
   // Every .asd/skills/<name>/SKILL.md is a canonical skill source, regardless
@@ -1215,8 +1226,9 @@ function buildSyncPlan(repoRoot) {
     for (const name of fs.readdirSync(skillsDir)) {
       const canonPath = path.join(skillsDir, name, 'SKILL.md');
       if (!fs.existsSync(canonPath)) continue;
-      plan.push({ class: 'full-file', kind: 'skill-claude', canonPath, parse: true, targetPath: path.join(repoRoot, '.claude', 'skills', name, 'SKILL.md') });
-      plan.push({ class: 'full-file', kind: 'skill-codex', canonPath, parse: true, targetPath: path.join(repoRoot, '.agents', 'skills', name, 'SKILL.md') });
+      const source = readCanonSource(canonPath, true);
+      plan.push({ class: 'full-file', kind: 'skill-claude', canonPath, source, targetPath: path.join(repoRoot, '.claude', 'skills', name, 'SKILL.md') });
+      plan.push({ class: 'full-file', kind: 'skill-codex', canonPath, source, targetPath: path.join(repoRoot, '.agents', 'skills', name, 'SKILL.md') });
     }
   }
   const hooksDir = path.join(repoRoot, '.asd', 'hooks');
@@ -1227,8 +1239,9 @@ function buildSyncPlan(repoRoot) {
       const name = f.slice(0, -3);
       // No frontmatter on hook sources - the whole file is JS, runnable
       // directly as `node .asd/hooks/<name>.js` (plan's invocation contract).
-      plan.push({ class: 'full-file', kind: 'hook-claude', canonPath, parse: false, targetPath: path.join(repoRoot, '.claude', 'hooks', `${name}.js`) });
-      plan.push({ class: 'full-file', kind: 'hook-codex', canonPath, parse: false, targetPath: path.join(repoRoot, '.codex', 'hooks', `${name}.js`) });
+      const source = readCanonSource(canonPath, false);
+      plan.push({ class: 'full-file', kind: 'hook-claude', canonPath, source, targetPath: path.join(repoRoot, '.claude', 'hooks', `${name}.js`) });
+      plan.push({ class: 'full-file', kind: 'hook-codex', canonPath, source, targetPath: path.join(repoRoot, '.codex', 'hooks', `${name}.js`) });
     }
   }
   plan.push({
@@ -1237,14 +1250,7 @@ function buildSyncPlan(repoRoot) {
     targetPath: path.join(repoRoot, 'CLAUDE.md'),
     renderBody: () => readClaudeMdBlockBody(repoRoot),
   });
-  if (isSelfSourcedAgentsMd(repoRoot)) {
-    plan.push({
-      class: 'managed-block',
-      relKey: 'AGENTS.md',
-      targetPath: path.join(repoRoot, 'AGENTS.md'),
-      selfSourced: true,
-    });
-  } else {
+  if (fs.existsSync(agentsMdTemplatePath(repoRoot))) {
     plan.push({
       class: 'managed-block',
       relKey: 'AGENTS.md',
@@ -1269,15 +1275,13 @@ function buildSyncPlan(repoRoot) {
   return plan;
 }
 
+// Renders from the plan item's pre-read canonical source - every full-file
+// item pushed by buildSyncPlan sets `source`.
 function renderFullFileItem(item, repoRoot, manifest) {
-  const canonRawNormalized = readNormalized(item.canonPath);
-  let meta = {};
-  let body = canonRawNormalized;
-  if (item.parse) {
-    const parsed = parseCanonicalFrontmatter(canonRawNormalized);
-    meta = parsed.meta;
-    body = parsed.body;
-  }
+  const source = item.source;
+  const canonRawNormalized = source.canonRawNormalized;
+  const meta = item.metaOverride || source.meta;
+  const body = source.body;
   const sourceRelPath = path.relative(path.join(repoRoot, '.asd'), item.canonPath).replace(/\\/g, '/');
   return renderFullFile({
     kind: item.kind,
@@ -1290,27 +1294,12 @@ function renderFullFileItem(item, repoRoot, manifest) {
   });
 }
 
-// Self-sourced managed blocks (no independent generator) can only be checked
-// against their own last-tracked digest: read the block as it exists on disk
-// and status it against itself, so the only possible outcomes are
-// missing/foreign/modified-foreign/current - never a "stale" a re-render
-// could produce, because there is no formula to re-render from.
-function statusSelfSourcedManagedBlock(targetPath, relKey, syncState) {
-  if (!fs.existsSync(targetPath)) return 'missing';
-  if (isSymlink(targetPath)) return 'foreign';
-  const text = readNormalized(targetPath);
-  const block = findManagedBlock(text);
-  if (!block) return 'missing';
-  return statusManagedBlock(targetPath, relKey, block.inner, syncState);
-}
-
 function statusForPlanItem(item, repoRoot, manifest, syncState) {
   if (item.class === 'full-file') {
     const rendered = renderFullFileItem(item, repoRoot, manifest);
     return { status: statusFullFile(item.targetPath, rendered.contentDigest), rendered };
   }
   if (item.class === 'managed-block') {
-    if (item.selfSourced) return { status: statusSelfSourcedManagedBlock(item.targetPath, item.relKey, syncState) };
     const body = item.renderBody();
     return { status: statusManagedBlock(item.targetPath, item.relKey, body, syncState), body };
   }
@@ -1348,9 +1337,6 @@ function runCheck(repoRoot) {
 // overwrite, e.g. from `/asd-sync`'s per-file "overwrite" choice) - current/
 // foreign is never written (plan: "apply только явно перечисленного", "never
 // overwrite silently" - force is the one explicit exception to "silently").
-// Self-sourced managed blocks (AGENTS.md) have no generator to apply from -
-// they are authored directly and only ever checked, never auto-applied here.
-//
 // A requested target that matches no plan entry may still be an orphan - a
 // generated view whose canonical source no longer exists, so it never
 // appears in buildSyncPlan's source-driven output. An orphan is deleted only
@@ -1393,13 +1379,9 @@ function runApply(repoRoot, requestedFiles, options) {
       const status = statusFullFile(item.targetPath, rendered.contentDigest);
       resolved.push({ rel, item, status, rendered });
     } else if (item.class === 'managed-block') {
-      if (item.selfSourced) {
-        resolved.push({ rel, item, status: statusSelfSourcedManagedBlock(item.targetPath, item.relKey, syncState), selfSourced: true });
-      } else {
-        const body = item.renderBody();
-        const status = statusManagedBlock(item.targetPath, item.relKey, body, syncState);
-        resolved.push({ rel, item, status, body });
-      }
+      const body = item.renderBody();
+      const status = statusManagedBlock(item.targetPath, item.relKey, body, syncState);
+      resolved.push({ rel, item, status, body });
     } else if (item.class === 'json-merge') {
       const entries = item.renderEntries();
       const status = statusJsonMerge(item.targetPath, item.relKey, item.ownedPathArr, entries, syncState);
@@ -1433,15 +1415,6 @@ function runApply(repoRoot, requestedFiles, options) {
       } else {
         results.push({ target: r.rel, status: 'orphan-unmarked', applied: false });
       }
-      continue;
-    }
-    if (r.selfSourced) {
-      results.push({
-        target: r.rel,
-        status: r.status,
-        applied: false,
-        note: 'self-sourced: author content directly, sync only verifies it was not hand-edited out of band',
-      });
       continue;
     }
     const writable = !hasInvalidTarget && (r.status === 'missing' || r.status === 'stale' || (r.status === 'modified-foreign' && forceSet.has(r.rel)));
@@ -1561,14 +1534,9 @@ module.exports = {
   recomputeAndWriteHashLedgers,
   CLAUDE_MD_BLOCK_BODY_FALLBACK,
   readClaudeMdBlockBody,
-  isInitializedConsumerProject,
-  readSelfHostingField,
-  isSelfHostingRepo,
-  isSelfSourcedAgentsMd,
   readAgentsMdTemplateBody,
   claudeSessionStartOwnedEntries,
   codexSessionStartOwnedEntries,
-  statusSelfSourcedManagedBlock,
   ORPHAN_TREES,
   expectedGeneratedTargets,
   hasOwnershipMarker,

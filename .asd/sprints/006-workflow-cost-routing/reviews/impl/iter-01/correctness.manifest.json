@@ -1,0 +1,129 @@
+{
+  "reviewer": "correctness",
+  "phase": "impl",
+  "iteration": 1,
+  "severity_floor": "low",
+  "files": [
+    ".asd/agents/asd-advisor.md",
+    ".asd/agents/asd-architect.md",
+    ".asd/agents/asd-ba.md",
+    ".asd/agents/asd-dev.md",
+    ".asd/agents/asd-external-review.md",
+    ".asd/agents/asd-pm.md",
+    ".asd/agents/asd-reviewer-correctness.md",
+    ".asd/agents/asd-reviewer-documentation.md",
+    ".asd/agents/asd-reviewer-efficiency.md",
+    ".asd/agents/asd-reviewer-testing.md",
+    ".asd/agents/asd-tester.md",
+    ".asd/agents/asd-ux.md",
+    ".asd/hooks/session-start.js",
+    ".asd/migrations/5.0.0.js",
+    ".asd/release-manifest.json",
+    ".asd/rules/artifact-layout.md",
+    ".asd/rules/checkpoints.md",
+    ".asd/rules/code-style.md",
+    ".asd/rules/core.md",
+    ".asd/rules/external-review.md",
+    ".asd/rules/git-strategy.md",
+    ".asd/rules/language-policy.md",
+    ".asd/rules/providers.md",
+    ".asd/rules/review-policy.md",
+    ".asd/rules/sprint-lifecycle.md",
+    ".asd/runtime.js",
+    ".asd/skills/asd-concept/SKILL.md",
+    ".asd/skills/asd-design-system/SKILL.md",
+    ".asd/skills/asd-init/SKILL.md",
+    ".asd/skills/asd-phase-audit/SKILL.md",
+    ".asd/skills/asd-phase-design-promote/SKILL.md",
+    ".asd/skills/asd-phase-plan/SKILL.md",
+    ".asd/skills/asd-phase-pr/SKILL.md",
+    ".asd/skills/asd-phase-scope/SKILL.md",
+    ".asd/skills/asd-sprint/SKILL.md",
+    ".asd/skills/asd-stack/SKILL.md",
+    ".asd/sync.js",
+    ".asd/templates/external-review/t_review-report.md",
+    ".asd/templates/t_AGENTS.md",
+    ".asd/templates/t_audit.md",
+    ".asd/templates/t_config.yaml",
+    ".asd/templates/t_design-md-delta.yaml",
+    ".asd/templates/t_manual-steps.md",
+    ".asd/templates/t_review.md",
+    ".asd/templates/t_state.json",
+    ".asd/workflows/asd-phase-audit.md",
+    ".asd/workflows/asd-phase-design-promote.md",
+    ".asd/workflows/asd-phase-design-review.md",
+    ".asd/workflows/asd-phase-design.md",
+    ".asd/workflows/asd-phase-impl-review.md",
+    ".asd/workflows/asd-phase-impl-test.md",
+    ".asd/workflows/asd-phase-impl.md",
+    ".asd/workflows/asd-phase-plan.md",
+    ".asd/workflows/asd-phase-pr.md",
+    ".asd/workflows/asd-phase-scope.md",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "README.md",
+    "tests/run.js"
+  ],
+  "rules": [
+    "BUG-1",
+    "SEC-1",
+    "SEC-2",
+    "SEC-3",
+    "SEC-4",
+    "SEC-5",
+    "CON-1",
+    "CON-2",
+    "CON-3",
+    "BP-1",
+    "AC-1",
+    "AC-2",
+    "AC-3",
+    "UI-1",
+    "UI-2",
+    "UI-3",
+    "UI-4",
+    "UI-5",
+    "UI-6",
+    "UI-7"
+  ],
+  "sections": [
+    "BUGS",
+    "SECURITY",
+    "CONTRACTS",
+    "BEST_PRACTICES",
+    "AC_TRACE",
+    "UI_CONFORMANCE"
+  ],
+  "n_a": {
+    "files": {},
+    "rules": {
+      "UI-1": [
+        "no-ui-surface-in-scope"
+      ],
+      "UI-2": [
+        "no-ui-surface-in-scope"
+      ],
+      "UI-3": [
+        "no-ui-surface-in-scope"
+      ],
+      "UI-4": [
+        "no-ui-surface-in-scope"
+      ],
+      "UI-5": [
+        "no-ui-surface-in-scope"
+      ],
+      "UI-6": [
+        "no-ui-surface-in-scope"
+      ],
+      "UI-7": [
+        "no-ui-surface-in-scope"
+      ]
+    },
+    "sections": {
+      "UI_CONFORMANCE": [
+        "no-ui-surface-in-scope"
+      ]
+    }
+  },
+  "digest": "8b774fa6dcad53f59192d1a9f080d8ca373a88ec559786c97cbe5dcc0f4dd8e9"
+}

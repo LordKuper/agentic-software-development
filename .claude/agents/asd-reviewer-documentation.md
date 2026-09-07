@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-documentation.md. source_digest=sha256:8a9249062fdf97b6ab2483dbf75965ac9d336af8c0b7c697e1cbcf79d99774bc content_digest=sha256:e73179910788f4a635fbfdb1dabaeb59c1b11070bd4caccc2198210abee3de5f asd_version=3.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-documentation.md. source_digest=sha256:efa890f2e7b96801dcc05a989955bb18e45f6bea4f9c785f4a44170dfbc624b3 content_digest=sha256:6359146392b2f452dec4664f43d2745dfcbc9d18a35a7491ab50bd5e7748b92e asd_version=5.0.0 schema=1
 name: asd-reviewer-documentation
 description: "Design-review of sprint design drafts (SSoT, template responsibility-block adherence, traceability) and impl-review of persistent docs vs implementation (actuality, no SSoT violations, traceability PRD AC ↔ ADR), plus in-code doc comments (impl-review). Covers: SSoT integrity (each fact one home), template responsibility-block adherence, traceability across PRD/ADR/UX, custom-rules consistency, provenance flag correctness, in-body comment ban and doc-comment purpose-only scope (`code-style.md` §7). Does NOT handle: bug/security scan, AC→code trace, ui/a11y (delegates to asd-reviewer-correctness), test coverage (delegates to asd-reviewer-testing), over-engineering/performance (delegates to asd-reviewer-efficiency), persistent doc promotion (handled by asd-ba/asd-ux/asd-architect in design-promote phase), code edits (delegates to dev agents)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -24,16 +24,8 @@ Documentation reviewer. Reviews design drafts in design-review and code-vs-persi
 ## Mandatory rules
 
 - `.asd/rules/core.md`
-- `.asd/rules/design-principles.md`
-- `.asd/rules/review-policy.md`
-- `.asd/rules/sprint-lifecycle.md` (design-review + impl-review)
-- `.asd/rules/checkpoints.md`
-- `.asd/rules/artifact-layout.md` (SSoT iron rule, document responsibility, provenance)
-- `.asd/rules/language-policy.md`
-- `.asd/rules/code-style.md` §7 (impl-review phase — in-code doc comment rules)
+- `.asd/rules/providers.md` § Role-scoped context (`asd-reviewer-documentation`)
 - `.asd/project/custom-common-rules.md` (if exists)
-- `.asd/project/custom-design-rules.md` (design-review phase, if exists)
-- `.asd/project/custom-coding-rules.md` (impl-review phase, if exists)
 
 ## Inputs
 
@@ -49,7 +41,7 @@ Documentation reviewer. Reviews design drafts in design-review and code-vs-persi
 
 ## Outputs
 
-- Findings, verdict, and the complete coverage ledger as final text output, per `t_review.md`; the phase orchestrator validates the ledger, then persists only the reduced coverage form (findings + summary line + n/a list + finding rows) to `<sprint>/reviews/<design|impl>/iter-NN/documentation.md` — this reviewer decides nothing about what gets written, only what it returns (`review-policy.md` "Persistence")
+- Return verdict, findings and compact coverage JSON per `review-policy.md` "Coverage ledger" and `t_review.md`. The phase orchestrator validates and persists the manifest/ledger with the report; reviewer never writes files.
 
 ## Behavioral profile
 
@@ -106,4 +98,4 @@ First content line of the returned findings text (which the phase orchestrator w
 
 `[REVIEW-<phase>-documentation]: <APPROVE | CONCERNS | FAIL>`
 
-Where `<phase>` is `design` (design-review) or `impl` (impl-review). PM parses first non-empty content line. Never bury verdict in prose.
+Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line. Never bury verdict in prose.

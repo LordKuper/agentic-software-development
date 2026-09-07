@@ -14,6 +14,8 @@ const { execFileSync } = require('node:child_process');
 const sync = require('../.asd/sync.js');
 const update = require('../.asd/skills/asd-update/update.js');
 const migration400 = require('../.asd/migrations/4.0.0.js');
+const migration500 = require('../.asd/migrations/5.0.0.js');
+const runtime = require('../.asd/runtime.js');
 
 const REPO_ROOT = path.resolve(__dirname, '..');
 const FIXTURES = path.join(__dirname, 'fixtures');
@@ -146,7 +148,7 @@ test('AC-3/6/7: every canonical Codex agent renders a supported delegate config'
   const manifest = loadManifest();
   const agentsDir = path.join(REPO_ROOT, '.asd', 'agents');
   const files = fs.readdirSync(agentsDir).filter(f => f.endsWith('.md'));
-  assert.strictEqual(files.length, 12, 'sanity: every dispatched role must be covered');
+  assert.strictEqual(files.length, 11, 'sanity: every dispatched role must be covered');
   for (const file of files) {
     const { meta, body } = sync.parseCanonicalFrontmatter(sync.readNormalized(path.join(agentsDir, file)));
     const output = sync.transformAgentCodexToml(meta, body, manifest);
@@ -199,8 +201,8 @@ test('agent-claude / agent-codex transforms resolve {{wraps_cli}}/{{wraps_config
 test('asd-external-review: the wrapped CLI subprocess carries an explicit read-only flag on both providers', () => {
   const claudeAgent = fs.readFileSync(path.join(REPO_ROOT, '.claude/agents/asd-external-review.md'), 'utf8');
   const codexAgent = fs.readFileSync(path.join(REPO_ROOT, '.codex/agents/asd-external-review.toml'), 'utf8');
-  assert.ok(claudeAgent.includes('codex exec --sandbox read-only -'), 'Claude-side must invoke the wrapped Codex CLI with an explicit --sandbox read-only, not rely on ambient project config');
-  assert.ok(codexAgent.includes('--allowedTools "Read,Grep,Glob"'), 'Codex-side must invoke the wrapped Claude CLI with explicit read-only tool restriction, not rely on ambient project permissions');
+  assert.ok(claudeAgent.includes('codex exec --model gpt-5.6-sol -c model_reasoning_effort="high" --sandbox read-only -'), 'Claude-side must invoke the wrapped Codex CLI with explicit model, effort, and read-only sandbox');
+  assert.ok(codexAgent.includes('--restricted --tools "Read,Grep,Glob" --strict-mcp-config'), 'Codex-side must invoke the wrapped Claude CLI with explicit read-only tool restriction, not rely on ambient project permissions');
 });
 
 test('AC-2/4/6/8: External Review CLI availability stays provider-symmetric', () => {
@@ -210,8 +212,20 @@ test('AC-2/4/6/8: External Review CLI availability stays provider-symmetric', ()
   const codexAgent = fs.readFileSync(path.join(REPO_ROOT, '.codex/agents/asd-external-review.toml'), 'utf8');
   assert.ok(init.includes('system.tools.codex_command') && init.includes('system.tools.claude_command') && init.includes('resolved command and availability'));
   assert.ok(config.includes('codex_command: ""') && config.includes('claude_command: ""'));
-  assert.ok(claudeAgent.includes('system.tools.codex_command') && claudeAgent.includes('`codex` with `--version`') && claudeAgent.includes('external review unavailable: <resolved command>'));
-  assert.ok(codexAgent.includes('system.tools.claude_command') && codexAgent.includes('`claude` with `--version`') && codexAgent.includes('external review unavailable: <resolved command>'));
+  assert.ok(claudeAgent.includes('system.tools.codex_command') && claudeAgent.includes('phase-supplied preflight') && claudeAgent.includes('external review unavailable: <specific status>'));
+  assert.ok(codexAgent.includes('system.tools.claude_command') && codexAgent.includes('phase-supplied preflight') && codexAgent.includes('external review unavailable: <specific status>'));
+});
+
+test('AC-3: wrapped model aliases resolve through the wrapped provider table', () => {
+  const manifest = loadManifest();
+  const raw = sync.readNormalized(path.join(REPO_ROOT, '.asd', 'agents', 'asd-external-review.md'));
+  const { meta, body } = sync.parseCanonicalFrontmatter(raw);
+  assert.ok(!raw.includes('gpt-5.6-sol'), 'canonical wrapper source must store family aliases only');
+  const changed = structuredClone(manifest);
+  changed.model_families.codex.sol = 'gpt-5.6-sol';
+  const rendered = sync.transformAgentClaude(meta, body, changed);
+  assert.ok(rendered.includes('--model gpt-5.6-sol'), 'nested wrapper arguments must receive the resolved wrapped model');
+  assert.ok(!rendered.includes('{{wraps_model}}'));
 });
 
 test('agents whose meta never sets wraps_cli/wraps_config_key are unaffected (substitution is a no-op)', () => {
@@ -371,10 +385,10 @@ function makeMiniRepo() {
 }
 
 function writeAgentCanon(root, name, canonText) {
-  fs.writeFileSync(path.join(root, '.asd', 'agents', name + '.md'), canonText, 'utf8');
+  fs.writeFileSync(path.join(root, '.asd', 'agents', name + '.md'), canonText.replace('"name": "asd-demo"', `"name": "${name}"`), 'utf8');
 }
 
-const GOOD_AGENT_CANON = fs.readFileSync(path.join(FIXTURES, 'canon/agents/demo-agent.md'), 'utf8');
+const GOOD_AGENT_CANON = sync.readNormalized(path.join(FIXTURES, 'canon/agents/demo-agent.md'));
 
 test('runApply: force overwrites a modified-foreign target only after explicit confirmation', () => {
   const root = makeMiniRepo();
@@ -455,87 +469,24 @@ test('buildSyncPlan: an INITIALIZED CONSUMER project generates AGENTS.md from t_
   assert.ok(fs.readFileSync(path.join(root, 'AGENTS.md'), 'utf8').includes('providers.md'));
 });
 
-test('buildSyncPlan: WITHOUT .asd/project/config.yaml (the framework repo itself), AGENTS.md stays self-sourced', () => {
+test('buildSyncPlan: WITHOUT .asd/project/config.yaml (the framework repo itself), AGENTS.md is an ordinary managed-block target rendered from t_AGENTS.md', () => {
   const root = makeMiniRepo(); // no .asd/project/config.yaml - matches this framework's own repo
   fs.mkdirSync(path.join(root, '.asd', 'templates'), { recursive: true });
-  fs.writeFileSync(path.join(root, '.asd', 'templates', 't_AGENTS.md'), 'consumer-only content that must NOT leak into a self-sourced AGENTS.md\n', 'utf8');
+  fs.writeFileSync(path.join(root, '.asd', 'templates', 't_AGENTS.md'), 'Framework-dev guidance from the template.\n', 'utf8');
 
-  const authored = '<!-- asd:begin v=1 -->\nHand-authored framework-dev guidance, unrelated to t_AGENTS.md.\n<!-- asd:end -->\n';
-  fs.writeFileSync(path.join(root, 'AGENTS.md'), authored, 'utf8');
-  const state = JSON.parse(fs.readFileSync(path.join(root, '.asd', 'sync-state.json'), 'utf8'));
-  state.entries['AGENTS.md'] = { kind: 'managed-block', content_digest: sync.digestTag('Hand-authored framework-dev guidance, unrelated to t_AGENTS.md.\n') };
-  fs.writeFileSync(path.join(root, '.asd', 'sync-state.json'), JSON.stringify(state, null, 2));
-
-  const status = sync.runCheck(root).find((i) => i.target === 'AGENTS.md').status;
-  assert.strictEqual(status, 'current', 'self-sourced AGENTS.md must never be compared against t_AGENTS.md');
-  sync.runApply(root, ['AGENTS.md']); // self-sourced: apply is a documented no-op
-  assert.strictEqual(fs.readFileSync(path.join(root, 'AGENTS.md'), 'utf8'), authored, 'self-sourced AGENTS.md is never overwritten by --apply');
+  assert.strictEqual(sync.runCheck(root).find((i) => i.target === 'AGENTS.md').status, 'missing', 'no self-sourced carve-out: a repo without config.yaml must still report AGENTS.md as missing, not silently skip/pass it');
+  sync.runApply(root, ['AGENTS.md']);
+  assert.ok(fs.readFileSync(path.join(root, 'AGENTS.md'), 'utf8').includes('Framework-dev guidance from the template.'), '--apply must actually create AGENTS.md from t_AGENTS.md, not report applied:false');
+  assert.strictEqual(sync.runCheck(root).find((i) => i.target === 'AGENTS.md').status, 'current');
 });
 
-// ===========================================================================
-// 3d. self_hosting field detection (fail-closed line scanner, no YAML dep)
-// ===========================================================================
+test('buildSyncPlan: with t_AGENTS.md absent, AGENTS.md drops out of the plan entirely and --apply reports not-found instead of throwing ENOENT', () => {
+  const root = makeMiniRepo(); // no .asd/templates/t_AGENTS.md at all
 
-test('readSelfHostingField: config.yaml absent -> disabled', () => {
-  const dir = mkTempDir();
-  assert.strictEqual(sync.readSelfHostingField(dir), 'disabled');
-  assert.strictEqual(sync.isSelfHostingRepo(dir), false);
-});
-
-test('readSelfHostingField: config.yaml exists but field absent -> disabled', () => {
-  const dir = mkTempDir();
-  fs.mkdirSync(path.join(dir, '.asd', 'project'), { recursive: true });
-  fs.writeFileSync(path.join(dir, '.asd', 'project', 'config.yaml'), 'language:\n  chat: en\n', 'utf8');
-  assert.strictEqual(sync.readSelfHostingField(dir), 'disabled');
-});
-
-test('readSelfHostingField: self_hosting: disabled -> disabled', () => {
-  const dir = mkTempDir();
-  fs.mkdirSync(path.join(dir, '.asd', 'project'), { recursive: true });
-  fs.writeFileSync(path.join(dir, '.asd', 'project', 'config.yaml'), 'self_hosting: disabled\n', 'utf8');
-  assert.strictEqual(sync.readSelfHostingField(dir), 'disabled');
-});
-
-test('readSelfHostingField: self_hosting: enabled -> enabled', () => {
-  const dir = mkTempDir();
-  fs.mkdirSync(path.join(dir, '.asd', 'project'), { recursive: true });
-  fs.writeFileSync(path.join(dir, '.asd', 'project', 'config.yaml'), 'self_hosting: enabled # ASD develops itself\n', 'utf8');
-  assert.strictEqual(sync.readSelfHostingField(dir), 'enabled');
-  assert.strictEqual(sync.isSelfHostingRepo(dir), true);
-});
-
-test('readSelfHostingField: malformed/unknown value fails closed to disabled', () => {
-  const dir = mkTempDir();
-  fs.mkdirSync(path.join(dir, '.asd', 'project'), { recursive: true });
-  fs.writeFileSync(path.join(dir, '.asd', 'project', 'config.yaml'), 'self_hosting: yes-please\n', 'utf8');
-  assert.strictEqual(sync.readSelfHostingField(dir), 'disabled');
-});
-
-test('readSelfHostingField: duplicated top-level key is ambiguous, fails closed to disabled (never "first" or "last" wins)', () => {
-  const dir = mkTempDir();
-  fs.mkdirSync(path.join(dir, '.asd', 'project'), { recursive: true });
-  fs.writeFileSync(path.join(dir, '.asd', 'project', 'config.yaml'), 'self_hosting: enabled\nself_hosting: disabled\n', 'utf8');
-  assert.strictEqual(sync.readSelfHostingField(dir), 'disabled');
-
-  const dir2 = mkTempDir();
-  fs.mkdirSync(path.join(dir2, '.asd', 'project'), { recursive: true });
-  fs.writeFileSync(path.join(dir2, '.asd', 'project', 'config.yaml'), 'self_hosting: enabled\nself_hosting: enabled\n', 'utf8');
-  assert.strictEqual(sync.readSelfHostingField(dir2), 'disabled', 'even two IDENTICAL duplicates are ambiguous malformed YAML, not a confirmation');
-});
-
-test('isSelfSourcedAgentsMd: no config -> self-sourced; consumer config -> generated; self_hosting:enabled -> self-sourced even though config exists', () => {
-  const noConfig = mkTempDir();
-  assert.strictEqual(sync.isSelfSourcedAgentsMd(noConfig), true);
-
-  const consumer = mkTempDir();
-  fs.mkdirSync(path.join(consumer, '.asd', 'project'), { recursive: true });
-  fs.writeFileSync(path.join(consumer, '.asd', 'project', 'config.yaml'), 'self_hosting: disabled\n', 'utf8');
-  assert.strictEqual(sync.isSelfSourcedAgentsMd(consumer), false);
-
-  const framework = mkTempDir();
-  fs.mkdirSync(path.join(framework, '.asd', 'project'), { recursive: true });
-  fs.writeFileSync(path.join(framework, '.asd', 'project', 'config.yaml'), 'self_hosting: enabled\n', 'utf8');
-  assert.strictEqual(sync.isSelfSourcedAgentsMd(framework), true);
+  assert.strictEqual(sync.runCheck(root).find((i) => i.target === 'AGENTS.md'), undefined, 'AGENTS.md must not appear in the plan when its template source is missing');
+  const results = sync.runApply(root, ['AGENTS.md']);
+  assert.strictEqual(results[0].status, 'not-found');
+  assert.strictEqual(results[0].applied, false);
 });
 
 // ===========================================================================
@@ -1039,18 +990,8 @@ test('`node .asd/sync.js --check` reports every item current (no drift), includi
     assert.ok(targets.has(`.claude/skills/${name}/SKILL.md`), `sync plan missing .claude/skills/${name}/SKILL.md`);
     assert.ok(targets.has(`.agents/skills/${name}/SKILL.md`), `sync plan missing .agents/skills/${name}/SKILL.md`);
   }
-  // `--check` always exits 0 with `ok: true`; drift only shows as a per-item
-  // `status` string, so `ok`/`items` alone cannot catch a stale/modified
-  // generated view. Assert every item is actually `current` - no exemption.
-  // `AGENTS.md` is self-sourced/hand-edited under `self_hosting: enabled`
-  // (per AGENTS.md's own documented rule) but MUST still be re-baselined to
-  // `current` after each hand-edit (sprint 003 plan.md Task 13 / DoD: "not
-  // merely tolerated"); previously this assertion allowlisted it out
-  // entirely, which would have silently accepted permanent drift instead of
-  // proving the re-baseline actually happened. Fails at parent 317aa50
-  // (AGENTS.md was `modified-foreign`); passes at HEAD.
   const drifted = parsed.items.filter((item) => item.status !== 'current');
-  assert.deepStrictEqual(drifted, []);
+  assert.deepStrictEqual(drifted, [], '`--check` always exits 0 with `ok: true`; drift only shows as a per-item `status` string, so `ok`/`items` alone cannot catch a stale/modified generated view. AGENTS.md is an ordinary managed-block target (sprint 006 removed the self-sourced carve-out) and must be current here too.');
 });
 
 // ===========================================================================
@@ -1112,7 +1053,7 @@ test('README.md / AGENTS.md agent-count claims match the actual .asd/agents/*.md
   // on the current word (not a general number-word parser) - it's a guard
   // against silent drift, not a parser: bumping the count must also bump
   // this literal, or the assertion fails loud instead of staying vacuous.
-  const WORD_TO_NUMBER = { Twelve: 12, Fourteen: 14, Fifteen: 15, Sixteen: 16, Seventeen: 17, Eighteen: 18 };
+  const WORD_TO_NUMBER = { Eleven: 11, Twelve: 12, Fourteen: 14, Fifteen: 15, Sixteen: 16, Seventeen: 17, Eighteen: 18 };
   const wordMatch = readmeText.match(/(\w+) specialized agents are canonically defined/);
   assert.ok(wordMatch, 'README.md must state "<Word> specialized agents are canonically defined"');
   assert.ok(Object.prototype.hasOwnProperty.call(WORD_TO_NUMBER, wordMatch[1]), `README.md word-form agent count "${wordMatch[1]}" is not in the known word->number map - update the map or the wording`);
@@ -1122,10 +1063,11 @@ test('README.md / AGENTS.md agent-count claims match the actual .asd/agents/*.md
   assert.ok(specsMatch, 'README.md folder map must state "N canonical agent specs"');
   assert.strictEqual(Number(specsMatch[1]), actualCount, `README.md folder map claims ${specsMatch[1]} agent specs, .asd/agents/ has ${actualCount}`);
 
+  const generatedAgentCount = sync.buildSyncPlan(REPO_ROOT).filter((item) => item.kind === 'agent-claude').length;
   const definitionMatches = [...readmeText.matchAll(/(\d+) agent definitions/g)];
   assert.strictEqual(definitionMatches.length, 2, `README.md folder map must state "N agent definitions" exactly twice (one per provider view), found ${definitionMatches.length}`);
   for (const m of definitionMatches) {
-    assert.strictEqual(Number(m[1]), actualCount, `README.md folder map claims ${m[1]} agent definitions, .asd/agents/ has ${actualCount}`);
+    assert.strictEqual(Number(m[1]), generatedAgentCount, `README.md folder map claims ${m[1]} agent definitions, generated provider roster has ${generatedAgentCount}`);
   }
 
   const agentsMdText = fs.readFileSync(path.join(REPO_ROOT, 'AGENTS.md'), 'utf8');
@@ -1997,23 +1939,33 @@ test('release-manifest.json: every upstream_hashes entry matches the actual file
 });
 
 // ===========================================================================
-// 6c. .asd/templates/*.json must stay valid JSON - sync.js --check never
+// 6c. .asd/templates/**/*.json must stay valid JSON - sync.js --check never
 // parses .asd/templates/ (it only classifies generated provider-view
 // targets), so nothing else in the pipeline would catch a template edit that
 // broke JSON syntax (e.g. a stray trailing comma left behind when deleting a
 // field). Placeholders like "{{SPRINT_ID}}" are quoted string values, so a
 // well-formed template parses fine as-is - this only guards syntax, not
-// placeholder semantics.
+// placeholder semantics. Recursive: templates live in subdirectories too
+// (e.g. external-review/), and a top-level-only scan would silently skip them
+// (testing F3, sprint 006 iter-02: this is exactly how t_review-scope.json
+// shipped missing exclude_paths[] undetected).
 // ===========================================================================
 
-test('every .asd/templates/*.json file parses as valid JSON', () => {
+test('every .asd/templates/**/*.json file parses as valid JSON', () => {
   const templatesDir = path.join(REPO_ROOT, '.asd', 'templates');
-  const jsonFiles = fs.readdirSync(templatesDir).filter((f) => f.endsWith('.json'));
-  assert.ok(jsonFiles.length > 0, 'sanity: at least one template JSON file must exist for this guard to mean anything');
+  const jsonFiles = fs.readdirSync(templatesDir, { recursive: true }).filter((f) => f.endsWith('.json'));
+  assert.ok(jsonFiles.length > 1, 'sanity: at least one nested template JSON file must exist for the recursive scan to mean anything');
   for (const f of jsonFiles) {
     const abs = path.join(templatesDir, f);
     assert.doesNotThrow(() => JSON.parse(fs.readFileSync(abs, 'utf8')), `.asd/templates/${f} must parse as valid JSON`);
   }
+});
+
+test('AC-2/4/6/7: t_review-scope.json key set matches external-review.md\'s declared manifest fields exactly', () => {
+  const manifest = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, '.asd/templates/external-review/t_review-scope.json'), 'utf8'));
+  assert.deepStrictEqual(Object.keys(manifest).sort(), ['base_ref', 'exclude_paths', 'files', 'head_ref', 'iteration', 'phase'].sort(), 'manifest fields must exactly match external-review.md\'s declared set: phase, iteration, base_ref, head_ref, files[], exclude_paths[]');
+  assert.ok(!Object.hasOwn(manifest, 'mode'), '"mode" was removed from the transport this wave and must never reappear');
+  assert.ok(!Object.hasOwn(manifest, 'commits'), '"commits[]" was removed this wave in favor of files[] + base_ref/head_ref and must never reappear');
 });
 
 // ===========================================================================
@@ -2059,11 +2011,40 @@ test('AC-2/4/5/6/7: SessionStart recovers only archived active sprints and repor
 test('AC-2/4/6/7: review workflow contracts retain Correctness and incremental diff scope', () => {
   const workflow = fs.readFileSync(path.join(REPO_ROOT, '.asd/workflows/asd-phase-design-review.md'), 'utf8');
   const prompt = fs.readFileSync(path.join(REPO_ROOT, '.asd/templates/external-review/t_prompt-external-impl.md'), 'utf8');
+  const designPrompt = fs.readFileSync(path.join(REPO_ROOT, '.asd/templates/external-review/t_prompt-external-design.md'), 'utf8');
   const implReview = fs.readFileSync(path.join(REPO_ROOT, '.asd/workflows/asd-phase-impl-review.md'), 'utf8');
   assert.ok(workflow.includes('Every internal reviewer is dispatched when not latch-skipped'));
   assert.ok(workflow.includes('reviewer still dispatches and is counted toward DoD'));
-  assert.ok(prompt.includes('git diff <state.json reviews.impl.iteration_heads["iter-(N-1)"]>...HEAD <pathspec>'));
+  assert.ok(prompt.includes('files[]') && prompt.includes('exclude_paths[]'), 'External Review now receives a files-mode scope manifest, not a rendered diff');
+  assert.ok(prompt.includes('reviews.impl.iteration_heads["iter-(N-1)"]'), 'incremental scope guarantee (iter 2+ diffs from the prior iteration head) must survive the transport change');
+  assert.ok(designPrompt.includes('files[]') && designPrompt.includes('exclude_paths[]'), 'design-review prompt must document the same files-mode scope manifest transport');
+  assert.ok(designPrompt.includes('base_ref') && designPrompt.includes('head_ref') && designPrompt.includes('empty'), 'design-review prompt must document that base_ref/head_ref travel empty (draft-snapshot scope, not a commit range)');
   assert.ok(implReview.includes('run command') && !implReview.includes('via Bash'));
+});
+
+// iteration-3 review (sprint 006): exclude_paths[] bounds what the reviewer
+// judges, not what it may read - a prior wording pass over-reached and
+// implied the named project-context reference paths (PRD, ADR, stack, etc.)
+// were unreadable. Guards the scope-vs-readability distinction against
+// reappearing in any of the three places that state it.
+test('AC-2/4/6/7: exclude_paths[] scope-vs-readability distinction holds in the rule doc and both prompts', () => {
+  const rule = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/external-review.md'), 'utf8');
+  const implPrompt = fs.readFileSync(path.join(REPO_ROOT, '.asd/templates/external-review/t_prompt-external-impl.md'), 'utf8');
+  const designPrompt = fs.readFileSync(path.join(REPO_ROOT, '.asd/templates/external-review/t_prompt-external-design.md'), 'utf8');
+  const carveOut = 'the project-context reference paths below, which are always readable and are never valid finding locations either';
+
+  assert.ok(rule.includes('bounds what the reviewer judges, not what it may read'), 'external-review.md must state exclude_paths[] bounds judgment scope, not readability');
+  assert.ok(rule.includes('stay readable regardless and are never valid finding locations either'), 'external-review.md must state the named project-context reference paths remain readable and are never findable-against');
+
+  for (const [name, prompt, placeholders] of [
+    ['impl', implPrompt, ['{{PRD_PATH}}', '{{ADR_PATH}}', '{{STACK_PATH}}', '{{CUSTOM_RULES_PATH}}', '{{COMMANDS_PATH}}']],
+    ['design', designPrompt, ['{{CONCEPT_PATH}}', '{{CUSTOM_RULES_PATH}}', '{{ACCESSIBILITY_PATH}}']],
+  ]) {
+    assert.ok(prompt.includes(carveOut), `t_prompt-external-${name}.md must state the exclude_paths readability carve-out`);
+    for (const ph of placeholders) {
+      assert.ok(prompt.includes(ph), `t_prompt-external-${name}.md must still pass ${ph} as project context (readability carve-out is meaningless without it)`);
+    }
+  }
 });
 
 test('SessionStart hook: a "skipped: <predicate>" verdict counts as satisfied, not "mixed"', () => {
@@ -2152,6 +2133,363 @@ test('SessionStart hook: an all-legacy-"skipped:" verdict map (no bare APPROVE a
   });
   const text = JSON.parse(out).hookSpecificOutput.additionalContext;
   assert.ok(text.includes('Last review verdict: mixed'), `an all-legacy-skip verdict map with no genuine approval must read "mixed", got: ${text}`);
+});
+
+test('AC-21: SessionStart reports "Next phase: await-user-closure" when pr.state is closure-pending', () => {
+  const tempRoot = mkTempDir();
+  const hookSrc = fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8');
+  writeFile(tempRoot, '.asd/hooks/session-start.js', hookSrc);
+  writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({
+    sprint_id: '999-fixture',
+    phase: 'pr',
+    branch: 'sprint/999-fixture',
+    pr: { state: 'closure-pending' },
+  }));
+  const out = execFileSync('node', [path.join(tempRoot, '.asd/hooks/session-start.js'), '--provider', 'claude'], {
+    cwd: tempRoot,
+    encoding: 'utf8',
+  });
+  const text = JSON.parse(out).hookSpecificOutput.additionalContext;
+  assert.ok(text.includes('Next phase: await-user-closure'), `expected the mandatory closure gate to report await-user-closure, got: ${text}`);
+});
+
+test('AC-21: SessionStart reports "Next phase: await-merge" for an ordinary pr phase without pr.state', () => {
+  const tempRoot = mkTempDir();
+  const hookSrc = fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8');
+  writeFile(tempRoot, '.asd/hooks/session-start.js', hookSrc);
+  writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({
+    sprint_id: '999-fixture',
+    phase: 'pr',
+    branch: 'sprint/999-fixture',
+  }));
+  const out = execFileSync('node', [path.join(tempRoot, '.asd/hooks/session-start.js'), '--provider', 'claude'], {
+    cwd: tempRoot,
+    encoding: 'utf8',
+  });
+  const text = JSON.parse(out).hookSpecificOutput.additionalContext;
+  assert.ok(text.includes('Next phase: await-merge'), `expected the default pr-phase path to report await-merge, got: ${text}`);
+});
+
+test('AC-7: no canonical rule, workflow, agent, or skill file references the retired asd-pm role', () => {
+  const labels = ['rules', 'workflows', 'agents', 'skills'];
+  const offenders = [];
+  for (const label of labels) {
+    const dir = path.join(REPO_ROOT, '.asd', label);
+    if (!fs.existsSync(dir)) continue;
+    for (const f of fs.readdirSync(dir, { recursive: true })) {
+      if (!f.endsWith('.md')) continue;
+      const text = fs.readFileSync(path.join(dir, f), 'utf8');
+      if (/asd-pm/.test(text)) offenders.push(`${label}/${f}`);
+    }
+  }
+  assert.deepStrictEqual(offenders, [], `canonical files still reference retired asd-pm: ${offenders.join(', ')}`);
+});
+
+// ===========================================================================
+// 15. Sprint 006 deterministic runtime contracts
+// ===========================================================================
+
+function validCoverageFixture() {
+  const manifest = {
+    files: ['f-1'], rules: ['r-1'], sections: ['s-1'],
+    n_a: { files: { 'f-1': ['no-file'] }, rules: { 'r-1': ['no-rule'] }, sections: { 's-1': ['no-section'] } },
+  };
+  manifest.digest = runtime.coverageManifestDigest(manifest);
+  return {
+    manifest,
+    ledger: {
+      manifest_digest: manifest.digest, findings: ['F-1'],
+      files: [{ i: 'f-1', s: 'checked' }],
+      rules: [{ i: 'r-1', s: 'finding', f: 'F-1' }],
+      sections: [{ i: 's-1', s: 'reviewed' }],
+    },
+  };
+}
+
+test('AC-1/2: compact coverage ledger rejects identity, completeness, predicate, and finding-reference fraud', () => {
+  const { manifest, ledger } = validCoverageFixture();
+  assert.deepStrictEqual(runtime.validateCoverageLedger(manifest, ledger, ['F-1']), { ok: true });
+  const cases = [
+    ['wrong digest', () => { const x = structuredClone(ledger); x.manifest_digest = '0'.repeat(64); return x; }, /identity/],
+    ['missing row', () => { const x = structuredClone(ledger); x.files = []; return x; }, /incomplete/],
+    ['duplicate row', () => { const x = structuredClone(ledger); x.files.push({ i: 'f-1', s: 'checked' }); return x; }, /identity/],
+    ['unknown row', () => { const x = structuredClone(ledger); x.files[0].i = 'unknown'; return x; }, /identity/],
+    ['invalid n/a predicate', () => { const x = structuredClone(ledger); x.files[0] = { i: 'f-1', s: 'n/a', p: 'invented' }; return x; }, /predicate/],
+    ['missing finding reference', () => { const x = structuredClone(ledger); x.rules[0] = { i: 'r-1', s: 'finding', f: 'F-2' }; return x; }, /finding reference/],
+  ];
+  for (const [label, makeLedger, message] of cases) assert.throws(() => runtime.validateCoverageLedger(manifest, makeLedger(), ['F-1']), message, label);
+  const forgeryCases = [
+    ['ledger claims an extra finding not actually raised', { findings: ['F-1', 'F-2'] }, ['F-1']],
+    ['ledger claims a finding while none was actually raised', { findings: [] }, ['F-1']],
+    ['ledger duplicates the same finding id', { findings: ['F-1', 'F-1'] }, ['F-1']],
+  ];
+  for (const [label, override, actualFindings] of forgeryCases) {
+    const forged = structuredClone(ledger);
+    Object.assign(forged, override);
+    assert.throws(() => runtime.validateCoverageLedger(manifest, forged, actualFindings), /ledger findings invalid/, label);
+  }
+  const duplicateManifest = structuredClone(manifest);
+  duplicateManifest.files.push('f-1');
+  duplicateManifest.digest = runtime.coverageManifestDigest(duplicateManifest);
+  const duplicateLedger = structuredClone(ledger);
+  duplicateLedger.manifest_digest = duplicateManifest.digest;
+  assert.throws(() => runtime.validateCoverageLedger(duplicateManifest, duplicateLedger, ['F-1']), /duplicates/);
+});
+
+test('AC-10/11: routing is monotonic and only verified deterministic work is a command', () => {
+  const base = { objectiveInputs: true, failedObjectiveCheck: false, risks: [], correctionAttempts: 0 };
+  assert.deepStrictEqual(runtime.routeTask({ ...base, kind: 'command', checks: ['deterministic-state'] }).execution, 'command');
+  assert.deepStrictEqual(runtime.routeTask({ ...base, kind: 'mechanical', checks: ['deterministic-check', 'exhaustive-match-validation'] }).execution, 'agent');
+  assert.strictEqual(runtime.routeTask({ ...base, kind: 'standard', checks: [] }).tier, 'standard');
+  assert.strictEqual(runtime.routeTask({ ...base, kind: 'mechanical', checks: ['deterministic-check', 'exhaustive-match-validation'], priorTier: 'critical' }).tier, 'critical');
+  assert.strictEqual(runtime.routeTask({ ...base, kind: 'standard', checks: [], failedObjectiveCheck: true, correctionAttempts: 1 }).tier, 'critical');
+  assert.notStrictEqual(runtime.routeTask({ ...base, kind: 'mechanical', objectiveInputs: false, checks: ['deterministic-check', 'exhaustive-match-validation'] }).tier, 'mechanical', 'a mechanical claim without objective inputs must never route mechanical');
+  assert.strictEqual(runtime.routeTask({ ...base, kind: 'command', checks: [] }).execution, 'agent', 'a command with no deterministic-state check is not deterministic and must not execute as a bare command');
+  assert.strictEqual(runtime.routeTask({ ...base, kind: 'command', objectiveInputs: false, checks: ['deterministic-state'] }).execution, 'agent', 'a command without objective inputs must never auto-execute even with the deterministic-state check present');
+  assert.strictEqual(runtime.routeTask({ ...base, kind: 'standard', checks: [], failedObjectiveCheck: true, correctionAttempts: 0 }).tier, 'standard', 'a single failed objective check with zero correction attempts must not yet escalate to critical');
+  assert.deepStrictEqual(runtime.routeTask({ ...base, kind: 'mechanical', checks: ['deterministic-check', 'exhaustive-match-validation'], risks: ['auth'] }), { tier: 'critical', execution: 'agent', reason: 'risk:auth' }, 'any named risk must escalate to critical regardless of otherwise-mechanical evidence');
+});
+
+test('AC-3/4/5: preflight permits only fixed local probes and negative cache is bounded and expires', () => {
+  const root = mkTempDir();
+  const cachePath = path.join(root, 'external-cache.json');
+  const command = process.platform === 'win32' ? path.join(root, 'ready.cmd') : path.join(root, 'ready');
+  fs.writeFileSync(command, process.platform === 'win32' ? '@echo off\r\nexit /b 0\r\n' : '#!/bin/sh\nexit 0\n', 'utf8');
+  if (process.platform !== 'win32') fs.chmodSync(command, 0o755);
+  const input = { provider: 'codex', command, model: 'gpt-5.6-sol', cachePath, now: 1000 };
+  assert.throws(() => runtime.externalPreflight({ ...input, provider: 'unknown' }), /provider/);
+  assert.throws(() => runtime.externalPreflight({ ...input, authArgs: ['exec', 'paid prompt'] }), /authArgs/);
+  const fingerprint = 'a'.repeat(64);
+  for (const retryAfter of [1000, Infinity, 1000 + 3600001]) {
+    assert.throws(() => runtime.recordExternalFailure({ fingerprint, status: 'quota', cachePath, now: 1000, retryAfter }), /bounded future/);
+  }
+  const ready = runtime.externalPreflight(input);
+  assert.strictEqual(ready.status, 'local-ready');
+  runtime.recordExternalFailure({ fingerprint: ready.fingerprint, status: 'quota', cachePath, now: 1000, retryAfter: 1001 });
+  assert.strictEqual(runtime.externalPreflight(input).status, 'negative-cache');
+  assert.strictEqual(runtime.externalPreflight({ ...input, now: 1001 }).status, 'local-ready', 'an expired entry must be ignored in-memory on read, even before any write persists the pruning');
+  assert.ok(Object.hasOwn(JSON.parse(fs.readFileSync(cachePath, 'utf8')).entries, ready.fingerprint), 'a read-only preflight call must not itself rewrite the cache file - the expired entry is still on disk');
+  runtime.recordExternalFailure({ fingerprint: 'b'.repeat(64), status: 'quota', cachePath, now: 1001, retryAfter: 1002 });
+  assert.ok(!Object.hasOwn(JSON.parse(fs.readFileSync(cachePath, 'utf8')).entries, ready.fingerprint), 'the expired entry is pruned from disk on the NEXT actual write, not before');
+});
+
+test('AC-5: negative-cache recovers when the fingerprint changes because model, command, or credential state changed - not only on TTL expiry', () => {
+  const root = mkTempDir();
+  const cachePath = path.join(root, 'external-cache.json');
+  const command = process.platform === 'win32' ? path.join(root, 'ready.cmd') : path.join(root, 'ready');
+  const otherCommand = process.platform === 'win32' ? path.join(root, 'other.cmd') : path.join(root, 'other');
+  const scriptBody = process.platform === 'win32' ? '@echo off\r\nexit /b 0\r\n' : '#!/bin/sh\nexit 0\n';
+  fs.writeFileSync(command, scriptBody, 'utf8');
+  fs.writeFileSync(otherCommand, scriptBody, 'utf8');
+  if (process.platform !== 'win32') {
+    fs.chmodSync(command, 0o755);
+    fs.chmodSync(otherCommand, 0o755);
+  }
+  const credentialPath = path.join(root, 'credential.json');
+  fs.writeFileSync(credentialPath, '{"token":"x"}', 'utf8');
+
+  const input = { provider: 'codex', command, model: 'gpt-5.6-sol', credentialPath, cachePath, now: 1000 };
+  const ready = runtime.externalPreflight(input);
+  assert.strictEqual(ready.status, 'local-ready');
+  runtime.recordExternalFailure({ fingerprint: ready.fingerprint, status: 'quota', cachePath, now: 1000, retryAfter: 1000 + 60000 });
+  assert.strictEqual(runtime.externalPreflight(input).status, 'negative-cache', 'sanity: the exact same input must hit the cached entry');
+
+  assert.strictEqual(runtime.externalPreflight({ ...input, model: 'gpt-5.6-terra' }).status, 'local-ready', 'a different model must produce a different fingerprint, never reuse a stale negative-cache entry');
+  assert.strictEqual(runtime.externalPreflight({ ...input, command: otherCommand }).status, 'local-ready', 'a different command must produce a different fingerprint');
+
+  fs.writeFileSync(credentialPath, '{"token":"rotated"}', 'utf8');
+  const stat = fs.statSync(credentialPath);
+  fs.utimesSync(credentialPath, new Date(stat.atimeMs + 1000), new Date(stat.mtimeMs + 1000));
+  assert.strictEqual(runtime.externalPreflight(input).status, 'local-ready', 'a rotated credential (changed mtime) must produce a different auth generation and recover, not stay stuck on the old negative-cache entry');
+});
+
+test('AC-5: the persisted negative-cache entry never carries anything beyond {status, retry_after} - no secrets or command output', () => {
+  const root = mkTempDir();
+  const cachePath = path.join(root, 'external-cache.json');
+  const command = process.platform === 'win32' ? path.join(root, 'ready.cmd') : path.join(root, 'ready');
+  fs.writeFileSync(command, process.platform === 'win32' ? '@echo off\r\nexit /b 0\r\n' : '#!/bin/sh\nexit 0\n', 'utf8');
+  if (process.platform !== 'win32') fs.chmodSync(command, 0o755);
+  const input = { provider: 'codex', command, model: 'gpt-5.6-sol', cachePath, now: 1000 };
+  const ready = runtime.externalPreflight(input);
+  runtime.recordExternalFailure({ fingerprint: ready.fingerprint, status: 'quota', cachePath, now: 1000, retryAfter: 1000 + 60000 });
+  const persisted = JSON.parse(fs.readFileSync(cachePath, 'utf8'));
+  const entry = persisted.entries[ready.fingerprint];
+  assert.deepStrictEqual(Object.keys(entry).sort(), ['retry_after', 'status'], 'the persisted entry must carry exactly {status, retry_after} - no secrets, command output, or other input echoed back');
+});
+
+test('buildInvocation: direct path keeps a metacharacter-containing command as a literal argv element (D-2 security property)', () => {
+  const direct = runtime.buildInvocation('win32', '/path/with;metachar/cmd', ['a b']);
+  assert.deepStrictEqual(direct, { file: '/path/with;metachar/cmd', args: ['a b'] });
+  assert.strictEqual(direct.input, undefined, 'the direct shape must never carry a shell-interpreted input string');
+});
+
+test('buildInvocation: .cmd/.bat/.ps1 on win32 route through PowerShell, metacharacters reach only the JSON stdin payload', () => {
+  for (const ext of ['cmd', 'bat', 'ps1']) {
+    const command = `x.${ext}`;
+    const plan = runtime.buildInvocation('win32', command, ['a']);
+    assert.strictEqual(plan.file, 'powershell.exe', `${ext}: must dispatch through powershell.exe`);
+    assert.ok(Array.isArray(plan.args) && plan.args.every((arg) => typeof arg === 'string' && !arg.includes(command)), `${ext}: fixed PowerShell args must never interpolate the command`);
+    assert.strictEqual(plan.input, JSON.stringify({ command, args: ['a'] }), `${ext}: command/args travel only via JSON stdin, never an interpolated command string`);
+  }
+});
+
+test('buildInvocation: viaPowerShell forces the PowerShell shape on win32 regardless of extension (the ENOENT-retry path, previously unreachable off Windows)', () => {
+  const command = 'plain-exe-with;metachar';
+  const plan = runtime.buildInvocation('win32', command, ['a'], true);
+  assert.strictEqual(plan.file, 'powershell.exe');
+  assert.ok(plan.args.every((arg) => typeof arg === 'string' && !arg.includes(command)), 'the metacharacter-bearing command must never appear inside an argument string');
+  assert.strictEqual(plan.input, JSON.stringify({ command, args: ['a'] }));
+});
+
+test('buildInvocation: non-win32 platforms always stay direct, even when viaPowerShell is true', () => {
+  for (const platform of ['linux', 'darwin']) {
+    const plan = runtime.buildInvocation(platform, 'x.cmd', ['a'], true);
+    assert.deepStrictEqual(plan, { file: 'x.cmd', args: ['a'] }, `${platform}: the PowerShell fallback is locked to win32`);
+  }
+});
+
+test('AC-4: Windows .cmd preflight executes a metacharacter-containing path literally (end-to-end bonus, buildInvocation above is the host-independent evidence)', () => {
+  if (process.platform !== 'win32') {
+    console.log('  (skipped: end-to-end spawn proof for the .cmd/metacharacter PowerShell fallback branch - only runs on win32; buildInvocation tests above cover the branch shape on any host)');
+    return;
+  }
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'asd & runtime-'));
+  const shim = path.join(root, 'external & shim.cmd');
+  fs.writeFileSync(shim, '@echo off\r\nexit /b 0\r\n', 'utf8');
+  const result = runtime.externalPreflight({ provider: 'codex', command: shim, model: 'gpt-5.6-sol', cachePath: path.join(root, 'cache.json') });
+  assert.strictEqual(result.status, 'local-ready');
+});
+
+function runtimeCli(args, options) {
+  return execFileSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'runtime.js'), ...args], { encoding: 'utf8', ...options });
+}
+
+test('runtime.js CLI: validate-ledger exits 0 with {"ok":true} stdout on valid fixtures', () => {
+  const root = mkTempDir();
+  const { manifest, ledger } = validCoverageFixture();
+  const manifestPath = path.join(root, 'manifest.json');
+  const ledgerPath = path.join(root, 'ledger.json');
+  const findingsPath = path.join(root, 'findings.json');
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest), 'utf8');
+  fs.writeFileSync(ledgerPath, JSON.stringify(ledger), 'utf8');
+  fs.writeFileSync(findingsPath, JSON.stringify(['F-1']), 'utf8');
+
+  const out = runtimeCli(['validate-ledger', '--manifest', manifestPath, '--ledger', ledgerPath, '--findings', findingsPath]);
+  assert.deepStrictEqual(JSON.parse(out), { ok: true });
+});
+
+test('runtime.js CLI: validate-ledger on a tampered ledger exits non-zero and prints no "ok" to stdout', () => {
+  const root = mkTempDir();
+  const { manifest, ledger } = validCoverageFixture();
+  const tampered = structuredClone(ledger);
+  tampered.findings = ['F-1', 'F-2'];
+  const manifestPath = path.join(root, 'manifest.json');
+  const ledgerPath = path.join(root, 'ledger.json');
+  const findingsPath = path.join(root, 'findings.json');
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest), 'utf8');
+  fs.writeFileSync(ledgerPath, JSON.stringify(tampered), 'utf8');
+  fs.writeFileSync(findingsPath, JSON.stringify(['F-1']), 'utf8');
+
+  let error = null;
+  try {
+    runtimeCli(['validate-ledger', '--manifest', manifestPath, '--ledger', ledgerPath, '--findings', findingsPath]);
+  } catch (e) {
+    error = e;
+  }
+  assert.ok(error, 'a tampered ledger must exit non-zero, never silently pass a blocking gate');
+  assert.notStrictEqual(error.status, 0);
+  assert.ok(!(error.stdout || '').includes('ok'), 'a rejected ledger must never print an "ok" payload to stdout');
+});
+
+test('runtime.js CLI: external-preflight exits 1 on command-unavailable', () => {
+  const root = mkTempDir();
+  const inputPath = path.join(root, 'input.json');
+  fs.writeFileSync(inputPath, JSON.stringify({ provider: 'codex', command: path.join(root, 'does-not-exist'), model: 'gpt-5.6-sol', cachePath: path.join(root, 'cache.json') }), 'utf8');
+
+  let error = null;
+  let stdout = '';
+  try {
+    stdout = runtimeCli(['external-preflight', '--input', inputPath]);
+  } catch (e) {
+    error = e;
+    stdout = e.stdout;
+  }
+  assert.ok(error, 'a missing/unavailable CLI must exit non-zero, not report local-ready');
+  assert.strictEqual(error.status, 1);
+  assert.strictEqual(JSON.parse(stdout).status, 'command-unavailable');
+});
+
+test('runtime.js CLI: manifest-digest prints the same digest coverageManifestDigest computes, and --write persists it', () => {
+  const root = mkTempDir();
+  const manifest = { files: ['f-1'], rules: ['r-1'], sections: ['s-1'], n_a: { files: {}, rules: {}, sections: {} } };
+  const manifestPath = path.join(root, 'manifest.json');
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest), 'utf8');
+
+  const out = runtimeCli(['manifest-digest', '--manifest', manifestPath]).trim();
+  assert.strictEqual(out, runtime.coverageManifestDigest(manifest));
+  assert.strictEqual(fs.readFileSync(manifestPath, 'utf8'), JSON.stringify(manifest), '--write not passed: file on disk must be untouched');
+
+  runtimeCli(['manifest-digest', '--manifest', manifestPath, '--write']);
+  const written = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  assert.strictEqual(written.digest, out, '--write must persist the same digest just printed');
+});
+
+test('AC-12/14: variants inherit their canonical permissions and malformed or colliding variants fail closed', () => {
+  const root = makeMiniRepo();
+  const base = GOOD_AGENT_CANON.replace('"name": "asd-demo"', '"name": "worker"').replace('\n}\n---', ',\n  "variants": {"mechanical": {"claude": {"model": "haiku"}, "codex": {"model": "luna", "model_reasoning_effort": "low"}}}\n}\n---');
+  writeAgentCanon(root, 'worker', base);
+  const targets = sync.runCheck(root).map((item) => item.target);
+  assert.ok(targets.includes('.claude/agents/worker-mechanical.md'));
+  assert.ok(targets.includes('.codex/agents/worker-mechanical.toml'));
+  sync.runApply(root, ['.claude/agents/worker-mechanical.md', '.codex/agents/worker-mechanical.toml']);
+  const claude = fs.readFileSync(path.join(root, '.claude/agents/worker-mechanical.md'), 'utf8');
+  assert.ok(claude.includes('model: haiku') && claude.includes('tools: [Read, Grep]'), 'tier may change model only; inherited permissions/body survive');
+  assert.ok(!/^effort:/m.test(claude), 'AC-10: haiku variant with no unsupported effort override must drop the inherited effort line entirely');
+  writeAgentCanon(root, 'worker', base.replace('"model": "haiku"', '"tools": ["Write"]'));
+  assert.throws(() => sync.runCheck(root), /permission metadata/);
+  writeAgentCanon(root, 'worker', base.replace('"mechanical"', '"unknown"'));
+  assert.throws(() => sync.runCheck(root), /unsupported variant suffix/);
+  writeAgentCanon(root, 'worker-mechanical', GOOD_AGENT_CANON.replace('"name": "asd-demo"', '"name": "worker-mechanical"'));
+  writeAgentCanon(root, 'worker', base);
+  assert.throws(() => sync.runCheck(root), /agent name collision/);
+});
+
+test('AC-14: PM migration deletes only intact generated views and remains idempotent', async () => {
+  const root = makeMigrationFixtureRepo();
+  const manifest = loadManifest();
+  const intact = path.join(root, '.claude', 'agents', 'asd-pm.md');
+  const modified = path.join(root, '.codex', 'agents', 'asd-pm.toml');
+  const pmCanon = GOOD_AGENT_CANON.replace('"name": "asd-demo"', '"name": "asd-pm"');
+  const { meta, body } = sync.parseCanonicalFrontmatter(pmCanon);
+  const makeView = (kind) => sync.renderFullFile({ kind, sourceRelPath: 'agents/asd-pm.md', canonRawNormalized: pmCanon, meta, body, manifest, asdVersion: manifest.asd_version }).output;
+  fs.mkdirSync(path.dirname(intact), { recursive: true });
+  fs.writeFileSync(intact, makeView('agent-claude'), 'utf8');
+  fs.mkdirSync(path.dirname(modified), { recursive: true });
+  fs.writeFileSync(modified, makeView('agent-codex') + 'edited', 'utf8');
+  const first = await migration500({ repoRoot: root });
+  assert.ok(first.deleted.includes('.claude/agents/asd-pm.md'));
+  assert.ok(first.skippedModified.includes('.codex/agents/asd-pm.toml'));
+  const second = await migration500({ repoRoot: root });
+  assert.deepStrictEqual(second.deleted, []);
+  assert.ok(second.missing.includes('.claude/agents/asd-pm.md'));
+
+  const unmarkedRoot = makeMigrationFixtureRepo();
+  const unmarked = path.join(unmarkedRoot, '.claude', 'agents', 'asd-pm.md');
+  fs.mkdirSync(path.dirname(unmarked), { recursive: true });
+  fs.writeFileSync(unmarked, 'consumer-owned\n', 'utf8');
+  const unmarkedReport = await migration500({ repoRoot: unmarkedRoot });
+  assert.ok(unmarkedReport.skippedUnmarked.includes('.claude/agents/asd-pm.md'));
+  assert.strictEqual(fs.readFileSync(unmarked, 'utf8'), 'consumer-owned\n');
+
+  const unsafeRoot = makeMigrationFixtureRepo();
+  const outside = path.join(mkTempDir(), 'asd-pm.md');
+  fs.writeFileSync(outside, makeView('agent-claude'), 'utf8');
+  const unsafe = path.join(unsafeRoot, '.claude', 'agents', 'asd-pm.md');
+  fs.mkdirSync(path.dirname(unsafe), { recursive: true });
+  fs.symlinkSync(outside, unsafe, 'file');
+  const unsafeReport = await migration500({ repoRoot: unsafeRoot });
+  assert.ok(unsafeReport.skippedUnsafe.includes('.claude/agents/asd-pm.md'));
+  assert.strictEqual(fs.existsSync(outside), true, 'migration must not follow or delete a target outside the consumer repo');
 });
 
 // ===========================================================================

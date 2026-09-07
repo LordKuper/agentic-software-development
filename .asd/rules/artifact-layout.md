@@ -147,13 +147,13 @@ The verdict-token line in `t_review.md`/`t_review-report.md` (`[REVIEW-{{REVIEW_
 
 ## Manual steps
 
-`<sprint>/manual-steps.md` per `t_manual-steps.md`. Per-sprint, created lazily. Owners: dev agents (append entries); PM (validates necessity).
+`<sprint>/manual-steps.md` per `t_manual-steps.md`. Per-sprint, created lazily. Owners: dev agents (append entries); main orchestrator (validates necessity).
 
 Manual step = operational action a human must perform for the plan to complete (provision a secret, create a cloud resource, hand-run a migration, set an env var, register a third-party account). NOT a code stub (`stubs.md`) nor manual QA verification (reviews `testing.md`).
 
 - When a subtask cannot proceed without a human-only operational action, the dev appends an `MS-N` entry (full step-by-step instructions + a `Verification` field) and marks the subtask `BLOCKED: MS-N` in `plan.md`.
 - `Verification` mandatory: states how the workflow confirms the action was done (a `commands.yaml` check, observable state, or explicit user confirmation).
-- PM validates every new entry before the phase halts. Kept only when the action genuinely cannot be done autonomously (needs access, a secret, an external account, an authority the agent lacks). Else rejected, returned to the dev to implement directly.
+- The main orchestrator validates every new entry before the phase halts. Kept only when the action genuinely cannot be done autonomously (needs access, a secret, an external account, an authority the agent lacks). Else rejected, returned to the dev to implement directly.
 - Status `pending` → `done`. The registering dev flips to `done` only after running `Verification`.
 - Sprint-scoped; archived with the sprint.
 
@@ -193,10 +193,10 @@ Agents preserve the block. Reviewers verify content respects the declared scope.
 
 ## Sprint archival
 
-Sprint folder moves from `.asd/sprints/<NNN-slug>/` to `.asd/sprints/archived/<NNN-slug>/` in `pr` **open** mode, right after the PR is created (DoD already met) — a dedicated commit pushed to the same sprint branch, so it lands inside the PR itself and merges atomically with it (avoids a later "push to sprint branch" that squash-merge + auto-delete-branch would make impossible). The terminal signal (`phase=done`, `pr.state="merged"`) is written separately, in `pr` **merge** mode, only once the PR is confirmed merged — the sprint counts as active until then even though its folder already sits under `archived/`. Archived sprints are otherwise never modified; this one terminal write is the sole exception (`sprint-lifecycle.md` "Sprint immutability").
+Archived path: `.asd/sprints/archived/<NNN-slug>/`. Closure/archival sequence (closure-pending → explicit approval → companion PR → terminal write + move) is owned by `sprint-lifecycle.md` "PR phase" — see there, not restated here.
 
 ## Decisions log
 
-Every approved decision (concept change, new subsystem, ADR, scope shift, custom-rule update) appends one entry to `<sprint>/decisions-log.md`. Per-sprint file, created at `scope` from `t_decisions-log.md`, archived with the sprint (`sprint-lifecycle.md` "Sprint immutability"). Owner: PM agent. Append-only, never edited or removed. Entry format and the durability rule are normative in `t_decisions-log.md` — not restated here.
+Every user or adaptive orchestrator decision appends one entry to `<sprint>/decisions-log.md`. Per-sprint file, created at `scope` from `t_decisions-log.md`, archived with the sprint. Owner: main orchestrator. Append-only, never edited or removed. Entry format and durability rule are normative in `t_decisions-log.md`.
 
 **Legacy log**: `.asd/project/decisions-log.md` is historical only — the project-wide log used before this rule, frozen as of sprint `002-lean-workflow`. Never appended to again.

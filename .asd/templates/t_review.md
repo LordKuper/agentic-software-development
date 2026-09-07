@@ -1,7 +1,7 @@
 ---
 responsibility:
-  owns: single reviewer verdict for one iteration, persisted in reduced coverage form
-  excludes: other reviewers, other iterations, fixes, the reviewer's full returned ledger (validated pre-write, never persisted verbatim — `review-policy.md`), manual-verification spec (test-plan.md's single home)
+  owns: single reviewer verdict and validated compact coverage for one iteration
+  excludes: other reviewers, other iterations, fixes, manual-verification spec (test-plan.md's single home)
   delegates_to: creator agent (fixes), sibling review files (other reviewers), test-plan.md (manual-verification spec)
 ---
 
@@ -21,27 +21,15 @@ responsibility:
 <!-- when no findings, leave one row: -->
 <!-- | — | — | — | no findings | — | -->
 
-## Coverage summary (internal reviewers only)
+## Coverage (internal reviewers only)
 
-Reviewer returns the complete file+rule(+section, Correctness/Efficiency only) coverage ledger (mandatory — verdict INVALID if incomplete; see `review-policy.md` "Coverage ledger"). This file persists only the reduced form below — the gate itself runs on the full returned ledger, before write.
-
-**Summary**: `files: {{checked}}/{{total}} checked, {{n/a}} n/a · rules: {{pass}}/{{total}}, {{findings}} findings` (Correctness/Efficiency append `· sections: {{reviewed}}/{{total}}, none blank`)
-
-**n/a rows** (verbatim, full list — file, rule, or section, with reason):
-| Item | Reason |
-|---|---|
-| {{path or checklist item}} | {{n/a reason}} |
-
-**Findings rows** (verbatim, full list — rule-coverage rows resolved `finding #N`; `checked`/`pass` rows dropped):
-| Rubric item | Finding |
-|---|---|
-| {{checklist item}} | finding #{{N}} |
+Return and persist the compact JSON ledger defined by `review-policy.md` "Coverage ledger", bound to the dispatcher manifest digest. Validate files, every rubric/custom-rule item, applicable section IDs, n/a predicates and finding references before accepting the verdict. The phase writes manifest/ledger evidence alongside this report; reference their relative paths here. Do not generate full prose coverage tables before compression.
 
 ## Verdict
 {{APPROVE | CONCERNS: <count> | FAIL: <count>}}
 
 ## Next action
-{{what creator/PM must do next}}
+{{what creator/orchestrator must do next}}
 
 ## Escalations (optional)
 - finding #{{N}}: requires user approval ({{reason: concept change / new abstraction / scope expansion / contract change}})

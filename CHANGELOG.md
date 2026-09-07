@@ -2,6 +2,26 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v5.0.0
+
+Workflow cost routing and adaptive user decisions. **Breaking:** standalone `asd-pm` removed; the main orchestrator owns its responsibilities. Update through `/asd-update`; migration removes unchanged framework-owned PM views while retaining consumer customizations for reconciliation.
+
+### Added
+- Generated Dev/Tester task variants share canonical instructions and permissions: mechanical (Haiku/Luna), critical (Opus/Sol); tier standard has no variant and dispatches the base agent (Sonnet/Terra). Objective risk routing and bounded escalation preserve the main model.
+- Compact machine-validated coverage and local external-review preflight with bounded negative caching. The external wrapper uses a cheaper model while its actual review defaults to strong models.
+- `user_gates: adaptive|strict`; absent legacy policy remains strict. Adaptive decisions retain actor, revision and evidence. Explicit user approval always gates sprint finalization and archival.
+- Audit `auto|always|off`, accepting legacy `enabled|disabled`, with a frozen effective decision per sprint.
+- External Review receives a structured scope manifest (`external-review/t_review-scope.json`: changed-file list, excluded paths, base/head refs) and resolves content from the repository itself, instead of being handed a rendered diff. `exclude_paths[]` bounds what the reviewer judges, never what it may read.
+- The external-review preflight's negative cache has a canonical location, `.asd/project/external-cache.json`, gitignored as machine-local retry state.
+
+### Changed
+- Architect owns the complete audit; BA participates only for material domain ambiguity. Tester reuse and phase-scoped rule reads reduce repeated context.
+- PR publication and sprint closure are separate. Confirmed merge and all technical quality checks remain mandatory.
+- `impl-review` refuses to start on a dirty worktree, and `impl-test` commits its own tests and `test-plan.md` before handing off. The two compose: the iteration diff is computed from commits, so uncommitted work would otherwise be invisible to every reviewer.
+
+### Removed
+- **BREAKING:** standalone `asd-pm` agent — canonical source and generated views (`.claude/agents/asd-pm.md`, `.codex/agents/asd-pm.toml`); the main orchestrator absorbs its responsibilities, no spawned agent replaces it. Run `/asd-update`; the bundled `5.0.0` migration removes a consumer's unmodified generated PM views while leaving any hand-edited copy in place for manual reconciliation.
+
 ## v4.0.1
 
 Codex-primary compatibility release for ChatGPT-backed runtimes. Delegate configuration now fails early with actionable diagnostics, generated skills use each provider's native invocation syntax, and cross-provider review behavior stays observable.

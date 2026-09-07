@@ -28,4 +28,4 @@ responsibility:
 {{APPROVE | CONCERNS: <count> | FAIL: <count>}}
 
 ## Next action
-{{what creator/PM must do next}}
+{{what creator/orchestrator must do next}}

@@ -26,17 +26,8 @@ Correctness reviewer. Merges the former Quality, Implementation and UI reviewers
 ## Mandatory rules
 
 - `.asd/rules/core.md`
-- `.asd/rules/design-principles.md`
-- `.asd/rules/review-policy.md` (severity floor, autofix vs escalation, nitpick drop list, verdict format, change-surface rule — reviews the iteration's diff/draft only, never restated here)
-- `.asd/rules/sprint-lifecycle.md` (design-review + impl-review phases)
-- `.asd/rules/artifact-layout.md`
-- `.asd/rules/language-policy.md`
-- `.asd/rules/code-style.md` (impl-review phase)
-- `.asd/rules/design-system.md`
-- `.asd/rules/ux-principles.md`
+- `.asd/rules/providers.md` § Role-scoped context (`asd-reviewer-correctness`)
 - `.asd/project/custom-common-rules.md` (if exists)
-- `.asd/project/custom-design-rules.md` (design-review phase, if exists)
-- `.asd/project/custom-coding-rules.md` (impl-review phase, if exists)
 
 ## Inputs
 
@@ -64,7 +55,7 @@ Correctness reviewer. Merges the former Quality, Implementation and UI reviewers
 
 ## Outputs
 
-- Findings, verdict, and the complete coverage ledger (file, rule, and section) as final text output, per `t_review.md`; the phase orchestrator validates the ledger, then persists only the reduced coverage form (findings + summary line + n/a list + finding rows) to `<sprint>/reviews/<design|impl>/iter-NN/correctness.md` — this reviewer decides nothing about what gets written, only what it returns (`review-policy.md` "Persistence")
+- Return verdict, findings and compact coverage JSON per `review-policy.md` "Coverage ledger" and `t_review.md`. The phase orchestrator validates and persists the manifest/ledger with the report; reviewer never writes files.
 
 ## Behavioral profile
 
@@ -110,7 +101,7 @@ Reviewer:
 
 ## Section coverage ledger
 
-Contract, format, and gate: `review-policy.md` "Coverage ledger" part 3 (SSoT, not restated here). This reviewer's `n/a` reasons: `outside phase gate` (section not on this phase's allowed-section list), the diff-derived UI-surface predicate name (impl-review, no UI surface in scope), or a target-artefact-missing note.
+Contract, format, and gate: `review-policy.md` "Coverage ledger" (SSoT, not restated here). This reviewer's `n/a` reasons: `outside phase gate` (section not on this phase's allowed-section list), the diff-derived UI-surface predicate name (impl-review, no UI surface in scope), or a target-artefact-missing note.
 
 ## Do's
 
@@ -147,4 +138,4 @@ First content line of the returned findings text (which the phase orchestrator w
 
 `[REVIEW-<phase>-correctness]: <APPROVE | CONCERNS | FAIL>`
 
-Where `<phase>` is `design` (design-review) or `impl` (impl-review). PM parses first non-empty content line. Never bury verdict in prose.
+Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line. Never bury verdict in prose.

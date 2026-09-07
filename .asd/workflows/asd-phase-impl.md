@@ -12,7 +12,7 @@ Orchestration body for the `asd-phase-impl` skill. Operation-mapping to host too
 - read: `.asd/project/config.yaml`, `state.json`, `plan.md`, `<sprint>/reviews/impl/iter-NN/` (review-fix), `<sprint>/test-plan.md` (test-fix), persistent docs, `.asd/project/custom-common-rules.md`, `custom-coding-rules.md`, `stubs.md`, `<sprint>/manual-steps.md`
 - write a file: `state.json` inline, for the mechanical non-gate writes at steps 4, 11 (`sprint-lifecycle.md` "State recovery")
 - request user decision: escalation only (see Execution mode)
-- delegate to agent: `asd-dev` per task / finding group / defect group (test-file findings to `asd-tester`); PM for manual-steps gate, impl completion gate, impl assessment gate, decisions-log tied to those gates
+- delegate to agent: `asd-dev` per task / finding group / defect group (test-file findings to `asd-tester`); the main orchestrator owns manual-step validation, gates and decisions-log inline
 
 ## Modes
 
@@ -58,6 +58,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
 5. **Build execution graph**:
    - initial — from Task dependencies; topological sort; mark independent tasks parallelisable
    - fix modes — fix tasks independent unless two touch same file; parallel where independent, sequential where they collide
+5a. Before each task dispatch, run `node .asd/runtime.js route-task --input <path>` with kind, objective inputs/checks, risks, correction attempts and prior tier. A result with `execution="command"` runs directly; `execution="agent"` dispatches `asd-dev-<tier>` for `mechanical`/`critical`, or the base `asd-dev` for `tier: standard` (no `-standard` variant exists — `providers.md` "Task-class variants and routing"). Persist the record in `state.json.task_routing[taskId]` per `providers.md`, supplying its tier as `priorTier` on re-entry. Invalid routing blocks; tier never lowers.
 6. **Dispatch tasks** per execution graph:
    - sequential where dependent; parallel where independent (caller schedules concurrent delegations)
    - per task: delegate to `asd-dev` (`asd-tester` only for review findings in test files) with payload:
@@ -79,24 +80,24 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
        - emit COMPLETED with summary (files touched; initial: AC-N satisfied, stubs added; review-fix: findings resolved by id; test-fix: defects resolved by `D-N`) when all subtasks/findings/defects done; when some subtasks manual-blocked, emit COMPLETED for unblocked portion plus `BLOCKED_MANUAL` listing deferred `MS-N`
 7. Wait all task signals (COMPLETED and/or BLOCKED_MANUAL)
 8. **Manual-steps validation + gate** — when any `BLOCKED_MANUAL` emitted:
-   - delegate to agent `asd-pm` to validate each new `MS-N` for necessity:
+   - the main orchestrator validates each new `MS-N` for necessity:
      - keep only when action genuinely cannot be done autonomously (needs access, secret, external account, or authority agent lacks)
-     - reject any entry agent could do with own tools → PM re-dispatches that task to owning dev with feedback "implement autonomously, remove MS-N"; dev deletes entry, unmarks `BLOCKED:` subtask, implements it; loop step 7
-   - once all remaining `MS-N` PM-validated and all unblocked tasks COMPLETED, delegate to agent `asd-pm`:
+     - reject any entry agent could do with own tools → re-dispatch its owning dev with feedback "implement autonomously, remove MS-N"; dev deletes entry, unmarks `BLOCKED:` subtask, implements it; loop step 7
+   - once all remaining `MS-N` are validated and all unblocked tasks COMPLETED, the main orchestrator:
      - record manual-steps halt in `state.json` `escalations[]`, append decisions-log entry
-     - present `manual-steps.md` to user (pause-message format per `checkpoints.md`); wait for explicit continue command
+     - present `manual-steps.md` to user (per `checkpoints.md` "Gate mechanics"); wait for explicit continue command
    - on user continue: re-dispatch each deferred task to owning dev with instruction:
      - verify referenced `MS-N` per its `Verification` field
      - if verified → flip entry `Status` to `done`, finish `BLOCKED:` subtasks, tick `plan.md` checkboxes, emit COMPLETED
      - if not verified → emit `BLOCKED_MANUAL` again (entry stays `pending`); relay to user
    - loop until every `MS-N` is `done` and every deferred task COMPLETED
-9. **Impl completion gate** (all modes) — delegate to agent `asd-pm` to verify, via `commands.yaml`:
+9. **Impl completion gate** (all modes) — the main orchestrator verifies, via `commands.yaml`:
    - `build` command executed and finished with no errors and no warnings
    - `lint` command executed and finished with no errors and no warnings
    - the gate itself never runs tests — a dev's optional impacted-set self-verification run (`sprint-lifecycle.md` "Impacted test set") is not part of it; the suite/impacted-set gates belong to `impl-test`/`impl-review`
-   - if any condition fails → phase MUST NOT advance: PM relays specific failure to owning dev(s) to fix and re-run; loop step 7. Unrecoverable failure escalates as a blocker (`FAILED`).
+   - if any condition fails → phase MUST NOT advance: relay specific failure to owning dev(s) to fix and re-run; loop step 7. Unrecoverable failure escalates as a blocker (`FAILED`).
    - automatic verification — no user pause
-10. **Impl assessment checkpoint** — **initial mode only** (fix modes skip to step 11) — delegate to agent `asd-pm`:
+10. **Impl assessment checkpoint** — **initial mode only** (fix modes skip to step 11) — the main orchestrator applies `checkpoints.md`, recording adaptive evidence or requesting the user:
    - read updated `<sprint>/plan.md` → verify all checkboxes ticked
    - read `.asd/project/stubs.md` → list stubs introduced this sprint (filter Sprint=<NNN-slug>; all rows open by definition since delete-on-resolve)
    - compose impl summary: tasks done, AC-N coverage map, files changed, build + lint status, sprint-introduced stubs
@@ -116,7 +117,7 @@ Per Execution mode, the **only** reasons impl contacts user before all tasks/fin
 - Any dev `QUESTION` (unresolvable requirement ambiguity) → relay, halt; resume on answer
 - Any dev Complication Approval request (Simplicity Default trigger) → relay, halt; resume on decision
 - Any dev `FAILED`/`ABORT` → relay, halt
-- Manual-steps gate (step 8) — after all unblocked work COMPLETED and PM-validated `MS-N` remain, PM presents `manual-steps.md`; resume on user continue command
+- Manual-steps gate (step 8) — after all unblocked work COMPLETED and validated `MS-N` remain, the main orchestrator presents `manual-steps.md`; resume on user continue command
 
 On `ADVICE_NEEDED` from any dispatched agent → relay per `sprint-lifecycle.md`'s `ADVICE_NEEDED` protocol; execution resumes, no halt. Not a blocker — the branches above are the only ones that halt.
 
@@ -134,7 +135,7 @@ Impl completion gate (step 9) and, initial mode only, impl assessment gate (step
 - decisions-log entry on impl assessment approval (initial) or fix-mode finalize
 
 ## Agents delegated to
-- `asd-pm` (manual-steps gate, impl completion gate, impl assessment gate, decisions-log tied to those gates; mechanical writes at steps 4, 11 are inline workflow writes)
+- The main orchestrator (manual-step validation, completion/assessment gates and decisions-log); no orchestration agent is dispatched.
 - `asd-dev` (per Task, finding group, or defect group)
 - `asd-tester` (review-fix mode only, for findings located in test files)
 

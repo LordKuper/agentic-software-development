@@ -80,7 +80,7 @@ Order per Google Labs DESIGN.md spec:
 - For each section:
   - Designer drafts the section, writes it into `docs/ux/DESIGN.md` on disk
   - Post the file path + a short delta summary of what the section now says in `language.chat` (never the full section body) per `language-policy.md`
-  - Request user decision (options) — labels/descriptions in `language.chat`: **A) Lock in / B) Revise this section / C) Skip (optional sections only)**
+  - Apply `checkpoints.md`: adaptive pass only for mechanical/already-authorized content; initial or material UX, brand or accessibility direction remains hard.
   - on B: collect feedback, designer revises, rewrites the section in place, re-posts delta summary, re-ask
   - on C: remove that section (heading + placeholder content) from the on-disk file entirely, then continue to the next section
   - repeat until A
@@ -105,7 +105,7 @@ After all DESIGN.md sections approved:
 - For each section:
   - Designer drafts the section, translates to `language.docs`, writes it into `docs/ux/accessibility.html` on disk
   - Post the file path + a short delta summary of what the section now says in `language.chat` (never the full section body) per `language-policy.md`
-  - Request user decision lock-in (options) — labels/descriptions in `language.chat`: **A) Lock in / B) Revise this section**
+  - Apply `checkpoints.md`; material accessibility direction remains hard.
   - on B: collect feedback, designer revises, rewrites the section in place, re-posts delta summary, re-ask
   - repeat until A
   - next section

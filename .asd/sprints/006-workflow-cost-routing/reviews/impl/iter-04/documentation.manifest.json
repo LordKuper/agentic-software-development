@@ -1,0 +1,71 @@
+{
+  "reviewer": "documentation",
+  "phase": "impl",
+  "iteration": 4,
+  "severity_floor": "high",
+  "files": [
+    ".asd/agents/asd-external-review.md",
+    ".asd/release-manifest.json",
+    ".asd/rules/external-review.md",
+    ".asd/skills/asd-init/SKILL.md",
+    ".asd/skills/asd-update/SKILL.md",
+    ".asd/templates/external-review/t_prompt-external-design.md",
+    ".asd/templates/external-review/t_prompt-external-impl.md",
+    "README.md",
+    "tests/run.js"
+  ],
+  "rules": [
+    "D-1",
+    "D-2",
+    "D-3",
+    "D-4",
+    "D-5",
+    "D-6",
+    "D-7",
+    "D-8",
+    "D-9"
+  ],
+  "sections": [
+    "SSOT",
+    "TEMPLATE_ADHERENCE",
+    "HTML_SHELL",
+    "PROVENANCE",
+    "TRACEABILITY",
+    "PERSISTENT_ACTUALITY",
+    "DOC_COMMENTS",
+    "FRAMEWORK_MODE",
+    "CUSTOM_RULES"
+  ],
+  "n_a": {
+    "files": {},
+    "rules": {
+      "D-3": [
+        "no-html-artifact-in-scope"
+      ],
+      "D-4": [
+        "no-html-artifact-in-scope"
+      ],
+      "D-5": [
+        "documents-disabled"
+      ],
+      "D-6": [
+        "documents-disabled"
+      ]
+    },
+    "sections": {
+      "HTML_SHELL": [
+        "no-html-artifact-in-scope"
+      ],
+      "PROVENANCE": [
+        "no-html-artifact-in-scope"
+      ],
+      "TRACEABILITY": [
+        "documents-disabled"
+      ],
+      "PERSISTENT_ACTUALITY": [
+        "documents-disabled"
+      ]
+    }
+  },
+  "digest": "a766a0ed1481a21dee93d09584c53812619cb558bb295bfcafb31da10a101a2f"
+}

@@ -25,16 +25,8 @@ Documentation reviewer. Reviews design drafts in design-review and code-vs-persi
 ## Mandatory rules
 
 - `.asd/rules/core.md`
-- `.asd/rules/design-principles.md`
-- `.asd/rules/review-policy.md`
-- `.asd/rules/sprint-lifecycle.md` (design-review + impl-review)
-- `.asd/rules/checkpoints.md`
-- `.asd/rules/artifact-layout.md` (SSoT iron rule, document responsibility, provenance)
-- `.asd/rules/language-policy.md`
-- `.asd/rules/code-style.md` §7 (impl-review phase — in-code doc comment rules)
+- `.asd/rules/providers.md` § Role-scoped context (`asd-reviewer-documentation`)
 - `.asd/project/custom-common-rules.md` (if exists)
-- `.asd/project/custom-design-rules.md` (design-review phase, if exists)
-- `.asd/project/custom-coding-rules.md` (impl-review phase, if exists)
 
 ## Inputs
 
@@ -50,7 +42,7 @@ Documentation reviewer. Reviews design drafts in design-review and code-vs-persi
 
 ## Outputs
 
-- Findings, verdict, and the complete coverage ledger as final text output, per `t_review.md`; the phase orchestrator validates the ledger, then persists only the reduced coverage form (findings + summary line + n/a list + finding rows) to `<sprint>/reviews/<design|impl>/iter-NN/documentation.md` — this reviewer decides nothing about what gets written, only what it returns (`review-policy.md` "Persistence")
+- Return verdict, findings and compact coverage JSON per `review-policy.md` "Coverage ledger" and `t_review.md`. The phase orchestrator validates and persists the manifest/ledger with the report; reviewer never writes files.
 
 ## Behavioral profile
 
@@ -107,4 +99,4 @@ First content line of the returned findings text (which the phase orchestrator w
 
 `[REVIEW-<phase>-documentation]: <APPROVE | CONCERNS | FAIL>`
 
-Where `<phase>` is `design` (design-review) or `impl` (impl-review). PM parses first non-empty content line. Never bury verdict in prose.
+Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line. Never bury verdict in prose.

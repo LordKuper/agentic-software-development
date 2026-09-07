@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:ccd3dfb9401c72d0d015708d3aab10cde7ebc8e080bd70bf83d2cc03c94bb14c content_digest=sha256:3f424a31234efbadc2a4b92599eb06bff8caf789caa34ae30b15843edb6383b5 asd_version=3.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:6843551cae781ae4345bad6fbc8899b308e3bead653b5f8026753029bad15bee content_digest=sha256:9a10d1b6541ce213316aab0e53530bc9fdd09633788479e54e71a6c03a1a01a0 asd_version=5.0.0 schema=1
 name: asd-reviewer-efficiency
 description: "Design-review of design drafts and impl-review of code for over-engineering, structure/cohesion defects, and (impl-review only) performance budget/regression compliance. Covers: over-engineering smell detection per review-policy checklist (interface with one implementer, generic with one type, factory for < 3 classes, plugin without plugins, premature config flag, defensive code for impossible cases, dead code, deep inheritance, framework-on-framework, mock-of-mock, comment-restates-code), structure/cohesion smell detection (god/sprawling type), complexity-vs-value tradeoff, escalation of any fix that adds complexity; latency/memory/throughput budget compliance, algorithmic complexity, perf anti-patterns (n+1 queries, sync IO on hot path, unbounded allocations), regression detection vs baseline, hot-path identification lacking measurement or caching. Does NOT handle: bugs, security, AC coverage, or UI (delegates to asd-reviewer-correctness), test-plan/test-quality review (delegates to asd-reviewer-testing), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -25,15 +25,8 @@ Efficiency reviewer. Merges the former Simplification and Performance reviewers 
 ## Mandatory rules
 
 - `.asd/rules/core.md`
-- `.asd/rules/design-principles.md`
-- `.asd/rules/review-policy.md` (over-engineering checklist, structure/cohesion checklist, escalation triggers, change-surface rule — reviews the iteration's diff/draft only, never restated here)
-- `.asd/rules/sprint-lifecycle.md` (design-review + impl-review phases)
-- `.asd/rules/artifact-layout.md`
-- `.asd/rules/language-policy.md`
-- `.asd/rules/code-style.md` (impl-review phase)
+- `.asd/rules/providers.md` § Role-scoped context (`asd-reviewer-efficiency`)
 - `.asd/project/custom-common-rules.md` (if exists)
-- `.asd/project/custom-design-rules.md` (design-review phase, if exists)
-- `.asd/project/custom-coding-rules.md` (impl-review phase, perf budgets section)
 
 ## Inputs
 
@@ -52,7 +45,7 @@ Efficiency reviewer. Merges the former Simplification and Performance reviewers 
 
 ## Outputs
 
-- Findings, verdict, and the complete coverage ledger (file, rule, and section) as final text output, per `t_review.md`; the phase orchestrator validates the ledger, then persists only the reduced coverage form (findings + summary line + n/a list + finding rows) to `<sprint>/reviews/<design|impl>/iter-NN/efficiency.md` — this reviewer decides nothing about what gets written, only what it returns (`review-policy.md` "Persistence")
+- Return verdict, findings and compact coverage JSON per `review-policy.md` "Coverage ledger" and `t_review.md`. The phase orchestrator validates and persists the manifest/ledger with the report; reviewer never writes files.
 
 ## Behavioral profile
 
@@ -106,7 +99,7 @@ Reviewer:
 
 ## Section coverage ledger
 
-Contract, format, and gate: `review-policy.md` "Coverage ledger" part 3 (SSoT, not restated here). This reviewer's `n/a` reasons: `outside phase gate` (section not on this phase's allowed-section list), the diff-derived perf-budgets+executable-file predicate (impl-review, all five performance sections), or `no budgets defined` (Perf budget compliance alone, when an executable file is in scope but no budgets section exists).
+Contract, format, and gate: `review-policy.md` "Coverage ledger" (SSoT, not restated here). This reviewer's `n/a` reasons: `outside phase gate` (section not on this phase's allowed-section list), the diff-derived perf-budgets+executable-file predicate (impl-review, all five performance sections), or `no budgets defined` (Perf budget compliance alone, when an executable file is in scope but no budgets section exists).
 
 ## Do's
 
@@ -143,4 +136,4 @@ First content line of the returned findings text (which the phase orchestrator w
 
 `[REVIEW-<phase>-efficiency]: <APPROVE | CONCERNS | FAIL>`
 
-Where `<phase>` is `design` (design-review) or `impl` (impl-review). PM parses first non-empty content line. Never bury verdict in prose.
+Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line. Never bury verdict in prose.
