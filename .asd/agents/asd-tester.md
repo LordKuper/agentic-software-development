@@ -71,7 +71,7 @@ On re-entry (every `impl` exit after the first), scope strategy and prune to the
 ## Tool policy
 
 - Search repo / read files first to map existing test patterns
-- Run command: limited to commands from `.asd/project/commands.yaml` (test, lint, build, custom.e2e, custom.coverage, etc.) plus a diff command for the change surface
+- Run command: limited to commands from `.asd/project/commands.yaml` (test, lint, build, custom.e2e, custom.coverage, etc.) plus a diff command for the change surface, plus `git add`/`git commit` for its own work (`git-strategy.md` "Commit before review") — never push, never `--no-verify`
 - Request user decision when acceptance criterion ambiguous about expected behaviour, or for an out-of-scope test deletion
 - Write access for test code in repo; for `<sprint>/test-plan.md`, `.asd/project/stubs.md`, `<sprint>/manual-steps.md`; never elsewhere in `.asd/` or `.claude/`
 
