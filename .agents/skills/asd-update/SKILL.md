@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-update/SKILL.md. source_digest=sha256:16e94e9f82c8b03eb78cfb2143f59aec8ffeb0ecbb8b106b5e96170d656bdf0c content_digest=sha256:46c4c910981b3cb845dd11b42ff544ec7ad83b13f08fad8b8d0afa367588194d asd_version=5.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-update/SKILL.md. source_digest=sha256:d1d5c144901ef566d5f758175f839696eeaec4090d1752f7b534fc6ff40dc0ac content_digest=sha256:ff4ac65b629dee9f1071785d14c0940f42a12b1aa41118e802dbfeb91bdcb60a asd_version=6.0.0 schema=1
 name: asd-update
 description: "Updates the ASD framework infrastructure (.asd/rules, .asd/templates, ASD agents/skills/hooks, .asd/migrations) in a consumer project to the latest version by fetching them from the configured ASD repo's main branch, replacing only framework-managed paths, running any pending `.asd/migrations/<version>.js` scripts in ascending order, and never touching consumer-owned config, sprints, persistent docs, or custom skills/agents/hooks. Use when the user runs $asd-update or asks to update, upgrade, or pull the latest ASD framework / workflow version."
 ---
@@ -35,5 +35,5 @@ Never touched: `.asd/project/**`, `.asd/sprints/**`, `docs/**`, `AGENTS.md`, `CL
 
 ## After
 
-- Remind user: `.claude/settings.json` and `.codex/hooks.json` are **not** auto-updated by this step (they hold user permissions/hook registration; `.asd/sync.js --apply` handles their own owned entries separately). If update changed hook files or added skills, run sync next.
+- Remind user: `.claude/settings.json` and `.codex/hooks.json` are **not** auto-updated by this step (they hold user permissions/hook registration; `node .asd/sync.js --apply` for generated provider-view targets handles their own owned entries separately). If update changed hook files or added skills, run sync next.
 - Requires `tar` on PATH (ships with Win10 1803+/macOS/Linux) and Node >= 16.7.

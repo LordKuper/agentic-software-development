@@ -33,7 +33,63 @@
       "artifact_revision": ".asd/sprints/008-retro-007-remediation/plan.md@2026-09-07T17:55:00Z"
     }
   ],
-  "task_routing": {},
+  "task_routing": {
+    "Task 1": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:review-gate contract"
+    },
+    "Task 2": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate behaviour"
+    },
+    "Task 3": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "normal"
+    },
+    "Task 4": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "normal"
+    },
+    "Task 5": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:read-only-view rule conflict"
+    },
+    "Task 6": {
+      "tier": "mechanical",
+      "execution": "agent",
+      "reason": "objective-mechanical"
+    },
+    "Task 7": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:SSoT duplication"
+    },
+    "Task 8": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "normal"
+    },
+    "Task 9": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:routing input compatibility"
+    },
+    "Task 10": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:state schema compatibility"
+    },
+    "Task 11": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "normal"
+    }
+  },
   "skipped_phases": [
     "design",
     "design-review",
@@ -53,7 +109,7 @@
     }
   },
   "created_at": "2026-09-07T17:11:41Z",
-  "updated_at": "2026-09-07T17:55:00Z",
+  "updated_at": "2026-09-07T18:00:00Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

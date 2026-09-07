@@ -35,7 +35,7 @@ When External Review is enabled, `/asd-init` probes the other provider's configu
 
 ### Codex with a ChatGPT account
 
-Codex delegates use the concrete model IDs in the canonical family map: `sol` → `gpt-5.6-sol`, `terra` → `gpt-5.6-terra`, and `luna` → `gpt-5.6-luna`. Do not substitute the API-style `gpt-5.6` identifier: a delegate-startup error naming an unsupported model means the canonical map or generated agent view is stale. Update ASD or correct the canonical mapping, regenerate the affected view with `node .asd/sync.js --apply <file...>`, then run `node .asd/sync.js --check`.
+Codex delegates use the concrete model IDs in the canonical family map: `sol` → `gpt-5.6-sol`, `terra` → `gpt-5.6-terra`, and `luna` → `gpt-5.6-luna`. Do not substitute the API-style `gpt-5.6` identifier: a delegate-startup error naming an unsupported model means the canonical map or generated agent view is stale. Update ASD or correct the canonical mapping, regenerate the affected view with `node .asd/sync.js --apply` for generated provider-view targets, then run `node .asd/sync.js --check`.
 
 Optional external tools auto-detected by `/asd-init`:
 
@@ -103,7 +103,7 @@ node "$(git rev-parse --show-toplevel)/.asd/skills/asd-update/update.js" --dry-r
 
 That command is also the manual fallback if you prefer running it outside Claude Code — self-locating, so it works from any directory in the repo. It needs `tar` on PATH (bundled with Windows 10 1803+, macOS, Linux) and Node >= 16.7.
 
-After a successful update, it automatically runs `node .asd/sync.js --check` — canon files changed upstream mean the generated provider views (`.claude/`, `.codex/`, `.agents/skills/`) are now stale. Run `/asd-sync` (or `node .asd/sync.js --apply <file...>`) to regenerate them.
+After a successful update, it automatically runs `node .asd/sync.js --check` — canon files changed upstream mean the generated provider views (`.claude/`, `.codex/`, `.agents/skills/`) are now stale. Run `/asd-sync` (or `node .asd/sync.js --apply` for generated provider-view targets) to regenerate them.
 
 > **After updating, reconcile `.claude/settings.json` and `.codex/hooks.json` yourself.** They hold your permission allowlist and hook registration; the updater and sync only ever merge in their own hook entries, never rewrite the rest of the file. If an update added a hook or skill, you may need to register it there manually.
 
@@ -436,7 +436,7 @@ Yes. Set `project.subsystem_decomposition: disabled` during `/asd-init`. Persist
 Yes. Each is independently toggleable under `documents.*` in `config.yaml`, frozen into the sprint's `state.json` at scope time (a later config edit never changes an active sprint's rules). `audit` becomes a fast no-op on its own when `documents.audit` is disabled: it advances immediately, writes nothing, with one skip line in the decisions log. When `prd`/`ux_spec`/`adr`/effective `c4` are **all** disabled, one deterministic check at design entry collapses `design`, `design-review`, and `design-promote` together — a single write records all three as skipped and advances straight to `plan`; the latter two are never separately dispatched. `plan`/`impl`/`impl-test`/`impl-review`/`retro`/`pr` always run; acceptance criteria then come from `sprint.md`'s own `AC-N` list instead of the PRD. See `.asd/rules/sprint-lifecycle.md` "Optional documents" and "No-op phase rule".
 
 **Can ASD develop itself?**
-Yes — set `self_hosting: enabled` in `config.yaml` (this repo ships with it enabled, `documents.audit` only). `/asd-sprint` then edits ASD's own canonical sources per the exhaustive write allowlist in `.asd/rules/sprint-lifecycle.md` "Self-hosting" — generated `.claude/`/`.codex/`/`.agents/skills/` stay off-limits, resynced via `node .asd/sync.js --apply` after every canon edit. Root `AGENTS.md`'s managed-block/hand-edited-tail split: `.asd/rules/providers.md` "Canonical path -> per-provider path" (ownership home). `/asd-update` refuses to run here (it pulls framework files INTO a consumer; a self-hosting repo IS the framework).
+Yes — set `self_hosting: enabled` in `config.yaml` (this repo ships with it enabled, `documents.audit` only). `/asd-sprint` then edits ASD's own canonical sources per the exhaustive write allowlist in `.asd/rules/sprint-lifecycle.md` "Self-hosting" — generated `.claude/`/`.codex/`/`.agents/skills/` stay off-limits, resynced via `node .asd/sync.js --apply` for generated provider-view targets after every canon edit. Root `AGENTS.md`'s managed-block/hand-edited-tail split: `.asd/rules/providers.md` "Canonical path -> per-provider path" (ownership home). `/asd-update` refuses to run here (it pulls framework files INTO a consumer; a self-hosting repo IS the framework).
 
 **What if my project already has an AGENTS.md or CLAUDE.md?**
 Either works. `/asd-init` adds ASD's rules as a managed block (`<!-- asd:begin -->...<!-- asd:end -->`) inside your existing `AGENTS.md`/`CLAUDE.md`, leaving the rest of your file untouched; if either file doesn't exist yet, it's created from `.asd/templates/t_AGENTS.md`/`t_CLAUDE.md`. Either way, do not reuse the `AGENTS.md`/`CLAUDE.md` from the ASD repo itself — those document how to develop the framework and are meaningless in a consumer project.
