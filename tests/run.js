@@ -3033,6 +3033,40 @@ test('AC-6: the interrupted-dispatch re-dispatch record is stated in review-poli
   }
 });
 
+test('sync.js CLI: bare --apply with no targets fails closed (exit 1) and skips the hash-ledger recompute - a stale generated view can no longer hide behind a green ledger', () => {
+  const root = makeMiniRepo();
+  const manifestPath = path.join(root, '.asd', 'release-manifest.json');
+  const syncStatePath = path.join(root, '.asd', 'sync-state.json');
+  const manifestBefore = fs.readFileSync(manifestPath, 'utf8');
+  const syncStateBefore = fs.readFileSync(syncStatePath, 'utf8');
+
+  let error = null;
+  try {
+    execFileSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), '--apply'], { cwd: root, encoding: 'utf8' });
+  } catch (e) {
+    error = e;
+  }
+  assert.ok(error, '--apply with an empty target list must exit non-zero, not silently succeed with applied: []');
+  assert.strictEqual(error.status, 1);
+  const report = JSON.parse(error.stdout);
+  assert.strictEqual(report.ok, false);
+  assert.deepStrictEqual(report.applied, []);
+  assert.strictEqual(report.hashLedger, null, 'the ledger recompute must be skipped when no target was given, exactly like an aborted batch');
+  assert.strictEqual(fs.readFileSync(manifestPath, 'utf8'), manifestBefore, 'a bare --apply must never write release-manifest.json');
+  assert.strictEqual(fs.readFileSync(syncStatePath, 'utf8'), syncStateBefore, 'a bare --apply must never write sync-state.json');
+});
+
+test('AC-10: a reserved change-risk class name declared target:"artifact" fails closed, case- and separator-normalized, without over-matching a merely-similar name', () => {
+  const base = { objectiveInputs: true, failedObjectiveCheck: false, correctionAttempts: 0, kind: 'standard', checks: [] };
+  const reservedAsArtifact = ['security', 'SECURITY', 'Authentication', 'migration', 'public contract', 'public-contract', 'public_contract', 'Workflow  Gate'];
+  for (const name of reservedAsArtifact) {
+    assert.throws(() => runtime.routeTask({ ...base, risks: [{ name, target: 'artifact' }] }), /reserved risk class is change by definition/, name);
+  }
+  assert.doesNotThrow(() => runtime.routeTask({ ...base, risks: [{ name: 'security', target: 'change' }] }), 'the same reserved name typed target:"change" is exactly the intended usage, never rejected');
+  assert.doesNotThrow(() => runtime.routeTask({ ...base, risks: [{ name: 'security-audit-tool', target: 'artifact' }] }), 'a name that merely contains a reserved word must not be caught - the reserved check is exact-match after normalization, not substring');
+  assert.doesNotThrow(() => runtime.routeTask({ ...base, risks: [{ name: 'config-file', target: 'artifact' }] }), 'a non-reserved artifact risk name must keep routing on evidence, unaffected by the new guard');
+});
+
 // ===========================================================================
 // Runner
 // ===========================================================================
