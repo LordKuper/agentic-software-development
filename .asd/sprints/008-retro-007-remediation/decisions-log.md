@@ -124,3 +124,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: All 22 iteration-2 findings are resolved and `review_fixes_pending` is cleared; the sprint returns to `impl-test`. The round was worked by one dev sequentially, then one tester, rather than by parallel dispatches.
 - **Rationale**: Build and lint are clean and the suite is 156/156, with all six new tests fail-first confirmed against the specific pre-fix commits they guard. The sequential shape answers the external reviewer's finding that two parallel fix rounds each introduced a fresh cross-file contradiction; this round introduced none that the suite or the dev's own re-read caught. Net effect on canon is −1554 characters of prose, so the compression the sprint exists for was preserved through the fix round.
 - **Affected docs**: [reviews/impl/iter-02/](reviews/impl/iter-02/), [test-plan.md](test-plan.md), [state.json](state.json)
+
+## 2026-09-08 — impl-test entries 4-5: impacted set green, 6 tests added
+
+- **Decision**: The impacted set is green (156/156) after entries 4 and 5; the sprint returns to `impl-review` for iteration 3. No new defect; `D-1` stays recorded as fixed.
+- **Rationale**: Entry 4 covered the iteration-2 fix round with six tests, each fail-first confirmed against the specific pre-fix commit it guards — including one that fails on the exact regression shape the previous guard could not see. Entry 5 found the remaining delta to be bookkeeping-only and scoped itself to the two `.asd/project/**` files the standard exclusions hide, extending one existing mirror rather than adding a redundant test, and recording `commands.yaml`'s deleted alias as an honest `none` because no Node code reads that file.
+- **Affected docs**: [test-plan.md](test-plan.md), [state.json](state.json)
