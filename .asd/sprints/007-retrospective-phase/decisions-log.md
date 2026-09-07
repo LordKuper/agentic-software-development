@@ -83,3 +83,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 - 2026-09-07 — impl-review iter-3: all reviewers APPROVE or latched (correctness latched at iter-2), external skipped (negative cache: quota); terminal full suite green 136/136 at 1436ef7
 - 2026-09-07 — impl-review DoD met; advancing to retro
+
+- 2026-09-07 — retro: `retrospective.html` written from 7 F-N entries (full branch); 8 actions (2 consumer, 6 asd) and 5 systemic proposals
