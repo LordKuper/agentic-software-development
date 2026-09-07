@@ -34,5 +34,5 @@ Never touched: `.asd/project/**`, `.asd/sprints/**`, `docs/**`, `AGENTS.md`, `CL
 
 ## After
 
-- Remind user: `.claude/settings.json` and `.codex/hooks.json` are **not** auto-updated by this step (they hold user permissions/hook registration; `node .asd/sync.js --apply` for generated provider-view targets handles their own owned entries separately). If update changed hook files or added skills, run sync next.
+- Remind user: `.claude/settings.json` and `.codex/hooks.json` are **not** auto-updated by this step (they hold user permissions/hook registration; `node .asd/sync.js --apply <generated-view-path...>` (pass generated view paths, never `.asd/` canon: `.claude/agents/<name>.md`, `.codex/agents/<name>.toml`, `.claude/skills/<name>/SKILL.md`, `.agents/skills/<name>/SKILL.md`) handles their own owned entries separately). If update changed hook files or added skills, run sync next.
 - Requires `tar` on PATH (ships with Win10 1803+/macOS/Linux) and Node >= 16.7.

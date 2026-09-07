@@ -905,8 +905,8 @@ function saveSyncState(repoRoot, state) {
 // release-manifest.json hash-ledger recompute (canon_hashes, upstream_hashes)
 // - both are pure functions of on-disk file content, so `--apply` recomputes
 // them fresh every run instead of relying on whoever edited canon to
-// hand-compute a digest (AGENTS.md: "run node .asd/sync.js --apply <file...>
-// after editing canon" - this IS that step, not a separate manual one).
+// hand-compute a digest: regenerating a view and refreshing the ledgers are
+// one step, not two.
 // ---------------------------------------------------------------------------
 
 // Same discovery as buildSyncPlan()'s agent/skill full-file items, but
@@ -1444,7 +1444,9 @@ function runApply(repoRoot, requestedFiles, options) {
 // matched neither a plan entry nor a detected orphan, so a bogus target is
 // never silently treated as success; the hash-ledger recompute that follows
 // a real apply is skipped on that same abort, so it never records a ledger
-// for a batch that wrote nothing.
+// for a batch that wrote nothing. An empty target list aborts the same way:
+// a bare `--apply` used to write no view yet still refresh the ledgers,
+// hiding stale views behind a green `--check`.
 function main(argv) {
   const repoRoot = findRepoRoot(process.cwd());
   const args = argv.slice(2);
@@ -1464,12 +1466,15 @@ function main(argv) {
     const forceIdx = rest.indexOf('--force');
     const force = forceIdx !== -1;
     const files = force ? rest.filter((_, i) => i !== forceIdx) : rest;
+    if (files.length === 0) {
+      process.stdout.write(JSON.stringify({ ok: false, error: '--apply requires at least one generated view path (e.g. .claude/agents/<name>.md)', applied: [], hashLedger: null }, null, 2) + '\n');
+      return 1;
+    }
     const forceRels = force ? files.map((f) => path.relative(repoRoot, path.resolve(repoRoot, f)).replace(/\\/g, '/')) : [];
     const results = runApply(repoRoot, files, { force: forceRels });
     const hasInvalidTargets = results.some((r) => r.status === 'not-found');
-    // AGENTS.md: "run node .asd/sync.js --apply <file...> after editing
-    // canon" - recomputing release-manifest.json's hash ledgers is now part
-    // of that same step, not a separate manual script (see comment above
+    // Recomputing release-manifest.json's hash ledgers is part of this same
+    // step, not a separate manual script (see comment above
     // recomputeAndWriteHashLedgers). Applies whole-repo, independent of which
     // targets were requested, since both ledgers are pure functions of
     // current on-disk canon content.

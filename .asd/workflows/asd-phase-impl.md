@@ -46,7 +46,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
 
 ## Workflow
 
-1. Read `.asd/project/config.yaml` (`backward_compat`, `system.tools`, `self_hosting`, `language.chat`, `language.docs`). When `self_hosting: enabled`, devs' write scope extends per plan scope to the exhaustive allowlist in `sprint-lifecycle.md` "Self-hosting" (do not restate it here); dev instruction (step 6) adds: after any canonical edit, run `node .asd/sync.js --apply` for generated provider-view targets before marking the task done; generated `.claude/`/`.codex/`/`.agents/skills/` stay off-limits always
+1. Read `.asd/project/config.yaml` (`backward_compat`, `system.tools`, `self_hosting`, `language.chat`, `language.docs`). When `self_hosting: enabled`, devs' write scope extends per plan scope to the exhaustive allowlist in `sprint-lifecycle.md` "Self-hosting" (do not restate it here); dev instruction (step 6) adds: after any canonical edit, run `node .asd/sync.js --apply <generated-view-path...>` (pass generated view paths, never `.asd/` canon: `.claude/agents/<name>.md`, `.codex/agents/<name>.toml`, `.claude/skills/<name>/SKILL.md`, `.agents/skills/<name>/SKILL.md`) before marking the task done; generated `.claude/`/`.codex/`/`.agents/skills/` stay off-limits always
 2. Read `<sprint>/state.json` → **detect mode**:
    - both fix flags null/absent → **initial mode**; confirm `plan.md` approved
    - `review_fixes_pending` = `iter-NN` → **review-fix mode**; confirm `<sprint>/reviews/impl/iter-NN/` exists (else `ABORT — precondition not met: reviews/impl/iter-NN missing`)
@@ -69,7 +69,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
      - instruction:
        - read context first
        - tech-reference precondition (refuse-to-implement rule): see `artifact-layout.md` "Tech reference docs" — do not restate here
-      - apply `review-policy.md`'s over-engineering and structure/cohesion checklists and `artifact-layout.md`'s SSoT iron rule while authoring, not only at review (`code-style.md` §1) — do not restate them here
+       - apply `review-policy.md`'s over-engineering and structure/cohesion checklists and `artifact-layout.md`'s SSoT iron rule while authoring, not only at review (`code-style.md` §1) — do not restate them here
        - work autonomously within plan + persistent docs scope; do NOT pause user for routine approach choices — make the reasonable call and proceed
        - escalate only on a blocker (see Execution mode): emit `QUESTION` for unresolvable requirement ambiguity, `FAILED` for missing tech-reference / unrecoverable failure, or raise Complication Approval via request for user decision **only** when a Simplicity Default trigger fires (new abstraction / dependency / config flag / generalization)
        - manual-steps handling: see `sprint-lifecycle.md` "Impl phase" — do not restate here

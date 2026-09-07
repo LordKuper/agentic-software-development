@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-update/SKILL.md. source_digest=sha256:d1d5c144901ef566d5f758175f839696eeaec4090d1752f7b534fc6ff40dc0ac content_digest=sha256:ff4ac65b629dee9f1071785d14c0940f42a12b1aa41118e802dbfeb91bdcb60a asd_version=6.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-update/SKILL.md. source_digest=sha256:2da080db28301184844b04ea1b9bf511081316660ae55b3c6402e4968f66075d content_digest=sha256:f1d23386ec7136e3b949be0a9f6771ad492f6a34ae3a17c3d31f5cdf886b777a asd_version=6.0.0 schema=1
 name: asd-update
 description: "Updates the ASD framework infrastructure (.asd/rules, .asd/templates, ASD agents/skills/hooks, .asd/migrations) in a consumer project to the latest version by fetching them from the configured ASD repo's main branch, replacing only framework-managed paths, running any pending `.asd/migrations/<version>.js` scripts in ascending order, and never touching consumer-owned config, sprints, persistent docs, or custom skills/agents/hooks. Use when the user runs $asd-update or asks to update, upgrade, or pull the latest ASD framework / workflow version."
 ---
@@ -35,5 +35,5 @@ Never touched: `.asd/project/**`, `.asd/sprints/**`, `docs/**`, `AGENTS.md`, `CL
 
 ## After
 
-- Remind user: `.claude/settings.json` and `.codex/hooks.json` are **not** auto-updated by this step (they hold user permissions/hook registration; `node .asd/sync.js --apply` for generated provider-view targets handles their own owned entries separately). If update changed hook files or added skills, run sync next.
+- Remind user: `.claude/settings.json` and `.codex/hooks.json` are **not** auto-updated by this step (they hold user permissions/hook registration; `node .asd/sync.js --apply <generated-view-path...>` (pass generated view paths, never `.asd/` canon: `.claude/agents/<name>.md`, `.codex/agents/<name>.toml`, `.claude/skills/<name>/SKILL.md`, `.agents/skills/<name>/SKILL.md`) handles their own owned entries separately). If update changed hook files or added skills, run sync next.
 - Requires `tar` on PATH (ships with Win10 1803+/macOS/Linux) and Node >= 16.7.

@@ -63,7 +63,7 @@ Implementer:
 - Run command: limited to commands in `.asd/project/commands.yaml` (lint, build, run, dev, custom.*); never the `test` command — the suite is impl-test's gate
 - Request user decision for ambiguity in requirements, ADR, ux-spec, or a missing token
 - Write access for production code in repo; for `.asd/project/stubs.md`, `<sprint>/manual-steps.md`, and defect `Status` rows in `<sprint>/test-plan.md` (test-fix mode); never elsewhere in `.asd/` or `.claude/`
-- **`self_hosting: enabled` only**: write scope extends per plan scope to the exhaustive allowlist in `sprint-lifecycle.md` "Self-hosting" (do not restate it here; HTML templates included — this framework repo has no application UI, so its `t_*.html` are documentation/config artefacts, not product UI); run `node .asd/sync.js --apply` for generated provider-view targets after any canonical edit; never hand-edit generated `.claude/`, `.codex/`, `.agents/skills/`
+- **`self_hosting: enabled` only**: write scope extends per plan scope to the exhaustive allowlist in `sprint-lifecycle.md` "Self-hosting" (do not restate it here; HTML templates included — this framework repo has no application UI, so its `t_*.html` are documentation/config artefacts, not product UI); run `node .asd/sync.js --apply <generated-view-path...>` (pass generated view paths, never `.asd/` canon: `.claude/agents/<name>.md`, `.codex/agents/<name>.toml`, `.claude/skills/<name>/SKILL.md`, `.agents/skills/<name>/SKILL.md`) after any canonical edit; never hand-edit generated `.claude/`, `.codex/`, `.agents/skills/`
 
 ## Do's
 
