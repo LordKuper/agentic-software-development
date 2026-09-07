@@ -469,21 +469,24 @@ test('buildSyncPlan: an INITIALIZED CONSUMER project generates AGENTS.md from t_
   assert.ok(fs.readFileSync(path.join(root, 'AGENTS.md'), 'utf8').includes('providers.md'));
 });
 
-test('buildSyncPlan: WITHOUT .asd/project/config.yaml (the framework repo itself), AGENTS.md stays self-sourced', () => {
+test('buildSyncPlan: WITHOUT .asd/project/config.yaml (the framework repo itself), AGENTS.md is an ordinary managed-block target rendered from t_AGENTS.md', () => {
   const root = makeMiniRepo(); // no .asd/project/config.yaml - matches this framework's own repo
   fs.mkdirSync(path.join(root, '.asd', 'templates'), { recursive: true });
-  fs.writeFileSync(path.join(root, '.asd', 'templates', 't_AGENTS.md'), 'consumer-only content that must NOT leak into a self-sourced AGENTS.md\n', 'utf8');
+  fs.writeFileSync(path.join(root, '.asd', 'templates', 't_AGENTS.md'), 'Framework-dev guidance from the template.\n', 'utf8');
 
-  const authored = '<!-- asd:begin v=1 -->\nHand-authored framework-dev guidance, unrelated to t_AGENTS.md.\n<!-- asd:end -->\n';
-  fs.writeFileSync(path.join(root, 'AGENTS.md'), authored, 'utf8');
-  const state = JSON.parse(fs.readFileSync(path.join(root, '.asd', 'sync-state.json'), 'utf8'));
-  state.entries['AGENTS.md'] = { kind: 'managed-block', content_digest: sync.digestTag('Hand-authored framework-dev guidance, unrelated to t_AGENTS.md.\n') };
-  fs.writeFileSync(path.join(root, '.asd', 'sync-state.json'), JSON.stringify(state, null, 2));
+  assert.strictEqual(sync.runCheck(root).find((i) => i.target === 'AGENTS.md').status, 'missing', 'no self-sourced carve-out: a repo without config.yaml must still report AGENTS.md as missing, not silently skip/pass it');
+  sync.runApply(root, ['AGENTS.md']);
+  assert.ok(fs.readFileSync(path.join(root, 'AGENTS.md'), 'utf8').includes('Framework-dev guidance from the template.'), '--apply must actually create AGENTS.md from t_AGENTS.md, not report applied:false');
+  assert.strictEqual(sync.runCheck(root).find((i) => i.target === 'AGENTS.md').status, 'current');
+});
 
-  const status = sync.runCheck(root).find((i) => i.target === 'AGENTS.md').status;
-  assert.strictEqual(status, 'current', 'self-sourced AGENTS.md must never be compared against t_AGENTS.md');
-  sync.runApply(root, ['AGENTS.md']); // self-sourced: apply is a documented no-op
-  assert.strictEqual(fs.readFileSync(path.join(root, 'AGENTS.md'), 'utf8'), authored, 'self-sourced AGENTS.md is never overwritten by --apply');
+test('buildSyncPlan: with t_AGENTS.md absent, AGENTS.md drops out of the plan entirely and --apply reports not-found instead of throwing ENOENT', () => {
+  const root = makeMiniRepo(); // no .asd/templates/t_AGENTS.md at all
+
+  assert.strictEqual(sync.runCheck(root).find((i) => i.target === 'AGENTS.md'), undefined, 'AGENTS.md must not appear in the plan when its template source is missing');
+  const results = sync.runApply(root, ['AGENTS.md']);
+  assert.strictEqual(results[0].status, 'not-found');
+  assert.strictEqual(results[0].applied, false);
 });
 
 // ===========================================================================
@@ -535,21 +538,6 @@ test('readSelfHostingField: duplicated top-level key is ambiguous, fails closed 
   fs.mkdirSync(path.join(dir2, '.asd', 'project'), { recursive: true });
   fs.writeFileSync(path.join(dir2, '.asd', 'project', 'config.yaml'), 'self_hosting: enabled\nself_hosting: enabled\n', 'utf8');
   assert.strictEqual(sync.readSelfHostingField(dir2), 'disabled', 'even two IDENTICAL duplicates are ambiguous malformed YAML, not a confirmation');
-});
-
-test('isSelfSourcedAgentsMd: no config -> self-sourced; consumer config -> generated; self_hosting:enabled -> self-sourced even though config exists', () => {
-  const noConfig = mkTempDir();
-  assert.strictEqual(sync.isSelfSourcedAgentsMd(noConfig), true);
-
-  const consumer = mkTempDir();
-  fs.mkdirSync(path.join(consumer, '.asd', 'project'), { recursive: true });
-  fs.writeFileSync(path.join(consumer, '.asd', 'project', 'config.yaml'), 'self_hosting: disabled\n', 'utf8');
-  assert.strictEqual(sync.isSelfSourcedAgentsMd(consumer), false);
-
-  const framework = mkTempDir();
-  fs.mkdirSync(path.join(framework, '.asd', 'project'), { recursive: true });
-  fs.writeFileSync(path.join(framework, '.asd', 'project', 'config.yaml'), 'self_hosting: enabled\n', 'utf8');
-  assert.strictEqual(sync.isSelfSourcedAgentsMd(framework), true);
 });
 
 // ===========================================================================
@@ -1053,18 +1041,8 @@ test('`node .asd/sync.js --check` reports every item current (no drift), includi
     assert.ok(targets.has(`.claude/skills/${name}/SKILL.md`), `sync plan missing .claude/skills/${name}/SKILL.md`);
     assert.ok(targets.has(`.agents/skills/${name}/SKILL.md`), `sync plan missing .agents/skills/${name}/SKILL.md`);
   }
-  // `--check` always exits 0 with `ok: true`; drift only shows as a per-item
-  // `status` string, so `ok`/`items` alone cannot catch a stale/modified
-  // generated view. Assert every item is actually `current` - no exemption.
-  // `AGENTS.md` is self-sourced/hand-edited under `self_hosting: enabled`
-  // (per AGENTS.md's own documented rule) but MUST still be re-baselined to
-  // `current` after each hand-edit (sprint 003 plan.md Task 13 / DoD: "not
-  // merely tolerated"); previously this assertion allowlisted it out
-  // entirely, which would have silently accepted permanent drift instead of
-  // proving the re-baseline actually happened. Fails at parent 317aa50
-  // (AGENTS.md was `modified-foreign`); passes at HEAD.
-  const drifted = parsed.items.filter((item) => item.target !== 'AGENTS.md' && item.status !== 'current');
-  assert.deepStrictEqual(drifted, []);
+  const drifted = parsed.items.filter((item) => item.status !== 'current');
+  assert.deepStrictEqual(drifted, [], '`--check` always exits 0 with `ok: true`; drift only shows as a per-item `status` string, so `ok`/`items` alone cannot catch a stale/modified generated view. AGENTS.md is an ordinary managed-block target (sprint 006 removed the self-sourced carve-out) and must be current here too.');
 });
 
 // ===========================================================================
@@ -2077,7 +2055,8 @@ test('AC-2/4/6/7: review workflow contracts retain Correctness and incremental d
   const implReview = fs.readFileSync(path.join(REPO_ROOT, '.asd/workflows/asd-phase-impl-review.md'), 'utf8');
   assert.ok(workflow.includes('Every internal reviewer is dispatched when not latch-skipped'));
   assert.ok(workflow.includes('reviewer still dispatches and is counted toward DoD'));
-  assert.ok(prompt.includes('git diff <state.json reviews.impl.iteration_heads["iter-(N-1)"]>...HEAD <pathspec>'));
+  assert.ok(prompt.includes('mode: "files"') && prompt.includes('exclude_paths[]'), 'External Review now receives a files-mode scope manifest, not a rendered diff');
+  assert.ok(prompt.includes('reviews.impl.iteration_heads["iter-(N-1)"]'), 'incremental scope guarantee (iter 2+ diffs from the prior iteration head) must survive the transport change');
   assert.ok(implReview.includes('run command') && !implReview.includes('via Bash'));
 });
 
@@ -2169,6 +2148,55 @@ test('SessionStart hook: an all-legacy-"skipped:" verdict map (no bare APPROVE a
   assert.ok(text.includes('Last review verdict: mixed'), `an all-legacy-skip verdict map with no genuine approval must read "mixed", got: ${text}`);
 });
 
+test('AC-21: SessionStart reports "Next phase: await-user-closure" when pr.state is closure-pending', () => {
+  const tempRoot = mkTempDir();
+  const hookSrc = fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8');
+  writeFile(tempRoot, '.asd/hooks/session-start.js', hookSrc);
+  writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({
+    sprint_id: '999-fixture',
+    phase: 'pr',
+    branch: 'sprint/999-fixture',
+    pr: { state: 'closure-pending' },
+  }));
+  const out = execFileSync('node', [path.join(tempRoot, '.asd/hooks/session-start.js'), '--provider', 'claude'], {
+    cwd: tempRoot,
+    encoding: 'utf8',
+  });
+  const text = JSON.parse(out).hookSpecificOutput.additionalContext;
+  assert.ok(text.includes('Next phase: await-user-closure'), `expected the mandatory closure gate to report await-user-closure, got: ${text}`);
+});
+
+test('AC-21: SessionStart reports "Next phase: await-merge" for an ordinary pr phase without pr.state', () => {
+  const tempRoot = mkTempDir();
+  const hookSrc = fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8');
+  writeFile(tempRoot, '.asd/hooks/session-start.js', hookSrc);
+  writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({
+    sprint_id: '999-fixture',
+    phase: 'pr',
+    branch: 'sprint/999-fixture',
+  }));
+  const out = execFileSync('node', [path.join(tempRoot, '.asd/hooks/session-start.js'), '--provider', 'claude'], {
+    cwd: tempRoot,
+    encoding: 'utf8',
+  });
+  const text = JSON.parse(out).hookSpecificOutput.additionalContext;
+  assert.ok(text.includes('Next phase: await-merge'), `expected the default pr-phase path to report await-merge, got: ${text}`);
+});
+
+test('AC-7: no canonical rule, workflow, or agent file references the retired asd-pm role', () => {
+  const dirs = ['rules', 'workflows', 'agents'].map((d) => path.join(REPO_ROOT, '.asd', d));
+  const offenders = [];
+  for (const dir of dirs) {
+    if (!fs.existsSync(dir)) continue;
+    for (const f of fs.readdirSync(dir)) {
+      if (!f.endsWith('.md')) continue;
+      const text = fs.readFileSync(path.join(dir, f), 'utf8');
+      if (/asd-pm/.test(text)) offenders.push(path.join(d, f));
+    }
+  }
+  assert.deepStrictEqual(offenders, [], `canonical files still reference retired asd-pm: ${offenders.join(', ')}`);
+});
+
 // ===========================================================================
 // 15. Sprint 006 deterministic runtime contracts
 // ===========================================================================
@@ -2202,6 +2230,16 @@ test('AC-1/2: compact coverage ledger rejects identity, completeness, predicate,
     ['missing finding reference', () => { const x = structuredClone(ledger); x.rules[0] = { i: 'r-1', s: 'finding', f: 'F-2' }; return x; }, /finding reference/],
   ];
   for (const [label, makeLedger, message] of cases) assert.throws(() => runtime.validateCoverageLedger(manifest, makeLedger(), ['F-1']), message, label);
+  const forgeryCases = [
+    ['ledger claims an extra finding not actually raised', { findings: ['F-1', 'F-2'] }, ['F-1']],
+    ['ledger claims a finding while none was actually raised', { findings: [] }, ['F-1']],
+    ['ledger duplicates the same finding id', { findings: ['F-1', 'F-1'] }, ['F-1']],
+  ];
+  for (const [label, override, actualFindings] of forgeryCases) {
+    const forged = structuredClone(ledger);
+    Object.assign(forged, override);
+    assert.throws(() => runtime.validateCoverageLedger(manifest, forged, actualFindings), /ledger findings invalid/, label);
+  }
   const duplicateManifest = structuredClone(manifest);
   duplicateManifest.files.push('f-1');
   duplicateManifest.digest = runtime.coverageManifestDigest(duplicateManifest);
@@ -2236,17 +2274,140 @@ test('AC-3/4/5: preflight permits only fixed local probes and negative cache is 
   assert.strictEqual(ready.status, 'local-ready');
   runtime.recordExternalFailure({ fingerprint: ready.fingerprint, status: 'quota', cachePath, now: 1000, retryAfter: 1001 });
   assert.strictEqual(runtime.externalPreflight(input).status, 'negative-cache');
-  assert.strictEqual(runtime.externalPreflight({ ...input, now: 1001 }).status, 'local-ready');
-  assert.ok(!Object.hasOwn(JSON.parse(fs.readFileSync(cachePath, 'utf8')).entries, ready.fingerprint), 'expired negative cache entry is pruned');
+  assert.strictEqual(runtime.externalPreflight({ ...input, now: 1001 }).status, 'local-ready', 'an expired entry must be ignored in-memory on read, even before any write persists the pruning');
+  assert.ok(Object.hasOwn(JSON.parse(fs.readFileSync(cachePath, 'utf8')).entries, ready.fingerprint), 'a read-only preflight call must not itself rewrite the cache file - the expired entry is still on disk');
+  runtime.recordExternalFailure({ fingerprint: 'b'.repeat(64), status: 'quota', cachePath, now: 1001, retryAfter: 1002 });
+  assert.ok(!Object.hasOwn(JSON.parse(fs.readFileSync(cachePath, 'utf8')).entries, ready.fingerprint), 'the expired entry is pruned from disk on the NEXT actual write, not before');
+});
+
+test('AC-5: negative-cache recovers when the fingerprint changes because model, command, or credential state changed - not only on TTL expiry', () => {
+  const root = mkTempDir();
+  const cachePath = path.join(root, 'external-cache.json');
+  const command = process.platform === 'win32' ? path.join(root, 'ready.cmd') : path.join(root, 'ready');
+  const otherCommand = process.platform === 'win32' ? path.join(root, 'other.cmd') : path.join(root, 'other');
+  const scriptBody = process.platform === 'win32' ? '@echo off\r\nexit /b 0\r\n' : '#!/bin/sh\nexit 0\n';
+  fs.writeFileSync(command, scriptBody, 'utf8');
+  fs.writeFileSync(otherCommand, scriptBody, 'utf8');
+  if (process.platform !== 'win32') {
+    fs.chmodSync(command, 0o755);
+    fs.chmodSync(otherCommand, 0o755);
+  }
+  const credentialPath = path.join(root, 'credential.json');
+  fs.writeFileSync(credentialPath, '{"token":"x"}', 'utf8');
+
+  const input = { provider: 'codex', command, model: 'gpt-5.6-sol', credentialPath, cachePath, now: 1000 };
+  const ready = runtime.externalPreflight(input);
+  assert.strictEqual(ready.status, 'local-ready');
+  runtime.recordExternalFailure({ fingerprint: ready.fingerprint, status: 'quota', cachePath, now: 1000, retryAfter: 1000 + 60000 });
+  assert.strictEqual(runtime.externalPreflight(input).status, 'negative-cache', 'sanity: the exact same input must hit the cached entry');
+
+  assert.strictEqual(runtime.externalPreflight({ ...input, model: 'gpt-5.6-terra' }).status, 'local-ready', 'a different model must produce a different fingerprint, never reuse a stale negative-cache entry');
+  assert.strictEqual(runtime.externalPreflight({ ...input, command: otherCommand }).status, 'local-ready', 'a different command must produce a different fingerprint');
+
+  fs.writeFileSync(credentialPath, '{"token":"rotated"}', 'utf8');
+  const stat = fs.statSync(credentialPath);
+  fs.utimesSync(credentialPath, new Date(stat.atimeMs + 1000), new Date(stat.mtimeMs + 1000));
+  assert.strictEqual(runtime.externalPreflight(input).status, 'local-ready', 'a rotated credential (changed mtime) must produce a different auth generation and recover, not stay stuck on the old negative-cache entry');
+});
+
+test('AC-5: the persisted negative-cache entry never carries anything beyond {status, retry_after} - no secrets or command output', () => {
+  const root = mkTempDir();
+  const cachePath = path.join(root, 'external-cache.json');
+  const command = process.platform === 'win32' ? path.join(root, 'ready.cmd') : path.join(root, 'ready');
+  fs.writeFileSync(command, process.platform === 'win32' ? '@echo off\r\nexit /b 0\r\n' : '#!/bin/sh\nexit 0\n', 'utf8');
+  if (process.platform !== 'win32') fs.chmodSync(command, 0o755);
+  const input = { provider: 'codex', command, model: 'gpt-5.6-sol', cachePath, now: 1000 };
+  const ready = runtime.externalPreflight(input);
+  runtime.recordExternalFailure({ fingerprint: ready.fingerprint, status: 'quota', cachePath, now: 1000, retryAfter: 1000 + 60000 });
+  const persisted = JSON.parse(fs.readFileSync(cachePath, 'utf8'));
+  const entry = persisted.entries[ready.fingerprint];
+  assert.deepStrictEqual(Object.keys(entry).sort(), ['retry_after', 'status'], 'the persisted entry must carry exactly {status, retry_after} - no secrets, command output, or other input echoed back');
 });
 
 test('AC-4: Windows .cmd preflight executes a metacharacter-containing path literally', () => {
-  if (process.platform !== 'win32') return;
+  if (process.platform !== 'win32') {
+    console.log('  (skipped: this is the only check for the .cmd/metacharacter PowerShell fallback branch in runLocal - it only runs on win32; see stubs.md)');
+    return;
+  }
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'asd & runtime-'));
   const shim = path.join(root, 'external & shim.cmd');
   fs.writeFileSync(shim, '@echo off\r\nexit /b 0\r\n', 'utf8');
   const result = runtime.externalPreflight({ provider: 'codex', command: shim, model: 'gpt-5.6-sol', cachePath: path.join(root, 'cache.json') });
   assert.strictEqual(result.status, 'local-ready');
+});
+
+function runtimeCli(args, options) {
+  return execFileSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'runtime.js'), ...args], { encoding: 'utf8', ...options });
+}
+
+test('runtime.js CLI: validate-ledger exits 0 with {"ok":true} stdout on valid fixtures', () => {
+  const root = mkTempDir();
+  const { manifest, ledger } = validCoverageFixture();
+  const manifestPath = path.join(root, 'manifest.json');
+  const ledgerPath = path.join(root, 'ledger.json');
+  const findingsPath = path.join(root, 'findings.json');
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest), 'utf8');
+  fs.writeFileSync(ledgerPath, JSON.stringify(ledger), 'utf8');
+  fs.writeFileSync(findingsPath, JSON.stringify(['F-1']), 'utf8');
+
+  const out = runtimeCli(['validate-ledger', '--manifest', manifestPath, '--ledger', ledgerPath, '--findings', findingsPath]);
+  assert.deepStrictEqual(JSON.parse(out), { ok: true });
+});
+
+test('runtime.js CLI: validate-ledger on a tampered ledger exits non-zero and prints no "ok" to stdout', () => {
+  const root = mkTempDir();
+  const { manifest, ledger } = validCoverageFixture();
+  const tampered = structuredClone(ledger);
+  tampered.findings = ['F-1', 'F-2'];
+  const manifestPath = path.join(root, 'manifest.json');
+  const ledgerPath = path.join(root, 'ledger.json');
+  const findingsPath = path.join(root, 'findings.json');
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest), 'utf8');
+  fs.writeFileSync(ledgerPath, JSON.stringify(tampered), 'utf8');
+  fs.writeFileSync(findingsPath, JSON.stringify(['F-1']), 'utf8');
+
+  let error = null;
+  try {
+    runtimeCli(['validate-ledger', '--manifest', manifestPath, '--ledger', ledgerPath, '--findings', findingsPath]);
+  } catch (e) {
+    error = e;
+  }
+  assert.ok(error, 'a tampered ledger must exit non-zero, never silently pass a blocking gate');
+  assert.notStrictEqual(error.status, 0);
+  assert.ok(!(error.stdout || '').includes('ok'), 'a rejected ledger must never print an "ok" payload to stdout');
+});
+
+test('runtime.js CLI: external-preflight exits 1 on command-unavailable', () => {
+  const root = mkTempDir();
+  const inputPath = path.join(root, 'input.json');
+  fs.writeFileSync(inputPath, JSON.stringify({ provider: 'codex', command: path.join(root, 'does-not-exist'), model: 'gpt-5.6-sol', cachePath: path.join(root, 'cache.json') }), 'utf8');
+
+  let error = null;
+  let stdout = '';
+  try {
+    stdout = runtimeCli(['external-preflight', '--input', inputPath]);
+  } catch (e) {
+    error = e;
+    stdout = e.stdout;
+  }
+  assert.ok(error, 'a missing/unavailable CLI must exit non-zero, not report local-ready');
+  assert.strictEqual(error.status, 1);
+  assert.strictEqual(JSON.parse(stdout).status, 'command-unavailable');
+});
+
+test('runtime.js CLI: manifest-digest prints the same digest coverageManifestDigest computes, and --write persists it', () => {
+  const root = mkTempDir();
+  const manifest = { files: ['f-1'], rules: ['r-1'], sections: ['s-1'], n_a: { files: {}, rules: {}, sections: {} } };
+  const manifestPath = path.join(root, 'manifest.json');
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest), 'utf8');
+
+  const out = runtimeCli(['manifest-digest', '--manifest', manifestPath]).trim();
+  assert.strictEqual(out, runtime.coverageManifestDigest(manifest));
+  assert.strictEqual(fs.readFileSync(manifestPath, 'utf8'), JSON.stringify(manifest), '--write not passed: file on disk must be untouched');
+
+  runtimeCli(['manifest-digest', '--manifest', manifestPath, '--write']);
+  const written = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  assert.strictEqual(written.digest, out, '--write must persist the same digest just printed');
 });
 
 test('AC-12/14: variants inherit their canonical permissions and malformed or colliding variants fail closed', () => {
@@ -2259,6 +2420,7 @@ test('AC-12/14: variants inherit their canonical permissions and malformed or co
   sync.runApply(root, ['.claude/agents/worker-mechanical.md', '.codex/agents/worker-mechanical.toml']);
   const claude = fs.readFileSync(path.join(root, '.claude/agents/worker-mechanical.md'), 'utf8');
   assert.ok(claude.includes('model: haiku') && claude.includes('tools: [Read, Grep]'), 'tier may change model only; inherited permissions/body survive');
+  assert.ok(!/^effort:/m.test(claude), 'AC-10: haiku variant with no unsupported effort override must drop the inherited effort line entirely');
   writeAgentCanon(root, 'worker', base.replace('"model": "haiku"', '"tools": ["Write"]'));
   assert.throws(() => sync.runCheck(root), /permission metadata/);
   writeAgentCanon(root, 'worker', base.replace('"mechanical"', '"unknown"'));
