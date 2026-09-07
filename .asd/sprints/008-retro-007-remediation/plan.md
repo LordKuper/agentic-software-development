@@ -77,7 +77,7 @@ hand-edited.
 - [x] Fix `.asd/project/custom-coding-rules.md:14` under the one-off authorization recorded in the decisions log
 - [x] Do not touch `.asd/templates/t_AGENTS.md` — it contains no sync wording; confirm by grep
 - [x] Run `node .asd/sync.js --apply` for the `asd-dev` render source and confirm the six generated agent views regenerate (AC-14)
-- [ ] Covers AC-5, AC-14. No material risk to the change: a documentation-wording correction whose target behaviour is already verified
+- [x] Covers AC-5, AC-14. No material risk to the change: a documentation-wording correction whose target behaviour is already verified
 
 ### Task 7: Bind the over-engineering and SSoT checklists at authoring time
 - [x] Add a link-plus-applicability statement to `.asd/rules/code-style.md` — the `review-policy.md` over-engineering and structure/cohesion checklists bind at authoring time, mirroring `design-principles.md` §10's wording (AC-7)
