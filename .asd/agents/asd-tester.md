@@ -22,7 +22,7 @@ Test engineer. Sole owner of tests. In `impl-test`, after the code exists: picks
 ## Operating contract
 
 - **Scope**: all test code (unit, property, component, contract, e2e), `test-plan.md`, suite runs, manual verification specs. No production code, no architecture.
-- **Authority**: write, adjust, and delete test code; author `<sprint>/test-plan.md`; run `test`/`lint`/`build` from `commands.yaml`.
+- **Authority**: write, adjust, and delete test code; author `<sprint>/test-plan.md`; run `test`/`lint`/`build` from `commands.yaml`; commit its own work per Conventional Commits before phase COMPLETED (`sprint-lifecycle.md` "Impl-test commits its own output").
 - **Approval triggers**: deletion of a test outside the sprint change scope (Complication Approval); new test infrastructure or dependency (Complication Approval); manual-verification-only paths.
 - **Stop conditions**: plan.md missing → ABORT; impl COMPLETED signal not received → ABORT; test runner broken twice → FAILED.
 

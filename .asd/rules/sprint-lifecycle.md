@@ -25,6 +25,8 @@ No cap on `impl⇄impl-test` rounds: loop until the impacted set is green or a d
 
 **Impl-review clean-worktree precondition** (home statement; mechanic in `asd-phase-impl-review.md` "Preconditions"): `impl-review` refuses to start while `git status --porcelain` is non-empty, measured at phase entry before any dispatch — the iteration diff is computed from commits, so uncommitted work (including pre-existing sprint bookkeeping files) is invisible to every reviewer. The phase's own later writes (review files, `state.json`, `decisions-log.md`, `test-plan.md`) are produced after this gate and are not subject to it. `design-review` has no matching precondition — it builds its manifest from on-disk drafts, so the git-invisibility blind spot does not exist there.
 
+**Impl-test commits its own output** (home statement; mechanic in `asd-phase-impl-test.md`): `impl-test` commits its authored/pruned tests and `test-plan.md` changes, Conventional Commits, before signalling COMPLETED — it runs immediately before the clean-worktree precondition above, and always writes tests plus `test-plan.md`, so the two rules only compose if `impl-test` leaves a clean worktree behind it (`git-strategy.md` "Commit before review").
+
 
 ## Review iteration counters
 
