@@ -1,0 +1,34 @@
+{
+  "phase": "impl-review",
+  "iteration": "1",
+  "base_ref": "main",
+  "head_ref": "0366ee9aabbce047c93a978606b4661bbf7cac20",
+  "files": [
+    ".asd/agents/asd-dev.md",
+    ".asd/release-manifest.json",
+    ".asd/rules/artifact-layout.md",
+    ".asd/rules/code-style.md",
+    ".asd/rules/git-strategy.md",
+    ".asd/rules/providers.md",
+    ".asd/rules/review-policy.md",
+    ".asd/rules/sprint-lifecycle.md",
+    ".asd/runtime.js",
+    ".asd/skills/asd-update/SKILL.md",
+    ".asd/templates/t_plan.md",
+    ".asd/templates/t_state.json",
+    ".asd/workflows/asd-phase-design-review.md",
+    ".asd/workflows/asd-phase-impl-review.md",
+    ".asd/workflows/asd-phase-impl-test.md",
+    ".asd/workflows/asd-phase-impl.md",
+    "AGENTS.md",
+    "README.md",
+    "tests/run.js"
+  ],
+  "exclude_paths": [
+    ".asd/project/**",
+    ".asd/sprints/**",
+    ".claude/**",
+    ".codex/**",
+    ".agents/**"
+  ]
+}

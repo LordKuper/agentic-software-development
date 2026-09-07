@@ -82,3 +82,21 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: The impacted set is green (145/145) with 9 tests added and 0 removed; the sprint advances to `impl-review`. No `D-N` defect was raised — the implementation held under every new test.
 - **Rationale**: The impacted-set safety valve fired immediately and degraded the run to the full suite, because the change surface touches `.asd/runtime.js` and the `.asd/rules`/`templates`/`workflows` trees, which are framework-wide under self-hosting, and because the repo has one flat test file with no subset selector. Nine `none` decisions are recorded with reasons in `test-plan.md`, mostly prose contracts already covered by the existing mirror sections or with no scripted parser to validate against.
 - **Affected docs**: [test-plan.md](test-plan.md), [plan.md](plan.md), [state.json](state.json)
+
+## 2026-09-07 — impl-review iteration 1: 41 findings, all five verdicts CONCERNS
+
+- **Decision**: All five reviewers returned CONCERNS (correctness 14, testing 9, documentation 8, efficiency 5, external 5); no reviewer latched. The sprint routes to `impl` review-fix mode with `review_fixes_pending: iter-01`.
+- **Rationale**: No FAIL, so no escalation was required for the findings themselves. Coverage manifests were supplied to all four internal reviewers this iteration and `node .asd/runtime.js validate-ledger` returned `ok: true` for each — unlike sprint 007, where no manifest was supplied and the ledger gate could not run.
+- **Affected docs**: [reviews/impl/iter-01/](reviews/impl/iter-01/), [state.json](state.json)
+
+## 2026-09-07 — one-off write authorization extended to all of custom-coding-rules.md
+
+- **Decision**: The one-off authorization to edit `.asd/project/custom-coding-rules.md` outside the self-hosting write allowlist covers any line of that file for this sprint, not only line 14. Finding D-2's fix to line 15 proceeds.
+- **Rationale**: Line 15 forbids hand-editing `.claude/` without qualifying it to *generated* trees, which directly contradicts the `.claude/agent-memory/` carve-out AC-3 introduced. The file is read on every impl dispatch, so leaving the contradiction would reproduce F-3/F-7 — the exact friction AC-3 fixes.
+- **Affected docs**: [reviews/impl/iter-01/documentation.md](reviews/impl/iter-01/documentation.md), [sprint.md](sprint.md)
+
+## 2026-09-07 — AC-11 keeps its cross-phase scope; derived_handoff re-recorded at phase exit
+
+- **Decision**: Fix `derived_handoff` per finding C-6 — re-record it at phase exit, after the final bookkeeping commit, keeping the derivation-time write as the intra-phase cache — rather than narrowing AC-11 to an intra-phase cache or deleting the field. E-2's prose compression applies on top.
+- **Rationale**: Correctness (C-6) and efficiency (E-2) independently established that the cross-phase hit AC-11 was scoped for is unreachable as delivered: impl-test must commit before impl-review's clean-worktree precondition, so `head` never matches. Re-recording after that commit makes impl-review's read actually hit, so the AC is satisfied as written instead of being reinterpreted after the fact.
+- **Affected docs**: [reviews/impl/iter-01/correctness.md](reviews/impl/iter-01/correctness.md), [reviews/impl/iter-01/efficiency.md](reviews/impl/iter-01/efficiency.md), [sprint.md](sprint.md)
