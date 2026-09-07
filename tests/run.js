@@ -2292,10 +2292,40 @@ test('AC-5: the persisted negative-cache entry never carries anything beyond {st
   assert.deepStrictEqual(Object.keys(entry).sort(), ['retry_after', 'status'], 'the persisted entry must carry exactly {status, retry_after} - no secrets, command output, or other input echoed back');
 });
 
-test('AC-4: Windows .cmd preflight executes a metacharacter-containing path literally', () => {
-  // TODO(sprint-006-workflow-cost-routing): only coverage for runLocal's win32 PowerShell-fallback branch; see stubs.md
+test('buildInvocation: direct path keeps a metacharacter-containing command as a literal argv element (D-2 security property)', () => {
+  const direct = runtime.buildInvocation('win32', '/path/with;metachar/cmd', ['a b']);
+  assert.deepStrictEqual(direct, { file: '/path/with;metachar/cmd', args: ['a b'] });
+  assert.strictEqual(direct.input, undefined, 'the direct shape must never carry a shell-interpreted input string');
+});
+
+test('buildInvocation: .cmd/.bat/.ps1 on win32 route through PowerShell, metacharacters reach only the JSON stdin payload', () => {
+  for (const ext of ['cmd', 'bat', 'ps1']) {
+    const command = `x.${ext}`;
+    const plan = runtime.buildInvocation('win32', command, ['a']);
+    assert.strictEqual(plan.file, 'powershell.exe', `${ext}: must dispatch through powershell.exe`);
+    assert.ok(Array.isArray(plan.args) && plan.args.every((arg) => typeof arg === 'string' && !arg.includes(command)), `${ext}: fixed PowerShell args must never interpolate the command`);
+    assert.strictEqual(plan.input, JSON.stringify({ command, args: ['a'] }), `${ext}: command/args travel only via JSON stdin, never an interpolated command string`);
+  }
+});
+
+test('buildInvocation: viaPowerShell forces the PowerShell shape on win32 regardless of extension (the ENOENT-retry path, previously unreachable off Windows)', () => {
+  const command = 'plain-exe-with;metachar';
+  const plan = runtime.buildInvocation('win32', command, ['a'], true);
+  assert.strictEqual(plan.file, 'powershell.exe');
+  assert.ok(plan.args.every((arg) => typeof arg === 'string' && !arg.includes(command)), 'the metacharacter-bearing command must never appear inside an argument string');
+  assert.strictEqual(plan.input, JSON.stringify({ command, args: ['a'] }));
+});
+
+test('buildInvocation: non-win32 platforms always stay direct, even when viaPowerShell is true', () => {
+  for (const platform of ['linux', 'darwin']) {
+    const plan = runtime.buildInvocation(platform, 'x.cmd', ['a'], true);
+    assert.deepStrictEqual(plan, { file: 'x.cmd', args: ['a'] }, `${platform}: the PowerShell fallback is locked to win32`);
+  }
+});
+
+test('AC-4: Windows .cmd preflight executes a metacharacter-containing path literally (end-to-end bonus, buildInvocation above is the host-independent evidence)', () => {
   if (process.platform !== 'win32') {
-    console.log('  (skipped: this is the only check for the .cmd/metacharacter PowerShell fallback branch in runLocal - it only runs on win32; see stubs.md)');
+    console.log('  (skipped: end-to-end spawn proof for the .cmd/metacharacter PowerShell fallback branch - only runs on win32; buildInvocation tests above cover the branch shape on any host)');
     return;
   }
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'asd & runtime-'));
