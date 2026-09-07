@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:4a33c2ae1baccb89e26659dfc8e404ffe5488b35376c23ed037da65b047bab40 content_digest=sha256:dc0a59e40c9294231150ed8fa9fbfcca00e8f01f623ee708bc84371af9214bec asd_version=5.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:6d6c27c534c698d2ba75ca9f83437ad1d035f39075c8662c4d28a6e7261f17a7 content_digest=sha256:32cf6d8cf88ed8dde855cb5a739829ea07d145322c4e109e2f5a87e122bda8bb asd_version=5.0.0 schema=1
 name: asd-init
 description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs $asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 ---
@@ -18,7 +18,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 
 ## Always first (both modes)
 
-0. **Determine self-hosting mode** (`self_hosting` field in `.asd/project/config.yaml` if it exists; else `disabled` — `sync.js`'s `isSelfHostingRepo`).
+0. **Determine self-hosting mode** (`self_hosting` field in `.asd/project/config.yaml`; missing, unreadable, or duplicated key → `disabled`, fail closed).
 0a. **Sync `AGENTS.md`/`CLAUDE.md` managed blocks** (see "AGENTS.md sync"). Runs unconditionally every invocation, fresh or re-init, regardless of subsequent user choices or aborts, in both self-hosting and consumer mode — the managed block always generates from `t_AGENTS.md`/`t_CLAUDE.md` (`providers.md` ownership table).
 
 ## Workflow (fresh)
