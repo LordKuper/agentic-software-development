@@ -23,6 +23,7 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 | F-4 | impl-review | All five reviewer dispatches of one iteration were lost at once to a session rate limit | — |
 | F-5 | impl-review | A reviewer returned a substantively complete ledger using status words the validator rejects | — |
 | F-6 | impl-review | A reviewer declared read-only wrote a file, because its agent definition grants Write | — |
+| F-7 | impl | A scripted edit anchored on a bare newline left a lone CR and turned two-line edits into whole-file rewrites | — |
 | F-2 | scope | Three of fourteen acceptance criteria were written against a stale premise and only the audit caught it | — |
 
 ## F-1 — A dispatched dev staged the whole worktree, sweeping a concurrent dev's edit into its own commit
@@ -78,3 +79,12 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 - **Impact**: None this sprint beyond one ownerless file, committed by the orchestrator. The concern is the standing claim.
 - **Root shape**: the tool grant is **not** the contradiction — canon and the generated view both give reviewers `Read`/`Glob`/`Grep`/`AskUserQuestion` and explicitly disallow `Edit`/`Bash`, with `sandbox_mode: read-only` on the Codex side. The write channel is `memory: project`, a separate host capability every reviewer definition grants. So "cannot write at all, by host guarantee" is false as an absolute while being true of the tool surface it was written about: reviewers cannot write **artifacts**, but can write **memory**, and the rule does not distinguish the two. A reviewer's memory is also loaded on its every later dispatch, which is what iteration 3 then found (three false durable statements in that same file), so the unaccounted channel is not merely a bookkeeping gap.
 - **Refs**: F-3
+
+## F-7 — A scripted edit anchored on a bare newline left a lone CR, turning two-line edits into whole-file rewrites
+
+- **Phase**: impl (review-fix mode, iteration 3)
+- **Surface**: rule — .asd/rules/code-style.md; the repo has CRLF-normalized canon on Windows and no rule about editing it programmatically
+- **What happened**: A dev applying a two-line deletion to two workflow files used a scripted replacement anchored on a bare newline. Because the files are CRLF on disk, the anchor matched mid-sequence and left a lone carriage return, which suppressed git CRLF normalization and rendered both edits as whole-file rewrites in the diff. Caught by git diff --check before staging and fixed; the dev recorded it as durable memory.
+- **Impact**: None shipped — the guard caught it. Without that check the round would have produced two whole-file diffs, which would have made the review diff unreadable and the iteration scope meaningless.
+- **Root shape**: canon on this platform is CRLF, agents edit it with newline-anchored scripted replacements by default, and nothing in the rules says so. The lint command (git diff --check) happens to catch the symptom, but only if the agent runs it before staging, and it reports it as a whitespace error rather than as the encoding hazard it is.
+- **Refs**: —
