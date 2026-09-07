@@ -87,10 +87,10 @@ hand-edited.
 - [ ] Covers AC-7. Material risk: this is the SSoT trap the sprint exists to fix; a copied checklist is an automatic Documentation-reviewer FAIL
 
 ### Task 8: The orchestrator commits its own bookkeeping at phase exit
-- [ ] State in `.asd/rules/git-strategy.md` "Commit before review" that the main orchestrator commits its own bookkeeping — `state.json`, `decisions-log.md`, review files, `friction-log.md` — at phase exit (AC-9)
-- [ ] State the matching prohibition: a dispatched agent never commits orchestrator-owned files it did not author
-- [ ] Reference `sprint-lifecycle.md`'s "Impl-test commits its own output" as the existing per-phase precedent rather than duplicating it
-- [ ] Covers AC-9. No material risk: states what the workflow already does, removing the ambiguity agents resolved defensively
+- [x] State in `.asd/rules/git-strategy.md` "Commit before review" that the main orchestrator commits its own bookkeeping — `state.json`, `decisions-log.md`, review files, `friction-log.md` — at phase exit (AC-9)
+- [x] State the matching prohibition: a dispatched agent never commits orchestrator-owned files it did not author
+- [x] Reference `sprint-lifecycle.md`'s "Impl-test commits its own output" as the existing per-phase precedent rather than duplicating it
+- [x] Covers AC-9. No material risk: states what the workflow already does, removing the ambiguity agents resolved defensively
 
 ### Task 9: Distinguish risk-to-the-change from risk-to-the-artifact in routing
 - [ ] Add a per-task material-risk declaration to `.asd/templates/t_plan.md`, which has no such field today — only a free-prose `## Risks (optional)` section (AC-10)
