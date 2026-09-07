@@ -38,6 +38,13 @@
       "reason": "Impl approved at assessment gate",
       "evidence": "plan.md all checkboxes ticked; sync --check ok; git diff --check clean; decisions-log.md",
       "artifact_revision": "181fc4cd4c34371ed3cbf32463d0c9950bd01234"
+    },
+    {
+      "gate": "pr-publication",
+      "decision_actor": "user",
+      "reason": "Explicit authorization to run finalization and open the PR",
+      "evidence": "plan.md all tasks checked; reviews/impl/iter-03 all APPROVE; test-plan.md Suite run 136/136 at 1436ef7; retrospective.html present; stubs.md clean",
+      "artifact_revision": "d2f005db737686e711b45b32e98ca9dc7c5fbaaf"
     }
   ],
   "task_routing": {
@@ -140,10 +147,14 @@
     }
   },
   "created_at": "2026-09-07T13:21:33Z",
-  "updated_at": "2026-09-07T16:31:39Z",
+  "updated_at": "2026-09-07T16:38:02Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
-  "pr": null,
+  "pr": {
+    "number": 27,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/27",
+    "state": "open"
+  },
   "archived_at": null,
   "escalations": []
 }

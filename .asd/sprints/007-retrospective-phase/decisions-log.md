@@ -85,3 +85,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-07 — impl-review DoD met; advancing to retro
 
 - 2026-09-07 — retro: `retrospective.html` written from 7 F-N entries (full branch); 8 actions (2 consumer, 6 asd) and 5 systemic proposals
+
+## 2026-09-07 — PR opened
+
+- **Decision**: `asd_version` bumped 5.0.0 → 6.0.0 (MAJOR: eleventh phase in the chain, `state.json.escalations` removed), CHANGELOG section added, PR #27 opened against `main`.
+- **Rationale**: DoD verified — every plan task checked, no sprint stubs, retrospective present, all iter-03 reviewers APPROVE or latched, terminal full suite green at 1436ef7 with no code diff since. Publication explicitly authorized by the user.
+- **Affected docs**: `.asd/release-manifest.json`, `CHANGELOG.md`, `state.json`
