@@ -14,7 +14,8 @@ All project work goes through `/asd-sprint`.
 - **Sprint** — one unit of scoped work. One active at a time. Closed sprints archived, immutable.
 - **Phase** — fixed step in sprint lifecycle. Ten mandatory: scope, audit, design, design-review, design-promote, plan, impl, impl-test, impl-review, pr.
 - **Iteration** — one pass of the review loop in a `*-review` phase. Each dispatches every reviewer fresh with clean context (`review-policy.md`).
-- **Creator agent** — produces artifacts (BA, UX, Architect, Dev, Tester). The main phase orchestrator owns routing, state, gates, logs, Git, PR, archival and release.
+- **Creator agent** — produces artifacts (BA, UX, Architect, Dev, Tester).
+- **Main orchestrator** — the role (not a spawned agent) that dispatches phase skills/agents and owns scope, plan, state, decisions-log, gates, manual-step validation, Git and release/archival sequencing. No PM agent is spawned; this replaces that responsibility. Role-scoped context: `providers.md` "Role-scoped context" table.
 - **Reviewer agent** — evaluates artifacts (Correctness, Efficiency, Testing, Documentation, External Review).
 - **Advisor agent** (`asd-advisor.md`) — read-only, consulted on non-gate uncertainty via a workflow-mediated `ADVICE_NEEDED` signal (never agent-to-agent). Returns a free-text recommendation, never binding — never authorizes a HARD gate or substitutes for user approval.
 - **Artifact** — file produced by an agent. User-facing (PRD, ADR, plan, …) or machine-readable (state.json, config.yaml).
@@ -70,8 +71,8 @@ Phase skills named `asd-phase-<phase>`, one per phase in `sprint-lifecycle.md`. 
 1. Disk is the memory. Decision → `decisions-log.md`; state → `state.json`; artifact → its real path.
    Anything living only in the transcript is not done. Corollary: any session is clearable at a phase
    boundary without loss.
-2. Clear at phase boundaries. Once a phase emits COMPLETED and its state write lands, the orchestrator
-   transcript holds nothing unique — prefer clear over compaction; re-enter via the sprint orchestrator,
+2. Clear at phase boundaries. Once a phase emits COMPLETED and its state write lands, the main orchestrator
+   transcript holds nothing unique — prefer clear over compaction; re-enter via the main orchestrator,
    recovering from `state.json` per `sprint-lifecycle.md` "State recovery".
 3. Compact only within a phase (long `impl` runs, fix loops). The compaction summary MUST preserve:
    sprint id; phase and mode; outstanding signals (`QUESTION`, `BLOCKED_MANUAL`, `ADVICE_NEEDED`); any
@@ -79,7 +80,7 @@ Phase skills named `asd-phase-<phase>`, one per phase in `sprint-lifecycle.md`. 
 4. Never clear or compact mid-gate — between posting a gate message and recording the answer. Record
    the answer to `decisions-log.md`/`state.json` first, then compact.
 5. Dispatch payloads carry paths and explicit parameters, never transcript excerpts. A dispatched agent
-   never inherits the orchestrator's conversation.
+   never inherits the main orchestrator's conversation.
 6. Reviewers get fresh context per iteration and never receive prior-iteration findings (external
    review's stalemate set excepted) — see `review-policy.md`, never restated here.
 7. Threshold: past ~70% context with no phase boundary in reach → compact; boundary in reach → finish
