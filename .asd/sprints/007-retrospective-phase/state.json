@@ -1,7 +1,7 @@
 {
   "sprint_id": "007-retrospective-phase",
   "branch": "sprint/007-retrospective-phase",
-  "phase": "impl",
+  "phase": "impl-test",
   "documents": {
     "audit": true,
     "prd": false,
@@ -31,6 +31,13 @@
       "reason": "Routine plan acceptance; all tasks trace to user-authorized AC-1..AC-9 and the three audit-gate answers",
       "evidence": "plan.md; audit.md; decisions-log.md",
       "artifact_revision": "bcb2f5c65c02590a68ef4ab2c9721d74db3bb039633125d113a8bb58ddda6e1c"
+    },
+    {
+      "gate": "impl-assessment",
+      "decision_actor": "user",
+      "reason": "Impl approved at assessment gate",
+      "evidence": "plan.md all checkboxes ticked; sync --check ok; git diff --check clean; decisions-log.md",
+      "artifact_revision": "181fc4cd4c34371ed3cbf32463d0c9950bd01234"
     }
   ],
   "task_routing": {
@@ -96,7 +103,7 @@
     }
   },
   "created_at": "2026-09-07T13:21:33Z",
-  "updated_at": "2026-09-07T13:42:59Z",
+  "updated_at": "2026-09-07T14:21:52Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

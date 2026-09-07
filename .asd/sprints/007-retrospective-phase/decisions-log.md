@@ -58,3 +58,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: AC-10 added. The retro phase also proposes systemic changes that would make a future sprint faster and cheaper, as an output class distinct from remediating recorded friction, produced even when the friction log is empty. Implemented as Task 8, since Tasks 1-3 were already complete when the expansion was requested.
 - **Rationale**: Explicit user request during impl. Audit reevaluation: `documents.audit` stays enabled; the expansion adds no behaviour outside the retro phase and no new contract, so no earlier phase is invalidated.
 - **Affected docs**: `sprint.md` (AC-10), `plan.md` (Task 8)
+
+## 2026-09-07 — impl assessment approved
+
+- **Decision**: Impl accepted; advance to impl-test. Eight tasks closed across eight commits; AC-1..AC-10 covered; build and lint clean; no stubs and no manual steps registered.
+- **Rationale**: Explicit user approval at the impl assessment gate.
+- **Affected docs**: `plan.md`, `state.json`
