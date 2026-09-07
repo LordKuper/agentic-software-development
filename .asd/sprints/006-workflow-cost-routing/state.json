@@ -46,8 +46,8 @@
     }
   },
   "created_at": "2026-09-06T11:16:29.213Z",
-  "updated_at": "2026-09-07T09:20:39.114Z",
-  "review_fixes_pending": "iter-02",
+  "updated_at": "2026-09-07T09:52:54.818Z",
+  "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null,
@@ -117,6 +117,42 @@
       "tier": "standard",
       "reason": "normal",
       "selector": "orchestrator",
+      "resolved_model": null
+    },
+    "W1": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "resolved_model": null
+    },
+    "W2": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "resolved_model": null
+    },
+    "W3": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "resolved_model": null
+    },
+    "W4": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "resolved_model": null
+    },
+    "W5": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "resolved_model": null
+    },
+    "W6": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
       "resolved_model": null
     }
   }
