@@ -2860,6 +2860,158 @@ test('AC-4/AC-5/AC-7/AC-10: t_retrospective.html classifies every section for th
 });
 
 // ===========================================================================
+// 19. Sprint 008 retro-007 remediation: split-dispatch partition proof
+// (AC-1/AC-6), typed risk routing (AC-10), and derived_handoff (AC-11).
+// ===========================================================================
+
+function buildManifest(files, rules, sections) {
+  const manifest = {
+    files, rules, sections,
+    n_a: {
+      files: Object.fromEntries(files.map((id) => [id, [`no-${id}`]])),
+      rules: Object.fromEntries(rules.map((id) => [id, [`no-${id}`]])),
+      sections: Object.fromEntries(sections.map((id) => [id, [`no-${id}`]])),
+    },
+  };
+  manifest.digest = runtime.coverageManifestDigest(manifest);
+  return manifest;
+}
+
+test('AC-1/6: a reviewer split partitions the manifest files list into two disjoint halves that each validate independently and union to the unpartitioned file set; two partial ledgers against one unpartitioned manifest are rejected', () => {
+  const allFiles = ['f-1', 'f-2', 'f-3', 'f-4'];
+  const rules = ['r-1'];
+  const sections = ['s-1'];
+  const whole = buildManifest(allFiles, rules, sections);
+
+  const half1Files = ['f-1', 'f-2'];
+  const half2Files = ['f-3', 'f-4'];
+  const half1 = buildManifest(half1Files, rules, sections);
+  const half2 = buildManifest(half2Files, rules, sections);
+
+  const ledgerFor = (manifest, files) => ({
+    manifest_digest: manifest.digest,
+    findings: [],
+    files: files.map((i) => ({ i, s: 'checked' })),
+    rules: rules.map((i) => ({ i, s: 'pass' })),
+    sections: sections.map((i) => ({ i, s: 'reviewed' })),
+  });
+
+  assert.deepStrictEqual(runtime.validateCoverageLedger(half1, ledgerFor(half1, half1Files), []), { ok: true }, 'half 1 must validate unchanged against its own complete manifest');
+  assert.deepStrictEqual(runtime.validateCoverageLedger(half2, ledgerFor(half2, half2Files), []), { ok: true }, 'half 2 must validate unchanged against its own complete manifest');
+
+  const unionFiles = [...half1.files, ...half2.files].sort();
+  assert.deepStrictEqual(unionFiles, [...allFiles].sort(), 'the two halves\' file ids must be disjoint and union to exactly the unpartitioned files list');
+  assert.deepStrictEqual(half1.rules, whole.rules, 'each half carries the full rules array unchanged');
+  assert.deepStrictEqual(half1.sections, whole.sections, 'each half carries the full sections array unchanged');
+
+  // The rejected alternative: two PARTIAL ledgers against the one UNPARTITIONED
+  // manifest, instead of two COMPLETE manifests each over its own file subset.
+  assert.throws(
+    () => runtime.validateCoverageLedger(whole, ledgerFor(whole, half1Files), []),
+    /files rows incomplete/,
+    'a partial ledger covering only half the files must never validate against the unpartitioned manifest - that is the mechanism the split rule explicitly forbids'
+  );
+});
+
+test('AC-10: a typed target:"change" risk routes exactly like the legacy bare-string form', () => {
+  const base = { objectiveInputs: true, failedObjectiveCheck: false, correctionAttempts: 0, kind: 'mechanical', checks: ['deterministic-check', 'exhaustive-match-validation'] };
+  const legacy = runtime.routeTask({ ...base, risks: ['auth'] });
+  const typed = runtime.routeTask({ ...base, risks: [{ name: 'auth', target: 'change' }] });
+  assert.deepStrictEqual(typed, legacy, 'a typed target:"change" entry must be indistinguishable in output from the legacy bare-string form');
+});
+
+test('AC-10: a typed target:"artifact" risk never escalates by itself - it routes on the task\'s own evidence and only annotates the reason', () => {
+  const mechanicalEvidence = { objectiveInputs: true, failedObjectiveCheck: false, correctionAttempts: 0, kind: 'mechanical', checks: ['deterministic-check', 'exhaustive-match-validation'], risks: [{ name: 'critical-config', target: 'artifact' }] };
+  assert.deepStrictEqual(
+    runtime.routeTask(mechanicalEvidence),
+    { tier: 'mechanical', execution: 'agent', reason: 'artifact-risk:critical-config' },
+    'otherwise-mechanical evidence plus an artifact risk must still route mechanical, with the reason recording that a risk was seen and deliberately not escalated'
+  );
+  const standardEvidence = { objectiveInputs: true, failedObjectiveCheck: false, correctionAttempts: 0, kind: 'standard', checks: [], risks: [{ name: 'critical-config', target: 'artifact' }] };
+  assert.deepStrictEqual(
+    runtime.routeTask(standardEvidence),
+    { tier: 'standard', execution: 'agent', reason: 'artifact-risk:critical-config' },
+    'standard evidence plus an artifact risk must route standard, not escalate'
+  );
+});
+
+test('AC-10: the no-downgrade clamp outranks an artifact-risk reason, and any declared risk - change or artifact - forces execution:agent even for an otherwise-deterministic command', () => {
+  const clamped = runtime.routeTask({
+    objectiveInputs: true, failedObjectiveCheck: false, correctionAttempts: 0, kind: 'mechanical',
+    checks: ['deterministic-check', 'exhaustive-match-validation'], risks: [{ name: 'critical-config', target: 'artifact' }], priorTier: 'critical',
+  });
+  assert.deepStrictEqual(clamped, { tier: 'critical', execution: 'agent', reason: 'no-downgrade' }, 'an artifact risk must never let a task fall out of a priorTier it already earned - the clamp reason wins over the artifact-risk reason');
+
+  const commandBase = { objectiveInputs: true, failedObjectiveCheck: false, correctionAttempts: 0, kind: 'command', checks: ['deterministic-state'] };
+  assert.strictEqual(runtime.routeTask({ ...commandBase, risks: [{ name: 'auth', target: 'change' }] }).execution, 'agent', 'a change risk on an otherwise-deterministic command must still force execution:agent');
+  assert.strictEqual(runtime.routeTask({ ...commandBase, risks: [{ name: 'audit-log', target: 'artifact' }] }).execution, 'agent', 'an artifact risk on an otherwise-deterministic command must still force execution:agent - no declared risk of either kind ever auto-executes');
+});
+
+test('AC-10: routing fails closed on every malformed risks shape - a task never routes lower on invalid evidence', () => {
+  const base = { objectiveInputs: true, failedObjectiveCheck: false, correctionAttempts: 0, kind: 'standard', checks: [] };
+  const cases = [
+    ['non-array risks', 'not-an-array', /risks must be an array of risks/],
+    ['null entry', [null], /risks entry must be a name or a typed risk/],
+    ['number entry', [5], /risks entry must be a name or a typed risk/],
+    ['array entry', [[]], /risks entry must be a name or a typed risk/],
+    ['empty name', [{ name: '', target: 'change' }], /risks entry name must be a non-empty string/],
+    ['NUL-bearing name', [{ name: 'a\0b', target: 'change' }], /risks entry name must be a non-empty string/],
+    ['missing target', [{ name: 'x' }], /risks entry target must be change or artifact/],
+    ['unknown target', [{ name: 'x', target: 'other' }], /risks entry target must be change or artifact/],
+  ];
+  for (const [label, risks, message] of cases) {
+    assert.throws(() => runtime.routeTask({ ...base, risks }), message, label);
+  }
+});
+
+test('AC-10: a mixed array of one change risk and one artifact risk still routes critical, with the reason naming the change risk', () => {
+  const result = runtime.routeTask({
+    objectiveInputs: true, failedObjectiveCheck: false, correctionAttempts: 0, kind: 'mechanical',
+    checks: ['deterministic-check', 'exhaustive-match-validation'],
+    risks: [{ name: 'auth', target: 'change' }, { name: 'config-file', target: 'artifact' }],
+  });
+  assert.deepStrictEqual(result, { tier: 'critical', execution: 'agent', reason: 'risk:auth' }, 'a change risk anywhere in the array must win the tier and the reason over a co-occurring artifact risk');
+});
+
+test('AC-11: t_state.json ships derived_handoff as an empty object, matching the pure-cache contract - never a placeholder, never pre-seeded', () => {
+  const state = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, '.asd/templates/t_state.json'), 'utf8'));
+  assert.deepStrictEqual(state.derived_handoff, {}, 't_state.json.derived_handoff must ship as {} - any reader treats absent/empty identically, but a shipped non-empty value would be a stale record with nothing to be stale against');
+});
+
+test('AC-11: SessionStart output is byte-identical whether state.json.derived_handoff is absent, well-formed, or malformed - the hook reads no key under it', () => {
+  const hookSrc = fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8');
+  const baseState = { sprint_id: '999-fixture', phase: 'impl-test', branch: 'sprint/999-fixture' };
+  const variants = {
+    absent: baseState,
+    'well-formed': { ...baseState, derived_handoff: { base: 'abc', head: 'def', pathspec: '.', files: ['a.js'] } },
+    malformed: { ...baseState, derived_handoff: 'not-an-object' },
+  };
+  const outputs = {};
+  for (const [label, state] of Object.entries(variants)) {
+    const tempRoot = mkTempDir();
+    writeFile(tempRoot, '.asd/hooks/session-start.js', hookSrc);
+    writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify(state));
+    outputs[label] = JSON.parse(execFileSync('node', [path.join(tempRoot, '.asd/hooks/session-start.js'), '--provider', 'claude'], { cwd: tempRoot, encoding: 'utf8' })).hookSpecificOutput.additionalContext;
+  }
+  assert.strictEqual(outputs.absent, outputs['well-formed'], 'an absent vs. a well-formed derived_handoff must produce identical session-summary text - the hook never reads it');
+  assert.strictEqual(outputs.absent, outputs.malformed, 'a malformed derived_handoff must not throw or change the summary - the hook silently ignores keys it does not read');
+});
+
+test('AC-11: derived_handoff\'s shape/validity rule lives ONLY in sprint-lifecycle.md "State recovery" - neither impl-test nor impl-review workflow restates the object literal, each only cites the rule', () => {
+  const lifecycle = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/sprint-lifecycle.md'), 'utf8');
+  const shapeLiteral = '{"base": "<sha>", "head": "<sha>", "pathspec": "<the exact pathspec the diff used>", "files": ["<repo-relative path>", …]}';
+  assert.ok(lifecycle.includes(shapeLiteral), 'sprint-lifecycle.md "State recovery" must state the derived_handoff shape literal - this test reads it as the single source, never restates it independently');
+
+  const citation = 'sole SSoT for its shape, validity rule and absent-key fallback';
+  for (const phase of ['impl-test', 'impl-review']) {
+    const workflow = fs.readFileSync(path.join(REPO_ROOT, `.asd/workflows/asd-phase-${phase}.md`), 'utf8');
+    assert.ok(workflow.includes('derived_handoff'), `asd-phase-${phase}.md must reference derived_handoff - it is the phase that reads/writes it`);
+    assert.ok(workflow.includes(citation), `asd-phase-${phase}.md must cite sprint-lifecycle.md "State recovery" as the sole SSoT rather than restating the rule`);
+    assert.ok(!workflow.includes(shapeLiteral), `asd-phase-${phase}.md must never inline the derived_handoff object-literal shape - that duplication is exactly what the SSoT citation exists to prevent`);
+  }
+});
+
+// ===========================================================================
 // Runner
 // ===========================================================================
 
