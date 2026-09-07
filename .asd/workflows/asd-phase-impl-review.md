@@ -15,6 +15,7 @@ Orchestration body for the `asd-phase-impl-review` skill. Operation-mapping to h
 - write a file: validated compact coverage evidence of each reviewer's returned text to `<sprint>/reviews/impl/iter-NN/<reviewer>.md`; the orchestrator updates state inline
 - request user decision: escalation on FAIL or iteration cap
 - delegate to agent in parallel: reviewers; the orchestrator writes state, routing and decisions inline; `asd-tester` runs the terminal full-suite gate. Reviewers stay read-only.
+- append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log"
 
 ## Reviewer read-only contract
 

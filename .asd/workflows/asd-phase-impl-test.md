@@ -13,6 +13,7 @@ Orchestration body for the `asd-phase-impl-test` skill. Operation-mapping to hos
 - write `state.json` and decisions-log inline for mechanical phase work
 - request user decision: out-of-scope test removal gate; escalation
 - delegate one live `asd-tester` instance for the whole phase (pre-strategy run, strategy, prune/author and suite run); recover from on-disk evidence only after session loss
+- append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log"
 
 ## Execution mode
 

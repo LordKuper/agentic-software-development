@@ -80,10 +80,10 @@ Material risk: `NEXT:` is authoritative for routing while `PHASE_CHAIN` only dri
 
 ### Task 5: Retire `escalations`, wire the append points (AC-2)
 
-- [ ] `.asd/templates/t_state.json` — remove the `escalations` key
-- [ ] `.asd/workflows/asd-phase-impl.md` — rewrite the manual-steps halt instruction to append a friction entry instead of writing `escalations[]`
-- [ ] Add the one-line friction-append reference to each existing phase workflow, pointing at the Task 1 rule section — never restating the mechanism
-- [ ] `.asd/rules/providers.md` — record the friction-append operation in the role-scoped context table if the existing rows do not already cover it
+- [x] `.asd/templates/t_state.json` — remove the `escalations` key
+- [x] `.asd/workflows/asd-phase-impl.md` — rewrite the manual-steps halt instruction to append a friction entry instead of writing `escalations[]`
+- [x] Add the one-line friction-append reference to each existing phase workflow, pointing at the Task 1 rule section — never restating the mechanism
+- [x] `.asd/rules/providers.md` — record the friction-append operation in the role-scoped context table if the existing rows do not already cover it
 
 Depends on Task 1.
 

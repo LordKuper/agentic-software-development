@@ -2,6 +2,8 @@
 
 The main orchestrator owns this workflow and delegates no orchestration role.
 
+Append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log".
+
 ## Open mode
 
 1. Read config, state, plan, reviews, test-plan, retrospective and stubs. Confirm every plan task, AC trace, required review verdict, full-suite record, lint/build record and stub rule; `pr` requires review DoD plus a completed `retro` (`checkpoints.md`), so `<sprint>/retrospective.html` is a DoD input and its absence blocks. Re-run required checks after a relevant diff. A failed or missing check blocks.
