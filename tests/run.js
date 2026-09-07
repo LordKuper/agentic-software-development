@@ -2146,14 +2146,15 @@ test('AC-21: SessionStart reports "Next phase: await-merge" for an ordinary pr p
 });
 
 test('AC-7: no canonical rule, workflow, or agent file references the retired asd-pm role', () => {
-  const dirs = ['rules', 'workflows', 'agents'].map((d) => path.join(REPO_ROOT, '.asd', d));
+  const labels = ['rules', 'workflows', 'agents'];
   const offenders = [];
-  for (const dir of dirs) {
+  for (const label of labels) {
+    const dir = path.join(REPO_ROOT, '.asd', label);
     if (!fs.existsSync(dir)) continue;
     for (const f of fs.readdirSync(dir)) {
       if (!f.endsWith('.md')) continue;
       const text = fs.readFileSync(path.join(dir, f), 'utf8');
-      if (/asd-pm/.test(text)) offenders.push(path.join(d, f));
+      if (/asd-pm/.test(text)) offenders.push(`${label}/${f}`);
     }
   }
   assert.deepStrictEqual(offenders, [], `canonical files still reference retired asd-pm: ${offenders.join(', ')}`);
@@ -2217,6 +2218,11 @@ test('AC-10/11: routing is monotonic and only verified deterministic work is a c
   assert.strictEqual(runtime.routeTask({ ...base, kind: 'standard', checks: [] }).tier, 'standard');
   assert.strictEqual(runtime.routeTask({ ...base, kind: 'mechanical', checks: ['deterministic-check', 'exhaustive-match-validation'], priorTier: 'critical' }).tier, 'critical');
   assert.strictEqual(runtime.routeTask({ ...base, kind: 'standard', checks: [], failedObjectiveCheck: true, correctionAttempts: 1 }).tier, 'critical');
+  assert.notStrictEqual(runtime.routeTask({ ...base, kind: 'mechanical', objectiveInputs: false, checks: ['deterministic-check', 'exhaustive-match-validation'] }).tier, 'mechanical', 'a mechanical claim without objective inputs must never route mechanical');
+  assert.strictEqual(runtime.routeTask({ ...base, kind: 'command', checks: [] }).execution, 'agent', 'a command with no deterministic-state check is not deterministic and must not execute as a bare command');
+  assert.strictEqual(runtime.routeTask({ ...base, kind: 'command', objectiveInputs: false, checks: ['deterministic-state'] }).execution, 'agent', 'a command without objective inputs must never auto-execute even with the deterministic-state check present');
+  assert.strictEqual(runtime.routeTask({ ...base, kind: 'standard', checks: [], failedObjectiveCheck: true, correctionAttempts: 0 }).tier, 'standard', 'a single failed objective check with zero correction attempts must not yet escalate to critical');
+  assert.deepStrictEqual(runtime.routeTask({ ...base, kind: 'mechanical', checks: ['deterministic-check', 'exhaustive-match-validation'], risks: ['auth'] }), { tier: 'critical', execution: 'agent', reason: 'risk:auth' }, 'any named risk must escalate to critical regardless of otherwise-mechanical evidence');
 });
 
 test('AC-3/4/5: preflight permits only fixed local probes and negative cache is bounded and expires', () => {
@@ -2287,6 +2293,7 @@ test('AC-5: the persisted negative-cache entry never carries anything beyond {st
 });
 
 test('AC-4: Windows .cmd preflight executes a metacharacter-containing path literally', () => {
+  // TODO(sprint-006-workflow-cost-routing): only coverage for runLocal's win32 PowerShell-fallback branch; see stubs.md
   if (process.platform !== 'win32') {
     console.log('  (skipped: this is the only check for the .cmd/metacharacter PowerShell fallback branch in runLocal - it only runs on win32; see stubs.md)');
     return;
