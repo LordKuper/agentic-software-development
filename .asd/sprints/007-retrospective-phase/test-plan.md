@@ -11,7 +11,7 @@ responsibility:
 
 | Entry | HEAD analysed | Scope |
 |---|---|---|
-| 1 | 99e4f9e | full change surface (`git diff main...HEAD`, minus `.asd/project/**`, `.asd/sprints/**`, generated `.claude/`/`.codex/`/`.agents/skills/`) |
+| 1 | 78e67f1 | full change surface (`git diff main...HEAD`, minus `.asd/project/**`, `.asd/sprints/**`, generated `.claude/`/`.codex/`/`.agents/skills/`) |
 
 ## Risk → check decisions
 

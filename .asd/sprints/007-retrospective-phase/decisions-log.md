@@ -64,3 +64,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Impl accepted; advance to impl-test. Eight tasks closed across eight commits; AC-1..AC-10 covered; build and lint clean; no stubs and no manual steps registered.
 - **Rationale**: Explicit user approval at the impl assessment gate.
 - **Affected docs**: `plan.md`, `state.json`
+
+- 2026-09-07 — impl-test: impacted set green (132/132, full-suite scope via shared-infrastructure safety valve), 5 tests added, 0 removed
