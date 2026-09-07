@@ -1,0 +1,63 @@
+{
+  "reviewer": "testing",
+  "phase": "impl",
+  "iteration": 3,
+  "severity_floor": "high",
+  "files": [
+    ".asd/agents/asd-external-review.md",
+    ".asd/agents/asd-tester.md",
+    ".asd/migrations/5.0.0.js",
+    ".asd/release-manifest.json",
+    ".asd/rules/external-review.md",
+    ".asd/rules/git-strategy.md",
+    ".asd/rules/providers.md",
+    ".asd/rules/sprint-lifecycle.md",
+    ".asd/runtime.js",
+    ".asd/sync.js",
+    ".asd/templates/external-review/t_prompt-external-design.md",
+    ".asd/templates/external-review/t_prompt-external-impl.md",
+    ".asd/templates/external-review/t_review-scope.json",
+    ".asd/workflows/asd-phase-design-review.md",
+    ".asd/workflows/asd-phase-impl-review.md",
+    ".asd/workflows/asd-phase-impl-test.md",
+    ".asd/workflows/asd-phase-impl.md",
+    ".gitignore",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "README.md",
+    "tests/run.js"
+  ],
+  "rules": [
+    "T-1",
+    "T-2",
+    "T-3",
+    "T-4",
+    "T-5",
+    "T-6",
+    "T-7",
+    "T-8",
+    "T-9",
+    "T-10"
+  ],
+  "sections": [
+    "RULE_CONFORMANCE",
+    "COVERAGE",
+    "EDGE_CASES",
+    "STUB_RESOLUTION",
+    "MANUAL_VERIFICATION"
+  ],
+  "n_a": {
+    "files": {},
+    "rules": {
+      "T-10": [
+        "automation-possible"
+      ]
+    },
+    "sections": {
+      "MANUAL_VERIFICATION": [
+        "automation-possible"
+      ]
+    }
+  },
+  "digest": "080465efa8fd49dfe54de92fa7aa287a6055415a2c3fca4b0f15a56338da75ef"
+}

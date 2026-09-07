@@ -1,0 +1,84 @@
+{
+  "reviewer": "documentation",
+  "phase": "impl",
+  "iteration": 3,
+  "severity_floor": "high",
+  "files": [
+    ".asd/agents/asd-external-review.md",
+    ".asd/agents/asd-tester.md",
+    ".asd/migrations/5.0.0.js",
+    ".asd/release-manifest.json",
+    ".asd/rules/external-review.md",
+    ".asd/rules/git-strategy.md",
+    ".asd/rules/providers.md",
+    ".asd/rules/sprint-lifecycle.md",
+    ".asd/runtime.js",
+    ".asd/sync.js",
+    ".asd/templates/external-review/t_prompt-external-design.md",
+    ".asd/templates/external-review/t_prompt-external-impl.md",
+    ".asd/templates/external-review/t_review-scope.json",
+    ".asd/workflows/asd-phase-design-review.md",
+    ".asd/workflows/asd-phase-impl-review.md",
+    ".asd/workflows/asd-phase-impl-test.md",
+    ".asd/workflows/asd-phase-impl.md",
+    ".gitignore",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "README.md",
+    "tests/run.js"
+  ],
+  "rules": [
+    "D-1",
+    "D-2",
+    "D-3",
+    "D-4",
+    "D-5",
+    "D-6",
+    "D-7",
+    "D-8",
+    "D-9"
+  ],
+  "sections": [
+    "SSOT",
+    "TEMPLATE_ADHERENCE",
+    "HTML_SHELL",
+    "PROVENANCE",
+    "TRACEABILITY",
+    "PERSISTENT_ACTUALITY",
+    "DOC_COMMENTS",
+    "FRAMEWORK_MODE",
+    "CUSTOM_RULES"
+  ],
+  "n_a": {
+    "files": {},
+    "rules": {
+      "D-3": [
+        "no-html-artifact-in-scope"
+      ],
+      "D-4": [
+        "no-html-artifact-in-scope"
+      ],
+      "D-5": [
+        "documents-disabled"
+      ],
+      "D-6": [
+        "documents-disabled"
+      ]
+    },
+    "sections": {
+      "HTML_SHELL": [
+        "no-html-artifact-in-scope"
+      ],
+      "PROVENANCE": [
+        "no-html-artifact-in-scope"
+      ],
+      "TRACEABILITY": [
+        "documents-disabled"
+      ],
+      "PERSISTENT_ACTUALITY": [
+        "documents-disabled"
+      ]
+    }
+  },
+  "digest": "ac684d72b19d461a4e85c672854b2dd58bde9d5fbaff5743b928cb78b1d7f0b5"
+}
