@@ -99,3 +99,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: User granted explicit closure approval for sprint 007-retrospective-phase after reviewing the completion evidence. Finalization and archival authorized.
 - **Rationale**: Hard gate per `checkpoints.md` — neither PR publication, the merge itself, nor `auto_pr` satisfies it. Requested and granted separately from the merge authorization.
 - **Affected docs**: `state.json` (terminal write), sprint folder (archive move)
+
+- 2026-09-07 — sprint finalized: terminal state written, folder archived
