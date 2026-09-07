@@ -1117,27 +1117,6 @@ function readClaudeMdBlockBody(repoRoot) {
   return readNormalized(templatePath);
 }
 
-// AGENTS.md has two genuinely different sources depending on WHOSE repo this
-// is, and sync.js is the same script shipped to both:
-// - The ASD framework's OWN repo: AGENTS.md is hand-authored framework-dev
-//   guidance, unrelated to t_AGENTS.md (that template is for CONSUMERS, a
-//   completely different document/audience). No generator exists for this -
-//   it stays "self-sourced": sync.js can only verify nobody edited the block
-//   without going through sync (drift detection), never that the prose
-//   matches a formula.
-// - A consumer project: AGENTS.md's managed block IS generated from
-//   `.asd/templates/t_AGENTS.md`, exactly like CLAUDE.md's - so a template
-//   update actually reaches the consumer's file via the normal
-//   check/stale/apply flow instead of silently never propagating.
-//
-// Distinguishing signal: `.asd/project/config.yaml` only exists after
-// `/asd-init` has run - which never happens in the framework's own repo (its
-// own docs explicitly say so) and always happens before a consumer's
-// AGENTS.md is ever synced. No new file/flag needed.
-function isInitializedConsumerProject(repoRoot) {
-  return fs.existsSync(path.join(repoRoot, '.asd', 'project', 'config.yaml'));
-}
-
 // Fail-closed top-level `self_hosting:` field reader - a minimal line scanner,
 // not a YAML parser (this repo has none). Returns 'enabled' only when the
 // field occurs EXACTLY ONCE at top level (column 0) with exactly that value;
@@ -1169,19 +1148,18 @@ function isSelfHostingRepo(repoRoot) {
   return readSelfHostingField(repoRoot) === 'enabled';
 }
 
-// AGENTS.md ownership: self-sourced (framework-dev guidance, never generated)
-// when EITHER no config.yaml exists yet (pre-init consumer clone - nothing to
-// generate from until /asd-init runs) OR the project explicitly declares
-// self_hosting: enabled (this repo, post-bootstrap, even though its own
-// config.yaml exists). Otherwise (initialized consumer project, self_hosting
-// disabled/absent) AGENTS.md is generated from t_AGENTS.md as before.
-function isSelfSourcedAgentsMd(repoRoot) {
-  return !isInitializedConsumerProject(repoRoot) || isSelfHostingRepo(repoRoot);
+// Canonical source of AGENTS.md's managed block. Absent, AGENTS.md is simply
+// left unmanaged - the same partial-plan outcome as a missing canon dir, not a
+// hard failure of the run.
+function agentsMdTemplatePath(repoRoot) {
+  return path.join(repoRoot, '.asd', 'templates', 't_AGENTS.md');
 }
 
+// Body of AGENTS.md's managed block, in every repo without exception - the
+// framework's own repo included, since it is also a project developed with
+// ASD. Repo-specific prose lives outside the block, where sync never reaches.
 function readAgentsMdTemplateBody(repoRoot) {
-  const templatePath = path.join(repoRoot, '.asd', 'templates', 't_AGENTS.md');
-  return readNormalized(templatePath);
+  return readNormalized(agentsMdTemplatePath(repoRoot));
 }
 
 // Owned SessionStart hook-registration entries. Kept next to each other so
@@ -1290,14 +1268,7 @@ function buildSyncPlan(repoRoot) {
     targetPath: path.join(repoRoot, 'CLAUDE.md'),
     renderBody: () => readClaudeMdBlockBody(repoRoot),
   });
-  if (isSelfSourcedAgentsMd(repoRoot)) {
-    plan.push({
-      class: 'managed-block',
-      relKey: 'AGENTS.md',
-      targetPath: path.join(repoRoot, 'AGENTS.md'),
-      selfSourced: true,
-    });
-  } else {
+  if (fs.existsSync(agentsMdTemplatePath(repoRoot))) {
     plan.push({
       class: 'managed-block',
       relKey: 'AGENTS.md',
@@ -1343,27 +1314,12 @@ function renderFullFileItem(item, repoRoot, manifest) {
   });
 }
 
-// Self-sourced managed blocks (no independent generator) can only be checked
-// against their own last-tracked digest: read the block as it exists on disk
-// and status it against itself, so the only possible outcomes are
-// missing/foreign/modified-foreign/current - never a "stale" a re-render
-// could produce, because there is no formula to re-render from.
-function statusSelfSourcedManagedBlock(targetPath, relKey, syncState) {
-  if (!fs.existsSync(targetPath)) return 'missing';
-  if (isSymlink(targetPath)) return 'foreign';
-  const text = readNormalized(targetPath);
-  const block = findManagedBlock(text);
-  if (!block) return 'missing';
-  return statusManagedBlock(targetPath, relKey, block.inner, syncState);
-}
-
 function statusForPlanItem(item, repoRoot, manifest, syncState) {
   if (item.class === 'full-file') {
     const rendered = renderFullFileItem(item, repoRoot, manifest);
     return { status: statusFullFile(item.targetPath, rendered.contentDigest), rendered };
   }
   if (item.class === 'managed-block') {
-    if (item.selfSourced) return { status: statusSelfSourcedManagedBlock(item.targetPath, item.relKey, syncState) };
     const body = item.renderBody();
     return { status: statusManagedBlock(item.targetPath, item.relKey, body, syncState), body };
   }
@@ -1401,9 +1357,6 @@ function runCheck(repoRoot) {
 // overwrite, e.g. from `/asd-sync`'s per-file "overwrite" choice) - current/
 // foreign is never written (plan: "apply только явно перечисленного", "never
 // overwrite silently" - force is the one explicit exception to "silently").
-// Self-sourced managed blocks (AGENTS.md) have no generator to apply from -
-// they are authored directly and only ever checked, never auto-applied here.
-//
 // A requested target that matches no plan entry may still be an orphan - a
 // generated view whose canonical source no longer exists, so it never
 // appears in buildSyncPlan's source-driven output. An orphan is deleted only
@@ -1446,13 +1399,9 @@ function runApply(repoRoot, requestedFiles, options) {
       const status = statusFullFile(item.targetPath, rendered.contentDigest);
       resolved.push({ rel, item, status, rendered });
     } else if (item.class === 'managed-block') {
-      if (item.selfSourced) {
-        resolved.push({ rel, item, status: statusSelfSourcedManagedBlock(item.targetPath, item.relKey, syncState), selfSourced: true });
-      } else {
-        const body = item.renderBody();
-        const status = statusManagedBlock(item.targetPath, item.relKey, body, syncState);
-        resolved.push({ rel, item, status, body });
-      }
+      const body = item.renderBody();
+      const status = statusManagedBlock(item.targetPath, item.relKey, body, syncState);
+      resolved.push({ rel, item, status, body });
     } else if (item.class === 'json-merge') {
       const entries = item.renderEntries();
       const status = statusJsonMerge(item.targetPath, item.relKey, item.ownedPathArr, entries, syncState);
@@ -1486,15 +1435,6 @@ function runApply(repoRoot, requestedFiles, options) {
       } else {
         results.push({ target: r.rel, status: 'orphan-unmarked', applied: false });
       }
-      continue;
-    }
-    if (r.selfSourced) {
-      results.push({
-        target: r.rel,
-        status: r.status,
-        applied: false,
-        note: 'self-sourced: author content directly, sync only verifies it was not hand-edited out of band',
-      });
       continue;
     }
     const writable = !hasInvalidTarget && (r.status === 'missing' || r.status === 'stale' || (r.status === 'modified-foreign' && forceSet.has(r.rel)));
@@ -1614,14 +1554,11 @@ module.exports = {
   recomputeAndWriteHashLedgers,
   CLAUDE_MD_BLOCK_BODY_FALLBACK,
   readClaudeMdBlockBody,
-  isInitializedConsumerProject,
   readSelfHostingField,
   isSelfHostingRepo,
-  isSelfSourcedAgentsMd,
   readAgentsMdTemplateBody,
   claudeSessionStartOwnedEntries,
   codexSessionStartOwnedEntries,
-  statusSelfSourcedManagedBlock,
   ORPHAN_TREES,
   expectedGeneratedTargets,
   hasOwnershipMarker,
