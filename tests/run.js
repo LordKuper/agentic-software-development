@@ -2190,11 +2190,19 @@ test('AC-7: no canonical rule, workflow, agent, or skill file references the ret
 // 15. Sprint 006 deterministic runtime contracts
 // ===========================================================================
 
-function validCoverageFixture() {
-  const manifest = {
-    files: ['f-1'], rules: ['r-1'], sections: ['s-1'],
-    n_a: { files: { 'f-1': ['no-file'] }, rules: { 'r-1': ['no-rule'] }, sections: { 's-1': ['no-section'] } },
+function buildManifest(files, rules, sections) {
+  return {
+    files, rules, sections,
+    n_a: {
+      files: Object.fromEntries(files.map((id) => [id, [`no-${id}`]])),
+      rules: Object.fromEntries(rules.map((id) => [id, [`no-${id}`]])),
+      sections: Object.fromEntries(sections.map((id) => [id, [`no-${id}`]])),
+    },
   };
+}
+
+function validCoverageFixture() {
+  const manifest = buildManifest(['f-1'], ['r-1'], ['s-1']);
   manifest.digest = runtime.coverageManifestDigest(manifest);
   return {
     manifest,
@@ -2422,7 +2430,7 @@ test('runtime.js CLI: external-preflight exits 1 on command-unavailable', () => 
 
 test('runtime.js CLI: manifest-digest prints the same digest coverageManifestDigest computes, and --write persists it', () => {
   const root = mkTempDir();
-  const manifest = { files: ['f-1'], rules: ['r-1'], sections: ['s-1'], n_a: { files: {}, rules: {}, sections: {} } };
+  const manifest = buildManifest(['f-1'], ['r-1'], ['s-1']);
   const manifestPath = path.join(root, 'manifest.json');
   fs.writeFileSync(manifestPath, JSON.stringify(manifest), 'utf8');
 
@@ -2864,29 +2872,19 @@ test('AC-4/AC-5/AC-7/AC-10: t_retrospective.html classifies every section for th
 // (AC-1/AC-6), typed risk routing (AC-10), and derived_handoff (AC-11).
 // ===========================================================================
 
-function buildManifest(files, rules, sections) {
-  const manifest = {
-    files, rules, sections,
-    n_a: {
-      files: Object.fromEntries(files.map((id) => [id, [`no-${id}`]])),
-      rules: Object.fromEntries(rules.map((id) => [id, [`no-${id}`]])),
-      sections: Object.fromEntries(sections.map((id) => [id, [`no-${id}`]])),
-    },
-  };
-  manifest.digest = runtime.coverageManifestDigest(manifest);
-  return manifest;
-}
-
-test('AC-1/6: a reviewer split partitions the manifest files list into two disjoint halves that each validate independently and union to the unpartitioned file set; two partial ledgers against one unpartitioned manifest are rejected', () => {
+test('AC-1/6: a reviewer split partitions the manifest files list into two disjoint halves that each validate independently against its own complete manifest; two partial ledgers against one unpartitioned manifest are rejected', () => {
   const allFiles = ['f-1', 'f-2', 'f-3', 'f-4'];
   const rules = ['r-1'];
   const sections = ['s-1'];
   const whole = buildManifest(allFiles, rules, sections);
+  whole.digest = runtime.coverageManifestDigest(whole);
 
   const half1Files = ['f-1', 'f-2'];
   const half2Files = ['f-3', 'f-4'];
   const half1 = buildManifest(half1Files, rules, sections);
+  half1.digest = runtime.coverageManifestDigest(half1);
   const half2 = buildManifest(half2Files, rules, sections);
+  half2.digest = runtime.coverageManifestDigest(half2);
 
   const ledgerFor = (manifest, files) => ({
     manifest_digest: manifest.digest,
@@ -2899,13 +2897,6 @@ test('AC-1/6: a reviewer split partitions the manifest files list into two disjo
   assert.deepStrictEqual(runtime.validateCoverageLedger(half1, ledgerFor(half1, half1Files), []), { ok: true }, 'half 1 must validate unchanged against its own complete manifest');
   assert.deepStrictEqual(runtime.validateCoverageLedger(half2, ledgerFor(half2, half2Files), []), { ok: true }, 'half 2 must validate unchanged against its own complete manifest');
 
-  const unionFiles = [...half1.files, ...half2.files].sort();
-  assert.deepStrictEqual(unionFiles, [...allFiles].sort(), 'the two halves\' file ids must be disjoint and union to exactly the unpartitioned files list');
-  assert.deepStrictEqual(half1.rules, whole.rules, 'each half carries the full rules array unchanged');
-  assert.deepStrictEqual(half1.sections, whole.sections, 'each half carries the full sections array unchanged');
-
-  // The rejected alternative: two PARTIAL ledgers against the one UNPARTITIONED
-  // manifest, instead of two COMPLETE manifests each over its own file subset.
   assert.throws(
     () => runtime.validateCoverageLedger(whole, ledgerFor(whole, half1Files), []),
     /files rows incomplete/,
@@ -2973,6 +2964,22 @@ test('AC-10: a mixed array of one change risk and one artifact risk still routes
   assert.deepStrictEqual(result, { tier: 'critical', execution: 'agent', reason: 'risk:auth' }, 'a change risk anywhere in the array must win the tier and the reason over a co-occurring artifact risk');
 });
 
+test('AC-10: a failed objective check with a correction attempt outranks a co-occurring artifact risk in the reason, so state.json.task_routing never mislabels an escalated task as merely risk-annotated', () => {
+  const result = runtime.routeTask({
+    objectiveInputs: true, failedObjectiveCheck: true, correctionAttempts: 1, kind: 'standard',
+    checks: [], risks: [{ name: 'config-file', target: 'artifact' }],
+  });
+  assert.deepStrictEqual(result, { tier: 'critical', execution: 'agent', reason: 'failed-objective-check' }, 'a failed objective check with at least one correction attempt must win the reason over a co-occurring artifact risk');
+});
+
+test('AC-10: an artifact risk whose priorTier does not outrank the computed tier keeps the artifact-risk reason - the no-downgrade clamp must not fire merely because priorTier is set', () => {
+  const result = runtime.routeTask({
+    objectiveInputs: true, failedObjectiveCheck: false, correctionAttempts: 0, kind: 'mechanical',
+    checks: ['deterministic-check', 'exhaustive-match-validation'], risks: [{ name: 'critical-config', target: 'artifact' }], priorTier: 'mechanical',
+  });
+  assert.deepStrictEqual(result, { tier: 'mechanical', execution: 'agent', reason: 'artifact-risk:critical-config' }, 'priorTier equal to the computed tier must not clamp - the reason must still name the artifact risk, not no-downgrade');
+});
+
 test('AC-11: t_state.json ships derived_handoff as an empty object, matching the pure-cache contract - never a placeholder, never pre-seeded', () => {
   const state = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, '.asd/templates/t_state.json'), 'utf8'));
   assert.deepStrictEqual(state.derived_handoff, {}, 't_state.json.derived_handoff must ship as {} - any reader treats absent/empty identically, but a shipped non-empty value would be a stale record with nothing to be stale against');
@@ -2995,6 +3002,7 @@ test('AC-11: SessionStart output is byte-identical whether state.json.derived_ha
   }
   assert.strictEqual(outputs.absent, outputs['well-formed'], 'an absent vs. a well-formed derived_handoff must produce identical session-summary text - the hook never reads it');
   assert.strictEqual(outputs.absent, outputs.malformed, 'a malformed derived_handoff must not throw or change the summary - the hook silently ignores keys it does not read');
+  assert.ok(outputs.absent.includes('999-fixture') && outputs.absent.includes('impl-test') && outputs.absent.includes('sprint/999-fixture'), 'the shared output must actually pin this fixture\'s sprint id, phase and branch - otherwise the three-way equality could vacuously compare three "no active sprint" strings');
 });
 
 test('AC-11: derived_handoff\'s shape/validity rule lives ONLY in sprint-lifecycle.md "State recovery" - neither impl-test nor impl-review workflow restates the object literal, each only cites the rule', () => {
@@ -3008,6 +3016,20 @@ test('AC-11: derived_handoff\'s shape/validity rule lives ONLY in sprint-lifecyc
     assert.ok(workflow.includes('derived_handoff'), `asd-phase-${phase}.md must reference derived_handoff - it is the phase that reads/writes it`);
     assert.ok(workflow.includes(citation), `asd-phase-${phase}.md must cite sprint-lifecycle.md "State recovery" as the sole SSoT rather than restating the rule`);
     assert.ok(!workflow.includes(shapeLiteral), `asd-phase-${phase}.md must never inline the derived_handoff object-literal shape - that duplication is exactly what the SSoT citation exists to prevent`);
+  }
+});
+
+test('AC-6: the interrupted-dispatch re-dispatch record is stated in review-policy.md and cited (not restated) by both *-review workflows', () => {
+  const policy = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/review-policy.md'), 'utf8');
+  assert.ok(policy.includes('is re-dispatched fresh in the same iteration'), 'review-policy.md must state the re-dispatch outcome for an interrupted reviewer - never a skip, never an APPROVE');
+  assert.ok(policy.includes('Interrupted attempts: <count> (<cause>)'), 'review-policy.md must state the durable per-file record an interrupted dispatch leaves on the written review file');
+
+  const citation = 'sole SSoT for trigger, partition, union property, merge rule and durable record';
+  const reDispatchPhrase = 'takes the same reject-and-re-dispatch-fresh path as a failed validation above';
+  for (const file of ['asd-phase-design-review.md', 'asd-phase-impl-review.md']) {
+    const workflow = fs.readFileSync(path.join(REPO_ROOT, `.asd/workflows/${file}`), 'utf8');
+    assert.ok(workflow.includes(citation), `${file} must cite review-policy.md as sole SSoT for the interrupted/split-dispatch contract, including the durable record, rather than restating it`);
+    assert.ok(workflow.includes(reDispatchPhrase), `${file} must route an interrupted dispatch (no verdict token, no ledger) through the same reject-and-re-dispatch-fresh handling as a failed ledger validation - a future edit dropping this from one workflow while review-policy.md still claims it must fail here`);
   }
 });
 
