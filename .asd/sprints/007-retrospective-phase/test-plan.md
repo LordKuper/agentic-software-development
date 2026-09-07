@@ -76,10 +76,21 @@ entry 1's `dropTrailingCommaBefore` mutation no longer exists to perform.
 ## Suite run
 
 - Command: `node tests/run.js`
-- Scope: full — shared-infrastructure safety valve (`sprint-lifecycle.md` "Impacted test set"): the change touches a hook, a migration and the release manifest, and `commands.yaml` has no `test_affected` selector, so the impacted set degrades to the whole suite
-- Result: pass — 136 passed / 0 failed / 0 skipped (entry 1: 132/132; entry 2: 137/137; entry 3 folded one migration test away and added no test file or test case — the three iteration-2 fixes are assertions inside tests that already existed, so the count drops by one while coverage grows)
-- Lint / build: pass (`git diff --check` clean; `node .asd/sync.js --check` clean, exit 0)
-- HEAD: bd69c1d
+- Scope: **full, unscoped** — the sprint cycle's single terminal full-suite gate, run at the closing
+  step of `impl-review` once every required reviewer was APPROVE or latched. Not the impacted set;
+  this record replaces the impacted-set run `impl-test` entry 3 left here.
+- Result: **pass** — runner exit code `0`, report `136/136 passed` (0 failed, 0 skipped). Verdict is
+  the exit code plus that report, not a summary of it.
+- Lint: **pass** — `git diff --check` exit 0, no whitespace errors. Its only output was a benign
+  `LF will be replaced by CRLF` advisory on the sprint's own `state.json`, not a diagnostic.
+- Build: **pass** — `node .asd/sync.js --check` exit 0, `"ok": true`, all 72 generated provider-view
+  targets `current` (no stale, no modified-foreign, no orphan).
+- HEAD: `1436ef751467c5e53c409d4639e17800ff4db515` (`1436ef7`)
+- vs the entry-3 impacted-set baseline (136/136 at `bd69c1d`): identical, and expected to be. The one
+  commit landed since — `1436ef7 chore(sprint): close impl-test entry 3` — touched only
+  `decisions-log.md`, `state.json` and this file: no test code and no source under test, so neither
+  the case count nor any assertion could move. Full history: 132/132 (entry 1), 137/137 (entry 2),
+  136/136 (entry 3, one migration test folded into another with no assertion lost).
 
 ## Defects
 
