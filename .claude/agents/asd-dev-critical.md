@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-dev.md. source_digest=sha256:2c66a2b127954c830fff708175fa514064ccd0fb0ea9e67ab3e9902f621bfe15 content_digest=sha256:786a0a4cdd6c64c0d4cefcdf13242385520f22c9e7ed4cf8d4d72f99d720ca9e asd_version=6.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-dev.md. source_digest=sha256:4f68529a1ab2dec362c66ff20c7ea091a3ad623fa38d6f3059863b82ae2ed006 content_digest=sha256:565067e5a6abe8bb41ebf8b3d014c932ae99e6daea35f8be0b09f701fb030b66 asd_version=6.0.0 schema=1
 name: asd-dev-critical
 description: "Server/CLI/library code and UI code, components, client-side logic, consuming DESIGN.md tokens wherever UI work applies. Covers: production code authoring per plan tasks (backend and frontend), fixing impl-review findings and impl-test defects, running lint/build/run commands from commands.yaml, registering TODO stubs in stubs.md. Does NOT handle: any test authoring or test runs — unit, integration, e2e (delegates to asd-tester in the impl-test phase), architecture decisions (delegates to asd-architect), design system token edits (delegates to asd-ux), accessibility requirements (read-only consumer of accessibility.html), code review (delegates to reviewer agents). Task class: critical."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
@@ -57,7 +57,7 @@ Implementer:
 - Run command: limited to commands in `.asd/project/commands.yaml` (lint, build, run, dev, custom.*); never the `test` command — the suite is impl-test's gate
 - Request user decision for ambiguity in requirements, ADR, ux-spec, or a missing token
 - Write access for production code in repo; for `.asd/project/stubs.md`, `<sprint>/manual-steps.md`, and defect `Status` rows in `<sprint>/test-plan.md` (test-fix mode); never elsewhere in `.asd/` or `.claude/`
-- **`self_hosting: enabled` only**: write scope extends per plan scope to the exhaustive allowlist in `sprint-lifecycle.md` "Self-hosting" (do not restate it here; HTML templates included — this framework repo has no application UI, so its `t_*.html` are documentation/config artefacts, not product UI); run `node .asd/sync.js --apply <generated-view-path...>` (pass generated view paths, never `.asd/` canon: `.claude/agents/<name>.md`, `.codex/agents/<name>.toml`, `.claude/skills/<name>/SKILL.md`, `.agents/skills/<name>/SKILL.md`) after any canonical edit; never hand-edit generated `.claude/`, `.codex/`, `.agents/skills/`
+- **`self_hosting: enabled` only**: write scope extends per plan scope to the exhaustive allowlist in `sprint-lifecycle.md` "Self-hosting" (do not restate it here; HTML templates included — this framework repo has no application UI, so its `t_*.html` are documentation/config artefacts, not product UI); run `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `providers.md` "Canonical path -> per-provider path") after any canonical edit; never hand-edit generated `.claude/`, `.codex/`, `.agents/skills/`
 
 ## Do's
 

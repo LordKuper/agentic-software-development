@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-update/SKILL.md. source_digest=sha256:2da080db28301184844b04ea1b9bf511081316660ae55b3c6402e4968f66075d content_digest=sha256:37f6792da7bc48db15ab13ad68759b11227d4007068d0f1cf109368c56e19664 asd_version=6.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-update/SKILL.md. source_digest=sha256:3f298bc78529a43980101c956c526cdbc96c819d4a7ef650ec8970b03c1be573 content_digest=sha256:1398f8cc3cb1f8322c8fa90d2ae46bfc62967bb4cd3b6f594bdc82a94c1d3aa9 asd_version=6.0.0 schema=1
 name: asd-update
 description: "Updates the ASD framework infrastructure (.asd/rules, .asd/templates, ASD agents/skills/hooks, .asd/migrations) in a consumer project to the latest version by fetching them from the configured ASD repo's main branch, replacing only framework-managed paths, running any pending `.asd/migrations/<version>.js` scripts in ascending order, and never touching consumer-owned config, sprints, persistent docs, or custom skills/agents/hooks. Use when the user runs /asd-update or asks to update, upgrade, or pull the latest ASD framework / workflow version."
 ---
@@ -35,5 +35,5 @@ Never touched: `.asd/project/**`, `.asd/sprints/**`, `docs/**`, `AGENTS.md`, `CL
 
 ## After
 
-- Remind user: `.claude/settings.json` and `.codex/hooks.json` are **not** auto-updated by this step (they hold user permissions/hook registration; `node .asd/sync.js --apply <generated-view-path...>` (pass generated view paths, never `.asd/` canon: `.claude/agents/<name>.md`, `.codex/agents/<name>.toml`, `.claude/skills/<name>/SKILL.md`, `.agents/skills/<name>/SKILL.md`) handles their own owned entries separately). If update changed hook files or added skills, run sync next.
+- Remind user: `.claude/settings.json` and `.codex/hooks.json` are **not** auto-updated by this step (they hold user permissions/hook registration; `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `.asd/rules/providers.md` "Canonical path -> per-provider path") handles their own owned entries separately). If update changed hook files or added skills, run sync next.
 - Requires `tar` on PATH (ships with Win10 1803+/macOS/Linux) and Node >= 16.7.
