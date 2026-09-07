@@ -38,8 +38,8 @@
     }
   },
   "created_at": "2026-09-06T11:16:29.213Z",
-  "updated_at": "2026-09-07T08:04:00.671Z",
-  "review_fixes_pending": "iter-01",
+  "updated_at": "2026-09-07T09:05:30.793Z",
+  "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null,
@@ -74,5 +74,42 @@
       "evidence": "reviews/impl/iter-01/efficiency.md F1; reviews/impl/iter-01/testing.md F1; decisions-log.md",
       "artifact_revision": null
     }
-  ]
+  ],
+  "task_routing": {
+    "T1": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:sync-ownership-model-change-affects-every-consumer-AGENTS.md",
+      "selector": "orchestrator",
+      "resolved_model": null
+    },
+    "T2": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "selector": "orchestrator",
+      "resolved_model": null
+    },
+    "T3": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "selector": "orchestrator",
+      "resolved_model": null
+    },
+    "T4": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "selector": "orchestrator",
+      "resolved_model": null
+    },
+    "T5": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "selector": "orchestrator",
+      "resolved_model": null
+    }
+  }
 }
