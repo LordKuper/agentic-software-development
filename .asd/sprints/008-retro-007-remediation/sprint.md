@@ -44,17 +44,27 @@ Self-hosting sprint: this repo IS the ASD framework, so the retrospective's `asd
   the provider-view root and never inside a sprint tree, and that a sprint folder holds
   only the artifacts the path map names. The statement is a rule, reachable by any agent
   on any dispatch — not an entry in one agent's memory.
-- AC-4: `F-4` — `.asd/sync.js` reports an `--apply` target that matches nothing as an
-  error instead of folding it into an ok result, so a wrong argument can no longer
-  succeed silently.
-- AC-5: `F-4` — the sync-step argument wording is corrected everywhere it is described:
-  `.asd/templates/t_AGENTS.md`, root `AGENTS.md`, and
-  `.asd/project/custom-coding-rules.md`, so a fresh consumer project does not inherit
-  the misleading instruction.
+- AC-4: `F-4` — **closed as already satisfied at scope time, no code change.** `.asd/sync.js`
+  has failed closed on an unmatched `--apply` target since v4.0.0 (`ok: false`, exit 1,
+  whole batch aborted); the audit verified it by running the tool. `F-4`'s remaining live
+  cause is the stale wording, which AC-5 fixes, and stale agent memory, which AC-3
+  addresses. The deliberate `orphan-unmarked` ok-result (`sync.js:1416`, contracted in
+  `providers.md` "Orphan detection") is left as designed.
+- AC-5: `F-4` — the sync-step argument wording is corrected at **every real occurrence**:
+  `AGENTS.md:74`, `.asd/project/custom-coding-rules.md:14`, `.asd/agents/asd-dev.md:66`,
+  `.asd/workflows/asd-phase-impl.md:49`, `README.md:38/106/439`,
+  `.asd/skills/asd-update/SKILL.md:37`. `.asd/templates/t_AGENTS.md` is dropped from the
+  target list — it contains no sync wording at all. Editing
+  `.asd/project/custom-coding-rules.md` is a one-off authorized exception to the
+  self-hosting write allowlist, verified by grep because `.asd/project/**` is outside the
+  review surface.
 - AC-6: `F-6` — an interrupted reviewer dispatch has a defined outcome in
-  `.asd/rules/review-policy.md`: recorded as an availability skip for that iteration, the
-  way an unavailable external reviewer already is, rather than requiring a full re-run
-  with no record that the first attempt happened.
+  `.asd/rules/review-policy.md`, and that outcome is **never a skip and never an APPROVE**:
+  the reviewer is re-dispatched fresh within the same iteration — the shape the invalid
+  coverage ledger already uses — with the interrupted attempt recorded so the loss is
+  visible rather than silent. External Review's availability skip stays exclusive to an
+  unavailable provider; an internal reviewer is always available and therefore never
+  satisfies DoD without a completed verdict.
 
 ### Systemic proposals
 
@@ -83,8 +93,12 @@ Self-hosting sprint: this repo IS the ASD framework, so the retrospective's `asd
   (phase list, agent roster and model tiers for both providers, config schema, folder
   map, command list), `core.md` "See also", the eleven-phase chain, template variables,
   and `.asd/release-manifest.json` (`managed_paths`, `canon_hashes`, `model_families`).
-- AC-13: `node tests/run.js` is green, with coverage extended to the new behaviour that
-  is machine-checkable — at minimum the `.asd/sync.js` unmatched-target error of AC-4.
+- AC-13: `node tests/run.js` is green, with coverage extended to the new machine-checkable
+  behaviour this sprint actually introduces — AC-1's manifest-partition union property,
+  AC-6's re-dispatch record, AC-10's routing input (both accepted shapes) and AC-11's
+  state field. The AC-4 unmatched-target error needs no new test: `tests/run.js` §11
+  already asserts it twice. Append as `§19`; the existing section numbering has
+  pre-existing collisions and is left alone.
 - AC-14: every canonical edit is reflected in the generated provider views via
   `.asd/sync.js --apply`; no generated file is hand-edited and no view is left stale.
 

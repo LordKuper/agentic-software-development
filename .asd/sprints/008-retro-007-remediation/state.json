@@ -1,7 +1,7 @@
 {
   "sprint_id": "008-retro-007-remediation",
   "branch": "sprint/008-retro-007-remediation",
-  "phase": "audit",
+  "phase": "design",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "adr": false, "c4": false },
   "user_gates": "adaptive",
   "gate_decisions": [
@@ -11,6 +11,13 @@
       "reason": "initial scope accepted in full, all 14 AC, oversize diff acknowledged",
       "evidence": "user chose 'accept as is' over narrowing to actions-only; AC-1 split-review contract lands in this same sprint and may be applied to its own review",
       "artifact_revision": ".asd/sprints/008-retro-007-remediation/sprint.md@2026-09-07T17:11:41Z"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "user",
+      "reason": "audit accepted; four scope adjustments decided by the user after stale-premise findings",
+      "evidence": "AC-4 closed as satisfied at HEAD (sync.js fail-closed since v4.0.0, verified by running the tool); AC-5 retargeted to all real occurrences, t_AGENTS.md dropped as empty; one-off authorization to edit .asd/project/custom-coding-rules.md outside the self-hosting write allowlist, verified by grep; AC-6 tightened beyond the audit's proposal — an internal reviewer is never skipped, an interrupted dispatch is re-dispatched fresh within the same iteration",
+      "artifact_revision": ".asd/sprints/008-retro-007-remediation/audit.md@2026-09-07"
     }
   ],
   "task_routing": {},
@@ -20,7 +27,7 @@
     "impl": { "iteration": 0, "verdicts": {}, "iteration_heads": {}, "latched": {} }
   },
   "created_at": "2026-09-07T17:11:41Z",
-  "updated_at": "2026-09-07T17:11:41Z",
+  "updated_at": "2026-09-07T17:40:00Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
