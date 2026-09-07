@@ -1,0 +1,52 @@
+<!--
+responsibility:
+  owns: retro-phase analysis of the sprint friction log — root cause per F-N entry, and the recommendations derived from it split consumer-project vs ASD-framework
+  excludes: the friction entries themselves (friction-log.md), code defects, review verdicts, plan tasks, decisions
+  delegates_to: friction-log.md (entries), test-plan.md (defects), reviews/ (verdicts), decisions-log.md (decisions)
+provenance: original          # original | reverse-engineered | migrated
+source: ""                    # optional path/URL when provenance != original
+-->
+
+<!-- Derived analysis: reference every entry by its F-N id, never restate it. Phase semantics: .asd/rules/sprint-lifecycle.md "Retro phase". -->
+<!-- EMPTY-LOG BRANCH: keep Outcome alone with lede "No friction recorded this sprint.", OMIT the other three sections — one h2 then leaves {{TOC_NAV}} empty per artifact-layout.md's threshold. -->
+
+<section id="outcome" class="hero">
+  <h2>Outcome</h2>
+  <p class="lede">{{N entries analysed, N consumer actions, N framework actions | No friction recorded this sprint.}}</p>
+</section>
+
+<section id="analysis">
+  <h2>Analysis</h2>
+  <table>
+    <thead>
+      <tr><th>Entry</th><th>Root cause</th><th>Scope</th></tr>
+    </thead>
+    <tbody>
+      <tr id="F-1"><td><a href="#F-1">F-1</a></td><td>{{why it happened, one sentence}}</td><td><span class="chip area">{{consumer | asd | both}}</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="consumer-actions">
+  <h2>Consumer-project actions</h2>
+  <table>
+    <thead>
+      <tr><th>Addresses</th><th>Recommendation</th><th>Target</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><a href="#F-1">F-1</a></td><td>{{proposed change}}</td><td><code>{{path in this project}}</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="asd-actions">
+  <h2>ASD-framework actions</h2>
+  <table>
+    <thead>
+      <tr><th>Addresses</th><th>Recommendation</th><th>Target</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><a href="#F-1">F-1</a></td><td>{{proposed change}}</td><td><code>{{rule, agent, skill, workflow or template}}</code></td></tr>
+    </tbody>
+  </table>
+</section>

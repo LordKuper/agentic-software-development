@@ -32,24 +32,24 @@ Standing DoD applies, never restated here (`sprint-lifecycle.md` "Plan file form
 
 Sole home for every fact the other tasks reference. Nothing here is restated elsewhere; other files link.
 
-- [ ] `sprint-lifecycle.md`: add a `## Friction log` section — what it records (workflow/tooling/agent/skill/rule/gate/provider-CLI problems), what it never records, entry id scheme, append-only, lazily created, sprint-scoped and archived with the sprint
-- [ ] `sprint-lifecycle.md`: state the boundary against `test-plan.md` `D-N`, `reviews/`, `manual-steps.md` `MS-N`, `decisions-log.md` — entries reference ids, never restate symptom, fix or verdict (G-5)
-- [ ] `sprint-lifecycle.md`: state the writer mechanism **once** — dispatched agents return friction observations in final text, the dispatching phase workflow appends; reviewers cannot write, by host guarantee (G-8, cite `providers.md`)
-- [ ] `sprint-lifecycle.md`: add a `## Retro phase` section — owner, input, output, the empty-log branch (record "no friction recorded" and advance, never invent findings), and that it is never gated beyond `checkpoints.md`
-- [ ] `sprint-lifecycle.md`: insert `retro` into the ASCII chain, the phase table (row between `impl-review` and `pr`), and the "never no-op" list at the end of "Optional documents"
-- [ ] `core.md`: glossary Phase entry — count `Ten` becomes `Eleven`, add `retro` to the list
-- [ ] `checkpoints.md`: precondition chain string; per-phase precondition sentence gains a `retro` clause and restates `pr`'s predecessor
+- [x] `sprint-lifecycle.md`: add a `## Friction log` section — what it records (workflow/tooling/agent/skill/rule/gate/provider-CLI problems), what it never records, entry id scheme, append-only, lazily created, sprint-scoped and archived with the sprint
+- [x] `sprint-lifecycle.md`: state the boundary against `test-plan.md` `D-N`, `reviews/`, `manual-steps.md` `MS-N`, `decisions-log.md` — entries reference ids, never restate symptom, fix or verdict (G-5)
+- [x] `sprint-lifecycle.md`: state the writer mechanism **once** — dispatched agents return friction observations in final text, the dispatching phase workflow appends; reviewers cannot write, by host guarantee (G-8, cite `providers.md`)
+- [x] `sprint-lifecycle.md`: add a `## Retro phase` section — owner, input, output, the empty-log branch (record "no friction recorded" and advance, never invent findings), and that it is never gated beyond `checkpoints.md`
+- [x] `sprint-lifecycle.md`: insert `retro` into the ASCII chain, the phase table (row between `impl-review` and `pr`), and the "never no-op" list at the end of "Optional documents"
+- [x] `core.md`: glossary Phase entry — count `Ten` becomes `Eleven`, add `retro` to the list
+- [x] `checkpoints.md`: precondition chain string; per-phase precondition sentence gains a `retro` clause and restates `pr`'s predecessor
 
 Material risk: this is the SSoT for the whole feature; a fact stated here and also restated in a template or workflow is an immediate Documentation `FAIL`.
 
 ### Task 2: Templates and layout (AC-1, AC-5)
 
-- [ ] `artifact-layout.md`: add `friction-log.md` and `retrospective.html` rows to the sprint-tree path map, next to `manual-steps.md`
-- [ ] `artifact-layout.md`: classify `friction-log.md` explicitly as a workflow/machine Markdown artifact (class of `plan.md`/`test-plan.md`/`manual-steps.md`), and `retrospective.html` as derived analysis — not a parallel rendering of the log (G-4)
-- [ ] `artifact-layout.md`: extend the `{{DOC_TYPE}}` enum with the retrospective value and give `{{STATUS}}` a value valid for a terminal report; add the retrospective to the artifact enumeration under "HTML shell wrapping" (G-3)
-- [ ] `t_html-shell.html`: add the retrospective fragment to the `delegates_to:` list
-- [ ] Author `.asd/templates/t_friction-log.md` — `responsibility` frontmatter with the `excludes` boundary from Task 1, entry table or block format with stable ids, phase-of-origin column
-- [ ] Author `.asd/templates/t_retrospective.html` — fragment only (no html/head/body/style/script chrome), leading `responsibility` comment plus `provenance: original`, sections for recorded friction, consumer-project recommendations and ASD-framework recommendations, each recommendation traceable to its entry id
+- [x] `artifact-layout.md`: add `friction-log.md` and `retrospective.html` rows to the sprint-tree path map, next to `manual-steps.md`
+- [x] `artifact-layout.md`: classify `friction-log.md` explicitly as a workflow/machine Markdown artifact (class of `plan.md`/`test-plan.md`/`manual-steps.md`), and `retrospective.html` as derived analysis — not a parallel rendering of the log (G-4)
+- [x] `artifact-layout.md`: extend the `{{DOC_TYPE}}` enum with the retrospective value and give `{{STATUS}}` a value valid for a terminal report; add the retrospective to the artifact enumeration under "HTML shell wrapping" (G-3)
+- [x] `t_html-shell.html`: add the retrospective fragment to the `delegates_to:` list
+- [x] Author `.asd/templates/t_friction-log.md` — `responsibility` frontmatter with the `excludes` boundary from Task 1, entry table or block format with stable ids, phase-of-origin column
+- [x] Author `.asd/templates/t_retrospective.html` — fragment only (no html/head/body/style/script chrome), leading `responsibility` comment plus `provenance: original`, sections for recorded friction, consumer-project recommendations and ASD-framework recommendations, each recommendation traceable to its entry id
 
 Material risk: fragment must not duplicate shell chrome, and `{{TOC_NAV}}` is creator-computed at the 3-`h2` threshold — a wrong non-empty placeholder is a review `FAIL` while a correctly empty one is compliant.
 
