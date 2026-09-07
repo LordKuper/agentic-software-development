@@ -15,6 +15,7 @@ const sync = require('../.asd/sync.js');
 const update = require('../.asd/skills/asd-update/update.js');
 const migration400 = require('../.asd/migrations/4.0.0.js');
 const migration500 = require('../.asd/migrations/5.0.0.js');
+const migration600 = require('../.asd/migrations/6.0.0.js');
 const runtime = require('../.asd/runtime.js');
 
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -2490,6 +2491,204 @@ test('AC-14: PM migration deletes only intact generated views and remains idempo
   const unsafeReport = await migration500({ repoRoot: unsafeRoot });
   assert.ok(unsafeReport.skippedUnsafe.includes('.claude/agents/asd-pm.md'));
   assert.strictEqual(fs.existsSync(outside), true, 'migration must not follow or delete a target outside the consumer repo');
+});
+
+// ===========================================================================
+// 15. .asd/migrations/6.0.0.js - retirement of state.json.escalations.
+// The migration rewrites a consumer's LIVE sprint state file, so the risk is
+// data loss, not feature absence: every other member (and the file's original
+// line endings) must survive, archived sprints must not be touched at all,
+// and any input it cannot handle safely must be left byte-for-byte alone.
+// ===========================================================================
+
+test('6.0.0 migration: strips "escalations" from an ACTIVE sprint state, preserving every other member and CRLF line endings; archived sprints untouched; re-run is a no-op', async () => {
+  const root = mkTempDir();
+  // CRLF on purpose: a Windows consumer's state.json. The migration must not
+  // silently normalize the whole file to LF while removing one member.
+  const activeBefore = [
+    '{',
+    '  "sprint_id": "007-live",',
+    '  "phase": "impl",',
+    '  "escalations": [{"id": "E-1", "note": "tool would not launch"}],',
+    '  "skipped_phases": [],',
+    '  "updated_at": "2026-09-07"',
+    '}',
+    '',
+  ].join('\r\n');
+  const activeExpected = [
+    '{',
+    '  "sprint_id": "007-live",',
+    '  "phase": "impl",',
+    '  "skipped_phases": [],',
+    '  "updated_at": "2026-09-07"',
+    '}',
+    '',
+  ].join('\r\n');
+  const archivedBefore = '{\n  "sprint_id": "006-old",\n  "escalations": [],\n  "phase": "done"\n}\n';
+  writeFile(root, '.asd/sprints/007-live/state.json', activeBefore);
+  writeFile(root, '.asd/sprints/archived/006-old/state.json', archivedBefore);
+
+  const report = await migration600({ repoRoot: root });
+
+  const activePath = path.join(root, '.asd/sprints/007-live/state.json');
+  const archivedPath = path.join(root, '.asd/sprints/archived/006-old/state.json');
+  assert.deepStrictEqual(report.stripped, ['.asd/sprints/007-live/state.json']);
+  assert.strictEqual(
+    fs.readFileSync(activePath, 'utf8'),
+    activeExpected,
+    'only the escalations line may go - every other byte, CRLF included, must survive'
+  );
+  assert.deepStrictEqual(JSON.parse(fs.readFileSync(activePath, 'utf8')), {
+    sprint_id: '007-live',
+    phase: 'impl',
+    skipped_phases: [],
+    updated_at: '2026-09-07',
+  });
+  assert.strictEqual(
+    fs.readFileSync(archivedPath, 'utf8'),
+    archivedBefore,
+    'archived sprints are immutable history - the migration must never enter the archive subtree'
+  );
+  assert.ok(
+    ![...report.stripped, ...report.absent, ...report.skipped].some((p) => p.includes('/archived/')),
+    'no archived path may appear in the report at all'
+  );
+
+  const rerun = await migration600({ repoRoot: root });
+  assert.deepStrictEqual(rerun.stripped, [], 're-running an applied migration must be a no-op, never an error');
+  assert.deepStrictEqual(rerun.absent, ['.asd/sprints/007-live/state.json']);
+  assert.strictEqual(fs.readFileSync(activePath, 'utf8'), activeExpected, 'idempotent: second run leaves the file identical');
+});
+
+test('6.0.0 migration: LAST-member "escalations" (no trailing comma) still parses after removal; unparsable JSON and an unexpected multi-line shape are left byte-for-byte untouched and reported as skipped', async () => {
+  const root = mkTempDir();
+  // a: the boundary case - removing the last member orphans the previous
+  // line's comma, which would make the file stop parsing if left behind.
+  const lastMember = '{\n  "sprint_id": "a",\n  "phase": "pr",\n  "escalations": []\n}\n';
+  // b: not JSON at all (half-written file). c: the member spans lines, which
+  // the single-line scanner cannot remove safely.
+  const broken = '{\n  "sprint_id": "b",\n  "escalations": [],\n';
+  const multiLine = '{\n  "sprint_id": "c",\n  "escalations": [\n    {"id": "E-1"}\n  ],\n  "phase": "impl"\n}\n';
+  writeFile(root, '.asd/sprints/a/state.json', lastMember);
+  writeFile(root, '.asd/sprints/b/state.json', broken);
+  writeFile(root, '.asd/sprints/c/state.json', multiLine);
+
+  const report = await migration600({ repoRoot: root });
+
+  const after = fs.readFileSync(path.join(root, '.asd/sprints/a/state.json'), 'utf8');
+  assert.deepStrictEqual(
+    JSON.parse(after),
+    { sprint_id: 'a', phase: 'pr' },
+    'dropping the final member must also drop the now-dangling comma, or the state file stops parsing'
+  );
+  assert.deepStrictEqual(report.stripped, ['.asd/sprints/a/state.json']);
+  assert.deepStrictEqual(
+    report.skipped.sort(),
+    ['.asd/sprints/b/state.json', '.asd/sprints/c/state.json'],
+    'anything the scanner cannot handle safely is skipped, not guessed at'
+  );
+  assert.strictEqual(fs.readFileSync(path.join(root, '.asd/sprints/b/state.json'), 'utf8'), broken, 'unparsable input left untouched');
+  assert.strictEqual(fs.readFileSync(path.join(root, '.asd/sprints/c/state.json'), 'utf8'), multiLine, 'unexpected shape left untouched');
+});
+
+// ===========================================================================
+// 16. Phase-chain consistency (AC-8, audit gap G-11). PHASE_CHAIN in the
+// SessionStart hook is the machine-readable phase set; roughly twenty other
+// sites mirror it by hand. These two tests derive the chain from the hook
+// source and assert the mirrors that are machine-checkable: the skill and
+// workflow files a phase needs to exist at all, and the two ordered phase
+// sequences in the rule docs.
+// ===========================================================================
+
+function readPhaseChain() {
+  const src = fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8');
+  const block = /const PHASE_CHAIN = \[([\s\S]*?)\];/.exec(src);
+  assert.ok(block, 'session-start.js must keep PHASE_CHAIN as a literal array - it is the chain SSoT');
+  return (block[1].match(/'([^']+)'/g) || []).map((quoted) => quoted.slice(1, -1));
+}
+
+test('AC-8/G-11: PHASE_CHAIN is the single source for the phase set - every phase has a skill AND a workflow, every phase skill/workflow is in the chain, and retro sits between impl-review and pr', () => {
+  const chain = readPhaseChain();
+  assert.deepStrictEqual([...new Set(chain)], chain, 'PHASE_CHAIN must not repeat a phase');
+  assert.strictEqual(chain[chain.length - 1], 'done', 'the chain terminates at the pseudo-phase "done"');
+
+  const retro = chain.indexOf('retro');
+  assert.ok(retro > 0, 'retro must be in the chain');
+  assert.strictEqual(chain[retro - 1], 'impl-review', 'retro runs directly after impl-review');
+  assert.strictEqual(chain[retro + 1], 'pr', 'retro runs directly before pr');
+
+  const phases = chain.filter((phase) => phase !== 'done');
+  const missing = [];
+  for (const phase of phases) {
+    if (!fs.existsSync(path.join(REPO_ROOT, `.asd/skills/asd-phase-${phase}/SKILL.md`))) missing.push(`skill for ${phase}`);
+    if (!fs.existsSync(path.join(REPO_ROOT, `.asd/workflows/asd-phase-${phase}.md`))) missing.push(`workflow for ${phase}`);
+  }
+  assert.deepStrictEqual(missing, [], `a phase in the chain with no dispatch target routes into nothing: ${missing.join(', ')}`);
+
+  // Reverse direction: an orphaned skill/workflow means the chain was edited
+  // (or reverted) without its dispatch targets - the same desync, mirrored.
+  const workflowPhases = fs
+    .readdirSync(path.join(REPO_ROOT, '.asd/workflows'))
+    .filter((name) => name.startsWith('asd-phase-') && name.endsWith('.md'))
+    .map((name) => name.slice('asd-phase-'.length, -'.md'.length));
+  const skillPhases = fs
+    .readdirSync(path.join(REPO_ROOT, '.asd/skills'))
+    .filter((name) => name.startsWith('asd-phase-'))
+    .map((name) => name.slice('asd-phase-'.length));
+  assert.deepStrictEqual([...workflowPhases].sort(), [...phases].sort(), 'phase workflows and PHASE_CHAIN must be in bijection');
+  assert.deepStrictEqual([...skillPhases].sort(), [...phases].sort(), 'phase skills and PHASE_CHAIN must be in bijection');
+});
+
+test('AC-8/G-11: the ordered phase-chain mirrors in core.md and sprint-lifecycle.md match PHASE_CHAIN exactly', () => {
+  const phases = readPhaseChain().filter((phase) => phase !== 'done');
+
+  const core = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/core.md'), 'utf8');
+  const glossary = /mandatory:\s*([^.]+)\./.exec(core);
+  assert.ok(glossary, 'core.md glossary must keep its "N mandatory: <phase>, <phase>, ..." phase list');
+  assert.deepStrictEqual(
+    glossary[1].split(',').map((phase) => phase.trim()),
+    phases,
+    'core.md glossary phase list drifted from PHASE_CHAIN'
+  );
+
+  const lifecycle = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/sprint-lifecycle.md'), 'utf8');
+  const arrowLine = /^scope\s*(?:→|⇄).*$/m.exec(lifecycle);
+  assert.ok(arrowLine, 'sprint-lifecycle.md must keep its "scope → ... → pr" chain line');
+  assert.deepStrictEqual(
+    arrowLine[0].split(/\s*(?:→|⇄)\s*/).map((phase) => phase.trim()),
+    phases,
+    'sprint-lifecycle.md chain line drifted from PHASE_CHAIN'
+  );
+});
+
+// ===========================================================================
+// 17. release-manifest.json reverse coverage (AC-5, audit gap G-12). Section
+// 6b asserts the forward direction (every recorded hash matches its file); an
+// added-but-unregistered file is invisible to it, and update.js only ships
+// what upstream_hashes lists - so a new template would never reach a consumer.
+// ===========================================================================
+
+test('AC-5/G-12: every file under release-manifest managed_paths HAS an upstream_hashes entry (reverse direction - an unregistered new template would otherwise never reach a consumer)', () => {
+  const manifest = loadManifest();
+  const recorded = new Set(Object.keys(manifest.upstream_hashes || {}));
+  const unregistered = [];
+
+  function walk(relPath) {
+    const abs = path.join(REPO_ROOT, relPath);
+    if (!fs.existsSync(abs)) return;
+    if (fs.statSync(abs).isFile()) {
+      if (!recorded.has(relPath)) unregistered.push(relPath);
+      return;
+    }
+    for (const entry of fs.readdirSync(abs).sort()) walk(`${relPath}/${entry}`);
+  }
+  for (const managed of manifest.managed_paths) walk(managed);
+
+  assert.deepStrictEqual(
+    unregistered,
+    [],
+    `managed files with no upstream_hashes entry (update.js would never deliver them): ${unregistered.join(', ')}`
+  );
 });
 
 // ===========================================================================
