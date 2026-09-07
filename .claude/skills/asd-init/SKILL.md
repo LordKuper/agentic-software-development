@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:00e51a97b6fa1a4e1255d47f906ef75353165d5bc47b83d39fa5a6523c4d1048 content_digest=sha256:d6be8c0934daee5b4008fd49e9fcbf044110e9f331acf5ce9432f810cb548e8d asd_version=5.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:4a33c2ae1baccb89e26659dfc8e404ffe5488b35376c23ed037da65b047bab40 content_digest=sha256:7e00001ba9975f88b6db9013b97c5df2d823d980ea4f14e33c6d00299c54025b asd_version=5.0.0 schema=1
 name: asd-init
 description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
@@ -19,8 +19,8 @@ Operation mapping: see `.asd/rules/providers.md`.
 
 ## Always first (both modes)
 
-0. **Determine self-hosting mode** (`self_hosting` field in `.asd/project/config.yaml` if it exists; else `disabled` — `sync.js`'s `isSelfHostingRepo`) BEFORE any AGENTS.md mutation — self-hosting must never be decided after the sync in step 0a below has already run against the wrong mode.
-0a. **Sync `AGENTS.md`/`CLAUDE.md` managed blocks** (see "AGENTS.md sync"). Runs unconditionally every invocation, fresh or re-init, regardless of subsequent user choices or aborts. In self-hosting mode, AGENTS.md is self-sourced (`providers.md` ownership table) — this step only verifies it, via `statusSelfSourcedManagedBlock`, never replaces its content with `t_AGENTS.md`.
+0. **Determine self-hosting mode** (`self_hosting` field in `.asd/project/config.yaml` if it exists; else `disabled` — `sync.js`'s `isSelfHostingRepo`).
+0a. **Sync `AGENTS.md`/`CLAUDE.md` managed blocks** (see "AGENTS.md sync"). Runs unconditionally every invocation, fresh or re-init, regardless of subsequent user choices or aborts, in both self-hosting and consumer mode — the managed block always generates from `t_AGENTS.md`/`t_CLAUDE.md` (`providers.md` ownership table).
 
 ## Workflow (fresh)
 
@@ -78,7 +78,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 4. Per section: ask new value → add to pending change-set (do not write yet)
 5. Show consolidated diff of all pending edits → request user decision: `accept-all` | `edit-section` | `abort`; loop until accepted
 6. Apply diff; write config
-7. If `review.external_review=enabled`, resolve and probe the wrapped CLI from the final config exactly as fresh init does; report the resolved command and availability. An unavailable probe leaves the setting intact but is surfaced as the explicit runtime availability-skip reason (`external-review.md` "Detection").
+7. If `review.external_review=enabled`, resolve and probe the wrapped CLI from the final config exactly as fresh init does; report the resolved command and availability. An unavailable probe leaves the setting intact but is surfaced as the explicit runtime availability-skip reason (`external-review.md` "Detection and negative cache").
 
 ## AGENTS.md sync
 
@@ -118,7 +118,7 @@ Four custom commands emitted only when `documents.ux_spec: enabled` (else omitte
 ## Artefacts produced
 
 - `.asd/project/config.yaml` (incl. `self_hosting`, `user_gates`, `documents.*`)
-- `AGENTS.md`, `CLAUDE.md` — consumer mode: managed block synced from `t_AGENTS.md`/`t_CLAUDE.md`; self-hosting mode: `AGENTS.md` self-sourced (verified, never generated), `CLAUDE.md` still synced
+- `AGENTS.md`, `CLAUDE.md` — managed block synced from `t_AGENTS.md`/`t_CLAUDE.md` in both consumer and self-hosting mode
 - `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`, `stubs.md`
 - `.asd/project/commands.yaml`
 - `docs/architecture/c4/` content per `diagram_tool` (decomp only)

@@ -44,6 +44,7 @@ When subsystem decomposition is enabled (`project.subsystem_decomposition`), per
 - `checkpoints.md` — pauses, approvals, preconditions
 - `git-strategy.md` — branches, commits, TODO stubs, PR
 - `artifact-layout.md` — paths, ownership, SSoT, archival
+- `code-style.md` — implementation-level code-writing rules
 - `review-policy.md` — severity, iteration floor, autofix vs escalation
 - `external-review.md` — wrapping the other provider's CLI for a second opinion
 - `providers.md` — canonical/provider path map, semantic-operation mapping, model-family table
