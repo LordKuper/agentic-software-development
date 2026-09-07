@@ -2616,20 +2616,72 @@ test('6.0.0 migration: strips the TOP-LEVEL "escalations" even when a nested mem
   );
 });
 
+test('AC-9: the 6.0.0 migration prints the escalations it dropped and where to re-record them - the run\'s only data-recovery affordance', async () => {
+  const root = mkTempDir();
+  const dropped = [{ id: 'E-1', note: 'tool would not launch' }, { id: 'E-2', note: 'gate fired at the wrong time' }];
+  const live = JSON.stringify({ sprint_id: '007-live', escalations: dropped, phase: 'impl' }, null, 2) + '\n';
+  writeFile(root, '.asd/sprints/007-live/state.json', live);
+  writeFile(root, '.asd/sprints/007-broken/state.json', '{\n  "sprint_id": "007-broken",\n  "escalations": [],\n');
+
+  const captured = [];
+  const realWrite = process.stdout.write;
+  process.stdout.write = (chunk) => {
+    captured.push(String(chunk));
+    return true;
+  };
+  let report;
+  try {
+    report = await migration600({ repoRoot: root });
+  } finally {
+    process.stdout.write = realWrite;
+  }
+  const output = captured.join('');
+
+  assert.deepStrictEqual(report.stripped, ['.asd/sprints/007-live/state.json']);
+  assert.ok(
+    output.includes(JSON.stringify(dropped)),
+    'the dropped escalations must be printed verbatim - the rewritten state file was their only other copy and it no longer holds them'
+  );
+  assert.ok(
+    /friction-log\.md/.test(output),
+    'the warning must name where the consumer re-records them, or the data is gone with no pointer to its replacement home'
+  );
+  assert.ok(
+    /007-broken\/state\.json.*by hand/.test(output),
+    'a state file left untouched because it does not parse must say so - silence reads as a successful migration'
+  );
+});
+
 // ===========================================================================
 // 16. Phase-chain consistency (AC-8, audit gap G-11). PHASE_CHAIN in the
 // SessionStart hook is the machine-readable phase set; roughly twenty other
-// sites mirror it by hand. These two tests derive the chain from the hook
-// source and assert the mirrors that are machine-checkable: the skill and
-// workflow files a phase needs to exist at all, and the two ordered phase
-// sequences in the rule docs.
+// sites mirror it by hand. These tests derive the chain from the hook source
+// and assert every mirror that is machine-checkable: the skill and workflow
+// files a phase needs to exist at all, the `NEXT:` token that does the actual
+// routing, the ordered phase sequences in the rule docs, and README's phase
+// table, flowchart and count words. PHASE_CHAIN only drives the session
+// hook's display, so a green chain array over a stale `NEXT:` or a stale
+// user-facing doc is exactly the silent desync these assertions exist for.
 // ===========================================================================
+
+const PHASE_COUNT_WORDS = [
+  'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven',
+  'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen',
+];
+const TOC_H2_THRESHOLD = 3;
 
 function readPhaseChain() {
   const src = fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8');
   const block = /const PHASE_CHAIN = \[([\s\S]*?)\];/.exec(src);
   assert.ok(block, 'session-start.js must keep PHASE_CHAIN as a literal array - it is the chain SSoT');
   return (block[1].match(/'([^']+)'/g) || []).map((quoted) => quoted.slice(1, -1));
+}
+
+function readReturnContractTargets(phase) {
+  const src = fs.readFileSync(path.join(REPO_ROOT, `.asd/workflows/asd-phase-${phase}.md`), 'utf8');
+  const contract = new RegExp(`^PHASE: ${phase} \\|.*\\bNEXT:\\s*(.+?)\\s*$`, 'm').exec(src);
+  assert.ok(contract, `asd-phase-${phase}.md must keep its single-line "PHASE: ${phase} | ... | NEXT: <...>" return contract`);
+  return contract[1].replace(/[<>`]/g, '').split('|').map((target) => target.trim());
 }
 
 test('AC-8/G-11: PHASE_CHAIN is the single source for the phase set - every phase has a skill AND a workflow, every phase skill/workflow is in the chain, and retro sits between impl-review and pr', () => {
@@ -2650,8 +2702,6 @@ test('AC-8/G-11: PHASE_CHAIN is the single source for the phase set - every phas
   }
   assert.deepStrictEqual(missing, [], `a phase in the chain with no dispatch target routes into nothing: ${missing.join(', ')}`);
 
-  // Reverse direction: an orphaned skill/workflow means the chain was edited
-  // (or reverted) without its dispatch targets - the same desync, mirrored.
   const workflowPhases = fs
     .readdirSync(path.join(REPO_ROOT, '.asd/workflows'))
     .filter((name) => name.startsWith('asd-phase-') && name.endsWith('.md'))
@@ -2660,11 +2710,32 @@ test('AC-8/G-11: PHASE_CHAIN is the single source for the phase set - every phas
     .readdirSync(path.join(REPO_ROOT, '.asd/skills'))
     .filter((name) => name.startsWith('asd-phase-'))
     .map((name) => name.slice('asd-phase-'.length));
-  assert.deepStrictEqual([...workflowPhases].sort(), [...phases].sort(), 'phase workflows and PHASE_CHAIN must be in bijection');
-  assert.deepStrictEqual([...skillPhases].sort(), [...phases].sort(), 'phase skills and PHASE_CHAIN must be in bijection');
+  assert.deepStrictEqual(
+    [...workflowPhases].sort(),
+    [...phases].sort(),
+    'phase workflows and PHASE_CHAIN must be in bijection - an orphaned workflow means the chain was edited or reverted without its dispatch targets, the same desync mirrored'
+  );
+  assert.deepStrictEqual([...skillPhases].sort(), [...phases].sort(), 'phase skills and PHASE_CHAIN must be in bijection, for the same reason');
 });
 
-test('AC-8/G-11: the ordered phase-chain mirrors in core.md and sprint-lifecycle.md match PHASE_CHAIN exactly', () => {
+test('AC-3/AC-6/AC-8: every phase workflow offers its PHASE_CHAIN successor as a NEXT target - NEXT is what routes the sprint, PHASE_CHAIN only what the session hook displays', () => {
+  const chain = readPhaseChain();
+  const phases = chain.filter((phase) => phase !== 'done');
+  const knownTargets = new Set([...chain, 'await-merge', 'halted']);
+
+  for (const [index, phase] of phases.entries()) {
+    const successor = chain[index + 1];
+    const targets = readReturnContractTargets(phase);
+    assert.ok(
+      targets.includes(successor),
+      `asd-phase-${phase}.md must offer "NEXT: ${successor}": PHASE_CHAIN routes ${phase} there, and a stale NEXT token skips the successor phase silently, with every chain assertion still green (got: ${targets.join(', ')})`
+    );
+    const unknown = targets.filter((target) => !knownTargets.has(target));
+    assert.deepStrictEqual(unknown, [], `asd-phase-${phase}.md names a NEXT target that is neither a phase nor a known terminal: ${unknown.join(', ')}`);
+  }
+});
+
+test('AC-8/G-11: the ordered phase-chain mirrors in core.md, sprint-lifecycle.md and checkpoints.md match PHASE_CHAIN exactly', () => {
   const phases = readPhaseChain().filter((phase) => phase !== 'done');
 
   const core = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/core.md'), 'utf8');
@@ -2684,6 +2755,37 @@ test('AC-8/G-11: the ordered phase-chain mirrors in core.md and sprint-lifecycle
     phases,
     'sprint-lifecycle.md chain line drifted from PHASE_CHAIN'
   );
+
+  const checkpoints = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/checkpoints.md'), 'utf8');
+  const preconditions = /## Precondition chain\s*```\s*([\s\S]*?)\s*```/.exec(checkpoints);
+  assert.ok(preconditions, 'checkpoints.md must keep its fenced "## Precondition chain" block');
+  assert.deepStrictEqual(
+    preconditions[1].split(/\s*(?:→|⇄)\s*/).map((phase) => phase.trim()),
+    phases.slice(1),
+    'checkpoints.md precondition chain drifted from PHASE_CHAIN - it lists every phase that HAS a predecessor, so the first phase is excluded by construction'
+  );
+});
+
+test('AC-8: README mirrors PHASE_CHAIN - the phase table, the workflow flowchart and every phase-count word', () => {
+  const phases = readPhaseChain().filter((phase) => phase !== 'done');
+  const readme = fs.readFileSync(path.join(REPO_ROOT, 'README.md'), 'utf8');
+
+  const tableRows = [...readme.matchAll(/^\| \*\*([a-z-]+)\*\* \|/gm)].map((row) => row[1]);
+  assert.deepStrictEqual(tableRows, phases, 'README phase table drifted from PHASE_CHAIN - it is the user-facing entry point, and a stale row describes a workflow that no longer exists');
+
+  const graphNodes = [...new Set([...readme.matchAll(/\w+\["([a-z-]+)<br\//g)].map((node) => node[1]))];
+  assert.deepStrictEqual(
+    graphNodes.sort(),
+    [...phases].sort(),
+    'the README flowchart must declare a node for exactly the phases in PHASE_CHAIN - declaration order belongs to the graph author, the node set does not'
+  );
+
+  const countPattern = new RegExp(`\\b(\\d+|${PHASE_COUNT_WORDS.join('|')})\\s+(?:mandatory |sprint )?phases\\b`, 'gi');
+  const counts = [...readme.matchAll(countPattern)].map((count) => count[1].toLowerCase());
+  assert.ok(counts.length >= 3, `README states the phase count in prose in at least three places - only ${counts.length} found, so this pattern has itself drifted and asserts nothing`);
+  const expected = new Set([String(phases.length), PHASE_COUNT_WORDS[phases.length]]);
+  const stale = counts.filter((count) => !expected.has(count));
+  assert.deepStrictEqual(stale, [], `README phase-count word disagrees with PHASE_CHAIN's ${phases.length}: ${stale.join(', ')}`);
 });
 
 // ===========================================================================
@@ -2714,6 +2816,48 @@ test('AC-5/G-12: every file under release-manifest managed_paths HAS an upstream
     [],
     `managed files with no upstream_hashes entry (update.js would never deliver them): ${unregistered.join(', ')}`
   );
+});
+
+// ===========================================================================
+// 18. t_retrospective.html section contract (AC-4, AC-5, AC-7, AC-10). The
+// retro phase has two branches and the template is the only place their
+// section sets are written down: an unclassified section leaves the empty-log
+// branch undefined, a dropped systemic section makes an entry-free log an
+// empty retrospective, and the h2 count on each branch is what decides
+// whether {{TOC_NAV}} is filled or correctly left empty.
+// ===========================================================================
+
+test('AC-4/AC-5/AC-7/AC-10: t_retrospective.html classifies every section for the empty-log branch, keeps the systemic class there, and sits on the right side of the TOC threshold on both branches', () => {
+  const template = fs.readFileSync(path.join(REPO_ROOT, '.asd/templates/t_retrospective.html'), 'utf8');
+  const sections = [...template.matchAll(/<section id="([a-z-]+)"[^>]*>\s*<h2>([^<]+)<\/h2>/g)].map((section) => section[2]);
+  assert.ok(sections.length > 0, 't_retrospective.html must keep its <section id> + <h2> fragment shape - every other assertion here reads it');
+
+  const branchNote = /<!-- EMPTY-LOG BRANCH:([\s\S]*?)-->/.exec(template);
+  assert.ok(branchNote, 't_retrospective.html must state which sections the empty-log branch keeps - it is the only written home for that split');
+  const omitAt = branchNote[1].indexOf('OMIT');
+  assert.ok(omitAt > 0, 'the empty-log note must separate kept from omitted sections with OMIT');
+
+  const unclassified = sections.filter((title) => !branchNote[1].includes(title));
+  assert.deepStrictEqual(unclassified, [], `a section the empty-log branch neither keeps nor omits leaves that branch's output to guesswork: ${unclassified.join(', ')}`);
+  const kept = sections.filter((title) => branchNote[1].indexOf(title) < omitAt);
+
+  assert.ok(
+    kept.some((title) => /systemic/i.test(title)),
+    'the systemic-proposals class ships on the empty-log branch too - an entry-free friction log is not an empty retrospective'
+  );
+  assert.ok(
+    kept.length < TOC_H2_THRESHOLD,
+    `the empty-log branch keeps ${kept.length} h2 sections; at ${TOC_H2_THRESHOLD} or more the manual AC-5 check must expect a TOC nav on this branch as well`
+  );
+  assert.ok(
+    sections.length >= TOC_H2_THRESHOLD,
+    `the full branch has ${sections.length} h2 sections; below ${TOC_H2_THRESHOLD} the shell omits the nav and the manual AC-5 check expecting one is wrong`
+  );
+
+  const actions = /<section id="actions">([\s\S]*?)<\/section>/.exec(template);
+  assert.ok(actions, 't_retrospective.html must keep the actions section - it is where recommendations live');
+  assert.ok(/F-\d/.test(actions[1]), 'every recommendation traces to the friction entry it addresses (AC-4), so the actions table carries an F-N reference');
+  assert.ok(/consumer\s*\|\s*asd/.test(actions[1]), 'recommendations split consumer-project vs ASD-framework (AC-4), so the actions table names the acting side');
 });
 
 // ===========================================================================
