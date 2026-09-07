@@ -12,3 +12,4 @@ Every `node .asd/sync.js --apply <target>` rewrites `.asd/release-manifest.json`
 **How to apply:**
 - Splitting one canonical file's changes across two commits: re-run `--apply` between them so each commit carries a ledger matching its own content. Otherwise the intermediate commit is red.
 - Working in parallel with sibling agents: your `--apply` sweeps up their uncommitted canon edits into the ledger. Check `git diff .asd/release-manifest.json` before staging and prefer to run it after siblings have committed.
+- Editing a non-render canon file (e.g. `.asd/migrations/*.js`, `.asd/templates/t_*`, tracked by `managed_paths`/`upstream_hashes` only) needs no `--apply` at all: recompute just that one entry with `sync.sha256Hex(sync.readNormalized(path))` and edit the single line. Keeps the ledger diff scoped to your own change.
