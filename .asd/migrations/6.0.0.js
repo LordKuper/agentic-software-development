@@ -15,13 +15,8 @@
  * warn-only would leave a dead field in every live sprint state until that sprint is archived.
  * Archived sprints keep theirs - closed sprints are immutable history.
  *
- * Removal is a parse / delete / re-serialize, not text surgery: sprint state is machine-written
- * and every reader parses it, so its byte layout has no consumer worth preserving at the price of
- * a shape-blind line scanner (which mishandled nested and multi-line occurrences of the key). The
- * rewrite is therefore whole-file, normalized to 2-space indent; only the file's own line ending
- * and trailing-newline habit are carried over. Member order survives (parse preserves it), so the
- * diff stays small for state written in the template's own shape. A file that does not parse is
- * left byte-for-byte alone and reported for a hand edit.
+ * Sprint state is machine-written and every reader parses it; byte layout is not worth preserving,
+ * so the rewrite is whole-file.
  *
  * The release's other breaking change, the new `retro` phase between `impl-review` and `pr`,
  * needs no state mutation: an in-flight sprint routes into `retro` through the new chain and

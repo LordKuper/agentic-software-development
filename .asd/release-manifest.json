@@ -149,7 +149,7 @@
     ".asd/agents/asd-ux.md": "b15cd8c1008d58a5ce21d6bf0e28375b00de269d4ea5dc6dfc813d08e89245f7",
     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
-    ".asd/migrations/6.0.0.js": "798a2424528db345535e797fd78bcd98e8129795e28bda556e0b7e78ace5a837",
+    ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
     ".asd/runtime.js": "788ede9f027bf57fb2fc5d86bf8f025e04308074b547441cf2a69fac19c2f470",
     ".asd/templates/external-review/t_review-scope.json": "66eca780c034c9ea851b5fbd6700c5cf47a0cc9591b5910e2942f35a65402bd9",
     ".asd/templates/t_friction-log.md": "be5dfa34ef73a1ffee70799b39a6d9d08eaa440e71a4cd8ec8c287e32b697ad5",
