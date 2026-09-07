@@ -4,7 +4,7 @@ The main orchestrator owns this workflow and delegates no orchestration role.
 
 ## Open mode
 
-1. Read config, state, plan, reviews, test-plan and stubs. Confirm every plan task, AC trace, required review verdict, full-suite record, lint/build record and stub rule. Re-run required checks after a relevant diff. A failed or missing check blocks.
+1. Read config, state, plan, reviews, test-plan, retrospective and stubs. Confirm every plan task, AC trace, required review verdict, full-suite record, lint/build record and stub rule; `pr` requires review DoD plus a completed `retro` (`checkpoints.md`), so `<sprint>/retrospective.html` is a DoD input and its absence blocks. Re-run required checks after a relevant diff. A failed or missing check blocks.
 2. Write `phase=pr` inline. For self-hosting, first bump version and changelog, commit them on the sprint branch, then compose the PR title/body.
 3. Apply the active policy to publication. Adaptive publication needs recorded scope authority, evidence and host permission; otherwise request the user. On successful PR creation/preparation, write `state.json.pr` and append the decision/log record. Do not archive or mark done.
 4. Emit `NEXT: await-merge`; the active sprint remains at its normal path while the PR is open.

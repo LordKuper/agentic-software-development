@@ -31,6 +31,7 @@ const PHASE_CHAIN = [
   'impl',
   'impl-test',
   'impl-review',
+  'retro',
   'pr',
   'done',
 ];

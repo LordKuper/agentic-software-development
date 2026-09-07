@@ -1,4 +1,4 @@
-// ASD generated. Edit .asd/hooks/session-start.js. source_digest=sha256:7cf9702e2bb46e0550d8b3ef2b1fd2ec62aadbb0c81ddbbefb2c42916deae622 content_digest=sha256:7cf9702e2bb46e0550d8b3ef2b1fd2ec62aadbb0c81ddbbefb2c42916deae622 asd_version=5.0.0 schema=1
+// ASD generated. Edit .asd/hooks/session-start.js. source_digest=sha256:b2ba4ce133eab117876d0e15424f40baa71eb9c887e8813326b7897358b6135d content_digest=sha256:b2ba4ce133eab117876d0e15424f40baa71eb9c887e8813326b7897358b6135d asd_version=5.0.0 schema=1
 // ASD SessionStart hook (canonical, provider-agnostic).
 // No shebang: this file is never executed directly (`./session-start.js`),
 // always invoked as `node <path> --provider ...`, and every generated
@@ -32,6 +32,7 @@ const PHASE_CHAIN = [
   'impl',
   'impl-test',
   'impl-review',
+  'retro',
   'pr',
   'done',
 ];

@@ -55,12 +55,12 @@ Material risk: fragment must not duplicate shell chrome, and `{{TOC_NAV}}` is cr
 
 ### Task 3: Retro skill and workflow (AC-3, AC-4, AC-5, AC-6, AC-7)
 
-- [ ] `.asd/skills/asd-phase-retro/SKILL.md` — JSON frontmatter matching the shape of the other phase skills; `claude.allowed-tools` must include write capability (the phase writes the HTML artifact); body is the one-sentence delegation to the workflow
-- [ ] `.asd/workflows/asd-phase-retro.md` — full section set (Preconditions, Operations used, Workflow, Artefacts produced, Agents delegated to, Skills/workflows dispatched, Return contract, References)
-- [ ] Workflow steps: read the friction log; empty or absent log takes the documented no-op branch; otherwise analyse each entry and derive consumer-side and ASD-side recommendations traced to entry ids
-- [ ] Workflow: write `retrospective.html` via the shell-wrapping procedure, then post a short `language.chat` summary of problems and proposed approaches
-- [ ] Workflow: carry the `ADVICE_NEEDED` relay branch every other phase workflow carries
-- [ ] Return contract emits `NEXT: pr` on both branches
+- [x] `.asd/skills/asd-phase-retro/SKILL.md` — JSON frontmatter matching the shape of the other phase skills; `claude.allowed-tools` must include write capability (the phase writes the HTML artifact); body is the one-sentence delegation to the workflow
+- [x] `.asd/workflows/asd-phase-retro.md` — full section set (Preconditions, Operations used, Workflow, Artefacts produced, Agents delegated to, Skills/workflows dispatched, Return contract, References)
+- [x] Workflow steps: read the friction log; empty or absent log takes the documented no-op branch; otherwise analyse each entry and derive consumer-side and ASD-side recommendations traced to entry ids
+- [x] Workflow: write `retrospective.html` via the shell-wrapping procedure, then post a short `language.chat` summary of problems and proposed approaches
+- [x] Workflow: carry the `ADVICE_NEEDED` relay branch every other phase workflow carries
+- [x] Return contract emits `NEXT: pr` on both branches
 
 Depends on Task 1 (contract) and Task 2 (template).
 
@@ -68,11 +68,11 @@ Material risk: the empty-log branch is what an in-flight consumer sprint hits af
 
 ### Task 4: Chain wiring (AC-3, AC-8)
 
-- [ ] `.asd/hooks/session-start.js` — insert `'retro'` into `PHASE_CHAIN` between `'impl-review'` and `'pr'`
-- [ ] `.asd/skills/asd-sprint/SKILL.md` Step 3 — `impl-review` DoD-met branch emits `NEXT: retro`; add the `retro` to `pr` sentence
-- [ ] `.asd/workflows/asd-phase-impl-review.md` — the emit line, the return contract and the branch prose all change `pr` to `retro`
-- [ ] `.asd/workflows/asd-phase-pr.md` — open-mode step 1 states whether the retrospective artifact is a DoD input (G-13)
-- [ ] Regenerate the provider hook views: `node .asd/sync.js --apply .asd/hooks/session-start.js`
+- [x] `.asd/hooks/session-start.js` — insert `'retro'` into `PHASE_CHAIN` between `'impl-review'` and `'pr'`
+- [x] `.asd/skills/asd-sprint/SKILL.md` Step 3 — `impl-review` DoD-met branch emits `NEXT: retro`; add the `retro` to `pr` sentence
+- [x] `.asd/workflows/asd-phase-impl-review.md` — the emit line, the return contract and the branch prose all change `pr` to `retro`
+- [x] `.asd/workflows/asd-phase-pr.md` — open-mode step 1 states whether the retrospective artifact is a DoD input (G-13)
+- [x] Regenerate the provider hook views: `node .asd/sync.js --apply .asd/hooks/session-start.js`
 
 Depends on Task 3 (the target phase must exist before anything routes to it).
 
