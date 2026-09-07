@@ -93,7 +93,19 @@ None open. The prior stub (`tests/run.js:2296`, `runLocal`'s Windows `.cmd`/meta
 - Result (entry 7): before authoring, 126/126 unchanged (this entry's delta was wording/documentation only, added no failing test). Added 1 contract-string test for the `exclude_paths[]` scope-vs-readability distinction (iter-3 correctness reviewer's suggestion, both parts proven fail-first individually); widened the existing AC-7 asd-pm guard to also scan nested `.asd/skills/*/SKILL.md` (sub-floor note, proven fail-first by injection against the pre-widen and post-widen test). No test removed. Declined 2 sub-floor checks (deriving the manifest key-set test from prose; asserting the `runLocal` ENOENT-retry trigger) — see Declined checks above. Final: pass — 127/127. Verified at `9ff22c5f359cd2e019105141343b39bc441b4c07`.
 - `node .asd/sync.js --check` — clean, exit 0 (verified after entry-7 edits; only `tests/run.js` touched — all mutations of `.asd/rules/external-review.md`, `.asd/templates/external-review/t_prompt-external-impl.md`, and `.asd/skills/asd-init/SKILL.md` were reverted, working tree confirmed clean after each).
 - Lint / build: pass before impl-test, per impl completion signal; sync/hash checks are included in the passing runner.
-- HEAD: `9ff22c5f359cd2e019105141343b39bc441b4c07` — analysed HEAD for entry 7, before impl-test's own commit lands on top; PR phase must compare its final HEAD before reuse.
+- HEAD (entry 7, impacted-scope record, superseded below): `9ff22c5f359cd2e019105141343b39bc441b4c07`.
+
+### impl-review terminal full-suite gate (unscoped)
+
+Dispatched once, at the end of `impl-review`, after every required reviewer (correctness 4, documentation 4, efficiency 3, testing 3) returned `APPROVE` or latched; External Review an availability skip. Per `sprint-lifecycle.md` "Impacted test set", this run is deliberately **unscoped** — never the impacted set.
+
+- `node tests/run.js` — pass, 127/127.
+- `git diff --check` (`lint`, per `commands.yaml`) — clean, exit 0.
+- `node .asd/sync.js --check` (`build`, per `commands.yaml`) — `{"ok": true}`, every item `"current"`, exit 0.
+- `node .asd/sync.js --check` (also run standalone, per this gate's explicit instruction) — same clean result, exit 0.
+- No test defect, no code defect: nothing to triage, no fix committed this pass, no `D-N` row added.
+- HEAD (this gate, authoritative for `pr`'s skip check): `d7b0ac4c40f072fe8f25f8c3a4ec9954e1392255`.
+- Verdict: **GREEN** — sprint may advance to `pr`.
 
 ### Production change request (testing F4) — delivered
 
