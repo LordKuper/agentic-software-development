@@ -204,7 +204,7 @@ Eleven specialized agents are canonically defined in `.asd/agents/` and generate
 | `asd-dev` | sonnet/medium | terra/medium | Server/CLI/library code and UI code (no tests; consumes DESIGN.md tokens where UI work applies) |
 | `asd-tester` | sonnet/medium | terra/medium | All tests: risk-based selection, pruning, authoring at every level, suite runs, manual verification specs |
 
-The main orchestrator owns scope, plan, state, decisions, manual-step validation, Git and release/archival sequencing; no PM agent is spawned. Dev/Tester task variants share each canonical role body and permissions: `-mechanical` uses Haiku (no effort)/Luna low, `-critical` Opus/Sol high; tier `standard` has no variant and dispatches the base agent (Sonnet/Terra medium). Deterministic bookkeeping uses commands. Routing uses objective eligibility, escalates on risk or failed checks, and never changes the main model. Experimental cheap outputs retain strong independent review.
+The main orchestrator owns scope, plan, state, decisions, manual-step validation, Git and release/archival sequencing; no PM agent is spawned. Dev/Tester task variants share each canonical role body and permissions: `-mechanical` uses Haiku (no effort)/Luna low, `-critical` Opus/Sol high; tier `standard` has no variant and dispatches the base agent (Sonnet/Terra medium). Deterministic bookkeeping uses commands. Routing uses objective eligibility, escalates on a risk declared against the change or a failed check — a risk declared against the artifact alone does not — and never changes the main model. Experimental cheap outputs retain strong independent review.
 
 ### Reviewers (4 internal + 1 external)
 

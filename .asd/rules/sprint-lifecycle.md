@@ -295,6 +295,12 @@ Modes are `pr=null` (open/prepare PR), `pr.state="open"` (await merge), `pr.stat
 
 See `t_plan.md` for canonical structure.
 
+**Material risk declaration** (one required line per `### Task N:` block, never a checkbox — a checkbox outside a subtask breaks task parsing): `Material risk: none`, or one `Material risk: change: <short risk class>` / `Material risk: artifact: <short risk class>` line per declared risk. The two kinds are distinct and are not interchangeable:
+- **change** — the edit's own correctness is uncertain: unfamiliar domain, ambiguous judgment, a contract whose right wording is not yet known, security/authentication/migration/public-contract/workflow-gate work. Routes `critical`.
+- **artifact** — the edit is small and objectively verifiable, but lands in a high-stakes file. Routes on the task's own evidence, so a mechanical edit to a critical artifact is no longer critical by that fact alone.
+
+The main orchestrator passes these lines as `route-task`'s `risks` input, one entry per line, typed by its kind (`providers.md` "Task-class variants and routing", which owns the routing semantics). When in doubt between the two kinds, declare `change`.
+
 **Standing Definition of Done** (constant across every sprint, never restated in `plan.md`): all AC-N from the acceptance-criteria source covered by Tasks; impacted test set green at `impl-test` (`Impacted test set` above); full test suite green once, at the end of `impl-review`; all required reviewers green at `impl-review`. `plan.md`'s own Definition of Done section holds only sprint-specific additions to this standing set, referencing it rather than repeating it.
 
 ## Sprint immutability

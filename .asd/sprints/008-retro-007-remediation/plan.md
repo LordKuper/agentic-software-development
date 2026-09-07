@@ -73,10 +73,10 @@ hand-edited.
 - [x] Covers AC-3. Material risk: three canonical files state `.claude/` is read-only always; an unreconciled carve-out creates a rule conflict
 
 ### Task 6: Correct the sync-step argument wording at every real occurrence
-- [ ] Fix the wording at `AGENTS.md:74`, `.asd/agents/asd-dev.md:66`, `.asd/workflows/asd-phase-impl.md:49`, `README.md:38/106/439`, `.asd/skills/asd-update/SKILL.md:37` (AC-5)
-- [ ] Fix `.asd/project/custom-coding-rules.md:14` under the one-off authorization recorded in the decisions log
-- [ ] Do not touch `.asd/templates/t_AGENTS.md` — it contains no sync wording; confirm by grep
-- [ ] Run `node .asd/sync.js --apply` for the `asd-dev` render source and confirm the six generated agent views regenerate (AC-14)
+- [x] Fix the wording at `AGENTS.md:74`, `.asd/agents/asd-dev.md:66`, `.asd/workflows/asd-phase-impl.md:49`, `README.md:38/106/439`, `.asd/skills/asd-update/SKILL.md:37` (AC-5)
+- [x] Fix `.asd/project/custom-coding-rules.md:14` under the one-off authorization recorded in the decisions log
+- [x] Do not touch `.asd/templates/t_AGENTS.md` — it contains no sync wording; confirm by grep
+- [x] Run `node .asd/sync.js --apply` for the `asd-dev` render source and confirm the six generated agent views regenerate (AC-14)
 - [ ] Covers AC-5, AC-14. No material risk to the change: a documentation-wording correction whose target behaviour is already verified
 
 ### Task 7: Bind the over-engineering and SSoT checklists at authoring time
@@ -93,13 +93,13 @@ hand-edited.
 - [x] Covers AC-9. No material risk: states what the workflow already does, removing the ambiguity agents resolved defensively
 
 ### Task 9: Distinguish risk-to-the-change from risk-to-the-artifact in routing
-- [ ] Add a per-task material-risk declaration to `.asd/templates/t_plan.md`, which has no such field today — only a free-prose `## Risks (optional)` section (AC-10)
-- [ ] Document the field and the two risk kinds in `.asd/rules/sprint-lifecycle.md` "Plan file format"
-- [ ] Extend `.asd/runtime.js` `routeTask` to read the distinction, accepting both shapes: a bare string keeps today's any-entry-forces-critical semantics, and only an explicitly typed risk-to-artifact entry may route lower
-- [ ] Keep `priorTier`'s no-downgrade clamp intact and remove no existing risk class from `providers.md`'s critical list
-- [ ] Move `providers.md` "Task-class variants and routing" prose with the `routeTask` change
-- [ ] Add a `.asd/migrations/<version>.js` only if a persisted `state.json.task_routing` shape changes; state in one line if none is needed
-- [ ] Covers AC-10. Material risk: `routeTask` fails closed on an unrecognised input, so a stricter schema blocks every dispatch in a consumer still emitting the old shape; a looser `hasRisk` silently downgrades security and contract work
+- [x] Add a per-task material-risk declaration to `.asd/templates/t_plan.md`, which has no such field today — only a free-prose `## Risks (optional)` section (AC-10)
+- [x] Document the field and the two risk kinds in `.asd/rules/sprint-lifecycle.md` "Plan file format"
+- [x] Extend `.asd/runtime.js` `routeTask` to read the distinction, accepting both shapes: a bare string keeps today's any-entry-forces-critical semantics, and only an explicitly typed risk-to-artifact entry may route lower
+- [x] Keep `priorTier`'s no-downgrade clamp intact and remove no existing risk class from `providers.md`'s critical list
+- [x] Move `providers.md` "Task-class variants and routing" prose with the `routeTask` change
+- [x] Add a `.asd/migrations/<version>.js` only if a persisted `state.json.task_routing` shape changes; state in one line if none is needed
+- [x] Covers AC-10. Material risk: `routeTask` fails closed on an unrecognised input, so a stricter schema blocks every dispatch in a consumer still emitting the old shape; a looser `hasRisk` silently downgrades security and contract work
 
 ### Task 10: A phase states the artifacts it hands to the next
 - [ ] Add the derived-handoff field to `.asd/templates/t_state.json` (AC-11)
