@@ -13,8 +13,15 @@
  * `.asd/sprints/**` is otherwise out of migration scope (4.0.0 warns about stale sprint state
  * rather than rewriting it). Deliberate exception here: the retired key lives nowhere else, so
  * warn-only would leave a dead field in every live sprint state until that sprint is archived.
- * Only that one member is removed; every other byte of the file, its line endings included, is
- * preserved. Archived sprints keep theirs - closed sprints are immutable history.
+ * Archived sprints keep theirs - closed sprints are immutable history.
+ *
+ * Removal is a parse / delete / re-serialize, not text surgery: sprint state is machine-written
+ * and every reader parses it, so its byte layout has no consumer worth preserving at the price of
+ * a shape-blind line scanner (which mishandled nested and multi-line occurrences of the key). The
+ * rewrite is therefore whole-file, normalized to 2-space indent; only the file's own line ending
+ * and trailing-newline habit are carried over. Member order survives (parse preserves it), so the
+ * diff stays small for state written in the template's own shape. A file that does not parse is
+ * left byte-for-byte alone and reported for a hand edit.
  *
  * The release's other breaking change, the new `retro` phase between `impl-review` and `pr`,
  * needs no state mutation: an in-flight sprint routes into `retro` through the new chain and
@@ -26,9 +33,8 @@ const fs = require('fs');
 const path = require('path');
 
 const ARCHIVE_DIR = 'archived';
-
-// The retired member as it is actually serialized: one line, array value closed on that line.
-const ESCALATIONS_MEMBER_RE = /^\s*"escalations"\s*:\s*\[[^\]]*\]\s*(,?)\s*$/;
+const RETIRED_KEY = 'escalations';
+const INDENT = 2;
 
 // Active sprints only - direct children of `.asd/sprints/` holding a `state.json`. The archive
 // subtree is skipped whole.
@@ -44,32 +50,20 @@ function activeSprintStatePaths(repoRoot) {
   return statePaths;
 }
 
-function dropTrailingCommaBefore(lines, fromIndex) {
-  for (let i = fromIndex; i >= 0; i--) {
-    if (lines[i].trim() === '') continue;
-    lines[i] = lines[i].replace(/,(\s*)$/, '$1');
-    return;
-  }
+// Serialized the way sprint state is written - 2-space indent - carrying over the line ending and
+// trailing newline of the file being replaced.
+function serializeLike(raw, state) {
+  const eol = raw.includes('\r\n') ? '\r\n' : '\n';
+  const trailingNewline = /\r?\n$/.test(raw) ? eol : '';
+  return JSON.stringify(state, null, INDENT).split('\n').join(eol) + trailingNewline;
 }
 
-// Returns `raw` without the `escalations` member, or null when this line scanner cannot do it
-// safely - member split across lines, or a result that would no longer parse. A null leaves the
-// consumer's file untouched rather than risking a broken state file.
-function withoutEscalationsMember(raw) {
-  const eol = raw.includes('\r\n') ? '\r\n' : '\n';
-  const lines = raw.split(/\r?\n/);
-  const index = lines.findIndex((line) => ESCALATIONS_MEMBER_RE.test(line));
-  if (index === -1) return null;
-  const hasTrailingComma = ESCALATIONS_MEMBER_RE.exec(lines[index])[1] === ',';
-  lines.splice(index, 1);
-  if (!hasTrailingComma) dropTrailingCommaBefore(lines, index - 1);
-  const text = lines.join(eol);
-  try {
-    JSON.parse(text);
-  } catch (_) {
-    return null;
-  }
-  return text;
+// Temp file plus rename: an interrupted run leaves the sprint's sole recovery point intact rather
+// than truncated.
+function replaceFileAtomically(filePath, text) {
+  const tempPath = `${filePath}.asd-migration.tmp`;
+  fs.writeFileSync(tempPath, text, { encoding: 'utf8' });
+  fs.renameSync(tempPath, filePath);
 }
 
 function stripSprintState(repoRoot, statePath, report, warn) {
@@ -83,23 +77,19 @@ function stripSprintState(repoRoot, statePath, report, warn) {
     warn(`${rel} is not parsable JSON - left untouched, remove the "escalations" key by hand.`);
     return;
   }
-  if (!state || !Object.prototype.hasOwnProperty.call(state, 'escalations')) {
+  if (!state || !Object.prototype.hasOwnProperty.call(state, RETIRED_KEY)) {
     report.absent.push(rel);
     return;
   }
-  const next = withoutEscalationsMember(raw);
-  if (next === null) {
-    report.skipped.push(rel);
-    warn(`${rel} holds "escalations" in an unexpected shape - left untouched, remove it by hand.`);
-    return;
-  }
-  if (Array.isArray(state.escalations) && state.escalations.length > 0) {
+  const dropped = state[RETIRED_KEY];
+  delete state[RETIRED_KEY];
+  if (Array.isArray(dropped) && dropped.length > 0) {
     warn(
-      `${rel} carried ${state.escalations.length} recorded escalation(s), now dropped - re-record ` +
-      `them as friction entries in that sprint's friction-log.md: ${JSON.stringify(state.escalations)}`
+      `${rel} carried ${dropped.length} recorded escalation(s), now dropped - re-record them as ` +
+      `friction entries in that sprint's friction-log.md: ${JSON.stringify(dropped)}`
     );
   }
-  fs.writeFileSync(statePath, next, { encoding: 'utf8' });
+  replaceFileAtomically(statePath, serializeLike(raw, state));
   report.stripped.push(rel);
 }
 

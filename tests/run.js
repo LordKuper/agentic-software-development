@@ -2496,15 +2496,14 @@ test('AC-14: PM migration deletes only intact generated views and remains idempo
 // ===========================================================================
 // 15. .asd/migrations/6.0.0.js - retirement of state.json.escalations.
 // The migration rewrites a consumer's LIVE sprint state file, so the risk is
-// data loss, not feature absence: every other member (and the file's original
-// line endings) must survive, archived sprints must not be touched at all,
-// and any input it cannot handle safely must be left byte-for-byte alone.
+// data loss, not feature absence: every other member must survive with the
+// file's own line endings, only the TOP-LEVEL key may go, archived sprints
+// must not be touched at all, and input that does not parse must be left
+// byte-for-byte alone.
 // ===========================================================================
 
 test('6.0.0 migration: strips "escalations" from an ACTIVE sprint state, preserving every other member and CRLF line endings; archived sprints untouched; re-run is a no-op', async () => {
   const root = mkTempDir();
-  // CRLF on purpose: a Windows consumer's state.json. The migration must not
-  // silently normalize the whole file to LF while removing one member.
   const activeBefore = [
     '{',
     '  "sprint_id": "007-live",',
@@ -2560,13 +2559,9 @@ test('6.0.0 migration: strips "escalations" from an ACTIVE sprint state, preserv
   assert.strictEqual(fs.readFileSync(activePath, 'utf8'), activeExpected, 'idempotent: second run leaves the file identical');
 });
 
-test('6.0.0 migration: LAST-member "escalations" (no trailing comma) still parses after removal; unparsable JSON and an unexpected multi-line shape are left byte-for-byte untouched and reported as skipped', async () => {
+test('6.0.0 migration: removes "escalations" whatever shape it is written in - last member, or a populated array spanning lines; only unparsable JSON is left byte-for-byte untouched and reported as skipped', async () => {
   const root = mkTempDir();
-  // a: the boundary case - removing the last member orphans the previous
-  // line's comma, which would make the file stop parsing if left behind.
   const lastMember = '{\n  "sprint_id": "a",\n  "phase": "pr",\n  "escalations": []\n}\n';
-  // b: not JSON at all (half-written file). c: the member spans lines, which
-  // the single-line scanner cannot remove safely.
   const broken = '{\n  "sprint_id": "b",\n  "escalations": [],\n';
   const multiLine = '{\n  "sprint_id": "c",\n  "escalations": [\n    {"id": "E-1"}\n  ],\n  "phase": "impl"\n}\n';
   writeFile(root, '.asd/sprints/a/state.json', lastMember);
@@ -2575,20 +2570,50 @@ test('6.0.0 migration: LAST-member "escalations" (no trailing comma) still parse
 
   const report = await migration600({ repoRoot: root });
 
-  const after = fs.readFileSync(path.join(root, '.asd/sprints/a/state.json'), 'utf8');
   assert.deepStrictEqual(
-    JSON.parse(after),
+    JSON.parse(fs.readFileSync(path.join(root, '.asd/sprints/a/state.json'), 'utf8')),
     { sprint_id: 'a', phase: 'pr' },
-    'dropping the final member must also drop the now-dangling comma, or the state file stops parsing'
+    'dropping the final member must leave the state file parsable, with no dangling comma'
   );
-  assert.deepStrictEqual(report.stripped, ['.asd/sprints/a/state.json']);
   assert.deepStrictEqual(
-    report.skipped.sort(),
-    ['.asd/sprints/b/state.json', '.asd/sprints/c/state.json'],
-    'anything the scanner cannot handle safely is skipped, not guessed at'
+    JSON.parse(fs.readFileSync(path.join(root, '.asd/sprints/c/state.json'), 'utf8')),
+    { sprint_id: 'c', phase: 'impl' },
+    'an escalations array that actually accumulated entries is pretty-printed across lines - the most likely live shape, and it must still be removed'
+  );
+  assert.deepStrictEqual(report.stripped.sort(), ['.asd/sprints/a/state.json', '.asd/sprints/c/state.json']);
+  assert.deepStrictEqual(
+    report.skipped,
+    ['.asd/sprints/b/state.json'],
+    'only input that cannot be parsed is skipped - nothing else is guessed at'
   );
   assert.strictEqual(fs.readFileSync(path.join(root, '.asd/sprints/b/state.json'), 'utf8'), broken, 'unparsable input left untouched');
-  assert.strictEqual(fs.readFileSync(path.join(root, '.asd/sprints/c/state.json'), 'utf8'), multiLine, 'unexpected shape left untouched');
+});
+
+test('6.0.0 migration: strips the TOP-LEVEL "escalations" even when a nested member of the same name is serialized above it, and leaves that nested member intact', async () => {
+  const root = mkTempDir();
+  const nestedFirst = [
+    '{',
+    '  "sprint_id": "007-deep",',
+    '  "reviews": {',
+    '    "escalations": [],',
+    '    "iteration": 1',
+    '  },',
+    '  "escalations": [{"id": "E-1", "note": "tool would not launch"}],',
+    '  "phase": "impl"',
+    '}',
+    '',
+  ].join('\n');
+  writeFile(root, '.asd/sprints/007-deep/state.json', nestedFirst);
+
+  const report = await migration600({ repoRoot: root });
+
+  const after = JSON.parse(fs.readFileSync(path.join(root, '.asd/sprints/007-deep/state.json'), 'utf8'));
+  assert.deepStrictEqual(report.stripped, ['.asd/sprints/007-deep/state.json']);
+  assert.deepStrictEqual(
+    after,
+    { sprint_id: '007-deep', reviews: { escalations: [], iteration: 1 }, phase: 'impl' },
+    'the retired key is the top-level one only - a same-named member at any other depth belongs to its owner and must survive'
+  );
 });
 
 // ===========================================================================
