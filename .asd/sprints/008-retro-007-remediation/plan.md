@@ -59,10 +59,10 @@ hand-edited.
 - [ ] Covers AC-8. No material risk: removes a contradiction between the workflow and the rule it implements; `asd-phase-design-review.md` already has the correct order
 
 ### Task 4: Artifact writes use the file-write operation, never a shell heredoc
-- [ ] Add the statement to `.asd/rules/providers.md` near the "Semantic operations -> host convention" `write a file` and `run a command` rows (AC-2)
-- [ ] Scope the rule to writing an artifact to disk, and name `external-review.md`'s stdin-pipe invocation as out of scope in the same sentence — it never touches the filesystem and must not be caught
-- [ ] Cite `runtime.js` `buildInvocation` (`shell: false`, JSON via stdin) as the existing precedent rather than restating its behaviour
-- [ ] Covers AC-2. No material risk: additive statement over an existing table
+- [x] Add the statement to `.asd/rules/providers.md` near the "Semantic operations -> host convention" `write a file` and `run a command` rows (AC-2)
+- [x] Scope the rule to writing an artifact to disk, and name `external-review.md`'s stdin-pipe invocation as out of scope in the same sentence — it never touches the filesystem and must not be caught
+- [x] Cite `runtime.js` `buildInvocation` (`shell: false`, JSON via stdin) as the existing precedent rather than restating its behaviour
+- [x] Covers AC-2. No material risk: additive statement over an existing table
 
 ### Task 5: Agent memory location and sprint-folder contents in artifact-layout.md
 - [ ] State in `.asd/rules/artifact-layout.md` that agent memory lives at the provider-view root and never inside a sprint tree (AC-3)

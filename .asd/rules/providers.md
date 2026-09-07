@@ -38,6 +38,8 @@ Canonical agent/skill/workflow bodies never name a host tool directly. They use 
 | run a command | `Bash` | Codex shell tool (subject to `sandbox_mode`) |
 | write a file | `Write` / `Edit` | Codex file-write tool (blocked entirely for reviewer agents — `sandbox_mode: "read-only"`) |
 
+Writing an artifact to disk always uses the `write a file` operation, never a shell heredoc/here-string — the shell layer's quoting constraints must never reach artifact content; precedent: `runtime.js` `buildInvocation` (`shell: false`, JSON via stdin). Piping content to a command's stdin is a different operation and stays permitted — e.g. `external-review.md`'s prompt-to-stdin invocation, which never touches the filesystem, is out of scope.
+
 Reviewer agents are read-only on every host (`review-policy.md`): Claude reviewer agents carry no `Write` in `tools`; Codex reviewer agents set `sandbox_mode: "read-only"`. The reviewer returns its report as final text; the main orchestrator (workflow) writes the review file. This is a host guarantee, not a textual instruction repeated in reviewer bodies.
 
 ## Model family resolution
