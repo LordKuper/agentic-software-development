@@ -52,11 +52,11 @@ hand-edited.
 - [x] Covers AC-1, AC-6. Material risk: workflow gate behaviour. Depends on Task 1
 
 ### Task 3: Check the external-review negative cache before manifest assembly
-- [ ] In `.asd/workflows/asd-phase-impl-review.md`, move the External Review scope-manifest build out of step 1 to a step after 1a's preflight (AC-8)
-- [ ] Update step 6's payload reference ("the step-1 scope manifest") to follow the manifest to its new step
-- [ ] Leave the internal-reviewer scope file list in step 1 — it is unrelated to external availability
-- [ ] Confirm `.asd/rules/external-review.md` "Detection and negative cache" already states the required order and needs no edit; state in one line if it does
-- [ ] Covers AC-8. No material risk: removes a contradiction between the workflow and the rule it implements; `asd-phase-design-review.md` already has the correct order
+- [x] In `.asd/workflows/asd-phase-impl-review.md`, move the External Review scope-manifest build out of step 1 to a step after 1a's preflight (AC-8)
+- [x] Update step 6's payload reference ("the step-1 scope manifest") to follow the manifest to its new step
+- [x] Leave the internal-reviewer scope file list in step 1 — it is unrelated to external availability
+- [x] Confirm `.asd/rules/external-review.md` "Detection and negative cache" already states the required order and needs no edit; state in one line if it does
+- [x] Covers AC-8. No material risk: removes a contradiction between the workflow and the rule it implements; `asd-phase-design-review.md` already has the correct order
 
 ### Task 4: Artifact writes use the file-write operation, never a shell heredoc
 - [x] Add the statement to `.asd/rules/providers.md` near the "Semantic operations -> host convention" `write a file` and `run a command` rows (AC-2)
