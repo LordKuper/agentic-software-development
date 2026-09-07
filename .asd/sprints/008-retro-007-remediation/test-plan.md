@@ -11,7 +11,7 @@ responsibility:
 
 | Entry | HEAD analysed | Scope |
 |---|---|---|
-| 1 | {{filled at phase exit}} | full change surface (base `39709446`, head `f886441`, 18 files, self-hosting exclusions applied) |
+| 1 | `a0eac63` | full change surface (base `39709446`, head `f886441`, 18 files, self-hosting exclusions applied) |
 
 ## Risk → check decisions
 

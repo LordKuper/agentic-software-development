@@ -1,7 +1,7 @@
 {
   "sprint_id": "008-retro-007-remediation",
   "branch": "sprint/008-retro-007-remediation",
-  "phase": "impl-test",
+  "phase": "impl-review",
   "documents": {
     "audit": true,
     "prd": false,
@@ -95,6 +95,11 @@
       "tier": "standard",
       "execution": "agent",
       "reason": "normal"
+    },
+    "impl-test": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:routing and state contract"
     }
   },
   "skipped_phases": [
@@ -116,9 +121,34 @@
     }
   },
   "created_at": "2026-09-07T17:11:41Z",
-  "updated_at": "2026-09-07T19:30:00Z",
+  "updated_at": "2026-09-07T20:10:00Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
-  "archived_at": null
+  "archived_at": null,
+  "derived_handoff": {
+    "base": "39709446c255822f6678c132d3f4c41ec65caa6e",
+    "head": "f886441d303ffd86090ece48175903317a0f1c9f",
+    "pathspec": "-- . :(exclude).asd/project :(exclude).asd/sprints :(exclude).claude :(exclude).codex :(exclude).agents",
+    "files": [
+      ".asd/agents/asd-dev.md",
+      ".asd/release-manifest.json",
+      ".asd/rules/artifact-layout.md",
+      ".asd/rules/code-style.md",
+      ".asd/rules/git-strategy.md",
+      ".asd/rules/providers.md",
+      ".asd/rules/review-policy.md",
+      ".asd/rules/sprint-lifecycle.md",
+      ".asd/runtime.js",
+      ".asd/skills/asd-update/SKILL.md",
+      ".asd/templates/t_plan.md",
+      ".asd/templates/t_state.json",
+      ".asd/workflows/asd-phase-design-review.md",
+      ".asd/workflows/asd-phase-impl-review.md",
+      ".asd/workflows/asd-phase-impl-test.md",
+      ".asd/workflows/asd-phase-impl.md",
+      "AGENTS.md",
+      "README.md"
+    ]
+  }
 }

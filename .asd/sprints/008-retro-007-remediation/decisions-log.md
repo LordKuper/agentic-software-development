@@ -76,3 +76,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: The user approved the impl assessment; the sprint advances to `impl-test`. All eleven plan tasks are COMPLETED, AC-1..AC-3 and AC-5..AC-14 are implemented, and AC-4 stands closed as satisfied at HEAD.
 - **Rationale**: Build (`node .asd/sync.js --check`) is `ok: true` with every target current and no orphans; lint (`git diff --check`) is clean; `tests/run.js` is 136/136 after Task 11 refreshed the `upstream_hashes` Task 7 left stale; no stub was introduced this sprint. Task 10's two deviations from its subtask wording — writing the handoff record at derivation time rather than phase exit, and wiring impl-test's delta at step 2 where it is actually computed — were accepted as keeping the field honest rather than decorative.
 - **Affected docs**: [plan.md](plan.md), [sprint.md](sprint.md), [friction-log.md](friction-log.md), [state.json](state.json)
+
+## 2026-09-07 — impl-test: impacted set green, 9 tests added
+
+- **Decision**: The impacted set is green (145/145) with 9 tests added and 0 removed; the sprint advances to `impl-review`. No `D-N` defect was raised — the implementation held under every new test.
+- **Rationale**: The impacted-set safety valve fired immediately and degraded the run to the full suite, because the change surface touches `.asd/runtime.js` and the `.asd/rules`/`templates`/`workflows` trees, which are framework-wide under self-hosting, and because the repo has one flat test file with no subset selector. Nine `none` decisions are recorded with reasons in `test-plan.md`, mostly prose contracts already covered by the existing mirror sections or with no scripted parser to validate against.
+- **Affected docs**: [test-plan.md](test-plan.md), [plan.md](plan.md), [state.json](state.json)
