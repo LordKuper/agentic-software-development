@@ -37,6 +37,7 @@ Two additions to the framework:
 - AC-6: The phase posts a short chat summary (in `language.chat`) of the problems found and proposed approaches, then returns `NEXT: pr`. It is never a user-blocking gate beyond what `checkpoints.md` already mandates.
 - AC-7: An empty friction log is a legitimate outcome: the phase records that and advances without inventing findings.
 - AC-8: Every cross-file mirror of the phase chain stays consistent — `sprint-lifecycle.md`, `core.md` glossary, `session-start.js` `PHASE_CHAIN`, `asd-sprint`/`asd-phase-*` return contracts, `README.md`, `artifact-layout.md`, `.asd/release-manifest.json`.
+- AC-10: The retro phase also produces **systemic improvement proposals** — what could be changed so a future sprint runs faster and cheaper — independent of whether any friction entry was recorded. These are a distinct output class from problem remediation: they may cite friction entries but are not limited to them, and an entry-free friction log still yields this section.
 - AC-9: Under `backward_compat: migration`, an in-flight consumer sprint created before this change still resumes: a migration handles the state/chain delta, and the version bump covers it.
 
 ## Out of scope

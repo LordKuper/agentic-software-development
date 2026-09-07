@@ -52,3 +52,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: `plan.md` accepted with seven tasks; advance to impl. Version target recorded as MAJOR, confirmed at pr per git-strategy.
 - **Rationale**: Routine plan-acceptance gate under `user_gates: adaptive`. Every task traces to an AC the user already authorized at the scope gate, and the three material questions the audit surfaced were answered by the user before planning. No unresolved material alternative remains; no new scope, subsystem, contract or waiver introduced.
 - **Affected docs**: `plan.md`, `state.json`
+
+## 2026-09-07 — Scope expanded: retro emits systemic improvement proposals
+
+- **Decision**: AC-10 added. The retro phase also proposes systemic changes that would make a future sprint faster and cheaper, as an output class distinct from remediating recorded friction, produced even when the friction log is empty. Implemented as Task 8, since Tasks 1-3 were already complete when the expansion was requested.
+- **Rationale**: Explicit user request during impl. Audit reevaluation: `documents.audit` stays enabled; the expansion adds no behaviour outside the retro phase and no new contract, so no earlier phase is invalidated.
+- **Affected docs**: `sprint.md` (AC-10), `plan.md` (Task 8)

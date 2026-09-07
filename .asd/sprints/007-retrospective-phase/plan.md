@@ -101,10 +101,10 @@ Material risk: the filename version must equal the `asd_version` the `pr` phase 
 
 ### Task 7: Documentation mirrors (AC-8)
 
-- [ ] `README.md` — phase count words, the mermaid flowchart edge, the phase table row, the folder map, the skill and workflow counts
-- [ ] `AGENTS.md` repo section — "ten phases", the skill counts, and the phase-chain consistency contract itself, which must gain the four sites it currently omits (`checkpoints.md`, `asd-sprint/SKILL.md`, `asd-phase-impl-review.md`) (G-10)
-- [ ] `.asd/release-manifest.json` — `upstream_hashes` entries for both new templates and for every file whose bytes changed (G-12)
-- [ ] `node .asd/sync.js --apply` for the new skill, then `--check` clean
+- [x] `README.md` — phase count words, the mermaid flowchart edge, the phase table row, the folder map, the skill and workflow counts
+- [x] `AGENTS.md` repo section — "ten phases", the skill counts, and the phase-chain consistency contract itself, which must gain the four sites it currently omits (`checkpoints.md`, `asd-sprint/SKILL.md`, `asd-phase-impl-review.md`) (G-10)
+- [x] `.asd/release-manifest.json` — `upstream_hashes` entries for both new templates and for every file whose bytes changed (G-12)
+- [x] `node .asd/sync.js --apply` for the new skill, then `--check` clean
 
 Depends on every preceding task.
 
