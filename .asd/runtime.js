@@ -42,7 +42,7 @@ function runLocal(command, args) {
       encoding: 'utf8', input: JSON.stringify({ command, args }), shell: false, timeout: PROBE_TIMEOUT_MS, windowsHide: true,
     });
   }
-  return { ok: !result.error && result.status === 0, timedOut: result.error && result.error.code === 'ETIMEDOUT', status: result.status === null ? null : result.status };
+  return { ok: !result.error && result.status === 0 };
 }
 
 function defaultAuthArgs(provider) {
@@ -100,10 +100,10 @@ function externalPreflight(input) {
   const authArgs = defaultAuthArgs(provider);
   const version = runLocal(input.command, ['--version']);
   if (!version.ok) {
-    return { status: 'command-unavailable', model_access: 'unknown', fingerprint: cacheKey({ ...input, provider, model, authArgs }, false) };
+    return { status: 'command-unavailable', model_access: 'unknown', fingerprint: cacheKey(input, false) };
   }
   const auth = runLocal(input.command, authArgs);
-  const key = cacheKey({ ...input, provider, model, authArgs }, auth.ok);
+  const key = cacheKey(input, auth.ok);
   if (!auth.ok) return { status: 'authentication-unavailable', model_access: 'unknown', fingerprint: key };
   const now = Number.isFinite(input.now) ? input.now : Date.now();
   const cached = readCache(input.cachePath, now).entries[key];
