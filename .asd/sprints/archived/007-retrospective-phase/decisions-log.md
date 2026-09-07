@@ -91,3 +91,13 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: `asd_version` bumped 5.0.0 → 6.0.0 (MAJOR: eleventh phase in the chain, `state.json.escalations` removed), CHANGELOG section added, PR #27 opened against `main`.
 - **Rationale**: DoD verified — every plan task checked, no sprint stubs, retrospective present, all iter-03 reviewers APPROVE or latched, terminal full suite green at 1436ef7 with no code diff since. Publication explicitly authorized by the user.
 - **Affected docs**: `.asd/release-manifest.json`, `CHANGELOG.md`, `state.json`
+
+- 2026-09-07 — PR #27 merged (squash dd3c28d); pr.state=closure-pending, sprint remains active pending explicit closure approval
+
+## 2026-09-07 — Sprint closure approved
+
+- **Decision**: User granted explicit closure approval for sprint 007-retrospective-phase after reviewing the completion evidence. Finalization and archival authorized.
+- **Rationale**: Hard gate per `checkpoints.md` — neither PR publication, the merge itself, nor `auto_pr` satisfies it. Requested and granted separately from the merge authorization.
+- **Affected docs**: `state.json` (terminal write), sprint folder (archive move)
+
+- 2026-09-07 — sprint finalized: terminal state written, folder archived

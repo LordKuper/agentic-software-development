@@ -25,6 +25,7 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 | F-5 | impl-review | Correctness reviewer exhausted its turn budget on the full 29-file scope and returned nothing usable — the same failure as F-1, now recurring | — |
 | F-6 | impl-review | A session rate limit killed both split correctness dispatches mid-review; their partial work was discarded with no resume path | — |
 | F-7 | impl | An agent wrote its memory into the sprint folder a second time, and this occurrence reached version control | — |
+| F-8 | pr | `gh pr merge --delete-branch` silently moved HEAD to the base branch, so the next two bookkeeping commits landed directly on `main` | — |
 
 ## F-1 — Audit agent exhausted its turn budget and returned no usable output
 
@@ -81,3 +82,13 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 - **What happened**: a dispatched tester created `<sprint>/.claude/agent-memory/...` instead of writing to the repository-root memory location — the same misplacement as F-3, by a different agent, after F-3 had already been corrected once in this sprint. This occurrence went further than F-3: the files were staged and committed, so they entered the sprint's history rather than sitting untracked.
 - **Impact**: the sprint folder is archived read-only at closure, so committed agent memory would have been frozen there and lost to the agent that wrote it. Recovery required relocating both files, merging the index line into the root memory index, removing the tree from version control and deleting it. F-3's recurrence is the finding: correcting the placement once, in one agent's memory, does not prevent the next agent from repeating it, because nothing in the layout rules or the dispatch payload states where agent memory belongs.
 - **Refs**: —
+
+## F-8 — Merging with branch deletion silently relocated HEAD to the base branch
+
+- **Phase**: pr
+- **Surface**: provider tool — `gh pr merge --delete-branch`, against `.asd/rules/git-strategy.md` "Forbidden"
+- **What happened**: merging the sprint PR with branch deletion removed the local sprint branch and moved `HEAD` to `main` without saying so in its output. The orchestrator, believing it was still on the sprint branch, then recorded the merge and the closure approval — two commits that landed directly on the local base branch, which `git-strategy.md` forbids outright. The reflog is the only place the relocation is visible.
+- **Impact**: caught before any push, and the two commits' content was preserved because the companion branch was cut from the diverged local `main` and therefore already contained them; the base branch was then reset to the remote. Had the companion branch been cut earlier, or had anything pushed in between, the recovery would not have been free. The general shape is worse than this instance: every phase workflow assumes the orchestrator knows which branch it is on, and nothing verifies that after a Git operation capable of changing it.
+- **Refs**: —
+
+<!-- F-8 was recorded after this sprint's retro phase had already run, so retrospective.html does not cover it. Left here for the next sprint's reader. -->
