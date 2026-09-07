@@ -3067,14 +3067,47 @@ test('AC-10: a reserved change-risk class name declared target:"artifact" fails 
   assert.doesNotThrow(() => runtime.routeTask({ ...base, risks: [{ name: 'config-file', target: 'artifact' }] }), 'a non-reserved artifact risk name must keep routing on evidence, unaffected by the new guard');
 });
 
-test('AC-11/T-1: neither asd-phase-impl-test.md nor asd-phase-impl-review.md ever inlines an alternate `head` = `git ...` formula for derived_handoff - sprint-lifecycle.md "State recovery" is sole SSoT, guarding the exact regression that shipped (`head` = `git rev-parse HEAD`, contradicting the canonical `git log -1 --format=%H <base>..HEAD -- <pathspec>`)', () => {
+test('AC-11/T-1: the derived_handoff wiring (which workflow writes it, which reads it, in which step) and any head/base formula restatement track sprint-lifecycle.md "State recovery" by construction - fails on a prose contradiction, not only a backticked one', () => {
   const lifecycle = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/sprint-lifecycle.md'), 'utf8');
   assert.ok(lifecycle.includes('never raw `HEAD`'), 'sprint-lifecycle.md "State recovery" must still state the head formula never resolves to raw HEAD');
 
-  const inlineHeadFormula = /`head`\s*=\s*`git[^`]*`/i;
-  for (const phase of ['impl-test', 'impl-review']) {
-    const workflow = fs.readFileSync(path.join(REPO_ROOT, `.asd/workflows/asd-phase-${phase}.md`), 'utf8');
-    assert.strictEqual(workflow.match(inlineHeadFormula), null, `asd-phase-${phase}.md must never inline a \`head\` = \`git ...\` formula of its own - a disagreeing redefinition (e.g. raw git rev-parse HEAD) must be caught here rather than shipping green`);
+  const wiring = lifecycle.match(/Written once, at `([^`]+)` step (\d+)'s green exit[\s\S]*?Read once, by `([^`]+)` step (\d+)\./);
+  assert.ok(wiring, 'sprint-lifecycle.md "State recovery" must state derived_handoff\'s writer/reader as "Written once, at `<workflow>` step N\'s green exit ... Read once, by `<workflow>` step N." - this test derives the canonical wiring from that sentence rather than hardcoding it a second time');
+  const [, writerFile, writerStep, readerFile, readerStep] = wiring;
+
+  function stepLines(file) {
+    const content = fs.readFileSync(path.join(REPO_ROOT, '.asd/workflows', file), 'utf8');
+    const map = {};
+    for (const m of content.matchAll(/^(\d+)\.\s(.*)$/gm)) map[m[1]] = m[2];
+    return map;
+  }
+  function derivedHandoffClause(line) {
+    const fragments = [];
+    for (const semiPart of (line || '').split(';')) {
+      for (const sentence of semiPart.split(/(?<=[.:])\s+(?=[A-Z*`])/)) fragments.push(sentence);
+    }
+    return fragments.filter((f) => f.includes('derived_handoff')).join(' ');
+  }
+
+  const writerSteps = stepLines(writerFile);
+  const readerSteps = stepLines(readerFile);
+
+  const writerStepsMentioning = Object.keys(writerSteps).filter((n) => writerSteps[n].includes('derived_handoff'));
+  assert.deepStrictEqual(writerStepsMentioning, [writerStep], `${writerFile} must mention derived_handoff in step ${writerStep} only, matching the rule's "written once" claim - a mention landing in a different or additional step means the workflow no longer matches the write count/location the rule states`);
+
+  const readerStepsMentioning = Object.keys(readerSteps).filter((n) => readerSteps[n].includes('derived_handoff'));
+  assert.deepStrictEqual(readerStepsMentioning, [readerStep], `${readerFile} must mention derived_handoff in step ${readerStep} only, matching the rule's "read once" claim`);
+
+  const writerClause = derivedHandoffClause(writerSteps[writerStep]);
+  const readerClause = derivedHandoffClause(readerSteps[readerStep]);
+
+  assert.ok(/\b(write|writes|written)\b/i.test(writerClause), `${writerFile} step ${writerStep} must actually say it writes derived_handoff, not merely mention it`);
+  assert.ok(!/\b(write|writes|written)\b/i.test(readerClause), `${readerFile} step ${readerStep} must never claim to write derived_handoff - the rule names it as the sole reader`);
+  assert.ok(/\b(read|reads)\b/i.test(readerClause), `${readerFile} step ${readerStep} must actually say it reads derived_handoff`);
+
+  for (const [file, clause] of [[writerFile, writerClause], [readerFile, readerClause]]) {
+    assert.ok(!/\bgit\b/i.test(clause), `${file}'s derived_handoff clause must never mention git directly - any base/head formula belongs solely to sprint-lifecycle.md "State recovery"; a prose or backticked restatement here (e.g. "head is git rev-parse HEAD") would drift from the rule silently instead of failing here`);
+    assert.ok(!/\bHEAD\b/.test(clause), `${file}'s derived_handoff clause must never mention HEAD directly - "head" is defined only in sprint-lifecycle.md "State recovery", never redefined here in prose or code`);
   }
 });
 
@@ -3138,6 +3171,37 @@ test('T-3/AC-2: providers.md states the never-heredoc file-write rule for artifa
 test('T-3/AC-7: providers.md\'s asd-dev role-scoped-context row cites the review-policy.md over-engineering/structure-cohesion checklists', () => {
   const providers = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/providers.md'), 'utf8');
   assert.ok(providers.includes('`review-policy.md` over-engineering and structure/cohesion checklists'), 'providers.md must cite the over-engineering/structure-cohesion checklists in asd-dev\'s role-scoped-context row');
+});
+
+test('T-2: feedback_no-shell-review-method.md cites asd-reviewer-testing.md\'s frontmatter for the reviewer\'s tool grant instead of re-enumerating it, and that frontmatter really is read-only - guards the stale-grant regression (D-2) that once claimed a Write tool this reviewer does not have', () => {
+  const memory = fs.readFileSync(path.join(REPO_ROOT, '.claude/agent-memory/asd-reviewer-testing/feedback_no-shell-review-method.md'), 'utf8');
+  assert.ok(memory.includes('.asd/agents/asd-reviewer-testing.md` frontmatter'), 'must cite the agent frontmatter as the tool-grant home rather than restating a tool list that can drift from it');
+  assert.strictEqual(memory.match(/\bWrite\b/), null, 'must never claim a Write tool grant for this reviewer');
+
+  const agentSrc = sync.readNormalized(path.join(REPO_ROOT, '.asd/agents/asd-reviewer-testing.md'));
+  const { meta } = sync.parseCanonicalFrontmatter(agentSrc);
+  assert.deepStrictEqual(meta.claude.tools, ['Read', 'Glob', 'Grep', 'AskUserQuestion'], 'the frontmatter this memory now cites must actually be the read-only grant it claims, or the citation points somewhere false');
+  assert.ok(!meta.claude.tools.includes('Write') && !meta.claude.tools.includes('Edit') && !meta.claude.tools.includes('Bash'), 'this reviewer must have no Write/Edit/Bash grant to cite');
+});
+
+test('T-2/C-2: canon_hashes covers only .asd/agents/*.md and .asd/skills/*/SKILL.md - the tree scope feedback_no-shell-review-method.md\'s per-tree collateral-failure count (three/two/one) depends on', () => {
+  const entries = sync.computeCanonHashes(REPO_ROOT);
+  assert.ok(entries.length > 0, 'sanity: computeCanonHashes must find at least one entry in this repo');
+  for (const [key] of entries) {
+    assert.ok(/^agents\/[^/]+\.md$/.test(key) || /^skills\/[^/]+\/SKILL\.md$/.test(key), `canon_hashes key "${key}" must be under agents/*.md or skills/*/SKILL.md - a third tree here would silently invalidate the memory's per-tree collateral-count claim`);
+  }
+  assert.strictEqual(entries.some(([key]) => key.startsWith('hooks/')), false, 'session-start.js and other hooks must never appear in canon_hashes - the memory\'s "hooks/t_AGENTS.md/t_CLAUDE.md -> two, not three" claim depends on this exclusion');
+});
+
+test('T-2: asd-dev-critical/MEMORY.md\'s index entries each link to a file that exists in the same directory - guards the new CRLF-hazard index line landing without its target, or drifting from it later', () => {
+  const dir = path.join(REPO_ROOT, '.claude/agent-memory/asd-dev-critical');
+  const index = fs.readFileSync(path.join(dir, 'MEMORY.md'), 'utf8');
+  const links = [...index.matchAll(/\]\(([^)]+\.md)\)/g)].map((m) => m[1]);
+  assert.ok(links.length > 0, 'asd-dev-critical/MEMORY.md must list at least one memory file');
+  for (const link of links) {
+    assert.ok(fs.existsSync(path.join(dir, link)), `asd-dev-critical/MEMORY.md links to "${link}" which does not exist`);
+  }
+  assert.ok(links.includes('project_crlf-canon-edits.md'), 'asd-dev-critical/MEMORY.md must index the new CRLF canon-edit hazard file added this round');
 });
 
 // ===========================================================================
