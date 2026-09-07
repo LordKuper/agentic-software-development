@@ -220,3 +220,12 @@ Recorded by the phase orchestrator because no reviewer can see it — `.asd/proj
 - **Orchestrator finding** resolved: both skill files drop the `sync.js`'s `isSelfHostingRepo` parenthetical and state the fail-closed rule in prose ("missing, unreadable, or duplicated key → disabled") rather than pointing at a deleted implementation.
 - **Gate**: `node .asd/sync.js --check` exit 0; `node tests/run.js` 126/126; worktree clean; no test expectation invalidated.
 - **Routing**: `review_fixes_pending` cleared; phase exits to `impl-test`. This delta contains production source, so impl-test runs a real strategy pass rather than the deterministic-command route the last two entries used.
+
+## 2026-09-07 — impl-test entry 7: impacted set green (127/127), 1 added / 0 removed
+
+- Delta since entry 6 carried production source (wording and documentation only), so this entry ran a real strategy pass rather than the deterministic-command route entries 3 and 6 used.
+- **The reviewer's suggested check was evaluated, not obeyed.** The tester accepted it on its merits and implemented it as a contract-string guard rather than a full-sentence match: it pins the scope-vs-readability sentence in `external-review.md`, the carve-out substring in both prompts, and the presence of all seven project-context placeholders. Proven fail-first twice — inverting the rule-doc sentence and inverting the prompt carve-out each fail it independently.
+- **A sub-floor note from iteration 3 was actioned with direct evidence**: the AC-7 `asd-pm` guard now scans `.asd/skills/*/SKILL.md` recursively. The tester demonstrated the gap rather than asserting it — injecting an `asd-pm` mention into `asd-init/SKILL.md` passed the old guard silently and fails the extended one by name.
+- **Two suggestions declined with reasons recorded**: deriving the manifest field list from `external-review.md`'s prose would itself be a brittle wording-coupled test, the very thing the added check avoids; asserting `runLocal`'s ENOENT-retry *trigger* would need new spawn-failure simulation infrastructure, disproportionate to a wording-only delta whose resulting shape is already covered.
+- `node tests/run.js` 127/127 at `9ff22c5`; `node .asd/sync.js --check` exit 0; `test_defects_pending` null.
+- Routes to `impl-review` iteration 4, floor `high`, dispatching only correctness and documentation — efficiency and testing are latched.
