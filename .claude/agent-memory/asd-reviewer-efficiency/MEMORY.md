@@ -1,0 +1,1 @@
+- [runtime.js stays one file](feedback_runtime-js-single-file.md) — user overrode the SC-1 split for `.asd/runtime.js`; never re-raise it, judge only new code.
