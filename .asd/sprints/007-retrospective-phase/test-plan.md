@@ -12,7 +12,7 @@ responsibility:
 | Entry | HEAD analysed | Scope |
 |---|---|---|
 | 1 | 78e67f1 | full change surface (`git diff main...HEAD`, minus `.asd/project/**`, `.asd/sprints/**`, generated `.claude/`/`.codex/`/`.agents/skills/`) |
-| 2 | 46d14be | delta since entry 1 — the three impl review-fix commits (`b187059` migration rewrite, `c12e173` retro contract, `46d14be` README/AGENTS/template) plus `reviews/impl/iter-01/testing.md` TST-01..TST-08 |
+| 2 | cf7b182 | delta since entry 1 — the three impl review-fix commits (`b187059` migration rewrite, `c12e173` retro contract, `46d14be` README/AGENTS/template) plus `reviews/impl/iter-01/testing.md` TST-01..TST-08 |
 
 ## Risk → check decisions
 
