@@ -6,7 +6,7 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 
 const CACHE_SCHEMA = 1;
-const MAX_TIMEOUT_MS = 10000;
+const PROBE_TIMEOUT_MS = 3000;
 const NEGATIVE_TTL_MS = 300000;
 const MAX_NEGATIVE_TTL_MS = 3600000;
 
@@ -30,17 +30,16 @@ function stringArray(value, name) {
   return value;
 }
 
-function runLocal(command, args, timeoutMs) {
+function runLocal(command, args) {
   if (typeof command !== 'string' || command.length === 0 || command.includes('\0')) fail('command must be a non-empty executable path');
   stringArray(args, 'args');
-  const timeout = Math.min(Math.max(Number(timeoutMs) || 0, 1), MAX_TIMEOUT_MS);
   const throughPowerShell = process.platform === 'win32' && /\.(cmd|bat|ps1)$/i.test(command);
   let result = throughPowerShell ? null : spawnSync(command, args, {
-    encoding: 'utf8', shell: false, timeout, windowsHide: true,
+    encoding: 'utf8', shell: false, timeout: PROBE_TIMEOUT_MS, windowsHide: true,
   });
   if (process.platform === 'win32' && (throughPowerShell || (result.error && result.error.code === 'ENOENT'))) {
     result = spawnSync('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', '$ErrorActionPreference = "Stop"; try { $request = [Console]::In.ReadToEnd() | ConvertFrom-Json; $global:LASTEXITCODE = 0; & $request.command @($request.args); exit $LASTEXITCODE } catch { exit 1 }'], {
-      encoding: 'utf8', input: JSON.stringify({ command, args }), shell: false, timeout, windowsHide: true,
+      encoding: 'utf8', input: JSON.stringify({ command, args }), shell: false, timeout: PROBE_TIMEOUT_MS, windowsHide: true,
     });
   }
   return { ok: !result.error && result.status === 0, timedOut: result.error && result.error.code === 'ETIMEDOUT', status: result.status === null ? null : result.status };
@@ -52,7 +51,7 @@ function defaultAuthArgs(provider) {
   fail('provider must be codex or claude');
 }
 
-function readCache(cachePath) {
+function readCache(cachePath, now) {
   if (!cachePath || !fs.existsSync(cachePath)) return { schema: CACHE_SCHEMA, entries: {} };
   let parsed;
   try {
@@ -61,9 +60,10 @@ function readCache(cachePath) {
     return { schema: CACHE_SCHEMA, entries: {} };
   }
   if (!parsed || parsed.schema !== CACHE_SCHEMA || !parsed.entries || typeof parsed.entries !== 'object' || Array.isArray(parsed.entries)) return { schema: CACHE_SCHEMA, entries: {} };
+  const cutoff = Number.isFinite(now) ? now : Date.now();
   const entries = {};
   for (const [key, entry] of Object.entries(parsed.entries)) {
-    if (/^[a-f0-9]{64}$/.test(key) && entry && typeof entry.status === 'string' && Number.isFinite(entry.retry_after)) entries[key] = { status: entry.status, retry_after: entry.retry_after };
+    if (/^[a-f0-9]{64}$/.test(key) && entry && typeof entry.status === 'string' && Number.isFinite(entry.retry_after) && entry.retry_after > cutoff) entries[key] = { status: entry.status, retry_after: entry.retry_after };
   }
   return { schema: CACHE_SCHEMA, entries };
 }
@@ -77,8 +77,12 @@ function writeCache(cachePath, cache) {
 function authGeneration(input) {
   if (typeof input.authGeneration === 'string') return input.authGeneration;
   if (typeof input.credentialPath !== 'string' || !fs.existsSync(input.credentialPath)) return 'unknown';
-  const stat = fs.statSync(input.credentialPath);
-  return `${stat.mtimeMs}:${stat.size}`;
+  try {
+    const stat = fs.statSync(input.credentialPath);
+    return `${stat.mtimeMs}:${stat.size}`;
+  } catch (_) {
+    return 'unknown';
+  }
 }
 
 function cacheKey(input, authReady) {
@@ -94,23 +98,17 @@ function externalPreflight(input) {
   if (input.authArgs !== undefined) fail('authArgs are not supported');
   if (typeof model !== 'string' || model.length === 0) fail('model required');
   const authArgs = defaultAuthArgs(provider);
-  const timeoutMs = input.timeoutMs || 3000;
-  const version = runLocal(input.command, ['--version'], timeoutMs);
+  const version = runLocal(input.command, ['--version']);
   if (!version.ok) {
     return { status: 'command-unavailable', model_access: 'unknown', fingerprint: cacheKey({ ...input, provider, model, authArgs }, false) };
   }
-  const auth = runLocal(input.command, authArgs, timeoutMs);
+  const auth = runLocal(input.command, authArgs);
   const key = cacheKey({ ...input, provider, model, authArgs }, auth.ok);
   if (!auth.ok) return { status: 'authentication-unavailable', model_access: 'unknown', fingerprint: key };
-  const cache = readCache(input.cachePath);
-  const cached = cache.entries[key];
   const now = Number.isFinite(input.now) ? input.now : Date.now();
-  if (cached && cached.retry_after > now) {
-    return { status: 'negative-cache', reason: cached.status, retry_after: cached.retry_after, model_access: 'unknown', fingerprint: key };
-  }
+  const cached = readCache(input.cachePath, now).entries[key];
   if (cached) {
-    delete cache.entries[key];
-    writeCache(input.cachePath, cache);
+    return { status: 'negative-cache', reason: cached.status, retry_after: cached.retry_after, model_access: 'unknown', fingerprint: key };
   }
   return { status: 'local-ready', model_access: 'unknown', fingerprint: key };
 }
@@ -122,7 +120,7 @@ function recordExternalFailure(input) {
   const now = Number.isFinite(input.now) ? input.now : Date.now();
   const retryAfter = input.retryAfter || now + NEGATIVE_TTL_MS;
   if (!Number.isFinite(retryAfter) || retryAfter <= now || retryAfter > now + MAX_NEGATIVE_TTL_MS) fail('retryAfter outside bounded future');
-  const cache = readCache(input.cachePath);
+  const cache = readCache(input.cachePath, now);
   cache.entries[input.fingerprint] = { status: input.status, retry_after: retryAfter };
   writeCache(input.cachePath, cache);
   return cache.entries[input.fingerprint];
@@ -142,11 +140,12 @@ function routeTask(input) {
   const hasRisk = risks.length > 0;
   const deterministicCommand = input.kind === 'command' && input.objectiveInputs === true && checks.includes('deterministic-state');
   const mechanical = input.kind === 'mechanical' && input.objectiveInputs === true && checks.includes('deterministic-check') && checks.includes('exhaustive-match-validation');
-  let tier = hasRisk || (input.failedObjectiveCheck && attempted >= 1) ? 'critical' : deterministicCommand || mechanical ? 'mechanical' : 'standard';
-  if (input.priorTier && ranks[input.priorTier] > ranks[tier]) tier = input.priorTier;
-  const execution = deterministicCommand && tier === 'mechanical' && input.priorTier === undefined ? 'command' : 'agent';
-  const reason = hasRisk ? `risk:${risks[0]}` : input.failedObjectiveCheck && attempted >= 1 ? 'failed-objective-check' : tier === input.priorTier ? 'no-downgrade' : execution === 'command' ? 'deterministic-command' : tier === 'mechanical' ? 'objective-mechanical' : 'normal';
-  return { tier, execution, reason, selector: 'orchestrator' };
+  const computedTier = hasRisk || (input.failedObjectiveCheck && attempted >= 1) ? 'critical' : deterministicCommand || mechanical ? 'mechanical' : 'standard';
+  const clamped = Boolean(input.priorTier) && ranks[input.priorTier] > ranks[computedTier];
+  const tier = clamped ? input.priorTier : computedTier;
+  const execution = deterministicCommand && tier === 'mechanical' ? 'command' : 'agent';
+  const reason = hasRisk ? `risk:${risks[0]}` : input.failedObjectiveCheck && attempted >= 1 ? 'failed-objective-check' : clamped ? 'no-downgrade' : execution === 'command' ? 'deterministic-command' : tier === 'mechanical' ? 'objective-mechanical' : 'normal';
+  return { tier, execution, reason };
 }
 
 function rowsById(rows, expected, allowedStatuses, allowedNa, findings, label) {
@@ -209,11 +208,16 @@ function validateCoverageLedger(manifest, ledger, actualFindings) {
   return { ok: true };
 }
 
-function parseFlagArgs(argv) {
+function parseFlagArgs(argv, booleanFlags) {
+  const bools = booleanFlags || [];
   const out = {};
-  for (let i = 0; i < argv.length; i += 2) {
-    if (!argv[i].startsWith('--') || argv[i + 1] === undefined) fail('flags require values');
-    out[argv[i].slice(2)] = argv[i + 1];
+  for (let i = 0; i < argv.length; i += 1) {
+    if (!argv[i].startsWith('--')) fail('flags require values');
+    const name = argv[i].slice(2);
+    if (bools.includes(name)) { out[name] = true; continue; }
+    if (argv[i + 1] === undefined) fail('flags require values');
+    out[name] = argv[i + 1];
+    i += 1;
   }
   return out;
 }
@@ -225,7 +229,14 @@ function inputJson(flags) {
 
 function main(argv) {
   const command = argv[2];
-  const flags = parseFlagArgs(argv.slice(3));
+  const flags = parseFlagArgs(argv.slice(3), ['write']);
+  if (command === 'manifest-digest') {
+    const manifest = JSON.parse(fs.readFileSync(flags.manifest, 'utf8'));
+    const digest = coverageManifestDigest(manifest);
+    if (flags.write) fs.writeFileSync(flags.manifest, JSON.stringify(Object.assign({}, manifest, { digest })) + '\n', 'utf8');
+    process.stdout.write(digest + '\n');
+    return 0;
+  }
   if (command === 'validate-ledger') {
     const result = validateCoverageLedger(JSON.parse(fs.readFileSync(flags.manifest, 'utf8')), JSON.parse(fs.readFileSync(flags.ledger, 'utf8')), JSON.parse(fs.readFileSync(flags.findings, 'utf8')));
     process.stdout.write(JSON.stringify(result) + '\n');
@@ -244,7 +255,7 @@ function main(argv) {
     process.stdout.write(JSON.stringify(routeTask(inputJson(flags))) + '\n');
     return 0;
   }
-  fail('usage: validate-ledger or external-preflight');
+  fail('usage: manifest-digest, validate-ledger, external-preflight, external-record-failure, or route-task');
 }
 
 if (require.main === module) {
