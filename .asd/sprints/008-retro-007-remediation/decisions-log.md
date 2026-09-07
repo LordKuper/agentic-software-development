@@ -70,3 +70,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: `plan.md` accepted through an adaptive routine pass, with eleven tasks covering AC-1..AC-3 and AC-5..AC-14. AC-1 and AC-6 are one task because they share a file and an insertion point; AC-12's mirrors are one closing sweep because only the last writer sees the final state.
 - **Rationale**: The plan decomposes acceptance criteria the user accepted at the scope gate and revised at the audit gate; it introduces no scope, no new criteria and no unresolved material alternative, which is what `checkpoints.md` requires for a routine adaptive pass. No stubs needed routing — `.asd/project/stubs.md` is empty.
 - **Affected docs**: [plan.md](plan.md), [sprint.md](sprint.md), [audit.md](audit.md), [state.json](state.json)
+
+## 2026-09-07 — impl assessment approved
+
+- **Decision**: The user approved the impl assessment; the sprint advances to `impl-test`. All eleven plan tasks are COMPLETED, AC-1..AC-3 and AC-5..AC-14 are implemented, and AC-4 stands closed as satisfied at HEAD.
+- **Rationale**: Build (`node .asd/sync.js --check`) is `ok: true` with every target current and no orphans; lint (`git diff --check`) is clean; `tests/run.js` is 136/136 after Task 11 refreshed the `upstream_hashes` Task 7 left stale; no stub was introduced this sprint. Task 10's two deviations from its subtask wording — writing the handoff record at derivation time rather than phase exit, and wiring impl-test's delta at step 2 where it is actually computed — were accepted as keeping the field honest rather than decorative.
+- **Affected docs**: [plan.md](plan.md), [sprint.md](sprint.md), [friction-log.md](friction-log.md), [state.json](state.json)

@@ -1,7 +1,7 @@
 {
   "sprint_id": "008-retro-007-remediation",
   "branch": "sprint/008-retro-007-remediation",
-  "phase": "impl",
+  "phase": "impl-test",
   "documents": {
     "audit": true,
     "prd": false,
@@ -31,6 +31,13 @@
       "reason": "routine adaptive pass: plan decomposes already-accepted AC without introducing scope, criteria or material alternatives",
       "evidence": "every task cites an AC from sprint.md accepted at the scope gate and revised by four user decisions at the audit gate; task grouping follows audit.md mitigations; no stubs to route (stubs.md empty); no test tasks per sprint-lifecycle plan format",
       "artifact_revision": ".asd/sprints/008-retro-007-remediation/plan.md@2026-09-07T17:55:00Z"
+    },
+    {
+      "gate": "impl-assessment",
+      "decision_actor": "user",
+      "reason": "impl assessment approved, advance to impl-test",
+      "evidence": "all 11 plan tasks COMPLETED with every checkbox ticked; build node .asd/sync.js --check ok:true; lint git diff --check clean; tests/run.js 136/136; no sprint-introduced stubs; two friction entries recorded",
+      "artifact_revision": ".asd/sprints/008-retro-007-remediation/plan.md@2026-09-07T19:30:00Z"
     }
   ],
   "task_routing": {
@@ -109,7 +116,7 @@
     }
   },
   "created_at": "2026-09-07T17:11:41Z",
-  "updated_at": "2026-09-07T18:00:00Z",
+  "updated_at": "2026-09-07T19:30:00Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
