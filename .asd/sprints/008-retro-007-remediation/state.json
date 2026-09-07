@@ -38,6 +38,27 @@
       "reason": "impl assessment approved, advance to impl-test",
       "evidence": "all 11 plan tasks COMPLETED with every checkbox ticked; build node .asd/sync.js --check ok:true; lint git diff --check clean; tests/run.js 136/136; no sprint-introduced stubs; two friction entries recorded",
       "artifact_revision": ".asd/sprints/008-retro-007-remediation/plan.md@2026-09-07T19:30:00Z"
+    },
+    {
+      "gate": "impl-review-escalation",
+      "decision_actor": "user",
+      "reason": "E-1 approved: delete union condition (c) as unreachable, relabel (d) to (c)",
+      "evidence": "a half reaches merge only after validate-ledger, and runtime.js:209 already recomputes and rejects a mismatched manifest digest",
+      "artifact_revision": "reviews/impl/iter-02/efficiency.md"
+    },
+    {
+      "gate": "impl-review-escalation",
+      "decision_actor": "user",
+      "reason": "E-4 approved: reduce derived_handoff to a single phase-exit write",
+      "evidence": "validity key costs the same order as the diff it saves and misses by construction on iterations >= 2 where base differs; the contradiction goes away with the surplus wiring",
+      "artifact_revision": "reviews/impl/iter-02/efficiency.md"
+    },
+    {
+      "gate": "write-authorization",
+      "decision_actor": "user",
+      "reason": "one-off authorization extended to .asd/project/commands.yaml; the sync-apply alias is deleted",
+      "evidence": "the alias is a deterministic exit 1 after the empty-target guard and is the only sync command a dev agent may run verbatim; a fixed string cannot express a command with mandatory arguments",
+      "artifact_revision": "reviews/impl/iter-02/correctness.md"
     }
   ],
   "task_routing": {
@@ -139,8 +160,8 @@
     }
   },
   "created_at": "2026-09-07T17:11:41Z",
-  "updated_at": "2026-09-08T01:00:00Z",
-  "review_fixes_pending": null,
+  "updated_at": "2026-09-08T01:20:00Z",
+  "review_fixes_pending": "iter-02",
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null,
