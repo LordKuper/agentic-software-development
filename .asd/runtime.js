@@ -30,16 +30,29 @@ function stringArray(value, name) {
   return value;
 }
 
+/** Builds the spawn shape for a command: direct argv, or the Windows PowerShell JSON-stdin fallback. */
+function buildInvocation(platform, command, args, viaPowerShell) {
+  if (platform === 'win32' && (viaPowerShell || /\.(cmd|bat|ps1)$/i.test(command))) {
+    return {
+      file: 'powershell.exe',
+      args: ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', '$ErrorActionPreference = "Stop"; try { $request = [Console]::In.ReadToEnd() | ConvertFrom-Json; $global:LASTEXITCODE = 0; & $request.command @($request.args); exit $LASTEXITCODE } catch { exit 1 }'],
+      input: JSON.stringify({ command, args }),
+    };
+  }
+  return { file: command, args };
+}
+
 function runLocal(command, args) {
   if (typeof command !== 'string' || command.length === 0 || command.includes('\0')) fail('command must be a non-empty executable path');
   stringArray(args, 'args');
-  const throughPowerShell = process.platform === 'win32' && /\.(cmd|bat|ps1)$/i.test(command);
-  let result = throughPowerShell ? null : spawnSync(command, args, {
+  const direct = buildInvocation(process.platform, command, args);
+  let result = direct.input === undefined ? spawnSync(direct.file, direct.args, {
     encoding: 'utf8', shell: false, timeout: PROBE_TIMEOUT_MS, windowsHide: true,
-  });
-  if (process.platform === 'win32' && (throughPowerShell || (result.error && result.error.code === 'ENOENT'))) {
-    result = spawnSync('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', '$ErrorActionPreference = "Stop"; try { $request = [Console]::In.ReadToEnd() | ConvertFrom-Json; $global:LASTEXITCODE = 0; & $request.command @($request.args); exit $LASTEXITCODE } catch { exit 1 }'], {
-      encoding: 'utf8', input: JSON.stringify({ command, args }), shell: false, timeout: PROBE_TIMEOUT_MS, windowsHide: true,
+  }) : null;
+  if (process.platform === 'win32' && (direct.input !== undefined || (result.error && result.error.code === 'ENOENT'))) {
+    const plan = direct.input !== undefined ? direct : buildInvocation(process.platform, command, args, true);
+    result = spawnSync(plan.file, plan.args, {
+      encoding: 'utf8', input: plan.input, shell: false, timeout: PROBE_TIMEOUT_MS, windowsHide: true,
     });
   }
   return { ok: !result.error && result.status === 0 };
@@ -262,4 +275,4 @@ if (require.main === module) {
   try { process.exitCode = main(process.argv); } catch (error) { process.stderr.write(`${error.message}\n`); process.exitCode = 2; }
 }
 
-module.exports = { coverageManifestDigest, externalPreflight, recordExternalFailure, routeTask, validateCoverageLedger, fingerprint };
+module.exports = { buildInvocation, coverageManifestDigest, externalPreflight, recordExternalFailure, routeTask, validateCoverageLedger, fingerprint };
