@@ -21,6 +21,19 @@ Record user decisions with `decision_actor=user`; silence and unrelated text are
 
 For an active sprint, record the actor, gate, artifact revision, evidence and reason in `state.json.gate_decisions` and append the sprint decision log. A standalone `/asd-concept`, `/asd-stack` or `/asd-design-system` has no state/log write: the accepted artifact and git history are its evidence. A material semantic change invalidates only the decision governing that artifact.
 
+## Criterion cost surfacing
+
+Gates are keyed by gate name, never by `AC-N`, so a criterion’s running cost is stated in the request rather than looked up. **Measurement point**: any request at the hard `scope, acceptance criteria or user value` gate that adds, changes, retires or closes a criterion, plus any review-cap override request — stated before the decision, never after it.
+
+**Unit**, per criterion the request names, derived at read time from artefacts the sprint already writes (no counter is stored, so nothing can drift):
+
+- *iterations charged* — count of `<sprint>/reviews/<phase>/iter-NN/` iterations whose findings name that `AC-N`;
+- *fix rounds charged* — count of `<sprint>/decisions-log.md` `impl fix for iter-NN: findings resolved` entries whose `iter-NN` is one of those iterations.
+
+State `0` explicitly for an untouched criterion; a review-cap override states the pair for every criterion carrying an unresolved finding at that iteration.
+
+The actor decides with the pair visible and writes it into the `evidence` of the record that gate already makes (above). Evidence only: no threshold fires, and a high count neither retires a criterion nor authorizes a new one.
+
 ## Gate inventory
 
 The normal gate class is retained for `strict`, and is the fallback when an adaptive decision cannot be justified:
