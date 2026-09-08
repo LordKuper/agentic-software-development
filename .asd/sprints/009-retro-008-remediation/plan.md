@@ -48,16 +48,16 @@ Material risk: change: four contracts in one file, two in the same section
 
 ### Task 3: runtime.js — one vocabulary constant, shared by validator and manifest
 Material risk: change: validator behaviour and manifest digest shape
-- [ ] Lift the per-row-type status sets (`:235-237`) and the `p`/`f` placement rule (`:188-191`) into one exported constant, so the emitted vocabulary and the enforced vocabulary cannot drift
-- [ ] Publish that vocabulary in the manifest per Task 2's contract; decide and record whether `validate-ledger` requires the field or tolerates its absence — a required field breaks every existing manifest fixture
-- [ ] Confirm `manifest-digest --write` still round-trips the manifest with the new field
+- [x] Lift the per-row-type status sets (`:235-237`) and the `p`/`f` placement rule (`:188-191`) into one exported constant, so the emitted vocabulary and the enforced vocabulary cannot drift
+- [x] Publish that vocabulary in the manifest per Task 2's contract; decide and record whether `validate-ledger` requires the field or tolerates its absence — a required field breaks every existing manifest fixture
+- [x] Confirm `manifest-digest --write` still round-trips the manifest with the new field
 
 ### Task 4: External review returns a verdict or a skip, never nothing
 Material risk: change: review DoD depends on this outcome contract
-- [ ] `.asd/agents/asd-external-review.md`: the wrapped CLI is awaited inside the dispatch, never backgrounded; on inability to complete, return the availability skip. Tool policy and Don'ts are the slots (`AC-8`, `F-8`)
-- [ ] `.asd/rules/external-review.md`: state the outcome contract — exactly two permitted outcomes, a verdict or an availability skip; an empty return is neither and is not permitted
-- [ ] `.asd/rules/review-policy.md:134`'s scoping sentence points at that contract, so the boundary between the internal interrupted-dispatch rule and External Review stops being a hole
-- [ ] Record in `decisions-log.md` that `AC-9` is closed with no deliverable, so a later sprint reading the 008 retrospective does not re-open it
+- [x] `.asd/agents/asd-external-review.md`: the wrapped CLI is awaited inside the dispatch, never backgrounded; on inability to complete, return the availability skip. Tool policy and Don'ts are the slots (`AC-8`, `F-8`)
+- [x] `.asd/rules/external-review.md`: state the outcome contract — exactly two permitted outcomes, a verdict or an availability skip; an empty return is neither and is not permitted
+- [x] `.asd/rules/review-policy.md:134`'s scoping sentence points at that contract, so the boundary between the internal interrupted-dispatch rule and External Review stops being a hole
+- [x] Record in `decisions-log.md` that `AC-9` is closed with no deliverable, so a later sprint reading the 008 retrospective does not re-open it
 
 ### Task 5: Agent memory is reviewable in both modes, said once
 Material risk: change: deleting content a currently-green test asserts
@@ -68,10 +68,10 @@ Material risk: change: deleting content a currently-green test asserts
 
 ### Task 6: asd-phase-impl.md — shared worktree, sequential fix rounds
 Material risk: change: dispatch routing and concurrency semantics
-- [ ] `AC-2`: the dispatch payload contract states that concurrently dispatched tasks share one worktree, citing Task 1's sentence rather than restating it
-- [ ] `AC-10`: review-fix mode runs its fix rounds sequentially under one agent. Only `:61` changes — `:64` is shared with initial mode and stays as it is
-- [ ] Check `:62` routing and `:83` "Wait all task signals" still read correctly once review-fix is no longer a concurrent set
-- [ ] `AC-11` impl side: the fix instruction (`:77`) cites Task 2's verification requirement
+- [x] `AC-2`: the dispatch payload contract states that concurrently dispatched tasks share one worktree, citing Task 1's sentence rather than restating it
+- [x] `AC-10`: review-fix mode runs its fix rounds sequentially under one agent. Only `:61` changes — `:64` is shared with initial mode and stays as it is
+- [x] Check `:62` routing and `:83` "Wait all task signals" still read correctly once review-fix is no longer a concurrent set
+- [x] `AC-11` impl side: the fix instruction (`:77`) cites Task 2's verification requirement
 
 ### Task 7: sprint-lifecycle.md — retro-derived criteria and criterion reachability
 Material risk: change: two rule contracts, one of them parser-critical
