@@ -11,7 +11,7 @@ responsibility:
 
 | Entry | HEAD analysed | Scope |
 |---|---|---|
-| 1 |  | full change surface (`git diff main...HEAD`, self-hosting exclusions applied: 17 canonical files + `.gitattributes`, minus `.asd/project/**`, `.asd/sprints/**` and generated views) |
+| 1 | 5e7451b | full change surface (`git diff main...HEAD`, self-hosting exclusions applied: 17 canonical files + `.gitattributes`, minus `.asd/project/**`, `.asd/sprints/**` and generated views) |
 
 ## Risk → check decisions
 

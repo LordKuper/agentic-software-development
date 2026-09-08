@@ -82,3 +82,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: All eleven plan tasks COMPLETED and approved by the user; sprint advances to impl-test. No stubs introduced. Build (`node .asd/sync.js --check`) and lint (`git diff --cached --check`) clean; `node tests/run.js` 159/160, the single red being `tests/run.js:3031-3046`, invalidated by Task 5 by design and reconciled in impl-test.
 - **Rationale**: Every AC that carried a deliverable landed in the single home the audit named, with citations rather than restatements elsewhere. Task 11 disproved the reported 94-entry ledger mismatch by measurement — `sync.js` hashes normalized text, so line endings cannot move a ledger entry; the real staleness was 14 entries from this sprint's own edits.
 - **Affected docs**: [plan.md](plan.md), [friction-log.md](friction-log.md)
+
+## 2026-09-08 — impl-test: impacted set green
+
+- **Decision**: Full suite green at 170/170 (the shared-infrastructure safety valve degraded the impacted set to the full suite, since the change surface is framework-wide). 10 tests added, 1 rewritten in place, 1 extended; no test removed, so the removal gate did not fire. No code defects — no `D-N` rows.
+- **Rationale**: The red `T-2` copy-count assertion was implementation-coupled — it measured how many times the agent-memory property was restated, which Task 5 deliberately reduced — so it was rewritten to the one-owner-plus-citations shape, never deleted. One recommended assertion was rejected after verification against source: `routeTask` takes a structured object and contains no plan-file parser, so a `Reachability`-vs-`Material risk` routing test would only prove a pure function deterministic.
+- **Affected docs**: [test-plan.md](test-plan.md), tests/run.js
