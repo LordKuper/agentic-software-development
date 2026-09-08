@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="generator" content="ASD workflow">
+  <meta name="doc-type" content="Retrospective">
+  <meta name="subsystem" content="sprint">
+  <meta name="sprint-id" content="008-retro-007-remediation">
+  <meta name="status" content="final">
+  <meta name="updated" content="2026-09-08">
+  <meta name="responsibility" content="retro-phase analysis of the sprint — root cause plus remediation per F-N entry, and systemic proposals for a cheaper future sprint, both split consumer-project vs ASD-framework">
+  <meta name="provenance" content="original">
+  <meta name="source" content="">
+  <title>Retrospective — Sprint 008 · retro-007-remediation</title>
+  <style>
+    :root {
+      --fg: #1a1c1e; --bg: #fff; --muted: #5b6770; --accent: #0066cc;
+      --code-bg: #f4f6f8; --border: #d0d7de; --max: 1040px;
+      --card-bg: #fafbfc;
+      --ok: #1a7f37; --warn: #b35900; --danger: #cf222e; --info: #0969da; --neutral: #5b6770;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --fg: #e6e6e6; --bg: #0e1116; --muted: #9aa4ad; --code-bg: #161b22; --border: #30363d;
+        --card-bg: #161b22;
+        --accent: #58a6ff; --ok: #3fb950; --warn: #d29922; --danger: #f85149; --info: #79c0ff; --neutral: #8b949e;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .layout { display: grid; grid-template-columns: 1fr; }
+    .layout:has(> nav.toc) { grid-template-columns: 260px minmax(0, 1fr); }
+    nav.toc { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; padding: 16px 12px; border-right: 1px solid var(--border); font-size: 0.85rem; }
+    nav.toc .toc-title { font-weight: 600; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.04em; }
+    nav.toc ol { list-style: none; margin: 0; padding: 0; }
+    nav.toc li { margin: 2px 0; }
+    nav.toc a { color: var(--fg); text-decoration: none; display: block; padding: 3px 6px; border-radius: 4px; }
+    nav.toc a:hover { background: var(--code-bg); color: var(--accent); }
+    @media (max-width: 880px) { nav.toc { position: static; max-height: none; border-right: none; border-bottom: 1px solid var(--border); } }
+    @media print { nav.toc { display: none; } }
+    .content { min-width: 0; }
+    header, main, footer { max-width: var(--max); margin: 0 auto; padding: 16px 24px; }
+    header { border-bottom: 1px solid var(--border); }
+    header h1 { margin: 4px 0 8px; font-size: 1.9rem; }
+    .badges span { display: inline-block; padding: 2px 8px; margin-right: 6px; font-size: 0.75rem; border: 1px solid var(--border); border-radius: 4px; color: var(--muted); background: var(--bg); }
+    .stats { color: var(--muted); font-size: 0.9rem; }
+    @media (max-width: 880px) {
+      .layout, .layout:has(> nav.toc) { grid-template-columns: 1fr; }
+    }
+    h2, h3 { line-height: 1.25; margin-top: 1.6em; }
+    h2 { border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+    a { color: var(--accent); }
+    code { font-family: ui-monospace, "Cascadia Code", Menlo, monospace; background: var(--code-bg); padding: 1px 5px; border-radius: 3px; font-size: 0.9em; }
+    table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 0.94rem; }
+    th, td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+    th { background: var(--card-bg); font-weight: 600; }
+    tr, li { break-inside: avoid; }
+    .hero .lede { font-size: 1.05rem; color: var(--muted); }
+    .chip { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 0.75rem; border: 1px solid var(--border); white-space: nowrap; }
+    .chip.area { background: var(--code-bg); color: var(--muted); }
+    footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <nav class="toc">
+      <div class="toc-title">Contents</div>
+      <ol>
+        <li><a href="#outcome">Outcome</a></li>
+        <li><a href="#analysis">Analysis</a></li>
+        <li><a href="#actions">Actions</a></li>
+        <li><a href="#systemic-proposals">Systemic proposals</a></li>
+      </ol>
+    </nav>
+    <div class="content">
+      <header>
+        <div class="badges">
+          <span>Retrospective</span>
+          <span>sprint</span>
+          <span class="status-final">final</span>
+        </div>
+        <h1>Retrospective — Sprint 008 · retro-007-remediation</h1>
+        <div class="stats">8 entries · 10 actions · 6 systemic proposals · updated 2026-09-08</div>
+      </header>
+      <main>
+        <section id="outcome" class="hero">
+          <h2>Outcome</h2>
+          <p class="lede">8 entries analysed, 1 consumer action, 9 framework actions, 6 systemic proposals.</p>
+          <p>This sprint's scope was the sprint 007 retrospective's own two tables, so its first duty is to report on that remediation. Every action 007 named was delivered, but three of its rows were written against a HEAD that had already moved: <a href="#F-2">F-2</a>. More telling, four of this sprint's eight entries are recurrences of classes 007 had already identified — the parallel-dispatch staging hazard behind <a href="#F-1">F-1</a> and <a href="#F-3">F-3</a>, and the lost-dispatch class behind <a href="#F-4">F-4</a> and <a href="#F-8">F-8</a>. 007 concluded that "a correction that lands only in one agent's memory does not survive the next dispatch". This sprint's evidence sharpens that: a correction that lands only in a <em>rule</em> does not survive either, when the rule states one half of a two-sided obligation.</p>
+          <p>The sprint cost six review iterations and roughly seventy findings. Two acceptance criteria did not survive contact: AC-4 was closed at audit as already satisfied at HEAD, and AC-11 was retired at iteration 4 after three fix rounds proved its purpose unreachable by construction. One was added mid-sprint — AC-15, an authorized scope expansion, after a reviewer found the workflow asserting a host guarantee the host does not provide.</p>
+        </section>
+
+        <section id="analysis">
+          <h2>Analysis</h2>
+          <table>
+            <thead>
+              <tr><th>Entry</th><th>Root cause</th><th>Scope</th></tr>
+            </thead>
+            <tbody>
+              <tr id="F-1"><td><a href="#F-1">F-1</a></td><td>Independent tasks are dispatched in parallel onto one shared worktree and each is told to commit, but no rule states that an agent stages only the paths it authored — so a broad stage sweeps a sibling's in-progress edit into the wrong commit.</td><td><span class="chip area">asd</span></td></tr>
+              <tr id="F-2"><td><a href="#F-2">F-2</a></td><td>A retrospective's recommendations are written against the HEAD of the sprint that produced them and carry no recorded verification that they are still unresolved when a later sprint picks them up; 007's own F-4 root cause was itself derived from a stale agent-memory note rather than from current source.</td><td><span class="chip area">asd</span></td></tr>
+              <tr id="F-3"><td><a href="#F-3">F-3</a></td><td>The commit-ownership rule added this sprint assigns orchestrator-owned bookkeeping to the orchestrator and forbids an agent committing what it did not author, but neither half covers the converse — an agent that authored a file and did not commit it. Under parallel dispatch agents correctly avoid a directory a sibling is also writing, so those files reliably end up ownerless.</td><td><span class="chip area">asd</span></td></tr>
+              <tr id="F-4"><td><a href="#F-4">F-4</a></td><td>The interrupted-dispatch contract treats interruption as a per-reviewer event, but the actual failure mode is correlated: a session-wide limit takes every concurrent dispatch at once, and the split trigger then counts consecutive interruptions per reviewer, escalating five reviewers independently rather than recognising one condition.</td><td><span class="chip area">asd</span></td></tr>
+              <tr id="F-5"><td><a href="#F-5">F-5</a></td><td>The per-row-type ledger status vocabulary is stated once, in one sentence of rule prose, and nowhere in the machine artefact the reviewer is handed — so the reviewer must recall it rather than read it off its own input, and the validator that knows the vocabulary is not the thing that supplies it.</td><td><span class="chip area">asd</span></td></tr>
+              <tr id="F-6"><td><a href="#F-6">F-6</a></td><td>The read-only property was asserted as an absolute host guarantee while being true only of the artifact surface it was written about: reviewers cannot write artifacts, but <code>memory: project</code> is a separate write channel every reviewer definition grants, and the rule did not distinguish the two.</td><td><span class="chip area">asd</span></td></tr>
+              <tr id="F-7"><td><a href="#F-7">F-7</a></td><td>Canon is CRLF on disk on this platform and agents edit it with newline-anchored scripted replacements by default; nothing in the rules says so, and the lint command that catches the symptom reports it as a whitespace error rather than as the encoding hazard it is.</td><td><span class="chip area">both</span></td></tr>
+              <tr id="F-8"><td><a href="#F-8">F-8</a></td><td>The external reviewer wraps another provider's CLI whose run can outlast the wrapping dispatch, and nothing requires the wrapper to await it synchronously — so the dispatch can return with neither a verdict nor an availability skip.</td><td><span class="chip area">asd</span></td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="actions">
+          <h2>Actions</h2>
+          <table>
+            <thead>
+              <tr><th>Addresses</th><th>Recommendation</th><th>Acts on</th><th>Target</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><a href="#F-1">F-1</a>, <a href="#F-3">F-3</a></td><td>State the staging-ownership rule as the second half of the commit-ownership rule already added: a dispatched agent stages only the paths it authored, and commits every path it authored before signalling completion. One sentence closes both the sweep and the ownerless-file case, which are the same gap seen from either side.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/git-strategy.md</code></td></tr>
+              <tr><td><a href="#F-1">F-1</a></td><td>Say in the impl dispatch payload contract that parallel tasks share one worktree, so an agent knows why staging discipline matters rather than inferring it after a collision.</td><td><span class="chip area">asd</span></td><td><code>.asd/workflows/asd-phase-impl.md</code></td></tr>
+              <tr><td><a href="#F-2">F-2</a></td><td>Require the scope phase to verify each retrospective-derived criterion against current HEAD before writing it into <code>sprint.md</code>, and to record the verification. This sprint's audit caught all three stale premises, but only after they had been accepted at a hard gate and had to be revised through another one.</td><td><span class="chip area">asd</span></td><td><code>.asd/workflows/asd-phase-scope.md</code>, <code>.asd/rules/sprint-lifecycle.md</code></td></tr>
+              <tr><td><a href="#F-4">F-4</a></td><td>Give the interrupted-dispatch contract a correlated-failure branch: when every dispatch of one iteration is lost to a single cause, record it once as an iteration-level interruption rather than as N independent per-reviewer attempts, so the split trigger is not armed five times by one event.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/review-policy.md</code></td></tr>
+              <tr><td><a href="#F-5">F-5</a></td><td>Carry the allowed statuses and the <code>p</code>/<code>f</code> placement rule in the coverage manifest itself, per row type, so the reviewer reads the vocabulary off the artefact it must satisfy instead of recalling a sentence from prose. The validator already knows them; the manifest is the natural place to publish them.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/review-policy.md</code>, <code>.asd/runtime.js</code></td></tr>
+              <tr><td><a href="#F-6">F-6</a></td><td>Delivered this sprint as AC-15: the claim is now scoped to artifacts with the memory channel named, stated once and cited elsewhere, and the External Review <code>Bash</code> carve-out is recorded. Remaining work is the general form — state which emitted agent frontmatter fields the host actually honours, since the framework currently emits at least one it does not.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/providers.md</code></td></tr>
+              <tr><td><a href="#F-7">F-7</a></td><td>State the CRLF editing hazard where agents will meet it — canon is CRLF on disk, so a scripted replacement must anchor on <code>\r\n</code>, and a whole-file diff for a small edit is the symptom. The lint command already catches it; the rule should name it as an encoding hazard rather than leaving it to be rediscovered.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/code-style.md</code></td></tr>
+              <tr><td><a href="#F-7">F-7</a></td><td>Add a <code>.gitattributes</code> declaring the line-ending policy explicitly, so the behaviour does not depend on each machine's <code>core.autocrlf</code>.</td><td><span class="chip area">consumer</span></td><td><code>.gitattributes</code></td></tr>
+              <tr><td><a href="#F-8">F-8</a></td><td>Require the external reviewer to await the wrapped CLI within its own dispatch and to return an availability skip if it cannot complete. An empty return is not a permitted outcome; the skip already is.</td><td><span class="chip area">asd</span></td><td><code>.asd/agents/asd-external-review.md</code>, <code>.asd/rules/external-review.md</code></td></tr>
+              <tr><td><a href="#F-8">F-8</a>, <a href="#F-4">F-4</a></td><td>Record the wrapper's availability history across sprints rather than only within one. Three sprints running, external review has been unavailable at the iteration where a second opinion was most useful; the DoD treats it as an independent check that is in practice absent at high iteration counts.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/external-review.md</code></td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="systemic-proposals">
+          <h2>Systemic proposals</h2>
+          <p>Read off how this sprint actually ran — six review iterations, roughly seventy findings, three fix rounds, one criterion retired and one added mid-flight — rather than off the entries above.</p>
+          <table>
+            <thead>
+              <tr><th>Proposal</th><th>Acts on</th><th>Target</th><th>Expected saving</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Fix rounds run sequentially under one agent, not in parallel. The external reviewer observed after iteration 2 that two parallel rounds had each closed their targets while introducing a fresh cross-file contradiction; the three rounds that followed were sequential and introduced none of that class. Parallelism bought wall-clock and cost a review iteration each time.</td><td><span class="chip area">asd</span></td><td><code>.asd/workflows/asd-phase-impl.md</code> review-fix mode</td><td>A review iteration per fix round — the single largest cost in this sprint.</td></tr>
+              <tr><td>Require a reviewer's proposed fix to be verified against source before it is applied, not merely applied. Twice this sprint a finding's own prescription was wrong: the ledger-failure arithmetic a finding asked for undercounted, and a corrected memory statement replaced one wrong test name with another. Both were caught only because the dev measured instead of transcribing.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/review-policy.md</code>, <code>.asd/workflows/asd-phase-impl.md</code></td><td>Fix rounds that close a finding while shipping a new false statement.</td></tr>
+              <tr><td>Make a criterion's reachability part of accepting it. AC-11 survived three fix rounds before anyone traced whether its stated purpose could occur at all; the answer was no, by construction, and each round closed its own finding while leaving the purpose unmet. A plan task whose value depends on two phases agreeing should say which two and on what.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/sprint-lifecycle.md</code> plan format</td><td>Three fix rounds and one retired criterion, in this sprint alone.</td></tr>
+              <tr><td>Put agent memory in the review surface by default, not by exception. Narrowing the self-hosting exclusion was an action item this sprint; the very next iteration found four false durable statements in one memory file, two of which had already cost a full review re-dispatch each. Memory loads on every dispatch of its agent and had never been reviewed.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/external-review.md</code>, <code>.asd/rules/sprint-lifecycle.md</code></td><td>Re-dispatches caused by an agent confidently following its own wrong note.</td></tr>
+              <tr><td>Let a reviewer's verdict be recorded when a late-returning duplicate dispatch contradicts it. At iteration 5 an interrupted external dispatch delivered after its replacement had already returned APPROVE, carrying a verified critical finding the replacement missed. The contract says the interrupted verdict never counts, which is right for bookkeeping and wrong for evidence; the orchestrator had to reason outside the rule to avoid shipping a known-false claim.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/review-policy.md</code></td><td>The gap between what the process records and what is known to be true.</td></tr>
+              <tr><td>Count what a criterion costs, not only whether it is met. This sprint retired one criterion, closed another as already satisfied, and added a third mid-flight. That is healthy, but it happened three times through hard gates because nothing surfaces a criterion's running cost until a reviewer objects.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/checkpoints.md</code></td><td>Hard-gate round trips spent discovering a criterion is not worth its price.</td></tr>
+            </tbody>
+          </table>
+        </section>
+      </main>
+      <footer>by ASD workflow | 2026-09-08 | sprint 008-retro-007-remediation</footer>
+    </div>
+  </div>
+</body>
+</html>

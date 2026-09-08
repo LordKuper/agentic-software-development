@@ -187,3 +187,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: the green handoff passed adaptively. The evidence is machine-produced and complete, the reviewer set is the full required five with no absent key, and no unresolved finding or material alternative remains.
 - **Sprint shape, for the retro**: six review iterations, roughly seventy findings across them, three fix rounds worked sequentially by a single agent after the external reviewer observed that parallel rounds kept introducing fresh contradictions. One acceptance criterion (AC-11) was retired mid-sprint after three rounds proved its purpose unreachable; one was added (AC-15) as an authorized scope expansion; one (AC-4) was closed at audit as already satisfied. Eight friction entries recorded.
 - **Affected docs**: [test-plan.md](test-plan.md), [reviews/impl/iter-06/](reviews/impl/iter-06/), [state.json](state.json)
+
+## 2026-09-08 — retrospective written
+
+- **Decision**: `retrospective.html` written on the analysed branch — 8 friction entries, 10 actions (1 consumer, 9 framework), 6 systemic proposals. The sprint advances to `pr`.
+- **Rationale**: the friction log carried entries, so the remediation class was derived per `F-N` alongside the systemic class. Because this sprint's own scope was the sprint 007 retrospective, the analysis also reports on that remediation: every 007 action was delivered, but three of its rows were stale at HEAD and four of this sprint's eight entries are recurrences of classes 007 had already named. The sharpened conclusion is recorded — a correction that lands only in a rule does not survive either, when the rule states one half of a two-sided obligation.
+- **Affected docs**: [retrospective.html](retrospective.html), [friction-log.md](friction-log.md), [state.json](state.json)

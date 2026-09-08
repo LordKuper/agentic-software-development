@@ -22,7 +22,7 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 | F-3 | impl | A dispatched agent authored its own memory files and left them uncommitted, blocking the next phase gate | F-1 |
 | F-4 | impl-review | All five reviewer dispatches of one iteration were lost at once to a session rate limit | — |
 | F-5 | impl-review | A reviewer returned a substantively complete ledger using status words the validator rejects | — |
-| F-6 | impl-review | A reviewer declared read-only wrote a file, because its agent definition grants Write | — |
+| F-6 | impl-review | A reviewer declared read-only wrote a file through the memory channel the read-only claim does not cover | — |
 | F-7 | impl | A scripted edit anchored on a bare newline left a lone CR and turned two-line edits into whole-file rewrites | — |
 | F-8 | impl-review | The External Review dispatch returned without a verdict, waiting on a background process | F-4 |
 | F-2 | scope | Three of fourteen acceptance criteria were written against a stale premise and only the audit caught it | — |
