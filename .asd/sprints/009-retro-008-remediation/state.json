@@ -150,7 +150,7 @@
       "latched": {}
     },
     "impl": {
-      "iteration": 4,
+      "iteration": 5,
       "verdicts": {
         "iter-01": {
           "correctness": "CONCERNS",
@@ -179,19 +179,28 @@
           "testing": "APPROVE",
           "documentation": "CONCERNS",
           "external": "APPROVE"
+        },
+        "iter-05": {
+          "correctness": "APPROVE",
+          "efficiency": "APPROVE",
+          "testing": "APPROVE",
+          "documentation": "APPROVE",
+          "external": "APPROVE"
         }
       },
       "iteration_heads": {
         "iter-01": "e40343ee9de1aeee7befec7bb45e23cec996b3eb",
         "iter-02": "12dc5e7794c27dd07f3fedf41473490d0d9a7549",
         "iter-03": "053fb3c810656eedf9e894ec5bad80b59b54b1c7",
-        "iter-04": "cb95d21cacee4333c3ac43e924e13b315d99db93"
+        "iter-04": "cb95d21cacee4333c3ac43e924e13b315d99db93",
+        "iter-05": "dd66102762f8bb17d3de881b70dc37d222467075"
       },
       "latched": {
         "efficiency": 2,
         "testing": 3,
         "correctness": 4,
-        "external": 4
+        "external": 4,
+        "documentation": 5
       }
     }
   },

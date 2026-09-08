@@ -22,6 +22,7 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 | F-2 | impl | `git add --renormalize .` swept three siblings' in-progress edits into one dev's index | — |
 | F-3 | impl | An agent-memory file was co-authored by two concurrent devs and left committable by neither | — |
 | F-5 | impl | A session limit killed a tester mid-mutation, leaving a canonical rule file mutated on disk with no restore | — |
+| F-6 | impl-review | A reviewer returned a semantically complete coverage ledger in the wrong shape; the rule permits only reject-and-re-dispatch | reviews/impl/iter-05/documentation |
 | F-4 | impl-review | External review unavailable for the third consecutive sprint, at the iteration where a second opinion carried the most value | reviews/impl/iter-01/external |
 
 ## F-1 — every parallel dev independently invented the same commit workaround
@@ -63,3 +64,11 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 - **What happened**: proving a new assertion fails first requires mutating the file it guards and restoring it byte-for-byte afterwards. A session-wide usage limit killed the tester between those two steps, so `.asd/rules/external-review.md` was left carrying the mutation — "imported here for the 4 internal reviewers" in place of "imported here whole", which is precisely the `DOC4-1` defect the dev chain had just fixed. **Corrected after the re-dispatch measured it**: the suite was *red* (169/171) in that state, not green — the assertion added against the mutation is its own tripwire, and the re-dispatched tester reproduced the exact byte state to confirm it. The orchestrator's first reading of this entry assumed green without measuring.
 - **Impact**: the orchestrator caught the mutation by reading the diff before re-dispatching, and restored the file; nothing was committed. The real exposure is narrower than first recorded but still real: a fix round committed without its diff being read would have shipped a re-narrowed contract, and the red suite would have been attributed to unfinished work rather than to a corrupted rule file. The mutate-and-restore obligation has no crash safety: no rule says a mutation must be restored before any other work, or that a fix round ends with a diff of canonical files the agent was not authorised to touch.
 - **Refs**: —
+
+## F-6 — a conforming-content, non-conforming-shape ledger has no cheap path
+
+- **Phase**: impl-review (iteration 5)
+- **Surface**: rule — `.asd/rules/review-policy.md` "Coverage ledger" enforcement paragraph
+- **What happened**: the documentation reviewer returned a coverage ledger that resolved every row — 9 files, 10 rules, 9 sections, each with its status and authorized `n/a` predicate — but shaped as maps rather than the `{i,s,p,f}` row arrays the manifest's own `vocabulary` field mandates. The rule offers exactly one response: reject and re-dispatch the reviewer fresh, its verdict never counting. That would have spent a full critical-tier agent run to re-obtain evidence already present and verifiable, on an APPROVE at the critical floor.
+- **Impact**: the phase workflow transcribed the returned content into the mandated shape instead — every identity, status and predicate preserved, nothing added — and `validate-ledger` accepted it. That is a deliberate deviation from the enforcement paragraph, recorded here and in `decisions-log.md` rather than hidden. The gap is that the rule treats "incomplete evidence" and "correct evidence, wrong container" as the same failure, when only the first is a reason to distrust the verdict. Retro should decide whether a transcription clause belongs in the rule, or whether the manifest should carry a shape example the way it now carries the vocabulary.
+- **Refs**: reviews/impl/iter-05/documentation
