@@ -84,3 +84,22 @@ Ninth, authoring style: `tests/run.js` gets reviewed against `code-style.md` §7
 in-body comments with no framework exemption — the ~60 pre-existing ones are not a licence, and new
 ones draw a Documentation finding every time. Put the reasoning in the `assert` message; it is read
 at the moment of failure, which a comment above the line is not.
+
+Tenth, on re-pinning after a canon fix invalidates an assertion: pin the **relation between two sites**,
+never a fresh literal on one of them. Sprint 009 iter-02 — `checkpoints.md` counts fix rounds by a tail
+match while `asd-phase-impl.md` step 11 emits the whole heading; the durable check derives the emitted
+literal from the workflow and asserts it *ends with* the tail read out of `checkpoints.md`, so either
+side may be reworded freely as long as the counter still selects the emitter. String equality between
+the two would have gone red on the correct fix, exactly as it did.
+
+Eleventh, matching rule prose: key the locator to the sentence's **citation**, never its ordinal or
+adverb. `sprint-lifecycle.md`'s latch-clearing route was renamed "A THIRD" → "A further" mid-sprint; a
+`find` on the citation (`` `review-policy.md` "Late duplicate return" ``) survives that, an
+ordinal-keyed one reddens on a correct edit. Same family as the fourth trap (assert removed instruction
+phrases, not topic words).
+
+Twelfth, worktree line endings: canon files here still sit CRLF in the worktree from before
+`.gitattributes` (`* text=auto eol=lf`) landed, so `git checkout -- <file>` after a mutation
+re-materialises that file as LF. Tracked content is unchanged (`git status` clean, index `i/lf`), but
+"restored byte-for-byte" is only true of tracked content — say so rather than overclaiming, and expect
+a `CRLF will be replaced by LF` warning when staging a file that was never checked out.
