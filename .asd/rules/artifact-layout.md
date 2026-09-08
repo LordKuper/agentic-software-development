@@ -40,8 +40,8 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │       │   ├── friction-log.md
 │       │   ├── retrospective.html
 │       │   └── reviews/
-│       │       ├── design/iter-NN/<reviewer>.md, <reviewer>.part-N.md
-│       │       └── impl/iter-NN/<reviewer>.md, <reviewer>.part-N.md
+│       │       ├── design/iter-NN/<reviewer>.md, <reviewer>.part-N.md, <reviewer>.late.md
+│       │       └── impl/iter-NN/<reviewer>.md, <reviewer>.part-N.md, <reviewer>.late.md
 │       └── archived/<NNN-slug>/
 ├── .claude/{agents/, skills/, hooks/, settings.json}   # generated provider view
 ├── .claude/agent-memory/<agent>/                       # hand-authored, never generated — see "Agent memory"
