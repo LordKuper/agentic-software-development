@@ -1,6 +1,6 @@
 ---
 name: sync-apply-ledger-gotcha
-description: node .asd/sync.js --apply recomputes release-manifest.json hash ledgers repo-wide, which bites when splitting commits or working in parallel with other agents
+description: node .asd/sync.js --apply recomputes release-manifest.json hash ledgers repo-wide (bites when splitting commits or working in parallel), and how to measure ledger staleness correctly - a raw unnormalized read fakes a repo-wide mismatch
 metadata:
   type: project
 ---
