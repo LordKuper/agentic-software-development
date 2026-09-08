@@ -1,7 +1,7 @@
 {
   "sprint_id": "008-retro-007-remediation",
   "branch": "sprint/008-retro-007-remediation",
-  "phase": "impl-review",
+  "phase": "retro",
   "documents": {
     "audit": true,
     "prd": false,
@@ -73,6 +73,13 @@
       "reason": "AC-15 added: reconcile the reviewer read-only claim with the host grant, record which frontmatter fields are verified, and remove non-English plan-quoting comments from the Node sources",
       "evidence": "canon grants reviewers [Read, Glob, Grep, AskUserQuestion] with memory: project while the host adds a file-writing capability for that channel, so review-policy.md's \"by host guarantee\" is false as an absolute; sync.js emits a field its own comment calls undocumented; sync.js and update.js carry Russian comments quoting a plan document against language-policy.md and code-style.md section 8",
       "artifact_revision": ".asd/sprints/008-retro-007-remediation/sprint.md"
+    },
+    {
+      "gate": "green-review-handoff",
+      "decision_actor": "orchestrator",
+      "reason": "routine adaptive pass: every required reviewer satisfied and the terminal full suite green",
+      "evidence": "iter-06 verdicts APPROVE for all five (four latched, external fresh); terminal unscoped run 160/160, git diff --check clean, node .asd/sync.js --check ok:true, recorded in test-plan.md Suite run at 458c8b4",
+      "artifact_revision": ".asd/sprints/008-retro-007-remediation/test-plan.md@b91d8fa"
     }
   ],
   "task_routing": {
@@ -212,7 +219,7 @@
     }
   },
   "created_at": "2026-09-07T17:11:41Z",
-  "updated_at": "2026-09-08T15:00:00Z",
+  "updated_at": "2026-09-08T15:30:00Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

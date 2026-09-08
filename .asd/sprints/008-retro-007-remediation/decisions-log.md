@@ -180,3 +180,10 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Also**: `plan.md`'s Task 10 row is annotated to record that AC-11 was retired and its shipped work removed. The rows stand as history rather than being rewritten.
 - **Verification**: 158/158, `--check` clean, `git diff --check` clean, eight generated reviewer views regenerated.
 - **Affected docs**: [reviews/impl/iter-05/external.md](reviews/impl/iter-05/external.md), [plan.md](plan.md), [state.json](state.json)
+
+## 2026-09-08 — impl-review DoD met; terminal full suite green
+
+- **Decision**: Every required reviewer is satisfied — correctness, efficiency and testing latched on APPROVE at iteration 5, documentation at iteration 4, External Review APPROVE at iteration 6 — and the terminal full-suite gate is green: 160/160 unscoped, `git diff --check` clean, `node .asd/sync.js --check` `ok: true`, recorded in `test-plan.md`'s `Suite run` at `458c8b4`. The sprint advances to `retro`.
+- **Rationale**: the green handoff passed adaptively. The evidence is machine-produced and complete, the reviewer set is the full required five with no absent key, and no unresolved finding or material alternative remains.
+- **Sprint shape, for the retro**: six review iterations, roughly seventy findings across them, three fix rounds worked sequentially by a single agent after the external reviewer observed that parallel rounds kept introducing fresh contradictions. One acceptance criterion (AC-11) was retired mid-sprint after three rounds proved its purpose unreachable; one was added (AC-15) as an authorized scope expansion; one (AC-4) was closed at audit as already satisfied. Eight friction entries recorded.
+- **Affected docs**: [test-plan.md](test-plan.md), [reviews/impl/iter-06/](reviews/impl/iter-06/), [state.json](state.json)
