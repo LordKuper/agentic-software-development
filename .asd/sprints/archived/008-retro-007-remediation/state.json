@@ -1,7 +1,7 @@
 {
   "sprint_id": "008-retro-007-remediation",
   "branch": "sprint/008-retro-007-remediation",
-  "phase": "pr",
+  "phase": "done",
   "documents": {
     "audit": true,
     "prd": false,
@@ -87,6 +87,13 @@
       "reason": "user authorized the pr phase after being told it bumps the version, writes the changelog and opens the PR",
       "evidence": "DoD verified and re-run at pr entry: 160/160 unscoped, lint clean, build ok:true, all five iter-06 verdicts APPROVE, no unticked plan task, no sprint stub, no pending defect, retrospective written",
       "artifact_revision": "PR #29"
+    },
+    {
+      "gate": "sprint-closure",
+      "decision_actor": "user",
+      "reason": "explicit closure approval granted after merge and completion evidence",
+      "evidence": "PR #29 squash-merged as e15929d; on main asd_version 7.0.0 and tests 160/160; 12 of 15 AC delivered, AC-4 closed at audit as already satisfied, AC-11 retired at review iteration 4; five APPROVE verdicts at iter-06; retrospective written from 8 friction entries",
+      "artifact_revision": "e15929d"
     }
   ],
   "task_routing": {
@@ -226,17 +233,19 @@
     }
   },
   "created_at": "2026-09-07T17:11:41Z",
-  "updated_at": "2026-09-08T16:30:00Z",
+  "updated_at": "2026-09-08T16:50:00Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": {
     "number": 29,
     "url": "https://github.com/LordKuper/agentic-software-development/pull/29",
-    "state": "open",
+    "state": "merged",
     "title": "feat(workflow)!: remediate sprint 007 retrospective, v7.0.0",
-    "opened_at": "2026-09-08T16:30:00Z"
+    "opened_at": "2026-09-08T16:30:00Z",
+    "merged_at": "2026-09-08T07:11:35Z",
+    "merge_commit": "e15929d4914ffa21b30c1ddcf7f1a6a7010084b8"
   },
-  "archived_at": null,
+  "archived_at": "2026-09-08T16:50:00Z",
   "derived_handoff": {
     "base": "0366ee9aabbce047c93a978606b4661bbf7cac20",
     "head": "f1bdec61d01db9aaca7c9d6003d6866f6781d054",
