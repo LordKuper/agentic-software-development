@@ -112,7 +112,7 @@ Root `AGENTS.md`'s managed-block/hand-edited-tail split: `providers.md` "Canonic
 
 Versioning: bump `asd_version` and update `CHANGELOG.md` before PR review; tag/release only after closure finalization.
 
-Framework impl-review/External Review change surface: the whole repo diff (everything here IS framework source — canonical `.asd/**`, `README.md`, `AGENTS.md`, `tests/**`, and anything else added later, e.g. CI configs), minus `.asd/project/**`, `.asd/sprints/**`, the generated provider views (`.claude/{agents,skills,hooks}/**`, `.claude/settings.json`, `.codex/**`, `.agents/skills/**`), build output — never an allow-list of named paths, so nothing new needs a matching rule edit to be reviewed. `.claude/agent-memory/**` is **not** excluded — hand-authored, no canonical source (`artifact-layout.md` "Agent memory"), reviewed like any other source file.
+Framework impl-review/External Review change surface: the whole repo diff (everything here IS framework source — canonical `.asd/**`, `README.md`, `AGENTS.md`, `tests/**`, and anything else added later, e.g. CI configs), minus `.asd/project/**`, `.asd/sprints/**`, the generated provider views (`.claude/{agents,skills,hooks}/**`, `.claude/settings.json`, `.codex/**`, `.agents/skills/**`), build output — never an allow-list of named paths, so nothing new needs a matching rule edit to be reviewed. `.claude/agent-memory/**` is not one of those views — `artifact-layout.md` "Agent memory".
 
 ## Optional documents
 
