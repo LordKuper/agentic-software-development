@@ -1,7 +1,7 @@
 {
   "sprint_id": "009-retro-008-remediation",
   "branch": "sprint/009-retro-008-remediation",
-  "phase": "design-promote",
+  "phase": "impl",
   "documents": {
     "audit": true,
     "prd": false,
@@ -33,6 +33,14 @@
       "reason": "routine audit acceptance under adaptive policy; escalated questions answered",
       "evidence": "audit.md",
       "artifact_revision": "audit.md@1",
+      "decided_at": "2026-09-08T00:00:00Z"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "orchestrator",
+      "reason": "routine plan acceptance under adaptive policy; no scope added, task granularity settled by audit collision finding",
+      "evidence": "plan.md, audit.md Risks",
+      "artifact_revision": "plan.md@1",
       "decided_at": "2026-09-08T00:00:00Z"
     }
   ],

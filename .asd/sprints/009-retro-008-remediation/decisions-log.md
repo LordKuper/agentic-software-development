@@ -70,3 +70,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: [audit.md](audit.md)
 
 - 2026-09-08 — design/design-review/design-promote skipped (no documents enabled)
+
+## 2026-09-08 — plan.md accepted
+
+- **Decision**: `plan.md` accepted with eleven tasks cut by file rather than by AC. `AC-9` gets no task (closed at the audit gate); `AC-17` gets no task (tests are selected in `impl-test`); the `tests/run.js:3045` reconciliation Task 5 forces is recorded as a sprint-specific DoD addition rather than as a plan task.
+- **Rationale**: Advanced adaptively — the plan adds no scope, and its only judgment call is task granularity, which the audit's collision finding settles: four ACs land in `review-policy.md` and three more collide pairwise, so file-grouped sequential tasks are the shape that avoids the very cost `AC-10` exists to remove.
+- **Affected docs**: [plan.md](plan.md), [audit.md](audit.md)
