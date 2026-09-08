@@ -138,7 +138,7 @@ Written and run in `impl-test`, never in `impl`. Selection happens **after** the
 - Style consistent within a file.
 - Preserve a file's existing line endings. A scripted or regex edit anchors on the file's actual EOL, never an assumed `\n` — assuming the wrong one strips or orphans the `\r` on every line it rewrites. Symptom: a whole-file diff for a small edit. Prefer an editing tool that keeps EOL; verify the diff is the size of the change before staging.
 - Build and lint must pass before any commit; the impacted test set (`sprint-lifecycle.md` "Impacted test set") gates `impl-test`, not each commit — the full suite runs once, at the end of `impl-review`.
-- Run the pre-commit lint against staged content: `git diff --check` inspects unstaged changes only and exits 0 once the damage is staged, so a stage → lint → commit sequence passes blind. Use `git diff --cached --check` (equivalently `git diff --check HEAD`); a project's configured `lint` command must be the staged form.
+- Run the pre-commit lint against staged content: `git diff --check` inspects unstaged changes only and exits 0 once the damage is staged, so a stage → lint → commit sequence passes blind. Use `git diff --cached --check`. `git diff --check HEAD` is a superset, not an equivalent — it compares worktree against HEAD, so it also flags unstaged content nobody is committing (in a shared worktree, a sibling's edits); acceptable only when the tree holds nothing but the staged change, and a project's configured `lint` command must be the staged form.
 
 ## 20. Per-Language Rules
 
