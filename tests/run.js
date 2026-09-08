@@ -3156,6 +3156,33 @@ test('AC-15: .asd/sync.js and .asd/skills/asd-update/update.js carry no non-Lati
   }
 });
 
+test('AC-15/iter-05: providers.md names External Review as the sole Bash carve-out among read-only reviewers, and that claim matches actual frontmatter grants', () => {
+  const providers = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/providers.md'), 'utf8');
+  assert.ok(providers.includes('Reviewer agents carry no artifact-write grant on either host, with one carve-out.'), 'providers.md must state the carve-out, not the unqualified universal it replaced');
+  assert.ok(providers.includes('Config-enforced for the four internal reviewers'), 'providers.md must scope the config-enforced guarantee to the four internal reviewers, not all reviewer agents');
+  assert.ok(providers.includes('External Review is the carve-out'), 'providers.md must name External Review as the exception, not leave the carve-out unattributed');
+  assert.ok(providers.includes('needs `Bash` to invoke the wrapped CLI'), 'providers.md must state why the carve-out needs Bash');
+  assert.ok(!providers.includes('Enforced by config, not by a textual instruction repeated in reviewer bodies.'), 'the prior blanket enforcement sentence (true only for the four internal reviewers) must not survive verbatim now that a fifth reviewer agent is carved out');
+
+  const externalRaw = sync.readNormalized(path.join(REPO_ROOT, '.asd/agents/asd-external-review.md'));
+  const { meta: externalMeta } = sync.parseCanonicalFrontmatter(externalRaw);
+  assert.ok(externalMeta.claude.tools.includes('Bash'), 'the agent providers.md names as the carve-out must actually carry the Bash grant the prose claims');
+
+  for (const name of ['asd-reviewer-correctness', 'asd-reviewer-documentation', 'asd-reviewer-efficiency', 'asd-reviewer-testing']) {
+    const raw = sync.readNormalized(path.join(REPO_ROOT, '.asd/agents', `${name}.md`));
+    const { meta } = sync.parseCanonicalFrontmatter(raw);
+    assert.ok(!meta.claude.tools.includes('Bash'), `${name}: providers.md claims the four internal reviewers are config-enforced with no Bash - ${name} must not carry it`);
+  }
+});
+
+test('T-2/iter-05: asd-reviewer-correctness memory cites review-policy.md/providers.md for the reviewer write scope instead of restating the unqualified "reviewers are read-only on both providers" claim providers.md just corrected', () => {
+  const memory = fs.readFileSync(path.join(REPO_ROOT, '.claude/agent-memory/asd-reviewer-correctness/feedback_review-method-no-shell.md'), 'utf8');
+  assert.ok(!memory.includes('reviewers are read-only on both providers'), 'must not restate the unqualified universal claim providers.md corrected this round');
+  assert.ok(memory.includes('review-policy.md') && memory.includes('Gate Verdict Format'), 'must cite review-policy.md "Gate Verdict Format" for write scope rather than restating it');
+  assert.ok(memory.includes('.asd/rules/providers.md'), 'must cite providers.md for the tool mapping rather than re-enumerating tool names');
+  assert.ok(!/\b(Write|Edit|Bash)\b(\s*[/,]\s*`?\b(Write|Edit|Bash)\b){1,}/.test(memory), 'must not re-enumerate a tool-name list that can silently drift from the cited frontmatter');
+});
+
 // ===========================================================================
 // Runner
 // ===========================================================================
