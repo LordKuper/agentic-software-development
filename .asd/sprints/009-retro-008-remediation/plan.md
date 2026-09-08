@@ -61,10 +61,10 @@ Material risk: change: review DoD depends on this outcome contract
 
 ### Task 5: Agent memory is reviewable in both modes, said once
 Material risk: change: deleting content a currently-green test asserts
-- [ ] `.asd/rules/artifact-layout.md` "Agent memory": state the property once, mode-independently — agent memory is hand-authored source inside the review surface, never excluded (`AC-13a`)
-- [ ] Reduce the four mode-specific restatements (`sprint-lifecycle.md:115`, `external-review.md:54` and `:60`, `t_prompt-external-impl.md:20`) to citations of that home
-- [ ] Close the consumer-mode hole: `external-review.md:53`'s consumer scope reads as an allow-list, leaving `.claude/agent-memory/**` undefined; state it the way the self-hosting row does — start from the whole repo, subtract the exclusions
-- [ ] Note for `impl-test`: `tests/run.js:3045`'s `totalMatches === 4` assertion is invalidated by this task by design
+- [x] `.asd/rules/artifact-layout.md` "Agent memory": state the property once, mode-independently — agent memory is hand-authored source inside the review surface, never excluded (`AC-13a`)
+- [x] Reduce the four mode-specific restatements (`sprint-lifecycle.md:115`, `external-review.md:54` and `:60`, `t_prompt-external-impl.md:20`) to citations of that home
+- [x] Close the consumer-mode hole: `external-review.md:53`'s consumer scope reads as an allow-list, leaving `.claude/agent-memory/**` undefined; state it the way the self-hosting row does — start from the whole repo, subtract the exclusions
+- [x] Note for `impl-test`: `tests/run.js:3045`'s `totalMatches === 4` assertion is invalidated by this task by design
 
 ### Task 6: asd-phase-impl.md — shared worktree, sequential fix rounds
 Material risk: change: dispatch routing and concurrency semantics
