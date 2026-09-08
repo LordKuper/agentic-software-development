@@ -302,6 +302,30 @@ a redundant restatement drifting is maintenance the next real re-narrowing does 
   the tracked one: identical index and HEAD content, with `git status --porcelain` reporting only
   ` M tests/run.js` after each restore. `tests/run.js` itself was never checked out and stays `w/crlf`
   in the worktree, `i/lf` in the index; the `git add` CRLF warning is that normalization, not damage
+- **Terminal full-suite gate** (`impl-review` step 9) — the sprint cycle's single **unscoped** full-suite
+  run, and the one recorded suite result for this sprint. It supersedes the entry-5 impacted-run record
+  above as the verdict; the per-entry records are **kept rather than deleted**, because the `Defects`
+  section and three `Added tests` rows cite them as evidence and deleting them would leave those
+  citations dangling. Verdict below is the runner's exit code and report, not a summary of it
+  - HEAD recorded: **`2ab6b57`** (`chore(sprint): impl-review iter-05, reviewer DoD met`). Worktree
+    verified clean before the run — `git status --porcelain --untracked-files=all` empty, so the tree
+    exercised is exactly the tree at that commit
+  - Command: `node tests/run.js` (`test` from `commands.yaml`), no filter and no impacted subset — the
+    full flat runner, every declaration
+  - Result: **171/171 passed, 0 failed, 0 skipped. Process exit code 0**
+  - Lint: `git diff --cached --check` (`lint`) — **exit 0, no output**, run twice: once with an empty
+    index before the suite, and again with this file staged, immediately before the commit that carries it
+  - Build: `node .asd/sync.js --check` (`build`) — **`"ok": true`**, 72/72 targets `current`, zero
+    non-`current`, exit 0
+  - `F-5` canon-restoration check (the interrupted dispatch that left a rule file mutated), read
+    directly at this HEAD rather than inferred from the clean status: `external-review.md:51` reads
+    `imported here whole` (**not** the `DOC4-1` byte state `imported here for the 4 internal
+    reviewers`); `review-policy.md:144` carries both the delegation clause and the late-duplicate
+    carve-out; each `*-review` workflow carries all three reach bullets, `Interrupted dispatch` and
+    `Late duplicate return` at `External Review included` and `Split dispatch` at `internal reviewers
+    only`. `git diff main...HEAD --stat` over `.asd/rules/` and `.asd/workflows/` is 11 files,
+    +79/−22 — every one a sprint deliverable, no residual mutation
+  - Defects opened by this run: **none**. Nothing red to triage, so no `D-N` row was appended
 - Skips: none. No entry was added to `.asd/project/stubs.md`
 - Manual steps: none. No plan subtask needed a human-only action
 
