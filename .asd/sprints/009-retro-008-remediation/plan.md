@@ -98,10 +98,10 @@ Material risk: artifact: a repo-wide checkout-behaviour change
 
 ### Task 11: Cross-file consistency and generated views
 Material risk: artifact: mechanical mirrors whose staleness is caught by CI and tests
-- [ ] `AC-16`: re-check `README.md` (phase list, agent roster, model tiers, config schema, folder map, command list), `core.md` "See also", the phase chain and template variables against every change above; update whatever the changes actually touched, and record deliberately if nothing did
-- [ ] `AC-16`: update `.asd/release-manifest.json` `canon_hashes` for every edited agent — `agents/asd-external-review.md`, and `agents/asd-dev.md` if Task 1 edited it
-- [ ] `AC-18`: run `node .asd/sync.js --apply` for the generated views of every edited canonical agent, passing generated view paths; hand-edit no generated file
-- [ ] Confirm `node .asd/sync.js --check` is clean, as CI runs exactly that
+- [x] `AC-16`: re-check `README.md` (phase list, agent roster, model tiers, config schema, folder map, command list), `core.md` "See also", the phase chain and template variables against every change above; update whatever the changes actually touched, and record deliberately if nothing did
+- [x] `AC-16`: update `.asd/release-manifest.json` `canon_hashes` for every edited agent — `agents/asd-external-review.md`, and `agents/asd-dev.md` if Task 1 edited it
+- [x] `AC-18`: run `node .asd/sync.js --apply` for the generated views of every edited canonical agent, passing generated view paths; hand-edit no generated file
+- [x] Confirm `node .asd/sync.js --check` is clean, as CI runs exactly that
 
 ## Dependencies
 
