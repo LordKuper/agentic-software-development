@@ -1,17 +1,17 @@
 ---
 name: crlf-canon-edits
-description: Canon files here are CRLF in the worktree but LF in git; a scripted literal edit that eats only the LF leaves a lone CR, which makes git show the whole file as rewritten and fails git diff --check
+description: A canon file that is CRLF on disk (a checkout predating .gitattributes) breaks under a scripted edit anchored on an LF-only newline; the orphan CR makes git show the whole file rewritten
 metadata:
   type: project
 ---
 
-`.asd/**` markdown is checked out CRLF (`core.autocrlf=true`, index is LF). A scripted literal replacement whose search string *starts* with `\n` matches only the LF half of a `\r\n`, so deleting a whole line leaves a stray `\r` behind.
+Anchor every scripted edit on the file's actual EOL, after reading its bytes. Root `.gitattributes` (`* text=auto eol=lf`) means a fresh checkout is LF, but a worktree checked out before that file was added is still CRLF on disk — check, never assume. On such a file a literal replacement whose search string *starts* with `\n` matches only the LF half of a `\r\n`, so deleting a whole line leaves a stray `\r` behind.
 
-**Why:** git skips CRLF→LF normalization for a file containing a lone CR, so that one orphan byte turns a two-line edit into a whole-file rewrite in `git diff` and makes `git diff --check` flag trailing whitespace on every line — hiding the real change from the reviewer and from the per-commit history the `pr` phase relies on.
+**Why:** git skips CRLF-to-LF normalization for a file holding a lone CR, so that one orphan byte turns a two-line edit into a whole-file rewrite in `git diff` and floods the whitespace lint with trailing-whitespace hits on untouched lines — hiding the real change from the reviewer and from the per-commit history the `pr` phase relies on.
 
 **How to apply:**
-- Deleting a line by script: anchor the search string on `\r?\n` (or the full `\r\n`), never a bare `\n`; afterwards check `(content.match(/\r(?!\n)/g) || []).length === 0`.
+- Read the bytes first; if the file holds CRLF, anchor the search string on `\r?\n` (or the full `\r\n`), never a bare `\n`; afterwards assert no lone CR remains.
 - Sanity-check every scripted edit with `git diff --numstat` — a line count far larger than the edit means a line-ending problem, not a content problem.
-- `git diff --check` must be clean before committing; a wall of "trailing whitespace" on untouched lines is this bug, not real whitespace.
+- Lint staged content: `git diff --cached --check` must be clean before committing (`code-style.md` §19 — the unstaged form exits 0 once the damage is staged). A wall of "trailing whitespace" on untouched lines is this bug, not real whitespace.
 - Writing a file with plain LF is harmless (git stores LF anyway) — only *mixed* endings inside one file break normalization.
 - Related: [[sync-apply-ledger-gotcha]] for the ledger refresh the same canon edit needs.
