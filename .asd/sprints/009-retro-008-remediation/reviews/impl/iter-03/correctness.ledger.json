@@ -1,0 +1,159 @@
+{
+  "manifest_digest": "be36d379178878f9a83fb07469698ea6a55734f446bdd8446bd70c3317326853",
+  "findings": [
+    "1"
+  ],
+  "files": [
+    {
+      "i": ".asd/release-manifest.json",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/rules/checkpoints.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/rules/sprint-lifecycle.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/workflows/asd-phase-design-review.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/workflows/asd-phase-impl-review.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/workflows/asd-phase-impl.md",
+      "s": "checked"
+    },
+    {
+      "i": ".claude/agent-memory/asd-dev-critical/project_sync-apply-ledger-gotcha.md",
+      "s": "checked"
+    },
+    {
+      "i": ".claude/agent-memory/asd-reviewer-correctness/MEMORY.md",
+      "s": "checked"
+    },
+    {
+      "i": ".claude/agent-memory/asd-reviewer-correctness/feedback_review-method-no-shell.md",
+      "s": "checked"
+    },
+    {
+      "i": ".claude/agent-memory/asd-reviewer-testing/feedback_no-shell-review-method.md",
+      "s": "checked"
+    },
+    {
+      "i": ".claude/agent-memory/asd-tester-critical/project_testability-envelope.md",
+      "s": "checked"
+    },
+    {
+      "i": "tests/run.js",
+      "s": "checked"
+    }
+  ],
+  "rules": [
+    {
+      "i": "ac-1",
+      "s": "pass"
+    },
+    {
+      "i": "ac-2",
+      "s": "pass"
+    },
+    {
+      "i": "ac-3",
+      "s": "pass"
+    },
+    {
+      "i": "ac-4",
+      "s": "pass"
+    },
+    {
+      "i": "ac-5",
+      "s": "pass"
+    },
+    {
+      "i": "ac-6",
+      "s": "pass"
+    },
+    {
+      "i": "ac-7",
+      "s": "pass"
+    },
+    {
+      "i": "ac-8",
+      "s": "pass"
+    },
+    {
+      "i": "ac-9",
+      "s": "n/a",
+      "p": "closed at the audit gate with no deliverable; no change this sprint"
+    },
+    {
+      "i": "ac-10",
+      "s": "pass"
+    },
+    {
+      "i": "ac-11",
+      "s": "pass"
+    },
+    {
+      "i": "ac-12",
+      "s": "pass"
+    },
+    {
+      "i": "ac-13",
+      "s": "pass"
+    },
+    {
+      "i": "ac-14",
+      "s": "finding",
+      "f": "1"
+    },
+    {
+      "i": "ac-15",
+      "s": "pass"
+    },
+    {
+      "i": "ac-16",
+      "s": "pass"
+    },
+    {
+      "i": "ac-17",
+      "s": "pass"
+    },
+    {
+      "i": "ac-18",
+      "s": "pass"
+    }
+  ],
+  "sections": [
+    {
+      "i": "bugs",
+      "s": "reviewed"
+    },
+    {
+      "i": "security",
+      "s": "reviewed"
+    },
+    {
+      "i": "contracts",
+      "s": "reviewed"
+    },
+    {
+      "i": "best-practices",
+      "s": "reviewed"
+    },
+    {
+      "i": "ac-coverage-trace",
+      "s": "reviewed"
+    },
+    {
+      "i": "ui-conformance",
+      "s": "n/a",
+      "p": "no UI surface in scope file list"
+    }
+  ]
+}
