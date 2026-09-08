@@ -103,3 +103,14 @@ Twelfth, worktree line endings: canon files here still sit CRLF in the worktree 
 re-materialises that file as LF. Tracked content is unchanged (`git status` clean, index `i/lf`), but
 "restored byte-for-byte" is only true of tracked content — say so rather than overclaiming, and expect
 a `CRLF will be replaced by LF` warning when staging a file that was never checked out.
+
+Thirteenth, mutation discipline under interruption (sprint 009 `F-5`): restore the mutated file in the
+tool call immediately after reading the failure, never after "one more check" - a session limit between
+mutate and restore leaves corrupted canon on disk, and the next dispatch inherits it as a diff it did
+not author. Two things worth knowing when that happens. (1) The pair is self-revealing, not silent: an
+added assertion plus the mutation it was aimed at makes the suite RED (the assertion fires), so a claim
+that "the suite was green with the corrupted file" is worth re-checking by reproducing the exact byte
+state rather than repeating. (2) The real exposure is at commit time, not suite time - the danger is a
+round committed without reading the diff. On re-entry into someone else's unrestored work, re-derive
+every assertion against source and re-run every proof: their outputs did not survive, and a proof you
+did not run is not a proof you can record.

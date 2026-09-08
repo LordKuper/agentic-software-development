@@ -15,6 +15,7 @@ responsibility:
 | 2 | 66a2a1f | delta since entry 1 — `impl` review-fix `iter-01`, test side: the eight dev fix commits `3c4e6c9..eb9034c` (`runtime.js` `coverageManifestDigest`, `artifact-layout.md`, `git-strategy.md`, both `*-review` workflows, `asd-external-review.md`, `external-review.md`, `sprint-lifecycle.md`, `code-style.md`, `checkpoints.md`, `asd-phase-impl.md`), plus the testing/documentation findings aimed at `tests/run.js` and at this file |
 | 3 | 1fcf059 | delta since entry 2 — `impl` review-fix `iter-02`, test side: the dev chain's five commits `f4d518f`..`25492b0` (`asd-phase-impl.md` steps 5 and 6, both `*-review` workflows' step 7a/8a + `Artefacts produced`, `checkpoints.md` fix-round match, `sprint-lifecycle.md` ordinal), plus testing `T-1`/`T-2`, both aimed at `tests/run.js` |
 | 4 | 6ae1f7a | delta since entry 3 — `impl` review-fix `iter-03`, test side: the dev chain's single commit `6ae1f7a`, two lines in each of the two `*-review` workflows (step 7a/8a header now scopes `internal reviewers only` to split mechanics; the `Late duplicate return` sub-bullet now opens with its own reach, `applies to any replaced dispatch, External Review included`), plus correctness's test-side recommendation aimed at `tests/run.js` |
+| 5 | 79d3f81 | delta since entry 4 — `impl` review-fix `iter-04`, test side: the dev chain's `96d9c55` (both `*-review` workflows, step 7a/8a — the header's reach removed outright, `Interrupted dispatch` and `Split dispatch` written out as their own bullets, each stating its own reach) and `b32be9d` (one `asd-dev-critical` memory file plus its `MEMORY.md` index line), plus the partial, uncommitted `tests/run.js` inherited from the tester dispatch a session limit killed mid-run (`friction-log.md` `F-5`) |
 
 Entry 1's two HEAD stamps are one tree (testing `T-6`): both its strategy pass and its suite run were
 scoped through `aae30d1`, the `impl` tip. `5e7451b` is that same tree plus this tester's own output
@@ -29,6 +30,12 @@ Entry 4 stamps `6ae1f7a`, again the dev chain's tip and again for the same reaso
 lines per review workflow and nothing else — no rule doc, no Node source, no template — so the scoped
 strategy pass covers exactly one existing test; the impacted-set gate still ran the whole suite below.
 
+Entry 5 stamps `79d3f81` — the dev chain's tip `b32be9d` plus the orchestrator's restore commit for
+`F-5`. Its delta is three lines per review workflow and one memory file. The inherited `tests/run.js`
+was treated as evidence to re-verify, not as reasoning already done: every assertion in it was
+re-checked against source at this HEAD, and every mutation proof below was run from scratch, because
+none of the interrupted run's proofs survived it.
+
 ## Risk → check decisions
 
 Acceptance-criteria source is `sprint.md` `AC-1`..`AC-18` (`documents.prd` disabled). `AC-9` was closed at
@@ -41,8 +48,8 @@ the audit gate with no deliverable and has no change surface; `AC-17` is this fi
 | `.asd/rules/artifact-layout.md` "Agent memory" + its three citers (AC-13a) | a mode-specific restatement grows back and the two copies disagree — the exact condition Task 5 collapsed | static (rewrite of the existing check) | add | the check already existed but asserted a **copy count**, which Task 5 invalidated by design; rewritten to owner-plus-citations so it tracks the property instead of the count |
 | `.asd/rules/git-strategy.md` "Commit before review" + both `*-review` workflows' review-file write step + `review-policy.md` "Diff reachability" (AC-13b) | the obligation is stated only where the reviewer reads it and never where the committer acts — a reviewer holds no commit tool, so its memory write never reaches a commit, never reaches a diff and is never reviewed. That is the one-sided-obligation class this whole sprint exists to close | static (three-site literal coupling, the AC-1/AC-2 idiom) | add | **entry 2** (testing `T-2`): at entry 1 this half had no row at all, `add` or `none`. It also had no acting site to bind to — the obligation lived in `review-policy.md` alone and neither review workflow contained the string `memory`. The review-fix round landed both acting sites (`git-strategy.md`'s bookkeeping sentence and both write steps), so the coupling is now three real literal tokens rather than a `none` |
 | `.asd/rules/git-strategy.md` + `.asd/agents/asd-dev.md` + `.asd/workflows/asd-phase-impl.md` (AC-1, AC-2) | the prohibition is restated somewhere and the copies diverge; or the rule lands without the tool grant that makes it followable, which is the "correction that lands only in a rule" failure this sprint exists to fix | static | add | three-site coupling (rule ↔ agent grant ↔ workflow citation); each site is a literal token a regex derives |
-| `.asd/rules/review-policy.md` correlated interruption / late duplicate return / verify before applying (AC-4, AC-14, AC-11) | a branch is dropped or reworded into its opposite — a late APPROVE displacing a recorded FAIL is a shipped-false-claim path, and a lost correlated-interruption branch re-arms the split trigger per reviewer | static | add | the directional halves ("never the reverse", "raises no reviewer's attempt count") are what make the branches safe; asserted as tokens, not whole sentences. **Entry 2** (testing `T-1`): AC-14's `<reviewer>.late.md` is additionally bound to `artifact-layout.md`'s two reviews rows — an artefact a rule mandates must be one the exhaustive path map admits, or the orchestrator is instructed to write a file the layout contract classifies as stray. **Entry 3** (testing `T-2`, plus this round's own dev delta): two more halves bound. (a) The latch-clearing clause — `sprint-lifecycle.md` "APPROVE latch" claims to name *every* route that clears a latch, and the late-return route is one of them; `latch` appeared in the suite exactly once, unrelated, so the claim guarded nothing. Pinned by the route's **citation**, never by its ordinal, since the dev chain renamed "A THIRD" → "A further" this very round and an ordinal-keyed match would have gone red on a correct edit. (b) Both `*-review` workflows: the rule names the phase workflow as the actor, so the acting sites are step 7a/8a's `Late duplicate return` sub-bullet and each `Artefacts produced` list — the same three-site idiom, now rule ↔ path map ↔ acting workflow. **Entry 4** (correctness's iter-03 recommendation, verified before acting): with the reach carve-out now stated in each workflow's own bullet, the suite still pinned only the citation substring — and by a file-level `includes`, not even line-scoped — so a future edit re-narrowing the bullet back to the step header's `internal reviewers only` would have passed green, discarding exactly the late External Review return AC-14 exists to admit. Bound as a three-site relation instead: `review-policy.md` states the carve-out attached to the branch it widens, and each workflow's late-duplicate line must carry the same reach on the same line as the citation |
-| `.asd/rules/external-review.md` "Outcome contract" + agent Don'ts + `review-policy.md` hand-off (AC-8) | the hand-off narrows back to the unavailability path only, leaving the empty return undisposed on both sides — `F-8` itself | static | add | includes the **negative** assertion on the old scoping line, which is the half a positive-only check would miss. **Entry 3** (testing `T-1`): the two-site abort carve-out the iter-01 round landed was still unasserted — `external-review.md`'s "a precondition missing before any invocation … aborts the dispatch instead" and the agent's `ABORT — precondition not met: <artefact>` scoped "only before any `{{wraps_cli}}` invocation" with its citation back to "Outcome contract". Silent both ways, which is why it is an `add` and not a `none`: drop the rule clause and the agent emits a third outcome the contract forbids; drop the agent's scoping and a missing prompt template returns an availability skip that passes a gate on an artefact nobody reviewed — `F-8`'s own class. Both halves are literal tokens in tracked files, so "it is prose" would not survive inspection |
+| `.asd/rules/review-policy.md` correlated interruption / late duplicate return / verify before applying (AC-4, AC-14, AC-11) | a branch is dropped or reworded into its opposite — a late APPROVE displacing a recorded FAIL is a shipped-false-claim path, and a lost correlated-interruption branch re-arms the split trigger per reviewer | static | add | the directional halves ("never the reverse", "raises no reviewer's attempt count") are what make the branches safe; asserted as tokens, not whole sentences. **Entry 2** (testing `T-1`): AC-14's `<reviewer>.late.md` is additionally bound to `artifact-layout.md`'s two reviews rows — an artefact a rule mandates must be one the exhaustive path map admits, or the orchestrator is instructed to write a file the layout contract classifies as stray. **Entry 3** (testing `T-2`, plus this round's own dev delta): two more halves bound. (a) The latch-clearing clause — `sprint-lifecycle.md` "APPROVE latch" claims to name *every* route that clears a latch, and the late-return route is one of them; `latch` appeared in the suite exactly once, unrelated, so the claim guarded nothing. Pinned by the route's **citation**, never by its ordinal, since the dev chain renamed "A THIRD" → "A further" this very round and an ordinal-keyed match would have gone red on a correct edit. (b) Both `*-review` workflows: the rule names the phase workflow as the actor, so the acting sites are step 7a/8a's `Late duplicate return` sub-bullet and each `Artefacts produced` list — the same three-site idiom, now rule ↔ path map ↔ acting workflow. **Entry 4** (correctness's iter-03 recommendation, verified before acting): with the reach carve-out now stated in each workflow's own bullet, the suite still pinned only the citation substring — and by a file-level `includes`, not even line-scoped — so a future edit re-narrowing the bullet back to the step header's `internal reviewers only` would have passed green, discarding exactly the late External Review return AC-14 exists to admit. Bound as a three-site relation instead: `review-policy.md` states the carve-out attached to the branch it widens, and each workflow's late-duplicate line must carry the same reach on the same line as the citation. **Entry 5** (iter-04 dev delta, `96d9c55`): the fix removed the step header's reach outright rather than widening it, so all three branches now state their own reach on their own line and the header governs nothing. That moves the risk twice over. First, the interrupted branch's reach is now asserted only at the two acting bullets, while its two **sources** were unpinned — `review-policy.md:144`'s `Applies to the 4 internal reviewers, except where a branch states its own reach` and `external-review.md:51`'s `imported here whole`, both landed at `636c7b4` and neither read by any test. Both are pinned now: without the delegation clause the bullets' wider reach contradicts its own SSoT, and without the whole import there is nothing placing External Review inside a branch whose default is the 4 internal reviewers, so the bullets become unsourced claims a compressor deletes on sight — which is exactly the edit `F-5` left on disk. Second, the three bullets are bound line-scoped like the late-duplicate one already was: `Interrupted dispatch` must carry `External Review included` **and** its `external-review.md` "Outcome contract" citation in the same sentence, and `Split dispatch` must keep `internal reviewers only` — that branch's narrowness is the real one (an External Review dispatch returns no ledger to merge and is exempt from `validate-ledger`), and with both neighbours now reading "External Review included", harmonizing the third is the plausible wrong edit. |
+| `.asd/rules/external-review.md` "Outcome contract" + agent Don'ts + `review-policy.md` hand-off (AC-8) | the hand-off narrows back to the unavailability path only, leaving the empty return undisposed on both sides — `F-8` itself | static | add | includes the **negative** assertion on the old scoping line, which is the half a positive-only check would miss. **Entry 3** (testing `T-1`): the two-site abort carve-out the iter-01 round landed was still unasserted — `external-review.md`'s "a precondition missing before any invocation … aborts the dispatch instead" and the agent's `ABORT — precondition not met: <artefact>` scoped "only before any `{{wraps_cli}}` invocation" with its citation back to "Outcome contract". Silent both ways, which is why it is an `add` and not a `none`: drop the rule clause and the agent emits a third outcome the contract forbids; drop the agent's scoping and a missing prompt template returns an availability skip that passes a gate on an artefact nobody reviewed — `F-8`'s own class. Both halves are literal tokens in tracked files, so "it is prose" would not survive inspection. **Entry 5**: the "Outcome contract" side of the hand-off — that it imports `review-policy.md` "Interrupted dispatch" **whole** — is now pinned, in the `AC-4/AC-11/AC-14` test body where the mirrors derived from it are checked rather than here. This test's own assertion is `external.includes('"Interrupted dispatch"')`: it checks the boundary is *named*, never that it is imported unnarrowed. That is the hole `F-5` exposed — the interrupted tester's leftover mutation (`imported here for the 4 internal reviewers`, the `DOC4-1` defect verbatim) leaves this AC-8 test green, verified directly by re-running that exact byte state (proof (b) below). |
 | `.asd/rules/code-style.md` §19 + `.asd/project/commands.yaml` `lint` (AC-6) | the rule requires the staged lint form while this repo's own configured command stays the blind one | static | add | `.asd/project/**` is outside every review surface, so no reviewer sees that config edit — this assertion is its only automated check |
 | `.gitattributes` (AC-7) | a CRLF blob enters the index; invisible in a worktree that shows CRLF for every file anyway | static + index probe (`git ls-files --eol`) | add | the declaration alone is a tautology; the index probe is the check with a real failure mode, and it is the committed form of the `F-7` damage |
 | `.asd/rules/sprint-lifecycle.md` scope re-verification + Reachability grammar, `asd-phase-scope.md`, `t_plan.md` (AC-3, AC-12) | the obligation lives only in a rule the acting phase never reads; or the template teaches `Reachability` as per-task mandatory, colliding with `Material risk`'s fail-closed absence semantics | static | add | the template is where a plan author actually reads whether the line is conditional — asserted by block shape, not by counting lines |
@@ -76,6 +83,12 @@ was replaced rather than deleted — the AC-15 whole-heading equality, supersede
 pin the same coupling as containment (`code-style.md` §17: an implementation-coupled check is
 rewritten to the property it was reaching for, not dropped). Nothing else met a removal criterion; no
 out-of-scope deletion was proposed, so the removal gate did not fire in this entry either.
+
+Entry 5 removed nothing either and added no declaration: one existing test amended in place, plus two
+assertion **messages** reworded (see Added tests). No inherited assertion was dropped — each was
+re-verified against source at `79d3f81` before being kept, since the working tree it arrived in was
+authored by a dispatch that did not survive to record why. No out-of-scope deletion was proposed, so
+the removal gate did not fire in this entry either.
 
 ## Added tests
 
@@ -125,6 +138,51 @@ binding has to strip the bullet, which is exactly what the added assertion catch
 Cost of being wrong is bounded: the header carries no other obligation, and the bullet's reach is now
 checked against its SSoT in both workflows.
 
+Entry 5 added **no** test and removed none: one existing test (`AC-4/AC-11/AC-14`) amended in place,
+declaration count unchanged at 171, +6 assertions. Provenance matters here, because this entry inherits
+work it did not do: the six assertions arrived as an uncommitted `tests/run.js` from the tester dispatch
+`F-5` killed. Each was re-derived against source at this HEAD before being kept — the four locators
+re-read (`review-policy.md:144`, `external-review.md:51`, both workflows' step 7a/8a bullets, checked
+for a second line either `find` could select), the `AC-8` test re-read to confirm the `importedWhole`
+message's claim about what it does and does not check, and the historical claim in the late-duplicate
+message checked against `git show 96d9c55^` (the header did read `split and re-dispatch mechanics:
+internal reviewers only`). All six held and all six were kept; none of the interrupted run's proofs
+survived, so all seven mutations below were run fresh.
+
+One inherited assertion was kept despite an apparent overlap, and the overlap is worth stating: a
+pre-existing file-level test already asserts the interrupted-routing sentence in both workflows, and it
+co-fires when the bullet is deleted (proof (c)). It is not a substitute — it passed on the **pre-fix**
+shape, where that sentence lived in the step header's prose. The new assertion requires the branch to
+be a bullet at the acting step, which is the property the iter-04 fix actually established.
+
+Two assertion **messages** were reworded rather than assertions added, for one reason: both argued
+from the step header's *current wording*, which has now been rewritten under them twice in four
+iterations. A message that quotes a neighbouring site goes stale silently — nothing fails, and the next
+reader is told why an assertion exists by a sentence that is no longer true, which is how the iter-03
+message came to argue from a header that no longer said what it claimed. Both now argue from the
+delegation rule itself (`review-policy.md` states the 4-internal default and delegates reach to each
+branch), which the same test pins one assertion earlier, so the messages cannot outlive their premise.
+
+The header pin stays **declined**, and entry 4's reason (a) is superseded rather than re-affirmed: the
+header no longer contains `internal reviewers only` at all, so "the literal is still there, only a
+prefix narrows it" is no longer the argument. The argument at this HEAD is:
+(a) *It reddens on a correct edit.* Pinning "the header carries no reach" means either a fresh
+single-site literal (`The step header carries no reach; each branch below states its own.`) or a
+line-scoped absence of `internal reviewers only` on the header line. A future header that correctly
+summarizes all three branches — "interrupted and late-duplicate reach any dispatch; split is internal
+reviewers only" — is right and fails both forms. That is the entry-3 shape that had to be re-pinned
+after going red on a correct fix, and the reason `code-style.md` §17 work here pins relations between
+two sites rather than fresh literals on one.
+(b) *No true positive is left for it.* The header has no acting force: the orchestrator acts from the
+bullets, and all three bullets now carry their own reach, each pinned line-scoped and each proven
+below. A header that re-broadened or re-narrowed while the bullets stand is a contradiction on the same
+screen — a Documentation finding, not a silent behaviour change. Behaviour changes only when a bullet
+is stripped, narrowed, or cut loose from its source, and those are the six things that now fail. Every
+regression this sprint actually shipped on this section was bullet-side or source-side: a bullet silent
+on reach (iter-03) and a narrowed import (`F-5` / `DOC4-1`).
+(c) *Four iterations have gone to one rule section.* An assertion whose only distinct failure mode is
+a redundant restatement drifting is maintenance the next real re-narrowing does not pay for.
+
 | Test | Regression proof |
 |---|---|
 | `AC-5: LEDGER_VOCABULARY is the single source validateCoverageLedger enforces …` | mutation: `rowsById`'s `new Set(LEDGER_VOCABULARY[label])` replaced by an inline literal copy of the same three status lists (the exact re-hardcoding AC-5 forbids, values identical so every ordinary assertion still passes). First failure: the widening probe — `Error: files status invalid: provisionally-checked` at `tests/run.js:3270` |
@@ -151,6 +209,7 @@ checked against its SSoT in both workflows.
 | `AC-10: asd-phase-impl.md builds fix modes as one ordered chain …` **(entry 3: round-level serialization bound)** | three mutations, each leaving the entry-1 assertions (the `one ordered chain` presence and the three removed-phrase absences) passing, so each reaches the assertion it aims at. (a) the ordering clause replaced by ` as its own chain.` → first failure `one ordered chain per half is not enough: the two halves must also be ordered against each other …` at `tests/run.js:3481`. (b) only `, so exactly one agent is in flight across the whole round` removed → `the round-level invariant is the reviewable claim …` at `:3482`. (c) step 6's appended scope clause removed, leaving `sequential where dependent; parallel where independent` intact → `the surviving parallelism must be scoped where it is stated: unscoped, the dispatch step reads as authorizing in a fix mode precisely what step 5 forbids …` at `:3486`. (c) is the one that matters for the preserved phrase: the entry-1 assertion that step 6 keeps its parallelism was converted from `lines.some(…)` to a `find` + two assertions, so the phrase's survival and its scoping fail separately and neither hides the other |
 
 | `AC-4/AC-11/AC-14 …` **(entry 4: reach carve-out bound at its SSoT and at both acting bullets, correctness's iter-03 recommendation)** | three mutations, each restored with `git checkout -- <file>` before the next, each run against the whole suite. (a) `, External Review included` deleted from `asd-phase-design-review.md`'s step-8a late-duplicate bullet (the re-narrowing the recommendation predicts) → first failure `.asd/workflows/asd-phase-design-review.md: the acting bullet must restate review-policy.md's reach carve-out on its own line, because the step that encloses it scopes itself "internal reviewers only" …` at `tests/run.js:3366`; 169/171, the co-failure being the expected `upstream_hashes` hash-ledger entry for the mutated file. (b) the same deletion in `asd-phase-impl-review.md` instead, design left intact so the loop's first iteration passes and the mutation is only reachable at the second → same assertion, `impl` variant, `tests/run.js:3366`, 169/171. (c) `, External Review included` deleted from `review-policy.md:144`'s section-scope line → first failure `review-policy.md scopes the whole section to the 4 internal reviewers, so the late-duplicate branch only reaches a replaced External Review dispatch while this carve-out stays attached to it …` at `tests/run.js:3361`, 169/171 — it precedes the loop, so it fires before either workflow assertion, which is the intended order: lose the SSoT and the two mirrors have nothing to mirror. Pre-mutation and post-restore runs were 171/171 in every case |
+| `AC-4/AC-11/AC-14 …` **(entry 5: both reach sources bound, and the interrupted/split bullets the iter-04 fix created)** | seven mutations, one per assertion touched, each restored with `git checkout -- <file>` **as the next tool call after reading the failure** — `F-5`'s lesson, taken literally — and each run against the whole suite. The co-failing `release-manifest.json: every upstream_hashes entry matches the actual file` is expected noise for any `managed_paths` file, not a second finding. Line stamps are entry-5 line numbers. (a) `, except where a branch states its own reach` deleted from `review-policy.md:144` → first failure `the section default plus its delegation clause are what make every acting bullet below load-bearing: a branch silent on reach is not unscoped, it inherits the 4-internal-reviewers default …` at `tests/run.js:3362`, 169/171. (b) `imported here whole` → `imported here for the 4 internal reviewers` in `external-review.md:51`, the exact byte state `F-5` left on disk → first failure `external-review.md must hand a non-outcome to review-policy.md "Interrupted dispatch" as a WHOLE import …` at `:3364`, 169/171 — the `AC-8` test stayed green throughout, which is the evidence behind that row's entry-5 note. (c) the whole `- Interrupted dispatch` bullet deleted from `asd-phase-impl-review.md` → in this test `.asd/workflows/asd-phase-impl-review.md: the interrupted branch must be written out as its own bullet at the acting step …` at `:3373`, 168/171 — the third failure is the pre-existing file-level routing test co-firing, discussed in Added tests. (d) that bullet's `— applies to any dispatch, External Review included:` → `— internal reviewers only:` → `… the interrupted bullet must carry its own reach on its own line, for the same reason the late-duplicate bullet does …` at `:3374`, 169/171. (e) the bullet's `per \`external-review.md\` "Outcome contract" (which imports that rule whole)` deleted with the reach left intact, so (d)'s assertion still passes and the mutation reaches the next one → `… the reach and the rule it is derived from must be one sentence …` at `:3375`, 169/171. (f) `Split dispatch — internal reviewers only, per that rule's opening scope` → `Split dispatch — applies to any dispatch, External Review included, per that rule's opening scope` → `… the split bullet must keep the section default stated explicitly …` at `:3377`, 169/171. (g) the reworded late-duplicate message re-proven on its own assertion: `Late duplicate return — applies to any replaced dispatch, External Review included:` → `Late duplicate return:` → `… the acting bullet must state review-policy.md's reach carve-out on the same line as its citation. Reach is delegated to each branch and never inherited from the enclosing step header …` at `:3369`, 169/171. Every workflow mutation was applied to `asd-phase-impl-review.md`, the loop's **second** iteration, so the design pass completes first and the mutation is reachable only at the assertion it aims at. Pre-mutation and post-restore runs were 171/171 in every case, with `git status --porcelain` showing only ` M tests/run.js` after each restore |
 
 ## Suite run
 
@@ -219,6 +278,30 @@ checked against its SSoT in both workflows.
   identically, worktree bytes included. `tests/run.js` itself was again never checked out and stays
   `w/crlf` / `i/lf` (the `git add` CRLF warning is that normalization, not damage — the staged diff is
   5 insertions / 1 deletion, not a whole-file rewrite)
+- Entry 5 opened **0 red** of its own. The inherited working tree was red, 169/171, and for one reason:
+  `F-5`'s unrestored mutation was still on disk at hand-over — `.asd/rules/external-review.md` carrying
+  `imported here for the 4 internal reviewers` against the very assertion that same working tree had
+  just added. The orchestrator's restore (`79d3f81`) returns 171/171. Recorded because it corrects the
+  severity stated in `F-5`: with both halves on disk the suite was **not** green, and reproducing that
+  exact state (proof (b) above) fails 169/171 with the new assertion first in this test — the fail-first
+  assertion was itself the tripwire that would have stopped the corrupted canon at the suite gate before
+  any commit. What `F-5` cost this entry is proofs, not decisions: all seven mutations were re-run from
+  scratch because none of the interrupted run's outputs survived, and every inherited assertion was
+  re-derived against source rather than trusted. No decision changed, no assertion was dropped, no `D-N`
+- Entry 5 result: **pass — 171/171 passed, 0 failed, 0 skipped** (171 declarations at entry 5's start,
+  minus 0 removed, plus 0 new; one existing test amended in place, +6 assertions and 2 messages
+  reworded). Entry 5 lint: `git diff --cached --check` — **clean, exit 0**, no output, against this
+  entry's own staged paths. Entry 5 build: `node .asd/sync.js --check` — **`"ok": true`**, 72/72 targets
+  `current`, zero non-`current`. Entry 5 HEAD: `79d3f81` plus this entry's own two authored files
+  (`tests/run.js`, `test-plan.md`). Entry 3's qualification to "byte-for-byte" is narrower here:
+  `git ls-files --eol` reports all three mutated canon files (`review-policy.md`, `external-review.md`,
+  `asd-phase-impl-review.md`) at `i/lf w/lf` after every restore, and `review-policy.md` and
+  `asd-phase-impl-review.md` were already `w/lf` before this entry touched them (entry 4 restored both).
+  `external-review.md`'s pre-mutation worktree endings cannot be re-verified from here — the interrupted
+  run mutated it and the orchestrator's restore ran before this dispatch began — so the honest claim is
+  the tracked one: identical index and HEAD content, with `git status --porcelain` reporting only
+  ` M tests/run.js` after each restore. `tests/run.js` itself was never checked out and stays `w/crlf`
+  in the worktree, `i/lf` in the index; the `git add` CRLF warning is that normalization, not damage
 - Skips: none. No entry was added to `.asd/project/stubs.md`
 - Manual steps: none. No plan subtask needed a human-only action
 
@@ -229,14 +312,16 @@ Code defects found by the suite. Resolved in `impl` test-fix mode.
 | ID | Location | Symptom | Failing test | Status | Fix commit |
 |---|---|---|---|---|---|
 
-None, in any of the four entries. Every failure seen was a test defect and was fixed here: entry 1's
+None, in any of the five entries. Every failure seen was a test defect and was fixed here: entry 1's
 pre-existing copy-count assertion (rewritten, see Removed/Added) and one over-tight `/parallel/i`
 match in a first draft of the AC-10 test (see its proof row); entry 2's single red, the
 `--write must persist the same digest just printed` assertion that correctness `F-2`'s fix
 invalidated by design (re-pinned, see Added tests and Suite run); entry 3's single red, the
 whole-heading `impl fix for iter-NN: findings resolved` equality that correctness `F-1`'s fix
 invalidated by design (re-pinned to containment, see Added tests and Suite run); entry 4 opened no
-red at all. No production or
+red at all; entry 5's only red was inherited — not its own and not a defect in either code or test
+(`F-5`'s unrestored canon mutation, restored at `79d3f81` before this entry began, recorded in Suite
+run). No production or
 canonical source was modified by this phase in any entry — the mutations below/above were all
 restored byte-for-byte.
 
