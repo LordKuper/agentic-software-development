@@ -44,7 +44,74 @@
       "decided_at": "2026-09-08T00:00:00Z"
     }
   ],
-  "task_routing": {},
+  "task_routing": {
+    "task-1": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "task-2": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "task-3": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:public contract",
+      "resolved_model": "opus"
+    },
+    "task-4": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "task-5": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "task-6": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "task-7": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "task-8": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "task-9": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:ambiguous judgment",
+      "resolved_model": "opus"
+    },
+    "task-10": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:repo checkout behaviour",
+      "resolved_model": "sonnet"
+    },
+    "task-11": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:generated view staleness",
+      "resolved_model": "sonnet"
+    }
+  },
   "skipped_phases": [
     "design",
     "design-review",

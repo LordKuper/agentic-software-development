@@ -1,0 +1,47 @@
+---
+responsibility:
+  owns: per-sprint log of workflow friction — a rule, phase, gate, agent, skill, template or provider tool that malfunctioned or could not be followed
+  excludes: code defects (test-plan.md D-N), artifact-quality findings and verdicts (reviews/), human operational actions (manual-steps.md MS-N), decisions taken (decisions-log.md)
+  delegates_to: test-plan.md (defects), reviews/ (verdicts), manual-steps.md (manual actions), decisions-log.md (decisions), retrospective.html (analysis and recommendations)
+---
+
+# Friction log — sprint 009-retro-008-remediation
+
+<!--
+Lifecycle, what qualifies, what never does, the F-N id scheme and who appends:
+.asd/rules/sprint-lifecycle.md "Friction log" — normative there, not restated here.
+Entry content is language.docs.
+Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
+-->
+
+## Summary
+
+| ID | Phase | Problem | Refs |
+|---|---|---|---|
+| F-1 | impl | Five parallel devs in one worktree each had to invent a pathspec-commit workaround; the rule fixing this was being authored in the same wave | — |
+| F-2 | impl | `git add --renormalize .` swept three siblings' in-progress edits into one dev's index | — |
+| F-3 | impl | An agent-memory file was co-authored by two concurrent devs and left committable by neither | — |
+
+## F-1 — every parallel dev independently invented the same commit workaround
+
+- **Phase**: impl (initial mode, wave 1: Tasks 1, 2, 8, 9, 10)
+- **Surface**: workflow — `.asd/workflows/asd-phase-impl.md` step 6 dispatch payload; rule — `.asd/rules/git-strategy.md` "Commit before review"
+- **What happened**: five devs were dispatched concurrently into one shared worktree. Each found the shared index already carrying siblings' staged paths at commit time, and each independently reinvented the same escape — `git commit --only <path>` or `git commit -- <paths>` — after the dispatch payload told it only to "commit per Conventional Commits". The staging-ownership sentence that makes this deterministic was itself Task 1 of this same wave, so the wave that proved the need ran without it.
+- **Impact**: no wrong commit landed, but the workaround cost each of five dispatches its own discovery pass, and the safety depended on every agent noticing the shared index unprompted. `AC-1` and `AC-2` are the fix; this entry records that the class recurred a third consecutive sprint (008 `F-1`, `F-3`) while being remediated.
+- **Refs**: —
+
+## F-2 — a renormalization command staged three siblings' work
+
+- **Phase**: impl (initial mode, Task 10)
+- **Surface**: workflow — `.asd/workflows/asd-phase-impl.md` step 6; rule — `.asd/rules/git-strategy.md`
+- **What happened**: verifying the `.gitattributes` premise legitimately requires `git add --renormalize .`, a whole-tree command with no path-scoped form that answers the same question. It staged `.asd/agents/asd-dev.md`, `.asd/rules/git-strategy.md` and the sprint's `state.json` — all mid-edit by siblings — and the dev had to detect and `git restore --staged` them before committing.
+- **Impact**: caught and reverted by the dev, so nothing shipped wrong. It shows the staging-ownership rule alone is not sufficient: some verification commands are inherently whole-tree, and a parallel wave gives them no safe moment to run.
+- **Refs**: —
+
+## F-3 — reviewer- and dev-authored agent memory has no owner under parallel dispatch
+
+- **Phase**: impl (initial mode, wave 1)
+- **Surface**: rule — `.asd/rules/artifact-layout.md` "Agent memory", `.asd/rules/review-policy.md` "Change-surface rule"
+- **What happened**: two concurrently dispatched devs both appended to `.claude/agent-memory/asd-dev-critical/project_parallel-agent-commit-sweep.md`. Neither could commit it without carrying the other's in-flight edit, so both left it uncommitted; it therefore reaches no reviewed diff. This is the exact ownerless-memory case `AC-13b` assigns an owner to, observed live while that AC was being implemented.
+- **Impact**: one source file authored this sprint sits outside every reviewer's change surface unless the orchestrator commits it. Recorded so retro can judge whether `AC-13b`'s fix (the phase workflow commits a reviewer's memory writes) covers the dev-authored, multi-writer case too — it currently does not.
+- **Refs**: —

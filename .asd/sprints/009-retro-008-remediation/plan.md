@@ -33,18 +33,18 @@ Sprint-specific additions: `tests/run.js:3031-3046` currently asserts the agent-
 
 ### Task 1: Staging and commit ownership, stated whole
 Material risk: change: workflow-gate contract, plus an agent tool-policy grant
-- [ ] `.asd/rules/git-strategy.md` "Commit before review": extend the ownership paragraph with the two missing halves — a dispatched agent stages only the paths it authored, and commits every path it authored before signalling completion (`AC-1`, closing `F-1` and `F-3` from one sentence)
-- [ ] `.asd/agents/asd-dev.md` tool policy: grant `git add`/`git commit` for the agent's own work, never push, never `--no-verify` — same shape as `asd-tester.md:74`, without which the new rule is unfollowable by the agent it governs
-- [ ] Verify no other file restates the rule; `asd-phase-impl.md`, `asd-dev.md`, `asd-tester.md` cite it
+- [x] `.asd/rules/git-strategy.md` "Commit before review": extend the ownership paragraph with the two missing halves — a dispatched agent stages only the paths it authored, and commits every path it authored before signalling completion (`AC-1`, closing `F-1` and `F-3` from one sentence)
+- [x] `.asd/agents/asd-dev.md` tool policy: grant `git add`/`git commit` for the agent's own work, never push, never `--no-verify` — same shape as `asd-tester.md:74`, without which the new rule is unfollowable by the agent it governs
+- [x] Verify no other file restates the rule; `asd-phase-impl.md`, `asd-dev.md`, `asd-tester.md` cite it
 
 ### Task 2: review-policy.md — four obligations, one sequential pass
 Material risk: change: four contracts in one file, two in the same section
-- [ ] `AC-5`: state the coverage manifest's vocabulary field in the manifest contract (`:93-105`) — allowed statuses and the `p`/`f` placement rule per row type, carried by the artefact the reviewer is handed, not by prose it must recall
-- [ ] `AC-4`: give the interrupted-dispatch contract (`:132-148`) a correlated-failure branch — one cause taking every dispatch of an iteration is recorded once as an iteration-level interruption, never as N per-reviewer attempts arming the split trigger N times
-- [ ] `AC-14`: in the same section, permit a late-returning duplicate dispatch's verdict to be recorded when it carries evidence contradicting the verdict already recorded; state who decides and what is written
-- [ ] `AC-11`: in "Autofix vs escalation" (`:70-83`), require a reviewer's proposed fix to be verified against source before it is applied; an equivalent correct fix remains permitted, an unverified transcription does not
-- [ ] `AC-13b`: in "Change-surface rule" (`:38-40`), close the diff-reachability gap — an agent-authored file that no one commits is invisible to review; name who commits reviewer-authored memory so it reaches the reviewed diff
-- [ ] Keep both `*-review` workflows citing this file, never restating it (`tests/run.js:2988-2993` asserts the citation)
+- [x] `AC-5`: state the coverage manifest's vocabulary field in the manifest contract (`:93-105`) — allowed statuses and the `p`/`f` placement rule per row type, carried by the artefact the reviewer is handed, not by prose it must recall
+- [x] `AC-4`: give the interrupted-dispatch contract (`:132-148`) a correlated-failure branch — one cause taking every dispatch of an iteration is recorded once as an iteration-level interruption, never as N per-reviewer attempts arming the split trigger N times
+- [x] `AC-14`: in the same section, permit a late-returning duplicate dispatch's verdict to be recorded when it carries evidence contradicting the verdict already recorded; state who decides and what is written
+- [x] `AC-11`: in "Autofix vs escalation" (`:70-83`), require a reviewer's proposed fix to be verified against source before it is applied; an equivalent correct fix remains permitted, an unverified transcription does not
+- [x] `AC-13b`: in "Change-surface rule" (`:38-40`), close the diff-reachability gap — an agent-authored file that no one commits is invisible to review; name who commits reviewer-authored memory so it reaches the reviewed diff
+- [x] Keep both `*-review` workflows citing this file, never restating it (`tests/run.js:2988-2993` asserts the citation)
 
 ### Task 3: runtime.js — one vocabulary constant, shared by validator and manifest
 Material risk: change: validator behaviour and manifest digest shape
@@ -82,19 +82,19 @@ Material risk: change: two rule contracts, one of them parser-critical
 
 ### Task 8: checkpoints.md — a criterion's running cost is surfaced
 Material risk: change: gate obligation with no enforcement mechanism behind it
-- [ ] `AC-15`: state the surfacing obligation on gates that already exist, with no new state — the count is read off `reviews/<phase>/iter-NN/` and the fix-round history in `decisions-log.md`, as decided at the audit gate
-- [ ] Name the measurement point and the unit explicitly, so the obligation is reviewable rather than decorative
+- [x] `AC-15`: state the surfacing obligation on gates that already exist, with no new state — the count is read off `reviews/<phase>/iter-NN/` and the fix-round history in `decisions-log.md`, as decided at the audit gate
+- [x] Name the measurement point and the unit explicitly, so the obligation is reviewable rather than decorative
 
 ### Task 9: code-style.md — the line-ending editing hazard and the blind lint
 Material risk: change: a rule shipped to every consumer, so it may not assert this repo's platform
-- [ ] `AC-6`: §19 states that a scripted replacement anchors on the file's actual EOL, and that a whole-file diff for a small edit is the symptom — platform-neutral, since `code-style.md` ships via `managed_paths`
-- [ ] `AC-6`: state the measured blind spot — `git diff --check` exits 0 once the damage is staged, so the pre-commit check is `git diff --cached --check`
-- [ ] Update `.asd/project/commands.yaml`'s `lint` to the `--cached` form, so this repo's own configured check is the one the rule describes. `.asd/project/**` is outside the review surface, so verify this edit by grep at `impl-review` rather than expecting a reviewer to see it
+- [x] `AC-6`: §19 states that a scripted replacement anchors on the file's actual EOL, and that a whole-file diff for a small edit is the symptom — platform-neutral, since `code-style.md` ships via `managed_paths`
+- [x] `AC-6`: state the measured blind spot — `git diff --check` exits 0 once the damage is staged, so the pre-commit check is `git diff --cached --check`
+- [x] Update `.asd/project/commands.yaml`'s `lint` to the `--cached` form, so this repo's own configured check is the one the rule describes. `.asd/project/**` is outside the review surface, so verify this edit by grep at `impl-review` rather than expecting a reviewer to see it
 
 ### Task 10: .gitattributes
 Material risk: artifact: a repo-wide checkout-behaviour change
-- [ ] `AC-7`: add a root `.gitattributes` declaring `* text=auto eol=lf`, this repository only — no template, no `/asd-init` seeding, no `managed_paths` entry
-- [ ] Confirm the measured premise still holds before committing: every index blob is LF, so no blob changes and `git add --renormalize .` is a no-op; the working tree normalizes to LF on the next checkout
+- [x] `AC-7`: add a root `.gitattributes` declaring `* text=auto eol=lf`, this repository only — no template, no `/asd-init` seeding, no `managed_paths` entry
+- [x] Confirm the measured premise still holds before committing: every index blob is LF, so no blob changes and `git add --renormalize .` is a no-op; the working tree normalizes to LF on the next checkout
 
 ### Task 11: Cross-file consistency and generated views
 Material risk: artifact: mechanical mirrors whose staleness is caught by CI and tests
