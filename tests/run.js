@@ -2439,8 +2439,16 @@ test('runtime.js CLI: manifest-digest prints the same digest coverageManifestDig
   assert.strictEqual(fs.readFileSync(manifestPath, 'utf8'), JSON.stringify(manifest), '--write not passed: file on disk must be untouched');
 
   runtimeCli(['manifest-digest', '--manifest', manifestPath, '--write']);
-  const written = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  const firstWrite = fs.readFileSync(manifestPath, 'utf8');
+  const written = JSON.parse(firstWrite);
   assert.strictEqual(written.digest, out, '--write must persist the same digest just printed');
+
+  // AC-5: stamping publishes the validator's own vocabulary into the artefact the reviewer reads,
+  // and must not move the manifest identity while doing it - a digest change here would invalidate
+  // every ledger already returned against the pre-stamp digest.
+  assert.deepStrictEqual(written.vocabulary, runtime.LEDGER_VOCABULARY, '--write must publish the validator\'s own vocabulary constant, so the reviewer reads the statuses off its own input instead of recalling rule prose');
+  runtimeCli(['manifest-digest', '--manifest', manifestPath, '--write']);
+  assert.strictEqual(fs.readFileSync(manifestPath, 'utf8'), firstWrite, 'a second --write must be byte-idempotent - stamping is how a workflow refreshes a manifest, and a moving file would churn the digest on every refresh');
 });
 
 test('AC-12/14: variants inherit their canonical permissions and malformed or colliding variants fail closed', () => {
@@ -3028,21 +3036,24 @@ test('AC-10: a reserved change-risk class name declared target:"artifact" fails 
   assert.doesNotThrow(() => runtime.routeTask({ ...base, risks: [{ name: 'config-file', target: 'artifact' }] }), 'a non-reserved artifact risk name must keep routing on evidence, unaffected by the new guard');
 });
 
-test('T-2: `.claude/agent-memory/**` is stated as NOT excluded from the self-hosting review scope everywhere the exclude_paths list itself is restated - sprint-lifecycle.md "Self-hosting", external-review.md (both statements), and t_prompt-external-impl.md', () => {
-  const files = [
-    '.asd/rules/sprint-lifecycle.md',
-    '.asd/rules/external-review.md',
-    '.asd/templates/external-review/t_prompt-external-impl.md',
-  ];
-  const notExcluded = /`\.claude\/agent-memory\/\*\*`[^.]*?not[^.]*?excluded/i;
-  let totalMatches = 0;
-  for (const rel of files) {
+test('AC-13a: artifact-layout.md "Agent memory" is the one owner of agent memory\'s review-surface status in both modes, and each site it names cites it instead of keeping a mode-specific restatement', () => {
+  const owner = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/artifact-layout.md'), 'utf8');
+  const ownerStatement = owner.split('\n').find((line) => line.includes('In the review surface, both modes'));
+  assert.ok(ownerStatement, 'artifact-layout.md "Agent memory" must carry the mode-independent statement of the property');
+  assert.ok(ownerStatement.includes('never an exclusion in any review scope'), 'the property must be stated of any review scope, not from inside the self-hosting carve-out it used to live in');
+  assert.ok(ownerStatement.includes('Sole statement of the property'), 'the owner must claim sole ownership, so a restatement reappearing elsewhere is a visible contract break rather than a silent fifth copy');
+
+  // Keyed on the owner-plus-citations shape, not on how many copies exist: the copy count this
+  // assertion replaced went red the moment the restatements were deliberately collapsed to one.
+  const restatement = /`\.claude\/agent-memory\/\*\*`[^.]*?not[^.]*?excluded/i;
+  assert.ok(!restatement.test(owner.replace(ownerStatement, '')), 'the owner file itself must not also carry the old exclusion-list restatement');
+  for (const rel of ['.asd/rules/sprint-lifecycle.md', '.asd/rules/external-review.md', '.asd/templates/external-review/t_prompt-external-impl.md']) {
+    const base = path.basename(rel);
+    assert.ok(ownerStatement.includes(base), `the owner statement must name ${base} as one of its citing sites - an unnamed citer is how a fifth copy gets written`);
     const content = fs.readFileSync(path.join(REPO_ROOT, rel), 'utf8');
-    const matches = content.match(new RegExp(notExcluded.source, 'gi'));
-    assert.ok(matches, `${rel} must state that .claude/agent-memory/** is not excluded from the self-hosting review scope`);
-    totalMatches += matches.length;
+    assert.ok(/artifact-layout\.md`? "Agent memory"/.test(content), `${rel} must cite artifact-layout.md "Agent memory" for agent memory's review-surface status`);
+    assert.ok(!restatement.test(content), `${rel} must not restate the property - the four mode-specific copies were collapsed into the single owner, and any of them growing back is the drift this shape catches`);
   }
-  assert.strictEqual(totalMatches, 4, 'external-review.md carries the statement twice (table row + exclude_paths sentence), the other two files once each - a dropped copy anywhere must be caught');
 });
 
 test('T-2: AGENTS.md is sole SSoT for the --apply <generated-view-path...> explanatory parenthetical; asd-dev.md, asd-update/SKILL.md, asd-phase-impl.md, custom-coding-rules.md and README.md cite providers.md instead of restating it', () => {
@@ -3181,6 +3192,238 @@ test('T-2/iter-05: asd-reviewer-correctness memory cites review-policy.md/provid
   assert.ok(memory.includes('review-policy.md') && memory.includes('Gate Verdict Format'), 'must cite review-policy.md "Gate Verdict Format" for write scope rather than restating it');
   assert.ok(memory.includes('.asd/rules/providers.md'), 'must cite providers.md for the tool mapping rather than re-enumerating tool names');
   assert.ok(!/\b(Write|Edit|Bash)\b(\s*[/,]\s*`?\b(Write|Edit|Bash)\b){1,}/.test(memory), 'must not re-enumerate a tool-name list that can silently drift from the cited frontmatter');
+});
+
+// ===========================================================================
+// 20. Sprint 009 retro-008 remediation. Two kinds of contract: the ledger
+// vocabulary runtime.js now publishes and enforces from one constant (AC-5),
+// and the single-home/citation contracts the sprint's rule edits depend on -
+// each of which is a two-site coupling that rots silently when only one site
+// is edited. Wording is asserted by token, never by whole sentence or copy
+// count: the over-tight `totalMatches === 4` assertion this sprint had to
+// rewrite is the failure class these are written against.
+// ===========================================================================
+
+function readRepoFile(rel) {
+  return fs.readFileSync(path.join(REPO_ROOT, rel), 'utf8');
+}
+
+/** Every canonical Markdown file ASD ships - the search space for a "sole home" claim. */
+function canonMarkdownFiles() {
+  const out = [];
+  for (const root of ['.asd/rules', '.asd/workflows', '.asd/agents', '.asd/skills', '.asd/templates']) {
+    for (const entry of fs.readdirSync(path.join(REPO_ROOT, root), { recursive: true })) {
+      const rel = `${root}/${String(entry).split(path.sep).join('/')}`;
+      if (rel.endsWith('.md') && fs.statSync(path.join(REPO_ROOT, rel)).isFile()) out.push(rel);
+    }
+  }
+  return out;
+}
+
+test('AC-5: LEDGER_VOCABULARY is the single source validateCoverageLedger enforces - each status is accepted only for its own row type, `p`/`f` sit exactly where the constant says, and widening the constant widens the validator', () => {
+  const vocabulary = runtime.LEDGER_VOCABULARY;
+  const rowTypes = ['files', 'rules', 'sections'];
+  const plainStatus = (rowType) => vocabulary[rowType].find((s) => s !== vocabulary.p && s !== vocabulary.f);
+
+  // One id per row type so a rejection can only come from the row type under test.
+  function fixture(rowType, row) {
+    const manifest = buildManifest(['files-1'], ['rules-1'], ['sections-1']);
+    manifest.digest = runtime.coverageManifestDigest(manifest);
+    const ledger = { manifest_digest: manifest.digest, findings: ['F-1'] };
+    for (const type of rowTypes) ledger[type] = [type === rowType ? row : { i: `${type}-1`, s: plainStatus(type) }];
+    return { manifest, ledger };
+  }
+  const decorate = (rowType, status) => {
+    const row = { i: `${rowType}-1`, s: status };
+    if (status === vocabulary.p) row.p = `no-${rowType}-1`;
+    if (status === vocabulary.f) row.f = 'F-1';
+    return row;
+  };
+  const validate = ({ manifest, ledger }) => runtime.validateCoverageLedger(manifest, ledger, ['F-1']);
+
+  for (const rowType of rowTypes) {
+    for (const status of vocabulary[rowType]) {
+      assert.deepStrictEqual(validate(fixture(rowType, decorate(rowType, status))), { ok: true }, `${rowType}: status "${status}" is published by LEDGER_VOCABULARY, so the validator must accept it`);
+    }
+    for (const foreign of [...new Set(rowTypes.flatMap((t) => vocabulary[t]))].filter((s) => !vocabulary[rowType].includes(s))) {
+      assert.throws(() => validate(fixture(rowType, decorate(rowType, foreign))), /status invalid/, `${rowType}: status "${foreign}" belongs to another row type only - accepting it would let a reviewer report coverage in a vocabulary its own manifest never offered`);
+    }
+    const naRow = decorate(rowType, vocabulary.p);
+    delete naRow.p;
+    assert.throws(() => validate(fixture(rowType, naRow)), /predicate/, `${rowType}: "${vocabulary.p}" must require its predicate - the constant names it as the one status carrying \`p\``);
+    const strayP = Object.assign(decorate(rowType, plainStatus(rowType)), { p: `no-${rowType}-1` });
+    assert.throws(() => validate(fixture(rowType, strayP)), /predicate only allowed/, `${rowType}: only "${vocabulary.p}" may carry \`p\``);
+    if (vocabulary[rowType].includes(vocabulary.f)) {
+      const findingRow = decorate(rowType, vocabulary.f);
+      delete findingRow.f;
+      assert.throws(() => validate(fixture(rowType, findingRow)), /finding reference/, `${rowType}: "${vocabulary.f}" must require its finding reference`);
+    }
+    const strayF = Object.assign(decorate(rowType, plainStatus(rowType)), { f: 'F-1' });
+    assert.throws(() => validate(fixture(rowType, strayF)), /finding reference only allowed/, `${rowType}: only "${vocabulary.f}" may carry \`f\``);
+  }
+
+  // The constant is the source, not a copy of it: widen the exported constant and the validator
+  // must widen with it. A re-hardcoded status list inside the validator fails right here.
+  const savedFiles = vocabulary.files.slice();
+  try {
+    vocabulary.files.push('provisionally-checked');
+    assert.deepStrictEqual(validate(fixture('files', { i: 'files-1', s: 'provisionally-checked' })), { ok: true }, 'the validator must read LEDGER_VOCABULARY itself - a status list re-hardcoded beside the constant is exactly the drift AC-5 exists to prevent');
+  } finally {
+    vocabulary.files.length = 0;
+    vocabulary.files.push(...savedFiles);
+  }
+  assert.deepStrictEqual(vocabulary.files, savedFiles, 'the constant must be restored - later tests digest manifests through it');
+});
+
+test('AC-5: validate-ledger tolerates a manifest predating the vocabulary field and rejects a divergent one even when its digest was recomputed', () => {
+  const ledgerFor = (manifest) => ({
+    manifest_digest: manifest.digest, findings: [],
+    files: [{ i: 'f-1', s: 'checked' }], rules: [{ i: 'r-1', s: 'pass' }], sections: [{ i: 's-1', s: 'reviewed' }],
+  });
+
+  const legacy = buildManifest(['f-1'], ['r-1'], ['s-1']);
+  legacy.digest = runtime.coverageManifestDigest(legacy);
+  assert.strictEqual(legacy.vocabulary, undefined, 'sanity: the backward-tolerance fixture must genuinely lack the field');
+  assert.deepStrictEqual(runtime.validateCoverageLedger(legacy, ledgerFor(legacy), []), { ok: true }, 'every manifest written before this sprint lacks `vocabulary`; requiring it would invalidate them all, so absence must validate exactly as before');
+
+  const published = buildManifest(['f-1'], ['r-1'], ['s-1']);
+  published.vocabulary = structuredClone(runtime.LEDGER_VOCABULARY);
+  published.digest = runtime.coverageManifestDigest(published);
+  assert.deepStrictEqual(runtime.validateCoverageLedger(published, ledgerFor(published), []), { ok: true }, 'a manifest publishing the vocabulary must validate against a ledger written in that vocabulary');
+
+  const divergent = buildManifest(['f-1'], ['r-1'], ['s-1']);
+  divergent.vocabulary = structuredClone(runtime.LEDGER_VOCABULARY);
+  divergent.vocabulary.files = [...divergent.vocabulary.files, 'provisionally-checked'];
+  divergent.digest = runtime.coverageManifestDigest(divergent);
+  assert.throws(() => runtime.validateCoverageLedger(divergent, ledgerFor(divergent), []), /vocabulary/, 'a hand-edited manifest advertising statuses the validator will not accept must be rejected outright - recomputing its digest makes it self-consistent, so the digest check alone never catches it');
+});
+
+test('AC-1/AC-2: git-strategy.md "Commit before review" is the sole home of the staging prohibition, asd-dev.md carries the git grant that makes it followable, and asd-phase-impl.md states the shared worktree while citing the rule', () => {
+  const gitStrategy = readRepoFile('.asd/rules/git-strategy.md');
+  assert.ok(gitStrategy.includes('stages only the paths it authored'), 'git-strategy.md must state the staging half of commit ownership (F-1)');
+  assert.ok(gitStrategy.includes('commits every path it authored before signalling completion'), 'git-strategy.md must state the ownerless-file half of commit ownership (F-3) - the two halves are one sentence precisely so neither can be dropped alone');
+
+  const prohibition = 'git add -A';
+  assert.ok(gitStrategy.includes(prohibition), 'git-strategy.md must carry the broad-stage prohibition itself');
+  for (const rel of canonMarkdownFiles()) {
+    if (rel === '.asd/rules/git-strategy.md') continue;
+    assert.ok(!readRepoFile(rel).includes(prohibition), `${rel} must not restate the broad-stage prohibition - git-strategy.md "Commit before review" is its sole home and every other site cites it`);
+  }
+
+  const dev = sync.readNormalized(path.join(REPO_ROOT, '.asd/agents/asd-dev.md'));
+  assert.ok(dev.includes('`git add`/`git commit` for its own work'), 'asd-dev.md must grant the commands the new rule obliges it to run, or the rule is unfollowable by the agent it governs');
+  assert.ok(dev.includes('never push, never `--no-verify`'), 'the grant must carry the same bounds asd-tester.md already states');
+  assert.ok(dev.includes('git-strategy.md'), 'the grant must cite the rule rather than restate its ownership contract');
+
+  const workflow = readRepoFile('.asd/workflows/asd-phase-impl.md');
+  assert.ok(workflow.includes('concurrently dispatched tasks share one worktree'), 'AC-2: the dispatch payload must tell a dev why staging discipline matters before a collision teaches it');
+  assert.ok(workflow.includes('`git-strategy.md` "Commit before review" — do not restate here'), 'the workflow must cite the rule, not restate it');
+});
+
+test('AC-4/AC-11/AC-14: review-policy.md carries the correlated-interruption branch, the late-duplicate-return evidence exception and the verify-before-applying obligation, and asd-phase-impl.md cites the last rather than restating it', () => {
+  const policy = readRepoFile('.asd/rules/review-policy.md');
+
+  assert.ok(policy.includes('**Correlated interruption.**'), 'AC-4: the interrupted-dispatch contract must carry a correlated-failure branch');
+  assert.ok(policy.includes('iteration <N> interrupted (<cause>), all dispatches'), 'the iteration-level event needs its own literal log line, since a resume rebuilds the per-iteration count from those entries');
+  assert.ok(/raises no reviewer.s attempt count/.test(policy), 'the whole point of the branch is that one session-wide cause must not arm the split trigger once per reviewer');
+
+  assert.ok(policy.includes('**Late duplicate return.**'), 'AC-14: a late-returning replaced dispatch needs a stated disposal');
+  assert.ok(policy.includes('<reviewer>.late.md'), 'the admitted late return needs a named artefact home, or the evidence has nowhere to land');
+  assert.ok(policy.includes('more severe of the two tokens'), 'the recorded verdict must move to the more severe token, never to whichever returned last');
+  assert.ok(/late APPROVE never displaces a recorded CONCERNS\/FAIL/.test(policy), 'the exception is evidence-only and one-directional - without this the branch becomes a way to launder a FAIL into an APPROVE');
+
+  assert.ok(policy.includes('**Verify before applying.**'), 'AC-11: a reviewer\'s proposed fix must be verified against source before it is applied');
+  assert.ok(policy.includes('An equivalent correct fix stays permitted'), 'verification must not narrow the existing autofix latitude');
+  const workflow = readRepoFile('.asd/workflows/asd-phase-impl.md');
+  assert.ok(workflow.includes('`review-policy.md` "Verify before applying" — do not restate here'), 'the impl side of AC-11 must cite the rule at the point the dev reads its fix instruction; a rule no dispatched agent reads is the failure mode this sprint exists to fix');
+});
+
+test('AC-8: external-review.md "Outcome contract" is the sole home of what a dispatched External Review may return, review-policy.md hands the whole question to it, and the agent forbids both the background run and the empty return', () => {
+  const external = readRepoFile('.asd/rules/external-review.md');
+  assert.ok(external.includes('## Outcome contract'), 'external-review.md must carry the outcome contract as its own named section, since review-policy.md and the agent both cite it by name');
+  assert.ok(/awaits the wrapped CLI inside its own dispatch and never backgrounds it/.test(external), 'F-8 was a dispatch that returned while its CLI was still running - the await obligation is the fix');
+  assert.ok(external.includes('is not permitted and is not a verdict'), 'an empty return must be named as neither of the two outcomes, or it stays an undefined third state');
+  assert.ok(external.includes('"Interrupted dispatch"'), 'the contract must name where a non-outcome is disposed, rather than leaving the boundary with review-policy.md a hole');
+
+  const policy = readRepoFile('.asd/rules/review-policy.md');
+  assert.ok(!policy.includes("External Review's unavailability path is"), 'the old scoping line handed off only the unavailability path, which is what left an empty return undisposed on both sides');
+  assert.ok(policy.includes('`external-review.md` "Outcome contract"'), 'review-policy.md must point at the outcome contract as a whole');
+
+  // Agent canon carries {{wraps_cli}}; both provider views substitute it, so assert around the
+  // placeholder rather than through it - a substituted CLI name would hold on one view only.
+  const agent = sync.readNormalized(path.join(REPO_ROOT, '.asd/agents/asd-external-review.md'));
+  assert.ok(agent.includes('Never background or detach the `{{wraps_cli}}` run'), 'the never-background Don\'t must be stated on the placeholder token both views render');
+  assert.ok(agent.includes('Never return anything but the two permitted outcomes'), 'the agent must carry the outcome contract as a Don\'t, not only the rule doc it may not read');
+  assert.ok(agent.includes('APPROVE (skipped: external review unavailable: <specific status>)'), 'the skip the agent is told to return must be the literal shape external-review.md defines, or a skip parses as prose');
+});
+
+test('AC-6: code-style.md §19 names the line-ending editing hazard platform-neutrally and requires the staged pre-commit lint, and this repo\'s own commands.yaml configures that form', () => {
+  const style = readRepoFile('.asd/rules/code-style.md');
+  assert.ok(/Preserve a file.s existing line endings/.test(style), 'F-7 was a scripted edit that assumed \\n on a CRLF file - the rule must name the hazard where the dev reads it');
+  assert.ok(style.includes('Symptom: a whole-file diff for a small edit'), 'the rule must name the observable symptom, or it cannot be acted on mid-edit');
+  assert.ok(style.includes('`git diff --cached --check`'), 'the measured blind spot: the bare form exits 0 once the damage is staged');
+  assert.ok(/a project.s configured `lint` command must be the staged form/.test(style), 'the rule must bind a project\'s configured lint to the staged form, not merely suggest it');
+  assert.ok(!/CRLF on disk|canon is CRLF/i.test(style), 'code-style.md ships to every consumer through managed_paths, so it must not assert this repository\'s own worktree line endings as universal');
+
+  const lintLine = readRepoFile('.asd/project/commands.yaml').split('\n').find((line) => line.startsWith('lint:'));
+  assert.ok(lintLine && lintLine.includes('--cached'), 'commands.yaml must configure the staged form the rule requires. `.asd/project/**` is outside every review surface, so this assertion is the only automated check that rule and configured command agree');
+});
+
+test('AC-7: a root .gitattributes normalizes line endings for the whole repository, and no tracked blob is CRLF in the index', () => {
+  assert.ok(/^\*\s+text=auto\s+eol=lf\s*$/m.test(readRepoFile('.gitattributes')), 'the root .gitattributes must declare `* text=auto eol=lf`, so line endings stop depending on each machine\'s core.autocrlf');
+
+  const listing = execFileSync('git', ['ls-files', '--eol'], { cwd: REPO_ROOT, encoding: 'utf8' });
+  const offenders = listing.split('\n').filter(Boolean).filter((line) => /^i\/(crlf|mixed)\b/.test(line)).map((line) => line.split('\t').pop());
+  assert.deepStrictEqual(offenders, [], 'every tracked blob must be LF in the index; a CRLF blob here is the committed form of the F-7 damage, invisible in a worktree that shows CRLF for every file anyway');
+});
+
+test('AC-3/AC-12: sprint-lifecycle.md owns retro-criterion re-verification and the conditional Reachability declaration, asd-phase-scope.md implements the first, and t_plan.md mirrors the second without making it per-task mandatory', () => {
+  const lifecycle = readRepoFile('.asd/rules/sprint-lifecycle.md');
+  assert.ok(lifecycle.includes('Retrospective-derived criteria are re-verified at scope'), 'AC-3: the obligation must be stated where the orchestrator reads its scope rules');
+  assert.ok(/Recording home is `decisions-log.md` alone/.test(lifecycle), 'the recording half is what makes the verification reviewable rather than assumed');
+  assert.ok(lifecycle.includes('`sprint.md` gains no section for this'), 'the audit-gate decision that no new sprint-artefact section is invented must survive in the rule, or a later sprint re-invents one');
+  const scope = readRepoFile('.asd/workflows/asd-phase-scope.md');
+  assert.ok(scope.includes('retrospective-derived criterion against current `HEAD`'), 'the scope workflow must implement the obligation, not merely leave it in a rule doc');
+  assert.ok(scope.includes('"Orchestration and adaptive gates"'), 'the workflow must cite sprint-lifecycle.md rather than restate the obligation');
+
+  assert.ok(lifecycle.includes('**Reachability declaration**'), 'AC-12: reachability must be part of the plan grammar');
+  assert.ok(lifecycle.includes('Reachability: <phase> writes <value> at <point>; <phase> reads it at <point>'), 'the declaration needs a stated shape, or "which two phases agree" is unreviewable');
+  assert.ok(/an absent `Reachability` line asserts the task has no cross-phase dependency/.test(lifecycle), 'the absence semantics must be stated explicitly - the neighbouring `Material risk` line fails closed to critical, and the two must never be conflated');
+
+  const template = readRepoFile('.asd/templates/t_plan.md');
+  assert.ok(template.includes('`Reachability:` line'), 't_plan.md must mirror the declaration in its parser-critical format rules');
+  const taskBlocks = template.split(/^### Task /m).slice(1);
+  assert.ok(taskBlocks.length >= 2, 'sanity: t_plan.md must ship more than one example Task block');
+  for (const block of taskBlocks) assert.ok(/^Material risk:/m.test(block), 'every example Task block must carry the mandatory Material risk line');
+  assert.ok(taskBlocks.some((block) => !/^Reachability:/m.test(block)), 't_plan.md must ship at least one example Task without a Reachability line - the template is where an author reads whether the line is conditional or mandatory, and a copy on every block teaches the wrong one');
+});
+
+test('AC-15: checkpoints.md surfaces a criterion\'s running cost from artefacts the sprint already writes, and the decisions-log literal it counts is the one asd-phase-impl.md actually emits', () => {
+  const checkpoints = readRepoFile('.asd/rules/checkpoints.md');
+  const heading = '## Criterion cost surfacing';
+  assert.strictEqual(checkpoints.split('\n').filter((line) => line.trim() === heading).length, 1, 'checkpoints.md must carry the surfacing obligation exactly once');
+  for (const rel of canonMarkdownFiles()) {
+    if (rel === '.asd/rules/checkpoints.md') continue;
+    assert.ok(!readRepoFile(rel).includes(heading), `${rel} must not carry a second copy of the surfacing obligation - it hangs off gates checkpoints.md already owns`);
+  }
+  assert.ok(checkpoints.includes('no counter is stored'), 'the mechanism was accepted at the audit gate on the condition that it adds no new state; a stored counter is the thing that can drift out of sync with the artefacts');
+  assert.ok(checkpoints.includes('`<sprint>/reviews/<phase>/iter-NN/`'), 'the iterations-charged unit must name the artefact it is derived from');
+
+  const fixRoundEntry = 'impl fix for iter-NN: findings resolved';
+  assert.ok(checkpoints.includes(fixRoundEntry), 'the fix-rounds-charged unit must name the decisions-log entry it counts');
+  const workflow = readRepoFile('.asd/workflows/asd-phase-impl.md');
+  assert.ok(workflow.includes(`decisions-log entry "${fixRoundEntry}"`), 'checkpoints.md counts fix rounds by matching this literal, so the entry asd-phase-impl.md emits must stay identical to it - reworded on either side, the count silently reads zero and nothing fails');
+});
+
+test('AC-10: asd-phase-impl.md builds fix modes as one ordered chain with no parallelism, while the initial dispatch step keeps its own parallel-where-independent wording', () => {
+  const lines = readRepoFile('.asd/workflows/asd-phase-impl.md').split('\n');
+  const fixModes = lines.find((line) => line.trim().startsWith('- fix modes'));
+  assert.ok(fixModes, 'the execution-graph step must still carry a fix-modes bullet');
+  assert.ok(fixModes.includes('one ordered chain, never a concurrent set'), 'sprint 008\'s two parallel fix rounds each cost a review iteration; the graph must build fix tasks sequentially');
+  for (const removed of ['parallel where independent', 'sequential where they collide', 'parallelisable']) {
+    assert.ok(!fixModes.includes(removed), `the fix-modes bullet must authorize no parallelism: "${removed}" is the wording AC-10 removes, and it reading as history rather than instruction is not enough`);
+  }
+  assert.ok(lines.some((line) => line.includes('sequential where dependent; parallel where independent')), 'the dispatch step\'s own parallelism, shared with initial mode, must survive - AC-10 narrows fix modes only, and losing this line would serialize the whole phase');
 });
 
 // ===========================================================================
