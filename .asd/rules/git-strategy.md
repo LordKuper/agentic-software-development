@@ -36,7 +36,7 @@ On resolution: row **deleted** from stubs.md (no status column; deletion = resol
 
 `impl-review` itself also commits: when it dispatches `asd-tester` to fix a test in place, that fix must land as a commit before the phase's `Suite run` records its `HEAD` and before `pr` open-mode's `git diff --quiet` skip check runs — an uncommitted in-place fix is invisible to both.
 
-The main orchestrator commits its own bookkeeping — `state.json`, `decisions-log.md`, review files, `friction-log.md` — at phase exit, same precedent as `impl-test` above. A dispatched agent never commits orchestrator-owned files it did not author, even to leave a clean tree for the next gate.
+The main orchestrator commits its own bookkeeping — `state.json`, `decisions-log.md`, review files, `friction-log.md` — at phase exit, same precedent as `impl-test` above. Ownership is symmetric for a dispatched agent: it stages only the paths it authored (never `git add -A`/`-u` or `commit -a` — concurrently dispatched tasks share one worktree, so a broad stage sweeps a sibling's in-progress edit into the wrong commit), commits every path it authored before signalling completion (an authored file no one commits reaches neither the reviewed diff nor `HEAD`), and never commits orchestrator-owned files it did not author, even to leave a clean tree for the next gate.
 
 ## PR self-review checklist
 
