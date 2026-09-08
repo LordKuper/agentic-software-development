@@ -80,6 +80,13 @@
       "reason": "routine adaptive pass: every required reviewer satisfied and the terminal full suite green",
       "evidence": "iter-06 verdicts APPROVE for all five (four latched, external fresh); terminal unscoped run 160/160, git diff --check clean, node .asd/sync.js --check ok:true, recorded in test-plan.md Suite run at 458c8b4",
       "artifact_revision": ".asd/sprints/008-retro-007-remediation/test-plan.md@b91d8fa"
+    },
+    {
+      "gate": "pr-publication",
+      "decision_actor": "user",
+      "reason": "user authorized the pr phase after being told it bumps the version, writes the changelog and opens the PR",
+      "evidence": "DoD verified and re-run at pr entry: 160/160 unscoped, lint clean, build ok:true, all five iter-06 verdicts APPROVE, no unticked plan task, no sprint stub, no pending defect, retrospective written",
+      "artifact_revision": "PR #29"
     }
   ],
   "task_routing": {
@@ -219,10 +226,16 @@
     }
   },
   "created_at": "2026-09-07T17:11:41Z",
-  "updated_at": "2026-09-08T16:00:00Z",
+  "updated_at": "2026-09-08T16:30:00Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
-  "pr": null,
+  "pr": {
+    "number": 29,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/29",
+    "state": "open",
+    "title": "feat(workflow)!: remediate sprint 007 retrospective, v7.0.0",
+    "opened_at": "2026-09-08T16:30:00Z"
+  },
   "archived_at": null,
   "derived_handoff": {
     "base": "0366ee9aabbce047c93a978606b4661bbf7cac20",
