@@ -173,3 +173,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: The cycle terminal full-suite run is green — 171/171, exit 0, lint and build clean, recorded in `test-plan.md` `Suite run` at `2ab6b57`. With all five reviewers APPROVE or latched, impl-review DoD is met and the sprint advances to retro. No `D-N` defects; nothing routes back to impl.
 - **Rationale**: Advanced adaptively — the green handoff is a routine gate with the evidence recorded above. The tester additionally re-read canon directly rather than inferring from a clean worktree, confirming no unrestored mutation survived friction `F-5`. It flagged one deliberate deviation instead of doing it silently: the per-entry impacted-run records were kept rather than overwritten, because the `Defects` and `Added tests` rows cite those reds by name and deleting the bullets would leave dangling citations.
 - **Affected docs**: [test-plan.md](test-plan.md), [state.json](state.json)
+
+## 2026-09-09 — retrospective written
+
+- **Decision**: `retrospective.html` written for sprint 009 — 6 entries analysed, 9 actions (1 consumer, 8 framework), 6 systemic proposals. Analysed branch, not the empty-log branch. Nothing promoted to a persistent doc; the file is archived with the sprint.
+- **Rationale**: Three of the six entries are parallel-dispatch collisions from the first implementation wave — the one wave that necessarily ran under the pre-fix rule, since the task landing that rule was in it. That shape is the sprint's main lesson and drives both the `F-1` action and one systemic proposal. The systemic class was derived from the run record (5 iterations, 4 fix rounds, ~36 findings, 2 interruptions, 3 assertions re-pinned) rather than from the entries, per the two-class split.
+- **Affected docs**: [retrospective.html](retrospective.html), [friction-log.md](friction-log.md)
