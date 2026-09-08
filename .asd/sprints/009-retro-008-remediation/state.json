@@ -1,7 +1,7 @@
 {
   "sprint_id": "009-retro-008-remediation",
   "branch": "sprint/009-retro-008-remediation",
-  "phase": "impl-review",
+  "phase": "retro",
   "documents": {
     "audit": true,
     "prd": false,
@@ -50,6 +50,14 @@
       "evidence": "plan.md all ticked; sync --check ok; tests 159/160 with one by-design red",
       "artifact_revision": "plan.md@impl-1",
       "decided_at": "2026-09-08T00:00:00Z"
+    },
+    {
+      "gate": "green-review-handoff",
+      "decision_actor": "orchestrator",
+      "reason": "all five reviewers APPROVE or latched at iter-05; terminal full suite green",
+      "evidence": "reviews/impl/iter-05/, test-plan.md Suite run at 2ab6b57, 171/171",
+      "artifact_revision": "test-plan.md@terminal",
+      "decided_at": "2026-09-09T00:00:00Z"
     }
   ],
   "task_routing": {
