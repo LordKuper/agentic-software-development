@@ -40,7 +40,7 @@ Canonical agent/skill/workflow bodies never name a host tool directly. They use 
 
 Writing an artifact to disk always uses the `write a file` operation, never a shell heredoc/here-string — the shell layer's quoting constraints must never reach artifact content; precedent: `runtime.js` `buildInvocation` (`shell: false`, JSON via stdin). Piping content to a command's stdin is a different operation and stays permitted — e.g. `external-review.md`'s prompt-to-stdin invocation, which never touches the filesystem, is out of scope.
 
-Reviewer agents carry no artifact-write grant on either host: Claude reviewer agents carry no `Write` in `tools`; Codex reviewer agents set `sandbox_mode: "read-only"`. What that read-only claim covers, and the `memory: project` channel it excludes: `review-policy.md` "Gate Verdict Format". The reviewer returns its report as final text; the main orchestrator (workflow) writes the review file. Enforced by config, not by a textual instruction repeated in reviewer bodies.
+Reviewer agents carry no artifact-write grant on either host, with one carve-out. Config-enforced for the four internal reviewers: no `Write`/`Edit`/`Bash` in Claude `tools`; Codex `sandbox_mode: "read-only"`. External Review is the carve-out — it needs `Bash` to invoke the wrapped CLI at all, so its read-only guarantee is enforced on the wrapped subprocess instead (`external-review.md`). What that read-only claim covers, and the `memory: project` channel it excludes: `review-policy.md` "Gate Verdict Format". The reviewer returns its report as final text; the phase workflow writes the review file.
 
 ### Emitted agent frontmatter: verified vs trusted
 
