@@ -106,13 +106,13 @@ Every scoped test run in `impl` and `impl-test` uses the **impacted set** — de
 
 `self_hosting: enabled` in `.asd/project/config.yaml` — sole source of truth, no marker file. Absent field or `disabled` = consumer mode (backward compatible, unchanged behavior).
 
-When enabled: Dev may write canonical `.asd/rules/`, `.asd/templates/`, `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/runtime.js`, `.asd/migrations/`, `.asd/sync.js`, `.asd/sync-state.json`, `.asd/release-manifest.json`, root `AGENTS.md`, `README.md`, `CHANGELOG.md`, `.gitignore`, `tests/**`. Generated provider views stay read-only; edit canon then sync.
+When enabled: Dev may write canonical `.asd/rules/`, `.asd/templates/`, `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/runtime.js`, `.asd/migrations/`, `.asd/sync.js`, `.asd/sync-state.json`, `.asd/release-manifest.json`, root `AGENTS.md`, `README.md`, `CHANGELOG.md`, `.gitignore`, `tests/**`, plus its own `.claude/agent-memory/<agent>/` (not generated output — `artifact-layout.md` "Agent memory"). Generated provider views stay read-only; edit canon then sync.
 
 Root `AGENTS.md`'s managed-block/hand-edited-tail split: `providers.md` "Canonical path -> per-provider path" (ownership home). `asd-update` is a no-op here (it pulls framework files INTO a consumer; this repo IS the framework).
 
 Versioning: bump `asd_version` and update `CHANGELOG.md` before PR review; tag/release only after closure finalization.
 
-Framework impl-review/External Review change surface: the whole repo diff (everything here IS framework source — canonical `.asd/**`, `README.md`, `AGENTS.md`, `tests/**`, and anything else added later, e.g. CI configs), minus `.asd/project/**`, `.asd/sprints/**`, generated `.claude/**`/`.codex/**`/`.agents/skills/**`, build output — never an allow-list of named paths, so nothing new needs a matching rule edit to be reviewed.
+Framework impl-review/External Review change surface: the whole repo diff (everything here IS framework source — canonical `.asd/**`, `README.md`, `AGENTS.md`, `tests/**`, and anything else added later, e.g. CI configs), minus `.asd/project/**`, `.asd/sprints/**`, the generated provider views (`.claude/{agents,skills,hooks}/**`, `.claude/settings.json`, `.codex/**`, `.agents/skills/**`), build output — never an allow-list of named paths, so nothing new needs a matching rule edit to be reviewed. `.claude/agent-memory/**` is **not** excluded — hand-authored, no canonical source (`artifact-layout.md` "Agent memory"), reviewed like any other source file.
 
 ## Optional documents
 
@@ -247,7 +247,7 @@ Loops until the impacted set passes. No iteration cap — an unfixable state sur
 
 One problem that is both a code defect and a workflow malfunction (routine under `self_hosting`, where workflow source IS the code) gets a `D-N` row for the defect and an `F-N` entry for the malfunction, cross-referenced by id — never the same content twice.
 
-**Writer mechanism** — stated once here, referenced by every phase workflow, restated by none: the main orchestrator running the phase workflow appends every entry itself, from what it observes — including what a dispatched agent's return text, signal or failure reveals. No agent writes the file and none is asked to self-report friction; reviewers cannot write at all, by host guarantee (`providers.md`). This is the single channel for workflow friction; `state.json` holds no parallel escalation list.
+**Writer mechanism** — stated once here, referenced by every phase workflow, restated by none: the main orchestrator running the phase workflow appends every entry itself, from what it observes — including what a dispatched agent's return text, signal or failure reveals. No agent writes the file and none is asked to self-report friction; reviewers write no sprint artefact at all (`review-policy.md`). This is the single channel for workflow friction; `state.json` holds no parallel escalation list.
 
 ## Retro phase
 
@@ -294,6 +294,12 @@ Modes are `pr=null` (open/prepare PR), `pr.state="open"` (await merge), `pr.stat
 ## Plan file format
 
 See `t_plan.md` for canonical structure.
+
+**Material risk declaration** (one required line per `### Task N:` block, never a checkbox — a checkbox outside a subtask breaks task parsing): `Material risk: none`, or one `Material risk: change: <short risk class>` / `Material risk: artifact: <short risk class>` line per declared risk. The two kinds are distinct and are not interchangeable:
+- **change** — the edit's own correctness is uncertain: unfamiliar domain, ambiguous judgment, a contract whose right wording is not yet known, security/authentication/migration/public-contract/workflow-gate work. Routes `critical`. Reserved-class rule: `providers.md` "Task-class variants and routing".
+- **artifact** — the edit is small and objectively verifiable, but lands in a high-stakes file. Routes on the task's own evidence, so a mechanical edit to a critical artifact is no longer critical by that fact alone.
+
+The main orchestrator passes these lines as `route-task`'s `risks` input, one entry per line, typed by its kind (`providers.md` "Task-class variants and routing", which owns the routing semantics). When in doubt between the two kinds, declare `change`. A Task block with no conforming line — absent, or off-grammar (prose, or inside a subtask checkbox) — reads `change: unclassified` and routes `critical` until the plan is updated; missing is never `none`.
 
 **Standing Definition of Done** (constant across every sprint, never restated in `plan.md`): all AC-N from the acceptance-criteria source covered by Tasks; impacted test set green at `impl-test` (`Impacted test set` above); full test suite green once, at the end of `impl-review`; all required reviewers green at `impl-review`. `plan.md`'s own Definition of Done section holds only sprint-specific additions to this standing set, referencing it rather than repeating it.
 

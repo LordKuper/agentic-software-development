@@ -116,7 +116,7 @@ Next action: APPROVE → reviewer done · CONCERNS → creator autofixes, next i
 
 ## Gate Verdict Format (machine-parseable first line)
 
-Reviewers are read-only (`providers.md`): a reviewer never writes its own review file. Every reviewer's **returned findings text** (its final text output) MUST begin (after any preamble) with a single-line verdict token:
+Reviewers write no review artifact, code or doc — that is why the phase workflow, never the reviewer, writes the review file (tool grants: `providers.md`). Not absolute: `memory: project` is a separate write channel reviewers do use and the host serves. Sole home of this claim — elsewhere cite it, never restate. Every reviewer's **returned findings text** (its final text output) MUST begin (after any preamble) with a single-line verdict token:
 
 ```
 [REVIEW-<phase>-<reviewer>]: <APPROVE | CONCERNS | FAIL>
@@ -127,7 +127,25 @@ Reviewers are read-only (`providers.md`): a reviewer never writes its own review
 
 Examples: `[REVIEW-impl-correctness]: APPROVE` · `[REVIEW-design-documentation]: FAIL` · `[REVIEW-impl-external]: CONCERNS`
 
-Never bury the verdict in prose. The dispatching phase workflow writes the verdict token, findings, and the validated compact coverage evidence (above) to `<sprint>/reviews/<phase>/iter-NN/<reviewer>.md`; phase orchestration reads the first non-empty content line of that written file.
+Never bury the verdict in prose. The dispatching phase workflow writes the verdict token, findings, and the validated compact coverage evidence (above) to `<sprint>/reviews/<phase>/iter-NN/<reviewer>.md`; phase orchestration reads the first non-empty content line of that written file. Carve-out: under a split dispatch (below) findings and evidence live in the part files instead, and that path holds the merged token plus links.
+
+## Interrupted dispatch and split dispatch
+
+Applies to the 4 internal reviewers; External Review's unavailability path is `external-review.md`.
+
+**Interrupted dispatch.** A dispatch returning no verdict token or no ledger (cut short mid-turn) is not a verdict: no `verdicts["iter-NN"]` entry, no latch. The same reviewer is re-dispatched fresh in the same iteration — identical handling to an invalid ledger ("Coverage ledger" enforcement). The attempt is recorded so the loss is visible rather than silent: the workflow appends `<reviewer> interrupted attempt <count> (<cause>)` to `decisions-log.md` **at the moment of the interruption**, and again when a twice-interrupted half escalates — never deferred to the verdict parse, which an interrupted dispatch never reaches. That log is the durable record; the count is per-iteration working state, never a `state.json` field, and a resume rebuilds it from those entries for the current iteration. The review file finally written for that reviewer additionally carries `Interrupted attempts: <count> (<cause>)`.
+
+An internal reviewer is NEVER recorded as skipped and never satisfies DoD without a completed verdict — it is always available, so `APPROVE (skipped: ...)` stays exclusive to an unavailable external provider (`sprint-lifecycle.md` "APPROVE latch" Availability-skip carve-out). Its absent key blocks (`sprint-lifecycle.md` "State recovery").
+
+**Split trigger.** A second consecutive interruption of the same reviewer on the same manifest digest, within one iteration: the manifest is thereby proven too large for one turn. No size threshold — one interruption re-dispatches, two split.
+
+**Partition.** Split the manifest's `files` list into two disjoint halves (manifest order, near-even) and build two complete manifests: own file half, full rubric (`rules`, `sections`), own digest (`manifest-digest --write`), and `n_a` filtered to retained ids **plus, for every rule and section id, the out-of-half predicate `evidence outside this half; covered by <reviewer>.part-N`** — the only truthful status for an id whose evidence that half does not hold. Each half is a whole manifest over its own subset, so `validate-ledger` accepts it unchanged.
+
+**Union property, checked before merge.** The orchestrator checks these by hand, over both half manifests and their validated ledgers against the unpartitioned manifest: (a) the halves' file ids are disjoint and union to exactly the unpartitioned `files` list; (b) `rules`/`sections` equal the unpartitioned arrays in both; (c) no rule or section id carries the out-of-half predicate `evidence outside this half; covered by <reviewer>.part-N` in **both** halves — that means nobody reviewed it. An id the unpartitioned manifest already authorizes `n/a` under a different predicate may be `n/a` in both halves and never blocks the merge; a half holding no evidence for an id records that truthful `n/a`, never a vacuous `pass`. Any check failing blocks the merge — that reviewer counts as incomplete.
+
+**Two fresh dispatches**, one per half ("Clean-context review iteration" holds verbatim). A half interrupted twice escalates to the user; the split is never applied recursively.
+
+**Half verdicts, files, merge.** Each half returns the normal first-line verdict token (above) over its own subset, written to `<sprint>/reviews/<phase>/iter-NN/<reviewer>.part-1.md`/`.part-2.md` with its own findings and validated ledger. The merged `<reviewer>.md` holds the merged token as its first content line plus links to both parts, no content copied — so every reader of that one path is unchanged. Merged verdict = the more severe half token (`FAIL` > `CONCERNS` > `APPROVE`), findings = the union of both halves. `verdicts["iter-NN"]` receives that single merged string; the bare `APPROVE` (hence the latch) requires both halves bare `APPROVE`.
 
 ## DoD per review phase
 

@@ -46,7 +46,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
 
 ## Workflow
 
-1. Read `.asd/project/config.yaml` (`backward_compat`, `system.tools`, `self_hosting`, `language.chat`, `language.docs`). When `self_hosting: enabled`, devs' write scope extends per plan scope to the exhaustive allowlist in `sprint-lifecycle.md` "Self-hosting" (do not restate it here); dev instruction (step 6) adds: after any canonical edit, run `node .asd/sync.js --apply <targets>` before marking the task done; generated `.claude/`/`.codex/`/`.agents/skills/` stay off-limits always
+1. Read `.asd/project/config.yaml` (`backward_compat`, `system.tools`, `self_hosting`, `language.chat`, `language.docs`). When `self_hosting: enabled`, devs' write scope extends per plan scope to the exhaustive allowlist in `sprint-lifecycle.md` "Self-hosting" (do not restate it here); dev instruction (step 6) adds: after any canonical edit, run `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `providers.md` "Canonical path -> per-provider path") before marking the task done; generated `.claude/`/`.codex/`/`.agents/skills/` stay off-limits always
 2. Read `<sprint>/state.json` → **detect mode**:
    - both fix flags null/absent → **initial mode**; confirm `plan.md` approved
    - `review_fixes_pending` = `iter-NN` → **review-fix mode**; confirm `<sprint>/reviews/impl/iter-NN/` exists (else `ABORT — precondition not met: reviews/impl/iter-NN missing`)
@@ -59,7 +59,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
 5. **Build execution graph**:
    - initial — from Task dependencies; topological sort; mark independent tasks parallelisable
    - fix modes — fix tasks independent unless two touch same file; parallel where independent, sequential where they collide
-5a. Before each task dispatch, run `node .asd/runtime.js route-task --input <path>` with kind, objective inputs/checks, risks, correction attempts and prior tier. A result with `execution="command"` runs directly; `execution="agent"` dispatches `asd-dev-<tier>` for `mechanical`/`critical`, or the base `asd-dev` for `tier: standard` (no `-standard` variant exists — `providers.md` "Task-class variants and routing"). Persist the record in `state.json.task_routing[taskId]` per `providers.md`, supplying its tier as `priorTier` on re-entry. Invalid routing blocks; tier never lowers.
+5a. Before each task dispatch, run `node .asd/runtime.js route-task --input <path>` with kind, objective inputs/checks, the task's `Material risk` lines as typed `risks` entries (`sprint-lifecycle.md` "Plan file format"), correction attempts and prior tier. A result with `execution="command"` runs directly; `execution="agent"` dispatches `asd-dev-<tier>` for `mechanical`/`critical`, or the base `asd-dev` for `tier: standard` (no `-standard` variant exists — `providers.md` "Task-class variants and routing"). Persist the record in `state.json.task_routing[taskId]` per `providers.md`, supplying its tier as `priorTier` on re-entry. Invalid routing blocks; tier never lowers.
 6. **Dispatch tasks** per execution graph:
    - sequential where dependent; parallel where independent (caller schedules concurrent delegations)
    - per task: delegate to `asd-dev` (`asd-tester` only for review findings in test files) with payload:
@@ -69,6 +69,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
      - instruction:
        - read context first
        - tech-reference precondition (refuse-to-implement rule): see `artifact-layout.md` "Tech reference docs" — do not restate here
+       - apply `review-policy.md`'s over-engineering and structure/cohesion checklists and `artifact-layout.md`'s SSoT iron rule while authoring, not only at review (`code-style.md` §1) — do not restate them here
        - work autonomously within plan + persistent docs scope; do NOT pause user for routine approach choices — make the reasonable call and proceed
        - escalate only on a blocker (see Execution mode): emit `QUESTION` for unresolvable requirement ambiguity, `FAILED` for missing tech-reference / unrecoverable failure, or raise Complication Approval via request for user decision **only** when a Simplicity Default trigger fires (new abstraction / dependency / config flag / generalization)
        - manual-steps handling: see `sprint-lifecycle.md` "Impl phase" — do not restate here

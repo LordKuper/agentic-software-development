@@ -11,7 +11,7 @@ Project rules applying only to code and tests. Read by `asd-dev`, `asd-tester`, 
 
 Framework repo specifics (`self_hosting: enabled`):
 - No YAML parser dependency in `.asd/sync.js` or `.asd/skills/*/update.js` — stay zero-dependency Node (`fs`, `path`, `crypto` only); config field reads use minimal fail-closed line scanners, never a full YAML library.
-- Any canonical `.asd/agents/`, `.asd/skills/`, `.asd/hooks/` edit MUST be followed by `node .asd/sync.js --apply <targets>` in the same task before marking it done.
-- Never hand-edit `.claude/`, `.codex/`, or `.agents/skills/` — always edit the `.asd/` canonical source.
+- Any canonical `.asd/agents/`, `.asd/skills/`, `.asd/hooks/` edit MUST be followed by `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `.asd/rules/providers.md` "Canonical path -> per-provider path") in the same task before marking it done.
+- Never hand-edit *generated* `.claude/`, `.codex/`, or `.agents/skills/` files — always edit the `.asd/` canonical source. Hand-authored agent memory is the carve-out: `artifact-layout.md` "Agent memory".
 
 ASD never overwrites this file.

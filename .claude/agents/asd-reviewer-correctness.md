@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-correctness.md. source_digest=sha256:c133683bf28d7ed5d87538debb9026b336b317414d2d3cf5434735da99010d71 content_digest=sha256:e82a9293f6d991f138b89cbde5ce94126f6c23b9d53888dbe68aa5c8368409d6 asd_version=5.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-correctness.md. source_digest=sha256:ff4c051bab5d27c995ff1ac9d9d3e49466a78b15e2c5da55d606a1e65abc6324 content_digest=sha256:4e73162a00a5941b7f0193b2a903974fcc07b615aba6e07e9a97e485a5d78287 asd_version=6.0.0 schema=1
 name: asd-reviewer-correctness
 description: "Design-review for every non-empty draft set (UI section n/a without a ux-spec/design-system draft) and impl-review of code, tests and UI for bugs, security, best-practice/contract drift, AC-N coverage, and UI/accessibility conformance. Covers: bug patterns (off-by-one, null paths, race conditions, resource leaks), security holes (secrets, injection, auth bypass, crypto misuse, input validation), language/framework best practices, contract violations vs ADR, PRD/AC-N coverage trace, ux-spec compliance check, UI implementation match to ux-spec mockups, design-system token/component usage, accessibility baseline compliance. Does NOT handle: over-engineering, structure/cohesion, or performance (delegates to asd-reviewer-efficiency), test-plan/test-quality review (delegates to asd-reviewer-testing), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -54,7 +54,7 @@ Correctness reviewer. Merges the former Quality, Implementation and UI reviewers
 
 ## Outputs
 
-- Return verdict, findings and compact coverage JSON per `review-policy.md` "Coverage ledger" and `t_review.md`. The phase orchestrator validates and persists the manifest/ledger with the report; reviewer never writes files.
+- Return verdict, findings and compact coverage JSON per `review-policy.md` "Coverage ledger" and `t_review.md`. The phase orchestrator validates and persists the manifest/ledger with the report; reviewer write scope: `review-policy.md` "Gate Verdict Format".
 
 ## Behavioral profile
 

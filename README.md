@@ -35,7 +35,7 @@ When External Review is enabled, `/asd-init` probes the other provider's configu
 
 ### Codex with a ChatGPT account
 
-Codex delegates use the concrete model IDs in the canonical family map: `sol` → `gpt-5.6-sol`, `terra` → `gpt-5.6-terra`, and `luna` → `gpt-5.6-luna`. Do not substitute the API-style `gpt-5.6` identifier: a delegate-startup error naming an unsupported model means the canonical map or generated agent view is stale. Update ASD or correct the canonical mapping, regenerate the affected view with `node .asd/sync.js --apply <file...>`, then run `node .asd/sync.js --check`.
+Codex delegates use the concrete model IDs in the canonical family map: `sol` → `gpt-5.6-sol`, `terra` → `gpt-5.6-terra`, and `luna` → `gpt-5.6-luna`. Do not substitute the API-style `gpt-5.6` identifier: a delegate-startup error naming an unsupported model means the canonical map or generated agent view is stale. Update ASD or correct the canonical mapping, regenerate the affected view with `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `.asd/rules/providers.md` "Canonical path -> per-provider path"), then run `node .asd/sync.js --check`.
 
 Optional external tools auto-detected by `/asd-init`:
 
@@ -103,7 +103,7 @@ node "$(git rev-parse --show-toplevel)/.asd/skills/asd-update/update.js" --dry-r
 
 That command is also the manual fallback if you prefer running it outside Claude Code — self-locating, so it works from any directory in the repo. It needs `tar` on PATH (bundled with Windows 10 1803+, macOS, Linux) and Node >= 16.7.
 
-After a successful update, it automatically runs `node .asd/sync.js --check` — canon files changed upstream mean the generated provider views (`.claude/`, `.codex/`, `.agents/skills/`) are now stale. Run `/asd-sync` (or `node .asd/sync.js --apply <file...>`) to regenerate them.
+After a successful update, it automatically runs `node .asd/sync.js --check` — canon files changed upstream mean the generated provider views (`.claude/`, `.codex/`, `.agents/skills/`) are now stale. Run `/asd-sync`, or `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `.asd/rules/providers.md` "Canonical path -> per-provider path"), to regenerate them.
 
 > **After updating, reconcile `.claude/settings.json` and `.codex/hooks.json` yourself.** They hold your permission allowlist and hook registration; the updater and sync only ever merge in their own hook entries, never rewrite the rest of the file. If an update added a hook or skill, you may need to register it there manually.
 
@@ -204,11 +204,11 @@ Eleven specialized agents are canonically defined in `.asd/agents/` and generate
 | `asd-dev` | sonnet/medium | terra/medium | Server/CLI/library code and UI code (no tests; consumes DESIGN.md tokens where UI work applies) |
 | `asd-tester` | sonnet/medium | terra/medium | All tests: risk-based selection, pruning, authoring at every level, suite runs, manual verification specs |
 
-The main orchestrator owns scope, plan, state, decisions, manual-step validation, Git and release/archival sequencing; no PM agent is spawned. Dev/Tester task variants share each canonical role body and permissions: `-mechanical` uses Haiku (no effort)/Luna low, `-critical` Opus/Sol high; tier `standard` has no variant and dispatches the base agent (Sonnet/Terra medium). Deterministic bookkeeping uses commands. Routing uses objective eligibility, escalates on risk or failed checks, and never changes the main model. Experimental cheap outputs retain strong independent review.
+The main orchestrator owns scope, plan, state, decisions, manual-step validation, Git and release/archival sequencing; no PM agent is spawned. Dev/Tester task variants share each canonical role body and permissions: `-mechanical` uses Haiku (no effort)/Luna low, `-critical` Opus/Sol high; tier `standard` has no variant and dispatches the base agent (Sonnet/Terra medium). Deterministic bookkeeping uses commands. Routing uses objective eligibility, escalates on a risk declared against the change or a failed check — a risk declared against the artifact alone does not — and never changes the main model. Experimental cheap outputs retain strong independent review.
 
 ### Reviewers (4 internal + 1 external)
 
-Reviewers are read-only on every provider: the 4 internal Claude reviewer agents carry no `Write`/`Edit`/`Bash` in `tools`; their Codex counterparts set `sandbox_mode: "read-only"`. External Review is the one exception with `Bash` in its Claude `tools` (it necessarily needs a command-runner to invoke the wrapped CLI at all) — its read-only guarantee is instead enforced explicitly on the WRAPPED subprocess itself: `codex exec --sandbox read-only` when running under Claude Code, `claude -p ... --tools "Read,Grep,Glob"` when running under Codex. Every reviewer returns its verdict as final text; the dispatching phase workflow writes the review file.
+Reviewers write no review artifact, code or doc on any provider (scope: `review-policy.md`; `memory: project` is a separate write channel they do use): the 4 internal Claude reviewer agents carry no `Write`/`Edit`/`Bash` in `tools`; their Codex counterparts set `sandbox_mode: "read-only"`. External Review is the one exception with `Bash` in its Claude `tools` (it necessarily needs a command-runner to invoke the wrapped CLI at all) — its read-only guarantee is instead enforced explicitly on the WRAPPED subprocess itself: `codex exec --sandbox read-only` when running under Claude Code, `claude -p ... --tools "Read,Grep,Glob"` when running under Codex. Every reviewer returns its verdict as final text; the dispatching phase workflow writes the review file.
 
 | Agent | Claude | Codex | Phase(s) | Scope |
 |---|---|---|---|---|
@@ -323,6 +323,7 @@ your-project/
 │   ├── agents/                      # 15 agent definitions: 11 roles + 4 tier variants (*.md)
 │   ├── skills/                      # 18 skill definitions (SKILL.md)
 │   ├── hooks/                       # SessionStart hook (Node.js)
+│   ├── agent-memory/<agent>/        # hand-authored, never generated — see "Agent memory" in artifact-layout.md
 │   └── settings.json                # hook registration + permissions allowlist (JSON-merge: ASD owns only its own entry)
 ├── .codex/                          # generated Codex view
 │   ├── agents/                      # 15 agent definitions: 11 roles + 4 tier variants (*.toml)
@@ -349,7 +350,7 @@ your-project/
 └── <your project source>
 ```
 
-`.asd/` is canonical and hand-edited; `.claude/`, `.codex/`, and `.agents/skills/` are generated by `.asd/sync.js` and committed so the project works immediately after checkout — never hand-edit a generated file, edit its `.asd/` source and re-run sync.
+`.asd/` is canonical and hand-edited; `.claude/`, `.codex/`, and `.agents/skills/` are generated by `.asd/sync.js` and committed so the project works immediately after checkout — never hand-edit a generated file, edit its `.asd/` source and re-run sync. Exception: `.claude/agent-memory/<agent>/` is hand-authored, not generated — see [`.asd/rules/artifact-layout.md`](.asd/rules/artifact-layout.md) "Agent memory".
 
 When `project.subsystem_decomposition: disabled`, persistent docs go to flat project-wide paths (no `<subsystem>/` subdirectories, no `c4/`).
 
@@ -436,7 +437,7 @@ Yes. Set `project.subsystem_decomposition: disabled` during `/asd-init`. Persist
 Yes. Each is independently toggleable under `documents.*` in `config.yaml`, frozen into the sprint's `state.json` at scope time (a later config edit never changes an active sprint's rules). `audit` becomes a fast no-op on its own when `documents.audit` is disabled: it advances immediately, writes nothing, with one skip line in the decisions log. When `prd`/`ux_spec`/`adr`/effective `c4` are **all** disabled, one deterministic check at design entry collapses `design`, `design-review`, and `design-promote` together — a single write records all three as skipped and advances straight to `plan`; the latter two are never separately dispatched. `plan`/`impl`/`impl-test`/`impl-review`/`retro`/`pr` always run; acceptance criteria then come from `sprint.md`'s own `AC-N` list instead of the PRD. See `.asd/rules/sprint-lifecycle.md` "Optional documents" and "No-op phase rule".
 
 **Can ASD develop itself?**
-Yes — set `self_hosting: enabled` in `config.yaml` (this repo ships with it enabled, `documents.audit` only). `/asd-sprint` then edits ASD's own canonical sources per the exhaustive write allowlist in `.asd/rules/sprint-lifecycle.md` "Self-hosting" — generated `.claude/`/`.codex/`/`.agents/skills/` stay off-limits, resynced via `node .asd/sync.js --apply` after every canon edit. Root `AGENTS.md`'s managed-block/hand-edited-tail split: `.asd/rules/providers.md` "Canonical path -> per-provider path" (ownership home). `/asd-update` refuses to run here (it pulls framework files INTO a consumer; a self-hosting repo IS the framework).
+Yes — set `self_hosting: enabled` in `config.yaml` (this repo ships with it enabled, `documents.audit` only). `/asd-sprint` then edits ASD's own canonical sources per the exhaustive write allowlist in `.asd/rules/sprint-lifecycle.md` "Self-hosting" — generated `.claude/`/`.codex/`/`.agents/skills/` stay off-limits, resynced via `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `.asd/rules/providers.md` "Canonical path -> per-provider path") after every canon edit. Root `AGENTS.md`'s managed-block/hand-edited-tail split: `.asd/rules/providers.md` "Canonical path -> per-provider path" (ownership home). `/asd-update` refuses to run here (it pulls framework files INTO a consumer; a self-hosting repo IS the framework).
 
 **What if my project already has an AGENTS.md or CLAUDE.md?**
 Either works. `/asd-init` adds ASD's rules as a managed block (`<!-- asd:begin -->...<!-- asd:end -->`) inside your existing `AGENTS.md`/`CLAUDE.md`, leaving the rest of your file untouched; if either file doesn't exist yet, it's created from `.asd/templates/t_AGENTS.md`/`t_CLAUDE.md`. Either way, do not reuse the `AGENTS.md`/`CLAUDE.md` from the ASD repo itself — those document how to develop the framework and are meaningless in a consumer project.

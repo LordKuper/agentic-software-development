@@ -2190,11 +2190,19 @@ test('AC-7: no canonical rule, workflow, agent, or skill file references the ret
 // 15. Sprint 006 deterministic runtime contracts
 // ===========================================================================
 
-function validCoverageFixture() {
-  const manifest = {
-    files: ['f-1'], rules: ['r-1'], sections: ['s-1'],
-    n_a: { files: { 'f-1': ['no-file'] }, rules: { 'r-1': ['no-rule'] }, sections: { 's-1': ['no-section'] } },
+function buildManifest(files, rules, sections) {
+  return {
+    files, rules, sections,
+    n_a: {
+      files: Object.fromEntries(files.map((id) => [id, [`no-${id}`]])),
+      rules: Object.fromEntries(rules.map((id) => [id, [`no-${id}`]])),
+      sections: Object.fromEntries(sections.map((id) => [id, [`no-${id}`]])),
+    },
   };
+}
+
+function validCoverageFixture() {
+  const manifest = buildManifest(['f-1'], ['r-1'], ['s-1']);
   manifest.digest = runtime.coverageManifestDigest(manifest);
   return {
     manifest,
@@ -2422,7 +2430,7 @@ test('runtime.js CLI: external-preflight exits 1 on command-unavailable', () => 
 
 test('runtime.js CLI: manifest-digest prints the same digest coverageManifestDigest computes, and --write persists it', () => {
   const root = mkTempDir();
-  const manifest = { files: ['f-1'], rules: ['r-1'], sections: ['s-1'], n_a: { files: {}, rules: {}, sections: {} } };
+  const manifest = buildManifest(['f-1'], ['r-1'], ['s-1']);
   const manifestPath = path.join(root, 'manifest.json');
   fs.writeFileSync(manifestPath, JSON.stringify(manifest), 'utf8');
 
@@ -2857,6 +2865,322 @@ test('AC-4/AC-5/AC-7/AC-10: t_retrospective.html classifies every section for th
   assert.ok(actions, 't_retrospective.html must keep the actions section - it is where recommendations live');
   assert.ok(/F-\d/.test(actions[1]), 'every recommendation traces to the friction entry it addresses (AC-4), so the actions table carries an F-N reference');
   assert.ok(/consumer\s*\|\s*asd/.test(actions[1]), 'recommendations split consumer-project vs ASD-framework (AC-4), so the actions table names the acting side');
+});
+
+// ===========================================================================
+// 19. Sprint 008 retro-007 remediation: split-dispatch partition proof
+// (AC-1/AC-6), typed risk routing (AC-10), and derived_handoff (AC-11).
+// ===========================================================================
+
+test('AC-1/6: a reviewer split partitions the manifest files list into two disjoint halves that each validate independently against its own complete manifest; two partial ledgers against one unpartitioned manifest are rejected', () => {
+  const allFiles = ['f-1', 'f-2', 'f-3', 'f-4'];
+  const rules = ['r-1'];
+  const sections = ['s-1'];
+  const whole = buildManifest(allFiles, rules, sections);
+  whole.digest = runtime.coverageManifestDigest(whole);
+
+  const half1Files = ['f-1', 'f-2'];
+  const half2Files = ['f-3', 'f-4'];
+  const half1 = buildManifest(half1Files, rules, sections);
+  half1.digest = runtime.coverageManifestDigest(half1);
+  const half2 = buildManifest(half2Files, rules, sections);
+  half2.digest = runtime.coverageManifestDigest(half2);
+
+  const ledgerFor = (manifest, files) => ({
+    manifest_digest: manifest.digest,
+    findings: [],
+    files: files.map((i) => ({ i, s: 'checked' })),
+    rules: rules.map((i) => ({ i, s: 'pass' })),
+    sections: sections.map((i) => ({ i, s: 'reviewed' })),
+  });
+
+  assert.deepStrictEqual(runtime.validateCoverageLedger(half1, ledgerFor(half1, half1Files), []), { ok: true }, 'half 1 must validate unchanged against its own complete manifest');
+  assert.deepStrictEqual(runtime.validateCoverageLedger(half2, ledgerFor(half2, half2Files), []), { ok: true }, 'half 2 must validate unchanged against its own complete manifest');
+
+  assert.throws(
+    () => runtime.validateCoverageLedger(whole, ledgerFor(whole, half1Files), []),
+    /files rows incomplete/,
+    'a partial ledger covering only half the files must never validate against the unpartitioned manifest - that is the mechanism the split rule explicitly forbids'
+  );
+});
+
+test('AC-10: a typed target:"change" risk routes exactly like the legacy bare-string form', () => {
+  const base = { objectiveInputs: true, failedObjectiveCheck: false, correctionAttempts: 0, kind: 'mechanical', checks: ['deterministic-check', 'exhaustive-match-validation'] };
+  const legacy = runtime.routeTask({ ...base, risks: ['auth'] });
+  const typed = runtime.routeTask({ ...base, risks: [{ name: 'auth', target: 'change' }] });
+  assert.deepStrictEqual(typed, legacy, 'a typed target:"change" entry must be indistinguishable in output from the legacy bare-string form');
+});
+
+test('AC-10: a typed target:"artifact" risk never escalates by itself - it routes on the task\'s own evidence and only annotates the reason', () => {
+  const mechanicalEvidence = { objectiveInputs: true, failedObjectiveCheck: false, correctionAttempts: 0, kind: 'mechanical', checks: ['deterministic-check', 'exhaustive-match-validation'], risks: [{ name: 'critical-config', target: 'artifact' }] };
+  assert.deepStrictEqual(
+    runtime.routeTask(mechanicalEvidence),
+    { tier: 'mechanical', execution: 'agent', reason: 'artifact-risk:critical-config' },
+    'otherwise-mechanical evidence plus an artifact risk must still route mechanical, with the reason recording that a risk was seen and deliberately not escalated'
+  );
+  const standardEvidence = { objectiveInputs: true, failedObjectiveCheck: false, correctionAttempts: 0, kind: 'standard', checks: [], risks: [{ name: 'critical-config', target: 'artifact' }] };
+  assert.deepStrictEqual(
+    runtime.routeTask(standardEvidence),
+    { tier: 'standard', execution: 'agent', reason: 'artifact-risk:critical-config' },
+    'standard evidence plus an artifact risk must route standard, not escalate'
+  );
+});
+
+test('AC-10: the no-downgrade clamp outranks an artifact-risk reason, and any declared risk - change or artifact - forces execution:agent even for an otherwise-deterministic command', () => {
+  const clamped = runtime.routeTask({
+    objectiveInputs: true, failedObjectiveCheck: false, correctionAttempts: 0, kind: 'mechanical',
+    checks: ['deterministic-check', 'exhaustive-match-validation'], risks: [{ name: 'critical-config', target: 'artifact' }], priorTier: 'critical',
+  });
+  assert.deepStrictEqual(clamped, { tier: 'critical', execution: 'agent', reason: 'no-downgrade' }, 'an artifact risk must never let a task fall out of a priorTier it already earned - the clamp reason wins over the artifact-risk reason');
+
+  const commandBase = { objectiveInputs: true, failedObjectiveCheck: false, correctionAttempts: 0, kind: 'command', checks: ['deterministic-state'] };
+  assert.strictEqual(runtime.routeTask({ ...commandBase, risks: [{ name: 'auth', target: 'change' }] }).execution, 'agent', 'a change risk on an otherwise-deterministic command must still force execution:agent');
+  assert.strictEqual(runtime.routeTask({ ...commandBase, risks: [{ name: 'audit-log', target: 'artifact' }] }).execution, 'agent', 'an artifact risk on an otherwise-deterministic command must still force execution:agent - no declared risk of either kind ever auto-executes');
+});
+
+test('AC-10: routing fails closed on every malformed risks shape - a task never routes lower on invalid evidence', () => {
+  const base = { objectiveInputs: true, failedObjectiveCheck: false, correctionAttempts: 0, kind: 'standard', checks: [] };
+  const cases = [
+    ['non-array risks', 'not-an-array', /risks must be an array of risks/],
+    ['null entry', [null], /risks entry must be a name or a typed risk/],
+    ['number entry', [5], /risks entry must be a name or a typed risk/],
+    ['array entry', [[]], /risks entry must be a name or a typed risk/],
+    ['empty name', [{ name: '', target: 'change' }], /risks entry name must be a non-empty string/],
+    ['NUL-bearing name', [{ name: 'a\0b', target: 'change' }], /risks entry name must be a non-empty string/],
+    ['missing target', [{ name: 'x' }], /risks entry target must be change or artifact/],
+    ['unknown target', [{ name: 'x', target: 'other' }], /risks entry target must be change or artifact/],
+  ];
+  for (const [label, risks, message] of cases) {
+    assert.throws(() => runtime.routeTask({ ...base, risks }), message, label);
+  }
+});
+
+test('AC-10: a mixed array of one change risk and one artifact risk still routes critical, with the reason naming the change risk', () => {
+  const result = runtime.routeTask({
+    objectiveInputs: true, failedObjectiveCheck: false, correctionAttempts: 0, kind: 'mechanical',
+    checks: ['deterministic-check', 'exhaustive-match-validation'],
+    risks: [{ name: 'auth', target: 'change' }, { name: 'config-file', target: 'artifact' }],
+  });
+  assert.deepStrictEqual(result, { tier: 'critical', execution: 'agent', reason: 'risk:auth' }, 'a change risk anywhere in the array must win the tier and the reason over a co-occurring artifact risk');
+});
+
+test('AC-10: a failed objective check with a correction attempt outranks a co-occurring artifact risk in the reason, so state.json.task_routing never mislabels an escalated task as merely risk-annotated', () => {
+  const result = runtime.routeTask({
+    objectiveInputs: true, failedObjectiveCheck: true, correctionAttempts: 1, kind: 'standard',
+    checks: [], risks: [{ name: 'config-file', target: 'artifact' }],
+  });
+  assert.deepStrictEqual(result, { tier: 'critical', execution: 'agent', reason: 'failed-objective-check' }, 'a failed objective check with at least one correction attempt must win the reason over a co-occurring artifact risk');
+});
+
+test('AC-10: an artifact risk whose priorTier does not outrank the computed tier keeps the artifact-risk reason - the no-downgrade clamp must not fire merely because priorTier is set', () => {
+  const result = runtime.routeTask({
+    objectiveInputs: true, failedObjectiveCheck: false, correctionAttempts: 0, kind: 'mechanical',
+    checks: ['deterministic-check', 'exhaustive-match-validation'], risks: [{ name: 'critical-config', target: 'artifact' }], priorTier: 'mechanical',
+  });
+  assert.deepStrictEqual(result, { tier: 'mechanical', execution: 'agent', reason: 'artifact-risk:critical-config' }, 'priorTier equal to the computed tier must not clamp - the reason must still name the artifact risk, not no-downgrade');
+});
+
+test('AC-6: the interrupted-dispatch re-dispatch record is stated in review-policy.md and cited (not restated) by both *-review workflows', () => {
+  const policy = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/review-policy.md'), 'utf8');
+  assert.ok(policy.includes('is re-dispatched fresh in the same iteration'), 'review-policy.md must state the re-dispatch outcome for an interrupted reviewer - never a skip, never an APPROVE');
+  assert.ok(policy.includes('Interrupted attempts: <count> (<cause>)'), 'review-policy.md must state the durable per-file record an interrupted dispatch leaves on the written review file');
+
+  const citation = 'sole SSoT for trigger, partition, union property, merge rule and durable record';
+  const reDispatchPhrase = 'takes the same reject-and-re-dispatch-fresh path as a failed validation above';
+  for (const file of ['asd-phase-design-review.md', 'asd-phase-impl-review.md']) {
+    const workflow = fs.readFileSync(path.join(REPO_ROOT, `.asd/workflows/${file}`), 'utf8');
+    assert.ok(workflow.includes(citation), `${file} must cite review-policy.md as sole SSoT for the interrupted/split-dispatch contract, including the durable record, rather than restating it`);
+    assert.ok(workflow.includes(reDispatchPhrase), `${file} must route an interrupted dispatch (no verdict token, no ledger) through the same reject-and-re-dispatch-fresh handling as a failed ledger validation - a future edit dropping this from one workflow while review-policy.md still claims it must fail here`);
+  }
+});
+
+test('sync.js CLI: bare --apply with no targets fails closed (exit 1) and skips the hash-ledger recompute - a stale generated view can no longer hide behind a green ledger', () => {
+  const root = makeMiniRepo();
+  const manifestPath = path.join(root, '.asd', 'release-manifest.json');
+  const syncStatePath = path.join(root, '.asd', 'sync-state.json');
+  const manifestBefore = fs.readFileSync(manifestPath, 'utf8');
+  const syncStateBefore = fs.readFileSync(syncStatePath, 'utf8');
+
+  let error = null;
+  try {
+    execFileSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), '--apply'], { cwd: root, encoding: 'utf8' });
+  } catch (e) {
+    error = e;
+  }
+  assert.ok(error, '--apply with an empty target list must exit non-zero, not silently succeed with applied: []');
+  assert.strictEqual(error.status, 1);
+  const report = JSON.parse(error.stdout);
+  assert.strictEqual(report.ok, false);
+  assert.deepStrictEqual(report.applied, []);
+  assert.strictEqual(report.hashLedger, null, 'the ledger recompute must be skipped when no target was given, exactly like an aborted batch');
+  assert.strictEqual(fs.readFileSync(manifestPath, 'utf8'), manifestBefore, 'a bare --apply must never write release-manifest.json');
+  assert.strictEqual(fs.readFileSync(syncStatePath, 'utf8'), syncStateBefore, 'a bare --apply must never write sync-state.json');
+});
+
+test('AC-10: a reserved change-risk class name declared target:"artifact" fails closed, case- and separator-normalized, without over-matching a merely-similar name', () => {
+  const base = { objectiveInputs: true, failedObjectiveCheck: false, correctionAttempts: 0, kind: 'standard', checks: [] };
+  const reservedAsArtifact = ['security', 'SECURITY', 'Authentication', 'migration', 'public contract', 'public-contract', 'public_contract', 'Workflow  Gate'];
+  for (const name of reservedAsArtifact) {
+    assert.throws(() => runtime.routeTask({ ...base, risks: [{ name, target: 'artifact' }] }), /reserved risk class is change by definition/, name);
+  }
+  assert.doesNotThrow(() => runtime.routeTask({ ...base, risks: [{ name: 'security', target: 'change' }] }), 'the same reserved name typed target:"change" is exactly the intended usage, never rejected');
+  assert.doesNotThrow(() => runtime.routeTask({ ...base, risks: [{ name: 'security-audit-tool', target: 'artifact' }] }), 'a name that merely contains a reserved word must not be caught - the reserved check is exact-match after normalization, not substring');
+  assert.doesNotThrow(() => runtime.routeTask({ ...base, risks: [{ name: 'config-file', target: 'artifact' }] }), 'a non-reserved artifact risk name must keep routing on evidence, unaffected by the new guard');
+});
+
+test('T-2: `.claude/agent-memory/**` is stated as NOT excluded from the self-hosting review scope everywhere the exclude_paths list itself is restated - sprint-lifecycle.md "Self-hosting", external-review.md (both statements), and t_prompt-external-impl.md', () => {
+  const files = [
+    '.asd/rules/sprint-lifecycle.md',
+    '.asd/rules/external-review.md',
+    '.asd/templates/external-review/t_prompt-external-impl.md',
+  ];
+  const notExcluded = /`\.claude\/agent-memory\/\*\*`[^.]*?not[^.]*?excluded/i;
+  let totalMatches = 0;
+  for (const rel of files) {
+    const content = fs.readFileSync(path.join(REPO_ROOT, rel), 'utf8');
+    const matches = content.match(new RegExp(notExcluded.source, 'gi'));
+    assert.ok(matches, `${rel} must state that .claude/agent-memory/** is not excluded from the self-hosting review scope`);
+    totalMatches += matches.length;
+  }
+  assert.strictEqual(totalMatches, 4, 'external-review.md carries the statement twice (table row + exclude_paths sentence), the other two files once each - a dropped copy anywhere must be caught');
+});
+
+test('T-2: AGENTS.md is sole SSoT for the --apply <generated-view-path...> explanatory parenthetical; asd-dev.md, asd-update/SKILL.md, asd-phase-impl.md, custom-coding-rules.md and README.md cite providers.md instead of restating it', () => {
+  const fullParenthetical = 'pass generated view paths, never `.asd/` canon: `.claude/agents/<name>.md`, `.codex/agents/<name>.toml`, `.claude/skills/<name>/SKILL.md`, `.agents/skills/<name>/SKILL.md`';
+  const citation = 'Canonical path -> per-provider path';
+  const agents = fs.readFileSync(path.join(REPO_ROOT, 'AGENTS.md'), 'utf8');
+  assert.ok(agents.includes(fullParenthetical), 'AGENTS.md must carry the full --apply explanatory parenthetical - the sole owner');
+
+  const otherSites = [
+    '.asd/agents/asd-dev.md',
+    '.asd/skills/asd-update/SKILL.md',
+    '.asd/workflows/asd-phase-impl.md',
+    '.asd/project/custom-coding-rules.md',
+    'README.md',
+  ];
+  for (const rel of otherSites) {
+    const content = fs.readFileSync(path.join(REPO_ROOT, rel), 'utf8');
+    assert.ok(!content.includes(fullParenthetical), `${rel} must not restate the full --apply explanatory parenthetical - AGENTS.md is the sole SSoT`);
+    assert.ok(content.includes(citation), `${rel} must cite providers.md "${citation}" instead of restating the parenthetical`);
+  }
+});
+
+test('T-2/AC-3: artifact-layout.md documents the <reviewer>.part-N.md split-review naming and the sprint-folder-purity statement alongside the Agent-memory carve-out; README.md and t_review.md carry the matching mirrors', () => {
+  const artifactLayout = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/artifact-layout.md'), 'utf8');
+  assert.ok(artifactLayout.includes('design/iter-NN/<reviewer>.md, <reviewer>.part-N.md'), 'artifact-layout.md path map must name <reviewer>.part-N.md under design reviews');
+  assert.ok(artifactLayout.includes('impl/iter-NN/<reviewer>.md, <reviewer>.part-N.md'), 'artifact-layout.md path map must name <reviewer>.part-N.md under impl reviews');
+  assert.ok(artifactLayout.includes('A sprint folder holds **only** the artifacts named above'), 'artifact-layout.md must state the sprint-folder-purity contract');
+  assert.ok(artifactLayout.includes('`agent-memory/` has no canonical source under `.asd/` and `sync.js` neither generates nor reconciles it'), 'artifact-layout.md must state the Agent-memory read-only carve-out reasoning');
+
+  const readme = fs.readFileSync(path.join(REPO_ROOT, 'README.md'), 'utf8');
+  assert.ok(readme.includes('is hand-authored, not generated'), 'README.md must mirror the agent-memory hand-authored exception to the generated-view read-only rule');
+
+  const reviewTemplate = fs.readFileSync(path.join(REPO_ROOT, '.asd/templates/t_review.md'), 'utf8');
+  assert.ok(reviewTemplate.includes('Interrupted attempts: {{count}} ({{cause}})'), 't_review.md must ship the interrupted-attempts placeholder line the durable-record rule (review-policy.md) depends on');
+  assert.ok(reviewTemplate.includes('<reviewer>.part-N.md'), 't_review.md must ship the split-form note pointing to <reviewer>.part-N.md');
+});
+
+test('T-3/AC-2: providers.md states the never-heredoc file-write rule for artifact content', () => {
+  const providers = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/providers.md'), 'utf8');
+  assert.ok(providers.includes('never a shell heredoc/here-string'), 'providers.md must state that writing an artifact never goes through a shell heredoc/here-string');
+});
+
+test('T-3/AC-7: providers.md\'s asd-dev role-scoped-context row cites the review-policy.md over-engineering/structure-cohesion checklists', () => {
+  const providers = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/providers.md'), 'utf8');
+  assert.ok(providers.includes('`review-policy.md` over-engineering and structure/cohesion checklists'), 'providers.md must cite the over-engineering/structure-cohesion checklists in asd-dev\'s role-scoped-context row');
+});
+
+test('T-2: feedback_no-shell-review-method.md cites asd-reviewer-testing.md\'s frontmatter for the reviewer\'s tool grant instead of re-enumerating it, and that frontmatter really is read-only - guards the stale-grant regression (D-2) that once claimed a Write tool this reviewer does not have', () => {
+  const memory = fs.readFileSync(path.join(REPO_ROOT, '.claude/agent-memory/asd-reviewer-testing/feedback_no-shell-review-method.md'), 'utf8');
+  assert.ok(memory.includes('.asd/agents/asd-reviewer-testing.md` frontmatter'), 'must cite the agent frontmatter as the tool-grant home rather than restating a tool list that can drift from it');
+
+  const agentSrc = sync.readNormalized(path.join(REPO_ROOT, '.asd/agents/asd-reviewer-testing.md'));
+  const { meta } = sync.parseCanonicalFrontmatter(agentSrc);
+  assert.deepStrictEqual(meta.claude.tools, ['Read', 'Glob', 'Grep', 'AskUserQuestion'], 'the frontmatter this memory now cites must actually be the read-only grant it claims, or the citation points somewhere false');
+  assert.ok(!meta.claude.tools.includes('Write') && !meta.claude.tools.includes('Edit') && !meta.claude.tools.includes('Bash'), 'this reviewer must have no Write/Edit/Bash grant to cite');
+
+  const grantedLower = meta.claude.tools.map((t) => t.toLowerCase());
+  const toolToken = '(?:Read|Glob|Grep|Write|Edit|Bash|AskUserQuestion|WebFetch|WebSearch|NotebookEdit|TodoWrite|Task)';
+  const enumerationPattern = new RegExp(`\\b${toolToken}\\b(?:\\s*[/,]\\s*\\b${toolToken}\\b)+`, 'gi');
+  const enumerations = memory.match(enumerationPattern) || [];
+  for (const group of enumerations) {
+    for (const name of group.split(/[/,]/).map((s) => s.trim())) {
+      assert.ok(grantedLower.includes(name.toLowerCase()), `memory re-enumerates tool "${name}" (in "${group}"), which is not in the cited frontmatter's grant [${meta.claude.tools.join(', ')}] - a re-enumerated grant must never disagree with what it cites, in any casing`);
+    }
+  }
+});
+
+test('T-2/C-2: canon_hashes covers only .asd/agents/*.md and .asd/skills/*/SKILL.md - the tree scope feedback_no-shell-review-method.md\'s per-tree collateral-failure count (three/two/one) depends on', () => {
+  const entries = sync.computeCanonHashes(REPO_ROOT);
+  assert.ok(entries.length > 0, 'sanity: computeCanonHashes must find at least one entry in this repo');
+  for (const [key] of entries) {
+    assert.ok(/^agents\/[^/]+\.md$/.test(key) || /^skills\/[^/]+\/SKILL\.md$/.test(key), `canon_hashes key "${key}" must be under agents/*.md or skills/*/SKILL.md - a third tree here would silently invalidate the memory's per-tree collateral-count claim`);
+  }
+  assert.strictEqual(entries.some(([key]) => key.startsWith('hooks/')), false, 'session-start.js and other hooks must never appear in canon_hashes - the memory\'s "hooks/t_AGENTS.md/t_CLAUDE.md -> two, not three" claim depends on this exclusion');
+});
+
+test('T-2: asd-dev-critical/MEMORY.md\'s index entries each link to a file that exists in the same directory - guards the new CRLF-hazard index line landing without its target, or drifting from it later', () => {
+  const dir = path.join(REPO_ROOT, '.claude/agent-memory/asd-dev-critical');
+  const index = fs.readFileSync(path.join(dir, 'MEMORY.md'), 'utf8');
+  const links = [...index.matchAll(/\]\(([^)]+\.md)\)/g)].map((m) => m[1]);
+  assert.ok(links.length > 0, 'asd-dev-critical/MEMORY.md must list at least one memory file');
+  for (const link of links) {
+    assert.ok(fs.existsSync(path.join(dir, link)), `asd-dev-critical/MEMORY.md links to "${link}" which does not exist`);
+  }
+  assert.ok(links.includes('project_crlf-canon-edits.md'), 'asd-dev-critical/MEMORY.md must index the new CRLF canon-edit hazard file added this round');
+});
+
+test('AC-15: review-policy.md is sole SSoT for the reviewer read-only reconciliation (artifact-write scope vs. the memory:project write channel), and providers.md cites it instead of restating it', () => {
+  const policy = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/review-policy.md'), 'utf8');
+  assert.ok(policy.includes('Reviewers write no review artifact, code or doc'), 'review-policy.md must state the scoped (non-absolute) claim of what reviewers cannot write');
+  assert.ok(policy.includes('memory: project` is a separate write channel reviewers do use'), 'review-policy.md must reconcile the artifact-level claim with the memory:project write channel the host actually grants, or a future edit could re-widen the claim back to a false absolute');
+
+  const providers = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/providers.md'), 'utf8');
+  assert.ok(providers.includes('Reviewer agents carry no artifact-write grant on either host'), 'providers.md must state the artifact-level grant fact it owns (tool config), distinct from the reconciliation review-policy.md owns');
+  assert.ok(providers.includes('Gate Verdict Format'), 'providers.md must cite review-policy.md "Gate Verdict Format" for what the read-only claim covers and excludes, rather than restating the reconciliation independently');
+  assert.ok(!providers.includes('memory: project` is a separate write channel reviewers do use'), 'providers.md must not restate the reconciliation sentence itself - that duplication is exactly what the citation exists to prevent');
+});
+
+test('AC-15: providers.md records which emitted agent frontmatter fields are host-verified vs. emitted on trust', () => {
+  const providers = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/providers.md'), 'utf8');
+  assert.ok(providers.includes('Host-honoured, and observable in dispatch'), 'providers.md must name the frontmatter fields the host actually verifies/observes at dispatch');
+  assert.ok(providers.includes('Emitted on trust: `effort` and `maxTurns`'), 'providers.md must record that effort/maxTurns are emitted by sync.js on trust, not verified by either host, so they are never relied on as an enforcement boundary');
+});
+
+test('AC-15: .asd/sync.js and .asd/skills/asd-update/update.js carry no non-Latin-script text - workflow infrastructure is English always (language-policy.md)', () => {
+  const nonLatinScript = /[Ͱ-ϿЀ-ӿ֐-׿؀-ۿऀ-ॿ฀-๿぀-ヿ㐀-䶿一-鿿가-힯]/;
+  for (const rel of ['.asd/sync.js', '.asd/skills/asd-update/update.js']) {
+    const content = fs.readFileSync(path.join(REPO_ROOT, rel), 'utf8');
+    const offender = content.match(nonLatinScript);
+    assert.strictEqual(offender, null, `${rel} must contain no non-Latin-script character (found "${offender && offender[0]}") - this round removed the Russian comments quoting a project plan document (AC-15); a future re-introduction must fail here, not wait for direct read`);
+  }
+});
+
+test('AC-15/iter-05: providers.md names External Review as the sole Bash carve-out among read-only reviewers, and that claim matches actual frontmatter grants', () => {
+  const providers = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/providers.md'), 'utf8');
+  assert.ok(providers.includes('Reviewer agents carry no artifact-write grant on either host, with one carve-out.'), 'providers.md must state the carve-out, not the unqualified universal it replaced');
+  assert.ok(providers.includes('Config-enforced for the four internal reviewers'), 'providers.md must scope the config-enforced guarantee to the four internal reviewers, not all reviewer agents');
+  assert.ok(providers.includes('External Review is the carve-out'), 'providers.md must name External Review as the exception, not leave the carve-out unattributed');
+  assert.ok(providers.includes('needs `Bash` to invoke the wrapped CLI'), 'providers.md must state why the carve-out needs Bash');
+  assert.ok(!providers.includes('Enforced by config, not by a textual instruction repeated in reviewer bodies.'), 'the prior blanket enforcement sentence (true only for the four internal reviewers) must not survive verbatim now that a fifth reviewer agent is carved out');
+
+  const externalRaw = sync.readNormalized(path.join(REPO_ROOT, '.asd/agents/asd-external-review.md'));
+  const { meta: externalMeta } = sync.parseCanonicalFrontmatter(externalRaw);
+  assert.ok(externalMeta.claude.tools.includes('Bash'), 'the agent providers.md names as the carve-out must actually carry the Bash grant the prose claims');
+
+  for (const name of ['asd-reviewer-correctness', 'asd-reviewer-documentation', 'asd-reviewer-efficiency', 'asd-reviewer-testing']) {
+    const raw = sync.readNormalized(path.join(REPO_ROOT, '.asd/agents', `${name}.md`));
+    const { meta } = sync.parseCanonicalFrontmatter(raw);
+    assert.ok(!meta.claude.tools.includes('Bash'), `${name}: providers.md claims the four internal reviewers are config-enforced with no Bash - ${name} must not carry it`);
+  }
+});
+
+test('T-2/iter-05: asd-reviewer-correctness memory cites review-policy.md/providers.md for the reviewer write scope instead of restating the unqualified "reviewers are read-only on both providers" claim providers.md just corrected', () => {
+  const memory = fs.readFileSync(path.join(REPO_ROOT, '.claude/agent-memory/asd-reviewer-correctness/feedback_review-method-no-shell.md'), 'utf8');
+  assert.ok(!memory.includes('reviewers are read-only on both providers'), 'must not restate the unqualified universal claim providers.md corrected this round');
+  assert.ok(memory.includes('review-policy.md') && memory.includes('Gate Verdict Format'), 'must cite review-policy.md "Gate Verdict Format" for write scope rather than restating it');
+  assert.ok(memory.includes('.asd/rules/providers.md'), 'must cite providers.md for the tool mapping rather than re-enumerating tool names');
+  assert.ok(!/\b(Write|Edit|Bash)\b(\s*[/,]\s*`?\b(Write|Edit|Bash)\b){1,}/.test(memory), 'must not re-enumerate a tool-name list that can silently drift from the cited frontmatter');
 });
 
 // ===========================================================================

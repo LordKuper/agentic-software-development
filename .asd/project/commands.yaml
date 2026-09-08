@@ -13,4 +13,3 @@ run: "node .asd/hooks/session-start.js --provider codex"
 
 custom:
   sync-check: "node .asd/sync.js --check"
-  sync-apply: "node .asd/sync.js --apply"

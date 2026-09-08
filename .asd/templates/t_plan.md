@@ -14,6 +14,7 @@ Format rules (parser-critical):
 - Checkboxes in any non-task section break orchestrator task parsing
 - Subtask deferred for a manual action stays `- [ ]`, suffixed ` — BLOCKED: MS-N` (see manual-steps.md)
 - No test-authoring tasks or subtasks: tests are selected and written in impl-test, after the code exists
+- Every task carries a `Material risk:` line, plain text, never a checkbox (see sprint-lifecycle.md "Plan file format")
 -->
 
 ## Overview
@@ -24,10 +25,16 @@ Standing DoD applies, never restated here (`sprint-lifecycle.md` "Plan file form
 {{sprint-specific DoD additions, if any — prose, NO checkboxes; omit this line entirely when none}}
 
 ### Task 1: {{title}}
+Material risk: change: {{short risk class — the edit's own correctness is uncertain}}
 - [ ] {{subtask}}
 - [ ] {{subtask}}
 
 ### Task 2: {{title}}
+Material risk: artifact: {{short risk class — verifiable edit in a high-stakes file}}
+- [ ] {{subtask}}
+
+### Task 3: {{title}}
+Material risk: none
 - [ ] {{subtask}}
 
 ## Risks (optional)

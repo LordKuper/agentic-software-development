@@ -9,6 +9,7 @@ const CACHE_SCHEMA = 1;
 const PROBE_TIMEOUT_MS = 3000;
 const NEGATIVE_TTL_MS = 300000;
 const MAX_NEGATIVE_TTL_MS = 3600000;
+const RESERVED_CHANGE_RISKS = ['security', 'authentication', 'migration', 'public contract', 'workflow gate'];
 
 function stable(value) {
   if (Array.isArray(value)) return '[' + value.map(stable).join(',') + ']';
@@ -28,6 +29,21 @@ function fail(message) {
 function stringArray(value, name) {
   if (!Array.isArray(value) || value.some((item) => typeof item !== 'string' || item.includes('\0'))) fail(`${name} must be a string array`);
   return value;
+}
+
+/** Normalizes one declared risk; an untyped name carries the strictest target, a reserved class fails closed unless declared against the change. */
+function riskEntry(value) {
+  const entry = typeof value === 'string' ? { name: value, target: 'change' } : value;
+  if (!entry || typeof entry !== 'object' || Array.isArray(entry)) fail('risks entry must be a name or a typed risk');
+  if (typeof entry.name !== 'string' || entry.name.length === 0 || entry.name.includes('\0')) fail('risks entry name must be a non-empty string');
+  if (entry.target !== 'change' && entry.target !== 'artifact') fail('risks entry target must be change or artifact');
+  if (entry.target === 'artifact' && RESERVED_CHANGE_RISKS.includes(entry.name.toLowerCase().replace(/[\s_-]+/g, ' ').trim())) fail(`reserved risk class is change by definition: ${entry.name}`);
+  return { name: entry.name, target: entry.target };
+}
+
+function riskArray(value, name) {
+  if (!Array.isArray(value)) fail(`${name} must be an array of risks`);
+  return value.map(riskEntry);
 }
 
 /** Builds the spawn shape for a command: direct argv, or the Windows PowerShell JSON-stdin fallback. */
@@ -144,20 +160,21 @@ function routeTask(input) {
   if (!input || typeof input !== 'object') fail('routing input required');
   if (!['command', 'mechanical', 'standard'].includes(input.kind)) fail('routing kind invalid');
   if (typeof input.objectiveInputs !== 'boolean' || typeof input.failedObjectiveCheck !== 'boolean') fail('routing evidence incomplete');
-  const risks = stringArray(input.risks, 'risks');
+  const risks = riskArray(input.risks, 'risks');
   const checks = stringArray(input.checks, 'checks');
   if (!Number.isInteger(input.correctionAttempts) || input.correctionAttempts < 0) fail('correctionAttempts invalid');
   const attempted = input.correctionAttempts;
   const ranks = { mechanical: 0, standard: 1, critical: 2 };
   if (input.priorTier !== undefined && !Object.prototype.hasOwnProperty.call(ranks, input.priorTier)) fail('priorTier invalid');
-  const hasRisk = risks.length > 0;
+  const changeRisk = risks.find((risk) => risk.target === 'change');
+  const artifactRisk = risks.find((risk) => risk.target === 'artifact');
   const deterministicCommand = input.kind === 'command' && input.objectiveInputs === true && checks.includes('deterministic-state');
   const mechanical = input.kind === 'mechanical' && input.objectiveInputs === true && checks.includes('deterministic-check') && checks.includes('exhaustive-match-validation');
-  const computedTier = hasRisk || (input.failedObjectiveCheck && attempted >= 1) ? 'critical' : deterministicCommand || mechanical ? 'mechanical' : 'standard';
+  const computedTier = changeRisk || (input.failedObjectiveCheck && attempted >= 1) ? 'critical' : deterministicCommand || mechanical ? 'mechanical' : 'standard';
   const clamped = Boolean(input.priorTier) && ranks[input.priorTier] > ranks[computedTier];
   const tier = clamped ? input.priorTier : computedTier;
-  const execution = deterministicCommand && tier === 'mechanical' ? 'command' : 'agent';
-  const reason = hasRisk ? `risk:${risks[0]}` : input.failedObjectiveCheck && attempted >= 1 ? 'failed-objective-check' : clamped ? 'no-downgrade' : execution === 'command' ? 'deterministic-command' : tier === 'mechanical' ? 'objective-mechanical' : 'normal';
+  const execution = deterministicCommand && tier === 'mechanical' && risks.length === 0 ? 'command' : 'agent';
+  const reason = changeRisk ? `risk:${changeRisk.name}` : input.failedObjectiveCheck && attempted >= 1 ? 'failed-objective-check' : clamped ? 'no-downgrade' : artifactRisk ? `artifact-risk:${artifactRisk.name}` : execution === 'command' ? 'deterministic-command' : tier === 'mechanical' ? 'objective-mechanical' : 'normal';
   return { tier, execution, reason };
 }
 

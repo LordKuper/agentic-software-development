@@ -1,0 +1,35 @@
+{
+  "phase": "impl-review",
+  "iteration": "2",
+  "base_ref": "0366ee9",
+  "head_ref": "f1bdec61d01db9aaca7c9d6003d6866f6781d054",
+  "files": [
+    ".asd/agents/asd-dev.md",
+    ".asd/release-manifest.json",
+    ".asd/rules/artifact-layout.md",
+    ".asd/rules/external-review.md",
+    ".asd/rules/providers.md",
+    ".asd/rules/review-policy.md",
+    ".asd/rules/sprint-lifecycle.md",
+    ".asd/runtime.js",
+    ".asd/skills/asd-update/SKILL.md",
+    ".asd/sync.js",
+    ".asd/templates/external-review/t_prompt-external-impl.md",
+    ".asd/templates/t_review.md",
+    ".asd/workflows/asd-phase-design-review.md",
+    ".asd/workflows/asd-phase-impl-review.md",
+    ".asd/workflows/asd-phase-impl-test.md",
+    ".asd/workflows/asd-phase-impl.md",
+    "AGENTS.md",
+    "README.md",
+    "tests/run.js"
+  ],
+  "exclude_paths": [
+    ".asd/project/**",
+    ".asd/sprints/**",
+    ".claude/{agents,skills,hooks}/**",
+    ".claude/settings.json",
+    ".codex/**",
+    ".agents/skills/**"
+  ]
+}

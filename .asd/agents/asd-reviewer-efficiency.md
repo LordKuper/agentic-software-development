@@ -46,7 +46,7 @@ Efficiency reviewer. Merges the former Simplification and Performance reviewers 
 
 ## Outputs
 
-- Return verdict, findings and compact coverage JSON per `review-policy.md` "Coverage ledger" and `t_review.md`. The phase orchestrator validates and persists the manifest/ledger with the report; reviewer never writes files.
+- Return verdict, findings and compact coverage JSON per `review-policy.md` "Coverage ledger" and `t_review.md`. The phase orchestrator validates and persists the manifest/ledger with the report; reviewer write scope: `review-policy.md` "Gate Verdict Format".
 
 ## Behavioral profile
 

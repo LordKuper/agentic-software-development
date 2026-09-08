@@ -1,0 +1,266 @@
+{
+  "sprint_id": "008-retro-007-remediation",
+  "branch": "sprint/008-retro-007-remediation",
+  "phase": "pr",
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "adr": false,
+    "c4": false
+  },
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "initial scope accepted in full, all 14 AC, oversize diff acknowledged",
+      "evidence": "user chose 'accept as is' over narrowing to actions-only; AC-1 split-review contract lands in this same sprint and may be applied to its own review",
+      "artifact_revision": ".asd/sprints/008-retro-007-remediation/sprint.md@2026-09-07T17:11:41Z"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "user",
+      "reason": "audit accepted; four scope adjustments decided by the user after stale-premise findings",
+      "evidence": "AC-4 closed as satisfied at HEAD (sync.js fail-closed since v4.0.0, verified by running the tool); AC-5 retargeted to all real occurrences, t_AGENTS.md dropped as empty; one-off authorization to edit .asd/project/custom-coding-rules.md outside the self-hosting write allowlist, verified by grep; AC-6 tightened beyond the audit's proposal — an internal reviewer is never skipped, an interrupted dispatch is re-dispatched fresh within the same iteration",
+      "artifact_revision": ".asd/sprints/008-retro-007-remediation/audit.md@2026-09-07"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "orchestrator",
+      "reason": "routine adaptive pass: plan decomposes already-accepted AC without introducing scope, criteria or material alternatives",
+      "evidence": "every task cites an AC from sprint.md accepted at the scope gate and revised by four user decisions at the audit gate; task grouping follows audit.md mitigations; no stubs to route (stubs.md empty); no test tasks per sprint-lifecycle plan format",
+      "artifact_revision": ".asd/sprints/008-retro-007-remediation/plan.md@2026-09-07T17:55:00Z"
+    },
+    {
+      "gate": "impl-assessment",
+      "decision_actor": "user",
+      "reason": "impl assessment approved, advance to impl-test",
+      "evidence": "all 11 plan tasks COMPLETED with every checkbox ticked; build node .asd/sync.js --check ok:true; lint git diff --check clean; tests/run.js 136/136; no sprint-introduced stubs; two friction entries recorded",
+      "artifact_revision": ".asd/sprints/008-retro-007-remediation/plan.md@2026-09-07T19:30:00Z"
+    },
+    {
+      "gate": "impl-review-escalation",
+      "decision_actor": "user",
+      "reason": "E-1 approved: delete union condition (c) as unreachable, relabel (d) to (c)",
+      "evidence": "a half reaches merge only after validate-ledger, and runtime.js:209 already recomputes and rejects a mismatched manifest digest",
+      "artifact_revision": "reviews/impl/iter-02/efficiency.md"
+    },
+    {
+      "gate": "impl-review-escalation",
+      "decision_actor": "user",
+      "reason": "E-4 approved: reduce derived_handoff to a single phase-exit write",
+      "evidence": "validity key costs the same order as the diff it saves and misses by construction on iterations >= 2 where base differs; the contradiction goes away with the surplus wiring",
+      "artifact_revision": "reviews/impl/iter-02/efficiency.md"
+    },
+    {
+      "gate": "write-authorization",
+      "decision_actor": "user",
+      "reason": "one-off authorization extended to .asd/project/commands.yaml; the sync-apply alias is deleted",
+      "evidence": "the alias is a deterministic exit 1 after the empty-target guard and is the only sync command a dev agent may run verbatim; a fixed string cannot express a command with mandatory arguments",
+      "artifact_revision": "reviews/impl/iter-02/correctness.md"
+    },
+    {
+      "gate": "impl-review-escalation",
+      "decision_actor": "user",
+      "reason": "AC-11 retired: derived_handoff deleted entirely, criterion closed as not delivered",
+      "evidence": "three review rounds established the stated purpose is unreachable by construction — impl-test stamps HEAD analysed before its bookkeeping commit, impl-review records iteration_heads after it, so bases differ on every iteration >= 2 and only the first handoff can hit; each repair closed its finding and left the purpose unmet",
+      "artifact_revision": "reviews/impl/iter-04/correctness.md"
+    },
+    {
+      "gate": "scope-expansion",
+      "decision_actor": "user",
+      "reason": "AC-15 added: reconcile the reviewer read-only claim with the host grant, record which frontmatter fields are verified, and remove non-English plan-quoting comments from the Node sources",
+      "evidence": "canon grants reviewers [Read, Glob, Grep, AskUserQuestion] with memory: project while the host adds a file-writing capability for that channel, so review-policy.md's \"by host guarantee\" is false as an absolute; sync.js emits a field its own comment calls undocumented; sync.js and update.js carry Russian comments quoting a plan document against language-policy.md and code-style.md section 8",
+      "artifact_revision": ".asd/sprints/008-retro-007-remediation/sprint.md"
+    },
+    {
+      "gate": "green-review-handoff",
+      "decision_actor": "orchestrator",
+      "reason": "routine adaptive pass: every required reviewer satisfied and the terminal full suite green",
+      "evidence": "iter-06 verdicts APPROVE for all five (four latched, external fresh); terminal unscoped run 160/160, git diff --check clean, node .asd/sync.js --check ok:true, recorded in test-plan.md Suite run at 458c8b4",
+      "artifact_revision": ".asd/sprints/008-retro-007-remediation/test-plan.md@b91d8fa"
+    },
+    {
+      "gate": "pr-publication",
+      "decision_actor": "user",
+      "reason": "user authorized the pr phase after being told it bumps the version, writes the changelog and opens the PR",
+      "evidence": "DoD verified and re-run at pr entry: 160/160 unscoped, lint clean, build ok:true, all five iter-06 verdicts APPROVE, no unticked plan task, no sprint stub, no pending defect, retrospective written",
+      "artifact_revision": "PR #29"
+    }
+  ],
+  "task_routing": {
+    "Task 1": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:review-gate contract"
+    },
+    "Task 2": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate behaviour"
+    },
+    "Task 3": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "normal"
+    },
+    "Task 4": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "normal"
+    },
+    "Task 5": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:read-only-view rule conflict"
+    },
+    "Task 6": {
+      "tier": "mechanical",
+      "execution": "agent",
+      "reason": "objective-mechanical"
+    },
+    "Task 7": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:SSoT duplication"
+    },
+    "Task 8": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "normal"
+    },
+    "Task 9": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:routing input compatibility"
+    },
+    "Task 10": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:state schema compatibility"
+    },
+    "Task 11": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "normal"
+    },
+    "impl-test": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:routing and state contract"
+    }
+  },
+  "skipped_phases": [
+    "design",
+    "design-review",
+    "design-promote"
+  ],
+  "reviews": {
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "iteration": 6,
+      "verdicts": {
+        "iter-01": {
+          "correctness": "CONCERNS",
+          "efficiency": "CONCERNS",
+          "testing": "CONCERNS",
+          "documentation": "CONCERNS",
+          "external": "CONCERNS"
+        },
+        "iter-02": {
+          "correctness": "CONCERNS",
+          "efficiency": "FAIL",
+          "testing": "CONCERNS",
+          "documentation": "CONCERNS",
+          "external": "CONCERNS"
+        },
+        "iter-03": {
+          "correctness": "CONCERNS",
+          "efficiency": "CONCERNS",
+          "testing": "CONCERNS",
+          "documentation": "CONCERNS",
+          "external": "APPROVE (skipped: external review unavailable: quota)"
+        },
+        "iter-04": {
+          "correctness": "FAIL",
+          "efficiency": "CONCERNS",
+          "testing": "CONCERNS",
+          "documentation": "APPROVE",
+          "external": "APPROVE (skipped: external review unavailable: active negative cache — quota)"
+        },
+        "iter-05": {
+          "correctness": "APPROVE",
+          "efficiency": "APPROVE",
+          "testing": "APPROVE",
+          "documentation": "APPROVE",
+          "external": "CONCERNS"
+        },
+        "iter-06": {
+          "correctness": "APPROVE",
+          "efficiency": "APPROVE",
+          "testing": "APPROVE",
+          "documentation": "APPROVE",
+          "external": "APPROVE"
+        }
+      },
+      "iteration_heads": {
+        "iter-01": "0366ee9aabbce047c93a978606b4661bbf7cac20",
+        "iter-02": "f1bdec61d01db9aaca7c9d6003d6866f6781d054",
+        "iter-03": "5dafacc9c8123e604c4c12739462f0813dba549b",
+        "iter-04": "f23c8dc995f95528613dd1d4078e20c0f3f6da56",
+        "iter-05": "02cd977d6b3cff9f712fa406d76ddc2202ae4cd7",
+        "iter-06": "fdf6cf620fb2500461d4f2459865c64ebe132ced"
+      },
+      "latched": {
+        "documentation": 4,
+        "correctness": 5,
+        "efficiency": 5,
+        "testing": 5,
+        "external": 6
+      }
+    }
+  },
+  "created_at": "2026-09-07T17:11:41Z",
+  "updated_at": "2026-09-08T16:30:00Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": {
+    "number": 29,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/29",
+    "state": "open",
+    "title": "feat(workflow)!: remediate sprint 007 retrospective, v7.0.0",
+    "opened_at": "2026-09-08T16:30:00Z"
+  },
+  "archived_at": null,
+  "derived_handoff": {
+    "base": "0366ee9aabbce047c93a978606b4661bbf7cac20",
+    "head": "f1bdec61d01db9aaca7c9d6003d6866f6781d054",
+    "pathspec": "-- . :(exclude).asd/project :(exclude).asd/sprints :(exclude).claude :(exclude).codex :(exclude).agents",
+    "files": [
+      ".asd/agents/asd-dev.md",
+      ".asd/release-manifest.json",
+      ".asd/rules/artifact-layout.md",
+      ".asd/rules/external-review.md",
+      ".asd/rules/providers.md",
+      ".asd/rules/review-policy.md",
+      ".asd/rules/sprint-lifecycle.md",
+      ".asd/runtime.js",
+      ".asd/skills/asd-update/SKILL.md",
+      ".asd/sync.js",
+      ".asd/templates/external-review/t_prompt-external-impl.md",
+      ".asd/templates/t_review.md",
+      ".asd/workflows/asd-phase-design-review.md",
+      ".asd/workflows/asd-phase-impl-review.md",
+      ".asd/workflows/asd-phase-impl-test.md",
+      ".asd/workflows/asd-phase-impl.md",
+      "AGENTS.md",
+      "README.md",
+      "tests/run.js"
+    ]
+  }
+}

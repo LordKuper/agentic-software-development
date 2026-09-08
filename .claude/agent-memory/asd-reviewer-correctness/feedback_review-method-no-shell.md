@@ -7,7 +7,7 @@ metadata:
 
 Review dispatches in this repo give no shell/Bash. Resolve the diff scope by reading the current content of the paths listed in the dispatch manifest's `files[]` with Read/Grep/Glob; never plan around running `git diff`.
 
-**Why:** reviewers are read-only on both providers (`.asd/rules/providers.md`, AGENTS.md "Agents") — no `Write`/`Edit`/`Bash` in `tools`, `sandbox_mode: "read-only"`. The phase orchestrator computes the diff and hands over the path list plus a `correctness.manifest.json`.
+**Why:** this reviewer gets no command-runner grant on either provider (write scope: `review-policy.md` "Gate Verdict Format"; tool mapping: `.asd/rules/providers.md`). The phase orchestrator computes the diff and hands over the path list plus a `correctness.manifest.json`.
 
 **How to apply:**
 - Ledger `files` rows must match the manifest exactly; the orchestrator validates with `node .asd/runtime.js validate-ledger`, so a shape mismatch means a re-dispatch.
