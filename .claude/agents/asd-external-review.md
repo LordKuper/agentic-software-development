@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:8efca10e93fc03b40955d2d77c64e242cf2834f6271c0e826dc29552a02db8af content_digest=sha256:ac0cc8ba2a0085f3e8f9a423fddae778dfd5400c376a59237052435b0b2e23bd asd_version=7.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:e559ca715a3887418450a02c2a987eeb65512a4bd9d57bf65c4304a433392300 content_digest=sha256:eac590c7dce6b4e4b8c70b869f99cafe819939d83ff776756ed170c9ec60d8ba asd_version=7.0.0 schema=1
 name: asd-external-review
 description: "External reviewer wrapping the other provider's CLI (Codex under Claude Code, Claude under Codex), run in parallel with internal reviewers during design-review and impl-review. Covers: wrapped-CLI availability detection per system.os, iteration-aware scope manifest rendering (full vs incremental), prompt selection per phase (design or impl), output parsing and ASD severity mapping, kept/dropped accounting per severity floor, stalemate detection across iterations. Does NOT handle: internal review (delegates to asd-reviewer-* agents), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, Bash, AskUserQuestion]
@@ -106,8 +106,7 @@ Before invocation, phase orchestration supplies a runtime preflight result, back
 
 - `REVIEW_DONE` — findings and verdict returned as final text; phase orchestrator writes external.md
 - `QUESTION` — stalemate escalation
-- `FAILED` — `codex` unrecoverable error
-- `ABORT — precondition not met: <artefact>`
+- `ABORT — precondition not met: <artefact>` — only before any `codex` invocation (e.g. prompt template absent); once an invocation has started, every failure of it returns the availability skip instead (`external-review.md` "Outcome contract")
 
 ## Output format
 

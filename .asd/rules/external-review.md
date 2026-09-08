@@ -46,7 +46,7 @@ Sole home of what a dispatched External Review may return — exactly one of two
 - **verdict** — findings text whose first content line is `[REVIEW-<phase>-external]: APPROVE|CONCERNS|FAIL` (`review-policy.md` "Gate Verdict Format")
 - **availability skip** — `APPROVE (skipped: external review unavailable: <specific status>)` (above)
 
-Nothing else. The skip is not confined to a preflight or negative-cache result: **any** inability to complete — wrapped-CLI crash, hang, timeout, unusable output, the one permitted retry exhausted — returns it, naming that cause as `<specific status>`. So the wrapper awaits the wrapped CLI inside its own dispatch and never backgrounds it; no outcome means "started, still running".
+Nothing else. The skip is not confined to a preflight or negative-cache result: **any** inability to complete — wrapped-CLI crash, hang, timeout, unusable output, the one permitted retry exhausted — returns it, naming that cause as `<specific status>`. So the wrapper awaits the wrapped CLI inside its own dispatch and never backgrounds it; no outcome means "started, still running". The contract scopes a dispatch that reached that invocation: a precondition missing before any invocation (prompt template absent) aborts the dispatch instead — a framework defect the orchestrator must see, never an availability skip.
 
 A return that is neither — empty, or prose carrying no verdict token and no skip — is not permitted and is not a verdict. Its disposal is `review-policy.md` "Interrupted dispatch", imported here whole.
 

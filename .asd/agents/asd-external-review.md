@@ -113,8 +113,7 @@ Before invocation, phase orchestration supplies a runtime preflight result, back
 
 - `REVIEW_DONE` — findings and verdict returned as final text; phase orchestrator writes external.md
 - `QUESTION` — stalemate escalation
-- `FAILED` — `{{wraps_cli}}` unrecoverable error
-- `ABORT — precondition not met: <artefact>`
+- `ABORT — precondition not met: <artefact>` — only before any `{{wraps_cli}}` invocation (e.g. prompt template absent); once an invocation has started, every failure of it returns the availability skip instead (`external-review.md` "Outcome contract")
 
 ## Output format
 
