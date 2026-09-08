@@ -139,6 +139,16 @@ deliverable (`AC-9`) and revised two against decisions taken at the audit gate (
   fix-round history in `decisions-log.md` — so nothing new is recorded and nothing can
   drift out of sync with them.
 
+### Scope expansion
+
+- AC-19: **authorized 2026-09-09, after the sprint PR was opened.** The main orchestrator merges the sprint PR
+  itself rather than waiting for a human to click merge.  gains a "Merging a PR" section as the
+  sole home of who merges;  "PR phase" and  merge mode cite it, and
+  's phase table mirrors it. The section states the boundary explicitly: merging ends the branch, not
+  the sprint — the hard closure gate still requires explicit user approval before any terminal state, archive move
+  or release tag, and a merge the orchestrator performed never satisfies it. A merge blocked by a failing check,
+  a conflict or branch protection is reported, never forced.
+
 ### Cross-cutting
 
 - AC-16: cross-file consistency holds for every change above — `README.md` mirrors (phase

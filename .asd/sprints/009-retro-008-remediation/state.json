@@ -66,6 +66,14 @@
       "evidence": "DoD verified: 171/171 suite, sync --check ok, all reviewers APPROVE/latched, retrospective written, no open sprint stubs",
       "artifact_revision": "v7.1.0",
       "decided_at": "2026-09-09T00:00:00Z"
+    },
+    {
+      "gate": "scope-expansion",
+      "decision_actor": "user",
+      "reason": "AC-19: orchestrator merges the sprint PR itself; closure stays a user gate",
+      "evidence": "user instruction in chat after PR #31 opened; suite 171/171 and sync --check re-run after the diff",
+      "artifact_revision": "sprint.md@ac-19",
+      "decided_at": "2026-09-09T00:00:00Z"
     }
   ],
   "task_routing": {
