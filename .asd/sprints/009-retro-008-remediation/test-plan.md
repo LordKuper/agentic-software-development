@@ -13,7 +13,7 @@ responsibility:
 |---|---|---|
 | 1 | 5e7451b | full change surface (`git diff main...HEAD`, self-hosting exclusions applied: 17 canonical files + `.gitattributes`, minus `.asd/project/**`, `.asd/sprints/**` and generated views) |
 | 2 | 66a2a1f | delta since entry 1 — `impl` review-fix `iter-01`, test side: the eight dev fix commits `3c4e6c9..eb9034c` (`runtime.js` `coverageManifestDigest`, `artifact-layout.md`, `git-strategy.md`, both `*-review` workflows, `asd-external-review.md`, `external-review.md`, `sprint-lifecycle.md`, `code-style.md`, `checkpoints.md`, `asd-phase-impl.md`), plus the testing/documentation findings aimed at `tests/run.js` and at this file |
-| 3 | 25492b0 | delta since entry 2 — `impl` review-fix `iter-02`, test side: the dev chain's five commits `f4d518f`..`25492b0` (`asd-phase-impl.md` steps 5 and 6, both `*-review` workflows' step 7a/8a + `Artefacts produced`, `checkpoints.md` fix-round match, `sprint-lifecycle.md` ordinal), plus testing `T-1`/`T-2`, both aimed at `tests/run.js` |
+| 3 | 1fcf059 | delta since entry 2 — `impl` review-fix `iter-02`, test side: the dev chain's five commits `f4d518f`..`25492b0` (`asd-phase-impl.md` steps 5 and 6, both `*-review` workflows' step 7a/8a + `Artefacts produced`, `checkpoints.md` fix-round match, `sprint-lifecycle.md` ordinal), plus testing `T-1`/`T-2`, both aimed at `tests/run.js` |
 
 Entry 1's two HEAD stamps are one tree (testing `T-6`): both its strategy pass and its suite run were
 scoped through `aae30d1`, the `impl` tip. `5e7451b` is that same tree plus this tester's own output
