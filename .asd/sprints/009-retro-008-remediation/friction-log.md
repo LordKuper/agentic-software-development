@@ -21,6 +21,7 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 | F-1 | impl | Five parallel devs in one worktree each had to invent a pathspec-commit workaround; the rule fixing this was being authored in the same wave | — |
 | F-2 | impl | `git add --renormalize .` swept three siblings' in-progress edits into one dev's index | — |
 | F-3 | impl | An agent-memory file was co-authored by two concurrent devs and left committable by neither | — |
+| F-4 | impl-review | External review unavailable for the third consecutive sprint, at the iteration where a second opinion carried the most value | reviews/impl/iter-01/external |
 
 ## F-1 — every parallel dev independently invented the same commit workaround
 
@@ -45,3 +46,11 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 - **What happened**: two concurrently dispatched devs both appended to `.claude/agent-memory/asd-dev-critical/project_parallel-agent-commit-sweep.md`. Neither could commit it without carrying the other's in-flight edit, so both left it uncommitted; it therefore reaches no reviewed diff. This is the exact ownerless-memory case `AC-13b` assigns an owner to, observed live while that AC was being implemented.
 - **Impact**: one source file authored this sprint sits outside every reviewer's change surface unless the orchestrator commits it. Recorded so retro can judge whether `AC-13b`'s fix (the phase workflow commits a reviewer's memory writes) covers the dev-authored, multi-writer case too — it currently does not.
 - **Refs**: —
+
+## F-4 — external review unavailable a third consecutive sprint
+
+- **Phase**: impl-review (iteration 1)
+- **Surface**: provider tool — wrapped Codex CLI via `.asd/agents/asd-external-review.md`; rule — `.asd/rules/external-review.md` "Detection and negative cache"
+- **What happened**: the first dispatch was lost to a session-wide usage limit before returning (recorded as interrupted attempt 1 in `decisions-log.md`). The fresh re-dispatch reached the wrapped CLI, which returned an active quota error on both the review pass and the one permitted retry, so the wrapper returned the availability skip. Preflight had reported `local-ready` — correctly, since local readiness is defined to predict only executable and local auth, never paid-request success.
+- **Impact**: the sprint's DoD counts External Review as an independent check, and it has now been absent in the iteration where it was most useful in three consecutive sprints (007, 008, 009). Iteration 1 was judged by internal reviewers alone. Note the machinery behaved exactly as `AC-8` specified: the outcome contract this sprint added is what turned a would-be empty return into a recorded skip, and the availability-skip carve-out kept External Review unlatched so it is re-dispatched next iteration.
+- **Refs**: reviews/impl/iter-01/external

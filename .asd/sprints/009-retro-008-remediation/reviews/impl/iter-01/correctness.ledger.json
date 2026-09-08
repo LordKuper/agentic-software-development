@@ -1,0 +1,209 @@
+{
+  "manifest_digest": "7e7b69633d991167eeb22db5f68232e100a5cc369c4c7e4010dbda96005d405d",
+  "findings": [
+    "F-1",
+    "F-2",
+    "F-3",
+    "F-4",
+    "F-5",
+    "F-6",
+    "F-7",
+    "F-8"
+  ],
+  "files": [
+    {
+      "i": ".asd/agents/asd-dev.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/agents/asd-external-review.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/release-manifest.json",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/rules/artifact-layout.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/rules/checkpoints.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/rules/code-style.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/rules/external-review.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/rules/git-strategy.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/rules/review-policy.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/rules/sprint-lifecycle.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/runtime.js",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/templates/external-review/t_prompt-external-impl.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/templates/t_plan.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/workflows/asd-phase-impl.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/workflows/asd-phase-scope.md",
+      "s": "checked"
+    },
+    {
+      "i": ".claude/agent-memory/asd-dev-critical/MEMORY.md",
+      "s": "checked"
+    },
+    {
+      "i": ".claude/agent-memory/asd-dev-critical/project_parallel-agent-commit-sweep.md",
+      "s": "checked"
+    },
+    {
+      "i": ".claude/agent-memory/asd-dev-critical/project_sync-apply-ledger-gotcha.md",
+      "s": "checked"
+    },
+    {
+      "i": ".claude/agent-memory/asd-tester-critical/project_testability-envelope.md",
+      "s": "checked"
+    },
+    {
+      "i": ".gitattributes",
+      "s": "checked"
+    },
+    {
+      "i": "tests/run.js",
+      "s": "checked"
+    }
+  ],
+  "rules": [
+    {
+      "i": "ac-1",
+      "s": "pass"
+    },
+    {
+      "i": "ac-2",
+      "s": "pass"
+    },
+    {
+      "i": "ac-3",
+      "s": "pass"
+    },
+    {
+      "i": "ac-4",
+      "s": "pass"
+    },
+    {
+      "i": "ac-5",
+      "s": "finding",
+      "f": "F-2"
+    },
+    {
+      "i": "ac-6",
+      "s": "finding",
+      "f": "F-6"
+    },
+    {
+      "i": "ac-7",
+      "s": "finding",
+      "f": "F-4"
+    },
+    {
+      "i": "ac-8",
+      "s": "finding",
+      "f": "F-3"
+    },
+    {
+      "i": "ac-9",
+      "s": "n/a",
+      "p": "closed at the audit gate with no deliverable; no change this sprint"
+    },
+    {
+      "i": "ac-10",
+      "s": "finding",
+      "f": "F-8"
+    },
+    {
+      "i": "ac-11",
+      "s": "pass"
+    },
+    {
+      "i": "ac-12",
+      "s": "pass"
+    },
+    {
+      "i": "ac-13",
+      "s": "finding",
+      "f": "F-7"
+    },
+    {
+      "i": "ac-14",
+      "s": "finding",
+      "f": "F-1"
+    },
+    {
+      "i": "ac-15",
+      "s": "pass"
+    },
+    {
+      "i": "ac-16",
+      "s": "finding",
+      "f": "F-5"
+    },
+    {
+      "i": "ac-17",
+      "s": "pass"
+    },
+    {
+      "i": "ac-18",
+      "s": "pass"
+    }
+  ],
+  "sections": [
+    {
+      "i": "bugs",
+      "s": "reviewed"
+    },
+    {
+      "i": "security",
+      "s": "reviewed"
+    },
+    {
+      "i": "contracts",
+      "s": "reviewed"
+    },
+    {
+      "i": "best-practices",
+      "s": "reviewed"
+    },
+    {
+      "i": "ac-coverage-trace",
+      "s": "reviewed"
+    },
+    {
+      "i": "ui-conformance",
+      "s": "n/a",
+      "p": "no UI surface in scope file list"
+    }
+  ]
+}

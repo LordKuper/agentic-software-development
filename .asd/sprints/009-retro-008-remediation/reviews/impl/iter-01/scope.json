@@ -1,0 +1,39 @@
+{
+  "phase": "impl-review",
+  "iteration": "1",
+  "base_ref": "main",
+  "head_ref": "e40343ee9de1aeee7befec7bb45e23cec996b3eb",
+  "files": [
+    ".asd/agents/asd-dev.md",
+    ".asd/agents/asd-external-review.md",
+    ".asd/release-manifest.json",
+    ".asd/rules/artifact-layout.md",
+    ".asd/rules/checkpoints.md",
+    ".asd/rules/code-style.md",
+    ".asd/rules/external-review.md",
+    ".asd/rules/git-strategy.md",
+    ".asd/rules/review-policy.md",
+    ".asd/rules/sprint-lifecycle.md",
+    ".asd/runtime.js",
+    ".asd/templates/external-review/t_prompt-external-impl.md",
+    ".asd/templates/t_plan.md",
+    ".asd/workflows/asd-phase-impl.md",
+    ".asd/workflows/asd-phase-scope.md",
+    ".claude/agent-memory/asd-dev-critical/MEMORY.md",
+    ".claude/agent-memory/asd-dev-critical/project_parallel-agent-commit-sweep.md",
+    ".claude/agent-memory/asd-dev-critical/project_sync-apply-ledger-gotcha.md",
+    ".claude/agent-memory/asd-tester-critical/project_testability-envelope.md",
+    ".gitattributes",
+    "tests/run.js"
+  ],
+  "exclude_paths": [
+    ".asd/project/**",
+    ".asd/sprints/**",
+    ".claude/agents/**",
+    ".claude/skills/**",
+    ".claude/hooks/**",
+    ".claude/settings.json",
+    ".codex/**",
+    ".agents/skills/**"
+  ]
+}

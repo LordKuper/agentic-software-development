@@ -88,3 +88,15 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Full suite green at 170/170 (the shared-infrastructure safety valve degraded the impacted set to the full suite, since the change surface is framework-wide). 10 tests added, 1 rewritten in place, 1 extended; no test removed, so the removal gate did not fire. No code defects — no `D-N` rows.
 - **Rationale**: The red `T-2` copy-count assertion was implementation-coupled — it measured how many times the agent-memory property was restated, which Task 5 deliberately reduced — so it was rewritten to the one-owner-plus-citations shape, never deleted. One recommended assertion was rejected after verification against source: `routeTask` takes a structured object and contains no plan-file parser, so a `Reachability`-vs-`Material risk` routing test would only prove a pure function deterministic.
 - **Affected docs**: [test-plan.md](test-plan.md), tests/run.js
+
+## 2026-09-08 — impl-review iter-01: external review interrupted (attempt 1)
+
+- **Decision**: external interrupted attempt 1 (session-wide usage limit, mid-dispatch). No verdict entry, no latch; the same reviewer is re-dispatched fresh in the same iteration per `review-policy.md` "Interrupted dispatch".
+- **Rationale**: Not the correlated-failure branch that rule now carries — the four internal reviewers had already returned their verdicts and ledgers before the limit hit, so exactly one dispatch was in flight and lost. Recorded at the moment of interruption, as the rule requires.
+- **Affected docs**: [reviews/impl/iter-01/](reviews/impl/iter-01/)
+
+## 2026-09-08 — impl-review iter-01: external availability skip, route to review-fix
+
+- **Decision**: External Review recorded as `APPROVE (skipped: codex quota exhausted)` — the wrapped CLI returned an active quota error on the pass and on the one permitted retry. Failure recorded in the negative cache (`status: quota`, bounded retry-after). Internal verdicts: correctness CONCERNS (8), efficiency CONCERNS (4), testing CONCERNS (6), documentation CONCERNS (9). No FAIL, so no escalation gate. `review_fixes_pending = iter-01`; sprint routes to impl review-fix mode.
+- **Rationale**: The skip satisfies DoD aggregation exactly like a bare APPROVE but is never latched, so External Review is re-dispatched at iteration 2 once availability returns. All 27 findings are creator-fixable; two carry conditional escalations whose default fix needs none (keeping the manifest-vocabulary digest injection would be a compat waiver; treating `tests/run.js` in-body comments as a convention would need a custom-rules carve-out).
+- **Affected docs**: [reviews/impl/iter-01/](reviews/impl/iter-01/), [state.json](state.json), [friction-log.md](friction-log.md)
