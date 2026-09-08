@@ -1,0 +1,182 @@
+{
+  "manifest_digest": "f56c6ada8733d5a176535cc793ca820dd3385b62a99264241689610a040599ff",
+  "findings": [
+    "T-1",
+    "T-2"
+  ],
+  "files": [
+    {
+      "i": ".asd/agents/asd-external-review.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/release-manifest.json",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/rules/artifact-layout.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/rules/checkpoints.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/rules/code-style.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/rules/external-review.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/rules/git-strategy.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/rules/review-policy.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/rules/sprint-lifecycle.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/runtime.js",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/workflows/asd-phase-design-review.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/workflows/asd-phase-impl-review.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/workflows/asd-phase-impl.md",
+      "s": "checked"
+    },
+    {
+      "i": ".claude/agent-memory/asd-dev-critical/MEMORY.md",
+      "s": "checked"
+    },
+    {
+      "i": ".claude/agent-memory/asd-dev-critical/project_crlf-canon-edits.md",
+      "s": "checked"
+    },
+    {
+      "i": ".claude/agent-memory/asd-tester-critical/MEMORY.md",
+      "s": "checked"
+    },
+    {
+      "i": ".claude/agent-memory/asd-tester-critical/project_testability-envelope.md",
+      "s": "checked"
+    },
+    {
+      "i": "tests/run.js",
+      "s": "checked"
+    }
+  ],
+  "rules": [
+    {
+      "i": "ac-1",
+      "s": "pass"
+    },
+    {
+      "i": "ac-2",
+      "s": "pass"
+    },
+    {
+      "i": "ac-3",
+      "s": "pass"
+    },
+    {
+      "i": "ac-4",
+      "s": "pass"
+    },
+    {
+      "i": "ac-5",
+      "s": "pass"
+    },
+    {
+      "i": "ac-6",
+      "s": "pass"
+    },
+    {
+      "i": "ac-7",
+      "s": "pass"
+    },
+    {
+      "i": "ac-8",
+      "s": "finding",
+      "f": "T-1"
+    },
+    {
+      "i": "ac-9",
+      "s": "n/a",
+      "p": "closed at the audit gate with no deliverable; no change this sprint"
+    },
+    {
+      "i": "ac-10",
+      "s": "pass"
+    },
+    {
+      "i": "ac-11",
+      "s": "pass"
+    },
+    {
+      "i": "ac-12",
+      "s": "pass"
+    },
+    {
+      "i": "ac-13",
+      "s": "pass"
+    },
+    {
+      "i": "ac-14",
+      "s": "finding",
+      "f": "T-2"
+    },
+    {
+      "i": "ac-15",
+      "s": "pass"
+    },
+    {
+      "i": "ac-16",
+      "s": "pass"
+    },
+    {
+      "i": "ac-17",
+      "s": "pass"
+    },
+    {
+      "i": "ac-18",
+      "s": "pass"
+    }
+  ],
+  "sections": [
+    {
+      "i": "rule-set-conformance",
+      "s": "reviewed"
+    },
+    {
+      "i": "coverage",
+      "s": "reviewed"
+    },
+    {
+      "i": "edge-cases",
+      "s": "reviewed"
+    },
+    {
+      "i": "stub-resolution",
+      "s": "n/a",
+      "p": "no stub added or removed this sprint; stubs.md empty"
+    },
+    {
+      "i": "manual-verification",
+      "s": "n/a",
+      "p": "no visual, ux-feel or third-party live surface in scope"
+    }
+  ]
+}

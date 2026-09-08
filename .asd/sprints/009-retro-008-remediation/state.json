@@ -1,0 +1,243 @@
+{
+  "sprint_id": "009-retro-008-remediation",
+  "branch": "sprint/009-retro-008-remediation",
+  "phase": "pr",
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "adr": false,
+    "c4": false
+  },
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "initial scope accepted as written (AC-1..AC-18)",
+      "evidence": "sprint.md, staleness verification against HEAD f1b15bf",
+      "artifact_revision": "sprint.md@scope-1",
+      "decided_at": "2026-09-08T00:00:00Z"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "user",
+      "reason": "four scope-affecting decisions: AC-7 eol=lf repo-only, AC-9 closed, AC-15 obligation-only mechanism",
+      "evidence": "audit.md gaps+risks, measured git ls-files --eol and git diff --check behaviour",
+      "artifact_revision": "sprint.md@audit-1",
+      "decided_at": "2026-09-08T00:00:00Z"
+    },
+    {
+      "gate": "audit-accept",
+      "decision_actor": "orchestrator",
+      "reason": "routine audit acceptance under adaptive policy; escalated questions answered",
+      "evidence": "audit.md",
+      "artifact_revision": "audit.md@1",
+      "decided_at": "2026-09-08T00:00:00Z"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "orchestrator",
+      "reason": "routine plan acceptance under adaptive policy; no scope added, task granularity settled by audit collision finding",
+      "evidence": "plan.md, audit.md Risks",
+      "artifact_revision": "plan.md@1",
+      "decided_at": "2026-09-08T00:00:00Z"
+    },
+    {
+      "gate": "impl-assessment",
+      "decision_actor": "user",
+      "reason": "all 11 tasks complete, build+lint clean, no stubs",
+      "evidence": "plan.md all ticked; sync --check ok; tests 159/160 with one by-design red",
+      "artifact_revision": "plan.md@impl-1",
+      "decided_at": "2026-09-08T00:00:00Z"
+    },
+    {
+      "gate": "green-review-handoff",
+      "decision_actor": "orchestrator",
+      "reason": "all five reviewers APPROVE or latched at iter-05; terminal full suite green",
+      "evidence": "reviews/impl/iter-05/, test-plan.md Suite run at 2ab6b57, 171/171",
+      "artifact_revision": "test-plan.md@terminal",
+      "decided_at": "2026-09-09T00:00:00Z"
+    },
+    {
+      "gate": "pr-publication",
+      "decision_actor": "user",
+      "reason": "user authorized opening the PR",
+      "evidence": "DoD verified: 171/171 suite, sync --check ok, all reviewers APPROVE/latched, retrospective written, no open sprint stubs",
+      "artifact_revision": "v7.1.0",
+      "decided_at": "2026-09-09T00:00:00Z"
+    },
+    {
+      "gate": "scope-expansion",
+      "decision_actor": "user",
+      "reason": "AC-19: orchestrator merges the sprint PR itself; closure stays a user gate",
+      "evidence": "user instruction in chat after PR #31 opened; suite 171/171 and sync --check re-run after the diff",
+      "artifact_revision": "sprint.md@ac-19",
+      "decided_at": "2026-09-09T00:00:00Z"
+    }
+  ],
+  "task_routing": {
+    "task-1": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "task-2": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "task-3": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:public contract",
+      "resolved_model": "opus"
+    },
+    "task-4": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "task-5": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "task-6": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "task-7": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "task-8": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "task-9": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:ambiguous judgment",
+      "resolved_model": "opus"
+    },
+    "task-10": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:repo checkout behaviour",
+      "resolved_model": "sonnet"
+    },
+    "task-11": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:public contract",
+      "resolved_model": "opus"
+    },
+    "impl-test-1": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "fix-iter01-rules": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "fix-iter01-tests": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    }
+  },
+  "skipped_phases": [
+    "design",
+    "design-review",
+    "design-promote"
+  ],
+  "reviews": {
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "iteration": 5,
+      "verdicts": {
+        "iter-01": {
+          "correctness": "CONCERNS",
+          "efficiency": "CONCERNS",
+          "testing": "CONCERNS",
+          "documentation": "CONCERNS",
+          "external": "APPROVE (skipped: codex quota exhausted)"
+        },
+        "iter-02": {
+          "correctness": "CONCERNS",
+          "efficiency": "APPROVE",
+          "testing": "CONCERNS",
+          "documentation": "CONCERNS",
+          "external": "CONCERNS"
+        },
+        "iter-03": {
+          "correctness": "CONCERNS",
+          "efficiency": "APPROVE",
+          "testing": "APPROVE",
+          "documentation": "CONCERNS",
+          "external": "CONCERNS"
+        },
+        "iter-04": {
+          "correctness": "APPROVE",
+          "efficiency": "APPROVE",
+          "testing": "APPROVE",
+          "documentation": "CONCERNS",
+          "external": "APPROVE"
+        },
+        "iter-05": {
+          "correctness": "APPROVE",
+          "efficiency": "APPROVE",
+          "testing": "APPROVE",
+          "documentation": "APPROVE",
+          "external": "APPROVE"
+        }
+      },
+      "iteration_heads": {
+        "iter-01": "e40343ee9de1aeee7befec7bb45e23cec996b3eb",
+        "iter-02": "12dc5e7794c27dd07f3fedf41473490d0d9a7549",
+        "iter-03": "053fb3c810656eedf9e894ec5bad80b59b54b1c7",
+        "iter-04": "cb95d21cacee4333c3ac43e924e13b315d99db93",
+        "iter-05": "dd66102762f8bb17d3de881b70dc37d222467075"
+      },
+      "latched": {
+        "efficiency": 2,
+        "testing": 3,
+        "correctness": 4,
+        "external": 4,
+        "documentation": 5
+      }
+    }
+  },
+  "created_at": "2026-09-08T00:00:00Z",
+  "updated_at": "2026-09-09T00:00:00Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": {
+    "number": 31,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/31",
+    "state": "open",
+    "opened_at": "2026-09-09T00:00:00Z",
+    "head": "103e3591"
+  },
+  "archived_at": null
+}

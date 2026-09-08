@@ -1,0 +1,30 @@
+{
+  "phase": "impl-review",
+  "iteration": "3",
+  "base_ref": "12dc5e7794c27dd07f3fedf41473490d0d9a7549",
+  "head_ref": "053fb3c810656eedf9e894ec5bad80b59b54b1c7",
+  "files": [
+    ".asd/release-manifest.json",
+    ".asd/rules/checkpoints.md",
+    ".asd/rules/sprint-lifecycle.md",
+    ".asd/workflows/asd-phase-design-review.md",
+    ".asd/workflows/asd-phase-impl-review.md",
+    ".asd/workflows/asd-phase-impl.md",
+    ".claude/agent-memory/asd-dev-critical/project_sync-apply-ledger-gotcha.md",
+    ".claude/agent-memory/asd-reviewer-correctness/MEMORY.md",
+    ".claude/agent-memory/asd-reviewer-correctness/feedback_review-method-no-shell.md",
+    ".claude/agent-memory/asd-reviewer-testing/feedback_no-shell-review-method.md",
+    ".claude/agent-memory/asd-tester-critical/project_testability-envelope.md",
+    "tests/run.js"
+  ],
+  "exclude_paths": [
+    ".asd/project/**",
+    ".asd/sprints/**",
+    ".claude/agents/**",
+    ".claude/skills/**",
+    ".claude/hooks/**",
+    ".claude/settings.json",
+    ".codex/**",
+    ".agents/skills/**"
+  ]
+}

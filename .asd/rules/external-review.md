@@ -39,6 +39,17 @@ On command/auth failure or an active negative cache:
 
 An availability skip satisfies only that iteration and never creates an APPROVE latch. A later local-ready result dispatches External Review normally.
 
+## Outcome contract
+
+Sole home of what a dispatched External Review may return — exactly one of two outcomes:
+
+- **verdict** — findings text whose first content line is `[REVIEW-<phase>-external]: APPROVE|CONCERNS|FAIL` (`review-policy.md` "Gate Verdict Format")
+- **availability skip** — `APPROVE (skipped: external review unavailable: <specific status>)` (above)
+
+Nothing else. The skip is not confined to a preflight or negative-cache result: **any** inability to complete — wrapped-CLI crash, hang, timeout, unusable output, the one permitted retry exhausted — returns it, naming that cause as `<specific status>`. So the wrapper awaits the wrapped CLI inside its own dispatch and never backgrounds it; no outcome means "started, still running". The contract scopes a dispatch that reached that invocation: a precondition missing before any invocation (prompt template absent) aborts the dispatch instead — a framework defect the orchestrator must see, never an availability skip.
+
+A return that is neither — empty, or prose carrying no verdict token and no skip — is not permitted and is not a verdict. Its disposal is `review-policy.md` "Interrupted dispatch", imported here whole.
+
 ## Phase-scoped payload
 
 The reviewer has direct repo read access and fetches its own content — it is handed a **scope manifest** (`external-review/t_review-scope.json`), never a rendered diff. This is the SSoT for the manifest contract; the agent and both review workflows link here rather than restating it.
@@ -50,14 +61,14 @@ Both phase workflows populate `files[]` = changed-path list at the reviewer's cu
 | Phase | scope (`files[]`) | `exclude_paths` |
 |---|---|---|
 | design-review | sprint design drafts only — `<sprint>/design/**`, minus generated output (only the drafts that exist per `documents.*`) | `c4-full/dist/` |
-| impl-review, `self_hosting: disabled` (consumer, default) | changed code and test files | `.asd/**`, `docs/**` |
-| impl-review, `self_hosting: enabled` (this repo) | changed files anywhere in the repo — everything here IS framework source (`sprint-lifecycle.md` "Self-hosting") | `.asd/project/**`, `.asd/sprints/**`, generated provider views per `sprint-lifecycle.md` "Self-hosting" (`.claude/agent-memory/**` not excluded) |
+| impl-review, `self_hosting: disabled` (consumer, default) | changed files anywhere in the repo, minus the exclusions — code and tests in practice | `.asd/**`, `docs/**` |
+| impl-review, `self_hosting: enabled` (this repo) | changed files anywhere in the repo — everything here IS framework source (`sprint-lifecycle.md` "Self-hosting") | `.asd/project/**`, `.asd/sprints/**`, generated provider views per `sprint-lifecycle.md` "Self-hosting" |
 
 Cross-phase reference material (concept, custom rules, accessibility baseline, prd/adr/stack/commands) travels as **paths only** in the rendered prompt (`t_prompt-external-{design,impl}.md` "project context"), never inside the scope manifest, never diffed. design-review scope never names source code; consumer-mode impl-review scope never names design/doc files (a doc-vs-code drift finding belongs to the internal Documentation reviewer). `exclude_paths` also keeps C4 schemas out of consumer impl-review: likec4 lives under `<sprint>/design/c4-full/` and `docs/architecture/c4/`.
 
 **Generated output is always in `exclude_paths`.** `**/dist/**` (likec4 build), `design-system.html`, `architecture.html` — all derived from a source the reviewer already sees (`*.c4`, `DESIGN.md`, `subsystems.yaml`). Review the source, not the build.
 
-`exclude_paths` for impl-review: `self_hosting: disabled` → `.asd/**`, `docs/**`; `self_hosting: enabled` → `.asd/project/**`, `.asd/sprints/**`, plus the generated provider views named in `sprint-lifecycle.md` "Self-hosting" (`.claude/agent-memory/**` not excluded) — the reviewer starts from the whole repo, not an allow-list, so any real framework source (CI configs, root-level configs, anything else added later) is included automatically without needing a matching manifest edit.
+Both impl-review rows start from the whole repo and subtract the exclusions, never an allow-list — so any real source added later (CI configs, root-level configs, anything else) is in scope automatically, with no manifest or rule edit. Agent memory's status in both modes: `artifact-layout.md` "Agent memory".
 
 ## Iteration semantics
 

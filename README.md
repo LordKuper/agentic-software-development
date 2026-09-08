@@ -166,7 +166,7 @@ flowchart TD
 | **impl-test** | Tester picks the risk-based test approach for the change scope, deletes redundant/flaky/implementation-coupled tests, writes the missing ones, runs the impacted set; records everything in `test-plan.md`; code defects route back to `impl` |
 | **impl-review** | 4 internal reviewers (Correctness, Efficiency, Testing, Documentation) plus External Review; routes findings back to `impl` review-fix mode; once reviewers approve, runs the sprint's one full-suite check — green advances to `retro`, red exits to `impl` test-fix mode and clears every APPROVE latch |
 | **retro** | Orchestrator reads the sprint's friction log and writes `retrospective.html` in two classes: root cause plus remediation per `F-N` entry, and systemic proposals for a cheaper next sprint (derived from how the sprint ran, not bounded by the entries) — every row marked as acting on the consumer project or the ASD framework; an entry-free log skips remediation only, proposals still ship; closes with a chat summary |
-| **pr** | DoD verification + `gh pr create` (or push + summary if gh disabled); explicit user closure approval before finalization/archival; terminal state additionally requires confirmed merge |
+| **pr** | DoD verification + `gh pr create`, then ASD merges the PR itself (or push + summary and you merge, if gh disabled); merging is not closure — explicit user closure approval still gates finalization/archival, and terminal state additionally requires confirmed merge |
 
 You can resume an interrupted sprint at any time: `/asd-sprint` reads `state.json`, detects the current phase, and dispatches the matching phase skill.
 

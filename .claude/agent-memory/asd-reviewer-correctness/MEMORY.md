@@ -1,2 +1,2 @@
-- [Review method: no shell](feedback_review-method-no-shell.md) — read manifest `files[]` directly, clean context per iteration, hunt cross-file dangling references
+- [Review method: no shell](feedback_review-method-no-shell.md) — manifest-driven scope; hunt dangling refs + rules with no acting-site binding
 - [Version bump lands at pr](project_version-bump-at-pr.md) — migration named for the next version vs. un-bumped `asd_version` is expected at impl-review, not a defect

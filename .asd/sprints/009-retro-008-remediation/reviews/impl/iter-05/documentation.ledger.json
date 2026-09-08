@@ -1,0 +1,129 @@
+{
+  "manifest_digest": "c22efb0ebb91ce8e9a9eea8a8aa42188e778013131b6ce7149dc86ab29190854",
+  "findings": [],
+  "files": [
+    {
+      "i": ".asd/release-manifest.json",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/workflows/asd-phase-design-review.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/workflows/asd-phase-impl-review.md",
+      "s": "checked"
+    },
+    {
+      "i": ".claude/agent-memory/asd-dev-critical/MEMORY.md",
+      "s": "checked"
+    },
+    {
+      "i": ".claude/agent-memory/asd-dev-critical/feedback_fix-the-class.md",
+      "s": "checked"
+    },
+    {
+      "i": ".claude/agent-memory/asd-external-review/reference_codex-invocation.md",
+      "s": "checked"
+    },
+    {
+      "i": ".claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md",
+      "s": "checked"
+    },
+    {
+      "i": ".claude/agent-memory/asd-tester-critical/project_testability-envelope.md",
+      "s": "checked"
+    },
+    {
+      "i": "tests/run.js",
+      "s": "checked"
+    }
+  ],
+  "rules": [
+    {
+      "i": "ssot",
+      "s": "pass"
+    },
+    {
+      "i": "template-adherence",
+      "s": "pass"
+    },
+    {
+      "i": "provenance",
+      "s": "n/a",
+      "p": "no HTML artifact in scope"
+    },
+    {
+      "i": "traceability",
+      "s": "n/a",
+      "p": "documents.prd and documents.adr disabled for this repo"
+    },
+    {
+      "i": "persistent-actuality",
+      "s": "n/a",
+      "p": "no persistent docs/ tree in this repo"
+    },
+    {
+      "i": "in-code-doc-comments",
+      "s": "pass"
+    },
+    {
+      "i": "readme-mirrors",
+      "s": "pass"
+    },
+    {
+      "i": "core-see-also",
+      "s": "pass"
+    },
+    {
+      "i": "release-manifest",
+      "s": "pass"
+    },
+    {
+      "i": "custom-rules-consistency",
+      "s": "pass"
+    }
+  ],
+  "sections": [
+    {
+      "i": "ssot",
+      "s": "reviewed"
+    },
+    {
+      "i": "template-adherence",
+      "s": "reviewed"
+    },
+    {
+      "i": "html-shell-wrapping",
+      "s": "n/a",
+      "p": "no HTML artifact in scope"
+    },
+    {
+      "i": "provenance",
+      "s": "n/a",
+      "p": "no HTML artifact in scope"
+    },
+    {
+      "i": "traceability",
+      "s": "n/a",
+      "p": "documents.prd and documents.adr disabled for this repo"
+    },
+    {
+      "i": "persistent-actuality",
+      "s": "n/a",
+      "p": "no persistent docs/ tree in this repo"
+    },
+    {
+      "i": "in-code-doc-comments",
+      "s": "reviewed"
+    },
+    {
+      "i": "framework-mode",
+      "s": "reviewed"
+    },
+    {
+      "i": "custom-rules-consistency",
+      "s": "reviewed"
+    }
+  ]
+}

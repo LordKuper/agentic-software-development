@@ -36,7 +36,7 @@ On resolution: row **deleted** from stubs.md (no status column; deletion = resol
 
 `impl-review` itself also commits: when it dispatches `asd-tester` to fix a test in place, that fix must land as a commit before the phase's `Suite run` records its `HEAD` and before `pr` open-mode's `git diff --quiet` skip check runs — an uncommitted in-place fix is invisible to both.
 
-The main orchestrator commits its own bookkeeping — `state.json`, `decisions-log.md`, review files, `friction-log.md` — at phase exit, same precedent as `impl-test` above. A dispatched agent never commits orchestrator-owned files it did not author, even to leave a clean tree for the next gate.
+The main orchestrator commits its own bookkeeping — `state.json`, `decisions-log.md`, review files, `friction-log.md`, and a dispatched reviewer's agent-memory writes (the one class it commits without authoring — a reviewer holds no commit tool; `review-policy.md` "Change-surface rule") — at phase exit, same precedent as `impl-test` above. Ownership is symmetric for a dispatched agent holding a commit tool: it stages only the paths it authored (never `git add -A`/`-u` or `commit -a` — concurrently dispatched tasks share one worktree, so a broad stage sweeps a sibling's in-progress edit into the wrong commit), commits every path it authored before signalling completion (an authored file no one commits reaches neither the reviewed diff nor `HEAD`), and never commits orchestrator-owned files it did not author, even to leave a clean tree for the next gate.
 
 ## PR self-review checklist
 
@@ -57,6 +57,14 @@ Triggered only after DoD met and the active `checkpoints.md` policy permits publ
 - `gh_enabled: true` + `auto_pr: true` → `gh pr create` with body from `t_pr-description.md`
 - `gh_enabled: false` → push branch, print PR-ready summary (title, body, compare URL)
 - `auto_pr: false` → push, prepare summary, wait for user to open PR manually
+
+## Merging a PR
+
+Sole home of who merges. The main orchestrator merges the sprint PR and the companion closure PR itself when `gh_enabled: true` — `gh pr merge --squash`, after checks pass and the PR is mergeable; it never waits for a human to click merge. With `gh_enabled: false` there is no Git host to merge through, so it reports the ready-to-merge state and the user merges.
+
+Merging is not closure. It ends the branch, not the sprint: the orchestrator records `pr.state="closure-pending"` and the hard closure gate (`checkpoints.md`) still requires explicit user approval before any terminal state, archive move or release tag. A merge the orchestrator performed never satisfies that gate, and neither does `auto_pr`.
+
+A merge blocked by a failing check, a conflict or a branch-protection rule is reported, not forced: never `--admin`, never a local merge pushed to `git.base_branch`.
 
 ## Finalize after closure
 

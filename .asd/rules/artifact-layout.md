@@ -40,8 +40,8 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │       │   ├── friction-log.md
 │       │   ├── retrospective.html
 │       │   └── reviews/
-│       │       ├── design/iter-NN/<reviewer>.md, <reviewer>.part-N.md
-│       │       └── impl/iter-NN/<reviewer>.md, <reviewer>.part-N.md
+│       │       ├── design/iter-NN/<reviewer>.md, <reviewer>.part-N.md, <reviewer>.late.md
+│       │       └── impl/iter-NN/<reviewer>.md, <reviewer>.part-N.md, <reviewer>.late.md
 │       └── archived/<NNN-slug>/
 ├── .claude/{agents/, skills/, hooks/, settings.json}   # generated provider view
 ├── .claude/agent-memory/<agent>/                       # hand-authored, never generated — see "Agent memory"
@@ -87,6 +87,8 @@ No `c4/` directory. No subsystem subfolders.
 Agent memory lives at the provider-view root — `.claude/agent-memory/<agent>/` (`MEMORY.md` index + one file per memory) — always, whatever working directory a dispatch names. Never inside a sprint tree (path map above).
 
 **Carve-out to the read-only generated-view rule**: `agent-memory/` has no canonical source under `.asd/` and `sync.js` neither generates nor reconciles it (no row in `providers.md` "Canonical path -> per-provider path"), so the read-only rule does not reach it. Everything else under `.claude/`, `.codex/` and `.agents/skills/` stays read-only — edit canon, then sync.
+
+**In the review surface, both modes**: agent memory is hand-authored source, not generated output, so it is never an exclusion in any review scope — `self_hosting` enabled or disabled alike. Sole statement of the property; `sprint-lifecycle.md` "Self-hosting", `external-review.md` "Phase-scoped payload" and `t_prompt-external-impl.md` cite it, never restate it. A memory file loads on every dispatch of its agent, so a false line in one is paid again per dispatch until a review catches it. How such a write reaches a reviewed diff at all: `review-policy.md` "Change-surface rule".
 
 ## Subsystem registry
 

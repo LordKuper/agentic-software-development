@@ -1,0 +1,189 @@
+{
+  "manifest_digest": "bf27c20f72eab9ceffa1c37eddef3a5ab825883f341c1753872812574d45297f",
+  "findings": [
+    "F-1",
+    "F-2",
+    "F-3",
+    "F-4",
+    "F-5",
+    "F-6",
+    "F-7",
+    "F-8",
+    "F-9"
+  ],
+  "files": [
+    {
+      "i": ".asd/agents/asd-dev.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/agents/asd-external-review.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/release-manifest.json",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/rules/artifact-layout.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/rules/checkpoints.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/rules/code-style.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/rules/external-review.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/rules/git-strategy.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/rules/review-policy.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/rules/sprint-lifecycle.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/runtime.js",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/templates/external-review/t_prompt-external-impl.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/templates/t_plan.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/workflows/asd-phase-impl.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/workflows/asd-phase-scope.md",
+      "s": "checked"
+    },
+    {
+      "i": ".claude/agent-memory/asd-dev-critical/MEMORY.md",
+      "s": "checked"
+    },
+    {
+      "i": ".claude/agent-memory/asd-dev-critical/project_parallel-agent-commit-sweep.md",
+      "s": "checked"
+    },
+    {
+      "i": ".claude/agent-memory/asd-dev-critical/project_sync-apply-ledger-gotcha.md",
+      "s": "checked"
+    },
+    {
+      "i": ".claude/agent-memory/asd-tester-critical/project_testability-envelope.md",
+      "s": "checked"
+    },
+    {
+      "i": ".gitattributes",
+      "s": "checked"
+    },
+    {
+      "i": "tests/run.js",
+      "s": "checked"
+    }
+  ],
+  "rules": [
+    {
+      "i": "ssot",
+      "s": "finding",
+      "f": "F-6"
+    },
+    {
+      "i": "template-adherence",
+      "s": "pass"
+    },
+    {
+      "i": "provenance",
+      "s": "n/a",
+      "p": "no HTML artifact in scope"
+    },
+    {
+      "i": "traceability",
+      "s": "n/a",
+      "p": "documents.prd and documents.adr disabled for this repo"
+    },
+    {
+      "i": "persistent-actuality",
+      "s": "n/a",
+      "p": "no persistent docs/ tree in this repo"
+    },
+    {
+      "i": "in-code-doc-comments",
+      "s": "finding",
+      "f": "F-3"
+    },
+    {
+      "i": "readme-mirrors",
+      "s": "pass"
+    },
+    {
+      "i": "core-see-also",
+      "s": "pass"
+    },
+    {
+      "i": "release-manifest",
+      "s": "pass"
+    },
+    {
+      "i": "custom-rules-consistency",
+      "s": "pass"
+    }
+  ],
+  "sections": [
+    {
+      "i": "ssot",
+      "s": "reviewed"
+    },
+    {
+      "i": "template-adherence",
+      "s": "reviewed"
+    },
+    {
+      "i": "html-shell-wrapping",
+      "s": "n/a",
+      "p": "no HTML artifact in scope"
+    },
+    {
+      "i": "provenance",
+      "s": "n/a",
+      "p": "no HTML artifact in scope"
+    },
+    {
+      "i": "traceability",
+      "s": "n/a",
+      "p": "documents.prd and documents.adr disabled for this repo"
+    },
+    {
+      "i": "persistent-actuality",
+      "s": "n/a",
+      "p": "no persistent docs/ tree in this repo"
+    },
+    {
+      "i": "in-code-doc-comments",
+      "s": "reviewed"
+    },
+    {
+      "i": "framework-mode",
+      "s": "reviewed"
+    },
+    {
+      "i": "custom-rules-consistency",
+      "s": "reviewed"
+    }
+  ]
+}

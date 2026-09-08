@@ -15,6 +15,7 @@ Format rules (parser-critical):
 - Subtask deferred for a manual action stays `- [ ]`, suffixed ` — BLOCKED: MS-N` (see manual-steps.md)
 - No test-authoring tasks or subtasks: tests are selected and written in impl-test, after the code exists
 - Every task carries a `Material risk:` line, plain text, never a checkbox (see sprint-lifecycle.md "Plan file format")
+- A task whose value depends on two phases agreeing also carries a `Reachability:` line, same placement; absent = no cross-phase dependency, never a fail-closed default (same section)
 -->
 
 ## Overview
@@ -26,6 +27,7 @@ Standing DoD applies, never restated here (`sprint-lifecycle.md` "Plan file form
 
 ### Task 1: {{title}}
 Material risk: change: {{short risk class — the edit's own correctness is uncertain}}
+Reachability: {{which two phases must agree, on what value, and the point in each where it is written and read — omit this line entirely when the task has no cross-phase dependency}}
 - [ ] {{subtask}}
 - [ ] {{subtask}}
 
