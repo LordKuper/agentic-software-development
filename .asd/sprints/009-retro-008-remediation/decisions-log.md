@@ -50,3 +50,21 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: The user accepted sprint 009's scope as written — `AC-1`..`AC-18`, including the `F-6` remainder closed at scope and the `S4` row narrowed to `AC-13`.
 - **Rationale**: Initial scope is a hard gate in both policies; it establishes the authority the adaptive policy reuses for the rest of the sprint.
 - **Affected docs**: [sprint.md](sprint.md), [state.json](state.json)
+
+## 2026-09-08 — audit gate: four scope-affecting decisions
+
+- **Decision**: (1) `AC-7` declares `* text=auto eol=lf` in a root `.gitattributes` — the working tree normalizes to LF on next checkout; no index blob changes. (2) `AC-7` covers this repository only: no template, no `/asd-init` seeding, no `managed_paths` entry. (3) `AC-9` is closed with no deliverable — no cross-sprint availability history is stored; each sprint probes availability itself. (4) `AC-15` is delivered as a surfacing obligation on existing gates with no new state, counting off `reviews/<phase>/iter-NN/` and `decisions-log.md`.
+- **Rationale**: Decisions (1) and (2) settle the AC-6/AC-7 contradiction the audit found — `eol=lf` falsifies "canon is CRLF on disk", so `AC-6` is rewritten platform-neutrally in the same pass. (3) removes an AC the audit showed undeliverable: every candidate storage surface either ships to consumers via `managed_paths`, is frozen legacy, or would be a new document type `t_decisions-log.md` forbids. (4) keeps the least-specified AC honest — gate bookkeeping is keyed by gate, not by `AC-N`, so a counter would be new state with no existing key.
+- **Affected docs**: [sprint.md](sprint.md) (`AC-6`, `AC-7`, `AC-9`, `AC-15`, Out of scope), [audit.md](audit.md)
+
+## 2026-09-08 — audit gate: AC-3 verification is recorded in decisions-log only
+
+- **Decision**: The HEAD-verification record `AC-3` mandates lives in `decisions-log.md` alone. `t_sprint.md` gains no "Staleness verification" section; this sprint's own such block in `sprint.md` stays as narrative context, not as a template-mandated shape.
+- **Rationale**: Advanced adaptively under `user_gates: adaptive` — a bounded placement choice with no material alternative: mandating both channels is the duplication `sprint-lifecycle.md` exists to prevent, and `decisions-log.md` already holds the entry with no template change.
+- **Affected docs**: [sprint.md](sprint.md), [audit.md](audit.md)
+
+## 2026-09-08 — audit accepted
+
+- **Decision**: `audit.md` accepted; sprint advances to design.
+- **Rationale**: Adaptive policy — audit acceptance is a routine gate; the material questions it surfaced were escalated and answered above, leaving no unresolved alternative. Evidence: measured `git ls-files --eol` over 583 files, measured `git diff --check` staged/unstaged behaviour, file:line citations for every gap.
+- **Affected docs**: [audit.md](audit.md)

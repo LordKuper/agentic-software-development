@@ -32,7 +32,9 @@ Self-hosting sprint: this repo IS the ASD framework, so the retrospective's `asd
 the sprint that produced them). Every row of both tables was re-checked against current
 HEAD `f1b15bf` before being written below. Result: fifteen rows still unresolved and
 carried as `AC-1`..`AC-15`; one row closed as already satisfied (below); one row narrowed
-by a partial delivery (`AC-13`).
+by a partial delivery (`AC-13`). The audit that followed then closed one more with no
+deliverable (`AC-9`) and revised two against decisions taken at the audit gate (`AC-6`,
+`AC-15`) — each recorded in place below and in `decisions-log.md`.
 
 - **`F-6` remaining work — closed at scope, no deliverable.** The row asked for the general
   form: state which emitted agent frontmatter fields the host actually honours.
@@ -69,21 +71,35 @@ by a partial delivery (`AC-13`).
   off its own input instead of recalling one sentence of rule prose.
   `.asd/rules/review-policy.md` and `.asd/runtime.js` (which already knows the vocabulary,
   being the validator) agree on the shape.
-- AC-6: `F-7` — `.asd/rules/code-style.md` names the CRLF editing hazard where agents meet
-  it: canon is CRLF on disk on this platform, a scripted replacement must anchor on `\r\n`,
-  and a whole-file diff for a small edit is the symptom. Stated as an encoding hazard, not
-  left to be rediscovered through a whitespace lint error.
-- AC-7: `F-7` — a root `.gitattributes` declares the line-ending policy explicitly, so the
-  behaviour no longer depends on each machine's `core.autocrlf`. No such file exists at
-  HEAD.
+- AC-6: `F-7` — **revised at audit, 2026-09-08, after the AC-7 decision below.**
+  `.asd/rules/code-style.md` names the line-ending editing hazard where agents meet it: a
+  scripted replacement anchors on the file's actual EOL, and a whole-file diff for a small
+  edit is the symptom. Stated platform-neutrally — `code-style.md` ships to every consumer
+  via `managed_paths`, so it may not assert this repo's own worktree EOL as universal. It
+  also names the measured blind spot: `git diff --check` exits 0 once the damage is staged,
+  so the pre-commit check is `git diff --cached --check` (or `HEAD`), not the bare form
+  `commands.yaml` configures today. The original "canon is CRLF on disk" wording is dropped
+  — AC-7 makes it false.
+- AC-7: `F-7` — a root `.gitattributes` declares `* text=auto eol=lf`, so line endings no
+  longer depend on each machine's `core.autocrlf`. **Decided at the audit gate, 2026-09-08.**
+  Every index blob is already LF, so no blob changes; the working tree becomes LF on the
+  next checkout, which is a deliberate normalization, not a side effect. Scope: this
+  repository only — no template, no `/asd-init` seeding step, no `managed_paths` entry. The
+  008 retrospective tagged this row `consumer`, and under `self_hosting` the consumer is
+  this repo.
 - AC-8: `F-8` — `.asd/agents/asd-external-review.md` and `.asd/rules/external-review.md`
   require the wrapper to await the wrapped CLI within its own dispatch and to return an
   availability skip if it cannot complete. An empty return — neither verdict nor skip — is
   not a permitted outcome.
-- AC-9: `F-8`/`F-4` — `.asd/rules/external-review.md` records the wrapper's availability
-  history across sprints, not only within one. Three sprints running, external review has
-  been unavailable at the iteration where a second opinion was most useful, while the DoD
-  treats it as an independent check.
+- AC-9: `F-8`/`F-4` — **closed at the audit gate, 2026-09-08, no deliverable.** The row asked
+  for a cross-sprint record of the wrapper's availability. The user decided no such history
+  is to be stored: each sprint probes availability itself, and the existing per-sprint
+  mechanisms (preflight, negative cache, friction log, retrospective) already carry
+  everything a sprint needs. The audit had independently found no legitimate storage
+  surface — `external-review.md` is inside `managed_paths` and would publish ASD's own
+  operational history into every consumer, `docs/` does not exist here,
+  `.asd/project/decisions-log.md` is frozen legacy, and `t_decisions-log.md` forbids
+  inventing a document type.
 
 ### Systemic proposals
 
@@ -117,7 +133,11 @@ by a partial delivery (`AC-13`).
 - AC-15: a criterion's running cost is surfaced, not only whether it is met —
   `.asd/rules/checkpoints.md`. Sprint 008 retired one criterion, closed one as already
   satisfied and added one mid-flight, each through a hard gate, because nothing surfaces
-  cost until a reviewer objects.
+  cost until a reviewer objects. **Mechanism decided at the audit gate, 2026-09-08**: a
+  surfacing obligation on gates that already exist, with **no new state**. The count is read
+  off artefacts the sprint already writes — `reviews/<phase>/iter-NN/` files and the
+  fix-round history in `decisions-log.md` — so nothing new is recorded and nothing can
+  drift out of sync with them.
 
 ### Cross-cutting
 
@@ -134,4 +154,8 @@ by a partial delivery (`AC-13`).
 
 - The `F-6` remaining row, closed at scope as already satisfied at HEAD (see **Staleness
   verification**). Recorded here so its absence is deliberate rather than missed.
+- Cross-sprint storage of external-review availability (`AC-9`), closed at the audit gate:
+  each sprint probes availability for itself.
+- A consumer-facing `.gitattributes` — template, `/asd-init` seeding, `managed_paths` entry.
+  `AC-7` is this repository's root file only.
 - Any behaviour not named by a row of the sprint 008 retrospective's two tables.
