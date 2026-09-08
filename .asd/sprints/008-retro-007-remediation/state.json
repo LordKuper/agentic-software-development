@@ -59,6 +59,20 @@
       "reason": "one-off authorization extended to .asd/project/commands.yaml; the sync-apply alias is deleted",
       "evidence": "the alias is a deterministic exit 1 after the empty-target guard and is the only sync command a dev agent may run verbatim; a fixed string cannot express a command with mandatory arguments",
       "artifact_revision": "reviews/impl/iter-02/correctness.md"
+    },
+    {
+      "gate": "impl-review-escalation",
+      "decision_actor": "user",
+      "reason": "AC-11 retired: derived_handoff deleted entirely, criterion closed as not delivered",
+      "evidence": "three review rounds established the stated purpose is unreachable by construction — impl-test stamps HEAD analysed before its bookkeeping commit, impl-review records iteration_heads after it, so bases differ on every iteration >= 2 and only the first handoff can hit; each repair closed its finding and left the purpose unmet",
+      "artifact_revision": "reviews/impl/iter-04/correctness.md"
+    },
+    {
+      "gate": "scope-expansion",
+      "decision_actor": "user",
+      "reason": "AC-15 added: reconcile the reviewer read-only claim with the host grant, record which frontmatter fields are verified, and remove non-English plan-quoting comments from the Node sources",
+      "evidence": "canon grants reviewers [Read, Glob, Grep, AskUserQuestion] with memory: project while the host adds a file-writing capability for that channel, so review-policy.md's \"by host guarantee\" is false as an absolute; sync.js emits a field its own comment calls undocumented; sync.js and update.js carry Russian comments quoting a plan document against language-policy.md and code-style.md section 8",
+      "artifact_revision": ".asd/sprints/008-retro-007-remediation/sprint.md"
     }
   ],
   "task_routing": {
@@ -178,8 +192,8 @@
     }
   },
   "created_at": "2026-09-07T17:11:41Z",
-  "updated_at": "2026-09-08T08:00:00Z",
-  "review_fixes_pending": null,
+  "updated_at": "2026-09-08T08:30:00Z",
+  "review_fixes_pending": "iter-04",
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null,

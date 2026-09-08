@@ -83,9 +83,29 @@ Self-hosting sprint: this repo IS the ASD framework, so the retrospective's `asd
   risk-to-the-artifact, and task routing reads that distinction — `.asd/rules/sprint-lifecycle.md`
   plan format and `.asd/runtime.js` routing input agree — so a mechanical edit to a
   high-stakes artifact no longer routes to the most expensive tier by that fact alone.
-- AC-11: a phase states the artifacts it hands to the next one — `.asd/templates/t_state.json`
-  and `.asd/rules/sprint-lifecycle.md` — so a cycle re-entry reads the derived scope list
-  and diff base instead of rebuilding what the previous phase already knew.
+- AC-11: **retired at impl-review iteration 4, no deliverable.** The criterion was that a
+  cycle re-entry reads the derived scope list instead of rebuilding it. Three review rounds
+  established that the stated purpose is unreachable by construction: `impl-test` stamps its
+  `HEAD analysed` before its own bookkeeping commit while `impl-review` records
+  `iteration_heads` after it, so writer and reader bases differ on every iteration ≥ 2 and only
+  the first handoff can ever hit. Each attempt to repair it closed its own finding and left the
+  purpose unmet. `derived_handoff` is removed entirely — the state field, its rule paragraph,
+  the workflow wiring and its tests — and this criterion is closed as not delivered rather than
+  recorded as met. The underlying retrospective proposal stays open for a future sprint.
+- AC-15: **scope expansion, authorized 2026-09-08 after impl-review iteration 4.** The reviewer
+  read-only property must match what the host actually grants. `review-policy.md` states
+  reviewers "cannot write at all, by host guarantee"; the canonical grant is
+  `[Read, Glob, Grep, AskUserQuestion]` with `memory: project`, and the host adds a
+  file-writing capability to serve that memory channel — so the absolute claim is false while
+  the artifact-level claim it was written about is true. Reconcile the two: state what reviewers
+  actually cannot write (review artifacts, code, docs) and account for the memory channel, or
+  change the config so the guarantee holds. In the same pass, record which emitted agent
+  frontmatter fields are host-verified and which are emitted on trust — `.asd/sync.js`'s own
+  comment admits `effort` is undocumented for the host, and that distinction belongs in the
+  rules rather than in a code comment. Finally, `.asd/sync.js` and
+  `.asd/skills/asd-update/update.js` carry comments written in Russian that quote a project plan
+  document, violating both `language-policy.md` (workflow infrastructure is English always) and
+  `code-style.md` §8 (no code comment references a project document) — translate or delete them.
 
 ### Cross-cutting
 
