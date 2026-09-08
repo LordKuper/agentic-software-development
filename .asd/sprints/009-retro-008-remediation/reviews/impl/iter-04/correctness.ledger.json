@@ -1,0 +1,136 @@
+{
+  "manifest_digest": "c744e91b9da6cbd200386a320d1d90bccd7e19107367fe6e9cd2c3243dcc9042",
+  "findings": [],
+  "files": [
+    {
+      "i": ".asd/release-manifest.json",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/workflows/asd-phase-design-review.md",
+      "s": "checked"
+    },
+    {
+      "i": ".asd/workflows/asd-phase-impl-review.md",
+      "s": "checked"
+    },
+    {
+      "i": ".claude/agent-memory/asd-reviewer-documentation/MEMORY.md",
+      "s": "checked"
+    },
+    {
+      "i": ".claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md",
+      "s": "checked"
+    },
+    {
+      "i": ".claude/agent-memory/asd-reviewer-testing/feedback_no-shell-review-method.md",
+      "s": "checked"
+    },
+    {
+      "i": "tests/run.js",
+      "s": "checked"
+    }
+  ],
+  "rules": [
+    {
+      "i": "ac-1",
+      "s": "pass"
+    },
+    {
+      "i": "ac-2",
+      "s": "pass"
+    },
+    {
+      "i": "ac-3",
+      "s": "pass"
+    },
+    {
+      "i": "ac-4",
+      "s": "pass"
+    },
+    {
+      "i": "ac-5",
+      "s": "pass"
+    },
+    {
+      "i": "ac-6",
+      "s": "pass"
+    },
+    {
+      "i": "ac-7",
+      "s": "pass"
+    },
+    {
+      "i": "ac-8",
+      "s": "pass"
+    },
+    {
+      "i": "ac-9",
+      "s": "n/a",
+      "p": "closed at the audit gate with no deliverable; no change this sprint"
+    },
+    {
+      "i": "ac-10",
+      "s": "pass"
+    },
+    {
+      "i": "ac-11",
+      "s": "pass"
+    },
+    {
+      "i": "ac-12",
+      "s": "pass"
+    },
+    {
+      "i": "ac-13",
+      "s": "pass"
+    },
+    {
+      "i": "ac-14",
+      "s": "pass"
+    },
+    {
+      "i": "ac-15",
+      "s": "pass"
+    },
+    {
+      "i": "ac-16",
+      "s": "pass"
+    },
+    {
+      "i": "ac-17",
+      "s": "pass"
+    },
+    {
+      "i": "ac-18",
+      "s": "pass"
+    }
+  ],
+  "sections": [
+    {
+      "i": "bugs",
+      "s": "reviewed"
+    },
+    {
+      "i": "security",
+      "s": "reviewed"
+    },
+    {
+      "i": "contracts",
+      "s": "reviewed"
+    },
+    {
+      "i": "best-practices",
+      "s": "reviewed"
+    },
+    {
+      "i": "ac-coverage-trace",
+      "s": "reviewed"
+    },
+    {
+      "i": "ui-conformance",
+      "s": "n/a",
+      "p": "no UI surface in scope file list"
+    }
+  ]
+}
