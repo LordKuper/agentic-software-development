@@ -21,6 +21,7 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 | F-1 | impl | Five parallel devs in one worktree each had to invent a pathspec-commit workaround; the rule fixing this was being authored in the same wave | — |
 | F-2 | impl | `git add --renormalize .` swept three siblings' in-progress edits into one dev's index | — |
 | F-3 | impl | An agent-memory file was co-authored by two concurrent devs and left committable by neither | — |
+| F-5 | impl | A session limit killed a tester mid-mutation, leaving a canonical rule file mutated on disk with no restore | — |
 | F-4 | impl-review | External review unavailable for the third consecutive sprint, at the iteration where a second opinion carried the most value | reviews/impl/iter-01/external |
 
 ## F-1 — every parallel dev independently invented the same commit workaround
@@ -54,3 +55,11 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 - **What happened**: the first dispatch was lost to a session-wide usage limit before returning (recorded as interrupted attempt 1 in `decisions-log.md`). The fresh re-dispatch reached the wrapped CLI, which returned an active quota error on both the review pass and the one permitted retry, so the wrapper returned the availability skip. Preflight had reported `local-ready` — correctly, since local readiness is defined to predict only executable and local auth, never paid-request success.
 - **Impact**: the sprint's DoD counts External Review as an independent check, and it has now been absent in the iteration where it was most useful in three consecutive sprints (007, 008, 009). Iteration 1 was judged by internal reviewers alone. Note the machinery behaved exactly as `AC-8` specified: the outcome contract this sprint added is what turned a would-be empty return into a recorded skip, and the availability-skip carve-out kept External Review unlatched so it is re-dispatched next iteration.
 - **Refs**: reviews/impl/iter-01/external
+
+## F-5 — an interrupted mutation proof left canonical source corrupted
+
+- **Phase**: impl (review-fix `iter-04`, tester chain)
+- **Surface**: rule — `.asd/rules/code-style.md` §17 fail-first proof obligation; workflow — `.asd/workflows/asd-phase-impl.md` fix-mode dispatch
+- **What happened**: proving a new assertion fails first requires mutating the file it guards and restoring it byte-for-byte afterwards. A session-wide usage limit killed the tester between those two steps, so `.asd/rules/external-review.md` was left carrying the mutation — "imported here for the 4 internal reviewers" in place of "imported here whole", which is precisely the `DOC4-1` defect the dev chain had just fixed. The suite was green with the corrupted file, because the mutation and the assertion that catches it were introduced in the same uncommitted working tree.
+- **Impact**: the orchestrator caught it by reading the diff before re-dispatching, and restored the file; nothing was committed. Had the round been committed unread, the sprint would have shipped a re-narrowed contract under a green suite. The mutate-and-restore obligation has no crash safety: no rule says a mutation must be restored before any other work, or that a fix round ends with a diff of canonical files the agent was not authorised to touch.
+- **Refs**: —
