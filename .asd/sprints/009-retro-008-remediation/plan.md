@@ -75,10 +75,10 @@ Material risk: change: dispatch routing and concurrency semantics
 
 ### Task 7: sprint-lifecycle.md — retro-derived criteria and criterion reachability
 Material risk: change: two rule contracts, one of them parser-critical
-- [ ] `AC-3`: state in "Orchestration and adaptive gates" that a retrospective-derived acceptance criterion is verified against current `HEAD` before it is written into `sprint.md`, and that the verification is recorded in `decisions-log.md` — that log alone, decided at the audit gate; `t_sprint.md` gains no section
-- [ ] `AC-3`: `.asd/workflows/asd-phase-scope.md` step 2 implements and cites it
-- [ ] `AC-12`: in "Plan file format", make a criterion's reachability part of accepting it — a task whose value depends on two phases agreeing names which two and on what
-- [ ] `AC-12`: mirror the declaration in `t_plan.md`, and re-read the fail-closed grammar at `:302` so two declaration lines' absence semantics do not collide
+- [x] `AC-3`: state in "Orchestration and adaptive gates" that a retrospective-derived acceptance criterion is verified against current `HEAD` before it is written into `sprint.md`, and that the verification is recorded in `decisions-log.md` — that log alone, decided at the audit gate; `t_sprint.md` gains no section
+- [x] `AC-3`: `.asd/workflows/asd-phase-scope.md` step 2 implements and cites it
+- [x] `AC-12`: in "Plan file format", make a criterion's reachability part of accepting it — a task whose value depends on two phases agreeing names which two and on what
+- [x] `AC-12`: mirror the declaration in `t_plan.md`, and re-read the fail-closed grammar at `:302` so two declaration lines' absence semantics do not collide
 
 ### Task 8: checkpoints.md — a criterion's running cost is surfaced
 Material risk: change: gate obligation with no enforcement mechanism behind it

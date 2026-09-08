@@ -106,10 +106,10 @@
       "resolved_model": "sonnet"
     },
     "task-11": {
-      "tier": "standard",
+      "tier": "critical",
       "execution": "agent",
-      "reason": "artifact-risk:generated view staleness",
-      "resolved_model": "sonnet"
+      "reason": "risk:public contract",
+      "resolved_model": "opus"
     }
   },
   "skipped_phases": [
