@@ -76,3 +76,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: `plan.md` accepted with eleven tasks cut by file rather than by AC. `AC-9` gets no task (closed at the audit gate); `AC-17` gets no task (tests are selected in `impl-test`); the `tests/run.js:3045` reconciliation Task 5 forces is recorded as a sprint-specific DoD addition rather than as a plan task.
 - **Rationale**: Advanced adaptively — the plan adds no scope, and its only judgment call is task granularity, which the audit's collision finding settles: four ACs land in `review-policy.md` and three more collide pairwise, so file-grouped sequential tasks are the shape that avoids the very cost `AC-10` exists to remove.
 - **Affected docs**: [plan.md](plan.md), [audit.md](audit.md)
+
+## 2026-09-08 — impl assessment approved
+
+- **Decision**: All eleven plan tasks COMPLETED and approved by the user; sprint advances to impl-test. No stubs introduced. Build (`node .asd/sync.js --check`) and lint (`git diff --cached --check`) clean; `node tests/run.js` 159/160, the single red being `tests/run.js:3031-3046`, invalidated by Task 5 by design and reconciled in impl-test.
+- **Rationale**: Every AC that carried a deliverable landed in the single home the audit named, with citations rather than restatements elsewhere. Task 11 disproved the reported 94-entry ledger mismatch by measurement — `sync.js` hashes normalized text, so line endings cannot move a ledger entry; the real staleness was 14 entries from this sprint's own edits.
+- **Affected docs**: [plan.md](plan.md), [friction-log.md](friction-log.md)

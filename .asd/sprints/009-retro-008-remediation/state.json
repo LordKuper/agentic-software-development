@@ -1,7 +1,7 @@
 {
   "sprint_id": "009-retro-008-remediation",
   "branch": "sprint/009-retro-008-remediation",
-  "phase": "impl",
+  "phase": "impl-test",
   "documents": {
     "audit": true,
     "prd": false,
@@ -41,6 +41,14 @@
       "reason": "routine plan acceptance under adaptive policy; no scope added, task granularity settled by audit collision finding",
       "evidence": "plan.md, audit.md Risks",
       "artifact_revision": "plan.md@1",
+      "decided_at": "2026-09-08T00:00:00Z"
+    },
+    {
+      "gate": "impl-assessment",
+      "decision_actor": "user",
+      "reason": "all 11 tasks complete, build+lint clean, no stubs",
+      "evidence": "plan.md all ticked; sync --check ok; tests 159/160 with one by-design red",
+      "artifact_revision": "plan.md@impl-1",
       "decided_at": "2026-09-08T00:00:00Z"
     }
   ],
