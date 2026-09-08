@@ -68,3 +68,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: `audit.md` accepted; sprint advances to design.
 - **Rationale**: Adaptive policy — audit acceptance is a routine gate; the material questions it surfaced were escalated and answered above, leaving no unresolved alternative. Evidence: measured `git ls-files --eol` over 583 files, measured `git diff --check` staged/unstaged behaviour, file:line citations for every gap.
 - **Affected docs**: [audit.md](audit.md)
+
+- 2026-09-08 — design/design-review/design-promote skipped (no documents enabled)

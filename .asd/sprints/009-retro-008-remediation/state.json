@@ -1,7 +1,7 @@
 {
   "sprint_id": "009-retro-008-remediation",
   "branch": "sprint/009-retro-008-remediation",
-  "phase": "design",
+  "phase": "design-promote",
   "documents": {
     "audit": true,
     "prd": false,
@@ -37,7 +37,11 @@
     }
   ],
   "task_routing": {},
-  "skipped_phases": [],
+  "skipped_phases": [
+    "design",
+    "design-review",
+    "design-promote"
+  ],
   "reviews": {
     "design": {
       "iteration": 0,
