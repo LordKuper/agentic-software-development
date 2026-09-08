@@ -1,0 +1,26 @@
+{
+  "phase": "impl-review",
+  "iteration": "6",
+  "base_ref": "02cd977",
+  "head_ref": "fdf6cf620fb2500461d4f2459865c64ebe132ced",
+  "files": [
+    ".asd/agents/asd-reviewer-correctness.md",
+    ".asd/agents/asd-reviewer-documentation.md",
+    ".asd/agents/asd-reviewer-efficiency.md",
+    ".asd/agents/asd-reviewer-testing.md",
+    ".asd/release-manifest.json",
+    ".asd/rules/providers.md",
+    ".claude/agent-memory/asd-reviewer-correctness/feedback_review-method-no-shell.md",
+    "tests/run.js"
+  ],
+  "exclude_paths": [
+    ".asd/project/**",
+    ".asd/sprints/**",
+    ".claude/agents/**",
+    ".claude/skills/**",
+    ".claude/hooks/**",
+    ".claude/settings.json",
+    ".codex/**",
+    ".agents/skills/**"
+  ]
+}
