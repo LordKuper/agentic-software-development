@@ -1,6 +1,6 @@
 ---
 name: testability-envelope
-description: What is and is not testable in the ASD framework repo, and the two accepted test patterns for its mostly-documentation change surfaces
+description: What is and is not testable in the ASD framework repo, the two accepted test patterns for its mostly-documentation change surfaces, and the mutation/fixture/authoring traps that keep biting
 metadata:
   type: project
 ---
@@ -61,3 +61,26 @@ Also durable: `runtime.js` `routeTask` takes a structured input object and conta
 parser** - the `Material risk` extraction is the orchestrator's. Any proposed test of plan-grammar
 routing "through route-task" is unfalsifiable by construction; record it as a checked-and-false
 premise rather than writing a test that only proves a pure function is deterministic.
+
+Sixth trap, on fixtures rather than mutations: a **backward-compatibility fixture built by calling the
+function under test** is not a fixture. Sprint 009's legacy-manifest row stamped its digest with
+`coverageManifestDigest` itself, so it tracked whatever that function did and stayed green straight
+through the identity break it claimed to cover. Build a legacy artefact from the *untouched primitive*
+the old code used (`runtime.fingerprint` + the old key handling), so it stays frozen at the old
+behaviour when the current one changes.
+
+Seventh: when generalizing a scoped assertion (one directory → a whole tree), check the tree first.
+Widening the `asd-dev-critical/MEMORY.md` index-link test over all of `.claude/agent-memory/**` goes
+red at HEAD on `asd-pm/MEMORY.md`'s dangling `feedback_flag-gate-semantics-before-applying.md` link —
+pre-existing and outside any current change surface. Scope the loop to the directories the sprint
+writes and record why in `test-plan.md`, rather than importing an out-of-scope failure.
+
+Eighth: a precondition guard with no mutable source (a spawn that needs `git` on PATH) is provable by
+**environment** instead: re-run the whole suite with `PATH` reduced to node's own directory. Three
+external-CLI preflight tests fail alongside it — check which failures are yours before claiming a
+test is the suite's only environment-dependent one.
+
+Ninth, authoring style: `tests/run.js` gets reviewed against `code-style.md` §7, which forbids
+in-body comments with no framework exemption — the ~60 pre-existing ones are not a licence, and new
+ones draw a Documentation finding every time. Put the reasoning in the `assert` message; it is read
+at the moment of failure, which a comment above the line is not.
