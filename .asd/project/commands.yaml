@@ -2,7 +2,7 @@
 # read by Dev, Tester, and review agents
 
 test: "node tests/run.js"
-lint: "git diff --check"
+lint: "git diff --cached --check"
 build: "node .asd/sync.js --check"
 run: "node .asd/hooks/session-start.js --provider codex"
 
