@@ -10,6 +10,8 @@ const PROBE_TIMEOUT_MS = 3000;
 const NEGATIVE_TTL_MS = 300000;
 const MAX_NEGATIVE_TTL_MS = 3600000;
 const RESERVED_CHANGE_RISKS = ['security', 'authentication', 'migration', 'public contract', 'workflow gate'];
+/** The single review-ledger row vocabulary: allowed statuses per row type, plus the one status carrying `p` and the one carrying `f`. Emitted into every manifest and enforced on every ledger from here, so published and enforced vocabulary cannot drift. */
+const LEDGER_VOCABULARY = { files: ['checked', 'n/a'], rules: ['pass', 'n/a', 'finding'], sections: ['reviewed', 'n/a'], p: 'n/a', f: 'finding' };
 
 function stable(value) {
   if (Array.isArray(value)) return '[' + value.map(stable).join(',') + ']';
@@ -178,26 +180,28 @@ function routeTask(input) {
   return { tier, execution, reason };
 }
 
-function rowsById(rows, expected, allowedStatuses, allowedNa, findings, label) {
+function rowsById(rows, expected, allowedNa, findings, label) {
   if (!Array.isArray(rows)) fail(`${label} rows must be an array`);
+  const allowedStatuses = new Set(LEDGER_VOCABULARY[label]);
+  const { p: naStatus, f: findingStatus } = LEDGER_VOCABULARY;
   const seen = new Set();
   for (const row of rows) {
     if (!row || typeof row.i !== 'string' || typeof row.s !== 'string') fail(`${label} row malformed`);
     if (!expected.has(row.i) || seen.has(row.i)) fail(`${label} row identity invalid: ${row.i}`);
     if (!allowedStatuses.has(row.s)) fail(`${label} status invalid: ${row.s}`);
-    if (row.s === 'n/a' && (typeof row.p !== 'string' || !allowedNa.get(row.i).has(row.p))) fail(`${label} n/a predicate invalid: ${row.i}`);
-    if (row.s !== 'n/a' && row.p !== undefined) fail(`${label} predicate only allowed for n/a: ${row.i}`);
-    if (row.s === 'finding' && (typeof row.f !== 'string' || !findings.has(row.f))) fail(`${label} finding reference invalid: ${row.i}`);
-    if (row.s !== 'finding' && row.f !== undefined) fail(`${label} finding reference only allowed for finding: ${row.i}`);
+    if (row.s === naStatus && (typeof row.p !== 'string' || !allowedNa.get(row.i).has(row.p))) fail(`${label} n/a predicate invalid: ${row.i}`);
+    if (row.s !== naStatus && row.p !== undefined) fail(`${label} predicate only allowed for n/a: ${row.i}`);
+    if (row.s === findingStatus && (typeof row.f !== 'string' || !findings.has(row.f))) fail(`${label} finding reference invalid: ${row.i}`);
+    if (row.s !== findingStatus && row.f !== undefined) fail(`${label} finding reference only allowed for finding: ${row.i}`);
     seen.add(row.i);
   }
   if (seen.size !== expected.size) fail(`${label} rows incomplete`);
 }
 
-/** Returns the required manifest digest for a review coverage ledger. */
+/** Returns the required manifest digest for a review coverage ledger. A manifest carrying no vocabulary is digested as if it carried the canonical one, so stamping it changes no identity; a divergent one is digested as written and rejected on validation. */
 function coverageManifestDigest(manifest) {
   if (!manifest || typeof manifest !== 'object') fail('manifest required');
-  const copy = Object.assign({}, manifest);
+  const copy = Object.assign({ vocabulary: LEDGER_VOCABULARY }, manifest);
   delete copy.digest;
   return fingerprint(copy);
 }
@@ -207,6 +211,7 @@ function validateCoverageLedger(manifest, ledger, actualFindings) {
   if (!manifest || !ledger) fail('manifest and ledger required');
   const digest = coverageManifestDigest(manifest);
   if (manifest.digest !== digest || ledger.manifest_digest !== digest) fail('ledger manifest identity invalid');
+  if (manifest.vocabulary !== undefined && stable(manifest.vocabulary) !== stable(LEDGER_VOCABULARY)) fail('manifest vocabulary invalid');
   const ids = (name) => {
     if (!Array.isArray(manifest[name]) || manifest[name].some((item) => typeof item !== 'string')) fail(`manifest ${name} invalid`);
     const set = new Set(manifest[name]);
@@ -232,9 +237,9 @@ function validateCoverageLedger(manifest, ledger, actualFindings) {
   const files = ids('files');
   const rules = ids('rules');
   const sections = ids('sections');
-  rowsById(ledger.files, files, new Set(['checked', 'n/a']), allowedNa('files', files), findings, 'files');
-  rowsById(ledger.rules, rules, new Set(['pass', 'n/a', 'finding']), allowedNa('rules', rules), findings, 'rules');
-  rowsById(ledger.sections || [], sections, new Set(['reviewed', 'n/a']), allowedNa('sections', sections), findings, 'sections');
+  rowsById(ledger.files, files, allowedNa('files', files), findings, 'files');
+  rowsById(ledger.rules, rules, allowedNa('rules', rules), findings, 'rules');
+  rowsById(ledger.sections || [], sections, allowedNa('sections', sections), findings, 'sections');
   return { ok: true };
 }
 
@@ -261,7 +266,7 @@ function main(argv) {
   const command = argv[2];
   const flags = parseFlagArgs(argv.slice(3), ['write']);
   if (command === 'manifest-digest') {
-    const manifest = JSON.parse(fs.readFileSync(flags.manifest, 'utf8'));
+    const manifest = Object.assign(JSON.parse(fs.readFileSync(flags.manifest, 'utf8')), { vocabulary: LEDGER_VOCABULARY });
     const digest = coverageManifestDigest(manifest);
     if (flags.write) fs.writeFileSync(flags.manifest, JSON.stringify(Object.assign({}, manifest, { digest })) + '\n', 'utf8');
     process.stdout.write(digest + '\n');
@@ -292,4 +297,4 @@ if (require.main === module) {
   try { process.exitCode = main(process.argv); } catch (error) { process.stderr.write(`${error.message}\n`); process.exitCode = 2; }
 }
 
-module.exports = { buildInvocation, coverageManifestDigest, externalPreflight, recordExternalFailure, routeTask, validateCoverageLedger, fingerprint };
+module.exports = { LEDGER_VOCABULARY, buildInvocation, coverageManifestDigest, externalPreflight, recordExternalFailure, routeTask, validateCoverageLedger, fingerprint };
