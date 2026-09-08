@@ -1,7 +1,7 @@
 {
   "sprint_id": "009-retro-008-remediation",
   "branch": "sprint/009-retro-008-remediation",
-  "phase": "pr",
+  "phase": "done",
   "documents": {
     "audit": true,
     "prd": false,
@@ -235,9 +235,9 @@
   "pr": {
     "number": 31,
     "url": "https://github.com/LordKuper/agentic-software-development/pull/31",
-    "state": "open",
+    "state": "merged",
     "opened_at": "2026-09-09T00:00:00Z",
     "head": "103e3591"
   },
-  "archived_at": null
+  "archived_at": "2026-09-09T00:00:00Z"
 }

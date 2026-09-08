@@ -23,6 +23,7 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 | F-3 | impl | An agent-memory file was co-authored by two concurrent devs and left committable by neither | — |
 | F-5 | impl | A session limit killed a tester mid-mutation, leaving a canonical rule file mutated on disk with no restore | — |
 | F-6 | impl-review | A reviewer returned a semantically complete coverage ledger in the wrong shape; the rule permits only reject-and-re-dispatch | reviews/impl/iter-05/documentation |
+| F-7 | pr | AC-7 broke a CRLF fixture that only ever had CRLF via core.autocrlf; no gate runs the suite on a clean checkout | — |
 | F-4 | impl-review | External review unavailable for the third consecutive sprint, at the iteration where a second opinion carried the most value | reviews/impl/iter-01/external |
 
 ## F-1 — every parallel dev independently invented the same commit workaround
@@ -72,3 +73,11 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 - **What happened**: the documentation reviewer returned a coverage ledger that resolved every row — 9 files, 10 rules, 9 sections, each with its status and authorized `n/a` predicate — but shaped as maps rather than the `{i,s,p,f}` row arrays the manifest's own `vocabulary` field mandates. The rule offers exactly one response: reject and re-dispatch the reviewer fresh, its verdict never counting. That would have spent a full critical-tier agent run to re-obtain evidence already present and verifiable, on an APPROVE at the critical floor.
 - **Impact**: the phase workflow transcribed the returned content into the mandated shape instead — every identity, status and predicate preserved, nothing added — and `validate-ledger` accepted it. That is a deliberate deviation from the enforcement paragraph, recorded here and in `decisions-log.md` rather than hidden. The gap is that the rule treats "incomplete evidence" and "correct evidence, wrong container" as the same failure, when only the first is a reason to distrust the verdict. Retro should decide whether a transcription clause belongs in the rule, or whether the manifest should carry a shape example the way it now carries the vocabulary.
 - **Refs**: reviews/impl/iter-05/documentation
+
+## F-7 — AC-7 broke a fixture whose CRLF was never in git
+
+- **Phase**: pr (closure, companion branch)
+- **Surface**: rule — `.gitattributes` added by `AC-7`; test — `tests/run.js` "CRLF+BOM canonical input normalizes to the same output as LF/no-BOM"; CI — `.github/workflows/sync-check.yml`
+- **What happened**: the fixture `tests/fixtures/canon/agents/demo-agent.crlf-bom.md` exists to be CRLF, and the test opens with a sanity assertion that it really is. Measured at closure: its blob carries **zero CR** and always did — the CRLF came entirely from `core.autocrlf=true` converting on checkout. `AC-7`'s `* text=auto eol=lf` ended that conversion, so on any fresh clone the fixture arrives LF and the test fails its own sanity check. The sprint never saw it: every run happened in a working tree checked out before `.gitattributes` existed, where the file was still CRLF from the old conversion.
+- **Impact**: `node tests/run.js` fails 170/171 on a clean clone of the merged `main`. It surfaced only because closure requires a fresh checkout, one step before the `v7.1.0` tag would have immortalised it. Two gaps compound here: a fixture whose bytes are the test input was normalised as if it were source, and no gate runs the suite on a clean checkout — CI runs `sync.js --check` alone, which the sprint's own audit flagged and no `AC` covered. Fixed on the companion branch (`-text` on the fixture path plus the CRLF bytes committed for real), an authorized deviation from that branch's terminal-state-only contract, recorded in `decisions-log.md`.
+- **Refs**: —
