@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 /*
  * ASD framework updater - per-file state machine (replaces the old wholesale
- * delete+copy driver). See plans/multi-provider-support.md, section
- * "update.js: пофайловая state machine" (SSoT for the contract below).
+ * delete+copy driver).
  *
  * Scope: syncs ONLY the canonical `.asd/` SSoT tree (rules, templates,
  * agents, skills, workflows, hooks, sync.js itself) from the upstream ASD
@@ -224,10 +223,10 @@ function planUpdate(repoRoot, sourceRoot) {
 // ---------------------------------------------------------------------------
 
 // `forceRelPaths` is the set of relPaths the USER has explicitly confirmed
-// overwriting (plan: "отличается -> conflict, не трогать без явного
-// подтверждения" - the second half of that sentence requires a path that
-// actually honors a confirmed "yes, overwrite"; add/update/delete are always
-// applied because they were never conflicts to begin with).
+// overwriting. A differing file is a conflict and is never touched without
+// explicit confirmation, so some path must honor a confirmed "yes, overwrite";
+// add/update/delete are always applied because they were never conflicts to
+// begin with.
 function applyClassifications(classifications, forceRelPaths) {
   const forceSet = forceRelPaths instanceof Set ? forceRelPaths : new Set(forceRelPaths || []);
   const applied = [];

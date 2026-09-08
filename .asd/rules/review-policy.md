@@ -116,7 +116,7 @@ Next action: APPROVE → reviewer done · CONCERNS → creator autofixes, next i
 
 ## Gate Verdict Format (machine-parseable first line)
 
-Reviewers are read-only (`providers.md`): a reviewer never writes its own review file. Every reviewer's **returned findings text** (its final text output) MUST begin (after any preamble) with a single-line verdict token:
+Reviewers write no review artifact, code or doc — that is why the phase workflow, never the reviewer, writes the review file (tool grants: `providers.md`). Not absolute: `memory: project` is a separate write channel reviewers do use and the host serves. Sole home of this claim — elsewhere cite it, never restate. Every reviewer's **returned findings text** (its final text output) MUST begin (after any preamble) with a single-line verdict token:
 
 ```
 [REVIEW-<phase>-<reviewer>]: <APPROVE | CONCERNS | FAIL>

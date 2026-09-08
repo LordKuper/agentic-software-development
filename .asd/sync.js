@@ -24,7 +24,7 @@ const BLOCK_END = '<!-- asd:end -->';
 // ---------------------------------------------------------------------------
 
 // UTF-8, no BOM, LF line endings - applied both before writing and before
-// hashing (plan: "Digest и нормализация").
+// hashing.
 function normalizeText(input) {
   let s = input;
   if (s.charCodeAt(0) === 0xfeff) s = s.slice(1); // strip UTF-8 BOM
@@ -126,8 +126,7 @@ function isSymlink(targetPath) {
 // Canonical source parsing: JSON frontmatter (no YAML parser - JSON.parse only)
 // ---------------------------------------------------------------------------
 
-// Invalid JSON must fail closed, before any write (plan: "Invalid JSON/TOML/
-// frontmatter останавливает sync до первой записи").
+// Invalid JSON must fail closed, before any write.
 function parseCanonicalFrontmatter(rawNormalizedText) {
   if (!rawNormalizedText.startsWith('---\n')) {
     throw new Error('canonical source must start with a "---" frontmatter fence');
@@ -275,11 +274,6 @@ function transformAgentClaude(meta, body, manifest) {
     lines.push(`disallowedTools: ${yamlFlowList(c.disallowedTools)}`);
   }
   if (c.model) lines.push(`model: ${resolveModelFamily(manifest, 'claude', c.model)}`);
-  // ASSUMPTION: plan's "Канонический формат агента" section literally lists
-  // `effort` as a field the plan says Claude frontmatter supports ("Claude
-  // frontmatter поддерживает tools, disallowedTools, model, effort, maxTurns,
-  // memory (подтверждено docs)") - followed literally here, even though this
-  // is not a documented Claude Code subagent field today.
   if (c.effort) lines.push(`effort: ${c.effort}`);
   if (c.maxTurns !== undefined) lines.push(`maxTurns: ${c.maxTurns}`);
   if (c.memory) lines.push(`memory: ${c.memory}`);
@@ -432,9 +426,9 @@ function statusFullFile(targetPath, expectedContentDigest) {
   // the actual body no longer matches it, the file was hand-edited outside
   // sync - that is modified-foreign regardless of whether canon has also
   // since changed. Only when the body still matches what sync last wrote do
-  // we compare against a fresh re-render to decide current vs stale (plan:
-  // "stale определяется re-render'ом", but that formula only applies to
-  // untampered files - re-render was never meant to launder a hand-edit).
+  // we compare against a fresh re-render to decide current vs stale. That
+  // re-render formula applies to untampered files only - it must never
+  // launder a hand-edit.
   if (actualContentDigest !== parsed.contentDigest) return 'modified-foreign';
   return actualContentDigest === expectedContentDigest ? 'current' : 'stale';
 }
@@ -822,9 +816,9 @@ function applyJsonMerge(targetPath, relKey, ownedPathArr, renderedOwnedEntries, 
 }
 
 // ---------------------------------------------------------------------------
-// update.js state machine (pofile status classification per plan section
-// "update.js: пофайловая state machine"). Pure/stateless: caller supplies the
-// hashes it already computed (local file, old release manifest, new upstream).
+// update.js state machine (per-file status classification). Pure/stateless:
+// the caller supplies the hashes it already computed (local file, old release
+// manifest, new upstream).
 // ---------------------------------------------------------------------------
 
 // Returns one of:
@@ -1218,9 +1212,8 @@ function buildSyncPlan(repoRoot) {
     }
   }
   // Every .asd/skills/<name>/SKILL.md is a canonical skill source, regardless
-  // of whether <name> is a phase skill or not - target trees per plan's
-  // "Целевая структура" (Codex skills live under .agents/skills/, not
-  // .codex/).
+  // of whether <name> is a phase skill or not - Codex skills live under
+  // .agents/skills/, never .codex/.
   const skillsDir = path.join(repoRoot, '.asd', 'skills');
   if (fs.existsSync(skillsDir)) {
     for (const name of fs.readdirSync(skillsDir)) {
@@ -1335,8 +1328,8 @@ function runCheck(repoRoot) {
 // ownership classes. missing/stale -> write always; modified-foreign -> write
 // ONLY when the caller passes it in `options.force` (a user-confirmed
 // overwrite, e.g. from `/asd-sync`'s per-file "overwrite" choice) - current/
-// foreign is never written (plan: "apply только явно перечисленного", "never
-// overwrite silently" - force is the one explicit exception to "silently").
+// foreign is never written. Apply touches only what was explicitly listed and
+// never overwrites silently; force is the one explicit exception.
 // A requested target that matches no plan entry may still be an orphan - a
 // generated view whose canonical source no longer exists, so it never
 // appears in buildSyncPlan's source-driven output. An orphan is deleted only
@@ -1349,8 +1342,7 @@ function runCheck(repoRoot) {
 // before pass 2 writes anything. A bad canon source (invalid JSON/TOML
 // frontmatter) throws during pass 1's render step, aborting the whole call
 // with zero writes performed - even if it's the last file in a multi-file
-// request and earlier ones would otherwise have rendered fine (plan: "Invalid
-// JSON/TOML/frontmatter останавливает sync до первой записи").
+// request and earlier ones would otherwise have rendered fine.
 function runApply(repoRoot, requestedFiles, options) {
   const manifest = loadReleaseManifest(repoRoot);
   const syncState = loadSyncState(repoRoot);

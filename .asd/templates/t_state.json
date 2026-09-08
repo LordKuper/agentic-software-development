@@ -11,7 +11,6 @@
     "design": { "iteration": 0, "verdicts": {}, "latched": {} },
     "impl": { "iteration": 0, "verdicts": {}, "iteration_heads": {}, "latched": {} }
   },
-  "derived_handoff": {},
   "created_at": "{{ISO8601}}",
   "updated_at": "{{ISO8601}}",
   "review_fixes_pending": null,

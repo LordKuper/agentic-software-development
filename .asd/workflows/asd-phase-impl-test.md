@@ -49,7 +49,7 @@ No user gate on a green impacted-set run, and none on routing defects back to im
    - **test defect** (bad assertion, wrong fixture, flaky pattern) → re-dispatch step 7 for the offending tests, then step 8 again
    - **code defect** → append a `D-N` row to the `Defects` section of `test-plan.md` (location, symptom, failing test, status `pending`); write `state.json.test_defects_pending = true` inline and append decisions-log "impl-test: defects <D-N list> → impl test-fix" (mechanical, no gate); commit these bookkeeping writes (`sprint-lifecycle.md` "Impl-test commits its own output"); emit COMPLETED with `NEXT: impl`
    - both kinds present → fix the test defects first, re-run, then route the remaining code defects back
-10. **Green impacted run** — write inline (mechanical, no gate): fill this entry's `Entry log` row `HEAD analysed` with current `git rev-parse HEAD` (now that step 7's prune/author commit and step 8's suite recording have both landed, so the next re-entry's delta excludes this entry's own test-authoring commits); append decisions-log "impl-test: impacted set green (<counts>), <added>/<removed> tests"; confirm `test_defects_pending` null; write `state.json.derived_handoff` by re-running step 2's file-list diff now that step 7's commit has landed (`sprint-lifecycle.md` "State recovery", sole SSoT for its shape, validity rule and absent-key fallback — the slot's only write, read only by `impl-review` step 1); commit these bookkeeping writes (`sprint-lifecycle.md` "Impl-test commits its own output") — `git status --porcelain` MUST be empty before this step's COMPLETED, since `impl-review` refuses a dirty worktree; emit COMPLETED with `NEXT: impl-review`
+10. **Green impacted run** — write inline (mechanical, no gate): fill this entry's `Entry log` row `HEAD analysed` with current `git rev-parse HEAD` (now that step 7's prune/author commit and step 8's suite recording have both landed, so the next re-entry's delta excludes this entry's own test-authoring commits); append decisions-log "impl-test: impacted set green (<counts>), <added>/<removed> tests"; confirm `test_defects_pending` null; commit these bookkeeping writes (`sprint-lifecycle.md` "Impl-test commits its own output") — `git status --porcelain` MUST be empty before this step's COMPLETED, since `impl-review` refuses a dirty worktree; emit COMPLETED with `NEXT: impl-review`
 11. tester QUESTION / FAILED / ABORT → relay, halt
 12. On `ADVICE_NEEDED` from any dispatched agent → relay per `sprint-lifecycle.md`'s `ADVICE_NEEDED` protocol; execution resumes, no halt.
 
@@ -64,7 +64,7 @@ Bounded risk: a defect outside the impacted set's reach is not caught by this ph
 ## Artefacts produced
 - `<sprint>/test-plan.md` (risk→check decisions, removals, added tests, suite run, defects, optional manual verification spec)
 - Tests added, adjusted, and deleted in repo
-- Updated `state.json` (phase=impl-test; `derived_handoff` at step 10; `test_defects_pending` set when routing back to impl)
+- Updated `state.json` (phase=impl-test; `test_defects_pending` set when routing back to impl)
 - Git commits per Conventional Commits
 - decisions-log entry on green impacted run or defect routing
 

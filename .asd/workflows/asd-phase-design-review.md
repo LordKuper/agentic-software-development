@@ -17,7 +17,7 @@ Orchestration body for the `asd-phase-design-review` skill. Operation-mapping to
 
 ## Reviewer read-only contract
 
-Every reviewer is read-only and returns its verdict, findings and compact machine ledger. The workflow validates that ledger, then writes the compact ledger plus verdict and finding rows directly; it never expands checked/pass prose. The reviewer never writes the file.
+Every reviewer returns its verdict, findings and compact machine ledger as text (what read-only covers: `review-policy.md`). The workflow validates that ledger, then writes the compact ledger plus verdict and finding rows directly; it never expands checked/pass prose. The reviewer never writes the file.
 
 ## Workflow
 
