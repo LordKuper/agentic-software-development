@@ -112,3 +112,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: `.claude/agent-memory/asd-pm/MEMORY.md` indexes `feedback_flag-gate-semantics-before-applying.md`, which does not exist. Pre-existing, outside this sprint's change surface; left untouched and recorded here rather than pulled into scope.
 - **Rationale**: Found while generalizing the memory index-link test. Fixing it would widen the diff past what any `AC-N` authorizes, and the new repo-wide test the tester considered would have gone red on it — so the test was scoped to the directories this sprint writes, with the reason recorded in `test-plan.md`.
 - **Affected docs**: [test-plan.md](test-plan.md)
+
+## 2026-09-08 — impl-test entry 2: full suite green
+
+- **Decision**: Entry 2 (delta = the `iter-01` review-fix commits) complete: suite 171/171, build `ok: true`, lint clean, re-verified at `66a2a1f`. No new tests beyond the fix round's own; no removals; no `D-N` defects. `test_defects_pending` stays null.
+- **Rationale**: The strategy, prune/author and suite passes for this delta were performed inside the fix round by the same tester agent, so entry 2 amends `test-plan.md` rather than re-deriving it. Entry 2's `HEAD analysed` was corrected from the delta tip to the post-authoring HEAD, so a later entry 3's delta excludes this entry's own test commits.
+- **Affected docs**: [test-plan.md](test-plan.md)
