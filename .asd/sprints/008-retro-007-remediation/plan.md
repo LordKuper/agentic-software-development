@@ -107,7 +107,7 @@ hand-edited.
 - [x] Make the field purely an optimisation — re-derivable, never a gate input — so a consumer mid-sprint without it degrades to today's behaviour
 - [x] Have `asd-phase-impl-review.md` step 1's scope file list and `asd-phase-impl-test.md` step 3's re-entry delta read the field when present and write it on exit
 - [x] Confirm `.asd/hooks/session-start.js` still exits 0 on a `state.json` lacking the field
-- [x] Covers AC-11. Material risk: state-schema change against sprints in flight in consumer projects
+- [x] Covered AC-11, which was **retired at impl-review iteration 4** — `derived_handoff` is deleted and the criterion is closed as not delivered (decisions log, 2026-09-08). The work below shipped and was then removed; the rows stand as history. Material risk: state-schema change against sprints in flight in consumer projects
 
 ### Task 11: Cross-file consistency sweep and out-of-surface verification
 - [x] Add the `agent-memory/` line to `README.md`'s `.claude/` folder-map block, required by Task 5 (AC-12)
