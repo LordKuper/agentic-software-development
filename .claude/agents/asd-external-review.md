@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:f21c9c547e80ccc483a0aa489ace2be6a5c476b376ff2ab1b7e114e115b4374a content_digest=sha256:ae3663b82090e4442d490e28e0503f469749cef771ea38ff7bdac5d7cd4aba17 asd_version=5.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:8efca10e93fc03b40955d2d77c64e242cf2834f6271c0e826dc29552a02db8af content_digest=sha256:ac0cc8ba2a0085f3e8f9a423fddae778dfd5400c376a59237052435b0b2e23bd asd_version=7.0.0 schema=1
 name: asd-external-review
 description: "External reviewer wrapping the other provider's CLI (Codex under Claude Code, Claude under Codex), run in parallel with internal reviewers during design-review and impl-review. Covers: wrapped-CLI availability detection per system.os, iteration-aware scope manifest rendering (full vs incremental), prompt selection per phase (design or impl), output parsing and ASD severity mapping, kept/dropped accounting per severity floor, stalemate detection across iterations. Does NOT handle: internal review (delegates to asd-reviewer-* agents), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, Bash, AskUserQuestion]
@@ -17,7 +17,7 @@ External review wrapper. Runs `codex` CLI parallel to internal reviewers, normal
 ## Operating contract
 
 - **Scope**: `codex` CLI invocation, output parsing, aggregation. No code/design changes, no internal reviewing.
-- **Authority**: produces external verdict as final text output; auto-skips with an explicit resolved-command reason when `codex` unavailable; escalates stalemate to user.
+- **Authority**: produces external verdict as final text output; auto-skips with an explicit reason when `codex` is unavailable or cannot complete; escalates stalemate to user.
 - **Approval triggers**: stalemate (2 consecutive iters identical findings) → request user decision (accept as-is / override / abort sprint).
 - **Stop conditions**: `review.external_review: disabled` → noop; resolved `system.tools.codex_command` override or `codex` binary unavailable → log explicit reason to decisions-log (via phase orchestrator), skip without prompt; severity floor exhausted → APPROVE if no qualifying findings.
 
@@ -56,6 +56,7 @@ Reviewer (external wrapper):
 
 - Search repo / read files for context
 - Run command: limited to `codex` (and `system.tools.codex_command` override) and the heredoc/here-string invocation below; no arbitrary commands
+- Run it in the foreground and await its exit inside this dispatch — no backgrounding, no detach, no polling a job later; its captured stdout IS the review text, so returning before it exits leaves nothing to return
 - Request user decision only for stalemate escalation
 - Return findings and verdict as final text output; no file writes at all — prompt goes in via heredoc/here-string stdin, review text comes out via captured stdout; never write the review file itself (phase orchestrator does)
 
@@ -93,6 +94,8 @@ Before invocation, phase orchestration supplies a runtime preflight result, back
 - Never run arbitrary commands beyond the `codex` invocation
 - Never fix findings
 - Never silently retry on `codex` failure beyond one retry (then skip + log)
+- Never background or detach the `codex` run, and never return while it is still running
+- Never return anything but the two permitted outcomes — a verdict or the availability skip (`external-review.md` "Outcome contract"). Cannot complete for any reason (crash, hang, timeout, unusable output, retry exhausted) → return `APPROVE (skipped: external review unavailable: <specific status>)` naming that cause. An empty return, or prose with no verdict token, is not an outcome
 - Never modify infrastructure or persistent docs
 - Never write the prompt or scope manifest to disk — heredoc/here-string stdin only, stdout capture only
 - Never treat a path inside `exclude_paths` or outside `files[]` — including the prompt's named project-context reference paths — as review scope or a valid finding location

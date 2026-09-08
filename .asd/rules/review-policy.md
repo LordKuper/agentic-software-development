@@ -141,7 +141,7 @@ Never bury the verdict in prose. The dispatching phase workflow writes the verdi
 
 ## Interrupted dispatch and split dispatch
 
-Applies to the 4 internal reviewers; External Review's unavailability path is `external-review.md`.
+Applies to the 4 internal reviewers, except where a branch states its own reach (**Late duplicate return**, below, holds for any replaced dispatch, External Review included). What External Review may return at all — its permitted outcomes, its unavailability path, and the disposal of anything else, which imports **Interrupted dispatch** below — is `external-review.md` "Outcome contract".
 
 **Interrupted dispatch.** A dispatch returning no verdict token or no ledger (cut short mid-turn) is not a verdict: no `verdicts["iter-NN"]` entry, no latch. The same reviewer is re-dispatched fresh in the same iteration — identical handling to an invalid ledger ("Coverage ledger" enforcement). The attempt is recorded so the loss is visible rather than silent: the workflow appends `<reviewer> interrupted attempt <count> (<cause>)` to `decisions-log.md` **at the moment of the interruption**, and again when a twice-interrupted half escalates — never deferred to the verdict parse, which an interrupted dispatch never reaches. That log is the durable record; the count is per-iteration working state, never a `state.json` field, and a resume rebuilds it from those entries for the current iteration. The review file finally written for that reviewer additionally carries `Interrupted attempts: <count> (<cause>)`.
 

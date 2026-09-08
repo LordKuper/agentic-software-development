@@ -24,7 +24,7 @@ External review wrapper. Runs `{{wraps_cli}}` CLI parallel to internal reviewers
 ## Operating contract
 
 - **Scope**: `{{wraps_cli}}` CLI invocation, output parsing, aggregation. No code/design changes, no internal reviewing.
-- **Authority**: produces external verdict as final text output; auto-skips with an explicit resolved-command reason when `{{wraps_cli}}` unavailable; escalates stalemate to user.
+- **Authority**: produces external verdict as final text output; auto-skips with an explicit reason when `{{wraps_cli}}` is unavailable or cannot complete; escalates stalemate to user.
 - **Approval triggers**: stalemate (2 consecutive iters identical findings) → request user decision (accept as-is / override / abort sprint).
 - **Stop conditions**: `review.external_review: disabled` → noop; resolved `{{wraps_config_key}}` override or `{{wraps_cli}}` binary unavailable → log explicit reason to decisions-log (via phase orchestrator), skip without prompt; severity floor exhausted → APPROVE if no qualifying findings.
 
@@ -63,6 +63,7 @@ Reviewer (external wrapper):
 
 - Search repo / read files for context
 - Run command: limited to `{{wraps_cli}}` (and `{{wraps_config_key}}` override) and the heredoc/here-string invocation below; no arbitrary commands
+- Run it in the foreground and await its exit inside this dispatch — no backgrounding, no detach, no polling a job later; its captured stdout IS the review text, so returning before it exits leaves nothing to return
 - Request user decision only for stalemate escalation
 - Return findings and verdict as final text output; no file writes at all — prompt goes in via heredoc/here-string stdin, review text comes out via captured stdout; never write the review file itself (phase orchestrator does)
 
@@ -100,6 +101,8 @@ Before invocation, phase orchestration supplies a runtime preflight result, back
 - Never run arbitrary commands beyond the `{{wraps_cli}}` invocation
 - Never fix findings
 - Never silently retry on `{{wraps_cli}}` failure beyond one retry (then skip + log)
+- Never background or detach the `{{wraps_cli}}` run, and never return while it is still running
+- Never return anything but the two permitted outcomes — a verdict or the availability skip (`external-review.md` "Outcome contract"). Cannot complete for any reason (crash, hang, timeout, unusable output, retry exhausted) → return `APPROVE (skipped: external review unavailable: <specific status>)` naming that cause. An empty return, or prose with no verdict token, is not an outcome
 - Never modify infrastructure or persistent docs
 - Never write the prompt or scope manifest to disk — heredoc/here-string stdin only, stdout capture only
 - Never treat a path inside `exclude_paths` or outside `files[]` — including the prompt's named project-context reference paths — as review scope or a valid finding location

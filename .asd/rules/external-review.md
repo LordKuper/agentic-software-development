@@ -39,6 +39,17 @@ On command/auth failure or an active negative cache:
 
 An availability skip satisfies only that iteration and never creates an APPROVE latch. A later local-ready result dispatches External Review normally.
 
+## Outcome contract
+
+Sole home of what a dispatched External Review may return — exactly one of two outcomes:
+
+- **verdict** — findings text whose first content line is `[REVIEW-<phase>-external]: APPROVE|CONCERNS|FAIL` (`review-policy.md` "Gate Verdict Format")
+- **availability skip** — `APPROVE (skipped: external review unavailable: <specific status>)` (above)
+
+Nothing else. The skip is not confined to a preflight or negative-cache result: **any** inability to complete — wrapped-CLI crash, hang, timeout, unusable output, the one permitted retry exhausted — returns it, naming that cause as `<specific status>`. So the wrapper awaits the wrapped CLI inside its own dispatch and never backgrounds it; no outcome means "started, still running".
+
+A return that is neither — empty, or prose carrying no verdict token and no skip — is not permitted and is not a verdict. Its disposal is `review-policy.md` "Interrupted dispatch", imported here whole.
+
 ## Phase-scoped payload
 
 The reviewer has direct repo read access and fetches its own content — it is handed a **scope manifest** (`external-review/t_review-scope.json`), never a rendered diff. This is the SSoT for the manifest contract; the agent and both review workflows link here rather than restating it.
