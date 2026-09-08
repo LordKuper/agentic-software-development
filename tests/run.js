@@ -3357,7 +3357,18 @@ test('AC-4/AC-11/AC-14: review-policy.md carries the correlated-interruption bra
     const row = layout.split('\n').find((line) => line.includes(`${phase}/iter-NN/<reviewer>.md`));
     assert.ok(row && row.includes('<reviewer>.late.md'), `artifact-layout.md's ${phase} reviews row must carry the artefact name review-policy.md mandates: that path map is exhaustive ("A sprint folder holds **only** the artifacts named above"), so a late-return file it omits is one the orchestrator is told to write and a Documentation reviewer is told to flag as stray`);
   }
+  for (const [phase, rel] of [['design', '.asd/workflows/asd-phase-design-review.md'], ['impl', '.asd/workflows/asd-phase-impl-review.md']]) {
+    const reviewFlow = readRepoFile(rel);
+    assert.ok(reviewFlow.includes('per `review-policy.md` "Late duplicate return" (sole SSoT'), `${rel} must bind the branch at the step that records verdicts and cite the rule as its sole home: review-policy.md names the phase workflow, never the returning agent, as the actor, so a workflow that never mentions it is an obligation with no acting site`);
+    const artefacts = reviewFlow.split('## Artefacts produced')[1];
+    assert.ok(artefacts && artefacts.includes(`<sprint>/reviews/${phase}/iter-NN/<reviewer>.late.md`), `${rel} must name the late-return file in its Artefacts produced list - that list is what the orchestrator writes from, and an artefact a rule mandates but no workflow declares is one nobody ever produces`);
+  }
   assert.ok(policy.includes('more severe of the two tokens'), 'the recorded verdict must move to the more severe token, never to whichever returned last');
+  assert.ok(policy.includes('any APPROVE latch for that reviewer cleared'), 'an admitted late return must clear that reviewer\'s latch, or it stays dispatch-skipped on the strength of an APPROVE its own admitted evidence just overturned');
+  const lifecycle = readRepoFile('.asd/rules/sprint-lifecycle.md');
+  const latchRoute = lifecycle.split('\n').find((line) => line.includes('clearing route') && line.includes('`review-policy.md` "Late duplicate return"'));
+  assert.ok(latchRoute, 'sprint-lifecycle.md "APPROVE latch" is the sole home of latch persistence and claims to name EVERY route that clears it, so the late-return route must appear there - matched by its citation, never by its ordinal, which this sprint already reworded once ("A THIRD" -> "A further")');
+  assert.ok(/clears that reviewer.s latch, that one key only/.test(latchRoute), 'the route must state its blast radius: clearing more than the one key would silently re-dispatch reviewers whose verdicts nothing contradicted');
   assert.ok(/late APPROVE never displaces a recorded CONCERNS\/FAIL/.test(policy), 'the exception is evidence-only and one-directional - without this the branch becomes a way to launder a FAIL into an APPROVE');
 
   assert.ok(policy.includes('**Verify before applying.**'), 'AC-11: a reviewer\'s proposed fix must be verified against source before it is applied');
@@ -3372,6 +3383,7 @@ test('AC-8: external-review.md "Outcome contract" is the sole home of what a dis
   assert.ok(/awaits the wrapped CLI inside its own dispatch and never backgrounds it/.test(external), 'F-8 was a dispatch that returned while its CLI was still running - the await obligation is the fix');
   assert.ok(external.includes('is not permitted and is not a verdict'), 'an empty return must be named as neither of the two outcomes, or it stays an undefined third state');
   assert.ok(external.includes('"Interrupted dispatch"'), 'the contract must name where a non-outcome is disposed, rather than leaving the boundary with review-policy.md a hole');
+  assert.ok(external.includes('a precondition missing before any invocation (prompt template absent) aborts the dispatch instead'), 'the two-outcome contract is scoped to a dispatch that reached the invocation; drop this carve-out and a missing prompt template returns an availability skip, which passes a review gate on an artefact that was never reviewed - the F-8 class itself');
 
   const policy = readRepoFile('.asd/rules/review-policy.md');
   assert.ok(!policy.includes("External Review's unavailability path is"), 'the old scoping line handed off only the unavailability path, which is what left an empty return undisposed on both sides');
@@ -3381,6 +3393,9 @@ test('AC-8: external-review.md "Outcome contract" is the sole home of what a dis
   assert.ok(agent.includes('Never background or detach the `{{wraps_cli}}` run'), 'the never-background Don\'t must be stated on the placeholder token both views render');
   assert.ok(agent.includes('Never return anything but the two permitted outcomes'), 'the agent must carry the outcome contract as a Don\'t, not only the rule doc it may not read');
   assert.ok(agent.includes('APPROVE (skipped: external review unavailable: <specific status>)'), 'the skip the agent is told to return must be the literal shape external-review.md defines, or a skip parses as prose');
+  const abortSignal = agent.split('\n').find((line) => line.includes('ABORT — precondition not met: <artefact>'));
+  assert.ok(abortSignal && abortSignal.includes('only before any `{{wraps_cli}}` invocation'), 'the acting half of the rule\'s carve-out: the agent\'s ABORT must be scoped to the pre-invocation window, or the agent emits a third outcome the two-outcome contract forbids');
+  assert.ok(abortSignal && abortSignal.includes('once an invocation has started, every failure of it returns the availability skip instead (`external-review.md` "Outcome contract")'), 'the post-invocation half must stay on the signal line AND cite the contract as its home, so the boundary is stated where the agent reads it and is not a second copy that can drift from external-review.md');
 });
 
 test('AC-6: code-style.md §19 names the line-ending editing hazard platform-neutrally and requires the staged pre-commit lint, and this repo\'s own commands.yaml configures that form', () => {
@@ -3440,10 +3455,19 @@ test('AC-15: checkpoints.md surfaces a criterion\'s running cost from artefacts 
   assert.ok(checkpoints.includes('no counter is stored'), 'the mechanism was accepted at the audit gate on the condition that it adds no new state; a stored counter is the thing that can drift out of sync with the artefacts');
   assert.ok(checkpoints.includes('`<sprint>/reviews/<phase>/iter-NN/`'), 'the iterations-charged unit must name the artefact it is derived from');
 
-  const fixRoundEntry = 'impl fix for iter-NN: findings resolved';
-  assert.ok(checkpoints.includes(fixRoundEntry), 'the fix-rounds-charged unit must name the decisions-log entry it counts');
-  const workflow = readRepoFile('.asd/workflows/asd-phase-impl.md');
-  assert.ok(workflow.includes(`decisions-log entry "${fixRoundEntry}"`), 'checkpoints.md counts fix rounds by matching this literal, so the entry asd-phase-impl.md emits must stay identical to it - reworded on either side, the count silently reads zero and nothing fails');
+  const matchedTail = 'for iter-NN: findings resolved';
+  assert.ok(checkpoints.includes(`matched on the stable tail \`${matchedTail}\``), 'the fix-rounds-charged unit must state the literal it matches decisions-log entries on, or the count is unreproducible');
+  assert.ok(checkpoints.includes('however the mode is named'), 'the tail is mode-agnostic on purpose: the orchestrator really writes "impl review-fix for iter-NN: findings resolved", which a match keyed to the mode name does not select - that miss is what made the previous whole-heading literal read zero on real data');
+
+  const citedStep = /`asd-phase-impl\.md` step (\d+) is the emitting SSoT/.exec(checkpoints);
+  assert.ok(citedStep, 'checkpoints.md must cite the workflow step that emits the entry it counts; without a named emitter the tail is a literal accountable to nobody');
+  const workflowLines = readRepoFile('.asd/workflows/asd-phase-impl.md').split('\n');
+  const emitted = workflowLines.map((line) => /append decisions-log entry "([^"]*iter-NN[^"]*)"/.exec(line)).filter(Boolean);
+  assert.strictEqual(emitted.length, 1, 'exactly one place in asd-phase-impl.md may emit the per-iteration fix-round entry - two emitters means two wordings, and the counter can only match one');
+  assert.ok(emitted[0][1].endsWith(matchedTail), `the entry asd-phase-impl.md emits ("${emitted[0][1]}") must END WITH the tail checkpoints.md matches on ("${matchedTail}"): the property is that what the emitter writes is selected by what the counter matches, so a rewording on either side that breaks the containment silently drops the count to zero and no gate notices`);
+  const emitIndex = workflowLines.findIndex((line) => line.includes(`append decisions-log entry "${emitted[0][1]}"`));
+  const owningStep = workflowLines.slice(0, emitIndex + 1).reverse().find((line) => /^\d+[a-z]?\. /.test(line));
+  assert.ok(owningStep && owningStep.startsWith(`${citedStep[1]}. `), `checkpoints.md cites step ${citedStep[1]} as the emitting SSoT, so the emitting line must sit inside that step - a renumbered workflow leaves the citation pointing at a step that emits nothing`);
 });
 
 test('AC-10: asd-phase-impl.md builds fix modes as one ordered chain with no parallelism, while the initial dispatch step keeps its own parallel-where-independent wording', () => {
@@ -3454,7 +3478,12 @@ test('AC-10: asd-phase-impl.md builds fix modes as one ordered chain with no par
   for (const removed of ['parallel where independent', 'sequential where they collide', 'parallelisable']) {
     assert.ok(!fixModes.includes(removed), `the fix-modes bullet must authorize no parallelism: "${removed}" is the wording AC-10 removes, and it reading as history rather than instruction is not enough`);
   }
-  assert.ok(lines.some((line) => line.includes('sequential where dependent; parallel where independent')), 'the dispatch step\'s own parallelism, shared with initial mode, must survive - AC-10 narrows fix modes only, and losing this line would serialize the whole phase');
+  assert.ok(fixModes.includes('dispatched only after the dev chain completes'), 'one ordered chain per half is not enough: the two halves must also be ordered against each other, or a tester chain runs while the dev chain is still editing the shared worktree and tests a tree nobody committed');
+  assert.ok(fixModes.includes('exactly one agent is in flight across the whole round'), 'the round-level invariant is the reviewable claim; without it "one ordered chain" reads as scoped to each chain separately, which is exactly the reading sprint 009 iter-01 ran on');
+
+  const dispatchLine = lines.find((line) => line.includes('sequential where dependent; parallel where independent'));
+  assert.ok(dispatchLine, 'the dispatch step\'s own parallelism, shared with initial mode, must survive - AC-10 narrows fix modes only, and losing this line would serialize the whole phase');
+  assert.ok(dispatchLine.includes('initial mode only'), 'the surviving parallelism must be scoped where it is stated: unscoped, the dispatch step reads as authorizing in a fix mode precisely what step 5 forbids, and a reader reaching step 6 first follows it');
 });
 
 // ===========================================================================
