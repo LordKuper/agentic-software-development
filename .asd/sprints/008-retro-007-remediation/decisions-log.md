@@ -158,3 +158,10 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: the removals are a retirement, not a coverage regression, and are recorded as such in `test-plan.md`'s Removed tests. The `Write`-token assertion was replaced by one that fails on a tool-grant enumeration disagreeing with the cited frontmatter, so a correct negative sentence no longer reds the suite while the false-claim class is still caught.
 - **Residual, deliberately out of scope**: English plan-document references remain in `.asd/sync.js` and `.asd/skills/asd-update/update.js` — the same `code-style.md` §8 class as the non-English ones, pre-existing since long before this sprint, and outside AC-15's authorized wording. Recorded as a residual risk in `test-plan.md`, not a defect.
 - **Affected docs**: [sprint.md](sprint.md), [test-plan.md](test-plan.md), [reviews/impl/iter-04/](reviews/impl/iter-04/)
+
+## 2026-09-08 — impl-review iter-05: external dispatch interrupted, re-dispatched fresh
+
+- **Decision**: The External Review dispatch for iteration 5 returned no verdict token and no report — it stopped waiting on a background process. Per `review-policy.md` "Interrupted dispatch and split dispatch" this is not a verdict: nothing is recorded in `verdicts`, nothing latches, and the reviewer is re-dispatched fresh on the same manifest within the same iteration. Interrupted attempts: 1 (dispatch returned without a verdict).
+- **Rationale**: Recorded here at the moment of interruption rather than at the verdict-parse step, which an interrupted dispatch never reaches — the mechanism this sprint added in response to sprint 007's F-6 and then corrected at iteration 2 so a twice-interrupted half is durably recorded before escalation.
+- **Status of the other reviewers**: correctness, efficiency and testing all returned APPROVE this iteration and latched; documentation was latch-skipped from iteration 4 and inherits its APPROVE. External is the only outstanding verdict.
+- **Affected docs**: [reviews/impl/iter-05/](reviews/impl/iter-05/), [friction-log.md](friction-log.md)

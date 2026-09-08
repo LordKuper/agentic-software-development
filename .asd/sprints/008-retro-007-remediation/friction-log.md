@@ -24,6 +24,7 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 | F-5 | impl-review | A reviewer returned a substantively complete ledger using status words the validator rejects | — |
 | F-6 | impl-review | A reviewer declared read-only wrote a file, because its agent definition grants Write | — |
 | F-7 | impl | A scripted edit anchored on a bare newline left a lone CR and turned two-line edits into whole-file rewrites | — |
+| F-8 | impl-review | The External Review dispatch returned without a verdict, waiting on a background process | F-4 |
 | F-2 | scope | Three of fourteen acceptance criteria were written against a stale premise and only the audit caught it | — |
 
 ## F-1 — A dispatched dev staged the whole worktree, sweeping a concurrent dev's edit into its own commit
@@ -88,3 +89,12 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 - **Impact**: None shipped — the guard caught it. Without that check the round would have produced two whole-file diffs, which would have made the review diff unreadable and the iteration scope meaningless.
 - **Root shape**: canon on this platform is CRLF, agents edit it with newline-anchored scripted replacements by default, and nothing in the rules says so. The lint command (git diff --check) happens to catch the symptom, but only if the agent runs it before staging, and it reports it as a whitespace error rather than as the encoding hazard it is.
 - **Refs**: —
+
+## F-8 — The External Review dispatch returned without a verdict, waiting on a background process
+
+- **Phase**: impl-review (iteration 5)
+- **Surface**: agent — .asd/agents/asd-external-review.md; the wrapped-CLI invocation path
+- **What happened**: The dispatch ran for some minutes, then returned a single sentence about waiting for a background process to notify completion. No verdict token, no report, no availability skip. The interrupted-dispatch contract handled it cleanly — no verdict recorded, no latch, re-dispatched fresh in the same iteration — but the cause is that the wrapper started long-running work in a mode where its own completion notification never reached it.
+- **Impact**: One external review round repeated. The internal verdicts were already in, so nothing else was blocked.
+- **Root shape**: the external reviewer wraps another provider CLI whose run can outlast the wrapping dispatch. This sprint saw the wrapper lose a round to a session rate limit (F-4), twice to a provider quota, and now once to its own background-wait pattern. Three distinct failure modes, one shared consequence: at the iterations where a second opinion is most useful, the external check is the least likely to produce one.
+- **Refs**: F-4
