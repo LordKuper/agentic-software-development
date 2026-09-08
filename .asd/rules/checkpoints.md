@@ -28,7 +28,7 @@ Gates are keyed by gate name, never by `AC-N`, so a criterion’s running cost i
 **Unit**, per criterion the request names, derived at read time from artefacts the sprint already writes (no counter is stored, so nothing can drift):
 
 - *iterations charged* — count of `<sprint>/reviews/<phase>/iter-NN/` iterations whose findings name that `AC-N`. A finding is not required to cite an AC (only Correctness traces AC-N), so this count is a lower bound and is stated as one;
-- *fix rounds charged* — count of `<sprint>/decisions-log.md` `impl fix for iter-NN: findings resolved` entries whose `iter-NN` is one of those iterations.
+- *fix rounds charged* — count of `<sprint>/decisions-log.md` fix-round entries whose `iter-NN` is one of those iterations, matched on the stable tail `for iter-NN: findings resolved` however the mode is named (`asd-phase-impl.md` step 11 is the emitting SSoT).
 
 State `0` explicitly for an untouched criterion; a review-cap override states the pair for every criterion carrying an unresolved finding at that iteration.
 
