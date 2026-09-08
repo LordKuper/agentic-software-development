@@ -1,7 +1,7 @@
 {
   "sprint_id": "009-retro-008-remediation",
   "branch": "sprint/009-retro-008-remediation",
-  "phase": "impl",
+  "phase": "impl-test",
   "documents": {
     "audit": true,
     "prd": false,
@@ -124,6 +124,18 @@
       "execution": "agent",
       "reason": "risk:workflow gate",
       "resolved_model": "opus"
+    },
+    "fix-iter01-rules": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "fix-iter01-tests": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
     }
   },
   "skipped_phases": [
@@ -156,7 +168,7 @@
   },
   "created_at": "2026-09-08T00:00:00Z",
   "updated_at": "2026-09-08T00:00:00Z",
-  "review_fixes_pending": "iter-01",
+  "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null

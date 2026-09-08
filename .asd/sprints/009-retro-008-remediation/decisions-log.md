@@ -100,3 +100,15 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: External Review recorded as `APPROVE (skipped: codex quota exhausted)` — the wrapped CLI returned an active quota error on the pass and on the one permitted retry. Failure recorded in the negative cache (`status: quota`, bounded retry-after). Internal verdicts: correctness CONCERNS (8), efficiency CONCERNS (4), testing CONCERNS (6), documentation CONCERNS (9). No FAIL, so no escalation gate. `review_fixes_pending = iter-01`; sprint routes to impl review-fix mode.
 - **Rationale**: The skip satisfies DoD aggregation exactly like a bare APPROVE but is never latched, so External Review is re-dispatched at iteration 2 once availability returns. All 27 findings are creator-fixable; two carry conditional escalations whose default fix needs none (keeping the manifest-vocabulary digest injection would be a compat waiver; treating `tests/run.js` in-body comments as a convention would need a custom-rules carve-out).
 - **Affected docs**: [reviews/impl/iter-01/](reviews/impl/iter-01/), [state.json](state.json), [friction-log.md](friction-log.md)
+
+## 2026-09-08 — impl review-fix for iter-01: findings resolved
+
+- **Decision**: All 27 iteration-1 findings resolved in one ordered chain — dev half (8 commits, `3c4e6c9`..`eb9034c`) then tester half (`d6e148f`), one agent in flight at a time, which is the shape `AC-10` now mandates. Suite 171/171. `review_fixes_pending` cleared.
+- **Rationale**: Three prescriptions were verified as wrong before applying, per the "Verify before applying" rule this sprint added. (1) documentation F-9 asked to document the digest injection; the prose was right and the code was wrong, so the injection was removed instead. (2) The external agent's `ABORT` signal was kept, not dropped, and scoped to pre-invocation preconditions, with a matching exemption clause in the Outcome contract — returning an availability skip for a missing prompt template would pass a review gate on a broken artefact. (3) testing T-1 predicted its new assertion would be red at HEAD; the dev had already registered `<reviewer>.late.md`, so it shipped green as a standing guard, proved by mutation. Two of the five in-body comments carried content no assertion message held and were folded into those messages rather than deleted.
+- **Affected docs**: [reviews/impl/iter-01/](reviews/impl/iter-01/), [test-plan.md](test-plan.md)
+
+## 2026-09-08 — noted for retro: stale link in asd-pm agent memory
+
+- **Decision**: `.claude/agent-memory/asd-pm/MEMORY.md` indexes `feedback_flag-gate-semantics-before-applying.md`, which does not exist. Pre-existing, outside this sprint's change surface; left untouched and recorded here rather than pulled into scope.
+- **Rationale**: Found while generalizing the memory index-link test. Fixing it would widen the diff past what any `AC-N` authorizes, and the new repo-wide test the tester considered would have gone red on it — so the test was scoped to the directories this sprint writes, with the reason recorded in `test-plan.md`.
+- **Affected docs**: [test-plan.md](test-plan.md)
