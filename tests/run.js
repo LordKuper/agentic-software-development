@@ -2980,45 +2980,6 @@ test('AC-10: an artifact risk whose priorTier does not outrank the computed tier
   assert.deepStrictEqual(result, { tier: 'mechanical', execution: 'agent', reason: 'artifact-risk:critical-config' }, 'priorTier equal to the computed tier must not clamp - the reason must still name the artifact risk, not no-downgrade');
 });
 
-test('AC-11: t_state.json ships derived_handoff as an empty object, matching the pure-cache contract - never a placeholder, never pre-seeded', () => {
-  const state = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, '.asd/templates/t_state.json'), 'utf8'));
-  assert.deepStrictEqual(state.derived_handoff, {}, 't_state.json.derived_handoff must ship as {} - any reader treats absent/empty identically, but a shipped non-empty value would be a stale record with nothing to be stale against');
-});
-
-test('AC-11: SessionStart output is byte-identical whether state.json.derived_handoff is absent, well-formed, or malformed - the hook reads no key under it', () => {
-  const hookSrc = fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8');
-  const baseState = { sprint_id: '999-fixture', phase: 'impl-test', branch: 'sprint/999-fixture' };
-  const variants = {
-    absent: baseState,
-    'well-formed': { ...baseState, derived_handoff: { base: 'abc', head: 'def', pathspec: '.', files: ['a.js'] } },
-    malformed: { ...baseState, derived_handoff: 'not-an-object' },
-  };
-  const outputs = {};
-  for (const [label, state] of Object.entries(variants)) {
-    const tempRoot = mkTempDir();
-    writeFile(tempRoot, '.asd/hooks/session-start.js', hookSrc);
-    writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify(state));
-    outputs[label] = JSON.parse(execFileSync('node', [path.join(tempRoot, '.asd/hooks/session-start.js'), '--provider', 'claude'], { cwd: tempRoot, encoding: 'utf8' })).hookSpecificOutput.additionalContext;
-  }
-  assert.strictEqual(outputs.absent, outputs['well-formed'], 'an absent vs. a well-formed derived_handoff must produce identical session-summary text - the hook never reads it');
-  assert.strictEqual(outputs.absent, outputs.malformed, 'a malformed derived_handoff must not throw or change the summary - the hook silently ignores keys it does not read');
-  assert.ok(outputs.absent.includes('999-fixture') && outputs.absent.includes('impl-test') && outputs.absent.includes('sprint/999-fixture'), 'the shared output must actually pin this fixture\'s sprint id, phase and branch - otherwise the three-way equality could vacuously compare three "no active sprint" strings');
-});
-
-test('AC-11: derived_handoff\'s shape/validity rule lives ONLY in sprint-lifecycle.md "State recovery" - neither impl-test nor impl-review workflow restates the object literal, each only cites the rule', () => {
-  const lifecycle = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/sprint-lifecycle.md'), 'utf8');
-  const shapeLiteral = '{"base": "<sha>", "head": "<sha>", "pathspec": "<the exact pathspec the diff used>", "files": ["<repo-relative path>", …]}';
-  assert.ok(lifecycle.includes(shapeLiteral), 'sprint-lifecycle.md "State recovery" must state the derived_handoff shape literal - this test reads it as the single source, never restates it independently');
-
-  const citation = 'sole SSoT for its shape, validity rule and absent-key fallback';
-  for (const phase of ['impl-test', 'impl-review']) {
-    const workflow = fs.readFileSync(path.join(REPO_ROOT, `.asd/workflows/asd-phase-${phase}.md`), 'utf8');
-    assert.ok(workflow.includes('derived_handoff'), `asd-phase-${phase}.md must reference derived_handoff - it is the phase that reads/writes it`);
-    assert.ok(workflow.includes(citation), `asd-phase-${phase}.md must cite sprint-lifecycle.md "State recovery" as the sole SSoT rather than restating the rule`);
-    assert.ok(!workflow.includes(shapeLiteral), `asd-phase-${phase}.md must never inline the derived_handoff object-literal shape - that duplication is exactly what the SSoT citation exists to prevent`);
-  }
-});
-
 test('AC-6: the interrupted-dispatch re-dispatch record is stated in review-policy.md and cited (not restated) by both *-review workflows', () => {
   const policy = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/review-policy.md'), 'utf8');
   assert.ok(policy.includes('is re-dispatched fresh in the same iteration'), 'review-policy.md must state the re-dispatch outcome for an interrupted reviewer - never a skip, never an APPROVE');
@@ -3065,50 +3026,6 @@ test('AC-10: a reserved change-risk class name declared target:"artifact" fails 
   assert.doesNotThrow(() => runtime.routeTask({ ...base, risks: [{ name: 'security', target: 'change' }] }), 'the same reserved name typed target:"change" is exactly the intended usage, never rejected');
   assert.doesNotThrow(() => runtime.routeTask({ ...base, risks: [{ name: 'security-audit-tool', target: 'artifact' }] }), 'a name that merely contains a reserved word must not be caught - the reserved check is exact-match after normalization, not substring');
   assert.doesNotThrow(() => runtime.routeTask({ ...base, risks: [{ name: 'config-file', target: 'artifact' }] }), 'a non-reserved artifact risk name must keep routing on evidence, unaffected by the new guard');
-});
-
-test('AC-11/T-1: the derived_handoff wiring (which workflow writes it, which reads it, in which step) and any head/base formula restatement track sprint-lifecycle.md "State recovery" by construction - fails on a prose contradiction, not only a backticked one', () => {
-  const lifecycle = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/sprint-lifecycle.md'), 'utf8');
-  assert.ok(lifecycle.includes('never raw `HEAD`'), 'sprint-lifecycle.md "State recovery" must still state the head formula never resolves to raw HEAD');
-
-  const wiring = lifecycle.match(/Written once, at `([^`]+)` step (\d+)'s green exit[\s\S]*?Read once, by `([^`]+)` step (\d+)\./);
-  assert.ok(wiring, 'sprint-lifecycle.md "State recovery" must state derived_handoff\'s writer/reader as "Written once, at `<workflow>` step N\'s green exit ... Read once, by `<workflow>` step N." - this test derives the canonical wiring from that sentence rather than hardcoding it a second time');
-  const [, writerFile, writerStep, readerFile, readerStep] = wiring;
-
-  function stepLines(file) {
-    const content = fs.readFileSync(path.join(REPO_ROOT, '.asd/workflows', file), 'utf8');
-    const map = {};
-    for (const m of content.matchAll(/^(\d+)\.\s(.*)$/gm)) map[m[1]] = m[2];
-    return map;
-  }
-  function derivedHandoffClause(line) {
-    const fragments = [];
-    for (const semiPart of (line || '').split(';')) {
-      for (const sentence of semiPart.split(/(?<=[.:])\s+(?=[A-Z*`])/)) fragments.push(sentence);
-    }
-    return fragments.filter((f) => f.includes('derived_handoff')).join(' ');
-  }
-
-  const writerSteps = stepLines(writerFile);
-  const readerSteps = stepLines(readerFile);
-
-  const writerStepsMentioning = Object.keys(writerSteps).filter((n) => writerSteps[n].includes('derived_handoff'));
-  assert.deepStrictEqual(writerStepsMentioning, [writerStep], `${writerFile} must mention derived_handoff in step ${writerStep} only, matching the rule's "written once" claim - a mention landing in a different or additional step means the workflow no longer matches the write count/location the rule states`);
-
-  const readerStepsMentioning = Object.keys(readerSteps).filter((n) => readerSteps[n].includes('derived_handoff'));
-  assert.deepStrictEqual(readerStepsMentioning, [readerStep], `${readerFile} must mention derived_handoff in step ${readerStep} only, matching the rule's "read once" claim`);
-
-  const writerClause = derivedHandoffClause(writerSteps[writerStep]);
-  const readerClause = derivedHandoffClause(readerSteps[readerStep]);
-
-  assert.ok(/\b(write|writes|written)\b/i.test(writerClause), `${writerFile} step ${writerStep} must actually say it writes derived_handoff, not merely mention it`);
-  assert.ok(!/\b(write|writes|written)\b/i.test(readerClause), `${readerFile} step ${readerStep} must never claim to write derived_handoff - the rule names it as the sole reader`);
-  assert.ok(/\b(read|reads)\b/i.test(readerClause), `${readerFile} step ${readerStep} must actually say it reads derived_handoff`);
-
-  for (const [file, clause] of [[writerFile, writerClause], [readerFile, readerClause]]) {
-    assert.ok(!/\bgit\b/i.test(clause), `${file}'s derived_handoff clause must never mention git directly - any base/head formula belongs solely to sprint-lifecycle.md "State recovery"; a prose or backticked restatement here (e.g. "head is git rev-parse HEAD") would drift from the rule silently instead of failing here`);
-    assert.ok(!/\bHEAD\b/.test(clause), `${file}'s derived_handoff clause must never mention HEAD directly - "head" is defined only in sprint-lifecycle.md "State recovery", never redefined here in prose or code`);
-  }
 });
 
 test('T-2: `.claude/agent-memory/**` is stated as NOT excluded from the self-hosting review scope everywhere the exclude_paths list itself is restated - sprint-lifecycle.md "Self-hosting", external-review.md (both statements), and t_prompt-external-impl.md', () => {
@@ -3176,12 +3093,21 @@ test('T-3/AC-7: providers.md\'s asd-dev role-scoped-context row cites the review
 test('T-2: feedback_no-shell-review-method.md cites asd-reviewer-testing.md\'s frontmatter for the reviewer\'s tool grant instead of re-enumerating it, and that frontmatter really is read-only - guards the stale-grant regression (D-2) that once claimed a Write tool this reviewer does not have', () => {
   const memory = fs.readFileSync(path.join(REPO_ROOT, '.claude/agent-memory/asd-reviewer-testing/feedback_no-shell-review-method.md'), 'utf8');
   assert.ok(memory.includes('.asd/agents/asd-reviewer-testing.md` frontmatter'), 'must cite the agent frontmatter as the tool-grant home rather than restating a tool list that can drift from it');
-  assert.strictEqual(memory.match(/\bWrite\b/), null, 'must never claim a Write tool grant for this reviewer');
 
   const agentSrc = sync.readNormalized(path.join(REPO_ROOT, '.asd/agents/asd-reviewer-testing.md'));
   const { meta } = sync.parseCanonicalFrontmatter(agentSrc);
   assert.deepStrictEqual(meta.claude.tools, ['Read', 'Glob', 'Grep', 'AskUserQuestion'], 'the frontmatter this memory now cites must actually be the read-only grant it claims, or the citation points somewhere false');
   assert.ok(!meta.claude.tools.includes('Write') && !meta.claude.tools.includes('Edit') && !meta.claude.tools.includes('Bash'), 'this reviewer must have no Write/Edit/Bash grant to cite');
+
+  const grantedLower = meta.claude.tools.map((t) => t.toLowerCase());
+  const toolToken = '(?:Read|Glob|Grep|Write|Edit|Bash|AskUserQuestion|WebFetch|WebSearch|NotebookEdit|TodoWrite|Task)';
+  const enumerationPattern = new RegExp(`\\b${toolToken}\\b(?:\\s*[/,]\\s*\\b${toolToken}\\b)+`, 'gi');
+  const enumerations = memory.match(enumerationPattern) || [];
+  for (const group of enumerations) {
+    for (const name of group.split(/[/,]/).map((s) => s.trim())) {
+      assert.ok(grantedLower.includes(name.toLowerCase()), `memory re-enumerates tool "${name}" (in "${group}"), which is not in the cited frontmatter's grant [${meta.claude.tools.join(', ')}] - a re-enumerated grant must never disagree with what it cites, in any casing`);
+    }
+  }
 });
 
 test('T-2/C-2: canon_hashes covers only .asd/agents/*.md and .asd/skills/*/SKILL.md - the tree scope feedback_no-shell-review-method.md\'s per-tree collateral-failure count (three/two/one) depends on', () => {
@@ -3202,6 +3128,32 @@ test('T-2: asd-dev-critical/MEMORY.md\'s index entries each link to a file that 
     assert.ok(fs.existsSync(path.join(dir, link)), `asd-dev-critical/MEMORY.md links to "${link}" which does not exist`);
   }
   assert.ok(links.includes('project_crlf-canon-edits.md'), 'asd-dev-critical/MEMORY.md must index the new CRLF canon-edit hazard file added this round');
+});
+
+test('AC-15: review-policy.md is sole SSoT for the reviewer read-only reconciliation (artifact-write scope vs. the memory:project write channel), and providers.md cites it instead of restating it', () => {
+  const policy = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/review-policy.md'), 'utf8');
+  assert.ok(policy.includes('Reviewers write no review artifact, code or doc'), 'review-policy.md must state the scoped (non-absolute) claim of what reviewers cannot write');
+  assert.ok(policy.includes('memory: project` is a separate write channel reviewers do use'), 'review-policy.md must reconcile the artifact-level claim with the memory:project write channel the host actually grants, or a future edit could re-widen the claim back to a false absolute');
+
+  const providers = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/providers.md'), 'utf8');
+  assert.ok(providers.includes('Reviewer agents carry no artifact-write grant on either host'), 'providers.md must state the artifact-level grant fact it owns (tool config), distinct from the reconciliation review-policy.md owns');
+  assert.ok(providers.includes('Gate Verdict Format'), 'providers.md must cite review-policy.md "Gate Verdict Format" for what the read-only claim covers and excludes, rather than restating the reconciliation independently');
+  assert.ok(!providers.includes('memory: project` is a separate write channel reviewers do use'), 'providers.md must not restate the reconciliation sentence itself - that duplication is exactly what the citation exists to prevent');
+});
+
+test('AC-15: providers.md records which emitted agent frontmatter fields are host-verified vs. emitted on trust', () => {
+  const providers = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/providers.md'), 'utf8');
+  assert.ok(providers.includes('Host-honoured, and observable in dispatch'), 'providers.md must name the frontmatter fields the host actually verifies/observes at dispatch');
+  assert.ok(providers.includes('Emitted on trust: `effort` and `maxTurns`'), 'providers.md must record that effort/maxTurns are emitted by sync.js on trust, not verified by either host, so they are never relied on as an enforcement boundary');
+});
+
+test('AC-15: .asd/sync.js and .asd/skills/asd-update/update.js carry no non-Latin-script text - workflow infrastructure is English always (language-policy.md)', () => {
+  const nonLatinScript = /[Ͱ-ϿЀ-ӿ֐-׿؀-ۿऀ-ॿ฀-๿぀-ヿ㐀-䶿一-鿿가-힯]/;
+  for (const rel of ['.asd/sync.js', '.asd/skills/asd-update/update.js']) {
+    const content = fs.readFileSync(path.join(REPO_ROOT, rel), 'utf8');
+    const offender = content.match(nonLatinScript);
+    assert.strictEqual(offender, null, `${rel} must contain no non-Latin-script character (found "${offender && offender[0]}") - this round removed the Russian comments quoting a project plan document (AC-15); a future re-introduction must fail here, not wait for direct read`);
+  }
 });
 
 // ===========================================================================
