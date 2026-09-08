@@ -178,6 +178,13 @@
           "testing": "CONCERNS",
           "documentation": "APPROVE",
           "external": "APPROVE (skipped: external review unavailable: active negative cache — quota)"
+        },
+        "iter-05": {
+          "correctness": "APPROVE",
+          "efficiency": "APPROVE",
+          "testing": "APPROVE",
+          "documentation": "APPROVE",
+          "external": "CONCERNS"
         }
       },
       "iteration_heads": {
@@ -188,13 +195,16 @@
         "iter-05": "02cd977d6b3cff9f712fa406d76ddc2202ae4cd7"
       },
       "latched": {
-        "documentation": 4
+        "documentation": 4,
+        "correctness": 5,
+        "efficiency": 5,
+        "testing": 5
       }
     }
   },
   "created_at": "2026-09-07T17:11:41Z",
-  "updated_at": "2026-09-08T10:00:00Z",
-  "review_fixes_pending": null,
+  "updated_at": "2026-09-08T12:00:00Z",
+  "review_fixes_pending": "iter-05",
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null,
