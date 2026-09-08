@@ -18,7 +18,7 @@ Entry 1's two HEAD stamps are one tree (testing `T-6`): both its strategy pass a
 scoped through `aae30d1`, the `impl` tip. `5e7451b` is that same tree plus this tester's own output
 (`git diff --stat aae30d1 5e7451b` → `tests/run.js`, `test-plan.md`, one memory file, nothing else),
 so no production or canonical content differs between the analysed surface and the exercised tree.
-Entry 2 stamps  — the tree the suite was re-run green on, which is the delta commits plus this entry's own test-authoring commit, so entry 3's delta would exclude it.
+Entry 2 stamps 66a2a1f — the tree the suite was re-run green on, which is the delta commits plus this entry's own test-authoring commit, so entry 3's delta would exclude it.
 
 ## Risk → check decisions
 

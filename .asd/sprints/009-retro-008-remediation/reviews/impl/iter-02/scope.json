@@ -1,0 +1,36 @@
+{
+  "phase": "impl-review",
+  "iteration": "2",
+  "base_ref": "e40343ee9de1aeee7befec7bb45e23cec996b3eb",
+  "head_ref": "12dc5e7794c27dd07f3fedf41473490d0d9a7549",
+  "files": [
+    ".asd/agents/asd-external-review.md",
+    ".asd/release-manifest.json",
+    ".asd/rules/artifact-layout.md",
+    ".asd/rules/checkpoints.md",
+    ".asd/rules/code-style.md",
+    ".asd/rules/external-review.md",
+    ".asd/rules/git-strategy.md",
+    ".asd/rules/review-policy.md",
+    ".asd/rules/sprint-lifecycle.md",
+    ".asd/runtime.js",
+    ".asd/workflows/asd-phase-design-review.md",
+    ".asd/workflows/asd-phase-impl-review.md",
+    ".asd/workflows/asd-phase-impl.md",
+    ".claude/agent-memory/asd-dev-critical/MEMORY.md",
+    ".claude/agent-memory/asd-dev-critical/project_crlf-canon-edits.md",
+    ".claude/agent-memory/asd-tester-critical/MEMORY.md",
+    ".claude/agent-memory/asd-tester-critical/project_testability-envelope.md",
+    "tests/run.js"
+  ],
+  "exclude_paths": [
+    ".asd/project/**",
+    ".asd/sprints/**",
+    ".claude/agents/**",
+    ".claude/skills/**",
+    ".claude/hooks/**",
+    ".claude/settings.json",
+    ".codex/**",
+    ".agents/skills/**"
+  ]
+}
