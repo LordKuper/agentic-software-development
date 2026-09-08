@@ -198,10 +198,10 @@ function rowsById(rows, expected, allowedNa, findings, label) {
   if (seen.size !== expected.size) fail(`${label} rows incomplete`);
 }
 
-/** Returns the required manifest digest for a review coverage ledger. A manifest carrying no vocabulary is digested as if it carried the canonical one, so stamping it changes no identity; a divergent one is digested as written and rejected on validation. */
+/** Returns the required manifest digest for a review coverage ledger: the manifest exactly as written, minus `digest`. A manifest carrying no vocabulary keeps the identity it was stamped with, so one written before the vocabulary existed still validates; a divergent one is digested as written and rejected on validation. */
 function coverageManifestDigest(manifest) {
   if (!manifest || typeof manifest !== 'object') fail('manifest required');
-  const copy = Object.assign({ vocabulary: LEDGER_VOCABULARY }, manifest);
+  const copy = Object.assign({}, manifest);
   delete copy.digest;
   return fingerprint(copy);
 }
@@ -266,7 +266,8 @@ function main(argv) {
   const command = argv[2];
   const flags = parseFlagArgs(argv.slice(3), ['write']);
   if (command === 'manifest-digest') {
-    const manifest = Object.assign(JSON.parse(fs.readFileSync(flags.manifest, 'utf8')), { vocabulary: LEDGER_VOCABULARY });
+    const onDisk = JSON.parse(fs.readFileSync(flags.manifest, 'utf8'));
+    const manifest = flags.write ? Object.assign({}, onDisk, { vocabulary: LEDGER_VOCABULARY }) : onDisk;
     const digest = coverageManifestDigest(manifest);
     if (flags.write) fs.writeFileSync(flags.manifest, JSON.stringify(Object.assign({}, manifest, { digest })) + '\n', 'utf8');
     process.stdout.write(digest + '\n');
