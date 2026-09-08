@@ -16,6 +16,7 @@ responsibility:
 | 3 | 1fcf059 | delta since entry 2 — `impl` review-fix `iter-02`, test side: the dev chain's five commits `f4d518f`..`25492b0` (`asd-phase-impl.md` steps 5 and 6, both `*-review` workflows' step 7a/8a + `Artefacts produced`, `checkpoints.md` fix-round match, `sprint-lifecycle.md` ordinal), plus testing `T-1`/`T-2`, both aimed at `tests/run.js` |
 | 4 | 6ae1f7a | delta since entry 3 — `impl` review-fix `iter-03`, test side: the dev chain's single commit `6ae1f7a`, two lines in each of the two `*-review` workflows (step 7a/8a header now scopes `internal reviewers only` to split mechanics; the `Late duplicate return` sub-bullet now opens with its own reach, `applies to any replaced dispatch, External Review included`), plus correctness's test-side recommendation aimed at `tests/run.js` |
 | 5 | 79d3f81 | delta since entry 4 — `impl` review-fix `iter-04`, test side: the dev chain's `96d9c55` (both `*-review` workflows, step 7a/8a — the header's reach removed outright, `Interrupted dispatch` and `Split dispatch` written out as their own bullets, each stating its own reach) and `b32be9d` (one `asd-dev-critical` memory file plus its `MEMORY.md` index line), plus the partial, uncommitted `tests/run.js` inherited from the tester dispatch a session limit killed mid-run (`friction-log.md` `F-5`) |
+| 6 (closure) | 19a6417 | **closure-time defect fix on the `pr`-phase companion branch**, not an `impl` re-entry. Scope: friction `F-7` alone — one test in `tests/run.js` and the fixture it read. No sprint change surface was re-derived |
 
 Entry 1's two HEAD stamps are one tree (testing `T-6`): both its strategy pass and its suite run were
 scoped through `aae30d1`, the `impl` tip. `5e7451b` is that same tree plus this tester's own output
@@ -35,6 +36,17 @@ Entry 5 stamps `79d3f81` — the dev chain's tip `b32be9d` plus the orchestrator
 was treated as evidence to re-verify, not as reasoning already done: every assertion in it was
 re-checked against source at this HEAD, and every mutation proof below was run from scratch, because
 none of the interrupted run's proofs survived it.
+
+Entry 6 is the `pr`-phase companion worktree on `main` at `19a6417` (the merged sprint PR). It is not
+an entry against a change surface: it fixes one defect this sprint shipped. `node tests/run.js` failed
+170/171 on any clean checkout of the merged branch, at
+`fixture sanity: input must actually carry CRLF` (`tests/run.js:249`). Measured here rather than
+assumed: `git show HEAD:tests/fixtures/canon/agents/demo-agent.crlf-bom.md | od -c` shows **zero CR** in
+the blob and always did — the fixture’s CRLF came entirely from `core.autocrlf=true` converting at
+checkout, and `AC-7`’s `* text=auto eol=lf` ended that conversion. The sprint’s own runs never saw it
+because every one happened in a working tree checked out before `.gitattributes` existed. This is the
+suite’s other environment-dependent test, alongside the `git`-binary probe entry 2 made legible, and
+the `AC-7` index probe entry 1 declined to mutation-prove is the assertion that exposed it.
 
 ## Risk → check decisions
 
@@ -89,6 +101,14 @@ assertion **messages** reworded (see Added tests). No inherited assertion was dr
 re-verified against source at `79d3f81` before being kept, since the working tree it arrived in was
 authored by a dispatch that did not survive to record why. No out-of-scope deletion was proposed, so
 the removal gate did not fire in this entry either.
+
+Entry 6 removed no test declaration, and the count stays 171. It deleted one **fixture**,
+`tests/fixtures/canon/agents/demo-agent.crlf-bom.md`, which nothing reads once the CRLF/BOM input is
+built at runtime: `grep -rn crlf-bom` over the repo returns `tests/run.js` plus two prose mentions in
+this sprint folder, and `release-manifest.json` never tracked it (`managed_paths` carries no `tests/`
+entry). In-scope — the deletion sits inside the very test that owned the file — so it proceeds on a
+recorded reason with no approval needed. Kept, it would be a dead file whose only reason to exist,
+being CRLF on disk, `.gitattributes` now makes impossible.
 
 ## Added tests
 
@@ -211,6 +231,8 @@ a redundant restatement drifting is maintenance the next real re-narrowing does 
 | `AC-4/AC-11/AC-14 …` **(entry 4: reach carve-out bound at its SSoT and at both acting bullets, correctness's iter-03 recommendation)** | three mutations, each restored with `git checkout -- <file>` before the next, each run against the whole suite. (a) `, External Review included` deleted from `asd-phase-design-review.md`'s step-8a late-duplicate bullet (the re-narrowing the recommendation predicts) → first failure `.asd/workflows/asd-phase-design-review.md: the acting bullet must restate review-policy.md's reach carve-out on its own line, because the step that encloses it scopes itself "internal reviewers only" …` at `tests/run.js:3366`; 169/171, the co-failure being the expected `upstream_hashes` hash-ledger entry for the mutated file. (b) the same deletion in `asd-phase-impl-review.md` instead, design left intact so the loop's first iteration passes and the mutation is only reachable at the second → same assertion, `impl` variant, `tests/run.js:3366`, 169/171. (c) `, External Review included` deleted from `review-policy.md:144`'s section-scope line → first failure `review-policy.md scopes the whole section to the 4 internal reviewers, so the late-duplicate branch only reaches a replaced External Review dispatch while this carve-out stays attached to it …` at `tests/run.js:3361`, 169/171 — it precedes the loop, so it fires before either workflow assertion, which is the intended order: lose the SSoT and the two mirrors have nothing to mirror. Pre-mutation and post-restore runs were 171/171 in every case |
 | `AC-4/AC-11/AC-14 …` **(entry 5: both reach sources bound, and the interrupted/split bullets the iter-04 fix created)** | seven mutations, one per assertion touched, each restored with `git checkout -- <file>` **as the next tool call after reading the failure** — `F-5`'s lesson, taken literally — and each run against the whole suite. The co-failing `release-manifest.json: every upstream_hashes entry matches the actual file` is expected noise for any `managed_paths` file, not a second finding. Line stamps are entry-5 line numbers. (a) `, except where a branch states its own reach` deleted from `review-policy.md:144` → first failure `the section default plus its delegation clause are what make every acting bullet below load-bearing: a branch silent on reach is not unscoped, it inherits the 4-internal-reviewers default …` at `tests/run.js:3362`, 169/171. (b) `imported here whole` → `imported here for the 4 internal reviewers` in `external-review.md:51`, the exact byte state `F-5` left on disk → first failure `external-review.md must hand a non-outcome to review-policy.md "Interrupted dispatch" as a WHOLE import …` at `:3364`, 169/171 — the `AC-8` test stayed green throughout, which is the evidence behind that row's entry-5 note. (c) the whole `- Interrupted dispatch` bullet deleted from `asd-phase-impl-review.md` → in this test `.asd/workflows/asd-phase-impl-review.md: the interrupted branch must be written out as its own bullet at the acting step …` at `:3373`, 168/171 — the third failure is the pre-existing file-level routing test co-firing, discussed in Added tests. (d) that bullet's `— applies to any dispatch, External Review included:` → `— internal reviewers only:` → `… the interrupted bullet must carry its own reach on its own line, for the same reason the late-duplicate bullet does …` at `:3374`, 169/171. (e) the bullet's `per \`external-review.md\` "Outcome contract" (which imports that rule whole)` deleted with the reach left intact, so (d)'s assertion still passes and the mutation reaches the next one → `… the reach and the rule it is derived from must be one sentence …` at `:3375`, 169/171. (f) `Split dispatch — internal reviewers only, per that rule's opening scope` → `Split dispatch — applies to any dispatch, External Review included, per that rule's opening scope` → `… the split bullet must keep the section default stated explicitly …` at `:3377`, 169/171. (g) the reworded late-duplicate message re-proven on its own assertion: `Late duplicate return — applies to any replaced dispatch, External Review included:` → `Late duplicate return:` → `… the acting bullet must state review-policy.md's reach carve-out on the same line as its citation. Reach is delegated to each branch and never inherited from the enclosing step header …` at `:3369`, 169/171. Every workflow mutation was applied to `asd-phase-impl-review.md`, the loop's **second** iteration, so the design pass completes first and the mutation is reachable only at the assertion it aims at. Pre-mutation and post-restore runs were 171/171 in every case, with `git status --porcelain` showing only ` M tests/run.js` after each restore |
 
+| `CRLF+BOM canonical input normalizes to the same output as LF/no-BOM` **(entry 6: input built at runtime, `F-7` fix)** | the input is now constructed in the test body — clean fixture read, hard-normalized to LF, re-expanded to CRLF, BOM prepended, written under `mkTempDir()` — so the bytes under test come from the test rather than from whatever the checkout produced. Two mutations of `sync.js` `normalizeText`, each restored in the tool call that read its failure. (a) the CRLF-to-LF replace line deleted → first failure `Error: canonical source must start with a "---" frontmatter fence`, thrown from `sync.js:131` `parseCanonicalFrontmatter` and reached at `tests/run.js:255` on the dirty render; 169/171, the co-failure being the expected `upstream_hashes` entry for the mutated file. (b) the BOM-strip line deleted instead → the same first failure at the same two stamps, 169/171. Recorded as observed rather than as aimed: under either mutation the test dies at the dirty **render**, before `assert.strictEqual(dirty.output, clean.output)` — a CR and a BOM each break the frontmatter fence, so no mutation of `normalizeText` reaches the equality assertion, and a reader must not delete either sanity assert believing the equality carries the proof. Third proof, by environment rather than by mutation, for the property the fix is actually about: the clean fixture rewritten CRLF in the worktree to simulate an `autocrlf` checkout → **171/171**, where the old test needed that same conversion to pass at all. The doubled-CR sanity assert is what makes that safe — without the LF hard-normalize before re-expansion, a CRLF working tree would yield two CRs per line |
+
 ## Suite run
 
 - Command: `node tests/run.js` (`test` from `commands.yaml`)
@@ -326,6 +348,26 @@ a redundant restatement drifting is maintenance the next real re-narrowing does 
     only`. `git diff main...HEAD --stat` over `.asd/rules/` and `.asd/workflows/` is 11 files,
     +79/−22 — every one a sprint deliverable, no residual mutation
   - Defects opened by this run: **none**. Nothing red to triage, so no `D-N` row was appended
+- **Closure run** (`pr` phase, companion branch `chore/finalize-sprint-009-retro-008-remediation`, worktree
+  on `main` `19a6417`) — a defect fix after the terminal gate above, recorded here rather than replacing
+  it. The terminal gate’s 171/171 stands as this sprint’s cycle verdict; it ran in a working tree
+  predating `.gitattributes`, which is precisely why it was green
+  - Pre-fix baseline at `19a6417`: **170/171 passed, 1 failed** — `CRLF+BOM canonical input normalizes to
+    the same output as LF/no-BOM`, at `fixture sanity: input must actually carry CRLF` (`tests/run.js:249`)
+  - Post-fix: **171/171 passed, 0 failed, 0 skipped, process exit code 0**. Declaration count unchanged —
+    one test amended in place, one fixture file deleted, none added and none removed
+  - Lint: `git diff --cached --check` — **exit 0, no output**, with this entry’s changes staged
+  - Build: `node .asd/sync.js --check` — **`"ok": true`**, exit 0, every target `current`
+  - Rejected alternative, recorded because it is the one a reader reaches for first: commit the fixture
+    with real CRLF bytes plus a `tests/fixtures/**/*.crlf-bom.md -text` attribute. It turns this test
+    green and breaks two live invariants — `AC-7`’s `every tracked blob must be LF in the index` assertion,
+    which exists to detect exactly that committed blob, and the `AC-6` `git diff --cached --check` lint,
+    which reads a CR at end of line as trailing whitespace on every line of the fixture. Both defend real
+    behaviour, so the fix had to weaken neither
+  - Defects opened: **none**. The red was a test defect (an input whose bytes were produced by the
+    checkout rather than by the test), fixed here per `code-style.md` §17 — no production or canonical
+    source was modified, and both `normalizeText` mutations were restored with
+    `git status --porcelain .asd/sync.js` empty
 - Skips: none. No entry was added to `.asd/project/stubs.md`
 - Manual steps: none. No plan subtask needed a human-only action
 
@@ -347,7 +389,10 @@ red at all; entry 5's only red was inherited — not its own and not a defect in
 (`F-5`'s unrestored canon mutation, restored at `79d3f81` before this entry began, recorded in Suite
 run). No production or
 canonical source was modified by this phase in any entry — the mutations below/above were all
-restored byte-for-byte.
+restored byte-for-byte. Entry 6 opened no `D-N` either: its red was a
+test defect of the same family — a fixture whose bytes were produced by the checkout rather than by the
+test — fixed in the test and proven by two `normalizeText` mutations, each restored in the tool call that
+read its failure.
 
 ## Manual verification (optional)
 

@@ -114,3 +114,25 @@ state rather than repeating. (2) The real exposure is at commit time, not suite 
 round committed without reading the diff. On re-entry into someone else's unrestored work, re-derive
 every assertion against source and re-run every proof: their outputs did not survive, and a proof you
 did not run is not a proof you can record.
+
+Fourteenth, fixtures whose *bytes* are the input: never commit one whose distinguishing bytes cannot
+survive checkout. Sprint 009 shipped `demo-agent.crlf-bom.md` as the CRLF/BOM input; its blob carried
+zero CR from day one and the CRLF came entirely from `core.autocrlf=true` converting on checkout, so
+the same sprint’s `.gitattributes` (`* text=auto eol=lf`) made the test fail its own sanity assert on
+every clean clone, at 170/171. Committing real CRLF bytes plus a `-text` override is the trap answer:
+it re-breaks the `every tracked blob must be LF in the index` assertion AND makes
+`git diff --cached --check` report trailing whitespace on every line. Build such an input in the test
+body instead (read the clean fixture, hard-normalize to LF, re-expand, prepend the BOM, write under
+`mkTempDir()`), and assert against doubled CRs so the construction is correct in a CRLF working tree
+too.
+
+**Why:** any assertion about the bytes on disk is really an assertion about checkout configuration
+unless the test produces those bytes itself — and a suite run inside a stale working tree cannot see it.
+
+**How to apply:** when a test opens with a "fixture sanity" assert about line endings, encoding or a
+BOM, treat that as the signal and move the construction into the test. Verify with
+`git show HEAD:<path> | od -c`, not by reading the worktree copy. Two corollaries: this is why a green
+suite in a long-lived worktree is not evidence about a fresh clone, and mutating `normalizeText` to
+prove such a test never reaches the output-equality assertion — CRLF and BOM each break the frontmatter
+fence first, so record the thrown parse error as the first failure instead of claiming the assertion
+you aimed at.

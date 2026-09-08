@@ -242,11 +242,14 @@ test('agents whose meta never sets wraps_cli/wraps_config_key are unaffected (su
 test('CRLF+BOM canonical input normalizes to the same output as LF/no-BOM', () => {
   const manifest = loadManifest();
   const cleanPath = path.join(FIXTURES, 'canon/agents/demo-agent.md');
-  const dirtyPath = path.join(FIXTURES, 'canon/agents/demo-agent.crlf-bom.md');
+  const cleanRaw = fs.readFileSync(cleanPath, 'utf8');
+  const dirtyPath = path.join(mkTempDir(), 'demo-agent.crlf-bom.md');
+  fs.writeFileSync(dirtyPath, `\ufeff${cleanRaw.replace(/\r\n/g, '\n').replace(/\n/g, '\r\n')}`, 'utf8');
 
   const dirtyRaw = fs.readFileSync(dirtyPath, 'utf8');
-  assert.ok(dirtyRaw.charCodeAt(0) === 0xfeff, 'fixture sanity: input must actually carry a BOM');
+  assert.ok(dirtyRaw.charCodeAt(0) === 0xfeff, 'fixture sanity: input must actually carry a BOM - this input is built here at runtime because a committed CRLF blob cannot survive .gitattributes `* text=auto eol=lf` and would reach a fresh clone as LF');
   assert.ok(dirtyRaw.includes('\r\n'), 'fixture sanity: input must actually carry CRLF');
+  assert.ok(!dirtyRaw.includes('\r\r'), 'fixture sanity: the LF-to-CRLF conversion must not double a CR when the clean fixture is already CRLF in this working tree');
 
   const clean = renderFixture('agent-claude', cleanPath, 'agents/demo-agent.md', manifest);
   const dirty = renderFixture('agent-claude', dirtyPath, 'agents/demo-agent.md', manifest);
