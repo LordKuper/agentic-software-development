@@ -39,6 +39,8 @@ Every iteration dispatches each reviewer as a **fresh agent invocation** — new
 
 Review, at every phase, covers only the change surface — the iteration's diff (impl-review) or draft set (design-review) — never the whole project. A finding about code/content outside that surface is invalid, with one exception: the change itself made that unchanged code/content incorrect (e.g. a renamed function left a caller elsewhere broken). Reviewer agents and workflows link here; this paragraph is the sole statement of the rule.
 
+**Diff reachability.** That surface is computed from commits, so an authored file nobody commits is invisible to review. Agent memory is in-surface hand-authored source (`artifact-layout.md` "Agent memory"), yet a reviewer holds no commit tool — so the phase workflow that writes a reviewer's review file commits that reviewer's memory writes in the same commit, the one file class it commits without authoring (`git-strategy.md` "Commit before review" otherwise binds commit ownership to authorship). Committed there, the write reaches a diff: the next iteration's, else `pr`'s.
+
 ## Over-engineering checklist (critical, undroppable)
 
 Efficiency reviewer flags any of these as `critical`:
@@ -71,6 +73,8 @@ Fix = split along responsibility seams into cohesive types → category `simplif
 
 Default: the responsible creator autofixes any reviewer issue without user prompt.
 
+**Verify before applying.** A reviewer's proposed fix is a claim about source, not an instruction: the fixer re-reads the cited path/symbol and confirms the finding's premise holds at current `HEAD` before applying anything. An equivalent correct fix stays permitted; an unverified transcription does not. Premise false → apply nothing and report the mismatch in the completion signal, never a silent drop. Premise true but prescription wrong → fix the real defect and say so in the commit body.
+
 **Where the fix happens:**
 - **design-review** — the creator (asd-ba / asd-ux / asd-architect) autofixes within the loop; iteration advances.
 - **impl-review** — fixes NOT applied inside the review phase. impl-review routes the sprint back to `impl` (review-fix mode); the responsible dev resolves findings; sprint re-enters impl-review via `impl-test`.
@@ -96,7 +100,13 @@ Applies to all 4 internal reviewers (NOT External Review — Codex self-scopes).
 
 The phase orchestrator derives an ordered machine manifest before dispatch. It enumerates every scoped file, every stable reviewer-rubric/custom-rule ID, named sections where applicable, and the **allowed `n/a` predicates per individual ID**. The manifest contains its SHA-256 digest, calculated by `.asd/runtime.js` over the manifest excluding `digest` — produce/verify it via `node .asd/runtime.js manifest-digest --manifest <path> [--write]`; a reviewer cannot replace it.
 
-The reviewer returns one compact JSON ledger: `manifest_digest`, `findings` (the exact finding IDs), and `files`/`rules`/`sections` row arrays. A row is `{i:<manifest id>,s:<status>,p?:<allowed n/a predicate>,f?:<finding id>}`. File status is `checked|n/a`; rule status is `pass|finding|n/a`; section status is `reviewed|n/a`. Only `n/a` has `p`; only `finding` has `f`. The phase parser derives the actual IDs from the returned findings, then invokes `node .asd/runtime.js validate-ledger --manifest <path> --ledger <path> --findings <path>`. The helper rejects a digest mismatch, duplicate, missing, unknown, blank, unauthorized `n/a`, or invented/missing finding reference.
+**Manifest `vocabulary`** — the row vocabulary travels inside the manifest, so a reviewer reads it off its own input instead of recalling prose:
+
+`"vocabulary": {"files": [...], "rules": [...], "sections": [...], "p": "<the single status that carries p>", "f": "<the single status that carries f>"}`
+
+Per-row-type status list plus the placement rule: `p` is required on the one status named by `p` and forbidden on every other, likewise `f`. This rule fixes the shape only; values come from `.asd/runtime.js`'s one exported vocabulary constant, shared by emitter and validator so published and enforced vocabulary cannot drift. **Required** in every manifest a phase workflow emits, split halves included. **Optional** to `validate-ledger`: absent → validated as before; present → must equal the validator's own constant, mismatch rejected. Digest-covered like every other manifest field.
+
+The reviewer returns one compact JSON ledger: `manifest_digest`, `findings` (the exact finding IDs), and `files`/`rules`/`sections` row arrays. A row is `{i:<manifest id>,s:<status>,p?:<allowed n/a predicate>,f?:<finding id>}`. Statuses and `p`/`f` placement are the manifest's `vocabulary` (above). The phase parser derives the actual IDs from the returned findings, then invokes `node .asd/runtime.js validate-ledger --manifest <path> --ledger <path> --findings <path>`. The helper rejects a digest mismatch, duplicate, missing, unknown, blank, unauthorized `n/a`, or invented/missing finding reference.
 
 A verdict whose ledger omits a scoped file, omits a checklist item, omits a required section row, or leaves any row blank/unresolved is INVALID — counts as review-incomplete, never as APPROVE.
 
@@ -134,6 +144,10 @@ Never bury the verdict in prose. The dispatching phase workflow writes the verdi
 Applies to the 4 internal reviewers; External Review's unavailability path is `external-review.md`.
 
 **Interrupted dispatch.** A dispatch returning no verdict token or no ledger (cut short mid-turn) is not a verdict: no `verdicts["iter-NN"]` entry, no latch. The same reviewer is re-dispatched fresh in the same iteration — identical handling to an invalid ledger ("Coverage ledger" enforcement). The attempt is recorded so the loss is visible rather than silent: the workflow appends `<reviewer> interrupted attempt <count> (<cause>)` to `decisions-log.md` **at the moment of the interruption**, and again when a twice-interrupted half escalates — never deferred to the verdict parse, which an interrupted dispatch never reaches. That log is the durable record; the count is per-iteration working state, never a `state.json` field, and a resume rebuilds it from those entries for the current iteration. The review file finally written for that reviewer additionally carries `Interrupted attempts: <count> (<cause>)`.
+
+**Correlated interruption.** One cause taking every dispatch in flight in an iteration (session-wide limit, host outage) is one iteration-level event, never N per-reviewer attempts. The phase workflow classifies it — it alone sees all dispatches — as: same cause, same moment, every dispatch then in flight; anything narrower stays per-reviewer. It appends `iteration <N> interrupted (<cause>), all dispatches` to `decisions-log.md` once, raises no reviewer's attempt count (so one event never arms the split trigger below), leaves it off every review file's `Interrupted attempts:` line, and re-dispatches every reviewer fresh. A re-dispatch afterwards interrupted on its own is that reviewer's attempt 1.
+
+**Late duplicate return.** A replaced dispatch delivering after its replacement's verdict was recorded is discarded; bookkeeping stays the replacement's. One exception, evidence only: it carries a finding at or above floor contradicting the recorded verdict. The phase workflow, never the returning agent, verifies that finding against source ("Autofix vs escalation"); unverified, discard it. Verified, record it: findings + ledger to `<sprint>/reviews/<phase>/iter-NN/<reviewer>.late.md`, linked from `<reviewer>.md`; `verdicts["iter-NN"]` becomes the more severe of the two tokens (severity order per "Half verdicts, files, merge"); any APPROVE latch for that reviewer cleared; `<reviewer> late return admitted on verified evidence (<finding id>)` appended to `decisions-log.md`. Never the reverse — a late APPROVE never displaces a recorded CONCERNS/FAIL — and a late return never latches. Evidence handling, not dispatch handling: it holds for any replaced dispatch, External Review included, whose availability path governs whether a dispatch returns at all, not what to do with evidence that did.
 
 An internal reviewer is NEVER recorded as skipped and never satisfies DoD without a completed verdict — it is always available, so `APPROVE (skipped: ...)` stays exclusive to an unavailable external provider (`sprint-lifecycle.md` "APPROVE latch" Availability-skip carve-out). Its absent key blocks (`sprint-lifecycle.md` "State recovery").
 
