@@ -1,0 +1,29 @@
+{
+  "sprint_id": "009-retro-008-remediation",
+  "branch": "sprint/009-retro-008-remediation",
+  "phase": "audit",
+  "documents": { "audit": true, "prd": false, "ux_spec": false, "adr": false, "c4": false },
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "initial scope accepted as written (AC-1..AC-18)",
+      "evidence": "sprint.md, staleness verification against HEAD f1b15bf",
+      "artifact_revision": "sprint.md@scope-1",
+      "decided_at": "2026-09-08T00:00:00Z"
+    }
+  ],
+  "task_routing": {},
+  "skipped_phases": [],
+  "reviews": {
+    "design": { "iteration": 0, "verdicts": {}, "latched": {} },
+    "impl": { "iteration": 0, "verdicts": {}, "iteration_heads": {}, "latched": {} }
+  },
+  "created_at": "2026-09-08T00:00:00Z",
+  "updated_at": "2026-09-08T00:00:00Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": null,
+  "archived_at": null
+}
