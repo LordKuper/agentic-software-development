@@ -58,7 +58,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
 4. Write `state.json` (phase=impl) inline (mechanical, no gate)
 5. **Build execution graph**:
    - initial — from Task dependencies; topological sort; mark independent tasks parallelisable
-   - fix modes — fix tasks independent unless two touch same file; parallel where independent, sequential where they collide
+   - fix modes (review-fix and test-fix alike) — one ordered chain, never a concurrent set: every fix task depends on its predecessor by construction, so exactly one is in flight at a time (order: colliding tasks adjacent, else by finding/defect id). Parallel fix rounds each closed their targets while introducing a fresh cross-file contradiction, costing a review iteration; sequential rounds did not.
 5a. Before each task dispatch, run `node .asd/runtime.js route-task --input <path>` with kind, objective inputs/checks, the task's `Material risk` lines as typed `risks` entries (`sprint-lifecycle.md` "Plan file format"), correction attempts and prior tier. A result with `execution="command"` runs directly; `execution="agent"` dispatches `asd-dev-<tier>` for `mechanical`/`critical`, or the base `asd-dev` for `tier: standard` (no `-standard` variant exists — `providers.md` "Task-class variants and routing"). Persist the record in `state.json.task_routing[taskId]` per `providers.md`, supplying its tier as `priorTier` on re-entry. Invalid routing blocks; tier never lowers.
 6. **Dispatch tasks** per execution graph:
    - sequential where dependent; parallel where independent (caller schedules concurrent delegations)
@@ -74,9 +74,10 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
        - escalate only on a blocker (see Execution mode): emit `QUESTION` for unresolvable requirement ambiguity, `FAILED` for missing tech-reference / unrecoverable failure, or raise Complication Approval via request for user decision **only** when a Simplicity Default trigger fires (new abstraction / dependency / config flag / generalization)
        - manual-steps handling: see `sprint-lifecycle.md` "Impl phase" — do not restate here
        - write production code only — **no tests, no authoring, no modifying, no pruning**; the impacted set (`sprint-lifecycle.md` "Impacted test set") may be run for self-verification only, never as a substitute for `impl-test`'s gate; test selection, authoring, pruning, and running belong to `impl-test`
-       - review-fix — apply suggested fix per finding, or equivalent correct fix; test-fix — fix the root cause behind the failing test (never weaken or delete the test), then set the defect row `Status` to `fixed` with the fixing commit sha in `<sprint>/test-plan.md`
+       - review-fix — verify each finding against source before applying (`review-policy.md` "Verify before applying" — do not restate here), then apply its suggested fix or an equivalent correct fix; test-fix — fix the root cause behind the failing test (never weaken or delete the test), then set the defect row `Status` to `fixed` with the fixing commit sha in `<sprint>/test-plan.md`
        - run `build` and `lint` per `commands.yaml`; do not advance with failures or warnings unreported
        - stub handling: see `git-strategy.md` "TODO stubs" — do not restate here
+       - staging + commit ownership — concurrently dispatched tasks share one worktree: see `git-strategy.md` "Commit before review" — do not restate here
        - commit per Conventional Commits (one logical change per commit; subject ≤50 chars; body describes WHY)
        - initial — tick corresponding checkboxes in `<sprint>/plan.md`
        - emit COMPLETED with summary (files touched; initial: AC-N satisfied, stubs added; review-fix: findings resolved by id; test-fix: defects resolved by `D-N`) when all subtasks/findings/defects done; when some subtasks manual-blocked, emit COMPLETED for unblocked portion plus `BLOCKED_MANUAL` listing deferred `MS-N`
