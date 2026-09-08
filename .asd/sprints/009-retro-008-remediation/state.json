@@ -58,6 +58,14 @@
       "evidence": "reviews/impl/iter-05/, test-plan.md Suite run at 2ab6b57, 171/171",
       "artifact_revision": "test-plan.md@terminal",
       "decided_at": "2026-09-09T00:00:00Z"
+    },
+    {
+      "gate": "pr-publication",
+      "decision_actor": "user",
+      "reason": "user authorized opening the PR",
+      "evidence": "DoD verified: 171/171 suite, sync --check ok, all reviewers APPROVE/latched, retrospective written, no open sprint stubs",
+      "artifact_revision": "v7.1.0",
+      "decided_at": "2026-09-09T00:00:00Z"
     }
   ],
   "task_routing": {
@@ -216,6 +224,12 @@
   "updated_at": "2026-09-09T00:00:00Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
-  "pr": null,
+  "pr": {
+    "number": 31,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/31",
+    "state": "open",
+    "opened_at": "2026-09-09T00:00:00Z",
+    "head": "103e3591"
+  },
   "archived_at": null
 }

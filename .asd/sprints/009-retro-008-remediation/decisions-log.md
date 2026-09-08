@@ -179,3 +179,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: `retrospective.html` written for sprint 009 — 6 entries analysed, 9 actions (1 consumer, 8 framework), 6 systemic proposals. Analysed branch, not the empty-log branch. Nothing promoted to a persistent doc; the file is archived with the sprint.
 - **Rationale**: Three of the six entries are parallel-dispatch collisions from the first implementation wave — the one wave that necessarily ran under the pre-fix rule, since the task landing that rule was in it. That shape is the sprint's main lesson and drives both the `F-1` action and one systemic proposal. The systemic class was derived from the run record (5 iterations, 4 fix rounds, ~36 findings, 2 interruptions, 3 assertions re-pinned) rather than from the entries, per the two-class split.
 - **Affected docs**: [retrospective.html](retrospective.html), [friction-log.md](friction-log.md)
+
+## 2026-09-09 — PR opened
+
+- **Decision**: PR [#31](https://github.com/LordKuper/agentic-software-development/pull/31) opened against `main` from `sprint/009-retro-008-remediation`, title `feat(workflow): remediate sprint 008 retrospective, v7.1.0`. Version bumped 7.0.0 → 7.1.0 with the CHANGELOG entry committed on the branch first. `state.json.pr.state = open`; the sprint stays active and unarchived, and `phase` stays `pr`.
+- **Rationale**: DoD verified before publication — every plan task ticked, every AC traced, all five reviewers APPROVE or latched at iteration 5, terminal full suite 171/171 with lint and build clean, retrospective written, no sprint-owned stubs. Publication was authorized by the user in chat, which the adaptive policy requires alongside the recorded evidence. Minor rather than major version: no consumer-facing tooling contract is removed and none fails where it previously succeeded.
+- **Affected docs**: [state.json](state.json), CHANGELOG.md, .asd/release-manifest.json
