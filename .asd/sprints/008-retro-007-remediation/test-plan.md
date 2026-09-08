@@ -162,6 +162,18 @@ Entry 10 additions (2 new tests, placed immediately after the last surviving §1
 
 ## Suite run
 
+**Terminal full-suite gate (impl-review step 9, this repo's one full-suite check for the cycle) — OVERWRITES the impacted-run record below with the unscoped result:**
+
+- Command: `node tests/run.js` (`test` from commands.yaml), unscoped whole-suite invocation, not the impacted set — result: **pass, 160/160 passed, 0 failed, 0 skipped**
+- Command: `git diff --check` (`lint`) — result: **clean, exit 0**, no output
+- Command: `node .asd/sync.js --check` (`build`) — result: **`"ok": true`**, every generated target (`.claude/agents/*.md`, `.codex/agents/*.toml`, `.claude/skills/*/SKILL.md`, `.agents/skills/*/SKILL.md`, hooks, `CLAUDE.md`/`AGENTS.md`, `.claude/settings.json`, `.codex/hooks.json`) reports `status: "current"`
+- HEAD this gate ran at: `458c8b413370415a2c081b9a18c6bc268e4d16d5`; worktree clean (`git status --porcelain` empty) before and after
+- Nothing red; no test fix needed; no `D-N` opened by this gate. All required reviewers (correctness/efficiency/testing APPROVE at iter 5, documentation APPROVE at iter 4, External Review APPROVE at iter 6) were already latched before this dispatch per the phase's precondition.
+
+---
+
+Prior record (impl-test phase, impacted-set gate, entry 10 — kept for history, no longer the phase's evidence-of-record):
+
 - Command: `node tests/run.js` (`test` from commands.yaml) — this repo has no `test_affected` selector and a single flat runner file, so every invocation runs the whole file; the **safety valve independently fires** for this entry regardless, since the change surface touches shared/framework-wide infrastructure (`.asd/runtime.js`, `.asd/rules/**`, `.asd/templates/**`, `.asd/workflows/**`, `.asd/release-manifest.json` — self-hosting means these ARE the framework). Impacted-set definition used: search-derived set (diff test files + reference search + AC-tag search) → safety valve fires on shared-infrastructure touch → degrades to full suite. Mechanically identical outcome to `impl-review`'s later full-suite run, but recorded here as the `impl-test` gate, per `sprint-lifecycle.md` "Impacted test set".
 - Scope: impacted (safety valve fired → full suite, ran nine times this sprint: 148 at entry 2, 150 at entry 3, 156 at entry 4, 156 at entry 5, 159 at entry 6, 159 at entry 7, 158 at entry 8, 158 at entry 9, 160 at entry 10)
 - Entry 2 result: pass — 148/148 passed, 0 failed, 0 skipped (136 pre-existing + 9 iter-01 added − 4 tautological assertion lines removed from one test (T-4, not a whole test) + 3 review-fix additions (2× T-8 boundary cases, 1× C-7 re-dispatch-record test) = 148 top-level `test(` declarations)
