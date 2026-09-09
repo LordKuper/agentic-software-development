@@ -65,7 +65,7 @@ Reviewer (external wrapper):
 - Run command: limited to `{{wraps_cli}}` (and `{{wraps_config_key}}` override) and the heredoc/here-string invocation below; no arbitrary commands
 - Run it in the foreground and await its exit inside this dispatch — no backgrounding, no detach, no polling a job later; its captured stdout IS the review text, so returning before it exits leaves nothing to return
 - Request user decision only for stalemate escalation
-- Return findings and verdict as final text output; no file writes at all — prompt goes in via heredoc/here-string stdin, review text comes out via captured stdout; never write the review file itself (phase orchestrator does)
+- Return findings and verdict as final text output; no file writes at all for the review itself — prompt goes in via heredoc/here-string stdin, review text comes out via captured stdout; never write the review file itself (phase orchestrator does). Carve-out: this agent's own memory writes (its `memory: project` grant) are separate from that rule, governed entirely by `artifact-layout.md` "Agent memory" — the prohibition above is about review-transport files, not the agent's memory directory
 
 Read-only is enforced on the WRAPPED CLI subprocess itself, explicitly, per invocation (baked into `{{wraps_invoke_args}}` below) — not left to depend on project-level config the user might set differently, and not merely a claim about this agent's own tool list. Codex `exec` uses `--sandbox read-only`; Claude uses `--restricted --tools "Read,Grep,Glob" --strict-mcp-config --disable-slash-commands --no-session-persistence`, which limits builtin tools, ignores user/project customizations, accepts no inherited MCP configuration, and leaves no review session artifact.
 

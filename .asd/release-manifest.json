@@ -31,7 +31,7 @@
   "canon_hashes": {
     "agents/asd-architect.md": "sha256:ca1453a01661de3303f30cf94be0a64832765ff6cccfc6ade24a8a3a8039bcf0",
     "agents/asd-ba.md": "sha256:6d53bd1c5f404856e458f6613e6c66a55649e6f072eaf38c54e138cec618f775",
-    "agents/asd-external-review.md": "sha256:1fb7b86fa6a42d22f6222599ba75abd102d3e7e5a4f93606221d88212a3d9bd0",
+    "agents/asd-external-review.md": "sha256:be032e9e65c026e47e9fa989b38719e098db188ebbf55c5c5cc7f256f4c8d470",
     "agents/asd-reviewer-documentation.md": "sha256:566c01a8633b7cd3d49e666cfaaf113b30f48b1baa09e80adda74e199a481235",
     "agents/asd-reviewer-testing.md": "sha256:cbf0161ca2edc523a0b4b96c9873e3931454d30e9bca2a5e9533d4d1ef8b5e6b",
     "skills/asd-concept/SKILL.md": "sha256:bf4b60a0fd27c777e62d16cc74eacb0bb3f68a022f7d294c81e43fc99a02abfd",
@@ -62,7 +62,7 @@
   "upstream_hashes": {
     ".asd/agents/asd-architect.md": "ca1453a01661de3303f30cf94be0a64832765ff6cccfc6ade24a8a3a8039bcf0",
     ".asd/agents/asd-ba.md": "6d53bd1c5f404856e458f6613e6c66a55649e6f072eaf38c54e138cec618f775",
-    ".asd/agents/asd-external-review.md": "1fb7b86fa6a42d22f6222599ba75abd102d3e7e5a4f93606221d88212a3d9bd0",
+    ".asd/agents/asd-external-review.md": "be032e9e65c026e47e9fa989b38719e098db188ebbf55c5c5cc7f256f4c8d470",
     ".asd/agents/asd-reviewer-documentation.md": "566c01a8633b7cd3d49e666cfaaf113b30f48b1baa09e80adda74e199a481235",
     ".asd/agents/asd-reviewer-testing.md": "cbf0161ca2edc523a0b4b96c9873e3931454d30e9bca2a5e9533d4d1ef8b5e6b",
     ".asd/hooks/session-start.js": "b2ba4ce133eab117876d0e15424f40baa71eb9c887e8813326b7897358b6135d",

@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:1fb7b86fa6a42d22f6222599ba75abd102d3e7e5a4f93606221d88212a3d9bd0 content_digest=sha256:5bf47dc749aa31996c103d137e7f674d257c73cb782ee7b4a3ec25f901c6638d asd_version=7.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:be032e9e65c026e47e9fa989b38719e098db188ebbf55c5c5cc7f256f4c8d470 content_digest=sha256:858fc11aa2e4251a86c315da1711b858ce5e2e2327fb562bcb555b68057c8696 asd_version=7.1.0 schema=1
 name: asd-external-review
 description: "External reviewer wrapping the other provider's CLI (Codex under Claude Code, Claude under Codex), run in parallel with internal reviewers during design-review and impl-review. Covers: wrapped-CLI availability detection per system.os, iteration-aware scope manifest rendering (full vs incremental), prompt selection per phase (design or impl), output parsing and ASD severity mapping, kept/dropped accounting per severity floor, stalemate detection across iterations. Does NOT handle: internal review (delegates to asd-reviewer-* agents), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, Bash, AskUserQuestion]
@@ -58,7 +58,7 @@ Reviewer (external wrapper):
 - Run command: limited to `codex` (and `system.tools.codex_command` override) and the heredoc/here-string invocation below; no arbitrary commands
 - Run it in the foreground and await its exit inside this dispatch — no backgrounding, no detach, no polling a job later; its captured stdout IS the review text, so returning before it exits leaves nothing to return
 - Request user decision only for stalemate escalation
-- Return findings and verdict as final text output; no file writes at all — prompt goes in via heredoc/here-string stdin, review text comes out via captured stdout; never write the review file itself (phase orchestrator does)
+- Return findings and verdict as final text output; no file writes at all for the review itself — prompt goes in via heredoc/here-string stdin, review text comes out via captured stdout; never write the review file itself (phase orchestrator does). Carve-out: this agent's own memory writes (its `memory: project` grant) are separate from that rule, governed entirely by `artifact-layout.md` "Agent memory" — the prohibition above is about review-transport files, not the agent's memory directory
 
 Read-only is enforced on the WRAPPED CLI subprocess itself, explicitly, per invocation (baked into `exec --model gpt-5.6-sol -c model_reasoning_effort="high" --sandbox read-only -` below) — not left to depend on project-level config the user might set differently, and not merely a claim about this agent's own tool list. Codex `exec` uses `--sandbox read-only`; Claude uses `--restricted --tools "Read,Grep,Glob" --strict-mcp-config --disable-slash-commands --no-session-persistence`, which limits builtin tools, ignores user/project customizations, accepts no inherited MCP configuration, and leaves no review session artifact.
 
