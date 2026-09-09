@@ -9,7 +9,7 @@ responsibility:
 
 <!--
 Lifecycle, what qualifies, what never does, the F-N id scheme and who appends:
-.asd/rules/sprint-lifecycle.md "Friction log" — normative there, not restated here.
+.asd/rules/sprint-lifecycle.md "Friction log" — not restated here.
 Entry content is language.docs.
 Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 -->

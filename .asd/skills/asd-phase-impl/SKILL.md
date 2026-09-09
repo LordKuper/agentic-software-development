@@ -7,4 +7,4 @@
 }
 ---
 
-Triggers when the sprint orchestrator dispatches the impl phase, or when the user explicitly asks to run or re-run impl for the active sprint. Execute workflow `.asd/workflows/asd-phase-impl.md`.
+Execute workflow `.asd/workflows/asd-phase-impl.md`.

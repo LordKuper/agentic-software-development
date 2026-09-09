@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="generator" content="ASD workflow">
+  <meta name="doc-type" content="Retrospective">
+  <meta name="subsystem" content="sprint">
+  <meta name="sprint-id" content="010-agent-doc-economy">
+  <meta name="status" content="final">
+  <meta name="updated" content="2026-09-09">
+  <meta name="responsibility" content="retro-phase analysis of the sprint — root cause plus remediation per F-N entry, and systemic proposals for a cheaper future sprint, both split consumer-project vs ASD-framework">
+  <meta name="provenance" content="original">
+  <meta name="source" content="">
+  <title>Retrospective — Sprint 010 · agent-doc-economy</title>
+  <style>
+    :root {
+      --fg: #1a1c1e; --bg: #fff; --muted: #5b6770; --accent: #0066cc;
+      --code-bg: #f4f6f8; --border: #d0d7de; --max: 1040px;
+      --card-bg: #fafbfc;
+      --ok: #1a7f37; --warn: #b35900; --danger: #cf222e; --info: #0969da; --neutral: #5b6770;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --fg: #e6e6e6; --bg: #0e1116; --muted: #9aa4ad; --code-bg: #161b22; --border: #30363d;
+        --card-bg: #161b22;
+        --accent: #58a6ff; --ok: #3fb950; --warn: #d29922; --danger: #f85149; --info: #79c0ff; --neutral: #8b949e;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .layout { display: grid; grid-template-columns: 1fr; }
+    .layout:has(> nav.toc) { grid-template-columns: 260px minmax(0, 1fr); }
+    nav.toc { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; padding: 16px 12px; border-right: 1px solid var(--border); font-size: 0.85rem; }
+    nav.toc .toc-title { font-weight: 600; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.04em; }
+    nav.toc ol { list-style: none; margin: 0; padding: 0; }
+    nav.toc li { margin: 2px 0; }
+    nav.toc a { color: var(--fg); text-decoration: none; display: block; padding: 3px 6px; border-radius: 4px; }
+    nav.toc a:hover { background: var(--code-bg); color: var(--accent); }
+    @media (max-width: 880px) { nav.toc { position: static; max-height: none; border-right: none; border-bottom: 1px solid var(--border); } }
+    @media print { nav.toc { display: none; } }
+    .content { min-width: 0; }
+    header, main, footer { max-width: var(--max); margin: 0 auto; padding: 16px 24px; }
+    header { border-bottom: 1px solid var(--border); }
+    header h1 { margin: 4px 0 8px; font-size: 1.9rem; }
+    .badges span { display: inline-block; padding: 2px 8px; margin-right: 6px; font-size: 0.75rem; border: 1px solid var(--border); border-radius: 4px; color: var(--muted); background: var(--bg); }
+    .stats { color: var(--muted); font-size: 0.9rem; }
+    @media (max-width: 880px) {
+      .layout, .layout:has(> nav.toc) { grid-template-columns: 1fr; }
+    }
+    h2, h3 { line-height: 1.25; margin-top: 1.6em; }
+    h2 { border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+    a { color: var(--accent); }
+    code { font-family: ui-monospace, "Cascadia Code", Menlo, monospace; background: var(--code-bg); padding: 1px 5px; border-radius: 3px; font-size: 0.9em; }
+    table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 0.94rem; }
+    th, td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+    th { background: var(--card-bg); font-weight: 600; }
+    tr, li { break-inside: avoid; }
+    .hero .lede { font-size: 1.05rem; color: var(--muted); }
+    .chip { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 0.75rem; border: 1px solid var(--border); white-space: nowrap; }
+    .chip.area { background: var(--code-bg); color: var(--muted); }
+    footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <nav class="toc">
+      <div class="toc-title">Contents</div>
+      <ol>
+        <li><a href="#outcome">Outcome</a></li>
+        <li><a href="#analysis">Analysis</a></li>
+        <li><a href="#actions">Actions</a></li>
+        <li><a href="#systemic-proposals">Systemic proposals</a></li>
+      </ol>
+    </nav>
+    <div class="content">
+      <header>
+        <div class="badges">
+          <span>Retrospective</span>
+          <span>sprint</span>
+          <span class="status-final">final</span>
+        </div>
+        <h1>Retrospective — Sprint 010 · agent-doc-economy</h1>
+        <div class="stats">5 entries · 7 actions · 6 systemic proposals · updated 2026-09-09</div>
+      </header>
+      <main><section id="outcome" class="hero">
+  <h2>Outcome</h2>
+  <p class="lede">5 entries analysed, 0 consumer actions, 7 framework actions, 6 systemic proposals.</p>
+  <p>This sprint set out to remediate the previous retrospective and to make agent-facing text an enforceable cost surface. It did both, and then spent most of its length discovering that the rule it wrote is harder to apply than to state. Five impl-review iterations produced 23 findings — 13, then 6, then 2, then 2, then none — and the largest single class, a declaration claiming some fact is <em>not restated here</em> while the restatement sits beside it, took six instances across five sites and three fix rounds to converge. Every one of External Review's seven iteration-1 findings was independently verified resolved before the final round, and both remaining reviewers swept the corpus for a seventh instance of that class and found none.</p>
+  <p>Three of the five friction entries are the orchestrator's own errors, and two of those cost real work: coverage manifests emitted in a shape the validator silently degrades rather than rejects, and those same manifests re-stamped while three dispatches held them. The defect they exposed is now fixed in code, so the shape fails loudly. The third, an instruction that told an agent to do what its own tool policy forbids, is the one worth the most attention — the agent complied and then recorded the practice in its memory as a pattern to reuse, where it survived a round before a reviewer found it.</p>
+  <p>What the sprint delivered: the ten acceptance criteria, roughly 18.7 KB cut from canon, two silent code defects closed, and a citation sweep that grew from 20 pinned relations to 185 and immediately found two dangling pointers that had survived an earlier release. The suite went 171 to 184, green at the terminal gate.</p>
+</section>
+
+<section id="analysis">
+  <h2>Analysis</h2>
+  <table>
+    <thead>
+      <tr><th>Entry</th><th>Root cause</th><th>Scope</th></tr>
+    </thead>
+    <tbody>
+      <tr id="F-1"><td><a href="#F-1">F-1</a></td><td>The coverage manifest's <code>n_a</code> is the one field an orchestrator hand-builds per dispatch, and nothing published its shape or checked it — the validator read a nested shape, silently degraded a flat one into "no predicate authorized", and so rejected every truthful row while accepting the malformed manifest that caused it.</td><td><span class="chip area">asd</span></td></tr>
+      <tr id="F-2"><td><a href="#F-2">F-2</a></td><td>The manifest is declared immutable to the reviewer but nothing declares it immutable to the orchestrator, so correcting one mid-flight silently invalidated returns that were already correct, and left two different failures indistinguishable in the artefacts.</td><td><span class="chip area">asd</span></td></tr>
+      <tr id="F-3"><td><a href="#F-3">F-3</a></td><td>The interrupted-dispatch rule reaches the split remedy only through a second interruption, so a scope already proven too large for one turn must be re-spent in full to prove it again — and the phase never checks scope size before dispatching, though it computes the file list itself.</td><td><span class="chip area">asd</span></td></tr>
+      <tr id="F-4"><td><a href="#F-4">F-4</a></td><td>Preflight predicts local executable and authentication state only, never paid-request availability, so a quota-exhausted provider is discovered by spending the dispatch — at whatever iteration it happens to fall.</td><td><span class="chip area">asd</span></td></tr>
+      <tr id="F-5"><td><a href="#F-5">F-5</a></td><td>Nothing checks a dispatch payload against the receiving agent's declared tool policy: the orchestrator composes the instruction, and the agent has no way to tell an authoritative instruction from one contradicting its own definition — so a workaround given once became standing guidance in that agent's memory.</td><td><span class="chip area">asd</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="actions">
+  <h2>Actions</h2>
+  <table>
+    <thead>
+      <tr><th>Addresses</th><th>Recommendation</th><th>Acts on</th><th>Target</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><a href="#F-1">F-1</a></td><td>Publish the <code>n_a</code> shape the way the row shape and vocabulary are already published — a constant beside them, stamped into every manifest and digest-covered — so an orchestrator reads the shape off its own emitter instead of inferring it from the validator's source. The rejection landed this sprint; the publication did not, and it is the half that prevents the mistake rather than reporting it.</td><td><span class="chip area">asd</span></td><td><code>.asd/runtime.js</code>, <code>.asd/rules/review-policy.md</code> "Coverage ledger"</td></tr>
+      <tr><td><a href="#F-2">F-2</a></td><td>State that a stamped manifest is immutable for the life of the dispatch that holds it, orchestrator included, and that a manifest needing correction requires re-dispatch rather than re-stamping. The reviewer-side immutability is already stated; only the writer's side is missing.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/review-policy.md</code> "Coverage ledger", <code>.asd/workflows/asd-phase-impl-review.md</code> step 7</td></tr>
+      <tr><td><a href="#F-3">F-3</a></td><td>Let the phase split a manifest on the evidence it already holds — its own scope file list — rather than only after two interruptions, and treat one interruption on a scope above that size as sufficient to split. The current rule can only learn by spending.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/review-policy.md</code> "Interrupted dispatch and split dispatch"</td></tr>
+      <tr><td><a href="#F-3">F-3</a></td><td>Record the interrupted attempt where the next dispatch will read it. This sprint logged attempts to the decisions log by hand; nothing in the workflow required the re-dispatch to carry turn-economy guidance, and the second attempt succeeded only because it was given some.</td><td><span class="chip area">asd</span></td><td><code>.asd/workflows/asd-phase-impl-review.md</code> step 7a</td></tr>
+      <tr><td><a href="#F-4">F-4</a></td><td>Keep the friction entry as the durable signal — it worked exactly as AC-4 intended — and additionally let a recorded quota failure suppress the next iteration's dispatch attempt while its retry-after stands, so the same iteration does not pay twice for a known-unavailable provider.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/external-review.md</code> "Detection and negative cache"</td></tr>
+      <tr><td><a href="#F-5">F-5</a></td><td>State that a dispatch payload may not instruct an agent to act outside its own declared tool policy, and that an agent receiving such an instruction reports it rather than complying. The agent is the last place the contradiction is visible, and it currently has no standing to refuse.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/providers.md</code> "Role-scoped context", <code>.asd/rules/core.md</code> "Autonomy and escalation"</td></tr>
+      <tr><td><a href="#F-5">F-5</a></td><td>Require an agent's memory write to be checked against that agent's own definition before it lands — the defect here was not the compliance but its promotion to standing guidance, which outlives the sprint and loads on every future dispatch.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/artifact-layout.md</code> "Agent memory"</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="systemic-proposals">
+  <h2>Systemic proposals</h2>
+  <table>
+    <thead>
+      <tr><th>Proposal</th><th>Acts on</th><th>Target</th><th>Expected saving</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Audit <code>.claude/agent-memory/**</code> under the documentation-economy rule as its own sprint. Memory is a per-dispatch read surface exactly like canon, it was never in this sprint's AC-8 corpus, and it produced findings in four of five review iterations — including the class that took three rounds to converge. Chasing it file by file inside a sprint scoped elsewhere is unbounded; auditing it once is not.</td><td><span class="chip area">asd</span></td><td><code>.claude/agent-memory/**</code>, <code>.asd/rules/artifact-layout.md</code> "Agent memory"</td></tr>
+      <tr><td>Have the plan phase size each review iteration's likely scope and say so, so the first iteration of a 56-file change surface is split by design rather than after an interruption. This sprint's first iteration lost a whole dispatch to turn exhaustion and its second ran on a 21-file scope without incident.</td><td><span class="chip area">asd</span></td><td><code>.asd/workflows/asd-phase-plan.md</code>, <code>.asd/rules/review-policy.md</code></td></tr>
+      <tr><td>Give the orchestrator a manifest-emitting helper rather than having each phase hand-build one. Every manifest this sprint emitted was assembled inline by the orchestrator, and two of the five friction entries are defects in that assembly; the emitter and the validator should share a source the way the vocabulary and row example already do.</td><td><span class="chip area">asd</span></td><td><code>.asd/runtime.js</code>, <code>.asd/workflows/asd-phase-impl-review.md</code>, <code>.asd/workflows/asd-phase-design-review.md</code></td></tr>
+      <tr><td>Let a reviewer's suggested fix be explicitly non-binding in the workflow text, as this sprint's agents already treated it. Three times a creator rejected the prescribed fix for a better one — a hardcoded list derived instead, a qualifier assertion rejected as a wording lock after counter-mutation, a canon-side fix chosen over editing another agent's memory — and each was right. The rule permits it; the dispatch payloads had to say so each time.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/review-policy.md</code> "Autofix vs escalation"</td></tr>
+      <tr><td>Prefer deriving a set over enumerating one wherever a test or rule names members. This sprint's two most durable checks both came from that move — the memory-directory sweep derived from the agent roster, and the citation sweep that grew 20 pinned relations to 185 — and the two defects they caught had both survived a hardcoded predecessor.</td><td><span class="chip area">asd</span></td><td><code>tests/run.js</code>, <code>.asd/rules/code-style.md</code></td></tr>
+      <tr><td>State that a per-entry suite record is one commit behind the tests that entry added, so only the terminal gate measures the tree that includes them. Four impl-test entries each recorded a run at the tree they analysed rather than the tree they produced, which is correct per entry and misleading in aggregate.</td><td><span class="chip area">asd</span></td><td><code>.asd/templates/t_test-plan.md</code>, <code>.asd/rules/sprint-lifecycle.md</code> "Impacted test set"</td></tr>
+    </tbody>
+  </table>
+</section>
+</main>
+<footer>by ASD workflow | 2026-09-09 | sprint 010-agent-doc-economy</footer>
+    </div>
+  </div>
+</body>
+</html>

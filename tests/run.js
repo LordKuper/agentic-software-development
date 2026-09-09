@@ -2431,7 +2431,7 @@ test('runtime.js CLI: external-preflight exits 1 on command-unavailable', () => 
   assert.strictEqual(JSON.parse(stdout).status, 'command-unavailable');
 });
 
-test('runtime.js CLI: manifest-digest digests a manifest exactly as written, and --write stamps the vocabulary into the file before digesting it', () => {
+test('runtime.js CLI: manifest-digest digests a manifest exactly as written, and --write stamps every published constant (vocabulary + row example) into the file, each digest-covered, before digesting it', () => {
   const root = mkTempDir();
   const manifest = buildManifest(['f-1'], ['r-1'], ['s-1']);
   const manifestPath = path.join(root, 'manifest.json');
@@ -2446,8 +2446,14 @@ test('runtime.js CLI: manifest-digest digests a manifest exactly as written, and
   const firstWrite = fs.readFileSync(manifestPath, 'utf8');
   const written = JSON.parse(firstWrite);
   assert.deepStrictEqual(written.vocabulary, runtime.LEDGER_VOCABULARY, '--write must publish the validator\'s own vocabulary constant, so the reviewer reads the statuses off its own input instead of recalling rule prose');
+  assert.deepStrictEqual(written.row_example, runtime.LEDGER_ROW_EXAMPLE, 'AC-6b: --write must publish the row example beside the vocabulary, from the validator\'s own constant - the reviewer reads the row SHAPE off its own input too, not only the status list');
   assert.strictEqual(written.digest, writeOut, '--write must persist exactly the digest it printed, or the workflow that captures stdout stamps one identity while the file carries another');
-  assert.strictEqual(written.digest, runtime.fingerprint(Object.assign({}, manifest, { vocabulary: runtime.LEDGER_VOCABULARY })), 'the persisted digest must be the hash of the stamped manifest with `vocabulary` in it: stamping is a real content change and moves the identity by design. What must NOT happen is the reverse - a digester implying the field over a file that lacks it');
+  assert.strictEqual(written.digest, runtime.fingerprint(Object.assign({}, manifest, { vocabulary: runtime.LEDGER_VOCABULARY, row_example: runtime.LEDGER_ROW_EXAMPLE })), 'the persisted digest must be the hash of the stamped manifest with BOTH published constants in it: stamping is a real content change and moves the identity by design. What must NOT happen is the reverse - a digester implying a field over a file that lacks it. Expressed through the untouched `fingerprint` primitive so a change to the digester cannot move this expectation with it');
+  for (const field of Object.keys(written).filter((key) => key !== 'digest')) {
+    const stripped = Object.assign({}, written);
+    delete stripped[field];
+    assert.notStrictEqual(runtime.coverageManifestDigest(stripped), written.digest, `AC-6b: --write stamped \`${field}\`, so the digest must cover it. A published field left outside the identity (as \`digest\` itself is) could be edited on disk after stamping and every ledger citing that digest would still validate - the field would teach a shape nothing enforces. Written as a sweep over whatever --write stamps, so a third published constant is covered the day it lands`);
+  }
   assert.strictEqual(written.digest, runtime.coverageManifestDigest(written), 'round-trip: validateCoverageLedger recomputes the digest from the manifest it reads off disk, so a stamped file whose digest is not its own digest is unvalidatable the moment it is written');
   runtimeCli(['manifest-digest', '--manifest', manifestPath, '--write']);
   assert.strictEqual(fs.readFileSync(manifestPath, 'utf8'), firstWrite, 'a second --write must be byte-idempotent - stamping is how a workflow refreshes a manifest, and a moving file would churn the digest on every refresh');
@@ -2990,10 +2996,15 @@ test('AC-10: an artifact risk whose priorTier does not outrank the computed tier
   assert.deepStrictEqual(result, { tier: 'mechanical', execution: 'agent', reason: 'artifact-risk:critical-config' }, 'priorTier equal to the computed tier must not clamp - the reason must still name the artifact risk, not no-downgrade');
 });
 
-test('AC-6: the interrupted-dispatch re-dispatch record is stated in review-policy.md and cited (not restated) by both *-review workflows', () => {
+test('AC-6/sprint-010 AC-6a: review-policy.md states the bounded one-transcription enforcement branch and keeps an interrupted dispatch out of it; both *-review workflows cite that branch and still route an interrupted dispatch to reject-and-re-dispatch', () => {
   const policy = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/review-policy.md'), 'utf8');
   assert.ok(policy.includes('is re-dispatched fresh in the same iteration'), 'review-policy.md must state the re-dispatch outcome for an interrupted reviewer - never a skip, never an APPROVE');
   assert.ok(policy.includes('Interrupted attempts: <count> (<cause>)'), 'review-policy.md must state the durable per-file record an interrupted dispatch leaves on the written review file');
+
+  assert.ok(policy.includes('A first failure earns one transcription'), 'sprint-010 AC-6a: the enforcement paragraph must split by failure class - a ledger resolving every row in the wrong shape costs a whole re-dispatch under a single reject rule, which is the friction F-6 recorded');
+  assert.ok(policy.includes('never runs twice on one return'), 'the transcription must be bounded at one attempt, or a workflow can iterate on a reviewer\'s return until it passes - re-encoding the gate away rather than through');
+  assert.ok(policy.includes('Transcription never supplies a status, predicate or finding id the return did not carry'), 'the branch is only safe while it re-encodes evidence the reviewer actually returned; supplying a missing status is the workflow forging the coverage the ledger exists to prove');
+  assert.ok(policy.includes('never the transcription branch, which has no returned ledger to re-encode'), 'AC-6a: an interrupted dispatch returns no ledger at all, so it must stay on the reject path - routed into transcription, a dispatch that produced nothing would be re-encoded into a verdict');
 
   const citation = 'sole SSoT for trigger, partition, union property, merge rule and durable record';
   const reDispatchPhrase = 'takes the same reject-and-re-dispatch-fresh path as a failed validation above';
@@ -3001,6 +3012,8 @@ test('AC-6: the interrupted-dispatch re-dispatch record is stated in review-poli
     const workflow = fs.readFileSync(path.join(REPO_ROOT, `.asd/workflows/${file}`), 'utf8');
     assert.ok(workflow.includes(citation), `${file} must cite review-policy.md as sole SSoT for the interrupted/split-dispatch contract, including the durable record, rather than restating it`);
     assert.ok(workflow.includes(reDispatchPhrase), `${file} must route an interrupted dispatch (no verdict token, no ledger) through the same reject-and-re-dispatch-fresh handling as a failed ledger validation - a future edit dropping this from one workflow while review-policy.md still claims it must fail here`);
+    assert.ok(workflow.includes('A failure earns one transcription and re-run per `review-policy.md` "Coverage ledger" enforcement'), `${file} is the acting site for AC-6a: the validation step must carry the transcription branch and cite its owner, or the rule's second case exists in prose and never in any workflow that could perform it`);
+    assert.ok(workflow.includes('never that step\'s transcription branch'), `${file} must exclude an interrupted dispatch from transcription at the branch itself - the exclusion holds only where the two paths are adjacent`);
   }
 });
 
@@ -3130,16 +3143,28 @@ test('T-2/C-2: canon_hashes covers only .asd/agents/*.md and .asd/skills/*/SKILL
   assert.strictEqual(entries.some(([key]) => key.startsWith('hooks/')), false, 'session-start.js and other hooks must never appear in canon_hashes - the memory\'s "hooks/t_AGENTS.md/t_CLAUDE.md -> two, not three" claim depends on this exclusion');
 });
 
-test('T-2/T-4: in each agent-memory directory this sprint writes, MEMORY.md and the files beside it are a bijection - an index line landing without its target, and a memory file no index points at, both fail here', () => {
-  for (const agent of ['asd-dev-critical', 'asd-tester-critical']) {
-    const dir = path.join(REPO_ROOT, '.claude/agent-memory', agent);
-    const index = fs.readFileSync(path.join(dir, 'MEMORY.md'), 'utf8');
+test('T-2/T-4/sprint-010 TST-01: in every agent-memory directory a dispatchable agent can load, MEMORY.md and the files beside it are a bijection - an index line landing without its target, and a memory file no index points at, both fail here', () => {
+  const roster = fs.readdirSync(path.join(REPO_ROOT, '.claude/agents')).filter((name) => name.endsWith('.md')).map((name) => name.slice(0, -3)).sort();
+  assert.ok(roster.length > 0, 'sanity: the agent roster must be derived from .claude/agents/*.md, or every check below passes vacuously - the hardcoded two-directory list this replaced is what let three of one round\'s six memory writes go unchecked');
+  const memoryRoot = path.join(REPO_ROOT, '.claude/agent-memory');
+  const written = fs.readdirSync(memoryRoot, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
+  assert.deepStrictEqual(written.filter((dir) => !roster.includes(dir)), ['asd-pm'], 'retired asd-pm must stay the only memory directory outside the roster: a directory no agent name matches is loaded by nobody, so a new name here is a memory write that reaches no dispatch - and it silently drops out of the loop below, which is the vacuity this comparison closes');
+
+  for (const agent of written.filter((dir) => roster.includes(dir))) {
+    const dir = path.join(memoryRoot, agent);
+    const memories = fs.readdirSync(dir).filter((name) => name.endsWith('.md') && name !== 'MEMORY.md').sort();
+    const indexPath = path.join(dir, 'MEMORY.md');
+    if (!fs.existsSync(indexPath)) {
+      assert.deepStrictEqual(memories, [], `${agent}/ holds memory files with no MEMORY.md beside them - nothing indexes them, so every one of them is a write no dispatch ever reads`);
+      continue;
+    }
+    const index = fs.readFileSync(indexPath, 'utf8');
     const links = [...index.matchAll(/\]\(([^)]+\.md)\)/g)].map((m) => m[1]);
     assert.ok(links.length > 0, `${agent}/MEMORY.md must list at least one memory file`);
     for (const link of links) {
       assert.ok(fs.existsSync(path.join(dir, link)), `${agent}/MEMORY.md links to "${link}" which does not exist`);
     }
-    for (const memory of fs.readdirSync(dir).filter((name) => name.endsWith('.md') && name !== 'MEMORY.md')) {
+    for (const memory of memories) {
       assert.ok(links.includes(memory), `${agent}/${memory} is written but not indexed by its MEMORY.md - only the index is always in context, so an unindexed memory is one the agent never loads and writing it was a no-op`);
     }
   }
@@ -3156,6 +3181,10 @@ test('AC-15: review-policy.md is sole SSoT for the reviewer read-only reconcilia
   assert.ok(providers.includes('Reviewer agents carry no artifact-write grant on either host'), 'providers.md must state the artifact-level grant fact it owns (tool config), distinct from the reconciliation review-policy.md owns');
   assert.ok(providers.includes('Gate Verdict Format'), 'providers.md must cite review-policy.md "Gate Verdict Format" for what the read-only claim covers and excludes, rather than restating the reconciliation independently');
   assert.ok(!providers.includes('memory: project` is a separate write channel reviewers do use'), 'providers.md must not restate the reconciliation sentence itself - that duplication is exactly what the citation exists to prevent');
+  assert.ok(!policy.includes('Sole statement of this claim'), 'the unscoped sole-statement claim was false the moment it was written (iter-03 DOC-1b): both review workflows and a rule doc also state that the reviewer itself performs no write, so an owning-side claim that every other site merely links contradicted them and invited a cut at whichever site was read next. Scope limit: this guards the literal from coming back, never the truth of a reworded ownership claim - over this corpus no derivable proxy separates a true declaration from a false one (test-plan.md, entry 5). The two assertions above are what keep it from going vacuous: they require the scoped statement to still be here');
+
+  const scopeLine = policy.split('\n').find((line) => line.includes('Reviewers write no review artifact, code or doc')) || '';
+  assert.ok(/agent memory/i.test(scopeLine) && scopeLine.includes('`artifact-layout.md`'), 'the scoped claim was STILL false after iter-03 (iter-04 EXT-1): a reviewer\'s own hand-authored memory file restated both halves this line claims only it states. A declaration must therefore bound its reach and name the surface it excludes. Asserted here: the line keeps a carve-out for agent memory AND a pointer to the rule that owns that surface - deliberately NOT the "in canon" qualifier the fix happened to word it with, which a synonym defeats and a correct rewording reddens. That the pointer resolves is the citation sweep\'s job; that this declaration still carries one is this assert\'s');
 });
 
 test('AC-15: providers.md records which emitted agent frontmatter fields are host-verified vs. emitted on trust', () => {
@@ -3182,8 +3211,12 @@ test('AC-15/iter-05: providers.md names External Review as the sole Bash carve-o
   assert.ok(!providers.includes('Enforced by config, not by a textual instruction repeated in reviewer bodies.'), 'the prior blanket enforcement sentence (true only for the four internal reviewers) must not survive verbatim now that a fifth reviewer agent is carved out');
 
   const externalRaw = sync.readNormalized(path.join(REPO_ROOT, '.asd/agents/asd-external-review.md'));
-  const { meta: externalMeta } = sync.parseCanonicalFrontmatter(externalRaw);
+  const { meta: externalMeta, body: externalBody } = sync.parseCanonicalFrontmatter(externalRaw);
   assert.ok(externalMeta.claude.tools.includes('Bash'), 'the agent providers.md names as the carve-out must actually carry the Bash grant the prose claims');
+
+  const writeBan = externalBody.split('\n').find((line) => line.includes('no file writes at all')) || '';
+  assert.ok(/memory/i.test(writeBan), 'External Review is the only reviewer whose body carries a blanket file-write prohibition, and its own frontmatter grants `memory: project` - so the prohibition must carve that channel out on the same bullet, where a reader of the ban sees it (iter-04 companion fix). Left unscoped it tells the agent its memory writes are forbidden while the host grants them, and that contradiction is invisible to every tool-grant assertion in this test');
+  assert.strictEqual(externalMeta.claude.memory, 'project', 'the carve-out cites `memory: project` as a grant this agent holds; if the frontmatter stops granting it, the body points at a channel that does not exist - the config-side twin of a dangling citation, and unasserted anywhere before this');
 
   for (const name of ['asd-reviewer-correctness', 'asd-reviewer-documentation', 'asd-reviewer-efficiency', 'asd-reviewer-testing']) {
     const raw = sync.readNormalized(path.join(REPO_ROOT, '.asd/agents', `${name}.md`));
@@ -3278,33 +3311,116 @@ test('AC-5: LEDGER_VOCABULARY is the single source validateCoverageLedger enforc
   assert.deepStrictEqual(vocabulary.files, savedFiles, 'the constant must be restored - later tests digest manifests through it');
 });
 
-test('AC-5: validate-ledger tolerates a manifest predating the vocabulary field and rejects a divergent one even when its digest was recomputed', () => {
+test('AC-5/AC-6b: validate-ledger tolerates a manifest predating each published constant - carrying neither, or `vocabulary` without `row_example` - and rejects a divergent one even when its digest was recomputed', () => {
   const ledgerFor = (manifest) => ({
     manifest_digest: manifest.digest, findings: [],
     files: [{ i: 'f-1', s: 'checked' }], rules: [{ i: 'r-1', s: 'pass' }], sections: [{ i: 's-1', s: 'reviewed' }],
   });
 
-  const preVocabularyDigest = (manifest) => {
+  const prePublicationDigest = (manifest) => {
     const copy = Object.assign({}, manifest);
     delete copy.digest;
     return runtime.fingerprint(copy);
   };
+  const validate = (manifest) => runtime.validateCoverageLedger(manifest, ledgerFor(manifest), []);
+
+  const published = [
+    ['vocabulary', runtime.LEDGER_VOCABULARY, (value) => { value.files = [...value.files, 'provisionally-checked']; }, /vocabulary/],
+    ['row_example', runtime.LEDGER_ROW_EXAMPLE, (value) => { value.p = 'invented predicate'; }, /row example/],
+  ];
 
   const legacy = buildManifest(['f-1'], ['r-1'], ['s-1']);
-  assert.strictEqual(legacy.vocabulary, undefined, 'sanity: the backward-tolerance fixture must genuinely lack the field');
-  legacy.digest = preVocabularyDigest(legacy);
-  assert.deepStrictEqual(runtime.validateCoverageLedger(legacy, ledgerFor(legacy), []), { ok: true }, 'every manifest written before this sprint lacks `vocabulary` AND carries a digest stamped the pre-vocabulary way - reproduced here from the untouched `fingerprint` primitive, so the fixture stays a legacy artefact instead of silently tracking whatever the digester does today. Requiring the field, or digesting an implied one, invalidates them all (correctness F-2)');
+  for (const [field] of published) assert.strictEqual(legacy[field], undefined, `sanity: the backward-tolerance fixture must genuinely lack \`${field}\``);
+  legacy.digest = prePublicationDigest(legacy);
+  assert.deepStrictEqual(validate(legacy), { ok: true }, 'the oldest manifests carry neither published field AND a digest stamped before either existed - reproduced here from the untouched `fingerprint` primitive, so the fixture stays a legacy artefact instead of silently tracking whatever the digester does today. Requiring a field, or digesting an implied one, invalidates them all (correctness F-2)');
 
-  const published = buildManifest(['f-1'], ['r-1'], ['s-1']);
-  published.vocabulary = structuredClone(runtime.LEDGER_VOCABULARY);
-  published.digest = runtime.coverageManifestDigest(published);
-  assert.deepStrictEqual(runtime.validateCoverageLedger(published, ledgerFor(published), []), { ok: true }, 'a manifest publishing the vocabulary must validate against a ledger written in that vocabulary');
+  const priorSprint = buildManifest(['f-1'], ['r-1'], ['s-1']);
+  priorSprint.vocabulary = structuredClone(runtime.LEDGER_VOCABULARY);
+  priorSprint.digest = prePublicationDigest(priorSprint);
+  assert.deepStrictEqual(validate(priorSprint), { ok: true }, 'AC-6b: every manifest stamped between the two publications has exactly this shape - `vocabulary` present, `row_example` absent. Each published constant must be independently optional, or adding the second one silently invalidated every manifest the first one stamped');
 
-  const divergent = buildManifest(['f-1'], ['r-1'], ['s-1']);
-  divergent.vocabulary = structuredClone(runtime.LEDGER_VOCABULARY);
-  divergent.vocabulary.files = [...divergent.vocabulary.files, 'provisionally-checked'];
-  divergent.digest = runtime.coverageManifestDigest(divergent);
-  assert.throws(() => runtime.validateCoverageLedger(divergent, ledgerFor(divergent), []), /vocabulary/, 'a hand-edited manifest advertising statuses the validator will not accept must be rejected outright - recomputing its digest makes it self-consistent, so the digest check alone never catches it');
+  for (const [field, constant, diverge, rejection] of published) {
+    const current = buildManifest(['f-1'], ['r-1'], ['s-1']);
+    current[field] = structuredClone(constant);
+    current.digest = runtime.coverageManifestDigest(current);
+    assert.deepStrictEqual(validate(current), { ok: true }, `a manifest publishing \`${field}\` must validate against a ledger written in it`);
+
+    const divergent = buildManifest(['f-1'], ['r-1'], ['s-1']);
+    divergent[field] = structuredClone(constant);
+    diverge(divergent[field]);
+    divergent.digest = runtime.coverageManifestDigest(divergent);
+    assert.throws(() => runtime.validateCoverageLedger(divergent, ledgerFor(divergent), []), rejection, `a hand-edited manifest publishing a \`${field}\` the validator does not enforce must be rejected outright - recomputing its digest makes it self-consistent, so the digest check alone never catches it`);
+  }
+});
+
+test('AC-6b: the published row example is a row validateCoverageLedger accepts once its placeholders are filled, carries exactly the decoration its own status requires, and review-policy.md publishes the same key set', () => {
+  const example = runtime.LEDGER_ROW_EXAMPLE;
+  const manifest = buildManifest(['f-1'], ['r-1'], ['s-1']);
+  manifest.row_example = structuredClone(example);
+  manifest.digest = runtime.coverageManifestDigest(manifest);
+  const ledgerWith = (fileRow) => ({
+    manifest_digest: manifest.digest, findings: [],
+    files: [fileRow], rules: [{ i: 'r-1', s: 'pass' }], sections: [{ i: 's-1', s: 'reviewed' }],
+  });
+  const placeholders = { i: 'f-1', p: 'no-f-1' };
+  const filled = Object.fromEntries(Object.entries(example).map(([key, value]) => [key, key in placeholders ? placeholders[key] : value]));
+
+  assert.strictEqual(example.s, runtime.LEDGER_VOCABULARY.p, 'the example must publish the one status the vocabulary names as carrying `p` - that pairing is the whole reason a single row can demonstrate the shape. Keyed to the vocabulary constant rather than to the status literal, so renaming the status moves both sides together');
+  let verdict;
+  try {
+    verdict = runtime.validateCoverageLedger(manifest, ledgerWith(filled), []);
+  } catch (error) {
+    verdict = `rejected: ${error.message}`;
+  }
+  assert.deepStrictEqual(verdict, { ok: true }, 'AC-6b: every reviewer copies this row shape out of its own manifest, so an example the validator rejects would teach every reviewer to return a ledger that fails the blocking gate - a failure visible only as a re-dispatch, never as a bad example. The rejection reason is reported in place of the verdict so the break names itself');
+
+  const undecorated = Object.assign({}, filled);
+  delete undecorated.p;
+  assert.throws(() => runtime.validateCoverageLedger(manifest, ledgerWith(undecorated), []), /predicate/, 'the example must carry the decorating key its status REQUIRES: dropping `p` from the filled row is rejected, which is what proves the published `p` is load-bearing rather than ornamental');
+
+  const policyLine = readRepoFile('.asd/rules/review-policy.md').split('\n').find((line) => line.includes('"row_example"'));
+  assert.ok(policyLine, 'review-policy.md "Coverage ledger" must publish the row example beside `vocabulary` - the orchestrator building a manifest reads the rule, the reviewer reads the manifest');
+  for (const key of Object.keys(example)) {
+    assert.ok(policyLine.includes(`"${key}"`), `review-policy.md's published example must name every key \`.asd/runtime.js\` actually stamps, \`${key}\` included - a documented shape short of the emitted one is the drift AC-6b's single-constant seam exists to prevent`);
+  }
+});
+
+test('sprint-010 T-1/D-2: a manifest keying `n_a` by row type - the shape a phase workflow emits - authorizes an n/a row of every row type, while any other keying is rejected by name instead of degrading to no authorized predicate', () => {
+  const vocabulary = runtime.LEDGER_VOCABULARY;
+  const rowTypes = Object.keys(vocabulary).filter((key) => Array.isArray(vocabulary[key]));
+  const ids = { files: ['f-1'], rules: ['r-1'], sections: ['s-1'] };
+  const stamp = (manifest) => { manifest.digest = runtime.coverageManifestDigest(manifest); return manifest; };
+  const ledgerFor = (manifest, rows) => Object.assign({ manifest_digest: manifest.digest, findings: [] }, rows);
+  const verdictOf = (manifest, ledger) => {
+    try { return `accepted: ${JSON.stringify(runtime.validateCoverageLedger(manifest, ledger, []))}`; } catch (error) { return `rejected: ${error.message}`; }
+  };
+
+  assert.deepStrictEqual(rowTypes, Object.keys(ids), 'both sides derive the row types from the vocabulary constant, so a fourth one must reach this fixture in the same change - otherwise every sweep below silently stops covering it');
+  const naRows = Object.fromEntries(rowTypes.map((type) => [type, ids[type].map((id) => ({ i: id, s: vocabulary.p, p: `no-${id}` }))]));
+  const plainRows = Object.fromEntries(rowTypes.map((type) => [type, ids[type].map((id) => ({ i: id, s: vocabulary[type][0] }))]));
+  assert.ok(rowTypes.every((type) => vocabulary[type][0] !== vocabulary.p), 'the plain ledger must genuinely carry no n/a row: a malformed manifest paired with one is the combination that passed silently before D-2, and a plain status equal to the n/a status would collapse that case into the rejection case beside it');
+
+  const emitted = stamp(buildManifest(ids.files, ids.rules, ids.sections));
+  assert.strictEqual(verdictOf(emitted, ledgerFor(emitted, naRows)), 'accepted: {"ok":true}', 'D-2: `n_a` is the one manifest field an orchestrator hand-builds per dispatch (review-policy.md "Coverage ledger": the allowed n/a predicates per individual ID), and nothing bound the shape it writes - row type, then id, then predicate list - to the shape validateCoverageLedger reads back out. One truthful n/a row per row type is what binds them');
+
+  const unauthorized = Object.assign({}, naRows, { files: [{ i: ids.files[0], s: vocabulary.p, p: 'a predicate this manifest never authorized' }] });
+  assert.ok(verdictOf(emitted, ledgerFor(emitted, unauthorized)).startsWith('rejected:'), "the predicate must be checked against that id's own list rather than merely be present, or the acceptance above proves only that a well-shaped manifest is ignored consistently");
+
+  const flat = buildManifest(ids.files, ids.rules, ids.sections);
+  flat.n_a = Object.fromEntries(rowTypes.flatMap((type) => ids[type].map((id) => [id, [`no-${id}`]])));
+  stamp(flat);
+  const flatVerdict = verdictOf(flat, ledgerFor(flat, plainRows));
+  assert.ok(flatVerdict.startsWith('rejected:') && flatVerdict.includes(ids.files[0]), `D-2: keyed by id instead of by row type, every lookup missed and each id resolved to an empty predicate set - truthful n/a rows rejected as unauthorized while the malformed manifest itself validated, the unknown-id guard iterating an empty object. This exact pairing, a plain ledger over a mis-keyed manifest, is the silent pass, and the rejection must name the offending key or the orchestrator that wrote it has nothing to correct. Got: ${flatVerdict}`);
+
+  for (const malformed of [[], 'files', null, 42]) {
+    const broken = stamp(Object.assign(buildManifest(ids.files, ids.rules, ids.sections), { n_a: malformed }));
+    assert.ok(verdictOf(broken, ledgerFor(broken, plainRows)).startsWith('rejected:'), `an n_a that is no object of row types (${JSON.stringify(malformed)}) must fail closed: read through the label lookup with its empty-object fallback it degrades to the same empty predicate set as the mis-keyed one above, which rejects truthful rows instead of the manifest`);
+  }
+
+  const legacy = buildManifest(ids.files, ids.rules, ids.sections);
+  delete legacy.n_a;
+  stamp(legacy);
+  assert.strictEqual(verdictOf(legacy, ledgerFor(legacy, plainRows)), 'accepted: {"ok":true}', 'a manifest authorizing no n/a at all omits `n_a` entirely, so the shape check must stay conditional on its presence - made mandatory, the fix for D-2 rejects every manifest whose review needed no n/a row');
 });
 
 test('AC-1/AC-2: git-strategy.md "Commit before review" is the sole home of the staging prohibition, asd-dev.md carries the git grant that makes it followable, and asd-phase-impl.md states the shared worktree while citing the rule', () => {
@@ -3327,16 +3443,36 @@ test('AC-1/AC-2: git-strategy.md "Commit before review" is the sole home of the 
   const workflow = readRepoFile('.asd/workflows/asd-phase-impl.md');
   assert.ok(workflow.includes('concurrently dispatched tasks share one worktree'), 'AC-2: the dispatch payload must tell a dev why staging discipline matters before a collision teaches it');
   assert.ok(workflow.includes('`git-strategy.md` "Commit before review" — do not restate here'), 'the workflow must cite the rule, not restate it');
+
+  const wholeTreeClause = gitStrategy.split('never a whole-tree command — ')[1];
+  assert.ok(wholeTreeClause, 'sprint 010 AC-2: git-strategy.md must name the whole-tree commands as a class, since the ban now covers forms (`--renormalize`, `stash`) that no path-scoped equivalent replaces');
+  const wholeTreeCommands = [...wholeTreeClause.split(' — even where')[0].matchAll(/`([^`]+)`/g)].map((match) => match[1]);
+  assert.ok(wholeTreeCommands.length >= 4, 'the clause must enumerate the banned commands - an unenumerated "whole-tree command" is not a rule an agent can check its own command against');
+  assert.ok(gitStrategy.includes('unconditional for a dispatched agent'), 'AC-2/G-3: the agent-facing half must be unconditional - a dispatched agent cannot observe whether a sibling dispatch is in flight, so a conditional ban would be unfollowable by the role it governs');
+
+  const mirror = readRepoFile('.asd/project/custom-coding-rules.md');
+  for (const command of wholeTreeCommands) {
+    assert.ok(mirror.includes(command), `custom-coding-rules.md is the one permitted mirror of the staging rule, so it must name every command git-strategy.md bans, \`${command}\` included. Derived from the owner's own clause rather than re-listed here, so extending the ban fails on the un-mirrored side instead of passing on a stale copy`);
+  }
+  assert.ok(mirror.includes('git-strategy.md'), 'the mirror must hand the full contract back to its owner rather than reading as a second, self-contained rule');
 });
 
-test('AC-13b: git-strategy.md "Commit before review" names the reviewer agent-memory it commits, and both *-review workflows name that commit at the step that writes the review file', () => {
+test('AC-13b/sprint-010 AC-3: git-strategy.md "Commit before review" names every agent-memory write whose author cannot commit it - the reviewer\'s and a concurrent co-author\'s - and both *-review workflows name that commit at the step that writes the review file', () => {
   const bookkeeping = readRepoFile('.asd/rules/git-strategy.md').split('\n').find((line) => line.includes('The main orchestrator commits its own bookkeeping'));
   assert.ok(bookkeeping, 'git-strategy.md must still enumerate the bookkeeping the orchestrator commits - it is the sole home of commit ownership');
   assert.ok(/agent-memory writes/.test(bookkeeping), 'AC-13b: the memory class must be named in the list the committer reads. Stated only where the reviewer reads it, the write never reaches a commit and the change-surface rule never sees it - the exact one-sided obligation this sprint exists to close');
   assert.ok(bookkeeping.includes('a reviewer holds no commit tool'), 'the reason the orchestrator commits a file it did not author must stand beside the obligation: the same sentence otherwise obliges every dispatched agent to commit its own paths, which a read-only reviewer cannot do');
   assert.ok(bookkeeping.includes('`review-policy.md` "Change-surface rule"'), 'the entry must cite the rule that puts agent memory in the surface, or it reads as an arbitrary extra file and gets dropped by the next editor');
 
-  assert.ok(readRepoFile('.asd/rules/review-policy.md').includes('`git-strategy.md` "Commit before review", which owns that bookkeeping'), 'review-policy.md states the obligation but must hand the bookkeeping to its owner rather than keeping a second copy of it');
+  assert.ok(bookkeeping.includes('concurrent co-author'), 'sprint-010 AC-3: the reviewer carve-out covers a reviewer holding no commit tool; it does not reach an author who HAS one but cannot stage a file a concurrent co-author holds mid-edit. Unnamed, that file is committed by nobody and never reaches the reviewed diff - the same one-sided obligation AC-13b closed for reviewers');
+  assert.ok(bookkeeping.includes('`artifact-layout.md` "Agent memory"'), 'the co-author case must cite the file that defines when two agents share one memory file, or "concurrent co-author" is a condition with no definition an agent can evaluate');
+
+  const memoryOwner = readRepoFile('.asd/rules/artifact-layout.md');
+  assert.ok(memoryOwner.includes('co-authorship arises only between concurrent dispatches of the same agent'), 'sprint-010 AC-3: artifact-layout.md "Agent memory" defines memory as per-agent, so it must also say when two agents can hold one file - otherwise the collision the commit rule now handles has no stated trigger');
+
+  const reachability = readRepoFile('.asd/rules/review-policy.md');
+  assert.ok(reachability.includes('`git-strategy.md` "Commit before review", which owns that bookkeeping'), 'review-policy.md states the obligation but must hand the bookkeeping to its owner rather than keeping a second copy of it');
+  assert.ok(/concurrent co-author holds[^\n]*the same rule assigns it/.test(reachability), 'sprint-010 AC-3: "Diff reachability" is where the ownerless-file class is enumerated, so the co-author case belongs in that enumeration as a pointer - a class named only in git-strategy.md is invisible where reviewers and workflows read the reachability rule');
 
   for (const rel of ['.asd/workflows/asd-phase-impl-review.md', '.asd/workflows/asd-phase-design-review.md']) {
     const writeStep = readRepoFile(rel).split('\n').find((line) => line.includes('the reviewer itself performs no write'));
@@ -3393,13 +3529,17 @@ test('AC-4/AC-11/AC-14: review-policy.md carries the correlated-interruption bra
   assert.ok(workflow.includes('`review-policy.md` "Verify before applying" — do not restate here'), 'the impl side of AC-11 must cite the rule at the point the dev reads its fix instruction; a rule no dispatched agent reads is the failure mode this sprint exists to fix');
 });
 
-test('AC-8: external-review.md "Outcome contract" is the sole home of what a dispatched External Review may return, review-policy.md hands the whole question to it, and the agent forbids both the background run and the empty return', () => {
+test('AC-8/sprint-010 AC-4: external-review.md "Outcome contract" is the sole home of what a dispatched External Review may return, an availability skip reaches the friction log as well as the decisions log, review-policy.md hands the whole question to it, and the agent forbids both the background run and the empty return', () => {
   const external = readRepoFile('.asd/rules/external-review.md');
   assert.ok(external.includes('## Outcome contract'), 'external-review.md must carry the outcome contract as its own named section, since review-policy.md and the agent both cite it by name');
   assert.ok(/awaits the wrapped CLI inside its own dispatch and never backgrounds it/.test(external), 'F-8 was a dispatch that returned while its CLI was still running - the await obligation is the fix');
   assert.ok(external.includes('is not permitted and is not a verdict'), 'an empty return must be named as neither of the two outcomes, or it stays an undefined third state');
   assert.ok(external.includes('"Interrupted dispatch"'), 'the contract must name where a non-outcome is disposed, rather than leaving the boundary with review-policy.md a hole');
   assert.ok(external.includes('a precondition missing before any invocation (prompt template absent) aborts the dispatch instead'), 'the two-outcome contract is scoped to a dispatch that reached the invocation; drop this carve-out and a missing prompt template returns an availability skip, which passes a review gate on an artefact that was never reviewed - the F-8 class itself');
+
+  const skipBullet = external.split('\n').find((line) => line.includes('APPROVE (skipped: external review unavailable: <specific status>)`; the dispatching workflow persists'));
+  assert.ok(skipBullet, 'external-review.md must state what the workflow does with an availability skip on the same bullet that defines the skip');
+  assert.ok(/friction entry/.test(skipBullet) && skipBullet.includes(FRICTION_APPEND_REF.split(' per ')[1]), 'sprint-010 AC-4: a skipped External Review is a review that did not happen, so it must reach the friction log as well as the decisions log - recorded nowhere durable, the retro cannot see that a required reviewer never ran. Keyed to the same `sprint-lifecycle.md` "Friction log" citation every phase workflow carries, so the writer mechanism stays stated once');
 
   const policy = readRepoFile('.asd/rules/review-policy.md');
   assert.ok(!policy.includes("External Review's unavailability path is"), 'the old scoping line handed off only the unavailability path, which is what left an empty return undisposed on both sides');
@@ -3500,6 +3640,287 @@ test('AC-10: asd-phase-impl.md builds fix modes as one ordered chain with no par
   const dispatchLine = lines.find((line) => line.includes('sequential where dependent; parallel where independent'));
   assert.ok(dispatchLine, 'the dispatch step\'s own parallelism, shared with initial mode, must survive - AC-10 narrows fix modes only, and losing this line would serialize the whole phase');
   assert.ok(dispatchLine.includes('initial mode only'), 'the surviving parallelism must be scoped where it is stated: unscoped, the dispatch step reads as authorizing in a fix mode precisely what step 5 forbids, and a reader reaching step 6 first follows it');
+});
+
+test('sprint-010 AC-9 (C-10): a Claude reasoning effort outside its vocabulary fails the render closed wherever the field is emitted, symmetrically with the Codex check - `ultra` being a Codex-only value', () => {
+  const check = (canon) => {
+    const root = makeMiniRepo();
+    writeAgentCanon(root, 'effort-probe', canon);
+    return () => sync.runCheck(root);
+  };
+  const withClaudeEffort = (value) => GOOD_AGENT_CANON.replace('"effort": "high"', `"effort": ${JSON.stringify(value)}`);
+
+  assert.doesNotThrow(check(withClaudeEffort('xhigh')), 'the vocabulary must admit every value the host accepts - a check narrower than the host silently forbids a legitimate retier');
+  assert.doesNotThrow(check(GOOD_AGENT_CANON.replace('"effort": "high",\n', '')), 'effort is optional (the haiku tier declares none), so an absent field must stay valid - a required-field check would reject every mechanical variant');
+  assert.doesNotThrow(check(GOOD_AGENT_CANON.replace('"model_reasoning_effort": "high"', '"model_reasoning_effort": "ultra"')), 'the two vocabularies differ by exactly this member: `ultra` is valid on a non-luna Codex model, so a Claude check copied onto the Codex side (or vice versa) breaks one of them');
+  assert.throws(check(withClaudeEffort('ultra')), /invalid effort/, 'C-10: `ultra` is a Codex-only value. Emitted for Claude it is silently ignored by the host, so the agent runs at the host default while canon, README and the tier matrix all claim otherwise - the failure mode is invisible in every artefact anyone reads');
+  assert.throws(check(withClaudeEffort('very-high')), /invalid effort/, 'a typo in the effort field must fail the render, exactly as an unknown model family already does - the Codex side has validated this since it shipped and the Claude side is the asymmetry C-10 recorded');
+
+  const effortWithoutModel = GOOD_AGENT_CANON.replace('"model": "opus",\n    "effort": "high"', '"effort": "bogus"');
+  assert.ok(!effortWithoutModel.includes('"model": "opus"') && effortWithoutModel.includes('"effort": "bogus"'), 'the fixture is a literal replace over the shared canon, so a reformatted canon silently makes it a no-op - the case below would then re-run the model-present path the assertions above already cover and stay green while the emission-site path went untested');
+  assert.throws(check(effortWithoutModel), /invalid.*effort/i, 'the emitted `effort:` line is guarded by `claude.effort` alone, so its validation must be too. Guarded instead by a sibling field (`claude.model`), the check misses every agent that declares an effort without a model family - the render writes `effort: bogus` into the generated view unchallenged, which is precisely the silent-ignore failure C-10 asked to close');
+
+  assert.throws(check(withClaudeEffort('')), /invalid effort/, 'an empty effort must reach the validator and fail closed. Guarded on truthiness the emission skipped it entirely: canon declared an effort, the generated view carried none, and `--check` stayed green over that mismatch - the same silent-ignore class C-10 opened, arrived at from the emitter side rather than the vocabulary side');
+  assert.throws(check(GOOD_AGENT_CANON.replace('"model": "opus"', '"model": "opus-xl"')), /effort-probe.*opus-xl.*effort "high"/, 'the unknown-family diagnostic must name the agent, the family, the resolved model and the effort on the Claude path too. Special-cased by provider, the Claude branch built its message without the agent argument it was handed, leaving a reader debugging it with no agent name and no route to the effort check that lives beside it');
+});
+
+test('sprint-010 AC-9 (G-12): `core.md` "See also" is the rule-doc index - it lists every other `.asd/rules/*.md` and nothing else - and neither AGENTS.md nor t_AGENTS.md keeps a second copy of that list', () => {
+  const ruleDocs = fs.readdirSync(path.join(REPO_ROOT, '.asd/rules'))
+    .filter((name) => name.endsWith('.md') && name !== 'core.md')
+    .sort();
+  const seeAlso = readRepoFile('.asd/rules/core.md').split('## See also')[1];
+  assert.ok(seeAlso, 'core.md must keep its "See also" section: every other site now points at it instead of carrying its own list, so its absence leaves the rule-doc set indexed nowhere');
+  const indexed = [...seeAlso.matchAll(/^- `([a-z0-9-]+\.md)`/gm)].map((match) => match[1]).sort();
+  assert.deepStrictEqual(indexed, ruleDocs, 'G-12: the index must be a bijection with the directory. Checked both ways deliberately - a new rule doc nobody indexed is unreachable for any agent reading the index, and an indexed doc that no longer exists sends a reader to a missing file. This is the mirror class that drifted for whole sprints under a green suite, because only the phase-chain and agent-count mirrors were machine-checked');
+
+  for (const rel of ['AGENTS.md', '.asd/templates/t_AGENTS.md']) {
+    const content = readRepoFile(rel);
+    const headings = content.split('\n').filter((line) => line.startsWith('### Rule docs'));
+    assert.strictEqual(headings.length, 1, `${rel} must carry exactly one "Rule docs" section - two would put this check on one of them while the other drifts`);
+    const section = content.split(headings[0])[1].split('\n### ')[0];
+    assert.ok(section.includes('`core.md` "See also"'), `${rel} "Rule docs" must point at the index, or the reader has no route from here to the rule-doc set`);
+    assert.deepStrictEqual(ruleDocs.filter((doc) => section.includes(doc)), [], `${rel} "Rule docs" must not re-list the docs beside the pointer: the copy that used to live here drifted two entries behind core.md and shipped that way to every consumer through t_AGENTS.md. Naming core.md alone is what keeps this section a pointer`);
+  }
+});
+
+test('sprint-010 AC-7/G-9: artifact-layout.md "Documentation economy" is the rule\'s sole home, AGENTS.md and code-style.md §7 point at it, and it is a derivable rubric id of the documentation reviewer - the only path into the blocking coverage ledger', () => {
+  const home = '.asd/rules/artifact-layout.md';
+  const rule = readRepoFile(home).split('## Documentation economy')[1];
+  assert.ok(rule, 'AC-7: the rule needs one canonical home with a named section, since its enforcement and both pointers cite it by name');
+  const decisionTests = ['**removal**', '**provenance**', '**enforcement**'];
+  for (const decisionTest of decisionTests) {
+    assert.ok(rule.split('\n## ')[0].includes(decisionTest), `AC-7/G-7: the rule must state its decision procedure - ${decisionTest} is one of the three tests a reviewer applies. A rule saying only what to exclude, with no procedure, decides nothing and is enforced as taste`);
+  }
+  assert.ok(rule.includes('Never cut, whatever the length'), 'AC-7: the preserve-list is what stops the rule cutting the text it protects - a machine-parsed token, an enumeration whose completeness is the rule, a stated failure mode. Without it the rule authorizes exactly the deletions that break the suite');
+  const section = rule.split('\n## ')[0];
+  assert.ok(/removal[^.]*necessary/i.test(section) && /corroborate/.test(section), 'AC-7: removal must be the controlling test rather than one of three alternatives. OR-joined, a line no logged defect happens to cite is cuttable on provenance alone even where a reading agent genuinely acts differently without it - provenance and enforcement can only corroborate a cut removal already allows');
+  const preserve = section.split('Never cut')[1] || '';
+  assert.ok(/normative/.test(preserve) && /at its home/.test(preserve), 'AC-7: the preserve-list must keep normative prose - a gate, safety boundary, ownership assignment, precondition, recovery duty - and keep it scoped to its home. Unscoped, that class shields every restatement elsewhere from the SSoT rule this same file declares above it');
+  assert.ok(/prohibition/.test(preserve), "AC-7: a standalone safety, security, authority or irreversible-action prohibition has no paired positive rule by construction, so the preserve-list must name it; the cut-on-sight bullet as first worded authorised deleting this framework's own such bans");
+
+  for (const rel of canonMarkdownFiles()) {
+    if (rel === home) continue;
+    for (const decisionTest of decisionTests) {
+      assert.ok(!readRepoFile(rel).includes(`${decisionTest} —`), `${rel} must cite the economy rule rather than restating its three tests - a second copy of a cut-or-keep procedure is the SSoT violation the rule itself makes a FAIL`);
+    }
+  }
+
+  for (const [rel, marker] of [['AGENTS.md', 'minimize runtime tokens'], ['.asd/rules/code-style.md', 'Comments concise and clear']]) {
+    const pointer = readRepoFile(rel).split('\n').find((line) => line.includes(marker));
+    assert.ok(pointer, `${rel} must keep its economy line - reduced to a pointer, not deleted: it is where a dev or reviewer working in that file meets the rule at all`);
+    assert.ok(pointer.includes('artifact-layout.md') && pointer.includes('Documentation economy'), `${rel}'s economy line must cite the new home by section, or the two former paragraphs grow back into second homes`);
+  }
+
+  const rubricIds = (rel) => {
+    const rubric = readRepoFile(rel).split('## Review rubric')[1].split('\n## ')[0];
+    const headings = [...rubric.matchAll(/^### (.+)$/gm)].map((match) => match[1].trim());
+    return headings.length > 0 ? headings : [...rubric.matchAll(/^- \*\*(.+?)\*\*/gm)].map((match) => match[1].trim());
+  };
+  for (const reviewer of ['correctness', 'efficiency', 'testing', 'documentation']) {
+    assert.ok(rubricIds(`.asd/agents/asd-reviewer-${reviewer}.md`).length > 0, `G-9: review-policy.md derives every manifest's rubric ids from this reviewer's \`## Review rubric\` - sectioned rubrics by their \`###\` headings, else by each bullet's bold lead-in. A rubric matching neither shape yields no ids, and a manifest with no rubric rows makes the reviewer's verdict unverifiable while still validating`);
+  }
+  assert.ok(rubricIds('.asd/agents/asd-reviewer-documentation.md').includes('Documentation economy'), 'AC-7: the rubric bullet is the rule\'s only path into the blocking coverage ledger, and it counts only if the derivation above yields it as an id. Stated in prose the reviewer would read it; enumerated as an id it must resolve a row before any verdict counts');
+});
+
+test('sprint-010 AC-1: the wave declaration is defined once in sprint-lifecycle.md "Plan file format", written by asd-phase-plan.md, dispatched from by asd-phase-impl.md steps 5-6, and slotted in t_plan.md', () => {
+  const lifecycle = readRepoFile('.asd/rules/sprint-lifecycle.md');
+  const declaration = lifecycle.split('\n').find((line) => line.startsWith('**Wave declaration**'));
+  assert.ok(declaration, 'AC-1/G-2: `wave` was vocabulary no canon file defined. It needs exactly one definition, in the section that owns the plan format, before either workflow can cite it');
+  assert.ok(declaration.includes('is alone in its wave'), 'AC-1 is the ordering rule itself: a task changing the dispatch or commit contract runs ahead of everything dispatched under it, alone. Without "alone", a contract change may share a wave with a task dispatched under the contract it is changing - the F-1 failure this criterion exists to prevent');
+  assert.ok(declaration.includes('Every Task appears in exactly one wave'), 'the partition property is what makes the table a schedule: a task in no wave is never dispatched, a task in two is dispatched twice');
+  assert.ok(declaration.includes('`asd-phase-impl.md` steps 5-6'), 'the definition must name its consumer, since the rule binds only where impl actually schedules');
+
+  const planWorkflow = readRepoFile('.asd/workflows/asd-phase-plan.md');
+  assert.ok(planWorkflow.includes('assign every Task to a wave and write the wave table into `## Dependencies`'), 'AC-1/G-1: the plan phase had no step that computed any ordering, so the criterion had nothing to attach to. The waves must be assigned where the plan is authored - impl cannot invent an ordering the plan never declared');
+  assert.ok(planWorkflow.includes('`sprint-lifecycle.md` "Plan file format"'), 'the plan step must cite the definition rather than restate the isolation rule');
+
+  const implLines = readRepoFile('.asd/workflows/asd-phase-impl.md').split('\n');
+  const graphLine = implLines.find((line) => line.trim().startsWith('- initial —'));
+  assert.ok(graphLine && graphLine.includes("the plan's wave table is the graph"), 'AC-1: impl must schedule from the declared waves. Re-deriving its own topological sort discards the isolation rule silently - the plan would say "alone in wave 2" and impl would dispatch it beside anything it shares no dependency line with');
+  assert.ok(graphLine.includes('never re-derived from the dependency lines'), 'the dependency lines survive as explanation; saying so is what keeps a reader from treating them as a second, competing schedule');
+  assert.ok(graphLine.includes('fall back'), 'a plan authored before this rule carries no table, so the old topological sort must remain reachable as the stated fallback - an in-flight sprint would otherwise be unschedulable');
+  const dispatchLine = implLines.find((line) => line.includes('the next wave opening only once all their signals are in'));
+  assert.ok(dispatchLine, 'AC-1: the barrier between waves is the enforcement. Waves that overlap make isolation nominal - a contract-changing task still in flight while the next wave dispatches is the same failure as sharing its wave');
+
+  const template = readRepoFile('.asd/templates/t_plan.md');
+  assert.ok(template.includes('| Wave | Tasks |'), 'AC-1/G-1: the section was optional and free-form, and an ordering rule cannot be enforced from an optional section. The table needs a slot the author fills and the impl parser reads');
+  assert.ok(/^- `## Dependencies` is required/m.test(template), 'the parser-critical comment block enumerates every line rule the plan parser depends on; a required section missing from that enumeration is a rule the author never sees');
+});
+
+test('sprint-010 AC-5a/AC-5b: the authorised-paths diff read is a condition of asd-phase-impl.md\'s all-modes completion gate, not of its fix-mode-only bookkeeping step, the workflow declares the git operation that gate runs on, and code-style.md §17 keeps the fail-first restore obligation the gate exists to catch', () => {
+  const implLines = readRepoFile('.asd/workflows/asd-phase-impl.md').split('\n');
+  const start = implLines.findIndex((line) => line.startsWith('9. **Impl completion gate**'));
+  assert.ok(start >= 0, 'the completion gate must keep its step number: every other step cites it by number, and this check locates the gate that way');
+  assert.ok(implLines[start].includes('(all modes)'), 'AC-5b: the gate must stay all-modes. A review-fix or test-fix round is exactly where an agent edits a path nobody assigned it, so a gate scoped to initial mode misses the rounds that need it');
+  const gate = implLines.slice(start, implLines.findIndex((line, index) => index > start && /^1[0-9]\. /.test(line))).join('\n');
+
+  const condition = 'every path it touches is one those agents were authorised to touch';
+  assert.ok(gate.includes(condition), 'AC-5b/F-5: the round\'s diff must be read before committing or advancing. Unread, an unrestored mutation or a scripted edit that rewrote more than its target rides into the commit and reaches review as authored work');
+  assert.ok(gate.includes('what its agents committed plus anything still uncommitted'), 'the read must span both, or the one thing it is aimed at - a mutation left on disk, never staged - is exactly what it cannot see');
+  assert.ok(gate.includes('Distinct from `code-style.md` §19'), 'the two checks share a tool and differ in question: §19 lints staged CONTENT, this gate asks which PATHS moved. Unmarked, one gets deleted as a duplicate of the other');
+  assert.strictEqual(readRepoFile('.asd/workflows/asd-phase-impl.md').split(condition).length - 1, 1, 'the condition must live in exactly one step. Copied into the fix-mode step as well, the two drift; moved there instead, initial mode loses the gate entirely');
+
+  const operations = readRepoFile('.asd/workflows/asd-phase-impl.md').split('\n## Operations used')[1].split('\n## ')[0];
+  const runGrant = operations.split('\n').find((line) => line.startsWith('- run command:'));
+  assert.ok(runGrant && runGrant.includes('git diff'), 'AC-5b: the gate asks which paths moved across committed AND uncommitted work, which only git answers, so `## Operations used` must declare that operation. Stated at the acting site with no tool declared behind it, the gate is an obligation the phase cannot discharge');
+
+  const tests17 = readRepoFile('.asd/rules/code-style.md').split('\n## 17. Tests')[1].split('\n## ')[0];
+  assert.ok(/restored before the agent's next tool call/.test(tests17), 'AC-5a: §17 is the sole home of the fail-first restore obligation and no file mirrors it, so nothing but this assertion stands between the bullet and an economy pass reading it as procedural detail. Deleted, a mutation left on disk stops being a defect anyone can cite');
+  assert.ok(/mutation left on disk is a defect/.test(tests17), 'AC-5a states the consequence separately from the instruction deliberately: without it a green suite reads as evidence that the tree is clean, which is exactly what an unrestored mutation makes it not (F-5)');
+});
+
+test('sprint-010 AC-10: the documentation economy rule carries both its authoring obligation and its review consequence in its own home, code-style.md §1 sends an author to every iron rule, and providers.md grants that home to every role whose context is a fixed list', () => {
+  const layout = readRepoFile('.asd/rules/artifact-layout.md');
+  const rule = layout.split('## Documentation economy')[1].split('\n## ')[0];
+  assert.ok(/tests bind while authoring/.test(rule), 'AC-10: stated only as something a reviewer judges, the rule reaches an author after the text is already written, and applying it costs a whole review round. The authoring obligation belongs in the rule\'s own home - the one file every authoring role is granted - not in a file half of them never load');
+  assert.ok(rule.includes('Violation = `FAIL` from Documentation reviewer'), 'AC-10 is two-sided: the authoring sentence must not displace the enforcement one, or the rule degrades to advice with no blocking gate behind it');
+
+  const ironRules = [...layout.matchAll(/^## (.+) \(iron rule\)$/gm)].map((match) => match[1]);
+  assert.strictEqual(ironRules.length, 2, 'artifact-layout.md declares the iron rules code-style.md §1 sends authors to, and that bullet enumerates them by name. A third iron rule added here must be named there in the same change, or it inherits the review-only reading AC-10 exists to remove');
+  const economy = ironRules.find((heading) => /economy/i.test(heading));
+  assert.ok(economy, 'the economy rule must stay an iron-rule heading: the §1 bullet, the documentation reviewer\'s rubric id and both pointer sites all select it by that section');
+
+  const proactive = readRepoFile('.asd/rules/code-style.md').split('\n').find((line) => line.includes('PROACTIVELY while authoring'));
+  assert.ok(proactive, 'code-style.md §1 must keep a proactive-authoring bullet: it is where a dev or tester meets an authoring obligation at all, and every reviewer-side rule reaches them only after the text exists');
+  assert.ok(proactive.includes('iron rules'), `AC-10: the bullet must send authors to both of artifact-layout.md's iron rules; naming one of ${ironRules.length} in the singular implies the other is review-only, which is how the economy rule read before this criterion`);
+  assert.ok(proactive.toLowerCase().includes(economy.toLowerCase()), `the bullet must name "${economy}" alongside SSoT - a list that names only SSoT is exactly the omission that left the economy rule enforceable but never authored against`);
+
+  const table = readRepoFile('.asd/rules/providers.md').split('## Role-scoped context')[1].split('\n## ')[0];
+  const rows = [...table.matchAll(/^\| (.+?) \| (.+?) \|$/gm)].filter(([, role]) => role !== 'Role');
+  assert.ok(rows.length >= 10, 'the role table must parse into rows, or every grant assertion below passes vacuously over an empty list - the failure mode that makes a reach check worthless');
+  const exemptPhrase = 'files named by the consulting question';
+  const exempt = rows.filter(([, , context]) => context.includes(exemptPhrase)).map(([, role]) => role.trim());
+  assert.deepStrictEqual(exempt, ['`asd-advisor`'], "exactly one row is exempt and it is the advisor's - granted the files its consulting question names rather than a fixed list, it has no fixed grant to assert against. Left uncounted, any number of rows could adopt that wording and drop out of the sweep below in silence: a role reading the economy rule nowhere, reported as covered");
+  for (const [, role, context] of rows) {
+    if (context.includes(exemptPhrase)) continue;
+    assert.ok(context.includes('artifact-layout.md'), `AC-10: ${role} writes text a later agent reads, so its row must grant artifact-layout.md - the rule's home, and the only route to it for a role that never loads code-style.md`);
+  }
+});
+
+test('sprint-010 iter-02: review-policy.md "Nitpick drop list" is the only enumeration inside the rule set every nitpick-instructed agent is granted, and the outbound external prompts are the sole exempt copies', () => {
+  const policy = readRepoFile('.asd/rules/review-policy.md');
+  const section = policy.split('## Nitpick drop list')[1];
+  assert.ok(section, 'review-policy.md must keep the drop list as its own named section: every reviewer body now says only "never raise nitpick categories", so this section is the sole place those category names exist for an agent that reads our rules');
+  const categories = [...section.split('\n## ')[0].matchAll(/^- (.+)$/gm)].map((match) => match[1].trim());
+  assert.ok(categories.length >= 5, `the section must enumerate the categories rather than name the class: a reviewer told to drop "nitpick categories" with nothing to resolve them against cannot check a finding against the rule. Found ${categories.length}`);
+
+  const table = readRepoFile('.asd/rules/providers.md').split('## Role-scoped context')[1].split('\n## ')[0];
+  const grants = new Map([...table.matchAll(/^\| (.+?) \| (.+?) \|$/gm)]
+    .filter(([, role]) => role !== 'Role')
+    .map(([, role, context]) => [role.trim().replace(/`/g, ''), context]));
+  assert.ok(grants.size >= 10, 'the role table must parse into rows, or every grant assertion below passes vacuously over an empty map - the failure mode that makes a reach check worthless');
+
+  const agentFiles = fs.readdirSync(path.join(REPO_ROOT, '.asd/agents')).filter((file) => file.endsWith('.md'));
+  const instructed = agentFiles.filter((file) => /nitpick/i.test(readRepoFile(`.asd/agents/${file}`))).map((file) => file.replace(/\.md$/, '')).sort();
+  const reviewers = agentFiles.filter((file) => file.startsWith('asd-reviewer-') || file === 'asd-external-review.md').map((file) => file.replace(/\.md$/, '')).sort();
+  assert.deepStrictEqual(instructed, reviewers, 'the set carrying the nitpick prohibition must be exactly the review agents - derived from the agent file set, never a hardcoded list, so a new reviewer that never received the instruction fails here instead of shipping as a silently permissive gate');
+  for (const name of instructed) {
+    const context = grants.get(name);
+    assert.ok(context, `providers.md must carry a Role-scoped context row for ${name}, or the grant its prohibition depends on is stated nowhere`);
+    assert.ok(context.includes('review-policy.md'), `${name} is told to drop nitpick categories without being given the category names, so its row must grant review-policy.md - the file holding the only enumeration. Ungranted, the instruction resolves to nothing at dispatch`);
+  }
+
+  assert.ok(categories.some((category) => category.includes('you could also')), 'the list must keep its most distinctive category, the token the sole-home sweep below selects on');
+  const copies = canonMarkdownFiles().filter((rel) => rel !== '.asd/rules/review-policy.md' && readRepoFile(rel).includes('you could also')).sort();
+  assert.deepStrictEqual(copies, [
+    '.asd/templates/external-review/t_prompt-external-design.md',
+    '.asd/templates/external-review/t_prompt-external-impl.md'
+  ], 'the two outbound prompt templates are the one legitimate second copy - the wrapped CLI is handed that text and cannot read review-policy.md - and both must keep it, or an external reviewer is told to drop categories it is never shown. Any other file reproducing them is the drifted copy this round deleted from asd-reviewer-correctness.md, which had aged to four of the five. Scoped to this one token deliberately: a reworded copy evades it, so this proves the token is sole-homed, never that no paraphrase exists');
+});
+
+test('sprint-010 iter-02: each latch non-restatement declaration denies only what its own site omits - the red-full-suite invalidation keeps its rule home and both step-9 acting sites while review-policy.md stops restating it, and neither review workflow denies the mechanic it spells out', () => {
+  const latchSection = readRepoFile('.asd/rules/sprint-lifecycle.md').split('## APPROVE latch')[1].split('\n## ')[0];
+  assert.ok(latchSection.includes('**Red-full-suite invalidation.**'), 'sprint-lifecycle.md "APPROVE latch" is the sole home of latch persistence and claims to name every route that clears it, so the red-suite route must live here - review-policy.md just dropped its copy, which leaves this the only rule-level statement of it');
+  assert.ok(/clear BOTH `reviews\.design\.latched` and `reviews\.impl\.latched` to `\{\}`/.test(latchSection), 'the route must state its blast radius: a red suite invalidates approvals in both review phases, and a rule saying only "clear the latch" is satisfied by clearing one of the two maps');
+
+  const policy = readRepoFile('.asd/rules/review-policy.md');
+  const dod = policy.split('\n').find((line) => line.includes("impl-review's DoD has a second, non-reviewer condition"));
+  assert.ok(dod, 'review-policy.md must keep the DoD half it owns - the green full suite as a second, non-reviewer DoD condition');
+  assert.ok(!dod.includes('clears every APPROVE latch sprint-wide'), 'the DoD paragraph must not re-acquire the clearing rule: that copy sat two lines above a declaration that the clearing is not restated here, so the file contradicted itself and either copy could drift out of step with the acting sites');
+
+  const implReview = readRepoFile('.asd/workflows/asd-phase-impl-review.md');
+  const redBranches = implReview.split('\n').filter((line) => /^\s+- \*\*Red, (test|code) defect\*\*/.test(line));
+  assert.strictEqual(redBranches.length, 2, 'step 9 must keep both red triage branches; a regex that stops matching them would make the clearing assertion below pass over an empty list');
+  for (const branch of redBranches) {
+    assert.ok(branch.includes('latch'), 'both step-9 red branches are acting sites for the red-full-suite invalidation - sprint-lifecycle.md calls that paragraph "the contract the full-suite step must satisfy", and now that review-policy.md no longer restates the clearing, a branch that stops performing it leaves the rule with no site that ever runs it');
+  }
+
+  const policyLatch = policy.split('\n').find((line) => line.startsWith('**APPROVE latch**'));
+  assert.ok(policyLatch && policyLatch.includes('not restated here'), 'review-policy.md must keep handing the mechanism to its SSoT instead of describing it');
+  assert.ok(!/not restated here\s*(,\s*)?(or|nor|and not)\b/i.test(policyLatch), 'a non-restatement declaration may speak for its own site only: both review workflows do spell the dispatch-skip mechanic out at the step that applies it (asserted below), so extending the denial across them made it false and told an editor those copies did not exist. Keyed on the denial being extended by a conjunction, not on the words "review workflow" - this bullet may legitimately name the workflows for anything else, and the extension is false whichever artefact it reaches');
+
+  for (const rel of ['.asd/workflows/asd-phase-impl-review.md', '.asd/workflows/asd-phase-design-review.md']) {
+    const body = readRepoFile(rel);
+    const filter = body.split('\n').find((line) => line.includes('APPROVE latch filter first'));
+    assert.ok(filter, `${rel} must keep the latch filter as the first act of its dispatch step`);
+    assert.ok(filter.includes('skipped entirely this iteration'), `${rel}: the filter bullet must spell out what a latched key does at the point the orchestrator acts on it - that restatement is what keeps the absence assertion on the next line from being vacuous`);
+    assert.ok(!filter.includes('not restated here'), `${rel}: this bullet restates the mechanic in the same breath, so its citation may claim sole SSoT and nothing more. A false "not restated here" reads as licence to delete the SSoT copy, which is the one an agent that never opens this workflow depends on`);
+
+    const writeStep = body.split('\n').find((line) => line.includes('sole SSoT for the every-reviewer-gets-an-entry invariant'));
+    assert.ok(writeStep, `${rel} must keep the verdict-write step's citation of the latch SSoT`);
+    assert.ok(writeStep.includes("External Review's availability skip is recorded as"), `${rel}: the write step states the availability-skip form itself, being the step that writes it`);
+    assert.ok(!writeStep.includes('availability-skip carve-out'), `${rel}: having just stated the availability skip, the step must not also list that carve-out among the things it declares un-restated - the same self-contradiction removed above`);
+  }
+});
+
+test("sprint-010 iter-02: sprint-lifecycle.md's ADVICE_NEEDED step cites the asd-advisor.md section that actually carries the no-log rule, derived from the agent rather than restated", () => {
+  const advisor = readRepoFile('.asd/agents/asd-advisor.md');
+  const sections = ["Do's", "Don'ts"].map((heading) => {
+    const body = advisor.split(`## ${heading}`)[1];
+    assert.ok(body, `asd-advisor.md must keep its ${heading} section - the lifecycle citation selects one of the two by name`);
+    return { heading, holdsRule: /Never log the consult/.test(body.split('\n## ')[0]) };
+  });
+  const holders = sections.filter((section) => section.holdsRule).map((section) => section.heading);
+  assert.strictEqual(holders.length, 1, `the no-log rule must live in exactly one of the advisor's two instruction sections; stated in both, or in neither, the citation below has no single correct target to be checked against. Holders: ${JSON.stringify(holders)}`);
+
+  const step = readRepoFile('.asd/rules/sprint-lifecycle.md').split('\n').find((line) => line.includes('No halt, no user contact, no logged trail'));
+  assert.ok(step, "sprint-lifecycle.md must keep the ADVICE_NEEDED round-trip's no-log step - it is the only place the protocol states that the consult leaves no artefact");
+  assert.ok(step.includes(`\`asd-advisor.md\` ${holders[0]}`), `the step must cite the advisor section that holds the rule (${holders[0]}), derived here from the agent file itself: this citation pointed at Do's until 2ae44c6, and an agent that follows a citation into a section holding nothing of the kind proceeds unguided while the sprint reads as documented`);
+});
+
+test('sprint-010 iter-03: the clean-worktree precondition is a reciprocal pair - sprint-lifecycle.md owns the rule and names the workflow section that performs it, and that section keeps the command and the failure signal while no longer denying that it restates anything', () => {
+  const home = readRepoFile('.asd/rules/sprint-lifecycle.md').split('\n').find((line) => line.includes('**Impl-review clean-worktree precondition**'));
+  assert.ok(home, 'sprint-lifecycle.md must keep the clean-worktree home statement: the workflow precondition cites it as sole SSoT, so a home that is cut leaves that citation pointing at nothing while the phase still refuses to start');
+  const delegated = /mechanic in `asd-phase-impl-review\.md` "([^"]+)"/.exec(home);
+  assert.ok(delegated, 'the home must name the workflow section it hands the mechanic to; this test derives the acting site from that name rather than hardcoding a heading either side may rename');
+
+  const workflow = readRepoFile('.asd/workflows/asd-phase-impl-review.md');
+  const parts = workflow.split(`\n## ${delegated[1]}`);
+  assert.strictEqual(parts.length, 2, `asd-phase-impl-review.md must carry exactly one "## ${delegated[1]}" section: its home delegates the mechanic to that heading by name, and a rename on one side only sends every reader to a section that does not exist`);
+  const precondition = parts[1].split('\n## ')[0].split('\n').find((line) => line.includes('Clean worktree at phase entry'));
+  assert.ok(precondition, `the clean-worktree gate must live inside "${delegated[1]}", the section its home names as the mechanic site`);
+  assert.ok(precondition.includes('`git status --porcelain`'), 'the acting site must name the command it runs. Its home states the same trigger and timing, so this line reads as a restatement and is a standing deletion candidate for an economy pass - but it is the only executable instruction either file carries, and the home delegates it here on purpose');
+  assert.ok(precondition.includes('`FAILED`'), 'the acting site must name the signal a dirty worktree raises: without it the gate states a trigger and no consequence, and the phase proceeds into a diff computed from commits that no reviewer can see the uncommitted half of');
+  assert.ok(precondition.includes('sole SSoT'), 'the precondition must keep citing its home rather than growing into a second rule statement - that citation is what makes the split above readable as a split instead of as two rules');
+  assert.ok(!precondition.includes('not restated here'), 'this bullet restates the home trigger and timing in the same breath, so its citation may claim sole SSoT and nothing more. The denial was false when written (iter-03 DOC-1a), and a false denial reads as licence to delete the home copy - the one a reader who never opens this workflow depends on');
+});
+
+test('sprint-010 iter-03: every section a canon file cites by name resolves in the file it names, with no dangling pointer left anywhere in canon', () => {
+  const canon = canonMarkdownFiles();
+  const byBase = new Map(canon.map((rel) => [rel.split('/').pop(), rel]));
+  const resolveTarget = (base) => [byBase.get(base), base, `.asd/templates/t_${base}`].find((candidate) => {
+    if (!candidate) return false;
+    const abs = path.join(REPO_ROOT, candidate);
+    return fs.existsSync(abs) && fs.statSync(abs).isFile();
+  });
+  const citation = /`([a-z0-9_.-]+\.md)`(?:'s)?\s+"([^"]+)"/g;
+
+  let cited = 0;
+  const dangling = [];
+  for (const rel of canon) {
+    readRepoFile(rel).split('\n').forEach((line) => {
+      for (const [, file, heading] of line.matchAll(citation)) {
+        cited += 1;
+        const target = resolveTarget(file);
+        const anchor = new RegExp(`^#{2,4} ${heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}|\\*\\*${heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\.?\\*\\*`, 'm');
+        if (!target || !anchor.test(readRepoFile(target))) dangling.push(`${rel} -> ${file} "${heading}"`);
+      }
+    });
+  }
+
+  assert.ok(cited >= 150, `the sweep must still reach the citation grammar it checks; only ${cited} citations matched, low enough that the pattern has probably stopped reaching canon and the comparison below would pass over an empty list`);
+
+  assert.deepStrictEqual(dangling, [], 'every section a canon file cites must resolve in the file it names. An entry here is a citation renamed on one side only - the failure this sweep exists for, four instances on record: sprint 006 documentation F5 fixed two by hand, and D-3 / D-4 of sprint 010 fixed the two that survived it. Resolution accepts a `## heading` or a `**bold label**`, both attested citation targets in this canon; heading matching is prefix-anchored so a parenthetical suffix still resolves. Should a dangler ever turn up pre-existing and outside the change surface, pin it here as a named exemption carrying its own D-N row rather than dropping the sweep - except on a line that denies restating the content, which may never be pinned: that denial tells the reader the content lives at the target and nowhere else, so a pointer resolving to nothing leaves it reachable from no site at all');
 });
 
 // ===========================================================================

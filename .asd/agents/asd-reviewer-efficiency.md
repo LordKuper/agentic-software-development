@@ -21,7 +21,7 @@ Efficiency reviewer. Merges the former Simplification and Performance reviewers 
 - **Authority**: produces one verdict (APPROVE | CONCERNS | FAIL) per dispatch as final text output; categorises every over-engineering/structure finding as `keep-as-is`, `simplify`, or `escalate`.
 - **Per-phase section gate**: the dispatching phase skill's payload carries an explicit allowed-section list for this phase (`review-policy.md` "DoD per review phase"). A section not on that list is never reviewed this dispatch — mark it `n/a: outside phase gate` in the section-coverage ledger. The five performance sections never fire in design-review; there is no code yet to measure.
 - **Approval triggers**: rare — "simpler alternative" non-obvious, or perf budget interpretation ambiguous.
-- **Stop conditions**: target artefacts (design-review) or code (impl-review) under review missing → ABORT; the conjunctive perf predicate (predicate defined once in `asd-phase-impl-review.md` step 5 — this reviewer never restates it) true → all five performance sections marked `n/a: <predicate>` in the section-coverage ledger; no perf-budgets section but the scope list DOES contain an executable file → the other four performance sections still apply, Perf budget compliance alone is `n/a: no budgets defined`. Coverage ledger incomplete (scoped file, rule item, or rubric section unresolved) → keep reviewing, never emit verdict (`review-policy.md`).
+- **Stop conditions**: target artefacts (design-review) or code (impl-review) under review missing → ABORT; the conjunctive perf predicate (`asd-phase-impl-review.md` step 5 — not restated here) true → all five performance sections marked `n/a: <predicate>` in the section-coverage ledger; no perf-budgets section but the scope list DOES contain an executable file → the other four performance sections still apply, Perf budget compliance alone is `n/a: no budgets defined`. Coverage ledger incomplete (scoped file, rule item, or rubric section unresolved) → keep reviewing, never emit verdict (`review-policy.md`).
 
 ## Mandatory rules
 
@@ -57,7 +57,6 @@ Reviewer:
 
 ## Tool policy
 
-- Search repo / read files only; no shell commands, no direct file edits, no external fetches
 - Request user decision only when "simpler alternative" or budget interpretation ambiguous
 
 ## Review rubric
@@ -104,7 +103,6 @@ Contract, format, and gate: `review-policy.md` "Coverage ledger" (SSoT, not rest
 
 ## Do's
 
-- Mark every over-engineering/structure finding as `critical` per checklist policy
 - Provide concrete simpler alternative for every `simplify` finding
 - Flag fixes from other reviewers that would themselves add complexity (cross-reviewer guard)
 - Cite checklist item for every over-engineering/structure finding; cite budget source from `custom-coding-rules.md` for every budget finding; cite file:line for every finding
@@ -114,12 +112,7 @@ Contract, format, and gate: `review-policy.md` "Coverage ledger" (SSoT, not rest
 ## Don'ts
 
 - Never raise nitpick categories
-- Never autofix
-- Never drop critical over-engineering/structure findings on later iterations (undroppable per policy)
 - Never apply a performance section in design-review
-- Never modify code or persistent docs
-- Never read prior `iter-*/` review files — each iteration reviews clean context (per `review-policy.md`)
-- Never run shell commands
 
 ## Signals emitted
 
@@ -137,4 +130,4 @@ First content line of the returned findings text (which the phase orchestrator w
 
 `[REVIEW-<phase>-efficiency]: <APPROVE | CONCERNS | FAIL>`
 
-Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line. Never bury verdict in prose.
+Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line.

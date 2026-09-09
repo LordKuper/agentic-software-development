@@ -31,7 +31,7 @@ Each provider can show up in two different roles — don't conflate them:
 - **As your primary runtime** — run sprints from Claude Code (`.claude/agents/*.md` + `.claude/skills/`) or Codex (`.codex/agents/*.toml` + `.agents/skills/`), both driving the same canonical workflow.
 - **As the External Review tool** — ASD shells out to the CLI of whichever provider is NOT your primary runtime, as a second opinion during design-review/impl-review (Codex CLI under Claude Code, Claude CLI under Codex). Works independently of which provider is your primary runtime.
 
-When External Review is enabled, `/asd-init` probes the other provider's configured command (`system.tools.codex_command` under Claude Code; `system.tools.claude_command` under Codex). A later unavailable probe is recorded as an explicit availability skip in the review output and decisions log rather than silently reducing coverage.
+When External Review is enabled, `/asd-init` probes the other provider's configured command (`system.tools.codex_command` under Claude Code; `system.tools.claude_command` under Codex). A later unavailable probe is recorded as an explicit availability skip in the review output, decisions log and friction log rather than silently reducing coverage.
 
 ### Codex with a ChatGPT account
 
@@ -161,7 +161,7 @@ flowchart TD
 | **design** | BA writes PRD, UX writes UX-spec and UI mockups, Architect writes ADRs and C4 schema |
 | **design-review** | 3 internal reviewers (Correctness, Efficiency, Documentation) plus External Review iterate to APPROVE |
 | **design-promote** | Approved sprint drafts get decomposed per subsystem and promoted to persistent `docs/` |
-| **plan** | Orchestrator decomposes work into Tasks with checkbox subtasks, traces each to PRD acceptance criteria |
+| **plan** | Orchestrator decomposes work into Tasks with checkbox subtasks, traces each to PRD acceptance criteria, assigns each to a dispatch wave |
 | **impl** | Dev implements Tasks — or fixes impl-review findings (review-fix mode) or impl-test defects (test-fix mode); no tests written here; run build/lint, commit per Conventional Commits |
 | **impl-test** | Tester picks the risk-based test approach for the change scope, deletes redundant/flaky/implementation-coupled tests, writes the missing ones, runs the impacted set; records everything in `test-plan.md`; code defects route back to `impl` |
 | **impl-review** | 4 internal reviewers (Correctness, Efficiency, Testing, Documentation) plus External Review; routes findings back to `impl` review-fix mode; once reviewers approve, runs the sprint's one full-suite check — green advances to `retro`, red exits to `impl` test-fix mode and clears every APPROVE latch |
@@ -215,7 +215,7 @@ Reviewers write no review artifact, code or doc on any provider (scope: `review-
 | `asd-reviewer-correctness` | opus/high | sol/high | design-review (UI section) + impl-review | Bugs, security, best-practice, contract drift; PRD/AC-N coverage trace; UX-spec compliance, design-system tokens, a11y — UI conformance section n/a-able (see below) |
 | `asd-reviewer-efficiency` | opus/high | sol/high | design-review + impl-review | Over-engineering (13-item checklist) + structure/cohesion (god/sprawling type) detection; impl-review-only perf budgets, regression, anti-patterns — perf sections n/a-able (see below) |
 | `asd-reviewer-testing` | opus/high | sol/high | impl-review | `test-plan.md` decisions (risk fit, justified removals and no-test calls, fail-first proof), test quality, manual verification capture |
-| `asd-reviewer-documentation` | opus/high | sol/high | design-review + impl-review | SSoT integrity, template adherence, traceability, in-code doc comments (impl-review) |
+| `asd-reviewer-documentation` | opus/high | sol/high | design-review + impl-review | SSoT integrity, documentation economy, template adherence, traceability, in-code doc comments (impl-review) |
 | `asd-external-review` | sonnet/medium | terra/medium | both | Wraps the *other* provider's CLI (Codex CLI under Claude Code, Claude CLI under Codex), reads its own content from a structured scope manifest (changed-file list, excluded paths, base/head refs, never a rendered diff — `.asd/rules/external-review.md` § Phase-scoped payload), parses output, applies severity floor |
 
 Reviewers emit a machine-parseable first-line verdict token: `[REVIEW-<phase>-<reviewer>]: APPROVE|CONCERNS|FAIL`, where `<phase>` is `design` or `impl` and `<reviewer>` is `correctness | efficiency | testing | documentation | external`.
@@ -390,7 +390,7 @@ designmd --version
 
 ### Codex CLI / Claude CLI
 
-Enables External Review in parallel with internal reviewers: install **Codex CLI** if Claude Code is your primary runtime, or **Claude CLI** if Codex is your primary runtime — External Review always wraps the *other* provider's CLI, never its own host's. Set `system.tools.codex_command` or `system.tools.claude_command` when it is not on PATH. ASD records an explicit availability skip in the review output and decisions log if the resolved command is unavailable, so the workflow keeps running.
+Enables External Review in parallel with internal reviewers: install **Codex CLI** if Claude Code is your primary runtime, or **Claude CLI** if Codex is your primary runtime — External Review always wraps the *other* provider's CLI, never its own host's. Set `system.tools.codex_command` or `system.tools.claude_command` when it is not on PATH. ASD records an explicit availability skip in the review output, decisions log and friction log if the resolved command is unavailable, so the workflow keeps running.
 
 ---
 

@@ -28,7 +28,7 @@ Validate content, data, config at load time, not in runtime hot paths. Crash bea
 
 ## 7. Observability by Design
 
-Every long-lived component ships from day one: structured logs (with context), metrics counters, traces, a health/readiness endpoint, inspectable runtime state. Add at design time; retrofitting is harder and less complete.
+Every long-lived component ships from day one: structured logs (with context), metrics counters, traces, a health/readiness endpoint, inspectable runtime state. Add at design time.
 
 ## 8. Backward Compatibility
 
@@ -40,7 +40,7 @@ Defer commitment where cost of reversal is high. Every ADR documents reversibili
 
 ## 10. Over-Engineering & Structure Smells
 
-Apply the over-engineering checklist AND the structure/cohesion checklist from `review-policy.md` PROACTIVELY during design, not only at review — flag during ADR drafting. Each item is `critical` and undroppable. The structure checklist (god/sprawling type) enforces #3 and #4 at the type level.
+Apply the over-engineering checklist AND the structure/cohesion checklist from `review-policy.md` PROACTIVELY during design, not only at review — flag during ADR drafting. The structure checklist (god/sprawling type) enforces #3 and #4 at the type level.
 
 ## 11. Research Current Best Practices
 

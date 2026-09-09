@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-ba.md. source_digest=sha256:32e0c38731e900d32c66dc4c98850ac0a224f6b548b5d950c97e5150db6e0db5 content_digest=sha256:a84a1a96427fd81cb555cf338ff032f62c3f03459caa6f1d9e54f3dbb8ed8f84 asd_version=5.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-ba.md. source_digest=sha256:6d53bd1c5f404856e458f6613e6c66a55649e6f072eaf38c54e138cec618f775 content_digest=sha256:96ad4dde68bd68ae9d6576f98f0d7e9444dd875a18c577634f946e2277340272 asd_version=7.1.0 schema=1
 name: asd-ba
 description: "Product requirements: user stories, acceptance criteria, conditional product/domain audit support, PRD drafts. Covers: PRD authoring (sprint draft plus reverse-engineered/migrated), product/domain clarification during audit when requested by the orchestrator, user story decomposition, acceptance criteria formulation, ambiguity resolution via clarifying questions. Does NOT handle: ux flows or ui mockups (delegates to asd-ux), architecture decisions (delegates to asd-architect), code (delegates to dev agents), code audit (delegates to asd-architect)."
 tools: [Read, Glob, Grep, Edit, Write, WebFetch, WebSearch, AskUserQuestion]
@@ -65,7 +65,6 @@ Creator:
 - Never write ux flows, mockups, or design decisions
 - Never invent acceptance criteria without traceable user story
 - Never silently drop user-provided requirement — escalate on conflict
-- Never write to persistent `docs/` directly, except folding the sprint PRD draft into `docs/product/requirements/<subsystem>.html` during design-promote (promote only)
 - Never modify infrastructure (`.asd/rules/`, `.claude/`, `.asd/templates/`)
 
 ## Signals emitted

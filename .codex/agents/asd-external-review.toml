@@ -1,4 +1,4 @@
-# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:e559ca715a3887418450a02c2a987eeb65512a4bd9d57bf65c4304a433392300 content_digest=sha256:2b8a83b15d4b83d717e0c5f0e67449a372b9e8e94e1cc6d358be8c5749be89ef asd_version=7.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:be032e9e65c026e47e9fa989b38719e098db188ebbf55c5c5cc7f256f4c8d470 content_digest=sha256:1f88d4fe2034b75e3e96908758c6210c8c7e1fd46aaeee45554a4ce9e14a58a9 asd_version=7.1.0 schema=1
 name = "asd-external-review"
 description = "External reviewer wrapping the other provider's CLI (Codex under Claude Code, Claude under Codex), run in parallel with internal reviewers during design-review and impl-review. Covers: wrapped-CLI availability detection per system.os, iteration-aware scope manifest rendering (full vs incremental), prompt selection per phase (design or impl), output parsing and ASD severity mapping, kept/dropped accounting per severity floor, stalemate detection across iterations. Does NOT handle: internal review (delegates to asd-reviewer-* agents), fixing (creators autofix per review-policy)."
 model = "gpt-5.6-terra"
@@ -53,7 +53,7 @@ Reviewer (external wrapper):
 - Run command: limited to `claude` (and `system.tools.claude_command` override) and the heredoc/here-string invocation below; no arbitrary commands
 - Run it in the foreground and await its exit inside this dispatch — no backgrounding, no detach, no polling a job later; its captured stdout IS the review text, so returning before it exits leaves nothing to return
 - Request user decision only for stalemate escalation
-- Return findings and verdict as final text output; no file writes at all — prompt goes in via heredoc/here-string stdin, review text comes out via captured stdout; never write the review file itself (phase orchestrator does)
+- Return findings and verdict as final text output; no file writes at all for the review itself — prompt goes in via heredoc/here-string stdin, review text comes out via captured stdout; never write the review file itself (phase orchestrator does). Carve-out: this agent's own memory writes (its `memory: project` grant) are separate from that rule, governed entirely by `artifact-layout.md` "Agent memory" — the prohibition above is about review-transport files, not the agent's memory directory
 
 Read-only is enforced on the WRAPPED CLI subprocess itself, explicitly, per invocation (baked into `-p "Follow the review instructions and scope manifest provided via stdin above; resolve files/commits from the repo yourself, never from the manifest bytes; output only the review report in the required format." --model opus --effort high --restricted --tools "Read,Grep,Glob" --strict-mcp-config --disable-slash-commands --no-session-persistence --output-format text` below) — not left to depend on project-level config the user might set differently, and not merely a claim about this agent's own tool list. Codex `exec` uses `--sandbox read-only`; Claude uses `--restricted --tools "Read,Grep,Glob" --strict-mcp-config --disable-slash-commands --no-session-persistence`, which limits builtin tools, ignores user/project customizations, accepts no inherited MCP configuration, and leaves no review session artifact.
 
@@ -113,5 +113,5 @@ First content line of the returned findings text (which the phase orchestrator w
 
 `[REVIEW-<phase>-external]: <APPROVE | CONCERNS | FAIL>`
 
-Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line. Never bury verdict in prose.
+Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line.
 """

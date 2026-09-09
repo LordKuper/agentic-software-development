@@ -8,7 +8,7 @@ Implementation-level rules for code-writing agents (Dev, Tester). Binding during
 - Small atomic functions, single clear responsibility.
 - Readability over cleverness.
 - No hidden coupling, global state, or action at a distance.
-- Apply the over-engineering AND structure/cohesion checklists (`review-policy.md`) and the SSoT iron rule (`artifact-layout.md`) PROACTIVELY while authoring, not only at review — the same items impl-review judges against.
+- Apply the over-engineering AND structure/cohesion checklists (`review-policy.md`) and both `artifact-layout.md` iron rules — SSoT and documentation economy — PROACTIVELY while authoring, not only at review — the same items impl-review judges against.
 
 ## 2. Naming
 
@@ -47,7 +47,7 @@ Implementation-level rules for code-writing agents (Dev, Tester). Binding during
 - No comments inside method/function bodies, ever. Meaning belongs in the name, the signature, or the member's doc comment — a body that needs narration is renamed, split, or rewritten instead of commented. The sole permitted in-body marker is `// TODO(sprint-<NNN-slug>): <reason>` (see below).
 - Doc comments mandatory on every public/exported type and member. Internal code documents only what a clear name cannot carry. Doc comments explain WHY, not WHAT — this WHY allowance applies to doc comments only, never to in-body comments (which are banned above).
 - Type-level doc: short, states the type's purpose ONLY — never duplicates or summarizes its members' docs. Member-level doc: short, states the member's purpose, never its implementation. Each member carries its own doc; state each fact once.
-- Comments concise and clear. Every extra word is cognitive load and wasted context — cut filler, hedging, restated code.
+- Comments concise and clear — the economy rule for agent-facing text (`artifact-layout.md` "Documentation economy") governs comment text too.
 - Inherit docs (`<inheritdoc/>`, `@inheritDoc`, etc.) wherever an override or implementation matches the base contract; do not restate inherited text.
 - Use the language-native doc format (XML-doc C#, docstrings Python, JSDoc TypeScript, etc.).
 - Update doc comments when code changes.
@@ -117,7 +117,7 @@ Written and run in `impl-test`, never in `impl`. Selection happens **after** the
 - Tests verify observable behavior, not implementation detail.
 - **Hypothetical-risk criterion — single home, governs both authoring and pruning:** a test earns its place only by covering a real, material risk on the change surface, evidenced by actual behavior, an identified failure mode, or a stated requirement. A test verifying a hypothetical rather than a real risk — including one whose behavior an existing check already covers, or whose only value is a coverage number — is not authored in the first place, and is a removal candidate wherever it already exists. Authoring is never the default: absent a qualifying risk, "no new test needed" is a first-class outcome of the strategy pass, not a silent fallback — record the decision (`none`) and its reason in `test-plan.md`.
 - Forbidden: trivial, implementation-coupled, mock-confirming, redundant, flaky tests, and any test failing the hypothetical-risk criterion above. Duplicates of an existing check are deleted, not kept "for safety".
-- Every fixed defect leaves a regression test proven against the pre-fix behavior (fail-first run recorded) or an equivalent targeted mutation.
+- Every fixed defect leaves a regression test proven against the pre-fix behavior (fail-first run recorded) or an equivalent targeted mutation. A mutation made to prove fail-first is restored before the agent's next tool call. A mutation left on disk is a defect regardless of what the suite reports.
 - Coverage numbers locate untested code; they are never a quota or a gate.
 - Deterministic: no `sleep`, wall-clock timing, random seeds, or execution-order reliance.
 - Isolated: no real external APIs, databases, or file I/O; use dependency injection.

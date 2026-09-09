@@ -16,13 +16,14 @@ Format rules (parser-critical):
 - No test-authoring tasks or subtasks: tests are selected and written in impl-test, after the code exists
 - Every task carries a `Material risk:` line, plain text, never a checkbox (see sprint-lifecycle.md "Plan file format")
 - A task whose value depends on two phases agreeing also carries a `Reachability:` line, same placement; absent = no cross-phase dependency, never a fail-closed default (same section)
+- `## Dependencies` is required and opens with the wave table impl dispatches from; every task sits in exactly one wave (same section)
 -->
 
 ## Overview
 {{what plan covers, prose}}
 
 ## Definition of Done
-Standing DoD applies, never restated here (`sprint-lifecycle.md` "Plan file format").
+Standing DoD applies (`sprint-lifecycle.md` "Plan file format") — not restated here.
 {{sprint-specific DoD additions, if any — prose, NO checkboxes; omit this line entirely when none}}
 
 ### Task 1: {{title}}
@@ -42,8 +43,14 @@ Material risk: none
 ## Risks (optional)
 - {{risk}}
 
-## Dependencies (optional)
-- Task {{N}} depends on Task {{M}}
+## Dependencies
+
+| Wave | Tasks |
+|---|---|
+| 1 | {{task ids dispatched together in this wave}} |
+| 2 | {{task ids}} |
+
+- Task {{N}} depends on Task {{M}} (optional lines, under the table)
 
 ## Out of scope (optional)
 - {{exclusion}}

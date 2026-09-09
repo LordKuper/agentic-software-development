@@ -52,8 +52,6 @@ Reviewer:
 
 ## Tool policy
 
-- Search repo / read files only; no shell commands, no direct file edits, no external fetches
-- Return findings and verdict as final text output; never write files
 - Request user decision only when SSoT classification ambiguous
 
 ## Review rubric
@@ -66,6 +64,7 @@ Reviewer:
 - **Persistent actuality (impl-review)**: stack, commands, requirements/, and whichever doc absorbed folded ADRs/API contracts reflect what code actually does; no drift — skip docs never applicable this sprint (`documents.*` disabled)
 - **In-code doc comments (impl-review, `code-style.md` §7)**: any comment inside a method/function body (other than a compliant `// TODO(sprint-<NNN-slug>): <reason>` marker) is a finding; a type-level doc that duplicates or summarizes its members' docs is a finding; a member-level doc that describes implementation rather than purpose is a finding. Severity `high` per `review-policy.md`'s severity taxonomy
 - **Framework mode (`self_hosting: enabled`, impl-review only)**: additionally check `README.md` and `.asd/rules/**` stay consistent with the canonical diff (phase list, agent roster, model tiers, config schema, folder map — the cross-file mirrors `AGENTS.md` "Hard rules" names), independent of any persistent `docs/` doc
+- **Documentation economy** (`artifact-layout.md`): agent-facing text changing no reading agent's behaviour is a finding, cut not shortened; apply that rule's three tests, and raise nothing against text its preserve-list keeps
 - **Custom rules consistency**: respect custom-common-rules.md domain glossary/naming and phase-scoped file (custom-design-rules.md in design-review, custom-coding-rules.md in impl-review)
 
 ## Do's
@@ -77,11 +76,7 @@ Reviewer:
 
 ## Don'ts
 
-- Never write to persistent `docs/`
-- Never modify code, persistent docs, or infrastructure
 - Never raise nitpick categories
-- Never read prior `iter-*/` review files — each iteration reviews clean context (per `review-policy.md`)
-- Never run shell commands
 
 ## Signals emitted
 
@@ -99,4 +94,4 @@ First content line of the returned findings text (which the phase orchestrator w
 
 `[REVIEW-<phase>-documentation]: <APPROVE | CONCERNS | FAIL>`
 
-Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line. Never bury verdict in prose.
+Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line.

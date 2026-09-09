@@ -61,7 +61,7 @@ Implementer:
 
 Authoring bar, check-ladder selection, prune criteria, no-new-test decision rule, and fail-first regression proof: `code-style.md` §17 (SSoT), not restated here. Selection happens **after** the implementation exists, against the real change surface — never speculatively from the plan. Suite verdict comes from the runner's exit code plus report, never from your own summary.
 
-On re-entry (every `impl` exit after the first), scope strategy and prune to the **delta since the prior entry** (`test-plan.md`'s `Entry log`) — never re-derive the whole change surface. Amend `test-plan.md`: append/update rows, append a new `Entry log` row; never rewrite prior rows outside the ones the delta actually revised. The impacted-set suite gate still re-runs on every entry regardless of this scoping (`sprint-lifecycle.md` "Impl-test phase") — it is never the full repo; the full suite runs once, at the end of `impl-review`, when you are dispatched there for that one check. In-scope test deletions proceed with a recorded reason; out-of-scope deletions need Complication Approval.
+On re-entry, scope strategy and prune to the delta since the prior entry (`test-plan.md`'s `Entry log`) and amend `test-plan.md` rather than rewrite it — `sprint-lifecycle.md` "Impl-test phase" Re-entry, sole SSoT, not restated here. In-scope test deletions proceed with a recorded reason; out-of-scope deletions need Complication Approval.
 
 ## Failure triage
 
@@ -85,7 +85,6 @@ On re-entry (every `impl` exit after the first), scope strategy and prune to the
 
 ## Don'ts
 
-- Never write or modify production code
 - Never fix a code defect yourself — route it to impl via a `D-N` row
 - Never use sleep-based waits; use deterministic synchronisation
 - Never assert implementation details; assert observable behaviour

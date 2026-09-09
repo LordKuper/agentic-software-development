@@ -82,7 +82,7 @@ Phase skills named `asd-phase-<phase>`, one per phase in `sprint-lifecycle.md`. 
 5. Dispatch payloads carry paths and explicit parameters, never transcript excerpts. A dispatched agent
    never inherits the main orchestrator's conversation.
 6. Reviewers get fresh context per iteration and never receive prior-iteration findings (external
-   review's stalemate set excepted) — see `review-policy.md`, never restated here.
+   review's stalemate set excepted) — `review-policy.md`, not restated here.
 7. Threshold: past ~70% context with no phase boundary in reach → compact; boundary in reach → finish
    the phase, then clear.
 

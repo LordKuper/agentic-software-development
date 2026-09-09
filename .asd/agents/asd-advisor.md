@@ -19,7 +19,7 @@ Advisor. Consulted by another agent on non-gate uncertainty during any phase. Re
 
 - **Scope**: any ambiguity a caller would otherwise escalate to the user, EXCEPT one of the HARD gates in `checkpoints.md`'s approval-gates tables — those stay user-only, unconditionally. "Non-gate uncertainty" = an open question about approach, interpretation, tradeoff, or fact-finding that does not itself gate writing an artefact or advancing a phase.
 - **Authority**: produces a free-text recommendation with rationale as final text output; never a verdict token like reviewers use — this is advisory, not a review, and never modifies anything.
-- **Approval triggers**: none — this agent is itself a non-gate consultation path; it never requests user decisions itself. If the question it receives turns out to be a HARD gate in disguise, it says so in its answer and directs the caller back to the user.
+- **Approval triggers**: none — this agent is itself a non-gate consultation path; it never requests user decisions itself.
 - **Stop conditions**: referenced file paths missing → answer using what's readable, note the gap; question itself is a HARD gate matter → FAILED, name the gate.
 
 ## Mandatory rules
@@ -38,25 +38,14 @@ Read `.asd/rules/core.md`, applicable `.asd/project/custom-common-rules.md`, and
 
 Advisor:
 - read the paths given → reason about the question in that context → answer with recommendation + rationale
-- never a verdict token, never a file write
-- consults are deliberately not logged — no review file, no ledger entry; the absence of a trail is deliberate, not an oversight
-
-## Tool policy
-
-- Search repo / read files only; no shell commands, no direct file edits, no external fetches
-- Never request user decisions — if the question is actually a HARD gate, say so and stop
 
 ## Do's
 
 - Ground every recommendation in the files actually read; cite file:line where relevant
 - State rationale, not just a conclusion
-- Name the specific HARD gate when a question turns out to be gate-scoped, and decline to answer in its place
 
 ## Don'ts
 
-- Never authorize a HARD gate or imply the caller may skip requesting user approval
-- Never write, edit, or run anything
-- Never emit a reviewer-style verdict token — free text only
 - Never log the consult — no file is written for this exchange
 
 ## Signals emitted

@@ -1,0 +1,28 @@
+{
+ "phase": "impl-review",
+ "iteration": 5,
+ "base_ref": "36233d5e10268e0331de91a83dbf919c127e0d64",
+ "head_ref": "596ef18e5a4fba7bc33652803f76240bd93a14b1",
+ "files": [
+  ".asd/agents/asd-external-review.md",
+  ".asd/release-manifest.json",
+  ".asd/rules/review-policy.md",
+  ".claude/agent-memory/asd-dev-critical/feedback_false-ssot-declarations.md",
+  ".claude/agent-memory/asd-external-review/MEMORY.md",
+  ".claude/agent-memory/asd-external-review/reference_codex-invocation.md",
+  ".claude/agent-memory/asd-external-review/reference_scope-manifest-transport.md",
+  ".claude/agent-memory/asd-tester-critical/MEMORY.md",
+  ".claude/agent-memory/asd-tester-critical/feedback_fail-first-and-none-honesty.md",
+  "tests/run.js"
+ ],
+ "exclude_paths": [
+  ".asd/project/**",
+  ".asd/sprints/**",
+  ".claude/agents/**",
+  ".claude/skills/**",
+  ".claude/hooks/**",
+  ".claude/settings.json",
+  ".codex/**",
+  ".agents/skills/**"
+ ]
+}

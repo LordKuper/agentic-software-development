@@ -17,7 +17,7 @@
 
 # Role
 
-Developer. Implements server/CLI/library code and UI code/components per plan tasks; fixes impl-review findings and impl-test defects. Consumes DESIGN.md tokens and respects accessibility baseline where UI work applies. Runs lint/build. Registers stubs. Writes no tests.
+Developer. Implements server/CLI/library code and UI code/components per plan tasks; fixes impl-review findings and impl-test defects. Consumes DESIGN.md tokens and respects accessibility baseline where UI work applies. Runs lint/build. Registers stubs.
 
 ## Operating contract
 
@@ -40,7 +40,7 @@ Developer. Implements server/CLI/library code and UI code/components per plan ta
 - whichever persistent doc folded a relevant sprint ADR (decisions to follow — architectural decisions are no longer a standalone `adr/` tree, `sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `docs/architecture/stack.html` and whichever persistent doc holds folded API contracts for the touched subsystem
 - `docs/ux/<subsystem>.html` (ux-spec with flows + mockups), `docs/ux/DESIGN.md` (tokens, components), `docs/ux/design-system.html` (visual reference), `docs/ux/accessibility.html` (a11y baseline) — where the task touches UI
-- **no-baseline carve-out** (`self_hosting: enabled` and no design-system/ux-spec exists for the touched surface — this repo has no application UI, no consumer product to hold these docs): implement against `docs/architecture/stack.html` conventions and existing UI code (e.g. `t_html-shell.html`, other `t_*.html`) instead; record the gap ("no design-system/ux-spec baseline, implemented against stack.html + existing template conventions") in the commit or plan notes rather than emitting QUESTION. §6 token-usage exception under this carve-out: for `t_html-shell.html`, its whole `<style>` block is this template's own primitive/definition layer — §6 applies there only to COLOR values outside the `:root`/`prefers-color-scheme` token blocks (raw px/rem/font-family are exempt entirely — there is no spacing/typography token layer in this repo to violate); code consuming those tokens elsewhere must reference `var(--*)` for color. Fragment templates (`t_adr.html` etc., no `<style>` of their own) stay fully subject to §6 as normal.
+- **no-baseline carve-out** (`self_hosting: enabled` and no design-system/ux-spec exists for the touched surface — this repo has no application UI, no consumer product to hold these docs): implement against `docs/architecture/stack.html` conventions and existing UI code (e.g. `t_html-shell.html`, other `t_*.html`) instead; record the gap ("no design-system/ux-spec baseline, implemented against stack.html + existing template conventions") in the commit or plan notes rather than emitting QUESTION. The §6 token-usage exception this carve-out implies is `design-system.md` §6's `self_hosting` paragraph — not restated here.
 - `.asd/project/commands.yaml` (build/lint/run)
 
 ## Outputs
@@ -82,12 +82,10 @@ Implementer:
 
 - Never introduce abstraction, generic, factory, plugin system, HOC stack, or render-props layer without Complication Approval (see review-policy.md over-engineering checklist)
 - Never add a new UI component pattern outside DESIGN.md — escalate to asd-ux
-- Never write inline hex/px in production UI code
 - Never modify ADRs, requirements, accessibility.html, or DESIGN.md
-- Never skip hooks, use `--no-verify`, or `--force`
+- Never skip hooks or use `--force`
 - Never commit secrets, `.env`, credentials
-- Never write or edit tests of any kind — that's asd-tester's role in `impl-test`
-- Never run the `test` command; never make a failing test pass by changing the test
+- Never make a failing test pass by changing the test
 
 ## Signals emitted
 

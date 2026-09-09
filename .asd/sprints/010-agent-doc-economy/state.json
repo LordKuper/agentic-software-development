@@ -1,0 +1,219 @@
+{
+  "sprint_id": "010-agent-doc-economy",
+  "branch": "sprint/010-agent-doc-economy",
+  "phase": "pr",
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "adr": false,
+    "c4": false
+  },
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "initial scope accepted at the hard write-then-review-accept gate",
+      "evidence": "sprint.md AC-1..AC-9; retrospective rows re-verified against HEAD 28343c3, per-criterion cost stated as 0 iterations / 0 fix rounds",
+      "artifact_revision": "sprint.md@scope-1"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "user",
+      "reason": "audit accepted and its three material ambiguities resolved",
+      "evidence": "audit.md G-6 wider scope, E-1 in scope, G-8 bytes-per-dispatch evidence standard; C-10..C-12 added from the claude-api skill run",
+      "artifact_revision": "audit.md@audit-2"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "user",
+      "reason": "plan accepted; E-1 mechanism chosen",
+      "evidence": "plan.md 12 tasks / 8 waves, AC-1 self-applied; E-1 reduced to pointers rather than hoisted or abstracted",
+      "artifact_revision": "plan.md@plan-1"
+    },
+    {
+      "gate": "impl assessment",
+      "decision_actor": "user",
+      "reason": "impl approved, advance to impl-test",
+      "evidence": "12/12 tasks complete; sync --check exit 0; lint clean; diff confined to authorised paths; suite 170/171 with the one failure owned by impl-test",
+      "artifact_revision": "plan.md@impl-complete"
+    },
+    {
+      "gate": "scope, acceptance criteria or user value",
+      "decision_actor": "user",
+      "reason": "AC-10 added: the rule must reach agents for authoring, not only review",
+      "evidence": "user instruction in session; verified gap — code-style.md §1 names only the SSoT iron rule and code-style.md reaches neither asd-ba nor asd-ux; cost for AC-10: 0 iterations, 0 fix rounds",
+      "artifact_revision": "sprint.md@scope-2"
+    },
+    {
+      "gate": "PR publication",
+      "decision_actor": "user",
+      "reason": "user approved pushing the branch and opening the PR",
+      "evidence": "DoD met: 184/184 terminal suite green at d76482b, sync --check 72/72, all five reviewers APPROVE, no open stubs, version bumped 7.1.0 -> 7.2.0 with CHANGELOG",
+      "artifact_revision": "pr#33"
+    }
+  ],
+  "task_routing": {
+    "T1": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "opus",
+      "reason": "risk:workflow gate"
+    },
+    "T2": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "opus",
+      "reason": "risk:workflow gate"
+    },
+    "T3": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "opus",
+      "reason": "risk:public contract"
+    },
+    "T4": {
+      "tier": "standard",
+      "execution": "agent",
+      "resolved_model": "sonnet",
+      "reason": "artifact-risk:rule-doc-edit"
+    },
+    "T5": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "opus",
+      "reason": "risk:workflow gate"
+    },
+    "T6": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "opus",
+      "reason": "risk:workflow gate"
+    },
+    "T7": {
+      "tier": "standard",
+      "execution": "agent",
+      "resolved_model": "sonnet",
+      "reason": "artifact-risk:rule-doc-edit"
+    },
+    "T8": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "opus",
+      "reason": "risk:public contract"
+    },
+    "T9": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "opus",
+      "reason": "risk:ambiguous judgment"
+    },
+    "T10": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "opus",
+      "reason": "risk:broad repository reasoning"
+    },
+    "T11": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "opus",
+      "reason": "risk:workflow gate"
+    },
+    "T12": {
+      "tier": "standard",
+      "execution": "agent",
+      "resolved_model": "sonnet",
+      "reason": "artifact-risk:verification-sweep"
+    },
+    "T13": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "D-1": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    }
+  },
+  "skipped_phases": [
+    "design",
+    "design-review",
+    "design-promote"
+  ],
+  "reviews": {
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "iteration": 5,
+      "verdicts": {
+        "iter-01": {
+          "correctness": "CONCERNS",
+          "efficiency": "CONCERNS",
+          "testing": "CONCERNS",
+          "documentation": "CONCERNS",
+          "external": "CONCERNS"
+        },
+        "iter-02": {
+          "correctness": "APPROVE",
+          "efficiency": "CONCERNS",
+          "testing": "CONCERNS",
+          "documentation": "CONCERNS",
+          "external": "APPROVE (skipped: external review unavailable: quota exhaustion)"
+        },
+        "iter-03": {
+          "correctness": "APPROVE",
+          "efficiency": "APPROVE",
+          "testing": "APPROVE",
+          "documentation": "CONCERNS",
+          "external": "APPROVE (skipped: external review unavailable: quota exhaustion)"
+        },
+        "iter-04": {
+          "correctness": "APPROVE",
+          "efficiency": "APPROVE",
+          "testing": "APPROVE",
+          "documentation": "CONCERNS",
+          "external": "CONCERNS"
+        },
+        "iter-05": {
+          "correctness": "APPROVE",
+          "efficiency": "APPROVE",
+          "testing": "APPROVE",
+          "documentation": "APPROVE",
+          "external": "APPROVE"
+        }
+      },
+      "iteration_heads": {
+        "iter-01": "14e1a09661a0ba545647ad32413ba16b87276f3b",
+        "iter-02": "a7bb4ae3173c4ef62e33ddb45bbbe2c44b554e67",
+        "iter-03": "1950c00a94b3e4cf4938b2e1f39591a80088e6a8",
+        "iter-04": "36233d5e10268e0331de91a83dbf919c127e0d64",
+        "iter-05": "596ef18e5a4fba7bc33652803f76240bd93a14b1"
+      },
+      "latched": {
+        "correctness": 2,
+        "efficiency": 3,
+        "testing": 3,
+        "documentation": 5,
+        "external": 5
+      }
+    }
+  },
+  "created_at": "2026-09-09T07:37:57Z",
+  "updated_at": "2026-09-09T18:49:33Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": {
+    "number": 33,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/33",
+    "state": "open"
+  },
+  "archived_at": null
+}

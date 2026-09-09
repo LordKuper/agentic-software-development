@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:a7acf53dcc16184cd68c89785b89b588ac013670161c712c88a65cfe4757843c content_digest=sha256:5930d39cead0bfdb6d63ef79cda55c6a2f1968cae26b0079e5e71756efe68dee asd_version=5.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:e7994176d2a010aea416911a20d986461172f4786f11661b988477c973739f70 content_digest=sha256:597abc9060a5636d2e023e76cba4ca3e9654c8277bffbf34b1a6b579834b4705 asd_version=7.1.0 schema=1
 name: asd-sprint
 description: "Starts a new ASD sprint or resumes the active one, dispatching the matching asd-phase-* skill and routing phase signals back to the user. Use when the user runs $asd-sprint or asks to start, continue, resume, or work on an ASD sprint."
 ---
@@ -48,12 +48,6 @@ After any phase skill returns:
 - `ABORT — precondition not met` → relay, halt
 
 User may interrupt anytime; asd-sprint re-detects state on next invocation.
-
-## Artefacts produced
-None directly. All writes happen inside phase skills (orchestrator, creators, reviewers).
-
-## Agents dispatched
-None directly. Phase skills delegate to agents.
 
 ## Skills dispatched
 Phase skills listed in `.asd/rules/sprint-lifecycle.md`. No other skill set.

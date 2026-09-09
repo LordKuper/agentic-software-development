@@ -55,11 +55,7 @@ No user gate on a green impacted-set run, and none on routing defects back to im
 
 ## Re-entry
 
-Every `impl` exit re-enters this phase. On re-entry the **strategy pass (step 4) and prune pass (step 7)** are scoped to the **delta since the prior entry** — the review-fix or test-fix commits, `git diff <prior HEAD analysed>...HEAD` — never a full re-derivation of the whole change surface. `test-plan.md` is **amended**, not rewritten: prior `Risk → check decisions` / `Added tests` / `Removed tests` rows stand unless a fix actually revised that risk, and a new `Entry log` row records the delta scope and the `HEAD` it was analysed through. `Defects` rows persist — resolved rows stay `fixed` for the record, and a defect that reappears gets a new `D-N` row rather than a reopened one.
-
-The **suite gate (step 8) re-runs on every entry**, scoped to the impacted set (`sprint-lifecycle.md` "Impacted test set", subject to its safety valve) — never the full repo; incremental delta scoping (above) applies only to the analysis passes, not to which tests this gate runs. The **removal gate (step 6)** is unaffected: it still fires whenever a proposed removal (in or out of the current pass's scope) falls outside the sprint's overall change surface.
-
-Bounded risk: a defect outside the impacted set's reach is not caught by this phase at all — the full, unconditional suite run at the end of `impl-review` (`sprint-lifecycle.md` "Impacted test set") is the backstop. No iteration cap on this phase: the loop ends on a green impacted run or on an escalated blocker.
+Delta scoping, amend-not-rewrite, the suite-gate rule and its bounded risk: `sprint-lifecycle.md` "Impl-test phase" Re-entry (sole SSoT, not restated here); steps 2, 4 and 7 above are its bindings. Two clarifications this phase owns: `Defects` rows persist across entries — a resolved row stays `fixed` for the record and a reappearing defect gets a new `D-N` row, never a reopened one; and the removal gate (step 6) fires on any proposed removal outside the sprint's **overall** change surface, not merely outside the current pass's delta.
 
 ## Artefacts produced
 - `<sprint>/test-plan.md` (risk→check decisions, removals, added tests, suite run, defects, optional manual verification spec)
@@ -72,9 +68,6 @@ Bounded risk: a defect outside the impacted set's reach is not caught by this ph
 - One live `asd-tester` (pre-strategy, strategy, prune/author, suite); after session loss re-dispatch from disk evidence
 - No orchestration dispatch — state/log writes are inline.
 - No reviewers — test quality is judged in impl-review by `asd-reviewer-testing`
-
-## Skills/workflows dispatched
-None.
 
 ## Return contract (single line)
 ```

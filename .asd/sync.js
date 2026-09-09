@@ -158,21 +158,39 @@ function parseCanonicalFrontmatter(rawNormalizedText) {
 // Model family resolution (release-manifest table; canon speaks in aliases)
 // ---------------------------------------------------------------------------
 
-function resolveModelFamily(manifest, provider, familyAlias, codexAgent = {}) {
+// Accepted reasoning-effort values per provider - the two lists differ by one
+// member: `ultra` exists on Codex only.
+const EFFORT_VOCABULARY = {
+  claude: /^(low|medium|high|xhigh|max)$/,
+  codex: /^(low|medium|high|xhigh|max|ultra)$/,
+};
+
+function resolveModelFamily(manifest, provider, familyAlias, agent = {}) {
   const table = manifest && manifest.model_families && manifest.model_families[provider];
   const resolvedModel = table && typeof familyAlias === 'string' ? table[familyAlias] : undefined;
-  const codexDiagnostic = (reason) => `Codex agent "${codexAgent.name || '<missing>'}": ${reason} (family "${familyAlias === undefined ? '<missing>' : familyAlias}", resolved model "${resolvedModel === undefined ? '<unresolved>' : resolvedModel}", effort "${codexAgent.effort === undefined ? '<missing>' : codexAgent.effort}")`;
+  const diagnostic = (reason) => `${provider === 'codex' ? 'Codex' : 'Claude'} agent "${agent.name || '<missing>'}": ${reason} (family "${familyAlias === undefined ? '<missing>' : familyAlias}", resolved model "${resolvedModel === undefined ? '<unresolved>' : resolvedModel}", effort "${agent.effort === undefined ? '<missing>' : agent.effort}")`;
   if (!table || !Object.prototype.hasOwnProperty.call(table, familyAlias)) {
-    if (provider === 'codex') throw new Error(codexDiagnostic('unknown model family'));
-    throw new Error(`unknown model family "${familyAlias}" for provider "${provider}"`);
+    throw new Error(diagnostic('unknown model family'));
   }
   if (provider === 'codex' && (typeof resolvedModel !== 'string' || !/^gpt-5\.6-(sol|terra|luna)$/.test(resolvedModel) || !resolvedModel.endsWith(`-${familyAlias}`))) {
-    throw new Error(codexDiagnostic('unsupported ChatGPT-runtime model mapping'));
+    throw new Error(diagnostic('unsupported ChatGPT-runtime model mapping'));
   }
-  if (provider === 'codex' && codexAgent.effort !== undefined && (!/^(low|medium|high|xhigh|max|ultra)$/.test(codexAgent.effort) || (resolvedModel.endsWith('-luna') && codexAgent.effort === 'ultra'))) {
-    throw new Error(codexDiagnostic('invalid model reasoning effort'));
+  if (provider === 'codex' && agent.effort !== undefined && (!EFFORT_VOCABULARY.codex.test(agent.effort) || (resolvedModel.endsWith('-luna') && agent.effort === 'ultra'))) {
+    throw new Error(diagnostic('invalid model reasoning effort'));
   }
   return resolvedModel;
+}
+
+// The Claude `effort:` line renders on `claude.effort` alone, so its vocabulary
+// check belongs at that emission site. Guarded instead by a sibling field, it
+// misses an agent declaring an effort and no model family - and an unknown
+// effort the host silently ignores leaves the agent running at the host
+// default while the generated view claims otherwise. The Codex counterpart
+// stays inside the family resolution, which it needs: `ultra` is rejected on
+// the luna model only.
+function validatedClaudeEffort(agentName, effort) {
+  if (EFFORT_VOCABULARY.claude.test(effort)) return effort;
+  throw new Error(`Claude agent "${agentName || '<missing>'}": invalid effort (effort "${effort}")`);
 }
 
 // ---------------------------------------------------------------------------
@@ -273,8 +291,8 @@ function transformAgentClaude(meta, body, manifest) {
   if (Array.isArray(c.disallowedTools) && c.disallowedTools.length > 0) {
     lines.push(`disallowedTools: ${yamlFlowList(c.disallowedTools)}`);
   }
-  if (c.model) lines.push(`model: ${resolveModelFamily(manifest, 'claude', c.model)}`);
-  if (c.effort) lines.push(`effort: ${c.effort}`);
+  if (c.model) lines.push(`model: ${resolveModelFamily(manifest, 'claude', c.model, { name: meta.name, effort: c.effort })}`);
+  if (c.effort !== undefined) lines.push(`effort: ${validatedClaudeEffort(meta.name, c.effort)}`);
   if (c.maxTurns !== undefined) lines.push(`maxTurns: ${c.maxTurns}`);
   if (c.memory) lines.push(`memory: ${c.memory}`);
   lines.push('---');

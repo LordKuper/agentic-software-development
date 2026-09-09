@@ -84,7 +84,7 @@ No `c4/` directory. No subsystem subfolders.
 
 ## Agent memory
 
-Agent memory lives at the provider-view root — `.claude/agent-memory/<agent>/` (`MEMORY.md` index + one file per memory) — always, whatever working directory a dispatch names. Never inside a sprint tree (path map above).
+Agent memory lives at the provider-view root — `.claude/agent-memory/<agent>/` (`MEMORY.md` index + one file per memory) — always, whatever working directory a dispatch names. Never inside a sprint tree (path map above). One directory per dispatched agent name, tier variants included: distinct agents never share a memory file, so co-authorship arises only between concurrent dispatches of the same agent, which share that directory and its single `MEMORY.md`.
 
 **Carve-out to the read-only generated-view rule**: `agent-memory/` has no canonical source under `.asd/` and `sync.js` neither generates nor reconciles it (no row in `providers.md` "Canonical path -> per-provider path"), so the read-only rule does not reach it. Everything else under `.claude/`, `.codex/` and `.agents/skills/` stays read-only — edit canon, then sync.
 
@@ -192,6 +192,14 @@ SSoT for two things invisible in the diff: **why** a test was removed, and **why
 
 Each fact has exactly one home file. Other files link to it, never copy. Violation = `FAIL` from Documentation reviewer.
 
+## Documentation economy (iron rule)
+
+A line of agent-facing text is re-paid on every dispatch that loads it, so it earns its place only by changing what a reading agent does; one that does not is deleted, not shortened. Reach: framework canon (rules, agents, skills, workflows, templates) and every artifact a later agent reads (`audit.md`, `plan.md`, `test-plan.md`, decisions-log entries, review files, retrospectives) — through the templates, in every consumer project too. **removal** decides and is necessary: cut only when no agent acts differently without the line. **provenance** — traces to no recorded defect, friction entry or decision — and **enforcement** — a tool grant, validator or suite assertion already imposes it, so the prose only restates it — corroborate a cut removal already allows; neither authorises one alone, and removal false = keep whatever the other two say. The tests bind while authoring: every agent that writes such text applies them before the line lands, not only when it is reviewed. Violation = `FAIL` from Documentation reviewer.
+
+Cut on sight: prose stating no rule; rationale for a rule already stated; an example disambiguating nothing; a prohibition that only negates a positive rule already stated beside it; emphasis so frequent it marks nothing; a fact whose home is another file (SSoT above).
+
+Never cut, whatever the length: text whose exact form is the contract (machine-parsed token, validated literal, parsed grammar); an enumeration whose completeness is the rule (a predicate's members, a per-role or per-case table); a case distinction a shorter phrasing collapses; a non-obvious failure mode stated with its symptom; normative text at its home stating a gate, safety boundary, ownership assignment, precondition or recovery duty — including a standalone safety, security, authority or irreversible-action prohibition with no positive rule beside it. Length is never the test.
+
 ## Document responsibility
 
 Every template in `.asd/templates/` MUST declare its responsibility in frontmatter:
@@ -216,7 +224,7 @@ Agents preserve the block. Reviewers verify content respects the declared scope.
 
 ## Sprint archival
 
-Archived path: `.asd/sprints/archived/<NNN-slug>/`. Closure/archival sequence (closure-pending → explicit approval → companion PR → terminal write + move) is owned by `sprint-lifecycle.md` "PR phase" — see there, not restated here.
+Archived path: `.asd/sprints/archived/<NNN-slug>/`. Closure/archival sequence (closure-pending → explicit approval → companion PR → terminal write + move) is owned by `sprint-lifecycle.md` "PR phase" — not restated here.
 
 ## Decisions log
 

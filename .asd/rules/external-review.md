@@ -14,7 +14,7 @@ Prompt passed via **heredoc/here-string straight into the wrapped CLI's stdin �
 
 The command TAIL differs per wrapped CLI — this is a real syntax difference. Canonical tail per CLI, including explicit model, effort, and read-only boundary, lives once in the agent file's `wraps_invoke_args` (`asd-external-review.md` frontmatter) — not restated here.
 
-The tails were verified against local Codex CLI 0.150.1 (`exec --help`: `--model`, `--config`, `--sandbox`) and Claude CLI 2.1.250 (`--help`: `--model`, `--effort`, `--restricted`, `--tools`, `--strict-mcp-config`, `--disable-slash-commands`, `--no-session-persistence`), and Anthropic's CLI reference for print/model/tool flags. `--allowedTools` alone is not a read-only boundary.
+`--allowedTools` alone is not a read-only boundary.
 
 | OS | Preflight | Review command |
 |---|---|---|
@@ -34,14 +34,14 @@ On a real-request authentication, quota, reachability, or command failure, phase
 
 On command/auth failure or an active negative cache:
 
-- Return `APPROVE (skipped: external review unavailable: <specific status>)`; the dispatching workflow persists the exact status in the external review output and appends it to `<sprint>/decisions-log.md` for sprint `<NNN-slug>` iteration `<N>`
+- Return `APPROVE (skipped: external review unavailable: <specific status>)`; the dispatching workflow persists the exact status in the external review output, appends it to `<sprint>/decisions-log.md` for sprint `<NNN-slug>` iteration `<N>`, and appends an `F-N` friction entry for it (`sprint-lifecycle.md` "Friction log")
 - Continue without external review, no user prompt
 
 An availability skip satisfies only that iteration and never creates an APPROVE latch. A later local-ready result dispatches External Review normally.
 
 ## Outcome contract
 
-Sole home of what a dispatched External Review may return — exactly one of two outcomes:
+Sole statement of what a dispatched External Review may return — exactly one of two outcomes:
 
 - **verdict** — findings text whose first content line is `[REVIEW-<phase>-external]: APPROVE|CONCERNS|FAIL` (`review-policy.md` "Gate Verdict Format")
 - **availability skip** — `APPROVE (skipped: external review unavailable: <specific status>)` (above)
@@ -71,8 +71,6 @@ Cross-phase reference material (concept, custom rules, accessibility baseline, p
 Both impl-review rows start from the whole repo and subtract the exclusions, never an allow-list — so any real source added later (CI configs, root-level configs, anything else) is in scope automatically, with no manifest or rule edit. Agent memory's status in both modes: `artifact-layout.md` "Agent memory".
 
 ## Iteration semantics
-
-Only the transport changed (diff payload → scope manifest); the incremental rule itself did not.
 
 | Phase | Iteration | Manifest content |
 |---|---|---|

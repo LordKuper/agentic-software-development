@@ -10,6 +10,7 @@ Orchestration body for the `asd-phase-impl` skill. Operation-mapping to host too
 
 ## Operations used
 - read: `.asd/project/config.yaml`, `state.json`, `plan.md`, `<sprint>/reviews/impl/iter-NN/` (review-fix), `<sprint>/test-plan.md` (test-fix), persistent docs, `.asd/project/custom-common-rules.md`, `custom-coding-rules.md`, `stubs.md`, `<sprint>/manual-steps.md`
+- run command: `git status --porcelain`/`git diff` to read the round's committed-plus-uncommitted diff for step 9's authorised-paths gate; `commands.yaml` `build`/`lint` for the same gate
 - write a file: `state.json` inline, for the mechanical non-gate writes at steps 4, 11 (`sprint-lifecycle.md` "State recovery")
 - request user decision: escalation only (see Execution mode)
 - delegate to agent: `asd-dev` per task / finding group / defect group (test-file findings to `asd-tester`); the main orchestrator owns manual-step validation, gates and decisions-log inline
@@ -17,13 +18,9 @@ Orchestration body for the `asd-phase-impl` skill. Operation-mapping to host too
 
 ## Modes
 
-Detected at step 2 from `state.json`:
+Mode set and semantics: `sprint-lifecycle.md` "Impl phase" Modes (sole SSoT, not restated here). Detection is step 2; per-mode preconditions are above; the entered mode's flag is cleared at step 11.
 
-- **Initial mode** (both fix flags null/absent) — implement `plan.md` Task blocks. Ends with user-facing impl assessment gate (step 10).
-- **Review-fix mode** (`review_fixes_pending` = `iter-NN`) — entered when impl-review routed sprint back. Resolve reviewer findings in `<sprint>/reviews/impl/iter-NN/`. On completion clears `review_fixes_pending`.
-- **Test-fix mode** (`test_defects_pending` set) — entered when impl-test found code defects. Resolve pending `D-N` rows in `<sprint>/test-plan.md`. On completion clears `test_defects_pending`.
-
-Fix modes **skip the impl assessment gate**. Impl completion gate (step 9) applies in **all** modes and stays build + lint only — this is a scoping rule, not a new gate: a dev may run the impacted set (`sprint-lifecycle.md` "Impacted test set") to self-check work in progress, in any mode, but never authors, modifies, or prunes a test, and that run neither satisfies nor substitutes for this gate. Test authoring, pruning, and running belong to `impl-test`.
+Fix modes **skip the impl assessment gate**. Impl completion gate (step 9) applies in **all** modes and runs no test — this is a scoping rule, not a new gate: a dev may run the impacted set (`sprint-lifecycle.md` "Impacted test set") to self-check work in progress, in any mode, but never authors, modifies, or prunes a test, and that run neither satisfies nor substitutes for this gate. Test authoring, pruning, and running belong to `impl-test`.
 
 ## Execution mode
 
@@ -52,16 +49,16 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
    - `review_fixes_pending` = `iter-NN` → **review-fix mode**; confirm `<sprint>/reviews/impl/iter-NN/` exists (else `ABORT — precondition not met: reviews/impl/iter-NN missing`)
    - `test_defects_pending` set → **test-fix mode**; confirm `<sprint>/test-plan.md` exists with pending `D-N` rows (else `ABORT — precondition not met: test-plan.md defects missing`)
 3. **Build work set** per mode:
-   - **initial** — read `<sprint>/plan.md` → parse Task blocks: title, subtask checkboxes, dependencies
+   - **initial** — read `<sprint>/plan.md` → parse Task blocks (title, subtask checkboxes) plus the `## Dependencies` wave table and dependency lines
    - **review-fix** — read every reviewer file in `<sprint>/reviews/impl/iter-NN/`; collect all CONCERNS findings plus all FAIL findings the user accepted for fix (skip FAIL noted resolved-by-override); group into fix tasks, one dev task per independent group; findings located in test files route to `asd-tester` instead
    - **test-fix** — read `<sprint>/test-plan.md` `Defects` section; collect every `D-N` with status `pending`; group into fix tasks, one dev task per independent group
 4. Write `state.json` (phase=impl) inline (mechanical, no gate)
 5. **Build execution graph**:
-   - initial — from Task dependencies; topological sort; mark independent tasks parallelisable
+   - initial — the plan's wave table is the graph (`sprint-lifecycle.md` "Plan file format"): waves ascending, tasks within one wave parallelisable, never re-derived from the dependency lines. A plan predating that rule carries no table: fall back to a topological sort over its dependency lines
    - fix modes (review-fix and test-fix alike) — one ordered chain, never a concurrent set: every fix task depends on its predecessor by construction, so exactly one is in flight at a time (order: colliding tasks adjacent, else by finding/defect id). The chain is dispatched to ONE agent that works it in order, never a fresh instance per task — tier per 5a; test-file findings still route to `asd-tester` as their own chain, dispatched only after the dev chain completes and carrying its outcome (fixes already committed — `git-strategy.md` "Commit before review"), never alongside it, so exactly one agent is in flight across the whole round.
 5a. Before each task dispatch, run `node .asd/runtime.js route-task --input <path>` with kind, objective inputs/checks, the task's `Material risk` lines as typed `risks` entries (`sprint-lifecycle.md` "Plan file format"), correction attempts and prior tier. A result with `execution="command"` runs directly; `execution="agent"` dispatches `asd-dev-<tier>` for `mechanical`/`critical`, or the base `asd-dev` for `tier: standard` (no `-standard` variant exists — `providers.md` "Task-class variants and routing"). Persist the record in `state.json.task_routing[taskId]` per `providers.md`, supplying its tier as `priorTier` on re-entry. Invalid routing blocks; tier never lowers. In a fix mode, route every task of the chain first and persist each record, then dispatch the whole chain to a single agent at the highest tier returned — one agent holding every fix in the round is what keeps a later fix from contradicting an earlier one it never saw.
 6. **Dispatch tasks** per execution graph:
-   - sequential where dependent; parallel where independent (caller schedules concurrent delegations) — initial mode only; in a fix mode step 5's single ordered chain governs, dev chain before tester chain
+   - per step 5's wave table, sequential where dependent; parallel where independent: waves ascending, every task of a wave dispatched concurrently (caller schedules concurrent delegations), the next wave opening only once all their signals are in — initial mode only; in a fix mode step 5's single ordered chain governs, dev chain before tester chain
    - per task, or once per chain in a fix mode (5a): delegate to `asd-dev` (`asd-tester` only for review findings in test files) with payload:
      - initial — Task block excerpt (title + subtasks + dependencies); review-fix — grouped finding list (each finding's severity, location, description, suggested fix; plus user-approved change note for accepted FAIL findings); test-fix — grouped defect list (`D-N`, location, symptom, failing test)
      - relevant context paths (PRD AC-N referenced, ADRs, ux-spec, DESIGN.md, accessibility, stack, commands.yaml, tech-reference/, custom-common-rules.md, custom-coding-rules.md; review-fix also: reviewer files in `reviews/impl/iter-NN/`; test-fix also: `test-plan.md`)
@@ -69,12 +66,12 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
      - instruction:
        - read context first
        - tech-reference precondition (refuse-to-implement rule): see `artifact-layout.md` "Tech reference docs" — do not restate here
-       - apply `review-policy.md`'s over-engineering and structure/cohesion checklists and `artifact-layout.md`'s SSoT iron rule while authoring, not only at review (`code-style.md` §1) — do not restate them here
+       - apply the checklists and iron rules while authoring, not only at review: `code-style.md` §1 — do not restate here
        - work autonomously within plan + persistent docs scope; do NOT pause user for routine approach choices — make the reasonable call and proceed
        - escalate only on a blocker (see Execution mode): emit `QUESTION` for unresolvable requirement ambiguity, `FAILED` for missing tech-reference / unrecoverable failure, or raise Complication Approval via request for user decision **only** when a Simplicity Default trigger fires (new abstraction / dependency / config flag / generalization)
        - manual-steps handling: see `sprint-lifecycle.md` "Impl phase" — do not restate here
        - write production code only — **no tests, no authoring, no modifying, no pruning**; the impacted set (`sprint-lifecycle.md` "Impacted test set") may be run for self-verification only, never as a substitute for `impl-test`'s gate; test selection, authoring, pruning, and running belong to `impl-test`
-       - review-fix — verify each finding against source before applying (`review-policy.md` "Verify before applying" — do not restate here), then apply its suggested fix or an equivalent correct fix; test-fix — fix the root cause behind the failing test (never weaken or delete the test), then set the defect row `Status` to `fixed` with the fixing commit sha in `<sprint>/test-plan.md`
+       - review-fix — `review-policy.md` "Verify before applying" — do not restate here; test-fix — fix the root cause behind the failing test (never weaken or delete the test), then set the defect row `Status` to `fixed` with the fixing commit sha in `<sprint>/test-plan.md`
        - run `build` and `lint` per `commands.yaml`; do not advance with failures or warnings unreported
        - stub handling: see `git-strategy.md` "TODO stubs" — do not restate here
        - staging + commit ownership — concurrently dispatched tasks share one worktree: see `git-strategy.md` "Commit before review" — do not restate here
@@ -97,6 +94,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
 9. **Impl completion gate** (all modes) — the main orchestrator verifies, via `commands.yaml`:
    - `build` command executed and finished with no errors and no warnings
    - `lint` command executed and finished with no errors and no warnings
+   - the round's diff — what its agents committed plus anything still uncommitted — read before committing or advancing: every path it touches is one those agents were authorised to touch. Any other path fails the gate as a build error does — a file no dispatched task named, a hand-edited generated view, a scripted edit that rewrote more than its target. Distinct from `code-style.md` §19's staged-content lint: same tool, different question
    - the gate itself never runs tests — a dev's optional impacted-set self-verification run (`sprint-lifecycle.md` "Impacted test set") is not part of it; the suite/impacted-set gates belong to `impl-test`/`impl-review`
    - if any condition fails → phase MUST NOT advance: relay specific failure to owning dev(s) to fix and re-run; loop step 7. Unrecoverable failure escalates as a blocker (`FAILED`).
    - automatic verification — no user pause
@@ -115,12 +113,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
 
 ## Escalation (interruptions before phase exit)
 
-Per Execution mode, the **only** reasons impl contacts user before all tasks/findings/defects complete (same in all modes):
-
-- Any dev `QUESTION` (unresolvable requirement ambiguity) → relay, halt; resume on answer
-- Any dev Complication Approval request (Simplicity Default trigger) → relay, halt; resume on decision
-- Any dev `FAILED`/`ABORT` → relay, halt
-- Manual-steps gate (step 8) — after all unblocked work COMPLETED and validated `MS-N` remain, the main orchestrator presents `manual-steps.md`; resume on user continue command
+The only reasons impl contacts the user before all tasks/findings/defects complete, in every mode, are the blockers enumerated under **Execution mode** above plus the manual-steps gate (step 8). Each relays and halts; execution resumes on the user's answer, decision or continue command.
 
 On `ADVICE_NEEDED` from any dispatched agent → relay per `sprint-lifecycle.md`'s `ADVICE_NEEDED` protocol; execution resumes, no halt. Not a blocker — the branches above are the only ones that halt.
 
@@ -141,9 +134,6 @@ Impl completion gate (step 9) and, initial mode only, impl assessment gate (step
 - The main orchestrator (manual-step validation, completion/assessment gates and decisions-log); no orchestration agent is dispatched.
 - `asd-dev` (per Task, finding group, or defect group)
 - `asd-tester` (review-fix mode only, for findings located in test files)
-
-## Skills/workflows dispatched
-None.
 
 ## Return contract (single line)
 ```

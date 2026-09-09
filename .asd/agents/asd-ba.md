@@ -66,7 +66,6 @@ Creator:
 - Never write ux flows, mockups, or design decisions
 - Never invent acceptance criteria without traceable user story
 - Never silently drop user-provided requirement — escalate on conflict
-- Never write to persistent `docs/` directly, except folding the sprint PRD draft into `docs/product/requirements/<subsystem>.html` during design-promote (promote only)
 - Never modify infrastructure (`.asd/rules/`, `.claude/`, `.asd/templates/`)
 
 ## Signals emitted

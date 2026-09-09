@@ -24,7 +24,3 @@ Reconcile generated provider views with canonical `.asd/` sources. Never overwri
    - `modified-foreign` targets marked overwrite: `node "$SYNC" --apply <file...> --force` (same command form, `--force` appended — this is the ONLY thing that actually makes a confirmed `modified-foreign` overwrite take effect; without it the CLI silently refuses and the file stays untouched).
    Skip either call if its group is empty.
 5. Report per-file outcome (applied / kept / still stale) from the apply result(s) plus a final `node "$SYNC" --check` summary.
-
-## Boundaries
-
-Never runs `--apply` on an item the user did not explicitly mark overwrite. Never passes `--force` for a `missing`/`stale` item (unnecessary — reserve it for `modified-foreign` only, where it is required). Never applies a whole class or tree in bulk without every item's own decision. Read-only until step 4.

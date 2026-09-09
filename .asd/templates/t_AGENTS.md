@@ -39,17 +39,7 @@ When subsystem decomposition is enabled (`project.subsystem_decomposition`), per
 
 ### Rule docs (`.asd/rules/`)
 
-- `core.md` — model, interaction protocol, invariants
-- `sprint-lifecycle.md` — phases, signals, plan format
-- `checkpoints.md` — pauses, approvals, preconditions
-- `git-strategy.md` — branches, commits, TODO stubs, PR
-- `artifact-layout.md` — paths, ownership, SSoT, archival
-- `code-style.md` — implementation-level code-writing rules
-- `review-policy.md` — severity, iteration floor, autofix vs escalation
-- `external-review.md` — wrapping the other provider's CLI for a second opinion
-- `providers.md` — canonical/provider path map, semantic-operation mapping, model-family table
-- `language-policy.md` — language matrix
-- `design-principles.md` — design-time principles
+`core.md` "See also" indexes every rule doc with its scope — not restated here.
 
 ### Hard rules
 

@@ -40,17 +40,7 @@ When subsystem decomposition is enabled (`project.subsystem_decomposition`), per
 
 ### Rule docs (`.asd/rules/`)
 
-- `core.md` — model, interaction protocol, invariants
-- `sprint-lifecycle.md` — phases, signals, plan format
-- `checkpoints.md` — pauses, approvals, preconditions
-- `git-strategy.md` — branches, commits, TODO stubs, PR
-- `artifact-layout.md` — paths, ownership, SSoT, archival
-- `code-style.md` — implementation-level code-writing rules
-- `review-policy.md` — severity, iteration floor, autofix vs escalation
-- `external-review.md` — wrapping the other provider's CLI for a second opinion
-- `providers.md` — canonical/provider path map, semantic-operation mapping, model-family table
-- `language-policy.md` — language matrix
-- `design-principles.md` — design-time principles
+`core.md` "See also" indexes every rule doc with its scope — not restated here.
 
 ### Hard rules
 
@@ -86,16 +76,14 @@ Ships as Markdown, YAML, JSON, HTML, Node hook scripts. No package.json, compile
 
 ### Architecture
 
-ASD drives a consumer project through phases per sprint, for **both Claude Code and Codex** from one canonical source under `.asd/`. `.asd/sync.js` generates each provider's own view (`.claude/`, `.codex/`, `.agents/skills/`) and keeps them in sync (`--check`/`--apply`); see `.asd/rules/providers.md` for the canonical/provider path map, the semantic-operation → host-tool mapping, and the orphan-detection contract (a generated view whose canonical source was deleted/renamed fails `--check`; `--apply` deletes it only when marker-owned AND explicitly named in the `--apply` target list, also pruning the now-empty parent directory).
+ASD drives a consumer project through phases per sprint, for **both Claude Code and Codex** from one canonical source under `.asd/`. `.asd/sync.js` generates each provider's own view and keeps it in sync (`--check`/`--apply`). Path map, semantic-operation → host-tool mapping, orphan-detection contract and model-family table: `.asd/rules/providers.md`.
 
-- **Rules** (`.asd/rules/*.md`) — SSoT for workflow behavior. `core.md` is the hub, links every other rule doc. Common invariants read by all agents; additional rules loaded by role/phase per providers.md.
-- **Skills** (`.asd/skills/<name>/SKILL.md`, canonical) — 18. JSON frontmatter (`name`, `description`, optional `claude`/`codex` blocks). `asd-sprint` detects active sprint from `state.json`, dispatches matching `asd-phase-*` skill. The 11 `asd-phase-*` skills are thin triggers delegating to `.asd/workflows/asd-phase-*.md` (the actual orchestration, extracted so it isn't duplicated per provider). `asd-init`, `asd-concept`, `asd-stack`, `asd-design-system` = user-facing setup; `asd-update` (bundles `update.js`) pulls latest framework files into a consumer per `.asd/release-manifest.json`'s `managed_paths`, then runs any pending `.asd/migrations/<version>.js` scripts in ascending order (each named by its target version, skipped once applied, stop-on-first-failure); `asd-sync` reconciles a consumer's generated provider views against canon. Generated to `.claude/skills/<name>/SKILL.md` (Claude) and `.agents/skills/<name>/SKILL.md` (Codex — NOT `.codex/`, Codex only reads project skills from `.agents/skills/`).
-- **Agents** (`.asd/agents/*.md`, canonical) — 11: 5 creators (BA, UX, Architect, Dev, Tester), 5 reviewers (4 internal — Correctness, Efficiency, Testing, Documentation — + External Review, each wrapping the other provider's CLI), 1 advisor (`asd-advisor`, read-only, workflow-dispatched on non-gate uncertainty). Main orchestrator owns former PM responsibilities. Task variants share each canonical role body and permissions, generated from declared tier metadata. JSON frontmatter: `name`, `description`, `claude: {model, effort, tools, ...}`, `codex: {model, model_reasoning_effort, sandbox_mode}` — `model` is a family alias (fable/opus/sonnet/haiku for Claude; sol/terra/luna for Codex), resolved to the ChatGPT-compatible concrete ID only by `.asd/release-manifest.json`'s `model_families` table; never put a concrete ID in canon. Reviewers are read-only on both providers (no `Write`/`Edit`/`Bash` in `tools`; `sandbox_mode: "read-only"`) — a reviewer returns its verdict as final text, the phase workflow writes the review file. Generated to `.claude/agents/*.md` (Claude) and `.codex/agents/*.toml` (Codex).
-- **Templates** (`.asd/templates/t_*`) — most consumer artifacts have a `t_`-prefixed template (e.g. `t_prd.html`, `t_plan.md`, `t_state.json`, `t_AGENTS.md`); deliberate exceptions with no template: API contracts and other Complication-Approval fold targets (folded into whichever persistent doc absorbs them, per `sprint-lifecycle.md` "Design-promote phase").
+- **Rules** (`.asd/rules/*.md`) — SSoT for workflow behavior; `core.md` is the hub. Which rules a role loads: `providers.md` "Role-scoped context".
+- **Skills** (`.asd/skills/<name>/SKILL.md`, canonical) — the 11 `asd-phase-*` skills are thin triggers delegating to `.asd/workflows/asd-phase-*.md`, which hold the orchestration so it is not duplicated per provider. Codex reads project skills only from `.agents/skills/`, never `.codex/`.
+- **Agents** (`.asd/agents/*.md`, canonical) — 11: 5 creators (BA, UX, Architect, Dev, Tester), 5 reviewers (4 internal + External Review), 1 advisor. The main orchestrator is a role, not a spawned agent. Task variants are generated from declared tier metadata, sharing the canonical role body and permissions. `model` is a family alias resolved to a concrete ID only by `.asd/release-manifest.json`'s `model_families`; never put a concrete ID in canon.
+- **Templates** (`.asd/templates/t_*`) — deliberate exceptions with no template: API contracts and other Complication-Approval fold targets (folded into whichever persistent doc absorbs them, per `sprint-lifecycle.md` "Design-promote phase").
 
-`t_AGENTS.md` (+ thin `t_CLAUDE.md`, just a `@AGENTS.md` import) template a consumer's `AGENTS.md`/`CLAUDE.md` (`.asd/rules/providers.md` "Canonical path -> per-provider path" is the ownership home). Canonical bodies (agents, skills, workflows) are provider-neutral — no host-tool names, no `@`-imports (Codex doesn't support them, plain concatenation only) — written as semantic operations mapped per-provider in `providers.md`.
-
-Flow: `asd-sprint` → phase skill → workflow → creator/reviewer agents → artifacts into the consumer's `.asd/sprints/<NNN-slug>/` and `docs/`. State recovery via per-sprint `state.json`.
+Canonical bodies (agents, skills, workflows) are provider-neutral — no host-tool names, no `@`-imports (Codex doesn't support them, plain concatenation only) — written as semantic operations mapped per-provider in `providers.md`.
 
 ### Cross-file consistency (main editing hazard)
 
@@ -119,4 +107,4 @@ These artifacts mirror/reference each other. A change in one usually needs match
 ### Hard rules (in addition to the block's)
 
 - **Every workflow change checked against README.md.** After editing any rule/skill/agent/workflow/template/hook/config schema, update README.md if affected (phase list, agent roster, model tiers — both providers, config schema, folder map, command list) in the same change. Not complete until README.md confirmed accurate. Changing an agent's frontmatter `model`/`codex.model` tier requires updating the README model-tier table same change.
-- **Every change must minimize runtime tokens.** Compress prose (caveman OK), drop filler/hedging, dedup to SSoT (restated facts → link to canonical home). Preserve: technical terms, exact tokens (verdict strings, phase names, placeholders), code/YAML/JSON structure. Allowed mirrors: the cross-file syncs above.
+- **Every change must minimize runtime tokens** — `.asd/rules/artifact-layout.md` "Documentation economy" holds the exclusions, the three tests and the preserve-list. Repo-local addition: the cross-file syncs above are the only mirrors it permits.

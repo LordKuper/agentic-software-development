@@ -12,6 +12,8 @@ const MAX_NEGATIVE_TTL_MS = 3600000;
 const RESERVED_CHANGE_RISKS = ['security', 'authentication', 'migration', 'public contract', 'workflow gate'];
 /** The single review-ledger row vocabulary: allowed statuses per row type, plus the one status carrying `p` and the one carrying `f`. Emitted into every manifest and enforced on every ledger from here, so published and enforced vocabulary cannot drift. */
 const LEDGER_VOCABULARY = { files: ['checked', 'n/a'], rules: ['pass', 'n/a', 'finding'], sections: ['reviewed', 'n/a'], p: 'n/a', f: 'finding' };
+/** One filled ledger row, published beside the vocabulary so a reviewer reads the row shape off its own input too. Its status is taken from the vocabulary constant and paired with the key that status requires, so the example cannot teach a row the validator rejects. */
+const LEDGER_ROW_EXAMPLE = { i: '<manifest id>', s: LEDGER_VOCABULARY.p, p: '<allowed n/a predicate>' };
 
 function stable(value) {
   if (Array.isArray(value)) return '[' + value.map(stable).join(',') + ']';
@@ -198,7 +200,7 @@ function rowsById(rows, expected, allowedNa, findings, label) {
   if (seen.size !== expected.size) fail(`${label} rows incomplete`);
 }
 
-/** Returns the required manifest digest for a review coverage ledger: the manifest exactly as written, minus `digest`. A manifest carrying no vocabulary keeps the identity it was stamped with, so one written before the vocabulary existed still validates; a divergent one is digested as written and rejected on validation. */
+/** Returns the required manifest digest for a review coverage ledger: the manifest exactly as written, minus `digest`. A manifest missing a published constant keeps the identity it was stamped with, so one written before that field existed still validates; a divergent one is digested as written and rejected on validation. */
 function coverageManifestDigest(manifest) {
   if (!manifest || typeof manifest !== 'object') fail('manifest required');
   const copy = Object.assign({}, manifest);
@@ -212,6 +214,12 @@ function validateCoverageLedger(manifest, ledger, actualFindings) {
   const digest = coverageManifestDigest(manifest);
   if (manifest.digest !== digest || ledger.manifest_digest !== digest) fail('ledger manifest identity invalid');
   if (manifest.vocabulary !== undefined && stable(manifest.vocabulary) !== stable(LEDGER_VOCABULARY)) fail('manifest vocabulary invalid');
+  if (manifest.row_example !== undefined && stable(manifest.row_example) !== stable(LEDGER_ROW_EXAMPLE)) fail('manifest row example invalid');
+  if (manifest.n_a !== undefined) {
+    if (!manifest.n_a || typeof manifest.n_a !== 'object' || Array.isArray(manifest.n_a)) fail('manifest n_a invalid');
+    const rowTypes = Object.keys(LEDGER_VOCABULARY).filter((key) => Array.isArray(LEDGER_VOCABULARY[key]));
+    for (const key of Object.keys(manifest.n_a)) if (!rowTypes.includes(key)) fail(`manifest n_a unknown row type: ${key}`);
+  }
   const ids = (name) => {
     if (!Array.isArray(manifest[name]) || manifest[name].some((item) => typeof item !== 'string')) fail(`manifest ${name} invalid`);
     const set = new Set(manifest[name]);
@@ -267,7 +275,7 @@ function main(argv) {
   const flags = parseFlagArgs(argv.slice(3), ['write']);
   if (command === 'manifest-digest') {
     const onDisk = JSON.parse(fs.readFileSync(flags.manifest, 'utf8'));
-    const manifest = flags.write ? Object.assign({}, onDisk, { vocabulary: LEDGER_VOCABULARY }) : onDisk;
+    const manifest = flags.write ? Object.assign({}, onDisk, { vocabulary: LEDGER_VOCABULARY, row_example: LEDGER_ROW_EXAMPLE }) : onDisk;
     const digest = coverageManifestDigest(manifest);
     if (flags.write) fs.writeFileSync(flags.manifest, JSON.stringify(Object.assign({}, manifest, { digest })) + '\n', 'utf8');
     process.stdout.write(digest + '\n');
@@ -298,4 +306,4 @@ if (require.main === module) {
   try { process.exitCode = main(process.argv); } catch (error) { process.stderr.write(`${error.message}\n`); process.exitCode = 2; }
 }
 
-module.exports = { LEDGER_VOCABULARY, buildInvocation, coverageManifestDigest, externalPreflight, recordExternalFailure, routeTask, validateCoverageLedger, fingerprint };
+module.exports = { LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, buildInvocation, coverageManifestDigest, externalPreflight, recordExternalFailure, routeTask, validateCoverageLedger, fingerprint };

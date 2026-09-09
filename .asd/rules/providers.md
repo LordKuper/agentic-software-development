@@ -20,7 +20,7 @@ Codex has no project-level equivalent of `.claude/skills` — a separate `.agent
 
 ### Orphan detection
 
-`buildSyncPlan` is source-driven: a deleted or renamed canonical agent/skill simply stops appearing in the plan, so `.asd/sync.js` also diffs the actual contents of `.claude/agents/`, `.claude/skills/`, `.codex/agents/`, `.agents/skills/` against what the current plan expects there. A file present in one of those trees with no matching plan entry is an orphan. `--check` is what enumerates every orphan — reports each, exits non-zero; it is the only place a caller discovers them. `--apply` deletes an orphan only when BOTH conditions hold: (1) it carries the ASD ownership marker — an unmarked file is reported (`orphan-unmarked`) and never touched, it's a consumer's own agent or skill, indistinguishable from an orphan by path alone; and (2) it is explicitly named in the `--apply <file...>` target list — `runApply` only inspects the requested targets, never sweeps the whole orphan set on its own initiative, so a caller regenerating only changed canon never automatically sweeps orphans, even marker-owned ones, unless it names them. Deleting a marker-owned orphan this way also prunes its now-empty parent directory, mirroring the migration runner's own empty-parent prune for the same file class.
+`buildSyncPlan` is source-driven: a deleted or renamed canonical agent/skill simply stops appearing in the plan, so `.asd/sync.js` also diffs the actual contents of `.claude/agents/`, `.claude/skills/`, `.codex/agents/`, `.agents/skills/` against what the current plan expects there. A file present in one of those trees with no matching plan entry is an orphan. `--check` is what enumerates every orphan — reports each, exits non-zero; it is the only place a caller discovers them. `--apply` deletes an orphan only when BOTH conditions hold: (1) it carries the ASD ownership marker — an unmarked file is reported (`orphan-unmarked`) and never touched, it's a consumer's own agent or skill, indistinguishable from an orphan by path alone; and (2) it is explicitly named in the `--apply <file...>` target list — `runApply` only inspects the requested targets, never sweeps the whole orphan set on its own initiative. Deleting a marker-owned orphan this way also prunes its now-empty parent directory.
 
 ## Semantic operations -> host convention
 
@@ -86,6 +86,8 @@ Which CLI to wrap is resolved per-provider at generation time: `asd-external-rev
 ## Role-scoped context
 
 Every role loads `core.md` and `custom-common-rules.md` when it exists. It then reads only the row for its current responsibility and phase; a gate proposal additionally reads `checkpoints.md`. Inputs named by the phase payload remain mandatory.
+
+Section scope inside a granted file: `artifact-layout.md` "HTML shell wrapping (mandatory)" is 25% of that file and actionable only on a user-facing HTML artifact, so a row granting `artifact-layout.md` reaches that section only when the role is authoring one (`asd-ba`, `asd-ux`, `asd-architect`) or one is in its change surface; otherwise the section is skipped, not read.
 
 | Role | Additional context |
 |---|---|

@@ -1,0 +1,31 @@
+{
+ "phase": "impl-review",
+ "iteration": 4,
+ "base_ref": "1950c00a94b3e4cf4938b2e1f39591a80088e6a8",
+ "head_ref": "36233d5e10268e0331de91a83dbf919c127e0d64",
+ "files": [
+  ".asd/agents/asd-reviewer-correctness.md",
+  ".asd/release-manifest.json",
+  ".asd/rules/review-policy.md",
+  ".asd/rules/sprint-lifecycle.md",
+  ".asd/workflows/asd-phase-impl-review.md",
+  ".claude/agent-memory/asd-dev-critical/feedback_false-ssot-declarations.md",
+  ".claude/agent-memory/asd-dev-critical/project_crlf-canon-edits.md",
+  ".claude/agent-memory/asd-external-review/MEMORY.md",
+  ".claude/agent-memory/asd-external-review/reference_codex-invocation.md",
+  ".claude/agent-memory/asd-external-review/reference_scope-manifest-transport.md",
+  ".claude/agent-memory/asd-reviewer-testing/feedback_no-shell-review-method.md",
+  ".claude/agent-memory/asd-tester-critical/project_testability-envelope.md",
+  "tests/run.js"
+ ],
+ "exclude_paths": [
+  ".asd/project/**",
+  ".asd/sprints/**",
+  ".claude/agents/**",
+  ".claude/skills/**",
+  ".claude/hooks/**",
+  ".claude/settings.json",
+  ".codex/**",
+  ".agents/skills/**"
+ ]
+}

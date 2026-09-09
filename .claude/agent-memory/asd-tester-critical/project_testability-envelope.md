@@ -15,7 +15,9 @@ accepted answer for a mostly-docs change surface:
 2. **Static canon-consistency assertions inside `tests/run.js`** where a machine-checkable invariant
    exists across files (derive the value from its SSoT, assert every mirror). Precedents in-file:
    the retired-`asd-pm` canon scan, `upstream_hashes`/`canon_hashes` checks, and (added sprint 007)
-   the `PHASE_CHAIN` ↔ skill/workflow bijection + ordered prose mirrors.
+   the `PHASE_CHAIN` ↔ skill/workflow bijection + ordered prose mirrors. Prefer a new assertion in a
+   loop that already reads those files over a new test — the suite count going *down* while coverage
+   goes up is a good outcome here.
 
 **Why:** the repo ships no application code, so the naive reading is "nothing is testable"; the real
 line is executable Node (`sync.js`, `update.js`, `.asd/migrations/**`, `.asd/runtime.js`,
@@ -26,108 +28,170 @@ gaps that pattern 2 closes (G-11 chain mirrors, G-12 forward-only manifest check
 executable changes real unit tests; give prose changes a `none` with its reason, unless the prose
 encodes an ordered/enumerable invariant that mirrors an SSoT — then pattern 2 applies.
 
-Two traps when proving these by mutation:
-- A purely defensive guard may be unmutatable (e.g. `6.0.0.js`'s `ARCHIVE_DIR` skip is a no-op
-  because the sprint listing is already non-recursive). Record the limitation instead of claiming
-  a proof that did not happen.
-- Any mutation of a file under `managed_paths` also fails the `upstream_hashes` test; that extra
-  FAIL is expected noise, not signal — look for your own test's name in the output.
+Entries below are keyed by topic, never by ordinal: fold a new lesson into the heading it belongs to
+instead of appending a numbered one. This file loads on every dispatch of this agent and is reviewed
+as a hot path under `artifact-layout.md` "Documentation economy" — ordinal keying is what made it
+grow (sprint 010 EFF-2), since appending is always cheaper than merging.
 
-Two recurring impl-review findings against pattern 1, both seen in sprint 007:
-- A **blanket `none`** covering several artefacts at once ("the rest is genuinely prose") is read as
-  a completeness claim and gets rejected. Scope each `none` to one artefact and one named risk, and
-  say what *would* make it assertable. A `none` whose own risk sentence describes a machine-checkable
-  literal ("a workflow that never appends") is dishonest by construction.
-- **Prose is not exempt just because it is prose**: a stable literal token repeated across a file set
-  (a `NEXT:` target, a reference line, a phase-count word) is the same rung as any other static
-  assertion — one substring check inside a loop that already reads those files. Prefer adding an
-  assertion to an existing loop over adding a test; the suite count going *down* while coverage goes
-  up is a good outcome here.
+## Mutate, run, restore — one bash call
 
-Third mutation trap: an assertion late in a multi-fixture test is only proven by a mutation that
-leaves the earlier fixtures passing. Changing *which* key/branch the code touches (e.g. top-level
-`delete` → recursive strip) reaches it; a wholesale pre-fix restore does not.
+Back the file up with `cp` to the scratchpad, then run mutate → suite → restore inside ONE bash call,
+restoring in the same call that reads the failure. Never restore with `git checkout --`, and never
+park the backup inside a tree a test globs — a stray `.md` under `.asd/rules/` breaks the rule-doc
+bijection check itself. For the extra FAIL lines a tracked file's mutation produces:
+[[mutation-runs-trip-the-hash-ledger]].
 
-Fourth trap, on the *authoring* side: rule prose here routinely narrates the alternative it just
-rejected inside the same bullet (`asd-phase-impl.md`'s fix-mode line explains why parallel rounds
-were dropped). A bare keyword absence check (`!/parallel/i`) therefore goes red against unmutated
-HEAD. Assert the absence of the specific *removed instruction phrases*, never of a topic word.
+**Why** — the two failure modes this replaces:
 
-Fifth: an "at least one example without X" assertion (template conditionality) is only proven by a
-mutation that adds X to **every** remaining block - a single-site edit leaves the claim true and the
-mutation uncaught. Same family as the third trap: match the mutation to what the assertion claims.
+- `git checkout -- <file>` re-materialises canon as LF: these files still sit CRLF in the worktree
+  from before `.gitattributes` (`* text=auto eol=lf`) landed. Tracked content is unchanged (`git
+  status` clean, index `i/lf`), but "restored byte-for-byte" is then only true of tracked content —
+  say so rather than overclaiming, and expect a `CRLF will be replaced by LF` warning when staging a
+  file that was never checked out.
+- A session boundary landing between mutate and restore leaves corrupted canon on disk, and the next
+  dispatch inherits it as a diff it did not author (sprint 009 `F-5`). Two things worth knowing when
+  that happens. (1) The pair is self-revealing, not silent: an added assertion plus the mutation it
+  was aimed at makes the suite RED (the assertion fires), so a claim that "the suite was green with
+  the corrupted file" is worth re-checking by reproducing the exact byte state rather than repeating.
+  (2) The real exposure is at commit time, not suite time — the danger is a round committed without
+  reading the diff. On re-entry into someone else's unrestored work, re-derive every assertion
+  against source and re-run every proof: their outputs did not survive, and a proof you did not run
+  is not a proof you can record.
 
-Also durable: `runtime.js` `routeTask` takes a structured input object and contains **no plan-file
-parser** - the `Material risk` extraction is the orchestrator's. Any proposed test of plan-grammar
-routing "through route-task" is unfalsifiable by construction; record it as a checked-and-false
-premise rather than writing a test that only proves a pure function is deterministic.
+## Guards that resist mutation
 
-Sixth trap, on fixtures rather than mutations: a **backward-compatibility fixture built by calling the
-function under test** is not a fixture. Sprint 009's legacy-manifest row stamped its digest with
-`coverageManifestDigest` itself, so it tracked whatever that function did and stayed green straight
-through the identity break it claimed to cover. Build a legacy artefact from the *untouched primitive*
-the old code used (`runtime.fingerprint` + the old key handling), so it stays frozen at the old
-behaviour when the current one changes.
+A purely defensive guard may be unmutatable (e.g. `6.0.0.js`'s `ARCHIVE_DIR` skip is a no-op because
+the sprint listing is already non-recursive). Record the limitation instead of claiming a proof that
+did not happen.
 
-Seventh: when generalizing a scoped assertion (one directory → a whole tree), check the tree first.
-Widening the `asd-dev-critical/MEMORY.md` index-link test over all of `.claude/agent-memory/**` goes
-red at HEAD on `asd-pm/MEMORY.md`'s dangling `feedback_flag-gate-semantics-before-applying.md` link —
-pre-existing and outside any current change surface. Scope the loop to the directories the sprint
-writes and record why in `test-plan.md`, rather than importing an out-of-scope failure.
-
-Eighth: a precondition guard with no mutable source (a spawn that needs `git` on PATH) is provable by
+A precondition guard with no mutable source (a spawn that needs `git` on PATH) is provable by
 **environment** instead: re-run the whole suite with `PATH` reduced to node's own directory. Three
 external-CLI preflight tests fail alongside it — check which failures are yours before claiming a
 test is the suite's only environment-dependent one.
 
-Ninth, authoring style: `tests/run.js` gets reviewed against `code-style.md` §7, which forbids
-in-body comments with no framework exemption — the ~60 pre-existing ones are not a licence, and new
-ones draw a Documentation finding every time. Put the reasoning in the `assert` message; it is read
-at the moment of failure, which a comment above the line is not.
+## Scoping a `none` — and a blanket `keep` is the same error
 
-Tenth, on re-pinning after a canon fix invalidates an assertion: pin the **relation between two sites**,
-never a fresh literal on one of them. Sprint 009 iter-02 — `checkpoints.md` counts fix rounds by a tail
-match while `asd-phase-impl.md` step 11 emits the whole heading; the durable check derives the emitted
-literal from the workflow and asserts it *ends with* the tail read out of `checkpoints.md`, so either
-side may be reworded freely as long as the counter still selects the emitter. String equality between
-the two would have gone red on the correct fix, exactly as it did.
+A **blanket `none`** covering several artefacts at once ("the rest is genuinely prose") is read as a
+completeness claim and gets rejected. Scope each `none` to one artefact and one named risk, and say
+what *would* make it assertable. A `none` whose own risk sentence describes a machine-checkable
+literal ("a workflow that never appends") is dishonest by construction. What makes a stated reason
+false is [[fail-first-and-none-honesty]]'s subject, not restated here.
 
-Eleventh, matching rule prose: key the locator to the sentence's **citation**, never its ordinal or
-adverb. `sprint-lifecycle.md`'s latch-clearing route was renamed "A THIRD" → "A further" mid-sprint; a
-`find` on the citation (`` `review-policy.md` "Late duplicate return" ``) survives that, an
-ordinal-keyed one reddens on a correct edit. Same family as the fourth trap (assert removed instruction
-phrases, not topic words).
+A blanket **`keep`** hides the same hole and is easier to miss, because a green run feels like
+evidence. "Re-run at this HEAD: every existing pin holds" proves only the pins that already existed —
+it says nothing about a contract nothing ever asserted. Sprint 010 entry 4 recorded that row over
+another role's five deletions; the continuation found two of the five (the nitpick enumeration and
+its `providers.md` grant; the red-full-suite latch invalidation and its two acting sites) had **no**
+assertion at any site, before or after. Before writing `keep` on someone else's cut, grep the suite
+for the surviving text and the rule it belongs to; if the grep is empty, the row is an `add`.
 
-Twelfth, worktree line endings: canon files here still sit CRLF in the worktree from before
-`.gitattributes` (`* text=auto eol=lf`) landed, so `git checkout -- <file>` after a mutation
-re-materialises that file as LF. Tracked content is unchanged (`git status` clean, index `i/lf`), but
-"restored byte-for-byte" is only true of tracked content — say so rather than overclaiming, and expect
-a `CRLF will be replaced by LF` warning when staging a file that was never checked out.
+When a new sweep finds a **pre-existing, out-of-scope** defect, neither ship it red nor drop the sweep:
+pin the broken set exactly (`deepStrictEqual` against the known members, both directions) and file the
+`D-N` rows, naming the ids in the assert message and stating in `test-plan.md` that fixing the defect
+also means deleting its line from the pinned list. Sprint 010 entry 5 did this for two dangling
+citations; the local precedent is entry 4's `asd-pm` fallout-set comparison. Shipping red would block
+`impl-review` entry on work no round of the sprint touched, and an exemption list with defect ids in it
+is visible where a silent filter is not.
 
-Thirteenth, mutation discipline under interruption (sprint 009 `F-5`): restore the mutated file in the
-tool call immediately after reading the failure, never after "one more check" - a session limit between
-mutate and restore leaves corrupted canon on disk, and the next dispatch inherits it as a diff it did
-not author. Two things worth knowing when that happens. (1) The pair is self-revealing, not silent: an
-added assertion plus the mutation it was aimed at makes the suite RED (the assertion fires), so a claim
-that "the suite was green with the corrupted file" is worth re-checking by reproducing the exact byte
-state rather than repeating. (2) The real exposure is at commit time, not suite time - the danger is a
-round committed without reading the diff. On re-entry into someone else's unrestored work, re-derive
-every assertion against source and re-run every proof: their outputs did not survive, and a proof you
-did not run is not a proof you can record.
+A pin like that carries a **closing obligation**, and it falls to this role because the pin is test text.
+When the defect is fixed the exemption line goes with it (say so in `test-plan.md`, since a fix without
+the deletion reddens the suite), and then check what the emptied list leaves behind. In sprint 010 it
+left two: a stricter tier whose only difference from the general one was refusing to be pinned — now a
+subset compared against the same `[]`, so a duplicate §17 prunes, taking its no-longer-guarding floor
+with it — and an assert message still explaining what a *missing* entry means, a failure mode `[]`
+cannot reach. Prune the tier, keep the rule by moving it into the surviving message as forward
+instruction ("if you ever pin one, never on a denial line"), and reshape only if a non-subsumed property
+is actually derivable — measure that before claiming it is not. Coverage did not change; the test got
+smaller and the exemption became a real assertion. That is the outcome to report plainly rather than
+dressing the round up with a new test.
 
-Fourteenth, fixtures whose *bytes* are the input: never commit one whose distinguishing bytes cannot
-survive checkout. Sprint 009 shipped `demo-agent.crlf-bom.md` as the CRLF/BOM input; its blob carried
-zero CR from day one and the CRLF came entirely from `core.autocrlf=true` converting on checkout, so
-the same sprint’s `.gitattributes` (`* text=auto eol=lf`) made the test fail its own sanity assert on
-every clean clone, at 170/171. Committing real CRLF bytes plus a `-text` override is the trap answer:
-it re-breaks the `every tracked blob must be LF in the index` assertion AND makes
-`git diff --cached --check` report trailing whitespace on every line. Build such an input in the test
-body instead (read the clean fixture, hard-normalize to LF, re-expand, prepend the BOM, write under
-`mkTempDir()`), and assert against doubled CRs so the construction is correct in a CRLF working tree
-too.
+Related, when the dispatching message hands you a commit range: check it contains the changes it
+names. Entry 4 (cont.) was pointed at `11bf405..dd47159`, which held only sprint bookkeeping — the
+dev chain was `5add9f5..2ae44c6`, an ancestor of the entry's own test commit, so the suite run
+already recorded had covered it and the range as given would have produced an empty gate.
+
+## Match the mutation to what the assertion claims
+
+An assertion late in a multi-fixture test is only proven by a mutation that leaves the earlier
+fixtures passing. Changing *which* key/branch the code touches (e.g. top-level `delete` → recursive
+strip) reaches it; a wholesale pre-fix restore does not.
+
+An "at least one example without X" assertion (template conditionality) is only proven by a mutation
+that adds X to **every** remaining block — a single-site edit leaves the claim true and the mutation
+uncaught.
+
+## Assert removed phrases, not topic words
+
+Rule prose here routinely narrates the alternative it just rejected inside the same bullet
+(`asd-phase-impl.md`'s fix-mode line explains why parallel rounds were dropped). A bare keyword
+absence check (`!/parallel/i`) therefore goes red against unmutated HEAD. Assert the absence of the
+specific *removed instruction phrases*, never of a topic word.
+
+Same family, for locating a sentence: key the locator to the sentence's **citation**, never its
+ordinal or adverb. `sprint-lifecycle.md`'s latch-clearing route was renamed "A THIRD" → "A further"
+mid-sprint; a `find` on the citation (`` `review-policy.md` "Late duplicate return" ``) survives
+that, an ordinal-keyed one reddens on a correct edit.
+
+## Citations and "not restated here" are checkable, as relations
+
+Two classes that look like unassertable prose and are not.
+
+A **cross-file citation** (`` `asd-advisor.md` Don'ts ``) names a section that either does or does not
+hold the rule. The general form is a repo-wide link checker — new infrastructure, correctly declined —
+but that argument only rules out the general form. The specific one is a derivation: scan the target's
+candidate sections for the rule, assert exactly one holds it, then assert the citing line names *that*
+heading. Reword either side freely; it goes red only when the rule moves without its citation. Do not
+record `none` here on "it would be a link checker".
+
+A **"not restated here" declaration** is checkable as a pair at each site: assert the bullet still
+spells the mechanic out (the restatement is load-bearing at the acting step), AND assert the denial is
+absent. The positive half is what keeps the negative half from going vacuous under a rewording. Sprint
+010 iter-02 found three such declarations false at the moment they were written — the same bullet
+restated the mechanic one clause later — and a false denial reads as licence to delete the SSoT copy,
+which is the one an agent that never opens that workflow depends on. Prove these by literally
+reverting the fix commit, not by a synthetic edit. Sprint 010 iter-03 decided the limit of this: whether
+a denial is *true* is a paraphrase judgement with no derivable proxy over this corpus, so the pair-pin
+per touched site is the whole answer — record that as the `none`, with the measurement behind it.
+
+The *pointer* half generalizes to the whole corpus and is worth one sweep, not one test per fix.
+Sprint 010 iter-03 replaced its own denial-scoped resolver with it: match `` `<file>.md` "<Section>" ``
+across `canonMarkdownFiles()`, resolve base name → repo root → `.asd/templates/t_<base>` (so `AGENTS.md`
+and `audit.md` resolve with no hardcoded pair), and accept the target as a `## heading` **or** a
+`**bold label**` — 10 of canon's 185 citations name a bold label, `sprint-lifecycle.md` "Impl-review
+clean-worktree precondition" among them, so a heading-only check reddens on correct edits. Match
+headings prefix-anchored: `## Related open stubs (optional)` is cited without its parenthetical. It found
+two dangling pointers (`checkpoints.md` "Re-running a phase", `external-review.md` "Iteration-aware
+diff"), both from PR #25 renames whose two sibling citations sprint 006's documentation reviewer fixed by
+hand; the class is recurrent and human review catches it only partly. Both were fixed at `ac3073a` and the
+sweep now compares against an empty set — tier the result only while an exemption exists (see the closing
+obligation above), and prove a retarget by **reverting each half as a mutation**: a pointer fix is
+checkable only by resolving it, and a literal pin on the new heading would just redden the next correct
+rename.
+
+## Pin the relation between two sites
+
+When a canon fix invalidates an assertion, re-pin the **relation between two sites**, never a fresh
+literal on one of them. Sprint 009 iter-02 — `checkpoints.md` counts fix rounds by a tail match while
+`asd-phase-impl.md` step 11 emits the whole heading; the durable check derives the emitted literal
+from the workflow and asserts it *ends with* the tail read out of `checkpoints.md`, so either side
+may be reworded freely as long as the counter still selects the emitter. String equality between the
+two would have gone red on the correct fix, exactly as it did.
+
+## Fixtures whose bytes are the input
+
+Never commit one whose distinguishing bytes cannot survive checkout. Sprint 009 shipped
+`demo-agent.crlf-bom.md` as the CRLF/BOM input; its blob carried zero CR from day one and the CRLF
+came entirely from `core.autocrlf=true` converting on checkout, so the same sprint's `.gitattributes`
+(`* text=auto eol=lf`) made the test fail its own sanity assert on every clean clone, at 170/171.
+Committing real CRLF bytes plus a `-text` override is the trap answer: it re-breaks the `every
+tracked blob must be LF in the index` assertion AND makes `git diff --cached --check` report trailing
+whitespace on every line. Build such an input in the test body instead (read the clean fixture,
+hard-normalize to LF, re-expand, prepend the BOM, write under `mkTempDir()`), and assert against
+doubled CRs so the construction is correct in a CRLF working tree too.
 
 **Why:** any assertion about the bytes on disk is really an assertion about checkout configuration
-unless the test produces those bytes itself — and a suite run inside a stale working tree cannot see it.
+unless the test produces those bytes itself — and a suite run inside a stale working tree cannot see
+it.
 
 **How to apply:** when a test opens with a "fixture sanity" assert about line endings, encoding or a
 BOM, treat that as the signal and move the construction into the test. Verify with
@@ -136,3 +200,101 @@ suite in a long-lived worktree is not evidence about a fresh clone, and mutating
 prove such a test never reaches the output-equality assertion — CRLF and BOM each break the frontmatter
 fence first, so record the thrown parse error as the first failure instead of claiming the assertion
 you aimed at.
+
+## Backward-compatibility fixtures
+
+A fixture built by calling the function under test is not a fixture. Sprint 009's legacy-manifest row
+stamped its digest with `coverageManifestDigest` itself, so it tracked whatever that function did and
+stayed green straight through the identity break it claimed to cover. Build a legacy artefact from the
+*untouched primitive* the old code used (`runtime.fingerprint` + the old key handling), so it stays
+frozen at the old behaviour when the current one changes.
+
+## Fills and guards that hide the fixture
+
+When a test exercises a published constant by filling its placeholders, build the filled copy from the
+constant's OWN entries (`Object.fromEntries(Object.entries(x).map(...))`), never
+`Object.assign({}, x, {i: …, p: …})`. Sprint 010's row-example test used the second form, so it
+supplied `p` whether or not the constant carried one — the mutation that dropped `p` from
+`LEDGER_ROW_EXAMPLE` passed green and revealed the test, not the code. Run the mutation before
+believing the assertion; a green mutation is a finding about the test.
+
+Same family for *guards*: a guard asserting a field is absent from a canon fixture must key on the
+provider-scoped literal. `demo-agent.md` carries `"model"` in both its `claude` and `codex` blocks, so
+`!canon.includes('"model"')` is red at HEAD however correct the mutation was;
+`!canon.includes('"model": "opus"')` is the assertion meant. Run the suite once after adding a guard,
+before recording anything about the assertion it protects.
+
+## Sweep guards: row set and exemption set both
+
+A **reach** claim ("this rule reaches every role that authors X") is not agent-runtime judgement — it
+is a sweep of `providers.md` "Role-scoped context". Each row's Additional-context cell is a fixed grant
+list, so a rule's home being granted is a literal check; the one row that grants "files named by the
+consulting question" (`asd-advisor`) is a derivable exemption, not a hardcoded one. Guard the loop with
+a row-count assert: a regex that stops matching the table makes every grant assertion pass vacuously.
+
+The row-count assert protects only the row set; the exemption set needs its own comparison. That reach
+sweep skipped any row matching the advisor's wording, so any number of rows adopting that wording would
+have dropped out green while `test-plan.md` asserted the exemption was singular (sprint 010 T-3).
+Compare the derived exemption list to the expected one exactly, then loop the remainder.
+
+Converse trap: one `deepStrictEqual` against an expected list absorbs *two* failure modes and reports
+whichever fires under a single message. A guard written `deepStrictEqual(holders, ["Don'ts"])` covers
+both "stated in more than one section" and "stated in the wrong one", so the second arrives labelled as
+the first and the reader deletes the wrong assertion. Split it: a `length === 1` guard with the
+uniqueness message, then the identity check with its own. The mutation is what surfaces this — a
+mutation whose FAIL message does not describe what you just did is a finding about the test.
+
+## Widening a scoped assertion
+
+Check the tree before generalizing one directory to a whole tree. Widening the agent-memory index-link
+test over all of `.claude/agent-memory/**` goes red at HEAD on `asd-pm/MEMORY.md`'s dangling
+`feedback_flag-gate-semantics-before-applying.md` link — pre-existing, outside any current change
+surface, and `asd-pm` is no longer in the agent roster. Sprint 010 iter-02 (TST-01) answer: derive the
+loop's set from `.claude/agents/*.md` — the dispatchable agents, tier variants included — rather than
+hardcoding directory names or globbing the memory tree. A new agent's directory is then covered the day
+it appears, and a directory no agent can load falls out by construction rather than by an allow-list;
+compare that fallout set to its expected members so a misspelled directory cannot join it silently.
+
+## `routeTask` has no plan-file parser
+
+`runtime.js` `routeTask` takes a structured input object; the `Material risk` extraction is the
+orchestrator's. Any proposed test of plan-grammar routing "through route-task" is unfalsifiable by
+construction — record it as a checked-and-false premise rather than writing a test that only proves a
+pure function is deterministic.
+
+## The terminal gate covers what every per-entry record cannot
+
+An impl-test entry records its run at the HEAD it *analysed* — the tree before its own test commit
+exists. So the last per-entry `Suite run` row is always one commit short of the tests it added, and
+the `impl-review` terminal gate is the first (and only) run at a HEAD that includes them. Say that
+explicitly in the record instead of writing the gate as a redundant re-run; sprint 010's superseded
+row sat at `93f8a20` while its assertions landed in `596ef18`. An unchanged count across that delta
+is a real result, not a no-op: assertions added to existing tests never move it.
+
+**Why:** a reader comparing two identical counts concludes the gate proved nothing, when what it
+proved is that the entry's own commit is green — which nothing else in the sprint ever checks.
+
+**How to apply:** at gate time diff the recorded HEAD against current (`git log <recorded>..HEAD`),
+name the commits the earlier record could not cover, and state whether the count moved and why. Note
+also that no test reads this repo's live `.asd/sprints/**` — every sprint reference in `tests/run.js`
+is a temp-root fixture — so editing `test-plan.md` cannot change the suite result and needs no re-run.
+
+## Authoring `tests/run.js`
+
+It gets reviewed against `code-style.md` §7, which forbids in-body comments with no framework
+exemption — the ~60 pre-existing ones are not a licence, and new ones draw a Documentation finding
+every time. Put the reasoning in the `assert` message; it is read at the moment of failure, which a
+comment above the line is not.
+
+When the thing under test *throws* where you assert a value, catch it into the compared value
+(`verdict = \`rejected: ${error.message}\``) — the failure then prints your assert message plus the
+real reason, instead of a bare stack from inside the library.
+
+## Heredoc backslash mangling
+
+The bash tool mangles a backslash inside a quoted heredoc, so a python/JS patch script piped as
+`python - <<'PY'` turns `\'` into `'` and its anchor silently stops matching an escaped apostrophe in
+the target file. Write the patch script with the Write tool and run it by path, or pick anchors with no
+backslashes; and for new assertion text prefer JS double-quoted strings where the message contains an
+apostrophe. Same call also fails outright ("unexpected EOF") on some longer heredocs — the file never
+gets written, so nothing is half-applied, but do not retry blindly.
