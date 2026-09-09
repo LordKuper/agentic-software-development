@@ -69,13 +69,26 @@ A precondition guard with no mutable source (a spawn that needs `git` on PATH) i
 external-CLI preflight tests fail alongside it — check which failures are yours before claiming a
 test is the suite's only environment-dependent one.
 
-## Scoping a `none`
+## Scoping a `none` — and a blanket `keep` is the same error
 
 A **blanket `none`** covering several artefacts at once ("the rest is genuinely prose") is read as a
 completeness claim and gets rejected. Scope each `none` to one artefact and one named risk, and say
 what *would* make it assertable. A `none` whose own risk sentence describes a machine-checkable
 literal ("a workflow that never appends") is dishonest by construction. What makes a stated reason
 false is [[fail-first-and-none-honesty]]'s subject, not restated here.
+
+A blanket **`keep`** hides the same hole and is easier to miss, because a green run feels like
+evidence. "Re-run at this HEAD: every existing pin holds" proves only the pins that already existed —
+it says nothing about a contract nothing ever asserted. Sprint 010 entry 4 recorded that row over
+another role's five deletions; the continuation found two of the five (the nitpick enumeration and
+its `providers.md` grant; the red-full-suite latch invalidation and its two acting sites) had **no**
+assertion at any site, before or after. Before writing `keep` on someone else's cut, grep the suite
+for the surviving text and the rule it belongs to; if the grep is empty, the row is an `add`.
+
+Related, when the dispatching message hands you a commit range: check it contains the changes it
+names. Entry 4 (cont.) was pointed at `11bf405..dd47159`, which held only sprint bookkeeping — the
+dev chain was `5add9f5..2ae44c6`, an ancestor of the entry's own test commit, so the suite run
+already recorded had covered it and the range as given would have produced an empty gate.
 
 ## Match the mutation to what the assertion claims
 
@@ -98,6 +111,25 @@ Same family, for locating a sentence: key the locator to the sentence's **citati
 ordinal or adverb. `sprint-lifecycle.md`'s latch-clearing route was renamed "A THIRD" → "A further"
 mid-sprint; a `find` on the citation (`` `review-policy.md` "Late duplicate return" ``) survives
 that, an ordinal-keyed one reddens on a correct edit.
+
+## Citations and "not restated here" are checkable, as relations
+
+Two classes that look like unassertable prose and are not.
+
+A **cross-file citation** (`` `asd-advisor.md` Don'ts ``) names a section that either does or does not
+hold the rule. The general form is a repo-wide link checker — new infrastructure, correctly declined —
+but that argument only rules out the general form. The specific one is a derivation: scan the target's
+candidate sections for the rule, assert exactly one holds it, then assert the citing line names *that*
+heading. Reword either side freely; it goes red only when the rule moves without its citation. Do not
+record `none` here on "it would be a link checker".
+
+A **"not restated here" declaration** is checkable as a pair at each site: assert the bullet still
+spells the mechanic out (the restatement is load-bearing at the acting step), AND assert the denial is
+absent. The positive half is what keeps the negative half from going vacuous under a rewording. Sprint
+010 iter-02 found three such declarations false at the moment they were written — the same bullet
+restated the mechanic one clause later — and a false denial reads as licence to delete the SSoT copy,
+which is the one an agent that never opens that workflow depends on. Prove these by literally
+reverting the fix commit, not by a synthetic edit.
 
 ## Pin the relation between two sites
 
@@ -167,6 +199,13 @@ The row-count assert protects only the row set; the exemption set needs its own 
 sweep skipped any row matching the advisor's wording, so any number of rows adopting that wording would
 have dropped out green while `test-plan.md` asserted the exemption was singular (sprint 010 T-3).
 Compare the derived exemption list to the expected one exactly, then loop the remainder.
+
+Converse trap: one `deepStrictEqual` against an expected list absorbs *two* failure modes and reports
+whichever fires under a single message. A guard written `deepStrictEqual(holders, ["Don'ts"])` covers
+both "stated in more than one section" and "stated in the wrong one", so the second arrives labelled as
+the first and the reader deletes the wrong assertion. Split it: a `length === 1` guard with the
+uniqueness message, then the identity check with its own. The mutation is what surfaces this — a
+mutation whose FAIL message does not describe what you just did is a finding about the test.
 
 ## Widening a scoped assertion
 
