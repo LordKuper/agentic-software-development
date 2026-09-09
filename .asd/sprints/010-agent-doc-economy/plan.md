@@ -87,10 +87,10 @@ Material risk: change: a new enforceable rule reaching every creator and reviewe
 
 ### Task 9: Audit the corpus against the accepted rule (AC-8)
 Material risk: change: judgment call on which passages the rule reaches
-- [ ] Extend `audit.md`'s corpus survey to the whole canonical surface rather than the worst offenders, applying the rule text Task 8 actually landed
-- [ ] Record per finding the file, what is wrong and which authority it violates — AC-7's rule, or a named published-guidance source
-- [ ] Apply the bytes-read-per-dispatch measurement the user accepted as this sprint's evidence standard (`audit.md` G-8) to the findings that claim a cost
-- [ ] Carry the existing E-1 through E-9 and C-1 through C-12 findings forward unchanged where the final rule confirms them, and mark any the rule does not reach
+- [x] Extend `audit.md`'s corpus survey to the whole canonical surface rather than the worst offenders, applying the rule text Task 8 actually landed
+- [x] Record per finding the file, what is wrong and which authority it violates — AC-7's rule, or a named published-guidance source
+- [x] Apply the bytes-read-per-dispatch measurement the user accepted as this sprint's evidence standard (`audit.md` G-8) to the findings that claim a cost
+- [x] Carry the existing E-1 through E-9 and C-1 through C-12 findings forward unchanged where the final rule confirms them, and mark any the rule does not reach
 
 ### Task 10: Apply the corpus findings to the text (AC-9)
 Material risk: change: deletions in text no test can verify (`audit.md` R-6)
