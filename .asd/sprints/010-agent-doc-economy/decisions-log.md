@@ -146,3 +146,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: `.asd/sprints/010-agent-doc-economy/reviews/impl/iter-05/*`, `state.json`
 
 - 2026-09-09 - terminal full-suite gate green at d76482b: 184/184, exit 0; sync --check 72/72 current; lint clean. Reviewer DoD plus a green full suite completes impl-review to retro.
+
+## 2026-09-09 — Retrospective written
+
+- **Decision**: `retrospective.html` written on the analysed branch: 5 friction entries analysed to root causes, 7 framework actions traced to those ids, 0 consumer actions, 6 systemic proposals. Every action targets ASD framework infrastructure — this sprint's consumer and its framework are the same repo, and no entry's cause lay in project-owned config or rules.
+- **Rationale**: All five entries are workflow malfunctions rather than artefact defects, so remediation is bounded by the log as the phase requires. The systemic class was derived from how the sprint actually ran — five review iterations, 23 findings converging 13/6/2/2/0, one dispatch lost whole to a turn limit, one to quota — rather than from the entry set; the largest proposal, auditing agent memory under the economy rule as its own sprint, cites entries as evidence but is not derived from them.
+- **Affected docs**: `.asd/sprints/010-agent-doc-economy/retrospective.html`
