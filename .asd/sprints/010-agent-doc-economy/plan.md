@@ -42,10 +42,10 @@ Material risk: change: extends the commit-ownership contract every dispatched ag
 
 ### Task 3: Ledger row-shape example in the manifest (AC-6b)
 Material risk: change: alters the digested manifest shape every reviewer's ledger validates against
-- [ ] Add a sibling exported constant beside `LEDGER_VOCABULARY` in `.asd/runtime.js` carrying one example row
-- [ ] Inject it under `--write` and validate it by the same equality test as the vocabulary, keeping the backward-compatibility branch for manifests stamped before the field existed
-- [ ] Document it beside the `vocabulary` paragraph in `review-policy.md` "Coverage ledger"
-- [ ] Update `.asd/release-manifest.json` `upstream_hashes` for the changed runtime source
+- [x] Add a sibling exported constant beside `LEDGER_VOCABULARY` in `.asd/runtime.js` carrying one example row
+- [x] Inject it under `--write` and validate it by the same equality test as the vocabulary, keeping the backward-compatibility branch for manifests stamped before the field existed
+- [x] Document it beside the `vocabulary` paragraph in `review-policy.md` "Coverage ledger"
+- [x] Update `.asd/release-manifest.json` `upstream_hashes` for the changed runtime source
 
 ### Task 4: Fail-first mutation must be restored (AC-5a)
 Material risk: artifact: small, objectively verifiable edit in a rule doc five files cite

@@ -106,7 +106,13 @@ The phase orchestrator derives an ordered machine manifest before dispatch. It e
 
 Per-row-type status list plus the placement rule: `p` is required on the one status named by `p` and forbidden on every other, likewise `f`. This rule fixes the shape only; values come from `.asd/runtime.js`'s one exported vocabulary constant, shared by emitter and validator so published and enforced vocabulary cannot drift. **Required** in every manifest a phase workflow emits, split halves included. **Optional** to `validate-ledger`: absent → validated as before; present → must equal the validator's own constant, mismatch rejected. Digest-covered like every other manifest field.
 
-The reviewer returns one compact JSON ledger: `manifest_digest`, `findings` (the exact finding IDs), and `files`/`rules`/`sections` row arrays. A row is `{i:<manifest id>,s:<status>,p?:<allowed n/a predicate>,f?:<finding id>}`. Statuses and `p`/`f` placement are the manifest's `vocabulary` (above). The phase parser derives the actual IDs from the returned findings, then invokes `node .asd/runtime.js validate-ledger --manifest <path> --ledger <path> --findings <path>`. The helper rejects a digest mismatch, duplicate, missing, unknown, blank, unauthorized `n/a`, or invented/missing finding reference.
+**Manifest `row_example`** — one filled row in that vocabulary travels beside it, so a reviewer reads the row shape off its own input too:
+
+`"row_example": {"i": "<manifest id>", "s": "<the single status that carries p>", "p": "<allowed n/a predicate>"}`
+
+Built in `.asd/runtime.js` from the vocabulary constant, so the example can never publish a row the validator rejects. Same four seams as `vocabulary`: one exported constant, `--write` injection, digest coverage, and the same optionality on `validate-ledger` — absent → validated as before; present → must equal the validator's own constant, mismatch rejected.
+
+The reviewer returns one compact JSON ledger: `manifest_digest`, `findings` (the exact finding IDs), and `files`/`rules`/`sections` row arrays. A row is `{i:<manifest id>,s:<status>,p?:<allowed n/a predicate>,f?:<finding id>}`. Statuses and `p`/`f` placement are the manifest's `vocabulary`, one filled row its `row_example` (both above). The phase parser derives the actual IDs from the returned findings, then invokes `node .asd/runtime.js validate-ledger --manifest <path> --ledger <path> --findings <path>`. The helper rejects a digest mismatch, duplicate, missing, unknown, blank, unauthorized `n/a`, or invented/missing finding reference.
 
 A verdict whose ledger omits a scoped file, omits a checklist item, omits a required section row, or leaves any row blank/unresolved is INVALID — counts as review-incomplete, never as APPROVE.
 
