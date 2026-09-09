@@ -93,6 +93,18 @@ citations; the local precedent is entry 4's `asd-pm` fallout-set comparison. Shi
 `impl-review` entry on work no round of the sprint touched, and an exemption list with defect ids in it
 is visible where a silent filter is not.
 
+A pin like that carries a **closing obligation**, and it falls to this role because the pin is test text.
+When the defect is fixed the exemption line goes with it (say so in `test-plan.md`, since a fix without
+the deletion reddens the suite), and then check what the emptied list leaves behind. In sprint 010 it
+left two: a stricter tier whose only difference from the general one was refusing to be pinned — now a
+subset compared against the same `[]`, so a duplicate §17 prunes, taking its no-longer-guarding floor
+with it — and an assert message still explaining what a *missing* entry means, a failure mode `[]`
+cannot reach. Prune the tier, keep the rule by moving it into the surviving message as forward
+instruction ("if you ever pin one, never on a denial line"), and reshape only if a non-subsumed property
+is actually derivable — measure that before claiming it is not. Coverage did not change; the test got
+smaller and the exemption became a real assertion. That is the outcome to report plainly rather than
+dressing the round up with a new test.
+
 Related, when the dispatching message hands you a commit range: check it contains the changes it
 names. Entry 4 (cont.) was pointed at `11bf405..dd47159`, which held only sprint bookkeeping — the
 dev chain was `5add9f5..2ae44c6`, an ancestor of the entry's own test commit, so the suite run
@@ -147,12 +159,14 @@ across `canonMarkdownFiles()`, resolve base name → repo root → `.asd/templat
 and `audit.md` resolve with no hardcoded pair), and accept the target as a `## heading` **or** a
 `**bold label**` — 10 of canon's 185 citations name a bold label, `sprint-lifecycle.md` "Impl-review
 clean-worktree precondition" among them, so a heading-only check reddens on correct edits. Match
-headings prefix-anchored: `## Related open stubs (optional)` is cited without its parenthetical. Tier the
-result — zero tolerance on a denial line, exact `deepStrictEqual` on the rest — so a denial regression
-reports under its own message instead of inside a set diff. It found two live dangling pointers
-(`checkpoints.md` "Re-running a phase", `external-review.md` "Iteration-aware diff"), both from PR #25
-renames whose two sibling citations sprint 006's documentation reviewer fixed by hand; the class is
-recurrent and human review catches it only partly.
+headings prefix-anchored: `## Related open stubs (optional)` is cited without its parenthetical. It found
+two dangling pointers (`checkpoints.md` "Re-running a phase", `external-review.md` "Iteration-aware
+diff"), both from PR #25 renames whose two sibling citations sprint 006's documentation reviewer fixed by
+hand; the class is recurrent and human review catches it only partly. Both were fixed at `ac3073a` and the
+sweep now compares against an empty set — tier the result only while an exemption exists (see the closing
+obligation above), and prove a retarget by **reverting each half as a mutation**: a pointer fix is
+checkable only by resolving it, and a literal pin on the new heading would just redden the next correct
+rename.
 
 ## Pin the relation between two sites
 

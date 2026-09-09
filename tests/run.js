@@ -3888,7 +3888,7 @@ test('sprint-010 iter-03: the clean-worktree precondition is a reciprocal pair -
   assert.ok(!precondition.includes('not restated here'), 'this bullet restates the home trigger and timing in the same breath, so its citation may claim sole SSoT and nothing more. The denial was false when written (iter-03 DOC-1a), and a false denial reads as licence to delete the home copy - the one a reader who never opens this workflow depends on');
 });
 
-test('sprint-010 iter-03: every section a canon file cites by name resolves in the file it names, no citation on a non-restatement declaration dangles at all, and the two pre-existing dangling pointers stay the exact known pair', () => {
+test('sprint-010 iter-03: every section a canon file cites by name resolves in the file it names, with no dangling pointer left anywhere in canon', () => {
   const canon = canonMarkdownFiles();
   const byBase = new Map(canon.map((rel) => [rel.split('/').pop(), rel]));
   const resolveTarget = (base) => [byBase.get(base), base, `.asd/templates/t_${base}`].find((candidate) => {
@@ -3897,29 +3897,23 @@ test('sprint-010 iter-03: every section a canon file cites by name resolves in t
     return fs.existsSync(abs) && fs.statSync(abs).isFile();
   });
   const citation = /`([a-z0-9_.-]+\.md)`(?:'s)?\s+"([^"]+)"/g;
-  const denial = /not restated here|do not restate here|never restated here|restated nowhere/i;
 
   let cited = 0;
-  let denials = 0;
   const dangling = [];
   for (const rel of canon) {
     readRepoFile(rel).split('\n').forEach((line) => {
-      const denies = denial.test(line);
-      if (denies) denials += 1;
       for (const [, file, heading] of line.matchAll(citation)) {
         cited += 1;
         const target = resolveTarget(file);
         const anchor = new RegExp(`^#{2,4} ${heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}|\\*\\*${heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\.?\\*\\*`, 'm');
-        if (!target || !anchor.test(readRepoFile(target))) dangling.push({ denies, at: `${rel} -> ${file} "${heading}"` });
+        if (!target || !anchor.test(readRepoFile(target))) dangling.push(`${rel} -> ${file} "${heading}"`);
       }
     });
   }
 
-  assert.ok(cited >= 150, `the sweep must still reach the citation grammar it checks; only ${cited} citations matched, low enough that the pattern has probably stopped reaching canon and both comparisons below would pass over an empty list`);
-  assert.ok(denials >= 25, `only ${denials} non-restatement declarations matched, too few for the zero-tolerance filter below to mean anything - the class is what makes a dangling pointer unrecoverable, so a filter that stops reaching it must be seen rather than pass silently`);
+  assert.ok(cited >= 150, `the sweep must still reach the citation grammar it checks; only ${cited} citations matched, low enough that the pattern has probably stopped reaching canon and the comparison below would pass over an empty list`);
 
-  assert.deepStrictEqual(dangling.filter((d) => d.denies).map((d) => d.at), [], 'a citation on a line that denies restating the content is held to zero tolerance, unlike the general set below: the denial tells the reader the content lives at the target and nowhere else, so a pointer that resolves to nothing leaves it reachable from no site at all. Fix the pointer or drop the denial - it may not join the known-pair list');
-  assert.deepStrictEqual(dangling.map((d) => d.at), [], 'the dangling set is pinned in both directions. A new entry is a citation renamed on one side only - the failure this sweep exists for, four instances on record (sprint 006 documentation F5 fixed two, these two survived it). A missing entry means one of the known pair was fixed: that is D-3 / D-4 in sprint 010 test-plan.md, and the fix belongs with deleting its line here. Resolution accepts a `## heading` or a `**bold label**`, both attested citation targets in this canon; heading matching is prefix-anchored so a parenthetical suffix still resolves');
+  assert.deepStrictEqual(dangling, [], 'every section a canon file cites must resolve in the file it names. An entry here is a citation renamed on one side only - the failure this sweep exists for, four instances on record: sprint 006 documentation F5 fixed two by hand, and D-3 / D-4 of sprint 010 fixed the two that survived it. Resolution accepts a `## heading` or a `**bold label**`, both attested citation targets in this canon; heading matching is prefix-anchored so a parenthetical suffix still resolves. Should a dangler ever turn up pre-existing and outside the change surface, pin it here as a named exemption carrying its own D-N row rather than dropping the sweep - except on a line that denies restating the content, which may never be pinned: that denial tells the reader the content lives at the target and nowhere else, so a pointer resolving to nothing leaves it reachable from no site at all');
 });
 
 // ===========================================================================
