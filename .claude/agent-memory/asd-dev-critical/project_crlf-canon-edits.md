@@ -14,5 +14,6 @@ Anchor every scripted edit on the file's actual EOL, after reading its bytes. Ro
 - Sanity-check every scripted edit with `git diff --numstat` — a line count far larger than the edit means a line-ending problem, not a content problem.
 - Lint staged content: `git diff --cached --check` must be clean before committing (`code-style.md` §19 — the unstaged form exits 0 once the damage is staged). A wall of "trailing whitespace" on untouched lines is this bug, not real whitespace.
 - Writing a file with plain LF is harmless (git stores LF anyway) — only *mixed* endings inside one file break normalization.
+- `sync.js --apply` manufactures exactly that mix: it rewrites a managed block with LF while leaving the rest of a CRLF working-tree file untouched, so `AGENTS.md` comes back half-and-half. After any `--apply` that touches a managed-block target, rewrite the whole file to LF before staging.
 - Escape sequences typed into a shell-fed Python one-liner do not survive intact here (a `\n` in the source arrived as a real newline and split a MEMORY.md index entry; `chr(92)` inside double quotes was eaten by the shell). Write the edit script to the scratchpad and run it by path, then re-read the diff.
 - Related: [[sync-apply-ledger-gotcha]] for the ledger refresh the same canon edit needs.
