@@ -3365,6 +3365,44 @@ test('AC-6b: the published row example is a row validateCoverageLedger accepts o
   }
 });
 
+test('sprint-010 T-1/D-2: a manifest keying `n_a` by row type - the shape a phase workflow emits - authorizes an n/a row of every row type, while any other keying is rejected by name instead of degrading to no authorized predicate', () => {
+  const vocabulary = runtime.LEDGER_VOCABULARY;
+  const rowTypes = Object.keys(vocabulary).filter((key) => Array.isArray(vocabulary[key]));
+  const ids = { files: ['f-1'], rules: ['r-1'], sections: ['s-1'] };
+  const stamp = (manifest) => { manifest.digest = runtime.coverageManifestDigest(manifest); return manifest; };
+  const ledgerFor = (manifest, rows) => Object.assign({ manifest_digest: manifest.digest, findings: [] }, rows);
+  const verdictOf = (manifest, ledger) => {
+    try { return `accepted: ${JSON.stringify(runtime.validateCoverageLedger(manifest, ledger, []))}`; } catch (error) { return `rejected: ${error.message}`; }
+  };
+
+  assert.deepStrictEqual(rowTypes, Object.keys(ids), 'both sides derive the row types from the vocabulary constant, so a fourth one must reach this fixture in the same change - otherwise every sweep below silently stops covering it');
+  const naRows = Object.fromEntries(rowTypes.map((type) => [type, ids[type].map((id) => ({ i: id, s: vocabulary.p, p: `no-${id}` }))]));
+  const plainRows = Object.fromEntries(rowTypes.map((type) => [type, ids[type].map((id) => ({ i: id, s: vocabulary[type][0] }))]));
+  assert.ok(rowTypes.every((type) => vocabulary[type][0] !== vocabulary.p), 'the plain ledger must genuinely carry no n/a row: a malformed manifest paired with one is the combination that passed silently before D-2, and a plain status equal to the n/a status would collapse that case into the rejection case beside it');
+
+  const emitted = stamp(buildManifest(ids.files, ids.rules, ids.sections));
+  assert.strictEqual(verdictOf(emitted, ledgerFor(emitted, naRows)), 'accepted: {"ok":true}', 'D-2: `n_a` is the one manifest field an orchestrator hand-builds per dispatch (review-policy.md "Coverage ledger": the allowed n/a predicates per individual ID), and nothing bound the shape it writes - row type, then id, then predicate list - to the shape validateCoverageLedger reads back out. One truthful n/a row per row type is what binds them');
+
+  const unauthorized = Object.assign({}, naRows, { files: [{ i: ids.files[0], s: vocabulary.p, p: 'a predicate this manifest never authorized' }] });
+  assert.ok(verdictOf(emitted, ledgerFor(emitted, unauthorized)).startsWith('rejected:'), "the predicate must be checked against that id's own list rather than merely be present, or the acceptance above proves only that a well-shaped manifest is ignored consistently");
+
+  const flat = buildManifest(ids.files, ids.rules, ids.sections);
+  flat.n_a = Object.fromEntries(rowTypes.flatMap((type) => ids[type].map((id) => [id, [`no-${id}`]])));
+  stamp(flat);
+  const flatVerdict = verdictOf(flat, ledgerFor(flat, plainRows));
+  assert.ok(flatVerdict.startsWith('rejected:') && flatVerdict.includes(ids.files[0]), `D-2: keyed by id instead of by row type, every lookup missed and each id resolved to an empty predicate set - truthful n/a rows rejected as unauthorized while the malformed manifest itself validated, the unknown-id guard iterating an empty object. This exact pairing, a plain ledger over a mis-keyed manifest, is the silent pass, and the rejection must name the offending key or the orchestrator that wrote it has nothing to correct. Got: ${flatVerdict}`);
+
+  for (const malformed of [[], 'files', null, 42]) {
+    const broken = stamp(Object.assign(buildManifest(ids.files, ids.rules, ids.sections), { n_a: malformed }));
+    assert.ok(verdictOf(broken, ledgerFor(broken, plainRows)).startsWith('rejected:'), `an n_a that is no object of row types (${JSON.stringify(malformed)}) must fail closed: read through the label lookup with its empty-object fallback it degrades to the same empty predicate set as the mis-keyed one above, which rejects truthful rows instead of the manifest`);
+  }
+
+  const legacy = buildManifest(ids.files, ids.rules, ids.sections);
+  delete legacy.n_a;
+  stamp(legacy);
+  assert.strictEqual(verdictOf(legacy, ledgerFor(legacy, plainRows)), 'accepted: {"ok":true}', 'a manifest authorizing no n/a at all omits `n_a` entirely, so the shape check must stay conditional on its presence - made mandatory, the fix for D-2 rejects every manifest whose review needed no n/a row');
+});
+
 test('AC-1/AC-2: git-strategy.md "Commit before review" is the sole home of the staging prohibition, asd-dev.md carries the git grant that makes it followable, and asd-phase-impl.md states the shared worktree while citing the rule', () => {
   const gitStrategy = readRepoFile('.asd/rules/git-strategy.md');
   assert.ok(gitStrategy.includes('stages only the paths it authored'), 'git-strategy.md must state the staging half of commit ownership (F-1)');
@@ -3601,6 +3639,9 @@ test('sprint-010 AC-9 (C-10): a Claude reasoning effort outside its vocabulary f
   const effortWithoutModel = GOOD_AGENT_CANON.replace('"model": "opus",\n    "effort": "high"', '"effort": "bogus"');
   assert.ok(!effortWithoutModel.includes('"model": "opus"') && effortWithoutModel.includes('"effort": "bogus"'), 'the fixture is a literal replace over the shared canon, so a reformatted canon silently makes it a no-op - the case below would then re-run the model-present path the assertions above already cover and stay green while the emission-site path went untested');
   assert.throws(check(effortWithoutModel), /invalid.*effort/i, 'the emitted `effort:` line is guarded by `claude.effort` alone, so its validation must be too. Guarded instead by a sibling field (`claude.model`), the check misses every agent that declares an effort without a model family - the render writes `effort: bogus` into the generated view unchallenged, which is precisely the silent-ignore failure C-10 asked to close');
+
+  assert.throws(check(withClaudeEffort('')), /invalid effort/, 'an empty effort must reach the validator and fail closed. Guarded on truthiness the emission skipped it entirely: canon declared an effort, the generated view carried none, and `--check` stayed green over that mismatch - the same silent-ignore class C-10 opened, arrived at from the emitter side rather than the vocabulary side');
+  assert.throws(check(GOOD_AGENT_CANON.replace('"model": "opus"', '"model": "opus-xl"')), /effort-probe.*opus-xl.*effort "high"/, 'the unknown-family diagnostic must name the agent, the family, the resolved model and the effort on the Claude path too. Special-cased by provider, the Claude branch built its message without the agent argument it was handed, leaving a reader debugging it with no agent name and no route to the effort check that lives beside it');
 });
 
 test('sprint-010 AC-9 (G-12): `core.md` "See also" is the rule-doc index - it lists every other `.asd/rules/*.md` and nothing else - and neither AGENTS.md nor t_AGENTS.md keeps a second copy of that list', () => {
@@ -3631,6 +3672,11 @@ test('sprint-010 AC-7/G-9: artifact-layout.md "Documentation economy" is the rul
     assert.ok(rule.split('\n## ')[0].includes(decisionTest), `AC-7/G-7: the rule must state its decision procedure - ${decisionTest} is one of the three tests a reviewer applies. A rule saying only what to exclude, with no procedure, decides nothing and is enforced as taste`);
   }
   assert.ok(rule.includes('Never cut, whatever the length'), 'AC-7: the preserve-list is what stops the rule cutting the text it protects - a machine-parsed token, an enumeration whose completeness is the rule, a stated failure mode. Without it the rule authorizes exactly the deletions that break the suite');
+  const section = rule.split('\n## ')[0];
+  assert.ok(/removal[^.]*necessary/i.test(section) && /corroborate/.test(section), 'AC-7: removal must be the controlling test rather than one of three alternatives. OR-joined, a line no logged defect happens to cite is cuttable on provenance alone even where a reading agent genuinely acts differently without it - provenance and enforcement can only corroborate a cut removal already allows');
+  const preserve = section.split('Never cut')[1] || '';
+  assert.ok(/normative/.test(preserve) && /at its home/.test(preserve), 'AC-7: the preserve-list must keep normative prose - a gate, safety boundary, ownership assignment, precondition, recovery duty - and keep it scoped to its home. Unscoped, that class shields every restatement elsewhere from the SSoT rule this same file declares above it');
+  assert.ok(/prohibition/.test(preserve), "AC-7: a standalone safety, security, authority or irreversible-action prohibition has no paired positive rule by construction, so the preserve-list must name it; the cut-on-sight bullet as first worded authorised deleting this framework's own such bans");
 
   for (const rel of canonMarkdownFiles()) {
     if (rel === home) continue;
@@ -3681,7 +3727,7 @@ test('sprint-010 AC-1: the wave declaration is defined once in sprint-lifecycle.
   assert.ok(/^- `## Dependencies` is required/m.test(template), 'the parser-critical comment block enumerates every line rule the plan parser depends on; a required section missing from that enumeration is a rule the author never sees');
 });
 
-test('sprint-010 AC-5b: the authorised-paths diff read is a condition of asd-phase-impl.md\'s all-modes completion gate, not of its fix-mode-only bookkeeping step', () => {
+test('sprint-010 AC-5a/AC-5b: the authorised-paths diff read is a condition of asd-phase-impl.md\'s all-modes completion gate, not of its fix-mode-only bookkeeping step, the workflow declares the git operation that gate runs on, and code-style.md §17 keeps the fail-first restore obligation the gate exists to catch', () => {
   const implLines = readRepoFile('.asd/workflows/asd-phase-impl.md').split('\n');
   const start = implLines.findIndex((line) => line.startsWith('9. **Impl completion gate**'));
   assert.ok(start >= 0, 'the completion gate must keep its step number: every other step cites it by number, and this check locates the gate that way');
@@ -3693,6 +3739,14 @@ test('sprint-010 AC-5b: the authorised-paths diff read is a condition of asd-pha
   assert.ok(gate.includes('what its agents committed plus anything still uncommitted'), 'the read must span both, or the one thing it is aimed at - a mutation left on disk, never staged - is exactly what it cannot see');
   assert.ok(gate.includes('Distinct from `code-style.md` §19'), 'the two checks share a tool and differ in question: §19 lints staged CONTENT, this gate asks which PATHS moved. Unmarked, one gets deleted as a duplicate of the other');
   assert.strictEqual(readRepoFile('.asd/workflows/asd-phase-impl.md').split(condition).length - 1, 1, 'the condition must live in exactly one step. Copied into the fix-mode step as well, the two drift; moved there instead, initial mode loses the gate entirely');
+
+  const operations = readRepoFile('.asd/workflows/asd-phase-impl.md').split('\n## Operations used')[1].split('\n## ')[0];
+  const runGrant = operations.split('\n').find((line) => line.startsWith('- run command:'));
+  assert.ok(runGrant && runGrant.includes('git diff'), 'AC-5b: the gate asks which paths moved across committed AND uncommitted work, which only git answers, so `## Operations used` must declare that operation. Stated at the acting site with no tool declared behind it, the gate is an obligation the phase cannot discharge');
+
+  const tests17 = readRepoFile('.asd/rules/code-style.md').split('\n## 17. Tests')[1].split('\n## ')[0];
+  assert.ok(/restored before the agent's next tool call/.test(tests17), 'AC-5a: §17 is the sole home of the fail-first restore obligation and no file mirrors it, so nothing but this assertion stands between the bullet and an economy pass reading it as procedural detail. Deleted, a mutation left on disk stops being a defect anyone can cite');
+  assert.ok(/mutation left on disk is a defect/.test(tests17), 'AC-5a states the consequence separately from the instruction deliberately: without it a green suite reads as evidence that the tree is clean, which is exactly what an unrestored mutation makes it not (F-5)');
 });
 
 test('sprint-010 AC-10: the documentation economy rule carries both its authoring obligation and its review consequence in its own home, code-style.md §1 sends an author to every iron rule, and providers.md grants that home to every role whose context is a fixed list', () => {
@@ -3714,9 +3768,12 @@ test('sprint-010 AC-10: the documentation economy rule carries both its authorin
   const table = readRepoFile('.asd/rules/providers.md').split('## Role-scoped context')[1].split('\n## ')[0];
   const rows = [...table.matchAll(/^\| (.+?) \| (.+?) \|$/gm)].filter(([, role]) => role !== 'Role');
   assert.ok(rows.length >= 10, 'the role table must parse into rows, or every grant assertion below passes vacuously over an empty list - the failure mode that makes a reach check worthless');
+  const exemptPhrase = 'files named by the consulting question';
+  const exempt = rows.filter(([, , context]) => context.includes(exemptPhrase)).map(([, role]) => role.trim());
+  assert.deepStrictEqual(exempt, ['`asd-advisor`'], "exactly one row is exempt and it is the advisor's - granted the files its consulting question names rather than a fixed list, it has no fixed grant to assert against. Left uncounted, any number of rows could adopt that wording and drop out of the sweep below in silence: a role reading the economy rule nowhere, reported as covered");
   for (const [, role, context] of rows) {
-    if (context.includes('files named by the consulting question')) continue;
-    assert.ok(context.includes('artifact-layout.md'), `AC-10: ${role} writes text a later agent reads, so its row must grant artifact-layout.md - the rule's home, and the only route to it for a role that never loads code-style.md. A row granting files per consulting question rather than by fixed list is the sole exemption`);
+    if (context.includes(exemptPhrase)) continue;
+    assert.ok(context.includes('artifact-layout.md'), `AC-10: ${role} writes text a later agent reads, so its row must grant artifact-layout.md - the rule's home, and the only route to it for a role that never loads code-style.md`);
   }
 });
 
