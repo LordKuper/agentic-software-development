@@ -1,7 +1,7 @@
 {
   "$comment": "ASD sync engine release manifest. Field map — schema_version: fail-closed version gate; model_families: canon model alias -> provider model id (mirrors the model-family table in .asd/rules/providers.md); canon_hashes: render-source digests for .asd/agents/*.md and .asd/skills/*/SKILL.md; repo/branch: upstream fetch source for .asd/skills/asd-update/update.js; managed_paths: every .asd/ tree/file update.js tracks (trees walked recursively); upstream_hashes: update.js's per-managed-path sha256 ledger (hex, no prefix) as of THIS release — a consumer clones it as the 'old release' baseline its next update diffs against, so an untouched file is never misclassified as conflict-foreign. Rationale for reusing upstream_hashes as that ledger: update.js header comment.",
   "schema_version": 1,
-  "asd_version": "7.1.0",
+  "asd_version": "7.2.0",
   "repo": "https://github.com/LordKuper/agentic-software-development",
   "branch": "main",
   "managed_paths": [
