@@ -1,6 +1,6 @@
 ---
 name: scope-manifest-transport
-description: files[]-only prompt transport is cheap; canonical cache-path value and why preflight/failure-recording are the orchestrator's calls, not this agent's; runtime.js external-record-failure CLI syntax; codex quota-error handling
+description: scope manifest (files[]/exclude_paths[]) is the sole payload transport per external-review.md contract, never a rendered diff — cost is a secondary note, not the reason; canonical cache-path value and why preflight/failure-recording are the orchestrator's calls, not this agent's; runtime.js external-record-failure CLI syntax; codex quota-error handling
 metadata:
   type: reference
 ---
@@ -8,15 +8,30 @@ metadata:
 Entries below are keyed by topic, not by sprint ordinal — fold a new lesson into its heading rather
 than appending a dated one. This file loads on every dispatch of this agent.
 
-## files[]-only prompt is cheap
+## Manifest transport is the contract, not a cost choice
 
-Composing the prompt from a `scope-manifest.json` (`files[]`/`exclude_paths[]`, no rendered diff) is
-far cheaper than piping a `git diff` on stdin (see [[codex-invocation-mechanics]]): just the compact
-prompt text + the manifest JSON, `cat`-ed into the same pipe so it never touches the Bash
-command-length limit in [[bash-tool-limits]]. Observed ~2.9 KB prompt + ~900 B manifest, well under
-the ~4.5 KB cliff. Whether `files[]` alone is sufficient for the wrapped model to resolve content
-could not be confirmed the first time this ran (codex hit its usage-limit error before reading any
-path) — see "Quota errors" below.
+`external-review.md` "Phase-scoped payload" is the SSoT, stated three times over (the agent's own
+definition, both phase workflows, this rule doc): this agent is handed a **scope manifest**
+(`files[]`/`exclude_paths[]`, `t_review-scope.json`) — never a rendered diff, under any
+circumstance, including as a fallback. The reviewer resolves `files[]` content itself, read-only,
+from the repo — never from manifest payload bytes. A live `git diff` pipe (see the superseded note in
+[[codex-invocation-mechanics]]) is retired transport; reaching for it again, for any reason including
+a prior turn's failure, contradicts canon and must be declined.
+
+Whether `files[]` alone is sufficient for the wrapped model to resolve content is not an open
+question: `external-review.md` names exactly what each mode's `files[]` covers (design-review draft
+paths; impl-review changed-path list, whole-repo-minus-exclusions in both the consumer and
+`self_hosting: enabled` rows) and states plainly that the wrapped CLI has direct repo read access to
+fetch it — Codex `exec` via its own read-only shell/`rg`/`sed` (observed cross-reading unchanged files
+routinely, see [[codex-invocation-mechanics]]), Claude via `Read`/`Grep`/`Glob`. The one dispatch that
+could not confirm this (sprint 010 impl-review iter 2) failed before reading any path, on a
+provider-side quota error, not on the manifest — see "Quota errors" below. Every dispatch since has
+resolved `files[]` content successfully; there is nothing unresolved to carry forward.
+
+As a secondary note only, cheaper is also true: prompt text + manifest JSON (~2.9 KB + ~900 B
+observed) stays well under the ~4.5 KB Bash-tool command-length cliff in [[bash-tool-limits]], `cat`-ed
+into the same pipe — no separate size argument is needed to justify the transport, the contract alone
+already forbids the alternative.
 
 ## Cache path and failure recording are the orchestrator's, not mine
 
