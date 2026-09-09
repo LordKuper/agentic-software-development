@@ -128,3 +128,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-09 - impl fix for iter-03: findings resolved (DOC-1 both halves by narrowing the declarations; DOC-2 by its owning agent, which also found the same rationalization in a second memory file of its own and corrected both).
 
 - 2026-09-09 - impl-test entry 5 raised D-3 and D-4, two canon citations whose target headings were renamed in an earlier release and never retargeted. Routed to impl test-fix rather than deferred: both live in files this sprint edited, so they are inside its change surface even though outside the last round increment, and the sweep that found them is this sprint own deliverable.
+
+- 2026-09-09 - impl test-fix: D-3 and D-4 resolved at ac3073a. The dev flagged two consequences of emptying the pinned list rather than acting on them, both being test text: the zero-tolerance tier no longer adds coverage over the general tier while the list is empty, and one clause of the assertion message now describes an unreachable failure mode.
