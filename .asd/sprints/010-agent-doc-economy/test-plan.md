@@ -76,7 +76,7 @@ Every mutation was restored in the same tool call that read its failure; `git st
 - Scope: full (safety valve, above — this repo's runner has no scoped mode either way)
 - Result: pass — 178 passed / 0 failed / 0 skipped
 - Lint / build: pass (`git diff --cached --check` clean on the staged set; `node .asd/sync.js --check` exit 0, 72/72 current)
-- HEAD: 92e433c
+- HEAD: 86398b2 — the entry-2 test commit; `92e433c` is the HEAD the delta was analysed through, and the run was re-verified green at `c36691f`, which changes no test
 
 Entry 1 ran at `af784cc`: 176 passed / 1 failed, that failure being D-1 below. The suite has grown 171 → 178 across both entries; no test was removed.
 
