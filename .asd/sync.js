@@ -170,8 +170,7 @@ function resolveModelFamily(manifest, provider, familyAlias, agent = {}) {
   const resolvedModel = table && typeof familyAlias === 'string' ? table[familyAlias] : undefined;
   const diagnostic = (reason) => `${provider === 'codex' ? 'Codex' : 'Claude'} agent "${agent.name || '<missing>'}": ${reason} (family "${familyAlias === undefined ? '<missing>' : familyAlias}", resolved model "${resolvedModel === undefined ? '<unresolved>' : resolvedModel}", effort "${agent.effort === undefined ? '<missing>' : agent.effort}")`;
   if (!table || !Object.prototype.hasOwnProperty.call(table, familyAlias)) {
-    if (provider === 'codex') throw new Error(diagnostic('unknown model family'));
-    throw new Error(`unknown model family "${familyAlias}" for provider "${provider}"`);
+    throw new Error(diagnostic('unknown model family'));
   }
   if (provider === 'codex' && (typeof resolvedModel !== 'string' || !/^gpt-5\.6-(sol|terra|luna)$/.test(resolvedModel) || !resolvedModel.endsWith(`-${familyAlias}`))) {
     throw new Error(diagnostic('unsupported ChatGPT-runtime model mapping'));
@@ -293,7 +292,7 @@ function transformAgentClaude(meta, body, manifest) {
     lines.push(`disallowedTools: ${yamlFlowList(c.disallowedTools)}`);
   }
   if (c.model) lines.push(`model: ${resolveModelFamily(manifest, 'claude', c.model, { name: meta.name, effort: c.effort })}`);
-  if (c.effort) lines.push(`effort: ${validatedClaudeEffort(meta.name, c.effort)}`);
+  if (c.effort !== undefined) lines.push(`effort: ${validatedClaudeEffort(meta.name, c.effort)}`);
   if (c.maxTurns !== undefined) lines.push(`maxTurns: ${c.maxTurns}`);
   if (c.memory) lines.push(`memory: ${c.memory}`);
   lines.push('---');
