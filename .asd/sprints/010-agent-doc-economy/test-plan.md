@@ -75,7 +75,7 @@ The single failure is D-1 below. The suite grew 171 → 177 tests; no test was r
 
 | ID | Location | Symptom | Failing test | Status | Fix commit |
 |---|---|---|---|---|---|
-| D-1 | `.asd/sync.js:286` (`transformAgentClaude`) / `:168` (`resolveModelFamily`) | The Claude `effort` vocabulary check runs only inside `if (c.model)`, but the `effort:` line is emitted under `if (c.effort)`. Canon declaring `claude.effort` without `claude.model` renders `effort: bogus` into `.claude/agents/<name>.md` unvalidated — the silent-ignore failure C-10 asked to close, and an asymmetry with the Codex side, where model and effort are both mandatory and always validated. Latent today (all eleven agents declare both), so no shipped view is currently wrong | `sprint-010 AC-9 (C-10): a Claude reasoning effort outside its vocabulary fails the render closed wherever the field is emitted, symmetrically with the Codex check` | pending | |
+| D-1 | `.asd/sync.js:286` (`transformAgentClaude`) / `:168` (`resolveModelFamily`) | The Claude `effort` vocabulary check runs only inside `if (c.model)`, but the `effort:` line is emitted under `if (c.effort)`. Canon declaring `claude.effort` without `claude.model` renders `effort: bogus` into `.claude/agents/<name>.md` unvalidated — the silent-ignore failure C-10 asked to close, and an asymmetry with the Codex side, where model and effort are both mandatory and always validated. Latent today (all eleven agents declare both), so no shipped view is currently wrong | `sprint-010 AC-9 (C-10): a Claude reasoning effort outside its vocabulary fails the render closed wherever the field is emitted, symmetrically with the Codex check` | fixed | `7501224` |
 
 ## Manual verification
 
