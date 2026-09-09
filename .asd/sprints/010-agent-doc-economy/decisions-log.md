@@ -106,3 +106,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: `.asd/sprints/010-agent-doc-economy/reviews/impl/iter-01/*`, `friction-log.md` (F-1, F-2, F-3), `test-plan.md` (`D-2`), `state.json`
 
 - 2026-09-09 — external attempt 1 delivered a completed verdict before its replacement returned; attempt 2 is the dispatch of record. Both CONCERNS, routing unchanged. Attempt 2 sharpened the rule finding (EX-6) and added EX-7, a category in the cut list that authorises deleting standalone safety and authority prohibitions. Both are folded into the fix set.
+
+- 2026-09-09 - impl fix for iter-01: findings resolved (EX-1..EX-7, CR-1..CR-3, EF-1, EF-2, DOC-1, DOC-2, D-2). One DOC-2 item deliberately not applied: asd-advisor.md:22 survives because request-user-decision is frontmatter-gated only on Claude, not on Codex, so the removal test fails under the rule corrected in the same round.
