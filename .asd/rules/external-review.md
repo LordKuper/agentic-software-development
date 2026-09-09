@@ -34,7 +34,7 @@ On a real-request authentication, quota, reachability, or command failure, phase
 
 On command/auth failure or an active negative cache:
 
-- Return `APPROVE (skipped: external review unavailable: <specific status>)`; the dispatching workflow persists the exact status in the external review output and appends it to `<sprint>/decisions-log.md` for sprint `<NNN-slug>` iteration `<N>`
+- Return `APPROVE (skipped: external review unavailable: <specific status>)`; the dispatching workflow persists the exact status in the external review output, appends it to `<sprint>/decisions-log.md` for sprint `<NNN-slug>` iteration `<N>`, and appends an `F-N` friction entry for it (`sprint-lifecycle.md` "Friction log")
 - Continue without external review, no user prompt
 
 An availability skip satisfies only that iteration and never creates an APPROVE latch. A later local-ready result dispatches External Review normally.

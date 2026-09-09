@@ -69,8 +69,8 @@ Material risk: change: adds a condition to the impl completion gate
 
 ### Task 7: Availability skip is a friction entry (AC-4)
 Material risk: artifact: one-line pointer in a rule doc
-- [ ] Extend the sentence in `external-review.md` that already routes the skip status to `decisions-log.md` so it also appends a friction entry
-- [ ] Keep it a pointer to `sprint-lifecycle.md` "Friction log", whose writer mechanism is stated once and restated by none
+- [x] Extend the sentence in `external-review.md` that already routes the skip status to `decisions-log.md` so it also appends a friction entry
+- [x] Keep it a pointer to `sprint-lifecycle.md` "Friction log", whose writer mechanism is stated once and restated by none
 
 ### Task 8: The documentation-economy rule (AC-7)
 Material risk: change: a new enforceable rule reaching every creator and reviewer, and a new coverage-manifest rubric entry
