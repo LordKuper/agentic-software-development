@@ -94,14 +94,14 @@ Material risk: change: judgment call on which passages the rule reaches
 
 ### Task 10: Apply the corpus findings to the text (AC-9)
 Material risk: change: deletions in text no test can verify (`audit.md` R-6)
-- [ ] Resolve E-1 by reduction to pointers: delete from both review workflows what `review-policy.md` already owns — which both files already declare its sole SSoT before restating it — leaving each with only its phase-specific remainder. No new abstraction, and nothing moves into the file every reviewer reads in full
-- [ ] Cut `AGENTS.md` "Architecture" (E-2) to what a directory listing cannot supply, editing the hand-written side below the sync marker
-- [ ] Resolve E-3 by making `AGENTS.md`/`t_AGENTS.md` "Rule docs" a pointer to `core.md` "See also" rather than a drifting copy, and confirm the drift is gone
-- [ ] Cut the reviewer prose that restates config-enforced permissions (E-4) and the duplicated line inside `asd-reviewer-efficiency.md`
-- [ ] Give the shell-CSS §6 carve-out (E-6) one home and make the other file cite it
-- [ ] Cut the rationale, emphasis and descriptor findings (E-7, E-8, E-9) and the thoroughness exhortations the ledger already enforces deterministically (C-3)
-- [ ] Decide E-5 by audience per `audit.md` R-3: keep editor-facing annotations if they survive the rule, standardised to one form; cut the rest
-- [ ] Run `node .asd/sync.js --apply` for every regenerated view and confirm no generated file was hand-edited
+- [x] Resolve E-1 by reduction to pointers: delete from both review workflows what `review-policy.md` already owns — which both files already declare its sole SSoT before restating it — leaving each with only its phase-specific remainder. No new abstraction, and nothing moves into the file every reviewer reads in full
+- [x] Cut `AGENTS.md` "Architecture" (E-2) to what a directory listing cannot supply, editing the hand-written side below the sync marker
+- [x] Resolve E-3 by making `AGENTS.md`/`t_AGENTS.md` "Rule docs" a pointer to `core.md` "See also" rather than a drifting copy, and confirm the drift is gone
+- [x] Cut the reviewer prose that restates config-enforced permissions (E-4) and the duplicated line inside `asd-reviewer-efficiency.md`
+- [x] Give the shell-CSS §6 carve-out (E-6) one home and make the other file cite it
+- [x] Cut the rationale, emphasis and descriptor findings (E-7, E-8, E-9) and the thoroughness exhortations the ledger already enforces deterministically (C-3)
+- [x] Decide E-5 by audience per `audit.md` R-3: keep editor-facing annotations if they survive the rule, standardised to one form; cut the rest
+- [x] Run `node .asd/sync.js --apply` for every regenerated view and confirm no generated file was hand-edited
 
 ### Task 11: Close the two mechanical defects the audit found (AC-9)
 Material risk: change: validation code whose failure mode is silent
