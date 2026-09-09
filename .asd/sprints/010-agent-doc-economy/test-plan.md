@@ -85,6 +85,7 @@ Entry 1 ran at `af784cc`: 176 passed / 1 failed, that failure being D-1 below. T
 | ID | Location | Symptom | Failing test | Status | Fix commit |
 |---|---|---|---|---|---|
 | D-1 | `.asd/sync.js:286` (`transformAgentClaude`) / `:168` (`resolveModelFamily`) | The Claude `effort` vocabulary check runs only inside `if (c.model)`, but the `effort:` line is emitted under `if (c.effort)`. Canon declaring `claude.effort` without `claude.model` renders `effort: bogus` into `.claude/agents/<name>.md` unvalidated — the silent-ignore failure C-10 asked to close, and an asymmetry with the Codex side, where model and effort are both mandatory and always validated. Latent today (all eleven agents declare both), so no shipped view is currently wrong | `sprint-010 AC-9 (C-10): a Claude reasoning effort outside its vocabulary fails the render closed wherever the field is emitted, symmetrically with the Codex check` | fixed | `7501224` |
+| D-2 | `.asd/runtime.js` `validateCoverageLedger` | `allowedNa` reads `manifest.n_a[<row-type label>]`, so a manifest keying `n_a` any other way degrades silently: every id resolves to an empty predicate set, each truthful `n/a` row is rejected as unauthorized, and the malformed manifest itself passes because the unknown-id guard iterates an empty object. Realized this iteration on all four manifests (`friction-log.md` F-1), visible only as three reviewer returns nobody could validate | T-1(b) — regression test authored by `asd-tester` in the following `impl-test` entry | fixed | `{SHA}` |
 
 ## Manual verification
 

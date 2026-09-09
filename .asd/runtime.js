@@ -215,6 +215,11 @@ function validateCoverageLedger(manifest, ledger, actualFindings) {
   if (manifest.digest !== digest || ledger.manifest_digest !== digest) fail('ledger manifest identity invalid');
   if (manifest.vocabulary !== undefined && stable(manifest.vocabulary) !== stable(LEDGER_VOCABULARY)) fail('manifest vocabulary invalid');
   if (manifest.row_example !== undefined && stable(manifest.row_example) !== stable(LEDGER_ROW_EXAMPLE)) fail('manifest row example invalid');
+  if (manifest.n_a !== undefined) {
+    if (!manifest.n_a || typeof manifest.n_a !== 'object' || Array.isArray(manifest.n_a)) fail('manifest n_a invalid');
+    const rowTypes = Object.keys(LEDGER_VOCABULARY).filter((key) => Array.isArray(LEDGER_VOCABULARY[key]));
+    for (const key of Object.keys(manifest.n_a)) if (!rowTypes.includes(key)) fail(`manifest n_a unknown row type: ${key}`);
+  }
   const ids = (name) => {
     if (!Array.isArray(manifest[name]) || manifest[name].some((item) => typeof item !== 'string')) fail(`manifest ${name} invalid`);
     const set = new Set(manifest[name]);
