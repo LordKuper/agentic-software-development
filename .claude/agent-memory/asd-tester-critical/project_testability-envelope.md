@@ -164,3 +164,16 @@ canon fixture must key on the provider-scoped literal. `demo-agent.md` carries `
 `claude` and `codex` blocks, so `!canon.includes('"model"')` is red at HEAD however correct the
 mutation was; `!canon.includes('"model": "opus"')` is the assertion meant. Run the suite once after
 adding a guard, before recording anything about the assertion it protects.
+
+Nineteenth, guard vacuity on BOTH sides of a sweep. The seventeenth trap's row-count assert protects the
+row set; the exemption set needs its own count. `providers.md`'s reach sweep skipped any row matching the
+advisor's "files named by the consulting question" wording, so any number of rows adopting that wording
+would have dropped out green while `test-plan.md` asserted the exemption was singular (sprint 010 T-3).
+Compare the derived exemption list to the expected one exactly, then loop the remainder.
+
+Twentieth, tooling: the bash tool mangles a backslash inside a quoted heredoc, so a python/JS patch script
+piped as `python - <<'PY'` turns `'` into `'` and its anchor silently stops matching an escaped
+apostrophe in the target file. Write the patch script with the Write tool and run it by path, or pick
+anchors with no backslashes; and for new assertion text prefer JS double-quoted strings where the message
+contains an apostrophe. Same call also fails outright ("unexpected EOF") on some longer heredocs - the file
+never gets written, so nothing is half-applied, but do not retry blindly.

@@ -19,4 +19,13 @@ Two things the `impl-review` testing reviewer checks hard in `test-plan.md`, and
 
 **How to apply:** before recording `none`, ask whether the thing is a literal token derivable from something the suite already reads. Reserve `none` for genuine agent-runtime judgement, rendered appearance, and items owned by a later phase — and for those, name the owner.
 
+**3. For a single-home rule bullet, the live risk is deletion, not drift.** Sprint 010 entry 1 recorded
+`none` on an AC because "no file restates it, so there is no drift surface to assert"; the testing
+reviewer routed it back (T-2). A bullet nothing mirrors is exactly the one nothing pins, and this
+framework's own economy rule makes deleting unpinned prose an obligation. Two `assert.ok`s on the
+rule text, appended to a test that already reads that file, cost nothing and settle it. Before
+accepting a no-mirror argument, check whether the preserve-list (or whatever the local keep-rule is)
+actually covers that text's class - a procedural instruction is not a contract token, an enumeration,
+a case distinction or a stated failure mode, so nothing protects it.
+
 See also [[mutation-runs-trip-the-hash-ledger]].
