@@ -12,6 +12,7 @@ responsibility:
 | Entry | HEAD analysed | Scope |
 |---|---|---|
 | 1 | af784cc | full change surface |
+| 2 | 92e433c | delta `af784cc...92e433c`: D-1's fix (`7501224`), the AC-10 scope addition (`b81fd7e`), sprint bookkeeping |
 
 **Impacted set = full suite** (`sprint-lifecycle.md` "Impacted test set", safety valve). The surface touches `.asd/runtime.js`, `.asd/sync.js`, `.asd/release-manifest.json` and every rule doc — framework-wide files by definition. `commands.yaml` carries no `test_affected`, so no native selector overrides it.
 
@@ -37,6 +38,11 @@ responsibility:
 | ~18.7 KB of prose deleted from agents, skills, workflows, README | a deletion takes a load-bearing instruction with it | static | keep | Every literal the suite pins is re-checked by the full run below — that is what a green suite does prove here. It does not prove the deletions safe (`plan.md` Risks, `audit.md` R-6); that judgement is the Documentation reviewer's, now under the rule this sprint landed |
 | generated `.claude/`, `.codex/`, `.agents/skills/` views | a canon edit not resynced ships a stale view | static | keep | `node .asd/sync.js --check` (the `build` command) plus the `--check` reports every item current test; 72/72 current |
 | `.asd/release-manifest.json` hash updates | a tracked source whose recorded hash no longer matches | static | keep | Existing `canon_hashes` / `upstream_hashes` tests cover both directions |
+| **Entry 2** — `sync.js` D-1 fix (`7501224`): the effort check moved to its emission site | the check regresses to a sibling-guarded position and an agent declaring `effort` without `model` renders unvalidated again | unit | keep | Already covered: the entry-1 test's last case *is* the emission-site path (`effortWithoutModel`), and it is what failed at entry 1. Re-proven fail-first at this HEAD against `7501224^`. Amended with a fixture guard only — see Added tests |
+| `sync.js` variant render path (`variantMeta`) | a task variant declaring an effort with no model slips past the emission-site check | — | none | No second path exists to test: `variantMeta` rejects a variant whose `claude.model` is not a string, and variants render through the same `transformAgentClaude` line the fix now guards. A test here would assert the fixture, not the code |
+| AC-10 authoring reach (`artifact-layout.md` rule body, `code-style.md` §1, `providers.md` role table) | the rule's home is granted to a role that never authors under it — or `code-style.md` §1 goes on naming SSoT alone, leaving the economy rule review-only for the two roles that read §1 at all | static | add | The reach claim is a table sweep, not a judgement: every `providers.md` role row whose context is a fixed list must grant `artifact-layout.md` (the one row that grants per consulting question is the derived exemption), guarded by a row-count assert so a parse miss cannot pass vacuously. Plus the home carrying both sides (authoring obligation and `FAIL` consequence), and §1 enumerating every `(iron rule)` heading the home declares |
+| AC-10 obligation restated in the eleven agent bodies | a per-agent copy re-homes the rule the sprint just gave one home | — | none | Declined deliberately, not overlooked: such a copy would be reworded, so a literal sweep would miss it while reporting coverage — the class of assertion `code-style.md` §17 rejects. The copy that would actually drift is the three-test *procedure*, already swept across all canon Markdown by the AC-7/G-9 test |
+| `code-style.md` §1 rewording (`b81fd7e`) vs the entry-1 sole-home sweep | the sweep stops reaching the file the AC-10 edit touched | static | keep | Re-proven at this HEAD: inserting a `**removal** —` restatement into §1 still fires `.asd/rules/code-style.md must cite the economy rule rather than restating its three tests`. The new bullet cites the home, it does not copy it |
 
 ## Removed tests
 
@@ -59,17 +65,20 @@ None. Every test covering the change surface was re-read against `code-style.md`
 | `AC-8/sprint-010 AC-4: … an availability skip reaches the friction log` (amended) | mutation: friction clause removed from external-review.md's skip bullet |
 | `AC-6/sprint-010 AC-6a: … the bounded one-transcription enforcement branch` (amended) | mutation: `asd-phase-impl-review.md` step 7 reverted to a bare reject rule — first failure names that workflow as the acting site |
 
-Every mutation was restored in the same tool call that read its failure; `git status` was clean of canon after each. Mutating any `managed_paths` file also reddens the `upstream_hashes` test — expected noise, not a second finding.
+| **Entry 2** — `sprint-010 AC-10: the documentation economy rule carries both its authoring obligation and its review consequence in its own home …` | three mutations, each the test's first failure: (a) `artifact-layout.md` reverted to `b81fd7e^` — "the authoring obligation belongs in the rule's own home"; (b) `code-style.md` reverted to `b81fd7e^` — "naming one of 2 in the singular implies the other is review-only"; (c) the grant deleted from the `asd-ba` row — the per-role assert names `` `asd-ba` `` |
+| `sprint-010 AC-9 (C-10): … wherever the field is emitted` (amended: fixture guard) | fail-first re-derived at this HEAD against `7501224^` — first failure "Missing expected exception: the emitted `effort:` line is guarded by `claude.effort` alone …", the new guard passing ahead of it, so the record stands. The guard exists because the case is a literal `replace` over the shared canon: reformat the canon and it silently re-runs the model-present path and stays green. Its own first draft (`!includes('"model"')`) went red at HEAD on the Codex `"model": "sol"` line — caught by the run, corrected before this record |
+
+Every mutation was restored in the same tool call that read its failure; `git status` was clean of canon after each. Mutating any `managed_paths` file also reddens the `upstream_hashes` test — expected noise, not a second finding. Entry 2 restored from a scratchpad copy rather than `git checkout --`, so the bytes return exactly.
 
 ## Suite run
 
 - Command: `node tests/run.js`
 - Scope: full (safety valve, above — this repo's runner has no scoped mode either way)
-- Result: fail — 176 passed / 1 failed / 0 skipped
+- Result: pass — 178 passed / 0 failed / 0 skipped
 - Lint / build: pass (`git diff --cached --check` clean on the staged set; `node .asd/sync.js --check` exit 0, 72/72 current)
-- HEAD: af784cc
+- HEAD: 92e433c
 
-The single failure is D-1 below. The suite grew 171 → 177 tests; no test was removed.
+Entry 1 ran at `af784cc`: 176 passed / 1 failed, that failure being D-1 below. The suite has grown 171 → 178 across both entries; no test was removed.
 
 ## Defects
 

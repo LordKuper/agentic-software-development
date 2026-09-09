@@ -3599,6 +3599,7 @@ test('sprint-010 AC-9 (C-10): a Claude reasoning effort outside its vocabulary f
   assert.throws(check(withClaudeEffort('very-high')), /invalid effort/, 'a typo in the effort field must fail the render, exactly as an unknown model family already does - the Codex side has validated this since it shipped and the Claude side is the asymmetry C-10 recorded');
 
   const effortWithoutModel = GOOD_AGENT_CANON.replace('"model": "opus",\n    "effort": "high"', '"effort": "bogus"');
+  assert.ok(!effortWithoutModel.includes('"model": "opus"') && effortWithoutModel.includes('"effort": "bogus"'), 'the fixture is a literal replace over the shared canon, so a reformatted canon silently makes it a no-op - the case below would then re-run the model-present path the assertions above already cover and stay green while the emission-site path went untested');
   assert.throws(check(effortWithoutModel), /invalid.*effort/i, 'the emitted `effort:` line is guarded by `claude.effort` alone, so its validation must be too. Guarded instead by a sibling field (`claude.model`), the check misses every agent that declares an effort without a model family - the render writes `effort: bogus` into the generated view unchallenged, which is precisely the silent-ignore failure C-10 asked to close');
 });
 
@@ -3692,6 +3693,31 @@ test('sprint-010 AC-5b: the authorised-paths diff read is a condition of asd-pha
   assert.ok(gate.includes('what its agents committed plus anything still uncommitted'), 'the read must span both, or the one thing it is aimed at - a mutation left on disk, never staged - is exactly what it cannot see');
   assert.ok(gate.includes('Distinct from `code-style.md` §19'), 'the two checks share a tool and differ in question: §19 lints staged CONTENT, this gate asks which PATHS moved. Unmarked, one gets deleted as a duplicate of the other');
   assert.strictEqual(readRepoFile('.asd/workflows/asd-phase-impl.md').split(condition).length - 1, 1, 'the condition must live in exactly one step. Copied into the fix-mode step as well, the two drift; moved there instead, initial mode loses the gate entirely');
+});
+
+test('sprint-010 AC-10: the documentation economy rule carries both its authoring obligation and its review consequence in its own home, code-style.md §1 sends an author to every iron rule, and providers.md grants that home to every role whose context is a fixed list', () => {
+  const layout = readRepoFile('.asd/rules/artifact-layout.md');
+  const rule = layout.split('## Documentation economy')[1].split('\n## ')[0];
+  assert.ok(/tests bind while authoring/.test(rule), 'AC-10: stated only as something a reviewer judges, the rule reaches an author after the text is already written, and applying it costs a whole review round. The authoring obligation belongs in the rule\'s own home - the one file every authoring role is granted - not in a file half of them never load');
+  assert.ok(rule.includes('Violation = `FAIL` from Documentation reviewer'), 'AC-10 is two-sided: the authoring sentence must not displace the enforcement one, or the rule degrades to advice with no blocking gate behind it');
+
+  const ironRules = [...layout.matchAll(/^## (.+) \(iron rule\)$/gm)].map((match) => match[1]);
+  assert.strictEqual(ironRules.length, 2, 'artifact-layout.md declares the iron rules code-style.md §1 sends authors to, and that bullet enumerates them by name. A third iron rule added here must be named there in the same change, or it inherits the review-only reading AC-10 exists to remove');
+  const economy = ironRules.find((heading) => /economy/i.test(heading));
+  assert.ok(economy, 'the economy rule must stay an iron-rule heading: the §1 bullet, the documentation reviewer\'s rubric id and both pointer sites all select it by that section');
+
+  const proactive = readRepoFile('.asd/rules/code-style.md').split('\n').find((line) => line.includes('PROACTIVELY while authoring'));
+  assert.ok(proactive, 'code-style.md §1 must keep a proactive-authoring bullet: it is where a dev or tester meets an authoring obligation at all, and every reviewer-side rule reaches them only after the text exists');
+  assert.ok(proactive.includes('iron rules'), `AC-10: the bullet must send authors to both of artifact-layout.md's iron rules; naming one of ${ironRules.length} in the singular implies the other is review-only, which is how the economy rule read before this criterion`);
+  assert.ok(proactive.toLowerCase().includes(economy.toLowerCase()), `the bullet must name "${economy}" alongside SSoT - a list that names only SSoT is exactly the omission that left the economy rule enforceable but never authored against`);
+
+  const table = readRepoFile('.asd/rules/providers.md').split('## Role-scoped context')[1].split('\n## ')[0];
+  const rows = [...table.matchAll(/^\| (.+?) \| (.+?) \|$/gm)].filter(([, role]) => role !== 'Role');
+  assert.ok(rows.length >= 10, 'the role table must parse into rows, or every grant assertion below passes vacuously over an empty list - the failure mode that makes a reach check worthless');
+  for (const [, role, context] of rows) {
+    if (context.includes('files named by the consulting question')) continue;
+    assert.ok(context.includes('artifact-layout.md'), `AC-10: ${role} writes text a later agent reads, so its row must grant artifact-layout.md - the rule's home, and the only route to it for a role that never loads code-style.md. A row granting files per consulting question rather than by fixed list is the sole exemption`);
+  }
 });
 
 // ===========================================================================
