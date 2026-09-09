@@ -179,10 +179,19 @@ function resolveModelFamily(manifest, provider, familyAlias, agent = {}) {
   if (provider === 'codex' && agent.effort !== undefined && (!EFFORT_VOCABULARY.codex.test(agent.effort) || (resolvedModel.endsWith('-luna') && agent.effort === 'ultra'))) {
     throw new Error(diagnostic('invalid model reasoning effort'));
   }
-  if (provider === 'claude' && agent.effort !== undefined && !EFFORT_VOCABULARY.claude.test(agent.effort)) {
-    throw new Error(diagnostic('invalid effort'));
-  }
   return resolvedModel;
+}
+
+// The Claude `effort:` line renders on `claude.effort` alone, so its vocabulary
+// check belongs at that emission site. Guarded instead by a sibling field, it
+// misses an agent declaring an effort and no model family - and an unknown
+// effort the host silently ignores leaves the agent running at the host
+// default while the generated view claims otherwise. The Codex counterpart
+// stays inside the family resolution, which it needs: `ultra` is rejected on
+// the luna model only.
+function validatedClaudeEffort(agentName, effort) {
+  if (EFFORT_VOCABULARY.claude.test(effort)) return effort;
+  throw new Error(`Claude agent "${agentName || '<missing>'}": invalid effort (effort "${effort}")`);
 }
 
 // ---------------------------------------------------------------------------
@@ -284,7 +293,7 @@ function transformAgentClaude(meta, body, manifest) {
     lines.push(`disallowedTools: ${yamlFlowList(c.disallowedTools)}`);
   }
   if (c.model) lines.push(`model: ${resolveModelFamily(manifest, 'claude', c.model, { name: meta.name, effort: c.effort })}`);
-  if (c.effort) lines.push(`effort: ${c.effort}`);
+  if (c.effort) lines.push(`effort: ${validatedClaudeEffort(meta.name, c.effort)}`);
   if (c.maxTurns !== undefined) lines.push(`maxTurns: ${c.maxTurns}`);
   if (c.memory) lines.push(`memory: ${c.memory}`);
   lines.push('---');
