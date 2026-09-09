@@ -126,6 +126,21 @@ body instead (read the clean fixture, hard-normalize to LF, re-expand, prepend t
 `mkTempDir()`), and assert against doubled CRs so the construction is correct in a CRLF working tree
 too.
 
+Fifteenth, the *fill* that hides the fixture: when a test exercises a published constant by filling its
+placeholders, build the filled copy from the constant's OWN entries (`Object.fromEntries(Object.entries(x)
+.map(...))`), never `Object.assign({}, x, {i: …, p: …})`. Sprint 010's row-example test used the second
+form, so it supplied `p` whether or not the constant carried one — the mutation that dropped `p` from
+`LEDGER_ROW_EXAMPLE` passed green and revealed the test, not the code. Run the mutation before believing
+the assertion; a green mutation is a finding about the test.
+
+Sixteenth, two authoring habits worth keeping. (a) When the thing under test *throws* where you assert a
+value, catch it into the compared value (`verdict = \`rejected: ${error.message}\``) — the failure then
+prints your assert message plus the real reason, instead of a bare stack from inside the library. (b) Run
+mutate → suite → restore inside ONE bash call, backing the file up with `cp` to the scratchpad rather than
+restoring with `git checkout --`: exact bytes come back (no CRLF re-materialisation, trap 12) and no
+session boundary can land between mutation and restore (trap 13). Never park the backup inside a tree a
+test globs — a stray `.md` under `.asd/rules/` breaks the rule-doc bijection check itself.
+
 **Why:** any assertion about the bytes on disk is really an assertion about checkout configuration
 unless the test produces those bytes itself — and a suite run inside a stale working tree cannot see it.
 
