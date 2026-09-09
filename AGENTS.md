@@ -119,4 +119,4 @@ These artifacts mirror/reference each other. A change in one usually needs match
 ### Hard rules (in addition to the block's)
 
 - **Every workflow change checked against README.md.** After editing any rule/skill/agent/workflow/template/hook/config schema, update README.md if affected (phase list, agent roster, model tiers — both providers, config schema, folder map, command list) in the same change. Not complete until README.md confirmed accurate. Changing an agent's frontmatter `model`/`codex.model` tier requires updating the README model-tier table same change.
-- **Every change must minimize runtime tokens.** Compress prose (caveman OK), drop filler/hedging, dedup to SSoT (restated facts → link to canonical home). Preserve: technical terms, exact tokens (verdict strings, phase names, placeholders), code/YAML/JSON structure. Allowed mirrors: the cross-file syncs above.
+- **Every change must minimize runtime tokens** — `.asd/rules/artifact-layout.md` "Documentation economy" holds the exclusions, the three tests and the preserve-list. Repo-local addition: the cross-file syncs above are the only mirrors it permits.

@@ -74,16 +74,16 @@ Material risk: artifact: one-line pointer in a rule doc
 
 ### Task 8: The documentation-economy rule (AC-7)
 Material risk: change: a new enforceable rule reaching every creator and reviewer, and a new coverage-manifest rubric entry
-- [ ] Site the rule in `artifact-layout.md` immediately after the SSoT iron rule, per `audit.md`'s recommendation and the user's accepted scope decision that it covers framework canon and every artifact a later agent reads
-- [ ] State the exclusions — prose stating no rule, rationale justifying an already-stated rule, examples disambiguating nothing, negative prompting without a positive rule to contrast, emphasis inflation (`audit.md` C-2), and the same fact in a second home
-- [ ] State the decision procedure (`audit.md` G-7): the removal test, the provenance test, and the enforcement test, which is what makes E-4's class cuttable
-- [ ] State the preserve-list so `audit.md` R-1's load-bearing text cannot be cut under this rule
-- [ ] Keep the rule itself within its own budget (`audit.md` R-2): a paragraph plus a short list, no essay
-- [ ] Add the enforcing bullet to `asd-reviewer-documentation.md` `## Review rubric` — the only path into the blocking coverage ledger
-- [ ] Resolve `audit.md` G-9: state how rubric IDs are derived and why they are stable, since the manifest must enumerate them and an omitted item invalidates a verdict
-- [ ] Extend the rule's reach to artifact templates per the accepted scope, so consumer projects inherit it
-- [ ] Reduce `AGENTS.md`'s hand-written economy paragraph and `code-style.md` §7's sentence to pointers at the new home
-- [ ] Run `node .asd/sync.js --apply` for the regenerated documentation-reviewer views
+- [x] Site the rule in `artifact-layout.md` immediately after the SSoT iron rule, per `audit.md`'s recommendation and the user's accepted scope decision that it covers framework canon and every artifact a later agent reads
+- [x] State the exclusions — prose stating no rule, rationale justifying an already-stated rule, examples disambiguating nothing, negative prompting without a positive rule to contrast, emphasis inflation (`audit.md` C-2), and the same fact in a second home
+- [x] State the decision procedure (`audit.md` G-7): the removal test, the provenance test, and the enforcement test, which is what makes E-4's class cuttable
+- [x] State the preserve-list so `audit.md` R-1's load-bearing text cannot be cut under this rule
+- [x] Keep the rule itself within its own budget (`audit.md` R-2): a paragraph plus a short list, no essay
+- [x] Add the enforcing bullet to `asd-reviewer-documentation.md` `## Review rubric` — the only path into the blocking coverage ledger
+- [x] Resolve `audit.md` G-9: state how rubric IDs are derived and why they are stable, since the manifest must enumerate them and an omitted item invalidates a verdict
+- [x] Extend the rule's reach to artifact templates per the accepted scope, so consumer projects inherit it
+- [x] Reduce `AGENTS.md`'s hand-written economy paragraph and `code-style.md` §7's sentence to pointers at the new home
+- [x] Run `node .asd/sync.js --apply` for the regenerated documentation-reviewer views
 
 ### Task 9: Audit the corpus against the accepted rule (AC-8)
 Material risk: change: judgment call on which passages the rule reaches

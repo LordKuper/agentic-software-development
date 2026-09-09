@@ -192,6 +192,14 @@ SSoT for two things invisible in the diff: **why** a test was removed, and **why
 
 Each fact has exactly one home file. Other files link to it, never copy. Violation = `FAIL` from Documentation reviewer.
 
+## Documentation economy (iron rule)
+
+A line of agent-facing text is re-paid on every dispatch that loads it, so it earns its place only by changing what a reading agent does; one that does not is deleted, not shortened. Reach: framework canon (rules, agents, skills, workflows, templates) and every artifact a later agent reads (`audit.md`, `plan.md`, `test-plan.md`, decisions-log entries, review files, retrospectives) — through the templates, in every consumer project too. Cut when any of three tests passes: **removal** — no agent acts differently without the line; **provenance** — it traces to no recorded defect, friction entry or decision; **enforcement** — a tool grant, validator or suite assertion already imposes it, so the prose only restates it. Violation = `FAIL` from Documentation reviewer.
+
+Cut on sight: prose stating no rule; rationale for a rule already stated; an example disambiguating nothing; a prohibition with no positive rule to contrast; emphasis so frequent it marks nothing; a fact whose home is another file (SSoT above).
+
+Never cut, whatever the length: text whose exact form is the contract (machine-parsed token, validated literal, parsed grammar); an enumeration whose completeness is the rule (a predicate's members, a per-role or per-case table); a case distinction a shorter phrasing collapses; a non-obvious failure mode stated with its symptom. Length is never the test.
+
 ## Document responsibility
 
 Every template in `.asd/templates/` MUST declare its responsibility in frontmatter:
