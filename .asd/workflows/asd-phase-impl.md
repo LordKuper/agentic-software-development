@@ -23,7 +23,7 @@ Detected at step 2 from `state.json`:
 - **Review-fix mode** (`review_fixes_pending` = `iter-NN`) — entered when impl-review routed sprint back. Resolve reviewer findings in `<sprint>/reviews/impl/iter-NN/`. On completion clears `review_fixes_pending`.
 - **Test-fix mode** (`test_defects_pending` set) — entered when impl-test found code defects. Resolve pending `D-N` rows in `<sprint>/test-plan.md`. On completion clears `test_defects_pending`.
 
-Fix modes **skip the impl assessment gate**. Impl completion gate (step 9) applies in **all** modes and stays build + lint only — this is a scoping rule, not a new gate: a dev may run the impacted set (`sprint-lifecycle.md` "Impacted test set") to self-check work in progress, in any mode, but never authors, modifies, or prunes a test, and that run neither satisfies nor substitutes for this gate. Test authoring, pruning, and running belong to `impl-test`.
+Fix modes **skip the impl assessment gate**. Impl completion gate (step 9) applies in **all** modes and runs no test — this is a scoping rule, not a new gate: a dev may run the impacted set (`sprint-lifecycle.md` "Impacted test set") to self-check work in progress, in any mode, but never authors, modifies, or prunes a test, and that run neither satisfies nor substitutes for this gate. Test authoring, pruning, and running belong to `impl-test`.
 
 ## Execution mode
 
@@ -97,6 +97,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
 9. **Impl completion gate** (all modes) — the main orchestrator verifies, via `commands.yaml`:
    - `build` command executed and finished with no errors and no warnings
    - `lint` command executed and finished with no errors and no warnings
+   - the round's diff — what its agents committed plus anything still uncommitted — read before committing or advancing: every path it touches is one those agents were authorised to touch. Any other path fails the gate as a build error does — a file no dispatched task named, a hand-edited generated view, a scripted edit that rewrote more than its target. Distinct from `code-style.md` §19's staged-content lint: same tool, different question
    - the gate itself never runs tests — a dev's optional impacted-set self-verification run (`sprint-lifecycle.md` "Impacted test set") is not part of it; the suite/impacted-set gates belong to `impl-test`/`impl-review`
    - if any condition fails → phase MUST NOT advance: relay specific failure to owning dev(s) to fix and re-run; loop step 7. Unrecoverable failure escalates as a blocker (`FAILED`).
    - automatic verification — no user pause

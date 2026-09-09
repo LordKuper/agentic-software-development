@@ -63,9 +63,9 @@ Material risk: change: changes what a review phase does with a failed validation
 
 ### Task 6: Fix-round exit diff check (AC-5b)
 Material risk: change: adds a condition to the impl completion gate
-- [ ] Add the diff read to `asd-phase-impl.md` step 9, the all-modes gate, not step 11, which is fix-mode only and declared mechanical
-- [ ] State it as confirming the round's diff touches only paths its agents were authorised to touch, before committing or advancing
-- [ ] Keep it distinct from `code-style.md` §19's staged-diff paragraph, which uses the same tool for a different purpose
+- [x] Add the diff read to `asd-phase-impl.md` step 9, the all-modes gate, not step 11, which is fix-mode only and declared mechanical
+- [x] State it as confirming the round's diff touches only paths its agents were authorised to touch, before committing or advancing
+- [x] Keep it distinct from `code-style.md` §19's staged-diff paragraph, which uses the same tool for a different purpose
 
 ### Task 7: Availability skip is a friction entry (AC-4)
 Material risk: artifact: one-line pointer in a rule doc
