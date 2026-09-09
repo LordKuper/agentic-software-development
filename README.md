@@ -31,7 +31,7 @@ Each provider can show up in two different roles — don't conflate them:
 - **As your primary runtime** — run sprints from Claude Code (`.claude/agents/*.md` + `.claude/skills/`) or Codex (`.codex/agents/*.toml` + `.agents/skills/`), both driving the same canonical workflow.
 - **As the External Review tool** — ASD shells out to the CLI of whichever provider is NOT your primary runtime, as a second opinion during design-review/impl-review (Codex CLI under Claude Code, Claude CLI under Codex). Works independently of which provider is your primary runtime.
 
-When External Review is enabled, `/asd-init` probes the other provider's configured command (`system.tools.codex_command` under Claude Code; `system.tools.claude_command` under Codex). A later unavailable probe is recorded as an explicit availability skip in the review output and decisions log rather than silently reducing coverage.
+When External Review is enabled, `/asd-init` probes the other provider's configured command (`system.tools.codex_command` under Claude Code; `system.tools.claude_command` under Codex). A later unavailable probe is recorded as an explicit availability skip in the review output, decisions log and friction log rather than silently reducing coverage.
 
 ### Codex with a ChatGPT account
 
@@ -390,7 +390,7 @@ designmd --version
 
 ### Codex CLI / Claude CLI
 
-Enables External Review in parallel with internal reviewers: install **Codex CLI** if Claude Code is your primary runtime, or **Claude CLI** if Codex is your primary runtime — External Review always wraps the *other* provider's CLI, never its own host's. Set `system.tools.codex_command` or `system.tools.claude_command` when it is not on PATH. ASD records an explicit availability skip in the review output and decisions log if the resolved command is unavailable, so the workflow keeps running.
+Enables External Review in parallel with internal reviewers: install **Codex CLI** if Claude Code is your primary runtime, or **Claude CLI** if Codex is your primary runtime — External Review always wraps the *other* provider's CLI, never its own host's. Set `system.tools.codex_command` or `system.tools.claude_command` when it is not on PATH. ASD records an explicit availability skip in the review output, decisions log and friction log if the resolved command is unavailable, so the workflow keeps running.
 
 ---
 
