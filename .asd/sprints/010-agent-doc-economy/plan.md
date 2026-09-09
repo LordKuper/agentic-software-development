@@ -111,10 +111,10 @@ Material risk: change: validation code whose failure mode is silent
 
 ### Task 12: Consistency sweep (AC-9)
 Material risk: artifact: mechanical verification across the sprint's whole change surface
-- [ ] Confirm `README.md` is accurate for every rule, agent, skill, workflow, template and config-schema change this sprint made — phase list, agent roster, model tiers for both providers, folder map, command list
-- [ ] Confirm `core.md` "See also" lists every rule doc, and the phase-chain mirrors still agree
-- [ ] Run `node .asd/sync.js --check` clean and `node tests/run.js` green
-- [ ] Confirm every AC-8 finding is applied or carries a recorded deferral reason
+- [x] Confirm `README.md` is accurate for every rule, agent, skill, workflow, template and config-schema change this sprint made — phase list, agent roster, model tiers for both providers, folder map, command list
+- [x] Confirm `core.md` "See also" lists every rule doc, and the phase-chain mirrors still agree
+- [x] Run `node .asd/sync.js --check` clean — 72/72 targets `current`; `node tests/run.js` — 170/171, the one failure being `tests/run.js:2450`'s pre-AC-6b manifest field pin, owned by `asd-tester` in impl-test per plan.md Task 11's second subtask reassignment — not a new failure and not fixable here (dev writes no tests)
+- [x] Confirm every AC-8 finding is applied or carries a recorded deferral reason — all 23 `E-N` and 12 `C-N` ids from `audit.md`'s survey and corpus-audit table are accounted for in `decisions-log.md`'s "Task 10 applied E-1 … E-23" entry (five applied-in-part with reasons: E-15, E-10, E-5, E-4, E-22) plus the earlier entries closing C-9/C-10/C-11/C-12 and out-of-scope C-6/C-11
 
 ## Risks
 - A green suite does not prove a prose deletion safe (`audit.md` R-6); Task 12's verification is necessary, not sufficient, and the documentation reviewer's new rubric bullet is the real check.
