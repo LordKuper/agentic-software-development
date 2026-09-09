@@ -68,7 +68,7 @@
     ".asd/hooks/session-start.js": "b2ba4ce133eab117876d0e15424f40baa71eb9c887e8813326b7897358b6135d",
     ".asd/rules/artifact-layout.md": "878b742812dd1dc7f95040181cd243b01953b48c039b96a9c6234dd3004a0813",
     ".asd/rules/checkpoints.md": "e62193a5be3f6b498026101c515135ca317dcd5368ae267f5fcd577d76fc6828",
-    ".asd/rules/code-style.md": "25210cc4bf398e089a2a7633ad6680708bca8dd527b22b34846cd7dea8975760",
+    ".asd/rules/code-style.md": "efa361b3433c7572acf699e0629502ee2ac38979ee32ffd7a5398e08145606f5",
     ".asd/rules/core.md": "0c25c9ab5d1ff4c1c0cb7ece0897c621bd02bdb9e97d9f9a060df37f12517f0b",
     ".asd/rules/design-principles.md": "dc52da294a70aba27d8076cfec7dd6917e90603892e7424eadc3a5bd8045da41",
     ".asd/rules/design-system.md": "5ea1e98d5bfb07521258d9c379f72e92e7e1b3065e372e258adc940bbc9e8af3",

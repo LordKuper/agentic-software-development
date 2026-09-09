@@ -49,9 +49,9 @@ Material risk: change: alters the digested manifest shape every reviewer's ledge
 
 ### Task 4: Fail-first mutation must be restored (AC-5a)
 Material risk: artifact: small, objectively verifiable edit in a rule doc five files cite
-- [ ] Extend the `code-style.md` §17 fail-first bullet: a mutation made to prove fail-first is restored before the agent's next tool call
-- [ ] State that a mutation left on disk is a defect regardless of what the suite reports
-- [ ] Confirm the five citing files reach it by citation and need no edit, as `audit.md` records
+- [x] Extend the `code-style.md` §17 fail-first bullet: a mutation made to prove fail-first is restored before the agent's next tool call
+- [x] State that a mutation left on disk is a defect regardless of what the suite reports
+- [x] Confirm the five citing files reach it by citation and need no edit, as `audit.md` records
 
 ### Task 5: Split the coverage-ledger enforcement (AC-6a)
 Material risk: change: changes what a review phase does with a failed validation
