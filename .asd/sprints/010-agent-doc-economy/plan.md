@@ -9,7 +9,7 @@ responsibility:
 
 ## Overview
 
-Twelve tasks in eight waves, covering `sprint.md` AC-1 through AC-9. Acceptance-criteria source is `sprint.md`, `documents.prd` being disabled.
+Thirteen tasks in nine waves, covering `sprint.md` AC-1 through AC-10. Task 13 and AC-10 were added after impl began, on the user's requirement that the documentation-economy rule reach agents for authoring and not only for review. Acceptance-criteria source is `sprint.md`, `documents.prd` being disabled.
 
 The wave order is itself the sprint's first deliverable. Task 1 lands AC-1 — the rule that a task changing the dispatch or commit contract runs ahead of everything dispatched under it, alone in its wave — and is therefore dispatched alone, before any task that would otherwise run under the old rule. Every later wave obeys the rule Task 1 writes. Tasks 2, 5, 6 and 8 are the other contract-changing tasks (`audit.md` R-9) and each holds its wave against the tasks that follow it.
 

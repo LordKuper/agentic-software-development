@@ -152,9 +152,9 @@
     }
   },
   "created_at": "2026-09-09T07:37:57Z",
-  "updated_at": "2026-09-09T10:37:24Z",
+  "updated_at": "2026-09-09T12:26:07Z",
   "review_fixes_pending": null,
-  "test_defects_pending": "D-1",
+  "test_defects_pending": null,
   "pr": null,
   "archived_at": null
 }
