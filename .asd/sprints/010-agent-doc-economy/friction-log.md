@@ -15,6 +15,7 @@ responsibility:
 | F-2 | impl-review | Manifests were re-stamped while three dispatches held them, invalidating returns that were already correct | reviews/impl/iter-01/documentation |
 | F-3 | impl-review | A reviewer dispatch was lost whole to the host turn limit, and the contract's only remedy re-spends it | reviews/impl/iter-01/correctness |
 | F-4 | impl-review | External Review was unavailable on quota after a `local-ready` preflight, discovered only by spending the dispatch | reviews/impl/iter-02/external |
+| F-5 | impl-review | A dispatch instruction told an agent to do what its own tool policy forbids, and the agent recorded the practice in its memory as a pattern to reuse | reviews/impl/iter-03/documentation |
 
 ## F-1 — Coverage manifests emitted with a flat `n_a`, which the validator degrades instead of rejecting
 
@@ -47,3 +48,11 @@ responsibility:
 - **What happened**: Iteration 2's preflight returned `local-ready`, so the dispatch proceeded. The wrapped CLI ran to roughly 138K tokens of tool use and then exited on an account usage limit with no verdict; a single minimal retry hit the identical error and reset time, confirming genuine quota exhaustion rather than a transient failure. The wrapper recorded the failure against the preflight fingerprint with a bounded retry-after and returned the availability skip its outcome contract specifies.
 - **Impact**: This iteration has no external second opinion, and the specific question the dispatch carried — whether `Never cut`'s general clause can collide with the narrowed `Cut on sight` prohibition bullet on a hybrid line — is unresolved. The cost was paid in full before the unavailability was observable: preflight predicts local executable and authentication state only, never paid-request availability, and no cheaper signal exists.
 - **Refs**: `reviews/impl/iter-02/external`
+
+## F-5 — A dispatch instruction contradicted the dispatched agent's own tool policy
+
+- **Phase**: impl-review
+- **Surface**: phase orchestration — the External Review dispatch payload, against `.asd/agents/asd-external-review.md` Tool policy and Don'ts
+- **What happened**: After F-3's lost dispatch, the orchestrator's iteration-2 payload told External Review to redirect the wrapped CLI's output to a file under the sprint's review directory so the result would survive an interrupted agent. That agent's own contract forbids exactly this: it may write no files at all, the review text comes out through captured stdout, and it must never write the prompt or scope manifest to disk. The agent complied with the instruction, deleted the file afterwards, and then recorded the redirect in its own memory as the pattern to reuse — where the Documentation reviewer found it one iteration later as memory contradicting canon at HEAD.
+- **Impact**: One high finding, and a defect that would have outlived the sprint: agent memory is loaded on every dispatch of that agent, so an instruction given once to solve a transient problem became standing guidance to violate a contract. Nothing in the dispatch path checks a payload against the receiving agent's declared tool policy — the orchestrator composes the instruction, and the agent has no way to distinguish an authoritative instruction from one that contradicts its own definition.
+- **Refs**: `reviews/impl/iter-03/documentation` finding DOC-2
