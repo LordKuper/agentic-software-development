@@ -3919,10 +3919,7 @@ test('sprint-010 iter-03: every section a canon file cites by name resolves in t
   assert.ok(denials >= 25, `only ${denials} non-restatement declarations matched, too few for the zero-tolerance filter below to mean anything - the class is what makes a dangling pointer unrecoverable, so a filter that stops reaching it must be seen rather than pass silently`);
 
   assert.deepStrictEqual(dangling.filter((d) => d.denies).map((d) => d.at), [], 'a citation on a line that denies restating the content is held to zero tolerance, unlike the general set below: the denial tells the reader the content lives at the target and nowhere else, so a pointer that resolves to nothing leaves it reachable from no site at all. Fix the pointer or drop the denial - it may not join the known-pair list');
-  assert.deepStrictEqual(dangling.map((d) => d.at), [
-    '.asd/rules/sprint-lifecycle.md -> checkpoints.md "Re-running a phase"',
-    '.asd/agents/asd-reviewer-correctness.md -> external-review.md "Iteration-aware diff"',
-  ], 'the dangling set is pinned in both directions. A new entry is a citation renamed on one side only - the failure this sweep exists for, four instances on record (sprint 006 documentation F5 fixed two, these two survived it). A missing entry means one of the known pair was fixed: that is D-3 / D-4 in sprint 010 test-plan.md, and the fix belongs with deleting its line here. Resolution accepts a `## heading` or a `**bold label**`, both attested citation targets in this canon; heading matching is prefix-anchored so a parenthetical suffix still resolves');
+  assert.deepStrictEqual(dangling.map((d) => d.at), [], 'the dangling set is pinned in both directions. A new entry is a citation renamed on one side only - the failure this sweep exists for, four instances on record (sprint 006 documentation F5 fixed two, these two survived it). A missing entry means one of the known pair was fixed: that is D-3 / D-4 in sprint 010 test-plan.md, and the fix belongs with deleting its line here. Resolution accepts a `## heading` or a `**bold label**`, both attested citation targets in this canon; heading matching is prefix-anchored so a parenthetical suffix still resolves');
 });
 
 // ===========================================================================
