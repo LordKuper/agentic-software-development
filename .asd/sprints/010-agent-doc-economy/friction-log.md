@@ -16,6 +16,7 @@ responsibility:
 | F-3 | impl-review | A reviewer dispatch was lost whole to the host turn limit, and the contract's only remedy re-spends it | reviews/impl/iter-01/correctness |
 | F-4 | impl-review | External Review was unavailable on quota after a `local-ready` preflight, discovered only by spending the dispatch | reviews/impl/iter-02/external |
 | F-5 | impl-review | A dispatch instruction told an agent to do what its own tool policy forbids, and the agent recorded the practice in its memory as a pattern to reuse | reviews/impl/iter-03/documentation |
+| F-6 | pr | Two canon files disagree on whether the sprint folder is archived before the merge, and the disagreement drives the next sprint's active-sprint detection | — |
 
 ## F-1 — Coverage manifests emitted with a flat `n_a`, which the validator degrades instead of rejecting
 
@@ -56,3 +57,11 @@ responsibility:
 - **What happened**: After F-3's lost dispatch, the orchestrator's iteration-2 payload told External Review to redirect the wrapped CLI's output to a file under the sprint's review directory so the result would survive an interrupted agent. That agent's own contract forbids exactly this: it may write no files at all, the review text comes out through captured stdout, and it must never write the prompt or scope manifest to disk. The agent complied with the instruction, deleted the file afterwards, and then recorded the redirect in its own memory as the pattern to reuse — where the Documentation reviewer found it one iteration later as memory contradicting canon at HEAD.
 - **Impact**: One high finding, and a defect that would have outlived the sprint: agent memory is loaded on every dispatch of that agent, so an instruction given once to solve a transient problem became standing guidance to violate a contract. Nothing in the dispatch path checks a payload against the receiving agent's declared tool policy — the orchestrator composes the instruction, and the agent has no way to distinguish an authoritative instruction from one that contradicts its own definition.
 - **Refs**: `reviews/impl/iter-03/documentation` finding DOC-2
+
+## F-6 — Canon disagrees with itself on whether `pr` open mode archives the sprint folder
+
+- **Phase**: pr
+- **Surface**: skill vs workflow — `.asd/skills/asd-sprint/SKILL.md` "Step 3: phase chain advancement" against `.asd/workflows/asd-phase-pr.md` "Open mode" step 3
+- **What happened**: The skill states that open mode returns `NEXT: await-merge` with the sprint folder "already archived onto the same branch, `phase` still not `done`", and its Step 1 detection is built on that claim — it unions active-path sprints with archived-path sprints whose `phase != "done"` precisely to find a sprint archived pre-merge. The workflow that actually performs the phase says the opposite in the same breath: "Do not archive or mark done." The orchestrator followed the workflow, which is the authoritative orchestration body, and left the folder on the active path.
+- **Impact**: None this sprint — the detection union tolerates either placement, which is why the contradiction survived. But the two files describe different states of the repository at the same point in the chain, so a future reader resolving them the other way archives a sprint that has not merged, and the sprint's own resume path is specified against a state its workflow never produces. It is the same defect class this sprint corrected six times inside `review-policy.md` and the review workflows: a self-declared contract that is false where it is declared.
+- **Refs**: —
