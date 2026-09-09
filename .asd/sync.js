@@ -158,19 +158,29 @@ function parseCanonicalFrontmatter(rawNormalizedText) {
 // Model family resolution (release-manifest table; canon speaks in aliases)
 // ---------------------------------------------------------------------------
 
-function resolveModelFamily(manifest, provider, familyAlias, codexAgent = {}) {
+// Accepted reasoning-effort values per provider - the two lists differ by one
+// member: `ultra` exists on Codex only.
+const EFFORT_VOCABULARY = {
+  claude: /^(low|medium|high|xhigh|max)$/,
+  codex: /^(low|medium|high|xhigh|max|ultra)$/,
+};
+
+function resolveModelFamily(manifest, provider, familyAlias, agent = {}) {
   const table = manifest && manifest.model_families && manifest.model_families[provider];
   const resolvedModel = table && typeof familyAlias === 'string' ? table[familyAlias] : undefined;
-  const codexDiagnostic = (reason) => `Codex agent "${codexAgent.name || '<missing>'}": ${reason} (family "${familyAlias === undefined ? '<missing>' : familyAlias}", resolved model "${resolvedModel === undefined ? '<unresolved>' : resolvedModel}", effort "${codexAgent.effort === undefined ? '<missing>' : codexAgent.effort}")`;
+  const diagnostic = (reason) => `${provider === 'codex' ? 'Codex' : 'Claude'} agent "${agent.name || '<missing>'}": ${reason} (family "${familyAlias === undefined ? '<missing>' : familyAlias}", resolved model "${resolvedModel === undefined ? '<unresolved>' : resolvedModel}", effort "${agent.effort === undefined ? '<missing>' : agent.effort}")`;
   if (!table || !Object.prototype.hasOwnProperty.call(table, familyAlias)) {
-    if (provider === 'codex') throw new Error(codexDiagnostic('unknown model family'));
+    if (provider === 'codex') throw new Error(diagnostic('unknown model family'));
     throw new Error(`unknown model family "${familyAlias}" for provider "${provider}"`);
   }
   if (provider === 'codex' && (typeof resolvedModel !== 'string' || !/^gpt-5\.6-(sol|terra|luna)$/.test(resolvedModel) || !resolvedModel.endsWith(`-${familyAlias}`))) {
-    throw new Error(codexDiagnostic('unsupported ChatGPT-runtime model mapping'));
+    throw new Error(diagnostic('unsupported ChatGPT-runtime model mapping'));
   }
-  if (provider === 'codex' && codexAgent.effort !== undefined && (!/^(low|medium|high|xhigh|max|ultra)$/.test(codexAgent.effort) || (resolvedModel.endsWith('-luna') && codexAgent.effort === 'ultra'))) {
-    throw new Error(codexDiagnostic('invalid model reasoning effort'));
+  if (provider === 'codex' && agent.effort !== undefined && (!EFFORT_VOCABULARY.codex.test(agent.effort) || (resolvedModel.endsWith('-luna') && agent.effort === 'ultra'))) {
+    throw new Error(diagnostic('invalid model reasoning effort'));
+  }
+  if (provider === 'claude' && agent.effort !== undefined && !EFFORT_VOCABULARY.claude.test(agent.effort)) {
+    throw new Error(diagnostic('invalid effort'));
   }
   return resolvedModel;
 }
@@ -273,7 +283,7 @@ function transformAgentClaude(meta, body, manifest) {
   if (Array.isArray(c.disallowedTools) && c.disallowedTools.length > 0) {
     lines.push(`disallowedTools: ${yamlFlowList(c.disallowedTools)}`);
   }
-  if (c.model) lines.push(`model: ${resolveModelFamily(manifest, 'claude', c.model)}`);
+  if (c.model) lines.push(`model: ${resolveModelFamily(manifest, 'claude', c.model, { name: meta.name, effort: c.effort })}`);
   if (c.effort) lines.push(`effort: ${c.effort}`);
   if (c.maxTurns !== undefined) lines.push(`maxTurns: ${c.maxTurns}`);
   if (c.memory) lines.push(`memory: ${c.memory}`);

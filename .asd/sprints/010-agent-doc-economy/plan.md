@@ -105,9 +105,9 @@ Material risk: change: deletions in text no test can verify (`audit.md` R-6)
 
 ### Task 11: Close the two mechanical defects the audit found (AC-9)
 Material risk: change: validation code whose failure mode is silent
-- [ ] Validate the Claude `effort` field in `.asd/sync.js` against its documented vocabulary, as the Codex counterpart already is (`audit.md` C-10)
-- [ ] Add the rule-doc-list mirror to `tests/run.js` so `core.md` "See also" and the `AGENTS.md`/`t_AGENTS.md` list cannot drift again unnoticed (`audit.md` G-12)
-- [ ] Update `.asd/release-manifest.json` hashes for the changed sources
+- [x] Validate the Claude `effort` field in `.asd/sync.js` against its documented vocabulary, as the Codex counterpart already is (`audit.md` C-10)
+- [ ] Add the rule-doc-list mirror to `tests/run.js` so `core.md` "See also" and the `AGENTS.md`/`t_AGENTS.md` list cannot drift again unnoticed (`audit.md` G-12) — REASSIGNED: impl-test, `asd-tester` — tests are authored there, never in impl
+- [x] Update `.asd/release-manifest.json` hashes for the changed sources
 
 ### Task 12: Consistency sweep (AC-9)
 Material risk: artifact: mechanical verification across the sprint's whole change surface
