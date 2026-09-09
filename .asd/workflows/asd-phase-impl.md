@@ -10,6 +10,7 @@ Orchestration body for the `asd-phase-impl` skill. Operation-mapping to host too
 
 ## Operations used
 - read: `.asd/project/config.yaml`, `state.json`, `plan.md`, `<sprint>/reviews/impl/iter-NN/` (review-fix), `<sprint>/test-plan.md` (test-fix), persistent docs, `.asd/project/custom-common-rules.md`, `custom-coding-rules.md`, `stubs.md`, `<sprint>/manual-steps.md`
+- run command: `git status --porcelain`/`git diff` to read the round's committed-plus-uncommitted diff for step 9's authorised-paths gate; `commands.yaml` `build`/`lint` for the same gate
 - write a file: `state.json` inline, for the mechanical non-gate writes at steps 4, 11 (`sprint-lifecycle.md` "State recovery")
 - request user decision: escalation only (see Execution mode)
 - delegate to agent: `asd-dev` per task / finding group / defect group (test-file findings to `asd-tester`); the main orchestrator owns manual-step validation, gates and decisions-log inline
