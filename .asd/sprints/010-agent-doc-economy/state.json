@@ -1,0 +1,43 @@
+{
+  "sprint_id": "010-agent-doc-economy",
+  "branch": "sprint/010-agent-doc-economy",
+  "phase": "scope",
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "adr": false,
+    "c4": false
+  },
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "initial scope accepted at the hard write-then-review-accept gate",
+      "evidence": "sprint.md AC-1..AC-9; retrospective rows re-verified against HEAD 28343c3, per-criterion cost stated as 0 iterations / 0 fix rounds",
+      "artifact_revision": "sprint.md@scope-1"
+    }
+  ],
+  "task_routing": {},
+  "skipped_phases": [],
+  "reviews": {
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "iteration": 0,
+      "verdicts": {},
+      "iteration_heads": {},
+      "latched": {}
+    }
+  },
+  "created_at": "2026-09-09T07:37:57Z",
+  "updated_at": "2026-09-09T07:40:22Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": null,
+  "archived_at": null
+}
