@@ -1,7 +1,7 @@
 {
   "sprint_id": "010-agent-doc-economy",
   "branch": "sprint/010-agent-doc-economy",
-  "phase": "scope",
+  "phase": "design",
   "documents": {
     "audit": true,
     "prd": false,
@@ -17,6 +17,13 @@
       "reason": "initial scope accepted at the hard write-then-review-accept gate",
       "evidence": "sprint.md AC-1..AC-9; retrospective rows re-verified against HEAD 28343c3, per-criterion cost stated as 0 iterations / 0 fix rounds",
       "artifact_revision": "sprint.md@scope-1"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "user",
+      "reason": "audit accepted and its three material ambiguities resolved",
+      "evidence": "audit.md G-6 wider scope, E-1 in scope, G-8 bytes-per-dispatch evidence standard; C-10..C-12 added from the claude-api skill run",
+      "artifact_revision": "audit.md@audit-2"
     }
   ],
   "task_routing": {},
@@ -35,7 +42,7 @@
     }
   },
   "created_at": "2026-09-09T07:37:57Z",
-  "updated_at": "2026-09-09T07:40:22Z",
+  "updated_at": "2026-09-09T08:02:21Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

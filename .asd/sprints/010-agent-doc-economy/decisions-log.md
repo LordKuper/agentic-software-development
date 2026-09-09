@@ -50,3 +50,15 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: The user accepted `sprint.md` AC-1 … AC-9 unchanged at the hard scope gate.
 - **Rationale**: The initial scope gate is hard in both policy modes because it establishes the authority the adaptive policy later reuses. Per-criterion cost was stated before the decision: 0 iterations, 0 fix rounds for every criterion, this being a new sprint.
 - **Affected docs**: `.asd/sprints/010-agent-doc-economy/sprint.md`, `.asd/sprints/010-agent-doc-economy/state.json`
+
+## 2026-09-09 — Audit accepted, three audit-surfaced ambiguities resolved by the user
+
+- **Decision**: `audit.md` accepted. G-6: AC-7's rule covers framework canon AND every artifact a later agent reads (`audit.md`, `plan.md`, `decisions-log.md`, `test-plan.md`, review files, retrospectives), so the constraint reaches consumer projects through the artifact templates. E-1: the review-workflow duplication is in scope for this sprint, to be resolved rather than deferred. G-8: the sprint defines a minimal evidence standard — bytes of rule text read per dispatch, derived from the role-scoped context table — and uses it to justify reducing what a dispatch reads; model and effort tiers are still not retiered, per `sprint.md` "Out of scope".
+- **Rationale**: All three change what the sprint delivers and what ships to consumers, so none could be taken adaptively. G-6's wider reading matches the user's original scope wording, which named process artifacts alongside rules and specs. E-1 is the single largest item in the corpus survey and the one whose deferral would leave the sprint's headline finding unaddressed. G-8 converts an unmeasurable criterion into a measurable one without touching the tier matrix.
+- **Affected docs**: `.asd/sprints/010-agent-doc-economy/audit.md` (G-6, G-8, E-1, R-4, R-10), `.asd/sprints/010-agent-doc-economy/state.json`
+
+## 2026-09-09 — claude-api skill run at the audit gate, G-11 closed
+
+- **Decision**: The orchestrator ran the claude-api skill the audit dispatch could not reach, producing C-10 (Claude `effort` is unvalidated in `sync.js` while the Codex counterpart is validated against a vocabulary — a typo ships silently and the agent runs at the host default while canon, the tier matrix and README claim otherwise), C-11 (`xhigh` exists between `high` and `max` and is unused in ASD's Claude tiers; recorded against G-8, not proposed) and C-12 (model aliases confirmed clean, no dated ids in canon). G-11 is closed with no unclosed input.
+- **Rationale**: Sprint scope named the skill explicitly. The subagent had no Skill tool, so the input would otherwise have been recorded as excluded; the orchestrator holds the skill and closing the gap cost one dispatch.
+- **Affected docs**: `.asd/sprints/010-agent-doc-economy/audit.md` (C-9 … C-12, G-11)
