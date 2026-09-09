@@ -3143,16 +3143,28 @@ test('T-2/C-2: canon_hashes covers only .asd/agents/*.md and .asd/skills/*/SKILL
   assert.strictEqual(entries.some(([key]) => key.startsWith('hooks/')), false, 'session-start.js and other hooks must never appear in canon_hashes - the memory\'s "hooks/t_AGENTS.md/t_CLAUDE.md -> two, not three" claim depends on this exclusion');
 });
 
-test('T-2/T-4: in each agent-memory directory this sprint writes, MEMORY.md and the files beside it are a bijection - an index line landing without its target, and a memory file no index points at, both fail here', () => {
-  for (const agent of ['asd-dev-critical', 'asd-tester-critical']) {
-    const dir = path.join(REPO_ROOT, '.claude/agent-memory', agent);
-    const index = fs.readFileSync(path.join(dir, 'MEMORY.md'), 'utf8');
+test('T-2/T-4/sprint-010 TST-01: in every agent-memory directory a dispatchable agent can load, MEMORY.md and the files beside it are a bijection - an index line landing without its target, and a memory file no index points at, both fail here', () => {
+  const roster = fs.readdirSync(path.join(REPO_ROOT, '.claude/agents')).filter((name) => name.endsWith('.md')).map((name) => name.slice(0, -3)).sort();
+  assert.ok(roster.length > 0, 'sanity: the agent roster must be derived from .claude/agents/*.md, or every check below passes vacuously - the hardcoded two-directory list this replaced is what let three of one round\'s six memory writes go unchecked');
+  const memoryRoot = path.join(REPO_ROOT, '.claude/agent-memory');
+  const written = fs.readdirSync(memoryRoot, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
+  assert.deepStrictEqual(written.filter((dir) => !roster.includes(dir)), ['asd-pm'], 'retired asd-pm must stay the only memory directory outside the roster: a directory no agent name matches is loaded by nobody, so a new name here is a memory write that reaches no dispatch - and it silently drops out of the loop below, which is the vacuity this comparison closes');
+
+  for (const agent of written.filter((dir) => roster.includes(dir))) {
+    const dir = path.join(memoryRoot, agent);
+    const memories = fs.readdirSync(dir).filter((name) => name.endsWith('.md') && name !== 'MEMORY.md').sort();
+    const indexPath = path.join(dir, 'MEMORY.md');
+    if (!fs.existsSync(indexPath)) {
+      assert.deepStrictEqual(memories, [], `${agent}/ holds memory files with no MEMORY.md beside them - nothing indexes them, so every one of them is a write no dispatch ever reads`);
+      continue;
+    }
+    const index = fs.readFileSync(indexPath, 'utf8');
     const links = [...index.matchAll(/\]\(([^)]+\.md)\)/g)].map((m) => m[1]);
     assert.ok(links.length > 0, `${agent}/MEMORY.md must list at least one memory file`);
     for (const link of links) {
       assert.ok(fs.existsSync(path.join(dir, link)), `${agent}/MEMORY.md links to "${link}" which does not exist`);
     }
-    for (const memory of fs.readdirSync(dir).filter((name) => name.endsWith('.md') && name !== 'MEMORY.md')) {
+    for (const memory of memories) {
       assert.ok(links.includes(memory), `${agent}/${memory} is written but not indexed by its MEMORY.md - only the index is always in context, so an unindexed memory is one the agent never loads and writing it was a no-op`);
     }
   }
