@@ -262,6 +262,23 @@ orchestrator's. Any proposed test of plan-grammar routing "through route-task" i
 construction — record it as a checked-and-false premise rather than writing a test that only proves a
 pure function is deterministic.
 
+## The terminal gate covers what every per-entry record cannot
+
+An impl-test entry records its run at the HEAD it *analysed* — the tree before its own test commit
+exists. So the last per-entry `Suite run` row is always one commit short of the tests it added, and
+the `impl-review` terminal gate is the first (and only) run at a HEAD that includes them. Say that
+explicitly in the record instead of writing the gate as a redundant re-run; sprint 010's superseded
+row sat at `93f8a20` while its assertions landed in `596ef18`. An unchanged count across that delta
+is a real result, not a no-op: assertions added to existing tests never move it.
+
+**Why:** a reader comparing two identical counts concludes the gate proved nothing, when what it
+proved is that the entry's own commit is green — which nothing else in the sprint ever checks.
+
+**How to apply:** at gate time diff the recorded HEAD against current (`git log <recorded>..HEAD`),
+name the commits the earlier record could not cover, and state whether the count moved and why. Note
+also that no test reads this repo's live `.asd/sprints/**` — every sprint reference in `tests/run.js`
+is a temp-root fixture — so editing `test-plan.md` cannot change the suite result and needs no re-run.
+
 ## Authoring `tests/run.js`
 
 It gets reviewed against `code-style.md` §7, which forbids in-body comments with no framework
