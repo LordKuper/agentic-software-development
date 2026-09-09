@@ -55,11 +55,11 @@ Material risk: artifact: small, objectively verifiable edit in a rule doc five f
 
 ### Task 5: Split the coverage-ledger enforcement (AC-6a)
 Material risk: change: changes what a review phase does with a failed validation
-- [ ] Partition the eight `validate-ledger` rejection classes into incomplete-or-unverifiable against wrong-shape-but-complete (`audit.md` G-5), stating the partition where the class list already lives
-- [ ] Split the enforcement paragraph: the first case rejects and re-dispatches, the second is transcribed by the phase workflow, validated, and recorded as a deviation
-- [ ] Determine whether `runtime.js` must return a class tag for the workflow to branch on, and add one if so
-- [ ] Update the one-line version in `asd-phase-impl-review.md` step 7 and `asd-phase-design-review.md` step 8
-- [ ] Confirm the interrupted-dispatch steps, which route through identical handling to an invalid ledger, are not silently re-routed into the transcription branch
+- [x] Partition the eight `validate-ledger` rejection classes into incomplete-or-unverifiable against wrong-shape-but-complete (`audit.md` G-5), stating the partition where the class list already lives
+- [x] Split the enforcement paragraph: the first case rejects and re-dispatches, the second is transcribed by the phase workflow, validated, and recorded as a deviation
+- [x] Determine whether `runtime.js` must return a class tag for the workflow to branch on, and add one if so
+- [x] Update the one-line version in `asd-phase-impl-review.md` step 7 and `asd-phase-design-review.md` step 8
+- [x] Confirm the interrupted-dispatch steps, which route through identical handling to an invalid ledger, are not silently re-routed into the transcription branch
 
 ### Task 6: Fix-round exit diff check (AC-5b)
 Material risk: change: adds a condition to the impl completion gate
