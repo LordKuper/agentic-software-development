@@ -96,7 +96,7 @@ Every mutation was restored in the same tool call that read its failure; `git st
 - Scope: full (safety valve, above — this repo's runner has no scoped mode either way)
 - Result: pass — 179 passed / 0 failed / 0 skipped
 - Lint / build: pass (`git diff --cached --check` clean on the staged set; `node .asd/sync.js --check` exit 0, 72/72 current)
-- HEAD: `b10e053` — the entry-4 commit, carrying the tree this run was made on; `9c5fa35` is the HEAD the entry-4 delta was analysed through, and the suite was green there too (179/179), before the TST-01 test changed
+- HEAD: `b10e053` — the entry-4 test commit, carrying the tree this run was made on; re-run green (179/179) at `11bf405`, the entry's last code/memory commit; `9c5fa35` is the HEAD the entry-4 delta was analysed through, and the suite was green there too (179/179), before the TST-01 test changed
 - Earlier: `fb1aeeb` — the entry-3 test commit; `3b080b1` is the HEAD the entry-3 delta was analysed through, and the suite was green there too, before any test changed
 
 Entry 1 ran at `af784cc`: 176 passed / 1 failed, that failure being D-1 below. Entry 2 ran at `86398b2`: 178/178. The suite has grown 171 → 179 across four entries and no test was removed: entry 3 added one test and eleven assertions to five existing ones, and entry 4 added no test at all — it replaced one test's hardcoded directory array with a derivation and added two branches to it, so the count is unchanged at 179 while the covered set went from two directories to every directory a dispatchable agent can load. That is the cheaper shape for a change surface that is mostly canon prose.
