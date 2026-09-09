@@ -3182,6 +3182,9 @@ test('AC-15: review-policy.md is sole SSoT for the reviewer read-only reconcilia
   assert.ok(providers.includes('Gate Verdict Format'), 'providers.md must cite review-policy.md "Gate Verdict Format" for what the read-only claim covers and excludes, rather than restating the reconciliation independently');
   assert.ok(!providers.includes('memory: project` is a separate write channel reviewers do use'), 'providers.md must not restate the reconciliation sentence itself - that duplication is exactly what the citation exists to prevent');
   assert.ok(!policy.includes('Sole statement of this claim'), 'the unscoped sole-statement claim was false the moment it was written (iter-03 DOC-1b): both review workflows and a rule doc also state that the reviewer itself performs no write, so an owning-side claim that every other site merely links contradicted them and invited a cut at whichever site was read next. Scope limit: this guards the literal from coming back, never the truth of a reworded ownership claim - over this corpus no derivable proxy separates a true declaration from a false one (test-plan.md, entry 5). The two assertions above are what keep it from going vacuous: they require the scoped statement to still be here');
+
+  const scopeLine = policy.split('\n').find((line) => line.includes('Reviewers write no review artifact, code or doc')) || '';
+  assert.ok(/agent memory/i.test(scopeLine) && scopeLine.includes('`artifact-layout.md`'), 'the scoped claim was STILL false after iter-03 (iter-04 EXT-1): a reviewer\'s own hand-authored memory file restated both halves this line claims only it states. A declaration must therefore bound its reach and name the surface it excludes. Asserted here: the line keeps a carve-out for agent memory AND a pointer to the rule that owns that surface - deliberately NOT the "in canon" qualifier the fix happened to word it with, which a synonym defeats and a correct rewording reddens. That the pointer resolves is the citation sweep\'s job; that this declaration still carries one is this assert\'s');
 });
 
 test('AC-15: providers.md records which emitted agent frontmatter fields are host-verified vs. emitted on trust', () => {
@@ -3208,8 +3211,12 @@ test('AC-15/iter-05: providers.md names External Review as the sole Bash carve-o
   assert.ok(!providers.includes('Enforced by config, not by a textual instruction repeated in reviewer bodies.'), 'the prior blanket enforcement sentence (true only for the four internal reviewers) must not survive verbatim now that a fifth reviewer agent is carved out');
 
   const externalRaw = sync.readNormalized(path.join(REPO_ROOT, '.asd/agents/asd-external-review.md'));
-  const { meta: externalMeta } = sync.parseCanonicalFrontmatter(externalRaw);
+  const { meta: externalMeta, body: externalBody } = sync.parseCanonicalFrontmatter(externalRaw);
   assert.ok(externalMeta.claude.tools.includes('Bash'), 'the agent providers.md names as the carve-out must actually carry the Bash grant the prose claims');
+
+  const writeBan = externalBody.split('\n').find((line) => line.includes('no file writes at all')) || '';
+  assert.ok(/memory/i.test(writeBan), 'External Review is the only reviewer whose body carries a blanket file-write prohibition, and its own frontmatter grants `memory: project` - so the prohibition must carve that channel out on the same bullet, where a reader of the ban sees it (iter-04 companion fix). Left unscoped it tells the agent its memory writes are forbidden while the host grants them, and that contradiction is invisible to every tool-grant assertion in this test');
+  assert.strictEqual(externalMeta.claude.memory, 'project', 'the carve-out cites `memory: project` as a grant this agent holds; if the frontmatter stops granting it, the body points at a channel that does not exist - the config-side twin of a dangling citation, and unasserted anywhere before this');
 
   for (const name of ['asd-reviewer-correctness', 'asd-reviewer-documentation', 'asd-reviewer-efficiency', 'asd-reviewer-testing']) {
     const raw = sync.readNormalized(path.join(REPO_ROOT, '.asd/agents', `${name}.md`));

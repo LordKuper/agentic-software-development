@@ -1,6 +1,6 @@
 ---
 name: fail-first-and-none-honesty
-description: This repo's testing reviewer rejects fail-first records that name the wrong assertion, and `none` decisions whose stated reason is falsifiable
+description: This repo's testing reviewer rejects fail-first records that name the wrong assertion, `none` decisions whose stated reason is falsifiable, and assertions that lock wording instead of substance
 metadata:
   type: feedback
 ---
@@ -43,3 +43,24 @@ plan had already written.
 **How to apply:** before recording `none`, ask whether the thing is a literal token derivable from
 something the suite already reads. Reserve `none` for genuine agent-runtime judgement, rendered
 appearance, and items owned by a later phase — and for those, name the owner.
+
+## A qualifier-presence assertion is a wording lock — prove otherwise with a reword mutation
+
+When a fix lands as a narrowing qualifier ("sole statement of that scope **in canon**"), the tempting
+assert is `includes(qualifier)`. Do not write it: a synonym defeats it and a correct rewording reddens
+it, so it fails in both directions while reporting coverage. Assert the *substance* the fix added
+instead — for a declaration, the carve-out it now names plus the pointer to the rule that owns the
+excluded surface (a pointer is the one machine-decidable property of a declaration here). A prose claim
+about config is even better: bind it to the config (`claude.memory === 'project'` for a body that cites
+its own `memory: project` grant) — that is a fact, not a phrasing.
+
+**Why:** sprint 010 entry 7. The dev flagged qualifier presence as the only checkable new fact; it was
+not, and the qualifier form would have reddened the very next legitimate rewrite of that paragraph.
+
+**How to apply:** run a THIRD mutation beyond fail-first — reword the fixed text end to end, drop the
+qualifier, keep the substance, and require the suite to stay GREEN. A red there means the assert locks
+wording; record both directions in `test-plan.md`. Related trap from the same entry: a mutation can
+change bytes and still change nothing — renaming a cited heading `## Agent memory` to `## Agent memory
+directories` left the citation resolving, because heading resolution is prefix-anchored. An anchor guard
+catches a missing anchor, never a semantic no-op; confirm the run actually reddens. See
+[[testability-envelope]].
