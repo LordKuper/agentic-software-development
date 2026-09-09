@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:e559ca715a3887418450a02c2a987eeb65512a4bd9d57bf65c4304a433392300 content_digest=sha256:eac590c7dce6b4e4b8c70b869f99cafe819939d83ff776756ed170c9ec60d8ba asd_version=7.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:1fb7b86fa6a42d22f6222599ba75abd102d3e7e5a4f93606221d88212a3d9bd0 content_digest=sha256:5bf47dc749aa31996c103d137e7f674d257c73cb782ee7b4a3ec25f901c6638d asd_version=7.1.0 schema=1
 name: asd-external-review
 description: "External reviewer wrapping the other provider's CLI (Codex under Claude Code, Claude under Codex), run in parallel with internal reviewers during design-review and impl-review. Covers: wrapped-CLI availability detection per system.os, iteration-aware scope manifest rendering (full vs incremental), prompt selection per phase (design or impl), output parsing and ASD severity mapping, kept/dropped accounting per severity floor, stalemate detection across iterations. Does NOT handle: internal review (delegates to asd-reviewer-* agents), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, Bash, AskUserQuestion]
@@ -118,4 +118,4 @@ First content line of the returned findings text (which the phase orchestrator w
 
 `[REVIEW-<phase>-external]: <APPROVE | CONCERNS | FAIL>`
 
-Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line. Never bury verdict in prose.
+Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line.

@@ -125,4 +125,4 @@ First content line of the returned findings text (which the phase orchestrator w
 
 `[REVIEW-<phase>-external]: <APPROVE | CONCERNS | FAIL>`
 
-Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line. Never bury verdict in prose.
+Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line.

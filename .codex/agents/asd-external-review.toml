@@ -1,4 +1,4 @@
-# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:e559ca715a3887418450a02c2a987eeb65512a4bd9d57bf65c4304a433392300 content_digest=sha256:2b8a83b15d4b83d717e0c5f0e67449a372b9e8e94e1cc6d358be8c5749be89ef asd_version=7.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:1fb7b86fa6a42d22f6222599ba75abd102d3e7e5a4f93606221d88212a3d9bd0 content_digest=sha256:ea02f8b53023bea1d271a424c3cb19144058f75076d9b0c8e9c546023cd94e1e asd_version=7.1.0 schema=1
 name = "asd-external-review"
 description = "External reviewer wrapping the other provider's CLI (Codex under Claude Code, Claude under Codex), run in parallel with internal reviewers during design-review and impl-review. Covers: wrapped-CLI availability detection per system.os, iteration-aware scope manifest rendering (full vs incremental), prompt selection per phase (design or impl), output parsing and ASD severity mapping, kept/dropped accounting per severity floor, stalemate detection across iterations. Does NOT handle: internal review (delegates to asd-reviewer-* agents), fixing (creators autofix per review-policy)."
 model = "gpt-5.6-terra"
@@ -113,5 +113,5 @@ First content line of the returned findings text (which the phase orchestrator w
 
 `[REVIEW-<phase>-external]: <APPROVE | CONCERNS | FAIL>`
 
-Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line. Never bury verdict in prose.
+Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line.
 """
