@@ -145,15 +145,25 @@
       "latched": {}
     },
     "impl": {
-      "iteration": 0,
-      "verdicts": {},
-      "iteration_heads": {},
+      "iteration": 1,
+      "verdicts": {
+        "iter-01": {
+          "correctness": "CONCERNS",
+          "efficiency": "CONCERNS",
+          "testing": "CONCERNS",
+          "documentation": "CONCERNS",
+          "external": "CONCERNS"
+        }
+      },
+      "iteration_heads": {
+        "iter-01": "14e1a09661a0ba545647ad32413ba16b87276f3b"
+      },
       "latched": {}
     }
   },
   "created_at": "2026-09-09T07:37:57Z",
-  "updated_at": "2026-09-09T12:26:07Z",
-  "review_fixes_pending": null,
+  "updated_at": "2026-09-09T13:06:50Z",
+  "review_fixes_pending": "iter-01",
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null
