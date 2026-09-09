@@ -21,6 +21,7 @@ responsibility:
 | 6 | 94d8779 | delta `14a8ce5..94d8779`: the test-fix round that closed this role's own D-3 and D-4 (`ac3073a` retargets both citations, `01cfad1` marks both rows `fixed`, `ef235e4` a dev memory write, `6d3d0c0`/`94d8779` bookkeeping). Range gated before use rather than trusted: `git log 14a8ce5..HEAD` holds exactly the round it names. Scope is the delta plus the two consequences that round deliberately left to this role, both of them this role's own test text — the emptied pinned list and the message clause describing it |
 
 | 7 | 93f8a20 | delta `36233d5..93f8a20`: the iteration-4 review-fix round — EXT-1's canon bounding of the sole-statement claim (`b7f58c4`), the external reviewer's write-ban carve-out (`5b04a80`), DOC-1's memory rewrite in `asd-external-review` (`13dc229`) and one `asd-dev-critical` memory entry (`79d413d`), plus review bookkeeping. Range gated before use rather than trusted: `git log 36233d5..93f8a20` holds exactly that round, and `--stat` is four canon/memory files, the manifest hashes and the iter-04 review artefacts — nothing executable |
+| gate | d76482b | **terminal full-suite gate**, dispatched by `impl-review` once every required reviewer is APPROVE or latched. Not a test-authoring entry: no strategy pass, no prune, no test written. Only the `Suite run` record below changed, and only its superseded top block |
 
 **Impacted set = full suite** (`sprint-lifecycle.md` "Impacted test set", safety valve). The surface touches `.asd/runtime.js`, `.asd/sync.js`, `.asd/release-manifest.json` and every rule doc — framework-wide files by definition. `commands.yaml` carries no `test_affected`, so no native selector overrides it.
 
@@ -138,11 +139,16 @@ Every mutation was restored in the same tool call that read its failure; `git st
 
 ## Suite run
 
+**Terminal full-suite gate** (impl-review, iteration 5) — the sprint cycle's one unscoped run, replacing the per-entry record entry 7 left here.
+
 - Command: `node tests/run.js`
-- Scope: full (safety valve, above — this repo's runner has no scoped mode either way)
-- Result: pass — 184 passed / 0 failed / 0 skipped
-- Lint / build: pass (`node .asd/sync.js --check` exit 0, `ok: true`, every item current — re-checked at this HEAD, since the entry's mutations touched canon and generated views; `git diff --cached --check` clean on the staged set)
-- HEAD: `93f8a20` — the iteration-4 review-fix round's last commit, the tree entry 7 analysed and ran on; entry 7's own commit touches `tests/run.js` and this file only. Re-run green after every mutation was restored
+- Scope: full, unscoped
+- Result: **pass — 184/184 passed, 0 failed, runner exit code `0`**
+- Lint / build: pass — `node .asd/sync.js --check` exit `0`, `"ok": true`, 72 of 72 targets `current` (22 agent views, 36 skill views, 2 hooks, `CLAUDE.md`, `AGENTS.md`, `.claude/settings.json`, `.codex/hooks.json`); `git diff --cached --check` exit `0` on the staged set
+- HEAD: `d76482b` — `git status --porcelain` was empty before the run, so the tree measured is exactly the tree recorded. This is the first run at a HEAD that includes entry 7's own test commit `596ef18`: the superseded record ran at `93f8a20`, the tree entry 7 *analysed*, which predates the two assertions that commit added. `596ef18` and the iteration-5 verdict bookkeeping `d76482b` are the delta this gate covers and the earlier record did not
+- Count: 184, unchanged from the last recorded run. No test was added or removed between `93f8a20` and `d76482b` — `596ef18` added two assertions to tests that already existed, which is why the count holds while what is pinned grew
+- Triage: none. Zero failures, so no test defect to fix in place and no `D-N` row opened by this gate
+- Superseded: `93f8a20` — entry 7's record (184/184). Its `Scope: full` was accurate; this repo's runner has no scoped mode, so the impacted set always degenerates to the whole suite. What that record could not cover was its own commit
 - Earlier: `94d8779` — the entry-6 test-fix tree (184/184). The pinned dangling set is now **empty and asserted empty**: D-3 and D-4 are fixed in canon, so the sweep is green because canon resolves, not because two failures were exempted
 - Earlier: `74a076d` — the entry-5 test commit (184/184), where the same two pointers were green only by being pinned
 - Earlier: `095ccff` — the entry-4 (cont.) test commit (182/182). `dd47159` is the HEAD this continuation's delta was analysed through: `dd47159`'s own `tests/run.js` was restored over the current canon and run there, 179/179, establishing the before-state against which the three added tests are the only delta (restored byte-for-byte from a scratchpad copy in the same call)
