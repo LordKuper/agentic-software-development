@@ -1,7 +1,7 @@
 {
   "sprint_id": "010-agent-doc-economy",
   "branch": "sprint/010-agent-doc-economy",
-  "phase": "pr",
+  "phase": "done",
   "documents": {
     "audit": true,
     "prd": false,
@@ -52,6 +52,13 @@
       "reason": "user approved pushing the branch and opening the PR",
       "evidence": "DoD met: 184/184 terminal suite green at d76482b, sync --check 72/72, all five reviewers APPROVE, no open stubs, version bumped 7.1.0 -> 7.2.0 with CHANGELOG",
       "artifact_revision": "pr#33"
+    },
+    {
+      "gate": "sprint closure",
+      "decision_actor": "user",
+      "reason": "explicit closure approval after merge and completion evidence",
+      "evidence": "PR #33 merged at 8caf2d6; main green 184/184, sync 72/72; AC-1..AC-10 delivered; all five reviewers APPROVE at iter-05; D-1..D-4 fixed; no open stubs; retrospective written; version 7.2.0",
+      "artifact_revision": "sprint 010 terminal"
     }
   ],
   "task_routing": {
@@ -207,13 +214,14 @@
     }
   },
   "created_at": "2026-09-09T07:37:57Z",
-  "updated_at": "2026-09-09T18:49:33Z",
+  "updated_at": "2026-09-09T19:16:50Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": {
     "number": 33,
     "url": "https://github.com/LordKuper/agentic-software-development/pull/33",
-    "state": "open"
+    "state": "merged",
+    "merge_commit": "8caf2d605fdbde1027852b9f142a72041f5e25bc"
   },
-  "archived_at": null
+  "archived_at": "2026-09-09T19:16:50Z"
 }
