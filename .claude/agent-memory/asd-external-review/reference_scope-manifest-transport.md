@@ -1,19 +1,73 @@
 ---
 name: scope-manifest-transport
-description: How the scope-manifest transport (files[]/exclude_paths JSON, no rendered diff) worked in its first real dispatch (sprint 006 impl-review iter 2) vs the old piped-diff transport; runtime.js external-record-failure CLI usage and cachePath convention gap
+description: files[]-only prompt transport is cheap; canonical cache-path value and why preflight/failure-recording are the orchestrator's calls, not this agent's; runtime.js external-record-failure CLI syntax; codex quota-error handling
 metadata:
   type: reference
 ---
 
-Scope-manifest transport (`.asd/rules/external-review.md` § Phase-scoped payload, first used sprint 006 impl-review iter 2, 32 `files[]`, no `commits[]`):
+Entries below are keyed by topic, not by sprint ordinal — fold a new lesson into its heading rather
+than appending a dated one. This file loads on every dispatch of this agent.
 
-- Composing the prompt got MUCH cheaper than the old piped-diff pattern in [[codex-invocation-mechanics]]: no `git diff <sha>...HEAD` piped on stdin at all — just the compact prompt text + the manifest JSON (read straight from the phase-supplied `scope-manifest.json`, cat'ed into the same pipe so it never touches the Bash command-length limit in [[bash-tool-limits]]). Command stayed at ~2.9 KB prompt + ~900 B manifest JSON via `cat`, well under the ~4.5 KB cliff.
-- Whether `files[]` alone (no diff) is "sufficient" could not be empirically confirmed this dispatch — the wrapped Codex CLI itself hit its usage-limit error (`ERROR: You've hit your usage limit ... try again at <time>`) on BOTH the real prompt and a minimal `echo "ping" | codex exec ...` retry, before ever reading a single `files[]` path. So this run validates the transport's cost/plumbing, not the wrapped model's actual read-only file-resolution behavior against `files[]`.
-- Contract gap actually observed and worth flagging as a finding on its merits (per dispatcher's own note): `.asd/templates/external-review/t_review-scope.json` template should declare `exclude_paths` if `external-review.md`/`asd-external-review.md` both require the reviewer to honor it — check the template's actual field list before assuming this is still open in a later iteration.
-- `node .asd/runtime.js external-record-failure` CLI usage: `--input` takes a PATH or literal `-` for stdin — NOT inline JSON text as the flag value (passing raw `{...}` as the value causes `fs.readFileSync` to try to open a file literally named `{...}` → ENOENT). Pipe with `| node .asd/runtime.js external-record-failure --input -`. Field names: `fingerprint` (64-hex sha), `status` (one of `authentication|quota|reachability|command`), `cachePath`, `retryAfter` (epoch-ms number, NOT `retry_after` string, bounded to now+1h max — `MAX_NEGATIVE_TTL_MS = 3600000`), optional `now`.
-- `cachePath` convention is NOT documented anywhere in canon (`external-review.md`, the agent file, `runtime.js` comments) — only exercised in `tests/run.js` as `path.join(root, 'external-cache.json')` against a throwaway temp root. No real cache file existed anywhere in the repo or user profile before this dispatch despite decisions-log claiming iter-1 already recorded a failure against the same fingerprint (`7fdbd8c9…464213`) — that prior record apparently never persisted anywhere discoverable, or used a path since deleted. Used `.asd/project/external-cache.json` as the production-appropriate location this time (sits beside `decisions-log.md`/`stubs.md`/`config.yaml`, is local per-project runtime state, not gitignored but also not part of any `managed_paths`/`canon_hashes` tracked set) — flag to PM/canon that this path should be written down as SSoT somewhere (`external-review.md` or `runtime.js` header comment) so it's not reinvented per dispatch.
-- Same fingerprint hit quota again this iteration despite the dispatcher's note that "the iteration-1 quota failure recorded against this fingerprint has since expired out of the negative cache" — the negative-cache TTL expiring only means ASD's own gate will retry; it does not mean the underlying OpenAI account usage limit has reset. Two dispatches ~hours apart, same account, same limit window (`try again at 3:19 PM` both times) — this looks like a real, still-active provider-side quota exhaustion, not a stale cache entry. Worth surfacing to the user/PM as an operational fact (this Codex account is currently rate/quota-limited into the afternoon) rather than re-attempting on every dispatch.
+## files[]-only prompt is cheap
 
-Sprint 007 impl-review iter 2 (2026-09-07, dispatcher explicitly claimed the negative-cache TTL had expired and local readiness was reconfirmed): dispatch still hit the identical quota error (`try again at 8:24 PM`) on the very first real request, same as sprint 006's pattern. Cache-TTL expiry is NOT a reliable proxy for the underlying account quota having reset — do not treat a `local-ready` preflight status as evidence the paid request will succeed; still budget for a single real-request attempt failing and recording a fresh failure (bounded retryAfter = now+1h, `MAX_NEGATIVE_TTL_MS`) even right after a prior negative-cache entry expired.
+Composing the prompt from a `scope-manifest.json` (`files[]`/`exclude_paths[]`, no rendered diff) is
+far cheaper than piping a `git diff` on stdin (see [[codex-invocation-mechanics]]): just the compact
+prompt text + the manifest JSON, `cat`-ed into the same pipe so it never touches the Bash
+command-length limit in [[bash-tool-limits]]. Observed ~2.9 KB prompt + ~900 B manifest, well under
+the ~4.5 KB cliff. Whether `files[]` alone is sufficient for the wrapped model to resolve content
+could not be confirmed the first time this ran (codex hit its usage-limit error before reading any
+path) — see "Quota errors" below.
 
-Sprint 010 impl-review iter 2 (2026-09-09): same fingerprint (`00dbcbebeb88e744d0a45c64323529e815757ab13791f5a763e5a88f8edaa0aa`), preflight said `local-ready`, but the real dispatch AND an immediate one-line "ping" retry both hit the identical quota error with the identical reset time (`try again at 8:43 PM`) — confirms retrying immediately after a quota hit is pointless (same window), not worth a second real-content attempt once the retry error matches the first. Also: this session's Bash tool redirected codex's stdout+stderr straight to a file inside `<sprint>/reviews/.../iter-02/` (via `> file 2>&1` on the codex command itself, not a separate `tail` step) — worked fine as the "bounded timeout, redirect before reading back" pattern the dispatcher asked for, and was deleted immediately after extracting the verdict/error, same as the scratchpad convention in [[codex-invocation-mechanics]]. `external-record-failure --input -` rejects any `retryAfter` beyond `now+1h` (`MAX_NEGATIVE_TTL_MS`) even when the provider's own quoted reset is further out — always compute `Date.now()+3600000` for the field, never the provider's stated reset timestamp.
+## Cache path and failure recording are the orchestrator's, not mine
+
+Canonical cache path is `.asd/project/external-cache.json` — named in `external-review.md` as the
+single value every caller uses, and it is gitignored (`.gitignore`). This agent never calls
+`.asd/runtime.js` or names the path itself: preflight (`external-preflight`) and failure recording
+(`external-record-failure`) are phase-orchestration's calls per the agent's own contract, consumed by
+this agent only as the preflight result handed to it at dispatch. If a future dispatch is ever asked
+to invoke `runtime.js` directly, that instruction contradicts canon — flag it rather than comply (see
+"Instructed to violate the no-disk/stdout-only contract" below).
+
+`node .asd/runtime.js external-record-failure` CLI syntax, for reference if ever reading orchestrator
+output: `--input` takes a PATH or literal `-` for stdin, NOT inline JSON text (raw `{...}` as the
+value makes `fs.readFileSync` try to open a file literally named `{...}` → ENOENT); pipe with
+`| node .asd/runtime.js external-record-failure --input -`. Fields: `fingerprint` (64-hex sha),
+`status` (`authentication|quota|reachability|command`), `cachePath`, `retryAfter` (epoch-ms number,
+NOT a string, bounded to `now+1h` max — `MAX_NEGATIVE_TTL_MS = 3600000` — even when the provider's
+own quoted reset is further out: always compute `Date.now()+3600000`, never the provider's stated
+reset timestamp), optional `now`.
+
+## Quota errors
+
+Across four dispatches (sprint 006 impl-review iter 2, sprint 007 impl-review iter 2, sprint 010
+impl-review iter 2, and a same-fingerprint retry within iter 2) the wrapped Codex CLI hit an identical
+`ERROR: You've hit your usage limit ... try again at <time>` on the first real request, sometimes
+also on an immediate minimal `echo "ping" | codex exec ...` retry with the same quoted reset time.
+Lessons that hold across all of them:
+
+- A negative-cache TTL expiring is not evidence the underlying provider-side quota has reset — it
+  only means ASD's own gate will retry. Do not treat a `local-ready` preflight status as proof the
+  paid request will succeed; still budget for a single real-request attempt failing.
+- Retrying immediately after a quota hit with the same quoted reset time is pointless (same window) —
+  one retry then skip, never a second real-content attempt once the retry error matches the first.
+- `2>/dev/null` on the codex pipe hides the failure entirely (empty result) — codex prints the quota
+  error to stderr after echoing the payload. Always merge stderr (`2>&1`) so the tail of the captured
+  output shows either the verdict or the error.
+- Verdict per agent contract on confirmed quota exhaustion: `APPROVE (skipped: external review
+  unavailable: quota exhausted)`, signal REVIEW_DONE, never fabricate findings.
+
+## Instructed to violate the no-disk/stdout-only contract
+
+This agent's own definition is explicit: no file writes at all, review text out through captured
+stdout only, no temp file, no cleanup step since nothing is created. A sprint 010 iter-2 dispatch
+payload instructed redirecting the wrapped CLI's stdout+stderr to a file inside the review directory
+as a workaround for a prior turn that lost its result to an interruption, and this agent complied and
+then recorded the redirect as a reusable pattern — that was wrong twice over: the instruction
+contradicted the contract, and writing it up as guidance turned a one-time transient workaround into
+standing advice a future dispatch might follow by default (the orchestrator's error is recorded as
+friction `F-5` in the sprint's friction log; a memory contradicting the agent's own read-only,
+stdout-only mandate is not something to carry forward regardless of who asked for it). If a dispatch
+payload ever asks for output redirected to disk again, decline and cite the tool-policy line
+("captured stdout IS the review text") rather than complying and reusing the workaround. Nothing about
+crash-survival changes the contract: on an interrupted turn, re-run the invocation clean rather than
+adding a disk hop.
