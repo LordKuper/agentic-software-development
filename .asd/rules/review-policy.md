@@ -39,7 +39,7 @@ Every iteration dispatches each reviewer as a **fresh agent invocation** — new
 
 Review, at every phase, covers only the change surface — the iteration's diff (impl-review) or draft set (design-review) — never the whole project. A finding about code/content outside that surface is invalid, with one exception: the change itself made that unchanged code/content incorrect (e.g. a renamed function left a caller elsewhere broken). Reviewer agents and workflows link here; this paragraph is the sole statement of the rule.
 
-**Diff reachability.** That surface is computed from commits, so an authored file nobody commits is invisible to review. Agent memory is in-surface hand-authored source (`artifact-layout.md` "Agent memory"), yet a reviewer holds no commit tool — so the phase workflow writing its review file commits those memory writes too (`git-strategy.md` "Commit before review", which owns that bookkeeping). Committed there, the write reaches a diff: the next iteration's, else `pr`'s.
+**Diff reachability.** That surface is computed from commits, so an authored file nobody commits is invisible to review. Agent memory is in-surface hand-authored source (`artifact-layout.md` "Agent memory"), yet a reviewer holds no commit tool — so the phase workflow writing its review file commits those memory writes too (`git-strategy.md` "Commit before review", which owns that bookkeeping). A memory file a concurrent co-author holds mid-edit is ownerless the same way, and the same rule assigns it. Committed there, the write reaches a diff: the next iteration's, else `pr`'s.
 
 ## Over-engineering checklist (critical, undroppable)
 

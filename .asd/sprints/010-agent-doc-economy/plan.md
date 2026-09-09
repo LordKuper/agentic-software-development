@@ -33,12 +33,12 @@ Reachability: `plan` writes each task's wave assignment into `plan.md` at author
 
 ### Task 2: Whole-tree git commands and co-authored memory ownership (AC-2, AC-3)
 Material risk: change: extends the commit-ownership contract every dispatched agent runs under
-- [ ] Extend the existing parenthetical in `git-strategy.md` "Commit before review" to name `git add --renormalize` and `git stash` alongside the commands it already bans, rather than opening a second paragraph
-- [ ] Resolve `audit.md` G-3: a dispatched agent cannot observe whether a sibling dispatch is in flight, so state the agent-facing half as an unconditional ban and hold the conditional permission with the orchestrator, which can observe it
-- [ ] Extend the agent-memory commit carve-out beyond the reviewer case: when the author cannot commit because a concurrent co-author holds the file, the orchestrator commits it at phase exit
-- [ ] Resolve `audit.md` G-4: state when two agents can co-author one memory file, since memory is otherwise defined per-agent
-- [ ] Name the concurrency case in `review-policy.md` "Diff reachability", which already defers ownership to `git-strategy.md` — a pointer, not a copy
-- [ ] Mirror the staging rule into `.asd/project/custom-coding-rules.md`, its only new-text home
+- [x] Extend the existing parenthetical in `git-strategy.md` "Commit before review" to name `git add --renormalize` and `git stash` alongside the commands it already bans, rather than opening a second paragraph
+- [x] Resolve `audit.md` G-3: a dispatched agent cannot observe whether a sibling dispatch is in flight, so state the agent-facing half as an unconditional ban and hold the conditional permission with the orchestrator, which can observe it
+- [x] Extend the agent-memory commit carve-out beyond the reviewer case: when the author cannot commit because a concurrent co-author holds the file, the orchestrator commits it at phase exit
+- [x] Resolve `audit.md` G-4: state when two agents can co-author one memory file, since memory is otherwise defined per-agent
+- [x] Name the concurrency case in `review-policy.md` "Diff reachability", which already defers ownership to `git-strategy.md` — a pointer, not a copy
+- [x] Mirror the staging rule into `.asd/project/custom-coding-rules.md`, its only new-text home
 
 ### Task 3: Ledger row-shape example in the manifest (AC-6b)
 Material risk: change: alters the digested manifest shape every reviewer's ledger validates against
