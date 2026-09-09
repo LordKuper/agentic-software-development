@@ -3855,6 +3855,21 @@ test('sprint-010 iter-02: each latch non-restatement declaration denies only wha
   }
 });
 
+test("sprint-010 iter-02: sprint-lifecycle.md's ADVICE_NEEDED step cites the asd-advisor.md section that actually carries the no-log rule, derived from the agent rather than restated", () => {
+  const advisor = readRepoFile('.asd/agents/asd-advisor.md');
+  const sections = ["Do's", "Don'ts"].map((heading) => {
+    const body = advisor.split(`## ${heading}`)[1];
+    assert.ok(body, `asd-advisor.md must keep its ${heading} section - the lifecycle citation selects one of the two by name`);
+    return { heading, holdsRule: /Never log the consult/.test(body.split('\n## ')[0]) };
+  });
+  const holders = sections.filter((section) => section.holdsRule).map((section) => section.heading);
+  assert.strictEqual(holders.length, 1, `the no-log rule must live in exactly one of the advisor's two instruction sections; stated in both, or in neither, the citation below has no single correct target to be checked against. Holders: ${JSON.stringify(holders)}`);
+
+  const step = readRepoFile('.asd/rules/sprint-lifecycle.md').split('\n').find((line) => line.includes('No halt, no user contact, no logged trail'));
+  assert.ok(step, "sprint-lifecycle.md must keep the ADVICE_NEEDED round-trip's no-log step - it is the only place the protocol states that the consult leaves no artefact");
+  assert.ok(step.includes(`\`asd-advisor.md\` ${holders[0]}`), `the step must cite the advisor section that holds the rule (${holders[0]}), derived here from the agent file itself: this citation pointed at Do's until 2ae44c6, and an agent that follows a citation into a section holding nothing of the kind proceeds unguided while the sprint reads as documented`);
+});
+
 // ===========================================================================
 // Runner
 // ===========================================================================
