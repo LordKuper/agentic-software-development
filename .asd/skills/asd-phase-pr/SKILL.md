@@ -7,4 +7,4 @@
 }
 ---
 
-Triggers when the sprint orchestrator dispatches the pr phase, or when the user explicitly asks to run or re-run the pr phase for the active sprint. Execute workflow `.asd/workflows/asd-phase-pr.md`.
+Execute workflow `.asd/workflows/asd-phase-pr.md`.

@@ -28,12 +28,6 @@ Orchestration body for the `asd-phase-retro` skill. Operation-mapping to host to
 - Updated `state.json` (phase=retro)
 - decisions-log entry
 
-## Agents delegated to
-- None; orchestration is inline.
-
-## Skills/workflows dispatched
-None.
-
 ## Return contract (single line)
 ```
 PHASE: retro | SPRINT: <NNN-slug> | STATUS: <complete|blocked|aborted> | NEXT: pr

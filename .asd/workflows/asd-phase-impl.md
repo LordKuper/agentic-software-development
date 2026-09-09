@@ -17,11 +17,7 @@ Orchestration body for the `asd-phase-impl` skill. Operation-mapping to host too
 
 ## Modes
 
-Detected at step 2 from `state.json`:
-
-- **Initial mode** (both fix flags null/absent) — implement `plan.md` Task blocks. Ends with user-facing impl assessment gate (step 10).
-- **Review-fix mode** (`review_fixes_pending` = `iter-NN`) — entered when impl-review routed sprint back. Resolve reviewer findings in `<sprint>/reviews/impl/iter-NN/`. On completion clears `review_fixes_pending`.
-- **Test-fix mode** (`test_defects_pending` set) — entered when impl-test found code defects. Resolve pending `D-N` rows in `<sprint>/test-plan.md`. On completion clears `test_defects_pending`.
+Mode set and semantics: `sprint-lifecycle.md` "Impl phase" Modes (sole SSoT, not restated here). Detection is step 2; per-mode preconditions are above; the entered mode's flag is cleared at step 11.
 
 Fix modes **skip the impl assessment gate**. Impl completion gate (step 9) applies in **all** modes and runs no test — this is a scoping rule, not a new gate: a dev may run the impacted set (`sprint-lifecycle.md` "Impacted test set") to self-check work in progress, in any mode, but never authors, modifies, or prunes a test, and that run neither satisfies nor substitutes for this gate. Test authoring, pruning, and running belong to `impl-test`.
 
@@ -69,12 +65,12 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
      - instruction:
        - read context first
        - tech-reference precondition (refuse-to-implement rule): see `artifact-layout.md` "Tech reference docs" — do not restate here
-       - apply `review-policy.md`'s over-engineering and structure/cohesion checklists and `artifact-layout.md`'s SSoT iron rule while authoring, not only at review (`code-style.md` §1) — do not restate them here
+       - apply the checklists and iron rules while authoring, not only at review: `code-style.md` §1 — do not restate here
        - work autonomously within plan + persistent docs scope; do NOT pause user for routine approach choices — make the reasonable call and proceed
        - escalate only on a blocker (see Execution mode): emit `QUESTION` for unresolvable requirement ambiguity, `FAILED` for missing tech-reference / unrecoverable failure, or raise Complication Approval via request for user decision **only** when a Simplicity Default trigger fires (new abstraction / dependency / config flag / generalization)
        - manual-steps handling: see `sprint-lifecycle.md` "Impl phase" — do not restate here
        - write production code only — **no tests, no authoring, no modifying, no pruning**; the impacted set (`sprint-lifecycle.md` "Impacted test set") may be run for self-verification only, never as a substitute for `impl-test`'s gate; test selection, authoring, pruning, and running belong to `impl-test`
-       - review-fix — verify each finding against source before applying (`review-policy.md` "Verify before applying" — do not restate here), then apply its suggested fix or an equivalent correct fix; test-fix — fix the root cause behind the failing test (never weaken or delete the test), then set the defect row `Status` to `fixed` with the fixing commit sha in `<sprint>/test-plan.md`
+       - review-fix — `review-policy.md` "Verify before applying" — do not restate here — then apply its suggested fix or an equivalent correct fix; test-fix — fix the root cause behind the failing test (never weaken or delete the test), then set the defect row `Status` to `fixed` with the fixing commit sha in `<sprint>/test-plan.md`
        - run `build` and `lint` per `commands.yaml`; do not advance with failures or warnings unreported
        - stub handling: see `git-strategy.md` "TODO stubs" — do not restate here
        - staging + commit ownership — concurrently dispatched tasks share one worktree: see `git-strategy.md` "Commit before review" — do not restate here
@@ -116,12 +112,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
 
 ## Escalation (interruptions before phase exit)
 
-Per Execution mode, the **only** reasons impl contacts user before all tasks/findings/defects complete (same in all modes):
-
-- Any dev `QUESTION` (unresolvable requirement ambiguity) → relay, halt; resume on answer
-- Any dev Complication Approval request (Simplicity Default trigger) → relay, halt; resume on decision
-- Any dev `FAILED`/`ABORT` → relay, halt
-- Manual-steps gate (step 8) — after all unblocked work COMPLETED and validated `MS-N` remain, the main orchestrator presents `manual-steps.md`; resume on user continue command
+The only reasons impl contacts the user before all tasks/findings/defects complete, in every mode, are the blockers enumerated under **Execution mode** above plus the manual-steps gate (step 8). Each relays and halts; execution resumes on the user's answer, decision or continue command.
 
 On `ADVICE_NEEDED` from any dispatched agent → relay per `sprint-lifecycle.md`'s `ADVICE_NEEDED` protocol; execution resumes, no halt. Not a blocker — the branches above are the only ones that halt.
 
@@ -142,9 +133,6 @@ Impl completion gate (step 9) and, initial mode only, impl assessment gate (step
 - The main orchestrator (manual-step validation, completion/assessment gates and decisions-log); no orchestration agent is dispatched.
 - `asd-dev` (per Task, finding group, or defect group)
 - `asd-tester` (review-fix mode only, for findings located in test files)
-
-## Skills/workflows dispatched
-None.
 
 ## Return contract (single line)
 ```

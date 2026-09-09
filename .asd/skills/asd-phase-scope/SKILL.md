@@ -7,4 +7,4 @@
 }
 ---
 
-Triggers when the sprint orchestrator dispatches the scope phase for a new sprint, or when the user explicitly asks to run or re-run the scope phase for the active sprint. Execute workflow `.asd/workflows/asd-phase-scope.md`.
+Execute workflow `.asd/workflows/asd-phase-scope.md`.

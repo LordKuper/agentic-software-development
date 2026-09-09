@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-sync/SKILL.md. source_digest=sha256:b085762c4fc2d0455effadf2312e8544225d888c8987c1e28b19a9fd24c1292a content_digest=sha256:9c33871ca599e9bace9809b125dc6267f7999f9afa6f37bc39184d33c2dfec3c asd_version=1.1.0 schema=1
+# ASD generated. Edit .asd/skills/asd-sync/SKILL.md. source_digest=sha256:f198477e9f35ba73c0b4088a690373e504ea0dd731d5fb501af54e477f3d7baa content_digest=sha256:e753e66957bb79fce5dfb002f476774cb9b7190b28f99016026d44adede62c9a asd_version=7.1.0 schema=1
 name: asd-sync
 description: "Reconciles this project's generated provider views (.claude/, .codex/, .agents/skills/) with the canonical ASD sources (.asd/agents, .asd/skills, .asd/hooks) via .asd/sync.js's check/apply flow, asking per-file whether to overwrite, keep, or diff before writing anything. Use when the user runs /asd-sync or asks to sync, regenerate, or reconcile the Claude/Codex agent and skill files after editing canonical ASD sources."
 ---
@@ -25,7 +25,3 @@ Reconcile generated provider views with canonical `.asd/` sources. Never overwri
    - `modified-foreign` targets marked overwrite: `node "$SYNC" --apply <file...> --force` (same command form, `--force` appended — this is the ONLY thing that actually makes a confirmed `modified-foreign` overwrite take effect; without it the CLI silently refuses and the file stays untouched).
    Skip either call if its group is empty.
 5. Report per-file outcome (applied / kept / still stale) from the apply result(s) plus a final `node "$SYNC" --check` summary.
-
-## Boundaries
-
-Never runs `--apply` on an item the user did not explicitly mark overwrite. Never passes `--force` for a `missing`/`stale` item (unnecessary — reserve it for `modified-foreign` only, where it is required). Never applies a whole class or tree in bulk without every item's own decision. Read-only until step 4.

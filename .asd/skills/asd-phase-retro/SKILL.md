@@ -7,4 +7,4 @@
 }
 ---
 
-Triggers when the sprint orchestrator dispatches the retro phase, or when the user explicitly asks to run or re-run retro for the active sprint. Execute workflow `.asd/workflows/asd-phase-retro.md`.
+Execute workflow `.asd/workflows/asd-phase-retro.md`.

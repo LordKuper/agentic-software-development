@@ -48,7 +48,6 @@ Reviewer:
 
 ## Tool policy
 
-- Search repo / read files only; no shell commands, no direct file edits, no external fetches
 - Request user decision for manual verification results (only when automation impossible)
 
 ## Review rubric
@@ -72,8 +71,6 @@ Reviewer:
 - Never write or modify tests yourself
 - Never raise nitpick categories
 - Never specify manual verification when automation IS possible — prefer automated
-- Never read prior `iter-*/` review files — each iteration reviews clean context (per `review-policy.md`)
-- Never run shell commands
 
 ## Signals emitted
 

@@ -224,7 +224,7 @@ Agents preserve the block. Reviewers verify content respects the declared scope.
 
 ## Sprint archival
 
-Archived path: `.asd/sprints/archived/<NNN-slug>/`. Closure/archival sequence (closure-pending → explicit approval → companion PR → terminal write + move) is owned by `sprint-lifecycle.md` "PR phase" — see there, not restated here.
+Archived path: `.asd/sprints/archived/<NNN-slug>/`. Closure/archival sequence (closure-pending → explicit approval → companion PR → terminal write + move) is owned by `sprint-lifecycle.md` "PR phase" — not restated here.
 
 ## Decisions log
 

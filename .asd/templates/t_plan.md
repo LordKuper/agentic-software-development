@@ -23,7 +23,7 @@ Format rules (parser-critical):
 {{what plan covers, prose}}
 
 ## Definition of Done
-Standing DoD applies, never restated here (`sprint-lifecycle.md` "Plan file format").
+Standing DoD applies (`sprint-lifecycle.md` "Plan file format") — not restated here.
 {{sprint-specific DoD additions, if any — prose, NO checkboxes; omit this line entirely when none}}
 
 ### Task 1: {{title}}

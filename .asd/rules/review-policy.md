@@ -5,7 +5,7 @@
 | Level | Definition | Example |
 |---|---|---|
 | critical | breaks build, security hole, data loss, contract violation | unhandled secret leak, broken migration |
-| high | wrong behavior, missing acceptance criterion, test gap on core path | requirement T3 not implemented |
+| high | wrong behavior, missing acceptance criterion, test gap on core path | AC-3 not implemented |
 | medium | bad pattern with concrete risk, weak edge-case coverage | shared mutable state, no test for empty input |
 | low | style, minor clarity, micro-inefficiency | naming inconsistency |
 
@@ -29,7 +29,7 @@ User may override the cap. On override the counter keeps incrementing (not reset
 
 Every iteration dispatches each reviewer as a **fresh agent invocation** — new context, no carry-over from authoring or prior iterations. Isolates each verdict from creator reasoning and earlier rounds.
 
-- The dispatching phase workflow spawns every required reviewer (and External Review) anew each iteration, unless that reviewer is APPROVE-latched (`sprint-lifecycle.md` "APPROVE latch") — a latched reviewer is not dispatched at all this iteration, never reused or resumed either. No dispatched reviewer is ever reused or resumed.
+- The dispatching phase workflow spawns every required reviewer (and External Review) anew each iteration, unless that reviewer is APPROVE-latched (`sprint-lifecycle.md` "APPROVE latch") — a latched reviewer is not dispatched at all this iteration, never reused or resumed either.
 - Reviewer payload carries only: the artifact/diff under review, rule references, severity floor, iteration number, context paths. Never authoring rationale or prior verdicts.
 - Reviewers MUST NOT read prior `reviews/<phase>/iter-*/` files. Only the current `iter-NN/` directory.
 - Incremental diff scoping (iter 2+ reviews only what changed — see `external-review.md`) narrows the *input*, not context. Agent still fresh.
@@ -37,7 +37,7 @@ Every iteration dispatches each reviewer as a **fresh agent invocation** — new
 
 ## Change-surface rule
 
-Review, at every phase, covers only the change surface — the iteration's diff (impl-review) or draft set (design-review) — never the whole project. A finding about code/content outside that surface is invalid, with one exception: the change itself made that unchanged code/content incorrect (e.g. a renamed function left a caller elsewhere broken). Reviewer agents and workflows link here; this paragraph is the sole statement of the rule.
+Review, at every phase, covers only the change surface — the iteration's diff (impl-review) or draft set (design-review) — never the whole project. A finding about code/content outside that surface is invalid, with one exception: the change itself made that unchanged code/content incorrect (e.g. a renamed function left a caller elsewhere broken). Sole statement of the rule; reviewer agents and workflows link here.
 
 **Diff reachability.** That surface is computed from commits, so an authored file nobody commits is invisible to review. Agent memory is in-surface hand-authored source (`artifact-layout.md` "Agent memory"), yet a reviewer holds no commit tool — so the phase workflow writing its review file commits those memory writes too (`git-strategy.md` "Commit before review", which owns that bookkeeping). A memory file a concurrent co-author holds mid-edit is ownerless the same way, and the same rule assigns it. Committed there, the write reaches a diff: the next iteration's, else `pr`'s.
 
@@ -96,7 +96,7 @@ Default: the responsible creator autofixes any reviewer issue without user promp
 
 ## Coverage ledger (mandatory — blocks verdict)
 
-Applies to all 4 internal reviewers (NOT External Review — Codex self-scopes). Before any verdict, the reviewer MUST emit a coverage ledger proving exhaustive review. Reviewer MUST NOT stop or emit a final verdict while its ledger is incomplete — keep reviewing until every row resolved.
+Applies to all 4 internal reviewers (NOT External Review — Codex self-scopes). Before any verdict, the reviewer MUST emit a coverage ledger proving exhaustive review. Reviewer MUST NOT emit a final verdict while its ledger is incomplete.
 
 The phase orchestrator derives an ordered machine manifest before dispatch. It enumerates every scoped file, every stable reviewer-rubric/custom-rule ID, named sections where applicable, and the **allowed `n/a` predicates per individual ID**. **Rubric ID derivation**: a reviewer's rubric IDs are the top-level entries of its agent file's `## Review rubric` — each `###` heading where that rubric is sectioned, else each bullet's bold lead-in label — in file order, the heading or label text verbatim as the id; nothing nested under an entry is enumerated separately. They are stable because the text IS the id: adding, renaming or deleting an entry is a canonical agent edit that moves the manifest in the same change, and an entry outside this phase or this diff's scope is still enumerated, carrying an authorized `n/a` predicate rather than being dropped. The manifest contains its SHA-256 digest, calculated by `.asd/runtime.js` over the manifest excluding `digest` — produce/verify it via `node .asd/runtime.js manifest-digest --manifest <path> [--write]`; a reviewer cannot replace it.
 
@@ -132,7 +132,7 @@ Next action: APPROVE → reviewer done · CONCERNS → creator autofixes, next i
 
 ## Gate Verdict Format (machine-parseable first line)
 
-Reviewers write no review artifact, code or doc — that is why the phase workflow, never the reviewer, writes the review file (tool grants: `providers.md`). Not absolute: `memory: project` is a separate write channel reviewers do use and the host serves. Sole home of this claim — elsewhere cite it, never restate. Every reviewer's **returned findings text** (its final text output) MUST begin (after any preamble) with a single-line verdict token:
+Reviewers write no review artifact, code or doc — that is why the phase workflow, never the reviewer, writes the review file (tool grants: `providers.md`). Not absolute: `memory: project` is a separate write channel reviewers do use and the host serves. Sole statement of this claim. Every reviewer's **returned findings text** (its final text output) MUST begin (after any preamble) with a single-line verdict token:
 
 ```
 [REVIEW-<phase>-<reviewer>]: <APPROVE | CONCERNS | FAIL>
@@ -143,7 +143,7 @@ Reviewers write no review artifact, code or doc — that is why the phase workfl
 
 Examples: `[REVIEW-impl-correctness]: APPROVE` · `[REVIEW-design-documentation]: FAIL` · `[REVIEW-impl-external]: CONCERNS`
 
-Never bury the verdict in prose. The dispatching phase workflow writes the verdict token, findings, and the validated compact coverage evidence (above) to `<sprint>/reviews/<phase>/iter-NN/<reviewer>.md`; phase orchestration reads the first non-empty content line of that written file. Carve-out: under a split dispatch (below) findings and evidence live in the part files instead, and that path holds the merged token plus links.
+The dispatching phase workflow writes the verdict token, findings, and the validated compact coverage evidence (above) to `<sprint>/reviews/<phase>/iter-NN/<reviewer>.md`; phase orchestration reads the first non-empty content line of that written file. Carve-out: under a split dispatch (below) findings and evidence live in the part files instead, and that path holds the merged token plus links.
 
 ## Interrupted dispatch and split dispatch
 
@@ -178,7 +178,7 @@ Every internal reviewer above is dispatched in its listed phase(s) unless alread
 
 **impl-review's DoD has a second, non-reviewer condition**: this table's reviewer roster all APPROVE/latched is necessary but not sufficient — impl-review also requires a green **full test suite**, run exactly once per cycle by its terminal step after the reviewer roster is met (`sprint-lifecycle.md` "Impacted test set"). A red full suite blocks `NEXT: retro` exactly as an unmet reviewer roster would, and additionally clears every APPROVE latch sprint-wide (below).
 
-**APPROVE latch**: a reviewer that already returned `APPROVE` on an earlier iteration of the same review phase is not re-dispatched on a later iteration and counts toward this table's "all APPROVE" requirement exactly as a fresh `APPROVE` would — so DoD stays reachable without re-running it. Persisted state, the dispatch-skip mechanics, and its red-full-suite invalidation are `sprint-lifecycle.md` "APPROVE latch" — sole home, not restated here or in either review workflow.
+**APPROVE latch**: a reviewer that already returned `APPROVE` on an earlier iteration of the same review phase is not re-dispatched on a later iteration and counts toward this table's "all APPROVE" requirement exactly as a fresh `APPROVE` would — so DoD stays reachable without re-running it. Persisted state, the dispatch-skip mechanics, and its red-full-suite invalidation are `sprint-lifecycle.md` "APPROVE latch" — not restated here or in either review workflow.
 
 **Diff-scoped impl-review fan-out** (`review.scoped_fan_out: enabled` — seeded `enabled` by `/asd-init` for NEW projects only; absent from an existing project's `config.yaml` means `disabled` (full fan-out), see `asd-phase-impl-review.md` step 5 for the SSoT): the two diff-derived predicates below no longer skip a reviewer's dispatch — both merged reviewers (Correctness, Efficiency) are always dispatched — they mark a rubric SECTION `n/a: <predicate>` in that reviewer's section-coverage ledger, so the agent never loads that domain's inputs for the n/a'd section. Correctness's UI conformance section is marked n/a only when no file in the iteration's scope list is a UI surface; Efficiency's five performance sections are marked n/a only when both no perf-budgets section exists in `custom-coding-rules.md` and the scope list contains no executable file (conjunctive). A section-level skip is recorded within the reviewer's own returned ledger, never as a separate `state.json` verdict value — the reviewer still returns one verdict token covering its dispatched sections. Satisfied-vs-blocking semantics for the reviewer's overall verdict: `sprint-lifecycle.md` "State recovery". The n/a'd section is re-included automatically the moment a qualifying file re-enters the diff. `review.scoped_fan_out: disabled` restores unconditional review of every section, exactly as if this paragraph did not exist.
 

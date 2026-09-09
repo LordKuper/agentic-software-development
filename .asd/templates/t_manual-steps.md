@@ -7,20 +7,7 @@ responsibility:
 
 # Manual Steps
 
-Per-sprint registry of manual operational actions a human MUST perform for the sprint plan to complete — provisioning a secret/API key, creating a cloud resource, running a migration by hand, setting an env var, registering a third-party account.
-
-Created lazily: exists only when at least one manual action arose. Devs append entries (append-only; never edit-in-place an existing entry's identity). Entry content is `language.docs`.
-
-Not the same as:
-
-- `stubs.md` — open code TODO stubs.
-- manual verification spec (reviews `testing.md`) — manual QA of *behaviour*.
-
-Manual steps = operational *setup* actions the agent cannot perform autonomously.
-
-Main orchestrator validates every new entry for necessity before the impl phase halts. Kept only when the action genuinely cannot be done autonomously (needs access, a secret, an external account, or an authority the agent lacks). If the orchestrator judges it autonomously doable, the entry is rejected and the task returns to the dev to implement directly.
-
-Status `pending` → `done`. The registering dev flips to `done` only after running its `Verification`. Sprint-scoped; archived with the sprint.
+Definition, boundary against `stubs.md` and manual verification, validation duty, status transition and lifecycle: `artifact-layout.md` "Manual steps" (sole SSoT, not restated here). Entries are append-only; entry content is `language.docs`.
 
 ## Summary
 

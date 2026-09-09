@@ -51,12 +51,6 @@ After any phase skill returns:
 
 User may interrupt anytime; asd-sprint re-detects state on next invocation.
 
-## Artefacts produced
-None directly. All writes happen inside phase skills (orchestrator, creators, reviewers).
-
-## Agents dispatched
-None directly. Phase skills delegate to agents.
-
 ## Skills dispatched
 Phase skills listed in `.asd/rules/sprint-lifecycle.md`. No other skill set.
 

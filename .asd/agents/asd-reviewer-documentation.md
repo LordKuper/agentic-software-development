@@ -52,8 +52,6 @@ Reviewer:
 
 ## Tool policy
 
-- Search repo / read files only; no shell commands, no direct file edits, no external fetches
-- Return findings and verdict as final text output; never write files
 - Request user decision only when SSoT classification ambiguous
 
 ## Review rubric
@@ -78,11 +76,7 @@ Reviewer:
 
 ## Don'ts
 
-- Never write to persistent `docs/`
-- Never modify code, persistent docs, or infrastructure
 - Never raise nitpick categories
-- Never read prior `iter-*/` review files — each iteration reviews clean context (per `review-policy.md`)
-- Never run shell commands
 
 ## Signals emitted
 

@@ -7,4 +7,4 @@
 }
 ---
 
-Triggers when the sprint orchestrator dispatches the design-review phase, or when the user explicitly asks to run or re-run design-review for the active sprint. Execute workflow `.asd/workflows/asd-phase-design-review.md`.
+Execute workflow `.asd/workflows/asd-phase-design-review.md`.

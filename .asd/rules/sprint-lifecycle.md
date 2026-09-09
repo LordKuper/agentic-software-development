@@ -50,14 +50,14 @@ Each review phase reads, increments, and reports only its own counter. Never sha
   | `reviews.design.iteration` | `scope`, `audit` |
   | `reviews.impl.iteration` | `scope`, `audit`, `design`, `design-review`, `design-promote`, `plan` |
 
-  Setting phase to `impl` or `impl-test` is not earlier than `impl` — normal cycle re-entry never resets. Reset fires only on a genuine rollback (the `asd-sprint` resume menu's *re-run earlier phase*). Rationale: once the artifact under review is re-created from an earlier phase, prior review rounds are void.
+  Setting phase to `impl` or `impl-test` is not earlier than `impl` — normal cycle re-entry never resets. Reset fires only on a genuine rollback (the `asd-sprint` resume menu's *re-run earlier phase*).
 - On iteration-cap override, the counter keeps incrementing — not reset. Severity floor stays pinned at `critical`.
 
 Verdict files: design-review → `<sprint>/reviews/design/iter-NN/`, impl-review → `<sprint>/reviews/impl/iter-NN/`, `NN` = that phase's own counter.
 
 ## APPROVE latch
 
-**Invariant** (closes the class of bugs this mechanism used to produce by hand-reconciling three places): a reviewer's key is ALWAYS written to `state.json.reviews.<phase>.verdicts["iter-NN"]` for every iteration of that phase that runs. A latch-skipped reviewer gets its inherited `APPROVE` recorded there without being dispatched. `latched` is purely a dispatch-time optimisation — it decides whether a reviewer is called again — and NEVER participates in DoD or pr-gate aggregation; both read `verdicts["iter-NN"]` alone. Consequence: clearing `latched` can never change satisfied-vs-blocking for any iteration, because the verdict keys it would have gated are already there.
+**Invariant**: a reviewer's key is ALWAYS written to `state.json.reviews.<phase>.verdicts["iter-NN"]` for every iteration of that phase that runs. A latch-skipped reviewer gets its inherited `APPROVE` recorded there without being dispatched. `latched` is purely a dispatch-time optimisation — it decides whether a reviewer is called again — and NEVER participates in DoD or pr-gate aggregation; both read `verdicts["iter-NN"]` alone. Consequence: clearing `latched` can never change satisfied-vs-blocking for any iteration, because the verdict keys it would have gated are already there.
 
 Persisted per phase per reviewer key in `state.json.reviews.<phase>.latched` (`t_state.json`) — a map from reviewer key (the same keys used in `verdicts["iter-NN"]`: `correctness`/`efficiency`/`testing`/`documentation`/`external` for impl-review, `correctness`/`efficiency`/`documentation`/`external` for design-review) to the iteration number at which that reviewer returned `APPROVE`. An absent key means that reviewer has never latched, or its latch was cleared. A sprint in flight when this field shipped carries no `latched` object at all under one or both phase nodes — treat a wholly absent `latched` object the same as an empty one (`{}`, no latches), mirroring the `iteration_heads` absent-key fallback above; never an error.
 
@@ -71,11 +71,11 @@ The dispatching phase workflow writes a reviewer's latch entry the moment that r
 
 **Late-return admission.** A further clearing route: admitting a verified late duplicate return for a reviewer clears that reviewer's latch, that one key only. Mechanics and the admission test stay in `review-policy.md` "Late duplicate return"; this line exists so the sole home of latch persistence names every route that clears it.
 
-**Red-full-suite invalidation.** A red full suite (the end-of-`impl-review` terminal suite run) proves previously-approved code was wrong: on that failure, clear BOTH `reviews.design.latched` and `reviews.impl.latched` to `{}` sprint-wide — not only the reviewer(s) whose domain the regression touched — before the sprint routes back to `impl`. This clears the dispatch-skip optimisation only: the next `impl-review` entry re-dispatches its full required roster, with no latch surviving from before the failure, so every reviewer produces a fresh verdict against the code that follows the fix. It can NEVER retroactively change satisfied-vs-blocking for an iteration already recorded — the invariant above already wrote every latch-skipped reviewer's inherited `APPROVE` into that iteration's own `verdicts["iter-NN"]` at the moment it was skipped, and clearing `latched` afterward does not touch those entries. This is a DISTINCT clearing route from the rollback reset above, not a consequence of it: a red-suite failure routes to `impl` in test-fix mode, and re-entering `impl`/`impl-test` from `impl-review` is normal cycle re-entry, never a rollback — "Setting phase to `impl` or `impl-test` is not earlier than `impl`" above, so the rollback-reset table never fires for this route. The full-suite step's own implementation (where in the workflow this clearing happens, alongside the rest of its red path) is out of this rule's scope; this paragraph is the contract that step must satisfy.
+**Red-full-suite invalidation.** A red full suite (the end-of-`impl-review` terminal suite run) proves previously-approved code was wrong: on that failure, clear BOTH `reviews.design.latched` and `reviews.impl.latched` to `{}` sprint-wide — not only the reviewer(s) whose domain the regression touched — before the sprint routes back to `impl`. This clears the dispatch-skip optimisation only: the next `impl-review` entry re-dispatches its full required roster. Recorded verdicts are untouched (invariant above). A DISTINCT clearing route from the rollback reset above, not a consequence of it: a red-suite failure routes to `impl` in test-fix mode, and re-entering `impl`/`impl-test` from `impl-review` is normal cycle re-entry, never a rollback — "Setting phase to `impl` or `impl-test` is not earlier than `impl`" above, so the rollback-reset table never fires for this route. This paragraph is the contract the full-suite step must satisfy; where in that step the clearing happens is out of scope.
 
 ## Impacted test set
 
-Every scoped test run in `impl` and `impl-test` uses the **impacted set** — defined once, here; every other file cross-links this section, never restates it. `impl-review`'s one terminal run is deliberately unscoped (below).
+Every scoped test run in `impl` and `impl-test` uses the **impacted set** — sole statement of the impacted set; every other file cross-links this section. `impl-review`'s one terminal run is deliberately unscoped (below).
 
 **Definition.** The impacted set is the union of:
 1. test files present in the change-surface diff;
@@ -84,7 +84,7 @@ Every scoped test run in `impl` and `impl-test` uses the **impacted set** — de
 
 **Native selector override.** When `commands.yaml` carries a `test_affected` field (a native runner flag such as `--changedSince`/`--onlyChanged`, or a filter expression), that field's result REPLACES the search-derived set above — the runner's own answer is used, not a second derivation. Field absent → fall back to the search-derived set. The field's shape and `t_commands.yaml`/`asd-init` detection are defined where `commands.yaml` is — this section only names the override mechanism and its key.
 
-**Safety valve — mandatory, not heuristic, checked BEFORE the selector or the search-derived set is used.** `asd-tester` MUST apply this test before every scoped run: when the change surface touches shared infrastructure — build config, CI config, shared/common modules, any framework-wide file — the impacted set degrades to the **full suite** for that run. A rule the tester applies on every run, never a judgment call.
+**Safety valve — mandatory, not heuristic, checked BEFORE the selector or the search-derived set is used.** `asd-tester` MUST apply this test before every scoped run: when the change surface touches shared infrastructure — build config, CI config, shared/common modules, any framework-wide file — the impacted set degrades to the **full suite** for that run.
 
 **Where impacted-only applies**: `impl` (self-verification only, below — devs never author/modify/prune a test); `impl-test`'s suite gate (below).
 
@@ -219,7 +219,7 @@ Only one fix flag is ever set: each fix mode clears its own before routing on. F
 
 Owner: Tester. Runs after every `impl` exit. Selects the test approach **after** the implementation exists, so tests follow the real change surface instead of a speculative one. Before selecting anything new, it runs the existing impacted tests (`Impacted test set` above) so the strategy pass observes actual post-impl behaviour and catches an `impl` regression before any new test is authored.
 
-**Principles**: check-ladder selection, prune criteria, no-new-test decision rule, and fail-first regression proof are all defined once in `code-style.md` §17 (SSoT) — binding here, not restated.
+**Principles**: check-ladder selection, prune criteria, no-new-test decision rule, and fail-first regression proof are all defined once in `code-style.md` §17 — binding here, not restated here.
 
 **Workflow**: change-surface analysis → pre-strategy impacted run (existing tests) → `test-plan.md` (risk → chosen check → decision) → prune + author → impacted-set suite run.
 
@@ -251,7 +251,7 @@ Loops until the impacted set passes. No iteration cap — an unfixable state sur
 
 One problem that is both a code defect and a workflow malfunction (routine under `self_hosting`, where workflow source IS the code) gets a `D-N` row for the defect and an `F-N` entry for the malfunction, cross-referenced by id — never the same content twice.
 
-**Writer mechanism** — stated once here, referenced by every phase workflow, restated by none: the main orchestrator running the phase workflow appends every entry itself, from what it observes — including what a dispatched agent's return text, signal or failure reveals. No agent writes the file and none is asked to self-report friction; reviewers write no sprint artefact at all (`review-policy.md`). This is the single channel for workflow friction; `state.json` holds no parallel escalation list.
+**Writer mechanism** — sole statement of the writer mechanism, referenced by every phase workflow: the main orchestrator running the phase workflow appends every entry itself, from what it observes — including what a dispatched agent's return text, signal or failure reveals. No agent writes the file and none is asked to self-report friction; reviewers write no sprint artefact at all (`review-policy.md`). This is the single channel for workflow friction; `state.json` holds no parallel escalation list.
 
 ## Retro phase
 

@@ -49,12 +49,6 @@ Orchestration body for the `asd-phase-plan` skill. Operation-mapping to host too
 - Updated `state.json` (phase=plan)
 - decisions-log entry
 
-## Agents delegated to
-- None; orchestration is inline.
-
-## Skills/workflows dispatched
-None.
-
 ## Return contract (single line)
 ```
 PHASE: plan | SPRINT: <NNN-slug> | STATUS: <complete|blocked|aborted> | NEXT: impl

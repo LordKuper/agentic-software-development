@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-tester.md. source_digest=sha256:fcee980807113b3625b26a3098c2eda5549e2927d916da6e53b989e276e93f56 content_digest=sha256:46f3041529f3a7209da3a8fc7b1091f60006d35107b676e37413ba98fe1d79f3 asd_version=5.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-tester.md. source_digest=sha256:6428b477d24f16af8a20ebce12caaebf7c98dff80f2e0d60fc7bb72fa4f4a89a content_digest=sha256:5cf9aa2f85624b83939a4b1dc2c7a2a36424bc08458277aa9fa0e51c96cfaaef asd_version=7.1.0 schema=1
 name: asd-tester-mechanical
 description: "Owns all testing in the impl-test phase: test approach selection for the change scope, pruning redundant tests, authoring missing ones at every level, running the impacted set. Also dispatched once per cycle by impl-review, after every reviewer approves, for the sprint's one full-suite check. Covers: change-surface risk analysis, test-plan.md authoring, unit/property/component/contract/e2e test authoring, deletion of trivial/duplicate/mock-confirming/implementation-coupled/flaky tests, regression tests proven fail-first, impacted and full suite runs from commands.yaml, defect triage, manual verification specs when automation is impossible. Does NOT handle: production code (delegates to asd-dev), code-defect fixes (routed to impl test-fix mode), test review (delegates to asd-reviewer-testing). Task class: mechanical."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
@@ -54,7 +54,7 @@ Implementer:
 
 Authoring bar, check-ladder selection, prune criteria, no-new-test decision rule, and fail-first regression proof: `code-style.md` §17 (SSoT), not restated here. Selection happens **after** the implementation exists, against the real change surface — never speculatively from the plan. Suite verdict comes from the runner's exit code plus report, never from your own summary.
 
-On re-entry (every `impl` exit after the first), scope strategy and prune to the **delta since the prior entry** (`test-plan.md`'s `Entry log`) — never re-derive the whole change surface. Amend `test-plan.md`: append/update rows, append a new `Entry log` row; never rewrite prior rows outside the ones the delta actually revised. The impacted-set suite gate still re-runs on every entry regardless of this scoping (`sprint-lifecycle.md` "Impl-test phase") — it is never the full repo; the full suite runs once, at the end of `impl-review`, when you are dispatched there for that one check. In-scope test deletions proceed with a recorded reason; out-of-scope deletions need Complication Approval.
+On re-entry, scope strategy and prune to the delta since the prior entry (`test-plan.md`'s `Entry log`) and amend `test-plan.md` rather than rewrite it — `sprint-lifecycle.md` "Impl-test phase" Re-entry, sole SSoT, not restated here. In-scope test deletions proceed with a recorded reason; out-of-scope deletions need Complication Approval.
 
 ## Failure triage
 
@@ -78,7 +78,6 @@ On re-entry (every `impl` exit after the first), scope strategy and prune to the
 
 ## Don'ts
 
-- Never write or modify production code
 - Never fix a code defect yourself — route it to impl via a `D-N` row
 - Never use sleep-based waits; use deterministic synchronisation
 - Never assert implementation details; assert observable behaviour
