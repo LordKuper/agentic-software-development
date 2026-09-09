@@ -3181,6 +3181,7 @@ test('AC-15: review-policy.md is sole SSoT for the reviewer read-only reconcilia
   assert.ok(providers.includes('Reviewer agents carry no artifact-write grant on either host'), 'providers.md must state the artifact-level grant fact it owns (tool config), distinct from the reconciliation review-policy.md owns');
   assert.ok(providers.includes('Gate Verdict Format'), 'providers.md must cite review-policy.md "Gate Verdict Format" for what the read-only claim covers and excludes, rather than restating the reconciliation independently');
   assert.ok(!providers.includes('memory: project` is a separate write channel reviewers do use'), 'providers.md must not restate the reconciliation sentence itself - that duplication is exactly what the citation exists to prevent');
+  assert.ok(!policy.includes('Sole statement of this claim'), 'the unscoped sole-statement claim was false the moment it was written (iter-03 DOC-1b): both review workflows and a rule doc also state that the reviewer itself performs no write, so an owning-side claim that every other site merely links contradicted them and invited a cut at whichever site was read next. Scope limit: this guards the literal from coming back, never the truth of a reworded ownership claim - over this corpus no derivable proxy separates a true declaration from a false one (test-plan.md, entry 5). The two assertions above are what keep it from going vacuous: they require the scoped statement to still be here');
 });
 
 test('AC-15: providers.md records which emitted agent frontmatter fields are host-verified vs. emitted on trust', () => {
@@ -3839,7 +3840,7 @@ test('sprint-010 iter-02: each latch non-restatement declaration denies only wha
 
   const policyLatch = policy.split('\n').find((line) => line.startsWith('**APPROVE latch**'));
   assert.ok(policyLatch && policyLatch.includes('not restated here'), 'review-policy.md must keep handing the mechanism to its SSoT instead of describing it');
-  assert.ok(!policyLatch.includes('review workflow'), 'a non-restatement declaration may speak for its own site only: both review workflows do spell the dispatch-skip mechanic out at the step that applies it (asserted below), so extending the denial across them made it false and told an editor those copies did not exist');
+  assert.ok(!/not restated here\s*(,\s*)?(or|nor|and not)\b/i.test(policyLatch), 'a non-restatement declaration may speak for its own site only: both review workflows do spell the dispatch-skip mechanic out at the step that applies it (asserted below), so extending the denial across them made it false and told an editor those copies did not exist. Keyed on the denial being extended by a conjunction, not on the words "review workflow" - this bullet may legitimately name the workflows for anything else, and the extension is false whichever artefact it reaches');
 
   for (const rel of ['.asd/workflows/asd-phase-impl-review.md', '.asd/workflows/asd-phase-design-review.md']) {
     const body = readRepoFile(rel);
@@ -3868,6 +3869,60 @@ test("sprint-010 iter-02: sprint-lifecycle.md's ADVICE_NEEDED step cites the asd
   const step = readRepoFile('.asd/rules/sprint-lifecycle.md').split('\n').find((line) => line.includes('No halt, no user contact, no logged trail'));
   assert.ok(step, "sprint-lifecycle.md must keep the ADVICE_NEEDED round-trip's no-log step - it is the only place the protocol states that the consult leaves no artefact");
   assert.ok(step.includes(`\`asd-advisor.md\` ${holders[0]}`), `the step must cite the advisor section that holds the rule (${holders[0]}), derived here from the agent file itself: this citation pointed at Do's until 2ae44c6, and an agent that follows a citation into a section holding nothing of the kind proceeds unguided while the sprint reads as documented`);
+});
+
+test('sprint-010 iter-03: the clean-worktree precondition is a reciprocal pair - sprint-lifecycle.md owns the rule and names the workflow section that performs it, and that section keeps the command and the failure signal while no longer denying that it restates anything', () => {
+  const home = readRepoFile('.asd/rules/sprint-lifecycle.md').split('\n').find((line) => line.includes('**Impl-review clean-worktree precondition**'));
+  assert.ok(home, 'sprint-lifecycle.md must keep the clean-worktree home statement: the workflow precondition cites it as sole SSoT, so a home that is cut leaves that citation pointing at nothing while the phase still refuses to start');
+  const delegated = /mechanic in `asd-phase-impl-review\.md` "([^"]+)"/.exec(home);
+  assert.ok(delegated, 'the home must name the workflow section it hands the mechanic to; this test derives the acting site from that name rather than hardcoding a heading either side may rename');
+
+  const workflow = readRepoFile('.asd/workflows/asd-phase-impl-review.md');
+  const parts = workflow.split(`\n## ${delegated[1]}`);
+  assert.strictEqual(parts.length, 2, `asd-phase-impl-review.md must carry exactly one "## ${delegated[1]}" section: its home delegates the mechanic to that heading by name, and a rename on one side only sends every reader to a section that does not exist`);
+  const precondition = parts[1].split('\n## ')[0].split('\n').find((line) => line.includes('Clean worktree at phase entry'));
+  assert.ok(precondition, `the clean-worktree gate must live inside "${delegated[1]}", the section its home names as the mechanic site`);
+  assert.ok(precondition.includes('`git status --porcelain`'), 'the acting site must name the command it runs. Its home states the same trigger and timing, so this line reads as a restatement and is a standing deletion candidate for an economy pass - but it is the only executable instruction either file carries, and the home delegates it here on purpose');
+  assert.ok(precondition.includes('`FAILED`'), 'the acting site must name the signal a dirty worktree raises: without it the gate states a trigger and no consequence, and the phase proceeds into a diff computed from commits that no reviewer can see the uncommitted half of');
+  assert.ok(precondition.includes('sole SSoT'), 'the precondition must keep citing its home rather than growing into a second rule statement - that citation is what makes the split above readable as a split instead of as two rules');
+  assert.ok(!precondition.includes('not restated here'), 'this bullet restates the home trigger and timing in the same breath, so its citation may claim sole SSoT and nothing more. The denial was false when written (iter-03 DOC-1a), and a false denial reads as licence to delete the home copy - the one a reader who never opens this workflow depends on');
+});
+
+test('sprint-010 iter-03: every section a canon file cites by name resolves in the file it names, no citation on a non-restatement declaration dangles at all, and the two pre-existing dangling pointers stay the exact known pair', () => {
+  const canon = canonMarkdownFiles();
+  const byBase = new Map(canon.map((rel) => [rel.split('/').pop(), rel]));
+  const resolveTarget = (base) => [byBase.get(base), base, `.asd/templates/t_${base}`].find((candidate) => {
+    if (!candidate) return false;
+    const abs = path.join(REPO_ROOT, candidate);
+    return fs.existsSync(abs) && fs.statSync(abs).isFile();
+  });
+  const citation = /`([a-z0-9_.-]+\.md)`(?:'s)?\s+"([^"]+)"/g;
+  const denial = /not restated here|do not restate here|never restated here|restated nowhere/i;
+
+  let cited = 0;
+  let denials = 0;
+  const dangling = [];
+  for (const rel of canon) {
+    readRepoFile(rel).split('\n').forEach((line) => {
+      const denies = denial.test(line);
+      if (denies) denials += 1;
+      for (const [, file, heading] of line.matchAll(citation)) {
+        cited += 1;
+        const target = resolveTarget(file);
+        const anchor = new RegExp(`^#{2,4} ${heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}|\\*\\*${heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\.?\\*\\*`, 'm');
+        if (!target || !anchor.test(readRepoFile(target))) dangling.push({ denies, at: `${rel} -> ${file} "${heading}"` });
+      }
+    });
+  }
+
+  assert.ok(cited >= 150, `the sweep must still reach the citation grammar it checks; only ${cited} citations matched, low enough that the pattern has probably stopped reaching canon and both comparisons below would pass over an empty list`);
+  assert.ok(denials >= 25, `only ${denials} non-restatement declarations matched, too few for the zero-tolerance filter below to mean anything - the class is what makes a dangling pointer unrecoverable, so a filter that stops reaching it must be seen rather than pass silently`);
+
+  assert.deepStrictEqual(dangling.filter((d) => d.denies).map((d) => d.at), [], 'a citation on a line that denies restating the content is held to zero tolerance, unlike the general set below: the denial tells the reader the content lives at the target and nowhere else, so a pointer that resolves to nothing leaves it reachable from no site at all. Fix the pointer or drop the denial - it may not join the known-pair list');
+  assert.deepStrictEqual(dangling.map((d) => d.at), [
+    '.asd/rules/sprint-lifecycle.md -> checkpoints.md "Re-running a phase"',
+    '.asd/agents/asd-reviewer-correctness.md -> external-review.md "Iteration-aware diff"',
+  ], 'the dangling set is pinned in both directions. A new entry is a citation renamed on one side only - the failure this sweep exists for, four instances on record (sprint 006 documentation F5 fixed two, these two survived it). A missing entry means one of the known pair was fixed: that is D-3 / D-4 in sprint 010 test-plan.md, and the fix belongs with deleting its line here. Resolution accepts a `## heading` or a `**bold label**`, both attested citation targets in this canon; heading matching is prefix-anchored so a parenthetical suffix still resolves');
 });
 
 // ===========================================================================

@@ -85,6 +85,14 @@ its `providers.md` grant; the red-full-suite latch invalidation and its two acti
 assertion at any site, before or after. Before writing `keep` on someone else's cut, grep the suite
 for the surviving text and the rule it belongs to; if the grep is empty, the row is an `add`.
 
+When a new sweep finds a **pre-existing, out-of-scope** defect, neither ship it red nor drop the sweep:
+pin the broken set exactly (`deepStrictEqual` against the known members, both directions) and file the
+`D-N` rows, naming the ids in the assert message and stating in `test-plan.md` that fixing the defect
+also means deleting its line from the pinned list. Sprint 010 entry 5 did this for two dangling
+citations; the local precedent is entry 4's `asd-pm` fallout-set comparison. Shipping red would block
+`impl-review` entry on work no round of the sprint touched, and an exemption list with defect ids in it
+is visible where a silent filter is not.
+
 Related, when the dispatching message hands you a commit range: check it contains the changes it
 names. Entry 4 (cont.) was pointed at `11bf405..dd47159`, which held only sprint bookkeeping — the
 dev chain was `5add9f5..2ae44c6`, an ancestor of the entry's own test commit, so the suite run
@@ -129,7 +137,22 @@ absent. The positive half is what keeps the negative half from going vacuous und
 010 iter-02 found three such declarations false at the moment they were written — the same bullet
 restated the mechanic one clause later — and a false denial reads as licence to delete the SSoT copy,
 which is the one an agent that never opens that workflow depends on. Prove these by literally
-reverting the fix commit, not by a synthetic edit.
+reverting the fix commit, not by a synthetic edit. Sprint 010 iter-03 decided the limit of this: whether
+a denial is *true* is a paraphrase judgement with no derivable proxy over this corpus, so the pair-pin
+per touched site is the whole answer — record that as the `none`, with the measurement behind it.
+
+The *pointer* half generalizes to the whole corpus and is worth one sweep, not one test per fix.
+Sprint 010 iter-03 replaced its own denial-scoped resolver with it: match `` `<file>.md` "<Section>" ``
+across `canonMarkdownFiles()`, resolve base name → repo root → `.asd/templates/t_<base>` (so `AGENTS.md`
+and `audit.md` resolve with no hardcoded pair), and accept the target as a `## heading` **or** a
+`**bold label**` — 10 of canon's 185 citations name a bold label, `sprint-lifecycle.md` "Impl-review
+clean-worktree precondition" among them, so a heading-only check reddens on correct edits. Match
+headings prefix-anchored: `## Related open stubs (optional)` is cited without its parenthetical. Tier the
+result — zero tolerance on a denial line, exact `deepStrictEqual` on the rest — so a denial regression
+reports under its own message instead of inside a set diff. It found two live dangling pointers
+(`checkpoints.md` "Re-running a phase", `external-review.md` "Iteration-aware diff"), both from PR #25
+renames whose two sibling citations sprint 006's documentation reviewer fixed by hand; the class is
+recurrent and human review catches it only partly.
 
 ## Pin the relation between two sites
 
