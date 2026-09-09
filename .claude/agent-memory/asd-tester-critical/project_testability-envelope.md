@@ -151,3 +151,16 @@ suite in a long-lived worktree is not evidence about a fresh clone, and mutating
 prove such a test never reaches the output-equality assertion — CRLF and BOM each break the frontmatter
 fence first, so record the thrown parse error as the first failure instead of claiming the assertion
 you aimed at.
+
+Seventeenth, a **reach** claim ("this rule reaches every role that authors X") is not agent-runtime
+judgement — it is a sweep of `providers.md` "Role-scoped context". Each row's Additional-context cell
+is a fixed grant list, so a rule's home being granted is a literal check; the one row that grants
+"files named by the consulting question" (`asd-advisor`) is a derivable exemption, not a hardcoded
+one. Guard the loop with a row-count assert: a regex that stops matching the table makes every grant
+assertion pass vacuously.
+
+Eighteenth, extending the fifteenth trap to *guards*: a guard asserting a field is absent from a
+canon fixture must key on the provider-scoped literal. `demo-agent.md` carries `"model"` in both its
+`claude` and `codex` blocks, so `!canon.includes('"model"')` is red at HEAD however correct the
+mutation was; `!canon.includes('"model": "opus"')` is the assertion meant. Run the suite once after
+adding a guard, before recording anything about the assertion it protects.
