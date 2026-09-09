@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:4f29b10523861b13ce982f459b389b8fde55128d007fc032a613cd9618e0a47d content_digest=sha256:5ac87205ff02e770f74e8de40acf3097039452e8766278dfe0f3f171c11286bf asd_version=7.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:cbf0161ca2edc523a0b4b96c9873e3931454d30e9bca2a5e9533d4d1ef8b5e6b content_digest=sha256:1273d29fc068d166eabda415d602376b829bb53e491acfb9eecd295c961be93f asd_version=7.1.0 schema=1
 name: asd-reviewer-testing
 description: "Impl-review assessment of the test-plan decisions and the tests themselves, plus judging manual-verification necessity when automation is impossible. Covers: risk→check fit per test-plan.md, justification of removed tests and of no-test decisions, fail-first proof on regression tests, coverage of AC-N, edge cases on core paths, absence of test-for-test-sake (meaningless assertions), flaky patterns, manual-verification necessity judgment against the spec `test-plan.md` already owns (single home — never re-authored here). Does NOT handle: bug/security/AC-coverage/ui/a11y (delegates to asd-reviewer-correctness), over-engineering/performance (delegates to asd-reviewer-efficiency), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -88,4 +88,4 @@ First content line of the returned findings text (which the phase orchestrator w
 
 `[REVIEW-impl-testing]: <APPROVE | CONCERNS | FAIL>`
 
-Phase orchestration parses first non-empty content line. Never bury verdict in prose.
+Phase orchestration parses first non-empty content line.

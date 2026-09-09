@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:43627086612c67ae6db725da4cc0ffa56dfa46d912d1f5a8466c85e85fa6f9d7 content_digest=sha256:d5dcbced9d3d8333ba093c34ed3d4d96b80dc4e130a247df95fe7cd63f2fcc00 asd_version=7.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:380abdd9c45dea9fe107a5441d78519a0d33a3088c2379bb1577d0c02faf976c content_digest=sha256:dad16878bc257f3646fb329eb0e071592c80ea0e1ad7733ef0f8b1c87203d18a asd_version=7.1.0 schema=1
 name: asd-reviewer-efficiency
 description: "Design-review of design drafts and impl-review of code for over-engineering, structure/cohesion defects, and (impl-review only) performance budget/regression compliance. Covers: over-engineering smell detection per review-policy checklist (interface with one implementer, generic with one type, factory for < 3 classes, plugin without plugins, premature config flag, defensive code for impossible cases, dead code, deep inheritance, framework-on-framework, mock-of-mock, comment-restates-code), structure/cohesion smell detection (god/sprawling type), complexity-vs-value tradeoff, escalation of any fix that adds complexity; latency/memory/throughput budget compliance, algorithmic complexity, perf anti-patterns (n+1 queries, sync IO on hot path, unbounded allocations), regression detection vs baseline, hot-path identification lacking measurement or caching. Does NOT handle: bugs, security, AC coverage, or UI (delegates to asd-reviewer-correctness), test-plan/test-quality review (delegates to asd-reviewer-testing), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -102,7 +102,6 @@ Contract, format, and gate: `review-policy.md` "Coverage ledger" (SSoT, not rest
 
 ## Do's
 
-- Mark every over-engineering/structure finding as `critical` per checklist policy
 - Provide concrete simpler alternative for every `simplify` finding
 - Flag fixes from other reviewers that would themselves add complexity (cross-reviewer guard)
 - Cite checklist item for every over-engineering/structure finding; cite budget source from `custom-coding-rules.md` for every budget finding; cite file:line for every finding
@@ -112,7 +111,6 @@ Contract, format, and gate: `review-policy.md` "Coverage ledger" (SSoT, not rest
 ## Don'ts
 
 - Never raise nitpick categories
-- Never drop critical over-engineering/structure findings on later iterations (undroppable per policy)
 - Never apply a performance section in design-review
 
 ## Signals emitted
@@ -131,4 +129,4 @@ First content line of the returned findings text (which the phase orchestrator w
 
 `[REVIEW-<phase>-efficiency]: <APPROVE | CONCERNS | FAIL>`
 
-Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line. Never bury verdict in prose.
+Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line.

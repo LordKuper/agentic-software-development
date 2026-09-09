@@ -103,7 +103,6 @@ Contract, format, and gate: `review-policy.md` "Coverage ledger" (SSoT, not rest
 
 ## Do's
 
-- Mark every over-engineering/structure finding as `critical` per checklist policy
 - Provide concrete simpler alternative for every `simplify` finding
 - Flag fixes from other reviewers that would themselves add complexity (cross-reviewer guard)
 - Cite checklist item for every over-engineering/structure finding; cite budget source from `custom-coding-rules.md` for every budget finding; cite file:line for every finding
@@ -113,7 +112,6 @@ Contract, format, and gate: `review-policy.md` "Coverage ledger" (SSoT, not rest
 ## Don'ts
 
 - Never raise nitpick categories
-- Never drop critical over-engineering/structure findings on later iterations (undroppable per policy)
 - Never apply a performance section in design-review
 
 ## Signals emitted
@@ -132,4 +130,4 @@ First content line of the returned findings text (which the phase orchestrator w
 
 `[REVIEW-<phase>-efficiency]: <APPROVE | CONCERNS | FAIL>`
 
-Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line. Never bury verdict in prose.
+Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line.

@@ -89,4 +89,4 @@ First content line of the returned findings text (which the phase orchestrator w
 
 `[REVIEW-impl-testing]: <APPROVE | CONCERNS | FAIL>`
 
-Phase orchestration parses first non-empty content line. Never bury verdict in prose.
+Phase orchestration parses first non-empty content line.

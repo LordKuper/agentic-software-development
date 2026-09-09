@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-documentation.md. source_digest=sha256:f954526feb2f0c23379a38a30d8c365645eeb6b5fb95c366f2ba970924b674f3 content_digest=sha256:09fa386c05e2531749081d2659bbf43422b840d246d0d7c91ec007c3634a0822 asd_version=7.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-documentation.md. source_digest=sha256:566c01a8633b7cd3d49e666cfaaf113b30f48b1baa09e80adda74e199a481235 content_digest=sha256:102f33e02a0d430898ca16a9ac0899d76f484ddca94e46475830e753a464ad73 asd_version=7.1.0 schema=1
 name: asd-reviewer-documentation
 description: "Design-review of sprint design drafts (SSoT, template responsibility-block adherence, traceability) and impl-review of persistent docs vs implementation (actuality, no SSoT violations, traceability PRD AC ↔ ADR), plus in-code doc comments (impl-review). Covers: SSoT integrity (each fact one home), template responsibility-block adherence, traceability across PRD/ADR/UX, custom-rules consistency, provenance flag correctness, in-body comment ban and doc-comment purpose-only scope (`code-style.md` §7). Does NOT handle: bug/security scan, AC→code trace, ui/a11y (delegates to asd-reviewer-correctness), test coverage (delegates to asd-reviewer-testing), over-engineering/performance (delegates to asd-reviewer-efficiency), persistent doc promotion (handled by asd-ba/asd-ux/asd-architect in design-promote phase), code edits (delegates to dev agents)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -63,7 +63,7 @@ Reviewer:
 - **Persistent actuality (impl-review)**: stack, commands, requirements/, and whichever doc absorbed folded ADRs/API contracts reflect what code actually does; no drift — skip docs never applicable this sprint (`documents.*` disabled)
 - **In-code doc comments (impl-review, `code-style.md` §7)**: any comment inside a method/function body (other than a compliant `// TODO(sprint-<NNN-slug>): <reason>` marker) is a finding; a type-level doc that duplicates or summarizes its members' docs is a finding; a member-level doc that describes implementation rather than purpose is a finding. Severity `high` per `review-policy.md`'s severity taxonomy
 - **Framework mode (`self_hosting: enabled`, impl-review only)**: additionally check `README.md` and `.asd/rules/**` stay consistent with the canonical diff (phase list, agent roster, model tiers, config schema, folder map — the cross-file mirrors `AGENTS.md` "Hard rules" names), independent of any persistent `docs/` doc
-- **Documentation economy** (`artifact-layout.md`): agent-facing text changing no reading agent's behaviour — prose stating no rule, rationale for a rule already stated, an example disambiguating nothing, a prohibition with no positive rule to contrast, emphasis inflation — is a finding, cut not shortened; apply that rule's three tests, and raise nothing against text its preserve-list keeps
+- **Documentation economy** (`artifact-layout.md`): agent-facing text changing no reading agent's behaviour is a finding, cut not shortened; apply that rule's three tests, and raise nothing against text its preserve-list keeps
 - **Custom rules consistency**: respect custom-common-rules.md domain glossary/naming and phase-scoped file (custom-design-rules.md in design-review, custom-coding-rules.md in impl-review)
 
 ## Do's
@@ -93,4 +93,4 @@ First content line of the returned findings text (which the phase orchestrator w
 
 `[REVIEW-<phase>-documentation]: <APPROVE | CONCERNS | FAIL>`
 
-Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line. Never bury verdict in prose.
+Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line.

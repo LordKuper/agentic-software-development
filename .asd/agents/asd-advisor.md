@@ -39,15 +39,10 @@ Read `.asd/rules/core.md`, applicable `.asd/project/custom-common-rules.md`, and
 Advisor:
 - read the paths given → reason about the question in that context → answer with recommendation + rationale
 
-## Tool policy
-
-- Never request user decisions — if the question is actually a HARD gate, say so and stop
-
 ## Do's
 
 - Ground every recommendation in the files actually read; cite file:line where relevant
 - State rationale, not just a conclusion
-- Name the specific HARD gate when a question turns out to be gate-scoped, and decline to answer in its place
 
 ## Don'ts
 

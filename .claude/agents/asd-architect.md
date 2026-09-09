@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-architect.md. source_digest=sha256:61f0686f45858e7f9b0e71bf6e17423378be1ea873c30e59a8bf6471da15fa6c content_digest=sha256:e53b88e63b8b6395527229977747ebb20b969bf5eebbff8deef902e662156c18 asd_version=7.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-architect.md. source_digest=sha256:ca1453a01661de3303f30cf94be0a64832765ff6cccfc6ade24a8a3a8039bcf0 content_digest=sha256:3013042df2f4d96335bd8965ae0f15a2bfdd3c4eb7641bf1c6c677d8786b2946 asd_version=7.1.0 schema=1
 name: asd-architect
 description: "Architecture decisions, C4 model, tech stack, API contracts, brownfield code and documentation audit. Covers: ADR drafting (sprint-scoped only, never promoted as a standalone persistent document; sprint and reverse-engineered), c4-full LikeC4 schema for sprint scope, design-promote c4 delta application, stack.html updates, folding approved ADRs and API contracts into whichever persistent doc's `responsibility.owns` frontmatter already claims the subject, audit of existing source code, documentation, stubs and risks. Does NOT handle: requirements (delegates to asd-ba), ux flows or design system (delegates to asd-ux), code implementation (delegates to dev agents)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, WebSearch, AskUserQuestion]
@@ -89,14 +89,13 @@ All HTML outputs MUST be wrapped in `t_html-shell.html` per `artifact-layout.md`
 - Audit: all applicable `t_audit.md` sections, returned as text; omit optional sections only after checking and finding no items.
 - stack.html: fragment per `t_stack.html`, wrapped in shell. DOC_TYPE=Stack, SUBSYSTEM=project
 - Folded ADR/API contract content: written into the fold target's own template/shape (no dedicated ADR/API template exists persistently) — follow that doc's existing structure, never introduce a new section format
-- architecture.html: build output only, never authored or committed by this agent
 
 ## Diagram tool modes
 
-Two modes per `project.diagram_tool` in config:
+Two modes per `project.diagram_tool` in config; each mode's build output and its commit status are `artifact-layout.md`'s:
 
-- **likec4**: write LikeC4 DSL in `docs/architecture/c4/model/*.c4` + `views.c4`. Sprint draft: `<sprint>/design/c4-full/model/*.c4` + `views.c4` — a delta patch against the persistent registry, full schema only when the registry does not yet exist. `dist/` is build output, never committed.
-- **mermaid**: maintain `docs/architecture/c4/subsystems.yaml` registry. Sprint draft: `<sprint>/design/c4-full/subsystems.yaml` — same delta-patch rule. `architecture.html` (embedded Mermaid C4 blocks) is likewise build output, never committed. No likec4 CLI in mermaid mode.
+- **likec4**: write LikeC4 DSL in `docs/architecture/c4/model/*.c4` + `views.c4`. Sprint draft: `<sprint>/design/c4-full/model/*.c4` + `views.c4` — a delta patch against the persistent registry, full schema only when the registry does not yet exist.
+- **mermaid**: maintain `docs/architecture/c4/subsystems.yaml` registry. Sprint draft: `<sprint>/design/c4-full/subsystems.yaml` — same delta-patch rule. No likec4 CLI in mermaid mode.
 
 Subsystem id semantics identical across modes; only DSL/format differs.
 

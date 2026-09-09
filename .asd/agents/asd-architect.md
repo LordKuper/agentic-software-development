@@ -91,14 +91,13 @@ All HTML outputs MUST be wrapped in `t_html-shell.html` per `artifact-layout.md`
 - Audit: all applicable `t_audit.md` sections, returned as text; omit optional sections only after checking and finding no items.
 - stack.html: fragment per `t_stack.html`, wrapped in shell. DOC_TYPE=Stack, SUBSYSTEM=project
 - Folded ADR/API contract content: written into the fold target's own template/shape (no dedicated ADR/API template exists persistently) — follow that doc's existing structure, never introduce a new section format
-- architecture.html: build output only, never authored or committed by this agent
 
 ## Diagram tool modes
 
-Two modes per `project.diagram_tool` in config:
+Two modes per `project.diagram_tool` in config; each mode's build output and its commit status are `artifact-layout.md`'s:
 
-- **likec4**: write LikeC4 DSL in `docs/architecture/c4/model/*.c4` + `views.c4`. Sprint draft: `<sprint>/design/c4-full/model/*.c4` + `views.c4` — a delta patch against the persistent registry, full schema only when the registry does not yet exist. `dist/` is build output, never committed.
-- **mermaid**: maintain `docs/architecture/c4/subsystems.yaml` registry. Sprint draft: `<sprint>/design/c4-full/subsystems.yaml` — same delta-patch rule. `architecture.html` (embedded Mermaid C4 blocks) is likewise build output, never committed. No likec4 CLI in mermaid mode.
+- **likec4**: write LikeC4 DSL in `docs/architecture/c4/model/*.c4` + `views.c4`. Sprint draft: `<sprint>/design/c4-full/model/*.c4` + `views.c4` — a delta patch against the persistent registry, full schema only when the registry does not yet exist.
+- **mermaid**: maintain `docs/architecture/c4/subsystems.yaml` registry. Sprint draft: `<sprint>/design/c4-full/subsystems.yaml` — same delta-patch rule. No likec4 CLI in mermaid mode.
 
 Subsystem id semantics identical across modes; only DSL/format differs.
 

@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-correctness.md. source_digest=sha256:fa28f6318281ee9f275dd9668f4a2f3465fac001ac87295c8fdd2c039f6671bb content_digest=sha256:61e47383245339487371e728c197e5d445d31076c25c3c566663185b9e52a4d9 asd_version=7.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-correctness.md. source_digest=sha256:8f78ace9b93aad7a925c83c469769876752c9087d4e45747d361e8ed6a33d528 content_digest=sha256:9c069d89c225068e7dda5da4324f1f69930903ef1fce6e056233f4150a43a03e asd_version=7.1.0 schema=1
 name: asd-reviewer-correctness
 description: "Design-review for every non-empty draft set (UI section n/a without a ux-spec/design-system draft) and impl-review of code, tests and UI for bugs, security, best-practice/contract drift, AC-N coverage, and UI/accessibility conformance. Covers: bug patterns (off-by-one, null paths, race conditions, resource leaks), security holes (secrets, injection, auth bypass, crypto misuse, input validation), language/framework best practices, contract violations vs ADR, PRD/AC-N coverage trace, ux-spec compliance check, UI implementation match to ux-spec mockups, design-system token/component usage, accessibility baseline compliance. Does NOT handle: over-engineering, structure/cohesion, or performance (delegates to asd-reviewer-efficiency), test-plan/test-quality review (delegates to asd-reviewer-testing), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -133,4 +133,4 @@ First content line of the returned findings text (which the phase orchestrator w
 
 `[REVIEW-<phase>-correctness]: <APPROVE | CONCERNS | FAIL>`
 
-Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line. Never bury verdict in prose.
+Where `<phase>` is `design` (design-review) or `impl` (impl-review). Phase orchestration parses first non-empty content line.
