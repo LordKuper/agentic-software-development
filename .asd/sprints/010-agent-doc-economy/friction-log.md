@@ -14,6 +14,7 @@ responsibility:
 | F-1 | impl-review | Coverage manifests were emitted with `n_a` keyed flat by rubric id, a shape `validate-ledger` silently degrades instead of rejecting | reviews/impl/iter-01/testing, reviews/impl/iter-01/documentation |
 | F-2 | impl-review | Manifests were re-stamped while three dispatches held them, invalidating returns that were already correct | reviews/impl/iter-01/documentation |
 | F-3 | impl-review | A reviewer dispatch was lost whole to the host turn limit, and the contract's only remedy re-spends it | reviews/impl/iter-01/correctness |
+| F-4 | impl-review | External Review was unavailable on quota after a `local-ready` preflight, discovered only by spending the dispatch | reviews/impl/iter-02/external |
 
 ## F-1 — Coverage manifests emitted with a flat `n_a`, which the validator degrades instead of rejecting
 
@@ -38,3 +39,11 @@ responsibility:
 - **What happened**: The Correctness dispatch reached the host's 50-turn limit having read most of a 56-file scope, and returned no verdict and no ledger; roughly 210K tokens of review work was discarded. The contract's remedy for a first interruption is a fresh re-dispatch, and its remedy for a second is to split the manifest — so the only route to the split is to spend a second full dispatch proving what the first already demonstrated, that the manifest is too large for one turn. Resumption was unavailable in this host, so the fresh re-dispatch was issued with explicit turn-economy instructions rather than an unchanged prompt.
 - **Impact**: One dispatch spent for no artefact. The interruption cause was a scope size the phase could have observed before dispatching, not a transient failure.
 - **Refs**: `reviews/impl/iter-01/correctness`
+
+## F-4 — External Review unavailable on quota, after a ready preflight
+
+- **Phase**: impl-review
+- **Surface**: provider tool — wrapped Codex CLI, via `.asd/rules/external-review.md` "Detection and negative cache"
+- **What happened**: Iteration 2's preflight returned `local-ready`, so the dispatch proceeded. The wrapped CLI ran to roughly 138K tokens of tool use and then exited on an account usage limit with no verdict; a single minimal retry hit the identical error and reset time, confirming genuine quota exhaustion rather than a transient failure. The wrapper recorded the failure against the preflight fingerprint with a bounded retry-after and returned the availability skip its outcome contract specifies.
+- **Impact**: This iteration has no external second opinion, and the specific question the dispatch carried — whether `Never cut`'s general clause can collide with the narrowed `Cut on sight` prohibition bullet on a hybrid line — is unresolved. The cost was paid in full before the unavailability was observable: preflight predicts local executable and authentication state only, never paid-request availability, and no cheaper signal exists.
+- **Refs**: `reviews/impl/iter-02/external`

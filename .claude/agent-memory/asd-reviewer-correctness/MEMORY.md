@@ -1,3 +1,4 @@
 - [Review method: no shell](feedback_review-method-no-shell.md) — manifest-driven scope; hunt dangling refs + rules with no acting-site binding
 - [Version bump lands at pr](project_version-bump-at-pr.md) — migration named for the next version vs. un-bumped `asd_version` is expected at impl-review, not a defect
 - [Prompt snapshot is the base branch](project_prompt-snapshot-is-base-branch.md) — injected AGENTS.md/git status predate the reviewed branch; read every quoted path off disk
+- [Operations-used run-command convention](project_operations-block-run-command-convention.md) — `node .asd/runtime.js` is never declared in any workflow's Operations block; check uniformity before calling it a gap

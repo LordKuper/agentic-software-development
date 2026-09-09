@@ -1,0 +1,39 @@
+{
+ "phase": "impl-review",
+ "iteration": 2,
+ "base_ref": "14e1a09661a0ba545647ad32413ba16b87276f3b",
+ "head_ref": "a7bb4ae3173c4ef62e33ddb45bbbe2c44b554e67",
+ "files": [
+  ".asd/agents/asd-advisor.md",
+  ".asd/agents/asd-architect.md",
+  ".asd/agents/asd-reviewer-correctness.md",
+  ".asd/agents/asd-reviewer-documentation.md",
+  ".asd/agents/asd-reviewer-efficiency.md",
+  ".asd/agents/asd-reviewer-testing.md",
+  ".asd/release-manifest.json",
+  ".asd/rules/artifact-layout.md",
+  ".asd/rules/review-policy.md",
+  ".asd/runtime.js",
+  ".asd/sync.js",
+  ".asd/workflows/asd-phase-design-review.md",
+  ".asd/workflows/asd-phase-impl-review.md",
+  ".asd/workflows/asd-phase-impl.md",
+  ".claude/agent-memory/asd-dev-critical/project_stale-context-snapshots.md",
+  ".claude/agent-memory/asd-external-review/reference_codex-invocation.md",
+  ".claude/agent-memory/asd-reviewer-correctness/MEMORY.md",
+  ".claude/agent-memory/asd-reviewer-correctness/project_prompt-snapshot-is-base-branch.md",
+  ".claude/agent-memory/asd-tester-critical/feedback_fail-first-and-none-honesty.md",
+  ".claude/agent-memory/asd-tester-critical/project_testability-envelope.md",
+  "tests/run.js"
+ ],
+ "exclude_paths": [
+  ".asd/project/**",
+  ".asd/sprints/**",
+  ".claude/agents/**",
+  ".claude/skills/**",
+  ".claude/hooks/**",
+  ".claude/settings.json",
+  ".codex/**",
+  ".agents/skills/**"
+ ]
+}
