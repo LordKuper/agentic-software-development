@@ -64,3 +64,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: `.asd/sprints/010-agent-doc-economy/audit.md` (C-9 … C-12, G-11)
 
 - 2026-09-09 — design/design-review/design-promote skipped (no documents enabled)
+
+## 2026-09-09 — Sprint 010 plan accepted; E-1 resolved by reduction to pointers
+
+- **Decision**: `plan.md` accepted: twelve tasks in eight waves, with AC-1 applied to this sprint itself — Task 1 lands the wave-ordering rule and is dispatched alone before any task that would otherwise run under the old rule, and Tasks 2, 5, 6 and 8 each hold their wave as the other contract-changing tasks. E-1 is resolved by deleting from both review workflows what `review-policy.md` already owns, not by hoisting the shared text into `review-policy.md` and not by inventing a shared workflow fragment.
+- **Rationale**: Both workflows already declare `review-policy.md` the sole SSoT for that material and then restate it, so the reduction removes a contradiction rather than relocating text. Hoisting would grow the one file every reviewer reads in full on every iteration, worsening the very cost finding (C-4, C-5) the sprint exists to address; a shared fragment would be a new abstraction with no second use case, needing Complication Approval, and Codex supports no imports. No stub decisions were required — `.asd/project/stubs.md` has no open rows.
+- **Affected docs**: `.asd/sprints/010-agent-doc-economy/plan.md`, `.asd/sprints/010-agent-doc-economy/audit.md` (E-1, R-4)
