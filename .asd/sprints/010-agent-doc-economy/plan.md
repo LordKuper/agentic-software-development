@@ -116,6 +116,15 @@ Material risk: artifact: mechanical verification across the sprint's whole chang
 - [x] Run `node .asd/sync.js --check` clean — 72/72 targets `current`; `node tests/run.js` — 170/171, the one failure being `tests/run.js:2450`'s pre-AC-6b manifest field pin, owned by `asd-tester` in impl-test per plan.md Task 11's second subtask reassignment — not a new failure and not fixable here (dev writes no tests)
 - [x] Confirm every AC-8 finding is applied or carries a recorded deferral reason — all 23 `E-N` and 12 `C-N` ids from `audit.md`'s survey and corpus-audit table are accounted for in `decisions-log.md`'s "Task 10 applied E-1 … E-23" entry (five applied-in-part with reasons: E-15, E-10, E-5, E-4, E-22) plus the earlier entries closing C-9/C-10/C-11/C-12 and out-of-scope C-6/C-11
 
+### Task 13: Reach the authoring side (AC-10)
+Material risk: change: changes what every creator agent is instructed to do while authoring
+Reachability: `artifact-layout.md` states the authoring obligation and every role row already loads that file; each creator reads it at authoring time and the documentation reviewer reads the same rule at review time — both must be reading one statement, not two.
+- [ ] State in the rule's own home that it binds at authoring time, not only at review, so it reaches every role that loads `artifact-layout.md` — including `asd-ba` and `asd-ux`, which never load `code-style.md`
+- [ ] Extend `code-style.md` §1's proactive-authoring instruction to name the documentation-economy iron rule alongside the SSoT iron rule it already names
+- [ ] Verify the review side is closed for both phases, not only impl-review, and record what makes it so
+- [ ] Verify no creator that authors agent-facing text is left unreached, role row by role row
+
+
 ## Risks
 - A green suite does not prove a prose deletion safe (`audit.md` R-6); Task 12's verification is necessary, not sufficient, and the documentation reviewer's new rubric bullet is the real check.
 - Task 10 is the sprint's largest change surface and the one most able to break the review loop (`audit.md` R-4).
@@ -133,6 +142,7 @@ Material risk: artifact: mechanical verification across the sprint's whole chang
 | 6 | 9 | the audit needs the final rule text |
 | 7 | 10, 11 | disjoint files, both applying audit findings |
 | 8 | 12 | consistency sweep over everything the sprint changed |
+| 9 | 13 | changes what every creator is instructed to do while authoring — alone in its wave |
 
 - Task 1 precedes every other task; it lands the ordering rule they run under.
 - Task 2 precedes Tasks 3 through 12; it changes the commit contract they are dispatched under.
@@ -141,6 +151,7 @@ Material risk: artifact: mechanical verification across the sprint's whole chang
 - Task 8 precedes Task 9, which audits against the rule Task 8 lands.
 - Task 9 precedes Tasks 10 and 11, which apply its findings.
 - Task 12 depends on every preceding task.
+- Task 13 depends on Task 8, whose rule it wires to the authoring side; it is a contract-changing task and holds wave 9 alone.
 
 ## Out of scope
 - Model or effort retiering (`sprint.md` "Out of scope"); C-11 stays recorded, not applied.

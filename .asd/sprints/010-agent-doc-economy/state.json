@@ -38,6 +38,13 @@
       "reason": "impl approved, advance to impl-test",
       "evidence": "12/12 tasks complete; sync --check exit 0; lint clean; diff confined to authorised paths; suite 170/171 with the one failure owned by impl-test",
       "artifact_revision": "plan.md@impl-complete"
+    },
+    {
+      "gate": "scope, acceptance criteria or user value",
+      "decision_actor": "user",
+      "reason": "AC-10 added: the rule must reach agents for authoring, not only review",
+      "evidence": "user instruction in session; verified gap — code-style.md §1 names only the SSoT iron rule and code-style.md reaches neither asd-ba nor asd-ux; cost for AC-10: 0 iterations, 0 fix rounds",
+      "artifact_revision": "sprint.md@scope-2"
     }
   ],
   "task_routing": {
@@ -112,6 +119,18 @@
       "execution": "agent",
       "resolved_model": "sonnet",
       "reason": "artifact-risk:verification-sweep"
+    },
+    "T13": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "D-1": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
     }
   },
   "skipped_phases": [
@@ -133,9 +152,9 @@
     }
   },
   "created_at": "2026-09-09T07:37:57Z",
-  "updated_at": "2026-09-09T10:09:10Z",
+  "updated_at": "2026-09-09T10:37:24Z",
   "review_fixes_pending": null,
-  "test_defects_pending": null,
+  "test_defects_pending": "D-1",
   "pr": null,
   "archived_at": null
 }
