@@ -2,5 +2,6 @@
 - [sync.js --apply target form](project_sync-apply-target-form.md) — `--apply` wants generated view paths, not `.asd/` canon, and rejects an empty target list; pick targets from `--check`.
 - [CRLF canon edits](project_crlf-canon-edits.md) — read a canon file's bytes before a scripted edit; a CRLF checkout orphans a CR under an LF-only anchor
 - [Parallel-agent commit sweep](project_parallel-agent-commit-sweep.md) — shared worktree: a sibling’s broad `git add` can swallow your edits; never `git stash`
+- [Tests pin literal prose](project_tests-pin-literal-prose.md) — `tests/run.js` asserts exact sentences in rule docs/workflows; reword around the literal, never edit the assertion
 - [Sequential fix rounds](feedback_sequential-fix-rounds.md) — cross-file review fixes go to one dev, in order; re-read every mirror before reporting done
 - [Fix the class, not the instance](feedback_fix-the-class.md) — recurring finding in one section? strip the blanket header qualifier, state reach per branch
