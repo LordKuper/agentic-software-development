@@ -160,3 +160,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: `.asd/sprints/010-agent-doc-economy/state.json`, `CHANGELOG.md`, `.asd/release-manifest.json`
 
 - 2026-09-09 - F-6 appended at pr: asd-sprint SKILL.md and asd-phase-pr.md disagree on whether open mode archives the sprint folder. Followed the workflow, which is the authoritative orchestration body, and left the folder on the active path. Recorded rather than resolved - it is canon outside this PR change surface and the retrospective for this sprint is already written and committed.
+
+## 2026-09-09 - Sprint closed
+
+- **Decision**: Explicit closure approval recorded after the merge and the completion evidence. Sprint folder moved to `archived/`, terminal state written (`phase=done`, `pr.state=merged` with the merge commit, `archived_at`).
+- **Rationale**: The hard closure gate is the one decision no publication, merge or adaptive policy can satisfy, so it was requested with the evidence in hand: PR #33 merged, main green at 184/184 with a clean sync, all ten acceptance criteria delivered, every reviewer APPROVE at iteration 5, all four defects fixed, no open stub, retrospective written.
+- **Affected docs**: `.asd/sprints/archived/010-agent-doc-economy/state.json`
