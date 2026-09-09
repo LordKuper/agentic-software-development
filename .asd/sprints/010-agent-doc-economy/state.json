@@ -1,7 +1,7 @@
 {
   "sprint_id": "010-agent-doc-economy",
   "branch": "sprint/010-agent-doc-economy",
-  "phase": "design",
+  "phase": "design-promote",
   "documents": {
     "audit": true,
     "prd": false,
@@ -27,7 +27,11 @@
     }
   ],
   "task_routing": {},
-  "skipped_phases": [],
+  "skipped_phases": [
+    "design",
+    "design-review",
+    "design-promote"
+  ],
   "reviews": {
     "design": {
       "iteration": 0,
@@ -42,7 +46,7 @@
     }
   },
   "created_at": "2026-09-09T07:37:57Z",
-  "updated_at": "2026-09-09T08:02:21Z",
+  "updated_at": "2026-09-09T08:02:32Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

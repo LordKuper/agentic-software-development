@@ -62,3 +62,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: The orchestrator ran the claude-api skill the audit dispatch could not reach, producing C-10 (Claude `effort` is unvalidated in `sync.js` while the Codex counterpart is validated against a vocabulary — a typo ships silently and the agent runs at the host default while canon, the tier matrix and README claim otherwise), C-11 (`xhigh` exists between `high` and `max` and is unused in ASD's Claude tiers; recorded against G-8, not proposed) and C-12 (model aliases confirmed clean, no dated ids in canon). G-11 is closed with no unclosed input.
 - **Rationale**: Sprint scope named the skill explicitly. The subagent had no Skill tool, so the input would otherwise have been recorded as excluded; the orchestrator holds the skill and closing the gap cost one dispatch.
 - **Affected docs**: `.asd/sprints/010-agent-doc-economy/audit.md` (C-9 … C-12, G-11)
+
+- 2026-09-09 — design/design-review/design-promote skipped (no documents enabled)
