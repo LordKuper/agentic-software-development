@@ -161,7 +161,7 @@ flowchart TD
 | **design** | BA writes PRD, UX writes UX-spec and UI mockups, Architect writes ADRs and C4 schema |
 | **design-review** | 3 internal reviewers (Correctness, Efficiency, Documentation) plus External Review iterate to APPROVE |
 | **design-promote** | Approved sprint drafts get decomposed per subsystem and promoted to persistent `docs/` |
-| **plan** | Orchestrator decomposes work into Tasks with checkbox subtasks, traces each to PRD acceptance criteria |
+| **plan** | Orchestrator decomposes work into Tasks with checkbox subtasks, traces each to PRD acceptance criteria, assigns each to a dispatch wave |
 | **impl** | Dev implements Tasks — or fixes impl-review findings (review-fix mode) or impl-test defects (test-fix mode); no tests written here; run build/lint, commit per Conventional Commits |
 | **impl-test** | Tester picks the risk-based test approach for the change scope, deletes redundant/flaky/implementation-coupled tests, writes the missing ones, runs the impacted set; records everything in `test-plan.md`; code defects route back to `impl` |
 | **impl-review** | 4 internal reviewers (Correctness, Efficiency, Testing, Documentation) plus External Review; routes findings back to `impl` review-fix mode; once reviewers approve, runs the sprint's one full-suite check — green advances to `retro`, red exits to `impl` test-fix mode and clears every APPROVE latch |

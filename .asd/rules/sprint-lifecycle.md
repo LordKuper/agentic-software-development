@@ -309,6 +309,8 @@ The main orchestrator passes these lines as `route-task`'s `risks` input, one en
 
 Its absence semantics are deliberately not `Material risk`'s, and the two are never conflated: an absent `Reachability` line asserts the task has no cross-phase dependency — never `unclassified`, never `critical`, and never input to `route-task`, which reads `Material risk` lines only. An off-grammar `Reachability` line is a plan defect fixed before approval, not a fail-closed default.
 
+**Wave declaration** (plan-level, one table in the required `## Dependencies` section, never a per-Task line): rows in ascending wave order, first column the wave number, second the ids of the Tasks dispatched in that wave. Every Task appears in exactly one wave. A Task changing the dispatch or commit contract other Tasks are dispatched under is ordered ahead of them and is alone in its wave. `impl` schedules from this table alone (`asd-phase-impl.md` steps 5-6); the dependency lines under it explain the grouping and never override it. A missing table, or a Task in none or in two waves, is a plan defect fixed before approval — except in a plan authored before this rule, which falls back to a topological sort over its dependency lines.
+
 **Standing Definition of Done** (constant across every sprint, never restated in `plan.md`): all AC-N from the acceptance-criteria source covered by Tasks; impacted test set green at `impl-test` (`Impacted test set` above); full test suite green once, at the end of `impl-review`; all required reviewers green at `impl-review`. `plan.md`'s own Definition of Done section holds only sprint-specific additions to this standing set, referencing it rather than repeating it.
 
 ## Sprint immutability

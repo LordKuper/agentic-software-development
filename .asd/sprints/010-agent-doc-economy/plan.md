@@ -15,17 +15,6 @@ The wave order is itself the sprint's first deliverable. Task 1 lands AC-1 — t
 
 `audit.md` is the input for every task: its Existing-docs section states, per criterion, which passage the new text attaches to and which mirrors move with it. No task invents a second home for a fact that already has one.
 
-| Wave | Tasks | Why grouped |
-|---|---|---|
-| 1 | 1 | AC-1 changes the dispatch contract every later wave runs under |
-| 2 | 2 | AC-2/AC-3 change the staging and commit contract |
-| 3 | 3, 4 | disjoint files, neither a contract change |
-| 4 | 5, 6, 7 | disjoint files; 5 changes the review contract but no task in this wave is dispatched under it |
-| 5 | 8 | AC-7's rule and its rubric bullet change the coverage manifest |
-| 6 | 9 | the audit needs the final rule text |
-| 7 | 10, 11 | disjoint files, both applying audit findings |
-| 8 | 12 | consistency sweep over everything the sprint changed |
-
 ## Definition of Done
 
 Standing DoD applies, never restated here (`sprint-lifecycle.md` "Plan file format").
@@ -35,12 +24,12 @@ Sprint-specific additions: every canonical edit to `.asd/agents/`, `.asd/skills/
 ### Task 1: Wave ordering for contract-changing tasks (AC-1)
 Material risk: change: defines new plan vocabulary and a scheduling constraint the impl phase must honour
 Reachability: `plan` writes each task's wave assignment into `plan.md` at authoring time; `impl` reads it at step 5 when it builds the execution graph and at step 6 when it decides what to dispatch concurrently — both must read the same wave number for the constraint to bind.
-- [ ] Define `wave` once — the vocabulary is absent from canon entirely (`audit.md` G-2) — in `sprint-lifecycle.md` "Plan file format", as a plan-level ordering property rather than a fourth per-Task line grammar
-- [ ] State the rule: a task changing the dispatch or commit contract is ordered ahead of every task dispatched under it, and is alone in its wave
-- [ ] Resolve `audit.md` G-1: `asd-phase-plan.md` computes no dependency graph today, so give the plan phase the step that assigns waves, and make the plan's dependency section carry them rather than staying optional
-- [ ] Update `t_plan.md` so the wave assignment has a slot and the parser-critical comment block still enumerates every line rule
-- [ ] Update `asd-phase-impl.md` steps 5 and 6 to schedule from the declared waves rather than from an independently derived topological sort
-- [ ] Check the mirror set: `README.md` if the plan format is described there, `tests/run.js` if it asserts the plan grammar
+- [x] Define `wave` once — the vocabulary is absent from canon entirely (`audit.md` G-2) — in `sprint-lifecycle.md` "Plan file format", as a plan-level ordering property rather than a fourth per-Task line grammar
+- [x] State the rule: a task changing the dispatch or commit contract is ordered ahead of every task dispatched under it, and is alone in its wave
+- [x] Resolve `audit.md` G-1: `asd-phase-plan.md` computes no dependency graph today, so give the plan phase the step that assigns waves, and make the plan's dependency section carry them rather than staying optional
+- [x] Update `t_plan.md` so the wave assignment has a slot and the parser-critical comment block still enumerates every line rule
+- [x] Update `asd-phase-impl.md` steps 5 and 6 to schedule from the declared waves rather than from an independently derived topological sort
+- [x] Check the mirror set: `README.md` if the plan format is described there, `tests/run.js` if it asserts the plan grammar
 
 ### Task 2: Whole-tree git commands and co-authored memory ownership (AC-2, AC-3)
 Material risk: change: extends the commit-ownership contract every dispatched agent runs under
@@ -133,6 +122,18 @@ Material risk: artifact: mechanical verification across the sprint's whole chang
 - Sprint 010's own artifacts fall under the rule it writes, per the accepted wider scope (`audit.md` R-10).
 
 ## Dependencies
+
+| Wave | Tasks | Why grouped |
+|---|---|---|
+| 1 | 1 | AC-1 changes the dispatch contract every later wave runs under |
+| 2 | 2 | AC-2/AC-3 change the staging and commit contract |
+| 3 | 3, 4 | disjoint files, neither a contract change |
+| 4 | 5, 6, 7 | disjoint files; 5 changes the review contract but no task in this wave is dispatched under it |
+| 5 | 8 | AC-7's rule and its rubric bullet change the coverage manifest |
+| 6 | 9 | the audit needs the final rule text |
+| 7 | 10, 11 | disjoint files, both applying audit findings |
+| 8 | 12 | consistency sweep over everything the sprint changed |
+
 - Task 1 precedes every other task; it lands the ordering rule they run under.
 - Task 2 precedes Tasks 3 through 12; it changes the commit contract they are dispatched under.
 - Task 3 precedes Task 8: both change the coverage manifest, and the runtime shape must exist before a new rubric entry references it (`audit.md` R-7).
