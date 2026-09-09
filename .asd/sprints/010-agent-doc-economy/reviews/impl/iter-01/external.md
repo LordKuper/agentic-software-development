@@ -49,9 +49,27 @@ The memory's cheap tell suggests running `git log --oneline -8`, but `asd-dev.md
 
 Findings were checked against repo source rather than taken on the wrapped model's word: `.asd/sync.js:168-196,279-330` for EX-1 and EX-4, tracing the provider-gated branches; `artifact-layout.md:191-202` for EX-2; `asd-phase-impl.md` in full cross-checked against both sibling workflows for EX-3; the memory file and `asd-dev.md:63` for EX-5. No stalemate check this dispatch — iteration 1, no prior finding set.
 
+## Second return — replacement dispatch (verdict of record)
+
+Attempt 1 was re-dispatched after returning with its wrapped subprocess still running (F-3). Attempt 1's completed output then arrived **before** its replacement's, and was recorded above; the replacement, attempt 2, returned afterwards. Attempt 2 is the dispatch of record. Both returned CONCERNS, so routing is unchanged, and the two agree on the core: the economy rule's three tests being OR-joined is unsafe, and `.asd/sync.js:296`'s truthiness guard is a real gap (EX-4 above = attempt 2's F3, which additionally asks for an empty-string regression case in `tests/run.js`).
+
+Attempt 2 states the rule finding more precisely than attempt 1 did, and adds one attempt 1 missed:
+
+### EX-6 — high — `.asd/rules/artifact-layout.md:197` (sharpens EX-2)
+
+The three deletion tests are OR-joined, so a line can be cut on the **provenance** test alone even when it fails the **removal** test — that is, even when a reading agent genuinely acts differently because of it — merely because nobody logged why it was added. The `Never cut` list does not cover an ordinary normative rule with real behavioural effect and no paper trail.
+
+**Fix**: make the removal test a necessary condition for any cut, with provenance and enforcement corroborating rather than independently sufficient; or state the precedence explicitly — when removal is false, the line is preserved regardless of the other two.
+
+### EX-7 — high — `.asd/rules/artifact-layout.md:199` (new)
+
+`Cut on sight` lists "a prohibition with no positive rule to contrast" as an unconditional category. Standalone prohibitions with no paired positive rule are exactly the shape of the framework's own security, authority, data-loss and irreversible-action bans — a bare "never do X" with no adjacent "do Y instead". As worded, the bullet authorises cutting those on sight, which is the opposite of what the `Never cut` boundary intends.
+
+**Fix**: narrow the bullet to a redundant negative restatement of an already-stated positive rule, which is its literal intent, and add standalone safety, security, authority and irreversible-action prohibitions to `Never cut` so the two clauses cannot conflict.
+
 ## Verdict
 
-CONCERNS: 5
+CONCERNS: 5 (attempt 1) / 3 (attempt 2, verdict of record). Consolidated fix set: EX-1 … EX-7.
 
 ## Next action
 
