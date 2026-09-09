@@ -3789,6 +3789,72 @@ test('sprint-010 AC-10: the documentation economy rule carries both its authorin
   }
 });
 
+test('sprint-010 iter-02: review-policy.md "Nitpick drop list" is the only enumeration inside the rule set every nitpick-instructed agent is granted, and the outbound external prompts are the sole exempt copies', () => {
+  const policy = readRepoFile('.asd/rules/review-policy.md');
+  const section = policy.split('## Nitpick drop list')[1];
+  assert.ok(section, 'review-policy.md must keep the drop list as its own named section: every reviewer body now says only "never raise nitpick categories", so this section is the sole place those category names exist for an agent that reads our rules');
+  const categories = [...section.split('\n## ')[0].matchAll(/^- (.+)$/gm)].map((match) => match[1].trim());
+  assert.ok(categories.length >= 5, `the section must enumerate the categories rather than name the class: a reviewer told to drop "nitpick categories" with nothing to resolve them against cannot check a finding against the rule. Found ${categories.length}`);
+
+  const table = readRepoFile('.asd/rules/providers.md').split('## Role-scoped context')[1].split('\n## ')[0];
+  const grants = new Map([...table.matchAll(/^\| (.+?) \| (.+?) \|$/gm)]
+    .filter(([, role]) => role !== 'Role')
+    .map(([, role, context]) => [role.trim().replace(/`/g, ''), context]));
+  assert.ok(grants.size >= 10, 'the role table must parse into rows, or every grant assertion below passes vacuously over an empty map - the failure mode that makes a reach check worthless');
+
+  const agentFiles = fs.readdirSync(path.join(REPO_ROOT, '.asd/agents')).filter((file) => file.endsWith('.md'));
+  const instructed = agentFiles.filter((file) => /nitpick/i.test(readRepoFile(`.asd/agents/${file}`))).map((file) => file.replace(/\.md$/, '')).sort();
+  const reviewers = agentFiles.filter((file) => file.startsWith('asd-reviewer-') || file === 'asd-external-review.md').map((file) => file.replace(/\.md$/, '')).sort();
+  assert.deepStrictEqual(instructed, reviewers, 'the set carrying the nitpick prohibition must be exactly the review agents - derived from the agent file set, never a hardcoded list, so a new reviewer that never received the instruction fails here instead of shipping as a silently permissive gate');
+  for (const name of instructed) {
+    const context = grants.get(name);
+    assert.ok(context, `providers.md must carry a Role-scoped context row for ${name}, or the grant its prohibition depends on is stated nowhere`);
+    assert.ok(context.includes('review-policy.md'), `${name} is told to drop nitpick categories without being given the category names, so its row must grant review-policy.md - the file holding the only enumeration. Ungranted, the instruction resolves to nothing at dispatch`);
+  }
+
+  assert.ok(categories.some((category) => category.includes('you could also')), 'the list must keep its most distinctive category, the token the sole-home sweep below selects on');
+  const copies = canonMarkdownFiles().filter((rel) => rel !== '.asd/rules/review-policy.md' && readRepoFile(rel).includes('you could also')).sort();
+  assert.deepStrictEqual(copies, [
+    '.asd/templates/external-review/t_prompt-external-design.md',
+    '.asd/templates/external-review/t_prompt-external-impl.md'
+  ], 'the two outbound prompt templates are the one legitimate second copy - the wrapped CLI is handed that text and cannot read review-policy.md - and both must keep it, or an external reviewer is told to drop categories it is never shown. Any other file reproducing them is the drifted copy this round deleted from asd-reviewer-correctness.md, which had aged to four of the five. Scoped to this one token deliberately: a reworded copy evades it, so this proves the token is sole-homed, never that no paraphrase exists');
+});
+
+test('sprint-010 iter-02: each latch non-restatement declaration denies only what its own site omits - the red-full-suite invalidation keeps its rule home and both step-9 acting sites while review-policy.md stops restating it, and neither review workflow denies the mechanic it spells out', () => {
+  const latchSection = readRepoFile('.asd/rules/sprint-lifecycle.md').split('## APPROVE latch')[1].split('\n## ')[0];
+  assert.ok(latchSection.includes('**Red-full-suite invalidation.**'), 'sprint-lifecycle.md "APPROVE latch" is the sole home of latch persistence and claims to name every route that clears it, so the red-suite route must live here - review-policy.md just dropped its copy, which leaves this the only rule-level statement of it');
+  assert.ok(/clear BOTH `reviews\.design\.latched` and `reviews\.impl\.latched` to `\{\}`/.test(latchSection), 'the route must state its blast radius: a red suite invalidates approvals in both review phases, and a rule saying only "clear the latch" is satisfied by clearing one of the two maps');
+
+  const policy = readRepoFile('.asd/rules/review-policy.md');
+  const dod = policy.split('\n').find((line) => line.includes("impl-review's DoD has a second, non-reviewer condition"));
+  assert.ok(dod, 'review-policy.md must keep the DoD half it owns - the green full suite as a second, non-reviewer DoD condition');
+  assert.ok(!dod.includes('clears every APPROVE latch sprint-wide'), 'the DoD paragraph must not re-acquire the clearing rule: that copy sat two lines above a declaration that the clearing is not restated here, so the file contradicted itself and either copy could drift out of step with the acting sites');
+
+  const implReview = readRepoFile('.asd/workflows/asd-phase-impl-review.md');
+  const redBranches = implReview.split('\n').filter((line) => /^\s+- \*\*Red, (test|code) defect\*\*/.test(line));
+  assert.strictEqual(redBranches.length, 2, 'step 9 must keep both red triage branches; a regex that stops matching them would make the clearing assertion below pass over an empty list');
+  for (const branch of redBranches) {
+    assert.ok(branch.includes('latch'), 'both step-9 red branches are acting sites for the red-full-suite invalidation - sprint-lifecycle.md calls that paragraph "the contract the full-suite step must satisfy", and now that review-policy.md no longer restates the clearing, a branch that stops performing it leaves the rule with no site that ever runs it');
+  }
+
+  const policyLatch = policy.split('\n').find((line) => line.startsWith('**APPROVE latch**'));
+  assert.ok(policyLatch && policyLatch.includes('not restated here'), 'review-policy.md must keep handing the mechanism to its SSoT instead of describing it');
+  assert.ok(!policyLatch.includes('review workflow'), 'a non-restatement declaration may speak for its own site only: both review workflows do spell the dispatch-skip mechanic out at the step that applies it (asserted below), so extending the denial across them made it false and told an editor those copies did not exist');
+
+  for (const rel of ['.asd/workflows/asd-phase-impl-review.md', '.asd/workflows/asd-phase-design-review.md']) {
+    const body = readRepoFile(rel);
+    const filter = body.split('\n').find((line) => line.includes('APPROVE latch filter first'));
+    assert.ok(filter, `${rel} must keep the latch filter as the first act of its dispatch step`);
+    assert.ok(filter.includes('skipped entirely this iteration'), `${rel}: the filter bullet must spell out what a latched key does at the point the orchestrator acts on it - that restatement is what keeps the absence assertion on the next line from being vacuous`);
+    assert.ok(!filter.includes('not restated here'), `${rel}: this bullet restates the mechanic in the same breath, so its citation may claim sole SSoT and nothing more. A false "not restated here" reads as licence to delete the SSoT copy, which is the one an agent that never opens this workflow depends on`);
+
+    const writeStep = body.split('\n').find((line) => line.includes('sole SSoT for the every-reviewer-gets-an-entry invariant'));
+    assert.ok(writeStep, `${rel} must keep the verdict-write step's citation of the latch SSoT`);
+    assert.ok(writeStep.includes("External Review's availability skip is recorded as"), `${rel}: the write step states the availability-skip form itself, being the step that writes it`);
+    assert.ok(!writeStep.includes('availability-skip carve-out'), `${rel}: having just stated the availability skip, the step must not also list that carve-out among the things it declares un-restated - the same self-contradiction removed above`);
+  }
+});
+
 // ===========================================================================
 // Runner
 // ===========================================================================
