@@ -29,7 +29,9 @@ executable changes real unit tests; give prose changes a `none` with its reason,
 encodes an ordered/enumerable invariant that mirrors an SSoT — then pattern 2 applies.
 
 Entries below are keyed by topic, never by ordinal: fold a new lesson into the heading it belongs to
-instead of appending a numbered one.
+instead of appending a numbered one. This file loads on every dispatch of this agent and is reviewed
+as a hot path under `artifact-layout.md` "Documentation economy" — ordinal keying is what made it
+grow (sprint 010 EFF-2), since appending is always cheaper than merging.
 
 ## Mutate, run, restore — one bash call
 
