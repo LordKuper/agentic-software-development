@@ -39,7 +39,7 @@ Codex delegates use the concrete model IDs in the canonical family map: `sol` �
 
 Optional external tools auto-detected by `/asd-init`:
 
-- **LikeC4 CLI** — for C4 architecture model rendering (subsystem-decomposition mode `likec4`)
+- **LikeC4 CLI** — for C4 architecture model rendering (`project.diagram_tool: likec4`, needs decomposition + `documents.c4` enabled)
 - **`@google/design.md`** — for DESIGN.md token lint and Tailwind/DTCG export
 
 ---
@@ -200,7 +200,7 @@ Eleven specialized agents are canonically defined in `.asd/agents/` and generate
 |---|---|---|---|
 | `asd-ba` | opus/high | sol/high | Business analyst: PRD, acceptance criteria; conditional domain audit support |
 | `asd-ux` | opus/high | sol/high | UX flows, UI mockups, DESIGN.md tokens, design-system.html |
-| `asd-architect` | opus/high | sol/high | Complete docs/code audit; ADRs, C4, stack, API contracts, tech references |
+| `asd-architect` | opus/high | sol/high | Complete docs/code audit; ADRs, subsystem registry, C4, stack, API contracts, tech references |
 | `asd-dev` | sonnet/medium | terra/medium | Server/CLI/library code and UI code (no tests; consumes DESIGN.md tokens where UI work applies) |
 | `asd-tester` | sonnet/medium | terra/medium | All tests: risk-based selection, pruning, authoring at every level, suite runs, manual verification specs |
 

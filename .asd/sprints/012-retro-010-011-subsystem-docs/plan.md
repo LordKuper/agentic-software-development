@@ -130,9 +130,9 @@ Reachability: audit or design-promote write `docs/architecture/subsystems.md` at
 
 ### Task 7: Mirrors and release manifest
 Material risk: artifact: release manifest hashes
-- [ ] AC-18, AC-19: update README.md for this sprint's changes. Sections: feature list (18), phase and agent descriptions, config schema (`diagram_tool`, decomposition), folder map (342), the runtime.js description (306), the LikeC4/Mermaid tool section (357, 369-378, 436), and the hard-rule mirror (181).
-- [ ] AC-18: in `.asd/release-manifest.json`, remove `t_subsystems.yaml` and register the new template(s) in `managed_paths` and `upstream_hashes`. Recompute every `canon_hashes` and `upstream_hashes` entry changed by Tasks 1-6.
-- [ ] AC-19: run `node .asd/sync.js --check` until clean. Build and lint.
+- [x] AC-18, AC-19: update README.md for this sprint's changes. Sections: feature list (18), phase and agent descriptions, config schema (`diagram_tool`, decomposition), folder map (342), the runtime.js description (306), the LikeC4/Mermaid tool section (357, 369-378, 436), and the hard-rule mirror (181).
+- [x] AC-18: in `.asd/release-manifest.json`, remove `t_subsystems.yaml` and register the new template(s) in `managed_paths` and `upstream_hashes`. Recompute every `canon_hashes` and `upstream_hashes` entry changed by Tasks 1-6.
+- [x] AC-19: run `node .asd/sync.js --check` until clean. Build and lint.
 
 ## Risks
 
