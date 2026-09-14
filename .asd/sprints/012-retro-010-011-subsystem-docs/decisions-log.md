@@ -226,3 +226,13 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: `sprint-lifecycle.md`, `t_plan.md`, `asd-phase-plan.md`, `asd-phase-impl.md`, `asd-init`, `review-policy.md`, `asd-phase-impl-review.md`, reviewer memories
 
 - 2026-09-14 — impl-test: impacted set green (full suite via safety valve, 197/197; sync --check 72/72 current), 0/0 tests added/removed, 1 updated (AC-13 late-wave + type check; entry 4)
+
+## 2026-09-14 — impl-review iter-03: CONCERNS → impl review-fix
+
+- **Decision**: Verdicts: correctness APPROVE (latched at 3); efficiency and testing APPROVE (inherited from their latch at 2, not dispatched); documentation and external CONCERNS. Floor is high. Both ledgers passed `validate-ledger`. There was no split (19 files). Routed to review-fix (`review_fixes_pending=iter-03`).
+  - Duplicate merged: DOC-1 = external #1. `asd-init` sprint-mediated `FAILED` at step 6 is not in impl's closed blocker list, so the accepted "phase blocker" choice never reached the workflow.
+  - Dev chain, in order:
+    - DOC-1.
+    - External #2: un-enumerated string fields (`documents.*`, `backward_compat`) in `t_config.yaml` carry no `Values:` marker, so sprint-mediated step 2 accepts any string. The iter-02 external #1 fix left this residual.
+- **Rationale**: Both findings are high and within scope, with no new abstraction. Iteration 4 is the last within the high budget.
+- **Affected docs**: `reviews/impl/iter-03/`, `state.json`

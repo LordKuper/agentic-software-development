@@ -1,6 +1,6 @@
 ---
 name: no-shell-doc-review-method
-description: How documentation review runs in this framework repo - no shell, manifest-driven ledger vocabulary (emitter-produced, possibly split into parts), and the defect shapes that actually pay off (acting-site scope contradicting the cited SSoT, partial mirror updates when a rule gains a trigger, sole-home claims wider than the code, and agent-memory claims stale at HEAD or contradicting the writer's definition)
+description: How documentation review runs in this framework repo - no shell, manifest-driven ledger vocabulary (emitter-produced, possibly split into parts), and the defect shapes that actually pay off (acting-site scope contradicting the cited SSoT, partial mirror updates when a rule gains a trigger, sole-home claims wider than the code, new failure branches missing from an exhaustive blocker list, and agent-memory claims stale at HEAD or contradicting the writer's definition)
 metadata:
   type: feedback
 ---
@@ -29,6 +29,10 @@ what changed; prior `reviews/` iterations stay unread.
 - **A rule gaining a second trigger/site leaves unnamed mirrors stale.** Grep the old attribution phrase
   across the whole phase's files - sibling steps AND the skill `description` (always-loaded, in no
   manifest). Valid under the change-surface exception (change made unchanged text wrong).
+- **Accepted flagged choices vs exhaustive lists.** A decisions-log "Accepted flagged choices" line that
+  routes a new failure ("... → `FAILED` → phase blocker") must land in canon. Check the dispatching
+  workflow's closed enumerations ("A blocker is exactly one of", "The only reasons ... contacts the user")
+  - sprint 012 iter-03 found `asd-init` sprint-mediated `FAILED` absent from `asd-phase-impl.md`'s.
 - **Sole-home claims wider than their home.** When a sprint moves content into code (012: n/a predicates
   into `runtime.js`), the new "lives only in X" sentence tends to claim more than X holds while the same
   rule doc still restates the rest. Check the claim against the code and grep for restatements - e.g.
@@ -39,6 +43,8 @@ what changed; prior `reviews/` iterations stay unread.
   writer's own definition - sprint 012 reviewer memories told the agent to proceed silently on an
   out-of-policy payload instruction where `providers.md` "Declared tool policy" requires `QUESTION`.
   A stale line in *your own* memory is corrected in the dispatch that finds it, not raised.
+  Documentation economy's reach lists canon and sprint artifacts, not agent memory - never raise memory
+  bloat as an economy finding.
 - The documentation-economy preserve-list keeps per-case tables whole: a logically subsumed clause in a
   table row is not a cut candidate.
 - The session-start AGENTS.md/CLAUDE.md snapshot in context can predate the branch's last sync - grep the
