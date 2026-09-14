@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:4f3b015f41b7164c73a2127f18bed24d39672c6bd6967011f2e8aba8c0842341 content_digest=sha256:6a5d52fb9d6abb6636de4cd00a57d7e0b50f1b12a529ea3d8b547688400bd20d asd_version=7.2.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:529bcd57da0cf20aa455bc657539764fd42d675c083f7e902f3618fa145fbb54 content_digest=sha256:7fcc23d0e5454e89164cd8dfb61f999a195bc16b12db9d51674f9c54ece1e1d6 asd_version=7.3.0 schema=1
 name: asd-init
-description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs $asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
+description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode, or applies a plan-declared settings change for the active sprint's impl phase. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs $asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 ---
 
 Operation mapping: see `.asd/rules/providers.md`.
@@ -15,17 +15,18 @@ Operation mapping: see `.asd/rules/providers.md`.
 ## Modes
 - **Fresh**: no `.asd/project/config.yaml` → full setup
 - **Re-init**: config exists → diff editor
+- **Sprint-mediated**: invoked by `asd-phase-impl.md` step 6 with an accepted plan's `Settings change:` pairs (`sprint-lifecycle.md` "Plan file format") → applies those pairs only
 
-## Always first (both modes)
+## Always first (fresh and re-init)
 
 0. **Determine self-hosting mode** (`self_hosting` field in `.asd/project/config.yaml`; missing, unreadable, or duplicated key → `disabled`, fail closed).
-0a. **Sync `AGENTS.md`/`CLAUDE.md` managed blocks** (see "AGENTS.md sync"). Runs unconditionally every invocation, fresh or re-init, regardless of subsequent user choices or aborts, in both self-hosting and consumer mode — the managed block always generates from `t_AGENTS.md`/`t_CLAUDE.md` (`providers.md` ownership table).
+0a. **Sync `AGENTS.md`/`CLAUDE.md` managed blocks** (see "AGENTS.md sync"). Runs every fresh or re-init invocation, regardless of subsequent user choices or aborts, in both self-hosting and consumer mode — the managed block always generates from `t_AGENTS.md`/`t_CLAUDE.md` (`providers.md` ownership table). Sprint-mediated mode skips it: `config.yaml` is its only write.
 
 ## Workflow (fresh)
 
 1. Detect greenfield vs brownfield via repo search on source files
 2. Request user input, batch: chat/docs language, decomposition, compatibility, external review, self-hosting, `user_gates` (`strict` default or `adaptive`), `skip_design_phases` (`disabled` default; semantics `sprint-lifecycle.md` "Optional documents"), and document settings. `documents.audit` is `auto|always|off` (`auto` default; legacy enabled/disabled normalize to always/off); other document flags keep their existing values. For self-hosting recommend audit `auto` and other documents disabled. Whenever `prd`, `ux_spec`, `adr` and `c4` are all disabled, recommend `skip_design_phases: enabled`.
-3. If decomposition enabled → request user decision: diagram_tool (`likec4` | `mermaid`)
+3. If decomposition and `documents.c4` enabled → request user decision: diagram_tool (`likec4` | `mermaid`)
 4. Detect OS via command execution (silent; no confirm yet)
 5. Detect external tools (silent; record results, do not prompt per-tool yet):
    - `likec4 --version` (only if diagram_tool=likec4)
@@ -50,16 +51,16 @@ Operation mapping: see `.asd/rules/providers.md`.
     - OS, tools, review limits, git settings, `user_gates`, `skip_design_phases`, normalized audit mode, detected build/test/lint/run commands and any affected-test selector
     Then request user decision: `accept-all` | `edit-section` | `abort`.
     - `edit-section` → request user decision on which section (os | tools | review | git | commands), collect new values, re-show proposal, loop until `accept-all`
-    - Missing required tools (designmd if `documents.ux_spec: enabled`; likec4 if decomp+likec4; the wrapped external-review CLI if external_review) → must resolve here: install / override path / disable feature. Do NOT silently proceed with missing required tools.
+    - Missing required tools (designmd if `documents.ux_spec: enabled`; likec4 if decomp+c4+likec4; the wrapped external-review CLI if external_review) → must resolve here: install / override path / disable feature. Do NOT silently proceed with missing required tools.
     Only after `accept-all` proceed to write.
 9. Write `.asd/project/config.yaml` from `t_config.yaml` with approved `user_gates`, `skip_design_phases`, audit mode and other fields.
 10. Ask user what custom rules to add (separately for common / design / coding scopes); write three files from templates: `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`. Empty scope still writes template stub (header + intro), so agents always find the file.
 11. Write `.asd/project/stubs.md` from `t_stubs.md` (empty registry — downstream phases expect the file to exist)
 12. Write `.asd/project/commands.yaml` (from `t_commands.yaml` + detected + OS-specific `custom.designmd-*` only when `documents.ux_spec: enabled`); `test_affected` written only when detected, omitted (not written empty/guessed) otherwise — a `.asd/project/commands.yaml` from an older ASD version without the field keeps working unchanged since the impacted set falls back to the search-derived definition
-13. If decomp enabled:
+13. If decomp enabled: write an empty registry `docs/architecture/subsystems.md` from `t_subsystems.md` (no rows, no diagram) when absent — Architect fills it (`artifact-layout.md` "Subsystem registry"). Only if `documents.c4` is also enabled:
     - **likec4 mode**: seed `c4/model/main.c4`, `c4/views.c4` from templates. Seed `commands.yaml` with a `c4-build: "likec4 build docs/architecture/c4 --output docs/architecture/c4/dist"` build-to-view command — `dist/` itself is gitignored, not built here
-    - **mermaid mode**: seed `c4/subsystems.yaml` from `t_subsystems.yaml`. ASD ships no mermaid-to-HTML renderer (avoids a new dependency) — seed `commands.yaml`'s `c4-build` entry as an empty placeholder (`""`) with an inline comment: user supplies their own render command before first use (a project script, or manually wrapping the mermaid blocks in `t_html-shell.html` as the architect agent does for other artifacts); `architecture.html` itself stays gitignored either way, never rendered by ASD itself
-14. If decomp enabled: **seed `.gitignore`** for C4 build output — append (never clobber existing entries; create the file if absent) `docs/architecture/c4/dist/` and `docs/architecture/c4/architecture.html` if not already present
+    - **mermaid mode**: seed nothing more — the diagram lives in `subsystems.md`; no `c4/`, no `c4-build`
+14. If decomp, `documents.c4` and likec4 mode: **seed `.gitignore`** for C4 build output — append (never clobber existing entries; create the file if absent) `docs/architecture/c4/dist/` if not already present
 15. **Post-init artefact checks** — suggest dedicated skill for each missing required artefact (do NOT auto-dispatch). Order: concept → stack → design-system:
     - `docs/product/concept.html` absent → suggest `$asd-concept`
     - `docs/architecture/stack.html` absent → suggest `$asd-stack`
@@ -79,6 +80,17 @@ Operation mapping: see `.asd/rules/providers.md`.
 5. Show consolidated diff of all pending edits → request user decision: `accept-all` | `edit-section` | `abort`; loop until accepted
 6. Apply diff; write config
 7. If `review.external_review=enabled`, resolve and probe the wrapped CLI from the final config exactly as fresh init does; report the resolved command and availability. An unavailable probe leaves the setting intact but is surfaced as the explicit runtime availability-skip reason (`external-review.md` "Detection and negative cache").
+
+## Workflow (sprint-mediated)
+
+Plan acceptance is the approval of record: no config dump, no section prompt, no `accept-all`.
+
+1. Read current `.asd/project/config.yaml`
+2. Validate every pair against the working-tree `.asd/templates/t_config.yaml` (a key an earlier-wave Task added counts) before any write: the dotted key must name a leaf field there, and the value must fit that field: one of its enumerated values where it enumerates them (`Values:` or an inline `a | b` comment), else the type of its template value — `true`/`false` for a boolean, a non-negative integer for an integer, a string for a string. Any failing pair → `FAILED` naming it; nothing written.
+3. Set each declared `<key>=<value>` pair (dotted path); touch no other field. A pair already equal is a no-op.
+4. Write config
+5. Post the diff in `language.chat`: one `<key>: <old|absent> → <new>` line per pair
+6. Re-init step 7 applies when a pair touches `review.external_review` or `system.tools`
 
 ## AGENTS.md sync
 
@@ -121,20 +133,23 @@ Four custom commands emitted only when `documents.ux_spec: enabled` (else omitte
 - `AGENTS.md`, `CLAUDE.md` — managed block synced from `t_AGENTS.md`/`t_CLAUDE.md` in both consumer and self-hosting mode
 - `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`, `stubs.md`
 - `.asd/project/commands.yaml`
-- `docs/architecture/c4/` content per `diagram_tool` (decomp only)
-- `.gitignore` entries for C4 build output (decomp only; append-only, existing entries preserved)
+- `docs/architecture/subsystems.md`, empty (decomp only)
+- `docs/architecture/c4/` likec4 seed (decomp + `documents.c4` + likec4 only)
+- `.gitignore` entry for likec4 build output (same condition; append-only, existing entries preserved)
 
 Concept, stack, design system NOT produced here; owned by `$asd-concept`, `$asd-stack`, `$asd-design-system` respectively.
 
 ## Agents dispatched
 
-None. Init runs solo; no sprint context yet.
+None. Init runs solo; fresh and re-init have no sprint context, sprint-mediated reads none beyond its declared pairs.
 
 ## Return contract (single line)
 
 ```
-INIT: <fresh|re-init> | MODE: <greenfield|brownfield> | DECOMP: <enabled|disabled> | DIAGRAM: <likec4|mermaid|n/a> | TOOLS: likec4=<ok|missing|skip|n/a> designmd=<ok|missing|skip> external_review_wrapped_cli=<ok|missing|skip|n/a>
+INIT: <fresh|re-init|sprint-mediated> | MODE: <greenfield|brownfield|n/a> | DECOMP: <enabled|disabled> | DIAGRAM: <likec4|mermaid|n/a> | TOOLS: likec4=<ok|missing|skip|n/a> designmd=<ok|missing|skip|n/a> external_review_wrapped_cli=<ok|missing|skip|n/a>
 ```
+
+Sprint-mediated: `MODE` and every `TOOLS` entry its step 6 did not probe are `n/a`; `DECOMP`/`DIAGRAM` are read from the written config.
 
 Followed by file-creation summary.
 

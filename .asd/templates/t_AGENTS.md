@@ -43,6 +43,6 @@ When subsystem decomposition is enabled (`project.subsystem_decomposition`), per
 
 ### Hard rules
 
-- Never modify workflow infrastructure (`.asd/rules/`, `.asd/templates/`, generated agent/skill/hook trees). Only `/asd-init`/`$asd-init` edits settings.
+- Never modify workflow infrastructure (`.asd/rules/`, `.asd/templates/`, generated agent/skill/hook trees). Only `/asd-init`/`$asd-init` edits settings — run by the user, or by `impl` for a plan-declared settings change.
 - All project work flows through `/asd-sprint`/`$asd-sprint`. No ad-hoc edits to project code outside a sprint.
 - One active sprint at a time. New sprint blocked until active one archived.

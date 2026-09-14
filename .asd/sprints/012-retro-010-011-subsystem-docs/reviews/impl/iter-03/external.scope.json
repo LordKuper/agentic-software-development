@@ -1,0 +1,37 @@
+{
+  "phase": "impl-review",
+  "iteration": 3,
+  "base_ref": "896b7428e430435da2e2c4edf0b15fe0fb1a8ba5",
+  "head_ref": "b389e4df850ed3becacb637272d2a35ba173733b",
+  "files": [
+    ".asd/release-manifest.json",
+    ".asd/rules/review-policy.md",
+    ".asd/rules/sprint-lifecycle.md",
+    ".asd/skills/asd-init/SKILL.md",
+    ".asd/templates/t_plan.md",
+    ".asd/workflows/asd-phase-impl-review.md",
+    ".asd/workflows/asd-phase-impl.md",
+    ".asd/workflows/asd-phase-plan.md",
+    ".claude/agent-memory/asd-reviewer-correctness/MEMORY.md",
+    ".claude/agent-memory/asd-reviewer-correctness/feedback_review-method-no-shell.md",
+    ".claude/agent-memory/asd-reviewer-correctness/feedback_trace-ac-to-motivating-case.md",
+    ".claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md",
+    ".claude/agent-memory/asd-reviewer-efficiency/MEMORY.md",
+    ".claude/agent-memory/asd-reviewer-efficiency/feedback_no-shell-incremental-scope.md",
+    ".claude/agent-memory/asd-reviewer-testing/MEMORY.md",
+    ".claude/agent-memory/asd-reviewer-testing/feedback_no-shell-review-method.md",
+    ".claude/agent-memory/asd-reviewer-testing/feedback_removed-flag-vacuity.md",
+    ".claude/agent-memory/asd-tester-critical/project_testability-envelope.md",
+    "tests/run.js"
+  ],
+  "exclude_paths": [
+    ".asd/project/**",
+    ".asd/sprints/**",
+    ".claude/agents/**",
+    ".claude/skills/**",
+    ".claude/hooks/**",
+    ".claude/settings.json",
+    ".codex/**",
+    ".agents/skills/**"
+  ]
+}

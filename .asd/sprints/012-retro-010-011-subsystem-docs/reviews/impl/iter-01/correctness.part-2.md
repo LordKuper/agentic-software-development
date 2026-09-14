@@ -1,0 +1,40 @@
+[REVIEW-impl-correctness]: CONCERNS
+
+# Review — correctness (part 2 of 2)
+
+- **Phase**: impl-review
+- **Iteration**: 1 (severity floor: low)
+- **Evidence**: [manifest](./correctness.part-2.manifest.json) · ledger below
+
+## Findings
+
+| # | Severity | Location | Description | Suggested fix |
+|---|---|---|---|---|
+| COR-2-1 | medium | `.asd/workflows/asd-phase-audit.md:6` (step 3a); related rule `.asd/rules/sprint-lifecycle.md` "Audit phase" | Registry migration moves only id, purpose and key paths for each subsystem, but step 3a then asks to delete a legacy `c4/` in any mermaid-mode project. When config `documents.c4` is enabled, the legacy `c4/subsystems.yaml` holds that project's diagram. Nothing writes that diagram into the `## Diagram` block of `subsystems.md` (`t_subsystems.md:14-23`) before the deletion gate. The user approves the deletion and the diagram is lost. That contradicts the plan decision in `decisions-log.md` that `c4/` is deleted "after its content has moved to the registry", and AC-17's promise that pre-change projects are migrated. Git history still has the file, but nothing tells the user or Architect to look there. The next design only rebuilds the diagram as a new "full schema", without the diagram the project already had. | In step 3a, and in the "Audit phase" rule it cites, add: when the project is in mermaid mode and config `documents.c4` is enabled, the Architect dispatch also writes the Mermaid block from the legacy source into `subsystems.md` `## Diagram`. The deletion gate is offered only after that write. |
+| COR-2-2 | low | `.asd/workflows/asd-phase-impl.md:83` (step 8) vs `:62` (step 6) | The settings-change rule says "when wave 1 opens, before any dispatch", but it sits in step 8, after step 6 has dispatched every wave and step 7 has waited for all of them. An orchestrator that follows the steps in order applies the change after all waves have run. Plan Task 5's Reachability line says it must land "before dispatching later waves". | Move the settings-change paragraph into step 6, before the wave-1 dispatch, or add a one-line pointer to step 8 at the start of step 6. Leave step 8 for manual steps only. |
+| COR-2-3 | low | `.asd/templates/t_plan.md:19`; `.asd/workflows/asd-phase-plan.md:39` | Two placement rules can clash, and nothing says which wins. A task with a `Settings change:` line must be "alone in wave 1". A task that changes the dispatch or commit contract must be "ordered ahead of" the tasks dispatched under it and "alone in its wave". A plan that has both kinds of task breaks one rule whatever order it picks. Plan step 4 also names only the contract-change rule, so the settings-change placement is reachable only through the template comment and the cited rule doc. | Add one tie-break in `sprint-lifecycle.md` "Plan file format" (for example, the settings-change task goes to wave 1 and the contract-change task follows alone in wave 2, since the settings task is applied through `asd-init`, not a dev dispatch). Mirror it in `t_plan.md:19` and in the plan step 4 wave bullet. |
+| COR-2-4 | low | `.asd/workflows/asd-phase-impl-review.md:35`, `:22`; `.asd/workflows/asd-phase-design-review.md:28` | Both workflows pass `--files <scope file list>` or `--files <in-scope draft paths, one per line>`, which reads as the list itself. `emitManifestCommand` (`.asd/runtime.js:359,365`) reads `--files` as a path to a file. Neither workflow says to write the list to a file first, where that file goes, or lists that write under "Operations used". A literal reading ends in ENOENT at the review gate. | Say `--files <path to a file holding the scope file list, one path per line>`, name the location (for example a scratch file outside the committed review dir), and add the write to "Operations used". |
+
+## Coverage (internal reviewers only)
+
+Split dispatch, part 2 of 2. All 20 manifest files were read in their current on-disk state. No shell was available, so the files were read directly rather than through the diff. Cross-checked against part-1 evidence the files cite: `.asd/runtime.js` emitter and validator, `sprint-lifecycle.md` "Audit phase", "Design-promote phase" and "Plan file format", `review-policy.md` "Split trigger", `asd-init/SKILL.md` step 13, `release-manifest.json`.
+
+- **AC trace in this half:** everything these files carry is bound where the acting agent reads it: AC-2, AC-3 (plan step 4), AC-4, AC-8, AC-10 (`t_test-plan.md` "Suite run"), AC-11 (impl steps 6, 10, 11), AC-12 (both review workflows), AC-13 (impl steps 8 and 9, `t_plan.md`), AC-15/16/17 (audit, design c4-full, design-promote, plan step 3, `t_audit.md`, `t_subsystem(s).md`), and AC-18 (`t_config.yaml`, README folder map, `.gitignore`). AC-17 is partial for mermaid-mode projects with C4 enabled (COR-2-1).
+- **Checked and not raised:**
+  - The `--halve` re-emit only applies to an unsplit manifest, and a part interrupted twice goes to a user decision, so part manifest files cannot collide.
+  - `--custom-rules` files always exist, because `asd-init` step 10 writes stubs.
+  - The UI-surface predicate is computed over the whole scope before partitioning.
+  - The agent-memory edits are consistent with the dev and tester definitions.
+
+## Verdict
+CONCERNS: 4
+
+## Next action
+Route to impl review-fix mode. COR-2-1 needs the diagram-migration clause in audit step 3a and the "Audit phase" rule. COR-2-2 to COR-2-4 are wording and placement fixes in the named workflows and template.
+
+## Escalations (optional)
+- none. COR-2-1 fills in the recorded migration decision and does not change it.
+
+```json
+{"manifest_digest": "1a69701bdb8ba7e8e4432e2f1ee60d8d19ee306698b590e9ef6796cfc3af1b7c", "findings": ["COR-2-1", "COR-2-2", "COR-2-3", "COR-2-4"], "files": [{"i": ".asd/templates/t_audit.md", "s": "checked"}, {"i": ".asd/templates/t_config.yaml", "s": "checked"}, {"i": ".asd/templates/t_plan.md", "s": "checked"}, {"i": ".asd/templates/t_subsystem.md", "s": "checked"}, {"i": ".asd/templates/t_subsystems.md", "s": "checked"}, {"i": ".asd/templates/t_subsystems.yaml", "s": "checked"}, {"i": ".asd/templates/t_test-plan.md", "s": "checked"}, {"i": ".asd/workflows/asd-phase-audit.md", "s": "checked"}, {"i": ".asd/workflows/asd-phase-design-promote.md", "s": "checked"}, {"i": ".asd/workflows/asd-phase-design-review.md", "s": "checked"}, {"i": ".asd/workflows/asd-phase-design.md", "s": "checked"}, {"i": ".asd/workflows/asd-phase-impl-review.md", "s": "checked"}, {"i": ".asd/workflows/asd-phase-impl.md", "s": "checked"}, {"i": ".asd/workflows/asd-phase-plan.md", "s": "checked"}, {"i": ".claude/agent-memory/asd-dev-critical/project_sync-apply-ledger-gotcha.md", "s": "checked"}, {"i": ".claude/agent-memory/asd-tester-critical/project_testability-envelope.md", "s": "checked"}, {"i": ".gitignore", "s": "checked"}, {"i": "AGENTS.md", "s": "checked"}, {"i": "README.md", "s": "checked"}, {"i": "tests/run.js", "s": "checked"}], "rules": [{"i": "Bugs [impl-review]", "s": "finding", "f": "COR-2-2"}, {"i": "Security [impl-review]", "s": "pass"}, {"i": "Contracts [impl-review]", "s": "finding", "f": "COR-2-3"}, {"i": "Best practices [impl-review]", "s": "finding", "f": "COR-2-4"}, {"i": "AC coverage trace [impl-review]", "s": "finding", "f": "COR-2-1"}, {"i": "UI conformance [design-review — `n/a: outside phase gate` without a ux-spec/design-system draft; impl-review — conditional on a UI surface in scope]", "s": "n/a", "p": "no UI surface in scope"}, {"i": ".asd/project/custom-common-rules.md", "s": "pass"}, {"i": ".asd/project/custom-coding-rules.md", "s": "pass"}], "sections": [{"i": "Bugs [impl-review]", "s": "reviewed"}, {"i": "Security [impl-review]", "s": "reviewed"}, {"i": "Contracts [impl-review]", "s": "reviewed"}, {"i": "Best practices [impl-review]", "s": "reviewed"}, {"i": "AC coverage trace [impl-review]", "s": "reviewed"}, {"i": "UI conformance [design-review — `n/a: outside phase gate` without a ux-spec/design-system draft; impl-review — conditional on a UI surface in scope]", "s": "n/a", "p": "no UI surface in scope"}]}
+```

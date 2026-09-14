@@ -90,12 +90,14 @@ Every scoped test run in `impl` and `impl-test` uses the **impacted set** — so
 
 **Where the full suite still runs**: exactly once per sprint cycle, at the end of `impl-review`, after every required reviewer returns `APPROVE` or is latched and before `NEXT: retro` — dispatched to `asd-tester` (reviewers are read-only, `providers.md`; the phase gains this capability only through that one dispatch). Recorded in `test-plan.md`'s existing `Suite run` section including `HEAD`; the `pr` gate keeps reading it from there, wording unchanged (`PR phase` below). Red path and latch-clearing: `impl` bullet above and `APPROVE latch` above. Green full suite is part of impl-review's DoD (`review-policy.md` "DoD per review phase").
 
+Each `impl-test` entry's `Suite run` record measures the tree that entry analysed. Only the terminal full-suite run at the end of `impl-review` measures the final tree.
+
 ## Phase table
 
 | Phase | Owner | Input | Output | Exit criteria |
 |---|---|---|---|---|
 | scope | Main orchestrator | user request | `sprint.md`, sprint id, branch | scope gate passed, branch created |
-| audit | Architect (BA conditional) | `sprint.md`, codebase, `docs/`, existing docs any format/location | `audit.md`; optional reverse-engineered/migrated drafts in `<sprint>/design/` | audit gate passed |
+| audit | Architect (BA conditional) | `sprint.md`, codebase, `docs/`, existing docs any format/location | `audit.md`; optional reverse-engineered/migrated drafts in `<sprint>/design/`; subsystem registry when absent (decomposition enabled) | audit gate passed |
 | design | BA → UX → Architect | `audit.md` | drafts in `<sprint>/design/` | drafts complete |
 | design-review | Correctness (UI section, conditional) + Efficiency + Documentation + External Review | `<sprint>/design/` | `reviews/design/iter-NN/<reviewer>.md` | DoD met |
 | design-promote | Orchestrator + Architect + BA + UX | approved drafts | persistent docs in `docs/` | drafts merged, decisions-log entry |
@@ -138,7 +140,7 @@ Never optional: `sprint.md`, `state.json`, `plan.md`, `test-plan.md`, impl-revie
 - PRD (`prd`) reads `sprint.md` + `audit.md` (if `audit` enabled).
 - UX-spec (`ux_spec`) reads PRD if enabled, else `sprint.md`; audit optional. Disabling `ux_spec` also disables the design-system gate, `design-md-delta.yaml`, and UX promotion.
 - ADR (`adr`) reads whichever of PRD/UX-spec exist, else `sprint.md`; audit optional. ADRs are sprint-scoped only (`<sprint>/design/adr.html`, sprint-local `ADR-1`, `ADR-2`, … numbering) and are never promoted as a standalone persistent document — see "Design-promote phase" fold rule.
-- C4 (effective `c4`) reads whichever design drafts exist, current stack, `sprint.md`; ADR not required.
+- C4 (effective `c4`) reads whichever design drafts exist, current stack, the subsystem registry, `sprint.md`; ADR not required.
 - Audit disabled → creators scan the repo themselves for context; the plan workflow greps touched files and reads `.asd/project/stubs.md` directly instead of `audit.md`'s "Related open stubs" section.
 
 **No-op phase rule**: a phase whose entire applicable-artifact set is empty skips dispatch, records its skip inline and returns `COMPLETED`. It has no artifact gate.
@@ -164,6 +166,8 @@ Scans: existing source in touched areas; existing docs in **any format/location*
 
 Output `audit.md` — findings (touched areas, existing docs/code, gaps, risks) plus **Documentation migration plan** listing found external docs to promote into ASD format. Where sprint scope directly overlaps found content, the agent may pre-formulate reverse-engineered/migrated drafts in `<sprint>/design/` (prd.html / adr.html) — **only for documents whose frozen `documents.*` flag is enabled**; a disabled document is never draft-created here either, its finding stays migration-plan text — with `provenance` + `source` frontmatter; these flow through design and design-review like any draft. Migration items not covered by drafts wait for design-promote.
 
+**Subsystem registry** (decomposition enabled; `artifact-layout.md` "Subsystem registry"): Architect reads `docs/architecture/subsystems.md` and each touched subsystem's `<id>.md` to locate the code in scope. When the registry is absent, Architect proposes it — per subsystem: id, purpose, key paths — from an existing C4 registry under `docs/architecture/c4/` (likec4 model or mermaid `subsystems.yaml`), else from code. Every proposed subsystem needs explicit user confirmation (`checkpoints.md` "Gate policy" hard list); only then does Architect write the registry and the `<id>.md` of each confirmed one, before the audit gate. Migrating from a mermaid `subsystems.yaml` with `project.diagram_tool: mermaid` and config `documents.c4` enabled, that write also carries its diagram — the confirmed subsystems and their relations — into the registry's `## Diagram` (`t_subsystems.md`). A registered subsystem without its `<id>.md` gets it backfilled, no gate (nothing is added). Only after that migration lands, a legacy `docs/architecture/c4/` the rules make redundant — config `documents.c4` disabled (the flag, never the `skip_design_phases`-suppressed frozen value) or `project.diagram_tool: mermaid` — is deleted only on user approval (same hard list), with its `.gitignore` entries and `commands.yaml` `c4-build`; declined keeps it.
+
 
 ## Design phase
 
@@ -175,7 +179,7 @@ Agents produce a draft set for the whole sprint scope in `<sprint>/design/`, one
 - `ux-spec.html` — flows + accessibility notes (`documents.ux_spec`)
 - `adr.html` — architecture decisions (`documents.adr`)
 - `design-md-delta.yaml` — proposed DESIGN.md token changes, produced inline during UX-spec authoring (only on token gap; each entry user-approved)
-- `c4-full/` — delta patch against the persistent C4 registry for sprint scope (`model/*.c4`, `views.c4`); full schema only when the persistent registry does not yet exist (effective `documents.c4`). Never build `dist/` here — generated output no reviewer sees (`external-review.md`).
+- `c4-full/` — delta patch against the persistent diagram for sprint scope — likec4 `model/*.c4`, `views.c4` against `docs/architecture/c4/`; mermaid `subsystems.md` against the registry's diagram block; full schema only when that diagram does not yet exist (effective `documents.c4`). Never build `dist/` here — generated output no reviewer sees (`external-review.md`).
 
 Order among enabled documents: PRD (if enabled) before design-system gate. Design-system gate (existence check on `docs/ux/DESIGN.md`, `design-system.html`, `accessibility.html`; dispatches `/asd-design-system` when any missing) applies only when `ux_spec` enabled, and blocks UX-spec. UX-spec (if enabled) before ADR. ADR (if enabled) before c4-full. If effective `documents.c4: disabled` (flag off, or `subsystem_decomposition: disabled`), `c4-full/` omitted.
 
@@ -187,11 +191,11 @@ No-op when the design phase produced zero drafts (see "Optional documents"). Oth
 The main orchestrator handles gates; three domain creators promote (Documentation reviewer NOT involved):
 
 1. The main orchestrator applies the adaptive gate policy to decomposition.
-2. A new subsystem remains hard; after approval Architect patches C4 and creates folders.
+2. A new subsystem remains hard; after approval Architect writes it to `docs/architecture/subsystems.md` — the sole subsystem registry (`artifact-layout.md` "Subsystem registry") — and to its `docs/architecture/<id>.md`, and creates its folders. A changed subsystem gets the same two writes.
 3. The main orchestrator distributes audit migration items to the matching domain.
 4. Parallel promotion:
    - `asd-ba` → per-subsystem (or flat) `docs/product/requirements/<subsystem>.html` from prd draft; product migration items.
-   - `asd-architect` → folds every ADR approved in `adr.html` into whichever existing persistent doc's `responsibility.owns` frontmatter already declares ownership of that decision's subject (see fold rule below); updates `stack.html`, `tech-reference/`; applies the sprint's c4 delta patch (or, when the persistent registry did not exist before this sprint, writes the full schema directly) to persistent `docs/architecture/c4/`; architecture migration items. Rendering (`dist/` or `architecture.html`) is not regenerated here — build on demand via the `commands.yaml` build-to-view command.
+   - `asd-architect` → folds every ADR approved in `adr.html` into whichever existing persistent doc's `responsibility.owns` frontmatter already declares ownership of that decision's subject (see fold rule below); updates `stack.html`, `tech-reference/`; only when effective `documents.c4` is enabled, applies the sprint's c4 delta patch (or, when the persistent diagram did not exist before this sprint, writes the full schema directly) — likec4 to `docs/architecture/c4/`, mermaid to the diagram block in `subsystems.md`; architecture migration items. Rendering (`dist/`) is not regenerated here — build on demand via the `commands.yaml` build-to-view command.
    - `asd-ux` → `docs/ux/<subsystem>.html` from ux-spec draft; patches `DESIGN.md` from `design-md-delta.yaml`; regenerates `design-system.html`; ux migration items.
 5. The dispatching workflow composes promotion records and writes state inline.
 
@@ -199,7 +203,7 @@ Dropping the per-persistent-write and final-mutation gates (former steps 4's tra
 
 **ADR fold rule**: every architectural decision approved in a sprint's `adr.html` is folded, at `design-promote`, into whichever existing persistent doc already declares ownership of that decision's subject in its `responsibility.owns` frontmatter — never from a lookup table. The `adr.html` article's optional "Fold target" line names the candidate and the matched `owns:` clause; the Architect verifies the match, not invents it. A binding rejected alternative folds as one line into the target doc's Constraints-equivalent section (or the fold target's nearest analogous section); a non-binding rejected alternative stays sprint-archive-only, never promoted. When no existing doc's `owns` matches, that is a Complication Approval, not a licence to invent a document — API contracts fold the same way: into a subsystem requirements/architecture doc, `stack.html`, a project-generated OpenAPI/SDL/proto artifact, or, only via Complication Approval, a brand-new doc with no pre-made template. The design gate stays **one approval for the sprint's whole ADR set** — fold-target selection happens after that gate, during promotion, and never re-opens it.
 
-If `subsystem_decomposition: disabled`: drafts merge into flat project-level docs (`requirements.html`, `ux-spec.html`); ADRs still fold per the rule above, never into a flat `adr/` tree. No subsystem folders, no c4 model.
+If `subsystem_decomposition: disabled`: drafts merge into flat project-level docs (`requirements.html`, `ux-spec.html`); ADRs still fold per the rule above, never into a flat `adr/` tree. No subsystem folders, no subsystem registry, no c4 model.
 
 ## Impl phase
 
@@ -310,6 +314,8 @@ The main orchestrator passes these lines as `route-task`'s `risks` input, one en
 **Reachability declaration** (conditional, at most one per `### Task N:` block, its own plain-text line directly under the `Material risk` line(s), never a checkbox): a task whose value depends on two phases agreeing carries `Reachability: <phase> writes <value> at <point>; <phase> reads it at <point>`. Accepting the plan means checking that those two points observe the same value — a purpose unreachable by construction is rewritten or dropped at plan approval, never planned and then closed finding by finding.
 
 Its absence semantics are deliberately not `Material risk`'s, and the two are never conflated: an absent `Reachability` line asserts the task has no cross-phase dependency — never `unclassified`, never `critical`, and never input to `route-task`, which reads `Material risk` lines only. An off-grammar `Reachability` line is a plan defect fixed before approval, not a fail-closed default.
+
+**Settings change declaration** (conditional, at most one per `### Task N:` block, plain-text line under the `Material risk`/`Reachability` lines, never a checkbox): `Settings change: <key>=<value>[, <key>=<value>…]`, `<key>` a dotted `.asd/project/config.yaml` path `t_config.yaml` carries — already, or once an earlier-wave Task of this sprint adds it. Plan acceptance is the approval of record for exactly those pairs: `impl` applies them through `asd-init` sprint-mediated mode as the carrying Task's wave opens, validated against the working-tree `t_config.yaml` then (`asd-phase-impl.md` step 6), never as an `MS-N`, and no other setting. A Task carrying the line is alone in its wave: wave 1 when `t_config.yaml` already carries every key, a Task changing the dispatch or commit contract (below) then following alone in wave 2; otherwise a wave after every Task adding one of its keys, the contract rule below then applying unchanged. The change never rewrites the running sprint's frozen `state.json` snapshot ("Optional documents" above): a frozen setting binds from the next sprint, a live-read one from its next read.
 
 **Wave declaration** (plan-level, one table in the required `## Dependencies` section, never a per-Task line): rows in ascending wave order, first column the wave number, second the ids of the Tasks dispatched in that wave. Every Task appears in exactly one wave. A Task changing the dispatch or commit contract other Tasks are dispatched under is ordered ahead of them and is alone in its wave. `impl` schedules from this table alone (`asd-phase-impl.md` steps 5-6); the dependency lines under it explain the grouping and never override it. A missing table, or a Task in none or in two waves, is a plan defect fixed before approval — except in a plan authored before this rule, which falls back to a topological sort over its dependency lines.
 

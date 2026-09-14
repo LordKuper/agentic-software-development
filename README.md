@@ -15,7 +15,7 @@ Both providers run from one canonical source under `.asd/` (agents, skills, hook
 - **Reviews that converge.** Iteration severity floor stops reviewers from nitpicking the same low-severity issue forever. Each iteration dispatches reviewers with clean context, so verdicts aren't biased by the authoring that produced the artifact. Each internal reviewer must return a complete coverage ledger — every scoped file and every checklist rule accounted for — and the phase skill validates that full ledger before writing, rejecting and re-dispatching any reviewer whose ledger is incomplete, so no file or rule is skipped silently. Only a coverage summary line, the full n/a list, and non-passing rows are persisted to the review file — the gate runs on the full returned ledger regardless.
 - **Brownfield-friendly.** The audit phase reads any existing docs and code (in any format and location) and reverse-engineers them into the workflow's structure.
 - **One source of truth.** SSoT iron rule is enforced by a dedicated Documentation reviewer.
-- **Subsystem-aware.** Optional LikeC4 (or Mermaid) registry organises persistent docs per subsystem.
+- **Subsystem-aware.** A subsystem registry (`docs/architecture/subsystems.md`) organises persistent docs per subsystem, with an optional LikeC4 or Mermaid C4 diagram.
 
 ---
 
@@ -39,7 +39,7 @@ Codex delegates use the concrete model IDs in the canonical family map: `sol` �
 
 Optional external tools auto-detected by `/asd-init`:
 
-- **LikeC4 CLI** — for C4 architecture model rendering (subsystem-decomposition mode `likec4`)
+- **LikeC4 CLI** — for C4 architecture model rendering (`project.diagram_tool: likec4`, needs decomposition + `documents.c4` enabled)
 - **`@google/design.md`** — for DESIGN.md token lint and Tailwind/DTCG export
 
 ---
@@ -178,7 +178,7 @@ User-facing commands available at any time. Invocation form differs per provider
 
 | Claude Code | Codex | Purpose |
 |---|---|---|
-| `/asd-init` | `$asd-init` | Initialize the workflow, or edit settings later in diff mode |
+| `/asd-init` | `$asd-init` | Initialize the workflow, or edit settings later in diff mode; `impl` also runs it for a plan-declared settings change |
 | `/asd-concept` | `$asd-concept` | Form or edit `docs/product/concept.html` (4 entry variants: no-idea / vague / clear / brownfield) |
 | `/asd-stack` | `$asd-stack` | Form or edit `docs/architecture/stack.html` (architect proposes from concept; same 4 variants) |
 | `/asd-design-system` | `$asd-design-system` | Form or edit `docs/ux/DESIGN.md`, `design-system.html`, `accessibility.html` (3 entry variants: greenfield / constraints / brownfield) |
@@ -200,7 +200,7 @@ Eleven specialized agents are canonically defined in `.asd/agents/` and generate
 |---|---|---|---|
 | `asd-ba` | opus/high | sol/high | Business analyst: PRD, acceptance criteria; conditional domain audit support |
 | `asd-ux` | opus/high | sol/high | UX flows, UI mockups, DESIGN.md tokens, design-system.html |
-| `asd-architect` | opus/high | sol/high | Complete docs/code audit; ADRs, C4, stack, API contracts, tech references |
+| `asd-architect` | opus/high | sol/high | Complete docs/code audit; ADRs, subsystem registry, C4, stack, API contracts, tech references |
 | `asd-dev` | sonnet/medium | terra/medium | Server/CLI/library code and UI code (no tests; consumes DESIGN.md tokens where UI work applies) |
 | `asd-tester` | sonnet/medium | terra/medium | All tests: risk-based selection, pruning, authoring at every level, suite runs, manual verification specs |
 
@@ -251,10 +251,10 @@ skip_design_phases: disabled  # enabled | disabled — absent = disabled; skips 
 
 documents:                # optional sprint documents; absent group = all enabled (back-compat)
   audit: auto              # auto | always | off; legacy enabled/disabled accepted
-  prd: enabled              # design/prd.html + persistent requirements
-  ux_spec: enabled          # ux-spec, design-system gate, design-md-delta
-  adr: enabled               # adr.html (sprint-scoped only; folds into existing persistent docs at design-promote)
-  c4: enabled                  # c4-full + persistent C4 (also needs project.subsystem_decomposition: enabled)
+  prd: enabled              # enabled | disabled; design/prd.html + persistent requirements
+  ux_spec: enabled          # enabled | disabled; ux-spec, design-system gate, design-md-delta
+  adr: enabled               # enabled | disabled; adr.html (sprint-scoped only; folds into existing persistent docs at design-promote)
+  c4: enabled                  # enabled | disabled; c4-full + persistent C4 (also needs project.subsystem_decomposition: enabled)
 
 language:
   chat: en          # language for chat with you
@@ -262,7 +262,7 @@ language:
 
 project:
   subsystem_decomposition: enabled    # enabled | disabled
-  diagram_tool: likec4                # likec4 | mermaid (only when decomposition enabled)
+  diagram_tool: likec4                # likec4 | mermaid (only when decomposition and documents.c4 enabled)
 
 backward_compat: migration            # strict | migration | none
 
@@ -303,7 +303,7 @@ your-project/
 │   ├── release-manifest.json        # schema/asd version, managed-path list, model-family table; drives /asd-update + sync.js
 │   ├── sync-state.json              # last-written digests for managed-block / JSON-merge targets (committed)
 │   ├── sync.js                      # generator: canon -> .claude/ + .codex/ + .agents/skills/ (--check / --apply)
-│   ├── runtime.js                   # deterministic helper: task-cost routing, external-review preflight, coverage-ledger validation, manifest digests
+│   ├── runtime.js                   # deterministic helper: task-cost routing, external-review preflight, coverage-manifest emission and split, coverage-ledger validation, manifest digests
 │   ├── rules/                       # workflow rules (role/phase-scoped reads), incl. providers.md
 │   ├── templates/                   # artifact templates (t_*.html / .md / .yaml / .c4), incl. t_AGENTS.md / t_CLAUDE.md
 │   ├── agents/                      # 11 canonical agent specs plus declared tier variants (JSON frontmatter: claude{} + codex{} blocks)
@@ -339,7 +339,9 @@ your-project/
 │   │   └── requirements/<subsystem>.html
 │   ├── architecture/
 │   │   ├── stack.html
-│   │   ├── c4/                      # subsystem registry (likec4 model or mermaid yaml)
+│   │   ├── subsystems.md            # subsystem registry (mermaid mode: + inline diagram)
+│   │   ├── <subsystem>.md           # purpose + key paths per subsystem
+│   │   ├── c4/                      # likec4 diagram source (documents.c4 + likec4 only)
 │   │   └── tech-reference/<tech>-<version>.md
 │   └── ux/
 │       ├── DESIGN.md                # Google Labs format token source
@@ -354,7 +356,7 @@ your-project/
 
 `.asd/` is canonical and hand-edited; `.claude/`, `.codex/`, and `.agents/skills/` are generated by `.asd/sync.js` and committed so the project works immediately after checkout — never hand-edit a generated file, edit its `.asd/` source and re-run sync. Exception: `.claude/agent-memory/<agent>/` is hand-authored, not generated — see [`.asd/rules/artifact-layout.md`](.asd/rules/artifact-layout.md) "Agent memory".
 
-When `project.subsystem_decomposition: disabled`, persistent docs go to flat project-wide paths (no `<subsystem>/` subdirectories, no `c4/`).
+When `project.subsystem_decomposition: disabled`, persistent docs go to flat project-wide paths (no `<subsystem>/` subdirectories, no subsystem registry, no `c4/`).
 
 The authoritative path map lives in [`.asd/rules/artifact-layout.md`](.asd/rules/artifact-layout.md).
 
@@ -373,9 +375,9 @@ npm install -g @likec4/cli
 likec4 --version
 ```
 
-If absent, choose `diagram_tool: mermaid` instead — ASD will render architecture views as embedded Mermaid C4 blocks.
+If absent, choose `diagram_tool: mermaid` instead — ASD writes the Mermaid C4 diagram inline in `docs/architecture/subsystems.md`, with no build step.
 
-Neither the LikeC4 `dist/` output nor the mermaid `architecture.html` is committed (build output, gitignored). `/asd-init` seeds a `c4-build` command in `.asd/project/commands.yaml`; run it to render the persistent C4 registry into a viewable artifact on demand.
+The LikeC4 `dist/` output is not committed (build output, gitignored). In likec4 mode `/asd-init` seeds a `c4-build` command in `.asd/project/commands.yaml`; run it to render the persistent C4 model into a viewable artifact on demand.
 
 ### `@google/design.md`
 
@@ -433,7 +435,7 @@ FAIL findings block progression. Fixes within scope may proceed under the active
 `documents.audit: auto` skips only verifiably mechanical scope without behavior, contract, migration or gate impact. Unknown/risky scope runs audit. `always` and `off` force the choice; legacy `enabled`/`disabled` map respectively. An absent documents group retains the legacy all-enabled behavior. Scope freezes the effective boolean; accepted scope expansion reevaluates it.
 
 **Does ASD work without subsystem decomposition?**
-Yes. Set `project.subsystem_decomposition: disabled` during `/asd-init`. Persistent docs become flat project-wide files. No C4 registry is maintained.
+Yes. Set `project.subsystem_decomposition: disabled` during `/asd-init`. Persistent docs become flat project-wide files. No subsystem registry is maintained.
 
 **Can I skip PRD/UX-spec/ADR/C4 for a lean sprint?**
 Yes. Each is independently toggleable under `documents.*` in `config.yaml`, frozen into the sprint's `state.json` at scope time (a later config edit never changes an active sprint's rules). `audit` becomes a fast no-op on its own when `documents.audit` is disabled: it advances immediately, writes nothing, with one skip line in the decisions log. When `prd`/`ux_spec`/`adr`/effective `c4` are **all** disabled, or when `skip_design_phases: enabled` (regardless of the document flags), one deterministic write — at design entry for the documents case, at audit exit for the explicit setting — collapses `design`, `design-review`, and `design-promote` together and advances straight to `plan`; the latter two are never separately dispatched. `plan`/`impl`/`impl-test`/`impl-review`/`retro`/`pr` always run; acceptance criteria then come from `sprint.md`'s own `AC-N` list instead of the PRD. See `.asd/rules/sprint-lifecycle.md` "Optional documents" and "No-op phase rule".

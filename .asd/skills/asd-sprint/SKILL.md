@@ -18,7 +18,7 @@
 - Read files / search repo — detect active sprint; read state.json, config.yaml, custom-common-rules.md
 - Run command — `git status`, `git branch --show-current`
 - Request user decision — new-sprint confirm, resume/abort choice
-- Delegate to skill — phase skills only
+- Delegate to skill — phase skills, plus `asd-init` per "Skills dispatched"
 - No direct writes — phase skills and their inline orchestrator own writes
 
 ## Workflow
@@ -52,7 +52,7 @@ After any phase skill returns:
 User may interrupt anytime; asd-sprint re-detects state on next invocation.
 
 ## Skills dispatched
-Phase skills listed in `.asd/rules/sprint-lifecycle.md`. No other skill set.
+Phase skills listed in `.asd/rules/sprint-lifecycle.md`, plus `asd-init` sprint-mediated mode for a plan-declared settings change (`asd-phase-impl.md` step 6). No other skill set.
 
 ## Return contract (single line)
 ```

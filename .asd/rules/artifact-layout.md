@@ -2,7 +2,7 @@
 
 ## Optional documents
 
-`prd.html`/`ux-spec.html`/`adr.html`/`c4-full`+`c4/` and `audit.md` are omitted entirely (sprint draft, promoted persistent doc, and any promotion folder) when their `documents.*` flag is disabled — see `sprint-lifecycle.md` "Optional documents" for the flags, defaults, and no-op phase rule. A disabled document is never written as an empty placeholder file.
+`prd.html`/`ux-spec.html`/`adr.html`/`c4-full`+`c4/` and `audit.md` are omitted entirely (sprint draft, promoted persistent doc, and any promotion folder) when their `documents.*` flag is disabled — see `sprint-lifecycle.md` "Optional documents" for the flags, defaults, and no-op phase rule. A disabled document is never written as an empty placeholder file. The subsystem registry and `<subsystem>.md` are no `documents.*` document: they follow `project.subsystem_decomposition` alone ("Subsystem registry"), and `/asd-init`'s empty registry seed is not such a placeholder.
 
 ## Subsystem decomposition modes
 
@@ -33,7 +33,8 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │       │   │   ├── ux-spec.html
 │       │   │   ├── adr.html             # sprint-scoped only; never a standalone persistent document (folds at design-promote)
 │       │   │   ├── design-md-delta.yaml
-│       │   │   └── c4-full/{model/*.c4, views.c4}   # delta patch vs persistent registry; full schema only when registry absent; never build dist/ here
+│       │   │   └── c4-full/                     # documents.c4 only; delta patch vs persistent diagram; full schema only when it is absent; never build dist/ here
+│       │   │       # likec4: model/*.c4, views.c4 · mermaid: subsystems.md
 │       │   ├── plan.md
 │       │   ├── test-plan.md
 │       │   ├── manual-steps.md
@@ -53,9 +54,9 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │   │   └── requirements/<subsystem>.html
 │   ├── architecture/
 │   │   ├── stack.html
-│   │   ├── c4/                          # subsystem registry + views; layout per project.diagram_tool (dist/, architecture.html are gitignored build output — build to view)
-│   │   │   # likec4 mode: model/*.c4, views.c4
-│   │   │   # mermaid mode: subsystems.yaml
+│   │   ├── subsystems.md                # sole subsystem registry; mermaid mode: + inline diagram
+│   │   ├── <subsystem>.md               # purpose + key paths, one per registered subsystem
+│   │   ├── c4/                          # documents.c4 + likec4 only: model/*.c4, views.c4 (dist/ is gitignored build output)
 │   │   └── tech-reference/<tech>-<version>.md
 │   └── ux/
 │       ├── DESIGN.md
@@ -80,11 +81,11 @@ docs/
 └── ux/{DESIGN.md, design-system.html, accessibility.html, ux-spec.html}
 ```
 
-No `c4/` directory. No subsystem subfolders.
+No registry, no `<subsystem>.md`, no `c4/` directory. No subsystem subfolders.
 
 ## Agent memory
 
-Agent memory lives at the provider-view root — `.claude/agent-memory/<agent>/` (`MEMORY.md` index + one file per memory) — always, whatever working directory a dispatch names. Never inside a sprint tree (path map above). One directory per dispatched agent name, tier variants included: distinct agents never share a memory file, so co-authorship arises only between concurrent dispatches of the same agent, which share that directory and its single `MEMORY.md`.
+Agent memory lives at the provider-view root — `.claude/agent-memory/<agent>/` (`MEMORY.md` index + one file per memory) — always, whatever working directory a dispatch names. Never inside a sprint tree (path map above). One directory per dispatched agent name, tier variants included: distinct agents never share a memory file, so co-authorship arises only between concurrent dispatches of the same agent, which share that directory and its single `MEMORY.md`. Before a write lands, the writing agent checks it against its own definition (declared tool policy: `providers.md` "Role-scoped context"); a practice that contradicts the definition is never recorded.
 
 **Carve-out to the read-only generated-view rule**: `agent-memory/` has no canonical source under `.asd/` and `sync.js` neither generates nor reconciles it (no row in `providers.md` "Canonical path -> per-provider path"), so the read-only rule does not reach it. Everything else under `.claude/`, `.codex/` and `.agents/skills/` stays read-only — edit canon, then sync.
 
@@ -92,12 +93,14 @@ Agent memory lives at the provider-view root — `.claude/agent-memory/<agent>/`
 
 ## Subsystem registry
 
-When decomposition enabled, registry lives in `docs/architecture/c4/`. Layout per `project.diagram_tool`:
+When decomposition enabled, `docs/architecture/subsystems.md` (`t_subsystems.md`) is the sole subsystem registry — which subsystems exist and their ids — whatever `documents.c4` or `project.diagram_tool`. Each entry links `docs/architecture/<id>.md` (`t_subsystem.md`: purpose, key paths), and every registered subsystem has one. Reserved, never a subsystem id (they collide in flat `docs/architecture/`): `subsystems`, `stack`, `c4`, `tech-reference`.
 
-- **likec4**: `model/*.c4` (LikeC4 DSL). Subsystem id = container/component id. `likec4 build` produces `dist/` interactive HTML — build output, gitignored, never committed; run the `commands.yaml` build-to-view command to render.
-- **mermaid**: `subsystems.yaml` (machine registry). Subsystem id = entry id. `architecture.html` (embedded Mermaid C4 views) is likewise build output, gitignored, never committed; run the build-to-view command to render.
+`/asd-init` seeds the registry empty; only Architect fills it. A subsystem is added at `design-promote` (`sprint-lifecycle.md` "Design-promote phase"), or at `audit` when the registry is absent (`sprint-lifecycle.md` "Audit phase") — each addition with explicit user approval (hard gate).
 
-New subsystems added only via `design-promote`, with user approval, regardless of diagram tool.
+Diagram, only with `documents.c4` enabled, per `project.diagram_tool`; with `documents.c4` disabled, `docs/architecture/c4/` is never written or created:
+
+- **likec4**: `c4/model/*.c4`, `views.c4` (LikeC4 DSL) — diagram source only; container/component ids match registry ids. `likec4 build` produces `dist/` interactive HTML — build output, gitignored, never committed; run the `commands.yaml` `c4-build` command to render.
+- **mermaid**: a Mermaid C4 block inline in `subsystems.md`. No `c4/` folder, no build output.
 
 ## Document provenance
 
@@ -116,12 +119,13 @@ User-facing artifacts are HTML only. No parallel Markdown source. Exceptions:
 - `DESIGN.md` — Google Labs format (YAML + Markdown), machine source for the design system. Spec: https://github.com/google-labs-code/design.md — agents fetch current spec from upstream when creating/editing it.
 - `commands.yaml` — machine source, not user-facing
 - LikeC4 `.c4` files — DSL source
+- `docs/architecture/subsystems.md`, `<subsystem>.md` — agent-facing registry, read by `audit` and `plan` to locate subsystem code
 
 `design-system.html` generated from DESIGN.md by the Documentation agent: all tokens/rules with live examples (color swatches with hex, typography samples, spacing scale, component previews). Regenerated when DESIGN.md changes.
 
 ## HTML shell wrapping (mandatory)
 
-Every user-facing HTML artifact (prd, ux-spec, adr, concept, stack, accessibility, design-system, architecture, retrospective) MUST be wrapped in `t_html-shell.html`. The fragment template (`t_prd.html`, …) supplies the `<section>` content filling `{{CONTENT}}`. Creators emit a complete HTML document, not a bare fragment. Each artifact stays a **self-contained single file** — no `docs/assets/*` stylesheet or other sibling-file dependency; the shell inlines its own `<style>`.
+Every user-facing HTML artifact (prd, ux-spec, adr, concept, stack, accessibility, design-system, retrospective) MUST be wrapped in `t_html-shell.html`. The fragment template (`t_prd.html`, …) supplies the `<section>` content filling `{{CONTENT}}`. Creators emit a complete HTML document, not a bare fragment. Each artifact stays a **self-contained single file** — no `docs/assets/*` stylesheet or other sibling-file dependency; the shell inlines its own `<style>`.
 
 The shell trims two blocks per document instead of always emitting them: the mermaid CDN script (only when the fragment actually contains a diagram) and the auto-TOC nav (only when the fragment has enough sections to need one). Both are ordinary computed placeholders, filled by the creator at write time — see table below.
 
@@ -129,7 +133,7 @@ The shell trims two blocks per document instead of always emitting them: the mer
 
 | Placeholder | Source / value |
 |---|---|
-| `{{DOC_TYPE}}` | one of `PRD`, `ADR`, `UX-spec`, `Concept`, `Stack`, `Accessibility`, `Design-system`, `Architecture`, `Retrospective` |
+| `{{DOC_TYPE}}` | one of `PRD`, `ADR`, `UX-spec`, `Concept`, `Stack`, `Accessibility`, `Design-system`, `Retrospective` |
 | `{{SUBSYSTEM}}` | subsystem id when persistent per-subsystem; `sprint` for any sprint-scoped artifact (drafts, `retrospective.html`); `project` for project-wide docs |
 | `{{SPRINT_ID}}` | active `state.json.sprint_id` for any sprint-scoped artifact (drafts, `retrospective.html`); empty for persistent docs |
 | `{{STATUS}}` | `draft` (design) / `in-review` (design-review) / `approved` (post design-promote) / `locked` (archived); `final` for a terminal report with no draft/review lifecycle (`retrospective.html`). `adr.html` is a set of decisions (one `<article>` each, `t_adr.html` "repeat this article per decision") — `{{STATUS}}` here is this document-lifecycle value, not an individual ADR's `proposed`/`accepted` status, which lives solely on that ADR's `.status-chip` |

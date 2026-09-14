@@ -1,0 +1,40 @@
+{
+  "phase": "impl-review",
+  "iteration": 2,
+  "base_ref": "64024f8887d4213290e694f14b493d0dd078e0ff",
+  "head_ref": "896b7428e430435da2e2c4edf0b15fe0fb1a8ba5",
+  "files": [
+    ".asd/agents/asd-architect.md",
+    ".asd/agents/asd-reviewer-correctness.md",
+    ".asd/agents/asd-reviewer-efficiency.md",
+    ".asd/release-manifest.json",
+    ".asd/rules/review-policy.md",
+    ".asd/rules/sprint-lifecycle.md",
+    ".asd/runtime.js",
+    ".asd/skills/asd-init/SKILL.md",
+    ".asd/skills/asd-sprint/SKILL.md",
+    ".asd/templates/t_plan.md",
+    ".asd/workflows/asd-phase-audit.md",
+    ".asd/workflows/asd-phase-design-review.md",
+    ".asd/workflows/asd-phase-impl-review.md",
+    ".asd/workflows/asd-phase-impl.md",
+    ".asd/workflows/asd-phase-plan.md",
+    ".claude/agent-memory/asd-reviewer-correctness/feedback_review-method-no-shell.md",
+    ".claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md",
+    ".claude/agent-memory/asd-reviewer-testing/MEMORY.md",
+    ".claude/agent-memory/asd-reviewer-testing/feedback_no-shell-review-method.md",
+    ".claude/agent-memory/asd-reviewer-testing/project_split-part-rubric-rows.md",
+    ".claude/agent-memory/asd-tester-critical/project_testability-envelope.md",
+    "tests/run.js"
+  ],
+  "exclude_paths": [
+    ".asd/project/**",
+    ".asd/sprints/**",
+    ".claude/agents/**",
+    ".claude/skills/**",
+    ".claude/hooks/**",
+    ".claude/settings.json",
+    ".codex/**",
+    ".agents/skills/**"
+  ]
+}

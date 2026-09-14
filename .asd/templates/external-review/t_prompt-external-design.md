@@ -18,7 +18,7 @@ You are external reviewer for ASD workflow. Review sprint design drafts.
 ## Inputs
 
 - scope manifest (above, JSON) — `files[]` lists the in-scope draft paths under `<sprint>/design/` (iter 1: all of them; iter 2+: only paths changed since the previous iteration snapshot), `exclude_paths[]` always includes `c4-full/dist/` and any other generated output — a scope bound (never listed in `files[]`, never a valid finding location), not a read prohibition; it does not apply to the project-context reference paths below, which are always readable and are never valid finding locations either. `base_ref`/`head_ref` are empty — design-review scopes by on-disk draft snapshot, not a commit range. Read current content of each `files[]` path yourself — no source code, no generated output, never from manifest bytes
-- artifacts in scope: whichever of prd.html, ux-spec.html, adr.html, design-md-delta.yaml, c4-full/{model/*.c4, views.c4} exist for this sprint (`documents.*` may disable any — `.asd/rules/sprint-lifecycle.md` "Optional documents") — DSL source only, `dist/` build output excluded
+- artifacts in scope: whichever of prd.html, ux-spec.html, adr.html, design-md-delta.yaml, c4-full/{model/*.c4, views.c4} (likec4) or c4-full/subsystems.md (mermaid) exist for this sprint (`documents.*` may disable any — `.asd/rules/sprint-lifecycle.md` "Optional documents") — DSL source only, `dist/` build output excluded
 - out of scope: implementation code and tests (reviewed in impl-review) — do not report code defects or ask to inspect the codebase
 - project context:
   - docs language: {{LANG_DOCS}}
@@ -78,9 +78,9 @@ Caller passes the computed floor; report only at floor severity or higher.
 - contrast preserved for color changes (per accessibility baseline)
 
 ### c4-full/
-- subsystems referenced in prd/adr present in model
+- subsystems referenced in prd/adr present in the model or subsystems draft, with ids matching `docs/architecture/subsystems.md`
 - new subsystems flagged explicitly (require user approval in promote)
-- views render valid (no broken refs)
+- diagram valid (no broken refs)
 
 ## Required verdict format
 

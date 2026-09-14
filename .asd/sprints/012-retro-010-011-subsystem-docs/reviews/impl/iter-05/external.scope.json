@@ -1,0 +1,21 @@
+{
+  "phase": "impl-review",
+  "iteration": 5,
+  "base_ref": "2f346cf5df50971b184954ee781c316fcea22934",
+  "head_ref": "f5abdac781cb9a54ee75d3f0abcfab6498c09704",
+  "files": [
+    ".claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md",
+    ".claude/agent-memory/asd-tester-critical/feedback_fail-first-and-none-honesty.md",
+    "tests/run.js"
+  ],
+  "exclude_paths": [
+    ".asd/project/**",
+    ".asd/sprints/**",
+    ".claude/agents/**",
+    ".claude/skills/**",
+    ".claude/hooks/**",
+    ".claude/settings.json",
+    ".codex/**",
+    ".agents/skills/**"
+  ]
+}

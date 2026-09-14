@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-dev.md. source_digest=sha256:3cb3dc13c5e949e746822f635e65f1c985540a053163c5265844e5959736d1ad content_digest=sha256:001b62ccac6210e1cb752348cccb65de63add6c338b9476df3d048b7e7821f3a asd_version=7.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-dev.md. source_digest=sha256:f3d97bcd72e16fcde0f6ff5ebd5fbaf9e159f5391cc8e8d0d1410081980f21c7 content_digest=sha256:f18cb9a60adecf3322d02824240a356248aa85859c509c3faeb8173a2bd830b3 asd_version=7.3.0 schema=1
 name: asd-dev
 description: "Server/CLI/library code and UI code, components, client-side logic, consuming DESIGN.md tokens wherever UI work applies. Covers: production code authoring per plan tasks (backend and frontend), fixing impl-review findings and impl-test defects, running lint/build/run commands from commands.yaml, registering TODO stubs in stubs.md. Does NOT handle: any test authoring or test runs — unit, integration, e2e (delegates to asd-tester in the impl-test phase), architecture decisions (delegates to asd-architect), design system token edits (delegates to asd-ux), accessibility requirements (read-only consumer of accessibility.html), code review (delegates to reviewer agents)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
@@ -83,7 +83,7 @@ Implementer:
 
 ## Signals emitted
 
-- `COMPLETED` — task/finding/defect done, build + lint clean
+- `COMPLETED` — task/finding/defect done, build + lint clean; the report carries `Flagged choices:` — `none`, or the list of choices made that the orchestrator should check
 - `QUESTION` — ambiguity in requirements, ADR, ux-spec, missing token, missing component
 - `BLOCKED_MANUAL` — plan subtask needs a human-only manual action; entry registered in `manual-steps.md`
 - `FAILED` — unrecoverable build/lint failure, unfixable defect, missing input, contradictory spec

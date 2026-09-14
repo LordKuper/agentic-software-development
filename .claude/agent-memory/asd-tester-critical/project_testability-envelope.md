@@ -43,7 +43,9 @@ that loops `[id, file, from, to]`, checks the anchor hits exactly once, and rest
 buffer in `finally` with a byte compare worked cleanly (sprint 011, 23 runs in two calls). A "revert the fix
 commit" mutation built from `execSync('git show <sha>^:<path>')` is a silent no-op on this Windows host:
 `execSync` runs through cmd.exe, which eats `^`, so it reads the CURRENT blob. Use `<sha>~1`. The tell is a
-run with zero FAIL lines, not even the hash-ledger noise every real canon mutation produces. For the extra FAIL lines a tracked file's mutation produces:
+run with zero FAIL lines, not even the hash-ledger noise every real canon mutation produces — unless the script
+reads only stdout: `runAll` writes `FAIL -` and the stack to **stderr**, `ok -` and the count to stdout, so a
+`spawnSync` loop must parse both or it shows a dropped count with no FAIL lines. For the extra FAIL lines a tracked file's mutation produces:
 [[mutation-runs-trip-the-hash-ledger]].
 
 **Why** — the two failure modes this replaces:
@@ -124,6 +126,11 @@ strip) reaches it; a wholesale pre-fix restore does not.
 An "at least one example without X" assertion (template conditionality) is only proven by a mutation
 that adds X to **every** remaining block — a single-site edit leaves the claim true and the mutation
 uncaught.
+
+The converse applies to a loop over a derived set, such as "each value type in `t_config.yaml`". Reverting
+the whole fix fires only on the set's first member, in insertion order, so it proves just that member.
+Add a second mutation that removes only a later member's clause before you record that the loop proves
+every member (sprint 012 entry 4, M26/M27).
 
 ## Assert removed phrases, not topic words
 
@@ -286,6 +293,16 @@ proved is that the entry's own commit is green — which nothing else in the spr
 name the commits the earlier record could not cover, and state whether the count moved and why. Note
 also that no test reads this repo's live `.asd/sprints/**` — every sprint reference in `tests/run.js`
 is a temp-root fixture — so editing `test-plan.md` cannot change the suite result and needs no re-run.
+
+## Retired mechanism under an existing test: rewrite, do not delete
+
+`asd-phase-impl-test.md` step 5 classifies a removal as in-scope only when the *test file* is in the change
+surface, and `tests/run.js` almost never is — so deleting any test whose mechanism a sprint retired trips the
+out-of-scope removal gate. Sprint 012 met this with the sprint-008 split test, which hand-built halves with
+`manifest-digest --write` after `emit-manifest` replaced that procedure: rewritten in place against the new
+seam and recorded as `keep (rewritten in place)`, one duplicate assert dropped with its reason in the row.
+Same move for a test carrying a local copy of a derivation the runtime now owns (the documentation-economy
+test's rubric parser): point it at the runtime, don't keep two parsers.
 
 ## Authoring `tests/run.js`
 

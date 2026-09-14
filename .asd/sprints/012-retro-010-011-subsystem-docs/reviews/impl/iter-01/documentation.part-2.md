@@ -1,0 +1,36 @@
+[REVIEW-impl-documentation]: CONCERNS
+
+# Review — documentation
+
+- **Phase**: impl-review
+- **Iteration**: 1
+- **Part**: 2 of 2 (manifest `documentation.part-2.manifest.json`)
+- **Evidence**: [manifest](./documentation.part-2.manifest.json) · ledger below
+
+I had no shell in this dispatch, so I did not run `git diff main...HEAD`. I reviewed the 20 scoped files at HEAD by reading them. For each claim, I checked the canon it cites (`artifact-layout.md`, `sprint-lifecycle.md`, `review-policy.md`, `.asd/runtime.js`, `tests/run.js`). I also checked both agent-memory files in scope against HEAD: the `managed_paths` tree entry, the new template `upstream_hashes` entries and `asd-phase-impl-test.md` step 5. Their claims hold, and both `MEMORY.md` index links resolve.
+
+## Findings
+
+| # | Severity | Location | Description | Suggested fix |
+|---|---|---|---|---|
+| DOC-2-1 | medium | `.asd/workflows/asd-phase-impl.md:83` (step 8) vs `:61-62` (step 6) | Step 8 says a declared settings change is applied "when wave 1 opens, before any dispatch". But it is numbered after step 6 (dispatch waves) and step 7 (wait for all signals), and neither step 5 nor step 6 sends the orchestrator to step 8 first. Followed in order, step 6 hands the settings-change Task to a dev before `asd-init` sprint-mediated mode runs. Step 9's config exception ("when step 8 applied a declared settings change") would then also accept a dev writing `config.yaml`. `sprint-lifecycle.md` "Plan file format" sets no timing, so the workflow is the only home of this ordering, and its placement contradicts its own words. | Move the settings-change application ahead of dispatch, either as its own step before 6 or as the first bullet of step 6 for wave 1. Say whether the settings-change Task is ever dispatched to a dev. Leave only the manual-steps gate in step 8, and update the step references in "Operations used", `asd-init/SKILL.md`, `asd-sprint/SKILL.md`, `sprint-lifecycle.md` and `tests/run.js` AC-13 together. |
+| DOC-2-2 | low | `.asd/workflows/asd-phase-design-review.md:28` (`--files <in-scope draft paths, one per line>`), `.asd/workflows/asd-phase-impl-review.md:35` (`--files <scope file list>`); same wording at `review-policy.md:101` | `.asd/runtime.js` `emitManifestCommand` (`:359`, `:365`) takes `--files <path>` and reads a file of newline-separated paths. Both workflows describe the argument as the paths themselves. Passing them inline fails with "flags require values" at the step that gates every reviewer dispatch. This is a mismatch between the CLI and the canon that tells the orchestrator how to call it. | Write it as `--files <path to the scope file list, one path per line>` at all three sites. Impl-review step 1 should also say the list is written to a file. |
+| DOC-2-3 | low | `tests/run.js:4221` (assert message) | The message says `--ledger` accepting returned text replaces "the transcription step the workflows dropped". Transcription is a defined branch that still exists: `review-policy.md` "Coverage ledger" Enforcement, impl-review step 7 and design-review step 8 all keep "one transcription and re-run". What the change removed was extracting the fenced block into bare JSON. Someone reading the failure message would think a live gate branch is retired. | Reword it, for example: "...read its one fenced ledger block - the orchestrator no longer extracts the block to bare JSON before validating". |
+| DOC-2-4 | low | `.asd/workflows/asd-phase-impl-review.md:28` + `:31` (step 5) | Step 5 now says the predicate member lists "live only in `.asd/runtime.js` (`isUiSurface`, `isExecutable`, ...)". Three lines later it restates part of a member list: "framework `.asd/templates/*.html` count as one". That is a copy of `isUiSurface`'s `.asd/templates/` branch. The "only" claim is false at its own site, and the partial copy goes stale silently if `isUiSurface` changes. The clause about the correctness reviewer's reduced rubric does change reviewer behaviour and should stay. | Remove the member half ("framework `.asd/templates/*.html` count as one"). Keep the pointer to `asd-reviewer-correctness.md`'s reduced/carve-out rubric and "never n/a'd", citing `isUiSurface` as the source of which files qualify. |
+
+## Coverage (internal reviewers only)
+
+The compact ledger is below, bound to the part-2 manifest digest. Every rubric id whose evidence this part does not hold (HTML shell, provenance, traceability) is `n/a` under the manifest's out-of-part predicate. `sections` is empty in the manifest.
+
+## Verdict
+CONCERNS: 4
+
+## Next action
+Impl review-fix mode. Send DOC-2-1, DOC-2-2 and DOC-2-4 to one dev as a single ordered chain, because DOC-2-1's renumbering touches cross-file step references pinned by `tests/run.js`. Send DOC-2-3 to `asd-tester` (the fix is assert-message text in `tests/run.js`). Before applying, re-verify each premise at HEAD per `review-policy.md` "Verify before applying"; the suggested fixes above are not binding.
+
+## Escalations (optional)
+None.
+
+```json
+{"manifest_digest": "f56f9caa04a0b5e83c1a555a493c1fc449e0bf2d07d9ad50fc235794d73379d3", "findings": ["DOC-2-1", "DOC-2-2", "DOC-2-3", "DOC-2-4"], "files": [{"i": ".asd/templates/t_audit.md", "s": "checked"}, {"i": ".asd/templates/t_config.yaml", "s": "checked"}, {"i": ".asd/templates/t_plan.md", "s": "checked"}, {"i": ".asd/templates/t_subsystem.md", "s": "checked"}, {"i": ".asd/templates/t_subsystems.md", "s": "checked"}, {"i": ".asd/templates/t_subsystems.yaml", "s": "checked"}, {"i": ".asd/templates/t_test-plan.md", "s": "checked"}, {"i": ".asd/workflows/asd-phase-audit.md", "s": "checked"}, {"i": ".asd/workflows/asd-phase-design-promote.md", "s": "checked"}, {"i": ".asd/workflows/asd-phase-design-review.md", "s": "checked"}, {"i": ".asd/workflows/asd-phase-design.md", "s": "checked"}, {"i": ".asd/workflows/asd-phase-impl-review.md", "s": "checked"}, {"i": ".asd/workflows/asd-phase-impl.md", "s": "checked"}, {"i": ".asd/workflows/asd-phase-plan.md", "s": "checked"}, {"i": ".claude/agent-memory/asd-dev-critical/project_sync-apply-ledger-gotcha.md", "s": "checked"}, {"i": ".claude/agent-memory/asd-tester-critical/project_testability-envelope.md", "s": "checked"}, {"i": ".gitignore", "s": "checked"}, {"i": "AGENTS.md", "s": "checked"}, {"i": "README.md", "s": "checked"}, {"i": "tests/run.js", "s": "checked"}], "rules": [{"i": "SSoT", "s": "finding", "f": "DOC-2-3"}, {"i": "Template adherence", "s": "pass"}, {"i": "HTML shell wrapping", "s": "n/a", "p": "evidence outside this part; covered by the other parts"}, {"i": "Provenance", "s": "n/a", "p": "evidence outside this part; covered by the other parts"}, {"i": "Traceability", "s": "n/a", "p": "evidence outside this part; covered by the other parts"}, {"i": "Persistent actuality (impl-review)", "s": "finding", "f": "DOC-2-2"}, {"i": "In-code doc comments (impl-review, `code-style.md` §7)", "s": "pass"}, {"i": "Framework mode (`self_hosting: enabled`, impl-review only)", "s": "finding", "f": "DOC-2-1"}, {"i": "Documentation economy", "s": "finding", "f": "DOC-2-4"}, {"i": "Custom rules consistency", "s": "pass"}, {"i": ".asd/project/custom-common-rules.md", "s": "pass"}, {"i": ".asd/project/custom-coding-rules.md", "s": "pass"}], "sections": []}
+```

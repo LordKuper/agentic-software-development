@@ -1,0 +1,24 @@
+{
+  "phase": "impl-review",
+  "iteration": 4,
+  "base_ref": "b389e4df850ed3becacb637272d2a35ba173733b",
+  "head_ref": "2f346cf5df50971b184954ee781c316fcea22934",
+  "files": [
+    ".asd/release-manifest.json",
+    ".asd/templates/t_config.yaml",
+    ".asd/workflows/asd-phase-impl.md",
+    ".claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md",
+    "README.md",
+    "tests/run.js"
+  ],
+  "exclude_paths": [
+    ".asd/project/**",
+    ".asd/sprints/**",
+    ".claude/agents/**",
+    ".claude/skills/**",
+    ".claude/hooks/**",
+    ".claude/settings.json",
+    ".codex/**",
+    ".agents/skills/**"
+  ]
+}

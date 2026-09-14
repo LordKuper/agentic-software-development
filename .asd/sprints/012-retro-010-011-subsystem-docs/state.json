@@ -1,0 +1,221 @@
+{
+  "sprint_id": "012-retro-010-011-subsystem-docs",
+  "branch": "sprint/012-retro-010-011-subsystem-docs",
+  "phase": "pr",
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "adr": false,
+    "c4": false
+  },
+  "user_gates": "adaptive",
+  "skip_design_phases": true,
+  "gate_decisions": [
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "initial scope accepted at the hard write-then-review-accept gate after two user revisions (subsystems.md as registry; mermaid diagram inside subsystems.md)",
+      "evidence": "sprint.md AC-1..AC-19; retrospective rows re-verified at HEAD 62464ac (010 F-4 closed); per-criterion cost 0 iterations / 0 fix rounds for every AC (all new)",
+      "artifact_revision": "sprint.md@scope-3"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "routine audit acceptance in adaptive mode: findings-only artefact within accepted scope; no BA-needed ambiguity; open architecture/migration/gate tradeoffs are plan-phase decisions, not audit alternatives",
+      "evidence": "audit.md all t_audit.md sections from asd-architect; BA_NEEDED: no; tradeoffs deferred to plan: registry bootstrap without C4, fate of existing consumer c4/, mermaid draft path, settings-task gate, split threshold",
+      "artifact_revision": "audit.md@audit-1"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "user",
+      "reason": "plan accepted at write-then-review-accept gate; AC-3 kept whole (plan-sizing half not narrowed)",
+      "evidence": "plan.md Tasks 1-7, waves 1:[1] 2:[2,3] 3:[4,5] 4:[6] 5:[7]; covers AC-1..AC-19; no open stubs",
+      "artifact_revision": "plan.md@plan-1"
+    },
+    {
+      "gate": "impl-assessment",
+      "decision_actor": "orchestrator",
+      "reason": "routine initial impl assessment in adaptive mode: all plan tasks complete, every dev-flagged choice resolved (accepted, user-decided or routed back and fixed), completion gate green",
+      "evidence": "plan.md 40/40 subtasks ticked; AC map T1:AC-5,6,7,8,11 T2:AC-1,3,12 T3:AC-9,10 T4:AC-2,3,4 T5:AC-13 T6:AC-14..18 T7:AC-18,19; build sync --check ok; lint git diff main...HEAD --check clean; authorised-paths check passed (canon allowlist, synced views, agent-memory, .gitignore, AGENTS.md, README, sync-state); no sprint stubs; node tests/run.js 186/187 with one expected stale assertion (manifest-digest stamp ~2461) routed to impl-test; flagged choices logged in decisions-log waves 1-4",
+      "artifact_revision": "HEAD@3c800d3"
+    },
+    {
+      "gate": "impl-review-green-handoff",
+      "decision_actor": "orchestrator",
+      "reason": "routine green handoff in adaptive mode: every required reviewer APPROVE/latched and terminal full suite green; no FAIL, no override, no waiver, no cap override",
+      "evidence": "state.json reviews.impl.verdicts iter-05 all APPROVE (latched: efficiency 2, testing 2, correctness 3, documentation 4, external 5); test-plan.md Suite run terminal full suite 197/197 at 1837e91, lint/build exit 0",
+      "artifact_revision": "HEAD@e8bb164"
+    },
+    {
+      "gate": "pr-publication",
+      "decision_actor": "user",
+      "reason": "user approved publishing the sprint 012 PR (push + gh pr create to main) after being shown title and 7.3.0 -> 8.0.0 breaking bump",
+      "evidence": "open-mode DoD: plan 40/40 ticked; reviews.impl.verdicts iter-05 all APPROVE; terminal full suite 197/197 at 1837e91 and no code/test diff since; lint/build exit 0; retrospective.html present; no sprint stubs; post-bump suite 197/197 at 7fb81a4",
+      "artifact_revision": "HEAD@7fb81a4"
+    }
+  ],
+  "task_routing": {
+    "T1": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "opus",
+      "reason": "risk:workflow gate"
+    },
+    "T2": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "opus",
+      "reason": "risk:workflow gate"
+    },
+    "T3": {
+      "tier": "standard",
+      "execution": "agent",
+      "resolved_model": "sonnet",
+      "reason": "artifact-risk:rule doc wording"
+    },
+    "T4": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "opus",
+      "reason": "risk:workflow gate"
+    },
+    "T5": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "opus",
+      "reason": "risk:workflow gate"
+    },
+    "T6": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "opus",
+      "reason": "risk:migration"
+    },
+    "T7": {
+      "tier": "standard",
+      "execution": "agent",
+      "resolved_model": "sonnet",
+      "reason": "artifact-risk:release manifest hashes"
+    },
+    "impl-test": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "opus",
+      "reason": "risk:workflow gate"
+    },
+    "RF-iter-01-dev": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "opus",
+      "reason": "risk:workflow gate"
+    },
+    "RF-iter-01-tester": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "opus",
+      "reason": "risk:workflow gate"
+    },
+    "RF-iter-02-dev": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "opus",
+      "reason": "risk:workflow gate"
+    },
+    "RF-iter-03-dev": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "opus",
+      "reason": "risk:workflow gate"
+    },
+    "RF-iter-04-tester": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "opus",
+      "reason": "risk:workflow gate"
+    },
+    "impl-review-full-suite": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "opus",
+      "reason": "risk:workflow gate"
+    }
+  },
+  "skipped_phases": [
+    "design",
+    "design-review",
+    "design-promote"
+  ],
+  "reviews": {
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "iteration": 5,
+      "verdicts": {
+        "iter-01": {
+          "correctness": "CONCERNS",
+          "efficiency": "CONCERNS",
+          "testing": "CONCERNS",
+          "external": "CONCERNS"
+        },
+        "iter-02": {
+          "correctness": "CONCERNS",
+          "efficiency": "APPROVE",
+          "testing": "APPROVE",
+          "documentation": "CONCERNS",
+          "external": "CONCERNS"
+        },
+        "iter-03": {
+          "correctness": "APPROVE",
+          "efficiency": "APPROVE",
+          "testing": "APPROVE",
+          "documentation": "CONCERNS",
+          "external": "CONCERNS"
+        },
+        "iter-04": {
+          "correctness": "APPROVE",
+          "efficiency": "APPROVE",
+          "testing": "APPROVE",
+          "documentation": "APPROVE",
+          "external": "CONCERNS"
+        },
+        "iter-05": {
+          "correctness": "APPROVE",
+          "efficiency": "APPROVE",
+          "testing": "APPROVE",
+          "documentation": "APPROVE",
+          "external": "APPROVE"
+        }
+      },
+      "iteration_heads": {
+        "iter-01": "64024f8887d4213290e694f14b493d0dd078e0ff",
+        "iter-02": "896b7428e430435da2e2c4edf0b15fe0fb1a8ba5",
+        "iter-03": "b389e4df850ed3becacb637272d2a35ba173733b",
+        "iter-04": "2f346cf5df50971b184954ee781c316fcea22934",
+        "iter-05": "f5abdac781cb9a54ee75d3f0abcfab6498c09704"
+      },
+      "latched": {
+        "efficiency": 2,
+        "testing": 2,
+        "correctness": 3,
+        "documentation": 4,
+        "external": 5
+      }
+    }
+  },
+  "created_at": "2026-09-14T09:29:45Z",
+  "updated_at": "2026-09-14T19:34:46Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": {
+    "state": "open",
+    "number": 37,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/37",
+    "title": "feat(workflow)!: move subsystem registry, remediate retros 010-011",
+    "asd_version": "8.0.0"
+  },
+  "archived_at": null
+}
