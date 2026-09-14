@@ -272,3 +272,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-14 — impl-test: impacted set green (full suite via safety valve, 197/197; sync --check 72/72 current), 0/0 tests added/removed (entry 6, delta since entry 5)
 
 - 2026-09-14 — impl-review iter-05: reviewer DoD met (external APPROVE at critical floor, latched 5; correctness/efficiency/testing/documentation inherited APPROVE) → terminal full-suite gate
+
+## 2026-09-14 — impl-review DoD met: terminal full suite green
+
+- **Decision**: impl-review closed after 5 iterations: every reviewer is APPROVE or latched, and the terminal full suite passes 197/197 at `1837e91` (lint and build exit 0). The adaptive green handoff advances the sprint to retro.
+- **Rationale**: The reviewer DoD and the full-suite condition (`review-policy.md` "DoD per review phase") both hold. No waiver or override was needed.
+- **Affected docs**: `test-plan.md` Suite run, `state.json`
