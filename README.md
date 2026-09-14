@@ -251,10 +251,10 @@ skip_design_phases: disabled  # enabled | disabled — absent = disabled; skips 
 
 documents:                # optional sprint documents; absent group = all enabled (back-compat)
   audit: auto              # auto | always | off; legacy enabled/disabled accepted
-  prd: enabled              # design/prd.html + persistent requirements
-  ux_spec: enabled          # ux-spec, design-system gate, design-md-delta
-  adr: enabled               # adr.html (sprint-scoped only; folds into existing persistent docs at design-promote)
-  c4: enabled                  # c4-full + persistent C4 (also needs project.subsystem_decomposition: enabled)
+  prd: enabled              # enabled | disabled; design/prd.html + persistent requirements
+  ux_spec: enabled          # enabled | disabled; ux-spec, design-system gate, design-md-delta
+  adr: enabled               # enabled | disabled; adr.html (sprint-scoped only; folds into existing persistent docs at design-promote)
+  c4: enabled                  # enabled | disabled; c4-full + persistent C4 (also needs project.subsystem_decomposition: enabled)
 
 language:
   chat: en          # language for chat with you

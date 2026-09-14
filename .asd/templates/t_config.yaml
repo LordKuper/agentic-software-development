@@ -15,10 +15,10 @@ skip_design_phases: disabled
 # Defaults: see .asd/rules/sprint-lifecycle.md "Optional documents".
 documents:
   audit: auto          # auto | always | off; legacy enabled/disabled accepted
-  prd: enabled         # design/prd.html + persistent requirements
-  ux_spec: enabled     # ux-spec, design-system gate, design-md-delta
-  adr: enabled          # adr.html (sprint-scoped only; folds into existing persistent docs at design-promote)
-  c4: enabled            # c4-full + persistent C4 diagram (also requires project.subsystem_decomposition: enabled)
+  prd: enabled         # enabled | disabled; design/prd.html + persistent requirements
+  ux_spec: enabled     # enabled | disabled; ux-spec, design-system gate, design-md-delta
+  adr: enabled          # enabled | disabled; adr.html (sprint-scoped only; folds into existing persistent docs at design-promote)
+  c4: enabled            # enabled | disabled; c4-full + persistent C4 diagram (also requires project.subsystem_decomposition: enabled)
 
 # Language for user-facing interaction.
 # chat — language used in chat responses and questions.
@@ -33,6 +33,7 @@ language:
 # strict    — public API/contracts never break.
 # migration — breaking changes allowed with a documented migration path and deprecation notice.
 # none      — free hand, breaking changes allowed without ceremony.
+# Values: strict | migration | none
 backward_compat: migration
 
 review:
