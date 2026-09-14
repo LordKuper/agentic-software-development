@@ -1,14 +1,28 @@
 ---
 responsibility:
-  owns: sprint-scoped record of workflow malfunctions (F-N)
-  excludes: code defects (test-plan.md D-N), review findings (reviews/), manual steps (manual-steps.md MS-N), decisions (decisions-log.md)
-  delegates_to: retrospective.html (analysis)
+  owns: per-sprint log of workflow friction — a rule, phase, gate, agent, skill, template or provider tool that malfunctioned or could not be followed
+  excludes: code defects (test-plan.md D-N), artifact-quality findings and verdicts (reviews/), human operational actions (manual-steps.md MS-N), decisions taken (decisions-log.md)
+  delegates_to: test-plan.md (defects), reviews/ (verdicts), manual-steps.md (manual actions), decisions-log.md (decisions), retrospective.html (analysis and recommendations)
 ---
 
-# Friction Log
+# Friction log — sprint 011-explicit-design-skip
 
-## F-1 — impl-test: tester left its authored agent-memory write uncommitted
+<!--
+Lifecycle, what qualifies, what never does, the F-N id scheme and who appends:
+.asd/rules/sprint-lifecycle.md "Friction log" — not restated here.
+Entry content is language.docs.
+Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
+-->
+## Summary
+
+| ID | Phase | Problem | Refs |
+|---|---|---|---|
+| F-1 | impl-test | Tester left its authored agent-memory write uncommitted | — |
+
+## F-1 — Tester left its authored agent-memory write uncommitted
 
 - **Phase**: impl-test
-- **What happened**: `asd-tester-critical` committed its tests and `test-plan.md` but left its own edit to `.claude/agent-memory/asd-tester-critical/project_testability-envelope.md` unstaged, although `git-strategy.md` "Commit before review" requires a dispatched agent holding a commit tool to commit every path it authored. The orchestrator committed it at phase exit so the impl-review clean-worktree precondition could hold.
-- **Evidence**: `git status --porcelain` after the tester returned, at HEAD 44f184c.
+- **Surface**: agent — `asd-tester-critical`
+- **What happened**: The tester committed its tests and `test-plan.md` but left its own edit to `.claude/agent-memory/asd-tester-critical/project_testability-envelope.md` unstaged, although `git-strategy.md` "Commit before review" requires a dispatched agent holding a commit tool to commit every path it authored.
+- **Impact**: The orchestrator had to commit the file at phase exit so the impl-review clean-worktree precondition holds; one extra check-and-commit round.
+- **Refs**: —
