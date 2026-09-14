@@ -287,6 +287,16 @@ name the commits the earlier record could not cover, and state whether the count
 also that no test reads this repo's live `.asd/sprints/**` — every sprint reference in `tests/run.js`
 is a temp-root fixture — so editing `test-plan.md` cannot change the suite result and needs no re-run.
 
+## Retired mechanism under an existing test: rewrite, do not delete
+
+`asd-phase-impl-test.md` step 5 classifies a removal as in-scope only when the *test file* is in the change
+surface, and `tests/run.js` almost never is — so deleting any test whose mechanism a sprint retired trips the
+out-of-scope removal gate. Sprint 012 met this with the sprint-008 split test, which hand-built halves with
+`manifest-digest --write` after `emit-manifest` replaced that procedure: rewritten in place against the new
+seam and recorded as `keep (rewritten in place)`, one duplicate assert dropped with its reason in the row.
+Same move for a test carrying a local copy of a derivation the runtime now owns (the documentation-economy
+test's rubric parser): point it at the runtime, don't keep two parsers.
+
 ## Authoring `tests/run.js`
 
 It gets reviewed against `code-style.md` §7, which forbids in-body comments with no framework
