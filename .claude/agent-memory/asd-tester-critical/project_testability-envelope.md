@@ -43,7 +43,9 @@ that loops `[id, file, from, to]`, checks the anchor hits exactly once, and rest
 buffer in `finally` with a byte compare worked cleanly (sprint 011, 23 runs in two calls). A "revert the fix
 commit" mutation built from `execSync('git show <sha>^:<path>')` is a silent no-op on this Windows host:
 `execSync` runs through cmd.exe, which eats `^`, so it reads the CURRENT blob. Use `<sha>~1`. The tell is a
-run with zero FAIL lines, not even the hash-ledger noise every real canon mutation produces. For the extra FAIL lines a tracked file's mutation produces:
+run with zero FAIL lines, not even the hash-ledger noise every real canon mutation produces — unless the script
+reads only stdout: `runAll` writes `FAIL -` and the stack to **stderr**, `ok -` and the count to stdout, so a
+`spawnSync` loop must parse both or it shows a dropped count with no FAIL lines. For the extra FAIL lines a tracked file's mutation produces:
 [[mutation-runs-trip-the-hash-ledger]].
 
 **Why** — the two failure modes this replaces:

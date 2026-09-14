@@ -2458,35 +2458,23 @@ test('runtime.js CLI: external-preflight exits 1 on command-unavailable', () => 
   assert.strictEqual(JSON.parse(stdout).status, 'command-unavailable');
 });
 
-test('runtime.js CLI: manifest-digest digests a manifest exactly as written, and --write stamps every published constant (vocabulary, row example, n_a shape) into the file, each digest-covered, before digesting it', () => {
+test('runtime.js CLI: manifest-digest digests a manifest exactly as written and never rewrites it - stamping belongs to emit-manifest alone', () => {
   const root = mkTempDir();
   const manifest = buildManifest(['f-1'], ['r-1'], ['s-1']);
   const manifestPath = path.join(root, 'manifest.json');
   fs.writeFileSync(manifestPath, JSON.stringify(manifest), 'utf8');
 
   const out = runtimeCli(['manifest-digest', '--manifest', manifestPath]).trim();
-  assert.strictEqual(out, runtime.coverageManifestDigest(manifest), 'the CLI must print exactly what the exported digester computes - a workflow stamps through the CLI while the validator checks through the library, so the two must never disagree');
+  assert.strictEqual(out, runtime.coverageManifestDigest(manifest), 'the CLI must print exactly what the exported digester computes - a workflow verifies through the CLI while the validator checks through the library, so the two must never disagree');
   assert.strictEqual(out, runtime.fingerprint(manifest), 'a manifest carrying no `vocabulary` must digest to the plain stable hash of its own content: the pre-vocabulary identity, expressed here through the untouched `fingerprint` primitive so the expectation cannot drift with the function under test. Digesting an implied field instead would move the identity of every manifest stamped before that field existed (correctness F-2)');
-  assert.strictEqual(fs.readFileSync(manifestPath, 'utf8'), JSON.stringify(manifest), '--write not passed: file on disk must be untouched');
 
-  const writeOut = runtimeCli(['manifest-digest', '--manifest', manifestPath, '--write']).trim();
-  const firstWrite = fs.readFileSync(manifestPath, 'utf8');
-  const written = JSON.parse(firstWrite);
-  const published = { vocabulary: runtime.LEDGER_VOCABULARY, row_example: runtime.LEDGER_ROW_EXAMPLE, n_a_shape: runtime.LEDGER_NA_SHAPE };
-  assert.deepStrictEqual(Object.keys(written).filter((key) => !(key in manifest) && key !== 'digest').sort(), Object.keys(published).sort(), 'sprint-012 AC-1: --write must stamp exactly the published constants this test knows the expected identity of - a constant stamped without landing here would move every digest while the fingerprint expectation below silently kept the old field set');
-  assert.deepStrictEqual(written.vocabulary, runtime.LEDGER_VOCABULARY, '--write must publish the validator\'s own vocabulary constant, so the reviewer reads the statuses off its own input instead of recalling rule prose');
-  assert.deepStrictEqual(written.row_example, runtime.LEDGER_ROW_EXAMPLE, 'AC-6b: --write must publish the row example beside the vocabulary, from the validator\'s own constant - the reviewer reads the row SHAPE off its own input too, not only the status list');
-  assert.deepStrictEqual(written.n_a_shape, runtime.LEDGER_NA_SHAPE, 'sprint-012 AC-1: --write must publish the n_a shape from the validator\'s own constant - `n_a` is the one field an orchestrator once hand-built, and its shape reached neither the reviewer nor the digest');
-  assert.strictEqual(written.digest, writeOut, '--write must persist exactly the digest it printed, or the workflow that captures stdout stamps one identity while the file carries another');
-  assert.strictEqual(written.digest, runtime.fingerprint(Object.assign({}, manifest, published)), 'the persisted digest must be the hash of the stamped manifest with EVERY published constant in it: stamping is a real content change and moves the identity by design. What must NOT happen is the reverse - a digester implying a field over a file that lacks it. Expressed through the untouched `fingerprint` primitive so a change to the digester cannot move this expectation with it');
-  for (const field of Object.keys(written).filter((key) => key !== 'digest')) {
-    const stripped = Object.assign({}, written);
-    delete stripped[field];
-    assert.notStrictEqual(runtime.coverageManifestDigest(stripped), written.digest, `AC-6b: --write stamped \`${field}\`, so the digest must cover it. A published field left outside the identity (as \`digest\` itself is) could be edited on disk after stamping and every ledger citing that digest would still validate - the field would teach a shape nothing enforces. Written as a sweep over whatever --write stamps, so a third published constant is covered the day it lands`);
+  let restamp;
+  try {
+    restamp = runtimeCli(['manifest-digest', '--manifest', manifestPath, '--write'], { stdio: 'pipe' }).trim();
+  } catch (error) {
+    restamp = `exit ${error.status}`;
   }
-  assert.strictEqual(written.digest, runtime.coverageManifestDigest(written), 'round-trip: validateCoverageLedger recomputes the digest from the manifest it reads off disk, so a stamped file whose digest is not its own digest is unvalidatable the moment it is written');
-  runtimeCli(['manifest-digest', '--manifest', manifestPath, '--write']);
-  assert.strictEqual(fs.readFileSync(manifestPath, 'utf8'), firstWrite, 'a second --write must be byte-idempotent - stamping is how a workflow refreshes a manifest, and a moving file would churn the digest on every refresh');
+  assert.strictEqual(fs.readFileSync(manifestPath, 'utf8'), JSON.stringify(manifest), `EFF-1-1: manifest-digest only verifies - a dispatched manifest is immutable to the orchestrator too (review-policy.md "Coverage ledger"), so no flag may re-stamp the file on disk. Got: ${restamp}`);
 });
 
 test('AC-12/14: variants inherit their canonical permissions and malformed or colliding variants fail closed', () => {
@@ -4143,6 +4131,20 @@ test("sprint-012 AC-12: emit-manifest derives rule and section ids from a review
   }
   assert.strictEqual(uiHolders(['README.md', '.asd/rules/notes.html'], true).length, 1, 'an .html under .asd/ outside .asd/templates/ is framework infrastructure, not a UI surface');
 
+  const htmlHolders = (manifest) => holders(manifest, predicates.noHtml);
+  const htmlIds = htmlHolders(emitReal('documentation', 'impl-review', ['README.md', '.asd/runtime.js'], {}));
+  assert.ok(htmlIds.length > 0, 'a scope with no HTML file must n/a the documentation entries whose evidence lives only in HTML docs, or every split part can record only out-of-part for them and union check (c) fails by construction (ORC-1)');
+  assert.deepStrictEqual(htmlHolders(emitReal('documentation', 'design-review', ['s/design/adr.md'], {})), htmlIds, 'the no-HTML predicate is phase-independent: a design-review scope of Markdown drafts only (prd and ux-spec disabled) carries it too');
+  for (const html of ['docs/product/requirements/core.html', '.asd/rules/notes.html']) {
+    assert.deepStrictEqual(htmlHolders(emitReal('documentation', 'impl-review', ['README.md', html], {})), [], `${html}: any HTML file in scope keeps the HTML-evidence entries reviewed - framework .asd/ HTML included, since the predicate is about HTML evidence, not about UI surfaces`);
+  }
+  const manyFiles = Array.from({ length: runtime.SPLIT_THRESHOLD_FILES + 1 }, (_, index) => `docs/file-${index + 1}.md`);
+  const documentationParts = (files) => runtime.emitCoverageManifests({ reviewer: 'documentation', phase: 'impl-review', rubric: agent('documentation'), files, customRules: {} });
+  const proseParts = documentationParts(manyFiles);
+  assert.deepStrictEqual(proseParts.map(htmlHolders), proseParts.map(() => htmlIds), `ORC-1: with no HTML anywhere in a split scope every one of the ${proseParts.length} parts must carry the no-HTML predicate - a standing n/a may sit in every part, an out-of-part one may not (review-policy.md "Union property", check (c))`);
+  const oneHtml = documentationParts(manyFiles.slice(0, -1).concat('docs/last.html'));
+  assert.deepStrictEqual(oneHtml.map(htmlHolders), oneHtml.map(() => []), 'the no-HTML predicate is decided over the whole scope before partitioning: one HTML file in the last part withholds it from every part - decided from any narrower slice, the part holding that HTML could n/a its entries under a standing predicate and union check (c) would pass with nobody reviewing them');
+
   const budgets = { '.asd/project/custom-coding-rules.md': '# Custom Coding Rules\n\n## Perf budgets\n\n- p95 under 200ms\n' };
   const efficiency = (files, customRules) => emitReal('efficiency', 'impl-review', files, { customRules, scopedFanOut: true });
   const prose = efficiency(['README.md'], {});
@@ -4156,7 +4158,9 @@ test("sprint-012 AC-12: emit-manifest derives rule and section ids from a review
   assert.deepStrictEqual(holders(efficiency(['tool.unknownext'], {}), predicates.perf), [], 'an unrecognised extension counts as executable, so the emitter fails toward reviewing more');
 
   const correctnessGated = (files) => holders(emitReal('correctness', 'design-review', files, {}), predicates.phaseGate);
-  assert.deepStrictEqual(correctnessGated(['s/design/prd.html']).filter((id) => !correctnessGated(['s/design/prd.html', 's/design/ux-spec.html']).includes(id)), uiIds, 'a ux-spec draft in design-review scope must lift exactly the UI conformance entry out of the phase gate; without one that entry is `outside phase gate` (asd-phase-design-review.md step 7)');
+  for (const draft of ['s/design/ux-spec.html', 's/design/design-md-delta.yaml']) {
+    assert.deepStrictEqual(correctnessGated(['s/design/prd.html']).filter((id) => !correctnessGated(['s/design/prd.html', draft]).includes(id)), uiIds, `${draft}: a ux-spec or design-system draft in design-review scope must lift exactly the UI conformance entry out of the phase gate; without either that entry is \`outside phase gate\` and token proposals go unreviewed (asd-phase-design-review.md step 7)`);
+  }
   let gatedAnywhere = 0;
   for (const reviewer of internalReviewers()) {
     const designGated = holders(emitReal(reviewer, 'design-review', ['s/design/prd.html'], {}), predicates.phaseGate);
@@ -4180,22 +4184,48 @@ test("runtime.js CLI: emit-manifest writes one stamped manifest per part under t
     const flow = canonText(rel);
     assert.ok(flow.includes(`\`${unsplitName}\``) && flow.includes(`\`${partName}\``), `${rel} must name the manifest files it dispatches from exactly as emit-manifest writes them, or the orchestrator looks for a path that never appears`);
   }
-  const emit = (count, dir) => {
+  const emit = (count, dir, extra = [], name = reviewer) => {
     fs.mkdirSync(dir, { recursive: true });
     const scopePath = path.join(dir, 'scope.txt');
     fs.writeFileSync(scopePath, `${Array.from({ length: count }, (_, index) => `src/file-${index + 1}.md`).join('\n')}\n\n`, 'utf8');
-    return JSON.parse(runtimeCli(['emit-manifest', '--reviewer', reviewer, '--phase', 'impl-review', '--scoped-fan-out', '--files', scopePath, '--out', dir], { stdio: 'pipe' }));
+    return JSON.parse(runtimeCli(['emit-manifest', '--reviewer', name, '--phase', 'impl-review', '--scoped-fan-out', ...extra, '--files', scopePath, '--out', dir], { stdio: 'pipe' }));
   };
+  const read = (entry) => JSON.parse(fs.readFileSync(entry.manifest, 'utf8'));
 
   const split = emit(runtime.SPLIT_THRESHOLD_FILES + 1, path.join(root, 'split'));
   assert.deepStrictEqual(split.map((entry) => path.basename(entry.manifest)), split.map((_, index) => partName.replace('<reviewer>', reviewer).replace('N', String(index + 1))), 'a scope above the threshold must be written as numbered parts, one file per part, each reported on stdout - and --scoped-fan-out ahead of --files must parse as a boolean, not swallow the path');
   const single = emit(runtime.SPLIT_THRESHOLD_FILES, path.join(root, 'single'));
   assert.deepStrictEqual(single.map((entry) => path.basename(entry.manifest)), [unsplitName.replace('<reviewer>', reviewer)], 'a scope at the threshold must be one unsplit manifest file');
-  for (const entry of [...split, ...single]) {
-    const onDisk = JSON.parse(fs.readFileSync(entry.manifest, 'utf8'));
-    assert.strictEqual(onDisk.digest, entry.digest, `${path.basename(entry.manifest)}: the digest printed must be the digest written`);
-    assert.strictEqual(onDisk.digest, runtime.coverageManifestDigest(onDisk), `${path.basename(entry.manifest)}: a written manifest must carry its own digest, since validate-ledger recomputes it from the file`);
+  const halved = emit(2, path.join(root, 'halved'), ['--halve']);
+  assert.deepStrictEqual(halved.map((entry) => path.basename(entry.manifest)), [1, 2].map((part) => partName.replace('<reviewer>', reviewer).replace('N', String(part))), 'the interruption trigger re-emits with --halve (review-policy.md "Split trigger"), so --halve ahead of --files must parse as a boolean and split even a scope under the threshold into two parts');
+
+  const published = { vocabulary: runtime.LEDGER_VOCABULARY, row_example: runtime.LEDGER_ROW_EXAMPLE, n_a_shape: runtime.LEDGER_NA_SHAPE };
+  const content = ['reviewer', 'phase', 'n_a', ...Object.keys(runtime.LEDGER_NA_SHAPE)];
+  for (const entry of [...split, ...single, ...halved]) {
+    const label = path.basename(entry.manifest);
+    const onDisk = read(entry);
+    assert.strictEqual(onDisk.digest, entry.digest, `${label}: the digest printed must be the digest written`);
+    assert.strictEqual(onDisk.digest, runtime.coverageManifestDigest(onDisk), `${label}: a written manifest must carry its own digest, since validate-ledger recomputes it from the file`);
+    assert.deepStrictEqual(Object.keys(onDisk).filter((key) => !content.includes(key) && key !== 'digest').sort(), Object.keys(published).sort(), `sprint-012 AC-1: ${label} must stamp exactly the published constants this test knows - one stamped without landing here would move every digest while the per-constant checks below never saw it`);
+    for (const [field, constant] of Object.entries(published)) {
+      assert.deepStrictEqual(onDisk[field], constant, `AC-6b/sprint-012 AC-1: ${label} must publish \`${field}\` from the validator's own constant, so the reviewer reads statuses, row shape and n_a shape off its own input instead of recalling rule prose`);
+    }
+    const withoutDigest = Object.assign({}, onDisk);
+    delete withoutDigest.digest;
+    assert.strictEqual(onDisk.digest, runtime.fingerprint(withoutDigest), `AC-6b: ${label}'s digest must be the hash of every field it carries but \`digest\`, published constants included - a field outside the identity could be edited on disk after stamping while every ledger citing that digest still validates. Expressed through the untouched \`fingerprint\` primitive so a change to the digester cannot move this expectation with it`);
   }
+  assert.strictEqual(runtimeCli(['manifest-digest', '--manifest', single[0].manifest]).trim(), single[0].digest, 'review-policy.md "Coverage ledger": `manifest-digest --manifest <path>` verifies what emit-manifest stamped, so the two must agree on every emitted file');
+
+  const customCommon = path.join(root, 'custom-common-rules.md');
+  const customCoding = path.join(root, 'custom-coding-rules.md');
+  fs.writeFileSync(customCommon, '# Custom Common Rules\n', 'utf8');
+  fs.writeFileSync(customCoding, '# Custom Coding Rules\n\n## Perf budgets\n\n- p95 under 200ms\n', 'utf8');
+  const perfHolders = (manifest) => Object.keys(manifest.n_a.rules).filter((id) => manifest.n_a.rules[id].includes(runtime.NA_PREDICATES.perf));
+  const withoutRules = read(emit(1, path.join(root, 'no-custom'), [], 'efficiency')[0]);
+  assert.ok(perfHolders(withoutRules).length > 0, 'sanity: without --custom-rules a prose-only scope must n/a the performance sections, or the budgeted run below proves nothing');
+  const withRules = read(emit(1, path.join(root, 'custom'), ['--custom-rules', `${customCommon},${customCoding}`], 'efficiency')[0]);
+  assert.deepStrictEqual(withRules.rules.slice(-2), [customCommon, customCoding], 'TST-1-1/TST-2-2: both review workflows pass --custom-rules as one comma-separated value, so each path must become its own custom-rule id, verbatim and in the order passed - otherwise every manifest silently drops its custom-rule rows');
+  assert.deepStrictEqual(perfHolders(withRules), [], 'TST-1-1: the --custom-rules files must be read as the emitter\'s budgets input - a perf-budgets heading in the passed custom-coding-rules.md keeps every performance section reviewed');
 
   const manifest = JSON.parse(fs.readFileSync(single[0].manifest, 'utf8'));
   const vocabulary = runtime.LEDGER_VOCABULARY;
@@ -4208,7 +4238,7 @@ test("runtime.js CLI: emit-manifest writes one stamped manifest per part under t
   const findingsPath = path.join(root, 'findings.json');
   fs.writeFileSync(findingsPath, '[]', 'utf8');
   const block = `\`\`\`json\n${JSON.stringify(ledger, null, 2)}\n\`\`\`\n`;
-  const returnedText = (ledgerBlocks) => `[REVIEW-impl-${reviewer}]: APPROVE\n\nNo findings.\n\n\`\`\`text\nnot a ledger\n\`\`\`\n\n${ledgerBlocks}`;
+  const returnedText = (ledgerBlocks) => `[REVIEW-impl-${reviewer}]: APPROVE\n\nNo findings.\n\nA row looks like:\n\n\`\`\`json\n${JSON.stringify(runtime.LEDGER_ROW_EXAMPLE)}\n\`\`\`\n\n${ledgerBlocks}`;
   const validate = (text, name) => {
     const ledgerPath = path.join(root, name);
     fs.writeFileSync(ledgerPath, text, 'utf8');
@@ -4218,7 +4248,7 @@ test("runtime.js CLI: emit-manifest writes one stamped manifest per part under t
       return `exit ${error.status}: ${String(error.stderr).trim()}`;
     }
   };
-  assert.deepStrictEqual(validate(returnedText(block), 'returned.md'), { ok: true }, 'AC-12: --ledger must take the reviewer\'s returned text as-is and read its one fenced ledger block, skipping fenced blocks that are no ledger - the transcription step the workflows dropped is exactly what this replaces');
+  assert.deepStrictEqual(validate(returnedText(block), 'returned.md'), { ok: true }, "AC-12: --ledger must take the reviewer's returned text as-is and read its one fenced block carrying `manifest_digest`, skipping every other fenced block - a quoted JSON excerpt such as a row example included - so the orchestrator no longer extracts the block to bare JSON before validating");
   const twice = validate(returnedText(`${block}\n${block}`), 'twice.md');
   assert.ok(typeof twice === 'string' && twice.startsWith('exit 2'), `returned text carrying two ledger blocks must be rejected rather than resolved by picking one - a reviewer could otherwise ship a ledger the orchestrator never validated. Got: ${JSON.stringify(twice)}`);
 });
@@ -4298,7 +4328,7 @@ test('sprint-012 AC-11: the report field asd-dev.md COMPLETED carries is the lit
   assert.ok(gateLine.includes('`checkpoints.md` "Gate policy"'), 'step 10 must classify a flagged choice under the gate policy that blocks an adaptive pass on an unresolved material alternative');
 });
 
-test("sprint-012 AC-13: the settings-change line sprint-lifecycle.md \"Plan file format\" defines is the one t_plan.md mirrors and asd-phase-impl.md step 8 applies through the asd-init mode that reads it - a mode in asd-init's return contract, in asd-sprint's dispatchable skills, and exempt from the managed-block sync its authorised paths exclude", () => {
+test("sprint-012 AC-13: the settings-change line sprint-lifecycle.md \"Plan file format\" defines is the one t_plan.md mirrors and asd-phase-impl.md applies ahead of any dev dispatch through the asd-init mode that reads it - a mode in asd-init's return contract, in asd-sprint's dispatchable skills, and exempt from the managed-block sync its authorised paths exclude", () => {
   const grammar = sectionOf('.asd/rules/sprint-lifecycle.md', 'Plan file format').split('\n').find((line) => line.startsWith('**Settings change declaration**'));
   const literal = grammar && /`([^`:]+:) <key>=<value>/.exec(grammar);
   assert.ok(literal, 'sprint-lifecycle.md "Plan file format" must define the settings-change line grammar');
@@ -4312,11 +4342,28 @@ test("sprint-012 AC-13: the settings-change line sprint-lifecycle.md \"Plan file
   const reader = sectionOf(init, 'Modes').split('\n').find((line) => line.includes(`\`${token}\``));
   assert.ok(reader, `one asd-init mode must take the declared \`${token}\` pairs as its input`);
   const mode = /^- \*\*([A-Za-z-]+)\*\*/.exec(reader)[1].toLowerCase();
+  const mediatedSteps = sectionOf(init, `Workflow (${mode})`).split(/\n(?=\d+\. )/);
+  const stepNumber = (predicate) => mediatedSteps.findIndex(predicate);
+  const validates = stepNumber((block) => block.includes('`.asd/templates/t_config.yaml`') && block.includes('`FAILED`'));
+  const sets = stepNumber((block) => block.includes('`<key>=<value>`'));
+  assert.ok(validates !== -1 && sets !== -1 && validates < sets, `COR-1-3: asd-init ${mode} mode must validate every declared pair against t_config.yaml, failing with \`FAILED\`, before the step that sets the pairs - an unknown key or out-of-range value otherwise lands in config.yaml, where nothing reads it`);
 
-  const flow = sectionOf('.asd/workflows/asd-phase-impl.md', 'Workflow');
-  assert.ok(stepOf(flow, '8').includes(`\`${token}\``) && stepOf(flow, '8').includes(`\`asd-init\` ${mode} mode`), `asd-phase-impl.md step 8 must apply the declared line through asd-init ${mode} mode instead of registering a manual step (011 P3)`);
-  assert.ok(stepOf(flow, '9').includes('`.asd/project/config.yaml`'), 'the completion gate must count config.yaml as authorised when step 8 wrote it, or the settings change fails the gate that follows it');
-  assert.ok(sectionOf('.asd/skills/asd-sprint/SKILL.md', 'Skills dispatched').includes(`\`asd-init\` ${mode} mode`), 'asd-sprint "Skills dispatched" must admit asd-init in that mode - it otherwise forbids every skill but the phase skills');
+  const impl = '.asd/workflows/asd-phase-impl.md';
+  const flow = sectionOf(impl, 'Workflow');
+  const dispatchInit = `\`asd-init\` ${mode} mode`;
+  const applying = flow.split(/\n(?=\d+[a-z]?\. )/).filter((block) => block.includes(`\`${token}\``) && block.includes(dispatchInit));
+  assert.strictEqual(applying.length, 1, `exactly one asd-phase-impl.md step must apply the declared line through asd-init ${mode} mode instead of registering a manual step (011 P3)`);
+  const applyStep = /^(\d+[a-z]?)\. /.exec(applying[0])[1];
+  assert.ok(flow.indexOf(dispatchInit) < flow.indexOf('delegate to `asd-dev`'), `COR-2-2/DOC-2-1: steps run in order, so the settings change (step ${applyStep}) must be applied ahead of the first dev delegation - applied after it, the settings Task reaches a dev before asd-init writes config.yaml`);
+  const citation = `\`asd-phase-impl.md\` step ${applyStep}`;
+  const sprintSkills = sectionOf('.asd/skills/asd-sprint/SKILL.md', 'Skills dispatched');
+  for (const [site, text] of [['asd-init "Modes"', reader], ['asd-sprint "Skills dispatched"', sprintSkills], ['sprint-lifecycle.md "Plan file format"', grammar]]) {
+    assert.ok(text.includes(citation), `${site} must cite the step that applies the settings change (${citation}) - a stale step number sends the reader to a step that no longer does it`);
+  }
+  assert.ok(sectionOf(impl, 'Operations used').split('\n').some((line) => line.includes(dispatchInit) && line.includes(`step ${applyStep}`)), `asd-phase-impl.md "Operations used" must name step ${applyStep} for the asd-init dispatch`);
+  const gateLine = stepOf(flow, '9').split('\n').find((line) => line.includes('`.asd/project/config.yaml`'));
+  assert.ok(gateLine && gateLine.includes(`step ${applyStep}`), `the completion gate must count config.yaml as authorised when step ${applyStep} wrote it, or the settings change fails the gate that follows it`);
+  assert.ok(sprintSkills.includes(dispatchInit), 'asd-sprint "Skills dispatched" must admit asd-init in that mode - it otherwise forbids every skill but the phase skills');
   assert.ok(!canonText(init).includes('## Always first (both modes)') && new RegExp(`${mode} mode skips`, 'i').test(sectionOf(init, 'Always first')), `the managed-block sync writes AGENTS.md/CLAUDE.md, paths step 9 does not authorise, so "Always first" must exempt ${mode} mode`);
   assert.ok(sectionOf('.asd/rules/core.md', 'Invariants').includes('`sprint-lifecycle.md` "Plan file format"'), 'core.md "Invariants" names /asd-init the only settings writer, so its sprint-mediated exception must point at the grammar');
   const hardRule = canonText('.asd/templates/t_AGENTS.md').split('\n').find((line) => line.includes('edits settings'));
@@ -4390,7 +4437,7 @@ test("sprint-012 AC-14..AC-18: docs/architecture/subsystems.md is the one subsys
   assert.ok(sectionOf(lifecycle, 'Audit phase').includes('`checkpoints.md` "Gate policy"'), '"Audit phase" must send its confirmation and deletion gates to that hard list');
 
   const seed = stepOf(sectionOf('.asd/skills/asd-init/SKILL.md', 'Workflow (fresh)'), '13');
-  assert.ok(seed.indexOf('documents.c4') !== -1 && seed.indexOf('c4/model') > seed.indexOf('documents.c4'), 'AC-16/AC-18: asd-init must seed c4/ only under the documents.c4 condition, while the registry seed precedes it unconditionally');
+  assert.ok(seed.indexOf('documents.c4') !== -1 && seed.indexOf('c4/model') > seed.indexOf('documents.c4') && seed.indexOf(registry) !== -1 && seed.indexOf(registry) < seed.indexOf('documents.c4'),'AC-16/AC-18: asd-init must seed c4/ only under the documents.c4 condition, while the registry seed precedes it unconditionally');
   assert.ok(stepOf(sectionOf('.asd/skills/asd-init/SKILL.md', 'Workflow (fresh)'), '14').includes('documents.c4'), 'the .gitignore entry for c4 build output must carry the same documents.c4 condition as the seed that creates c4/');
 });
 
