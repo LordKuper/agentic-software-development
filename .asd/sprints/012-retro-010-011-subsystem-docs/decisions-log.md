@@ -180,3 +180,19 @@ A decision whose value must survive this sprint's archival is ALSO written into 
   - Tester chain, after the dev chain: TST-1-1, TST-1-2, TST-1-3, TST-2-1, TST-2-2, DOC-2-3.
 - **Rationale**: Every remaining finding is CONCERNS within scope. None requires escalation, since each is a deletion or a clarification with no new abstraction.
 - **Affected docs**: `reviews/impl/iter-01/`, `state.json`
+
+## 2026-09-14 — impl review-fix for iter-01: findings resolved
+
+- **Decision**: The dev chain resolved all 12 fix-set findings (`de7d9f9..686b03e`) and the tester chain resolved all 6 test-file findings (`f3238d5`). Build (`sync.js --check`) and lint are clean, the authorised-paths check passed, and the suite is 197/197.
+  - Accepted flagged choices from the dev chain:
+    - ORC-1: a single `noHtml` path predicate covers `HTML shell wrapping`/`Provenance`/`Traceability`. `Template adherence` is not covered. With `scoped_fan_out: disabled`, a split scope without UI or executable files can still fail union (c) for the UI/perf ids; that edge is left as the existing escape-hatch semantics.
+    - The `--files` list is written to a scratch file outside the repo.
+    - COR-1-3 rejects keys not present in `t_config.yaml` and checks values only for enumerated fields, so legacy values are rejected.
+    - The remaining subtasks of a settings-change task dispatch in wave 1 after `asd-init`.
+  - Accepted flagged choices from the tester chain:
+    - three redundant asserts pruned (reasons in `test-plan.md` row 22);
+    - the AC-13 order check is anchored on `delegate to \`asd-dev\``;
+    - a note added to the tester's memory.
+  - The tester chain appended `test-plan.md` Entry log row 2, covering the review-fix delta.
+- **Rationale**: Every premise verified at HEAD, and each choice stays within the finding it fixes.
+- **Affected docs**: `.asd/runtime.js`, rule docs, workflows, reviewer/architect agents, `asd-init`/`asd-sprint`, `tests/run.js`, `test-plan.md`
