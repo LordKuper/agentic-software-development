@@ -1,0 +1,52 @@
+---
+responsibility:
+  owns: approved decisions for THIS sprint
+  excludes: cross-sprint/durable decisions, sprint state, review notes
+  delegates_to: docs/** + adr fold targets (durable design decisions), CHANGELOG.md (releases), .asd/project/stubs.md (standing open defects), state.json (state), reviews/ (verdicts)
+---
+
+# Decisions Log
+
+Per-sprint, append-only. Never edited or removed. Created at `scope`, archived with the sprint.
+
+## Entry format
+
+```markdown
+## YYYY-MM-DD — <one-line summary>
+
+- **Decision**: <what was decided> (≤3 sentences)
+- **Rationale**: <why> (≤3 sentences)
+- **Affected docs**: <links> (unrestricted)
+```
+
+A no-op skip or other zero-content decision uses the one-line form instead:
+
+```markdown
+- YYYY-MM-DD — <phase> skipped: <reason>
+```
+
+## Durability rule
+
+A decision whose value must survive this sprint's archival is ALSO written into an existing persistent home — a `docs/` fold target, `CHANGELOG.md`, or `.asd/project/stubs.md`. Never invent a new document type for this. This log records that the decision was made; the persistent home is what a later sprint can still read.
+
+## Entries
+
+<!-- entries appended below this line -->
+
+## 2026-09-14 — Scope intent clarified: explicit skip of the design block
+
+- **Decision**: The setting skips `design`, `design-review` and `design-promote` explicitly, without loading their skills or workflows; the document-driven skip stays because it also covers partial document sets. Enabled for this repo.
+- **Rationale**: The user chose this reading when told that this repo already skips all three phases implicitly in every sprint, at the cost of loading `asd-phase-design` for one no-op write.
+- **Affected docs**: `.asd/sprints/011-explicit-design-skip/sprint.md`
+
+## 2026-09-14 — Audit phase runs (documents.audit: auto → true)
+
+- **Decision**: `documents.audit: auto` normalizes to running the audit; `state.json.documents.audit` frozen to `true`.
+- **Rationale**: The scope changes phase routing, the config schema, the frozen state shape and the precondition chain — behaviour and contract impact, not mechanical.
+- **Affected docs**: `.asd/sprints/011-explicit-design-skip/state.json`
+
+## 2026-09-14 — Sprint 011 scope accepted
+
+- **Decision**: The user accepted `sprint.md` AC-1 … AC-7 unchanged at the hard scope gate.
+- **Rationale**: The initial scope gate is hard in both policy modes. Per-criterion cost was stated before the decision: 0 iterations, 0 fix rounds for every criterion, this being a new sprint.
+- **Affected docs**: `.asd/sprints/011-explicit-design-skip/sprint.md`, `.asd/sprints/011-explicit-design-skip/state.json`
