@@ -79,9 +79,9 @@ per-entry record measures only the tree that entry analysed, not any tree produc
 
 - Command: `node tests/run.js` (impacted set = full suite: the shared-infrastructure safety valve fired — framework-wide canon and `.asd/runtime.js` changed)
 - Scope: impacted
-- Result: pending
-- Lint / build: pending
-- HEAD: pending
+- Result: pass — 197 passed, 0 failed, 0 skipped (exit 0)
+- Lint / build: pass — `git diff --cached --check` exit 0 on each staged commit; `node .asd/sync.js --check` exit 0, 72/72 items `current`
+- HEAD: 4b3b966 — includes this entry's own test commit; the impl-review terminal full-suite run remains the only record of the final tree
 
 ## Defects
 
