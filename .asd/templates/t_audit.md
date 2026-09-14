@@ -33,7 +33,7 @@ Include documentation and implementation touched by scope.
 - {{risk}}: impact={{impact}}, mitigation={{mitigation}}
 
 ## Subsystems map (optional, decomposition enabled)
-- {{subsystem id from c4 model}}: {{relation to scope}}
+- {{subsystem id from docs/architecture/subsystems.md}}: {{relation to scope}}
 
 ## Related open stubs (optional)
 

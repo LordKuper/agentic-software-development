@@ -18,7 +18,7 @@ Orchestration body for the `asd-phase-plan` skill. Operation-mapping to host too
 
 1. Read `.asd/project/config.yaml` (`language.chat`, `language.docs`, `project.subsystem_decomposition`); read `<sprint>/state.json` — frozen `documents.prd`, `documents.audit`
 2. Read `<sprint>/state.json` → confirm design-promote done
-3. Read `<sprint>/sprint.md`, persistent docs referenced (per-subsystem files updated this sprint, plus shared concept.html, stack.html, DESIGN.md, accessibility.html — only whichever exist), `.asd/project/commands.yaml`. Acceptance-criteria source: PRD AC-N when `documents.prd` enabled, else `sprint.md`'s own `AC-N` list (`sprint-lifecycle.md` "Optional documents").
+3. Read `<sprint>/sprint.md`, persistent docs referenced (decomposition enabled: `docs/architecture/subsystems.md` and each touched subsystem's `<id>.md`, to locate its code; per-subsystem files updated this sprint, plus shared concept.html, stack.html, DESIGN.md, accessibility.html — only whichever exist), `.asd/project/commands.yaml`. Acceptance-criteria source: PRD AC-N when `documents.prd` enabled, else `sprint.md`'s own `AC-N` list (`sprint-lifecycle.md` "Optional documents").
 4. Write `state.json` (phase=plan) inline; the main orchestrator performs:
    - sprint.md path, list of relevant persistent doc paths, acceptance-criteria source, `language.chat`, `language.docs`; template `t_plan.md`
    - instruction:

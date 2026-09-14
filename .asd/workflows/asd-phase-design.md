@@ -43,11 +43,11 @@ Orchestration body for the `asd-phase-design` skill. Operation-mapping to host t
    - on Architect COMPLETED → workflow appends decisions-log entry inline ("`<sprint>/design/adr.html` accepted")
    - if `adr` disabled → skip to step 10
 10. **Step c4-full** — only if frozen `documents.c4` (already effective, from `state.json`) enabled: on ADR step done → delegate to agent `asd-architect`
-    - inputs: whichever design drafts exist, `docs/architecture/stack.html`, persistent `docs/architecture/c4/` (diff target), sprint.md; ADR not required
+    - inputs: whichever design drafts exist, `docs/architecture/stack.html`, `docs/architecture/subsystems.md`, persistent diagram (diff target: likec4 `docs/architecture/c4/`, mermaid the registry's diagram block), sprint.md; ADR not required
     - templates per `project.diagram_tool`:
       - likec4: `t_c4-model.c4`, `t_c4-views.c4`; produce `<sprint>/design/c4-full/model/*.c4`, `views.c4` — never build `dist/` here (generated output no reviewer sees, `external-review.md`)
-      - mermaid: `t_subsystems.yaml`; produce `<sprint>/design/c4-full/subsystems.yaml` — never render `architecture.html` here
-    - instruction: author a **delta patch** against the persistent registry covering sprint scope; author the **full schema** instead only when the persistent registry does not yet exist; write the files directly — `c4-full/` carries no approval gate of any kind (neither class, `checkpoints.md`), so there is no discuss/approve step here; post the absolute path(s) + a brief summary in chat (still no content dumps — `checkpoints.md`'s link-and-summary rule applies even without a gate); emit COMPLETED
+      - mermaid: `t_subsystems.md`; produce `<sprint>/design/c4-full/subsystems.md`
+    - instruction: author a **delta patch** against the persistent diagram covering sprint scope; author the **full schema** instead only when the persistent diagram does not yet exist; write the files directly — `c4-full/` carries no approval gate of any kind (neither class, `checkpoints.md`), so there is no discuss/approve step here; post the absolute path(s) + a brief summary in chat (still no content dumps — `checkpoints.md`'s link-and-summary rule applies even without a gate); emit COMPLETED
     - if `documents.c4` disabled → skip
 11. On all enabled steps COMPLETED → write `state.json` (drafts ready) inline; post a non-blocking rollup SUMMARY chat note listing drafts produced and skipped (informational only — per-artifact decisions-log entries already recorded at each step's `accept`, steps 6/7/8/9) — mechanical, no gate
 12. Emit phase COMPLETED with return contract
@@ -85,4 +85,4 @@ PHASE: design | SPRINT: <NNN-slug> | STATUS: <complete|blocked|aborted> | NEXT: 
 - `.asd/rules/checkpoints.md` (per-artifact approval)
 - `.asd/rules/language-policy.md` ("Write-then-review-accept: chat-language self-sufficiency", quote translation)
 - `.asd/rules/artifact-layout.md` (sprint design folder, provenance, c4 mode layouts)
-- Templates: `t_prd.html`, `t_ux-spec.html`, `t_adr.html`, `t_design-md-delta.yaml`, `t_c4-model.c4`, `t_c4-views.c4`, `t_subsystems.yaml`, `t_tech-reference.md`
+- Templates: `t_prd.html`, `t_ux-spec.html`, `t_adr.html`, `t_design-md-delta.yaml`, `t_c4-model.c4`, `t_c4-views.c4`, `t_subsystems.md`, `t_tech-reference.md`

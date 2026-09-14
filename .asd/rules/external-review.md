@@ -66,7 +66,7 @@ Both phase workflows populate `files[]` = changed-path list at the reviewer's cu
 
 Cross-phase reference material (concept, custom rules, accessibility baseline, prd/adr/stack/commands) travels as **paths only** in the rendered prompt (`t_prompt-external-{design,impl}.md` "project context"), never inside the scope manifest, never diffed. design-review scope never names source code; consumer-mode impl-review scope never names design/doc files (a doc-vs-code drift finding belongs to the internal Documentation reviewer). `exclude_paths` also keeps C4 schemas out of consumer impl-review: likec4 lives under `<sprint>/design/c4-full/` and `docs/architecture/c4/`.
 
-**Generated output is always in `exclude_paths`.** `**/dist/**` (likec4 build), `design-system.html`, `architecture.html` — all derived from a source the reviewer already sees (`*.c4`, `DESIGN.md`, `subsystems.yaml`). Review the source, not the build.
+**Generated output is always in `exclude_paths`.** `**/dist/**` (likec4 build), `design-system.html` — both derived from a source the reviewer already sees (`*.c4`, `DESIGN.md`). Review the source, not the build.
 
 Both impl-review rows start from the whole repo and subtract the exclusions, never an allow-list — so any real source added later (CI configs, root-level configs, anything else) is in scope automatically, with no manifest or rule edit. Agent memory's status in both modes: `artifact-layout.md` "Agent memory".
 
