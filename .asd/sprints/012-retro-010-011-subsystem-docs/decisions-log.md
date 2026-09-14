@@ -268,3 +268,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
   - Accepted tester choices: the verb set is halt/stop/abort with `before … dispatch`; a self-contradictory clause is left to Correctness; the overlapping DOC-1 presence check is kept. The suite is 197/197.
 - **Rationale**: Premises verified; no production canon change.
 - **Affected docs**: `tests/run.js`, `test-plan.md`, documentation reviewer memory
+
+- 2026-09-14 — impl-test: impacted set green (full suite via safety valve, 197/197; sync --check 72/72 current), 0/0 tests added/removed (entry 6, delta since entry 5)

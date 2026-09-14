@@ -16,7 +16,7 @@ responsibility:
 | 3 | c1bd9ae4600015483f61ec070d60b091ef4381e3 | delta since entry 2 (`686b03e...HEAD`): `tests/run.js` (entry 2's own commit `f3238d5`) and tester agent memory; no production canon. Pre-run at `f304b76`: 197/197 |
 | 4 | 3fda0e8ece8ba7b4580949a5b0b4273cb0e0ca5e | delta since entry 3 (`c1bd9ae...HEAD`): impl review-fix iter-02 — `1ec55e7` (COR-2), `ec7871f` (external #1), `e50963c` (DOC-2), release-manifest hashes, reviewer agent memory. Pre-run at `4443b8b`: 197/197 |
 | 5 | a319bbf8255370d8274c8d3abbfbd39c5b808228 | delta since entry 4 (`3fda0e8...HEAD`): impl review-fix iter-03 — `70c7c44` (DOC-1 = external #1), `611eb0b` (external #2), release-manifest hashes, reviewer agent memory. Pre-run at `928cbac`: 197/197 |
-| 6 |  | delta since entry 5 (`a319bbf...HEAD`): impl review-fix iter-04 — `3c4d96c` (`tests/run.js`, external iter-04 #1 halt assert), tester and documentation-reviewer agent memory; no production canon. Pre-run at `7429533`: 197/197 |
+| 6 | 11d6fe2222fd94b04ca1877228197a4a7a7df791 | delta since entry 5 (`a319bbf...HEAD`): impl review-fix iter-04 — `3c4d96c` (`tests/run.js`, external iter-04 #1 halt assert), tester and documentation-reviewer agent memory; no production canon. Pre-run at `7429533`: 197/197 |
 
 ## Risk → check decisions
 
