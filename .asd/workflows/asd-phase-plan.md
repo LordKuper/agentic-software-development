@@ -36,7 +36,7 @@ Orchestration body for the `asd-phase-plan` skill. Operation-mapping to host too
        - each Task references an AC-N from the acceptance-criteria source it satisfies (cite in Task body)
        - subtasks as checkboxes inside `### Task N:` block only (parser-critical)
        - no test-authoring Tasks or subtasks — tests are selected and written in `impl-test`, after the code exists; note per Task only the **material risk** the change carries, as input for impl-test
-       - assign every Task to a wave and write the wave table into `## Dependencies`, isolating each Task that changes the dispatch or commit contract per `sprint-lifecycle.md` "Plan file format"; list non-trivial dependencies under the table
+       - assign every Task to a wave and write the wave table into `## Dependencies`, a settings-change Task alone in wave 1, then each Task that changes the dispatch or commit contract isolated ahead of the Tasks dispatched under it, per `sprint-lifecycle.md` "Plan file format"; list non-trivial dependencies under the table
        - estimate the iteration-1 review scope in files from the Tasks' touched paths; above `.asd/runtime.js` `SPLIT_THRESHOLD_FILES`, name the expected part count per internal reviewer in `## Risks`. Advisory only: `emit-manifest` splits on the real scope file list (`review-policy.md` "Split trigger")
      - **Definition of Done**: reference the standing DoD (`sprint-lifecycle.md` "Plan file format") instead of restating it; author only sprint-specific additions, if any
      - translate skeleton + full draft to `language.docs`, write `<sprint>/plan.md`; gate mechanic (approve-before-write vs write-then-review-accept) and strict-vs-adaptive evidence requirement per `checkpoints.md` — deferred to step 5, not fixed here
