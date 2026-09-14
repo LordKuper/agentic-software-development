@@ -102,31 +102,31 @@ Reachability: plan writes a `Settings change:` line in a Task block at plan step
 Material risk: change: migration
 Material risk: change: public contract
 Reachability: audit or design-promote write `docs/architecture/subsystems.md` at audit step 2 or promote step 4; plan reads it at plan step 3 and audit reads it at step 2 to locate subsystem code.
-- [ ] AC-14, AC-16: rewrite `artifact-layout.md`:
+- [x] AC-14, AC-16: rewrite `artifact-layout.md`:
   - "Subsystem registry": `subsystems.md` is the sole registry; reserved ids `subsystems`, `stack`, `c4`, `tech-reference`.
   - Path maps: registry and `<id>.md` in the decomposed tree. `c4/` appears only with effective c4 and likec4. The mermaid sprint draft is `<sprint>/design/c4-full/subsystems.md`.
   - Line 5 carve-out.
   - "Document representation rule": add an exception for the agent-facing `.md` registry and subsystem files.
   - Retire `architecture.html` from the shell list and `DOC_TYPE`.
-- [ ] AC-14: update `core.md` Glossary "Subsystem".
-- [ ] AC-14, AC-17: update `sprint-lifecycle.md`: phase-table audit output, "Optional documents" C4 inputs, "Audit phase", "Design phase" c4-full, "Design-promote phase" steps 2 and 4, decomposition-disabled paragraph.
-- [ ] AC-15: new template(s) with responsibility frontmatter for `subsystems.md` (registry list with links, optional inline Mermaid block for mermaid mode) and `<id>.md` (purpose, key paths). Delete `t_subsystems.yaml`.
-- [ ] AC-16: in mermaid mode, the diagram lives inline in `subsystems.md`. No `c4/`, `subsystems.yaml` or `architecture.html`. Update:
+- [x] AC-14: update `core.md` Glossary "Subsystem".
+- [x] AC-14, AC-17: update `sprint-lifecycle.md`: phase-table audit output, "Optional documents" C4 inputs, "Audit phase", "Design phase" c4-full, "Design-promote phase" steps 2 and 4, decomposition-disabled paragraph.
+- [x] AC-15: new template(s) with responsibility frontmatter for `subsystems.md` (registry list with links, optional inline Mermaid block for mermaid mode) and `<id>.md` (purpose, key paths). Delete `t_subsystems.yaml`.
+- [x] AC-16: in mermaid mode, the diagram lives inline in `subsystems.md`. No `c4/`, `subsystems.yaml` or `architecture.html`. Update:
   - `asd-phase-design.md` c4-full step and template list;
   - `external-review.md` 67/69;
   - `t_prompt-external-design.md` artifacts list and checklist;
   - `asd-reviewer-efficiency.md` inputs;
   - `asd-phase-design-review.md` 8/32.
-- [ ] AC-17 promote: in `asd-phase-design-promote.md`, Architect writes a new or changed subsystem to the registry and to `<id>.md`. It patches likec4 C4 only when effective c4 is enabled. A new subsystem stays a hard gate.
-- [ ] AC-17 audit: in `asd-phase-audit.md` step 2, when decomposition is enabled and the registry is absent, Architect proposes the registry and `<id>.md` files from an existing C4 registry, or from code when none exists. Each subsystem added needs explicit user confirmation (hard). Only after confirmation does Architect write the files. Missing `<id>.md` files for registered subsystems are backfilled. A legacy `c4/` that is redundant under the new rules (effective c4 disabled, or mermaid mode) is deleted after migration under a hard gate, together with its `.gitignore` `architecture.html` line.
-- [ ] AC-17: `audit` and `plan` read the registry. Update `asd-phase-plan.md` step 3 and `t_audit.md` "Subsystems map".
-- [ ] AC-17, AC-18: in `asd-architect.md`, update the description, write access (registry, `<id>.md`, audit-phase writes after confirmation), "Diagram tool modes" and stop conditions.
-- [ ] AC-17, AC-18: `asd-init/SKILL.md` and `t_config.yaml`:
+- [x] AC-17 promote: in `asd-phase-design-promote.md`, Architect writes a new or changed subsystem to the registry and to `<id>.md`. It patches likec4 C4 only when effective c4 is enabled. A new subsystem stays a hard gate.
+- [x] AC-17 audit: in `asd-phase-audit.md` step 2, when decomposition is enabled and the registry is absent, Architect proposes the registry and `<id>.md` files from an existing C4 registry, or from code when none exists. Each subsystem added needs explicit user confirmation (hard). Only after confirmation does Architect write the files. Missing `<id>.md` files for registered subsystems are backfilled. A legacy `c4/` that is redundant under the new rules (effective c4 disabled, or mermaid mode) is deleted after migration under a hard gate, together with its `.gitignore` `architecture.html` line.
+- [x] AC-17: `audit` and `plan` read the registry. Update `asd-phase-plan.md` step 3 and `t_audit.md` "Subsystems map".
+- [x] AC-17, AC-18: in `asd-architect.md`, update the description, write access (registry, `<id>.md`, audit-phase writes after confirmation), "Diagram tool modes" and stop conditions.
+- [x] AC-17, AC-18: `asd-init/SKILL.md` and `t_config.yaml`:
   - enabling decomposition creates an empty `docs/architecture/subsystems.md`;
   - `diagram_tool` and the `c4/` seeding only when C4 is enabled;
   - mermaid seeds no `c4/` and no `c4-build`;
   - no `architecture.html` `.gitignore` entry.
-- [ ] Update this repo's `.gitignore` `architecture.html` line. Sync the generated views. Build and lint.
+- [x] Update this repo's `.gitignore` `architecture.html` line. Sync the generated views. Build and lint.
 
 ### Task 7: Mirrors and release manifest
 Material risk: artifact: release manifest hashes
