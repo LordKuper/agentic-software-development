@@ -1,7 +1,7 @@
 {
   "sprint_id": "012-retro-010-011-subsystem-docs",
   "branch": "sprint/012-retro-010-011-subsystem-docs",
-  "phase": "retro",
+  "phase": "pr",
   "documents": {
     "audit": true,
     "prd": false,
@@ -46,6 +46,13 @@
       "reason": "routine green handoff in adaptive mode: every required reviewer APPROVE/latched and terminal full suite green; no FAIL, no override, no waiver, no cap override",
       "evidence": "state.json reviews.impl.verdicts iter-05 all APPROVE (latched: efficiency 2, testing 2, correctness 3, documentation 4, external 5); test-plan.md Suite run terminal full suite 197/197 at 1837e91, lint/build exit 0",
       "artifact_revision": "HEAD@e8bb164"
+    },
+    {
+      "gate": "pr-publication",
+      "decision_actor": "user",
+      "reason": "user approved publishing the sprint 012 PR (push + gh pr create to main) after being shown title and 7.3.0 -> 8.0.0 breaking bump",
+      "evidence": "open-mode DoD: plan 40/40 ticked; reviews.impl.verdicts iter-05 all APPROVE; terminal full suite 197/197 at 1837e91 and no code/test diff since; lint/build exit 0; retrospective.html present; no sprint stubs; post-bump suite 197/197 at 7fb81a4",
+      "artifact_revision": "HEAD@7fb81a4"
     }
   ],
   "task_routing": {
@@ -200,7 +207,7 @@
     }
   },
   "created_at": "2026-09-14T09:29:45Z",
-  "updated_at": "2026-09-14T15:54:22Z",
+  "updated_at": "2026-09-14T19:34:10Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
