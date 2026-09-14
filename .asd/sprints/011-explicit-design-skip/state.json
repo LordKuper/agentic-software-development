@@ -38,6 +38,13 @@
       "reason": "routine initial impl assessment passed adaptively",
       "evidence": "plan.md 6/6 tasks ticked (AC-1..AC-7 mapped); MS-1 done via user-run /asd-init; sync --check 0 non-current; git diff --check clean; round diff confined to task-named canon, synced views, release-manifest, project config and sprint bookkeeping; tests 184/184 at Task 5 self-verification; no sprint-011 stubs",
       "artifact_revision": "plan.md@impl-complete"
+    },
+    {
+      "gate": "impl-review green handoff",
+      "decision_actor": "orchestrator",
+      "reason": "routine green handoff passed adaptively: reviewer DoD and terminal full suite both met",
+      "evidence": "reviews.impl.verdicts iter-02 all APPROVE (efficiency latched iter-01); every internal ledger validated; terminal full suite 187/187 exit 0 at a9218eb, lint and sync --check clean (test-plan.md Suite run, commit 03c0d56)",
+      "artifact_revision": "test-plan.md@03c0d56"
     }
   ],
   "task_routing": {
@@ -145,7 +152,7 @@
     }
   },
   "created_at": "2026-09-14T06:59:44Z",
-  "updated_at": "2026-09-14T12:30:00Z",
+  "updated_at": "2026-09-14T12:40:00Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

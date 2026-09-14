@@ -86,3 +86,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-14 — impl fix for iter-01: findings resolved (EXT-1, COR-1 in 8d28cbb; COR-2 in b6e7f8e; DOC-1 in bfe09d9; TST-01 plus the EXT-1/COR-2 test contract in 318ffca; every premise verified at HEAD, no mismatch)
 - 2026-09-14 — impl-test: impacted set green (187/187, full suite by safety valve; sync --check 72/72 current; lint clean), 0/0 tests added/removed (1 assertion added)
 - 2026-09-14 — impl-review iter-02: all reviewers APPROVE (efficiency latched from iter-01); reviewer DoD met, dispatching terminal full-suite gate
+
+## 2026-09-14 — impl-review DoD met, handoff to retro (adaptive)
+
+- **Decision**: The terminal full suite is green: 187/187, lint and `sync --check` clean, recorded at `a9218eb`. With iter-02 reviewers all APPROVE, impl-review DoD is met and the sprint advances to retro.
+- **Rationale**: The green handoff is a routine gate. Its evidence is complete, from validated ledgers, runner exit codes and no open findings or defects, so the adaptive rule passes it without a user decision.
+- **Affected docs**: `.asd/sprints/011-explicit-design-skip/test-plan.md`, `.asd/sprints/011-explicit-design-skip/reviews/impl/iter-02/`
