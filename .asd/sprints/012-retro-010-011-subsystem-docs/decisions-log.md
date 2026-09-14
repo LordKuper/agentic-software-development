@@ -166,3 +166,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Initial impl is accepted at HEAD 3c800d3: Tasks 1-7 are complete, the build (`sync.js --check`) and lint are clean, the authorised-paths check passed, and no stubs were added. The sprint advances to impl-test.
 - **Rationale**: Every flagged choice is resolved (entries above), so no material alternative is open. The one red test, the manifest-digest stamp assertion, is stale after AC-1 added `n_a_shape`; impl-test owns updating it.
 - **Affected docs**: `plan.md`, `state.json` gate_decisions
+
+- 2026-09-14 — impl-test: impacted set green (full suite via safety valve, 197/197; sync --check 72/72 current), 10/0 tests added/removed (6 updated in place incl. sprint-008 split test rewritten for emitter-produced parts)
