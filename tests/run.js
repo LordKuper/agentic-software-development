@@ -2863,6 +2863,8 @@ test('sprint-011 AC-3/AC-5/AC-7: the audit exit that emits NEXT: plan is keyed o
   assert.ok(!/phase=|skipped_phases|record it\b/.test(auditOff), 'the audit step reading `documents.audit` must not write state of its own (no phase=, no skipped_phases, no "record it") - with the setting on, an audit-skip write followed by the exit write is two non-atomic writes, and an interruption between them leaves phase="audit" for resume to re-enter design (EXT-1)');
   const auditRecord = exit.indexOf('`"audit"`');
   assert.ok(auditRecord !== -1 && auditRecord < appended.index, "the exit write must carry a skipped audit's \"audit\" record ahead of the design-block names it appends - it is the one write for both skips, so the audit record cannot land on its own (EXT-1, sprint-lifecycle.md \"Multi-phase skip\")");
+  const auditOnly = exit.split(/\.\s+/).find((sentence) => sentence.includes(`NEXT: ${chain[chain.indexOf('audit') + 1]}`));
+  assert.ok(auditOnly && auditOnly.includes('phase="audit"'), 'the exit branch emitting NEXT: design must set phase="audit" - with step 1 carrying no write, it is the only write that advances phase past a skipped audit, and a skip recorded without that advance is the state "Skip record" forbids');
 
   const lifecycle = readRepoFile('.asd/rules/sprint-lifecycle.md');
   const homes = lifecycle.split('\n').map((line) => /^\*\*([^*]+)\*\*:\s*(.*)$/.exec(line)).filter((match) => match && match[1].toLowerCase().includes(between.join('/')));
