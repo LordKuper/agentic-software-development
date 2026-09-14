@@ -93,3 +93,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: The green handoff is a routine gate. Its evidence is complete, from validated ledgers, runner exit codes and no open findings or defects, so the adaptive rule passes it without a user decision.
 - **Affected docs**: `.asd/sprints/011-explicit-design-skip/test-plan.md`, `.asd/sprints/011-explicit-design-skip/reviews/impl/iter-02/`
 - 2026-09-14 — retro: `.asd/sprints/011-explicit-design-skip/retrospective.html` written (analysed branch; 1 friction entry, 1 framework action, 3 systemic proposals)
+
+## 2026-09-14 — Sprint PR #35 opened (adaptive publication)
+
+- **Decision**: `asd_version` was bumped 7.2.0 → 7.3.0 with a CHANGELOG entry. PR #35 (`feat(workflow): add skip_design_phases setting`) is open against `main`, and the sprint awaits merge.
+- **Rationale**: Every open-mode DoD check holds: all plan tasks done, AC-6 verified in config, review DoD at iter-02, full suite green with no code diff since, no sprint stubs, and the retrospective present. `auto_pr` and `gh_enabled` plus the accepted scope authorise publication under `user_gates: adaptive`.
+- **Affected docs**: `CHANGELOG.md`, `.asd/release-manifest.json`, `.asd/sprints/011-explicit-design-skip/state.json`

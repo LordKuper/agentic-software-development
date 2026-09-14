@@ -1,7 +1,7 @@
 {
   "sprint_id": "011-explicit-design-skip",
   "branch": "sprint/011-explicit-design-skip",
-  "phase": "retro",
+  "phase": "pr",
   "documents": {
     "audit": true,
     "prd": false,
@@ -45,6 +45,13 @@
       "reason": "routine green handoff passed adaptively: reviewer DoD and terminal full suite both met",
       "evidence": "reviews.impl.verdicts iter-02 all APPROVE (efficiency latched iter-01); every internal ledger validated; terminal full suite 187/187 exit 0 at a9218eb, lint and sync --check clean (test-plan.md Suite run, commit 03c0d56)",
       "artifact_revision": "test-plan.md@03c0d56"
+    },
+    {
+      "gate": "PR publication",
+      "decision_actor": "orchestrator",
+      "reason": "adaptive publication: accepted scope authority, DoD evidence complete, config auto_pr and gh_enabled true",
+      "evidence": "plan 6/6; iter-02 verdicts all APPROVE; full suite 187/187 at a9218eb and after version bump; sync --check 72/72; no sprint stubs; retrospective.html present; AC-6 config line verified; asd_version 7.2.0 -> 7.3.0 with CHANGELOG",
+      "artifact_revision": "PR #35"
     }
   ],
   "task_routing": {
@@ -152,9 +159,15 @@
     }
   },
   "created_at": "2026-09-14T06:59:44Z",
-  "updated_at": "2026-09-14T12:45:00Z",
+  "updated_at": "2026-09-14T13:10:00Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
-  "pr": null,
+  "pr": {
+    "state": "open",
+    "number": 35,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/35",
+    "title": "feat(workflow): add skip_design_phases setting",
+    "asd_version": "7.3.0"
+  },
   "archived_at": null
 }
