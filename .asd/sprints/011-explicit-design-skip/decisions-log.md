@@ -92,3 +92,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: The terminal full suite is green: 187/187, lint and `sync --check` clean, recorded at `a9218eb`. With iter-02 reviewers all APPROVE, impl-review DoD is met and the sprint advances to retro.
 - **Rationale**: The green handoff is a routine gate. Its evidence is complete, from validated ledgers, runner exit codes and no open findings or defects, so the adaptive rule passes it without a user decision.
 - **Affected docs**: `.asd/sprints/011-explicit-design-skip/test-plan.md`, `.asd/sprints/011-explicit-design-skip/reviews/impl/iter-02/`
+- 2026-09-14 — retro: `.asd/sprints/011-explicit-design-skip/retrospective.html` written (analysed branch; 1 friction entry, 1 framework action, 3 systemic proposals)
