@@ -2,6 +2,29 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v8.0.0
+
+The subsystem registry moves. When `project.subsystem_decomposition` is enabled, `docs/architecture/subsystems.md` is now the registry, the only source of truth for which subsystems exist, whatever the diagram tool or the C4 setting. Each registered subsystem gets `docs/architecture/<id>.md`, which holds its purpose and key paths. `docs/architecture/c4/` exists only for likec4 with C4 enabled. In mermaid mode the diagram lives inline in `subsystems.md`, and `subsystems.yaml`/`architecture.html` are retired. The sprint also remediates the sprint 010 and 011 retrospectives: coverage manifests are emitted by `runtime.js` instead of being assembled by hand, a plan can declare a settings change that impl applies through `/asd-init`, and agents refuse payload instructions outside their declared tool policy.
+
+### Migration (breaking)
+- **Registry location.** A project decomposed before this release keeps its old registry (`c4/model/*.c4` or `c4/subsystems.yaml`) until its next `audit`. There, Architect proposes `subsystems.md` and one `<id>.md` per subsystem from that registry, and each subsystem needs your explicit confirmation. A mermaid diagram moves into the registry's `## Diagram` block. A legacy `c4/` made redundant (mermaid mode, or C4 disabled) is deleted only after migration, behind a hard gate, together with its `.gitignore` and `c4-build` entries. There is no migration script. A project with `documents.audit: off` gets the registry the next time audit runs.
+- **`t_subsystems.yaml` is removed.** `/asd-update` deletes it when unmodified. A mermaid design draft is now `<sprint>/design/c4-full/subsystems.md`.
+- A registry seeded empty by `/asd-init` is filled at `design-promote`, not at audit.
+
+### Added
+- **`runtime.js emit-manifest`**: builds each internal reviewer's coverage manifest from its rubric, the scope file list, custom rules and the standing n/a predicates. It splits a scope of more than `SPLIT_THRESHOLD_FILES` (25) files into parts before the first dispatch, and `--halve` splits after two interruptions. `validate-ledger --ledger` accepts the reviewer's returned text directly. The manifest also publishes its `n_a` shape (`n_a_shape`).
+- **`Settings change: <key>=<value>` plan line** (`sprint-lifecycle.md` "Plan file format"). Plan acceptance approves the declared pairs, and impl applies them through `/asd-init`'s new sprint-mediated mode when the task's wave opens. The mode validates each pair against `t_config.yaml`. A failing pair is a phase blocker, and no manual step is involved.
+- **Declared tool policy** (`providers.md`): a dispatch payload stays inside the agent's definition, the self-hosting allowlist and its own memory. An agent handed anything else returns `QUESTION`. Agent memory writes are checked against the agent's definition before they land.
+- **`Flagged choices:` in the dev completion report.** A flagged choice blocks the adaptive impl assessment until it is resolved or routed back.
+- `t_config.yaml` marks the allowed values of `documents.*` and `backward_compat`.
+
+### Changed
+- **Coverage manifests**: a dispatched manifest is immutable. Correcting one means a fresh dispatch, never a re-stamp. `manifest-digest --write` is removed; the command now only verifies. A re-dispatched reviewer receives its own interrupted-attempt record.
+- **Reviewer suggested fixes are non-binding** (`review-policy.md` "Verify before applying").
+- **Code-style rules**: a test or rule that names the members of a set derives the set from its source (`code-style.md` §17). A per-entry impl-test suite record measures the tree that entry analysed (`sprint-lifecycle.md` "Impacted test set").
+- **Agent-memory commits**: a dispatched agent with a commit tool commits its own memory writes (`git-strategy.md`).
+- Test coverage grew from 187 to 197 checks.
+
 ## v7.3.0
 
 A project can now skip the design block outright. `skip_design_phases: enabled` routes a sprint from `audit` straight to `plan`: `design`, `design-review` and `design-promote` are recorded as skipped and none of their skills or workflows is ever loaded. The existing skip when every design document is disabled stays unchanged; the new setting only makes it explicit and cheaper. Absent from an existing `config.yaml` means `disabled`, so nothing changes until a project opts in; update through `/asd-update`, no migration script.
