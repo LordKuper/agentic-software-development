@@ -77,3 +77,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: Every plan checkbox is ticked, build (`sync --check`) and lint are clean, the round's diff touches only task-authorised paths, and no sprint stub was introduced, so the routine gate's evidence rule is met without a new user decision.
 - **Affected docs**: `.asd/sprints/011-explicit-design-skip/plan.md`, `.asd/sprints/011-explicit-design-skip/manual-steps.md`
 - 2026-09-14 — impl-test: impacted set green (187/187, full suite by safety valve; sync --check 72/72 current; lint clean), 3/0 tests added/removed
+
+## 2026-09-14 — impl-review iter-01: CONCERNS, routed to impl review-fix
+
+- **Decision**: Efficiency APPROVE (latched). Correctness (COR-1, COR-2), Testing (TST-01), Documentation (DOC-1) and External (EXT-1) return CONCERNS, with no FAIL. `review_fixes_pending = "iter-01"`, `NEXT: impl`.
+- **Rationale**: Every finding is autofixable within scope, so no escalation is needed. COR-1 and EXT-1 share one root cause in the audit two-write sequence; COR-2 is the resume rule and plan precondition reading `skipped_phases` as current status; DOC-1 is two stale collapse attributions; TST-01 is the unpinned AC-3 decisions-log line. Iteration cap is not reached (iter 2 floor medium).
+- **Affected docs**: `.asd/sprints/011-explicit-design-skip/reviews/impl/iter-01/`

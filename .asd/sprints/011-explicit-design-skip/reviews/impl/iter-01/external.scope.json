@@ -1,0 +1,35 @@
+{
+  "phase": "impl-review",
+  "iteration": 1,
+  "base_ref": "main",
+  "head_ref": "f34400f0d1bc99fbba1a8d6ff6bdd4be44087248",
+  "files": [
+    ".asd/hooks/session-start.js",
+    ".asd/release-manifest.json",
+    ".asd/rules/checkpoints.md",
+    ".asd/rules/sprint-lifecycle.md",
+    ".asd/skills/asd-init/SKILL.md",
+    ".asd/skills/asd-sprint/SKILL.md",
+    ".asd/templates/t_config.yaml",
+    ".asd/templates/t_state.json",
+    ".asd/workflows/asd-phase-audit.md",
+    ".asd/workflows/asd-phase-design-promote.md",
+    ".asd/workflows/asd-phase-design-review.md",
+    ".asd/workflows/asd-phase-plan.md",
+    ".asd/workflows/asd-phase-scope.md",
+    ".claude/agent-memory/asd-tester-critical/project_testability-envelope.md",
+    "AGENTS.md",
+    "README.md",
+    "tests/run.js"
+  ],
+  "exclude_paths": [
+    ".asd/project/**",
+    ".asd/sprints/**",
+    ".claude/agents/**",
+    ".claude/skills/**",
+    ".claude/hooks/**",
+    ".claude/settings.json",
+    ".codex/**",
+    ".agents/skills/**"
+  ]
+}
