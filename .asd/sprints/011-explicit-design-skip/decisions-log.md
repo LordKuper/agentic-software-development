@@ -84,3 +84,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: Every finding is autofixable within scope, so no escalation is needed. COR-1 and EXT-1 share one root cause in the audit two-write sequence; COR-2 is the resume rule and plan precondition reading `skipped_phases` as current status; DOC-1 is two stale collapse attributions; TST-01 is the unpinned AC-3 decisions-log line. Iteration cap is not reached (iter 2 floor medium).
 - **Affected docs**: `.asd/sprints/011-explicit-design-skip/reviews/impl/iter-01/`
 - 2026-09-14 — impl fix for iter-01: findings resolved (EXT-1, COR-1 in 8d28cbb; COR-2 in b6e7f8e; DOC-1 in bfe09d9; TST-01 plus the EXT-1/COR-2 test contract in 318ffca; every premise verified at HEAD, no mismatch)
+- 2026-09-14 — impl-test: impacted set green (187/187, full suite by safety valve; sync --check 72/72 current; lint clean), 0/0 tests added/removed (1 assertion added)
