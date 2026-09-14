@@ -58,3 +58,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: `.asd/sprints/011-explicit-design-skip/audit.md`, `.asd/sprints/011-explicit-design-skip/state.json`
 
 - 2026-09-14 — design/design-review/design-promote skipped (no documents enabled)
+
+## 2026-09-14 — `.asd/sprints/011-explicit-design-skip/plan.md` accepted
+
+- **Decision**: The user accepted the plan: six tasks in four waves, config field `skip_design_phases: enabled | disabled` at top level (absent = disabled), frozen as state boolean `skip_design_phases` (absent = false). No open stub touches the scope.
+- **Rationale**: The field name is a new public config contract and a naming preference, so it went to the user rather than an adaptive pass.
+- **Affected docs**: `.asd/sprints/011-explicit-design-skip/plan.md`, `.asd/sprints/011-explicit-design-skip/state.json`

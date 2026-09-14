@@ -1,7 +1,7 @@
 {
   "sprint_id": "011-explicit-design-skip",
   "branch": "sprint/011-explicit-design-skip",
-  "phase": "design-promote",
+  "phase": "plan",
   "documents": {
     "audit": true,
     "prd": false,
@@ -24,6 +24,13 @@
       "reason": "routine audit acceptance passed adaptively: no material ambiguity, every recommendation implements an accepted AC",
       "evidence": "audit.md G-1..G-12, R-1..R-9; architect reported no material ambiguity; G-3 effective-document freeze implements AC-4 setting-wins; G-4 option A (audit exit owns skip write) is the only option satisfying AC-3 without router writes; R-1 MS-N /asd-init run implements AC-6 wording; no BA dispatch needed",
       "artifact_revision": "audit.md@audit-1"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "user",
+      "reason": "plan accepted; field name chosen",
+      "evidence": "plan.md 6 tasks / 4 waves covering AC-1..AC-7; config skip_design_phases: enabled|disabled top-level, state boolean skip_design_phases; audit exit owns skip write",
+      "artifact_revision": "plan.md@plan-1"
     }
   ],
   "task_routing": {},
@@ -46,7 +53,7 @@
     }
   },
   "created_at": "2026-09-14T06:59:44Z",
-  "updated_at": "2026-09-14T07:21:00Z",
+  "updated_at": "2026-09-14T07:40:00Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
