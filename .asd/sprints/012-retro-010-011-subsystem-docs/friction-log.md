@@ -20,6 +20,7 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 |---|---|---|---|
 | F-1 | scope | Start confirmation and free-form scope collected in one discrete-option request; scope text lost | — |
 | F-2 | impl | Task 1 dev dispatch terminated by provider session limit mid-task, leaving uncommitted partial edits | — |
+| F-3 | impl-review | emit-manifest split parts cannot truthfully cover a rubric id with no evidence anywhere in scope; union check (c) fails by construction | reviews/impl/iter-01/documentation |
 
 ## F-1 — Start confirmation and free-form scope collected in one discrete-option request; scope text lost
 
@@ -36,3 +37,11 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 - **What happened**: The dispatch ended with no COMPLETED signal after it had edited 10 canonical files and run `sync.js --apply`. Nothing was committed and no plan checkbox was ticked. `asd-phase-impl.md` has no interrupted-dispatch branch; `review-policy.md` "Interrupted dispatch" covers reviewers only. The orchestrator therefore re-dispatched a fresh dev instructed to verify and finish the partial diff, rather than discarding it.
 - **Impact**: The sprint waited for the limit to reset, and the task was re-dispatched with its partial work carried over as unverified on-disk state.
 - **Refs**: —
+
+## F-3 — emit-manifest split parts cannot truthfully cover a rubric id with no evidence anywhere in scope
+
+- **Phase**: impl-review
+- **Surface**: tool — `.asd/runtime.js` `emit-manifest` (this sprint AC-12) with `review-policy.md` "Union property" (c)
+- **What happened**: The iter-01 scope had 40 files and split into two parts per reviewer. The documentation rubric ids `HTML shell wrapping`, `Provenance` and `Traceability` have no evidence anywhere in the scope, because there is no user-facing HTML and no PRD/ADR. The emitted manifests authorised only the out-of-part predicate for them, so both parts truthfully recorded that predicate and union (c) blocked the merge. Hand-built manifests used to authorise scope-derived predicates; the emitter has no channel for them.
+- **Impact**: The documentation reviewer counts as incomplete for iter-01, so it must be re-dispatched next iteration. The defect was routed as ORC-1.
+- **Refs**: reviews/impl/iter-01/documentation

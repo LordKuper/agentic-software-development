@@ -168,3 +168,15 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: `plan.md`, `state.json` gate_decisions
 
 - 2026-09-14 — impl-test: impacted set green (full suite via safety valve, 197/197; sync --check 72/72 current), 10/0 tests added/removed (6 updated in place incl. sprint-008 split test rewritten for emitter-produced parts)
+
+## 2026-09-14 — impl-review iter-01: CONCERNS → impl review-fix
+
+- **Decision**: Verdicts are correctness, efficiency, testing and external CONCERNS. Documentation has no verdict: its merge is blocked by union property (c). Every internal part ledger passed `validate-ledger`, and no reviewer returned FAIL. Findings are routed to impl review-fix (`review_fixes_pending=iter-01`), with these dispositions:
+  - Excluded, by existing user authorization: COR-1-1 and external #1 (audit filling an empty seeded registry). The user decided "leave as is" for exactly this case (entry "Wave 4 flagged choices resolved").
+  - Invalid under the change-surface rule: external #3. Its cited line in `t_prompt-external-design.md:97` dates from the initial commit and was not made incorrect by this sprint.
+  - Duplicates merged: COR-2-1 into COR-1-2; DOC-2-1 and external #4 into COR-2-2; DOC-2-2 into COR-2-4.
+  - Dev chain, in order: EFF-1-1, ORC-1, EFF-2-1, DOC-1-1, DOC-2-4, COR-2-4, COR-2-2, COR-2-3, COR-1-2, COR-1-3, external #2, DOC-1-2.
+    - ORC-1 is orchestrator-observed: `emit-manifest` authorises no scope-derived `n/a`, such as no user-facing HTML in scope or PRD/ADR disabled. Every part of a split therefore marks such rubric ids out-of-part, which makes union (c) fail by construction. Sprint 011's hand-built manifests authorised these predicates.
+  - Tester chain, after the dev chain: TST-1-1, TST-1-2, TST-1-3, TST-2-1, TST-2-2, DOC-2-3.
+- **Rationale**: Every remaining finding is CONCERNS within scope. None requires escalation, since each is a deletion or a clarification with no new abstraction.
+- **Affected docs**: `reviews/impl/iter-01/`, `state.json`
