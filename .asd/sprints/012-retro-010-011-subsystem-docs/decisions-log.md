@@ -236,3 +236,14 @@ A decision whose value must survive this sprint's archival is ALSO written into 
     - External #2: un-enumerated string fields (`documents.*`, `backward_compat`) in `t_config.yaml` carry no `Values:` marker, so sprint-mediated step 2 accepts any string. The iter-02 external #1 fix left this residual.
 - **Rationale**: Both findings are high and within scope, with no new abstraction. Iteration 4 is the last within the high budget.
 - **Affected docs**: `reviews/impl/iter-03/`, `state.json`
+
+## 2026-09-14 — impl review-fix for iter-03: findings resolved
+
+- **Decision**: Resolved by the dev chain:
+  - DOC-1 with external #1 (`70c7c44`): an `asd-init` sprint-mediated `FAILED` is added to impl's closed blocker list, with step 6 halting before that wave's dispatch.
+  - External #2 (`611eb0b`): `Values` markers added for `documents.prd`/`ux_spec`/`adr`/`c4` and `backward_compat` in `t_config.yaml`, mirrored in the README config schema.
+  - Build and lint are clean, and the suite is 197/197.
+  - Not restated in `sprint-lifecycle.md` (single home).
+  - Accepted flagged choices: this repo's live `config.yaml` is untouched; the `documents.audit` legacy values are rejected under sprint-mediated validation; `language` stays limited to ru/en.
+- **Rationale**: Premises verified at HEAD. Markers are the existing convention, so no new heuristic was needed.
+- **Affected docs**: `asd-phase-impl.md`, `t_config.yaml`, README.md
