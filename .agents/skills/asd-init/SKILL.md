@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:ecce7acafdeb24c5a9ed1aeeef285278e210744fb6ddb190b3fe6e065f658e6f content_digest=sha256:7aa772774fcbeca3e1c3695d0c135fa4b9237084f111f921b9d8c1654b3df23c asd_version=7.3.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:578aa6e5b50dcde9c759dba6bf8eac20dcee98fe1afff50e016ac661a2d2a9d5 content_digest=sha256:d12964f9cb9d763d9757e0291dc61f09bb667cd6a9f5f224eb1c9a2686115d71 asd_version=7.3.0 schema=1
 name: asd-init
 description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode, or applies a plan-declared settings change for the active sprint's impl phase. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs $asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 ---
@@ -15,7 +15,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 ## Modes
 - **Fresh**: no `.asd/project/config.yaml` → full setup
 - **Re-init**: config exists → diff editor
-- **Sprint-mediated**: invoked by `asd-phase-impl.md` step 8 with an accepted plan's `Settings change:` pairs (`sprint-lifecycle.md` "Plan file format") → applies those pairs only
+- **Sprint-mediated**: invoked by `asd-phase-impl.md` step 6 with an accepted plan's `Settings change:` pairs (`sprint-lifecycle.md` "Plan file format") → applies those pairs only
 
 ## Always first (fresh and re-init)
 

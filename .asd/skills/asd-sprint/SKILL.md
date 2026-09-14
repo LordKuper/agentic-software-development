@@ -52,7 +52,7 @@ After any phase skill returns:
 User may interrupt anytime; asd-sprint re-detects state on next invocation.
 
 ## Skills dispatched
-Phase skills listed in `.asd/rules/sprint-lifecycle.md`, plus `asd-init` sprint-mediated mode for a plan-declared settings change (`asd-phase-impl.md` step 8). No other skill set.
+Phase skills listed in `.asd/rules/sprint-lifecycle.md`, plus `asd-init` sprint-mediated mode for a plan-declared settings change (`asd-phase-impl.md` step 6). No other skill set.
 
 ## Return contract (single line)
 ```

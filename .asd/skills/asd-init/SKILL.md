@@ -17,7 +17,7 @@
 ## Modes
 - **Fresh**: no `.asd/project/config.yaml` → full setup
 - **Re-init**: config exists → diff editor
-- **Sprint-mediated**: invoked by `asd-phase-impl.md` step 8 with an accepted plan's `Settings change:` pairs (`sprint-lifecycle.md` "Plan file format") → applies those pairs only
+- **Sprint-mediated**: invoked by `asd-phase-impl.md` step 6 with an accepted plan's `Settings change:` pairs (`sprint-lifecycle.md` "Plan file format") → applies those pairs only
 
 ## Always first (fresh and re-init)
 

@@ -14,7 +14,7 @@ Orchestration body for the `asd-phase-impl` skill. Operation-mapping to host too
 - write a file: `state.json` inline, for the mechanical non-gate writes at steps 4, 11 (`sprint-lifecycle.md` "State recovery")
 - request user decision: escalation only (see Execution mode)
 - delegate to agent: `asd-dev` per task / finding group / defect group (test-file findings to `asd-tester`); the main orchestrator owns manual-step validation, gates and decisions-log inline
-- dispatch a skill: `asd-init` sprint-mediated mode, for a declared settings change (step 8)
+- dispatch a skill: `asd-init` sprint-mediated mode, for a declared settings change (step 6)
 - append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log"
 
 ## Modes
@@ -59,6 +59,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
    - fix modes (review-fix and test-fix alike) — one ordered chain, never a concurrent set: every fix task depends on its predecessor by construction, so exactly one is in flight at a time (order: colliding tasks adjacent, else by finding/defect id). The chain is dispatched to ONE agent that works it in order, never a fresh instance per task — tier per 5a; test-file findings still route to `asd-tester` as their own chain, dispatched only after the dev chain completes and carrying its outcome (fixes already committed — `git-strategy.md` "Commit before review"), never alongside it, so exactly one agent is in flight across the whole round.
 5a. Before each task dispatch, run `node .asd/runtime.js route-task --input <path>` with kind, objective inputs/checks, the task's `Material risk` lines as typed `risks` entries (`sprint-lifecycle.md` "Plan file format"), correction attempts and prior tier. A result with `execution="command"` runs directly; `execution="agent"` dispatches `asd-dev-<tier>` for `mechanical`/`critical`, or the base `asd-dev` for `tier: standard` (no `-standard` variant exists — `providers.md` "Task-class variants and routing"). Persist the record in `state.json.task_routing[taskId]` per `providers.md`, supplying its tier as `priorTier` on re-entry. Invalid routing blocks; tier never lowers. In a fix mode, route every task of the chain first and persist each record, then dispatch the whole chain to a single agent at the highest tier returned — one agent holding every fix in the round is what keeps a later fix from contradicting an earlier one it never saw.
 6. **Dispatch tasks** per execution graph:
+   - **Declared settings change** (initial mode) — before wave 1 dispatches, a Task's `Settings change:` line (`sprint-lifecycle.md` "Plan file format") is applied, never an `MS-N` and never handed to a dev: the main orchestrator dispatches `asd-init` sprint-mediated mode with exactly the declared pairs and commits `.asd/project/config.yaml` itself; that Task's other subtasks, if any, then dispatch in wave 1
    - per step 5's wave table, sequential where dependent; parallel where independent: waves ascending, every task of a wave dispatched concurrently (caller schedules concurrent delegations), the next wave opening only once all their signals are in — initial mode only; in a fix mode step 5's single ordered chain governs, dev chain before tester chain
    - per task, or once per chain in a fix mode (5a): delegate to `asd-dev` (`asd-tester` only for review findings in test files) with payload:
      - initial — Task block excerpt (title + subtasks + dependencies); review-fix — grouped finding list (each finding's severity, location, description; plus user-approved change note for accepted FAIL findings); test-fix — grouped defect list (`D-N`, location, symptom, failing test)
@@ -80,8 +81,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
        - initial — tick corresponding checkboxes in `<sprint>/plan.md`
        - emit COMPLETED with summary (files touched; initial: AC-N satisfied, stubs added; review-fix: findings resolved by id; test-fix: defects resolved by `D-N`; every mode: `Flagged choices:` `none` or a list) when all subtasks/findings/defects done; when some subtasks manual-blocked, emit COMPLETED for unblocked portion plus `BLOCKED_MANUAL` listing deferred `MS-N`
 7. Wait all task signals (COMPLETED and/or BLOCKED_MANUAL)
-8. **Declared settings change** (initial mode) — a Task's `Settings change:` line (`sprint-lifecycle.md` "Plan file format") is never an `MS-N`: when wave 1 opens, before any dispatch, the main orchestrator dispatches `asd-init` sprint-mediated mode with exactly the declared pairs and commits `.asd/project/config.yaml` itself.
-   **Manual-steps validation + gate** — when any `BLOCKED_MANUAL` emitted:
+8. **Manual-steps validation + gate** — when any `BLOCKED_MANUAL` emitted:
    - the main orchestrator validates each new `MS-N` for necessity:
      - keep only when action genuinely cannot be done autonomously (needs access, secret, external account, or authority agent lacks)
      - reject any entry agent could do with own tools → re-dispatch its owning dev with feedback "implement autonomously, remove MS-N"; dev deletes entry, unmarks `BLOCKED:` subtask, implements it; loop step 7
@@ -96,7 +96,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
 9. **Impl completion gate** (all modes) — the main orchestrator verifies, via `commands.yaml`:
    - `build` command executed and finished with no errors and no warnings
    - `lint` command executed and finished with no errors and no warnings
-   - the round's diff — what its agents committed plus anything still uncommitted — read before committing or advancing: every path it touches is one those agents were authorised to touch, plus `.asd/project/config.yaml` when step 8 applied a declared settings change. Any other path fails the gate as a build error does — a file no dispatched task named, a hand-edited generated view, a scripted edit that rewrote more than its target. Distinct from `code-style.md` §19's staged-content lint: same tool, different question
+   - the round's diff — what its agents committed plus anything still uncommitted — read before committing or advancing: every path it touches is one those agents were authorised to touch, plus `.asd/project/config.yaml` when step 6 applied a declared settings change. Any other path fails the gate as a build error does — a file no dispatched task named, a hand-edited generated view, a scripted edit that rewrote more than its target. Distinct from `code-style.md` §19's staged-content lint: same tool, different question
    - the gate itself never runs tests — a dev's optional impacted-set self-verification run (`sprint-lifecycle.md` "Impacted test set") is not part of it; the suite/impacted-set gates belong to `impl-test`/`impl-review`
    - if any condition fails → phase MUST NOT advance: relay specific failure to owning dev(s) to fix and re-run; loop step 7. Unrecoverable failure escalates as a blocker (`FAILED`).
    - automatic verification — no user pause

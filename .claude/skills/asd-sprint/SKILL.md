@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:2ed87b0c7cdbe2b6b26e499bfcb5dad5541b81f696f29b32f193cd2faa9a5a62 content_digest=sha256:98f2720bea6a280dfc519960af4e7a6542a9c99089d53f44f26a0deafbfd5740 asd_version=7.3.0 schema=1
+# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:669d9dae3caa151dde1e6646b772bb1e541c20626797266d06a61467395827a8 content_digest=sha256:1a276e9037413b4c36e9fb3bf6493e642b855004859cebbf61f09b89e6721c73 asd_version=7.3.0 schema=1
 name: asd-sprint
 description: "Starts a new ASD sprint or resumes the active one, dispatching the matching asd-phase-* skill and routing phase signals back to the user. Use when the user runs /asd-sprint or asks to start, continue, resume, or work on an ASD sprint."
 allowed-tools: "Read Glob Grep Bash AskUserQuestion Skill"
@@ -51,7 +51,7 @@ After any phase skill returns:
 User may interrupt anytime; asd-sprint re-detects state on next invocation.
 
 ## Skills dispatched
-Phase skills listed in `.asd/rules/sprint-lifecycle.md`, plus `asd-init` sprint-mediated mode for a plan-declared settings change (`asd-phase-impl.md` step 8). No other skill set.
+Phase skills listed in `.asd/rules/sprint-lifecycle.md`, plus `asd-init` sprint-mediated mode for a plan-declared settings change (`asd-phase-impl.md` step 6). No other skill set.
 
 ## Return contract (single line)
 ```
