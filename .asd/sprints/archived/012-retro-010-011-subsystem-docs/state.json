@@ -1,7 +1,7 @@
 {
   "sprint_id": "012-retro-010-011-subsystem-docs",
   "branch": "sprint/012-retro-010-011-subsystem-docs",
-  "phase": "pr",
+  "phase": "done",
   "documents": {
     "audit": true,
     "prd": false,
@@ -53,6 +53,13 @@
       "reason": "user approved publishing the sprint 012 PR (push + gh pr create to main) after being shown title and 7.3.0 -> 8.0.0 breaking bump",
       "evidence": "open-mode DoD: plan 40/40 ticked; reviews.impl.verdicts iter-05 all APPROVE; terminal full suite 197/197 at 1837e91 and no code/test diff since; lint/build exit 0; retrospective.html present; no sprint stubs; post-bump suite 197/197 at 7fb81a4",
       "artifact_revision": "HEAD@7fb81a4"
+    },
+    {
+      "gate": "sprint-closure",
+      "decision_actor": "user",
+      "reason": "explicit closure approval at the hard closure gate after PR #37 merge",
+      "evidence": "PR #37 merged e041f0e (sync-check pass); AC-1..AC-19 covered; plan 40/40; impl-review iter-05 all APPROVE; terminal full suite 197/197; retrospective.html; asd_version 8.0.0 + CHANGELOG",
+      "artifact_revision": "HEAD@03c7378"
     }
   ],
   "task_routing": {
@@ -207,15 +214,16 @@
     }
   },
   "created_at": "2026-09-14T09:29:45Z",
-  "updated_at": "2026-09-14T19:34:46Z",
+  "updated_at": "2026-09-14T19:36:55Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": {
-    "state": "open",
+    "state": "merged",
     "number": 37,
     "url": "https://github.com/LordKuper/agentic-software-development/pull/37",
     "title": "feat(workflow)!: move subsystem registry, remediate retros 010-011",
-    "asd_version": "8.0.0"
+    "asd_version": "8.0.0",
+    "merge_commit": "e041f0eb19af4f4870bbfd00f9ec1a9459826b96"
   },
-  "archived_at": null
+  "archived_at": "2026-09-14T19:36:55Z"
 }

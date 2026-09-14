@@ -288,3 +288,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: `.asd/release-manifest.json`, `CHANGELOG.md`
 
 - 2026-09-14 — pr: PR #37 opened (https://github.com/LordKuper/agentic-software-development/pull/37), awaiting merge
+
+- 2026-09-14 — pr: PR #37 squash-merged by the orchestrator (`e041f0e`) after `sync-check` passed; `pr.state=closure-pending`, awaiting explicit closure approval
+
+- 2026-09-14 — closure: user explicitly approved sprint closure (hard gate); finalization via companion PR, then tag/release v8.0.0
+
+- 2026-09-14 — finalize: sprint folder archived, `pr.state=merged`, `phase=done`; landed via companion PR from `chore/finalize-sprint-012-retro-010-011-subsystem-docs`
