@@ -88,10 +88,11 @@
 Plan acceptance is the approval of record: no config dump, no section prompt, no `accept-all`.
 
 1. Read current `.asd/project/config.yaml`
-2. Set each declared `<key>=<value>` pair (dotted path); touch no other field. A pair already equal is a no-op.
-3. Write config
-4. Post the diff in `language.chat`: one `<key>: <old|absent> → <new>` line per pair
-5. Re-init step 7 applies when a pair touches `review.external_review` or `system.tools`
+2. Validate every pair against `.asd/templates/t_config.yaml` before any write: the dotted key must exist there, and where that field enumerates its values (`Values:` or an inline `a | b` comment) the value must be one of them. Any failing pair → `FAILED` naming it; nothing written.
+3. Set each declared `<key>=<value>` pair (dotted path); touch no other field. A pair already equal is a no-op.
+4. Write config
+5. Post the diff in `language.chat`: one `<key>: <old|absent> → <new>` line per pair
+6. Re-init step 7 applies when a pair touches `review.external_review` or `system.tools`
 
 ## AGENTS.md sync
 

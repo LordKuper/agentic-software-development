@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:578aa6e5b50dcde9c759dba6bf8eac20dcee98fe1afff50e016ac661a2d2a9d5 content_digest=sha256:d12964f9cb9d763d9757e0291dc61f09bb667cd6a9f5f224eb1c9a2686115d71 asd_version=7.3.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:71edf4a71387d3c89e82cd8fc1b3ad075b47388d2b7dec981a2b6713080ffb70 content_digest=sha256:dfc7a8e7e1fa9e2e06644409accad0267fd2a931c2902c3e02597bd6bc8073d0 asd_version=7.3.0 schema=1
 name: asd-init
 description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode, or applies a plan-declared settings change for the active sprint's impl phase. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs $asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 ---
@@ -86,10 +86,11 @@ Operation mapping: see `.asd/rules/providers.md`.
 Plan acceptance is the approval of record: no config dump, no section prompt, no `accept-all`.
 
 1. Read current `.asd/project/config.yaml`
-2. Set each declared `<key>=<value>` pair (dotted path); touch no other field. A pair already equal is a no-op.
-3. Write config
-4. Post the diff in `language.chat`: one `<key>: <old|absent> → <new>` line per pair
-5. Re-init step 7 applies when a pair touches `review.external_review` or `system.tools`
+2. Validate every pair against `.asd/templates/t_config.yaml` before any write: the dotted key must exist there, and where that field enumerates its values (`Values:` or an inline `a | b` comment) the value must be one of them. Any failing pair → `FAILED` naming it; nothing written.
+3. Set each declared `<key>=<value>` pair (dotted path); touch no other field. A pair already equal is a no-op.
+4. Write config
+5. Post the diff in `language.chat`: one `<key>: <old|absent> → <new>` line per pair
+6. Re-init step 7 applies when a pair touches `review.external_review` or `system.tools`
 
 ## AGENTS.md sync
 
