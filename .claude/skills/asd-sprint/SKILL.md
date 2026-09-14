@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:e7994176d2a010aea416911a20d986461172f4786f11661b988477c973739f70 content_digest=sha256:1070b3a8f5c6c630842cc7efea2be269e40d785bd06d0c96aa72d19d835e3a3f asd_version=7.1.0 schema=1
+# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:1e2603327854255212bcb3c0ccaed783d6e26e7b38115bbdfb7d26a1a5e2e87e content_digest=sha256:c726b25f9c0bd1af04b2dc96ad709753c0ca55980fb6c3cfccd782734c78a806 asd_version=7.2.0 schema=1
 name: asd-sprint
 description: "Starts a new ASD sprint or resumes the active one, dispatching the matching asd-phase-* skill and routing phase signals back to the user. Use when the user runs /asd-sprint or asks to start, continue, resume, or work on an ASD sprint."
 allowed-tools: "Read Glob Grep Bash AskUserQuestion Skill"
@@ -38,12 +38,12 @@ Operation mapping: see `.asd/rules/providers.md`.
 ### Step 2B: resume flow
 1. Read `.asd/sprints/<NNN-slug>/state.json`
 2. Show: sprint id, current phase, review iteration (`reviews.design.iteration` when phase=`design-review`, `reviews.impl.iteration` when phase=`impl-review`), last review verdict (if any)
-3. Request user decision: resume (default) | re-run current phase | re-run earlier phase | abort sprint
-4. Delegate to the matching phase skill. *re-run earlier phase* = rollback: its inline state update resets the review counter + severity floor per **rollback reset** in `sprint-lifecycle.md`.
+3. Request user decision: resume (default) | re-run current phase | re-run earlier phase | abort sprint. When frozen `skip_design_phases` is `true`, neither re-run option offers `design`, `design-review` or `design-promote`.
+4. Delegate to the matching phase skill. *resume* re-enters `phase`, except when `phase` is the last `skipped_phases` entry: then dispatch its successor in the phase chain. *re-run earlier phase* = rollback: its inline state update resets the review counter + severity floor per **rollback reset** in `sprint-lifecycle.md`.
 
 ### Step 3: phase chain advancement
 After any phase skill returns:
-- `COMPLETED` → read the phase skill's `NEXT:` field and dispatch that phase skill. `NEXT:` is authoritative — follows default linear order in `.asd/rules/sprint-lifecycle.md` except the `impl`/`impl-test`/`impl-review` cycle: `impl` always returns `NEXT: impl-test`; `impl-test` returns `NEXT: impl` on code defects (routes to impl test-fix mode) or `NEXT: impl-review` on a green suite; `impl-review` returns `NEXT: impl` on unresolved findings (routes to impl review-fix mode) or `NEXT: retro` on DoD met; `retro` always returns `NEXT: pr`, on its analysed and its empty-log branch alike. The `pr` phase ends the chain in two steps: open mode returns `NEXT: await-merge` (PR opened, sprint folder already archived onto the same branch, `phase` still not `done` — halt, no further dispatch); a later resume re-enters `pr` in merge mode, reading `state.json` from its archived location, and on `NEXT: done` writes the terminal state and the chain ends.
+- `COMPLETED` → read the phase skill's `NEXT:` field and dispatch that phase skill. `NEXT:` is authoritative — follows default linear order in `.asd/rules/sprint-lifecycle.md` except the design-block collapse (`audit` returns `NEXT: plan` when frozen `skip_design_phases` is `true`; `design` returns `NEXT: plan` on its documents-disabled no-op) and the `impl`/`impl-test`/`impl-review` cycle: `impl` always returns `NEXT: impl-test`; `impl-test` returns `NEXT: impl` on code defects (routes to impl test-fix mode) or `NEXT: impl-review` on a green suite; `impl-review` returns `NEXT: impl` on unresolved findings (routes to impl review-fix mode) or `NEXT: retro` on DoD met; `retro` always returns `NEXT: pr`, on its analysed and its empty-log branch alike. The `pr` phase ends the chain in two steps: open mode returns `NEXT: await-merge` (PR opened, sprint folder already archived onto the same branch, `phase` still not `done` — halt, no further dispatch); a later resume re-enters `pr` in merge mode, reading `state.json` from its archived location, and on `NEXT: done` writes the terminal state and the chain ends.
 - `FAILED` → relay, halt
 - `QUESTION` → relay pending question, halt until reply
 - `ABORT — precondition not met` → relay, halt

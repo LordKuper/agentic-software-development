@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:6d6c27c534c698d2ba75ca9f83437ad1d035f39075c8662c4d28a6e7261f17a7 content_digest=sha256:f652c362dc46c1f9f11fbf8f5c3abc19218218859843bcd1e08e574729c4c8a0 asd_version=5.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:4f3b015f41b7164c73a2127f18bed24d39672c6bd6967011f2e8aba8c0842341 content_digest=sha256:db0b784b6db08b4551826724a32cd56edb45b0ce264934f9e1a0eec9acc6548d asd_version=7.2.0 schema=1
 name: asd-init
 description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
@@ -25,7 +25,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 ## Workflow (fresh)
 
 1. Detect greenfield vs brownfield via repo search on source files
-2. Request user input, batch: chat/docs language, decomposition, compatibility, external review, self-hosting, `user_gates` (`strict` default or `adaptive`), and document settings. `documents.audit` is `auto|always|off` (`auto` default; legacy enabled/disabled normalize to always/off); other document flags keep their existing values. For self-hosting recommend audit `auto` and other documents disabled.
+2. Request user input, batch: chat/docs language, decomposition, compatibility, external review, self-hosting, `user_gates` (`strict` default or `adaptive`), `skip_design_phases` (`disabled` default; semantics `sprint-lifecycle.md` "Optional documents"), and document settings. `documents.audit` is `auto|always|off` (`auto` default; legacy enabled/disabled normalize to always/off); other document flags keep their existing values. For self-hosting recommend audit `auto` and other documents disabled. Whenever `prd`, `ux_spec`, `adr` and `c4` are all disabled, recommend `skip_design_phases: enabled`.
 3. If decomposition enabled → request user decision: diagram_tool (`likec4` | `mermaid`)
 4. Detect OS via command execution (silent; no confirm yet)
 5. Detect external tools (silent; record results, do not prompt per-tool yet):
@@ -48,12 +48,12 @@ Operation mapping: see `.asd/rules/providers.md`.
      the search-derived impacted set is the safe fallback
    Record into proposal; do not prompt per-command yet
 8a. **Consolidated proposal & edit gate** — present every auto-detected/defaulted value in one structured block in `language.chat`:
-    - OS, tools, review limits, git settings, `user_gates`, normalized audit mode, detected build/test/lint/run commands and any affected-test selector
+    - OS, tools, review limits, git settings, `user_gates`, `skip_design_phases`, normalized audit mode, detected build/test/lint/run commands and any affected-test selector
     Then request user decision: `accept-all` | `edit-section` | `abort`.
     - `edit-section` → request user decision on which section (os | tools | review | git | commands), collect new values, re-show proposal, loop until `accept-all`
     - Missing required tools (designmd if `documents.ux_spec: enabled`; likec4 if decomp+likec4; the wrapped external-review CLI if external_review) → must resolve here: install / override path / disable feature. Do NOT silently proceed with missing required tools.
     Only after `accept-all` proceed to write.
-9. Write `.asd/project/config.yaml` from `t_config.yaml` with approved `user_gates`, audit mode and other fields.
+9. Write `.asd/project/config.yaml` from `t_config.yaml` with approved `user_gates`, `skip_design_phases`, audit mode and other fields.
 10. Ask user what custom rules to add (separately for common / design / coding scopes); write three files from templates: `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`. Empty scope still writes template stub (header + intro), so agents always find the file.
 11. Write `.asd/project/stubs.md` from `t_stubs.md` (empty registry — downstream phases expect the file to exist)
 12. Write `.asd/project/commands.yaml` (from `t_commands.yaml` + detected + OS-specific `custom.designmd-*` only when `documents.ux_spec: enabled`); `test_affected` written only when detected, omitted (not written empty/guessed) otherwise — a `.asd/project/commands.yaml` from an older ASD version without the field keeps working unchanged since the impacted set falls back to the search-derived definition
@@ -74,7 +74,8 @@ Operation mapping: see `.asd/rules/providers.md`.
 
 1. Read current `.asd/project/config.yaml`
 2. **Dump full current config to chat** in `language.chat` before any edit prompt. Render every field as structured block. User MUST see complete current state before being asked what to change. Do NOT skip or summarise — full values verbatim.
-3. Request user decision on which sections to edit
+2a. List every field present in `t_config.yaml` but absent from the current config, each with its absent default (the template comment's, e.g. `skip_design_phases` → `disabled`), so a newly shipped field is editable
+3. Request user decision on which sections to edit, absent fields included
 4. Per section: ask new value → add to pending change-set (do not write yet)
 5. Show consolidated diff of all pending edits → request user decision: `accept-all` | `edit-section` | `abort`; loop until accepted
 6. Apply diff; write config
@@ -117,7 +118,7 @@ Four custom commands emitted only when `documents.ux_spec: enabled` (else omitte
 
 ## Artefacts produced
 
-- `.asd/project/config.yaml` (incl. `self_hosting`, `user_gates`, `documents.*`)
+- `.asd/project/config.yaml` (incl. `self_hosting`, `user_gates`, `skip_design_phases`, `documents.*`)
 - `AGENTS.md`, `CLAUDE.md` — managed block synced from `t_AGENTS.md`/`t_CLAUDE.md` in both consumer and self-hosting mode
 - `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`, `stubs.md`
 - `.asd/project/commands.yaml`
