@@ -46,30 +46,30 @@ Reachability: `scope` writes `state.json.skip_design_phases` and the effective `
 ### Task 2: Skip routing through the audit exit (AC-3)
 Material risk: change: workflow routing and the plan precondition chain
 Reachability: `audit` writes `phase="design-promote"` and appends the three names to `skipped_phases` at its exit; `asd-sprint` reads the returned `NEXT: plan` at step 3, and `plan` reads `skipped_phases` at its preconditions.
-- [ ] Make both exits of `asd-phase-audit.md` read the frozen `skip_design_phases`: the step 1 skip branch and the step 4 post-gate advance. When it is `true`:
+- [x] Make both exits of `asd-phase-audit.md` read the frozen `skip_design_phases`: the step 1 skip branch and the step 4 post-gate advance. When it is `true`:
   - perform one inline mechanical write: `phase="design-promote"`, `["design", "design-review", "design-promote"]` appended to `skipped_phases`, and one decisions-log line naming the setting;
   - return `NEXT: plan`.
-- [ ] Widen the return contract to `NEXT: <design | plan>`, never `plan` alone (R-5). Fix the line-3 "recorded reason" drift (G-12).
-- [ ] `sprint-lifecycle.md`:
+- [x] Widen the return contract to `NEXT: <design | plan>`, never `plan` alone (R-5). Fix the line-3 "recorded reason" drift (G-12).
+- [x] `sprint-lifecycle.md`:
   - add the second trigger to "Multi-phase skip", the no-op table and the collapse line, which currently name the design workflow as the only collapse site (G-9);
   - leave "Eleven mandatory" and the chain line untouched (R-4).
-- [ ] `checkpoints.md` line 62: `plan` also accepts the explicit skip (G-5).
-- [ ] `asd-phase-plan.md` preconditions: accept `skipped_phases` containing the design block as design-promote done (G-5).
-- [ ] `asd-phase-design-review.md` and `asd-phase-design-promote.md`: generalise the collapse wording so it no longer implies a documents-only trigger (G-9).
-- [ ] `.asd/skills/asd-sprint/SKILL.md` step 3: name audit's `NEXT: plan` route, and design's existing one, beside the other listed exceptions.
-- [ ] `.asd/skills/asd-sprint/SKILL.md` resume flow: state that resume dispatches the successor of a skipped phase, and that design-block targets are not offered for a re-run when the setting is on (G-7).
+- [x] `checkpoints.md` line 62: `plan` also accepts the explicit skip (G-5).
+- [x] `asd-phase-plan.md` preconditions: accept `skipped_phases` containing the design block as design-promote done (G-5).
+- [x] `asd-phase-design-review.md` and `asd-phase-design-promote.md`: generalise the collapse wording so it no longer implies a documents-only trigger (G-9).
+- [x] `.asd/skills/asd-sprint/SKILL.md` step 3: name audit's `NEXT: plan` route, and design's existing one, beside the other listed exceptions.
+- [x] `.asd/skills/asd-sprint/SKILL.md` resume flow: state that resume dispatches the successor of a skipped phase, and that design-block targets are not offered for a re-run when the setting is on (G-7).
 
 ### Task 3: Session hook next-phase (AC-5)
 Material risk: artifact: hook that must exit 0 and never throw on any state shape
 Reachability: `scope` writes `state.json.skip_design_phases`; `.asd/hooks/session-start.js` reads it when computing `next`, and must agree with audit's `NEXT: plan`.
-- [ ] In `.asd/hooks/session-start.js`, compute `next` as `plan` when `phase === 'audit'` and `state.skip_design_phases === true`, otherwise unchanged (G-6).
-- [ ] Leave `PHASE_CHAIN` unchanged.
+- [x] In `.asd/hooks/session-start.js`, compute `next` as `plan` when `phase === 'audit'` and `state.skip_design_phases === true`, otherwise unchanged (G-6).
+- [x] Leave `PHASE_CHAIN` unchanged.
 
 ### Task 4: `/asd-init` offers the field in fresh and diff mode (AC-1, AC-6 prerequisite)
 Material risk: change: the only skill allowed to write project settings
-- [ ] Fresh mode: add `skip_design_phases` to the step 2 batch with its default, and to the proposal/write steps and the artefact list (G-8).
-- [ ] Re-init diff mode: list fields present in `t_config.yaml` but absent from the current config, each with its absent default, so a newly shipped field is offerable (G-8).
-- [ ] Self-hosting recommendation: suggest `enabled` when every design document is disabled.
+- [x] Fresh mode: add `skip_design_phases` to the step 2 batch with its default, and to the proposal/write steps and the artefact list (G-8).
+- [x] Re-init diff mode: list fields present in `t_config.yaml` but absent from the current config, each with its absent default, so a newly shipped field is offerable (G-8).
+- [x] Self-hosting recommendation: suggest `enabled` when every design document is disabled.
 
 ### Task 5: Mirrors and generated views (AC-7)
 Material risk: none
