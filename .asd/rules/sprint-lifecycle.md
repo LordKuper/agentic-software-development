@@ -90,6 +90,8 @@ Every scoped test run in `impl` and `impl-test` uses the **impacted set** — so
 
 **Where the full suite still runs**: exactly once per sprint cycle, at the end of `impl-review`, after every required reviewer returns `APPROVE` or is latched and before `NEXT: retro` — dispatched to `asd-tester` (reviewers are read-only, `providers.md`; the phase gains this capability only through that one dispatch). Recorded in `test-plan.md`'s existing `Suite run` section including `HEAD`; the `pr` gate keeps reading it from there, wording unchanged (`PR phase` below). Red path and latch-clearing: `impl` bullet above and `APPROVE latch` above. Green full suite is part of impl-review's DoD (`review-policy.md` "DoD per review phase").
 
+Each `impl-test` entry's `Suite run` record measures the tree that entry analysed — a correct record at the time it was written, not a claim about the tree a later entry produces. Only the terminal full-suite run at the end of `impl-review` measures the final tree; do not read an earlier per-entry record as covering commits added after it.
+
 ## Phase table
 
 | Phase | Owner | Input | Output | Exit criteria |

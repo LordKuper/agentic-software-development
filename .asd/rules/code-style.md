@@ -122,6 +122,7 @@ Written and run in `impl-test`, never in `impl`. Selection happens **after** the
 - Deterministic: no `sleep`, wall-clock timing, random seeds, or execution-order reliance.
 - Isolated: no real external APIs, databases, or file I/O; use dependency injection.
 - No hardcoded test data: build fixtures from named constants or factories (exception: boundary-value tests where the literal is the point).
+- A test or rule that names the members of a set derives that set from its source wherever a source exists, rather than enumerating members by hand. A hardcoded enumeration drifts silently as the source changes.
 - Test files named `<system>_<feature>_test.<ext>`; test functions `test_<scenario>_<expected>`.
 - A test mutating global/static state saves and restores it in setup/teardown.
 - Structure each test as Arrange — Act — Assert.

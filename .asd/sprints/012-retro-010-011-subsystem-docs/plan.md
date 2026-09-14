@@ -79,8 +79,8 @@ Material risk: artifact: runtime.js coverage validator
 
 ### Task 3: Derive-over-enumerate rule and suite-record lag
 Material risk: artifact: rule doc wording
-- [ ] AC-9: in `code-style.md` §17 Tests, require a test or rule that names the members of a set to derive the set from its source, wherever such a source exists.
-- [ ] AC-10: in `t_test-plan.md` "Entry log"/"Suite run" and `sprint-lifecycle.md` "Impacted test set", state that a per-entry suite record measures the tree that entry analysed. Only the terminal full-suite run measures the final tree. Write it in one home and cite it from the other.
+- [x] AC-9: in `code-style.md` §17 Tests, require a test or rule that names the members of a set to derive the set from its source, wherever such a source exists.
+- [x] AC-10: in `t_test-plan.md` "Entry log"/"Suite run" and `sprint-lifecycle.md` "Impacted test set", state that a per-entry suite record measures the tree that entry analysed. Only the terminal full-suite run measures the final tree. Write it in one home and cite it from the other.
 
 ### Task 4: Manifest immutability, interrupted-attempt payload, plan review-scope sizing
 Material risk: change: workflow gate
