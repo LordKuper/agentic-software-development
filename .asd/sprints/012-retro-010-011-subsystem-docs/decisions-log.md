@@ -83,3 +83,26 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: `audit.md`, `state.json` gate_decisions
 
 - 2026-09-14 — design/design-review/design-promote skipped (skip_design_phases enabled)
+
+## 2026-09-14 — Plan inputs: registry bootstrap, legacy c4/ removal, settings-task approval
+
+- **Decision**: Registry bootstrap:
+  - When decomposition is enabled, `/asd-init` creates an empty `docs/architecture/subsystems.md`, and `design-promote` fills it.
+  - If decomposition is already enabled but there is no registry, `audit` creates the registry and does the first fill.
+  - Every subsystem added to the registry needs explicit user confirmation.
+
+  A legacy `docs/architecture/c4/` that the new rules make redundant (C4 disabled, or mermaid mode) is deleted at `audit` after its content has moved to the registry. A plan task that declares a settings change is approved by plan acceptance; `/asd-init` then applies only the declared key/value pairs and shows the diff, with no second `accept-all`.
+- **Rationale**: The user decided all three at the plan phase.
+- **Affected docs**: `plan.md` Tasks 5 and 6
+
+## 2026-09-14 — Split threshold value and partition shape (adaptive)
+
+- **Decision**: The split threshold is a `.asd/runtime.js` constant of 25 scope files, applied when a manifest is emitted. A manifest above it is partitioned before its first dispatch into `ceil(files / 25)` disjoint parts in manifest order, never recursively. The existing trigger of two interruptions still halves a manifest that is below the threshold.
+- **Rationale**: Sprint 010 evidence: a 56-file scope exhausted a whole dispatch, and a 21-file scope ran cleanly. An N-part partition closes the "above 2× threshold" gap that `audit.md` raised, without recursion.
+- **Affected docs**: `plan.md` Task 2
+
+## 2026-09-14 — `.asd/sprints/012-retro-010-011-subsystem-docs/plan.md` accepted
+
+- **Decision**: The user accepted plan.md: 7 tasks in 5 waves, covering AC-1..AC-19. AC-3 is kept whole.
+- **Rationale**: The user gave an explicit `accept` at the plan gate. There were no open stubs, so no stub decisions were needed.
+- **Affected docs**: `plan.md`

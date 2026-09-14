@@ -1,7 +1,7 @@
 {
   "sprint_id": "012-retro-010-011-subsystem-docs",
   "branch": "sprint/012-retro-010-011-subsystem-docs",
-  "phase": "design-promote",
+  "phase": "plan",
   "documents": {
     "audit": true,
     "prd": false,
@@ -25,6 +25,13 @@
       "reason": "routine audit acceptance in adaptive mode: findings-only artefact within accepted scope; no BA-needed ambiguity; open architecture/migration/gate tradeoffs are plan-phase decisions, not audit alternatives",
       "evidence": "audit.md all t_audit.md sections from asd-architect; BA_NEEDED: no; tradeoffs deferred to plan: registry bootstrap without C4, fate of existing consumer c4/, mermaid draft path, settings-task gate, split threshold",
       "artifact_revision": "audit.md@audit-1"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "user",
+      "reason": "plan accepted at write-then-review-accept gate; AC-3 kept whole (plan-sizing half not narrowed)",
+      "evidence": "plan.md Tasks 1-7, waves 1:[1] 2:[2,3] 3:[4,5] 4:[6] 5:[7]; covers AC-1..AC-19; no open stubs",
+      "artifact_revision": "plan.md@plan-1"
     }
   ],
   "task_routing": {},
@@ -47,7 +54,7 @@
     }
   },
   "created_at": "2026-09-14T09:29:45Z",
-  "updated_at": "2026-09-14T09:47:42Z",
+  "updated_at": "2026-09-14T10:07:08Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
