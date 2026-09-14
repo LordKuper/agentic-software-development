@@ -4,7 +4,7 @@ Orchestration body for the `asd-phase-design-review` skill. Operation-mapping to
 
 ## Preconditions
 - Active sprint at `.asd/sprints/<NNN-slug>/`
-- Whichever of prd.html/ux-spec.html/adr.html the sprint's frozen `documents.*` enabled are present in `<sprint>/design/` (per checkpoints precondition chain). When design was the collapsed no-op (all four `documents.*` disabled), this phase is never separately dispatched — `state.json.phase` already advanced past it to `design-promote` — so this precondition is never evaluated in that case
+- Whichever of prd.html/ux-spec.html/adr.html the sprint's frozen `documents.*` enabled are present in `<sprint>/design/` (per checkpoints precondition chain). After a design-block collapse (either trigger, `sprint-lifecycle.md` "Design/design-review/design-promote collapse"), this phase is never dispatched — `state.json.phase` already advanced past it to `design-promote` — so this precondition is never evaluated in that case
 - Optional drafts honored: design-md-delta.yaml, c4-full/
 - `state.json.phase` advanced from `design`
 
