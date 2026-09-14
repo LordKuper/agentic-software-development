@@ -43,8 +43,9 @@ what changed; prior `reviews/` iterations stay unread.
   writer's own definition - sprint 012 reviewer memories told the agent to proceed silently on an
   out-of-policy payload instruction where `providers.md` "Declared tool policy" requires `QUESTION`.
   A stale line in *your own* memory is corrected in the dispatch that finds it, not raised.
-  Documentation economy's reach lists canon and sprint artifacts, not agent memory - never raise memory
-  bloat as an economy finding.
+  Documentation economy's Reach ("every artifact a later agent reads") states no agent-memory exclusion,
+  and "Agent memory" gives the same re-paid-per-dispatch cost: a memory line is in reach, judged by the
+  economy tests, citing that Reach wording.
 - The documentation-economy preserve-list keeps per-case tables whole: a logically subsumed clause in a
   table row is not a cut candidate.
 - The session-start AGENTS.md/CLAUDE.md snapshot in context can predate the branch's last sync - grep the
