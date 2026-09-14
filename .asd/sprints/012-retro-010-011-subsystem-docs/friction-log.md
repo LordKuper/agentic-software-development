@@ -1,0 +1,29 @@
+---
+responsibility:
+  owns: per-sprint log of workflow friction — a rule, phase, gate, agent, skill, template or provider tool that malfunctioned or could not be followed
+  excludes: code defects (test-plan.md D-N), artifact-quality findings and verdicts (reviews/), human operational actions (manual-steps.md MS-N), decisions taken (decisions-log.md)
+  delegates_to: test-plan.md (defects), reviews/ (verdicts), manual-steps.md (manual actions), decisions-log.md (decisions), retrospective.html (analysis and recommendations)
+---
+
+# Friction log — sprint 012-retro-010-011-subsystem-docs
+
+<!--
+Lifecycle, what qualifies, what never does, the F-N id scheme and who appends:
+.asd/rules/sprint-lifecycle.md "Friction log" — not restated here.
+Entry content is language.docs.
+Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
+-->
+
+## Summary
+
+| ID | Phase | Problem | Refs |
+|---|---|---|---|
+| F-1 | scope | Start confirmation and free-form scope collected in one discrete-option request; scope text lost | — |
+
+## F-1 — Start confirmation and free-form scope collected in one discrete-option request; scope text lost
+
+- **Phase**: scope
+- **Surface**: skill — `.asd/skills/asd-sprint/SKILL.md` Step 2A.3
+- **What happened**: Step 2A.3 combines "confirm start" and "collect scope (free-form)" in one request-user-decision operation. The orchestrator offered a "Start, scope in Other" option. The user picked that label, so no scope text arrived. The orchestrator also rendered the options in English although `language.chat` is `ru`, which breaks `language-policy.md` "User-decision options".
+- **Impact**: One extra user round trip before scope could be refined.
+- **Refs**: —
