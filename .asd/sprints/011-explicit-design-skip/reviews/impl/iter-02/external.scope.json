@@ -1,0 +1,28 @@
+{
+  "phase": "impl-review",
+  "iteration": 2,
+  "base_ref": "f34400f0d1bc99fbba1a8d6ff6bdd4be44087248",
+  "head_ref": "77660c88046e0b7389a481e303328d9fab61c42e",
+  "files": [
+    ".asd/release-manifest.json",
+    ".asd/rules/sprint-lifecycle.md",
+    ".asd/skills/asd-phase-design-review/SKILL.md",
+    ".asd/skills/asd-sprint/SKILL.md",
+    ".asd/workflows/asd-phase-audit.md",
+    ".asd/workflows/asd-phase-design-review.md",
+    ".asd/workflows/asd-phase-plan.md",
+    ".claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md",
+    ".claude/agent-memory/asd-tester-critical/project_testability-envelope.md",
+    "tests/run.js"
+  ],
+  "exclude_paths": [
+    ".asd/project/**",
+    ".asd/sprints/**",
+    ".claude/agents/**",
+    ".claude/skills/**",
+    ".claude/hooks/**",
+    ".claude/settings.json",
+    ".codex/**",
+    ".agents/skills/**"
+  ]
+}
