@@ -4,7 +4,7 @@ Orchestration body for the `asd-phase-plan` skill. Operation-mapping to host too
 
 ## Preconditions
 - Active sprint at `.asd/sprints/<NNN-slug>/`
-- design-promote done: persistent docs reflect approved sprint design, or `skipped_phases` contains `design-promote` (a no-op or collapsed design block)
+- design-promote done: persistent docs reflect approved sprint design, or the collapse test holds (`sprint-lifecycle.md` "Design/design-review/design-promote collapse")
 - `state.json.phase` advanced from `design-promote`
 
 ## Operations used

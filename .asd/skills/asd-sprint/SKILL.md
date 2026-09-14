@@ -40,7 +40,7 @@
 1. Read `.asd/sprints/<NNN-slug>/state.json`
 2. Show: sprint id, current phase, review iteration (`reviews.design.iteration` when phase=`design-review`, `reviews.impl.iteration` when phase=`impl-review`), last review verdict (if any)
 3. Request user decision: resume (default) | re-run current phase | re-run earlier phase | abort sprint. When frozen `skip_design_phases` is `true`, neither re-run option offers `design`, `design-review` or `design-promote`.
-4. Delegate to the matching phase skill. *resume* re-enters `phase`, except when `phase` is the last `skipped_phases` entry: then dispatch its successor in the phase chain. *re-run earlier phase* = rollback: its inline state update resets the review counter + severity floor per **rollback reset** in `sprint-lifecycle.md`.
+4. Delegate to the matching phase skill. *resume* re-enters `phase`, except `phase="design-promote"` under the collapse test (`sprint-lifecycle.md` "Design/design-review/design-promote collapse"): then dispatch `plan`. *re-run earlier phase* = rollback: its inline state update resets the review counter + severity floor per **rollback reset** in `sprint-lifecycle.md`.
 
 ### Step 3: phase chain advancement
 After any phase skill returns:

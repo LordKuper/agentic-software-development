@@ -152,7 +152,7 @@ Never optional: `sprint.md`, `state.json`, `plan.md`, `test-plan.md`, impl-revie
 
 `plan`, `impl`, `impl-test`, `impl-review`, `retro`, `pr` are never no-op.
 
-**Design/design-review/design-promote collapse**: one deterministic no-op write, from one of two sites — the audit exit when frozen `skip_design_phases` is `true` (design is never dispatched either), else the design workflow when all documents are disabled. Design-review and design-promote are not dispatched.
+**Design/design-review/design-promote collapse**: one deterministic no-op write, from one of two sites — the audit exit when frozen `skip_design_phases` is `true` (design is never dispatched either), else the design workflow when all documents are disabled. Design-review and design-promote are not dispatched. Collapse test, on frozen state and never on the historical `skipped_phases`: `skip_design_phases` is `true` or `documents.prd`/`ux_spec`/`adr`/`c4` are all `false`. Under it no design draft is produced or promoted, so `phase="design-promote"` is the collapse write: resume dispatches `plan`, and `plan` needs no promotion.
 
 ## Audit phase
 
