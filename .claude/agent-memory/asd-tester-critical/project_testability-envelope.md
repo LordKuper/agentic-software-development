@@ -40,7 +40,10 @@ restoring in the same call that reads the failure. Never restore with `git check
 park the backup inside a tree a test globs — a stray `.md` under `.asd/rules/` breaks the rule-doc
 bijection check itself. For many mutations, a Node script written to the temp dir (not a heredoc)
 that loops `[id, file, from, to]`, checks the anchor hits exactly once, and restores the in-memory
-buffer in `finally` with a byte compare worked cleanly (sprint 011, 23 runs in two calls). For the extra FAIL lines a tracked file's mutation produces:
+buffer in `finally` with a byte compare worked cleanly (sprint 011, 23 runs in two calls). A "revert the fix
+commit" mutation built from `execSync('git show <sha>^:<path>')` is a silent no-op on this Windows host:
+`execSync` runs through cmd.exe, which eats `^`, so it reads the CURRENT blob. Use `<sha>~1`. The tell is a
+run with zero FAIL lines, not even the hash-ledger noise every real canon mutation produces. For the extra FAIL lines a tracked file's mutation produces:
 [[mutation-runs-trip-the-hash-ledger]].
 
 **Why** — the two failure modes this replaces:
