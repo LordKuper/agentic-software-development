@@ -14,7 +14,7 @@ were scoped through; the next re-entry's delta is `git diff <this sha>...HEAD`.
 
 | Entry | HEAD analysed | Scope |
 |---|---|---|
-| 1 |  | full change surface |
+| 1 | 44f184cf5ae6840366c5c693210279811c9076e0 | full change surface |
 
 Pre-strategy run (existing tests, before authoring): `node tests/run.js` at `7f3ccf7`, exit 0, 184/184 passed. Full suite by the safety valve: the surface touches rule docs, templates, the hook and `release-manifest.json`, all framework-wide; `tests/run.js` is a single runner with no `test_affected` selector anyway.
 

@@ -76,3 +76,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Initial impl complete: Tasks 1-6 done, MS-1 done (user ran `/asd-init` diff mode; `skip_design_phases: enabled` committed). Advance to impl-test.
 - **Rationale**: Every plan checkbox is ticked, build (`sync --check`) and lint are clean, the round's diff touches only task-authorised paths, and no sprint stub was introduced, so the routine gate's evidence rule is met without a new user decision.
 - **Affected docs**: `.asd/sprints/011-explicit-design-skip/plan.md`, `.asd/sprints/011-explicit-design-skip/manual-steps.md`
+- 2026-09-14 — impl-test: impacted set green (187/187, full suite by safety valve; sync --check 72/72 current; lint clean), 3/0 tests added/removed
