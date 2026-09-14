@@ -62,5 +62,11 @@ qualifier, keep the substance, and require the suite to stay GREEN. A red there 
 wording; record both directions in `test-plan.md`. Related trap from the same entry: a mutation can
 change bytes and still change nothing — renaming a cited heading `## Agent memory` to `## Agent memory
 directories` left the citation resolving, because heading resolution is prefix-anchored. An anchor guard
-catches a missing anchor, never a semantic no-op; confirm the run actually reddens. See
+catches a missing anchor, never a semantic no-op; confirm the run actually reddens.
+
+A *signal-token* presence assert (`includes('\`FAILED\`')`) is the same trap from the other side. It
+proves the signal is mentioned, not handled, so "on `FAILED`, continue" passes (sprint 012 external
+iter-04 #1). Slice the clause the token opens (to its `;`) and assert each semantic property on its own:
+the action (halt), the route (blocker), the ordering (before dispatch). Then mutate each property away
+separately, plus a full reversal. See
 [[testability-envelope]].
