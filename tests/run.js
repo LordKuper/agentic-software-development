@@ -2174,6 +2174,33 @@ test('AC-21: SessionStart reports "Next phase: await-merge" for an ordinary pr p
   assert.ok(text.includes('Next phase: await-merge'), `expected the default pr-phase path to report await-merge, got: ${text}`);
 });
 
+test('sprint-011 AC-2/AC-5: SessionStart reports "Next phase: plan" after audit only when the frozen design-skip field is the boolean true - absent, false or an unseeded placeholder falls back to design, and the field moves no other phase', () => {
+  const placeholder = '{{SKIP_DESIGN_PHASES}}';
+  const template = JSON.parse(readRepoFile('.asd/templates/t_state.json'));
+  const key = Object.keys(template).find((name) => template[name] === placeholder);
+  assert.ok(key, `t_state.json must carry the frozen design-skip field as the quoted "${placeholder}" placeholder - the fixtures below take the field name from it, so the hook is checked against the key scope actually writes`);
+  const hookSrc = readRepoFile('.asd/hooks/session-start.js');
+  const cases = [
+    ['audit', true, 'plan'],
+    ['audit', undefined, 'design'],
+    ['audit', false, 'design'],
+    ['audit', placeholder, 'design'],
+    ['scope', true, 'audit'],
+  ];
+  const label = ([phase, value, next]) => `${phase} + ${key}=${value === undefined ? '<absent>' : JSON.stringify(value)} -> ${next}`;
+
+  const observed = cases.map(([phase, value]) => {
+    const tempRoot = mkTempDir();
+    writeFile(tempRoot, '.asd/hooks/session-start.js', hookSrc);
+    writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({ sprint_id: '999-fixture', phase, branch: 'sprint/999-fixture', [key]: value }));
+    const out = execFileSync('node', [path.join(tempRoot, '.asd/hooks/session-start.js'), '--provider', 'claude'], { cwd: tempRoot, encoding: 'utf8' });
+    const next = /Next phase: (\S+)/.exec(JSON.parse(out).hookSpecificOutput.additionalContext);
+    return label([phase, value, next ? next[1] : '<no Next phase line>']);
+  });
+
+  assert.deepStrictEqual(observed, cases.map(label), "the session hook must agree with audit's exit: plan only for a bare boolean true frozen at scope (sprint-lifecycle.md \"Optional documents\" - a state.json without the field means false, and a quoted placeholder that survived the write is not true), and only while phase is audit - any other phase keeps its PHASE_CHAIN successor");
+});
+
 test('AC-7: no canonical rule, workflow, agent, or skill file references the retired asd-pm role', () => {
   const labels = ['rules', 'workflows', 'agents', 'skills'];
   const offenders = [];
@@ -2808,6 +2835,75 @@ test('AC-8: the always-loaded mirrors of PHASE_CHAIN - README\'s phase table and
     const stale = counts.filter((count) => !expected.has(count));
     assert.deepStrictEqual(stale, [], `${file} phase-count word disagrees with PHASE_CHAIN's ${phases.length}: ${stale.join(', ')} - README is the user-facing entry point and AGENTS.md is loaded as project instructions on every turn, so a stale count in either describes a workflow that no longer exists`);
   }
+});
+
+test('sprint-011 AC-3/AC-5/AC-7: the audit exit that emits NEXT: plan is keyed on skip_design_phases, lands phase on the chain predecessor of plan, records exactly the phases between audit and plan as skipped, and the plan precondition, checkpoints chain and resume flow accept that state', () => {
+  const key = 'skip_design_phases';
+  const chain = readPhaseChain();
+  const between = chain.slice(chain.indexOf('audit') + 1, chain.indexOf('plan'));
+  const audit = readWorkflow('audit');
+
+  assert.ok(readReturnContractTargets('audit', audit).includes('plan'), "asd-phase-audit.md's return contract must offer NEXT: plan - asd-sprint follows NEXT as authoritative, so without it the explicit skip has no route and design is dispatched anyway");
+  const exits = audit.split('\n').filter((line) => /^\d+\.\s/.test(line) && line.includes('NEXT: plan'));
+  assert.strictEqual(exits.length, 1, 'exactly one numbered audit step must emit NEXT: plan - it is the single site of the design-block skip write');
+  const [exit] = exits;
+  assert.ok(exit.includes(`\`${key}\``), `the audit step emitting NEXT: plan must be conditioned on the frozen \`${key}\` - an unconditioned route skips design for every sprint`);
+  const landed = /phase="([a-z-]+)"/.exec(exit);
+  assert.ok(landed, 'the audit skip write must set phase="<name>" explicitly');
+  assert.strictEqual(chain[chain.indexOf(landed[1]) + 1], 'plan', `the skip write must land phase on the PHASE_CHAIN predecessor of plan (sprint-lifecycle.md "Multi-phase skip": the LAST subsumed phase) - the session hook and resume derive the next phase from it, so phase="${landed[1]}" would re-enter the skipped block`);
+  const appended = /\[\s*("[a-z-]+"(?:\s*,\s*"[a-z-]+")*)\s*\]/.exec(exit);
+  assert.ok(appended, 'the audit skip write must name the skipped_phases it appends as a literal array');
+  assert.deepStrictEqual(JSON.parse(`[${appended[1]}]`), between, 'the skip write must record exactly the phases PHASE_CHAIN places between audit and plan, in order - a missing name is a phase a later audit cannot tell from one that ran and produced nothing');
+
+  const planPreconditions = /## Preconditions([\s\S]*?)\n## /.exec(readWorkflow('plan'));
+  assert.ok(planPreconditions, 'asd-phase-plan.md must keep its "## Preconditions" section');
+  assert.ok(
+    planPreconditions[1].split('\n').some((line) => line.includes('skipped_phases') && line.includes(`\`${landed[1]}\``)),
+    `asd-phase-plan.md preconditions must accept skipped_phases containing \`${landed[1]}\` - the explicit skip promotes nothing, so without this plan ABORTs on the state audit just wrote`
+  );
+  const planRequires = /`plan` requires ([^;]+);/.exec(readRepoFile('.asd/rules/checkpoints.md'));
+  assert.ok(planRequires, 'checkpoints.md must keep its "`plan` requires ...;" precondition clause');
+  assert.ok(planRequires[1].includes(`\`${key}\``), `checkpoints.md's plan precondition must accept the \`${key}\` collapse - it is the chain whose miss emits ABORT`);
+
+  const resume = /### Step 2B[\s\S]*?\n### /.exec(readRepoFile('.asd/skills/asd-sprint/SKILL.md'));
+  assert.ok(resume, 'asd-sprint SKILL.md must keep its "### Step 2B" resume flow');
+  assert.ok(resume[0].includes('skipped_phases'), 'the asd-sprint resume flow must dispatch the successor of a phase recorded in skipped_phases - re-entering phase as written would load asd-phase-design-promote after the skip, which AC-3 forbids');
+});
+
+test('sprint-011 AC-1/AC-2/AC-4/AC-7: the design-skip field is one name across t_state.json, t_config.yaml, the README schema, scope seeding, its sprint-lifecycle.md home and asd-init diff mode - absent means disabled at every site, so a misspelt site is a setting that silently does nothing', () => {
+  const placeholder = '{{SKIP_DESIGN_PHASES}}';
+  const template = JSON.parse(readRepoFile('.asd/templates/t_state.json'));
+  const key = Object.keys(template).find((name) => template[name] === placeholder);
+  assert.ok(key, `t_state.json must parse as shipped and carry the frozen design-skip field as the quoted "${placeholder}" placeholder - scope seeds only placeholders the template holds`);
+
+  const declaredDefault = (rel) => {
+    const line = new RegExp(`^${key}:\\s*(\\w+)`, 'm').exec(readRepoFile(rel));
+    return line ? line[1] : '<not declared at top level>';
+  };
+  assert.strictEqual(declaredDefault('.asd/templates/t_config.yaml'), 'disabled', `t_config.yaml must declare top-level \`${key}\` with the shipped default disabled - asd-init diff mode offers only fields the template declares, and AC-1 makes disabled the unchanged behaviour`);
+  assert.strictEqual(declaredDefault('README.md'), 'disabled', `README's config schema must mirror \`${key}\` and its default from t_config.yaml`);
+
+  const initReinit = /## Workflow \(re-init\)([\s\S]*?)\n## /.exec(readRepoFile('.asd/skills/asd-init/SKILL.md'));
+  assert.ok(initReinit, 'asd-init SKILL.md must keep its "## Workflow (re-init)" section');
+  assert.ok(initReinit[1].includes('t_config.yaml'), 'asd-init diff mode must consult t_config.yaml for fields absent from the current config - otherwise a newly shipped field such as this one cannot be enabled through /asd-init, the only allowed write path (AC-6)');
+
+  const seed = readWorkflow('scope').split('\n').find((line) => line.includes(placeholder));
+  assert.ok(seed && seed.includes(`config.${key}`), `asd-phase-scope.md must seed "${placeholder}" from \`config.${key}\` - an unseeded placeholder leaves a string in state.json, which every reader treats as not true`);
+
+  const lifecycle = readRepoFile('.asd/rules/sprint-lifecycle.md');
+  const home = lifecycle.split('\n').find((line) => line.includes(placeholder));
+  assert.ok(home && home.includes(`state.json.${key}`), `sprint-lifecycle.md "Optional documents" must hold the home statement freezing \`${key}\` into state.json.${key} via "${placeholder}"`);
+  const designRow = /^\| Phase \| No-op when \|[\s\S]*?^\| design \| (.*?) \|\s*$/m.exec(lifecycle);
+  assert.ok(designRow && designRow[1].includes(`\`${key}\``), `the no-op table's design row must name \`${key}\` as a trigger`);
+  const designDocs = [...designRow[1].matchAll(/`([a-z0-9_]+)`/g)].map((token) => token[1]).filter((token) => token !== key);
+  assert.ok(designDocs.length >= 4, `the design row must still enumerate the design documents whose all-disabled state is the other trigger - only [${designDocs.join(', ')}] found, so this derivation has drifted and asserts nothing`);
+  const unfrozen = designDocs.filter((doc) => !new RegExp(`\\b${doc}\\b`).test(home));
+  assert.deepStrictEqual(unfrozen, [], `the \`${key}\` home must freeze every design document the no-op table names as effective false - a document left true names an AC source or draft that the skipped design block never produces`);
+
+  const seedTail = seed.slice(seed.indexOf(placeholder) + placeholder.length);
+  const unwritten = designDocs.filter((doc) => !seedTail.includes(`{{DOC_${doc.toUpperCase()}}}`));
+  assert.deepStrictEqual(unwritten, [], `asd-phase-scope.md, the site that writes state.json, must write every design-document placeholder as false once "${placeholder}" freezes true - the sprint-lifecycle.md home alone does not reach the orchestrator running scope`);
+  assert.ok(seedTail.includes('decisions-log'), `asd-phase-scope.md must log the design documents \`${key}\` suppresses - after the freeze state.json.documents no longer mirrors config, so that decisions-log line is their only record (AC-4)`);
 });
 
 // ===========================================================================
