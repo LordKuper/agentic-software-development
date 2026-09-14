@@ -32,13 +32,13 @@ Sprint-specific additions:
 ### Task 1: Config field and frozen state contract (AC-1, AC-2, AC-4)
 Material risk: change: new config and state contract read by scope, audit and the session hook
 Reachability: `scope` writes `state.json.skip_design_phases` and the effective `documents.*` at step 3a; `audit` reads them at its exit step, and `session-start.js` reads `skip_design_phases` when computing the next phase.
-- [ ] Declare `skip_design_phases: enabled | disabled` in `.asd/templates/t_config.yaml`, top level, with its absent default. Align the line-4 comment with the rule that settings change only via `/asd-init` (R-3).
-- [ ] Add `"skip_design_phases": "{{SKIP_DESIGN_PHASES}}"` to `.asd/templates/t_state.json`. Keep the file valid JSON.
-- [ ] Add one home statement to `sprint-lifecycle.md` "Optional documents":
+- [x] Declare `skip_design_phases: enabled | disabled` in `.asd/templates/t_config.yaml`, top level, with its absent default. Align the line-4 comment with the rule that settings change only via `/asd-init` (R-3).
+- [x] Add `"skip_design_phases": "{{SKIP_DESIGN_PHASES}}"` to `.asd/templates/t_state.json`. Keep the file valid JSON.
+- [x] Add one home statement to `sprint-lifecycle.md` "Optional documents":
   - the field is frozen at scope as a bare boolean;
   - config absent means `disabled`, and state absent means `false`;
   - when it is `true`, effective `documents.prd/ux_spec/adr/c4` freeze `false`, following the effective-`c4` precedent, while `documents.audit` is untouched (G-2, G-3, R-6).
-- [ ] Extend `asd-phase-scope.md` step 3a:
+- [x] Extend `asd-phase-scope.md` step 3a:
   - seed the placeholder, accepting only `enabled|disabled`;
   - apply the effective-document freeze;
   - when any configured design document is suppressed, append one decisions-log line naming those documents (AC-4).
