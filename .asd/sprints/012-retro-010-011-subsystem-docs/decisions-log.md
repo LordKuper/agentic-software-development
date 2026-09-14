@@ -249,3 +249,13 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: `asd-phase-impl.md`, `t_config.yaml`, README.md
 
 - 2026-09-14 — impl-test: impacted set green (full suite via safety valve, 197/197; sync --check 72/72 current), 0/0 tests added/removed, 1 updated (DOC-1 blocker + config enumerations; entry 5). Accepted tester choice: explicit five-field free-text allowlist as a deliberate fail-closed guard.
+
+## 2026-09-14 — impl-review iter-04: CONCERNS → impl review-fix
+
+- **Decision**: Verdicts: documentation APPROVE (latched at 4); correctness, efficiency and testing inherited APPROVE; external CONCERNS (2). Its ledger passed `validate-ledger`. Routed to review-fix (`review_fixes_pending=iter-04`):
+  - external #1: a test defect (the `FAILED` substring assert does not pin halt semantics), sent to the tester chain;
+  - external #2: sent to the owning `asd-reviewer-documentation` memory.
+    - Premise partly holds. The reach clause's parenthetical names no agent memory, but "every artifact a later agent reads" does not clearly exclude it either.
+    - Resolution: the owner narrows the line so it no longer asserts an exclusion canon does not state.
+- **Rationale**: Both findings are in scope. No production canon change is needed. Iteration 5 floor is critical.
+- **Affected docs**: `reviews/impl/iter-04/`, `state.json`
