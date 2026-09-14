@@ -271,7 +271,7 @@ function validateCoverageLedger(manifest, ledger, actualFindings) {
   return { ok: true };
 }
 
-/** Stamps every published constant into a manifest and sets its digest; the one stamping seam for emitted and re-stamped manifests alike. */
+/** Stamps every published constant into an emitted manifest and sets its digest. */
 function stampManifest(manifest) {
   const stamped = Object.assign({}, manifest, { vocabulary: LEDGER_VOCABULARY, row_example: LEDGER_ROW_EXAMPLE, n_a_shape: LEDGER_NA_SHAPE });
   return Object.assign(stamped, { digest: coverageManifestDigest(stamped) });
@@ -395,12 +395,9 @@ function inputJson(flags) {
 
 function main(argv) {
   const command = argv[2];
-  const flags = parseFlagArgs(argv.slice(3), ['write', 'scoped-fan-out', 'halve']);
+  const flags = parseFlagArgs(argv.slice(3), ['scoped-fan-out', 'halve']);
   if (command === 'manifest-digest') {
-    const onDisk = JSON.parse(fs.readFileSync(flags.manifest, 'utf8'));
-    const manifest = flags.write ? stampManifest(onDisk) : onDisk;
-    if (flags.write) fs.writeFileSync(flags.manifest, JSON.stringify(manifest) + '\n', 'utf8');
-    process.stdout.write(coverageManifestDigest(manifest) + '\n');
+    process.stdout.write(coverageManifestDigest(JSON.parse(fs.readFileSync(flags.manifest, 'utf8'))) + '\n');
     return 0;
   }
   if (command === 'emit-manifest') {
