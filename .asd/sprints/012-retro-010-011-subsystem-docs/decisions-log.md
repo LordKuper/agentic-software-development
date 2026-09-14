@@ -247,3 +247,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
   - Accepted flagged choices: this repo's live `config.yaml` is untouched; the `documents.audit` legacy values are rejected under sprint-mediated validation; `language` stays limited to ru/en.
 - **Rationale**: Premises verified at HEAD. Markers are the existing convention, so no new heuristic was needed.
 - **Affected docs**: `asd-phase-impl.md`, `t_config.yaml`, README.md
+
+- 2026-09-14 — impl-test: impacted set green (full suite via safety valve, 197/197; sync --check 72/72 current), 0/0 tests added/removed, 1 updated (DOC-1 blocker + config enumerations; entry 5). Accepted tester choice: explicit five-field free-text allowlist as a deliberate fail-closed guard.
