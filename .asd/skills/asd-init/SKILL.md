@@ -148,8 +148,10 @@ None. Init runs solo; fresh and re-init have no sprint context, sprint-mediated 
 ## Return contract (single line)
 
 ```
-INIT: <fresh|re-init|sprint-mediated> | MODE: <greenfield|brownfield> | DECOMP: <enabled|disabled> | DIAGRAM: <likec4|mermaid|n/a> | TOOLS: likec4=<ok|missing|skip|n/a> designmd=<ok|missing|skip> external_review_wrapped_cli=<ok|missing|skip|n/a>
+INIT: <fresh|re-init|sprint-mediated> | MODE: <greenfield|brownfield|n/a> | DECOMP: <enabled|disabled> | DIAGRAM: <likec4|mermaid|n/a> | TOOLS: likec4=<ok|missing|skip|n/a> designmd=<ok|missing|skip|n/a> external_review_wrapped_cli=<ok|missing|skip|n/a>
 ```
+
+Sprint-mediated: `MODE` and every `TOOLS` entry its step 6 did not probe are `n/a`; `DECOMP`/`DIAGRAM` are read from the written config.
 
 Followed by file-creation summary.
 

@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:71edf4a71387d3c89e82cd8fc1b3ad075b47388d2b7dec981a2b6713080ffb70 content_digest=sha256:5c96397006a30ac7b8a12c62bdb2a9e8e7dfa033a2d75f4337f01d75df66d35b asd_version=7.3.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:106fb77b1f7857ff67d84501ece7222311ef8d971bdb9d5f8d2846c15b873558 content_digest=sha256:25a85b1811db3eb5491f38014b83c6a121f400156d4337d48a8b9cf0f810ae46 asd_version=7.3.0 schema=1
 name: asd-init
 description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode, or applies a plan-declared settings change for the active sprint's impl phase. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
@@ -147,8 +147,10 @@ None. Init runs solo; fresh and re-init have no sprint context, sprint-mediated 
 ## Return contract (single line)
 
 ```
-INIT: <fresh|re-init|sprint-mediated> | MODE: <greenfield|brownfield> | DECOMP: <enabled|disabled> | DIAGRAM: <likec4|mermaid|n/a> | TOOLS: likec4=<ok|missing|skip|n/a> designmd=<ok|missing|skip> external_review_wrapped_cli=<ok|missing|skip|n/a>
+INIT: <fresh|re-init|sprint-mediated> | MODE: <greenfield|brownfield|n/a> | DECOMP: <enabled|disabled> | DIAGRAM: <likec4|mermaid|n/a> | TOOLS: likec4=<ok|missing|skip|n/a> designmd=<ok|missing|skip|n/a> external_review_wrapped_cli=<ok|missing|skip|n/a>
 ```
+
+Sprint-mediated: `MODE` and every `TOOLS` entry its step 6 did not probe are `n/a`; `DECOMP`/`DIAGRAM` are read from the written config.
 
 Followed by file-creation summary.
 
