@@ -60,7 +60,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
 6. **Dispatch tasks** per execution graph:
    - per step 5's wave table, sequential where dependent; parallel where independent: waves ascending, every task of a wave dispatched concurrently (caller schedules concurrent delegations), the next wave opening only once all their signals are in — initial mode only; in a fix mode step 5's single ordered chain governs, dev chain before tester chain
    - per task, or once per chain in a fix mode (5a): delegate to `asd-dev` (`asd-tester` only for review findings in test files) with payload:
-     - initial — Task block excerpt (title + subtasks + dependencies); review-fix — grouped finding list (each finding's severity, location, description, suggested fix; plus user-approved change note for accepted FAIL findings); test-fix — grouped defect list (`D-N`, location, symptom, failing test)
+     - initial — Task block excerpt (title + subtasks + dependencies); review-fix — grouped finding list (each finding's severity, location, description; plus user-approved change note for accepted FAIL findings); test-fix — grouped defect list (`D-N`, location, symptom, failing test)
      - relevant context paths (PRD AC-N referenced, ADRs, ux-spec, DESIGN.md, accessibility, stack, commands.yaml, tech-reference/, custom-common-rules.md, custom-coding-rules.md; review-fix also: reviewer files in `reviews/impl/iter-NN/`; test-fix also: `test-plan.md`)
      - `language.chat`, `language.docs`
      - instruction:
@@ -77,7 +77,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
        - staging + commit ownership — concurrently dispatched tasks share one worktree: see `git-strategy.md` "Commit before review" — do not restate here
        - commit per Conventional Commits (one logical change per commit; subject ≤50 chars; body describes WHY)
        - initial — tick corresponding checkboxes in `<sprint>/plan.md`
-       - emit COMPLETED with summary (files touched; initial: AC-N satisfied, stubs added; review-fix: findings resolved by id; test-fix: defects resolved by `D-N`) when all subtasks/findings/defects done; when some subtasks manual-blocked, emit COMPLETED for unblocked portion plus `BLOCKED_MANUAL` listing deferred `MS-N`
+       - emit COMPLETED with summary (files touched; initial: AC-N satisfied, stubs added; review-fix: findings resolved by id; test-fix: defects resolved by `D-N`; every mode: `Flagged choices:` `none` or a list) when all subtasks/findings/defects done; when some subtasks manual-blocked, emit COMPLETED for unblocked portion plus `BLOCKED_MANUAL` listing deferred `MS-N`
 7. Wait all task signals (COMPLETED and/or BLOCKED_MANUAL)
 8. **Manual-steps validation + gate** — when any `BLOCKED_MANUAL` emitted:
    - the main orchestrator validates each new `MS-N` for necessity:
@@ -100,13 +100,14 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
    - automatic verification — no user pause
 10. **Impl assessment checkpoint** — **initial mode only** (fix modes skip to step 11) — the main orchestrator applies `checkpoints.md`, recording adaptive evidence or requesting the user:
    - read updated `<sprint>/plan.md` → verify all checkboxes ticked
+   - a non-`none` `Flagged choices:` in any dev COMPLETED is an unresolved material alternative (`checkpoints.md` "Gate policy"): no adaptive pass until the orchestrator resolves it or routes it back to the dev (loop step 7)
    - read `.asd/project/stubs.md` → list stubs introduced this sprint (filter Sprint=<NNN-slug>; all rows open by definition since delete-on-resolve)
    - compose impl summary: tasks done, AC-N coverage map, files changed, build + lint status, sprint-introduced stubs
    - present via request for user decision: approve (advance to impl-test) / request changes / abort
    - on approve: update `state.json`, append decisions-log entry ("impl assessment approved")
    - on request changes: relay specific feedback to relevant dev(s); loop step 7
    - on abort: emit ABORT
-11. **Fix-mode finalize** — fix modes only — write inline (mechanical, no gate):
+11. **Fix-mode finalize** — fix modes only — write inline (mechanical, no gate), after resolving or routing back any non-`none` `Flagged choices:` as step 10 does:
    - review-fix: clear `state.json.review_fixes_pending` (set null), append decisions-log entry "impl fix for iter-NN: findings resolved"
    - test-fix: clear `state.json.test_defects_pending` (set null), append decisions-log entry "impl test-fix: defects <D-N list> resolved"
 12. Emit phase COMPLETED with return contract (`NEXT: impl-test` in all modes)

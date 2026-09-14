@@ -51,14 +51,14 @@ Sprint-specific additions:
 
 ### Task 1: Dispatch and commit contract
 Material risk: change: workflow gate
-- [ ] AC-5: in `providers.md` "Role-scoped context", define an agent's declared tool policy. It is the agent's own definition, plus the phase-granted self-hosting write allowlist (`sprint-lifecycle.md` "Self-hosting"), plus the agent-memory carve-out (`artifact-layout.md` "Agent memory"). A dispatch payload must stay inside that policy. An agent that receives an instruction outside it returns `QUESTION` naming the contradiction and does not comply.
-- [ ] AC-5: add a one-line cite of that rule in `core.md` "Autonomy and escalation".
-- [ ] AC-6: in `artifact-layout.md` "Agent memory", require the writing agent to check a memory write against its own definition before the write lands. A practice that contradicts the definition is never recorded.
-- [ ] AC-7: in `git-strategy.md` "Commit before review", state that agent-memory writes made by a dispatched agent that holds a commit tool are paths it authored and commits. Agents without a commit tool stay under the existing orchestrator clause.
-- [ ] AC-8: extend the "Verify before applying" paragraph in `review-policy.md` "Autofix vs escalation": the suggested fix is non-binding and a creator may resolve the finding another way. Remove the payload restatement at `asd-phase-impl.md` review-fix payload (~63) and in `asd-phase-design-review.md` creator autofix (~46-48). Add no second statement.
-- [ ] AC-11: `asd-dev.md` COMPLETED report gains a `Flagged choices:` field (`none` or a list), and `asd-phase-impl.md` step 6 summary contract is updated to match.
-- [ ] AC-11: at `asd-phase-impl.md` step 10, a non-`none` flagged choice counts as an unresolved material alternative under `checkpoints.md` "Gate policy". The adaptive pass is blocked until the orchestrator resolves the choice or routes it back to the dev.
-- [ ] Run `node .asd/sync.js --apply` on every generated view of the edited agents and skills. Build and lint per `commands.yaml`.
+- [x] AC-5: in `providers.md` "Role-scoped context", define an agent's declared tool policy. It is the agent's own definition, plus the phase-granted self-hosting write allowlist (`sprint-lifecycle.md` "Self-hosting"), plus the agent-memory carve-out (`artifact-layout.md` "Agent memory"). A dispatch payload must stay inside that policy. An agent that receives an instruction outside it returns `QUESTION` naming the contradiction and does not comply.
+- [x] AC-5: add a one-line cite of that rule in `core.md` "Autonomy and escalation".
+- [x] AC-6: in `artifact-layout.md` "Agent memory", require the writing agent to check a memory write against its own definition before the write lands. A practice that contradicts the definition is never recorded.
+- [x] AC-7: in `git-strategy.md` "Commit before review", state that agent-memory writes made by a dispatched agent that holds a commit tool are paths it authored and commits. Agents without a commit tool stay under the existing orchestrator clause.
+- [x] AC-8: extend the "Verify before applying" paragraph in `review-policy.md` "Autofix vs escalation": the suggested fix is non-binding and a creator may resolve the finding another way. Remove the payload restatement at `asd-phase-impl.md` review-fix payload (~63) and in `asd-phase-design-review.md` creator autofix (~46-48). Add no second statement.
+- [x] AC-11: `asd-dev.md` COMPLETED report gains a `Flagged choices:` field (`none` or a list), and `asd-phase-impl.md` step 6 summary contract is updated to match.
+- [x] AC-11: at `asd-phase-impl.md` step 10, a non-`none` flagged choice counts as an unresolved material alternative under `checkpoints.md` "Gate policy". The adaptive pass is blocked until the orchestrator resolves the choice or routes it back to the dev.
+- [x] Run `node .asd/sync.js --apply` on every generated view of the edited agents and skills. Build and lint per `commands.yaml`.
 
 ### Task 2: Runtime coverage-manifest emitter, n_a shape and split threshold
 Material risk: change: workflow gate

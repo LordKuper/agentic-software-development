@@ -89,7 +89,7 @@ Implementer:
 
 ## Signals emitted
 
-- `COMPLETED` — task/finding/defect done, build + lint clean
+- `COMPLETED` — task/finding/defect done, build + lint clean; the report carries `Flagged choices:` — `none`, or the list of choices made that the orchestrator should check
 - `QUESTION` — ambiguity in requirements, ADR, ux-spec, missing token, missing component
 - `BLOCKED_MANUAL` — plan subtask needs a human-only manual action; entry registered in `manual-steps.md`
 - `FAILED` — unrecoverable build/lint failure, unfixable defect, missing input, contradictory spec

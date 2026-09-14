@@ -104,6 +104,8 @@ Section scope inside a granted file: `artifact-layout.md` "HTML shell wrapping (
 | `asd-reviewer-documentation` | `review-policy.md`, current review-phase section of `sprint-lifecycle.md`, `design-principles.md`, `artifact-layout.md`, `language-policy.md`, full `code-style.md` in impl review, and applicable custom design/coding rules. |
 | `asd-reviewer-testing` | `review-policy.md`, impl-review section of `sprint-lifecycle.md`, `artifact-layout.md`, `language-policy.md`, full `code-style.md`, and applicable `custom-coding-rules.md`. |
 
+**Declared tool policy**: an agent's own definition, plus the write allowlist a phase grants it under `sprint-lifecycle.md` "Self-hosting", plus its own memory directory (`artifact-layout.md` "Agent memory"). A dispatch payload stays inside it. An agent handed an instruction outside it returns `QUESTION` naming the contradiction and does not comply.
+
 ## Task-class variants and routing
 
 An agent may declare `variants` in its canonical JSON frontmatter. Each fixed suffix is `mechanical` or `critical`; it changes only Claude `model`/optional `effort` and Codex `model`/`model_reasoning_effort`. `.asd/sync.js` emits `<base>-<suffix>` from the base body and permissions, rejects malformed metadata and name collisions. No dispatcher mutates generated configuration. Tier `standard` has no variant — it dispatches the **base** agent id (`asd-dev`, `asd-tester`) directly, since a `standard` variant would only re-declare the base's own model/effort.

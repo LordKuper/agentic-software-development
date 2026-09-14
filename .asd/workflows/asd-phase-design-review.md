@@ -45,7 +45,7 @@ Orchestration body for the `asd-phase-design-review` skill. Operation-mapping to
      - on override → mark resolved, continue
      - on accept → delegate to agent corresponding creator (BA / UX / Architect) to apply approved changes; on creator COMPLETED → loop step 4 (increment iteration)
    - **Only CONCERNS** (no FAIL) → autofix loop:
-     - delegate to agent responsible creator(s) with finding list; each autofixes per `review-policy.md` (no escalation needed)
+     - delegate to agent responsible creator(s) with finding list; each autofixes per `review-policy.md` "Autofix vs escalation"
      - on all creator COMPLETED → loop step 4
 10. Iteration cap reached (no severity tier has remaining budget for next iter):
    - request user decision: override cap and continue / accept current findings / abort sprint

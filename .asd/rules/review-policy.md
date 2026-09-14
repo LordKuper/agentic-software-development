@@ -73,7 +73,7 @@ Fix = split along responsibility seams into cohesive types → category `simplif
 
 Default: the responsible creator autofixes any reviewer issue without user prompt.
 
-**Verify before applying.** A reviewer's proposed fix is a claim about source, not an instruction: the fixer re-reads the cited path/symbol and confirms the finding's premise holds at current `HEAD` before applying anything. An equivalent correct fix stays permitted; an unverified transcription does not. Premise false → apply nothing and report the mismatch in the completion signal, never a silent drop. Premise true but prescription wrong → fix the real defect and say so in the commit body.
+**Verify before applying.** A reviewer's proposed fix is a claim about source, not an instruction: the fixer re-reads the cited path/symbol and confirms the finding's premise holds at current `HEAD` before applying anything. An equivalent correct fix stays permitted; an unverified transcription does not. The suggested fix is non-binding: the creator may resolve the finding with a different fix. Premise false → apply nothing and report the mismatch in the completion signal, never a silent drop. Premise true but prescription wrong → fix the real defect and say so in the commit body.
 
 **Where the fix happens:**
 - **design-review** — the creator (asd-ba / asd-ux / asd-architect) autofixes within the loop; iteration advances.
