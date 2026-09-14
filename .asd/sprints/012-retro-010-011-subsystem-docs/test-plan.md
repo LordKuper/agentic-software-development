@@ -16,6 +16,7 @@ responsibility:
 | 3 | c1bd9ae4600015483f61ec070d60b091ef4381e3 | delta since entry 2 (`686b03e...HEAD`): `tests/run.js` (entry 2's own commit `f3238d5`) and tester agent memory; no production canon. Pre-run at `f304b76`: 197/197 |
 | 4 | 3fda0e8ece8ba7b4580949a5b0b4273cb0e0ca5e | delta since entry 3 (`c1bd9ae...HEAD`): impl review-fix iter-02 — `1ec55e7` (COR-2), `ec7871f` (external #1), `e50963c` (DOC-2), release-manifest hashes, reviewer agent memory. Pre-run at `4443b8b`: 197/197 |
 | 5 | a319bbf8255370d8274c8d3abbfbd39c5b808228 | delta since entry 4 (`3fda0e8...HEAD`): impl review-fix iter-03 — `70c7c44` (DOC-1 = external #1), `611eb0b` (external #2), release-manifest hashes, reviewer agent memory. Pre-run at `928cbac`: 197/197 |
+| 6 |  | delta since entry 5 (`a319bbf...HEAD`): impl review-fix iter-04 — `3c4d96c` (`tests/run.js`, external iter-04 #1 halt assert), tester and documentation-reviewer agent memory; no production canon. Pre-run at `7429533`: 197/197 |
 
 ## Risk → check decisions
 
@@ -54,6 +55,8 @@ Pre-strategy run at `8fa5d97` (entry 1, impacted set = full suite via the shared
 | Entry 5 — `70c7c44` (DOC-1): `asd-phase-impl.md` "Execution mode" closed blocker list, step 6 apply line (AC-13) | asd-init sprint-mediated `FAILED` has no halt path: the list says "exactly one of", so an autonomous impl dispatches the wave against a setting that was never written; or the blocker bullet cites a step that no longer applies the change | static relation | add (asserts in existing AC-13 test) | Located by the existing derivation (the step holding the token and the asd-init mode, and its apply line). The apply line must handle `FAILED`, the signal the COR-1-3 assert already requires of the validation step. Review-fix iter-04 (external #1): naming `FAILED` let "on `FAILED`, continue dispatching" pass, so the `FAILED` clause (to its `;`) must also halt (`halt`/`stop`/`abort`), route to a `blocker` (Execution mode's only halt path) and place it `before` the wave's `dispatch`. These are three semantic properties, not one phrase. A blocker-list bullet must name `asd-init`, `FAILED` and `step <applyStep>`, which is a citation relation, so renumbering reddens only a stale bullet. Whether the orchestrator actually halts is agent-runtime judgement (owner: impl-review Correctness). |
 | Entry 5 — `611eb0b` (external #2): `t_config.yaml` enumeration markers for `documents.prd/ux_spec/adr/c4` and `backward_compat`; README config-schema mirror (AC-13) | a string field that downstream readers branch on carries no `Values:`/inline `a \| b` enumeration, so asd-init step 2 falls back to "any string" and writes `documents.prd=maybe`. This is the iter-02 #1 finding recurring in narrower form. Other risks: a marker that disagrees with the value list described above the field or with the shipped default; README enumerating different values than the template it mirrors | static, derived | add (asserts in existing AC-13 test) | Leaves are parsed from `t_config.yaml` with their enumeration taken from the two forms step 2 names (inline, or `Values:` in the field's or its section's comment block). Three checks follow. (1) The string leaves with no enumeration equal exactly the five free-form fields (`system.tools.likec4/codex_command/claude_command`, `git.base_branch/branch_pattern`), so a new enumerated field without a marker reddens and a new free-form field joins the list deliberately. (2) Every enumeration contains its shipped default, and equals the `<value> — …` list described above the field where one exists. (3) Every README schema leaf that enumerates values matches the template's enumeration; README `language.*` carries none, so this runs one way only. |
 | Entry 5 — reviewer agent memory (`asd-reviewer-documentation` `feedback_no-shell-doc-review-method.md`), release-manifest hashes | stale guidance; stale ledger | — / static | none / keep | Same reasons as the entry 4 rows: no workflow or runtime parses memory prose, and the existing `upstream_hashes` test covers the manifest. |
+| Entry 6 — `tests/run.js` delta `3c4d96c` | test code is itself the check; its mutation proof is `Added tests` "Review-fix iter-04" | — | none | No production surface in the delta; re-deriving that row would restate it. |
+| Entry 6 — agent memory (`asd-tester-critical` `feedback_fail-first-and-none-honesty.md`, `asd-reviewer-documentation` `feedback_no-shell-doc-review-method.md`) | stale guidance for the next dispatch | — | none | Same reason as the entry 3–5 memory rows: no workflow or runtime parses memory prose. |
 
 ## Removed tests
 
@@ -100,10 +103,10 @@ per-entry record measures only the tree that entry analysed, not any tree produc
 (`.asd/rules/sprint-lifecycle.md` "Impacted test set").
 
 - Command: `node tests/run.js` (impacted set = full suite: the shared-infrastructure safety valve fired — framework-wide canon and `.asd/runtime.js` changed this cycle)
-- Scope: impacted (entry 5 gate)
+- Scope: impacted (entry 6 gate)
 - Result: pass — 197 passed, 0 failed, 0 skipped (exit 0)
 - Lint / build: pass — `git diff --cached --check` exit 0 on the staged commit; `node .asd/sync.js --check` exit 0, 72/72 items `current`
-- HEAD: entry 5 ran at `928cbac` with its own `tests/run.js` edits in the working tree; the pre-strategy run was 197/197 at the same HEAD. The count stays at 197 because entry 5 added asserts to an existing test and no new test. Entry 5's own commit is first covered by the impl-review terminal full-suite run, which remains the only record of the final tree
+- HEAD: entry 6 ran at `7429533`, working tree changed only in this file; the pre-strategy run was 197/197 at the same HEAD. Entry 6 changed no test code. The impl-review terminal full-suite run remains the only record of the final tree
 
 ## Defects
 
