@@ -198,3 +198,18 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: `.asd/runtime.js`, rule docs, workflows, reviewer/architect agents, `asd-init`/`asd-sprint`, `tests/run.js`, `test-plan.md`
 
 - 2026-09-14 — impl-test: impacted set green (full suite via safety valve, 197/197; sync --check 72/72 current), 0/0 tests added/removed (entry 3, delta since entry 2)
+
+## 2026-09-14 — impl-review iter-02: CONCERNS → impl review-fix
+
+- **Decision**: Verdicts: efficiency and testing APPROVE (both latched at 2); correctness, documentation and external CONCERNS. Every internal ledger passed `validate-ledger`. There was no split (22 files), and there is no FAIL. Routed to review-fix (`review_fixes_pending=iter-02`).
+  - Duplicates merged:
+    - COR-1 = DOC-1 (correctness-memory half) = external #2.
+    - DOC-2 = external #3.
+  - Dev chain, in order:
+    - COR-2 (widen the settings-change placement so a declared key added by a same-sprint Task is allowed; validate against the working-tree `t_config.yaml` when the settings wave opens). This reverses the orchestrator's acceptance of dev choice COR-1-3 in "impl review-fix for iter-01", which had silently contradicted "Wave 3 flagged choices resolved". AC-13 is not narrowed.
+    - external #1 (type/shape validation for un-enumerated boolean/integer fields in sprint-mediated step 2).
+    - DOC-2.
+  - Memory chain: DOC-1/COR-1 goes to the owning agents only. `asd-reviewer-correctness` fixes `feedback_review-method-no-shell.md` and `asd-reviewer-testing` fixes `feedback_no-shell-review-method.md`, each within its own memory directory (`artifact-layout.md` "Agent memory"; a dev may not write another agent's memory). The orchestrator commits both, per `git-strategy.md` "Commit before review".
+  - Root cause of DOC-1: the orchestrator's own payloads instructed `git diff` runs (friction F-4). From this point on, reviewer payloads carry the diff range as data, with review from reads, never as a command to run.
+- **Rationale**: Every finding is within scope and CONCERNS, with no new abstraction. Iteration 3 floor is `high`.
+- **Affected docs**: `reviews/impl/iter-02/`, `state.json`

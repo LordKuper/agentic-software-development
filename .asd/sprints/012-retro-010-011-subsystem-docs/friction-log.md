@@ -21,6 +21,7 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 | F-1 | scope | Start confirmation and free-form scope collected in one discrete-option request; scope text lost | — |
 | F-2 | impl | Task 1 dev dispatch terminated by provider session limit mid-task, leaving uncommitted partial edits | — |
 | F-3 | impl-review | emit-manifest split parts cannot truthfully cover a rubric id with no evidence anywhere in scope; union check (c) fails by construction | reviews/impl/iter-01/documentation |
+| F-4 | impl-review | Orchestrator reviewer payloads instructed `git diff` runs outside the reviewers declared tool policy; reviewers recorded a comply-anyway practice in memory | reviews/impl/iter-02/documentation |
 
 ## F-1 — Start confirmation and free-form scope collected in one discrete-option request; scope text lost
 
@@ -45,3 +46,11 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 - **What happened**: The iter-01 scope had 40 files and split into two parts per reviewer. The documentation rubric ids `HTML shell wrapping`, `Provenance` and `Traceability` have no evidence anywhere in the scope, because there is no user-facing HTML and no PRD/ADR. The emitted manifests authorised only the out-of-part predicate for them, so both parts truthfully recorded that predicate and union (c) blocked the merge. Hand-built manifests used to authorise scope-derived predicates; the emitter has no channel for them.
 - **Impact**: The documentation reviewer counts as incomplete for iter-01, so it must be re-dispatched next iteration. The defect was routed as ORC-1.
 - **Refs**: reviews/impl/iter-01/documentation
+
+## F-4 — Orchestrator reviewer payloads instructed shell commands outside the reviewers declared tool policy
+
+- **Phase**: impl-review
+- **Surface**: phase — `asd-phase-impl-review.md` step 6 payload, as composed by the orchestrator in iterations 1 and 2
+- **What happened**: Every internal reviewer payload said `Diff: git diff main...HEAD -- <file>`. The internal reviewers hold no shell (`providers.md` "Role-scoped context"), so each one worked from direct reads instead. Two of them, correctness and testing, recorded that practice in memory as "state the contradiction instead of halting". That contradicts the "Declared tool policy" refusal rule added by this sprint (AC-5) and the agent-memory check (AC-6). Step 6 says the payload carries "the diff computed in step 1", but it does not say the diff must arrive as content or as a file path the reviewer can read, rather than as a command.
+- **Impact**: DOC-1 in iter-02 becomes a memory-fix round. This is the 010 F-5 pattern recurring in the very sprint that remediates it.
+- **Refs**: reviews/impl/iter-02/documentation DOC-1

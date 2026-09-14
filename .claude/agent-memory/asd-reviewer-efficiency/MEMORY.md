@@ -1,1 +1,2 @@
 - [runtime.js stays one file](feedback_runtime-js-single-file.md) — user overrode the SC-1 split for `.asd/runtime.js`; never re-raise it, judge only new code.
+- [No-shell incremental scope](feedback_no-shell-incremental-scope.md) — rebuild iter-2+ delta from decisions-log fix entry + test-plan Entry log; memory bloat is outside economy reach.
