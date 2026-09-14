@@ -247,6 +247,8 @@ user_gates: strict        # adaptive | strict — closure always requires user a
 
 self_hosting: disabled   # enabled | disabled — ASD developing itself through its own workflow
 
+skip_design_phases: disabled  # enabled | disabled — absent = disabled; skips design/design-review/design-promote outright
+
 documents:                # optional sprint documents; absent group = all enabled (back-compat)
   audit: auto              # auto | always | off; legacy enabled/disabled accepted
   prd: enabled              # design/prd.html + persistent requirements
@@ -434,7 +436,7 @@ FAIL findings block progression. Fixes within scope may proceed under the active
 Yes. Set `project.subsystem_decomposition: disabled` during `/asd-init`. Persistent docs become flat project-wide files. No C4 registry is maintained.
 
 **Can I skip PRD/UX-spec/ADR/C4 for a lean sprint?**
-Yes. Each is independently toggleable under `documents.*` in `config.yaml`, frozen into the sprint's `state.json` at scope time (a later config edit never changes an active sprint's rules). `audit` becomes a fast no-op on its own when `documents.audit` is disabled: it advances immediately, writes nothing, with one skip line in the decisions log. When `prd`/`ux_spec`/`adr`/effective `c4` are **all** disabled, one deterministic check at design entry collapses `design`, `design-review`, and `design-promote` together — a single write records all three as skipped and advances straight to `plan`; the latter two are never separately dispatched. `plan`/`impl`/`impl-test`/`impl-review`/`retro`/`pr` always run; acceptance criteria then come from `sprint.md`'s own `AC-N` list instead of the PRD. See `.asd/rules/sprint-lifecycle.md` "Optional documents" and "No-op phase rule".
+Yes. Each is independently toggleable under `documents.*` in `config.yaml`, frozen into the sprint's `state.json` at scope time (a later config edit never changes an active sprint's rules). `audit` becomes a fast no-op on its own when `documents.audit` is disabled: it advances immediately, writes nothing, with one skip line in the decisions log. When `prd`/`ux_spec`/`adr`/effective `c4` are **all** disabled, or when `skip_design_phases: enabled` (regardless of the document flags), one deterministic write — at design entry for the documents case, at audit exit for the explicit setting — collapses `design`, `design-review`, and `design-promote` together and advances straight to `plan`; the latter two are never separately dispatched. `plan`/`impl`/`impl-test`/`impl-review`/`retro`/`pr` always run; acceptance criteria then come from `sprint.md`'s own `AC-N` list instead of the PRD. See `.asd/rules/sprint-lifecycle.md` "Optional documents" and "No-op phase rule".
 
 **Can ASD develop itself?**
 Yes — set `self_hosting: enabled` in `config.yaml` (this repo ships with it enabled, `documents.audit` only). `/asd-sprint` then edits ASD's own canonical sources per the exhaustive write allowlist in `.asd/rules/sprint-lifecycle.md` "Self-hosting" — generated `.claude/`/`.codex/`/`.agents/skills/` stay off-limits, resynced via `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `.asd/rules/providers.md` "Canonical path -> per-provider path") after every canon edit. Root `AGENTS.md`'s managed-block/hand-edited-tail split: `.asd/rules/providers.md` "Canonical path -> per-provider path" (ownership home). `/asd-update` refuses to run here (it pulls framework files INTO a consumer; a self-hosting repo IS the framework).

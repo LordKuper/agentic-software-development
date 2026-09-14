@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="generator" content="ASD workflow">
+  <meta name="doc-type" content="Retrospective">
+  <meta name="subsystem" content="sprint">
+  <meta name="sprint-id" content="011-explicit-design-skip">
+  <meta name="status" content="final">
+  <meta name="updated" content="2026-09-14">
+  <meta name="responsibility" content="retro-phase analysis of the sprint — root cause plus remediation per F-N entry, and systemic proposals for a cheaper future sprint, both split consumer-project vs ASD-framework">
+  <meta name="provenance" content="original">
+  <meta name="source" content="">
+  <title>Retrospective — Sprint 011 · explicit-design-skip</title>
+  <style>
+    :root {
+      --fg: #1a1c1e; --bg: #fff; --muted: #5b6770; --accent: #0066cc;
+      --code-bg: #f4f6f8; --border: #d0d7de; --max: 1040px;
+      --card-bg: #fafbfc;
+      --ok: #1a7f37; --warn: #b35900; --danger: #cf222e; --info: #0969da; --neutral: #5b6770;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --fg: #e6e6e6; --bg: #0e1116; --muted: #9aa4ad; --code-bg: #161b22; --border: #30363d;
+        --card-bg: #161b22;
+        --accent: #58a6ff; --ok: #3fb950; --warn: #d29922; --danger: #f85149; --info: #79c0ff; --neutral: #8b949e;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .layout { display: grid; grid-template-columns: 1fr; }
+    .layout:has(> nav.toc) { grid-template-columns: 260px minmax(0, 1fr); }
+    nav.toc { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; padding: 16px 12px; border-right: 1px solid var(--border); font-size: 0.85rem; }
+    nav.toc .toc-title { font-weight: 600; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.04em; }
+    nav.toc ol { list-style: none; margin: 0; padding: 0; }
+    nav.toc li { margin: 2px 0; }
+    nav.toc a { color: var(--fg); text-decoration: none; display: block; padding: 3px 6px; border-radius: 4px; }
+    nav.toc a:hover { background: var(--code-bg); color: var(--accent); }
+    @media (max-width: 880px) { nav.toc { position: static; max-height: none; border-right: none; border-bottom: 1px solid var(--border); } }
+    @media print { nav.toc { display: none; } }
+    .content { min-width: 0; }
+    header, main, footer { max-width: var(--max); margin: 0 auto; padding: 16px 24px; }
+    header { border-bottom: 1px solid var(--border); }
+    header h1 { margin: 4px 0 8px; font-size: 1.9rem; }
+    .badges span { display: inline-block; padding: 2px 8px; margin-right: 6px; font-size: 0.75rem; border: 1px solid var(--border); border-radius: 4px; color: var(--muted); background: var(--bg); }
+    .stats { color: var(--muted); font-size: 0.9rem; }
+    @media (max-width: 880px) {
+      .layout, .layout:has(> nav.toc) { grid-template-columns: 1fr; }
+    }
+    h2, h3 { line-height: 1.25; margin-top: 1.6em; }
+    h2 { border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+    a { color: var(--accent); }
+    code { font-family: ui-monospace, "Cascadia Code", Menlo, monospace; background: var(--code-bg); padding: 1px 5px; border-radius: 3px; font-size: 0.9em; }
+    table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 0.94rem; }
+    th, td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+    th { background: var(--card-bg); font-weight: 600; }
+    tr, li { break-inside: avoid; }
+    .hero .lede { font-size: 1.05rem; color: var(--muted); }
+    .chip { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 0.75rem; border: 1px solid var(--border); white-space: nowrap; }
+    .chip.area { background: var(--code-bg); color: var(--muted); }
+    footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <nav class="toc">
+      <div class="toc-title">Contents</div>
+      <ol>
+        <li><a href="#outcome">Outcome</a></li>
+        <li><a href="#analysis">Analysis</a></li>
+        <li><a href="#actions">Actions</a></li>
+        <li><a href="#systemic-proposals">Systemic proposals</a></li>
+      </ol>
+    </nav>
+    <div class="content">
+      <header>
+        <div class="badges">
+          <span>Retrospective</span>
+          <span>sprint</span>
+          <span class="status-final">final</span>
+        </div>
+        <h1>Retrospective — Sprint 011 · explicit-design-skip</h1>
+        <div class="stats">1 entry · 1 action · 3 systemic proposals · updated 2026-09-14</div>
+      </header>
+      <main><section id="outcome" class="hero">
+  <h2>Outcome</h2>
+  <p class="lede">1 entry analysed, 0 consumer actions, 1 framework action, 3 systemic proposals.</p>
+  <p>The sprint shipped <code>skip_design_phases</code>. The design block is now skipped from the audit exit, without loading any design skill or workflow. This repo enables the setting through <code>/asd-init</code> diff mode. Six tasks ran in four waves. The only halt was MS-1, the user-run settings edit. Impl-review took two iterations. Iteration 1 returned five low-to-high findings across four reviewers, with no FAIL. Two of them shared one root cause: a crash window between two skip writes. Iteration 2 returned all APPROVE, and the terminal full suite was green at 187/187.</p>
+  <p>One friction entry was recorded, a small commit-ownership slip. Most of the sprint's avoidable cost came from something the log does not record: the two-write crash window the implementing dev had already flagged as a "choice worth checking" when it reported back. It passed the adaptive impl assessment unexamined and returned as EXT-1 and COR-1, which cost a full review-fix round, an impl-test re-entry and a second review iteration.</p>
+</section>
+
+<section id="analysis">
+  <h2>Analysis</h2>
+  <table>
+    <thead>
+      <tr><th>Entry</th><th>Root cause</th><th>Scope</th></tr>
+    </thead>
+    <tbody>
+      <tr id="F-1"><td><a href="#F-1">F-1</a></td><td>The impl-test dispatch named the orchestrator-owned files the tester must not stage but not the agent-memory writes it must commit. Those writes go through the host memory channel, so the agent does not register them as authored paths under <code>git-strategy.md</code> "Commit before review".</td><td><span class="chip area">asd</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="actions">
+  <h2>Actions</h2>
+  <table>
+    <thead>
+      <tr><th>Addresses</th><th>Recommendation</th><th>Acts on</th><th>Target</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><a href="#F-1">F-1</a></td><td>State in the dispatched agent's commit obligation that agent-memory writes it made are authored paths it commits. Every later dispatch this sprint that carried that clause left a clean tree.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/git-strategy.md "Commit before review"</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="systemic-proposals">
+  <h2>Systemic proposals</h2>
+  <table>
+    <thead>
+      <tr><th>Proposal</th><th>Acts on</th><th>Target</th><th>Expected saving</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Treat a choice a dev explicitly flags for checking in its completion report as an unresolved material alternative. It blocks the adaptive impl-assessment pass until the orchestrator resolves it or routes it back.</td><td><span class="chip area">asd</span></td><td><code>.asd/workflows/asd-phase-impl.md step 10; .asd/rules/checkpoints.md</code></td><td>This sprint: one review-fix round, one impl-test re-entry and one impl-review iteration. That is five reviewer dispatches plus two dev/tester dispatches spent on a defect already reported before review.</td></tr>
+      <tr><td>Add a <code>runtime.js</code> subcommand that emits each internal reviewer's coverage manifest from the canonical rubric headings, the iteration diff's scope file list and standing n/a predicates, then stamps its digest. Accept the reviewer's fenced ledger block directly as the ledger input.</td><td><span class="chip area">asd</span></td><td><code>.asd/runtime.js; .asd/workflows/asd-phase-impl-review.md steps 1, 7</code></td><td>Orchestrator hand-derivation of rubric ids and hand-transcription of four ledgers per iteration (eight this sprint), plus the risk of a manifest drifting from agent rubrics.</td></tr>
+      <tr><td>Let a plan task declare a settings change to be applied through <code>/asd-init</code> diff mode. The orchestrator runs it after the plan's user acceptance instead of halting on a manual step, so the settings authority rule keeps its single writer but gains a sprint-mediated caller.</td><td><span class="chip area">asd</span></td><td><code>AGENTS.md hard rules; .asd/skills/asd-sprint/SKILL.md "Skills dispatched"; .asd/workflows/asd-phase-impl.md step 8</code></td><td>One manual-step halt and user round trip for any sprint whose deliverable includes a project setting (MS-1 here).</td></tr>
+    </tbody>
+  </table>
+</section>
+</main>
+<footer>by ASD workflow | 2026-09-14 | sprint 011-explicit-design-skip</footer>
+    </div>
+  </div>
+</body>
+</html>

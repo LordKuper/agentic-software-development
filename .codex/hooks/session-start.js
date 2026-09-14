@@ -1,4 +1,4 @@
-// ASD generated. Edit .asd/hooks/session-start.js. source_digest=sha256:b2ba4ce133eab117876d0e15424f40baa71eb9c887e8813326b7897358b6135d content_digest=sha256:b2ba4ce133eab117876d0e15424f40baa71eb9c887e8813326b7897358b6135d asd_version=5.0.0 schema=1
+// ASD generated. Edit .asd/hooks/session-start.js. source_digest=sha256:7eaeb0c587e4379215d5d10310bbdb14268df46006e5983564a2c70b1973099c content_digest=sha256:7eaeb0c587e4379215d5d10310bbdb14268df46006e5983564a2c70b1973099c asd_version=7.2.0 schema=1
 // ASD SessionStart hook (canonical, provider-agnostic).
 // No shebang: this file is never executed directly (`./session-start.js`),
 // always invoked as `node <path> --provider ...`, and every generated
@@ -156,7 +156,9 @@ function summary(active, provider) {
   const iter = reviewNode && reviewNode.iteration != null ? reviewNode.iteration : 0;
   const branch = state.branch || 'unknown';
   const verdict = lastReviewVerdict(reviewNode);
-  const next = phase === 'pr' ? (state.pr && state.pr.state === 'closure-pending' ? 'await-user-closure' : 'await-merge') : nextPhase(phase);
+  const next = phase === 'pr' ? (state.pr && state.pr.state === 'closure-pending' ? 'await-user-closure' : 'await-merge')
+    : (phase === 'audit' && state.skip_design_phases === true) ? 'plan'
+    : nextPhase(phase);
   const iterPart = phase.endsWith('-review') ? ` (iter ${iter})` : '';
   return [
     `[ASD] Active sprint: ${id}`,

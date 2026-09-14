@@ -57,7 +57,7 @@ The block above is synced from `.asd/templates/t_AGENTS.md` and applies here in 
 
 This repo **IS the ASD (Agentic Software Development) framework** — its source, not a project that *uses* ASD. No application code: every file is workflow infrastructure (rules, templates, agent/skill defs, hooks). Work = authoring/editing that infrastructure.
 
-`self_hosting: enabled`, so `/asd-sprint` develops ASD itself, dispatching normally through the eleven phases. `documents.*` is a lean profile (`audit: auto`, `prd`/`ux_spec`/`adr`/`c4` disabled) — no PRD/UX-spec/ADR churn for a framework whose spec already lives in `.asd/rules/`; `plan`/`impl`/`impl-test`/`impl-review`/`retro`/`pr` still run in full. `/asd-update` refuses to run here (it pulls framework files INTO a consumer; this repo IS the framework).
+`self_hosting: enabled`, so `/asd-sprint` develops ASD itself, dispatching normally through the eleven phases. `documents.*` is a lean profile (`audit: auto`, `prd`/`ux_spec`/`adr`/`c4` disabled) plus `skip_design_phases: enabled` — no PRD/UX-spec/ADR churn for a framework whose spec already lives in `.asd/rules/`, and design/design-review/design-promote are skipped outright (`sprint-lifecycle.md` "Optional documents"); `plan`/`impl`/`impl-test`/`impl-review`/`retro`/`pr` still run in full. `/asd-update` refuses to run here (it pulls framework files INTO a consumer; this repo IS the framework).
 
 ### Override: infrastructure is the work, not read-only
 

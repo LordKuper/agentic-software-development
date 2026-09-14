@@ -122,11 +122,13 @@ Framework impl-review/External Review change surface: the whole repo diff (every
 
 `documents.<name>` in config (`audit | prd | ux_spec | adr | c4`), frozen into `state.json.documents` at `scope` — phases read that frozen snapshot, never live config, so a mid-sprint config edit never changes an active sprint's preconditions. Old config without the `documents` group, or an active sprint's `state.json` without a `documents` snapshot, means every value `enabled` (no behavior change). Fail-closed default is per-field, not per-group: when the `documents` group is present but a given field is absent from it, that field is `disabled` — only a wholly-absent group defaults everything to `enabled`. Effective `documents.c4` (computed once, here, at `scope` — never recomputed later) is `enabled` only when `project.subsystem_decomposition: enabled` too; otherwise disabled regardless of the flag.
 
+**Explicit design skip**: top-level `skip_design_phases: enabled | disabled` in config (absent → `disabled`), frozen at `scope` into `state.json.skip_design_phases` as a bare boolean, replacing `"{{SKIP_DESIGN_PHASES}}"` by the quoted-placeholder rule below; a `state.json` without the field means `false`. When `true`, effective `documents.prd`/`ux_spec`/`adr`/`c4` freeze `false` regardless of their flags, like effective `c4` — `state.json.documents` then no longer mirrors config, so scope's decisions-log line naming the suppressed documents is their only record. `documents.audit` is untouched.
+
 **Config string → state boolean**: `t_state.json`'s `documents` map holds `"{{DOC_AUDIT}}"`/`"{{DOC_PRD}}"`/`"{{DOC_UX_SPEC}}"`/`"{{DOC_ADR}}"`/`"{{DOC_C4}}"` as quoted placeholders — quoted so the template file itself stays valid, parseable JSON as shipped. At `scope` write time, replace each entire quoted token (**including its surrounding quotes**) with the bare JSON boolean `true`/`false` matching that document's normalized `enabled`/`disabled` value — the written `state.json` must end up with `"audit": true`, never `"audit": "{{DOC_AUDIT}}"` or `"audit": "true"`. Never leave a placeholder token, quoted or not, in a written `state.json`.
 
 **Skip record**: `t_state.json.skipped_phases` starts `[]`. A no-op phase (below) appends its own phase name to this array in the same write that advances `phase` — this is what lets a resumed sprint or a later audit tell "phase legitimately skipped, empty applicable-artifact set" apart from "phase ran and produced nothing," which the `phase`/`updated_at` fields alone cannot distinguish. Never removed or reordered; a phase re-run after a rollback (`checkpoints.md` "Re-run") that turns out non-empty this time does not retroactively remove its earlier skip entry — the array is a historical record, not current status.
 
-**Multi-phase skip**: when one deterministic check subsumes several consecutive no-op phases in a single write — the `design`/`design-review`/`design-promote` collapse below — that one write appends **every** subsumed phase name to `skipped_phases` (`["design", "design-review", "design-promote"]`) and sets `phase` to the **last** subsumed phase name, never one array append per phase and never the first. This way `PHASE_CHAIN[idx+1]` mechanically yields the next real phase and a resumed session cannot re-enter the collapsed block. The subsumed phases are never separately dispatched, so they never make their own individual `skipped_phases` write.
+**Multi-phase skip**: when one deterministic check subsumes several consecutive no-op phases in a single write — the `design`/`design-review`/`design-promote` collapse below, from either of its triggers — that one write appends **every** subsumed phase name to `skipped_phases` (`["design", "design-review", "design-promote"]`) and sets `phase` to the **last** subsumed phase name, never one array append per phase and never the first; at the audit exit, a skipped audit's own `"audit"` precedes them in that same write. This way `PHASE_CHAIN[idx+1]` mechanically yields the next real phase and a resumed session cannot re-enter the collapsed block. The subsumed phases are never separately dispatched, so they never make their own individual `skipped_phases` write.
 
 Never optional: `sprint.md`, `state.json`, `plan.md`, `test-plan.md`, impl-review reports, `manual-steps.md` (already lazy), `friction-log.md` (already lazy), `retrospective.html`, `<sprint>/decisions-log.md`, `stubs.md`. A disabled document is never written as an empty stub — skip recorded in `state.json` plus one decisions-log line.
 
@@ -144,13 +146,13 @@ Never optional: `sprint.md`, `state.json`, `plan.md`, `test-plan.md`, impl-revie
 | Phase | No-op when |
 |---|---|
 | audit | `audit` disabled |
-| design | `prd`, `ux_spec`, `adr`, effective `c4` all disabled |
+| design | `prd`, `ux_spec`, `adr`, effective `c4` all disabled, or `skip_design_phases` true |
 | design-review | design phase produced zero drafts |
 | design-promote | zero approved drafts to promote |
 
 `plan`, `impl`, `impl-test`, `impl-review`, `retro`, `pr` are never no-op.
 
-**Design/design-review/design-promote collapse**: the design workflow performs one deterministic no-op write when all documents are disabled; design-review and design-promote are not dispatched.
+**Design/design-review/design-promote collapse**: one deterministic no-op write, from one of two sites — the audit exit when frozen `skip_design_phases` is `true` (design is never dispatched either), else the design workflow when all documents are disabled. Design-review and design-promote are not dispatched. Collapse test, on frozen state and never on the historical `skipped_phases`: `skip_design_phases` is `true` or `documents.prd`/`ux_spec`/`adr`/`c4` are all `false`. Under it no design draft is produced or promoted, so `phase="design-promote"` is the collapse write: resume dispatches `plan`, and `plan` needs no promotion.
 
 ## Audit phase
 

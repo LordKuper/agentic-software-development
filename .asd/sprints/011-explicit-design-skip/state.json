@@ -1,0 +1,173 @@
+{
+  "sprint_id": "011-explicit-design-skip",
+  "branch": "sprint/011-explicit-design-skip",
+  "phase": "pr",
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "adr": false,
+    "c4": false
+  },
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "initial scope accepted at the hard write-then-review-accept gate",
+      "evidence": "sprint.md AC-1..AC-7; no retrospective-derived criteria; per-criterion cost stated as 0 iterations / 0 fix rounds",
+      "artifact_revision": "sprint.md@scope-1"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "routine audit acceptance passed adaptively: no material ambiguity, every recommendation implements an accepted AC",
+      "evidence": "audit.md G-1..G-12, R-1..R-9; architect reported no material ambiguity; G-3 effective-document freeze implements AC-4 setting-wins; G-4 option A (audit exit owns skip write) is the only option satisfying AC-3 without router writes; R-1 MS-N /asd-init run implements AC-6 wording; no BA dispatch needed",
+      "artifact_revision": "audit.md@audit-1"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "user",
+      "reason": "plan accepted; field name chosen",
+      "evidence": "plan.md 6 tasks / 4 waves covering AC-1..AC-7; config skip_design_phases: enabled|disabled top-level, state boolean skip_design_phases; audit exit owns skip write",
+      "artifact_revision": "plan.md@plan-1"
+    },
+    {
+      "gate": "impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "routine initial impl assessment passed adaptively",
+      "evidence": "plan.md 6/6 tasks ticked (AC-1..AC-7 mapped); MS-1 done via user-run /asd-init; sync --check 0 non-current; git diff --check clean; round diff confined to task-named canon, synced views, release-manifest, project config and sprint bookkeeping; tests 184/184 at Task 5 self-verification; no sprint-011 stubs",
+      "artifact_revision": "plan.md@impl-complete"
+    },
+    {
+      "gate": "impl-review green handoff",
+      "decision_actor": "orchestrator",
+      "reason": "routine green handoff passed adaptively: reviewer DoD and terminal full suite both met",
+      "evidence": "reviews.impl.verdicts iter-02 all APPROVE (efficiency latched iter-01); every internal ledger validated; terminal full suite 187/187 exit 0 at a9218eb, lint and sync --check clean (test-plan.md Suite run, commit 03c0d56)",
+      "artifact_revision": "test-plan.md@03c0d56"
+    },
+    {
+      "gate": "PR publication",
+      "decision_actor": "orchestrator",
+      "reason": "adaptive publication: accepted scope authority, DoD evidence complete, config auto_pr and gh_enabled true",
+      "evidence": "plan 6/6; iter-02 verdicts all APPROVE; full suite 187/187 at a9218eb and after version bump; sync --check 72/72; no sprint stubs; retrospective.html present; AC-6 config line verified; asd_version 7.2.0 -> 7.3.0 with CHANGELOG",
+      "artifact_revision": "PR #35"
+    }
+  ],
+  "task_routing": {
+    "T1": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "opus",
+      "reason": "risk:public contract"
+    },
+    "T2": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "opus",
+      "reason": "risk:workflow gate"
+    },
+    "T3": {
+      "tier": "standard",
+      "execution": "agent",
+      "resolved_model": "sonnet",
+      "reason": "artifact-risk:hook fail-silent"
+    },
+    "T4": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "opus",
+      "reason": "risk:settings writer skill"
+    },
+    "T5": {
+      "tier": "standard",
+      "execution": "agent",
+      "resolved_model": "sonnet",
+      "reason": "normal"
+    },
+    "T6": {
+      "tier": "standard",
+      "execution": "agent",
+      "resolved_model": "sonnet",
+      "reason": "artifact-risk:project config"
+    },
+    "impl-test": {
+      "resolved_model": "opus",
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate"
+    },
+    "iter-01-fix-dev": {
+      "resolved_model": "opus",
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate"
+    },
+    "iter-01-fix-test": {
+      "resolved_model": "opus",
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "no-downgrade"
+    },
+    "impl-review-full-suite": {
+      "resolved_model": "sonnet",
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "normal"
+    }
+  },
+  "skipped_phases": [
+    "design",
+    "design-review",
+    "design-promote"
+  ],
+  "reviews": {
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "iteration": 2,
+      "verdicts": {
+        "iter-01": {
+          "correctness": "CONCERNS",
+          "efficiency": "APPROVE",
+          "testing": "CONCERNS",
+          "documentation": "CONCERNS",
+          "external": "CONCERNS"
+        },
+        "iter-02": {
+          "correctness": "APPROVE",
+          "efficiency": "APPROVE",
+          "testing": "APPROVE",
+          "documentation": "APPROVE",
+          "external": "APPROVE"
+        }
+      },
+      "iteration_heads": {
+        "iter-01": "f34400f0d1bc99fbba1a8d6ff6bdd4be44087248",
+        "iter-02": "77660c88046e0b7389a481e303328d9fab61c42e"
+      },
+      "latched": {
+        "efficiency": 1,
+        "correctness": 2,
+        "testing": 2,
+        "documentation": 2,
+        "external": 2
+      }
+    }
+  },
+  "created_at": "2026-09-14T06:59:44Z",
+  "updated_at": "2026-09-14T13:10:00Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": {
+    "state": "open",
+    "number": 35,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/35",
+    "title": "feat(workflow): add skip_design_phases setting",
+    "asd_version": "7.3.0"
+  },
+  "archived_at": null
+}
