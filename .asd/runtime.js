@@ -14,6 +14,26 @@ const RESERVED_CHANGE_RISKS = ['security', 'authentication', 'migration', 'publi
 const LEDGER_VOCABULARY = { files: ['checked', 'n/a'], rules: ['pass', 'n/a', 'finding'], sections: ['reviewed', 'n/a'], p: 'n/a', f: 'finding' };
 /** One filled ledger row, published beside the vocabulary so a reviewer reads the row shape off its own input too. Its status is taken from the vocabulary constant and paired with the key that status requires, so the example cannot teach a row the validator rejects. */
 const LEDGER_ROW_EXAMPLE = { i: '<manifest id>', s: LEDGER_VOCABULARY.p, p: '<allowed n/a predicate>' };
+const ROW_TYPES = Object.keys(LEDGER_VOCABULARY).filter((key) => Array.isArray(LEDGER_VOCABULARY[key]));
+/** The `n_a` shape: row type, then manifest id, then its allowed predicate list. Published beside the vocabulary under its own key, because `n_a` itself carries per-dispatch content. */
+const LEDGER_NA_SHAPE = Object.fromEntries(ROW_TYPES.map((type) => [type, { [LEDGER_ROW_EXAMPLE.i]: [LEDGER_ROW_EXAMPLE.p] }]));
+/** A scope file list above this many files is partitioned into `ceil(files / threshold)` parts before its first dispatch. */
+const SPLIT_THRESHOLD_FILES = 25;
+/** The standing n/a predicates, each the exact text a ledger row records. The emitter authorizes one only where its condition holds; this is their sole home. */
+const NA_PREDICATES = {
+  phaseGate: 'outside phase gate',
+  uiSurface: 'no UI surface in scope',
+  perf: 'no perf budgets section and no executable file in scope',
+  noBudgets: 'no budgets defined',
+  outOfPart: 'evidence outside this part; covered by the other parts',
+};
+/** Rubric entries each conditional predicate covers, by reviewer and id prefix; a prefix matching no entry fails the emit closed. */
+const NA_TARGETS = {
+  ui: { correctness: ['UI conformance'] },
+  perf: { efficiency: ['Perf budget compliance', 'Perf anti-patterns', 'Algorithmic complexity', 'Regression detection', 'Hot path identification'] },
+  budgetCompliance: { efficiency: ['Perf budget compliance'] },
+};
+const PHASES = ['design-review', 'impl-review'];
 
 function stable(value) {
   if (Array.isArray(value)) return '[' + value.map(stable).join(',') + ']';
@@ -215,10 +235,10 @@ function validateCoverageLedger(manifest, ledger, actualFindings) {
   if (manifest.digest !== digest || ledger.manifest_digest !== digest) fail('ledger manifest identity invalid');
   if (manifest.vocabulary !== undefined && stable(manifest.vocabulary) !== stable(LEDGER_VOCABULARY)) fail('manifest vocabulary invalid');
   if (manifest.row_example !== undefined && stable(manifest.row_example) !== stable(LEDGER_ROW_EXAMPLE)) fail('manifest row example invalid');
+  if (manifest.n_a_shape !== undefined && stable(manifest.n_a_shape) !== stable(LEDGER_NA_SHAPE)) fail('manifest n_a shape invalid');
   if (manifest.n_a !== undefined) {
     if (!manifest.n_a || typeof manifest.n_a !== 'object' || Array.isArray(manifest.n_a)) fail('manifest n_a invalid');
-    const rowTypes = Object.keys(LEDGER_VOCABULARY).filter((key) => Array.isArray(LEDGER_VOCABULARY[key]));
-    for (const key of Object.keys(manifest.n_a)) if (!rowTypes.includes(key)) fail(`manifest n_a unknown row type: ${key}`);
+    for (const key of Object.keys(manifest.n_a)) if (!ROW_TYPES.includes(key)) fail(`manifest n_a unknown row type: ${key}`);
   }
   const ids = (name) => {
     if (!Array.isArray(manifest[name]) || manifest[name].some((item) => typeof item !== 'string')) fail(`manifest ${name} invalid`);
@@ -251,6 +271,109 @@ function validateCoverageLedger(manifest, ledger, actualFindings) {
   return { ok: true };
 }
 
+/** Stamps every published constant into a manifest and sets its digest; the one stamping seam for emitted and re-stamped manifests alike. */
+function stampManifest(manifest) {
+  const stamped = Object.assign({}, manifest, { vocabulary: LEDGER_VOCABULARY, row_example: LEDGER_ROW_EXAMPLE, n_a_shape: LEDGER_NA_SHAPE });
+  return Object.assign(stamped, { digest: coverageManifestDigest(stamped) });
+}
+
+/** Parses a reviewer's `## Review rubric`: rule ids are its `###` headings, else its bullets' bold lead-in labels; section ids are its `###` headings. */
+function rubricIds(markdown) {
+  if (typeof markdown !== 'string') fail('rubric markdown required');
+  const rubric = markdown.replace(/\r\n/g, '\n').split(/^## Review rubric *$/m)[1];
+  if (rubric === undefined) fail('reviewer has no ## Review rubric');
+  const body = rubric.split(/^## /m)[0];
+  const sections = [...body.matchAll(/^### (.+)$/gm)].map((match) => match[1].trim());
+  const rules = sections.length > 0 ? sections : [...body.matchAll(/^- \*\*(.+?)\*\*/gm)].map((match) => match[1]);
+  if (rules.length === 0) fail('reviewer rubric has no entries');
+  return { rules, sections };
+}
+
+/** A UI surface: `.html`/`.htm` outside `.asd/` or under `.asd/templates/`, a stylesheet or component-framework file, or any file under a `ui`/`components`/`views`/`pages` path segment. */
+function isUiSurface(file) {
+  if (/\.html?$/i.test(file)) return !file.startsWith('.asd/') || file.startsWith('.asd/templates/');
+  return /\.(css|scss|less|jsx|tsx|vue|svelte)$/i.test(file) || /(^|\/)(ui|components|views|pages)\//.test(file);
+}
+
+/** An executable file is anything that is not prose, config or markup, so an unrecognised extension keeps the performance sections reviewed. */
+function isExecutable(file) {
+  return !/\.(md|json|ya?ml|toml|html?|txt)$/i.test(file);
+}
+
+/** Maps every rule id to the standing n/a predicates its condition authorizes for this dispatch. */
+function standingPredicates(input, ids, customRules) {
+  const granted = new Map(ids.map((id) => [id, []]));
+  const targets = (key) => (NA_TARGETS[key][input.reviewer] || []).map((prefix) => ids.find((id) => id.startsWith(prefix)) || fail(`rubric entry missing for n/a predicate: ${prefix}`));
+  const grant = (key, predicate) => targets(key).forEach((id) => granted.get(id).push(predicate));
+  const otherPhase = PHASES.find((phase) => phase !== input.phase);
+  const hasBudgets = Object.entries(customRules).some(([file, text]) => file.endsWith('custom-coding-rules.md') && /^#+ [^\n]*perf[^\n]*budget/im.test(text));
+  Object.keys(NA_TARGETS).forEach(targets);
+  ids.filter((id) => id.includes(otherPhase) && !id.includes(input.phase)).forEach((id) => granted.get(id).push(NA_PREDICATES.phaseGate));
+  if (input.phase === 'design-review') {
+    if (!input.files.some((file) => /(^|\/)(ux-spec\.html|design-md-delta\.yaml)$/.test(file))) grant('ui', NA_PREDICATES.phaseGate);
+    return granted;
+  }
+  if (input.scopedFanOut === true && !input.files.some(isUiSurface)) grant('ui', NA_PREDICATES.uiSurface);
+  if (input.scopedFanOut === true && !hasBudgets && !input.files.some(isExecutable)) grant('perf', NA_PREDICATES.perf);
+  if (!hasBudgets) grant('budgetCompliance', NA_PREDICATES.noBudgets);
+  return granted;
+}
+
+/** Emits one reviewer's stamped coverage manifests: one over the whole scope, or disjoint near-even parts in manifest order when the scope exceeds the split threshold or is halved. */
+function emitCoverageManifests(input) {
+  if (!input || typeof input !== 'object') fail('emit input required');
+  if (!PHASES.includes(input.phase)) fail('phase must be design-review or impl-review');
+  const files = stringArray(input.files, 'files');
+  const customRules = input.customRules || {};
+  const rubric = rubricIds(input.rubric);
+  const rules = rubric.rules.concat(Object.keys(customRules));
+  const granted = standingPredicates(input, rules, customRules);
+  const partCount = files.length > SPLIT_THRESHOLD_FILES ? Math.ceil(files.length / SPLIT_THRESHOLD_FILES) : input.halve === true ? 2 : 1;
+  if (partCount > Math.max(files.length, 1)) fail('scope has fewer files than parts');
+  const naFor = (ids) => Object.fromEntries(ids.map((id) => [id, partCount > 1 ? granted.get(id).concat(NA_PREDICATES.outOfPart) : granted.get(id)]).filter(([, predicates]) => predicates.length > 0));
+  const allowedNa = { files: {}, rules: naFor(rules), sections: naFor(rubric.sections) };
+  return Array.from({ length: partCount }, (_, part) => stampManifest({
+    reviewer: input.reviewer,
+    phase: input.phase,
+    files: files.slice(Math.floor(part * files.length / partCount), Math.floor((part + 1) * files.length / partCount)),
+    rules,
+    sections: rubric.sections,
+    n_a: allowedNa,
+  }));
+}
+
+/** Reads a reviewer ledger from bare JSON, or from the one fenced block carrying `manifest_digest` inside the reviewer's returned text. */
+function ledgerFromText(text) {
+  const parse = (candidate) => {
+    try { return JSON.parse(candidate); } catch (_) { return undefined; }
+  };
+  const bare = parse(text);
+  if (bare !== undefined) return bare;
+  const blocks = [...text.matchAll(/^```[^\n]*\r?\n([\s\S]*?)^```/gm)].map((match) => parse(match[1])).filter((value) => value && typeof value === 'object' && value.manifest_digest !== undefined);
+  if (blocks.length !== 1) fail('ledger must be JSON or returned text with exactly one fenced ledger block');
+  return blocks[0];
+}
+
+function emitManifestCommand(flags) {
+  if (!/^[a-z]+$/.test(flags.reviewer || '')) fail('--reviewer <name> required');
+  if (typeof flags.files !== 'string' || typeof flags.out !== 'string') fail('--files <path> and --out <dir> required');
+  const customPaths = typeof flags['custom-rules'] === 'string' ? flags['custom-rules'].split(',') : [];
+  const manifests = emitCoverageManifests({
+    reviewer: flags.reviewer,
+    phase: flags.phase,
+    rubric: fs.readFileSync(path.join(__dirname, 'agents', `asd-reviewer-${flags.reviewer}.md`), 'utf8'),
+    files: fs.readFileSync(flags.files, 'utf8').split(/\r?\n/).map((line) => line.trim()).filter(Boolean),
+    customRules: Object.fromEntries(customPaths.map((file) => [file, fs.readFileSync(file, 'utf8')])),
+    scopedFanOut: flags['scoped-fan-out'] === true,
+    halve: flags.halve === true,
+  });
+  return manifests.map((manifest, index) => {
+    const file = path.join(flags.out, manifests.length === 1 ? `${flags.reviewer}.manifest.json` : `${flags.reviewer}.part-${index + 1}.manifest.json`);
+    fs.writeFileSync(file, JSON.stringify(manifest) + '\n', 'utf8');
+    return { manifest: file, digest: manifest.digest };
+  });
+}
+
 function parseFlagArgs(argv, booleanFlags) {
   const bools = booleanFlags || [];
   const out = {};
@@ -272,17 +395,20 @@ function inputJson(flags) {
 
 function main(argv) {
   const command = argv[2];
-  const flags = parseFlagArgs(argv.slice(3), ['write']);
+  const flags = parseFlagArgs(argv.slice(3), ['write', 'scoped-fan-out', 'halve']);
   if (command === 'manifest-digest') {
     const onDisk = JSON.parse(fs.readFileSync(flags.manifest, 'utf8'));
-    const manifest = flags.write ? Object.assign({}, onDisk, { vocabulary: LEDGER_VOCABULARY, row_example: LEDGER_ROW_EXAMPLE }) : onDisk;
-    const digest = coverageManifestDigest(manifest);
-    if (flags.write) fs.writeFileSync(flags.manifest, JSON.stringify(Object.assign({}, manifest, { digest })) + '\n', 'utf8');
-    process.stdout.write(digest + '\n');
+    const manifest = flags.write ? stampManifest(onDisk) : onDisk;
+    if (flags.write) fs.writeFileSync(flags.manifest, JSON.stringify(manifest) + '\n', 'utf8');
+    process.stdout.write(coverageManifestDigest(manifest) + '\n');
+    return 0;
+  }
+  if (command === 'emit-manifest') {
+    process.stdout.write(JSON.stringify(emitManifestCommand(flags)) + '\n');
     return 0;
   }
   if (command === 'validate-ledger') {
-    const result = validateCoverageLedger(JSON.parse(fs.readFileSync(flags.manifest, 'utf8')), JSON.parse(fs.readFileSync(flags.ledger, 'utf8')), JSON.parse(fs.readFileSync(flags.findings, 'utf8')));
+    const result = validateCoverageLedger(JSON.parse(fs.readFileSync(flags.manifest, 'utf8')), ledgerFromText(fs.readFileSync(flags.ledger, 'utf8')), JSON.parse(fs.readFileSync(flags.findings, 'utf8')));
     process.stdout.write(JSON.stringify(result) + '\n');
     return 0;
   }
@@ -299,11 +425,11 @@ function main(argv) {
     process.stdout.write(JSON.stringify(routeTask(inputJson(flags))) + '\n');
     return 0;
   }
-  fail('usage: manifest-digest, validate-ledger, external-preflight, external-record-failure, or route-task');
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, external-preflight, external-record-failure, or route-task');
 }
 
 if (require.main === module) {
   try { process.exitCode = main(process.argv); } catch (error) { process.stderr.write(`${error.message}\n`); process.exitCode = 2; }
 }
 
-module.exports = { LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, buildInvocation, coverageManifestDigest, externalPreflight, recordExternalFailure, routeTask, validateCoverageLedger, fingerprint };
+module.exports = { LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, NA_PREDICATES, SPLIT_THRESHOLD_FILES, buildInvocation, coverageManifestDigest, emitCoverageManifests, externalPreflight, recordExternalFailure, routeTask, validateCoverageLedger, fingerprint };

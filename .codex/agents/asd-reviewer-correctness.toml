@@ -1,4 +1,4 @@
-# ASD generated. Edit .asd/agents/asd-reviewer-correctness.md. source_digest=sha256:c556908c702a7392d02fbf669e31e96aafab8cc6c003aa1f5b14922d71417bbe content_digest=sha256:e18536281be2fefa04b2727f648c246268d08f359a9cbde3648a6a2b5f7bbbd9 asd_version=7.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-correctness.md. source_digest=sha256:227f4348e928cbe60959281c2dc80c4e8a3c45f45b5a107975d21b3bcfb82043 content_digest=sha256:ef41f3ba79ee1aa68273d42002a673004aeaa5e2eecc10040d940daef50f3754 asd_version=7.3.0 schema=1
 name = "asd-reviewer-correctness"
 description = "Design-review for every non-empty draft set (UI section n/a without a ux-spec/design-system draft) and impl-review of code, tests and UI for bugs, security, best-practice/contract drift, AC-N coverage, and UI/accessibility conformance. Covers: bug patterns (off-by-one, null paths, race conditions, resource leaks), security holes (secrets, injection, auth bypass, crypto misuse, input validation), language/framework best practices, contract violations vs ADR, PRD/AC-N coverage trace, ux-spec compliance check, UI implementation match to ux-spec mockups, design-system token/component usage, accessibility baseline compliance. Does NOT handle: over-engineering, structure/cohesion, or performance (delegates to asd-reviewer-efficiency), test-plan/test-quality review (delegates to asd-reviewer-testing), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 model = "gpt-5.6-sol"
@@ -90,11 +90,11 @@ Reviewer:
 - **UX principles**: readability, hierarchy, progressive disclosure, cross-theme consistency per `ux-principles.md`
 - **Accessibility**: rules from accessibility.html applied (visual, motor, cognitive, auditory, platform integration); Known Intentional Limitations respected (no false reports against declared exclusions)
 
-**Self-hosting framework-templates carve-out reduced rubric**: when reviewing under the impl-review self-hosting carve-out above, **Token comment** (§4) and **Lint exclusions** (§11) are n/a — no DESIGN.md/designmd-lint pipeline exists for framework templates; note both as n/a in the rule-coverage ledger, not as findings. All other rubric items apply, substituting WCAG AA thresholds for the missing accessibility.html and `design-system.md`/`ux-principles.md` for the missing DESIGN.md/ux-spec — **except Token usage (§6)**, which follows `design-system.md` §6's `self_hosting` paragraph — not restated here.
+**Self-hosting framework-templates carve-out reduced rubric**: when reviewing under the impl-review self-hosting carve-out above, **Token comment** (§4) and **Lint exclusions** (§11) are n/a — no DESIGN.md/designmd-lint pipeline exists for framework templates; raise neither as a finding. All other rubric items apply, substituting WCAG AA thresholds for the missing accessibility.html and `design-system.md`/`ux-principles.md` for the missing DESIGN.md/ux-spec — **except Token usage (§6)**, which follows `design-system.md` §6's `self_hosting` paragraph — not restated here.
 
 ## Section coverage ledger
 
-Contract, format, and gate: `review-policy.md` "Coverage ledger" (SSoT, not restated here). This reviewer's `n/a` reasons: `outside phase gate` (section not on this phase's allowed-section list), the diff-derived UI-surface predicate name (impl-review, no UI surface in scope), or a target-artefact-missing note.
+Contract, format, and gate: `review-policy.md` "Coverage ledger" (SSoT, not restated here). This reviewer's `n/a` reasons: the predicates its manifest's `n_a` authorizes per id (`.asd/runtime.js` `emit-manifest`).
 
 ## Do's
 

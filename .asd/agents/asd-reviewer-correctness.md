@@ -96,11 +96,11 @@ Reviewer:
 - **UX principles**: readability, hierarchy, progressive disclosure, cross-theme consistency per `ux-principles.md`
 - **Accessibility**: rules from accessibility.html applied (visual, motor, cognitive, auditory, platform integration); Known Intentional Limitations respected (no false reports against declared exclusions)
 
-**Self-hosting framework-templates carve-out reduced rubric**: when reviewing under the impl-review self-hosting carve-out above, **Token comment** (§4) and **Lint exclusions** (§11) are n/a — no DESIGN.md/designmd-lint pipeline exists for framework templates; note both as n/a in the rule-coverage ledger, not as findings. All other rubric items apply, substituting WCAG AA thresholds for the missing accessibility.html and `design-system.md`/`ux-principles.md` for the missing DESIGN.md/ux-spec — **except Token usage (§6)**, which follows `design-system.md` §6's `self_hosting` paragraph — not restated here.
+**Self-hosting framework-templates carve-out reduced rubric**: when reviewing under the impl-review self-hosting carve-out above, **Token comment** (§4) and **Lint exclusions** (§11) are n/a — no DESIGN.md/designmd-lint pipeline exists for framework templates; raise neither as a finding. All other rubric items apply, substituting WCAG AA thresholds for the missing accessibility.html and `design-system.md`/`ux-principles.md` for the missing DESIGN.md/ux-spec — **except Token usage (§6)**, which follows `design-system.md` §6's `self_hosting` paragraph — not restated here.
 
 ## Section coverage ledger
 
-Contract, format, and gate: `review-policy.md` "Coverage ledger" (SSoT, not restated here). This reviewer's `n/a` reasons: `outside phase gate` (section not on this phase's allowed-section list), the diff-derived UI-surface predicate name (impl-review, no UI surface in scope), or a target-artefact-missing note.
+Contract, format, and gate: `review-policy.md` "Coverage ledger" (SSoT, not restated here). This reviewer's `n/a` reasons: the predicates its manifest's `n_a` authorizes per id (`.asd/runtime.js` `emit-manifest`).
 
 ## Do's
 

@@ -303,7 +303,7 @@ your-project/
 │   ├── release-manifest.json        # schema/asd version, managed-path list, model-family table; drives /asd-update + sync.js
 │   ├── sync-state.json              # last-written digests for managed-block / JSON-merge targets (committed)
 │   ├── sync.js                      # generator: canon -> .claude/ + .codex/ + .agents/skills/ (--check / --apply)
-│   ├── runtime.js                   # deterministic helper: task-cost routing, external-review preflight, coverage-ledger validation, manifest digests
+│   ├── runtime.js                   # deterministic helper: task-cost routing, external-review preflight, coverage-manifest emission and split, coverage-ledger validation, manifest digests
 │   ├── rules/                       # workflow rules (role/phase-scoped reads), incl. providers.md
 │   ├── templates/                   # artifact templates (t_*.html / .md / .yaml / .c4), incl. t_AGENTS.md / t_CLAUDE.md
 │   ├── agents/                      # 11 canonical agent specs plus declared tier variants (JSON frontmatter: claude{} + codex{} blocks)

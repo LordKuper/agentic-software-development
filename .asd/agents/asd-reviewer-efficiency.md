@@ -99,7 +99,7 @@ Reviewer:
 
 ## Section coverage ledger
 
-Contract, format, and gate: `review-policy.md` "Coverage ledger" (SSoT, not restated here). This reviewer's `n/a` reasons: `outside phase gate` (section not on this phase's allowed-section list), the diff-derived perf-budgets+executable-file predicate (impl-review, all five performance sections), or `no budgets defined` (Perf budget compliance alone, when an executable file is in scope but no budgets section exists).
+Contract, format, and gate: `review-policy.md` "Coverage ledger" (SSoT, not restated here). This reviewer's `n/a` reasons: the predicates its manifest's `n_a` authorizes per id (`.asd/runtime.js` `emit-manifest`).
 
 ## Do's
 

@@ -63,19 +63,19 @@ Material risk: change: workflow gate
 ### Task 2: Runtime coverage-manifest emitter, n_a shape and split threshold
 Material risk: change: workflow gate
 Material risk: artifact: runtime.js coverage validator
-- [ ] AC-1: publish the `n_a` shape as a `.asd/runtime.js` constant beside `LEDGER_VOCABULARY` and `LEDGER_ROW_EXAMPLE`, under a manifest key distinct from `n_a`. Stamp it from the single stamping function used by `manifest-digest --write` and the new emitter. The validator checks equality exactly as it does for the two existing constants, and tolerates the field's absence in legacy manifests. Export it.
-- [ ] AC-3: add constant `SPLIT_THRESHOLD_FILES = 25`. When the scope file list exceeds it, the emitter emits `ceil(files / 25)` disjoint part manifests in manifest order. Each part carries the full rubric, its own digest and the out-of-half predicate per `review-policy.md` "Partition", generalised to N parts.
-- [ ] AC-12: add an emitter subcommand with these inputs: reviewer name, phase, iteration scope file list, and optional `custom-*-rules.md` paths. Rule ids come from the reviewer's `## Review rubric` headings or bold-label bullets, parsed from `.asd/agents/asd-reviewer-<name>.md`. Section ids come from the rubric sections. The standing n/a predicates become code constants: UI-surface, perf, `outside phase gate`, `no budgets defined`, out-of-half.
-- [ ] AC-12: the subcommand writes one stamped manifest per part. Update the usage string.
-- [ ] AC-12: `validate-ledger --ledger` accepts either the reviewer's full returned text, from which it extracts the fenced ledger block, or bare JSON. Findings stay sourced from the separate `--findings` input, so the invented/missing-finding check is not made vacuous.
-- [ ] AC-1, AC-3, AC-12: in `review-policy.md` "Coverage ledger" and "Interrupted dispatch and split dispatch":
+- [x] AC-1: publish the `n_a` shape as a `.asd/runtime.js` constant beside `LEDGER_VOCABULARY` and `LEDGER_ROW_EXAMPLE`, under a manifest key distinct from `n_a`. Stamp it from the single stamping function used by `manifest-digest --write` and the new emitter. The validator checks equality exactly as it does for the two existing constants, and tolerates the field's absence in legacy manifests. Export it.
+- [x] AC-3: add constant `SPLIT_THRESHOLD_FILES = 25`. When the scope file list exceeds it, the emitter emits `ceil(files / 25)` disjoint part manifests in manifest order. Each part carries the full rubric, its own digest and the out-of-half predicate per `review-policy.md` "Partition", generalised to N parts.
+- [x] AC-12: add an emitter subcommand with these inputs: reviewer name, phase, iteration scope file list, and optional `custom-*-rules.md` paths. Rule ids come from the reviewer's `## Review rubric` headings or bold-label bullets, parsed from `.asd/agents/asd-reviewer-<name>.md`. Section ids come from the rubric sections. The standing n/a predicates become code constants: UI-surface, perf, `outside phase gate`, `no budgets defined`, out-of-half.
+- [x] AC-12: the subcommand writes one stamped manifest per part. Update the usage string.
+- [x] AC-12: `validate-ledger --ledger` accepts either the reviewer's full returned text, from which it extracts the fenced ledger block, or bare JSON. Findings stay sourced from the separate `--findings` input, so the invented/missing-finding check is not made vacuous.
+- [x] AC-1, AC-3, AC-12: in `review-policy.md` "Coverage ledger" and "Interrupted dispatch and split dispatch":
   - state the published `n_a` shape;
   - add the pre-dispatch threshold split beside the existing two-interruption halving;
   - name the subcommand as the manifest source.
 
   The prose cites the runtime constant values and does not restate them.
-- [ ] AC-12: switch `asd-phase-impl-review.md` steps 1, 5, 6, 7 and 7a, and `asd-phase-design-review.md` steps 7, 8 and 8a, to the subcommand. Step 5's predicates are re-homed to the runtime constant, and `asd-reviewer-correctness.md` keeps citing step 5. Rubric-heading edits needed for parseable ids go into the reviewer agents only where the parser requires them.
-- [ ] Sync the generated views. Build and lint.
+- [x] AC-12: switch `asd-phase-impl-review.md` steps 1, 5, 6, 7 and 7a, and `asd-phase-design-review.md` steps 7, 8 and 8a, to the subcommand. Step 5's predicates are re-homed to the runtime constant, and `asd-reviewer-correctness.md` keeps citing step 5. Rubric-heading edits needed for parseable ids go into the reviewer agents only where the parser requires them.
+- [x] Sync the generated views. Build and lint.
 
 ### Task 3: Derive-over-enumerate rule and suite-record lag
 Material risk: artifact: rule doc wording
