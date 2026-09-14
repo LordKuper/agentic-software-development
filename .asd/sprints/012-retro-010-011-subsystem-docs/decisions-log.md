@@ -278,3 +278,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: impl-review closed after 5 iterations: every reviewer is APPROVE or latched, and the terminal full suite passes 197/197 at `1837e91` (lint and build exit 0). The adaptive green handoff advances the sprint to retro.
 - **Rationale**: The reviewer DoD and the full-suite condition (`review-policy.md` "DoD per review phase") both hold. No waiver or override was needed.
 - **Affected docs**: `test-plan.md` Suite run, `state.json`
+
+- 2026-09-14 — retro: `.asd/sprints/012-retro-010-011-subsystem-docs/retrospective.html` written — 4 friction entries analysed (analysed branch), 4 framework actions, 4 systemic proposals

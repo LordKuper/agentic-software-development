@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="generator" content="ASD workflow">
+  <meta name="doc-type" content="Retrospective">
+  <meta name="subsystem" content="sprint">
+  <meta name="sprint-id" content="011-explicit-design-skip">
+  <meta name="status" content="final">
+  <meta name="updated" content="2026-09-14">
+  <meta name="responsibility" content="retro-phase analysis of the sprint — root cause plus remediation per F-N entry, and systemic proposals for a cheaper future sprint, both split consumer-project vs ASD-framework">
+  <meta name="provenance" content="original">
+  <meta name="source" content="">
+  <title>Retrospective — Sprint 012 · retro-010-011-subsystem-docs</title>
+  <style>
+    :root {
+      --fg: #1a1c1e; --bg: #fff; --muted: #5b6770; --accent: #0066cc;
+      --code-bg: #f4f6f8; --border: #d0d7de; --max: 1040px;
+      --card-bg: #fafbfc;
+      --ok: #1a7f37; --warn: #b35900; --danger: #cf222e; --info: #0969da; --neutral: #5b6770;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --fg: #e6e6e6; --bg: #0e1116; --muted: #9aa4ad; --code-bg: #161b22; --border: #30363d;
+        --card-bg: #161b22;
+        --accent: #58a6ff; --ok: #3fb950; --warn: #d29922; --danger: #f85149; --info: #79c0ff; --neutral: #8b949e;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .layout { display: grid; grid-template-columns: 1fr; }
+    .layout:has(> nav.toc) { grid-template-columns: 260px minmax(0, 1fr); }
+    nav.toc { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; padding: 16px 12px; border-right: 1px solid var(--border); font-size: 0.85rem; }
+    nav.toc .toc-title { font-weight: 600; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.04em; }
+    nav.toc ol { list-style: none; margin: 0; padding: 0; }
+    nav.toc li { margin: 2px 0; }
+    nav.toc a { color: var(--fg); text-decoration: none; display: block; padding: 3px 6px; border-radius: 4px; }
+    nav.toc a:hover { background: var(--code-bg); color: var(--accent); }
+    @media (max-width: 880px) { nav.toc { position: static; max-height: none; border-right: none; border-bottom: 1px solid var(--border); } }
+    @media print { nav.toc { display: none; } }
+    .content { min-width: 0; }
+    header, main, footer { max-width: var(--max); margin: 0 auto; padding: 16px 24px; }
+    header { border-bottom: 1px solid var(--border); }
+    header h1 { margin: 4px 0 8px; font-size: 1.9rem; }
+    .badges span { display: inline-block; padding: 2px 8px; margin-right: 6px; font-size: 0.75rem; border: 1px solid var(--border); border-radius: 4px; color: var(--muted); background: var(--bg); }
+    .stats { color: var(--muted); font-size: 0.9rem; }
+    @media (max-width: 880px) {
+      .layout, .layout:has(> nav.toc) { grid-template-columns: 1fr; }
+    }
+    h2, h3 { line-height: 1.25; margin-top: 1.6em; }
+    h2 { border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+    a { color: var(--accent); }
+    code { font-family: ui-monospace, "Cascadia Code", Menlo, monospace; background: var(--code-bg); padding: 1px 5px; border-radius: 3px; font-size: 0.9em; }
+    table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 0.94rem; }
+    th, td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+    th { background: var(--card-bg); font-weight: 600; }
+    tr, li { break-inside: avoid; }
+    .hero .lede { font-size: 1.05rem; color: var(--muted); }
+    .chip { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 0.75rem; border: 1px solid var(--border); white-space: nowrap; }
+    .chip.area { background: var(--code-bg); color: var(--muted); }
+    footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <nav class="toc">
+      <div class="toc-title">Contents</div>
+      <ol>
+        <li><a href="#outcome">Outcome</a></li>
+        <li><a href="#analysis">Analysis</a></li>
+        <li><a href="#actions">Actions</a></li>
+        <li><a href="#systemic-proposals">Systemic proposals</a></li>
+      </ol>
+    </nav>
+    <div class="content">
+      <header>
+        <div class="badges">
+          <span>Retrospective</span>
+          <span>sprint</span>
+          <span class="status-final">final</span>
+        </div>
+        <h1>Retrospective — Sprint 012 · retro-010-011-subsystem-docs</h1>
+        <div class="stats">4 entries · 4 actions · 4 systemic proposals · updated 2026-09-14</div>
+      </header>
+      <main><section id="outcome" class="hero">
+  <h2>Outcome</h2>
+  <p class="lede">4 entries analysed, 0 consumer actions, 4 framework actions, 4 systemic proposals.</p>
+  <p>The sprint delivered everything in scope, AC-1..AC-19:</p>
+  <ul>
+    <li>seven open retro-010/011 actions and seven selected proposals;</li>
+    <li>the subsystem registry move to <code>docs/architecture/subsystems.md</code>, with per-subsystem files;</li>
+    <li>a mermaid diagram inline in the registry.</li>
+  </ul>
+  <p>Seven plan tasks ran in five waves. Impl-review took five iterations with 12 → 6 → 3 → 2 → 0 counted findings (floor low → critical), and the terminal full suite was green at 197/197. The registry and the tool-policy refusal rule were largely settled in iteration 1. Most of the review cost came from one criterion, AC-13, the sprint-mediated settings change:</p>
+  <ul>
+    <li>iteration 1 found placement and ordering gaps;</li>
+    <li>iteration 2 caught the orchestrator reversing its own earlier disposition on key validation;</li>
+    <li>iterations 3 and 4 followed the consequences of that fix into the blocker list, the template markers and a test assertion.</li>
+  </ul>
+  <p>Two of the four friction entries are orchestrator errors, and one of them repeated the 010 F-5 pattern that this sprint remediated: payloads that told agents to act outside their tool policy.</p>
+</section>
+
+<section id="analysis">
+  <h2>Analysis</h2>
+  <table>
+    <thead>
+      <tr><th>Entry</th><th>Root cause</th><th>Scope</th></tr>
+    </thead>
+    <tbody>
+      <tr id="F-1"><td><a href="#F-1">F-1</a></td><td><code>asd-sprint</code> Step 2A.3 bundles a discrete confirmation and free-form scope collection into one request-user-decision operation. That operation offers options, so the scope text depends on the user noticing a free-text field. Nothing reminds the orchestrator at that call site that option labels must be in <code>language.chat</code>.</td><td><span class="chip area">asd</span></td></tr>
+      <tr id="F-2"><td><a href="#F-2">F-2</a></td><td>The interrupted-dispatch rule exists only for reviewers (<code>review-policy.md</code> "Interrupted dispatch"). A dev or tester dispatch cut off by a provider limit has no defined path, so its uncommitted partial edits are neither discarded nor handed to the next dispatch under any contract.</td><td><span class="chip area">asd</span></td></tr>
+      <tr id="F-3"><td><a href="#F-3">F-3</a></td><td>The emitter moved the n/a authorisations from hand-built manifests into fixed standing predicates. A rubric id with no evidence anywhere in the scope then had only the out-of-part predicate. No test crossed a real reviewer rubric with a real split scope to check that union property (c) is satisfiable.</td><td><span class="chip area">asd</span></td></tr>
+      <tr id="F-4"><td><a href="#F-4">F-4</a></td><td><code>asd-phase-impl-review.md</code> step 6 says the payload carries "the diff computed in step 1" without saying in what form. The orchestrator wrote it as a command, <code>git diff …</code>, which internal reviewers cannot run. Reviewers then recorded their workaround in memory.</td><td><span class="chip area">asd</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="actions">
+  <h2>Actions</h2>
+  <table>
+    <thead>
+      <tr><th>Addresses</th><th>Recommendation</th><th>Acts on</th><th>Target</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><a href="#F-1">F-1</a></td><td>Split Step 2A.3 into two operations: a discrete start confirmation, then a plain free-form chat prompt for scope with no options. A free-form answer is never collected through an option list.</td><td><span class="chip area">asd</span></td><td><code>.asd/skills/asd-sprint/SKILL.md Step 2A</code></td></tr>
+      <tr><td><a href="#F-2">F-2</a></td><td>Give impl and impl-test an interrupted-dispatch branch for creator agents. Re-dispatch the same task fresh, and declare the partial on-disk diff as an unverified draft that the new dispatch owns: verify it, then keep, fix or revert. Record the attempt at the moment of interruption, citing the reviewer rule's recording pattern rather than restating it.</td><td><span class="chip area">asd</span></td><td><code>.asd/workflows/asd-phase-impl.md; .asd/workflows/asd-phase-impl-test.md; .asd/rules/review-policy.md "Interrupted dispatch" (cite)</code></td></tr>
+      <tr><td><a href="#F-3">F-3</a></td><td>Two changes. First, add a suite check that emits split manifests for every internal reviewer over a scope with no evidence for some rubric ids, and asserts that union (c) can pass. Second, settle the remaining <code>scoped_fan_out: disabled</code> edge accepted in "impl review-fix for iter-01": UI/perf ids in a split scope with no UI or executable file. Either give those ids a standing predicate, or let union (c) accept an id with no evidence in the whole scope.</td><td><span class="chip area">asd</span></td><td><code>tests/run.js; .asd/runtime.js standingPredicates; .asd/rules/review-policy.md "Union property"</code></td></tr>
+      <tr><td><a href="#F-4">F-4</a></td><td>State in both review workflows' payload bullet that the diff reaches a reviewer as data (base/head refs plus the scope file list, or content), never as a command to run. Cite <code>providers.md</code> "Declared tool policy".</td><td><span class="chip area">asd</span></td><td><code>.asd/workflows/asd-phase-impl-review.md step 6; .asd/workflows/asd-phase-design-review.md step 7</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="systemic-proposals">
+  <h2>Systemic proposals</h2>
+  <table>
+    <thead>
+      <tr><th>Proposal</th><th>Acts on</th><th>Target</th><th>Expected saving</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Before the orchestrator accepts a flagged choice, it checks <code>decisions-log.md</code> for an earlier disposition on the same subject. A contradiction is either resolved explicitly, with the reversal recorded, or routed back. In this sprint, the key-validation choice was accepted in the iter-01 fix round even though "Wave 3 flagged choices resolved" had rejected it.</td><td><span class="chip area">asd</span></td><td><code>.asd/workflows/asd-phase-impl.md steps 10–11</code></td><td>This sprint: iter-02 COR-2 plus its fix round, and the iter-03/04 follow-ups (blocker list, template markers, halt assertion). That is three review iterations, three fix rounds and three impl-test re-entries touching AC-13.</td></tr>
+      <tr><td>Let an internal reviewer write its own review file under <code>reviews/&lt;phase&gt;/iter-NN/&lt;reviewer&gt;*.md</code>, gated by <code>validate-ledger</code> on that file. Today the orchestrator re-emits every returned report verbatim before it can validate the ledger.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/review-policy.md "Gate Verdict Format"; .asd/rules/providers.md "Role-scoped context"; reviewer agents</code></td><td>Orchestrator output spent transcribing 15 returned reviews this sprint, each 3–10 KB, and the risk that a hand transcription diverges from the return.</td></tr>
+      <tr><td>When a review-fix round changes only tests that its own tester chain already proved fail-first and recorded in <code>test-plan.md</code>, the next impl-test re-entry reduces to the suite gate. No strategy dispatch is needed for a delta that consists of that chain's own commit.</td><td><span class="chip area">asd</span></td><td><code>.asd/rules/sprint-lifecycle.md "Impl-test phase" Re-entry; .asd/workflows/asd-phase-impl-test.md</code></td><td>Entries 3 and 6 this sprint: two tester dispatches that analysed only the previous chain's commit and concluded <code>none</code>.</td></tr>
+      <tr><td>At scope, when the request combines unrelated strands, here a retro remediation and a new feature, present splitting it into consecutive sprints as an option with its review-cost trade-off, before the ACs are frozen.</td><td><span class="chip area">asd</span></td><td><code>.asd/workflows/asd-phase-scope.md step 2</code></td><td>A 40-file first-iteration surface, which split into 8 internal reviewer dispatches. Findings from either strand forced full re-review of both until five iterations converged.</td></tr>
+    </tbody>
+  </table>
+</section>
+</main>
+<footer>by ASD workflow | 2026-09-14 | sprint 012-retro-010-011-subsystem-docs</footer>
+    </div>
+  </div>
+</body>
+</html>
