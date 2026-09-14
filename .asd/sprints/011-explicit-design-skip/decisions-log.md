@@ -50,3 +50,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: The user accepted `sprint.md` AC-1 … AC-7 unchanged at the hard scope gate.
 - **Rationale**: The initial scope gate is hard in both policy modes. Per-criterion cost was stated before the decision: 0 iterations, 0 fix rounds for every criterion, this being a new sprint.
 - **Affected docs**: `.asd/sprints/011-explicit-design-skip/sprint.md`, `.asd/sprints/011-explicit-design-skip/state.json`
+
+## 2026-09-14 — Audit accepted adaptively
+
+- **Decision**: `audit.md` accepted by the orchestrator under `user_gates: adaptive`; BA not dispatched. Carried to plan: field outside the `documents` group (G-1), effective design documents frozen `false` when the setting is on (G-3), audit workflow exit owns the skip write and returns `NEXT: <design | plan>` (G-4 option A), AC-6 delivered as a manual `/asd-init` step (R-1).
+- **Rationale**: The architect found no material product/domain ambiguity, and each carried recommendation is the evidence-forced implementation of an already accepted criterion (AC-1, AC-3, AC-4, AC-6), so no new authority is needed. Field and state names stay open for plan.
+- **Affected docs**: `.asd/sprints/011-explicit-design-skip/audit.md`, `.asd/sprints/011-explicit-design-skip/state.json`
