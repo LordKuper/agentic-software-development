@@ -99,3 +99,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: `asd_version` was bumped 7.2.0 → 7.3.0 with a CHANGELOG entry. PR #35 (`feat(workflow): add skip_design_phases setting`) is open against `main`, and the sprint awaits merge.
 - **Rationale**: Every open-mode DoD check holds: all plan tasks done, AC-6 verified in config, review DoD at iter-02, full suite green with no code diff since, no sprint stubs, and the retrospective present. `auto_pr` and `gh_enabled` plus the accepted scope authorise publication under `user_gates: adaptive`.
 - **Affected docs**: `CHANGELOG.md`, `.asd/release-manifest.json`, `.asd/sprints/011-explicit-design-skip/state.json`
+
+## 2026-09-14 — Sprint closed
+
+- **Decision**: PR #35 squash-merged by the orchestrator as `1f2b375`. The sprint passed through `closure-pending`, then the user gave explicit closure approval. The sprint folder moved to `archived/` with terminal state written: `phase=done`, `pr.state=merged` with the merge commit, `archived_at`.
+- **Rationale**: Closure is the hard gate no merge or adaptive policy satisfies, so it was requested with the evidence in hand: main green at 187/187 with a clean sync, AC-1…AC-7 delivered, every reviewer APPROVE at iteration 2, no open defect or stub, retrospective written.
+- **Affected docs**: `.asd/sprints/archived/011-explicit-design-skip/state.json`
