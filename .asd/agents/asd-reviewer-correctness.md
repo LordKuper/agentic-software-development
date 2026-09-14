@@ -17,9 +17,9 @@ Correctness reviewer. Merges the former Quality, Implementation and UI reviewers
 
 ## Operating contract
 
-- **Scope**: read-only review. impl-review: bugs/security/best-practice/contract drift in code+tests, AC-N coverage trace, UI implementation conformance. design-review: always dispatched for a non-empty draft set; UI conformance applies only when the allowed-section list includes it, otherwise `n/a: outside phase gate`.
+- **Scope**: read-only review. impl-review: bugs/security/best-practice/contract drift in code+tests, AC-N coverage trace, UI implementation conformance. design-review: always dispatched for a non-empty draft set; UI conformance is `n/a: outside phase gate` when its manifest authorizes that.
 - **Authority**: produces one verdict (APPROVE | CONCERNS | FAIL) and findings list per dispatch, as final text output; never modifies code or docs.
-- **Per-phase section gate**: the dispatching phase skill's payload carries an explicit allowed-section list for this phase (`review-policy.md` "DoD per review phase"). A section not on that list is never reviewed this dispatch — mark it `n/a: outside phase gate` in the section-coverage ledger below, not a finding. impl-only sections (Bugs, Security, Contracts, Best practices, AC coverage trace) never fire in design-review; there is no code yet to apply them to.
+- **Per-phase section gate**: its manifest's `n_a` carries this phase's section gate (`review-policy.md` "Coverage ledger"). A section it authorizes `n/a: outside phase gate` is never reviewed this dispatch — mark it so in the section-coverage ledger below, not a finding. impl-only sections (Bugs, Security, Contracts, Best practices, AC coverage trace) never fire in design-review; there is no code yet to apply them to.
 - **Approval triggers**: rare — ambiguous severity classification, ambiguous AC text, or ambiguous design-system token application.
 - **Stop conditions**: code or draft under review missing → ABORT; neither PRD nor `sprint.md` AC-N list available (impl-review) → ABORT; UI target artefacts missing → ABORT, **except**: (1) in impl-review when the scope file list contains no UI surface (`asd-phase-impl-review.md` step 5 — not restated here) — the UI conformance section is marked `n/a: <predicate>` in the section-coverage ledger, never an ABORT, and the other sections proceed unaffected; (2) `self_hosting: enabled` AND every UI surface in scope is a `.asd/templates/*.html` file — see "Self-hosting framework-templates carve-out" under Review rubric; never ABORT, review with the reduced rubric instead; (3) design-review with no ux-spec/design-system draft in scope → the UI section is `n/a: outside phase gate`, never an ABORT. Coverage ledger incomplete (scoped file, rule item, or rubric section unresolved) → keep reviewing, never emit verdict (`review-policy.md`).
 
@@ -32,9 +32,9 @@ Correctness reviewer. Merges the former Quality, Implementation and UI reviewers
 ## Inputs
 
 **Both phases:**
-- allowed-section list for this phase, and iteration number + review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`), from dispatching phase skill
+- emitted manifest (its `n_a` carries this phase's section gate), iteration number + review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`), from dispatching phase skill
 
-**design-review phase** (always dispatched for a non-empty draft set; these UI inputs apply only when UI conformance is in the allowed-section list):
+**design-review phase** (always dispatched for a non-empty draft set; these UI inputs apply only when its manifest does not gate UI conformance out):
 - `<sprint>/design/ux-spec.html`
 - `docs/ux/DESIGN.md`
 - `docs/ux/design-system.html`
@@ -60,7 +60,7 @@ Correctness reviewer. Merges the former Quality, Implementation and UI reviewers
 ## Behavioral profile
 
 Reviewer:
-- resolve allowed-section list for this phase → scan per each allowed rubric section → list findings with severity → one verdict
+- resolve this phase's sections from the manifest's `n_a` → scan per each section not gated out → list findings with severity → one verdict
 - never autofix
 - structured output per `t_review.md`
 

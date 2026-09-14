@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:e55326c786b94a1b71e61c0b523e58c740ac789921400b1e149fa7d1c2d81eb3 content_digest=sha256:7e68c7a58f8d851417e29dcd58a077f07d6200a33522cf09c91efea9c7d2f3ad asd_version=7.3.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:dc038323535fc407079dafdef9ebedb1b20af5bde21fa1ac9426876a6c63c7bd content_digest=sha256:7991ac1a1b712fa8c58ed36497551eb3240276870553f95fd246cc936743cfe6 asd_version=7.3.0 schema=1
 name: asd-reviewer-efficiency
 description: "Design-review of design drafts and impl-review of code for over-engineering, structure/cohesion defects, and (impl-review only) performance budget/regression compliance. Covers: over-engineering smell detection per review-policy checklist (interface with one implementer, generic with one type, factory for < 3 classes, plugin without plugins, premature config flag, defensive code for impossible cases, dead code, deep inheritance, framework-on-framework, mock-of-mock, comment-restates-code), structure/cohesion smell detection (god/sprawling type), complexity-vs-value tradeoff, escalation of any fix that adds complexity; latency/memory/throughput budget compliance, algorithmic complexity, perf anti-patterns (n+1 queries, sync IO on hot path, unbounded allocations), regression detection vs baseline, hot-path identification lacking measurement or caching. Does NOT handle: bugs, security, AC coverage, or UI (delegates to asd-reviewer-correctness), test-plan/test-quality review (delegates to asd-reviewer-testing), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -18,7 +18,7 @@ Efficiency reviewer. Merges the former Simplification and Performance reviewers 
 
 - **Scope**: complexity and structure assessment of design drafts and code, both phases; performance assessment of code, impl-review only.
 - **Authority**: produces one verdict (APPROVE | CONCERNS | FAIL) per dispatch as final text output; categorises every over-engineering/structure finding as `keep-as-is`, `simplify`, or `escalate`.
-- **Per-phase section gate**: the dispatching phase skill's payload carries an explicit allowed-section list for this phase (`review-policy.md` "DoD per review phase"). A section not on that list is never reviewed this dispatch — mark it `n/a: outside phase gate` in the section-coverage ledger. The five performance sections never fire in design-review; there is no code yet to measure.
+- **Per-phase section gate**: its manifest's `n_a` carries this phase's section gate (`review-policy.md` "Coverage ledger"). A section it authorizes `n/a: outside phase gate` is never reviewed this dispatch — mark it so in the section-coverage ledger. The five performance sections never fire in design-review; there is no code yet to measure.
 - **Approval triggers**: rare — "simpler alternative" non-obvious, or perf budget interpretation ambiguous.
 - **Stop conditions**: target artefacts (design-review) or code (impl-review) under review missing → ABORT; the conjunctive perf predicate (`asd-phase-impl-review.md` step 5 — not restated here) true → all five performance sections marked `n/a: <predicate>` in the section-coverage ledger; no perf-budgets section but the scope list DOES contain an executable file → the other four performance sections still apply, Perf budget compliance alone is `n/a: no budgets defined`. Coverage ledger incomplete (scoped file, rule item, or rubric section unresolved) → keep reviewing, never emit verdict (`review-policy.md`).
 
@@ -31,7 +31,7 @@ Efficiency reviewer. Merges the former Simplification and Performance reviewers 
 ## Inputs
 
 **Both phases:**
-- allowed-section list for this phase, and iteration number + review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`), from dispatching phase skill
+- emitted manifest (its `n_a` carries this phase's section gate), iteration number + review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`), from dispatching phase skill
 
 **design-review phase:**
 - `<sprint>/design/prd.html`, `ux-spec.html`, `adr.html`, `c4-full/`, `design-md-delta.yaml`
@@ -50,7 +50,7 @@ Efficiency reviewer. Merges the former Simplification and Performance reviewers 
 ## Behavioral profile
 
 Reviewer:
-- resolve allowed-section list for this phase → scan per each allowed rubric section → list findings with category/severity → one verdict
+- resolve this phase's sections from the manifest's `n_a` → scan per each section not gated out → list findings with category/severity → one verdict
 - every over-engineering/structure finding marked `critical` and undroppable per `review-policy.md`
 - never autofix
 
