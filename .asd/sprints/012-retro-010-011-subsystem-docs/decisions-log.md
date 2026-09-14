@@ -213,3 +213,14 @@ A decision whose value must survive this sprint's archival is ALSO written into 
   - Root cause of DOC-1: the orchestrator's own payloads instructed `git diff` runs (friction F-4). From this point on, reviewer payloads carry the diff range as data, with review from reads, never as a command to run.
 - **Rationale**: Every finding is within scope and CONCERNS, with no new abstraction. Iteration 3 floor is `high`.
 - **Affected docs**: `reviews/impl/iter-02/`, `state.json`
+
+## 2026-09-14 — impl review-fix for iter-02: findings resolved
+
+- **Decision**: The dev chain resolved COR-2 (`1ec55e7`), external #1 (`ec7871f`) and DOC-2 with external #3 (`e50963c`). The owning reviewers corrected their memories for DOC-1/COR-1/external #2; the orchestrator committed both. Build and lint are clean, and the suite is 197/197.
+  - Accepted flagged choices:
+    - A settings-change task may sit in any wave after the key-adding tasks.
+    - A key still missing when its wave opens → `asd-init` `FAILED` → phase blocker.
+    - Field type is inferred from the template value.
+  - The AC-13 test wording ("ahead of any dev dispatch") trails the late-wave case. That goes to the impl-test re-entry.
+- **Rationale**: Premises verified at HEAD. The fix widens AC-13 back to its motivating case without narrowing it.
+- **Affected docs**: `sprint-lifecycle.md`, `t_plan.md`, `asd-phase-plan.md`, `asd-phase-impl.md`, `asd-init`, `review-policy.md`, `asd-phase-impl-review.md`, reviewer memories
