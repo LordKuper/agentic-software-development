@@ -102,11 +102,11 @@ always reads whatever is recorded here last — the full-suite record, by the ti
 per-entry record measures only the tree that entry analysed, not any tree produced later
 (`.asd/rules/sprint-lifecycle.md` "Impacted test set").
 
-- Command: `node tests/run.js` (impacted set = full suite: the shared-infrastructure safety valve fired — framework-wide canon and `.asd/runtime.js` changed this cycle)
-- Scope: impacted (entry 6 gate)
-- Result: pass — 197 passed, 0 failed, 0 skipped (exit 0)
-- Lint / build: pass — `git diff --cached --check` exit 0 on the staged commit; `node .asd/sync.js --check` exit 0, 72/72 items `current`
-- HEAD: entry 6 ran at `7429533`, working tree changed only in this file; the pre-strategy run was 197/197 at the same HEAD. Entry 6 changed no test code. The impl-review terminal full-suite run remains the only record of the final tree
+- Command: `node tests/run.js` (unscoped)
+- Scope: full suite. This is the impl-review iter-05 terminal full-suite run (step 9)
+- Result: pass. Runner summary `197/197 passed`: 197 `ok`, 0 `not ok`, 0 skipped (exit 0)
+- Lint / build: pass. `git diff --cached --check` exit 0 with nothing staged. `node .asd/sync.js --check` exit 0, `"ok": true`, 72/72 items `current`
+- HEAD: `1837e919ab81a1566a8df1b560728f284f386d4f`, with a clean working tree at run time. That is the commit the suite ran at. The bookkeeping commit that records this section comes after it and changes only this file
 
 ## Defects
 
