@@ -85,9 +85,9 @@ Material risk: artifact: rule doc wording
 ### Task 4: Manifest immutability, interrupted-attempt payload, plan review-scope sizing
 Material risk: change: workflow gate
 Reachability: plan writes the expected review scope size into plan.md Risks at step 4; impl-review reads the emitted part count at step 7 — the plan line is advisory and the runtime threshold decides the split.
-- [ ] AC-2: in `review-policy.md` "Coverage ledger", make a manifest that has already been dispatched immutable for the life of that dispatch, for the orchestrator too. Correcting it requires a fresh dispatch with a newly emitted manifest, never a re-stamp. Stamping pre-dispatch parts is not a re-stamp. Mirror this in `asd-phase-impl-review.md` step 7 and `asd-phase-design-review.md` step 8.
-- [ ] AC-4: admit the reviewer's interrupted-attempt record (count and cause, rebuilt from `decisions-log.md`) in the "Clean-context review iteration" "Reviewer payload carries only" list. Update both workflows' payload bullets. `core.md` "Context hygiene" #6 is not edited.
-- [ ] AC-3: in `asd-phase-plan.md` step 4, the plan estimates the iteration-1 review scope in files from the tasks' touched paths. When the estimate exceeds the runtime threshold, the plan names the expected part count in `## Risks`.
+- [x] AC-2: in `review-policy.md` "Coverage ledger", make a manifest that has already been dispatched immutable for the life of that dispatch, for the orchestrator too. Correcting it requires a fresh dispatch with a newly emitted manifest, never a re-stamp. Stamping pre-dispatch parts is not a re-stamp. Mirror this in `asd-phase-impl-review.md` step 7 and `asd-phase-design-review.md` step 8.
+- [x] AC-4: admit the reviewer's interrupted-attempt record (count and cause, rebuilt from `decisions-log.md`) in the "Clean-context review iteration" "Reviewer payload carries only" list. Update both workflows' payload bullets. `core.md` "Context hygiene" #6 is not edited.
+- [x] AC-3: in `asd-phase-plan.md` step 4, the plan estimates the iteration-1 review scope in files from the tasks' touched paths. When the estimate exceeds the runtime threshold, the plan names the expected part count in `## Risks`.
 
 ### Task 5: Sprint-mediated settings change through /asd-init
 Material risk: change: workflow gate
