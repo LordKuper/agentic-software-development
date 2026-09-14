@@ -4359,6 +4359,45 @@ test("sprint-012 AC-13: the settings-change line sprint-lifecycle.md \"Plan file
   for (const type of valueTypes) {
     assert.ok(new RegExp(`\\b${type}\\b`).test(mediatedSteps[validates]), `external iter-02 #1: asd-init ${mode} mode's validation step must say what value fits a ${type} field of t_config.yaml - most of its fields carry no enumeration, so without a type rule \`gh_enabled=maybe\` or \`iterations_low=-3\` passes and is written`);
   }
+  const configLeaves = (text) => {
+    const leaves = new Map();
+    const sections = [];
+    let comments = [];
+    for (const line of text.split('\n')) {
+      const comment = /^\s*#(.*)$/.exec(line);
+      if (comment) { comments.push(comment[1]); continue; }
+      const field = /^(\s*)(\w+):[ \t]*([^#\n]*?)\s*(?:#(.*))?$/.exec(line);
+      if (!field) { comments = []; continue; }
+      const [, indent, key, value, inline = ''] = field;
+      while (sections.length && sections[sections.length - 1].indent >= indent.length) sections.pop();
+      const parent = sections[sections.length - 1];
+      if (!value) {
+        sections.push({ indent: indent.length, key: parent ? `${parent.key}.${key}` : key, comments });
+      } else {
+        const block = [...(parent ? parent.comments : []), ...comments].join('\n');
+        const listed = /^\s*(\w+(?:\s*\|\s*\w+)+)/.exec(inline) || /Values:\s*(\w+(?:\s*\|\s*\w+)+)/.exec(block);
+        const described = comments.map((text) => /^\s*(\w+)\s+—\s/.exec(text)).filter(Boolean).map((match) => match[1]);
+        leaves.set(parent ? `${parent.key}.${key}` : key, { value: value.replace(/^"(.*)"$/, '$1'), raw: value, enumeration: listed ? listed[1].split(/\s*\|\s*/) : null, described });
+      }
+      comments = [];
+    }
+    return leaves;
+  };
+  const templateLeaves = configLeaves(canonText('.asd/templates/t_config.yaml'));
+  const freeStrings = [...templateLeaves].filter(([, leaf]) => !leaf.enumeration && !/^(true|false|\d+)$/.test(leaf.raw)).map(([key]) => key);
+  assert.deepStrictEqual(freeStrings, ['system.tools.likec4', 'system.tools.codex_command', 'system.tools.claude_command', 'git.base_branch', 'git.branch_pattern'], `external iter-03 #2: asd-init ${mode} mode checks a string field of t_config.yaml against its \`Values:\` or inline \`a | b\` enumeration and otherwise accepts any string, so only genuinely free-form strings may carry neither - \`documents.prd=maybe\` or \`backward_compat=whatever\` is otherwise written to config.yaml. A new free-form field joins this list deliberately`);
+  for (const [key, leaf] of templateLeaves) {
+    if (!leaf.enumeration) continue;
+    assert.ok(leaf.enumeration.includes(leaf.value), `t_config.yaml \`${key}\` ships the default \`${leaf.value}\`, which its own enumeration (${leaf.enumeration.join(' | ')}) would make asd-init reject`);
+    if (leaf.described.length) assert.deepStrictEqual([...leaf.described].sort(), [...leaf.enumeration].sort(), `t_config.yaml \`${key}\` describes the values ${leaf.described.join(', ')} above the field, and asd-init validates against its enumeration - the two lists must name the same values`);
+  }
+  const readmeSchema = /^## Configuration$[\s\S]*?```yaml\n([\s\S]*?)```/m.exec(readRepoFile('README.md'));
+  const readmeEnumerated = [...configLeaves(readmeSchema ? readmeSchema[1] : '')].filter(([, leaf]) => leaf.enumeration);
+  assert.ok(readmeEnumerated.some(([key]) => key === 'backward_compat'), "the README config-schema sweep must still reach the schema block's enumerated fields");
+  for (const [key, leaf] of readmeEnumerated) {
+    const template = templateLeaves.get(key);
+    assert.deepStrictEqual(template && template.enumeration, leaf.enumeration, `README.md's config schema mirrors t_config.yaml, so \`${key}\`'s values (${leaf.enumeration.join(' | ')}) must be the enumeration asd-init validates against there`);
+  }
 
   const impl = '.asd/workflows/asd-phase-impl.md';
   const flow = sectionOf(impl, 'Workflow');
@@ -4369,6 +4408,9 @@ test("sprint-012 AC-13: the settings-change line sprint-lifecycle.md \"Plan file
   assert.ok(flow.indexOf(dispatchInit) < flow.indexOf('delegate to `asd-dev`'), `COR-2-2/DOC-2-1: a wave's bullets run in order, so the settings change (step ${applyStep}) must be applied ahead of that wave's dev delegation - applied after it, the settings Task reaches a dev before asd-init writes config.yaml`);
   const applyLine = applying[0].split('\n').find((line) => line.includes(`\`${token}\``) && line.includes(dispatchInit));
   assert.ok(/\bwave\b/.test(applyLine) && !/\bwave 1\b/.test(applyLine), `COR-2: step ${applyStep} must apply the settings change as its own Task's wave opens, never keyed to wave 1 - the grammar lets that Task follow the one adding its key, and applied at wave 1 the key is not in t_config.yaml yet`);
+  assert.ok(applyLine.includes('`FAILED`'), `DOC-1: step ${applyStep} must say what the wave does when asd-init ${mode} mode returns \`FAILED\` - the mode writes nothing then, and dispatching the wave anyway runs its Tasks against a setting that never landed`);
+  const blockers = /^A blocker is exactly one of:\n((?:- .*\n?)+)/m.exec(sectionOf(impl, 'Execution mode'));
+  assert.ok(blockers && blockers[1].split('\n').some((line) => line.includes('`asd-init`') && line.includes('`FAILED`') && line.includes(`step ${applyStep}`)), `DOC-1: impl's closed blocker list must admit asd-init's \`FAILED\` at step ${applyStep} - "exactly one of" leaves any other signal no halt path, so the autonomous phase has no rule to stop on`);
   const citation = `\`asd-phase-impl.md\` step ${applyStep}`;
   const sprintSkills = sectionOf('.asd/skills/asd-sprint/SKILL.md', 'Skills dispatched');
   for (const [site, text] of [['asd-init "Modes"', reader], ['asd-sprint "Skills dispatched"', sprintSkills], ['sprint-lifecycle.md "Plan file format"', grammar]]) {
