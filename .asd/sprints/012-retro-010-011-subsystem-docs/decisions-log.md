@@ -224,3 +224,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
   - The AC-13 test wording ("ahead of any dev dispatch") trails the late-wave case. That goes to the impl-test re-entry.
 - **Rationale**: Premises verified at HEAD. The fix widens AC-13 back to its motivating case without narrowing it.
 - **Affected docs**: `sprint-lifecycle.md`, `t_plan.md`, `asd-phase-plan.md`, `asd-phase-impl.md`, `asd-init`, `review-policy.md`, `asd-phase-impl-review.md`, reviewer memories
+
+- 2026-09-14 — impl-test: impacted set green (full suite via safety valve, 197/197; sync --check 72/72 current), 0/0 tests added/removed, 1 updated (AC-13 late-wave + type check; entry 4)
