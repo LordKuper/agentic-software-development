@@ -106,3 +106,63 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: The user accepted plan.md: 7 tasks in 5 waves, covering AC-1..AC-19. AC-3 is kept whole.
 - **Rationale**: The user gave an explicit `accept` at the plan gate. There were no open stubs, so no stub decisions were needed.
 - **Affected docs**: `plan.md`
+
+## 2026-09-14 — Task 1 flagged choices resolved
+
+- **Decision**: Accepted: step 11 also resolves a flagged choice in fix modes, and `suggested fix` is removed from the review-fix payload. Routed back and fixed in `2b5580a`: the non-binding sentence in `review-policy.md` "Verify before applying" is merged with the existing sentence, so the permission is stated once.
+- **Rationale**: Choice 1 closes the audit risk "AC-11 — fix modes skip the gate". Choice 2 is what the plan asked for, and the reviewer files stay in the payload's context paths. Choice 3 would have left a duplicate statement that impl-review flags under the documentation-economy rule.
+- **Affected docs**: `.asd/workflows/asd-phase-impl.md`, `.asd/rules/review-policy.md`
+
+## 2026-09-14 — Wave 2 flagged choices resolved (Tasks 2, 3)
+
+- **Decision**: All accepted. Task 3: the suite-record lag has its sole home in `sprint-lifecycle.md` "Impacted test set", and `t_test-plan.md` cites it. Task 2, choices 1-9:
+  - a custom rule's id is its `--custom-rules` path;
+  - sectioned rubrics use their `###` headings as both rule ids and section ids;
+  - executable-by-default classification;
+  - `.asd/templates/*.html` counts as UI surface;
+  - the phase-gate predicate is assigned by name;
+  - `no budgets defined` is allowed whenever there is no budgets heading;
+  - the out-of-part predicate is generalised to N parts;
+  - halving on interruption uses `emit-manifest --halve`;
+  - emit fails closed on a missing predicate target or more parts than files.
+- **Rationale**: Choices 1 and 2 follow the existing "Rubric ID derivation" text, where sectioned rubrics derive ids from `###` headings. Choices 3, 6 and 9 fail toward reviewing more. Choices 7 and 8 keep split halves emitter-produced, as AC-12 requires. The one red test, the stamp test at ~2461, is an expected break for impl-test to update. Release-manifest hashes were refreshed by the orchestrator after the wave.
+- **Affected docs**: `.asd/runtime.js`, `.asd/rules/review-policy.md`, `.asd/rules/sprint-lifecycle.md`
+
+## 2026-09-14 — Wave 3 flagged choices resolved (Tasks 4, 5)
+
+- **Decision**: All accepted.
+  - Task 4:
+    - The attempt record goes into the payload only when the reviewer has one of its own.
+    - The payload list is the single statement of that record.
+    - Plan sizing lives only in `asd-phase-plan.md` step 4, via `## Risks`.
+  - Task 5:
+    - A settings change is applied when wave 1 opens.
+    - A declared key is not validated against `t_config.yaml`.
+    - No special adaptive-plan rule.
+    - The frozen-vs-live nuance is stated.
+    - No bullet in `asd-phase-plan.md`.
+    - `asd-phase-impl` gets no `Skill` allowed-tools change, because the orchestrator session holds `Skill`.
+    - `.asd/sync-state.json` is committed.
+- **Rationale**: Each choice follows existing contracts or the plan's own wording. Validating keys against the template would reject the sprint-011 case this path replaces, and plan acceptance is the recorded approval.
+- **Affected docs**: `.asd/rules/review-policy.md`, `.asd/workflows/asd-phase-plan.md`, `.asd/rules/sprint-lifecycle.md`, `.asd/skills/asd-init/SKILL.md`, `.asd/workflows/asd-phase-impl.md`
+
+## 2026-09-14 — Wave 4 flagged choices resolved (Task 6)
+
+- **Decision**: Accepted choices 1-4, 6, 8 and 9:
+  - two templates, `t_subsystems.md` and `t_subsystem.md`;
+  - the redundant legacy `c4/` is detected from live config, not frozen state;
+  - the deletion also removes the orphaned `c4-build` and `.gitignore` entries, and the orchestrator performs it after the hard gate;
+  - registry writes happen at audit step 3a;
+  - re-init does not seed the registry;
+  - `c4-full` is always a delta;
+  - README rows go to Task 7.
+
+  Choice 5 was decided by the user: leave as is. Audit fills only an absent registry, and an empty seeded registry is filled only at design-promote. Choice 7 was routed back: the legacy `c4/` deletion is added to the `checkpoints.md` hard list.
+- **Rationale**: The user answered choice 5 explicitly. Choice 7 applies the rule that `checkpoints.md` "Gate policy" is the single home of hard gates. Choice 2 avoids deleting a live likec4 model when `skip_design_phases` forces frozen c4 to false. Choice 3 closes the orphan migration gap raised in audit.
+- **Affected docs**: `.asd/rules/sprint-lifecycle.md`, `.asd/rules/checkpoints.md`, `.asd/workflows/asd-phase-audit.md`
+
+## 2026-09-14 — impl assessment approved (adaptive)
+
+- **Decision**: Initial impl is accepted at HEAD 3c800d3: Tasks 1-7 are complete, the build (`sync.js --check`) and lint are clean, the authorised-paths check passed, and no stubs were added. The sprint advances to impl-test.
+- **Rationale**: Every flagged choice is resolved (entries above), so no material alternative is open. The one red test, the manifest-digest stamp assertion, is stale after AC-1 added `n_a_shape`; impl-test owns updating it.
+- **Affected docs**: `plan.md`, `state.json` gate_decisions

@@ -19,6 +19,7 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 | ID | Phase | Problem | Refs |
 |---|---|---|---|
 | F-1 | scope | Start confirmation and free-form scope collected in one discrete-option request; scope text lost | — |
+| F-2 | impl | Task 1 dev dispatch terminated by provider session limit mid-task, leaving uncommitted partial edits | — |
 
 ## F-1 — Start confirmation and free-form scope collected in one discrete-option request; scope text lost
 
@@ -26,4 +27,12 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 - **Surface**: skill — `.asd/skills/asd-sprint/SKILL.md` Step 2A.3
 - **What happened**: Step 2A.3 combines "confirm start" and "collect scope (free-form)" in one request-user-decision operation. The orchestrator offered a "Start, scope in Other" option. The user picked that label, so no scope text arrived. The orchestrator also rendered the options in English although `language.chat` is `ru`, which breaks `language-policy.md` "User-decision options".
 - **Impact**: One extra user round trip before scope could be refined.
+- **Refs**: —
+
+## F-2 — Task 1 dev dispatch terminated by provider session limit mid-task, leaving uncommitted partial edits
+
+- **Phase**: impl
+- **Surface**: provider tool — Claude API session limit (HTTP 429, `rate_limit`) on the `asd-dev-critical` dispatch for plan Task 1
+- **What happened**: The dispatch ended with no COMPLETED signal after it had edited 10 canonical files and run `sync.js --apply`. Nothing was committed and no plan checkbox was ticked. `asd-phase-impl.md` has no interrupted-dispatch branch; `review-policy.md` "Interrupted dispatch" covers reviewers only. The orchestrator therefore re-dispatched a fresh dev instructed to verify and finish the partial diff, rather than discarding it.
+- **Impact**: The sprint waited for the limit to reset, and the task was re-dispatched with its partial work carried over as unverified on-disk state.
 - **Refs**: —
