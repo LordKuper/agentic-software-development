@@ -2,6 +2,20 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v7.3.0
+
+A project can now skip the design block outright. `skip_design_phases: enabled` routes a sprint from `audit` straight to `plan`: `design`, `design-review` and `design-promote` are recorded as skipped and none of their skills or workflows is ever loaded. The existing skip when every design document is disabled stays unchanged; the new setting only makes it explicit and cheaper. Absent from an existing `config.yaml` means `disabled`, so nothing changes until a project opts in; update through `/asd-update`, no migration script.
+
+### Added
+- **`skip_design_phases: enabled | disabled`** (`t_config.yaml`, `sprint-lifecycle.md` "Optional documents"): a top-level setting frozen into `state.json` at `scope`, like `user_gates`. When enabled, `documents.prd`/`ux_spec`/`adr`/`c4` freeze `false` for the sprint whatever their configured values, and scope logs the documents it suppressed. `documents.audit` is untouched.
+- **The audit exit performs the skip** (`asd-phase-audit.md`): one mechanical write, covering a skipped audit and the design block together, sets `phase="design-promote"` and returns `NEXT: plan`. The return contract is now `NEXT: <design | plan>`.
+- **`/asd-init` offers the setting** in fresh mode, and re-init diff mode now lists every template field absent from the current config with its default, so a newly shipped field is editable.
+
+### Changed
+- **Resume and the plan precondition key on a frozen collapse test** (`sprint-lifecycle.md` "Design/design-review/design-promote collapse", `asd-sprint`, `asd-phase-plan.md`, `checkpoints.md`): the design block counts as collapsed when `skip_design_phases` is true or every design document is disabled — never from the historical `skipped_phases` list, whose stale entry after a rollback could otherwise skip a real, interrupted promotion.
+- **The session-start hook** reports `plan` as the next phase after `audit` when the setting is on.
+- Test coverage grew from 184 to 187 checks.
+
 ## v7.2.0
 
 Agent-facing text becomes a governed cost surface. ASD now carries an iron rule for it, sited beside the single-source-of-truth rule and enforced through the Documentation reviewer's blocking coverage ledger: a line earns its place only by changing what a reading agent does, with a removal test that is necessary and controlling, and a preserve-list that protects contracts, exhaustive enumerations, case distinctions, stated failure modes, and standalone safety prohibitions. Roughly 18.7 KB of prose was cut from canon under it. The sprint also remediates every problem the sprint 009 retrospective identified. Nothing in consumer state changes shape; update through `/asd-update`, no migration script.
