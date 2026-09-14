@@ -10,7 +10,7 @@ Orchestration body for the `asd-phase-design-review` skill. Operation-mapping to
 
 ## Operations used
 - read: `.asd/project/config.yaml`, `state.json`, drafts in `<sprint>/design/`, review files
-- write validated compact reviewer coverage and orchestrator state inline
+- write validated compact reviewer coverage and orchestrator state inline; the in-scope draft path list for step 7's `emit-manifest --files`, to a temp file outside the repo
 - request user decision: escalation on FAIL or iteration cap
 - delegate to agent in parallel: reviewers; delegate to agent sequentially: creator autofix; the orchestrator writes state and decisions-log inline
 - append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log"
@@ -25,7 +25,7 @@ Orchestration body for the `asd-phase-design-review` skill. Operation-mapping to
 5. Compute severity floor for current iteration per `review-policy.md` cumulative-budget algorithm (uses `reviews.design.iteration`)
 6. Create folder `<sprint>/reviews/design/iter-NN/` if absent
 7. **Parallel dispatch** — every reviewer delegated to as a **fresh agent** each iteration (clean-context dispatch per `review-policy.md`); no reviewer reused across iterations:
-   - **Emit manifests** — for each internal reviewer not latch-skipped (filter below), run `node .asd/runtime.js emit-manifest --reviewer <name> --phase design-review --files <in-scope draft paths, one per line> --out <sprint>/reviews/design/iter-NN/ --custom-rules .asd/project/custom-common-rules.md,.asd/project/custom-design-rules.md`. It writes `<reviewer>.manifest.json`, or `<reviewer>.part-N.manifest.json` parts when the scope exceeds the split threshold (`review-policy.md` "Split trigger"); parts dispatch per step 8a's split branch from the start.
+   - **Emit manifests** — for each internal reviewer not latch-skipped (filter below), run `node .asd/runtime.js emit-manifest --reviewer <name> --phase design-review --files <path to a file listing the in-scope draft paths, one per line> --out <sprint>/reviews/design/iter-NN/ --custom-rules .asd/project/custom-common-rules.md,.asd/project/custom-design-rules.md`. It writes `<reviewer>.manifest.json`, or `<reviewer>.part-N.manifest.json` parts when the scope exceeds the split threshold (`review-policy.md` "Split trigger"); parts dispatch per step 8a's split branch from the start.
    - **APPROVE latch filter first** (`sprint-lifecycle.md` "APPROVE latch" — sole SSoT for the mechanism): read `state.json.reviews.design.latched`; a reviewer key present there is skipped entirely this iteration — no fresh agent call, no new review file, no ledger gate at step 8 for it. Every internal reviewer is dispatched when not latch-skipped, for any non-empty draft set:
    - `asd-reviewer-documentation`
    - `asd-reviewer-efficiency`
