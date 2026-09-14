@@ -196,3 +196,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
   - The tester chain appended `test-plan.md` Entry log row 2, covering the review-fix delta.
 - **Rationale**: Every premise verified at HEAD, and each choice stays within the finding it fixes.
 - **Affected docs**: `.asd/runtime.js`, rule docs, workflows, reviewer/architect agents, `asd-init`/`asd-sprint`, `tests/run.js`, `test-plan.md`
+
+- 2026-09-14 — impl-test: impacted set green (full suite via safety valve, 197/197; sync --check 72/72 current), 0/0 tests added/removed (entry 3, delta since entry 2)

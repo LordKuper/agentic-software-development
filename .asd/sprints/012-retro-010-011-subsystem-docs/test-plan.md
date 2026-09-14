@@ -13,7 +13,7 @@ responsibility:
 |---|---|---|
 | 1 | b7a54c59faa44c1b98eb220bb84d7d944fa887c1 | full change surface |
 | 2 | 686b03e5fb2c6d0d60e5bb0f11bc8589ed9a48c5 | impl review-fix iter-01, tester chain: TST-1-1, TST-1-2, TST-1-3, TST-2-1, TST-2-2, DOC-2-3, plus the dev chain `de7d9f9..686b03e` (EFF-1-1, ORC-1, COR-1-3, COR-2-2/DOC-2-1). Pre-run at `686b03e`: 195/197, both reds from that chain (`manifest-digest … --write` test, AC-13 step 8) |
-| 3 |  | delta since entry 2 (`686b03e...HEAD`): `tests/run.js` (entry 2's own commit `f3238d5`) and tester agent memory; no production canon. Pre-run at `f304b76`: 197/197 |
+| 3 | c1bd9ae4600015483f61ec070d60b091ef4381e3 | delta since entry 2 (`686b03e...HEAD`): `tests/run.js` (entry 2's own commit `f3238d5`) and tester agent memory; no production canon. Pre-run at `f304b76`: 197/197 |
 
 ## Risk → check decisions
 
