@@ -65,15 +65,15 @@ Written twice per cycle: `impl-test`'s suite gate records an **impacted-set** ru
 it with the cycle's one **full-suite** run once every reviewer is APPROVE/latched. The `pr` gate
 always reads whatever is recorded here last — the full-suite record, by the time `pr` runs.
 
-- Command: pending (suite gate runs after the test commit)
-- Scope: impacted (degraded to full by the safety valve)
-- Result: pending
-- Lint / build: pending
-- HEAD: pending
+- Command: `node tests/run.js`
+- Scope: impacted, degraded to the full suite by the safety valve (framework-wide files touched; single runner, no `test_affected`)
+- Result: pass — exit 0, 187/187 passed, 0 failed, 0 skipped (184 pre-existing + 3 added)
+- Lint / build: pass — `git diff main...HEAD --check` exit 0 (staged `git diff --cached --check` exit 0 before the test commit); `node .asd/sync.js --check` exit 0, `"ok": true`, 72/72 items `current`
+- HEAD: 89ece635abe0b8e147ae28fc2c9099aacea22430 — the entry's own test commit, so this run already covers the added tests
 
 ## Defects
 
-Code defects found by the suite. Resolved in `impl` test-fix mode.
+Code defects found by the suite. Resolved in `impl` test-fix mode. None found in entry 1.
 
 | ID | Location | Symptom | Failing test | Status | Fix commit |
 |---|---|---|---|---|---|
