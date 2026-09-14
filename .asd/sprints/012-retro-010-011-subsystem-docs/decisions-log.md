@@ -259,3 +259,12 @@ A decision whose value must survive this sprint's archival is ALSO written into 
     - Resolution: the owner narrows the line so it no longer asserts an exclusion canon does not state.
 - **Rationale**: Both findings are in scope. No production canon change is needed. Iteration 5 floor is critical.
 - **Affected docs**: `reviews/impl/iter-04/`, `state.json`
+
+## 2026-09-14 — impl review-fix for iter-04: findings resolved
+
+- **Decision**: Two iter-04 findings resolved:
+  - external #1 by the tester chain (`3c4d96c`): the halt-before-that-wave's-dispatch assertion now checks the semantics; 4 reversal mutations go red and 1 reword stays green;
+  - external #2 by the owning documentation reviewer: the memory note now cites the Reach wording instead of asserting an exclusion.
+  - Accepted tester choices: the verb set is halt/stop/abort with `before … dispatch`; a self-contradictory clause is left to Correctness; the overlapping DOC-1 presence check is kept. The suite is 197/197.
+- **Rationale**: Premises verified; no production canon change.
+- **Affected docs**: `tests/run.js`, `test-plan.md`, documentation reviewer memory
