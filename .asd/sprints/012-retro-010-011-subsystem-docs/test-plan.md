@@ -13,6 +13,7 @@ responsibility:
 |---|---|---|
 | 1 | b7a54c59faa44c1b98eb220bb84d7d944fa887c1 | full change surface |
 | 2 | 686b03e5fb2c6d0d60e5bb0f11bc8589ed9a48c5 | impl review-fix iter-01, tester chain: TST-1-1, TST-1-2, TST-1-3, TST-2-1, TST-2-2, DOC-2-3, plus the dev chain `de7d9f9..686b03e` (EFF-1-1, ORC-1, COR-1-3, COR-2-2/DOC-2-1). Pre-run at `686b03e`: 195/197, both reds from that chain (`manifest-digest … --write` test, AC-13 step 8) |
+| 3 |  | delta since entry 2 (`686b03e...HEAD`): `tests/run.js` (entry 2's own commit `f3238d5`) and tester agent memory; no production canon. Pre-run at `f304b76`: 197/197 |
 
 ## Risk → check decisions
 
@@ -41,6 +42,8 @@ Pre-strategy run at `8fa5d97` (entry 1, impacted set = full suite via the shared
 | generated views, `.asd/sync-state.json` (AC-19) | canon edited without `--apply` | static | keep | Existing `sync.js --check reports every item current` test. |
 | `external-review.md`, `t_prompt-external-design.md`, `asd-phase-design.md`, `t_config.yaml` comments, `README.md` prose rows (runtime.js description, `/asd-init` row, LikeC4 section) | wording drift in descriptions | — | none | Descriptive prose with no token a workflow parses; the retired names they dropped are covered by the registry test's absence sweep, the README tree by its mirror assert. Assertable only if one of them grew an enumeration of a canonical set. |
 | `sprint-lifecycle.md` "Audit phase"/"Design-promote phase" registry procedure, `asd-phase-audit.md` step 3a (AC-17) | an agent skipping per-subsystem confirmation or backfill at runtime | — | none | Agent-runtime judgement in audit/promote; the literal contracts (hard-list entry, citation, write grant, registry path) are pinned above. Owner: impl-review Correctness reviewer. |
+| Entry 3 — `tests/run.js` delta `f3238d5` | test code is itself the check; its assertions and mutation proofs are entry 2's rows 69–73 | — | none | No production surface in the delta; re-deriving entry 2's rows would restate them. Delta adds no in-body comments (`code-style.md` §7). |
+| Entry 3 — `.claude/agent-memory/asd-tester-critical/project_testability-envelope.md` | stale or wrong guidance for the next tester dispatch | — | none | Agent-memory prose, read by one agent, parsed by no workflow or runtime. Assertable only if memory grew a canonical enumeration. |
 
 ## Removed tests
 
@@ -83,11 +86,11 @@ always reads whatever is recorded here last — the full-suite record, by the ti
 per-entry record measures only the tree that entry analysed, not any tree produced later
 (`.asd/rules/sprint-lifecycle.md` "Impacted test set").
 
-- Command: `node tests/run.js` (impacted set = full suite: the shared-infrastructure safety valve fired — framework-wide canon and `.asd/runtime.js` changed)
-- Scope: impacted
+- Command: `node tests/run.js` (impacted set = full suite: the shared-infrastructure safety valve fired — framework-wide canon and `.asd/runtime.js` changed this cycle)
+- Scope: impacted (entry 3 gate)
 - Result: pass — 197 passed, 0 failed, 0 skipped (exit 0)
-- Lint / build: pass — `git diff --cached --check` exit 0 on each staged commit; `node .asd/sync.js --check` exit 0, 72/72 items `current`
-- HEAD: entry 2 analysed `686b03e` plus its uncommitted `tests/run.js` edits; the count stays 197 because every entry-2 change sits inside existing tests. The impl-review terminal full-suite run remains the only record of the final tree
+- Lint / build: pass — `git diff --cached --check` exit 0 on the staged commit; `node .asd/sync.js --check` exit 0, 72/72 items `current`
+- HEAD: entry 3 analysed `f304b76`, the first recorded run at a HEAD that includes entry 2's committed tests (`f3238d5`); count unchanged at 197 because entry 2 changed only existing tests and entry 3 added none. The impl-review terminal full-suite run remains the only record of the final tree
 
 ## Defects
 
