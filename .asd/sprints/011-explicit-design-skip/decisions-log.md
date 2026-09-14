@@ -64,3 +64,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: The user accepted the plan: six tasks in four waves, config field `skip_design_phases: enabled | disabled` at top level (absent = disabled), frozen as state boolean `skip_design_phases` (absent = false). No open stub touches the scope.
 - **Rationale**: The field name is a new public config contract and a naming preference, so it went to the user rather than an adaptive pass.
 - **Affected docs**: `.asd/sprints/011-explicit-design-skip/plan.md`, `.asd/sprints/011-explicit-design-skip/state.json`
+
+## 2026-09-14 — MS-1 validated as a necessary manual step
+
+- **Decision**: Task 6 blocks on MS-1: the user runs `/asd-init` diff mode to set `skip_design_phases: enabled`. Tasks 1-5 are complete; build (`sync --check`) and lint are clean, and the suite passes 184/184.
+- **Rationale**: Settings are writable only through `/asd-init`, which no dispatched agent can invoke, so the action needs authority the chain does not hold.
+- **Affected docs**: `.asd/sprints/011-explicit-design-skip/manual-steps.md`, `.asd/sprints/011-explicit-design-skip/plan.md`

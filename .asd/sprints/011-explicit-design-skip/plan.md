@@ -73,14 +73,14 @@ Material risk: change: the only skill allowed to write project settings
 
 ### Task 5: Mirrors and generated views (AC-7)
 Material risk: none
-- [ ] README config schema block: add `skip_design_phases` with values and absent default. Touch the phase table or flowchart only if their wording contradicts the new route (G-10).
-- [ ] `AGENTS.md` tail below `<!-- asd:end -->`: extend the lean-profile sentence to name `skip_design_phases: enabled` (G-10).
-- [ ] Run `node .asd/sync.js --apply` once over every affected generated view: `.claude/hooks/session-start.js`, `.codex/hooks/session-start.js`, `.claude/skills/asd-sprint/SKILL.md`, `.agents/skills/asd-sprint/SKILL.md`, `.claude/skills/asd-init/SKILL.md`, `.agents/skills/asd-init/SKILL.md`. This refreshes `release-manifest.json` hashes. Then run `--check` (R-8).
+- [x] README config schema block: add `skip_design_phases` with values and absent default. Touch the phase table or flowchart only if their wording contradicts the new route (G-10).
+- [x] `AGENTS.md` tail below `<!-- asd:end -->`: extend the lean-profile sentence to name `skip_design_phases: enabled` (G-10).
+- [x] Run `node .asd/sync.js --apply` once over every affected generated view: `.claude/hooks/session-start.js`, `.codex/hooks/session-start.js`, `.claude/skills/asd-sprint/SKILL.md`, `.agents/skills/asd-sprint/SKILL.md`, `.claude/skills/asd-init/SKILL.md`, `.agents/skills/asd-init/SKILL.md`. This refreshes `release-manifest.json` hashes. Then run `--check` (R-8).
 
 ### Task 6: Enable the setting in this repo (AC-6)
 Material risk: artifact: project config written only by `/asd-init`
-- [ ] Register `MS-N`: the user runs `/asd-init` diff mode on the sprint branch and sets `skip_design_phases: enabled` (R-1).
-- [ ] Review `git diff` after the run and keep only the config change plus any managed-block drift that is already current (R-2). The orchestrator commits it before `impl-review`.
+- [ ] Register `MS-N`: the user runs `/asd-init` diff mode on the sprint branch and sets `skip_design_phases: enabled` (R-1). — BLOCKED: MS-1
+- [ ] Review `git diff` after the run and keep only the config change plus any managed-block drift that is already current (R-2). The orchestrator commits it before `impl-review`. — BLOCKED: MS-1
 
 ## Risks
 - If a dev edits `sprint-lifecycle.md` beyond its section, Task 1 and Task 2 could collide. Their waves are serialised for that reason.
