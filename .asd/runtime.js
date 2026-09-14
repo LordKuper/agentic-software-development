@@ -25,6 +25,7 @@ const NA_PREDICATES = {
   uiSurface: 'no UI surface in scope',
   perf: 'no perf budgets section and no executable file in scope',
   noBudgets: 'no budgets defined',
+  noHtml: 'no HTML file in scope',
   outOfPart: 'evidence outside this part; covered by the other parts',
 };
 /** Rubric entries each conditional predicate covers, by reviewer and id prefix; a prefix matching no entry fails the emit closed. */
@@ -32,6 +33,7 @@ const NA_TARGETS = {
   ui: { correctness: ['UI conformance'] },
   perf: { efficiency: ['Perf budget compliance', 'Perf anti-patterns', 'Algorithmic complexity', 'Regression detection', 'Hot path identification'] },
   budgetCompliance: { efficiency: ['Perf budget compliance'] },
+  html: { documentation: ['HTML shell wrapping', 'Provenance', 'Traceability'] },
 };
 const PHASES = ['design-review', 'impl-review'];
 
@@ -309,6 +311,7 @@ function standingPredicates(input, ids, customRules) {
   const hasBudgets = Object.entries(customRules).some(([file, text]) => file.endsWith('custom-coding-rules.md') && /^#+ [^\n]*perf[^\n]*budget/im.test(text));
   Object.keys(NA_TARGETS).forEach(targets);
   ids.filter((id) => id.includes(otherPhase) && !id.includes(input.phase)).forEach((id) => granted.get(id).push(NA_PREDICATES.phaseGate));
+  if (!input.files.some((file) => /\.html?$/i.test(file))) grant('html', NA_PREDICATES.noHtml);
   if (input.phase === 'design-review') {
     if (!input.files.some((file) => /(^|\/)(ux-spec\.html|design-md-delta\.yaml)$/.test(file))) grant('ui', NA_PREDICATES.phaseGate);
     return granted;
