@@ -70,11 +70,13 @@ Written twice per cycle: `impl-test`'s suite gate records an **impacted-set** ru
 it with the cycle's one **full-suite** run once every reviewer is APPROVE/latched. The `pr` gate
 always reads whatever is recorded here last — the full-suite record, by the time `pr` runs.
 
+Terminal full-suite run (`impl-review` step 9, unscoped):
+
 - Command: `node tests/run.js`
-- Scope: impacted, degraded to the full suite by the safety valve (framework-wide files touched; single runner, no `test_affected`)
-- Result (entry 2): pass — exit 0, 187/187 passed, 0 failed, 0 skipped. The count is unchanged because entry 2 added one assertion to an existing test.
-- Lint / build: pass — `git diff 44f184c...HEAD --check` exit 0 (staged `git diff --cached --check` exit 0 before the test commit); `node .asd/sync.js --check` exit 0, `"ok": true`, 72/72 items `current`
-- HEAD: a3746b2cc8ee1f036f9188431a0c76a3b0716506 — the entry's own test commit, so this run already covers the added assertion
+- Result: pass — exit 0, 187/187 passed, 0 failed, 0 skipped
+- Lint: `git diff main...HEAD --check` exit 0; `git diff --cached --check` exit 0
+- Build: `node .asd/sync.js --check` exit 0, `"ok": true`, 72/72 items `current`
+- HEAD: a9218eb32c6a63204b9baa3d9c4ae0885846c39b
 
 ## Defects
 
