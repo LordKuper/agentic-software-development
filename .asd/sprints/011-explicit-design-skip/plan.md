@@ -79,8 +79,8 @@ Material risk: none
 
 ### Task 6: Enable the setting in this repo (AC-6)
 Material risk: artifact: project config written only by `/asd-init`
-- [ ] Register `MS-N`: the user runs `/asd-init` diff mode on the sprint branch and sets `skip_design_phases: enabled` (R-1). — BLOCKED: MS-1
-- [ ] Review `git diff` after the run and keep only the config change plus any managed-block drift that is already current (R-2). The orchestrator commits it before `impl-review`. — BLOCKED: MS-1
+- [x] Register `MS-N`: the user runs `/asd-init` diff mode on the sprint branch and sets `skip_design_phases: enabled` (R-1). — BLOCKED: MS-1
+- [x] Review `git diff` after the run and keep only the config change plus any managed-block drift that is already current (R-2). The orchestrator commits it before `impl-review`. — BLOCKED: MS-1
 
 ## Risks
 - If a dev edits `sprint-lifecycle.md` beyond its section, Task 1 and Task 2 could collide. Their waves are serialised for that reason.

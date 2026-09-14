@@ -70,3 +70,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Task 6 blocks on MS-1: the user runs `/asd-init` diff mode to set `skip_design_phases: enabled`. Tasks 1-5 are complete; build (`sync --check`) and lint are clean, and the suite passes 184/184.
 - **Rationale**: Settings are writable only through `/asd-init`, which no dispatched agent can invoke, so the action needs authority the chain does not hold.
 - **Affected docs**: `.asd/sprints/011-explicit-design-skip/manual-steps.md`, `.asd/sprints/011-explicit-design-skip/plan.md`
+
+## 2026-09-14 — Impl assessment approved (adaptive)
+
+- **Decision**: Initial impl complete: Tasks 1-6 done, MS-1 done (user ran `/asd-init` diff mode; `skip_design_phases: enabled` committed). Advance to impl-test.
+- **Rationale**: Every plan checkbox is ticked, build (`sync --check`) and lint are clean, the round's diff touches only task-authorised paths, and no sprint stub was introduced, so the routine gate's evidence rule is met without a new user decision.
+- **Affected docs**: `.asd/sprints/011-explicit-design-skip/plan.md`, `.asd/sprints/011-explicit-design-skip/manual-steps.md`

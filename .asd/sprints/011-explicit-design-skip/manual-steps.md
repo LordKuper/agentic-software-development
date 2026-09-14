@@ -13,7 +13,7 @@ Definition, boundary against `stubs.md` and manual verification, validation duty
 
 | ID | Title | Blocks | Performed by | Status |
 |---|---|---|---|---|
-| MS-1 | Enable `skip_design_phases` via `/asd-init` diff mode | Task 6 — both subtasks | user | pending |
+| MS-1 | Enable `skip_design_phases` via `/asd-init` diff mode | Task 6 — both subtasks | user | done |
 
 ## MS-1 — Enable `skip_design_phases` via `/asd-init` diff mode
 
@@ -22,7 +22,7 @@ Definition, boundary against `stubs.md` and manual verification, validation duty
 - **When**: before `impl-test`, on branch `sprint/011-explicit-design-skip`, after commit 19a7299 (synced `/asd-init` view)
 - **Prerequisites**: Tasks 1-5 committed; clean worktree
 - **Performed by**: user
-- **Status**: pending
+- **Status**: done
 
 ### Steps
 
