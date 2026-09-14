@@ -1,6 +1,6 @@
 ---
 name: no-shell-doc-review-method
-description: How documentation review runs in this framework repo - no shell, manifest-driven ledger vocabulary (emitter-produced, possibly split into parts), and the defect shapes that actually pay off (acting-site scope contradicting the cited SSoT, partial mirror updates when a rule gains a trigger, sole-home claims wider than the code, and agent-memory claims stale at HEAD)
+description: How documentation review runs in this framework repo - no shell, manifest-driven ledger vocabulary (emitter-produced, possibly split into parts), and the defect shapes that actually pay off (acting-site scope contradicting the cited SSoT, partial mirror updates when a rule gains a trigger, sole-home claims wider than the code, and agent-memory claims stale at HEAD or contradicting the writer's definition)
 metadata:
   type: feedback
 ---
@@ -13,8 +13,10 @@ shape rule only. Since sprint 012 manifests come from `runtime.js emit-manifest`
 arrives as `documentation.part-N.manifest.json`, where every rule id carries the out-of-part predicate -
 still review the part's files and mark `finding` (or `pass`) where this part holds the evidence.
 Files-row vocabulary is `checked`/`n/a` with no `finding` status, so a file carrying a finding is still
-`checked` and the finding id hangs off the rules row. Sha256 freshness (`upstream_hashes`) cannot be
-recomputed - say it was corroborated structurally.
+`checked` and the finding id hangs off the rules row (one `f` per row: spread two findings over the two
+rubric ids they best fit). Sha256 freshness (`upstream_hashes`) cannot be recomputed - say it was
+corroborated structurally. Iter 2+ with no shell: the decisions-log "review-fix ... resolved" entry names
+what changed; prior `reviews/` iterations stay unread.
 
 **Why:** reviewers hold no command-runner grant on either provider (write scope: `review-policy.md`
 "Gate Verdict Format"), and an invalid ledger is not a verdict - the phase rejects and re-dispatches.
@@ -28,12 +30,15 @@ recomputed - say it was corroborated structurally.
   across the whole phase's files - sibling steps AND the skill `description` (always-loaded, in no
   manifest). Valid under the change-surface exception (change made unchanged text wrong).
 - **Sole-home claims wider than their home.** When a sprint moves content into code (012: n/a predicates
-  into `runtime.js`), the new "lives only in X" sentence tends to claim more than X holds (e.g. "text and
-  conditions") while the same rule doc still restates the rest. Check the claim against the code and grep
-  the rule doc itself for restatements.
+  into `runtime.js`), the new "lives only in X" sentence tends to claim more than X holds while the same
+  rule doc still restates the rest. Check the claim against the code and grep for restatements - e.g.
+  quoted `` `n/a: <predicate>` `` literals in canon (deliberate, pinned by a test) falsify "predicate text
+  lives only in runtime.js".
 - **Agent-memory files are reviewable source** (`artifact-layout.md` "Agent memory"): verify durable claims
-  against HEAD (exported helpers, CLI exit behaviour, manifest reach, `MEMORY.md` links). A stale line in
-  *your own* memory is corrected in the dispatch that finds it, not raised.
+  against HEAD (exported helpers, CLI exit behaviour, manifest reach, `MEMORY.md` links) AND against the
+  writer's own definition - sprint 012 reviewer memories told the agent to proceed silently on an
+  out-of-policy payload instruction where `providers.md` "Declared tool policy" requires `QUESTION`.
+  A stale line in *your own* memory is corrected in the dispatch that finds it, not raised.
 - The documentation-economy preserve-list keeps per-case tables whole: a logically subsumed clause in a
   table row is not a cut candidate.
 - The session-start AGENTS.md/CLAUDE.md snapshot in context can predate the branch's last sync - grep the
