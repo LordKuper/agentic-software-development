@@ -92,11 +92,11 @@ Reachability: plan writes the expected review scope size into plan.md Risks at s
 ### Task 5: Sprint-mediated settings change through /asd-init
 Material risk: change: workflow gate
 Reachability: plan writes a `Settings change:` line in a Task block at plan step 4; impl reads it at `asd-phase-impl.md` step 8 and applies it through `/asd-init` before dispatching later waves.
-- [ ] AC-13: add grammar to `sprint-lifecycle.md` "Plan file format": a `Settings change: <key>=<value>[, …]` plain-text line in a Task block. Plan acceptance is the approval of record for exactly those pairs. A task carrying the line sits alone in the first wave, and the change never affects the running sprint's frozen state. Mirror it in the `t_plan.md` format comment.
-- [ ] AC-13: `asd-init/SKILL.md` gains a sprint-mediated invocation. Input is the declared pairs, and only those pairs are applied. It posts the diff without a full dump or `accept-all`, and skips "Always first" managed-block sync. The "no sprint context yet" line changes to match.
-- [ ] AC-13: `asd-phase-impl.md` step 8: orchestrator applies a declared settings change through that invocation instead of registering an MS-N. Step 9 counts `.asd/project/config.yaml` as an authorised path.
-- [ ] AC-13: update the `core.md` Invariants settings line, the `t_AGENTS.md` hard rule, and the `asd-sprint/SKILL.md` "Skills dispatched" line (`asd-init` is allowed for a declared settings change). Regenerate the root `AGENTS.md` managed block with `sync.js --apply AGENTS.md`.
-- [ ] Sync the generated views. Build and lint.
+- [x] AC-13: add grammar to `sprint-lifecycle.md` "Plan file format": a `Settings change: <key>=<value>[, …]` plain-text line in a Task block. Plan acceptance is the approval of record for exactly those pairs. A task carrying the line sits alone in the first wave, and the change never affects the running sprint's frozen state. Mirror it in the `t_plan.md` format comment.
+- [x] AC-13: `asd-init/SKILL.md` gains a sprint-mediated invocation. Input is the declared pairs, and only those pairs are applied. It posts the diff without a full dump or `accept-all`, and skips "Always first" managed-block sync. The "no sprint context yet" line changes to match.
+- [x] AC-13: `asd-phase-impl.md` step 8: orchestrator applies a declared settings change through that invocation instead of registering an MS-N. Step 9 counts `.asd/project/config.yaml` as an authorised path.
+- [x] AC-13: update the `core.md` Invariants settings line, the `t_AGENTS.md` hard rule, and the `asd-sprint/SKILL.md` "Skills dispatched" line (`asd-init` is allowed for a declared settings change). Regenerate the root `AGENTS.md` managed block with `sync.js --apply AGENTS.md`.
+- [x] Sync the generated views. Build and lint.
 
 ### Task 6: Subsystem registry in docs/architecture/subsystems.md
 Material risk: change: migration

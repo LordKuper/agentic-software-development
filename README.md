@@ -178,7 +178,7 @@ User-facing commands available at any time. Invocation form differs per provider
 
 | Claude Code | Codex | Purpose |
 |---|---|---|
-| `/asd-init` | `$asd-init` | Initialize the workflow, or edit settings later in diff mode |
+| `/asd-init` | `$asd-init` | Initialize the workflow, or edit settings later in diff mode; `impl` also runs it for a plan-declared settings change |
 | `/asd-concept` | `$asd-concept` | Form or edit `docs/product/concept.html` (4 entry variants: no-idea / vague / clear / brownfield) |
 | `/asd-stack` | `$asd-stack` | Form or edit `docs/architecture/stack.html` (architect proposes from concept; same 4 variants) |
 | `/asd-design-system` | `$asd-design-system` | Form or edit `docs/ux/DESIGN.md`, `design-system.html`, `accessibility.html` (3 entry variants: greenfield / constraints / brownfield) |

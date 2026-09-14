@@ -16,6 +16,7 @@ Format rules (parser-critical):
 - No test-authoring tasks or subtasks: tests are selected and written in impl-test, after the code exists
 - Every task carries a `Material risk:` line, plain text, never a checkbox (see sprint-lifecycle.md "Plan file format")
 - A task whose value depends on two phases agreeing also carries a `Reachability:` line, same placement; absent = no cross-phase dependency, never a fail-closed default (same section)
+- A task declaring a project-settings change carries a `Settings change: <key>=<value>[, …]` line, same placement; plan acceptance approves exactly those pairs, and the task sits alone in wave 1 (same section)
 - `## Dependencies` is required and opens with the wave table impl dispatches from; every task sits in exactly one wave (same section)
 -->
 

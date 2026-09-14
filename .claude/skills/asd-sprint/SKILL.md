@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:ee04f30982c1f99b921c8792db5061ef019d3afc34f833a0d4bc5a6d519a039e content_digest=sha256:228fb4286b8fe353f8517fc374163344dd7e1cd9c80b4f9f51f8919527d280e1 asd_version=7.2.0 schema=1
+# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:2ed87b0c7cdbe2b6b26e499bfcb5dad5541b81f696f29b32f193cd2faa9a5a62 content_digest=sha256:98f2720bea6a280dfc519960af4e7a6542a9c99089d53f44f26a0deafbfd5740 asd_version=7.3.0 schema=1
 name: asd-sprint
 description: "Starts a new ASD sprint or resumes the active one, dispatching the matching asd-phase-* skill and routing phase signals back to the user. Use when the user runs /asd-sprint or asks to start, continue, resume, or work on an ASD sprint."
 allowed-tools: "Read Glob Grep Bash AskUserQuestion Skill"
@@ -17,7 +17,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 - Read files / search repo — detect active sprint; read state.json, config.yaml, custom-common-rules.md
 - Run command — `git status`, `git branch --show-current`
 - Request user decision — new-sprint confirm, resume/abort choice
-- Delegate to skill — phase skills only
+- Delegate to skill — phase skills, plus `asd-init` per "Skills dispatched"
 - No direct writes — phase skills and their inline orchestrator own writes
 
 ## Workflow
@@ -51,7 +51,7 @@ After any phase skill returns:
 User may interrupt anytime; asd-sprint re-detects state on next invocation.
 
 ## Skills dispatched
-Phase skills listed in `.asd/rules/sprint-lifecycle.md`. No other skill set.
+Phase skills listed in `.asd/rules/sprint-lifecycle.md`, plus `asd-init` sprint-mediated mode for a plan-declared settings change (`asd-phase-impl.md` step 8). No other skill set.
 
 ## Return contract (single line)
 ```

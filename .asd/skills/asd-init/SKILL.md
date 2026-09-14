@@ -1,7 +1,7 @@
 ---
 {
   "name": "asd-init",
-  "description": "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings.",
+  "description": "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode, or applies a plan-declared settings change for the active sprint's impl phase. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings.",
   "claude": {
     "allowed-tools": "Read Write Edit Glob Grep Bash AskUserQuestion"
   }
@@ -17,11 +17,12 @@
 ## Modes
 - **Fresh**: no `.asd/project/config.yaml` → full setup
 - **Re-init**: config exists → diff editor
+- **Sprint-mediated**: invoked by `asd-phase-impl.md` step 8 with an accepted plan's `Settings change:` pairs (`sprint-lifecycle.md` "Plan file format") → applies those pairs only
 
-## Always first (both modes)
+## Always first (fresh and re-init)
 
 0. **Determine self-hosting mode** (`self_hosting` field in `.asd/project/config.yaml`; missing, unreadable, or duplicated key → `disabled`, fail closed).
-0a. **Sync `AGENTS.md`/`CLAUDE.md` managed blocks** (see "AGENTS.md sync"). Runs unconditionally every invocation, fresh or re-init, regardless of subsequent user choices or aborts, in both self-hosting and consumer mode — the managed block always generates from `t_AGENTS.md`/`t_CLAUDE.md` (`providers.md` ownership table).
+0a. **Sync `AGENTS.md`/`CLAUDE.md` managed blocks** (see "AGENTS.md sync"). Runs every fresh or re-init invocation, regardless of subsequent user choices or aborts, in both self-hosting and consumer mode — the managed block always generates from `t_AGENTS.md`/`t_CLAUDE.md` (`providers.md` ownership table). Sprint-mediated mode skips it: `config.yaml` is its only write, so impl step 9's authorised paths stay exact.
 
 ## Workflow (fresh)
 
@@ -82,6 +83,16 @@
 6. Apply diff; write config
 7. If `review.external_review=enabled`, resolve and probe the wrapped CLI from the final config exactly as fresh init does; report the resolved command and availability. An unavailable probe leaves the setting intact but is surfaced as the explicit runtime availability-skip reason (`external-review.md` "Detection and negative cache").
 
+## Workflow (sprint-mediated)
+
+Plan acceptance is the approval of record: no config dump, no section prompt, no `accept-all`.
+
+1. Read current `.asd/project/config.yaml`
+2. Set each declared `<key>=<value>` pair (dotted path); touch no other field. A pair already equal is a no-op.
+3. Write config
+4. Post the diff in `language.chat`: one `<key>: <old|absent> → <new>` line per pair
+5. Re-init step 7 applies when a pair touches `review.external_review` or `system.tools`
+
 ## AGENTS.md sync
 
 Idempotent, ownership-class **managed block** (`.asd/rules/providers.md` ownership table). Uses the sync engine's managed-block functions (`.asd/sync.js`: `findManagedBlock`, `statusManagedBlock`, `applyManagedBlock`) — do not hand-roll marker parsing.
@@ -130,12 +141,12 @@ Concept, stack, design system NOT produced here; owned by `/asd-concept`, `/asd-
 
 ## Agents dispatched
 
-None. Init runs solo; no sprint context yet.
+None. Init runs solo; fresh and re-init have no sprint context, sprint-mediated reads none beyond its declared pairs.
 
 ## Return contract (single line)
 
 ```
-INIT: <fresh|re-init> | MODE: <greenfield|brownfield> | DECOMP: <enabled|disabled> | DIAGRAM: <likec4|mermaid|n/a> | TOOLS: likec4=<ok|missing|skip|n/a> designmd=<ok|missing|skip> external_review_wrapped_cli=<ok|missing|skip|n/a>
+INIT: <fresh|re-init|sprint-mediated> | MODE: <greenfield|brownfield> | DECOMP: <enabled|disabled> | DIAGRAM: <likec4|mermaid|n/a> | TOOLS: likec4=<ok|missing|skip|n/a> designmd=<ok|missing|skip> external_review_wrapped_cli=<ok|missing|skip|n/a>
 ```
 
 Followed by file-creation summary.
