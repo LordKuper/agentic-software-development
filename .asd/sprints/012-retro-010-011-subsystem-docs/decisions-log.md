@@ -75,3 +75,11 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: The user accepted `sprint.md` revision 3 (AC-1..AC-19) at the hard scope gate.
 - **Rationale**: An explicit `accept` was given after two revisions. Every criterion is new, and its cost is 0 iterations and 0 fix rounds.
 - **Affected docs**: `sprint.md`, `state.json` gate_decisions
+
+## 2026-09-14 — Audit accepted (adaptive)
+
+- **Decision**: `audit.md` is accepted by the orchestrator under adaptive gates. BA was not dispatched.
+- **Rationale**: The audit is findings only and stays inside the accepted scope, and Architect reported no product/domain ambiguity. The open architecture, migration and gate tradeoffs it raises are decided in plan: registry bootstrap without C4, the fate of consumers' existing `c4/`, the mermaid draft path, the settings-task gate, and the split threshold.
+- **Affected docs**: `audit.md`, `state.json` gate_decisions
+
+- 2026-09-14 — design/design-review/design-promote skipped (skip_design_phases enabled)
