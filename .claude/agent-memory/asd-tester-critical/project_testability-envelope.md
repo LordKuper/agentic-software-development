@@ -127,6 +127,11 @@ An "at least one example without X" assertion (template conditionality) is only 
 that adds X to **every** remaining block — a single-site edit leaves the claim true and the mutation
 uncaught.
 
+The converse applies to a loop over a derived set, such as "each value type in `t_config.yaml`". Reverting
+the whole fix fires only on the set's first member, in insertion order, so it proves just that member.
+Add a second mutation that removes only a later member's clause before you record that the loop proves
+every member (sprint 012 entry 4, M26/M27).
+
 ## Assert removed phrases, not topic words
 
 Rule prose here routinely narrates the alternative it just rejected inside the same bullet

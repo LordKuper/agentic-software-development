@@ -4328,12 +4328,18 @@ test('sprint-012 AC-11: the report field asd-dev.md COMPLETED carries is the lit
   assert.ok(gateLine.includes('`checkpoints.md` "Gate policy"'), 'step 10 must classify a flagged choice under the gate policy that blocks an adaptive pass on an unresolved material alternative');
 });
 
-test("sprint-012 AC-13: the settings-change line sprint-lifecycle.md \"Plan file format\" defines is the one t_plan.md mirrors and asd-phase-impl.md applies ahead of any dev dispatch through the asd-init mode that reads it - a mode in asd-init's return contract, in asd-sprint's dispatchable skills, and exempt from the managed-block sync its authorised paths exclude", () => {
+test("sprint-012 AC-13: the settings-change line sprint-lifecycle.md \"Plan file format\" defines is the one t_plan.md mirrors and asd-phase-impl.md applies as its Task's wave opens, ahead of that wave's dev dispatch, through the asd-init mode that type-checks it - a mode in asd-init's return contract, in asd-sprint's dispatchable skills, and exempt from the managed-block sync its authorised paths exclude", () => {
   const grammar = sectionOf('.asd/rules/sprint-lifecycle.md', 'Plan file format').split('\n').find((line) => line.startsWith('**Settings change declaration**'));
   const literal = grammar && /`([^`:]+:) <key>=<value>/.exec(grammar);
   assert.ok(literal, 'sprint-lifecycle.md "Plan file format" must define the settings-change line grammar');
   const token = literal[1];
-  assert.ok(canonText('.asd/templates/t_plan.md').includes(`\`${token} <key>=<value>`), "t_plan.md's parser-critical format comment must mirror the line a planner writes");
+  const templateLine = canonText('.asd/templates/t_plan.md').split('\n').find((line) => line.includes(`\`${token} <key>=<value>`));
+  assert.ok(templateLine, "t_plan.md's parser-critical format comment must mirror the line a planner writes");
+  assert.ok(!grammar.includes('never one a same-sprint task adds'), 'COR-2: the grammar must admit a key an earlier-wave Task of the same sprint adds to t_config.yaml - excluding it strands 011 P3, the add-then-enable case AC-13 exists for, on an MS-N halt');
+  const planLine = sectionOf('.asd/workflows/asd-phase-plan.md', 'Workflow').split('\n').find((line) => /settings-change Task/.test(line));
+  for (const [site, line] of [['t_plan.md', templateLine], ['asd-phase-plan.md', planLine]]) {
+    assert.ok(line && line.includes('t_config.yaml'), `COR-2: ${site} must place the settings-change Task by whether t_config.yaml already carries its keys - a wave-1-only placement puts it ahead of the Task adding its key, and asd-init then fails the pair`);
+  }
 
   const init = '.asd/skills/asd-init/SKILL.md';
   const modes = [...sectionOf(init, 'Modes').matchAll(/^- \*\*([A-Za-z-]+)\*\*/gm)].map((match) => match[1].toLowerCase());
@@ -4347,6 +4353,12 @@ test("sprint-012 AC-13: the settings-change line sprint-lifecycle.md \"Plan file
   const validates = stepNumber((block) => block.includes('`.asd/templates/t_config.yaml`') && block.includes('`FAILED`'));
   const sets = stepNumber((block) => block.includes('`<key>=<value>`'));
   assert.ok(validates !== -1 && sets !== -1 && validates < sets, `COR-1-3: asd-init ${mode} mode must validate every declared pair against t_config.yaml, failing with \`FAILED\`, before the step that sets the pairs - an unknown key or out-of-range value otherwise lands in config.yaml, where nothing reads it`);
+  const leafValues = [...canonText('.asd/templates/t_config.yaml').matchAll(/^\s*\w+:[ \t]+([^#\s][^#\n]*?)\s*(?:#.*)?$/gm)].map((match) => match[1]);
+  const valueTypes = [...new Set(leafValues.map((value) => (/^(true|false)$/.test(value) ? 'boolean' : /^\d+$/.test(value) ? 'integer' : 'string')))];
+  assert.ok(valueTypes.length > 1, `the t_config.yaml leaf sweep must still reach its fields (types found: ${valueTypes})`);
+  for (const type of valueTypes) {
+    assert.ok(new RegExp(`\\b${type}\\b`).test(mediatedSteps[validates]), `external iter-02 #1: asd-init ${mode} mode's validation step must say what value fits a ${type} field of t_config.yaml - most of its fields carry no enumeration, so without a type rule \`gh_enabled=maybe\` or \`iterations_low=-3\` passes and is written`);
+  }
 
   const impl = '.asd/workflows/asd-phase-impl.md';
   const flow = sectionOf(impl, 'Workflow');
@@ -4354,7 +4366,9 @@ test("sprint-012 AC-13: the settings-change line sprint-lifecycle.md \"Plan file
   const applying = flow.split(/\n(?=\d+[a-z]?\. )/).filter((block) => block.includes(`\`${token}\``) && block.includes(dispatchInit));
   assert.strictEqual(applying.length, 1, `exactly one asd-phase-impl.md step must apply the declared line through asd-init ${mode} mode instead of registering a manual step (011 P3)`);
   const applyStep = /^(\d+[a-z]?)\. /.exec(applying[0])[1];
-  assert.ok(flow.indexOf(dispatchInit) < flow.indexOf('delegate to `asd-dev`'), `COR-2-2/DOC-2-1: steps run in order, so the settings change (step ${applyStep}) must be applied ahead of the first dev delegation - applied after it, the settings Task reaches a dev before asd-init writes config.yaml`);
+  assert.ok(flow.indexOf(dispatchInit) < flow.indexOf('delegate to `asd-dev`'), `COR-2-2/DOC-2-1: a wave's bullets run in order, so the settings change (step ${applyStep}) must be applied ahead of that wave's dev delegation - applied after it, the settings Task reaches a dev before asd-init writes config.yaml`);
+  const applyLine = applying[0].split('\n').find((line) => line.includes(`\`${token}\``) && line.includes(dispatchInit));
+  assert.ok(/\bwave\b/.test(applyLine) && !/\bwave 1\b/.test(applyLine), `COR-2: step ${applyStep} must apply the settings change as its own Task's wave opens, never keyed to wave 1 - the grammar lets that Task follow the one adding its key, and applied at wave 1 the key is not in t_config.yaml yet`);
   const citation = `\`asd-phase-impl.md\` step ${applyStep}`;
   const sprintSkills = sectionOf('.asd/skills/asd-sprint/SKILL.md', 'Skills dispatched');
   for (const [site, text] of [['asd-init "Modes"', reader], ['asd-sprint "Skills dispatched"', sprintSkills], ['sprint-lifecycle.md "Plan file format"', grammar]]) {
