@@ -270,3 +270,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: `tests/run.js`, `test-plan.md`, documentation reviewer memory
 
 - 2026-09-14 — impl-test: impacted set green (full suite via safety valve, 197/197; sync --check 72/72 current), 0/0 tests added/removed (entry 6, delta since entry 5)
+
+- 2026-09-14 — impl-review iter-05: reviewer DoD met (external APPROVE at critical floor, latched 5; correctness/efficiency/testing/documentation inherited APPROVE) → terminal full-suite gate
