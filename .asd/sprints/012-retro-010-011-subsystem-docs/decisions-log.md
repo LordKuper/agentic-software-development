@@ -286,3 +286,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Open-mode DoD is verified: all plan tasks ticked, iter-05 reviewers all APPROVE, terminal full suite 197/197 with no code or test diff since, a retrospective present, and no sprint stubs. `asd_version` goes 7.3.0 → 8.0.0 with a CHANGELOG entry (`7fb81a4`). The user approved publishing the PR.
 - **Rationale**: The bump is MAJOR because of the `feat!` commits (registry location moved, `t_subsystems.yaml` retired). Migrations max 6.0.0 ≤ 8.0.0. PR publication is an outward action, so it was confirmed with the user.
 - **Affected docs**: `.asd/release-manifest.json`, `CHANGELOG.md`
+
+- 2026-09-14 — pr: PR #37 opened (https://github.com/LordKuper/agentic-software-development/pull/37), awaiting merge
