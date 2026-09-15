@@ -41,3 +41,11 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 - 2026-09-15 — audit `auto` → true: scope changes gate behaviour and template contracts, not mechanical.
 - 2026-09-15 — design, design-review, design-promote suppressed by `skip_design_phases`; PRD/UX-spec/ADR/C4 already disabled in config.
+
+## 2026-09-15 — Scope expanded: audit analyses all relevant docs/ with canonical precedence
+
+- **Decision**: AC-10..AC-12 added at the user's request. Audit reads every relevant `docs/` document; canonical ASD documents win contradictions; residual contradictions go to the user as a hard decision.
+- **Rationale**: At `HEAD` 68b4659 `sprint-lifecycle.md` "Audit phase" scans `docs/` but sets neither a completeness bar nor a precedence rule, and `t_audit.md` has no place to record a contradiction. "Canonical ASD document" is taken as a persistent doc at its path-map location, plus `.asd/rules/` under self_hosting.
+- **Affected docs**: [sprint.md](sprint.md)
+
+- 2026-09-15 — audit re-evaluated after scope expansion: stays true.
