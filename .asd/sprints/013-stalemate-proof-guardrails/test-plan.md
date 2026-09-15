@@ -14,6 +14,7 @@ responsibility:
 | 1 | 629c514edd4b743ee60127b05d27e0e22b21d39b | full change surface |
 | 2 | e03f09fa02f0b2fd661f6d374985c518ba1e0ca6 | delta since entry 1 |
 | 3 | b0aade601a9a5788c0e418acf812e0f52a9b739e | delta since entry 2 |
+| 4 | | delta since entry 3 |
 
 ## Risk → check decisions
 
@@ -45,6 +46,8 @@ Impacted set: full suite (`node tests/run.js`). The change surface touches frame
 | Entry 3: `defectStalemate` needs consecutive entries (COR-1-2, 05d7ffd) | A green entry between two routings of the same set still raises a stalemate, or a consecutive repeat after an older different set is missed. | unit | keep | Adjusted in 7fd3b0c and recorded in the first row: entries 2 and 3 after a different entry 1 give `true`, entries 2 and 4 give `false`, entries 9 and 10 give `true`, a single entry gives `false`. Each bound of `previousEntry === latestEntry - 1` has a case that fails if it flips. Regression proof (TST-1, iter-02): targeted mutation back to the pre-fix `previousEntry !== undefined` fails the AC-1/AC-2 test; recorded in "Added tests". |
 | Entry 3: `9.0.0.js` drops the three pre-9.0.0 `diagram_tool` comment rewrites (EFF-1, 42033a1) | A removed constant is still referenced, or an owned 9.0.0 comment rewrite goes with them. | component/contract | keep | The 8.0.0 → 9.0.0 fixture pair carries the current `likec4`/`mermaid` lines, so it never exercised the dropped entries and still passes byte for byte; it still proves the kept header and `Values:` rewrites. The shipped-template sweep (`t_config.yaml` and README `unchanged`) stays green. No test for an older comment staying untouched: that is the absence of a feature, not a behaviour. |
 | Entry 3: prose-only fixes: External Review stdin syntax keyed on host shell plus `platform` (e27e270); impl-test step 1 resumes an interrupted entry (cfe52a9); sanctioned config-writer licence widened in `core.md`, `t_AGENTS.md`, `asd-update`, README, `9.0.0.js` header (7fb5365); asd-init override path (3e1a618); README pointers (62ff591) | Wording drifts between mirrors; the stdin table reverts to `platform`-only keying. | static/arch (stdin table), — (rest) | adjust (stdin table), none (rest) | Prose read by LLM agents, no machine consumer; same reason as the prose-only row above. Exception (TST-2, iter-02): "AC-3/4/5: preflight permits only fixed local probes" now pins the `external-review.md` table rows — the `Claude Code, any` row names `<<'EOF'` (heredoc), the ``Codex, `win32` `` row `@'` (here-string) — and its message states the host-shell-plus-`platform` rule. Mutation to `platform`-only rows (`` `win32` `` / `` `linux`, `darwin` ``): `node tests/run.js` → exit 1, that test fails (collateral `upstream_hashes` for `external-review.md`); restored. `externalPreflight` behaviour is unchanged (JSDoc only), so its `platform` assertion still holds. `AGENTS.md` ↔ `t_AGENTS.md` is guarded by `sync.js --check`; README phase/roster mirrors by §16. |
+| Entry 4: `9.0.0.js` header comment states the comment bound once (63c6f03); manifest hash | — | — | none | Comment only, no behaviour change. The one test that reads `9.0.0.js` source parses `REMOVED_KEYS`, not the header; the hash is guarded by the `upstream_hashes` test, green on HEAD. |
+| Entry 4: AC-16 preflight assert pins the External Review stdin table rows (fbb7120) | The pin is weaker than the rule, or couples to wording no reader needs. | static/arch | keep | Two row anchors (`Claude Code, any` → `<<'EOF'`, ``Codex, `win32` `` → `@'`) are the smallest check that fails on a revert to `platform`-only keying; mutation proof recorded in the entry 3 row above. Nothing further to add. |
 
 ## Removed tests
 
@@ -67,9 +70,9 @@ Impacted set: full suite (`node tests/run.js`). The change surface touches frame
 
 - Command: `node tests/run.js`
 - Scope: full (safety valve: the change surface touches framework-wide files)
-- Result: pass, exit 0: 203 passed, 0 failed, 0 skipped (entry 3; pre-strategy and suite gate, no test code added)
-- Lint / build: pass (entry 3). `git diff --cached --check` exit 0 on this entry's staged `test-plan.md`; `node .asd/sync.js --check` exit 0, `"ok": true`, 72/72 targets current.
-- HEAD: 0cede0486d46f24fc5071a026b05c1785d2be079 (entry 3 adds no test code; its commit changes only this file)
+- Result: pass, exit 0: 203 passed, 0 failed, 0 skipped (entry 4; pre-strategy and suite gate, no test code added)
+- Lint / build: pass (entry 4). `git diff --cached --check` exit 0 on this entry's staged `test-plan.md`; `node .asd/sync.js --check` exit 0, `"ok": true`, 72/72 targets current.
+- HEAD: 7fc886d6583767e5ffa756e537030661c613e8b7 (entry 4 adds no test code; its commit changes only this file)
 
 ## Defects
 
