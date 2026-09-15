@@ -89,3 +89,13 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-15 — impl test-fix: defects D-1 resolved
 
 - 2026-09-15 — impl-test: impacted set green (full suite 203/203), 7/0 tests
+
+- 2026-09-15 — impl-review iter-01: external interrupted attempt 1 (agent stream stalled 600s, no verdict)
+
+- 2026-09-15 — impl-review iter-01: external review skipped (external review unavailable: quota exhausted), sprint 013-stalemate-proof-guardrails iteration 1
+
+## 2026-09-15 — impl-review iter-01 routed to impl review-fix
+
+- **Decision**: Iteration 1 verdicts: correctness, efficiency, testing, documentation CONCERNS (split into 2 parts each, ledgers validated, union property held); external APPROVE (skipped: quota). 12 findings at floor `low` route to impl review-fix (`review_fixes_pending = "iter-01"`). No FAIL, so no escalation; COR-1-1 and COR-1-2 are resolved by their option (a) code/wording fixes, which need no risk acceptance or AC change.
+- **Rationale**: Every finding is autofixable per `review-policy.md`; DOC-P1-1 (widen the writer licence to the value mappings/insertions carrying a removed key's intent) and EFF-1 (drop the three pre-9.0.0 comment rewrites) are compatible and applied together.
+- **Affected docs**: [reviews/impl/iter-01/](reviews/impl/iter-01/)

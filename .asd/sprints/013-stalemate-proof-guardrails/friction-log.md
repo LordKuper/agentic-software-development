@@ -20,6 +20,8 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 |---|---|---|---|
 | F-1 | impl | Both wave-1 critical dev dispatches terminated by host rate limit before any edit | — |
 | F-2 | impl | Wave-2 Task 2 dev dispatch stalled 600s twice with no edit and no signal | — |
+| F-3 | impl-review | Reviewer payload named a `git diff` command but internal reviewers hold no shell | reviews/impl/iter-01/correctness, efficiency, testing, documentation |
+| F-4 | impl-review | External Review stalled once, then skipped on Codex quota exhaustion | reviews/impl/iter-01/external |
 
 ## F-1 — Both wave-1 critical dev dispatches terminated by host rate limit before any edit
 
@@ -36,3 +38,20 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 - **What happened**: The standard-tier Task 2 dispatch stopped making progress and was killed by the host watchdog after 600s, having written nothing. As in F-1, no rule covers a dispatch lost without a signal; the orchestrator checked the worktree and re-dispatched fresh.
 - **Impact**: Wave 2 held open for two extra dispatches; the fresh standard-tier retry stalled identically, so Task 2 was raised to the critical tier for a third dispatch.
 - **Refs**: —
+
+## F-3 — Reviewer payload named a `git diff` command but internal reviewers hold no shell
+
+- **Phase**: impl-review
+- **Surface**: phase — `.asd/workflows/asd-phase-impl-review.md` step 6 payload ("the diff computed in step 1")
+- **What happened**: The orchestrator passed each internal reviewer a `git diff main...HEAD -- <file>` instruction instead of the computed diff. All eight part dispatches reported having no shell and reconstructed the change surface from `plan.md`/`audit.md`/`test-plan.md` citations and on-disk files; two could not verify manifest hash freshness.
+- **Impact**: Reviewers spent turns rebuilding the diff indirectly; changed-vs-unchanged lines were inferred, not observed.
+- **Refs**: reviews/impl/iter-01/correctness, reviews/impl/iter-01/efficiency, reviews/impl/iter-01/testing, reviews/impl/iter-01/documentation
+
+## F-4 — External Review stalled once, then skipped on Codex quota exhaustion
+
+- **Phase**: impl-review
+- **Surface**: provider tool — wrapped Codex CLI via `asd-external-review` (win32 host, Git Bash run-command)
+- **What happened**: The first dispatch stalled 600s with no verdict (host watchdog). The re-dispatch, told to use a heredoc under Git Bash and a 540s command timeout, got a Codex usage-limit error on the real run and one retry, and returned the availability skip; `quota` was recorded in the negative cache.
+- **Impact**: Iteration 1 has no external verdict; two dispatches spent.
+- **Refs**: reviews/impl/iter-01/external
+
