@@ -316,8 +316,8 @@ function standingPredicates(input, ids, customRules) {
     if (!input.files.some((file) => /(^|\/)(ux-spec\.html|design-md-delta\.yaml)$/.test(file))) grant('ui', NA_PREDICATES.phaseGate);
     return granted;
   }
-  if (input.scopedFanOut === true && !input.files.some(isUiSurface)) grant('ui', NA_PREDICATES.uiSurface);
-  if (input.scopedFanOut === true && !hasBudgets && !input.files.some(isExecutable)) grant('perf', NA_PREDICATES.perf);
+  if (!input.files.some(isUiSurface)) grant('ui', NA_PREDICATES.uiSurface);
+  if (!hasBudgets && !input.files.some(isExecutable)) grant('perf', NA_PREDICATES.perf);
   if (!hasBudgets) grant('budgetCompliance', NA_PREDICATES.noBudgets);
   return granted;
 }
@@ -393,7 +393,6 @@ function emitManifestCommand(flags) {
     rubric: fs.readFileSync(path.join(__dirname, 'agents', `asd-reviewer-${flags.reviewer}.md`), 'utf8'),
     files: fs.readFileSync(flags.files, 'utf8').split(/\r?\n/).map((line) => line.trim()).filter(Boolean),
     customRules: Object.fromEntries(customPaths.map((file) => [file, fs.readFileSync(file, 'utf8')])),
-    scopedFanOut: flags['scoped-fan-out'] === true,
     halve: flags.halve === true,
   });
   return manifests.map((manifest, index) => {
@@ -424,7 +423,7 @@ function inputJson(flags) {
 
 function main(argv) {
   const command = argv[2];
-  const flags = parseFlagArgs(argv.slice(3), ['scoped-fan-out', 'halve']);
+  const flags = parseFlagArgs(argv.slice(3), ['halve']);
   if (command === 'manifest-digest') {
     process.stdout.write(coverageManifestDigest(JSON.parse(fs.readFileSync(flags.manifest, 'utf8'))) + '\n');
     return 0;
