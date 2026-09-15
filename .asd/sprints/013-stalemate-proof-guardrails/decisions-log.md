@@ -123,3 +123,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-15 — impl-test: impacted set green (full suite 203/203), 0/0 tests
 
 - 2026-09-15 — impl-review iter-03: external review skipped (external review unavailable: negative-cache quota), sprint 013-stalemate-proof-guardrails iteration 3
+
+## 2026-09-15 — impl-review DoD met; green handoff to retro
+
+- **Decision**: impl-review complete at iteration 3: correctness, efficiency (latched 2), testing, documentation APPROVE; external availability-skipped (quota) in all three iterations; terminal full suite green at HEAD 78b6a7b (`node tests/run.js` exit 0, 203/203; lint and `sync.js --check` clean; recorded 888373c). Green handoff passed adaptively.
+- **Rationale**: Every required reviewer verdict for `iter-03` is satisfied per `sprint-lifecycle.md` "State recovery"; the only hard decision in the cycle (AC-19 bound) was taken by the user; no waiver, debt or cap override is involved.
+- **Affected docs**: [reviews/impl/iter-03/](reviews/impl/iter-03/), [test-plan.md](test-plan.md)

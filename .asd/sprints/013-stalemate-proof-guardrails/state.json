@@ -46,6 +46,13 @@
       "reason": "AC-19 writer bound widened to value mappings, key insertions and shipped-comment rewrites carrying a removed key/value intent (COR-2-1)",
       "evidence": "reviews/impl/iter-02/correctness.md COR-2-1; AC-19 iterations charged >=2 (lower bound), fix rounds charged 1",
       "artifact_revision": "sprint.md sha256:720ce28a6689"
+    },
+    {
+      "gate": "impl-review-green-handoff",
+      "decision_actor": "orchestrator",
+      "reason": "all required reviewers APPROVE/latched at iter-03, external availability skip, terminal full suite green",
+      "evidence": "state.json reviews.impl.verdicts iter-03; test-plan.md Suite run HEAD 78b6a7b exit 0 203/203",
+      "artifact_revision": "HEAD 888373c"
     }
   ],
   "task_routing": {
@@ -190,7 +197,7 @@
     }
   },
   "created_at": "2026-09-15T08:00:17Z",
-  "updated_at": "2026-09-15T11:20:41Z",
+  "updated_at": "2026-09-15T11:22:08Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
