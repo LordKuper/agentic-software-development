@@ -7,21 +7,16 @@ user_gates: adaptive # adaptive | strict; closure always requires user approval
 # Values: enabled | disabled. See .asd/rules/sprint-lifecycle.md "Self-hosting".
 self_hosting: enabled
 
-# Skip design, design-review and design-promote outright. Absent field = disabled.
-# Values: enabled | disabled. See .asd/rules/sprint-lifecycle.md "Optional documents".
-skip_design_phases: enabled
-
 # Optional sprint documents and their persistent docs counterpart.
 # Absent group (old config) = every value enabled (current behavior unchanged).
 # Absent field within an existing group = disabled (fail-closed).
 # Lean framework-dev profile: only audit; PRD/UX/ADR/C4 add no value for a
 # framework whose spec already lives in .asd/rules/ + this plan doc.
 documents:
-  audit: auto          # auto | always | off; legacy enabled/disabled accepted
+  audit: auto          # auto | always | off
   prd: disabled         # design/prd.html + persistent requirements
   ux_spec: disabled     # ux-spec, design-system gate, design-md-delta
   adr: disabled          # adr.html + persistent ADR
-  c4: disabled             # c4-full + persistent C4
 
 # Language for user-facing interaction.
 # chat — language used in chat responses and questions.
@@ -39,7 +34,6 @@ language:
 backward_compat: migration
 
 review:
-  scoped_fan_out: enabled
   # External review via the other provider's CLI (Codex CLI wrapped in a Claude
   # session, Claude CLI wrapped in a Codex session), performed in parallel with
   # internal reviewers. Values: enabled | disabled
@@ -59,22 +53,10 @@ project:
   # Values: enabled | disabled
   # Framework repo is one cohesive workflow tree, not multiple subsystems.
   subsystem_decomposition: disabled
+  diagram_tool: none
 
 system:
-  # Operating system of the developer machine, set by /asd-init.
-  # Determines invocation pattern for external CLIs (Codex, gh, etc.).
-  # Values: windows | linux | macos
-  os: windows
-
   tools:
-    # LikeC4 CLI for C4 architecture model rendering.
-    # Required when project.diagram_tool: likec4. Not used (decomposition disabled).
-    likec4: ""
-
-    # @google/design.md tooling availability flag.
-    # Not used — documents.ux_spec disabled, no DESIGN.md maintained for this repo.
-    designmd: false
-
     # Codex CLI command path. Empty for default lookup (`codex` on all OSes).
     codex_command: ""
 
@@ -89,9 +71,3 @@ git:
   # {n}    — sprint number, zero-padded to 3 digits (e.g. 001).
   # {slug} — kebab-case slug derived from sprint scope.
   branch_pattern: "sprint/{n}-{slug}"
-
-  # Use gh CLI for PR creation. If false, workflow stops at push and prints PR-ready summary.
-  gh_enabled: true
-
-  # Automatically open PR after Definition of Done is met and user confirms.
-  auto_pr: true
