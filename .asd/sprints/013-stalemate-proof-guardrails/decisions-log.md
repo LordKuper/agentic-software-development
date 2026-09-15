@@ -103,3 +103,17 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-15 — impl fix for iter-01: findings resolved (COR-1-1, COR-1-2, COR-1-3, COR-1-P2-1, COR-1-P2-2, COR-1-P2-3, EFF-1, DOC-P1-1, DOC-1, DOC-2, DOC-3 no edit needed, TST-2-1, TST-2-2)
 
 - 2026-09-15 — impl-test: impacted set green (full suite 203/203), 0/0 tests
+
+- 2026-09-15 — impl-review iter-02: external review skipped (external review unavailable: quota exhausted), sprint 013-stalemate-proof-guardrails iteration 2
+
+## 2026-09-15 — AC-19 writer bound widened (user)
+
+- **Decision**: AC-19's sanctioned config-writer bound now reads "release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent", matching canon since the iter-01 review-fix (DOC-P1-1). Resolves COR-2-1 without a canon edit.
+- **Rationale**: The user approved the wider wording at the hard acceptance-criteria gate; it describes what AC-19's own mappings require. The widening had first entered as an autofix without that gate — an orchestration miss. Evidence stated before the decision: AC-19 iterations charged ≥2 (iter-01, iter-02; lower bound), fix rounds charged 1.
+- **Affected docs**: [sprint.md](sprint.md), [reviews/impl/iter-02/correctness.md](reviews/impl/iter-02/correctness.md)
+
+## 2026-09-15 — impl-review iter-02 routed to impl review-fix
+
+- **Decision**: Iteration 2 (floor medium, 24-file diff, no split): efficiency APPROVE (latched at 2); correctness CONCERNS (COR-2-1 resolved by the user AC-19 decision above, no fix); testing CONCERNS (TST-1 missing fail-first record for the COR-1-2 fix, TST-2 stale AC-16 assert message); documentation CONCERNS (F-1 stale `9.0.0.js` header clause); external skipped (quota). TST-1, TST-2, F-1 route to impl review-fix (`review_fixes_pending = "iter-02"`).
+- **Rationale**: No FAIL; remaining findings are autofixable and change no AC bound.
+- **Affected docs**: [reviews/impl/iter-02/](reviews/impl/iter-02/)

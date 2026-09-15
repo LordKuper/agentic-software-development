@@ -21,7 +21,8 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 | F-1 | impl | Both wave-1 critical dev dispatches terminated by host rate limit before any edit | — |
 | F-2 | impl | Wave-2 Task 2 dev dispatch stalled 600s twice with no edit and no signal | — |
 | F-3 | impl-review | Reviewer payload named a `git diff` command but internal reviewers hold no shell | reviews/impl/iter-01/correctness, efficiency, testing, documentation |
-| F-4 | impl-review | External Review stalled once, then skipped on Codex quota exhaustion | reviews/impl/iter-01/external |
+| F-4 | impl-review | External Review stalled once, then skipped on Codex quota exhaustion in iter-01 and iter-02 | reviews/impl/iter-01/external, reviews/impl/iter-02/external |
+| F-5 | impl | A review-fix autofix widened an acceptance criterion's bound without the hard AC gate | reviews/impl/iter-02/correctness |
 
 ## F-1 — Both wave-1 critical dev dispatches terminated by host rate limit before any edit
 
@@ -52,6 +53,13 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 - **Phase**: impl-review
 - **Surface**: provider tool — wrapped Codex CLI via `asd-external-review` (win32 host, Git Bash run-command)
 - **What happened**: The first dispatch stalled 600s with no verdict (host watchdog). The re-dispatch, told to use a heredoc under Git Bash and a 540s command timeout, got a Codex usage-limit error on the real run and one retry, and returned the availability skip; `quota` was recorded in the negative cache.
-- **Impact**: Iteration 1 has no external verdict; two dispatches spent.
-- **Refs**: reviews/impl/iter-01/external
+- **Impact**: Iterations 1 and 2 have no external verdict; three dispatches spent. The default 5-minute negative-cache TTL had expired by iteration 2, so preflight reported `local-ready` and a paid dispatch re-hit the same provider reset window; the second record used the one-hour maximum.
+- **Refs**: reviews/impl/iter-01/external, reviews/impl/iter-02/external
 
+## F-5 — A review-fix autofix widened an acceptance criterion's bound without the hard AC gate
+
+- **Phase**: impl
+- **Surface**: gate — `checkpoints.md` "Gate policy" hard list (changed acceptance criteria) vs `review-policy.md` "Autofix vs escalation"
+- **What happened**: iter-01 finding DOC-P1-1 suggested widening the sanctioned config-writer wording; the orchestrator routed it as an autofix and the dev applied it in canon, silently moving past AC-19's user-approved "renames and removals" bound. Nothing in the review-fix path checks whether a fix changes an AC's stated bound; correctness caught it in iter-02 (COR-2-1).
+- **Impact**: One extra review iteration and a late hard gate for a decision that belonged at iter-01 routing.
+- **Refs**: reviews/impl/iter-02/correctness
