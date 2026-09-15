@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-architect.md. source_digest=sha256:b18fff906032be6ce1e937dd9a99205707fd77804de21092f737eb2d72772603 content_digest=sha256:3171108f96a0b466552eb656a739af2c0f9da18d227fd3a2aa667cdc381f3823 asd_version=7.3.0 schema=1
+# ASD generated. Edit .asd/agents/asd-architect.md. source_digest=sha256:08c42cbce857444fbff4fd1ea781fc041e5e1c17b83af372b19d18e85b3e9873 content_digest=sha256:3171595708dd078f2a94a2f4ceff46b224408346c85f40812361c718976881e3 asd_version=8.0.0 schema=1
 name: asd-architect
 description: "Architecture decisions, subsystem registry, C4 model, tech stack, API contracts, brownfield code and documentation audit. Covers: ADR drafting (sprint-scoped only, never promoted as a standalone persistent document; sprint and reverse-engineered), c4-full schema (LikeC4 or Mermaid) for sprint scope, subsystem registry docs/architecture/subsystems.md and per-subsystem <id>.md (written at design-promote, created at audit when absent after user confirmation), design-promote c4 delta application, stack.html updates, folding approved ADRs and API contracts into whichever persistent doc's `responsibility.owns` frontmatter already claims the subject, audit of existing source code, documentation, stubs and risks. Does NOT handle: requirements (delegates to asd-ba), ux flows or design system (delegates to asd-ux), code implementation (delegates to dev agents)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, WebSearch, AskUserQuestion]
@@ -29,7 +29,7 @@ Read `.asd/rules/core.md`, applicable `.asd/project/custom-common-rules.md`, and
 - `<sprint>/design/prd.html` (requirements) when `documents.prd` enabled, else `sprint.md`
 - `<sprint>/design/ux-spec.html` (ux flows informing architecture) when `documents.ux_spec` enabled, else omitted (`.asd/rules/sprint-lifecycle.md` "Optional documents")
 - existing `docs/architecture/` docs (stack, subsystem registry and `<id>.md`, c4 model, and whichever persistent docs' `owns` frontmatter previously absorbed folded ADRs/API contracts) and `.asd/project/commands.yaml`
-- existing source code, documentation in any location/format, and stubs (for audit)
+- existing source code, every `docs/` document bearing on touched areas, other documentation in any location/format, and stubs (for audit, `sprint-lifecycle.md` "Audit phase")
 - backward_compat policy from config
 
 ## Outputs
@@ -88,7 +88,7 @@ All HTML outputs MUST be wrapped in `t_html-shell.html` per `artifact-layout.md`
 - ADR: fragment per `t_adr.html` (one `<article class="adr" id="adr-{{N}}">` per decision, ids prefixed `adr-{{N}}-*`), wrapped in shell. Doc-level meta is set-level, not per-decision: DOC_TYPE=ADR, SUBSYSTEM=subsystem id (or `N/A`) when every ADR shares one, else `project`; STATUS=document lifecycle value (`draft`/`in-review`/`approved`/`locked`), never an individual ADR's `proposed`/`accepted`; TITLE=`ADRs — Sprint NNN · <slug>`; STATS=`N decisions · subsystems · updated YYYY-MM-DD`. Each ADR's own `proposed`/`accepted` status lives only on its `.status-chip status-{{proposed | accepted}}` inside `{{CONTENT}}`
 - c4 model: LikeC4 DSL per upstream spec (not HTML, no shell)
 - registry / subsystem file: Markdown per `t_subsystems.md` / `t_subsystem.md` (not HTML, no shell)
-- Audit: all applicable `t_audit.md` sections, returned as text; omit optional sections only after checking and finding no items.
+- Audit: all applicable `t_audit.md` sections, returned as text; omit optional sections only after checking and finding no items; resolve and record contradictions per `sprint-lifecycle.md` "Audit phase".
 - stack.html: fragment per `t_stack.html`, wrapped in shell. DOC_TYPE=Stack, SUBSYSTEM=project
 - Folded ADR/API contract content: written into the fold target's own template/shape (no dedicated ADR/API template exists persistently) — follow that doc's existing structure, never introduce a new section format
 

@@ -31,7 +31,7 @@ Read `.asd/rules/core.md`, applicable `.asd/project/custom-common-rules.md`, and
 - `<sprint>/design/prd.html` (requirements) when `documents.prd` enabled, else `sprint.md`
 - `<sprint>/design/ux-spec.html` (ux flows informing architecture) when `documents.ux_spec` enabled, else omitted (`.asd/rules/sprint-lifecycle.md` "Optional documents")
 - existing `docs/architecture/` docs (stack, subsystem registry and `<id>.md`, c4 model, and whichever persistent docs' `owns` frontmatter previously absorbed folded ADRs/API contracts) and `.asd/project/commands.yaml`
-- existing source code, documentation in any location/format, and stubs (for audit)
+- existing source code, every `docs/` document bearing on touched areas, other documentation in any location/format, and stubs (for audit, `sprint-lifecycle.md` "Audit phase")
 - backward_compat policy from config
 
 ## Outputs
@@ -90,7 +90,7 @@ All HTML outputs MUST be wrapped in `t_html-shell.html` per `artifact-layout.md`
 - ADR: fragment per `t_adr.html` (one `<article class="adr" id="adr-{{N}}">` per decision, ids prefixed `adr-{{N}}-*`), wrapped in shell. Doc-level meta is set-level, not per-decision: DOC_TYPE=ADR, SUBSYSTEM=subsystem id (or `N/A`) when every ADR shares one, else `project`; STATUS=document lifecycle value (`draft`/`in-review`/`approved`/`locked`), never an individual ADR's `proposed`/`accepted`; TITLE=`ADRs — Sprint NNN · <slug>`; STATS=`N decisions · subsystems · updated YYYY-MM-DD`. Each ADR's own `proposed`/`accepted` status lives only on its `.status-chip status-{{proposed | accepted}}` inside `{{CONTENT}}`
 - c4 model: LikeC4 DSL per upstream spec (not HTML, no shell)
 - registry / subsystem file: Markdown per `t_subsystems.md` / `t_subsystem.md` (not HTML, no shell)
-- Audit: all applicable `t_audit.md` sections, returned as text; omit optional sections only after checking and finding no items.
+- Audit: all applicable `t_audit.md` sections, returned as text; omit optional sections only after checking and finding no items; resolve and record contradictions per `sprint-lifecycle.md` "Audit phase".
 - stack.html: fragment per `t_stack.html`, wrapped in shell. DOC_TYPE=Stack, SUBSYSTEM=project
 - Folded ADR/API contract content: written into the fold target's own template/shape (no dedicated ADR/API template exists persistently) — follow that doc's existing structure, never introduce a new section format
 
