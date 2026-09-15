@@ -1,6 +1,6 @@
 <!--
 responsibility:
-  owns: retro-phase analysis of the sprint — root cause plus remediation per F-N entry, and systemic proposals for a cheaper future sprint, both split consumer-project vs ASD-framework
+  owns: retro-phase analysis of the sprint — root cause per F-N entry, then deduplicated findings drafted as guardrail + home, as remediation and systemic proposals for a cheaper future sprint, both split consumer-project vs ASD-framework
   excludes: the friction entries themselves (friction-log.md), code defects, review verdicts, plan tasks, decisions
   delegates_to: friction-log.md (entries), test-plan.md (defects), reviews/ (verdicts), decisions-log.md (decisions)
 provenance: original          # original | reverse-engineered | migrated
@@ -31,10 +31,10 @@ source: ""                    # optional path/URL when provenance != original
   <h2>Actions</h2>
   <table>
     <thead>
-      <tr><th>Addresses</th><th>Recommendation</th><th>Acts on</th><th>Target</th></tr>
+      <tr><th>Addresses</th><th>Guardrail</th><th>Acts on</th><th>Home</th></tr>
     </thead>
     <tbody>
-      <tr><td><a href="#F-1">F-1</a></td><td>{{proposed change}}</td><td><span class="chip area">{{consumer | asd}}</span></td><td><code>{{path, rule, agent, skill, workflow or template}}</code></td></tr>
+      <tr><td><a href="#F-1">F-1</a>{{, every other merged F-N link}}</td><td>{{one imperative line | covered by: cited existing rule}}</td><td><span class="chip area">{{consumer | asd}}</span></td><td><code>{{home per sprint-lifecycle.md "Retro phase"}}</code></td></tr>
     </tbody>
   </table>
 </section>
@@ -44,10 +44,10 @@ source: ""                    # optional path/URL when provenance != original
   <h2>Systemic proposals</h2>
   <table>
     <thead>
-      <tr><th>Proposal</th><th>Acts on</th><th>Target</th><th>Expected saving</th></tr>
+      <tr><th>Guardrail</th><th>Acts on</th><th>Home</th><th>Expected saving</th></tr>
     </thead>
     <tbody>
-      <tr><td>{{proposed change}}</td><td><span class="chip area">{{consumer | asd}}</span></td><td><code>{{path, rule, agent, skill, workflow or template}}</code></td><td>{{what a future sprint spends less of}}</td></tr>
+      <tr><td>{{one imperative line | covered by: cited existing rule}}</td><td><span class="chip area">{{consumer | asd}}</span></td><td><code>{{home per sprint-lifecycle.md "Retro phase"}}</code></td><td>{{what a future sprint spends less of}}</td></tr>
     </tbody>
   </table>
 </section>

@@ -1,0 +1,21 @@
+[REVIEW-impl-efficiency]: CONCERNS
+
+# Review — efficiency
+
+- **Phase**: impl-review
+- **Iteration**: 1 (part 1 of 2)
+- **Manifest**: [efficiency.part-1.manifest.json](efficiency.part-1.manifest.json)
+
+## Findings
+
+| # | Severity | Location | Description | Suggested fix |
+|---|---|---|---|---|
+| 1 | low | `.asd/migrations/9.0.0.js:66-72` (header claim `:22-25`) | Complexity vs. value (simplify). `SHIPPED_DIAGRAM_COMMENTS` holds 6 comment rewrites; three (`:68`, `:69`, `:70`) fix comments that went stale in earlier releases (`design/architecture/` → `docs/architecture/`, mermaid `subsystems.yaml` → `subsystems.md`), not in 9.0.0, and none is in the 8.0.0 fixture (`tests/fixtures/migrations/9.0.0/t_config-8.0.0.yaml:74-77`). They exceed the writer licence in `core.md:30`, `t_AGENTS.md:46`, `asd-update/SKILL.md:20` ("release-mandated key renames and removals"); the header's own reason covers only comments whose contract this release changed. | Delete map entries `:68`, `:69`, `:70`; keep `:66`, `:67` (AC-13) and `:71` (`none` is new). The 8.0.0 → 9.0.0 fixture pair still passes byte for byte. |
+
+Checked with no finding (condensed): `defectStalemate` single pass; `externalPreflight` spread wrapper; `scopedFanOut` removal complete; `isDesignCollapsed` non-object guard needed (hooks never throw); rest of `9.0.0.js` matches the plan contract; no removed keys left in this part's canon (`sprint-lifecycle.md:345` kept legacy note, `:155` legacy-state clause); perf budgets none; only hot path is the session-start hook, constant-time change. No shell available: change surface rebuilt from `plan.md`/`test-plan.md`/`decisions-log.md` and on-disk files.
+
+## Coverage ledger
+
+```json
+{"manifest_digest":"303c1d99eb1dc6fe9a89a1b6e5546ea6179987f26a88c0645b41614f548f2e09","findings":["1"],"files":[{"i":".asd/agents/asd-architect.md","s":"checked"},{"i":".asd/agents/asd-external-review.md","s":"checked"},{"i":".asd/hooks/session-start.js","s":"checked"},{"i":".asd/migrations/9.0.0.js","s":"checked"},{"i":".asd/release-manifest.json","s":"checked"},{"i":".asd/rules/artifact-layout.md","s":"checked"},{"i":".asd/rules/checkpoints.md","s":"checked"},{"i":".asd/rules/code-style.md","s":"checked"},{"i":".asd/rules/core.md","s":"checked"},{"i":".asd/rules/external-review.md","s":"checked"},{"i":".asd/rules/git-strategy.md","s":"checked"},{"i":".asd/rules/review-policy.md","s":"checked"},{"i":".asd/rules/sprint-lifecycle.md","s":"checked"},{"i":".asd/runtime.js","s":"checked"},{"i":".asd/skills/asd-init/SKILL.md","s":"checked"},{"i":".asd/skills/asd-phase-design-review/SKILL.md","s":"checked"},{"i":".asd/skills/asd-phase-retro/SKILL.md","s":"checked"},{"i":".asd/skills/asd-sprint/SKILL.md","s":"checked"},{"i":".asd/skills/asd-update/SKILL.md","s":"checked"},{"i":".asd/sync-state.json","s":"checked"},{"i":".asd/templates/t_AGENTS.md","s":"checked"}],"rules":[{"i":"Over-engineering checklist [design-review, impl-review] — critical, undroppable","s":"pass"},{"i":"Structure / cohesion checklist [design-review, impl-review] — critical, undroppable","s":"pass"},{"i":"Complexity-vs-value tradeoff [design-review, impl-review]","s":"finding","f":"1"},{"i":"Perf budget compliance [impl-review]","s":"n/a","p":"no budgets defined"},{"i":"Perf anti-patterns [impl-review]","s":"pass"},{"i":"Algorithmic complexity [impl-review]","s":"pass"},{"i":"Regression detection [impl-review]","s":"pass"},{"i":"Hot path identification [impl-review]","s":"pass"},{"i":".asd/project/custom-common-rules.md","s":"pass"},{"i":".asd/project/custom-coding-rules.md","s":"pass"}],"sections":[{"i":"Over-engineering checklist [design-review, impl-review] — critical, undroppable","s":"reviewed"},{"i":"Structure / cohesion checklist [design-review, impl-review] — critical, undroppable","s":"reviewed"},{"i":"Complexity-vs-value tradeoff [design-review, impl-review]","s":"reviewed"},{"i":"Perf budget compliance [impl-review]","s":"n/a","p":"no budgets defined"},{"i":"Perf anti-patterns [impl-review]","s":"reviewed"},{"i":"Algorithmic complexity [impl-review]","s":"reviewed"},{"i":"Regression detection [impl-review]","s":"reviewed"},{"i":"Hot path identification [impl-review]","s":"reviewed"}]}
+```

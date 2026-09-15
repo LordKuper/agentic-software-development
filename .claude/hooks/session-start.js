@@ -1,4 +1,4 @@
-// ASD generated. Edit .asd/hooks/session-start.js. source_digest=sha256:7eaeb0c587e4379215d5d10310bbdb14268df46006e5983564a2c70b1973099c content_digest=sha256:7eaeb0c587e4379215d5d10310bbdb14268df46006e5983564a2c70b1973099c asd_version=7.2.0 schema=1
+// ASD generated. Edit .asd/hooks/session-start.js. source_digest=sha256:01bee3a7bdc817a6387f6db6521bc85adad78789b6365630687b2d15842874b1 content_digest=sha256:01bee3a7bdc817a6387f6db6521bc85adad78789b6365630687b2d15842874b1 asd_version=8.0.0 schema=1
 // ASD SessionStart hook (canonical, provider-agnostic).
 // No shebang: this file is never executed directly (`./session-start.js`),
 // always invoked as `node <path> --provider ...`, and every generated
@@ -99,6 +99,11 @@ function nextPhase(current) {
   return PHASE_CHAIN[idx + 1];
 }
 
+// Design-block collapse test (sprint-lifecycle.md): every frozen design document is false.
+function isDesignCollapsed(documents) {
+  return Boolean(documents) && typeof documents === 'object' && ['prd', 'ux_spec', 'adr', 'c4'].every(name => documents[name] === false);
+}
+
 // Pick the relevant review node for the current phase. In a review phase use
 // that phase's node; otherwise use whichever counter advanced most recently.
 function reviewNodeForPhase(reviews, phase) {
@@ -157,7 +162,7 @@ function summary(active, provider) {
   const branch = state.branch || 'unknown';
   const verdict = lastReviewVerdict(reviewNode);
   const next = phase === 'pr' ? (state.pr && state.pr.state === 'closure-pending' ? 'await-user-closure' : 'await-merge')
-    : (phase === 'audit' && state.skip_design_phases === true) ? 'plan'
+    : (phase === 'audit' && isDesignCollapsed(state.documents)) ? 'plan'
     : nextPhase(phase);
   const iterPart = phase.endsWith('-review') ? ` (iter ${iter})` : '';
   return [

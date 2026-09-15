@@ -54,21 +54,20 @@ The main orchestrator confirms before opening PR:
 Triggered only after DoD met and the active `checkpoints.md` policy permits publication. In strict this needs user confirmation; adaptive publication needs recorded authority/evidence and any host permission.
 
 - PR title MUST follow Conventional Commits (`<type>(<scope>): <subject>`) — becomes the squash-merge commit subject
-- `gh_enabled: true` + `auto_pr: true` → `gh pr create` with body from `t_pr-description.md`
-- `gh_enabled: false` → push branch, print PR-ready summary (title, body, compare URL)
-- `auto_pr: false` → push, prepare summary, wait for user to open PR manually
+- Push branch, then `gh pr create` with body from `t_pr-description.md`
+- `gh` is the only PR path (`/asd-init` requires it). `gh` itself failing — not installed, not authenticated, host unreachable — is `FAILED` naming the fix: install gh (https://cli.github.com) or `gh auth login`. Never a manual-PR fallback.
 
 ## Merging a PR
 
-Sole statement of who merges. The main orchestrator merges the sprint PR and the companion closure PR itself when `gh_enabled: true` — `gh pr merge --squash`, after checks pass and the PR is mergeable; it never waits for a human to click merge. With `gh_enabled: false` there is no Git host to merge through, so it reports the ready-to-merge state and the user merges.
+Sole statement of who merges. The main orchestrator merges the sprint PR and the companion closure PR itself — `gh pr merge --squash`, after checks pass and the PR is mergeable; it never waits for a human to click merge.
 
-Merging is not closure. It ends the branch, not the sprint: the orchestrator records `pr.state="closure-pending"` and the hard closure gate (`checkpoints.md`) still requires explicit user approval before any terminal state, archive move or release tag. A merge the orchestrator performed never satisfies that gate, and neither does `auto_pr`.
+Merging is not closure. It ends the branch, not the sprint: the orchestrator records `pr.state="closure-pending"` and the hard closure gate (`checkpoints.md`) still requires explicit user approval before any terminal state, archive move or release tag. A merge the orchestrator performed never satisfies that gate.
 
 A merge blocked by a failing check, a conflict or a branch-protection rule is reported, not forced: never `--admin`, never a local merge pushed to `git.base_branch`.
 
 ## Finalize after closure
 
-After confirmed merge and explicit hard closure approval, the main orchestrator creates `chore/finalize-sprint-<NNN-slug>` from `git.base_branch`. Its companion PR contains the terminal state and archive move, then merges through the normal configured Git path. No direct base push. If the companion PR cannot merge, leave it open and keep the sprint closure pending.
+After confirmed merge and explicit hard closure approval, the main orchestrator creates `chore/finalize-sprint-<NNN-slug>` from `git.base_branch`. Its companion PR contains the terminal state and archive move, then merges through `gh` like the sprint PR. No direct base push. If the companion PR cannot merge, leave it open and keep the sprint closure pending.
 
 ## Pre-existing uncommitted changes
 

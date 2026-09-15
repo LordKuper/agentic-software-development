@@ -1,0 +1,616 @@
+diff --git a/.asd/agents/asd-external-review.md b/.asd/agents/asd-external-review.md
+index 41cc005..a639e19 100644
+--- a/.asd/agents/asd-external-review.md
++++ b/.asd/agents/asd-external-review.md
+@@ -69,12 +69,12 @@ Reviewer (external wrapper):
+ 
+ Read-only is enforced on the WRAPPED CLI subprocess itself, explicitly, per invocation (baked into `{{wraps_invoke_args}}` below) — not left to depend on project-level config the user might set differently, and not merely a claim about this agent's own tool list. Codex `exec` uses `--sandbox read-only`; Claude uses `--restricted --tools "Read,Grep,Glob" --strict-mcp-config --disable-slash-commands --no-session-persistence`, which limits builtin tools, ignores user/project customizations, accepts no inherited MCP configuration, and leaves no review session artifact.
+ 
+-## `{{wraps_cli}}` invocation (per preflight `platform`)
++## `{{wraps_cli}}` invocation (per host shell and preflight `platform`, `external-review.md` "OS-specific invocation")
+ 
+ Command tail is provider-specific (`{{wraps_invoke_args}}` — the two CLIs take different arguments for a scripted, stdin-fed, plain-text-output, explicitly-read-only run; this is a real syntax difference, not just a binary-name swap). Prompt sent via heredoc/here-string directly into the wrapped CLI's stdin — never written to disk (required: this agent is read-only on both providers). Capture stdout directly as the review text — no `-o <out-file>`, no temp file, no cleanup step needed since nothing was created.
+ 
+-- `win32` (PowerShell): `@'`<rendered prompt + scope manifest>`'@ | {{wraps_cli}} {{wraps_invoke_args}}` — here-string piped straight to stdin (or `{{wraps_config_key}}` override)
+-- any other platform (bash): `{{wraps_cli}} {{wraps_invoke_args}} <<'EOF'` / `<rendered prompt + scope manifest>` / `EOF` — heredoc piped straight to stdin (or override)
++- Codex host on `win32` (PowerShell): `@'`<rendered prompt + scope manifest>`'@ | {{wraps_cli}} {{wraps_invoke_args}}` — here-string piped straight to stdin (or `{{wraps_config_key}}` override)
++- Claude Code host on any platform (bash, Git Bash on Windows), Codex host elsewhere: `{{wraps_cli}} {{wraps_invoke_args}} <<'EOF'` / `<rendered prompt + scope manifest>` / `EOF` — heredoc piped straight to stdin (or override)
+ 
+ Both forms feed prompt+scope manifest via stdin; the wrapped CLI's own `Read`/`Glob`/`Grep` (Claude) or read-only shell (Codex `exec`) tools resolve `files[]` content from the repo itself. The command's own stdout is captured as the final message — a plain-text verdict, never structured/streaming output. No `-o <out-file>`.
+ 
+diff --git a/.asd/migrations/9.0.0.js b/.asd/migrations/9.0.0.js
+index 4a9aefd..0812762 100644
+--- a/.asd/migrations/9.0.0.js
++++ b/.asd/migrations/9.0.0.js
+@@ -3,8 +3,9 @@
+  * (new value `none`), `skip_design_phases` folds into the design document flags, legacy
+  * `documents.audit` values `enabled`/`disabled` become `always`/`off`, and eight keys with no
+  * remaining reader are dropped. This rewrites `.asd/project/config.yaml` only - as a release
+- * migration it is a sanctioned settings writer, limited to these release-mandated renames and
+- * removals. Sprint state is never touched: an active sprint keeps running on the documents
++ * migration it is a sanctioned settings writer, limited to release-mandated key renames and
++ * removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a
++ * renamed or removed key's or value's intent. Sprint state is never touched: an active sprint keeps running on the documents
+  * snapshot frozen at its scope.
+  *
+  * Runs in consumer projects via `/asd-update`. Sole non-consumer use: the ASD framework repo's own
+@@ -59,15 +60,10 @@ const SHIPPED_AUDIT_COMMENT = '# auto | always | off; legacy enabled/disabled ac
+ const CURRENT_AUDIT_COMMENT = '# auto | always | off';
+ const CURRENT_DIAGRAM_HEADER = '# Diagram tool for architecture views. Any diagram also requires subsystem_decomposition: enabled.';
+ const CURRENT_DIAGRAM_NONE = '# none — no diagram written; the subsystem registry is unaffected';
+-const CURRENT_DIAGRAM_LIKEC4 = '# likec4 — text DSL in docs/architecture/c4/model/*.c4 + likec4 CLI builds dist/';
+-const CURRENT_DIAGRAM_MERMAID = '# mermaid — Mermaid block inline in docs/architecture/subsystems.md; no c4/ folder';
+ // Earlier releases' verbatim `project.diagram_tool` comment lines, mapped to the lines replacing them.
+ const SHIPPED_DIAGRAM_COMMENTS = new Map([
+   ['# Diagram tool for the subsystem registry and architecture views. Only used when decomposition enabled.', [CURRENT_DIAGRAM_HEADER, CURRENT_DIAGRAM_NONE]],
+   ['# Diagram tool for architecture views. Only used when decomposition and documents.c4 are enabled.', [CURRENT_DIAGRAM_HEADER, CURRENT_DIAGRAM_NONE]],
+-  ['# likec4 — text DSL in design/architecture/c4/model/*.c4 + likec4 CLI builds dist/', [CURRENT_DIAGRAM_LIKEC4]],
+-  ['# mermaid — yaml registry in design/architecture/c4/subsystems.yaml + agent-rendered architecture.html with mermaid blocks', [CURRENT_DIAGRAM_MERMAID]],
+-  ['# mermaid — yaml registry in docs/architecture/c4/subsystems.yaml + agent-rendered architecture.html with mermaid blocks', [CURRENT_DIAGRAM_MERMAID]],
+   ['# Values: likec4 | mermaid', ['# Values: none | likec4 | mermaid']],
+ ]);
+ 
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 9244815..56ffa6a 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -31,16 +31,16 @@
+   "canon_hashes": {
+     "agents/asd-architect.md": "sha256:b6f4b6301624c38d5c5ec43fc590047ed03673a0fe45a5d7f95fe251b52944a7",
+     "agents/asd-ba.md": "sha256:6d53bd1c5f404856e458f6613e6c66a55649e6f072eaf38c54e138cec618f775",
+-    "agents/asd-external-review.md": "sha256:55b2b5a0061641c30c22c2e620a300075a402c62703ee6fdf9df6afa0742bd63",
++    "agents/asd-external-review.md": "sha256:030b7253f205d752eb386a19d7087f8d842bda52d28420dcdddae46725329235",
+     "agents/asd-reviewer-documentation.md": "sha256:566c01a8633b7cd3d49e666cfaaf113b30f48b1baa09e80adda74e199a481235",
+     "agents/asd-reviewer-testing.md": "sha256:cbf0161ca2edc523a0b4b96c9873e3931454d30e9bca2a5e9533d4d1ef8b5e6b",
+     "skills/asd-concept/SKILL.md": "sha256:bf4b60a0fd27c777e62d16cc74eacb0bb3f68a022f7d294c81e43fc99a02abfd",
+     "skills/asd-design-system/SKILL.md": "sha256:f0328b550aa0fa11f03c2177c45ffa628f5942580d1f39689a212136fd3efa7f",
+-    "skills/asd-init/SKILL.md": "sha256:6090767468afe7b06f7147e4a664a308b283a258a8e6825c1e6de3f490b4a252",
++    "skills/asd-init/SKILL.md": "sha256:63f2ca4ca340bffaf444e06e64ce262b8f81c26ee968ce61dadad87ec31f7587",
+     "skills/asd-sprint/SKILL.md": "sha256:2942fcc4b89f86223016bb09d4d58a343dd801534d43d6b0e5219cf8e8e9805c",
+     "skills/asd-stack/SKILL.md": "sha256:dbaf7e457fd58d5de99d5ec0aa4877a32ff599da700bb5ee2deb2379fac690a6",
+     "skills/asd-sync/SKILL.md": "sha256:f198477e9f35ba73c0b4088a690373e504ea0dd731d5fb501af54e477f3d7baa",
+-    "skills/asd-update/SKILL.md": "sha256:c7a52e255b621bcddf21f5891f97c919748a571729a898f2f9e25db5d74a2580",
++    "skills/asd-update/SKILL.md": "sha256:fa71a8e3afe4f6942d8a4011dd5f682ae2671b80a73b26a51bffdf9d0b2a1365",
+     "skills/asd-phase-scope/SKILL.md": "sha256:55c2cc419af90b0c66b6350bdf4955b3fc305c8d93e599ae2ebc2f8117e5ebf9",
+     "skills/asd-phase-audit/SKILL.md": "sha256:8bbda9f2eb8b7925599c387f783d888ba92b12772f82942e8fc28c1e92383eb8",
+     "skills/asd-phase-design/SKILL.md": "sha256:30c104f7de3c4c12a1635aaecb458b60d7d11d7a49a3649f22788fba2783dcdc",
+@@ -62,26 +62,26 @@
+   "upstream_hashes": {
+     ".asd/agents/asd-architect.md": "b6f4b6301624c38d5c5ec43fc590047ed03673a0fe45a5d7f95fe251b52944a7",
+     ".asd/agents/asd-ba.md": "6d53bd1c5f404856e458f6613e6c66a55649e6f072eaf38c54e138cec618f775",
+-    ".asd/agents/asd-external-review.md": "55b2b5a0061641c30c22c2e620a300075a402c62703ee6fdf9df6afa0742bd63",
++    ".asd/agents/asd-external-review.md": "030b7253f205d752eb386a19d7087f8d842bda52d28420dcdddae46725329235",
+     ".asd/agents/asd-reviewer-documentation.md": "566c01a8633b7cd3d49e666cfaaf113b30f48b1baa09e80adda74e199a481235",
+     ".asd/agents/asd-reviewer-testing.md": "cbf0161ca2edc523a0b4b96c9873e3931454d30e9bca2a5e9533d4d1ef8b5e6b",
+     ".asd/hooks/session-start.js": "01bee3a7bdc817a6387f6db6521bc85adad78789b6365630687b2d15842874b1",
+     ".asd/rules/artifact-layout.md": "30c1742ab814da3ec76dff160cd3036b4800774f9cfa00bd45c3e40196f47152",
+     ".asd/rules/checkpoints.md": "aeb01eea65bed3bda456b8e3f36cc48a2eee84214786918de2f910eb3fc9d04a",
+     ".asd/rules/code-style.md": "58167d3f89b718761535dfc887824c264810bfb8bf6b266bfaefed85837d50d0",
+-    ".asd/rules/core.md": "9298cbfe0dffd595b3ca9d6b9d55c8ce7464c4942ce67c737d7fcd03e554ffe7",
++    ".asd/rules/core.md": "e21423b48d7068a8df35024057d10b52bec5e7dd65a639db6dec6f7de9de9665",
+     ".asd/rules/design-principles.md": "b89a20a6ce6ad8bf02f011d26874a552fbca30babd390a147f0ced0d4f71852b",
+     ".asd/rules/design-system.md": "c583c8ba2c08b26685b0a30dea665bb9ac19cc714e8df3622e582f33d1c95371",
+-    ".asd/rules/external-review.md": "9209037cebd8af68eb7066c0cf65436f2efaa2367478c1ee2caf25ff591ccca1",
++    ".asd/rules/external-review.md": "e2884eb2957a520b4d4927fd50b05636a20c540a83964b9298906c2fd424f321",
+     ".asd/rules/git-strategy.md": "ec14d01e3648956fd8e93d30c588f41c15ef1c1e079c02d132e93b9542c4e6f9",
+     ".asd/rules/language-policy.md": "e9b488a4cff5ed193208a52324601bede1a41e2512f2a6f06d0660576940f322",
+     ".asd/rules/providers.md": "e31b79b224ccc85242d02128250d5c9588e3de94e71cdb12512e943ded7fee57",
+     ".asd/rules/review-policy.md": "09b8e8e5f9e12cfce4c20f245b3e5bcf91e704da8e2bcb7c9f25505c1d8508e3",
+-    ".asd/rules/sprint-lifecycle.md": "225b2807dc35ad300f8dc3cb82b117817e4bbb48d0b32ca6cad27c5ca010b8c1",
++    ".asd/rules/sprint-lifecycle.md": "b234a2f44d45266829f0b05547e50c4ce2fb95459e8d298621d7e0a1546ee499",
+     ".asd/rules/ux-principles.md": "9f2af8c90d969c73654812b80e523e33b4c5696f506acf49e4bacb4c0dc6750c",
+     ".asd/skills/asd-concept/SKILL.md": "bf4b60a0fd27c777e62d16cc74eacb0bb3f68a022f7d294c81e43fc99a02abfd",
+     ".asd/skills/asd-design-system/SKILL.md": "f0328b550aa0fa11f03c2177c45ffa628f5942580d1f39689a212136fd3efa7f",
+-    ".asd/skills/asd-init/SKILL.md": "6090767468afe7b06f7147e4a664a308b283a258a8e6825c1e6de3f490b4a252",
++    ".asd/skills/asd-init/SKILL.md": "63f2ca4ca340bffaf444e06e64ce262b8f81c26ee968ce61dadad87ec31f7587",
+     ".asd/skills/asd-phase-audit/SKILL.md": "8bbda9f2eb8b7925599c387f783d888ba92b12772f82942e8fc28c1e92383eb8",
+     ".asd/skills/asd-phase-design-promote/SKILL.md": "c8be3ee0408dad4b3aa2ffbcee02824f0143187ac12d17000fd904886a4ea0b0",
+     ".asd/skills/asd-phase-design-review/SKILL.md": "62db3bbdc0e8206b970a3c3e651470fe9b68b0db3e69b87b3bd109881643b4f7",
+@@ -95,13 +95,13 @@
+     ".asd/skills/asd-sprint/SKILL.md": "2942fcc4b89f86223016bb09d4d58a343dd801534d43d6b0e5219cf8e8e9805c",
+     ".asd/skills/asd-stack/SKILL.md": "dbaf7e457fd58d5de99d5ec0aa4877a32ff599da700bb5ee2deb2379fac690a6",
+     ".asd/skills/asd-sync/SKILL.md": "f198477e9f35ba73c0b4088a690373e504ea0dd731d5fb501af54e477f3d7baa",
+-    ".asd/skills/asd-update/SKILL.md": "c7a52e255b621bcddf21f5891f97c919748a571729a898f2f9e25db5d74a2580",
++    ".asd/skills/asd-update/SKILL.md": "fa71a8e3afe4f6942d8a4011dd5f682ae2671b80a73b26a51bffdf9d0b2a1365",
+     ".asd/skills/asd-update/update.js": "dfb850b3e58588cb8add48403ba08466c8b20729286c187244e9f896607c5d86",
+     ".asd/sync.js": "4ab912097e8161652c5aa0451c43702733f0e0151f6431e0e21c0a0f967d876e",
+     ".asd/templates/external-review/t_prompt-external-design.md": "6e478097fe9f9edb9f9636b2115b6098947924a5fad61c4399f1326c244c9bc6",
+     ".asd/templates/external-review/t_prompt-external-impl.md": "ffddff5a66064934ccf35d604c10b83475d003a35715e4ea2956d4dcd6932cae",
+     ".asd/templates/external-review/t_review-report.md": "a591147f1c5daf2f2f643ceea411055d7cbe2ab5493ee3416f995dd790805bbf",
+-    ".asd/templates/t_AGENTS.md": "097d2cda332b6b20434671b49c00cb2a7f3b0cc24dcef877ef10a6f008b2f390",
++    ".asd/templates/t_AGENTS.md": "ff504a8b39dd36df3dfa8a744e23f8c29a8073d72b6561b017f91aa558a4f097",
+     ".asd/templates/t_CLAUDE.md": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49",
+     ".asd/templates/t_accessibility.html": "ac188f67b5a5b19dfc0a5e5e4a3f4d940b764df3917fbb6cc75bbaefb32b50f9",
+     ".asd/templates/t_adr.html": "9ac045ee1190cf8ee2a54e19b1d76f7e206c726892583267cfb8a657024aea9d",
+@@ -135,7 +135,7 @@
+     ".asd/workflows/asd-phase-design-review.md": "65dc74c56bb4f8eea6fca9df7c79559d7f75adc8fc9ae4108c691b29b94e1b5a",
+     ".asd/workflows/asd-phase-design.md": "803e588939ac9cbae0ccd33539eb36f983f30e7a3ad441ffa9827569aa21220e",
+     ".asd/workflows/asd-phase-impl-review.md": "afbacc9cf0e8aca081372e0043f12b29906709b64fa810665ef1adf250ecb4b4",
+-    ".asd/workflows/asd-phase-impl-test.md": "6e5567613a9c2630b19397a687621cbafa36e07bae9dbdc13ed1395db69423bf",
++    ".asd/workflows/asd-phase-impl-test.md": "3f0083102c27ccfd21a2d157117c7ee130dfe82ee13c74b4f3454c3efb207e0d",
+     ".asd/workflows/asd-phase-impl.md": "d1e1b07f1ed1f7275fad229e0a2583f6f79e2df9da58537321f99cf5723b524c",
+     ".asd/workflows/asd-phase-plan.md": "f9e537226fc6698db0aef56714ae20419b89887da8aa53d73a58f1eb31e697c9",
+     ".asd/workflows/asd-phase-pr.md": "7ba3e17daf073e6648c7522b5107c90c95b195a40146ff96fc4d240237af67e5",
+@@ -149,7 +149,7 @@
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
+     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
+-    ".asd/runtime.js": "c2900857d4529bd1991cb9a6dbcf361a9d37eb6b53a05ce3e0c76caba08efd9f",
++    ".asd/runtime.js": "595a0e35a23e2a5b9035227d116ab2428449fc65d237cb0a90982c8ca3a45441",
+     ".asd/templates/external-review/t_review-scope.json": "66eca780c034c9ea851b5fbd6700c5cf47a0cc9591b5910e2942f35a65402bd9",
+     ".asd/templates/t_friction-log.md": "4937325124026f9af7b977a193a672ed2961e95156a8017212105d87093d02f8",
+     ".asd/templates/t_retrospective.html": "6b1a120d8a22bfeb7180d32f422e5888c7d453a4770a61b8502a1947f5322f1f",
+@@ -157,6 +157,6 @@
+     ".asd/workflows/asd-phase-retro.md": "956218bdfa7087fe2a62390949fce5372a2d5fafcb6e2eccecc5163b54f03afd",
+     ".asd/templates/t_subsystem.md": "1365a20aeb5847a1da23ac88d7a3d0153ba3a8b6a3abbf06b883a689d9ee2f5d",
+     ".asd/templates/t_subsystems.md": "54b1e273e9e74a57e08b43d1b671f880b7f682d9ec1bc4afb95a55d98b2531dd",
+-    ".asd/migrations/9.0.0.js": "470cb486838879dd613a72fd62ccd8afb417c5a864f34f8ec41f7e468f91c5c5"
++    ".asd/migrations/9.0.0.js": "c87b9756dbec2f68fc222ff3cbfedb1b027b2b0c9a9f0b1a48837ae4baf3f37f"
+   }
+ }
+diff --git a/.asd/rules/core.md b/.asd/rules/core.md
+index 9740ab6..e165106 100644
+--- a/.asd/rules/core.md
++++ b/.asd/rules/core.md
+@@ -27,7 +27,7 @@ All project work goes through `/asd-sprint`.
+ ## Invariants
+ 
+ - One active sprint. New sprint blocked until current archived.
+-- Infrastructure files read-only during sprint work. Only `/asd-init` may edit settings — run by the user, or sprint-mediated for a plan's declared settings change (`sprint-lifecycle.md` "Plan file format") — or by a release migration run by `/asd-update`, limited to release-mandated key renames and removals. **Exception**: `self_hosting: enabled` lifts this for the exhaustive allowlist in `sprint-lifecycle.md` "Self-hosting" — generated `.claude/`/`.codex/`/`.agents/skills/` stay read-only always.
++- Infrastructure files read-only during sprint work. Only `/asd-init` may edit settings — run by the user, or sprint-mediated for a plan's declared settings change (`sprint-lifecycle.md` "Plan file format") — or by a release migration run by `/asd-update`, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent. **Exception**: `self_hosting: enabled` lifts this for the exhaustive allowlist in `sprint-lifecycle.md` "Self-hosting" — generated `.claude/`/`.codex/`/`.agents/skills/` stay read-only always.
+ - Every project task flows through a sprint. Ad-hoc edits forbidden.
+ - Folder structure follows `artifact-layout.md`.
+ 
+diff --git a/.asd/rules/external-review.md b/.asd/rules/external-review.md
+index d59a9ac..29f2929 100644
+--- a/.asd/rules/external-review.md
++++ b/.asd/rules/external-review.md
+@@ -8,7 +8,7 @@ Controlled by `review.external_review` in config (`enabled` | `disabled`). If `d
+ 
+ ## OS-specific invocation
+ 
+-OS read from the `external-preflight` output's `platform` (`process.platform`).
++OS read from the `external-preflight` output's `platform` (`process.platform`). Stdin syntax follows the shell that runs the command, not `platform` alone: Claude Code's run-command shell is POSIX bash on every OS (Git Bash on Windows); Codex's is PowerShell on `win32`.
+ 
+ Prompt passed via **heredoc/here-string straight into the wrapped CLI's stdin — never written to disk**. This agent runs read-only on both providers, so no step in the invocation may touch the filesystem. The wrapped CLI's own stdout is captured directly as its final message (the text verdict) — no `-o <out-file>`, no temp file, no cleanup step, because nothing was ever created on disk.
+ 
+@@ -16,10 +16,10 @@ The command TAIL differs per wrapped CLI — this is a real syntax difference. C
+ 
+ `--allowedTools` alone is not a read-only boundary.
+ 
+-| `platform` | Preflight | Review command |
++| Host, `platform` | Preflight | Review command |
+ |---|---|---|
+-| `win32` | runtime helper with direct arguments or its fixed PowerShell shim | `@'<rendered prompt + scope manifest>'@ \| <resolved-command> <wraps_invoke_args>` (here-string piped to stdin) |
+-| any other (`linux`, `darwin`) | runtime helper with direct arguments | `<resolved-command> <wraps_invoke_args> <<'EOF'` / `<rendered prompt + scope manifest>` / `EOF` (heredoc piped to stdin) |
++| Codex, `win32` | runtime helper with direct arguments or its fixed PowerShell shim | `@'<rendered prompt + scope manifest>'@ \| <resolved-command> <wraps_invoke_args>` (here-string piped to stdin) |
++| Claude Code, any; Codex, any other (`linux`, `darwin`) | runtime helper with direct arguments (fixed PowerShell shim allowed on `win32`) | `<resolved-command> <wraps_invoke_args> <<'EOF'` / `<rendered prompt + scope manifest>` / `EOF` (heredoc piped to stdin) |
+ Both forms read prompt+scope manifest from stdin; the wrapped CLI's own read-only filesystem tools resolve `files[]` content from the repo (never from the manifest bytes) — the command's own stdout is the final message text verdict. No `-o <out-file>` for either CLI.
+ 
+ `<wrapped-cli>` is `codex` under Claude Code / `claude` under Codex — command name on every OS (each ships a shell shim plus OS-specific wrappers on Windows; no compiled `.exe`). `<resolved-command>` is that default unless the config override (`system.tools.codex_command` under Claude, `system.tools.claude_command` under Codex) is non-empty, in which case it replaces the lookup path for both probe and review.
+diff --git a/.asd/rules/sprint-lifecycle.md b/.asd/rules/sprint-lifecycle.md
+index 2e7700c..8c4287b 100644
+--- a/.asd/rules/sprint-lifecycle.md
++++ b/.asd/rules/sprint-lifecycle.md
+@@ -240,7 +240,7 @@ Owner: Tester. Runs after every `impl` exit. Selects the test approach **after**
+ 
+ Loops until the impacted set passes. No iteration cap — an unfixable state surfaces as a dev/tester `FAILED`, not as a silent exit.
+ 
+-**Stalemate** — when the last two impl-test entries that routed code defects routed the same identity set, the phase escalates `FAILED: stalemate` instead of routing. Identity is the `Defects` file path, runner failure line and failing test, never `D-N`; `impl-review` rows never count. `node .asd/runtime.js defect-stalemate` compares deterministically. A user answer, logged with the set's digest, covers only the next routing of that set; the same set repeating after it escalates again. Mechanics: `asd-phase-impl-test.md` step 9.
++**Stalemate** — when two consecutive impl-test entries routed the same code-defect identity set (a green entry between them breaks the run), the phase escalates `FAILED: stalemate` instead of routing. Identity is the `Defects` file path, runner failure line and failing test, never `D-N`; `impl-review` rows never count. `node .asd/runtime.js defect-stalemate` compares deterministically. A user answer, logged with the set's digest, covers only the next routing of that set; the same set repeating after it escalates again. Mechanics: `asd-phase-impl-test.md` step 9.
+ 
+ ## Friction log
+ 
+diff --git a/.asd/runtime.js b/.asd/runtime.js
+index c0e855a..1c42ed6 100644
+--- a/.asd/runtime.js
++++ b/.asd/runtime.js
+@@ -144,7 +144,7 @@ function cacheKey(input, authReady) {
+   return fingerprint({ provider: input.provider, model: input.model, command: input.command, auth_args: defaultAuthArgs(input.provider), auth_ready: authReady, auth_generation: authGeneration(input) });
+ }
+ 
+-/** Checks executable and authentication locally without making a model request; reports the host platform External Review keys its stdin syntax on. */
++/** Checks executable and authentication locally without making a model request; reports the host platform External Review combines with its host shell to pick stdin syntax. */
+ function externalPreflight(input) {
+   return { ...localReadiness(input), platform: process.platform };
+ }
+@@ -366,7 +366,7 @@ function tableCells(line) {
+   return line.trim().replace(/^\||\|$/g, '').split(/(?<!\\)\|/).map((cell) => cell.trim().replace(/\\\|/g, '|').replace(/^`(.*)`$/, '$1'));
+ }
+ 
+-/** Compares the code-defect identity sets (file path without line, runner failure line, failing test) of the last two impl-test entries that routed defects in a test plan's `Defects` table; `D-N` ids and `impl-review` rows never take part. `digest` identifies the latest set, so a recorded answer can be keyed to it. */
++/** Compares the code-defect identity sets (file path without line, runner failure line, failing test) of the last two impl-test entries that routed defects in a test plan's `Defects` table, a stalemate only when those entry numbers are consecutive; `D-N` ids and `impl-review` rows never take part. `digest` identifies the latest set, so a recorded answer can be keyed to it. */
+ function defectStalemate(markdown) {
+   if (typeof markdown !== 'string') fail('test-plan markdown required');
+   const section = markdown.replace(/\r\n/g, '\n').split(/^## Defects *$/m)[1];
+@@ -383,9 +383,10 @@ function defectStalemate(markdown) {
+     tuples.add(stable([cells[location].replace(/:\d+(?::\d+)?$/, ''), cells[symptom], cells[test]]));
+     byEntry.set(Number(cells[entry]), tuples);
+   }
+-  const [latest, previous] = [...byEntry.keys()].sort((a, b) => b - a).map((key) => [...byEntry.get(key)].sort());
+-  if (latest === undefined) return { stalemate: false, digest: null };
+-  return { stalemate: previous !== undefined && stable(latest) === stable(previous), digest: fingerprint(latest) };
++  const [latestEntry, previousEntry] = [...byEntry.keys()].sort((a, b) => b - a);
++  if (latestEntry === undefined) return { stalemate: false, digest: null };
++  const [latest, previous] = [latestEntry, previousEntry].map((key) => [...(byEntry.get(key) || [])].sort());
++  return { stalemate: previousEntry === latestEntry - 1 && stable(latest) === stable(previous), digest: fingerprint(latest) };
+ }
+ 
+ function emitManifestCommand(flags) {
+diff --git a/.asd/skills/asd-init/SKILL.md b/.asd/skills/asd-init/SKILL.md
+index e61256a..a3c74de 100644
+--- a/.asd/skills/asd-init/SKILL.md
++++ b/.asd/skills/asd-init/SKILL.md
+@@ -54,7 +54,7 @@
+     - OS, tools, review limits, git settings, `user_gates`, audit mode, diagram_tool, detected build/test/lint/run commands and any affected-test selector
+     Then request user decision: `accept-all` | `edit-section` | `abort`.
+     - `edit-section` → request user decision on which section (os | tools | review | git | commands), collect new values, re-show proposal, loop until `accept-all`
+-    - Missing required tools (Node if `documents.ux_spec: enabled`; likec4 if diagram_tool=likec4; the wrapped external-review CLI if external_review) → must resolve here: install / override path / disable feature. Do NOT silently proceed with missing required tools.
++    - Missing required tools → must resolve here: Node (if `documents.ux_spec: enabled`) → install or `documents.ux_spec: disabled`; likec4 (if diagram_tool=likec4) → install or diagram_tool `mermaid`/`none`; the wrapped external-review CLI (if external_review) → install, override path (`system.tools.codex_command`/`claude_command`) or `review.external_review: disabled`. Do NOT silently proceed with missing required tools.
+     Only after `accept-all` proceed to write.
+ 9. Write `.asd/project/config.yaml` from `t_config.yaml` with approved `user_gates`, audit mode, diagram_tool and other fields.
+ 10. Ask user what custom rules to add (separately for common / design / coding scopes); write three files from templates: `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`. Empty scope still writes template stub (header + intro), so agents always find the file.
+diff --git a/.asd/skills/asd-update/SKILL.md b/.asd/skills/asd-update/SKILL.md
+index ffaa36c..fae9514 100644
+--- a/.asd/skills/asd-update/SKILL.md
++++ b/.asd/skills/asd-update/SKILL.md
+@@ -1,7 +1,7 @@
+ ---
+ {
+   "name": "asd-update",
+-  "description": "Updates the ASD framework infrastructure (.asd/rules, .asd/templates, ASD agents/skills/hooks, .asd/migrations) in a consumer project to the latest version by fetching them from the configured ASD repo's main branch, replacing only framework-managed paths, running any pending `.asd/migrations/<version>.js` scripts in ascending order, and never touching consumer-owned config (beyond a migration's release-mandated key renames and removals), sprints, persistent docs, or custom skills/agents/hooks. Use when the user runs /asd-update or asks to update, upgrade, or pull the latest ASD framework / workflow version."
++  "description": "Updates the ASD framework infrastructure (.asd/rules, .asd/templates, ASD agents/skills/hooks, .asd/migrations) in a consumer project to the latest version by fetching them from the configured ASD repo's main branch, replacing only framework-managed paths, running any pending `.asd/migrations/<version>.js` scripts in ascending order, and never touching consumer-owned config (beyond a migration's release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent), sprints, persistent docs, or custom skills/agents/hooks. Use when the user runs /asd-update or asks to update, upgrade, or pull the latest ASD framework / workflow version."
+ }
+ ---
+ 
+@@ -17,7 +17,7 @@ Read `self_hosting` from `.asd/project/config.yaml` first; missing, unreadable,
+ 
+ Managed set = SSoT in `.asd/release-manifest.json`'s `managed_paths` (canonical `.asd/` trees, `.asd/migrations`, and `sync.js` itself, walked recursively file-by-file) — replacing the old wholesale tree-delete approach with a per-file state machine (`add | update | delete | conflict | conflict-foreign | keep-local-modified | noop`, driven by `classifyUpdateItem` in `.asd/sync.js`). A file whose local hash still matches the last-fetched release is safe to update or delete; a file that diverged is a **conflict** and is never touched without explicit confirmation.
+ 
+-Never touched: `.asd/project/**` (except `config.yaml`, which a release migration may rewrite as a sanctioned settings writer, limited to release-mandated key renames and removals), `.asd/sprints/**`, `docs/**`, `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json`, any non-ASD skill/agent/hook, anything outside `managed_paths`.
++Never touched: `.asd/project/**` (except `config.yaml`, which a release migration may rewrite as a sanctioned settings writer, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent), `.asd/sprints/**`, `docs/**`, `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json`, any non-ASD skill/agent/hook, anything outside `managed_paths`.
+ 
+ ## Run
+ 
+diff --git a/.asd/sync-state.json b/.asd/sync-state.json
+index 1cb6290..34038a4 100644
+--- a/.asd/sync-state.json
++++ b/.asd/sync-state.json
+@@ -4,7 +4,7 @@
+   "entries": {
+     "AGENTS.md": {
+       "kind": "managed-block",
+-      "content_digest": "sha256:097d2cda332b6b20434671b49c00cb2a7f3b0cc24dcef877ef10a6f008b2f390"
++      "content_digest": "sha256:ff504a8b39dd36df3dfa8a744e23f8c29a8073d72b6561b017f91aa558a4f097"
+     },
+     "CLAUDE.md": {
+       "kind": "managed-block",
+diff --git a/.asd/templates/t_AGENTS.md b/.asd/templates/t_AGENTS.md
+index 8463ab0..a33c4a8 100644
+--- a/.asd/templates/t_AGENTS.md
++++ b/.asd/templates/t_AGENTS.md
+@@ -43,6 +43,6 @@ When subsystem decomposition is enabled (`project.subsystem_decomposition`), per
+ 
+ ### Hard rules
+ 
+-- Never modify workflow infrastructure (`.asd/rules/`, `.asd/templates/`, generated agent/skill/hook trees). Only `/asd-init`/`$asd-init` edits settings — run by the user, or by `impl` for a plan-declared settings change — or by a release migration `/asd-update`/`$asd-update` runs, limited to release-mandated key renames and removals.
++- Never modify workflow infrastructure (`.asd/rules/`, `.asd/templates/`, generated agent/skill/hook trees). Only `/asd-init`/`$asd-init` edits settings — run by the user, or by `impl` for a plan-declared settings change — or by a release migration `/asd-update`/`$asd-update` runs, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent.
+ - All project work flows through `/asd-sprint`/`$asd-sprint`. No ad-hoc edits to project code outside a sprint.
+ - One active sprint at a time. New sprint blocked until active one archived.
+diff --git a/.asd/workflows/asd-phase-impl-test.md b/.asd/workflows/asd-phase-impl-test.md
+index dba1697..d83e1cb 100644
+--- a/.asd/workflows/asd-phase-impl-test.md
++++ b/.asd/workflows/asd-phase-impl-test.md
+@@ -10,7 +10,7 @@ Orchestration body for the `asd-phase-impl-test` skill. Operation-mapping to hos
+ ## Operations used
+ - read: `.asd/project/config.yaml`, `state.json`, `plan.md`, `test-plan.md`, persistent docs (PRD ACs, ux-spec), `commands.yaml`, `custom-common-rules.md`, `custom-coding-rules.md`, existing test sources
+ - run command: change-surface diff; `commands.yaml` `test`/`lint`/`build`, impacted-scoped (`sprint-lifecycle.md` "Impacted test set") for the pre-strategy run and the suite gate alike
+-- write `state.json` and decisions-log inline for mechanical phase work
++- write `state.json` and decisions-log inline for mechanical phase work; on an accept-as-debt answer (step 9), `test-plan.md` `Defects` status edits and `.asd/project/stubs.md` registrations
+ - request user decision: out-of-scope test removal gate; escalation
+ - delegate one live `asd-tester` instance for the whole phase (pre-strategy run, strategy, prune/author and suite run); recover from on-disk evidence only after session loss
+ - append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log"
+@@ -27,7 +27,7 @@ No user gate on a green impacted-set run, and none on routing defects back to im
+ 
+ ## Workflow
+ 
+-1. Read `.asd/project/config.yaml` (`language.chat`, `language.docs`, `backward_compat`, `self_hosting`), `<sprint>/state.json` → write `phase=impl-test` inline (mechanical, no gate). Check `<sprint>/test-plan.md` for an `Entry log` with a prior row: none → this is **entry 1** (first entry this sprint); a prior row exists → this is a **re-entry**, and its `HEAD analysed` is `<prior-sha>`
++1. Read `.asd/project/config.yaml` (`language.chat`, `language.docs`, `backward_compat`, `self_hosting`), `<sprint>/state.json` → write `phase=impl-test` inline (mechanical, no gate). Check `<sprint>/test-plan.md` for an `Entry log` with a prior row: none → this is **entry 1** (first entry this sprint); a prior row exists → this is a **re-entry**, and its `HEAD analysed` is `<prior-sha>`. A last row with an empty `HEAD analysed` is the **interrupted current entry** (e.g. a stalemate halt) — resume it: keep its row (step 4 appends none), take `<prior-sha>` from the row before it (none → entry 1, amended not rewritten), never re-append its `D-N` rows; when they exist and a current answer (step 9) names their digest, go straight to step 9's current-answer branch
+ 1a. Route Tester work through `node .asd/runtime.js route-task --input <path>` and persist its result. `execution="command"` runs directly; `execution="agent"` dispatches `asd-tester-<tier>` for `mechanical`/`critical`, or the base `asd-tester` for `tier: standard` (no `-standard` variant exists — `providers.md` "Task-class variants and routing"). Persist `state.json.task_routing[taskId]` per `providers.md`; reuse its tier on re-entry. A risk declared against the change and a failed objective check after one correction are critical and never later downgraded.
+ 2. **Change surface**:
+    - **Entry 1**: run command for `git diff <git.base_branch>...HEAD --stat <exclude_paths>` plus file list, using the same `exclude_paths` as impl-review's self-hosting-aware scoping (`.asd/rules/external-review.md` "Phase-scoped payload" — consumer default excludes `.asd/**`/`docs/**`; `self_hosting: enabled` includes the whole repo minus `.asd/project/**`/`.asd/sprints/**`/generated views). This is the **full change surface**
+@@ -65,6 +65,7 @@ Delta scoping, amend-not-rewrite, the suite-gate rule and its bounded risk: `spr
+ ## Artefacts produced
+ - `<sprint>/test-plan.md` (risk→check decisions, removals, added tests, suite run, defects, optional manual verification spec)
+ - Tests added, adjusted, and deleted in repo
++- `.asd/project/stubs.md` `(accepted-debt)` rows on an accept-as-debt answer
+ - Updated `state.json` (phase=impl-test; `test_defects_pending` set when routing back to impl)
+ - Git commits per Conventional Commits
+ - decisions-log entry on green impacted run or defect routing
+diff --git a/.claude/agent-memory/asd-reviewer-correctness/MEMORY.md b/.claude/agent-memory/asd-reviewer-correctness/MEMORY.md
+index 01b923e..82011de 100644
+--- a/.claude/agent-memory/asd-reviewer-correctness/MEMORY.md
++++ b/.claude/agent-memory/asd-reviewer-correctness/MEMORY.md
+@@ -3,3 +3,4 @@
+ - [Prompt snapshot is the base branch](project_prompt-snapshot-is-base-branch.md) — injected AGENTS.md/git status predate the reviewed branch; read every quoted path off disk
+ - [Operations-used run-command convention](project_operations-block-run-command-convention.md) — `node .asd/runtime.js` is never declared in any workflow's Operations block; check uniformity before calling it a gap
+ - [Trace AC to its motivating case](feedback_trace-ac-to-motivating-case.md) — walk a retro row's evidenced case through the post-fix rule; tightening fixes can make it inexpressible
++- [OS is not shell](project_os-is-not-shell.md) — Claude Code runs commands via POSIX `Bash` even on win32; OS-keyed shell syntax is wrong for one provider
+diff --git a/.claude/agent-memory/asd-reviewer-correctness/feedback_review-method-no-shell.md b/.claude/agent-memory/asd-reviewer-correctness/feedback_review-method-no-shell.md
+index 5d182df..0eac667 100644
+--- a/.claude/agent-memory/asd-reviewer-correctness/feedback_review-method-no-shell.md
++++ b/.claude/agent-memory/asd-reviewer-correctness/feedback_review-method-no-shell.md
+@@ -10,9 +10,11 @@ Review dispatches in this repo give no shell/Bash. Resolve the diff scope by rea
+ **Why:** this reviewer gets no command-runner grant on either provider (write scope: `review-policy.md` "Gate Verdict Format"; tool mapping: `.asd/rules/providers.md`). The phase orchestrator computes the diff and hands over the path list plus a `correctness.manifest.json` (or `correctness.part-N.manifest.json` under a split dispatch).
+ 
+ **How to apply:**
+-- Ledger `files` rows must match the manifest exactly; the orchestrator validates with `node .asd/runtime.js validate-ledger`, so a shape mismatch means a re-dispatch. Copy `n/a` predicates byte-identically from the manifest's `n_a` map; row statuses come from the manifest's own `vocabulary` field (which also names the single status carrying `p` and the single one carrying `f`).
++- Ledger `files` rows must match the manifest exactly; the orchestrator validates with `node .asd/runtime.js validate-ledger`, so a shape mismatch means a re-dispatch. Copy `n/a` predicates byte-identically from the manifest's `n_a` map; row statuses come from the manifest's own `vocabulary` field (which also names the single status carrying `p` and the single one carrying `f`). A row's `f` is ONE finding id, so each finding needs its own `finding` row.
++- Under a split dispatch every rule/section carries the out-of-part `n/a`, but an id whose evidence IS in this part should still be reviewed (`reviewed`/`pass`/`finding`), not reflexively n/a'd. `isUiSurface` counts `.asd/templates/*.html`, so a part holding one reviews UI conformance under the self-hosting carve-out.
+ - A payload that names a diff range as data (e.g. "Diff: `git diff main...HEAD -- <files>`") or offers reading the files directly is within policy: review from on-disk reads. A payload that instructs running a command this reviewer cannot run is outside its declared tool policy: return `QUESTION` naming the contradiction and do not comply (`providers.md` "Role-scoped context" "Declared tool policy", loaded as a mandatory rule by the agent definition).
+ - Never open `reviews/<phase>/iter-*/` from an earlier iteration — clean context per iteration is a hard rule, and the severity floor already encodes what earlier iterations settled.
+ - Cross-file consistency is the dominant defect class here (canon vs generated views vs README/CHANGELOG vs `release-manifest.json`); a deletion in one canonical file usually leaves a dangling reference elsewhere, so grep the repo for removed identifiers even when the referencing file is outside the diff — the change-surface rule permits this when the change is what made the other file wrong.
+ - **Highest-yield trace for a rules/workflow sprint**: for every AC, find both halves — the obligation in the rule doc AND its binding at the acting site (the `asd-phase-*.md` step, template, or agent file the acting agent actually reads). A rule with no acting-site binding, or a rule that counts an exact literal another file must emit, is the recurring finding here; check the literal against what the emitting side really writes (sprint decisions-log entries are legitimate evidence even though `.asd/sprints/**` is outside the review surface).
+ - Also trace a new trigger condition against every seeding site that can pre-satisfy it (sprint 012: `/asd-init` seeds an empty registry, which made audit's "registry absent" branch unreachable for freshly initialised brownfield projects).
++- For a new halt/escalation branch (e.g. a `FAILED` that `asd-sprint` relays and halts on), walk the resume path: the phase re-runs from step 1, so check that its entry detection copes with the state the halt left half-written (sprint 013: impl-test's stalemate halt leaves the `Entry log` row's `HEAD analysed` unfilled, which step 1 reads as a finished prior entry).
+diff --git a/.claude/agent-memory/asd-reviewer-correctness/project_os-is-not-shell.md b/.claude/agent-memory/asd-reviewer-correctness/project_os-is-not-shell.md
+new file mode 100644
+index 0000000..4dafc35
+--- /dev/null
++++ b/.claude/agent-memory/asd-reviewer-correctness/project_os-is-not-shell.md
+@@ -0,0 +1,12 @@
++---
++name: os-is-not-shell
++description: In this framework the host OS does not decide which shell runs a command - Claude Code's run-command op is `Bash` (POSIX, Git Bash on Windows) while Codex's shell tool is PowerShell on Windows; check any OS-keyed command syntax against the provider
++metadata:
++  type: project
++---
++
++A rule that picks command syntax (heredoc vs PowerShell here-string, path separators, quoting) from the OS alone is wrong for one provider on Windows. `providers.md` maps "run a command" to `Bash` under Claude Code, and `asd-external-review.md`'s Claude tool list grants only `Bash`, so a `win32` host under Claude still needs POSIX syntax.
++
++**Why:** sprint 013 impl-review iter 1. AC-16 moved External Review's stdin syntax from the user-set `system.os` onto `external-preflight`'s `process.platform`, which removed the only override. Audit risk "External Review picks the wrong stdin syntax" had already named this, and nothing mitigated it. Archived sprint 001 `reviews/impl/iter-02/external.md` shows a heredoc actually working on this Windows host.
++
++**How to apply:** when a diff keys shell syntax on an OS value, trace which tool runs it for each provider (`providers.md` semantic-op table plus the agent's frontmatter tool grants) before accepting it. Pairs with [[review-method-no-shell]]'s acting-site trace.
+diff --git a/.claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md b/.claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md
+index 4294df5..0c3621a 100644
+--- a/.claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md
++++ b/.claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md
+@@ -1,13 +1,15 @@
+ ---
+ name: no-shell-doc-review-method
+-description: How documentation review runs in this framework repo - no shell, manifest-driven ledger vocabulary (emitter-produced, possibly split into parts), and the defect shapes that actually pay off (acting-site scope contradicting the cited SSoT, partial mirror updates when a rule gains a trigger, sole-home claims wider than the code, new failure branches missing from an exhaustive blocker list, and agent-memory claims stale at HEAD or contradicting the writer's definition)
++description: How documentation review runs in this framework repo - no shell, manifest-driven ledger vocabulary (emitter-produced, possibly split into parts), and the defect shapes that actually pay off (acting-site scope contradicting the cited SSoT, partial mirror updates when a rule gains a trigger, sole-home claims wider than the code, authority bounds narrower than their only instance, new failure branches missing from an exhaustive blocker list, new in-body comments in tests/run.js, and agent-memory claims stale at HEAD or contradicting the writer's definition)
+ metadata:
+   type: feedback
+ ---
+ 
+ Dispatches give no Bash even when the payload says "diff under review: `git diff A...HEAD`". Resolve the
+ surface by reading the manifest's scoped paths with Read/Grep/Glob and say once that the diff was derived
+-from file reads. Ledger statuses, `n/a` predicates and `p`/`f` placement come off the dispatched
++from file reads. The sprint's `audit.md` "Gaps" names every pre-change reader as `file:line`, and `plan.md`
++task lines cite the same - together they locate the changed lines without a diff. Ledger statuses, `n/a`
++predicates and `p`/`f` placement come off the dispatched
+ manifest's `vocabulary`/`n_a` fields, copied byte-identically; `review-policy.md` "Coverage ledger" is the
+ shape rule only. Since sprint 012 manifests come from `runtime.js emit-manifest`; a scope above 25 files
+ arrives as `documentation.part-N.manifest.json`, where every rule id carries the out-of-part predicate -
+@@ -38,6 +40,15 @@ what changed; prior `reviews/` iterations stay unread.
+   rule doc still restates the rest. Check the claim against the code and grep for restatements - e.g.
+   quoted `` `n/a: <predicate>` `` literals in canon (deliberate, pinned by a test) falsify "predicate text
+   lives only in runtime.js".
++- **Authority bounds narrower than their only instance.** The mirror image: a sprint sanctioning a new
++  writer names a limit ("limited to X") and the one script it sanctions does more than X. Sprint 013:
++  `core.md`/`t_AGENTS.md`/`asd-update` bound release migrations to "key renames and removals" while
++  `9.0.0.js` also rewrites surviving keys' values, inserts keys and rewords shipped comments. Read the code.
++- **In-body comments in `tests/run.js`.** It holds dozens of pre-existing in-body `//` comments, out of
++  surface. Without a diff, find the new ones by grepping `^\s{2,}//` and keeping only hits inside tests named
++  for the current sprint (`sprint-NNN`) - 013 found a `// ponytail:` note there (§7, high).
++- Migration comments in `.asd/migrations/*.js` follow the `6.0.0.js` precedent (member docs carrying WHY,
++  "Temp file plus rename: ..."); that style alone is not a §7 finding.
+ - **Agent-memory files are reviewable source** (`artifact-layout.md` "Agent memory"): verify durable claims
+   against HEAD (exported helpers, CLI exit behaviour, manifest reach, `MEMORY.md` links) AND against the
+   writer's own definition - sprint 012 reviewer memories told the agent to proceed silently on an
+diff --git a/.claude/agent-memory/asd-reviewer-efficiency/MEMORY.md b/.claude/agent-memory/asd-reviewer-efficiency/MEMORY.md
+index 2bcd27a..077fc09 100644
+--- a/.claude/agent-memory/asd-reviewer-efficiency/MEMORY.md
++++ b/.claude/agent-memory/asd-reviewer-efficiency/MEMORY.md
+@@ -1,2 +1,2 @@
+ - [runtime.js stays one file](feedback_runtime-js-single-file.md) — user overrode the SC-1 split for `.asd/runtime.js`; never re-raise it, judge only new code.
+-- [No-shell incremental scope](feedback_no-shell-incremental-scope.md) — rebuild iter-2+ delta from decisions-log fix entry + test-plan Entry log; memory bloat is outside economy reach.
++- [No-shell change surface](feedback_no-shell-incremental-scope.md) — rebuild iter-1/iter-2+ surface from plan/audit/test-plan/decisions-log; memory bloat and test micro-costs not raised.
+diff --git a/.claude/agent-memory/asd-reviewer-efficiency/feedback_no-shell-incremental-scope.md b/.claude/agent-memory/asd-reviewer-efficiency/feedback_no-shell-incremental-scope.md
+index 3e583a5..9240fe8 100644
+--- a/.claude/agent-memory/asd-reviewer-efficiency/feedback_no-shell-incremental-scope.md
++++ b/.claude/agent-memory/asd-reviewer-efficiency/feedback_no-shell-incremental-scope.md
+@@ -1,12 +1,12 @@
+ ---
+ name: no-shell-incremental-scope
+-description: Efficiency review dispatches have no shell; how to recover an iter-2+ incremental delta without git diff, and which growth findings are out of reach
++description: Efficiency review dispatches have no shell; how to recover the change surface (iter 1 and iter 2+) without git diff, and which growth findings are out of reach
+ metadata:
+   type: feedback
+ ---
+ 
+-Dispatches say "`git diff <sha>...HEAD`" but this reviewer has no shell. Read the manifest's `files` on disk and rebuild the delta from the sprint's own records: the `decisions-log.md` entry "impl review-fix for iter-NN: findings resolved" (finding ids, accepted flagged choices) and `test-plan.md` "Entry log" rows (per-entry scope and commit ranges). Never open earlier `reviews/*/iter-*/` files.
++Dispatches say "`git diff <sha>...HEAD`" but this reviewer has no shell (Read/Glob/Grep only). Read the manifest's `files` on disk and rebuild the delta from the sprint's own records. Iter 1: `plan.md` task subtasks (they cite file:line per edit), `audit.md` "Touched areas"/"Gaps" (line-level touch map), `test-plan.md` "Added tests"/"Risk → check decisions" (names every added/adjusted test in `tests/run.js`, grep by its title), and the `decisions-log.md` "impl assessment approved" entry (flagged choices the orchestrator routed back and had fixed are requested scope, not creep). Iter 2+: the `decisions-log.md` entry "impl review-fix for iter-NN: findings resolved" and `test-plan.md` "Entry log" rows. Never open earlier `reviews/*/iter-*/` files.
+ 
+-**Why:** a finding must sit on the change surface (`review-policy.md` "Change-surface rule"). Without a diff, those two records are the only stated list of what changed.
++**Why:** a finding must sit on the change surface (`review-policy.md` "Change-surface rule"). Without a diff, those records are the only stated list of what changed.
+ 
+-**How to apply:** raise a finding only on a line you can tie to a listed fix. Agent-memory growth is outside `artifact-layout.md` "Documentation economy" reach (it lists canon and sprint artifacts only; sprint 012 left 010 P1 out of scope), so do not raise memory-file bloat as an economy finding. See [[runtime-js-single-file]].
++**How to apply:** raise a finding only on a line you can tie to a listed change. Agent-memory growth is outside `artifact-layout.md` "Documentation economy" reach (it lists canon and sprint artifacts only; sprint 012 left 010 P1 out of scope), so do not raise memory-file bloat as an economy finding. Test-only micro-costs (e.g. a RegExp rebuilt per line in a one-shot canon sweep, tens of ms) fail the complexity-vs-value bar; don't spend an iteration on them. See [[runtime-js-single-file]].
+diff --git a/.claude/agent-memory/asd-reviewer-testing/MEMORY.md b/.claude/agent-memory/asd-reviewer-testing/MEMORY.md
+index 6bdb6d5..4011a3b 100644
+--- a/.claude/agent-memory/asd-reviewer-testing/MEMORY.md
++++ b/.claude/agent-memory/asd-reviewer-testing/MEMORY.md
+@@ -1,5 +1,6 @@
+ # Memory Index
+ 
+ - [No-shell review method](feedback_no-shell-review-method.md) — no Bash; shell instruction in payload → QUESTION; corroborate fail-first runs via release-manifest ledger arithmetic
+-- [Split-part rubric rows](project_split-part-rubric-rows.md) — out-of-part n/a is granted on every rule in every part; the tests-holding part must resolve rows; check assert messages vs predicates
++- [Split-part rubric rows](project_split-part-rubric-rows.md) — every part resolves rubric rows (source-only part reads tests as context); tests/run.js defects stay in its part; assert message vs predicate
+ - [Removed-flag vacuity](feedback_removed-flag-vacuity.md) — "removed flag no longer does X" asserts can pass at the parser; entry rows naming only test-bearing finding ids are below floor
++- [Sweep exemption granularity](feedback_sweep-exemption-granularity.md) — removed-key canon sweeps: per-line wording skips span whole paragraphs; same-named state field exempts all config readers
+diff --git a/.claude/agent-memory/asd-reviewer-testing/feedback_sweep-exemption-granularity.md b/.claude/agent-memory/asd-reviewer-testing/feedback_sweep-exemption-granularity.md
+new file mode 100644
+index 0000000..72f7f5b
+--- /dev/null
++++ b/.claude/agent-memory/asd-reviewer-testing/feedback_sweep-exemption-granularity.md
+@@ -0,0 +1,15 @@
++---
++name: sweep-exemption-granularity
++description: Canon "no removed name survives" sweeps in tests/run.js - check exemption granularity; a per-line wording skip spans a whole paragraph, and a key-name skip for a same-named state field hides every config reader of it
++metadata:
++  type: feedback
++---
++
++When a sprint removes config keys, `tests/run.js` usually gets a sweep over canon asserting no removed name survives. Check how its exemptions are scoped, not only that it is green.
++
++- Canon rule docs write whole paragraphs on one physical line. So a skip like `if (/legacy/i.test(line)) return` exempts the entire paragraph, often the very rule paragraph that used to read the key. Sprint 013 had 13+ canon lines exempted this way, among them `sprint-lifecycle.md` :9, :155 and :345.
++- If a removed config key shares its dotted name with a field the state template still freezes (sprint 013: config `documents.c4` vs `t_state.json` `documents.c4`), a "skip what state still carries" rule exempts that key completely. Every config reader of it then goes unguarded. Check whether any other assert fills the gap. In sprint 013 none did: the asd-init step-13/14 asserts only checked that `diagram_tool`/`likec4` were present, never that `documents.c4` was absent.
++
++**Why:** a sweep with a broad exemption is green today and still green after the reader comes back, so the risk row looks settled when it is not.
++
++**How to apply:** for each exemption, list the lines it currently skips. Grep the exempting token together with the removed names. The sound fix is to pin that skipped set with `deepStrictEqual`, as in [[no-shell-review-method]] "Exemption sets". Raise medium when a skipped line is a former reader site.
+diff --git a/.claude/agent-memory/asd-reviewer-testing/project_split-part-rubric-rows.md b/.claude/agent-memory/asd-reviewer-testing/project_split-part-rubric-rows.md
+index a6fc274..fdc6737 100644
+--- a/.claude/agent-memory/asd-reviewer-testing/project_split-part-rubric-rows.md
++++ b/.claude/agent-memory/asd-reviewer-testing/project_split-part-rubric-rows.md
+@@ -1,6 +1,6 @@
+ ---
+ name: split-part-rubric-rows
+-description: In a split testing review every rule id carries the out-of-part n/a in every part, so the part holding tests/run.js must resolve rubric rows itself; also check assert messages claim nothing their predicate skips
++description: In a split testing review every rule id carries the out-of-part n/a in every part, so the parts must resolve rubric rows themselves (the source-only part too, reading tests/run.js as context); also check assert messages claim nothing their predicate skips
+ metadata:
+   type: project
+ ---
+@@ -9,6 +9,6 @@ Since sprint 012 `emit-manifest` gives every rule id in EVERY part the out-of-pa
+ 
+ **Why:** the authorization is mechanical, not a statement that the other part really holds the evidence; if both parts take the easy `n/a`, the reviewer counts as incomplete.
+ 
+-**How to apply:** in a testing split, the part whose files include `tests/run.js` and `test-plan.md`'s exercised surfaces resolves every rubric row as `pass`/`finding` (stubs.md and `TODO(sprint-` grep take one call each). Use the out-of-part `n/a` only for an id you truly could not judge from your part's files.
++**How to apply:** in a testing split, the part whose files include `tests/run.js` and `test-plan.md`'s exercised surfaces resolves every rubric row as `pass`/`finding` (stubs.md and `TODO(sprint-` grep take one call each). The part holding only source files (sprint 013 iter-01 part 1: `runtime.js`, migrations, hooks, rules, skills) can also resolve rows as `pass`/`finding`: read the matching `tests/run.js` tests as context and judge whether its own files' behaviour is covered. Use the out-of-part `n/a` only for an id you truly could not judge from your part's files. A defect that lives in `tests/run.js` itself belongs to the part that holds that file, even when the source site it fails to guard is in your part. Examples: a sweep exemption that is too broad ([[sweep-exemption-granularity]]), or a record-shape problem such as sprint 013's off-template `Decision` value `adjust` with an empty Removed tests table after a test was replaced. The manifest limits findings to the part's own files. Give the other part a one-line pointer in Next action, not a finding.
+ 
+ Test-quality pattern worth checking each review: an assert whose message claims two properties while its predicate checks one (sprint 012 iter-01: asd-init step-13 seed assert says "registry seed precedes it unconditionally" but only checks `documents.c4` precedes `c4/model`). Replay a mutation that breaks only the unchecked half; green means a finding. See [[no-shell-review-method]].
+diff --git a/AGENTS.md b/AGENTS.md
+index 606dcf6..00ac5ad 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -44,7 +44,7 @@ When subsystem decomposition is enabled (`project.subsystem_decomposition`), per
+ 
+ ### Hard rules
+ 
+-- Never modify workflow infrastructure (`.asd/rules/`, `.asd/templates/`, generated agent/skill/hook trees). Only `/asd-init`/`$asd-init` edits settings — run by the user, or by `impl` for a plan-declared settings change — or by a release migration `/asd-update`/`$asd-update` runs, limited to release-mandated key renames and removals.
++- Never modify workflow infrastructure (`.asd/rules/`, `.asd/templates/`, generated agent/skill/hook trees). Only `/asd-init`/`$asd-init` edits settings — run by the user, or by `impl` for a plan-declared settings change — or by a release migration `/asd-update`/`$asd-update` runs, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent.
+ - All project work flows through `/asd-sprint`/`$asd-sprint`. No ad-hoc edits to project code outside a sprint.
+ - One active sprint at a time. New sprint blocked until active one archived.
+ <!-- asd:end -->
+diff --git a/README.md b/README.md
+index 3945f2c..b21461b 100644
+--- a/README.md
++++ b/README.md
+@@ -83,7 +83,7 @@ This fetches the latest framework files from the ASD repo's `main` branch and re
+ 
+ | Updated (overwritten) | Never touched |
+ |---|---|
+-| `.asd/rules/`, `.asd/templates/` | `.asd/project/` (your config, custom rules) — except a release migration's release-mandated `config.yaml` key renames and removals |
++| `.asd/rules/`, `.asd/templates/` | `.asd/project/` (your config, custom rules) — except a release migration's release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent in `config.yaml` |
+ | `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/migrations/`, `.asd/sync.js`, `.asd/runtime.js` | `.asd/sprints/` (your sprint work) |
+ | `.asd/release-manifest.json` itself | `docs/` (your persistent docs) |
+ | | `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json` |
+@@ -183,7 +183,7 @@ User-facing commands available at any time. Invocation form differs per provider
+ | `/asd-stack` | `$asd-stack` | Form or edit `docs/architecture/stack.html` (architect proposes from concept; same 4 variants) |
+ | `/asd-design-system` | `$asd-design-system` | Form or edit `docs/ux/DESIGN.md`, `design-system.html`, `accessibility.html` (3 entry variants: greenfield / constraints / brownfield) |
+ | `/asd-sprint` | `$asd-sprint` | Start a new sprint or resume the active one |
+-| `/asd-update` | `$asd-update` | Update framework infrastructure (rules, templates, ASD agents/skills/hooks, `.asd/migrations`) to the latest version from the ASD repo's main branch, then run any pending migration scripts in ascending order; never touches your config (beyond a migration's release-mandated key renames and removals), sprints, persistent docs, or custom skills/agents/hooks |
++| `/asd-update` | `$asd-update` | Update framework infrastructure (rules, templates, ASD agents/skills/hooks, `.asd/migrations`) to the latest version from the ASD repo's main branch, then run any pending migration scripts in ascending order; never touches your config (beyond a migration's release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent), sprints, persistent docs, or custom skills/agents/hooks |
+ | `/asd-sync` | `$asd-sync` | Reconcile generated provider views (`.claude/`, `.codex/`, `.agents/skills/`) with canonical `.asd/` sources — per-file overwrite/keep/diff confirmation, never a silent bulk overwrite |
+ 
+ Phase skills (`asd-phase-*`) are dispatched internally by `/asd-sprint`/`$asd-sprint`. You usually do not invoke them directly, but you can use them to re-run a specific phase of the active sprint.
+@@ -220,7 +220,7 @@ Reviewers write no review artifact, code or doc on any provider (scope: `review-
+ 
+ Reviewers emit a machine-parseable first-line verdict token: `[REVIEW-<phase>-<reviewer>]: APPROVE|CONCERNS|FAIL`, where `<phase>` is `design` or `impl` and `<reviewer>` is `correctness | efficiency | testing | documentation | external`.
+ 
+-**Diff-scoped rubric-section gating** (always on — see `.asd/rules/review-policy.md` "Diff-scoped impl-review fan-out" for the SSoT): Correctness and Efficiency are always dispatched; two diff-derived predicates instead mark a rubric SECTION `n/a: <predicate>` inside that reviewer's own returned coverage ledger, so the agent never loads that domain's inputs for the n/a'd section. Correctness's UI conformance section is n/a only when no file in the iteration's scope list is a UI surface; Efficiency's five performance sections are n/a only when both no perf-budgets section exists in `custom-coding-rules.md` and the scope list contains no executable file (conjunctive). Each n/a'd section re-enters automatically the moment a qualifying file re-enters the diff. `checkpoints.md`'s impl-review approval gate is unaffected (`review-policy.md` DoD table).
++**Diff-scoped rubric-section gating** (always on — SSoT: `.asd/workflows/asd-phase-impl-review.md` step 5): Correctness and Efficiency are always dispatched; two diff-derived predicates instead mark a rubric SECTION `n/a: <predicate>` inside that reviewer's own returned coverage ledger, so the agent never loads that domain's inputs for the n/a'd section. Correctness's UI conformance section is n/a only when no file in the iteration's scope list is a UI surface; Efficiency's five performance sections are n/a only when both no perf-budgets section exists in `custom-coding-rules.md` and the scope list contains no executable file (conjunctive). Each n/a'd section re-enters automatically the moment a qualifying file re-enters the diff. `checkpoints.md`'s impl-review approval gate is unaffected (`review-policy.md` DoD table).
+ 
+ An **APPROVE latch** persists per phase per reviewer key in `state.json`: a reviewer that returned APPROVE on iteration N is not re-dispatched on N+1+ within the same phase, and counts as satisfied at the DoD. A red full suite at the end of impl-review (see below) clears every latch sprint-wide.
+ 
+@@ -294,7 +294,7 @@ your-project/
+ │   ├── release-manifest.json        # schema/asd version, managed-path list, model-family table; drives /asd-update + sync.js
+ │   ├── sync-state.json              # last-written digests for managed-block / JSON-merge targets (committed)
+ │   ├── sync.js                      # generator: canon -> .claude/ + .codex/ + .agents/skills/ (--check / --apply)
+-│   ├── runtime.js                   # deterministic helper: task-cost routing, external-review preflight, coverage-manifest emission and split, coverage-ledger validation, manifest digests
++│   ├── runtime.js                   # deterministic helper: task-cost routing, external-review preflight, coverage-manifest emission and split, coverage-ledger validation, manifest digests, impl-test defect-stalemate comparison
+ │   ├── rules/                       # workflow rules (role/phase-scoped reads), incl. providers.md
+ │   ├── templates/                   # artifact templates (t_*.html / .md / .yaml / .c4), incl. t_AGENTS.md / t_CLAUDE.md
+ │   ├── agents/                      # 11 canonical agent specs plus declared tier variants (JSON frontmatter: claude{} + codex{} blocks)
+diff --git a/tests/run.js b/tests/run.js
+index ef9e349..595eef8 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -2903,19 +2903,27 @@ test('sprint-013 AC-13..AC-18/AC-20: no config key the 9.0.0 migration removes s
+ 
+   const state = JSON.parse(readRepoFile('.asd/templates/t_state.json'));
+   const frozenInState = (key) => key.split('.').reduce((node, part) => (node && typeof node === 'object' && Object.hasOwn(node, part) ? node[part] : undefined), state) !== undefined;
+-  // ponytail: a bare leaf is searched only when it carries `_`; `os`, `c4`, `likec4` are searched dotted, since bare they name live tools and state fields.
+-  const needles = [...new Set(removed.filter((key) => !frozenInState(key)).flatMap((key) => [key, key.split('.').pop()].filter((name, index) => index === 0 || name.includes('_'))))];
++  const leafIsUnambiguous = (leaf) => leaf.includes('_');
++  const spellings = (key) => [key, key.split('.').pop()].filter((name, index) => index === 0 || leafIsUnambiguous(name));
++  const needles = [...new Set(removed.flatMap(spellings))];
+   const hooks = fs.readdirSync(path.join(REPO_ROOT, '.asd/hooks')).map((file) => `.asd/hooks/${file}`);
+-  const offenders = [];
++  const [offenders, legacyLines, frozenReaders] = [[], [], []];
+   for (const rel of [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/templates/t_state.json', '.asd/runtime.js', ...hooks]) {
+     canonText(rel).split('\n').forEach((line, index) => {
+-      if (/legacy/i.test(line)) return;
+-      for (const needle of needles) {
+-        if (new RegExp(`(?<![\\w-])${needle.replace(/\./g, '\\.')}(?![\\w-])`).test(line)) offenders.push(`${rel}:${index + 1}: ${needle}`);
++      for (const needle of needles.filter((name) => new RegExp(`(?<![\\w-])${name.replace(/\./g, '\\.')}(?![\\w-])`).test(line))) {
++        if (/legacy/i.test(line)) legacyLines.push(`${rel}: ${needle}`);
++        else if (frozenInState(needle)) frozenReaders.push(`${rel}: ${needle}`);
++        else offenders.push(`${rel}:${index + 1}: ${needle}`);
+       }
+     });
+   }
+   assert.deepStrictEqual(offenders, [], `removed config keys [${needles.join(', ')}] must have no reader left - an agent told to read one acts on a setting nothing writes. Allowed only: a state field t_state.json still carries, and a line that states legacy handling`);
++  assert.deepStrictEqual(legacyLines.sort(), ['.asd/rules/sprint-lifecycle.md: scoped_fan_out', '.asd/rules/sprint-lifecycle.md: skip_design_phases'], 'a line mentioning "legacy" is exempt as a whole, so every exempted hit is pinned - the collapse paragraph ignoring a legacy skip_design_phases state field and the legacy skipped-verdict note on scoped_fan_out. A new hit may be a reader hidden in a legacy paragraph; review it and re-pin');
++  assert.deepStrictEqual(frozenReaders.sort(), [
++    ...Array(4).fill('.asd/rules/sprint-lifecycle.md: documents.c4'),
++    '.asd/workflows/asd-phase-design-promote.md: documents.c4',
++    ...Array(5).fill('.asd/workflows/asd-phase-design.md: documents.c4'),
++  ], 'documents.c4 survives only as the state.json field scope freezes, so its reader lines are pinned - a new line may read the removed config key; confirm it reads state.json and re-pin');
+ });
+ 
+ // ===========================================================================
+@@ -4491,9 +4499,11 @@ test("sprint-012 AC-14..AC-18: docs/architecture/subsystems.md is the one subsys
+   assert.ok(sectionOf(lifecycle, 'Audit phase').includes('`checkpoints.md` "Gate policy"'), '"Audit phase" must send its confirmation and deletion gates to that hard list');
+ 
+   const seed = stepOf(sectionOf('.asd/skills/asd-init/SKILL.md', 'Workflow (fresh)'), '13');
++  const gitignore = stepOf(sectionOf('.asd/skills/asd-init/SKILL.md', 'Workflow (fresh)'), '14');
+   const diagramCondition = seed.indexOf('`diagram_tool`');
+   assert.ok(seed.indexOf(registry) !== -1 && seed.indexOf(registry) < diagramCondition && diagramCondition < seed.indexOf('c4/model'), 'AC-16/AC-18, sprint-013 AC-13: asd-init must seed c4/ only under the diagram_tool condition, while the registry seed precedes it unconditionally');
+-  assert.ok(stepOf(sectionOf('.asd/skills/asd-init/SKILL.md', 'Workflow (fresh)'), '14').includes('likec4'), 'sprint-013 AC-13: the .gitignore entry for c4 build output must carry the same likec4 condition as the seed that creates c4/');
++  assert.ok(gitignore.includes('likec4'), 'sprint-013 AC-13: the .gitignore entry for c4 build output must carry the same likec4 condition as the seed that creates c4/');
++  assert.deepStrictEqual([seed, gitignore].filter((step) => step.includes('documents.c4')), [], 'sprint-013 AC-13: asd-init steps 13 and 14 must not key on the removed documents.c4 - init writes config, which no longer carries it');
+ });
+ 
+ // ===========================================================================
+@@ -4551,7 +4561,7 @@ function migrateConfig900(text) {
+   return run();
+ }
+ 
+-test('sprint-013 AC-1/AC-2: defect-stalemate compares the identity sets of the last two impl-test entries that routed defects - file path without its line, verbatim runner line, failing test - never D-N ids, row order or impl-review rows, and its digest names the latest set', () => {
++test('sprint-013 AC-1/AC-2: defect-stalemate compares the identity sets of two consecutive impl-test entries that routed defects - file path without its line, verbatim runner line, failing test - never D-N ids, row order or impl-review rows, and its digest names the latest set', () => {
+   const { row, plan } = defectPlanFixture();
+   const verdict = (rows, eol) => runtime.defectStalemate(plan(rows, eol));
+   const moved = (tuple, location) => [location, tuple[1], tuple[2]];
+@@ -4572,7 +4582,8 @@ test('sprint-013 AC-1/AC-2: defect-stalemate compares the identity sets of the l
+ 
+   assert.strictEqual(verdict([row('D-1', '1', DEFECT_PARSER), row('D-2', '2', DEFECT_PARSER), row('D-3', 'impl-review', DEFECT_SPLITTER)]).stalemate, true, 'an impl-review row never joins an entry set, the latest included');
+   assert.strictEqual(verdict([row('D-1', 'impl-review', DEFECT_PARSER), row('D-2', '1', DEFECT_PARSER)]).stalemate, false, 'an impl-review row is not an impl-test entry, so one routing entry has nothing to repeat');
+-  assert.strictEqual(verdict([row('D-1', '1', DEFECT_SPLITTER), row('D-2', '2', DEFECT_PARSER), row('D-3', '4', DEFECT_PARSER)]).stalemate, true, 'only the last two entries that routed defects are compared - a green entry between them routes nothing');
++  assert.strictEqual(verdict([row('D-1', '1', DEFECT_SPLITTER), row('D-2', '2', DEFECT_PARSER), row('D-3', '3', DEFECT_PARSER)]).stalemate, true, 'only the last two entries are compared - an older entry routing a different set does not break a consecutive repeat');
++  assert.strictEqual(verdict([row('D-1', '1', DEFECT_SPLITTER), row('D-2', '2', DEFECT_PARSER), row('D-3', '4', DEFECT_PARSER)]).stalemate, false, 'a green entry between two routings of the same set breaks the run - entries 2 and 4 are not consecutive (sprint-lifecycle.md "Impl-test phase")');
+   assert.strictEqual(verdict([row('D-1', '9', DEFECT_PARSER), row('D-2', '10', DEFECT_PARSER), row('D-3', '2', DEFECT_SPLITTER)]).stalemate, true, 'entries order by number, so entry 10 follows entry 9');
+ 
+   const single = verdict([row('D-1', '1', DEFECT_PARSER)]);

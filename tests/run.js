@@ -16,6 +16,7 @@ const update = require('../.asd/skills/asd-update/update.js');
 const migration400 = require('../.asd/migrations/4.0.0.js');
 const migration500 = require('../.asd/migrations/5.0.0.js');
 const migration600 = require('../.asd/migrations/6.0.0.js');
+const migration900 = require('../.asd/migrations/9.0.0.js');
 const runtime = require('../.asd/runtime.js');
 
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -2174,31 +2175,35 @@ test('AC-21: SessionStart reports "Next phase: await-merge" for an ordinary pr p
   assert.ok(text.includes('Next phase: await-merge'), `expected the default pr-phase path to report await-merge, got: ${text}`);
 });
 
-test('sprint-011 AC-2/AC-5: SessionStart reports "Next phase: plan" after audit only when the frozen design-skip field is the boolean true - absent, false or an unseeded placeholder falls back to design, and the field moves no other phase', () => {
-  const placeholder = '{{SKIP_DESIGN_PHASES}}';
+test('sprint-013 AC-14: SessionStart reports "Next phase: plan" after audit exactly when every frozen design document is the boolean false - a legacy skip_design_phases moves nothing, a document true, absent or unseeded falls back to design, a non-object documents value never breaks the hook, and no other phase moves', () => {
   const template = JSON.parse(readRepoFile('.asd/templates/t_state.json'));
-  const key = Object.keys(template).find((name) => template[name] === placeholder);
-  assert.ok(key, `t_state.json must carry the frozen design-skip field as the quoted "${placeholder}" placeholder - the fixtures below take the field name from it, so the hook is checked against the key scope actually writes`);
+  const designDocs = Object.keys(template.documents || {}).filter((name) => name !== 'audit');
+  assert.ok(designDocs.length >= 4, `t_state.json "documents" must still freeze the design documents the collapse test reads - only [${designDocs.join(', ')}] found, so the cases below assert nothing`);
+  const off = Object.fromEntries(designDocs.map((name) => [name, false]));
   const hookSrc = readRepoFile('.asd/hooks/session-start.js');
   const cases = [
-    ['audit', true, 'plan'],
-    ['audit', undefined, 'design'],
-    ['audit', false, 'design'],
-    ['audit', placeholder, 'design'],
-    ['scope', true, 'audit'],
+    ['audit', { documents: { audit: true, ...off } }, 'plan'],
+    ['audit', { documents: off, skip_design_phases: true }, 'plan'],
+    ...designDocs.map((doc) => ['audit', { documents: { ...off, [doc]: true }, skip_design_phases: true }, 'design']),
+    ['audit', { documents: Object.fromEntries(designDocs.slice(1).map((name) => [name, false])) }, 'design'],
+    ['audit', { documents: template.documents }, 'design'],
+    ['audit', {}, 'design'],
+    ['audit', { documents: null }, 'design'],
+    ['audit', { documents: 'false' }, 'design'],
+    ['scope', { documents: off }, 'audit'],
   ];
-  const label = ([phase, value, next]) => `${phase} + ${key}=${value === undefined ? '<absent>' : JSON.stringify(value)} -> ${next}`;
+  const label = ([phase, fields, next]) => `${phase} + ${JSON.stringify(fields)} -> ${next}`;
 
-  const observed = cases.map(([phase, value]) => {
+  const observed = cases.map(([phase, fields]) => {
     const tempRoot = mkTempDir();
     writeFile(tempRoot, '.asd/hooks/session-start.js', hookSrc);
-    writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({ sprint_id: '999-fixture', phase, branch: 'sprint/999-fixture', [key]: value }));
+    writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({ sprint_id: '999-fixture', phase, branch: 'sprint/999-fixture', ...fields }));
     const out = execFileSync('node', [path.join(tempRoot, '.asd/hooks/session-start.js'), '--provider', 'claude'], { cwd: tempRoot, encoding: 'utf8' });
     const next = /Next phase: (\S+)/.exec(JSON.parse(out).hookSpecificOutput.additionalContext);
-    return label([phase, value, next ? next[1] : '<no Next phase line>']);
+    return label([phase, fields, next ? next[1] : '<no Next phase line>']);
   });
 
-  assert.deepStrictEqual(observed, cases.map(label), "the session hook must agree with audit's exit: plan only for a bare boolean true frozen at scope (sprint-lifecycle.md \"Optional documents\" - a state.json without the field means false, and a quoted placeholder that survived the write is not true), and only while phase is audit - any other phase keeps its PHASE_CHAIN successor");
+  assert.deepStrictEqual(observed, cases.map(label), 'the session hook must agree with the audit exit (sprint-lifecycle.md "Design/design-review/design-promote collapse"): plan only when every frozen design document is a bare false, whatever a legacy skip_design_phases says, and only while phase is audit - any other phase keeps its PHASE_CHAIN successor');
 });
 
 test('AC-7: no canonical rule, workflow, agent, or skill file references the retired asd-pm role', () => {
@@ -2304,6 +2309,8 @@ test('AC-3/4/5: preflight permits only fixed local probes and negative cache is 
   }
   const ready = runtime.externalPreflight(input);
   assert.strictEqual(ready.status, 'local-ready');
+  const externalRows = canonText('.asd/rules/external-review.md').split(/\r?\n/);
+  assert.ok(externalRows.some((line) => line.startsWith('| Claude Code, any') && line.includes("<<'EOF'")) && externalRows.some((line) => line.startsWith('| Codex, `win32`') && line.includes("@'")) && ready.platform === process.platform, `sprint-013 AC-16 (COR-1-1): External Review keys stdin syntax on the host shell plus the preflight output's \`platform\` (external-review.md "OS-specific invocation") - Claude Code always heredoc, Codex here-string on win32 else heredoc - so the table's Claude Code row must name the heredoc form, its Codex win32 row the here-string, and the preflight must report the host platform under that name - got ${JSON.stringify(ready.platform)}`);
   runtime.recordExternalFailure({ fingerprint: ready.fingerprint, status: 'quota', cachePath, now: 1000, retryAfter: 1001 });
   assert.strictEqual(runtime.externalPreflight(input).status, 'negative-cache');
   assert.strictEqual(runtime.externalPreflight({ ...input, now: 1001 }).status, 'local-ready', 'an expired entry must be ignored in-memory on read, even before any write persists the pruning');
@@ -2828,17 +2835,21 @@ test('AC-8: the always-loaded mirrors of PHASE_CHAIN - README\'s phase table and
   }
 });
 
-test('sprint-011 AC-3/AC-5/AC-7: the audit exit that emits NEXT: plan is keyed on skip_design_phases, lands phase on the chain predecessor of plan, records exactly the phases between audit and plan as skipped in the one exit write that also carries a skipped audit and logs the setting, and the plan precondition, checkpoints chain and resume flow accept that state through the frozen collapse test', () => {
-  const key = 'skip_design_phases';
+test('sprint-011 AC-3/AC-5/AC-7, sprint-013 AC-14: the audit exit that emits NEXT: plan is keyed on the documents-only collapse test, lands phase on the chain predecessor of plan, records exactly the phases between audit and plan as skipped in the one exit write that also carries a skipped audit and logs the skip, and the plan precondition, checkpoints chain and resume flow accept that state through the same frozen collapse test', () => {
   const chain = readPhaseChain();
   const between = chain.slice(chain.indexOf('audit') + 1, chain.indexOf('plan'));
   const audit = readWorkflow('audit');
+  const lifecycle = readRepoFile('.asd/rules/sprint-lifecycle.md');
+  const homes = lifecycle.split('\n').map((line) => /^\*\*([^*]+)\*\*:\s*(.*)$/.exec(line)).filter((match) => match && match[1].toLowerCase().includes(between.join('/')));
+  assert.strictEqual(homes.length, 1, `sprint-lifecycle.md must hold exactly one bold-labelled rule for the ${between.join('/')} collapse - it is the home the audit exit, the plan precondition and resume all cite`);
+  const [, collapseLabel, collapseBody] = homes[0];
+  const citation = `\`sprint-lifecycle.md\` "${collapseLabel}"`;
 
-  assert.ok(readReturnContractTargets('audit', audit).includes('plan'), "asd-phase-audit.md's return contract must offer NEXT: plan - asd-sprint follows NEXT as authoritative, so without it the explicit skip has no route and design is dispatched anyway");
+  assert.ok(readReturnContractTargets('audit', audit).includes('plan'), "asd-phase-audit.md's return contract must offer NEXT: plan - asd-sprint follows NEXT as authoritative, so without it the collapse has no route and design is dispatched anyway");
   const exits = audit.split('\n').filter((line) => /^\d+\.\s/.test(line) && line.includes('NEXT: plan'));
   assert.strictEqual(exits.length, 1, 'exactly one numbered audit step must emit NEXT: plan - it is the single site of the design-block skip write');
   const [exit] = exits;
-  assert.ok(exit.includes(`\`${key}\``), `the audit step emitting NEXT: plan must be conditioned on the frozen \`${key}\` - an unconditioned route skips design for every sprint`);
+  assert.ok(exit.includes(citation), `the audit step emitting NEXT: plan must be conditioned on the collapse test cited as ${citation} - an unconditioned route skips design for every sprint`);
   const landed = /phase="([a-z-]+)"/.exec(exit);
   assert.ok(landed, 'the audit skip write must set phase="<name>" explicitly');
   assert.strictEqual(chain[chain.indexOf(landed[1]) + 1], 'plan', `the skip write must land phase on the PHASE_CHAIN predecessor of plan (sprint-lifecycle.md "Multi-phase skip": the LAST subsumed phase) - the session hook and resume derive the next phase from it, so phase="${landed[1]}" would re-enter the skipped block`);
@@ -2846,28 +2857,25 @@ test('sprint-011 AC-3/AC-5/AC-7: the audit exit that emits NEXT: plan is keyed o
   assert.ok(appended, 'the audit skip write must name the skipped_phases it appends as a literal array');
   assert.deepStrictEqual(JSON.parse(`[${appended[1]}]`), between, 'the skip write must record exactly the phases PHASE_CHAIN places between audit and plan, in order - a missing name is a phase a later audit cannot tell from one that ran and produced nothing');
   const logged = exit.split(/;\s|\.\s/).filter((clause) => clause.includes('decisions-log')).flatMap((clause) => [...clause.matchAll(/"([^"]*)"/g)].map((match) => match[1]));
-  assert.ok(logged.some((line) => line.includes(key)), `the audit skip write must add a quoted decisions-log line naming \`${key}\` - the explicit skip and the all-documents-disabled collapse leave identical state, so that line is the only record of which trigger fired (AC-3)`);
+  assert.ok(logged.some((line) => between.every((phase) => line.includes(phase))), `the audit skip write must add a quoted decisions-log line naming the skipped ${between.join('/')} - sprint-lifecycle.md "Optional documents" records every skip as state plus one decisions-log line`);
 
   const exitStep = /^(\d+)\./.exec(exit)[1];
-  const auditOff = audit.split('\n').find((line) => /^\d+\.\s/.test(line) && line.includes('`documents.audit`'));
-  assert.ok(auditOff && auditOff.includes(`step ${exitStep}`), `the audit step reading \`documents.audit\` must route a false audit to step ${exitStep}, the exit write`);
+  const auditOff = audit.split('\n').find((line) => /^\d+\.\s/.test(line) && line.includes('false audit'));
+  assert.ok(auditOff && auditOff.includes(`step ${exitStep}`), `the audit step reading the frozen documents must route a false audit to step ${exitStep}, the exit write`);
   assert.ok(!/phase=|skipped_phases|record it\b/.test(auditOff), 'the audit step reading `documents.audit` must not write state of its own (no phase=, no skipped_phases, no "record it") - with the setting on, an audit-skip write followed by the exit write is two non-atomic writes, and an interruption between them leaves phase="audit" for resume to re-enter design (EXT-1)');
   const auditRecord = exit.indexOf('`"audit"`');
   assert.ok(auditRecord !== -1 && auditRecord < appended.index, "the exit write must carry a skipped audit's \"audit\" record ahead of the design-block names it appends - it is the one write for both skips, so the audit record cannot land on its own (EXT-1, sprint-lifecycle.md \"Multi-phase skip\")");
   const auditOnly = exit.split(/\.\s+/).find((sentence) => sentence.includes(`NEXT: ${chain[chain.indexOf('audit') + 1]}`));
   assert.ok(auditOnly && auditOnly.includes('phase="audit"'), 'the exit branch emitting NEXT: design must set phase="audit" - with step 1 carrying no write, it is the only write that advances phase past a skipped audit, and a skip recorded without that advance is the state "Skip record" forbids');
 
-  const lifecycle = readRepoFile('.asd/rules/sprint-lifecycle.md');
-  const homes = lifecycle.split('\n').map((line) => /^\*\*([^*]+)\*\*:\s*(.*)$/.exec(line)).filter((match) => match && match[1].toLowerCase().includes(between.join('/')));
-  assert.strictEqual(homes.length, 1, `sprint-lifecycle.md must hold exactly one bold-labelled rule for the ${between.join('/')} collapse - it is the home the plan precondition and resume both cite`);
-  const [, collapseLabel, collapseBody] = homes[0];
-  const citation = `\`sprint-lifecycle.md\` "${collapseLabel}"`;
   const designRow = /^\| Phase \| No-op when \|[\s\S]*?^\| design \| (.*?) \|\s*$/m.exec(lifecycle);
-  const designDocs = designRow ? [...designRow[1].matchAll(/`([a-z0-9_]+)`/g)].map((token) => token[1]).filter((token) => token !== key) : [];
+  const designDocs = designRow ? [...designRow[1].matchAll(/`([a-z0-9_]+)`/g)].map((token) => token[1]) : [];
   assert.ok(designDocs.length >= 4, `the no-op table's design row must still enumerate the design documents - only [${designDocs.join(', ')}] found, so this derivation has drifted and the collapse-test check below asserts nothing`);
-  const collapseTest = collapseBody.split(/\.\s+/).find((sentence) => sentence.includes(`\`${key}\``) && designDocs.every((doc) => new RegExp(`\\b${doc}\\b`).test(sentence)));
-  assert.ok(collapseTest, `${citation} must state one collapse test naming \`${key}\` and every design document [${designDocs.join(', ')}] - resume and plan decide from it, so a dropped trigger resumes a collapsed sprint into design-promote`);
-  assert.ok(!collapseTest.slice(collapseTest.lastIndexOf(':') + 1).includes('skipped_phases'), `the collapse test's condition in ${citation} must not read skipped_phases - that array is a historical record, so a stale entry left by a rollback would pass a real, interrupted promotion as collapsed (COR-2)`);
+  const collapseTest = collapseBody.split(/\.\s+/).find((sentence) => designDocs.every((doc) => new RegExp(`\\b${doc}\\b`).test(sentence)));
+  assert.ok(collapseTest, `${citation} must state one collapse test naming every design document [${designDocs.join(', ')}] - resume and plan decide from it, so a dropped document resumes a collapsed sprint into design-promote`);
+  const condition = collapseTest.slice(collapseTest.lastIndexOf(':') + 1);
+  assert.ok(!condition.includes('skipped_phases'), `the collapse test's condition in ${citation} must not read skipped_phases - that array is a historical record, so a stale entry left by a rollback would pass a real, interrupted promotion as collapsed (COR-2)`);
+  assert.ok(!condition.includes('skip_design_phases'), `sprint-013 AC-14: the collapse test's condition in ${citation} is documents-only - the removed setting may survive only as a legacy state field the rule ignores`);
 
   const planPreconditions = /## Preconditions([\s\S]*?)\n## /.exec(readWorkflow('plan'));
   assert.ok(planPreconditions, 'asd-phase-plan.md must keep its "## Preconditions" section');
@@ -2876,7 +2884,7 @@ test('sprint-011 AC-3/AC-5/AC-7: the audit exit that emits NEXT: plan is keyed o
   assert.ok(!promoted.includes('skipped_phases'), 'asd-phase-plan.md must not accept a design-promote recorded in skipped_phases - a stale skip entry left by a rollback would let plan run on unpromoted docs (COR-2)');
   const planRequires = /`plan` requires ([^;]+);/.exec(readRepoFile('.asd/rules/checkpoints.md'));
   assert.ok(planRequires, 'checkpoints.md must keep its "`plan` requires ...;" precondition clause');
-  assert.ok(planRequires[1].includes(`\`${key}\``), `checkpoints.md's plan precondition must accept the \`${key}\` collapse - it is the chain whose miss emits ABORT`);
+  assert.ok(/\bcollapse\b/.test(planRequires[1]) && !planRequires[1].includes('skip_design_phases'), "checkpoints.md's plan precondition must accept the design-block collapse, not a removed setting - it is the chain whose miss emits ABORT");
 
   const resume = /### Step 2B[\s\S]*?\n### /.exec(readRepoFile('.asd/skills/asd-sprint/SKILL.md'));
   assert.ok(resume, 'asd-sprint SKILL.md must keep its "### Step 2B" resume flow');
@@ -2885,40 +2893,38 @@ test('sprint-011 AC-3/AC-5/AC-7: the audit exit that emits NEXT: plan is keyed o
   assert.ok(!successor.includes('skipped_phases'), `the asd-sprint resume exception for phase="${landed[1]}" must not read skipped_phases - a stale skip entry left by a rollback would skip a real, interrupted promotion (COR-2)`);
 });
 
-test('sprint-011 AC-1/AC-2/AC-4/AC-7: the design-skip field is one name across t_state.json, t_config.yaml, the README schema, scope seeding, its sprint-lifecycle.md home and asd-init diff mode - absent means disabled at every site, so a misspelt site is a setting that silently does nothing', () => {
-  const placeholder = '{{SKIP_DESIGN_PHASES}}';
-  const template = JSON.parse(readRepoFile('.asd/templates/t_state.json'));
-  const key = Object.keys(template).find((name) => template[name] === placeholder);
-  assert.ok(key, `t_state.json must parse as shipped and carry the frozen design-skip field as the quoted "${placeholder}" placeholder - scope seeds only placeholders the template holds`);
+test('sprint-013 AC-13..AC-18/AC-20: no config key the 9.0.0 migration removes survives - t_config.yaml and the README config schema are already migrated, and no canon reader names a removed key except a state field t_state.json still freezes or a line stating its legacy handling', () => {
+  const removed = readRemovedConfigKeys();
+  const readme = /^## Configuration$[\s\S]*?```yaml\n([\s\S]*?)```/m.exec(readRepoFile('README.md'));
+  assert.ok(readme, 'README.md must keep its "## Configuration" yaml schema block');
+  for (const [label, text] of [['.asd/templates/t_config.yaml', canonText('.asd/templates/t_config.yaml')], ['README.md config schema', readme[1]]]) {
+    const { report } = migrateConfig900(text);
+    assert.deepStrictEqual([report.status, report.changes, report.reason], ['unchanged', [], null], `${label} must already be in the 9.0.0 shape - asd-init writes config from t_config.yaml and README mirrors it, so a removed key, a legacy value or a shipped stale comment there reaches every new project`);
+  }
 
-  const declaredDefault = (rel) => {
-    const line = new RegExp(`^${key}:\\s*(\\w+)`, 'm').exec(readRepoFile(rel));
-    return line ? line[1] : '<not declared at top level>';
-  };
-  assert.strictEqual(declaredDefault('.asd/templates/t_config.yaml'), 'disabled', `t_config.yaml must declare top-level \`${key}\` with the shipped default disabled - asd-init diff mode offers only fields the template declares, and AC-1 makes disabled the unchanged behaviour`);
-  assert.strictEqual(declaredDefault('README.md'), 'disabled', `README's config schema must mirror \`${key}\` and its default from t_config.yaml`);
-
-  const initReinit = /## Workflow \(re-init\)([\s\S]*?)\n## /.exec(readRepoFile('.asd/skills/asd-init/SKILL.md'));
-  assert.ok(initReinit, 'asd-init SKILL.md must keep its "## Workflow (re-init)" section');
-  assert.ok(initReinit[1].includes('t_config.yaml'), 'asd-init diff mode must consult t_config.yaml for fields absent from the current config - otherwise a newly shipped field such as this one cannot be enabled through /asd-init, the only allowed write path (AC-6)');
-
-  const seed = readWorkflow('scope').split('\n').find((line) => line.includes(placeholder));
-  assert.ok(seed && seed.includes(`config.${key}`), `asd-phase-scope.md must seed "${placeholder}" from \`config.${key}\` - an unseeded placeholder leaves a string in state.json, which every reader treats as not true`);
-
-  const lifecycle = readRepoFile('.asd/rules/sprint-lifecycle.md');
-  const home = lifecycle.split('\n').find((line) => line.includes(placeholder));
-  assert.ok(home && home.includes(`state.json.${key}`), `sprint-lifecycle.md "Optional documents" must hold the home statement freezing \`${key}\` into state.json.${key} via "${placeholder}"`);
-  const designRow = /^\| Phase \| No-op when \|[\s\S]*?^\| design \| (.*?) \|\s*$/m.exec(lifecycle);
-  assert.ok(designRow && designRow[1].includes(`\`${key}\``), `the no-op table's design row must name \`${key}\` as a trigger`);
-  const designDocs = [...designRow[1].matchAll(/`([a-z0-9_]+)`/g)].map((token) => token[1]).filter((token) => token !== key);
-  assert.ok(designDocs.length >= 4, `the design row must still enumerate the design documents whose all-disabled state is the other trigger - only [${designDocs.join(', ')}] found, so this derivation has drifted and asserts nothing`);
-  const unfrozen = designDocs.filter((doc) => !new RegExp(`\\b${doc}\\b`).test(home));
-  assert.deepStrictEqual(unfrozen, [], `the \`${key}\` home must freeze every design document the no-op table names as effective false - a document left true names an AC source or draft that the skipped design block never produces`);
-
-  const seedTail = seed.slice(seed.indexOf(placeholder) + placeholder.length);
-  const unwritten = designDocs.filter((doc) => !seedTail.includes(`{{DOC_${doc.toUpperCase()}}}`));
-  assert.deepStrictEqual(unwritten, [], `asd-phase-scope.md, the site that writes state.json, must write every design-document placeholder as false once "${placeholder}" freezes true - the sprint-lifecycle.md home alone does not reach the orchestrator running scope`);
-  assert.ok(seedTail.includes('decisions-log'), `asd-phase-scope.md must log the design documents \`${key}\` suppresses - after the freeze state.json.documents no longer mirrors config, so that decisions-log line is their only record (AC-4)`);
+  const state = JSON.parse(readRepoFile('.asd/templates/t_state.json'));
+  const frozenInState = (key) => key.split('.').reduce((node, part) => (node && typeof node === 'object' && Object.hasOwn(node, part) ? node[part] : undefined), state) !== undefined;
+  const leafIsUnambiguous = (leaf) => leaf.includes('_');
+  const spellings = (key) => [key, key.split('.').pop()].filter((name, index) => index === 0 || leafIsUnambiguous(name));
+  const needles = [...new Set(removed.flatMap(spellings))];
+  const hooks = fs.readdirSync(path.join(REPO_ROOT, '.asd/hooks')).map((file) => `.asd/hooks/${file}`);
+  const [offenders, legacyLines, frozenReaders] = [[], [], []];
+  for (const rel of [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/templates/t_state.json', '.asd/runtime.js', ...hooks]) {
+    canonText(rel).split('\n').forEach((line, index) => {
+      for (const needle of needles.filter((name) => new RegExp(`(?<![\\w-])${name.replace(/\./g, '\\.')}(?![\\w-])`).test(line))) {
+        if (/legacy/i.test(line)) legacyLines.push(`${rel}: ${needle}`);
+        else if (frozenInState(needle)) frozenReaders.push(`${rel}: ${needle}`);
+        else offenders.push(`${rel}:${index + 1}: ${needle}`);
+      }
+    });
+  }
+  assert.deepStrictEqual(offenders, [], `removed config keys [${needles.join(', ')}] must have no reader left - an agent told to read one acts on a setting nothing writes. Allowed only: a state field t_state.json still carries, and a line that states legacy handling`);
+  assert.deepStrictEqual(legacyLines.sort(), ['.asd/rules/sprint-lifecycle.md: scoped_fan_out', '.asd/rules/sprint-lifecycle.md: skip_design_phases'], 'a line mentioning "legacy" is exempt as a whole, so every exempted hit is pinned - the collapse paragraph ignoring a legacy skip_design_phases state field and the legacy skipped-verdict note on scoped_fan_out. A new hit may be a reader hidden in a legacy paragraph; review it and re-pin');
+  assert.deepStrictEqual(frozenReaders.sort(), [
+    ...Array(4).fill('.asd/rules/sprint-lifecycle.md: documents.c4'),
+    '.asd/workflows/asd-phase-design-promote.md: documents.c4',
+    ...Array(5).fill('.asd/workflows/asd-phase-design.md: documents.c4'),
+  ], 'documents.c4 survives only as the state.json field scope freezes, so its reader lines are pinned - a new line may read the removed config key; confirm it reads state.json and re-pin');
 });
 
 // ===========================================================================
@@ -4122,14 +4128,13 @@ test("sprint-012 AC-12: emit-manifest derives rule and section ids from a review
   const holders = (manifest, predicate) => Object.entries(manifest.n_a.rules).filter(([, predicates]) => predicates.includes(predicate)).map(([id]) => id);
   const predicates = runtime.NA_PREDICATES;
 
-  const uiHolders = (files, scopedFanOut) => holders(emitReal('correctness', 'impl-review', files, { scopedFanOut }), predicates.uiSurface);
-  const uiIds = uiHolders(['README.md', '.asd/runtime.js'], true);
-  assert.strictEqual(uiIds.length, 1, 'scoped fan-out with no UI surface in scope must n/a exactly the one UI conformance entry');
-  assert.deepStrictEqual(uiHolders(['README.md'], false), [], 'without --scoped-fan-out no entry degrades to n/a - the full-fan-out escape hatch of asd-phase-impl-review.md step 5');
+  const uiHolders = (files) => holders(emitReal('correctness', 'impl-review', files, {}), predicates.uiSurface);
+  const uiIds = uiHolders(['README.md', '.asd/runtime.js']);
+  assert.strictEqual(uiIds.length, 1, 'with no UI surface in scope exactly the one UI conformance entry is n/a - diff-scoped fan-out is always on, with no flag to pass (sprint-013 AC-17)');
   for (const surface of ['.asd/templates/t_prd.html', 'docs/site/index.html', 'app/theme.scss', 'src/components/button.ts', 'src/App.tsx']) {
-    assert.deepStrictEqual(uiHolders(['README.md', surface], true), [], `${surface} is a UI surface, so it must keep UI conformance reviewed - framework .asd/templates/*.html included, the whole subject of the correctness reviewer's self-hosting carve-out`);
+    assert.deepStrictEqual(uiHolders(['README.md', surface]), [], `${surface} is a UI surface, so it must keep UI conformance reviewed - framework .asd/templates/*.html included, the whole subject of the correctness reviewer's self-hosting carve-out`);
   }
-  assert.strictEqual(uiHolders(['README.md', '.asd/rules/notes.html'], true).length, 1, 'an .html under .asd/ outside .asd/templates/ is framework infrastructure, not a UI surface');
+  assert.strictEqual(uiHolders(['README.md', '.asd/rules/notes.html']).length, 1, 'an .html under .asd/ outside .asd/templates/ is framework infrastructure, not a UI surface');
 
   const htmlHolders = (manifest) => holders(manifest, predicates.noHtml);
   const htmlIds = htmlHolders(emitReal('documentation', 'impl-review', ['README.md', '.asd/runtime.js'], {}));
@@ -4146,7 +4151,7 @@ test("sprint-012 AC-12: emit-manifest derives rule and section ids from a review
   assert.deepStrictEqual(oneHtml.map(htmlHolders), oneHtml.map(() => []), 'the no-HTML predicate is decided over the whole scope before partitioning: one HTML file in the last part withholds it from every part - decided from any narrower slice, the part holding that HTML could n/a its entries under a standing predicate and union check (c) would pass with nobody reviewing them');
 
   const budgets = { '.asd/project/custom-coding-rules.md': '# Custom Coding Rules\n\n## Perf budgets\n\n- p95 under 200ms\n' };
-  const efficiency = (files, customRules) => emitReal('efficiency', 'impl-review', files, { customRules, scopedFanOut: true });
+  const efficiency = (files, customRules) => emitReal('efficiency', 'impl-review', files, { customRules });
   const prose = efficiency(['README.md'], {});
   const perfIds = holders(prose, predicates.perf);
   const budgetIds = holders(prose, predicates.noBudgets);
@@ -4164,7 +4169,7 @@ test("sprint-012 AC-12: emit-manifest derives rule and section ids from a review
   let gatedAnywhere = 0;
   for (const reviewer of internalReviewers()) {
     const designGated = holders(emitReal(reviewer, 'design-review', ['s/design/prd.html'], {}), predicates.phaseGate);
-    const implGated = holders(emitReal(reviewer, 'impl-review', ['README.md'], { scopedFanOut: true }), predicates.phaseGate);
+    const implGated = holders(emitReal(reviewer, 'impl-review', ['README.md'], {}), predicates.phaseGate);
     gatedAnywhere += designGated.length + implGated.length;
     assert.deepStrictEqual(designGated.filter((id) => implGated.includes(id)), [], `${reviewer}: no rubric entry may sit outside the phase gate in both phases - reviewed by nobody, ever, while every ledger validates`);
   }
@@ -4188,12 +4193,12 @@ test("runtime.js CLI: emit-manifest writes one stamped manifest per part under t
     fs.mkdirSync(dir, { recursive: true });
     const scopePath = path.join(dir, 'scope.txt');
     fs.writeFileSync(scopePath, `${Array.from({ length: count }, (_, index) => `src/file-${index + 1}.md`).join('\n')}\n\n`, 'utf8');
-    return JSON.parse(runtimeCli(['emit-manifest', '--reviewer', name, '--phase', 'impl-review', '--scoped-fan-out', ...extra, '--files', scopePath, '--out', dir], { stdio: 'pipe' }));
+    return JSON.parse(runtimeCli(['emit-manifest', '--reviewer', name, '--phase', 'impl-review', ...extra, '--files', scopePath, '--out', dir], { stdio: 'pipe' }));
   };
   const read = (entry) => JSON.parse(fs.readFileSync(entry.manifest, 'utf8'));
 
   const split = emit(runtime.SPLIT_THRESHOLD_FILES + 1, path.join(root, 'split'));
-  assert.deepStrictEqual(split.map((entry) => path.basename(entry.manifest)), split.map((_, index) => partName.replace('<reviewer>', reviewer).replace('N', String(index + 1))), 'a scope above the threshold must be written as numbered parts, one file per part, each reported on stdout - and --scoped-fan-out ahead of --files must parse as a boolean, not swallow the path');
+  assert.deepStrictEqual(split.map((entry) => path.basename(entry.manifest)), split.map((_, index) => partName.replace('<reviewer>', reviewer).replace('N', String(index + 1))), 'a scope above the threshold must be written as numbered parts, one file per part, each reported on stdout');
   const single = emit(runtime.SPLIT_THRESHOLD_FILES, path.join(root, 'single'));
   assert.deepStrictEqual(single.map((entry) => path.basename(entry.manifest)), [unsplitName.replace('<reviewer>', reviewer)], 'a scope at the threshold must be one unsplit manifest file');
   const halved = emit(2, path.join(root, 'halved'), ['--halve']);
@@ -4357,7 +4362,7 @@ test("sprint-012 AC-13: the settings-change line sprint-lifecycle.md \"Plan file
   const valueTypes = [...new Set(leafValues.map((value) => (/^(true|false)$/.test(value) ? 'boolean' : /^\d+$/.test(value) ? 'integer' : 'string')))];
   assert.ok(valueTypes.length > 1, `the t_config.yaml leaf sweep must still reach its fields (types found: ${valueTypes})`);
   for (const type of valueTypes) {
-    assert.ok(new RegExp(`\\b${type}\\b`).test(mediatedSteps[validates]), `external iter-02 #1: asd-init ${mode} mode's validation step must say what value fits a ${type} field of t_config.yaml - most of its fields carry no enumeration, so without a type rule \`gh_enabled=maybe\` or \`iterations_low=-3\` passes and is written`);
+    assert.ok(new RegExp(`\\b${type}\\b`).test(mediatedSteps[validates]), `external iter-02 #1: asd-init ${mode} mode's validation step must say what value fits a ${type} field of t_config.yaml - most of its fields carry no enumeration, so without a type rule \`iterations_low=maybe\` or \`iterations_low=-3\` passes and is written`);
   }
   const configLeaves = (text) => {
     const leaves = new Map();
@@ -4385,7 +4390,7 @@ test("sprint-012 AC-13: the settings-change line sprint-lifecycle.md \"Plan file
   };
   const templateLeaves = configLeaves(canonText('.asd/templates/t_config.yaml'));
   const freeStrings = [...templateLeaves].filter(([, leaf]) => !leaf.enumeration && !/^(true|false|\d+)$/.test(leaf.raw)).map(([key]) => key);
-  assert.deepStrictEqual(freeStrings, ['system.tools.likec4', 'system.tools.codex_command', 'system.tools.claude_command', 'git.base_branch', 'git.branch_pattern'], `external iter-03 #2: asd-init ${mode} mode checks a string field of t_config.yaml against its \`Values:\` or inline \`a | b\` enumeration and otherwise accepts any string, so only genuinely free-form strings may carry neither - \`documents.prd=maybe\` or \`backward_compat=whatever\` is otherwise written to config.yaml. A new free-form field joins this list deliberately`);
+  assert.deepStrictEqual(freeStrings, ['system.tools.codex_command', 'system.tools.claude_command', 'git.base_branch', 'git.branch_pattern'], `external iter-03 #2: asd-init ${mode} mode checks a string field of t_config.yaml against its \`Values:\` or inline \`a | b\` enumeration and otherwise accepts any string, so only genuinely free-form strings may carry neither - \`documents.prd=maybe\` or \`backward_compat=whatever\` is otherwise written to config.yaml. A new free-form field joins this list deliberately`);
   for (const [key, leaf] of templateLeaves) {
     if (!leaf.enumeration) continue;
     assert.ok(leaf.enumeration.includes(leaf.value), `t_config.yaml \`${key}\` ships the default \`${leaf.value}\`, which its own enumeration (${leaf.enumeration.join(' | ')}) would make asd-init reject`);
@@ -4495,8 +4500,190 @@ test("sprint-012 AC-14..AC-18: docs/architecture/subsystems.md is the one subsys
   assert.ok(sectionOf(lifecycle, 'Audit phase').includes('`checkpoints.md` "Gate policy"'), '"Audit phase" must send its confirmation and deletion gates to that hard list');
 
   const seed = stepOf(sectionOf('.asd/skills/asd-init/SKILL.md', 'Workflow (fresh)'), '13');
-  assert.ok(seed.indexOf('documents.c4') !== -1 && seed.indexOf('c4/model') > seed.indexOf('documents.c4') && seed.indexOf(registry) !== -1 && seed.indexOf(registry) < seed.indexOf('documents.c4'),'AC-16/AC-18: asd-init must seed c4/ only under the documents.c4 condition, while the registry seed precedes it unconditionally');
-  assert.ok(stepOf(sectionOf('.asd/skills/asd-init/SKILL.md', 'Workflow (fresh)'), '14').includes('documents.c4'), 'the .gitignore entry for c4 build output must carry the same documents.c4 condition as the seed that creates c4/');
+  const gitignore = stepOf(sectionOf('.asd/skills/asd-init/SKILL.md', 'Workflow (fresh)'), '14');
+  const diagramCondition = seed.indexOf('`diagram_tool`');
+  assert.ok(seed.indexOf(registry) !== -1 && seed.indexOf(registry) < diagramCondition && diagramCondition < seed.indexOf('c4/model'), 'AC-16/AC-18, sprint-013 AC-13: asd-init must seed c4/ only under the diagram_tool condition, while the registry seed precedes it unconditionally');
+  assert.ok(gitignore.includes('likec4'), 'sprint-013 AC-13: the .gitignore entry for c4 build output must carry the same likec4 condition as the seed that creates c4/');
+  assert.deepStrictEqual([seed, gitignore].filter((step) => step.includes('documents.c4')), [], 'sprint-013 AC-13: asd-init steps 13 and 14 must not key on the removed documents.c4 - init writes config, which no longer carries it');
+});
+
+// ===========================================================================
+// 21. Sprint 013: the impl-test stalemate comparer and the 9.0.0 config
+// migration. The comparer decides whether a defect loop escalates, so a set
+// it misreads either loops uncapped or stops a sprint for nothing; the
+// migration rewrites a consumer's config.yaml without a YAML parser.
+// ===========================================================================
+
+/** A test plan whose Defects table is t_test-plan.md's own header, plus a row builder keyed by that header's column names. */
+function defectPlanFixture() {
+  const table = sectionOf('.asd/templates/t_test-plan.md', 'Defects').split('\n').filter((line) => line.startsWith('|'));
+  assert.ok(table.length >= 2, 't_test-plan.md "Defects" must keep its table header and separator');
+  const columns = table[0].split('|').slice(1, -1).map((cell) => cell.trim());
+  const row = (id, entry, [location, symptom, failingTest], status = 'pending') => {
+    const cells = { ID: id, Entry: entry, Location: location, Symptom: symptom, 'Failing test': failingTest, Status: status };
+    return `| ${columns.map((name) => (Object.hasOwn(cells, name) ? cells[name] : '')).join(' | ')} |`;
+  };
+  const plan = (rows, eol = '\n') => ['# Test plan', '', '## Defects', '', table[0], table[1], ...rows, '', '## Manual verification (optional)', ''].join(eol);
+  return { row, plan };
+}
+
+const DEFECT_PARSER = ['tests/run.js:120', 'AssertionError [ERR_ASSERTION]: expected a \\| b', 'parser: rejects a tab indent'];
+const DEFECT_SPLITTER = ['.asd/runtime.js:40:7', 'TypeError: Cannot read properties of undefined', 'runtime: splits a table row'];
+
+/** The key list 9.0.0.js drops, read from its literal array as §16 reads PHASE_CHAIN - the removed-key checks take their set from the migration itself. */
+function readRemovedConfigKeys() {
+  const block = /const REMOVED_KEYS = \[([\s\S]*?)\];/.exec(canonText('.asd/migrations/9.0.0.js'));
+  assert.ok(block, '9.0.0.js must keep REMOVED_KEYS as a literal array');
+  const keys = (block[1].match(/'([^']+)'/g) || []).map((quoted) => quoted.slice(1, -1));
+  assert.ok(keys.length > 0, 'REMOVED_KEYS must still list keys, or every removed-key check passes over nothing');
+  return keys;
+}
+
+/** Runs 9.0.0.js on `text` as a project's config.yaml; stdout is captured, `rerun` migrates the same project again. */
+function migrateConfig900(text) {
+  const root = mkTempDir();
+  const configPath = path.join(root, '.asd', 'project', 'config.yaml');
+  if (text !== undefined) writeFile(root, '.asd/project/config.yaml', text);
+  const run = () => {
+    const captured = [];
+    const realWrite = process.stdout.write;
+    process.stdout.write = (chunk) => {
+      captured.push(String(chunk));
+      return true;
+    };
+    let report;
+    try {
+      report = migration900({ repoRoot: root });
+    } finally {
+      process.stdout.write = realWrite;
+    }
+    return { report, output: captured.join(''), text: fs.existsSync(configPath) ? fs.readFileSync(configPath, 'utf8') : undefined, rerun: run };
+  };
+  return run();
+}
+
+test('sprint-013 AC-1/AC-2: defect-stalemate compares the identity sets of two consecutive impl-test entries that routed defects - file path without its line, verbatim runner line, failing test - never D-N ids, row order or impl-review rows, and its digest names the latest set', () => {
+  const { row, plan } = defectPlanFixture();
+  const verdict = (rows, eol) => runtime.defectStalemate(plan(rows, eol));
+  const moved = (tuple, location) => [location, tuple[1], tuple[2]];
+  const latest = [row('D-3', '2', moved(DEFECT_SPLITTER, '`.asd/runtime.js:88`')), row('D-4', '2', moved(DEFECT_PARSER, 'tests/run.js:131'))];
+  const repeat = [row('D-1', '1', DEFECT_PARSER, 'fixed'), row('D-2', '1', DEFECT_SPLITTER, 'fixed'), ...latest];
+
+  const repeated = verdict(repeat);
+  assert.strictEqual(repeated.stalemate, true, 'the same file paths, runner lines and failing tests routed twice are a stalemate, although every line number moved, the ids differ and the rows are reordered');
+  assert.deepStrictEqual(verdict([...latest].reverse()), { stalemate: false, digest: repeated.digest }, 'the digest is the latest set alone, independent of row order - a decisions-log answer is keyed to it');
+  assert.deepStrictEqual(verdict(repeat, '\r\n'), repeated, 'a CRLF test plan must compare exactly as its LF form');
+
+  for (const [field, index, value] of [['file path', 0, 'tests/other.js:131'], ['runner failure line', 1, 'AssertionError [ERR_ASSERTION]: expected a'], ['failing test', 2, 'parser: rejects a tab']]) {
+    const changed = DEFECT_PARSER.map((cell, at) => (at === index ? value : cell));
+    assert.strictEqual(verdict([row('D-1', '1', DEFECT_PARSER), row('D-2', '2', changed)]).stalemate, false, `a changed ${field} is a different defect - AC-2 compares the runner's text verbatim, so a reworded symptom fails open by design`);
+  }
+  assert.strictEqual(verdict([row('D-1', '1', DEFECT_PARSER), row('D-2', '1', DEFECT_SPLITTER), row('D-3', '2', DEFECT_PARSER)]).stalemate, false, 'a subset of the previous set is progress, not a stalemate');
+  assert.strictEqual(verdict([row('D-1', '1', DEFECT_PARSER), row('D-2', '2', DEFECT_PARSER), row('D-3', '2', DEFECT_SPLITTER)]).stalemate, false, 'a superset of the previous set is not a stalemate');
+
+  assert.strictEqual(verdict([row('D-1', '1', DEFECT_PARSER), row('D-2', '2', DEFECT_PARSER), row('D-3', 'impl-review', DEFECT_SPLITTER)]).stalemate, true, 'an impl-review row never joins an entry set, the latest included');
+  assert.strictEqual(verdict([row('D-1', 'impl-review', DEFECT_PARSER), row('D-2', '1', DEFECT_PARSER)]).stalemate, false, 'an impl-review row is not an impl-test entry, so one routing entry has nothing to repeat');
+  assert.strictEqual(verdict([row('D-1', '1', DEFECT_SPLITTER), row('D-2', '2', DEFECT_PARSER), row('D-3', '3', DEFECT_PARSER)]).stalemate, true, 'only the last two entries are compared - an older entry routing a different set does not break a consecutive repeat');
+  assert.strictEqual(verdict([row('D-1', '1', DEFECT_SPLITTER), row('D-2', '2', DEFECT_PARSER), row('D-3', '4', DEFECT_PARSER)]).stalemate, false, 'a green entry between two routings of the same set breaks the run - entries 2 and 4 are not consecutive (sprint-lifecycle.md "Impl-test phase")');
+  assert.strictEqual(verdict([row('D-1', '9', DEFECT_PARSER), row('D-2', '10', DEFECT_PARSER), row('D-3', '2', DEFECT_SPLITTER)]).stalemate, true, 'entries order by number, so entry 10 follows entry 9');
+
+  const single = verdict([row('D-1', '1', DEFECT_PARSER)]);
+  assert.ok(single.stalemate === false && /^[0-9a-f]{64}$/.test(single.digest), `a first routing is never a stalemate but still names its set: ${JSON.stringify(single)}`);
+  assert.deepStrictEqual(verdict([]), { stalemate: false, digest: null }, 'no defect rows: nothing to compare');
+  assert.deepStrictEqual(runtime.defectStalemate(readRepoFile('.asd/templates/t_test-plan.md')), { stalemate: false, digest: null }, 't_test-plan.md as shipped must parse - its placeholder row routes no entry');
+
+  assert.throws(() => runtime.defectStalemate('# Test plan\n'), /Defects/, 'a plan without a Defects section must fail, never report no stalemate');
+  assert.throws(() => runtime.defectStalemate(plan([row('D-1', '1', DEFECT_PARSER)]).replace('| Entry |', '| Round |')), /Entry/, 'a Defects table missing an identity column must fail closed');
+  assert.throws(() => verdict([row('D-1', '1', ['a.js', 'expected a | b', 'parser'])]), /malformed/, 'an unescaped pipe in a cell shifts every column after it, so the row must fail rather than compare the wrong fields');
+});
+
+test('sprint-013 AC-2 D-1: defect-stalemate rejects a Defects row whose Entry is neither an Entry log number nor impl-review - skipping it drops that entry\'s set and a real stalemate fails open', () => {
+  const { row, plan } = defectPlanFixture();
+  assert.doesNotThrow(() => runtime.defectStalemate(plan([row('D-1', '1', DEFECT_PARSER), row('D-2', 'impl-review', DEFECT_PARSER)])), 'sanity: the two Entry forms t_test-plan.md defines must parse');
+  for (const entry of ['Entry 2', '#2', 'impl review', '']) {
+    assert.throws(() => runtime.defectStalemate(plan([row('D-1', '1', DEFECT_PARSER), row('D-2', entry, DEFECT_PARSER)])), Error, `Entry ${JSON.stringify(entry)} is off-template (t_test-plan.md: \`Entry log\` N or impl-review) - read as "not an impl-test entry" it hides entry 2's repeat of entry 1 and the loop runs on uncapped`);
+  }
+});
+
+test('sprint-013 AC-3: the defect-stalemate CLI prints {stalemate, digest} and exits 0 on a readable plan, and exits 2 with nothing on stdout when --plan is missing or the Defects table is malformed', () => {
+  const root = mkTempDir();
+  const { row, plan } = defectPlanFixture();
+  const write = (name, text) => {
+    const file = path.join(root, name);
+    fs.writeFileSync(file, text, 'utf8');
+    return file;
+  };
+  const readable = plan([row('D-1', '1', DEFECT_PARSER), row('D-2', '2', DEFECT_PARSER)]);
+  assert.deepStrictEqual(JSON.parse(runtimeCli(['defect-stalemate', '--plan', write('plan.md', readable)])), runtime.defectStalemate(readable), 'the CLI step 9 runs must print what the comparer returns');
+
+  const run = (args) => {
+    try {
+      return { status: 0, stdout: runtimeCli(['defect-stalemate', ...args], { stdio: 'pipe' }) };
+    } catch (error) {
+      return { status: error.status, stdout: String(error.stdout) };
+    }
+  };
+  for (const [label, args] of [
+    ['missing --plan', []],
+    ['no Defects section', ['--plan', write('none.md', '# Test plan\n')]],
+    ['row with an extra cell', ['--plan', write('bad.md', plan([`${row('D-1', '1', DEFECT_PARSER)} extra |`]))]],
+  ]) {
+    assert.deepStrictEqual(run(args), { status: 2, stdout: '' }, `${label}: step 9 must never read a verdict from a plan the comparer could not parse`);
+  }
+});
+
+test('sprint-013 AC-19: the 9.0.0 migration rewrites a config built from the 8.0.0 t_config.yaml into the 9.0.0 t_config.yaml byte for byte - LF, or CRLF with a BOM - reports every removed key, and a second run changes nothing', () => {
+  const fixture = (name) => fs.readFileSync(path.join(FIXTURES, 'migrations', '9.0.0', name), 'utf8').replace(/\r\n/g, '\n');
+  const before = fixture('t_config-8.0.0.yaml');
+  const after = fixture('t_config-9.0.0.yaml');
+  const removed = readRemovedConfigKeys();
+  for (const [label, encode] of [['LF', (text) => text], ['CRLF+BOM', (text) => `﻿${text.replace(/\n/g, '\r\n')}`]]) {
+    const first = migrateConfig900(encode(before));
+    assert.strictEqual(first.report.status, 'migrated', `${label}: ${first.report.reason}`);
+    assert.strictEqual(first.text, encode(after), `${label}: every byte the migration does not own - comments, blank lines, comment columns, line endings, BOM - must survive, and every key it owns must land in the 9.0.0 template shape`);
+    assert.deepStrictEqual(removed.filter((key) => !first.report.changes.includes(`${key}: removed`)), [], `${label}: the report must name every removed key the 8.0.0 template carried`);
+    const second = first.rerun();
+    assert.deepStrictEqual([second.report.status, second.text], ['unchanged', encode(after)], `${label}: /asd-update may run a migration again, so a migrated config must be left alone - a documents group without c4 must not now read as diagram_tool: none`);
+  }
+});
+
+test('sprint-013 AC-19: the 9.0.0 migration maps c4, skip_design_phases and legacy audit values without losing intent, and leaves a config with no pre-9.0.0 key unchanged', () => {
+  const cases = [
+    ['c4 enabled keeps the diagram tool', 'documents:\n  prd: enabled\n  c4: enabled\nproject:\n  diagram_tool: mermaid\n', 'documents:\n  prd: enabled\nproject:\n  diagram_tool: mermaid\n'],
+    ['c4 enabled without diagram_tool takes the likec4 default', 'documents:\n  prd: enabled\n  c4: enabled\nproject:\n  subsystem_decomposition: enabled\n', 'documents:\n  prd: enabled\nproject:\n  subsystem_decomposition: enabled\n  diagram_tool: likec4\n'],
+    ['c4 disabled is none', 'documents:\n  prd: enabled\n  c4: disabled\nproject:\n  diagram_tool: likec4\n', 'documents:\n  prd: enabled\nproject:\n  diagram_tool: none\n'],
+    ['c4 absent from a present documents group is disabled', 'documents:\n  prd: enabled\nproject:\n  diagram_tool: mermaid\ngit:\n  base_branch: main\n  gh_enabled: true\n', 'documents:\n  prd: enabled\nproject:\n  diagram_tool: none\ngit:\n  base_branch: main\n'],
+    ['an absent documents group is all enabled', 'project:\n  diagram_tool: mermaid\nsystem:\n  os: linux\n  tools:\n    codex_command: ""\n', 'project:\n  diagram_tool: mermaid\nsystem:\n  tools:\n    codex_command: ""\n'],
+    ['skip_design_phases enabled disables the design documents and the diagram', 'skip_design_phases: enabled\ndocuments:\n  audit: auto\n  prd: enabled\n  ux_spec: enabled\n  adr: enabled\n  c4: enabled\nproject:\n  diagram_tool: likec4\n', 'documents:\n  audit: auto\n  prd: disabled\n  ux_spec: disabled\n  adr: disabled\nproject:\n  diagram_tool: none\n'],
+    ['skip_design_phases enabled with no documents group creates it', 'skip_design_phases: enabled\nproject:\n  subsystem_decomposition: enabled\n', 'project:\n  subsystem_decomposition: enabled\n  diagram_tool: none\n\ndocuments:\n  audit: always\n  prd: disabled\n  ux_spec: disabled\n  adr: disabled\n'],
+    ['skip_design_phases disabled only goes', 'skip_design_phases: disabled\ndocuments:\n  prd: enabled\n  c4: enabled\nproject:\n  diagram_tool: likec4\n', 'documents:\n  prd: enabled\nproject:\n  diagram_tool: likec4\n'],
+    ['legacy audit enabled is always', 'documents:\n  audit: enabled\n  prd: enabled\n', 'documents:\n  audit: always\n  prd: enabled\n'],
+    ['legacy audit disabled is off, its inline comment kept on its column', 'documents:\n  audit: disabled # mine\n  prd: enabled\n', 'documents:\n  audit: off      # mine\n  prd: enabled\n'],
+    ['no pre-9.0.0 key', 'documents:\n  audit: auto\n  prd: enabled\nproject:\n  diagram_tool: likec4\n', 'documents:\n  audit: auto\n  prd: enabled\nproject:\n  diagram_tool: likec4\n'],
+  ];
+  const observed = cases.map(([label, input]) => {
+    const first = migrateConfig900(input);
+    const second = first.rerun();
+    return [label, first.report.status, first.text, second.report.status];
+  });
+  assert.deepStrictEqual(observed, cases.map(([label, input, expected]) => [label, expected === input ? 'unchanged' : 'migrated', expected, 'unchanged']), 'each AC-19 mapping and audit.md "Migration gaps" boundary, with a second run leaving the result alone');
+  assert.deepStrictEqual(migrateConfig900(undefined).report, { status: 'absent', changes: [], reason: null }, 'a project without config.yaml has nothing to migrate');
+});
+
+test('sprint-013 AC-19: the 9.0.0 migration leaves a config it cannot read line by line byte-identical and says how to re-run it', () => {
+  const rerunCommand = 'node -e "require(\'./.asd/migrations/9.0.0.js\')({ repoRoot: process.cwd() })"';
+  for (const [label, input] of [
+    ['flow map', 'documents: { c4: enabled }\n'],
+    ['duplicate key', 'documents:\n  c4: enabled\n  c4: disabled\n'],
+    ['mixed line endings', 'documents:\r\n  prd: enabled\n  c4: enabled\r\n'],
+    ['value outside the enumeration', 'documents:\n  c4: maybe\n'],
+    ['tab indent', 'documents:\n\tc4: enabled\n'],
+  ]) {
+    const { report, text, output } = migrateConfig900(input);
+    assert.strictEqual(report.status, 'skipped', `${label}: a shape the line-based rewrite does not understand must be skipped, not guessed`);
+    assert.strictEqual(text, input, `${label}: a skipped config must stay byte-identical`);
+    assert.ok(report.reason && output.includes('left untouched') && output.includes(rerunCommand), `${label}: the warning must say the file was left untouched and name the re-run command - got ${JSON.stringify(output)}`);
+  }
 });
 
 // ===========================================================================

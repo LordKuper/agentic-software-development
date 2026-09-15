@@ -33,7 +33,7 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │       │   │   ├── ux-spec.html
 │       │   │   ├── adr.html             # sprint-scoped only; never a standalone persistent document (folds at design-promote)
 │       │   │   ├── design-md-delta.yaml
-│       │   │   └── c4-full/                     # documents.c4 only; delta patch vs persistent diagram; full schema only when it is absent; never build dist/ here
+│       │   │   └── c4-full/                     # diagram_tool not none only; delta patch vs persistent diagram; full schema only when it is absent; never build dist/ here
 │       │   │       # likec4: model/*.c4, views.c4 · mermaid: subsystems.md
 │       │   ├── plan.md
 │       │   ├── test-plan.md
@@ -56,7 +56,7 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │   │   ├── stack.html
 │   │   ├── subsystems.md                # sole subsystem registry; mermaid mode: + inline diagram
 │   │   ├── <subsystem>.md               # purpose + key paths, one per registered subsystem
-│   │   ├── c4/                          # documents.c4 + likec4 only: model/*.c4, views.c4 (dist/ is gitignored build output)
+│   │   ├── c4/                          # diagram_tool likec4 only: model/*.c4, views.c4 (dist/ is gitignored build output)
 │   │   └── tech-reference/<tech>-<version>.md
 │   └── ux/
 │       ├── DESIGN.md
@@ -93,11 +93,11 @@ Agent memory lives at the provider-view root — `.claude/agent-memory/<agent>/`
 
 ## Subsystem registry
 
-When decomposition enabled, `docs/architecture/subsystems.md` (`t_subsystems.md`) is the sole subsystem registry — which subsystems exist and their ids — whatever `documents.c4` or `project.diagram_tool`. Each entry links `docs/architecture/<id>.md` (`t_subsystem.md`: purpose, key paths), and every registered subsystem has one. Reserved, never a subsystem id (they collide in flat `docs/architecture/`): `subsystems`, `stack`, `c4`, `tech-reference`.
+When decomposition enabled, `docs/architecture/subsystems.md` (`t_subsystems.md`) is the sole subsystem registry — which subsystems exist and their ids — whatever `project.diagram_tool`. Each entry links `docs/architecture/<id>.md` (`t_subsystem.md`: purpose, key paths), and every registered subsystem has one. Reserved, never a subsystem id (they collide in flat `docs/architecture/`): `subsystems`, `stack`, `c4`, `tech-reference`.
 
 `/asd-init` seeds the registry empty; only Architect fills it. A subsystem is added at `design-promote` (`sprint-lifecycle.md` "Design-promote phase"), or at `audit` when the registry is absent (`sprint-lifecycle.md` "Audit phase") — each addition with explicit user approval (hard gate).
 
-Diagram, only with `documents.c4` enabled, per `project.diagram_tool`; with `documents.c4` disabled, `docs/architecture/c4/` is never written or created:
+Diagram per `project.diagram_tool`; with `none`, no diagram is written and `docs/architecture/c4/` is never created:
 
 - **likec4**: `c4/model/*.c4`, `views.c4` (LikeC4 DSL) — diagram source only; container/component ids match registry ids. `likec4 build` produces `dist/` interactive HTML — build output, gitignored, never committed; run the `commands.yaml` `c4-build` command to render.
 - **mermaid**: a Mermaid C4 block inline in `subsystems.md`. No `c4/` folder, no build output.

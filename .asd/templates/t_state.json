@@ -4,7 +4,6 @@
   "phase": "scope",
   "documents": { "audit": "{{DOC_AUDIT}}", "prd": "{{DOC_PRD}}", "ux_spec": "{{DOC_UX_SPEC}}", "adr": "{{DOC_ADR}}", "c4": "{{DOC_C4}}" },
   "user_gates": "{{USER_GATES}}",
-  "skip_design_phases": "{{SKIP_DESIGN_PHASES}}",
   "gate_decisions": [],
   "task_routing": {},
   "skipped_phases": [],

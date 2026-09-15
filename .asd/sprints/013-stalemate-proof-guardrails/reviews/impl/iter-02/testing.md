@@ -1,0 +1,22 @@
+[REVIEW-impl-testing]: CONCERNS
+
+# Review — testing
+
+- **Phase**: impl-review
+- **Iteration**: 2
+- **Manifest**: [testing.manifest.json](testing.manifest.json) · **Diff**: [iteration.diff](iteration.diff)
+
+## Findings
+
+| # | Severity | Location | Description | Suggested fix |
+|---|---|---|---|---|
+| TST-1 | medium | `tests/run.js:4586`; `test-plan.md` "Risk → check decisions" row "Entry 3: `defectStalemate` needs consecutive entries (COR-1-2, 05d7ffd)" and "Added tests" AC-1/AC-2 row (Regression proof `n/a`) | COR-1-2 was a real code defect fixed in review-fix; the inverted assert (entries 2/4 → `false`) fails against the old code, so the test is sound, but `code-style.md` §17 requires a recorded fail-first run or mutation (command, non-zero exit code, failing test name) for every fixed defect. The plan records a bare claim and `n/a`; D-1 in the same function has a proper record. Affects AC-1. | Record a fail-first proof in the AC-1/AC-2 "Added tests" cell: temporarily restore `previousEntry !== undefined` in place of `previousEntry === latestEntry - 1` (or run at pre-fix `runtime.js`), record `node tests/run.js` → exit 1 with the runner test name, restore, then post-fix exit 0 (expect a collateral `upstream_hashes` failure for `runtime.js`). |
+| TST-2 | medium | `tests/run.js:2312` (AC-16 "AC-3/4/5: preflight permits only fixed local probes…"); `test-plan.md` entry 3 prose-only row (e27e270) | After COR-1-1 the stdin syntax keys on host shell plus `platform` (Claude Code always heredoc). The only AC-16 pin still asserts only that `external-review.md` mentions `platform` and `ready.platform === process.platform`, with a message stating the old `platform`-only rule — a revert of the table stays green while the message describes the reverted rule. | Reword the message to the host-shell-plus-`platform` rule; optionally pin that the table's Claude Code row names the heredoc form so a `platform`-only revert fails. |
+
+Checked and holding (condensed): `documents.c4` pin (10 frozen-state reader lines, each read) and legacy-line pin (`sprint-lifecycle.md:155`, `:345`) match disk; asd-init step 13/14 absence assert sound; EFF-1 fixture pair still valid; consecutive-entry bounds (2/3 true, 2/4 false, 9/10 true, single false) kill a loosening mutation; no stubs; no manual verification needed. No shell available: 203 `test(` declarations counted; hashes checked structurally.
+
+## Coverage ledger
+
+```json
+{"manifest_digest":"2846fb0356a65b393864a1ed664f81758055d2ea097e793853467cb4d4975b19","findings":["TST-1","TST-2"],"files":[{"i":".asd/agents/asd-external-review.md","s":"checked"},{"i":".asd/migrations/9.0.0.js","s":"checked"},{"i":".asd/release-manifest.json","s":"checked"},{"i":".asd/rules/core.md","s":"checked"},{"i":".asd/rules/external-review.md","s":"checked"},{"i":".asd/rules/sprint-lifecycle.md","s":"checked"},{"i":".asd/runtime.js","s":"checked"},{"i":".asd/skills/asd-init/SKILL.md","s":"checked"},{"i":".asd/skills/asd-update/SKILL.md","s":"checked"},{"i":".asd/sync-state.json","s":"checked"},{"i":".asd/templates/t_AGENTS.md","s":"checked"},{"i":".asd/workflows/asd-phase-impl-test.md","s":"checked"},{"i":".claude/agent-memory/asd-reviewer-correctness/MEMORY.md","s":"checked"},{"i":".claude/agent-memory/asd-reviewer-correctness/feedback_review-method-no-shell.md","s":"checked"},{"i":".claude/agent-memory/asd-reviewer-correctness/project_os-is-not-shell.md","s":"checked"},{"i":".claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md","s":"checked"},{"i":".claude/agent-memory/asd-reviewer-efficiency/MEMORY.md","s":"checked"},{"i":".claude/agent-memory/asd-reviewer-efficiency/feedback_no-shell-incremental-scope.md","s":"checked"},{"i":".claude/agent-memory/asd-reviewer-testing/MEMORY.md","s":"checked"},{"i":".claude/agent-memory/asd-reviewer-testing/feedback_sweep-exemption-granularity.md","s":"checked"},{"i":".claude/agent-memory/asd-reviewer-testing/project_split-part-rubric-rows.md","s":"checked"},{"i":"AGENTS.md","s":"checked"},{"i":"README.md","s":"checked"},{"i":"tests/run.js","s":"checked"}],"rules":[{"i":"Rule-set conformance","s":"finding","f":"TST-1"},{"i":"Coverage","s":"finding","f":"TST-2"},{"i":"Edge cases","s":"pass"},{"i":"Stub-resolution verification","s":"pass"},{"i":"Manual verification (last resort)","s":"pass"},{"i":".asd/project/custom-common-rules.md","s":"pass"},{"i":".asd/project/custom-coding-rules.md","s":"pass"}],"sections":[]}
+```

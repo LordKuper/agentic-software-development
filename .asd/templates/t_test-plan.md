@@ -43,7 +43,7 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
 
 | Test | Regression proof |
 |---|---|
-| {{file:name}} | {{n/a \| fail-first vs D-N \| mutation <what was mutated>}} |
+| {{file:name}} | {{n/a \| fail-first vs D-N: <command> → exit <code>, <failing test> \| mutation <what>: <command> → exit <code>, <failing test> — evidence per code-style.md §17}} |
 
 ## Suite run
 
@@ -62,11 +62,11 @@ per-entry record measures only the tree that entry analysed, not any tree produc
 
 ## Defects
 
-Code defects found by the suite. Resolved in `impl` test-fix mode.
+Code defects found by the suite. Resolved in `impl` test-fix mode. `Entry` through `Failing test` are never edited once written — the stalemate check compares them (`.asd/rules/sprint-lifecycle.md` "Impl-test phase").
 
-| ID | Location | Symptom | Failing test | Status | Fix commit |
-|---|---|---|---|---|---|
-| D-1 | {{file:line}} | {{observed wrong behaviour}} | {{test name}} | {{pending \| fixed}} | {{sha}} |
+| ID | Entry | Location | Symptom | Failing test | Status | Fix commit |
+|---|---|---|---|---|---|---|
+| D-1 | {{`Entry log` N that routed it \| impl-review}} | {{file path, no line}} | {{runner's first failure line, verbatim}} | {{runner-reported test name}} | {{pending \| fixed \| accepted-debt}} | {{sha}} |
 
 ## Manual verification (optional)
 

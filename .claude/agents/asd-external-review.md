@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:be032e9e65c026e47e9fa989b38719e098db188ebbf55c5c5cc7f256f4c8d470 content_digest=sha256:858fc11aa2e4251a86c315da1711b858ce5e2e2327fb562bcb555b68057c8696 asd_version=7.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:030b7253f205d752eb386a19d7087f8d842bda52d28420dcdddae46725329235 content_digest=sha256:954aebddd57f4d1ad4a9571fd372614758cd0daa493e57e22c16fa6f99eacad7 asd_version=8.0.0 schema=1
 name: asd-external-review
-description: "External reviewer wrapping the other provider's CLI (Codex under Claude Code, Claude under Codex), run in parallel with internal reviewers during design-review and impl-review. Covers: wrapped-CLI availability detection per system.os, iteration-aware scope manifest rendering (full vs incremental), prompt selection per phase (design or impl), output parsing and ASD severity mapping, kept/dropped accounting per severity floor, stalemate detection across iterations. Does NOT handle: internal review (delegates to asd-reviewer-* agents), fixing (creators autofix per review-policy)."
+description: "External reviewer wrapping the other provider's CLI (Codex under Claude Code, Claude under Codex), run in parallel with internal reviewers during design-review and impl-review. Covers: wrapped-CLI availability detection and invocation per runtime-detected platform, iteration-aware scope manifest rendering (full vs incremental), prompt selection per phase (design or impl), output parsing and ASD severity mapping, kept/dropped accounting per severity floor, stalemate detection across iterations. Does NOT handle: internal review (delegates to asd-reviewer-* agents), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, Bash, AskUserQuestion]
 disallowedTools: [Edit, WebFetch]
 model: sonnet
@@ -29,7 +29,7 @@ External review wrapper. Runs `codex` CLI parallel to internal reviewers, normal
 
 ## Inputs
 
-- `.asd/project/config.yaml` (`review.external_review`, `system.os`, `system.tools.codex_command`)
+- `.asd/project/config.yaml` (`review.external_review`, `system.tools.codex_command`)
 - phase, iteration, review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
 - prompt template:
   - design-review → `.asd/templates/external-review/t_prompt-external-design.md`
@@ -62,12 +62,12 @@ Reviewer (external wrapper):
 
 Read-only is enforced on the WRAPPED CLI subprocess itself, explicitly, per invocation (baked into `exec --model gpt-5.6-sol -c model_reasoning_effort="high" --sandbox read-only -` below) — not left to depend on project-level config the user might set differently, and not merely a claim about this agent's own tool list. Codex `exec` uses `--sandbox read-only`; Claude uses `--restricted --tools "Read,Grep,Glob" --strict-mcp-config --disable-slash-commands --no-session-persistence`, which limits builtin tools, ignores user/project customizations, accepts no inherited MCP configuration, and leaves no review session artifact.
 
-## `codex` invocation (per system.os)
+## `codex` invocation (per host shell and preflight `platform`, `external-review.md` "OS-specific invocation")
 
 Command tail is provider-specific (`exec --model gpt-5.6-sol -c model_reasoning_effort="high" --sandbox read-only -` — the two CLIs take different arguments for a scripted, stdin-fed, plain-text-output, explicitly-read-only run; this is a real syntax difference, not just a binary-name swap). Prompt sent via heredoc/here-string directly into the wrapped CLI's stdin — never written to disk (required: this agent is read-only on both providers). Capture stdout directly as the review text — no `-o <out-file>`, no temp file, no cleanup step needed since nothing was created.
 
-- windows (PowerShell): `@'`<rendered prompt + scope manifest>`'@ | codex exec --model gpt-5.6-sol -c model_reasoning_effort="high" --sandbox read-only -` — here-string piped straight to stdin (or `system.tools.codex_command` override)
-- linux/macos (bash): `codex exec --model gpt-5.6-sol -c model_reasoning_effort="high" --sandbox read-only - <<'EOF'` / `<rendered prompt + scope manifest>` / `EOF` — heredoc piped straight to stdin (or override)
+- Codex host on `win32` (PowerShell): `@'`<rendered prompt + scope manifest>`'@ | codex exec --model gpt-5.6-sol -c model_reasoning_effort="high" --sandbox read-only -` — here-string piped straight to stdin (or `system.tools.codex_command` override)
+- Claude Code host on any platform (bash, Git Bash on Windows), Codex host elsewhere: `codex exec --model gpt-5.6-sol -c model_reasoning_effort="high" --sandbox read-only - <<'EOF'` / `<rendered prompt + scope manifest>` / `EOF` — heredoc piped straight to stdin (or override)
 
 Both forms feed prompt+scope manifest via stdin; the wrapped CLI's own `Read`/`Glob`/`Grep` (Claude) or read-only shell (Codex `exec`) tools resolve `files[]` content from the repo itself. The command's own stdout is captured as the final message — a plain-text verdict, never structured/streaming output. No `-o <out-file>`.
 

@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-phase-retro/SKILL.md. source_digest=sha256:417f9081d1cba742e3530518bc52d501b6330568c45cf8701434c23b0d4779ec content_digest=sha256:ec1f361279d9e4ed358b2a1561d6b3e71774737df89f3930ae525f445db1be14 asd_version=7.1.0 schema=1
+# ASD generated. Edit .asd/skills/asd-phase-retro/SKILL.md. source_digest=sha256:d40dea69c3415c91b8043f4fff9bbda9dbf5750f76ebd2ff762942ab56fb4bef content_digest=sha256:7bc98cbcbc6ba3b928190987d2fe4889723c0ab929fc73433db8bc53187d4a29 asd_version=8.0.0 schema=1
 name: asd-phase-retro
-description: "Runs the ASD retro phase: the phase orchestrator reads the sprint friction log, derives a root cause per F-N entry with consumer-project and ASD-framework remediation traced to those ids, plus systemic proposals from how the sprint actually ran, writes retrospective.html and posts a short chat summary. An absent or entry-free log takes the empty-log branch — remediation skipped, systemic proposals still produced — and still completes to pr. Use when asd-sprint dispatches the retro phase, or when the user explicitly asks to run or re-run retro for the active sprint."
+description: "Runs the ASD retro phase: the phase orchestrator reads the sprint friction log, derives remediation traced to F-N entries plus systemic proposals from how the sprint actually ran, merges findings sharing one root cause, drops any an existing rule in its home already covers, gives each survivor a one-line Guardrail and its Home split into consumer-project and ASD-framework actions (proposed, never applied), writes retrospective.html and posts a short chat summary. An absent or entry-free log takes the empty-log branch — remediation skipped, systemic proposals still produced — and still completes to pr. Use when asd-sprint dispatches the retro phase, or when the user explicitly asks to run or re-run retro for the active sprint."
 allowed-tools: "Read Write Edit"
 ---
 

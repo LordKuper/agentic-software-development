@@ -1,0 +1,217 @@
+{
+  "sprint_id": "013-stalemate-proof-guardrails",
+  "branch": "sprint/013-stalemate-proof-guardrails",
+  "phase": "pr",
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "adr": false,
+    "c4": false
+  },
+  "user_gates": "adaptive",
+  "skip_design_phases": true,
+  "gate_decisions": [
+    {
+      "gate": "scope-amendment",
+      "decision_actor": "user",
+      "reason": "audit open questions: AC-2 path identity via runtime.js, AC-3 own stalemate options, AC-7 expanded homes, AC-19 migration as sanctioned writer, AC-20 run 9.0.0.js here, goal count 28->20",
+      "evidence": "audit.md Gaps/Documentation contradictions C3,C5,C7,C8; user answers 2026-09-15",
+      "artifact_revision": "sprint.md sha256:1b839e2d8a70"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "all hard audit questions answered by user; remaining choices (frozen documents.c4 effective boolean, invalid audit value blocks) in-bounds defaults with existing precedent",
+      "evidence": "audit.md; decisions-log 2026-09-15 audit entries; checkpoints.md Gate policy",
+      "artifact_revision": "audit.md sha256:0d81eae9f023"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "orchestrator",
+      "reason": "all tasks trace to user-authorized AC-1..AC-20; plan-fixed choices bounded with precedent; no open stubs; no unresolved material alternative",
+      "evidence": "plan.md Overview decisions; audit.md; decisions-log 2026-09-15 plan entry",
+      "artifact_revision": "plan.md sha256:6a49d6ac2dec"
+    },
+    {
+      "gate": "impl-assessment",
+      "decision_actor": "orchestrator",
+      "reason": "all tasks complete, build+lint clean, authorised-paths diff, flagged choices resolved, no stubs",
+      "evidence": "plan.md 35/35 ticked; sync.js --check ok; git diff --check clean; decisions-log impl assessment entry",
+      "artifact_revision": "HEAD b6df00a"
+    },
+    {
+      "gate": "scope-amendment",
+      "decision_actor": "user",
+      "reason": "AC-19 writer bound widened to value mappings, key insertions and shipped-comment rewrites carrying a removed key/value intent (COR-2-1)",
+      "evidence": "reviews/impl/iter-02/correctness.md COR-2-1; AC-19 iterations charged >=2 (lower bound), fix rounds charged 1",
+      "artifact_revision": "sprint.md sha256:720ce28a6689"
+    },
+    {
+      "gate": "impl-review-green-handoff",
+      "decision_actor": "orchestrator",
+      "reason": "all required reviewers APPROVE/latched at iter-03, external availability skip, terminal full suite green",
+      "evidence": "state.json reviews.impl.verdicts iter-03; test-plan.md Suite run HEAD 78b6a7b exit 0 203/203",
+      "artifact_revision": "HEAD 888373c"
+    },
+    {
+      "gate": "pr-publication",
+      "decision_actor": "orchestrator",
+      "reason": "DoD met; AC-15 makes pr always open through gh; gh authenticated; adaptive policy",
+      "evidence": "plan 35/35; iter-03 verdicts satisfied; full suite 203/203 at 78b6a7b, re-run green at 6bfd6ae; retrospective.html present; no open stubs",
+      "artifact_revision": "HEAD 6bfd6ae"
+    }
+  ],
+  "task_routing": {
+    "Task 1": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "Task 2": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "orchestrator-escalation: two stalled standard dispatches (F-2)",
+      "resolved_model": "opus"
+    },
+    "Task 3": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "Task 4": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:ambiguous judgment",
+      "resolved_model": "opus"
+    },
+    "Task 5": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:public contract",
+      "resolved_model": "opus"
+    },
+    "Task 6": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:public contract",
+      "resolved_model": "opus"
+    },
+    "Task 7": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:migration",
+      "resolved_model": "opus"
+    },
+    "Task 8": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:migration",
+      "resolved_model": "opus"
+    },
+    "Task 9": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "orchestrator-escalation: standard dispatches stalled twice this phase (F-2)",
+      "resolved_model": "opus"
+    },
+    "impl-test": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:migration",
+      "resolved_model": "opus"
+    },
+    "D-1": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "review-fix iter-01 dev": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "review-fix iter-01 tester": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "review-fix iter-02 dev": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:migration",
+      "resolved_model": "opus"
+    },
+    "review-fix iter-02 tester": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    }
+  },
+  "skipped_phases": [
+    "design",
+    "design-review",
+    "design-promote"
+  ],
+  "reviews": {
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "iteration": 3,
+      "verdicts": {
+        "iter-01": {
+          "correctness": "CONCERNS",
+          "efficiency": "CONCERNS",
+          "testing": "CONCERNS",
+          "documentation": "CONCERNS",
+          "external": "APPROVE (skipped: external review unavailable: quota exhausted)"
+        },
+        "iter-02": {
+          "correctness": "CONCERNS",
+          "efficiency": "APPROVE",
+          "testing": "CONCERNS",
+          "documentation": "CONCERNS",
+          "external": "APPROVE (skipped: external review unavailable: quota exhausted)"
+        },
+        "iter-03": {
+          "correctness": "APPROVE",
+          "efficiency": "APPROVE",
+          "testing": "APPROVE",
+          "documentation": "APPROVE",
+          "external": "APPROVE (skipped: external review unavailable: negative-cache quota)"
+        }
+      },
+      "iteration_heads": {
+        "iter-01": "f400f3a9ba6e50e4b45c0346d86b0c06ddf24315",
+        "iter-02": "e569351508c1724b47916da03a778f9db1e79efc",
+        "iter-03": "c43af433d95e7b89b1458d8ecf960b5b785e8ba7"
+      },
+      "latched": {
+        "efficiency": 2,
+        "correctness": 3,
+        "testing": 3,
+        "documentation": 3
+      }
+    }
+  },
+  "created_at": "2026-09-15T08:00:17Z",
+  "updated_at": "2026-09-15T11:26:15Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": {
+    "number": 39,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/39",
+    "state": "open",
+    "head": "6bfd6ae"
+  },
+  "archived_at": null
+}

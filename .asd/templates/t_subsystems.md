@@ -1,6 +1,6 @@
 ---
 responsibility:
-  owns: which subsystems exist and their ids (sole subsystem registry); mermaid mode with documents.c4: the subsystem diagram
+  owns: which subsystems exist and their ids (sole subsystem registry); diagram_tool mermaid: the subsystem diagram
   excludes: a subsystem's purpose and key paths, requirements, decisions, stack
   delegates_to: <id>.md (purpose, key paths), c4/ (likec4 diagram source), stack.html
 ---
@@ -13,7 +13,7 @@ responsibility:
 
 ## Diagram
 
-Mermaid mode with `documents.c4` enabled only; omit this section otherwise.
+`project.diagram_tool: mermaid` only; omit this section otherwise.
 
 ```mermaid
 C4Container

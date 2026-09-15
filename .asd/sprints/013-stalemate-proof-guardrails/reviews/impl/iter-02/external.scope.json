@@ -1,0 +1,42 @@
+{
+  "phase": "impl-review",
+  "iteration": 2,
+  "base_ref": "f400f3a9ba6e50e4b45c0346d86b0c06ddf24315",
+  "head_ref": "e569351508c1724b47916da03a778f9db1e79efc",
+  "files": [
+    ".asd/agents/asd-external-review.md",
+    ".asd/migrations/9.0.0.js",
+    ".asd/release-manifest.json",
+    ".asd/rules/core.md",
+    ".asd/rules/external-review.md",
+    ".asd/rules/sprint-lifecycle.md",
+    ".asd/runtime.js",
+    ".asd/skills/asd-init/SKILL.md",
+    ".asd/skills/asd-update/SKILL.md",
+    ".asd/sync-state.json",
+    ".asd/templates/t_AGENTS.md",
+    ".asd/workflows/asd-phase-impl-test.md",
+    ".claude/agent-memory/asd-reviewer-correctness/MEMORY.md",
+    ".claude/agent-memory/asd-reviewer-correctness/feedback_review-method-no-shell.md",
+    ".claude/agent-memory/asd-reviewer-correctness/project_os-is-not-shell.md",
+    ".claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md",
+    ".claude/agent-memory/asd-reviewer-efficiency/MEMORY.md",
+    ".claude/agent-memory/asd-reviewer-efficiency/feedback_no-shell-incremental-scope.md",
+    ".claude/agent-memory/asd-reviewer-testing/MEMORY.md",
+    ".claude/agent-memory/asd-reviewer-testing/feedback_sweep-exemption-granularity.md",
+    ".claude/agent-memory/asd-reviewer-testing/project_split-part-rubric-rows.md",
+    "AGENTS.md",
+    "README.md",
+    "tests/run.js"
+  ],
+  "exclude_paths": [
+    ".asd/project/**",
+    ".asd/sprints/**",
+    ".claude/agents/**",
+    ".claude/skills/**",
+    ".claude/hooks/**",
+    ".claude/settings.json",
+    ".codex/**",
+    ".agents/skills/**"
+  ]
+}

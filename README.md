@@ -24,7 +24,7 @@ Both providers run from one canonical source under `.asd/` (agents, skills, hook
 - **Claude Code and/or Codex CLI** — pick one as your primary runtime, or use both; ASD generates a working provider view for each
 - **Node.js** — used by the SessionStart hook, `.asd/sync.js`, and by the optional Google Labs `designmd` and `LikeC4` CLIs
 - **Git** — required (sprint = branch)
-- **gh CLI** — optional, only if you want ASD to open PRs for you
+- **gh CLI** — required, installed and authenticated (`gh auth status`); `/asd-init` stops without it, and every sprint PR is opened and merged through it
 
 Each provider can show up in two different roles — don't conflate them:
 
@@ -39,7 +39,7 @@ Codex delegates use the concrete model IDs in the canonical family map: `sol` �
 
 Optional external tools auto-detected by `/asd-init`:
 
-- **LikeC4 CLI** — for C4 architecture model rendering (`project.diagram_tool: likec4`, needs decomposition + `documents.c4` enabled)
+- **LikeC4 CLI** — for C4 architecture model rendering (`project.diagram_tool: likec4`, needs decomposition enabled)
 - **`@google/design.md`** — for DESIGN.md token lint and Tailwind/DTCG export
 
 ---
@@ -83,7 +83,7 @@ This fetches the latest framework files from the ASD repo's `main` branch and re
 
 | Updated (overwritten) | Never touched |
 |---|---|
-| `.asd/rules/`, `.asd/templates/` | `.asd/project/` (your config, custom rules) |
+| `.asd/rules/`, `.asd/templates/` | `.asd/project/` (your config, custom rules) — except a release migration's release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent in `config.yaml` |
 | `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/migrations/`, `.asd/sync.js`, `.asd/runtime.js` | `.asd/sprints/` (your sprint work) |
 | `.asd/release-manifest.json` itself | `docs/` (your persistent docs) |
 | | `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json` |
@@ -114,7 +114,7 @@ This repo (the ASD framework source itself) runs `node .asd/sync.js --check` in 
 ## Quick start
 
 ```text
-/asd-init           # interactive setup: language, decomposition mode, OS, tools, git
+/asd-init           # interactive setup: language, decomposition mode, tools, git (requires authenticated gh)
 /asd-concept        # define the project concept (vision, users, value)
 /asd-stack          # define the tech stack (architect proposes from concept)
 /asd-design-system  # define the design system (tokens, components, a11y) — optional, also auto-gated in the design phase
@@ -152,21 +152,21 @@ flowchart TD
     class pr done;
 ```
 
-`impl`, `impl-test`, and `impl-review` form one cycle. `impl` writes production code only — its gate is build + lint. `impl-test` then picks the test approach for the whole change scope (after the code exists), prunes tests that no longer earn their keep, writes the missing ones, and runs the **impacted set** (tests touched by the change surface, not the whole repo): code defects route back to `impl` (test-fix mode), a green impacted run advances to `impl-review`. Review findings route back to `impl` (review-fix mode) and return through `impl-test`. Once every required reviewer is APPROVE (or already latched from an earlier iteration), `impl-review` runs the sprint's **one full-suite check** before advancing to `retro` — a red run there fixes test defects in place and re-runs, or, for code defects, exits to `impl` (test-fix mode) and clears every reviewer's APPROVE latch. The `impl⇄impl-test` loop is uncapped — it ends on a green impacted run or an escalated blocker; `impl-review` keeps its iteration cap.
+`impl`, `impl-test`, and `impl-review` form one cycle. `impl` writes production code only — its gate is build + lint. `impl-test` then picks the test approach for the whole change scope (after the code exists), prunes tests that no longer earn their keep, writes the missing ones, and runs the **impacted set** (tests touched by the change surface, not the whole repo): code defects route back to `impl` (test-fix mode), a green impacted run advances to `impl-review`. Review findings route back to `impl` (review-fix mode) and return through `impl-test`. Once every required reviewer is APPROVE (or already latched from an earlier iteration), `impl-review` runs the sprint's **one full-suite check** before advancing to `retro` — a red run there fixes test defects in place and re-runs, or, for code defects, exits to `impl` (test-fix mode) and clears every reviewer's APPROVE latch. The `impl⇄impl-test` loop is uncapped — it ends on a green impacted run, an escalated blocker, or a stalemate: two consecutive impl-test entries routing the same defect set (compared by `node .asd/runtime.js defect-stalemate`) escalate `FAILED: stalemate` to you; `impl-review` keeps its iteration cap.
 
 | Phase | What happens |
 |---|---|
 | **scope** | Orchestrator refines your raw idea into a coherent sprint goal; creates the sprint branch and folder |
-| **audit** | Architect scans existing docs and code; BA joins only for material domain ambiguity; identify gaps, risks, stubs to resolve |
+| **audit** | Architect reads every existing doc bearing on the touched areas, plus the code; BA joins only for material domain ambiguity; a canonical ASD doc wins a contradiction, an unsettled one is your hard decision; identify gaps, risks, stubs to resolve |
 | **design** | BA writes PRD, UX writes UX-spec and UI mockups, Architect writes ADRs and C4 schema |
 | **design-review** | 3 internal reviewers (Correctness, Efficiency, Documentation) plus External Review iterate to APPROVE |
 | **design-promote** | Approved sprint drafts get decomposed per subsystem and promoted to persistent `docs/` |
 | **plan** | Orchestrator decomposes work into Tasks with checkbox subtasks, traces each to PRD acceptance criteria, assigns each to a dispatch wave |
 | **impl** | Dev implements Tasks — or fixes impl-review findings (review-fix mode) or impl-test defects (test-fix mode); no tests written here; run build/lint, commit per Conventional Commits |
-| **impl-test** | Tester picks the risk-based test approach for the change scope, deletes redundant/flaky/implementation-coupled tests, writes the missing ones, runs the impacted set; records everything in `test-plan.md`; code defects route back to `impl` |
+| **impl-test** | Tester picks the risk-based test approach for the change scope, deletes redundant/flaky/implementation-coupled tests, writes the missing ones, runs the impacted set; records everything in `test-plan.md`, each regression proof with its failing command, non-zero exit code and test name; code defects route back to `impl` |
 | **impl-review** | 4 internal reviewers (Correctness, Efficiency, Testing, Documentation) plus External Review; routes findings back to `impl` review-fix mode; once reviewers approve, runs the sprint's one full-suite check — green advances to `retro`, red exits to `impl` test-fix mode and clears every APPROVE latch |
-| **retro** | Orchestrator reads the sprint's friction log and writes `retrospective.html` in two classes: root cause plus remediation per `F-N` entry, and systemic proposals for a cheaper next sprint (derived from how the sprint ran, not bounded by the entries) — every row marked as acting on the consumer project or the ASD framework; an entry-free log skips remediation only, proposals still ship; closes with a chat summary |
-| **pr** | DoD verification + `gh pr create`, then ASD merges the PR itself (or push + summary and you merge, if gh disabled); merging is not closure — explicit user closure approval still gates finalization/archival, and terminal state additionally requires confirmed merge |
+| **retro** | Orchestrator reads the sprint's friction log and writes `retrospective.html` in two classes: remediation traced to `F-N` entries, and systemic proposals for a cheaper next sprint (derived from how the sprint ran, not bounded by the entries); findings sharing a root cause merge first, one an existing rule already covers is dropped citing it, and each survivor gets a one-line `Guardrail` and its `Home` — every row marked as acting on the consumer project or the ASD framework, never applied by retro; an entry-free log skips remediation only, proposals still ship; closes with a chat summary |
+| **pr** | DoD verification + `gh pr create`, then ASD merges the PR itself through `gh` (a `gh` failure is `FAILED` naming the fix); merging is not closure — explicit user closure approval still gates finalization/archival, and terminal state additionally requires confirmed merge |
 
 You can resume an interrupted sprint at any time: `/asd-sprint` reads `state.json`, detects the current phase, and dispatches the matching phase skill.
 
@@ -183,7 +183,7 @@ User-facing commands available at any time. Invocation form differs per provider
 | `/asd-stack` | `$asd-stack` | Form or edit `docs/architecture/stack.html` (architect proposes from concept; same 4 variants) |
 | `/asd-design-system` | `$asd-design-system` | Form or edit `docs/ux/DESIGN.md`, `design-system.html`, `accessibility.html` (3 entry variants: greenfield / constraints / brownfield) |
 | `/asd-sprint` | `$asd-sprint` | Start a new sprint or resume the active one |
-| `/asd-update` | `$asd-update` | Update framework infrastructure (rules, templates, ASD agents/skills/hooks, `.asd/migrations`) to the latest version from the ASD repo's main branch, then run any pending migration scripts in ascending order; never touches your config, sprints, persistent docs, or custom skills/agents/hooks |
+| `/asd-update` | `$asd-update` | Update framework infrastructure (rules, templates, ASD agents/skills/hooks, `.asd/migrations`) to the latest version from the ASD repo's main branch, then run any pending migration scripts in ascending order; never touches your config (beyond a migration's release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent), sprints, persistent docs, or custom skills/agents/hooks |
 | `/asd-sync` | `$asd-sync` | Reconcile generated provider views (`.claude/`, `.codex/`, `.agents/skills/`) with canonical `.asd/` sources — per-file overwrite/keep/diff confirmation, never a silent bulk overwrite |
 
 Phase skills (`asd-phase-*`) are dispatched internally by `/asd-sprint`/`$asd-sprint`. You usually do not invoke them directly, but you can use them to re-run a specific phase of the active sprint.
@@ -220,7 +220,7 @@ Reviewers write no review artifact, code or doc on any provider (scope: `review-
 
 Reviewers emit a machine-parseable first-line verdict token: `[REVIEW-<phase>-<reviewer>]: APPROVE|CONCERNS|FAIL`, where `<phase>` is `design` or `impl` and `<reviewer>` is `correctness | efficiency | testing | documentation | external`.
 
-**Diff-scoped rubric-section gating** (`review.scoped_fan_out: enabled` — seeded `enabled` by `/asd-init` for NEW projects only; absent from an existing project's `config.yaml` means `disabled`, full coverage — see `.asd/rules/review-policy.md` "Diff-scoped impl-review fan-out" for the SSoT): Correctness and Efficiency are always dispatched; two diff-derived predicates instead mark a rubric SECTION `n/a: <predicate>` inside that reviewer's own returned coverage ledger, so the agent never loads that domain's inputs for the n/a'd section. Correctness's UI conformance section is n/a only when no file in the iteration's scope list is a UI surface; Efficiency's five performance sections are n/a only when both no perf-budgets section exists in `custom-coding-rules.md` and the scope list contains no executable file (conjunctive). Each n/a'd section re-enters automatically the moment a qualifying file re-enters the diff; `review.scoped_fan_out: disabled` restores unconditional coverage of every section. `checkpoints.md`'s impl-review approval gate is unaffected either way (`review-policy.md` DoD table).
+**Diff-scoped rubric-section gating** (always on — SSoT: `.asd/workflows/asd-phase-impl-review.md` step 5): Correctness and Efficiency are always dispatched; two diff-derived predicates instead mark a rubric SECTION `n/a: <predicate>` inside that reviewer's own returned coverage ledger, so the agent never loads that domain's inputs for the n/a'd section. Correctness's UI conformance section is n/a only when no file in the iteration's scope list is a UI surface; Efficiency's five performance sections are n/a only when both no perf-budgets section exists in `custom-coding-rules.md` and the scope list contains no executable file (conjunctive). Each n/a'd section re-enters automatically the moment a qualifying file re-enters the diff. `checkpoints.md`'s impl-review approval gate is unaffected (`review-policy.md` DoD table).
 
 An **APPROVE latch** persists per phase per reviewer key in `state.json`: a reviewer that returned APPROVE on iteration N is not re-dispatched on N+1+ within the same phase, and counts as satisfied at the DoD. A red full suite at the end of impl-review (see below) clears every latch sprint-wide.
 
@@ -247,14 +247,11 @@ user_gates: strict        # adaptive | strict — closure always requires user a
 
 self_hosting: disabled   # enabled | disabled — ASD developing itself through its own workflow
 
-skip_design_phases: disabled  # enabled | disabled — absent = disabled; skips design/design-review/design-promote outright
-
 documents:                # optional sprint documents; absent group = all enabled (back-compat)
-  audit: auto              # auto | always | off; legacy enabled/disabled accepted
+  audit: auto              # auto | always | off; any other value blocks scope
   prd: enabled              # enabled | disabled; design/prd.html + persistent requirements
   ux_spec: enabled          # enabled | disabled; ux-spec, design-system gate, design-md-delta
   adr: enabled               # enabled | disabled; adr.html (sprint-scoped only; folds into existing persistent docs at design-promote)
-  c4: enabled                  # enabled | disabled; c4-full + persistent C4 (also needs project.subsystem_decomposition: enabled)
 
 language:
   chat: en          # language for chat with you
@@ -262,31 +259,25 @@ language:
 
 project:
   subsystem_decomposition: enabled    # enabled | disabled
-  diagram_tool: likec4                # likec4 | mermaid (only when decomposition and documents.c4 enabled)
+  diagram_tool: likec4                # none | likec4 | mermaid (any diagram also needs decomposition enabled)
 
 backward_compat: migration            # strict | migration | none
 
 review:
   external_review: enabled            # enabled | disabled
-  scoped_fan_out: enabled              # enabled | disabled — impl-review UI/Performance rubric sections n/a-able per diff-derived predicates (disabled = every section reviewed in full, every iteration)
   iterations_low: 1                   # cumulative-budget severity floor
   iterations_medium: 1
   iterations_high: 2
   iterations_critical: 10
 
 system:
-  os: linux                           # windows | linux | macos
   tools:
-    likec4: "likec4"                  # empty string disables likec4 generation
-    designmd: true                    # availability flag; actual commands live in .asd/project/commands.yaml
     codex_command: ""                 # override when wrapping Codex under Claude Code; empty = PATH lookup
     claude_command: ""                # override when wrapping Claude CLI under Codex; empty = PATH lookup
 
 git:
   base_branch: main
   branch_pattern: "sprint/{n}-{slug}"
-  gh_enabled: true
-  auto_pr: true
 ```
 
 Re-run `/asd-init` to edit any section in diff mode.
@@ -303,7 +294,7 @@ your-project/
 │   ├── release-manifest.json        # schema/asd version, managed-path list, model-family table; drives /asd-update + sync.js
 │   ├── sync-state.json              # last-written digests for managed-block / JSON-merge targets (committed)
 │   ├── sync.js                      # generator: canon -> .claude/ + .codex/ + .agents/skills/ (--check / --apply)
-│   ├── runtime.js                   # deterministic helper: task-cost routing, external-review preflight, coverage-manifest emission and split, coverage-ledger validation, manifest digests
+│   ├── runtime.js                   # deterministic helper: task-cost routing, external-review preflight, coverage-manifest emission and split, coverage-ledger validation, manifest digests, impl-test defect-stalemate comparison
 │   ├── rules/                       # workflow rules (role/phase-scoped reads), incl. providers.md
 │   ├── templates/                   # artifact templates (t_*.html / .md / .yaml / .c4), incl. t_AGENTS.md / t_CLAUDE.md
 │   ├── agents/                      # 11 canonical agent specs plus declared tier variants (JSON frontmatter: claude{} + codex{} blocks)
@@ -341,7 +332,7 @@ your-project/
 │   │   ├── stack.html
 │   │   ├── subsystems.md            # subsystem registry (mermaid mode: + inline diagram)
 │   │   ├── <subsystem>.md           # purpose + key paths per subsystem
-│   │   ├── c4/                      # likec4 diagram source (documents.c4 + likec4 only)
+│   │   ├── c4/                      # likec4 diagram source (diagram_tool: likec4 only)
 │   │   └── tech-reference/<tech>-<version>.md
 │   └── ux/
 │       ├── DESIGN.md                # Google Labs format token source
@@ -375,7 +366,7 @@ npm install -g @likec4/cli
 likec4 --version
 ```
 
-If absent, choose `diagram_tool: mermaid` instead — ASD writes the Mermaid C4 diagram inline in `docs/architecture/subsystems.md`, with no build step.
+If absent, choose `diagram_tool: mermaid` instead — ASD writes the Mermaid C4 diagram inline in `docs/architecture/subsystems.md`, with no build step — or `none` for no diagram.
 
 The LikeC4 `dist/` output is not committed (build output, gitignored). In likec4 mode `/asd-init` seeds a `c4-build` command in `.asd/project/commands.yaml`; run it to render the persistent C4 model into a viewable artifact on demand.
 
@@ -432,13 +423,13 @@ The iteration severity floor uses cumulative budgets: by default iter 1 consider
 FAIL findings block progression. Fixes within scope may proceed under the active policy; waiving findings or quality protections remains a hard user decision, recorded in `decisions-log.md`.
 
 **Can I skip the audit phase on greenfield projects?**
-`documents.audit: auto` skips only verifiably mechanical scope without behavior, contract, migration or gate impact. Unknown/risky scope runs audit. `always` and `off` force the choice; legacy `enabled`/`disabled` map respectively. An absent documents group retains the legacy all-enabled behavior. Scope freezes the effective boolean; accepted scope expansion reevaluates it.
+`documents.audit: auto` skips only verifiably mechanical scope without behavior, contract, migration or gate impact. Unknown/risky scope runs audit. `always` and `off` force the choice; any other value, legacy `enabled`/`disabled` included, blocks scope (`/asd-update`'s migration maps them to `always`/`off`). An absent documents group retains the legacy all-enabled behavior. Scope freezes the effective boolean; accepted scope expansion reevaluates it.
 
 **Does ASD work without subsystem decomposition?**
 Yes. Set `project.subsystem_decomposition: disabled` during `/asd-init`. Persistent docs become flat project-wide files. No subsystem registry is maintained.
 
 **Can I skip PRD/UX-spec/ADR/C4 for a lean sprint?**
-Yes. Each is independently toggleable under `documents.*` in `config.yaml`, frozen into the sprint's `state.json` at scope time (a later config edit never changes an active sprint's rules). `audit` becomes a fast no-op on its own when `documents.audit` is disabled: it advances immediately, writes nothing, with one skip line in the decisions log. When `prd`/`ux_spec`/`adr`/effective `c4` are **all** disabled, or when `skip_design_phases: enabled` (regardless of the document flags), one deterministic write — at design entry for the documents case, at audit exit for the explicit setting — collapses `design`, `design-review`, and `design-promote` together and advances straight to `plan`; the latter two are never separately dispatched. `plan`/`impl`/`impl-test`/`impl-review`/`retro`/`pr` always run; acceptance criteria then come from `sprint.md`'s own `AC-N` list instead of the PRD. See `.asd/rules/sprint-lifecycle.md` "Optional documents" and "No-op phase rule".
+Yes. PRD, UX-spec and ADR are independently toggleable under `documents.*` in `config.yaml`; the diagram is off with `project.diagram_tool: none` or decomposition disabled. All are frozen into the sprint's `state.json` at scope time (a later config edit never changes an active sprint's rules). `audit` becomes a fast no-op on its own when `documents.audit` resolves to off: it advances immediately, writes nothing, with one skip line in the decisions log. When `prd`/`ux_spec`/`adr` and the diagram are **all** off, one deterministic write at the audit exit collapses `design`, `design-review`, and `design-promote` together and advances straight to `plan`; none of the three is dispatched. `plan`/`impl`/`impl-test`/`impl-review`/`retro`/`pr` always run; acceptance criteria then come from `sprint.md`'s own `AC-N` list instead of the PRD. See `.asd/rules/sprint-lifecycle.md` "Optional documents" and "No-op phase rule".
 
 **Can ASD develop itself?**
 Yes — set `self_hosting: enabled` in `config.yaml` (this repo ships with it enabled, `documents.audit` only). `/asd-sprint` then edits ASD's own canonical sources per the exhaustive write allowlist in `.asd/rules/sprint-lifecycle.md` "Self-hosting" — generated `.claude/`/`.codex/`/`.agents/skills/` stay off-limits, resynced via `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `.asd/rules/providers.md` "Canonical path -> per-provider path") after every canon edit. Root `AGENTS.md`'s managed-block/hand-edited-tail split: `.asd/rules/providers.md` "Canonical path -> per-provider path" (ownership home). `/asd-update` refuses to run here (it pulls framework files INTO a consumer; a self-hosting repo IS the framework).

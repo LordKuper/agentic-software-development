@@ -21,6 +21,9 @@ Include documentation and implementation touched by scope.
 ## Existing docs found
 - [{{title}}]({{path}}): {{quote or summary of relevant part}}
 
+## Contradictions (optional)
+- {{source A}} vs {{source B}}: {{conflict}}; winner={{canonical source | unsettled → user: <answer>}}
+
 ## Existing implementation found
 - {{path}}: {{what scope already covered by current code}}
 
