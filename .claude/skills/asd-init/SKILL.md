@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:69a492d457a417047405eb43eb46671afd57886d02cc377de7fed5bc59550e60 content_digest=sha256:4a9875178ab0298e40fada8715721f31e9e3c8c5c42706cc46b7fa4cba76bf50 asd_version=8.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:6090767468afe7b06f7147e4a664a308b283a258a8e6825c1e6de3f490b4a252 content_digest=sha256:6ce244622b4aeabb9a88315ee873c6aba3fa7f0955057642281f31dc164e77d2 asd_version=8.0.0 schema=1
 name: asd-init
 description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode, or applies a plan-declared settings change for the active sprint's impl phase. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
@@ -88,7 +88,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 Plan acceptance is the approval of record: no config dump, no section prompt, no `accept-all`.
 
 1. Read current `.asd/project/config.yaml`
-2. Validate every pair against the working-tree `.asd/templates/t_config.yaml` (a key an earlier-wave Task added counts) before any write: the dotted key must name a leaf field there, and the value must fit that field: one of its enumerated values where it enumerates them (`Values:` or an inline `a | b` comment), else the type of its template value — `true`/`false` for a boolean, a non-negative integer for an integer, a string for a string. Any failing pair → `FAILED` naming it; nothing written.
+2. Validate every pair against the working-tree `.asd/templates/t_config.yaml` (a key an earlier-wave Task added counts) before any write: the dotted key must name a leaf field there, and the value must fit that field: one of its enumerated values where it enumerates them (`Values:` or an inline `a | b` comment), else the type of its template value — a non-negative integer for an integer, a string for a string. Any failing pair → `FAILED` naming it; nothing written.
 3. Set each declared `<key>=<value>` pair (dotted path); touch no other field. A pair already equal is a no-op.
 4. Write config
 5. Post the diff in `language.chat`: one `<key>: <old|absent> → <new>` line per pair
