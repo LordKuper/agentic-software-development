@@ -69,10 +69,10 @@ Impacted set: full suite (`node tests/run.js`). The change surface touches frame
 ## Suite run
 
 - Command: `node tests/run.js`
-- Scope: full (safety valve: the change surface touches framework-wide files)
-- Result: pass, exit 0: 203 passed, 0 failed, 0 skipped (entry 4; pre-strategy and suite gate, no test code added)
-- Lint / build: pass (entry 4). `git diff --cached --check` exit 0 on this entry's staged `test-plan.md`; `node .asd/sync.js --check` exit 0, `"ok": true`, 72/72 targets current.
-- HEAD: 7fc886d6583767e5ffa756e537030661c613e8b7 (entry 4 adds no test code; its commit changes only this file)
+- Scope: full (impl-review iteration 3 terminal full-suite run, unscoped; overwrites entry 4's record)
+- Result: pass, exit 0: 203 passed, 0 failed, 0 skipped (`203/203 passed`)
+- Lint / build: pass. `git diff --cached --check` exit 0; `node .asd/sync.js --check` exit 0, `"ok": true`, 72/72 targets current.
+- HEAD: 78b6a7baa6ef4d11eb4a121783142c42fd59b965 (clean tree; the recording commit changes only this file)
 
 ## Defects
 
