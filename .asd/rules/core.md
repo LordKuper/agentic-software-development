@@ -22,7 +22,7 @@ All project work goes through `/asd-sprint`.
 - **Persistent doc** — living document under `docs/`. Updated across sprints.
 - **Workflow infrastructure** — `.asd/rules/`, `.asd/templates/`, `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/runtime.js`, `.asd/migrations/`, `.asd/sync.js`, `.claude/`, `.codex/`, `.agents/skills/`, `AGENTS.md`, `CLAUDE.md`. Never modified during sprint work.
 - **Runtime helper** — `.asd/runtime.js` performs deterministic routing, external readiness and ledger validation; it is not a model or authority source.
-- **Subsystem** — unit of project decomposition. Registered in `docs/architecture/subsystems.md`, the sole registry whatever `documents.c4` or diagram tool, when `project.subsystem_decomposition: enabled` (`artifact-layout.md` "Subsystem registry"). Persistent docs organized per subsystem. New subsystems added only in `design-promote`, or at `audit` when the registry is absent, with user approval.
+- **Subsystem** — unit of project decomposition. Registered in `docs/architecture/subsystems.md`, the sole registry whatever `project.diagram_tool`, when `project.subsystem_decomposition: enabled` (`artifact-layout.md` "Subsystem registry"). Persistent docs organized per subsystem. New subsystems added only in `design-promote`, or at `audit` when the registry is absent, with user approval.
 
 ## Invariants
 

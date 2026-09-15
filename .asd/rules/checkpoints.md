@@ -59,7 +59,7 @@ Write the artifact to its real path, post its absolute path with a short delta s
 audit → design → design-review → design-promote → plan → impl ⇄ impl-test → impl-review → retro → pr
 ```
 
-`audit` requires accepted scope; `design` requires audit or an audit skip; `design-review` requires produced in-scope drafts; `design-promote` requires review DoD; `plan` requires promotion or the design-block collapse (documents-disabled no-op or `skip_design_phases`); `impl` requires plan or pending fix state; `impl-test` requires impl build/lint; `impl-review` requires impacted tests; `retro` requires review DoD; `pr` requires review DoD plus a completed `retro`. Missing predecessor emits `ABORT — precondition not met: <artifact>`.
+`audit` requires accepted scope; `design` requires audit or an audit skip; `design-review` requires produced in-scope drafts; `design-promote` requires review DoD; `plan` requires promotion or the design-block collapse; `impl` requires plan or pending fix state; `impl-test` requires impl build/lint; `impl-review` requires impacted tests; `retro` requires review DoD; `pr` requires review DoD plus a completed `retro`. Missing predecessor emits `ABORT — precondition not met: <artifact>`.
 
 ## Re-run
 

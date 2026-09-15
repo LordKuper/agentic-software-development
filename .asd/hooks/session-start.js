@@ -98,6 +98,11 @@ function nextPhase(current) {
   return PHASE_CHAIN[idx + 1];
 }
 
+// Design-block collapse test (sprint-lifecycle.md): every frozen design document is false.
+function isDesignCollapsed(documents) {
+  return Boolean(documents) && typeof documents === 'object' && ['prd', 'ux_spec', 'adr', 'c4'].every(name => documents[name] === false);
+}
+
 // Pick the relevant review node for the current phase. In a review phase use
 // that phase's node; otherwise use whichever counter advanced most recently.
 function reviewNodeForPhase(reviews, phase) {
@@ -156,7 +161,7 @@ function summary(active, provider) {
   const branch = state.branch || 'unknown';
   const verdict = lastReviewVerdict(reviewNode);
   const next = phase === 'pr' ? (state.pr && state.pr.state === 'closure-pending' ? 'await-user-closure' : 'await-merge')
-    : (phase === 'audit' && state.skip_design_phases === true) ? 'plan'
+    : (phase === 'audit' && isDesignCollapsed(state.documents)) ? 'plan'
     : nextPhase(phase);
   const iterPart = phase.endsWith('-review') ? ` (iter ${iter})` : '';
   return [
