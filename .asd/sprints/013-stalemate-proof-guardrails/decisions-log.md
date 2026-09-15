@@ -99,3 +99,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Iteration 1 verdicts: correctness, efficiency, testing, documentation CONCERNS (split into 2 parts each, ledgers validated, union property held); external APPROVE (skipped: quota). 12 findings at floor `low` route to impl review-fix (`review_fixes_pending = "iter-01"`). No FAIL, so no escalation; COR-1-1 and COR-1-2 are resolved by their option (a) code/wording fixes, which need no risk acceptance or AC change.
 - **Rationale**: Every finding is autofixable per `review-policy.md`; DOC-P1-1 (widen the writer licence to the value mappings/insertions carrying a removed key's intent) and EFF-1 (drop the three pre-9.0.0 comment rewrites) are compatible and applied together.
 - **Affected docs**: [reviews/impl/iter-01/](reviews/impl/iter-01/)
+
+- 2026-09-15 — impl fix for iter-01: findings resolved (COR-1-1, COR-1-2, COR-1-3, COR-1-P2-1, COR-1-P2-2, COR-1-P2-3, EFF-1, DOC-P1-1, DOC-1, DOC-2, DOC-3 no edit needed, TST-2-1, TST-2-2)
