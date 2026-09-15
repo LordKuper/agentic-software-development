@@ -6,7 +6,7 @@ The main orchestrator owns scope and plan writing, phase/state transitions, deci
 
 **Retrospective-derived criteria are re-verified at scope.** A retrospective is sprint-scoped and never promoted ("Retro phase" below), so its rows state what was true at the HEAD that produced them. Before such a row becomes an `AC-N` in `sprint.md`, the orchestrator checks it against current `HEAD` and carries only what is still unresolved — an already-satisfied row is closed, a partly delivered one narrowed to its remaining half. Recording home is `decisions-log.md` alone: one entry naming the verified HEAD sha, each row's outcome and the evidence for it. `sprint.md` gains no section for this.
 
-At scope, normalize audit `enabled` to `always` and `disabled` to `off`; accept `auto|always|off`. Freeze the effective audit boolean in state (`documents.audit`) — the normalization rule below is deterministic, so no separate reason field is stored. `auto` skips only a complete, verifiably mechanical scope with no behaviour, contract, migration or gate impact; unknown/risky scope audits. An accepted scope expansion reevaluates it. Architect owns audit; BA is dispatched only for evidenced material product/domain ambiguity.
+At scope, accept only `documents.audit: auto|always|off`; any other value, legacy `enabled`/`disabled` included, blocks (`checkpoints.md` "Gate policy" invalid-policy rule). Freeze the effective audit boolean in state (`documents.audit`) — the rule below is deterministic, so no separate reason field is stored. `auto` skips only a complete, verifiably mechanical scope with no behaviour, contract, migration or gate impact; unknown/risky scope audits. An accepted scope expansion reevaluates it. Architect owns audit; BA is dispatched only for evidenced material product/domain ambiguity.
 
 Use `checkpoints.md` for every user-gate decision. A closure request is mandatory after merge and all DoD evidence, before `phase=done`, finalization or archival; it cannot be passed adaptively. Existing archived-active recovery remains active until that explicit closure approval.
 
@@ -158,7 +158,7 @@ Never optional: `sprint.md`, `state.json`, `plan.md`, `test-plan.md`, impl-revie
 
 ## Audit phase
 
-No-op when `documents.audit: disabled` (see "Optional documents").
+No-op when frozen `documents.audit` is `false` (see "Optional documents").
 
 An absent optional section in `audit.md` (`t_audit.md`) means an empty finding set for that check — the check ran and found nothing — never that the check was skipped. BA/Architect omit an optional section entirely when it has no findings; they never emit a mandated placeholder row to signal "none". A check that could not run at all is a `FAILED`/`ABORT` from the responsible agent, not a silently-omitted section.
 

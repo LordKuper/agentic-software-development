@@ -4,7 +4,7 @@ Orchestration body for the `asd-phase-design` skill. Operation-mapping to host t
 
 ## Preconditions
 - Active sprint at `.asd/sprints/<NNN-slug>/`
-- `audit.md` approved, OR (frozen `documents.audit: disabled`) audit phase COMPLETED signal alone (per checkpoints precondition chain)
+- `audit.md` approved, OR (frozen `documents.audit` false) audit phase COMPLETED signal alone (per checkpoints precondition chain)
 - `state.json.phase` advanced from `audit`
 
 ## Operations used
