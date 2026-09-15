@@ -1,0 +1,120 @@
+diff --git a/.asd/migrations/9.0.0.js b/.asd/migrations/9.0.0.js
+index 0812762..ee2ec99 100644
+--- a/.asd/migrations/9.0.0.js
++++ b/.asd/migrations/9.0.0.js
+@@ -20,10 +20,9 @@
+  * `{ status, changes, reason }`, status one of `migrated | unchanged | absent | skipped`.
+  *
+  * No YAML parser: the rewrite is line-based and keeps every byte it does not own - comments,
+- * blank lines, inline comment columns, line endings, BOM. The one comment exception: a line on or
+- * directly above `documents.audit` / `project.diagram_tool` that an earlier release's config
+- * template shipped verbatim, now stating a wrong contract, gets today's wording; any other comment
+- * is the user's and stays. Anything beyond plain block-style
++ * blank lines, inline comment columns, line endings, BOM. Every comment is the user's except the
++ * shipped-comment rewrites bounded above, on or directly above `documents.audit` /
++ * `project.diagram_tool`. Anything beyond plain block-style
+  * `key: scalar` lines under consistent indentation (flow maps, lists, block scalars, anchors,
+  * tags, duplicate keys, tab indent, mixed line endings) skips the whole file with a warning
+  * rather than guessing.
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 56ffa6a..834d21b 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -157,6 +157,6 @@
+     ".asd/workflows/asd-phase-retro.md": "956218bdfa7087fe2a62390949fce5372a2d5fafcb6e2eccecc5163b54f03afd",
+     ".asd/templates/t_subsystem.md": "1365a20aeb5847a1da23ac88d7a3d0153ba3a8b6a3abbf06b883a689d9ee2f5d",
+     ".asd/templates/t_subsystems.md": "54b1e273e9e74a57e08b43d1b671f880b7f682d9ec1bc4afb95a55d98b2531dd",
+-    ".asd/migrations/9.0.0.js": "c87b9756dbec2f68fc222ff3cbfedb1b027b2b0c9a9f0b1a48837ae4baf3f37f"
++    ".asd/migrations/9.0.0.js": "1a1da6ebd2576d92ed44ccde308969856f3aeaa7be152438137e94b43cd015b1"
+   }
+ }
+diff --git a/.claude/agent-memory/asd-reviewer-correctness/feedback_trace-ac-to-motivating-case.md b/.claude/agent-memory/asd-reviewer-correctness/feedback_trace-ac-to-motivating-case.md
+index 3fbdc07..383a1ae 100644
+--- a/.claude/agent-memory/asd-reviewer-correctness/feedback_trace-ac-to-motivating-case.md
++++ b/.claude/agent-memory/asd-reviewer-correctness/feedback_trace-ac-to-motivating-case.md
+@@ -1,6 +1,6 @@
+ ---
+ name: trace-ac-to-motivating-case
+-description: For a retro-remediation AC, re-check the fix-round narrowing against the retro row's own evidenced case - a validation fix can make the one case the AC exists for inexpressible
++description: For a retro-remediation AC, re-check the fix-round narrowing against the retro row's own evidenced case - a validation fix can make the one case the AC exists for inexpressible; also catch fix rounds that widen an AC's stated bound without the hard AC gate
+ metadata:
+   type: feedback
+ ---
+@@ -10,3 +10,5 @@ When an AC cites a retrospective row (`(011 P3)`, `(010 F-5)`), open that row in
+ **Why:** sprint 012 impl-review iter 2. The fix for iter-01's COR-1-3 made `asd-init` sprint-mediated mode reject keys missing from `t_config.yaml`, and the grammar added "never one a same-sprint task adds". Together with "alone in wave 1, applied before wave 1", that left 011 P3's only evidenced case (a sprint that ships a setting and enables it, 011 MS-1) still needing a manual step. A decisions-log entry from earlier in the same sprint had rejected key validation for exactly that reason, and the later acceptance never recorded the reversal.
+ 
+ **How to apply:** at every iteration of a retro-remediation sprint, for each AC touched by the fix round, (1) read the retro row, (2) walk its concrete case through the current rule and its acting-site order, (3) grep `decisions-log.md` for an earlier entry whose rationale the fix contradicts. Pairs with [[review-method-no-shell]]. Raise it as an AC coverage finding, not as a flip-flop on the earlier finding.
++
++The mirror case: a fix round that WIDENS a bound the AC text states verbatim (sprint 013 iter 2: AC-19 "limited to release-mandated key renames and removals" widened in canon to value mappings/insertions/comment rewrites, `sprint.md` unchanged, routed as autofix). `checkpoints.md` makes a changed AC hard, so check `decisions-log.md` for user authority on the AC wording before accepting it.
+diff --git a/.claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md b/.claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md
+index 0c3621a..1fb980d 100644
+--- a/.claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md
++++ b/.claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md
+@@ -1,13 +1,14 @@
+ ---
+ name: no-shell-doc-review-method
+-description: How documentation review runs in this framework repo - no shell, manifest-driven ledger vocabulary (emitter-produced, possibly split into parts), and the defect shapes that actually pay off (acting-site scope contradicting the cited SSoT, partial mirror updates when a rule gains a trigger, sole-home claims wider than the code, authority bounds narrower than their only instance, new failure branches missing from an exhaustive blocker list, new in-body comments in tests/run.js, and agent-memory claims stale at HEAD or contradicting the writer's definition)
++description: How documentation review runs in this framework repo - no shell, manifest-driven ledger vocabulary (emitter-produced, possibly split into parts), and the defect shapes that actually pay off (acting-site scope contradicting the cited SSoT, partial mirror updates when a rule gains a trigger, sole-home claims wider than the code, authority bounds narrower than their only instance, a fix narrowing code while the file's second description of it stays wide, new failure branches missing from an exhaustive blocker list, new in-body comments in tests/run.js, and agent-memory claims stale at HEAD or contradicting the writer's definition)
+ metadata:
+   type: feedback
+ ---
+ 
+ Dispatches give no Bash even when the payload says "diff under review: `git diff A...HEAD`". Resolve the
+ surface by reading the manifest's scoped paths with Read/Grep/Glob and say once that the diff was derived
+-from file reads. The sprint's `audit.md` "Gaps" names every pre-change reader as `file:line`, and `plan.md`
++from file reads. When the dispatch ships an `iteration.diff` file under `reviews/<phase>/iter-NN/`, read it -
++it IS the surface. The sprint's `audit.md` "Gaps" names every pre-change reader as `file:line`, and `plan.md`
+ task lines cite the same - together they locate the changed lines without a diff. Ledger statuses, `n/a`
+ predicates and `p`/`f` placement come off the dispatched
+ manifest's `vocabulary`/`n_a` fields, copied byte-identically; `review-policy.md` "Coverage ledger" is the
+@@ -44,6 +45,9 @@ what changed; prior `reviews/` iterations stay unread.
+   writer names a limit ("limited to X") and the one script it sanctions does more than X. Sprint 013:
+   `core.md`/`t_AGENTS.md`/`asd-update` bound release migrations to "key renames and removals" while
+   `9.0.0.js` also rewrites surviving keys' values, inserts keys and rewords shipped comments. Read the code.
++- **Fix narrows code, file's other description stays wide.** When a review fix deletes behaviour to fit a
++  bound (013 iter-02: `9.0.0.js` dropped three shipped-comment mappings), the same file's header often
++  describes that behaviour a second time in its old reach. Grep the header for every statement of it.
+ - **In-body comments in `tests/run.js`.** It holds dozens of pre-existing in-body `//` comments, out of
+   surface. Without a diff, find the new ones by grepping `^\s{2,}//` and keeping only hits inside tests named
+   for the current sprint (`sprint-NNN`) - 013 found a `// ponytail:` note there (§7, high).
+diff --git a/.claude/agent-memory/asd-reviewer-testing/MEMORY.md b/.claude/agent-memory/asd-reviewer-testing/MEMORY.md
+index 4011a3b..00a4bcf 100644
+--- a/.claude/agent-memory/asd-reviewer-testing/MEMORY.md
++++ b/.claude/agent-memory/asd-reviewer-testing/MEMORY.md
+@@ -4,3 +4,4 @@
+ - [Split-part rubric rows](project_split-part-rubric-rows.md) — every part resolves rubric rows (source-only part reads tests as context); tests/run.js defects stay in its part; assert message vs predicate
+ - [Removed-flag vacuity](feedback_removed-flag-vacuity.md) — "removed flag no longer does X" asserts can pass at the parser; entry rows naming only test-bearing finding ids are below floor
+ - [Sweep exemption granularity](feedback_sweep-exemption-granularity.md) — removed-key canon sweeps: per-line wording skips span whole paragraphs; same-named state field exempts all config readers
++- [Review-fix defect proof](feedback_review-fix-defect-proof.md) — COR-* code fixes need §17 fail-first record too (not in Defects table); re-read assert messages a prose fix falsified
+diff --git a/.claude/agent-memory/asd-reviewer-testing/feedback_review-fix-defect-proof.md b/.claude/agent-memory/asd-reviewer-testing/feedback_review-fix-defect-proof.md
+new file mode 100644
+index 0000000..bb92525
+--- /dev/null
++++ b/.claude/agent-memory/asd-reviewer-testing/feedback_review-fix-defect-proof.md
+@@ -0,0 +1,12 @@
++---
++name: review-fix-defect-proof
++description: Code defects found by impl-review (COR-*) and fixed in a review-fix round never enter the test-plan Defects table, so their §17 fail-first record is easy to skip; also re-read existing assert messages a prose fix made false
++metadata:
++  type: feedback
++---
++
++A correctness finding fixed in an impl-review fix round (sprint 013 iter-02: COR-1-2, `defectStalemate` consecutive entries) is still a "fixed defect" under `code-style.md` §17. It needs a recorded fail-first run or mutation: command, non-zero exit, failing test name. The test-plan `Defects` table only holds impl-test `D-N` rows, so the fix shows up only as an inverted assertion plus a `keep` row saying "each bound has a case that fails if it flips". That is the bare claim §17 rejects.
++
++**Why:** the regression test can be fine (replaying it against the pre-fix code shows it would fail) while the proof record is still missing. The iteration-2 Entry log row makes the record look settled.
++
++**How to apply:** at iter ≥ 2, map each code-fix id in the decisions-log `impl fix for iter-NN` line to an `Added tests` Regression-proof cell. A `keep` or `n/a` there means a medium finding. Replay the assert against the pre-fix code to decide whether the fix is only a record gap or also a real test gap. Separately, when a finding fixes a prose rule that an existing assert already pins by word match, re-read that assert's message. Sprint 013: `tests/run.js` AC-16 still said stdin syntax is picked from `platform` after COR-1-1 keyed it on the host shell. See [[no-shell-review-method]], [[split-part-rubric-rows]].
+diff --git a/tests/run.js b/tests/run.js
+index 595eef8..738ad29 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -2309,7 +2309,8 @@ test('AC-3/4/5: preflight permits only fixed local probes and negative cache is
+   }
+   const ready = runtime.externalPreflight(input);
+   assert.strictEqual(ready.status, 'local-ready');
+-  assert.ok(canonText('.asd/rules/external-review.md').includes('`platform`') && ready.platform === process.platform, `sprint-013 AC-16: External Review picks here-string or heredoc from the preflight output's \`platform\` (external-review.md), so the preflight must report the host platform under that name - got ${JSON.stringify(ready.platform)}`);
++  const externalRows = canonText('.asd/rules/external-review.md').split(/\r?\n/);
++  assert.ok(externalRows.some((line) => line.startsWith('| Claude Code, any') && line.includes("<<'EOF'")) && externalRows.some((line) => line.startsWith('| Codex, `win32`') && line.includes("@'")) && ready.platform === process.platform, `sprint-013 AC-16 (COR-1-1): External Review keys stdin syntax on the host shell plus the preflight output's \`platform\` (external-review.md "OS-specific invocation") - Claude Code always heredoc, Codex here-string on win32 else heredoc - so the table's Claude Code row must name the heredoc form, its Codex win32 row the here-string, and the preflight must report the host platform under that name - got ${JSON.stringify(ready.platform)}`);
+   runtime.recordExternalFailure({ fingerprint: ready.fingerprint, status: 'quota', cachePath, now: 1000, retryAfter: 1001 });
+   assert.strictEqual(runtime.externalPreflight(input).status, 'negative-cache');
+   assert.strictEqual(runtime.externalPreflight({ ...input, now: 1001 }).status, 'local-ready', 'an expired entry must be ignored in-memory on read, even before any write persists the pruning');

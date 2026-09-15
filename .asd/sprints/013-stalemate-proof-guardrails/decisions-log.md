@@ -121,3 +121,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-15 — impl fix for iter-02: findings resolved (F-1, TST-1, TST-2; COR-2-1 resolved by user AC-19 decision)
 
 - 2026-09-15 — impl-test: impacted set green (full suite 203/203), 0/0 tests
+
+- 2026-09-15 — impl-review iter-03: external review skipped (external review unavailable: negative-cache quota), sprint 013-stalemate-proof-guardrails iteration 3
