@@ -15,6 +15,7 @@ Three workflow hardenings taken from a review of trace-engineering practice for 
 2. Ground fail-first regression proof in raw runner evidence, not a claim.
 3. Make the retrospective deduplicate its findings first, and only then draft each surviving finding as a one-line guardrail with a named home.
 4. Make audit analyse every relevant document under `docs/`, resolve contradictions in favour of canonical ASD documents, and ask the user about whatever still conflicts.
+5. Cut the configuration surface from 26 settings to 18: merge the diagram flags, fold the design skip into `documents.*`, and remove settings nobody reads or nobody needs to turn off. Pull requests become always ASD-managed.
 
 ## Acceptance
 
@@ -29,6 +30,14 @@ Three workflow hardenings taken from a review of trace-engineering practice for 
 - AC-10: Audit reads every document under `docs/` that bears on the sprint's touched areas, not a sample. `sprint-lifecycle.md` "Audit phase", `asd-phase-audit.md` step 2 and the `asd-architect` audit instructions state this, and `audit.md` "Existing docs found" lists each one analysed.
 - AC-11: When documents contradict each other, the canonical ASD document wins. A canonical ASD document is a persistent doc at its `artifact-layout.md` path-map location, and under `self_hosting` also a `.asd/rules/` doc. Each contradiction resolved this way is recorded in `audit.md` with both sources and the winning one.
 - AC-12: A contradiction that precedence cannot settle, such as two canonical documents disagreeing or no canonical source on either side, is escalated to the user as a hard decision before the audit gate passes. The answer is recorded in `decisions-log.md` and in `audit.md`. `t_audit.md` gains one optional section holding the AC-11 and AC-12 records, and `checkpoints.md` lists the unresolved-contradiction question as hard.
+- AC-13: `documents.c4` is removed and `project.diagram_tool` takes `none | likec4 | mermaid`. `none` means no diagram is written. The subsystem registry does not depend on this value. A diagram still requires `project.subsystem_decomposition: enabled`.
+- AC-14: `skip_design_phases` is removed from config and state. Design, design-review and design-promote collapse in one write at the audit exit whenever `prd`, `ux_spec` and `adr` are disabled and the effective diagram tool is `none`. The design workflow keeps its own collapse only as a defensive fallback for a direct re-dispatch.
+- AC-15: `git.gh_enabled` and `git.auto_pr` are removed. The `pr` phase always opens and merges the sprint PR through `gh`. `/asd-init` requires `gh` to be installed and authenticated and does not proceed without it. A `gh` failure at `pr` is `FAILED` naming the fix. The hard closure gate is unchanged.
+- AC-16: `system.os`, `system.tools.likec4` and `system.tools.designmd` are removed. External Review takes the platform from runtime detection. `/asd-init` probes likec4 when `diagram_tool: likec4` and Node when `ux_spec` is enabled, writing no flag for either.
+- AC-17: `review.scoped_fan_out` is removed and diff-scoped rubric n/a marking is always on. The "absent means disabled" clause and its references are deleted.
+- AC-18: The legacy `documents.audit` values `enabled` and `disabled` are no longer accepted. Scope reads only `auto | always | off`.
+- AC-19: A `.asd/migrations/` script rewrites an existing consumer `config.yaml` without losing intent. `c4: enabled` becomes the project's current diagram tool and `c4: disabled` becomes `none`. `skip_design_phases: enabled` disables `prd`, `ux_spec` and `adr` and sets `diagram_tool: none`. Legacy audit values are normalised, and every removed key is dropped. A sprint already active during the upgrade keeps working from its frozen state. `CHANGELOG.md` announces the breaking change.
+- AC-20: `t_config.yaml`, `/asd-init`, `t_state.json`, README.md (config schema) and `tests/run.js` match AC-13..AC-19. This repo's own `config.yaml` is changed only as a plan-declared settings change applied through `/asd-init`.
 - AC-9: `node tests/run.js` is green, `node .asd/sync.js --check` is clean, README.md is consistent with the changed rules, workflows and templates, and every added line passes `artifact-layout.md` "Documentation economy".
 
 ## Out of scope

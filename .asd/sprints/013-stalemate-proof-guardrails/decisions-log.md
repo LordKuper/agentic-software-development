@@ -49,3 +49,11 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: [sprint.md](sprint.md)
 
 - 2026-09-15 — audit re-evaluated after scope expansion: stays true.
+
+## 2026-09-15 — Scope expanded: configuration revision
+
+- **Decision**: AC-13..AC-20 added. The user accepted every revision recommendation except one: `git.gh_enabled` and `git.auto_pr` are removed outright, so PRs are always ASD-managed through `gh`, instead of merged into a `git.pr` mode.
+- **Rationale**: At `HEAD` 68b4659 `system.os`, `system.tools.designmd` and `system.tools.likec4` have no reader outside `/asd-init` (`runtime.js` uses `process.platform`). `documents.c4` duplicates `project.diagram_tool`, and `skip_design_phases` duplicates an all-disabled design document set. Removing legacy audit aliases follows the "keep" row's migration note, which the user accepted.
+- **Affected docs**: [sprint.md](sprint.md)
+
+- 2026-09-15 — audit re-evaluated after scope expansion: stays true (config schema break, migration).
