@@ -377,7 +377,8 @@ function defectStalemate(markdown) {
   const byEntry = new Map();
   for (const cells of rows) {
     if (cells.length !== header.length) fail(`Defects row malformed: ${cells.join(' | ')}`);
-    if (!/^\d+$/.test(cells[entry])) continue;
+    if (cells[entry] === 'impl-review' || /^\{\{.*\}\}$/.test(cells[entry])) continue;
+    if (!/^\d+$/.test(cells[entry])) fail(`Defects row Entry must be an Entry log number or impl-review: ${cells.join(' | ')}`);
     const tuples = byEntry.get(Number(cells[entry])) || new Set();
     tuples.add(stable([cells[location].replace(/:\d+(?::\d+)?$/, ''), cells[symptom], cells[test]]));
     byEntry.set(Number(cells[entry]), tuples);
