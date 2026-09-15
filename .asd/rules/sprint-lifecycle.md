@@ -240,7 +240,7 @@ Owner: Tester. Runs after every `impl` exit. Selects the test approach **after**
 
 Loops until the impacted set passes. No iteration cap — an unfixable state surfaces as a dev/tester `FAILED`, not as a silent exit.
 
-**Stalemate** — when the last two impl-test entries that routed code defects routed the same identity set, the phase escalates `FAILED: stalemate` instead of routing. Identity is the `Defects` file path, runner failure line and failing test, never `D-N`; `impl-review` rows never count. `node .asd/runtime.js defect-stalemate` compares deterministically. A decisions-log answer naming the set's digest is applied, never re-asked. Mechanics: `asd-phase-impl-test.md` step 9.
+**Stalemate** — when the last two impl-test entries that routed code defects routed the same identity set, the phase escalates `FAILED: stalemate` instead of routing. Identity is the `Defects` file path, runner failure line and failing test, never `D-N`; `impl-review` rows never count. `node .asd/runtime.js defect-stalemate` compares deterministically. A user answer, logged with the set's digest, covers only the next routing of that set; the same set repeating after it escalates again. Mechanics: `asd-phase-impl-test.md` step 9.
 
 ## Friction log
 
