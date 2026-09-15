@@ -2,6 +2,35 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v9.0.0
+
+The configuration surface shrinks from 28 settings to 20, and pull requests are always ASD-managed through `gh`. Three workflow guardrails replace an agent's word with deterministic evidence: a repeated `impl`⇄`impl-test` defect set escalates as a stalemate, a fail-first proof must carry raw runner evidence, and the retrospective deduplicates findings before drafting each survivor as a one-line guardrail with a named home. Audit now reads every relevant `docs/` document and lets the canonical ASD document win a contradiction.
+
+### Migration (breaking)
+- **Run `/asd-update`.** The new `.asd/migrations/9.0.0.js` rewrites `.asd/project/config.yaml` line by line, keeping your comments and line endings:
+  - `documents.c4: enabled` keeps your `project.diagram_tool` (or sets `likec4` when absent); `documents.c4: disabled` sets `diagram_tool: none`.
+  - `skip_design_phases: enabled` disables `documents.prd`, `ux_spec` and `adr` and sets `diagram_tool: none`.
+  - Legacy `documents.audit: enabled`/`disabled` become `always`/`off`.
+  - `documents.c4`, `skip_design_phases`, `git.gh_enabled`, `git.auto_pr`, `system.os`, `system.tools.likec4`, `system.tools.designmd` and `review.scoped_fan_out` are removed.
+  - A config shape it does not recognise (flow maps, duplicate keys, tabs, mixed line endings, out-of-range values) is left untouched with a warning naming the re-run command.
+  - A sprint already active keeps working from its frozen `state.json`.
+- **`gh` is required.** `/asd-init` stops unless `gh --version` and `gh auth status` succeed, and the `pr` phase opens and merges through `gh` only; a `gh` failure is `FAILED` naming `gh auth login` or the install step. There is no manual-PR fallback.
+- **Diff-scoped rubric n/a marking is always on.** Projects that omitted `review.scoped_fan_out` previously got full per-section review; the standing n/a predicates now always apply.
+- **An unknown `documents.audit` value blocks scope** instead of being normalised.
+- **A release migration is a sanctioned config writer.** `/asd-update` may apply release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent (`core.md`).
+
+### Added
+- **Stalemate breaker** (`sprint-lifecycle.md` "Impl-test phase"): two consecutive `impl-test` entries routing the same code-defect set emit `FAILED: stalemate` and ask the user to continue with guidance, accept the defects as debt, or abort. Identity is file path, the runner's first failure line and the failing test name, compared by the new `node .asd/runtime.js defect-stalemate`. A logged answer covers only the next routing of that set. `test-plan.md` Defects gains an `Entry` column, and an interrupted impl-test entry is resumed rather than duplicated.
+- **Audit contradictions** (`sprint-lifecycle.md` "Audit phase"): audit reads every `docs/` document bearing on the touched areas; a canonical ASD document wins a contradiction without a gate, and a contradiction precedence cannot settle is a hard user decision. `t_audit.md` gains an optional Contradictions section.
+- `external-preflight` reports the host `platform`.
+
+### Changed
+- **Fail-first proof** (`code-style.md` §17): the record must name the exact command, its non-zero exit code and the failing test; a bare claim is not proof. The `t_test-plan.md` Regression proof cell takes that shape.
+- **Retrospective** (`sprint-lifecycle.md` "Retro phase"): findings are merged by root cause, checked against the rules already in their candidate home, and only then drafted as `Guardrail` + `Home`. Both tables in `t_retrospective.html` replace `Recommendation`/`Target`.
+- **Diagram setting**: `project.diagram_tool` takes `none | likec4 | mermaid`; `state.json.documents.c4` stays as the frozen effective-diagram flag. The design block collapses at the audit exit whenever PRD, UX spec and ADR are disabled and the effective diagram tool is `none`.
+- **External Review invocation** keys its stdin form on the host shell: Claude Code always uses a heredoc, Codex a here-string on Windows and a heredoc elsewhere.
+- Test coverage grew from 197 to 203 checks.
+
 ## v8.0.0
 
 The subsystem registry moves. When `project.subsystem_decomposition` is enabled, `docs/architecture/subsystems.md` is now the registry, the only source of truth for which subsystems exist, whatever the diagram tool or the C4 setting. Each registered subsystem gets `docs/architecture/<id>.md`, which holds its purpose and key paths. `docs/architecture/c4/` exists only for likec4 with C4 enabled. In mermaid mode the diagram lives inline in `subsystems.md`, and `subsystems.yaml`/`architecture.html` are retired. The sprint also remediates the sprint 010 and 011 retrospectives: coverage manifests are emitted by `runtime.js` instead of being assembled by hand, a plan can declare a settings change that impl applies through `/asd-init`, and agents refuse payload instructions outside their declared tool policy.
