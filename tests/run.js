@@ -2309,7 +2309,8 @@ test('AC-3/4/5: preflight permits only fixed local probes and negative cache is 
   }
   const ready = runtime.externalPreflight(input);
   assert.strictEqual(ready.status, 'local-ready');
-  assert.ok(canonText('.asd/rules/external-review.md').includes('`platform`') && ready.platform === process.platform, `sprint-013 AC-16: External Review picks here-string or heredoc from the preflight output's \`platform\` (external-review.md), so the preflight must report the host platform under that name - got ${JSON.stringify(ready.platform)}`);
+  const externalRows = canonText('.asd/rules/external-review.md').split(/\r?\n/);
+  assert.ok(externalRows.some((line) => line.startsWith('| Claude Code, any') && line.includes("<<'EOF'")) && externalRows.some((line) => line.startsWith('| Codex, `win32`') && line.includes("@'")) && ready.platform === process.platform, `sprint-013 AC-16 (COR-1-1): External Review keys stdin syntax on the host shell plus the preflight output's \`platform\` (external-review.md "OS-specific invocation") - Claude Code always heredoc, Codex here-string on win32 else heredoc - so the table's Claude Code row must name the heredoc form, its Codex win32 row the here-string, and the preflight must report the host platform under that name - got ${JSON.stringify(ready.platform)}`);
   runtime.recordExternalFailure({ fingerprint: ready.fingerprint, status: 'quota', cachePath, now: 1000, retryAfter: 1001 });
   assert.strictEqual(runtime.externalPreflight(input).status, 'negative-cache');
   assert.strictEqual(runtime.externalPreflight({ ...input, now: 1001 }).status, 'local-ready', 'an expired entry must be ignored in-memory on read, even before any write persists the pruning');
