@@ -117,3 +117,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Iteration 2 (floor medium, 24-file diff, no split): efficiency APPROVE (latched at 2); correctness CONCERNS (COR-2-1 resolved by the user AC-19 decision above, no fix); testing CONCERNS (TST-1 missing fail-first record for the COR-1-2 fix, TST-2 stale AC-16 assert message); documentation CONCERNS (F-1 stale `9.0.0.js` header clause); external skipped (quota). TST-1, TST-2, F-1 route to impl review-fix (`review_fixes_pending = "iter-02"`).
 - **Rationale**: No FAIL; remaining findings are autofixable and change no AC bound.
 - **Affected docs**: [reviews/impl/iter-02/](reviews/impl/iter-02/)
+
+- 2026-09-15 — impl fix for iter-02: findings resolved (F-1, TST-1, TST-2; COR-2-1 resolved by user AC-19 decision)
