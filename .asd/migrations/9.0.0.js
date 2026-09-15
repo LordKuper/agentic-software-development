@@ -20,10 +20,9 @@
  * `{ status, changes, reason }`, status one of `migrated | unchanged | absent | skipped`.
  *
  * No YAML parser: the rewrite is line-based and keeps every byte it does not own - comments,
- * blank lines, inline comment columns, line endings, BOM. The one comment exception: a line on or
- * directly above `documents.audit` / `project.diagram_tool` that an earlier release's config
- * template shipped verbatim, now stating a wrong contract, gets today's wording; any other comment
- * is the user's and stays. Anything beyond plain block-style
+ * blank lines, inline comment columns, line endings, BOM. Every comment is the user's except the
+ * shipped-comment rewrites bounded above, on or directly above `documents.audit` /
+ * `project.diagram_tool`. Anything beyond plain block-style
  * `key: scalar` lines under consistent indentation (flow maps, lists, block scalars, anchors,
  * tags, duplicate keys, tab indent, mixed line endings) skips the whole file with a warning
  * rather than guessing.

@@ -157,6 +157,6 @@
     ".asd/workflows/asd-phase-retro.md": "956218bdfa7087fe2a62390949fce5372a2d5fafcb6e2eccecc5163b54f03afd",
     ".asd/templates/t_subsystem.md": "1365a20aeb5847a1da23ac88d7a3d0153ba3a8b6a3abbf06b883a689d9ee2f5d",
     ".asd/templates/t_subsystems.md": "54b1e273e9e74a57e08b43d1b671f880b7f682d9ec1bc4afb95a55d98b2531dd",
-    ".asd/migrations/9.0.0.js": "c87b9756dbec2f68fc222ff3cbfedb1b027b2b0c9a9f0b1a48837ae4baf3f37f"
+    ".asd/migrations/9.0.0.js": "1a1da6ebd2576d92ed44ccde308969856f3aeaa7be152438137e94b43cd015b1"
   }
 }
