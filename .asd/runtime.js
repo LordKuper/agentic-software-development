@@ -366,7 +366,7 @@ function tableCells(line) {
   return line.trim().replace(/^\||\|$/g, '').split(/(?<!\\)\|/).map((cell) => cell.trim().replace(/\\\|/g, '|').replace(/^`(.*)`$/, '$1'));
 }
 
-/** Compares the code-defect identity sets (file path without line, runner failure line, failing test) of the last two impl-test entries that routed defects in a test plan's `Defects` table; `D-N` ids and `impl-review` rows never take part. `digest` identifies the latest set, so a recorded answer can be keyed to it. */
+/** Compares the code-defect identity sets (file path without line, runner failure line, failing test) of the last two impl-test entries that routed defects in a test plan's `Defects` table, a stalemate only when those entry numbers are consecutive; `D-N` ids and `impl-review` rows never take part. `digest` identifies the latest set, so a recorded answer can be keyed to it. */
 function defectStalemate(markdown) {
   if (typeof markdown !== 'string') fail('test-plan markdown required');
   const section = markdown.replace(/\r\n/g, '\n').split(/^## Defects *$/m)[1];
@@ -383,9 +383,10 @@ function defectStalemate(markdown) {
     tuples.add(stable([cells[location].replace(/:\d+(?::\d+)?$/, ''), cells[symptom], cells[test]]));
     byEntry.set(Number(cells[entry]), tuples);
   }
-  const [latest, previous] = [...byEntry.keys()].sort((a, b) => b - a).map((key) => [...byEntry.get(key)].sort());
-  if (latest === undefined) return { stalemate: false, digest: null };
-  return { stalemate: previous !== undefined && stable(latest) === stable(previous), digest: fingerprint(latest) };
+  const [latestEntry, previousEntry] = [...byEntry.keys()].sort((a, b) => b - a);
+  if (latestEntry === undefined) return { stalemate: false, digest: null };
+  const [latest, previous] = [latestEntry, previousEntry].map((key) => [...(byEntry.get(key) || [])].sort());
+  return { stalemate: previousEntry === latestEntry - 1 && stable(latest) === stable(previous), digest: fingerprint(latest) };
 }
 
 function emitManifestCommand(flags) {
