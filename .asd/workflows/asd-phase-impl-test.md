@@ -10,7 +10,7 @@ Orchestration body for the `asd-phase-impl-test` skill. Operation-mapping to hos
 ## Operations used
 - read: `.asd/project/config.yaml`, `state.json`, `plan.md`, `test-plan.md`, persistent docs (PRD ACs, ux-spec), `commands.yaml`, `custom-common-rules.md`, `custom-coding-rules.md`, existing test sources
 - run command: change-surface diff; `commands.yaml` `test`/`lint`/`build`, impacted-scoped (`sprint-lifecycle.md` "Impacted test set") for the pre-strategy run and the suite gate alike
-- write `state.json` and decisions-log inline for mechanical phase work
+- write `state.json` and decisions-log inline for mechanical phase work; on an accept-as-debt answer (step 9), `test-plan.md` `Defects` status edits and `.asd/project/stubs.md` registrations
 - request user decision: out-of-scope test removal gate; escalation
 - delegate one live `asd-tester` instance for the whole phase (pre-strategy run, strategy, prune/author and suite run); recover from on-disk evidence only after session loss
 - append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log"
@@ -27,7 +27,7 @@ No user gate on a green impacted-set run, and none on routing defects back to im
 
 ## Workflow
 
-1. Read `.asd/project/config.yaml` (`language.chat`, `language.docs`, `backward_compat`, `self_hosting`), `<sprint>/state.json` → write `phase=impl-test` inline (mechanical, no gate). Check `<sprint>/test-plan.md` for an `Entry log` with a prior row: none → this is **entry 1** (first entry this sprint); a prior row exists → this is a **re-entry**, and its `HEAD analysed` is `<prior-sha>`
+1. Read `.asd/project/config.yaml` (`language.chat`, `language.docs`, `backward_compat`, `self_hosting`), `<sprint>/state.json` → write `phase=impl-test` inline (mechanical, no gate). Check `<sprint>/test-plan.md` for an `Entry log` with a prior row: none → this is **entry 1** (first entry this sprint); a prior row exists → this is a **re-entry**, and its `HEAD analysed` is `<prior-sha>`. A last row with an empty `HEAD analysed` is the **interrupted current entry** (e.g. a stalemate halt) — resume it: keep its row (step 4 appends none), take `<prior-sha>` from the row before it (none → entry 1, amended not rewritten), never re-append its `D-N` rows; when they exist and a current answer (step 9) names their digest, go straight to step 9's current-answer branch
 1a. Route Tester work through `node .asd/runtime.js route-task --input <path>` and persist its result. `execution="command"` runs directly; `execution="agent"` dispatches `asd-tester-<tier>` for `mechanical`/`critical`, or the base `asd-tester` for `tier: standard` (no `-standard` variant exists — `providers.md` "Task-class variants and routing"). Persist `state.json.task_routing[taskId]` per `providers.md`; reuse its tier on re-entry. A risk declared against the change and a failed objective check after one correction are critical and never later downgraded.
 2. **Change surface**:
    - **Entry 1**: run command for `git diff <git.base_branch>...HEAD --stat <exclude_paths>` plus file list, using the same `exclude_paths` as impl-review's self-hosting-aware scoping (`.asd/rules/external-review.md` "Phase-scoped payload" — consumer default excludes `.asd/**`/`docs/**`; `self_hosting: enabled` includes the whole repo minus `.asd/project/**`/`.asd/sprints/**`/generated views). This is the **full change surface**
@@ -65,6 +65,7 @@ Delta scoping, amend-not-rewrite, the suite-gate rule and its bounded risk: `spr
 ## Artefacts produced
 - `<sprint>/test-plan.md` (risk→check decisions, removals, added tests, suite run, defects, optional manual verification spec)
 - Tests added, adjusted, and deleted in repo
+- `.asd/project/stubs.md` `(accepted-debt)` rows on an accept-as-debt answer
 - Updated `state.json` (phase=impl-test; `test_defects_pending` set when routing back to impl)
 - Git commits per Conventional Commits
 - decisions-log entry on green impacted run or defect routing
