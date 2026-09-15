@@ -7,18 +7,13 @@ user_gates: strict # adaptive | strict; closure always requires user approval
 # Values: enabled | disabled. See .asd/rules/sprint-lifecycle.md "Self-hosting".
 self_hosting: disabled
 
-# Skip design, design-review and design-promote outright. Absent field = disabled.
-# Values: enabled | disabled. See .asd/rules/sprint-lifecycle.md "Optional documents".
-skip_design_phases: disabled
-
 # Optional sprint documents and their persistent docs counterpart.
 # Defaults: see .asd/rules/sprint-lifecycle.md "Optional documents".
 documents:
-  audit: auto          # auto | always | off; legacy enabled/disabled accepted
+  audit: auto          # auto | always | off
   prd: enabled         # enabled | disabled; design/prd.html + persistent requirements
   ux_spec: enabled     # enabled | disabled; ux-spec, design-system gate, design-md-delta
   adr: enabled          # enabled | disabled; adr.html (sprint-scoped only; folds into existing persistent docs at design-promote)
-  c4: enabled            # enabled | disabled; c4-full + persistent C4 diagram (also requires project.subsystem_decomposition: enabled)
 
 # Language for user-facing interaction.
 # chat — language used in chat responses and questions.
@@ -42,21 +37,6 @@ review:
   # internal reviewers. Values: enabled | disabled
   external_review: enabled
 
-  # Diff-scoped rubric-section fan-out at impl-review. Both merged reviewers
-  # (correctness, efficiency) are always dispatched; this only skips a rubric
-  # SECTION inside one of them. When enabled (default), the correctness
-  # reviewer's UI conformance section is marked n/a when no file in the diff
-  # is a UI surface, and the efficiency reviewer's five performance sections
-  # are marked n/a only when both no perf-budgets section exists in
-  # custom-coding-rules.md AND the diff has no executable file (conjunctive).
-  # Predicates are diff-derived only, never keyed on the `documents.*` flags
-  # above. A section skip is recorded inside the reviewer's own returned
-  # ledger, never as a separate verdict value, and never counts as a missing
-  # reviewer at the impl-review or pr DoD gate. Disable to restore
-  # unconditional review of every section, every iteration.
-  # Values: enabled | disabled
-  scoped_fan_out: enabled
-
   # Maximum number of review iterations per severity level.
   # On iteration N, only issues of severity X or higher are considered.
   # Defaults below mean: trivial issues get one shot, critical issues loop up to ten times.
@@ -71,31 +51,15 @@ project:
   # Values: enabled | disabled
   subsystem_decomposition: enabled
 
-  # Diagram tool for architecture views. Only used when decomposition and documents.c4 are enabled.
+  # Diagram tool for architecture views. Any diagram also requires subsystem_decomposition: enabled.
+  # none — no diagram written; the subsystem registry is unaffected
   # likec4 — text DSL in docs/architecture/c4/model/*.c4 + likec4 CLI builds dist/
   # mermaid — Mermaid block inline in docs/architecture/subsystems.md; no c4/ folder
-  # Values: likec4 | mermaid
+  # Values: none | likec4 | mermaid
   diagram_tool: likec4
 
 system:
-  # Operating system of the developer machine, set by /asd-init.
-  # Determines invocation pattern for external CLIs (Codex, gh, etc.).
-  # Values: windows | linux | macos
-  os: linux
-
   tools:
-    # LikeC4 CLI for C4 architecture model rendering.
-    # Required when project.diagram_tool: likec4.
-    # Empty string disables likec4 generation.
-    likec4: "likec4"
-
-    # @google/design.md tooling availability flag.
-    # Actual commands live in .asd/project/commands.yaml as
-    # `designmd-install`, `designmd-lint`, `designmd-diff`, `designmd-export`
-    # (OS-specific; written by /asd-init).
-    # Set to false to disable design.md tooling (agents still read/write DESIGN.md manually).
-    designmd: true
-
     # Codex CLI command path. Empty for default lookup (`codex` on all OSes).
     # Override for external review when running under Claude Code (wraps Codex); init/runtime probe this resolved command.
     codex_command: ""
@@ -112,9 +76,3 @@ git:
   # {n}    — sprint number, zero-padded to 3 digits (e.g. 001).
   # {slug} — kebab-case slug derived from sprint scope.
   branch_pattern: "sprint/{n}-{slug}"
-
-  # Use gh CLI for PR creation. If false, workflow stops at push and prints PR-ready summary.
-  gh_enabled: true
-
-  # Automatically open PR after Definition of Done is met and user confirms.
-  auto_pr: true
