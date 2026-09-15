@@ -131,3 +131,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: [reviews/impl/iter-03/](reviews/impl/iter-03/), [test-plan.md](test-plan.md)
 
 - 2026-09-15 — `retrospective.html` written: analysed branch, 5 friction entries (F-1+F-2 merged → 4 framework actions, 0 consumer), 3 systemic proposals (1 covered by an existing rule); nothing applied or promoted.
+
+- 2026-09-15 — pr: asd_version 8.0.0 → 9.0.0 with CHANGELOG v9.0.0; PR #39 opened via gh (adaptive publication, DoD verified)

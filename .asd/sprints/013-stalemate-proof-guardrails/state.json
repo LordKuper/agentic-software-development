@@ -53,6 +53,13 @@
       "reason": "all required reviewers APPROVE/latched at iter-03, external availability skip, terminal full suite green",
       "evidence": "state.json reviews.impl.verdicts iter-03; test-plan.md Suite run HEAD 78b6a7b exit 0 203/203",
       "artifact_revision": "HEAD 888373c"
+    },
+    {
+      "gate": "pr-publication",
+      "decision_actor": "orchestrator",
+      "reason": "DoD met; AC-15 makes pr always open through gh; gh authenticated; adaptive policy",
+      "evidence": "plan 35/35; iter-03 verdicts satisfied; full suite 203/203 at 78b6a7b, re-run green at 6bfd6ae; retrospective.html present; no open stubs",
+      "artifact_revision": "HEAD 6bfd6ae"
     }
   ],
   "task_routing": {
@@ -197,9 +204,14 @@
     }
   },
   "created_at": "2026-09-15T08:00:17Z",
-  "updated_at": "2026-09-15T11:25:07Z",
+  "updated_at": "2026-09-15T11:26:15Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
-  "pr": null,
+  "pr": {
+    "number": 39,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/39",
+    "state": "open",
+    "head": "6bfd6ae"
+  },
   "archived_at": null
 }
