@@ -1,7 +1,7 @@
 {
   "sprint_id": "013-stalemate-proof-guardrails",
   "branch": "sprint/013-stalemate-proof-guardrails",
-  "phase": "plan",
+  "phase": "impl",
   "documents": {
     "audit": true,
     "prd": false,
@@ -32,9 +32,71 @@
       "reason": "all tasks trace to user-authorized AC-1..AC-20; plan-fixed choices bounded with precedent; no open stubs; no unresolved material alternative",
       "evidence": "plan.md Overview decisions; audit.md; decisions-log 2026-09-15 plan entry",
       "artifact_revision": "plan.md sha256:6a49d6ac2dec"
+    },
+    {
+      "gate": "impl-assessment",
+      "decision_actor": "orchestrator",
+      "reason": "all tasks complete, build+lint clean, authorised-paths diff, flagged choices resolved, no stubs",
+      "evidence": "plan.md 35/35 ticked; sync.js --check ok; git diff --check clean; decisions-log impl assessment entry",
+      "artifact_revision": "HEAD b6df00a"
     }
   ],
-  "task_routing": {},
+  "task_routing": {
+    "Task 1": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "Task 2": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "orchestrator-escalation: two stalled standard dispatches (F-2)",
+      "resolved_model": "opus"
+    },
+    "Task 3": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "Task 4": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:ambiguous judgment",
+      "resolved_model": "opus"
+    },
+    "Task 5": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:public contract",
+      "resolved_model": "opus"
+    },
+    "Task 6": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:public contract",
+      "resolved_model": "opus"
+    },
+    "Task 7": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:migration",
+      "resolved_model": "opus"
+    },
+    "Task 8": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:migration",
+      "resolved_model": "opus"
+    },
+    "Task 9": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "orchestrator-escalation: standard dispatches stalled twice this phase (F-2)",
+      "resolved_model": "opus"
+    }
+  },
   "skipped_phases": [
     "design",
     "design-review",
@@ -54,7 +116,7 @@
     }
   },
   "created_at": "2026-09-15T08:00:17Z",
-  "updated_at": "2026-09-15T08:54:36Z",
+  "updated_at": "2026-09-15T09:45:31Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
