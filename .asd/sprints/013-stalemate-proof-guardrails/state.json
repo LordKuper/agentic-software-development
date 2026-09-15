@@ -1,19 +1,53 @@
 {
   "sprint_id": "013-stalemate-proof-guardrails",
   "branch": "sprint/013-stalemate-proof-guardrails",
-  "phase": "scope",
-  "documents": { "audit": true, "prd": false, "ux_spec": false, "adr": false, "c4": false },
+  "phase": "design-promote",
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "adr": false,
+    "c4": false
+  },
   "user_gates": "adaptive",
   "skip_design_phases": true,
-  "gate_decisions": [],
+  "gate_decisions": [
+    {
+      "gate": "scope-amendment",
+      "decision_actor": "user",
+      "reason": "audit open questions: AC-2 path identity via runtime.js, AC-3 own stalemate options, AC-7 expanded homes, AC-19 migration as sanctioned writer, AC-20 run 9.0.0.js here, goal count 28->20",
+      "evidence": "audit.md Gaps/Documentation contradictions C3,C5,C7,C8; user answers 2026-09-15",
+      "artifact_revision": "sprint.md sha256:1b839e2d8a70"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "all hard audit questions answered by user; remaining choices (frozen documents.c4 effective boolean, invalid audit value blocks) in-bounds defaults with existing precedent",
+      "evidence": "audit.md; decisions-log 2026-09-15 audit entries; checkpoints.md Gate policy",
+      "artifact_revision": "audit.md sha256:0d81eae9f023"
+    }
+  ],
   "task_routing": {},
-  "skipped_phases": [],
+  "skipped_phases": [
+    "design",
+    "design-review",
+    "design-promote"
+  ],
   "reviews": {
-    "design": { "iteration": 0, "verdicts": {}, "latched": {} },
-    "impl": { "iteration": 0, "verdicts": {}, "iteration_heads": {}, "latched": {} }
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "iteration": 0,
+      "verdicts": {},
+      "iteration_heads": {},
+      "latched": {}
+    }
   },
   "created_at": "2026-09-15T08:00:17Z",
-  "updated_at": "2026-09-15T08:00:17Z",
+  "updated_at": "2026-09-15T08:50:34Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

@@ -1,0 +1,234 @@
+---
+responsibility:
+  owns: brownfield findings for sprint scope (existing docs, code, gaps incl. dependencies/migration, risks)
+  excludes: requirements, decisions, plan, code
+  delegates_to: prd.html (requirements), adr.html (decisions), plan.md (tasks)
+---
+
+# Audit
+
+## Scope reference
+[sprint.md](./sprint.md)
+
+## Touched areas
+- `.asd/rules/sprint-lifecycle.md`: impl⇄impl-test cycle (:20-26), Impl-test phase suite gate and loop (:224-241), Friction log (:243-260), Retro phase (:262-275), Audit phase (:159-169), Optional documents, collapse and no-op table (:123-157), Design and design-promote c4 lines (:174, :182-184, :198), audit normalization (:9), scoped_fan_out verdict note (:335), signal vocabulary (:285-293).
+- `.asd/workflows/asd-phase-impl-test.md`: step 1/2 re-entry sha, step 9 triage, step 10 HEAD fill, Execution mode user contacts (:20-25), Re-entry (:58).
+- `.asd/workflows/asd-phase-impl.md`: test-fix payload (:66), row flip to `fixed` (:77), "Fix modes are unbounded by design" (:44).
+- `.asd/templates/t_test-plan.md`: Added tests `Regression proof` (:44-46), Defects table (:67-69).
+- `.asd/rules/external-review.md` "Stalemate detection" (:99-103). `.asd/agents/asd-external-review.md`: stalemate (:28, :96, :115), `system.os` (:4, :39, :72, :76-77).
+- `.asd/runtime.js`: subcommand set (:399-428), `externalPreflight` output (:148-169), `scopedFanOut` (:319-320, :370, :401).
+- `.asd/rules/code-style.md` §17 fail-first bullet (:120).
+- `.asd/agents/asd-reviewer-testing.md` rubric (:55). `.asd/agents/asd-tester.md`: Failure triage (:66-69), Tool policy (:74).
+- `.asd/workflows/asd-phase-retro.md` (:10, :19-21). `.asd/templates/t_retrospective.html` (:11, :30-53).
+- `.asd/rules/artifact-layout.md`: Agent memory (:86-92), path map (:11-84), Subsystem registry diagram (:96-103), c4 comments (:36, :59).
+- `.asd/workflows/asd-phase-audit.md` (:3-8). `.asd/agents/asd-architect.md` (:34, :39, :41, :43, :60, :99). `.asd/templates/t_audit.md` (:21-56). `.asd/rules/checkpoints.md`: hard list (:7), plan precondition (:62).
+- Config revision readers and writers:
+  - Templates: `t_config.yaml`, `t_state.json`.
+  - Scope, design and routing: `asd-phase-scope.md`, `asd-phase-design.md`, `asd-phase-design-review.md` and its SKILL description, `asd-phase-design-promote.md`, `asd-sprint/SKILL.md`, `.asd/hooks/session-start.js`.
+  - Init, git and PR: `asd-init/SKILL.md`, `git-strategy.md`, `asd-phase-pr.md`.
+  - Review: `review-policy.md`, `asd-phase-impl-review.md`, `external-review.md`.
+  - Core rules: `core.md` (:25 glossary, :30 invariant).
+  - Other templates and project files: `t_subsystems.md` (:3, :16), `t_AGENTS.md` (:46), `.asd/project/custom-design-rules.md` (:12).
+  - Migrations and update: `.asd/migrations/` (new `9.0.0.js`), `.asd/skills/asd-update/SKILL.md` (:4, :10), `.asd/release-manifest.json`.
+  - Root docs and tests: `README.md`, root `AGENTS.md` (:47, :60), `CHANGELOG.md`, `tests/run.js`.
+- Generated views to resync (never hand-edit):
+  - Agents: `.claude/agents/` and `.codex/agents/` for asd-architect, asd-reviewer-testing, asd-tester (+ `-mechanical`/`-critical`) and asd-external-review.
+  - Skills: `.claude/skills/` and `.agents/skills/` for asd-init, asd-sprint, asd-phase-design, asd-phase-design-review.
+  - Hooks: `.claude/hooks/` and `.codex/hooks/` for session-start.js.
+
+## Existing docs found
+- `docs/` is absent from this repo. No persistent doc exists at any `artifact-layout.md` path-map location. Under `self_hosting`, `.asd/rules/*.md` are the canonical documents.
+- `plans/*.md` is gitignored local planning (`.gitignore:15-16`), so it is non-canonical. `plans/self-hosting-and-optional-documents.md:57` ("effective c4 = disabled without decomposition") agrees with `sprint-lifecycle.md:125`.
+- [sprint-lifecycle.md](../../rules/sprint-lifecycle.md):
+  - :26 "No cap on `impl⇄impl-test` rounds … until the impacted set is green or a dev blocker escalates"
+  - :239-241 "code defect → appended to `Defects` … No iteration cap — an unfixable state surfaces as a dev/tester `FAILED`"
+  - :165 audit "Scans: existing source in touched areas; existing docs in any format/location; persistent docs in `docs/`" (no completeness bar, no precedence)
+  - :268-273 retro has two classes, a consumer/asd split and the empty-log branch. :271 "A fact a friction entry already owns is remediation only". There is no dedup step and no guardrail/home fields.
+  - :127, :151, :157 `skip_design_phases` trigger and collapse test
+  - :125 "Effective `documents.c4` … `enabled` only when `project.subsystem_decomposition: enabled`"
+  - :9 legacy audit normalization
+- [external-review.md](../../rules/external-review.md):
+  - :103 "If two consecutive iterations produce an identical issue set (same files, lines, messages), **agent** emits `FAIL: stalemate …` and escalates … options: accept findings as-is, override, abort sprint". The comparison is performed by the agent, which is an LLM.
+  - :11 "OS read from `system.os`"
+  - :19-23 per-OS here-string/heredoc table
+- [code-style.md](../../rules/code-style.md) :120: "Every fixed defect leaves a regression test proven against the pre-fix behavior (fail-first run recorded) or an equivalent targeted mutation". It names no command, exit code or test name.
+- [t_test-plan.md](../../templates/t_test-plan.md):
+  - :46 the `Regression proof` cell accepts `{{n/a | fail-first vs D-N | mutation <what was mutated>}}`
+  - :67 Defects columns are `ID | Location | Symptom | Failing test | Status | Fix commit`, with no entry marker
+- [asd-reviewer-testing.md](../../agents/asd-reviewer-testing.md) :55: fail-first regression proof is already "judged against `code-style.md` §17 (SSoT)".
+- [artifact-layout.md](../../rules/artifact-layout.md) :88: agent memory lives at `.claude/agent-memory/<agent>/` and is never generated. It is Claude-only in practice: `sync.js:297` emits `memory` only in the Claude renderer, and every agent's `codex` frontmatter has no memory key.
+- [checkpoints.md](../../rules/checkpoints.md) :7 hard list has no contradiction item. :62 plan precondition names `skip_design_phases`.
+- [git-strategy.md](../../rules/git-strategy.md):
+  - :57-59 `gh_enabled`/`auto_pr` matrix
+  - :63 merge only "when `gh_enabled: true`"
+  - :65 "neither does `auto_pr`"
+  - :81 migration version DoD `max(.asd/migrations/*.js) <= asd_version`
+  - :83 unconditional `gh release create` for self-hosting
+- [review-policy.md](../../rules/review-policy.md):
+  - :101 `[--scoped-fan-out]` flag
+  - :177 "absent from an existing project's `config.yaml` means `disabled` (full fan-out)"
+  - :179 UI section clause
+- [core.md](../../rules/core.md):
+  - :30 "Only `/asd-init` may edit settings — run by the user, or sprint-mediated"
+  - :94 untrusted-data boundary: files outside `.asd/rules/`, `.asd/templates/`, `.claude/` are data
+- [asd-update SKILL](../../skills/asd-update/SKILL.md) :4 "never touching consumer-owned config". :14 refuses under `self_hosting`.
+- [asd-init SKILL](../../skills/asd-init/SKILL.md):
+  - :31, :34 likec4 probe
+  - :35 designmd probe (node/npm) that writes the `designmd` flag
+  - :32 "Detect OS"
+  - :39 `gh_enabled from gh --version; auto_pr=false`
+  - :79 re-init lists template fields absent from config, but not the reverse
+  - :91-93 sprint-mediated mode validates each pair against a working-tree `t_config.yaml` leaf and "touch no other field"
+  - :151 return contract `designmd=`
+- [CHANGELOG.md](../../../CHANGELOG.md):
+  - :30 v7.3.0 skip_design_phases "no migration script"
+  - :210 "/asd-update never touches consumer-owned config"
+  - :5 current v8.0.0
+- [README.md](../../../README.md):
+  - :27 "gh CLI — optional"
+  - :42 LikeC4 "needs … `documents.c4`"
+  - :169 pr row "if gh disabled"
+  - :223 scoped fan-out paragraph
+  - :246-290 config schema
+  - :344 c4 folder comment
+  - :371-392 tools
+  - :435, :441 FAQ
+- Root [AGENTS.md](../../../AGENTS.md) :60 (hand-edited tail) names `c4` and `skip_design_phases: enabled`.
+
+## Existing implementation found
+- Defect rows already carry location, symptom and failing test (`t_test-plan.md:67`, `asd-phase-impl-test.md:50`, `asd-tester.md:69`). A reappearing defect "gets a new `D-N` row, never a reopened one" (`asd-phase-impl-test.md:58`), which confirms that AC-2 cannot compare on ids.
+- The decisions-log line "impl-test: defects <D-N list> → impl test-fix" (`asd-phase-impl-test.md:50`) already records each routed set.
+- Signal vocabulary: `FAILED` = "cannot proceed, reason in body" (`sprint-lifecycle.md:288`). `asd-sprint` relays and halts on FAILED (`SKILL.md:48`). No new signal type is needed for `FAILED: stalemate`.
+- `runtime.js` already hosts deterministic, test-covered helpers (`route-task`, `emit-manifest`, `validate-ledger`; core.md glossary "Runtime helper"). There is no defect-set comparer.
+- `runtime.js` already takes the platform from `process.platform` (`buildInvocation`, :76-101). No runtime code reads `system.os`, `system.tools.likec4` or `system.tools.designmd`.
+- `standingPredicates` returns early for design-review before any `scopedFanOut` check (:315-318), so only the impl-review branch changes.
+- The collapse test already works from frozen documents. Scope writes `{{DOC_PRD}}/{{DOC_UX_SPEC}}/{{DOC_ADR}}/{{DOC_C4}}` as `false` whenever skip freezes `true` (`asd-phase-scope.md:8`). Every legacy state with `skip_design_phases: true` therefore already satisfies a documents-only collapse test, including this sprint (`state.json:5,7`).
+- The design workflow already has a documents-only collapse (`asd-phase-design.md:22`), which can serve as AC-14's "defensive fallback".
+- The subsystem registry is already independent of the diagram setting (`artifact-layout.md:96`).
+- The migration runner and conventions exist:
+  - Filename = target version; `module.exports = (ctx) => report`; zero-dependency; idempotent (`update.js:281-296`).
+  - `6.0.0.js` rewrites active sprint `state.json` only, atomically (temp+rename, EOL preserved), skips archived sprints and warns on unparsable files.
+  - `4.0.0.js:26` "Never touches `.asd/project/config.yaml` values".
+- Current `asd_version` is 8.0.0 (`release-manifest.json`). The breaking change implies `9.0.0.js`.
+- `asd-init` already probes likec4 only when `diagram_tool=likec4` (:34) and Node only when `ux_spec` is enabled (:35). Only the flag writes and the OS step need to go.
+- Retro already enforces the rule that "a fact a friction entry owns is remediation only" (`sprint-lifecycle.md:271`), which partly anticipates AC-6. It never applies or promotes anything (:266, :268).
+- Audit already scans docs in any format and location (`sprint-lifecycle.md:165`). `t_audit.md` already has an "absent optional section = empty finding set" rule (:10).
+
+## Gaps
+- **AC-1..3 — previous entry's defect set.** The set that the previous entry routed cannot be read from `test-plan.md`:
+  - The Defects table has no entry column (`t_test-plan.md:67`).
+  - Prior rows are flipped to `fixed` by impl test-fix (`asd-phase-impl.md:77`).
+  - Rows persist across entries (`asd-phase-impl-test.md:58`).
+  - A Defects `Entry` column (or an equivalent marker) is needed for step 9 to read the previous set "from `test-plan.md`" as AC-3 requires.
+- **AC-1..3 — Entry log never gets a sha on a routing exit (pre-existing defect).** Step 9's routing exit never fills the Entry log `HEAD analysed` value: it is filled only at step 10 on a green run (`asd-phase-impl-test.md:41`, :50, :52). Yet step 1/2 of the next re-entry diffs from the prior row's `HEAD analysed` (:29, :33). After any defect route the delta's left sha is empty. "Consecutive entries" also relies on these rows.
+- **AC-2 — no comparer.** No deterministic comparer exists (`runtime.js:399-428`). "Location" is `file:line` (`t_test-plan.md:69`), and "symptom" is free prose written by the tester.
+- **AC-1 — stalemate missing from impl-test contacts and loop wording.** Stalemate is absent from impl-test's closed list of user contacts (`asd-phase-impl-test.md:20-25`). It is also absent from the loop wording in `sprint-lifecycle.md:26` and :241 and in `asd-phase-impl.md:44`.
+- **AC-1 — no resume rule after a stalemate halt.** Nothing says how a sprint resumes after a stalemate FAILED. A plain re-entry reruns impl-test and hits the same stalemate again.
+- **AC-4/5 — §17 and template.** §17 (:120) and the `Regression proof` cell (`t_test-plan.md:46`) lack command, non-zero exit code and failing test name. `Suite run` records counts but no exit code (:57-61).
+- **AC-5 — reviewer half likely already covered.** The reviewer rubric (`asd-reviewer-testing.md:55`) already flags any row violating §17. Tightening §17 may be enough, and an added reviewer line may fail economy's removal test.
+- **AC-6..8 — retro workflow and template.** The retro workflow has no dedup step, no check against existing home rules, and a read list without home files (`asd-phase-retro.md:10`, :19-20). The template has no `guardrail`/`home` fields (`t_retrospective.html:34`, :47).
+- **AC-6/7 — ordering tension.** AC-6 checks each merged finding against its "target home" before AC-7 assigns the home. The plan must treat the AC-6 home as a candidate that AC-7 finalizes.
+- **AC-7 — home list.** The list omits `custom-design-rules.md`. It has no entry for a consumer-mode finding that acts on the ASD framework, although the split is required (`sprint-lifecycle.md:268`, `t_retrospective.html:37`). It has no entry for a non-rule fix (template, runtime helper).
+- **AC-10..12 — audit rules, template and gate.**
+  - No completeness bar or precedence exists in `sprint-lifecycle.md:165`, `asd-phase-audit.md:4` or `asd-architect.md:34`/:93.
+  - `t_audit.md` has no contradiction section.
+  - `checkpoints.md:7` does not list an unresolved contradiction.
+  - Audit step 3a records only registry and c4 decisions (`asd-phase-audit.md:6`), so there is no recording step for contradiction answers.
+- **AC-13/14 — readers of `documents.c4`, `diagram_tool` and `skip_design_phases`.**
+  - `documents.c4` readers:
+    - Rules: `sprint-lifecycle.md:125`, :127, :129, :143, :151, :157, :169, :174, :182, :184, :198; `artifact-layout.md:36`, :59, :96, :100; `core.md:25`.
+    - Agent: `asd-architect.md:41`, :43, :60, :99.
+    - Workflows: `asd-phase-design.md:1-2`, :21-22, :45, :51, :63; `asd-phase-design-review.md:20`; `asd-phase-design-promote.md:8`; `asd-phase-scope.md:8`.
+    - Skill: `asd-init:30-31`, :56, :62, :65, :139.
+    - Templates: `t_config.yaml:21`, :74; `t_state.json:5`; `t_subsystems.md:3`, :16.
+    - Docs and project files: `README.md:42`, :257, :265, :344, :441; `AGENTS.md:60`; `custom-design-rules.md:12`.
+    - Tests: `tests/run.js:4498-4499`.
+  - `diagram_tool`: 12 references. The enum must gain `none`, and its absent default is unspecified.
+  - `skip_design_phases` readers:
+    - Rules: `sprint-lifecycle.md:127`, :133, :151, :157; `checkpoints.md:62`.
+    - Workflows: `asd-phase-audit.md:3`, :8; `asd-phase-scope.md:8`; `asd-phase-design-review.md:7`, :21; `asd-phase-design-promote.md:5`.
+    - Skills: `asd-sprint/SKILL.md:42`, :47; `asd-phase-design-review/SKILL.md:4`; `asd-init:30`, :53, :58, :79, :134.
+    - Hook: `session-start.js:159`.
+    - Templates: `t_config.yaml:10-12`; `t_state.json:7`.
+    - Docs: `README.md:250`, :441; `AGENTS.md:60`.
+    - Tests: `tests/run.js:2177-2202`, :2831-2886, :2888-2922.
+- **AC-15 — gh.**
+  - `gh_enabled` readers: `git-strategy.md:57-58`, :63; `asd-init:39`; `t_config.yaml:116-117`; `README.md:288`.
+  - `auto_pr` readers: `git-strategy.md:57`, :59, :65; `asd-phase-pr.md:17`; `asd-init:39`; `t_config.yaml:119-120`; `README.md:289`.
+  - `asd-init` checks only `gh --version`, never auth (`gh auth status`).
+  - `asd-phase-pr.md:16` "where the host allows … otherwise reports the ready state" must become gh-only, with a FAILED that names the fix.
+  - `README.md:27` and :169 must change.
+- **AC-16 — OS and tool flags.**
+  - `system.os` readers: `external-review.md:11`, :19-23; `asd-external-review.md:4`, :39, :72, :76-77; `asd-init:32`, :53; `t_config.yaml:80-84`; `README.md:278`.
+  - `system.tools.likec4` readers: `t_config.yaml:87-90`, `README.md:280`, `tests/run.js:4388`.
+  - `system.tools.designmd` readers: `asd-init:35`, `t_config.yaml:92-97`, `README.md:281`.
+  - Removing them leaves no runtime reader. The preflight output has no platform field (`runtime.js:158-168`), and `asd-init`'s return contract carries `designmd=` (:151).
+  - OS detection is still needed at init for the per-OS `designmd-*` commands (`asd-init:116-130`), just without a config flag.
+- **AC-17 — `scoped_fan_out` readers.**
+  - Runtime: `runtime.js:319-320`, :370, :401.
+  - Rules: `review-policy.md:101`, :177, :179; `sprint-lifecycle.md:335`. Keep `sprint-lifecycle.md:337`, which is the historical legacy-verdict note.
+  - Workflow: `asd-phase-impl-review.md:22`, :28-30, :35, :90.
+  - Template and docs: `t_config.yaml:45-58`; `README.md:223`, :271.
+  - Tests: `tests/run.js:4125-4128`, :4149, :4167, :4191-4196.
+- **AC-18 — legacy audit values.**
+  - Readers: `sprint-lifecycle.md:9`; `asd-phase-scope.md:7`; `asd-init:30`; `t_config.yaml:17`; `README.md:253`, :435.
+  - Behaviour for a now-invalid value is unspecified. Recommended: block, matching `user_gates` "Invalid or unreadable policy blocks" (`checkpoints.md:5`).
+- **AC-19 — settings-writer rules contradict a config-rewriting migration.** `core.md:30`, `t_AGENTS.md:46` and `AGENTS.md:47` name `/asd-init` the only settings writer, and `asd-update/SKILL.md:4` promises "never touching consumer-owned config". All four contradict a migration that rewrites `config.yaml`.
+- **AC-19 — no key removal outside the migration.** Re-init never removes keys the template no longer declares (`asd-init:79`).
+- **AC-20 — this repo cannot drop removed keys.** Sprint-mediated mode cannot remove a key (`asd-init:91-93`), and migrations never run here (`asd-update/SKILL.md:14`), so this repo has no sanctioned way to drop the 8 removed keys.
+- **AC-9 and release — manifest and sync bookkeeping.**
+  - `canon_hashes` must be refreshed for every changed agent and skill (architect, reviewer-testing, tester, external-review, asd-init, asd-sprint, asd-phase-design, asd-phase-design-review).
+  - `upstream_hashes` must be refreshed for every changed managed file, plus a new entry for `9.0.0.js` (`tests/run.js:1915` §6b, :2931).
+  - `asd_version` → 9.0.0 with a CHANGELOG `## v9.0.0` Migration (breaking) section, under the `git-strategy.md:81` DoD.
+  - `sync.js --apply` for every generated view listed under Touched areas.
+- **Tests that must be rewritten.**
+  - `tests/run.js:2177-2202`: the hook key is taken from the `{{SKIP_DESIGN_PHASES}}` placeholder.
+  - `tests/run.js:2831-2886` and :2888-2922: the skip-field name and the audit exit keyed on it.
+  - `tests/run.js:4388`: `freeStrings` includes `system.tools.likec4`.
+  - `tests/run.js:4394-4400`: the README enum must equal `t_config`'s, including the new `none`.
+  - `tests/run.js:4498-4499`: `documents.c4` condition in `asd-init` steps 13/14.
+  - `tests/run.js:4125-4196`: the `scopedFanOut` flag.
+- **Tests that must keep holding.**
+  - `tests/run.js:2963-2995`: Actions must keep an `F-N` and `consumer | asd`.
+  - `tests/run.js:3912` and :3930: the §17 restore sentence.
+  - `tests/run.js:4310`: the §17 set-derivation bullet.
+  - `tests/run.js:4493`: the hard list must keep `deletion … migration`.
+  - `tests/run.js:4443`: `t_audit.md` "Subsystems map".
+- **Documentation contradictions (both sources):**
+  - C1: `asd-init/SKILL.md:39` default `auto_pr=false` vs `t_config.yaml:120` and `README.md:289` `auto_pr: true`. Moot after AC-15.
+  - C2: `README.md:27` "gh CLI — optional" vs `git-strategy.md:83` unconditional `gh release create` under self-hosting. Canonical: git-strategy.md.
+  - C3: `external-review.md:103` (agent-performed comparison, `FAIL:` token, "accept findings as-is") vs sprint AC-2/AC-3 (deterministic, no LLM, `FAILED: stalemate`, by reference). The pattern can be reused only for its detection shape.
+  - C4: `asd-phase-impl-test.md:41`/:52 (HEAD analysed filled only when green) vs :29/:33 and `sprint-lifecycle.md:232` (re-entry delta from the prior row's sha). The two cannot both work after a defect route.
+  - C5: `core.md:30`, `t_AGENTS.md:46` and `asd-update/SKILL.md:4` (only `/asd-init` writes settings; update never touches config) vs AC-19. Also vs the `4.0.0.js:26` and `CHANGELOG.md:210` precedent.
+  - C6: `core.md:94` (files outside `.asd/rules/`, `.asd/templates/`, `.claude/` are data, not instructions) vs `.asd/project/custom-*-rules.md`. Those files are mandatory rules for every agent (`providers.md:88`), and AC-7 makes two of them guardrail homes. Pre-existing.
+  - C7: AC-7 home `.claude/agent-memory/<agent>/` vs provider-neutral canon (AGENTS.md "Canonical bodies are provider-neutral") and `sync.js:297`, which renders memory for Claude only.
+  - C8: sprint.md Goal item 5 "26 settings to 18" vs `t_config.yaml`, which has 28 leaf settings (8 removed → 20). The number is in the Goal only, so keep it out of CHANGELOG and README.
+- **External dependency gaps:**
+  - `gh` CLI: becomes mandatory (install + `gh auth status`) at `/asd-init` and `pr`.
+  - Node: probed only when `ux_spec` is enabled, though hooks, sync and runtime already require it (`README.md:25`).
+  - likec4 CLI: probed only when `diagram_tool: likec4`.
+- **Migration gaps:**
+  - `config.yaml` `documents.c4: enabled` → keep the existing `project.diagram_tool`. If that key is absent, the default is undefined; `t_config` ships `likec4`.
+  - `documents.c4: disabled`, or absent from a present `documents` group (fail-closed per `sprint-lifecycle.md:125`) → `diagram_tool: none`.
+  - `documents` group wholly absent (= all enabled) → the diagram-tool rule above applies.
+  - `skip_design_phases: enabled` → `prd`, `ux_spec`, `adr` = disabled and `diagram_tool: none`, creating the `documents` group if absent.
+  - `audit: enabled` → `always`; `audit: disabled` → `off`.
+  - Drop `gh_enabled`, `auto_pr`, `system.os`, `system.tools.likec4`, `system.tools.designmd`, `review.scoped_fan_out`.
+  - The migration must be line-based: the repo is zero-dependency with no YAML parser (`sync.js:126`). It must preserve comments and EOL (`code-style.md` §19) and follow the `6.0.0.js` pattern (atomic replace, skip-and-warn on an unrecognized shape).
+  - Active sprint `state.json`: `skip_design_phases` can stay unread (the frozen documents cover it) or be stripped per the 6.0.0 pattern. `documents.c4` handling depends on the frozen-diagram decision recorded in `decisions-log.md`.
+
+## Risks
+- **Stalemate misses real repeats (fails open).** Defect identity on `file:line` shifts when a fix commit edits the same file. A tester re-wording the prose symptom also defeats exact comparison, so the uncapped loop the sprint targets continues. impact=high, mitigation=define location as the file path, symptom as the runner's first failure line verbatim and failing test as the runner-reported name; compare in a runtime helper under `tests/run.js`.
+- **False stalemate.** The same failing test and symptom can come back with a different root cause after a partial fix, and escalate early. impact=low (a user contact, not data loss), mitigation=the escalation options include "continue".
+- **Defect sources outside impl-test.** Defects from impl-review's red full suite also route to test-fix (`sprint-lifecycle.md:24`) but are not "impl-test entries", so a repeat spanning impl-review → impl → impl-test is not detected. impact=medium, mitigation=state explicitly which entries count, or record an entry origin in the new Defects entry column.
+- **Migration corrupts consumer YAML.** Consumer-owned `config.yaml` gets rewritten without a parser (inline comments, CRLF, flow maps, duplicated keys). impact=high, mitigation=touch only known keys at known indent, abort per file with a warning on any unrecognized shape, write atomically, stay idempotent; add fixture tests for CRLF, absent groups and already-migrated configs.
+- **AC-17 silently reduces review coverage.** Consumers whose config omits `scoped_fan_out` currently get full fan-out (absent = disabled, `review-policy.md:177`) and become always-on. impact=medium, mitigation=a CHANGELOG breaking-change line naming the coverage change.
+- **AC-15 excludes non-GitHub hosts and gh-less setups.** `/asd-init` blocks without an authenticated gh. impact=medium (user-decided), mitigation=CHANGELOG migration note; the `pr` FAILED names `gh auth login`/install.
+- **External Review picks the wrong stdin syntax.** It is chosen per OS (`external-review.md:19-23`), but the run-command shell can differ from the OS (e.g. a POSIX shell on a Windows host). A runtime OS check alone can pick here-string versus heredoc wrongly. impact=medium (a false availability skip), mitigation=key syntax on the invoking shell, or return platform plus shell from `external-preflight`; add a test.
+- **AC-12 blocks self-hosting audits too often.** Hard gates may fire often because workflow and rule docs drift (C3 and C4 above). impact=medium, mitigation=escalate only canonical-vs-canonical or no-canonical conflicts; rule-vs-workflow resolves by precedence without a gate.
+- **Agent-memory guardrails are not loaded under Codex (C7).** impact=medium, mitigation=per the retro-home decision recorded in `decisions-log.md`.
+- **Hash and sync churn across about 30 managed files.** Missing one fails §6b, 2931 or `sync.js --check`. impact=medium, mitigation=one final mechanical task that refreshes hashes, applies sync and checks.
+- **Stale runtime flag swallows the next argument.** If a workflow still passes `--scoped-fan-out` after it leaves the boolean list, the parser takes the next argument as its value (`runtime.js:380-391`, e.g. `--files`). impact=medium, mitigation=change runtime and workflow in one task, or keep the flag as an accepted no-op.
+- **Retro token cost.** Reading home files per finding adds tokens: rule docs run 50-340 lines. impact=low, mitigation=read only the named home and search it for the finding's subject.
+- **Economy failure from restatement.** An AC-5 reviewer edit or AC-3 option text that restates §17 or `external-review.md` fails `artifact-layout.md` "Documentation economy" (:201). impact=low, mitigation=pointers only, and edit the reviewer only if §17 alone does not reach "proof row evidence".
+- **This sprint's own frozen state carries `skip_design_phases: true`** (`state.json:7`) while impl removes its readers. impact=low: frozen documents are all false (`state.json:5`), so the documents-only collapse test, resume and hook still agree, mitigation=add a legacy-state fixture to the rewritten hook test.

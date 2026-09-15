@@ -57,3 +57,17 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: [sprint.md](sprint.md)
 
 - 2026-09-15 — audit re-evaluated after scope expansion: stays true (config schema break, migration).
+
+## 2026-09-15 — Audit questions resolved by user; AC-2, AC-3, AC-7, AC-19, AC-20 amended
+
+- **Decision**: AC-2 compares file path (line dropped), runner failure line and failing test name in a `runtime.js` subcommand. AC-3 reuses only the External Review detection rule; its own options are continue with guidance, accept as debt (hard waiver, `stubs.md`) or abort, answer logged against re-trigger. AC-7 home list gains `custom-design-rules.md`, Claude-only agent memory and consumer-mode "upstream ASD", with `Guardrail`/`Home` columns; AC-19 sanctions a release migration run by `/asd-update` as config writer (`core.md`, `t_AGENTS.md`, `asd-update`); AC-20 rewrites this repo's `config.yaml` by running the migration as a plan task; Goal count corrected to 28 → 20.
+- **Rationale**: Audit found `file:line` identity fails open, "accept as-is" is a hidden quality waiver, AC-7 homes lose findings, and C5 (only `/asd-init` writes settings) blocks AC-19/AC-20. The user chose the recommended option for each except AC-20, where running `9.0.0.js` here was chosen over a new `<key>=<absent>` settings form; the migration header must therefore not restrict it to consumer projects.
+- **Affected docs**: [sprint.md](sprint.md), [audit.md](audit.md)
+
+## 2026-09-15 — Audit accepted adaptively; frozen diagram state and invalid audit value
+
+- **Decision**: Audit gate passed by orchestrator. `state.json.documents.c4` stays as the frozen effective boolean (`diagram_tool != none` AND decomposition enabled); only the config key is removed. A legacy or unknown `documents.audit` value blocks scope, matching the invalid-`user_gates` rule.
+- **Rationale**: Every hard item from audit was answered by the user above; the two remaining choices are in-bounds plan-level defaults that keep active-sprint readers and hook unchanged and follow the existing `checkpoints.md` "Invalid or unreadable policy blocks" precedent.
+- **Affected docs**: [audit.md](audit.md)
+
+- 2026-09-15 — design/design-review/design-promote skipped (skip_design_phases enabled)
