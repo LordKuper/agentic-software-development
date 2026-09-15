@@ -71,3 +71,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: [audit.md](audit.md)
 
 - 2026-09-15 — design/design-review/design-promote skipped (skip_design_phases enabled)
+
+## 2026-09-15 — `plan.md` accepted
+
+- **Decision**: Plan of 9 tasks in 6 waves accepted adaptively. Fixed at plan: Defects `Entry` column; step 9 routing exit fills `HEAD analysed`; `runtime.js defect-stalemate` with digest-keyed answer suppression; `external-preflight` returns `platform`; unknown audit value blocks; `9.0.0.js` touches config only and maps `c4: enabled` with no `diagram_tool` to `likec4`; `/asd-init` requires `gh auth status`.
+- **Rationale**: Every task traces to user-authorized AC-1..AC-20 (as amended at audit); the fixed choices are bounded readings of those ACs or follow existing precedent (`checkpoints.md` invalid-policy block, `6.0.0.js` contract, `t_config.yaml` default), and no material alternative remains open. No open stubs (`stubs.md` empty).
+- **Affected docs**: [plan.md](plan.md)
