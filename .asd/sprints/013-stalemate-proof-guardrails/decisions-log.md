@@ -119,3 +119,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: [reviews/impl/iter-02/](reviews/impl/iter-02/)
 
 - 2026-09-15 — impl fix for iter-02: findings resolved (F-1, TST-1, TST-2; COR-2-1 resolved by user AC-19 decision)
+
+- 2026-09-15 — impl-test: impacted set green (full suite 203/203), 0/0 tests
