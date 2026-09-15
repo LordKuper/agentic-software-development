@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:6090767468afe7b06f7147e4a664a308b283a258a8e6825c1e6de3f490b4a252 content_digest=sha256:6ce244622b4aeabb9a88315ee873c6aba3fa7f0955057642281f31dc164e77d2 asd_version=8.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:63f2ca4ca340bffaf444e06e64ce262b8f81c26ee968ce61dadad87ec31f7587 content_digest=sha256:ba0a8835d9fc16309a4e49f8fb8614da3032fcb10c073c67e421601753ff5d6d asd_version=8.0.0 schema=1
 name: asd-init
 description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode, or applies a plan-declared settings change for the active sprint's impl phase. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
@@ -53,7 +53,7 @@ Operation mapping: see `.asd/rules/providers.md`.
     - OS, tools, review limits, git settings, `user_gates`, audit mode, diagram_tool, detected build/test/lint/run commands and any affected-test selector
     Then request user decision: `accept-all` | `edit-section` | `abort`.
     - `edit-section` → request user decision on which section (os | tools | review | git | commands), collect new values, re-show proposal, loop until `accept-all`
-    - Missing required tools (Node if `documents.ux_spec: enabled`; likec4 if diagram_tool=likec4; the wrapped external-review CLI if external_review) → must resolve here: install / override path / disable feature. Do NOT silently proceed with missing required tools.
+    - Missing required tools → must resolve here: Node (if `documents.ux_spec: enabled`) → install or `documents.ux_spec: disabled`; likec4 (if diagram_tool=likec4) → install or diagram_tool `mermaid`/`none`; the wrapped external-review CLI (if external_review) → install, override path (`system.tools.codex_command`/`claude_command`) or `review.external_review: disabled`. Do NOT silently proceed with missing required tools.
     Only after `accept-all` proceed to write.
 9. Write `.asd/project/config.yaml` from `t_config.yaml` with approved `user_gates`, audit mode, diagram_tool and other fields.
 10. Ask user what custom rules to add (separately for common / design / coding scopes); write three files from templates: `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`. Empty scope still writes template stub (header + intro), so agents always find the file.
