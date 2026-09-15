@@ -220,7 +220,7 @@ Reviewers write no review artifact, code or doc on any provider (scope: `review-
 
 Reviewers emit a machine-parseable first-line verdict token: `[REVIEW-<phase>-<reviewer>]: APPROVE|CONCERNS|FAIL`, where `<phase>` is `design` or `impl` and `<reviewer>` is `correctness | efficiency | testing | documentation | external`.
 
-**Diff-scoped rubric-section gating** (always on — see `.asd/rules/review-policy.md` "Diff-scoped impl-review fan-out" for the SSoT): Correctness and Efficiency are always dispatched; two diff-derived predicates instead mark a rubric SECTION `n/a: <predicate>` inside that reviewer's own returned coverage ledger, so the agent never loads that domain's inputs for the n/a'd section. Correctness's UI conformance section is n/a only when no file in the iteration's scope list is a UI surface; Efficiency's five performance sections are n/a only when both no perf-budgets section exists in `custom-coding-rules.md` and the scope list contains no executable file (conjunctive). Each n/a'd section re-enters automatically the moment a qualifying file re-enters the diff. `checkpoints.md`'s impl-review approval gate is unaffected (`review-policy.md` DoD table).
+**Diff-scoped rubric-section gating** (always on — SSoT: `.asd/workflows/asd-phase-impl-review.md` step 5): Correctness and Efficiency are always dispatched; two diff-derived predicates instead mark a rubric SECTION `n/a: <predicate>` inside that reviewer's own returned coverage ledger, so the agent never loads that domain's inputs for the n/a'd section. Correctness's UI conformance section is n/a only when no file in the iteration's scope list is a UI surface; Efficiency's five performance sections are n/a only when both no perf-budgets section exists in `custom-coding-rules.md` and the scope list contains no executable file (conjunctive). Each n/a'd section re-enters automatically the moment a qualifying file re-enters the diff. `checkpoints.md`'s impl-review approval gate is unaffected (`review-policy.md` DoD table).
 
 An **APPROVE latch** persists per phase per reviewer key in `state.json`: a reviewer that returned APPROVE on iteration N is not re-dispatched on N+1+ within the same phase, and counts as satisfied at the DoD. A red full suite at the end of impl-review (see below) clears every latch sprint-wide.
 
@@ -294,7 +294,7 @@ your-project/
 │   ├── release-manifest.json        # schema/asd version, managed-path list, model-family table; drives /asd-update + sync.js
 │   ├── sync-state.json              # last-written digests for managed-block / JSON-merge targets (committed)
 │   ├── sync.js                      # generator: canon -> .claude/ + .codex/ + .agents/skills/ (--check / --apply)
-│   ├── runtime.js                   # deterministic helper: task-cost routing, external-review preflight, coverage-manifest emission and split, coverage-ledger validation, manifest digests
+│   ├── runtime.js                   # deterministic helper: task-cost routing, external-review preflight, coverage-manifest emission and split, coverage-ledger validation, manifest digests, impl-test defect-stalemate comparison
 │   ├── rules/                       # workflow rules (role/phase-scoped reads), incl. providers.md
 │   ├── templates/                   # artifact templates (t_*.html / .md / .yaml / .c4), incl. t_AGENTS.md / t_CLAUDE.md
 │   ├── agents/                      # 11 canonical agent specs plus declared tier variants (JSON frontmatter: claude{} + codex{} blocks)
