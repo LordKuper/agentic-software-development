@@ -8,7 +8,7 @@ Controlled by `review.external_review` in config (`enabled` | `disabled`). If `d
 
 ## OS-specific invocation
 
-OS read from `system.os` in config (set by `/asd-init`).
+OS read from the `external-preflight` output's `platform` (`process.platform`).
 
 Prompt passed via **heredoc/here-string straight into the wrapped CLI's stdin — never written to disk**. This agent runs read-only on both providers, so no step in the invocation may touch the filesystem. The wrapped CLI's own stdout is captured directly as its final message (the text verdict) — no `-o <out-file>`, no temp file, no cleanup step, because nothing was ever created on disk.
 
@@ -16,12 +16,10 @@ The command TAIL differs per wrapped CLI — this is a real syntax difference. C
 
 `--allowedTools` alone is not a read-only boundary.
 
-| OS | Preflight | Review command |
+| `platform` | Preflight | Review command |
 |---|---|---|
-| windows | runtime helper with direct arguments or its fixed PowerShell shim | `@'<rendered prompt + scope manifest>'@ \| <resolved-command> <wraps_invoke_args>` (here-string piped to stdin) |
-| linux | runtime helper with direct arguments | `<resolved-command> <wraps_invoke_args> <<'EOF'` / `<rendered prompt + scope manifest>` / `EOF` (heredoc piped to stdin) |
-| macos | runtime helper with direct arguments | same as linux |
-
+| `win32` | runtime helper with direct arguments or its fixed PowerShell shim | `@'<rendered prompt + scope manifest>'@ \| <resolved-command> <wraps_invoke_args>` (here-string piped to stdin) |
+| any other (`linux`, `darwin`) | runtime helper with direct arguments | `<resolved-command> <wraps_invoke_args> <<'EOF'` / `<rendered prompt + scope manifest>` / `EOF` (heredoc piped to stdin) |
 Both forms read prompt+scope manifest from stdin; the wrapped CLI's own read-only filesystem tools resolve `files[]` content from the repo (never from the manifest bytes) — the command's own stdout is the final message text verdict. No `-o <out-file>` for either CLI.
 
 `<wrapped-cli>` is `codex` under Claude Code / `claude` under Codex — command name on every OS (each ships a shell shim plus OS-specific wrappers on Windows; no compiled `.exe`). `<resolved-command>` is that default unless the config override (`system.tools.codex_command` under Claude, `system.tools.claude_command` under Codex) is non-empty, in which case it replaces the lookup path for both probe and review.

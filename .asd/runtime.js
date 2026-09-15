@@ -144,8 +144,12 @@ function cacheKey(input, authReady) {
   return fingerprint({ provider: input.provider, model: input.model, command: input.command, auth_args: defaultAuthArgs(input.provider), auth_ready: authReady, auth_generation: authGeneration(input) });
 }
 
-/** Checks executable and authentication locally without making a model request. */
+/** Checks executable and authentication locally without making a model request; reports the host platform External Review keys its stdin syntax on. */
 function externalPreflight(input) {
+  return { ...localReadiness(input), platform: process.platform };
+}
+
+function localReadiness(input) {
   if (!input || typeof input !== 'object') fail('preflight input required');
   const provider = input.provider;
   const model = input.model;

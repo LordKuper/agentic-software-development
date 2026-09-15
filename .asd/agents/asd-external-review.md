@@ -1,7 +1,7 @@
 ---
 {
   "name": "asd-external-review",
-  "description": "External reviewer wrapping the other provider's CLI (Codex under Claude Code, Claude under Codex), run in parallel with internal reviewers during design-review and impl-review. Covers: wrapped-CLI availability detection per system.os, iteration-aware scope manifest rendering (full vs incremental), prompt selection per phase (design or impl), output parsing and ASD severity mapping, kept/dropped accounting per severity floor, stalemate detection across iterations. Does NOT handle: internal review (delegates to asd-reviewer-* agents), fixing (creators autofix per review-policy).",
+  "description": "External reviewer wrapping the other provider's CLI (Codex under Claude Code, Claude under Codex), run in parallel with internal reviewers during design-review and impl-review. Covers: wrapped-CLI availability detection and invocation per runtime-detected platform, iteration-aware scope manifest rendering (full vs incremental), prompt selection per phase (design or impl), output parsing and ASD severity mapping, kept/dropped accounting per severity floor, stalemate detection across iterations. Does NOT handle: internal review (delegates to asd-reviewer-* agents), fixing (creators autofix per review-policy).",
   "claude": {
     "model": "sonnet", "effort": "medium",
     "tools": ["Read", "Glob", "Grep", "Bash", "AskUserQuestion"],
@@ -36,7 +36,7 @@ External review wrapper. Runs `{{wraps_cli}}` CLI parallel to internal reviewers
 
 ## Inputs
 
-- `.asd/project/config.yaml` (`review.external_review`, `system.os`, `{{wraps_config_key}}`)
+- `.asd/project/config.yaml` (`review.external_review`, `{{wraps_config_key}}`)
 - phase, iteration, review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
 - prompt template:
   - design-review → `.asd/templates/external-review/t_prompt-external-design.md`
@@ -69,12 +69,12 @@ Reviewer (external wrapper):
 
 Read-only is enforced on the WRAPPED CLI subprocess itself, explicitly, per invocation (baked into `{{wraps_invoke_args}}` below) — not left to depend on project-level config the user might set differently, and not merely a claim about this agent's own tool list. Codex `exec` uses `--sandbox read-only`; Claude uses `--restricted --tools "Read,Grep,Glob" --strict-mcp-config --disable-slash-commands --no-session-persistence`, which limits builtin tools, ignores user/project customizations, accepts no inherited MCP configuration, and leaves no review session artifact.
 
-## `{{wraps_cli}}` invocation (per system.os)
+## `{{wraps_cli}}` invocation (per preflight `platform`)
 
 Command tail is provider-specific (`{{wraps_invoke_args}}` — the two CLIs take different arguments for a scripted, stdin-fed, plain-text-output, explicitly-read-only run; this is a real syntax difference, not just a binary-name swap). Prompt sent via heredoc/here-string directly into the wrapped CLI's stdin — never written to disk (required: this agent is read-only on both providers). Capture stdout directly as the review text — no `-o <out-file>`, no temp file, no cleanup step needed since nothing was created.
 
-- windows (PowerShell): `@'`<rendered prompt + scope manifest>`'@ | {{wraps_cli}} {{wraps_invoke_args}}` — here-string piped straight to stdin (or `{{wraps_config_key}}` override)
-- linux/macos (bash): `{{wraps_cli}} {{wraps_invoke_args}} <<'EOF'` / `<rendered prompt + scope manifest>` / `EOF` — heredoc piped straight to stdin (or override)
+- `win32` (PowerShell): `@'`<rendered prompt + scope manifest>`'@ | {{wraps_cli}} {{wraps_invoke_args}}` — here-string piped straight to stdin (or `{{wraps_config_key}}` override)
+- any other platform (bash): `{{wraps_cli}} {{wraps_invoke_args}} <<'EOF'` / `<rendered prompt + scope manifest>` / `EOF` — heredoc piped straight to stdin (or override)
 
 Both forms feed prompt+scope manifest via stdin; the wrapped CLI's own `Read`/`Glob`/`Grep` (Claude) or read-only shell (Codex `exec`) tools resolve `files[]` content from the repo itself. The command's own stdout is captured as the final message — a plain-text verdict, never structured/streaming output. No `-o <out-file>`.
 
