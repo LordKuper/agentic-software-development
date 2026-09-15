@@ -59,15 +59,10 @@ const SHIPPED_AUDIT_COMMENT = '# auto | always | off; legacy enabled/disabled ac
 const CURRENT_AUDIT_COMMENT = '# auto | always | off';
 const CURRENT_DIAGRAM_HEADER = '# Diagram tool for architecture views. Any diagram also requires subsystem_decomposition: enabled.';
 const CURRENT_DIAGRAM_NONE = '# none — no diagram written; the subsystem registry is unaffected';
-const CURRENT_DIAGRAM_LIKEC4 = '# likec4 — text DSL in docs/architecture/c4/model/*.c4 + likec4 CLI builds dist/';
-const CURRENT_DIAGRAM_MERMAID = '# mermaid — Mermaid block inline in docs/architecture/subsystems.md; no c4/ folder';
 // Earlier releases' verbatim `project.diagram_tool` comment lines, mapped to the lines replacing them.
 const SHIPPED_DIAGRAM_COMMENTS = new Map([
   ['# Diagram tool for the subsystem registry and architecture views. Only used when decomposition enabled.', [CURRENT_DIAGRAM_HEADER, CURRENT_DIAGRAM_NONE]],
   ['# Diagram tool for architecture views. Only used when decomposition and documents.c4 are enabled.', [CURRENT_DIAGRAM_HEADER, CURRENT_DIAGRAM_NONE]],
-  ['# likec4 — text DSL in design/architecture/c4/model/*.c4 + likec4 CLI builds dist/', [CURRENT_DIAGRAM_LIKEC4]],
-  ['# mermaid — yaml registry in design/architecture/c4/subsystems.yaml + agent-rendered architecture.html with mermaid blocks', [CURRENT_DIAGRAM_MERMAID]],
-  ['# mermaid — yaml registry in docs/architecture/c4/subsystems.yaml + agent-rendered architecture.html with mermaid blocks', [CURRENT_DIAGRAM_MERMAID]],
   ['# Values: likec4 | mermaid', ['# Values: none | likec4 | mermaid']],
 ]);
 
