@@ -3,3 +3,4 @@
 - [Prompt snapshot is the base branch](project_prompt-snapshot-is-base-branch.md) — injected AGENTS.md/git status predate the reviewed branch; read every quoted path off disk
 - [Operations-used run-command convention](project_operations-block-run-command-convention.md) — `node .asd/runtime.js` is never declared in any workflow's Operations block; check uniformity before calling it a gap
 - [Trace AC to its motivating case](feedback_trace-ac-to-motivating-case.md) — walk a retro row's evidenced case through the post-fix rule; tightening fixes can make it inexpressible
+- [OS is not shell](project_os-is-not-shell.md) — Claude Code runs commands via POSIX `Bash` even on win32; OS-keyed shell syntax is wrong for one provider
