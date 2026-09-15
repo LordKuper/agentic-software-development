@@ -19,7 +19,10 @@
  * `{ status, changes, reason }`, status one of `migrated | unchanged | absent | skipped`.
  *
  * No YAML parser: the rewrite is line-based and keeps every byte it does not own - comments,
- * blank lines, inline comment columns, line endings, BOM. Anything beyond plain block-style
+ * blank lines, inline comment columns, line endings, BOM. The one comment exception: a line on or
+ * directly above `documents.audit` / `project.diagram_tool` that an earlier release's config
+ * template shipped verbatim, now stating a wrong contract, gets today's wording; any other comment
+ * is the user's and stays. Anything beyond plain block-style
  * `key: scalar` lines under consistent indentation (flow maps, lists, block scalars, anchors,
  * tags, duplicate keys, tab indent, mixed line endings) skips the whole file with a warning
  * rather than guessing.
@@ -51,6 +54,22 @@ const ENUMERATED_KEYS = {
 const DEFAULT_DIAGRAM_TOOL = 'likec4';
 const DIAGRAM_NONE = 'none';
 const DEFAULT_CHILD_INDENT = 2;
+
+const SHIPPED_AUDIT_COMMENT = '# auto | always | off; legacy enabled/disabled accepted';
+const CURRENT_AUDIT_COMMENT = '# auto | always | off';
+const CURRENT_DIAGRAM_HEADER = '# Diagram tool for architecture views. Any diagram also requires subsystem_decomposition: enabled.';
+const CURRENT_DIAGRAM_NONE = '# none — no diagram written; the subsystem registry is unaffected';
+const CURRENT_DIAGRAM_LIKEC4 = '# likec4 — text DSL in docs/architecture/c4/model/*.c4 + likec4 CLI builds dist/';
+const CURRENT_DIAGRAM_MERMAID = '# mermaid — Mermaid block inline in docs/architecture/subsystems.md; no c4/ folder';
+// Earlier releases' verbatim `project.diagram_tool` comment lines, mapped to the lines replacing them.
+const SHIPPED_DIAGRAM_COMMENTS = new Map([
+  ['# Diagram tool for the subsystem registry and architecture views. Only used when decomposition enabled.', [CURRENT_DIAGRAM_HEADER, CURRENT_DIAGRAM_NONE]],
+  ['# Diagram tool for architecture views. Only used when decomposition and documents.c4 are enabled.', [CURRENT_DIAGRAM_HEADER, CURRENT_DIAGRAM_NONE]],
+  ['# likec4 — text DSL in design/architecture/c4/model/*.c4 + likec4 CLI builds dist/', [CURRENT_DIAGRAM_LIKEC4]],
+  ['# mermaid — yaml registry in design/architecture/c4/subsystems.yaml + agent-rendered architecture.html with mermaid blocks', [CURRENT_DIAGRAM_MERMAID]],
+  ['# mermaid — yaml registry in docs/architecture/c4/subsystems.yaml + agent-rendered architecture.html with mermaid blocks', [CURRENT_DIAGRAM_MERMAID]],
+  ['# Values: likec4 | mermaid', ['# Values: none | likec4 | mermaid']],
+]);
 
 const KEY_LINE = /^( *)([A-Za-z_][A-Za-z0-9_-]*):(?: +(.*))?$/;
 const UNSUPPORTED_VALUE_START = /^[{[|>&*!]/;
@@ -192,8 +211,7 @@ function applyValueChanges(lines, entries, changes) {
 // a blank line, a group header or the file start, and closed by the key ending its paragraph.
 // Anything looser may be a shared comment, so the key goes alone.
 function ownedBlockStart(lines, entry) {
-  let start = entry.index;
-  while (start > 0 && isComment(lines[start - 1]) && indentOf(lines[start - 1]) === entry.indent) start--;
+  const { start } = commentBlockAbove(lines, entry);
   const above = lines[start - 1];
   const below = lines[entry.index + 1];
   const opensParagraph = start === 0 || isBlank(above) || isHeaderLine(above);
@@ -215,6 +233,41 @@ function removeKey(lines, entry, changes) {
   changes.push(`${entry.path}: removed`);
 }
 
+// Comment lines above a key, contiguous and at its indent.
+function commentBlockAbove(lines, entry) {
+  let start = entry.index;
+  while (start > 0 && isComment(lines[start - 1]) && indentOf(lines[start - 1]) === entry.indent) start--;
+  return { start, block: lines.slice(start, entry.index) };
+}
+
+// Replaces template-shipped comments whose contract this release changed; user-written ones never match.
+function rewriteShippedComments(lines, entries, changes) {
+  const audit = entries.get('documents.audit');
+  if (audit && lines[audit.index].endsWith(SHIPPED_AUDIT_COMMENT)) {
+    lines[audit.index] = lines[audit.index].slice(0, -SHIPPED_AUDIT_COMMENT.length) + CURRENT_AUDIT_COMMENT;
+    changes.push('documents.audit: shipped comment -> current wording');
+  }
+  const diagramTool = entries.get('project.diagram_tool');
+  if (!diagramTool) return;
+  const { start, block } = commentBlockAbove(lines, diagramTool);
+  const hasNoneLine = block.some((line) => line.trim() === CURRENT_DIAGRAM_NONE);
+  const rewritten = block.flatMap((line) => {
+    const replacement = SHIPPED_DIAGRAM_COMMENTS.get(line.trim());
+    if (!replacement) return [line];
+    const indent = ' '.repeat(indentOf(line));
+    return replacement.filter((text) => !(hasNoneLine && text === CURRENT_DIAGRAM_NONE)).map((text) => indent + text);
+  });
+  if (rewritten.join('\n') === block.join('\n')) return;
+  lines.splice(start, block.length, ...rewritten);
+  changes.push('project.diagram_tool: shipped comments -> current wording');
+}
+
+function reparse(lines) {
+  const parsed = parseEntries(lines);
+  if (parsed.reason) throw new Error(`9.0.0 produced an unparsable config (${parsed.reason}) - no file written`);
+  return parsed.entries;
+}
+
 // LF-joined text in, LF-joined text out; a trailing newline is kept apart so appends land before it.
 function migrateText(text) {
   const hasTrailingNewline = text.endsWith('\n');
@@ -225,10 +278,10 @@ function migrateText(text) {
   if (problem) return { reason: problem };
   const changes = [];
   applyValueChanges(lines, parsed.entries, changes);
-  const reparsed = parseEntries(lines);
-  if (reparsed.reason) throw new Error(`9.0.0 produced an unparsable config (${reparsed.reason}) - no file written`);
-  const removed = REMOVED_KEYS.map((key) => reparsed.entries.get(key)).filter(Boolean).sort((a, b) => b.index - a.index);
+  const afterValues = reparse(lines);
+  const removed = REMOVED_KEYS.map((key) => afterValues.get(key)).filter(Boolean).sort((a, b) => b.index - a.index);
   for (const entry of removed) removeKey(lines, entry, changes);
+  rewriteShippedComments(lines, reparse(lines), changes);
   return { text: lines.join('\n') + (hasTrailingNewline ? '\n' : ''), changes };
 }
 
