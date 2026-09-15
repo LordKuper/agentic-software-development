@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-update/SKILL.md. source_digest=sha256:c7a52e255b621bcddf21f5891f97c919748a571729a898f2f9e25db5d74a2580 content_digest=sha256:1a2e2b8c93f564f83eeba06a556b9b999a71ee850c6a8b08e49b0c9115b88c80 asd_version=8.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-update/SKILL.md. source_digest=sha256:fa71a8e3afe4f6942d8a4011dd5f682ae2671b80a73b26a51bffdf9d0b2a1365 content_digest=sha256:7529cbe49b8f95f124b5bd20464cd389c4522ac0871c2e615de1af5da034d702 asd_version=8.0.0 schema=1
 name: asd-update
-description: "Updates the ASD framework infrastructure (.asd/rules, .asd/templates, ASD agents/skills/hooks, .asd/migrations) in a consumer project to the latest version by fetching them from the configured ASD repo's main branch, replacing only framework-managed paths, running any pending `.asd/migrations/<version>.js` scripts in ascending order, and never touching consumer-owned config (beyond a migration's release-mandated key renames and removals), sprints, persistent docs, or custom skills/agents/hooks. Use when the user runs /asd-update or asks to update, upgrade, or pull the latest ASD framework / workflow version."
+description: "Updates the ASD framework infrastructure (.asd/rules, .asd/templates, ASD agents/skills/hooks, .asd/migrations) in a consumer project to the latest version by fetching them from the configured ASD repo's main branch, replacing only framework-managed paths, running any pending `.asd/migrations/<version>.js` scripts in ascending order, and never touching consumer-owned config (beyond a migration's release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent), sprints, persistent docs, or custom skills/agents/hooks. Use when the user runs /asd-update or asks to update, upgrade, or pull the latest ASD framework / workflow version."
 ---
 
 Operation mapping: see `.asd/rules/providers.md`.
@@ -18,7 +18,7 @@ Read `self_hosting` from `.asd/project/config.yaml` first; missing, unreadable, 
 
 Managed set = SSoT in `.asd/release-manifest.json`'s `managed_paths` (canonical `.asd/` trees, `.asd/migrations`, and `sync.js` itself, walked recursively file-by-file) — replacing the old wholesale tree-delete approach with a per-file state machine (`add | update | delete | conflict | conflict-foreign | keep-local-modified | noop`, driven by `classifyUpdateItem` in `.asd/sync.js`). A file whose local hash still matches the last-fetched release is safe to update or delete; a file that diverged is a **conflict** and is never touched without explicit confirmation.
 
-Never touched: `.asd/project/**` (except `config.yaml`, which a release migration may rewrite as a sanctioned settings writer, limited to release-mandated key renames and removals), `.asd/sprints/**`, `docs/**`, `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json`, any non-ASD skill/agent/hook, anything outside `managed_paths`.
+Never touched: `.asd/project/**` (except `config.yaml`, which a release migration may rewrite as a sanctioned settings writer, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent), `.asd/sprints/**`, `docs/**`, `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json`, any non-ASD skill/agent/hook, anything outside `managed_paths`.
 
 ## Run
 

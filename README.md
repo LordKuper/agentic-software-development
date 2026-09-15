@@ -83,7 +83,7 @@ This fetches the latest framework files from the ASD repo's `main` branch and re
 
 | Updated (overwritten) | Never touched |
 |---|---|
-| `.asd/rules/`, `.asd/templates/` | `.asd/project/` (your config, custom rules) — except a release migration's release-mandated `config.yaml` key renames and removals |
+| `.asd/rules/`, `.asd/templates/` | `.asd/project/` (your config, custom rules) — except a release migration's release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent in `config.yaml` |
 | `.asd/agents/`, `.asd/skills/`, `.asd/workflows/`, `.asd/hooks/`, `.asd/migrations/`, `.asd/sync.js`, `.asd/runtime.js` | `.asd/sprints/` (your sprint work) |
 | `.asd/release-manifest.json` itself | `docs/` (your persistent docs) |
 | | `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json` |
@@ -183,7 +183,7 @@ User-facing commands available at any time. Invocation form differs per provider
 | `/asd-stack` | `$asd-stack` | Form or edit `docs/architecture/stack.html` (architect proposes from concept; same 4 variants) |
 | `/asd-design-system` | `$asd-design-system` | Form or edit `docs/ux/DESIGN.md`, `design-system.html`, `accessibility.html` (3 entry variants: greenfield / constraints / brownfield) |
 | `/asd-sprint` | `$asd-sprint` | Start a new sprint or resume the active one |
-| `/asd-update` | `$asd-update` | Update framework infrastructure (rules, templates, ASD agents/skills/hooks, `.asd/migrations`) to the latest version from the ASD repo's main branch, then run any pending migration scripts in ascending order; never touches your config (beyond a migration's release-mandated key renames and removals), sprints, persistent docs, or custom skills/agents/hooks |
+| `/asd-update` | `$asd-update` | Update framework infrastructure (rules, templates, ASD agents/skills/hooks, `.asd/migrations`) to the latest version from the ASD repo's main branch, then run any pending migration scripts in ascending order; never touches your config (beyond a migration's release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent), sprints, persistent docs, or custom skills/agents/hooks |
 | `/asd-sync` | `$asd-sync` | Reconcile generated provider views (`.claude/`, `.codex/`, `.agents/skills/`) with canonical `.asd/` sources — per-file overwrite/keep/diff confirmation, never a silent bulk overwrite |
 
 Phase skills (`asd-phase-*`) are dispatched internally by `/asd-sprint`/`$asd-sprint`. You usually do not invoke them directly, but you can use them to re-run a specific phase of the active sprint.

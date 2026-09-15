@@ -3,8 +3,9 @@
  * (new value `none`), `skip_design_phases` folds into the design document flags, legacy
  * `documents.audit` values `enabled`/`disabled` become `always`/`off`, and eight keys with no
  * remaining reader are dropped. This rewrites `.asd/project/config.yaml` only - as a release
- * migration it is a sanctioned settings writer, limited to these release-mandated renames and
- * removals. Sprint state is never touched: an active sprint keeps running on the documents
+ * migration it is a sanctioned settings writer, limited to release-mandated key renames and
+ * removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a
+ * renamed or removed key's or value's intent. Sprint state is never touched: an active sprint keeps running on the documents
  * snapshot frozen at its scope.
  *
  * Runs in consumer projects via `/asd-update`. Sole non-consumer use: the ASD framework repo's own
