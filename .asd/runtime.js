@@ -357,6 +357,32 @@ function ledgerFromText(text) {
   return blocks[0];
 }
 
+/** Splits one markdown table row into trimmed cells, honouring `\|` escapes and dropping one enclosing backtick pair. */
+function tableCells(line) {
+  return line.trim().replace(/^\||\|$/g, '').split(/(?<!\\)\|/).map((cell) => cell.trim().replace(/\\\|/g, '|').replace(/^`(.*)`$/, '$1'));
+}
+
+/** Compares the code-defect identity sets (file path without line, runner failure line, failing test) of the last two impl-test entries that routed defects in a test plan's `Defects` table; `D-N` ids and `impl-review` rows never take part. `digest` identifies the latest set, so a recorded answer can be keyed to it. */
+function defectStalemate(markdown) {
+  if (typeof markdown !== 'string') fail('test-plan markdown required');
+  const section = markdown.replace(/\r\n/g, '\n').split(/^## Defects *$/m)[1];
+  if (section === undefined) fail('test-plan has no ## Defects section');
+  const [header, , ...rows] = section.split(/^## /m)[0].split('\n').filter((line) => line.trim().startsWith('|')).map(tableCells);
+  if (header === undefined) fail('Defects table missing');
+  const [entry, location, symptom, test] = ['Entry', 'Location', 'Symptom', 'Failing test'].map((name) => (header.includes(name) ? header.indexOf(name) : fail(`Defects table has no ${name} column`)));
+  const byEntry = new Map();
+  for (const cells of rows) {
+    if (cells.length !== header.length) fail(`Defects row malformed: ${cells.join(' | ')}`);
+    if (!/^\d+$/.test(cells[entry])) continue;
+    const tuples = byEntry.get(Number(cells[entry])) || new Set();
+    tuples.add(stable([cells[location].replace(/:\d+(?::\d+)?$/, ''), cells[symptom], cells[test]]));
+    byEntry.set(Number(cells[entry]), tuples);
+  }
+  const [latest, previous] = [...byEntry.keys()].sort((a, b) => b - a).map((key) => [...byEntry.get(key)].sort());
+  if (latest === undefined) return { stalemate: false, digest: null };
+  return { stalemate: previous !== undefined && stable(latest) === stable(previous), digest: fingerprint(latest) };
+}
+
 function emitManifestCommand(flags) {
   if (!/^[a-z]+$/.test(flags.reviewer || '')) fail('--reviewer <name> required');
   if (typeof flags.files !== 'string' || typeof flags.out !== 'string') fail('--files <path> and --out <dir> required');
@@ -425,11 +451,16 @@ function main(argv) {
     process.stdout.write(JSON.stringify(routeTask(inputJson(flags))) + '\n');
     return 0;
   }
-  fail('usage: emit-manifest, manifest-digest, validate-ledger, external-preflight, external-record-failure, or route-task');
+  if (command === 'defect-stalemate') {
+    if (typeof flags.plan !== 'string') fail('--plan <path> required');
+    process.stdout.write(JSON.stringify(defectStalemate(fs.readFileSync(flags.plan, 'utf8'))) + '\n');
+    return 0;
+  }
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, external-preflight, external-record-failure, route-task, or defect-stalemate');
 }
 
 if (require.main === module) {
   try { process.exitCode = main(process.argv); } catch (error) { process.stderr.write(`${error.message}\n`); process.exitCode = 2; }
 }
 
-module.exports = { LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, NA_PREDICATES, SPLIT_THRESHOLD_FILES, buildInvocation, coverageManifestDigest, emitCoverageManifests, externalPreflight, recordExternalFailure, routeTask, validateCoverageLedger, fingerprint };
+module.exports = { LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, NA_PREDICATES, SPLIT_THRESHOLD_FILES, buildInvocation, coverageManifestDigest, defectStalemate, emitCoverageManifests, externalPreflight, recordExternalFailure, routeTask, validateCoverageLedger, fingerprint };
