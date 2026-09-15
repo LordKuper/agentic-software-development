@@ -2903,19 +2903,27 @@ test('sprint-013 AC-13..AC-18/AC-20: no config key the 9.0.0 migration removes s
 
   const state = JSON.parse(readRepoFile('.asd/templates/t_state.json'));
   const frozenInState = (key) => key.split('.').reduce((node, part) => (node && typeof node === 'object' && Object.hasOwn(node, part) ? node[part] : undefined), state) !== undefined;
-  // ponytail: a bare leaf is searched only when it carries `_`; `os`, `c4`, `likec4` are searched dotted, since bare they name live tools and state fields.
-  const needles = [...new Set(removed.filter((key) => !frozenInState(key)).flatMap((key) => [key, key.split('.').pop()].filter((name, index) => index === 0 || name.includes('_'))))];
+  const leafIsUnambiguous = (leaf) => leaf.includes('_');
+  const spellings = (key) => [key, key.split('.').pop()].filter((name, index) => index === 0 || leafIsUnambiguous(name));
+  const needles = [...new Set(removed.flatMap(spellings))];
   const hooks = fs.readdirSync(path.join(REPO_ROOT, '.asd/hooks')).map((file) => `.asd/hooks/${file}`);
-  const offenders = [];
+  const [offenders, legacyLines, frozenReaders] = [[], [], []];
   for (const rel of [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/templates/t_state.json', '.asd/runtime.js', ...hooks]) {
     canonText(rel).split('\n').forEach((line, index) => {
-      if (/legacy/i.test(line)) return;
-      for (const needle of needles) {
-        if (new RegExp(`(?<![\\w-])${needle.replace(/\./g, '\\.')}(?![\\w-])`).test(line)) offenders.push(`${rel}:${index + 1}: ${needle}`);
+      for (const needle of needles.filter((name) => new RegExp(`(?<![\\w-])${name.replace(/\./g, '\\.')}(?![\\w-])`).test(line))) {
+        if (/legacy/i.test(line)) legacyLines.push(`${rel}: ${needle}`);
+        else if (frozenInState(needle)) frozenReaders.push(`${rel}: ${needle}`);
+        else offenders.push(`${rel}:${index + 1}: ${needle}`);
       }
     });
   }
   assert.deepStrictEqual(offenders, [], `removed config keys [${needles.join(', ')}] must have no reader left - an agent told to read one acts on a setting nothing writes. Allowed only: a state field t_state.json still carries, and a line that states legacy handling`);
+  assert.deepStrictEqual(legacyLines.sort(), ['.asd/rules/sprint-lifecycle.md: scoped_fan_out', '.asd/rules/sprint-lifecycle.md: skip_design_phases'], 'a line mentioning "legacy" is exempt as a whole, so every exempted hit is pinned - the collapse paragraph ignoring a legacy skip_design_phases state field and the legacy skipped-verdict note on scoped_fan_out. A new hit may be a reader hidden in a legacy paragraph; review it and re-pin');
+  assert.deepStrictEqual(frozenReaders.sort(), [
+    ...Array(4).fill('.asd/rules/sprint-lifecycle.md: documents.c4'),
+    '.asd/workflows/asd-phase-design-promote.md: documents.c4',
+    ...Array(5).fill('.asd/workflows/asd-phase-design.md: documents.c4'),
+  ], 'documents.c4 survives only as the state.json field scope freezes, so its reader lines are pinned - a new line may read the removed config key; confirm it reads state.json and re-pin');
 });
 
 // ===========================================================================
@@ -4491,9 +4499,11 @@ test("sprint-012 AC-14..AC-18: docs/architecture/subsystems.md is the one subsys
   assert.ok(sectionOf(lifecycle, 'Audit phase').includes('`checkpoints.md` "Gate policy"'), '"Audit phase" must send its confirmation and deletion gates to that hard list');
 
   const seed = stepOf(sectionOf('.asd/skills/asd-init/SKILL.md', 'Workflow (fresh)'), '13');
+  const gitignore = stepOf(sectionOf('.asd/skills/asd-init/SKILL.md', 'Workflow (fresh)'), '14');
   const diagramCondition = seed.indexOf('`diagram_tool`');
   assert.ok(seed.indexOf(registry) !== -1 && seed.indexOf(registry) < diagramCondition && diagramCondition < seed.indexOf('c4/model'), 'AC-16/AC-18, sprint-013 AC-13: asd-init must seed c4/ only under the diagram_tool condition, while the registry seed precedes it unconditionally');
-  assert.ok(stepOf(sectionOf('.asd/skills/asd-init/SKILL.md', 'Workflow (fresh)'), '14').includes('likec4'), 'sprint-013 AC-13: the .gitignore entry for c4 build output must carry the same likec4 condition as the seed that creates c4/');
+  assert.ok(gitignore.includes('likec4'), 'sprint-013 AC-13: the .gitignore entry for c4 build output must carry the same likec4 condition as the seed that creates c4/');
+  assert.deepStrictEqual([seed, gitignore].filter((step) => step.includes('documents.c4')), [], 'sprint-013 AC-13: asd-init steps 13 and 14 must not key on the removed documents.c4 - init writes config, which no longer carries it');
 });
 
 // ===========================================================================
@@ -4551,7 +4561,7 @@ function migrateConfig900(text) {
   return run();
 }
 
-test('sprint-013 AC-1/AC-2: defect-stalemate compares the identity sets of the last two impl-test entries that routed defects - file path without its line, verbatim runner line, failing test - never D-N ids, row order or impl-review rows, and its digest names the latest set', () => {
+test('sprint-013 AC-1/AC-2: defect-stalemate compares the identity sets of two consecutive impl-test entries that routed defects - file path without its line, verbatim runner line, failing test - never D-N ids, row order or impl-review rows, and its digest names the latest set', () => {
   const { row, plan } = defectPlanFixture();
   const verdict = (rows, eol) => runtime.defectStalemate(plan(rows, eol));
   const moved = (tuple, location) => [location, tuple[1], tuple[2]];
@@ -4572,7 +4582,8 @@ test('sprint-013 AC-1/AC-2: defect-stalemate compares the identity sets of the l
 
   assert.strictEqual(verdict([row('D-1', '1', DEFECT_PARSER), row('D-2', '2', DEFECT_PARSER), row('D-3', 'impl-review', DEFECT_SPLITTER)]).stalemate, true, 'an impl-review row never joins an entry set, the latest included');
   assert.strictEqual(verdict([row('D-1', 'impl-review', DEFECT_PARSER), row('D-2', '1', DEFECT_PARSER)]).stalemate, false, 'an impl-review row is not an impl-test entry, so one routing entry has nothing to repeat');
-  assert.strictEqual(verdict([row('D-1', '1', DEFECT_SPLITTER), row('D-2', '2', DEFECT_PARSER), row('D-3', '4', DEFECT_PARSER)]).stalemate, true, 'only the last two entries that routed defects are compared - a green entry between them routes nothing');
+  assert.strictEqual(verdict([row('D-1', '1', DEFECT_SPLITTER), row('D-2', '2', DEFECT_PARSER), row('D-3', '3', DEFECT_PARSER)]).stalemate, true, 'only the last two entries are compared - an older entry routing a different set does not break a consecutive repeat');
+  assert.strictEqual(verdict([row('D-1', '1', DEFECT_SPLITTER), row('D-2', '2', DEFECT_PARSER), row('D-3', '4', DEFECT_PARSER)]).stalemate, false, 'a green entry between two routings of the same set breaks the run - entries 2 and 4 are not consecutive (sprint-lifecycle.md "Impl-test phase")');
   assert.strictEqual(verdict([row('D-1', '9', DEFECT_PARSER), row('D-2', '10', DEFECT_PARSER), row('D-3', '2', DEFECT_SPLITTER)]).stalemate, true, 'entries order by number, so entry 10 follows entry 9');
 
   const single = verdict([row('D-1', '1', DEFECT_PARSER)]);
