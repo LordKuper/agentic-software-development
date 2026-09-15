@@ -101,3 +101,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: [reviews/impl/iter-01/](reviews/impl/iter-01/)
 
 - 2026-09-15 — impl fix for iter-01: findings resolved (COR-1-1, COR-1-2, COR-1-3, COR-1-P2-1, COR-1-P2-2, COR-1-P2-3, EFF-1, DOC-P1-1, DOC-1, DOC-2, DOC-3 no edit needed, TST-2-1, TST-2-2)
+
+- 2026-09-15 — impl-test: impacted set green (full suite 203/203), 0/0 tests
