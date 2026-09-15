@@ -69,12 +69,12 @@ Reviewer (external wrapper):
 
 Read-only is enforced on the WRAPPED CLI subprocess itself, explicitly, per invocation (baked into `{{wraps_invoke_args}}` below) — not left to depend on project-level config the user might set differently, and not merely a claim about this agent's own tool list. Codex `exec` uses `--sandbox read-only`; Claude uses `--restricted --tools "Read,Grep,Glob" --strict-mcp-config --disable-slash-commands --no-session-persistence`, which limits builtin tools, ignores user/project customizations, accepts no inherited MCP configuration, and leaves no review session artifact.
 
-## `{{wraps_cli}}` invocation (per preflight `platform`)
+## `{{wraps_cli}}` invocation (per host shell and preflight `platform`, `external-review.md` "OS-specific invocation")
 
 Command tail is provider-specific (`{{wraps_invoke_args}}` — the two CLIs take different arguments for a scripted, stdin-fed, plain-text-output, explicitly-read-only run; this is a real syntax difference, not just a binary-name swap). Prompt sent via heredoc/here-string directly into the wrapped CLI's stdin — never written to disk (required: this agent is read-only on both providers). Capture stdout directly as the review text — no `-o <out-file>`, no temp file, no cleanup step needed since nothing was created.
 
-- `win32` (PowerShell): `@'`<rendered prompt + scope manifest>`'@ | {{wraps_cli}} {{wraps_invoke_args}}` — here-string piped straight to stdin (or `{{wraps_config_key}}` override)
-- any other platform (bash): `{{wraps_cli}} {{wraps_invoke_args}} <<'EOF'` / `<rendered prompt + scope manifest>` / `EOF` — heredoc piped straight to stdin (or override)
+- Codex host on `win32` (PowerShell): `@'`<rendered prompt + scope manifest>`'@ | {{wraps_cli}} {{wraps_invoke_args}}` — here-string piped straight to stdin (or `{{wraps_config_key}}` override)
+- Claude Code host on any platform (bash, Git Bash on Windows), Codex host elsewhere: `{{wraps_cli}} {{wraps_invoke_args}} <<'EOF'` / `<rendered prompt + scope manifest>` / `EOF` — heredoc piped straight to stdin (or override)
 
 Both forms feed prompt+scope manifest via stdin; the wrapped CLI's own `Read`/`Glob`/`Grep` (Claude) or read-only shell (Codex `exec`) tools resolve `files[]` content from the repo itself. The command's own stdout is captured as the final message — a plain-text verdict, never structured/streaming output. No `-o <out-file>`.
 
