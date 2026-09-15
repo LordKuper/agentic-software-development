@@ -44,7 +44,7 @@ When subsystem decomposition is enabled (`project.subsystem_decomposition`), per
 
 ### Hard rules
 
-- Never modify workflow infrastructure (`.asd/rules/`, `.asd/templates/`, generated agent/skill/hook trees). Only `/asd-init`/`$asd-init` edits settings — run by the user, or by `impl` for a plan-declared settings change.
+- Never modify workflow infrastructure (`.asd/rules/`, `.asd/templates/`, generated agent/skill/hook trees). Only `/asd-init`/`$asd-init` edits settings — run by the user, or by `impl` for a plan-declared settings change — or by a release migration `/asd-update`/`$asd-update` runs, limited to release-mandated key renames and removals.
 - All project work flows through `/asd-sprint`/`$asd-sprint`. No ad-hoc edits to project code outside a sprint.
 - One active sprint at a time. New sprint blocked until active one archived.
 <!-- asd:end -->
@@ -57,7 +57,7 @@ The block above is synced from `.asd/templates/t_AGENTS.md` and applies here in 
 
 This repo **IS the ASD (Agentic Software Development) framework** — its source, not a project that *uses* ASD. No application code: every file is workflow infrastructure (rules, templates, agent/skill defs, hooks). Work = authoring/editing that infrastructure.
 
-`self_hosting: enabled`, so `/asd-sprint` develops ASD itself, dispatching normally through the eleven phases. `documents.*` is a lean profile (`audit: auto`, `prd`/`ux_spec`/`adr`/`c4` disabled) plus `skip_design_phases: enabled` — no PRD/UX-spec/ADR churn for a framework whose spec already lives in `.asd/rules/`, and design/design-review/design-promote are skipped outright (`sprint-lifecycle.md` "Optional documents"); `plan`/`impl`/`impl-test`/`impl-review`/`retro`/`pr` still run in full. `/asd-update` refuses to run here (it pulls framework files INTO a consumer; this repo IS the framework).
+`self_hosting: enabled`, so `/asd-sprint` develops ASD itself, dispatching normally through the eleven phases. `documents.*` is a lean profile (`audit: auto`, `prd`/`ux_spec`/`adr` disabled) plus `project.diagram_tool: none` — no PRD/UX-spec/ADR churn for a framework whose spec already lives in `.asd/rules/`, and design/design-review/design-promote collapse at the audit exit (`sprint-lifecycle.md` "Optional documents"); `plan`/`impl`/`impl-test`/`impl-review`/`retro`/`pr` still run in full. `/asd-update` refuses to run here (it pulls framework files INTO a consumer; this repo IS the framework).
 
 ### Override: infrastructure is the work, not read-only
 
