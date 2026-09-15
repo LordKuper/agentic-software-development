@@ -43,7 +43,7 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
 
 | Test | Regression proof |
 |---|---|
-| {{file:name}} | {{n/a \| fail-first vs D-N \| mutation <what was mutated>}} |
+| {{file:name}} | {{n/a \| fail-first vs D-N: <command> → exit <code>, <failing test> \| mutation <what>: <command> → exit <code>, <failing test> — evidence per code-style.md §17}} |
 
 ## Suite run
 
