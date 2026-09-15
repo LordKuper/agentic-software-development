@@ -13,6 +13,7 @@ responsibility:
 |---|---|---|
 | 1 | 629c514edd4b743ee60127b05d27e0e22b21d39b | full change surface |
 | 2 | e03f09fa02f0b2fd661f6d374985c518ba1e0ca6 | delta since entry 1 |
+| 3 | | delta since entry 2 |
 
 ## Risk → check decisions
 
@@ -41,6 +42,9 @@ Impacted set: full suite (`node tests/run.js`). The change surface touches frame
 | Phase-chain mirrors | — | static/arch | keep | §16 is green on HEAD. No phase name changed. |
 | Prose-only rules: stalemate rule and options (AC-1, AC-3); §17 proof evidence and the `Regression proof` cell (AC-4, AC-5); retro dedup and `Guardrail`/`Home` (AC-6..AC-8); audit completeness, precedence, `t_audit.md` Contradictions, hard list (AC-10..AC-12); gh-only PR and init probe (AC-15); scope blocking legacy audit values (AC-18); sanctioned config-writer wording (AC-19) | Wording drifts between rule, workflow and template. | — | none | Prose read by LLM agents, with no machine consumer. A word-match test would be coupled to wording, and impl-review judges it. Existing guards stay green: §17 restore and set-derivation sentences, retro Actions `F-N` and `consumer \| asd`, hard list `deletion … migration`, `t_audit.md` "Subsystems map", and the runtime subcommand-invocation sweep, which reaches `defect-stalemate`. |
 | This repo's `.asd/project/config.yaml` (AC-20) | — | — | none | A one-time result of plan Task 8, verified at impl assessment (second run `unchanged`). `.asd/project/**` is user-owned, so this is not a behaviour that can regress. |
+| Entry 3: `defectStalemate` needs consecutive entries (COR-1-2, 05d7ffd) | A green entry between two routings of the same set still raises a stalemate, or a consecutive repeat after an older different set is missed. | unit | keep | Adjusted in 7fd3b0c and recorded in the first row: entries 2 and 3 after a different entry 1 give `true`, entries 2 and 4 give `false`, entries 9 and 10 give `true`, a single entry gives `false`. Each bound of `previousEntry === latestEntry - 1` has a case that fails if it flips. |
+| Entry 3: `9.0.0.js` drops the three pre-9.0.0 `diagram_tool` comment rewrites (EFF-1, 42033a1) | A removed constant is still referenced, or an owned 9.0.0 comment rewrite goes with them. | component/contract | keep | The 8.0.0 → 9.0.0 fixture pair carries the current `likec4`/`mermaid` lines, so it never exercised the dropped entries and still passes byte for byte; it still proves the kept header and `Values:` rewrites. The shipped-template sweep (`t_config.yaml` and README `unchanged`) stays green. No test for an older comment staying untouched: that is the absence of a feature, not a behaviour. |
+| Entry 3: prose-only fixes: External Review stdin syntax keyed on host shell plus `platform` (e27e270); impl-test step 1 resumes an interrupted entry (cfe52a9); sanctioned config-writer licence widened in `core.md`, `t_AGENTS.md`, `asd-update`, README, `9.0.0.js` header (7fb5365); asd-init override path (3e1a618); README pointers (62ff591) | Wording drifts between mirrors. | — | none | Prose read by LLM agents, no machine consumer; same reason as the prose-only row above. `externalPreflight` behaviour is unchanged (JSDoc only), so its `platform` assertion still holds. `AGENTS.md` ↔ `t_AGENTS.md` is guarded by `sync.js --check`; README phase/roster mirrors by §16. |
 
 ## Removed tests
 
@@ -63,9 +67,9 @@ Impacted set: full suite (`node tests/run.js`). The change surface touches frame
 
 - Command: `node tests/run.js`
 - Scope: full (safety valve: the change surface touches framework-wide files)
-- Result: pass, exit 0: 203 passed, 0 failed, 0 skipped (entry 2)
-- Lint / build: pass. `git diff --cached --check` exit 0 on this entry's staged `test-plan.md`; `node .asd/sync.js --check` exit 0, `"ok": true`, 72/72 targets current.
-- HEAD: 9edf29f05823d30fcb0429a2cd1a54900e30fe7e (entry 2 adds no test code; its commit changes only this file)
+- Result: pass, exit 0: 203 passed, 0 failed, 0 skipped (entry 3; pre-strategy and suite gate, no test code added)
+- Lint / build: pass (entry 3). `git diff --cached --check` exit 0 on this entry's staged `test-plan.md`; `node .asd/sync.js --check` exit 0, `"ok": true`, 72/72 targets current.
+- HEAD: 0cede0486d46f24fc5071a026b05c1785d2be079 (entry 3 adds no test code; its commit changes only this file)
 
 ## Defects
 
