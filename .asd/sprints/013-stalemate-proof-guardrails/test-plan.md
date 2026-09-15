@@ -12,6 +12,7 @@ responsibility:
 | Entry | HEAD analysed | Scope |
 |---|---|---|
 | 1 | 629c514edd4b743ee60127b05d27e0e22b21d39b | full change surface |
+| 2 | | delta since entry 1 |
 
 ## Risk → check decisions
 
@@ -21,6 +22,7 @@ Impacted set: full suite (`node tests/run.js`). The change surface touches frame
 |---|---|---|---|---|
 | `.asd/runtime.js` `defectStalemate` (AC-1, AC-2) | A repeated defect set is missed, or a stalemate is raised falsely. Cases: line shift in `Location`, row order, `D-N` ids, CRLF, `\|` inside a cell, backticked cells, `impl-review` rows, a superset or subset, one identity field changed. | unit/property | add | Pure function, so table-driven fixtures are enough. The fixtures use the real `t_test-plan.md` Defects header, which guards the column names the runtime hard-codes. A changed `Symptom` must give `stalemate: false`: that is AC-2's verbatim identity, the known fail-open limit, asserted explicitly and not fixed. The digest must not change with row order, ids or line numbers. |
 | `defectStalemate` `Entry` cell (AC-1, AC-2) | A row whose `Entry` is neither a number nor `impl-review` (for example `Entry 2`) is skipped, so that entry's set disappears and a real stalemate fails open. | unit | add | Code defect D-1, confirmed by the orchestrator. The regression test fails on HEAD. |
+| Entry 2: `defectStalemate` skips a whole-cell `{{...}}` Entry (D-1 fix, b293de8) | Skipping too little makes the shipped template's placeholder row throw. Skipping too much hides a real row. | unit | keep | The existing assertion that `t_test-plan.md` as shipped parses to `{stalemate: false, digest: null}` runs the placeholder row through this branch. It would throw without the branch. The D-1 test covers off-template values that must still throw. A written row whose only placeholder is `Entry` is hypothetical: step 9 writes `Entry` as this entry's number. |
 | `runtime.js defect-stalemate` CLI (AC-3) | A malformed plan or table, or a missing `--plan`, still prints a verdict step 9 acts on. | component/contract | add | Step 9 runs the CLI, not the export. Only the CLI has the exit contract: exit 0 with JSON on stdout, or exit 2 with empty stdout. |
 | `.asd/migrations/9.0.0.js` on a real config (AC-19) | A config built from the shipped template loses intent, comments or bytes, or a second run changes it again. | component/contract | add | Fixture pair under `tests/fixtures/`: the 8.0.0 `t_config.yaml` must migrate byte-for-byte to the 9.0.0 one, as LF and as CRLF+BOM, and a second run must report `unchanged`. The comment rewrite and the removal of owned comments are only visible on the real shape. Frozen fixtures, not `git show`: squash merges drop sprint shas. |
 | `9.0.0.js` value mapping (AC-19) | A wrong mapping: `c4` enabled, disabled, absent from a present group, or with the group absent; `c4: enabled` without `diagram_tool` (→ `likec4`); `skip_design_phases: enabled` with and without a `documents` group; legacy audit `enabled`/`disabled`. A config with no removed key must keep `diagram_tool: likec4`. | unit | add | Table-driven inline YAML in a temp repo. Each row is an AC-19 mapping or an audit.md "Migration gaps" boundary, so the literals are the point. |
@@ -50,7 +52,7 @@ Impacted set: full suite (`node tests/run.js`). The change surface touches frame
 | Test | Regression proof |
 |---|---|
 | `tests/run.js`: sprint-013 AC-1/AC-2: defect-stalemate compares the identity sets of the last two impl-test entries… | n/a |
-| `tests/run.js`: sprint-013 AC-2 D-1: defect-stalemate rejects a Defects row whose Entry is neither an Entry log number nor impl-review… | fail-first vs D-1: `node tests/run.js` → exit 1, `sprint-013 AC-2 D-1: defect-stalemate rejects a Defects row whose Entry is neither an Entry log number nor impl-review - skipping it drops that entry's set and a real stalemate fails open` |
+| `tests/run.js`: sprint-013 AC-2 D-1: defect-stalemate rejects a Defects row whose Entry is neither an Entry log number nor impl-review… | fail-first vs D-1: `node tests/run.js` → exit 1, `sprint-013 AC-2 D-1: defect-stalemate rejects a Defects row whose Entry is neither an Entry log number nor impl-review - skipping it drops that entry's set and a real stalemate fails open`. Post-fix at 9edf29f: `node tests/run.js` → exit 0, 203/203 passed |
 | `tests/run.js`: sprint-013 AC-3: the defect-stalemate CLI prints {stalemate, digest} and exits 0… | n/a |
 | `tests/run.js`: sprint-013 AC-19: the 9.0.0 migration rewrites a config built from the 8.0.0 t_config.yaml… (fixtures `tests/fixtures/migrations/9.0.0/t_config-8.0.0.yaml`, `t_config-9.0.0.yaml`) | n/a |
 | `tests/run.js`: sprint-013 AC-19: the 9.0.0 migration maps c4, skip_design_phases and legacy audit values… | n/a |
@@ -61,9 +63,9 @@ Impacted set: full suite (`node tests/run.js`). The change surface touches frame
 
 - Command: `node tests/run.js`
 - Scope: full (safety valve: the change surface touches framework-wide files)
-- Result: fail, exit 1: 202 passed, 1 failed, 0 skipped. Failing test: `sprint-013 AC-2 D-1: defect-stalemate rejects a Defects row whose Entry is neither an Entry log number nor impl-review - skipping it drops that entry's set and a real stalemate fails open` (D-1).
-- Lint / build: pass. `git diff --cached --check` exit 0 on this entry's staged tests and plan; `node .asd/sync.js --check` exit 0, `"ok": true`, 72/72 targets current.
-- HEAD: bc8ea10, worktree carrying this entry's test commit (`tests/**` and this file only; production code as at bc8ea10)
+- Result: pass, exit 0: 203 passed, 0 failed, 0 skipped (entry 2)
+- Lint / build: pass. `git diff --cached --check` exit 0 on this entry's staged `test-plan.md`; `node .asd/sync.js --check` exit 0, `"ok": true`, 72/72 targets current.
+- HEAD: 9edf29f05823d30fcb0429a2cd1a54900e30fe7e (entry 2 adds no test code; its commit changes only this file)
 
 ## Defects
 
