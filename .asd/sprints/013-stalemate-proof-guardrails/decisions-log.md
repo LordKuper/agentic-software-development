@@ -85,3 +85,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: [plan.md](plan.md), [friction-log.md](friction-log.md)
 
 - 2026-09-15 — impl-test: defects D-1 → impl test-fix (digest fde48b3c55eb87f00ab4e85f8307eb2925c6cf8b9fe5fc7cc7d878a5570c0053)
+
+- 2026-09-15 — impl test-fix: defects D-1 resolved

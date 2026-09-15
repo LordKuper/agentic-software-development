@@ -69,4 +69,4 @@ Impacted set: full suite (`node tests/run.js`). The change surface touches frame
 
 | ID | Entry | Location | Symptom | Failing test | Status | Fix commit |
 |---|---|---|---|---|---|---|
-| D-1 | 1 | .asd/runtime.js | AssertionError [ERR_ASSERTION]: Missing expected exception (Error): Entry "Entry 2" is off-template (t_test-plan.md: `Entry log` N or impl-review) - read as "not an impl-test entry" it hides entry 2's repeat of entry 1 and the loop runs on uncapped | sprint-013 AC-2 D-1: defect-stalemate rejects a Defects row whose Entry is neither an Entry log number nor impl-review - skipping it drops that entry's set and a real stalemate fails open | pending | |
+| D-1 | 1 | .asd/runtime.js | AssertionError [ERR_ASSERTION]: Missing expected exception (Error): Entry "Entry 2" is off-template (t_test-plan.md: `Entry log` N or impl-review) - read as "not an impl-test entry" it hides entry 2's repeat of entry 1 and the loop runs on uncapped | sprint-013 AC-2 D-1: defect-stalemate rejects a Defects row whose Entry is neither an Entry log number nor impl-review - skipping it drops that entry's set and a real stalemate fails open | fixed | b293de8 |
