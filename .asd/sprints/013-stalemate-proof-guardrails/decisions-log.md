@@ -129,3 +129,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: impl-review complete at iteration 3: correctness, efficiency (latched 2), testing, documentation APPROVE; external availability-skipped (quota) in all three iterations; terminal full suite green at HEAD 78b6a7b (`node tests/run.js` exit 0, 203/203; lint and `sync.js --check` clean; recorded 888373c). Green handoff passed adaptively.
 - **Rationale**: Every required reviewer verdict for `iter-03` is satisfied per `sprint-lifecycle.md` "State recovery"; the only hard decision in the cycle (AC-19 bound) was taken by the user; no waiver, debt or cap override is involved.
 - **Affected docs**: [reviews/impl/iter-03/](reviews/impl/iter-03/), [test-plan.md](test-plan.md)
+
+- 2026-09-15 — `retrospective.html` written: analysed branch, 5 friction entries (F-1+F-2 merged → 4 framework actions, 0 consumer), 3 systemic proposals (1 covered by an existing rule); nothing applied or promoted.
