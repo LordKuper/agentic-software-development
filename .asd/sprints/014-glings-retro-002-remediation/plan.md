@@ -36,9 +36,9 @@ Material risk: change: workflow gate
 
 ### Task 2: Fail closed on multiple Defects sections, with line numbers
 Material risk: change: public contract
-- [ ] `runtime.js` `defectStalemate`: find every heading matching `^## Defects\b` (exact and suffixed); more than one fails closed with `test-plan has <k> ## Defects sections at lines <l1>, <l2>, …`
-- [ ] Keep original line numbers through parsing; missing column, malformed row and malformed separator errors name the offending line (`line <n>: …`)
-- [ ] `t_test-plan.md` Defects comment: one table only, rows appended, never a second section
+- [x] `runtime.js` `defectStalemate`: find every heading matching `^## Defects\b` (exact and suffixed); more than one fails closed with `test-plan has <k> ## Defects sections at lines <l1>, <l2>, …`
+- [x] Keep original line numbers through parsing; missing column, malformed row and malformed separator errors name the offending line (`line <n>: …`)
+- [x] `t_test-plan.md` Defects comment: one table only, rows appended, never a second section
 
 ### Task 3: External Review partial-coverage outcome with batching
 Material risk: change: workflow gate
