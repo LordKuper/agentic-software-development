@@ -34,3 +34,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+- 2026-09-16 — route impl-test entry 3: critical, dispatch HEAD 56827af
+- 2026-09-16 — impl-test: impacted set green (207/207, sync --check ok, lint ok), 0 added / 0 removed tests, AC-2 extended (DOC-1 id and payload); entry-02 rotated; no defects. Flagged choices accepted: example-id prefix pin, payload id presence only
