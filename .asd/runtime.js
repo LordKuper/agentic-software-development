@@ -19,7 +19,7 @@ const ROW_TYPES = Object.keys(LEDGER_VOCABULARY).filter((key) => Array.isArray(L
 const LEDGER_NA_SHAPE = Object.fromEntries(ROW_TYPES.map((type) => [type, { [LEDGER_ROW_EXAMPLE.i]: [LEDGER_ROW_EXAMPLE.p] }]));
 /** A scope file list above this many files is partitioned into `ceil(files / threshold)` parts before its first dispatch. */
 const SPLIT_THRESHOLD_FILES = 25;
-/** A reviewable change surface above this many files blocks plan acceptance and impl-review entry until the user splits the sprint or approves an override bound. Four split parts (4 * SPLIT_THRESHOLD_FILES), set at sprint 014 plan against ASD sprints 001-013 (max 87 files) and Glings 002 (657). */
+/** A reviewable change surface above this many files blocks plan acceptance and impl-review entry until the user splits the sprint or approves an override bound. Four split parts (4 * SPLIT_THRESHOLD_FILES). */
 const SURFACE_CAP_FILES = 100;
 /** The standing n/a predicates, each the exact text a ledger row records. The emitter authorizes one only where its condition holds; this is their sole home. */
 const NA_PREDICATES = {
