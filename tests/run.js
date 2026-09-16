@@ -4763,6 +4763,12 @@ test('sprint-014 AC-2: a failed creator or tester dispatch is reconstructed from
   const [defectLands = '', defectOtherwise = ''] = defectSentence ? defectSentence.slice(defectSentence.indexOf(`\`${defectId}\``)).split(/\botherwise\b/) : [];
   assert.ok(defectLands.includes('Defects') && defectLands.includes(`\`${fixedStatus[1]}\``), `COR-1: reconstruction must read a \`${defectId}\` trailer as landed only once its Defects row reads \`${fixedStatus[1]}\` - test-fix commits the fix before flipping the row, so a dispatch dying between them leaves the row pending`);
   assert.ok(/\bsha\b/.test(defectOtherwise) && /\b(?:no|never|not)\b[^.]*\bfix/.test(defectOtherwise), `COR-1: otherwise the re-dispatch must only set the \`${defectId}\` row from the trailer commit's sha, without a second fix`);
+  const ledgerKey = /\bledger\.(\w+)\)\s*\?\s*ledger\.\1\b/.exec(canonText('.asd/runtime.js'));
+  const partFile = /<reviewer>(\.part-)N(\.md)`/.exec(canonText('.asd/rules/review-policy.md'));
+  assert.ok(ledgerKey && ids.includes(ledgerKey[1]), `DOC-1: git-strategy.md "Commits" must define a review finding id as its id in the reviewer's ledger \`${ledgerKey && ledgerKey[1]}\` - undefined, a dev writes a trailer reconstruction cannot match. Got: ${JSON.stringify(ids)}`);
+  assert.ok(partFile && ids.some((id) => new RegExp(`^[a-z-]+${partFile[1].replace('.', '\\.')}\\d+${partFile[2].replace('.', '\\.')} [A-Z]+-\\d+$`).test(id)), `DOC-1: git-strategy.md "Commits" must show a review finding id prefixed by its <reviewer>.part-N.md file - split parts' findings are a union, never renumbered, so a bare shared id reads the other part's fix as landed. Got: ${JSON.stringify(ids)}`);
+  const reviewFixPayload = (canonText('.asd/workflows/asd-phase-impl.md').split('\n').find((line) => line.trimStart().startsWith('- initial —') && line.includes('review-fix —')) || '').split(/;\s*test-fix\b/)[0].split('review-fix —')[1] || '';
+  assert.ok(/\bid\b[^;]*`git-strategy\.md` "Commits"/.test(reviewFixPayload), 'DOC-1: the review-fix payload must carry each finding\'s id per git-strategy.md "Commits" - without it the dev has no id for its ASD-Task trailer');
   const leftovers = failed.split(/(?<=\.) /).find((sentence) => /\buncommitted\b/i.test(sentence));
   const [payload = '', orchestrator = ''] = leftovers ? leftovers.split(/;\s*/) : [];
   assert.ok(/\bauthori[sz]ed\b/.test(payload), 'TST-1: the failed-dispatch payload must limit uncommitted leftovers to the paths the failed dispatch was authorised to touch');
