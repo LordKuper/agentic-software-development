@@ -1,7 +1,7 @@
 {
   "sprint_id": "014-glings-retro-002-remediation",
   "branch": "sprint/014-glings-retro-002-remediation",
-  "phase": "impl",
+  "phase": "impl-test",
   "documents": {
     "audit": true,
     "prd": false,
@@ -134,6 +134,12 @@
       "resolved_model": "claude:opus"
     },
     "iter-02 tester chain": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "claude:opus"
+    },
+    "impl-test entry 3": {
       "tier": "critical",
       "execution": "agent",
       "reason": "risk:workflow gate",
