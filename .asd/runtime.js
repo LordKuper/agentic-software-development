@@ -312,9 +312,9 @@ function isExecutable(file) {
   return !/\.(md|json|ya?ml|toml|html?|txt)$/i.test(file);
 }
 
-/** A templated artefact: basename equal to a template name, a path under `.asd/templates/`, `docs/` or `.asd/sprints/`, or root `AGENTS.md`/`CLAUDE.md`. */
+/** A templated artefact: basename equal to a template name (so `AGENTS.md`/`CLAUDE.md` at any depth), or a path under `.asd/templates/`, `docs/` or `.asd/sprints/`. */
 function isTemplated(file, templates) {
-  return templates.includes(file.split('/').pop()) || /^(\.asd\/templates\/|docs\/|\.asd\/sprints\/|(AGENTS|CLAUDE)\.md$)/.test(file);
+  return templates.includes(file.split('/').pop()) || /^(\.asd\/templates\/|docs\/|\.asd\/sprints\/)/.test(file);
 }
 
 /** Every `t_<name>` file under a templates directory, at any depth, as `<name>`. */
