@@ -30,7 +30,7 @@ Testing reviewer. Judges the test *decisions* recorded in `test-plan.md` and the
 
 ## Inputs
 
-- `<sprint>/test-plan.md` (primary input: risk→check decisions, removals, added tests, suite run, manual verification spec)
+- `<sprint>/test-plan.md` with its `test-plan.entry-NN.md` segments (primary input: risk→check decisions, removals, added tests, suite run, manual verification spec; `artifact-layout.md` "Test plan")
 - diff payload (code + tests)
 - `docs/product/requirements/<subsystem>.html` (ACs to trace); when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
 - `<sprint>/plan.md`

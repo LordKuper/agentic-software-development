@@ -6,7 +6,7 @@ Append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecyc
 
 ## Open mode
 
-1. Read config, state, plan, reviews, test-plan, retrospective and stubs. Confirm every plan task, AC trace, required review verdict, full-suite record, lint/build record and stub rule; `pr` requires review DoD plus a completed `retro` (`checkpoints.md`), so `<sprint>/retrospective.html` is a DoD input and its absence blocks. Re-run required checks after a relevant diff. A failed or missing check blocks.
+1. Read config, state, plan, reviews, test-plan with its segments (`artifact-layout.md` "Test plan"), retrospective and stubs. Confirm every plan task, AC trace, required review verdict (satisfied per `sprint-lifecycle.md` "State recovery", External Review's skip and partial forms included), full-suite record, lint/build record and stub rule; `pr` requires review DoD plus a completed `retro` (`checkpoints.md`), so `<sprint>/retrospective.html` is a DoD input and its absence blocks. Re-run required checks after a relevant diff. A failed or missing check blocks.
 2. Write `phase=pr` inline. For self-hosting, first bump version and changelog, commit them on the sprint branch, then compose the PR title/body.
 3. Apply the active policy to publication. Adaptive publication needs recorded scope authority, evidence and host permission; otherwise request the user. Open the PR per `git-strategy.md` "PR creation"; a `gh` failure is `FAILED` naming the fix given there. On successful PR creation, write `state.json.pr` and append the decision/log record. Do not archive or mark done.
 4. Emit `NEXT: await-merge`; the active sprint remains at its normal path while the PR is open.

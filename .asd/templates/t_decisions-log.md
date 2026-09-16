@@ -7,7 +7,7 @@ responsibility:
 
 # Decisions Log
 
-Per-sprint, append-only. Never edited or removed. Created at `scope`, archived with the sprint.
+Per-sprint, append-only. Never edited or removed. Created at `scope`, rotated at phase entry (`.asd/rules/artifact-layout.md` "Decisions log"), archived with the sprint.
 
 ## Entry format
 
@@ -19,10 +19,12 @@ Per-sprint, append-only. Never edited or removed. Created at `scope`, archived w
 - **Affected docs**: <links> (unrestricted)
 ```
 
-A no-op skip or other zero-content decision uses the one-line form instead:
+A no-op skip, other zero-content decision, dispatch routing line or failed-dispatch reconstruction uses the one-line form instead:
 
 ```markdown
 - YYYY-MM-DD — <phase> skipped: <reason>
+- YYYY-MM-DD — route <taskIds>: <tier>, dispatch HEAD <sha>
+- YYYY-MM-DD — reconstruction: landed <ids>; re-dispatched <ids>
 ```
 
 ## Durability rule

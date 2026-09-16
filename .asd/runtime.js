@@ -19,6 +19,8 @@ const ROW_TYPES = Object.keys(LEDGER_VOCABULARY).filter((key) => Array.isArray(L
 const LEDGER_NA_SHAPE = Object.fromEntries(ROW_TYPES.map((type) => [type, { [LEDGER_ROW_EXAMPLE.i]: [LEDGER_ROW_EXAMPLE.p] }]));
 /** A scope file list above this many files is partitioned into `ceil(files / threshold)` parts before its first dispatch. */
 const SPLIT_THRESHOLD_FILES = 25;
+/** A reviewable change surface above this many files blocks plan acceptance and impl-review entry until the user splits the sprint or approves an override bound. Four split parts (4 * SPLIT_THRESHOLD_FILES). */
+const SURFACE_CAP_FILES = 100;
 /** The standing n/a predicates, each the exact text a ledger row records. The emitter authorizes one only where its condition holds; this is their sole home. */
 const NA_PREDICATES = {
   phaseGate: 'outside phase gate',
@@ -26,6 +28,8 @@ const NA_PREDICATES = {
   perf: 'no perf budgets section and no executable file in scope',
   noBudgets: 'no budgets defined',
   noHtml: 'no HTML file in scope',
+  noSelfHosting: 'self_hosting not enabled',
+  noTemplated: 'no templated artefact in scope',
   outOfPart: 'evidence outside this part; covered by the other parts',
 };
 /** Rubric entries each conditional predicate covers, by reviewer and id prefix; a prefix matching no entry fails the emit closed. */
@@ -34,6 +38,8 @@ const NA_TARGETS = {
   perf: { efficiency: ['Perf budget compliance', 'Perf anti-patterns', 'Algorithmic complexity', 'Regression detection', 'Hot path identification'] },
   budgetCompliance: { efficiency: ['Perf budget compliance'] },
   html: { documentation: ['HTML shell wrapping', 'Provenance', 'Traceability'] },
+  selfHosting: { documentation: ['Framework mode'] },
+  templated: { documentation: ['Template adherence'] },
 };
 const PHASES = ['design-review', 'impl-review'];
 
@@ -306,8 +312,18 @@ function isExecutable(file) {
   return !/\.(md|json|ya?ml|toml|html?|txt)$/i.test(file);
 }
 
+/** A templated artefact: basename equal to a template name (so `AGENTS.md`/`CLAUDE.md` at any depth), or a path under `.asd/templates/`, `docs/` or `.asd/sprints/`. */
+function isTemplated(file, templates) {
+  return templates.includes(file.split('/').pop()) || /^(\.asd\/templates\/|docs\/|\.asd\/sprints\/)/.test(file);
+}
+
+/** Every `t_<name>` file under a templates directory, at any depth, as `<name>`. */
+function templateNames(dir) {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => (entry.isDirectory() ? templateNames(path.join(dir, entry.name)) : entry.name.startsWith('t_') ? [entry.name.slice(2)] : []));
+}
+
 /** Maps every rule id to the standing n/a predicates its condition authorizes for this dispatch. */
-function standingPredicates(input, ids, customRules) {
+function standingPredicates(input, ids, customRules, templates) {
   const granted = new Map(ids.map((id) => [id, []]));
   const targets = (key) => (NA_TARGETS[key][input.reviewer] || []).map((prefix) => ids.find((id) => id.startsWith(prefix)) || fail(`rubric entry missing for n/a predicate: ${prefix}`));
   const grant = (key, predicate) => targets(key).forEach((id) => granted.get(id).push(predicate));
@@ -316,6 +332,8 @@ function standingPredicates(input, ids, customRules) {
   Object.keys(NA_TARGETS).forEach(targets);
   ids.filter((id) => id.includes(otherPhase) && !id.includes(input.phase)).forEach((id) => granted.get(id).push(NA_PREDICATES.phaseGate));
   if (!input.files.some((file) => /\.html?$/i.test(file))) grant('html', NA_PREDICATES.noHtml);
+  if (input.selfHosting !== true) grant('selfHosting', NA_PREDICATES.noSelfHosting);
+  if (!input.files.some((file) => isTemplated(file, templates))) grant('templated', NA_PREDICATES.noTemplated);
   if (input.phase === 'design-review') {
     if (!input.files.some((file) => /(^|\/)(ux-spec\.html|design-md-delta\.yaml)$/.test(file))) grant('ui', NA_PREDICATES.phaseGate);
     return granted;
@@ -334,7 +352,8 @@ function emitCoverageManifests(input) {
   const customRules = input.customRules || {};
   const rubric = rubricIds(input.rubric);
   const rules = rubric.rules.concat(Object.keys(customRules));
-  const granted = standingPredicates(input, rules, customRules);
+  const templates = input.templates === undefined ? [] : stringArray(input.templates, 'templates');
+  const granted = standingPredicates(input, rules, customRules, templates);
   const partCount = files.length > SPLIT_THRESHOLD_FILES ? Math.ceil(files.length / SPLIT_THRESHOLD_FILES) : input.halve === true ? 2 : 1;
   if (partCount > Math.max(files.length, 1)) fail('scope has fewer files than parts');
   const naFor = (ids) => Object.fromEntries(ids.map((id) => [id, partCount > 1 ? granted.get(id).concat(NA_PREDICATES.outOfPart) : granted.get(id)]).filter(([, predicates]) => predicates.length > 0));
@@ -369,16 +388,20 @@ function tableCells(line) {
 /** Compares the code-defect identity sets (file path without line, runner failure line, failing test) of the last two impl-test entries that routed defects in a test plan's `Defects` table, a stalemate only when those entry numbers are consecutive; `D-N` ids and `impl-review` rows never take part. `digest` identifies the latest set, so a recorded answer can be keyed to it. */
 function defectStalemate(markdown) {
   if (typeof markdown !== 'string') fail('test-plan markdown required');
-  const section = markdown.replace(/\r\n/g, '\n').split(/^## Defects *$/m)[1];
-  if (section === undefined) fail('test-plan has no ## Defects section');
-  const [header, , ...rows] = section.split(/^## /m)[0].split('\n').filter((line) => line.trim().startsWith('|')).map(tableCells);
-  if (header === undefined) fail('Defects table missing');
-  const [entry, location, symptom, test] = ['Entry', 'Location', 'Symptom', 'Failing test'].map((name) => (header.includes(name) ? header.indexOf(name) : fail(`Defects table has no ${name} column`)));
+  const lines = markdown.replace(/\r\n/g, '\n').split('\n');
+  const headings = lines.flatMap((line, i) => (/^## Defects\b/.test(line) ? [i + 1] : []));
+  if (headings.length === 0) fail('test-plan has no ## Defects section');
+  if (headings.length > 1) fail(`test-plan has ${headings.length} ## Defects sections at lines ${headings.join(', ')}`);
+  const end = lines.findIndex((line, i) => i >= headings[0] && /^## /.test(line));
+  const [header, separator, ...rows] = lines.slice(headings[0], end === -1 ? lines.length : end).flatMap((line, i) => (line.trim().startsWith('|') ? [{ at: `line ${headings[0] + i + 1}`, cells: tableCells(line) }] : []));
+  if (header === undefined) fail(`line ${headings[0]}: Defects table missing`);
+  const [entry, location, symptom, test] = ['Entry', 'Location', 'Symptom', 'Failing test'].map((name) => (header.cells.includes(name) ? header.cells.indexOf(name) : fail(`${header.at}: Defects table has no ${name} column`)));
+  if (separator === undefined || separator.cells.length !== header.cells.length || !separator.cells.every((cell) => /^:?-+:?$/.test(cell))) fail(`${(separator || header).at}: Defects table separator malformed`);
   const byEntry = new Map();
-  for (const cells of rows) {
-    if (cells.length !== header.length) fail(`Defects row malformed: ${cells.join(' | ')}`);
+  for (const { at, cells } of rows) {
+    if (cells.length !== header.cells.length) fail(`${at}: Defects row malformed: ${cells.join(' | ')}`);
     if (cells[entry] === 'impl-review' || /^\{\{.*\}\}$/.test(cells[entry])) continue;
-    if (!/^\d+$/.test(cells[entry])) fail(`Defects row Entry must be an Entry log number or impl-review: ${cells.join(' | ')}`);
+    if (!/^\d+$/.test(cells[entry])) fail(`${at}: Defects row Entry must be an Entry log number or impl-review: ${cells.join(' | ')}`);
     const tuples = byEntry.get(Number(cells[entry])) || new Set();
     tuples.add(stable([cells[location].replace(/:\d+(?::\d+)?$/, ''), cells[symptom], cells[test]]));
     byEntry.set(Number(cells[entry]), tuples);
@@ -389,6 +412,18 @@ function defectStalemate(markdown) {
   return { stalemate: previousEntry === latestEntry - 1 && stable(latest) === stable(previous), digest: fingerprint(latest) };
 }
 
+function readFileList(file) {
+  return fs.readFileSync(file, 'utf8').split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+}
+
+/** Measures a file list against SURFACE_CAP_FILES, or against the user-approved override bound when one is recorded. */
+function surfaceCheck(files, bound) {
+  if (bound !== undefined && !(Number.isInteger(bound) && bound > 0)) fail('--bound must be a positive integer');
+  const cap = bound === undefined ? SURFACE_CAP_FILES : bound;
+  const count = new Set(files).size;
+  return { files: count, cap, breach: count > cap };
+}
+
 function emitManifestCommand(flags) {
   if (!/^[a-z]+$/.test(flags.reviewer || '')) fail('--reviewer <name> required');
   if (typeof flags.files !== 'string' || typeof flags.out !== 'string') fail('--files <path> and --out <dir> required');
@@ -397,9 +432,11 @@ function emitManifestCommand(flags) {
     reviewer: flags.reviewer,
     phase: flags.phase,
     rubric: fs.readFileSync(path.join(__dirname, 'agents', `asd-reviewer-${flags.reviewer}.md`), 'utf8'),
-    files: fs.readFileSync(flags.files, 'utf8').split(/\r?\n/).map((line) => line.trim()).filter(Boolean),
+    files: readFileList(flags.files),
     customRules: Object.fromEntries(customPaths.map((file) => [file, fs.readFileSync(file, 'utf8')])),
     halve: flags.halve === true,
+    selfHosting: flags['self-hosting'] === true,
+    templates: templateNames(path.join(__dirname, 'templates')),
   });
   return manifests.map((manifest, index) => {
     const file = path.join(flags.out, manifests.length === 1 ? `${flags.reviewer}.manifest.json` : `${flags.reviewer}.part-${index + 1}.manifest.json`);
@@ -429,7 +466,7 @@ function inputJson(flags) {
 
 function main(argv) {
   const command = argv[2];
-  const flags = parseFlagArgs(argv.slice(3), ['halve']);
+  const flags = parseFlagArgs(argv.slice(3), ['halve', 'self-hosting']);
   if (command === 'manifest-digest') {
     process.stdout.write(coverageManifestDigest(JSON.parse(fs.readFileSync(flags.manifest, 'utf8'))) + '\n');
     return 0;
@@ -461,11 +498,17 @@ function main(argv) {
     process.stdout.write(JSON.stringify(defectStalemate(fs.readFileSync(flags.plan, 'utf8'))) + '\n');
     return 0;
   }
-  fail('usage: emit-manifest, manifest-digest, validate-ledger, external-preflight, external-record-failure, route-task, or defect-stalemate');
+  if (command === 'surface-check') {
+    if (typeof flags.files !== 'string') fail('--files <path> required');
+    const result = surfaceCheck(readFileList(flags.files), flags.bound === undefined ? undefined : Number(flags.bound));
+    process.stdout.write(JSON.stringify(result) + '\n');
+    return result.breach ? 1 : 0;
+  }
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, external-preflight, external-record-failure, route-task, defect-stalemate, or surface-check');
 }
 
 if (require.main === module) {
   try { process.exitCode = main(process.argv); } catch (error) { process.stderr.write(`${error.message}\n`); process.exitCode = 2; }
 }
 
-module.exports = { LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, NA_PREDICATES, SPLIT_THRESHOLD_FILES, buildInvocation, coverageManifestDigest, defectStalemate, emitCoverageManifests, externalPreflight, recordExternalFailure, routeTask, validateCoverageLedger, fingerprint };
+module.exports = { LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, NA_PREDICATES, SPLIT_THRESHOLD_FILES, SURFACE_CAP_FILES, buildInvocation, coverageManifestDigest, defectStalemate, emitCoverageManifests, externalPreflight, recordExternalFailure, routeTask, surfaceCheck, validateCoverageLedger, fingerprint };

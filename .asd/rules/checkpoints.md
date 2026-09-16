@@ -2,9 +2,9 @@
 
 ## Gate policy
 
-`config.yaml`'s top-level `user_gates` is the source; `state.json.user_gates` is the frozen per-sprint copy, seeded at scope from config (`asd-phase-scope.md`) — a later config edit never changes an active sprint. Value is `strict` or `adaptive`; absent legacy value means `strict`. Invalid or unreadable policy blocks. A standalone skill with no active sprint (`/asd-concept`, `/asd-stack`, `/asd-design-system`) reads `config.user_gates` directly, default `strict`. `strict` uses the gate classes below with explicit approval. In `adaptive`, the main orchestrator may advance a routine gate only when exact user authority and documented constraints cover the choice, effects/resources are understood, applicable checks pass, and no unresolved material alternative remains. It records `{gate, decision_actor:"orchestrator", reason, evidence, artifact_revision}` in `state.json.gate_decisions` and the decisions log. Confidence alone is insufficient. Missing facts require investigation; missing authority, preference or material trade-off requires the user. A semantic revision makes its prior decision stale. Exact existing user authorization may be reused.
+`config.yaml`'s top-level `user_gates` is the source; `state.json.user_gates` is the frozen per-sprint copy, seeded at scope from config (`asd-phase-scope.md`) — a later config edit never changes an active sprint. Value is `strict` or `adaptive`; absent legacy value means `strict`. Invalid or unreadable policy blocks. A standalone skill with no active sprint (`/asd-concept`, `/asd-stack`, `/asd-design-system`) reads `config.user_gates` directly, default `strict`. `strict` uses the gate classes below with explicit approval. In `adaptive`, the main orchestrator may advance a routine gate only when exact user authority and documented constraints cover the choice, effects/resources are understood, applicable checks pass, and no unresolved material alternative remains. It records `{gate, decision_actor:"orchestrator", reason, evidence, artifact_revision}` in `state.json.gate_decisions` (short refs only, `artifact-layout.md` "State file") and the decisions log (narrative). Confidence alone is insufficient. Missing facts require investigation; missing authority, preference or material trade-off requires the user. A semantic revision makes its prior decision stale. Exact existing user authorization may be reused.
 
-Hard in both modes: new or changed scope, acceptance criteria or user value not already explicitly authorized; initial/material UX, brand, accessibility or stack direction not already authorized; a new subsystem boundary; deletion of project files during migration; an audit contradiction precedence cannot settle (`sprint-lifecycle.md` "Audit phase"); material architecture, public contract or compatibility change; debt or any reviewer/coverage/quality waiver; review-cap override; abort; and sprint closure. Machine checks never become approvals.
+Hard in both modes: new or changed scope, acceptance criteria or user value not already explicitly authorized; initial/material UX, brand, accessibility or stack direction not already authorized; a new subsystem boundary; deletion of project files during migration; an audit contradiction precedence cannot settle (`sprint-lifecycle.md` "Audit phase"); material architecture, public contract or compatibility change; debt or any reviewer/coverage/quality waiver; review-cap override; change-surface cap override (`sprint-lifecycle.md` "Plan file format"), distinct from review-cap override; abort; and sprint closure. Machine checks never become approvals.
 
 Routine candidates: audit/plan acceptance, initial impl assessment, green review handoff, in-bounds ADR, factual tech reference, mechanical docs/design-system update, approved decomposition, and bounded complication decisions. Expenses, external actions, out-of-scope test deletion and PR publication use the same evidence rule; host permissions and machine checks remain mandatory.
 
@@ -19,7 +19,7 @@ Record user decisions with `decision_actor=user`; silence and unrelated text are
 
 ## Approval recording
 
-For an active sprint, record the actor, gate, artifact revision, evidence and reason in `state.json.gate_decisions` and append the sprint decision log. A standalone `/asd-concept`, `/asd-stack` or `/asd-design-system` has no state/log write: the accepted artifact and git history are its evidence. A material semantic change invalidates only the decision governing that artifact.
+For an active sprint, record the actor, gate, artifact revision and short-ref evidence/reason in `state.json.gate_decisions` (`artifact-layout.md` "State file") and append the narrative to the sprint decision log. A standalone `/asd-concept`, `/asd-stack` or `/asd-design-system` has no state/log write: the accepted artifact and git history are its evidence. A material semantic change invalidates only the decision governing that artifact.
 
 ## Criterion cost surfacing
 
@@ -28,7 +28,7 @@ Gates are keyed by gate name, never by `AC-N`, so a criterion’s running cost i
 **Unit**, per criterion the request names, derived at read time from artefacts the sprint already writes (no counter is stored, so nothing can drift):
 
 - *iterations charged* — count of `<sprint>/reviews/<phase>/iter-NN/` iterations whose findings name that `AC-N`. A finding is not required to cite an AC (only Correctness traces AC-N), so this count is a lower bound and is stated as one;
-- *fix rounds charged* — count of `<sprint>/decisions-log.md` fix-round entries whose `iter-NN` is one of those iterations, matched on the stable tail `for iter-NN: findings resolved` however the mode is named (`asd-phase-impl.md` step 11 is the emitting SSoT).
+- *fix rounds charged* — count of fix-round entries across `<sprint>/decisions-log.md` and its segments (`artifact-layout.md` "Decisions log"), whose `iter-NN` is one of those iterations, matched on the stable tail `for iter-NN: findings resolved` however the mode is named (`asd-phase-impl.md` step 11 is the emitting SSoT).
 
 State `0` explicitly for an untouched criterion; a review-cap override states the pair for every criterion carrying an unresolved finding at that iteration.
 
@@ -45,6 +45,7 @@ The normal gate class is retained for `strict`, and is the fallback when an adap
 | scope, plan, concept, stack, PRD, UX, design-system, ADR draft | write-then-review-accept |
 | factual tech-reference and mechanical design-system update | approve-before-write in strict; routine in adaptive |
 | test removal, PR publication, expense or external action | approve-before-write in strict; evidence rule in adaptive; never bypass host permissions/checks |
+| change-surface cap override (plan acceptance or impl-review entry) | hard approve-before-write |
 | sprint closure | hard approve-before-finalize/archive |
 
 `c4-full/` has no standalone artifact gate. Per-section QODDA uses this same policy; it does not create a second mandatory pause.

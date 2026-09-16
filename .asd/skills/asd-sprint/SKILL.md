@@ -16,12 +16,14 @@
 
 ## Operations used
 - Read files / search repo — detect active sprint; read state.json, config.yaml, custom-common-rules.md
-- Run command — `git status`, `git branch --show-current`
+- Run command — `git status`, `git branch --show-current`; decisions-log rotation (rename, copy template, commit those paths)
 - Request user decision — new-sprint confirm, resume/abort choice
 - Delegate to skill — phase skills, plus `asd-init` per "Skills dispatched"
-- No direct writes — phase skills and their inline orchestrator own writes
+- No other writes — phase skills and their inline orchestrator own writes
 
 ## Workflow
+
+Before a phase-skill delegation below, rotate the decisions log when `.asd/rules/artifact-layout.md` "Decisions log" requires it.
 
 ### Step 1: detect active sprint
 - Search repo for `.asd/sprints/*/state.json` (excluding `archived/`) UNION `.asd/sprints/archived/*/state.json` where `phase != "done"` (a sprint the `pr` phase already archived pre-merge, still awaiting merge confirmation)

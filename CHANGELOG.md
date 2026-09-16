@@ -2,6 +2,28 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v10.0.0
+
+Remediates the Glings sprint 002 retrospective. External Review can now return partial coverage from batched reviews instead of silently skipping, a failed dev/tester dispatch is reconstructed from git evidence before it is re-sent, plans declare a change surface capped at 100 files, and `decisions-log.md` / `test-plan.md` rotate into numbered segments so long sprints stay readable.
+
+### Migration (breaking)
+- **Merge duplicate `## Defects` sections.** `node .asd/runtime.js defect-stalemate` now fails closed when a `test-plan.md` holds more than one `## Defects` heading (exact or suffixed), naming each heading line. Before resuming an active sprint, merge those sections into the single table. There is no migration script.
+- **External Review skip is narrowed.** `APPROVE (skipped: ...)` now applies only to a non-ready preflight or an active negative cache; a failure after invocation is an interrupted dispatch, or `APPROVE (partial: <n>/<m> files; <cause>)` when at least one batch completed with no finding at or above floor (`external-review.md` "Outcome contract"). A partial satisfies only its iteration and never latches; unreviewed files carry into the next iteration.
+- **New hard gate `change-surface cap override`.** A plan whose `Change surface: <n> files` exceeds `SURFACE_CAP_FILES` (100) blocks acceptance until split into sequential sprints or overridden with a bound; impl-review re-measures at first entry. Plans without the line are grandfathered.
+- **Commit trailer contract.** Every commit a dispatched dev or tester makes carries one `ASD-Task: <id>` line per id it covers (`git-strategy.md` "Commits").
+
+### Added
+- **Failed-dispatch reconstruction** (`sprint-lifecycle.md` "State recovery"): the routing line records `dispatch HEAD <sha>`; a dispatch returning no signal is rebuilt from `ASD-Task` trailers and uncommitted leftovers before re-dispatch. An impl-test trailer never marks its entry landed, and a `D-N` lands only once its Defects row reads `fixed`.
+- **External Review batching**: scope above `SPLIT_THRESHOLD_FILES` is reviewed in sequential batches inside one dispatch; `t_review-report.md` gains `Reviewed files` and `Unreviewed files`.
+- `node .asd/runtime.js surface-check --files <path> [--bound <n>]` and `SURFACE_CAP_FILES`.
+- **Standing n/a for Documentation `Framework mode` and `Template adherence`**: `emit-manifest --self-hosting` and a templated-artefact classifier let split parts mark them n/a truthfully.
+- **Log rotation** (`artifact-layout.md` "Decisions log", "Test plan"): `decisions-log.NNN.md` at a phase change, `test-plan.entry-NN.md` at impl-test re-entry; cross-span readers read segments in order.
+
+### Changed
+- `defect-stalemate` table errors name the offending line (`line <n>: ...`) and validate the separator row.
+- `state.json` carries only keys `t_state.json` defines; `gate_decisions` reason/evidence are short refs, narrative goes to the decisions log (`artifact-layout.md` "State file").
+- Test coverage grew from 203 to 207 checks.
+
 ## v9.0.0
 
 The configuration surface shrinks from 28 settings to 20, and pull requests are always ASD-managed through `gh`. Three workflow guardrails replace an agent's word with deterministic evidence: a repeated `impl`⇄`impl-test` defect set escalates as a stalemate, a fail-first proof must carry raw runner evidence, and the retrospective deduplicates findings before drafting each survivor as a one-line guardrail with a named home. Audit now reads every relevant `docs/` document and lets the canonical ASD document win a contradiction.

@@ -31,7 +31,7 @@ Each provider can show up in two different roles — don't conflate them:
 - **As your primary runtime** — run sprints from Claude Code (`.claude/agents/*.md` + `.claude/skills/`) or Codex (`.codex/agents/*.toml` + `.agents/skills/`), both driving the same canonical workflow.
 - **As the External Review tool** — ASD shells out to the CLI of whichever provider is NOT your primary runtime, as a second opinion during design-review/impl-review (Codex CLI under Claude Code, Claude CLI under Codex). Works independently of which provider is your primary runtime.
 
-When External Review is enabled, `/asd-init` probes the other provider's configured command (`system.tools.codex_command` under Claude Code; `system.tools.claude_command` under Codex). A later unavailable probe is recorded as an explicit availability skip in the review output, decisions log and friction log rather than silently reducing coverage.
+When External Review is enabled, `/asd-init` probes the other provider's configured command (`system.tools.codex_command` under Claude Code; `system.tools.claude_command` under Codex). A later non-ready preflight or active negative cache is recorded as an explicit availability skip in the review output, decisions log and friction log rather than silently reducing coverage; a large scope reviewed in sequential batches that stops partway with no finding at or above floor instead returns a distinct partial-coverage outcome (`APPROVE (partial: <n>/<m> files; <cause>)`), also logged and never latched — see `external-review.md` "Outcome contract".
 
 ### Codex with a ChatGPT account
 
@@ -218,7 +218,7 @@ Reviewers write no review artifact, code or doc on any provider (scope: `review-
 | `asd-reviewer-documentation` | opus/high | sol/high | design-review + impl-review | SSoT integrity, documentation economy, template adherence, traceability, in-code doc comments (impl-review) |
 | `asd-external-review` | sonnet/medium | terra/medium | both | Wraps the *other* provider's CLI (Codex CLI under Claude Code, Claude CLI under Codex), reads its own content from a structured scope manifest (changed-file list, excluded paths, base/head refs, never a rendered diff — `.asd/rules/external-review.md` § Phase-scoped payload), parses output, applies severity floor |
 
-Reviewers emit a machine-parseable first-line verdict token: `[REVIEW-<phase>-<reviewer>]: APPROVE|CONCERNS|FAIL`, where `<phase>` is `design` or `impl` and `<reviewer>` is `correctness | efficiency | testing | documentation | external`.
+Reviewers emit a machine-parseable first-line verdict token: `[REVIEW-<phase>-<reviewer>]: APPROVE|CONCERNS|FAIL`, where `<phase>` is `design` or `impl` and `<reviewer>` is `correctness | efficiency | testing | documentation | external`. External Review's first line may also be the skip or partial form, per `.asd/rules/external-review.md` § Outcome contract.
 
 **Diff-scoped rubric-section gating** (always on — SSoT: `.asd/workflows/asd-phase-impl-review.md` step 5): Correctness and Efficiency are always dispatched; two diff-derived predicates instead mark a rubric SECTION `n/a: <predicate>` inside that reviewer's own returned coverage ledger, so the agent never loads that domain's inputs for the n/a'd section. Correctness's UI conformance section is n/a only when no file in the iteration's scope list is a UI surface; Efficiency's five performance sections are n/a only when both no perf-budgets section exists in `custom-coding-rules.md` and the scope list contains no executable file (conjunctive). Each n/a'd section re-enters automatically the moment a qualifying file re-enters the diff. `checkpoints.md`'s impl-review approval gate is unaffected (`review-policy.md` DoD table).
 
@@ -236,7 +236,7 @@ Read-only, consulted by any agent on non-gate uncertainty — an open question a
 
 ## User gates
 
-`adaptive` lets the main orchestrator pass routine audit/plan/assessment/review and already-authorized document decisions with recorded authority, evidence and artifact revision. `strict` retains explicit pauses. Material new scope/product/UX/stack/architecture/contract decisions, quality waivers and iteration-cap overrides retain hard gates. **Sprint closure (finalization and archival) always requires explicit user approval.** PR publication, expenses, external commitments, sensitive irreversible actions and out-of-scope test deletion are not categorical ASD hard gates; applicable permissions, authority and quality checks still apply. All modes retain build/lint/tests/review coverage and confirmed-merge requirements.
+`adaptive` lets the main orchestrator pass routine audit/plan/assessment/review and already-authorized document decisions with recorded authority, evidence and artifact revision. `strict` retains explicit pauses. Material new scope/product/UX/stack/architecture/contract decisions, quality waivers, review-cap overrides and change-surface cap overrides (a reviewable change surface above `SURFACE_CAP_FILES`, checked at plan acceptance and again at impl-review entry) retain hard gates. **Sprint closure (finalization and archival) always requires explicit user approval.** PR publication, expenses, external commitments, sensitive irreversible actions and out-of-scope test deletion are not categorical ASD hard gates; applicable permissions, authority and quality checks still apply. All modes retain build/lint/tests/review coverage and confirmed-merge requirements.
 
 ## Configuration
 
@@ -294,7 +294,7 @@ your-project/
 │   ├── release-manifest.json        # schema/asd version, managed-path list, model-family table; drives /asd-update + sync.js
 │   ├── sync-state.json              # last-written digests for managed-block / JSON-merge targets (committed)
 │   ├── sync.js                      # generator: canon -> .claude/ + .codex/ + .agents/skills/ (--check / --apply)
-│   ├── runtime.js                   # deterministic helper: task-cost routing, external-review preflight, coverage-manifest emission and split, coverage-ledger validation, manifest digests, impl-test defect-stalemate comparison
+│   ├── runtime.js                   # deterministic helper: task-cost routing, external-review preflight, coverage-manifest emission and split, coverage-ledger validation, manifest digests, impl-test defect-stalemate comparison (multi-`## Defects`-section fail-closed), change-surface cap check (`surface-check`)
 │   ├── rules/                       # workflow rules (role/phase-scoped reads), incl. providers.md
 │   ├── templates/                   # artifact templates (t_*.html / .md / .yaml / .c4), incl. t_AGENTS.md / t_CLAUDE.md
 │   ├── agents/                      # 11 canonical agent specs plus declared tier variants (JSON frontmatter: claude{} + codex{} blocks)
@@ -310,7 +310,7 @@ your-project/
 │   │   ├── custom-coding-rules.md   # impl / impl-test / impl-review rules (incl. perf budgets)
 │   │   └── stubs.md                 # project-global TODO registry
 │   └── sprints/
-│       ├── <NNN-slug>/              # active sprint (one at a time); decisions-log.md created here at scope, archived with the sprint
+│       ├── <NNN-slug>/              # active sprint (one at a time); decisions-log.md and test-plan.md created here, rotating into numbered `decisions-log.NNN.md` / `test-plan.entry-NN.md` segments so neither grows unbounded (`artifact-layout.md`); archived with the sprint
 │       └── archived/<NNN-slug>/     # moved here after explicit closure approval; completed sprints immutable
 ├── .claude/                         # generated Claude Code view
 │   ├── agents/                      # 15 agent definitions: 11 roles + 4 tier variants (*.md)

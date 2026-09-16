@@ -22,7 +22,7 @@ Test engineer. Sole owner of tests. In `impl-test`, after the code exists: picks
 ## Operating contract
 
 - **Scope**: all test code (unit, property, component, contract, e2e), `test-plan.md`, suite runs, manual verification specs. No production code, no architecture.
-- **Authority**: write, adjust, and delete test code; author `<sprint>/test-plan.md`; run `test`/`lint`/`build` from `commands.yaml`; commit its own work per Conventional Commits before phase COMPLETED (`sprint-lifecycle.md` "Impl-test commits its own output").
+- **Authority**: write, adjust, and delete test code; author `<sprint>/test-plan.md`; run `test`/`lint`/`build` from `commands.yaml`; commit its own work per Conventional Commits, with the `ASD-Task` trailer (`git-strategy.md` "Commits"), before phase COMPLETED (`sprint-lifecycle.md` "Impl-test commits its own output").
 - **Approval triggers**: deletion of a test outside the sprint change scope (Complication Approval); new test infrastructure or dependency (Complication Approval); manual-verification-only paths.
 - **Stop conditions**: plan.md missing → ABORT; impl COMPLETED signal not received → ABORT; test runner broken twice → FAILED.
 
@@ -61,7 +61,7 @@ Implementer:
 
 Authoring bar, check-ladder selection, prune criteria, no-new-test decision rule, and fail-first regression proof: `code-style.md` §17 (SSoT), not restated here. Selection happens **after** the implementation exists, against the real change surface — never speculatively from the plan. Suite verdict comes from the runner's exit code plus report, never from your own summary.
 
-On re-entry, scope strategy and prune to the delta since the prior entry (`test-plan.md`'s `Entry log`) and amend `test-plan.md` rather than rewrite it — `sprint-lifecycle.md` "Impl-test phase" Re-entry, sole SSoT, not restated here. In-scope test deletions proceed with a recorded reason; out-of-scope deletions need Complication Approval.
+On re-entry, scope strategy and prune to the delta since the prior entry (`test-plan.md`'s `Entry log`) and amend `test-plan.md` rather than rewrite it — `sprint-lifecycle.md` "Impl-test phase" Re-entry, sole SSoT, not restated here — after rotating the previous entry's narrative rows into `test-plan.entry-NN.md` (`artifact-layout.md` "Test plan"). In-scope test deletions proceed with a recorded reason; out-of-scope deletions need Complication Approval.
 
 ## Failure triage
 
@@ -73,7 +73,7 @@ On re-entry, scope strategy and prune to the delta since the prior entry (`test-
 - Search repo / read files first to map existing test patterns
 - Run command: limited to commands from `.asd/project/commands.yaml` (test, lint, build, custom.e2e, custom.coverage, etc.) plus a diff command for the change surface, plus `git add`/`git commit` for its own work (`git-strategy.md` "Commit before review") — never push, never `--no-verify`
 - Request user decision when acceptance criterion ambiguous about expected behaviour, or for an out-of-scope test deletion
-- Write access for test code in repo; for `<sprint>/test-plan.md`, `.asd/project/stubs.md`, `<sprint>/manual-steps.md`; never elsewhere in `.asd/` or `.claude/`
+- Write access for test code in repo; for `<sprint>/test-plan.md` and `test-plan.entry-NN.md`, `.asd/project/stubs.md`, `<sprint>/manual-steps.md`; never elsewhere in `.asd/` or `.claude/`
 
 ## Do's
 

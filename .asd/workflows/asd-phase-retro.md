@@ -7,7 +7,7 @@ Orchestration body for the `asd-phase-retro` skill. Operation-mapping to host to
 - Review DoD met at `impl-review` (`checkpoints.md` per-phase preconditions); `state.json.phase` advanced from `impl-review`
 
 ## Operations used
-- read: `.asd/project/config.yaml`, `<sprint>/friction-log.md`, and the sprint's run record — `state.json`, `plan.md`, `decisions-log.md` — as systemic-class evidence; the file behind a cited id (`manual-steps.md`, `reviews/<phase>/iter-NN/<reviewer>`) only when an `F-N` cites it; per finding, only its candidate home (`sprint-lifecycle.md` "Retro phase" home list), searched for the finding's subject
+- read: `.asd/project/config.yaml`, `<sprint>/friction-log.md`, and the sprint's run record — `state.json`, `plan.md`, `decisions-log.md` with its segments (`artifact-layout.md` "Decisions log") — as systemic-class evidence; the file behind a cited id (`manual-steps.md`, `reviews/<phase>/iter-NN/<reviewer>`) only when an `F-N` cites it; per finding, only its candidate home (`sprint-lifecycle.md` "Retro phase" home list), searched for the finding's subject
 - write a file: `<sprint>/retrospective.html`; `state.json` inline, for the mechanical non-gate phase-field write (`sprint-lifecycle.md` "State recovery")
 - append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log"
 - the main orchestrator analyses, authors and logs inline; nothing is delegated
