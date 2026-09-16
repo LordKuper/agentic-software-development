@@ -1,7 +1,7 @@
 {
   "sprint_id": "014-glings-retro-002-remediation",
   "branch": "sprint/014-glings-retro-002-remediation",
-  "phase": "plan",
+  "phase": "impl",
   "documents": {
     "audit": true,
     "prd": false,
@@ -45,9 +45,65 @@
       "reason": "routine plan within accepted scope",
       "evidence": "all AC-N traced; material choices user-decided; no stubs",
       "artifact_revision": "plan.md initial"
+    },
+    {
+      "gate": "impl-assessment",
+      "decision_actor": "orchestrator",
+      "reason": "routine initial impl assessment",
+      "evidence": "plan 8/8 ticked; sync --check ok; lint ok; diff paths authorised; flagged choices resolved; no stubs",
+      "artifact_revision": "633d378"
     }
   ],
-  "task_routing": {},
+  "task_routing": {
+    "Task 1": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "Task 2": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "claude:opus",
+      "reason": "risk:public contract"
+    },
+    "Task 3": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "Task 4": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "claude:opus",
+      "reason": "risk:public contract"
+    },
+    "Task 5": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "Task 7": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "Task 6": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:rule wording in artifact-layout.md and checkpoints.md",
+      "resolved_model": "claude:sonnet"
+    },
+    "Task 8": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:README and release-manifest mirrors",
+      "resolved_model": "claude:sonnet"
+    }
+  },
   "skipped_phases": [
     "design",
     "design-review",
@@ -67,7 +123,7 @@
     }
   },
   "created_at": "2026-09-16T12:13:47Z",
-  "updated_at": "2026-09-16T16:32:06Z",
+  "updated_at": "2026-09-16T17:44:49Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

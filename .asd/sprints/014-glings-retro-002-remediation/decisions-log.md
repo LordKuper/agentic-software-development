@@ -69,3 +69,20 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: 8 Tasks in 6 waves cover AC-1..AC-9; no migration script, AC-8 met by a CHANGELOG manual step at `pr`. Commit trailer `ASD-Task: <id>` chosen for AC-2 commit→task mapping.
 - **Rationale**: Routine gate: every AC traced, material alternatives settled by the user, remaining choices bounded inside accepted scope; audit lists no related open stubs and `stubs.md` is empty.
 - **Affected docs**: [plan.md](plan.md)
+- 2026-09-16 — route Task 1: critical, dispatch HEAD 2d14532
+- 2026-09-16 — Task 1 flagged choices resolved: accept `impl-test entry N` id, routing-line name overlap and trailer-by-agent-file pointer; one-line routing-line form vs `t_decisions-log.md` folded into Task 7 header note
+- 2026-09-16 — route Task 2, Task 3: critical; Task 6: standard, dispatch HEAD b21bb1f
+- 2026-09-16 — wave 2 flagged choices accepted: Task 2 separator validation and `` suffix match; Task 3 `external review interrupted: <cause>` return, skip unreviewed = full scope, stalemate vs latest verdict iteration, step-6/DoD-header consistency edits; Task 6 State file section placement. Known for impl-test: tests/run.js ~3715/3719 pin old two-outcome wording
+- 2026-09-16 — route Task 4: critical, dispatch HEAD 1ad0a25
+- 2026-09-16 — Task 4 flagged choices accepted: n/a texts quoted inline at review-policy.md 101, manual recursive walk (Node >=16.7), root-only AGENTS/CLAUDE path rule plus basename match, redundant design-review Framework mode n/a, flag stated at config step pointing to emit step
+- 2026-09-16 — route Task 5: critical, dispatch HEAD 89092b2
+- 2026-09-16 — Task 5 flagged choices accepted: surface-check exit 1 on breach, impl-review check grandfathered without a Change surface line, latest override record wins, dedupe + positive-int bound, plan input via temp path list, literal cap 100
+- 2026-09-16 — route Task 7: critical, dispatch HEAD e620deb
+- 2026-09-16 — Task 7 flagged choices accepted: rotation keyed on phase change vs state.json.phase, asd-sprint commits its rotation, tester owns test-plan rotation, test-fix payload reads newest decisions-log.NNN.md for stalemate answer, pointer only at impl-test Re-entry, Manual verification stays live
+- 2026-09-16 — route Task 8: standard, dispatch HEAD 6c89542
+
+## 2026-09-16 — impl assessment approved (adaptive)
+
+- **Decision**: Tasks 1-8 complete at 633d378; AC-1..AC-7 and AC-9 implemented, AC-8 by DoD (no migration). Build `sync.js --check` and lint clean; every diff path is a Task-named canon file, its synced view, README or plan.md; no stubs added.
+- **Rationale**: Routine gate: all flagged choices resolved inside plan scope (entries above). Known `tests/run.js` failure on the old External Review two-outcome wording is impl-test's input, not an impl gate.
+- **Affected docs**: [plan.md](plan.md)
