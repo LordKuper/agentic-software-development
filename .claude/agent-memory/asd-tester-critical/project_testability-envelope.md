@@ -277,7 +277,10 @@ is testable by extracting it from the rule and running it with `execFileSync('gi
 repo (pass `-c user.name/-c user.email/-c commit.gpgsign=false`). Tokenize with `/(?:[^\s']+|'[^']*')+/g`
 then strip `'` — the naive `'[^']*'|\S+` splits `--format='%h %s'` at the space and git reports a bad
 revision (sprint 014 entry 1). Derive the trailer key from its defining rule, not the command, so the
-run also proves the two sites agree.
+run also proves the two sites agree. The fixture has to contain every commit shape the rule makes a claim
+about. With one `src/` commit and one trailer, a pathspec re-added to the command, or trailers joined onto one line,
+stayed green. Entry 2 added a `.asd/sprints/**`-only commit and a two-trailer commit, and both
+mutations turned red.
 
 ## `routeTask` has no plan-file parser
 
