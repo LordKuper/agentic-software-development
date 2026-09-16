@@ -57,3 +57,15 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: Routine gate: findings are factual with path:line evidence within accepted scope, the only unsettled contradiction was decided by the user, and no new scope or authority is implied.
 - **Affected docs**: [audit.md](audit.md)
 - 2026-09-16 — design/design-review/design-promote skipped (no documents enabled)
+
+## 2026-09-16 — Plan choices decided by user
+
+- **Decision**: AC-1: External Review reviews scope above `SPLIT_THRESHOLD_FILES` in sequential batches inside one dispatch (Complication Approval: **What** batch loop in the wrapper; **Why** n/m must be deterministic; **Justification** a self-reported count is unverifiable and absent on crash; **Alternatives** reviewed-files report line, rejected), and unreviewed files carry into the next iteration's manifest. AC-5: change-surface cap 100 files. AC-7: decisions-log rotated by rename at phase entry, test-plan narrative sections rotated per Entry log number.
+- **Rationale**: User chose the recommended option on each material trade-off at plan.
+- **Affected docs**: [plan.md](plan.md), [audit.md](audit.md)
+
+## 2026-09-16 — `plan.md` accepted (adaptive)
+
+- **Decision**: 8 Tasks in 6 waves cover AC-1..AC-9; no migration script, AC-8 met by a CHANGELOG manual step at `pr`. Commit trailer `ASD-Task: <id>` chosen for AC-2 commit→task mapping.
+- **Rationale**: Routine gate: every AC traced, material alternatives settled by the user, remaining choices bounded inside accepted scope; audit lists no related open stubs and `stubs.md` is empty.
+- **Affected docs**: [plan.md](plan.md)
