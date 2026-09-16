@@ -1,6 +1,6 @@
 ---
 name: no-shell-doc-review-method
-description: How documentation review runs in this framework repo - no shell, manifest-driven ledger vocabulary (emitter-produced, possibly split into parts), and the defect shapes that actually pay off (acting-site scope contradicting the cited SSoT, partial mirror updates when a rule gains a trigger, sole-home claims wider than the code, authority bounds narrower than their only instance, a fix narrowing code while the file's second description of it stays wide, new failure branches missing from an exhaustive blocker list, new in-body comments in tests/run.js, and agent-memory claims stale at HEAD or contradicting the writer's definition)
+description: How documentation review runs in this framework repo - no shell, manifest-driven ledger vocabulary (emitter-produced, possibly split into parts), and the defect shapes that actually pay off (acting-site scope contradicting the cited SSoT, partial mirror updates when a rule gains a trigger, sole-home claims wider than the code, authority bounds narrower than their only instance, a fix narrowing code while the file's second description of it stays wide, new failure branches missing from an exhaustive blocker list, a new record-and-carry rule bound only on its read side, new in-body comments in tests/run.js, and agent-memory claims stale at HEAD or contradicting the writer's definition)
 metadata:
   type: feedback
 ---
@@ -9,7 +9,8 @@ Dispatches give no Bash even when the payload says "diff under review: `git diff
 surface by reading the manifest's scoped paths with Read/Grep/Glob and say once that the diff was derived
 from file reads. When the dispatch ships an `iteration.diff` file under `reviews/<phase>/iter-NN/`, read it -
 it IS the surface. The sprint's `audit.md` "Gaps" names every pre-change reader as `file:line`, and `plan.md`
-task lines cite the same - together they locate the changed lines without a diff. Ledger statuses, `n/a`
+task lines cite the same - together they locate the changed lines without a diff. The impl-test
+decisions-log entry often carries "Tester notes for impl-review" naming drift worth checking. Ledger statuses, `n/a`
 predicates and `p`/`f` placement come off the dispatched
 manifest's `vocabulary`/`n_a` fields, copied byte-identically; `review-policy.md` "Coverage ledger" is the
 shape rule only. Since sprint 012 manifests come from `runtime.js emit-manifest`; a scope above 25 files
@@ -32,6 +33,9 @@ what changed; prior `reviews/` iterations stay unread.
 - **A rule gaining a second trigger/site leaves unnamed mirrors stale.** Grep the old attribution phrase
   across the whole phase's files - sibling steps AND the skill `description` (always-loaded, in no
   manifest). Valid under the change-surface exception (change made unchanged text wrong).
+- **Record-and-carry rules: check both sides.** When a rule says "iteration X records list L, next
+  iteration reads L", tests usually pin only the read. Find who writes L in every case the rule names -
+  sprint 014: External Review skip's `Unreviewed files` had no writer and step 1b skipped the scope work.
 - **Accepted flagged choices vs exhaustive lists.** A decisions-log "Accepted flagged choices" line that
   routes a new failure ("... → `FAILED` → phase blocker") must land in canon. Check the dispatching
   workflow's closed enumerations ("A blocker is exactly one of", "The only reasons ... contacts the user")
