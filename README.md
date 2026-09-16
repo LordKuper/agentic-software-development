@@ -310,7 +310,7 @@ your-project/
 │   │   ├── custom-coding-rules.md   # impl / impl-test / impl-review rules (incl. perf budgets)
 │   │   └── stubs.md                 # project-global TODO registry
 │   └── sprints/
-│       ├── <NNN-slug>/              # active sprint (one at a time); decisions-log.md and test-plan.md created here, rotating into dated `decisions-log.NNN.md` / `test-plan.entry-NN.md` segments so neither grows unbounded (`artifact-layout.md`); archived with the sprint
+│       ├── <NNN-slug>/              # active sprint (one at a time); decisions-log.md and test-plan.md created here, rotating into numbered `decisions-log.NNN.md` / `test-plan.entry-NN.md` segments so neither grows unbounded (`artifact-layout.md`); archived with the sprint
 │       └── archived/<NNN-slug>/     # moved here after explicit closure approval; completed sprints immutable
 ├── .claude/                         # generated Claude Code view
 │   ├── agents/                      # 15 agent definitions: 11 roles + 4 tier variants (*.md)
