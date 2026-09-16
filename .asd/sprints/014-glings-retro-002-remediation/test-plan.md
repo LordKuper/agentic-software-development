@@ -1,0 +1,95 @@
+---
+responsibility:
+  owns: test approach for sprint change scope, removal reasons, no-test decisions, suite run result, code defects found by tests, manual-verification spec (single home — never duplicated in a review file)
+  excludes: task breakdown, requirements, review verdicts, code, change surface (derivable from the diff)
+  delegates_to: plan.md (tasks), persistent docs (requirements), reviews/impl/iter-NN/testing.md (verdict)
+---
+
+# Test plan — sprint 014-glings-retro-002-remediation
+
+<!--
+Written in impl-test, after the implementation exists. First entry writes this file fresh;
+every re-entry AMENDS it (append/update rows) — never a full rewrite. Defects rows persist
+(resolved ones kept for the record). Narrative rows of prior entries rotate into
+test-plan.entry-NN.md: .asd/rules/artifact-layout.md "Test plan". Change surface is not restated here — it's the diff
+itself (`git diff --stat`), computed by asd-phase-impl-test.md step 2 (full on entry 1, delta
+since the prior entry's `HEAD analysed` on re-entry).
+Rules: .asd/rules/sprint-lifecycle.md (impl-test phase), .asd/rules/code-style.md §17.
+-->
+
+## Entry log
+
+Appended each entry, never rewritten. `HEAD analysed` is the commit the strategy/prune passes
+were scoped through; the next re-entry's delta is `git diff <this sha>...HEAD`.
+
+| Entry | HEAD analysed | Scope |
+|---|---|---|
+| 1 |  | full change surface |
+
+## Risk → check decisions
+
+| Change | Material risk | Chosen check | Decision | Reason |
+|---|---|---|---|---|
+| `runtime.js` `defectStalemate` (Task 2, AC-3) | A second `## Defects` section (exact or suffixed) is read alone and a real stalemate fails open; a missing separator silently consumes the first defect row; errors do not name the line to fix | unit + CLI | add | Pure function plus its CLI exit contract; the new test covers both failures AC-3 names, the CLI loop gains a two-sections row |
+| `runtime.js` `NA_PREDICATES`/`NA_TARGETS` `noSelfHosting`/`noTemplated`, `isTemplated`, `templateNames`, `--self-hosting` (Task 4, AC-4) | Predicate granted where its condition fails (entry silently unreviewed) or withheld where it holds (split union check (c) fails); `--self-hosting` not parsed as boolean; nested templates not read | unit + CLI | add | Assertions appended to the two tests that already exercise the standing predicates against real rubrics and the real CLI, one per classifier branch plus boundary non-matches |
+| New predicates across split parts (AC-4 union check (c)) | A split part lacks a standing predicate the whole scope earns | unit | none | Both predicates are granted by the single whole-scope `standingPredicates` call before partitioning; the existing ORC-1 no-HTML assertions (sprint-012 AC-12 test) redden on any move of that call per part. Assertable separately only if a predicate gained its own evaluation path |
+| `review-policy.md` quotes of the two predicate texts | Quoted text drifts from `NA_PREDICATES`, teaching a ledger row the gate rejects | static | keep | sprint-012 AC-3/AC-12 sweep already checks every quoted `n/a:` literal in canon against `NA_PREDICATES` |
+| `runtime.js` `surface-check`, `SURFACE_CAP_FILES` (Task 5, AC-5) | Off-by-one at the cap, duplicate paths double-counted, invalid bound admits the surface, breach not signalled by exit code | unit + CLI | add | Boundary values at cap/cap+1, dedupe, bound override, invalid bounds, CRLF list with blank line, exit 0/1/2 |
+| Change-surface declaration and override gate across plan, checkpoints, impl-review (Task 5 Reachability) | Plan writes a gate/declaration impl-review never reads; override missing from the hard gate list lets adaptive mode self-approve; lifecycle restates the cap number | static | add | Literals derived from `sprint-lifecycle.md` "Plan file format" and asserted at `t_plan.md`, `asd-phase-plan.md`, impl-review entry check and `checkpoints.md`; `SURFACE_CAP_FILES` citation added to the runtime symbol sweep |
+| External Review outcome contract (Task 3, AC-1) | Agent/template/workflows/latch rule disagree with the three-outcome contract; skip re-widened to post-invocation failures; partial latches or loses its unreviewed files | static | add | Existing AC-8/sprint-010 AC-4 test carried a stale two-outcome assertion (test defect, suite 202/203 before this entry); rewritten in place to derive the partial, interrupted and `Unreviewed files` literals from `external-review.md` and assert every consuming site |
+| External Review batching loop, n/m accounting, stalemate over verdict iterations only | Wrapper batches wrongly or compares partial iterations | — | none | Executed by the `asd-external-review` agent against a live wrapped CLI; no `runtime.js` code path. Owner: impl-review Correctness. Literal contract sites are pinned by the row above |
+| `session-start.js` `lastReviewVerdict` (Task 3) | Partial value displayed as not satisfied | unit (hook exec) | add | Existing skip test turned into a loop over the skip and partial values of `external`; code unchanged, the prefix check now pinned for partial |
+| Failed-dispatch reconstruction (Task 1, AC-2) | Trailer key in the `git log` command diverges from `git-strategy.md`, so landed tasks re-dispatch; routing line lacks the anchor; workflows stop handing off to State recovery | static + executable git | add | Relations derived from `git-strategy.md` "Commits" and `sprint-lifecycle.md` "State recovery"; the canon `git log` command is run in a temp repo against a commit carrying the trailer |
+| `state.json` machine-state rule (Task 6, AC-6) | Prose written to `state.json` | — | none | No runtime reads or validates `state.json` prose, so there is no behaviour to exercise; deletion of `artifact-layout.md` "State file" reddens the canon citation sweep (`checkpoints.md` cites it twice). Assertable only with a `state.json` schema validator, which does not exist |
+| Rotation of `decisions-log.md`/`test-plan.md` (Task 7, AC-7) | Segment names drift between writer and readers; `Defects` or `Entry log` rotated out of live so stalemate/re-entry read partial history; a cross-span reader loses its pointer | static | add | Names and moved/kept section lists derived from `artifact-layout.md`, checked against `t_test-plan.md` headings, a canon+README name sweep and each cross-span reader's pointer |
+| Rotation performed at runtime (asd-sprint rename/commit, tester row move) | Rotation not performed | — | none | Orchestrator/tester action with no executable surface; names and triggers pinned by the row above. Owner: impl-review Correctness |
+| README.md mirrors (Task 8, AC-9) | README drifts from changed rules | static | keep | New README text is descriptive prose, not a §16-derived enumeration; segment names are in the AC-7 sweep; §16 chain/count checks unchanged. Remaining consistency owned by the Documentation reviewer's Framework mode |
+| `release-manifest.json`, generated views (Task 8) | Stale hashes or views | static | keep | Existing `canon_hashes`/`upstream_hashes` tests and `sync.js --check` test, green at this entry |
+| CHANGELOG/migration note (AC-8) | Consumer manual step missing | — | none | Not on this change surface: written by `pr` open mode per plan DoD. Owner: `pr` |
+
+## Removed tests
+
+| Test | Reason | In change scope |
+|---|---|---|
+| — | none | — |
+
+## Added tests
+
+Level and AC/risk covered are visible in the test file itself (name, path) — not restated here.
+
+All proofs ran `node tests/run.js` with one mutation applied and restored in the same process (byte-compared); every canon mutation also fails `release-manifest.json: every upstream_hashes entry matches the actual file` (hash noise), agent/hook mutations additionally the `canon_hashes` and `sync.js --check` tests. Suite green (207/207) before and after the batch.
+
+| Test | Regression proof |
+|---|---|
+| tests/run.js:sprint-014 AC-3: defect-stalemate fails closed on a second ## Defects section… | fail-first vs pre-change: `.asd/runtime.js` replaced by `git show main:.asd/runtime.js`, `node tests/run.js` → exit 1, 200/207, `sprint-014 AC-3…` first failure `"## Defects": entry 2 repeats entry 1 across two sections…`. Mutations: multi-section guard removed → exit 1, same message; separator check removed → exit 1, `without a separator the first data row would be consumed…`; row `line <n>:` prefix removed → exit 1, `a malformed row must name its own line…`; header prefix removed → exit 1, `a missing identity column must name the header line` |
+| tests/run.js:sprint-013 AC-3: the defect-stalemate CLI… (row `two Defects sections` added) | fail-first vs pre-change (main runtime.js) → exit 1, `two Defects sections: step 9 must never read a verdict…`; multi-section guard removed → exit 1, same message |
+| tests/run.js:sprint-012 AC-12: emit-manifest derives rule and section ids… (AC-4 assertions added) | fail-first vs pre-change (main runtime.js) → exit 1, `sprint-014 AC-4: without self-hosting exactly the Framework mode entry is n/a…`; `selfHosting !== true` → `true` → exit 1, `a self-hosting review keeps Framework mode reviewed…`; `docs\/` dropped from `isTemplated` → exit 1, `docs/architecture/core.md is a templated artefact…`; basename match on full path → exit 1, `x/plan.md is a templated artefact…` |
+| tests/run.js:runtime.js CLI: emit-manifest writes one stamped manifest per part… (AC-4 CLI assertions added) | fail-first vs pre-change (main runtime.js) → exit 1, `sprint-014 AC-4: a CLI emit without --self-hosting over an untemplated scope carries both new standing predicates`; `self-hosting` dropped from boolean flags → exit 1, thrown `Command failed: … emit-manifest … --self-hosting --files …`; `templateNames` non-recursive → exit 1, `--self-hosting ahead of --files must parse as a boolean … every depth of .asd/templates…`; predicate always granted → exit 1, same message |
+| tests/run.js:sprint-014 AC-5: surface-check counts distinct paths… | fail-first vs pre-change (main runtime.js) → exit 1, `TypeError: runtime.surfaceCheck is not a function`; no dedupe → exit 1, `a path listed twice is one file of change surface…`; breach returns 0 → exit 1, `a breach exits 1 and still prints the result…`; bound validation removed → exit 1, `Missing expected exception: bound 0…`; impl-review `gate: change-surface-cap-override` renamed → exit 1, `plan Reachability: impl-review entry must detect…`; override removed from `checkpoints.md` hard list → exit 1, `the override sprint-lifecycle.md sends to checkpoints.md must be in its hard-in-both-modes list…` |
+| tests/run.js:sprint-012 AC-3/AC-12: every `.asd/runtime.js` symbol canon cites… (`SURFACE_CAP_FILES` assertion added) | fail-first vs pre-change (main runtime.js) → exit 1, first failure the existing `canon hands member lists and predicate text to named runtime.js symbols…` (symbol undeclared); `sprint-lifecycle.md` symbol replaced by `100 files` → exit 1, `sprint-014 AC-5: the change-surface cap is one runtime constant…` |
+| tests/run.js:AC-8/sprint-010 AC-4/sprint-014 AC-1: external-review.md "Outcome contract"… (rewritten in place) | Pre-entry run failed on the stale `Never return anything but the two permitted outcomes` assertion (202/203). Mutations: agent Don't partial literal reworded → exit 1, `the agent's outcome Don't must carry \`APPROVE (partial: <n>/<m> files; <cause>)\`…`; agent ABORT line restored to `every failure of it returns the availability skip instead` → exit 1, `sprint-014 AC-1: the post-invocation half must stay on the signal line…`; partial literal dropped from latch carve-out → exit 1, `the latch rule both workflows cite must name the partial…`; `**any** inability to complete` re-added → exit 1, `the skip is narrowed to a non-ready preflight…`; design-review carry-forward removed → exit 1, `asd-phase-design-review.md must union the previous iteration's \`Unreviewed files\`…`. Reword `never creates an APPROVE latch` → `is never latched` → only hash noise fails (206/207), the test stays green |
+| tests/run.js:SessionStart hook: an availability-skip … or partial … counts as satisfied | mutation hook `approved` to bare-or-skip regex → exit 1, `External Review's "APPROVE (partial: 25/40 files; codex timeout)" must count as satisfied…` |
+| tests/run.js:sprint-014 AC-2: a failed creator or tester dispatch is reconstructed… | mutation `trailers:key=ASD-Task` → `trailers:key=Task` in `sprint-lifecycle.md` → exit 1, `the State recovery git log must print each landed commit's ASD-Task value on its own line…`; impl-test routing line anchor dropped → exit 1, `asd-phase-impl-test.md: the routing line must carry \`dispatch HEAD <sha>\`…`; `t_decisions-log.md` reconstruction line reworded → exit 1, `t_decisions-log.md carries the normative one-line forms…` |
+| tests/run.js:sprint-014 AC-7: decisions-log.md and test-plan.md rotate… | mutation `Defects` removed from live kept list → exit 1, `live test-plan.md must keep "Defects"…`; README `decisions-log.NNN.md` → `decisions-log.NN.md` → exit 1 (206/207, no hash noise), `a reader globbing a segment name other than the one the rotating writer produces…`; retro pointer removed → exit 1, `asd-phase-retro.md writes or reads across rotated decisions-log segments…` |
+
+## Suite run
+
+Written twice per cycle: `impl-test`'s suite gate records an **impacted-set** run here each entry
+(`.asd/rules/sprint-lifecycle.md` "Impacted test set"); `impl-review`'s terminal step overwrites
+it with the cycle's one **full-suite** run once every reviewer is APPROVE/latched. The `pr` gate
+always reads whatever is recorded here last — the full-suite record, by the time `pr` runs. Each
+per-entry record measures only the tree that entry analysed, not any tree produced later
+(`.asd/rules/sprint-lifecycle.md` "Impacted test set").
+
+- Command: `node tests/run.js` (impacted set = whole suite: no affected-test selector, shared infrastructure touched — safety valve)
+- Scope: impacted
+- Result: pass — 207/207 passed, 0 failed, 0 skipped, exit 0 (pre-strategy run: 202/203, the stale External Review assertion)
+- Lint / build: pass — `git diff --cached --check` exit 0 on the staged set; `node .asd/sync.js --check` exit 0, `ok: true`, 72/72 items `current`
+- HEAD: 7d97b59 — with this entry's `tests/run.js` edits uncommitted in the worktree; the entry's own test commit is first run at a HEAD by the impl-review terminal gate
+
+## Defects
+
+Code defects found by the suite. Resolved in `impl` test-fix mode. `Entry` through `Failing test` are never edited once written — the stalemate check compares them (`.asd/rules/sprint-lifecycle.md` "Impl-test phase"). One table only: append rows, never a second `## Defects` section — the check fails on one.
+
+| ID | Entry | Location | Symptom | Failing test | Status | Fix commit |
+|---|---|---|---|---|---|---|
