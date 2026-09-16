@@ -52,10 +52,10 @@ Material risk: change: workflow gate
 
 ### Task 4: Standing n/a for Framework mode and Template adherence
 Material risk: change: public contract
-- [ ] `runtime.js`: `NA_PREDICATES` gains `noSelfHosting: 'self_hosting not enabled'` and `noTemplated: 'no templated artefact in scope'`; `NA_TARGETS` maps them to documentation `Framework mode` and `Template adherence`
-- [ ] Templated-artefact classifier from its input: basename equals a `.asd/templates/**/t_<name>` stripped of `t_`, or path under `.asd/templates/`, `docs/`, `.asd/sprints/`, or `AGENTS.md`/`CLAUDE.md`; `emitManifestCommand` lists `.asd/templates/` and passes names in; `--self-hosting` boolean flag
-- [ ] `asd-phase-impl-review.md` step 1 and `asd-phase-design-review.md` step 3 pass `--self-hosting` when `config.self_hosting: enabled`
-- [ ] `review-policy.md` standing-predicate list quotes both new texts exactly
+- [x] `runtime.js`: `NA_PREDICATES` gains `noSelfHosting: 'self_hosting not enabled'` and `noTemplated: 'no templated artefact in scope'`; `NA_TARGETS` maps them to documentation `Framework mode` and `Template adherence`
+- [x] Templated-artefact classifier from its input: basename equals a `.asd/templates/**/t_<name>` stripped of `t_`, or path under `.asd/templates/`, `docs/`, `.asd/sprints/`, or `AGENTS.md`/`CLAUDE.md`; `emitManifestCommand` lists `.asd/templates/` and passes names in; `--self-hosting` boolean flag
+- [x] `asd-phase-impl-review.md` step 1 and `asd-phase-design-review.md` step 3 pass `--self-hosting` when `config.self_hosting: enabled`
+- [x] `review-policy.md` standing-predicate list quotes both new texts exactly
 
 ### Task 5: Change-surface cap at plan and impl-review entry
 Material risk: change: workflow gate
