@@ -1,0 +1,42 @@
+{
+  "phase": "impl-review",
+  "iteration": 1,
+  "base_ref": "main",
+  "head_ref": "168770fd762f06a7f171f95b7fc3268dc9fab5d6",
+  "files": [
+    ".asd/agents/asd-dev.md",
+    ".asd/agents/asd-external-review.md",
+    ".asd/agents/asd-reviewer-testing.md",
+    ".asd/agents/asd-tester.md",
+    ".asd/hooks/session-start.js",
+    ".asd/release-manifest.json",
+    ".asd/rules/artifact-layout.md",
+    ".asd/rules/checkpoints.md",
+    ".asd/rules/external-review.md",
+    ".asd/rules/git-strategy.md",
+    ".asd/rules/review-policy.md",
+    ".asd/rules/sprint-lifecycle.md",
+    ".asd/runtime.js",
+    ".asd/skills/asd-sprint/SKILL.md",
+    ".asd/templates/external-review/t_review-report.md",
+    ".asd/templates/t_decisions-log.md",
+    ".asd/templates/t_plan.md",
+    ".asd/templates/t_test-plan.md",
+    ".asd/workflows/asd-phase-design-review.md",
+    ".asd/workflows/asd-phase-impl-review.md",
+    ".asd/workflows/asd-phase-impl-test.md",
+    ".asd/workflows/asd-phase-impl.md",
+    ".asd/workflows/asd-phase-plan.md",
+    ".asd/workflows/asd-phase-pr.md",
+    ".asd/workflows/asd-phase-retro.md",
+    "README.md",
+    "tests/run.js"
+  ],
+  "exclude_paths": [
+    ".asd/project/**",
+    ".asd/sprints/**",
+    ".claude/**",
+    ".codex/**",
+    ".agents/skills/**"
+  ]
+}
