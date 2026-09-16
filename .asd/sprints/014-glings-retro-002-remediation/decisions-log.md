@@ -34,3 +34,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-09-16 — impl-review iter-02: route to impl review-fix
+
+- **Decision**: correctness (COR-1), testing (TST-1), documentation (DOC-1) CONCERNS; external APPROVE (latched at 2); efficiency inherited APPROVE (latched). `review_fixes_pending = iter-02`.
+- **Rationale**: No FAIL; iteration 3 within high budget. Correctness's out-of-surface remark on an empty `decisions-log.005.md` checked and false: `.005` holds the impl-test entry 2 lines.
+- **Affected docs**: [reviews/impl/iter-02/](reviews/impl/iter-02/)

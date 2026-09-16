@@ -19,8 +19,9 @@ still review the part's files and mark `finding` (or `pass`) where this part hol
 Files-row vocabulary is `checked`/`n/a` with no `finding` status, so a file carrying a finding is still
 `checked` and the finding id hangs off the rules row (one `f` per row: spread two findings over the two
 rubric ids they best fit). Sha256 freshness (`upstream_hashes`) cannot be recomputed - say it was
-corroborated structurally. Iter 2+ with no shell: the decisions-log "review-fix ... resolved" entry names
-what changed; prior `reviews/` iterations stay unread.
+corroborated structurally. Iter 2+ with no shell: the decisions-log "impl fix for iter-NN: findings resolved"
+entry (possibly in a rotated `decisions-log.NNN.md`, newest ordinal) names what changed; prior `reviews/`
+iterations stay unread - globbing `reviews/impl/**` lists them, so glob only the current `iter-NN/`.
 
 **Why:** reviewers hold no command-runner grant on either provider (write scope: `review-policy.md`
 "Gate Verdict Format"), and an invalid ledger is not a verdict - the phase rejects and re-dispatches.
@@ -36,6 +37,8 @@ what changed; prior `reviews/` iterations stay unread.
 - **Record-and-carry rules: check both sides.** When a rule says "iteration X records list L, next
   iteration reads L", tests usually pin only the read. Find who writes L in every case the rule names -
   sprint 014: External Review skip's `Unreviewed files` had no writer and step 1b skipped the scope work.
+  Same for id-keyed matching: 014's `ASD-Task: <id>` trailer names "a review finding id", but the
+  review-fix payload (`asd-phase-impl.md` step 6) carries no id - check the dispatcher hands the writer the id.
 - **Accepted flagged choices vs exhaustive lists.** A decisions-log "Accepted flagged choices" line that
   routes a new failure ("... → `FAILED` → phase blocker") must land in canon. Check the dispatching
   workflow's closed enumerations ("A blocker is exactly one of", "The only reasons ... contacts the user")
