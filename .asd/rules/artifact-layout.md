@@ -27,6 +27,7 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │       │   ├── sprint.md
 │       │   ├── state.json
 │       │   ├── decisions-log.md
+│       │   ├── decisions-log.NNN.md          # rotated segments, "Decisions log"
 │       │   ├── audit.md
 │       │   ├── design/
 │       │   │   ├── prd.html
@@ -37,6 +38,7 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │       │   │       # likec4: model/*.c4, views.c4 · mermaid: subsystems.md
 │       │   ├── plan.md
 │       │   ├── test-plan.md
+│       │   ├── test-plan.entry-NN.md          # rotated narrative segments, "Test plan"
 │       │   ├── manual-steps.md
 │       │   ├── friction-log.md
 │       │   ├── retrospective.html
@@ -180,6 +182,8 @@ Manual step = operational action a human must perform for the plan to complete (
 
 `<sprint>/test-plan.md` per `t_test-plan.md`. Per-sprint: entry 1 writes it fresh; every re-entry amends it (Defects section carried over with resolved entries kept for the record). Owner: Tester.
 
+**Rotation**: at a re-entry's strategy pass, before any new row and never when resuming an interrupted current entry (`asd-phase-impl-test.md` step 1), the Tester moves the `Risk → check decisions`, `Removed tests` and `Added tests` rows of the previous `Entry log` entry N, if any, into `test-plan.entry-NN.md` (same section headings, N zero-padded to 2) when that file is absent, leaving those tables empty in the live file. Live `test-plan.md` keeps the `Entry log`, `Suite run`, `Defects` and `Manual verification`. A segment is never edited: a fix that changes a rotated row's risk gets a superseding row in the live file. Readers: "Decisions log" below.
+
 SSoT for two things invisible in the diff: **why** a test was removed, and **why** a change needed no new test. Also the handoff channel for code defects to `impl` test-fix mode (`Defects` section). Not a task list (that is `plan.md`) and not a review verdict (that is `reviews/impl/iter-NN/testing.md`).
 
 **Manual verification — single home.** The optional `Manual verification` table (AC, steps, expected observation) is authored only here, by the Tester, when automation is impossible (visual UI, third-party live integration, ux feel). No review file duplicates or re-authors this spec; `asd-reviewer-testing` judges whether the spec is justified and reports any result as an ordinary finding, never as a persisted section of its own.
@@ -237,5 +241,9 @@ Archived path: `.asd/sprints/archived/<NNN-slug>/`. Closure/archival sequence (c
 ## Decisions log
 
 Every user or adaptive orchestrator decision appends one entry to `<sprint>/decisions-log.md`. Per-sprint file, created at `scope` from `t_decisions-log.md`, archived with the sprint. Owner: main orchestrator. Append-only, never edited or removed. Entry format and durability rule are normative in `t_decisions-log.md`.
+
+**Rotation**: before delegating a phase skill whose phase differs from `state.json.phase`, `asd-sprint` renames the live `decisions-log.md` to `decisions-log.NNN.md` (next ordinal, zero-padded to 3) when it holds an entry, recreates the live file from `t_decisions-log.md`, and commits both. A resume or re-run of the phase in `state.json.phase` never rotates, so a within-phase reader — the interrupted-attempt count (`review-policy.md` "Interrupted dispatch"), the failed-dispatch routing line (`sprint-lifecycle.md` "State recovery"), an impl-test stalemate answer — reads the live file alone.
+
+**Readers of both rotated files**: a current-fact reader reads the live file; a cross-span reader reads every segment in ordinal order, then the live file. No segment present = a legacy single file, read as is.
 
 **Legacy log**: `.asd/project/decisions-log.md` is historical only — the project-wide log used before this rule, frozen as of sprint `002-lean-workflow`. Never appended to again.

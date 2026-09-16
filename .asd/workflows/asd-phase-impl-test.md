@@ -37,7 +37,7 @@ No user gate on a green impacted-set run, and none on routing defects back to im
 4. **Strategy pass** — the same live `asd-tester` receives: change surface, prior plan evidence, ACs, contracts, commands and rules. It:
    - **authoring bar + no-new-test decision rule**: `code-style.md` §17 (SSoT), not restated here — write decision `none` with its reason in `test-plan.md` when no test qualifies
    - test selection happens **now**, after the implementation exists — never speculatively from the plan; check-ladder selection and prune criteria per `code-style.md` §17 (SSoT), not restated here
-   - **re-entry**: analyse only the delta — the material risk introduced or changed by the fix commits; leave prior `Risk → check decisions` rows untouched unless a fix actually changed that risk's behaviour, in which case update that row in place
+   - **re-entry**: first rotate the previous entry's narrative rows into `test-plan.entry-NN.md` (`artifact-layout.md` "Test plan"); analyse only the delta — the material risk introduced or changed by the fix commits; leave prior `Risk → check decisions` rows untouched unless a fix actually changed that risk's behaviour, in which case update a live row in place, or supersede a rotated one
    - specify `Manual verification` only when automation is impossible (visual UI, third-party live integration, ux feel) — `test-plan.md` is its single home, never duplicated in a review file
    - **entry 1**: write `<sprint>/test-plan.md` per `t_test-plan.md` (Risk → check decisions etc.); leave the first `Entry log` row's `HEAD analysed` unfilled for now (scope = "full change surface"). **Re-entry**: amend it — append new/updated rows; leave the new `Entry log` row's `HEAD analysed` unfilled for now (scope = "delta since entry N-1"); never rewrite prior rows outside the ones actually revised. Emit COMPLETED. The `HEAD analysed` sha itself is written at step 9's routing exit or in step 10, after the prune/author commit (step 7) and the suite recording (step 8) — never before — so the next re-entry's delta excludes this entry's own test-authoring commits
 5. Read `test-plan.md` → collect proposed removals; split into in-scope (test file inside the change surface) and out-of-scope
@@ -63,7 +63,7 @@ No user gate on a green impacted-set run, and none on routing defects back to im
 Delta scoping, amend-not-rewrite, the suite-gate rule and its bounded risk: `sprint-lifecycle.md` "Impl-test phase" Re-entry (sole SSoT, not restated here); steps 2, 4 and 7 above are its bindings. Two clarifications this phase owns: `Defects` rows persist across entries — a resolved row stays `fixed` for the record and a reappearing defect gets a new `D-N` row, never a reopened one; and the removal gate (step 6) fires on any proposed removal outside the sprint's **overall** change surface, not merely outside the current pass's delta.
 
 ## Artefacts produced
-- `<sprint>/test-plan.md` (risk→check decisions, removals, added tests, suite run, defects, optional manual verification spec)
+- `<sprint>/test-plan.md` (risk→check decisions, removals, added tests, suite run, defects, optional manual verification spec), plus `test-plan.entry-NN.md` on re-entry
 - Tests added, adjusted, and deleted in repo
 - `.asd/project/stubs.md` `(accepted-debt)` rows on an accept-as-debt answer
 - Updated `state.json` (phase=impl-test; `test_defects_pending` set when routing back to impl)

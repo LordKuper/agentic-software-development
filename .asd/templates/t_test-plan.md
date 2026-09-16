@@ -10,7 +10,8 @@ responsibility:
 <!--
 Written in impl-test, after the implementation exists. First entry writes this file fresh;
 every re-entry AMENDS it (append/update rows) — never a full rewrite. Defects rows persist
-(resolved ones kept for the record). Change surface is not restated here — it's the diff
+(resolved ones kept for the record). Narrative rows of prior entries rotate into
+test-plan.entry-NN.md: .asd/rules/artifact-layout.md "Test plan". Change surface is not restated here — it's the diff
 itself (`git diff --stat`), computed by asd-phase-impl-test.md step 2 (full on entry 1, delta
 since the prior entry's `HEAD analysed` on re-entry).
 Rules: .asd/rules/sprint-lifecycle.md (impl-test phase), .asd/rules/code-style.md §17.

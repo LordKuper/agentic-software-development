@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:2942fcc4b89f86223016bb09d4d58a343dd801534d43d6b0e5219cf8e8e9805c content_digest=sha256:ade4c776adb921a6286f5187a06c271a79b8d166c5ca1707075d8d40d6e6a9bf asd_version=8.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:aa181b435a6ef7da682c1c496533bb35c5ea36623558f3ba6f3e2104ddce7415 content_digest=sha256:49295015122e97e67c1db304d09c0c50c5fed20382580be1ab7ac5074c5f7da0 asd_version=9.0.0 schema=1
 name: asd-sprint
 description: "Starts a new ASD sprint or resumes the active one, dispatching the matching asd-phase-* skill and routing phase signals back to the user. Use when the user runs $asd-sprint or asks to start, continue, resume, or work on an ASD sprint."
 ---
@@ -14,12 +14,14 @@ Operation mapping: see `.asd/rules/providers.md`.
 
 ## Operations used
 - Read files / search repo — detect active sprint; read state.json, config.yaml, custom-common-rules.md
-- Run command — `git status`, `git branch --show-current`
+- Run command — `git status`, `git branch --show-current`; decisions-log rotation (rename, copy template, commit those paths)
 - Request user decision — new-sprint confirm, resume/abort choice
 - Delegate to skill — phase skills, plus `asd-init` per "Skills dispatched"
-- No direct writes — phase skills and their inline orchestrator own writes
+- No other writes — phase skills and their inline orchestrator own writes
 
 ## Workflow
+
+Before every phase-skill delegation below: rotate the decisions log per `.asd/rules/artifact-layout.md` "Decisions log".
 
 ### Step 1: detect active sprint
 - Search repo for `.asd/sprints/*/state.json` (excluding `archived/`) UNION `.asd/sprints/archived/*/state.json` where `phase != "done"` (a sprint the `pr` phase already archived pre-merge, still awaiting merge confirmation)

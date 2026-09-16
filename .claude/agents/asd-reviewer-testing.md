@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:cbf0161ca2edc523a0b4b96c9873e3931454d30e9bca2a5e9533d4d1ef8b5e6b content_digest=sha256:1273d29fc068d166eabda415d602376b829bb53e491acfb9eecd295c961be93f asd_version=7.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:467a502444ac6451b1f46b7d2ea249b99a7610a8b6a187c0221beb012cc82f67 content_digest=sha256:b48ddf4fb44a11e1e1381929e53a5b15582e71b1f18e302034b2329601fc495d asd_version=9.0.0 schema=1
 name: asd-reviewer-testing
 description: "Impl-review assessment of the test-plan decisions and the tests themselves, plus judging manual-verification necessity when automation is impossible. Covers: risk→check fit per test-plan.md, justification of removed tests and of no-test decisions, fail-first proof on regression tests, coverage of AC-N, edge cases on core paths, absence of test-for-test-sake (meaningless assertions), flaky patterns, manual-verification necessity judgment against the spec `test-plan.md` already owns (single home — never re-authored here). Does NOT handle: bug/security/AC-coverage/ui/a11y (delegates to asd-reviewer-correctness), over-engineering/performance (delegates to asd-reviewer-efficiency), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -29,7 +29,7 @@ Testing reviewer. Judges the test *decisions* recorded in `test-plan.md` and the
 
 ## Inputs
 
-- `<sprint>/test-plan.md` (primary input: risk→check decisions, removals, added tests, suite run, manual verification spec)
+- `<sprint>/test-plan.md` with its `test-plan.entry-NN.md` segments (primary input: risk→check decisions, removals, added tests, suite run, manual verification spec; `artifact-layout.md` "Test plan")
 - diff payload (code + tests)
 - `docs/product/requirements/<subsystem>.html` (ACs to trace); when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
 - `<sprint>/plan.md`

@@ -229,7 +229,7 @@ Owner: Tester. Runs after every `impl` exit. Selects the test approach **after**
 
 **Workflow**: change-surface analysis → pre-strategy impacted run (existing tests) → `test-plan.md` (risk → chosen check → decision) → prune + author → impacted-set suite run.
 
-**Re-entry** (every `impl` exit after the first re-enters this phase): the strategy and prune passes scope to the **delta since the prior entry** (the review-fix/test-fix commits, via `test-plan.md`'s `Entry log`), not the whole change surface again — `test-plan.md` is amended, not rewritten. The **suite gate re-runs on every entry**, scoped per `Impacted test set` above (never the whole repo, subject to its safety valve). Bounded risk: a defect introduced by a fix outside the impacted set's reach is not caught here — the end-of-`impl-review` full suite (`Impacted test set` above) is the backstop.
+**Re-entry** (every `impl` exit after the first re-enters this phase): the strategy and prune passes scope to the **delta since the prior entry** (the review-fix/test-fix commits, via `test-plan.md`'s `Entry log`), not the whole change surface again — `test-plan.md` is amended, not rewritten, after the prior entry's narrative rows rotate (`artifact-layout.md` "Test plan"). The **suite gate re-runs on every entry**, scoped per `Impacted test set` above (never the whole repo, subject to its safety valve). Bounded risk: a defect introduced by a fix outside the impacted set's reach is not caught here — the end-of-`impl-review` full suite (`Impacted test set` above) is the backstop.
 
 **Removal gate** — deleting a test outside scope uses `checkpoints.md`: explicit approval in strict, or adaptive evidence when authority and checks cover it. In-scope removals record a reason.
 
