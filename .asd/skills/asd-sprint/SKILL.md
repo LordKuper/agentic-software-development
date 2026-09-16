@@ -23,7 +23,7 @@
 
 ## Workflow
 
-Before every phase-skill delegation below: rotate the decisions log per `.asd/rules/artifact-layout.md` "Decisions log".
+Before a phase-skill delegation below, rotate the decisions log when `.asd/rules/artifact-layout.md` "Decisions log" requires it.
 
 ### Step 1: detect active sprint
 - Search repo for `.asd/sprints/*/state.json` (excluding `archived/`) UNION `.asd/sprints/archived/*/state.json` where `phase != "done"` (a sprint the `pr` phase already archived pre-merge, still awaiting merge confirmation)

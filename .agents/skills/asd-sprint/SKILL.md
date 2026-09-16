@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:aa181b435a6ef7da682c1c496533bb35c5ea36623558f3ba6f3e2104ddce7415 content_digest=sha256:49295015122e97e67c1db304d09c0c50c5fed20382580be1ab7ac5074c5f7da0 asd_version=9.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:5b65b1013de646221a4cec7e70ebc1693eae23baad29c36d00e9e151da289df6 content_digest=sha256:473972e329d49f3c0513217ec7854ae8d08946b36cb6cdc014329f475d022ce4 asd_version=9.0.0 schema=1
 name: asd-sprint
 description: "Starts a new ASD sprint or resumes the active one, dispatching the matching asd-phase-* skill and routing phase signals back to the user. Use when the user runs $asd-sprint or asks to start, continue, resume, or work on an ASD sprint."
 ---
@@ -21,7 +21,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 
 ## Workflow
 
-Before every phase-skill delegation below: rotate the decisions log per `.asd/rules/artifact-layout.md` "Decisions log".
+Before a phase-skill delegation below, rotate the decisions log when `.asd/rules/artifact-layout.md` "Decisions log" requires it.
 
 ### Step 1: detect active sprint
 - Search repo for `.asd/sprints/*/state.json` (excluding `archived/`) UNION `.asd/sprints/archived/*/state.json` where `phase != "done"` (a sprint the `pr` phase already archived pre-merge, still awaiting merge confirmation)
