@@ -29,10 +29,10 @@ AC-8 is met with no migration script: rotation reads absent segments as legacy, 
 
 ### Task 1: Recover a failed creator/tester dispatch from git evidence
 Material risk: change: workflow gate
-- [ ] `git-strategy.md` "Commits": every commit a dispatched dev/tester makes carries one `ASD-Task: <id>` trailer (`Task N`, a review finding id, or `D-N`); one line, no restated rationale
-- [ ] `sprint-lifecycle.md` "State recovery": single home for failed-dispatch reconstruction (AC-2). Trigger: `impl` initial/review-fix/test-fix or `impl-test` dispatch returns no completion signal. Anchor: the HEAD sha the orchestrator logs in its routing line at dispatch. Steps: `git status --porcelain`, `git log --format='%h %s%n%(trailers:key=ASD-Task,valueonly)' <anchor>..HEAD -- . ':!.asd/sprints/**'`; landed ids are dropped from the re-dispatch; uncommitted leftovers are named in the re-dispatch payload for the agent to finish or revert, never swept by the orchestrator; one `reconstruction: landed <ids>; re-dispatched <ids>` decisions-log line
-- [ ] Routing log line in `asd-phase-impl.md` and `asd-phase-impl-test.md` gains `dispatch HEAD <sha>`; each workflow's no-signal branch points to the rule, no restatement
-- [ ] `asd-dev.md` / `asd-tester.md`: commit instruction names the trailer by pointer to `git-strategy.md`
+- [x] `git-strategy.md` "Commits": every commit a dispatched dev/tester makes carries one `ASD-Task: <id>` trailer (`Task N`, a review finding id, or `D-N`); one line, no restated rationale
+- [x] `sprint-lifecycle.md` "State recovery": single home for failed-dispatch reconstruction (AC-2). Trigger: `impl` initial/review-fix/test-fix or `impl-test` dispatch returns no completion signal. Anchor: the HEAD sha the orchestrator logs in its routing line at dispatch. Steps: `git status --porcelain`, `git log --format='%h %s%n%(trailers:key=ASD-Task,valueonly)' <anchor>..HEAD -- . ':!.asd/sprints/**'`; landed ids are dropped from the re-dispatch; uncommitted leftovers are named in the re-dispatch payload for the agent to finish or revert, never swept by the orchestrator; one `reconstruction: landed <ids>; re-dispatched <ids>` decisions-log line
+- [x] Routing log line in `asd-phase-impl.md` and `asd-phase-impl-test.md` gains `dispatch HEAD <sha>`; each workflow's no-signal branch points to the rule, no restatement
+- [x] `asd-dev.md` / `asd-tester.md`: commit instruction names the trailer by pointer to `git-strategy.md`
 
 ### Task 2: Fail closed on multiple Defects sections, with line numbers
 Material risk: change: public contract
