@@ -35,3 +35,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 <!-- entries appended below this line -->
 - 2026-09-16 — pr open mode DoD verified: plan 8/8, AC-1..AC-9 traced, iter-03 all APPROVE/latched, full suite 207/207 at `c55e695` with no code/test diff since `3c41096`, sync and lint clean, retrospective present, no sprint stubs; version bumped to 10.0.0 with CHANGELOG (AC-8 manual step for duplicate Defects sections)
+- 2026-09-16 — PR #41 opened (user-approved publication): https://github.com/LordKuper/agentic-software-development/pull/41
