@@ -12,7 +12,7 @@ Before creating: `git fetch origin`, fast-forward local `git.base_branch` to `or
 - Subject ≤ 50 chars, imperative mood, English
 - Body describes WHY, not WHAT
 - One commit per task when possible; phase-grouped acceptable for small tasks
-- A dispatched `asd-dev`/`asd-tester` commit carries one trailer line `ASD-Task: <id>` — `Task N`, a review finding id, `D-N`, or `impl-test entry N` for impl-test's own commits
+- A dispatched `asd-dev`/`asd-tester` commit carries one trailer line `ASD-Task: <id>` per id it covers — `Task N`, a review finding id, `D-N`, `impl-test entry N` for impl-test's own commits, or `impl-review iter-NN suite` for impl-review step 9's in-place test fix
 - Before push: squash local WIP/fixup commits into task-level commits (`git reset --soft` + recommit, or non-interactive rebase). Applies to unpushed commits only — published history stays untouched (see Forbidden)
 
 ## Forbidden
