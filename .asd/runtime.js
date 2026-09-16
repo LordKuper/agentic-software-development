@@ -26,6 +26,8 @@ const NA_PREDICATES = {
   perf: 'no perf budgets section and no executable file in scope',
   noBudgets: 'no budgets defined',
   noHtml: 'no HTML file in scope',
+  noSelfHosting: 'self_hosting not enabled',
+  noTemplated: 'no templated artefact in scope',
   outOfPart: 'evidence outside this part; covered by the other parts',
 };
 /** Rubric entries each conditional predicate covers, by reviewer and id prefix; a prefix matching no entry fails the emit closed. */
@@ -34,6 +36,8 @@ const NA_TARGETS = {
   perf: { efficiency: ['Perf budget compliance', 'Perf anti-patterns', 'Algorithmic complexity', 'Regression detection', 'Hot path identification'] },
   budgetCompliance: { efficiency: ['Perf budget compliance'] },
   html: { documentation: ['HTML shell wrapping', 'Provenance', 'Traceability'] },
+  selfHosting: { documentation: ['Framework mode'] },
+  templated: { documentation: ['Template adherence'] },
 };
 const PHASES = ['design-review', 'impl-review'];
 
@@ -306,8 +310,18 @@ function isExecutable(file) {
   return !/\.(md|json|ya?ml|toml|html?|txt)$/i.test(file);
 }
 
+/** A templated artefact: basename equal to a template name, a path under `.asd/templates/`, `docs/` or `.asd/sprints/`, or root `AGENTS.md`/`CLAUDE.md`. */
+function isTemplated(file, templates) {
+  return templates.includes(file.split('/').pop()) || /^(\.asd\/templates\/|docs\/|\.asd\/sprints\/|(AGENTS|CLAUDE)\.md$)/.test(file);
+}
+
+/** Every `t_<name>` file under a templates directory, at any depth, as `<name>`. */
+function templateNames(dir) {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => (entry.isDirectory() ? templateNames(path.join(dir, entry.name)) : entry.name.startsWith('t_') ? [entry.name.slice(2)] : []));
+}
+
 /** Maps every rule id to the standing n/a predicates its condition authorizes for this dispatch. */
-function standingPredicates(input, ids, customRules) {
+function standingPredicates(input, ids, customRules, templates) {
   const granted = new Map(ids.map((id) => [id, []]));
   const targets = (key) => (NA_TARGETS[key][input.reviewer] || []).map((prefix) => ids.find((id) => id.startsWith(prefix)) || fail(`rubric entry missing for n/a predicate: ${prefix}`));
   const grant = (key, predicate) => targets(key).forEach((id) => granted.get(id).push(predicate));
@@ -316,6 +330,8 @@ function standingPredicates(input, ids, customRules) {
   Object.keys(NA_TARGETS).forEach(targets);
   ids.filter((id) => id.includes(otherPhase) && !id.includes(input.phase)).forEach((id) => granted.get(id).push(NA_PREDICATES.phaseGate));
   if (!input.files.some((file) => /\.html?$/i.test(file))) grant('html', NA_PREDICATES.noHtml);
+  if (input.selfHosting !== true) grant('selfHosting', NA_PREDICATES.noSelfHosting);
+  if (!input.files.some((file) => isTemplated(file, templates))) grant('templated', NA_PREDICATES.noTemplated);
   if (input.phase === 'design-review') {
     if (!input.files.some((file) => /(^|\/)(ux-spec\.html|design-md-delta\.yaml)$/.test(file))) grant('ui', NA_PREDICATES.phaseGate);
     return granted;
@@ -334,7 +350,8 @@ function emitCoverageManifests(input) {
   const customRules = input.customRules || {};
   const rubric = rubricIds(input.rubric);
   const rules = rubric.rules.concat(Object.keys(customRules));
-  const granted = standingPredicates(input, rules, customRules);
+  const templates = input.templates === undefined ? [] : stringArray(input.templates, 'templates');
+  const granted = standingPredicates(input, rules, customRules, templates);
   const partCount = files.length > SPLIT_THRESHOLD_FILES ? Math.ceil(files.length / SPLIT_THRESHOLD_FILES) : input.halve === true ? 2 : 1;
   if (partCount > Math.max(files.length, 1)) fail('scope has fewer files than parts');
   const naFor = (ids) => Object.fromEntries(ids.map((id) => [id, partCount > 1 ? granted.get(id).concat(NA_PREDICATES.outOfPart) : granted.get(id)]).filter(([, predicates]) => predicates.length > 0));
@@ -404,6 +421,8 @@ function emitManifestCommand(flags) {
     files: fs.readFileSync(flags.files, 'utf8').split(/\r?\n/).map((line) => line.trim()).filter(Boolean),
     customRules: Object.fromEntries(customPaths.map((file) => [file, fs.readFileSync(file, 'utf8')])),
     halve: flags.halve === true,
+    selfHosting: flags['self-hosting'] === true,
+    templates: templateNames(path.join(__dirname, 'templates')),
   });
   return manifests.map((manifest, index) => {
     const file = path.join(flags.out, manifests.length === 1 ? `${flags.reviewer}.manifest.json` : `${flags.reviewer}.part-${index + 1}.manifest.json`);
@@ -433,7 +452,7 @@ function inputJson(flags) {
 
 function main(argv) {
   const command = argv[2];
-  const flags = parseFlagArgs(argv.slice(3), ['halve']);
+  const flags = parseFlagArgs(argv.slice(3), ['halve', 'self-hosting']);
   if (command === 'manifest-digest') {
     process.stdout.write(coverageManifestDigest(JSON.parse(fs.readFileSync(flags.manifest, 'utf8'))) + '\n');
     return 0;
