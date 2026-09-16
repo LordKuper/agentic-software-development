@@ -81,9 +81,9 @@ Reachability: impl-test writes `test-plan.entry-NN.md` at its entry start; impl-
 
 ### Task 8: Mirrors, generated views and release manifest
 Material risk: artifact: README and release-manifest mirrors
-- [ ] README.md: External Review outcomes, `defect-stalemate` and `surface-check` runtime commands (line 297), rotation in folder map (313), cap and hard gate list (171, 223-225, 423)
-- [ ] `node .asd/sync.js --apply` on every generated view of changed agents/skills/hooks; `--check` clean
-- [ ] `.asd/release-manifest.json` `canon_hashes`/`managed_paths` current for changed canon
+- [x] README.md: External Review outcomes, `defect-stalemate` and `surface-check` runtime commands (line 297), rotation in folder map (313), cap and hard gate list (171, 223-225, 423)
+- [x] `node .asd/sync.js --apply` on every generated view of changed agents/skills/hooks; `--check` clean
+- [x] `.asd/release-manifest.json` `canon_hashes`/`managed_paths` current for changed canon
 
 ## Risks
 - Iteration-1 review scope ~32 files exceeds `SPLIT_THRESHOLD_FILES` (25): expect 2 parts per internal reviewer; External Review runs 2 batches.
