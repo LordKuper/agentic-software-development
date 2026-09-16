@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-dev.md. source_digest=sha256:f3d97bcd72e16fcde0f6ff5ebd5fbaf9e159f5391cc8e8d0d1410081980f21c7 content_digest=sha256:a482c58fc5d57861f5000fdea4f4800d52f68fd213b41b8e470954f04642d503 asd_version=7.3.0 schema=1
+# ASD generated. Edit .asd/agents/asd-dev.md. source_digest=sha256:d8f6f5edbdf7f3e00c6a562e44043cb4da26cded8efa0d590dec6d94f5f1a389 content_digest=sha256:69fb33744e54824553f5cf5498f447fbc6e6ad4edb211472688cfdd8b50e4cb9 asd_version=9.0.0 schema=1
 name: asd-dev-critical
 description: "Server/CLI/library code and UI code, components, client-side logic, consuming DESIGN.md tokens wherever UI work applies. Covers: production code authoring per plan tasks (backend and frontend), fixing impl-review findings and impl-test defects, running lint/build/run commands from commands.yaml, registering TODO stubs in stubs.md. Does NOT handle: any test authoring or test runs — unit, integration, e2e (delegates to asd-tester in the impl-test phase), architecture decisions (delegates to asd-architect), design system token edits (delegates to asd-ux), accessibility requirements (read-only consumer of accessibility.html), code review (delegates to reviewer agents). Task class: critical."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
@@ -69,7 +69,7 @@ Implementer:
 - Manual-steps handling: see `sprint-lifecycle.md` "Impl phase" — do not restate here
 - Run build and lint before marking task done
 - In test-fix mode: fix the root cause behind the failing test, never weaken or delete the test; flip the `D-N` row to `fixed` with the commit sha
-- Commit per task with Conventional Commits format
+- Commit per task with Conventional Commits format plus the `ASD-Task` trailer (`git-strategy.md` "Commits")
 - Read custom-common-rules.md (domain glossary, naming) and custom-coding-rules.md (forbidden patterns, perf budgets) and respect both
 
 ## Don'ts

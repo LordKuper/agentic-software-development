@@ -75,7 +75,7 @@ Implementer:
 - Manual-steps handling: see `sprint-lifecycle.md` "Impl phase" — do not restate here
 - Run build and lint before marking task done
 - In test-fix mode: fix the root cause behind the failing test, never weaken or delete the test; flip the `D-N` row to `fixed` with the commit sha
-- Commit per task with Conventional Commits format
+- Commit per task with Conventional Commits format plus the `ASD-Task` trailer (`git-strategy.md` "Commits")
 - Read custom-common-rules.md (domain glossary, naming) and custom-coding-rules.md (forbidden patterns, perf budgets) and respect both
 
 ## Don'ts
