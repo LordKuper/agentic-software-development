@@ -35,3 +35,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 <!-- entries appended below this line -->
 - 2026-09-16 — impl-review iter-03: all reviewers APPROVE or latched; reviewer DoD met → terminal full-suite gate. Sub-floor documentation note (External Review finding has no defined ASD-Task id) kept for retro
+
+## 2026-09-16 — impl-review DoD met (adaptive green handoff)
+
+- **Decision**: Terminal full suite green at `c55e695` (207/207, lint and `sync.js --check` clean), recorded in `3c41096`; advance to retro.
+- **Rationale**: Routine gate: every reviewer APPROVE or latched in iter-03, no unresolved finding, machine checks pass.
+- **Affected docs**: [test-plan.md](test-plan.md), [reviews/impl/iter-03/](reviews/impl/iter-03/)
