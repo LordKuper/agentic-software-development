@@ -68,8 +68,8 @@ Reachability: plan writes the approved override bound at its gate into `state.js
 
 ### Task 6: state.json holds machine state only
 Material risk: artifact: rule wording in artifact-layout.md and checkpoints.md
-- [ ] `artifact-layout.md`: one statement — `state.json` carries only keys `t_state.json` defines; prose goes to `decisions-log.md`; `gate_decisions[].reason`/`evidence` are short refs
-- [ ] `checkpoints.md` "Gate policy" (5) and "Approval recording" (22): record short refs in `gate_decisions`, the prose in the decisions log
+- [x] `artifact-layout.md`: one statement — `state.json` carries only keys `t_state.json` defines; prose goes to `decisions-log.md`; `gate_decisions[].reason`/`evidence` are short refs
+- [x] `checkpoints.md` "Gate policy" (5) and "Approval recording" (22): record short refs in `gate_decisions`, the prose in the decisions log
 
 ### Task 7: Rotate decisions-log.md and test-plan.md
 Material risk: change: workflow gate
