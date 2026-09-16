@@ -5,7 +5,7 @@ responsibility:
   delegates_to: t_prompt-external-{design,impl}.md (prompts), t_review.md (internal reviewer output)
 ---
 
-[REVIEW-{{REVIEW_PHASE}}-external]: {{APPROVE | APPROVE (partial: <n>/<m> files; <cause>) | CONCERNS | FAIL}}
+[REVIEW-{{REVIEW_PHASE}}-external]: {{APPROVE | APPROVE (skipped: external review unavailable: <specific status>) | APPROVE (partial: <n>/<m> files; <cause>) | CONCERNS | FAIL}}
 
 # External Review Report
 

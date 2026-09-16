@@ -32,7 +32,7 @@ On a real-request authentication, quota, reachability, or command failure, phase
 
 On a non-ready preflight (command/auth failure) or an active negative cache — never on a failure after invocation (Outcome contract):
 
-- Return `APPROVE (skipped: external review unavailable: <specific status>)`; the dispatching workflow persists the exact status in the external review output, appends it to `<sprint>/decisions-log.md` for sprint `<NNN-slug>` iteration `<N>`, and appends an `F-N` friction entry for it (`sprint-lifecycle.md` "Friction log")
+- Return `APPROVE (skipped: external review unavailable: <specific status>)`; the dispatching workflow persists the exact status in that iteration's `external.md` — its first-line token plus an `Unreviewed files` line naming the `files[]` the scope manifest would have carried ("Iteration semantics"), no other section — appends it to `<sprint>/decisions-log.md` for sprint `<NNN-slug>` iteration `<N>`, and appends an `F-N` friction entry for it (`sprint-lifecycle.md` "Friction log")
 - Continue without external review, no user prompt
 
 An availability skip satisfies only that iteration and never creates an APPROVE latch. A later local-ready result dispatches External Review normally.
