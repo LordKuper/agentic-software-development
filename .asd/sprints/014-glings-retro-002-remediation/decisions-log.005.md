@@ -34,3 +34,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+- 2026-09-16 — route impl-test entry 2: critical, dispatch HEAD 14498c1
+- 2026-09-16 — impl-test: impacted set green (207/207, sync --check ok, lint ok), 0 added / 0 removed tests, 2 extended (AC-2 trailer scan fixtures, AC-1 skip Unreviewed files); entry-01 rotated; no defects. Flagged choices accepted: suite-id fixture trailer, authorised-leftover rule untested (no runtime filter)
