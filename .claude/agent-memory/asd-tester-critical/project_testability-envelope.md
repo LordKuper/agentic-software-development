@@ -42,7 +42,7 @@ bijection check itself. For many mutations, a Node script written to the temp di
 that loops `[id, file, from, to]`, checks the anchor hits exactly once, and restores the in-memory
 buffer in `finally` with a byte compare worked cleanly (sprint 011, 23 runs in two calls). A "revert the fix
 commit" mutation built from `execSync('git show <sha>^:<path>')` is a silent no-op on this Windows host:
-`execSync` runs through cmd.exe, which eats `^`, so it reads the CURRENT blob. Use `<sha>~1`. The tell is a
+`execSync` runs through cmd.exe, which eats `^`, so it reads the CURRENT blob. Use `<sha>~1`. Writing regex source into `tests/run.js` from a script: a plain JS string turns `\b` into a backspace byte (invisible in Read, suite goes red) and a global `split('\\`')` strip hits every existing escaped-backtick row in `test-plan.md` — use `String.raw` in a scratch file, or the Edit tool (sprint 014 iter-02). The tell is a
 run with zero FAIL lines, not even the hash-ledger noise every real canon mutation produces — unless the script
 reads only stdout: `runAll` writes `FAIL -` and the stack to **stderr**, `ok -` and the count to stdout, so a
 `spawnSync` loop must parse both or it shows a dropped count with no FAIL lines. For the extra FAIL lines a tracked file's mutation produces:

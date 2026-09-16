@@ -34,3 +34,13 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+- 2026-09-16 — route iter-02 dev chain: critical, dispatch HEAD 4d84e84
+- 2026-09-16 — iter-02 dev chain flagged choices accepted: `<review file> <id>` qualifier only on collision; D-N leftover only sets the row, fix verified by impl-test
+- 2026-09-16 — route iter-02 tester chain: critical, dispatch HEAD 43d320f
+- 2026-09-16 — iter-02 tester chain flagged choices accepted: spelling-tolerant authorised check, word anchors failing loudly, rows edited in place
+
+## 2026-09-16 — impl fix for iter-02: findings resolved
+
+- **Decision**: COR-1, DOC-1 (`b2019e0`, `43d320f`), TST-1 and COR-1 pin (`c9cf9b7`) resolved; suite 207/207, sync --check ok, lint clean.
+- **Rationale**: Fix-mode finalize; flagged choices resolved above.
+- **Affected docs**: [reviews/impl/iter-02/](reviews/impl/iter-02/), [test-plan.md](test-plan.md)
