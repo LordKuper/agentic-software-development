@@ -4756,6 +4756,18 @@ test('sprint-014 AC-2: a failed creator or tester dispatch is reconstructed from
   const testerException = failed.split(/(?<=\.) /).find((sentence) => sentence.includes(`\`${testerId}\``));
   assert.ok(testerException && /\bnever\b[^.:]*landed/.test(testerException) && testerException.includes('(`asd-phase-impl-test.md` step 1)'), `COR-2: reconstruction must never read \`${testerId}\` as landed and must resume via asd-phase-impl-test.md step 1 - dropped as landed after the test commit, the entry's suite gate never runs`);
   assert.ok(canonText('.asd/workflows/asd-phase-impl-test.md').split('\n').some((line) => line.startsWith('1. ') && line.includes('interrupted current entry')), 'COR-2: asd-phase-impl-test.md step 1, which reconstruction resumes through, must handle the interrupted current entry');
+  const defectId = ids.find((id) => id.startsWith('D-'));
+  const fixedStatus = /`Status` to `([^`]+)`/.exec(canonText('.asd/workflows/asd-phase-impl.md'));
+  assert.ok(defectId && fixedStatus, `COR-1: git-strategy.md "Commits" must list the D-N id and asd-phase-impl.md test-fix must name the Status it sets. Got: ${JSON.stringify(ids)}`);
+  const defectSentence = failed.split(/(?<=\.) /).find((sentence) => sentence.includes(`\`${defectId}\``));
+  const [defectLands = '', defectOtherwise = ''] = defectSentence ? defectSentence.slice(defectSentence.indexOf(`\`${defectId}\``)).split(/\botherwise\b/) : [];
+  assert.ok(defectLands.includes('Defects') && defectLands.includes(`\`${fixedStatus[1]}\``), `COR-1: reconstruction must read a \`${defectId}\` trailer as landed only once its Defects row reads \`${fixedStatus[1]}\` - test-fix commits the fix before flipping the row, so a dispatch dying between them leaves the row pending`);
+  assert.ok(/\bsha\b/.test(defectOtherwise) && /\b(?:no|never|not)\b[^.]*\bfix/.test(defectOtherwise), `COR-1: otherwise the re-dispatch must only set the \`${defectId}\` row from the trailer commit's sha, without a second fix`);
+  const leftovers = failed.split(/(?<=\.) /).find((sentence) => /\buncommitted\b/i.test(sentence));
+  const [payload = '', orchestrator = ''] = leftovers ? leftovers.split(/;\s*/) : [];
+  assert.ok(/\bauthori[sz]ed\b/.test(payload), 'TST-1: the failed-dispatch payload must limit uncommitted leftovers to the paths the failed dispatch was authorised to touch');
+  assert.ok(/\bnever\b[^;]*\bbookkeeping\b/.test(payload) && /\bnever\b[^;]*\bsibling\b/.test(payload), 'TST-1: the failed-dispatch payload must never name orchestrator bookkeeping or an in-flight sibling dispatch\'s paths - the agent would finish or revert state.json, decisions-log.md or sibling work');
+  assert.ok(/\borchestrator\b/.test(orchestrator) && /\bnever\b/.test(orchestrator) && /\bstag/.test(orchestrator) && /\bdiscard/.test(orchestrator), 'TST-1: the orchestrator must never stage or discard a failed dispatch\'s leftovers - author-only staging');
   for (const rel of ['.asd/templates/t_decisions-log.md', '.asd/workflows/asd-phase-impl.md', '.asd/workflows/asd-phase-impl-test.md']) {
     assert.ok(canonText(rel).split('\n').some((line) => /route <taskIds?>/.test(line) && line.includes(anchor[1])), `${rel}: the routing line must carry \`${anchor[1]}\` - without it a failed dispatch has no anchor and every commit on the branch reads as landed`);
   }
