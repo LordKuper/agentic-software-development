@@ -1,0 +1,43 @@
+{
+  "sprint_id": "014-glings-retro-002-remediation",
+  "branch": "sprint/014-glings-retro-002-remediation",
+  "phase": "scope",
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "adr": false,
+    "c4": false
+  },
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "explicit accept of sprint.md AC-1..AC-9",
+      "evidence": "user answered accept at hard scope gate; retro rows verified at HEAD 1421e34",
+      "artifact_revision": "sprint.md initial"
+    }
+  ],
+  "task_routing": {},
+  "skipped_phases": [],
+  "reviews": {
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "iteration": 0,
+      "verdicts": {},
+      "iteration_heads": {},
+      "latched": {}
+    }
+  },
+  "created_at": "2026-09-16T12:13:47Z",
+  "updated_at": "2026-09-16T12:22:04Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": null,
+  "archived_at": null
+}
