@@ -74,10 +74,10 @@ Material risk: artifact: rule wording in artifact-layout.md and checkpoints.md
 ### Task 7: Rotate decisions-log.md and test-plan.md
 Material risk: change: workflow gate
 Reachability: impl-test writes `test-plan.entry-NN.md` at its entry start; impl-review's Testing reviewer and `asd-phase-pr.md` read the live file plus segments at their test-plan read
-- [ ] `artifact-layout.md` (single home): decisions-log renamed at phase entry to `decisions-log.NNN.md` (next ordinal, only when the live file holds an entry), live file recreated from `t_decisions-log.md`; test-plan narrative sections (Risk→check, Removed, Added) of the previous Entry moved at impl-test entry into `test-plan.entry-NN.md`, live keeps Entry log, Suite run and Defects; current-fact readers read the live file, cross-span readers glob segments in order; absent segments = legacy single file
-- [ ] `t_decisions-log.md`, `t_test-plan.md`: header notes point to the rotation rule
-- [ ] Rotation trigger: `asd-sprint` Step 3 / Step 2B before delegating a phase skill; `asd-phase-impl-test.md` entry and `asd-tester.md` for test-plan
-- [ ] Cross-span readers follow segments by pointer: `checkpoints.md` criterion cost, `review-policy.md` interrupted-dispatch rebuild (live file suffices within a phase; say so once), `sprint-lifecycle.md` 91/93/232/239/243/290, `asd-phase-retro.md`, `asd-phase-pr.md`, `asd-reviewer-testing.md`
+- [x] `artifact-layout.md` (single home): decisions-log renamed at phase entry to `decisions-log.NNN.md` (next ordinal, only when the live file holds an entry), live file recreated from `t_decisions-log.md`; test-plan narrative sections (Risk→check, Removed, Added) of the previous Entry moved at impl-test entry into `test-plan.entry-NN.md`, live keeps Entry log, Suite run and Defects; current-fact readers read the live file, cross-span readers glob segments in order; absent segments = legacy single file
+- [x] `t_decisions-log.md`, `t_test-plan.md`: header notes point to the rotation rule
+- [x] Rotation trigger: `asd-sprint` Step 3 / Step 2B before delegating a phase skill; `asd-phase-impl-test.md` entry and `asd-tester.md` for test-plan
+- [x] Cross-span readers follow segments by pointer: `checkpoints.md` criterion cost, `review-policy.md` interrupted-dispatch rebuild (live file suffices within a phase; say so once), `sprint-lifecycle.md` 91/93/232/239/243/290, `asd-phase-retro.md`, `asd-phase-pr.md`, `asd-reviewer-testing.md`
 
 ### Task 8: Mirrors, generated views and release manifest
 Material risk: artifact: README and release-manifest mirrors
