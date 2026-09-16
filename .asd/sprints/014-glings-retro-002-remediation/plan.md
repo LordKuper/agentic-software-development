@@ -60,11 +60,11 @@ Material risk: change: public contract
 ### Task 5: Change-surface cap at plan and impl-review entry
 Material risk: change: workflow gate
 Reachability: plan writes the approved override bound at its gate into `state.json.gate_decisions` (`gate: change-surface-cap-override`, `evidence: bound=<n>`); impl-review reads it at its entry check before step 1
-- [ ] `runtime.js`: `SURFACE_CAP_FILES = 100` with a doc comment (4 × `SPLIT_THRESHOLD_FILES`; ASD sprints 001-013 max 87, Glings 002 657); `surface-check --files <path> [--bound <n>]` returns `{files, cap, breach}`
-- [ ] `t_plan.md` Overview: required `Change surface: <n> files` line; `sprint-lifecycle.md` "Plan file format": declaration, breach blocks acceptance until the user splits into sequential sprints (hard scope gate; remainder to `sprint.md` Out of scope plus decisions-log) or approves `change-surface cap override` with a bound; a plan without the line is grandfathered
-- [ ] `checkpoints.md` hard list and Gate inventory: `change-surface cap override`, distinct from review-cap override
-- [ ] `asd-phase-plan.md` step 4: replace the advisory split estimate (line 40) with the declaration and `surface-check`; keep the split part-count note
-- [ ] `asd-phase-impl-review.md` entry: measure iteration 1's `git diff --name-only <base>...HEAD <pathspec>` via `surface-check` against the cap or recorded bound; breach escalates override-or-abort instead of reviewing
+- [x] `runtime.js`: `SURFACE_CAP_FILES = 100` with a doc comment (4 × `SPLIT_THRESHOLD_FILES`; ASD sprints 001-013 max 87, Glings 002 657); `surface-check --files <path> [--bound <n>]` returns `{files, cap, breach}`
+- [x] `t_plan.md` Overview: required `Change surface: <n> files` line; `sprint-lifecycle.md` "Plan file format": declaration, breach blocks acceptance until the user splits into sequential sprints (hard scope gate; remainder to `sprint.md` Out of scope plus decisions-log) or approves `change-surface cap override` with a bound; a plan without the line is grandfathered
+- [x] `checkpoints.md` hard list and Gate inventory: `change-surface cap override`, distinct from review-cap override
+- [x] `asd-phase-plan.md` step 4: replace the advisory split estimate (line 40) with the declaration and `surface-check`; keep the split part-count note
+- [x] `asd-phase-impl-review.md` entry: measure iteration 1's `git diff --name-only <base>...HEAD <pathspec>` via `surface-check` against the cap or recorded bound; breach escalates override-or-abort instead of reviewing
 
 ### Task 6: state.json holds machine state only
 Material risk: artifact: rule wording in artifact-layout.md and checkpoints.md
