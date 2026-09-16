@@ -230,6 +230,10 @@ Agents preserve the block. Reviewers verify content respects the declared scope.
 
 Archived path: `.asd/sprints/archived/<NNN-slug>/`. Closure/archival sequence (closure-pending → explicit approval → companion PR → terminal write + move) is owned by `sprint-lifecycle.md` "PR phase" — not restated here.
 
+## State file
+
+`<sprint>/state.json` carries only the keys `t_state.json` defines — machine state, never prose. `gate_decisions[].reason` and `.evidence` are short refs (a path, id or one-line pointer), not narrative; the narrative goes to `decisions-log.md`.
+
 ## Decisions log
 
 Every user or adaptive orchestrator decision appends one entry to `<sprint>/decisions-log.md`. Per-sprint file, created at `scope` from `t_decisions-log.md`, archived with the sprint. Owner: main orchestrator. Append-only, never edited or removed. Entry format and durability rule are normative in `t_decisions-log.md`.
