@@ -270,6 +270,15 @@ hardcoding directory names or globbing the memory tree. A new agent's directory 
 it appears, and a directory no agent can load falls out by construction rather than by an allow-list;
 compare that fallout set to its expected members so a misspelled directory cannot join it silently.
 
+## A canon shell command is executable evidence
+
+A rule that tells the orchestrator to run a literal command (`git log --format='…%(trailers:key=ASD-Task,valueonly)' <anchor>..HEAD -- . ':!…'`)
+is testable by extracting it from the rule and running it with `execFileSync('git', …)` in a `mkTempDir()`
+repo (pass `-c user.name/-c user.email/-c commit.gpgsign=false`). Tokenize with `/(?:[^\s']+|'[^']*')+/g`
+then strip `'` — the naive `'[^']*'|\S+` splits `--format='%h %s'` at the space and git reports a bad
+revision (sprint 014 entry 1). Derive the trailer key from its defining rule, not the command, so the
+run also proves the two sites agree.
+
 ## `routeTask` has no plan-file parser
 
 `runtime.js` `routeTask` takes a structured input object; the `Material risk` extraction is the
