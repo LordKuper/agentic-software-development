@@ -3735,6 +3735,12 @@ test('AC-8/sprint-010 AC-4/sprint-014 AC-1: external-review.md "Outcome contract
   const carried = /as its `([^`]+)` line/.exec(sectionOf('.asd/rules/external-review.md', 'Iteration semantics'));
   assert.ok(carried, 'external-review.md "Iteration semantics" must name the line a partial, skip or stopped iteration records its unreviewed files on');
   assert.ok(canonText('.asd/templates/external-review/t_review-report.md').includes(`**${carried[1]}**`), `sprint-014 AC-1: t_review-report.md must slot the \`${carried[1]}\` line the next iteration reads`);
+  assert.ok(canonText('.asd/templates/external-review/t_review-report.md').includes('APPROVE (skipped: external review unavailable: <specific status>)'), "EXT-5: t_review-report.md's first-line alternatives must admit the skip token the skip's external.md carries");
+  assert.ok(skipBullet.includes(`\`${carried[1]}\``) && skipBullet.includes('`files[]`'), `COR-4: the availability skip must persist a \`${carried[1]}\` line naming the files[] it never reviewed - on a skip no agent runs, so nothing else writes it and those files never reach External Review`);
+  for (const [rel, step] of [['.asd/workflows/asd-phase-impl-review.md', '1b. '], ['.asd/workflows/asd-phase-design-review.md', '3a. ']]) {
+    const sentences = canonText(rel).split('\n').find((line) => line.startsWith(step)).split(/(?<=\.) /);
+    assert.ok(sentences.some((sentence) => sentence.includes('non-ready') && sentence.includes('`files[]`') && sentence.includes(`\`${carried[1]}\``)), `COR-4: ${rel} step ${step.slice(0, -2)} must still compute files[] on a non-ready preflight as the skip's \`${carried[1]}\` - skipped with the manifest, the skip has no list to write`);
+  }
   for (const rel of ['.asd/workflows/asd-phase-impl-review.md', '.asd/workflows/asd-phase-design-review.md']) {
     assert.ok(canonText(rel).split('\n').some((line) => line.includes('`files[]`') && line.includes(`previous iteration's \`${carried[1]}\``)), `sprint-014 AC-1: ${rel} must union the previous iteration's \`${carried[1]}\` into the External Review files[] - dropped, a partial's unreviewed files are never reviewed while the partial satisfies DoD`);
   }
@@ -4734,14 +4740,22 @@ test('sprint-014 AC-5: surface-check counts distinct paths against SURFACE_CAP_F
 });
 
 test('sprint-014 AC-2: a failed creator or tester dispatch is reconstructed from the ASD-Task trailer git-strategy.md defines, anchored on the dispatch HEAD both dispatching workflows log, and the git log command State recovery runs reports that trailer', () => {
-  const trailer = /`(ASD-Task): <id>`/.exec(sectionOf('.asd/rules/git-strategy.md', 'Commits'));
+  const commits = sectionOf('.asd/rules/git-strategy.md', 'Commits');
+  const trailer = /`(ASD-Task): <id>`/.exec(commits);
   assert.ok(trailer, 'git-strategy.md "Commits" must define the ASD-Task trailer literal');
+  const ids = [...commits.split('\n').find((line) => line.includes(trailer[0])).split(' — ')[1].matchAll(/`([^`]+)`/g)].map((match) => match[1]);
+  const testerId = ids.find((id) => id.startsWith('impl-test '));
+  const suiteId = ids.find((id) => id.startsWith('impl-review '));
+  assert.ok(testerId && suiteId, `COR-2/EXT-3: git-strategy.md "Commits" must list an id for impl-test's own commits and for impl-review step 9's in-place test fix. Got: ${JSON.stringify(ids)}`);
   const failed = sectionOf('.asd/rules/sprint-lifecycle.md', 'State recovery').split('\n').find((line) => line.startsWith('**Failed dispatch**'));
   const anchor = failed && /`(dispatch HEAD <sha>)`/.exec(failed);
   const command = failed && /`(git log [^`]+)`/.exec(failed);
   const reconstruction = failed && /`- YYYY-MM-DD — (reconstruction: [^`]+)`/.exec(failed);
   assert.ok(anchor && command && reconstruction, 'sprint-lifecycle.md "State recovery" must keep the failed-dispatch anchor, git log command and decisions-log line as literals');
   assert.ok(canonText('.asd/templates/t_decisions-log.md').includes(reconstruction[1]), 't_decisions-log.md carries the normative one-line forms, so it must carry the reconstruction line State recovery appends');
+  const testerException = failed.split(/(?<=\.) /).find((sentence) => sentence.includes(`\`${testerId}\``));
+  assert.ok(testerException && /\bnever\b[^.:]*landed/.test(testerException) && testerException.includes('(`asd-phase-impl-test.md` step 1)'), `COR-2: reconstruction must never read \`${testerId}\` as landed and must resume via asd-phase-impl-test.md step 1 - dropped as landed after the test commit, the entry's suite gate never runs`);
+  assert.ok(canonText('.asd/workflows/asd-phase-impl-test.md').split('\n').some((line) => line.startsWith('1. ') && line.includes('interrupted current entry')), 'COR-2: asd-phase-impl-test.md step 1, which reconstruction resumes through, must handle the interrupted current entry');
   for (const rel of ['.asd/templates/t_decisions-log.md', '.asd/workflows/asd-phase-impl.md', '.asd/workflows/asd-phase-impl-test.md']) {
     assert.ok(canonText(rel).split('\n').some((line) => /route <taskIds?>/.test(line) && line.includes(anchor[1])), `${rel}: the routing line must carry \`${anchor[1]}\` - without it a failed dispatch has no anchor and every commit on the branch reads as landed`);
   }
@@ -4762,10 +4776,20 @@ test('sprint-014 AC-2: a failed creator or tester dispatch is reconstructed from
   writeFile(repo, 'src/landed.js', 'landed\n');
   git('add', '-A');
   git('commit', '-q', '-m', `feat: land task\n\n${trailer[1]}: Task 3`);
+  const grouped = ['Task 4', 'D-1'];
+  writeFile(repo, 'src/grouped.js', 'grouped\n');
+  git('add', '-A');
+  git('commit', '-q', '-m', `fix: grouped\n\n${grouped.map((id) => `${trailer[1]}: ${id}`).join('\n')}`);
+  const sprintOnly = suiteId.replace('NN', '01');
+  writeFile(repo, '.asd/sprints/001-x/test-plan.md', 'suite\n');
+  git('add', '-A');
+  git('commit', '-q', '-m', `test: sprint path only\n\n${trailer[1]}: ${sprintOnly}`);
   writeFile(repo, 'src/uncommitted.js', 'left over\n');
   const args = command[1].replace('<anchor>', start).match(/(?:[^\s']+|'[^']*')+/g).map((token) => token.replace(/'/g, ''));
-  const landed = git(...args.slice(1));
-  assert.ok(landed.split('\n').includes('Task 3'), `the State recovery git log must print each landed commit's ${trailer[1]} value on its own line, or every landed task is re-dispatched. Got: ${JSON.stringify(landed)}`);
+  const landed = git(...args.slice(1)).split('\n');
+  assert.ok(landed.includes('Task 3'), `the State recovery git log must print each landed commit's ${trailer[1]} value on its own line, or every landed task is re-dispatched. Got: ${JSON.stringify(landed)}`);
+  assert.ok(grouped.every((id) => landed.includes(id)), `COR-3: a commit covering several ids carries one ${trailer[1]} line per id, and the git log must print every one - an unprinted id re-dispatches landed work. Got: ${JSON.stringify(landed)}`);
+  assert.ok(landed.includes(sprintOnly), `EXT-2: a commit touching only .asd/sprints/** (a tester's test-plan.md, impl-review's suite fix) must still report its ${trailer[1]} - a pathspec that hides it re-dispatches landed work. Got: ${JSON.stringify(landed)}`);
 });
 
 test('sprint-014 AC-7: decisions-log.md and test-plan.md rotate into the segment names artifact-layout.md defines, every canon mention uses those names, live test-plan.md keeps the sections its per-entry readers need, and each cross-span reader points at the rotation rule', () => {
