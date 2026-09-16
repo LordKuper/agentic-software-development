@@ -369,16 +369,20 @@ function tableCells(line) {
 /** Compares the code-defect identity sets (file path without line, runner failure line, failing test) of the last two impl-test entries that routed defects in a test plan's `Defects` table, a stalemate only when those entry numbers are consecutive; `D-N` ids and `impl-review` rows never take part. `digest` identifies the latest set, so a recorded answer can be keyed to it. */
 function defectStalemate(markdown) {
   if (typeof markdown !== 'string') fail('test-plan markdown required');
-  const section = markdown.replace(/\r\n/g, '\n').split(/^## Defects *$/m)[1];
-  if (section === undefined) fail('test-plan has no ## Defects section');
-  const [header, , ...rows] = section.split(/^## /m)[0].split('\n').filter((line) => line.trim().startsWith('|')).map(tableCells);
-  if (header === undefined) fail('Defects table missing');
-  const [entry, location, symptom, test] = ['Entry', 'Location', 'Symptom', 'Failing test'].map((name) => (header.includes(name) ? header.indexOf(name) : fail(`Defects table has no ${name} column`)));
+  const lines = markdown.replace(/\r\n/g, '\n').split('\n');
+  const headings = lines.flatMap((line, i) => (/^## Defects\b/.test(line) ? [i + 1] : []));
+  if (headings.length === 0) fail('test-plan has no ## Defects section');
+  if (headings.length > 1) fail(`test-plan has ${headings.length} ## Defects sections at lines ${headings.join(', ')}`);
+  const end = lines.findIndex((line, i) => i >= headings[0] && /^## /.test(line));
+  const [header, separator, ...rows] = lines.slice(headings[0], end === -1 ? lines.length : end).flatMap((line, i) => (line.trim().startsWith('|') ? [{ at: `line ${headings[0] + i + 1}`, cells: tableCells(line) }] : []));
+  if (header === undefined) fail(`line ${headings[0]}: Defects table missing`);
+  const [entry, location, symptom, test] = ['Entry', 'Location', 'Symptom', 'Failing test'].map((name) => (header.cells.includes(name) ? header.cells.indexOf(name) : fail(`${header.at}: Defects table has no ${name} column`)));
+  if (separator === undefined || separator.cells.length !== header.cells.length || !separator.cells.every((cell) => /^:?-+:?$/.test(cell))) fail(`${(separator || header).at}: Defects table separator malformed`);
   const byEntry = new Map();
-  for (const cells of rows) {
-    if (cells.length !== header.length) fail(`Defects row malformed: ${cells.join(' | ')}`);
+  for (const { at, cells } of rows) {
+    if (cells.length !== header.cells.length) fail(`${at}: Defects row malformed: ${cells.join(' | ')}`);
     if (cells[entry] === 'impl-review' || /^\{\{.*\}\}$/.test(cells[entry])) continue;
-    if (!/^\d+$/.test(cells[entry])) fail(`Defects row Entry must be an Entry log number or impl-review: ${cells.join(' | ')}`);
+    if (!/^\d+$/.test(cells[entry])) fail(`${at}: Defects row Entry must be an Entry log number or impl-review: ${cells.join(' | ')}`);
     const tuples = byEntry.get(Number(cells[entry])) || new Set();
     tuples.add(stable([cells[location].replace(/:\d+(?::\d+)?$/, ''), cells[symptom], cells[test]]));
     byEntry.set(Number(cells[entry]), tuples);
