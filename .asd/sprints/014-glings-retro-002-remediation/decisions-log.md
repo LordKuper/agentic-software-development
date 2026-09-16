@@ -34,3 +34,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+- 2026-09-16 — route impl-test entry 1: critical, dispatch HEAD 7d97b59
+- 2026-09-16 — impl-test: impacted set green (207/207, sync --check ok, lint ok), 4 added / 0 removed tests, 5 modified; no defects. Tester notes for impl-review: README folder map calls segments "dated" (numbered); failed-dispatch log excludes `.asd/sprints/**`, so a test-plan-only impl-test commit reads as not landed
