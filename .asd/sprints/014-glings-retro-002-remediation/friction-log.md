@@ -19,6 +19,8 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 | ID | Phase | Problem | Refs |
 |---|---|---|---|
 | F-1 | audit | Canon disagrees on when External Review's availability skip applies | decisions-log.md 2026-09-16 audit contradiction |
+| F-2 | impl-review | Reviewer ledger returned without `manifest_digest` | reviews/impl/iter-01/efficiency |
+| F-3 | impl-review | Shell-less reviewers handed a `git diff` command instead of the diff | reviews/impl/iter-01, iter-02, iter-03 |
 
 ## F-1 — Canon disagrees on when External Review's availability skip applies
 
@@ -27,3 +29,19 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 - **What happened**: The first group scopes the skip to a non-ready preflight or an active negative cache. The second also returns it for a crash, hang, timeout, unusable output or exhausted retry after invocation. Two canonical sources, so precedence could not settle it.
 - **Impact**: A hard user decision was needed before the audit gate, and AC-1 now also has to narrow the external-review contract.
 - **Refs**: —
+
+## F-2 — Reviewer ledger returned without `manifest_digest`
+
+- **Phase**: impl-review
+- **Surface**: agent — `asd-reviewer-efficiency` (iter-01 part 2); template — `.asd/templates/t_review.md` Coverage block
+- **What happened**: The ledger block carried findings/files/rules/sections but no `manifest_digest`; `validate-ledger` rejects that as incomplete, not transcribable. `t_review.md` shows no ledger keys, and the dispatch payload did not restate the shape.
+- **Impact**: One fresh re-dispatch (~100k subagent tokens); later payloads spelled out the ledger shape.
+- **Refs**: reviews/impl/iter-01/efficiency
+
+## F-3 — Shell-less reviewers handed a `git diff` command instead of the diff
+
+- **Phase**: impl-review
+- **Surface**: phase — `.asd/workflows/asd-phase-impl-review.md` step 6 payload ("the diff computed in step 1")
+- **What happened**: The orchestrator passed the diff as a command line; internal reviewers hold no shell, so every reviewer in all three iterations rebuilt the change set from plan.md, test-plan.md and decisions-log segments before reviewing.
+- **Impact**: Extra read cost per reviewer, and one iter-02 reviewer misread an out-of-surface decisions-log segment as empty.
+- **Refs**: reviews/impl/iter-01, reviews/impl/iter-02, reviews/impl/iter-03
