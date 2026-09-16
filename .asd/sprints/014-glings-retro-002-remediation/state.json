@@ -215,9 +215,11 @@
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": {
+    "state": "open",
     "number": 41,
     "url": "https://github.com/LordKuper/agentic-software-development/pull/41",
-    "state": "open"
+    "title": "feat(workflow)!: remediate Glings retro 002",
+    "asd_version": "10.0.0"
   },
   "archived_at": null
 }
