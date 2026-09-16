@@ -39,6 +39,8 @@ iterations stay unread - globbing `reviews/impl/**` lists them, so glob only the
   sprint 014: External Review skip's `Unreviewed files` had no writer and step 1b skipped the scope work.
   Same for id-keyed matching: 014's `ASD-Task: <id>` trailer names "a review finding id", but the
   review-fix payload (`asd-phase-impl.md` step 6) carries no id - check the dispatcher hands the writer the id.
+  Anything keyed to "the reviewer's ledger" misses External Review, which returns no ledger
+  (`review-policy.md` "Coverage ledger" excludes it) - 014 iter-03 residual, rated medium.
 - **Accepted flagged choices vs exhaustive lists.** A decisions-log "Accepted flagged choices" line that
   routes a new failure ("... → `FAILED` → phase blocker") must land in canon. Check the dispatching
   workflow's closed enumerations ("A blocker is exactly one of", "The only reasons ... contacts the user")

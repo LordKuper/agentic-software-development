@@ -34,3 +34,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+- 2026-09-16 — impl-review iter-03: all reviewers APPROVE or latched; reviewer DoD met → terminal full-suite gate. Sub-floor documentation note (External Review finding has no defined ASD-Task id) kept for retro
