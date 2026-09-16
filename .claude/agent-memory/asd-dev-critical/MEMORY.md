@@ -1,5 +1,6 @@
 - [sync --apply ledger gotcha](project_sync-apply-ledger-gotcha.md) — `--apply` rewrites hashes repo-wide; measure staleness normalized, a raw read fakes 94
 - [sync.js --apply target form](project_sync-apply-target-form.md) — `--apply` wants generated view paths, not `.asd/` canon, and rejects an empty target list; pick targets from `--check`.
+- [No python scripted edits](project_no-python-scripted-edits.md) — `python - <<EOF` hangs the shell here; use `node -e` or Edit
 - [CRLF canon edits](project_crlf-canon-edits.md) — read a canon file's bytes before a scripted edit; a CRLF checkout orphans a CR under an LF-only anchor
 - [Parallel-agent commit sweep](project_parallel-agent-commit-sweep.md) — shared worktree: a sibling’s broad `git add` can swallow your edits; never `git stash`
 - [Tests pin literal prose and output shapes](project_tests-pin-literal-prose.md) — `tests/run.js` pins rule-doc sentences and runtime field sets; reword around the literal, never edit the assertion
