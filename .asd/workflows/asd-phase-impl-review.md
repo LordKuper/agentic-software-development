@@ -5,6 +5,7 @@ Orchestration body for the `asd-phase-impl-review` skill. Operation-mapping to h
 ## Preconditions
 - Active sprint at `.asd/sprints/<NNN-slug>/`
 - **Clean worktree at phase entry** (`sprint-lifecycle.md`'s impl-review contract, sole SSoT): before any dispatch, run `git status --porcelain`; non-empty output → `FAILED`, naming the dirty paths. Measured once, at entry, before step 1.
+- **Change-surface cap at first entry** (`state.json.reviews.impl.iteration` 0; `sprint-lifecycle.md` "Plan file format"), skipped when plan.md has no `Change surface:` line: before step 1, write `git diff --name-only <base_branch>...HEAD <pathspec>` (step 1's pathspec) to a temp file outside the repo and run `node .asd/runtime.js surface-check --files <path>`, adding `--bound <n>` from the latest `state.json.gate_decisions` entry with `gate: change-surface-cap-override`. `breach: true` → request user decision: approve the hard `change-surface cap override` with a new bound (recorded the same way), or abort. Never review a breached surface.
 - impl-test COMPLETED signal received with a green impacted-set run (`sprint-lifecycle.md` "Impacted test set"); `state.json.phase` advanced from `impl-test`
 - **First entry** (after initial impl): all plan.md Task checkboxes ticked; impl assessment approved
 - **Cycle re-entry** (after impl review-fix + impl-test): `state.json.review_fixes_pending` cleared by impl fix-mode finalize; `test_defects_pending` null; `<sprint>/test-plan.md` `Suite run` records a pass

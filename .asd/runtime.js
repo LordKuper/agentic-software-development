@@ -19,6 +19,8 @@ const ROW_TYPES = Object.keys(LEDGER_VOCABULARY).filter((key) => Array.isArray(L
 const LEDGER_NA_SHAPE = Object.fromEntries(ROW_TYPES.map((type) => [type, { [LEDGER_ROW_EXAMPLE.i]: [LEDGER_ROW_EXAMPLE.p] }]));
 /** A scope file list above this many files is partitioned into `ceil(files / threshold)` parts before its first dispatch. */
 const SPLIT_THRESHOLD_FILES = 25;
+/** A reviewable change surface above this many files blocks plan acceptance and impl-review entry until the user splits the sprint or approves an override bound. Four split parts (4 * SPLIT_THRESHOLD_FILES), set at sprint 014 plan against ASD sprints 001-013 (max 87 files) and Glings 002 (657). */
+const SURFACE_CAP_FILES = 100;
 /** The standing n/a predicates, each the exact text a ledger row records. The emitter authorizes one only where its condition holds; this is their sole home. */
 const NA_PREDICATES = {
   phaseGate: 'outside phase gate',
@@ -410,6 +412,18 @@ function defectStalemate(markdown) {
   return { stalemate: previousEntry === latestEntry - 1 && stable(latest) === stable(previous), digest: fingerprint(latest) };
 }
 
+function readFileList(file) {
+  return fs.readFileSync(file, 'utf8').split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+}
+
+/** Measures a file list against SURFACE_CAP_FILES, or against the user-approved override bound when one is recorded. */
+function surfaceCheck(files, bound) {
+  if (bound !== undefined && !(Number.isInteger(bound) && bound > 0)) fail('--bound must be a positive integer');
+  const cap = bound === undefined ? SURFACE_CAP_FILES : bound;
+  const count = new Set(files).size;
+  return { files: count, cap, breach: count > cap };
+}
+
 function emitManifestCommand(flags) {
   if (!/^[a-z]+$/.test(flags.reviewer || '')) fail('--reviewer <name> required');
   if (typeof flags.files !== 'string' || typeof flags.out !== 'string') fail('--files <path> and --out <dir> required');
@@ -418,7 +432,7 @@ function emitManifestCommand(flags) {
     reviewer: flags.reviewer,
     phase: flags.phase,
     rubric: fs.readFileSync(path.join(__dirname, 'agents', `asd-reviewer-${flags.reviewer}.md`), 'utf8'),
-    files: fs.readFileSync(flags.files, 'utf8').split(/\r?\n/).map((line) => line.trim()).filter(Boolean),
+    files: readFileList(flags.files),
     customRules: Object.fromEntries(customPaths.map((file) => [file, fs.readFileSync(file, 'utf8')])),
     halve: flags.halve === true,
     selfHosting: flags['self-hosting'] === true,
@@ -484,11 +498,17 @@ function main(argv) {
     process.stdout.write(JSON.stringify(defectStalemate(fs.readFileSync(flags.plan, 'utf8'))) + '\n');
     return 0;
   }
-  fail('usage: emit-manifest, manifest-digest, validate-ledger, external-preflight, external-record-failure, route-task, or defect-stalemate');
+  if (command === 'surface-check') {
+    if (typeof flags.files !== 'string') fail('--files <path> required');
+    const result = surfaceCheck(readFileList(flags.files), flags.bound === undefined ? undefined : Number(flags.bound));
+    process.stdout.write(JSON.stringify(result) + '\n');
+    return result.breach ? 1 : 0;
+  }
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, external-preflight, external-record-failure, route-task, defect-stalemate, or surface-check');
 }
 
 if (require.main === module) {
   try { process.exitCode = main(process.argv); } catch (error) { process.stderr.write(`${error.message}\n`); process.exitCode = 2; }
 }
 
-module.exports = { LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, NA_PREDICATES, SPLIT_THRESHOLD_FILES, buildInvocation, coverageManifestDigest, defectStalemate, emitCoverageManifests, externalPreflight, recordExternalFailure, routeTask, validateCoverageLedger, fingerprint };
+module.exports = { LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, NA_PREDICATES, SPLIT_THRESHOLD_FILES, SURFACE_CAP_FILES, buildInvocation, coverageManifestDigest, defectStalemate, emitCoverageManifests, externalPreflight, recordExternalFailure, routeTask, surfaceCheck, validateCoverageLedger, fingerprint };
