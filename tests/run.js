@@ -3709,6 +3709,14 @@ test('AC-8/sprint-010 AC-4/sprint-014 AC-1: external-review.md "Outcome contract
   const policy = readRepoFile('.asd/rules/review-policy.md');
   assert.ok(!policy.includes("External Review's unavailability path is"), 'the old scoping line handed off only the unavailability path, which is what left an empty return undisposed on both sides');
   assert.ok(policy.includes('`external-review.md` "Outcome contract"'), 'review-policy.md must point at the outcome contract as a whole');
+  const grammarLink = /external-review\.md`? (?:"|§ )Outcome contract/;
+  assert.ok(sectionOf('.asd/rules/review-policy.md', 'Gate Verdict Format').split('\n').some((line) => line.startsWith('- ') && grammarLink.test(line)), 'EXT-5: the review-policy.md verdict grammar must link the skip/partial carve-out, or a literal grammar match rejects a valid External Review return');
+  assert.ok(readRepoFile('README.md').split('\n').some((line) => line.includes('[REVIEW-<phase>-<reviewer>]') && grammarLink.test(line)), 'EXT-5: the README verdict-token grammar mirror must link the skip/partial carve-out on the line that states the grammar');
+  const stalemateInput = sectionOf('.asd/rules/external-review.md', 'Stalemate detection').split('\n').find((line) => /\bpartial\b/.test(line));
+  assert.ok(stalemateInput && /\bskip\b/.test(stalemateInput) && /phase skill/i.test(stalemateInput), 'TST-1-1: "Stalemate detection" must have the phase skill exclude partial and skip iterations from the finding set it supplies - compared against a partial, a real stalemate is missed');
+  for (const rel of ['.asd/workflows/asd-phase-impl-review.md', '.asd/workflows/asd-phase-design-review.md']) {
+    assert.ok(canonText(rel).includes('`external-review.md` "Stalemate detection"'), `TST-1-1: ${rel} supplies the stalemate finding set, so it must cite external-review.md "Stalemate detection"`);
+  }
 
   const agent = sync.readNormalized(path.join(REPO_ROOT, '.asd/agents/asd-external-review.md'));
   assert.ok(agent.includes('Never background or detach the `{{wraps_cli}}` run'), 'the never-background Don\'t must be stated on the placeholder token both views render');
@@ -4169,8 +4177,8 @@ test("sprint-012 AC-12: emit-manifest derives rule and section ids from a review
   assert.strictEqual(frameworkHolders({}).length, 1, 'sprint-014 AC-4: without self-hosting exactly the Framework mode entry is n/a, or every split part records only out-of-part for it and union check (c) fails by construction');
   assert.deepStrictEqual(frameworkHolders({ selfHosting: true }), [], 'sprint-014 AC-4: a self-hosting review keeps Framework mode reviewed - the README/rule-mirror check is its whole subject');
   const templatedHolders = (files) => holders(emitReal('documentation', 'impl-review', files, { templates: ['plan.md'] }), predicates.noTemplated);
-  assert.strictEqual(templatedHolders(['README.md', '.asd/runtime.js', 'src/AGENTS.md', 'mydocs/guide.md', 'x/myplan.md']).length, 1, 'sprint-014 AC-4: a scope with no templated artefact n/a\'s exactly the Template adherence entry - a nested AGENTS.md, a docs-like prefix and a basename merely containing a template name are not templated');
-  for (const file of ['x/plan.md', '.asd/templates/t_new.md', 'docs/architecture/core.md', '.asd/sprints/001-x/sprint.md', 'AGENTS.md', 'CLAUDE.md']) {
+  assert.strictEqual(templatedHolders(['README.md', '.asd/runtime.js', 'mydocs/guide.md', 'x/myplan.md']).length, 1, 'sprint-014 AC-4: a scope with no templated artefact n/a\'s exactly the Template adherence entry - a docs-like prefix and a basename merely containing a template name are not templated');
+  for (const file of ['x/plan.md', '.asd/templates/t_new.md', 'docs/architecture/core.md', '.asd/sprints/001-x/sprint.md']) {
     assert.deepStrictEqual(templatedHolders(['README.md', file]), [], `sprint-014 AC-4: ${file} is a templated artefact, so Template adherence must stay reviewed`);
   }
 
@@ -4209,8 +4217,10 @@ test("runtime.js CLI: emit-manifest writes one stamped manifest per part under t
   const reviewer = 'testing';
   const unsplitName = '<reviewer>.manifest.json';
   const partName = '<reviewer>.part-N.manifest.json';
+  const selfHostingFlag = /\[(--self-hosting)\]/.exec(sectionOf('.asd/rules/review-policy.md', 'Coverage ledger'))[1];
   for (const rel of ['.asd/workflows/asd-phase-impl-review.md', '.asd/workflows/asd-phase-design-review.md']) {
     const flow = canonText(rel);
+    assert.ok(flow.split('\n').some((line) => line.includes('self_hosting: enabled') && line.includes(`\`${selfHostingFlag}\``) && line.includes('emit-manifest')), `TST-2-1: ${rel} must add review-policy.md's \`${selfHostingFlag}\` to its emit-manifest step when self_hosting: enabled - dropped, a self-hosting review n/a's Documentation's Framework mode and validate-ledger accepts it`);
     assert.ok(flow.includes(`\`${unsplitName}\``) && flow.includes(`\`${partName}\``), `${rel} must name the manifest files it dispatches from exactly as emit-manifest writes them, or the orchestrator looks for a path that never appears`);
   }
   const emit = (count, dir, extra = [], name = reviewer) => {
@@ -4270,6 +4280,9 @@ test("runtime.js CLI: emit-manifest writes one stamped manifest per part under t
   assert.ok(plain(runtime.NA_PREDICATES.noSelfHosting).length === 1 && plain(runtime.NA_PREDICATES.noTemplated).length === 1, 'sprint-014 AC-4: a CLI emit without --self-hosting over an untemplated scope carries both new standing predicates');
   const hosted = documentation('doc-hosted', ['src/a.md', `reviews/${nested[nested.length - 1].slice(2)}`], ['--self-hosting']);
   assert.deepStrictEqual([hosted(runtime.NA_PREDICATES.noSelfHosting), hosted(runtime.NA_PREDICATES.noTemplated)], [[], []], `sprint-014 AC-4: --self-hosting ahead of --files must parse as a boolean both review workflows pass, and the CLI must read template names from every depth of .asd/templates - ${nested.join('/')} included`);
+  for (const file of ['AGENTS.md', 'CLAUDE.md', 'src/AGENTS.md']) {
+    assert.deepStrictEqual(documentation(`doc-${file.replace(/\W/g, '-')}`, ['src/a.md', file])(runtime.NA_PREDICATES.noTemplated), [], `TST-1-2: against the real .asd/templates list ${file} is templated by basename at any depth, so Template adherence must stay reviewed - the rule isTemplated's doc comment states`);
+  }
 
   const manifest = JSON.parse(fs.readFileSync(single[0].manifest, 'utf8'));
   const vocabulary = runtime.LEDGER_VOCABULARY;
@@ -4763,10 +4776,20 @@ test('sprint-014 AC-7: decisions-log.md and test-plan.md rotate into the segment
   const names = { test: /`(test-plan\.[^`]+\.md)`/.exec(testPlan)[1], decisions: /`(decisions-log\.[^`]+\.md)`/.exec(decisions)[1] };
   const mentions = [];
   for (const rel of [...canonMarkdownFiles(), '.asd/rules/artifact-layout.md', 'README.md']) {
-    for (const [mention] of canonText(rel).matchAll(/test-plan\.[A-Za-z]+-[A-Za-z0-9]+\.md|decisions-log\.[A-Za-z0-9]+\.md/g)) mentions.push(`${rel}: ${mention}`);
+    for (const [mention] of canonText(rel).matchAll(/(?:test-plan|decisions-log)\.[^\s.`'"()]+\.md/g)) mentions.push(`${rel}: ${mention}`);
   }
   assert.ok(mentions.length > 2, 'sanity: the sweep must reach the segment names canon uses');
-  assert.deepStrictEqual(mentions.filter((entry) => ![names.test, names.decisions].includes(entry.split(': ')[1])), [], 'a reader globbing a segment name other than the one the rotating writer produces reads nothing and reports a short history');
+  assert.deepStrictEqual(mentions.filter((entry) => ![names.test, names.decisions].includes(entry.split(': ')[1])), [], 'EXT-6: every test-plan.<token>.md / decisions-log.<token>.md mention must carry the canonical token - a reader globbing a segment name other than the one the rotating writer produces reads nothing and reports a short history');
+
+  const trigger = decisions.split(' renames ')[0];
+  assert.ok(trigger.includes('`state.json.phase`'), 'TST-2-2: decisions-log rotation must be conditioned on the delegated phase differing from `state.json.phase` - unconditioned, a resume rotates the live file away from its within-phase readers');
+  const neverRotates = decisions.split(/(?<=\.) (?=[A-Z])/).find((sentence) => /never rotates/.test(sentence));
+  assert.ok(neverRotates && /resume/i.test(neverRotates), 'TST-2-2: the Decisions log Rotation paragraph must state that a resume or re-run of the current phase never rotates');
+  for (const reader of ['`review-policy.md` "Interrupted dispatch"', '`sprint-lifecycle.md` "State recovery"']) {
+    assert.ok(neverRotates && neverRotates.includes(reader), `TST-2-2: the resume-never-rotates sentence must name its within-phase reader ${reader} - rotated mid-phase, that reader loses its count or routing line`);
+  }
+  assert.ok(/\bresum[^.;]*\(`asd-phase-impl-test\.md` step 1\)/.test(testPlan), 'TST-2-2: test-plan rotation must carve out resuming an interrupted current entry, citing asd-phase-impl-test.md step 1 - rotated on resume, the interrupted entry loses its rows');
+  assert.ok(!canonText('.asd/skills/asd-sprint/SKILL.md').includes('Before every phase-skill delegation below: rotate'), 'TST-2-2: asd-sprint must rotate only when artifact-layout.md "Decisions log" requires it, never before every delegation');
 
   const listed = (text) => [...text.matchAll(/`([^`]+)`/g)].map((match) => match[1]);
   const moved = listed(testPlan.split('moves the ')[1].split(' rows of')[0]);
