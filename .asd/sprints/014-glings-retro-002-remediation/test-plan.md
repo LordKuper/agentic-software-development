@@ -59,11 +59,11 @@ always reads whatever is recorded here last — the full-suite record, by the ti
 per-entry record measures only the tree that entry analysed, not any tree produced later
 (`.asd/rules/sprint-lifecycle.md` "Impacted test set").
 
-- Command: `node tests/run.js` (impacted set = whole suite: no affected-test selector, shared infrastructure touched — safety valve)
-- Scope: impacted
-- Result: pass — 207/207 passed, 0 failed, 0 skipped, exit 0 (entry 3; pre-strategy run 207/207, exit 0). The count did not change because the assertions were added to existing tests
-- Lint / build: pass — `git diff --cached --check` exit 0 on the staged set; `node .asd/sync.js --check` exit 0, `ok: true`, 72/72 items `current`
-- HEAD: 56827af — with this entry's `tests/run.js` edits uncommitted in the worktree. The impl-review terminal gate is the first run at a HEAD that contains this entry's test commit
+- Command: `node tests/run.js` (unscoped full suite — impl-review terminal gate)
+- Scope: full
+- Result: pass — 207/207 passed, 0 failed, 0 skipped, exit 0
+- Lint / build: pass — `git diff --cached --check` exit 0; `node .asd/sync.js --check` exit 0, `ok: true`, 72/72 items `current`
+- HEAD: c55e695 — impl-review terminal full-suite gate, iter-03, all reviewers APPROVE/latched
 
 ## Defects
 
