@@ -134,6 +134,7 @@ Reviewers write no review artifact, code or doc — that is why the phase workfl
 
 - `<phase>` = `design` (design-review) or `impl` (impl-review)
 - `<reviewer>` = `correctness | efficiency | testing | documentation | external`
+- External Review's first line may also be the skip or partial form, per `external-review.md` "Outcome contract"
 
 Examples: `[REVIEW-impl-correctness]: APPROVE` · `[REVIEW-design-documentation]: FAIL` · `[REVIEW-impl-external]: CONCERNS`
 
