@@ -149,7 +149,7 @@ Applies to the 4 internal reviewers, except where a branch states its own reach 
 
 **Late duplicate return.** A replaced dispatch delivering after its replacement's verdict was recorded is discarded; bookkeeping stays the replacement's. One exception, evidence only: it carries a finding at or above floor contradicting the recorded verdict. The phase workflow, never the returning agent, verifies that finding against source ("Autofix vs escalation"); unverified, discard it. Verified, record it: findings + ledger to `<sprint>/reviews/<phase>/iter-NN/<reviewer>.late.md`, linked from `<reviewer>.md`; `verdicts["iter-NN"]` becomes the more severe of the two tokens (severity order per "Part verdicts, files, merge"); any APPROVE latch for that reviewer cleared; `<reviewer> late return admitted on verified evidence (<finding id>)` appended to `decisions-log.md`. Never the reverse — a late APPROVE never displaces a recorded CONCERNS/FAIL — and a late return never latches.
 
-An internal reviewer is NEVER recorded as skipped and never satisfies DoD without a completed verdict — it is always available, so `APPROVE (skipped: ...)` stays exclusive to an unavailable external provider (`sprint-lifecycle.md` "APPROVE latch" Availability-skip carve-out). Its absent key blocks (`sprint-lifecycle.md` "State recovery").
+An internal reviewer is NEVER recorded as skipped and never satisfies DoD without a completed verdict — it is always available, so `APPROVE (skipped: ...)` and `APPROVE (partial: ...)` stay exclusive to External Review (`sprint-lifecycle.md` "APPROVE latch" Availability-skip carve-out). Its absent key blocks (`sprint-lifecycle.md` "State recovery").
 
 **Split trigger.** Either of two, both applied by `emit-manifest`. **Scope size**: a scope file list above `.asd/runtime.js` `SPLIT_THRESHOLD_FILES` is emitted as `ceil(files / threshold)` parts before its first dispatch. **Interruption**: a second consecutive interruption of the same reviewer on the same manifest digest, within one iteration, proves an unsplit manifest too large for one turn — re-emit it with `--halve` (two parts). One interruption re-dispatches, two split.
 
@@ -163,7 +163,7 @@ An internal reviewer is NEVER recorded as skipped and never satisfies DoD withou
 
 ## DoD per review phase
 
-| Phase | Required reviewers (all APPROVE or APPROVE-latched, same iteration) |
+| Phase | Required reviewers (all APPROVE or APPROVE-latched, same iteration; External Review's skip or partial form counts, `external-review.md` "Outcome contract") |
 |---|---|
 | design-review | Correctness, Efficiency, Documentation — dispatched for any non-empty draft set unless APPROVE-latched (below); Correctness's UI rubric section is `n/a: outside phase gate` when no ux-spec/design-system artifact is in scope; External Review (if enabled) |
 | impl-review | Correctness, Efficiency, Documentation, Testing — dispatched unless APPROVE-latched (below); External Review (if enabled) |

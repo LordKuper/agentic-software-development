@@ -30,7 +30,7 @@ Before wrapper dispatch or scope manifest assembly, phase orchestration calls `n
 
 On a real-request authentication, quota, reachability, or command failure, phase orchestration calls `node .asd/runtime.js external-record-failure --input <json>` with the preflight fingerprint and a finite retry-after of at most one hour. The cache stores only status and retry-after. Its identity binds the selected model, resolved command, fixed auth check, auth status, and non-secret auth generation; expiry or a changed identity restores an attempt. Preflight always reruns local executable and auth checks before honoring a negative cache. It never sends a paid probe.
 
-On command/auth failure or an active negative cache:
+On a non-ready preflight (command/auth failure) or an active negative cache — never on a failure after invocation (Outcome contract):
 
 - Return `APPROVE (skipped: external review unavailable: <specific status>)`; the dispatching workflow persists the exact status in the external review output, appends it to `<sprint>/decisions-log.md` for sprint `<NNN-slug>` iteration `<N>`, and appends an `F-N` friction entry for it (`sprint-lifecycle.md` "Friction log")
 - Continue without external review, no user prompt
@@ -39,14 +39,23 @@ An availability skip satisfies only that iteration and never creates an APPROVE 
 
 ## Outcome contract
 
-Sole statement of what a dispatched External Review may return — exactly one of two outcomes:
+Sole statement of what a dispatched External Review may return — exactly one of three outcomes:
 
-- **verdict** — findings text whose first content line is `[REVIEW-<phase>-external]: APPROVE|CONCERNS|FAIL` (`review-policy.md` "Gate Verdict Format")
-- **availability skip** — `APPROVE (skipped: external review unavailable: <specific status>)` (above)
+- **verdict** — findings text whose first content line is `[REVIEW-<phase>-external]: APPROVE|CONCERNS|FAIL` (`review-policy.md` "Gate Verdict Format"), over every file or, after a stopped batch, over the completed batches ("Batching")
+- **availability skip** — `APPROVE (skipped: external review unavailable: <specific status>)`, only on a non-ready preflight or an active negative cache (above)
+- **partial** — `[REVIEW-<phase>-external]: APPROVE (partial: <n>/<m> files; <cause>)` ("Batching"), never attached to CONCERNS or FAIL. Like the skip, it satisfies only its own iteration, never creates an APPROVE latch, and carries the skip's persistence duties (decisions-log and `F-N` entry, above)
 
-Nothing else. The skip is not confined to a preflight or negative-cache result: **any** inability to complete — wrapped-CLI crash, hang, timeout, unusable output, the one permitted retry exhausted — returns it, naming that cause as `<specific status>`. So the wrapper awaits the wrapped CLI inside its own dispatch and never backgrounds it; no outcome means "started, still running". The contract scopes a dispatch that reached that invocation: a precondition missing before any invocation (prompt template absent) aborts the dispatch instead — a framework defect the orchestrator must see, never an availability skip.
+Nothing else. A failure after invocation with no completed batch — wrapped-CLI crash, hang, timeout, unusable output, the one permitted retry exhausted — is an interrupted dispatch, never a skip: the wrapper returns `external review interrupted: <cause>`. An authentication, quota, reachability or command cause is also recorded through `external-record-failure` (above), so the re-dispatch's preflight yields the skip. The wrapper awaits the wrapped CLI inside its own dispatch and never backgrounds it; no outcome means "started, still running". The contract scopes a dispatch that reached that invocation: a precondition missing before any invocation (prompt template absent) aborts the dispatch instead — a framework defect the orchestrator must see, never an availability skip.
 
-A return that is neither — empty, or prose carrying no verdict token and no skip — is not permitted and is not a verdict. Its disposal is `review-policy.md` "Interrupted dispatch", imported here whole.
+An empty return, or prose carrying no outcome, is not permitted and is not a verdict. Its disposal, like the interrupted return's, is `review-policy.md` "Interrupted dispatch", imported here whole.
+
+## Batching
+
+`files[]` above `.asd/runtime.js` `SPLIT_THRESHOLD_FILES` is reviewed in sequential batches of that size, in manifest order, inside one dispatch; a scope at or below it is one batch. Each batch is one wrapped-CLI invocation over the manifest narrowed to that batch's `files[]`. `m` is the `files[]` count, `n` the files in completed batches. A batch failing after its one retry stops the dispatch; no later batch runs. On a stop:
+
+- no completed batch → interrupted dispatch (Outcome contract)
+- a completed batch holds a finding at or above floor → verdict over the completed batches
+- otherwise → partial, `<cause>` naming the stopped batch's failure
 
 ## Phase-scoped payload
 
@@ -79,6 +88,8 @@ Both impl-review rows start from the whole repo and subtract the exclusions, nev
 
 Iteration 1 covers all sprint work in that phase; later iterations cover every commit since the sha recorded at the start of the previous iteration — not just the last commit, so a multi-commit review-fix cycle stays fully covered. Absent-key fallback (sprint in flight when `iteration_heads` shipped): `sprint-lifecycle.md` "State recovery" (sole SSoT). design-review persists a file snapshot each iteration; next iteration reads it to compute its manifest.
 
+**Unreviewed files.** A partial, skip or stopped-batch iteration lists the `files[]` it did not review — a skip: the whole scope it would have sent — as its `Unreviewed files` line in that iteration's `external.md` (`t_review-report.md`). The next iteration's `files[]` is the table row above unioned with that list.
+
 Agent dispatched fresh each iteration (`review-policy.md` clean-context). Incremental manifest narrows *input*, not context.
 
 ## Output mapping
@@ -96,10 +107,10 @@ Findings rendered to the review output dir supplied by the dispatching phase ski
 
 ## Stalemate detection
 
-Phase skill supplies previous iteration's finding set as explicit payload input (from iteration 2). Agent compares against that supplied set only — does not read prior `iter-*/` files.
+Phase skill supplies the finding set of the latest earlier verdict iteration — partial and skip iterations are skipped — as explicit payload input (from iteration 2). Agent compares against that supplied set only — does not read prior `iter-*/` files.
 
-If two consecutive iterations produce an identical issue set (same files, lines, messages), agent emits `FAIL: stalemate after <N> iterations, identical findings` and escalates to user with options: accept findings as-is, override, abort sprint.
+If two consecutive verdict iterations produce an identical issue set (same files, lines, messages), agent emits `FAIL: stalemate after <N> iterations, identical findings` and escalates to user with options: accept findings as-is, override, abort sprint.
 
 ## Aggregation
 
-External Review verdict counts as one reviewer in the DoD check. APPROVE from External Review required when `external_review: enabled`.
+External Review verdict counts as one reviewer in the DoD check. APPROVE from External Review required when `external_review: enabled`; a skip or partial satisfies its own iteration only (Outcome contract).

@@ -118,7 +118,7 @@ function reviewNodeForPhase(reviews, phase) {
   return null;
 }
 
-// Display-only session summary, never a gate. "APPROVE"-prefixed values (bare or availability-skip) count as satisfied.
+// Display-only session summary, never a gate. "APPROVE"-prefixed values (bare, availability-skip or partial) count as satisfied.
 function lastReviewVerdict(node) {
   if (!node || typeof node !== 'object') return 'n/a';
   const verdictsByIter = node.verdicts;
