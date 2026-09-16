@@ -44,3 +44,16 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Sprint 014 scope is AC-1..AC-9 in `sprint.md`, accepted explicitly by the user at the hard scope gate. Audit runs (`documents.audit: auto`, scope has behaviour, contract and migration impact).
 - **Rationale**: User asked to implement the framework-level proposals of the Glings 002 retrospective; still-open rows were verified at HEAD 1421e34 (entry above).
 - **Affected docs**: [sprint.md](sprint.md)
+
+## 2026-09-16 — Audit contradiction settled: narrow External Review skip
+
+- **Decision**: `sprint-lifecycle.md` wins over `external-review.md`: the availability skip applies only to a non-ready preflight or an active negative cache. A failure after invocation is an interrupted dispatch and is re-dispatched; a recorded quota/auth negative cache makes that re-dispatch skip. AC-1 narrows `external-review.md` "Outcome contract" and `asd-external-review.md` accordingly.
+- **Rationale**: User decision at the hard contradiction gate (canonical vs canonical, `sprint-lifecycle.md` "Audit phase").
+- **Affected docs**: [audit.md](audit.md), [friction-log.md](friction-log.md)
+
+## 2026-09-16 — Audit accepted (adaptive)
+
+- **Decision**: `audit.md` accepted by the orchestrator under `user_gates: adaptive`. Its AC-5 cap value (100) and AC-7 rotation recommendation stay proposals for plan.
+- **Rationale**: Routine gate: findings are factual with path:line evidence within accepted scope, the only unsettled contradiction was decided by the user, and no new scope or authority is implied.
+- **Affected docs**: [audit.md](audit.md)
+- 2026-09-16 — design/design-review/design-promote skipped (no documents enabled)
