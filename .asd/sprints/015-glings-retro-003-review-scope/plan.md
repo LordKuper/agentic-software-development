@@ -29,14 +29,14 @@ Sprint-specific additions:
 
 ### Task 1: Dispatch ceiling and audit batching (AC-9, AC-11)
 Material risk: change: workflow-gate dispatch contract
-- [ ] `.asd/runtime.js`: add `DISPATCH_CEILING = 20` and `AUDIT_BATCH_THRESHOLD_FILES = 200` beside `SPLIT_THRESHOLD_FILES`/`SURFACE_CAP_FILES`, and export both
-- [ ] `.asd/runtime.js`: add a pure wave-splitting helper (a list of dispatches → sequential waves of ≤ `DISPATCH_CEILING`), with a CLI entry if a workflow needs one
-- [ ] `.asd/runtime.js`: `surfaceCheck` also returns the implied internal-review dispatch upper bound `dispatches` = internal reviewers × `ceil(bound / SPLIT_THRESHOLD_FILES)` + External Review
-- [ ] `.asd/rules/sprint-lifecycle.md` "Orchestration and adaptive gates": add a single home for the ceiling rule. Concurrent dispatches in one phase step are at most `DISPATCH_CEILING`, and anything above it goes in sequential waves (review parts, impl task waves). Correlated interruption is judged per wave.
-- [ ] `.asd/rules/sprint-lifecycle.md` "Plan file format" and `.asd/rules/checkpoints.md`: a change-surface cap-override request states the `dispatches` count it implies
-- [ ] `.asd/workflows/asd-phase-impl.md` step 6 and `asd-phase-impl-review.md` step 7a: point to the ceiling rule. A task wave or part set above the ceiling runs in sub-waves.
-- [ ] `.asd/workflows/asd-phase-audit.md` step 2: when `git ls-files` over the touched areas counts more than `AUDIT_BATCH_THRESHOLD_FILES`, the architect payload carries a batched-read plan (grep first, then targeted section reads)
-- [ ] `.asd/agents/asd-architect.md`: raise `maxTurns` to 150 (trusted emission; the batched-read plan is the binding control)
+- [x] `.asd/runtime.js`: add `DISPATCH_CEILING = 20` and `AUDIT_BATCH_THRESHOLD_FILES = 200` beside `SPLIT_THRESHOLD_FILES`/`SURFACE_CAP_FILES`, and export both
+- [x] `.asd/runtime.js`: add a pure wave-splitting helper (a list of dispatches → sequential waves of ≤ `DISPATCH_CEILING`), with a CLI entry if a workflow needs one
+- [x] `.asd/runtime.js`: `surfaceCheck` also returns the implied internal-review dispatch upper bound `dispatches` = internal reviewers × `ceil(bound / SPLIT_THRESHOLD_FILES)` + External Review
+- [x] `.asd/rules/sprint-lifecycle.md` "Orchestration and adaptive gates": add a single home for the ceiling rule. Concurrent dispatches in one phase step are at most `DISPATCH_CEILING`, and anything above it goes in sequential waves (review parts, impl task waves). Correlated interruption is judged per wave.
+- [x] `.asd/rules/sprint-lifecycle.md` "Plan file format" and `.asd/rules/checkpoints.md`: a change-surface cap-override request states the `dispatches` count it implies
+- [x] `.asd/workflows/asd-phase-impl.md` step 6 and `asd-phase-impl-review.md` step 7a: point to the ceiling rule. A task wave or part set above the ceiling runs in sub-waves.
+- [x] `.asd/workflows/asd-phase-audit.md` step 2: when `git ls-files` over the touched areas counts more than `AUDIT_BATCH_THRESHOLD_FILES`, the architect payload carries a batched-read plan (grep first, then targeted section reads)
+- [x] `.asd/agents/asd-architect.md`: raise `maxTurns` to 150 (trusted emission; the batched-read plan is the binding control)
 
 ### Task 2: Per-reviewer scope, compact rename rows, materialized diff in runtime (AC-2, AC-4, AC-5)
 Material risk: change: coverage-ledger contract
