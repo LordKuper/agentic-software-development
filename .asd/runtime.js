@@ -445,12 +445,14 @@ function draftSnapshot(files, out, previous) {
   return files.filter((file) => before[file] !== hashes[file]);
 }
 
-/** Measures a file list against SURFACE_CAP_FILES, or against the user-approved override bound when one is recorded; `dispatches` is the impl-review dispatch upper bound that cap implies (every internal reviewer per split part, one more part for Testing's appended test-plan paths, plus External Review). Known limit: that one extra part assumes at most SPLIT_THRESHOLD_FILES test-plan paths (test-plan.md plus its entry segments), so more re-entries undercount; take the path count as input if that ever happens. */
-function surfaceCheck(files, bound) {
+/** Measures a file list against SURFACE_CAP_FILES, or against the user-approved override bound when one is recorded; `dispatches` is the impl-review dispatch upper bound that cap implies (every internal reviewer per split part, Testing's parts sized for its test files plus the `testPlanFiles` test-plan paths appended to them, plus External Review). `testPlanFiles` defaults to 1, test-plan.md alone, for callers before any impl-test entry segment exists. */
+function surfaceCheck(files, bound, testPlanFiles = 1) {
   if (bound !== undefined && !(Number.isInteger(bound) && bound > 0)) fail('--bound must be a positive integer');
+  if (!(Number.isInteger(testPlanFiles) && testPlanFiles > 0)) fail('--test-plan-files must be a positive integer');
   const cap = bound === undefined ? SURFACE_CAP_FILES : bound;
   const count = new Set(files).size;
-  return { files: count, cap, breach: count > cap, dispatches: INTERNAL_REVIEWERS.length * Math.ceil(cap / SPLIT_THRESHOLD_FILES) + 2 };
+  const parts = (n) => Math.ceil(n / SPLIT_THRESHOLD_FILES);
+  return { files: count, cap, breach: count > cap, dispatches: (INTERNAL_REVIEWERS.length - 1) * parts(cap) + parts(cap + testPlanFiles) + 1 };
 }
 
 /** Runs git without a shell, returning its stdout, or streaming it into an open file descriptor so a large patch never hits a buffer cap. */
@@ -578,7 +580,7 @@ function main(argv) {
   }
   if (command === 'surface-check') {
     if (typeof flags.files !== 'string') fail('--files <path> required');
-    const result = surfaceCheck(readFileList(flags.files), flags.bound === undefined ? undefined : Number(flags.bound));
+    const result = surfaceCheck(readFileList(flags.files), flags.bound === undefined ? undefined : Number(flags.bound), flags['test-plan-files'] === undefined ? undefined : Number(flags['test-plan-files']));
     process.stdout.write(JSON.stringify(result) + '\n');
     return result.breach ? 1 : 0;
   }
