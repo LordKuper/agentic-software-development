@@ -115,3 +115,11 @@ A decision whose value must survive this sprint's archival is ALSO written into 
   - EXT-1: implement the design-review snapshot write/read.
   - Test-file findings TST-1 and TST-2 go to `asd-tester` after the dev chain.
 - **Affected docs**: reviews/impl/iter-01/, plan.md Task 4
+- 2026-09-22 — route review-fix iter-01 dev chain: critical, dispatch HEAD 0b790b8
+- 2026-09-22 — route review-fix iter-01 tester chain: critical, dispatch HEAD 7566611
+- 2026-09-22 — review-fix flagged choices accepted by orchestrator:
+  - `draft-snapshot` subcommand (the smallest real implementation of the EXT-1 snapshot), with snapshots committed alongside the reviews.
+  - Extra consistent wording cuts in CHANGELOG and README.
+  - The surface-cap count left without `quotePath`.
+  - Tester: one commit carrying 4 trailers; entry-01 rows edited in place as the findings named them.
+- 2026-09-22 — impl fix for iter-01: findings resolved
