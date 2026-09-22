@@ -142,3 +142,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-22 — impl-review DoD met: full suite green 213/213 at 25cdce5; green handoff passed adaptively → retro
 - 2026-09-22 — `<sprint>/retrospective.html` written: 2 entries (both covered by canon), 3 systemic proposals, analysed branch
 - 2026-09-22 — pr open mode DoD verified: plan 7/7, AC-1..AC-13 traced, iter-03 all APPROVE/latched, full suite 213/213 at 25cdce5 with no code diff since, sync clean, retrospective present, no sprint stubs; version 11.0.0 with CHANGELOG (no migration)
+- 2026-09-22 — PR #43 opened (user-approved publication): https://github.com/LordKuper/agentic-software-development/pull/43
