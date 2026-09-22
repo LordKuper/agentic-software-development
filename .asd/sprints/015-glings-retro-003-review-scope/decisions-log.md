@@ -94,3 +94,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Tasks 1-7 are done and the phase advances to impl-test.
 - **Rationale**: Every plan box is ticked, every flagged choice was resolved inside plan scope (logged above), build and lint are clean, all diff paths are authorised, and no stubs were added this sprint. Two existing tests pin the old `surfaceCheck`/`emit-manifest` behaviour; test changes are impl-test's job.
 - **Affected docs**: plan.md
+- 2026-09-22 — route impl-test entry 1: critical, dispatch HEAD 082cd31
+- 2026-09-22 — impl-test: defects D-1 → impl test-fix (digest 51fc5d2bde6461502eb0dbd2ff312500801b21a077b11417369b36172c05f674)

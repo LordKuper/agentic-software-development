@@ -59,7 +59,9 @@ not, and the qualifier form would have reddened the very next legitimate rewrite
 
 **How to apply:** run a THIRD mutation beyond fail-first — reword the fixed text end to end, drop the
 qualifier, keep the substance, and require the suite to stay GREEN. A red there means the assert locks
-wording; record both directions in `test-plan.md`. Related trap from the same entry: a mutation can
+wording; record both directions in `test-plan.md`. An order-bound regex (`never[^.]*free-form`) is the same lock:
+a correct reword puts the tokens in the other order (sprint 015 C6). Split the text into clauses and test
+each token on its own. Related trap from the same entry: a mutation can
 change bytes and still change nothing — renaming a cited heading `## Agent memory` to `## Agent memory
 directories` left the citation resolving, because heading resolution is prefix-anchored. An anchor guard
 catches a missing anchor, never a semantic no-op; confirm the run actually reddens.
