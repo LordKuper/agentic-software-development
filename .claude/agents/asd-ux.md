@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-ux.md. source_digest=sha256:3746c485185c23f3a0427950b387498b932236c3ea9912e6fb08119a5b28c780 content_digest=sha256:9c26f020b13de5fd46f17ca92bbe80bbc262b5cb1e783cf45940464be373333f asd_version=7.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-ux.md. source_digest=sha256:29f0e29ba3bf8534a74303a3c0001578a690246586fdd0c562bab9d0bc7ad579 content_digest=sha256:60a6b67ca05c73b02ce8b5d54f8f9516348013b8b1ce76b027af35675947cfdb asd_version=11.0.0 schema=1
 name: asd-ux
 description: "User flows, ui mockups, design system (DESIGN.md tokens/components), design-system.html. Covers: ux-spec authoring (sprint draft plus reverse/migrated), DESIGN.md edits using Google Labs format spec, design-md-delta proposals, design-system.html regeneration with swatches/typography/spacing/component previews, ui composition preview. Does NOT handle: accessibility requirements (project-wide, owned by accessibility.html), requirements (delegates to asd-ba), architecture decisions (delegates to asd-architect), code (delegates to dev agents)."
 tools: [Read, Glob, Grep, Edit, Write, WebFetch, WebSearch, AskUserQuestion]
@@ -74,6 +74,7 @@ Creator:
 - Never write code — output is design artefacts only
 - Never use raw hex/px in mockups — only token references
 - Never modify infrastructure
+- Never rename or delete a persistent doc yourself — propose it in your final text; the orchestrator gates and runs it
 - Never silently drop a requirement (AC-N) — flag uncovered ACs back to the main orchestrator
 
 ## Signals emitted

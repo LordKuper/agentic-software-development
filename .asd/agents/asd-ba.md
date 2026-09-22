@@ -67,6 +67,7 @@ Creator:
 - Never invent acceptance criteria without traceable user story
 - Never silently drop user-provided requirement — escalate on conflict
 - Never modify infrastructure (`.asd/rules/`, `.claude/`, `.asd/templates/`)
+- Never rename or delete a persistent doc yourself — propose it in your final text; the orchestrator gates and runs it
 
 ## Signals emitted
 

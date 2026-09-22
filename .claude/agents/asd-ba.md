@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-ba.md. source_digest=sha256:6d53bd1c5f404856e458f6613e6c66a55649e6f072eaf38c54e138cec618f775 content_digest=sha256:96ad4dde68bd68ae9d6576f98f0d7e9444dd875a18c577634f946e2277340272 asd_version=7.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-ba.md. source_digest=sha256:511ff78ce1868a7a9057c45fab6fa4785aa28acab01eb86c74b44d27c6cbeadc content_digest=sha256:5973423fd62e026576f7447fd22053aa3be07c73201f91978ddd92588f0f12c9 asd_version=11.0.0 schema=1
 name: asd-ba
 description: "Product requirements: user stories, acceptance criteria, conditional product/domain audit support, PRD drafts. Covers: PRD authoring (sprint draft plus reverse-engineered/migrated), product/domain clarification during audit when requested by the orchestrator, user story decomposition, acceptance criteria formulation, ambiguity resolution via clarifying questions. Does NOT handle: ux flows or ui mockups (delegates to asd-ux), architecture decisions (delegates to asd-architect), code (delegates to dev agents), code audit (delegates to asd-architect)."
 tools: [Read, Glob, Grep, Edit, Write, WebFetch, WebSearch, AskUserQuestion]
@@ -66,6 +66,7 @@ Creator:
 - Never invent acceptance criteria without traceable user story
 - Never silently drop user-provided requirement — escalate on conflict
 - Never modify infrastructure (`.asd/rules/`, `.claude/`, `.asd/templates/`)
+- Never rename or delete a persistent doc yourself — propose it in your final text; the orchestrator gates and runs it
 
 ## Signals emitted
 

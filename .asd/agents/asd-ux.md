@@ -75,6 +75,7 @@ Creator:
 - Never write code — output is design artefacts only
 - Never use raw hex/px in mockups — only token references
 - Never modify infrastructure
+- Never rename or delete a persistent doc yourself — propose it in your final text; the orchestrator gates and runs it
 - Never silently drop a requirement (AC-N) — flag uncovered ACs back to the main orchestrator
 
 ## Signals emitted
