@@ -139,3 +139,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-22 — impl-test: impacted set green (213/213 full suite), 1 extended/0 removed (entry 4)
 - 2026-09-22 — impl-review iter-03: all reviewers APPROVE (correctness/efficiency latched at iter 2); reviewer DoD met → terminal full suite
 - 2026-09-22 — route impl-review terminal suite: standard, dispatch HEAD 31dd56c
+- 2026-09-22 — impl-review DoD met: full suite green 213/213 at 25cdce5; green handoff passed adaptively → retro
