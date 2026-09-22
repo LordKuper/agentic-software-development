@@ -101,3 +101,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
   - The dispatch bound adds one Testing part for at most 25 test-plan paths.
   - The halved-retry bound is out of scope; it predates this sprint.
 - 2026-09-22 — impl test-fix: defects D-1 resolved
+- 2026-09-22 — route impl-test entry 2: critical, dispatch HEAD 9452acf
+- 2026-09-22 — impl-test: impacted set green (211/211 full suite), 0/0 tests (entry 2)
