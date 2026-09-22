@@ -25,8 +25,8 @@ const SURFACE_CAP_FILES = 100;
 const DISPATCH_CEILING = 20;
 /** An audit whose touched areas track more than this many files gets a batched-read plan in the architect payload. */
 const AUDIT_BATCH_THRESHOLD_FILES = 200;
-/** Internal impl-review reviewers, each dispatched once per split part. */
-const INTERNAL_REVIEWERS = 4;
+/** Internal reviewers, named as `emit-manifest --reviewer` takes them, each dispatched once per split part. */
+const INTERNAL_REVIEWERS = ['correctness', 'efficiency', 'testing', 'documentation'];
 /** The standing n/a predicates, each the exact text a ledger row records. The emitter authorizes one only where its condition holds; this is their sole home. */
 const NA_PREDICATES = {
   phaseGate: 'outside phase gate',
@@ -37,6 +37,7 @@ const NA_PREDICATES = {
   noSelfHosting: 'self_hosting not enabled',
   noTemplated: 'no templated artefact in scope',
   outOfPart: 'evidence outside this part; covered by the other parts',
+  pureRename: 'pure rename: identical content and mode',
 };
 /** Rubric entries each conditional predicate covers, by reviewer and id prefix; a prefix matching no entry fails the emit closed. */
 const NA_TARGETS = {
@@ -363,15 +364,36 @@ function emitCoverageManifests(input) {
   const partCount = files.length > SPLIT_THRESHOLD_FILES ? Math.ceil(files.length / SPLIT_THRESHOLD_FILES) : input.halve === true ? 2 : 1;
   if (partCount > Math.max(files.length, 1)) fail('scope has fewer files than parts');
   const naFor = (ids) => Object.fromEntries(ids.map((id) => [id, partCount > 1 ? granted.get(id).concat(NA_PREDICATES.outOfPart) : granted.get(id)]).filter(([, predicates]) => predicates.length > 0));
-  const allowedNa = { files: {}, rules: naFor(rules), sections: naFor(rubric.sections) };
-  return Array.from({ length: partCount }, (_, part) => stampManifest({
-    reviewer: input.reviewer,
-    phase: input.phase,
-    files: files.slice(Math.floor(part * files.length / partCount), Math.floor((part + 1) * files.length / partCount)),
-    rules,
-    sections: rubric.sections,
-    n_a: allowedNa,
-  }));
+  const renamed = new Set(input.pureRenames === undefined ? [] : stringArray(input.pureRenames, 'pureRenames'));
+  return Array.from({ length: partCount }, (_, part) => {
+    const partFiles = files.slice(Math.floor(part * files.length / partCount), Math.floor((part + 1) * files.length / partCount));
+    return stampManifest({
+      reviewer: input.reviewer,
+      phase: input.phase,
+      files: partFiles,
+      rules,
+      sections: rubric.sections,
+      n_a: { files: Object.fromEntries(partFiles.filter((file) => renamed.has(file)).map((file) => [file, [NA_PREDICATES.pureRename]])), rules: naFor(rules), sections: naFor(rubric.sections) },
+    });
+  });
+}
+
+/** A test file: under a `test`/`tests`/`__tests__`/`spec`/`specs` path segment, or a basename in a common test naming convention. Heuristic, so Correctness's full list stays the backstop for a miss. */
+function isTest(file) {
+  return /(^|\/)(test|tests|__tests__|spec|specs)\//.test(file) || /\.(test|spec)\.|^test_|_test\.|Tests?\./.test(file.split('/').pop());
+}
+
+/** One reviewer's file list, the single selector every manifest is built from: impl-review Testing narrows to test files plus the explicitly passed test-plan paths, which the scope pathspec excludes; every other reviewer gets the whole scope. */
+function reviewerFiles(phase, reviewer, files, testPlan) {
+  if (phase !== 'impl-review' || reviewer !== 'testing') return files;
+  return [...new Set(files.filter(isTest).concat(testPlan))];
+}
+
+/** Fails when a scope file lands in no internal reviewer's list, since nobody would then review it. */
+function assertReviewerUnion(phase, files, testPlan) {
+  const covered = new Set(INTERNAL_REVIEWERS.flatMap((reviewer) => reviewerFiles(phase, reviewer, files, testPlan)));
+  const orphans = files.filter((file) => !covered.has(file));
+  if (orphans.length > 0) fail(`scope files in no internal reviewer's list: ${orphans.join(', ')}`);
 }
 
 /** Reads a reviewer ledger from bare JSON, or from the one fenced block carrying `manifest_digest` inside the reviewer's returned text. */
@@ -427,7 +449,7 @@ function surfaceCheck(files, bound) {
   if (bound !== undefined && !(Number.isInteger(bound) && bound > 0)) fail('--bound must be a positive integer');
   const cap = bound === undefined ? SURFACE_CAP_FILES : bound;
   const count = new Set(files).size;
-  return { files: count, cap, breach: count > cap, dispatches: INTERNAL_REVIEWERS * Math.ceil(cap / SPLIT_THRESHOLD_FILES) + 1 };
+  return { files: count, cap, breach: count > cap, dispatches: INTERNAL_REVIEWERS.length * Math.ceil(cap / SPLIT_THRESHOLD_FILES) + 1 };
 }
 
 /** Splits one phase step's dispatches, in order, into sequential waves of at most DISPATCH_CEILING. */
@@ -437,24 +459,74 @@ function dispatchWaves(dispatches) {
   return waves;
 }
 
+/** Runs git without a shell, returning its stdout, or streaming it into an open file descriptor so a large patch never hits a buffer cap. */
+function runGit(args, outFd) {
+  const result = spawnSync('git', args, { encoding: 'utf8', maxBuffer: Infinity, stdio: ['ignore', outFd === undefined ? 'pipe' : outFd, 'pipe'], windowsHide: true });
+  if (result.error || result.status !== 0) fail(`git ${args.join(' ')} failed: ${result.error ? result.error.message : result.stderr.trim()}`);
+  return result.stdout;
+}
+
+function gitRef(value, name) {
+  if (typeof value !== 'string' || !/^[^-\s]\S*$/.test(value)) fail(`${name} <sha> required`);
+  return value;
+}
+
+/** Every rename in the range, destination to source; `pure` only when git reports the identical blob and mode on both sides, so the rename is behaviour-neutral by proof, never by assertion. */
+function rangeRenames(base, head) {
+  const tokens = runGit(['diff', '--raw', '-z', '-M', '--no-abbrev', `${base}...${head}`]).split('\0');
+  const renames = new Map();
+  let at = 0;
+  while (at < tokens.length - 1) {
+    const [srcMode, dstMode, srcBlob, dstBlob, status] = tokens[at].slice(1).split(' ');
+    if (status.startsWith('R')) renames.set(tokens[at + 2], { source: tokens[at + 1], pure: srcBlob === dstBlob && srcMode === dstMode });
+    at += /^[RC]/.test(status) ? 3 : 2;
+  }
+  return renames;
+}
+
+/** A manifest's patch pathspec: its files the range changed (appended test-plan paths are not), each rename paired with its source so the patch shows a rename rather than an add. */
+function patchPaths(files, scope, renames) {
+  return files.filter((file) => scope.has(file)).flatMap((file) => (renames.has(file) ? [renames.get(file).source, file] : [file]));
+}
+
+function writePatch(file, base, head, paths) {
+  const fd = fs.openSync(file, 'w');
+  try {
+    if (paths.length > 0) runGit(['--literal-pathspecs', 'diff', '-M', '--no-color', '--no-ext-diff', '--no-textconv', `${base}...${head}`, '--', ...paths], fd);
+  } finally {
+    fs.closeSync(fd);
+  }
+}
+
 function emitManifestCommand(flags) {
   if (!/^[a-z]+$/.test(flags.reviewer || '')) fail('--reviewer <name> required');
   if (typeof flags.files !== 'string' || typeof flags.out !== 'string') fail('--files <path> and --out <dir> required');
+  const hasRange = flags.base !== undefined || flags.head !== undefined;
+  if (hasRange && flags.phase !== 'impl-review') fail('--base/--head apply to impl-review only');
+  const range = hasRange ? { base: gitRef(flags.base, '--base'), head: gitRef(flags.head, '--head') } : null;
   const customPaths = typeof flags['custom-rules'] === 'string' ? flags['custom-rules'].split(',') : [];
+  const testPlan = typeof flags['test-plan'] === 'string' ? flags['test-plan'].split(',') : [];
+  const scope = readFileList(flags.files);
+  assertReviewerUnion(flags.phase, scope, testPlan);
+  const renames = range ? rangeRenames(range.base, range.head) : new Map();
   const manifests = emitCoverageManifests({
     reviewer: flags.reviewer,
     phase: flags.phase,
     rubric: fs.readFileSync(path.join(__dirname, 'agents', `asd-reviewer-${flags.reviewer}.md`), 'utf8'),
-    files: readFileList(flags.files),
+    files: reviewerFiles(flags.phase, flags.reviewer, scope, testPlan),
     customRules: Object.fromEntries(customPaths.map((file) => [file, fs.readFileSync(file, 'utf8')])),
     halve: flags.halve === true,
     selfHosting: flags['self-hosting'] === true,
     templates: templateNames(path.join(__dirname, 'templates')),
+    pureRenames: [...renames].filter(([, rename]) => rename.pure).map(([file]) => file),
   });
+  const inScope = new Set(scope);
   return manifests.map((manifest, index) => {
-    const file = path.join(flags.out, manifests.length === 1 ? `${flags.reviewer}.manifest.json` : `${flags.reviewer}.part-${index + 1}.manifest.json`);
-    fs.writeFileSync(file, JSON.stringify(manifest) + '\n', 'utf8');
-    return { manifest: file, digest: manifest.digest };
+    const stem = path.join(flags.out, manifests.length === 1 ? flags.reviewer : `${flags.reviewer}.part-${index + 1}`);
+    fs.writeFileSync(`${stem}.manifest.json`, JSON.stringify(manifest) + '\n', 'utf8');
+    if (!range) return { manifest: `${stem}.manifest.json`, digest: manifest.digest };
+    writePatch(`${stem}.diff`, range.base, range.head, patchPaths(manifest.files, inScope, renames));
+    return { manifest: `${stem}.manifest.json`, digest: manifest.digest, diff: `${stem}.diff` };
   });
 }
 
@@ -524,4 +596,4 @@ if (require.main === module) {
   try { process.exitCode = main(process.argv); } catch (error) { process.stderr.write(`${error.message}\n`); process.exitCode = 2; }
 }
 
-module.exports = { AUDIT_BATCH_THRESHOLD_FILES, DISPATCH_CEILING, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, NA_PREDICATES, SPLIT_THRESHOLD_FILES, SURFACE_CAP_FILES, buildInvocation, coverageManifestDigest, defectStalemate, dispatchWaves, emitCoverageManifests, externalPreflight, recordExternalFailure, routeTask, surfaceCheck, validateCoverageLedger, fingerprint };
+module.exports = { AUDIT_BATCH_THRESHOLD_FILES, DISPATCH_CEILING, INTERNAL_REVIEWERS, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, NA_PREDICATES, SPLIT_THRESHOLD_FILES, SURFACE_CAP_FILES, assertReviewerUnion, buildInvocation, coverageManifestDigest, defectStalemate, dispatchWaves, emitCoverageManifests, externalPreflight, isTest, recordExternalFailure, reviewerFiles, routeTask, surfaceCheck, validateCoverageLedger, fingerprint };
