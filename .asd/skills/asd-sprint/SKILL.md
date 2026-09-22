@@ -17,7 +17,7 @@
 ## Operations used
 - Read files / search repo — detect active sprint; read state.json, config.yaml, custom-common-rules.md
 - Run command — `git status`, `git branch --show-current`; decisions-log rotation (rename, copy template, commit those paths)
-- Request user decision — new-sprint confirm, resume/abort choice
+- Request user decision — new-sprint confirm, resume/abort choice (never free-form scope text)
 - Delegate to skill — phase skills, plus `asd-init` per "Skills dispatched"
 - No other writes — phase skills and their inline orchestrator own writes
 
@@ -34,7 +34,7 @@ Before a phase-skill delegation below, rotate the decisions log when `.asd/rules
 ### Step 2A: new-sprint flow
 1. Read `.asd/project/config.yaml` (confirm init complete)
 2. `git status` — if dirty, request user decision: commit / stash / abort
-3. Request user decision: confirm start; collect scope (free-form)
+3. Collect scope as a plain chat message; request user decision only to confirm start or abort
 4. Delegate to skill `asd-phase-scope`, passing scope text
 5. On COMPLETED → advance per Step 3
 

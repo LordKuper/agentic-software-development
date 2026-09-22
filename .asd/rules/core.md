@@ -37,7 +37,7 @@ For a hard or unresolved decision: **Question** → **Options** → **Decision**
 
 ## Request user decision
 
-Canonical semantic op for prompting the user with discrete options (host-tool mapping: `providers.md`). Every agent can do this. Use whenever a choice is needed rather than free-form input.
+Canonical semantic op for prompting the user with discrete options (host-tool mapping: `providers.md`). Every agent can do this. Use whenever a choice is needed; never for free-form input, which is collected as a plain chat message.
 
 ## Autonomy and escalation
 
@@ -71,22 +71,18 @@ Phase skills named `asd-phase-<phase>`, one per phase in `sprint-lifecycle.md`. 
 ## Context hygiene
 
 1. Disk is the memory. Decision → `decisions-log.md`; state → `state.json`; artifact → its real path.
-   Anything living only in the transcript is not done. Corollary: any session is clearable at a phase
-   boundary without loss.
-2. Clear at phase boundaries. Once a phase emits COMPLETED and its state write lands, the main orchestrator
-   transcript holds nothing unique — prefer clear over compaction; re-enter via the main orchestrator,
-   recovering from `state.json` per `sprint-lifecycle.md` "State recovery".
-3. Compact only within a phase (long `impl` runs, fix loops). The compaction summary MUST preserve:
-   sprint id; phase and mode; outstanding signals (`QUESTION`, `BLOCKED_MANUAL`, `ADVICE_NEEDED`); any
-   gate answer not yet written to disk; paths written this phase; remaining task/finding/defect ids.
-4. Never clear or compact mid-gate — between posting a gate message and recording the answer. Record
-   the answer to `decisions-log.md`/`state.json` first, then compact.
+   Anything living only in the transcript is not done.
+2. At a phase boundary the main orchestrator continues the chain itself. Context compaction is automatic
+   and host-driven — no user involvement, never a prompt to clear. A lost session re-enters via the main
+   orchestrator, recovering from `state.json` per `sprint-lifecycle.md` "State recovery".
+3. A compaction summary MUST preserve: sprint id; phase and mode; outstanding signals (`QUESTION`,
+   `BLOCKED_MANUAL`, `ADVICE_NEEDED`); any gate answer not yet written to disk; paths written this phase;
+   remaining task/finding/defect ids.
+4. Write a gate answer to `decisions-log.md`/`state.json` before any further work.
 5. Dispatch payloads carry paths and explicit parameters, never transcript excerpts. A dispatched agent
    never inherits the main orchestrator's conversation.
 6. Reviewers get fresh context per iteration and never receive prior-iteration findings (external
    review's stalemate set excepted) — `review-policy.md`, not restated here.
-7. Threshold: past ~70% context with no phase boundary in reach → compact; boundary in reach → finish
-   the phase, then clear.
 
 ## Untrusted-data boundary
 
