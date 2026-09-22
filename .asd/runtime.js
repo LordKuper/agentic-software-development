@@ -437,6 +437,14 @@ function readFileList(file) {
   return fs.readFileSync(file, 'utf8').split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
 }
 
+/** Writes one design-review iteration's draft content hashes to `out` and returns the drafts whose hash differs from the `previous` iteration's snapshot; every draft when there is no previous snapshot, so a missing one widens scope rather than dropping a draft. */
+function draftSnapshot(files, out, previous) {
+  const hashes = Object.fromEntries(files.map((file) => [file, fingerprint(fs.readFileSync(file, 'utf8'))]));
+  const before = previous !== undefined && fs.existsSync(previous) ? JSON.parse(fs.readFileSync(previous, 'utf8')) : {};
+  fs.writeFileSync(out, JSON.stringify(hashes) + '\n', 'utf8');
+  return files.filter((file) => before[file] !== hashes[file]);
+}
+
 /** Measures a file list against SURFACE_CAP_FILES, or against the user-approved override bound when one is recorded; `dispatches` is the impl-review dispatch upper bound that cap implies (every internal reviewer per split part, one more part for Testing's appended test-plan paths, plus External Review). Known limit: that one extra part assumes at most SPLIT_THRESHOLD_FILES test-plan paths (test-plan.md plus its entry segments), so more re-entries undercount; take the path count as input if that ever happens. */
 function surfaceCheck(files, bound) {
   if (bound !== undefined && !(Number.isInteger(bound) && bound > 0)) fail('--bound must be a positive integer');
@@ -574,11 +582,16 @@ function main(argv) {
     process.stdout.write(JSON.stringify(result) + '\n');
     return result.breach ? 1 : 0;
   }
-  fail('usage: emit-manifest, manifest-digest, validate-ledger, external-preflight, external-record-failure, route-task, defect-stalemate, or surface-check');
+  if (command === 'draft-snapshot') {
+    if (typeof flags.files !== 'string' || typeof flags.out !== 'string') fail('--files <path> and --out <path> required');
+    process.stdout.write(draftSnapshot(readFileList(flags.files), flags.out, flags.previous).map((file) => `${file}\n`).join(''));
+    return 0;
+  }
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, external-preflight, external-record-failure, route-task, defect-stalemate, surface-check, or draft-snapshot');
 }
 
 if (require.main === module) {
   try { process.exitCode = main(process.argv); } catch (error) { process.stderr.write(`${error.message}\n`); process.exitCode = 2; }
 }
 
-module.exports = { AUDIT_BATCH_THRESHOLD_FILES, DISPATCH_CEILING, INTERNAL_REVIEWERS, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, NA_PREDICATES, SPLIT_THRESHOLD_FILES, SURFACE_CAP_FILES, buildInvocation, coverageManifestDigest, defectStalemate, emitCoverageManifests, externalPreflight, isTest, recordExternalFailure, reviewerFiles, routeTask, surfaceCheck, validateCoverageLedger, fingerprint };
+module.exports = { AUDIT_BATCH_THRESHOLD_FILES, DISPATCH_CEILING, INTERNAL_REVIEWERS, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, NA_PREDICATES, SPLIT_THRESHOLD_FILES, SURFACE_CAP_FILES, buildInvocation, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifests, externalPreflight, isTest, recordExternalFailure, reviewerFiles, routeTask, surfaceCheck, validateCoverageLedger, fingerprint };

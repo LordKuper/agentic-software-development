@@ -86,7 +86,7 @@ Both impl-review rows start from the whole repo and subtract the exclusions, nev
 | impl-review | 1 | `files[]` = changed files on `<git.base_branch>...HEAD <exclude_paths>`, `base_ref`=`<git.base_branch>`, `head_ref`=`HEAD` |
 | impl-review | 2+ | `files[]` = changed files on `<state.json reviews.impl.iteration_heads["iter-(N-1)"]>...HEAD <exclude_paths>`, `base_ref`=that sha, `head_ref`=`HEAD` |
 
-Iteration 1 covers all sprint work in that phase; later iterations cover every commit since the sha recorded at the start of the previous iteration — not just the last commit, so a multi-commit review-fix cycle stays fully covered. Absent-key fallback (sprint in flight when `iteration_heads` shipped): `sprint-lifecycle.md` "State recovery" (sole SSoT). design-review persists a file snapshot each iteration; next iteration reads it to compute its manifest.
+Iteration 1 covers all sprint work in that phase; later iterations cover every commit since the sha recorded at the start of the previous iteration — not just the last commit, so a multi-commit review-fix cycle stays fully covered. Absent-key fallback (sprint in flight when `iteration_heads` shipped): `sprint-lifecycle.md` "State recovery" (sole SSoT). design-review persists a draft snapshot each iteration and computes its 2+ list from the previous one (`asd-phase-design-review.md` step 7 "Draft list").
 
 **Unreviewed files.** A partial, skip or stopped-batch iteration lists the `files[]` it did not review — a skip: the whole scope it would have sent — as its `Unreviewed files` line in that iteration's `external.md` (`t_review-report.md`). The next iteration's `files[]` is the table row above unioned with that list.
 
