@@ -41,19 +41,19 @@ Material risk: change: workflow-gate dispatch contract
 ### Task 2: Per-reviewer scope, compact rename rows, materialized diff in runtime (AC-2, AC-4, AC-5)
 Material risk: change: coverage-ledger contract
 Reachability: impl-review writes the per-reviewer manifest and `.diff` paths at step 6; the reviewer reads both from its payload at dispatch, and `validate-ledger` reads the same manifest at step 7
-- [ ] `emit-manifest` builds each reviewer's file list from one selector keyed by phase and reviewer (the AC-3 table). Add the `isTest` classifier: path segment `test|tests|__tests__|spec|specs`, or a basename matching `*.test.*`, `*.spec.*`, `test_*`, `*_test.*` or `*Test(s).*`. In impl-review, Testing gets the test files plus `--test-plan <path...>`, appended explicitly. Everyone else gets the full list.
-- [ ] Add a cross-reviewer invariant check: the union of the internal reviewers' lists equals the scope list, or emission fails
-- [ ] `emit-manifest --base <sha> --head <sha>` (impl-review): run `git diff --raw -M100%` and grant `NA_PREDICATES.pureRename` on `n_a.files[<path>]` to every R100 path. No caller can supply this classification. `validate-ledger` stays unchanged.
-- [ ] With `--base/--head`, write one patch per manifest or part (`<reviewer>[.part-N].diff`, `git diff -M <range> -- <that part's files>`) beside the manifest, and print its path
-- [ ] Split union check (a) is keyed to that reviewer's list. New manifest fields stay optional to `validate-ledger`, so a manifest emitted before the upgrade still validates.
-- [ ] Constants and predicates are cited by symbol wherever canon quotes them (citer sweep)
+- [x] `emit-manifest` builds each reviewer's file list from one selector keyed by phase and reviewer (the AC-3 table). Add the `isTest` classifier: path segment `test|tests|__tests__|spec|specs`, or a basename matching `*.test.*`, `*.spec.*`, `test_*`, `*_test.*` or `*Test(s).*`. In impl-review, Testing gets the test files plus `--test-plan <path...>`, appended explicitly. Everyone else gets the full list.
+- [x] Add a cross-reviewer invariant check: the union of the internal reviewers' lists equals the scope list, or emission fails
+- [x] `emit-manifest --base <sha> --head <sha>` (impl-review): run `git diff --raw -M100%` and grant `NA_PREDICATES.pureRename` on `n_a.files[<path>]` to every R100 path. No caller can supply this classification. `validate-ledger` stays unchanged.
+- [x] With `--base/--head`, write one patch per manifest or part (`<reviewer>[.part-N].diff`, `git diff -M <range> -- <that part's files>`) beside the manifest, and print its path
+- [x] Split union check (a) is keyed to that reviewer's list. New manifest fields stay optional to `validate-ledger`, so a manifest emitted before the upgrade still validates.
+- [x] Constants and predicates are cited by symbol wherever canon quotes them (citer sweep)
 
 ### Task 3: Context hygiene, free-form scope, cleanup prompt, scope-point document skip (AC-1, AC-7, AC-8, AC-10)
 Material risk: change: orchestrator behaviour rule wording
-- [ ] `.asd/rules/core.md` "Context hygiene": drop every clear instruction (rules 1, 2 and 7). At a phase boundary the orchestrator continues the chain itself, and context compacts automatically, host-driven, with no user involvement. Keep rule 3's preserve list as the content a compaction must keep. Reword rule 4 per C-4: write the gate answer to disk before any further work. Keep rules 5 and 6 and the "State recovery" path.
-- [ ] `.asd/rules/core.md` "Request user decision": never used for free-form input
-- [ ] `.asd/skills/asd-sprint/SKILL.md` step 2A.3 and its Operations list: collect scope as a plain chat message, and use the decision prompt only for confirm, start and abort
-- [ ] `.asd/workflows/asd-phase-scope.md`:
+- [x] `.asd/rules/core.md` "Context hygiene": drop every clear instruction (rules 1, 2 and 7). At a phase boundary the orchestrator continues the chain itself, and context compacts automatically, host-driven, with no user involvement. Keep rule 3's preserve list as the content a compaction must keep. Reword rule 4 per C-4: write the gate answer to disk before any further work. Keep rules 5 and 6 and the "State recovery" path.
+- [x] `.asd/rules/core.md` "Request user decision": never used for free-form input
+- [x] `.asd/skills/asd-sprint/SKILL.md` step 2A.3 and its Operations list: collect scope as a plain chat message, and use the decision prompt only for confirm, start and abort
+- [x] `.asd/workflows/asd-phase-scope.md`:
   - step 1: raw scope arrives as a plain chat message.
   - step 2: before the scope gate, ask about cleanup and quality criteria (legacy removal, warning budget, doc consolidation), unless the raw scope already covers them.
   - step 3a: at the scope gate the user may skip an enabled optional document for this sprint (narrow-only, hard), frozen as `false` plus one decisions-log line. The rule itself lives in Task 4.
@@ -67,7 +67,7 @@ Reachability: scope/audit write `state.json.documents.<doc>=false` at the skip g
 
 ### Task 5: Orchestrator route for BA/UX doc rename and delete (AC-6)
 Material risk: change: promote-phase git ownership
-- [ ] `.asd/workflows/asd-phase-design-promote.md` step 4: when a BA or UX creator proposes renaming or deleting one of its persistent docs, the user approves. Deletion goes through the existing hard deletion gate; a rename follows gate policy. The main orchestrator then runs `git mv`/`git rm` inline, and the creator updates content and inbound links. The BA/UX tool policy is unchanged.
+- [x] `.asd/workflows/asd-phase-design-promote.md` step 4: when a BA or UX creator proposes renaming or deleting one of its persistent docs, the user approves. Deletion goes through the existing hard deletion gate; a rename follows gate policy. The main orchestrator then runs `git mv`/`git rm` inline, and the creator updates content and inbound links. The BA/UX tool policy is unchanged.
 
 ### Task 6: Reviewer responsibility table and scope contract in canon (AC-2, AC-3, AC-4, AC-5, C-1..C-3)
 Material risk: change: reviewer roster and payload contract

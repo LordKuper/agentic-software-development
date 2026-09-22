@@ -131,7 +131,7 @@
     ".asd/templates/t_test-plan.md": "005b9aef2a8f75ccafc28efc26cdccff7b7863e6389050f448b01dc5973e9259",
     ".asd/templates/t_ux-spec.html": "4740d0c9219ceaca240aa598aa95cce039d2e6629a63b7801a54769f98f900c5",
     ".asd/workflows/asd-phase-audit.md": "c121c3c1c08928c4835892d8d0ecc89e0a9957034b50cb902d6d0fd0511d0f7e",
-    ".asd/workflows/asd-phase-design-promote.md": "331f78ab56c165f3c5ddd58ad44cf408f22c031ad167fb0ac1cb387cb2c99854",
+    ".asd/workflows/asd-phase-design-promote.md": "48ab80161f90c1725db4a65e98c3c37c63fe1f6ddaa141ef807e49158dbf1b65",
     ".asd/workflows/asd-phase-design-review.md": "1662080c63a852786f984f82f9b1b3c4640e145aa9096800e597fa12448d78b8",
     ".asd/workflows/asd-phase-design.md": "803e588939ac9cbae0ccd33539eb36f983f30e7a3ad441ffa9827569aa21220e",
     ".asd/workflows/asd-phase-impl-review.md": "d83492b0af12d2037f2756fc6a601dfed3813fbba21458ce608875bec5c2f133",
