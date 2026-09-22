@@ -63,3 +63,16 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: audit.md
 
 - 2026-09-22 — design/design-review/design-promote skipped (no documents enabled)
+
+## 2026-09-22 — `plan.md` accepted
+
+- **Decision**: The user accepted a plan of 7 Tasks in 4 waves, with a change surface of 25 files. The plan settles the choices the audit left open:
+  - design-review Correctness gets every changed draft and a new "Draft correctness" rubric entry.
+  - Only Testing narrows in impl-review.
+  - Compact rows cover R100 renames only.
+  - Patch files are committed.
+  - `c4` is skippable.
+  - Architect `maxTurns` is 150.
+  - Version 11.0.0, with no migration.
+- **Rationale**: These are material choices the user had not authorized before, so the gate was explicit rather than adaptive. No open stubs.
+- **Affected docs**: plan.md
