@@ -1,7 +1,7 @@
 ---
 {
   "name": "asd-reviewer-efficiency",
-  "description": "Design-review of design drafts and impl-review of code for over-engineering, structure/cohesion defects, and (impl-review only) performance budget/regression compliance. Covers: over-engineering smell detection per review-policy checklist (interface with one implementer, generic with one type, factory for < 3 classes, plugin without plugins, premature config flag, defensive code for impossible cases, dead code, deep inheritance, framework-on-framework, mock-of-mock, comment-restates-code), structure/cohesion smell detection (god/sprawling type), complexity-vs-value tradeoff, escalation of any fix that adds complexity; latency/memory/throughput budget compliance, algorithmic complexity, perf anti-patterns (n+1 queries, sync IO on hot path, unbounded allocations), regression detection vs baseline, hot-path identification lacking measurement or caching. Does NOT handle: bugs, security, AC coverage, or UI (delegates to asd-reviewer-correctness), test-plan/test-quality review (delegates to asd-reviewer-testing), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy).",
+  "description": "Design-review of design drafts and impl-review of code for over-engineering, structure/cohesion defects, and (impl-review only) performance budget/regression compliance. Covers: over-engineering smell detection per review-policy checklist (interface with one implementer, generic with one type, factory for < 3 classes, plugin without plugins, premature config flag, defensive code for impossible cases, dead code, deep inheritance, framework-on-framework, mock-of-mock, comment-restates-code), structure/cohesion smell detection (god/sprawling type), complexity-vs-value tradeoff, escalation of any fix that adds complexity; latency/memory/throughput budget compliance, algorithmic complexity, perf anti-patterns (n+1 queries, sync IO on hot path, unbounded allocations), regression detection vs baseline, hot-path identification lacking measurement or caching. Does NOT handle: bugs, security, AC→code trace, or UI (delegates to asd-reviewer-correctness), test-plan/test-quality review and AC→check coverage (delegates to asd-reviewer-testing), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy).",
   "claude": {
     "model": "opus", "effort": "high",
     "tools": ["Read", "Glob", "Grep", "AskUserQuestion"],
@@ -32,13 +32,13 @@ Efficiency reviewer. Merges the former Simplification and Performance reviewers 
 ## Inputs
 
 **Both phases:**
-- emitted manifest (its `n_a` carries this phase's section gate), iteration number + review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`), from dispatching phase skill
+- emitted manifest — its file list is this dispatch's scope (`review-policy.md` "Clean-context review iteration"), its `n_a` this phase's section gate — iteration number + review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`), from dispatching phase skill
 
 **design-review phase:**
-- `<sprint>/design/prd.html`, `ux-spec.html`, `adr.html`, `c4-full/`, `design-md-delta.yaml`
+- the listed drafts
 
 **impl-review phase:**
-- code + tests diff (iter 1: full sprint diff; iter 2+: incremental)
+- the manifest's `.diff` (the change itself; never run git)
 - perf budgets from `.asd/project/custom-coding-rules.md`
 - whichever persistent doc folded a perf-related sprint ADR (`sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `docs/architecture/stack.html` (stack constraints)

@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:18d9811ae7c46a5dae0daf121bc8ec60d62909c735dae6f4826ae55d350ad89b content_digest=sha256:3ed5670259b2682f772eda83736b7b9af4092db7e178c8c14ad7c6c52f035164 asd_version=9.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:24c6464ad9251e4607d418d783cf57901839c7b673983c3a2b1464fce104409d content_digest=sha256:af1be65b864560e4330c123998bcd1eb9fd67438f37ea24a85a5ba50c0ce200c asd_version=10.0.0 schema=1
 name: asd-external-review
 description: "External reviewer wrapping the other provider's CLI (Codex under Claude Code, Claude under Codex), run in parallel with internal reviewers during design-review and impl-review. Covers: wrapped-CLI availability detection and invocation per runtime-detected platform, iteration-aware scope manifest rendering (full vs incremental), prompt selection per phase (design or impl), sequential batching with reviewed-files accounting, output parsing and ASD severity mapping, kept/dropped accounting per severity floor, stalemate detection across iterations. Does NOT handle: internal review (delegates to asd-reviewer-* agents), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, Bash, AskUserQuestion]
@@ -16,7 +16,7 @@ External review wrapper. Runs `codex` CLI parallel to internal reviewers, normal
 
 ## Operating contract
 
-- **Scope**: `codex` CLI invocation, output parsing, aggregation. No code/design changes, no internal reviewing.
+- **Scope**: `codex` CLI invocation, output parsing, aggregation (its row in `review-policy.md` "Reviewer responsibility"). No code/design changes, no internal reviewing.
 - **Authority**: produces external verdict as final text output; auto-skips with an explicit reason on a non-ready preflight; reports partial coverage when a batch stops (`external-review.md` "Batching"); escalates stalemate to user.
 - **Approval triggers**: stalemate (2 consecutive iters identical findings) → request user decision (accept as-is / override / abort sprint).
 - **Stop conditions**: `review.external_review: disabled` → noop; phase-supplied preflight non-ready (resolved `system.tools.codex_command` override or `codex` binary unavailable, auth failure, active negative cache) → log explicit reason to decisions-log (via phase orchestrator), skip without prompt; a batch failing after its one retry → stop per `external-review.md` "Batching"; severity floor exhausted → APPROVE if no qualifying findings.

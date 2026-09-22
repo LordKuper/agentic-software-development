@@ -1,2 +1,2 @@
 - [runtime.js stays one file](feedback_runtime-js-single-file.md) — user overrode the SC-1 split for `.asd/runtime.js`; never re-raise it, judge only new code.
-- [No-shell change surface](feedback_no-shell-incremental-scope.md) — rebuild iter-1/iter-2+ surface from plan/audit/test-plan/decisions-log; memory bloat and test micro-costs not raised.
+- [No-shell change surface](feedback_no-shell-incremental-scope.md) — read the manifest's .diff (sprint 015+); sprint-record fallback; memory bloat and test micro-costs not raised.

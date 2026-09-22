@@ -1,0 +1,235 @@
+{
+  "sprint_id": "015-glings-retro-003-review-scope",
+  "branch": "sprint/015-glings-retro-003-review-scope",
+  "phase": "pr",
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "adr": false,
+    "c4": false
+  },
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "explicit accept of sprint.md AC-1..AC-13",
+      "evidence": "user answered accept at hard scope gate; retro rows verified at HEAD 8649c9c",
+      "artifact_revision": "sprint.md initial"
+    },
+    {
+      "gate": "audit-contradiction",
+      "decision_actor": "user",
+      "reason": "canonical vs canonical C-1..C-4",
+      "evidence": "audit.md Contradictions; C-1 split, C-2 incremental everywhere, C-3 reword, C-4 reword",
+      "artifact_revision": "audit.md initial"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "adaptive routine pass: all t_audit sections returned, contradictions user-settled, no product ambiguity, decomposition disabled",
+      "evidence": "audit.md at 3842a26+1",
+      "artifact_revision": "audit.md initial"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "user",
+      "reason": "explicit accept of plan.md Tasks 1-7, 4 waves",
+      "evidence": "user answered accept; surface-check files=25 cap=100 breach=false",
+      "artifact_revision": "plan.md initial"
+    },
+    {
+      "gate": "impl-assessment",
+      "decision_actor": "orchestrator",
+      "reason": "adaptive: Tasks 1-7 ticked, flagged choices resolved in-plan, build+lint clean, diff paths authorised",
+      "evidence": "sync --check ok; git diff --cached --check clean; plan.md 0 open boxes; no sprint stubs; 2 pinned-test failures routed to impl-test",
+      "artifact_revision": "HEAD 1683b6f"
+    },
+    {
+      "gate": "plan-change",
+      "decision_actor": "user",
+      "reason": "P2-1: audit-exit document skip becomes user-initiated",
+      "evidence": "reviews/impl/iter-01/correctness.part-2 P2-1; user chose user-initiated only",
+      "artifact_revision": "plan.md Task 4"
+    },
+    {
+      "gate": "impl-review-green-handoff",
+      "decision_actor": "orchestrator",
+      "reason": "adaptive: all reviewers APPROVE iter-03, terminal full suite green",
+      "evidence": "verdicts iter-03; test-plan Suite run 213/213 at 25cdce5 (db81a42)",
+      "artifact_revision": "reviews/impl/iter-03"
+    },
+    {
+      "gate": "pr-publication",
+      "decision_actor": "user",
+      "reason": "explicit approval to push and open PR",
+      "evidence": "DoD verified: plan 0 open, iter-03 all APPROVE, full suite 213/213 at 25cdce5, sync ok, no sprint stubs, retrospective present, v11.0.0",
+      "artifact_revision": "HEAD bfdd865"
+    }
+  ],
+  "task_routing": {
+    "Task 1": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "Task 2": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "claude:opus",
+      "reason": "risk:public contract"
+    },
+    "Task 3": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "Task 4": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "Task 5": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "Task 6": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "claude:opus",
+      "reason": "risk:public contract"
+    },
+    "Task 7": {
+      "tier": "standard",
+      "execution": "agent",
+      "resolved_model": "claude:sonnet",
+      "reason": "artifact-risk:release manifest"
+    },
+    "impl-test entry 1": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "D-1": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "impl-test entry 2": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "claude:opus",
+      "reason": "no-downgrade"
+    },
+    "review-fix iter-01 dev": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "review-fix iter-01 tester": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "impl-test entry 3": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "claude:opus",
+      "reason": "no-downgrade"
+    },
+    "review-fix iter-02 dev": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "claude:opus",
+      "reason": "no-downgrade"
+    },
+    "review-fix iter-02 tester": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "claude:opus",
+      "reason": "no-downgrade"
+    },
+    "impl-test entry 4": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "claude:opus",
+      "reason": "no-downgrade"
+    },
+    "impl-review terminal suite": {
+      "tier": "standard",
+      "execution": "agent",
+      "resolved_model": "claude:sonnet",
+      "reason": "normal"
+    }
+  },
+  "skipped_phases": [
+    "design",
+    "design-review",
+    "design-promote"
+  ],
+  "reviews": {
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "iteration": 3,
+      "verdicts": {
+        "iter-01": {
+          "correctness": "CONCERNS",
+          "efficiency": "CONCERNS",
+          "testing": "CONCERNS",
+          "documentation": "CONCERNS",
+          "external": "CONCERNS"
+        },
+        "iter-02": {
+          "correctness": "APPROVE",
+          "efficiency": "APPROVE",
+          "testing": "CONCERNS",
+          "documentation": "CONCERNS",
+          "external": "CONCERNS"
+        },
+        "iter-03": {
+          "correctness": "APPROVE",
+          "efficiency": "APPROVE",
+          "testing": "APPROVE",
+          "documentation": "APPROVE",
+          "external": "APPROVE"
+        }
+      },
+      "iteration_heads": {
+        "iter-01": "a5f6548ea1bd1d25323f3f896cc6112eb14da9b5",
+        "iter-02": "f259ed3373f807d866995143f80d2ad44b2dc201",
+        "iter-03": "31dd56c367d0ac2e7f17f1c4ac297ee347f0fe21"
+      },
+      "latched": {
+        "correctness": 2,
+        "efficiency": 2,
+        "testing": 3,
+        "documentation": 3,
+        "external": 3
+      }
+    }
+  },
+  "created_at": "2026-09-22T07:05:22Z",
+  "updated_at": "2026-09-22T09:13:50Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": {
+    "number": 43,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/43",
+    "state": "open"
+  },
+  "archived_at": null
+}

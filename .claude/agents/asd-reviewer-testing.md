@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:467a502444ac6451b1f46b7d2ea249b99a7610a8b6a187c0221beb012cc82f67 content_digest=sha256:b48ddf4fb44a11e1e1381929e53a5b15582e71b1f18e302034b2329601fc495d asd_version=9.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:b04fb6e0d88b2f8fdb3ad826d2c4625b2fbf83fb55249b76f74622b5094538b3 content_digest=sha256:36d264bb2d220408d9d0a8043eac4b895541f2dc2a45b3afe5974390f9e3ebf8 asd_version=10.0.0 schema=1
 name: asd-reviewer-testing
-description: "Impl-review assessment of the test-plan decisions and the tests themselves, plus judging manual-verification necessity when automation is impossible. Covers: risk→check fit per test-plan.md, justification of removed tests and of no-test decisions, fail-first proof on regression tests, coverage of AC-N, edge cases on core paths, absence of test-for-test-sake (meaningless assertions), flaky patterns, manual-verification necessity judgment against the spec `test-plan.md` already owns (single home — never re-authored here). Does NOT handle: bug/security/AC-coverage/ui/a11y (delegates to asd-reviewer-correctness), over-engineering/performance (delegates to asd-reviewer-efficiency), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
+description: "Impl-review assessment of the test-plan decisions and the tests themselves, plus judging manual-verification necessity when automation is impossible. Covers: risk→check fit per test-plan.md, justification of removed tests and of no-test decisions, fail-first proof on regression tests, AC→check coverage (every AC-N has a check), edge cases on core paths, absence of test-for-test-sake (meaningless assertions), flaky patterns, manual-verification necessity judgment against the spec `test-plan.md` already owns (single home — never re-authored here). Does NOT handle: bug/security/AC→code trace/ui/a11y (delegates to asd-reviewer-correctness), over-engineering/performance (delegates to asd-reviewer-efficiency), documentation sync and stub resolution (delegates to asd-reviewer-documentation), design-review testability (unowned by design), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
 disallowedTools: [Edit, Bash, WebFetch]
 model: opus
@@ -30,7 +30,8 @@ Testing reviewer. Judges the test *decisions* recorded in `test-plan.md` and the
 ## Inputs
 
 - `<sprint>/test-plan.md` with its `test-plan.entry-NN.md` segments (primary input: risk→check decisions, removals, added tests, suite run, manual verification spec; `artifact-layout.md` "Test plan")
-- diff payload (code + tests)
+- emitted manifest — its file list (test files plus `test-plan.md` and segments) is this dispatch's scope (`review-policy.md` "Clean-context review iteration"); other code stays readable as context
+- the manifest's `.diff` (the change itself; never run git)
 - `docs/product/requirements/<subsystem>.html` (ACs to trace); when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
 - `<sprint>/plan.md`
 - iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
@@ -54,7 +55,6 @@ Reviewer:
 - **Rule-set conformance**: check-ladder risk fit, removal-reason validity, no-test-decision honesty, fail-first regression proof, meaningfulness, and determinism all judged against `code-style.md` §17 (SSoT) — not restated here; flag any `test-plan.md` row or authored test that violates it (e.g. an e2e journey where a unit/contract test would catch the same defect, a removal lacking a valid reason, an out-of-scope removal lacking recorded user approval, a `none` decision that's actually false)
 - **Coverage**: every AC-N has a check asserting observable behaviour at some level
 - **Edge cases**: empty, single, many, boundary, invalid, concurrent — each present where it carries real risk on core paths
-- **Stub-resolution verification**: for each stub deleted from `.asd/project/stubs.md` by current sprint, confirm corresponding `// TODO(sprint-<NNN-slug>): ...` marker is removed from code; conversely, every such marker in code touched this sprint must have a matching open entry in stubs.md
 - **Manual verification (last resort)**: only when visual UI rendering, third-party live integration, or ux feel cannot be automated — judge whether `test-plan.md`'s existing spec is justified; never author new steps here
 
 ## Do's

@@ -59,7 +59,7 @@ An empty return, or prose carrying no outcome, is not permitted and is not a ver
 
 ## Phase-scoped payload
 
-The reviewer has direct repo read access and fetches its own content — it is handed a **scope manifest** (`external-review/t_review-scope.json`), never a rendered diff. This is the SSoT for the manifest contract; the agent and both review workflows link here rather than restating it.
+The reviewer has direct repo read access and fetches its own content — it is handed a **scope manifest** (`external-review/t_review-scope.json`), never a rendered diff. This is the SSoT for the manifest contract, and the External Review row of `review-policy.md` "Reviewer responsibility"; the agent and both review workflows link here rather than restating it.
 
 Manifest fields: `phase`, `iteration`, `base_ref`, `head_ref` (impl-review only — see below), `files[]` (changed-path list), and `exclude_paths[]` (repo-relative pathspec exclusions on **review scope**: never listed in `files[]`, never a valid finding location, even if reachable another way). `exclude_paths[]` bounds what the reviewer judges, not what it may read — the prompt's named project-context reference paths (below) stay readable regardless and are never valid finding locations either. The reviewer resolves all content from the repo — never from manifest payload bytes.
 
@@ -86,7 +86,7 @@ Both impl-review rows start from the whole repo and subtract the exclusions, nev
 | impl-review | 1 | `files[]` = changed files on `<git.base_branch>...HEAD <exclude_paths>`, `base_ref`=`<git.base_branch>`, `head_ref`=`HEAD` |
 | impl-review | 2+ | `files[]` = changed files on `<state.json reviews.impl.iteration_heads["iter-(N-1)"]>...HEAD <exclude_paths>`, `base_ref`=that sha, `head_ref`=`HEAD` |
 
-Iteration 1 covers all sprint work in that phase; later iterations cover every commit since the sha recorded at the start of the previous iteration — not just the last commit, so a multi-commit review-fix cycle stays fully covered. Absent-key fallback (sprint in flight when `iteration_heads` shipped): `sprint-lifecycle.md` "State recovery" (sole SSoT). design-review persists a file snapshot each iteration; next iteration reads it to compute its manifest.
+Iteration 1 covers all sprint work in that phase; later iterations cover every commit since the sha recorded at the start of the previous iteration — not just the last commit, so a multi-commit review-fix cycle stays fully covered. Absent-key fallback (sprint in flight when `iteration_heads` shipped): `sprint-lifecycle.md` "State recovery" (sole SSoT). design-review persists a draft snapshot each iteration and computes its 2+ list from the previous one (`asd-phase-design-review.md` step 7 "Draft list").
 
 **Unreviewed files.** A partial, skip or stopped-batch iteration lists the `files[]` it did not review — a skip: the whole scope it would have sent — as its `Unreviewed files` line in that iteration's `external.md` (`t_review-report.md`). The next iteration's `files[]` is the table row above unioned with that list.
 

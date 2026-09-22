@@ -8,3 +8,4 @@
 - [Sequential fix rounds](feedback_sequential-fix-rounds.md) — cross-file review fixes go to one dev, in order; re-read every mirror before reporting done
 - [Fix the class, not the instance](feedback_fix-the-class.md) — recurring finding in one section? strip the blanket header qualifier, state reach per branch
 - [False SSoT declarations](feedback_false-ssot-declarations.md) — "not restated here" above surviving text: narrow the denial, keep what acts at its site
+- [JSON frontmatter quotes](project_json-frontmatter-quotes.md) — a `"Section"` citation in an agent `description` breaks sync.js JSON parsing

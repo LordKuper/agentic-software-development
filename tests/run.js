@@ -3767,7 +3767,7 @@ test('AC-7: a root .gitattributes normalizes line endings for the whole reposito
   try {
     listing = execFileSync('git', ['ls-files', '--eol'], { cwd: REPO_ROOT, encoding: 'utf8' });
   } catch (error) {
-    assert.fail(`this assertion is the suite's only call to the \`git\` binary and additionally needs a git work tree at ${REPO_ROOT}: the index line ending is the property under test and nothing in the worktree can show it. Run from a clone with git on PATH, or this criterion is unverifiable here. Underlying: ${error.message}`);
+    assert.fail(`this assertion needs the \`git\` binary and a git work tree at ${REPO_ROOT}: the index line ending is the property under test and nothing in the worktree can show it. Run from a clone with git on PATH, or this criterion is unverifiable here. Underlying: ${error.message}`);
   }
   const offenders = listing.split('\n').filter(Boolean).filter((line) => /^i\/(crlf|mixed)\b/.test(line)).map((line) => line.split('\t').pop());
   assert.deepStrictEqual(offenders, [], 'every tracked blob must be LF in the index; a CRLF blob here is the committed form of the F-7 damage, invisible in a worktree that shows CRLF for every file anyway');
@@ -4220,7 +4220,7 @@ test("sprint-012 AC-12: emit-manifest derives rule and section ids from a review
 
 test("runtime.js CLI: emit-manifest writes one stamped manifest per part under the file names both review workflows dispatch from, and validate-ledger reads the ledger straight out of a reviewer's returned text", () => {
   const root = mkTempDir();
-  const reviewer = 'testing';
+  const reviewer = 'correctness';
   const unsplitName = '<reviewer>.manifest.json';
   const partName = '<reviewer>.part-N.manifest.json';
   const selfHostingFlag = /\[(--self-hosting)\]/.exec(sectionOf('.asd/rules/review-policy.md', 'Coverage ledger'))[1];
@@ -4338,6 +4338,9 @@ test('sprint-012 AC-3/AC-12: every `.asd/runtime.js` symbol canon cites is decla
   assert.deepStrictEqual(quoted.filter((entry) => !authorizable.has(entry.slice(entry.indexOf(': ') + 2))), [], 'a reviewer copies a quoted `n/a: <predicate>` into its ledger row, and validate-ledger accepts only a predicate the emitted manifest authorizes - a literal outside NA_PREDICATES teaches a row the blocking gate rejects');
   for (const rel of ['.asd/rules/review-policy.md', '.asd/workflows/asd-phase-plan.md']) {
     assert.ok((citers.get('SPLIT_THRESHOLD_FILES') || []).includes(rel), `AC-3: ${rel} must cite the split threshold by its runtime symbol - review-policy.md for the pre-dispatch split, asd-phase-plan.md for the plan's review-scope estimate`);
+  }
+  for (const [symbol, rel] of [['DISPATCH_CEILING', '.asd/rules/sprint-lifecycle.md'], ['AUDIT_BATCH_THRESHOLD_FILES', '.asd/workflows/asd-phase-audit.md'], ['reviewerFiles', '.asd/rules/review-policy.md']]) {
+    assert.ok((citers.get(symbol) || []).includes(rel), `sprint-015 AC-2/AC-9/AC-11: ${rel} must cite \`${symbol}\` by its runtime symbol rather than restate the value or selector it holds`);
   }
   assert.ok((citers.get('SURFACE_CAP_FILES') || []).includes('.asd/rules/sprint-lifecycle.md'), 'sprint-014 AC-5: the change-surface cap is one runtime constant, so sprint-lifecycle.md "Plan file format" must cite it by symbol rather than restate a number that drifts from the one surface-check applies');
 });
@@ -4698,10 +4701,11 @@ test('sprint-014 AC-3: defect-stalemate fails closed on a second ## Defects sect
 test('sprint-014 AC-5: surface-check counts distinct paths against SURFACE_CAP_FILES or a positive override bound, exits 1 with the result on breach and 2 on unusable input, and the plan declaration and override gate it measures read the same literals at plan and at impl-review entry', () => {
   const cap = runtime.SURFACE_CAP_FILES;
   const paths = (count) => Array.from({ length: count }, (_, index) => `src/file-${index + 1}.md`);
-  assert.deepStrictEqual(runtime.surfaceCheck(paths(cap)), { files: cap, cap, breach: false }, 'a surface at the cap is within it');
-  assert.deepStrictEqual(runtime.surfaceCheck(paths(cap + 1)), { files: cap + 1, cap, breach: true }, 'one file over the cap is a breach');
+  const result = (files, bound, breach) => ({ files, cap: bound, breach, dispatches: runtime.surfaceCheck([], bound).dispatches });
+  assert.deepStrictEqual(runtime.surfaceCheck(paths(cap)), result(cap, cap, false), 'a surface at the cap is within it');
+  assert.deepStrictEqual(runtime.surfaceCheck(paths(cap + 1)), result(cap + 1, cap, true), 'one file over the cap is a breach');
   assert.strictEqual(runtime.surfaceCheck(paths(cap).concat('src/file-1.md')).breach, false, 'a path listed twice is one file of change surface - counting it twice escalates a sprint that is within its cap');
-  assert.deepStrictEqual(runtime.surfaceCheck(paths(cap + 1), cap + 1), { files: cap + 1, cap: cap + 1, breach: false }, 'an approved override bound replaces the cap');
+  assert.deepStrictEqual(runtime.surfaceCheck(paths(cap + 1), cap + 1), result(cap + 1, cap + 1, false), 'an approved override bound replaces the cap');
   for (const bound of [0, -1, 1.5, Number.NaN]) {
     assert.throws(() => runtime.surfaceCheck(paths(1), bound), /bound/, `bound ${bound}: an unusable override must fail closed, never silently fall back to a bound that admits the surface`);
   }
@@ -4719,9 +4723,9 @@ test('sprint-014 AC-5: surface-check counts distinct paths against SURFACE_CAP_F
     fs.writeFileSync(file, `${paths(count).join('\r\n')}\r\n\r\n`, 'utf8');
     return file;
   };
-  assert.deepStrictEqual(run(['--files', list('within.txt', cap)]), { status: 0, stdout: `${JSON.stringify({ files: cap, cap, breach: false })}\n` }, 'a CRLF git diff --name-only list with a trailing blank line at the cap exits 0 and prints the result');
-  assert.deepStrictEqual(run(['--files', list('over.txt', cap + 1)]), { status: 1, stdout: `${JSON.stringify({ files: cap + 1, cap, breach: true })}\n` }, 'a breach exits 1 and still prints the result both gates read');
-  assert.deepStrictEqual(run(['--files', list('bounded.txt', cap + 1), '--bound', String(cap + 1)]), { status: 0, stdout: `${JSON.stringify({ files: cap + 1, cap: cap + 1, breach: false })}\n` }, '--bound carries the recorded override into the CLI');
+  assert.deepStrictEqual(run(['--files', list('within.txt', cap)]), { status: 0, stdout: `${JSON.stringify(result(cap, cap, false))}\n` }, 'a CRLF git diff --name-only list with a trailing blank line at the cap exits 0 and prints the result');
+  assert.deepStrictEqual(run(['--files', list('over.txt', cap + 1)]), { status: 1, stdout: `${JSON.stringify(result(cap + 1, cap, true))}\n` }, 'a breach exits 1 and still prints the result both gates read');
+  assert.deepStrictEqual(run(['--files', list('bounded.txt', cap + 1), '--bound', String(cap + 1)]), { status: 0, stdout: `${JSON.stringify(result(cap + 1, cap + 1, false))}\n` }, '--bound carries the recorded override into the CLI');
   for (const [label, args] of [['missing --files', []], ['non-numeric --bound', ['--files', list('any.txt', 1), '--bound', 'many']]]) {
     assert.deepStrictEqual(run(args), { status: 2, stdout: '' }, `${label}: no result may be read from input the check could not use`);
   }
@@ -4940,6 +4944,234 @@ test('sprint-013 AC-19: the 9.0.0 migration leaves a config it cannot read line 
     assert.strictEqual(text, input, `${label}: a skipped config must stay byte-identical`);
     assert.ok(report.reason && output.includes('left untouched') && output.includes(rerunCommand), `${label}: the warning must say the file was left untouched and name the re-run command - got ${JSON.stringify(output)}`);
   }
+});
+
+test('sprint-015 AC-2/AC-3: the impl-review Testing reviewer receives only the isTest scope files plus the --test-plan paths, every other reviewer the whole scope, and review-policy.md "Reviewer responsibility" gives each of the five reviewers both phases', () => {
+  assert.deepStrictEqual(runtime.INTERNAL_REVIEWERS.slice().sort(), internalReviewers().sort(), 'INTERNAL_REVIEWERS drives the per-reviewer manifests and the surface-check dispatch count, so it must name exactly the asd-reviewer-* agents');
+  const testFiles = ['tests/run.js', 'test/a.js', 'src/__tests__/a.js', 'spec/a.rb', 'pkg/specs/a.rb', 'src/a.test.ts', 'src/a.spec.js', 'src/test_a.py', 'src/a_test.go', 'src/ATest.java', 'src/ATests.cs', 'Assets/Tests/EditMode/Fixture.cs'];
+  const plan = ['.asd/sprints/015-x/test-plan.md', '.asd/sprints/015-x/test-plan.entry-01.md'];
+  const otherFiles = ['src/contest.js', 'src/latest/a.js', 'src/testing.js', 'docs/protests.md', 'README.md', ...plan];
+  assert.deepStrictEqual(testFiles.filter((file) => !runtime.isTest(file)), [], 'each path-segment and basename convention the plan names must classify as a test file, or Testing never receives it');
+  assert.deepStrictEqual(otherFiles.filter(runtime.isTest), [], 'a name merely containing "test" is not a test file - misclassified, Testing reviews code it does not own; test-plan.md reaches Testing only through --test-plan');
+  const scope = [...otherFiles.slice(0, -plan.length), ...testFiles];
+  assert.deepStrictEqual(runtime.reviewerFiles('impl-review', 'testing', scope, plan), [...testFiles, ...plan], 'impl-review Testing receives the scope test files in scope order, then the --test-plan paths the scope pathspec excludes');
+  for (const phase of ['design-review', 'impl-review']) {
+    for (const reviewer of runtime.INTERNAL_REVIEWERS.filter((name) => name !== 'testing')) {
+      assert.deepStrictEqual(runtime.reviewerFiles(phase, reviewer, scope, plan), scope, `${phase} ${reviewer}: every reviewer but impl-review Testing receives the whole scope, never the test-plan paths`);
+    }
+  }
+
+  const table = sectionOf('.asd/rules/review-policy.md', 'Reviewer responsibility').split('\n').filter((line) => line.startsWith('|')).map((line) => line.split('|').slice(1, -1).map((cell) => cell.trim()));
+  assert.ok(table.length > 2 && /design-review/.test(table[0][1]) && /impl-review/.test(table[0][2]), 'the responsibility table must keep one design-review and one impl-review column');
+  const rows = table.slice(2);
+  const expected = [...internalReviewers(), 'external-review'].map((slug) => slug.split('-').map((word) => word[0].toUpperCase() + word.slice(1)).join(' '));
+  assert.deepStrictEqual(rows.map((row) => row[0]).sort(), expected.sort(), 'AC-3: one row per reviewer agent - a reviewer without a row has no owner map, a row without an agent owns concerns nobody reviews');
+  assert.deepStrictEqual(rows.filter((row) => row.length !== 3 || !row[1] || !row[2]).map((row) => row[0]), [], 'AC-3: every reviewer row must state both phases, an unowned phase included');
+  const testing = rows.find((row) => row[0] === 'Testing');
+  assert.ok(testing[2].includes('`isTest`') && testing[2].includes('`--test-plan`'), 'AC-2: the Testing impl-review cell must name the runtime classifier and the flag reviewerFiles narrows by');
+
+  for (const reviewer of internalReviewers()) {
+    const inputs = sectionOf(`.asd/agents/asd-reviewer-${reviewer}.md`, 'Inputs');
+    assert.ok(inputs.includes('`.diff`') && !/\bgit (diff|log|show)\b|diff payload/.test(inputs), `AC-4: asd-reviewer-${reviewer} has no shell, so its Inputs must read the manifest's .diff and never a git command or a diff payload`);
+  }
+  const source = canonText('.asd/runtime.js');
+  for (const rel of ['.asd/workflows/asd-phase-impl-review.md', '.asd/workflows/asd-phase-design-review.md']) {
+    const line = canonText(rel).split('\n').find((candidate) => candidate.includes('node .asd/runtime.js emit-manifest'));
+    const flags = [...line.matchAll(/ --([a-z-]+)/g)].map((match) => match[1]);
+    assert.deepStrictEqual(flags.filter((flag) => !source.includes(`flags['${flag}']`) && !source.includes(`flags.${flag} `) && !source.includes(`flags.${flag})`) && !source.includes(`flags.${flag},`)), [], `${rel}: every emit-manifest flag the workflow passes must be one the CLI reads - an unread --test-plan or --base drops Testing's plan or every .diff without an error`);
+  }
+});
+
+test('sprint-015 AC-4/AC-5: emit-manifest --base/--head writes each manifest\'s .diff over its own files, grants the pure-rename n/a only to a rename git reports with identical content and mode, validate-ledger accepts that row nowhere else, and the range is refused outside impl-review', () => {
+  const repo = mkTempDir();
+  const emptyGlobalConfig = path.join(mkTempDir(), 'gitconfig');
+  fs.writeFileSync(emptyGlobalConfig, '', 'utf8');
+  const env = { ...process.env, GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: emptyGlobalConfig };
+  const git = (...args) => execFileSync('git', ['-c', 'user.name=asd-test', '-c', 'user.email=asd-test@example.invalid', '-c', 'commit.gpgsign=false', '-c', 'core.autocrlf=false', ...args], { cwd: repo, env, encoding: 'utf8' });
+  const body = (tag) => Array.from({ length: 20 }, (_, index) => `${tag} line ${index + 1}`).join('\n') + '\n';
+  git('init', '-q');
+  for (const name of ['pure', 'edited', 'chmod', 'kept']) writeFile(repo, `src/${name}.js`, body(name));
+  writeFile(repo, 'tests/kept.test.js', body('test'));
+  git('add', '-A');
+  git('commit', '-q', '-m', 'base');
+  const base = git('rev-parse', 'HEAD').trim();
+  fs.mkdirSync(path.join(repo, 'lib'));
+  for (const name of ['pure', 'edited', 'chmod']) git('mv', `src/${name}.js`, `lib/${name}.js`);
+  writeFile(repo, 'lib/edited.js', body('edited').replace('line 1\n', 'line one\n'));
+  writeFile(repo, 'src/kept.js', `${body('kept')}appended\n`);
+  writeFile(repo, 'tests/kept.test.js', `${body('test')}appended\n`);
+  git('add', '-A');
+  git('update-index', '--chmod=+x', 'lib/chmod.js');
+  git('commit', '-q', '-m', 'head');
+  const head = git('rev-parse', 'HEAD').trim();
+  const range = ['--base', base, '--head', head];
+
+  const work = mkTempDir();
+  const list = (name, files) => {
+    const file = path.join(work, name);
+    fs.writeFileSync(file, `${files.join('\n')}\n`, 'utf8');
+    return file;
+  };
+  const scope = git('diff', '--name-only', '-M', `${base}...${head}`).trim().split('\n');
+  assert.deepStrictEqual(scope.slice().sort(), ['lib/chmod.js', 'lib/edited.js', 'lib/pure.js', 'src/kept.js', 'tests/kept.test.js'], 'sanity: the scope is the renamed destinations plus the edits');
+  const emit = (reviewer, files, extra, phase = 'impl-review') => {
+    const out = fs.mkdtempSync(path.join(work, `${reviewer}-`));
+    return JSON.parse(runtimeCli(['emit-manifest', '--reviewer', reviewer, '--phase', phase, '--files', list(`${path.basename(out)}.txt`, files), '--out', out, ...extra], { cwd: repo, env, stdio: 'pipe' }));
+  };
+  const read = (entry) => JSON.parse(fs.readFileSync(entry.manifest, 'utf8'));
+  const headers = (entry) => Object.fromEntries([...fs.readFileSync(entry.diff, 'utf8').matchAll(/^diff --git a\/(\S+) b\/(\S+)$/gm)].map((match) => [match[2], match[1]]));
+  const pure = { 'lib/pure.js': [runtime.NA_PREDICATES.pureRename] };
+
+  const [whole] = emit('correctness', scope, range);
+  const manifest = read(whole);
+  assert.deepStrictEqual(manifest.n_a.files, pure, 'AC-5: only the identical-content, identical-mode rename is behaviour-neutral by proof - an edited rename, a mode-changing rename and a plain edit keep their full review');
+  assert.deepStrictEqual(headers(whole), { 'lib/chmod.js': 'src/chmod.js', 'lib/edited.js': 'src/edited.js', 'lib/pure.js': 'src/pure.js', 'src/kept.js': 'src/kept.js', 'tests/kept.test.js': 'tests/kept.test.js' }, 'AC-4: the patch covers every listed file, each rename paired with its source so the reviewer sees a rename, not an add');
+
+  const [testing] = emit('testing', scope, ['--test-plan', '.asd/sprints/015-x/test-plan.md', ...range]);
+  assert.deepStrictEqual(read(testing).files, ['tests/kept.test.js', '.asd/sprints/015-x/test-plan.md'], 'AC-2: the CLI builds Testing\'s list through reviewerFiles, test-plan path appended');
+  assert.deepStrictEqual(Object.keys(headers(testing)), ['tests/kept.test.js'], 'AC-4: a manifest\'s patch covers only its own files the range changed - the appended test-plan path is not in the range');
+  const [empty] = emit('testing', ['src/kept.js'], range);
+  assert.deepStrictEqual([read(empty).files, fs.readFileSync(empty.diff, 'utf8')], [[], ''], 'an empty list still gets its .diff, empty, so the payload path always resolves');
+
+  const parts = emit('correctness', scope, ['--halve', ...range]);
+  assert.strictEqual(parts.length, 2, 'sanity: --halve splits the scope in two');
+  for (const part of parts) {
+    const files = read(part).files;
+    assert.deepStrictEqual(Object.keys(headers(part)).sort(), files.slice().sort(), `${path.basename(part.diff)}: each part's patch covers exactly its own files`);
+    assert.deepStrictEqual(read(part).n_a.files, files.includes('lib/pure.js') ? pure : {}, `${path.basename(part.manifest)}: the pure-rename grant travels with the part holding the file`);
+  }
+
+  const vocabulary = runtime.LEDGER_VOCABULARY;
+  const ledger = (naFile) => ({
+    manifest_digest: manifest.digest, findings: [],
+    files: manifest.files.map((i) => (i === naFile ? { i, s: vocabulary.p, p: runtime.NA_PREDICATES.pureRename } : { i, s: vocabulary.files[0] })),
+    rules: manifest.rules.map((i) => (manifest.n_a.rules[i] ? { i, s: vocabulary.p, p: manifest.n_a.rules[i][0] } : { i, s: vocabulary.rules[0] })),
+    sections: manifest.sections.map((i) => ({ i, s: vocabulary.sections[0] })),
+  });
+  assert.deepStrictEqual(runtime.validateCoverageLedger(manifest, ledger('lib/pure.js'), []), { ok: true }, 'AC-5: the compact row validates on the file the runtime proved');
+  for (const file of scope.filter((name) => name !== 'lib/pure.js')) {
+    assert.throws(() => runtime.validateCoverageLedger(manifest, ledger(file), []), /predicate/, `AC-5: ${file}: a reviewer asserting the pure-rename row on a file the runtime did not prove is an unauthorized n/a`);
+  }
+
+  const out = mkTempDir();
+  let refused = null;
+  try {
+    runtimeCli(['emit-manifest', '--reviewer', 'correctness', '--phase', 'design-review', '--files', list('design.txt', scope), '--out', out, ...range], { cwd: repo, env, stdio: 'pipe' });
+  } catch (error) {
+    refused = { status: error.status, stderr: String(error.stderr).trim() };
+  }
+  assert.ok(refused && refused.status === 2 && /impl-review only/.test(refused.stderr) && fs.readdirSync(out).length === 0, `design-review has no git range, so --base/--head must exit 2 before writing anything. Got: ${JSON.stringify(refused)}`);
+});
+
+test('sprint-015 AC-11: surface-check dispatches bounds the impl-review dispatches its bound implies - every internal reviewer\'s emitted parts, Testing\'s parts sized for the --test-plan-files count impl-review entry passes (EXT-4), plus External Review - rejects an unusable count, and the override request quotes that field', () => {
+  const threshold = runtime.SPLIT_THRESHOLD_FILES;
+  const tight = new Set();
+  for (const planCount of [1, threshold + 1, 2 * threshold + 3]) {
+    const planPaths = Array.from({ length: planCount }, (_, index) => (index === 0 ? '.asd/sprints/015-x/test-plan.md' : `.asd/sprints/015-x/test-plan.entry-${String(index).padStart(2, '0')}.md`));
+    for (const bound of [1, threshold - 1, threshold, threshold + 1, runtime.SURFACE_CAP_FILES]) {
+      const scope = Array.from({ length: bound }, (_, index) => `tests/file-${index + 1}.test.js`);
+      const parts = runtime.INTERNAL_REVIEWERS.reduce((sum, reviewer) => sum + runtime.emitCoverageManifests({ reviewer, phase: 'impl-review', rubric: readRepoFile(`.asd/agents/asd-reviewer-${reviewer}.md`), files: runtime.reviewerFiles('impl-review', reviewer, scope, planPaths), customRules: {} }).length, 0);
+      const { dispatches } = planCount === 1 ? runtime.surfaceCheck(scope, bound) : runtime.surfaceCheck(scope, bound, planCount);
+      assert.ok(parts + 1 <= dispatches, `bound ${bound}, ${planCount} test-plan paths: a scope of ${bound} test files emits ${parts} internal-review parts plus External Review, above the ${dispatches} dispatches the cap-override request tells the user to approve`);
+      if (parts + 1 === dispatches) tight.add(`${planCount}/${bound}`);
+    }
+  }
+  assert.ok([1, threshold + 1, 2 * threshold + 3].every((planCount) => [...tight].some((key) => key.startsWith(`${planCount}/`))), 'the bound must be reached for the default and for every test-plan count, or an over-count passes');
+  assert.ok(tight.has(`1/${threshold}`) && tight.has(`1/${runtime.SURFACE_CAP_FILES}`), 'the default count must stay tight at every multiple of the split threshold - where test-plan.md alone opens one extra Testing part - or plan-time callers get a looser bound than before');
+  for (const count of [0, -1, 1.5, Number.NaN]) {
+    assert.throws(() => runtime.surfaceCheck(['a.md'], undefined, count), /--test-plan-files/, `test-plan files ${count}: an unusable count must fail closed, never size Testing's parts from a guess`);
+  }
+  const list = path.join(mkTempDir(), 'scope.txt');
+  fs.writeFileSync(list, 'tests/a.test.js\n', 'utf8');
+  const cli = (count) => {
+    try {
+      return { status: 0, stdout: runtimeCli(['surface-check', '--files', list, '--test-plan-files', count], { stdio: 'pipe' }) };
+    } catch (error) {
+      return { status: error.status, stdout: String(error.stdout) };
+    }
+  };
+  assert.deepStrictEqual(cli(String(threshold + 1)), { status: 0, stdout: `${JSON.stringify(runtime.surfaceCheck(['tests/a.test.js'], undefined, threshold + 1))}\n` }, '--test-plan-files carries the test-plan count into the CLI');
+  assert.deepStrictEqual(cli('many'), { status: 2, stdout: '' }, 'a non-numeric --test-plan-files must exit 2 with no result');
+  const entryCheck = canonText('.asd/workflows/asd-phase-impl-review.md').split('\n').find((line) => line.includes('surface-check --files'));
+  assert.ok(entryCheck && entryCheck.includes('--test-plan-files <n>'), 'impl-review entry must pass the test-plan count to surface-check, or the cap-override request undercounts Testing on a long re-entry chain');
+  const declaration = sectionOf('.asd/rules/sprint-lifecycle.md', 'Plan file format').split('\n').find((line) => line.startsWith('**Change surface declaration**'));
+  const field = declaration && /the `(\w+)` count `surface-check --bound <n>` returns/.exec(declaration);
+  assert.ok(field && field[1] in runtime.surfaceCheck([]), 'the cap-override request "Plan file format" defines must quote a field surface-check returns, or the request states a count nobody computes');
+});
+
+test('sprint-015 AC-2 (EXT-1): draft-snapshot persists each design-review iteration\'s draft hashes and prints every draft on iteration 1, on 2+ only the drafts whose content changed, every draft when the previous snapshot is missing, and the design-review workflow runs it with those flags', () => {
+  const root = mkTempDir();
+  const drafts = ['prd.html', 'ux.html'].map((name) => path.join(root, name));
+  drafts.forEach((file, index) => fs.writeFileSync(file, `draft ${index}\n`, 'utf8'));
+  const list = path.join(root, 'drafts.txt');
+  fs.writeFileSync(list, drafts.join('\n') + '\n', 'utf8');
+  const out = (iteration) => path.join(root, `iter-${iteration}.json`);
+  const snapshot = (iteration, previous) => runtimeCli(['draft-snapshot', '--files', list, '--out', out(iteration), ...(previous === undefined ? [] : ['--previous', out(previous)])]).split('\n').filter(Boolean);
+  assert.deepStrictEqual(snapshot(1), drafts, 'iteration 1 reviews every in-scope draft');
+  assert.deepStrictEqual(Object.keys(JSON.parse(fs.readFileSync(out(1), 'utf8'))), drafts, 'the snapshot persists one hash per draft, or iteration 2 has nothing to compare against');
+  assert.deepStrictEqual(snapshot(2, 1), [], 'an unchanged draft set leaves iteration 2+ nothing to review');
+  fs.writeFileSync(drafts[1], 'draft 1 revised\n', 'utf8');
+  assert.deepStrictEqual(snapshot(3, 2), [drafts[1]], 'iteration 2+ reviews only the draft whose content changed since the previous snapshot');
+  assert.deepStrictEqual(snapshot(4, 99), drafts, 'a missing previous snapshot widens to every draft, never drops one');
+  const draftList = stepOf(canonText('.asd/workflows/asd-phase-design-review.md'), 7).split('\n').find((line) => line.includes('node .asd/runtime.js draft-snapshot'));
+  assert.ok(draftList && ['--files', '--out', '--previous'].every((flag) => draftList.includes(flag)), 'design-review step 7 must run draft-snapshot with the flags this test drives, or iteration 2+ never narrows');
+});
+
+test('sprint-015 AC-4 (F-2): the impl-review scope-list command prints a non-ASCII path unquoted, so it still matches as a literal pathspec', () => {
+  const repo = mkTempDir();
+  const emptyGlobalConfig = path.join(mkTempDir(), 'gitconfig');
+  fs.writeFileSync(emptyGlobalConfig, '', 'utf8');
+  const env = { ...process.env, GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: emptyGlobalConfig };
+  const git = (...args) => execFileSync('git', ['-c', 'user.name=asd-test', '-c', 'user.email=asd-test@example.invalid', '-c', 'commit.gpgsign=false', ...args], { cwd: repo, env, encoding: 'utf8' });
+  git('init', '-q');
+  writeFile(repo, 'README.md', 'base\n');
+  git('add', '.');
+  git('commit', '-q', '-m', 'base');
+  writeFile(repo, 'docs/résumé.md', 'new\n');
+  git('add', '.');
+  git('commit', '-q', '-m', 'add');
+  const command = /running the diff above as `git ([^`]+)`/.exec(stepOf(canonText('.asd/workflows/asd-phase-impl-review.md'), 1));
+  assert.ok(command, 'impl-review step 1 must still name the command that derives the scope file list');
+  assert.deepStrictEqual(git(...command[1].split(/\s+/), 'HEAD~1', 'HEAD').split('\n').filter(Boolean), ['docs/résumé.md'], 'the scope list must carry the raw path: a C-quoted one matches nothing as a pathspec and drops out of the reviewers\' .diff');
+});
+
+test('sprint-015 AC-1/AC-6/AC-7/AC-8/AC-10/AC-12: no canon tells anyone to clear context, compaction keeps its preserve list, free-form input never goes through a decision prompt, BA/UX renames route to the orchestrator, the per-sprint document skip is hard, scope asks the cleanup criteria, and the changelog heads the released version', () => {
+  const clear = /\bclear(?:s|ed|ing)?\b(?: the)? (?:session|context|transcript)|clear over compaction|then clear|clearable|\/clear\b/i;
+  assert.deepStrictEqual([...canonMarkdownFiles(), 'README.md', 'AGENTS.md'].filter((rel) => clear.test(canonText(rel))), [], 'AC-1: context compaction is automatic and host-driven - no canon or README line may tell anyone to clear the session');
+  const hygiene = sectionOf('.asd/rules/core.md', 'Context hygiene');
+  const preserve = hygiene.split(/\n\d\. /).find((item) => /compaction summary MUST preserve/.test(item));
+  assert.ok(preserve && ['sprint id', 'phase and mode', '`QUESTION`', '`BLOCKED_MANUAL`', '`ADVICE_NEEDED`', 'gate answer', 'paths written', 'task/finding/defect ids'].every((item) => preserve.includes(item)), 'AC-1: the compaction summary keeps its preserve list');
+  assert.ok(/gate answer[^.]*`decisions-log\.md`\/`state\.json` before any further work/.test(hygiene) && hygiene.includes('"State recovery"'), 'AC-1: the gate answer is written to disk before any further work, and a lost session recovers from state.json');
+
+  const freeForm = sectionOf('.asd/rules/core.md', 'Request user decision');
+  assert.ok(freeForm.split(/(?<=[.;])\s/).some((clause) => /free-form/i.test(clause) && /\bnever\b/.test(clause)), 'AC-7: "Request user decision" must never be used for free-form input');
+  assert.ok(canonText('.asd/skills/asd-sprint/SKILL.md').split('\n').some((line) => /^\d\. Collect scope as a plain chat message/.test(line)) && canonText('.asd/workflows/asd-phase-scope.md').split('\n').some((line) => line.startsWith('1. ') && line.includes('plain chat message')), 'AC-7: asd-sprint and the scope workflow collect raw scope as a plain chat message');
+
+  const promote = stepOf(canonText('.asd/workflows/asd-phase-design-promote.md'), 4);
+  assert.ok(/\borchestrator\b[^.]*`git mv`[^.]*`git rm`/.test(promote), 'AC-6: design-promote routes a BA/UX doc rename or deletion to the main orchestrator');
+  const afterGit = promote.slice(promote.indexOf('`git rm`'));
+  assert.ok(/re-dispatch/.test(afterGit) && afterGit.includes('step 5'), 'AC-6 (P2-2): after the git operation the creator is re-dispatched before step 5 awaits it - a parallel dispatch cannot pause mid-run for git');
+  for (const name of ['asd-ba', 'asd-ux']) {
+    const text = canonText(`.asd/agents/${name}.md`);
+    const claude = JSON.parse(text.split('---\n')[1]).claude;
+    assert.ok(claude.disallowedTools.includes('Bash') && !claude.tools.includes('Bash'), `AC-6: ${name} stays shell-less - its git operations route through the orchestrator instead`);
+    assert.ok(text.split('\n').some((line) => line.startsWith('- Never') && /\brename\b/.test(line) && /\bpropos/.test(line)), `AC-6 (P2-2): ${name} proposes a doc rename or deletion in its final text instead of performing it, or design-promote never receives the proposal`);
+  }
+
+  const checkpoints = canonText('.asd/rules/checkpoints.md').split('\n');
+  const skipGate = 'per-sprint document skip';
+  assert.ok(checkpoints.some((line) => line.startsWith('Hard in both modes:') && line.includes(skipGate)) && checkpoints.some((line) => line.startsWith(`| ${skipGate} `) && line.includes('| hard')), 'AC-8: the per-sprint document skip is hard in both modes and in the inventory - otherwise an adaptive orchestrator skips a document on its own');
+  const skip = sectionOf('.asd/rules/sprint-lifecycle.md', 'Optional documents').split('\n').find((line) => line.startsWith('**Per-sprint skip**'));
+  const logLine = skip && /"(<doc> skipped this sprint by user)"/.exec(skip);
+  assert.ok(skip && /Record: the frozen `false` plus/.test(skip), 'AC-8: the skip records the frozen `false` later phases read - the log line alone leaves the document produced');
+  assert.ok(logLine && /`config\.yaml` is untouched/.test(skip) && canonText('.asd/workflows/asd-phase-scope.md').includes(logLine[1]), 'AC-8: the skip records the full "<doc> skipped this sprint by user" decisions-log line the scope workflow writes verbatim, doc placeholder included, and never touches config.yaml');
+  const auditSkip = stepOf(canonText('.asd/workflows/asd-phase-audit.md'), 5).split(/(?<=\.)\s/).find((sentence) => sentence.includes('document skip'));
+  assert.ok(auditSkip && auditSkip.includes('user request') && /\bnever\b/.test(auditSkip) && auditSkip.includes('prompt'), 'AC-8 (P2-1): the audit-exit document skip is user-initiated, never a standalone prompt on an adaptive or mechanical exit');
+
+  assert.ok(['legacy removal', 'warning budget', 'doc consolidation'].every((item) => stepOf(canonText('.asd/workflows/asd-phase-scope.md'), 2).includes(item)), 'AC-10: before the scope gate the scope workflow asks for the cleanup and quality criteria');
+
+  const released = /^## v(\S+)$/m.exec(canonText('CHANGELOG.md'));
+  assert.strictEqual(released && released[1], loadManifest().asd_version, 'AC-12: the newest CHANGELOG heading is the asd_version release-manifest.json ships');
 });
 
 // ===========================================================================

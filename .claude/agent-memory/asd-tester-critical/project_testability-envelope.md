@@ -132,6 +132,16 @@ the whole fix fires only on the set's first member, in insertion order, so it pr
 Add a second mutation that removes only a later member's clause before you record that the loop proves
 every member (sprint 012 entry 4, M26/M27).
 
+A `keep` justified by "the existing assert already requires it verbatim" needs the fix's own revert
+as proof. A regex whose capture group spans less than the fixed literal (sprint 015 AC-8 captured only
+the suffix, which the pre-fix line also held) passes on the old text too. Put the capture around the
+whole changed literal, then run the revert (TST-3).
+
+A "tight somewhere" assert on an upper bound only catches an overcount that hits every sampled point.
+When a fix adds a parameter with a default, the old and new formulas usually agree only at some inputs
+(sprint 015 EXT-4: only at multiples of 25). Compute both at each sampled point before writing
+"the default is unchanged", and pin tightness at exactly those points (mutation: loosen only there).
+
 ## Assert removed phrases, not topic words
 
 Rule prose here routinely narrates the alternative it just rejected inside the same bullet
@@ -215,6 +225,13 @@ suite in a long-lived worktree is not evidence about a fresh clone, and mutating
 prove such a test never reaches the output-equality assertion — CRLF and BOM each break the frontmatter
 fence first, so record the thrown parse error as the first failure instead of claiming the assertion
 you aimed at.
+
+Same family for a temp git repo fixture: the host's global/system git config is also an input. The
+test helper's `-c` flags do not reach the git that `runtime.js` spawns, so pass
+`env: { ...process.env, GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: <empty temp file> }` to the
+test's own git AND to every `runtimeCli` call (sprint 015 TST-2). To prove it, run the suite with
+`GIT_CONFIG_GLOBAL` pointing at a file that sets `diff.noprefix = true`: without the isolation, the
+`diff --git a/ b/` header match fails.
 
 ## Backward-compatibility fixtures
 
