@@ -72,4 +72,4 @@ Every mutation ran as mutate → suite → restore inside one script, with a byt
 
 | ID | Entry | Location | Symptom | Failing test | Status | Fix commit |
 |---|---|---|---|---|---|---|
-| D-1 | 1 | .asd/runtime.js | AssertionError [ERR_ASSERTION]: bound 25: a scope of 25 test files emits 5 internal-review parts plus External Review, above the 5 dispatches the cap-override request tells the user to approve | sprint-015 AC-11: surface-check dispatches bounds the impl-review dispatches its bound implies - every internal reviewer's emitted parts, Testing's --test-plan path included, plus External Review - and the override request quotes that field | pending |  |
+| D-1 | 1 | .asd/runtime.js | AssertionError [ERR_ASSERTION]: bound 25: a scope of 25 test files emits 5 internal-review parts plus External Review, above the 5 dispatches the cap-override request tells the user to approve | sprint-015 AC-11: surface-check dispatches bounds the impl-review dispatches its bound implies - every internal reviewer's emitted parts, Testing's --test-plan path included, plus External Review - and the override request quotes that field | fixed | e3baf5b |
