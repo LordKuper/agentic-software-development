@@ -61,9 +61,9 @@ Material risk: change: orchestrator behaviour rule wording
 ### Task 4: Per-sprint document skip rule and audit-exit point (AC-8)
 Material risk: change: frozen-state gate semantics
 Reachability: scope/audit write `state.json.documents.<doc>=false` at the skip gate; design/design-review/design-promote and the collapse test read the frozen value at phase entry
-- [ ] `.asd/rules/sprint-lifecycle.md` "Optional documents": add a narrow-only exception to "never recomputed". The user may flip an enabled `prd`, `ux_spec`, `adr` or `c4` to `false` for this sprint only, at the scope gate or the audit exit, and only before any draft of that document exists. The decisions-log line says `skipped this sprint by user`, as distinct from config-disabled. `audit` is excluded.
-- [ ] `.asd/rules/checkpoints.md`: add the gate to the hard list and to the inventory
-- [ ] `.asd/workflows/asd-phase-audit.md` step 5: offer the skip before the collapse test. A skip that empties the design set collapses as usual.
+- [x] `.asd/rules/sprint-lifecycle.md` "Optional documents": add a narrow-only exception to "never recomputed". The user may flip an enabled `prd`, `ux_spec`, `adr` or `c4` to `false` for this sprint only, at the scope gate or the audit exit, and only before any draft of that document exists. The decisions-log line says `skipped this sprint by user`, as distinct from config-disabled. `audit` is excluded.
+- [x] `.asd/rules/checkpoints.md`: add the gate to the hard list and to the inventory
+- [x] `.asd/workflows/asd-phase-audit.md` step 5: offer the skip before the collapse test. A skip that empties the design set collapses as usual.
 
 ### Task 5: Orchestrator route for BA/UX doc rename and delete (AC-6)
 Material risk: change: promote-phase git ownership
@@ -72,22 +72,22 @@ Material risk: change: promote-phase git ownership
 ### Task 6: Reviewer responsibility table and scope contract in canon (AC-2, AC-3, AC-4, AC-5, C-1..C-3)
 Material risk: change: reviewer roster and payload contract
 Reachability: review-policy's AC-3 table is the selector Task 2 implements; both review workflows and every reviewer agent read the same table
-- [ ] `.asd/rules/review-policy.md`:
+- [x] `.asd/rules/review-policy.md`:
   - Add one responsibility table: reviewer × phase → what it judges and which files it receives. It covers Correctness, Efficiency, Testing, Documentation and External Review in design-review and impl-review. Testability in design-review is stated as unowned by design. C-1 split: Correctness owns the AC→code trace, Testing owns the AC→check coverage.
   - "Clean-context review iteration": the payload's single scope source is the reviewer's own manifest file list plus, in impl-review, its `.diff` path. Never tell a reviewer to run git. "Unlisted" means out of the ledger and not a finding location; any other path may still be read as context. The Change-surface exception is kept.
   - C-2: incremental on iteration 2+ in both phases.
   - C-3: "the wrapped CLI self-scopes".
   - "Coverage ledger": add the `pureRename` compact row class.
   - "Union property": per-reviewer lists plus the cross-reviewer union invariant.
-- [ ] `.asd/workflows/asd-phase-impl-review.md` steps 1, 6 and 7a: per-reviewer `emit-manifest` with `--base/--head` (and `--test-plan` for Testing); the payload carries the manifest and `.diff` paths and no diff text
-- [ ] `.asd/workflows/asd-phase-design-review.md` step 7: per-reviewer manifest over the iteration's changed drafts (iteration 1 = all in-scope drafts)
-- [ ] `.asd/agents/asd-reviewer-{correctness,efficiency,testing,documentation}.md`:
+- [x] `.asd/workflows/asd-phase-impl-review.md` steps 1, 6 and 7a: per-reviewer `emit-manifest` with `--base/--head` (and `--test-plan` for Testing); the payload carries the manifest and `.diff` paths and no diff text
+- [x] `.asd/workflows/asd-phase-design-review.md` step 7: per-reviewer manifest over the iteration's changed drafts (iteration 1 = all in-scope drafts)
+- [x] `.asd/agents/asd-reviewer-{correctness,efficiency,testing,documentation}.md`:
   - description and "Does NOT handle" match the table.
   - Inputs read the manifest list plus the `.diff`, and no git (correctness L44, efficiency L41, testing L34, documentation L40).
   - Correctness gains a design-review "Draft correctness" rubric entry.
   - Testing's "Stub-resolution verification" moves to Documentation.
-- [ ] `.asd/agents/asd-external-review.md` and `.asd/rules/external-review.md`: a table row reference only. Its `files[]` contract is unchanged.
-- [ ] `.asd/templates/t_review.md`: when the text mentions scope, it matches the per-reviewer list
+- [x] `.asd/agents/asd-external-review.md` and `.asd/rules/external-review.md`: a table row reference only. Its `files[]` contract is unchanged.
+- [x] `.asd/templates/t_review.md`: when the text mentions scope, it matches the per-reviewer list
 
 ### Task 7: Release, README, sync (AC-12, AC-13)
 Material risk: artifact: release manifest and README mirrors
