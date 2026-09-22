@@ -380,20 +380,13 @@ function emitCoverageManifests(input) {
 
 /** A test file: under a `test`/`tests`/`__tests__`/`spec`/`specs` path segment, or a basename in a common test naming convention. Heuristic, so Correctness's full list stays the backstop for a miss. */
 function isTest(file) {
-  return /(^|\/)(test|tests|__tests__|spec|specs)\//.test(file) || /\.(test|spec)\.|^test_|_test\.|Tests?\./.test(file.split('/').pop());
+  return /(^|\/)(test|tests|__tests__|spec|specs)\//i.test(file) || /\.(test|spec)\.|^test_|_test\.|Tests?\./.test(file.split('/').pop());
 }
 
 /** One reviewer's file list, the single selector every manifest is built from: impl-review Testing narrows to test files plus the explicitly passed test-plan paths, which the scope pathspec excludes; every other reviewer gets the whole scope. */
 function reviewerFiles(phase, reviewer, files, testPlan) {
   if (phase !== 'impl-review' || reviewer !== 'testing') return files;
   return [...new Set(files.filter(isTest).concat(testPlan))];
-}
-
-/** Fails when a scope file lands in no internal reviewer's list, since nobody would then review it. */
-function assertReviewerUnion(phase, files, testPlan) {
-  const covered = new Set(INTERNAL_REVIEWERS.flatMap((reviewer) => reviewerFiles(phase, reviewer, files, testPlan)));
-  const orphans = files.filter((file) => !covered.has(file));
-  if (orphans.length > 0) fail(`scope files in no internal reviewer's list: ${orphans.join(', ')}`);
 }
 
 /** Reads a reviewer ledger from bare JSON, or from the one fenced block carrying `manifest_digest` inside the reviewer's returned text. */
@@ -444,20 +437,12 @@ function readFileList(file) {
   return fs.readFileSync(file, 'utf8').split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
 }
 
-/** Measures a file list against SURFACE_CAP_FILES, or against the user-approved override bound when one is recorded; `dispatches` is the impl-review dispatch upper bound that cap implies (every internal reviewer per split part, one more part for Testing's appended test-plan paths, plus External Review). */
+/** Measures a file list against SURFACE_CAP_FILES, or against the user-approved override bound when one is recorded; `dispatches` is the impl-review dispatch upper bound that cap implies (every internal reviewer per split part, one more part for Testing's appended test-plan paths, plus External Review). Known limit: that one extra part assumes at most SPLIT_THRESHOLD_FILES test-plan paths (test-plan.md plus its entry segments), so more re-entries undercount; take the path count as input if that ever happens. */
 function surfaceCheck(files, bound) {
   if (bound !== undefined && !(Number.isInteger(bound) && bound > 0)) fail('--bound must be a positive integer');
   const cap = bound === undefined ? SURFACE_CAP_FILES : bound;
   const count = new Set(files).size;
-  // ponytail: Testing's extra part holds up to SPLIT_THRESHOLD_FILES test-plan paths (test-plan.md + 24 entry segments); take the path count as input if re-entries ever exceed that.
   return { files: count, cap, breach: count > cap, dispatches: INTERNAL_REVIEWERS.length * Math.ceil(cap / SPLIT_THRESHOLD_FILES) + 2 };
-}
-
-/** Splits one phase step's dispatches, in order, into sequential waves of at most DISPATCH_CEILING. */
-function dispatchWaves(dispatches) {
-  const waves = [];
-  for (let i = 0; i < dispatches.length; i += DISPATCH_CEILING) waves.push(dispatches.slice(i, i + DISPATCH_CEILING));
-  return waves;
 }
 
 /** Runs git without a shell, returning its stdout, or streaming it into an open file descriptor so a large patch never hits a buffer cap. */
@@ -508,7 +493,6 @@ function emitManifestCommand(flags) {
   const customPaths = typeof flags['custom-rules'] === 'string' ? flags['custom-rules'].split(',') : [];
   const testPlan = typeof flags['test-plan'] === 'string' ? flags['test-plan'].split(',') : [];
   const scope = readFileList(flags.files);
-  assertReviewerUnion(flags.phase, scope, testPlan);
   const renames = range ? rangeRenames(range.base, range.head) : new Map();
   const manifests = emitCoverageManifests({
     reviewer: flags.reviewer,
@@ -597,4 +581,4 @@ if (require.main === module) {
   try { process.exitCode = main(process.argv); } catch (error) { process.stderr.write(`${error.message}\n`); process.exitCode = 2; }
 }
 
-module.exports = { AUDIT_BATCH_THRESHOLD_FILES, DISPATCH_CEILING, INTERNAL_REVIEWERS, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, NA_PREDICATES, SPLIT_THRESHOLD_FILES, SURFACE_CAP_FILES, assertReviewerUnion, buildInvocation, coverageManifestDigest, defectStalemate, dispatchWaves, emitCoverageManifests, externalPreflight, isTest, recordExternalFailure, reviewerFiles, routeTask, surfaceCheck, validateCoverageLedger, fingerprint };
+module.exports = { AUDIT_BATCH_THRESHOLD_FILES, DISPATCH_CEILING, INTERNAL_REVIEWERS, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, NA_PREDICATES, SPLIT_THRESHOLD_FILES, SURFACE_CAP_FILES, buildInvocation, coverageManifestDigest, defectStalemate, emitCoverageManifests, externalPreflight, isTest, recordExternalFailure, reviewerFiles, routeTask, surfaceCheck, validateCoverageLedger, fingerprint };
