@@ -216,6 +216,13 @@ prove such a test never reaches the output-equality assertion — CRLF and BOM e
 fence first, so record the thrown parse error as the first failure instead of claiming the assertion
 you aimed at.
 
+Same family for a temp git repo fixture: the host's global/system git config is also an input. The
+test helper's `-c` flags do not reach the git that `runtime.js` spawns, so pass
+`env: { ...process.env, GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: <empty temp file> }` to the
+test's own git AND to every `runtimeCli` call (sprint 015 TST-2). To prove it, run the suite with
+`GIT_CONFIG_GLOBAL` pointing at a file that sets `diff.noprefix = true`: without the isolation, the
+`diff --git a/ b/` header match fails.
+
 ## Backward-compatibility fixtures
 
 A fixture built by calling the function under test is not a fixture. Sprint 009's legacy-manifest row
