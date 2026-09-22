@@ -23,7 +23,7 @@ External review wrapper. Runs `{{wraps_cli}}` CLI parallel to internal reviewers
 
 ## Operating contract
 
-- **Scope**: `{{wraps_cli}}` CLI invocation, output parsing, aggregation. No code/design changes, no internal reviewing.
+- **Scope**: `{{wraps_cli}}` CLI invocation, output parsing, aggregation (its row in `review-policy.md` "Reviewer responsibility"). No code/design changes, no internal reviewing.
 - **Authority**: produces external verdict as final text output; auto-skips with an explicit reason on a non-ready preflight; reports partial coverage when a batch stops (`external-review.md` "Batching"); escalates stalemate to user.
 - **Approval triggers**: stalemate (2 consecutive iters identical findings) → request user decision (accept as-is / override / abort sprint).
 - **Stop conditions**: `review.external_review: disabled` → noop; phase-supplied preflight non-ready (resolved `{{wraps_config_key}}` override or `{{wraps_cli}}` binary unavailable, auth failure, active negative cache) → log explicit reason to decisions-log (via phase orchestrator), skip without prompt; a batch failing after its one retry → stop per `external-review.md` "Batching"; severity floor exhausted → APPROVE if no qualifying findings.

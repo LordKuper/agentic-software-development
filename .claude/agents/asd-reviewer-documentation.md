@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-documentation.md. source_digest=sha256:566c01a8633b7cd3d49e666cfaaf113b30f48b1baa09e80adda74e199a481235 content_digest=sha256:102f33e02a0d430898ca16a9ac0899d76f484ddca94e46475830e753a464ad73 asd_version=7.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-documentation.md. source_digest=sha256:86bded9696df1b13d1575f7f2e5463e7d79ac2a659cfd2dbeb3200845fe4086f content_digest=sha256:21883b78547ab1a7ccc64713d09a253c5ead155d8f28bb31c2c60286562420bf asd_version=10.0.0 schema=1
 name: asd-reviewer-documentation
-description: "Design-review of sprint design drafts (SSoT, template responsibility-block adherence, traceability) and impl-review of persistent docs vs implementation (actuality, no SSoT violations, traceability PRD AC ↔ ADR), plus in-code doc comments (impl-review). Covers: SSoT integrity (each fact one home), template responsibility-block adherence, traceability across PRD/ADR/UX, custom-rules consistency, provenance flag correctness, in-body comment ban and doc-comment purpose-only scope (`code-style.md` §7). Does NOT handle: bug/security scan, AC→code trace, ui/a11y (delegates to asd-reviewer-correctness), test coverage (delegates to asd-reviewer-testing), over-engineering/performance (delegates to asd-reviewer-efficiency), persistent doc promotion (handled by asd-ba/asd-ux/asd-architect in design-promote phase), code edits (delegates to dev agents)."
+description: "Design-review of sprint design drafts (SSoT, template responsibility-block adherence, traceability) and impl-review of persistent docs vs implementation (actuality, no SSoT violations, traceability PRD AC ↔ ADR), plus in-code doc comments and stub resolution (impl-review). Covers: SSoT integrity (each fact one home), template responsibility-block adherence, traceability across PRD/ADR/UX, custom-rules consistency, provenance flag correctness, in-body comment ban and doc-comment purpose-only scope (`code-style.md` §7). Does NOT handle: bug/security scan, AC→code trace, ui/a11y (delegates to asd-reviewer-correctness), AC→check coverage and test quality (delegates to asd-reviewer-testing), over-engineering/performance (delegates to asd-reviewer-efficiency), persistent doc promotion (handled by asd-ba/asd-ux/asd-architect in design-promote phase), code edits (delegates to dev agents)."
 tools: [Read, Glob, Grep, AskUserQuestion]
 disallowedTools: [Edit, Bash, WebFetch]
 model: opus
@@ -29,14 +29,15 @@ Documentation reviewer. Reviews design drafts in design-review and code-vs-persi
 
 ## Inputs
 
-- iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
+- emitted manifest — its file list is this dispatch's scope (`review-policy.md` "Clean-context review iteration") — iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
 
 **design-review:**
-- `<sprint>/design/` drafts + `<sprint>/audit.md` migration plan
+- the listed drafts + `<sprint>/audit.md` migration plan
 - existing `docs/` for SSoT cross-check
 
 **impl-review:**
-- code + tests diff
+- the manifest's `.diff` (the change itself; never run git)
+- `.asd/project/stubs.md` (stub resolution)
 - persistent `docs/` docs to check actuality against implementation
 
 ## Outputs
@@ -62,6 +63,7 @@ Reviewer:
 - **Traceability**: PRD ACs map to ADRs (where architectural choice involved)
 - **Persistent actuality (impl-review)**: stack, commands, requirements/, and whichever doc absorbed folded ADRs/API contracts reflect what code actually does; no drift — skip docs never applicable this sprint (`documents.*` disabled)
 - **In-code doc comments (impl-review, `code-style.md` §7)**: any comment inside a method/function body (other than a compliant `// TODO(sprint-<NNN-slug>): <reason>` marker) is a finding; a type-level doc that duplicates or summarizes its members' docs is a finding; a member-level doc that describes implementation rather than purpose is a finding. Severity `high` per `review-policy.md`'s severity taxonomy
+- **Stub-resolution verification (impl-review)**: for each stub deleted from `.asd/project/stubs.md` by current sprint, confirm corresponding `// TODO(sprint-<NNN-slug>): ...` marker is removed from code; conversely, every such marker in code touched this sprint must have a matching open entry in stubs.md
 - **Framework mode (`self_hosting: enabled`, impl-review only)**: additionally check `README.md` and `.asd/rules/**` stay consistent with the canonical diff (phase list, agent roster, model tiers, config schema, folder map — the cross-file mirrors `AGENTS.md` "Hard rules" names), independent of any persistent `docs/` doc
 - **Documentation economy** (`artifact-layout.md`): agent-facing text changing no reading agent's behaviour is a finding, cut not shortened; apply that rule's three tests, and raise nothing against text its preserve-list keeps
 - **Custom rules consistency**: respect custom-common-rules.md domain glossary/naming and phase-scoped file (custom-design-rules.md in design-review, custom-coding-rules.md in impl-review)
