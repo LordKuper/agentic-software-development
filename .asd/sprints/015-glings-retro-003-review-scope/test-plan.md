@@ -47,6 +47,7 @@ In `tests/run.js`. Each proof: mutate, run the suite, restore in the same call, 
 
 ## Suite run
 
+- **impl-review terminal full suite** (unscoped, per commands.yaml, all reviewers latched APPROVE): `node tests/run.js` — 213/213 passed, 0 failed, 0 skipped, exit 0. Lint (`git diff --cached --check`) — exit 0, no output. Build (`node .asd/sync.js --check`) — exit 0, `ok: true`, all 72 items `current`. HEAD = 25cdce5ae00c7179b34f9fb21acd82ff0fffe20d. Verdict: green
 - Command: `node tests/run.js`
 - Scope: full (safety valve: `.asd/runtime.js` is framework-wide infrastructure)
 - Entry 4 pre-strategy (HEAD b8abf24d8e4f5dc749c44fe61c3eebe82aceaa27, before any edit): 213/213 passed, 0 failed, exit 0
