@@ -76,3 +76,21 @@ A decision whose value must survive this sprint's archival is ALSO written into 
   - Version 11.0.0, with no migration.
 - **Rationale**: These are material choices the user had not authorized before, so the gate was explicit rather than adaptive. No open stubs.
 - **Affected docs**: plan.md
+- 2026-09-22 — route Task 1: critical, dispatch HEAD 5b9c7d0
+- 2026-09-22 — route Task 2, Task 3, Task 5: critical, dispatch HEAD 5288f86
+- 2026-09-22 — wave 1-2 flagged choices accepted by orchestrator:
+  - Task 1: `dispatchWaves` has no CLI; the ceiling rule is cited by its section heading; `dispatches` is an upper bound.
+  - Task 2: pure rename proven by identical content and mode via `git diff --raw -z -M` over `base...head`, which proves at least as much as R100; `INTERNAL_REVIEWERS` is an array; the predicate is cited by symbol; test-plan paths are left out of patches.
+  - Task 3: the skip is applied at the step 4 gate; the rule text "never a prompt to clear" is a ban.
+  - Task 5: short wording for the hard gate.
+- 2026-09-22 — route Task 4, Task 6: critical, dispatch HEAD 4389577
+- 2026-09-22 — wave 3 flagged choices accepted by orchestrator:
+  - Task 4: the skip line names the document; "(no further gate)" rewording.
+  - Task 6: phase-tagged rubric headings reuse the existing phase gate, with no runtime change; `--test-plan` is passed to every reviewer; `t_review.md` is unchanged because it has no scope text; External Review's row is a pointer; design iteration 2+ reuses External Review's snapshot rule.
+- 2026-09-22 — route Task 7: standard, dispatch HEAD f987651
+
+## 2026-09-22 — impl assessment approved (adaptive)
+
+- **Decision**: Tasks 1-7 are done and the phase advances to impl-test.
+- **Rationale**: Every plan box is ticked, every flagged choice was resolved inside plan scope (logged above), build and lint are clean, all diff paths are authorised, and no stubs were added this sprint. Two existing tests pin the old `surfaceCheck`/`emit-manifest` behaviour; test changes are impl-test's job.
+- **Affected docs**: plan.md

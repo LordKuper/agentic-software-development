@@ -1,7 +1,7 @@
 {
   "sprint_id": "015-glings-retro-003-review-scope",
   "branch": "sprint/015-glings-retro-003-review-scope",
-  "phase": "plan",
+  "phase": "impl",
   "documents": {
     "audit": true,
     "prd": false,
@@ -38,9 +38,59 @@
       "reason": "explicit accept of plan.md Tasks 1-7, 4 waves",
       "evidence": "user answered accept; surface-check files=25 cap=100 breach=false",
       "artifact_revision": "plan.md initial"
+    },
+    {
+      "gate": "impl-assessment",
+      "decision_actor": "orchestrator",
+      "reason": "adaptive: Tasks 1-7 ticked, flagged choices resolved in-plan, build+lint clean, diff paths authorised",
+      "evidence": "sync --check ok; git diff --cached --check clean; plan.md 0 open boxes; no sprint stubs; 2 pinned-test failures routed to impl-test",
+      "artifact_revision": "HEAD 1683b6f"
     }
   ],
-  "task_routing": {},
+  "task_routing": {
+    "Task 1": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "Task 2": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "claude:opus",
+      "reason": "risk:public contract"
+    },
+    "Task 3": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "Task 4": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "Task 5": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "Task 6": {
+      "tier": "critical",
+      "execution": "agent",
+      "resolved_model": "claude:opus",
+      "reason": "risk:public contract"
+    },
+    "Task 7": {
+      "tier": "standard",
+      "execution": "agent",
+      "resolved_model": "claude:sonnet",
+      "reason": "artifact-risk:release manifest"
+    }
+  },
   "skipped_phases": [
     "design",
     "design-review",
@@ -60,7 +110,7 @@
     }
   },
   "created_at": "2026-09-22T07:05:22Z",
-  "updated_at": "2026-09-22T07:31:51Z",
+  "updated_at": "2026-09-22T07:49:29Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
