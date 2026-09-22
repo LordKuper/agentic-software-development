@@ -49,3 +49,17 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: User accepted sprint.md AC-1..AC-13 at the hard scope gate.
 - **Rationale**: Explicit `accept`; the AC-2 per-reviewer file subset and the AC-11 ceiling-plus-waves interpretation were surfaced for review before accept.
 - **Affected docs**: sprint.md
+
+## 2026-09-22 — Audit contradictions settled
+
+- **Decision**: C-1: Correctness owns the AC→code trace and Testing owns the AC→check coverage. C-2: incremental scope everywhere, so design-review internal reviewers also get only the changed drafts on iteration 2+. C-3: "the wrapped CLI self-scopes". C-4: the gate answer is written to disk before any further work.
+- **Rationale**: Hard user decisions on canonical-vs-canonical contradictions (`sprint-lifecycle.md` "Audit phase"). C-2 overrides the architect's proposed resolution.
+- **Affected docs**: audit.md "Contradictions"
+
+## 2026-09-22 — Audit accepted (adaptive)
+
+- **Decision**: Orchestrator advanced the routine audit gate.
+- **Rationale**: Every `t_audit.md` section was returned, every contradiction was settled by the user, there is no product ambiguity, and decomposition is disabled. The plan carries the open choices the audit named: design-review Correctness with an empty list, patch files committed vs gitignored, c4 skippable under AC-8.
+- **Affected docs**: audit.md
+
+- 2026-09-22 — design/design-review/design-promote skipped (no documents enabled)

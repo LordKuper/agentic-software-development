@@ -1,7 +1,7 @@
 {
   "sprint_id": "015-glings-retro-003-review-scope",
   "branch": "sprint/015-glings-retro-003-review-scope",
-  "phase": "scope",
+  "phase": "design-promote",
   "documents": {
     "audit": true,
     "prd": false,
@@ -17,10 +17,28 @@
       "reason": "explicit accept of sprint.md AC-1..AC-13",
       "evidence": "user answered accept at hard scope gate; retro rows verified at HEAD 8649c9c",
       "artifact_revision": "sprint.md initial"
+    },
+    {
+      "gate": "audit-contradiction",
+      "decision_actor": "user",
+      "reason": "canonical vs canonical C-1..C-4",
+      "evidence": "audit.md Contradictions; C-1 split, C-2 incremental everywhere, C-3 reword, C-4 reword",
+      "artifact_revision": "audit.md initial"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "adaptive routine pass: all t_audit sections returned, contradictions user-settled, no product ambiguity, decomposition disabled",
+      "evidence": "audit.md at 3842a26+1",
+      "artifact_revision": "audit.md initial"
     }
   ],
   "task_routing": {},
-  "skipped_phases": [],
+  "skipped_phases": [
+    "design",
+    "design-review",
+    "design-promote"
+  ],
   "reviews": {
     "design": {
       "iteration": 0,
@@ -35,7 +53,7 @@
     }
   },
   "created_at": "2026-09-22T07:05:22Z",
-  "updated_at": "2026-09-22T07:07:23Z",
+  "updated_at": "2026-09-22T07:20:23Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
