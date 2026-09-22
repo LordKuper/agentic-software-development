@@ -132,6 +132,11 @@ the whole fix fires only on the set's first member, in insertion order, so it pr
 Add a second mutation that removes only a later member's clause before you record that the loop proves
 every member (sprint 012 entry 4, M26/M27).
 
+A `keep` justified by "the existing assert already requires it verbatim" needs the fix's own revert
+as proof. A regex whose capture group spans less than the fixed literal (sprint 015 AC-8 captured only
+the suffix, which the pre-fix line also held) passes on the old text too. Put the capture around the
+whole changed literal, then run the revert (TST-3).
+
 ## Assert removed phrases, not topic words
 
 Rule prose here routinely narrates the alternative it just rejected inside the same bullet

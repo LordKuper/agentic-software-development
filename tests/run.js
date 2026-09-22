@@ -5142,9 +5142,9 @@ test('sprint-015 AC-1/AC-6/AC-7/AC-8/AC-10/AC-12: no canon tells anyone to clear
   const skipGate = 'per-sprint document skip';
   assert.ok(checkpoints.some((line) => line.startsWith('Hard in both modes:') && line.includes(skipGate)) && checkpoints.some((line) => line.startsWith(`| ${skipGate} `) && line.includes('| hard')), 'AC-8: the per-sprint document skip is hard in both modes and in the inventory - otherwise an adaptive orchestrator skips a document on its own');
   const skip = sectionOf('.asd/rules/sprint-lifecycle.md', 'Optional documents').split('\n').find((line) => line.startsWith('**Per-sprint skip**'));
-  const logLine = skip && /"<doc> (skipped this sprint by user)"/.exec(skip);
+  const logLine = skip && /"(<doc> skipped this sprint by user)"/.exec(skip);
   assert.ok(skip && /Record: the frozen `false` plus/.test(skip), 'AC-8: the skip records the frozen `false` later phases read - the log line alone leaves the document produced');
-  assert.ok(logLine && /`config\.yaml` is untouched/.test(skip) && canonText('.asd/workflows/asd-phase-scope.md').includes(logLine[1]), 'AC-8: the skip records a decisions-log line the scope workflow writes verbatim and never touches config.yaml');
+  assert.ok(logLine && /`config\.yaml` is untouched/.test(skip) && canonText('.asd/workflows/asd-phase-scope.md').includes(logLine[1]), 'AC-8: the skip records the full "<doc> skipped this sprint by user" decisions-log line the scope workflow writes verbatim, doc placeholder included, and never touches config.yaml');
   const auditSkip = stepOf(canonText('.asd/workflows/asd-phase-audit.md'), 5).split(/(?<=\.)\s/).find((sentence) => sentence.includes('document skip'));
   assert.ok(auditSkip && auditSkip.includes('user request') && /\bnever\b/.test(auditSkip) && auditSkip.includes('prompt'), 'AC-8 (P2-1): the audit-exit document skip is user-initiated, never a standalone prompt on an adaptive or mechanical exit');
 

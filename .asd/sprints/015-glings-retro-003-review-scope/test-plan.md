@@ -29,7 +29,7 @@ Rows from earlier entries are in `test-plan.entry-01.md` and `test-plan.entry-02
 | `runtime.js` `dispatchWaves` / `assertReviewerUnion` deleted (8c0cedd) | stale test or plan rows still point at them | grep | none | no test references either one. Both are recorded `resolved` in `test-plan.entry-01.md`. `review-policy.md` now cites `reviewerFiles`, which the AC-2/AC-3 test covers |
 | `runtime.js` `surfaceCheck` comment → doc-comment (8c0cedd) | — | none | none | a comment-only change. The arithmetic it describes is still pinned by the AC-11 test |
 | `external-review.md` / `review-policy.md` wording on the snapshot and the reviewer union | prose drift | none | none | no literal token here that any other site mirrors. The executable half (snapshot) is the `draft-snapshot` row above; the union half is a `reviewerFiles` property the AC-2/AC-3 test already asserts |
-| `asd-phase-scope.md` step 3a: full `"<doc> skipped this sprint by user"` log line (e3a8801, P2-3) | — | static | keep | the existing AC-8 assert already reads the `<doc> ...` form from `sprint-lifecycle.md` and requires it verbatim in the scope workflow |
+| `asd-phase-scope.md` step 3a: full `"<doc> skipped this sprint by user"` log line (e3a8801, P2-3) | — | static | extended | the AC-8 assert captured only the suffix, which the pre-fix line also held; the capture now spans the full `<doc> skipped this sprint by user` literal (review-fix iter-02, TST-3) |
 | README.md / CHANGELOG.md wording (2d30b99, e3a8801) | — | none | none | release-note and readme prose, with no mirror token. AC-12's version-heading assert still holds |
 
 ## Removed tests
@@ -51,6 +51,7 @@ In `tests/run.js`. Each proof: mutate, run the suite, restore in the same call, 
 | extended: AC-6 re-dispatch | step 4 back to pre-fix "then the creator updates content and inbound links." → exit 1, `AC-6 (P2-2): after the git operation the creator is re-dispatched before step 5 awaits it - a parallel dispatch cannot pause mid-run for git` |
 | extended: AC-6 BA/UX Don'ts | line deleted from `asd-ba.md` → exit 1, `AC-6 (P2-2): asd-ba proposes a doc rename or deletion …`. Same for `asd-ux.md` → `… asd-ux proposes …`. Reworded to "Never delete or rename one of your persistent docs; return it as a proposal …" → the test stays green (ledger noise only), so the assert does not lock the wording |
 | extended: AC-8 audit exit | step 5 back to pre-fix "First offer the per-sprint document skip …" → exit 1, `AC-8 (P2-1): the audit-exit document skip is user-initiated, never a standalone prompt on an adaptive or mechanical exit`. Reworded to "is applied only when the user requests it or step 4 already awaits a decision; it is never prompted for on its own …" → the test stays green, so the assert does not lock the wording |
+| extended: AC-8 scope log line (TST-3) | step 3a back to pre-fix `"skipped this sprint by user"` → exit 1, `AC-8: the skip records the full "<doc> skipped this sprint by user" decisions-log line the scope workflow writes verbatim, doc placeholder included, and never touches config.yaml`. Before the capture fix the same mutation stayed green |
 
 ## Suite run
 
@@ -59,6 +60,7 @@ In `tests/run.js`. Each proof: mutate, run the suite, restore in the same call, 
 - Pre-strategy (entry 3, HEAD 351dd3ff159744f3b9013ab50f63572580fc9726, before any edit): 211/211 passed, exit 0
 - Result: pass. 213/213 passed, 0 failed, 0 skipped, exit 0 (HEAD 351dd3ff159744f3b9013ab50f63572580fc9726 plus this entry's test edits)
 - Lint / build: lint (`git diff --cached --check`) pass. Build (`node .asd/sync.js --check`) pass: exit 0, `ok: true`, 0 items not current
+- Review-fix iter-02 (TST-3, over c1438ca): 213/213 passed, exit 0; build and lint pass
 - Entry 2 record: 211/211 at 9452acf, then 211/211 after review-fix iter-01 over 7566611
 
 ## Defects
