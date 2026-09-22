@@ -444,12 +444,13 @@ function readFileList(file) {
   return fs.readFileSync(file, 'utf8').split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
 }
 
-/** Measures a file list against SURFACE_CAP_FILES, or against the user-approved override bound when one is recorded; `dispatches` is the impl-review dispatch upper bound that cap implies (every internal reviewer per split part, plus External Review). */
+/** Measures a file list against SURFACE_CAP_FILES, or against the user-approved override bound when one is recorded; `dispatches` is the impl-review dispatch upper bound that cap implies (every internal reviewer per split part, one more part for Testing's appended test-plan paths, plus External Review). */
 function surfaceCheck(files, bound) {
   if (bound !== undefined && !(Number.isInteger(bound) && bound > 0)) fail('--bound must be a positive integer');
   const cap = bound === undefined ? SURFACE_CAP_FILES : bound;
   const count = new Set(files).size;
-  return { files: count, cap, breach: count > cap, dispatches: INTERNAL_REVIEWERS.length * Math.ceil(cap / SPLIT_THRESHOLD_FILES) + 1 };
+  // ponytail: Testing's extra part holds up to SPLIT_THRESHOLD_FILES test-plan paths (test-plan.md + 24 entry segments); take the path count as input if re-entries ever exceed that.
+  return { files: count, cap, breach: count > cap, dispatches: INTERNAL_REVIEWERS.length * Math.ceil(cap / SPLIT_THRESHOLD_FILES) + 2 };
 }
 
 /** Splits one phase step's dispatches, in order, into sequential waves of at most DISPATCH_CEILING. */
