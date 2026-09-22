@@ -5,7 +5,7 @@
   "claude": {
     "model": "opus", "effort": "high",
     "tools": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "WebFetch", "WebSearch", "AskUserQuestion"],
-    "disallowedTools": [], "maxTurns": 50, "memory": "project"
+    "disallowedTools": [], "maxTurns": 150, "memory": "project"
   },
   "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "workspace-write" }
 }

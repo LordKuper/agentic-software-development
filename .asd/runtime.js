@@ -21,6 +21,12 @@ const LEDGER_NA_SHAPE = Object.fromEntries(ROW_TYPES.map((type) => [type, { [LED
 const SPLIT_THRESHOLD_FILES = 25;
 /** A reviewable change surface above this many files blocks plan acceptance and impl-review entry until the user splits the sprint or approves an override bound. Four split parts (4 * SPLIT_THRESHOLD_FILES). */
 const SURFACE_CAP_FILES = 100;
+/** Concurrent agent dispatches one phase step may run; dispatches above it run in sequential waves of at most this many. */
+const DISPATCH_CEILING = 20;
+/** An audit whose touched areas track more than this many files gets a batched-read plan in the architect payload. */
+const AUDIT_BATCH_THRESHOLD_FILES = 200;
+/** Internal impl-review reviewers, each dispatched once per split part. */
+const INTERNAL_REVIEWERS = 4;
 /** The standing n/a predicates, each the exact text a ledger row records. The emitter authorizes one only where its condition holds; this is their sole home. */
 const NA_PREDICATES = {
   phaseGate: 'outside phase gate',
@@ -416,12 +422,19 @@ function readFileList(file) {
   return fs.readFileSync(file, 'utf8').split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
 }
 
-/** Measures a file list against SURFACE_CAP_FILES, or against the user-approved override bound when one is recorded. */
+/** Measures a file list against SURFACE_CAP_FILES, or against the user-approved override bound when one is recorded; `dispatches` is the impl-review dispatch upper bound that cap implies (every internal reviewer per split part, plus External Review). */
 function surfaceCheck(files, bound) {
   if (bound !== undefined && !(Number.isInteger(bound) && bound > 0)) fail('--bound must be a positive integer');
   const cap = bound === undefined ? SURFACE_CAP_FILES : bound;
   const count = new Set(files).size;
-  return { files: count, cap, breach: count > cap };
+  return { files: count, cap, breach: count > cap, dispatches: INTERNAL_REVIEWERS * Math.ceil(cap / SPLIT_THRESHOLD_FILES) + 1 };
+}
+
+/** Splits one phase step's dispatches, in order, into sequential waves of at most DISPATCH_CEILING. */
+function dispatchWaves(dispatches) {
+  const waves = [];
+  for (let i = 0; i < dispatches.length; i += DISPATCH_CEILING) waves.push(dispatches.slice(i, i + DISPATCH_CEILING));
+  return waves;
 }
 
 function emitManifestCommand(flags) {
@@ -511,4 +524,4 @@ if (require.main === module) {
   try { process.exitCode = main(process.argv); } catch (error) { process.stderr.write(`${error.message}\n`); process.exitCode = 2; }
 }
 
-module.exports = { LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, NA_PREDICATES, SPLIT_THRESHOLD_FILES, SURFACE_CAP_FILES, buildInvocation, coverageManifestDigest, defectStalemate, emitCoverageManifests, externalPreflight, recordExternalFailure, routeTask, surfaceCheck, validateCoverageLedger, fingerprint };
+module.exports = { AUDIT_BATCH_THRESHOLD_FILES, DISPATCH_CEILING, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, NA_PREDICATES, SPLIT_THRESHOLD_FILES, SURFACE_CAP_FILES, buildInvocation, coverageManifestDigest, defectStalemate, dispatchWaves, emitCoverageManifests, externalPreflight, recordExternalFailure, routeTask, surfaceCheck, validateCoverageLedger, fingerprint };

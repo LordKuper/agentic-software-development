@@ -45,7 +45,7 @@ The normal gate class is retained for `strict`, and is the fallback when an adap
 | scope, plan, concept, stack, PRD, UX, design-system, ADR draft | write-then-review-accept |
 | factual tech-reference and mechanical design-system update | approve-before-write in strict; routine in adaptive |
 | test removal, PR publication, expense or external action | approve-before-write in strict; evidence rule in adaptive; never bypass host permissions/checks |
-| change-surface cap override (plan acceptance or impl-review entry) | hard approve-before-write |
+| change-surface cap override (plan acceptance or impl-review entry; request states the bound's `dispatches` from `surface-check`) | hard approve-before-write |
 | sprint closure | hard approve-before-finalize/archive |
 
 `c4-full/` has no standalone artifact gate. Per-section QODDA uses this same policy; it does not create a second mandatory pause.
