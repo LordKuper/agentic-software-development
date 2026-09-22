@@ -5079,6 +5079,42 @@ test('sprint-015 AC-11: surface-check dispatches bounds the impl-review dispatch
   assert.ok(field && field[1] in runtime.surfaceCheck([]), 'the cap-override request "Plan file format" defines must quote a field surface-check returns, or the request states a count nobody computes');
 });
 
+test('sprint-015 AC-2 (EXT-1): draft-snapshot persists each design-review iteration\'s draft hashes and prints every draft on iteration 1, on 2+ only the drafts whose content changed, every draft when the previous snapshot is missing, and the design-review workflow runs it with those flags', () => {
+  const root = mkTempDir();
+  const drafts = ['prd.html', 'ux.html'].map((name) => path.join(root, name));
+  drafts.forEach((file, index) => fs.writeFileSync(file, `draft ${index}\n`, 'utf8'));
+  const list = path.join(root, 'drafts.txt');
+  fs.writeFileSync(list, drafts.join('\n') + '\n', 'utf8');
+  const out = (iteration) => path.join(root, `iter-${iteration}.json`);
+  const snapshot = (iteration, previous) => runtimeCli(['draft-snapshot', '--files', list, '--out', out(iteration), ...(previous === undefined ? [] : ['--previous', out(previous)])]).split('\n').filter(Boolean);
+  assert.deepStrictEqual(snapshot(1), drafts, 'iteration 1 reviews every in-scope draft');
+  assert.deepStrictEqual(Object.keys(JSON.parse(fs.readFileSync(out(1), 'utf8'))), drafts, 'the snapshot persists one hash per draft, or iteration 2 has nothing to compare against');
+  assert.deepStrictEqual(snapshot(2, 1), [], 'an unchanged draft set leaves iteration 2+ nothing to review');
+  fs.writeFileSync(drafts[1], 'draft 1 revised\n', 'utf8');
+  assert.deepStrictEqual(snapshot(3, 2), [drafts[1]], 'iteration 2+ reviews only the draft whose content changed since the previous snapshot');
+  assert.deepStrictEqual(snapshot(4, 99), drafts, 'a missing previous snapshot widens to every draft, never drops one');
+  const draftList = stepOf(canonText('.asd/workflows/asd-phase-design-review.md'), 7).split('\n').find((line) => line.includes('node .asd/runtime.js draft-snapshot'));
+  assert.ok(draftList && ['--files', '--out', '--previous'].every((flag) => draftList.includes(flag)), 'design-review step 7 must run draft-snapshot with the flags this test drives, or iteration 2+ never narrows');
+});
+
+test('sprint-015 AC-4 (F-2): the impl-review scope-list command prints a non-ASCII path unquoted, so it still matches as a literal pathspec', () => {
+  const repo = mkTempDir();
+  const emptyGlobalConfig = path.join(mkTempDir(), 'gitconfig');
+  fs.writeFileSync(emptyGlobalConfig, '', 'utf8');
+  const env = { ...process.env, GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: emptyGlobalConfig };
+  const git = (...args) => execFileSync('git', ['-c', 'user.name=asd-test', '-c', 'user.email=asd-test@example.invalid', '-c', 'commit.gpgsign=false', ...args], { cwd: repo, env, encoding: 'utf8' });
+  git('init', '-q');
+  writeFile(repo, 'README.md', 'base\n');
+  git('add', '.');
+  git('commit', '-q', '-m', 'base');
+  writeFile(repo, 'docs/résumé.md', 'new\n');
+  git('add', '.');
+  git('commit', '-q', '-m', 'add');
+  const command = /running the diff above as `git ([^`]+)`/.exec(stepOf(canonText('.asd/workflows/asd-phase-impl-review.md'), 1));
+  assert.ok(command, 'impl-review step 1 must still name the command that derives the scope file list');
+  assert.deepStrictEqual(git(...command[1].split(/\s+/), 'HEAD~1', 'HEAD').split('\n').filter(Boolean), ['docs/résumé.md'], 'the scope list must carry the raw path: a C-quoted one matches nothing as a pathspec and drops out of the reviewers\' .diff');
+});
+
 test('sprint-015 AC-1/AC-6/AC-7/AC-8/AC-10/AC-12: no canon tells anyone to clear context, compaction keeps its preserve list, free-form input never goes through a decision prompt, BA/UX renames route to the orchestrator, the per-sprint document skip is hard, scope asks the cleanup criteria, and the changelog heads the released version', () => {
   const clear = /\bclear(?:s|ed|ing)?\b(?: the)? (?:session|context|transcript)|clear over compaction|then clear|clearable|\/clear\b/i;
   assert.deepStrictEqual([...canonMarkdownFiles(), 'README.md', 'AGENTS.md'].filter((rel) => clear.test(canonText(rel))), [], 'AC-1: context compaction is automatic and host-driven - no canon or README line may tell anyone to clear the session');
@@ -5093,9 +5129,13 @@ test('sprint-015 AC-1/AC-6/AC-7/AC-8/AC-10/AC-12: no canon tells anyone to clear
 
   const promote = stepOf(canonText('.asd/workflows/asd-phase-design-promote.md'), 4);
   assert.ok(/\borchestrator\b[^.]*`git mv`[^.]*`git rm`/.test(promote), 'AC-6: design-promote routes a BA/UX doc rename or deletion to the main orchestrator');
+  const afterGit = promote.slice(promote.indexOf('`git rm`'));
+  assert.ok(/re-dispatch/.test(afterGit) && afterGit.includes('step 5'), 'AC-6 (P2-2): after the git operation the creator is re-dispatched before step 5 awaits it - a parallel dispatch cannot pause mid-run for git');
   for (const name of ['asd-ba', 'asd-ux']) {
-    const claude = JSON.parse(canonText(`.asd/agents/${name}.md`).split('---\n')[1]).claude;
+    const text = canonText(`.asd/agents/${name}.md`);
+    const claude = JSON.parse(text.split('---\n')[1]).claude;
     assert.ok(claude.disallowedTools.includes('Bash') && !claude.tools.includes('Bash'), `AC-6: ${name} stays shell-less - its git operations route through the orchestrator instead`);
+    assert.ok(text.split('\n').some((line) => line.startsWith('- Never') && /\brename\b/.test(line) && /\bpropos/.test(line)), `AC-6 (P2-2): ${name} proposes a doc rename or deletion in its final text instead of performing it, or design-promote never receives the proposal`);
   }
 
   const checkpoints = canonText('.asd/rules/checkpoints.md').split('\n');
@@ -5105,6 +5145,8 @@ test('sprint-015 AC-1/AC-6/AC-7/AC-8/AC-10/AC-12: no canon tells anyone to clear
   const logLine = skip && /"<doc> (skipped this sprint by user)"/.exec(skip);
   assert.ok(skip && /Record: the frozen `false` plus/.test(skip), 'AC-8: the skip records the frozen `false` later phases read - the log line alone leaves the document produced');
   assert.ok(logLine && /`config\.yaml` is untouched/.test(skip) && canonText('.asd/workflows/asd-phase-scope.md').includes(logLine[1]), 'AC-8: the skip records a decisions-log line the scope workflow writes verbatim and never touches config.yaml');
+  const auditSkip = stepOf(canonText('.asd/workflows/asd-phase-audit.md'), 5).split(/(?<=\.)\s/).find((sentence) => sentence.includes('document skip'));
+  assert.ok(auditSkip && auditSkip.includes('user request') && /\bnever\b/.test(auditSkip) && auditSkip.includes('prompt'), 'AC-8 (P2-1): the audit-exit document skip is user-initiated, never a standalone prompt on an adaptive or mechanical exit');
 
   assert.ok(['legacy removal', 'warning budget', 'doc consolidation'].every((item) => stepOf(canonText('.asd/workflows/asd-phase-scope.md'), 2).includes(item)), 'AC-10: before the scope gate the scope workflow asks for the cleanup and quality criteria');
 
