@@ -1,7 +1,7 @@
 {
   "sprint_id": "015-glings-retro-003-review-scope",
   "branch": "sprint/015-glings-retro-003-review-scope",
-  "phase": "pr",
+  "phase": "done",
   "documents": {
     "audit": true,
     "prd": false,
@@ -66,6 +66,13 @@
       "reason": "explicit approval to push and open PR",
       "evidence": "DoD verified: plan 0 open, iter-03 all APPROVE, full suite 213/213 at 25cdce5, sync ok, no sprint stubs, retrospective present, v11.0.0",
       "artifact_revision": "HEAD bfdd865"
+    },
+    {
+      "gate": "closure",
+      "decision_actor": "user",
+      "reason": "explicit instruction to merge and close sprint",
+      "evidence": "PR #43 squash-merged at 8d46557; DoD verified at pr open",
+      "artifact_revision": "8d46557"
     }
   ],
   "task_routing": {
@@ -223,13 +230,14 @@
     }
   },
   "created_at": "2026-09-22T07:05:22Z",
-  "updated_at": "2026-09-22T09:13:50Z",
+  "updated_at": "2026-09-22T09:17:35Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": {
     "number": 43,
     "url": "https://github.com/LordKuper/agentic-software-development/pull/43",
-    "state": "open"
+    "state": "merged",
+    "merge_commit": "8d4655797bd34720d87fafeb72947033060d7494"
   },
-  "archived_at": null
+  "archived_at": "2026-09-22T09:17:35Z"
 }
