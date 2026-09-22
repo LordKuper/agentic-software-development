@@ -131,3 +131,7 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Correctness and Efficiency approved and are latched at iter 2. Three medium findings route to review-fix. EXT-4 carries over: `surfaceCheck` takes an optional test-plan path count, replacing the doc-comment-only resolution chosen at iter-01. DOC-1 removes the stale sentence from the testing-reviewer memory. TST-3 (widen the AC-8 capture, with fail-first proof) goes to `asd-tester`.
 - **Rationale**: External Review verified 4 of 5 iter-01 findings resolved, so there is no stalemate. Each fix is small and in scope, and fixing EXT-4 now avoids another carry-over.
 - **Affected docs**: reviews/impl/iter-02/
+- 2026-09-22 — route review-fix iter-02 dev chain: critical, dispatch HEAD 36be875
+- 2026-09-22 — route review-fix iter-02 tester chain: critical, dispatch HEAD 695b43d
+- 2026-09-22 — EXT-4 flagged choice accepted by orchestrator: with the default of 1, the count is lower but still an upper bound at caps that are not a multiple of 25
+- 2026-09-22 — impl fix for iter-02: findings resolved
