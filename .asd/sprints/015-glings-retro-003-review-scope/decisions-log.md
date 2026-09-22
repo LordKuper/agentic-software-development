@@ -135,3 +135,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-22 — route review-fix iter-02 tester chain: critical, dispatch HEAD 695b43d
 - 2026-09-22 — EXT-4 flagged choice accepted by orchestrator: with the default of 1, the count is lower but still an upper bound at caps that are not a multiple of 25
 - 2026-09-22 — impl fix for iter-02: findings resolved
+- 2026-09-22 — route impl-test entry 4: critical, dispatch HEAD b8abf24
+- 2026-09-22 — impl-test: impacted set green (213/213 full suite), 1 extended/0 removed (entry 4)
