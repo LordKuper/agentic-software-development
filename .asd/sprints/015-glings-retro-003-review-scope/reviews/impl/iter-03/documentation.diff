@@ -1,0 +1,197 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 2f30cc8..eff0362 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -134,7 +134,7 @@
+     ".asd/workflows/asd-phase-design-promote.md": "5b9f03eeb234350cfcb5b88c41030442d417997780058db02d2610b57c248dfa",
+     ".asd/workflows/asd-phase-design-review.md": "91db51ce3ad0eef7e16ec972a55bf9ca7bd00d6909385e5621375b992c576cf9",
+     ".asd/workflows/asd-phase-design.md": "803e588939ac9cbae0ccd33539eb36f983f30e7a3ad441ffa9827569aa21220e",
+-    ".asd/workflows/asd-phase-impl-review.md": "e49eb30708633d1236c1ce60248c23eff74a2d7ea0ea5216af501044464e38da",
++    ".asd/workflows/asd-phase-impl-review.md": "07e1872e3deb73e76fefc38ea97c0b9dee93c9330b4ae72d90ae5d5bdbb1ee16",
+     ".asd/workflows/asd-phase-impl-test.md": "d5f254318ca60b37a94610e597f48b24ab1bf4ec6e45b270927027d2014f6e48",
+     ".asd/workflows/asd-phase-impl.md": "4b3f32d11b31b168030c6ef91db7370e9cc20a62313bf8ec1e8f1573e5355710",
+     ".asd/workflows/asd-phase-plan.md": "362ef86e4e93e0bdd8357224f36c2cf7a376f5dc22e1334bf69b6cc283495e87",
+@@ -149,7 +149,7 @@
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
+     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
+-    ".asd/runtime.js": "3a92c4db745f60c53663f0fa4557924b9cbc3de9b4a900ba09284b8119ecd1c2",
++    ".asd/runtime.js": "11cb9a299d42176cee22d81b5fcdeed7c9f85fa7bca78fae3a0e5c9ff3108a7f",
+     ".asd/templates/external-review/t_review-scope.json": "66eca780c034c9ea851b5fbd6700c5cf47a0cc9591b5910e2942f35a65402bd9",
+     ".asd/templates/t_friction-log.md": "4937325124026f9af7b977a193a672ed2961e95156a8017212105d87093d02f8",
+     ".asd/templates/t_retrospective.html": "6b1a120d8a22bfeb7180d32f422e5888c7d453a4770a61b8502a1947f5322f1f",
+diff --git a/.asd/runtime.js b/.asd/runtime.js
+index 5e3056d..c458014 100644
+--- a/.asd/runtime.js
++++ b/.asd/runtime.js
+@@ -445,12 +445,14 @@ function draftSnapshot(files, out, previous) {
+   return files.filter((file) => before[file] !== hashes[file]);
+ }
+ 
+-/** Measures a file list against SURFACE_CAP_FILES, or against the user-approved override bound when one is recorded; `dispatches` is the impl-review dispatch upper bound that cap implies (every internal reviewer per split part, one more part for Testing's appended test-plan paths, plus External Review). Known limit: that one extra part assumes at most SPLIT_THRESHOLD_FILES test-plan paths (test-plan.md plus its entry segments), so more re-entries undercount; take the path count as input if that ever happens. */
+-function surfaceCheck(files, bound) {
++/** Measures a file list against SURFACE_CAP_FILES, or against the user-approved override bound when one is recorded; `dispatches` is the impl-review dispatch upper bound that cap implies (every internal reviewer per split part, Testing's parts sized for its test files plus the `testPlanFiles` test-plan paths appended to them, plus External Review). `testPlanFiles` defaults to 1, test-plan.md alone, for callers before any impl-test entry segment exists. */
++function surfaceCheck(files, bound, testPlanFiles = 1) {
+   if (bound !== undefined && !(Number.isInteger(bound) && bound > 0)) fail('--bound must be a positive integer');
++  if (!(Number.isInteger(testPlanFiles) && testPlanFiles > 0)) fail('--test-plan-files must be a positive integer');
+   const cap = bound === undefined ? SURFACE_CAP_FILES : bound;
+   const count = new Set(files).size;
+-  return { files: count, cap, breach: count > cap, dispatches: INTERNAL_REVIEWERS.length * Math.ceil(cap / SPLIT_THRESHOLD_FILES) + 2 };
++  const parts = (n) => Math.ceil(n / SPLIT_THRESHOLD_FILES);
++  return { files: count, cap, breach: count > cap, dispatches: (INTERNAL_REVIEWERS.length - 1) * parts(cap) + parts(cap + testPlanFiles) + 1 };
+ }
+ 
+ /** Runs git without a shell, returning its stdout, or streaming it into an open file descriptor so a large patch never hits a buffer cap. */
+@@ -578,7 +580,7 @@ function main(argv) {
+   }
+   if (command === 'surface-check') {
+     if (typeof flags.files !== 'string') fail('--files <path> required');
+-    const result = surfaceCheck(readFileList(flags.files), flags.bound === undefined ? undefined : Number(flags.bound));
++    const result = surfaceCheck(readFileList(flags.files), flags.bound === undefined ? undefined : Number(flags.bound), flags['test-plan-files'] === undefined ? undefined : Number(flags['test-plan-files']));
+     process.stdout.write(JSON.stringify(result) + '\n');
+     return result.breach ? 1 : 0;
+   }
+diff --git a/.asd/workflows/asd-phase-impl-review.md b/.asd/workflows/asd-phase-impl-review.md
+index b67f529..638255f 100644
+--- a/.asd/workflows/asd-phase-impl-review.md
++++ b/.asd/workflows/asd-phase-impl-review.md
+@@ -5,7 +5,7 @@ Orchestration body for the `asd-phase-impl-review` skill. Operation-mapping to h
+ ## Preconditions
+ - Active sprint at `.asd/sprints/<NNN-slug>/`
+ - **Clean worktree at phase entry** (`sprint-lifecycle.md`'s impl-review contract, sole SSoT): before any dispatch, run `git status --porcelain`; non-empty output → `FAILED`, naming the dirty paths. Measured once, at entry, before step 1.
+-- **Change-surface cap at first entry** (`state.json.reviews.impl.iteration` 0; `sprint-lifecycle.md` "Plan file format"), skipped when plan.md has no `Change surface:` line: before step 1, write `git diff --name-only <base_branch>...HEAD <pathspec>` (step 1's pathspec) to a temp file outside the repo and run `node .asd/runtime.js surface-check --files <path>`, adding `--bound <n>` from the latest `state.json.gate_decisions` entry with `gate: change-surface-cap-override`. `breach: true` → request user decision: approve the hard `change-surface cap override` with a new bound (recorded the same way), or abort. Never review a breached surface.
++- **Change-surface cap at first entry** (`state.json.reviews.impl.iteration` 0; `sprint-lifecycle.md` "Plan file format"), skipped when plan.md has no `Change surface:` line: before step 1, write `git diff --name-only <base_branch>...HEAD <pathspec>` (step 1's pathspec) to a temp file outside the repo and run `node .asd/runtime.js surface-check --files <path>`, adding `--bound <n>` from the latest `state.json.gate_decisions` entry with `gate: change-surface-cap-override` and `--test-plan-files <n>`, the count of step 6's `--test-plan` paths. `breach: true` → request user decision: approve the hard `change-surface cap override` with a new bound (recorded the same way), or abort. Never review a breached surface.
+ - impl-test COMPLETED signal received with a green impacted-set run (`sprint-lifecycle.md` "Impacted test set"); `state.json.phase` advanced from `impl-test`
+ - **First entry** (after initial impl): all plan.md Task checkboxes ticked; impl assessment approved
+ - **Cycle re-entry** (after impl review-fix + impl-test): `state.json.review_fixes_pending` cleared by impl fix-mode finalize; `test_defects_pending` null; `<sprint>/test-plan.md` `Suite run` records a pass
+diff --git a/.claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md b/.claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md
+index 6b3106b..759faa1 100644
+--- a/.claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md
++++ b/.claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md
+@@ -51,7 +51,9 @@ greps to canon (a grep over the sprint folder hits sibling reviewers' files).
+   that style alone is not a §7 finding.
+ - **Agent-memory files are reviewable source** (`artifact-layout.md` "Agent memory"): verify durable claims
+   against HEAD AND against the writer's own definition. A stale line in *your own* memory is corrected in
+-  the dispatch that finds it, not raised. A memory line is in Documentation economy's Reach.
++  the dispatch that finds it, not raised. A memory line is in Documentation economy's Reach. A sibling
++  memory written in the same diff range as a code fix often cites the defect that range already fixed
++  (015 iter-02: testing memory vs the run.js AC-7 message) - check each memory "re-read X" against the diff.
+ - The documentation-economy preserve-list keeps per-case tables whole: a logically subsumed clause in a
+   table row is not a cut candidate.
+ - The session-start AGENTS.md/CLAUDE.md snapshot in context can predate the branch's last sync - grep the
+diff --git a/.claude/agent-memory/asd-reviewer-testing/feedback_review-fix-defect-proof.md b/.claude/agent-memory/asd-reviewer-testing/feedback_review-fix-defect-proof.md
+index b2e90ae..4a25934 100644
+--- a/.claude/agent-memory/asd-reviewer-testing/feedback_review-fix-defect-proof.md
++++ b/.claude/agent-memory/asd-reviewer-testing/feedback_review-fix-defect-proof.md
+@@ -1,6 +1,6 @@
+ ---
+ name: review-fix-defect-proof
+-description: Code defects found by impl-review (COR-*) and fixed in a review-fix round never enter the test-plan Defects table, so their §17 fail-first record is easy to skip; also re-read existing assert messages a prose fix made false; compare each fix's `none` reason with its sibling rows; sentence splitters break at "e.g."
++description: Code defects found by impl-review (COR-*) and fixed in a review-fix round never enter the test-plan Defects table, so their §17 fail-first record is easy to skip; also re-read existing assert messages a prose fix made false; compare each fix's `none` reason with its sibling rows; sentence splitters break at "e.g."; `keep` rows claiming "verbatim" — check the regex capture group
+ metadata:
+   type: feedback
+ ---
+@@ -14,3 +14,5 @@ A correctness finding fixed in an impl-review fix round (sprint 013 iter-02: COR
+ Asymmetric `none` (sprint 014 iter-02): framework "code" fixes are often prose rules the orchestrator executes. The tester pinned COR-2's prose carve-out statically (`never … landed` regex) but gave COR-1's equally prose carve-out (leftovers limited to the failed dispatch's authorised paths) `none` with "assertable only if moved into runtime.js". The reason is false by the entry's own sibling row. Check every fix-id `none` against how sibling fix rows in the same entry were checked; a clause deletion with a silent data-loss effect and no effect-level pin elsewhere is medium.
+ 
+ Sentence-split asserts (sprint 014 iter-03, AC-2): `text.split(/(?<=\.) /)` also splits at `e.g. `, so the "sentence" an assert reads may start mid-clause. Replay which fragment the `.find()` returns before trusting a mutation record; it held there, but a later `e.g.` inserted before a pinned clause silently moves it into another fragment. Also `\bnever\b[^;]*\bX\b` regexes accept X in a positive clause after an unrelated `never` — below high floor alone.
++
++Capture-group scope (sprint 015 iter-02, P2-3): a `keep` row said the AC-8 assert requires the `"<doc> skipped this sprint by user"` line verbatim, but the regex was `/"<doc> (skipped …)"/` — group 1 is only the suffix, so the pre-fix form still passes. When a `keep` cites an existing `.includes(match[1])`, check what the group actually spans against the pre-fix text.
+diff --git a/.claude/agent-memory/asd-reviewer-testing/feedback_temp-repo-git-determinism.md b/.claude/agent-memory/asd-reviewer-testing/feedback_temp-repo-git-determinism.md
+index b8bc765..270fd5a 100644
+--- a/.claude/agent-memory/asd-reviewer-testing/feedback_temp-repo-git-determinism.md
++++ b/.claude/agent-memory/asd-reviewer-testing/feedback_temp-repo-git-determinism.md
+@@ -9,6 +9,6 @@ Sprint 015 added a temp-repo `emit-manifest --base/--head` test. The test's own
+ 
+ **Why:** the -c flags on the fixture helper make the test look hermetic; the subprocess under test is where host config leaks in.
+ 
+-**How to apply:** for any test that runs a runtime subcommand calling git, check whether the child env sets `GIT_CONFIG_NOSYSTEM`/`GIT_CONFIG_GLOBAL` or production pins prefixes. Also re-read the AC-7 `.gitattributes` test message at tests/run.js ~3770, which claims to be "the suite's only call to the git binary" (false since sprint 014).
++**How to apply:** for any test that runs a runtime subcommand calling git, check whether the child env sets `GIT_CONFIG_NOSYSTEM`/`GIT_CONFIG_GLOBAL` or production pins prefixes.
+ 
+ Scope note: since sprint 015 `reviewerFiles` narrows impl-review Testing to `isTest` scope files plus `--test-plan` paths. Source files are context only; judge their coverage by reading them, but findings attach only to the manifest's files. See [[no-shell-review-method]].
+diff --git a/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md b/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md
+index e643606..1c712d1 100644
+--- a/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md
++++ b/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md
+@@ -132,6 +132,16 @@ the whole fix fires only on the set's first member, in insertion order, so it pr
+ Add a second mutation that removes only a later member's clause before you record that the loop proves
+ every member (sprint 012 entry 4, M26/M27).
+ 
++A `keep` justified by "the existing assert already requires it verbatim" needs the fix's own revert
++as proof. A regex whose capture group spans less than the fixed literal (sprint 015 AC-8 captured only
++the suffix, which the pre-fix line also held) passes on the old text too. Put the capture around the
++whole changed literal, then run the revert (TST-3).
++
++A "tight somewhere" assert on an upper bound only catches an overcount that hits every sampled point.
++When a fix adds a parameter with a default, the old and new formulas usually agree only at some inputs
++(sprint 015 EXT-4: only at multiples of 25). Compute both at each sampled point before writing
++"the default is unchanged", and pin tightness at exactly those points (mutation: loosen only there).
++
+ ## Assert removed phrases, not topic words
+ 
+ Rule prose here routinely narrates the alternative it just rejected inside the same bullet
+diff --git a/tests/run.js b/tests/run.js
+index 650d347..bdee258 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -5063,17 +5063,37 @@ test('sprint-015 AC-4/AC-5: emit-manifest --base/--head writes each manifest\'s
+   assert.ok(refused && refused.status === 2 && /impl-review only/.test(refused.stderr) && fs.readdirSync(out).length === 0, `design-review has no git range, so --base/--head must exit 2 before writing anything. Got: ${JSON.stringify(refused)}`);
+ });
+ 
+-test('sprint-015 AC-11: surface-check dispatches bounds the impl-review dispatches its bound implies - every internal reviewer\'s emitted parts, Testing\'s --test-plan path included, plus External Review - and the override request quotes that field', () => {
+-  const planPath = '.asd/sprints/015-x/test-plan.md';
+-  let tight = 0;
+-  for (const bound of [1, runtime.SPLIT_THRESHOLD_FILES - 1, runtime.SPLIT_THRESHOLD_FILES, runtime.SPLIT_THRESHOLD_FILES + 1, runtime.SURFACE_CAP_FILES]) {
+-    const scope = Array.from({ length: bound }, (_, index) => `tests/file-${index + 1}.test.js`);
+-    const parts = runtime.INTERNAL_REVIEWERS.reduce((sum, reviewer) => sum + runtime.emitCoverageManifests({ reviewer, phase: 'impl-review', rubric: readRepoFile(`.asd/agents/asd-reviewer-${reviewer}.md`), files: runtime.reviewerFiles('impl-review', reviewer, scope, [planPath]), customRules: {} }).length, 0);
+-    const { dispatches } = runtime.surfaceCheck(scope, bound);
+-    assert.ok(parts + 1 <= dispatches, `bound ${bound}: a scope of ${bound} test files emits ${parts} internal-review parts plus External Review, above the ${dispatches} dispatches the cap-override request tells the user to approve`);
+-    if (parts + 1 === dispatches) tight += 1;
+-  }
+-  assert.ok(tight > 0, 'the bound must be reached somewhere, or any over-count passes');
++test('sprint-015 AC-11: surface-check dispatches bounds the impl-review dispatches its bound implies - every internal reviewer\'s emitted parts, Testing\'s parts sized for the --test-plan-files count impl-review entry passes (EXT-4), plus External Review - rejects an unusable count, and the override request quotes that field', () => {
++  const threshold = runtime.SPLIT_THRESHOLD_FILES;
++  const tight = new Set();
++  for (const planCount of [1, threshold + 1, 2 * threshold + 3]) {
++    const planPaths = Array.from({ length: planCount }, (_, index) => (index === 0 ? '.asd/sprints/015-x/test-plan.md' : `.asd/sprints/015-x/test-plan.entry-${String(index).padStart(2, '0')}.md`));
++    for (const bound of [1, threshold - 1, threshold, threshold + 1, runtime.SURFACE_CAP_FILES]) {
++      const scope = Array.from({ length: bound }, (_, index) => `tests/file-${index + 1}.test.js`);
++      const parts = runtime.INTERNAL_REVIEWERS.reduce((sum, reviewer) => sum + runtime.emitCoverageManifests({ reviewer, phase: 'impl-review', rubric: readRepoFile(`.asd/agents/asd-reviewer-${reviewer}.md`), files: runtime.reviewerFiles('impl-review', reviewer, scope, planPaths), customRules: {} }).length, 0);
++      const { dispatches } = planCount === 1 ? runtime.surfaceCheck(scope, bound) : runtime.surfaceCheck(scope, bound, planCount);
++      assert.ok(parts + 1 <= dispatches, `bound ${bound}, ${planCount} test-plan paths: a scope of ${bound} test files emits ${parts} internal-review parts plus External Review, above the ${dispatches} dispatches the cap-override request tells the user to approve`);
++      if (parts + 1 === dispatches) tight.add(`${planCount}/${bound}`);
++    }
++  }
++  assert.ok([1, threshold + 1, 2 * threshold + 3].every((planCount) => [...tight].some((key) => key.startsWith(`${planCount}/`))), 'the bound must be reached for the default and for every test-plan count, or an over-count passes');
++  assert.ok(tight.has(`1/${threshold}`) && tight.has(`1/${runtime.SURFACE_CAP_FILES}`), 'the default count must stay tight at every multiple of the split threshold - where test-plan.md alone opens one extra Testing part - or plan-time callers get a looser bound than before');
++  for (const count of [0, -1, 1.5, Number.NaN]) {
++    assert.throws(() => runtime.surfaceCheck(['a.md'], undefined, count), /--test-plan-files/, `test-plan files ${count}: an unusable count must fail closed, never size Testing's parts from a guess`);
++  }
++  const list = path.join(mkTempDir(), 'scope.txt');
++  fs.writeFileSync(list, 'tests/a.test.js\n', 'utf8');
++  const cli = (count) => {
++    try {
++      return { status: 0, stdout: runtimeCli(['surface-check', '--files', list, '--test-plan-files', count], { stdio: 'pipe' }) };
++    } catch (error) {
++      return { status: error.status, stdout: String(error.stdout) };
++    }
++  };
++  assert.deepStrictEqual(cli(String(threshold + 1)), { status: 0, stdout: `${JSON.stringify(runtime.surfaceCheck(['tests/a.test.js'], undefined, threshold + 1))}\n` }, '--test-plan-files carries the test-plan count into the CLI');
++  assert.deepStrictEqual(cli('many'), { status: 2, stdout: '' }, 'a non-numeric --test-plan-files must exit 2 with no result');
++  const entryCheck = canonText('.asd/workflows/asd-phase-impl-review.md').split('\n').find((line) => line.includes('surface-check --files'));
++  assert.ok(entryCheck && entryCheck.includes('--test-plan-files <n>'), 'impl-review entry must pass the test-plan count to surface-check, or the cap-override request undercounts Testing on a long re-entry chain');
+   const declaration = sectionOf('.asd/rules/sprint-lifecycle.md', 'Plan file format').split('\n').find((line) => line.startsWith('**Change surface declaration**'));
+   const field = declaration && /the `(\w+)` count `surface-check --bound <n>` returns/.exec(declaration);
+   assert.ok(field && field[1] in runtime.surfaceCheck([]), 'the cap-override request "Plan file format" defines must quote a field surface-check returns, or the request states a count nobody computes');
+@@ -5142,9 +5162,9 @@ test('sprint-015 AC-1/AC-6/AC-7/AC-8/AC-10/AC-12: no canon tells anyone to clear
+   const skipGate = 'per-sprint document skip';
+   assert.ok(checkpoints.some((line) => line.startsWith('Hard in both modes:') && line.includes(skipGate)) && checkpoints.some((line) => line.startsWith(`| ${skipGate} `) && line.includes('| hard')), 'AC-8: the per-sprint document skip is hard in both modes and in the inventory - otherwise an adaptive orchestrator skips a document on its own');
+   const skip = sectionOf('.asd/rules/sprint-lifecycle.md', 'Optional documents').split('\n').find((line) => line.startsWith('**Per-sprint skip**'));
+-  const logLine = skip && /"<doc> (skipped this sprint by user)"/.exec(skip);
++  const logLine = skip && /"(<doc> skipped this sprint by user)"/.exec(skip);
+   assert.ok(skip && /Record: the frozen `false` plus/.test(skip), 'AC-8: the skip records the frozen `false` later phases read - the log line alone leaves the document produced');
+-  assert.ok(logLine && /`config\.yaml` is untouched/.test(skip) && canonText('.asd/workflows/asd-phase-scope.md').includes(logLine[1]), 'AC-8: the skip records a decisions-log line the scope workflow writes verbatim and never touches config.yaml');
++  assert.ok(logLine && /`config\.yaml` is untouched/.test(skip) && canonText('.asd/workflows/asd-phase-scope.md').includes(logLine[1]), 'AC-8: the skip records the full "<doc> skipped this sprint by user" decisions-log line the scope workflow writes verbatim, doc placeholder included, and never touches config.yaml');
+   const auditSkip = stepOf(canonText('.asd/workflows/asd-phase-audit.md'), 5).split(/(?<=\.)\s/).find((sentence) => sentence.includes('document skip'));
+   assert.ok(auditSkip && auditSkip.includes('user request') && /\bnever\b/.test(auditSkip) && auditSkip.includes('prompt'), 'AC-8 (P2-1): the audit-exit document skip is user-initiated, never a standalone prompt on an adaptive or mechanical exit');
+ 

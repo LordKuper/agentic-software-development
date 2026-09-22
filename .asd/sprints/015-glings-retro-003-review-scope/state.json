@@ -1,7 +1,7 @@
 {
   "sprint_id": "015-glings-retro-003-review-scope",
   "branch": "sprint/015-glings-retro-003-review-scope",
-  "phase": "impl-test",
+  "phase": "impl-review",
   "documents": {
     "audit": true,
     "prd": false,
@@ -150,6 +150,12 @@
       "execution": "agent",
       "resolved_model": "claude:opus",
       "reason": "no-downgrade"
+    },
+    "impl-review terminal suite": {
+      "tier": "standard",
+      "execution": "agent",
+      "resolved_model": "claude:sonnet",
+      "reason": "normal"
     }
   },
   "skipped_phases": [
@@ -164,7 +170,7 @@
       "latched": {}
     },
     "impl": {
-      "iteration": 2,
+      "iteration": 3,
       "verdicts": {
         "iter-01": {
           "correctness": "CONCERNS",
@@ -179,20 +185,31 @@
           "testing": "CONCERNS",
           "documentation": "CONCERNS",
           "external": "CONCERNS"
+        },
+        "iter-03": {
+          "correctness": "APPROVE",
+          "efficiency": "APPROVE",
+          "testing": "APPROVE",
+          "documentation": "APPROVE",
+          "external": "APPROVE"
         }
       },
       "iteration_heads": {
         "iter-01": "a5f6548ea1bd1d25323f3f896cc6112eb14da9b5",
-        "iter-02": "f259ed3373f807d866995143f80d2ad44b2dc201"
+        "iter-02": "f259ed3373f807d866995143f80d2ad44b2dc201",
+        "iter-03": "31dd56c367d0ac2e7f17f1c4ac297ee347f0fe21"
       },
       "latched": {
         "correctness": 2,
-        "efficiency": 2
+        "efficiency": 2,
+        "testing": 3,
+        "documentation": 3,
+        "external": 3
       }
     }
   },
   "created_at": "2026-09-22T07:05:22Z",
-  "updated_at": "2026-09-22T08:57:04Z",
+  "updated_at": "2026-09-22T09:10:37Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
