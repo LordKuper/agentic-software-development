@@ -91,19 +91,19 @@ Reachability: review-policy's AC-3 table is the selector Task 2 implements; both
 
 ### Task 7: Release, README, sync (AC-12, AC-13)
 Material risk: artifact: release manifest and README mirrors
-- [ ] `README.md`:
+- [x] `README.md`:
   - reviewer roster and scope column (L213-219)
   - diff-scoped gating (L223)
   - runtime.js folder-map line (L297)
   - reviewer phase note (L402)
   - context and scope wording
   - the architect `maxTurns` mention, if any
-- [ ] `CHANGELOG.md` 11.0.0 entry:
+- [x] `CHANGELOG.md` 11.0.0 entry:
   - per-reviewer scope and patch files, `pureRename` rows
   - dispatch ceiling, per-sprint document skip, free-form scope, cleanup prompt, context hygiene
   - no-migration note: "finish or re-emit an in-flight review iteration after upgrade"
-- [ ] `.asd/release-manifest.json` `asd_version` 11.0.0
-- [ ] Run `node .asd/sync.js --apply` on every changed generated view, then `--check`, which must be clean. Recompute `canon_hashes`.
+- [x] `.asd/release-manifest.json` `asd_version` 11.0.0
+- [x] Run `node .asd/sync.js --apply` on every changed generated view, then `--check`, which must be clean. Recompute `canon_hashes`.
 
 ## Risks
 - `isTest` is a heuristic. A missed test file has no Testing owner, and Correctness's full list is the backstop.

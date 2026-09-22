@@ -2,6 +2,27 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v11.0.0
+
+Remediates the Glings sprint 003 (subsystem-layout-migration) retrospective. Each reviewer now gets its own scoped file list and, in impl-review, its own `.diff` patch instead of a shared list and rendered diff text; concurrent dispatches are capped and large audits read in batches; scope collection drops the decision-prompt UI for free-form input and no longer clears context at phase boundaries; and a sprint may skip one enabled optional document for itself alone.
+
+### Migration
+- **No migration script.** New manifest fields (`--base/--head`, `pureRename` rows, per-reviewer file lists) are optional to `validate-ledger`; a manifest emitted before the upgrade still validates, and `state.json`'s schema is unchanged. An in-flight review iteration started before the upgrade: finish it as emitted, or discard and re-emit it fresh under the new per-reviewer contract — both are safe.
+
+### Added
+- **Per-reviewer scope.** `emit-manifest` builds each reviewer's file list from one selector keyed by phase and reviewer (`review-policy.md` "Reviewer responsibility"). In impl-review, Testing narrows to the `isTest` files plus `--test-plan <path...>` (`test-plan.md` and its segments); Correctness, Efficiency and Documentation keep the full scope list. A cross-reviewer invariant fails emission unless the internal reviewers' lists union to exactly the scope list.
+- **`.diff` patch files.** `emit-manifest --base <sha> --head <sha>` (impl-review only) writes one patch per manifest or part (`<reviewer>[.part-N].diff`) beside it, and grants the compact `pureRename` row (`NA_PREDICATES.pureRename`) to every 100%-similarity rename `git diff --raw -M100%` finds — only a machine-proven rename qualifies, never a namespace/import-only edit. The reviewer payload carries the manifest and `.diff` paths, never rendered diff text, and no reviewer is ever told to run git.
+- **Dispatch ceiling.** `DISPATCH_CEILING` (20) caps concurrent dispatches in one phase step; anything above it runs in sequential sub-waves (review parts, impl task waves), each judged separately for correlated interruption. `.asd/runtime.js` exports a pure wave-splitting helper, and `surfaceCheck` also returns the implied review-dispatch upper bound. A change-surface cap-override request states the `dispatches` count it implies.
+- **Batched audit reads.** `AUDIT_BATCH_THRESHOLD_FILES` (200): when the touched areas exceed it, the architect payload carries a batched-read plan (grep first, then targeted section reads) instead of a flat file dump; `asd-architect`'s `maxTurns` rises to 150 to match (the batched-read plan, not the turn cap, is the real control).
+- **Per-sprint document skip** (`sprint-lifecycle.md` "Optional documents"): the user may flip an enabled `prd`, `ux_spec`, `adr` or `c4` to `false` for the active sprint only, at the scope gate or the audit exit, before any draft of that document exists — a hard gate, narrow-only, logged as "skipped this sprint by user" distinct from config-disabled. `audit` itself is excluded.
+- **Free-form scope.** Raw scope arrives as a plain chat message, not a decision prompt; before the scope gate the orchestrator asks about cleanup and quality criteria (legacy removal, warning budget, doc consolidation) unless the raw scope already covers them.
+- **BA/UX doc rename/delete** now routes through the orchestrator at `design-promote`: the user approves, then the orchestrator runs `git mv`/`git rm` inline and the creator updates content and inbound links.
+- **Design-review draft correctness.** Correctness gains a design-review rubric entry: AC completeness against `sprint.md`, contract soundness, ADR decision soundness — covering every changed draft, not only UI drafts.
+
+### Changed
+- **Context hygiene** (`core.md`): no instruction ever tells the orchestrator to clear context. A phase boundary continues the chain itself; context compaction is automatic and host-driven. The gate answer is written to disk before any further work, so a mid-gate compaction stays recoverable.
+- **Stub-resolution verification** moves from the Testing reviewer's rubric to Documentation's, alongside persistent-doc actuality.
+
 ## v10.0.0
 
 Remediates the Glings sprint 002 retrospective. External Review can now return partial coverage from batched reviews instead of silently skipping, a failed dev/tester dispatch is reconstructed from git evidence before it is re-sent, plans declare a change surface capped at 100 files, and `decisions-log.md` / `test-plan.md` rotate into numbered segments so long sprints stay readable.
