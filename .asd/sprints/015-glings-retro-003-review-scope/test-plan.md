@@ -66,7 +66,7 @@ Every mutation ran as mutate → suite → restore inside one script, with a byt
 - Scope: full (safety valve: `.asd/runtime.js` and rule docs are framework-wide infrastructure)
 - Result: fail — 210/211 passed, 1 failed (`sprint-015 AC-11: …`, D-1), 0 skipped. Pre-strategy run at the same HEAD: 205/207, with the two pinned tests failing (both adjusted above)
 - Lint / build: lint (`git diff --cached --check`) pass. Build (`node .asd/sync.js --check`) pass: exit 0, `ok: true`, 72/72 items `current`
-- HEAD: 082cd31 (tests uncommitted at run time; the commit adds only `tests/run.js` and this file)
+- HEAD: d33cddd (the test commit). The same 210/211 was measured at 082cd31 before commit, with `tests/run.js` as committed
 
 ## Defects
 
