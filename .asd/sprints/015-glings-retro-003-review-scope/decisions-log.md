@@ -1,0 +1,51 @@
+---
+responsibility:
+  owns: approved decisions for THIS sprint
+  excludes: cross-sprint/durable decisions, sprint state, review notes
+  delegates_to: docs/** + adr fold targets (durable design decisions), CHANGELOG.md (releases), .asd/project/stubs.md (standing open defects), state.json (state), reviews/ (verdicts)
+---
+
+# Decisions Log
+
+Per-sprint, append-only. Never edited or removed. Created at `scope`, rotated at phase entry (`.asd/rules/artifact-layout.md` "Decisions log"), archived with the sprint.
+
+## Entry format
+
+```markdown
+## YYYY-MM-DD — <one-line summary>
+
+- **Decision**: <what was decided> (≤3 sentences)
+- **Rationale**: <why> (≤3 sentences)
+- **Affected docs**: <links> (unrestricted)
+```
+
+A no-op skip, other zero-content decision, dispatch routing line or failed-dispatch reconstruction uses the one-line form instead:
+
+```markdown
+- YYYY-MM-DD — <phase> skipped: <reason>
+- YYYY-MM-DD — route <taskIds>: <tier>, dispatch HEAD <sha>
+- YYYY-MM-DD — reconstruction: landed <ids>; re-dispatched <ids>
+```
+
+## Durability rule
+
+A decision whose value must survive this sprint's archival is ALSO written into an existing persistent home — a `docs/` fold target, `CHANGELOG.md`, or `.asd/project/stubs.md`. Never invent a new document type for this. This log records that the decision was made; the persistent home is what a later sprint can still read.
+
+## Entries
+
+<!-- entries appended below this line -->
+
+## 2026-09-22 — Glings retro 003 rows verified at HEAD 8649c9c
+
+- **Decision**: Carry F-1 (AC-8), F-3 (AC-7), F-4 (AC-6), F-7/F-8 (AC-4), F-9 (AC-5), systemic cleanup-criteria (AC-10), all unresolved. F-2 narrowed to its audit half (AC-9); systemic fan-out narrowed to a concurrency ceiling plus cap-override disclosure (AC-11). F-5, F-6 and the consumer systemic row are excluded as consumer scope.
+- **Rationale**: F-1: no per-sprint skip exists, only config `documents.*`. F-2: reviewers already split at `SPLIT_THRESHOLD_FILES`=25, but architect `maxTurns` is 50 and the audit payload has no batched-read rule. F-3: `asd-sprint` SKILL step 2A.3 still collects scope via a request-user-decision prompt, and this session reproduced it. F-4: `asd-ba`/`asd-ux` tools have no Bash, and design-promote has no rename/delete route. F-7/F-8: the impl-review payload passes "the diff" to Read/Glob/Grep-only reviewers. F-9: the ledger has no rename row class. Cleanup criteria: the scope workflow has no such prompt. Fan-out: `SURFACE_CAP_FILES`=100 (sprint 014) bounds default fan-out to about 17 dispatches, but a cap override is unbounded.
+- **Affected docs**: sprint.md AC-4..AC-11
+
+- 2026-09-22 — audit frozen `true`: scope changes behaviour, contracts and gates (not mechanical)
+- 2026-09-22 — prd, ux_spec, adr skipped: disabled in config; c4 `false` (diagram_tool none)
+
+## 2026-09-22 — Scope accepted
+
+- **Decision**: User accepted sprint.md AC-1..AC-13 at the hard scope gate.
+- **Rationale**: Explicit `accept`; the AC-2 per-reviewer file subset and the AC-11 ceiling-plus-waves interpretation were surfaced for review before accept.
+- **Affected docs**: sprint.md
