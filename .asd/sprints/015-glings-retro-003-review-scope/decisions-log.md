@@ -123,3 +123,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
   - The surface-cap count left without `quotePath`.
   - Tester: one commit carrying 4 trailers; entry-01 rows edited in place as the findings named them.
 - 2026-09-22 — impl fix for iter-01: findings resolved
+- 2026-09-22 — route impl-test entry 3: critical, dispatch HEAD 351dd3f
+- 2026-09-22 — impl-test: impacted set green (213/213 full suite), 2/0 tests (entry 3)
