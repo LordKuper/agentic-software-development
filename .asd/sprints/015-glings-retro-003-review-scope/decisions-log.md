@@ -96,3 +96,8 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: plan.md
 - 2026-09-22 — route impl-test entry 1: critical, dispatch HEAD 082cd31
 - 2026-09-22 — impl-test: defects D-1 → impl test-fix (digest 51fc5d2bde6461502eb0dbd2ff312500801b21a077b11417369b36172c05f674)
+- 2026-09-22 — route D-1: critical, dispatch HEAD 3352fd5
+- 2026-09-22 — D-1 flagged choices accepted by orchestrator:
+  - The dispatch bound adds one Testing part for at most 25 test-plan paths.
+  - The halved-retry bound is out of scope; it predates this sprint.
+- 2026-09-22 — impl test-fix: defects D-1 resolved
