@@ -103,3 +103,15 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-22 — impl test-fix: defects D-1 resolved
 - 2026-09-22 — route impl-test entry 2: critical, dispatch HEAD 9452acf
 - 2026-09-22 — impl-test: impacted set green (211/211 full suite), 0/0 tests (entry 2)
+
+## 2026-09-22 — impl-review iter-01: 17 findings → review-fix
+
+- **Decision**: Every reviewer returned CONCERNS and none returned FAIL. The findings route to impl review-fix mode. The user decided P2-1: at the audit exit, the document skip applies only when the user requests it or when a decision is already awaited at the audit gate. There is no standalone prompt, and the flip stays a hard gate.
+- **Rationale**: Orchestrator fix choices:
+  - E1 (delete `dispatchWaves`) also resolves EXT-3, because no untested dead export is left.
+  - E2: delete `assertReviewerUnion`.
+  - F-2: step 1 uses `git -c core.quotePath=false diff --name-only`.
+  - EXT-4: resolved by the doc-comment move under D-1/EXT-2.
+  - EXT-1: implement the design-review snapshot write/read.
+  - Test-file findings TST-1 and TST-2 go to `asd-tester` after the dev chain.
+- **Affected docs**: reviews/impl/iter-01/, plan.md Task 4

@@ -1,7 +1,7 @@
 {
   "sprint_id": "015-glings-retro-003-review-scope",
   "branch": "sprint/015-glings-retro-003-review-scope",
-  "phase": "impl-test",
+  "phase": "impl-review",
   "documents": {
     "audit": true,
     "prd": false,
@@ -45,6 +45,13 @@
       "reason": "adaptive: Tasks 1-7 ticked, flagged choices resolved in-plan, build+lint clean, diff paths authorised",
       "evidence": "sync --check ok; git diff --cached --check clean; plan.md 0 open boxes; no sprint stubs; 2 pinned-test failures routed to impl-test",
       "artifact_revision": "HEAD 1683b6f"
+    },
+    {
+      "gate": "plan-change",
+      "decision_actor": "user",
+      "reason": "P2-1: audit-exit document skip becomes user-initiated",
+      "evidence": "reviews/impl/iter-01/correctness.part-2 P2-1; user chose user-initiated only",
+      "artifact_revision": "plan.md Task 4"
     }
   ],
   "task_routing": {
@@ -121,15 +128,25 @@
       "latched": {}
     },
     "impl": {
-      "iteration": 0,
-      "verdicts": {},
-      "iteration_heads": {},
+      "iteration": 1,
+      "verdicts": {
+        "iter-01": {
+          "correctness": "CONCERNS",
+          "efficiency": "CONCERNS",
+          "testing": "CONCERNS",
+          "documentation": "CONCERNS",
+          "external": "CONCERNS"
+        }
+      },
+      "iteration_heads": {
+        "iter-01": "a5f6548ea1bd1d25323f3f896cc6112eb14da9b5"
+      },
       "latched": {}
     }
   },
   "created_at": "2026-09-22T07:05:22Z",
-  "updated_at": "2026-09-22T08:04:54Z",
-  "review_fixes_pending": null,
+  "updated_at": "2026-09-22T08:28:06Z",
+  "review_fixes_pending": "iter-01",
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null

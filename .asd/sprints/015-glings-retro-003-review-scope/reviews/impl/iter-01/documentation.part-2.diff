@@ -1,0 +1,478 @@
+diff --git a/.asd/skills/asd-sprint/SKILL.md b/.asd/skills/asd-sprint/SKILL.md
+index 47d9257..10f4735 100644
+--- a/.asd/skills/asd-sprint/SKILL.md
++++ b/.asd/skills/asd-sprint/SKILL.md
+@@ -17,7 +17,7 @@
+ ## Operations used
+ - Read files / search repo — detect active sprint; read state.json, config.yaml, custom-common-rules.md
+ - Run command — `git status`, `git branch --show-current`; decisions-log rotation (rename, copy template, commit those paths)
+-- Request user decision — new-sprint confirm, resume/abort choice
++- Request user decision — new-sprint confirm, resume/abort choice (never free-form scope text)
+ - Delegate to skill — phase skills, plus `asd-init` per "Skills dispatched"
+ - No other writes — phase skills and their inline orchestrator own writes
+ 
+@@ -34,7 +34,7 @@ Before a phase-skill delegation below, rotate the decisions log when `.asd/rules
+ ### Step 2A: new-sprint flow
+ 1. Read `.asd/project/config.yaml` (confirm init complete)
+ 2. `git status` — if dirty, request user decision: commit / stash / abort
+-3. Request user decision: confirm start; collect scope (free-form)
++3. Collect scope as a plain chat message; request user decision only to confirm start or abort
+ 4. Delegate to skill `asd-phase-scope`, passing scope text
+ 5. On COMPLETED → advance per Step 3
+ 
+diff --git a/.asd/workflows/asd-phase-audit.md b/.asd/workflows/asd-phase-audit.md
+index efba239..0b67f57 100644
+--- a/.asd/workflows/asd-phase-audit.md
++++ b/.asd/workflows/asd-phase-audit.md
+@@ -1,12 +1,12 @@
+ # ASD Workflow: Audit
+ 
+ 1. Read frozen `documents.*`. A false audit is a mechanical skip: go to step 5, whose write carries its record.
+-2. Dispatch `asd-architect` to inspect source, every `docs/` document bearing on touched areas, other documentation, stubs, gaps, risks and migration needs, returning all `t_audit.md` sections as text with contradictions resolved by canonical precedence (`sprint-lifecycle.md` "Audit phase"). It may identify evidenced material product/domain ambiguity. When `project.subsystem_decomposition` is enabled it reads the subsystem registry, and returns a registry proposal beside the sections when the registry is absent (`sprint-lifecycle.md` "Audit phase").
++2. Dispatch `asd-architect` to inspect source, every `docs/` document bearing on touched areas, other documentation, stubs, gaps, risks and migration needs, returning all `t_audit.md` sections as text with contradictions resolved by canonical precedence (`sprint-lifecycle.md` "Audit phase"). It may identify evidenced material product/domain ambiguity. When `project.subsystem_decomposition` is enabled it reads the subsystem registry, and returns a registry proposal beside the sections when the registry is absent (`sprint-lifecycle.md` "Audit phase"). When `git ls-files -- <touched areas>` counts more than `.asd/runtime.js` `AUDIT_BATCH_THRESHOLD_FILES`, the payload carries a batched-read plan: grep the touched areas first, then read only the matched sections, never whole files in bulk.
+ 3. Only for that evidenced ambiguity, dispatch `asd-ba` for the affected product/domain findings. The orchestrator merges returned text into `audit.md`.
+ 3a. Registry migration (decomposition enabled), per `sprint-lifecycle.md` "Audit phase": request explicit user confirmation per proposed subsystem (hard); dispatch `asd-architect` to write the registry (with any migrated diagram) and `<id>.md` of confirmed subsystems and backfill missing `<id>.md`. Then, for a redundant legacy `docs/architecture/c4/`, request user decision (hard) and on approval delete it, its `.gitignore` entries and `commands.yaml` `c4-build` inline. Record each decision.
+ 3b. Per unsettled `audit.md` "Contradictions" entry: request user decision (hard); record the answer in `decisions-log.md` and in that entry.
+ 4. Apply `checkpoints.md`: in adaptive mode record valid evidence and advance; otherwise present the audit and await the applicable decision. Record actor, evidence and revision.
+-5. Exit in at most one inline mechanical write (no gate), the only write for either skip; when step 1 skipped audit, it first appends `"audit"` to `skipped_phases` with that skip's decisions-log line. Under the design-block collapse test (`sprint-lifecycle.md` "Design/design-review/design-promote collapse"), the write sets `phase="design-promote"`, appends `["design", "design-review", "design-promote"]` to `skipped_phases` and one decisions-log line "design/design-review/design-promote skipped (no documents enabled)"; emit `NEXT: plan`. Otherwise it sets `phase="audit"` (only when step 1 skipped audit); emit `NEXT: design`.
++5. First offer the per-sprint document skip for each frozen-`true` `prd`/`ux_spec`/`adr`/`c4` with no draft yet (hard; `sprint-lifecycle.md` "Optional documents"). Exit in at most one inline mechanical write (no further gate), the only write for any skip; when step 1 skipped audit, it first appends `"audit"` to `skipped_phases` with that skip's decisions-log line; each accepted document skip sets its frozen `false` with its decisions-log line, before the collapse test reads it. Under the design-block collapse test (`sprint-lifecycle.md` "Design/design-review/design-promote collapse"), the write sets `phase="design-promote"`, appends `["design", "design-review", "design-promote"]` to `skipped_phases` and one decisions-log line "design/design-review/design-promote skipped (no documents enabled)"; emit `NEXT: plan`. Otherwise it sets `phase="audit"` (only when step 1 skipped audit); emit `NEXT: design`.
+ 
+ Append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log".
+ 
+diff --git a/.asd/workflows/asd-phase-design-promote.md b/.asd/workflows/asd-phase-design-promote.md
+index d2e80aa..55d21d2 100644
+--- a/.asd/workflows/asd-phase-design-promote.md
++++ b/.asd/workflows/asd-phase-design-promote.md
+@@ -5,7 +5,7 @@ The main phase orchestrator owns decomposition, state and gates inline.
+ 1. Read frozen documents, drafts and audit. Intersect enabled documents with existing drafts. Empty scope is a mechanical no-op: record skipped phase and advance. After a design-block collapse (`sprint-lifecycle.md`) this phase is never dispatched.
+ 2. Compute decomposition and migration targets. Under `checkpoints.md`, execute an already approved/in-bounds decomposition adaptively with evidence; a new subsystem or material boundary is hard and waits for the user. Record the decision before mutation.
+ 3. For an approved new or a changed subsystem, dispatch `asd-architect` to write it to `docs/architecture/subsystems.md` and its `<id>.md` and create its folders (`sprint-lifecycle.md` "Design-promote phase").
+-4. Dispatch only applicable domain creators in parallel: BA promotes PRD, Architect promotes ADR/stack/tech references and, only with frozen `documents.c4` true, the diagram per `project.diagram_tool`, UX promotes UX/DESIGN and regenerates its view when changed.
++4. Dispatch only applicable domain creators in parallel: BA promotes PRD, Architect promotes ADR/stack/tech references and, only with frozen `documents.c4` true, the diagram per `project.diagram_tool`, UX promotes UX/DESIGN and regenerates its view when changed. BA/UX have no shell: when either proposes renaming or deleting one of its persistent docs, the user approves (deletion is hard, rename follows `checkpoints.md` "Gate policy"), the main orchestrator runs `git mv`/`git rm` inline, then the creator updates content and inbound links.
+ 5. Wait for creators; append artifact records and update `state.json` inline. Post a non-blocking summary and emit `NEXT: plan`.
+ 
+ Append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log".
+diff --git a/.asd/workflows/asd-phase-design-review.md b/.asd/workflows/asd-phase-design-review.md
+index aeec333..bdc7934 100644
+--- a/.asd/workflows/asd-phase-design-review.md
++++ b/.asd/workflows/asd-phase-design-review.md
+@@ -10,7 +10,7 @@ Orchestration body for the `asd-phase-design-review` skill. Operation-mapping to
+ 
+ ## Operations used
+ - read: `.asd/project/config.yaml`, `state.json`, drafts in `<sprint>/design/`, review files
+-- write validated compact reviewer coverage and orchestrator state inline; the in-scope draft path list for step 7's `emit-manifest --files`, to a temp file outside the repo
++- write validated compact reviewer coverage and orchestrator state inline; the iteration's draft path list for step 7's `emit-manifest --files`, to a temp file outside the repo
+ - request user decision: escalation on FAIL or iteration cap
+ - delegate to agent in parallel: reviewers; delegate to agent sequentially: creator autofix; the orchestrator writes state and decisions-log inline
+ - append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log"
+@@ -25,13 +25,13 @@ Orchestration body for the `asd-phase-design-review` skill. Operation-mapping to
+ 5. Compute severity floor for current iteration per `review-policy.md` cumulative-budget algorithm (uses `reviews.design.iteration`)
+ 6. Create folder `<sprint>/reviews/design/iter-NN/` if absent
+ 7. **Parallel dispatch** — every reviewer delegated to as a **fresh agent** each iteration (clean-context dispatch per `review-policy.md`); no reviewer reused across iterations:
+-   - **Emit manifests** — for each internal reviewer not latch-skipped (filter below), run `node .asd/runtime.js emit-manifest --reviewer <name> --phase design-review --files <path to a file listing the in-scope draft paths, one per line> --out <sprint>/reviews/design/iter-NN/ --custom-rules .asd/project/custom-common-rules.md,.asd/project/custom-design-rules.md`. It writes `<reviewer>.manifest.json`, or `<reviewer>.part-N.manifest.json` parts when the scope exceeds the split threshold (`review-policy.md` "Split trigger"); parts dispatch per step 8a's split branch from the start.
++   - **Emit manifests** — for each internal reviewer not latch-skipped (filter below), run `node .asd/runtime.js emit-manifest --reviewer <name> --phase design-review --files <path to a file listing this iteration's draft paths, one per line — iter 1: every in-scope draft from step 1; iter 2+: only those changed since the previous iteration's snapshot (`review-policy.md` "Clean-context review iteration")> --out <sprint>/reviews/design/iter-NN/ --custom-rules .asd/project/custom-common-rules.md,.asd/project/custom-design-rules.md`. It builds that reviewer's own file list (`review-policy.md` "Reviewer responsibility") and writes `<reviewer>.manifest.json`, or `<reviewer>.part-N.manifest.json` parts when the scope exceeds the split threshold (`review-policy.md` "Split trigger"); parts dispatch per step 8a's split branch from the start.
+    - **APPROVE latch filter first** (`sprint-lifecycle.md` "APPROVE latch" — sole SSoT for the mechanism): read `state.json.reviews.design.latched`; a reviewer key present there is skipped entirely this iteration — no fresh agent call, no new review file, no ledger gate at step 8 for it. Every internal reviewer is dispatched when not latch-skipped, for any non-empty draft set:
+    - `asd-reviewer-documentation`
+    - `asd-reviewer-efficiency`
+-   - `asd-reviewer-correctness` — with no ux-spec/design-system draft in scope, the reviewer still dispatches and is counted toward DoD
++   - `asd-reviewer-correctness` — judges draft correctness on every draft; with no ux-spec/design-system draft in scope, its UI section is n/a; the reviewer still dispatches and is counted toward DoD
+    - if `review.external_review=enabled` AND not latch-skipped → `asd-external-review` with phase=`design-review`, scoped to whichever drafts are present. Build its **scope manifest** per `external-review/t_review-scope.json`: `phase: "design-review"`, `iteration: N`, `base_ref`/`head_ref` = empty string (design-review scopes by on-disk draft snapshot, not a commit range — `external-review.md` "Phase-scoped payload"), `files[]` = the in-scope draft paths (iter 1: the full flag-and-existence intersection from step 1; iter 2+: only paths changed since the previous iteration's persisted snapshot; both unioned with the previous iteration's `Unreviewed files`, `external-review.md` "Iteration semantics"), `exclude_paths[]` = `c4-full/dist/` plus any other generated output — never a rendered diff, the agent reads each `files[]` path itself
+-   - payload to each internal reviewer (latch-skipped reviewers receive no dispatch, hence no payload): its emitted **manifest** path (the in-scope draft paths — the flag-and-existence intersection from step 1 — and every id it must cover in its `review-policy.md` coverage ledger, `n/a` authorizations included), iteration N, review output dir `<sprint>/reviews/design/iter-NN/`, severity floor, `language.chat`, `language.docs`; impl-only rubric sections never fire against drafts — the manifest's `n_a` carries that phase gate. Payload carries no authoring rationale, no prior-iteration verdicts; a step-8a re-dispatch additionally carries that reviewer's interrupted-attempt record for this iteration, count and cause rebuilt from `decisions-log.md` (`review-policy.md` "Clean-context review iteration"). Payload to `asd-external-review` is the scope manifest above plus review output dir, severity floor, step 3a's preflight result (its `platform` included), `language.chat`, `language.docs` — never the internal reviewers' draft-path payload verbatim. For `asd-external-review` on iter ≥ 2, also pass the finding set per `external-review.md` "Stalemate detection"
++   - payload to each internal reviewer (latch-skipped reviewers receive no dispatch, hence no payload): its emitted **manifest** path (its own file list, the single scope source, and every id it must cover in its `review-policy.md` coverage ledger, `n/a` authorizations included), iteration N, review output dir `<sprint>/reviews/design/iter-NN/`, severity floor, `language.chat`, `language.docs`; impl-only rubric sections never fire against drafts — the manifest's `n_a` carries that phase gate. Payload carries no authoring rationale, no prior-iteration verdicts; a step-8a re-dispatch additionally carries that reviewer's interrupted-attempt record for this iteration, count and cause rebuilt from `decisions-log.md` (`review-policy.md` "Clean-context review iteration"). Payload to `asd-external-review` is the scope manifest above plus review output dir, severity floor, step 3a's preflight result (its `platform` included), `language.chat`, `language.docs` — never the internal reviewers' draft-path payload verbatim. For `asd-external-review` on iter ≥ 2, also pass the finding set per `external-review.md` "Stalemate detection"
+    - each reviewer returns its findings + complete coverage ledger (file, rule, and section) + verdict as final text per `t_review.md` (or `external-review/t_review-report.md` for external), first-line verdict token `[REVIEW-design-<reviewer>]: ...`; **this workflow writes the validated compact coverage evidence of that text to `<sprint>/reviews/design/iter-NN/<reviewer>.md`** (step 8) — the reviewer itself performs no write, and the commit carrying that file also carries any agent memory that reviewer authored (`git-strategy.md` "Commit before review")
+ 8. Wait all REVIEW_DONE; write the returned text and the finding-id array derived from its findings, then run `node .asd/runtime.js validate-ledger --manifest <emitted manifest> --ledger <returned text> --findings <path>` for each internal reviewer. A failure earns one transcription and re-run per `review-policy.md` "Coverage ledger" enforcement — passing, the transcript is persisted and the deviation appended to `<sprint>/friction-log.md`; still failing, it rejects and re-dispatches fresh. External Review is exempt. A dispatched manifest is never re-stamped, by this workflow either: correcting one re-emits it and re-dispatches fresh (`review-policy.md` "Coverage ledger" immutability).
+ 8a. **Interrupted dispatch / split dispatch** — `review-policy.md` "Interrupted dispatch and split dispatch" is the sole SSoT for trigger, partition, union property, merge rule and durable record, not restated here. The step header carries no reach; each branch below states its own.
+diff --git a/.asd/workflows/asd-phase-impl-review.md b/.asd/workflows/asd-phase-impl-review.md
+index 0585c62..cf35243 100644
+--- a/.asd/workflows/asd-phase-impl-review.md
++++ b/.asd/workflows/asd-phase-impl-review.md
+@@ -31,19 +31,19 @@ Orchestration body for the `asd-phase-impl-review` skill. Operation-mapping to h
+    - **Perf predicate — Efficiency's five performance sections n/a'd** only when **both** (a) `.asd/project/custom-coding-rules.md` (passed via `--custom-rules`) has no perf-budgets section **and** (b) the scope file list contains no executable file (`isExecutable`). Conjunctive — either condition false means the sections are reviewed as normal (three of its remaining rubric items are budget-independent regardless).
+    - The evaluated predicate result reaches each affected reviewer as its manifest's `n_a` entry for that section — **the reviewer never loads that domain's inputs for an n/a'd section**. The reviewer records the section as `n/a: <predicate>` in its own returned section-coverage ledger and still emits one verdict token covering whatever it did review. No separate `state.json` value is written for a section skip — only the reviewer's overall verdict token is recorded, at step 8.
+ 6. **Parallel dispatch** — every reviewer delegated to as a **fresh agent** each iteration (clean-context dispatch per `review-policy.md`); no reviewer reused across iterations:
+-   - **Emit manifests** — for each internal reviewer not latch-skipped (filter below), run `node .asd/runtime.js emit-manifest --reviewer <name> --phase impl-review --files <path to the step 1 scope file list> --out <sprint>/reviews/impl/iter-NN/ --custom-rules .asd/project/custom-common-rules.md,.asd/project/custom-coding-rules.md`. It writes `<reviewer>.manifest.json`, or `<reviewer>.part-N.manifest.json` parts when the scope exceeds the split threshold (`review-policy.md` "Split trigger"); parts dispatch per step 7a's split branch from the start.
++   - **Emit manifests** — for each internal reviewer not latch-skipped (filter below), run `node .asd/runtime.js emit-manifest --reviewer <name> --phase impl-review --files <path to the step 1 scope file list> --out <sprint>/reviews/impl/iter-NN/ --custom-rules .asd/project/custom-common-rules.md,.asd/project/custom-coding-rules.md --test-plan <sprint>/test-plan.md[,<each test-plan.entry-NN.md segment>] --base <step 1 diff base> --head <this iteration's iteration_heads sha>`. It builds that reviewer's own file list (`review-policy.md` "Reviewer responsibility") and writes `<reviewer>.manifest.json` plus its patch `<reviewer>.diff`, or `<reviewer>.part-N.manifest.json`/`.diff` parts when the list exceeds the split threshold (`review-policy.md` "Split trigger"); parts dispatch per step 7a's split branch from the start. Its output names each `manifest` and `diff` path.
+    - **APPROVE latch filter first** (`sprint-lifecycle.md` "APPROVE latch" — sole SSoT for the mechanism): read `state.json.reviews.impl.latched`; a reviewer key present there is skipped entirely this iteration — no fresh agent call, no new review file, no ledger gate at step 7 for it. Distinct from the section-level n/a mechanism below, which still fully dispatches Correctness/Efficiency; the latch skips the whole agent. Every reviewer NOT latch-skipped is always dispatched (no other agent-level skip):
+    - `asd-reviewer-correctness` — AC-N coverage trace vs code/tests uses PRD AC-N if `documents.prd` enabled, else `sprint.md`'s own AC-N; its UI conformance section is n/a per step 5's UI-surface predicate when applicable
+    - `asd-reviewer-efficiency` — its five performance sections are n/a per step 5's conjunctive predicate when applicable
+    - `asd-reviewer-testing` — `<sprint>/test-plan.md` is its primary input
+    - `asd-reviewer-documentation`
+    - if `review.external_review=enabled` AND not latch-skipped → `asd-external-review` with phase=`impl-review`
+-   - payload to each internal reviewer (latch-skipped reviewers receive no dispatch, hence no payload): the diff computed in step 1, its emitted **manifest** path (the scope file list and every id it must cover in its `review-policy.md` coverage ledger, `n/a` authorizations included), iteration N, review output dir `<sprint>/reviews/impl/iter-NN/`, severity floor, relevant context paths (`<sprint>/test-plan.md` included — Testing reviewer's primary input), `language.chat`, `language.docs`. Payload carries no authoring rationale, no prior-iteration verdicts; a step-7a re-dispatch additionally carries that reviewer's interrupted-attempt record for this iteration, count and cause rebuilt from `decisions-log.md` (`review-policy.md` "Clean-context review iteration"); incremental diff scopes the *input*, not reviewer's context. Payload to `asd-external-review` differs: the step-1b **scope manifest** (never the diff, never the scope file list as a bare set — it is `files[]`/`exclude_paths[]` plus `base_ref`/`head_ref`), review output dir, severity floor, the reference paths from `external-review.md`'s consumer/self-hosting row, step 1a's preflight result (its `platform` included), `language.chat`, `language.docs`. For `asd-external-review` on iter ≥ 2, also pass the finding set per `external-review.md` "Stalemate detection"
++   - payload to each internal reviewer (latch-skipped reviewers receive no dispatch, hence no payload): its emitted **manifest** path (its own file list, the single scope source, and every id it must cover in its `review-policy.md` coverage ledger, `n/a` authorizations included) and that manifest's `.diff` path — never diff text, never an instruction to run git — iteration N, review output dir `<sprint>/reviews/impl/iter-NN/`, severity floor, relevant context paths (`<sprint>/test-plan.md` included — Testing reviewer's primary input), `language.chat`, `language.docs`. Payload carries no authoring rationale, no prior-iteration verdicts; a step-7a re-dispatch additionally carries that reviewer's interrupted-attempt record for this iteration, count and cause rebuilt from `decisions-log.md` (`review-policy.md` "Clean-context review iteration"); incremental diff scopes the *input*, not reviewer's context. Payload to `asd-external-review` differs: the step-1b **scope manifest** (never the diff, never the scope file list as a bare set — it is `files[]`/`exclude_paths[]` plus `base_ref`/`head_ref`), review output dir, severity floor, the reference paths from `external-review.md`'s consumer/self-hosting row, step 1a's preflight result (its `platform` included), `language.chat`, `language.docs`. For `asd-external-review` on iter ≥ 2, also pass the finding set per `external-review.md` "Stalemate detection"
+    - each reviewer returns its findings + complete coverage ledger (file, rule, and section) + verdict as final text per `t_review.md` (or `external-review/t_review-report.md` for external), first-line verdict token `[REVIEW-impl-<reviewer>]: ...`; **this workflow writes the validated compact coverage evidence of that text to `<sprint>/reviews/impl/iter-NN/<reviewer>.md`** (step 7) — the reviewer itself performs no write, and the commit carrying that file also carries any agent memory that reviewer authored (`git-strategy.md` "Commit before review")
+ 7. Wait REVIEW_DONE; write the returned text and the finding-id array derived from its findings, then run `node .asd/runtime.js validate-ledger --manifest <emitted manifest> --ledger <returned text> --findings <path>` for each internal reviewer. A failure earns one transcription and re-run per `review-policy.md` "Coverage ledger" enforcement — passing, the transcript is persisted and the deviation appended to `<sprint>/friction-log.md`; still failing, it rejects and re-dispatches fresh. External Review is exempt. A dispatched manifest is never re-stamped, by this workflow either: correcting one re-emits it and re-dispatches fresh (`review-policy.md` "Coverage ledger" immutability).
+ 7a. **Interrupted dispatch / split dispatch** — `review-policy.md` "Interrupted dispatch and split dispatch" is the sole SSoT for trigger, partition, union property, merge rule and durable record, not restated here. The step header carries no reach; each branch below states its own.
+    - Interrupted dispatch — reaches any dispatch, External Review included, per `external-review.md` "Outcome contract": takes the same reject-and-re-dispatch-fresh path as a failed validation above, never that step's transcription branch.
+-   - Split dispatch — internal reviewers only. Phase bindings: parts come from step 6's `emit-manifest` — already emitted when the scope exceeds the threshold, re-emitted with `--halve` on the interruption trigger; dispatch each part as its own fresh agent carrying the step 6 payload narrowed to that part, gated by `validate-ledger` as above; part files are `<sprint>/reviews/impl/iter-NN/<reviewer>.part-N.md` and step 8 parses the merged `<reviewer>.md` only; a part interrupted twice → request user decision.
++   - Split dispatch — internal reviewers only. Phase bindings: parts come from step 6's `emit-manifest` — already emitted when the scope exceeds the threshold, re-emitted with `--halve` on the interruption trigger; dispatch each part as its own fresh agent (a part set above the dispatch ceiling runs in waves, `sprint-lifecycle.md` "Orchestration and adaptive gates") carrying the step 6 payload narrowed to that part (its own manifest and `.diff`), gated by `validate-ledger` as above; part files are `<sprint>/reviews/impl/iter-NN/<reviewer>.part-N.md` and step 8 parses the merged `<reviewer>.md` only; a part interrupted twice → request user decision.
+    - Late duplicate return — reaches any replaced dispatch, External Review included, per `review-policy.md` "Late duplicate return" (sole SSoT for the admission test and every action it mandates). Phase bindings: a return delivering after step 8 recorded its replacement's verdict, once admitted, is written to `<sprint>/reviews/impl/iter-NN/<reviewer>.late.md`, linked from `<reviewer>.md`, and carries that section's `verdicts["iter-NN"]`, `latched` and decisions-log writes even though step 8 already ran.
+ 8. Parse first-line verdict tokens from all written reviewer files; write `state.json` `reviews.impl.verdicts["iter-NN"]` (keyed `correctness`/`efficiency`/`testing`/`documentation`/`external`) and `reviews.impl.latched` per `sprint-lifecycle.md` "APPROVE latch" — sole SSoT for the every-reviewer-gets-an-entry invariant, the inherited `APPROVE` a latch-skipped reviewer receives and the bare-`APPROVE`-only latch condition; not restated here. Phase bindings: a reviewer split at step 7a contributes exactly one entry, parsed from its merged `<reviewer>.md` first line like any other; an interrupted attempt contributes none, and its attempts were already logged at step 7a, not here. External Review's availability skip is recorded as `"APPROVE (skipped: <reason>)"` when the phase-supplied preflight returns non-ready, and its partial outcome verbatim as `"APPROVE (partial: <n>/<m> files; <cause>)"`; their other persistence duties (the skip's `Unreviewed files` line from step 1b included) are `external-review.md` "Outcome contract"'s, not this step's. Aggregate per `sprint-lifecycle.md` "State recovery" satisfied-vs-blocking semantics, reading `verdicts["iter-NN"]` alone. impl-review does NOT fix findings itself — fixes route to impl phase (fix mode):
+    - **All APPROVE or latched** → reviewer DoD met → proceed to step 9 (terminal full-suite gate)
+@@ -76,7 +76,7 @@ Orchestration body for the `asd-phase-impl-review` skill. Operation-mapping to h
+ - `<sprint>/reviews/impl/iter-NN/testing.md` (written by this workflow when dispatched; not written this iteration when latch-skipped — step 6)
+ - `<sprint>/reviews/impl/iter-NN/documentation.md` (written by this workflow when dispatched; not written this iteration when latch-skipped — step 6)
+ - `<sprint>/reviews/impl/iter-NN/external.md` (when `external_review=enabled` and not latch-skipped; written by this workflow)
+-- `<sprint>/reviews/impl/iter-NN/<reviewer>.manifest.json` or `<reviewer>.part-N.manifest.json` (step 6, per dispatched internal reviewer)
++- `<sprint>/reviews/impl/iter-NN/<reviewer>.manifest.json` and `<reviewer>.diff`, or `<reviewer>.part-N.manifest.json` and `.diff` (step 6, per dispatched internal reviewer)
+ - `<sprint>/reviews/impl/iter-NN/<reviewer>.part-N.md` (only for a split reviewer, step 7a; its `<reviewer>.md` then holds the merged token plus links to every part)
+ - `<sprint>/reviews/impl/iter-NN/<reviewer>.late.md` (only for a late duplicate return admitted at step 7a; linked from that reviewer's `<reviewer>.md`)
+ - Updated `<sprint>/test-plan.md` `Suite run` section (step 9, overwriting the impacted-run record) and, on a code-defect red, a new `Defects` `D-N` row
+diff --git a/.asd/workflows/asd-phase-impl.md b/.asd/workflows/asd-phase-impl.md
+index 870dd40..82d52a7 100644
+--- a/.asd/workflows/asd-phase-impl.md
++++ b/.asd/workflows/asd-phase-impl.md
+@@ -61,7 +61,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
+ 5a. Before each task dispatch, run `node .asd/runtime.js route-task --input <path>` with kind, objective inputs/checks, the task's `Material risk` lines as typed `risks` entries (`sprint-lifecycle.md` "Plan file format"), correction attempts and prior tier. A result with `execution="command"` runs directly; `execution="agent"` dispatches `asd-dev-<tier>` for `mechanical`/`critical`, or the base `asd-dev` for `tier: standard` (no `-standard` variant exists — `providers.md` "Task-class variants and routing"). Persist the record in `state.json.task_routing[taskId]` per `providers.md`, supplying its tier as `priorTier` on re-entry, and append the decisions-log routing line `- YYYY-MM-DD — route <taskIds>: <tier>, dispatch HEAD <sha>` (`git rev-parse HEAD`, one per dispatch). Invalid routing blocks; tier never lowers. In a fix mode, route every task of the chain first and persist each record, then dispatch the whole chain to a single agent at the highest tier returned — one agent holding every fix in the round is what keeps a later fix from contradicting an earlier one it never saw.
+ 6. **Dispatch tasks** per execution graph:
+    - **Declared settings change** (initial mode) — as the wave holding a Task's `Settings change:` line (`sprint-lifecycle.md` "Plan file format") opens, before any of that wave's dispatch, the line is applied, never an `MS-N` and never handed to a dev: the main orchestrator dispatches `asd-init` sprint-mediated mode with exactly the declared pairs — validated against the working-tree `t_config.yaml`, so a key an earlier wave added counts — and commits `.asd/project/config.yaml` itself; on `FAILED`, halt as a blocker before any of that wave's dispatch; else that Task's other subtasks, if any, then dispatch in that wave
+-   - per step 5's wave table, sequential where dependent; parallel where independent: waves ascending, every task of a wave dispatched concurrently (caller schedules concurrent delegations), the next wave opening only once all their signals are in — initial mode only; in a fix mode step 5's single ordered chain governs, dev chain before tester chain
++   - per step 5's wave table, sequential where dependent; parallel where independent: waves ascending, every task of a wave dispatched concurrently (caller schedules concurrent delegations; a wave above the dispatch ceiling runs in sub-waves, `sprint-lifecycle.md` "Orchestration and adaptive gates"), the next wave opening only once all their signals are in — initial mode only; in a fix mode step 5's single ordered chain governs, dev chain before tester chain
+    - per task, or once per chain in a fix mode (5a): delegate to `asd-dev` (`asd-tester` only for review findings in test files) with payload:
+      - initial — Task block excerpt (title + subtasks + dependencies); review-fix — grouped finding list (each finding's id per `git-strategy.md` "Commits", severity, location, description; plus user-approved change note for accepted FAIL findings); test-fix — grouped defect list (`D-N`, location, symptom, failing test) plus the guidance of a stalemate continue answer logged for it in the newest `decisions-log.NNN.md` (`artifact-layout.md` "Decisions log"), if any
+      - relevant context paths (PRD AC-N referenced, ADRs, ux-spec, DESIGN.md, accessibility, stack, commands.yaml, tech-reference/, custom-common-rules.md, custom-coding-rules.md; review-fix also: reviewer files in `reviews/impl/iter-NN/`; test-fix also: `test-plan.md`)
+diff --git a/.asd/workflows/asd-phase-scope.md b/.asd/workflows/asd-phase-scope.md
+index 27fa96f..0abc6f3 100644
+--- a/.asd/workflows/asd-phase-scope.md
++++ b/.asd/workflows/asd-phase-scope.md
+@@ -2,10 +2,10 @@
+ 
+ The main orchestrator owns this phase inline.
+ 
+-1. Read config and existing active/legacy archived sprints. Obtain raw scope when absent, fast-forward the base branch, require a clean tree, create the sprint branch and folder.
+-2. Refine scope into `sprint.md` with stable `AC-N` ids; ask the user only for ambiguity that prevents a concrete scope. Verify every retrospective-derived criterion against current `HEAD` before writing it, and record that verification in `decisions-log.md` per `sprint-lifecycle.md` "Orchestration and adaptive gates". Seed state and decisions log.
++1. Read config and existing active/legacy archived sprints. Obtain raw scope when absent, as a plain chat message, fast-forward the base branch, require a clean tree, create the sprint branch and folder.
++2. Refine scope into `sprint.md` with stable `AC-N` ids; ask the user only for ambiguity that prevents a concrete scope. Before the scope gate, ask explicitly for cleanup and quality criteria (legacy removal, warning budget, doc consolidation) unless the raw scope already states them. Verify every retrospective-derived criterion against current `HEAD` before writing it, and record that verification in `decisions-log.md` per `sprint-lifecycle.md` "Orchestration and adaptive gates". Seed state and decisions log.
+ 3. Read `documents.audit`: accept only `auto|always|off`, any other value blocks (`sprint-lifecycle.md` "Orchestration and adaptive gates"); `auto` skips only a complete mechanical scope with no behaviour, contract, migration or gate impact. Freeze the effective boolean into `state.json.documents.audit` (no separate reason field — the rule is deterministic, per `sprint-lifecycle.md`). Reevaluate after an accepted scope expansion.
+-3a. Seed the remaining state placeholders: `{{USER_GATES}}` from `config.user_gates` (accept only `adaptive|strict`; absent -> `strict`); `{{DOC_PRD}}`/`{{DOC_UX_SPEC}}`/`{{DOC_ADR}}` from normalized `documents.*` (absent group -> all enabled); `{{DOC_C4}}` as the effective diagram (`sprint-lifecycle.md` "Optional documents"). No placeholder literal may survive the write.
++3a. Seed the remaining state placeholders: `{{USER_GATES}}` from `config.user_gates` (accept only `adaptive|strict`; absent -> `strict`); `{{DOC_PRD}}`/`{{DOC_UX_SPEC}}`/`{{DOC_ADR}}` from normalized `documents.*` (absent group -> all enabled); `{{DOC_C4}}` as the effective diagram (`sprint-lifecycle.md` "Optional documents"). No placeholder literal may survive the write. At the scope gate (step 4) the user may skip an enabled optional document (`prd`/`ux_spec`/`adr`/`c4`) for this sprint only — hard, narrow-only: overwrite its frozen value with `false` and log one decisions-log line "skipped this sprint by user" (`sprint-lifecycle.md` "Optional documents").
+ 4. The initial scope is hard until it is explicitly accepted, because it establishes authority for the adaptive policy. Afterwards record the accepted user decision. A fully specified already-authorized outcome is recorded without inventing another decision.
+ 5. Emit `NEXT: audit`.
+ 
+diff --git a/.claude/agent-memory/asd-dev-critical/MEMORY.md b/.claude/agent-memory/asd-dev-critical/MEMORY.md
+index 640dd2d..541e01e 100644
+--- a/.claude/agent-memory/asd-dev-critical/MEMORY.md
++++ b/.claude/agent-memory/asd-dev-critical/MEMORY.md
+@@ -8,3 +8,4 @@
+ - [Sequential fix rounds](feedback_sequential-fix-rounds.md) — cross-file review fixes go to one dev, in order; re-read every mirror before reporting done
+ - [Fix the class, not the instance](feedback_fix-the-class.md) — recurring finding in one section? strip the blanket header qualifier, state reach per branch
+ - [False SSoT declarations](feedback_false-ssot-declarations.md) — "not restated here" above surviving text: narrow the denial, keep what acts at its site
++- [JSON frontmatter quotes](project_json-frontmatter-quotes.md) — a `"Section"` citation in an agent `description` breaks sync.js JSON parsing
+diff --git a/.claude/agent-memory/asd-dev-critical/project_json-frontmatter-quotes.md b/.claude/agent-memory/asd-dev-critical/project_json-frontmatter-quotes.md
+new file mode 100644
+index 0000000..1800982
+--- /dev/null
++++ b/.claude/agent-memory/asd-dev-critical/project_json-frontmatter-quotes.md
+@@ -0,0 +1,12 @@
++---
++name: json-frontmatter-quotes
++description: Agent/skill `description` lives in JSON frontmatter — a `"Section"` citation inside it breaks sync.js parsing
++metadata:
++  type: project
++---
++
++Canonical agent/skill frontmatter is JSON, so a double-quoted section citation (`review-policy.md` "X") pasted into `description` makes `sync.js --check` throw "canonical frontmatter is not valid JSON".
++
++**Why:** body prose cites sections with bare double quotes; copying that style into the description string silently breaks the JSON.
++
++**How to apply:** in `description`, drop the section citation or phrase it without quotes; run `node .asd/sync.js --check` right after any frontmatter edit.
+diff --git a/.claude/agent-memory/asd-tester-critical/feedback_fail-first-and-none-honesty.md b/.claude/agent-memory/asd-tester-critical/feedback_fail-first-and-none-honesty.md
+index 85313a6..4fe4580 100644
+--- a/.claude/agent-memory/asd-tester-critical/feedback_fail-first-and-none-honesty.md
++++ b/.claude/agent-memory/asd-tester-critical/feedback_fail-first-and-none-honesty.md
+@@ -59,7 +59,9 @@ not, and the qualifier form would have reddened the very next legitimate rewrite
+ 
+ **How to apply:** run a THIRD mutation beyond fail-first — reword the fixed text end to end, drop the
+ qualifier, keep the substance, and require the suite to stay GREEN. A red there means the assert locks
+-wording; record both directions in `test-plan.md`. Related trap from the same entry: a mutation can
++wording; record both directions in `test-plan.md`. An order-bound regex (`never[^.]*free-form`) is the same lock:
++a correct reword puts the tokens in the other order (sprint 015 C6). Split the text into clauses and test
++each token on its own. Related trap from the same entry: a mutation can
+ change bytes and still change nothing — renaming a cited heading `## Agent memory` to `## Agent memory
+ directories` left the citation resolving, because heading resolution is prefix-anchored. An anchor guard
+ catches a missing anchor, never a semantic no-op; confirm the run actually reddens.
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 90ed180..3def874 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -2,6 +2,27 @@
+ 
+ All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
+ 
++## v11.0.0
++
++Remediates the Glings sprint 003 (subsystem-layout-migration) retrospective. Each reviewer now gets its own scoped file list and, in impl-review, its own `.diff` patch instead of a shared list and rendered diff text; concurrent dispatches are capped and large audits read in batches; scope collection drops the decision-prompt UI for free-form input and no longer clears context at phase boundaries; and a sprint may skip one enabled optional document for itself alone.
++
++### Migration
++- **No migration script.** New manifest fields (`--base/--head`, `pureRename` rows, per-reviewer file lists) are optional to `validate-ledger`; a manifest emitted before the upgrade still validates, and `state.json`'s schema is unchanged. An in-flight review iteration started before the upgrade: finish it as emitted, or discard and re-emit it fresh under the new per-reviewer contract — both are safe.
++
++### Added
++- **Per-reviewer scope.** `emit-manifest` builds each reviewer's file list from one selector keyed by phase and reviewer (`review-policy.md` "Reviewer responsibility"). In impl-review, Testing narrows to the `isTest` files plus `--test-plan <path...>` (`test-plan.md` and its segments); Correctness, Efficiency and Documentation keep the full scope list. A cross-reviewer invariant fails emission unless the internal reviewers' lists union to exactly the scope list.
++- **`.diff` patch files.** `emit-manifest --base <sha> --head <sha>` (impl-review only) writes one patch per manifest or part (`<reviewer>[.part-N].diff`) beside it, and grants the compact `pureRename` row (`NA_PREDICATES.pureRename`) to every 100%-similarity rename `git diff --raw -M100%` finds — only a machine-proven rename qualifies, never a namespace/import-only edit. The reviewer payload carries the manifest and `.diff` paths, never rendered diff text, and no reviewer is ever told to run git.
++- **Dispatch ceiling.** `DISPATCH_CEILING` (20) caps concurrent dispatches in one phase step; anything above it runs in sequential sub-waves (review parts, impl task waves), each judged separately for correlated interruption. `.asd/runtime.js` exports a pure wave-splitting helper, and `surfaceCheck` also returns the implied review-dispatch upper bound. A change-surface cap-override request states the `dispatches` count it implies.
++- **Batched audit reads.** `AUDIT_BATCH_THRESHOLD_FILES` (200): when the touched areas exceed it, the architect payload carries a batched-read plan (grep first, then targeted section reads) instead of a flat file dump; `asd-architect`'s `maxTurns` rises to 150 to match (the batched-read plan, not the turn cap, is the real control).
++- **Per-sprint document skip** (`sprint-lifecycle.md` "Optional documents"): the user may flip an enabled `prd`, `ux_spec`, `adr` or `c4` to `false` for the active sprint only, at the scope gate or the audit exit, before any draft of that document exists — a hard gate, narrow-only, logged as "skipped this sprint by user" distinct from config-disabled. `audit` itself is excluded.
++- **Free-form scope.** Raw scope arrives as a plain chat message, not a decision prompt; before the scope gate the orchestrator asks about cleanup and quality criteria (legacy removal, warning budget, doc consolidation) unless the raw scope already covers them.
++- **BA/UX doc rename/delete** now routes through the orchestrator at `design-promote`: the user approves, then the orchestrator runs `git mv`/`git rm` inline and the creator updates content and inbound links.
++- **Design-review draft correctness.** Correctness gains a design-review rubric entry: AC completeness against `sprint.md`, contract soundness, ADR decision soundness — covering every changed draft, not only UI drafts.
++
++### Changed
++- **Context hygiene** (`core.md`): no instruction ever tells the orchestrator to clear context. A phase boundary continues the chain itself; context compaction is automatic and host-driven. The gate answer is written to disk before any further work, so a mid-gate compaction stays recoverable.
++- **Stub-resolution verification** moves from the Testing reviewer's rubric to Documentation's, alongside persistent-doc actuality.
++
+ ## v10.0.0
+ 
+ Remediates the Glings sprint 002 retrospective. External Review can now return partial coverage from batched reviews instead of silently skipping, a failed dev/tester dispatch is reconstructed from git evidence before it is re-sent, plans declare a change surface capped at 100 files, and `decisions-log.md` / `test-plan.md` rotate into numbered segments so long sprints stay readable.
+diff --git a/README.md b/README.md
+index 034fb5c..5f09cac 100644
+--- a/README.md
++++ b/README.md
+@@ -208,14 +208,14 @@ The main orchestrator owns scope, plan, state, decisions, manual-step validation
+ 
+ ### Reviewers (4 internal + 1 external)
+ 
+-Reviewers write no review artifact, code or doc on any provider (scope: `review-policy.md`; `memory: project` is a separate write channel they do use): the 4 internal Claude reviewer agents carry no `Write`/`Edit`/`Bash` in `tools`; their Codex counterparts set `sandbox_mode: "read-only"`. External Review is the one exception with `Bash` in its Claude `tools` (it necessarily needs a command-runner to invoke the wrapped CLI at all) — its read-only guarantee is instead enforced explicitly on the WRAPPED subprocess itself: `codex exec --sandbox read-only` when running under Claude Code, `claude -p ... --tools "Read,Grep,Glob"` when running under Codex. Every reviewer returns its verdict as final text; the dispatching phase workflow writes the review file.
++Reviewers write no review artifact, code or doc on any provider (scope: `review-policy.md`; `memory: project` is a separate write channel they do use): the 4 internal Claude reviewer agents carry no `Write`/`Edit`/`Bash` in `tools`; their Codex counterparts set `sandbox_mode: "read-only"`. External Review is the one exception with `Bash` in its Claude `tools` (it necessarily needs a command-runner to invoke the wrapped CLI at all) — its read-only guarantee is instead enforced explicitly on the WRAPPED subprocess itself: `codex exec --sandbox read-only` when running under Claude Code, `claude -p ... --tools "Read,Grep,Glob"` when running under Codex. Every reviewer returns its verdict as final text; the dispatching phase workflow writes the review file. Each reviewer's payload carries only its own emitted manifest file list (plus, in impl-review, that manifest's `.diff` patch path) — never a second list, never rendered diff text, never a git command — per `.asd/rules/review-policy.md` "Reviewer responsibility" (the sole owner map: one reviewer per concern, one file list per reviewer) and "Clean-context review iteration".
+ 
+ | Agent | Claude | Codex | Phase(s) | Scope |
+ |---|---|---|---|---|
+-| `asd-reviewer-correctness` | opus/high | sol/high | design-review (UI section) + impl-review | Bugs, security, best-practice, contract drift; PRD/AC-N coverage trace; UX-spec compliance, design-system tokens, a11y — UI conformance section n/a-able (see below) |
+-| `asd-reviewer-efficiency` | opus/high | sol/high | design-review + impl-review | Over-engineering (13-item checklist) + structure/cohesion (god/sprawling type) detection; impl-review-only perf budgets, regression, anti-patterns — perf sections n/a-able (see below) |
+-| `asd-reviewer-testing` | opus/high | sol/high | impl-review | `test-plan.md` decisions (risk fit, justified removals and no-test calls, fail-first proof), test quality, manual verification capture |
+-| `asd-reviewer-documentation` | opus/high | sol/high | design-review + impl-review | SSoT integrity, documentation economy, template adherence, traceability, in-code doc comments (impl-review) |
++| `asd-reviewer-correctness` | opus/high | sol/high | design-review (draft correctness + UI section) + impl-review | Bugs, security, best-practice, contract drift; PRD/AC-N coverage trace; UX-spec compliance, design-system tokens, a11y — UI conformance section n/a-able (see below); design-review also judges draft correctness (AC completeness, contract/ADR soundness). Receives every file in scope. |
++| `asd-reviewer-efficiency` | opus/high | sol/high | design-review + impl-review | Over-engineering (13-item checklist) + structure/cohesion (god/sprawling type) detection; impl-review-only perf budgets, regression, anti-patterns — perf sections n/a-able (see below). Receives every file in scope. |
++| `asd-reviewer-testing` | opus/high | sol/high | impl-review | `test-plan.md` decisions (risk fit, justified removals and no-test calls, fail-first proof), test quality, manual verification capture. Receives only the `isTest` scope files plus `test-plan.md` and its segments — the one narrowed reviewer list. |
++| `asd-reviewer-documentation` | opus/high | sol/high | design-review + impl-review | SSoT integrity, documentation economy, template adherence, traceability, in-code doc comments and stub resolution (impl-review). Receives every file in scope. |
+ | `asd-external-review` | sonnet/medium | terra/medium | both | Wraps the *other* provider's CLI (Codex CLI under Claude Code, Claude CLI under Codex), reads its own content from a structured scope manifest (changed-file list, excluded paths, base/head refs, never a rendered diff — `.asd/rules/external-review.md` § Phase-scoped payload), parses output, applies severity floor |
+ 
+ Reviewers emit a machine-parseable first-line verdict token: `[REVIEW-<phase>-<reviewer>]: APPROVE|CONCERNS|FAIL`, where `<phase>` is `design` or `impl` and `<reviewer>` is `correctness | efficiency | testing | documentation | external`. External Review's first line may also be the skip or partial form, per `.asd/rules/external-review.md` § Outcome contract.
+@@ -294,7 +294,7 @@ your-project/
+ │   ├── release-manifest.json        # schema/asd version, managed-path list, model-family table; drives /asd-update + sync.js
+ │   ├── sync-state.json              # last-written digests for managed-block / JSON-merge targets (committed)
+ │   ├── sync.js                      # generator: canon -> .claude/ + .codex/ + .agents/skills/ (--check / --apply)
+-│   ├── runtime.js                   # deterministic helper: task-cost routing, external-review preflight, coverage-manifest emission and split, coverage-ledger validation, manifest digests, impl-test defect-stalemate comparison (multi-`## Defects`-section fail-closed), change-surface cap check (`surface-check`)
++│   ├── runtime.js                   # deterministic helper: task-cost routing, external-review preflight, per-reviewer coverage-manifest emission and split (`--base/--head` writes a `.diff` patch per manifest/part and authorizes compact `pureRename` rows on proven R100 renames; `--test-plan` narrows Testing's impl-review list), coverage-ledger validation, manifest digests, impl-test defect-stalemate comparison (multi-`## Defects`-section fail-closed), change-surface cap check (`surface-check`, also returning the implied review-dispatch bound), sequential dispatch-wave splitting at `DISPATCH_CEILING`
+ │   ├── rules/                       # workflow rules (role/phase-scoped reads), incl. providers.md
+ │   ├── templates/                   # artifact templates (t_*.html / .md / .yaml / .c4), incl. t_AGENTS.md / t_CLAUDE.md
+ │   ├── agents/                      # 11 canonical agent specs plus declared tier variants (JSON frontmatter: claude{} + codex{} blocks)
+diff --git a/tests/run.js b/tests/run.js
+index 7e26107..7673797 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -4220,7 +4220,7 @@ test("sprint-012 AC-12: emit-manifest derives rule and section ids from a review
+ 
+ test("runtime.js CLI: emit-manifest writes one stamped manifest per part under the file names both review workflows dispatch from, and validate-ledger reads the ledger straight out of a reviewer's returned text", () => {
+   const root = mkTempDir();
+-  const reviewer = 'testing';
++  const reviewer = 'correctness';
+   const unsplitName = '<reviewer>.manifest.json';
+   const partName = '<reviewer>.part-N.manifest.json';
+   const selfHostingFlag = /\[(--self-hosting)\]/.exec(sectionOf('.asd/rules/review-policy.md', 'Coverage ledger'))[1];
+@@ -4339,6 +4339,9 @@ test('sprint-012 AC-3/AC-12: every `.asd/runtime.js` symbol canon cites is decla
+   for (const rel of ['.asd/rules/review-policy.md', '.asd/workflows/asd-phase-plan.md']) {
+     assert.ok((citers.get('SPLIT_THRESHOLD_FILES') || []).includes(rel), `AC-3: ${rel} must cite the split threshold by its runtime symbol - review-policy.md for the pre-dispatch split, asd-phase-plan.md for the plan's review-scope estimate`);
+   }
++  for (const [symbol, rel] of [['DISPATCH_CEILING', '.asd/rules/sprint-lifecycle.md'], ['AUDIT_BATCH_THRESHOLD_FILES', '.asd/workflows/asd-phase-audit.md'], ['reviewerFiles', '.asd/rules/review-policy.md']]) {
++    assert.ok((citers.get(symbol) || []).includes(rel), `sprint-015 AC-2/AC-9/AC-11: ${rel} must cite \`${symbol}\` by its runtime symbol rather than restate the value or selector it holds`);
++  }
+   assert.ok((citers.get('SURFACE_CAP_FILES') || []).includes('.asd/rules/sprint-lifecycle.md'), 'sprint-014 AC-5: the change-surface cap is one runtime constant, so sprint-lifecycle.md "Plan file format" must cite it by symbol rather than restate a number that drifts from the one surface-check applies');
+ });
+ 
+@@ -4698,10 +4701,11 @@ test('sprint-014 AC-3: defect-stalemate fails closed on a second ## Defects sect
+ test('sprint-014 AC-5: surface-check counts distinct paths against SURFACE_CAP_FILES or a positive override bound, exits 1 with the result on breach and 2 on unusable input, and the plan declaration and override gate it measures read the same literals at plan and at impl-review entry', () => {
+   const cap = runtime.SURFACE_CAP_FILES;
+   const paths = (count) => Array.from({ length: count }, (_, index) => `src/file-${index + 1}.md`);
+-  assert.deepStrictEqual(runtime.surfaceCheck(paths(cap)), { files: cap, cap, breach: false }, 'a surface at the cap is within it');
+-  assert.deepStrictEqual(runtime.surfaceCheck(paths(cap + 1)), { files: cap + 1, cap, breach: true }, 'one file over the cap is a breach');
++  const result = (files, bound, breach) => ({ files, cap: bound, breach, dispatches: runtime.surfaceCheck([], bound).dispatches });
++  assert.deepStrictEqual(runtime.surfaceCheck(paths(cap)), result(cap, cap, false), 'a surface at the cap is within it');
++  assert.deepStrictEqual(runtime.surfaceCheck(paths(cap + 1)), result(cap + 1, cap, true), 'one file over the cap is a breach');
+   assert.strictEqual(runtime.surfaceCheck(paths(cap).concat('src/file-1.md')).breach, false, 'a path listed twice is one file of change surface - counting it twice escalates a sprint that is within its cap');
+-  assert.deepStrictEqual(runtime.surfaceCheck(paths(cap + 1), cap + 1), { files: cap + 1, cap: cap + 1, breach: false }, 'an approved override bound replaces the cap');
++  assert.deepStrictEqual(runtime.surfaceCheck(paths(cap + 1), cap + 1), result(cap + 1, cap + 1, false), 'an approved override bound replaces the cap');
+   for (const bound of [0, -1, 1.5, Number.NaN]) {
+     assert.throws(() => runtime.surfaceCheck(paths(1), bound), /bound/, `bound ${bound}: an unusable override must fail closed, never silently fall back to a bound that admits the surface`);
+   }
+@@ -4719,9 +4723,9 @@ test('sprint-014 AC-5: surface-check counts distinct paths against SURFACE_CAP_F
+     fs.writeFileSync(file, `${paths(count).join('\r\n')}\r\n\r\n`, 'utf8');
+     return file;
+   };
+-  assert.deepStrictEqual(run(['--files', list('within.txt', cap)]), { status: 0, stdout: `${JSON.stringify({ files: cap, cap, breach: false })}\n` }, 'a CRLF git diff --name-only list with a trailing blank line at the cap exits 0 and prints the result');
+-  assert.deepStrictEqual(run(['--files', list('over.txt', cap + 1)]), { status: 1, stdout: `${JSON.stringify({ files: cap + 1, cap, breach: true })}\n` }, 'a breach exits 1 and still prints the result both gates read');
+-  assert.deepStrictEqual(run(['--files', list('bounded.txt', cap + 1), '--bound', String(cap + 1)]), { status: 0, stdout: `${JSON.stringify({ files: cap + 1, cap: cap + 1, breach: false })}\n` }, '--bound carries the recorded override into the CLI');
++  assert.deepStrictEqual(run(['--files', list('within.txt', cap)]), { status: 0, stdout: `${JSON.stringify(result(cap, cap, false))}\n` }, 'a CRLF git diff --name-only list with a trailing blank line at the cap exits 0 and prints the result');
++  assert.deepStrictEqual(run(['--files', list('over.txt', cap + 1)]), { status: 1, stdout: `${JSON.stringify(result(cap + 1, cap, true))}\n` }, 'a breach exits 1 and still prints the result both gates read');
++  assert.deepStrictEqual(run(['--files', list('bounded.txt', cap + 1), '--bound', String(cap + 1)]), { status: 0, stdout: `${JSON.stringify(result(cap + 1, cap + 1, false))}\n` }, '--bound carries the recorded override into the CLI');
+   for (const [label, args] of [['missing --files', []], ['non-numeric --bound', ['--files', list('any.txt', 1), '--bound', 'many']]]) {
+     assert.deepStrictEqual(run(args), { status: 2, stdout: '' }, `${label}: no result may be read from input the check could not use`);
+   }
+@@ -4942,6 +4946,168 @@ test('sprint-013 AC-19: the 9.0.0 migration leaves a config it cannot read line
+   }
+ });
+ 
++test('sprint-015 AC-2/AC-3: the impl-review Testing reviewer receives only the isTest scope files plus the --test-plan paths, every other reviewer the whole scope, and review-policy.md "Reviewer responsibility" gives each of the five reviewers both phases', () => {
++  assert.deepStrictEqual(runtime.INTERNAL_REVIEWERS.slice().sort(), internalReviewers().sort(), 'INTERNAL_REVIEWERS drives the union guard and the surface-check dispatch count, so it must name exactly the asd-reviewer-* agents');
++  const testFiles = ['tests/run.js', 'test/a.js', 'src/__tests__/a.js', 'spec/a.rb', 'pkg/specs/a.rb', 'src/a.test.ts', 'src/a.spec.js', 'src/test_a.py', 'src/a_test.go', 'src/ATest.java', 'src/ATests.cs'];
++  const plan = ['.asd/sprints/015-x/test-plan.md', '.asd/sprints/015-x/test-plan.entry-01.md'];
++  const otherFiles = ['src/contest.js', 'src/latest/a.js', 'src/testing.js', 'docs/protests.md', 'README.md', ...plan];
++  assert.deepStrictEqual(testFiles.filter((file) => !runtime.isTest(file)), [], 'each path-segment and basename convention the plan names must classify as a test file, or Testing never receives it');
++  assert.deepStrictEqual(otherFiles.filter(runtime.isTest), [], 'a name merely containing "test" is not a test file - misclassified, Testing reviews code it does not own; test-plan.md reaches Testing only through --test-plan');
++  const scope = [...otherFiles.slice(0, -plan.length), ...testFiles];
++  assert.deepStrictEqual(runtime.reviewerFiles('impl-review', 'testing', scope, plan), [...testFiles, ...plan], 'impl-review Testing receives the scope test files in scope order, then the --test-plan paths the scope pathspec excludes');
++  for (const phase of ['design-review', 'impl-review']) {
++    for (const reviewer of runtime.INTERNAL_REVIEWERS.filter((name) => name !== 'testing')) {
++      assert.deepStrictEqual(runtime.reviewerFiles(phase, reviewer, scope, plan), scope, `${phase} ${reviewer}: every reviewer but impl-review Testing receives the whole scope, never the test-plan paths`);
++    }
++  }
++
++  const table = sectionOf('.asd/rules/review-policy.md', 'Reviewer responsibility').split('\n').filter((line) => line.startsWith('|')).map((line) => line.split('|').slice(1, -1).map((cell) => cell.trim()));
++  assert.ok(table.length > 2 && /design-review/.test(table[0][1]) && /impl-review/.test(table[0][2]), 'the responsibility table must keep one design-review and one impl-review column');
++  const rows = table.slice(2);
++  const expected = [...internalReviewers(), 'external-review'].map((slug) => slug.split('-').map((word) => word[0].toUpperCase() + word.slice(1)).join(' '));
++  assert.deepStrictEqual(rows.map((row) => row[0]).sort(), expected.sort(), 'AC-3: one row per reviewer agent - a reviewer without a row has no owner map, a row without an agent owns concerns nobody reviews');
++  assert.deepStrictEqual(rows.filter((row) => row.length !== 3 || !row[1] || !row[2]).map((row) => row[0]), [], 'AC-3: every reviewer row must state both phases, an unowned phase included');
++  const testing = rows.find((row) => row[0] === 'Testing');
++  assert.ok(testing[2].includes('`isTest`') && testing[2].includes('`--test-plan`'), 'AC-2: the Testing impl-review cell must name the runtime classifier and the flag reviewerFiles narrows by');
++
++  for (const reviewer of internalReviewers()) {
++    const inputs = sectionOf(`.asd/agents/asd-reviewer-${reviewer}.md`, 'Inputs');
++    assert.ok(inputs.includes('`.diff`') && !/\bgit (diff|log|show)\b|diff payload/.test(inputs), `AC-4: asd-reviewer-${reviewer} has no shell, so its Inputs must read the manifest's .diff and never a git command or a diff payload`);
++  }
++  const source = canonText('.asd/runtime.js');
++  for (const rel of ['.asd/workflows/asd-phase-impl-review.md', '.asd/workflows/asd-phase-design-review.md']) {
++    const line = canonText(rel).split('\n').find((candidate) => candidate.includes('node .asd/runtime.js emit-manifest'));
++    const flags = [...line.matchAll(/ --([a-z-]+)/g)].map((match) => match[1]);
++    assert.deepStrictEqual(flags.filter((flag) => !source.includes(`flags['${flag}']`) && !source.includes(`flags.${flag} `) && !source.includes(`flags.${flag})`) && !source.includes(`flags.${flag},`)), [], `${rel}: every emit-manifest flag the workflow passes must be one the CLI reads - an unread --test-plan or --base drops Testing's plan or every .diff without an error`);
++  }
++});
++
++test('sprint-015 AC-4/AC-5: emit-manifest --base/--head writes each manifest\'s .diff over its own files, grants the pure-rename n/a only to a rename git reports with identical content and mode, validate-ledger accepts that row nowhere else, and the range is refused outside impl-review', () => {
++  const repo = mkTempDir();
++  const git = (...args) => execFileSync('git', ['-c', 'user.name=asd-test', '-c', 'user.email=asd-test@example.invalid', '-c', 'commit.gpgsign=false', '-c', 'core.autocrlf=false', ...args], { cwd: repo, encoding: 'utf8' });
++  const body = (tag) => Array.from({ length: 20 }, (_, index) => `${tag} line ${index + 1}`).join('\n') + '\n';
++  git('init', '-q');
++  for (const name of ['pure', 'edited', 'chmod', 'kept']) writeFile(repo, `src/${name}.js`, body(name));
++  writeFile(repo, 'tests/kept.test.js', body('test'));
++  git('add', '-A');
++  git('commit', '-q', '-m', 'base');
++  const base = git('rev-parse', 'HEAD').trim();
++  fs.mkdirSync(path.join(repo, 'lib'));
++  for (const name of ['pure', 'edited', 'chmod']) git('mv', `src/${name}.js`, `lib/${name}.js`);
++  writeFile(repo, 'lib/edited.js', body('edited').replace('line 1\n', 'line one\n'));
++  writeFile(repo, 'src/kept.js', `${body('kept')}appended\n`);
++  writeFile(repo, 'tests/kept.test.js', `${body('test')}appended\n`);
++  git('add', '-A');
++  git('update-index', '--chmod=+x', 'lib/chmod.js');
++  git('commit', '-q', '-m', 'head');
++  const head = git('rev-parse', 'HEAD').trim();
++  const range = ['--base', base, '--head', head];
++
++  const work = mkTempDir();
++  const list = (name, files) => {
++    const file = path.join(work, name);
++    fs.writeFileSync(file, `${files.join('\n')}\n`, 'utf8');
++    return file;
++  };
++  const scope = git('diff', '--name-only', '-M', `${base}...${head}`).trim().split('\n');
++  assert.deepStrictEqual(scope.slice().sort(), ['lib/chmod.js', 'lib/edited.js', 'lib/pure.js', 'src/kept.js', 'tests/kept.test.js'], 'sanity: the scope is the renamed destinations plus the edits');
++  const emit = (reviewer, files, extra, phase = 'impl-review') => {
++    const out = fs.mkdtempSync(path.join(work, `${reviewer}-`));
++    return JSON.parse(runtimeCli(['emit-manifest', '--reviewer', reviewer, '--phase', phase, '--files', list(`${path.basename(out)}.txt`, files), '--out', out, ...extra], { cwd: repo, stdio: 'pipe' }));
++  };
++  const read = (entry) => JSON.parse(fs.readFileSync(entry.manifest, 'utf8'));
++  const headers = (entry) => Object.fromEntries([...fs.readFileSync(entry.diff, 'utf8').matchAll(/^diff --git a\/(\S+) b\/(\S+)$/gm)].map((match) => [match[2], match[1]]));
++  const pure = { 'lib/pure.js': [runtime.NA_PREDICATES.pureRename] };
++
++  const [whole] = emit('correctness', scope, range);
++  const manifest = read(whole);
++  assert.deepStrictEqual(manifest.n_a.files, pure, 'AC-5: only the identical-content, identical-mode rename is behaviour-neutral by proof - an edited rename, a mode-changing rename and a plain edit keep their full review');
++  assert.deepStrictEqual(headers(whole), { 'lib/chmod.js': 'src/chmod.js', 'lib/edited.js': 'src/edited.js', 'lib/pure.js': 'src/pure.js', 'src/kept.js': 'src/kept.js', 'tests/kept.test.js': 'tests/kept.test.js' }, 'AC-4: the patch covers every listed file, each rename paired with its source so the reviewer sees a rename, not an add');
++
++  const [testing] = emit('testing', scope, ['--test-plan', '.asd/sprints/015-x/test-plan.md', ...range]);
++  assert.deepStrictEqual(read(testing).files, ['tests/kept.test.js', '.asd/sprints/015-x/test-plan.md'], 'AC-2: the CLI builds Testing\'s list through reviewerFiles, test-plan path appended');
++  assert.deepStrictEqual(Object.keys(headers(testing)), ['tests/kept.test.js'], 'AC-4: a manifest\'s patch covers only its own files the range changed - the appended test-plan path is not in the range');
++  const [empty] = emit('testing', ['src/kept.js'], range);
++  assert.deepStrictEqual([read(empty).files, fs.readFileSync(empty.diff, 'utf8')], [[], ''], 'an empty list still gets its .diff, empty, so the payload path always resolves');
++
++  const parts = emit('correctness', scope, ['--halve', ...range]);
++  assert.strictEqual(parts.length, 2, 'sanity: --halve splits the scope in two');
++  for (const part of parts) {
++    const files = read(part).files;
++    assert.deepStrictEqual(Object.keys(headers(part)).sort(), files.slice().sort(), `${path.basename(part.diff)}: each part's patch covers exactly its own files`);
++    assert.deepStrictEqual(read(part).n_a.files, files.includes('lib/pure.js') ? pure : {}, `${path.basename(part.manifest)}: the pure-rename grant travels with the part holding the file`);
++  }
++
++  const vocabulary = runtime.LEDGER_VOCABULARY;
++  const ledger = (naFile) => ({
++    manifest_digest: manifest.digest, findings: [],
++    files: manifest.files.map((i) => (i === naFile ? { i, s: vocabulary.p, p: runtime.NA_PREDICATES.pureRename } : { i, s: vocabulary.files[0] })),
++    rules: manifest.rules.map((i) => (manifest.n_a.rules[i] ? { i, s: vocabulary.p, p: manifest.n_a.rules[i][0] } : { i, s: vocabulary.rules[0] })),
++    sections: manifest.sections.map((i) => ({ i, s: vocabulary.sections[0] })),
++  });
++  assert.deepStrictEqual(runtime.validateCoverageLedger(manifest, ledger('lib/pure.js'), []), { ok: true }, 'AC-5: the compact row validates on the file the runtime proved');
++  for (const file of scope.filter((name) => name !== 'lib/pure.js')) {
++    assert.throws(() => runtime.validateCoverageLedger(manifest, ledger(file), []), /predicate/, `AC-5: ${file}: a reviewer asserting the pure-rename row on a file the runtime did not prove is an unauthorized n/a`);
++  }
++
++  const out = mkTempDir();
++  let refused = null;
++  try {
++    runtimeCli(['emit-manifest', '--reviewer', 'correctness', '--phase', 'design-review', '--files', list('design.txt', scope), '--out', out, ...range], { cwd: repo, stdio: 'pipe' });
++  } catch (error) {
++    refused = { status: error.status, stderr: String(error.stderr).trim() };
++  }
++  assert.ok(refused && refused.status === 2 && /impl-review only/.test(refused.stderr) && fs.readdirSync(out).length === 0, `design-review has no git range, so --base/--head must exit 2 before writing anything. Got: ${JSON.stringify(refused)}`);
++});
++
++test('sprint-015 AC-11: surface-check dispatches bounds the impl-review dispatches its bound implies - every internal reviewer\'s emitted parts, Testing\'s --test-plan path included, plus External Review - and the override request quotes that field', () => {
++  const planPath = '.asd/sprints/015-x/test-plan.md';
++  let tight = 0;
++  for (const bound of [1, runtime.SPLIT_THRESHOLD_FILES - 1, runtime.SPLIT_THRESHOLD_FILES, runtime.SPLIT_THRESHOLD_FILES + 1, runtime.SURFACE_CAP_FILES]) {
++    const scope = Array.from({ length: bound }, (_, index) => `tests/file-${index + 1}.test.js`);
++    const parts = runtime.INTERNAL_REVIEWERS.reduce((sum, reviewer) => sum + runtime.emitCoverageManifests({ reviewer, phase: 'impl-review', rubric: readRepoFile(`.asd/agents/asd-reviewer-${reviewer}.md`), files: runtime.reviewerFiles('impl-review', reviewer, scope, [planPath]), customRules: {} }).length, 0);
++    const { dispatches } = runtime.surfaceCheck(scope, bound);
++    assert.ok(parts + 1 <= dispatches, `bound ${bound}: a scope of ${bound} test files emits ${parts} internal-review parts plus External Review, above the ${dispatches} dispatches the cap-override request tells the user to approve`);
++    if (parts + 1 === dispatches) tight += 1;
++  }
++  assert.ok(tight > 0, 'the bound must be reached somewhere, or any over-count passes');
++  const row = canonText('.asd/rules/checkpoints.md').split('\n').find((line) => line.startsWith('| change-surface cap override '));
++  const field = row && /`(\w+)` from `surface-check`/.exec(row);
++  assert.ok(field && field[1] in runtime.surfaceCheck([]), 'the cap-override gate row must quote a field surface-check returns, or the request states a count nobody computes');
++});
++
++test('sprint-015 AC-1/AC-6/AC-7/AC-8/AC-10/AC-12: no canon tells anyone to clear context, compaction keeps its preserve list, free-form input never goes through a decision prompt, BA/UX renames route to the orchestrator, the per-sprint document skip is hard, scope asks the cleanup criteria, and the changelog heads the released version', () => {
++  const clear = /\bclear(?:s|ed|ing)?\b(?: the)? (?:session|context|transcript)|clear over compaction|then clear|clearable|\/clear\b/i;
++  assert.deepStrictEqual([...canonMarkdownFiles(), 'README.md', 'AGENTS.md'].filter((rel) => clear.test(canonText(rel))), [], 'AC-1: context compaction is automatic and host-driven - no canon or README line may tell anyone to clear the session');
++  const hygiene = sectionOf('.asd/rules/core.md', 'Context hygiene');
++  const preserve = hygiene.split(/\n\d\. /).find((item) => /compaction summary MUST preserve/.test(item));
++  assert.ok(preserve && ['sprint id', 'phase and mode', '`QUESTION`', '`BLOCKED_MANUAL`', '`ADVICE_NEEDED`', 'gate answer', 'paths written', 'task/finding/defect ids'].every((item) => preserve.includes(item)), 'AC-1: the compaction summary keeps its preserve list');
++  assert.ok(/gate answer[^.]*`decisions-log\.md`\/`state\.json` before any further work/.test(hygiene) && hygiene.includes('"State recovery"'), 'AC-1: the gate answer is written to disk before any further work, and a lost session recovers from state.json');
++
++  const freeForm = sectionOf('.asd/rules/core.md', 'Request user decision');
++  assert.ok(freeForm.split(/(?<=[.;])\s/).some((clause) => /free-form/i.test(clause) && /\bnever\b/.test(clause)), 'AC-7: "Request user decision" must never be used for free-form input');
++  assert.ok(canonText('.asd/skills/asd-sprint/SKILL.md').split('\n').some((line) => /^\d\. Collect scope as a plain chat message/.test(line)) && canonText('.asd/workflows/asd-phase-scope.md').split('\n').some((line) => line.startsWith('1. ') && line.includes('plain chat message')), 'AC-7: asd-sprint and the scope workflow collect raw scope as a plain chat message');
++
++  const promote = stepOf(canonText('.asd/workflows/asd-phase-design-promote.md'), 4);
++  assert.ok(/\borchestrator\b[^.]*`git mv`[^.]*`git rm`/.test(promote), 'AC-6: design-promote routes a BA/UX doc rename or deletion to the main orchestrator');
++  for (const name of ['asd-ba', 'asd-ux']) {
++    const claude = JSON.parse(canonText(`.asd/agents/${name}.md`).split('---\n')[1]).claude;
++    assert.ok(claude.disallowedTools.includes('Bash') && !claude.tools.includes('Bash'), `AC-6: ${name} stays shell-less - its git operations route through the orchestrator instead`);
++  }
++
++  const checkpoints = canonText('.asd/rules/checkpoints.md').split('\n');
++  const skipGate = 'per-sprint document skip';
++  assert.ok(checkpoints.some((line) => line.startsWith('Hard in both modes:') && line.includes(skipGate)) && checkpoints.some((line) => line.startsWith(`| ${skipGate} `) && line.includes('| hard')), 'AC-8: the per-sprint document skip is hard in both modes and in the inventory - otherwise an adaptive orchestrator skips a document on its own');
++  const skip = sectionOf('.asd/rules/sprint-lifecycle.md', 'Optional documents').split('\n').find((line) => line.startsWith('**Per-sprint skip**'));
++  const logLine = skip && /"<doc> (skipped this sprint by user)"/.exec(skip);
++  assert.ok(logLine && /`config\.yaml` is untouched/.test(skip) && canonText('.asd/workflows/asd-phase-scope.md').includes(logLine[1]), 'AC-8: the skip records a decisions-log line the scope workflow writes verbatim and never touches config.yaml');
++
++  assert.ok(['legacy removal', 'warning budget', 'doc consolidation'].every((item) => stepOf(canonText('.asd/workflows/asd-phase-scope.md'), 2).includes(item)), 'AC-10: before the scope gate the scope workflow asks for the cleanup and quality criteria');
++
++  const released = /^## v(\S+)$/m.exec(canonText('CHANGELOG.md'));
++  assert.strictEqual(released && released[1], loadManifest().asd_version, 'AC-12: the newest CHANGELOG heading is the asd_version release-manifest.json ships');
++});
++
+ // ===========================================================================
+ // Runner
+ // ===========================================================================

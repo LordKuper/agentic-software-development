@@ -1,0 +1,664 @@
+diff --git a/.asd/agents/asd-architect.md b/.asd/agents/asd-architect.md
+index 208aa1b..e7d21c4 100644
+--- a/.asd/agents/asd-architect.md
++++ b/.asd/agents/asd-architect.md
+@@ -5,7 +5,7 @@
+   "claude": {
+     "model": "opus", "effort": "high",
+     "tools": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "WebFetch", "WebSearch", "AskUserQuestion"],
+-    "disallowedTools": [], "maxTurns": 50, "memory": "project"
++    "disallowedTools": [], "maxTurns": 150, "memory": "project"
+   },
+   "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "workspace-write" }
+ }
+diff --git a/.asd/agents/asd-external-review.md b/.asd/agents/asd-external-review.md
+index a4e2f57..8cbd889 100644
+--- a/.asd/agents/asd-external-review.md
++++ b/.asd/agents/asd-external-review.md
+@@ -23,7 +23,7 @@ External review wrapper. Runs `{{wraps_cli}}` CLI parallel to internal reviewers
+ 
+ ## Operating contract
+ 
+-- **Scope**: `{{wraps_cli}}` CLI invocation, output parsing, aggregation. No code/design changes, no internal reviewing.
++- **Scope**: `{{wraps_cli}}` CLI invocation, output parsing, aggregation (its row in `review-policy.md` "Reviewer responsibility"). No code/design changes, no internal reviewing.
+ - **Authority**: produces external verdict as final text output; auto-skips with an explicit reason on a non-ready preflight; reports partial coverage when a batch stops (`external-review.md` "Batching"); escalates stalemate to user.
+ - **Approval triggers**: stalemate (2 consecutive iters identical findings) → request user decision (accept as-is / override / abort sprint).
+ - **Stop conditions**: `review.external_review: disabled` → noop; phase-supplied preflight non-ready (resolved `{{wraps_config_key}}` override or `{{wraps_cli}}` binary unavailable, auth failure, active negative cache) → log explicit reason to decisions-log (via phase orchestrator), skip without prompt; a batch failing after its one retry → stop per `external-review.md` "Batching"; severity floor exhausted → APPROVE if no qualifying findings.
+diff --git a/.asd/agents/asd-reviewer-correctness.md b/.asd/agents/asd-reviewer-correctness.md
+index 458ad9e..120cca6 100644
+--- a/.asd/agents/asd-reviewer-correctness.md
++++ b/.asd/agents/asd-reviewer-correctness.md
+@@ -1,7 +1,7 @@
+ ---
+ {
+   "name": "asd-reviewer-correctness",
+-  "description": "Design-review for every non-empty draft set (UI section n/a without a ux-spec/design-system draft) and impl-review of code, tests and UI for bugs, security, best-practice/contract drift, AC-N coverage, and UI/accessibility conformance. Covers: bug patterns (off-by-one, null paths, race conditions, resource leaks), security holes (secrets, injection, auth bypass, crypto misuse, input validation), language/framework best practices, contract violations vs ADR, PRD/AC-N coverage trace, ux-spec compliance check, UI implementation match to ux-spec mockups, design-system token/component usage, accessibility baseline compliance. Does NOT handle: over-engineering, structure/cohesion, or performance (delegates to asd-reviewer-efficiency), test-plan/test-quality review (delegates to asd-reviewer-testing), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy).",
++  "description": "Design-review of draft correctness (AC completeness, contract and ADR decision soundness) and UI drafts (UI section n/a without a ux-spec/design-system draft), and impl-review of code, tests and UI for bugs, security, best-practice/contract drift, the AC→code trace, and UI/accessibility conformance. Covers: bug patterns (off-by-one, null paths, race conditions, resource leaks), security holes (secrets, injection, auth bypass, crypto misuse, input validation), language/framework best practices, contract violations vs ADR, AC→code trace against PRD/`sprint.md` AC-N, ux-spec compliance check, UI implementation match to ux-spec mockups, design-system token/component usage, accessibility baseline compliance. Does NOT handle: over-engineering, structure/cohesion, or performance (delegates to asd-reviewer-efficiency), test-plan/test-quality review and AC→check coverage (delegates to asd-reviewer-testing), design-review testability (unowned by design), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy).",
+   "claude": {
+     "model": "opus", "effort": "high",
+     "tools": ["Read", "Glob", "Grep", "AskUserQuestion"],
+@@ -17,7 +17,7 @@ Correctness reviewer. Merges the former Quality, Implementation and UI reviewers
+ 
+ ## Operating contract
+ 
+-- **Scope**: read-only review. impl-review: bugs/security/best-practice/contract drift in code+tests, AC-N coverage trace, UI implementation conformance. design-review: always dispatched for a non-empty draft set; UI conformance is `n/a: outside phase gate` when its manifest authorizes that.
++- **Scope**: read-only review. impl-review: bugs/security/best-practice/contract drift in code+tests, AC-N coverage trace, UI implementation conformance. design-review: draft correctness over every listed draft; UI conformance is `n/a: outside phase gate` when its manifest authorizes that.
+ - **Authority**: produces one verdict (APPROVE | CONCERNS | FAIL) and findings list per dispatch, as final text output; never modifies code or docs.
+ - **Per-phase section gate**: its manifest's `n_a` carries this phase's section gate (`review-policy.md` "Coverage ledger"). A section it authorizes `n/a: outside phase gate` is never reviewed this dispatch — mark it so in the section-coverage ledger below, not a finding. impl-only sections (Bugs, Security, Contracts, Best practices, AC coverage trace) never fire in design-review; there is no code yet to apply them to.
+ - **Approval triggers**: rare — ambiguous severity classification, ambiguous AC text, or ambiguous design-system token application.
+@@ -32,22 +32,23 @@ Correctness reviewer. Merges the former Quality, Implementation and UI reviewers
+ ## Inputs
+ 
+ **Both phases:**
+-- emitted manifest (its `n_a` carries this phase's section gate), iteration number + review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`), from dispatching phase skill
++- emitted manifest — its file list is this dispatch's scope (`review-policy.md` "Clean-context review iteration"), its `n_a` this phase's section gate — iteration number + review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`), from dispatching phase skill
+ 
+-**design-review phase** (always dispatched for a non-empty draft set; these UI inputs apply only when its manifest does not gate UI conformance out):
+-- `<sprint>/design/ux-spec.html`
+-- `docs/ux/DESIGN.md`
+-- `docs/ux/design-system.html`
+-- `docs/ux/accessibility.html`
++**design-review phase:**
++- the listed drafts; `<sprint>/sprint.md` (AC-N source when `documents.prd` disabled)
++- UI inputs, only when its manifest does not gate UI conformance out:
++  - `<sprint>/design/ux-spec.html`
++  - `docs/ux/DESIGN.md`
++  - `docs/ux/design-system.html`
++  - `docs/ux/accessibility.html`
+ 
+ **impl-review phase:**
+-- diff payload (iter 1: `git diff <base>...HEAD`; iter 2+: diff since previous iteration's recorded HEAD, per `external-review.md` "Iteration semantics")
++- the manifest's `.diff` (the change itself; never run git)
+ - whichever persistent doc folded a relevant sprint ADR (decisions for contract checks — `sprint-lifecycle.md` "Design-promote phase" fold rule)
+ - `docs/architecture/stack.html` (stack constraints)
+ - `.asd/project/custom-coding-rules.md` (forbidden patterns, security policy)
+ - `docs/product/requirements/<subsystem>.html` or `<sprint>/design/prd.html` for sprint-scoped ACs; when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
+ - `<sprint>/plan.md` (task-to-AC mapping)
+-- UI code diff
+ - `docs/ux/<subsystem>.html` (promoted ux-spec) — when absent, review against `docs/ux/DESIGN.md` and `accessibility.html` directly; absence of a spec never means absence of UI code to review
+ - `docs/ux/DESIGN.md`
+ - `docs/ux/accessibility.html`
+@@ -70,6 +71,11 @@ Reviewer:
+ 
+ ## Review rubric
+ 
++### Draft correctness [design-review]
++- AC completeness: every `sprint.md` AC-N (or PRD AC-N) carried by the drafts, none contradicted
++- contract soundness: API/schema contracts consistent, complete and implementable
++- ADR decision soundness: each decision states a real choice and fits the stack and constraints
++
+ ### Bugs [impl-review]
+ - off-by-one, null/undefined paths, race conditions, unhandled errors, resource leaks (handles, sockets, db connections), timezone/locale assumptions
+ 
+diff --git a/.asd/agents/asd-reviewer-documentation.md b/.asd/agents/asd-reviewer-documentation.md
+index e1b26dd..ddc5f95 100644
+--- a/.asd/agents/asd-reviewer-documentation.md
++++ b/.asd/agents/asd-reviewer-documentation.md
+@@ -1,7 +1,7 @@
+ ---
+ {
+   "name": "asd-reviewer-documentation",
+-  "description": "Design-review of sprint design drafts (SSoT, template responsibility-block adherence, traceability) and impl-review of persistent docs vs implementation (actuality, no SSoT violations, traceability PRD AC ↔ ADR), plus in-code doc comments (impl-review). Covers: SSoT integrity (each fact one home), template responsibility-block adherence, traceability across PRD/ADR/UX, custom-rules consistency, provenance flag correctness, in-body comment ban and doc-comment purpose-only scope (`code-style.md` §7). Does NOT handle: bug/security scan, AC→code trace, ui/a11y (delegates to asd-reviewer-correctness), test coverage (delegates to asd-reviewer-testing), over-engineering/performance (delegates to asd-reviewer-efficiency), persistent doc promotion (handled by asd-ba/asd-ux/asd-architect in design-promote phase), code edits (delegates to dev agents).",
++  "description": "Design-review of sprint design drafts (SSoT, template responsibility-block adherence, traceability) and impl-review of persistent docs vs implementation (actuality, no SSoT violations, traceability PRD AC ↔ ADR), plus in-code doc comments and stub resolution (impl-review). Covers: SSoT integrity (each fact one home), template responsibility-block adherence, traceability across PRD/ADR/UX, custom-rules consistency, provenance flag correctness, in-body comment ban and doc-comment purpose-only scope (`code-style.md` §7). Does NOT handle: bug/security scan, AC→code trace, ui/a11y (delegates to asd-reviewer-correctness), AC→check coverage and test quality (delegates to asd-reviewer-testing), over-engineering/performance (delegates to asd-reviewer-efficiency), persistent doc promotion (handled by asd-ba/asd-ux/asd-architect in design-promote phase), code edits (delegates to dev agents).",
+   "claude": {
+     "model": "opus", "effort": "high",
+     "tools": ["Read", "Glob", "Grep", "AskUserQuestion"],
+@@ -30,14 +30,15 @@ Documentation reviewer. Reviews design drafts in design-review and code-vs-persi
+ 
+ ## Inputs
+ 
+-- iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
++- emitted manifest — its file list is this dispatch's scope (`review-policy.md` "Clean-context review iteration") — iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
+ 
+ **design-review:**
+-- `<sprint>/design/` drafts + `<sprint>/audit.md` migration plan
++- the listed drafts + `<sprint>/audit.md` migration plan
+ - existing `docs/` for SSoT cross-check
+ 
+ **impl-review:**
+-- code + tests diff
++- the manifest's `.diff` (the change itself; never run git)
++- `.asd/project/stubs.md` (stub resolution)
+ - persistent `docs/` docs to check actuality against implementation
+ 
+ ## Outputs
+@@ -63,6 +64,7 @@ Reviewer:
+ - **Traceability**: PRD ACs map to ADRs (where architectural choice involved)
+ - **Persistent actuality (impl-review)**: stack, commands, requirements/, and whichever doc absorbed folded ADRs/API contracts reflect what code actually does; no drift — skip docs never applicable this sprint (`documents.*` disabled)
+ - **In-code doc comments (impl-review, `code-style.md` §7)**: any comment inside a method/function body (other than a compliant `// TODO(sprint-<NNN-slug>): <reason>` marker) is a finding; a type-level doc that duplicates or summarizes its members' docs is a finding; a member-level doc that describes implementation rather than purpose is a finding. Severity `high` per `review-policy.md`'s severity taxonomy
++- **Stub-resolution verification (impl-review)**: for each stub deleted from `.asd/project/stubs.md` by current sprint, confirm corresponding `// TODO(sprint-<NNN-slug>): ...` marker is removed from code; conversely, every such marker in code touched this sprint must have a matching open entry in stubs.md
+ - **Framework mode (`self_hosting: enabled`, impl-review only)**: additionally check `README.md` and `.asd/rules/**` stay consistent with the canonical diff (phase list, agent roster, model tiers, config schema, folder map — the cross-file mirrors `AGENTS.md` "Hard rules" names), independent of any persistent `docs/` doc
+ - **Documentation economy** (`artifact-layout.md`): agent-facing text changing no reading agent's behaviour is a finding, cut not shortened; apply that rule's three tests, and raise nothing against text its preserve-list keeps
+ - **Custom rules consistency**: respect custom-common-rules.md domain glossary/naming and phase-scoped file (custom-design-rules.md in design-review, custom-coding-rules.md in impl-review)
+diff --git a/.asd/agents/asd-reviewer-efficiency.md b/.asd/agents/asd-reviewer-efficiency.md
+index a0517a9..753325e 100644
+--- a/.asd/agents/asd-reviewer-efficiency.md
++++ b/.asd/agents/asd-reviewer-efficiency.md
+@@ -1,7 +1,7 @@
+ ---
+ {
+   "name": "asd-reviewer-efficiency",
+-  "description": "Design-review of design drafts and impl-review of code for over-engineering, structure/cohesion defects, and (impl-review only) performance budget/regression compliance. Covers: over-engineering smell detection per review-policy checklist (interface with one implementer, generic with one type, factory for < 3 classes, plugin without plugins, premature config flag, defensive code for impossible cases, dead code, deep inheritance, framework-on-framework, mock-of-mock, comment-restates-code), structure/cohesion smell detection (god/sprawling type), complexity-vs-value tradeoff, escalation of any fix that adds complexity; latency/memory/throughput budget compliance, algorithmic complexity, perf anti-patterns (n+1 queries, sync IO on hot path, unbounded allocations), regression detection vs baseline, hot-path identification lacking measurement or caching. Does NOT handle: bugs, security, AC coverage, or UI (delegates to asd-reviewer-correctness), test-plan/test-quality review (delegates to asd-reviewer-testing), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy).",
++  "description": "Design-review of design drafts and impl-review of code for over-engineering, structure/cohesion defects, and (impl-review only) performance budget/regression compliance. Covers: over-engineering smell detection per review-policy checklist (interface with one implementer, generic with one type, factory for < 3 classes, plugin without plugins, premature config flag, defensive code for impossible cases, dead code, deep inheritance, framework-on-framework, mock-of-mock, comment-restates-code), structure/cohesion smell detection (god/sprawling type), complexity-vs-value tradeoff, escalation of any fix that adds complexity; latency/memory/throughput budget compliance, algorithmic complexity, perf anti-patterns (n+1 queries, sync IO on hot path, unbounded allocations), regression detection vs baseline, hot-path identification lacking measurement or caching. Does NOT handle: bugs, security, AC→code trace, or UI (delegates to asd-reviewer-correctness), test-plan/test-quality review and AC→check coverage (delegates to asd-reviewer-testing), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy).",
+   "claude": {
+     "model": "opus", "effort": "high",
+     "tools": ["Read", "Glob", "Grep", "AskUserQuestion"],
+@@ -32,13 +32,13 @@ Efficiency reviewer. Merges the former Simplification and Performance reviewers
+ ## Inputs
+ 
+ **Both phases:**
+-- emitted manifest (its `n_a` carries this phase's section gate), iteration number + review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`), from dispatching phase skill
++- emitted manifest — its file list is this dispatch's scope (`review-policy.md` "Clean-context review iteration"), its `n_a` this phase's section gate — iteration number + review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`), from dispatching phase skill
+ 
+ **design-review phase:**
+-- `<sprint>/design/prd.html`, `ux-spec.html`, `adr.html`, `c4-full/`, `design-md-delta.yaml`
++- the listed drafts
+ 
+ **impl-review phase:**
+-- code + tests diff (iter 1: full sprint diff; iter 2+: incremental)
++- the manifest's `.diff` (the change itself; never run git)
+ - perf budgets from `.asd/project/custom-coding-rules.md`
+ - whichever persistent doc folded a perf-related sprint ADR (`sprint-lifecycle.md` "Design-promote phase" fold rule)
+ - `docs/architecture/stack.html` (stack constraints)
+diff --git a/.asd/agents/asd-reviewer-testing.md b/.asd/agents/asd-reviewer-testing.md
+index c72886a..3c939ec 100644
+--- a/.asd/agents/asd-reviewer-testing.md
++++ b/.asd/agents/asd-reviewer-testing.md
+@@ -1,7 +1,7 @@
+ ---
+ {
+   "name": "asd-reviewer-testing",
+-  "description": "Impl-review assessment of the test-plan decisions and the tests themselves, plus judging manual-verification necessity when automation is impossible. Covers: risk→check fit per test-plan.md, justification of removed tests and of no-test decisions, fail-first proof on regression tests, coverage of AC-N, edge cases on core paths, absence of test-for-test-sake (meaningless assertions), flaky patterns, manual-verification necessity judgment against the spec `test-plan.md` already owns (single home — never re-authored here). Does NOT handle: bug/security/AC-coverage/ui/a11y (delegates to asd-reviewer-correctness), over-engineering/performance (delegates to asd-reviewer-efficiency), documentation sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy).",
++  "description": "Impl-review assessment of the test-plan decisions and the tests themselves, plus judging manual-verification necessity when automation is impossible. Covers: risk→check fit per test-plan.md, justification of removed tests and of no-test decisions, fail-first proof on regression tests, AC→check coverage (every AC-N has a check), edge cases on core paths, absence of test-for-test-sake (meaningless assertions), flaky patterns, manual-verification necessity judgment against the spec `test-plan.md` already owns (single home — never re-authored here). Does NOT handle: bug/security/AC→code trace/ui/a11y (delegates to asd-reviewer-correctness), over-engineering/performance (delegates to asd-reviewer-efficiency), documentation sync and stub resolution (delegates to asd-reviewer-documentation), design-review testability (unowned by design), fixing (creators autofix per review-policy).",
+   "claude": {
+     "model": "opus", "effort": "high",
+     "tools": ["Read", "Glob", "Grep", "AskUserQuestion"],
+@@ -31,7 +31,8 @@ Testing reviewer. Judges the test *decisions* recorded in `test-plan.md` and the
+ ## Inputs
+ 
+ - `<sprint>/test-plan.md` with its `test-plan.entry-NN.md` segments (primary input: risk→check decisions, removals, added tests, suite run, manual verification spec; `artifact-layout.md` "Test plan")
+-- diff payload (code + tests)
++- emitted manifest — its file list (test files plus `test-plan.md` and segments) is this dispatch's scope (`review-policy.md` "Clean-context review iteration"); other code stays readable as context
++- the manifest's `.diff` (the change itself; never run git)
+ - `docs/product/requirements/<subsystem>.html` (ACs to trace); when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
+ - `<sprint>/plan.md`
+ - iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
+@@ -55,7 +56,6 @@ Reviewer:
+ - **Rule-set conformance**: check-ladder risk fit, removal-reason validity, no-test-decision honesty, fail-first regression proof, meaningfulness, and determinism all judged against `code-style.md` §17 (SSoT) — not restated here; flag any `test-plan.md` row or authored test that violates it (e.g. an e2e journey where a unit/contract test would catch the same defect, a removal lacking a valid reason, an out-of-scope removal lacking recorded user approval, a `none` decision that's actually false)
+ - **Coverage**: every AC-N has a check asserting observable behaviour at some level
+ - **Edge cases**: empty, single, many, boundary, invalid, concurrent — each present where it carries real risk on core paths
+-- **Stub-resolution verification**: for each stub deleted from `.asd/project/stubs.md` by current sprint, confirm corresponding `// TODO(sprint-<NNN-slug>): ...` marker is removed from code; conversely, every such marker in code touched this sprint must have a matching open entry in stubs.md
+ - **Manual verification (last resort)**: only when visual UI rendering, third-party live integration, or ux feel cannot be automated — judge whether `test-plan.md`'s existing spec is justified; never author new steps here
+ 
+ ## Do's
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 02136ac..0d5e683 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -1,7 +1,7 @@
+ {
+   "$comment": "ASD sync engine release manifest. Field map — schema_version: fail-closed version gate; model_families: canon model alias -> provider model id (mirrors the model-family table in .asd/rules/providers.md); canon_hashes: render-source digests for .asd/agents/*.md and .asd/skills/*/SKILL.md; repo/branch: upstream fetch source for .asd/skills/asd-update/update.js; managed_paths: every .asd/ tree/file update.js tracks (trees walked recursively); upstream_hashes: update.js's per-managed-path sha256 ledger (hex, no prefix) as of THIS release — a consumer clones it as the 'old release' baseline its next update diffs against, so an untouched file is never misclassified as conflict-foreign. Rationale for reusing upstream_hashes as that ledger: update.js header comment.",
+   "schema_version": 1,
+-  "asd_version": "10.0.0",
++  "asd_version": "11.0.0",
+   "repo": "https://github.com/LordKuper/agentic-software-development",
+   "branch": "main",
+   "managed_paths": [
+@@ -29,15 +29,15 @@
+     }
+   },
+   "canon_hashes": {
+-    "agents/asd-architect.md": "sha256:b6f4b6301624c38d5c5ec43fc590047ed03673a0fe45a5d7f95fe251b52944a7",
++    "agents/asd-architect.md": "sha256:5c4ec7f9bcfd5a3245d48924d8894fad4966e326eddb05c36099673cda2bbe89",
+     "agents/asd-ba.md": "sha256:6d53bd1c5f404856e458f6613e6c66a55649e6f072eaf38c54e138cec618f775",
+-    "agents/asd-external-review.md": "sha256:18d9811ae7c46a5dae0daf121bc8ec60d62909c735dae6f4826ae55d350ad89b",
+-    "agents/asd-reviewer-documentation.md": "sha256:566c01a8633b7cd3d49e666cfaaf113b30f48b1baa09e80adda74e199a481235",
+-    "agents/asd-reviewer-testing.md": "sha256:467a502444ac6451b1f46b7d2ea249b99a7610a8b6a187c0221beb012cc82f67",
++    "agents/asd-external-review.md": "sha256:24c6464ad9251e4607d418d783cf57901839c7b673983c3a2b1464fce104409d",
++    "agents/asd-reviewer-documentation.md": "sha256:86bded9696df1b13d1575f7f2e5463e7d79ac2a659cfd2dbeb3200845fe4086f",
++    "agents/asd-reviewer-testing.md": "sha256:b04fb6e0d88b2f8fdb3ad826d2c4625b2fbf83fb55249b76f74622b5094538b3",
+     "skills/asd-concept/SKILL.md": "sha256:bf4b60a0fd27c777e62d16cc74eacb0bb3f68a022f7d294c81e43fc99a02abfd",
+     "skills/asd-design-system/SKILL.md": "sha256:f0328b550aa0fa11f03c2177c45ffa628f5942580d1f39689a212136fd3efa7f",
+     "skills/asd-init/SKILL.md": "sha256:63f2ca4ca340bffaf444e06e64ce262b8f81c26ee968ce61dadad87ec31f7587",
+-    "skills/asd-sprint/SKILL.md": "sha256:5b65b1013de646221a4cec7e70ebc1693eae23baad29c36d00e9e151da289df6",
++    "skills/asd-sprint/SKILL.md": "sha256:6deacad005e602fb60c86dacee7d74ba2dde49a61bee1852d69bd0b098b52225",
+     "skills/asd-stack/SKILL.md": "sha256:dbaf7e457fd58d5de99d5ec0aa4877a32ff599da700bb5ee2deb2379fac690a6",
+     "skills/asd-sync/SKILL.md": "sha256:f198477e9f35ba73c0b4088a690373e504ea0dd731d5fb501af54e477f3d7baa",
+     "skills/asd-update/SKILL.md": "sha256:fa71a8e3afe4f6942d8a4011dd5f682ae2671b80a73b26a51bffdf9d0b2a1365",
+@@ -52,32 +52,32 @@
+     "skills/asd-phase-impl-review/SKILL.md": "sha256:1546ffbcf7420fc9bd974f26857b4915dac363dcf86ae99ce2ac5e5fb6d431bf",
+     "skills/asd-phase-pr/SKILL.md": "sha256:49e18f17eb18417dbe85120f9743c6763a753fab337b06e2646b40a22eb9d6bd",
+     "agents/asd-advisor.md": "sha256:aaf226519ac0c73f33eac28041a3c722c69e9406c0c92eab98dcc45860fc6247",
+-    "agents/asd-reviewer-correctness.md": "sha256:0caa67ae2a2dfbcc086c3224b371668d156e307f4a751697dfca48183858a0a4",
+-    "agents/asd-reviewer-efficiency.md": "sha256:dc038323535fc407079dafdef9ebedb1b20af5bde21fa1ac9426876a6c63c7bd",
++    "agents/asd-reviewer-correctness.md": "sha256:cb8958e0f87d32b3d175bc29773b6afeb38c3e2b60b837c492f91091c8320695",
++    "agents/asd-reviewer-efficiency.md": "sha256:3f578b8a5835ec7c298bee1f713b41dfce4cda5601be39620db1beb763ab32d0",
+     "agents/asd-dev.md": "sha256:d8f6f5edbdf7f3e00c6a562e44043cb4da26cded8efa0d590dec6d94f5f1a389",
+     "agents/asd-tester.md": "sha256:37cc32fc380dccd01ad22149312a6a04d60691d1899cbcbdc7cd0228a4d399a2",
+     "agents/asd-ux.md": "sha256:3746c485185c23f3a0427950b387498b932236c3ea9912e6fb08119a5b28c780",
+     "skills/asd-phase-retro/SKILL.md": "sha256:d40dea69c3415c91b8043f4fff9bbda9dbf5750f76ebd2ff762942ab56fb4bef"
+   },
+   "upstream_hashes": {
+-    ".asd/agents/asd-architect.md": "b6f4b6301624c38d5c5ec43fc590047ed03673a0fe45a5d7f95fe251b52944a7",
++    ".asd/agents/asd-architect.md": "5c4ec7f9bcfd5a3245d48924d8894fad4966e326eddb05c36099673cda2bbe89",
+     ".asd/agents/asd-ba.md": "6d53bd1c5f404856e458f6613e6c66a55649e6f072eaf38c54e138cec618f775",
+-    ".asd/agents/asd-external-review.md": "18d9811ae7c46a5dae0daf121bc8ec60d62909c735dae6f4826ae55d350ad89b",
+-    ".asd/agents/asd-reviewer-documentation.md": "566c01a8633b7cd3d49e666cfaaf113b30f48b1baa09e80adda74e199a481235",
+-    ".asd/agents/asd-reviewer-testing.md": "467a502444ac6451b1f46b7d2ea249b99a7610a8b6a187c0221beb012cc82f67",
++    ".asd/agents/asd-external-review.md": "24c6464ad9251e4607d418d783cf57901839c7b673983c3a2b1464fce104409d",
++    ".asd/agents/asd-reviewer-documentation.md": "86bded9696df1b13d1575f7f2e5463e7d79ac2a659cfd2dbeb3200845fe4086f",
++    ".asd/agents/asd-reviewer-testing.md": "b04fb6e0d88b2f8fdb3ad826d2c4625b2fbf83fb55249b76f74622b5094538b3",
+     ".asd/hooks/session-start.js": "b136e0ee07b5e5259e44dcfbdb4787cda19d57ce6bfa93313ae9fb490a15a563",
+     ".asd/rules/artifact-layout.md": "7c863c32d85254a790fa58b8ff8e77dd5c88f9eb4a1a2176422099fd5795702f",
+-    ".asd/rules/checkpoints.md": "1af974d0b84ee2e4614d6b992ca4e878d10ea7069afd970129d781723057ac69",
++    ".asd/rules/checkpoints.md": "9b395e83a8d67472817e7af211f2ed15fb9f89375fbac41ba4f0d48e6276ae7e",
+     ".asd/rules/code-style.md": "58167d3f89b718761535dfc887824c264810bfb8bf6b266bfaefed85837d50d0",
+-    ".asd/rules/core.md": "e21423b48d7068a8df35024057d10b52bec5e7dd65a639db6dec6f7de9de9665",
++    ".asd/rules/core.md": "d98f14d952c95d00c583291a755cefc6028da3da49227bf2b73303079910f003",
+     ".asd/rules/design-principles.md": "b89a20a6ce6ad8bf02f011d26874a552fbca30babd390a147f0ced0d4f71852b",
+     ".asd/rules/design-system.md": "c583c8ba2c08b26685b0a30dea665bb9ac19cc714e8df3622e582f33d1c95371",
+-    ".asd/rules/external-review.md": "25af6a8e948a1e42db1c277fb61b2c03ede66fcd9f03d6d22eec4156ddf2e91d",
++    ".asd/rules/external-review.md": "4dd847eaeb942165ff6095384ecf5f753f9c1cc463a4f2d9036ef88c39c66a1a",
+     ".asd/rules/git-strategy.md": "35d08a1b2f50451aa8088426c6d0cd108f9c0512968f8125ce286083bdf9a2d6",
+     ".asd/rules/language-policy.md": "e9b488a4cff5ed193208a52324601bede1a41e2512f2a6f06d0660576940f322",
+     ".asd/rules/providers.md": "e31b79b224ccc85242d02128250d5c9588e3de94e71cdb12512e943ded7fee57",
+-    ".asd/rules/review-policy.md": "fc5ad1470a17b9fc83fc6bd9509ddb452cf7d8aaeb794e1c3e35e0cf1cc87a7e",
+-    ".asd/rules/sprint-lifecycle.md": "946498b0a36900641b37c5fbd0f95e2d152d0896c957cad75469bf70fc6a4a62",
++    ".asd/rules/review-policy.md": "8b58d27f6aae5547c348f08e497a76b303700180e1dbf521c7a2019bc964a914",
++    ".asd/rules/sprint-lifecycle.md": "9cf1536defd4604f038da3519b70b9d32d683d11696f594b877c1ffe2ea1ed5b",
+     ".asd/rules/ux-principles.md": "9f2af8c90d969c73654812b80e523e33b4c5696f506acf49e4bacb4c0dc6750c",
+     ".asd/skills/asd-concept/SKILL.md": "bf4b60a0fd27c777e62d16cc74eacb0bb3f68a022f7d294c81e43fc99a02abfd",
+     ".asd/skills/asd-design-system/SKILL.md": "f0328b550aa0fa11f03c2177c45ffa628f5942580d1f39689a212136fd3efa7f",
+@@ -92,7 +92,7 @@
+     ".asd/skills/asd-phase-plan/SKILL.md": "69f5e50ce2946d8a4123fe86eddf803a56622e99de867fcd8e6a6a4d1e00db9c",
+     ".asd/skills/asd-phase-pr/SKILL.md": "49e18f17eb18417dbe85120f9743c6763a753fab337b06e2646b40a22eb9d6bd",
+     ".asd/skills/asd-phase-scope/SKILL.md": "55c2cc419af90b0c66b6350bdf4955b3fc305c8d93e599ae2ebc2f8117e5ebf9",
+-    ".asd/skills/asd-sprint/SKILL.md": "5b65b1013de646221a4cec7e70ebc1693eae23baad29c36d00e9e151da289df6",
++    ".asd/skills/asd-sprint/SKILL.md": "6deacad005e602fb60c86dacee7d74ba2dde49a61bee1852d69bd0b098b52225",
+     ".asd/skills/asd-stack/SKILL.md": "dbaf7e457fd58d5de99d5ec0aa4877a32ff599da700bb5ee2deb2379fac690a6",
+     ".asd/skills/asd-sync/SKILL.md": "f198477e9f35ba73c0b4088a690373e504ea0dd731d5fb501af54e477f3d7baa",
+     ".asd/skills/asd-update/SKILL.md": "fa71a8e3afe4f6942d8a4011dd5f682ae2671b80a73b26a51bffdf9d0b2a1365",
+@@ -130,26 +130,26 @@
+     ".asd/templates/t_tech-reference.md": "f327dcfc2b9351a6b4bd2b332e64660bdacb77391f1c1b7b30f22a8e2b59adea",
+     ".asd/templates/t_test-plan.md": "005b9aef2a8f75ccafc28efc26cdccff7b7863e6389050f448b01dc5973e9259",
+     ".asd/templates/t_ux-spec.html": "4740d0c9219ceaca240aa598aa95cce039d2e6629a63b7801a54769f98f900c5",
+-    ".asd/workflows/asd-phase-audit.md": "ea354e1aaaf357b1d054de524ccb1469bd9a22730741c3481752cc28d4ddc5c6",
+-    ".asd/workflows/asd-phase-design-promote.md": "331f78ab56c165f3c5ddd58ad44cf408f22c031ad167fb0ac1cb387cb2c99854",
+-    ".asd/workflows/asd-phase-design-review.md": "1662080c63a852786f984f82f9b1b3c4640e145aa9096800e597fa12448d78b8",
++    ".asd/workflows/asd-phase-audit.md": "dba13dba9646db76fdaa00bb6aef2764ab4b5eff44143f04133f44f1f2892a14",
++    ".asd/workflows/asd-phase-design-promote.md": "48ab80161f90c1725db4a65e98c3c37c63fe1f6ddaa141ef807e49158dbf1b65",
++    ".asd/workflows/asd-phase-design-review.md": "fe9e0ab3bb63907a7bf3289ba2586701934d3b9c9ded6bd70edf356913d0fcdc",
+     ".asd/workflows/asd-phase-design.md": "803e588939ac9cbae0ccd33539eb36f983f30e7a3ad441ffa9827569aa21220e",
+-    ".asd/workflows/asd-phase-impl-review.md": "e5b6c8aa7a9c9d8010383fb3ef8feb5eea8369db02463fae56e0895080acb9fa",
++    ".asd/workflows/asd-phase-impl-review.md": "85425c11a86006feaa734e697f2bd5ffcf250a23f976bb311443e0d40e69a485",
+     ".asd/workflows/asd-phase-impl-test.md": "d5f254318ca60b37a94610e597f48b24ab1bf4ec6e45b270927027d2014f6e48",
+-    ".asd/workflows/asd-phase-impl.md": "a60d35811e9050b9ef3427cf3066b44c61eabb91b13ed23408f36163d8dd9ab4",
++    ".asd/workflows/asd-phase-impl.md": "4b3f32d11b31b168030c6ef91db7370e9cc20a62313bf8ec1e8f1573e5355710",
+     ".asd/workflows/asd-phase-plan.md": "362ef86e4e93e0bdd8357224f36c2cf7a376f5dc22e1334bf69b6cc283495e87",
+     ".asd/workflows/asd-phase-pr.md": "f24f91a885a64c55daa2ef927b13b75b652e5ef136741a5583ab68638d2524f4",
+-    ".asd/workflows/asd-phase-scope.md": "ad42ab80b93488abe84db42fb13aa7f55af8df1b9d897d3195c45b19a509b70a",
++    ".asd/workflows/asd-phase-scope.md": "ead1fd89283e06260a84aee9890e91bdea647cd455f7c26dae6df1938771b195",
+     ".asd/agents/asd-advisor.md": "aaf226519ac0c73f33eac28041a3c722c69e9406c0c92eab98dcc45860fc6247",
+-    ".asd/agents/asd-reviewer-correctness.md": "0caa67ae2a2dfbcc086c3224b371668d156e307f4a751697dfca48183858a0a4",
+-    ".asd/agents/asd-reviewer-efficiency.md": "dc038323535fc407079dafdef9ebedb1b20af5bde21fa1ac9426876a6c63c7bd",
++    ".asd/agents/asd-reviewer-correctness.md": "cb8958e0f87d32b3d175bc29773b6afeb38c3e2b60b837c492f91091c8320695",
++    ".asd/agents/asd-reviewer-efficiency.md": "3f578b8a5835ec7c298bee1f713b41dfce4cda5601be39620db1beb763ab32d0",
+     ".asd/agents/asd-dev.md": "d8f6f5edbdf7f3e00c6a562e44043cb4da26cded8efa0d590dec6d94f5f1a389",
+     ".asd/agents/asd-tester.md": "37cc32fc380dccd01ad22149312a6a04d60691d1899cbcbdc7cd0228a4d399a2",
+     ".asd/agents/asd-ux.md": "3746c485185c23f3a0427950b387498b932236c3ea9912e6fb08119a5b28c780",
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
+     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
+-    ".asd/runtime.js": "cb769d1dbb29f8f137972f53b93d8c7692356697097f5c46cb0f59d6fc3ea623",
++    ".asd/runtime.js": "13a75aac2b046895875fbc09359221d0d7d4564b0211cc4951b12a417b36b8f2",
+     ".asd/templates/external-review/t_review-scope.json": "66eca780c034c9ea851b5fbd6700c5cf47a0cc9591b5910e2942f35a65402bd9",
+     ".asd/templates/t_friction-log.md": "4937325124026f9af7b977a193a672ed2961e95156a8017212105d87093d02f8",
+     ".asd/templates/t_retrospective.html": "6b1a120d8a22bfeb7180d32f422e5888c7d453a4770a61b8502a1947f5322f1f",
+diff --git a/.asd/rules/checkpoints.md b/.asd/rules/checkpoints.md
+index 78fa425..f1c67bc 100644
+--- a/.asd/rules/checkpoints.md
++++ b/.asd/rules/checkpoints.md
+@@ -4,7 +4,7 @@
+ 
+ `config.yaml`'s top-level `user_gates` is the source; `state.json.user_gates` is the frozen per-sprint copy, seeded at scope from config (`asd-phase-scope.md`) — a later config edit never changes an active sprint. Value is `strict` or `adaptive`; absent legacy value means `strict`. Invalid or unreadable policy blocks. A standalone skill with no active sprint (`/asd-concept`, `/asd-stack`, `/asd-design-system`) reads `config.user_gates` directly, default `strict`. `strict` uses the gate classes below with explicit approval. In `adaptive`, the main orchestrator may advance a routine gate only when exact user authority and documented constraints cover the choice, effects/resources are understood, applicable checks pass, and no unresolved material alternative remains. It records `{gate, decision_actor:"orchestrator", reason, evidence, artifact_revision}` in `state.json.gate_decisions` (short refs only, `artifact-layout.md` "State file") and the decisions log (narrative). Confidence alone is insufficient. Missing facts require investigation; missing authority, preference or material trade-off requires the user. A semantic revision makes its prior decision stale. Exact existing user authorization may be reused.
+ 
+-Hard in both modes: new or changed scope, acceptance criteria or user value not already explicitly authorized; initial/material UX, brand, accessibility or stack direction not already authorized; a new subsystem boundary; deletion of project files during migration; an audit contradiction precedence cannot settle (`sprint-lifecycle.md` "Audit phase"); material architecture, public contract or compatibility change; debt or any reviewer/coverage/quality waiver; review-cap override; change-surface cap override (`sprint-lifecycle.md` "Plan file format"), distinct from review-cap override; abort; and sprint closure. Machine checks never become approvals.
++Hard in both modes: new or changed scope, acceptance criteria or user value not already explicitly authorized; initial/material UX, brand, accessibility or stack direction not already authorized; a new subsystem boundary; deletion of project files during migration; an audit contradiction precedence cannot settle (`sprint-lifecycle.md` "Audit phase"); material architecture, public contract or compatibility change; debt or any reviewer/coverage/quality waiver; review-cap override; change-surface cap override (`sprint-lifecycle.md` "Plan file format"), distinct from review-cap override; a per-sprint document skip (`sprint-lifecycle.md` "Optional documents"); abort; and sprint closure. Machine checks never become approvals.
+ 
+ Routine candidates: audit/plan acceptance, initial impl assessment, green review handoff, in-bounds ADR, factual tech reference, mechanical docs/design-system update, approved decomposition, and bounded complication decisions. Expenses, external actions, out-of-scope test deletion and PR publication use the same evidence rule; host permissions and machine checks remain mandatory.
+ 
+@@ -45,7 +45,8 @@ The normal gate class is retained for `strict`, and is the fallback when an adap
+ | scope, plan, concept, stack, PRD, UX, design-system, ADR draft | write-then-review-accept |
+ | factual tech-reference and mechanical design-system update | approve-before-write in strict; routine in adaptive |
+ | test removal, PR publication, expense or external action | approve-before-write in strict; evidence rule in adaptive; never bypass host permissions/checks |
+-| change-surface cap override (plan acceptance or impl-review entry) | hard approve-before-write |
++| change-surface cap override (plan acceptance or impl-review entry; request states the bound's `dispatches` from `surface-check`) | hard approve-before-write |
++| per-sprint document skip (scope gate or audit exit) | hard approve-before-write |
+ | sprint closure | hard approve-before-finalize/archive |
+ 
+ `c4-full/` has no standalone artifact gate. Per-section QODDA uses this same policy; it does not create a second mandatory pause.
+diff --git a/.asd/rules/core.md b/.asd/rules/core.md
+index e165106..82fba80 100644
+--- a/.asd/rules/core.md
++++ b/.asd/rules/core.md
+@@ -37,7 +37,7 @@ For a hard or unresolved decision: **Question** → **Options** → **Decision**
+ 
+ ## Request user decision
+ 
+-Canonical semantic op for prompting the user with discrete options (host-tool mapping: `providers.md`). Every agent can do this. Use whenever a choice is needed rather than free-form input.
++Canonical semantic op for prompting the user with discrete options (host-tool mapping: `providers.md`). Every agent can do this. Use whenever a choice is needed; never for free-form input, which is collected as a plain chat message.
+ 
+ ## Autonomy and escalation
+ 
+@@ -71,22 +71,18 @@ Phase skills named `asd-phase-<phase>`, one per phase in `sprint-lifecycle.md`.
+ ## Context hygiene
+ 
+ 1. Disk is the memory. Decision → `decisions-log.md`; state → `state.json`; artifact → its real path.
+-   Anything living only in the transcript is not done. Corollary: any session is clearable at a phase
+-   boundary without loss.
+-2. Clear at phase boundaries. Once a phase emits COMPLETED and its state write lands, the main orchestrator
+-   transcript holds nothing unique — prefer clear over compaction; re-enter via the main orchestrator,
+-   recovering from `state.json` per `sprint-lifecycle.md` "State recovery".
+-3. Compact only within a phase (long `impl` runs, fix loops). The compaction summary MUST preserve:
+-   sprint id; phase and mode; outstanding signals (`QUESTION`, `BLOCKED_MANUAL`, `ADVICE_NEEDED`); any
+-   gate answer not yet written to disk; paths written this phase; remaining task/finding/defect ids.
+-4. Never clear or compact mid-gate — between posting a gate message and recording the answer. Record
+-   the answer to `decisions-log.md`/`state.json` first, then compact.
++   Anything living only in the transcript is not done.
++2. At a phase boundary the main orchestrator continues the chain itself. Context compaction is automatic
++   and host-driven — no user involvement, never a prompt to clear. A lost session re-enters via the main
++   orchestrator, recovering from `state.json` per `sprint-lifecycle.md` "State recovery".
++3. A compaction summary MUST preserve: sprint id; phase and mode; outstanding signals (`QUESTION`,
++   `BLOCKED_MANUAL`, `ADVICE_NEEDED`); any gate answer not yet written to disk; paths written this phase;
++   remaining task/finding/defect ids.
++4. Write a gate answer to `decisions-log.md`/`state.json` before any further work.
+ 5. Dispatch payloads carry paths and explicit parameters, never transcript excerpts. A dispatched agent
+    never inherits the main orchestrator's conversation.
+ 6. Reviewers get fresh context per iteration and never receive prior-iteration findings (external
+    review's stalemate set excepted) — `review-policy.md`, not restated here.
+-7. Threshold: past ~70% context with no phase boundary in reach → compact; boundary in reach → finish
+-   the phase, then clear.
+ 
+ ## Untrusted-data boundary
+ 
+diff --git a/.asd/rules/external-review.md b/.asd/rules/external-review.md
+index e1ad842..5d03d72 100644
+--- a/.asd/rules/external-review.md
++++ b/.asd/rules/external-review.md
+@@ -59,7 +59,7 @@ An empty return, or prose carrying no outcome, is not permitted and is not a ver
+ 
+ ## Phase-scoped payload
+ 
+-The reviewer has direct repo read access and fetches its own content — it is handed a **scope manifest** (`external-review/t_review-scope.json`), never a rendered diff. This is the SSoT for the manifest contract; the agent and both review workflows link here rather than restating it.
++The reviewer has direct repo read access and fetches its own content — it is handed a **scope manifest** (`external-review/t_review-scope.json`), never a rendered diff. This is the SSoT for the manifest contract, and the External Review row of `review-policy.md` "Reviewer responsibility"; the agent and both review workflows link here rather than restating it.
+ 
+ Manifest fields: `phase`, `iteration`, `base_ref`, `head_ref` (impl-review only — see below), `files[]` (changed-path list), and `exclude_paths[]` (repo-relative pathspec exclusions on **review scope**: never listed in `files[]`, never a valid finding location, even if reachable another way). `exclude_paths[]` bounds what the reviewer judges, not what it may read — the prompt's named project-context reference paths (below) stay readable regardless and are never valid finding locations either. The reviewer resolves all content from the repo — never from manifest payload bytes.
+ 
+diff --git a/.asd/rules/review-policy.md b/.asd/rules/review-policy.md
+index 0bcc9e1..e084bf8 100644
+--- a/.asd/rules/review-policy.md
++++ b/.asd/rules/review-policy.md
+@@ -30,9 +30,10 @@ User may override the cap. On override the counter keeps incrementing (not reset
+ Every iteration dispatches each reviewer as a **fresh agent invocation** — new context, no carry-over from authoring or prior iterations. Isolates each verdict from creator reasoning and earlier rounds.
+ 
+ - The dispatching phase workflow spawns every required reviewer (and External Review) anew each iteration, unless that reviewer is APPROVE-latched (`sprint-lifecycle.md` "APPROVE latch") — a latched reviewer is not dispatched at all this iteration, never reused or resumed either.
+-- Reviewer payload carries only: the artifact/diff under review, rule references, severity floor, iteration number, context paths, and — on a re-dispatch — that reviewer's own interrupted-attempt record for this iteration (count and cause, rebuilt from `decisions-log.md` per "Interrupted dispatch"), when it has one. Never authoring rationale or prior verdicts.
++- Reviewer payload carries only: its own emitted manifest path, plus in impl-review that manifest's `.diff` path; rule references, severity floor, iteration number, context paths, and — on a re-dispatch — that reviewer's own interrupted-attempt record for this iteration (count and cause, rebuilt from `decisions-log.md` per "Interrupted dispatch"), when it has one. Never authoring rationale or prior verdicts.
++- **Scope**: the manifest's file list ("Reviewer responsibility") is the payload's single scope source — never a second list, never diff text. It bounds the reviewer's ledger file rows and valid finding locations. An unlisted path is out of both, yet stays readable as context; the Change-surface exception below still applies. The `.diff` shows the change itself, deletions included. A payload never tells a reviewer to run git.
+ - Reviewers MUST NOT read prior `reviews/<phase>/iter-*/` files. Only the current `iter-NN/` directory.
+-- Incremental diff scoping (iter 2+ reviews only what changed — see `external-review.md`) narrows the *input*, not context. Agent still fresh.
++- Incremental scoping, in both review phases (iter 2+ reviews only what changed — `external-review.md` "Iteration semantics": impl-review since the previous iteration's recorded HEAD, design-review since its draft snapshot), narrows the *input*, not context. Agent still fresh.
+ - Where a reviewer genuinely needs prior-iteration data (External Review stalemate detection), the phase workflow supplies it as explicit payload input — scoped data, not context carry-over.
+ 
+ ## Change-surface rule
+@@ -96,9 +97,11 @@ Default: the responsible creator autofixes any reviewer issue without user promp
+ 
+ ## Coverage ledger (mandatory — blocks verdict)
+ 
+-Applies to all 4 internal reviewers (NOT External Review — Codex self-scopes). Before any verdict, the reviewer MUST emit a coverage ledger proving exhaustive review. Reviewer MUST NOT emit a final verdict while its ledger is incomplete.
++Applies to all 4 internal reviewers (NOT External Review — the wrapped CLI self-scopes). Before any verdict, the reviewer MUST emit a coverage ledger proving exhaustive review. Reviewer MUST NOT emit a final verdict while its ledger is incomplete.
+ 
+-The phase workflow emits an ordered machine manifest per internal reviewer before dispatch with `node .asd/runtime.js emit-manifest --reviewer <name> --phase <design-review|impl-review> --files <path to a file listing the scope files, one per line> --out <review output dir> [--custom-rules <path,...>] [--halve] [--self-hosting]` — the sole manifest source; never hand-assembled; `--self-hosting` is passed when `config.self_hosting: enabled`. It enumerates every scoped file, every stable reviewer-rubric/custom-rule ID (a custom rule's id is the `--custom-rules` path as passed), the rubric's section IDs (its `###` headings; none for an unsectioned rubric), and the **allowed `n/a` predicates per individual ID** — the standing predicates, whose target ids and classifier member lists live only in `.asd/runtime.js` (`NA_TARGETS`, `isUiSurface`, `isExecutable`, `isTemplated`); their text is owned by `NA_PREDICATES` there, and any canon quote of it must match — e.g. Documentation's Framework mode is `n/a: self_hosting not enabled` without `--self-hosting`, and its Template adherence is `n/a: no templated artefact in scope` when no scope file is templated. **Rubric ID derivation**: a reviewer's rubric IDs are the top-level entries of its agent file's `## Review rubric` — each `###` heading where that rubric is sectioned, else each bullet's bold lead-in label — in file order, the heading or label text verbatim as the id; nothing nested under an entry is enumerated separately. They are stable because the text IS the id: adding, renaming or deleting an entry is a canonical agent edit that moves the manifest in the same change, and an entry outside this phase or this diff's scope is still enumerated, carrying an authorized `n/a` predicate rather than being dropped. The manifest contains its SHA-256 digest, calculated by `.asd/runtime.js` over the manifest excluding `digest` — `emit-manifest` stamps it, `node .asd/runtime.js manifest-digest --manifest <path>` verifies it; a reviewer cannot replace it. **Immutability**: a dispatched manifest is immutable for the life of that dispatch, to the orchestrator as to the reviewer. Correcting it takes a fresh dispatch carrying a newly emitted manifest, never a re-stamp of the dispatched one. `emit-manifest` stamping parts before their first dispatch is emission, not a re-stamp.
++The phase workflow emits an ordered machine manifest per internal reviewer before dispatch with `node .asd/runtime.js emit-manifest --reviewer <name> --phase <design-review|impl-review> --files <path to a file listing the scope files, one per line> --out <review output dir> [--custom-rules <path,...>] [--test-plan <path,...>] [--base <sha> --head <sha>] [--halve] [--self-hosting]` — the sole manifest source; never hand-assembled; `--self-hosting` is passed when `config.self_hosting: enabled`. From the scope it builds this reviewer's file list ("Reviewer responsibility"). It enumerates every file in that list, every stable reviewer-rubric/custom-rule ID (a custom rule's id is the `--custom-rules` path as passed), the rubric's section IDs (its `###` headings; none for an unsectioned rubric), and the **allowed `n/a` predicates per individual ID** — the standing predicates, whose target ids and classifier member lists live only in `.asd/runtime.js` (`NA_TARGETS`, `isUiSurface`, `isExecutable`, `isTemplated`); their text is owned by `NA_PREDICATES` there, and any canon quote of it must match — e.g. Documentation's Framework mode is `n/a: self_hosting not enabled` without `--self-hosting`, and its Template adherence is `n/a: no templated artefact in scope` when no scope file is templated. **Rubric ID derivation**: a reviewer's rubric IDs are the top-level entries of its agent file's `## Review rubric` — each `###` heading where that rubric is sectioned, else each bullet's bold lead-in label — in file order, the heading or label text verbatim as the id; nothing nested under an entry is enumerated separately. They are stable because the text IS the id: adding, renaming or deleting an entry is a canonical agent edit that moves the manifest in the same change, and an entry outside this phase or this diff's scope is still enumerated, carrying an authorized `n/a` predicate rather than being dropped. The manifest contains its SHA-256 digest, calculated by `.asd/runtime.js` over the manifest excluding `digest` — `emit-manifest` stamps it, `node .asd/runtime.js manifest-digest --manifest <path>` verifies it; a reviewer cannot replace it. **Immutability**: a dispatched manifest is immutable for the life of that dispatch, to the orchestrator as to the reviewer. Correcting it takes a fresh dispatch carrying a newly emitted manifest, never a re-stamp of the dispatched one. `emit-manifest` stamping parts before their first dispatch is emission, not a re-stamp.
++
++**Pure-rename row.** `--base/--head` apply to impl-review only. With them, `emit-manifest` writes each manifest's patch `<reviewer>[.part-N].diff` beside it and returns its path. It also authorizes `NA_PREDICATES.pureRename` in `n_a.files` for each listed file the range renames with identical content and mode. That file's row is then the compact `n/a` row. The runtime proves the class; a reviewer asserting it anywhere else is an unauthorized `n/a`. The rename is neutral for the file, not for its referrers — the Change-surface exception covers those.
+ 
+ **Manifest `vocabulary`** — the row vocabulary travels inside the manifest, so a reviewer reads it off its own input instead of recalling prose:
+ 
+@@ -156,12 +159,24 @@ An internal reviewer is NEVER recorded as skipped and never satisfies DoD withou
+ 
+ **Partition.** `emit-manifest` splits the scope file list into disjoint near-even parts in manifest order, each a complete manifest: own file part, full rubric (`rules`, `sections`), own digest, and `n_a` **plus, for every rule and section id, the out-of-part predicate (`NA_PREDICATES.outOfPart`)** — the only truthful status for an id whose evidence that part does not hold. Each part is a whole manifest over its own subset, so `validate-ledger` accepts it unchanged.
+ 
+-**Union property, checked before merge.** The orchestrator checks these by hand, over every part manifest and its validated ledger: (a) the parts' file ids are disjoint and union to exactly the scope file list; (b) `rules`/`sections` are equal in every part; (c) no rule or section id is `n/a` under the out-of-part predicate in **every** part — that means nobody reviewed it. An id `n/a` under a standing predicate may be `n/a` in every part and never blocks the merge; a part holding no evidence for an id records that truthful `n/a`, never a vacuous `pass`. Any check failing blocks the merge — that reviewer counts as incomplete.
++**Union property, checked before merge.** The orchestrator checks these by hand, over every part manifest and its validated ledger: (a) the parts' file ids are disjoint and union to exactly that reviewer's file list; (b) `rules`/`sections` are equal in every part; (c) no rule or section id is `n/a` under the out-of-part predicate in **every** part — that means nobody reviewed it. An id `n/a` under a standing predicate may be `n/a` in every part and never blocks the merge; a part holding no evidence for an id records that truthful `n/a`, never a vacuous `pass`. Any check failing blocks the merge — that reviewer counts as incomplete. Across reviewers, the internal reviewers' lists union to the scope file list; `emit-manifest` checks this before writing any manifest (`assertReviewerUnion`) and fails otherwise.
+ 
+ **One fresh dispatch per part** ("Clean-context review iteration" holds verbatim). A part interrupted twice escalates to the user; the split is never applied recursively.
+ 
+ **Part verdicts, files, merge.** Each part returns the normal first-line verdict token (above) over its own subset, written to `<sprint>/reviews/<phase>/iter-NN/<reviewer>.part-N.md` with its own findings and validated ledger. The merged `<reviewer>.md` holds the merged token as its first content line plus links to every part, no content copied — so every reader of that one path is unchanged. Merged verdict = the most severe part token (`FAIL` > `CONCERNS` > `APPROVE`), findings = the union of all parts. `verdicts["iter-NN"]` receives that single merged string; the bare `APPROVE` (hence the latch) requires every part bare `APPROVE`.
+ 
++## Reviewer responsibility
++
++Sole owner map: each concern below has exactly one reviewer; agent rubrics hold the detail. "Receives" is the reviewer's manifest file list, built from the iteration's scope by `.asd/runtime.js` `reviewerFiles`.
++
++| Reviewer | design-review: judges · receives | impl-review: judges · receives |
++|---|---|---|
++| Correctness | draft correctness (AC completeness, contract and ADR decision soundness), UI conformance of ux-spec/design-system drafts · every scoped draft | bugs, security, contracts, best practices, AC→code trace, UI conformance · every scope file |
++| Efficiency | over-engineering, structure/cohesion, complexity-vs-value · every scoped draft | the same plus performance · every scope file |
++| Testing | not dispatched; testability is unowned in design-review — no tests exist before impl | test-plan decisions, AC→check coverage, edge cases, manual-verification necessity · the `isTest` scope files plus `test-plan.md` and its segments (`--test-plan`) |
++| Documentation | SSoT, template adherence, provenance, traceability, custom rules, documentation economy · every scoped draft | the same plus persistent-doc actuality, in-code doc comments, stub resolution, Framework mode · every scope file |
++| External Review | the wrapped CLI's own review · `files[]` per `external-review.md` "Phase-scoped payload" | same |
++
+ ## DoD per review phase
+ 
+ | Phase | Required reviewers (all APPROVE or APPROVE-latched, same iteration; External Review's skip or partial form counts, `external-review.md` "Outcome contract") |
+@@ -177,4 +192,4 @@ Every internal reviewer above is dispatched in its listed phase(s) unless alread
+ 
+ **Diff-scoped impl-review fan-out** (always on; `asd-phase-impl-review.md` step 5 is the SSoT): the two diff-derived predicates below never skip a reviewer's dispatch — both merged reviewers (Correctness, Efficiency) are always dispatched — they mark a rubric SECTION `n/a: <predicate>` in that reviewer's section-coverage ledger, so the agent never loads that domain's inputs for the n/a'd section. Correctness's UI conformance section is marked n/a only when no file in the iteration's scope list is a UI surface; Efficiency's five performance sections are marked n/a only when both no perf-budgets section exists in `custom-coding-rules.md` and the scope list contains no executable file (conjunctive). A section-level skip is recorded within the reviewer's own returned ledger, never as a separate `state.json` verdict value — the reviewer still returns one verdict token covering its dispatched sections. Satisfied-vs-blocking semantics for the reviewer's overall verdict: `sprint-lifecycle.md` "State recovery". The n/a'd section is re-included automatically the moment a qualifying file re-enters the diff.
+ 
+-Correctness reviewer traces AC-N coverage against PRD AC-N when `documents.prd` enabled, else against `sprint.md`'s own AC-N list (`sprint-lifecycle.md` "Optional documents"). Impl-review's Correctness UI section always applies regardless of `ux_spec` — absence of a ux-spec draft never implies absence of UI code to review; it checks against accessibility.html/DESIGN.md directly when no ux-spec exists; the section is included or marked n/a per the diff-derived UI-surface predicate above, never per `documents.ux_spec`. Documentation reviewer, in `self_hosting: enabled` mode, additionally checks `README.md`/`.asd/rules/**` consistency against the framework diff, independent of persistent docs.
++Correctness's AC→code trace and Testing's AC→check coverage read PRD AC-N when `documents.prd` enabled, else `sprint.md`'s own AC-N list (`sprint-lifecycle.md` "Optional documents"). Impl-review's Correctness UI section always applies regardless of `ux_spec` — absence of a ux-spec draft never implies absence of UI code to review; it checks against accessibility.html/DESIGN.md directly when no ux-spec exists; the section is included or marked n/a per the diff-derived UI-surface predicate above, never per `documents.ux_spec`. Documentation reviewer, in `self_hosting: enabled` mode, additionally checks `README.md`/`.asd/rules/**` consistency against the framework diff, independent of persistent docs.
+diff --git a/.asd/rules/sprint-lifecycle.md b/.asd/rules/sprint-lifecycle.md
+index b736834..3b30ba5 100644
+--- a/.asd/rules/sprint-lifecycle.md
++++ b/.asd/rules/sprint-lifecycle.md
+@@ -8,6 +8,8 @@ The main orchestrator owns scope and plan writing, phase/state transitions, deci
+ 
+ At scope, accept only `documents.audit: auto|always|off`; any other value, legacy `enabled`/`disabled` included, blocks (`checkpoints.md` "Gate policy" invalid-policy rule). Freeze the effective audit boolean in state (`documents.audit`) — the rule below is deterministic, so no separate reason field is stored. `auto` skips only a complete, verifiably mechanical scope with no behaviour, contract, migration or gate impact; unknown/risky scope audits. An accepted scope expansion reevaluates it. Architect owns audit; BA is dispatched only for evidenced material product/domain ambiguity.
+ 
++**Dispatch ceiling.** One phase step runs at most `.asd/runtime.js` `DISPATCH_CEILING` agent dispatches concurrently; above it, the step dispatches in order in sequential waves of at most that many — review parts and an impl task wave (as sub-waves) alike. Correlated interruption (`review-policy.md` "Correlated interruption") is judged per wave: only dispatches in flight together share one cause.
++
+ Use `checkpoints.md` for every user-gate decision. A closure request is mandatory after merge and all DoD evidence, before `phase=done`, finalization or archival; it cannot be passed adaptively. Existing archived-active recovery remains active until that explicit closure approval.
+ 
+ ## Phases (all mandatory)
+@@ -124,6 +126,8 @@ Framework impl-review/External Review change surface: the whole repo diff (every
+ 
+ `documents.<name>` in config (`audit | prd | ux_spec | adr`), frozen into `state.json.documents` at `scope` — phases read that frozen snapshot, never live config, so a mid-sprint config edit never changes an active sprint's preconditions. Old config without the `documents` group, or an active sprint's `state.json` without a `documents` snapshot, means every value `enabled` (no behavior change). Fail-closed default is per-field, not per-group: when the `documents` group is present but a given field is absent from it, that field is `disabled` — only a wholly-absent group defaults everything to `enabled`. `state.json.documents.c4` is the frozen **effective diagram** (computed once, here, at `scope` — never recomputed later): `true` only when `project.diagram_tool` (absent → `likec4`) is not `none` and `project.subsystem_decomposition: enabled`.
+ 
++**Per-sprint skip** (the one exception to "frozen, never recomputed", narrow-only): the user may flip a frozen `true` `prd`/`ux_spec`/`adr`/`c4` to `false` for this sprint only, at the scope gate (`asd-phase-scope.md` step 3a) or the audit exit (`asd-phase-audit.md` step 5), and only while no draft of that document exists in `<sprint>/design/` (`c4` → `c4-full/`). Hard gate (`checkpoints.md` "Gate policy"). Record: the frozen `false` plus one decisions-log line "<doc> skipped this sprint by user", distinct from a config-disabled document's line; `config.yaml` is untouched. Never `false`→`true`, never `audit` (its `off`/`auto` already cover it).
++
+ **Config string → state boolean**: `t_state.json`'s `documents` map holds `"{{DOC_AUDIT}}"`/`"{{DOC_PRD}}"`/`"{{DOC_UX_SPEC}}"`/`"{{DOC_ADR}}"`/`"{{DOC_C4}}"` as quoted placeholders — quoted so the template file itself stays valid, parseable JSON as shipped. At `scope` write time, replace each entire quoted token (**including its surrounding quotes**) with the bare JSON boolean `true`/`false` matching that document's normalized value (`{{DOC_AUDIT}}` the effective audit boolean, `{{DOC_C4}}` the effective diagram) — the written `state.json` must end up with `"audit": true`, never `"audit": "{{DOC_AUDIT}}"` or `"audit": "true"`. Never leave a placeholder token, quoted or not, in a written `state.json`.
+ 
+ **Skip record**: `t_state.json.skipped_phases` starts `[]`. A no-op phase (below) appends its own phase name to this array in the same write that advances `phase` — this is what lets a resumed sprint or a later audit tell "phase legitimately skipped, empty applicable-artifact set" apart from "phase ran and produced nothing," which the `phase`/`updated_at` fields alone cannot distinguish. Never removed or reordered; a phase re-run after a rollback (`checkpoints.md` "Re-run") that turns out non-empty this time does not retroactively remove its earlier skip entry — the array is a historical record, not current status.
+@@ -327,7 +331,7 @@ Its absence semantics are deliberately not `Material risk`'s, and the two are ne
+ 
+ **Wave declaration** (plan-level, one table in the required `## Dependencies` section, never a per-Task line): rows in ascending wave order, first column the wave number, second the ids of the Tasks dispatched in that wave. Every Task appears in exactly one wave. A Task changing the dispatch or commit contract other Tasks are dispatched under is ordered ahead of them and is alone in its wave. `impl` schedules from this table alone (`asd-phase-impl.md` steps 5-6); the dependency lines under it explain the grouping and never override it. A missing table, or a Task in none or in two waves, is a plan defect fixed before approval — except in a plan authored before this rule, which falls back to a topological sort over its dependency lines.
+ 
+-**Change surface declaration** (plan-level, one required line in `## Overview`): `Change surface: <n> files`, the estimated count of distinct paths the Tasks touch within the impl-review diff pathspec, measured with `node .asd/runtime.js surface-check`. Above `.asd/runtime.js` `SURFACE_CAP_FILES` the plan is not accepted until the user either splits the work into sequential sprints (hard scope gate: this sprint keeps a within-cap part, the remainder goes to `sprint.md` Out of scope plus a decisions-log entry) or approves the hard `change-surface cap override` gate (`checkpoints.md`) with a bound, recorded as `gate_decisions` `gate: change-surface-cap-override`, `evidence: bound=<n>`. impl-review entry re-measures the real diff against the cap or that bound (`asd-phase-impl-review.md` Preconditions). A plan without the line predates this rule and is grandfathered at both points.
++**Change surface declaration** (plan-level, one required line in `## Overview`): `Change surface: <n> files`, the estimated count of distinct paths the Tasks touch within the impl-review diff pathspec, measured with `node .asd/runtime.js surface-check`. Above `.asd/runtime.js` `SURFACE_CAP_FILES` the plan is not accepted until the user either splits the work into sequential sprints (hard scope gate: this sprint keeps a within-cap part, the remainder goes to `sprint.md` Out of scope plus a decisions-log entry) or approves the hard `change-surface cap override` gate (`checkpoints.md`) with a bound — the request states the `dispatches` count `surface-check --bound <n>` returns for it — recorded as `gate_decisions` `gate: change-surface-cap-override`, `evidence: bound=<n>`. impl-review entry re-measures the real diff against the cap or that bound (`asd-phase-impl-review.md` Preconditions). A plan without the line predates this rule and is grandfathered at both points.
+ 
+ **Standing Definition of Done** (constant across every sprint, never restated in `plan.md`): all AC-N from the acceptance-criteria source covered by Tasks; impacted test set green at `impl-test` (`Impacted test set` above); full test suite green once, at the end of `impl-review`; all required reviewers green at `impl-review`. `plan.md`'s own Definition of Done section holds only sprint-specific additions to this standing set, referencing it rather than repeating it.
+ 
+diff --git a/.asd/runtime.js b/.asd/runtime.js
+index 2c469cf..6e59e23 100644
+--- a/.asd/runtime.js
++++ b/.asd/runtime.js
+@@ -21,6 +21,12 @@ const LEDGER_NA_SHAPE = Object.fromEntries(ROW_TYPES.map((type) => [type, { [LED
+ const SPLIT_THRESHOLD_FILES = 25;
+ /** A reviewable change surface above this many files blocks plan acceptance and impl-review entry until the user splits the sprint or approves an override bound. Four split parts (4 * SPLIT_THRESHOLD_FILES). */
+ const SURFACE_CAP_FILES = 100;
++/** Concurrent agent dispatches one phase step may run; dispatches above it run in sequential waves of at most this many. */
++const DISPATCH_CEILING = 20;
++/** An audit whose touched areas track more than this many files gets a batched-read plan in the architect payload. */
++const AUDIT_BATCH_THRESHOLD_FILES = 200;
++/** Internal reviewers, named as `emit-manifest --reviewer` takes them, each dispatched once per split part. */
++const INTERNAL_REVIEWERS = ['correctness', 'efficiency', 'testing', 'documentation'];
+ /** The standing n/a predicates, each the exact text a ledger row records. The emitter authorizes one only where its condition holds; this is their sole home. */
+ const NA_PREDICATES = {
+   phaseGate: 'outside phase gate',
+@@ -31,6 +37,7 @@ const NA_PREDICATES = {
+   noSelfHosting: 'self_hosting not enabled',
+   noTemplated: 'no templated artefact in scope',
+   outOfPart: 'evidence outside this part; covered by the other parts',
++  pureRename: 'pure rename: identical content and mode',
+ };
+ /** Rubric entries each conditional predicate covers, by reviewer and id prefix; a prefix matching no entry fails the emit closed. */
+ const NA_TARGETS = {
+@@ -357,15 +364,36 @@ function emitCoverageManifests(input) {
+   const partCount = files.length > SPLIT_THRESHOLD_FILES ? Math.ceil(files.length / SPLIT_THRESHOLD_FILES) : input.halve === true ? 2 : 1;
+   if (partCount > Math.max(files.length, 1)) fail('scope has fewer files than parts');
+   const naFor = (ids) => Object.fromEntries(ids.map((id) => [id, partCount > 1 ? granted.get(id).concat(NA_PREDICATES.outOfPart) : granted.get(id)]).filter(([, predicates]) => predicates.length > 0));
+-  const allowedNa = { files: {}, rules: naFor(rules), sections: naFor(rubric.sections) };
+-  return Array.from({ length: partCount }, (_, part) => stampManifest({
+-    reviewer: input.reviewer,
+-    phase: input.phase,
+-    files: files.slice(Math.floor(part * files.length / partCount), Math.floor((part + 1) * files.length / partCount)),
+-    rules,
+-    sections: rubric.sections,
+-    n_a: allowedNa,
+-  }));
++  const renamed = new Set(input.pureRenames === undefined ? [] : stringArray(input.pureRenames, 'pureRenames'));
++  return Array.from({ length: partCount }, (_, part) => {
++    const partFiles = files.slice(Math.floor(part * files.length / partCount), Math.floor((part + 1) * files.length / partCount));
++    return stampManifest({
++      reviewer: input.reviewer,
++      phase: input.phase,
++      files: partFiles,
++      rules,
++      sections: rubric.sections,
++      n_a: { files: Object.fromEntries(partFiles.filter((file) => renamed.has(file)).map((file) => [file, [NA_PREDICATES.pureRename]])), rules: naFor(rules), sections: naFor(rubric.sections) },
++    });
++  });
++}
++
++/** A test file: under a `test`/`tests`/`__tests__`/`spec`/`specs` path segment, or a basename in a common test naming convention. Heuristic, so Correctness's full list stays the backstop for a miss. */
++function isTest(file) {
++  return /(^|\/)(test|tests|__tests__|spec|specs)\//.test(file) || /\.(test|spec)\.|^test_|_test\.|Tests?\./.test(file.split('/').pop());
++}
++
++/** One reviewer's file list, the single selector every manifest is built from: impl-review Testing narrows to test files plus the explicitly passed test-plan paths, which the scope pathspec excludes; every other reviewer gets the whole scope. */
++function reviewerFiles(phase, reviewer, files, testPlan) {
++  if (phase !== 'impl-review' || reviewer !== 'testing') return files;
++  return [...new Set(files.filter(isTest).concat(testPlan))];
++}
++
++/** Fails when a scope file lands in no internal reviewer's list, since nobody would then review it. */
++function assertReviewerUnion(phase, files, testPlan) {
++  const covered = new Set(INTERNAL_REVIEWERS.flatMap((reviewer) => reviewerFiles(phase, reviewer, files, testPlan)));
++  const orphans = files.filter((file) => !covered.has(file));
++  if (orphans.length > 0) fail(`scope files in no internal reviewer's list: ${orphans.join(', ')}`);
+ }
+ 
+ /** Reads a reviewer ledger from bare JSON, or from the one fenced block carrying `manifest_digest` inside the reviewer's returned text. */
+@@ -416,32 +444,90 @@ function readFileList(file) {
+   return fs.readFileSync(file, 'utf8').split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+ }
+ 
+-/** Measures a file list against SURFACE_CAP_FILES, or against the user-approved override bound when one is recorded. */
++/** Measures a file list against SURFACE_CAP_FILES, or against the user-approved override bound when one is recorded; `dispatches` is the impl-review dispatch upper bound that cap implies (every internal reviewer per split part, one more part for Testing's appended test-plan paths, plus External Review). */
+ function surfaceCheck(files, bound) {
+   if (bound !== undefined && !(Number.isInteger(bound) && bound > 0)) fail('--bound must be a positive integer');
+   const cap = bound === undefined ? SURFACE_CAP_FILES : bound;
+   const count = new Set(files).size;
+-  return { files: count, cap, breach: count > cap };
++  // ponytail: Testing's extra part holds up to SPLIT_THRESHOLD_FILES test-plan paths (test-plan.md + 24 entry segments); take the path count as input if re-entries ever exceed that.
++  return { files: count, cap, breach: count > cap, dispatches: INTERNAL_REVIEWERS.length * Math.ceil(cap / SPLIT_THRESHOLD_FILES) + 2 };
++}
++
++/** Splits one phase step's dispatches, in order, into sequential waves of at most DISPATCH_CEILING. */
++function dispatchWaves(dispatches) {
++  const waves = [];
++  for (let i = 0; i < dispatches.length; i += DISPATCH_CEILING) waves.push(dispatches.slice(i, i + DISPATCH_CEILING));
++  return waves;
++}
++
++/** Runs git without a shell, returning its stdout, or streaming it into an open file descriptor so a large patch never hits a buffer cap. */
++function runGit(args, outFd) {
++  const result = spawnSync('git', args, { encoding: 'utf8', maxBuffer: Infinity, stdio: ['ignore', outFd === undefined ? 'pipe' : outFd, 'pipe'], windowsHide: true });
++  if (result.error || result.status !== 0) fail(`git ${args.join(' ')} failed: ${result.error ? result.error.message : result.stderr.trim()}`);
++  return result.stdout;
++}
++
++function gitRef(value, name) {
++  if (typeof value !== 'string' || !/^[^-\s]\S*$/.test(value)) fail(`${name} <sha> required`);
++  return value;
++}
++
++/** Every rename in the range, destination to source; `pure` only when git reports the identical blob and mode on both sides, so the rename is behaviour-neutral by proof, never by assertion. */
++function rangeRenames(base, head) {
++  const tokens = runGit(['diff', '--raw', '-z', '-M', '--no-abbrev', `${base}...${head}`]).split('\0');
++  const renames = new Map();
++  let at = 0;
++  while (at < tokens.length - 1) {
++    const [srcMode, dstMode, srcBlob, dstBlob, status] = tokens[at].slice(1).split(' ');
++    if (status.startsWith('R')) renames.set(tokens[at + 2], { source: tokens[at + 1], pure: srcBlob === dstBlob && srcMode === dstMode });
++    at += /^[RC]/.test(status) ? 3 : 2;
++  }
++  return renames;
++}
++
++/** A manifest's patch pathspec: its files the range changed (appended test-plan paths are not), each rename paired with its source so the patch shows a rename rather than an add. */
++function patchPaths(files, scope, renames) {
++  return files.filter((file) => scope.has(file)).flatMap((file) => (renames.has(file) ? [renames.get(file).source, file] : [file]));
++}
++
++function writePatch(file, base, head, paths) {
++  const fd = fs.openSync(file, 'w');
++  try {
++    if (paths.length > 0) runGit(['--literal-pathspecs', 'diff', '-M', '--no-color', '--no-ext-diff', '--no-textconv', `${base}...${head}`, '--', ...paths], fd);
++  } finally {
++    fs.closeSync(fd);
++  }
+ }
+ 
+ function emitManifestCommand(flags) {
+   if (!/^[a-z]+$/.test(flags.reviewer || '')) fail('--reviewer <name> required');
+   if (typeof flags.files !== 'string' || typeof flags.out !== 'string') fail('--files <path> and --out <dir> required');
++  const hasRange = flags.base !== undefined || flags.head !== undefined;
++  if (hasRange && flags.phase !== 'impl-review') fail('--base/--head apply to impl-review only');
++  const range = hasRange ? { base: gitRef(flags.base, '--base'), head: gitRef(flags.head, '--head') } : null;
+   const customPaths = typeof flags['custom-rules'] === 'string' ? flags['custom-rules'].split(',') : [];
++  const testPlan = typeof flags['test-plan'] === 'string' ? flags['test-plan'].split(',') : [];
++  const scope = readFileList(flags.files);
++  assertReviewerUnion(flags.phase, scope, testPlan);
++  const renames = range ? rangeRenames(range.base, range.head) : new Map();
+   const manifests = emitCoverageManifests({
+     reviewer: flags.reviewer,
+     phase: flags.phase,
+     rubric: fs.readFileSync(path.join(__dirname, 'agents', `asd-reviewer-${flags.reviewer}.md`), 'utf8'),
+-    files: readFileList(flags.files),
++    files: reviewerFiles(flags.phase, flags.reviewer, scope, testPlan),
+     customRules: Object.fromEntries(customPaths.map((file) => [file, fs.readFileSync(file, 'utf8')])),
+     halve: flags.halve === true,
+     selfHosting: flags['self-hosting'] === true,
+     templates: templateNames(path.join(__dirname, 'templates')),
++    pureRenames: [...renames].filter(([, rename]) => rename.pure).map(([file]) => file),
+   });
++  const inScope = new Set(scope);
+   return manifests.map((manifest, index) => {
+-    const file = path.join(flags.out, manifests.length === 1 ? `${flags.reviewer}.manifest.json` : `${flags.reviewer}.part-${index + 1}.manifest.json`);
+-    fs.writeFileSync(file, JSON.stringify(manifest) + '\n', 'utf8');
+-    return { manifest: file, digest: manifest.digest };
++    const stem = path.join(flags.out, manifests.length === 1 ? flags.reviewer : `${flags.reviewer}.part-${index + 1}`);
++    fs.writeFileSync(`${stem}.manifest.json`, JSON.stringify(manifest) + '\n', 'utf8');
++    if (!range) return { manifest: `${stem}.manifest.json`, digest: manifest.digest };
++    writePatch(`${stem}.diff`, range.base, range.head, patchPaths(manifest.files, inScope, renames));
++    return { manifest: `${stem}.manifest.json`, digest: manifest.digest, diff: `${stem}.diff` };
+   });
+ }
+ 
+@@ -511,4 +597,4 @@ if (require.main === module) {
+   try { process.exitCode = main(process.argv); } catch (error) { process.stderr.write(`${error.message}\n`); process.exitCode = 2; }
+ }
+ 
+-module.exports = { LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, NA_PREDICATES, SPLIT_THRESHOLD_FILES, SURFACE_CAP_FILES, buildInvocation, coverageManifestDigest, defectStalemate, emitCoverageManifests, externalPreflight, recordExternalFailure, routeTask, surfaceCheck, validateCoverageLedger, fingerprint };
++module.exports = { AUDIT_BATCH_THRESHOLD_FILES, DISPATCH_CEILING, INTERNAL_REVIEWERS, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, NA_PREDICATES, SPLIT_THRESHOLD_FILES, SURFACE_CAP_FILES, assertReviewerUnion, buildInvocation, coverageManifestDigest, defectStalemate, dispatchWaves, emitCoverageManifests, externalPreflight, isTest, recordExternalFailure, reviewerFiles, routeTask, surfaceCheck, validateCoverageLedger, fingerprint };
