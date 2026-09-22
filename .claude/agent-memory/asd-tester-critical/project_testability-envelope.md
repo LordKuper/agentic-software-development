@@ -137,6 +137,11 @@ as proof. A regex whose capture group spans less than the fixed literal (sprint 
 the suffix, which the pre-fix line also held) passes on the old text too. Put the capture around the
 whole changed literal, then run the revert (TST-3).
 
+A "tight somewhere" assert on an upper bound only catches an overcount that hits every sampled point.
+When a fix adds a parameter with a default, the old and new formulas usually agree only at some inputs
+(sprint 015 EXT-4: only at multiples of 25). Compute both at each sampled point before writing
+"the default is unchanged", and pin tightness at exactly those points (mutation: loosen only there).
+
 ## Assert removed phrases, not topic words
 
 Rule prose here routinely narrates the alternative it just rejected inside the same bullet

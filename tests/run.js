@@ -5063,17 +5063,37 @@ test('sprint-015 AC-4/AC-5: emit-manifest --base/--head writes each manifest\'s 
   assert.ok(refused && refused.status === 2 && /impl-review only/.test(refused.stderr) && fs.readdirSync(out).length === 0, `design-review has no git range, so --base/--head must exit 2 before writing anything. Got: ${JSON.stringify(refused)}`);
 });
 
-test('sprint-015 AC-11: surface-check dispatches bounds the impl-review dispatches its bound implies - every internal reviewer\'s emitted parts, Testing\'s --test-plan path included, plus External Review - and the override request quotes that field', () => {
-  const planPath = '.asd/sprints/015-x/test-plan.md';
-  let tight = 0;
-  for (const bound of [1, runtime.SPLIT_THRESHOLD_FILES - 1, runtime.SPLIT_THRESHOLD_FILES, runtime.SPLIT_THRESHOLD_FILES + 1, runtime.SURFACE_CAP_FILES]) {
-    const scope = Array.from({ length: bound }, (_, index) => `tests/file-${index + 1}.test.js`);
-    const parts = runtime.INTERNAL_REVIEWERS.reduce((sum, reviewer) => sum + runtime.emitCoverageManifests({ reviewer, phase: 'impl-review', rubric: readRepoFile(`.asd/agents/asd-reviewer-${reviewer}.md`), files: runtime.reviewerFiles('impl-review', reviewer, scope, [planPath]), customRules: {} }).length, 0);
-    const { dispatches } = runtime.surfaceCheck(scope, bound);
-    assert.ok(parts + 1 <= dispatches, `bound ${bound}: a scope of ${bound} test files emits ${parts} internal-review parts plus External Review, above the ${dispatches} dispatches the cap-override request tells the user to approve`);
-    if (parts + 1 === dispatches) tight += 1;
+test('sprint-015 AC-11: surface-check dispatches bounds the impl-review dispatches its bound implies - every internal reviewer\'s emitted parts, Testing\'s parts sized for the --test-plan-files count impl-review entry passes (EXT-4), plus External Review - rejects an unusable count, and the override request quotes that field', () => {
+  const threshold = runtime.SPLIT_THRESHOLD_FILES;
+  const tight = new Set();
+  for (const planCount of [1, threshold + 1, 2 * threshold + 3]) {
+    const planPaths = Array.from({ length: planCount }, (_, index) => (index === 0 ? '.asd/sprints/015-x/test-plan.md' : `.asd/sprints/015-x/test-plan.entry-${String(index).padStart(2, '0')}.md`));
+    for (const bound of [1, threshold - 1, threshold, threshold + 1, runtime.SURFACE_CAP_FILES]) {
+      const scope = Array.from({ length: bound }, (_, index) => `tests/file-${index + 1}.test.js`);
+      const parts = runtime.INTERNAL_REVIEWERS.reduce((sum, reviewer) => sum + runtime.emitCoverageManifests({ reviewer, phase: 'impl-review', rubric: readRepoFile(`.asd/agents/asd-reviewer-${reviewer}.md`), files: runtime.reviewerFiles('impl-review', reviewer, scope, planPaths), customRules: {} }).length, 0);
+      const { dispatches } = planCount === 1 ? runtime.surfaceCheck(scope, bound) : runtime.surfaceCheck(scope, bound, planCount);
+      assert.ok(parts + 1 <= dispatches, `bound ${bound}, ${planCount} test-plan paths: a scope of ${bound} test files emits ${parts} internal-review parts plus External Review, above the ${dispatches} dispatches the cap-override request tells the user to approve`);
+      if (parts + 1 === dispatches) tight.add(`${planCount}/${bound}`);
+    }
   }
-  assert.ok(tight > 0, 'the bound must be reached somewhere, or any over-count passes');
+  assert.ok([1, threshold + 1, 2 * threshold + 3].every((planCount) => [...tight].some((key) => key.startsWith(`${planCount}/`))), 'the bound must be reached for the default and for every test-plan count, or an over-count passes');
+  assert.ok(tight.has(`1/${threshold}`) && tight.has(`1/${runtime.SURFACE_CAP_FILES}`), 'the default count must stay tight at every multiple of the split threshold - where test-plan.md alone opens one extra Testing part - or plan-time callers get a looser bound than before');
+  for (const count of [0, -1, 1.5, Number.NaN]) {
+    assert.throws(() => runtime.surfaceCheck(['a.md'], undefined, count), /--test-plan-files/, `test-plan files ${count}: an unusable count must fail closed, never size Testing's parts from a guess`);
+  }
+  const list = path.join(mkTempDir(), 'scope.txt');
+  fs.writeFileSync(list, 'tests/a.test.js\n', 'utf8');
+  const cli = (count) => {
+    try {
+      return { status: 0, stdout: runtimeCli(['surface-check', '--files', list, '--test-plan-files', count], { stdio: 'pipe' }) };
+    } catch (error) {
+      return { status: error.status, stdout: String(error.stdout) };
+    }
+  };
+  assert.deepStrictEqual(cli(String(threshold + 1)), { status: 0, stdout: `${JSON.stringify(runtime.surfaceCheck(['tests/a.test.js'], undefined, threshold + 1))}\n` }, '--test-plan-files carries the test-plan count into the CLI');
+  assert.deepStrictEqual(cli('many'), { status: 2, stdout: '' }, 'a non-numeric --test-plan-files must exit 2 with no result');
+  const entryCheck = canonText('.asd/workflows/asd-phase-impl-review.md').split('\n').find((line) => line.includes('surface-check --files'));
+  assert.ok(entryCheck && entryCheck.includes('--test-plan-files <n>'), 'impl-review entry must pass the test-plan count to surface-check, or the cap-override request undercounts Testing on a long re-entry chain');
   const declaration = sectionOf('.asd/rules/sprint-lifecycle.md', 'Plan file format').split('\n').find((line) => line.startsWith('**Change surface declaration**'));
   const field = declaration && /the `(\w+)` count `surface-check --bound <n>` returns/.exec(declaration);
   assert.ok(field && field[1] in runtime.surfaceCheck([]), 'the cap-override request "Plan file format" defines must quote a field surface-check returns, or the request states a count nobody computes');
