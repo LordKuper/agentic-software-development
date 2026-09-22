@@ -140,3 +140,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-22 — impl-review iter-03: all reviewers APPROVE (correctness/efficiency latched at iter 2); reviewer DoD met → terminal full suite
 - 2026-09-22 — route impl-review terminal suite: standard, dispatch HEAD 31dd56c
 - 2026-09-22 — impl-review DoD met: full suite green 213/213 at 25cdce5; green handoff passed adaptively → retro
+- 2026-09-22 — `<sprint>/retrospective.html` written: 2 entries (both covered by canon), 3 systemic proposals, analysed branch
