@@ -51,7 +51,9 @@ greps to canon (a grep over the sprint folder hits sibling reviewers' files).
   that style alone is not a §7 finding.
 - **Agent-memory files are reviewable source** (`artifact-layout.md` "Agent memory"): verify durable claims
   against HEAD AND against the writer's own definition. A stale line in *your own* memory is corrected in
-  the dispatch that finds it, not raised. A memory line is in Documentation economy's Reach.
+  the dispatch that finds it, not raised. A memory line is in Documentation economy's Reach. A sibling
+  memory written in the same diff range as a code fix often cites the defect that range already fixed
+  (015 iter-02: testing memory vs the run.js AC-7 message) - check each memory "re-read X" against the diff.
 - The documentation-economy preserve-list keeps per-case tables whole: a logically subsumed clause in a
   table row is not a cut candidate.
 - The session-start AGENTS.md/CLAUDE.md snapshot in context can predate the branch's last sync - grep the

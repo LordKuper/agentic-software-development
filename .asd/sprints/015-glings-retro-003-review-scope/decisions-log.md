@@ -125,3 +125,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-22 — impl fix for iter-01: findings resolved
 - 2026-09-22 — route impl-test entry 3: critical, dispatch HEAD 351dd3f
 - 2026-09-22 — impl-test: impacted set green (213/213 full suite), 2/0 tests (entry 3)
+
+## 2026-09-22 — impl-review iter-02: 3 findings → review-fix
+
+- **Decision**: Correctness and Efficiency approved and are latched at iter 2. Three medium findings route to review-fix. EXT-4 carries over: `surfaceCheck` takes an optional test-plan path count, replacing the doc-comment-only resolution chosen at iter-01. DOC-1 removes the stale sentence from the testing-reviewer memory. TST-3 (widen the AC-8 capture, with fail-first proof) goes to `asd-tester`.
+- **Rationale**: External Review verified 4 of 5 iter-01 findings resolved, so there is no stalemate. Each fix is small and in scope, and fixing EXT-4 now avoids another carry-over.
+- **Affected docs**: reviews/impl/iter-02/
