@@ -34,3 +34,11 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+- 2026-09-23 — route Task 1: critical, dispatch HEAD 2197043
+
+## 2026-09-23 — impl assessment approved (adaptive)
+
+- **Decision**: Task 1 complete in `79d0d98` (AC-1..AC-4, AC-6); build (`sync --check`) and lint clean; zero live `terra`; no stubs; flagged choices none. Advance to impl-test.
+- **Rationale**: Every plan checkbox ticked; diff limited to plan-authorized paths; breaking marker present for MAJOR inference.
+- **Affected docs**: plan.md

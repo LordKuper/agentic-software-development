@@ -31,9 +31,23 @@
       "reason": "all choices scope/audit-authorized; surface 11/100",
       "evidence": "plan.md; surface-check breach=false",
       "artifact_revision": "plan.md@d165d40+1"
+    },
+    {
+      "gate": "impl-assessment",
+      "decision_actor": "orchestrator",
+      "reason": "all Task 1 boxes ticked; build/lint clean; flagged none",
+      "evidence": "79d0d98",
+      "artifact_revision": "79d0d98"
     }
   ],
-  "task_routing": {},
+  "task_routing": {
+    "Task 1": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:public contract",
+      "resolved_model": "claude:opus"
+    }
+  },
   "skipped_phases": [
     "design",
     "design-review",
@@ -53,7 +67,7 @@
     }
   },
   "created_at": "2026-09-23T12:13:50Z",
-  "updated_at": "2026-09-23T12:20:06Z",
+  "updated_at": "2026-09-23T12:21:56Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
