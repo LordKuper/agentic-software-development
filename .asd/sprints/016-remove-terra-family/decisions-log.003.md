@@ -34,3 +34,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-09-23 — `<sprint>/plan.md` accepted (adaptive)
+
+- **Decision**: Plan accepted: single Task 1 in wave 1 covering AC-1..AC-4, AC-6; AC-5 CHANGELOG/version deferred to pr per git-strategy. No open stubs in scope. Change surface 11 files (cap 100).
+- **Rationale**: Every choice already authorized at scope (tiers, removal) or settled by canon at audit (no migration script); surface-check passes; no material alternative remains.
+- **Affected docs**: plan.md
