@@ -34,3 +34,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+- 2026-09-23 — route testing.md T-1, testing.md T-2: standard, dispatch HEAD d0ead2d
+- 2026-09-23 — impl review-fix for iter-01: findings resolved (testing.md T-1 64b8e4e, T-2 39f754a); build/lint clean, flagged none
