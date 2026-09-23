@@ -45,6 +45,13 @@
       "reason": "all reviewers APPROVE; full suite green",
       "evidence": "reviews/impl/iter-02; test-plan.md Suite run @d9172d2",
       "artifact_revision": "532f1ef"
+    },
+    {
+      "gate": "pr-publication",
+      "decision_actor": "user",
+      "reason": "explicit chat instruction to publish and finish autonomously",
+      "evidence": "PR #47",
+      "artifact_revision": "f633b9e"
     }
   ],
   "task_routing": {
@@ -122,9 +129,13 @@
     }
   },
   "created_at": "2026-09-23T12:13:50Z",
-  "updated_at": "2026-09-23T12:37:55Z",
+  "updated_at": "2026-09-23T12:39:37Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
-  "pr": null,
+  "pr": {
+    "number": 47,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/47",
+    "state": "open"
+  },
   "archived_at": null
 }

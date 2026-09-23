@@ -40,3 +40,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Retro complete, empty-log branch (no friction-log.md): 0 entries analysed, 4 systemic proposals (3 new, 1 covered by `code-style.md` §17). Nothing applied or promoted.
 - **Rationale**: Systemic class derived from the run record (iter-01 low-finding cycle, decisions-log rotation churn, critical routing of a value swap).
 - **Affected docs**: retrospective.html
+
+## 2026-09-23 — PR #47 published; autonomous completion authorized
+
+- **Decision**: User instructed in chat: publish, then carry the sprint autonomously through completion and release publication. Branch pushed; PR #47 opened (`feat(providers)!: replace codex terra with sol`). The same instruction is recorded as explicit closure approval for the post-merge hard gate.
+- **Rationale**: PR publication and sprint closure need explicit user authority; the user's message grants both.
+- **Affected docs**: state.json, https://github.com/LordKuper/agentic-software-development/pull/47
