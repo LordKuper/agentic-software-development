@@ -1,7 +1,7 @@
-# ASD generated. Edit .asd/agents/asd-dev.md. source_digest=sha256:d8f6f5edbdf7f3e00c6a562e44043cb4da26cded8efa0d590dec6d94f5f1a389 content_digest=sha256:2e04f0fa36ed2f56a3faaa8e81d3e3bf0576ff4e15aa7ade9c3ea4e1d0c9d75f asd_version=9.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-dev.md. source_digest=sha256:d8f6f5edbdf7f3e00c6a562e44043cb4da26cded8efa0d590dec6d94f5f1a389 content_digest=sha256:2ff8f70842b1458ff35bf5a68a42d8139283eb57a408bcb43db9fffac3413b46 asd_version=11.0.0 schema=1
 name = "asd-dev-critical"
 description = "Server/CLI/library code and UI code, components, client-side logic, consuming DESIGN.md tokens wherever UI work applies. Covers: production code authoring per plan tasks (backend and frontend), fixing impl-review findings and impl-test defects, running lint/build/run commands from commands.yaml, registering TODO stubs in stubs.md. Does NOT handle: any test authoring or test runs — unit, integration, e2e (delegates to asd-tester in the impl-test phase), architecture decisions (delegates to asd-architect), design system token edits (delegates to asd-ux), accessibility requirements (read-only consumer of accessibility.html), code review (delegates to reviewer agents). Task class: critical."
-model = "gpt-5.6-sol"
+model = "gpt-6-sol"
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 developer_instructions = """

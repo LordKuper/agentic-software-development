@@ -23,9 +23,9 @@
       "haiku": "haiku"
     },
     "codex": {
-      "sol": "gpt-5.6-sol",
+      "sol": "gpt-6-sol",
       "terra": "gpt-5.6-terra",
-      "luna": "gpt-5.6-luna"
+      "luna": "gpt-6-luna"
     }
   },
   "canon_hashes": {
@@ -75,7 +75,7 @@
     ".asd/rules/external-review.md": "b604cecaec7a09ff289f4f238832deda6fcd4b00f1a989b5e84192a3d995a0d4",
     ".asd/rules/git-strategy.md": "35d08a1b2f50451aa8088426c6d0cd108f9c0512968f8125ce286083bdf9a2d6",
     ".asd/rules/language-policy.md": "e9b488a4cff5ed193208a52324601bede1a41e2512f2a6f06d0660576940f322",
-    ".asd/rules/providers.md": "e31b79b224ccc85242d02128250d5c9588e3de94e71cdb12512e943ded7fee57",
+    ".asd/rules/providers.md": "55d6934344c041fd859db1ab727327cf8d2aa52d20241170371683f4146a204e",
     ".asd/rules/review-policy.md": "c28cf04863a1241e8fb9513089fb36661cab885b9a7a1aa28d16cdb73ade07a3",
     ".asd/rules/sprint-lifecycle.md": "9cf1536defd4604f038da3519b70b9d32d683d11696f594b877c1ffe2ea1ed5b",
     ".asd/rules/ux-principles.md": "9f2af8c90d969c73654812b80e523e33b4c5696f506acf49e4bacb4c0dc6750c",
@@ -97,7 +97,7 @@
     ".asd/skills/asd-sync/SKILL.md": "f198477e9f35ba73c0b4088a690373e504ea0dd731d5fb501af54e477f3d7baa",
     ".asd/skills/asd-update/SKILL.md": "fa71a8e3afe4f6942d8a4011dd5f682ae2671b80a73b26a51bffdf9d0b2a1365",
     ".asd/skills/asd-update/update.js": "dfb850b3e58588cb8add48403ba08466c8b20729286c187244e9f896607c5d86",
-    ".asd/sync.js": "4ab912097e8161652c5aa0451c43702733f0e0151f6431e0e21c0a0f967d876e",
+    ".asd/sync.js": "a0b93f68aec5c9f4534c621f26e6fc23491e91102753f67589476636c391b5fc",
     ".asd/templates/external-review/t_prompt-external-design.md": "6e478097fe9f9edb9f9636b2115b6098947924a5fad61c4399f1326c244c9bc6",
     ".asd/templates/external-review/t_prompt-external-impl.md": "ffddff5a66064934ccf35d604c10b83475d003a35715e4ea2956d4dcd6932cae",
     ".asd/templates/external-review/t_review-report.md": "8af89cb42a1d76f95dc23652202079522341d8c8e46add1e1a014a3f7a28b6d5",

@@ -1,7 +1,7 @@
-# ASD generated. Edit .asd/agents/asd-ba.md. source_digest=sha256:511ff78ce1868a7a9057c45fab6fa4785aa28acab01eb86c74b44d27c6cbeadc content_digest=sha256:338d7dba6ecc4f7d7ebfff02852c861c4a6a6a130187342e1e0b8c7da40cf9ec asd_version=11.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-ba.md. source_digest=sha256:511ff78ce1868a7a9057c45fab6fa4785aa28acab01eb86c74b44d27c6cbeadc content_digest=sha256:555262b2a412d6a52bb3f601345932de137669df3ade8e90a1fb9272428de5e0 asd_version=11.0.0 schema=1
 name = "asd-ba"
 description = "Product requirements: user stories, acceptance criteria, conditional product/domain audit support, PRD drafts. Covers: PRD authoring (sprint draft plus reverse-engineered/migrated), product/domain clarification during audit when requested by the orchestrator, user story decomposition, acceptance criteria formulation, ambiguity resolution via clarifying questions. Does NOT handle: ux flows or ui mockups (delegates to asd-ux), architecture decisions (delegates to asd-architect), code (delegates to dev agents), code audit (delegates to asd-architect)."
-model = "gpt-5.6-sol"
+model = "gpt-6-sol"
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 developer_instructions = """

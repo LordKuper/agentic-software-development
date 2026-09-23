@@ -35,7 +35,7 @@ When External Review is enabled, `/asd-init` probes the other provider's configu
 
 ### Codex with a ChatGPT account
 
-Codex delegates use the concrete model IDs in the canonical family map: `sol` → `gpt-5.6-sol`, `terra` → `gpt-5.6-terra`, and `luna` → `gpt-5.6-luna`. Do not substitute the API-style `gpt-5.6` identifier: a delegate-startup error naming an unsupported model means the canonical map or generated agent view is stale. Update ASD or correct the canonical mapping, regenerate the affected view with `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `.asd/rules/providers.md` "Canonical path -> per-provider path"), then run `node .asd/sync.js --check`.
+Codex delegates use the concrete model IDs in the canonical family map: `sol` → `gpt-6-sol`, `terra` → `gpt-5.6-terra`, and `luna` → `gpt-6-luna`. Do not substitute the API-style `gpt-5.6` identifier: a delegate-startup error naming an unsupported model means the canonical map or generated agent view is stale. Update ASD or correct the canonical mapping, regenerate the affected view with `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `.asd/rules/providers.md` "Canonical path -> per-provider path"), then run `node .asd/sync.js --check`.
 
 Optional external tools auto-detected by `/asd-init`:
 

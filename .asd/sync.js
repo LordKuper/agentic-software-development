@@ -172,7 +172,7 @@ function resolveModelFamily(manifest, provider, familyAlias, agent = {}) {
   if (!table || !Object.prototype.hasOwnProperty.call(table, familyAlias)) {
     throw new Error(diagnostic('unknown model family'));
   }
-  if (provider === 'codex' && (typeof resolvedModel !== 'string' || !/^gpt-5\.6-(sol|terra|luna)$/.test(resolvedModel) || !resolvedModel.endsWith(`-${familyAlias}`))) {
+  if (provider === 'codex' && (typeof resolvedModel !== 'string' || !/^gpt-\d+(\.\d+)?-(sol|terra|luna)$/.test(resolvedModel) || !resolvedModel.endsWith(`-${familyAlias}`))) {
     throw new Error(diagnostic('unsupported ChatGPT-runtime model mapping'));
   }
   if (provider === 'codex' && agent.effort !== undefined && (!EFFORT_VOCABULARY.codex.test(agent.effort) || (resolvedModel.endsWith('-luna') && agent.effort === 'ultra'))) {

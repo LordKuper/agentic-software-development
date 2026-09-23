@@ -91,7 +91,7 @@ test('canonical agent -> Codex .toml matches fixture', () => {
   const expected = readExpectedFixture(path.join(FIXTURES, 'expected/agents/demo-agent.codex.toml'), manifest);
   assert.strictEqual(rendered.output, expected);
   assert.ok(rendered.output.startsWith('# ASD generated. Edit .asd/agents/demo-agent.md.'));
-  assert.ok(rendered.output.includes('model = "gpt-5.6-sol"'), 'codex model family alias must resolve via release-manifest table');
+  assert.ok(rendered.output.includes('model = "gpt-6-sol"'), 'codex model family alias must resolve via release-manifest table');
   assert.ok(rendered.output.includes('developer_instructions = """'));
 });
 
@@ -154,7 +154,7 @@ test('AC-3/6/7: every canonical Codex agent renders a supported delegate config'
   for (const file of files) {
     const { meta, body } = sync.parseCanonicalFrontmatter(sync.readNormalized(path.join(agentsDir, file)));
     const output = sync.transformAgentCodexToml(meta, body, manifest);
-    assert.match(output, /^model = "gpt-5\.6-(sol|terra|luna)"$/m, `${meta.name}: supported model`);
+    assert.match(output, /^model = "gpt-\d+(\.\d+)?-(sol|terra|luna)"$/m, `${meta.name}: supported model`);
     assert.match(output, /^model_reasoning_effort = "(low|medium|high|xhigh|max|ultra)"$/m, `${meta.name}: supported effort`);
     assert.match(output, /^sandbox_mode = "(workspace-write|read-only)"$/m, `${meta.name}: supported sandbox`);
   }
@@ -203,7 +203,7 @@ test('agent-claude / agent-codex transforms resolve {{wraps_cli}}/{{wraps_config
 test('asd-external-review: the wrapped CLI subprocess carries an explicit read-only flag on both providers', () => {
   const claudeAgent = fs.readFileSync(path.join(REPO_ROOT, '.claude/agents/asd-external-review.md'), 'utf8');
   const codexAgent = fs.readFileSync(path.join(REPO_ROOT, '.codex/agents/asd-external-review.toml'), 'utf8');
-  assert.ok(claudeAgent.includes('codex exec --model gpt-5.6-sol -c model_reasoning_effort="high" --sandbox read-only -'), 'Claude-side must invoke the wrapped Codex CLI with explicit model, effort, and read-only sandbox');
+  assert.ok(claudeAgent.includes('codex exec --model gpt-6-sol -c model_reasoning_effort="high" --sandbox read-only -'), 'Claude-side must invoke the wrapped Codex CLI with explicit model, effort, and read-only sandbox');
   assert.ok(codexAgent.includes('--restricted --tools "Read,Grep,Glob" --strict-mcp-config'), 'Codex-side must invoke the wrapped Claude CLI with explicit read-only tool restriction, not rely on ambient project permissions');
 });
 
@@ -222,11 +222,11 @@ test('AC-3: wrapped model aliases resolve through the wrapped provider table', (
   const manifest = loadManifest();
   const raw = sync.readNormalized(path.join(REPO_ROOT, '.asd', 'agents', 'asd-external-review.md'));
   const { meta, body } = sync.parseCanonicalFrontmatter(raw);
-  assert.ok(!raw.includes('gpt-5.6-sol'), 'canonical wrapper source must store family aliases only');
+  assert.ok(!raw.includes('gpt-6-sol'), 'canonical wrapper source must store family aliases only');
   const changed = structuredClone(manifest);
-  changed.model_families.codex.sol = 'gpt-5.6-sol';
+  changed.model_families.codex.sol = 'gpt-6-sol';
   const rendered = sync.transformAgentClaude(meta, body, changed);
-  assert.ok(rendered.includes('--model gpt-5.6-sol'), 'nested wrapper arguments must receive the resolved wrapped model');
+  assert.ok(rendered.includes('--model gpt-6-sol'), 'nested wrapper arguments must receive the resolved wrapped model');
   assert.ok(!rendered.includes('{{wraps_model}}'));
 });
 
@@ -2292,7 +2292,7 @@ test('AC-3/4/5: preflight permits only fixed local probes and negative cache is 
   const command = process.platform === 'win32' ? path.join(root, 'ready.cmd') : path.join(root, 'ready');
   fs.writeFileSync(command, process.platform === 'win32' ? '@echo off\r\nexit /b 0\r\n' : '#!/bin/sh\nexit 0\n', 'utf8');
   if (process.platform !== 'win32') fs.chmodSync(command, 0o755);
-  const input = { provider: 'codex', command, model: 'gpt-5.6-sol', cachePath, now: 1000 };
+  const input = { provider: 'codex', command, model: 'gpt-6-sol', cachePath, now: 1000 };
   assert.throws(() => runtime.externalPreflight({ ...input, provider: 'unknown' }), /provider/);
   assert.throws(() => runtime.externalPreflight({ ...input, authArgs: ['exec', 'paid prompt'] }), /authArgs/);
   const fingerprint = 'a'.repeat(64);
@@ -2326,7 +2326,7 @@ test('AC-5: negative-cache recovers when the fingerprint changes because model, 
   const credentialPath = path.join(root, 'credential.json');
   fs.writeFileSync(credentialPath, '{"token":"x"}', 'utf8');
 
-  const input = { provider: 'codex', command, model: 'gpt-5.6-sol', credentialPath, cachePath, now: 1000 };
+  const input = { provider: 'codex', command, model: 'gpt-6-sol', credentialPath, cachePath, now: 1000 };
   const ready = runtime.externalPreflight(input);
   assert.strictEqual(ready.status, 'local-ready');
   runtime.recordExternalFailure({ fingerprint: ready.fingerprint, status: 'quota', cachePath, now: 1000, retryAfter: 1000 + 60000 });
@@ -2347,7 +2347,7 @@ test('AC-5: the persisted negative-cache entry never carries anything beyond {st
   const command = process.platform === 'win32' ? path.join(root, 'ready.cmd') : path.join(root, 'ready');
   fs.writeFileSync(command, process.platform === 'win32' ? '@echo off\r\nexit /b 0\r\n' : '#!/bin/sh\nexit 0\n', 'utf8');
   if (process.platform !== 'win32') fs.chmodSync(command, 0o755);
-  const input = { provider: 'codex', command, model: 'gpt-5.6-sol', cachePath, now: 1000 };
+  const input = { provider: 'codex', command, model: 'gpt-6-sol', cachePath, now: 1000 };
   const ready = runtime.externalPreflight(input);
   runtime.recordExternalFailure({ fingerprint: ready.fingerprint, status: 'quota', cachePath, now: 1000, retryAfter: 1000 + 60000 });
   const persisted = JSON.parse(fs.readFileSync(cachePath, 'utf8'));
@@ -2394,7 +2394,7 @@ test('AC-4: Windows .cmd preflight executes a metacharacter-containing path lite
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'asd & runtime-'));
   const shim = path.join(root, 'external & shim.cmd');
   fs.writeFileSync(shim, '@echo off\r\nexit /b 0\r\n', 'utf8');
-  const result = runtime.externalPreflight({ provider: 'codex', command: shim, model: 'gpt-5.6-sol', cachePath: path.join(root, 'cache.json') });
+  const result = runtime.externalPreflight({ provider: 'codex', command: shim, model: 'gpt-6-sol', cachePath: path.join(root, 'cache.json') });
   assert.strictEqual(result.status, 'local-ready');
 });
 
@@ -2442,7 +2442,7 @@ test('runtime.js CLI: validate-ledger on a tampered ledger exits non-zero and pr
 test('runtime.js CLI: external-preflight exits 1 on command-unavailable', () => {
   const root = mkTempDir();
   const inputPath = path.join(root, 'input.json');
-  fs.writeFileSync(inputPath, JSON.stringify({ provider: 'codex', command: path.join(root, 'does-not-exist'), model: 'gpt-5.6-sol', cachePath: path.join(root, 'cache.json') }), 'utf8');
+  fs.writeFileSync(inputPath, JSON.stringify({ provider: 'codex', command: path.join(root, 'does-not-exist'), model: 'gpt-6-sol', cachePath: path.join(root, 'cache.json') }), 'utf8');
 
   let error = null;
   let stdout = '';
