@@ -2,6 +2,19 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v12.0.0
+
+Codex `terra` model family removed; its users move to `sol` at unchanged `medium` effort.
+
+### Migration (breaking)
+- **Custom agents declaring `terra`.** Replace `codex.model: "terra"` (and any `wraps_model: "terra"`) with `"sol"` in every `.asd/agents/*.md` you authored or kept as a local edit, then run `node .asd/sync.js --apply <generated-view-path...>` and `node .asd/sync.js --check`. Until then `/asd-update`'s post-update check and `sync --check` exit 1 with `unknown model family (family "terra", …)`; the already-generated view keeps running. There is no migration script — a release migration never rewrites custom agents.
+
+### Removed
+- Codex model family `terra` (`gpt-5.6-terra`) from `release-manifest.json` `model_families`; the Codex model-ID check accepts only the remaining families.
+
+### Changed
+- `asd-dev` and `asd-tester` (base, standard tier) and the `asd-external-review` wrapper resolve to `sol / medium` under Codex, up from `terra / medium` — expect higher Codex usage on these agents. Standard vs critical (`sol / high`) is now an effort split. Run `/asd-update` to regenerate the Codex agent views.
+
 ## v11.1.0
 
 Codex `sol` and `luna` model families move to GPT-6.
