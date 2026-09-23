@@ -1,7 +1,7 @@
 {
   "sprint_id": "016-remove-terra-family",
   "branch": "sprint/016-remove-terra-family",
-  "phase": "impl",
+  "phase": "impl-test",
   "documents": {
     "audit": true,
     "prd": false,
