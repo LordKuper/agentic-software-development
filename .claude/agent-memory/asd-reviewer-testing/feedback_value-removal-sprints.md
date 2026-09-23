@@ -13,3 +13,5 @@ When a sprint removes an enum member (sprint 016: Codex `terra` family), check t
 
 **Why:** a green suite after a removal proves nothing about which branch a swapped fixture exercises, and the hand enumeration is exactly what needed the manual edit.
 **How to apply:** use this in any removal or rename sprint. Also check that every AC has a test-plan line, including an AC deferred to the pr phase (version/CHANGELOG), where the line should cite the existing CHANGELOG==asd_version pin. See [[no-shell-review-method]], [[removed-flag-vacuity]].
+
+Replay tip (sprint 016 iter-02): a per-agent loop's first-firing message names the first file in `fs.readdirSync` order, which is alphabetical on NTFS (`asd-advisor`). The Glob tool lists by mtime, so don't use its order for the replay. Review-fix rows written before the next impl-test entry's rotation land inside the rotated segment legitimately. That is not a "segment edited" violation.

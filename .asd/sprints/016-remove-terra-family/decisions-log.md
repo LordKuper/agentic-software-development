@@ -34,3 +34,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+- 2026-09-23 — impl-review iter-02: testing APPROVE (fresh); correctness/efficiency/documentation/external inherited APPROVE (latched at 1); reviewer DoD met
