@@ -2,6 +2,14 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v11.1.0
+
+Codex `sol` and `luna` model families move to GPT-6.
+
+### Changed
+- Codex `sol` resolves to `gpt-6-sol` and `luna` to `gpt-6-luna`; `terra` stays `gpt-5.6-terra`. Run `/asd-update` to regenerate the Codex agent views and the External Review wrapper.
+- Codex model-ID validation accepts any `gpt-<N>[.<M>]-<family>` ID, so a later family bump is a `release-manifest.json` edit alone, with no sync engine change.
+
 ## v11.0.0
 
 Remediates the Glings sprint 003 (subsystem-layout-migration) retrospective. Each reviewer now gets its own scoped file list and, in impl-review, its own `.diff` patch instead of a shared list and rendered diff text; concurrent dispatches are capped and large audits read in batches; scope collection drops the decision-prompt UI for free-form input and no longer clears context at phase boundaries; and a sprint may skip one enabled optional document for itself alone.
