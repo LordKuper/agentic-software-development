@@ -34,3 +34,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-09-23 — `<sprint>/retrospective.html` written
+
+- **Decision**: Retro complete, empty-log branch (no friction-log.md): 0 entries analysed, 4 systemic proposals (3 new, 1 covered by `code-style.md` §17). Nothing applied or promoted.
+- **Rationale**: Systemic class derived from the run record (iter-01 low-finding cycle, decisions-log rotation churn, critical routing of a value swap).
+- **Affected docs**: retrospective.html
