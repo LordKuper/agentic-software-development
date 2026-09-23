@@ -36,11 +36,11 @@ None. The only delta is a rewrite of an existing assertion, whose proof is in th
 
 ## Suite run
 
-- Command: `node tests/run.js`
-- Scope: full (entry 2: the delta is `tests/run.js`, the single test file)
-- Result: pass — 213 passed, 0 failed, 0 skipped (exit 0)
-- Lint / build: pass — `git diff --cached --check` exit 0; `node .asd/sync.js --check` exit 0
-- HEAD: 10b08508a06913429f2a05ddb7d4e50ccc3e722c
+- impl-review terminal full-suite run (unscoped, per `.asd/project/commands.yaml`)
+- `node tests/run.js`: pass — 213 passed, 0 failed, 0 skipped (exit 0)
+- `git diff --cached --check`: pass (exit 0)
+- `node .asd/sync.js --check`: pass — all items `current` (exit 0)
+- HEAD: d9172d23c6957da688bf097c4e390e19baac95af
 
 ## Defects
 
