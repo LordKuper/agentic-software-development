@@ -133,7 +133,7 @@ test('AC-1/3/5/6/7: Codex renderer rejects invalid delegate config with context'
     ['missing Codex block', { ...meta, codex: null }, manifest, 'missing or malformed Codex configuration'],
     ['unknown family', { ...meta, codex: { ...meta.codex, model: 'unknown' } }, manifest, 'unknown model family'],
     ['legacy unsuffixed model', meta, { ...manifest, model_families: { ...manifest.model_families, codex: { ...manifest.model_families.codex, sol: 'gpt-5.6' } } }, 'unsupported ChatGPT-runtime model mapping'],
-    ['mismatched family model', meta, { ...manifest, model_families: { ...manifest.model_families, codex: { ...manifest.model_families.codex, sol: 'gpt-5.6-terra' } } }, 'unsupported ChatGPT-runtime model mapping'],
+    ['mismatched family model', meta, { ...manifest, model_families: { ...manifest.model_families, codex: { ...manifest.model_families.codex, sol: 'gpt-6-luna' } } }, 'unsupported ChatGPT-runtime model mapping'],
     ['invalid effort', { ...meta, codex: { ...meta.codex, model_reasoning_effort: 'fast' } }, manifest, 'invalid model reasoning effort'],
     ['invalid sandbox', { ...meta, codex: { ...meta.codex, sandbox_mode: 'unsafe' } }, manifest, 'invalid sandbox mode'],
   ];
@@ -151,10 +151,12 @@ test('AC-3/6/7: every canonical Codex agent renders a supported delegate config'
   const agentsDir = path.join(REPO_ROOT, '.asd', 'agents');
   const files = fs.readdirSync(agentsDir).filter(f => f.endsWith('.md'));
   assert.strictEqual(files.length, 11, 'sanity: every dispatched role must be covered');
+  const codexFamilies = Object.keys(manifest.model_families.codex).join('|');
+  const codexModelRe = new RegExp(`^model = "gpt-\\d+(\\.\\d+)?-(${codexFamilies})"$`, 'm');
   for (const file of files) {
     const { meta, body } = sync.parseCanonicalFrontmatter(sync.readNormalized(path.join(agentsDir, file)));
     const output = sync.transformAgentCodexToml(meta, body, manifest);
-    assert.match(output, /^model = "gpt-\d+(\.\d+)?-(sol|terra|luna)"$/m, `${meta.name}: supported model`);
+    assert.match(output, codexModelRe, `${meta.name}: supported model`);
     assert.match(output, /^model_reasoning_effort = "(low|medium|high|xhigh|max|ultra)"$/m, `${meta.name}: supported effort`);
     assert.match(output, /^sandbox_mode = "(workspace-write|read-only)"$/m, `${meta.name}: supported sandbox`);
   }
@@ -2332,7 +2334,7 @@ test('AC-5: negative-cache recovers when the fingerprint changes because model, 
   runtime.recordExternalFailure({ fingerprint: ready.fingerprint, status: 'quota', cachePath, now: 1000, retryAfter: 1000 + 60000 });
   assert.strictEqual(runtime.externalPreflight(input).status, 'negative-cache', 'sanity: the exact same input must hit the cached entry');
 
-  assert.strictEqual(runtime.externalPreflight({ ...input, model: 'gpt-5.6-terra' }).status, 'local-ready', 'a different model must produce a different fingerprint, never reuse a stale negative-cache entry');
+  assert.strictEqual(runtime.externalPreflight({ ...input, model: 'gpt-6-luna' }).status, 'local-ready', 'a different model must produce a different fingerprint, never reuse a stale negative-cache entry');
   assert.strictEqual(runtime.externalPreflight({ ...input, command: otherCommand }).status, 'local-ready', 'a different command must produce a different fingerprint');
 
   fs.writeFileSync(credentialPath, '{"token":"rotated"}', 'utf8');

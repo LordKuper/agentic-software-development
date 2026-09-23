@@ -7,7 +7,7 @@
     "tools": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "AskUserQuestion"],
     "disallowedTools": [], "maxTurns": 1000, "memory": "project"
   },
-  "codex": { "model": "terra", "model_reasoning_effort": "medium", "sandbox_mode": "workspace-write" },
+  "codex": { "model": "sol", "model_reasoning_effort": "medium", "sandbox_mode": "workspace-write" },
   "variants": {
     "mechanical": { "claude": { "model": "haiku" }, "codex": { "model": "luna", "model_reasoning_effort": "low" } },
     "critical": { "claude": { "model": "opus", "effort": "high" }, "codex": { "model": "sol", "model_reasoning_effort": "high" } }
