@@ -34,3 +34,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-09-23 — impl-review iter-01: route to impl review-fix
+
+- **Decision**: Verdicts: correctness/efficiency/documentation/external APPROVE (latched at 1); testing CONCERNS (T-1 low: `tests/run.js:157` hand-listed Codex family set; T-2 low: test-plan.md lacks an AC-5 row). Both verified against source; route to impl review-fix mode (test-file findings → asd-tester chain).
+- **Rationale**: Unresolved CONCERNS at floor low; iteration budget allows iter-02.
+- **Affected docs**: reviews/impl/iter-01/, test-plan.md, tests/run.js
