@@ -34,3 +34,11 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-09-23 — Audit accepted (adaptive); no migration script
+
+- **Decision**: Orchestrator advanced the audit gate adaptively. AC-5's open question resolved: no `.asd/migrations/12.0.0.js`; consumers get a CHANGELOG `### Migration` note (`codex.model: "terra"` → `"sol"` in custom/kept-local agents). Hash ledgers regenerated via `sync.js --apply`, never by hand.
+- **Rationale**: `core.md:30` limits release migrations to settings; `asd-update` never touches custom agents — canonical precedence leaves no material alternative. Failure mode is loud and self-describing; v11.0.0 precedent.
+- **Affected docs**: audit.md, CHANGELOG.md (pr phase)
+
+- 2026-09-23 — design/design-review/design-promote skipped (no documents enabled)
