@@ -12,7 +12,7 @@ responsibility:
 | Entry | HEAD analysed | Scope |
 |---|---|---|
 | 1 | 83746d1a8896b2e1d107ab080f7b24320f5e308c | full change surface |
-| 2 |  | delta since entry 1 |
+| 2 | 398db22fff0f9d04f7349985baa3398db504d00c | delta since entry 1 |
 
 Impacted set: full suite. Safety valve fires — the surface touches `.asd/sync.js` and `.asd/release-manifest.json`, framework-wide shared infrastructure that every render/hash-ledger test loads. `commands.yaml` carries no `test_affected`. Pre-strategy run at `5b5c91d`: `node tests/run.js` → exit 0, `213/213 passed`.
 

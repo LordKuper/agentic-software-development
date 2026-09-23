@@ -34,3 +34,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+- 2026-09-23 — route impl-test entry 2: critical, dispatch HEAD 10b0850
+- 2026-09-23 — impl-test: impacted set green (full suite, 213/213), 0/0 tests
