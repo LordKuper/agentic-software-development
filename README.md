@@ -35,7 +35,7 @@ When External Review is enabled, `/asd-init` probes the other provider's configu
 
 ### Codex with a ChatGPT account
 
-Codex delegates use the concrete model IDs in the canonical family map: `sol` → `gpt-6-sol`, `terra` → `gpt-5.6-terra`, and `luna` → `gpt-6-luna`. Do not substitute the API-style `gpt-5.6` identifier: a delegate-startup error naming an unsupported model means the canonical map or generated agent view is stale. Update ASD or correct the canonical mapping, regenerate the affected view with `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `.asd/rules/providers.md` "Canonical path -> per-provider path"), then run `node .asd/sync.js --check`.
+Codex delegates use the concrete model IDs in the canonical family map: `sol` → `gpt-6-sol` and `luna` → `gpt-6-luna`. Do not substitute the unsuffixed API-style identifier (e.g. `gpt-6`): a delegate-startup error naming an unsupported model means the canonical map or generated agent view is stale. Update ASD or correct the canonical mapping, regenerate the affected view with `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `.asd/rules/providers.md` "Canonical path -> per-provider path"), then run `node .asd/sync.js --check`.
 
 Optional external tools auto-detected by `/asd-init`:
 
@@ -192,7 +192,7 @@ Phase skills (`asd-phase-*`) are dispatched internally by `/asd-sprint`/`$asd-sp
 
 ## Agents
 
-Eleven specialized agents are canonically defined in `.asd/agents/` and generated per provider: `.claude/agents/*.md` for Claude Code, `.codex/agents/*.toml` for Codex. Each declares a model family alias per provider (Claude: fable/opus/sonnet/haiku; Codex: sol/terra/luna) plus supported reasoning effort (omitted for Haiku); `.asd/sync.js` resolves aliases to concrete model ids via `.asd/release-manifest.json`'s `model_families` table (mirrored in [`.asd/rules/providers.md`](.asd/rules/providers.md)). Effort is shown as `model/effort`.
+Eleven specialized agents are canonically defined in `.asd/agents/` and generated per provider: `.claude/agents/*.md` for Claude Code, `.codex/agents/*.toml` for Codex. Each declares a model family alias per provider (Claude: fable/opus/sonnet/haiku; Codex: sol/luna) plus supported reasoning effort (omitted for Haiku); `.asd/sync.js` resolves aliases to concrete model ids via `.asd/release-manifest.json`'s `model_families` table (mirrored in [`.asd/rules/providers.md`](.asd/rules/providers.md)). Effort is shown as `model/effort`.
 
 ### Creators (5)
 
@@ -201,10 +201,10 @@ Eleven specialized agents are canonically defined in `.asd/agents/` and generate
 | `asd-ba` | opus/high | sol/high | Business analyst: PRD, acceptance criteria; conditional domain audit support |
 | `asd-ux` | opus/high | sol/high | UX flows, UI mockups, DESIGN.md tokens, design-system.html |
 | `asd-architect` | opus/high | sol/high | Complete docs/code audit; ADRs, subsystem registry, C4, stack, API contracts, tech references |
-| `asd-dev` | sonnet/medium | terra/medium | Server/CLI/library code and UI code (no tests; consumes DESIGN.md tokens where UI work applies) |
-| `asd-tester` | sonnet/medium | terra/medium | All tests: risk-based selection, pruning, authoring at every level, suite runs, manual verification specs |
+| `asd-dev` | sonnet/medium | sol/medium | Server/CLI/library code and UI code (no tests; consumes DESIGN.md tokens where UI work applies) |
+| `asd-tester` | sonnet/medium | sol/medium | All tests: risk-based selection, pruning, authoring at every level, suite runs, manual verification specs |
 
-The main orchestrator owns scope, plan, state, decisions, manual-step validation, Git and release/archival sequencing; no PM agent is spawned. Dev/Tester task variants share each canonical role body and permissions: `-mechanical` uses Haiku (no effort)/Luna low, `-critical` Opus/Sol high; tier `standard` has no variant and dispatches the base agent (Sonnet/Terra medium). Deterministic bookkeeping uses commands. Routing uses objective eligibility, escalates on a risk declared against the change or a failed check — a risk declared against the artifact alone does not — and never changes the main model. Experimental cheap outputs retain strong independent review.
+The main orchestrator owns scope, plan, state, decisions, manual-step validation, Git and release/archival sequencing; no PM agent is spawned. Dev/Tester task variants share each canonical role body and permissions: `-mechanical` uses Haiku (no effort)/Luna low, `-critical` Opus/Sol high; tier `standard` has no variant and dispatches the base agent (Sonnet/Sol medium). Deterministic bookkeeping uses commands. Routing uses objective eligibility, escalates on a risk declared against the change or a failed check — a risk declared against the artifact alone does not — and never changes the main model. Experimental cheap outputs retain strong independent review.
 
 ### Reviewers (4 internal + 1 external)
 
@@ -216,7 +216,7 @@ Reviewers write no review artifact, code or doc on any provider (scope: `review-
 | `asd-reviewer-efficiency` | opus/high | sol/high | design-review + impl-review | Over-engineering (13-item checklist) + structure/cohesion (god/sprawling type) detection; impl-review-only perf budgets, regression, anti-patterns — perf sections n/a-able (see below). Receives every file in scope. |
 | `asd-reviewer-testing` | opus/high | sol/high | impl-review | `test-plan.md` decisions (risk fit, justified removals and no-test calls, fail-first proof), test quality, manual verification capture. Receives only the `isTest` scope files plus `test-plan.md` and its segments — the one narrowed reviewer list. |
 | `asd-reviewer-documentation` | opus/high | sol/high | design-review + impl-review | SSoT integrity, documentation economy, template adherence, traceability, in-code doc comments and stub resolution (impl-review). Receives every file in scope. |
-| `asd-external-review` | sonnet/medium | terra/medium | both | Wraps the *other* provider's CLI (Codex CLI under Claude Code, Claude CLI under Codex), reads its own content from a structured scope manifest (changed-file list, excluded paths, base/head refs, never a rendered diff — `.asd/rules/external-review.md` § Phase-scoped payload), parses output, applies severity floor |
+| `asd-external-review` | sonnet/medium | sol/medium | both | Wraps the *other* provider's CLI (Codex CLI under Claude Code, Claude CLI under Codex), reads its own content from a structured scope manifest (changed-file list, excluded paths, base/head refs, never a rendered diff — `.asd/rules/external-review.md` § Phase-scoped payload), parses output, applies severity floor |
 
 Reviewers emit a machine-parseable first-line verdict token: `[REVIEW-<phase>-<reviewer>]: APPROVE|CONCERNS|FAIL`, where `<phase>` is `design` or `impl` and `<reviewer>` is `correctness | efficiency | testing | documentation | external`. External Review's first line may also be the skip or partial form, per `.asd/rules/external-review.md` § Outcome contract.
 

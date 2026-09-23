@@ -18,15 +18,15 @@ Standing DoD applies (`sprint-lifecycle.md` "Plan file format") — not restated
 ### Task 1: Remove terra family and retier its agents to sol/medium
 Covers AC-1, AC-2, AC-3, AC-4, AC-6.
 Material risk: change: public contract
-- [ ] `.asd/release-manifest.json`: delete `model_families.codex.terra` (hand-edit only this key; never hand-edit `canon_hashes`/`upstream_hashes`)
-- [ ] `.asd/sync.js:175`: Codex model-ID regex `(sol|terra|luna)` → `(sol|luna)`
-- [ ] `.asd/agents/asd-dev.md`, `.asd/agents/asd-tester.md`: base `codex.model` `"terra"` → `"sol"`, effort `medium` and variants unchanged
-- [ ] `.asd/agents/asd-external-review.md`: wrapper `codex.model` `"terra"` → `"sol"`, effort `medium` and `wraps_model` values unchanged
-- [ ] `.asd/rules/providers.md`: drop the `terra` family-table row; tier-matrix rows for `asd-dev, asd-tester (base)` and `asd-external-review wrapper` → `sol / medium`
-- [ ] `README.md`: ChatGPT section (:38) drops `terra` and rewords the `gpt-5.6` API-style warning to the unsuffixed identifier (e.g. `gpt-6`); roster intro (:195), dev/tester rows (:204–205), task-variant prose (:207), External Review row (:219) → `sol` / `Sol`
-- [ ] `tests/run.js`: `:136` fixture `sol: 'gpt-5.6-terra'` → `sol: 'gpt-6-luna'` (keeps exercising the family-suffix mismatch branch); `:157` regex → `(sol|luna)`; `:2335` substitute model → `gpt-6-luna`
-- [ ] Last, after every edit above: `node "$(git rev-parse --show-toplevel)/.asd/sync.js" --apply .codex/agents/asd-dev.toml .codex/agents/asd-tester.toml .codex/agents/asd-external-review.toml` (regenerates the three views and both hash ledgers)
-- [ ] Build/lint gate: `node .asd/sync.js --check` clean; grep confirms zero live `terra`; commit with a breaking marker (`feat(providers)!: …` with `BREAKING CHANGE:` footer) so the pr phase infers MAJOR
+- [x] `.asd/release-manifest.json`: delete `model_families.codex.terra` (hand-edit only this key; never hand-edit `canon_hashes`/`upstream_hashes`)
+- [x] `.asd/sync.js:175`: Codex model-ID regex `(sol|terra|luna)` → `(sol|luna)`
+- [x] `.asd/agents/asd-dev.md`, `.asd/agents/asd-tester.md`: base `codex.model` `"terra"` → `"sol"`, effort `medium` and variants unchanged
+- [x] `.asd/agents/asd-external-review.md`: wrapper `codex.model` `"terra"` → `"sol"`, effort `medium` and `wraps_model` values unchanged
+- [x] `.asd/rules/providers.md`: drop the `terra` family-table row; tier-matrix rows for `asd-dev, asd-tester (base)` and `asd-external-review wrapper` → `sol / medium`
+- [x] `README.md`: ChatGPT section (:38) drops `terra` and rewords the `gpt-5.6` API-style warning to the unsuffixed identifier (e.g. `gpt-6`); roster intro (:195), dev/tester rows (:204–205), task-variant prose (:207), External Review row (:219) → `sol` / `Sol`
+- [x] `tests/run.js`: `:136` fixture `sol: 'gpt-5.6-terra'` → `sol: 'gpt-6-luna'` (keeps exercising the family-suffix mismatch branch); `:157` regex → `(sol|luna)`; `:2335` substitute model → `gpt-6-luna`
+- [x] Last, after every edit above: `node "$(git rev-parse --show-toplevel)/.asd/sync.js" --apply .codex/agents/asd-dev.toml .codex/agents/asd-tester.toml .codex/agents/asd-external-review.toml` (regenerates the three views and both hash ledgers)
+- [x] Build/lint gate: `node .asd/sync.js --check` clean; grep confirms zero live `terra`; commit with a breaking marker (`feat(providers)!: …` with `BREAKING CHANGE:` footer) so the pr phase infers MAJOR
 
 ## Risks
 - Hash-ledger freshness tests fail if `providers.md` or `sync.js` is edited after the last `--apply` — the `--apply` subtask runs strictly last.

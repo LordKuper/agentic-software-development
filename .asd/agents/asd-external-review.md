@@ -10,7 +10,7 @@
     "wraps_invoke_args": "exec --model {{wraps_model}} -c model_reasoning_effort=\"high\" --sandbox read-only -"
   },
   "codex": {
-    "model": "terra", "model_reasoning_effort": "medium", "sandbox_mode": "read-only",
+    "model": "sol", "model_reasoning_effort": "medium", "sandbox_mode": "read-only",
     "wraps_cli": "claude", "wraps_config_key": "system.tools.claude_command", "wraps_model": "opus",
     "wraps_invoke_args": "-p \"Follow the review instructions and scope manifest provided via stdin above; resolve files/commits from the repo yourself, never from the manifest bytes; output only the review report in the required format.\" --model {{wraps_model}} --effort high --restricted --tools \"Read,Grep,Glob\" --strict-mcp-config --disable-slash-commands --no-session-persistence --output-format text"
   }

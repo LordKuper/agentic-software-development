@@ -57,7 +57,6 @@ Canonical agent frontmatter speaks in family aliases only (`claude.model`, `code
 | sonnet | sonnet | — |
 | haiku | haiku | — |
 | sol | — | gpt-6-sol |
-| terra | — | gpt-5.6-terra |
 | luna | — | gpt-6-luna |
 
 A provider's id is always its rolling alias (newest model in the family), so a family's model bump is a one-line edit to `release-manifest.json` — canonical agent bodies never change.
@@ -67,10 +66,10 @@ A provider's id is always its rolling alias (newest model in the family), so a f
 | Agent | Claude model / effort | Codex model / effort | Codex sandbox |
 |---|---|---|---|
 | asd-ba, asd-ux, asd-architect | opus / high | sol / high | workspace-write |
-| asd-dev, asd-tester (base) | sonnet / medium | terra / medium | workspace-write |
+| asd-dev, asd-tester (base) | sonnet / medium | sol / medium | workspace-write |
 | asd-dev-*, asd-tester-* | mechanical: haiku / none; critical: opus / high (standard: no variant, dispatches base) | mechanical: luna / low; critical: sol / high (standard: no variant, dispatches base) | workspace-write |
 | asd-reviewer-* (4) | opus / high | sol / high | read-only |
-| asd-external-review wrapper | sonnet / medium | terra / medium | read-only |
+| asd-external-review wrapper | sonnet / medium | sol / medium | read-only |
 | asd-external-review wrapped reviewer | sol / high | opus / high | read-only |
 | asd-advisor | fable / high | sol / high | read-only |
 
