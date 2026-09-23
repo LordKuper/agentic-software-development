@@ -151,10 +151,12 @@ test('AC-3/6/7: every canonical Codex agent renders a supported delegate config'
   const agentsDir = path.join(REPO_ROOT, '.asd', 'agents');
   const files = fs.readdirSync(agentsDir).filter(f => f.endsWith('.md'));
   assert.strictEqual(files.length, 11, 'sanity: every dispatched role must be covered');
+  const codexFamilies = Object.keys(manifest.model_families.codex).join('|');
+  const codexModelRe = new RegExp(`^model = "gpt-\\d+(\\.\\d+)?-(${codexFamilies})"$`, 'm');
   for (const file of files) {
     const { meta, body } = sync.parseCanonicalFrontmatter(sync.readNormalized(path.join(agentsDir, file)));
     const output = sync.transformAgentCodexToml(meta, body, manifest);
-    assert.match(output, /^model = "gpt-\d+(\.\d+)?-(sol|luna)"$/m, `${meta.name}: supported model`);
+    assert.match(output, codexModelRe, `${meta.name}: supported model`);
     assert.match(output, /^model_reasoning_effort = "(low|medium|high|xhigh|max|ultra)"$/m, `${meta.name}: supported effort`);
     assert.match(output, /^sandbox_mode = "(workspace-write|read-only)"$/m, `${meta.name}: supported sandbox`);
   }
