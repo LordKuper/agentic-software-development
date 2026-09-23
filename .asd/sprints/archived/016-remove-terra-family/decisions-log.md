@@ -46,3 +46,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: User instructed in chat: publish, then carry the sprint autonomously through completion and release publication. Branch pushed; PR #47 opened (`feat(providers)!: replace codex terra with sol`). The same instruction is recorded as explicit closure approval for the post-merge hard gate.
 - **Rationale**: PR publication and sprint closure need explicit user authority; the user's message grants both.
 - **Affected docs**: state.json, https://github.com/LordKuper/agentic-software-development/pull/47
+
+## 2026-09-23 — Sprint 016 closed and archived
+
+- **Decision**: PR #47 squash-merged at `234ac47`; closure approved by the user's explicit instruction to finish the sprint autonomously through release. Terminal state written and sprint archived via companion PR; tag `v12.0.0` and GitHub release follow its merge.
+- **Rationale**: Hard closure gate satisfied by explicit user authority, not by the merge.
+- **Affected docs**: state.json

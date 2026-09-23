@@ -1,7 +1,7 @@
 {
   "sprint_id": "016-remove-terra-family",
   "branch": "sprint/016-remove-terra-family",
-  "phase": "pr",
+  "phase": "done",
   "documents": {
     "audit": true,
     "prd": false,
@@ -52,6 +52,13 @@
       "reason": "explicit chat instruction to publish and finish autonomously",
       "evidence": "PR #47",
       "artifact_revision": "f633b9e"
+    },
+    {
+      "gate": "closure",
+      "decision_actor": "user",
+      "reason": "explicit instruction to finish sprint autonomously incl. release",
+      "evidence": "PR #47 squash-merged at 234ac47; DoD verified at pr open",
+      "artifact_revision": "234ac47"
     }
   ],
   "task_routing": {
@@ -129,13 +136,14 @@
     }
   },
   "created_at": "2026-09-23T12:13:50Z",
-  "updated_at": "2026-09-23T12:39:37Z",
+  "updated_at": "2026-09-23T12:41:27Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": {
     "number": 47,
     "url": "https://github.com/LordKuper/agentic-software-development/pull/47",
-    "state": "open"
+    "state": "merged",
+    "merge_commit": "234ac47610b5d2488811527eb838efcd779f11e8"
   },
-  "archived_at": null
+  "archived_at": "2026-09-23T12:41:27Z"
 }
