@@ -1,7 +1,7 @@
-# ASD generated. Edit .asd/agents/asd-architect.md. source_digest=sha256:b6f4b6301624c38d5c5ec43fc590047ed03673a0fe45a5d7f95fe251b52944a7 content_digest=sha256:b60ba6540d10201fab547ffe03f2022d5abf59b9ddf636232b799c5ca94a301c asd_version=8.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-architect.md. source_digest=sha256:5c4ec7f9bcfd5a3245d48924d8894fad4966e326eddb05c36099673cda2bbe89 content_digest=sha256:26d0aa7c9bf18782f59f535678572f53522214729b02381efb85021f046417b9 asd_version=11.0.0 schema=1
 name = "asd-architect"
 description = "Architecture decisions, subsystem registry, C4 model, tech stack, API contracts, brownfield code and documentation audit. Covers: ADR drafting (sprint-scoped only, never promoted as a standalone persistent document; sprint and reverse-engineered), c4-full schema (LikeC4 or Mermaid) for sprint scope, subsystem registry docs/architecture/subsystems.md and per-subsystem <id>.md (written at design-promote, created at audit when absent after user confirmation), design-promote c4 delta application, stack.html updates, folding approved ADRs and API contracts into whichever persistent doc's `responsibility.owns` frontmatter already claims the subject, audit of existing source code, documentation, stubs and risks. Does NOT handle: requirements (delegates to asd-ba), ux flows or design system (delegates to asd-ux), code implementation (delegates to dev agents)."
-model = "gpt-5.6-sol"
+model = "gpt-6-sol"
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 developer_instructions = """
