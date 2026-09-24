@@ -42,3 +42,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: AC-5 rewritten: split dispatch parts are removed entirely in both review phases, and review waves are the one mechanism for splitting a large review scope. The design-review out-of-scope line now says it is reviewed unsplit. Plan D7 covers the knock-on: twice-interrupted escalation, `surface-check` without `dispatches`, and `EXTERNAL_BATCH_FILES` for the wrapped-CLI batches.
 - **Rationale**: Explicit user instruction at the plan gate, which serves as authority for the scope change.
 - **Affected docs**: sprint.md, plan.md
+
+## 2026-09-24 — Scope changed: External batches and Dispatch ceiling removed
+
+- **Decision**: AC-5 also removes External Review's in-dispatch file batches, together with its `partial` outcome, and the Dispatch ceiling (`DISPATCH_CEILING`). Plan D7 covers the knock-on: one wrapped-CLI invocation per dispatch; a legacy recorded partial token still reads as satisfied; impl Task waves dispatch fully concurrently.
+- **Rationale**: Explicit user instruction at the plan gate, which serves as authority for the scope change.
+- **Affected docs**: sprint.md, plan.md

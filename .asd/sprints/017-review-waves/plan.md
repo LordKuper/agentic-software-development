@@ -60,8 +60,11 @@ This plan implements `sprint.md` AC-1..AC-8, working from the gaps and risks in 
   - Split dispatch parts are removed in both review phases: the size trigger (`SPLIT_THRESHOLD_FILES`), the interruption trigger (`--halve`), `.part-N` manifests/diffs/review files, `NA_PREDICATES.outOfPart`, the union property and the part merge. Every reviewer gets one manifest, one `.diff` and one review file per iteration.
   - An internal reviewer interrupted twice in a row on the same manifest in one iteration escalates to the user (retry fresh / abort), with no re-split.
   - `surface-check` drops `dispatches` and `--test-plan-files`: without parts, a wave-iteration dispatches at most 5 agents. `SURFACE_CAP_FILES` stays 100 as a plain literal, and the cap-override request no longer states a dispatch count.
-  - External Review's in-dispatch file batches keep their size of 25 under a renamed constant `EXTERNAL_BATCH_FILES`. They are a wrapped-CLI turn limit, not a dispatch split.
-  - The dispatch ceiling becomes a pure concurrency bound (`sequential groups of at most DISPATCH_CEILING`) for every phase step, in practice binding only impl Task waves, and no longer uses the word "wave".
+  - External Review's in-dispatch file batches are removed. One dispatch makes one wrapped-CLI invocation over its whole list, retried once.
+    - The `partial` outcome goes too, so the Outcome contract keeps verdict and availability skip only.
+    - A failure after invocation is an interrupted dispatch, and `Unreviewed files` comes only from a skip.
+    - A legacy `"APPROVE (partial: …)"` already recorded in an in-flight sprint still reads as satisfied (`sprint-lifecycle.md` "State recovery" legacy line), under `backward_compat: migration`.
+  - The Dispatch ceiling is removed: `DISPATCH_CEILING`, the `sprint-lifecycle.md` paragraph, and the `asd-phase-impl.md` sub-wave clause, so every Task of an impl wave dispatches concurrently. "Correlated interruption" is judged over every dispatch in flight in the iteration.
   - "Wave" then means only plan Task waves (`sprint-lifecycle.md` "Wave declaration") and review waves (defined once, in "Review iteration counters").
 - **D8 — Scope hand-off home (AC-8).** A new `review-policy.md` "Scope hand-off" section is the sole home for both review phases and every reviewer, External Review included. It replaces the scope bullet of "Clean-context review iteration" and the scope half of `external-review.md` "Phase-scoped payload".
   - **(1) List.** The per-agent file list (`emit-manifest` output, per wave) is the only normative scope: ledger rows and valid finding locations.
@@ -74,7 +77,6 @@ This plan implements `sprint.md` AC-1..AC-8, working from the gaps and risks in 
   - (c) A new `--full-files <path> --full-base <sha>` pair diffs the listed files over the wider range. It serves D6 wave iteration 1 and External Review's carried-over `Unreviewed files` (diffed over `<base_branch>...HEAD`).
   - (d) Testing's `--test-plan` paths are included in its `.diff`.
   - (e) Design-review: `draft-snapshot` also copies draft content into the iteration dir. From iteration 2, `emit-manifest --phase design-review --snapshot <prev iter dir>` writes a `--no-index` diff against it. Iteration 1 has no diff, because the drafts are wholly new and a diff would duplicate them.
-  - (f) External Review's in-dispatch batches keep the one diff file and bound each batch's scope by its batch list.
 - **D10 — Readers (AC-6).** The session-start hook reads both shapes, shows `wave K/n, iter N`, and never throws. `asd-sprint` resume shows the wave and its counter. `pr` DoD requires `wave == n` with every wave's highest iteration satisfied. Retro, the friction-log/test-plan templates and `asd-dev` cite the id form. `checkpoints.md` "Criterion cost surfacing" counts `wave-*/iter-NN/` dirs plus legacy ones.
 
 Change surface: 35 files
@@ -89,8 +91,8 @@ Sprint-specific additions:
 ### Task 1: Runtime — review-waves command and scope hand-off emission
 Material risk: change: new runtime commands and a changed emit-manifest contract (D1, D2, D9)
 Reachability: impl-review writes `waves.json` at first entry via `review-waves`; impl-review reads it at every wave's iteration 1 to build the division list for `emit-manifest --full-files`.
-- [ ] Add `WAVE_THRESHOLD_LINES = 3000` with a JSDoc line. Reword the `DISPATCH_CEILING` JSDoc to "sequential groups", with no "wave" (D7).
-- [ ] Remove parts (D7): `SPLIT_THRESHOLD_FILES`, `--halve`, part naming in `emitCoverageManifests`/`emitManifestCommand`, `NA_PREDICATES.outOfPart`. `surfaceCheck` loses `dispatches`/`--test-plan-files`, and the `SURFACE_CAP_FILES` JSDoc loses the parts rationale. Add `EXTERNAL_BATCH_FILES = 25`.
+- [ ] Add `WAVE_THRESHOLD_LINES = 3000` with a JSDoc line. Remove `DISPATCH_CEILING` and its export (D7).
+- [ ] Remove parts (D7): `SPLIT_THRESHOLD_FILES`, `--halve`, part naming in `emitCoverageManifests`/`emitManifestCommand`, `NA_PREDICATES.outOfPart`. `surfaceCheck` loses `dispatches`/`--test-plan-files`, and the `SURFACE_CAP_FILES` JSDoc loses the parts rationale.
 - [ ] Add a `review-waves` command: `--files --base --head` measures numstat lines (binary and pure-rename 0) and returns `{lines, threshold, waves}`. With `--division <json> --out <path>`, it validates exactly `n` non-empty disjoint lists covering the scope, then writes `waves.json` (D1, D2).
 - [ ] `emit-manifest --reviewer external`: write `external.scope.json` per `t_review-scope.json` plus `external.diff` for its list, with no rubric read and no ledger (D9a, D9b).
 - [ ] Add the `--full-files <path> --full-base <sha>` pair: listed files join the manifest list, and their patch hunks are taken over `<full-base>...<head>` in the same `.diff` (D9c).
@@ -112,11 +114,11 @@ Material risk: change: workflow-gate and state-schema contract across rule docs 
   - rollback reset clearing `reviews.impl` and the division (D3);
   - legacy-shape fallback (D3).
 - [ ] `sprint-lifecycle.md` other sections:
-  - "Dispatch ceiling" as a pure concurrency bound, without "wave" (D7);
-  - "APPROVE latch" per wave, with closed waves never re-dispatched (D6);
+  - "Dispatch ceiling" paragraph removed (D7);
+  - "APPROVE latch" per wave, with closed waves never re-dispatched (D6); availability-skip carve-out without the partial form (D7);
   - phase table impl-review row;
   - "Impacted test set" terminal suite after the last wave;
-  - "State recovery" per-wave reads, fixing the stale pointers audit found at :64, :354, :357;
+  - "State recovery" per-wave reads, the partial token kept only as a legacy satisfied value (D7), fixing the stale pointers audit found at :64, :354, :357;
   - "PR phase" reviews-green over all waves (D10);
   - "Plan file format" Change surface declaration: the cap-override request no longer states a `dispatches` count (D7).
 - [ ] `review-policy.md`:
@@ -125,7 +127,7 @@ Material risk: change: workflow-gate and state-schema contract across rule docs 
   - "Late duplicate return": the closed-wave branch (D6);
   - interrupted/correlated literals in id form (D4);
   - "Coverage ledger": no part stamping or out-of-part text (D7);
-  - "DoD per review phase": impl-review DoD = every wave's roster met plus the terminal suite.
+  - "DoD per review phase": impl-review DoD = every wave's roster met plus the terminal suite; "Gate Verdict Format" and the DoD table drop the partial form (D7).
 - [ ] `checkpoints.md`: "Criterion cost surfacing" counts wave dirs plus legacy ones, with the fix-round tail in id form; the review-cap override is per wave (D4, D10).
 - [ ] `artifact-layout.md`: `reviews/impl/wave-<K>/iter-NN/…` and `reviews/impl/waves.json` in the path map, plus the legacy read, with the `.part-N` entries removed; the test-plan note in id form (D2, D4, D7).
 - [ ] `git-strategy.md`: the `ASD-Task: impl-review <id> suite` trailer (D4); finding-id prefix example without `.part-N` (D7).
@@ -138,9 +140,9 @@ Material risk: change: public External Review scope-manifest contract and the re
 - [ ] `external-review.md`:
   - "Phase-scoped payload" keeps only the External-specific manifest fields and the diff-file hand-off (D9a, D9b), linking to "Scope hand-off", with no self-computed diff;
   - "Iteration semantics": carried-over `Unreviewed files` via `--full-files` (D9c), plus wave-scoped carry-over and stalemate lookups in id form (D4);
-  - batching bullet on `EXTERNAL_BATCH_FILES` (D7, D9f).
+  - "Batching" section removed; "Outcome contract" without partial or stopped-batch branches; "Unreviewed files" from skip only (D7).
 - [ ] `external-review/t_review-scope.json`, `t_prompt-external-impl.md`, `t_prompt-external-design.md`: the new fields. The prompts name the diff file as readable context despite its `.asd/sprints/**` location, and no longer grant `git diff`.
-- [ ] Agents `asd-external-review.md` (no "resolve files/commits yourself"; scope = list + diff) and the four `asd-reviewer-*.md` Inputs lines: link to "Scope hand-off" instead of restating it, and mention the design-review `.diff` from iteration 2.
+- [ ] Agents `asd-external-review.md` (no "resolve files/commits yourself"; scope = list + diff; one invocation, no batches, no partial outcome) and the four `asd-reviewer-*.md` Inputs lines: link to "Scope hand-off" instead of restating it, and mention the design-review `.diff` from iteration 2.
 - [ ] Regenerate the provider views for every edited agent with `node "$(git rev-parse --show-toplevel)/.asd/sync.js" --apply <view paths>`.
 
 ### Task 5: Workflows and sprint skill
@@ -160,12 +162,12 @@ Reachability: impl-review writes `review_fixes_pending = "wave-<K>/iter-NN"` at 
   - artefacts list;
   - return contract with `WAVE`.
 - [ ] `asd-phase-design-review.md`: split dispatch/parts removed (D7); `draft-snapshot` content copy plus `--snapshot` diff from iteration 2 (D9e); External via `emit-manifest --reviewer external`; payload links to "Scope hand-off".
-- [ ] `asd-phase-impl.md`, `asd-phase-impl-test.md`: `review_fixes_pending` and the findings path in id form (D4).
+- [ ] `asd-phase-impl.md`, `asd-phase-impl-test.md`: `review_fixes_pending` and the findings path in id form (D4); impl step 6 without the dispatch-ceiling sub-wave clause (D7).
 - [ ] `asd-phase-pr.md` step 1: reviews-green over all waves (D10).
 - [ ] `asd-phase-retro.md`: review evidence paths in id form.
 - [ ] `asd-phase-plan.md`: the part-count note and the `dispatches` reference removed (D7).
 - [ ] `.asd/skills/asd-sprint/SKILL.md`: the resume display shows wave K/n and that wave's counter; rollback resets the wave node.
-- [ ] Templates `t_review.md` (part text removed, D7), `external-review/t_review-report.md` (iteration header carries the wave), `t_friction-log.md`, `t_test-plan.md` (id form).
+- [ ] Templates `t_review.md` (part text removed, D7), `external-review/t_review-report.md` (iteration header carries the wave; partial form removed, D7), `t_friction-log.md`, `t_test-plan.md` (id form).
 - [ ] `asd-dev.md`: findings path in id form.
 - [ ] Regenerate the provider views for the edited skill and agent (`sync.js --apply`).
 
@@ -173,7 +175,8 @@ Reachability: impl-review writes `review_fixes_pending = "wave-<K>/iter-NN"` at 
 Material risk: artifact: mirror accuracy and manifest hashes (AC-7)
 - [ ] `README.md`:
   - impl-review description, waves and the hand-off triple;
-  - External Review row (:219) with no "base/head refs";
+  - External Review row (:219) with no "base/head refs", batches or partial outcome;
+  - no Dispatch ceiling mention;
   - latch per wave (:225);
   - runtime.js entry (:297) with `review-waves`, external emission, `--full-files`, `--snapshot`, with no parts and no `dispatches`;
   - the floor note (:420) per wave;
@@ -183,7 +186,8 @@ Material risk: artifact: mirror accuracy and manifest hashes (AC-7)
 
 ## Risks
 - **Scope size:** the change surface is 35 files. Parts no longer exist once this sprint lands, and the sprint's own impl-review runs under the new canon (next item), so `WAVE_THRESHOLD_LINES` governs its size.
-- **Oversized wave:** without parts, a wave far above the threshold (3 waves cap it) is reviewed unsplit. Two consecutive interruptions escalate to the user instead of re-splitting.
+- **Oversized wave:** without parts or External batches, a wave far above the threshold (3 waves cap it) goes to each reviewer and the wrapped CLI unsplit. Two consecutive interruptions escalate to the user instead of re-splitting.
+- **Unbounded concurrency:** with no dispatch ceiling, an impl wave with many Tasks dispatches all of them at once. The plan author keeps waves reasonably sized.
 - **Self-hosting bootstrap:** this sprint's own impl-review runs under the canon it rewrites, from a pre-wave `state.json`. D3's legacy fallback must be exact, and the impl-test suite covers the legacy shape before impl-review entry.
 - **Test churn:** `tests/run.js` pins many of these contracts (audit "Risks" list). Impl-test updates them after the code exists.
 - **Review cost:** each wave carries its own floor and cap. D1's line threshold keeps waves rare; D5's per-wave cap adds cap requests surfacing per-wave counts.
@@ -205,4 +209,4 @@ Material risk: artifact: mirror accuracy and manifest hashes (AC-7)
 
 ## Out of scope
 - Automated `.asd/migrations/*.js` rewriting of in-flight `state.json` (D3 reader fallback instead).
-- Changing `SURFACE_CAP_FILES` or `DISPATCH_CEILING` values.
+- Changing the `SURFACE_CAP_FILES` value.
