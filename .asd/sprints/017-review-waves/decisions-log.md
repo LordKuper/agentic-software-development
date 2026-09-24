@@ -67,3 +67,17 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: plan.md
 
 - 2026-09-24 — route Task 5: critical, dispatch HEAD 64680d0
+
+## 2026-09-24 — Task 5 flagged choices resolved
+
+- **Decision**: All Task 5 flags (d43bf8a) accepted:
+  - `--full-files` for the wave list at iteration 1, giving a deterministic union;
+  - External emission moved to step 6;
+  - legacy normalization as a precondition;
+  - cap-accept or all-FAIL override in wave K < n advances to wave K+1.
+
+  Task 6 also changes the `session-start.js` comment to "legacy partial". The other loose ends need no change. CHANGELOG stays with the pr phase, per git-strategy "Versioning".
+- **Rationale**: Each flag follows from D5/D6/D9 and the per-wave roster, and none opens a material alternative.
+- **Affected docs**: plan.md
+
+- 2026-09-24 — route Task 6: standard, dispatch HEAD e725b7a
