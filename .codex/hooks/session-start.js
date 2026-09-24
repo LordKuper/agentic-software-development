@@ -1,4 +1,4 @@
-// ASD generated. Edit .asd/hooks/session-start.js. source_digest=sha256:367dd2666336bee093e7201cb998569a9fff0765a41e4ebca11c62278cd0810d content_digest=sha256:367dd2666336bee093e7201cb998569a9fff0765a41e4ebca11c62278cd0810d asd_version=12.0.0 schema=1
+// ASD generated. Edit .asd/hooks/session-start.js. source_digest=sha256:fcb7aa34f4f65de7be201863093b13a4e1b2719e897876e63f93ca84a17832c2 content_digest=sha256:fcb7aa34f4f65de7be201863093b13a4e1b2719e897876e63f93ca84a17832c2 asd_version=12.0.0 schema=1
 // ASD SessionStart hook (canonical, provider-agnostic).
 // No shebang: this file is never executed directly (`./session-start.js`),
 // always invoked as `node <path> --provider ...`, and every generated
@@ -121,22 +121,18 @@ function normalizeImplReviews(reviews) {
 }
 
 // Pick the relevant review node for the current phase. In a review phase use
-// that phase's node; otherwise use whichever counter advanced most recently.
+// that phase's node; otherwise impl-review's current wave node once any wave
+// has iterated (impl-review runs after design-review, and a wave's counter
+// restarts at 1, so comparing counters would pick design), else design's.
 function reviewNodeForPhase(reviews, phase) {
   if (!reviews || typeof reviews !== 'object') return null;
-  if (phase === 'design-review') return reviews.design || null;
-  if (phase === 'impl-review') {
-    const implInfo = normalizeImplReviews(reviews);
-    return implInfo ? implInfo.node : null;
-  }
-  const d = reviews.design || null;
   const implInfo = normalizeImplReviews(reviews);
-  const i = implInfo ? implInfo.node : null;
-  const di = (d && d.iteration) || 0;
-  const ii = (i && i.iteration) || 0;
-  if (ii > 0 && ii >= di) return i;
-  if (di > 0) return d;
-  return null;
+  if (phase === 'design-review') return reviews.design || null;
+  if (phase === 'impl-review') return implInfo ? implInfo.node : null;
+  const implWaves = !implInfo ? [] : Array.isArray(reviews.impl.waves) ? reviews.impl.waves : [reviews.impl];
+  if (implWaves.some(n => n && n.iteration > 0)) return implInfo.node;
+  const d = reviews.design || null;
+  return d && d.iteration > 0 ? d : null;
 }
 
 // `iter-NN` keys sort lexically wrong past 9 iterations; extract the numeric

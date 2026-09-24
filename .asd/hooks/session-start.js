@@ -120,22 +120,18 @@ function normalizeImplReviews(reviews) {
 }
 
 // Pick the relevant review node for the current phase. In a review phase use
-// that phase's node; otherwise use whichever counter advanced most recently.
+// that phase's node; otherwise impl-review's current wave node once any wave
+// has iterated (impl-review runs after design-review, and a wave's counter
+// restarts at 1, so comparing counters would pick design), else design's.
 function reviewNodeForPhase(reviews, phase) {
   if (!reviews || typeof reviews !== 'object') return null;
-  if (phase === 'design-review') return reviews.design || null;
-  if (phase === 'impl-review') {
-    const implInfo = normalizeImplReviews(reviews);
-    return implInfo ? implInfo.node : null;
-  }
-  const d = reviews.design || null;
   const implInfo = normalizeImplReviews(reviews);
-  const i = implInfo ? implInfo.node : null;
-  const di = (d && d.iteration) || 0;
-  const ii = (i && i.iteration) || 0;
-  if (ii > 0 && ii >= di) return i;
-  if (di > 0) return d;
-  return null;
+  if (phase === 'design-review') return reviews.design || null;
+  if (phase === 'impl-review') return implInfo ? implInfo.node : null;
+  const implWaves = !implInfo ? [] : Array.isArray(reviews.impl.waves) ? reviews.impl.waves : [reviews.impl];
+  if (implWaves.some(n => n && n.iteration > 0)) return implInfo.node;
+  const d = reviews.design || null;
+  return d && d.iteration > 0 ? d : null;
 }
 
 // `iter-NN` keys sort lexically wrong past 9 iterations; extract the numeric
