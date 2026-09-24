@@ -479,24 +479,25 @@ function numstatLines(output, files) {
   return lines;
 }
 
-/** Review waves a scope of `lines` changed lines needs: one per WAVE_THRESHOLD_LINES begun, at least one, at most MAX_REVIEW_WAVES. */
-function reviewWaveCount(lines) {
+/** Review waves a scope of `files` files and `lines` changed lines needs: one per WAVE_THRESHOLD_LINES begun, at least one, at most MAX_REVIEW_WAVES and never more than `files`, so every wave can hold a file. */
+function reviewWaveCount(lines, files) {
   if (!Number.isInteger(lines) || lines < 0) fail('lines must be a non-negative integer');
-  return Math.min(MAX_REVIEW_WAVES, Math.max(1, Math.ceil(lines / WAVE_THRESHOLD_LINES)));
+  if (!Number.isInteger(files) || files < 0) fail('files must be a non-negative integer');
+  return Math.min(MAX_REVIEW_WAVES, Math.max(1, files), Math.max(1, Math.ceil(lines / WAVE_THRESHOLD_LINES)));
 }
 
-/** Accepts a review-wave division only as exactly `count` non-empty file lists, disjoint and together equal to the scope, so every scope file is reviewed in exactly one wave. */
+/** Accepts a review-wave division only as exactly `count` file lists, disjoint and together equal to the scope, so every scope file is reviewed in exactly one wave; a list may be empty only when the scope is, as the one wave `[[]]`. */
 function validateWaveDivision(division, scope, count) {
   if (!Array.isArray(division) || division.length !== count) fail(`division must hold exactly ${count} waves`);
+  const inScope = new Set(scope);
   const placed = new Set();
   division.forEach((wave, index) => {
-    if (stringArray(wave, `division wave ${index + 1}`).length === 0) fail(`division wave ${index + 1} is empty`);
+    if (stringArray(wave, `division wave ${index + 1}`).length === 0 && inScope.size > 0) fail(`division wave ${index + 1} is empty`);
     wave.forEach((file) => {
       if (placed.has(file)) fail(`division places a file twice: ${file}`);
       placed.add(file);
     });
   });
-  const inScope = new Set(scope);
   const outside = [...placed].find((file) => !inScope.has(file));
   if (outside !== undefined) fail(`division file outside the scope: ${outside}`);
   const unplaced = [...inScope].find((file) => !placed.has(file));
@@ -658,7 +659,7 @@ function reviewWavesCommand(flags) {
   const head = gitRef(flags.head, '--head');
   const scope = readFileList(flags.files);
   const lines = numstatLines(runGit(['diff', '--numstat', '-z', '-M', `${base}...${head}`]), scope);
-  const measured = { lines, threshold: WAVE_THRESHOLD_LINES, waves: reviewWaveCount(lines) };
+  const measured = { lines, threshold: WAVE_THRESHOLD_LINES, waves: reviewWaveCount(lines, new Set(scope).size) };
   if (flags.division === undefined) return measured;
   const waves = validateWaveDivision(JSON.parse(fs.readFileSync(flags.division, 'utf8')), scope, measured.waves);
   fs.mkdirSync(path.dirname(flags.out), { recursive: true });
