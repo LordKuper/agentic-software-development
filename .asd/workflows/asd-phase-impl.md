@@ -5,11 +5,11 @@ Orchestration body for the `asd-phase-impl` skill. Operation-mapping to host too
 ## Preconditions
 - Active sprint at `.asd/sprints/<NNN-slug>/`
 - **Initial mode**: `plan.md` approved (per checkpoints precondition chain); `state.json.phase` advanced from `plan`
-- **Review-fix mode**: `state.json.review_fixes_pending` set to `iter-NN`; `<sprint>/reviews/impl/iter-NN/` reviewer files exist
+- **Review-fix mode**: `state.json.review_fixes_pending` set to an impl-review iteration id `<id>` (`wave-<K>/iter-NN`; a legacy bare `iter-NN` reads as wave 1, its dir the legacy one — `sprint-lifecycle.md` "Review iteration counters"); `<sprint>/reviews/impl/<id>/` reviewer files exist
 - **Test-fix mode**: `state.json.test_defects_pending` set; `<sprint>/test-plan.md` has pending `Defects` rows
 
 ## Operations used
-- read: `.asd/project/config.yaml`, `state.json`, `plan.md`, `<sprint>/reviews/impl/iter-NN/` (review-fix), `<sprint>/test-plan.md` (test-fix), persistent docs, `.asd/project/custom-common-rules.md`, `custom-coding-rules.md`, `stubs.md`, `<sprint>/manual-steps.md`
+- read: `.asd/project/config.yaml`, `state.json`, `plan.md`, `<sprint>/reviews/impl/<id>/` (review-fix), `<sprint>/test-plan.md` (test-fix), persistent docs, `.asd/project/custom-common-rules.md`, `custom-coding-rules.md`, `stubs.md`, `<sprint>/manual-steps.md`
 - run command: `git status --porcelain`/`git diff` to read the round's committed-plus-uncommitted diff for step 9's authorised-paths gate; `commands.yaml` `build`/`lint` for the same gate
 - write a file: `state.json` inline, for the mechanical non-gate writes at steps 4, 11 (`sprint-lifecycle.md` "State recovery")
 - request user decision: escalation only (see Execution mode)
@@ -48,11 +48,11 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
 1. Read `.asd/project/config.yaml` (`backward_compat`, `system.tools`, `self_hosting`, `language.chat`, `language.docs`). When `self_hosting: enabled`, devs' write scope extends per plan scope to the exhaustive allowlist in `sprint-lifecycle.md` "Self-hosting" (do not restate it here); dev instruction (step 6) adds: after any canonical edit, run `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `providers.md` "Canonical path -> per-provider path") before marking the task done; generated `.claude/`/`.codex/`/`.agents/skills/` stay off-limits always
 2. Read `<sprint>/state.json` → **detect mode**:
    - both fix flags null/absent → **initial mode**; confirm `plan.md` approved
-   - `review_fixes_pending` = `iter-NN` → **review-fix mode**; confirm `<sprint>/reviews/impl/iter-NN/` exists (else `ABORT — precondition not met: reviews/impl/iter-NN missing`)
+   - `review_fixes_pending` = `<id>` → **review-fix mode**; confirm `<sprint>/reviews/impl/<id>/` exists (else `ABORT — precondition not met: reviews/impl/<id> missing`)
    - `test_defects_pending` set → **test-fix mode**; confirm `<sprint>/test-plan.md` exists with pending `D-N` rows (else `ABORT — precondition not met: test-plan.md defects missing`)
 3. **Build work set** per mode:
    - **initial** — read `<sprint>/plan.md` → parse Task blocks (title, subtask checkboxes) plus the `## Dependencies` wave table and dependency lines
-   - **review-fix** — read every reviewer file in `<sprint>/reviews/impl/iter-NN/`; collect all CONCERNS findings plus all FAIL findings the user accepted for fix (skip FAIL noted resolved-by-override); group into fix tasks, one dev task per independent group; findings located in test files route to `asd-tester` instead
+   - **review-fix** — read every reviewer file in `<sprint>/reviews/impl/<id>/`; collect all CONCERNS findings plus all FAIL findings the user accepted for fix (skip FAIL noted resolved-by-override); group into fix tasks, one dev task per independent group; findings located in test files route to `asd-tester` instead
    - **test-fix** — read `<sprint>/test-plan.md` `Defects` section; collect every `D-N` with status `pending`; group into fix tasks, one dev task per independent group
 4. Write `state.json` (phase=impl) inline (mechanical, no gate)
 5. **Build execution graph**:
@@ -61,10 +61,10 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
 5a. Before each task dispatch, run `node .asd/runtime.js route-task --input <path>` with kind, objective inputs/checks, the task's `Material risk` lines as typed `risks` entries (`sprint-lifecycle.md` "Plan file format"), correction attempts and prior tier. A result with `execution="command"` runs directly; `execution="agent"` dispatches `asd-dev-<tier>` for `mechanical`/`critical`, or the base `asd-dev` for `tier: standard` (no `-standard` variant exists — `providers.md` "Task-class variants and routing"). Persist the record in `state.json.task_routing[taskId]` per `providers.md`, supplying its tier as `priorTier` on re-entry, and append the decisions-log routing line `- YYYY-MM-DD — route <taskIds>: <tier>, dispatch HEAD <sha>` (`git rev-parse HEAD`, one per dispatch). Invalid routing blocks; tier never lowers. In a fix mode, route every task of the chain first and persist each record, then dispatch the whole chain to a single agent at the highest tier returned — one agent holding every fix in the round is what keeps a later fix from contradicting an earlier one it never saw.
 6. **Dispatch tasks** per execution graph:
    - **Declared settings change** (initial mode) — as the wave holding a Task's `Settings change:` line (`sprint-lifecycle.md` "Plan file format") opens, before any of that wave's dispatch, the line is applied, never an `MS-N` and never handed to a dev: the main orchestrator dispatches `asd-init` sprint-mediated mode with exactly the declared pairs — validated against the working-tree `t_config.yaml`, so a key an earlier wave added counts — and commits `.asd/project/config.yaml` itself; on `FAILED`, halt as a blocker before any of that wave's dispatch; else that Task's other subtasks, if any, then dispatch in that wave
-   - per step 5's wave table, sequential where dependent; parallel where independent: waves ascending, every task of a wave dispatched concurrently (caller schedules concurrent delegations; a wave above the dispatch ceiling runs in sub-waves, `sprint-lifecycle.md` "Orchestration and adaptive gates"), the next wave opening only once all their signals are in — initial mode only; in a fix mode step 5's single ordered chain governs, dev chain before tester chain
+   - per step 5's wave table, sequential where dependent; parallel where independent: waves ascending, every task of a wave dispatched concurrently (caller schedules concurrent delegations), the next wave opening only once all their signals are in — initial mode only; in a fix mode step 5's single ordered chain governs, dev chain before tester chain
    - per task, or once per chain in a fix mode (5a): delegate to `asd-dev` (`asd-tester` only for review findings in test files) with payload:
      - initial — Task block excerpt (title + subtasks + dependencies); review-fix — grouped finding list (each finding's id per `git-strategy.md` "Commits", severity, location, description; plus user-approved change note for accepted FAIL findings); test-fix — grouped defect list (`D-N`, location, symptom, failing test) plus the guidance of a stalemate continue answer logged for it in the newest `decisions-log.NNN.md` (`artifact-layout.md` "Decisions log"), if any
-     - relevant context paths (PRD AC-N referenced, ADRs, ux-spec, DESIGN.md, accessibility, stack, commands.yaml, tech-reference/, custom-common-rules.md, custom-coding-rules.md; review-fix also: reviewer files in `reviews/impl/iter-NN/`; test-fix also: `test-plan.md`)
+     - relevant context paths (PRD AC-N referenced, ADRs, ux-spec, DESIGN.md, accessibility, stack, commands.yaml, tech-reference/, custom-common-rules.md, custom-coding-rules.md; review-fix also: reviewer files in `reviews/impl/<id>/`; test-fix also: `test-plan.md`)
      - `language.chat`, `language.docs`
      - instruction:
        - read context first
@@ -111,7 +111,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
    - on request changes: relay specific feedback to relevant dev(s); loop step 7
    - on abort: emit ABORT
 11. **Fix-mode finalize** — fix modes only — write inline (mechanical, no gate), after resolving or routing back any non-`none` `Flagged choices:` as step 10 does:
-   - review-fix: clear `state.json.review_fixes_pending` (set null), append decisions-log entry "impl fix for iter-NN: findings resolved"
+   - review-fix: clear `state.json.review_fixes_pending` (set null), append decisions-log entry "impl fix for <id>: findings resolved"
    - test-fix: clear `state.json.test_defects_pending` (set null), append decisions-log entry "impl test-fix: defects <D-N list> resolved"
 12. Emit phase COMPLETED with return contract (`NEXT: impl-test` in all modes)
 
@@ -128,7 +128,7 @@ Impl completion gate (step 9) and, initial mode only, impl assessment gate (step
 - Updated `.asd/project/stubs.md` (project-global; open stubs only, deleted on resolution)
 - `<sprint>/manual-steps.md` when a manual action arose (per-sprint, append-only)
 - Updated `<sprint>/plan.md` checkboxes (initial mode)
-- Updated reviewer files in `<sprint>/reviews/impl/iter-NN/` with user-approved change notes (review-fix mode)
+- Updated reviewer files in `<sprint>/reviews/impl/<id>/` with user-approved change notes (review-fix mode)
 - Updated `<sprint>/test-plan.md` defect rows flipped to `fixed` (test-fix mode)
 - Updated `state.json` (phase=impl; the entered mode's fix flag cleared on exit)
 - Git commits per Conventional Commits

@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-dev.md. source_digest=sha256:d8f6f5edbdf7f3e00c6a562e44043cb4da26cded8efa0d590dec6d94f5f1a389 content_digest=sha256:5a0ff9a3b5e3a4f980c5414795a8ae382fb5b8a4a0c68e4020863e2ccf2b6de2 asd_version=9.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-dev.md. source_digest=sha256:396b3671c8cbf48d49b5479f8c499777798e5d08045da4b3614f9ecbf7e8614c content_digest=sha256:5bb75574954c5033a1c2c07aa04e5efbf6c292db86635be7d5ec3e157868a3dd asd_version=12.0.0 schema=1
 name: asd-dev-mechanical
 description: "Server/CLI/library code and UI code, components, client-side logic, consuming DESIGN.md tokens wherever UI work applies. Covers: production code authoring per plan tasks (backend and frontend), fixing impl-review findings and impl-test defects, running lint/build/run commands from commands.yaml, registering TODO stubs in stubs.md. Does NOT handle: any test authoring or test runs — unit, integration, e2e (delegates to asd-tester in the impl-test phase), architecture decisions (delegates to asd-architect), design system token edits (delegates to asd-ux), accessibility requirements (read-only consumer of accessibility.html), code review (delegates to reviewer agents). Task class: mechanical."
 tools: [Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion]
@@ -28,7 +28,7 @@ Developer. Implements server/CLI/library code and UI code/components per plan ta
 ## Inputs
 
 - `<sprint>/plan.md` (tasks)
-- `<sprint>/reviews/impl/iter-NN/` (review-fix mode) or `<sprint>/test-plan.md` `Defects` (test-fix mode)
+- `<sprint>/reviews/impl/wave-<K>/iter-NN/` (review-fix mode) or `<sprint>/test-plan.md` `Defects` (test-fix mode)
 - `docs/product/requirements/<subsystem>.html` (acceptance criteria to satisfy); when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
 - whichever persistent doc folded a relevant sprint ADR (decisions to follow — architectural decisions are no longer a standalone `adr/` tree, `sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `docs/architecture/stack.html` and whichever persistent doc holds folded API contracts for the touched subsystem

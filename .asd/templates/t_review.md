@@ -9,12 +9,11 @@ responsibility:
 Interrupted attempts: {{count}} ({{cause}})
 
 <!-- the line above only when the reviewer was interrupted; omit it otherwise -->
-<!-- split form: the merged `<reviewer>.md` carries the token, that same optional line and links to `<reviewer>.part-N.md` only — findings and coverage stay in the parts (see `review-policy.md`) -->
 
 # Review — {{REVIEWER}}
 
 - **Phase**: {{design-review | impl-review}}
-- **Iteration**: {{N}}
+- **Iteration**: {{design-review: N | impl-review: wave-<K>/iter-NN}}
 
 ## Findings
 

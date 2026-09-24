@@ -18,7 +18,7 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 
 | ID | Phase | Problem | Refs |
 |---|---|---|---|
-| {{F-N}} | {{phase}} | {{one-line problem}} | {{D-N \| MS-N \| reviews/<phase>/iter-NN/<reviewer> \| —}} |
+| {{F-N}} | {{phase}} | {{one-line problem}} | {{D-N \| MS-N \| reviews/<phase>/[wave-<K>/]iter-NN/<reviewer> \| —}} |
 
 ## F-{{N}} — {{one-line problem}}
 

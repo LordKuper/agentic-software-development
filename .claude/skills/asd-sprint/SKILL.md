@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:6deacad005e602fb60c86dacee7d74ba2dde49a61bee1852d69bd0b098b52225 content_digest=sha256:05d4b94cfe5f8f801dd5b07db21a9b9956a513d03b6895726c3652df7b9ee1ed asd_version=10.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:e075debe2b5fd4138a54f013afed72ad4699520c32a1d561c26b3fc6036a9f97 content_digest=sha256:dea3f727c88780f4ca2bbe45d64b6a24a5856670ca029284b72e565580b0f83e asd_version=12.0.0 schema=1
 name: asd-sprint
 description: "Starts a new ASD sprint or resumes the active one, dispatching the matching asd-phase-* skill and routing phase signals back to the user. Use when the user runs /asd-sprint or asks to start, continue, resume, or work on an ASD sprint."
 allowed-tools: "Read Glob Grep Bash AskUserQuestion Skill"
@@ -39,9 +39,9 @@ Before a phase-skill delegation below, rotate the decisions log when `.asd/rules
 
 ### Step 2B: resume flow
 1. Read `.asd/sprints/<NNN-slug>/state.json`
-2. Show: sprint id, current phase, review iteration (`reviews.design.iteration` when phase=`design-review`, `reviews.impl.iteration` when phase=`impl-review`), last review verdict (if any)
+2. Show: sprint id, current phase, review iteration (`reviews.design.iteration` when phase=`design-review`; when phase=`impl-review`, `wave <K>/<n>` = `reviews.impl.wave`/`waves.length` plus that wave's `iteration`, a legacy flat `reviews.impl` read as wave 1 of 1 — `sprint-lifecycle.md` "Review iteration counters"), last review verdict (if any)
 3. Request user decision: resume (default) | re-run current phase | re-run earlier phase | abort sprint. Under the design-block collapse test (`sprint-lifecycle.md`), neither re-run option offers `design`, `design-review` or `design-promote`.
-4. Delegate to the matching phase skill. *resume* re-enters `phase`, except `phase="design-promote"` under the collapse test (`sprint-lifecycle.md` "Design/design-review/design-promote collapse"): then dispatch `plan`. *re-run earlier phase* = rollback: its inline state update resets the review counter + severity floor per **rollback reset** in `sprint-lifecycle.md`.
+4. Delegate to the matching phase skill. *resume* re-enters `phase`, except `phase="design-promote"` under the collapse test (`sprint-lifecycle.md` "Design/design-review/design-promote collapse"): then dispatch `plan`. *re-run earlier phase* = rollback: its inline state update resets the review state per **rollback reset** in `sprint-lifecycle.md` — `reviews.design`'s counter, `reviews.impl` to its seed wave node — with the severity floors.
 
 ### Step 3: phase chain advancement
 After any phase skill returns:
