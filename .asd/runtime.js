@@ -591,11 +591,15 @@ function writeGitOutput(file, invocations) {
   }
 }
 
-/** Writes `<stem>.diff` for a manifest's file list and returns its path: over the commit ranges in impl-review, against the previous snapshot in design-review; null when there is nothing to diff against, as in design-review iteration 1. */
-function writeManifestDiff(stem, files, ranges, snapshot) {
+/** Writes the diff of a manifest's file list into `dir` and returns its path: over the commit ranges in impl-review, against the previous snapshot in design-review; null when there is nothing to diff against, as in design-review iteration 1. Named by the fingerprint of the git invocations producing it, so manifests sharing a list and range share one file, written once and never left half-written under that name. */
+function writeManifestDiff(dir, files, ranges, snapshot) {
   if (ranges === null && snapshot === undefined) return null;
-  const diff = `${stem}.diff`;
-  writeGitOutput(diff, ranges !== null ? rangePatchInvocations(ranges, files) : snapshotPatchInvocations(snapshot, files));
+  const invocations = ranges !== null ? rangePatchInvocations(ranges, files) : snapshotPatchInvocations(snapshot, files);
+  const diff = path.join(dir, `${fingerprint(invocations).slice(0, 16)}.diff`);
+  if (!fs.existsSync(diff)) {
+    writeGitOutput(`${diff}.tmp`, invocations);
+    fs.renameSync(`${diff}.tmp`, diff);
+  }
   return diff;
 }
 
@@ -613,7 +617,7 @@ function emitExternalScope(flags, files, ranges) {
   const scope = Object.assign(
     { phase: flags.phase, iteration: positiveInteger(flags.iteration, '--iteration') },
     isImplReview ? { wave: positiveInteger(flags.wave, '--wave') } : {},
-    { files, diff: writeManifestDiff(stem, files, ranges, flags.snapshot) },
+    { files, diff: writeManifestDiff(flags.out, files, ranges, flags.snapshot) },
   );
   fs.writeFileSync(`${stem}.scope.json`, JSON.stringify(scope) + '\n', 'utf8');
   return scope.diff === null ? { scope: `${stem}.scope.json` } : { scope: `${stem}.scope.json`, diff: scope.diff };
@@ -637,7 +641,7 @@ function emitInternalManifest(flags, files, ranges) {
   });
   const stem = path.join(flags.out, flags.reviewer);
   fs.writeFileSync(`${stem}.manifest.json`, JSON.stringify(manifest) + '\n', 'utf8');
-  const diff = writeManifestDiff(stem, manifest.files, ranges, flags.snapshot);
+  const diff = writeManifestDiff(flags.out, manifest.files, ranges, flags.snapshot);
   return diff === null ? { manifest: `${stem}.manifest.json`, digest: manifest.digest } : { manifest: `${stem}.manifest.json`, digest: manifest.digest, diff };
 }
 
