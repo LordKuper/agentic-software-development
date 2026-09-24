@@ -35,3 +35,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 <!-- entries appended below this line -->
 - 2026-09-24 — External Review skipped for sprint 017-review-waves iteration wave-1/iter-02: external review unavailable: command-unavailable (`codex` not on PATH; same cause as F-1)
+
+## 2026-09-24 — impl-review wave-1/iter-02 → impl review-fix
+
+- **Decision**: Efficiency returned APPROVE and is latched (wave 1, iteration 2). Correctness (1), Testing (3) and Documentation (2) returned CONCERNS, and External was availability-skipped. The 6 findings route to impl review-fix with `review_fixes_pending = "wave-1/iter-02"`. The cap is not reached (next is iteration 3 of 7).
+- **Rationale**: No finding is FAIL, and all are at or above floor `medium`.
+- **Affected docs**: reviews/impl/wave-1/iter-02/
