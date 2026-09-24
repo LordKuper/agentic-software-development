@@ -441,17 +441,18 @@ function snapshotCopyPath(iterationDir, file) {
   return path.join(iterationDir, 'snapshot', relative);
 }
 
-/** Writes one design-review iteration's draft content hashes to `out`, copies each draft under the `snapshot/` directory beside it so the next iteration can diff against it, and returns the drafts whose hash differs from the `previous` iteration's snapshot; every draft when there is no previous snapshot, so a missing one widens scope rather than dropping a draft. */
+/** Copies each draft under the `snapshot/` directory of design-review iteration dir `out`, so the next iteration can diff against it, and returns the drafts whose content differs from their copy under the `previous` iteration dir; a missing copy counts as changed, so a missing snapshot widens scope rather than dropping a draft. */
 function draftSnapshot(files, out, previous) {
-  const hashes = Object.fromEntries(files.map((file) => [file, fingerprint(fs.readFileSync(file, 'utf8'))]));
-  const before = previous !== undefined && fs.existsSync(previous) ? JSON.parse(fs.readFileSync(previous, 'utf8')) : {};
+  const changed = files.filter((file) => {
+    const before = previous === undefined ? null : snapshotCopyPath(previous, file);
+    return before === null || !fs.existsSync(before) || !fs.readFileSync(before).equals(fs.readFileSync(file));
+  });
   files.forEach((file) => {
-    const copy = snapshotCopyPath(path.dirname(out), file);
+    const copy = snapshotCopyPath(out, file);
     fs.mkdirSync(path.dirname(copy), { recursive: true });
     fs.copyFileSync(file, copy);
   });
-  fs.writeFileSync(out, JSON.stringify(hashes) + '\n', 'utf8');
-  return files.filter((file) => before[file] !== hashes[file]);
+  return changed;
 }
 
 /** Measures a file list against SURFACE_CAP_FILES, or against the user-approved override bound when one is recorded. */
@@ -748,7 +749,7 @@ function main(argv) {
     return result.breach ? 1 : 0;
   }
   if (command === 'draft-snapshot') {
-    if (typeof flags.files !== 'string' || typeof flags.out !== 'string') fail('--files <path> and --out <path> required');
+    if (typeof flags.files !== 'string' || typeof flags.out !== 'string') fail('--files <path> and --out <iteration dir> required');
     process.stdout.write(draftSnapshot(readFileList(flags.files), flags.out, flags.previous).map((file) => `${file}\n`).join(''));
     return 0;
   }

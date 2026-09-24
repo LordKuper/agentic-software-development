@@ -10,7 +10,7 @@ Orchestration body for the `asd-phase-design-review` skill. Operation-mapping to
 
 ## Operations used
 - read: `.asd/project/config.yaml`, `state.json`, drafts in `<sprint>/design/`, review files
-- write validated compact reviewer coverage and orchestrator state inline; the iteration's draft path list for step 7's `emit-manifest --files` and External Review's list, to temp files outside the repo, and its `snapshot.json` plus `snapshot/` copies
+- write validated compact reviewer coverage and orchestrator state inline; the iteration's draft path list for step 7's `emit-manifest --files` and External Review's list, to temp files outside the repo, and its `snapshot/` draft copies
 - request user decision: escalation on FAIL or iteration cap
 - delegate to agent in parallel: reviewers; delegate to agent sequentially: creator autofix; the orchestrator writes state and decisions-log inline
 - append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log"
@@ -25,7 +25,7 @@ Orchestration body for the `asd-phase-design-review` skill. Operation-mapping to
 5. Compute severity floor for current iteration per `review-policy.md` cumulative-budget algorithm (uses `reviews.design.iteration`)
 6. Create folder `<sprint>/reviews/design/iter-NN/` if absent
 7. **Parallel dispatch** — every reviewer delegated to as a **fresh agent** each iteration (clean-context dispatch per `review-policy.md`); no reviewer reused across iterations:
-   - **Draft list** — the sole home of the design-review iteration snapshot: run `node .asd/runtime.js draft-snapshot --files <step 1's in-scope draft paths, one per line> --out <sprint>/reviews/design/iter-NN/snapshot.json`, adding `--previous <sprint>/reviews/design/iter-(NN-1)/snapshot.json` on iter 2+, and write its stdout to a temp file outside the repo. It persists this iteration's draft content hashes and a copy of each draft under `<sprint>/reviews/design/iter-NN/snapshot/`, and prints every draft on iter 1, and on iter 2+ only the drafts whose content differs from the previous snapshot (every draft when that snapshot is missing). Run it every iteration, latch-skipped reviewers or not.
+   - **Draft list** — the sole home of the design-review iteration snapshot: run `node .asd/runtime.js draft-snapshot --files <step 1's in-scope draft paths, one per line> --out <sprint>/reviews/design/iter-NN/`, adding `--previous <sprint>/reviews/design/iter-(NN-1)/` on iter 2+, and write its stdout to a temp file outside the repo. It copies each draft under `<sprint>/reviews/design/iter-NN/snapshot/`, and prints every draft on iter 1, and on iter 2+ only the drafts whose content differs from their previous copy (a missing copy counts as changed). Run it every iteration, latch-skipped reviewers or not.
    - **Emit manifests** — for each internal reviewer not latch-skipped (filter below), run `node .asd/runtime.js emit-manifest --reviewer <name> --phase design-review --files <the draft list above> --out <sprint>/reviews/design/iter-NN/ --custom-rules .asd/project/custom-common-rules.md,.asd/project/custom-design-rules.md`, adding `--snapshot <sprint>/reviews/design/iter-(NN-1)/` on iter 2+. It builds that reviewer's own file list (`review-policy.md` "Reviewer responsibility") and writes `<reviewer>.manifest.json`, plus on iter 2+ its list's `<fingerprint>.diff` against the previous iteration's snapshot copies (none at iter 1, `review-policy.md` "Scope hand-off").
    - **APPROVE latch filter first** (`sprint-lifecycle.md` "APPROVE latch" — sole SSoT for the mechanism): read `state.json.reviews.design.latched`; a reviewer key present there is skipped entirely this iteration — no fresh agent call, no new review file, no ledger gate at step 8 for it. Every internal reviewer is dispatched when not latch-skipped, for any non-empty draft set:
    - `asd-reviewer-documentation`
@@ -61,7 +61,7 @@ Orchestration body for the `asd-phase-design-review` skill. Operation-mapping to
 - `<sprint>/reviews/design/iter-NN/efficiency.md` (written by this workflow when dispatched; not written this iteration when latch-skipped — step 7)
 - `<sprint>/reviews/design/iter-NN/correctness.md` (written by this workflow when dispatched; its UI section may be `n/a: outside phase gate`; not written when latch-skipped)
 - `<sprint>/reviews/design/iter-NN/external.md` (when `external_review=enabled` and not latch-skipped; written by this workflow)
-- `<sprint>/reviews/design/iter-NN/snapshot.json` and `snapshot/` (step 7, every iteration: in-scope draft content hashes and copies)
+- `<sprint>/reviews/design/iter-NN/snapshot/` (step 7, every iteration: in-scope draft copies)
 - `<sprint>/reviews/design/iter-NN/<reviewer>.manifest.json` (step 7, per dispatched internal reviewer), `external.scope.json` (step 7, External Review dispatched), plus on iter 2+ one `<fingerprint>.diff` per distinct list
 - `<sprint>/reviews/design/iter-NN/<reviewer>.late.md` (only for a late duplicate return admitted at step 8a; linked from that reviewer's `<reviewer>.md`)
 - Updated `<sprint>/design/` artifacts after autofix or escalation-approved fixes
