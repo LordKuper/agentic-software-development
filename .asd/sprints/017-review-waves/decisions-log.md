@@ -37,3 +37,11 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 - 2026-09-24 — route Task 1: critical, dispatch HEAD c2bf1db
 - 2026-09-24 — route Task 2: standard, dispatch HEAD c2bf1db
+
+## 2026-09-24 — Wave 1 flagged choices resolved
+
+- **Decision**: All Task 1 flags (af26202) and Task 2 flags (52d91d7) accepted as in-plan implementation choices. Task 1: snapshot copies go to `<iter dir>/snapshot/<path>`; External gets `--iteration`/`--wave` and requires a range in impl-review; `emit-manifest` prints a single object; new exports. Task 2: the wave display is impl-review only; an out-of-range `wave` falls back to 1 in the hook display. `t_review-scope.json` is already done by Task 1, so Task 4 does not touch it again.
+- **Rationale**: Every choice stays inside D1/D2/D7/D9/D10, and none opens a material alternative. Later Tasks bind the rule text to these names.
+- **Affected docs**: plan.md
+
+- 2026-09-24 — route Task 3: critical, dispatch HEAD 2e2e133
