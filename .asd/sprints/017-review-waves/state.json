@@ -24,6 +24,13 @@
       "reason": "scope-authorized; sole contradiction settled by AC-8 at scope gate",
       "evidence": "audit.md Contradictions; decisions-log.001.md",
       "artifact_revision": "audit.md@2026-09-24T01:00:00Z"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "user",
+      "reason": "explicit accept; includes scope changes AC-5 (parts, external batches, dispatch ceiling removed)",
+      "evidence": "plan.md D1-D10, Tasks 1-6; surface-check 35/100",
+      "artifact_revision": "plan.md@c49ba94"
     }
   ],
   "task_routing": {},
@@ -46,7 +53,7 @@
     }
   },
   "created_at": "2026-09-24T00:24:03Z",
-  "updated_at": "2026-09-24T01:10:00Z",
+  "updated_at": "2026-09-24T02:00:00Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
