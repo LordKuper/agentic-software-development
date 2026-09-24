@@ -42,3 +42,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Opened PR #49 (`claude/asd-sprint-4y74bx` → `main`) through the GitHub MCP tools and subscribed to its activity. The sprint stays active at its normal path; merge and closure are separate steps.
 - **Rationale**: `gh`, the only PR path per `git-strategy.md`, is not installed in the cloud container. The user explicitly chose the MCP route.
 - **Affected docs**: state.json
+
+## 2026-09-24 — PR #49 merged; sprint closure approved (user)
+
+- **Decision**: The orchestrator squash-merged PR #49 as `75a9fe9` after CI (`sync-check`) passed and the PR was mergeable, and set `pr.state="closure-pending"`. The user explicitly instructed to drive autonomously to sprint closure and release publication, which is the hard closure approval.
+- **Rationale**: Merging never satisfies closure (`git-strategy.md` "Merging a PR"). The user's explicit instruction does.
+- **Affected docs**: state.json

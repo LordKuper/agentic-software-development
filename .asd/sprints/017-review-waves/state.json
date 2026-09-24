@@ -52,6 +52,13 @@
       "reason": "explicit choice: open PR via GitHub MCP (gh unavailable)",
       "evidence": "PR #49",
       "artifact_revision": "509ed73"
+    },
+    {
+      "gate": "sprint-closure",
+      "decision_actor": "user",
+      "reason": "explicit instruction: drive autonomously to sprint closure and release publication",
+      "evidence": "PR #49 merged 75a9fe9; CI sync-check green; DoD verified at pr open",
+      "artifact_revision": "75a9fe9"
     }
   ],
   "task_routing": {
@@ -309,13 +316,14 @@
     }
   },
   "created_at": "2026-09-24T00:24:03Z",
-  "updated_at": "2026-09-24T16:30:00Z",
+  "updated_at": "2026-09-24T17:00:00Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": {
-    "state": "open",
+    "state": "closure-pending",
     "number": 49,
-    "url": "https://github.com/LordKuper/agentic-software-development/pull/49"
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/49",
+    "merge_commit": "75a9fe9da6a255002d5c2b8ed5b545831306744a"
   },
   "archived_at": null
 }
