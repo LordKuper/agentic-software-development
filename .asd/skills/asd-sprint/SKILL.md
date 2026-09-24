@@ -40,9 +40,9 @@ Before a phase-skill delegation below, rotate the decisions log when `.asd/rules
 
 ### Step 2B: resume flow
 1. Read `.asd/sprints/<NNN-slug>/state.json`
-2. Show: sprint id, current phase, review iteration (`reviews.design.iteration` when phase=`design-review`, `reviews.impl.iteration` when phase=`impl-review`), last review verdict (if any)
+2. Show: sprint id, current phase, review iteration (`reviews.design.iteration` when phase=`design-review`; when phase=`impl-review`, `wave <K>/<n>` = `reviews.impl.wave`/`waves.length` plus that wave's `iteration`, a legacy flat `reviews.impl` read as wave 1 of 1 — `sprint-lifecycle.md` "Review iteration counters"), last review verdict (if any)
 3. Request user decision: resume (default) | re-run current phase | re-run earlier phase | abort sprint. Under the design-block collapse test (`sprint-lifecycle.md`), neither re-run option offers `design`, `design-review` or `design-promote`.
-4. Delegate to the matching phase skill. *resume* re-enters `phase`, except `phase="design-promote"` under the collapse test (`sprint-lifecycle.md` "Design/design-review/design-promote collapse"): then dispatch `plan`. *re-run earlier phase* = rollback: its inline state update resets the review counter + severity floor per **rollback reset** in `sprint-lifecycle.md`.
+4. Delegate to the matching phase skill. *resume* re-enters `phase`, except `phase="design-promote"` under the collapse test (`sprint-lifecycle.md` "Design/design-review/design-promote collapse"): then dispatch `plan`. *re-run earlier phase* = rollback: its inline state update resets the review state per **rollback reset** in `sprint-lifecycle.md` — `reviews.design`'s counter, `reviews.impl` to its seed wave node — with the severity floors.
 
 ### Step 3: phase chain advancement
 After any phase skill returns:

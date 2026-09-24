@@ -17,16 +17,18 @@ const LEDGER_ROW_EXAMPLE = { i: '<manifest id>', s: LEDGER_VOCABULARY.p, p: '<al
 const ROW_TYPES = Object.keys(LEDGER_VOCABULARY).filter((key) => Array.isArray(LEDGER_VOCABULARY[key]));
 /** The `n_a` shape: row type, then manifest id, then its allowed predicate list. Published beside the vocabulary under its own key, because `n_a` itself carries per-dispatch content. */
 const LEDGER_NA_SHAPE = Object.fromEntries(ROW_TYPES.map((type) => [type, { [LEDGER_ROW_EXAMPLE.i]: [LEDGER_ROW_EXAMPLE.p] }]));
-/** A scope file list above this many files is partitioned into `ceil(files / threshold)` parts before its first dispatch. */
-const SPLIT_THRESHOLD_FILES = 25;
-/** A reviewable change surface above this many files blocks plan acceptance and impl-review entry until the user splits the sprint or approves an override bound. Four split parts (4 * SPLIT_THRESHOLD_FILES). */
+/** A reviewable change surface above this many files blocks plan acceptance and impl-review entry until the user splits the sprint or approves an override bound. */
 const SURFACE_CAP_FILES = 100;
-/** Concurrent agent dispatches one phase step may run; dispatches above it run in sequential waves of at most this many. */
-const DISPATCH_CEILING = 20;
+/** Changed lines (added plus deleted) one impl-review wave carries; a larger scope divides into more waves, so no review turn holds an oversized diff. */
+const WAVE_THRESHOLD_LINES = 3000;
+/** Most review waves one scope divides into, so an oversized scope still ends in a bounded number of sequential reviews. */
+const MAX_REVIEW_WAVES = 3;
 /** An audit whose touched areas track more than this many files gets a batched-read plan in the architect payload. */
 const AUDIT_BATCH_THRESHOLD_FILES = 200;
-/** Internal reviewers, named as `emit-manifest --reviewer` takes them, each dispatched once per split part. */
+/** Internal reviewers, named as `emit-manifest --reviewer` takes them. */
 const INTERNAL_REVIEWERS = ['correctness', 'efficiency', 'testing', 'documentation'];
+/** The `emit-manifest --reviewer` name that emits External Review's scope manifest instead of a coverage manifest. */
+const EXTERNAL_REVIEWER = 'external';
 /** The standing n/a predicates, each the exact text a ledger row records. The emitter authorizes one only where its condition holds; this is their sole home. */
 const NA_PREDICATES = {
   phaseGate: 'outside phase gate',
@@ -36,7 +38,6 @@ const NA_PREDICATES = {
   noHtml: 'no HTML file in scope',
   noSelfHosting: 'self_hosting not enabled',
   noTemplated: 'no templated artefact in scope',
-  outOfPart: 'evidence outside this part; covered by the other parts',
   pureRename: 'pure rename: identical content and mode',
 };
 /** Rubric entries each conditional predicate covers, by reviewer and id prefix; a prefix matching no entry fails the emit closed. */
@@ -351,8 +352,8 @@ function standingPredicates(input, ids, customRules, templates) {
   return granted;
 }
 
-/** Emits one reviewer's stamped coverage manifests: one over the whole scope, or disjoint near-even parts in manifest order when the scope exceeds the split threshold or is halved. */
-function emitCoverageManifests(input) {
+/** Emits one reviewer's stamped coverage manifest over its whole file list. */
+function emitCoverageManifest(input) {
   if (!input || typeof input !== 'object') fail('emit input required');
   if (!PHASES.includes(input.phase)) fail('phase must be design-review or impl-review');
   const files = stringArray(input.files, 'files');
@@ -361,20 +362,15 @@ function emitCoverageManifests(input) {
   const rules = rubric.rules.concat(Object.keys(customRules));
   const templates = input.templates === undefined ? [] : stringArray(input.templates, 'templates');
   const granted = standingPredicates(input, rules, customRules, templates);
-  const partCount = files.length > SPLIT_THRESHOLD_FILES ? Math.ceil(files.length / SPLIT_THRESHOLD_FILES) : input.halve === true ? 2 : 1;
-  if (partCount > Math.max(files.length, 1)) fail('scope has fewer files than parts');
-  const naFor = (ids) => Object.fromEntries(ids.map((id) => [id, partCount > 1 ? granted.get(id).concat(NA_PREDICATES.outOfPart) : granted.get(id)]).filter(([, predicates]) => predicates.length > 0));
+  const naFor = (ids) => Object.fromEntries(ids.map((id) => [id, granted.get(id)]).filter(([, predicates]) => predicates.length > 0));
   const renamed = new Set(input.pureRenames === undefined ? [] : stringArray(input.pureRenames, 'pureRenames'));
-  return Array.from({ length: partCount }, (_, part) => {
-    const partFiles = files.slice(Math.floor(part * files.length / partCount), Math.floor((part + 1) * files.length / partCount));
-    return stampManifest({
-      reviewer: input.reviewer,
-      phase: input.phase,
-      files: partFiles,
-      rules,
-      sections: rubric.sections,
-      n_a: { files: Object.fromEntries(partFiles.filter((file) => renamed.has(file)).map((file) => [file, [NA_PREDICATES.pureRename]])), rules: naFor(rules), sections: naFor(rubric.sections) },
-    });
+  return stampManifest({
+    reviewer: input.reviewer,
+    phase: input.phase,
+    files,
+    rules,
+    sections: rubric.sections,
+    n_a: { files: Object.fromEntries(files.filter((file) => renamed.has(file)).map((file) => [file, [NA_PREDICATES.pureRename]])), rules: naFor(rules), sections: naFor(rubric.sections) },
   });
 }
 
@@ -437,28 +433,83 @@ function readFileList(file) {
   return fs.readFileSync(file, 'utf8').split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
 }
 
-/** Writes one design-review iteration's draft content hashes to `out` and returns the drafts whose hash differs from the `previous` iteration's snapshot; every draft when there is no previous snapshot, so a missing one widens scope rather than dropping a draft. */
-function draftSnapshot(files, out, previous) {
-  const hashes = Object.fromEntries(files.map((file) => [file, fingerprint(fs.readFileSync(file, 'utf8'))]));
-  const before = previous !== undefined && fs.existsSync(previous) ? JSON.parse(fs.readFileSync(previous, 'utf8')) : {};
-  fs.writeFileSync(out, JSON.stringify(hashes) + '\n', 'utf8');
-  return files.filter((file) => before[file] !== hashes[file]);
+/** Where an iteration directory keeps its snapshot copy of a draft: the draft's path mirrored under `snapshot/`, an absolute path with its root dropped; a path climbing out with `..` fails, so a copy never lands outside the snapshot. */
+function snapshotCopyPath(iterationDir, file) {
+  const normalized = path.normalize(file);
+  const relative = path.isAbsolute(normalized) ? path.relative(path.parse(normalized).root, normalized) : normalized;
+  if (relative === '..' || relative.startsWith(`..${path.sep}`)) fail(`draft path must not climb out of its tree: ${file}`);
+  return path.join(iterationDir, 'snapshot', relative);
 }
 
-/** Measures a file list against SURFACE_CAP_FILES, or against the user-approved override bound when one is recorded; `dispatches` is the impl-review dispatch upper bound that cap implies (every internal reviewer per split part, Testing's parts sized for its test files plus the `testPlanFiles` test-plan paths appended to them, plus External Review). `testPlanFiles` defaults to 1, test-plan.md alone, for callers before any impl-test entry segment exists. */
-function surfaceCheck(files, bound, testPlanFiles = 1) {
+/** Copies each draft under the `snapshot/` directory of design-review iteration dir `out`, so the next iteration can diff against it, and returns the drafts whose content differs from their copy under the `previous` iteration dir; a missing copy counts as changed, so a missing snapshot widens scope rather than dropping a draft. */
+function draftSnapshot(files, out, previous) {
+  const changed = files.filter((file) => {
+    const before = previous === undefined ? null : snapshotCopyPath(previous, file);
+    return before === null || !fs.existsSync(before) || !fs.readFileSync(before).equals(fs.readFileSync(file));
+  });
+  files.forEach((file) => {
+    const copy = snapshotCopyPath(out, file);
+    fs.mkdirSync(path.dirname(copy), { recursive: true });
+    fs.copyFileSync(file, copy);
+  });
+  return changed;
+}
+
+/** Measures a file list against SURFACE_CAP_FILES, or against the user-approved override bound when one is recorded. */
+function surfaceCheck(files, bound) {
   if (bound !== undefined && !(Number.isInteger(bound) && bound > 0)) fail('--bound must be a positive integer');
-  if (!(Number.isInteger(testPlanFiles) && testPlanFiles > 0)) fail('--test-plan-files must be a positive integer');
   const cap = bound === undefined ? SURFACE_CAP_FILES : bound;
   const count = new Set(files).size;
-  const parts = (n) => Math.ceil(n / SPLIT_THRESHOLD_FILES);
-  return { files: count, cap, breach: count > cap, dispatches: (INTERNAL_REVIEWERS.length - 1) * parts(cap) + parts(cap + testPlanFiles) + 1 };
+  return { files: count, cap, breach: count > cap };
 }
 
-/** Runs git without a shell, returning its stdout, or streaming it into an open file descriptor so a large patch never hits a buffer cap. */
-function runGit(args, outFd) {
+/** Sums added plus deleted lines of `git diff --numstat -z -M` output over the listed paths, a rename counted at its destination; a binary file (`-`) and a pure rename (0 and 0) add nothing. */
+function numstatLines(output, files) {
+  const listed = new Set(stringArray(files, 'files'));
+  const tokens = output.split('\0');
+  let lines = 0;
+  let at = 0;
+  while (at < tokens.length - 1) {
+    const entry = /^(-|\d+)\t(-|\d+)\t([\s\S]*)$/.exec(tokens[at]);
+    if (!entry) fail(`numstat entry malformed: ${tokens[at]}`);
+    const [, added, deleted, file] = entry;
+    const isRename = file === '';
+    if (added !== '-' && listed.has(isRename ? tokens[at + 2] : file)) lines += Number(added) + Number(deleted);
+    at += isRename ? 3 : 1;
+  }
+  return lines;
+}
+
+/** Review waves a scope of `files` files and `lines` changed lines needs: one per WAVE_THRESHOLD_LINES begun, at least one, at most MAX_REVIEW_WAVES and never more than `files`, so every wave can hold a file. */
+function reviewWaveCount(lines, files) {
+  if (!Number.isInteger(lines) || lines < 0) fail('lines must be a non-negative integer');
+  if (!Number.isInteger(files) || files < 0) fail('files must be a non-negative integer');
+  return Math.min(MAX_REVIEW_WAVES, Math.max(1, files), Math.max(1, Math.ceil(lines / WAVE_THRESHOLD_LINES)));
+}
+
+/** Accepts a review-wave division only as exactly `count` file lists, disjoint and together equal to the scope, so every scope file is reviewed in exactly one wave; a list may be empty only when the scope is, as the one wave `[[]]`. */
+function validateWaveDivision(division, scope, count) {
+  if (!Array.isArray(division) || division.length !== count) fail(`division must hold exactly ${count} waves`);
+  const inScope = new Set(scope);
+  const placed = new Set();
+  division.forEach((wave, index) => {
+    if (stringArray(wave, `division wave ${index + 1}`).length === 0 && inScope.size > 0) fail(`division wave ${index + 1} is empty`);
+    wave.forEach((file) => {
+      if (placed.has(file)) fail(`division places a file twice: ${file}`);
+      placed.add(file);
+    });
+  });
+  const outside = [...placed].find((file) => !inScope.has(file));
+  if (outside !== undefined) fail(`division file outside the scope: ${outside}`);
+  const unplaced = [...inScope].find((file) => !placed.has(file));
+  if (unplaced !== undefined) fail(`scope file in no wave: ${unplaced}`);
+  return division;
+}
+
+/** Runs git without a shell, returning its stdout, or streaming it into an open file descriptor so a large patch never hits a buffer cap; `okStatuses` admits git's documented non-error exits, such as `--no-index` reporting a difference with 1. */
+function runGit(args, outFd, okStatuses = [0]) {
   const result = spawnSync('git', args, { encoding: 'utf8', maxBuffer: Infinity, stdio: ['ignore', outFd === undefined ? 'pipe' : outFd, 'pipe'], windowsHide: true });
-  if (result.error || result.status !== 0) fail(`git ${args.join(' ')} failed: ${result.error ? result.error.message : result.stderr.trim()}`);
+  if (result.error || !okStatuses.includes(result.status)) fail(`git ${args.join(' ')} failed: ${result.error ? result.error.message : result.stderr.trim()}`);
   return result.stdout;
 }
 
@@ -480,49 +531,168 @@ function rangeRenames(base, head) {
   return renames;
 }
 
-/** A manifest's patch pathspec: its files the range changed (appended test-plan paths are not), each rename paired with its source so the patch shows a rename rather than an add. */
-function patchPaths(files, scope, renames) {
-  return files.filter((file) => scope.has(file)).flatMap((file) => (renames.has(file) ? [renames.get(file).source, file] : [file]));
+/** A patch pathspec for files one range diffs, each rename paired with its source so the patch shows a rename rather than an add. */
+function patchPaths(files, renames) {
+  return files.flatMap((file) => (renames.has(file) ? [renames.get(file).source, file] : [file]));
 }
 
-function writePatch(file, base, head, paths) {
+/** An impl-review manifest's commit ranges: `--base...--head` for the scope, and `--full-base...--head` for `--full-files`, whose entries join the list and take that wider range even when also in the scope. Null without `--base/--head`. */
+function manifestRanges(flags) {
+  const hasRange = flags.base !== undefined || flags.head !== undefined;
+  const hasFull = flags['full-files'] !== undefined || flags['full-base'] !== undefined;
+  if (hasRange && flags.phase !== 'impl-review') fail('--base/--head apply to impl-review only');
+  if (hasFull && !hasRange && (flags.snapshot === undefined || flags['full-base'] !== undefined)) fail('--full-files/--full-base need --base/--head; in design-review --full-files needs --snapshot and takes no --full-base');
+  if (!hasRange) return null;
+  const head = gitRef(flags.head, '--head');
+  const base = gitRef(flags.base, '--base');
+  const scopeRange = { base, head, renames: rangeRenames(base, head) };
+  if (!hasFull) return { scope: scopeRange, full: null, fullFiles: new Set() };
+  if (typeof flags['full-files'] !== 'string') fail('--full-files <path> required with --full-base');
+  const fullBase = gitRef(flags['full-base'], '--full-base');
+  return { scope: scopeRange, full: { base: fullBase, head, renames: rangeRenames(fullBase, head) }, fullFiles: new Set(readFileList(flags['full-files'])) };
+}
+
+/** A design-review manifest's snapshot diff source: the previous iteration dir, and the `--full-files` drafts left out of the diff so each is read whole. Null without `--snapshot`. */
+function snapshotSource(flags) {
+  if (flags.snapshot === undefined) return null;
+  if (flags.phase !== 'design-review') fail('--snapshot applies to design-review only');
+  return { dir: flags.snapshot, whole: new Set(flags['full-files'] === undefined ? [] : readFileList(flags['full-files'])) };
+}
+
+/** The range a listed file's patch hunks come from; a file on neither list, such as an appended test-plan path, takes the manifest range. */
+function rangeOf(ranges, file) {
+  return ranges.full !== null && ranges.fullFiles.has(file) ? ranges.full : ranges.scope;
+}
+
+/** Listed files each range renames with identical content and mode. */
+function pureRenames(ranges, files) {
+  if (ranges === null) return [];
+  return files.filter((file) => {
+    const rename = rangeOf(ranges, file).renames.get(file);
+    return rename !== undefined && rename.pure;
+  });
+}
+
+/** Git invocations writing one patch for `files`, each file's hunks over its own range. */
+function rangePatchInvocations(ranges, files) {
+  return [ranges.scope, ranges.full].filter((range) => range !== null).flatMap((range) => {
+    const paths = patchPaths(files.filter((file) => rangeOf(ranges, file) === range), range.renames);
+    return paths.length === 0 ? [] : [{ args: ['--literal-pathspecs', 'diff', '-M', '--no-color', '--no-ext-diff', '--no-textconv', `${range.base}...${range.head}`, '--', ...paths] }];
+  });
+}
+
+/** Git invocations diffing each draft against its copy in the previous iteration's snapshot; a draft that snapshot lacks gets none. */
+function snapshotPatchInvocations(previousDir, files) {
+  return files.flatMap((file) => {
+    const copy = snapshotCopyPath(previousDir, file);
+    return fs.existsSync(copy) ? [{ args: ['diff', '--no-index', '--no-color', '--no-ext-diff', '--no-textconv', '--', copy, file], okStatuses: [0, 1] }] : [];
+  });
+}
+
+/** Streams each git invocation's stdout, in order, into one freshly written file. */
+function writeGitOutput(file, invocations) {
   const fd = fs.openSync(file, 'w');
   try {
-    if (paths.length > 0) runGit(['--literal-pathspecs', 'diff', '-M', '--no-color', '--no-ext-diff', '--no-textconv', `${base}...${head}`, '--', ...paths], fd);
+    invocations.forEach((invocation) => runGit(invocation.args, fd, invocation.okStatuses));
   } finally {
     fs.closeSync(fd);
   }
 }
 
-function emitManifestCommand(flags) {
-  if (!/^[a-z]+$/.test(flags.reviewer || '')) fail('--reviewer <name> required');
-  if (typeof flags.files !== 'string' || typeof flags.out !== 'string') fail('--files <path> and --out <dir> required');
-  const hasRange = flags.base !== undefined || flags.head !== undefined;
-  if (hasRange && flags.phase !== 'impl-review') fail('--base/--head apply to impl-review only');
-  const range = hasRange ? { base: gitRef(flags.base, '--base'), head: gitRef(flags.head, '--head') } : null;
+/** Writes the diff of a manifest's file list into `dir` and returns its path: over the commit ranges in impl-review, against the previous snapshot in design-review, minus the drafts it leaves whole; null when there is nothing to diff against, as in design-review iteration 1. Named by the fingerprint of the git invocations producing it, so manifests sharing a list and range share one file; rewritten on every call, since those invocations name refs and paths rather than content and a reused directory may hold an older file under the same name, and renamed into place so it is never seen half-written. */
+function writeManifestDiff(dir, files, ranges, snapshot) {
+  if (ranges === null && snapshot === null) return null;
+  const invocations = ranges !== null ? rangePatchInvocations(ranges, files) : snapshotPatchInvocations(snapshot.dir, files.filter((file) => !snapshot.whole.has(file)));
+  const diff = path.join(dir, `${fingerprint(invocations).slice(0, 16)}.diff`);
+  const partial = `${diff}.${process.pid}.tmp`;
+  writeGitOutput(partial, invocations);
+  fs.renameSync(partial, diff);
+  return diff;
+}
+
+function positiveInteger(value, name) {
+  if (typeof value !== 'string' || !/^[1-9]\d*$/.test(value)) fail(`${name} <n> must be a positive integer`);
+  return Number(value);
+}
+
+/** Writes External Review's scope manifest and its diff: the same explicit list and precomputed change content an internal reviewer gets, with no rubric and no ledger. */
+function emitExternalScope(flags, files, ranges, snapshot) {
+  const isImplReview = flags.phase === 'impl-review';
+  if (isImplReview && ranges === null) fail('--base/--head required for impl-review External Review');
+  if (isImplReview !== (flags.wave !== undefined)) fail('--wave <k> is required for impl-review and applies to it only');
+  const stem = path.join(flags.out, EXTERNAL_REVIEWER);
+  const scope = Object.assign(
+    { phase: flags.phase, iteration: positiveInteger(flags.iteration, '--iteration') },
+    isImplReview ? { wave: positiveInteger(flags.wave, '--wave') } : {},
+    { files, diff: writeManifestDiff(flags.out, files, ranges, snapshot) },
+  );
+  fs.writeFileSync(`${stem}.scope.json`, JSON.stringify(scope) + '\n', 'utf8');
+  return scope.diff === null ? { scope: `${stem}.scope.json` } : { scope: `${stem}.scope.json`, diff: scope.diff };
+}
+
+/** Writes one internal reviewer's coverage manifest and its diff. */
+function emitInternalManifest(flags, files, ranges, snapshot) {
+  if (flags.iteration !== undefined || flags.wave !== undefined) fail(`--iteration/--wave apply to --reviewer ${EXTERNAL_REVIEWER} only`);
   const customPaths = typeof flags['custom-rules'] === 'string' ? flags['custom-rules'].split(',') : [];
   const testPlan = typeof flags['test-plan'] === 'string' ? flags['test-plan'].split(',') : [];
-  const scope = readFileList(flags.files);
-  const renames = range ? rangeRenames(range.base, range.head) : new Map();
-  const manifests = emitCoverageManifests({
+  const reviewed = reviewerFiles(flags.phase, flags.reviewer, files, testPlan);
+  const manifest = emitCoverageManifest({
     reviewer: flags.reviewer,
     phase: flags.phase,
     rubric: fs.readFileSync(path.join(__dirname, 'agents', `asd-reviewer-${flags.reviewer}.md`), 'utf8'),
-    files: reviewerFiles(flags.phase, flags.reviewer, scope, testPlan),
+    files: reviewed,
     customRules: Object.fromEntries(customPaths.map((file) => [file, fs.readFileSync(file, 'utf8')])),
-    halve: flags.halve === true,
     selfHosting: flags['self-hosting'] === true,
     templates: templateNames(path.join(__dirname, 'templates')),
-    pureRenames: [...renames].filter(([, rename]) => rename.pure).map(([file]) => file),
+    pureRenames: pureRenames(ranges, reviewed),
   });
-  const inScope = new Set(scope);
-  return manifests.map((manifest, index) => {
-    const stem = path.join(flags.out, manifests.length === 1 ? flags.reviewer : `${flags.reviewer}.part-${index + 1}`);
-    fs.writeFileSync(`${stem}.manifest.json`, JSON.stringify(manifest) + '\n', 'utf8');
-    if (!range) return { manifest: `${stem}.manifest.json`, digest: manifest.digest };
-    writePatch(`${stem}.diff`, range.base, range.head, patchPaths(manifest.files, inScope, renames));
-    return { manifest: `${stem}.manifest.json`, digest: manifest.digest, diff: `${stem}.diff` };
-  });
+  const stem = path.join(flags.out, flags.reviewer);
+  fs.writeFileSync(`${stem}.manifest.json`, JSON.stringify(manifest) + '\n', 'utf8');
+  const diff = writeManifestDiff(flags.out, manifest.files, ranges, snapshot);
+  return diff === null ? { manifest: `${stem}.manifest.json`, digest: manifest.digest } : { manifest: `${stem}.manifest.json`, digest: manifest.digest, diff };
+}
+
+function emitManifestCommand(flags) {
+  if (!/^[a-z]+$/.test(flags.reviewer || '')) fail('--reviewer <name> required');
+  if (typeof flags.files !== 'string' || typeof flags.out !== 'string') fail('--files <path> and --out <dir> required');
+  if (!PHASES.includes(flags.phase)) fail('phase must be design-review or impl-review');
+  const snapshot = snapshotSource(flags);
+  const ranges = manifestRanges(flags);
+  const whole = ranges !== null ? ranges.fullFiles : snapshot !== null ? snapshot.whole : new Set();
+  const files = [...new Set(readFileList(flags.files).concat([...whole]))];
+  return flags.reviewer === EXTERNAL_REVIEWER ? emitExternalScope(flags, files, ranges, snapshot) : emitInternalManifest(flags, files, ranges, snapshot);
+}
+
+function reviewWavesCommand(flags) {
+  if (typeof flags.files !== 'string') fail('--files <path> required');
+  if ((flags.division === undefined) !== (flags.out === undefined)) fail('--division <json path> and --out <path> go together');
+  const base = gitRef(flags.base, '--base');
+  const head = gitRef(flags.head, '--head');
+  const scope = readFileList(flags.files);
+  const lines = numstatLines(runGit(['diff', '--numstat', '-z', '-M', `${base}...${head}`]), scope);
+  const measured = { lines, threshold: WAVE_THRESHOLD_LINES, waves: reviewWaveCount(lines, new Set(scope).size) };
+  if (flags.division === undefined) return measured;
+  const waves = validateWaveDivision(JSON.parse(fs.readFileSync(flags.division, 'utf8')), scope, measured.waves);
+  fs.mkdirSync(path.dirname(flags.out), { recursive: true });
+  fs.writeFileSync(flags.out, JSON.stringify({ base, head, lines, threshold: WAVE_THRESHOLD_LINES, waves }) + '\n', 'utf8');
+  return measured;
+}
+
+/** Wave `k`'s list from a `waves.json` division, each path a later commit renamed mapped to its destination at `head` (renames over the division's `head...head`), so a file renamed after the division is reviewed under its current path. */
+function waveFiles(division, k, head) {
+  if (!division || typeof division !== 'object' || !Array.isArray(division.waves)) fail('waves.json must hold a waves array');
+  if (k > division.waves.length) fail(`--wave ${k} exceeds the ${division.waves.length} waves of the division`);
+  const moved = new Map([...rangeRenames(gitRef(division.head, 'waves.json head'), head)].map(([destination, rename]) => [rename.source, destination]));
+  return stringArray(division.waves[k - 1], `wave ${k}`).map((file) => moved.get(file) || file);
+}
+
+/** Writes a review wave's iteration-1 list: its current-path `waves.json` list unioned with the `--files` list, one path per line. */
+function waveFilesCommand(flags) {
+  if (typeof flags.waves !== 'string' || typeof flags.out !== 'string') fail('--waves <path> and --out <path> required');
+  const listed = waveFiles(JSON.parse(fs.readFileSync(flags.waves, 'utf8')), positiveInteger(flags.wave, '--wave'), gitRef(flags.head, '--head'));
+  const files = [...new Set(listed.concat(typeof flags.files === 'string' ? readFileList(flags.files) : []))];
+  fs.writeFileSync(flags.out, files.map((file) => `${file}\n`).join(''), 'utf8');
+  return { out: flags.out, files: files.length };
 }
 
 function parseFlagArgs(argv, booleanFlags) {
@@ -546,7 +716,7 @@ function inputJson(flags) {
 
 function main(argv) {
   const command = argv[2];
-  const flags = parseFlagArgs(argv.slice(3), ['halve', 'self-hosting']);
+  const flags = parseFlagArgs(argv.slice(3), ['self-hosting']);
   if (command === 'manifest-digest') {
     process.stdout.write(coverageManifestDigest(JSON.parse(fs.readFileSync(flags.manifest, 'utf8'))) + '\n');
     return 0;
@@ -580,20 +750,28 @@ function main(argv) {
   }
   if (command === 'surface-check') {
     if (typeof flags.files !== 'string') fail('--files <path> required');
-    const result = surfaceCheck(readFileList(flags.files), flags.bound === undefined ? undefined : Number(flags.bound), flags['test-plan-files'] === undefined ? undefined : Number(flags['test-plan-files']));
+    const result = surfaceCheck(readFileList(flags.files), flags.bound === undefined ? undefined : Number(flags.bound));
     process.stdout.write(JSON.stringify(result) + '\n');
     return result.breach ? 1 : 0;
   }
   if (command === 'draft-snapshot') {
-    if (typeof flags.files !== 'string' || typeof flags.out !== 'string') fail('--files <path> and --out <path> required');
+    if (typeof flags.files !== 'string' || typeof flags.out !== 'string') fail('--files <path> and --out <iteration dir> required');
     process.stdout.write(draftSnapshot(readFileList(flags.files), flags.out, flags.previous).map((file) => `${file}\n`).join(''));
     return 0;
   }
-  fail('usage: emit-manifest, manifest-digest, validate-ledger, external-preflight, external-record-failure, route-task, defect-stalemate, surface-check, or draft-snapshot');
+  if (command === 'review-waves') {
+    process.stdout.write(JSON.stringify(reviewWavesCommand(flags)) + '\n');
+    return 0;
+  }
+  if (command === 'wave-files') {
+    process.stdout.write(JSON.stringify(waveFilesCommand(flags)) + '\n');
+    return 0;
+  }
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, external-preflight, external-record-failure, route-task, defect-stalemate, surface-check, draft-snapshot, review-waves, or wave-files');
 }
 
 if (require.main === module) {
   try { process.exitCode = main(process.argv); } catch (error) { process.stderr.write(`${error.message}\n`); process.exitCode = 2; }
 }
 
-module.exports = { AUDIT_BATCH_THRESHOLD_FILES, DISPATCH_CEILING, INTERNAL_REVIEWERS, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, NA_PREDICATES, SPLIT_THRESHOLD_FILES, SURFACE_CAP_FILES, buildInvocation, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifests, externalPreflight, isTest, recordExternalFailure, reviewerFiles, routeTask, surfaceCheck, validateCoverageLedger, fingerprint };
+module.exports = { AUDIT_BATCH_THRESHOLD_FILES, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, SURFACE_CAP_FILES, WAVE_THRESHOLD_LINES, buildInvocation, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, isTest, numstatLines, recordExternalFailure, reviewWaveCount, reviewerFiles, routeTask, surfaceCheck, validateCoverageLedger, validateWaveDivision, waveFiles, fingerprint };

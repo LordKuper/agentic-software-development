@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:3f578b8a5835ec7c298bee1f713b41dfce4cda5601be39620db1beb763ab32d0 content_digest=sha256:fc68503906bb897ae6a93584b31fd7fec56194e9e53d4dc502703f267abdbc45 asd_version=10.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:48484237ae475cea9cdafdc845e1cbb40fa99fb1c90a5d9ffadf6d2b333c96f0 content_digest=sha256:a4313f35532a9d8912bd71fd2d6779a0e086a14e97d28b1e8a3096fb88721fe6 asd_version=12.0.0 schema=1
 name: asd-reviewer-efficiency
 description: "Design-review of design drafts and impl-review of code for over-engineering, structure/cohesion defects, and (impl-review only) performance budget/regression compliance. Covers: over-engineering smell detection per review-policy checklist (interface with one implementer, generic with one type, factory for < 3 classes, plugin without plugins, premature config flag, defensive code for impossible cases, dead code, deep inheritance, framework-on-framework, mock-of-mock, comment-restates-code), structure/cohesion smell detection (god/sprawling type), complexity-vs-value tradeoff, escalation of any fix that adds complexity; latency/memory/throughput budget compliance, algorithmic complexity, perf anti-patterns (n+1 queries, sync IO on hot path, unbounded allocations), regression detection vs baseline, hot-path identification lacking measurement or caching. Does NOT handle: bugs, security, AC→code trace, or UI (delegates to asd-reviewer-correctness), test-plan/test-quality review and AC→check coverage (delegates to asd-reviewer-testing), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -31,13 +31,12 @@ Efficiency reviewer. Merges the former Simplification and Performance reviewers 
 ## Inputs
 
 **Both phases:**
-- emitted manifest — its file list is this dispatch's scope (`review-policy.md` "Clean-context review iteration"), its `n_a` this phase's section gate — iteration number + review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`), from dispatching phase skill
+- emitted manifest and its `.diff` (design-review: from iteration 2) — the hand-off per `review-policy.md` "Scope hand-off"; the manifest's `n_a` is this phase's section gate — iteration number + review output dir (`<sprint>/reviews/<design|impl>/[wave-<K>/]iter-NN/`), from dispatching phase skill
 
 **design-review phase:**
 - the listed drafts
 
 **impl-review phase:**
-- the manifest's `.diff` (the change itself; never run git)
 - perf budgets from `.asd/project/custom-coding-rules.md`
 - whichever persistent doc folded a perf-related sprint ADR (`sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `docs/architecture/stack.html` (stack constraints)
@@ -125,7 +124,7 @@ Contract, format, and gate: `review-policy.md` "Coverage ledger" (SSoT, not rest
 
 ## Gate Verdict Format
 
-First content line of the returned findings text (which the phase orchestrator writes to `<sprint>/reviews/<design|impl>/iter-NN/efficiency.md`) MUST be:
+First content line of the returned findings text (which the phase orchestrator writes to `<sprint>/reviews/<design|impl>/[wave-<K>/]iter-NN/efficiency.md`) MUST be:
 
 `[REVIEW-<phase>-efficiency]: <APPROVE | CONCERNS | FAIL>`
 

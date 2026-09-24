@@ -103,27 +103,51 @@ function isDesignCollapsed(documents) {
   return Boolean(documents) && typeof documents === 'object' && ['prd', 'ux_spec', 'adr', 'c4'].every(name => documents[name] === false);
 }
 
-// Pick the relevant review node for the current phase. In a review phase use
-// that phase's node; otherwise use whichever counter advanced most recently.
-function reviewNodeForPhase(reviews, phase) {
+// reviews.impl is either wave-aware ({wave, waves: [node, ...]}) or the
+// legacy flat node itself (no `waves` array), read as waves: [node], wave: 1.
+// Guards every shape defect so the hook never throws on malformed state.
+function normalizeImplReviews(reviews) {
   if (!reviews || typeof reviews !== 'object') return null;
-  if (phase === 'design-review') return reviews.design || null;
-  if (phase === 'impl-review') return reviews.impl || null;
-  const d = reviews.design || null;
-  const i = reviews.impl || null;
-  const di = (d && d.iteration) || 0;
-  const ii = (i && i.iteration) || 0;
-  if (ii > 0 && ii >= di) return i;
-  if (di > 0) return d;
-  return null;
+  const impl = reviews.impl;
+  if (!impl || typeof impl !== 'object') return null;
+  if (Array.isArray(impl.waves) && impl.waves.length > 0) {
+    const total = impl.waves.length;
+    const wave = Number.isInteger(impl.wave) && impl.wave >= 1 && impl.wave <= total ? impl.wave : 1;
+    const node = impl.waves[wave - 1] || null;
+    return { node, wave, total };
+  }
+  return { node: impl, wave: 1, total: 1 };
 }
 
-// Display-only session summary, never a gate. "APPROVE"-prefixed values (bare, availability-skip or partial) count as satisfied.
+// Pick the relevant review node for the current phase. In a review phase use
+// that phase's node; otherwise impl-review's current wave node once any wave
+// has iterated (impl-review runs after design-review, and a wave's counter
+// restarts at 1, so comparing counters would pick design), else design's.
+function reviewNodeForPhase(reviews, phase) {
+  if (!reviews || typeof reviews !== 'object') return null;
+  const implInfo = normalizeImplReviews(reviews);
+  if (phase === 'design-review') return reviews.design || null;
+  if (phase === 'impl-review') return implInfo ? implInfo.node : null;
+  const implWaves = !implInfo ? [] : Array.isArray(reviews.impl.waves) ? reviews.impl.waves : [reviews.impl];
+  if (implWaves.some(n => n && n.iteration > 0)) return implInfo.node;
+  const d = reviews.design || null;
+  return d && d.iteration > 0 ? d : null;
+}
+
+// `iter-NN` keys are zero-padded to two digits, so lexical order breaks past
+// iter-99; extract the numeric suffix so the highest iteration is picked
+// numerically, not lexically.
+function iterNumber(key) {
+  const m = typeof key === 'string' && /^iter-(\d+)$/.exec(key);
+  return m ? parseInt(m[1], 10) : -1;
+}
+
+// Display-only session summary, never a gate. "APPROVE"-prefixed values (bare or availability-skip; the partial form is legacy only) count as satisfied.
 function lastReviewVerdict(node) {
   if (!node || typeof node !== 'object') return 'n/a';
   const verdictsByIter = node.verdicts;
   if (!verdictsByIter || typeof verdictsByIter !== 'object') return 'n/a';
-  const iters = Object.keys(verdictsByIter).sort();
+  const iters = Object.keys(verdictsByIter).sort((a, b) => iterNumber(a) - iterNumber(b));
   if (iters.length === 0) return 'n/a';
   const latest = verdictsByIter[iters[iters.length - 1]];
   if (!latest || typeof latest !== 'object') return 'n/a';
@@ -163,7 +187,10 @@ function summary(active, provider) {
   const next = phase === 'pr' ? (state.pr && state.pr.state === 'closure-pending' ? 'await-user-closure' : 'await-merge')
     : (phase === 'audit' && isDesignCollapsed(state.documents)) ? 'plan'
     : nextPhase(phase);
-  const iterPart = phase.endsWith('-review') ? ` (iter ${iter})` : '';
+  const implInfo = phase === 'impl-review' ? normalizeImplReviews(state.reviews) : null;
+  const iterPart = !phase.endsWith('-review') ? ''
+    : (implInfo && implInfo.total > 1) ? ` (wave ${implInfo.wave}/${implInfo.total}, iter ${iter})`
+    : ` (iter ${iter})`;
   return [
     `[ASD] Active sprint: ${id}`,
     `  Phase: ${phase}${iterPart}`,

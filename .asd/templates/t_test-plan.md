@@ -2,7 +2,7 @@
 responsibility:
   owns: test approach for sprint change scope, removal reasons, no-test decisions, suite run result, code defects found by tests, manual-verification spec (single home — never duplicated in a review file)
   excludes: task breakdown, requirements, review verdicts, code, change surface (derivable from the diff)
-  delegates_to: plan.md (tasks), persistent docs (requirements), reviews/impl/iter-NN/testing.md (verdict)
+  delegates_to: plan.md (tasks), persistent docs (requirements), reviews/impl/wave-<K>/iter-NN/testing.md (verdict)
 ---
 
 # Test plan — sprint {{SPRINT_ID}}
@@ -50,9 +50,10 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
 
 Written twice per cycle: `impl-test`'s suite gate records an **impacted-set** run here each entry
 (`.asd/rules/sprint-lifecycle.md` "Impacted test set"); `impl-review`'s terminal step overwrites
-it with the cycle's one **full-suite** run once every reviewer is APPROVE/latched. The `pr` gate
-always reads whatever is recorded here last — the full-suite record, by the time `pr` runs. Each
-per-entry record measures only the tree that entry analysed, not any tree produced later
+it with the cycle's one **full-suite** run once the last review wave's reviewers are
+APPROVE/latched. The `pr` gate always reads whatever is recorded here last — the full-suite
+record, by the time `pr` runs. Each per-entry record measures only the tree that entry
+analysed, not any tree produced later
 (`.asd/rules/sprint-lifecycle.md` "Impacted test set").
 
 - Command: {{`test` from commands.yaml, impacted-scoped or unscoped per Scope below}}

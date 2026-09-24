@@ -1,0 +1,212 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index c5c5319..261fa45 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -75,7 +75,7 @@
+     ".asd/rules/git-strategy.md": "6afde1cd09b2df8bf9f3e3789605244f9775c3c8f7ff22c36cc8aecdf4f1d133",
+     ".asd/rules/language-policy.md": "e9b488a4cff5ed193208a52324601bede1a41e2512f2a6f06d0660576940f322",
+     ".asd/rules/providers.md": "0e7b7c0960dbd0907e41aa7a4651e8b186d95c2d16ca546512102fd0255f0d36",
+-    ".asd/rules/review-policy.md": "d2abee241cdea8c0532a89787423e174963befef4d926c6b3c035fb193fef4c3",
++    ".asd/rules/review-policy.md": "99ef25ff2a78fc0c7ab22b9a0fee649377b2ae2a12be5c61574d9c09bc9e405f",
+     ".asd/rules/sprint-lifecycle.md": "a8ba4a8888b9a9be73c023af3173ef322a6928835e2c6f826389d445418e9643",
+     ".asd/rules/ux-principles.md": "9f2af8c90d969c73654812b80e523e33b4c5696f506acf49e4bacb4c0dc6750c",
+     ".asd/skills/asd-concept/SKILL.md": "bf4b60a0fd27c777e62d16cc74eacb0bb3f68a022f7d294c81e43fc99a02abfd",
+@@ -133,7 +133,7 @@
+     ".asd/workflows/asd-phase-design-promote.md": "5b9f03eeb234350cfcb5b88c41030442d417997780058db02d2610b57c248dfa",
+     ".asd/workflows/asd-phase-design-review.md": "d28e4b390051685f8c60d7cbba752fadc047513da88ece3e54840ee2bbf61462",
+     ".asd/workflows/asd-phase-design.md": "803e588939ac9cbae0ccd33539eb36f983f30e7a3ad441ffa9827569aa21220e",
+-    ".asd/workflows/asd-phase-impl-review.md": "5b03886374e0fa7cf3f9b1252aa5ce75a5d3c4b7675631fcd2481ede5cd6cab7",
++    ".asd/workflows/asd-phase-impl-review.md": "574461d6b7630e3fa53c6781a6adce3902b4c649d743e44744d35caf97414a56",
+     ".asd/workflows/asd-phase-impl-test.md": "2d35970d2c89411942745fa5b641923482d983f8a6393db4d7aa0101070a46ee",
+     ".asd/workflows/asd-phase-impl.md": "370771c62a6e23a21de4e796ae063ec2debf2f8f8ee3bf6129edeb49411cf0c1",
+     ".asd/workflows/asd-phase-plan.md": "43be52c664f4eaf2db293bd8d0e5aa27d03cc696deaf2d3d1ec63e122d7e6052",
+@@ -148,7 +148,7 @@
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
+     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
+-    ".asd/runtime.js": "fd00e460b34b55ce1724ab79120b1fbc8e5941db73232f4e66aaca33c36cfc0e",
++    ".asd/runtime.js": "68dc0e2e1e1adb2b79acbb14bfd7ef9484f311bb8ddb0db5fc84603ef06ca72f",
+     ".asd/templates/external-review/t_review-scope.json": "a17ee84e64cc6a693aaa30dacaef660c841b23a92331abf217ff64c8fc2d4951",
+     ".asd/templates/t_friction-log.md": "8ceae936077b1c0b869fe439965e859059b6dab971b79a89126f8074e379ce33",
+     ".asd/templates/t_retrospective.html": "6b1a120d8a22bfeb7180d32f422e5888c7d453a4770a61b8502a1947f5322f1f",
+diff --git a/.asd/rules/review-policy.md b/.asd/rules/review-policy.md
+index 8ef5621..2af9710 100644
+--- a/.asd/rules/review-policy.md
++++ b/.asd/rules/review-policy.md
+@@ -41,7 +41,7 @@ Every iteration dispatches each reviewer as a **fresh agent invocation** — new
+ Sole statement, both review phases, every reviewer — the 4 internal reviewers and External Review. Workflows, agents, external prompts and README link here.
+ 
+ 1. **List** — the reviewer's file list, written by `node .asd/runtime.js emit-manifest` per reviewer (impl-review: per wave; built as "Reviewer responsibility" states; External Review's scope manifest: `external-review.md` "Phase-scoped payload"), is its only normative scope: its ledger file rows and its valid finding locations. Never a second list, never diff text in the payload.
+-2. **Diff** — the `<fingerprint>.diff` file `emit-manifest` writes beside it for exactly that list — named by its inputs, so manifests sharing a list and range share one file — is the change content, deletions included, read on demand. impl-review: every iteration, over the iteration's range (`sprint-lifecycle.md` "Review iteration counters"). design-review: from iteration 2, against the previous iteration's draft snapshot (`--snapshot`); none at iteration 1 — the drafts are wholly new, so a diff would only duplicate them.
++2. **Diff** — the `<fingerprint>.diff` file `emit-manifest` writes beside it for exactly that list — named by its inputs, so manifests sharing a list and range share one file, and rewritten at every emit, so a reused iteration directory never serves an older file under that name — is the change content, deletions included, read on demand. impl-review: every iteration, over the iteration's range (`sprint-lifecycle.md` "Review iteration counters"). design-review: from iteration 2, against the previous iteration's draft snapshot (`--snapshot`); none at iteration 1 — the drafts are wholly new, so a diff would only duplicate them.
+ 3. **Whole files** — any file, listed or not, is readable as context when the diff is not enough. An unlisted path stays out of scope — for an internal reviewer, save the Change-surface exception below.
+ 
+ No reviewer — the wrapped CLI included — runs git to derive, widen or narrow its scope, and no payload tells it to.
+diff --git a/.asd/runtime.js b/.asd/runtime.js
+index f64f4d0..d1ab18f 100644
+--- a/.asd/runtime.js
++++ b/.asd/runtime.js
+@@ -599,15 +599,14 @@ function writeGitOutput(file, invocations) {
+   }
+ }
+ 
+-/** Writes the diff of a manifest's file list into `dir` and returns its path: over the commit ranges in impl-review, against the previous snapshot in design-review, minus the drafts it leaves whole; null when there is nothing to diff against, as in design-review iteration 1. Named by the fingerprint of the git invocations producing it, so manifests sharing a list and range share one file, written once and never left half-written under that name. */
++/** Writes the diff of a manifest's file list into `dir` and returns its path: over the commit ranges in impl-review, against the previous snapshot in design-review, minus the drafts it leaves whole; null when there is nothing to diff against, as in design-review iteration 1. Named by the fingerprint of the git invocations producing it, so manifests sharing a list and range share one file; rewritten on every call, since those invocations name refs and paths rather than content and a reused directory may hold an older file under the same name, and renamed into place so it is never seen half-written. */
+ function writeManifestDiff(dir, files, ranges, snapshot) {
+   if (ranges === null && snapshot === null) return null;
+   const invocations = ranges !== null ? rangePatchInvocations(ranges, files) : snapshotPatchInvocations(snapshot.dir, files.filter((file) => !snapshot.whole.has(file)));
+   const diff = path.join(dir, `${fingerprint(invocations).slice(0, 16)}.diff`);
+-  if (!fs.existsSync(diff)) {
+-    writeGitOutput(`${diff}.tmp`, invocations);
+-    fs.renameSync(`${diff}.tmp`, diff);
+-  }
++  const partial = `${diff}.${process.pid}.tmp`;
++  writeGitOutput(partial, invocations);
++  fs.renameSync(partial, diff);
+   return diff;
+ }
+ 
+diff --git a/.asd/workflows/asd-phase-impl-review.md b/.asd/workflows/asd-phase-impl-review.md
+index 42e9863..300f047 100644
+--- a/.asd/workflows/asd-phase-impl-review.md
++++ b/.asd/workflows/asd-phase-impl-review.md
+@@ -80,7 +80,7 @@ Orchestration body for the `asd-phase-impl-review` skill. Operation-mapping to h
+ - `<sprint>/reviews/impl/<id>/documentation.md` (written by this workflow when dispatched; not written this iteration when latch-skipped — step 6)
+ - `<sprint>/reviews/impl/<id>/external.md` (when `external_review=enabled` and not latch-skipped; written by this workflow)
+ - `<sprint>/reviews/impl/<id>/<reviewer>.manifest.json` (step 6, per dispatched internal reviewer), `external.scope.json` (step 6, External Review dispatched) and one `<fingerprint>.diff` per distinct list and range
+-- `<sprint>/reviews/impl/<id>/<reviewer>.late.md` (only for a late duplicate return admitted at step 7a, in the replaced dispatch's iteration dir; linked from that reviewer's `<reviewer>.md`)
++- `<sprint>/reviews/impl/<id>/<reviewer>.late.md` (only for a late duplicate return admitted at step 7a; which iteration's `<id>`, and its link, per `review-policy.md` "Late duplicate return")
+ - Updated `<sprint>/test-plan.md` `Suite run` section (step 9, overwriting the impacted-run record) and, on a code-defect red, a new `Defects` `D-N` row
+ - Updated `state.json` (phase; `reviews.impl.wave` and each wave node's `iteration`, `iteration_heads`, `verdicts`, `latched`; `review_fixes_pending`; `test_defects_pending` on a step-9 code-defect red)
+ - decisions-log entry on a division into n > 1 waves, DoD met (full suite green), route-to-impl-fix, override, or terminal-suite-red
+diff --git a/.claude/agent-memory/asd-external-review/reference_codex-invocation.md b/.claude/agent-memory/asd-external-review/reference_codex-invocation.md
+index 36e6a0b..a87b28a 100644
+--- a/.claude/agent-memory/asd-external-review/reference_codex-invocation.md
++++ b/.claude/agent-memory/asd-external-review/reference_codex-invocation.md
+@@ -19,7 +19,7 @@ Wrapped Codex CLI (codex-cli 0.150.x) via `codex exec --sandbox read-only -`:
+ - Codex line-number citations were exact in every run so far but can be off by a few lines — always verify the cited location with Grep/Read before keeping a finding, and cite the verified line.
+ - Grep tool: a brace glob like `{asd-concept,asd-stack}/SKILL.md` with `path` set to a parent dir returned no matches — and the `glob` parameter with a brace list (`{rules/*.md,templates/t_x.html}`) ALSO silently returns "No matches" even when the files contain the pattern (2026-09-02). Use one Grep call per file with `path` = the file instead. A single negated glob `!**/sprints/**` with `path` = `.asd` works fine for repo-wide token sweeps.
+ - This repo is self-hosting: impl-review pathspec is the `self_hosting: enabled` row of `external-review.md` § Phase-scoped payload (excludes `.asd/project/**`, `.asd/sprints/**`, generated views) — NOT the consumer `':(exclude).asd/**'` row.
+-- Iteration 2+ diff base: impl-review wave K's `state.json.reviews.impl.waves[K].iteration_heads["iter-(NN-1)"]` (per-wave key since review waves landed; before that it was a flat `reviews.impl.iteration_heads`, and before sprint 002 iter 3 it was "last commit only"). Prior finding set arrives inline in dispatch payload — never read prior `iter-*/` files even if the dispatcher's message suggests it.
++- Prior finding set arrives inline in dispatch payload — never read other iterations' `iter-*/` files, any wave's.
+ - Stalemate test is "identical issue set (same files, lines, messages)". A partial fix that moves the defect to a new clause/line with a narrower message, or that lands in 2 of 3 target files, is a carry-over, NOT a stalemate — report it as a kept (or below-floor-noted) finding and say explicitly which part of the prior finding remains, so PM can judge. Two consecutive APPROVEs with the prior iteration's below-floor notes now verified resolved (iter 5 → iter 6, sprint 003) is convergence, not stalemate.
+ - Verifying a "reach carve-out" fix (a branch/bullet claiming its own scope narrower/wider than its enclosing header): check the reach statement sits on the SAME line as the SSoT citation in every mirror file, not just present somewhere in the section — a fix that states reach elsewhere in the block still leaves the acting bullet ambiguous on its own. Sprint 009 iter-4: "Late duplicate return — applies to any replaced dispatch, External Review included:" landed on the same line as `per review-policy.md "Late duplicate return" (sole SSoT...)` in both asd-phase-design-review.md and asd-phase-impl-review.md — genuinely closed the iter-3 finding, confirmed via direct grep of both files plus a wrapped codex pass (APPROVE, dropped_below_floor: 2).
+ 
+diff --git a/tests/run.js b/tests/run.js
+index 279b9cf..73bb9f7 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -3094,7 +3094,7 @@ test('sprint-017 AC-1 (D1/D2): review-waves counts one wave per WAVE_THRESHOLD_L
+   for (const [lines, files, expected] of [
+     [0, 0, 1], [0, 10, 1], [1, 10, 1], [threshold, 10, 1], [threshold + 1, 10, 2], [2 * threshold, 10, 2],
+     [2 * threshold + 1, 10, Math.min(3, cap)], [cap * threshold + 1, 10, cap], [100 * threshold, 10, cap],
+-    [7000, 2, 2],
++    [2 * threshold + 1, 2, 2], [threshold + 1, 1, 1],
+   ]) {
+     assert.strictEqual(runtime.reviewWaveCount(lines, files), expected, `${lines} changed lines over ${files} files: one wave per ${threshold} lines begun, at least 1, at most min(${cap}, files)`);
+   }
+@@ -5211,6 +5211,18 @@ test('sprint-017 AC-4/AC-8 (D6/D9a-c): emit-manifest --full-files/--full-base jo
+   const twinDiffName = path.basename(twin.result.diff);
+   assert.strictEqual(twinDiffName, path.basename(joined.result.diff), 'EFF-2: two manifests sharing the same file list and ranges share the identically fingerprinted .diff name, so a shared file+range never writes a duplicate byte-identical patch');
+ 
++  const sharedOut = fs.mkdtempSync(path.join(work, 'shared-'));
++  const emitInto = (reviewer, files, extra) => runtimeCliResult(['emit-manifest', '--reviewer', reviewer, '--files', list(files), '--out', sharedOut, ...extra], { cwd: repo, env });
++  const diffsOf = () => fs.readdirSync(sharedOut).filter((name) => name.endsWith('.diff'));
++  const correctnessShared = emitInto('correctness', ['src/current.js'], range);
++  const testingShared = emitInto('testing', ['src/current.js'], [...range, '--test-plan', 'src/earlier.js']);
++  assert.strictEqual(diffsOf().length, 2, 'TST-1: two reviewers with differing lists over one shared out dir write two distinct .diff files, never a shared or skipped one');
++  assert.notStrictEqual(path.basename(correctnessShared.result.diff), path.basename(testingShared.result.diff), 'TST-1: differing lists must fingerprint to different names');
++  assert.ok(hunkOf(patch(correctnessShared.result.diff), 'src/current.js').length === 1 && hunkOf(patch(correctnessShared.result.diff), 'src/earlier.js').length === 0, 'TST-1: correctness\'s .diff carries only its own list\'s headers');
++  assert.ok(hunkOf(patch(testingShared.result.diff), 'src/earlier.js').length === 1 && hunkOf(patch(testingShared.result.diff), 'src/current.js').length === 0, 'TST-1: testing\'s .diff (narrowed by --test-plan) carries only its own list\'s headers, none of correctness\'s');
++  emitInto('correctness', ['src/current.js'], range);
++  assert.strictEqual(diffsOf().length, 2, 'TST-1: re-emitting the same list and range into the shared dir must not add a second .diff');
++
+   const designExternal = cli(runtime.EXTERNAL_REVIEWER, ['s/design/prd.html'], ['--phase', 'design-review', '--iteration', '1']);
+   const designScope = JSON.parse(fs.readFileSync(path.join(designExternal.out, 'external.scope.json'), 'utf8'));
+   assert.deepStrictEqual(designScope, { phase: 'design-review', iteration: 1, files: ['s/design/prd.html'], diff: null }, 'D9b/D9e: design-review has no waves and, at iteration 1, no diff - the field travels null rather than pointing at a file that was never written');
+@@ -5374,7 +5386,7 @@ test('sprint-017 AC-8 (D9e): draft-snapshot copies each draft beside its snapsho
+   assert.deepStrictEqual(copies.map((copy) => fs.readFileSync(copy, 'utf8')), drafts.map((file) => fs.readFileSync(file, 'utf8')), 'each draft is copied under <iter dir>/snapshot/, so the next iteration has content to diff against, not only a hash');
+   const first = emit('documentation', 1, drafts);
+   assert.deepStrictEqual(Object.keys(first).sort(), ['digest', 'manifest'], 'iteration 1 has no --snapshot and writes no .diff - the drafts are wholly new and a diff would only duplicate them');
+-  assert.ok(!fs.existsSync(path.join(iterDir(1), 'documentation.diff')), 'no stray .diff at iteration 1');
++  assert.deepStrictEqual(fs.readdirSync(iterDir(1)).filter((name) => name.endsWith('.diff')), [], 'TST-1: no .diff of any name at iteration 1 - diffs are fingerprint-named now, so a check for the literal documentation.diff can no longer fail');
+ 
+   fs.writeFileSync(drafts[0], 'draft 0 line 1\ndraft 0 revised\n', 'utf8');
+   const added = path.join(root, 'design', 'ux-spec.html');
+@@ -5387,6 +5399,12 @@ test('sprint-017 AC-8 (D9e): draft-snapshot copies each draft beside its snapsho
+   const external = emit(runtime.EXTERNAL_REVIEWER, 2, [drafts[0]], ['--iteration', '2', '--snapshot', iterDir(1)]);
+   assert.ok(external.diff && fs.readFileSync(external.diff, 'utf8').includes('+draft 0 revised'), 'External Review gets the same snapshot diff for its list');
+ 
++  fs.writeFileSync(drafts[0], 'draft 0 line 1\ndraft 0 revised again\n', 'utf8');
++  const secondAgain = emit('documentation', 2, [drafts[0], added], ['--snapshot', iterDir(1)]);
++  assert.strictEqual(secondAgain.diff, second.diff, 'sanity: the same list and --snapshot dir must still fingerprint to the same .diff path');
++  const patchAgain = fs.readFileSync(secondAgain.diff, 'utf8');
++  assert.ok(patchAgain.includes('+draft 0 revised again') && !patchAgain.includes('+draft 0 revised\n'), 'COR-1: a second emit into the same iteration dir with the same list and --snapshot, after the draft changed again, must rewrite the .diff with the new content - a stale existsSync-skipped file would still read the first revision');
++
+   const cor3Dir = path.join(root, 'reviews/design/iter-cor3');
+   fs.mkdirSync(cor3Dir, { recursive: true });
+   const cor3 = JSON.parse(runtimeCli(['emit-manifest', '--reviewer', 'documentation', '--phase', 'design-review', '--files', list('scope-cor3.txt', [added]), '--out', cor3Dir, '--snapshot', iterDir(1), '--full-files', list('full-cor3.txt', [drafts[0]])], { stdio: 'pipe' }));
+@@ -5476,16 +5494,30 @@ test('sprint-017 AC-5/AC-7: no live canon, README, runtime or hook keeps a mecha
+   assert.ok(partialLegacy && /satisfied for its iteration, never latched/.test(partialLegacy), 'D7/AC-6: a partial already recorded in an in-flight sprint must still read as satisfied, never latched, under backward_compat: migration');
+ });
+ 
+-test('sprint-017 AC-5/AC-7 (COR-4): no agent memory a dispatched agent loads names a review mechanism review waves replaced as live - only right after a negation in the same clause, or on a line naming it legacy', () => {
++const AGENT_MEMORY_ROOT = '.claude/agent-memory';
++
++/** Every memory file a dispatched roster agent loads: the `.md` files under `.claude/agent-memory/<agent>/`, for each agent `.claude/agents/` defines. */
++function rosterMemoryFiles() {
+   const roster = fs.readdirSync(path.join(REPO_ROOT, '.claude/agents')).filter((name) => name.endsWith('.md')).map((name) => name.slice(0, -3));
+-  const memoryRoot = '.claude/agent-memory';
+-  const files = fs.readdirSync(path.join(REPO_ROOT, memoryRoot)).filter((dir) => roster.includes(dir)).flatMap((dir) => fs.readdirSync(path.join(REPO_ROOT, memoryRoot, dir)).filter((name) => name.endsWith('.md')).map((name) => `${memoryRoot}/${dir}/${name}`));
++  return fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT)).filter((dir) => roster.includes(dir)).flatMap((dir) => fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT, dir)).filter((name) => name.endsWith('.md')).map((name) => `${AGENT_MEMORY_ROOT}/${dir}/${name}`));
++}
++
++test('sprint-017 AC-5/AC-7 (COR-4): no agent memory a dispatched agent loads names a review mechanism review waves replaced as live - only right after a negation in the same clause, or on a line naming it legacy', () => {
++  const memoryRoot = AGENT_MEMORY_ROOT;
++  const files = rosterMemoryFiles();
+   assert.ok(files.some((rel) => rel.startsWith(`${memoryRoot}/asd-reviewer-`)) && files.some((rel) => rel.startsWith(`${memoryRoot}/asd-external-review/`)), 'sanity: the sweep must reach the reviewer and External Review memories COR-4 found stale');
+   const negated = (line, at) => /\b(?:no|never|not|without|removed|retired|superseded)\b/i.test(line.slice(Math.max(0, at - 40), at).split(/[.;]\s|—/).pop());
+   const leftovers = files.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => (/\blegacy\b/i.test(line) ? [] : REPLACED_REVIEW_MECHANISMS.flatMap((needle) => [...line.matchAll(new RegExp(needle.source, `${needle.flags}g`))].filter((match) => !negated(line, match.index)).map((match) => `${rel}:${index + 1} ${match[0]}`)))));
+   assert.deepStrictEqual(leftovers, [], 'COR-4/AC-7: agent memory is loaded on every dispatch, so a line describing a removed split, part or External batch as current contract reloads a false contract that "Scope hand-off" and the wave state contradict. A memory may name one only as absent ("no .part-N") or legacy; its owner rewrites or deletes the rest');
+ });
+ 
++test('sprint-017 (DOC-2): review wave K is 1-based and its state node is reviews.impl.waves[K-1] - no canon, README or agent memory a dispatched agent loads indexes it as waves[K]', () => {
++  assert.ok(sectionOf('.asd/rules/sprint-lifecycle.md', 'Review iteration counters').includes('`reviews.impl.waves[K-1].iteration`'), 'sanity: sprint-lifecycle.md "Review iteration counters" is the source defining wave K\'s node as waves[K-1]');
++  const files = [...canonMarkdownFiles(), 'README.md', ...rosterMemoryFiles()];
++  const offByOne = files.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => (/\bwaves\[K\]/.test(line) ? [`${rel}:${index + 1}`] : [])));
++  assert.deepStrictEqual(offByOne, [], 'DOC-2: waves[K] names wave K+1\'s node (or none, for the last wave), so a line reading it as wave K\'s iteration, heads, verdicts or latches points the reader at the wrong wave - and a memory line is reloaded on every dispatch');
++});
++
+ test('sprint-017 AC-1/AC-6 (D3/D4): the review wave and the impl-review iteration id are defined once in sprint-lifecycle.md "Review iteration counters", t_state.json seeds reviews.impl as one wave node of exactly the fields that definition names, and every reader of the counter - review-policy.md\'s severity floor and sprint-lifecycle.md\'s State-recovery readers included - uses the per-wave form', () => {
+   const counters = sectionOf('.asd/rules/sprint-lifecycle.md', 'Review iteration counters');
+   const definition = counters.split('\n').find((line) => line.startsWith('**Review wave**'));
+@@ -5525,11 +5557,7 @@ test('sprint-017 AC-1/AC-6 (D3/D4): the review wave and the impl-review iteratio
+   assert.ok(/reads only `verdicts\["iter-NN"\]` for the relevant review node \(impl-review: the current wave's, legacy shape included\)/.test(readRepoFile('.asd/rules/sprint-lifecycle.md')), 'TST-2: the hook\'s display-only State-recovery reader must also read the current wave\'s node, legacy shape included');
+ });
+ 
+-test('sprint-017 TST-1 (AC-2/AC-3): review-policy.md pins the severity floor to the current wave counter with a per-wave cap, impl-review step 8 sends K<n straight to wave K+1\'s iteration 1 in the same entry with no impl/impl-test between and K=n to the terminal suite, the return contract carries WAVE: <K>, and a division into n > 1 waves leaves its own decisions-log artefact', () => {
+-  const floor = sectionOf('.asd/rules/review-policy.md', 'Iteration severity floor');
+-  assert.ok(/or in impl-review the current review wave's counter/.test(floor), 'AC-2/AC-3: the floor must be keyed on the current wave\'s counter, not one flat count for the whole phase');
+-  assert.ok(/User may override the cap \(per wave in impl-review\)/.test(floor), 'AC-2/AC-3: the iteration cap is per wave, so overriding one wave\'s cap must not raise or reset another\'s');
+-
++test('sprint-017 TST-1 (AC-2/AC-3): impl-review step 8 sends K<n straight to wave K+1\'s iteration 1 in the same entry with no impl/impl-test between and K=n to the terminal suite, the return contract carries WAVE: <K>, and a division into n > 1 waves leaves its own decisions-log artefact', () => {
+   const step8 = stepOf(canonText('.asd/workflows/asd-phase-impl-review.md'), 8);
+   assert.ok(/K < n .*wave K\+1.*same entry, no `impl`\/`impl-test` between/.test(step8), 'AC-2/AC-3: an unmet wave under n must advance straight to the next wave\'s iteration 1 in the same entry - cycling through impl/impl-test between waves would silently re-run test-fix machinery no finding asked for');
+   assert.ok(/K = n .*reviewer DoD met.*proceed to step 9/.test(step8), 'AC-2/AC-3: only the roster-met last wave may reach the terminal full-suite gate');
+@@ -5541,13 +5569,15 @@ test('sprint-017 TST-1 (AC-2/AC-3): review-policy.md pins the severity floor to
+   assert.ok(artefacts.split('\n').some((line) => /decisions-log entry on a division into n > 1 waves/.test(line)), 'AC-1: a division into more than one wave must leave a decisions-log artefact naming it, or a resumed session cannot tell whether the scope was ever divided');
+ });
+ 
+-test('sprint-017 (COR-2): a closed wave\'s late-admitted finding lands in the CURRENT iteration\'s dir (never the closed wave\'s), joins step 8\'s unresolved set, and step 8 checks for it before the roster-met "Otherwise" branch', () => {
++test('sprint-017 (COR-2/DOC-1): a closed wave\'s late-admitted finding lands in the CURRENT iteration\'s dir (never the closed wave\'s), joins step 8\'s unresolved set, step 8 checks for it before the roster-met "Otherwise" branch, and the Artefacts produced line defers that location to review-policy.md instead of restating one', () => {
+   const reviewFlow = canonText('.asd/workflows/asd-phase-impl-review.md');
+   const step7a = stepOf(reviewFlow, '7a');
+   const closedWaveLine = step7a.split('\n').find((line) => line.includes('for a closed wave'));
+   assert.ok(closedWaveLine, 'COR-2: step 7a must state a closed-wave branch for a late duplicate return - otherwise a late admission after the wave advanced has nowhere defined to land');
+   assert.ok(/its `\.late\.md` goes to this iteration's `<sprint>\/reviews\/impl\/<id>\/` instead/.test(closedWaveLine), 'COR-2: a closed wave\'s late.md must land in the CURRENT iteration\'s dir, not the closed wave\'s own dir - the closed wave is never reopened or re-dispatched');
+   assert.ok(/its finding joins step 8's unresolved set/.test(closedWaveLine), 'COR-2: the closed-wave finding must reach step 8\'s routing, or an admitted FAIL/CONCERNS from a closed wave is silently dropped');
++  const lateArtefact = sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Artefacts produced').split('\n').find((line) => line.includes('<reviewer>.late.md'));
++  assert.ok(lateArtefact && lateArtefact.includes('per `review-policy.md` "Late duplicate return"') && !/iteration dir/.test(lateArtefact), `DOC-1: the Artefacts produced .late.md line must cite review-policy.md "Late duplicate return" for which iteration's dir it lands in, never restate one - a single restated location contradicts step 7a's closed-wave branch, and an orchestrator writing from the list puts the file where review-fix never reads it. Got: ${lateArtefact}`);
+ 
+   const step8 = stepOf(reviewFlow, 8);
+   const unresolvedBullet = step8.split('\n').find((line) => line.includes('Any unresolved finding remains'));

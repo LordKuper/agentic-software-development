@@ -43,8 +43,9 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │       │   ├── friction-log.md
 │       │   ├── retrospective.html
 │       │   └── reviews/
-│       │       ├── design/iter-NN/<reviewer>.md, <reviewer>.part-N.md, <reviewer>.late.md
-│       │       └── impl/iter-NN/<reviewer>.md, <reviewer>.part-N.md, <reviewer>.late.md
+│       │       ├── design/iter-NN/<reviewer>.md, <reviewer>.late.md
+│       │       ├── impl/waves.json                # review-wave division, sprint-lifecycle.md "Review iteration counters"
+│       │       └── impl/wave-<K>/iter-NN/<reviewer>.md, <reviewer>.late.md   # legacy impl/iter-NN/ read as wave 1
 │       └── archived/<NNN-slug>/
 ├── .claude/{agents/, skills/, hooks/, settings.json}   # generated provider view
 ├── .claude/agent-memory/<agent>/                       # hand-authored, never generated — see "Agent memory"
@@ -184,7 +185,7 @@ Manual step = operational action a human must perform for the plan to complete (
 
 **Rotation**: at a re-entry's strategy pass, before any new row and never when resuming an interrupted current entry (`asd-phase-impl-test.md` step 1), the Tester moves the `Risk → check decisions`, `Removed tests` and `Added tests` rows of the previous `Entry log` entry N, if any, into `test-plan.entry-NN.md` (same section headings, N zero-padded to 2) when that file is absent, leaving those tables empty in the live file. Live `test-plan.md` keeps the `Entry log`, `Suite run`, `Defects` and `Manual verification`. A segment is never edited: a fix that changes a rotated row's risk gets a superseding row in the live file. Readers: "Decisions log" below.
 
-SSoT for two things invisible in the diff: **why** a test was removed, and **why** a change needed no new test. Also the handoff channel for code defects to `impl` test-fix mode (`Defects` section). Not a task list (that is `plan.md`) and not a review verdict (that is `reviews/impl/iter-NN/testing.md`).
+SSoT for two things invisible in the diff: **why** a test was removed, and **why** a change needed no new test. Also the handoff channel for code defects to `impl` test-fix mode (`Defects` section). Not a task list (that is `plan.md`) and not a review verdict (that is `reviews/impl/wave-<K>/iter-NN/testing.md`).
 
 **Manual verification — single home.** The optional `Manual verification` table (AC, steps, expected observation) is authored only here, by the Tester, when automation is impossible (visual UI, third-party live integration, ux feel). No review file duplicates or re-authors this spec; `asd-reviewer-testing` judges whether the spec is justified and reports any result as an ordinary finding, never as a persisted section of its own.
 

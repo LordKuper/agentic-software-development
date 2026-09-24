@@ -30,14 +30,13 @@ Documentation reviewer. Reviews design drafts in design-review and code-vs-persi
 
 ## Inputs
 
-- emitted manifest — its file list is this dispatch's scope (`review-policy.md` "Clean-context review iteration") — iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
+- emitted manifest and its `.diff` (design-review: from iteration 2) — the hand-off per `review-policy.md` "Scope hand-off" — iteration number and review output dir (`<sprint>/reviews/<design|impl>/[wave-<K>/]iter-NN/`) from dispatching phase skill
 
 **design-review:**
 - the listed drafts + `<sprint>/audit.md` migration plan
 - existing `docs/` for SSoT cross-check
 
 **impl-review:**
-- the manifest's `.diff` (the change itself; never run git)
 - `.asd/project/stubs.md` (stub resolution)
 - persistent `docs/` docs to check actuality against implementation
 
@@ -92,7 +91,7 @@ Reviewer:
 
 ## Gate Verdict Format
 
-First content line of the returned findings text (which the phase orchestrator writes to `<sprint>/reviews/<design|impl>/iter-NN/documentation.md`) MUST be:
+First content line of the returned findings text (which the phase orchestrator writes to `<sprint>/reviews/<design|impl>/[wave-<K>/]iter-NN/documentation.md`) MUST be:
 
 `[REVIEW-<phase>-documentation]: <APPROVE | CONCERNS | FAIL>`
 

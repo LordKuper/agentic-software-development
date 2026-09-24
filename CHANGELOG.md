@@ -2,6 +2,34 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v13.0.0
+
+A large impl-review scope is now reviewed as up to 3 sequential **review waves**, each running the standard review process with its own iteration counter. Waves replace split dispatch parts, External Review's file batches and the dispatch ceiling. Every reviewer, External Review included, receives the same three-part hand-off: its own file list, a runtime-written `.diff` for exactly that list, and whole files as context only.
+
+### Migration (breaking)
+- **No migration script.** A sprint already in flight with the old flat `state.json.reviews.impl` (`iteration`, `verdicts`, `iteration_heads`, `latched`) is read as one wave, and its first wave-aware impl-review entry rewrites it into `{wave, waves: [...]}` in place. Legacy `reviews/impl/iter-NN/` dirs, a bare `review_fixes_pending: "iter-NN"` and a recorded `"APPROVE (partial: ...)"` External verdict are all read as wave 1 and still count as satisfied.
+- **Custom External Review prompts.** `external-review/t_review-scope.json` changed from `base_ref`/`head_ref`/`exclude_paths` to `phase`, `iteration`, `wave`, `files[]` and `diff`. A local prompt that tells the wrapped CLI to run `git diff` over the refs must instead read the `diff` file path the manifest names.
+- **Removed runtime surface.** `SPLIT_THRESHOLD_FILES`, `DISPATCH_CEILING`, `--halve`, `NA_PREDICATES.outOfPart`, `surface-check`'s `dispatches` and `--test-plan-files`, and `draft-snapshot`'s `snapshot.json` are gone. A script that calls them has to drop those flags and fields. `draft-snapshot --out/--previous` now take iteration directories.
+
+### Added
+- **Review waves** (`sprint-lifecycle.md` "Review iteration counters"). At the first impl-review entry, `node .asd/runtime.js review-waves` measures the scope's changed lines (binary files and pure renames count 0). The wave count is one per `WAVE_THRESHOLD_LINES` (3000) begun, capped by the file count and by `MAX_REVIEW_WAVES` (3). The orchestrator groups the files into cohesive waves; `review-waves --division` validates the grouping and writes `reviews/impl/waves.json`.
+  - Waves are reviewed one after another, each with its own severity floor, iteration cap, verdicts and APPROVE latches.
+  - When a wave's reviewers are done, the next wave starts in the same entry. The full test suite runs once, after the last wave.
+  - A fix touching an earlier wave's file is reviewed in the current wave, and a closed wave is never reopened.
+  - The iteration id is `wave-<K>/iter-NN`, and review files live under `reviews/impl/wave-<K>/iter-NN/`. The impl-review return contract gains `WAVE: <K>`.
+- **`wave-files`**: builds a wave's iteration-1 list, carrying files renamed since the division over to their current paths.
+- **Scope hand-off** (`review-policy.md` "Scope hand-off"). This is now the one statement of what each reviewer receives, in both review phases:
+  - its file list, which is the only normative scope;
+  - one `.diff` named by a fingerprint of its inputs, rewritten on every emit and shared by reviewers with the same list and range;
+  - whole files, as context only.
+
+  External Review now gets its list and diff from `emit-manifest --reviewer external`. Design-review gets a diff from iteration 2 onward, taken against the previous iteration's draft copies; a carried-over draft is listed without a hunk and read whole.
+
+### Removed
+- Split dispatch parts (`.part-N` manifests, diffs and review files; the size and interruption split triggers; the union property and part merge). If the same reviewer is interrupted twice in a row, the orchestrator now asks you to retry or abort.
+- External Review's in-dispatch file batches and its `partial` outcome. One dispatch makes one wrapped-CLI call, retried once, and returns a verdict or an availability skip.
+- The dispatch ceiling (`DISPATCH_CEILING`). Every task in an impl wave now starts at once, so keep plan waves reasonably sized.
+
 ## v12.0.0
 
 Codex `terra` model family removed; its users move to `sol` at unchanged `medium` effort.

@@ -32,7 +32,7 @@ Correctness reviewer. Merges the former Quality, Implementation and UI reviewers
 ## Inputs
 
 **Both phases:**
-- emitted manifest — its file list is this dispatch's scope (`review-policy.md` "Clean-context review iteration"), its `n_a` this phase's section gate — iteration number + review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`), from dispatching phase skill
+- emitted manifest and its `.diff` (design-review: from iteration 2) — the hand-off per `review-policy.md` "Scope hand-off"; the manifest's `n_a` is this phase's section gate — iteration number + review output dir (`<sprint>/reviews/<design|impl>/[wave-<K>/]iter-NN/`), from dispatching phase skill
 
 **design-review phase:**
 - the listed drafts; `<sprint>/sprint.md` (AC-N source when `documents.prd` disabled)
@@ -43,7 +43,6 @@ Correctness reviewer. Merges the former Quality, Implementation and UI reviewers
   - `docs/ux/accessibility.html`
 
 **impl-review phase:**
-- the manifest's `.diff` (the change itself; never run git)
 - whichever persistent doc folded a relevant sprint ADR (decisions for contract checks — `sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `docs/architecture/stack.html` (stack constraints)
 - `.asd/project/custom-coding-rules.md` (forbidden patterns, security policy)
@@ -134,7 +133,7 @@ Contract, format, and gate: `review-policy.md` "Coverage ledger" (SSoT, not rest
 
 ## Gate Verdict Format
 
-First content line of the returned findings text (which the phase orchestrator writes to `<sprint>/reviews/<design|impl>/iter-NN/correctness.md`) MUST be:
+First content line of the returned findings text (which the phase orchestrator writes to `<sprint>/reviews/<design|impl>/[wave-<K>/]iter-NN/correctness.md`) MUST be:
 
 `[REVIEW-<phase>-correctness]: <APPROVE | CONCERNS | FAIL>`
 

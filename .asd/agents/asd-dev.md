@@ -35,7 +35,7 @@ Developer. Implements server/CLI/library code and UI code/components per plan ta
 ## Inputs
 
 - `<sprint>/plan.md` (tasks)
-- `<sprint>/reviews/impl/iter-NN/` (review-fix mode) or `<sprint>/test-plan.md` `Defects` (test-fix mode)
+- `<sprint>/reviews/impl/wave-<K>/iter-NN/` (review-fix mode) or `<sprint>/test-plan.md` `Defects` (test-fix mode)
 - `docs/product/requirements/<subsystem>.html` (acceptance criteria to satisfy); when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
 - whichever persistent doc folded a relevant sprint ADR (decisions to follow — architectural decisions are no longer a standalone `adr/` tree, `sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `docs/architecture/stack.html` and whichever persistent doc holds folded API contracts for the touched subsystem

@@ -1,6 +1,6 @@
 ---
 name: scope-manifest-transport
-description: scope manifest (files[]/exclude_paths[]) is the sole payload transport per external-review.md contract, never a rendered diff — cost is a secondary note, not the reason; canonical cache-path value and why preflight/failure-recording are the orchestrator's calls, not this agent's; runtime.js external-record-failure CLI syntax; codex quota-error handling
+description: current scope-manifest fields (phase/iteration/wave/files[]/diff, no exclude_paths) per external-review.md "Phase-scoped payload"; the diff field is a real precomputed diff-file path, read by the wrapped CLI itself, never bytes inline in the manifest; canonical cache-path value and why preflight/failure-recording are the orchestrator's calls, not this agent's; runtime.js external-record-failure CLI syntax; codex quota-error handling
 metadata:
   type: reference
 ---
@@ -8,30 +8,28 @@ metadata:
 Entries below are keyed by topic, not by sprint ordinal — fold a new lesson into its heading rather
 than appending a dated one. This file loads on every dispatch of this agent.
 
-## Manifest transport is the contract, not a cost choice
+## Manifest shape and the files[]/diff split
 
-`external-review.md` "Phase-scoped payload" is the SSoT, stated three times over (the agent's own
-definition, both phase workflows, this rule doc): this agent is handed a **scope manifest**
-(`files[]`/`exclude_paths[]`, `t_review-scope.json`) — never a rendered diff, under any
-circumstance, including as a fallback. The reviewer resolves `files[]` content itself, read-only,
-from the repo — never from manifest payload bytes. A live `git diff` pipe (see the superseded note in
-[[codex-invocation-mechanics]]) is retired transport; reaching for it again, for any reason including
-a prior turn's failure, contradicts canon and must be declined.
+`external-review.md` "Phase-scoped payload" is the SSoT (the agent's own definition, `review-policy.md`
+"Scope hand-off", both phase workflows, this rule doc): `node .asd/runtime.js emit-manifest --reviewer
+external --iteration <N> [--wave <K>]` writes `external.scope.json` (`t_review-scope.json`: `phase`,
+`iteration`, `wave` [impl-review only], `files[]`, `diff`) plus its diff file into the review output
+dir. There is no `exclude_paths[]` field — pathspec exclusions are applied by the phase when it builds
+`files[]`, never sent to the reviewer as a separate field (`external-review.md` "Phase-scoped payload"
+table). `files[]` is the sole normative scope and the only valid finding-location set.
 
-Whether `files[]` alone is sufficient for the wrapped model to resolve content is not an open
-question: `external-review.md` names exactly what each mode's `files[]` covers (design-review draft
-paths; impl-review changed-path list, whole-repo-minus-exclusions in both the consumer and
-`self_hosting: enabled` rows) and states plainly that the wrapped CLI has direct repo read access to
-fetch it — Codex `exec` via its own read-only shell/`rg`/`sed` (observed cross-reading unchanged files
-routinely, see [[codex-invocation-mechanics]]), Claude via `Read`/`Grep`/`Glob`. The one dispatch that
-could not confirm this (sprint 010 impl-review iter 2) failed before reading any path, on a
-provider-side quota error, not on the manifest — see "Quota errors" below. Every dispatch since has
-resolved `files[]` content successfully; there is nothing unresolved to carry forward.
+`diff` is the path of a runtime-written, fingerprint-named `.diff` file covering exactly that `files[]`
+list — real change content, deletions included — sitting under `.asd/sprints/**`, outside review scope
+but readable context; `null` only at design-review iteration 1 (drafts are wholly new, a diff would
+just duplicate them). This is NOT the retired "rendered diff inline in the payload" transport: the
+manifest carries a path, never diff bytes as a field value, and the wrapped CLI reads both `files[]`
+content and the diff file from the repo itself with its own read-only tools — never from manifest
+bytes, and it never computes a diff itself. Treat the diff file as context only; a finding location is
+always a `files[]` path, never the diff file's own path.
 
-As a secondary note only, cheaper is also true: prompt text + manifest JSON (~2.9 KB + ~900 B
-observed) stays well under the ~4.5 KB Bash-tool command-length cliff in [[bash-tool-limits]], `cat`-ed
-into the same pipe — no separate size argument is needed to justify the transport, the contract alone
-already forbids the alternative.
+As a secondary note, cheaper is also true: prompt text + manifest JSON stays well under the ~4.5 KB
+Bash-tool command-length cliff in [[bash-tool-limits]] — no separate size argument needed, the contract
+alone already shapes the transport.
 
 ## Cache path and failure recording are the orchestrator's, not mine
 
