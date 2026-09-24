@@ -1,7 +1,7 @@
 {
   "sprint_id": "017-review-waves",
   "branch": "claude/asd-sprint-4y74bx",
-  "phase": "impl-review",
+  "phase": "impl",
   "documents": {
     "audit": true,
     "prd": false,
@@ -82,6 +82,102 @@
       "tier": "critical",
       "reason": "risk:public contract",
       "resolved_model": "claude:opus"
+    },
+    "wave-1/iter-01 COR-1": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:workflow gate",
+      "resolved_model": "claude:opus"
+    },
+    "wave-1/iter-01 COR-2": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:workflow gate",
+      "resolved_model": "claude:opus"
+    },
+    "wave-1/iter-01 COR-3": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:workflow gate",
+      "resolved_model": "claude:opus"
+    },
+    "wave-1/iter-01 COR-5": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:workflow gate",
+      "resolved_model": "claude:opus"
+    },
+    "wave-1/iter-01 COR-6": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:workflow gate",
+      "resolved_model": "claude:opus"
+    },
+    "wave-1/iter-01 DOC-1": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:workflow gate",
+      "resolved_model": "claude:opus"
+    },
+    "wave-1/iter-01 DOC-2": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:workflow gate",
+      "resolved_model": "claude:opus"
+    },
+    "wave-1/iter-01 DOC-3": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:workflow gate",
+      "resolved_model": "claude:opus"
+    },
+    "wave-1/iter-01 EFF-1": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:workflow gate",
+      "resolved_model": "claude:opus"
+    },
+    "wave-1/iter-01 EFF-2": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:workflow gate",
+      "resolved_model": "claude:opus"
+    },
+    "wave-1/iter-01 EFF-3": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:workflow gate",
+      "resolved_model": "claude:opus"
+    },
+    "wave-1/iter-01 COR-4": {
+      "execution": "agent",
+      "tier": "critical",
+      "reason": "risk:workflow gate",
+      "resolved_model": "claude:opus"
+    },
+    "wave-1/iter-01 TST-1": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "resolved_model": "claude:sonnet"
+    },
+    "wave-1/iter-01 TST-2": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "resolved_model": "claude:sonnet"
+    },
+    "wave-1/iter-01 TST-3": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "resolved_model": "claude:sonnet"
+    },
+    "wave-1/iter-01 EFF-4": {
+      "execution": "agent",
+      "tier": "standard",
+      "reason": "normal",
+      "resolved_model": "claude:sonnet"
     }
   },
   "skipped_phases": [
@@ -118,7 +214,7 @@
     }
   },
   "created_at": "2026-09-24T00:24:03Z",
-  "updated_at": "2026-09-24T06:00:00Z",
+  "updated_at": "2026-09-24T06:05:00Z",
   "review_fixes_pending": "wave-1/iter-01",
   "test_defects_pending": null,
   "pr": null,
