@@ -148,7 +148,7 @@ Material risk: change: public External Review scope-manifest contract and the re
 ### Task 5: Workflows and sprint skill
 Material risk: change: phase orchestration for impl-review wave sequencing and design-review diff hand-off (AC-1..AC-4, AC-6, AC-8)
 Reachability: impl-review writes `review_fixes_pending = "wave-<K>/iter-NN"` at step 8; impl review-fix mode reads it to locate findings, and impl-test reads it as its precondition.
-- [ ] `asd-phase-impl-review.md`:
+- [x] `asd-phase-impl-review.md`:
   - preconditions: cap at "no wave node", plus legacy normalization (D3, D5);
   - new step 1c: `review-waves` measurement and division on first entry;
   - step 1: per-wave scope (D6);
@@ -161,15 +161,15 @@ Reachability: impl-review writes `review_fixes_pending = "wave-<K>/iter-NN"` at 
   - steps 9-10: per-wave cap;
   - artefacts list;
   - return contract with `WAVE`.
-- [ ] `asd-phase-design-review.md`: split dispatch/parts removed (D7); `draft-snapshot` content copy plus `--snapshot` diff from iteration 2 (D9e); External via `emit-manifest --reviewer external`; payload links to "Scope hand-off".
-- [ ] `asd-phase-impl.md`, `asd-phase-impl-test.md`: `review_fixes_pending` and the findings path in id form (D4); impl step 6 without the dispatch-ceiling sub-wave clause (D7).
-- [ ] `asd-phase-pr.md` step 1: reviews-green over all waves (D10).
-- [ ] `asd-phase-retro.md`: review evidence paths in id form.
-- [ ] `asd-phase-plan.md`: the part-count note and the `dispatches` reference removed (D7).
-- [ ] `.asd/skills/asd-sprint/SKILL.md`: the resume display shows wave K/n and that wave's counter; rollback resets the wave node.
-- [ ] Templates `t_review.md` (part text removed, D7), `external-review/t_review-report.md` (iteration header carries the wave; partial form removed, D7), `t_friction-log.md`, `t_test-plan.md` (id form).
-- [ ] `asd-dev.md`: findings path in id form.
-- [ ] Regenerate the provider views for the edited skill and agent (`sync.js --apply`).
+- [x] `asd-phase-design-review.md`: split dispatch/parts removed (D7); `draft-snapshot` content copy plus `--snapshot` diff from iteration 2 (D9e); External via `emit-manifest --reviewer external`; payload links to "Scope hand-off".
+- [x] `asd-phase-impl.md`, `asd-phase-impl-test.md`: `review_fixes_pending` and the findings path in id form (D4); impl step 6 without the dispatch-ceiling sub-wave clause (D7).
+- [x] `asd-phase-pr.md` step 1: reviews-green over all waves (D10).
+- [x] `asd-phase-retro.md`: review evidence paths in id form.
+- [x] `asd-phase-plan.md`: the part-count note and the `dispatches` reference removed (D7).
+- [x] `.asd/skills/asd-sprint/SKILL.md`: the resume display shows wave K/n and that wave's counter; rollback resets the wave node.
+- [x] Templates `t_review.md` (part text removed, D7), `external-review/t_review-report.md` (iteration header carries the wave; partial form removed, D7), `t_friction-log.md`, `t_test-plan.md` (id form).
+- [x] `asd-dev.md`: findings path in id form.
+- [x] Regenerate the provider views for the edited skill and agent (`sync.js --apply`).
 
 ### Task 6: README and release bookkeeping
 Material risk: artifact: mirror accuracy and manifest hashes (AC-7)
