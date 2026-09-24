@@ -49,3 +49,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 - 2026-09-24 — audit frozen true: `documents.audit: auto`, scope changes review behaviour, state schema and gate routing (not mechanical)
 - 2026-09-24 — prd, ux_spec, adr frozen false (config-disabled); c4 frozen false (`project.diagram_tool: none`)
+
+## 2026-09-24 — Scope expanded: per-reviewer file list
+
+- **Decision**: AC-8 added. In both review phases the orchestrator builds, for each reviewer agent (External Review included), the explicit file list to review, and that list is the agent's only scope source, with one canonical home. Audit stays frozen true; the expansion does not change that.
+- **Rationale**: User request at the scope gate, before accept.
+- **Affected docs**: sprint.md
