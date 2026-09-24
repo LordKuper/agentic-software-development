@@ -42,3 +42,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: test-plan.md
 
 - 2026-09-24 — route impl-test entry 1: critical, dispatch HEAD af04d4d
+
+- 2026-09-24 — impl-test: impacted set green (full suite via safety valve, 219/219), 8/2 tests; 17 updated; no D-N; tester flags (decision `none` for D5/D6 prose, "legacy" sweep carve-out, `..` guard test) accepted

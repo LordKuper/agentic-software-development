@@ -11,7 +11,7 @@ responsibility:
 
 | Entry | HEAD analysed | Scope |
 |---|---|---|
-| 1 |  | full change surface |
+| 1 | 8b0c28f58ee83940449709bfdba3a35814daf987 | full change surface |
 
 Impacted set: full suite. The safety valve fires: the surface touches `.asd/runtime.js`, `.asd/hooks/session-start.js`, `.asd/release-manifest.json`, rule docs and workflows. These are framework-wide files that the `tests/run.js` runtime, hook, hash-ledger and content-contract tests all load. `commands.yaml` has no `test_affected`.
 
