@@ -1968,20 +1968,34 @@ test('every .asd/templates/**/*.json file parses as valid JSON', () => {
   }
 });
 
-test('AC-2/4/6/7: t_review-scope.json key set matches external-review.md\'s declared manifest fields exactly', () => {
+/** The External Review scope-manifest field names external-review.md "Phase-scoped payload" declares on its `Manifest fields:` line, `[]` suffixes dropped. */
+function declaredScopeFields() {
+  const line = sectionOf('.asd/rules/external-review.md', 'Phase-scoped payload').split('\n').find((candidate) => candidate.startsWith('Manifest fields:'));
+  assert.ok(line, 'external-review.md "Phase-scoped payload" must declare the scope-manifest fields on its own `Manifest fields:` line');
+  return [...line.split(' — ')[0].matchAll(/`([a-z_]+)(?:\[\])?`/g)].map((match) => match[1]);
+}
+
+test('AC-2/4/6/7/sprint-017 AC-8: t_review-scope.json key set matches external-review.md\'s declared manifest fields exactly, and no self-diff ref survives', () => {
   const manifest = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, '.asd/templates/external-review/t_review-scope.json'), 'utf8'));
-  assert.deepStrictEqual(Object.keys(manifest).sort(), ['base_ref', 'exclude_paths', 'files', 'head_ref', 'iteration', 'phase'].sort(), 'manifest fields must exactly match external-review.md\'s declared set: phase, iteration, base_ref, head_ref, files[], exclude_paths[]');
-  assert.ok(!Object.hasOwn(manifest, 'mode'), '"mode" was removed from the transport this wave and must never reappear');
-  assert.ok(!Object.hasOwn(manifest, 'commits'), '"commits[]" was removed this wave in favor of files[] + base_ref/head_ref and must never reappear');
+  const declared = declaredScopeFields();
+  assert.ok(declared.includes('files') && declared.includes('diff'), `sanity: the declared set must carry the list and the precomputed diff (AC-8 triple), got ${JSON.stringify(declared)}`);
+  assert.deepStrictEqual(Object.keys(manifest).sort(), declared.slice().sort(), 'the template and external-review.md must declare the same scope-manifest fields - the runtime writes the template shape, the wrapped CLI is told the rule shape');
+  for (const removed of ['base_ref', 'head_ref', 'exclude_paths', 'mode', 'commits']) {
+    assert.ok(!Object.hasOwn(manifest, removed), `"${removed}" was removed from the transport and must never reappear - a ref pair or exclusion list lets External Review derive its own scope (sprint-017 AC-8)`);
+  }
 });
 
 // ===========================================================================
 // 7. SessionStart hook: --provider must change the printed skill form
 // ===========================================================================
 
+/** Runs a copy of the hook in a temp repo holding one fixture sprint, so the output never depends on the live sprint - whose branch name may itself contain `/asd-sprint`. */
 function runHook(provider) {
-  const out = execFileSync('node', [path.join(REPO_ROOT, '.asd/hooks/session-start.js'), '--provider', provider], {
-    cwd: REPO_ROOT,
+  const tempRoot = mkTempDir();
+  writeFile(tempRoot, '.asd/hooks/session-start.js', fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8'));
+  writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({ sprint_id: '999-fixture', phase: 'impl', branch: 'feat/999-fixture' }));
+  const out = execFileSync('node', [path.join(tempRoot, '.asd/hooks/session-start.js'), '--provider', provider], {
+    cwd: tempRoot,
     encoding: 'utf8',
   });
   return JSON.parse(out).hookSpecificOutput.additionalContext;
@@ -2022,32 +2036,38 @@ test('AC-2/4/6/7: review workflow contracts retain Correctness and incremental d
   const implReview = fs.readFileSync(path.join(REPO_ROOT, '.asd/workflows/asd-phase-impl-review.md'), 'utf8');
   assert.ok(workflow.includes('Every internal reviewer is dispatched when not latch-skipped'));
   assert.ok(workflow.includes('reviewer still dispatches and is counted toward DoD'));
-  assert.ok(prompt.includes('files[]') && prompt.includes('exclude_paths[]'), 'External Review now receives a files-mode scope manifest, not a rendered diff');
-  assert.ok(prompt.includes('reviews.impl.iteration_heads["iter-(N-1)"]'), 'incremental scope guarantee (iter 2+ diffs from the prior iteration head) must survive the transport change');
-  assert.ok(designPrompt.includes('files[]') && designPrompt.includes('exclude_paths[]'), 'design-review prompt must document the same files-mode scope manifest transport');
-  assert.ok(designPrompt.includes('base_ref') && designPrompt.includes('head_ref') && designPrompt.includes('empty'), 'design-review prompt must document that base_ref/head_ref travel empty (draft-snapshot scope, not a commit range)');
+  for (const [name, text] of [['impl', prompt], ['design', designPrompt]]) {
+    assert.ok(text.includes('files[]') && text.includes('`diff`') && text.includes('`.asd/rules/review-policy.md` "Scope hand-off"'), `sprint-017 AC-8: t_prompt-external-${name}.md must hand the wrapped CLI the list and the precomputed diff file, linking the one hand-off home`);
+    assert.ok(/never derive, widen or narrow the scope yourself/i.test(text), `sprint-017 AC-8: t_prompt-external-${name}.md must forbid the wrapped CLI deriving its own scope`);
+    assert.ok(!/\bgit (diff|log|show)\b|base_ref|head_ref|exclude_paths/.test(text), `sprint-017 AC-8: t_prompt-external-${name}.md must no longer grant a git diff or carry a ref pair to compute one`);
+  }
+  assert.ok(/`diff` is `null` at iteration 1/.test(designPrompt), 'sprint-017 D9e: the design-review prompt must say iteration 1 carries no diff, so a null field reads as "read each draft whole", not as a broken hand-off');
+  const scopePerIteration = sectionOf('.asd/rules/sprint-lifecycle.md', 'Review iteration counters').split('\n').find((line) => line.startsWith('- **Scope per iteration**'));
+  assert.ok(scopePerIteration && scopePerIteration.includes('iteration_heads["iter-(NN-1)"]...HEAD'), 'incremental scope guarantee (iter 2+ diffs from the same wave\'s prior iteration head) must survive the move of the diff into the runtime');
   assert.ok(implReview.includes('run command') && !implReview.includes('via Bash'));
 });
 
-// iteration-3 review (sprint 006): exclude_paths[] bounds what the reviewer
+// iteration-3 review (sprint 006): the scope bounds what the reviewer
 // judges, not what it may read - a prior wording pass over-reached and
 // implied the named project-context reference paths (PRD, ADR, stack, etc.)
-// were unreadable. Guards the scope-vs-readability distinction against
-// reappearing in any of the three places that state it.
-test('AC-2/4/6/7: exclude_paths[] scope-vs-readability distinction holds in the rule doc and both prompts', () => {
-  const rule = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/external-review.md'), 'utf8');
+// were unreadable. Since sprint 017 the per-agent list alone is the scope (no
+// exclude_paths[]); guards the distinction in the hand-off home and both
+// prompts.
+test('AC-2/4/6/7/sprint-017 AC-8: the scope-vs-readability distinction holds in review-policy.md "Scope hand-off" and both prompts', () => {
+  const handOff = sectionOf('.asd/rules/review-policy.md', 'Scope hand-off');
   const implPrompt = fs.readFileSync(path.join(REPO_ROOT, '.asd/templates/external-review/t_prompt-external-impl.md'), 'utf8');
   const designPrompt = fs.readFileSync(path.join(REPO_ROOT, '.asd/templates/external-review/t_prompt-external-design.md'), 'utf8');
-  const carveOut = 'the project-context reference paths below, which are always readable and are never valid finding locations either';
+  const carveOut = 'the project-context reference paths below included — is context only, never a finding location';
 
-  assert.ok(rule.includes('bounds what the reviewer judges, not what it may read'), 'external-review.md must state exclude_paths[] bounds judgment scope, not readability');
-  assert.ok(rule.includes('stay readable regardless and are never valid finding locations either'), 'external-review.md must state the named project-context reference paths remain readable and are never findable-against');
+  const wholeFiles = handOff.split('\n').find((line) => line.startsWith('3. **Whole files**'));
+  assert.ok(wholeFiles && wholeFiles.includes('listed or not, is readable as context') && wholeFiles.includes('An unlisted path stays out of scope'), 'review-policy.md "Scope hand-off" must state that any file stays readable as context while an unlisted one stays out of scope');
+  assert.ok(handOff.includes('only normative scope: its ledger file rows and its valid finding locations'), 'review-policy.md "Scope hand-off" must make the list the only bound on finding locations');
 
   for (const [name, prompt, placeholders] of [
     ['impl', implPrompt, ['{{PRD_PATH}}', '{{ADR_PATH}}', '{{STACK_PATH}}', '{{CUSTOM_RULES_PATH}}', '{{COMMANDS_PATH}}']],
     ['design', designPrompt, ['{{CONCEPT_PATH}}', '{{CUSTOM_RULES_PATH}}', '{{ACCESSIBILITY_PATH}}']],
   ]) {
-    assert.ok(prompt.includes(carveOut), `t_prompt-external-${name}.md must state the exclude_paths readability carve-out`);
+    assert.ok(prompt.includes(carveOut), `t_prompt-external-${name}.md must state the readability carve-out for paths outside files[]`);
     for (const ph of placeholders) {
       assert.ok(prompt.includes(ph), `t_prompt-external-${name}.md must still pass ${ph} as project context (readability carve-out is meaningless without it)`);
     }
@@ -2132,6 +2152,33 @@ test('SessionStart hook: an all-legacy-"skipped:" verdict map (no bare APPROVE a
   });
   const text = JSON.parse(out).hookSpecificOutput.additionalContext;
   assert.ok(text.includes('Last review verdict: mixed'), `an all-legacy-skip verdict map with no genuine approval must read "mixed", got: ${text}`);
+});
+
+test('sprint-017 AC-6 (D3/D10): SessionStart reads the current review wave\'s node and the legacy flat reviews.impl alike, picks the highest iteration numerically, shows wave K/n only past one wave, and never throws on a malformed wave shape', () => {
+  const tempRoot = mkTempDir();
+  writeFile(tempRoot, '.asd/hooks/session-start.js', fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8'));
+  const hook = (impl) => {
+    writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({ sprint_id: '999-fixture', phase: 'impl-review', branch: 'feat/999-fixture', reviews: { design: { iteration: 0, verdicts: {} }, impl } }));
+    const out = execFileSync('node', [path.join(tempRoot, '.asd/hooks/session-start.js'), '--provider', 'claude'], { cwd: tempRoot, encoding: 'utf8' });
+    return JSON.parse(out).hookSpecificOutput.additionalContext;
+  };
+  const node = (iteration, verdicts) => ({ iteration, verdicts, iteration_heads: {}, latched: {} });
+  const seed = JSON.parse(readRepoFile('.asd/templates/t_state.json')).reviews.impl;
+
+  assert.ok(hook(seed).includes('Phase: impl-review (iter 0)'), `the t_state.json seed is one wave, so it must read as the unchanged single-wave text, got: ${hook(seed)}`);
+  const waves = { wave: 2, waves: [node(3, { 'iter-03': { correctness: 'APPROVE' } }), node(2, { 'iter-01': { correctness: 'FAIL' }, 'iter-02': { correctness: 'CONCERNS' } })] };
+  const multi = hook(waves);
+  assert.ok(multi.includes('Phase: impl-review (wave 2/2, iter 2)') && multi.includes('Last review verdict: yellow'), `past one wave the summary names the current wave and reads that wave's own counter and latest verdicts, never wave 1's, got: ${multi}`);
+  const legacy = hook(node(2, { 'iter-01': { correctness: 'FAIL' }, 'iter-02': { correctness: 'APPROVE' } }));
+  assert.ok(legacy.includes('Phase: impl-review (iter 2)') && legacy.includes('Last review verdict: green'), `AC-6: a pre-wave flat reviews.impl reads as one wave, got: ${legacy}`);
+  const numeric = hook(node(100, { 'iter-99': { correctness: 'FAIL' }, 'iter-100': { correctness: 'APPROVE' } }));
+  assert.ok(numeric.includes('Last review verdict: green'), `iter-100 is later than iter-99 - a lexical sort reads iter-99's FAIL as the latest verdict, got: ${numeric}`);
+
+  for (const malformed of [{ wave: 7, waves: [node(1, {})] }, { wave: 1, waves: [null] }, { wave: 1, waves: 'x' }, { waves: [] }, [], 'x', null]) {
+    let text;
+    assert.doesNotThrow(() => { text = hook(malformed); }, `malformed reviews.impl ${JSON.stringify(malformed)} must never make the hook exit non-zero`);
+    assert.ok(text.includes('Active sprint: 999-fixture'), `malformed reviews.impl ${JSON.stringify(malformed)} must still print the summary, got: ${text}`);
+  }
 });
 
 test('AC-21: SessionStart reports "Next phase: await-user-closure" when pr.state is closure-pending', () => {
@@ -2995,59 +3042,43 @@ test('AC-4/AC-5/AC-7/AC-10: t_retrospective.html classifies every section for th
 });
 
 // ===========================================================================
-// 19. Sprint 008 retro-007 remediation: split-dispatch partition proof
-// (AC-1/AC-6), typed risk routing (AC-10), and derived_handoff (AC-11).
+// 19. Sprint 008 retro-007 remediation: typed risk routing (AC-10) and
+// derived_handoff (AC-11); sprint 017 review-wave sizing (its AC-1).
 // ===========================================================================
 
 const SECTIONED_RUBRIC = '# Reviewer\n\n## Review rubric\n\n### Alpha\n\n- **Nested label**: never an id of its own\n\n### Beta\n\n## Signals emitted\n\n### Not a rubric entry\n';
 
-test('AC-1/6/sprint-012 AC-3: emit-manifest partitions a scope above SPLIT_THRESHOLD_FILES into ceil(files / threshold) disjoint near-even parts in manifest order, each a stamped whole manifest carrying the out-of-part predicate and validating on its own; --halve splits an unsplit scope in two and fails closed when parts would outnumber files', () => {
-  const threshold = runtime.SPLIT_THRESHOLD_FILES;
-  const scope = (count) => Array.from({ length: count }, (_, index) => `src/file-${index + 1}.md`);
-  const emit = (files, halve) => runtime.emitCoverageManifests({ reviewer: 'testing', phase: 'impl-review', rubric: SECTIONED_RUBRIC, files, halve });
-  const vocabulary = runtime.LEDGER_VOCABULARY;
-  const outOfPart = runtime.NA_PREDICATES.outOfPart;
-
-  for (const [count, halve, expectedParts] of [[threshold, false, 1], [threshold + 1, false, 2], [2 * threshold + 1, false, 3], [2, true, 2]]) {
-    const files = scope(count);
-    const parts = emit(files, halve);
-    const label = `${count} file(s)${halve ? ' with --halve' : ''}`;
-    assert.strictEqual(parts.length, expectedParts, `${label}: AC-3 fixes the part count at ceil(files / ${threshold}) above the threshold, one at or below it, two on the interruption trigger`);
-    assert.deepStrictEqual(parts.flatMap((part) => part.files), files, `${label}: the parts' file lists must concatenate back to the scope exactly - disjoint, in manifest order, nothing dropped - or union property (a) blocks every merge and a dropped file is reviewed by nobody`);
-    const sizes = parts.map((part) => part.files.length);
-    assert.ok(Math.max(...sizes) - Math.min(...sizes) <= 1, `${label}: parts must be near-even (${sizes}), since the split exists because one dispatch could not hold the whole scope`);
-    parts.forEach((part, index) => {
-      assert.deepStrictEqual([part.rules, part.sections], [['Alpha', 'Beta'], ['Alpha', 'Beta']], `${label} part ${index + 1}: every part carries the full rubric - union property (b)`);
-      assert.strictEqual(part.digest, runtime.coverageManifestDigest(part), `${label} part ${index + 1}: each part is stamped with its own digest by the emitter, never by a later manifest-digest --write`);
-      for (const kind of ['rules', 'sections']) {
-        for (const id of part[kind]) {
-          assert.strictEqual((part.n_a[kind][id] || []).includes(outOfPart), expectedParts > 1, `${label} part ${index + 1}: ${kind} "${id}" must carry the out-of-part predicate exactly when the scope is split - it is the only truthful n/a for an id whose evidence sits in another part, and meaningless on an unsplit manifest`);
-        }
-      }
-      const resolve = (done) => (index === 0 ? { s: done } : { s: vocabulary.p, p: outOfPart });
-      const ledger = {
-        manifest_digest: part.digest, findings: [],
-        files: part.files.map((i) => ({ i, s: vocabulary.files[0] })),
-        rules: part.rules.map((i) => Object.assign({ i }, resolve(vocabulary.rules[0]))),
-        sections: part.sections.map((i) => Object.assign({ i }, resolve(vocabulary.sections[0]))),
-      };
-      let verdict;
-      try {
-        verdict = runtime.validateCoverageLedger(part, ledger, []);
-      } catch (error) {
-        verdict = `rejected: ${error.message}`;
-      }
-      assert.deepStrictEqual(verdict, { ok: true }, `${label} part ${index + 1}: a part is a whole manifest over its own subset, so validate-ledger must accept it unchanged${expectedParts > 1 && index > 0 ? ' - including the out-of-part n/a rows of a part that reviewed nothing itself' : ''}`);
-    });
+test('sprint-017 AC-1 (D1/D2): review-waves counts one wave per WAVE_THRESHOLD_LINES begun, at least one and at most MAX_REVIEW_WAVES; numstat lines count listed files only, a binary file and a pure rename 0; a division is accepted only as exactly n non-empty disjoint lists covering the scope', () => {
+  const threshold = runtime.WAVE_THRESHOLD_LINES;
+  const cap = runtime.MAX_REVIEW_WAVES;
+  assert.ok(cap >= 2, 'sanity: a cap below 2 leaves nothing to divide');
+  for (const [lines, expected] of [[0, 1], [1, 1], [threshold, 1], [threshold + 1, 2], [2 * threshold, 2], [2 * threshold + 1, Math.min(3, cap)], [cap * threshold + 1, cap], [100 * threshold, cap]]) {
+    assert.strictEqual(runtime.reviewWaveCount(lines), expected, `${lines} changed lines: one wave per ${threshold} lines begun, at least 1, at most ${cap}`);
+  }
+  for (const lines of [-1, 1.5, Number.NaN, '3001']) {
+    assert.throws(() => runtime.reviewWaveCount(lines), /non-negative integer/, `${JSON.stringify(lines)}: an unusable measurement must fail closed, never size the waves from a guess`);
   }
 
-  let verdict;
-  try {
-    verdict = emit(scope(1), true);
-  } catch (error) {
-    verdict = `rejected: ${error.message}`;
+  const numstat = ['12\t3\tsrc/a.js', '-\t-\tassets/logo.png', '0\t0\t', 'src/old.js', 'lib/moved.js', '4\t1\t', 'src/was.js', 'lib/edited.js', '7\t0\tsrc/unlisted.js', ''].join('\0');
+  const listed = ['src/a.js', 'assets/logo.png', 'lib/moved.js', 'lib/edited.js'];
+  assert.strictEqual(runtime.numstatLines(numstat, listed), 12 + 3 + 4 + 1, 'D1: added plus deleted lines of the listed files; the binary file and the pure rename add 0, an edited rename counts at its destination, an unlisted file never counts');
+  assert.strictEqual(runtime.numstatLines(numstat, ['src/old.js', 'src/was.js']), 0, 'a rename is listed by its destination, never its source');
+  assert.strictEqual(runtime.numstatLines('', listed), 0, 'an empty range measures 0 lines');
+  assert.throws(() => runtime.numstatLines('garbage\0', listed), /malformed/, 'an unparsable numstat entry must fail closed, never read as 0 lines and collapse the scope into one wave');
+
+  const scope = ['a.md', 'b.md', 'c.md', 'd.md'];
+  assert.deepStrictEqual(runtime.validateWaveDivision([['a.md', 'c.md'], ['b.md', 'd.md']], scope, 2), [['a.md', 'c.md'], ['b.md', 'd.md']], 'a disjoint division covering the scope in exactly n waves is accepted as given, grouping left to the orchestrator');
+  for (const [label, division, pattern] of [
+    ['too few waves', [scope], /exactly 2 waves/],
+    ['too many waves', [['a.md'], ['b.md'], ['c.md', 'd.md']], /exactly 2 waves/],
+    ['an empty wave', [scope, []], /empty/],
+    ['a file in two waves', [['a.md', 'b.md'], ['b.md', 'c.md', 'd.md']], /twice/],
+    ['a file outside the scope', [['a.md', 'b.md'], ['c.md', 'd.md', 'e.md']], /outside the scope/],
+    ['a scope file in no wave', [['a.md', 'b.md'], ['c.md']], /in no wave/],
+    ['a non-array wave', [['a.md', 'b.md'], 'c.md'], /string array/],
+  ]) {
+    assert.throws(() => runtime.validateWaveDivision(division, scope, 2), pattern, `${label}: a division that is not exactly n non-empty disjoint lists covering the scope leaves a file reviewed twice or by nobody`);
   }
-  assert.ok(String(verdict).startsWith('rejected:'), `--halve on a one-file scope must fail closed: a part holding no file validates vacuously and reports a review that never happened. Got: ${JSON.stringify(verdict)}`);
 });
 
 test('AC-10: a typed target:"change" risk routes exactly like the legacy bare-string form', () => {
@@ -3136,11 +3167,16 @@ test('AC-6/sprint-010 AC-6a: review-policy.md states the bounded one-transcripti
   assert.ok(policy.includes('Transcription never supplies a status, predicate or finding id the return did not carry'), 'the branch is only safe while it re-encodes evidence the reviewer actually returned; supplying a missing status is the workflow forging the coverage the ledger exists to prove');
   assert.ok(policy.includes('never the transcription branch, which has no returned ledger to re-encode'), 'AC-6a: an interrupted dispatch returns no ledger at all, so it must stay on the reject path - routed into transcription, a dispatch that produced nothing would be re-encoded into a verdict');
 
-  const citation = 'sole SSoT for trigger, partition, union property, merge rule and durable record';
+  const escalation = policy.split('\n').find((line) => line.startsWith('**Escalation.**'));
+  assert.ok(escalation && escalation.includes('second consecutive interruption') && escalation.includes('request') && /never split or narrowed/.test(escalation), 'sprint-017 AC-5 (D7): with no split to fall back on, a reviewer interrupted twice in a row on one manifest must escalate to the user, and the manifest must never be split or narrowed');
+
+  const citation = 'is the sole SSoT for the durable record, the escalation and the correlated branch';
   const reDispatchPhrase = 'takes the same reject-and-re-dispatch-fresh path as a failed validation above';
   for (const file of ['asd-phase-design-review.md', 'asd-phase-impl-review.md']) {
     const workflow = fs.readFileSync(path.join(REPO_ROOT, `.asd/workflows/${file}`), 'utf8');
-    assert.ok(workflow.includes(citation), `${file} must cite review-policy.md as sole SSoT for the interrupted/split-dispatch contract, including the durable record, rather than restating it`);
+    assert.ok(workflow.includes(citation), `${file} must cite review-policy.md as sole SSoT for the interrupted-dispatch contract, including the durable record and the escalation, rather than restating it`);
+    const interrupted = workflow.split('\n').find((line) => line.trimStart().startsWith('- Interrupted dispatch'));
+    assert.ok(interrupted && interrupted.includes('second consecutive interruption') && interrupted.includes('never a split'), `sprint-017 AC-5: ${file}'s interrupted bullet must bind the twice-interrupted escalation and exclude a split - the old acting site re-split the manifest`);
     assert.ok(workflow.includes(reDispatchPhrase), `${file} must route an interrupted dispatch (no verdict token, no ledger) through the same reject-and-re-dispatch-fresh handling as a failed ledger validation - a future edit dropping this from one workflow while review-policy.md still claims it must fail here`);
     assert.ok(workflow.includes('A failure earns one transcription and re-run per `review-policy.md` "Coverage ledger" enforcement'), `${file} is the acting site for AC-6a: the validation step must carry the transcription branch and cite its owner, or the rule's second case exists in prose and never in any workflow that could perform it`);
     assert.ok(workflow.includes('never that step\'s transcription branch'), `${file} must exclude an interrupted dispatch from transcription at the branch itself - the exclusion holds only where the two paths are adjacent`);
@@ -3219,10 +3255,12 @@ test('T-2: AGENTS.md is sole SSoT for the --apply <generated-view-path...> expla
   }
 });
 
-test('T-2/AC-3: artifact-layout.md documents the <reviewer>.part-N.md split-review naming and the sprint-folder-purity statement alongside the Agent-memory carve-out; README.md and t_review.md carry the matching mirrors', () => {
+test('T-2/AC-3/sprint-017 AC-6: artifact-layout.md names every review-file variant - per-wave impl dirs, the waves.json division and the legacy read - and the sprint-folder-purity statement alongside the Agent-memory carve-out; README.md and t_review.md carry the matching mirrors', () => {
   const artifactLayout = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/artifact-layout.md'), 'utf8');
-  assert.ok(artifactLayout.includes('design/iter-NN/<reviewer>.md, <reviewer>.part-N.md, <reviewer>.late.md'), 'artifact-layout.md path map must name every review-file variant under design reviews');
-  assert.ok(artifactLayout.includes('impl/iter-NN/<reviewer>.md, <reviewer>.part-N.md, <reviewer>.late.md'), 'artifact-layout.md path map must name every review-file variant under impl reviews');
+  assert.ok(artifactLayout.includes('design/iter-NN/<reviewer>.md, <reviewer>.late.md'), 'artifact-layout.md path map must name every review-file variant under design reviews');
+  const implRow = artifactLayout.split('\n').find((line) => line.includes('impl/wave-<K>/iter-NN/<reviewer>.md, <reviewer>.late.md'));
+  assert.ok(implRow && implRow.includes('legacy impl/iter-NN/'), 'sprint-017 D4: artifact-layout.md path map must name the per-wave impl review dir and the legacy dir it still reads, or an in-flight sprint\'s reviews are stray files by the purity rule below');
+  assert.ok(artifactLayout.includes('impl/waves.json'), 'sprint-017 D2: the division file is written under the sprint folder, so the exhaustive path map must name it');
   assert.ok(artifactLayout.includes('A sprint folder holds **only** the artifacts named above'), 'artifact-layout.md must state the sprint-folder-purity contract');
   assert.ok(artifactLayout.includes('`agent-memory/` has no canonical source under `.asd/` and `sync.js` neither generates nor reconciles it'), 'artifact-layout.md must state the Agent-memory read-only carve-out reasoning');
 
@@ -3231,7 +3269,7 @@ test('T-2/AC-3: artifact-layout.md documents the <reviewer>.part-N.md split-revi
 
   const reviewTemplate = fs.readFileSync(path.join(REPO_ROOT, '.asd/templates/t_review.md'), 'utf8');
   assert.ok(reviewTemplate.includes('Interrupted attempts: {{count}} ({{cause}})'), 't_review.md must ship the interrupted-attempts placeholder line the durable-record rule (review-policy.md) depends on');
-  assert.ok(reviewTemplate.includes('<reviewer>.part-N.md'), 't_review.md must ship the split-form note pointing to <reviewer>.part-N.md');
+  assert.ok(reviewTemplate.includes('wave-<K>/iter-NN'), 'sprint-017 D4: t_review.md must carry the impl-review iteration in its id form, so a review file names the wave it belongs to');
 });
 
 test('T-3/AC-2: providers.md states the never-heredoc file-write rule for artifact content', () => {
@@ -3640,14 +3678,14 @@ test('AC-4/AC-11/AC-14: review-policy.md carries the correlated-interruption bra
   const policy = readRepoFile('.asd/rules/review-policy.md');
 
   assert.ok(policy.includes('**Correlated interruption.**'), 'AC-4: the interrupted-dispatch contract must carry a correlated-failure branch');
-  assert.ok(policy.includes('iteration <N> interrupted (<cause>), all dispatches'), 'the iteration-level event needs its own literal log line, since a resume rebuilds the per-iteration count from those entries');
-  assert.ok(/raises no reviewer.s attempt count/.test(policy), 'the whole point of the branch is that one session-wide cause must not arm the split trigger once per reviewer');
+  assert.ok(policy.includes('iteration <id> interrupted (<cause>), all dispatches'), 'the iteration-level event needs its own literal log line, since a resume rebuilds the per-iteration count from those entries - keyed by the iteration id, which in impl-review names the wave (sprint-017 D4)');
+  assert.ok(/raises no reviewer.s attempt count/.test(policy), 'the whole point of the branch is that one session-wide cause must not arm the twice-interrupted escalation once per reviewer');
 
   assert.ok(policy.includes('**Late duplicate return.**'), 'AC-14: a late-returning replaced dispatch needs a stated disposal');
   assert.ok(policy.includes('<reviewer>.late.md'), 'the admitted late return needs a named artefact home, or the evidence has nowhere to land');
   const layout = readRepoFile('.asd/rules/artifact-layout.md');
-  for (const phase of ['design', 'impl']) {
-    const row = layout.split('\n').find((line) => line.includes(`${phase}/iter-NN/<reviewer>.md`));
+  for (const [phase, dir] of [['design', 'design/iter-NN'], ['impl', 'impl/wave-<K>/iter-NN']]) {
+    const row = layout.split('\n').find((line) => line.includes(`${dir}/<reviewer>.md`));
     assert.ok(row && row.includes('<reviewer>.late.md'), `artifact-layout.md's ${phase} reviews row must carry the artefact name review-policy.md mandates: that path map is exhaustive ("A sprint folder holds **only** the artifacts named above"), so a late-return file it omits is one the orchestrator is told to write and a Documentation reviewer is told to flag as stray`);
   }
   const policyReach = policy.split('\n').find((line) => line.includes('**Late duplicate return**') && line.includes('holds for any replaced dispatch'));
@@ -3655,19 +3693,17 @@ test('AC-4/AC-11/AC-14: review-policy.md carries the correlated-interruption bra
   assert.ok(policyReach.includes('Applies to the 4 internal reviewers, except where a branch states its own reach'), 'the section default plus its delegation clause are what make every acting bullet below load-bearing: a branch silent on reach is not unscoped, it inherits the 4-internal-reviewers default - so a bullet that drops its own reach is wrong rather than merely vague');
   const importedWhole = readRepoFile('.asd/rules/external-review.md').split('\n').find((line) => line.includes('`review-policy.md` "Interrupted dispatch"') && line.includes('imported here whole'));
   assert.ok(importedWhole, 'external-review.md must hand a non-outcome to review-policy.md "Interrupted dispatch" as a WHOLE import: that import is the only thing placing External Review inside a branch whose section default is the 4 internal reviewers, so it is the source the two interrupted-bullet mirrors below are derived from - narrow it and their reach becomes an unsourced claim (the AC-8 test checks only that the boundary is named, never that the import is whole)');
-  for (const [phase, rel] of [['design', '.asd/workflows/asd-phase-design-review.md'], ['impl', '.asd/workflows/asd-phase-impl-review.md']]) {
+  for (const [dir, rel] of [['design/iter-NN', '.asd/workflows/asd-phase-design-review.md'], ['impl/<id>', '.asd/workflows/asd-phase-impl-review.md']]) {
     const reviewFlow = readRepoFile(rel);
     const lateLine = reviewFlow.split('\n').find((line) => line.includes('per `review-policy.md` "Late duplicate return" (sole SSoT'));
     assert.ok(lateLine, `${rel} must bind the branch at the step that records verdicts and cite the rule as its sole home: review-policy.md names the phase workflow, never the returning agent, as the actor, so a workflow that never mentions it is an obligation with no acting site`);
     assert.ok(lateLine.includes('External Review included'), `${rel}: the acting bullet must state review-policy.md's reach carve-out on the same line as its citation. Reach is delegated to each branch and never inherited from the enclosing step header, and the section default behind that delegation is the 4 internal reviewers, so a bullet silent on reach discards precisely the late External Review the branch exists to admit (iteration 3 finding: at that point the header itself claimed "internal reviewers only" and the silent bullet inherited it outright). Line-scoped on purpose: a carve-out parked elsewhere in the file satisfies a file-level check while the acting site stays narrow`);
     const artefacts = reviewFlow.split('## Artefacts produced')[1];
-    assert.ok(artefacts && artefacts.includes(`<sprint>/reviews/${phase}/iter-NN/<reviewer>.late.md`), `${rel} must name the late-return file in its Artefacts produced list - that list is what the orchestrator writes from, and an artefact a rule mandates but no workflow declares is one nobody ever produces`);
+    assert.ok(artefacts && artefacts.includes(`<sprint>/reviews/${dir}/<reviewer>.late.md`), `${rel} must name the late-return file in its Artefacts produced list - that list is what the orchestrator writes from, and an artefact a rule mandates but no workflow declares is one nobody ever produces`);
     const interruptedLine = reviewFlow.split('\n').find((line) => line.trimStart().startsWith('- Interrupted dispatch'));
     assert.ok(interruptedLine, `${rel}: the interrupted branch must be written out as its own bullet at the acting step - review-policy.md delegates reach to each branch, so a branch that is not written out at the acting step has its reach stated nowhere the orchestrator reads`);
     assert.ok(interruptedLine.includes('External Review included'), `${rel}: the interrupted bullet must carry its own reach on its own line, for the same reason the late-duplicate bullet does. Re-narrowed to the section default, it tells the orchestrator NOT to re-dispatch a cut-short External Review dispatch and not to log the attempt, and step 8/9 then blocks on an absent \`external\` key with nothing in decisions-log to explain it`);
     assert.ok(interruptedLine.includes('`external-review.md` "Outcome contract"'), `${rel}: the reach and the rule it is derived from must be one sentence - external-review.md imports "Interrupted dispatch" whole, and a wider reach asserted with no citation back to that import reads as contradicting the section default and gets edited out`);
-    const splitLine = reviewFlow.split('\n').find((line) => line.trimStart().startsWith('- Split dispatch'));
-    assert.ok(splitLine && splitLine.includes('internal reviewers only'), `${rel}: the split bullet must keep the section default stated explicitly - with both neighbouring bullets now reading "External Review included", harmonizing the third is the plausible edit, and widened it authorizes partitioning a dispatch that returns no coverage ledger to merge at all (step 7/8: External Review is exempt from validate-ledger)`);
   }
   assert.ok(policy.includes('more severe of the two tokens'), 'the recorded verdict must move to the more severe token, never to whichever returned last');
   assert.ok(policy.includes('any APPROVE latch for that reviewer cleared'), 'an admitted late return must clear that reviewer\'s latch, or it stays dispatch-skipped on the strength of an APPROVE its own admitted evidence just overturned');
@@ -3688,7 +3724,7 @@ test('AC-4/AC-11/AC-14: review-policy.md carries the correlated-interruption bra
   assert.ok(!readRepoFile('.asd/workflows/asd-phase-design-review.md').includes('(no escalation needed)'), 'sprint-012 AC-8: the design-review autofix bullet must cite "Autofix vs escalation" instead of restating a latitude the rule now owns');
 });
 
-test('AC-8/sprint-010 AC-4/sprint-014 AC-1: external-review.md "Outcome contract" is the sole home of what a dispatched External Review may return - a verdict, the preflight-only availability skip or the partial - an availability skip reaches the friction log as well as the decisions log, review-policy.md hands the whole question to it, and the agent, report template, latch rule and both review workflows carry the outcome literals the contract defines', () => {
+test('AC-8/sprint-010 AC-4/sprint-014 AC-1/sprint-017 AC-5: external-review.md "Outcome contract" is the sole home of what a dispatched External Review may return - a verdict or the preflight-only availability skip, never a partial - an availability skip reaches the friction log as well as the decisions log, review-policy.md hands the whole question to it, and the agent, report template, latch rule and both review workflows carry the outcome literals the contract defines', () => {
   const external = readRepoFile('.asd/rules/external-review.md');
   assert.ok(external.includes('## Outcome contract'), 'external-review.md must carry the outcome contract as its own named section, since review-policy.md and the agent both cite it by name');
   assert.ok(/awaits the wrapped CLI inside its own dispatch and never backgrounds it/.test(external), 'F-8 was a dispatch that returned while its CLI was still running - the await obligation is the fix');
@@ -3701,21 +3737,21 @@ test('AC-8/sprint-010 AC-4/sprint-014 AC-1: external-review.md "Outcome contract
   assert.ok(/friction entry/.test(skipBullet) && skipBullet.includes(FRICTION_APPEND_REF.split(' per ')[1]), 'sprint-010 AC-4: a skipped External Review is a review that did not happen, so it must reach the friction log as well as the decisions log - recorded nowhere durable, the retro cannot see that a required reviewer never ran. Keyed to the same `sprint-lifecycle.md` "Friction log" citation every phase workflow carries, so the writer mechanism stays stated once');
 
   const contract = sectionOf('.asd/rules/external-review.md', 'Outcome contract');
-  const partial = /`\[REVIEW-<phase>-external\]: (APPROVE \(partial: [^`]+\))`/.exec(contract);
+  const outcomes = contract.split('\n').filter((line) => /^- \*\*[a-z ]+\*\* — /.test(line)).map((line) => /^- \*\*([a-z ]+)\*\*/.exec(line)[1]);
+  assert.deepStrictEqual(outcomes, ['verdict', 'availability skip'], 'sprint-017 AC-5: the contract must define exactly two outcomes - the partial went with External Review\'s file batches');
   const interrupted = /`(external review interrupted: [^`]+)`/.exec(contract);
-  assert.ok(partial && interrupted, 'sprint-014 AC-1: the contract must define the partial outcome and the interrupted return as literals, the shapes every other site below is checked against');
-  const partialBullet = contract.split('\n').find((line) => line.includes(partial[1]));
-  assert.ok(/never\b[^.]*latch/.test(partialBullet) &&partialBullet.includes('`F-N`'), 'sprint-014 AC-1: the partial outcome satisfies its iteration without latching and gets an `F-N` entry - a partial left undurable, or latched, removes External Review from the sprint while files it never read stay unreviewed');
+  assert.ok(interrupted, 'sprint-014 AC-1: the contract must define the interrupted return as a literal, the shape every other site below is checked against');
+  assert.ok(/one wrapped-CLI invocation over its whole `files\[\]`, retried once — never batched or split/.test(contract), 'sprint-017 AC-5 (D7): one dispatch is one invocation over the whole list - a batch boundary is exactly what used to produce the partial outcome');
   assert.ok(!contract.includes('**any** inability to complete'), 'sprint-014 AC-1: the skip is narrowed to a non-ready preflight or negative cache - a post-invocation failure returning the skip passes the gate on a review that did not happen');
 
   const policy = readRepoFile('.asd/rules/review-policy.md');
   assert.ok(!policy.includes("External Review's unavailability path is"), 'the old scoping line handed off only the unavailability path, which is what left an empty return undisposed on both sides');
   assert.ok(policy.includes('`external-review.md` "Outcome contract"'), 'review-policy.md must point at the outcome contract as a whole');
   const grammarLink = /external-review\.md`? (?:"|§ )Outcome contract/;
-  assert.ok(sectionOf('.asd/rules/review-policy.md', 'Gate Verdict Format').split('\n').some((line) => line.startsWith('- ') && grammarLink.test(line)), 'EXT-5: the review-policy.md verdict grammar must link the skip/partial carve-out, or a literal grammar match rejects a valid External Review return');
-  assert.ok(readRepoFile('README.md').split('\n').some((line) => line.includes('[REVIEW-<phase>-<reviewer>]') && grammarLink.test(line)), 'EXT-5: the README verdict-token grammar mirror must link the skip/partial carve-out on the line that states the grammar');
-  const stalemateInput = sectionOf('.asd/rules/external-review.md', 'Stalemate detection').split('\n').find((line) => /\bpartial\b/.test(line));
-  assert.ok(stalemateInput && /\bskip\b/.test(stalemateInput) && /phase skill/i.test(stalemateInput), 'TST-1-1: "Stalemate detection" must have the phase skill exclude partial and skip iterations from the finding set it supplies - compared against a partial, a real stalemate is missed');
+  assert.ok(sectionOf('.asd/rules/review-policy.md', 'Gate Verdict Format').split('\n').some((line) => line.startsWith('- ') && grammarLink.test(line)), 'EXT-5: the review-policy.md verdict grammar must link the skip carve-out, or a literal grammar match rejects a valid External Review return');
+  assert.ok(readRepoFile('README.md').split('\n').some((line) => line.includes('[REVIEW-<phase>-<reviewer>]') && grammarLink.test(line)), 'EXT-5: the README verdict-token grammar mirror must link the skip carve-out on the line that states the grammar');
+  const stalemateInput = sectionOf('.asd/rules/external-review.md', 'Stalemate detection').split('\n').find((line) => /\bskip\b/.test(line));
+  assert.ok(stalemateInput && /phase skill/i.test(stalemateInput), 'TST-1-1: "Stalemate detection" must have the phase skill exclude skip iterations from the finding set it supplies - compared against a skip, a real stalemate is missed');
   for (const rel of ['.asd/workflows/asd-phase-impl-review.md', '.asd/workflows/asd-phase-design-review.md']) {
     assert.ok(canonText(rel).includes('`external-review.md` "Stalemate detection"'), `TST-1-1: ${rel} supplies the stalemate finding set, so it must cite external-review.md "Stalemate detection"`);
   }
@@ -3724,18 +3760,19 @@ test('AC-8/sprint-010 AC-4/sprint-014 AC-1: external-review.md "Outcome contract
   assert.ok(agent.includes('Never background or detach the `{{wraps_cli}}` run'), 'the never-background Don\'t must be stated on the placeholder token both views render');
   const outcomeDont = agent.split('\n').find((line) => line.startsWith('- Never return anything but') && line.includes('`external-review.md` "Outcome contract"'));
   assert.ok(outcomeDont, 'the agent must carry the outcome contract as a Don\'t citing its home, not only the rule doc it may not read');
-  for (const literal of ['APPROVE (skipped: external review unavailable: <specific status>)', partial[1], interrupted[1]]) {
+  for (const literal of ['APPROVE (skipped: external review unavailable: <specific status>)', interrupted[1]]) {
     assert.ok(outcomeDont.includes(literal), `the agent's outcome Don't must carry \`${literal}\` exactly as external-review.md defines it, or that return parses as prose`);
   }
   const abortSignal = agent.split('\n').find((line) => line.includes('ABORT — precondition not met: <artefact>'));
   assert.ok(abortSignal && abortSignal.includes('only before any `{{wraps_cli}}` invocation'), 'the acting half of the rule\'s carve-out: the agent\'s ABORT must be scoped to the pre-invocation window, or the agent emits an outcome the contract forbids');
   assert.ok(abortSignal && abortSignal.includes(interrupted[1]) && abortSignal.includes('`external-review.md` "Outcome contract"') && !abortSignal.includes('returns the availability skip'), 'sprint-014 AC-1: the post-invocation half must stay on the signal line, return the interrupted form rather than the availability skip, and cite the contract as its home');
 
-  for (const rel of ['.asd/agents/asd-external-review.md', '.asd/templates/external-review/t_review-report.md', '.asd/workflows/asd-phase-impl-review.md', '.asd/workflows/asd-phase-design-review.md', '.asd/rules/sprint-lifecycle.md']) {
-    assert.ok(canonText(rel).includes(partial[1]), `sprint-014 AC-1: ${rel} must carry the partial outcome as external-review.md defines it - the agent returns it, the report template renders it, the workflows write it verbatim to verdicts, the latch rule excludes it`);
-  }
+  const partialToken = 'APPROVE (partial:';
+  const partialSites = [...canonMarkdownFiles(), 'README.md'].flatMap((rel) => canonText(rel).split('\n').filter((line) => line.includes(partialToken)).map((line) => `${rel}: ${line}`));
+  assert.ok(partialSites.length > 0 && partialSites.every((site) => site.startsWith('.asd/rules/sprint-lifecycle.md: ') && /\blegacy\b/.test(site)), `sprint-017 AC-5/D7: no current-version site may emit, render or parse the partial outcome; the one survivor is sprint-lifecycle.md "State recovery"'s legacy satisfied value, an in-flight sprint may still hold. Got: ${JSON.stringify(partialSites)}`);
+
   const carried = /as its `([^`]+)` line/.exec(sectionOf('.asd/rules/external-review.md', 'Iteration semantics'));
-  assert.ok(carried, 'external-review.md "Iteration semantics" must name the line a partial, skip or stopped iteration records its unreviewed files on');
+  assert.ok(carried, 'external-review.md "Iteration semantics" must name the line a skipped iteration records its unreviewed files on');
   assert.ok(canonText('.asd/templates/external-review/t_review-report.md').includes(`**${carried[1]}**`), `sprint-014 AC-1: t_review-report.md must slot the \`${carried[1]}\` line the next iteration reads`);
   assert.ok(canonText('.asd/templates/external-review/t_review-report.md').includes('APPROVE (skipped: external review unavailable: <specific status>)'), "EXT-5: t_review-report.md's first-line alternatives must admit the skip token the skip's external.md carries");
   assert.ok(skipBullet.includes(`\`${carried[1]}\``) && skipBullet.includes('`files[]`'), `COR-4: the availability skip must persist a \`${carried[1]}\` line naming the files[] it never reviewed - on a skip no agent runs, so nothing else writes it and those files never reach External Review`);
@@ -3744,10 +3781,10 @@ test('AC-8/sprint-010 AC-4/sprint-014 AC-1: external-review.md "Outcome contract
     assert.ok(sentences.some((sentence) => sentence.includes('non-ready') && sentence.includes('`files[]`') && sentence.includes(`\`${carried[1]}\``)), `COR-4: ${rel} step ${step.slice(0, -2)} must still compute files[] on a non-ready preflight as the skip's \`${carried[1]}\` - skipped with the manifest, the skip has no list to write`);
   }
   for (const rel of ['.asd/workflows/asd-phase-impl-review.md', '.asd/workflows/asd-phase-design-review.md']) {
-    assert.ok(canonText(rel).split('\n').some((line) => line.includes('`files[]`') && line.includes(`previous iteration's \`${carried[1]}\``)), `sprint-014 AC-1: ${rel} must union the previous iteration's \`${carried[1]}\` into the External Review files[] - dropped, a partial's unreviewed files are never reviewed while the partial satisfies DoD`);
+    assert.ok(canonText(rel).split('\n').some((line) => line.includes('`files[]`') && line.includes(`previous iteration's \`${carried[1]}\``)), `sprint-014 AC-1: ${rel} must union the previous iteration's \`${carried[1]}\` into the External Review files[] - dropped, a skip's unreviewed files are never reviewed while the skip satisfies DoD`);
   }
   const latch = sectionOf('.asd/rules/sprint-lifecycle.md', 'APPROVE latch');
-  assert.ok(latch.includes(partial[1]) && latch.includes('only for the bare `"APPROVE"` token'), 'sprint-014 AC-1: the latch rule both workflows cite must name the partial as a non-latching value and keep the bare-token-only latch write that excludes it');
+  assert.ok(latch.includes('only for the bare `"APPROVE"` token') && latch.includes('never for the `"APPROVE (skipped: ...)"` form'), 'sprint-014 AC-1: the latch rule both workflows cite must keep the bare-token-only latch write that excludes the skip');
 });
 
 test('AC-6: code-style.md §19 names the line-ending editing hazard platform-neutrally and requires the staged pre-commit lint, and this repo\'s own commands.yaml configures that form', () => {
@@ -3806,15 +3843,17 @@ test('AC-15: checkpoints.md surfaces a criterion\'s running cost from artefacts 
   }
   assert.ok(checkpoints.includes('no counter is stored'), 'the mechanism was accepted at the audit gate on the condition that it adds no new state; a stored counter is the thing that can drift out of sync with the artefacts');
   assert.ok(checkpoints.includes('`<sprint>/reviews/<phase>/iter-NN/`'), 'the iterations-charged unit must name the artefact it is derived from');
+  assert.ok(checkpoints.includes('`<sprint>/reviews/impl/wave-*/iter-NN/`') && checkpoints.includes('legacy `<sprint>/reviews/impl/iter-NN/`'), 'sprint-017 AC-6 (D10): impl-review iterations live in per-wave dirs, so the count must glob them and still read the legacy dirs - keyed on the old path alone it reads zero for every wave-era iteration');
 
-  const matchedTail = 'for iter-NN: findings resolved';
+  const matchedTail = 'for <id>: findings resolved';
   assert.ok(checkpoints.includes(`matched on the stable tail \`${matchedTail}\``), 'the fix-rounds-charged unit must state the literal it matches decisions-log entries on, or the count is unreproducible');
-  assert.ok(checkpoints.includes('however the mode is named'), 'the tail is mode-agnostic on purpose: the orchestrator really writes "impl review-fix for iter-NN: findings resolved", which a match keyed to the mode name does not select - that miss is what made the previous whole-heading literal read zero on real data');
+  assert.ok(checkpoints.includes('however the mode is named'), 'the tail is mode-agnostic on purpose: the orchestrator really writes "impl review-fix for <id>: findings resolved", which a match keyed to the mode name does not select - that miss is what made the previous whole-heading literal read zero on real data');
+  assert.ok(checkpoints.includes('`wave-<K>/iter-NN`, legacy `iter-NN`'), 'sprint-017 D4: the tail matches on the iteration id, so checkpoints.md must name both id forms it resolves');
 
   const citedStep = /`asd-phase-impl\.md` step (\d+) is the emitting SSoT/.exec(checkpoints);
   assert.ok(citedStep, 'checkpoints.md must cite the workflow step that emits the entry it counts; without a named emitter the tail is a literal accountable to nobody');
   const workflowLines = readRepoFile('.asd/workflows/asd-phase-impl.md').split('\n');
-  const emitted = workflowLines.map((line) => /append decisions-log entry "([^"]*iter-NN[^"]*)"/.exec(line)).filter(Boolean);
+  const emitted = workflowLines.map((line) => /append decisions-log entry "([^"]*<id>[^"]*)"/.exec(line)).filter(Boolean);
   assert.strictEqual(emitted.length, 1, 'exactly one place in asd-phase-impl.md may emit the per-iteration fix-round entry - two emitters means two wordings, and the counter can only match one');
   assert.ok(emitted[0][1].endsWith(matchedTail), `the entry asd-phase-impl.md emits ("${emitted[0][1]}") must END WITH the tail checkpoints.md matches on ("${matchedTail}"): the property is that what the emitter writes is selected by what the counter matches, so a rewording on either side that breaks the containment silently drops the count to zero and no gate notices`);
   const emitIndex = workflowLines.findIndex((line) => line.includes(`append decisions-log entry "${emitted[0][1]}"`));
@@ -3909,7 +3948,7 @@ test('sprint-010 AC-7/G-9: artifact-layout.md "Documentation economy" is the rul
 
   const rubricIds = (reviewer) => {
     try {
-      return runtime.emitCoverageManifests({ reviewer, phase: 'impl-review', rubric: readRepoFile(`.asd/agents/asd-reviewer-${reviewer}.md`), files: [] })[0].rules;
+      return runtime.emitCoverageManifest({ reviewer, phase: 'impl-review', rubric: readRepoFile(`.asd/agents/asd-reviewer-${reviewer}.md`), files: [] }).rules;
     } catch (error) {
       return `rejected: ${error.message}`;
     }
@@ -4030,7 +4069,8 @@ test('sprint-010 iter-02: review-policy.md "Nitpick drop list" is the only enume
 test('sprint-010 iter-02: each latch non-restatement declaration denies only what its own site omits - the red-full-suite invalidation keeps its rule home and both step-9 acting sites while review-policy.md stops restating it, and neither review workflow denies the mechanic it spells out', () => {
   const latchSection = readRepoFile('.asd/rules/sprint-lifecycle.md').split('## APPROVE latch')[1].split('\n## ')[0];
   assert.ok(latchSection.includes('**Red-full-suite invalidation.**'), 'sprint-lifecycle.md "APPROVE latch" is the sole home of latch persistence and claims to name every route that clears it, so the red-suite route must live here - review-policy.md just dropped its copy, which leaves this the only rule-level statement of it');
-  assert.ok(/clear BOTH `reviews\.design\.latched` and `reviews\.impl\.latched` to `\{\}`/.test(latchSection), 'the route must state its blast radius: a red suite invalidates approvals in both review phases, and a rule saying only "clear the latch" is satisfied by clearing one of the two maps');
+  assert.ok(/clear `reviews\.design\.latched` and every impl-review wave node's `latched` to `\{\}` sprint-wide/.test(latchSection), 'the route must state its blast radius: a red suite invalidates approvals in both review phases and every review wave, and a rule saying only "clear the latch" is satisfied by clearing one of the maps');
+  assert.ok(latchSection.includes('A closed wave is never dispatched again, so this re-arms only the current (last) wave'), 'sprint-017 AC-4 (D6): clearing a closed wave\'s latch must not read as reopening it - an approved wave is never reopened');
 
   const policy = readRepoFile('.asd/rules/review-policy.md');
   const dod = policy.split('\n').find((line) => line.includes("impl-review's DoD has a second, non-reviewer condition"));
@@ -4147,7 +4187,7 @@ test("sprint-012 AC-1: the published n_a shape keys exactly the vocabulary's row
 });
 
 test("sprint-012 AC-12: emit-manifest derives rule and section ids from a reviewer's own rubric, appends custom-rule paths, and grants each standing n/a predicate only where its condition holds - checked against every internal reviewer's real rubric in both phases", () => {
-  const fixture = (rubric, customRules) => runtime.emitCoverageManifests({ reviewer: 'testing', phase: 'impl-review', rubric, files: ['a.md'], customRules })[0];
+  const fixture = (rubric, customRules) => runtime.emitCoverageManifest({ reviewer: 'testing', phase: 'impl-review', rubric, files: ['a.md'], customRules });
   const sectioned = fixture(SECTIONED_RUBRIC, { '.asd/project/custom-coding-rules.md': '# Custom Coding Rules\n' });
   assert.deepStrictEqual([sectioned.rules, sectioned.sections], [['Alpha', 'Beta', '.asd/project/custom-coding-rules.md'], ['Alpha', 'Beta']], 'review-policy.md "Rubric ID derivation": a sectioned rubric yields its `###` headings as rule and section ids in file order - nothing nested under a heading, nothing under the next `##` - and a custom rule is enumerated by the path passed');
   const bullets = fixture("## Review rubric\n\n- **Alpha**: detail\n  - **Nested**: not an id\n- **Beta**: detail\n\n## Do's\n\n- **Not a rubric entry**\n", {});
@@ -4155,7 +4195,7 @@ test("sprint-012 AC-12: emit-manifest derives rule and section ids from a review
   assert.throws(() => fixture('# Reviewer\n\n## Signals emitted\n', {}), /Review rubric/, 'a reviewer file with no `## Review rubric` must fail the emit closed: a manifest with no rubric rows validates while proving nothing was reviewed');
 
   const agent = (reviewer) => readRepoFile(`.asd/agents/asd-reviewer-${reviewer}.md`);
-  const emitReal = (reviewer, phase, files, extra) => runtime.emitCoverageManifests(Object.assign({ reviewer, phase, rubric: agent(reviewer), files, customRules: {} }, extra))[0];
+  const emitReal = (reviewer, phase, files, extra) => runtime.emitCoverageManifest(Object.assign({ reviewer, phase, rubric: agent(reviewer), files, customRules: {} }, extra));
   const holders = (manifest, predicate) => Object.entries(manifest.n_a.rules).filter(([, predicates]) => predicates.includes(predicate)).map(([id]) => id);
   const predicates = runtime.NA_PREDICATES;
 
@@ -4169,20 +4209,13 @@ test("sprint-012 AC-12: emit-manifest derives rule and section ids from a review
 
   const htmlHolders = (manifest) => holders(manifest, predicates.noHtml);
   const htmlIds = htmlHolders(emitReal('documentation', 'impl-review', ['README.md', '.asd/runtime.js'], {}));
-  assert.ok(htmlIds.length > 0, 'a scope with no HTML file must n/a the documentation entries whose evidence lives only in HTML docs, or every split part can record only out-of-part for them and union check (c) fails by construction (ORC-1)');
+  assert.ok(htmlIds.length > 0, 'a scope with no HTML file must n/a the documentation entries whose evidence lives only in HTML docs - otherwise a prose-only scope forces a review of evidence that cannot exist there (ORC-1)');
   assert.deepStrictEqual(htmlHolders(emitReal('documentation', 'design-review', ['s/design/adr.md'], {})), htmlIds, 'the no-HTML predicate is phase-independent: a design-review scope of Markdown drafts only (prd and ux-spec disabled) carries it too');
   for (const html of ['docs/product/requirements/core.html', '.asd/rules/notes.html']) {
     assert.deepStrictEqual(htmlHolders(emitReal('documentation', 'impl-review', ['README.md', html], {})), [], `${html}: any HTML file in scope keeps the HTML-evidence entries reviewed - framework .asd/ HTML included, since the predicate is about HTML evidence, not about UI surfaces`);
   }
-  const manyFiles = Array.from({ length: runtime.SPLIT_THRESHOLD_FILES + 1 }, (_, index) => `docs/file-${index + 1}.md`);
-  const documentationParts = (files) => runtime.emitCoverageManifests({ reviewer: 'documentation', phase: 'impl-review', rubric: agent('documentation'), files, customRules: {} });
-  const proseParts = documentationParts(manyFiles);
-  assert.deepStrictEqual(proseParts.map(htmlHolders), proseParts.map(() => htmlIds), `ORC-1: with no HTML anywhere in a split scope every one of the ${proseParts.length} parts must carry the no-HTML predicate - a standing n/a may sit in every part, an out-of-part one may not (review-policy.md "Union property", check (c))`);
-  const oneHtml = documentationParts(manyFiles.slice(0, -1).concat('docs/last.html'));
-  assert.deepStrictEqual(oneHtml.map(htmlHolders), oneHtml.map(() => []), 'the no-HTML predicate is decided over the whole scope before partitioning: one HTML file in the last part withholds it from every part - decided from any narrower slice, the part holding that HTML could n/a its entries under a standing predicate and union check (c) would pass with nobody reviewing them');
-
   const frameworkHolders = (extra) => holders(emitReal('documentation', 'impl-review', ['README.md'], extra), predicates.noSelfHosting);
-  assert.strictEqual(frameworkHolders({}).length, 1, 'sprint-014 AC-4: without self-hosting exactly the Framework mode entry is n/a, or every split part records only out-of-part for it and union check (c) fails by construction');
+  assert.strictEqual(frameworkHolders({}).length, 1, 'sprint-014 AC-4: without self-hosting exactly the Framework mode entry is n/a - a Framework-mode review is meaningless outside a self-hosting repo');
   assert.deepStrictEqual(frameworkHolders({ selfHosting: true }), [], 'sprint-014 AC-4: a self-hosting review keeps Framework mode reviewed - the README/rule-mirror check is its whole subject');
   const templatedHolders = (files) => holders(emitReal('documentation', 'impl-review', files, { templates: ['plan.md'] }), predicates.noTemplated);
   assert.strictEqual(templatedHolders(['README.md', '.asd/runtime.js', 'mydocs/guide.md', 'x/myplan.md']).length, 1, 'sprint-014 AC-4: a scope with no templated artefact n/a\'s exactly the Template adherence entry - a docs-like prefix and a basename merely containing a template name are not templated');
@@ -4217,19 +4250,18 @@ test("sprint-012 AC-12: emit-manifest derives rule and section ids from a review
 
   const orphaned = agent('correctness').replace(`### ${uiIds[0]}`, '### Renamed entry');
   assert.notStrictEqual(orphaned, agent('correctness'), 'sanity: the rename must hit the heading the UI predicate targets');
-  assert.throws(() => runtime.emitCoverageManifests({ reviewer: 'correctness', phase: 'impl-review', rubric: orphaned, files: ['README.md'] }), /rubric entry missing/, 'renaming a rubric entry a standing predicate targets must fail every emit closed, naming the entry - silently dropping the predicate would force a full review where the rule allows n/a, and every run of the loop above proves the real rubrics still resolve');
+  assert.throws(() => runtime.emitCoverageManifest({ reviewer: 'correctness', phase: 'impl-review', rubric: orphaned, files: ['README.md'] }), /rubric entry missing/, 'renaming a rubric entry a standing predicate targets must fail every emit closed, naming the entry - silently dropping the predicate would force a full review where the rule allows n/a, and every run of the loop above proves the real rubrics still resolve');
 });
 
-test("runtime.js CLI: emit-manifest writes one stamped manifest per part under the file names both review workflows dispatch from, and validate-ledger reads the ledger straight out of a reviewer's returned text", () => {
+test("runtime.js CLI: emit-manifest writes one stamped manifest per reviewer under the file name both review workflows dispatch from, whatever the scope size, and validate-ledger reads the ledger straight out of a reviewer's returned text", () => {
   const root = mkTempDir();
   const reviewer = 'correctness';
-  const unsplitName = '<reviewer>.manifest.json';
-  const partName = '<reviewer>.part-N.manifest.json';
+  const manifestName = '<reviewer>.manifest.json';
   const selfHostingFlag = /\[(--self-hosting)\]/.exec(sectionOf('.asd/rules/review-policy.md', 'Coverage ledger'))[1];
   for (const rel of ['.asd/workflows/asd-phase-impl-review.md', '.asd/workflows/asd-phase-design-review.md']) {
     const flow = canonText(rel);
     assert.ok(flow.split('\n').some((line) => line.includes('self_hosting: enabled') && line.includes(`\`${selfHostingFlag}\``) && line.includes('emit-manifest')), `TST-2-1: ${rel} must add review-policy.md's \`${selfHostingFlag}\` to its emit-manifest step when self_hosting: enabled - dropped, a self-hosting review n/a's Documentation's Framework mode and validate-ledger accepts it`);
-    assert.ok(flow.includes(`\`${unsplitName}\``) && flow.includes(`\`${partName}\``), `${rel} must name the manifest files it dispatches from exactly as emit-manifest writes them, or the orchestrator looks for a path that never appears`);
+    assert.ok(flow.includes(`\`${manifestName}\``), `${rel} must name the manifest file it dispatches from exactly as emit-manifest writes it, or the orchestrator looks for a path that never appears`);
   }
   const emit = (count, dir, extra = [], name = reviewer) => {
     fs.mkdirSync(dir, { recursive: true });
@@ -4239,16 +4271,18 @@ test("runtime.js CLI: emit-manifest writes one stamped manifest per part under t
   };
   const read = (entry) => JSON.parse(fs.readFileSync(entry.manifest, 'utf8'));
 
-  const split = emit(runtime.SPLIT_THRESHOLD_FILES + 1, path.join(root, 'split'));
-  assert.deepStrictEqual(split.map((entry) => path.basename(entry.manifest)), split.map((_, index) => partName.replace('<reviewer>', reviewer).replace('N', String(index + 1))), 'a scope above the threshold must be written as numbered parts, one file per part, each reported on stdout');
-  const single = emit(runtime.SPLIT_THRESHOLD_FILES, path.join(root, 'single'));
-  assert.deepStrictEqual(single.map((entry) => path.basename(entry.manifest)), [unsplitName.replace('<reviewer>', reviewer)], 'a scope at the threshold must be one unsplit manifest file');
-  const halved = emit(2, path.join(root, 'halved'), ['--halve']);
-  assert.deepStrictEqual(halved.map((entry) => path.basename(entry.manifest)), [1, 2].map((part) => partName.replace('<reviewer>', reviewer).replace('N', String(part))), 'the interruption trigger re-emits with --halve (review-policy.md "Split trigger"), so --halve ahead of --files must parse as a boolean and split even a scope under the threshold into two parts');
+  const small = emit(1, path.join(root, 'small'));
+  const large = emit(runtime.SURFACE_CAP_FILES, path.join(root, 'large'));
+  for (const entry of [small, large]) {
+    assert.deepStrictEqual(Object.keys(entry).sort(), ['digest', 'manifest'], 'without a range the CLI reports one manifest and its digest, as a single object - no .diff to name');
+    assert.strictEqual(path.basename(entry.manifest), manifestName.replace('<reviewer>', reviewer), 'sprint-017 AC-5 (D7): a scope of any size is one manifest file - review waves bound its size, never a split into parts');
+    assert.deepStrictEqual(fs.readdirSync(path.dirname(entry.manifest)).sort(), ['correctness.manifest.json', 'scope.txt'], 'sprint-017 AC-5: nothing but the one manifest is written beside the scope list');
+  }
+  assert.strictEqual(read(large).files.length, runtime.SURFACE_CAP_FILES, 'the manifest carries the whole scope list, nothing dropped');
 
   const published = { vocabulary: runtime.LEDGER_VOCABULARY, row_example: runtime.LEDGER_ROW_EXAMPLE, n_a_shape: runtime.LEDGER_NA_SHAPE };
   const content = ['reviewer', 'phase', 'n_a', ...Object.keys(runtime.LEDGER_NA_SHAPE)];
-  for (const entry of [...split, ...single, ...halved]) {
+  for (const entry of [small, large]) {
     const label = path.basename(entry.manifest);
     const onDisk = read(entry);
     assert.strictEqual(onDisk.digest, entry.digest, `${label}: the digest printed must be the digest written`);
@@ -4261,16 +4295,16 @@ test("runtime.js CLI: emit-manifest writes one stamped manifest per part under t
     delete withoutDigest.digest;
     assert.strictEqual(onDisk.digest, runtime.fingerprint(withoutDigest), `AC-6b: ${label}'s digest must be the hash of every field it carries but \`digest\`, published constants included - a field outside the identity could be edited on disk after stamping while every ledger citing that digest still validates. Expressed through the untouched \`fingerprint\` primitive so a change to the digester cannot move this expectation with it`);
   }
-  assert.strictEqual(runtimeCli(['manifest-digest', '--manifest', single[0].manifest]).trim(), single[0].digest, 'review-policy.md "Coverage ledger": `manifest-digest --manifest <path>` verifies what emit-manifest stamped, so the two must agree on every emitted file');
+  assert.strictEqual(runtimeCli(['manifest-digest', '--manifest', small.manifest]).trim(), small.digest, 'review-policy.md "Coverage ledger": `manifest-digest --manifest <path>` verifies what emit-manifest stamped, so the two must agree on every emitted file');
 
   const customCommon = path.join(root, 'custom-common-rules.md');
   const customCoding = path.join(root, 'custom-coding-rules.md');
   fs.writeFileSync(customCommon, '# Custom Common Rules\n', 'utf8');
   fs.writeFileSync(customCoding, '# Custom Coding Rules\n\n## Perf budgets\n\n- p95 under 200ms\n', 'utf8');
   const perfHolders = (manifest) => Object.keys(manifest.n_a.rules).filter((id) => manifest.n_a.rules[id].includes(runtime.NA_PREDICATES.perf));
-  const withoutRules = read(emit(1, path.join(root, 'no-custom'), [], 'efficiency')[0]);
+  const withoutRules = read(emit(1, path.join(root, 'no-custom'), [], 'efficiency'));
   assert.ok(perfHolders(withoutRules).length > 0, 'sanity: without --custom-rules a prose-only scope must n/a the performance sections, or the budgeted run below proves nothing');
-  const withRules = read(emit(1, path.join(root, 'custom'), ['--custom-rules', `${customCommon},${customCoding}`], 'efficiency')[0]);
+  const withRules = read(emit(1, path.join(root, 'custom'), ['--custom-rules', `${customCommon},${customCoding}`], 'efficiency'));
   assert.deepStrictEqual(withRules.rules.slice(-2), [customCommon, customCoding], 'TST-1-1/TST-2-2: both review workflows pass --custom-rules as one comma-separated value, so each path must become its own custom-rule id, verbatim and in the order passed - otherwise every manifest silently drops its custom-rule rows');
   assert.deepStrictEqual(perfHolders(withRules), [], 'TST-1-1: the --custom-rules files must be read as the emitter\'s budgets input - a perf-budgets heading in the passed custom-coding-rules.md keeps every performance section reviewed');
 
@@ -4280,7 +4314,7 @@ test("runtime.js CLI: emit-manifest writes one stamped manifest per part under t
     const dir = path.join(root, name);
     fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(path.join(dir, 'scope.txt'), files.join('\n'), 'utf8');
-    const [entry] = JSON.parse(runtimeCli(['emit-manifest', '--reviewer', 'documentation', '--phase', 'impl-review', ...extra, '--files', path.join(dir, 'scope.txt'), '--out', dir], { stdio: 'pipe' }));
+    const entry = JSON.parse(runtimeCli(['emit-manifest', '--reviewer', 'documentation', '--phase', 'impl-review', ...extra, '--files', path.join(dir, 'scope.txt'), '--out', dir], { stdio: 'pipe' }));
     const onDisk = read(entry);
     return (predicate) => Object.keys(onDisk.n_a.rules).filter((id) => onDisk.n_a.rules[id].includes(predicate));
   };
@@ -4292,7 +4326,7 @@ test("runtime.js CLI: emit-manifest writes one stamped manifest per part under t
     assert.deepStrictEqual(documentation(`doc-${file.replace(/\W/g, '-')}`, ['src/a.md', file])(runtime.NA_PREDICATES.noTemplated), [], `TST-1-2: against the real .asd/templates list ${file} is templated by basename at any depth, so Template adherence must stay reviewed - the rule isTemplated's doc comment states`);
   }
 
-  const manifest = JSON.parse(fs.readFileSync(single[0].manifest, 'utf8'));
+  const manifest = JSON.parse(fs.readFileSync(small.manifest, 'utf8'));
   const vocabulary = runtime.LEDGER_VOCABULARY;
   const ledger = {
     manifest_digest: manifest.digest, findings: [],
@@ -4308,7 +4342,7 @@ test("runtime.js CLI: emit-manifest writes one stamped manifest per part under t
     const ledgerPath = path.join(root, name);
     fs.writeFileSync(ledgerPath, text, 'utf8');
     try {
-      return JSON.parse(runtimeCli(['validate-ledger', '--manifest', single[0].manifest, '--ledger', ledgerPath, '--findings', findingsPath], { stdio: 'pipe' }));
+      return JSON.parse(runtimeCli(['validate-ledger', '--manifest', small.manifest, '--ledger', ledgerPath, '--findings', findingsPath], { stdio: 'pipe' }));
     } catch (error) {
       return `exit ${error.status}: ${String(error.stderr).trim()}`;
     }
@@ -4338,12 +4372,10 @@ test('sprint-012 AC-3/AC-12: every `.asd/runtime.js` symbol canon cites is decla
   assert.deepStrictEqual([...citers.keys()].filter((symbol) => !declared.has(symbol)), [], 'canon hands member lists and predicate text to named runtime.js symbols instead of restating them, so a cited symbol must exist - renamed on one side only, the prose points at nothing and the next editor restates the list');
   assert.deepStrictEqual(invoked.filter((entry) => !subcommands.has(entry.split(': ')[1])), [], 'every subcommand canon tells an orchestrator to run must be one main() dispatches - anything else exits on the usage error at the moment a review gate needs it');
   assert.deepStrictEqual(quoted.filter((entry) => !authorizable.has(entry.slice(entry.indexOf(': ') + 2))), [], 'a reviewer copies a quoted `n/a: <predicate>` into its ledger row, and validate-ledger accepts only a predicate the emitted manifest authorizes - a literal outside NA_PREDICATES teaches a row the blocking gate rejects');
-  for (const rel of ['.asd/rules/review-policy.md', '.asd/workflows/asd-phase-plan.md']) {
-    assert.ok((citers.get('SPLIT_THRESHOLD_FILES') || []).includes(rel), `AC-3: ${rel} must cite the split threshold by its runtime symbol - review-policy.md for the pre-dispatch split, asd-phase-plan.md for the plan's review-scope estimate`);
+  for (const [symbol, rel] of [['WAVE_THRESHOLD_LINES', '.asd/rules/sprint-lifecycle.md'], ['AUDIT_BATCH_THRESHOLD_FILES', '.asd/workflows/asd-phase-audit.md'], ['reviewerFiles', '.asd/rules/review-policy.md']]) {
+    assert.ok((citers.get(symbol) || []).includes(rel), `sprint-015 AC-2/AC-9/sprint-017 AC-1: ${rel} must cite \`${symbol}\` by its runtime symbol rather than restate the value or selector it holds`);
   }
-  for (const [symbol, rel] of [['DISPATCH_CEILING', '.asd/rules/sprint-lifecycle.md'], ['AUDIT_BATCH_THRESHOLD_FILES', '.asd/workflows/asd-phase-audit.md'], ['reviewerFiles', '.asd/rules/review-policy.md']]) {
-    assert.ok((citers.get(symbol) || []).includes(rel), `sprint-015 AC-2/AC-9/AC-11: ${rel} must cite \`${symbol}\` by its runtime symbol rather than restate the value or selector it holds`);
-  }
+  assert.ok(invoked.some((entry) => entry === '.asd/workflows/asd-phase-impl-review.md: review-waves'), 'sprint-017 AC-1: the wave count is a runtime check, so impl-review must run `review-waves` rather than judge the division size itself');
   assert.ok((citers.get('SURFACE_CAP_FILES') || []).includes('.asd/rules/sprint-lifecycle.md'), 'sprint-014 AC-5: the change-surface cap is one runtime constant, so sprint-lifecycle.md "Plan file format" must cite it by symbol rather than restate a number that drifts from the one surface-check applies');
 });
 
@@ -4703,7 +4735,7 @@ test('sprint-014 AC-3: defect-stalemate fails closed on a second ## Defects sect
 test('sprint-014 AC-5: surface-check counts distinct paths against SURFACE_CAP_FILES or a positive override bound, exits 1 with the result on breach and 2 on unusable input, and the plan declaration and override gate it measures read the same literals at plan and at impl-review entry', () => {
   const cap = runtime.SURFACE_CAP_FILES;
   const paths = (count) => Array.from({ length: count }, (_, index) => `src/file-${index + 1}.md`);
-  const result = (files, bound, breach) => ({ files, cap: bound, breach, dispatches: runtime.surfaceCheck([], bound).dispatches });
+  const result = (files, bound, breach) => ({ files, cap: bound, breach });
   assert.deepStrictEqual(runtime.surfaceCheck(paths(cap)), result(cap, cap, false), 'a surface at the cap is within it');
   assert.deepStrictEqual(runtime.surfaceCheck(paths(cap + 1)), result(cap + 1, cap, true), 'one file over the cap is a breach');
   assert.strictEqual(runtime.surfaceCheck(paths(cap).concat('src/file-1.md')).breach, false, 'a path listed twice is one file of change surface - counting it twice escalates a sprint that is within its cap');
@@ -4736,6 +4768,7 @@ test('sprint-014 AC-5: surface-check counts distinct paths against SURFACE_CAP_F
   const declared = declaration && /`(Change surface: <n> files)`/.exec(declaration);
   const gate = declaration && /`gate: ([a-z-]+)`, `evidence: (bound=<n>)`/.exec(declaration);
   assert.ok(declared && gate, 'sprint-lifecycle.md "Plan file format" must define the plan declaration line and the override record as literals');
+  assert.ok(!/\bdispatches\b/.test(declaration), 'sprint-017 AC-5 (D7): without parts a wave-iteration dispatches at most the fixed roster, so the cap-override request must no longer quote a dispatch count surface-check stopped computing');
   assert.ok(sectionOf('.asd/templates/t_plan.md', 'Overview').includes(declared[1].replace('<n>', '{{n}}')), 't_plan.md Overview must slot the declaration sprint-lifecycle.md defines, or plans stop carrying it and impl-review grandfathers every sprint');
   assert.ok(canonText('.asd/workflows/asd-phase-plan.md').includes(declared[1]), 'asd-phase-plan.md must write the declaration in its defined form');
   const gateName = /hard `([^`]+)` gate \(`checkpoints\.md`\)/.exec(declaration);
@@ -4770,9 +4803,9 @@ test('sprint-014 AC-2: a failed creator or tester dispatch is reconstructed from
   assert.ok(defectLands.includes('Defects') && defectLands.includes(`\`${fixedStatus[1]}\``), `COR-1: reconstruction must read a \`${defectId}\` trailer as landed only once its Defects row reads \`${fixedStatus[1]}\` - test-fix commits the fix before flipping the row, so a dispatch dying between them leaves the row pending`);
   assert.ok(/\bsha\b/.test(defectOtherwise) && /\b(?:no|never|not)\b[^.]*\bfix/.test(defectOtherwise), `COR-1: otherwise the re-dispatch must only set the \`${defectId}\` row from the trailer commit's sha, without a second fix`);
   const ledgerKey = /\bledger\.(\w+)\)\s*\?\s*ledger\.\1\b/.exec(canonText('.asd/runtime.js'));
-  const partFile = /<reviewer>(\.part-)N(\.md)`/.exec(canonText('.asd/rules/review-policy.md'));
   assert.ok(ledgerKey && ids.includes(ledgerKey[1]), `DOC-1: git-strategy.md "Commits" must define a review finding id as its id in the reviewer's ledger \`${ledgerKey && ledgerKey[1]}\` - undefined, a dev writes a trailer reconstruction cannot match. Got: ${JSON.stringify(ids)}`);
-  assert.ok(partFile && ids.some((id) => new RegExp(`^[a-z-]+${partFile[1].replace('.', '\\.')}\\d+${partFile[2].replace('.', '\\.')} [A-Z]+-\\d+$`).test(id)), `DOC-1: git-strategy.md "Commits" must show a review finding id prefixed by its <reviewer>.part-N.md file - split parts' findings are a union, never renumbered, so a bare shared id reads the other part's fix as landed. Got: ${JSON.stringify(ids)}`);
+  assert.ok(ids.some((id) => /^[a-z-]+\.md [A-Z]+-\d+$/.test(id)), `DOC-1: git-strategy.md "Commits" must show a review finding id prefixed by its <reviewer>.md review file - each reviewer numbers its own findings, so a bare shared id reads another reviewer's fix as landed. Got: ${JSON.stringify(ids)}`);
+  assert.ok(ids.includes('impl-review wave-<K>/iter-NN suite'), `sprint-017 D4: the impl-review suite trailer carries the iteration id, or two waves' iteration-NN suite fixes share one trailer. Got: ${JSON.stringify(ids)}`);
   const reviewFixPayload = (canonText('.asd/workflows/asd-phase-impl.md').split('\n').find((line) => line.trimStart().startsWith('- initial —') && line.includes('review-fix —')) || '').split(/;\s*test-fix\b/)[0].split('review-fix —')[1] || '';
   assert.ok(/\bid\b[^;]*`git-strategy\.md` "Commits"/.test(reviewFixPayload), 'DOC-1: the review-fix payload must carry each finding\'s id per git-strategy.md "Commits" - without it the dev has no id for its ASD-Task trailer');
   const leftovers = failed.split(/(?<=\.) /).find((sentence) => /\buncommitted\b/i.test(sentence));
@@ -4994,6 +5027,8 @@ test('sprint-015 AC-4/AC-5: emit-manifest --base/--head writes each manifest\'s 
   git('init', '-q');
   for (const name of ['pure', 'edited', 'chmod', 'kept']) writeFile(repo, `src/${name}.js`, body(name));
   writeFile(repo, 'tests/kept.test.js', body('test'));
+  const testPlan = '.asd/sprints/015-x/test-plan.md';
+  writeFile(repo, testPlan, body('plan'));
   git('add', '-A');
   git('commit', '-q', '-m', 'base');
   const base = git('rev-parse', 'HEAD').trim();
@@ -5002,6 +5037,7 @@ test('sprint-015 AC-4/AC-5: emit-manifest --base/--head writes each manifest\'s 
   writeFile(repo, 'lib/edited.js', body('edited').replace('line 1\n', 'line one\n'));
   writeFile(repo, 'src/kept.js', `${body('kept')}appended\n`);
   writeFile(repo, 'tests/kept.test.js', `${body('test')}appended\n`);
+  writeFile(repo, testPlan, `${body('plan')}suite run recorded\n`);
   git('add', '-A');
   git('update-index', '--chmod=+x', 'lib/chmod.js');
   git('commit', '-q', '-m', 'head');
@@ -5014,8 +5050,8 @@ test('sprint-015 AC-4/AC-5: emit-manifest --base/--head writes each manifest\'s 
     fs.writeFileSync(file, `${files.join('\n')}\n`, 'utf8');
     return file;
   };
-  const scope = git('diff', '--name-only', '-M', `${base}...${head}`).trim().split('\n');
-  assert.deepStrictEqual(scope.slice().sort(), ['lib/chmod.js', 'lib/edited.js', 'lib/pure.js', 'src/kept.js', 'tests/kept.test.js'], 'sanity: the scope is the renamed destinations plus the edits');
+  const scope = git('diff', '--name-only', '-M', `${base}...${head}`, '--', '.', ':!.asd/sprints/**').trim().split('\n');
+  assert.deepStrictEqual(scope.slice().sort(), ['lib/chmod.js', 'lib/edited.js', 'lib/pure.js', 'src/kept.js', 'tests/kept.test.js'], 'sanity: the scope is the renamed destinations plus the edits, the sprint folder excluded as the impl-review pathspec excludes it');
   const emit = (reviewer, files, extra, phase = 'impl-review') => {
     const out = fs.mkdtempSync(path.join(work, `${reviewer}-`));
     return JSON.parse(runtimeCli(['emit-manifest', '--reviewer', reviewer, '--phase', phase, '--files', list(`${path.basename(out)}.txt`, files), '--out', out, ...extra], { cwd: repo, env, stdio: 'pipe' }));
@@ -5024,24 +5060,18 @@ test('sprint-015 AC-4/AC-5: emit-manifest --base/--head writes each manifest\'s 
   const headers = (entry) => Object.fromEntries([...fs.readFileSync(entry.diff, 'utf8').matchAll(/^diff --git a\/(\S+) b\/(\S+)$/gm)].map((match) => [match[2], match[1]]));
   const pure = { 'lib/pure.js': [runtime.NA_PREDICATES.pureRename] };
 
-  const [whole] = emit('correctness', scope, range);
+  const whole = emit('correctness', scope, range);
   const manifest = read(whole);
   assert.deepStrictEqual(manifest.n_a.files, pure, 'AC-5: only the identical-content, identical-mode rename is behaviour-neutral by proof - an edited rename, a mode-changing rename and a plain edit keep their full review');
   assert.deepStrictEqual(headers(whole), { 'lib/chmod.js': 'src/chmod.js', 'lib/edited.js': 'src/edited.js', 'lib/pure.js': 'src/pure.js', 'src/kept.js': 'src/kept.js', 'tests/kept.test.js': 'tests/kept.test.js' }, 'AC-4: the patch covers every listed file, each rename paired with its source so the reviewer sees a rename, not an add');
 
-  const [testing] = emit('testing', scope, ['--test-plan', '.asd/sprints/015-x/test-plan.md', ...range]);
-  assert.deepStrictEqual(read(testing).files, ['tests/kept.test.js', '.asd/sprints/015-x/test-plan.md'], 'AC-2: the CLI builds Testing\'s list through reviewerFiles, test-plan path appended');
-  assert.deepStrictEqual(Object.keys(headers(testing)), ['tests/kept.test.js'], 'AC-4: a manifest\'s patch covers only its own files the range changed - the appended test-plan path is not in the range');
-  const [empty] = emit('testing', ['src/kept.js'], range);
+  const testing = emit('testing', scope, ['--test-plan', testPlan, ...range]);
+  assert.deepStrictEqual(read(testing).files, ['tests/kept.test.js', testPlan], 'AC-2: the CLI builds Testing\'s list through reviewerFiles, test-plan path appended');
+  assert.deepStrictEqual(headers(testing), { 'tests/kept.test.js': 'tests/kept.test.js', [testPlan]: testPlan }, 'sprint-017 D9d: Testing\'s .diff covers its whole list over the manifest range, test-plan path included - the diff file is the change content for exactly that list (AC-8), so a test-plan edit it left out would be read by no one as a change');
+  const unchangedPlan = emit('testing', scope, ['--test-plan', '.asd/sprints/015-x/test-plan.entry-01.md', ...range]);
+  assert.deepStrictEqual(Object.keys(headers(unchangedPlan)), ['tests/kept.test.js'], 'a listed test-plan path the range never touched contributes no hunk and no error');
+  const empty = emit('testing', ['src/kept.js'], range);
   assert.deepStrictEqual([read(empty).files, fs.readFileSync(empty.diff, 'utf8')], [[], ''], 'an empty list still gets its .diff, empty, so the payload path always resolves');
-
-  const parts = emit('correctness', scope, ['--halve', ...range]);
-  assert.strictEqual(parts.length, 2, 'sanity: --halve splits the scope in two');
-  for (const part of parts) {
-    const files = read(part).files;
-    assert.deepStrictEqual(Object.keys(headers(part)).sort(), files.slice().sort(), `${path.basename(part.diff)}: each part's patch covers exactly its own files`);
-    assert.deepStrictEqual(read(part).n_a.files, files.includes('lib/pure.js') ? pure : {}, `${path.basename(part.manifest)}: the pure-rename grant travels with the part holding the file`);
-  }
 
   const vocabulary = runtime.LEDGER_VOCABULARY;
   const ledger = (naFile) => ({
@@ -5065,40 +5095,169 @@ test('sprint-015 AC-4/AC-5: emit-manifest --base/--head writes each manifest\'s 
   assert.ok(refused && refused.status === 2 && /impl-review only/.test(refused.stderr) && fs.readdirSync(out).length === 0, `design-review has no git range, so --base/--head must exit 2 before writing anything. Got: ${JSON.stringify(refused)}`);
 });
 
-test('sprint-015 AC-11: surface-check dispatches bounds the impl-review dispatches its bound implies - every internal reviewer\'s emitted parts, Testing\'s parts sized for the --test-plan-files count impl-review entry passes (EXT-4), plus External Review - rejects an unusable count, and the override request quotes that field', () => {
-  const threshold = runtime.SPLIT_THRESHOLD_FILES;
-  const tight = new Set();
-  for (const planCount of [1, threshold + 1, 2 * threshold + 3]) {
-    const planPaths = Array.from({ length: planCount }, (_, index) => (index === 0 ? '.asd/sprints/015-x/test-plan.md' : `.asd/sprints/015-x/test-plan.entry-${String(index).padStart(2, '0')}.md`));
-    for (const bound of [1, threshold - 1, threshold, threshold + 1, runtime.SURFACE_CAP_FILES]) {
-      const scope = Array.from({ length: bound }, (_, index) => `tests/file-${index + 1}.test.js`);
-      const parts = runtime.INTERNAL_REVIEWERS.reduce((sum, reviewer) => sum + runtime.emitCoverageManifests({ reviewer, phase: 'impl-review', rubric: readRepoFile(`.asd/agents/asd-reviewer-${reviewer}.md`), files: runtime.reviewerFiles('impl-review', reviewer, scope, planPaths), customRules: {} }).length, 0);
-      const { dispatches } = planCount === 1 ? runtime.surfaceCheck(scope, bound) : runtime.surfaceCheck(scope, bound, planCount);
-      assert.ok(parts + 1 <= dispatches, `bound ${bound}, ${planCount} test-plan paths: a scope of ${bound} test files emits ${parts} internal-review parts plus External Review, above the ${dispatches} dispatches the cap-override request tells the user to approve`);
-      if (parts + 1 === dispatches) tight.add(`${planCount}/${bound}`);
-    }
-  }
-  assert.ok([1, threshold + 1, 2 * threshold + 3].every((planCount) => [...tight].some((key) => key.startsWith(`${planCount}/`))), 'the bound must be reached for the default and for every test-plan count, or an over-count passes');
-  assert.ok(tight.has(`1/${threshold}`) && tight.has(`1/${runtime.SURFACE_CAP_FILES}`), 'the default count must stay tight at every multiple of the split threshold - where test-plan.md alone opens one extra Testing part - or plan-time callers get a looser bound than before');
-  for (const count of [0, -1, 1.5, Number.NaN]) {
-    assert.throws(() => runtime.surfaceCheck(['a.md'], undefined, count), /--test-plan-files/, `test-plan files ${count}: an unusable count must fail closed, never size Testing's parts from a guess`);
-  }
-  const list = path.join(mkTempDir(), 'scope.txt');
-  fs.writeFileSync(list, 'tests/a.test.js\n', 'utf8');
-  const cli = (count) => {
+test('sprint-017 AC-4/AC-8 (D6/D9a-c): emit-manifest --full-files/--full-base joins the listed files to the manifest and diffs them over the wider range, and --reviewer external writes the scope manifest t_review-scope.json declares plus its diff for the same list, with no rubric manifest', () => {
+  const repo = mkTempDir();
+  const emptyGlobalConfig = path.join(mkTempDir(), 'gitconfig');
+  fs.writeFileSync(emptyGlobalConfig, '', 'utf8');
+  const env = { ...process.env, GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: emptyGlobalConfig };
+  const git = (...args) => execFileSync('git', ['-c', 'user.name=asd-test', '-c', 'user.email=asd-test@example.invalid', '-c', 'commit.gpgsign=false', '-c', 'core.autocrlf=false', ...args], { cwd: repo, env, encoding: 'utf8' });
+  const body = (tag) => Array.from({ length: 20 }, (_, index) => `${tag} line ${index + 1}`).join('\n') + '\n';
+  const commit = (message) => {
+    git('add', '-A');
+    git('commit', '-q', '-m', message);
+    return git('rev-parse', 'HEAD').trim();
+  };
+  git('init', '-q');
+  writeFile(repo, 'src/earlier.js', body('earlier'));
+  writeFile(repo, 'src/current.js', body('current'));
+  const base = commit('base');
+  writeFile(repo, 'src/earlier.js', body('earlier').replace('earlier line 1\n', 'earlier wave edit\n'));
+  const mid = commit('earlier wave');
+  writeFile(repo, 'src/earlier.js', body('earlier').replace('earlier line 1\n', 'earlier wave edit\n').replace('earlier line 20\n', 'review fix edit\n'));
+  writeFile(repo, 'src/current.js', body('current').replace('current line 1\n', 'current wave edit\n'));
+  const head = commit('review fix');
+
+  const work = mkTempDir();
+  let lists = 0;
+  const list = (files) => {
+    lists += 1;
+    const file = path.join(work, `list-${lists}.txt`);
+    fs.writeFileSync(file, `${files.join('\n')}\n`, 'utf8');
+    return file;
+  };
+  const cli = (reviewer, files, extra) => {
+    const out = fs.mkdtempSync(path.join(work, `${reviewer}-`));
     try {
-      return { status: 0, stdout: runtimeCli(['surface-check', '--files', list, '--test-plan-files', count], { stdio: 'pipe' }) };
+      return { out, status: 0, result: JSON.parse(runtimeCli(['emit-manifest', '--reviewer', reviewer, '--files', list(files), '--out', out, ...extra], { cwd: repo, env, stdio: 'pipe' })) };
     } catch (error) {
-      return { status: error.status, stdout: String(error.stdout) };
+      return { out, status: error.status, stderr: String(error.stderr).trim() };
     }
   };
-  assert.deepStrictEqual(cli(String(threshold + 1)), { status: 0, stdout: `${JSON.stringify(runtime.surfaceCheck(['tests/a.test.js'], undefined, threshold + 1))}\n` }, '--test-plan-files carries the test-plan count into the CLI');
-  assert.deepStrictEqual(cli('many'), { status: 2, stdout: '' }, 'a non-numeric --test-plan-files must exit 2 with no result');
-  const entryCheck = canonText('.asd/workflows/asd-phase-impl-review.md').split('\n').find((line) => line.includes('surface-check --files'));
-  assert.ok(entryCheck && entryCheck.includes('--test-plan-files <n>'), 'impl-review entry must pass the test-plan count to surface-check, or the cap-override request undercounts Testing on a long re-entry chain');
-  const declaration = sectionOf('.asd/rules/sprint-lifecycle.md', 'Plan file format').split('\n').find((line) => line.startsWith('**Change surface declaration**'));
-  const field = declaration && /the `(\w+)` count `surface-check --bound <n>` returns/.exec(declaration);
-  assert.ok(field && field[1] in runtime.surfaceCheck([]), 'the cap-override request "Plan file format" defines must quote a field surface-check returns, or the request states a count nobody computes');
+  const patch = (file) => fs.readFileSync(file, 'utf8');
+  const hunkOf = (text, file) => text.split(/^(?=diff --git )/m).filter((block) => block.startsWith(`diff --git a/${file} `));
+  const range = ['--phase', 'impl-review', '--base', mid, '--head', head];
+  const full = (files) => ['--full-files', list(files), '--full-base', base];
+
+  const narrow = cli('correctness', ['src/earlier.js'], range);
+  assert.ok(!patch(narrow.result.diff).includes('earlier wave edit') && patch(narrow.result.diff).includes('review fix edit'), 'sanity: over --base...--head alone the earlier wave\'s edit is out of the patch');
+
+  const joined = cli('correctness', ['src/current.js'], [...range, ...full(['src/earlier.js'])]);
+  assert.strictEqual(joined.status, 0, `sanity: the emit must succeed, got ${joined.stderr}`);
+  assert.deepStrictEqual(JSON.parse(fs.readFileSync(joined.result.manifest, 'utf8')).files, ['src/current.js', 'src/earlier.js'], 'D9c: --full-files entries join the manifest list after the scope list, so they get ledger rows and valid finding locations (AC-8 (1))');
+  const joinedPatch = patch(joined.result.diff);
+  const [earlierHunk] = hunkOf(joinedPatch, 'src/earlier.js');
+  assert.ok(earlierHunk && earlierHunk.includes('earlier wave edit') && earlierHunk.includes('review fix edit'), 'D6/D9c: a --full-files entry is diffed over --full-base...--head, so wave iteration 1 and a carried-over Unreviewed file show every change since the base branch, not only the incremental range');
+  const [currentHunk] = hunkOf(joinedPatch, 'src/current.js');
+  assert.ok(currentHunk && currentHunk.includes('current wave edit'), 'a scope-only file keeps the --base...--head range in the same .diff');
+
+  const both = cli('correctness', ['src/current.js', 'src/earlier.js'], [...range, ...full(['src/earlier.js'])]);
+  const bothPatch = patch(both.result.diff);
+  assert.deepStrictEqual(JSON.parse(fs.readFileSync(both.result.manifest, 'utf8')).files, ['src/current.js', 'src/earlier.js'], 'a file on both lists is listed once');
+  assert.ok(hunkOf(bothPatch, 'src/earlier.js').length === 1 && hunkOf(bothPatch, 'src/earlier.js')[0].includes('earlier wave edit'), 'a file on both lists takes the wider range, once - never two overlapping hunks the reviewer must reconcile');
+
+  for (const [label, extra, pattern] of [
+    ['--full-files without a range', ['--phase', 'impl-review', ...full(['src/earlier.js'])], /need --base\/--head/],
+    ['--full-base without --full-files', [...range, '--full-base', base], /--full-files <path> required/],
+    ['--full-files in design-review', ['--phase', 'design-review', ...full(['src/earlier.js'])], /need --base\/--head/],
+  ]) {
+    const refused = cli('correctness', ['src/current.js'], extra);
+    assert.ok(refused.status === 2 && pattern.test(refused.stderr) && fs.readdirSync(refused.out).length === 0, `${label}: must exit 2 before writing anything. Got: ${JSON.stringify(refused)}`);
+  }
+
+  const declared = declaredScopeFields();
+  const external = cli(runtime.EXTERNAL_REVIEWER, ['src/current.js'], [...range, '--iteration', '1', '--wave', '2', ...full(['src/earlier.js'])]);
+  assert.strictEqual(external.status, 0, `sanity: the External emit must succeed, got ${external.stderr}`);
+  assert.deepStrictEqual(fs.readdirSync(external.out).sort(), ['external.diff', 'external.scope.json'], 'D9a: External Review gets its scope manifest and its diff - no rubric-derived coverage manifest, since it keeps no ledger');
+  const scopeJson = JSON.parse(fs.readFileSync(path.join(external.out, 'external.scope.json'), 'utf8'));
+  assert.deepStrictEqual(Object.keys(scopeJson).sort(), declared.slice().sort(), 'D9b: the impl-review scope manifest carries exactly the fields external-review.md declares and t_review-scope.json ships');
+  assert.deepStrictEqual(scopeJson, { phase: 'impl-review', iteration: 1, wave: 2, files: ['src/current.js', 'src/earlier.js'], diff: path.join(external.out, 'external.diff') }, 'AC-8: External Review receives the same explicit list an internal reviewer would, and the path of the precomputed diff for exactly that list');
+  assert.deepStrictEqual(external.result, { scope: path.join(external.out, 'external.scope.json'), diff: scopeJson.diff }, 'the CLI names both written paths');
+  assert.ok(hunkOf(patch(scopeJson.diff), 'src/earlier.js')[0].includes('earlier wave edit'), 'D9c: a carried-over or wave-list file reaches External Review diffed over the wider range too');
+
+  const designExternal = cli(runtime.EXTERNAL_REVIEWER, ['s/design/prd.html'], ['--phase', 'design-review', '--iteration', '1']);
+  const designScope = JSON.parse(fs.readFileSync(path.join(designExternal.out, 'external.scope.json'), 'utf8'));
+  assert.deepStrictEqual(designScope, { phase: 'design-review', iteration: 1, files: ['s/design/prd.html'], diff: null }, 'D9b/D9e: design-review has no waves and, at iteration 1, no diff - the field travels null rather than pointing at a file that was never written');
+  assert.deepStrictEqual(Object.keys(designScope).sort(), declared.filter((field) => field !== 'wave').sort(), 'the design-review manifest is the declared set minus the impl-review-only `wave`');
+  assert.deepStrictEqual(fs.readdirSync(designExternal.out), ['external.scope.json'], 'no .diff is written when there is nothing to diff against');
+
+  for (const [label, reviewer, extra, pattern] of [
+    ['impl-review External without --wave', runtime.EXTERNAL_REVIEWER, [...range, '--iteration', '1'], /--wave <k> is required/],
+    ['impl-review External without a range', runtime.EXTERNAL_REVIEWER, ['--phase', 'impl-review', '--iteration', '1', '--wave', '1'], /--base\/--head required/],
+    ['design-review External with --wave', runtime.EXTERNAL_REVIEWER, ['--phase', 'design-review', '--iteration', '1', '--wave', '1'], /applies to it only/],
+    ['External with a non-positive iteration', runtime.EXTERNAL_REVIEWER, [...range, '--iteration', '0', '--wave', '1'], /positive integer/],
+    ['an internal reviewer with --iteration', 'correctness', [...range, '--iteration', '1'], /apply to --reviewer external only/],
+  ]) {
+    const refused = cli(reviewer, ['src/current.js'], extra);
+    assert.ok(refused.status === 2 && pattern.test(refused.stderr), `${label}: must exit 2. Got: ${JSON.stringify(refused)}`);
+    assert.ok(!fs.existsSync(path.join(refused.out, 'external.scope.json')), `${label}: no scope manifest may be written for a refused emit`);
+  }
+});
+
+test('sprint-017 AC-1 (D1/D2): review-waves measures a real git range over the scope list - binary files and pure renames 0, an edited rename at its destination - and writes waves.json only for a division it accepts', () => {
+  const repo = mkTempDir();
+  const emptyGlobalConfig = path.join(mkTempDir(), 'gitconfig');
+  fs.writeFileSync(emptyGlobalConfig, '', 'utf8');
+  const env = { ...process.env, GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: emptyGlobalConfig };
+  const git = (...args) => execFileSync('git', ['-c', 'user.name=asd-test', '-c', 'user.email=asd-test@example.invalid', '-c', 'commit.gpgsign=false', '-c', 'core.autocrlf=false', ...args], { cwd: repo, env, encoding: 'utf8' });
+  const lines = (tag, count) => Array.from({ length: count }, (_, index) => `${tag} line ${index + 1}`).join('\n') + '\n';
+  const threshold = runtime.WAVE_THRESHOLD_LINES;
+  git('init', '-q');
+  writeFile(repo, 'src/pure.js', lines('pure', 20));
+  writeFile(repo, 'src/edited.js', lines('edited', 20));
+  fs.mkdirSync(path.join(repo, 'assets'));
+  fs.writeFileSync(path.join(repo, 'assets/logo.bin'), Buffer.from([0, 1, 2, 3, 0, 255]));
+  git('add', '-A');
+  git('commit', '-q', '-m', 'base');
+  const base = git('rev-parse', 'HEAD').trim();
+  fs.mkdirSync(path.join(repo, 'lib'));
+  git('mv', 'src/pure.js', 'lib/pure.js');
+  git('mv', 'src/edited.js', 'lib/edited.js');
+  writeFile(repo, 'lib/edited.js', lines('edited', 20).replace('edited line 1\n', 'edited line one\n'));
+  fs.writeFileSync(path.join(repo, 'assets/logo.bin'), Buffer.from([0, 9, 9, 9, 0, 255, 7]));
+  writeFile(repo, 'src/big.js', lines('big', threshold));
+  writeFile(repo, 'src/unlisted.js', lines('unlisted', 50));
+  git('add', '-A');
+  git('commit', '-q', '-m', 'head');
+  const head = git('rev-parse', 'HEAD').trim();
+
+  const work = mkTempDir();
+  const write = (name, content) => {
+    const file = path.join(work, name);
+    fs.writeFileSync(file, content, 'utf8');
+    return file;
+  };
+  const run = (args) => {
+    try {
+      return { status: 0, result: JSON.parse(runtimeCli(['review-waves', ...args], { cwd: repo, env, stdio: 'pipe' })) };
+    } catch (error) {
+      return { status: error.status, stderr: String(error.stderr).trim() };
+    }
+  };
+  const scope = ['lib/pure.js', 'lib/edited.js', 'assets/logo.bin', 'src/big.js'];
+  const scopeFile = write('scope.txt', `${scope.join('\n')}\n`);
+  const range = ['--files', scopeFile, '--base', base, '--head', head];
+
+  const measured = run(range);
+  assert.deepStrictEqual(measured, { status: 0, result: { lines: threshold + 2, threshold, waves: 2 } }, `D1: ${threshold} added lines plus the edited rename's one changed line (1 added, 1 deleted) - the pure rename and the binary file count 0 and src/unlisted.js is outside the list - so the scope is one line past the threshold and needs 2 waves`);
+  const onlySmall = run(['--files', write('small.txt', 'lib/pure.js\nlib/edited.js\nassets/logo.bin\n'), '--base', base, '--head', head]);
+  assert.deepStrictEqual(onlySmall.result, { lines: 2, threshold, waves: 1 }, 'a scope at or below the threshold is one wave, today\'s single review');
+
+  const out = path.join(work, 'reviews/impl/waves.json');
+  const division = [['src/big.js'], ['lib/pure.js', 'lib/edited.js', 'assets/logo.bin']];
+  const accepted = run([...range, '--division', write('division.json', JSON.stringify(division)), '--out', out]);
+  assert.deepStrictEqual(accepted, measured, 'the division run reports the same measurement it validated against');
+  assert.deepStrictEqual(JSON.parse(fs.readFileSync(out, 'utf8')), { base, head, lines: threshold + 2, threshold, waves: division }, 'D2: waves.json records the range, the measurement and the accepted division verbatim - the file lists live there, never in state.json');
+
+  for (const [label, args, pattern] of [
+    ['a one-wave division of a two-wave scope', [...range, '--division', write('one.json', JSON.stringify([scope])), '--out', path.join(work, 'one/waves.json')], /exactly 2 waves/],
+    ['a division missing a scope file', [...range, '--division', write('short.json', JSON.stringify([['src/big.js'], ['lib/pure.js']])), '--out', path.join(work, 'short/waves.json')], /in no wave/],
+    ['--division without --out', [...range, '--division', write('lonely.json', JSON.stringify(division))], /go together/],
+    ['a missing --head', ['--files', scopeFile, '--base', base], /--head/],
+  ]) {
+    const refused = run(args);
+    assert.ok(refused.status === 2 && pattern.test(refused.stderr), `${label}: must exit 2. Got: ${JSON.stringify(refused)}`);
+  }
+  assert.ok(!fs.existsSync(path.join(work, 'one')) && !fs.existsSync(path.join(work, 'short')), 'a rejected division writes no waves.json, so the orchestrator regroups instead of dispatching an invalid split');
 });
 
 test('sprint-015 AC-2 (EXT-1): draft-snapshot persists each design-review iteration\'s draft hashes and prints every draft on iteration 1, on 2+ only the drafts whose content changed, every draft when the previous snapshot is missing, and the design-review workflow runs it with those flags', () => {
@@ -5117,6 +5276,58 @@ test('sprint-015 AC-2 (EXT-1): draft-snapshot persists each design-review iterat
   assert.deepStrictEqual(snapshot(4, 99), drafts, 'a missing previous snapshot widens to every draft, never drops one');
   const draftList = stepOf(canonText('.asd/workflows/asd-phase-design-review.md'), 7).split('\n').find((line) => line.includes('node .asd/runtime.js draft-snapshot'));
   assert.ok(draftList && ['--files', '--out', '--previous'].every((flag) => draftList.includes(flag)), 'design-review step 7 must run draft-snapshot with the flags this test drives, or iteration 2+ never narrows');
+});
+
+test('sprint-017 AC-8 (D9e): draft-snapshot copies each draft beside its snapshot, and emit-manifest --snapshot diffs the listed drafts against the previous iteration\'s copies - no diff at iteration 1, none for a draft the snapshot lacks, refused outside design-review', () => {
+  const root = mkTempDir();
+  const drafts = ['prd.html', 'adr.html'].map((name) => path.join(root, 'design', name));
+  drafts.forEach((file, index) => writeFile(root, path.relative(root, file), `draft ${index} line 1\ndraft ${index} line 2\n`));
+  const iterDir = (iteration) => path.join(root, 'reviews/design', `iter-0${iteration}`);
+  const list = (name, files) => {
+    const file = path.join(root, name);
+    fs.writeFileSync(file, `${files.join('\n')}\n`, 'utf8');
+    return file;
+  };
+  const snapshot = (iteration) => {
+    fs.mkdirSync(iterDir(iteration), { recursive: true });
+    runtimeCli(['draft-snapshot', '--files', list('drafts.txt', drafts), '--out', path.join(iterDir(iteration), 'snapshot.json')]);
+  };
+  const emit = (reviewer, iteration, files, extra = [], phase = 'design-review') => {
+    try {
+      return JSON.parse(runtimeCli(['emit-manifest', '--reviewer', reviewer, '--phase', phase, '--files', list(`scope-${reviewer}-${iteration}.txt`, files), '--out', iterDir(iteration), ...extra], { stdio: 'pipe' }));
+    } catch (error) {
+      return { status: error.status, stderr: String(error.stderr).trim() };
+    }
+  };
+
+  snapshot(1);
+  const copies = drafts.map((file) => path.join(iterDir(1), 'snapshot', path.relative(path.parse(file).root, file)));
+  assert.deepStrictEqual(copies.map((copy) => fs.readFileSync(copy, 'utf8')), drafts.map((file) => fs.readFileSync(file, 'utf8')), 'each draft is copied under <iter dir>/snapshot/, so the next iteration has content to diff against, not only a hash');
+  const first = emit('documentation', 1, drafts);
+  assert.deepStrictEqual(Object.keys(first).sort(), ['digest', 'manifest'], 'iteration 1 has no --snapshot and writes no .diff - the drafts are wholly new and a diff would only duplicate them');
+  assert.ok(!fs.existsSync(path.join(iterDir(1), 'documentation.diff')), 'no stray .diff at iteration 1');
+
+  fs.writeFileSync(drafts[0], 'draft 0 line 1\ndraft 0 revised\n', 'utf8');
+  const added = path.join(root, 'design', 'ux-spec.html');
+  fs.writeFileSync(added, 'new draft\n', 'utf8');
+  snapshot(2);
+  const second = emit('documentation', 2, [drafts[0], added], ['--snapshot', iterDir(1)]);
+  const patch = fs.readFileSync(second.diff, 'utf8');
+  assert.ok(patch.includes('-draft 0 line 2') && patch.includes('+draft 0 revised'), 'iteration 2+ diffs a changed draft against the previous iteration\'s copy');
+  assert.ok(!patch.includes('new draft') && !patch.includes('draft 1'), 'a draft the previous snapshot lacks gets no hunk - it is read whole - and an unlisted draft never appears');
+  const external = emit(runtime.EXTERNAL_REVIEWER, 2, [drafts[0]], ['--iteration', '2', '--snapshot', iterDir(1)]);
+  assert.ok(external.diff && fs.readFileSync(external.diff, 'utf8').includes('+draft 0 revised'), 'External Review gets the same snapshot diff for its list');
+
+  const refused = emit('documentation', 3, [drafts[0]], ['--snapshot', iterDir(1)], 'impl-review');
+  assert.ok(refused.status === 2 && /design-review only/.test(refused.stderr), `--snapshot is a design-review input; impl-review diffs a commit range. Got: ${JSON.stringify(refused)}`);
+  fs.writeFileSync(path.join(root, 'climb.html'), 'outside the design tree\n', 'utf8');
+  let climbed = null;
+  try {
+    runtimeCli(['draft-snapshot', '--files', list('climb.txt', ['../climb.html']), '--out', path.join(iterDir(3), 'snapshot.json')], { cwd: path.join(root, 'design'), stdio: 'pipe' });
+  } catch (error) {
+    climbed = { status: error.status, stderr: String(error.stderr).trim() };
+  }
+  assert.ok(climbed && climbed.status === 2 && /must not climb out/.test(climbed.stderr) && !fs.existsSync(path.join(iterDir(3), 'climb.html')), `a draft path climbing out with .. must fail before a copy lands outside the snapshot directory. Got: ${JSON.stringify(climbed)}`);
 });
 
 test('sprint-015 AC-4 (F-2): the impl-review scope-list command prints a non-ASCII path unquoted, so it still matches as a literal pathspec', () => {
@@ -5174,6 +5385,65 @@ test('sprint-015 AC-1/AC-6/AC-7/AC-8/AC-10/AC-12: no canon tells anyone to clear
 
   const released = /^## v(\S+)$/m.exec(canonText('CHANGELOG.md'));
   assert.strictEqual(released && released[1], loadManifest().asd_version, 'AC-12: the newest CHANGELOG heading is the asd_version release-manifest.json ships');
+});
+
+// ===========================================================================
+// Sprint 017: review waves replace split parts; one scope hand-off.
+// ===========================================================================
+
+test('sprint-017 AC-5/AC-7: no live canon, README, runtime or hook keeps a mechanism review waves replaced - split parts, --halve, the out-of-part predicate, the split threshold, the Dispatch ceiling, External batches and their partial outcome, surface-check dispatches, or a self-diff ref pair - except a line naming it as legacy', () => {
+  const needles = [/\.part-|part-N|--halve|outOfPart|out-of-part|SPLIT_THRESHOLD|split trigger|union property|part merge|split dispatch|DISPATCH_CEILING|dispatch ceiling|sub-wave|APPROVE \(partial:|--test-plan-files/i, /\b(?:base_ref|head_ref|exclude_paths)\b/];
+  const hooks = fs.readdirSync(path.join(REPO_ROOT, '.asd/hooks')).filter((file) => file.endsWith('.js')).map((file) => `.asd/hooks/${file}`);
+  const files = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/runtime.js', '.asd/templates/external-review/t_review-scope.json', '.asd/templates/t_state.json', ...hooks];
+  assert.ok(files.includes('.asd/rules/sprint-lifecycle.md') && hooks.length > 0, 'sanity: the sweep must reach the rule docs and the hooks');
+  const leftovers = files.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => needles.filter((needle) => needle.test(line) && !/\blegacy\b/i.test(line)).map((needle) => `${rel}:${index + 1} ${line.match(needle)[0]}`)));
+  assert.deepStrictEqual(leftovers, [], 'AC-5: review waves are the one canonical mechanism for splitting a large review scope; a surviving reference to a removed one tells an orchestrator to run a step no runtime supports. Only a line stating legacy handling for an in-flight sprint may name one');
+  const partialLegacy = sectionOf('.asd/rules/sprint-lifecycle.md', 'State recovery').split('\n').find((line) => line.includes('APPROVE (partial:'));
+  assert.ok(partialLegacy && /satisfied for its iteration, never latched/.test(partialLegacy), 'D7/AC-6: a partial already recorded in an in-flight sprint must still read as satisfied, never latched, under backward_compat: migration');
+});
+
+test('sprint-017 AC-1/AC-6 (D3/D4): the review wave and the impl-review iteration id are defined once in sprint-lifecycle.md "Review iteration counters", t_state.json seeds reviews.impl as one wave node of exactly the fields that definition names, and every reader of the counter uses the per-wave form', () => {
+  const counters = sectionOf('.asd/rules/sprint-lifecycle.md', 'Review iteration counters');
+  const definition = counters.split('\n').find((line) => line.startsWith('**Review wave**'));
+  assert.ok(definition && definition.includes('sole definition'), 'sprint-lifecycle.md "Review iteration counters" must carry the review-wave definition and claim it as the sole one');
+  const redefined = [...canonMarkdownFiles(), 'README.md'].filter((rel) => rel !== '.asd/rules/sprint-lifecycle.md' && canonText(rel).split('\n').some((line) => line.startsWith('**Review wave**')));
+  assert.deepStrictEqual(redefined, [], 'D7: "wave" now means only the plan Task wave and the review wave; a second review-wave definition is the drift the sole-home claim forbids');
+  const glossary = sectionOf('.asd/rules/core.md', 'Glossary').split('\n').find((line) => line.startsWith('- **Review wave**'));
+  assert.ok(glossary && glossary.includes('`sprint-lifecycle.md` "Review iteration counters"'), 'core.md\'s glossary line must point at the definition rather than restate it');
+
+  const nodeFields = [...definition.split(' — ')[1].split('(`t_state.json`)')[0].matchAll(/`([a-z_]+)`/g)].map((match) => match[1]);
+  assert.ok(nodeFields.includes('iteration') && nodeFields.includes('latched'), `sanity: the definition must name the wave node's fields, got ${JSON.stringify(nodeFields)}`);
+  const impl = JSON.parse(readRepoFile('.asd/templates/t_state.json')).reviews.impl;
+  assert.deepStrictEqual(Object.keys(impl).sort(), ['wave', 'waves'], 'D3: reviews.impl is the wave pointer plus the wave nodes - a flat counter beside them would be a second, unwaved iteration count');
+  assert.strictEqual(impl.wave, 1, 'D3: the seed points at wave 1');
+  assert.ok(Array.isArray(impl.waves) && impl.waves.length === 1, 'D3: the seed is one wave node - the division point adds the rest, and a rollback reset restores exactly this');
+  assert.deepStrictEqual(Object.keys(impl.waves[0]).sort(), nodeFields.slice().sort(), 'D3: the seed node carries exactly the fields the review-wave definition names');
+  assert.deepStrictEqual(impl.waves[0], { iteration: 0, verdicts: {}, iteration_heads: {}, latched: {} }, 'D3: a fresh wave node starts at iteration 0 with nothing recorded - the division point is keyed on that 0');
+
+  const idLine = counters.split('\n').find((line) => line.startsWith('- **Iteration id**'));
+  assert.ok(idLine && idLine.includes('`wave-<K>/iter-NN`') && idLine.includes('Design-review ids stay `iter-NN`'), 'D4: the impl-review iteration id must be defined once, in the id form every impl-review literal cites, with design-review unchanged');
+  const implReview = canonText('.asd/workflows/asd-phase-impl-review.md');
+  assert.ok(implReview.includes('`<id>` = this iteration\'s id `wave-<K>/iter-NN`') && implReview.includes('`state.json.review_fixes_pending = "<id>"`'), 'D4 Reachability: impl-review must write review_fixes_pending as the wave-qualified id, or impl review-fix looks for findings in a dir that is not there');
+  assert.ok(canonText('.asd/workflows/asd-phase-impl.md').split('\n').some((line) => line.includes('review_fixes_pending') && line.includes('`wave-<K>/iter-NN`') && /legacy bare `iter-NN` reads as wave 1/.test(line)), 'D4/AC-6: impl review-fix mode must read the id form, and a legacy bare iter-NN as wave 1');
+  const staleImplDirs = [...canonMarkdownFiles(), 'README.md'].flatMap((rel) => canonText(rel).split('\n').filter((line) => /reviews\/impl\/iter-NN/.test(line) && !/\blegacy\b/i.test(line)).map((line) => `${rel}: ${line.slice(0, 80)}`));
+  assert.deepStrictEqual(staleImplDirs, [], 'D4: impl-review files live under reviews/impl/wave-<K>/iter-NN/; the flat dir may be named only as the legacy read');
+
+  assert.ok(canonText('.asd/skills/asd-sprint/SKILL.md').includes('`wave <K>/<n>`'), 'D10/AC-6: the asd-sprint resume display must show the wave and that wave\'s counter');
+  assert.ok(stepOf(canonText('.asd/workflows/asd-phase-pr.md'), 1).includes('every impl-review wave'), 'D10/AC-6: the pr DoD must read reviews-green over every wave, never only the current node');
+  const reset = counters.split('\n').find((line) => line.includes('**Rollback reset.**'));
+  assert.ok(reset && reset.includes('`reviews.impl` to its `t_state.json` seed') && reset.includes('re-divides'), 'D3: a rollback reset must drop every wave and re-divide at the next entry, not keep a stale division');
+});
+
+test('sprint-017 AC-8 (D8): review-policy.md "Scope hand-off" is the sole home of the list/diff/whole-files triple, and every workflow, reviewer agent, External Review file and README links to it', () => {
+  const heading = '## Scope hand-off';
+  const homes = [...canonMarkdownFiles(), 'README.md'].filter((rel) => canonText(rel).split('\n').some((line) => line.trim() === heading));
+  assert.deepStrictEqual(homes, ['.asd/rules/review-policy.md'], 'D8: the hand-off must be stated once');
+  const handOff = sectionOf('.asd/rules/review-policy.md', 'Scope hand-off');
+  assert.ok(['1. **List**', '2. **Diff**', '3. **Whole files**'].every((item) => handOff.includes(item)), 'AC-8: the home must carry the fixed triple in order');
+  assert.ok(/No reviewer — the wrapped CLI included — runs git to derive, widen or narrow its scope/.test(handOff), 'AC-8: the agent never derives its own scope, External Review included');
+  const link = /review-policy\.md`? (?:"|§ )Scope hand-off/;
+  const citers = ['.asd/workflows/asd-phase-impl-review.md', '.asd/workflows/asd-phase-design-review.md', '.asd/rules/external-review.md', '.asd/agents/asd-external-review.md', '.asd/templates/external-review/t_prompt-external-impl.md', '.asd/templates/external-review/t_prompt-external-design.md', 'README.md', ...internalReviewers().map((reviewer) => `.asd/agents/asd-reviewer-${reviewer}.md`)];
+  assert.deepStrictEqual(citers.filter((rel) => !link.test(canonText(rel))), [], 'D8: every site handing a reviewer its scope must link the one home instead of restating it');
 });
 
 // ===========================================================================
