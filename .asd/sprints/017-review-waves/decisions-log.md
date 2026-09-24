@@ -34,3 +34,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+- 2026-09-24 — impl-review division: `review-waves` measured 1470 lines (threshold 3000) → n = 1, one unsplit wave; `reviews/impl/waves.json` written; legacy flat `reviews.impl` normalized into the wave shape at entry
+- 2026-09-24 — External Review skipped for sprint 017-review-waves iteration wave-1/iter-01: external review unavailable: command-unavailable (`codex` not on PATH in this cloud container)
