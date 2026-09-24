@@ -36,3 +36,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 <!-- entries appended below this line -->
 
 - 2026-09-24 — route impl-test entry 3: critical, dispatch HEAD 66911b9
+
+- 2026-09-24 — impl-test: defects D-1, D-2 → impl test-fix (digest f356c887a7ea45db2f121c6c0922b3ccc9c0038781773a7de51494c4ff6467eb); tester flags accepted (red-by-design COR-4 regression sweep over roster agents' memory, 40-char negation window, one D-N per file)
