@@ -35,3 +35,11 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 <!-- entries appended below this line -->
 - 2026-09-24 — External Review skipped for sprint 017-review-waves iteration wave-1/iter-03: external review unavailable: command-unavailable (same cause as F-1); efficiency latched (iter 2), not dispatched
+
+## 2026-09-24 — impl-review wave-1/iter-03: roster met, wave 1 of 1 closed
+
+- **Decision**: Correctness, Testing and Documentation returned APPROVE and are now latched at iteration 3. Efficiency was latched at iteration 2, and External was availability-skipped. K = n = 1, so the phase goes to the terminal full-suite gate.
+- **Rationale**: Every required reviewer is APPROVE or latched in `verdicts["iter-03"]`.
+- **Affected docs**: reviews/impl/wave-1/iter-03/
+
+- 2026-09-24 — route impl-review wave-1/iter-03 suite: critical, dispatch HEAD 0721b6c
