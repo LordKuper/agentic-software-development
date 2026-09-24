@@ -80,7 +80,7 @@ Orchestration body for the `asd-phase-impl-review` skill. Operation-mapping to h
 - `<sprint>/reviews/impl/<id>/documentation.md` (written by this workflow when dispatched; not written this iteration when latch-skipped — step 6)
 - `<sprint>/reviews/impl/<id>/external.md` (when `external_review=enabled` and not latch-skipped; written by this workflow)
 - `<sprint>/reviews/impl/<id>/<reviewer>.manifest.json` (step 6, per dispatched internal reviewer), `external.scope.json` (step 6, External Review dispatched) and one `<fingerprint>.diff` per distinct list and range
-- `<sprint>/reviews/impl/<id>/<reviewer>.late.md` (only for a late duplicate return admitted at step 7a, in the replaced dispatch's iteration dir; linked from that reviewer's `<reviewer>.md`)
+- `<sprint>/reviews/impl/<id>/<reviewer>.late.md` (only for a late duplicate return admitted at step 7a; which iteration's `<id>`, and its link, per `review-policy.md` "Late duplicate return")
 - Updated `<sprint>/test-plan.md` `Suite run` section (step 9, overwriting the impacted-run record) and, on a code-defect red, a new `Defects` `D-N` row
 - Updated `state.json` (phase; `reviews.impl.wave` and each wave node's `iteration`, `iteration_heads`, `verdicts`, `latched`; `review_fixes_pending`; `test_defects_pending` on a step-9 code-defect red)
 - decisions-log entry on a division into n > 1 waves, DoD met (full suite green), route-to-impl-fix, override, or terminal-suite-red
