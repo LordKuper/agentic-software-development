@@ -5494,14 +5494,28 @@ test('sprint-017 AC-5/AC-7: no live canon, README, runtime or hook keeps a mecha
   assert.ok(partialLegacy && /satisfied for its iteration, never latched/.test(partialLegacy), 'D7/AC-6: a partial already recorded in an in-flight sprint must still read as satisfied, never latched, under backward_compat: migration');
 });
 
-test('sprint-017 AC-5/AC-7 (COR-4): no agent memory a dispatched agent loads names a review mechanism review waves replaced as live - only right after a negation in the same clause, or on a line naming it legacy', () => {
+const AGENT_MEMORY_ROOT = '.claude/agent-memory';
+
+/** Every memory file a dispatched roster agent loads: the `.md` files under `.claude/agent-memory/<agent>/`, for each agent `.claude/agents/` defines. */
+function rosterMemoryFiles() {
   const roster = fs.readdirSync(path.join(REPO_ROOT, '.claude/agents')).filter((name) => name.endsWith('.md')).map((name) => name.slice(0, -3));
-  const memoryRoot = '.claude/agent-memory';
-  const files = fs.readdirSync(path.join(REPO_ROOT, memoryRoot)).filter((dir) => roster.includes(dir)).flatMap((dir) => fs.readdirSync(path.join(REPO_ROOT, memoryRoot, dir)).filter((name) => name.endsWith('.md')).map((name) => `${memoryRoot}/${dir}/${name}`));
+  return fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT)).filter((dir) => roster.includes(dir)).flatMap((dir) => fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT, dir)).filter((name) => name.endsWith('.md')).map((name) => `${AGENT_MEMORY_ROOT}/${dir}/${name}`));
+}
+
+test('sprint-017 AC-5/AC-7 (COR-4): no agent memory a dispatched agent loads names a review mechanism review waves replaced as live - only right after a negation in the same clause, or on a line naming it legacy', () => {
+  const memoryRoot = AGENT_MEMORY_ROOT;
+  const files = rosterMemoryFiles();
   assert.ok(files.some((rel) => rel.startsWith(`${memoryRoot}/asd-reviewer-`)) && files.some((rel) => rel.startsWith(`${memoryRoot}/asd-external-review/`)), 'sanity: the sweep must reach the reviewer and External Review memories COR-4 found stale');
   const negated = (line, at) => /\b(?:no|never|not|without|removed|retired|superseded)\b/i.test(line.slice(Math.max(0, at - 40), at).split(/[.;]\s|—/).pop());
   const leftovers = files.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => (/\blegacy\b/i.test(line) ? [] : REPLACED_REVIEW_MECHANISMS.flatMap((needle) => [...line.matchAll(new RegExp(needle.source, `${needle.flags}g`))].filter((match) => !negated(line, match.index)).map((match) => `${rel}:${index + 1} ${match[0]}`)))));
   assert.deepStrictEqual(leftovers, [], 'COR-4/AC-7: agent memory is loaded on every dispatch, so a line describing a removed split, part or External batch as current contract reloads a false contract that "Scope hand-off" and the wave state contradict. A memory may name one only as absent ("no .part-N") or legacy; its owner rewrites or deletes the rest');
+});
+
+test('sprint-017 (DOC-2): review wave K is 1-based and its state node is reviews.impl.waves[K-1] - no canon, README or agent memory a dispatched agent loads indexes it as waves[K]', () => {
+  assert.ok(sectionOf('.asd/rules/sprint-lifecycle.md', 'Review iteration counters').includes('`reviews.impl.waves[K-1].iteration`'), 'sanity: sprint-lifecycle.md "Review iteration counters" is the source defining wave K\'s node as waves[K-1]');
+  const files = [...canonMarkdownFiles(), 'README.md', ...rosterMemoryFiles()];
+  const offByOne = files.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => (/\bwaves\[K\]/.test(line) ? [`${rel}:${index + 1}`] : [])));
+  assert.deepStrictEqual(offByOne, [], 'DOC-2: waves[K] names wave K+1\'s node (or none, for the last wave), so a line reading it as wave K\'s iteration, heads, verdicts or latches points the reader at the wrong wave - and a memory line is reloaded on every dispatch');
 });
 
 test('sprint-017 AC-1/AC-6 (D3/D4): the review wave and the impl-review iteration id are defined once in sprint-lifecycle.md "Review iteration counters", t_state.json seeds reviews.impl as one wave node of exactly the fields that definition names, and every reader of the counter - review-policy.md\'s severity floor and sprint-lifecycle.md\'s State-recovery readers included - uses the per-wave form', () => {
@@ -5555,13 +5569,15 @@ test('sprint-017 TST-1 (AC-2/AC-3): impl-review step 8 sends K<n straight to wav
   assert.ok(artefacts.split('\n').some((line) => /decisions-log entry on a division into n > 1 waves/.test(line)), 'AC-1: a division into more than one wave must leave a decisions-log artefact naming it, or a resumed session cannot tell whether the scope was ever divided');
 });
 
-test('sprint-017 (COR-2): a closed wave\'s late-admitted finding lands in the CURRENT iteration\'s dir (never the closed wave\'s), joins step 8\'s unresolved set, and step 8 checks for it before the roster-met "Otherwise" branch', () => {
+test('sprint-017 (COR-2/DOC-1): a closed wave\'s late-admitted finding lands in the CURRENT iteration\'s dir (never the closed wave\'s), joins step 8\'s unresolved set, step 8 checks for it before the roster-met "Otherwise" branch, and the Artefacts produced line defers that location to review-policy.md instead of restating one', () => {
   const reviewFlow = canonText('.asd/workflows/asd-phase-impl-review.md');
   const step7a = stepOf(reviewFlow, '7a');
   const closedWaveLine = step7a.split('\n').find((line) => line.includes('for a closed wave'));
   assert.ok(closedWaveLine, 'COR-2: step 7a must state a closed-wave branch for a late duplicate return - otherwise a late admission after the wave advanced has nowhere defined to land');
   assert.ok(/its `\.late\.md` goes to this iteration's `<sprint>\/reviews\/impl\/<id>\/` instead/.test(closedWaveLine), 'COR-2: a closed wave\'s late.md must land in the CURRENT iteration\'s dir, not the closed wave\'s own dir - the closed wave is never reopened or re-dispatched');
   assert.ok(/its finding joins step 8's unresolved set/.test(closedWaveLine), 'COR-2: the closed-wave finding must reach step 8\'s routing, or an admitted FAIL/CONCERNS from a closed wave is silently dropped');
+  const lateArtefact = sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Artefacts produced').split('\n').find((line) => line.includes('<reviewer>.late.md'));
+  assert.ok(lateArtefact && lateArtefact.includes('per `review-policy.md` "Late duplicate return"') && !/iteration dir/.test(lateArtefact), `DOC-1: the Artefacts produced .late.md line must cite review-policy.md "Late duplicate return" for which iteration's dir it lands in, never restate one - a single restated location contradicts step 7a's closed-wave branch, and an orchestrator writing from the list puts the file where review-fix never reads it. Got: ${lateArtefact}`);
 
   const step8 = stepOf(reviewFlow, 8);
   const unresolvedBullet = step8.split('\n').find((line) => line.includes('Any unresolved finding remains'));
