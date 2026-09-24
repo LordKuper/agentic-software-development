@@ -14,6 +14,7 @@ All project work goes through `/asd-sprint`.
 - **Sprint** — one unit of scoped work. One active at a time. Closed sprints archived, immutable.
 - **Phase** — fixed step in sprint lifecycle. Eleven mandatory: scope, audit, design, design-review, design-promote, plan, impl, impl-test, impl-review, retro, pr.
 - **Iteration** — one pass of the review loop in a `*-review` phase. Each dispatches every reviewer fresh with clean context (`review-policy.md`).
+- **Review wave** — one of the sequential slices a large impl-review scope divides into, each with its own iterations (`sprint-lifecycle.md` "Review iteration counters").
 - **Creator agent** — produces artifacts (BA, UX, Architect, Dev, Tester).
 - **Main orchestrator** — the role (not a spawned agent) that dispatches phase skills/agents and owns scope, plan, state, decisions-log, gates, manual-step validation, Git and release/archival sequencing. No PM agent is spawned; this replaces that responsibility. Role-scoped context: `providers.md` "Role-scoped context" table.
 - **Reviewer agent** — evaluates artifacts (Correctness, Efficiency, Testing, Documentation, External Review).

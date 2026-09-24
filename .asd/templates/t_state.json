@@ -9,7 +9,7 @@
   "skipped_phases": [],
   "reviews": {
     "design": { "iteration": 0, "verdicts": {}, "latched": {} },
-    "impl": { "iteration": 0, "verdicts": {}, "iteration_heads": {}, "latched": {} }
+    "impl": { "wave": 1, "waves": [ { "iteration": 0, "verdicts": {}, "iteration_heads": {}, "latched": {} } ] }
   },
   "created_at": "{{ISO8601}}",
   "updated_at": "{{ISO8601}}",
