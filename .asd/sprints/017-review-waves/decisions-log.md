@@ -53,3 +53,17 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: plan.md
 
 - 2026-09-24 — route Task 4: critical, dispatch HEAD 138e261
+
+## 2026-09-24 — Task 4 flagged choices resolved
+
+- **Decision**: All six Task 4 flags (b18786a) accepted:
+  - `t_review-report.md` handled here, not in Task 5, and its "Reviewed files n/m" line dropped;
+  - Unreviewed carry-over is scoped to its wave;
+  - a carried-over design draft is read whole;
+  - External Review stays strict to `files[]`;
+  - Gate-line paths in id form;
+  - interim `release-manifest.json` hashes.
+- **Rationale**: Each flag stays inside D4/D7/D8/D9 and keeps prior behaviour where the plan is silent (a skip on the final iteration never carried over before either).
+- **Affected docs**: plan.md
+
+- 2026-09-24 — route Task 5: critical, dispatch HEAD 64680d0
