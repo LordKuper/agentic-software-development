@@ -1,7 +1,7 @@
 {
   "sprint_id": "017-review-waves",
   "branch": "claude/asd-sprint-4y74bx",
-  "phase": "plan",
+  "phase": "impl",
   "documents": {
     "audit": true,
     "prd": false,
@@ -33,7 +33,44 @@
       "artifact_revision": "plan.md@c49ba94"
     }
   ],
-  "task_routing": {},
+  "task_routing": {
+    "Task 1": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "risk:public contract"
+    },
+    "Task 2": {
+      "execution": "agent",
+      "tier": "standard",
+      "resolved_model": "claude:sonnet",
+      "reason": "artifact-risk:hook never throws"
+    },
+    "Task 3": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "Task 4": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "risk:public contract"
+    },
+    "Task 5": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "Task 6": {
+      "execution": "agent",
+      "tier": "standard",
+      "resolved_model": "claude:sonnet",
+      "reason": "artifact-risk:mirror accuracy"
+    }
+  },
   "skipped_phases": [
     "design",
     "design-review",
@@ -53,7 +90,7 @@
     }
   },
   "created_at": "2026-09-24T00:24:03Z",
-  "updated_at": "2026-09-24T02:00:00Z",
+  "updated_at": "2026-09-24T02:05:00Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
