@@ -1,7 +1,7 @@
 {
   "sprint_id": "017-review-waves",
   "branch": "claude/asd-sprint-4y74bx",
-  "phase": "audit",
+  "phase": "design-promote",
   "documents": {
     "audit": true,
     "prd": false,
@@ -17,10 +17,21 @@
       "reason": "explicit accept",
       "evidence": "sprint.md AC-1..AC-8",
       "artifact_revision": "sprint.md@2026-09-24T00:40:00Z"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "scope-authorized; sole contradiction settled by AC-8 at scope gate",
+      "evidence": "audit.md Contradictions; decisions-log.001.md",
+      "artifact_revision": "audit.md@2026-09-24T01:00:00Z"
     }
   ],
   "task_routing": {},
-  "skipped_phases": [],
+  "skipped_phases": [
+    "design",
+    "design-review",
+    "design-promote"
+  ],
   "reviews": {
     "design": {
       "iteration": 0,
@@ -35,7 +46,7 @@
     }
   },
   "created_at": "2026-09-24T00:24:03Z",
-  "updated_at": "2026-09-24T00:41:00Z",
+  "updated_at": "2026-09-24T01:00:00Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

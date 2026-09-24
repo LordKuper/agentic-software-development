@@ -1,0 +1,250 @@
+---
+responsibility:
+  owns: brownfield findings for sprint scope (existing docs, code, gaps incl. dependencies/migration, risks)
+  excludes: requirements, decisions, plan, code
+  delegates_to: prd.html (requirements), adr.html (decisions), plan.md (tasks)
+---
+
+# Audit
+
+## Scope reference
+[sprint.md](./sprint.md) — AC-1..AC-8; scope decisions in [decisions-log.001.md](./decisions-log.001.md).
+
+## Touched areas
+Line numbers below are file:line references.
+- `.asd/rules/sprint-lifecycle.md`:
+  - Dispatch ceiling :11
+  - Review iteration counters :35-58 (increment :47, rollback table :48-55, path :58)
+  - APPROVE latch :60-76
+  - terminal suite :93
+  - phase table :104, :107, :109
+  - Self-hosting surface :123
+  - review-fix mode :221
+  - PR reviews-green :295
+  - Change surface cap :334
+  - State recovery :348-357
+- `.asd/rules/review-policy.md`:
+  - severity floor :12-26 (N = `reviews.impl.iteration` :16)
+  - clean-context payload/scope :30-37
+  - change-surface and diff reachability :39-43
+  - ledger internal-only :100
+  - emit-manifest :102
+  - `.diff` impl-only :104
+  - review file path :144
+  - interrupted/correlated/late/split/partition/union/merge :146-166
+  - Reviewer responsibility :168-178
+  - DoD and latch :180-193
+- `.asd/rules/external-review.md`:
+  - batching :52-58
+  - Phase-scoped payload :60-78 (self-diff permission :66)
+  - Iteration semantics :80-93
+  - output paths :106
+  - stalemate :108-112
+  - skip record "iteration `<N>`" :35
+- `.asd/rules/checkpoints.md`: review-cap in the hard list :7; Criterion cost surfacing :25-35.
+- `.asd/rules/artifact-layout.md`: reviews path map :45-47; test-plan note :187; State file :237-239; rotation :245.
+- `.asd/rules/git-strategy.md`: `ASD-Task` trailers :15; commit-before-review :34-40.
+- `.asd/rules/core.md`: glossary "Iteration" :16. `providers.md` restates no reviewer payloads.
+- `.asd/workflows/asd-phase-impl-review.md`:
+  - cap precondition :8
+  - scope list :23
+  - External manifest :25
+  - increment and head :26
+  - floor :27
+  - dir :28
+  - emit :34
+  - latch filter :35
+  - payloads :41
+  - split and ceiling :46
+  - late :47
+  - verdict/latch :48
+  - `review_fixes_pending` :57
+  - red-suite latch clear :62
+  - cap :65-69
+  - artefacts :74-83
+  - `ITER` :97
+- `.asd/workflows/asd-phase-design-review.md`: increment :24; snapshot :28; emit :29; External manifest :34; payloads :35; split :40; verdicts :42.
+- `.asd/workflows/asd-phase-impl.md`: review-fix mode :8, :12, :51, :55, :67, :114, :131.
+- Other workflows: `asd-phase-pr.md` :9; `asd-phase-retro.md` :10, :19; `asd-phase-plan.md` :40.
+- `.asd/skills/asd-sprint/SKILL.md`: resume display :43; rollback :45.
+- Agents:
+  - `asd-reviewer-correctness` :35, :46
+  - `asd-reviewer-efficiency` :35, :41
+  - `asd-reviewer-documentation` :33, :40
+  - `asd-reviewer-testing` :34-35
+  - `asd-external-review` :15, :47, :59, :108
+  - `asd-dev` :38
+- Templates:
+  - `t_state.json` :10-13
+  - `external-review/t_review-scope.json`
+  - `t_prompt-external-impl.md` :20
+  - `t_prompt-external-design.md` :20
+  - `t_review.md` :17
+  - `t_review-report.md` :13-16
+  - `t_friction-log.md` :21
+  - `t_test-plan.md` :5
+- `.asd/runtime.js`:
+  - constants :20-29
+  - `emitCoverageManifests` :355-379
+  - `reviewerFiles` :387-390
+  - `draftSnapshot` :441-446
+  - `surfaceCheck` :449-456
+  - patch writers :471-495
+  - `emitManifestCommand` :497-526
+  - CLI :547-593
+- `.asd/hooks/session-start.js`: `reviewNodeForPhase` :108-119; `lastReviewVerdict` :122-137; summary :159-162.
+- Release and docs: `.asd/migrations/`, `.asd/release-manifest.json` (`upstream_hashes`), `README.md` (:155, :167, :219, :225, :297, :420), `CHANGELOG.md`, `tests/run.js`.
+
+## Existing docs found
+- [review-policy.md](../../rules/review-policy.md):
+  - :34 — the manifest file list is "the payload's single scope source … A payload never tells a reviewer to run git."
+  - :100 — ledger "NOT External Review — the wrapped CLI self-scopes".
+  - :158 — parts = `ceil(files / SPLIT_THRESHOLD_FILES)`, or `--halve` after two interruptions.
+  - :166 — parts merge into one `verdicts["iter-NN"]`.
+- [sprint-lifecycle.md](../../rules/sprint-lifecycle.md):
+  - :11 — dispatch ceiling, sequential waves "review parts and an impl task wave (as sub-waves) alike".
+  - :47 — counter incremented at start of every entry.
+  - :348 — iter NN≥2 range from `iteration_heads["iter-(NN-1)"]`; an absent key falls back to base.
+  - :64 — an absent `latched` means `{}`.
+  - :295 — pr reads the highest iteration first.
+- [external-review.md](../../rules/external-review.md):
+  - :62 — scope manifest "never a rendered diff", self-declared SSoT.
+  - :66 — impl-review refs let the wrapped CLI run `git diff <base_ref>..<head_ref>`; design-review refs are empty.
+  - :54 — batches of `SPLIT_THRESHOLD_FILES` inside one dispatch.
+  - :91 — Unreviewed files carry into the next iteration.
+- [checkpoints.md](../../rules/checkpoints.md) :30-31: iterations charged = count of `iter-NN/`; the fix-round tail is `for iter-NN: findings resolved`.
+- [artifact-layout.md](../../rules/artifact-layout.md) :46-47: the exhaustive `iter-NN/` path map.
+- [CHANGELOG.md](../../../CHANGELOG.md) v11.0.0 gives per-reviewer scope, `.diff` (impl-only) and dispatch-ceiling sub-waves. Its migration note: "No migration script … state.json's schema is unchanged".
+- [README.md](../../../README.md):
+  - :219 — External Review scope manifest "never a rendered diff".
+  - :225 — latch per phase per reviewer.
+  - :297 — runtime.js.
+  - :420 — floor.
+- There is no `docs/` tree; `.asd/rules/` is canonical under self-hosting.
+
+## Contradictions
+- `review-policy.md` :34, :100 (no git in the payload; "wrapped CLI self-scopes") vs `external-review.md` :66 + `t_prompt-external-impl.md` :20 + `asd-external-review.md` :15 (the wrapped CLI may self-diff over `base_ref..head_ref`). These are two canonical rule docs. winner = unsettled → user: settled at the scope gate by AC-8 (decisions-log.001.md "Scope refined: diff-volume threshold and scope hand-off triple"). External Review gets the same list and a precomputed diff, and refs stop being a way to self-compute a diff. The external-review side is to be aligned.
+
+## Existing implementation found
+- **Counter/verdict/latch inventory (AC-6):**
+  - `reviews.impl.iteration`:
+    - write: impl-review.md :26; rollback reset sprint-lifecycle :48-55 via asd-sprint SKILL :45.
+    - read: impl-review.md :8, :27, :97; review-policy :16; external-review :35; t_review.md :17; t_review-report.md :13; asd-sprint SKILL :43; session-start.js :114-115, :160; retro :10.
+  - `iteration_heads`:
+    - write: impl-review.md :26.
+    - read: impl-review.md :23, :34; sprint-lifecycle :348; external-review :87, :89; t_prompt-external-impl :20; t_state.json :12; tests :2026.
+  - `verdicts["iter-NN"]`:
+    - write: impl-review.md :47-48; review-policy :150, :154, :166; sprint-lifecycle :62-68.
+    - read: sprint-lifecycle :295, :350-357; pr.md :9; session-start.js :122-137.
+  - `latched`:
+    - write: impl-review.md :48, :62-63; sprint-lifecycle :48, :64, :70-76; review-policy :154.
+    - read: impl-review.md :35.
+  - `reviews/impl/iter-NN/`:
+    - write: impl-review.md :16, :28, :34, :42, :46-47, :74-81; review-policy :144, :154, :166.
+    - read: impl.md :8, :12, :51, :55, :67, :131; asd-dev :38; sprint-lifecycle :58, :107, :109, :221, :260, :295; checkpoints :30; artifact-layout :47, :187; retro :10, :19; t_friction-log :21; t_test-plan :5; agents (correctness :35, :137; testing :38, :88; external :40); external-review :106.
+  - `review_fixes_pending="iter-NN"`: impl-review.md :57, :61, :67; impl.md :51, :114; impl-test.md :8; sprint-lifecycle :220-221.
+  - Iteration-keyed literals: review-policy :150, :152; checkpoints :31; impl.md :114; git-strategy :15.
+  - `.asd/runtime.js` reads no `state.json`. Any runtime state reader for AC-6 is new code.
+- **Splitting today (AC-5):**
+  - Per-reviewer parts inside one iteration (runtime.js :364; review-policy :164-166), sharing the counter.
+  - `DISPATCH_CEILING=20` (runtime.js :25) is exported only and applied by hand (sprint-lifecycle :11).
+  - Default caps give at most 18 impl-review dispatches (`SURFACE_CAP_FILES=100`: 3×4 + ceil(101/25) + 1), so ceiling waves fire only under a cap override.
+  - "Wave" today means plan Task waves (sprint-lifecycle :330, :332; impl.md; plan.md :39; t_plan.md; README :164) and dispatch-ceiling batches (sprint-lifecycle :11; impl-review.md :46; impl.md :64; runtime.js :24). design-review.md :40 does not mention the ceiling.
+  - External Review has a third mechanism: sequential batches inside one dispatch (external-review :54; agent :59).
+- **Scope hand-off today (AC-8):**
+  - impl-review internal: scope list (impl-review.md :23) → `emit-manifest` → `reviewerFiles` (only Testing narrows, to `isTest` plus `--test-plan`) → manifest plus `<reviewer>[.part-N].diff` (runtime.js :519-525).
+  - impl-review External: `files[]` = scope ∪ previous Unreviewed, plus `exclude_paths` and refs (impl-review.md :25). No runtime-emitted list or diff exists: `emit-manifest` needs an `asd-reviewer-<name>.md` rubric (runtime.js :510).
+  - design-review internal: snapshot list → `emit-manifest`, no range. `--base/--head` exits 2 (runtime.js :501; test :5058-5065). No diff.
+  - design-review External: `files[]` = drafts ∪ Unreviewed, refs empty.
+  - The mechanism is restated in review-policy :33-34, :102-104, :170-178; external-review :60-93; impl-review.md :23, :25, :34, :41, :46; design-review.md :28-29, :34-35, :40; reviewer agents; external prompts; t_review-scope.json; README :219, :297. There are two homes today: review-policy (internal) and external-review :62 (External).
+- **Size measurement (AC-1):**
+  - File count only: `SPLIT_THRESHOLD_FILES=25`, `SURFACE_CAP_FILES=100`, `AUDIT_BATCH_THRESHOLD_FILES=200`; `surfaceCheck` counts paths (:453).
+  - Nothing measures lines or bytes. `writePatch` streams to disk (:488-495).
+- **Reusable mechanisms:**
+  - latch map and the every-reviewer-gets-an-entry invariant (sprint-lifecycle :62)
+  - `iteration_heads` incremental range
+  - union-property hand check (review-policy :162), a precedent for a disjoint/cover check
+  - `ASD-Task` trailers map commits to Tasks (git-strategy :15); plan Tasks carry no file list
+
+## Gaps
+- **AC-1 metric:** needs a runtime constant plus a measuring command over range × list (numstat lines or patch bytes).
+  - Rules needed for binary files, pure renames and the non-diffed `--test-plan` paths.
+  - Needs a stated relation to the file-based `SPLIT_THRESHOLD_FILES` and `SURFACE_CAP_FILES`.
+- **AC-1 partition:**
+  - No check exists for ≤3, disjoint and covering; needs a runtime check or a stated hand check.
+  - Needs a tie-break for a file touched by several Tasks.
+  - Needs a home for untrailered files (agent memory, untrailered commits).
+- **AC-1/AC-6 state:** `t_state.json` holds one counter; there is no schema for the division or for per-wave counters, verdicts, latches and heads.
+  - `review_fixes_pending` needs a wave qualifier.
+  - The rollback reset must also clear the division.
+- **AC-2/AC-3 counter lifecycle:** "increment at start of every entry" (sprint-lifecycle :47; impl-review step 2) assumes one counter per entry, and a wave transition inside one entry breaks it. The cap precondition (:8) and `ITER` (:97) need a per-wave meaning.
+- **AC-4 scope per wave-iteration is undefined:**
+  - Iter 1 = wave files over `base...HEAD`?
+  - Iter 2+ = the full incremental diff since the wave's previous head, including files of other waves and new files?
+- **AC-4 vs Late duplicate return (review-policy :154):** admission clears a latch and raises `verdicts`, which would reopen a closed wave.
+- **AC-3 vs red-suite invalidation (sprint-lifecycle :76; impl-review :62):** latches are cleared sprint-wide. Re-entry must land on the last wave without touching earlier waves' verdicts.
+- **Diff reachability (review-policy :43):** reviewer memory written during wave k may never reach a reviewed diff once wave k+1 starts in the same entry with a wave-limited list.
+- **Iteration-keyed literals need wave qualification:** review-policy :150, :152; external-review :35, :91, :110; checkpoints :30-31; impl.md :114; git-strategy :15 (finding-id file prefix is unique only within one iteration).
+- **Readers AC-6 omits:** pr DoD across every wave's final verdicts (sprint-lifecycle :295; pr.md :9); session-start hook :108-137; retro :10; t_friction-log :21; t_test-plan :5; asd-dev :38.
+- **AC-8 runtime:**
+  - no list or diff emission for External Review;
+  - no range for design-review (runtime :501, test :5058-5065);
+  - design drafts are not guaranteed committed, and `snapshot.json` holds hashes only, so there is no baseline content for an iter 2+ diff;
+  - Testing's `--test-plan` paths are excluded from its `.diff` (:483-486);
+  - carried-over Unreviewed files need a diff over their original range.
+- **AC-8 vs External batching (external-review :54):** per-batch diff narrowing is undefined, and so is the batch/part relation.
+- **AC-5:** `surfaceCheck.dispatches` (runtime :449-456) and plan.md :40 (part count) assume a whole-surface, one-iteration dispatch. The cap-override bound under waves is undefined.
+- **Stale pointers in edited files:**
+  - sprint-lifecycle :64 says "above", but the fallback is at :348 (below);
+  - :354 cites a nonexistent "`asd-phase-pr.md` open mode step 1's legacy branch";
+  - :357 cites "`asd-phase-pr.md` step 4", which is `NEXT: await-merge`.
+- **Glossary:** core.md :16 defines only "Iteration". The only "wave" definition is plan "Wave declaration" (sprint-lifecycle :332), pinned by tests :3924-3942.
+- **External dependency gaps:** none. `git diff --numstat` is available through `runGit`. The diff file sits under `.asd/sprints/**` (inside `exclude_paths`), so the wrapped-CLI prompt must name it as readable context (external-review :64).
+- **Migration gaps:**
+  - `reviews.impl` `{iteration, verdicts, iteration_heads, latched}` → per-wave shape, with the legacy shape read as one wave.
+  - `review_fixes_pending: "iter-NN"` → wave-qualified.
+  - `reviews/impl/iter-NN/` → wave-scoped path, with the legacy path kept readable.
+  - The hook reads both shapes and never throws.
+  - `upstream_hashes` for touched managed files are recomputed (tests :1925-1946).
+  - CHANGELOG Migration section.
+  - Precedent is a reader absent-key fallback (sprint-lifecycle :64, :159, :332, :334, :348, :354; runtime.js :242; v11 "No migration script"). Only 6.0.0 rewrites active `state.json`, as a stated exception.
+  - Migrations never run in this repo, and this sprint's own `state.json` is pre-wave, so only a reader fallback reaches it.
+
+## Risks
+- **Wave term collision:** "wave" already means plan Task waves and dispatch-ceiling batches; the ceiling also governs impl sub-waves and design-review parts (out of scope).
+  - impact: the ceiling could stop covering those, or a second "wave" definition could break tests :3924-3942, :4344.
+  - mitigation: keep the ceiling general, define the review wave once, and state the parts-inside-wave relation once.
+- **Review cost growth:** each wave has its own counter and floor. With this repo's config the cap is 7 per wave, so up to 21 impl-review iterations of at least 5 dispatches each.
+  - impact: token and time cost, more cap escalations.
+  - mitigation: surface per-wave counts in cap/cost requests (checkpoints :25-35); plan-time wave estimate.
+- **Self-hosting bootstrap:** sprint 017's impl-review runs under the canon it rewrites, from a pre-wave state.
+  - impact: a wave defect corrupts its own review.
+  - mitigation: an exact single-wave legacy fallback, with runtime and hook tests on the legacy shape before impl-review entry.
+- **Hook fragility:** session-start.js :122-137 assumes flat `iter-NN` keys sorted lexically.
+  - impact: wrong display, or a throw on a nested shape (contract: exit 0, never throw).
+  - mitigation: guard both shapes; extend tests :2068-2134.
+- **AC-8 design-review diff:** the iter-1 diff equals the whole draft, and there is no committed baseline.
+  - impact: doubled reads or wrong diffs.
+  - mitigation: settle the baseline source (snapshot content vs a commit) at plan.
+- **Late return / red suite / never-reopen interplay.**
+  - impact: an implicit reopen of an approved wave, or DoD mis-aggregation at pr.
+  - mitigation: one explicit rule per clearing route, scoped to the current wave.
+- **Test churn:** contracts pinned in `tests/run.js`:
+  - :1971-1976 `t_review-scope.json` keys incl. refs
+  - :2025-2028 prompt text
+  - :3224-3225, :3650, :3664 `iter-NN` paths
+  - :3808-3822 fix-round tail
+  - :4033, :4055 latch wording
+  - :4232, :4357 manifest names and emit form
+  - :4342-4346 `DISPATCH_CEILING`
+  - :4977 `.diff` input
+  - :4983 emit flags
+  - :5058-5065 design-review range refusal
+  - :5069-5095 `surfaceCheck.dispatches`
+  - §16 mirrors
+  - manifest hashes
+
+  impact: a red suite until every mirror moves together. mitigation: one Task per mirror cluster.
+- **Provider-view drift:** agent and skill canon edits need `sync.js --apply`, and AC-7 requires `--check` to be clean.
+  - impact: drift failure at pr.
+  - mitigation: a sync step in each canon Task.

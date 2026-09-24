@@ -34,3 +34,11 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-09-24 — Audit accepted (adaptive)
+
+- **Decision**: `audit.md` accepted by the orchestrator. The one canonical-vs-canonical contradiction (review-policy :34/:100 vs external-review :66 on External Review self-diffing) is settled by the user's AC-8 answer at the scope gate. The listed Gaps are design choices for plan.
+- **Rationale**: Every finding lies inside the accepted scope, and no new authority, preference or material trade-off arises at audit. Open trade-offs (wave metric, partition rule, state shape, design-review diff baseline) belong to the plan gate.
+- **Affected docs**: audit.md
+
+- 2026-09-24 — design/design-review/design-promote skipped (no documents enabled)
