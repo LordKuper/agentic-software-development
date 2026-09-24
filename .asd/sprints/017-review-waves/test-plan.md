@@ -12,8 +12,11 @@ responsibility:
 | Entry | HEAD analysed | Scope |
 |---|---|---|
 | 1 | 8b0c28f58ee83940449709bfdba3a35814daf987 | full change surface |
+| 2 | a866c4c8b94c0ec9ea8f5f8f7e5139fd0df5ac50 | dev-chain review-fix delta since entry 1 (testing.md TST-1..TST-3, efficiency.md EFF-4, plus the dev-chain commits `8b0c28f..a866c4c` those findings' fixes touch) |
 
-Impacted set: full suite. The safety valve fires: the surface touches `.asd/runtime.js`, `.asd/hooks/session-start.js`, `.asd/release-manifest.json`, rule docs and workflows. These are framework-wide files that the `tests/run.js` runtime, hook, hash-ledger and content-contract tests all load. `commands.yaml` has no `test_affected`.
+Impacted set: full suite (both entries). The safety valve fires: the surface touches `.asd/runtime.js`, `.asd/hooks/session-start.js`, `.asd/release-manifest.json`, rule docs and workflows. These are framework-wide files that the `tests/run.js` runtime, hook, hash-ledger and content-contract tests all load. `commands.yaml` has no `test_affected`.
+
+Entry 1's `Risk → check decisions`, `Removed tests` and `Added tests` rows are rotated to `test-plan.entry-01.md` (`artifact-layout.md` "Test plan"). This entry's own rows follow.
 
 Pre-strategy run at `5b8ad95`: `node tests/run.js` → exit 1, `194/213 passed`. 19 FAILs:
 - 18 pin contracts this sprint changed on purpose: t_review-scope.json keys, prompt transport, the `exclude_paths[]` carve-out, the split partition, the interrupted/split citation, `.part-N` naming, the correlated-interruption literal, the partial outcome, the `for iter-NN` tail, `emitCoverageManifests` (G-9, sprint-012 AC-12), the red-suite latch wording, the per-part CLI files, the `SPLIT_THRESHOLD_FILES`/`DISPATCH_CEILING` citers, surface-check `dispatches` (sprint-014 AC-5 and sprint-015 AC-11), the `.part-N` finding-id prefix, and the sprint-015 AC-4/AC-5 part output.
@@ -23,55 +26,46 @@ Pre-strategy run at `5b8ad95`: `node tests/run.js` → exit 1, `194/213 passed`.
 
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
-| `.asd/runtime.js` `reviewWaveCount`/`numstatLines`/`validateWaveDivision` (D1, D2) | wrong wave count at the boundaries, a binary file or rename counted, a division that places a file twice or nowhere accepted | unit/property | add | pure functions whose boundaries (0, threshold, threshold+1, cap) and rejection cases are the contract; cheapest exact check |
-| `review-waves` CLI over real `git diff --numstat -z -M` (D1, D2) | the `-z` rename record parsed against the wrong token, `waves.json` written for a rejected division | component/contract | add | only a real git range proves the parser against git's actual rename/binary output; fixture repo, no network |
-| `emit-manifest --reviewer external` (D9a, D9b) | scope.json drifts from `t_review-scope.json`/external-review.md, a rubric manifest written, `wave` missing in impl-review | component/contract | add | public External Review contract; the key set is derived from the rule's `Manifest fields:` line |
-| `--full-files`/`--full-base` (D6, D9c) | wave-list or carried-over files diffed over the incremental range only, listed twice, flags accepted without a range | component/contract | add | fixture repo with base, mid and head commits separates the two ranges |
-| Testing `--test-plan` in `.diff` (D9d) | a changed test-plan left out of Testing's diff | component/contract | add | extends the existing sprint-015 AC-4/AC-5 fixture: the test-plan changes in range |
-| `draft-snapshot` copies + `--snapshot` diff (D9e) | no content to diff at iteration 2+, a diff written at iteration 1, a copy landing outside `snapshot/` | component/contract | add | temp-dir drafts over `git diff --no-index`; one test covers iteration 1, iteration 2 and the rejections |
-| Parts removed from `emit-manifest` (D7) | a large scope is still split, or extra files are written | component/contract | keep | the rewritten CLI test asserts one manifest for a `SURFACE_CAP_FILES`-file scope and nothing else in the dir |
-| `surfaceCheck` without `dispatches` (D7) | the result shape still carries the field, or the override request still quotes it | unit + static | keep | updated sprint-014 AC-5 test: exact `{files, cap, breach}` plus a declaration-line check |
-| `.asd/hooks/session-start.js` both `reviews.impl` shapes (D3, D10) | throws on a malformed shape, reads wave 1 instead of the current wave, picks the latest iteration lexically | component | add | runs the hook in a temp repo over the seed, a multi-wave shape, the legacy flat shape, iter-99/iter-100 and 7 malformed shapes |
-| Rules: review wave, iteration id, `t_state.json` seed, readers (Task 3, D3, D4, D10) | a second wave definition, a seed node whose fields differ from the definition, stale `reviews/impl/iter-NN` paths, readers ignoring waves | static/arch | add | set derived from the definition line; sweep over canon Markdown and README |
-| "Scope hand-off" single home (Task 4, D8) | the triple restated elsewhere, or a hand-off site that does not link it | static/arch | add | citer set includes every internal reviewer, derived from the agent files |
-| Removed mechanisms (AC-5, AC-7) | a live canon, README, runtime or hook line still telling an orchestrator to split, halve, batch or quote dispatches | static/arch | add | one sweep; a line only passes when it names legacy handling |
-| External Outcome contract without partial (D7) | the partial outcome survives at an emitting or rendering site | static | keep | Outcome-contract test rewritten: exactly two outcomes, the partial only on the legacy State-recovery line |
-| Interrupted-dispatch escalation (D7) | the workflows still re-split after a second interruption | static | keep | AC-6a test extended with the Escalation rule and both workflow bullets |
-| Wave sequencing orchestration in `asd-phase-impl-review.md` (D5, D6) | the orchestrator advances or reopens waves wrongly | — | none | orchestration prose run by the main orchestrator, with no executable surface beyond the runtime commands tested above. Its literals are pinned by the static checks. This sprint's own impl-review runs it live (plan Risks "Self-hosting bootstrap") |
-| README / `release-manifest.json` (Task 6) | mirror drift, stale hashes | static | keep | the existing `upstream_hashes` and `sync.js --check` tests already cover it |
-| `tests/run.js` `runHook` (test defect) | the provider-form check depends on the live sprint's branch name | component | keep (fixed) | `runHook` now runs a copy of the hook in a temp repo with a fixture sprint |
+| `reviewWaveCount(lines, files)` file-count cap (COR-1 fallout) | a 2-file/7000-line scope still gets 3 waves, so a wave holds no file | unit | add | the existing boundary test grows a `[files, expected]` axis at the one shape the cap changes (2 files, 7000 lines → 2 waves), alongside the untouched line-only cases |
+| `validateWaveDivision([[]], [], 1)` (COR-1) | an empty scope's one empty wave is rejected as "empty" instead of accepted | unit | add | direct call at the one boundary the fix changed: `inScope.size > 0` guards the rejection now |
+| `wave-files` command: rename mapping + union (COR-5) | a division-time path renamed since the division is reviewed under its stale path, or the iteration's own extra files are dropped or duplicated | component/contract | add | fixture repo: division at one commit, a rename after it; asserts the mapped list, the union with an extra file list (dedup, order), and a `--wave` past the division rejected |
+| Shared `.diff` naming + skipped rewrite (EFF-2 fallout) | two manifests over the same list+range write two byte-identical patches, or a stale patch is served for a changed range | component/contract | add | the external + amended emit-manifest test asserts one `.diff` file (not `external.diff`) and a twin emit for the same list+range shares its basename |
+| Design-review `--full-files` excludes a listed draft from the snapshot diff (COR-3) | a `--full-files` draft that changed since the previous snapshot still gets a hunk, defeating "listed, no hunk" | component/contract | add | extends the D9e fixture: a changed draft passed via `--full-files` joins the manifest list but its diff carries none of its content |
+| Hook node choice once a wave has iterated (COR-6) | outside a review phase, the summary compares impl wave 2's fresh counter against design's and wrongly shows design's verdict | component | add | temp-repo hook run: before any wave iterates shows design's verdict, after a later wave iterates shows that wave's instead |
+| impl-review step 8 branch order + closed-wave `.late.md` placement (COR-2) | a closed wave's late-admitted finding is written into the closed wave's own dir (never reached again) or step 8's roster-met branch runs before an admitted late finding is checked | static | add | static contract on step 7a's closed-wave bullet (target dir, "joins step 8's unresolved set") and step 8's three-branch order (FAIL → unresolved findings → roster-met Otherwise) |
+| review-policy.md floor + return contract + division log entry (TST-1: AC-2/AC-3) | AC-2/AC-3 had no check at any level per code-style.md §17 | static | add | one contract pinning the per-wave floor citation, step 8's K<n/K=n routing, the `WAVE: <K>` return-contract literal, and the division decisions-log artefact bullet |
+| `MAX_REVIEW_WAVES` boundary (TST-3: AC-1) | the cap silently widens past "up to 3" while `cap >= 2` keeps passing | static | add | `assert.strictEqual(cap, 3)` plus a README `"up to 3"` cross-check |
+| review-policy.md floor + State-recovery readers of the per-wave counter (TST-2) | the `none` reason for wave-sequencing orchestration claimed a pinning test that didn't exist; the D3/D4 test title claimed floor/State-recovery coverage it didn't check | static | add | added floor-citation and State-recovery reviews-green/hook-reader assertions to the existing D3/D4 test; named the new TST-1 test in the `none` row below |
+| Four sandboxed-git fixtures + two hand-rolled CLI try/catch wrappers (EFF-4) | drifted fixtures (one missing `core.autocrlf=false`) and duplicated try/catch shapes | refactor, no new test | keep | extracted `sandboxGitRepo()` and `runtimeCliResult()`; all four git fixtures and the two JSON-CLI closures now share them — behavior unchanged, so the pre-existing tests are the regression proof |
+| Wave sequencing orchestration in `asd-phase-impl-review.md` (D5, D6) | the orchestrator advances or reopens waves wrongly | — | none | orchestration prose run by the main orchestrator, with no executable surface beyond the runtime commands tested above. TST-1 above is the pinning test its literals rely on. This sprint's own impl-review runs it live (plan Risks "Self-hosting bootstrap") |
 
 ## Removed tests
 
-| Test | Reason | In change scope |
-|---|---|---|
-| `tests/run.js:AC-1/6/sprint-012 AC-3: emit-manifest partitions a scope above SPLIT_THRESHOLD_FILES into ceil(files / threshold) disjoint near-even parts …` | implementation-coupled to a removed mechanism: split parts, `SPLIT_THRESHOLD_FILES`, `--halve`, `outOfPart` | no — pre-authorized, decisions-log.md 2026-09-24 (removed mechanism) |
-| `tests/run.js:sprint-015 AC-11: surface-check dispatches bounds the impl-review dispatches its bound implies …` | implementation-coupled to a removed mechanism: surface-check `dispatches` and `--test-plan-files` | no — pre-authorized, decisions-log.md 2026-09-24 (removed mechanism) |
-| assertions inside rewritten tests (AC-4/AC-11/AC-14 split bullet; sprint-012 AC-12 ORC-1 per-part predicates; CLI per-part/`--halve` files; symbol citers `SPLIT_THRESHOLD_FILES`/`DISPATCH_CEILING`; DOC-1 `.part-N` prefix; sprint-015 AC-4/AC-5 `--halve` parts; t_review-scope `base_ref`/`head_ref`/`exclude_paths`; prompt `exclude_paths[]` carve-out) | implementation-coupled to removed mechanisms; each test keeps its other assertions, updated to the new contract | no — pre-authorized, decisions-log.md 2026-09-24 (removed mechanism) |
+None this entry — every finding was a broken-on-purpose test to update (`code-style.md` §17), a coverage gap to fill, or a fixture refactor with the same assertions.
 
 ## Added tests
 
 | Test | Regression proof |
 |---|---|
-| `tests/run.js:sprint-017 AC-1 (D1/D2): review-waves counts one wave per WAVE_THRESHOLD_LINES begun …` | mutation `numstatLines` counts a rename at its source: `node tests/run.js` → exit 1, this test + the review-waves CLI test FAIL; mutation drop `MAX_REVIEW_WAVES` cap → exit 1, this test FAILs; mutation drop the unplaced-file check → exit 1, this test + CLI test FAIL |
-| `tests/run.js:sprint-017 AC-1 (D1/D2): review-waves measures a real git range over the scope list …` | same runs as above (rename-source and unplaced-file mutations) → exit 1, this test FAILs |
-| `tests/run.js:sprint-017 AC-4/AC-8 (D6/D9a-c): emit-manifest --full-files/--full-base joins the listed files …` | mutation `rangeOf` always returns the scope range: `node tests/run.js` → exit 1, this test FAILs; mutation External scope drops `wave` → exit 1, this test FAILs |
-| `tests/run.js:sprint-017 AC-8 (D9e): draft-snapshot copies each draft beside its snapshot …` | mutation `snapshotPatchInvocations` emits nothing: `node tests/run.js` → exit 1, this test FAILs |
-| `tests/run.js:sprint-017 AC-6 (D3/D10): SessionStart reads the current review wave's node …` | mutation hook sorts `iter-NN` keys lexically: `node tests/run.js` → exit 1, this test FAILs; mutation hook always reads `waves[0]` → exit 1, this test FAILs |
-| `tests/run.js:sprint-015 AC-4/AC-5 …` (added D9d assertion: test-plan path in Testing's `.diff`) | mutation diff written for the scope `files` instead of `manifest.files`: `node tests/run.js` → exit 1, this test FAILs |
-| `tests/run.js:sprint-017 AC-5/AC-7: no live canon, README, runtime or hook keeps a mechanism review waves replaced …` | n/a (static sweep, green on current canon) |
-| `tests/run.js:sprint-017 AC-1/AC-6 (D3/D4): the review wave and the impl-review iteration id are defined once …` | n/a (static contract) |
-| `tests/run.js:sprint-017 AC-8 (D8): review-policy.md "Scope hand-off" is the sole home …` | n/a (static contract) |
+| `tests/run.js:sprint-017 AC-1 (D1/D2): review-waves counts one wave per WAVE_THRESHOLD_LINES begun … at least one and at most min(MAX_REVIEW_WAVES, files) …` (updated for the file-count cap and the empty-scope acceptance) | mutation drop the file-count cap from `reviewWaveCount` → exit 1, this test FAILs; mutation drop `inScope.size > 0` from the empty-wave rejection → exit 1, this test FAILs |
+| `tests/run.js:sprint-017 AC-1/AC-4 (COR-5): wave-files reads wave K's list at its current paths …` | mutation drop the rename mapping (`return stringArray(...)` unmapped) → exit 1, this test FAILs |
+| `tests/run.js:sprint-017 AC-4/AC-8 (D6/D9a-c) …` (updated: derives the External `.diff` name from the CLI's own returned path instead of the literal `external.diff`; added a twin-emit shared-name assertion) | mutation append `Math.random()` into the fingerprint input → exit 1, the twin-name assertion FAILs |
+| `tests/run.js:sprint-017 AC-8 (D9e) …` (updated: `draft-snapshot --out`/`--previous` now take iteration dirs, no `snapshot.json`; added the COR-3 `--full-files` exclusion case) | mutation have `draftSnapshot` also write a `snapshot.json` → exit 1, this test + the EXT-1 test FAIL; mutation drop the `--full-files` exclusion filter in `writeManifestDiff` → exit 1, this test FAILs |
+| `tests/run.js:sprint-015 AC-2 (EXT-1) …` (updated: iteration dirs, no `snapshot.json`, asserts the `snapshot/` copies directly) | mutation have `draftSnapshot` also write a `snapshot.json` → exit 1, this test FAILs |
+| `tests/run.js:sprint-017 (COR-6): outside a review phase, SessionStart prefers the impl-review wave node …` | mutation drop the wave-iterated branch from `reviewNodeForPhase` (fall through to design's node) → exit 1, this test FAILs |
+| `tests/run.js:sprint-017 (COR-2): a closed wave's late-admitted finding lands in the CURRENT iteration's dir …` | mutation reword the closed-wave finding's step-8 mention → exit 1, this test FAILs |
+| `tests/run.js:sprint-017 TST-1 (AC-2/AC-3): review-policy.md pins the severity floor … the return contract carries WAVE: <K> …` | mutation drop `WAVE: <K> \|` from the return contract → exit 1, this test FAILs |
+| `tests/run.js:sprint-017 AC-1/AC-6 (D3/D4) …` (extended: floor citation + State-recovery reviews-green/hook-reader assertions, TST-2) | covered by the existing D3/D4 mutation set; the new assertions read literals already pinned there, no additional mutation needed |
 
-Mutations were applied one at a time to `.asd/runtime.js` or `.asd/hooks/session-start.js`, each restored by `cp` in the same command and byte-compared (`cmp`). Every mutated run also failed the `upstream_hashes` guard, and the hook ones the `sync.js --check` guard. Both are expected noise from editing a hashed file.
+Mutations were applied one at a time to `.asd/runtime.js`, `.asd/hooks/session-start.js` or `.asd/workflows/asd-phase-impl-review.md`, each restored by `cp`/`git checkout --` in the same command and byte-compared (`cmp`/`git diff --stat`). Every `runtime.js`/hook mutated run also failed the `upstream_hashes` guard (and the hook one the `sync.js --check` guard) — expected noise from editing a hashed file.
 
 ## Suite run
 
 - Command: `node tests/run.js`
 - Scope: full (safety valve, see Entry log)
-- Result: pass — `219/219 passed`, 0 failed, 0 skipped (exit 0). The runner has no skip state. Its one `(skipped: … only runs on win32 …)` line is a pre-existing in-test platform branch, not a skipped test.
-- Lint / build: pass — `git diff --cached --check` exit 0 on the staged change; `node .asd/sync.js --check` exit 0, `ok: true`, 72/72 items `current`
-- HEAD: 5b8ad95 — the working tree plus this entry's staged `tests/run.js` and this file, committed right after as the entry's test commit
+- Result: pass — `223/223 passed`, 0 failed, 0 skipped (exit 0). The runner has no skip state. Its one `(skipped: … only runs on win32 …)` line is a pre-existing in-test platform branch, not a skipped test.
+- Lint / build: pass — `git diff --cached --check` exit 0 on the staged change; `node .asd/sync.js --check` exit 0, `ok: true`
+- HEAD: a866c4c8b94c0ec9ea8f5f8f7e5139fd0df5ac50 — the working tree plus this entry's staged `tests/run.js`, `test-plan.md` and `test-plan.entry-01.md`, committed right after as the entry's test commit
 
 ## Defects
 
