@@ -599,15 +599,14 @@ function writeGitOutput(file, invocations) {
   }
 }
 
-/** Writes the diff of a manifest's file list into `dir` and returns its path: over the commit ranges in impl-review, against the previous snapshot in design-review, minus the drafts it leaves whole; null when there is nothing to diff against, as in design-review iteration 1. Named by the fingerprint of the git invocations producing it, so manifests sharing a list and range share one file, written once and never left half-written under that name. */
+/** Writes the diff of a manifest's file list into `dir` and returns its path: over the commit ranges in impl-review, against the previous snapshot in design-review, minus the drafts it leaves whole; null when there is nothing to diff against, as in design-review iteration 1. Named by the fingerprint of the git invocations producing it, so manifests sharing a list and range share one file; rewritten on every call, since those invocations name refs and paths rather than content and a reused directory may hold an older file under the same name, and renamed into place so it is never seen half-written. */
 function writeManifestDiff(dir, files, ranges, snapshot) {
   if (ranges === null && snapshot === null) return null;
   const invocations = ranges !== null ? rangePatchInvocations(ranges, files) : snapshotPatchInvocations(snapshot.dir, files.filter((file) => !snapshot.whole.has(file)));
   const diff = path.join(dir, `${fingerprint(invocations).slice(0, 16)}.diff`);
-  if (!fs.existsSync(diff)) {
-    writeGitOutput(`${diff}.tmp`, invocations);
-    fs.renameSync(`${diff}.tmp`, diff);
-  }
+  const partial = `${diff}.${process.pid}.tmp`;
+  writeGitOutput(partial, invocations);
+  fs.renameSync(partial, diff);
   return diff;
 }
 
