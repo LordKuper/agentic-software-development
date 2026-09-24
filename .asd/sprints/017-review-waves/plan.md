@@ -107,13 +107,13 @@ Material risk: artifact: hook must exit 0 and never throw on either state shape 
 
 ### Task 3: Rules — review waves, state shape, iteration id
 Material risk: change: workflow-gate and state-schema contract across rule docs (AC-1..AC-6, D1-D7, D10)
-- [ ] `sprint-lifecycle.md` "Review iteration counters":
+- [x] `sprint-lifecycle.md` "Review iteration counters":
   - define the review wave once (D1, D2, D7) and the impl-review iteration id (D4);
   - per-wave counter lifecycle and sequencing (D5);
   - per-iteration scope (D6);
   - rollback reset clearing `reviews.impl` and the division (D3);
   - legacy-shape fallback (D3).
-- [ ] `sprint-lifecycle.md` other sections:
+- [x] `sprint-lifecycle.md` other sections:
   - "Dispatch ceiling" paragraph removed (D7);
   - "APPROVE latch" per wave, with closed waves never re-dispatched (D6); availability-skip carve-out without the partial form (D7);
   - phase table impl-review row;
@@ -121,18 +121,18 @@ Material risk: change: workflow-gate and state-schema contract across rule docs 
   - "State recovery" per-wave reads, the partial token kept only as a legacy satisfied value (D7), fixing the stale pointers audit found at :64, :354, :357;
   - "PR phase" reviews-green over all waves (D10);
   - "Plan file format" Change surface declaration: the cap-override request no longer states a `dispatches` count (D7).
-- [ ] `review-policy.md`:
+- [x] `review-policy.md`:
   - "Iteration severity floor": `N` = the current wave's counter, with the cap per wave;
   - "Interrupted dispatch and split dispatch" becomes "Interrupted dispatch". Split trigger, Partition, Union property, One-fresh-dispatch-per-part and Part merge are removed; two consecutive interruptions escalate (D7). The internal-reviewer never-skipped/never-partial sentence stays;
   - "Late duplicate return": the closed-wave branch (D6);
   - interrupted/correlated literals in id form (D4);
   - "Coverage ledger": no part stamping or out-of-part text (D7);
   - "DoD per review phase": impl-review DoD = every wave's roster met plus the terminal suite; "Gate Verdict Format" and the DoD table drop the partial form (D7).
-- [ ] `checkpoints.md`: "Criterion cost surfacing" counts wave dirs plus legacy ones, with the fix-round tail in id form; the review-cap override is per wave (D4, D10).
-- [ ] `artifact-layout.md`: `reviews/impl/wave-<K>/iter-NN/…` and `reviews/impl/waves.json` in the path map, plus the legacy read, with the `.part-N` entries removed; the test-plan note in id form (D2, D4, D7).
-- [ ] `git-strategy.md`: the `ASD-Task: impl-review <id> suite` trailer (D4); finding-id prefix example without `.part-N` (D7).
-- [ ] `core.md` glossary: extend "Iteration" with "Review wave" in one line, pointing to `sprint-lifecycle.md`.
-- [ ] `t_state.json`: seed `reviews.impl` as `{ "wave": 1, "waves": [ { "iteration": 0, "verdicts": {}, "iteration_heads": {}, "latched": {} } ] }` (D3).
+- [x] `checkpoints.md`: "Criterion cost surfacing" counts wave dirs plus legacy ones, with the fix-round tail in id form; the review-cap override is per wave (D4, D10).
+- [x] `artifact-layout.md`: `reviews/impl/wave-<K>/iter-NN/…` and `reviews/impl/waves.json` in the path map, plus the legacy read, with the `.part-N` entries removed; the test-plan note in id form (D2, D4, D7).
+- [x] `git-strategy.md`: the `ASD-Task: impl-review <id> suite` trailer (D4); finding-id prefix example without `.part-N` (D7).
+- [x] `core.md` glossary: extend "Iteration" with "Review wave" in one line, pointing to `sprint-lifecycle.md`.
+- [x] `t_state.json`: seed `reviews.impl` as `{ "wave": 1, "waves": [ { "iteration": 0, "verdicts": {}, "iteration_heads": {}, "latched": {} } ] }` (D3).
 
 ### Task 4: Scope hand-off — single home and External Review alignment
 Material risk: change: public External Review scope-manifest contract and the reviewer payload contract (AC-8, D8, D9)
