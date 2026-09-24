@@ -36,3 +36,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 <!-- entries appended below this line -->
 
 - 2026-09-24 — route impl-test entry 4: critical, dispatch HEAD d2eedc4
+
+- 2026-09-24 — impl-test: impacted set green (full suite via safety valve, 224/224), 0/0 tests; decision none (existing COR-4 sweep + bijection test, fail-first re-proved against ace77e4^)
