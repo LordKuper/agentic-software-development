@@ -34,3 +34,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-09-24 — `.asd/sprints/017-review-waves/retrospective.html` written
+
+- **Decision**: Retro complete on the analysed-log branch. Four entries were analysed (F-1..F-4); F-2 and F-4 merged into one root cause. That gives 3 actions (1 consumer, 2 framework) and 4 systemic proposals (1 already covered by `asd-phase-scope.md` step 2). Nothing was applied or promoted.
+- **Rationale**: Retro produces proposals only. Promoting a guardrail is the user's decision.
+- **Affected docs**: retrospective.html
