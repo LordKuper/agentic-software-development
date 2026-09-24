@@ -136,14 +136,14 @@ Material risk: change: workflow-gate and state-schema contract across rule docs 
 
 ### Task 4: Scope hand-off — single home and External Review alignment
 Material risk: change: public External Review scope-manifest contract and the reviewer payload contract (AC-8, D8, D9)
-- [ ] `review-policy.md`: a new "Scope hand-off" section as the sole home (D8). Trim "Clean-context review iteration" to a link, and point the "Coverage ledger" `.diff` sentence and the "Reviewer responsibility" External row at it.
-- [ ] `external-review.md`:
+- [x] `review-policy.md`: a new "Scope hand-off" section as the sole home (D8). Trim "Clean-context review iteration" to a link, and point the "Coverage ledger" `.diff` sentence and the "Reviewer responsibility" External row at it.
+- [x] `external-review.md`:
   - "Phase-scoped payload" keeps only the External-specific manifest fields and the diff-file hand-off (D9a, D9b), linking to "Scope hand-off", with no self-computed diff;
   - "Iteration semantics": carried-over `Unreviewed files` via `--full-files` (D9c), plus wave-scoped carry-over and stalemate lookups in id form (D4);
   - "Batching" section removed; "Outcome contract" without partial or stopped-batch branches; "Unreviewed files" from skip only (D7).
-- [ ] `external-review/t_review-scope.json`, `t_prompt-external-impl.md`, `t_prompt-external-design.md`: the new fields. The prompts name the diff file as readable context despite its `.asd/sprints/**` location, and no longer grant `git diff`.
-- [ ] Agents `asd-external-review.md` (no "resolve files/commits yourself"; scope = list + diff; one invocation, no batches, no partial outcome) and the four `asd-reviewer-*.md` Inputs lines: link to "Scope hand-off" instead of restating it, and mention the design-review `.diff` from iteration 2.
-- [ ] Regenerate the provider views for every edited agent with `node "$(git rev-parse --show-toplevel)/.asd/sync.js" --apply <view paths>`.
+- [x] `external-review/t_review-scope.json`, `t_prompt-external-impl.md`, `t_prompt-external-design.md`: the new fields. The prompts name the diff file as readable context despite its `.asd/sprints/**` location, and no longer grant `git diff`.
+- [x] Agents `asd-external-review.md` (no "resolve files/commits yourself"; scope = list + diff; one invocation, no batches, no partial outcome) and the four `asd-reviewer-*.md` Inputs lines: link to "Scope hand-off" instead of restating it, and mention the design-review `.diff` from iteration 2.
+- [x] Regenerate the provider views for every edited agent with `node "$(git rev-parse --show-toplevel)/.asd/sync.js" --apply <view paths>`.
 
 ### Task 5: Workflows and sprint skill
 Material risk: change: phase orchestration for impl-review wave sequencing and design-review diff hand-off (AC-1..AC-4, AC-6, AC-8)
