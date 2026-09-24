@@ -667,6 +667,23 @@ function reviewWavesCommand(flags) {
   return measured;
 }
 
+/** Wave `k`'s list from a `waves.json` division, each path a later commit renamed mapped to its destination at `head` (renames over the division's `head...head`), so a file renamed after the division is reviewed under its current path. */
+function waveFiles(division, k, head) {
+  if (!division || typeof division !== 'object' || !Array.isArray(division.waves)) fail('waves.json must hold a waves array');
+  if (k > division.waves.length) fail(`--wave ${k} exceeds the ${division.waves.length} waves of the division`);
+  const moved = new Map([...rangeRenames(gitRef(division.head, 'waves.json head'), head)].map(([destination, rename]) => [rename.source, destination]));
+  return stringArray(division.waves[k - 1], `wave ${k}`).map((file) => moved.get(file) || file);
+}
+
+/** Writes a review wave's iteration-1 list: its current-path `waves.json` list unioned with the `--files` list, one path per line. */
+function waveFilesCommand(flags) {
+  if (typeof flags.waves !== 'string' || typeof flags.out !== 'string') fail('--waves <path> and --out <path> required');
+  const listed = waveFiles(JSON.parse(fs.readFileSync(flags.waves, 'utf8')), positiveInteger(flags.wave, '--wave'), gitRef(flags.head, '--head'));
+  const files = [...new Set(listed.concat(typeof flags.files === 'string' ? readFileList(flags.files) : []))];
+  fs.writeFileSync(flags.out, files.map((file) => `${file}\n`).join(''), 'utf8');
+  return { out: flags.out, files: files.length };
+}
+
 function parseFlagArgs(argv, booleanFlags) {
   const bools = booleanFlags || [];
   const out = {};
@@ -735,11 +752,15 @@ function main(argv) {
     process.stdout.write(JSON.stringify(reviewWavesCommand(flags)) + '\n');
     return 0;
   }
-  fail('usage: emit-manifest, manifest-digest, validate-ledger, external-preflight, external-record-failure, route-task, defect-stalemate, surface-check, draft-snapshot, or review-waves');
+  if (command === 'wave-files') {
+    process.stdout.write(JSON.stringify(waveFilesCommand(flags)) + '\n');
+    return 0;
+  }
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, external-preflight, external-record-failure, route-task, defect-stalemate, surface-check, draft-snapshot, review-waves, or wave-files');
 }
 
 if (require.main === module) {
   try { process.exitCode = main(process.argv); } catch (error) { process.stderr.write(`${error.message}\n`); process.exitCode = 2; }
 }
 
-module.exports = { AUDIT_BATCH_THRESHOLD_FILES, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, SURFACE_CAP_FILES, WAVE_THRESHOLD_LINES, buildInvocation, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, isTest, numstatLines, recordExternalFailure, reviewWaveCount, reviewerFiles, routeTask, surfaceCheck, validateCoverageLedger, validateWaveDivision, fingerprint };
+module.exports = { AUDIT_BATCH_THRESHOLD_FILES, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, SURFACE_CAP_FILES, WAVE_THRESHOLD_LINES, buildInvocation, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, isTest, numstatLines, recordExternalFailure, reviewWaveCount, reviewerFiles, routeTask, surfaceCheck, validateCoverageLedger, validateWaveDivision, waveFiles, fingerprint };
