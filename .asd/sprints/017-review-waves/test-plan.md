@@ -14,20 +14,19 @@ responsibility:
 | 1 | 8b0c28f58ee83940449709bfdba3a35814daf987 | full change surface |
 | 2 | a866c4c8b94c0ec9ea8f5f8f7e5139fd0df5ac50 | dev-chain review-fix delta since entry 1 (testing.md TST-1..TST-3, efficiency.md EFF-4, plus the dev-chain commits `8b0c28f..a866c4c` those findings' fixes touch) |
 | 3 | ee7333e334510ce3233afdcd7c7bf9d6837f7215 | delta since entry 2: `tests/run.js` (95aee62, review-fix tester chain) and `.claude/agent-memory/**` (COR-4 memory rewrites, 30f75c3 and e4dd2c0) |
+| 4 |  | delta since entry 3: `.claude/agent-memory/asd-reviewer-testing/**` (D-1/D-2 test-fix, ace77e4) |
 
-Impacted set: full suite (all entries). The safety valve fires. Entries 1-2 touched `.asd/runtime.js`, `.asd/hooks/session-start.js`, `.asd/release-manifest.json`, rule docs and workflows, and entry 3's delta touches `tests/run.js`, the runner itself. `commands.yaml` has no `test_affected`.
+Impacted set: full suite (all entries). The safety valve fires. Entries 1-2 touched `.asd/runtime.js`, `.asd/hooks/session-start.js`, `.asd/release-manifest.json`, rule docs and workflows, and entry 3's delta touches `tests/run.js`, the runner itself. `commands.yaml` has no `test_affected`. Entry 4's delta is memory only, but its search-derived set (the tests walking `.claude/agent-memory/**`) lives in the one test file `tests/run.js`, which the runner executes whole.
 
-Entry 2's `Risk → check decisions`, `Removed tests` and `Added tests` rows are rotated to `test-plan.entry-02.md`. Entry 1's are in `test-plan.entry-01.md` (`artifact-layout.md` "Test plan"). This entry's own rows follow.
+Entry 3's `Risk → check decisions`, `Removed tests` and `Added tests` rows are rotated to `test-plan.entry-03.md`. Entries 1-2 are in `test-plan.entry-01.md` and `test-plan.entry-02.md` (`artifact-layout.md` "Test plan"). This entry's own rows follow.
 
-Entry 3 pre-strategy run at `032357a`: `node tests/run.js` → exit 0, `223/223 passed`.
+Entry 4 pre-strategy run at `4a1520a`: `node tests/run.js` → exit 0, `224/224 passed`.
 
 ## Risk → check decisions
 
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
-| COR-4 memory rewrites under `.claude/agent-memory/{asd-external-review,asd-reviewer-correctness,asd-reviewer-documentation,asd-reviewer-efficiency}/` | memory is loaded on every dispatch, so a line that still describes split parts, `--halve`, the out-of-part predicate or `exclude_paths` as current reloads a false contract. This is a real risk: COR-4 found it, and one owner, `asd-reviewer-testing`, was missed. A later memory write can also bring it back | static | add | COR-4 is a fixed defect, so `code-style.md` §17 requires a regression check, and entry 2 had no COR-4 row. The AC-5 canon sweep does not reach memory. A second sweep over the memory dirs of every roster agent now uses the canon sweep's needle set, which is extracted into the shared `REPLACED_REVIEW_MECHANISMS`. Memory lines are allowed to say a mechanism is absent (e.g. "no `.part-N`"), so a term passes when a negation comes right before it in the same clause (40-char window) or the line says legacy. A negation word anywhere on the line would exempt too much. |
-| `tests/run.js` from 95aee62 (review-fix tester chain) | tests written outside impl-test's own pass (F-3) might lack their proof | — | none | Entry 2 (`test-plan.entry-02.md`) already analysed this commit and recorded a mutation proof for each added or updated test. The pre-strategy run is green at 223/223. The one gap found, no COR-4 row, is closed by the row above, so there is no re-analysis. |
-| `REPLACED_REVIEW_MECHANISMS` extraction in the AC-5 canon sweep | the canon sweep changes behaviour | refactor, no new test | keep | The canon sweep reads the same regexes from the constant. Its behaviour is unchanged, and it stays green before and after the extraction. |
+| D-1/D-2 fix (ace77e4) under `.claude/agent-memory/asd-reviewer-testing/`: split-part memory deleted, `--halve` anecdote and two other memories rewritten, `MEMORY.md` index updated | a split, part or `--halve` line survives or returns as live contract; the index loses or gains a line without its file | static | none | Existing checks already cover both risks, so no new test qualifies (`code-style.md` §17). The COR-4 memory sweep (entry 3) covers the first. Its fail-first proof against this fix: `git checkout ace77e4^ -- .claude/agent-memory/asd-reviewer-testing`, then `node tests/run.js` → exit 1, `223/224 passed`. The one FAIL is `sprint-017 AC-5/AC-7 (COR-4): no agent memory a dispatched agent loads names a review mechanism review waves replaced as live - only right after a negation in the same clause, or on a line naming it legacy`, with exactly D-1/D-2's 7 leftovers. The dir was restored in the same command (`git restore --source=HEAD --staged --worktree`, re-added file removed), and `git status --short` was empty afterwards. At ace77e4 and later the sweep is green (pre-strategy run above). The second risk is covered by the memory-index bijection test (`T-2/T-4/sprint-010 TST-01`), which caught the fix's own dropped `feedback_value-removal-sprints.md` index line before commit (decisions-log.009.md). |
 
 ## Removed tests
 
@@ -35,17 +34,15 @@ None this entry.
 
 ## Added tests
 
-| Test | Regression proof |
-|---|---|
-| `tests/run.js:sprint-017 AC-5/AC-7 (COR-4): no agent memory a dispatched agent loads names a review mechanism review waves replaced as live - only right after a negation in the same clause, or on a line naming it legacy` | Mutation: restore the pre-COR-4 text of the 11 memory files COR-4 rewrote (`git show a866c4c:<f> > <f>`), then run `node tests/run.js` → exit 1. This test FAILs with 23 leftovers, 16 more than the 7 at HEAD (D-1/D-2), and they span all four COR-4 owners' dirs. The files were restored in the same command with `git checkout -- <f>`, and `git status --short .claude/agent-memory` was empty afterwards. At HEAD the test is red only on D-1/D-2 |
+None this entry.
 
 ## Suite run
 
 - Command: `node tests/run.js`
 - Scope: full (safety valve, see Entry log)
-- Result: fail — `223/224 passed`, 1 failed, 0 skipped (exit 1). The only FAIL is the new COR-4 memory sweep, which fails on D-1/D-2. The runner has no skip state. Its one `(skipped: … only runs on win32 …)` line is a pre-existing in-test platform branch, not a skipped test.
+- Result: pass — `224/224 passed`, 0 failed, 0 skipped (exit 0). The runner has no skip state. Its one `(skipped: … only runs on win32 …)` line is a pre-existing in-test platform branch, not a skipped test.
 - Lint / build: pass — `git diff --cached --check` exit 0 on the staged change; `node .asd/sync.js --check` exit 0, `ok: true`
-- HEAD: 032357a8942863f6b8dd8f9d99e306257237f080 — the working tree plus this entry's staged `tests/run.js`, `test-plan.md`, `test-plan.entry-02.md` and `.claude/agent-memory/asd-tester/**`, committed right after as the entry's test commit
+- HEAD: 4a1520ad359f8196ac162f75e587c72e054368eb — the working tree plus this entry's staged `test-plan.md` and `test-plan.entry-03.md`, committed right after as the entry's test commit
 
 ## Defects
 
