@@ -102,8 +102,8 @@ Reachability: impl-review writes `waves.json` at first entry via `review-waves`;
 
 ### Task 2: Session-start hook reads per-wave state
 Material risk: artifact: hook must exit 0 and never throw on either state shape (D3, D10)
-- [ ] `reviewNodeForPhase`/`lastReviewVerdict` read `reviews.impl.waves[wave-1]` with the legacy flat-node fallback, and pick the highest `iter-NN` numerically.
-- [ ] The summary shows `wave K/n, iter N` when `waves.length > 1`, otherwise the unchanged single-wave text.
+- [x] `reviewNodeForPhase`/`lastReviewVerdict` read `reviews.impl.waves[wave-1]` with the legacy flat-node fallback, and pick the highest `iter-NN` numerically.
+- [x] The summary shows `wave K/n, iter N` when `waves.length > 1`, otherwise the unchanged single-wave text.
 
 ### Task 3: Rules — review waves, state shape, iteration id
 Material risk: change: workflow-gate and state-schema contract across rule docs (AC-1..AC-6, D1-D7, D10)
