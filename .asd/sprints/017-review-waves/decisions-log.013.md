@@ -34,4 +34,7 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
-- 2026-09-24 — External Review skipped for sprint 017-review-waves iteration wave-1/iter-03: external review unavailable: command-unavailable (same cause as F-1); efficiency latched (iter 2), not dispatched
+
+- 2026-09-24 — route impl-test entry 5: critical, dispatch HEAD a900281
+
+- 2026-09-24 — impl-test: impacted set green (full suite via safety valve, 225/225), 1 added (DOC-2) + DOC-1/COR-2 test extended, 0 removed; tester overrode brief on DOC-1/DOC-2 coverage with fail-first evidence (accepted)

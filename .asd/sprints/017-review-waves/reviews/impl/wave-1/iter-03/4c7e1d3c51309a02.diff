@@ -1,0 +1,213 @@
+diff --git a/.asd/sprints/017-review-waves/test-plan.entry-04.md b/.asd/sprints/017-review-waves/test-plan.entry-04.md
+new file mode 100644
+index 0000000..9d6bc9b
+--- /dev/null
++++ b/.asd/sprints/017-review-waves/test-plan.entry-04.md
+@@ -0,0 +1,21 @@
++# Test plan — entry 4 (rotated segment)
++
++Rotated from `test-plan.md` at entry 5's strategy pass (`artifact-layout.md` "Test plan" rotation). A cross-span reader reads this segment in ordinal order, then the live file.
++
++Carried from the live file's preamble; it records entry 4's pre-strategy run:
++
++Entry 4 pre-strategy run at `4a1520a`: `node tests/run.js` → exit 0, `224/224 passed`.
++
++## Risk → check decisions
++
++| Change | Material risk | Chosen check | Decision | Reason |
++|---|---|---|---|---|
++| D-1/D-2 fix (ace77e4) under `.claude/agent-memory/asd-reviewer-testing/`: split-part memory deleted, `--halve` anecdote and two other memories rewritten, `MEMORY.md` index updated | a split, part or `--halve` line survives or returns as live contract; the index loses or gains a line without its file | static | none | Existing checks already cover both risks, so no new test qualifies (`code-style.md` §17). The COR-4 memory sweep (entry 3) covers the first. Its fail-first proof against this fix: `git checkout ace77e4^ -- .claude/agent-memory/asd-reviewer-testing`, then `node tests/run.js` → exit 1, `223/224 passed`. The one FAIL is `sprint-017 AC-5/AC-7 (COR-4): no agent memory a dispatched agent loads names a review mechanism review waves replaced as live - only right after a negation in the same clause, or on a line naming it legacy`, with exactly D-1/D-2's 7 leftovers. The dir was restored in the same command (`git restore --source=HEAD --staged --worktree`, re-added file removed), and `git status --short` was empty afterwards. At ace77e4 and later the sweep is green (pre-strategy run above). The second risk is covered by the memory-index bijection test (`T-2/T-4/sprint-010 TST-01`), which caught the fix's own dropped `feedback_value-removal-sprints.md` index line before commit (decisions-log.009.md). |
++
++## Removed tests
++
++None this entry.
++
++## Added tests
++
++None this entry.
+diff --git a/.asd/sprints/017-review-waves/test-plan.md b/.asd/sprints/017-review-waves/test-plan.md
+index 7673805..6f288b1 100644
+--- a/.asd/sprints/017-review-waves/test-plan.md
++++ b/.asd/sprints/017-review-waves/test-plan.md
+@@ -15,34 +15,54 @@ responsibility:
+ | 2 | a866c4c8b94c0ec9ea8f5f8f7e5139fd0df5ac50 | dev-chain review-fix delta since entry 1 (testing.md TST-1..TST-3, efficiency.md EFF-4, plus the dev-chain commits `8b0c28f..a866c4c` those findings' fixes touch) |
+ | 3 | ee7333e334510ce3233afdcd7c7bf9d6837f7215 | delta since entry 2: `tests/run.js` (95aee62, review-fix tester chain) and `.claude/agent-memory/**` (COR-4 memory rewrites, 30f75c3 and e4dd2c0) |
+ | 4 | 734c215dc1329ad36b7e3f19a4ea33b469cdfa89 | delta since entry 3: `.claude/agent-memory/asd-reviewer-testing/**` (D-1/D-2 test-fix, ace77e4) |
++| 5 | a5f2a89ede60b16b5d27627c1738bc35161b989e | delta since entry 4: review-fix wave-1/iter-02 — `.asd/runtime.js` + `.asd/rules/review-policy.md` (COR-1, 3cada92), `.asd/workflows/asd-phase-impl-review.md` (DOC-1, 2d33b83), `.claude/agent-memory/asd-external-review/reference_codex-invocation.md` (DOC-2, c4a9c15), `.asd/release-manifest.json` (hashes), `tests/run.js` (review-fix tester chain, f580744) |
+ 
+-Impacted set: full suite (all entries). The safety valve fires. Entries 1-2 touched `.asd/runtime.js`, `.asd/hooks/session-start.js`, `.asd/release-manifest.json`, rule docs and workflows, and entry 3's delta touches `tests/run.js`, the runner itself. `commands.yaml` has no `test_affected`. Entry 4's delta is memory only, but its search-derived set (the tests walking `.claude/agent-memory/**`) lives in the one test file `tests/run.js`, which the runner executes whole.
++Impacted set: full suite (all entries). The safety valve fires. Entries 1-2 touched `.asd/runtime.js`, `.asd/hooks/session-start.js`, `.asd/release-manifest.json`, rule docs and workflows, and entry 3's delta touches `tests/run.js`, the runner itself. `commands.yaml` has no `test_affected`. Entry 4's delta is memory only, but its search-derived set (the tests walking `.claude/agent-memory/**`) lives in the one test file `tests/run.js`, which the runner executes whole. Entry 5's delta touches `.asd/runtime.js`, `.asd/release-manifest.json` and `tests/run.js` again.
+ 
+-Entry 3's `Risk → check decisions`, `Removed tests` and `Added tests` rows are rotated to `test-plan.entry-03.md`. Entries 1-2 are in `test-plan.entry-01.md` and `test-plan.entry-02.md` (`artifact-layout.md` "Test plan"). This entry's own rows follow.
++Entry 4's `Risk → check decisions`, `Removed tests` and `Added tests` rows are rotated to `test-plan.entry-04.md`. Entries 1-3 are in `test-plan.entry-01.md` to `test-plan.entry-03.md` (`artifact-layout.md` "Test plan"). This entry's own rows follow. The COR-1 and TST-1..TST-3 rows were written by the review-fix tester chain (f580744) against this same delta; entry 5 adopts them and adds the DOC-1/DOC-2/COR-1 pid-temp/manifest rows.
+ 
+-Entry 4 pre-strategy run at `4a1520a`: `node tests/run.js` → exit 0, `224/224 passed`.
++Entry 5 pre-strategy run at `15dfbe0`: `node tests/run.js` → exit 0, `224/224 passed`.
+ 
+ ## Risk → check decisions
+ 
+ | Change | Material risk | Chosen check | Decision | Reason |
+ |---|---|---|---|---|
+-| D-1/D-2 fix (ace77e4) under `.claude/agent-memory/asd-reviewer-testing/`: split-part memory deleted, `--halve` anecdote and two other memories rewritten, `MEMORY.md` index updated | a split, part or `--halve` line survives or returns as live contract; the index loses or gains a line without its file | static | none | Existing checks already cover both risks, so no new test qualifies (`code-style.md` §17). The COR-4 memory sweep (entry 3) covers the first. Its fail-first proof against this fix: `git checkout ace77e4^ -- .claude/agent-memory/asd-reviewer-testing`, then `node tests/run.js` → exit 1, `223/224 passed`. The one FAIL is `sprint-017 AC-5/AC-7 (COR-4): no agent memory a dispatched agent loads names a review mechanism review waves replaced as live - only right after a negation in the same clause, or on a line naming it legacy`, with exactly D-1/D-2's 7 leftovers. The dir was restored in the same command (`git restore --source=HEAD --staged --worktree`, re-added file removed), and `git status --short` was empty afterwards. At ace77e4 and later the sweep is green (pre-strategy run above). The second risk is covered by the memory-index bijection test (`T-2/T-4/sprint-010 TST-01`), which caught the fix's own dropped `feedback_value-removal-sprints.md` index line before commit (decisions-log.009.md). |
++| COR-1 fix (3cada92) `writeManifestDiff` rewrites its fingerprint-named `.diff` via `.tmp` + rename on every emit, no `existsSync` short-circuit | a reused iteration dir (rollback reset, or a moved impl-review `--base` ref) serves the pre-fix stale `.diff` to every reviewer | unit | add | the D9e test now re-emits into the SAME design-review iteration dir with the same list and `--snapshot` after the draft changed again, and asserts the `.diff` (same fingerprinted path) carries the new revision, not the first |
++| TST-1: two differing lists (or ranges) into one shared impl-review out dir could collide on the fingerprint, or the diff-absence check at iteration 1 could no longer fail | a mutation dropping paths (or range) from the fingerprint survives undetected; `documentation.diff`'s literal-name absence check is vacuous now that diffs are fingerprint-named | unit | add | new block in the D6/D9a-c test: correctness and testing (`--test-plan`) emit differing lists into one shared out dir → two distinct `.diff` paths, each carrying only its own list's header, re-emitting the same list+range adds no third file; D9e's iteration-1 check replaced with `fs.readdirSync(iterDir(1)).filter(.diff)` deep-equal `[]` |
++| TST-2: the COR-1 file-count cap axis was pinned only at hardcoded `[7000, 2, 2]`, vacuous once `WAVE_THRESHOLD_LINES` is tuned; single-file edge case untested | the cap silently loses coverage as soon as the threshold changes, and a single-file scope's cap-to-1 case has no check | unit | add | replaced `[7000, 2, 2]` with `[2 * threshold + 1, 2, 2]` (derived from the tunable) and added `[threshold + 1, 1, 1]` |
++| COR-1 (3cada92): the partial file is now `<diff>.<pid>.tmp` rather than one shared `<diff>.tmp` | two concurrent `emit-manifest` runs sharing a list and range interleave writes into one temp file, and a reader sees a half-written `.diff` | — | none | Only a real race exercises it, and a race is not deterministically reproducible (`code-style.md` §17 bars flaky and timing-based tests). The observable contract, a complete `.diff` with current content under the fingerprinted name after every emit, is already asserted by D9e (COR-1 row above) and by every `.diff` read in D6/D9a-c; a dropped rename leaves no `.diff` and fails those reads. |
++| DOC-1 fix (2d33b83): impl-review "Artefacts produced" `.late.md` line now cites `review-policy.md` "Late duplicate return" instead of restating "in the replaced dispatch's iteration dir" | the line gives a second, contradicting location for a closed wave's late return, so an orchestrator writing from the list puts the file where review-fix never reads it | static | add | Fixed defect, so `code-style.md` §17 requires a fail-first regression check. The existing `.late.md` assertion (`tests/run.js`, late-duplicate reach test) only checks the path is listed and stayed green against the pre-fix file (`git show 2d33b83^:.asd/workflows/asd-phase-impl-review.md` swapped in → exit 1, `223/224 passed`, the only FAIL being the `upstream_hashes` guard). Added to the COR-2 test, which already pins step 7a's closed-wave location: the artefact line must cite the SSoT and name no iteration dir itself. |
++| DOC-2 fix (c4a9c15): External Review memory drops the "Iteration 2+ diff base" clause, which named wave K's node `reviews.impl.waves[K]` | memory is reloaded on every dispatch, so a 1-based-K node named `waves[K]` points the reader at the next wave's iteration, heads, verdicts and latches; the same notation can reappear in any canon or memory line | static | add | Fixed defect with a concrete, pinnable false fact. The COR-4 memory sweep's needles are removed mechanisms, not index notation, and it stayed green against the pre-fix memory (`git show c4a9c15^:<file>` swapped in → exit 0, `224/224 passed`). New sweep over canon Markdown, README and every roster agent's memory for `waves[K]`, anchored on `sprint-lifecycle.md` "Review iteration counters" defining `waves[K-1]`. The clause's other half (a diff base the wrapped CLI never computes) has no invariant beyond "Scope hand-off"'s no-git rule, so no further check. |
++| `.asd/release-manifest.json` hash updates for the three edited hashed files | a stale hash | static | none | The existing `upstream_hashes` guard covers it and is green at HEAD; it fired as expected on every swap/mutation run this entry. |
++| TST-3: the TST-1 static test duplicated the D3/D4 test's two severity-floor regexes, and D3/D4 is a strict superset | duplicate assertions drift independently and both need updating on any future floor-wording change (`code-style.md` §17) | static | remove | deleted the two duplicate lines from the TST-1 test; TST-1's title trimmed to drop the floor/cap clause it no longer asserts (D3/D4 keeps it) |
+ 
+ ## Removed tests
+ 
+-None this entry.
++| Test | Reason |
++|---|---|
++| TST-1 static test's two severity-floor regex assertions (`or in impl-review the current review wave's counter`, `User may override the cap (per wave in impl-review)`) | strict duplicate of the D3/D4 test's own assertions on the same `floor` text — the sole home per `code-style.md` §17; in-scope (`testing.md` TST-3), no approval needed |
++
++Correction to `test-plan.entry-02.md`'s TST-1 row (`Added tests`, the `sprint-017 TST-1 (AC-2/AC-3) …` line): that row's test title and reason no longer match the test after this round's TST-3 fix (the floor/cap pin moved to D3/D4 alone; TST-1's own title is trimmed to `AC-2/AC-3): impl-review step 8 sends K<n …`, dropping the floor/cap clause). `test-plan.entry-02.md` is a closed rotated segment and stays unedited (`artifact-layout.md` "Test plan"); this row is the correction of record.
+ 
+ ## Added tests
+ 
+-None this entry.
++| Test | Regression proof |
++|---|---|
++| `tests/run.js:sprint-017 AC-8 (D9e) …` (COR-1: added a second same-dir, same-list, same-`--snapshot` emit after the draft changed again) | fail-first against pre-fix `.asd/runtime.js` (`git show 3cada92^:.asd/runtime.js` swapped in): `node tests/run.js` → exit 1, `222/224 passed`, FAIL `sprint-017 AC-8 (D9e) …` on the new COR-1 assertion at `tests/run.js:5406`. Restored via `cp` from a pre-swap backup, `cmp` byte-verified clean, `git status --short` showed only the intended `tests/run.js` test edit. Post-fix: green (Suite run below). Entry 5 re-ran the same swap at `15dfbe0` with this entry's tests added: exit 1, `223/225 passed`, FAILs `sprint-017 AC-8 (D9e) …` and the `upstream_hashes` guard; restored by `cp` in the same command, `cmp` clean. |
++| `tests/run.js:sprint-017 AC-4/AC-8 (D6/D9a-c) …` (TST-1: shared-out-dir differing-lists block; D9e's iteration-1 vacuous check replaced) | mutation `fingerprint(invocations)` → `fingerprint(ranges)` at `.asd/runtime.js:606` (drops the file list from the fingerprint) → exit 1, `222/224 passed`, FAIL `sprint-017 AC-4/AC-8 (D6/D9a-c) …` at `tests/run.js:5219` (`1 !== 2` — the two differing lists collided onto one `.diff`). Restored via `cp` from a pre-mutation backup, `cmp` byte-verified clean. |
++| `tests/run.js:sprint-017 AC-1 (D1/D2) …` (TST-2: `[2 * threshold + 1, 2, 2]`, `[threshold + 1, 1, 1]`) | derived directly from `runtime.WAVE_THRESHOLD_LINES`/`MAX_REVIEW_WAVES`, so the axis stays a real mutation proof at any tuned threshold; covered by the existing per-case `assert.strictEqual` in the loop, no separate mutation needed beyond that loop's own. Entry 5 mutation proof: `Math.min(MAX_REVIEW_WAVES, Math.max(1, files), …)` → `Math.min(MAX_REVIEW_WAVES, …)` in `reviewWaveCount` (drops the file-count cap) → `node tests/run.js` exit 1, `223/225 passed`, FAIL `sprint-017 AC-1 (D1/D2) …` with `6001 changed lines over 2 files` (the new `[2 * threshold + 1, 2, 2]` row), plus the `upstream_hashes` guard; restored by `cp` in the same command, `cmp` clean. |
++| `tests/run.js:sprint-017 (COR-2/DOC-1) …` (DOC-1: the impl-review `Artefacts produced` `.late.md` line must cite `review-policy.md` "Late duplicate return" and name no iteration dir itself; title extended) | fail-first against pre-fix `.asd/workflows/asd-phase-impl-review.md` (`git show 2d33b83^:.asd/workflows/asd-phase-impl-review.md` swapped in): `node tests/run.js` → exit 1, `223/225 passed`, FAIL `sprint-017 (COR-2/DOC-1): a closed wave's late-admitted finding lands in the CURRENT iteration's dir …`, plus the `upstream_hashes` guard. Restored by `cp` in the same command, `cmp` clean. |
++| `tests/run.js:sprint-017 (DOC-2): review wave K is 1-based and its state node is reviews.impl.waves[K-1] - no canon, README or agent memory a dispatched agent loads indexes it as waves[K]` | fail-first against the pre-fix memory (`git show c4a9c15^:.claude/agent-memory/asd-external-review/reference_codex-invocation.md` swapped in): `node tests/run.js` → exit 1, `224/225 passed`, the one FAIL being this test, reporting `.claude/agent-memory/asd-external-review/reference_codex-invocation.md:22`. Restored by `cp` in the same command, `cmp` clean, `git status --short` showed only `tests/run.js`. Refactor alongside: the roster memory-file walk moved out of the COR-4 sweep into the shared `rosterMemoryFiles()` helper both tests use; COR-4 stays green. |
++
++Mutations were applied one at a time to `.asd/runtime.js` (entry 5 also to `.asd/workflows/asd-phase-impl-review.md` and the External Review memory), each restored by `cp` from a pre-mutation backup in the same command sequence and byte-compared (`cmp`). The `.asd/runtime.js` swap/mutation runs also failed the `upstream_hashes`/`sync.js --check` guards — expected noise from editing a hashed file, per the entry-3 note this segment inherits.
+ 
+ ## Suite run
+ 
+ - Command: `node tests/run.js`
+ - Scope: full (safety valve, see Entry log)
+-- Result: pass — `224/224 passed`, 0 failed, 0 skipped (exit 0). The runner has no skip state. Its one `(skipped: … only runs on win32 …)` line is a pre-existing in-test platform branch, not a skipped test.
+-- Lint / build: pass — `git diff --cached --check` exit 0 on the staged change; `node .asd/sync.js --check` exit 0, `ok: true`
+-- HEAD: 4a1520ad359f8196ac162f75e587c72e054368eb — the working tree plus this entry's staged `test-plan.md` and `test-plan.entry-03.md`, committed right after as the entry's test commit
++- Result: pass — `225/225 passed`, 0 failed, 0 skipped (exit 0). The runner has no skip state. Its one `(skipped: … only runs on win32 …)` line is a pre-existing in-test platform branch, not a skipped test.
++- Lint / build: pass — `git diff --cached --check` exit 0 on the staged change (`tests/run.js`, `test-plan.md`, `test-plan.entry-04.md`); `node .asd/sync.js --check` exit 0, `ok: true`
++- HEAD: 15dfbe08aca4389963617a11ee15c80297bd6454 plus this entry's staged `tests/run.js`, committed right after as this entry's test commit
+ 
+ ## Defects
+ 
+diff --git a/tests/run.js b/tests/run.js
+index 279b9cf..73bb9f7 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -3094,7 +3094,7 @@ test('sprint-017 AC-1 (D1/D2): review-waves counts one wave per WAVE_THRESHOLD_L
+   for (const [lines, files, expected] of [
+     [0, 0, 1], [0, 10, 1], [1, 10, 1], [threshold, 10, 1], [threshold + 1, 10, 2], [2 * threshold, 10, 2],
+     [2 * threshold + 1, 10, Math.min(3, cap)], [cap * threshold + 1, 10, cap], [100 * threshold, 10, cap],
+-    [7000, 2, 2],
++    [2 * threshold + 1, 2, 2], [threshold + 1, 1, 1],
+   ]) {
+     assert.strictEqual(runtime.reviewWaveCount(lines, files), expected, `${lines} changed lines over ${files} files: one wave per ${threshold} lines begun, at least 1, at most min(${cap}, files)`);
+   }
+@@ -5211,6 +5211,18 @@ test('sprint-017 AC-4/AC-8 (D6/D9a-c): emit-manifest --full-files/--full-base jo
+   const twinDiffName = path.basename(twin.result.diff);
+   assert.strictEqual(twinDiffName, path.basename(joined.result.diff), 'EFF-2: two manifests sharing the same file list and ranges share the identically fingerprinted .diff name, so a shared file+range never writes a duplicate byte-identical patch');
+ 
++  const sharedOut = fs.mkdtempSync(path.join(work, 'shared-'));
++  const emitInto = (reviewer, files, extra) => runtimeCliResult(['emit-manifest', '--reviewer', reviewer, '--files', list(files), '--out', sharedOut, ...extra], { cwd: repo, env });
++  const diffsOf = () => fs.readdirSync(sharedOut).filter((name) => name.endsWith('.diff'));
++  const correctnessShared = emitInto('correctness', ['src/current.js'], range);
++  const testingShared = emitInto('testing', ['src/current.js'], [...range, '--test-plan', 'src/earlier.js']);
++  assert.strictEqual(diffsOf().length, 2, 'TST-1: two reviewers with differing lists over one shared out dir write two distinct .diff files, never a shared or skipped one');
++  assert.notStrictEqual(path.basename(correctnessShared.result.diff), path.basename(testingShared.result.diff), 'TST-1: differing lists must fingerprint to different names');
++  assert.ok(hunkOf(patch(correctnessShared.result.diff), 'src/current.js').length === 1 && hunkOf(patch(correctnessShared.result.diff), 'src/earlier.js').length === 0, 'TST-1: correctness\'s .diff carries only its own list\'s headers');
++  assert.ok(hunkOf(patch(testingShared.result.diff), 'src/earlier.js').length === 1 && hunkOf(patch(testingShared.result.diff), 'src/current.js').length === 0, 'TST-1: testing\'s .diff (narrowed by --test-plan) carries only its own list\'s headers, none of correctness\'s');
++  emitInto('correctness', ['src/current.js'], range);
++  assert.strictEqual(diffsOf().length, 2, 'TST-1: re-emitting the same list and range into the shared dir must not add a second .diff');
++
+   const designExternal = cli(runtime.EXTERNAL_REVIEWER, ['s/design/prd.html'], ['--phase', 'design-review', '--iteration', '1']);
+   const designScope = JSON.parse(fs.readFileSync(path.join(designExternal.out, 'external.scope.json'), 'utf8'));
+   assert.deepStrictEqual(designScope, { phase: 'design-review', iteration: 1, files: ['s/design/prd.html'], diff: null }, 'D9b/D9e: design-review has no waves and, at iteration 1, no diff - the field travels null rather than pointing at a file that was never written');
+@@ -5374,7 +5386,7 @@ test('sprint-017 AC-8 (D9e): draft-snapshot copies each draft beside its snapsho
+   assert.deepStrictEqual(copies.map((copy) => fs.readFileSync(copy, 'utf8')), drafts.map((file) => fs.readFileSync(file, 'utf8')), 'each draft is copied under <iter dir>/snapshot/, so the next iteration has content to diff against, not only a hash');
+   const first = emit('documentation', 1, drafts);
+   assert.deepStrictEqual(Object.keys(first).sort(), ['digest', 'manifest'], 'iteration 1 has no --snapshot and writes no .diff - the drafts are wholly new and a diff would only duplicate them');
+-  assert.ok(!fs.existsSync(path.join(iterDir(1), 'documentation.diff')), 'no stray .diff at iteration 1');
++  assert.deepStrictEqual(fs.readdirSync(iterDir(1)).filter((name) => name.endsWith('.diff')), [], 'TST-1: no .diff of any name at iteration 1 - diffs are fingerprint-named now, so a check for the literal documentation.diff can no longer fail');
+ 
+   fs.writeFileSync(drafts[0], 'draft 0 line 1\ndraft 0 revised\n', 'utf8');
+   const added = path.join(root, 'design', 'ux-spec.html');
+@@ -5387,6 +5399,12 @@ test('sprint-017 AC-8 (D9e): draft-snapshot copies each draft beside its snapsho
+   const external = emit(runtime.EXTERNAL_REVIEWER, 2, [drafts[0]], ['--iteration', '2', '--snapshot', iterDir(1)]);
+   assert.ok(external.diff && fs.readFileSync(external.diff, 'utf8').includes('+draft 0 revised'), 'External Review gets the same snapshot diff for its list');
+ 
++  fs.writeFileSync(drafts[0], 'draft 0 line 1\ndraft 0 revised again\n', 'utf8');
++  const secondAgain = emit('documentation', 2, [drafts[0], added], ['--snapshot', iterDir(1)]);
++  assert.strictEqual(secondAgain.diff, second.diff, 'sanity: the same list and --snapshot dir must still fingerprint to the same .diff path');
++  const patchAgain = fs.readFileSync(secondAgain.diff, 'utf8');
++  assert.ok(patchAgain.includes('+draft 0 revised again') && !patchAgain.includes('+draft 0 revised\n'), 'COR-1: a second emit into the same iteration dir with the same list and --snapshot, after the draft changed again, must rewrite the .diff with the new content - a stale existsSync-skipped file would still read the first revision');
++
+   const cor3Dir = path.join(root, 'reviews/design/iter-cor3');
+   fs.mkdirSync(cor3Dir, { recursive: true });
+   const cor3 = JSON.parse(runtimeCli(['emit-manifest', '--reviewer', 'documentation', '--phase', 'design-review', '--files', list('scope-cor3.txt', [added]), '--out', cor3Dir, '--snapshot', iterDir(1), '--full-files', list('full-cor3.txt', [drafts[0]])], { stdio: 'pipe' }));
+@@ -5476,16 +5494,30 @@ test('sprint-017 AC-5/AC-7: no live canon, README, runtime or hook keeps a mecha
+   assert.ok(partialLegacy && /satisfied for its iteration, never latched/.test(partialLegacy), 'D7/AC-6: a partial already recorded in an in-flight sprint must still read as satisfied, never latched, under backward_compat: migration');
+ });
+ 
+-test('sprint-017 AC-5/AC-7 (COR-4): no agent memory a dispatched agent loads names a review mechanism review waves replaced as live - only right after a negation in the same clause, or on a line naming it legacy', () => {
++const AGENT_MEMORY_ROOT = '.claude/agent-memory';
++
++/** Every memory file a dispatched roster agent loads: the `.md` files under `.claude/agent-memory/<agent>/`, for each agent `.claude/agents/` defines. */
++function rosterMemoryFiles() {
+   const roster = fs.readdirSync(path.join(REPO_ROOT, '.claude/agents')).filter((name) => name.endsWith('.md')).map((name) => name.slice(0, -3));
+-  const memoryRoot = '.claude/agent-memory';
+-  const files = fs.readdirSync(path.join(REPO_ROOT, memoryRoot)).filter((dir) => roster.includes(dir)).flatMap((dir) => fs.readdirSync(path.join(REPO_ROOT, memoryRoot, dir)).filter((name) => name.endsWith('.md')).map((name) => `${memoryRoot}/${dir}/${name}`));
++  return fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT)).filter((dir) => roster.includes(dir)).flatMap((dir) => fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT, dir)).filter((name) => name.endsWith('.md')).map((name) => `${AGENT_MEMORY_ROOT}/${dir}/${name}`));
++}
++
++test('sprint-017 AC-5/AC-7 (COR-4): no agent memory a dispatched agent loads names a review mechanism review waves replaced as live - only right after a negation in the same clause, or on a line naming it legacy', () => {
++  const memoryRoot = AGENT_MEMORY_ROOT;
++  const files = rosterMemoryFiles();
+   assert.ok(files.some((rel) => rel.startsWith(`${memoryRoot}/asd-reviewer-`)) && files.some((rel) => rel.startsWith(`${memoryRoot}/asd-external-review/`)), 'sanity: the sweep must reach the reviewer and External Review memories COR-4 found stale');
+   const negated = (line, at) => /\b(?:no|never|not|without|removed|retired|superseded)\b/i.test(line.slice(Math.max(0, at - 40), at).split(/[.;]\s|—/).pop());
+   const leftovers = files.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => (/\blegacy\b/i.test(line) ? [] : REPLACED_REVIEW_MECHANISMS.flatMap((needle) => [...line.matchAll(new RegExp(needle.source, `${needle.flags}g`))].filter((match) => !negated(line, match.index)).map((match) => `${rel}:${index + 1} ${match[0]}`)))));
+   assert.deepStrictEqual(leftovers, [], 'COR-4/AC-7: agent memory is loaded on every dispatch, so a line describing a removed split, part or External batch as current contract reloads a false contract that "Scope hand-off" and the wave state contradict. A memory may name one only as absent ("no .part-N") or legacy; its owner rewrites or deletes the rest');
+ });
+ 
++test('sprint-017 (DOC-2): review wave K is 1-based and its state node is reviews.impl.waves[K-1] - no canon, README or agent memory a dispatched agent loads indexes it as waves[K]', () => {
++  assert.ok(sectionOf('.asd/rules/sprint-lifecycle.md', 'Review iteration counters').includes('`reviews.impl.waves[K-1].iteration`'), 'sanity: sprint-lifecycle.md "Review iteration counters" is the source defining wave K\'s node as waves[K-1]');
++  const files = [...canonMarkdownFiles(), 'README.md', ...rosterMemoryFiles()];
++  const offByOne = files.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => (/\bwaves\[K\]/.test(line) ? [`${rel}:${index + 1}`] : [])));
++  assert.deepStrictEqual(offByOne, [], 'DOC-2: waves[K] names wave K+1\'s node (or none, for the last wave), so a line reading it as wave K\'s iteration, heads, verdicts or latches points the reader at the wrong wave - and a memory line is reloaded on every dispatch');
++});
++
+ test('sprint-017 AC-1/AC-6 (D3/D4): the review wave and the impl-review iteration id are defined once in sprint-lifecycle.md "Review iteration counters", t_state.json seeds reviews.impl as one wave node of exactly the fields that definition names, and every reader of the counter - review-policy.md\'s severity floor and sprint-lifecycle.md\'s State-recovery readers included - uses the per-wave form', () => {
+   const counters = sectionOf('.asd/rules/sprint-lifecycle.md', 'Review iteration counters');
+   const definition = counters.split('\n').find((line) => line.startsWith('**Review wave**'));
+@@ -5525,11 +5557,7 @@ test('sprint-017 AC-1/AC-6 (D3/D4): the review wave and the impl-review iteratio
+   assert.ok(/reads only `verdicts\["iter-NN"\]` for the relevant review node \(impl-review: the current wave's, legacy shape included\)/.test(readRepoFile('.asd/rules/sprint-lifecycle.md')), 'TST-2: the hook\'s display-only State-recovery reader must also read the current wave\'s node, legacy shape included');
+ });
+ 
+-test('sprint-017 TST-1 (AC-2/AC-3): review-policy.md pins the severity floor to the current wave counter with a per-wave cap, impl-review step 8 sends K<n straight to wave K+1\'s iteration 1 in the same entry with no impl/impl-test between and K=n to the terminal suite, the return contract carries WAVE: <K>, and a division into n > 1 waves leaves its own decisions-log artefact', () => {
+-  const floor = sectionOf('.asd/rules/review-policy.md', 'Iteration severity floor');
+-  assert.ok(/or in impl-review the current review wave's counter/.test(floor), 'AC-2/AC-3: the floor must be keyed on the current wave\'s counter, not one flat count for the whole phase');
+-  assert.ok(/User may override the cap \(per wave in impl-review\)/.test(floor), 'AC-2/AC-3: the iteration cap is per wave, so overriding one wave\'s cap must not raise or reset another\'s');
+-
++test('sprint-017 TST-1 (AC-2/AC-3): impl-review step 8 sends K<n straight to wave K+1\'s iteration 1 in the same entry with no impl/impl-test between and K=n to the terminal suite, the return contract carries WAVE: <K>, and a division into n > 1 waves leaves its own decisions-log artefact', () => {
+   const step8 = stepOf(canonText('.asd/workflows/asd-phase-impl-review.md'), 8);
+   assert.ok(/K < n .*wave K\+1.*same entry, no `impl`\/`impl-test` between/.test(step8), 'AC-2/AC-3: an unmet wave under n must advance straight to the next wave\'s iteration 1 in the same entry - cycling through impl/impl-test between waves would silently re-run test-fix machinery no finding asked for');
+   assert.ok(/K = n .*reviewer DoD met.*proceed to step 9/.test(step8), 'AC-2/AC-3: only the roster-met last wave may reach the terminal full-suite gate');
+@@ -5541,13 +5569,15 @@ test('sprint-017 TST-1 (AC-2/AC-3): review-policy.md pins the severity floor to
+   assert.ok(artefacts.split('\n').some((line) => /decisions-log entry on a division into n > 1 waves/.test(line)), 'AC-1: a division into more than one wave must leave a decisions-log artefact naming it, or a resumed session cannot tell whether the scope was ever divided');
+ });
+ 
+-test('sprint-017 (COR-2): a closed wave\'s late-admitted finding lands in the CURRENT iteration\'s dir (never the closed wave\'s), joins step 8\'s unresolved set, and step 8 checks for it before the roster-met "Otherwise" branch', () => {
++test('sprint-017 (COR-2/DOC-1): a closed wave\'s late-admitted finding lands in the CURRENT iteration\'s dir (never the closed wave\'s), joins step 8\'s unresolved set, step 8 checks for it before the roster-met "Otherwise" branch, and the Artefacts produced line defers that location to review-policy.md instead of restating one', () => {
+   const reviewFlow = canonText('.asd/workflows/asd-phase-impl-review.md');
+   const step7a = stepOf(reviewFlow, '7a');
+   const closedWaveLine = step7a.split('\n').find((line) => line.includes('for a closed wave'));
+   assert.ok(closedWaveLine, 'COR-2: step 7a must state a closed-wave branch for a late duplicate return - otherwise a late admission after the wave advanced has nowhere defined to land');
+   assert.ok(/its `\.late\.md` goes to this iteration's `<sprint>\/reviews\/impl\/<id>\/` instead/.test(closedWaveLine), 'COR-2: a closed wave\'s late.md must land in the CURRENT iteration\'s dir, not the closed wave\'s own dir - the closed wave is never reopened or re-dispatched');
+   assert.ok(/its finding joins step 8's unresolved set/.test(closedWaveLine), 'COR-2: the closed-wave finding must reach step 8\'s routing, or an admitted FAIL/CONCERNS from a closed wave is silently dropped');
++  const lateArtefact = sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Artefacts produced').split('\n').find((line) => line.includes('<reviewer>.late.md'));
++  assert.ok(lateArtefact && lateArtefact.includes('per `review-policy.md` "Late duplicate return"') && !/iteration dir/.test(lateArtefact), `DOC-1: the Artefacts produced .late.md line must cite review-policy.md "Late duplicate return" for which iteration's dir it lands in, never restate one - a single restated location contradicts step 7a's closed-wave branch, and an orchestrator writing from the list puts the file where review-fix never reads it. Got: ${lateArtefact}`);
+ 
+   const step8 = stepOf(reviewFlow, 8);
+   const unresolvedBullet = step8.split('\n').find((line) => line.includes('Any unresolved finding remains'));
