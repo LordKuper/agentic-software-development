@@ -100,7 +100,15 @@
       "waves": [
         {
           "iteration": 1,
-          "verdicts": {},
+          "verdicts": {
+            "iter-01": {
+              "correctness": "CONCERNS",
+              "efficiency": "CONCERNS",
+              "testing": "CONCERNS",
+              "documentation": "CONCERNS",
+              "external": "APPROVE (skipped: external review unavailable: command-unavailable)"
+            }
+          },
           "iteration_heads": {
             "iter-01": "820ac1c8de97b8c92202fdb490b538d6c3b058a3"
           },
@@ -110,8 +118,8 @@
     }
   },
   "created_at": "2026-09-24T00:24:03Z",
-  "updated_at": "2026-09-24T05:00:00Z",
-  "review_fixes_pending": null,
+  "updated_at": "2026-09-24T06:00:00Z",
+  "review_fixes_pending": "wave-1/iter-01",
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null
