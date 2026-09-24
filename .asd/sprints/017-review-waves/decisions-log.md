@@ -52,3 +52,20 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: plan.md (D9c superseded)
 
 - 2026-09-24 — route wave-1/iter-01 TST-1, TST-2, TST-3, EFF-4: standard (tester chain after dev chain), dispatch HEAD cdc5a93
+
+## 2026-09-24 — COR-4: owners' memory texts applied by the orchestrator (user decision)
+
+- **Decision**: For `asd-reviewer-correctness`, `-efficiency` and `-documentation`, the orchestrator applied verbatim the memory replacements each owner returned. The owners had `memory: project` but no write tool in this host, so the user approved this one-time exception to "Agent memory" ownership. `asd-external-review` fixed its own memory, because it holds Bash.
+- **Rationale**: Leaving the memory stale reloads a false contract on every dispatch. The text's author is still the owner.
+- **Affected docs**: .claude/agent-memory/
+
+## 2026-09-24 — impl fix for wave-1/iter-01: findings resolved
+
+- **Decision**: All 16 findings are resolved, and `review_fixes_pending` is cleared:
+  - COR-1..3, COR-5, COR-6, DOC-1..3 and EFF-1..3 by the dev chain;
+  - TST-1..3 and EFF-4 by the tester chain (95aee62);
+  - COR-4 by the memory owners' text.
+
+  Build (`sync.js --check`) and lint are clean, and the suite is at 223/223.
+- **Rationale**: Every finding is closed with its trailer, and the completion gate passes.
+- **Affected docs**: reviews/impl/wave-1/iter-01/
