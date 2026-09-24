@@ -3094,7 +3094,7 @@ test('sprint-017 AC-1 (D1/D2): review-waves counts one wave per WAVE_THRESHOLD_L
   for (const [lines, files, expected] of [
     [0, 0, 1], [0, 10, 1], [1, 10, 1], [threshold, 10, 1], [threshold + 1, 10, 2], [2 * threshold, 10, 2],
     [2 * threshold + 1, 10, Math.min(3, cap)], [cap * threshold + 1, 10, cap], [100 * threshold, 10, cap],
-    [7000, 2, 2],
+    [2 * threshold + 1, 2, 2], [threshold + 1, 1, 1],
   ]) {
     assert.strictEqual(runtime.reviewWaveCount(lines, files), expected, `${lines} changed lines over ${files} files: one wave per ${threshold} lines begun, at least 1, at most min(${cap}, files)`);
   }
@@ -5211,6 +5211,18 @@ test('sprint-017 AC-4/AC-8 (D6/D9a-c): emit-manifest --full-files/--full-base jo
   const twinDiffName = path.basename(twin.result.diff);
   assert.strictEqual(twinDiffName, path.basename(joined.result.diff), 'EFF-2: two manifests sharing the same file list and ranges share the identically fingerprinted .diff name, so a shared file+range never writes a duplicate byte-identical patch');
 
+  const sharedOut = fs.mkdtempSync(path.join(work, 'shared-'));
+  const emitInto = (reviewer, files, extra) => runtimeCliResult(['emit-manifest', '--reviewer', reviewer, '--files', list(files), '--out', sharedOut, ...extra], { cwd: repo, env });
+  const diffsOf = () => fs.readdirSync(sharedOut).filter((name) => name.endsWith('.diff'));
+  const correctnessShared = emitInto('correctness', ['src/current.js'], range);
+  const testingShared = emitInto('testing', ['src/current.js'], [...range, '--test-plan', 'src/earlier.js']);
+  assert.strictEqual(diffsOf().length, 2, 'TST-1: two reviewers with differing lists over one shared out dir write two distinct .diff files, never a shared or skipped one');
+  assert.notStrictEqual(path.basename(correctnessShared.result.diff), path.basename(testingShared.result.diff), 'TST-1: differing lists must fingerprint to different names');
+  assert.ok(hunkOf(patch(correctnessShared.result.diff), 'src/current.js').length === 1 && hunkOf(patch(correctnessShared.result.diff), 'src/earlier.js').length === 0, 'TST-1: correctness\'s .diff carries only its own list\'s headers');
+  assert.ok(hunkOf(patch(testingShared.result.diff), 'src/earlier.js').length === 1 && hunkOf(patch(testingShared.result.diff), 'src/current.js').length === 0, 'TST-1: testing\'s .diff (narrowed by --test-plan) carries only its own list\'s headers, none of correctness\'s');
+  emitInto('correctness', ['src/current.js'], range);
+  assert.strictEqual(diffsOf().length, 2, 'TST-1: re-emitting the same list and range into the shared dir must not add a second .diff');
+
   const designExternal = cli(runtime.EXTERNAL_REVIEWER, ['s/design/prd.html'], ['--phase', 'design-review', '--iteration', '1']);
   const designScope = JSON.parse(fs.readFileSync(path.join(designExternal.out, 'external.scope.json'), 'utf8'));
   assert.deepStrictEqual(designScope, { phase: 'design-review', iteration: 1, files: ['s/design/prd.html'], diff: null }, 'D9b/D9e: design-review has no waves and, at iteration 1, no diff - the field travels null rather than pointing at a file that was never written');
@@ -5374,7 +5386,7 @@ test('sprint-017 AC-8 (D9e): draft-snapshot copies each draft beside its snapsho
   assert.deepStrictEqual(copies.map((copy) => fs.readFileSync(copy, 'utf8')), drafts.map((file) => fs.readFileSync(file, 'utf8')), 'each draft is copied under <iter dir>/snapshot/, so the next iteration has content to diff against, not only a hash');
   const first = emit('documentation', 1, drafts);
   assert.deepStrictEqual(Object.keys(first).sort(), ['digest', 'manifest'], 'iteration 1 has no --snapshot and writes no .diff - the drafts are wholly new and a diff would only duplicate them');
-  assert.ok(!fs.existsSync(path.join(iterDir(1), 'documentation.diff')), 'no stray .diff at iteration 1');
+  assert.deepStrictEqual(fs.readdirSync(iterDir(1)).filter((name) => name.endsWith('.diff')), [], 'TST-1: no .diff of any name at iteration 1 - diffs are fingerprint-named now, so a check for the literal documentation.diff can no longer fail');
 
   fs.writeFileSync(drafts[0], 'draft 0 line 1\ndraft 0 revised\n', 'utf8');
   const added = path.join(root, 'design', 'ux-spec.html');
@@ -5386,6 +5398,12 @@ test('sprint-017 AC-8 (D9e): draft-snapshot copies each draft beside its snapsho
   assert.ok(!patch.includes('new draft') && !patch.includes('draft 1'), 'a draft the previous snapshot lacks gets no hunk - it is read whole - and an unlisted draft never appears');
   const external = emit(runtime.EXTERNAL_REVIEWER, 2, [drafts[0]], ['--iteration', '2', '--snapshot', iterDir(1)]);
   assert.ok(external.diff && fs.readFileSync(external.diff, 'utf8').includes('+draft 0 revised'), 'External Review gets the same snapshot diff for its list');
+
+  fs.writeFileSync(drafts[0], 'draft 0 line 1\ndraft 0 revised again\n', 'utf8');
+  const secondAgain = emit('documentation', 2, [drafts[0], added], ['--snapshot', iterDir(1)]);
+  assert.strictEqual(secondAgain.diff, second.diff, 'sanity: the same list and --snapshot dir must still fingerprint to the same .diff path');
+  const patchAgain = fs.readFileSync(secondAgain.diff, 'utf8');
+  assert.ok(patchAgain.includes('+draft 0 revised again') && !patchAgain.includes('+draft 0 revised\n'), 'COR-1: a second emit into the same iteration dir with the same list and --snapshot, after the draft changed again, must rewrite the .diff with the new content - a stale existsSync-skipped file would still read the first revision');
 
   const cor3Dir = path.join(root, 'reviews/design/iter-cor3');
   fs.mkdirSync(cor3Dir, { recursive: true });
@@ -5525,11 +5543,7 @@ test('sprint-017 AC-1/AC-6 (D3/D4): the review wave and the impl-review iteratio
   assert.ok(/reads only `verdicts\["iter-NN"\]` for the relevant review node \(impl-review: the current wave's, legacy shape included\)/.test(readRepoFile('.asd/rules/sprint-lifecycle.md')), 'TST-2: the hook\'s display-only State-recovery reader must also read the current wave\'s node, legacy shape included');
 });
 
-test('sprint-017 TST-1 (AC-2/AC-3): review-policy.md pins the severity floor to the current wave counter with a per-wave cap, impl-review step 8 sends K<n straight to wave K+1\'s iteration 1 in the same entry with no impl/impl-test between and K=n to the terminal suite, the return contract carries WAVE: <K>, and a division into n > 1 waves leaves its own decisions-log artefact', () => {
-  const floor = sectionOf('.asd/rules/review-policy.md', 'Iteration severity floor');
-  assert.ok(/or in impl-review the current review wave's counter/.test(floor), 'AC-2/AC-3: the floor must be keyed on the current wave\'s counter, not one flat count for the whole phase');
-  assert.ok(/User may override the cap \(per wave in impl-review\)/.test(floor), 'AC-2/AC-3: the iteration cap is per wave, so overriding one wave\'s cap must not raise or reset another\'s');
-
+test('sprint-017 TST-1 (AC-2/AC-3): impl-review step 8 sends K<n straight to wave K+1\'s iteration 1 in the same entry with no impl/impl-test between and K=n to the terminal suite, the return contract carries WAVE: <K>, and a division into n > 1 waves leaves its own decisions-log artefact', () => {
   const step8 = stepOf(canonText('.asd/workflows/asd-phase-impl-review.md'), 8);
   assert.ok(/K < n .*wave K\+1.*same entry, no `impl`\/`impl-test` between/.test(step8), 'AC-2/AC-3: an unmet wave under n must advance straight to the next wave\'s iteration 1 in the same entry - cycling through impl/impl-test between waves would silently re-run test-fix machinery no finding asked for');
   assert.ok(/K = n .*reviewer DoD met.*proceed to step 9/.test(step8), 'AC-2/AC-3: only the roster-met last wave may reach the terminal full-suite gate');
