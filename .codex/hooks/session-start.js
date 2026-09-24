@@ -1,4 +1,4 @@
-// ASD generated. Edit .asd/hooks/session-start.js. source_digest=sha256:fcb7aa34f4f65de7be201863093b13a4e1b2719e897876e63f93ca84a17832c2 content_digest=sha256:fcb7aa34f4f65de7be201863093b13a4e1b2719e897876e63f93ca84a17832c2 asd_version=12.0.0 schema=1
+// ASD generated. Edit .asd/hooks/session-start.js. source_digest=sha256:9dca95369da17b765c3e91db94211d6f14be6ba9e531a14e63aca3d186431929 content_digest=sha256:9dca95369da17b765c3e91db94211d6f14be6ba9e531a14e63aca3d186431929 asd_version=12.0.0 schema=1
 // ASD SessionStart hook (canonical, provider-agnostic).
 // No shebang: this file is never executed directly (`./session-start.js`),
 // always invoked as `node <path> --provider ...`, and every generated
@@ -104,7 +104,7 @@ function isDesignCollapsed(documents) {
   return Boolean(documents) && typeof documents === 'object' && ['prd', 'ux_spec', 'adr', 'c4'].every(name => documents[name] === false);
 }
 
-// reviews.impl (D3) is either wave-aware ({wave, waves: [node, ...]}) or the
+// reviews.impl is either wave-aware ({wave, waves: [node, ...]}) or the
 // legacy flat node itself (no `waves` array), read as waves: [node], wave: 1.
 // Guards every shape defect so the hook never throws on malformed state.
 function normalizeImplReviews(reviews) {
@@ -135,8 +135,9 @@ function reviewNodeForPhase(reviews, phase) {
   return d && d.iteration > 0 ? d : null;
 }
 
-// `iter-NN` keys sort lexically wrong past 9 iterations; extract the numeric
-// suffix so the highest iteration is picked numerically, not lexically.
+// `iter-NN` keys are zero-padded to two digits, so lexical order breaks past
+// iter-99; extract the numeric suffix so the highest iteration is picked
+// numerically, not lexically.
 function iterNumber(key) {
   const m = typeof key === 'string' && /^iter-(\d+)$/.exec(key);
   return m ? parseInt(m[1], 10) : -1;

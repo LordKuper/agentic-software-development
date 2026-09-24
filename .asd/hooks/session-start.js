@@ -103,7 +103,7 @@ function isDesignCollapsed(documents) {
   return Boolean(documents) && typeof documents === 'object' && ['prd', 'ux_spec', 'adr', 'c4'].every(name => documents[name] === false);
 }
 
-// reviews.impl (D3) is either wave-aware ({wave, waves: [node, ...]}) or the
+// reviews.impl is either wave-aware ({wave, waves: [node, ...]}) or the
 // legacy flat node itself (no `waves` array), read as waves: [node], wave: 1.
 // Guards every shape defect so the hook never throws on malformed state.
 function normalizeImplReviews(reviews) {
@@ -134,8 +134,9 @@ function reviewNodeForPhase(reviews, phase) {
   return d && d.iteration > 0 ? d : null;
 }
 
-// `iter-NN` keys sort lexically wrong past 9 iterations; extract the numeric
-// suffix so the highest iteration is picked numerically, not lexically.
+// `iter-NN` keys are zero-padded to two digits, so lexical order breaks past
+// iter-99; extract the numeric suffix so the highest iteration is picked
+// numerically, not lexically.
 function iterNumber(key) {
   const m = typeof key === 'string' && /^iter-(\d+)$/.exec(key);
   return m ? parseInt(m[1], 10) : -1;
