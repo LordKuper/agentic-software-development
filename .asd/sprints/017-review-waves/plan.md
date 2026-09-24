@@ -91,14 +91,14 @@ Sprint-specific additions:
 ### Task 1: Runtime — review-waves command and scope hand-off emission
 Material risk: change: new runtime commands and a changed emit-manifest contract (D1, D2, D9)
 Reachability: impl-review writes `waves.json` at first entry via `review-waves`; impl-review reads it at every wave's iteration 1 to build the division list for `emit-manifest --full-files`.
-- [ ] Add `WAVE_THRESHOLD_LINES = 3000` with a JSDoc line. Remove `DISPATCH_CEILING` and its export (D7).
-- [ ] Remove parts (D7): `SPLIT_THRESHOLD_FILES`, `--halve`, part naming in `emitCoverageManifests`/`emitManifestCommand`, `NA_PREDICATES.outOfPart`. `surfaceCheck` loses `dispatches`/`--test-plan-files`, and the `SURFACE_CAP_FILES` JSDoc loses the parts rationale.
-- [ ] Add a `review-waves` command: `--files --base --head` measures numstat lines (binary and pure-rename 0) and returns `{lines, threshold, waves}`. With `--division <json> --out <path>`, it validates exactly `n` non-empty disjoint lists covering the scope, then writes `waves.json` (D1, D2).
-- [ ] `emit-manifest --reviewer external`: write `external.scope.json` per `t_review-scope.json` plus `external.diff` for its list, with no rubric read and no ledger (D9a, D9b).
-- [ ] Add the `--full-files <path> --full-base <sha>` pair: listed files join the manifest list, and their patch hunks are taken over `<full-base>...<head>` in the same `.diff` (D9c).
-- [ ] Include Testing's `--test-plan` paths in its `.diff` over the manifest range (D9d).
-- [ ] `draft-snapshot` also copies draft content under the iteration dir. `emit-manifest --phase design-review --snapshot <prev iter dir>` writes a `--no-index` diff per manifest. `--base/--head` stay impl-review-only (D9e).
-- [ ] Export the new constant and functions beside the existing ones.
+- [x] Add `WAVE_THRESHOLD_LINES = 3000` with a JSDoc line. Remove `DISPATCH_CEILING` and its export (D7).
+- [x] Remove parts (D7): `SPLIT_THRESHOLD_FILES`, `--halve`, part naming in `emitCoverageManifests`/`emitManifestCommand`, `NA_PREDICATES.outOfPart`. `surfaceCheck` loses `dispatches`/`--test-plan-files`, and the `SURFACE_CAP_FILES` JSDoc loses the parts rationale.
+- [x] Add a `review-waves` command: `--files --base --head` measures numstat lines (binary and pure-rename 0) and returns `{lines, threshold, waves}`. With `--division <json> --out <path>`, it validates exactly `n` non-empty disjoint lists covering the scope, then writes `waves.json` (D1, D2).
+- [x] `emit-manifest --reviewer external`: write `external.scope.json` per `t_review-scope.json` plus `external.diff` for its list, with no rubric read and no ledger (D9a, D9b).
+- [x] Add the `--full-files <path> --full-base <sha>` pair: listed files join the manifest list, and their patch hunks are taken over `<full-base>...<head>` in the same `.diff` (D9c).
+- [x] Include Testing's `--test-plan` paths in its `.diff` over the manifest range (D9d).
+- [x] `draft-snapshot` also copies draft content under the iteration dir. `emit-manifest --phase design-review --snapshot <prev iter dir>` writes a `--no-index` diff per manifest. `--base/--head` stay impl-review-only (D9e).
+- [x] Export the new constant and functions beside the existing ones.
 
 ### Task 2: Session-start hook reads per-wave state
 Material risk: artifact: hook must exit 0 and never throw on either state shape (D3, D10)
