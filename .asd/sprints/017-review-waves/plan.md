@@ -173,7 +173,7 @@ Reachability: impl-review writes `review_fixes_pending = "wave-<K>/iter-NN"` at 
 
 ### Task 6: README and release bookkeeping
 Material risk: artifact: mirror accuracy and manifest hashes (AC-7)
-- [ ] `README.md`:
+- [x] `README.md`:
   - impl-review description, waves and the hand-off triple;
   - External Review row (:219) with no "base/head refs", batches or partial outcome;
   - no Dispatch ceiling mention;
@@ -181,8 +181,8 @@ Material risk: artifact: mirror accuracy and manifest hashes (AC-7)
   - runtime.js entry (:297) with `review-waves`, external emission, `--full-files`, `--snapshot`, with no parts and no `dispatches`;
   - the floor note (:420) per wave;
   - folder map `wave-<K>/`.
-- [ ] Recompute `.asd/release-manifest.json` `upstream_hashes` for every touched managed file. Check whether `managed_paths` or `canon_hashes` need an entry; no new agent or skill is added.
-- [ ] Run `node .asd/sync.js --check`: no drift.
+- [x] Recompute `.asd/release-manifest.json` `upstream_hashes` for every touched managed file. Check whether `managed_paths` or `canon_hashes` need an entry; no new agent or skill is added.
+- [x] Run `node .asd/sync.js --check`: no drift.
 
 ## Risks
 - **Scope size:** the change surface is 35 files. Parts no longer exist once this sprint lands, and the sprint's own impl-review runs under the new canon (next item), so `WAVE_THRESHOLD_LINES` governs its size.

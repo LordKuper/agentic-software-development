@@ -1,4 +1,4 @@
-// ASD generated. Edit .asd/hooks/session-start.js. source_digest=sha256:6805b2bc93fd88ca677351faa15eda8cc2bed2f67fa87b6305d1b14c3eb40cfb content_digest=sha256:6805b2bc93fd88ca677351faa15eda8cc2bed2f67fa87b6305d1b14c3eb40cfb asd_version=12.0.0 schema=1
+// ASD generated. Edit .asd/hooks/session-start.js. source_digest=sha256:367dd2666336bee093e7201cb998569a9fff0765a41e4ebca11c62278cd0810d content_digest=sha256:367dd2666336bee093e7201cb998569a9fff0765a41e4ebca11c62278cd0810d asd_version=12.0.0 schema=1
 // ASD SessionStart hook (canonical, provider-agnostic).
 // No shebang: this file is never executed directly (`./session-start.js`),
 // always invoked as `node <path> --provider ...`, and every generated
@@ -146,7 +146,7 @@ function iterNumber(key) {
   return m ? parseInt(m[1], 10) : -1;
 }
 
-// Display-only session summary, never a gate. "APPROVE"-prefixed values (bare, availability-skip or partial) count as satisfied.
+// Display-only session summary, never a gate. "APPROVE"-prefixed values (bare or availability-skip; the partial form is legacy only) count as satisfied.
 function lastReviewVerdict(node) {
   if (!node || typeof node !== 'object') return 'n/a';
   const verdictsByIter = node.verdicts;

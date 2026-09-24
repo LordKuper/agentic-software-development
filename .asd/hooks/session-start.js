@@ -145,7 +145,7 @@ function iterNumber(key) {
   return m ? parseInt(m[1], 10) : -1;
 }
 
-// Display-only session summary, never a gate. "APPROVE"-prefixed values (bare, availability-skip or partial) count as satisfied.
+// Display-only session summary, never a gate. "APPROVE"-prefixed values (bare or availability-skip; the partial form is legacy only) count as satisfied.
 function lastReviewVerdict(node) {
   if (!node || typeof node !== 'object') return 'n/a';
   const verdictsByIter = node.verdicts;
