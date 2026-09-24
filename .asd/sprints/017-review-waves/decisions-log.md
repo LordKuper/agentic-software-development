@@ -55,3 +55,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: AC-8 added. In both review phases the orchestrator builds, for each reviewer agent (External Review included), the explicit file list to review, and that list is the agent's only scope source, with one canonical home. Audit stays frozen true; the expansion does not change that.
 - **Rationale**: User request at the scope gate, before accept.
 - **Affected docs**: sprint.md
+
+## 2026-09-24 — Scope refined: diff-volume threshold and scope hand-off triple
+
+- **Decision**: AC-1: the wave threshold measures diff volume, not file count; metric and value are set at plan. AC-8: hand-off is list = normative scope, runtime-precomputed per-list diff file = content, whole files = on-demand context; External Review gets the same list and diff, with no self-computed diff from refs.
+- **Rationale**: User accepted the token-economy analysis at the scope gate. Dispatch cost is dominated by content read and per-dispatch fixed overhead, not the list; file count is a poor proxy for review size.
+- **Affected docs**: sprint.md
