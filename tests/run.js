@@ -5462,8 +5462,11 @@ test('sprint-015 AC-1/AC-6/AC-7/AC-8/AC-10/AC-12: no canon tells anyone to clear
 // Sprint 017: review waves replace split parts; one scope hand-off.
 // ===========================================================================
 
+/** Terms naming a review mechanism sprint 017's review waves replaced (AC-5); shared by the canon sweep and the agent-memory sweep. */
+const REPLACED_REVIEW_MECHANISMS = [/\.part-|part-N|--halve|outOfPart|out-of-part|SPLIT_THRESHOLD|split trigger|union property|part merge|split dispatch|DISPATCH_CEILING|dispatch ceiling|sub-wave|APPROVE \(partial:|--test-plan-files/i, /\b(?:base_ref|head_ref|exclude_paths)\b/];
+
 test('sprint-017 AC-5/AC-7: no live canon, README, runtime or hook keeps a mechanism review waves replaced - split parts, --halve, the out-of-part predicate, the split threshold, the Dispatch ceiling, External batches and their partial outcome, surface-check dispatches, or a self-diff ref pair - except a line naming it as legacy', () => {
-  const needles = [/\.part-|part-N|--halve|outOfPart|out-of-part|SPLIT_THRESHOLD|split trigger|union property|part merge|split dispatch|DISPATCH_CEILING|dispatch ceiling|sub-wave|APPROVE \(partial:|--test-plan-files/i, /\b(?:base_ref|head_ref|exclude_paths)\b/];
+  const needles = REPLACED_REVIEW_MECHANISMS;
   const hooks = fs.readdirSync(path.join(REPO_ROOT, '.asd/hooks')).filter((file) => file.endsWith('.js')).map((file) => `.asd/hooks/${file}`);
   const files = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/runtime.js', '.asd/templates/external-review/t_review-scope.json', '.asd/templates/t_state.json', ...hooks];
   assert.ok(files.includes('.asd/rules/sprint-lifecycle.md') && hooks.length > 0, 'sanity: the sweep must reach the rule docs and the hooks');
@@ -5471,6 +5474,16 @@ test('sprint-017 AC-5/AC-7: no live canon, README, runtime or hook keeps a mecha
   assert.deepStrictEqual(leftovers, [], 'AC-5: review waves are the one canonical mechanism for splitting a large review scope; a surviving reference to a removed one tells an orchestrator to run a step no runtime supports. Only a line stating legacy handling for an in-flight sprint may name one');
   const partialLegacy = sectionOf('.asd/rules/sprint-lifecycle.md', 'State recovery').split('\n').find((line) => line.includes('APPROVE (partial:'));
   assert.ok(partialLegacy && /satisfied for its iteration, never latched/.test(partialLegacy), 'D7/AC-6: a partial already recorded in an in-flight sprint must still read as satisfied, never latched, under backward_compat: migration');
+});
+
+test('sprint-017 AC-5/AC-7 (COR-4): no agent memory a dispatched agent loads names a review mechanism review waves replaced as live - only right after a negation in the same clause, or on a line naming it legacy', () => {
+  const roster = fs.readdirSync(path.join(REPO_ROOT, '.claude/agents')).filter((name) => name.endsWith('.md')).map((name) => name.slice(0, -3));
+  const memoryRoot = '.claude/agent-memory';
+  const files = fs.readdirSync(path.join(REPO_ROOT, memoryRoot)).filter((dir) => roster.includes(dir)).flatMap((dir) => fs.readdirSync(path.join(REPO_ROOT, memoryRoot, dir)).filter((name) => name.endsWith('.md')).map((name) => `${memoryRoot}/${dir}/${name}`));
+  assert.ok(files.some((rel) => rel.startsWith(`${memoryRoot}/asd-reviewer-`)) && files.some((rel) => rel.startsWith(`${memoryRoot}/asd-external-review/`)), 'sanity: the sweep must reach the reviewer and External Review memories COR-4 found stale');
+  const negated = (line, at) => /\b(?:no|never|not|without|removed|retired|superseded)\b/i.test(line.slice(Math.max(0, at - 40), at).split(/[.;]\s|—/).pop());
+  const leftovers = files.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => (/\blegacy\b/i.test(line) ? [] : REPLACED_REVIEW_MECHANISMS.flatMap((needle) => [...line.matchAll(new RegExp(needle.source, `${needle.flags}g`))].filter((match) => !negated(line, match.index)).map((match) => `${rel}:${index + 1} ${match[0]}`)))));
+  assert.deepStrictEqual(leftovers, [], 'COR-4/AC-7: agent memory is loaded on every dispatch, so a line describing a removed split, part or External batch as current contract reloads a false contract that "Scope hand-off" and the wave state contradict. A memory may name one only as absent ("no .part-N") or legacy; its owner rewrites or deletes the rest');
 });
 
 test('sprint-017 AC-1/AC-6 (D3/D4): the review wave and the impl-review iteration id are defined once in sprint-lifecycle.md "Review iteration counters", t_state.json seeds reviews.impl as one wave node of exactly the fields that definition names, and every reader of the counter - review-policy.md\'s severity floor and sprint-lifecycle.md\'s State-recovery readers included - uses the per-wave form', () => {
