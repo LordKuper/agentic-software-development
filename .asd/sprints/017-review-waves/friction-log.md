@@ -22,6 +22,7 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 | F-2 | impl-review | Review-fix has no route for a finding in another agent's memory | reviews/impl/wave-1/iter-01/correctness |
 | F-3 | impl | Review-fix tester wrote an impl-test Entry log row | test-plan.md Entry log |
 | F-4 | impl | Reviewers declare `memory: project` but get no write tool | reviews/impl/wave-1/iter-01/correctness |
+| F-5 | pr | `gh`-only PR rule unfollowable in a cloud container | — |
 
 ## F-1 — External Review CLI unavailable in the cloud container
 
@@ -54,3 +55,11 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 - **What happened**: The owners were dispatched to fix their own stale memory (COR-4). The Claude Code host gave them no write or edit tool, so none of them could write. `review-policy.md` "Gate Verdict Format" says the memory channel is one "reviewers do use and the host serves", which did not hold here.
 - **Impact**: The owners' texts had to be applied under a user-approved exception to memory ownership. A reviewer's memory can go stale with no owner able to correct it.
 - **Refs**: reviews/impl/wave-1/iter-01/correctness (COR-4)
+
+## F-5 — `gh`-only PR rule unfollowable in a cloud container
+
+- **Phase**: pr
+- **Surface**: rule — `.asd/rules/git-strategy.md` "PR creation" / "Merging a PR"
+- **What happened**: `gh` is not installed in the Claude Code cloud container; GitHub access there is only through the GitHub MCP tools. The rule makes `gh` failure `FAILED` with no alternative path.
+- **Impact**: The PR could be opened only through a user-approved deviation (GitHub MCP).
+- **Refs**: —

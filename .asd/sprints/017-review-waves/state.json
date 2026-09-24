@@ -45,6 +45,13 @@
       "reason": "wave 1/1 roster APPROVE/latched; terminal full suite green",
       "evidence": "verdicts wave-1 iter-03; test-plan.md Suite run 225/225 @ f6ad5fa",
       "artifact_revision": "1c91120"
+    },
+    {
+      "gate": "pr-publication",
+      "decision_actor": "user",
+      "reason": "explicit choice: open PR via GitHub MCP (gh unavailable)",
+      "evidence": "PR #49",
+      "artifact_revision": "509ed73"
     }
   ],
   "task_routing": {
@@ -302,9 +309,13 @@
     }
   },
   "created_at": "2026-09-24T00:24:03Z",
-  "updated_at": "2026-09-24T16:00:00Z",
+  "updated_at": "2026-09-24T16:30:00Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
-  "pr": null,
+  "pr": {
+    "state": "open",
+    "number": 49,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/49"
+  },
   "archived_at": null
 }
