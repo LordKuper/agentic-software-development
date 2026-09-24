@@ -36,3 +36,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 <!-- entries appended below this line -->
 
 - 2026-09-24 — stub inclusion skipped: `audit.md` has no Related open stubs; `.asd/project/stubs.md` empty
+
+## 2026-09-24 — Scope changed: review waves replace split parts
+
+- **Decision**: AC-5 rewritten: split dispatch parts are removed entirely in both review phases, and review waves are the one mechanism for splitting a large review scope. The design-review out-of-scope line now says it is reviewed unsplit. Plan D7 covers the knock-on: twice-interrupted escalation, `surface-check` without `dispatches`, and `EXTERNAL_BATCH_FILES` for the wrapped-CLI batches.
+- **Rationale**: Explicit user instruction at the plan gate, which serves as authority for the scope change.
+- **Affected docs**: sprint.md, plan.md
