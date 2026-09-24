@@ -117,7 +117,8 @@ Material risk: change: workflow-gate and state-schema contract across rule docs 
   - phase table impl-review row;
   - "Impacted test set" terminal suite after the last wave;
   - "State recovery" per-wave reads, fixing the stale pointers audit found at :64, :354, :357;
-  - "PR phase" reviews-green over all waves (D10).
+  - "PR phase" reviews-green over all waves (D10);
+  - "Plan file format" Change surface declaration: the cap-override request no longer states a `dispatches` count (D7).
 - [ ] `review-policy.md`:
   - "Iteration severity floor": `N` = the current wave's counter, with the cap per wave;
   - "Interrupted dispatch and split dispatch" becomes "Interrupted dispatch". Split trigger, Partition, Union property, One-fresh-dispatch-per-part and Part merge are removed; two consecutive interruptions escalate (D7). The internal-reviewer never-skipped/never-partial sentence stays;
