@@ -541,7 +541,7 @@ function manifestRanges(flags) {
   const hasRange = flags.base !== undefined || flags.head !== undefined;
   const hasFull = flags['full-files'] !== undefined || flags['full-base'] !== undefined;
   if (hasRange && flags.phase !== 'impl-review') fail('--base/--head apply to impl-review only');
-  if (hasFull && !hasRange) fail('--full-files/--full-base need --base/--head');
+  if (hasFull && !hasRange && (flags.snapshot === undefined || flags['full-base'] !== undefined)) fail('--full-files/--full-base need --base/--head; in design-review --full-files needs --snapshot and takes no --full-base');
   if (!hasRange) return null;
   const head = gitRef(flags.head, '--head');
   const base = gitRef(flags.base, '--base');
@@ -550,6 +550,13 @@ function manifestRanges(flags) {
   if (typeof flags['full-files'] !== 'string') fail('--full-files <path> required with --full-base');
   const fullBase = gitRef(flags['full-base'], '--full-base');
   return { scope: scopeRange, full: { base: fullBase, head, renames: rangeRenames(fullBase, head) }, fullFiles: new Set(readFileList(flags['full-files'])) };
+}
+
+/** A design-review manifest's snapshot diff source: the previous iteration dir, and the `--full-files` drafts left out of the diff so each is read whole. Null without `--snapshot`. */
+function snapshotSource(flags) {
+  if (flags.snapshot === undefined) return null;
+  if (flags.phase !== 'design-review') fail('--snapshot applies to design-review only');
+  return { dir: flags.snapshot, whole: new Set(flags['full-files'] === undefined ? [] : readFileList(flags['full-files'])) };
 }
 
 /** The range a listed file's patch hunks come from; a file on neither list, such as an appended test-plan path, takes the manifest range. */
@@ -592,10 +599,10 @@ function writeGitOutput(file, invocations) {
   }
 }
 
-/** Writes the diff of a manifest's file list into `dir` and returns its path: over the commit ranges in impl-review, against the previous snapshot in design-review; null when there is nothing to diff against, as in design-review iteration 1. Named by the fingerprint of the git invocations producing it, so manifests sharing a list and range share one file, written once and never left half-written under that name. */
+/** Writes the diff of a manifest's file list into `dir` and returns its path: over the commit ranges in impl-review, against the previous snapshot in design-review, minus the drafts it leaves whole; null when there is nothing to diff against, as in design-review iteration 1. Named by the fingerprint of the git invocations producing it, so manifests sharing a list and range share one file, written once and never left half-written under that name. */
 function writeManifestDiff(dir, files, ranges, snapshot) {
-  if (ranges === null && snapshot === undefined) return null;
-  const invocations = ranges !== null ? rangePatchInvocations(ranges, files) : snapshotPatchInvocations(snapshot, files);
+  if (ranges === null && snapshot === null) return null;
+  const invocations = ranges !== null ? rangePatchInvocations(ranges, files) : snapshotPatchInvocations(snapshot.dir, files.filter((file) => !snapshot.whole.has(file)));
   const diff = path.join(dir, `${fingerprint(invocations).slice(0, 16)}.diff`);
   if (!fs.existsSync(diff)) {
     writeGitOutput(`${diff}.tmp`, invocations);
@@ -610,7 +617,7 @@ function positiveInteger(value, name) {
 }
 
 /** Writes External Review's scope manifest and its diff: the same explicit list and precomputed change content an internal reviewer gets, with no rubric and no ledger. */
-function emitExternalScope(flags, files, ranges) {
+function emitExternalScope(flags, files, ranges, snapshot) {
   const isImplReview = flags.phase === 'impl-review';
   if (isImplReview && ranges === null) fail('--base/--head required for impl-review External Review');
   if (isImplReview !== (flags.wave !== undefined)) fail('--wave <k> is required for impl-review and applies to it only');
@@ -618,14 +625,14 @@ function emitExternalScope(flags, files, ranges) {
   const scope = Object.assign(
     { phase: flags.phase, iteration: positiveInteger(flags.iteration, '--iteration') },
     isImplReview ? { wave: positiveInteger(flags.wave, '--wave') } : {},
-    { files, diff: writeManifestDiff(flags.out, files, ranges, flags.snapshot) },
+    { files, diff: writeManifestDiff(flags.out, files, ranges, snapshot) },
   );
   fs.writeFileSync(`${stem}.scope.json`, JSON.stringify(scope) + '\n', 'utf8');
   return scope.diff === null ? { scope: `${stem}.scope.json` } : { scope: `${stem}.scope.json`, diff: scope.diff };
 }
 
 /** Writes one internal reviewer's coverage manifest and its diff. */
-function emitInternalManifest(flags, files, ranges) {
+function emitInternalManifest(flags, files, ranges, snapshot) {
   if (flags.iteration !== undefined || flags.wave !== undefined) fail(`--iteration/--wave apply to --reviewer ${EXTERNAL_REVIEWER} only`);
   const customPaths = typeof flags['custom-rules'] === 'string' ? flags['custom-rules'].split(',') : [];
   const testPlan = typeof flags['test-plan'] === 'string' ? flags['test-plan'].split(',') : [];
@@ -642,7 +649,7 @@ function emitInternalManifest(flags, files, ranges) {
   });
   const stem = path.join(flags.out, flags.reviewer);
   fs.writeFileSync(`${stem}.manifest.json`, JSON.stringify(manifest) + '\n', 'utf8');
-  const diff = writeManifestDiff(flags.out, manifest.files, ranges, flags.snapshot);
+  const diff = writeManifestDiff(flags.out, manifest.files, ranges, snapshot);
   return diff === null ? { manifest: `${stem}.manifest.json`, digest: manifest.digest } : { manifest: `${stem}.manifest.json`, digest: manifest.digest, diff };
 }
 
@@ -650,11 +657,11 @@ function emitManifestCommand(flags) {
   if (!/^[a-z]+$/.test(flags.reviewer || '')) fail('--reviewer <name> required');
   if (typeof flags.files !== 'string' || typeof flags.out !== 'string') fail('--files <path> and --out <dir> required');
   if (!PHASES.includes(flags.phase)) fail('phase must be design-review or impl-review');
-  if (flags.snapshot !== undefined && flags.phase !== 'design-review') fail('--snapshot applies to design-review only');
+  const snapshot = snapshotSource(flags);
   const ranges = manifestRanges(flags);
-  const scope = readFileList(flags.files);
-  const files = ranges === null ? scope : [...new Set(scope.concat([...ranges.fullFiles]))];
-  return flags.reviewer === EXTERNAL_REVIEWER ? emitExternalScope(flags, files, ranges) : emitInternalManifest(flags, files, ranges);
+  const whole = ranges !== null ? ranges.fullFiles : snapshot !== null ? snapshot.whole : new Set();
+  const files = [...new Set(readFileList(flags.files).concat([...whole]))];
+  return flags.reviewer === EXTERNAL_REVIEWER ? emitExternalScope(flags, files, ranges, snapshot) : emitInternalManifest(flags, files, ranges, snapshot);
 }
 
 function reviewWavesCommand(flags) {
