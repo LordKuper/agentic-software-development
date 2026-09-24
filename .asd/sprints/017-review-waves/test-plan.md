@@ -58,11 +58,13 @@ Mutations were applied one at a time to `.asd/runtime.js` (entry 5 also to `.asd
 
 ## Suite run
 
-- Command: `node tests/run.js`
-- Scope: full (safety valve, see Entry log)
-- Result: pass — `225/225 passed`, 0 failed, 0 skipped (exit 0). The runner has no skip state. Its one `(skipped: … only runs on win32 …)` line is a pre-existing in-test platform branch, not a skipped test.
-- Lint / build: pass — `git diff --cached --check` exit 0 on the staged change (`tests/run.js`, `test-plan.md`, `test-plan.entry-04.md`); `node .asd/sync.js --check` exit 0, `ok: true`
-- HEAD: 15dfbe08aca4389963617a11ee15c80297bd6454 plus this entry's staged `tests/run.js`, committed right after as this entry's test commit
+Impl-review step 9 terminal full-suite gate (wave 1 of 1 closed at `wave-1/iter-03`). It replaces entry 5's impacted-run record.
+
+- HEAD: f6ad5fadafc7a35079820bac366d7d86e97e96e3 (clean working tree)
+- Command: `node tests/run.js`, unscoped
+- Result: pass. Exit 0, runner report `225/225 passed`: 225 `ok -` lines, 0 `not ok`. The runner has no skip state. Its one `(skipped: … only runs on win32 …)` line is a pre-existing in-test platform branch, not a skipped test.
+- Lint: `git diff --cached --check` exit 0, run on the staged change (this `test-plan.md` only)
+- Build: `node .asd/sync.js --check` exit 0, `ok: true`, every generated target `current`
 
 ## Defects
 
