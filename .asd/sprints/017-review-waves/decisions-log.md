@@ -81,3 +81,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: plan.md
 
 - 2026-09-24 — route Task 6: standard, dispatch HEAD e725b7a
+
+## 2026-09-24 — Impl assessment approved (adaptive)
+
+- **Decision**: Initial impl is complete at e6dcaa4. Tasks 1-6 are ticked, and `sync.js --check` (build) and `git diff --cached --check` (lint) are clean. All 56 changed paths are authorized: the planned surface plus their generated views, plus `asd-phase-impl-review` SKILL.md, which the Task 5 dispatch named. `tests/run.js` is knowingly red on pinned contracts; impl-test updates it.
+- **Rationale**: Routine gate with complete objective evidence. No flagged choice is left open, and no stub was added this sprint.
+- **Affected docs**: plan.md
