@@ -43,3 +43,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: reviews/impl/wave-1/iter-03/
 
 - 2026-09-24 — route impl-review wave-1/iter-03 suite: critical, dispatch HEAD 0721b6c
+
+## 2026-09-24 — impl-review DoD met (adaptive green handoff)
+
+- **Decision**: The terminal full suite is green: test 225/225, lint and build clean at f6ad5fa, recorded in 1c91120. Reviewer DoD is met in wave 1 of 1, and the phase goes to retro.
+- **Rationale**: This is a routine gate with complete machine evidence and no open finding. External Review was availability-skipped in every iteration (F-1).
+- **Affected docs**: test-plan.md, reviews/impl/

@@ -38,6 +38,13 @@
       "reason": "all Task boxes ticked; build/lint clean; all flagged choices resolved; no sprint stubs",
       "evidence": "plan.md Tasks 1-6; decisions-log.md flag entries",
       "artifact_revision": "e6dcaa4"
+    },
+    {
+      "gate": "impl-review-green-handoff",
+      "decision_actor": "orchestrator",
+      "reason": "wave 1/1 roster APPROVE/latched; terminal full suite green",
+      "evidence": "verdicts wave-1 iter-03; test-plan.md Suite run 225/225 @ f6ad5fa",
+      "artifact_revision": "1c91120"
     }
   ],
   "task_routing": {
@@ -295,7 +302,7 @@
     }
   },
   "created_at": "2026-09-24T00:24:03Z",
-  "updated_at": "2026-09-24T15:00:00Z",
+  "updated_at": "2026-09-24T15:30:00Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
