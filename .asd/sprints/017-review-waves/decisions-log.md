@@ -45,3 +45,11 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: plan.md
 
 - 2026-09-24 — route Task 3: critical, dispatch HEAD 2e2e133
+
+## 2026-09-24 — Task 3 flagged choices resolved
+
+- **Decision**: All eight Task 3 flags (e2cf698) are accepted. The main one: the division point is `reviews.impl.waves[0].iteration == 0`, because the seed already carries a wave node and so plan D1/D5 "no wave node" could never be true; Task 5 binds to this. `waves.json` is written for n = 1 too, the literals use the id form, and "Review wave" gets its own glossary line. Leftovers (7) go to Task 4 and stale workflow cites (8) to Task 5.
+- **Rationale**: The flags fix a plan inconsistency or pick wording inside D1-D7 scope, and none opens a material alternative.
+- **Affected docs**: plan.md
+
+- 2026-09-24 — route Task 4: critical, dispatch HEAD 138e261
