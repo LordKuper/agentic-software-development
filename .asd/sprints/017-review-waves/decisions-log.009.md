@@ -35,4 +35,10 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 <!-- entries appended below this line -->
 
-- 2026-09-24 — route impl-test entry 4: critical, dispatch HEAD d2eedc4
+## 2026-09-24 — D-1/D-2: testing reviewer memory text applied (user decision)
+
+- **Decision**: The user approved the same exception as COR-4 for `asd-reviewer-testing`: the orchestrator applied the owner's returned text verbatim (ace77e4). The owner's whole-file `MEMORY.md` replacement had dropped the existing `feedback_value-removal-sprints.md` index line, and the memory-index bijection test caught it. That line was restored verbatim from HEAD.
+- **Rationale**: The owner authored the text, and the restore only undoes an accidental deletion.
+- **Affected docs**: .claude/agent-memory/asd-reviewer-testing/
+
+- 2026-09-24 — impl test-fix: defects D-1, D-2 resolved
