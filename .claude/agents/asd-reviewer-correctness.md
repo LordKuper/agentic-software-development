@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-correctness.md. source_digest=sha256:cb8958e0f87d32b3d175bc29773b6afeb38c3e2b60b837c492f91091c8320695 content_digest=sha256:fda471f6cc54840fed3c2d32f1af5cea10bd05fd5e400d3a9f854ac0e838e212 asd_version=10.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-correctness.md. source_digest=sha256:af05413663edcad31896e9b4cba088a647d6e64d48aafb6dde0264f2b4e7176d content_digest=sha256:8d9e2eaff7865b77138c89ae574596b0f1b832c30d38832d6ef011da3d9a978c asd_version=12.0.0 schema=1
 name: asd-reviewer-correctness
 description: "Design-review of draft correctness (AC completeness, contract and ADR decision soundness) and UI drafts (UI section n/a without a ux-spec/design-system draft), and impl-review of code, tests and UI for bugs, security, best-practice/contract drift, the AC→code trace, and UI/accessibility conformance. Covers: bug patterns (off-by-one, null paths, race conditions, resource leaks), security holes (secrets, injection, auth bypass, crypto misuse, input validation), language/framework best practices, contract violations vs ADR, AC→code trace against PRD/`sprint.md` AC-N, ux-spec compliance check, UI implementation match to ux-spec mockups, design-system token/component usage, accessibility baseline compliance. Does NOT handle: over-engineering, structure/cohesion, or performance (delegates to asd-reviewer-efficiency), test-plan/test-quality review and AC→check coverage (delegates to asd-reviewer-testing), design-review testability (unowned by design), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -31,7 +31,7 @@ Correctness reviewer. Merges the former Quality, Implementation and UI reviewers
 ## Inputs
 
 **Both phases:**
-- emitted manifest — its file list is this dispatch's scope (`review-policy.md` "Clean-context review iteration"), its `n_a` this phase's section gate — iteration number + review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`), from dispatching phase skill
+- emitted manifest and its `.diff` (design-review: from iteration 2) — the hand-off per `review-policy.md` "Scope hand-off"; the manifest's `n_a` is this phase's section gate — iteration number + review output dir (`<sprint>/reviews/<design|impl>/[wave-<K>/]iter-NN/`), from dispatching phase skill
 
 **design-review phase:**
 - the listed drafts; `<sprint>/sprint.md` (AC-N source when `documents.prd` disabled)
@@ -42,7 +42,6 @@ Correctness reviewer. Merges the former Quality, Implementation and UI reviewers
   - `docs/ux/accessibility.html`
 
 **impl-review phase:**
-- the manifest's `.diff` (the change itself; never run git)
 - whichever persistent doc folded a relevant sprint ADR (decisions for contract checks — `sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `docs/architecture/stack.html` (stack constraints)
 - `.asd/project/custom-coding-rules.md` (forbidden patterns, security policy)
@@ -133,7 +132,7 @@ Contract, format, and gate: `review-policy.md` "Coverage ledger" (SSoT, not rest
 
 ## Gate Verdict Format
 
-First content line of the returned findings text (which the phase orchestrator writes to `<sprint>/reviews/<design|impl>/iter-NN/correctness.md`) MUST be:
+First content line of the returned findings text (which the phase orchestrator writes to `<sprint>/reviews/<design|impl>/[wave-<K>/]iter-NN/correctness.md`) MUST be:
 
 `[REVIEW-<phase>-correctness]: <APPROVE | CONCERNS | FAIL>`
 

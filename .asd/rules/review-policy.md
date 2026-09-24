@@ -30,11 +30,21 @@ User may override the cap (per wave in impl-review). On override the counter kee
 Every iteration dispatches each reviewer as a **fresh agent invocation** — new context, no carry-over from authoring or prior iterations. Isolates each verdict from creator reasoning and earlier rounds.
 
 - The dispatching phase workflow spawns every required reviewer (and External Review) anew each iteration, unless that reviewer is APPROVE-latched (`sprint-lifecycle.md` "APPROVE latch") — a latched reviewer is not dispatched at all this iteration, never reused or resumed either.
-- Reviewer payload carries only: its own emitted manifest path, plus in impl-review that manifest's `.diff` path; rule references, severity floor, iteration number, context paths, and — on a re-dispatch — that reviewer's own interrupted-attempt record for this iteration (count and cause, rebuilt from `decisions-log.md` per "Interrupted dispatch"), when it has one. Never authoring rationale or prior verdicts.
-- **Scope**: the manifest's file list ("Reviewer responsibility") is the payload's single scope source — never a second list, never diff text. It bounds the reviewer's ledger file rows and valid finding locations. An unlisted path is out of both, yet stays readable as context; the Change-surface exception below still applies. The `.diff` shows the change itself, deletions included. A payload never tells a reviewer to run git.
+- Reviewer payload carries only: its own emitted manifest path, plus its `.diff` path when one is written ("Scope hand-off"); rule references, severity floor, iteration number, context paths, and — on a re-dispatch — that reviewer's own interrupted-attempt record for this iteration (count and cause, rebuilt from `decisions-log.md` per "Interrupted dispatch"), when it has one. Never authoring rationale or prior verdicts.
+- **Scope**: "Scope hand-off" (below).
 - Reviewers MUST NOT read another iteration's review files, any wave's. Only the current iteration directory.
-- Incremental scoping, in both review phases (iter 2+ reviews only what changed — `external-review.md` "Iteration semantics": impl-review since the previous iteration's recorded HEAD, design-review since its draft snapshot), narrows the *input*, not context. Agent still fresh.
+- Incremental scoping, in both review phases (iter 2+ reviews only what changed — impl-review since the wave's previous recorded iteration HEAD, `sprint-lifecycle.md` "Review iteration counters"; design-review since its draft snapshot), narrows the *input*, not context. Agent still fresh.
 - Where a reviewer genuinely needs prior-iteration data (External Review stalemate detection), the phase workflow supplies it as explicit payload input — scoped data, not context carry-over.
+
+## Scope hand-off
+
+Sole statement, both review phases, every reviewer — the 4 internal reviewers and External Review. Workflows, agents, external prompts and README link here.
+
+1. **List** — the reviewer's file list, written by `node .asd/runtime.js emit-manifest` per reviewer (impl-review: per wave; built as "Reviewer responsibility" states; External Review's scope manifest: `external-review.md` "Phase-scoped payload"), is its only normative scope: its ledger file rows and its valid finding locations. Never a second list, never diff text in the payload.
+2. **Diff** — the `.diff` file `emit-manifest` writes beside it for exactly that list is the change content, deletions included, read on demand. impl-review: every iteration, over the iteration's range (`sprint-lifecycle.md` "Review iteration counters"). design-review: from iteration 2, against the previous iteration's draft snapshot (`--snapshot`); none at iteration 1 — the drafts are wholly new, so a diff would only duplicate them.
+3. **Whole files** — any file, listed or not, is readable as context when the diff is not enough. An unlisted path stays out of scope — for an internal reviewer, save the Change-surface exception below.
+
+No reviewer — the wrapped CLI included — runs git to derive, widen or narrow its scope, and no payload tells it to.
 
 ## Change-surface rule
 
@@ -97,11 +107,11 @@ Default: the responsible creator autofixes any reviewer issue without user promp
 
 ## Coverage ledger (mandatory — blocks verdict)
 
-Applies to all 4 internal reviewers (NOT External Review — the wrapped CLI self-scopes). Before any verdict, the reviewer MUST emit a coverage ledger proving exhaustive review. Reviewer MUST NOT emit a final verdict while its ledger is incomplete.
+Applies to all 4 internal reviewers (NOT External Review — same list and diff, "Scope hand-off", but no rubric and no ledger). Before any verdict, the reviewer MUST emit a coverage ledger proving exhaustive review. Reviewer MUST NOT emit a final verdict while its ledger is incomplete.
 
 The phase workflow emits an ordered machine manifest per internal reviewer before dispatch with `node .asd/runtime.js emit-manifest --reviewer <name> --phase <design-review|impl-review> --files <path to a file listing the scope files, one per line> --out <review output dir> [--custom-rules <path,...>] [--test-plan <path,...>] [--base <sha> --head <sha> [--full-files <path> --full-base <sha>]] [--snapshot <previous iteration dir>] [--self-hosting]` — the sole manifest source; never hand-assembled; `--self-hosting` is passed when `config.self_hosting: enabled`. From the scope it builds this reviewer's file list ("Reviewer responsibility"). It enumerates every file in that list, every stable reviewer-rubric/custom-rule ID (a custom rule's id is the `--custom-rules` path as passed), the rubric's section IDs (its `###` headings; none for an unsectioned rubric), and the **allowed `n/a` predicates per individual ID** — the standing predicates, whose target ids and classifier member lists live only in `.asd/runtime.js` (`NA_TARGETS`, `isUiSurface`, `isExecutable`, `isTemplated`); their text is owned by `NA_PREDICATES` there, and any canon quote of it must match — e.g. Documentation's Framework mode is `n/a: self_hosting not enabled` without `--self-hosting`, and its Template adherence is `n/a: no templated artefact in scope` when no scope file is templated. **Rubric ID derivation**: a reviewer's rubric IDs are the top-level entries of its agent file's `## Review rubric` — each `###` heading where that rubric is sectioned, else each bullet's bold lead-in label — in file order, the heading or label text verbatim as the id; nothing nested under an entry is enumerated separately. They are stable because the text IS the id: adding, renaming or deleting an entry is a canonical agent edit that moves the manifest in the same change, and an entry outside this phase or this diff's scope is still enumerated, carrying an authorized `n/a` predicate rather than being dropped. The manifest contains its SHA-256 digest, calculated by `.asd/runtime.js` over the manifest excluding `digest` — `emit-manifest` stamps it, `node .asd/runtime.js manifest-digest --manifest <path>` verifies it; a reviewer cannot replace it. **Immutability**: a dispatched manifest is immutable for the life of that dispatch, to the orchestrator as to the reviewer. Correcting it takes a fresh dispatch carrying a newly emitted manifest, never a re-stamp of the dispatched one.
 
-**Pure-rename row.** `--base/--head` apply to impl-review only. With them, `emit-manifest` writes each manifest's patch `<reviewer>.diff` beside it and returns its path. It also authorizes `NA_PREDICATES.pureRename` in `n_a.files` for each listed file the range renames with identical content and mode. That file's row is then the compact `n/a` row. The runtime proves the class; a reviewer asserting it anywhere else is an unauthorized `n/a`. The rename is neutral for the file, not for its referrers — the Change-surface exception covers those.
+**Pure-rename row.** `--base/--head` apply to impl-review only. With them, `emit-manifest` also writes the manifest's `.diff` ("Scope hand-off") and authorizes `NA_PREDICATES.pureRename` in `n_a.files` for each listed file the range renames with identical content and mode. That file's row is then the compact `n/a` row. The runtime proves the class; a reviewer asserting it anywhere else is an unauthorized `n/a`. The rename is neutral for the file, not for its referrers — the Change-surface exception covers those.
 
 **Manifest `vocabulary`** — the row vocabulary travels inside the manifest, so a reviewer reads it off its own input instead of recalling prose:
 
@@ -167,7 +177,7 @@ Sole owner map: each concern below has exactly one reviewer; agent rubrics hold 
 | Efficiency | over-engineering, structure/cohesion, complexity-vs-value · every scoped draft | the same plus performance · every scope file |
 | Testing | not dispatched; testability is unowned in design-review — no tests exist before impl | test-plan decisions, AC→check coverage, edge cases, manual-verification necessity · the `isTest` scope files plus `test-plan.md` and its segments (`--test-plan`) |
 | Documentation | SSoT, template adherence, provenance, traceability, custom rules, documentation economy · every scoped draft | the same plus persistent-doc actuality, in-code doc comments, stub resolution, Framework mode · every scope file |
-| External Review | the wrapped CLI's own review · `files[]` per `external-review.md` "Phase-scoped payload" | same |
+| External Review | the wrapped CLI's own review · every scope file ("Scope hand-off") plus carried-over `Unreviewed files` (`external-review.md` "Iteration semantics") | same |
 
 ## DoD per review phase
 

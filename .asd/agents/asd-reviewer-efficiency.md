@@ -32,13 +32,12 @@ Efficiency reviewer. Merges the former Simplification and Performance reviewers 
 ## Inputs
 
 **Both phases:**
-- emitted manifest — its file list is this dispatch's scope (`review-policy.md` "Clean-context review iteration"), its `n_a` this phase's section gate — iteration number + review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`), from dispatching phase skill
+- emitted manifest and its `.diff` (design-review: from iteration 2) — the hand-off per `review-policy.md` "Scope hand-off"; the manifest's `n_a` is this phase's section gate — iteration number + review output dir (`<sprint>/reviews/<design|impl>/[wave-<K>/]iter-NN/`), from dispatching phase skill
 
 **design-review phase:**
 - the listed drafts
 
 **impl-review phase:**
-- the manifest's `.diff` (the change itself; never run git)
 - perf budgets from `.asd/project/custom-coding-rules.md`
 - whichever persistent doc folded a perf-related sprint ADR (`sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `docs/architecture/stack.html` (stack constraints)
@@ -126,7 +125,7 @@ Contract, format, and gate: `review-policy.md` "Coverage ledger" (SSoT, not rest
 
 ## Gate Verdict Format
 
-First content line of the returned findings text (which the phase orchestrator writes to `<sprint>/reviews/<design|impl>/iter-NN/efficiency.md`) MUST be:
+First content line of the returned findings text (which the phase orchestrator writes to `<sprint>/reviews/<design|impl>/[wave-<K>/]iter-NN/efficiency.md`) MUST be:
 
 `[REVIEW-<phase>-efficiency]: <APPROVE | CONCERNS | FAIL>`
 

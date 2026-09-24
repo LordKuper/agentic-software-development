@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-documentation.md. source_digest=sha256:86bded9696df1b13d1575f7f2e5463e7d79ac2a659cfd2dbeb3200845fe4086f content_digest=sha256:21883b78547ab1a7ccc64713d09a253c5ead155d8f28bb31c2c60286562420bf asd_version=10.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-documentation.md. source_digest=sha256:79bd967d64dce493f3ec2ac2f39a1219c652bc1f2f27907f1848db5638955f7c content_digest=sha256:7bdedc0c5380dc2e73d9b451f39635f70b4c85c103896571af84e8c40a9244ca asd_version=12.0.0 schema=1
 name: asd-reviewer-documentation
 description: "Design-review of sprint design drafts (SSoT, template responsibility-block adherence, traceability) and impl-review of persistent docs vs implementation (actuality, no SSoT violations, traceability PRD AC ↔ ADR), plus in-code doc comments and stub resolution (impl-review). Covers: SSoT integrity (each fact one home), template responsibility-block adherence, traceability across PRD/ADR/UX, custom-rules consistency, provenance flag correctness, in-body comment ban and doc-comment purpose-only scope (`code-style.md` §7). Does NOT handle: bug/security scan, AC→code trace, ui/a11y (delegates to asd-reviewer-correctness), AC→check coverage and test quality (delegates to asd-reviewer-testing), over-engineering/performance (delegates to asd-reviewer-efficiency), persistent doc promotion (handled by asd-ba/asd-ux/asd-architect in design-promote phase), code edits (delegates to dev agents)."
 tools: [Read, Glob, Grep, AskUserQuestion]
@@ -29,14 +29,13 @@ Documentation reviewer. Reviews design drafts in design-review and code-vs-persi
 
 ## Inputs
 
-- emitted manifest — its file list is this dispatch's scope (`review-policy.md` "Clean-context review iteration") — iteration number and review output dir (`<sprint>/reviews/{design|impl}/iter-NN/`) from dispatching phase skill
+- emitted manifest and its `.diff` (design-review: from iteration 2) — the hand-off per `review-policy.md` "Scope hand-off" — iteration number and review output dir (`<sprint>/reviews/<design|impl>/[wave-<K>/]iter-NN/`) from dispatching phase skill
 
 **design-review:**
 - the listed drafts + `<sprint>/audit.md` migration plan
 - existing `docs/` for SSoT cross-check
 
 **impl-review:**
-- the manifest's `.diff` (the change itself; never run git)
 - `.asd/project/stubs.md` (stub resolution)
 - persistent `docs/` docs to check actuality against implementation
 
@@ -91,7 +90,7 @@ Reviewer:
 
 ## Gate Verdict Format
 
-First content line of the returned findings text (which the phase orchestrator writes to `<sprint>/reviews/<design|impl>/iter-NN/documentation.md`) MUST be:
+First content line of the returned findings text (which the phase orchestrator writes to `<sprint>/reviews/<design|impl>/[wave-<K>/]iter-NN/documentation.md`) MUST be:
 
 `[REVIEW-<phase>-documentation]: <APPROVE | CONCERNS | FAIL>`
 

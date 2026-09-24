@@ -5,15 +5,14 @@ responsibility:
   delegates_to: t_prompt-external-{design,impl}.md (prompts), t_review.md (internal reviewer output)
 ---
 
-[REVIEW-{{REVIEW_PHASE}}-external]: {{APPROVE | APPROVE (skipped: external review unavailable: <specific status>) | APPROVE (partial: <n>/<m> files; <cause>) | CONCERNS | FAIL}}
+[REVIEW-{{REVIEW_PHASE}}-external]: {{APPROVE | APPROVE (skipped: external review unavailable: <specific status>) | CONCERNS | FAIL}}
 
 # External Review Report
 
 - **Phase**: {{design-review | impl-review}}
-- **Iteration**: {{N}}
+- **Iteration**: {{design-review: N | impl-review: wave-<K>/iter-NN}}
 - **Severity floor (this iter)**: {{low | medium | high | critical}}
-- **Reviewed files**: {{n}}/{{m}}
-- **Unreviewed files**: {{paths not reviewed this iteration, omitted when n = m; external-review.md "Iteration semantics"}}
+- **Unreviewed files**: {{skip record only — every `files[]` path it would have sent; external-review.md "Iteration semantics"}}
 
 ## Kept findings
 
@@ -27,7 +26,7 @@ responsibility:
 - Nitpick, by category: {{nitpick category}}: {{count}}{{, ...}}
 
 ## Verdict
-{{APPROVE | APPROVE (partial: <n>/<m> files; <cause>) | CONCERNS: <count> | FAIL: <count>}}
+{{APPROVE | CONCERNS: <count> | FAIL: <count>}}
 
 ## Next action
 {{what creator/orchestrator must do next}}
