@@ -48,3 +48,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: The orchestrator squash-merged PR #49 as `75a9fe9` after CI (`sync-check`) passed and the PR was mergeable, and set `pr.state="closure-pending"`. The user explicitly instructed to drive autonomously to sprint closure and release publication, which is the hard closure approval.
 - **Rationale**: Merging never satisfies closure (`git-strategy.md` "Merging a PR"). The user's explicit instruction does.
 - **Affected docs**: state.json
+- 2026-09-24 — sprint 017-review-waves finalized: archived, phase=done, pr.state=merged (companion PR)

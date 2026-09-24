@@ -1,7 +1,7 @@
 {
   "sprint_id": "017-review-waves",
   "branch": "claude/asd-sprint-4y74bx",
-  "phase": "pr",
+  "phase": "done",
   "documents": {
     "audit": true,
     "prd": false,
@@ -316,14 +316,14 @@
     }
   },
   "created_at": "2026-09-24T00:24:03Z",
-  "updated_at": "2026-09-24T17:00:00Z",
+  "updated_at": "2026-09-24T17:05:00Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": {
-    "state": "closure-pending",
+    "state": "merged",
     "number": 49,
     "url": "https://github.com/LordKuper/agentic-software-development/pull/49",
     "merge_commit": "75a9fe9da6a255002d5c2b8ed5b545831306744a"
   },
-  "archived_at": null
+  "archived_at": "2026-09-24T17:05:00Z"
 }
