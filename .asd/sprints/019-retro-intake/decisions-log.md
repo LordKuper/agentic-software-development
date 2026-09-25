@@ -63,3 +63,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Initial impl complete: Tasks 1-7 plus one reconciliation round, every plan checkbox ticked. Build (`sync.js --check`) is ok and lint (`git diff --check`) is clean. The round diff holds only authorised paths plus orchestrator bookkeeping and the backlog seed. No sprint stubs. AC coverage: AC-1..AC-5, AC-7 (Tasks 3, 4, 5); AC-6 (Task 4); AC-8 (Task 1); AC-9/10 (Task 2); AC-11..AC-16 (Tasks 3, 4, 6); AC-17 (Task 7; tests pending impl-test).
 - **Rationale**: `user_gates: adaptive`; every flagged choice was resolved above and nothing material is open. The suite is at 225/229, and the four red tests are the wording pins the plan's Risks section assigns to impl-test.
 - **Affected docs**: [plan.md](plan.md)
+- 2026-09-25 — route impl-test entry 1: critical, dispatch HEAD f9d31d7
+- 2026-09-26 — reconstruction: landed none; re-dispatched impl-test entry 1
