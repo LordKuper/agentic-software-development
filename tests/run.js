@@ -6036,7 +6036,12 @@ test('sprint-019 AC-1/AC-3/AC-4/AC-5/AC-6: scope step 2a runs retro intake by th
     return execFileSync(process.execPath, [path.join(REPO_ROOT, script), ...args], { cwd: root, encoding: 'utf8', stdio: 'pipe' });
   };
   const fixture = retroIntakeFixture(INTAKE_SPRINTS, INTAKE_BACKLOG);
-  assert.deepStrictEqual(JSON.parse(run(fixture.root)), runtime.retroCandidates(fixture.sprintsDir, fixture.backlogPath, true), 'the command as the workflow writes it, run from the project root, must reach the sprints and the backlog it names');
+  const offered = JSON.parse(run(fixture.root));
+  assert.deepStrictEqual(offered, runtime.retroCandidates(fixture.sprintsDir, fixture.backlogPath, true), 'the command as the workflow writes it, run from the project root, must reach the sprints and the backlog it names');
+  const rowId = canonText('.asd/rules/sprint-lifecycle.md').split('\n').find((line) => line.startsWith('**Retro row id**')) || '';
+  const prefix = (/`([^`]+:)`[^.]*\bEnglish\b/.exec(rowId.split(/(?<=\.)\s/).find((sentence) => /\bEnglish\b/.test(sentence)) || '') || [])[1];
+  const covered = RETRO_017.actions.findIndex(([text]) => prefix && text.startsWith(prefix));
+  assert.ok(covered >= 0 && !offered.some((candidate) => candidate.row === `017-b#A-${covered + 1}`), `sprint-019 74a25b1: "Retro row id" must name the covered-by prefix among its English literals, and it must be the one intake drops - a translated prefix offers covered rows as candidates (got ${JSON.stringify(prefix)})`);
   assert.strictEqual(run(retroIntakeFixture({}).root).trim(), '[]', 'AC-5: a project with no archived sprint and no backlog yet gets [] - the silent no-op');
 
   const intake = canonText('.asd/rules/sprint-lifecycle.md').split('\n').find((line) => line.startsWith('**Retro intake.**')) || '';
@@ -6144,6 +6149,9 @@ test('sprint-019 AC-9/AC-10: the dispatch payload header providers.md defines is
   for (const [rel, step] of [['.asd/workflows/asd-phase-design-review.md', 7], ['.asd/workflows/asd-phase-impl-review.md', 6]]) {
     assert.ok(stepOf(canonText(rel), step).includes('`providers.md` "Dispatch payload header"'), `${rel} step ${step} builds every reviewer payload, so it must open them with the header by citing its home`);
   }
+  for (const [rel, step] of [['.asd/workflows/asd-phase-impl.md', 6], ['.asd/workflows/asd-phase-impl-test.md', '1a'], ['.asd/workflows/asd-phase-impl-review.md', 9]]) {
+    assert.ok(stepOf(canonText(rel), step).split('\n').some((line) => /\bdelegate|\bdispatch/i.test(line) && /asd-(?:dev|tester)/.test(line) && line.includes('`providers.md` "Dispatch payload header"')), `sprint-019 COR-6: ${rel} step ${step} dispatches a dev or tester, the case 018 F-2 evidenced, so its dispatch line must open the payload with the header by citing its home`);
+  }
 
   const reserve = /report by turn <maxTurns − (\d+)>/.exec(rule);
   assert.ok(reserve, 'the Turn budget line must state the turn the report is due by, relative to maxTurns');
@@ -6181,11 +6189,18 @@ test('sprint-019 AC-11/AC-12/AC-13/AC-15/AC-16: each review-fix, rotation and te
   for (const rel of ['.asd/workflows/asd-phase-impl.md', '.asd/agents/asd-tester.md']) {
     assert.ok(canonText(rel).split('\n').some((line) => /review-fix|tester chain/.test(line) && line.includes('`artifact-layout.md` "Test plan"')), `AC-15: ${rel} must bound the review-fix tester by pointing at the "Test plan" grant`);
   }
+  assert.ok(sectionOf('.asd/rules/artifact-layout.md', 'Test plan').split(/(?<=\.)\s/).some((sentence) => sentence.includes('`Removed tests`') && /\bnever\b/.test(sentence) && /\bdelet/.test(sentence) && /\bnext\b/.test(sentence) && sentence.includes('`impl-test`')), 'sprint-019 COR-4: the review-fix tester may not touch Removed tests, the home of why a test went, so the grant must say it never deletes a test and that the next impl-test entry removes it and records the reason there');
+  assert.ok(canonText('.asd/agents/asd-tester.md').split('\n').some((line) => /^In review-fix\b/.test(line) && /\bdelet/.test(line) && /\bno test\b|\bnever\b/.test(line)), 'sprint-019 COR-4: the tester body bounds its review-fix pass, so it must say that pass deletes no test');
+  const testerDescription = sync.parseCanonicalFrontmatter(sync.readNormalized(path.join(REPO_ROOT, '.asd/agents/asd-tester.md'))).meta.description;
+  assert.ok(testerDescription.split(/[.,]\s/).some((clause) => /review-fix/.test(clause) && /test files/.test(clause)) && stepOf(canonText('.asd/workflows/asd-phase-impl.md'), 3).includes('findings located in test files route to `asd-tester`'), "sprint-019 DOC-5: impl step 3 dispatches the tester in review-fix for findings located in test files, so the tester's description must name that purpose in its review-fix clause - the row limit only bounds what it touches");
 
   const leftover = sectionOf('.asd/rules/artifact-layout.md', 'Agent memory').split('\n').find((line) => line.startsWith('**Leftover-term check**')) || '';
-  assert.ok(leftover.includes('`.claude/agent-memory/**`') && /\bfirst\b/.test(leftover) && leftover.includes('`impl-test`') && /no longer existing agents/.test(leftover), 'AC-16: the leftover-term check covers all agent memory, orphan directories included, from the first impl-test entry');
+  assert.ok(leftover.includes('`.claude/agent-memory/**`') && /\bfirst\b/.test(leftover) && leftover.includes('`impl-test`') && /no longer existing agents/.test(leftover), 'AC-16: the leftover-term check covers all agent memory, orphan directories included, at the first impl-test entry');
+  assert.ok(!/\bfrom (?:its|the) first\b/.test(leftover), 'sprint-019 DOC-3: both acting sites run the check at entry 1 only, so the home must not say it runs from the first entry on');
   for (const rel of ['.asd/workflows/asd-phase-impl-test.md', '.asd/agents/asd-tester.md']) {
-    assert.ok(canonText(rel).split('\n').some((line) => /leftover-term check/.test(line) && line.includes('`artifact-layout.md` "Agent memory"')), `AC-16: ${rel} runs the check on entry 1, so it must point at its home`);
+    const acting = canonText(rel).split('\n').filter((line) => /leftover-term check/.test(line) && line.includes('`artifact-layout.md` "Agent memory"'));
+    assert.ok(acting.length > 0, `AC-16: ${rel} runs the check on entry 1, so it must point at its home`);
+    assert.ok(acting.every((line) => !line.includes('`.claude/agent-memory/**`')), `sprint-019 DOC-3: ${rel} must cite the whole check, not restate a scope - a restated agent-memory-only scope left the canon and README half with no one acting on it`);
   }
 });
 
@@ -6197,13 +6212,24 @@ test('sprint-019 AC-14/AC-16: review-policy.md "Autofix vs escalation" routes a 
   assert.ok(clauses.some((clause) => /own write tool/.test(clause) && clause.includes('`memory: project`') && /reviewers/.test(clause)), 'AC-14 (iter-01 answer b): the owner fixes the file with its own write tool, which `memory: project` serves every owner on Claude, reviewers included - without that clause a reviewer owner reads the MEMORY-FIX fallback as its route');
   assert.ok(clauses.some((clause) => clause.includes('`MEMORY-FIX <path>`') && /no verdict token/.test(clause)), 'AC-14: an owner without a write tool returns only a MEMORY-FIX block and no verdict token - a token would be parsed as a review');
   assert.ok(clauses.some((clause) => /\bverbatim\b/.test(clause) && /\bcommits\b/.test(clause) && /decisions-log/.test(clause)), 'AC-14: the orchestrator applies that text verbatim, commits it and records it in the decisions log');
+  assert.ok(clauses.some((clause) => clause.includes('`.claude/agent-memory/<owner>/`') && clause.includes('`D-N`')), 'sprint-019 external #1: impl step 3 routes a test-fix D-N located in agent memory to this dispatch too, so the home must name D-N beside review findings');
+  assert.ok(clauses.some((clause) => /\bowner\b/.test(clause) && /\ball\b/.test(clause) && /\bfindings\b/.test(clause)), 'sprint-019 external #1: each distinct owner gets one memory-fix dispatch carrying all its findings - unstated, a round with several owners has no rule for how many dispatches it makes');
+  assert.ok(clauses.some((clause) => /one at a time/.test(clause)), 'sprint-019 external #1: memory-fix dispatches run one at a time, so no two owners write concurrently');
+  assert.ok(clauses.some((clause) => /\bafter\b/.test(clause) && /\bdev\b/.test(clause) && /\btester\b/.test(clause)), "sprint-019 external #1: memory-fix dispatches run after the round's dev and tester chains");
+  assert.ok(clauses.some((clause) => /\blowest\b/.test(clause) && /\bid\b/.test(clause)), "sprint-019 external #1: the owners' dispatches are ordered by each owner's lowest finding or D-N id - without an order key the sequence is the orchestrator's guess");
+  const ownerless = memoryFix.split(/(?<=\.)\s/).find((sentence) => /no longer exists?/.test(sentence)) || '';
+  assert.ok(/no owner/.test(ownerless) && /\bdeletes\b/.test(ownerless) && /\bcommits\b/.test(ownerless) && /decisions-log/.test(ownerless) && /no memory text/.test(ownerless), 'sprint-019 COR-3: a finding in the memory directory of an agent that no longer exists has no owner to dispatch - the orchestrator deletes the stale file or directory, commits the deletion and logs one line, authoring no memory text; unstated, the leftover-term check finds an orphan hit and the round stalls');
+  const impl = canonText('.asd/workflows/asd-phase-impl.md');
+  const reviewFix = stepOf(impl, 3).split('\n').find((line) => line.includes('**review-fix**')) || '';
+  assert.ok(reviewFix.split(/;\s/).some((clause) => /no longer exists?/.test(clause) && /\bdeleted\b/.test(clause) && /\bsame rule\b/.test(clause)), 'sprint-019 COR-3: impl step 3 is where a memory finding meets its owner, so it must send an ownerless one to the deletion its home defines');
+  assert.ok(stepOf(impl, 9).split('\n').some((line) => /authorised to touch/.test(line) && /\bdeleted\b/.test(line) && /ownerless/.test(line)), "sprint-019 COR-3: impl step 9's authorised-paths gate must admit an ownerless memory file the orchestrator deleted, or the deletion fails the gate as an unauthorised path");
+  assert.ok(stepOf(impl, 5).split(/(?<=\.)\s/).some((sentence) => /memory-fix/i.test(sentence) && /\blast\b/.test(sentence) && sentence.includes('`review-policy.md` "Autofix vs escalation"')), 'sprint-019 external #1: impl step 5 runs memory-fix dispatches last, in the order the home sets, so it must point at that home');
 
   const memoryFiles = fs.readdirSync(path.join(REPO_ROOT, '.claude/agent-memory'), { recursive: true }).map((entry) => `.claude/agent-memory/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
   assert.ok(memoryFiles.some((rel) => rel.startsWith('.claude/agent-memory/asd-pm/')), 'sanity: AC-16 - the sweep must reach agent-memory directories no roster agent loads');
   const claim = /\b(?:serves|gives) (?:a reviewer|it|this agent) no write tool|only loads (?:it|its memory)/i;
-  const pendingMemoryFix = ['.claude/agent-memory/asd-reviewer-documentation/project_reviewer-write-scope-declaration.md', '.claude/agent-memory/asd-reviewer-testing/feedback_no-shell-review-method.md'];
   const leftovers = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', ...memoryFiles].flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => (claim.test(line) ? [`${rel}:${index + 1}`] : [])));
-  assert.deepStrictEqual(leftovers.filter((hit) => !pendingMemoryFix.includes(hit.replace(/:\d+$/, ''))), [], `AC-14/AC-16 (iter-01 answer b): on Claude \`memory: project\` serves a reviewer Write, so a line saying the host serves it no write tool, or that \`memory: project\` only loads its memory, restates the claim iter-01 refuted - its owner rewrites it through the memory-fix dispatch. The two exempted files carry COR-1/DOC-1, routed to their owners' memory-fix dispatches after the round's tester chain; once those land, the next impl-test entry deletes the exemption. Found: ${leftovers.join(', ')}`);
+  assert.deepStrictEqual(leftovers, [], `AC-14/AC-16 (iter-01 answer b): on Claude \`memory: project\` serves a reviewer Write, so a line saying the host serves it no write tool, or that \`memory: project\` only loads its memory, restates the claim iter-01 refuted - its owner rewrites it through the memory-fix dispatch; an orphan directory's file is deleted. If you ever exempt a file here, name its finding id in this message and delete the exemption once the fix lands. Found: ${leftovers.join(', ')}`);
 });
 
 // ===========================================================================
