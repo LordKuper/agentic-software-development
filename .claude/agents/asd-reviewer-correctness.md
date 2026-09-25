@@ -1,9 +1,9 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-correctness.md. source_digest=sha256:af05413663edcad31896e9b4cba088a647d6e64d48aafb6dde0264f2b4e7176d content_digest=sha256:8d9e2eaff7865b77138c89ae574596b0f1b832c30d38832d6ef011da3d9a978c asd_version=12.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-correctness.md. source_digest=sha256:b88c9adce657d43282d252a09555b9157a367cce9076a7b013f4ceb871f69942 content_digest=sha256:c3af0d3ef3ea3d3c3805b041f37edbc11f69dece16f610cee083413b140f05e3 asd_version=13.0.0 schema=1
 name: asd-reviewer-correctness
 description: "Design-review of draft correctness (AC completeness, contract and ADR decision soundness) and UI drafts (UI section n/a without a ux-spec/design-system draft), and impl-review of code, tests and UI for bugs, security, best-practice/contract drift, the AC→code trace, and UI/accessibility conformance. Covers: bug patterns (off-by-one, null paths, race conditions, resource leaks), security holes (secrets, injection, auth bypass, crypto misuse, input validation), language/framework best practices, contract violations vs ADR, AC→code trace against PRD/`sprint.md` AC-N, ux-spec compliance check, UI implementation match to ux-spec mockups, design-system token/component usage, accessibility baseline compliance. Does NOT handle: over-engineering, structure/cohesion, or performance (delegates to asd-reviewer-efficiency), test-plan/test-quality review and AC→check coverage (delegates to asd-reviewer-testing), design-review testability (unowned by design), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
-tools: [Read, Glob, Grep, AskUserQuestion]
-disallowedTools: [Edit, Bash, WebFetch]
+tools: [Read, Glob, Grep, WebFetch, WebSearch]
+disallowedTools: [Edit, Bash]
 model: opus
 effort: high
 maxTurns: 50
@@ -65,7 +65,8 @@ Reviewer:
 
 ## Tool policy
 
-- Request user decision only when severity, AC text, or token applicability truly ambiguous
+- Web lookups only for language/framework best practices and security advisories
+- Severity, AC text, or token applicability truly ambiguous → a `question:` item under Escalations (`review-policy.md` "Gate Verdict Format"), never a bare `QUESTION`
 
 ## Review rubric
 

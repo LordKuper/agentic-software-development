@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-stack/SKILL.md. source_digest=sha256:dbaf7e457fd58d5de99d5ec0aa4877a32ff599da700bb5ee2deb2379fac690a6 content_digest=sha256:c5611432601c3c322b4f99e3479d049cdc463f900ae103c812f4349ac5699102 asd_version=5.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-stack/SKILL.md. source_digest=sha256:1afe58b6e4c6611adf468e9dfee361d017412dad8465f52423afdd1ae5ac9354 content_digest=sha256:b53f9f54dcd8c6f25b785811776688585097e2917195b9362d66dcea242bd16c asd_version=13.0.0 schema=1
 name: asd-stack
 description: "Forms or edits the project tech stack document at docs/architecture/stack.html via asd-architect, branching by silent detection into one of four flows (clean slate / constraints / clear stack / brownfield extraction). Verifies versions via WebFetch, runs knowledge-gap analysis, and maintains a tech-reference doc per chosen tech. Use when the user runs $asd-stack, when asd-init or asd-concept detects a missing stack.html and suggests this skill, or when the user asks to define, draft, refine, edit, upgrade, or reverse-engineer the project technology stack."
 ---
@@ -57,7 +57,8 @@ Phase 1 brownfield candidates auto-suggest D as default.
 - Proceed to Phase 4
 
 **Variant C — clear stack**
-- Delegate to agent `asd-architect` to ask user to describe chosen stack
+- Request user input: describe the chosen stack
+- Delegate to agent `asd-architect` with concept + that description
 - Architect validates compatibility with concept; flags conflicts (e.g., "concept implies mobile but stack is server-only")
 - Architect fills unstated gaps per `t_stack.html` (proposes defaults; user approves)
 - Proceed to Phase 4

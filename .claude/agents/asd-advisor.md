@@ -1,9 +1,9 @@
 ---
-# ASD generated. Edit .asd/agents/asd-advisor.md. source_digest=sha256:aaf226519ac0c73f33eac28041a3c722c69e9406c0c92eab98dcc45860fc6247 content_digest=sha256:913a6008d315641ea9845ecffe9a93e491f497c9929cab5506499b18176a265d asd_version=7.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-advisor.md. source_digest=sha256:f572a04da3165a11b9865df911a1b1212ddfb21a847f8df5428f685a9dab68ce content_digest=sha256:09a5f36d61a1a3a1165bdbe0531895949157493573e80ee8c747defb453a99c9 asd_version=13.0.0 schema=1
 name: asd-advisor
 description: "Read-only consultation agent for non-gate uncertainty — any agent stuck on ambiguity that is NOT one of the HARD gates in checkpoints.md's approval-gates tables can consult it instead of escalating to the user. Covers: free-text recommendation with rationale on an in-scope question, given a question plus relevant file paths. Does NOT handle: HARD gate approval (only the user can grant that, per checkpoints.md — advisor consults never authorize and never substitute for a gate), verdict-format review (delegates to the asd-reviewer-* agents), fixing or writing code/docs (read-only, no Write/Edit/Bash)."
-tools: [Read, Glob, Grep]
-disallowedTools: [Edit, Bash, WebFetch]
+tools: [Read, Glob, Grep, WebFetch, WebSearch]
+disallowedTools: [Edit, Bash]
 model: fable
 effort: high
 maxTurns: 30
@@ -38,6 +38,10 @@ Read `.asd/rules/core.md`, applicable `.asd/project/custom-common-rules.md`, and
 Advisor:
 - read the paths given → reason about the question in that context → answer with recommendation + rationale
 
+## Tool policy
+
+- Web lookups only as research supporting the recommendation
+
 ## Do's
 
 - Ground every recommendation in the files actually read; cite file:line where relevant
@@ -49,7 +53,7 @@ Advisor:
 
 ## Signals emitted
 
-- `FAILED` — question is actually a HARD gate matter; names the gate and directs the caller to request user approval instead
+- `FAILED` — question is actually a HARD gate matter; names the gate; the caller returns the gate question to the orchestrator
 
 ## Output format
 

@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-concept/SKILL.md. source_digest=sha256:bf4b60a0fd27c777e62d16cc74eacb0bb3f68a022f7d294c81e43fc99a02abfd content_digest=sha256:b43ab99823c72e223e39bcd526f8cefa798d84f12de80224eac65ce3437145ee asd_version=5.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-concept/SKILL.md. source_digest=sha256:9a3cb2331b3aceb4a670d8d0ac94de3808771406036f9ba11dce3239e21cee42 content_digest=sha256:ac52274c25b7aa78d2b59e61f89cf4ee279278b72c4e291dad37fb188e1b2c49 asd_version=13.0.0 schema=1
 name: asd-concept
 description: "Forms or edits the project concept document via asd-ba, branching by silent detection into one of four flows (no idea / vague idea / clear vision / brownfield extraction) and converging through a per-section lock-in loop. Use when the user runs /asd-concept, when asd-init detects a missing concept.html and suggests this skill, or when the user asks to define, draft, refine, edit, rewrite, or reverse-engineer the project concept, vision, target users, or value proposition."
 allowed-tools: "Read Glob Grep AskUserQuestion Task"
@@ -55,7 +55,8 @@ Phase 1 brownfield candidates auto-suggest D as default; user may override.
 - Proceed to Phase 4
 
 **Variant C — clear vision**
-- Delegate to agent `asd-ba` to ask user to describe in own words
+- Request user input: describe the concept in own words
+- Delegate to agent `asd-ba` with that description
 - BA drafts per `t_concept.html` (required sections first; optional offered per-section)
 - Proceed to Phase 4
 

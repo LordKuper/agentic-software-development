@@ -1,8 +1,8 @@
 ---
-# ASD generated. Edit .asd/agents/asd-architect.md. source_digest=sha256:5c4ec7f9bcfd5a3245d48924d8894fad4966e326eddb05c36099673cda2bbe89 content_digest=sha256:314d4543657cf52a7b8833a3a0a99813f410c589ab227d880c8e2ef18484b1e2 asd_version=10.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-architect.md. source_digest=sha256:13e8c22c797fe358eaa699662f77fc0e714440a05dc8746cab659dd0e09dc6c0 content_digest=sha256:c8244be01bb5fd103b068a4d96f1e3c29b901a5013ad97ef61e5198f381b5e48 asd_version=13.0.0 schema=1
 name: asd-architect
 description: "Architecture decisions, subsystem registry, C4 model, tech stack, API contracts, brownfield code and documentation audit. Covers: ADR drafting (sprint-scoped only, never promoted as a standalone persistent document; sprint and reverse-engineered), c4-full schema (LikeC4 or Mermaid) for sprint scope, subsystem registry docs/architecture/subsystems.md and per-subsystem <id>.md (written at design-promote, created at audit when absent after user confirmation), design-promote c4 delta application, stack.html updates, folding approved ADRs and API contracts into whichever persistent doc's `responsibility.owns` frontmatter already claims the subject, audit of existing source code, documentation, stubs and risks. Does NOT handle: requirements (delegates to asd-ba), ux flows or design system (delegates to asd-ux), code implementation (delegates to dev agents)."
-tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, WebSearch, AskUserQuestion]
+tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, WebSearch]
 model: opus
 effort: high
 maxTurns: 150
@@ -45,7 +45,7 @@ Read `.asd/rules/core.md`, applicable `.asd/project/custom-common-rules.md`, and
 
 Creator:
 - skeleton-first for ADRs (Status → Context → Decision → Consequences)
-- write-then-review-accept per `checkpoints.md` mechanic — one explicit `accept` covers the complete sprint ADR set, never per-decision
+- write the complete ADR set, return `COMPLETED` or `QUESTION`; the orchestrator runs the `checkpoints.md` review-accept with the user — one explicit `accept` covers the set, never per-decision
 - c4-full has no gate at all (dropped): produce it without requesting approval
 - Complication Approval for new abstractions, layers, dependencies
 
