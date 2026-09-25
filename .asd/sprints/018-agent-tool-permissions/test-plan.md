@@ -67,15 +67,15 @@ Every mutation was run the same way. `node <scratchpad>/mutate.js <id>` edits on
 
 ## Suite run
 
-Pre-strategy impacted run (step 3), existing tests only. The step-8 suite gate overwrites this record.
-
 - Command: `node tests/run.js`
 - Scope: impacted = full (safety valve: `sync.js`, `core.md`, `release-manifest.json` are framework-wide)
-- Result: fail — 223/225 passed, 2 failed, 0 skipped (exit 1). Failing: `T-2: feedback_no-shell-review-method.md cites asd-reviewer-testing.md's frontmatter …` (`tests/run.js:3335`, deepStrictEqual still expects `AskUserQuestion`); `sprint-015 AC-1/AC-6/AC-7/AC-8/AC-10/AC-12: …` (`tests/run.js:5459`, "AC-6: asd-ba stays shell-less …"). Both are red by intent (plan.md Risks)
-- Lint / build: not run at step 3
-- HEAD: e2d919d
+- Result: fail — 226/228 passed, 2 failed, 0 skipped (exit 1). Both failures are code defects D-1 and D-2 below. They are assertions this entry added, red at HEAD because canon lacks the contract. The two tests red before strategy (T-2, sprint-015), 223/225 at e2d919d, now pass
+- Lint / build: pass — `git diff --check` exit 0; `node .asd/sync.js --check` exit 0, `"ok": true`
+- HEAD: d3587cc
 
 ## Defects
 
 | ID | Entry | Location | Symptom | Failing test | Status | Fix commit |
 |---|---|---|---|---|---|---|
+| D-1 | 1 | .asd/rules/providers.md | AssertionError [ERR_ASSERTION]: AC-4/AC-5: the out-of-policy refusal must route a reviewer through its question carrier - "an agent ... returns `QUESTION`" alone makes a reviewer return a bare QUESTION, which reads as an interrupted dispatch | sprint-018 AC-4/AC-5/AC-7: a reviewer's question and External Review's stalemate ride the verdict-bearing report - one carrier form across template, rule, agents and both review workflows - and impl-review collects manual-verification results before dispatching the testing reviewer | pending | |
+| D-2 | 1 | .asd/workflows/asd-phase-audit.md | AssertionError [ERR_ASSERTION]: AC-7: every workflow dispatching a role that can return QUESTION must cite the QUESTION protocol, or that question has no handling path in the phase | sprint-018 AC-4/AC-5/AC-7: only the main orchestrator prompts the user - core.md says so, the QUESTION protocol carries every dispatched question, every creator/dev/tester-dispatching workflow cites it, and no agent body, skill or design step hands user contact to a dispatched agent | pending | |
