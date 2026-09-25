@@ -1,7 +1,7 @@
 {
   "sprint_id": "018-agent-tool-permissions",
   "branch": "sprint/018-agent-tool-permissions",
-  "phase": "pr",
+  "phase": "done",
   "documents": {
     "audit": true,
     "prd": false,
@@ -73,6 +73,13 @@
       "reason": "explicit approve to push and open PR",
       "evidence": "PR #51",
       "artifact_revision": "HEAD@6aeaaea"
+    },
+    {
+      "gate": "closure",
+      "decision_actor": "user",
+      "reason": "explicit merge-and-close instruction",
+      "evidence": "PR #51 merged b379155",
+      "artifact_revision": "PR #51"
     }
   ],
   "task_routing": {
@@ -287,13 +294,14 @@
     }
   },
   "created_at": "2026-09-25T08:23:09Z",
-  "updated_at": "2026-09-25T15:40:00Z",
+  "updated_at": "2026-09-25T18:05:00Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": {
     "number": 51,
     "url": "https://github.com/LordKuper/agentic-software-development/pull/51",
-    "state": "open"
+    "state": "merged",
+    "merge_commit": "b37915537b100b380c13bb2c82666bc53ae72610"
   },
-  "archived_at": null
+  "archived_at": "2026-09-25T18:05:00Z"
 }

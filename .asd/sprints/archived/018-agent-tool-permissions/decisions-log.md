@@ -36,3 +36,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 <!-- entries appended below this line -->
 - 2026-09-25 — pr open-mode DoD verified: plan tasks ticked, reviews green (wave 1/1, iter-05 all satisfied), full suite 229/229 @ed81831 (no code diff since), no sprint stubs, retrospective present; asd_version 13.0.0 → 13.1.0 (feat, no breaking), CHANGELOG v13.1.0; suite re-run after bump 229/229
 - 2026-09-25 — PR #51 opened (user-approved publication): https://github.com/LordKuper/agentic-software-development/pull/51
+- 2026-09-25 — PR #51 squash-merged (b379155); pr.state=closure-pending
+- 2026-09-25 — closure approved by user ("Сливай и закрывай спринт")
+- 2026-09-25 — sprint finalized: archived to .asd/sprints/archived/018-agent-tool-permissions, phase=done, pr.state=merged
