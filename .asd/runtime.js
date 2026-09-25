@@ -508,7 +508,7 @@ function latestRetroSprint(archived) {
   return sprints.find((sprint) => fs.existsSync(path.join(archived, sprint, 'retrospective.html')) && sprintPhase(path.join(archived, sprint)) === 'done') || null;
 }
 
-/** Retro intake candidates as `{row, acts_on, guardrail, home}`: the latest closed retrospective's rows the backlog does not dispose, then the backlog's deferred rows with the backlog's text and their retro's home; `covered by:` rows drop, and `asd` rows outside a self-hosting project. An absent backlog reads as empty. */
+/** Retro intake candidates as `{row, acts_on, guardrail, home}`: the latest closed retrospective's rows the backlog does not dispose, then the backlog's deferred rows as their retrospective states them (the backlog's Acts on/Guardrail are human-readable copies); `covered by:` rows drop, and `asd` rows outside a self-hosting project. An absent backlog reads as empty. */
 function retroCandidates(sprintsDir, backlogPath, selfHosting) {
   if (!fs.statSync(sprintsDir).isDirectory()) fail(`--sprints is not a directory: ${sprintsDir}`);
   const archived = path.join(sprintsDir, 'archived');
@@ -517,10 +517,7 @@ function retroCandidates(sprintsDir, backlogPath, selfHosting) {
   const rowsOf = (sprint) => retroRows(fs.readFileSync(path.join(archived, sprint, 'retrospective.html'), 'utf8')).map((row) => ({ row: `${sprint}#${row.id}`, acts_on: row.acts_on, guardrail: row.guardrail, home: row.home }));
   const latest = latestRetroSprint(archived);
   const fresh = latest === null ? [] : rowsOf(latest).filter((candidate) => !disposed.has(candidate.row));
-  const deferred = backlog.filter((entry) => entry.disposition === 'deferred').map((entry) => {
-    const source = rowsOf(entry.row.split('#')[0]).find((candidate) => candidate.row === entry.row) || fail(`retro backlog row not in its retrospective: ${entry.row}`);
-    return { row: entry.row, acts_on: entry.acts_on, guardrail: entry.guardrail, home: source.home };
-  });
+  const deferred = backlog.filter((entry) => entry.disposition === 'deferred').map((entry) => rowsOf(entry.row.split('#')[0]).find((candidate) => candidate.row === entry.row) || fail(`retro backlog row not in its retrospective: ${entry.row}`));
   return fresh.concat(deferred).filter((candidate) => !/^covered by:/i.test(candidate.guardrail) && (selfHosting || candidate.acts_on === 'consumer'));
 }
 
