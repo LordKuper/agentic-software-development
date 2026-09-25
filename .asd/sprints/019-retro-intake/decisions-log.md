@@ -65,3 +65,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: [plan.md](plan.md)
 - 2026-09-25 — route impl-test entry 1: critical, dispatch HEAD f9d31d7
 - 2026-09-26 — reconstruction: landed none; re-dispatched impl-test entry 1
+- 2026-09-26 — impl-test: defects D-1, D-2 → impl test-fix (digest 3ec2fc12df1ccac02262dab533d64e635d766ebf5270c2b5e8c74556ec4b83c5)
