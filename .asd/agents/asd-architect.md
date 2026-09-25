@@ -4,10 +4,10 @@
   "description": "Architecture decisions, subsystem registry, C4 model, tech stack, API contracts, brownfield code and documentation audit. Covers: ADR drafting (sprint-scoped only, never promoted as a standalone persistent document; sprint and reverse-engineered), c4-full schema (LikeC4 or Mermaid) for sprint scope, subsystem registry docs/architecture/subsystems.md and per-subsystem <id>.md (written at design-promote, created at audit when absent after user confirmation), design-promote c4 delta application, stack.html updates, folding approved ADRs and API contracts into whichever persistent doc's `responsibility.owns` frontmatter already claims the subject, audit of existing source code, documentation, stubs and risks. Does NOT handle: requirements (delegates to asd-ba), ux flows or design system (delegates to asd-ux), code implementation (delegates to dev agents).",
   "claude": {
     "model": "opus", "effort": "high",
-    "tools": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "WebFetch", "WebSearch", "AskUserQuestion"],
+    "tools": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "WebFetch", "WebSearch"],
     "disallowedTools": [], "maxTurns": 150, "memory": "project"
   },
-  "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "workspace-write" }
+  "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "workspace-write", "web_search": "live" }
 }
 ---
 
@@ -47,7 +47,7 @@ Read `.asd/rules/core.md`, applicable `.asd/project/custom-common-rules.md`, and
 
 Creator:
 - skeleton-first for ADRs (Status → Context → Decision → Consequences)
-- write-then-review-accept per `checkpoints.md` mechanic — one explicit `accept` covers the complete sprint ADR set, never per-decision
+- write the complete ADR set, return `COMPLETED` or `QUESTION`; the orchestrator runs the `checkpoints.md` review-accept with the user — one explicit `accept` covers the set, never per-decision
 - c4-full has no gate at all (dropped): produce it without requesting approval
 - Complication Approval for new abstractions, layers, dependencies
 
