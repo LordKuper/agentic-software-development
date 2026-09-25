@@ -34,3 +34,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+- 2026-09-25 — route impl-test entry 5: critical, dispatch HEAD 03fea36
+- 2026-09-25 — impl-test entry 5 flagged choices accepted (Suite run HEAD pre-commit; stop checked via citing site only)
+- 2026-09-25 — impl-test: impacted set green (229/229, full suite via safety valve), 1 added / 0 removed tests
