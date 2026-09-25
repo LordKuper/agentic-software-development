@@ -67,9 +67,9 @@ Material risk: change: workflow gate — design accept loops and manual-verifica
 
 ### Task 6: README and generated views
 Material risk: artifact: README mirror and generated provider views
-- [ ] README.md: reviewer grants (~211), advisor (~229), note that only the orchestrator prompts the user, web grants per agent on both providers, a note on pre-allowing `WebFetch`/`WebSearch` in consumer permission settings
-- [ ] `node "$(git rev-parse --show-toplevel)/.asd/sync.js" --apply` for every changed generated view (15 `.claude/agents`, 15 `.codex/agents`, changed skills in `.claude/skills` and `.agents/skills`); `release-manifest.json` hashes updated by the same run
-- [ ] `node .asd/sync.js --check` clean
+- [x] README.md: reviewer grants (~211), advisor (~229), note that only the orchestrator prompts the user, web grants per agent on both providers, a note on pre-allowing `WebFetch`/`WebSearch` in consumer permission settings
+- [x] `node "$(git rev-parse --show-toplevel)/.asd/sync.js" --apply` for every changed generated view (15 `.claude/agents`, 15 `.codex/agents`, changed skills in `.claude/skills` and `.agents/skills`); `release-manifest.json` hashes updated by the same run
+- [x] `node .asd/sync.js --check` clean
 
 ## Risks
 - Existing tests (`tests/run.js` 3335, 5457-5461, Codex TOML fixture 83-96/150-162) go red after waves 1-2 by design; impl-test updates them and adds grep-based contracts for AC-4/AC-5/AC-7 (input for impl-test, not a Task here).

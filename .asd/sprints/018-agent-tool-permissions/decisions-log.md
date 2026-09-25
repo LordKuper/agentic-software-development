@@ -46,3 +46,10 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: [plan.md](plan.md), [friction-log.md](friction-log.md)
 
 - 2026-09-25 — route Task 6: standard, dispatch HEAD a8480bb
+- 2026-09-25 — Task 6 README corrected in-task (dfb9370): per-agent Bash bounds (Architect likec4 only, no commit tool), no temporal wording
+
+## 2026-09-25 — impl assessment approved
+
+- **Decision**: Impl assessment passed adaptively: Tasks 1-6 ticked; AC-1..AC-9 implemented (AC-6's test portion pending impl-test); build `sync --check` clean, lint clean, round diff inside authorised paths; no stubs introduced.
+- **Rationale**: Every flagged choice was resolved or routed back and fixed; remaining red tests (`tests/run.js` 3335, 5459) are planned impl-test updates.
+- **Affected docs**: [plan.md](plan.md)

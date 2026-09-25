@@ -45,6 +45,13 @@
       "reason": "covered by scope+audit user decisions",
       "evidence": "plan.md; decisions-log.002.md; surface 67/100",
       "artifact_revision": "plan.md@2026-09-25T09:20:00Z"
+    },
+    {
+      "gate": "impl-assessment",
+      "decision_actor": "orchestrator",
+      "reason": "all tasks done; flagged choices resolved; build+lint clean",
+      "evidence": "plan.md Tasks 1-6; sync --check clean; decisions-log.md",
+      "artifact_revision": "HEAD@dfb9370"
     }
   ],
   "task_routing": {
@@ -109,7 +116,7 @@
     }
   },
   "created_at": "2026-09-25T08:23:09Z",
-  "updated_at": "2026-09-25T09:30:00Z",
+  "updated_at": "2026-09-25T10:30:00Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
