@@ -34,3 +34,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-09-25 — `.asd/sprints/018-agent-tool-permissions/plan.md` accepted
+
+- **Decision**: Plan accepted adaptively: 6 Tasks in 3 waves (sync.js key; creators / reviewers+advisor+External / rules / workflows+skills in parallel; README + regenerated views), change surface 67/100.
+- **Rationale**: Every Task traces to AC-1..AC-9 and the user's audit answers (decisions-log.002.md); no open stubs touch the scope; the only plan-local choice (BA Bash limited to read-only git inspection) sits inside the accepted AC-8 bound. Test updates are left to impl-test per the no-test-Task rule.
+- **Affected docs**: [plan.md](plan.md)

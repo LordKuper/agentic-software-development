@@ -1,7 +1,7 @@
 {
   "sprint_id": "018-agent-tool-permissions",
   "branch": "sprint/018-agent-tool-permissions",
-  "phase": "design-promote",
+  "phase": "plan",
   "documents": {
     "audit": true,
     "prd": false,
@@ -38,6 +38,13 @@
       "reason": "audit findings answered",
       "evidence": "audit.md; decisions-log.md",
       "artifact_revision": "audit.md@2026-09-25T09:00:00Z"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "orchestrator",
+      "reason": "covered by scope+audit user decisions",
+      "evidence": "plan.md; decisions-log.002.md; surface 67/100",
+      "artifact_revision": "plan.md@2026-09-25T09:20:00Z"
     }
   ],
   "task_routing": {},
@@ -65,7 +72,7 @@
     }
   },
   "created_at": "2026-09-25T08:23:09Z",
-  "updated_at": "2026-09-25T09:02:00Z",
+  "updated_at": "2026-09-25T09:20:00Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
