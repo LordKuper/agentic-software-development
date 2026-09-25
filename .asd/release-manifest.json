@@ -28,8 +28,8 @@
     }
   },
   "canon_hashes": {
-    "agents/asd-architect.md": "sha256:13e8c22c797fe358eaa699662f77fc0e714440a05dc8746cab659dd0e09dc6c0",
-    "agents/asd-ba.md": "sha256:e9a9ea69f970bfdcbb44e825488b99bbe769185823d9ff6aedcbb2ee58c836c7",
+    "agents/asd-architect.md": "sha256:8d01b8674fa5bd03eea679182e77ec69e6d917fc3c0aa7a4b0868b4e002e0a72",
+    "agents/asd-ba.md": "sha256:9e5a6a67d54c31e2f5b0f877ea2a9f615b569bdebf965c735bc277d0603a6787",
     "agents/asd-external-review.md": "sha256:f0236382423176eb6fa016268b05715ab2d8aff18bbe9b91b59d12829c2bb76a",
     "agents/asd-reviewer-documentation.md": "sha256:97eaa2fcb1d0d0884b5a0657142ff972b13054d2c8ac03686afb774ededed8c7",
     "agents/asd-reviewer-testing.md": "sha256:2aa415304e9c81ff040ee8b9669bc23171d4d83110c8cd1c1276ae3c916abd63",
@@ -55,12 +55,12 @@
     "agents/asd-reviewer-efficiency.md": "sha256:09dc7d0e65fe2a841488f9de633b3191ae2e77dd483173853d043b0df89fe399",
     "agents/asd-dev.md": "sha256:88cfaa9fa44f68ca68943b908b89f81c438f36b223a58b6b65167b98c5e3bd81",
     "agents/asd-tester.md": "sha256:a10cc3be429c4527c602ec336f803b530cb931a9592ac2043cd0b367e01ff78e",
-    "agents/asd-ux.md": "sha256:d96e5a52e06cf3de81b46f167aeef02474f42bdfd17569ce597930e631504bb2",
+    "agents/asd-ux.md": "sha256:dde7f191475423de51a7f981925cbc29b3f7f5826c6567bb544dfa003ad34c41",
     "skills/asd-phase-retro/SKILL.md": "sha256:d40dea69c3415c91b8043f4fff9bbda9dbf5750f76ebd2ff762942ab56fb4bef"
   },
   "upstream_hashes": {
-    ".asd/agents/asd-architect.md": "13e8c22c797fe358eaa699662f77fc0e714440a05dc8746cab659dd0e09dc6c0",
-    ".asd/agents/asd-ba.md": "e9a9ea69f970bfdcbb44e825488b99bbe769185823d9ff6aedcbb2ee58c836c7",
+    ".asd/agents/asd-architect.md": "8d01b8674fa5bd03eea679182e77ec69e6d917fc3c0aa7a4b0868b4e002e0a72",
+    ".asd/agents/asd-ba.md": "9e5a6a67d54c31e2f5b0f877ea2a9f615b569bdebf965c735bc277d0603a6787",
     ".asd/agents/asd-external-review.md": "f0236382423176eb6fa016268b05715ab2d8aff18bbe9b91b59d12829c2bb76a",
     ".asd/agents/asd-reviewer-documentation.md": "97eaa2fcb1d0d0884b5a0657142ff972b13054d2c8ac03686afb774ededed8c7",
     ".asd/agents/asd-reviewer-testing.md": "2aa415304e9c81ff040ee8b9669bc23171d4d83110c8cd1c1276ae3c916abd63",
@@ -144,7 +144,7 @@
     ".asd/agents/asd-reviewer-efficiency.md": "09dc7d0e65fe2a841488f9de633b3191ae2e77dd483173853d043b0df89fe399",
     ".asd/agents/asd-dev.md": "88cfaa9fa44f68ca68943b908b89f81c438f36b223a58b6b65167b98c5e3bd81",
     ".asd/agents/asd-tester.md": "a10cc3be429c4527c602ec336f803b530cb931a9592ac2043cd0b367e01ff78e",
-    ".asd/agents/asd-ux.md": "d96e5a52e06cf3de81b46f167aeef02474f42bdfd17569ce597930e631504bb2",
+    ".asd/agents/asd-ux.md": "dde7f191475423de51a7f981925cbc29b3f7f5826c6567bb544dfa003ad34c41",
     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
