@@ -34,3 +34,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+- 2026-09-25 — route external.md 1-2: critical, dispatch HEAD 5ed3e98
+- 2026-09-25 — review-fix round 3 flagged choices accepted: `resolved:` line rule covers override, stop and cap-accept in one home (pre-existing pr-gate hole closed with it); session-start hook display unchanged; moot-by-answer re-raise loop left for retro
+- 2026-09-25 — impl fix for wave-1/iter-03: findings resolved (external.md 1, external.md 2)
