@@ -38,3 +38,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-25 — route Task 2: critical, dispatch HEAD 11a2a3d
 - 2026-09-25 — route Task 3, Task 4, Task 5: critical, dispatch HEAD f4eb7ed
 - 2026-09-25 — route Task 6: standard, dispatch HEAD f4eb7ed
+- 2026-09-25 — route wave-3 reconciliation (orchestrator request-changes on Tasks 3/4/6 cross-citations): critical, dispatch HEAD fc19c89
+- 2026-09-25 — route Task 7: standard, dispatch HEAD 421b41b

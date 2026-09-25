@@ -67,48 +67,48 @@ Material risk: change: public contract — dispatch and reviewer payload shape
 ### Task 3: Rule docs — intake home, rotation, tester lifecycle, review-fix rules
 Material risk: change: workflow gate — new scope-time intake gate, rotation trigger and review-fix routing
 Reachability: retro writes row ids at `asd-phase-retro.md` step 6; scope reads them through `retro-candidates` at `asd-phase-scope.md` step 2a
-- [ ] `sprint-lifecycle.md`:
+- [x] `sprint-lifecycle.md`:
   - new "Retro intake" sub-section per Overview (AC-1..AC-5); "Retro phase" wording: the backlog holds scope-time dispositions, never retro content;
   - "Impl-test phase": fresh tester per entry and per terminal suite run, `test-plan.md` the only hand-off (AC-13);
   - review-fix tester amends only `test-plan.md`'s risk and added-test rows, while `Entry log` and segment rotation stay with impl-test (AC-15);
   - "State recovery": the failed-dispatch anchor is the *latest* routing line naming those ids (AC-12);
   - phase-table `scope` row mentions intake.
-- [ ] `artifact-layout.md`:
+- [x] `artifact-layout.md`:
   - path map `.asd/project/retro-backlog.md` and a short "Retro backlog" section (owner, lazy creation, never overwritten by update);
   - "Decisions log" Rotation per the rotation boundary (AC-12);
   - "Test plan": owner split impl-test vs review-fix tester (AC-15);
   - "Agent memory": a leftover-term check covering `.claude/agent-memory/**`, orphan agent directories included, from the first impl-test entry of a sprint that removes a mechanism or term (AC-16).
-- [ ] `checkpoints.md`: the hard list and the inventory gain "retro intake dispositions" (part of the hard scope gate; reject permanent, undecided = deferred). "Criterion cost surfacing" covers included candidates.
-- [ ] `review-policy.md`:
+- [x] `checkpoints.md`: the hard list and the inventory gain "retro intake dispositions" (part of the hard scope gate; reject permanent, undecided = deferred). "Criterion cost surfacing" covers included candidates.
+- [x] `review-policy.md`:
   - "Autofix vs escalation": a review-fix that changes a rule other files consume searches for every consumer of that rule's home, updates them in the same commit, and lists them in its completion signal (AC-11);
   - L142: the memory-channel claim is corrected to the memory-fix dispatch, per Overview (AC-14).
 
 ### Task 4: Phase workflows — scope intake, retro row ids, impl routing
 Material risk: change: workflow gate — scope step order, review-fix memory routing, tester dispatch
 Reachability: impl-review writes a memory finding location at step 7; impl reads it at step 3 routing
-- [ ] `asd-phase-scope.md`: step 2 drops the cleanup/quality-criteria question (AC-6). A new step 2a, after the decisions log is seeded and before step 4, runs retro intake by citing "Retro intake". Step 4 writes the dispositions to the backlog on acceptance. The References list gains `t_retro-backlog.md`.
-- [ ] `asd-phase-retro.md` step 6: emit the `A-N`/`P-N` row ids and keep the English literals (AC-7).
-- [ ] `asd-phase-impl.md`:
+- [x] `asd-phase-scope.md`: step 2 drops the cleanup/quality-criteria question (AC-6). A new step 2a, after the decisions log is seeded and before step 4, runs retro intake by citing "Retro intake". Step 4 writes the dispositions to the backlog on acceptance. The References list gains `t_retro-backlog.md`.
+- [x] `asd-phase-retro.md` step 6: emit the `A-N`/`P-N` row ids and keep the English literals (AC-7).
+- [x] `asd-phase-impl.md`:
   - step 3 routes memory findings to their owner, with the memory-fix dispatch for owners without a write tool (AC-14);
   - steps 5/6: the review-fix tester chain cites the AC-15 row limit and the AC-11 consumer-search rule;
   - L66 stalemate-answer reader reads the live `decisions-log.md` (AC-12);
   - step 9's round-diff gate admits memory-fix paths the orchestrator applied.
-- [ ] `asd-phase-impl-test.md` L15/L74: a fresh tester per entry, never resumed across entries (AC-13). Step 1 cites the AC-16 leftover-term check on entry 1.
-- [ ] `asd-phase-impl-review.md` step 9: dispatch a fresh tester for each terminal suite run (AC-13).
+- [x] `asd-phase-impl-test.md` L15/L74: a fresh tester per entry, never resumed across entries (AC-13). Step 1 cites the AC-16 leftover-term check on entry 1.
+- [x] `asd-phase-impl-review.md` step 9: dispatch a fresh tester for each terminal suite run (AC-13).
 
 ### Task 5: Templates and runtime helper
 Material risk: change: public contract — new runtime command, new persistent template, retro row-id format
-- [ ] New `t_retro-backlog.md`: `responsibility` frontmatter (owns: cross-sprint dispositions of retro rows; excludes: retro content, sprint decisions), the table header per Overview, and a short comment giving the disposition vocabulary.
-- [ ] `t_retrospective.html`: `id="A-N"` / `id="P-N"` on Action and Systemic `<tr>`s, plus a comment that row ids and `Acts on` values stay English literals. Keep the `tests/run.js:3069-3101` shape (section ids, `F-N`, `consumer | asd`).
-- [ ] `t_decisions-log.md` "Durability rule": add `.asd/project/retro-backlog.md` to the list of persistent homes.
-- [ ] `.asd/runtime.js`: a `retro-candidates` command per Overview (zero dependencies, deterministic, fail-closed on unreadable input). An absent backlog reads as empty. It exports the parsing function for tests.
+- [x] New `t_retro-backlog.md`: `responsibility` frontmatter (owns: cross-sprint dispositions of retro rows; excludes: retro content, sprint decisions), the table header per Overview, and a short comment giving the disposition vocabulary.
+- [x] `t_retrospective.html`: `id="A-N"` / `id="P-N"` on Action and Systemic `<tr>`s, plus a comment that row ids and `Acts on` values stay English literals. Keep the `tests/run.js:3069-3101` shape (section ids, `F-N`, `consumer | asd`).
+- [x] `t_decisions-log.md` "Durability rule": add `.asd/project/retro-backlog.md` to the list of persistent homes.
+- [x] `.asd/runtime.js`: a `retro-candidates` command per Overview (zero dependencies, deterministic, fail-closed on unreadable input). An absent backlog reads as empty. It exports the parsing function for tests.
 
 ### Task 6: Agents and agent memory
 Material risk: artifact: tester and External Review agent bodies plus hand-authored memory
-- [ ] `asd-tester.md`: the description names the review-fix dispatch; the body cites the AC-15 row limit, the fresh-per-entry lifecycle (AC-13) and the AC-16 leftover-term check.
-- [ ] `asd-external-review.md` L67: the memory carve-out is aligned with the corrected review-policy statement (AC-14).
-- [ ] Memory `asd-reviewer-documentation/project_reviewer-write-scope-declaration.md` L9 and `asd-tester-critical/feedback_fail-first-and-none-honesty.md` L55: stop restating the host-served memory channel. The tester-critical file is the dispatched owner's own memory, so that owner edits it. The reviewer file's owner has no write tool, so the orchestrator applies the owner-approved text per AC-14 and records it.
-- [ ] `node "$(git rev-parse --show-toplevel)/.asd/sync.js" --apply` for `.claude/agents/asd-tester{,-mechanical,-critical}.md`, `.claude/agents/asd-external-review.md` and the matching `.codex/agents/*.toml`.
+- [x] `asd-tester.md`: the description names the review-fix dispatch; the body cites the AC-15 row limit, the fresh-per-entry lifecycle (AC-13) and the AC-16 leftover-term check.
+- [x] `asd-external-review.md` L67: the memory carve-out is aligned with the corrected review-policy statement (AC-14).
+- [x] Memory `asd-reviewer-documentation/project_reviewer-write-scope-declaration.md` L9 and `asd-tester-critical/feedback_fail-first-and-none-honesty.md` L55: stop restating the host-served memory channel. The tester-critical file is the dispatched owner's own memory, so that owner edits it. The reviewer file's owner has no write tool, so the orchestrator applies the owner-approved text per AC-14 and records it.
+- [x] `node "$(git rev-parse --show-toplevel)/.asd/sync.js" --apply` for `.claude/agents/asd-tester{,-mechanical,-critical}.md`, `.claude/agents/asd-external-review.md` and the matching `.codex/agents/*.toml`.
 
 ### Task 7: README, manifest, version
 Material risk: artifact: README mirror, release manifest and changelog
