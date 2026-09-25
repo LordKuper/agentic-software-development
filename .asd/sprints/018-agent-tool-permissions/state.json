@@ -1,0 +1,48 @@
+{
+  "sprint_id": "018-agent-tool-permissions",
+  "branch": "sprint/018-agent-tool-permissions",
+  "phase": "scope",
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "adr": false,
+    "c4": false
+  },
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "explicit accept",
+      "evidence": "sprint.md AC-1..AC-6",
+      "artifact_revision": "sprint.md@2026-09-25T08:23:09Z"
+    }
+  ],
+  "task_routing": {},
+  "skipped_phases": [],
+  "reviews": {
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "wave": 1,
+      "waves": [
+        {
+          "iteration": 0,
+          "verdicts": {},
+          "iteration_heads": {},
+          "latched": {}
+        }
+      ]
+    }
+  },
+  "created_at": "2026-09-25T08:23:09Z",
+  "updated_at": "2026-09-25T08:25:00Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": null,
+  "archived_at": null
+}
