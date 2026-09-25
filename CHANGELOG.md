@@ -2,6 +2,30 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v13.1.0
+
+Agent tool grants now match how agents are actually dispatched. No subagent can reach the user on either host, so every user prompt comes from the main orchestrator. BA and UX get a bounded shell. Web access moves to the agents that benefit from it, on Claude and on Codex.
+
+### Changed
+- **Tool grants.** No agent grants `AskUserQuestion`.
+  - BA and UX gain `Bash`, bounded by a run-command policy: BA may run read-only git inspection; UX may run `designmd-lint`, `designmd-diff` and `designmd-export`.
+  - Dev, Tester, Advisor and Correctness gain `WebFetch` and `WebSearch`, each scoped by its Tool policy.
+  - Efficiency, Testing, Documentation and External Review stay web-less.
+  - Consider pre-allowing `WebFetch`/`WebSearch` in `.claude/settings.json` to avoid permission prompts.
+- **Codex web access.** The same agents render `web_search = "live"`; the four web-less agents render `"disabled"`. `sync.js` accepts an optional `codex.web_search` key (`disabled|cached|indexed|live`). Run `/asd-update` to regenerate the views.
+- **User contact is orchestrator-only** (`core.md` "Request user decision"):
+  - A dispatched creator, dev or tester returns `QUESTION`. The orchestrator asks you, logs the answer and re-dispatches (`sprint-lifecycle.md` "`QUESTION` protocol").
+  - The design phase's section discuss/accept loops and the UX token gate now run in the orchestrator.
+  - `/asd-concept` and `/asd-stack` collect your description before delegating.
+  - impl-review asks you for manual-verification results before dispatching the testing reviewer.
+  - The orchestrator runs `designmd-install`, on Windows once per session, before dispatching UX.
+- **Reviewer questions** (`review-policy.md` "Reviewer question carrier"):
+  - A reviewer never returns a bare `QUESTION`. It lists `question: <finding id> — <text>; options: …` under `## Escalations`, and returns at least `CONCERNS` while a question is open.
+  - The orchestrator writes your `answer:` into the review file, and review-fix acts on it.
+- **External Review stalemate.** A stalemate returns `FAIL` plus a `Stalemate:` block. Its options are now **stop**, **continue fixing** and **abort**, defined in `external-review.md` "Stalemate detection". They replace the old accept as-is / override wording.
+- **Findings you resolve without a fix.** Override, stalemate stop and iteration-cap accept append a `resolved:` line to the review file. Such a verdict now satisfies DoD and the pr gate (`sprint-lifecycle.md` "State recovery" "User-resolved findings").
+- **Commit tool.** `git-strategy.md` now defines who holds a commit tool by role policy, not by tool grant: only Dev and Tester commit, and the orchestrator commits BA, UX and Architect drafts.
+
 ## v13.0.0
 
 A large impl-review scope is now reviewed as up to 3 sequential **review waves**, each running the standard review process with its own iteration counter. Waves replace split dispatch parts, External Review's file batches and the dispatch ceiling. Every reviewer, External Review included, receives the same three-part hand-off: its own file list, a runtime-written `.diff` for exactly that list, and whole files as context only.

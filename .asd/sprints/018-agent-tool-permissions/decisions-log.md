@@ -34,3 +34,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+- 2026-09-25 — pr open-mode DoD verified: plan tasks ticked, reviews green (wave 1/1, iter-05 all satisfied), full suite 229/229 @ed81831 (no code diff since), no sprint stubs, retrospective present; asd_version 13.0.0 → 13.1.0 (feat, no breaking), CHANGELOG v13.1.0; suite re-run after bump 229/229
