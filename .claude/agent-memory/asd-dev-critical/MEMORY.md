@@ -2,7 +2,7 @@
 - [sync.js --apply target form](project_sync-apply-target-form.md) — `--apply` wants generated view paths, not `.asd/` canon, and rejects an empty target list; pick targets from `--check`.
 - [No python scripted edits](project_no-python-scripted-edits.md) — `python - <<EOF` hangs the shell here; use `node -e` or Edit
 - [CRLF canon edits](project_crlf-canon-edits.md) — read a canon file's bytes before a scripted edit; a CRLF checkout orphans a CR under an LF-only anchor
-- [Parallel-agent commit sweep](project_parallel-agent-commit-sweep.md) — shared worktree: a sibling’s broad `git add` can swallow your edits; never stage-then-wait, never `git stash`
+- [Parallel-agent commit sweep](project_parallel-agent-commit-sweep.md) — shared worktree: a sibling’s broad `git add` can swallow your edits; never stage-then-wait (new files: `git add && git commit --only` in one command), never `git stash`
 - [Tests pin literal prose and output shapes](project_tests-pin-literal-prose.md) — `tests/run.js` pins rule-doc sentences and runtime field sets; reword around the literal, never edit the assertion
 - [Stale context snapshots](project_stale-context-snapshots.md) — injected file bodies predate earlier waves' commits; re-read canon from disk before claiming what it says
 - [Sequential fix rounds](feedback_sequential-fix-rounds.md) — cross-file review fixes go to one dev, in order; re-read every mirror before reporting done
