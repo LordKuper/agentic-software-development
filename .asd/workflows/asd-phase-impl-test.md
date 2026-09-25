@@ -20,7 +20,7 @@ Orchestration body for the `asd-phase-impl-test` skill. Operation-mapping to hos
 Runs **autonomously**. The only user contacts:
 
 - **removal gate** (step 6) — a proposed deletion of a test outside the sprint change scope;
-- a tester blocker — `QUESTION` (AC behaviour genuinely ambiguous), `FAILED` (test runner broken, tech-reference missing), or a Simplicity Default trigger (new test dependency or test infrastructure) needing Complication Approval;
+- a tester blocker — `QUESTION` (AC behaviour genuinely ambiguous), `FAILED` (test runner broken, tech-reference missing), or a Simplicity Default trigger (new test dependency or test infrastructure) needing Complication Approval, returned as a `QUESTION`;
 - **stalemate** (step 9) — `FAILED: stalemate`, a hard decision.
 
 No user gate on a green impacted-set run, and none on routing defects back to impl short of a stalemate.
@@ -55,7 +55,7 @@ No user gate on a green impacted-set run, and none on routing defects back to im
      - otherwise, or on continue, **route**: fill this entry's `Entry log` `HEAD analysed` with `git rev-parse HEAD`; write `state.json.test_defects_pending = true` inline and append decisions-log "impl-test: defects <D-N list> → impl test-fix (digest <digest>)" (mechanical, no gate); commit these bookkeeping writes (`sprint-lifecycle.md` "Impl-test commits its own output"); emit COMPLETED with `NEXT: impl`
    - both kinds present → fix the test defects first, re-run, then route the remaining code defects back
 10. **Green impacted run** — write inline (mechanical, no gate): fill this entry's `Entry log` row `HEAD analysed` with current `git rev-parse HEAD` (now that step 7's prune/author commit and step 8's suite recording have both landed, so the next re-entry's delta excludes this entry's own test-authoring commits); append decisions-log "impl-test: impacted set green (<counts>), <added>/<removed> tests"; confirm `test_defects_pending` null; commit these bookkeeping writes (`sprint-lifecycle.md` "Impl-test commits its own output") — `git status --porcelain` MUST be empty before this step's COMPLETED, since `impl-review` refuses a dirty worktree; emit COMPLETED with `NEXT: impl-review`
-11. tester QUESTION / FAILED / ABORT → relay, halt; no signal → `sprint-lifecycle.md` "State recovery" failed dispatch before re-dispatch
+11. tester `QUESTION` → per `sprint-lifecycle.md`'s `QUESTION` protocol; FAILED / ABORT → relay, halt; no signal → `sprint-lifecycle.md` "State recovery" failed dispatch before re-dispatch
 12. On `ADVICE_NEEDED` from any dispatched agent → relay per `sprint-lifecycle.md`'s `ADVICE_NEEDED` protocol; execution resumes, no halt.
 
 ## Re-entry

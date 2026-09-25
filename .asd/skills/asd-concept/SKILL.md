@@ -56,7 +56,8 @@ Phase 1 brownfield candidates auto-suggest D as default; user may override.
 - Proceed to Phase 4
 
 **Variant C — clear vision**
-- Delegate to agent `asd-ba` to ask user to describe in own words
+- Request user input: describe the concept in own words
+- Delegate to agent `asd-ba` with that description
 - BA drafts per `t_concept.html` (required sections first; optional offered per-section)
 - Proceed to Phase 4
 

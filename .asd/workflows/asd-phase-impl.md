@@ -35,7 +35,7 @@ A blocker is exactly one of:
 - dev `QUESTION` — requirement ambiguity unresolvable from plan + persistent docs;
 - dev `FAILED`/`ABORT` — missing tech-reference, or unrecoverable lint/build failure;
 - `asd-init` sprint-mediated `FAILED` at step 6 — a declared settings-change pair failed validation;
-- a Simplicity Default trigger (`core.md`) — new abstraction, dependency, config flag, or generalization — needs Complication Approval before proceeding.
+- a Simplicity Default trigger (`core.md`) — new abstraction, dependency, config flag, or generalization — needs Complication Approval before proceeding: the dev returns it as a `QUESTION`.
 
 A dev `BLOCKED_MANUAL` does **not** halt immediately: dev registers the manual action, defers only affected subtasks, continues all unblocked work. Phase halts at manual-steps gate (step 8) only after every unblocked task COMPLETED.
 
@@ -71,7 +71,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
        - tech-reference precondition (refuse-to-implement rule): see `artifact-layout.md` "Tech reference docs" — do not restate here
        - apply the checklists and iron rules while authoring, not only at review: `code-style.md` §1 — do not restate here
        - work autonomously within plan + persistent docs scope; do NOT pause user for routine approach choices — make the reasonable call and proceed
-       - escalate only on a blocker (see Execution mode): emit `QUESTION` for unresolvable requirement ambiguity, `FAILED` for missing tech-reference / unrecoverable failure, or raise Complication Approval via request for user decision **only** when a Simplicity Default trigger fires (new abstraction / dependency / config flag / generalization)
+       - escalate only on a blocker (see Execution mode): emit `QUESTION` for unresolvable requirement ambiguity, `FAILED` for missing tech-reference / unrecoverable failure, or return a Complication Approval `QUESTION` **only** when a Simplicity Default trigger fires (new abstraction / dependency / config flag / generalization)
        - manual-steps handling: see `sprint-lifecycle.md` "Impl phase" — do not restate here
        - write production code only — **no tests, no authoring, no modifying, no pruning**; the impacted set (`sprint-lifecycle.md` "Impacted test set") may be run for self-verification only, never as a substitute for `impl-test`'s gate; test selection, authoring, pruning, and running belong to `impl-test`
        - review-fix — `review-policy.md` "Verify before applying" — do not restate here; test-fix — fix the root cause behind the failing test (never weaken or delete the test), then set the defect row `Status` to `fixed` with the fixing commit sha in `<sprint>/test-plan.md`
@@ -117,7 +117,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
 
 ## Escalation (interruptions before phase exit)
 
-The only reasons impl contacts the user before all tasks/findings/defects complete, in every mode, are the blockers enumerated under **Execution mode** above plus the manual-steps gate (step 8). Each relays and halts; execution resumes on the user's answer, decision or continue command.
+The only reasons impl contacts the user before all tasks/findings/defects complete, in every mode, are the blockers enumerated under **Execution mode** above plus the manual-steps gate (step 8). A dev `QUESTION` follows `sprint-lifecycle.md`'s `QUESTION` protocol; every other blocker relays and halts, resuming on the user's decision or continue command.
 
 On `ADVICE_NEEDED` from any dispatched agent → relay per `sprint-lifecycle.md`'s `ADVICE_NEEDED` protocol; execution resumes, no halt. Not a blocker — the branches above are the only ones that halt.
 
