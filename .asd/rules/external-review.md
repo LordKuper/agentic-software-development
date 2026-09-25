@@ -93,7 +93,7 @@ Findings rendered to the review output dir supplied by the dispatching phase ski
 
 Phase skill supplies the finding set of the latest earlier verdict iteration — skip iterations are skipped; in impl-review of the same wave, by iteration id — as explicit payload input (from iteration 2). Agent compares against that supplied set only — does not read another iteration's review files.
 
-If two consecutive verdict iterations produce an identical issue set (same files, lines, messages), agent emits `FAIL: stalemate after <N> iterations, identical findings` and escalates to user with options: accept findings as-is, override, abort sprint.
+If two consecutive verdict iterations produce an identical issue set (same files, lines, messages), the agent returns a verdict ("Outcome contract"): first line `[REVIEW-<phase>-external]: FAIL`, plus a `Stalemate: <N> iterations, identical findings` block with options accept findings as-is / override / abort sprint. The orchestrator asks the user (`core.md` "Request user decision").
 
 ## Aggregation
 

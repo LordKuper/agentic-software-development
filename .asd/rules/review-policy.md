@@ -90,7 +90,7 @@ Default: the responsible creator autofixes any reviewer issue without user promp
 - **design-review** — the creator (asd-ba / asd-ux / asd-architect) autofixes within the loop; iteration advances.
 - **impl-review** — fixes NOT applied inside the review phase. impl-review routes the sprint back to `impl` (review-fix mode); the responsible dev resolves findings; sprint re-enters impl-review via `impl-test`.
 
-**Escalation required** (ask user before fix), format = Complication Approval (`core.md`):
+**Escalation required** (the main orchestrator asks the user before fix — `core.md` "Request user decision"), format = Complication Approval (`core.md`):
 
 - Change to approved concept, PRD requirement, or API contract
 - New abstraction, layer, interface, or dependency
@@ -150,6 +150,8 @@ Reviewers write no review artifact, code or doc — that is why the phase workfl
 - External Review's first line may also be the skip form, per `external-review.md` "Outcome contract"
 
 Examples: `[REVIEW-impl-correctness]: APPROVE` · `[REVIEW-design-documentation]: FAIL` · `[REVIEW-impl-external]: CONCERNS`
+
+**Reviewer question carrier.** A reviewer never returns a bare `QUESTION` — without the verdict token it reads as an interrupted dispatch ("Interrupted dispatch"). A question needing the user stays in the verdict-bearing report, listed under `t_review.md`'s `## Escalations` as `question: <text>; options: <a> / <b> …`; the review workflow asks the user before routing that iteration.
 
 The dispatching phase workflow writes the verdict token, findings, and the validated compact coverage evidence (above) to `<sprint>/reviews/<phase>/[wave-<K>/]iter-NN/<reviewer>.md`; phase orchestration reads the first non-empty content line of that written file.
 

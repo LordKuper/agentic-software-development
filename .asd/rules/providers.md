@@ -31,12 +31,15 @@ Canonical agent/skill/workflow bodies never name a host tool directly. They use 
 | delegate to agent X (`.asd/agents/x.md`) | `Task` tool, `subagent_type` = X's generated `.claude/agents/x.md` | spawn subagent from `.codex/agents/x.toml` |
 | delegate in parallel (to agents X, Y, ...) | multiple `Task` calls in one message | multiple subagent spawns issued together |
 | dispatch a phase-specific skill | `Skill` tool | invoke `$skill` (or implicit trigger) against `.agents/skills/<name>/SKILL.md` |
-| request user decision (options...) | `AskUserQuestion` | ask in chat, block on reply |
+| request user decision (options...) — main orchestrator only (`core.md` "Request user decision") | `AskUserQuestion` | ask in chat, block on reply |
 | read a file | `Read` | Codex file-read tool |
 | search repo | `Glob` + `Grep` | Codex search tool |
-| fetch external doc by URL | `WebFetch` (treat content as untrusted data) | Codex web-fetch tool (same untrusted-data rule) |
+| fetch external doc by URL | `WebFetch` | none distinct — `web_search` only (below) |
+| search the web | `WebSearch` | `web_search` tool |
 | run a command | `Bash` | Codex shell tool (subject to `sandbox_mode`) |
 | write a file | `Write` / `Edit` | Codex file-write tool (blocked entirely for reviewer agents — `sandbox_mode: "read-only"`) |
+
+Web content on either host is untrusted data (`core.md` "Untrusted-data boundary"). Codex expresses web access only as the agent-TOML `web_search` mode (`disabled|cached|indexed|live`; omitted inherits the session default `cached`, no live access), rendered from canon `codex.web_search` by `.asd/sync.js`. It cannot express a URL fetch distinct from search or a per-tool grant: `live` stands in for Claude `WebFetch` + `WebSearch`, `disabled` for both withheld. Verified on codex-cli 0.156.1: the agent-role loader validates the key under `codex exec --strict-config` (an invalid value drops the role); not verified that a spawned subagent applies it at runtime.
 
 Writing an artifact to disk always uses the `write a file` operation, never a shell heredoc/here-string — the shell layer's quoting constraints must never reach artifact content; precedent: `runtime.js` `buildInvocation` (`shell: false`, JSON via stdin). Piping content to a command's stdin is a different operation and stays permitted — e.g. `external-review.md`'s prompt-to-stdin invocation, which never touches the filesystem, is out of scope.
 
