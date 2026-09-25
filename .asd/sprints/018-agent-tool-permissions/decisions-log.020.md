@@ -34,3 +34,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+- 2026-09-25 — route D-3: critical, dispatch HEAD 336b003
+- 2026-09-25 — impl test-fix: defects D-3 resolved (cee9c09)
