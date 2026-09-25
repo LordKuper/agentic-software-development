@@ -34,3 +34,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+- 2026-09-25 — route D-1, D-2: critical, dispatch HEAD d7524a5
+- 2026-09-25 — test-fix flagged choices accepted: audit QUESTION branch as step 3c covering all audit dispatches; reviewer exception inline in providers.md "Declared tool policy"
+- 2026-09-25 — impl test-fix: defects D-1, D-2 resolved (0533ef8, 4df9bf4)
