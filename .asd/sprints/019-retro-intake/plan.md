@@ -54,8 +54,8 @@ Sprint-specific additions:
 
 ### Task 1: Atomic path-scoped commit contract
 Material risk: change: workflow gate — commit contract every dispatched agent runs under
-- [ ] `git-strategy.md` "Commit before review" (L40): a dispatched agent commits in one compound command, `git add -- <paths> && git diff --cached --check -- <paths> && git commit --only -- <paths>`, runs `git reset -q -- <paths>` on failure, and never leaves a path staged between commands. Never-tracked paths are covered by the same `git add`, and a rename names both paths. Keep the existing whole-tree-ban sentence intact, because `custom-coding-rules.md`'s mirror is derived from it.
-- [ ] `git-strategy.md` "Commits": point to that one-command form. `code-style.md` §19 and `commands.yaml` stay unchanged (decisions-log.002.md).
+- [x] `git-strategy.md` "Commit before review" (L40): a dispatched agent commits in one compound command, `git add -- <paths> && git diff --cached --check -- <paths> && git commit --only -- <paths>`, runs `git reset -q -- <paths>` on failure, and never leaves a path staged between commands. Never-tracked paths are covered by the same `git add`, and a rename names both paths. Keep the existing whole-tree-ban sentence intact, because `custom-coding-rules.md`'s mirror is derived from it.
+- [x] `git-strategy.md` "Commits": point to that one-command form. `code-style.md` §19 and `commands.yaml` stay unchanged (decisions-log.002.md).
 
 ### Task 2: Dispatch payload header — repo root and turn budget
 Material risk: change: public contract — dispatch and reviewer payload shape
