@@ -31,6 +31,13 @@
       "reason": "contradictions settled; gaps inside accepted ACs",
       "evidence": "audit.md; decisions-log 2026-09-25",
       "artifact_revision": "audit.md@2026-09-25T14:00:30Z"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "user",
+      "reason": "explicit accept",
+      "evidence": "plan.md Tasks 1-7; surface 33/100",
+      "artifact_revision": "plan.md@ead8832"
     }
   ],
   "task_routing": {},
@@ -58,7 +65,7 @@
     }
   },
   "created_at": "2026-09-25T13:09:07Z",
-  "updated_at": "2026-09-25T14:01:01Z",
+  "updated_at": "2026-09-25T14:52:12Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
