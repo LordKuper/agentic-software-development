@@ -5483,6 +5483,12 @@ test('sprint-015 AC-1/AC-6/AC-7/AC-8/AC-10/AC-12: no canon tells anyone to clear
     assert.ok(runCommand.some((clause) => /\bnever\b/.test(clause) && /\bartifact\b/.test(clause)), `sprint-018 AC-8: ${name}'s shell is bounded by its Run command policy line, which must forbid writing an artifact through it (providers.md write-a-file rule)`);
     assert.ok(runCommand.some((clause) => /\bnever\b/.test(clause) && /\bgit write\b/.test(clause)), `AC-6/sprint-018 AC-8: ${name}'s Run command line must forbid git writes - holding Bash, its renames and deletions still route through the orchestrator`);
     assert.ok(runCommand.some((clause) => /\borchestrator\b/.test(clause) && /\brenames?\b/.test(clause)), `AC-6/sprint-018 AC-8: ${name}'s Run command line must route renames/deletes to the orchestrator`);
+    const allowClauses = runCommand.filter((clause) => /\bonly\b/.test(clause) && !/\bnever\b/.test(clause));
+    const allowed = allowClauses.flatMap((clause) => [...clause.matchAll(/`([^`]+)`/g)].map((match) => match[1]));
+    assert.ok(allowed.length > 0, `sprint-018 AC-8 (TST-1-2): ${name}'s Run command line must name the commands it may run under an "only" scope - a never-list alone leaves every other command open`);
+    const neverRun = [...text.matchAll(/Never run `([^`]+)`/g)].map((match) => match[1]);
+    const covers = (grant, command) => (grant.endsWith('*') ? command.startsWith(grant.slice(0, -1)) : command === grant);
+    assert.deepStrictEqual(allowed.filter((grant) => neverRun.some((command) => covers(grant, command))), [], `sprint-018 AC-8: ${name}'s Run command allowlist must not reach a command its own body says never to run (\`designmd-install\` writes package.json/lockfile)`);
     assert.ok(text.split('\n').some((line) => line.startsWith('- Never') && /\brename\b/.test(line) && /\bpropos/.test(line)), `AC-6 (P2-2): ${name} proposes a doc rename or deletion in its final text instead of performing it, or design-promote never receives the proposal`);
   }
 
@@ -5756,6 +5762,13 @@ test('sprint-018 AC-4/AC-5/AC-7: a reviewer\'s question and External Review\'s s
   assert.ok(token && label, 'AC-4: a stalemate returns the FAIL verdict token plus a Stalemate block - a verdict, inside the two-outcome contract');
   const trigger = canonText('.asd/agents/asd-external-review.md').split('\n').find((line) => line.startsWith('- **Approval triggers**'));
   assert.ok(trigger && trigger.includes(token[1]) && trigger.includes(`\`${label[1]}`), 'AC-4: External Review\'s stalemate trigger must return the same token and block external-review.md defines');
+  const options = [...external.matchAll(/^- \*\*([a-z ]+)\*\* — \S/gm)].map((match) => match[1]);
+  assert.strictEqual(options.length, 3, `AC-4: "Stalemate detection" is the one home of the stalemate options, each with its effect - got ${JSON.stringify(options)}`);
+  const optionList = (text) => ((/options:? ([a-z /]+?)(?: \(|\.|$)/m.exec(text) || [])[1] || '').split(' / ').map((option) => option.trim());
+  const report = sectionOf('.asd/templates/external-review/t_review-report.md', 'Stalemate');
+  assert.ok(report.includes('`external-review.md` "Stalemate detection"') || report.includes('external-review.md "Stalemate detection"'), 'AC-4: the report template\'s Stalemate section must point at the options\' home');
+  assert.deepStrictEqual(optionList(report.split('\n').find((line) => line.startsWith(label[1])) || ''), options, 'AC-4: the Stalemate block the report template renders must offer exactly the options external-review.md defines');
+  assert.deepStrictEqual(optionList(trigger), options, 'AC-4: External Review\'s stalemate trigger must offer exactly the options external-review.md defines');
 
   for (const rel of ['.asd/workflows/asd-phase-design-review.md', '.asd/workflows/asd-phase-impl-review.md']) {
     const flow = sectionOf(rel, 'Workflow').split('\n');
@@ -5767,7 +5780,7 @@ test('sprint-018 AC-4/AC-5/AC-7: a reviewer\'s question and External Review\'s s
     assert.ok(clauses.some((c) => /\bnever\b/.test(c) && /interrupted/.test(c)), `AC-4: ${rel} must not treat a question-carrying report as an interrupted dispatch`);
     assert.ok(/request user decision/.test(flow[q]) && /decisions-log/.test(flow[q]), `AC-4: ${rel} asks the user per question and logs the answers`);
     const stalemate = flow.find((line) => line.includes(`\`${label[1]}\``));
-    assert.ok(stalemate && /request user decision/.test(stalemate) && ['accept as-is', 'override', 'abort'].every((option) => stalemate.includes(option)), `AC-4: ${rel} must recognise External Review's Stalemate block and ask the user its options`);
+    assert.ok(stalemate && /request user decision/.test(stalemate) && stalemate.includes('`external-review.md` "Stalemate detection"'), `AC-4: ${rel} must recognise External Review's Stalemate block, ask the user and take the options from their home`);
   }
 
   const collect = sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Workflow').split('\n').find((line) => line.includes('`asd-reviewer-testing`') && /Manual verification/.test(line));
@@ -5775,7 +5788,8 @@ test('sprint-018 AC-4/AC-5/AC-7: a reviewer\'s question and External Review\'s s
   assert.ok(sectionOf('.asd/agents/asd-reviewer-testing.md', 'Inputs').split('\n').some((line) => /manual-verification results/.test(line) && /\bpayload\b/.test(line)), 'AC-7: the testing reviewer reads the results from its payload - the consuming end of the collection above');
 
   const declared = sectionOf('.asd/rules/providers.md', 'Role-scoped context').split('\n').find((line) => line.startsWith('**Declared tool policy**'));
-  assert.ok(declared && declared.includes('`review-policy.md` "Gate Verdict Format"'), 'AC-4/AC-5: the out-of-policy refusal must route a reviewer through its question carrier - "an agent ... returns `QUESTION`" alone makes a reviewer return a bare QUESTION, which reads as an interrupted dispatch');
+  const carveOut = declared && declared.split(/[.;]\s|\s—\s/).find((clause) => /\breviewer\b/.test(clause) && clause.includes('`review-policy.md` "Gate Verdict Format"'));
+  assert.ok(carveOut, 'AC-4/AC-5 (TST-1-1): one clause must name the reviewer and route it to its carrier home - the out-of-policy refusal must route a reviewer through its question carrier - "an agent ... returns `QUESTION`" alone makes a reviewer return a bare QUESTION, which reads as an interrupted dispatch');
 });
 
 // ===========================================================================
