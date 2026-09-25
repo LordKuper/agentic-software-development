@@ -34,3 +34,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+- 2026-09-25 — `.asd/sprints/018-agent-tool-permissions/retrospective.html` written: 3 F-N entries analysed, 3 remediation actions, 3 systemic proposals, analysed branch
