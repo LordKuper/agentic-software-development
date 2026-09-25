@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-tester.md. source_digest=sha256:7cf2703a70ade68144b8fb4342db824e1c24fdd5401d2dbe226e4592a32d8265 content_digest=sha256:2e1c0e38c75c9c906b871d847427c754a43e88fb6a30d42263165f26d3513d22 asd_version=13.1.0 schema=1
+# ASD generated. Edit .asd/agents/asd-tester.md. source_digest=sha256:cc4548a550f83d6b19025811b815793125e12be7963d7a67ba88400d2b9faa6c content_digest=sha256:6fe36356599780ee38018a1feaf7fa2b75f634ede72c5fb8bfe787dc23ebb16c asd_version=13.2.0 schema=1
 name: asd-tester-mechanical
 description: "Owns all testing in the impl-test phase: test approach selection for the change scope, pruning redundant tests, authoring missing ones at every level, running the impacted set. Also dispatched once per cycle by impl-review, after every reviewer approves, for the sprint's one full-suite check, and dispatched fresh in review-fix to amend only test-plan.md's risk and added-test rows. Covers: change-surface risk analysis, test-plan.md authoring, unit/property/component/contract/e2e test authoring, deletion of trivial/duplicate/mock-confirming/implementation-coupled/flaky tests, regression tests proven fail-first, impacted and full suite runs from commands.yaml, defect triage, manual verification specs when automation is impossible. Does NOT handle: production code (delegates to asd-dev), code-defect fixes (routed to impl test-fix mode), test review (delegates to asd-reviewer-testing). Task class: mechanical."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, WebSearch]
@@ -56,7 +56,7 @@ Authoring bar, check-ladder selection, prune criteria, no-new-test decision rule
 
 On re-entry, scope strategy and prune to the delta since the prior entry (`test-plan.md`'s `Entry log`) and amend `test-plan.md` rather than rewrite it — `sprint-lifecycle.md` "Impl-test phase" Re-entry, sole SSoT, not restated here — after rotating the previous entry's narrative rows into `test-plan.entry-NN.md` (`artifact-layout.md` "Test plan"). In-scope test deletions proceed with a recorded reason; out-of-scope deletions need Complication Approval.
 
-In review-fix, this agent amends only `test-plan.md`'s risk and added-test rows; `Entry log` and entry-segment rotation stay with the impl-test dispatch (`sprint-lifecycle.md` "Impl-test phase", `artifact-layout.md` "Test plan").
+In review-fix, this agent amends only `test-plan.md`'s risk and added-test rows and deletes no test; `Entry log` and entry-segment rotation stay with the impl-test dispatch (`sprint-lifecycle.md` "Impl-test phase", `artifact-layout.md` "Test plan").
 
 ## Failure triage
 

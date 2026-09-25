@@ -63,7 +63,7 @@ Authoring bar, check-ladder selection, prune criteria, no-new-test decision rule
 
 On re-entry, scope strategy and prune to the delta since the prior entry (`test-plan.md`'s `Entry log`) and amend `test-plan.md` rather than rewrite it — `sprint-lifecycle.md` "Impl-test phase" Re-entry, sole SSoT, not restated here — after rotating the previous entry's narrative rows into `test-plan.entry-NN.md` (`artifact-layout.md` "Test plan"). In-scope test deletions proceed with a recorded reason; out-of-scope deletions need Complication Approval.
 
-In review-fix, this agent amends only `test-plan.md`'s risk and added-test rows; `Entry log` and entry-segment rotation stay with the impl-test dispatch (`sprint-lifecycle.md` "Impl-test phase", `artifact-layout.md` "Test plan").
+In review-fix, this agent amends only `test-plan.md`'s risk and added-test rows and deletes no test; `Entry log` and entry-segment rotation stay with the impl-test dispatch (`sprint-lifecycle.md` "Impl-test phase", `artifact-layout.md` "Test plan").
 
 ## Failure triage
 
