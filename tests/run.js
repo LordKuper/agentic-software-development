@@ -3406,11 +3406,15 @@ test('T-2/T-4/sprint-010 TST-01: in every agent-memory directory a dispatchable 
   assert.ok(devIndex.includes('project_crlf-canon-edits.md'), 'asd-dev-critical/MEMORY.md must index the CRLF canon-edit hazard file added this sprint');
 });
 
-test('AC-15/sprint-019 AC-14: review-policy.md is sole SSoT for the reviewer write scope - its own memory included, which it reaches only through the memory-fix dispatch - and providers.md cites it instead of restating it', () => {
+test('AC-15/sprint-019 AC-14: review-policy.md is sole SSoT for the reviewer write scope - its own memory directory the one place it writes, a finding there routed through the memory-fix dispatch - and providers.md cites it instead of restating it', () => {
   const policy = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/review-policy.md'), 'utf8');
   assert.ok(policy.includes('Reviewers write no review artifact, code or doc'), 'review-policy.md must state the scoped (non-absolute) claim of what reviewers cannot write');
   const scopeSentences = (policy.split('\n').find((line) => line.includes('Reviewers write no review artifact, code or doc')) || '').split(/(?<=\.)\s/);
-  assert.ok(scopeSentences.some((sentence) => sentence.includes('`memory: project`') && sentence.includes('memory-fix dispatch') && sentence.includes('"Autofix vs escalation"')), 'sprint-019 AC-14: the host serves a reviewer no memory write tool, so the scope statement must say how a reviewer\'s memory changes - through the memory-fix dispatch, pointed at its home "Autofix vs escalation" - or the next reader restores the false "separate write channel" claim this sprint removed');
+  assert.ok(scopeSentences.some((sentence) => sentence.includes('`memory: project`') && sentence.includes('`Write`') && /own memory/.test(sentence) && sentence.includes('memory-fix dispatch') && sentence.includes('"Autofix vs escalation"')), 'sprint-019 AC-14 (iter-01 answer b): on Claude `memory: project` serves a reviewer `Write`, so the scope statement must say so, bound it to the reviewer\'s own memory, and route a finding there through the memory-fix dispatch pointed at its home "Autofix vs escalation" - the iter-01 text claimed the host serves no write tool, which the reviewer dispatches themselves refuted');
+  for (const name of ['asd-reviewer-correctness', 'asd-reviewer-documentation', 'asd-reviewer-efficiency', 'asd-reviewer-testing', 'asd-external-review']) {
+    const { meta } = sync.parseCanonicalFrontmatter(sync.readNormalized(path.join(REPO_ROOT, '.asd/agents', `${name}.md`)));
+    assert.ok(meta.claude.memory === 'project' && !(meta.claude.disallowedTools || []).includes('Write'), `sprint-019 AC-14: ${name}: review-policy.md and providers.md say \`memory: project\` serves every reviewer Write because no reviewer's disallowedTools names it - the frontmatter must keep both halves true, or the prose states a grant the host no longer serves`);
+  }
 
   const providers = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/providers.md'), 'utf8');
   assert.ok(providers.includes('Reviewer agents carry no artifact-write grant on either host'), 'providers.md must state the artifact-level grant fact it owns (tool config), distinct from the reconciliation review-policy.md owns');
@@ -3463,7 +3467,7 @@ test('AC-15/iter-05: providers.md names External Review as the sole Bash carve-o
   assert.ok(externalMeta.claude.tools.includes('Bash'), 'the agent providers.md names as the carve-out must actually carry the Bash grant the prose claims');
 
   const writeBan = externalBody.split('\n').find((line) => line.includes('no file writes at all')) || '';
-  assert.ok(/memory/i.test(writeBan) && writeBan.includes('memory-fix dispatch') && writeBan.includes('"Autofix vs escalation"'), 'sprint-019 AC-14: External Review holds Bash, so its blanket write ban is the one reviewer line a reader could take as leaving its own memory writable - the same bullet must route a change to that memory through the memory-fix dispatch and point at its home, as the other reviewers are routed');
+  assert.ok(/own memory/.test(writeBan) && writeBan.includes('`Write`') && writeBan.includes('memory-fix dispatch') && writeBan.includes('"Autofix vs escalation"'), 'sprint-019 AC-14 (iter-01 answer b): External Review\'s write ban is blanket for the review itself, yet `memory: project` serves it `Write` for its own memory - the same bullet must name that one exception and route a finding in that memory through the memory-fix dispatch, pointed at its home, as the other reviewers are routed');
   assert.strictEqual(externalMeta.claude.memory, 'project', 'the bullet cites `memory: project` as what loads this agent\'s memory; if the frontmatter stops granting it, the body points at a channel that does not exist - the config-side twin of a dangling citation');
 
   for (const name of ['asd-reviewer-correctness', 'asd-reviewer-documentation', 'asd-reviewer-efficiency', 'asd-reviewer-testing']) {
@@ -3728,7 +3732,7 @@ test('AC-1/AC-2: git-strategy.md "Commit before review" is the sole home of the 
   assert.ok(mirror.includes('git-strategy.md'), 'the mirror must hand the full contract back to its owner rather than reading as a second, self-contained rule');
 });
 
-test('AC-13b/sprint-010 AC-3/sprint-019 AC-14: git-strategy.md "Commit before review" names every agent-memory write whose author cannot commit it - the reviewer\'s and a concurrent co-author\'s - and the acting site is impl\'s memory-fix routing, never the review-file write step', () => {
+test('AC-13b/sprint-010 AC-3/sprint-019 AC-14: git-strategy.md "Commit before review" names every agent-memory write whose author cannot commit it - the reviewer\'s and a concurrent co-author\'s - and the acting sites are the review-file commit (memory written while reviewing) and impl\'s memory-fix routing', () => {
   const bookkeeping = readRepoFile('.asd/rules/git-strategy.md').split('\n').find((line) => line.includes('The main orchestrator commits its own bookkeeping'));
   assert.ok(bookkeeping, 'git-strategy.md must still enumerate the bookkeeping the orchestrator commits - it is the sole home of commit ownership');
   assert.ok(/agent-memory writes/.test(bookkeeping), 'AC-13b: the memory class must be named in the list the committer reads. Stated only where the reviewer reads it, the write never reaches a commit and the change-surface rule never sees it - the exact one-sided obligation this sprint exists to close');
@@ -3749,7 +3753,8 @@ test('AC-13b/sprint-010 AC-3/sprint-019 AC-14: git-strategy.md "Commit before re
   for (const rel of ['.asd/workflows/asd-phase-impl-review.md', '.asd/workflows/asd-phase-design-review.md']) {
     const writeStep = readRepoFile(rel).split('\n').find((line) => line.includes('the reviewer itself performs no write'));
     assert.ok(writeStep, `${rel} must still carry the review-file write step`);
-    assert.ok(!writeStep.includes('agent memory that reviewer authored'), `sprint-019 AC-14: ${rel}: a reviewer holds no write tool, so there is no reviewer-authored memory for the review-file commit to carry - that clause restates the host-served memory channel this sprint removed`);
+    const carried = writeStep.slice(writeStep.indexOf('the reviewer itself performs no write'));
+    assert.ok(/agent memory/.test(carried) && carried.includes('`git-strategy.md` "Commit before review"'), `sprint-019 AC-14 (iter-01 answer b): ${rel}: on Claude \`memory: project\` serves a reviewer Write, so memory it writes while reviewing is committed with its review file - the write step must say its commit carries that memory and point at the bookkeeping rule, or the write reaches no reviewed diff`);
   }
 
   const impl = canonText('.asd/workflows/asd-phase-impl.md');
@@ -5936,7 +5941,7 @@ const INTAKE_BACKLOG = [
   ['017-b#A-1', 'asd', 'included', '019-z', 'Included action'],
   ['017-b#P-1', 'asd', 'rejected', '019-z', 'Rejected proposal'],
   ['017-b#P-3', 'consumer', 'closed', '019-z', 'Closed proposal'],
-  ['017-b#A-4', 'asd', 'deferred', '019-z', 'Deferred latest action, as the backlog words it'],
+  ['017-b#A-4', 'consumer', 'deferred', '019-z', 'Deferred latest action, as the backlog words it'],
   ['016-a#A-1', 'consumer', 'deferred', '019-z', 'Deferred consumer action'],
   ['016-a#P-2', 'asd', 'deferred', '019-z', 'Deferred asd proposal'],
   ['016-a#P-1', 'asd', 'included', '019-z', 'Old proposal'],
@@ -5989,11 +5994,11 @@ test('sprint-019 AC-1/AC-2/AC-5: retroCandidates offers the latest done retro\'s
     { row: '016-a#A-1', acts_on: 'consumer', guardrail: 'Deferred consumer action', home: 'h016A1' },
     { row: '016-a#P-2', acts_on: 'asd', guardrail: 'Deferred asd proposal', home: 'h016P2' },
     { row: '017-b#A-3', acts_on: 'consumer', guardrail: 'Fresh consumer action', home: 'h017A3' },
-    { row: '017-b#A-4', acts_on: 'asd', guardrail: 'Deferred latest action, as the backlog words it', home: 'h017A4' },
+    { row: '017-b#A-4', acts_on: 'asd', guardrail: 'Deferred latest action', home: 'h017A4' },
     { row: '017-b#P-2', acts_on: 'asd', guardrail: 'Fresh asd proposal', home: 'h017P2' },
   ];
-  assert.deepStrictEqual(fixture.candidates(true), selfHosting, 'AC-1: 017-b is the latest archived sprint that is done AND has a retro (018-c has none, 019-d is not done); its included/rejected/closed rows and its covered-by row are not offered, its deferred row is offered once with the backlog\'s text, and older deferred rows come back with their own retro\'s home');
-  assert.deepStrictEqual(fixture.candidates(false), selfHosting.filter((candidate) => candidate.acts_on === 'consumer'), 'AC-2: a consumer project gets only consumer rows, deferred ones included');
+  assert.deepStrictEqual(fixture.candidates(true), selfHosting, 'AC-1: 017-b is the latest archived sprint that is done AND has a retro (018-c has none, 019-d is not done); its included/rejected/closed rows and its covered-by row are not offered, its deferred row is offered once as its retrospective states it - Acts on and guardrail read from the retro, never from the backlog\'s human-readable copies, which this fixture words differently (Acts on consumer, extra text) so reading either from the backlog shows - and older deferred rows come back with their own retro\'s home');
+  assert.deepStrictEqual(fixture.candidates(false), selfHosting.filter((candidate) => candidate.acts_on === 'consumer'), 'AC-2: a consumer project gets only consumer rows, deferred ones included - filtered on the retro\'s Acts on, so 017-b#A-4 (asd in its retro, consumer in the backlog copy) stays out');
   fs.rmSync(fixture.backlogPath);
   assert.deepStrictEqual(fixture.candidates(true).map((candidate) => candidate.row), ['017-b#A-1', '017-b#A-3', '017-b#A-4', '017-b#P-1', '017-b#P-2', '017-b#P-3'], 'an absent backlog reads as empty - the first intake of a project offers every non-covered row of its latest retro');
 
@@ -6017,7 +6022,7 @@ test('sprint-019 AC-1/AC-2/AC-5: retroCandidates offers the latest done retro\'s
   assert.ok(missing.status === 2 && /--backlog <path> required/.test(missing.stderr), `a missing --backlog must exit 2, never read a default path: ${JSON.stringify(missing)}`);
 });
 
-test('sprint-019 AC-1/AC-5/AC-6: scope step 2a runs retro intake by the command sprint-lifecycle.md "Retro intake" names - run as written from a project root it prints the candidates, and [] with no prior retro', () => {
+test('sprint-019 AC-1/AC-3/AC-4/AC-5/AC-6: scope step 2a runs retro intake by the command sprint-lifecycle.md "Retro intake" names - run as written from a project root it prints the candidates, and [] with no prior retro - and the home\'s failure, empty, resolved and disposition clauses and scope step 4\'s backlog write each hold', () => {
   const step = stepOf(canonText('.asd/workflows/asd-phase-scope.md'), '2a');
   assert.ok(step.includes('`sprint-lifecycle.md` "Retro intake"'), 'step 2a must cite the intake home rather than restate it');
   const command = /`(node \.asd\/runtime\.js retro-candidates [^`]+)`/.exec(step);
@@ -6033,6 +6038,25 @@ test('sprint-019 AC-1/AC-5/AC-6: scope step 2a runs retro intake by the command 
   const fixture = retroIntakeFixture(INTAKE_SPRINTS, INTAKE_BACKLOG);
   assert.deepStrictEqual(JSON.parse(run(fixture.root)), runtime.retroCandidates(fixture.sprintsDir, fixture.backlogPath, true), 'the command as the workflow writes it, run from the project root, must reach the sprints and the backlog it names');
   assert.strictEqual(run(retroIntakeFixture({}).root).trim(), '[]', 'AC-5: a project with no archived sprint and no backlog yet gets [] - the silent no-op');
+
+  const intake = canonText('.asd/rules/sprint-lifecycle.md').split('\n').find((line) => line.startsWith('**Retro intake.**')) || '';
+  const sentences = intake.split(/(?<=\.)\s/);
+  const sentenceWith = (pattern) => sentences.find((sentence) => pattern.test(sentence)) || '';
+  const failed = sentenceWith(/non-zero exit/);
+  assert.ok(/\bblocks\b/.test(failed) && /stderr/.test(failed) && /re-run/.test(failed) && /\bskip\b/.test(failed) && /decisions-log/.test(failed), 'sprint-019 TST-1-1: a failed retro-candidates run blocks intake and hands its stderr to the user - fix and re-run, or skip with one decisions-log line; unstated, the orchestrator reads a crash as [] and the rows are never offered');
+  const empty = sentenceWith(/empty array/);
+  assert.ok(/no question/.test(empty) && /no backlog write/.test(empty) && /decisions-log/.test(empty), 'sprint-019 TST-1-1/AC-5: an empty candidate list is a no-op - one decisions-log line, no question, no backlog write');
+  const resolved = sentenceWith(/\bresolved\b/);
+  assert.ok(resolved.includes('`closed`') && /without asking/.test(resolved), 'sprint-019 TST-1-1/AC-3: a candidate re-verification finds resolved is written closed without asking the user, or every stale row is re-asked at each scope');
+  const decisions = sentenceWith(/\bundecided\b/).split(/[:,]\s/);
+  const decision = (stem) => decisions.find((clause) => new RegExp(`\\b${stem}`).test(clause)) || '';
+  assert.ok(decision('undecided').includes('`deferred`'), 'sprint-019 TST-1-1/AC-3: an undecided row is written deferred - dropped, it is never written, and retroCandidates stops offering it once the next retro archives, so it is lost for good');
+  assert.ok(decision('inclu').includes('`AC-N`'), 'sprint-019 TST-1-1/AC-3: an included row becomes an AC-N of this sprint');
+  assert.ok(/never offered again/.test(decision('reject')), 'sprint-019 TST-1-1/AC-3: a rejected row is never offered again');
+
+  const accept = stepOf(canonText('.asd/workflows/asd-phase-scope.md'), 4);
+  const backlog = /--backlog (\S+)/.exec(command[1]);
+  assert.ok(backlog && accept.includes(`\`${backlog[1]}\``) && /step 2a/.test(accept) && /dispositions/.test(accept), 'sprint-019 TST-1-1/AC-4: scope step 4 writes step 2a\'s dispositions to the backlog path step 2a reads - dropped, included and rejected rows come back at every scope; written elsewhere, the next intake never sees them');
 });
 
 test('sprint-019 AC-4: the live retro backlog parses, each row resolves to its archived retro row with the same Acts on and text, the 019 triage seed stands until a later sprint re-decides a row, /asd-update never manages the file, and live intake re-offers every deferred row and no disposed one', () => {
@@ -6165,19 +6189,21 @@ test('sprint-019 AC-11/AC-12/AC-13/AC-15/AC-16: each review-fix, rotation and te
   }
 });
 
-test('sprint-019 AC-14/AC-16: review-policy.md "Autofix vs escalation" routes a memory finding to its owner through the memory-fix dispatch, and no canon, README or agent-memory file - orphan agent directories included - still claims a reviewer writes its own memory', () => {
+test('sprint-019 AC-14/AC-16: review-policy.md "Autofix vs escalation" routes a memory finding to its owner through the memory-fix dispatch, and no canon, README or agent-memory file - orphan agent directories included - still claims the host serves a reviewer no memory write tool', () => {
   const memoryFix = sectionOf('.asd/rules/review-policy.md', 'Autofix vs escalation').split('\n').find((line) => line.startsWith('**Memory-fix dispatch**')) || '';
   const clauses = memoryFix.split(/(?<=[.;])\s/);
   assert.ok(clauses.some((clause) => clause.includes('`.claude/agent-memory/<owner>/`') && clause.includes('`<owner>`')), 'AC-14: a memory finding routes to the memory\'s owner');
   assert.ok(clauses.some((clause) => /non-owner/.test(clause) && /\bnever\b/.test(clause)), 'AC-14: a non-owner never authors memory text');
+  assert.ok(clauses.some((clause) => /own write tool/.test(clause) && clause.includes('`memory: project`') && /reviewers/.test(clause)), 'AC-14 (iter-01 answer b): the owner fixes the file with its own write tool, which `memory: project` serves every owner on Claude, reviewers included - without that clause a reviewer owner reads the MEMORY-FIX fallback as its route');
   assert.ok(clauses.some((clause) => clause.includes('`MEMORY-FIX <path>`') && /no verdict token/.test(clause)), 'AC-14: an owner without a write tool returns only a MEMORY-FIX block and no verdict token - a token would be parsed as a review');
   assert.ok(clauses.some((clause) => /\bverbatim\b/.test(clause) && /\bcommits\b/.test(clause) && /decisions-log/.test(clause)), 'AC-14: the orchestrator applies that text verbatim, commits it and records it in the decisions log');
 
   const memoryFiles = fs.readdirSync(path.join(REPO_ROOT, '.claude/agent-memory'), { recursive: true }).map((entry) => `.claude/agent-memory/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
   assert.ok(memoryFiles.some((rel) => rel.startsWith('.claude/agent-memory/asd-pm/')), 'sanity: AC-16 - the sweep must reach agent-memory directories no roster agent loads');
-  const claim = /write channel|`memory: project` channel/i;
+  const claim = /\b(?:serves|gives) (?:a reviewer|it|this agent) no write tool|only loads (?:it|its memory)/i;
+  const pendingMemoryFix = ['.claude/agent-memory/asd-reviewer-documentation/project_reviewer-write-scope-declaration.md', '.claude/agent-memory/asd-reviewer-testing/feedback_no-shell-review-method.md'];
   const leftovers = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', ...memoryFiles].flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => (claim.test(line) ? [`${rel}:${index + 1}`] : [])));
-  assert.deepStrictEqual(leftovers, [], `AC-14/AC-16: the host serves a reviewer no memory write tool, so a line calling \`memory: project\` a write channel it uses restates the claim this sprint removed - its owner rewrites it through the memory-fix dispatch. Found: ${leftovers.join(', ')}`);
+  assert.deepStrictEqual(leftovers.filter((hit) => !pendingMemoryFix.includes(hit.replace(/:\d+$/, ''))), [], `AC-14/AC-16 (iter-01 answer b): on Claude \`memory: project\` serves a reviewer Write, so a line saying the host serves it no write tool, or that \`memory: project\` only loads its memory, restates the claim iter-01 refuted - its owner rewrites it through the memory-fix dispatch. The two exempted files carry COR-1/DOC-1, routed to their owners' memory-fix dispatches after the round's tester chain; once those land, the next impl-test entry deletes the exemption. Found: ${leftovers.join(', ')}`);
 });
 
 // ===========================================================================

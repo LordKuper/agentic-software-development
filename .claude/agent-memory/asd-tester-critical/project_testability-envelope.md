@@ -100,6 +100,12 @@ citations; the local precedent is entry 4's `asd-pm` fallout-set comparison. Shi
 `impl-review` entry on work no round of the sprint touched, and an exemption list with defect ids in it
 is visible where a silent filter is not.
 
+Exception: when the stale hits sit in another owner's memory and that owner's memory-fix dispatch runs
+*after* the tester chain in the same round (sprint 019 review-fix, COR-1/DOC-1), an exact pin reddens
+the moment the fix lands, and nobody left in the round can edit the test. Exempt those files by name
+with the finding ids in the assert message (a subset filter, not a `deepStrictEqual`), prove the list is
+load-bearing by emptying it, and hand its deletion to the next `impl-test` entry.
+
 A pin like that carries a **closing obligation**, and it falls to this role because the pin is test text.
 When the defect is fixed the exemption line goes with it (say so in `test-plan.md`, since a fix without
 the deletion reddens the suite), and then check what the emptied list leaves behind. In sprint 010 it
