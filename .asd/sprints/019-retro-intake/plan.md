@@ -59,10 +59,10 @@ Material risk: change: workflow gate — commit contract every dispatched agent 
 
 ### Task 2: Dispatch payload header — repo root and turn budget
 Material risk: change: public contract — dispatch and reviewer payload shape
-- [ ] `providers.md` "delegate to agent" operation: add the dispatch payload header rule (repo root reset before every dispatch, the `Repo root:` line). Replace L50's "Emitted on trust: `effort` and `maxTurns`" with the host-scoped statement: `maxTurns` is host-enforced on Claude and absent on Codex. Keep an `effort` claim only as far as the host docs support it.
-- [ ] `review-policy.md` L33 exhaustive payload list: admit the `Repo root:` and `Turn budget:` lines, citing providers.md.
-- [ ] `external-review.md` "Phase-scoped payload": admit the same two lines.
-- [ ] `asd-phase-design-review.md` step 7 and `asd-phase-impl-review.md` step 6: the payload carries the header (a one-line cite, never restated).
+- [x] `providers.md` "delegate to agent" operation: add the dispatch payload header rule (repo root reset before every dispatch, the `Repo root:` line). Replace L50's "Emitted on trust: `effort` and `maxTurns`" with the host-scoped statement: `maxTurns` is host-enforced on Claude and absent on Codex. Keep an `effort` claim only as far as the host docs support it.
+- [x] `review-policy.md` L33 exhaustive payload list: admit the `Repo root:` and `Turn budget:` lines, citing providers.md.
+- [x] `external-review.md` "Phase-scoped payload": admit the same two lines.
+- [x] `asd-phase-design-review.md` step 7 and `asd-phase-impl-review.md` step 6: the payload carries the header (a one-line cite, never restated).
 
 ### Task 3: Rule docs — intake home, rotation, tester lifecycle, review-fix rules
 Material risk: change: workflow gate — new scope-time intake gate, rotation trigger and review-fix routing

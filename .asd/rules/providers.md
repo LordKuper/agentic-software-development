@@ -45,9 +45,13 @@ Writing an artifact to disk always uses the `write a file` operation, never a sh
 
 Reviewer agents carry no artifact-write grant on either host, with one carve-out. Config-enforced for the four internal reviewers: no `Write`/`Edit`/`Bash` in Claude `tools`; Codex `sandbox_mode: "read-only"`. External Review is the carve-out — it needs `Bash` to invoke the wrapped CLI at all, so its read-only guarantee is enforced on the wrapped subprocess instead (`external-review.md`). What that read-only claim covers, and the `memory: project` channel it excludes: `review-policy.md` "Gate Verdict Format". The reviewer returns its report as final text; the phase workflow writes the review file.
 
+### Dispatch payload header
+
+Before every `delegate to agent` the orchestrator returns the shell to the repo root; the payload opens with `Repo root: <absolute path>`. A reviewer, External Review or advisor payload also carries `Turn budget: <maxTurns>; report by turn <maxTurns − 5>`, `<maxTurns>` from that agent's canon frontmatter. Host-scoped: Claude enforces `maxTurns` — a cap stop is an interrupted dispatch (`review-policy.md` "Interrupted dispatch"); wave division, never resume, is the lever. Codex renders no `maxTurns`; there the budget is advisory.
+
 ### Emitted agent frontmatter: verified vs trusted
 
-Host-honoured, and observable in dispatch: `name`, `description`, `tools`, `disallowedTools`, `model`, `memory`. Emitted on trust: `effort` and `maxTurns` — canon declares them and `.asd/sync.js` renders them verbatim, but neither is a documented subagent field today, so neither may be relied on as an enforcement boundary.
+Host-honoured, and observable in dispatch: `name`, `description`, `tools`, `disallowedTools`, `model`, `memory`. `maxTurns` is host-scoped: host-enforced on Claude (a documented subagent field), absent on Codex ("Dispatch payload header"). Emitted on trust: `effort` — a documented Claude subagent field, but not observable in dispatch, so never relied on as an enforcement boundary.
 
 ## Model family resolution
 
