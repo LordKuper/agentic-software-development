@@ -50,6 +50,17 @@ const NA_TARGETS = {
   templated: { documentation: ['Template adherence'] },
 };
 const PHASES = ['design-review', 'impl-review'];
+/** A retro row's acting side; like its row id, an English literal under any docs language, so intake can filter on it. */
+const ACTS_ON = ['consumer', 'asd'];
+/** The retro tables intake reads: row-id prefix and cell positions, fixed by the retrospective template because translated headers cannot locate them. Actions may be absent (empty friction log); systemic proposals never are. */
+const RETRO_TABLES = [
+  { section: 'actions', prefix: 'A', cells: 4, guardrail: 1, actsOn: 2, home: 3, required: false },
+  { section: 'systemic-proposals', prefix: 'P', cells: 4, guardrail: 0, actsOn: 1, home: 2, required: true },
+];
+/** The retro backlog's one table header. */
+const BACKLOG_HEADER = ['Row', 'Acts on', 'Disposition', 'Decided in', 'Guardrail'];
+/** Retro backlog dispositions; `closed` is a row verified already resolved at HEAD. */
+const BACKLOG_DISPOSITIONS = ['deferred', 'included', 'rejected', 'closed'];
 
 function stable(value) {
   if (Array.isArray(value)) return '[' + value.map(stable).join(',') + ']';
@@ -399,7 +410,7 @@ function ledgerFromText(text) {
 
 /** Splits one markdown table row into trimmed cells, honouring `\|` escapes and dropping one enclosing backtick pair. */
 function tableCells(line) {
-  return line.trim().replace(/^\||\|$/g, '').split(/(?<!\\)\|/).map((cell) => cell.trim().replace(/\\\|/g, '|').replace(/^`(.*)`$/, '$1'));
+  return line.trim().replace(/^\||\|$/g, '').split(/(?<!\\)\|/).map((cell) => cell.trim().replace(/\\\|/g, '|').replace(/^`([^`]*)`$/, '$1'));
 }
 
 /** Compares the code-defect identity sets (file path without line, runner failure line, failing test) of the last two impl-test entries that routed defects in a test plan's `Defects` table, a stalemate only when those entry numbers are consecutive; `D-N` ids and `impl-review` rows never take part. `digest` identifies the latest set, so a recorded answer can be keyed to it. */
@@ -427,6 +438,90 @@ function defectStalemate(markdown) {
   if (latestEntry === undefined) return { stalemate: false, digest: null };
   const [latest, previous] = [latestEntry, previousEntry].map((key) => [...(byEntry.get(key) || [])].sort());
   return { stalemate: previousEntry === latestEntry - 1 && stable(latest) === stable(previous), digest: fingerprint(latest) };
+}
+
+function htmlText(fragment) {
+  return fragment.replace(/<[^>]*>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
+}
+
+function retroRow(table, attributes, content, ordinal) {
+  const id = `${table.prefix}-${ordinal}`;
+  const declared = /(?:^|\s)id="([^"]*)"/.exec(attributes);
+  if (declared !== null && declared[1] !== id) fail(`${table.section} row ${ordinal} declares id ${declared[1]}, expected ${id}`);
+  const cells = [...content.matchAll(/<td\b[^>]*>([\s\S]*?)<\/td>/g)].map((cell) => cell[1]);
+  if (cells.length !== table.cells) fail(`${table.section} row ${id} has ${cells.length} cells, expected ${table.cells}`);
+  const actsOn = htmlText(cells[table.actsOn]);
+  if (!ACTS_ON.includes(actsOn)) fail(`${table.section} row ${id} Acts on must be ${ACTS_ON.join(' or ')}: ${actsOn}`);
+  return { id, acts_on: actsOn, guardrail: htmlText(cells[table.guardrail].replace(/<\/?code>/g, '`')), home: htmlText(cells[table.home]) };
+}
+
+/** Parses a retrospective's Action and Systemic-proposal rows: each id is `A-N`/`P-N` from its 1-based `<tbody>` ordinal, `covered by:` rows counted, so a retro with or without `<tr id>` yields the same ids; a declared id disagreeing with its ordinal fails. */
+function retroRows(html) {
+  if (typeof html !== 'string') fail('retrospective html required');
+  return RETRO_TABLES.flatMap((table) => {
+    const section = new RegExp(`<section id="${table.section}"[^>]*>([\\s\\S]*?)</section>`).exec(html);
+    if (section === null) return table.required ? fail(`retrospective has no ${table.section} section`) : [];
+    const body = /<tbody\b[^>]*>([\s\S]*?)<\/tbody>/.exec(section[1]);
+    if (body === null) fail(`retrospective ${table.section} table has no tbody`);
+    return [...body[1].matchAll(/<tr\b([^>]*)>([\s\S]*?)<\/tr>/g)].map((row, index) => retroRow(table, row[1], row[2], index + 1));
+  });
+}
+
+/** Parses the retro backlog's one table, one row per `<NNN-slug>#A-N`/`#P-N` address; an unknown disposition, acting side or repeated address fails. */
+function backlogRows(markdown) {
+  if (typeof markdown !== 'string') fail('retro backlog markdown required');
+  const lines = markdown.replace(/\r\n/g, '\n').split('\n').map((line) => line.trim());
+  const headers = lines.flatMap((line, i) => (line.startsWith('|') && stable(tableCells(line)) === stable(BACKLOG_HEADER) ? [i] : []));
+  if (headers.length !== 1) fail(`retro backlog must hold exactly one | ${BACKLOG_HEADER.join(' | ')} | table, found ${headers.length}`);
+  const after = lines.slice(headers[0] + 1);
+  const end = after.findIndex((line) => !line.startsWith('|'));
+  const [separator, ...rows] = after.slice(0, end === -1 ? after.length : end).map(tableCells);
+  if (separator === undefined || separator.length !== BACKLOG_HEADER.length || !separator.every((cell) => /^:?-+:?$/.test(cell))) fail('retro backlog table separator malformed');
+  const seen = new Set();
+  return rows.map((cells) => {
+    const [row, actsOn, disposition, decidedIn, guardrail] = cells;
+    if (cells.length !== BACKLOG_HEADER.length) fail(`retro backlog row malformed: ${cells.join(' | ')}`);
+    if (!/^\d+-[a-z0-9-]+#[AP]-[1-9]\d*$/.test(row) || seen.has(row)) fail(`retro backlog Row invalid or repeated: ${row}`);
+    if (!ACTS_ON.includes(actsOn)) fail(`retro backlog ${row} Acts on must be ${ACTS_ON.join(' or ')}: ${actsOn}`);
+    if (!BACKLOG_DISPOSITIONS.includes(disposition)) fail(`retro backlog ${row} Disposition must be one of ${BACKLOG_DISPOSITIONS.join(', ')}: ${disposition}`);
+    seen.add(row);
+    return { row, acts_on: actsOn, disposition, decided_in: decidedIn, guardrail };
+  });
+}
+
+function sprintPhase(dir) {
+  const file = path.join(dir, 'state.json');
+  let state;
+  try {
+    state = JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch (error) {
+    fail(`${file} unreadable: ${error.message}`);
+  }
+  if (!state || typeof state.phase !== 'string') fail(`${file} has no phase`);
+  return state.phase;
+}
+
+/** The highest-numbered archived sprint that reached `done` with a retrospective, or null. */
+function latestRetroSprint(archived) {
+  if (!fs.existsSync(archived)) return null;
+  const sprints = fs.readdirSync(archived, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort((a, b) => b.localeCompare(a, 'en', { numeric: true }));
+  return sprints.find((sprint) => fs.existsSync(path.join(archived, sprint, 'retrospective.html')) && sprintPhase(path.join(archived, sprint)) === 'done') || null;
+}
+
+/** Retro intake candidates as `{row, acts_on, guardrail, home}`: the latest closed retrospective's rows the backlog does not dispose, then the backlog's deferred rows with the backlog's text and their retro's home; `covered by:` rows drop, and `asd` rows outside a self-hosting project. An absent backlog reads as empty. */
+function retroCandidates(sprintsDir, backlogPath, selfHosting) {
+  if (!fs.statSync(sprintsDir).isDirectory()) fail(`--sprints is not a directory: ${sprintsDir}`);
+  const archived = path.join(sprintsDir, 'archived');
+  const backlog = fs.existsSync(backlogPath) ? backlogRows(fs.readFileSync(backlogPath, 'utf8')) : [];
+  const disposed = new Set(backlog.map((entry) => entry.row));
+  const rowsOf = (sprint) => retroRows(fs.readFileSync(path.join(archived, sprint, 'retrospective.html'), 'utf8')).map((row) => ({ row: `${sprint}#${row.id}`, acts_on: row.acts_on, guardrail: row.guardrail, home: row.home }));
+  const latest = latestRetroSprint(archived);
+  const fresh = latest === null ? [] : rowsOf(latest).filter((candidate) => !disposed.has(candidate.row));
+  const deferred = backlog.filter((entry) => entry.disposition === 'deferred').map((entry) => {
+    const source = rowsOf(entry.row.split('#')[0]).find((candidate) => candidate.row === entry.row) || fail(`retro backlog row not in its retrospective: ${entry.row}`);
+    return { row: entry.row, acts_on: entry.acts_on, guardrail: entry.guardrail, home: source.home };
+  });
+  return fresh.concat(deferred).filter((candidate) => !/^covered by:/i.test(candidate.guardrail) && (selfHosting || candidate.acts_on === 'consumer'));
 }
 
 function readFileList(file) {
@@ -767,11 +862,16 @@ function main(argv) {
     process.stdout.write(JSON.stringify(waveFilesCommand(flags)) + '\n');
     return 0;
   }
-  fail('usage: emit-manifest, manifest-digest, validate-ledger, external-preflight, external-record-failure, route-task, defect-stalemate, surface-check, draft-snapshot, review-waves, or wave-files');
+  if (command === 'retro-candidates') {
+    if (typeof flags.sprints !== 'string' || typeof flags.backlog !== 'string') fail('--sprints <dir> and --backlog <path> required');
+    process.stdout.write(JSON.stringify(retroCandidates(flags.sprints, flags.backlog, flags['self-hosting'] === true)) + '\n');
+    return 0;
+  }
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, external-preflight, external-record-failure, route-task, defect-stalemate, surface-check, draft-snapshot, review-waves, wave-files, or retro-candidates');
 }
 
 if (require.main === module) {
   try { process.exitCode = main(process.argv); } catch (error) { process.stderr.write(`${error.message}\n`); process.exitCode = 2; }
 }
 
-module.exports = { AUDIT_BATCH_THRESHOLD_FILES, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, SURFACE_CAP_FILES, WAVE_THRESHOLD_LINES, buildInvocation, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, isTest, numstatLines, recordExternalFailure, reviewWaveCount, reviewerFiles, routeTask, surfaceCheck, validateCoverageLedger, validateWaveDivision, waveFiles, fingerprint };
+module.exports = { AUDIT_BATCH_THRESHOLD_FILES, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, SURFACE_CAP_FILES, WAVE_THRESHOLD_LINES, backlogRows, buildInvocation, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, isTest, numstatLines, recordExternalFailure, retroCandidates, retroRows, reviewWaveCount, reviewerFiles, routeTask, surfaceCheck, validateCoverageLedger, validateWaveDivision, waveFiles, fingerprint };
