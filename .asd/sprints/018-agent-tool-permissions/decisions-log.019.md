@@ -34,3 +34,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+- 2026-09-25 — route impl-test entry 6: critical, dispatch HEAD b343e5a
+- 2026-09-25 — impl-test entry 6 flagged choices accepted: D-3 is a defect (no sweep exemption); Suite run HEAD pre-commit
+- 2026-09-25 — impl-test: defects D-3 → impl test-fix (digest 23343a86b6bdf5a08683afb4deaa72fde031db90a8c81b844792b2b3a88dfa78)
