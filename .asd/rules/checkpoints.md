@@ -4,7 +4,7 @@
 
 `config.yaml`'s top-level `user_gates` is the source; `state.json.user_gates` is the frozen per-sprint copy, seeded at scope from config (`asd-phase-scope.md`) — a later config edit never changes an active sprint. Value is `strict` or `adaptive`; absent legacy value means `strict`. Invalid or unreadable policy blocks. A standalone skill with no active sprint (`/asd-concept`, `/asd-stack`, `/asd-design-system`) reads `config.user_gates` directly, default `strict`. `strict` uses the gate classes below with explicit approval. In `adaptive`, the main orchestrator may advance a routine gate only when exact user authority and documented constraints cover the choice, effects/resources are understood, applicable checks pass, and no unresolved material alternative remains. It records `{gate, decision_actor:"orchestrator", reason, evidence, artifact_revision}` in `state.json.gate_decisions` (short refs only, `artifact-layout.md` "State file") and the decisions log (narrative). Confidence alone is insufficient. Missing facts require investigation; missing authority, preference or material trade-off requires the user. A semantic revision makes its prior decision stale. Exact existing user authorization may be reused.
 
-Hard in both modes: new or changed scope, acceptance criteria or user value not already explicitly authorized; initial/material UX, brand, accessibility or stack direction not already authorized; a new subsystem boundary; deletion of project files during migration; an audit contradiction precedence cannot settle (`sprint-lifecycle.md` "Audit phase"); material architecture, public contract or compatibility change; debt or any reviewer/coverage/quality waiver; review-cap override (per review wave in impl-review); change-surface cap override (`sprint-lifecycle.md` "Plan file format"), distinct from review-cap override; a per-sprint document skip (`sprint-lifecycle.md` "Optional documents"); abort; and sprint closure. Machine checks never become approvals.
+Hard in both modes: new or changed scope, acceptance criteria or user value not already explicitly authorized; initial/material UX, brand, accessibility or stack direction not already authorized; a new subsystem boundary; deletion of project files during migration; an audit contradiction precedence cannot settle (`sprint-lifecycle.md` "Audit phase"); material architecture, public contract or compatibility change; debt or any reviewer/coverage/quality waiver; review-cap override (per review wave in impl-review); change-surface cap override (`sprint-lifecycle.md` "Plan file format"), distinct from review-cap override; a per-sprint document skip (`sprint-lifecycle.md` "Optional documents"); retro intake dispositions, decided inside the scope gate (`sprint-lifecycle.md` "Retro intake"); abort; and sprint closure. Machine checks never become approvals.
 
 Routine candidates: audit/plan acceptance, initial impl assessment, green review handoff, in-bounds ADR, factual tech reference, mechanical docs/design-system update, approved decomposition, and bounded complication decisions. Expenses, external actions, out-of-scope test deletion and PR publication use the same evidence rule; host permissions and machine checks remain mandatory.
 
@@ -23,7 +23,7 @@ For an active sprint, record the actor, gate, artifact revision and short-ref ev
 
 ## Criterion cost surfacing
 
-Gates are keyed by gate name, never by `AC-N`, so a criterion’s running cost is stated in the request rather than looked up. **Measurement point**: any request at the hard `scope, acceptance criteria or user value` gate that adds, changes, retires or closes a criterion, plus any review-cap override request — stated before the decision, never after it.
+Gates are keyed by gate name, never by `AC-N`, so a criterion’s running cost is stated in the request rather than looked up. **Measurement point**: any request at the hard `scope, acceptance criteria or user value` gate that adds, changes, retires or closes a criterion — an included retro intake candidate among them — plus any review-cap override request — stated before the decision, never after it.
 
 **Unit**, per criterion the request names, derived at read time from artefacts the sprint already writes (no counter is stored, so nothing can drift):
 
@@ -47,6 +47,7 @@ The normal gate class is retained for `strict`, and is the fallback when an adap
 | test removal, PR publication, expense or external action | approve-before-write in strict; evidence rule in adaptive; never bypass host permissions/checks |
 | change-surface cap override (plan acceptance or impl-review entry) | hard approve-before-write |
 | per-sprint document skip (scope gate or audit exit) | hard approve-before-write |
+| retro intake dispositions (scope gate; written on acceptance) | hard approve-before-write |
 | sprint closure | hard approve-before-finalize/archive |
 
 `c4-full/` has no standalone artifact gate. Per-section QODDA uses this same policy; it does not create a second mandatory pause.

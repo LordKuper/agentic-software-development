@@ -50,7 +50,7 @@ No reviewer — the wrapped CLI included — runs git to derive, widen or narrow
 
 Review, at every phase, covers only the change surface — the iteration's diff (impl-review) or draft set (design-review) — never the whole project. A finding about code/content outside that surface is invalid, with one exception: the change itself made that unchanged code/content incorrect (e.g. a renamed function left a caller elsewhere broken). Sole statement of the rule; reviewer agents and workflows link here.
 
-**Diff reachability.** That surface is computed from commits, so an authored file nobody commits is invisible to review. Agent memory is in-surface hand-authored source (`artifact-layout.md` "Agent memory"), yet a reviewer holds no commit tool — so the phase workflow writing its review file commits those memory writes too (`git-strategy.md` "Commit before review", which owns that bookkeeping). A memory file a concurrent co-author holds mid-edit is ownerless the same way, and the same rule assigns it. Committed there, the write reaches a diff: the next iteration's, else `pr`'s.
+**Diff reachability.** That surface is computed from commits, so an authored file nobody commits is invisible to review. Agent memory is in-surface hand-authored source (`artifact-layout.md` "Agent memory"), yet a reviewer holds no write or commit tool — so the orchestrator commits the memory text it applies for one ("Autofix vs escalation" memory-fix dispatch; `git-strategy.md` "Commit before review", which owns that bookkeeping). A memory file a concurrent co-author holds mid-edit is ownerless the same way, and the same rule assigns it. Committed there, the write reaches a diff: the next iteration's, else `pr`'s.
 
 ## Over-engineering checklist (critical, undroppable)
 
@@ -85,6 +85,10 @@ Fix = split along responsibility seams into cohesive types → category `simplif
 Default: the responsible creator autofixes any reviewer issue without user prompt.
 
 **Verify before applying.** A reviewer's proposed fix is a claim about source, not an instruction: the fixer re-reads the cited path/symbol and confirms the finding's premise holds at current `HEAD` before applying anything. The suggested fix is non-binding. An equivalent correct fix stays permitted, as does a different fix that resolves the finding; an unverified transcription does not. Premise false → apply nothing and report the mismatch in the completion signal, never a silent drop. Premise true but prescription wrong → fix the real defect and say so in the commit body.
+
+**Consumer search.** A review-fix that changes a rule other files consume searches for every consumer of that rule's home, updates them in the same commit, and lists them in its completion signal.
+
+**Memory-fix dispatch** (Claude only; Codex renders no `memory`). A finding located in `.claude/agent-memory/<owner>/` routes to `<owner>`; a non-owner never authors memory text. An owner holding a write tool fixes it itself in the review-fix chain. An owner without one (reviewers) gets a fresh memory-fix dispatch returning only a `MEMORY-FIX <path>` block holding the replacement text — no verdict token, it is not a review. The orchestrator applies that text verbatim, commits it (`git-strategy.md` "Commit before review") and appends one decisions-log line.
 
 **Where the fix happens:**
 - **design-review** — the creator (asd-ba / asd-ux / asd-architect) autofixes within the loop; iteration advances.
@@ -139,7 +143,7 @@ Next action: APPROVE → reviewer done · CONCERNS → creator autofixes, next i
 
 ## Gate Verdict Format (machine-parseable first line)
 
-Reviewers write no review artifact, code or doc — that is why the phase workflow, never the reviewer, writes the review file (tool grants: `providers.md`). Not absolute: `memory: project` is a separate write channel reviewers do use and the host serves. Sole statement of that scope in canon — what the read-only claim covers and the one channel it excludes; canon acting sites state only the write they perform, `providers.md` only the tool grants. Hand-authored agent memory is outside canon and outside this claim (`artifact-layout.md` "Agent memory"). Every reviewer's **returned findings text** (its final text output) MUST begin (after any preamble) with a single-line verdict token:
+Reviewers write no review artifact, code or doc — that is why the phase workflow, never the reviewer, writes the review file (tool grants: `providers.md`). Nor do they write their own memory: `memory: project` loads it, but the host serves a reviewer no write tool, so a change to it goes through the memory-fix dispatch ("Autofix vs escalation"). Sole statement of that scope in canon — what the read-only claim covers and how a reviewer's memory is written; canon acting sites state only the write they perform, `providers.md` only the tool grants. Hand-authored agent memory is outside canon, so what a memory file restates is outside this sole-statement claim (`artifact-layout.md` "Agent memory"). Every reviewer's **returned findings text** (its final text output) MUST begin (after any preamble) with a single-line verdict token:
 
 ```
 [REVIEW-<phase>-<reviewer>]: <APPROVE | CONCERNS | FAIL>
