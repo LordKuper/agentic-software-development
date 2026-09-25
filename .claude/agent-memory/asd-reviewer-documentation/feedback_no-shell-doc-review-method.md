@@ -54,8 +54,10 @@ current `reviews/impl/wave-<K>/iter-NN/` (design: `reviews/design/iter-NN/`), an
 - Migration comments in `.asd/migrations/*.js` follow the `6.0.0.js` precedent (member docs carrying WHY);
   that style alone is not a §7 finding.
 - **Agent-memory files are reviewable source** (`artifact-layout.md` "Agent memory"): verify durable claims
-  against HEAD AND against the writer's own definition. A stale line in *your own* memory is corrected in
-  the dispatch that finds it, not raised. A memory line is in Documentation economy's Reach. A sibling
+  against HEAD AND against the writer's own definition. A stale line in *your own* memory in scope is
+  raised like any other finding; its fix comes in your later memory-fix dispatch (`review-policy.md`
+  "Autofix vs escalation"), not mid-review. Writing new memory while reviewing stays allowed; the
+  orchestrator commits it with the review file ("Diff reachability"). A memory line is in Documentation economy's Reach. A sibling
   memory written in the same diff range as a code fix often cites the defect that range already fixed
   (015 iter-02: testing memory vs the run.js AC-7 message) - check each memory "re-read X" against the diff.
   When a rule changes, grep ALL `.claude/agent-memory/` for the old wording: a sibling memory outside the
