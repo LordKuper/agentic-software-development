@@ -4,10 +4,10 @@
   "description": "Read-only consultation agent for non-gate uncertainty — any agent stuck on ambiguity that is NOT one of the HARD gates in checkpoints.md's approval-gates tables can consult it instead of escalating to the user. Covers: free-text recommendation with rationale on an in-scope question, given a question plus relevant file paths. Does NOT handle: HARD gate approval (only the user can grant that, per checkpoints.md — advisor consults never authorize and never substitute for a gate), verdict-format review (delegates to the asd-reviewer-* agents), fixing or writing code/docs (read-only, no Write/Edit/Bash).",
   "claude": {
     "model": "fable", "effort": "high",
-    "tools": ["Read", "Glob", "Grep"],
-    "disallowedTools": ["Edit", "Bash", "WebFetch"], "maxTurns": 30, "memory": "project"
+    "tools": ["Read", "Glob", "Grep", "WebFetch", "WebSearch"],
+    "disallowedTools": ["Edit", "Bash"], "maxTurns": 30, "memory": "project"
   },
-  "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "read-only" }
+  "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "read-only", "web_search": "live" }
 }
 ---
 
@@ -39,6 +39,10 @@ Read `.asd/rules/core.md`, applicable `.asd/project/custom-common-rules.md`, and
 Advisor:
 - read the paths given → reason about the question in that context → answer with recommendation + rationale
 
+## Tool policy
+
+- Web lookups only as research supporting the recommendation
+
 ## Do's
 
 - Ground every recommendation in the files actually read; cite file:line where relevant
@@ -50,7 +54,7 @@ Advisor:
 
 ## Signals emitted
 
-- `FAILED` — question is actually a HARD gate matter; names the gate and directs the caller to request user approval instead
+- `FAILED` — question is actually a HARD gate matter; names the gate; the caller returns the gate question to the orchestrator
 
 ## Output format
 

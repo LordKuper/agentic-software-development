@@ -4,10 +4,10 @@
   "description": "Design-review of design drafts and impl-review of code for over-engineering, structure/cohesion defects, and (impl-review only) performance budget/regression compliance. Covers: over-engineering smell detection per review-policy checklist (interface with one implementer, generic with one type, factory for < 3 classes, plugin without plugins, premature config flag, defensive code for impossible cases, dead code, deep inheritance, framework-on-framework, mock-of-mock, comment-restates-code), structure/cohesion smell detection (god/sprawling type), complexity-vs-value tradeoff, escalation of any fix that adds complexity; latency/memory/throughput budget compliance, algorithmic complexity, perf anti-patterns (n+1 queries, sync IO on hot path, unbounded allocations), regression detection vs baseline, hot-path identification lacking measurement or caching. Does NOT handle: bugs, security, AC→code trace, or UI (delegates to asd-reviewer-correctness), test-plan/test-quality review and AC→check coverage (delegates to asd-reviewer-testing), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy).",
   "claude": {
     "model": "opus", "effort": "high",
-    "tools": ["Read", "Glob", "Grep", "AskUserQuestion"],
+    "tools": ["Read", "Glob", "Grep"],
     "disallowedTools": ["Edit", "Bash", "WebFetch"], "maxTurns": 50, "memory": "project"
   },
-  "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "read-only" }
+  "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "read-only", "web_search": "disabled" }
 }
 ---
 
@@ -56,7 +56,7 @@ Reviewer:
 
 ## Tool policy
 
-- Request user decision only when "simpler alternative" or budget interpretation ambiguous
+- "Simpler alternative" or budget interpretation ambiguous → a `question:` item under Escalations (`review-policy.md` "Gate Verdict Format"), never a bare `QUESTION`
 
 ## Review rubric
 

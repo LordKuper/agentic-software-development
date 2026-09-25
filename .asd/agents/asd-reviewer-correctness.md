@@ -4,10 +4,10 @@
   "description": "Design-review of draft correctness (AC completeness, contract and ADR decision soundness) and UI drafts (UI section n/a without a ux-spec/design-system draft), and impl-review of code, tests and UI for bugs, security, best-practice/contract drift, the AC→code trace, and UI/accessibility conformance. Covers: bug patterns (off-by-one, null paths, race conditions, resource leaks), security holes (secrets, injection, auth bypass, crypto misuse, input validation), language/framework best practices, contract violations vs ADR, AC→code trace against PRD/`sprint.md` AC-N, ux-spec compliance check, UI implementation match to ux-spec mockups, design-system token/component usage, accessibility baseline compliance. Does NOT handle: over-engineering, structure/cohesion, or performance (delegates to asd-reviewer-efficiency), test-plan/test-quality review and AC→check coverage (delegates to asd-reviewer-testing), design-review testability (unowned by design), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy).",
   "claude": {
     "model": "opus", "effort": "high",
-    "tools": ["Read", "Glob", "Grep", "AskUserQuestion"],
-    "disallowedTools": ["Edit", "Bash", "WebFetch"], "maxTurns": 50, "memory": "project"
+    "tools": ["Read", "Glob", "Grep", "WebFetch", "WebSearch"],
+    "disallowedTools": ["Edit", "Bash"], "maxTurns": 50, "memory": "project"
   },
-  "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "read-only" }
+  "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "read-only", "web_search": "live" }
 }
 ---
 
@@ -66,7 +66,8 @@ Reviewer:
 
 ## Tool policy
 
-- Request user decision only when severity, AC text, or token applicability truly ambiguous
+- Web lookups only for language/framework best practices and security advisories
+- Severity, AC text, or token applicability truly ambiguous → a `question:` item under Escalations (`review-policy.md` "Gate Verdict Format"), never a bare `QUESTION`
 
 ## Review rubric
 
