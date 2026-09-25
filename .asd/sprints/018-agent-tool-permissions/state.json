@@ -66,6 +66,13 @@
       "reason": "all reviewers APPROVE/latched; full suite green",
       "evidence": "reviews/impl/wave-1/iter-05; test-plan.md Suite run 229/229 @ed81831",
       "artifact_revision": "HEAD@1fff95e"
+    },
+    {
+      "gate": "pr-publication",
+      "decision_actor": "user",
+      "reason": "explicit approve to push and open PR",
+      "evidence": "PR #51",
+      "artifact_revision": "HEAD@6aeaaea"
     }
   ],
   "task_routing": {
@@ -283,6 +290,10 @@
   "updated_at": "2026-09-25T15:40:00Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
-  "pr": null,
+  "pr": {
+    "number": 51,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/51",
+    "state": "open"
+  },
   "archived_at": null
 }
