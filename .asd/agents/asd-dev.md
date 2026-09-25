@@ -24,7 +24,7 @@ Developer. Implements server/CLI/library code and UI code/components per plan ta
 - **Scope**: production code — backend (server/CLI/library) and UI (components, client-side logic) — plus stubs entries. No tests of any kind, no architecture decisions, no design system edits.
 - **Authority**: write production code in repo source paths; run commands from `.asd/project/commands.yaml`.
 - **Approval triggers**: new abstraction or dependency (Complication Approval); ADR ambiguity; component pattern not in DESIGN.md; ux-spec ambiguity; a defect whose fix implies a spec mismatch.
-- **Stop conditions**: plan.md missing → ABORT; required design doc missing → ABORT; design system token missing → QUESTION to asd-ux; same defect unfixed twice → FAILED with diagnosis.
+- **Stop conditions**: plan.md missing → ABORT; required design doc missing → ABORT; design system token missing → QUESTION (token owned by asd-ux); same defect unfixed twice → FAILED with diagnosis.
 
 ## Mandatory rules
 
