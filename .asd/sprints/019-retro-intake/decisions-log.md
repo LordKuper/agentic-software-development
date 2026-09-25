@@ -40,3 +40,20 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-25 — route Task 6: standard, dispatch HEAD f4eb7ed
 - 2026-09-25 — route wave-3 reconciliation (orchestrator request-changes on Tasks 3/4/6 cross-citations): critical, dispatch HEAD fc19c89
 - 2026-09-25 — route Task 7: standard, dispatch HEAD 421b41b
+
+## 2026-09-25 — Retro backlog seeded (AC-4)
+
+- **Decision**: The orchestrator wrote `.asd/project/retro-backlog.md` from `t_retro-backlog.md`, with 15 rows decided in 019: 10 `included`, 3 `deferred` (016#P-1, 017#P-1, 017#P-3), 2 `rejected` (016#P-3, 017#A-1). Guardrail text comes from `retroRows`. `retro-candidates --self-hosting` now returns exactly the 3 deferred rows (DoD check).
+- **Rationale**: The backlog is orchestrator-owned, and no dispatched agent writes it (plan Overview). The seed applies the triage recorded in decisions-log.001.md.
+- **Affected docs**: [retro-backlog.md](../../project/retro-backlog.md)
+
+## 2026-09-25 — Wave flagged choices resolved
+
+- **Decision**: Accepted every dev flagged choice from Tasks 1-7 and the reconciliation round (commit 421b41b):
+  - Task 1 edited its own memory, and the `index.lock` retry was left out of the rule.
+  - Task 2 kept `effort` "emitted on trust".
+  - Task 5 fixed a backtick edge in the shared `tableCells`, which changes the `defect-stalemate` digest for cells with inner backticks; the effect is fail-safe (the question is re-asked).
+  - Task 3 placed each home where the sibling cites point.
+  - The reconciliation round classified External Review as a no-write-tool memory owner.
+- **Rationale**: Each choice stays inside plan scope and the accepted ACs. Two gaps are left for impl-review and not fixed here: who flips the `test-plan.md` Status of a reviewer-owned memory `D-N` after a memory-fix, and the `t_retrospective.html` comment restating the row-id ordinal.
+- **Affected docs**: [plan.md](plan.md)
