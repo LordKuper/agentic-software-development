@@ -326,7 +326,6 @@ function transformAgentCodexToml(meta, body, manifest) {
   const model = resolveModelFamily(manifest, 'codex', c.model, { name: meta && meta.name, effort: c.model_reasoning_effort });
   if (c.model_reasoning_effort === undefined) fail('missing model reasoning effort', model);
   if (c.sandbox_mode !== 'workspace-write' && c.sandbox_mode !== 'read-only') fail('invalid sandbox mode', model);
-  // Optional; omitted = inherit the parent session's web_search (Codex default "cached").
   if (c.web_search !== undefined && !['disabled', 'cached', 'indexed', 'live'].includes(c.web_search)) fail('invalid web_search mode', model);
   const lines = [];
   lines.push(`name = "${tomlEscapeBasic(meta.name)}"`);
