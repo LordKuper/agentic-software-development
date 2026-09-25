@@ -5,3 +5,4 @@
 - [Trace AC to its motivating case](feedback_trace-ac-to-motivating-case.md) — walk a retro row's evidenced case through the post-fix rule; tightening fixes can make it inexpressible
 - [OS is not shell](project_os-is-not-shell.md) — Claude Code runs commands via POSIX `Bash` even on win32; OS-keyed shell syntax is wrong for one provider
 - [Check host claims against own dispatch](feedback_check-host-claims-against-own-dispatch.md) — host-capability canon claims: compare with your own tool list + host docs, not just the retro row
+- [Read deferred gaps in sprint logs](feedback_read-deferred-gaps-in-sprint-logs.md) — grep decisions-log/friction-log for gaps "left for impl-review" before the verdict

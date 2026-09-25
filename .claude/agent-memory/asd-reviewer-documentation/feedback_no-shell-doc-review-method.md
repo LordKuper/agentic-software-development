@@ -1,6 +1,6 @@
 ---
 name: no-shell-doc-review-method
-description: How documentation review runs in this framework repo - no shell, manifest-driven ledger vocabulary (emitter-produced list plus one fingerprint-named .diff, review-policy.md "Scope hand-off"), and the defect shapes that actually pay off (acting-site scope contradicting the cited SSoT, partial mirror updates when a rule gains a trigger, sole-home claims wider than the code, authority bounds narrower than their only instance, a fix narrowing code while the file's second description of it stays wide, new failure branches missing from an exhaustive blocker list, a new record-and-carry rule bound only on its read side, a duty moved off an agent onto "the orchestrator" with no acting site, new in-body `// ponytail:` comments in Node sources, README FAQ answers left stale by a new feature, and agent-memory claims stale at HEAD or contradicting the writer's definition)
+description: How documentation review runs in this framework repo - no shell, manifest-driven ledger vocabulary (emitter-produced list plus one fingerprint-named .diff, review-policy.md "Scope hand-off"), and the defect shapes that actually pay off (acting-site scope contradicting the cited SSoT, partial mirror updates when a rule gains a trigger, sole-home claims wider than the code, authority bounds narrower than their only instance, a fix narrowing code while the file's second description of it stays wide, new failure branches missing from an exhaustive blocker list, a new record-and-carry rule bound only on its read side, a duty moved off an agent onto "the orchestrator" with no acting site, a universal grant claim leaving a sibling fallback branch unreachable, new in-body `// ponytail:` comments in Node sources, README FAQ answers left stale by a new feature, and agent-memory claims stale at HEAD or contradicting the writer's definition)
 metadata:
   type: feedback
 ---
@@ -15,8 +15,9 @@ Ledger statuses, `n/a` predicates and `p`/`f` placement come off the dispatched 
 `vocabulary`/`n_a` fields, copied byte-identically; `review-policy.md` "Coverage ledger" is the shape rule
 only. Files-row vocabulary is `checked`/`n/a` with no `finding` status, so a file carrying a
 finding is still `checked` and the finding id hangs off the rules row (one `f` per row: spread two findings
-over the two rubric ids they best fit). Sha256 freshness (`upstream_hashes`) cannot be recomputed - say it
-was corroborated structurally. Iter 2+: the decisions-log "impl fix for <id>: findings resolved" entry names what changed (impl-review
+over the two rubric ids they best fit). An empty `n_a` means no row may be `n/a` at all. Sha256 freshness
+(`upstream_hashes`) cannot be recomputed - say it was corroborated structurally. Iter 2+: the decisions-log
+"impl fix for <id>: findings resolved" entry names what changed (impl-review
 <id> = `wave-<K>/iter-NN`); other iterations' `reviews/` files, any wave's, stay unread - glob only the
 current `reviews/impl/wave-<K>/iter-NN/` (design: `reviews/design/iter-NN/`), and scope greps to canon
 (a grep over the sprint folder hits sibling reviewers' files).
@@ -39,7 +40,12 @@ current `reviews/impl/wave-<K>/iter-NN/` (design: `reviews/design/iter-NN/`), an
   lean sprint?"). Grep README FAQ for the feature's question, not only tables and folder map.
 - **Record-and-carry rules: check both sides.** When a rule says "iteration X records list L, next
   iteration reads L", find who writes L in every case the rule names. Anything keyed to "the reviewer's
-  ledger" misses External Review, which returns no ledger.
+  ledger" misses External Review, which returns no ledger. Also check step order at the reader: 019
+  iter-02, "next impl-test entry performs the removal" vs impl-test step 4 rotating the live tables away
+  before step 5 reads them.
+- **Universal grant claims vs fallback branches.** A sentence saying the host serves *every* X a tool
+  leaves a sibling "an X with no tool" branch dead; check agent frontmatter (019 iter-02: every
+  `memory: project` agent keeps `Write`, yet the MEMORY-FIX fallback stayed).
 - **Accepted flagged choices vs exhaustive lists.** A decisions-log "Accepted flagged choices" line that
   routes a new failure must land in the dispatching workflow's closed enumerations.
 - **Sole-home claims wider than their home.** Check "lives only in X" against the code and grep for

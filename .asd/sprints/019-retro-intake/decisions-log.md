@@ -85,3 +85,10 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-26 — impl fix for wave-1/iter-01: findings resolved (dev chain 0f9f77c..1fc1abe: COR-1..7, DOC-1..5, EFF-1, external #1/#2; tester 694c28f: TST-1-1, TST-1-2 + pins; memory-fix 5c48db2, b06232a); flagged choices accepted — the `pendingMemoryFix` sweep exemption must be removed at impl-test entry 3, and the COR-4 removal carry-over row survives rotation only if entry 3's tester reads the rotated segment
 - 2026-09-26 — route impl-test entry 3: critical, dispatch HEAD b06232a
 - 2026-09-26 — impl-test: impacted set green (238/238), 0/0 tests, assertions extended in 4 tests (entry 3)
+
+## 2026-09-26 — impl-review wave-1/iter-02 → review-fix
+
+- **Decision**: Verdicts: correctness CONCERNS (COR-1), documentation CONCERNS (DOC-2-1..3), efficiency/testing/external APPROVE (now latched). Routed to impl review-fix (`review_fixes_pending = wave-1/iter-02`). DOC-2-2 is resolved by its alternative, not by deletion: AC-14 requires the returned-text path for an owner with no write tool, and a consumer agent that disallows `Write` is a real case (efficiency iter-02 note). The fallback is kept and worded with its real condition. DOC-2-3 then removes the "serves every owner one" restatement.
+- **Rationale**: One consistent fix set for the conflicting reviewer guidance, within the accepted AC-14. The next iteration's floor is high.
+- **Affected docs**: [correctness.md](reviews/impl/wave-1/iter-02/correctness.md), [documentation.md](reviews/impl/wave-1/iter-02/documentation.md)
+- 2026-09-26 — route review-fix wave-1/iter-02 dev chain (correctness.md COR-1, DOC-2-1..3): critical, dispatch HEAD c3cdad4

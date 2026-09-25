@@ -1,2 +1,3 @@
 - [runtime.js stays one file](feedback_runtime-js-single-file.md) — user overrode the SC-1 split for `.asd/runtime.js`; never re-raise it, judge only new code.
 - [No-shell change surface](feedback_no-shell-incremental-scope.md) — manifest list = scope, fingerprint .diff = change content (impl every iter, design iter 2+), no git, no parts; memory bloat and test micro-costs not raised.
+- [MEMORY-FIX fallback is AC-mandated](project_memory-fix-fallback-keep.md) — owner-without-write-tool branch never fires for canon agents, but AC-14 requires it; keep-as-is, don't raise.
