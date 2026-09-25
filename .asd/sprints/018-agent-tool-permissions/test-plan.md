@@ -18,18 +18,18 @@ were scoped through; the next re-entry's delta is `git diff <this sha>...HEAD`.
 | 2 | 67cc9a8 | delta since entry 1 |
 | 3 | 0bd998c | delta since entry 2 |
 | 4 | 7d16856 | delta since entry 3 |
+| 5 | | delta since entry 4 |
 
 ## Risk → check decisions
 
-Entry 4 (delta since entry 3: `git diff 0bd998c...HEAD`, review-fix round 2: dev 9409e90, 099cf64, d12ece2, 3ee9f24 plus tester 9513ce2). Impacted set: the **full suite**. The safety valve fires because the delta touches `core.md`, `review-policy.md` and `release-manifest.json`. Every canon change in the delta was pinned, with a revert-to-parent proof, by 9513ce2 while entry 3 was live (rotated `test-plan.entry-03.md`); nothing after 9513ce2 is canon.
+Entry 5 (delta since entry 4: `git diff 7d16856...HEAD`, review-fix round 3: dev e5d36b4, 308c214; no test findings). Impacted set: the **full suite**. The safety valve fires because the delta touches `sprint-lifecycle.md`, `review-policy.md` and `release-manifest.json`.
 
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
-| `core.md:47` gate-uncertainty carve-out (3ee9f24) | the reviewer carve-out is lost again | static | none | Already pinned by the widened rules sweep; `core.md` reverted to `3ee9f24~1` fails it (rotated segment, Q1). A new test would duplicate that assertion |
-| stalemate routing (d12ece2): option names removed from both workflows; `external-review.md` "stop"/"continue fixing" effects now name the route | workflows restate stale names; an option loses its effect | static | none | Absence of names plus the home citation are pinned (W1/W2, S4/S5), and so is "exactly three options, each with an effect". Whether the effect prose routes correctly is a judgement about the text with no derivable proxy. Owner: the impl-review correctness reviewer. It becomes assertable if the routes are ever given as literal step references |
-| `answer:` line (099cf64) | the user's answer never reaches the fixer | static | none | Pinned as a relation across carrier, template, impl step 3 and both workflows (A1–A4) |
-| `designmd-install` orchestrator sites (9409e90) | a cited site stops running the install | static | none | Pinned by resolving the `asd-ux.md` citations (I1/I2) |
-| `release-manifest.json` hash refresh | stale ledger | static | keep | The existing `upstream_hashes` and `canon_hashes` tests pass at dbc6b60 |
+| e5d36b4: every `question:` names its finding id (`review-policy.md` carrier, `t_review.md`) | the binding is dropped from both sites at once, so an answer again has no finding to ride with. The existing carrier↔template shape comparison catches one side drifting, not both | static | add (carriers test) | The carrier's form must open with a `<…finding…>` placeholder. Together with the existing shape comparison, this pins the template too |
+| 308c214: user-resolved findings (`sprint-lifecycle.md` "State recovery" home; `resolved:` line cited from `external-review.md` stop, both review workflows, `asd-phase-impl.md` step 3) | a resolution with no recording site (override/stop/cap-accept) leaves no `resolved:` line, so review-fix re-fixes the finding or the pr/DoD gate stays blocked on a bare CONCERNS/FAIL; the collector does not skip named findings | static | add (new test) | Everything is derived from the home. The reasons come from its `resolved:` form; the sites are the canon files that cite it; the review workflows are derived by filename. Every reason must have a citing recording site. Each review workflow must record override and `cap-accept`. The impl review-fix collector must name the form's `resolved:` prefix and cite the home. The home must state both effects (skip, satisfied) |
+| 308c214: design-review DoD branch "All APPROVE, latched or user-resolved"; pr-gate "or for a user-resolved entry" | the satisfied semantics are misapplied at a gate | — | none | Both gates aggregate per the home's satisfied-vs-blocking semantics. The home's "satisfied" statement is pinned above, and the branch wording itself is a pointer to it. Checking whether each gate applies it correctly is a runtime judgement with no machine-checkable form here. Owner: the impl-review correctness reviewer |
+| `release-manifest.json` hash refresh | stale ledger | static | keep | The existing `upstream_hashes` and `canon_hashes` tests pass |
 
 ## Removed tests
 
@@ -38,18 +38,20 @@ Entry 4 (delta since entry 3: `git diff 0bd998c...HEAD`, review-fix round 2: dev
 
 ## Added tests
 
-None this entry. The delta's assertions landed in 9513ce2, with their proofs recorded in the rotated `test-plan.entry-03.md`.
+Mutations were run with `MUT=./mut6.js node <scratchpad>/mutate.js`: a `git show <sha>~1` revert or an anchor-exact edit, restored in `finally` with a byte compare. `upstream_hashes` noise is not listed; every mutation run exited 1.
 
 | Test | Regression proof |
 |---|---|
+| tests/run.js:`sprint-018 AC-4/AC-5/AC-7: a reviewer's question and External Review's stalemate …` (finding-id placeholder) | Y1: `review-policy.md` reverted to `e5d36b4~1` → exit 1, "AC-4: every question names the finding it qualifies (no finding, no question)". The new assert sits before the shape comparison, so it fires first |
+| tests/run.js:`sprint-018 AC-4: a finding the user resolves without a fix is recorded by one resolved: line form …` | U1: `sprint-lifecycle.md` reverted to `308c214~1` → exit 1, "the user-resolved record must be defined once, as a line form naming every resolving reason"; U2: `external-review.md` reverted → "resolving reason \"stop\" must be recorded at a site that cites the home"; U3/U4: design-review / impl-review reverted → "… resolves findings without a fix, so it must cite the user-resolved home"; U5: `asd-phase-impl.md` reverted → "impl review-fix must skip each finding a resolved: line names, citing the home"; U6: impl-review cap-accept recording removed (citation left) → "… an iteration-cap accept must record the open findings resolved"; U7: design-review override recording set back to "mark resolved" (citation left elsewhere) → "… a FAIL override must be recorded as resolved"; U8: "skips" → "fixes" in the home → "the home must state both effects". Rewording R5 ("is skipped by the review-fix collector") first reddened the `/\bskips?\b/` check, which exposed a wording lock. It was relaxed to `/\bskip/` before commit, and R5 then left this test green |
 
 ## Suite run
 
 - Command: `node tests/run.js`
-- Scope: impacted = full (safety valve: the delta touches `core.md`, `review-policy.md` and `release-manifest.json`)
-- Result: pass — 228/228 passed, 0 failed, 0 skipped (exit 0), at both the pre-strategy run (step 3) and the suite gate (step 8). This entry changed no test code
+- Scope: impacted = full (safety valve: the delta touches `sprint-lifecycle.md`, `review-policy.md` and `release-manifest.json`)
+- Result: pass — 229/229 passed, 0 failed, 0 skipped (exit 0) at the suite gate (step 8). The pre-strategy run (step 3) was 228/228, exit 0; this entry added one test
 - Lint / build: pass — `git diff --check` exit 0; `node .asd/sync.js --check` exit 0, `"ok": true`
-- HEAD: dbc6b60
+- HEAD: 03fea36, worktree carrying this entry's uncommitted `tests/run.js` assertions; they land in the commit that records this run
 
 ## Defects
 

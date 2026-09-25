@@ -5768,6 +5768,7 @@ test('sprint-018 AC-4/AC-5/AC-7: a reviewer\'s question and External Review\'s s
   const carrier = sectionOf('.asd/rules/review-policy.md', 'Gate Verdict Format').split('\n').find((line) => line.includes('bare `QUESTION`'));
   const form = carrier && /`(question: [^`]+)`/.exec(carrier);
   assert.ok(form && carrier.includes('`## Escalations`'), 'AC-4: review-policy.md must state the reviewer question carrier and its Escalations placement');
+  assert.ok(/^question: <[^>]*\bfinding\b[^>]*>/.test(form[1]), 'AC-4: every question names the finding it qualifies (no finding, no question) - an answer with no finding has nothing to ride into the fix route');
   assert.strictEqual(shape(form[1]), shape(templateItem.slice(2)), 'AC-4: the carrier form in review-policy.md and the item t_review.md ships must be one shape, or a workflow parses one and a reviewer writes the other');
   assert.ok(carrier.split(/(?<=[.;])\s/).some((sentence) => sentence.includes('`CONCERNS`') && sentence.includes('`APPROVE`') && /\bnever\b/.test(sentence)), 'AC-4: a reviewer holding an open question returns at least CONCERNS, never APPROVE - an APPROVE latches the reviewer and the question never reaches a fix route');
   const answerItem = canonText('.asd/templates/t_review.md').split('## Escalations')[1].split('\n').find((line) => /^\s+answer:/.test(line));
@@ -5819,6 +5820,32 @@ test('sprint-018 AC-4/AC-5/AC-7: a reviewer\'s question and External Review\'s s
   const declared = sectionOf('.asd/rules/providers.md', 'Role-scoped context').split('\n').find((line) => line.startsWith('**Declared tool policy**'));
   const carveOut = declared && declared.split(/[.;]\s|\s—\s/).find((clause) => /\breviewer\b/.test(clause) && clause.includes('`review-policy.md` "Gate Verdict Format"'));
   assert.ok(carveOut, 'AC-4/AC-5 (TST-1-1): one clause must name the reviewer and route it to its carrier home - the out-of-policy refusal must route a reviewer through its question carrier - "an agent ... returns `QUESTION`" alone makes a reviewer return a bare QUESTION, which reads as an interrupted dispatch');
+});
+
+test('sprint-018 AC-4: a finding the user resolves without a fix is recorded by one resolved: line form, every resolving site and the review-fix collector cite its one home, and review-fix skips what it names', () => {
+  const home = sectionOf('.asd/rules/sprint-lifecycle.md', 'State recovery').split('\n').find((line) => line.startsWith('**User-resolved findings**'));
+  const form = home && /`(resolved: [^`]+)`/.exec(home);
+  const reasons = form ? ((/<([a-z-]+(?: \| [a-z-]+)+)>/.exec(form[1]) || [])[1] || '').split(' | ').filter(Boolean) : [];
+  assert.ok(form && reasons.length >= 3, 'the user-resolved record must be defined once, as a line form naming every resolving reason');
+  assert.ok(/\bskip/.test(home) && /\bsatisfied\b/.test(home), 'the home must state both effects: review-fix skips a named finding, and a fully named CONCERNS/FAIL counts as satisfied');
+
+  const citation = '`sprint-lifecycle.md` "State recovery" user-resolved findings';
+  const sites = canonMarkdownFiles().filter((rel) => canonText(rel).includes(citation));
+  for (const reason of reasons) {
+    const recorders = sites.filter((rel) => canonText(rel).split('\n').some((line) => new RegExp(`\\b${reason}\\b`).test(line) && /\bresolved\b/.test(line)));
+    assert.ok(recorders.length > 0, `resolving reason "${reason}" must be recorded at a site that cites the home - otherwise that resolution leaves no resolved: line and the gate stays blocked`);
+  }
+  const reviewWorkflows = fs.readdirSync(path.join(REPO_ROOT, '.asd/workflows')).filter((file) => /^asd-phase-[a-z]+-review\.md$/.test(file)).map((file) => `.asd/workflows/${file}`);
+  assert.strictEqual(reviewWorkflows.length, 2, 'sanity: design-review and impl-review');
+  for (const rel of reviewWorkflows) {
+    const lines = canonText(rel).split('\n');
+    assert.ok(sites.includes(rel), `${rel} resolves findings without a fix, so it must cite the user-resolved home`);
+    assert.ok(lines.some((line) => /\boverride\b/.test(line) && /\brecord\b/.test(line) && /\bresolved\b/.test(line)), `${rel}: a FAIL override must be recorded as resolved, or review-fix fixes it anyway`);
+    assert.ok(lines.some((line) => line.includes('`cap-accept`') && /\bresolved\b/.test(line)), `${rel}: an iteration-cap accept must record the open findings resolved`);
+  }
+  const prefix = form[1].split(' ')[0];
+  const reviewFix = stepOf(sectionOf('.asd/workflows/asd-phase-impl.md', 'Workflow'), 3).split('\n').find((line) => line.includes('**review-fix**'));
+  assert.ok(reviewFix && reviewFix.includes(`\`${prefix}\``) && reviewFix.includes(citation), 'impl review-fix must skip each finding a resolved: line names, citing the home - the collector is the consuming end of the record');
 });
 
 // ===========================================================================
