@@ -40,6 +40,5 @@ Leftover imprecision at a non-canon site is below critical at most. `tests/run.j
 substance, not the "in canon" wording, so a correct rewording stays green. It checks the agent-memory
 carve-out plus the `artifact-layout.md` pointer, the memory-fix dispatch plus the "Autofix vs escalation"
 pointer, and `claude.memory === 'project'` on the external agent. The sprint 019 AC-14/AC-16 sweep
-fails on any canon, README or agent-memory line matching `write channel` or
-`` `memory: project` channel ``. See [[no-shell-doc-review-method]] and
-[[external-review-prompt-duplication]].
+fails on any canon, README or agent-memory line that still calls reviewer memory a write path. See
+[[no-shell-doc-review-method]] and [[external-review-prompt-duplication]].
