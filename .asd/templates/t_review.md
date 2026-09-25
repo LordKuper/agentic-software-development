@@ -36,3 +36,5 @@ Return and persist the compact JSON ledger defined by `review-policy.md` "Covera
 
 ## Escalations (optional)
 - finding #{{N}}: requires user approval ({{reason: concept change / new abstraction / scope expansion / contract change}})
+- question: {{finding id}} — {{text}}; options: {{a}} / {{b}}
+  answer: {{written by the review workflow after the user decides; the reviewer never writes it}}

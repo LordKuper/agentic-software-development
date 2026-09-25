@@ -35,7 +35,7 @@ A blocker is exactly one of:
 - dev `QUESTION` — requirement ambiguity unresolvable from plan + persistent docs;
 - dev `FAILED`/`ABORT` — missing tech-reference, or unrecoverable lint/build failure;
 - `asd-init` sprint-mediated `FAILED` at step 6 — a declared settings-change pair failed validation;
-- a Simplicity Default trigger (`core.md`) — new abstraction, dependency, config flag, or generalization — needs Complication Approval before proceeding.
+- a Simplicity Default trigger (`core.md`) — new abstraction, dependency, config flag, or generalization — needs Complication Approval before proceeding: the dev returns it as a `QUESTION`.
 
 A dev `BLOCKED_MANUAL` does **not** halt immediately: dev registers the manual action, defers only affected subtasks, continues all unblocked work. Phase halts at manual-steps gate (step 8) only after every unblocked task COMPLETED.
 
@@ -52,7 +52,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
    - `test_defects_pending` set → **test-fix mode**; confirm `<sprint>/test-plan.md` exists with pending `D-N` rows (else `ABORT — precondition not met: test-plan.md defects missing`)
 3. **Build work set** per mode:
    - **initial** — read `<sprint>/plan.md` → parse Task blocks (title, subtask checkboxes) plus the `## Dependencies` wave table and dependency lines
-   - **review-fix** — read every reviewer file in `<sprint>/reviews/impl/<id>/`, `<reviewer>.late.md` included; collect all CONCERNS findings, every admitted late finding, plus all FAIL findings the user accepted for fix (skip FAIL noted resolved-by-override); group into fix tasks, one dev task per independent group; findings located in test files route to `asd-tester` instead
+   - **review-fix** — read every reviewer file in `<sprint>/reviews/impl/<id>/`, `<reviewer>.late.md` included; collect all CONCERNS findings, every admitted late finding, plus all FAIL findings the user accepted for fix or kept by a stalemate **continue fixing**, skipping each finding a `resolved:` line names (`sprint-lifecycle.md` "State recovery" user-resolved findings), plus every `answer:` line under a `question:` item (`review-policy.md` "Gate Verdict Format"), part of that reviewer's finding set; group into fix tasks, one dev task per independent group; findings located in test files route to `asd-tester` instead
    - **test-fix** — read `<sprint>/test-plan.md` `Defects` section; collect every `D-N` with status `pending`; group into fix tasks, one dev task per independent group
 4. Write `state.json` (phase=impl) inline (mechanical, no gate)
 5. **Build execution graph**:
@@ -71,7 +71,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
        - tech-reference precondition (refuse-to-implement rule): see `artifact-layout.md` "Tech reference docs" — do not restate here
        - apply the checklists and iron rules while authoring, not only at review: `code-style.md` §1 — do not restate here
        - work autonomously within plan + persistent docs scope; do NOT pause user for routine approach choices — make the reasonable call and proceed
-       - escalate only on a blocker (see Execution mode): emit `QUESTION` for unresolvable requirement ambiguity, `FAILED` for missing tech-reference / unrecoverable failure, or raise Complication Approval via request for user decision **only** when a Simplicity Default trigger fires (new abstraction / dependency / config flag / generalization)
+       - escalate only on a blocker (see Execution mode): emit `QUESTION` for unresolvable requirement ambiguity, `FAILED` for missing tech-reference / unrecoverable failure, or return a Complication Approval `QUESTION` **only** when a Simplicity Default trigger fires (new abstraction / dependency / config flag / generalization)
        - manual-steps handling: see `sprint-lifecycle.md` "Impl phase" — do not restate here
        - write production code only — **no tests, no authoring, no modifying, no pruning**; the impacted set (`sprint-lifecycle.md` "Impacted test set") may be run for self-verification only, never as a substitute for `impl-test`'s gate; test selection, authoring, pruning, and running belong to `impl-test`
        - review-fix — `review-policy.md` "Verify before applying" — do not restate here; test-fix — fix the root cause behind the failing test (never weaken or delete the test), then set the defect row `Status` to `fixed` with the fixing commit sha in `<sprint>/test-plan.md`
@@ -117,7 +117,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
 
 ## Escalation (interruptions before phase exit)
 
-The only reasons impl contacts the user before all tasks/findings/defects complete, in every mode, are the blockers enumerated under **Execution mode** above plus the manual-steps gate (step 8). Each relays and halts; execution resumes on the user's answer, decision or continue command.
+The only reasons impl contacts the user before all tasks/findings/defects complete, in every mode, are the blockers enumerated under **Execution mode** above plus the manual-steps gate (step 8). A dev `QUESTION` follows `sprint-lifecycle.md`'s `QUESTION` protocol; every other blocker relays and halts, resuming on the user's decision or continue command.
 
 On `ADVICE_NEEDED` from any dispatched agent → relay per `sprint-lifecycle.md`'s `ADVICE_NEEDED` protocol; execution resumes, no halt. Not a blocker — the branches above are the only ones that halt.
 

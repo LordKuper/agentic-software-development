@@ -11,7 +11,7 @@ Orchestration body for the `asd-phase-design-review` skill. Operation-mapping to
 ## Operations used
 - read: `.asd/project/config.yaml`, `state.json`, drafts in `<sprint>/design/`, review files
 - write validated compact reviewer coverage and orchestrator state inline; the iteration's draft path list for step 7's `emit-manifest --files` and External Review's list, to temp files outside the repo, and its `snapshot/` draft copies
-- request user decision: escalation on FAIL or iteration cap
+- request user decision: reviewer questions, escalation on FAIL or iteration cap
 - delegate to agent in parallel: reviewers; delegate to agent sequentially: creator autofix; the orchestrator writes state and decisions-log inline
 - append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log"
 
@@ -38,12 +38,14 @@ Orchestration body for the `asd-phase-design-review` skill. Operation-mapping to
 8a. **Interrupted dispatch** — `review-policy.md` "Interrupted dispatch" is the sole SSoT for the durable record, the escalation and the correlated branch, not restated here; its `<id>` is `iter-NN`. The step header carries no reach; each branch below states its own.
    - Interrupted dispatch — reaches any dispatch, External Review included, per `external-review.md` "Outcome contract": takes the same reject-and-re-dispatch-fresh path as a failed validation above, never that step's transcription branch; a second consecutive interruption on the same manifest → request user decision per that section's Escalation (retry fresh / abort), never a split.
    - Late duplicate return — reaches any replaced dispatch, External Review included, per `review-policy.md` "Late duplicate return" (sole SSoT for the admission test and every action it mandates). Phase bindings: a return delivering after step 9 recorded its replacement's verdict, once admitted, is written to `<sprint>/reviews/design/iter-NN/<reviewer>.late.md`, linked from `<reviewer>.md`, and carries that section's `verdicts["iter-NN"]`, `latched` and decisions-log writes even though step 9 already ran.
-9. Parse first-line tokens from all written reviewer files; write `state.json` `reviews.design.verdicts["iter-NN"]` (keyed `correctness`/`efficiency`/`documentation`/`external`) and `reviews.design.latched` per `sprint-lifecycle.md` "APPROVE latch" — sole SSoT for the every-reviewer-gets-an-entry invariant, the inherited `APPROVE` a latch-skipped reviewer receives and the bare-`APPROVE`-only latch condition; not restated here. Phase bindings: an interrupted attempt contributes no entry, its attempts already logged at step 8a. External Review's availability skip is recorded as `"APPROVE (skipped: <reason>)"` when the phase-supplied preflight returns non-ready; its other persistence duties (the skip's `Unreviewed files` line, the `files[]` step 7's scope manifest would carry, included) are `external-review.md` "Outcome contract"'s, not this step's. Aggregate per `sprint-lifecycle.md` "State recovery" satisfied-vs-blocking semantics, reading `verdicts["iter-NN"]` alone:
-   - **All APPROVE or latched** → DoD met; apply the adaptive gate policy and append the decision inline; emit phase COMPLETED
+9. Parse first-line tokens from all written reviewer files; write `state.json` `reviews.design.verdicts["iter-NN"]` (keyed `correctness`/`efficiency`/`documentation`/`external`) and `reviews.design.latched` per `sprint-lifecycle.md` "APPROVE latch" — sole SSoT for the every-reviewer-gets-an-entry invariant, the inherited `APPROVE` a latch-skipped reviewer receives and the bare-`APPROVE`-only latch condition; not restated here. Phase bindings: an interrupted attempt contributes no entry, its attempts already logged at step 8a. External Review's availability skip is recorded as `"APPROVE (skipped: <reason>)"` when the phase-supplied preflight returns non-ready; its other persistence duties (the skip's `Unreviewed files` line, the `files[]` step 7's scope manifest would carry, included) are `external-review.md` "Outcome contract"'s, not this step's. Aggregate per `sprint-lifecycle.md` "State recovery" satisfied-vs-blocking semantics, reading `verdicts["iter-NN"]` alone, except per `sprint-lifecycle.md` "State recovery" "User-resolved findings":
+   - **Reviewer questions first** — a report carrying `question:` items under `## Escalations` (`review-policy.md` "Gate Verdict Format" question carrier) is verdict-bearing, never interrupted (step 8a): request user decision per item, append the answers to decisions-log, and write each under its item in that reviewer's file per that carrier, passing it with that reviewer's findings to the creator fix dispatch (such a report is at least CONCERNS, per that carrier)
+   - **All APPROVE, latched or user-resolved** (`sprint-lifecycle.md` "State recovery" user-resolved findings) → DoD met; apply the adaptive gate policy and append the decision inline; emit phase COMPLETED
    - **Any FAIL** → escalation:
      - parse FAIL findings; group by escalation cause (concept change / new abstraction / scope expansion / contract change)
      - request user decision in `language.chat`: present each FAIL using Complication Approval format from `core.md`; collect decisions
-     - on override → mark resolved, continue
+     - External Review's stalemate FAIL (`Stalemate:` block, `external-review.md` "Stalemate detection") → request user decision; options and routing per that section, instead of the accept/override bullets below
+     - on override → record that finding resolved (`sprint-lifecycle.md` "State recovery" user-resolved findings), continue
      - on accept → delegate to agent corresponding creator (BA / UX / Architect) to apply approved changes; on creator COMPLETED → loop step 4 (increment iteration)
    - **Only CONCERNS** (no FAIL) → autofix loop:
      - delegate to agent responsible creator(s) with finding list; each autofixes per `review-policy.md` "Autofix vs escalation"
@@ -51,9 +53,9 @@ Orchestration body for the `asd-phase-design-review` skill. Operation-mapping to
 10. Iteration cap reached (no severity tier has remaining budget for next iter):
    - request user decision: override cap and continue / accept current findings / abort sprint
    - on override → loop step 4 (`reviews.design.iteration` keeps incrementing — not reset; severity floor pinned at `critical`)
-   - on accept → COMPLETED note "iteration cap reached, user accepted"
+   - on accept → record every open finding resolved (`cap-accept`, same home); COMPLETED note "iteration cap reached, user accepted"
    - on abort → emit ABORT
-11. Any reviewer QUESTION / FAILED / ABORT → relay, halt
+11. Any reviewer or creator FAILED / ABORT → relay, halt; creator `QUESTION` → per `sprint-lifecycle.md`'s `QUESTION` protocol; a reviewer never returns a bare `QUESTION` (step 9)
 12. On `ADVICE_NEEDED` from any dispatched agent → relay per `sprint-lifecycle.md`'s `ADVICE_NEEDED` protocol; execution resumes, no halt.
 
 ## Artefacts produced
@@ -66,7 +68,7 @@ Orchestration body for the `asd-phase-design-review` skill. Operation-mapping to
 - `<sprint>/reviews/design/iter-NN/<reviewer>.late.md` (only for a late duplicate return admitted at step 8a; linked from that reviewer's `<reviewer>.md`)
 - Updated `<sprint>/design/` artifacts after autofix or escalation-approved fixes
 - Updated `state.json` (phase, `reviews.design.iteration`, `reviews.design.verdicts`, `reviews.design.latched`)
-- decisions-log entry on DoD met or override
+- decisions-log entry on DoD met, override or reviewer-question answers (step 9)
 
 ## Agents delegated to
 - 3 internal reviewers (Documentation, Efficiency, Correctness) — parallel, dispatched for any non-empty draft set unless APPROVE-latched (step 7); Correctness's UI section is `n/a: outside phase gate` when no ux-spec/design-system draft is in scope

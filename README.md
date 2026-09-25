@@ -194,6 +194,8 @@ Phase skills (`asd-phase-*`) are dispatched internally by `/asd-sprint`/`$asd-sp
 
 Eleven specialized agents are canonically defined in `.asd/agents/` and generated per provider: `.claude/agents/*.md` for Claude Code, `.codex/agents/*.toml` for Codex. Each declares a model family alias per provider (Claude: fable/opus/sonnet/haiku; Codex: sol/luna) plus supported reasoning effort (omitted for Haiku); `.asd/sync.js` resolves aliases to concrete model ids via `.asd/release-manifest.json`'s `model_families` table (mirrored in [`.asd/rules/providers.md`](.asd/rules/providers.md)). Effort is shown as `model/effort`.
 
+Only the main orchestrator (and a skill it runs inline) ever prompts you for a discrete decision (`AskUserQuestion` on Claude Code, chat-and-block on Codex — `.asd/rules/providers.md` "Semantic operations -> host convention"). No creator, reviewer, or advisor agent carries that grant on either host: a dispatched agent facing a hard or unresolved decision returns `QUESTION` (creators) or its `Escalations`/`Stalemate` carrier (reviewers/External) to the orchestrator instead (`.asd/rules/sprint-lifecycle.md` "`QUESTION` protocol", `.asd/rules/review-policy.md` "Gate Verdict Format").
+
 ### Creators (5)
 
 | Agent | Claude | Codex | Role |
@@ -206,9 +208,13 @@ Eleven specialized agents are canonically defined in `.asd/agents/` and generate
 
 The main orchestrator owns scope, plan, state, decisions, manual-step validation, Git and release/archival sequencing; no PM agent is spawned. Dev/Tester task variants share each canonical role body and permissions: `-mechanical` uses Haiku (no effort)/Luna low, `-critical` Opus/Sol high; tier `standard` has no variant and dispatches the base agent (Sonnet/Sol medium). Deterministic bookkeeping uses commands. Routing uses objective eligibility, escalates on a risk declared against the change or a failed check — a risk declared against the artifact alone does not — and never changes the main model. Experimental cheap outputs retain strong independent review.
 
+All five creators carry `WebFetch`/`WebSearch` (Codex `web_search: "live"`), each scoped by its own Tool policy. BA, UX, and Architect also carry `Bash`, each bounded to its own run-command policy: BA to read-only git inspection (`git log`/`git show`/`git diff`); UX to the `designmd-lint`/`-diff`/`-export` `commands.yaml` aliases (`designmd-install` is the orchestrator's, run before dispatching UX); Architect to the `likec4` CLI (lint/validate only, never `build` inside a sprint draft) — none of the three writes an artifact via shell or holds a commit tool (`.asd/rules/git-strategy.md` "Commit before review"). Dev and Tester carry `Bash` limited by their run-command policy (`commands.yaml` commands plus `git add`/`git commit` for their own work; Dev never runs `test`) and are the only two agents holding a commit tool.
+
 ### Reviewers (4 internal + 1 external)
 
 Reviewers write no review artifact, code or doc on any provider (scope: `review-policy.md`; `memory: project` is a separate write channel they do use): the 4 internal Claude reviewer agents carry no `Write`/`Edit`/`Bash` in `tools`; their Codex counterparts set `sandbox_mode: "read-only"`. External Review is the one exception with `Bash` in its Claude `tools` (it necessarily needs a command-runner to invoke the wrapped CLI at all) — its read-only guarantee is instead enforced explicitly on the WRAPPED subprocess itself: `codex exec --sandbox read-only` when running under Claude Code, `claude -p ... --tools "Read,Grep,Glob"` when running under Codex. Every reviewer returns its verdict as final text; the dispatching phase workflow writes the review file. Every reviewer gets its scope per `.asd/rules/review-policy.md` "Scope hand-off": its own file list, a precomputed `.diff`, whole files as context only; "Reviewer responsibility" there is the sole owner map — one reviewer per concern, one file list per reviewer.
+
+Web grants split per reviewer: only Correctness carries `WebFetch`/`WebSearch` (Codex `web_search: "live"`), scoped by its Tool policy. Efficiency, Testing, Documentation, and External Review carry neither (Codex `web_search: "disabled"`).
 
 | Agent | Claude | Codex | Phase(s) | Scope |
 |---|---|---|---|---|
@@ -226,7 +232,7 @@ An **APPROVE latch** persists per phase per reviewer key in `state.json` — in 
 
 ### Advisor (1)
 
-Read-only, consulted by any agent on non-gate uncertainty — an open question about approach, interpretation, tradeoff, or fact-finding that doesn't itself gate writing an artifact or advancing a phase. Never authorizes a HARD gate (`checkpoints.md`), never emits a verdict token, never writes or edits anything; returns a free-text recommendation with rationale that the consulting agent may accept, adapt, or override. Consults are not logged — no review file, no ledger entry.
+Read-only, consulted by any agent on non-gate uncertainty — an open question about approach, interpretation, tradeoff, or fact-finding that doesn't itself gate writing an artifact or advancing a phase. Never authorizes a HARD gate (`checkpoints.md`), never emits a verdict token, never writes or edits anything, and never prompts you directly. Carries `WebFetch`/`WebSearch` (Codex `web_search: "live"`) for fact-finding. Returns a free-text recommendation with rationale that the consulting agent may accept, adapt, or override. Consults are not logged — no review file, no ledger entry.
 
 | Agent | Claude | Codex | Role |
 |---|---|---|---|
@@ -407,7 +413,7 @@ The canonical SessionStart hook (`.asd/hooks/session-start.js`) prints a one-blo
 
 ### Settings.json / hooks.json
 
-`.claude/settings.json` pre-allows common git / gh / likec4 / designmd / codex commands so Claude Code does not prompt you for permission each time; edit its `permissions.allow` array to extend. `.codex/hooks.json` registers the same hook for Codex. Both files are JSON-merge targets — ASD owns only its own hook entry in each, never the rest of the file.
+`.claude/settings.json` pre-allows common git / gh / likec4 / designmd / codex commands so Claude Code does not prompt you for permission each time; edit its `permissions.allow` array to extend. Since several agents carry `WebFetch`/`WebSearch` (creators, Correctness, Advisor — see "Agents" above), also pre-allow those tools there if you don't want a permission prompt on first use. `.codex/hooks.json` registers the same hook for Codex. Both files are JSON-merge targets — ASD owns only its own hook entry in each, never the rest of the file.
 
 ---
 

@@ -136,6 +136,7 @@ test('AC-1/3/5/6/7: Codex renderer rejects invalid delegate config with context'
     ['mismatched family model', meta, { ...manifest, model_families: { ...manifest.model_families, codex: { ...manifest.model_families.codex, sol: 'gpt-6-luna' } } }, 'unsupported ChatGPT-runtime model mapping'],
     ['invalid effort', { ...meta, codex: { ...meta.codex, model_reasoning_effort: 'fast' } }, manifest, 'invalid model reasoning effort'],
     ['invalid sandbox', { ...meta, codex: { ...meta.codex, sandbox_mode: 'unsafe' } }, manifest, 'invalid sandbox mode'],
+    ['invalid web_search', { ...meta, codex: { ...meta.codex, web_search: 'on' } }, manifest, 'invalid web_search mode'],
   ];
   for (const [label, invalidMeta, invalidManifest, reason] of cases) {
     assert.throws(
@@ -143,6 +144,18 @@ test('AC-1/3/5/6/7: Codex renderer rejects invalid delegate config with context'
       err => err.message.includes(reason) && err.message.includes('runtime-fixture') && err.message.includes('family') && err.message.includes('resolved model') && err.message.includes('effort'),
       label
     );
+  }
+
+  const documented = /agent-TOML `web_search` mode \(`([a-z|]+)`/.exec(canonText('.asd/rules/providers.md'));
+  assert.ok(documented, 'sprint-018 AC-3: providers.md must document the Codex web_search modes canon may set - the one statement of what Codex can express');
+  for (const mode of documented[1].split('|')) {
+    let rendered;
+    try {
+      rendered = sync.transformAgentCodexToml({ ...meta, codex: { ...meta.codex, web_search: mode } }, '', manifest);
+    } catch (error) {
+      rendered = `rejected: ${error.message}`;
+    }
+    assert.ok(rendered.split('\n').includes(`web_search = "${mode}"`), `sprint-018 AC-3: providers.md documents web_search mode "${mode}", so sync.js must accept and render it - the documented set and the validator drift apart otherwise. Got: ${rendered.split('\n')[0]}`);
   }
 });
 
@@ -159,6 +172,15 @@ test('AC-3/6/7: every canonical Codex agent renders a supported delegate config'
     assert.match(output, codexModelRe, `${meta.name}: supported model`);
     assert.match(output, /^model_reasoning_effort = "(low|medium|high|xhigh|max|ultra)"$/m, `${meta.name}: supported effort`);
     assert.match(output, /^sandbox_mode = "(workspace-write|read-only)"$/m, `${meta.name}: supported sandbox`);
+  }
+
+  const codexItems = sync.buildSyncPlan(REPO_ROOT).filter((item) => item.kind === 'agent-codex');
+  assert.ok(codexItems.some((item) => item.metaOverride), 'sanity: the plan must carry the tier variants, or the parity loop below never reaches them');
+  for (const item of codexItems) {
+    const { meta: base, body } = sync.parseCanonicalFrontmatter(sync.readNormalized(item.canonPath));
+    const meta = item.metaOverride || base;
+    const web = ['WebFetch', 'WebSearch'].every((tool) => base.claude.tools.includes(tool)) ? 'live' : 'disabled';
+    assert.ok(sync.transformAgentCodexToml(meta, body, manifest).split('\n').includes(`web_search = "${web}"`), `sprint-018 AC-3: ${meta.name} must render web_search = "${web}" - Codex parity with its canonical Claude web grant, variants inheriting the base key`);
   }
 });
 
@@ -3332,7 +3354,7 @@ test('T-2: feedback_no-shell-review-method.md cites asd-reviewer-testing.md\'s f
 
   const agentSrc = sync.readNormalized(path.join(REPO_ROOT, '.asd/agents/asd-reviewer-testing.md'));
   const { meta } = sync.parseCanonicalFrontmatter(agentSrc);
-  assert.deepStrictEqual(meta.claude.tools, ['Read', 'Glob', 'Grep', 'AskUserQuestion'], 'the frontmatter this memory now cites must actually be the read-only grant it claims, or the citation points somewhere false');
+  assert.deepStrictEqual(meta.claude.tools, ['Read', 'Glob', 'Grep'], 'the frontmatter this memory now cites must actually be the read-only grant it claims, or the citation points somewhere false');
   assert.ok(!meta.claude.tools.includes('Write') && !meta.claude.tools.includes('Edit') && !meta.claude.tools.includes('Bash'), 'this reviewer must have no Write/Edit/Bash grant to cite');
 
   const grantedLower = meta.claude.tools.map((t) => t.toLowerCase());
@@ -5456,7 +5478,17 @@ test('sprint-015 AC-1/AC-6/AC-7/AC-8/AC-10/AC-12: no canon tells anyone to clear
   for (const name of ['asd-ba', 'asd-ux']) {
     const text = canonText(`.asd/agents/${name}.md`);
     const claude = JSON.parse(text.split('---\n')[1]).claude;
-    assert.ok(claude.disallowedTools.includes('Bash') && !claude.tools.includes('Bash'), `AC-6: ${name} stays shell-less - its git operations route through the orchestrator instead`);
+    assert.ok(claude.tools.includes('Bash') && !claude.disallowedTools.includes('Bash'), `sprint-018 AC-1: ${name} carries a shell on Claude - granted in tools, not disallowed`);
+    const runCommand = (sectionOf(`.asd/agents/${name}.md`, 'Tool policy').split('\n').find((line) => line.startsWith('- Run command:')) || '').split(/(?<=[;.])\s/);
+    assert.ok(runCommand.some((clause) => /\bnever\b/.test(clause) && /\bartifact\b/.test(clause)), `sprint-018 AC-8: ${name}'s shell is bounded by its Run command policy line, which must forbid writing an artifact through it (providers.md write-a-file rule)`);
+    assert.ok(runCommand.some((clause) => /\bnever\b/.test(clause) && /\bgit write\b/.test(clause)), `AC-6/sprint-018 AC-8: ${name}'s Run command line must forbid git writes - holding Bash, its renames and deletions still route through the orchestrator`);
+    assert.ok(runCommand.some((clause) => /\borchestrator\b/.test(clause) && /\brenames?\b/.test(clause)), `AC-6/sprint-018 AC-8: ${name}'s Run command line must route renames/deletes to the orchestrator`);
+    const allowClauses = runCommand.filter((clause) => /\bonly\b/.test(clause) && !/\bnever\b/.test(clause));
+    const allowed = allowClauses.flatMap((clause) => [...clause.matchAll(/`([^`]+)`/g)].map((match) => match[1]));
+    assert.ok(allowed.length > 0, `sprint-018 AC-8 (TST-1-2): ${name}'s Run command line must name the commands it may run under an "only" scope - a never-list alone leaves every other command open`);
+    const neverRun = [...text.matchAll(/Never run `([^`]+)`/g)].map((match) => match[1]);
+    const covers = (grant, command) => (grant.endsWith('*') ? command.startsWith(grant.slice(0, -1)) : command === grant);
+    assert.deepStrictEqual(allowed.filter((grant) => neverRun.some((command) => covers(grant, command))), [], `sprint-018 AC-8: ${name}'s Run command allowlist must not reach a command its own body says never to run (\`designmd-install\` writes package.json/lockfile)`);
     assert.ok(text.split('\n').some((line) => line.startsWith('- Never') && /\brename\b/.test(line) && /\bpropos/.test(line)), `AC-6 (P2-2): ${name} proposes a doc rename or deletion in its final text instead of performing it, or design-promote never receives the proposal`);
   }
 
@@ -5596,6 +5628,232 @@ test('sprint-017 AC-8 (D8): review-policy.md "Scope hand-off" is the sole home o
   const link = /review-policy\.md`? (?:"|§ )Scope hand-off/;
   const citers = ['.asd/workflows/asd-phase-impl-review.md', '.asd/workflows/asd-phase-design-review.md', '.asd/rules/external-review.md', '.asd/agents/asd-external-review.md', '.asd/templates/external-review/t_prompt-external-impl.md', '.asd/templates/external-review/t_prompt-external-design.md', 'README.md', ...internalReviewers().map((reviewer) => `.asd/agents/asd-reviewer-${reviewer}.md`)];
   assert.deepStrictEqual(citers.filter((rel) => !link.test(canonText(rel))), [], 'D8: every site handing a reviewer its scope must link the one home instead of restating it');
+});
+
+// ===========================================================================
+// 22. Sprint 018: agent tool grants and orchestrator-only user contact
+// ===========================================================================
+
+function canonAgents() {
+  return fs.readdirSync(path.join(REPO_ROOT, '.asd/agents')).filter((file) => file.endsWith('.md')).sort().map((file) => {
+    const rel = `.asd/agents/${file}`;
+    const { meta, body } = sync.parseCanonicalFrontmatter(sync.readNormalized(path.join(REPO_ROOT, rel)));
+    return { rel, name: meta.name, meta, body };
+  });
+}
+
+test('sprint-018 AC-1/AC-2/AC-4/AC-8/AC-9: no agent grants AskUserQuestion, web access is granted whole or withheld whole with every grant scoped by policy, and every shell is bounded with commit holders matching git-strategy.md', () => {
+  const agents = canonAgents();
+  assert.strictEqual(agents.length, 11, 'sanity: every dispatched role must be swept');
+  assert.deepStrictEqual(agents.filter((a) => a.meta.claude.tools.includes('AskUserQuestion')).map((a) => a.name), [], 'AC-4: a dispatched agent never reaches the user, so no canonical agent may carry the user-prompting tool');
+
+  const webTools = ['WebFetch', 'WebSearch'];
+  const hasWeb = (a) => webTools.every((tool) => a.meta.claude.tools.includes(tool));
+  assert.deepStrictEqual(agents.filter((a) => !hasWeb(a) && webTools.some((tool) => a.meta.claude.tools.includes(tool))).map((a) => a.name), [], 'AC-2: web access is one grant - WebFetch without WebSearch (or the reverse) has no Codex equivalent, which renders only live or disabled');
+  assert.deepStrictEqual(agents.filter((a) => !hasWeb(a)).map((a) => a.name), ['asd-external-review', 'asd-reviewer-documentation', 'asd-reviewer-efficiency', 'asd-reviewer-testing'], 'AC-2: exactly these four keep web withheld; every other agent carries it');
+  for (const a of agents) {
+    const denied = webTools.filter((tool) => a.meta.claude.disallowedTools.includes(tool));
+    if (hasWeb(a)) assert.deepStrictEqual(denied, [], `AC-2: ${a.name} grants web, so its disallowedTools must not deny it`);
+    else assert.ok(denied.includes('WebFetch'), `AC-2: ${a.name} keeps WebFetch in disallowedTools`);
+  }
+
+  for (const a of agents.filter(hasWeb)) {
+    assert.ok(sectionOf(a.rel, 'Tool policy').split('\n').some((line) => line.startsWith('- ') && /\bweb\b|\bURL\b/i.test(line)), `AC-9: ${a.name} carries web tools, so its Tool policy must scope what it may look up`);
+  }
+  const boundary = sectionOf('.asd/rules/core.md', 'Untrusted-data boundary');
+  assert.ok(boundary.includes('search results'), 'AC-9: the untrusted-data rule must cover web search results, not only fetched pages');
+  assert.ok(!/WebFetch|WebSearch|web_search/.test(boundary), 'AC-9: the untrusted-data rule applies on both hosts, so it names no host tool (providers.md maps them)');
+  const devWeb = sectionOf('.asd/agents/asd-dev.md', 'Tool policy').split('\n').filter((line) => /\bweb\b/.test(line)).map((line) => /^- (.+?) only for /.exec(line)).find(Boolean);
+  assert.ok(devWeb, 'AC-9: asd-dev must carry its scoped web policy line');
+  const ops = devWeb[1].split(' / ').map((op) => op[0].toLowerCase() + op.slice(1));
+  assert.ok(ops.length === 2, `sanity: the web policy line names fetch and search - got ${JSON.stringify(ops)}`);
+  const providers = canonText('.asd/rules/providers.md').split('\n');
+  for (const op of ops) {
+    assert.ok(providers.some((line) => line.startsWith(`| ${op} |`)), `AC-9: agent bodies name the semantic op "${op}", so providers.md must map it to both hosts`);
+  }
+  const fetchLines = agents.filter(hasWeb).flatMap((a) => sectionOf(a.rel, 'Tool policy').split('\n').filter((line) => line.toLowerCase().startsWith(`- ${ops[0].toLowerCase()}`)).map((line) => [a.name, line]));
+  assert.ok(fetchLines.length >= 5, `sanity: the web-granted agents whose policy names the fetch op must be found - got ${fetchLines.length}`);
+  for (const [name, line] of fetchLines) {
+    const scoped = /^- (.+?) only for /.exec(line);
+    assert.deepStrictEqual(scoped && scoped[1].split(' / ').map((op) => op[0].toLowerCase() + op.slice(1)), ops, `AC-9 (TST-2-3): ${name} holds both web tools, so its scoped policy line must bound search as well as fetch ("<fetch> / <search> only for") - a fetch-only scope leaves web search unbounded`);
+  }
+  const uxInstall = sectionOf('.asd/agents/asd-ux.md', "Do's").split('\n').find((line) => line.includes('Never run `designmd-install`'));
+  const installSites = uxInstall ? [...uxInstall.matchAll(/`(asd-[a-z-]+)(\.md)?`(?: step (\d+))?/g)] : [];
+  assert.ok(installSites.length >= 3, 'AC-8: asd-ux may not run designmd-install, so it must name the orchestrator sites that run it instead');
+  for (const [, name, isWorkflow, step] of installSites) {
+    const rel = isWorkflow ? `.asd/workflows/${name}.md` : `.asd/skills/${name}/SKILL.md`;
+    const source = canonText(rel).includes('\n## Workflow') ? sectionOf(rel, 'Workflow') : canonText(rel);
+    assert.ok(/run command `designmd-install`/i.test(step ? stepOf(source, step) : source), `AC-8: asd-ux cites ${rel}${step ? ` step ${step}` : ''} as where the orchestrator runs designmd-install - that site must run it, or DESIGN.md lint fails on Windows with nobody allowed to install`);
+  }
+
+  const shells = agents.filter((a) => a.meta.claude.tools.includes('Bash'));
+  const runLine = (a) => sectionOf(a.rel, 'Tool policy').split('\n').find((line) => line.startsWith('- Run command:'));
+  assert.deepStrictEqual(shells.filter((a) => !runLine(a)).map((a) => a.name), [], 'AC-8: every Bash grant is bounded by a Run command policy line');
+  const holders = shells.filter((a) => runLine(a).includes('`git commit`')).map((a) => a.name);
+  const policy = canonText('.asd/rules/git-strategy.md');
+  const start = policy.indexOf('Holding a commit tool');
+  assert.ok(start >= 0 && policy.indexOf('hold one', start) > start, 'AC-8: git-strategy.md must define who holds a commit tool by role policy');
+  const named = [...policy.slice(start, policy.indexOf('hold one', start)).matchAll(/`(asd-[a-z-]+)`/g)].map((match) => match[1]).sort();
+  assert.deepStrictEqual(holders, named, 'AC-8: git-strategy.md names the commit-tool holders and each agent\'s Run command line grants `git commit` - the two sites must agree, or a shell-holding creator reads the commit obligation as its own');
+});
+
+test('sprint-018 AC-4/AC-5/AC-7: only the main orchestrator prompts the user - core.md says so, the QUESTION protocol carries every dispatched question, every creator/dev/tester-dispatching workflow cites it, and no agent body, skill or design step hands user contact to a dispatched agent', () => {
+  const request = sectionOf('.asd/rules/core.md', 'Request user decision');
+  assert.ok(request.split(/(?<=[.;—])\s/).some((clause) => /\bonly\b/i.test(clause) && /main orchestrator/.test(clause)), 'AC-5: core.md must reserve request user decision to the main orchestrator');
+  assert.ok(request.includes("`sprint-lifecycle.md`'s `QUESTION` protocol"), 'AC-5: core.md must hand a dispatched agent\'s question to the QUESTION protocol');
+  assert.ok(!request.includes('Every agent can do this'), 'AC-5: the retired "every agent can prompt" claim must stay gone');
+  assert.ok(canonText('.asd/rules/providers.md').split('\n').some((line) => line.startsWith('| request user decision') && line.includes('`core.md` "Request user decision"')), 'AC-5: the providers.md host mapping must point at the orchestrator-only rule');
+  for (const [rel, retired] of [['.asd/rules/sprint-lifecycle.md', 'escalates to the user normally'], ['.asd/rules/sprint-lifecycle.md', "escalates per `core.md`'s Autonomy"], ['.asd/rules/design-principles.md', 'request user decision for final choice'], ['.asd/rules/external-review.md', 'escalates to user with options']]) {
+    assert.ok(!canonText(rel).includes(retired), `AC-5: ${rel} must not tell a dispatched agent to reach the user itself ("${retired}")`);
+  }
+
+  const vocabulary = sectionOf('.asd/rules/sprint-lifecycle.md', 'Signal vocabulary');
+  const signal = vocabulary.split('\n').find((line) => line.startsWith('- `QUESTION`'));
+  assert.ok(signal && /\breviewer\b/.test(signal) && signal.includes('`review-policy.md` "Gate Verdict Format"') && signal.includes('`QUESTION` protocol'), 'AC-4/AC-7: the QUESTION signal must exclude reviewers (pointing at their carrier) and point at its protocol');
+  const protocol = vocabulary.split('**`QUESTION` protocol**')[1];
+  assert.ok(protocol, 'AC-7: sprint-lifecycle.md must carry the QUESTION protocol');
+  const steps = protocol.split('\n\n')[0].split('\n').filter((line) => /^\d\. /.test(line));
+  assert.ok(steps.length === 3 && /dispatched agent/.test(steps[0]), 'AC-7: step 1 catches QUESTION from a dispatched agent');
+  assert.ok(/main orchestrator/.test(steps[1]) && /request user decision/.test(steps[1]), 'AC-7: step 2 - the main orchestrator asks, via request user decision');
+  assert.ok(steps[1].includes('`decisions-log.md`') && /before any further work/.test(steps[1]), 'AC-7: step 2 - the answer is on disk before any further work, or a lost session loses it');
+  assert.ok(/\bfresh\b/.test(steps[2]) && /original task/.test(steps[2]) && /\banswer\b/.test(steps[2]), 'AC-7: step 3 - a fresh re-dispatch carrying the original task plus the answer; no host resumes a dispatched agent');
+
+  const citation = "`sprint-lifecycle.md`'s `QUESTION` protocol";
+  const creators = canonAgents().map((a) => a.name).filter((name) => !/^asd-(reviewer-|external-review|advisor)/.test(name));
+  assert.deepStrictEqual(creators, ['asd-architect', 'asd-ba', 'asd-dev', 'asd-tester', 'asd-ux'], 'sanity: the QUESTION-emitting roles, derived from the agents directory');
+  const workflows = fs.readdirSync(path.join(REPO_ROOT, '.asd/workflows')).filter((file) => file.endsWith('.md')).map((file) => `.asd/workflows/${file}`);
+  const dispatchers = workflows.filter((rel) => creators.some((name) => canonText(rel).includes(`\`${name}\``)));
+  assert.ok(dispatchers.length >= 6, `sanity: the creator/dev/tester-dispatching workflows must be found - got ${dispatchers.join(', ')}`);
+  const branches = workflows.flatMap((rel) => canonText(rel).split(/;|\n/).filter((clause) => /QUESTION[^→]*→/.test(clause)).map((clause) => `${rel}: ${clause.trim()}`));
+  assert.ok(branches.length >= 3, 'sanity: the QUESTION → branch sweep must reach the workflows');
+  assert.deepStrictEqual(branches.filter((clause) => !clause.includes(citation)), [], 'AC-7: a QUESTION branch routes through the protocol, never "relay, halt"');
+
+  const selfPrompt = /\brequests? (?:for )?(?:a )?user (?:decision|approval)|\brequests? the user\b/i;
+  const offenders = canonAgents().flatMap((a) => a.body.split(/(?<=[.;])\s|\n/).filter((clause) => selfPrompt.test(clause) && !/\bnever\b/.test(clause)).map((clause) => `${a.name}: ${clause.trim()}`));
+  assert.deepStrictEqual(offenders, [], 'AC-4: no agent body may instruct the agent itself to request a user decision - it returns QUESTION (or its reviewer carrier) instead');
+  const delegatedAsk = [...canonMarkdownFiles()].flatMap((rel) => canonText(rel).split('\n').filter((line) => /delegate to agent\b[^.]*\bto ask (?:the )?user/i.test(line)).map((line) => `${rel}: ${line}`));
+  assert.deepStrictEqual(delegatedAsk, [], 'AC-7: a skill or workflow collects user input inline before delegating - never delegates the asking');
+
+  const design = sectionOf('.asd/workflows/asd-phase-design.md', 'Workflow');
+  for (const n of [6, 8, 9]) {
+    const step = stepOf(design, n);
+    const instruction = step.split('\n').find((line) => line.trim().startsWith('- instruction:'));
+    assert.ok(instruction, `step ${n} must keep its creator instruction`);
+    for (const phrase of ['loop until explicit', 'discuss each', 'request user decision']) {
+      assert.ok(!instruction.includes(phrase), `AC-7: design step ${n}'s creator instruction must not carry user contact ("${phrase}") - the dispatched creator cannot reach the user`);
+    }
+    assert.ok(/accept loop/.test(step), `AC-7: design step ${n} must run the accept loop in the orchestrator`);
+  }
+  const loop = stepOf(design, 6).split('\n').find((line) => /accept loop/.test(line));
+  assert.ok(/\borchestrator\b/.test(loop) && /re-dispatch/.test(loop) && loop.includes('explicit `accept`'), 'AC-7: the accept loop is the orchestrator\'s - it discusses with the user and re-dispatches the creator until an explicit accept');
+  const tokenGate = stepOf(design, 8).split('\n').find((line) => /token gate/.test(line));
+  assert.ok(tokenGate && /\borchestrator\b/.test(tokenGate) && tokenGate.includes(citation), 'AC-7: UX\'s token approval is an orchestrator gate over UX\'s QUESTION');
+
+  assert.deepStrictEqual(dispatchers.filter((rel) => !canonText(rel).includes(citation)), [], 'AC-7: every workflow dispatching a role that can return QUESTION must cite the QUESTION protocol, or that question has no handling path in the phase');
+});
+
+test('sprint-018 AC-4/AC-5/AC-7: a reviewer\'s question and External Review\'s stalemate ride the verdict-bearing report - one carrier form across template, rule, agents and both review workflows - and impl-review collects manual-verification results before dispatching the testing reviewer', () => {
+  const reviewers = canonAgents().filter((a) => /^asd-(reviewer-|external-review)/.test(a.name));
+  assert.strictEqual(reviewers.length, 5, 'sanity: four internal reviewers plus External Review');
+  for (const r of reviewers) {
+    assert.ok(!sectionOf(r.rel, 'Signals emitted').includes('`QUESTION`'), `AC-4: ${r.name} never returns a bare QUESTION - without its verdict token it reads as an interrupted dispatch and the question is lost`);
+    for (const line of r.body.split('\n').filter((l) => l.includes('`question:`'))) {
+      assert.ok(line.includes('`review-policy.md` "Gate Verdict Format"'), `AC-4: ${r.name} routes a question through the carrier and must cite its home: ${line}`);
+    }
+  }
+
+  const shape = (text) => text.replace(/\{\{[^}]+\}\}|<[^>]+>/g, 'X').replace(/\s*…\s*$/, '').trim();
+  const templateItem = canonText('.asd/templates/t_review.md').split('## Escalations')[1].split('\n').find((line) => line.startsWith('- question:'));
+  assert.ok(templateItem, 'AC-4: t_review.md "## Escalations" must ship the question item form');
+  const carrier = sectionOf('.asd/rules/review-policy.md', 'Gate Verdict Format').split('\n').find((line) => line.includes('bare `QUESTION`'));
+  const form = carrier && /`(question: [^`]+)`/.exec(carrier);
+  assert.ok(form && carrier.includes('`## Escalations`'), 'AC-4: review-policy.md must state the reviewer question carrier and its Escalations placement');
+  assert.ok(/^question: <[^>]*\bfinding\b[^>]*>/.test(form[1]), 'AC-4: every question names the finding it qualifies (no finding, no question) - an answer with no finding has nothing to ride into the fix route');
+  assert.ok(carrier.split(/(?<=\.)\s/).some((sentence) => sentence.includes('`providers.md` "Declared tool policy"') && /\bfinding\b/.test(sentence)), 'AC-4/AC-5: a reviewer\'s out-of-policy refusal must become a finding the carrier question names - "no finding, no question" otherwise leaves the refusal no way to reach the user');
+  assert.strictEqual(shape(form[1]), shape(templateItem.slice(2)), 'AC-4: the carrier form in review-policy.md and the item t_review.md ships must be one shape, or a workflow parses one and a reviewer writes the other');
+  assert.ok(carrier.split(/(?<=[.;])\s/).some((sentence) => sentence.includes('`CONCERNS`') && sentence.includes('`APPROVE`') && /\bnever\b/.test(sentence)), 'AC-4: a reviewer holding an open question returns at least CONCERNS, never APPROVE - an APPROVE latches the reviewer and the question never reaches a fix route');
+  const answerItem = canonText('.asd/templates/t_review.md').split('## Escalations')[1].split('\n').find((line) => /^\s+answer:/.test(line));
+  const answerForm = /`(\s*answer: [^`]+)`/.exec(carrier);
+  assert.ok(answerItem && answerForm, 'AC-4: the carrier must state where the user\'s answer is written, and t_review.md must ship that line under the question item');
+  assert.strictEqual(shape(answerForm[1]), shape(answerItem), 'AC-4: review-policy.md and t_review.md must agree on the answer line form');
+  const reviewFix = stepOf(sectionOf('.asd/workflows/asd-phase-impl.md', 'Workflow'), 3).split('\n').find((line) => line.includes('**review-fix**'));
+  assert.ok(reviewFix && reviewFix.includes('`answer:`') && reviewFix.includes('`review-policy.md` "Gate Verdict Format"'), 'AC-4: impl review-fix must collect the answer lines with the findings, citing the carrier - otherwise the answer sits in decisions-log and the fixer never reads it');
+  const routesToQuestion = /\b(?:returns?|via|as) `QUESTION`/;
+  const questionRoutes = fs.readdirSync(path.join(REPO_ROOT, '.asd/rules')).flatMap((file) => canonText(`.asd/rules/${file}`).split('\n').filter((line) => routesToQuestion.test(line)).map((line) => ({ file, line })));
+  assert.deepStrictEqual(questionRoutes.filter(({ line }) => !/\bagent\b/.test(line)).map(({ file }) => file), ['design-principles.md'], 'TST-2-1: a QUESTION route whose line names no agent is creator-scoped and exempt; the exempt set is compared exactly, so a generic route cannot drop out of the sweep by rewording its subject');
+  const genericReturns = questionRoutes.filter(({ line }) => /\bagent\b/.test(line)).map(({ file, line }) => `${file}: ${line}`);
+  assert.ok(genericReturns.length >= 5, 'sanity: the rule-doc lines routing any agent to QUESTION must be found');
+  assert.deepStrictEqual(genericReturns.filter((line) => !(/\breviewer\b/.test(line) && /\bcarrier\b/.test(line))), [], 'AC-4/AC-5: a rule line telling any agent to return QUESTION reaches reviewers too, so it must carve them out to their carrier on the same line (D-1, then ADVICE_NEEDED steps 4/6 - the class recurs)');
+
+  const external = sectionOf('.asd/rules/external-review.md', 'Stalemate detection');
+  const token = /first line `(\[REVIEW-<phase>-external\]: FAIL)`/.exec(external);
+  const label = /`(Stalemate:)[^`]*`/.exec(external);
+  assert.ok(token && label, 'AC-4: a stalemate returns the FAIL verdict token plus a Stalemate block - a verdict, inside the two-outcome contract');
+  const trigger = canonText('.asd/agents/asd-external-review.md').split('\n').find((line) => line.startsWith('- **Approval triggers**'));
+  assert.ok(trigger && trigger.includes(token[1]) && trigger.includes(`\`${label[1]}`), 'AC-4: External Review\'s stalemate trigger must return the same token and block external-review.md defines');
+  const options = [...external.matchAll(/^- \*\*([a-z ]+)\*\* — \S/gm)].map((match) => match[1]);
+  assert.strictEqual(options.length, 3, `AC-4: "Stalemate detection" is the one home of the stalemate options, each with its effect - got ${JSON.stringify(options)}`);
+  const optionList = (text) => ((/options:? ([a-z /]+?)(?: \(|\.|$)/m.exec(text) || [])[1] || '').split(' / ').map((option) => option.trim());
+  const report = sectionOf('.asd/templates/external-review/t_review-report.md', 'Stalemate');
+  assert.ok(report.includes('`external-review.md` "Stalemate detection"') || report.includes('external-review.md "Stalemate detection"'), 'AC-4: the report template\'s Stalemate section must point at the options\' home');
+  assert.deepStrictEqual(optionList(report.split('\n').find((line) => line.startsWith(label[1])) || ''), options, 'AC-4: the Stalemate block the report template renders must offer exactly the options external-review.md defines');
+  assert.deepStrictEqual(optionList(trigger), options, 'AC-4: External Review\'s stalemate trigger must offer exactly the options external-review.md defines');
+
+  for (const rel of ['.asd/workflows/asd-phase-design-review.md', '.asd/workflows/asd-phase-impl-review.md']) {
+    const flow = sectionOf(rel, 'Workflow').split('\n');
+    const q = flow.findIndex((line) => line.includes('`question:`'));
+    const fail = flow.findIndex((line) => line.includes('**Any FAIL**'));
+    assert.ok(q >= 0 && q < fail, `AC-4: ${rel} must handle reviewer questions before routing the iteration`);
+    const clauses = flow[q].split(/(?<=[.;:])\s/);
+    assert.ok(flow[q].includes('`review-policy.md` "Gate Verdict Format"'), `AC-4: ${rel} must cite the carrier's home`);
+    assert.ok(clauses.some((c) => /\bnever\b/.test(c) && /interrupted/.test(c)), `AC-4: ${rel} must not treat a question-carrying report as an interrupted dispatch`);
+    assert.ok(/request user decision/.test(flow[q]) && /decisions-log/.test(flow[q]), `AC-4: ${rel} asks the user per question and logs the answers`);
+    const stalemate = flow.find((line) => line.includes(`\`${label[1]}\``));
+    assert.ok(stalemate && /request user decision/.test(stalemate) && stalemate.includes('`external-review.md` "Stalemate detection"'), `AC-4: ${rel} must recognise External Review's Stalemate block, ask the user and take the options from their home`);
+    assert.deepStrictEqual(options.filter((option) => new RegExp(`\\b${option}\\b`).test(stalemate)), [], `AC-4 (TST-2-2): ${rel} takes the stalemate options from external-review.md and must not restate them - a restated name goes stale on the next rename while the citation keeps this test green`);
+    assert.ok(flow[q].split(/(?<=[;.])\s|, and /).some((clause) => /\bwrite\b/.test(clause) && /reviewer's file/.test(clause)), `AC-4: ${rel} must write each answer into that reviewer's file, where the fixer reads it - an answer only in decisions-log never reaches the fix`);
+  }
+
+  const collect = sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Workflow').split('\n').find((line) => line.includes('`asd-reviewer-testing`') && /Manual verification/.test(line));
+  assert.ok(collect && /request user decision/.test(collect) && /\bpayload\b/.test(collect) && /decisions-log/.test(collect), 'AC-7: impl-review collects the manual-verification results from the user, logs them and passes them in the testing reviewer\'s payload');
+  assert.ok(sectionOf('.asd/agents/asd-reviewer-testing.md', 'Inputs').split('\n').some((line) => /manual-verification results/.test(line) && /\bpayload\b/.test(line)), 'AC-7: the testing reviewer reads the results from its payload - the consuming end of the collection above');
+
+  const declared = sectionOf('.asd/rules/providers.md', 'Role-scoped context').split('\n').find((line) => line.startsWith('**Declared tool policy**'));
+  const carveOut = declared && declared.split(/[.;]\s|\s—\s/).find((clause) => /\breviewer\b/.test(clause) && clause.includes('`review-policy.md` "Gate Verdict Format"'));
+  assert.ok(carveOut, 'AC-4/AC-5 (TST-1-1): one clause must name the reviewer and route it to its carrier home - the out-of-policy refusal must route a reviewer through its question carrier - "an agent ... returns `QUESTION`" alone makes a reviewer return a bare QUESTION, which reads as an interrupted dispatch');
+});
+
+test('sprint-018 AC-4: a finding the user resolves without a fix is recorded by one resolved: line form, every resolving site and the review-fix collector cite its one home, and review-fix skips what it names', () => {
+  const home = sectionOf('.asd/rules/sprint-lifecycle.md', 'State recovery').split('\n').find((line) => line.startsWith('**User-resolved findings**'));
+  const form = home && /`(resolved: [^`]+)`/.exec(home);
+  const reasons = form ? ((/<([a-z-]+(?: \| [a-z-]+)+)>/.exec(form[1]) || [])[1] || '').split(' | ').filter(Boolean) : [];
+  assert.ok(form && reasons.length >= 3, 'the user-resolved record must be defined once, as a line form naming every resolving reason');
+  assert.ok(/\bskip/.test(home) && /\bsatisfied\b/.test(home), 'the home must state both effects: review-fix skips a named finding, and a fully named CONCERNS/FAIL counts as satisfied');
+
+  const citation = '`sprint-lifecycle.md` "State recovery" user-resolved findings';
+  const sites = canonMarkdownFiles().filter((rel) => canonText(rel).includes(citation));
+  for (const reason of reasons) {
+    const recorders = sites.filter((rel) => canonText(rel).split('\n').some((line) => new RegExp(`\\b${reason}\\b`).test(line) && /\bresolved\b/.test(line)));
+    assert.ok(recorders.length > 0, `resolving reason "${reason}" must be recorded at a site that cites the home - otherwise that resolution leaves no resolved: line and the gate stays blocked`);
+  }
+  const reviewWorkflows = fs.readdirSync(path.join(REPO_ROOT, '.asd/workflows')).filter((file) => /^asd-phase-[a-z]+-review\.md$/.test(file)).map((file) => `.asd/workflows/${file}`);
+  assert.strictEqual(reviewWorkflows.length, 2, 'sanity: design-review and impl-review');
+  for (const rel of reviewWorkflows) {
+    const lines = canonText(rel).split('\n');
+    assert.ok(sites.includes(rel), `${rel} resolves findings without a fix, so it must cite the user-resolved home`);
+    assert.ok(lines.some((line) => /\boverride\b/.test(line) && /\brecord\b/.test(line) && /\bresolved\b/.test(line)), `${rel}: a FAIL override must be recorded as resolved, or review-fix fixes it anyway`);
+    assert.ok(lines.some((line) => line.includes('`cap-accept`') && /\bresolved\b/.test(line)), `${rel}: an iteration-cap accept must record the open findings resolved`);
+  }
+  const prefix = form[1].split(' ')[0];
+  const reviewFix = stepOf(sectionOf('.asd/workflows/asd-phase-impl.md', 'Workflow'), 3).split('\n').find((line) => line.includes('**review-fix**'));
+  assert.ok(reviewFix && reviewFix.includes(`\`${prefix}\``) && reviewFix.includes(citation), 'impl review-fix must skip each finding a resolved: line names, citing the home - the collector is the consuming end of the record');
+
+  const verdictOnly = [...canonMarkdownFiles(), 'README.md'].flatMap((rel) => canonText(rel).split('\n').filter((line) => line.includes('`verdicts["iter-NN"]` alone')).map((line) => ({ rel, line })));
+  assert.ok(verdictOnly.length >= 2, 'sanity: the aggregation steps that read verdicts must be found');
+  const dodHeader = sectionOf('.asd/rules/review-policy.md', 'DoD per review phase').split('\n').find((line) => line.startsWith('| Phase |'));
+  assert.ok(dodHeader && dodHeader.includes('`sprint-lifecycle.md` "State recovery"') && /user-resolved/.test(dodHeader), 'AC-4: the DoD table says what counts as met, so it must admit a user-resolved verdict with its home');
+  assert.ok(/satisfied per its "State recovery"/.test(stepOf(canonText('.asd/workflows/asd-phase-pr.md'), 1)), 'AC-4: the pr gate, the other gating consumer, must judge satisfied-vs-blocking per State recovery, where the user-resolved rule lives');
+  assert.deepStrictEqual(verdictOnly.filter(({ line }) => !line.includes('"User-resolved findings"')).map(({ rel, line }) => `${rel}: …${line.slice(Math.max(0, line.indexOf('alone') - 80), line.indexOf('alone') + 40)}…`), [], 'AC-4 (104feda): a line saying a consumer reads verdicts["iter-NN"] alone must carry the user-resolved exception - read literally, it blocks a user-resolved CONCERNS/FAIL forever');
 });
 
 // ===========================================================================

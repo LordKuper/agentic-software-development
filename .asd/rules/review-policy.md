@@ -90,7 +90,7 @@ Default: the responsible creator autofixes any reviewer issue without user promp
 - **design-review** — the creator (asd-ba / asd-ux / asd-architect) autofixes within the loop; iteration advances.
 - **impl-review** — fixes NOT applied inside the review phase. impl-review routes the sprint back to `impl` (review-fix mode); the responsible dev resolves findings; sprint re-enters impl-review via `impl-test`.
 
-**Escalation required** (ask user before fix), format = Complication Approval (`core.md`):
+**Escalation required** (the main orchestrator asks the user before fix — `core.md` "Request user decision"), format = Complication Approval (`core.md`):
 
 - Change to approved concept, PRD requirement, or API contract
 - New abstraction, layer, interface, or dependency
@@ -151,6 +151,8 @@ Reviewers write no review artifact, code or doc — that is why the phase workfl
 
 Examples: `[REVIEW-impl-correctness]: APPROVE` · `[REVIEW-design-documentation]: FAIL` · `[REVIEW-impl-external]: CONCERNS`
 
+**Reviewer question carrier.** A reviewer never returns a bare `QUESTION` — without the verdict token it reads as an interrupted dispatch ("Interrupted dispatch"). A question needing the user stays in the verdict-bearing report, listed under `t_review.md`'s `## Escalations` as `question: <finding id> — <text>; options: <a> / <b> …`; the review workflow asks the user before routing that iteration and writes each answer into that reviewer's review file directly under its item, as `  answer: <text>` — the fixer reads it as part of that reviewer's finding set. A reviewer holding an open question returns at least `CONCERNS`, never `APPROVE`, so the answer rides with its findings into the fix route and no latch drops it. Every question qualifies one finding of the same report, named by its id — no finding, no question — so an answer always has a finding to ride with. A reviewer refusing an out-of-policy instruction (`providers.md` "Declared tool policy") records the refusal as a finding located at the dispatch payload, and its question names that finding.
+
 The dispatching phase workflow writes the verdict token, findings, and the validated compact coverage evidence (above) to `<sprint>/reviews/<phase>/[wave-<K>/]iter-NN/<reviewer>.md`; phase orchestration reads the first non-empty content line of that written file.
 
 ## Interrupted dispatch
@@ -181,7 +183,7 @@ Sole owner map: each concern below has exactly one reviewer; agent rubrics hold 
 
 ## DoD per review phase
 
-| Phase | Required reviewers (all APPROVE or APPROVE-latched, same iteration; External Review's skip form counts, `external-review.md` "Outcome contract") |
+| Phase | Required reviewers (all APPROVE or APPROVE-latched, same iteration; External Review's skip form counts, `external-review.md` "Outcome contract"; so does a user-resolved verdict, `sprint-lifecycle.md` "State recovery") |
 |---|---|
 | design-review | Correctness, Efficiency, Documentation — dispatched for any non-empty draft set unless APPROVE-latched (below); Correctness's UI rubric section is `n/a: outside phase gate` when no ux-spec/design-system artifact is in scope; External Review (if enabled) |
 | impl-review | Correctness, Efficiency, Documentation, Testing — dispatched unless APPROVE-latched (below); External Review (if enabled) — met in every review wave, in order (`sprint-lifecycle.md` "Review iteration counters") |

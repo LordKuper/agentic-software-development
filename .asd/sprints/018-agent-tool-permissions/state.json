@@ -1,0 +1,299 @@
+{
+  "sprint_id": "018-agent-tool-permissions",
+  "branch": "sprint/018-agent-tool-permissions",
+  "phase": "pr",
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "adr": false,
+    "c4": false
+  },
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "explicit accept",
+      "evidence": "sprint.md AC-1..AC-6",
+      "artifact_revision": "sprint.md@2026-09-25T08:23:09Z"
+    },
+    {
+      "gate": "audit-contradiction",
+      "decision_actor": "user",
+      "reason": "external-review stalemate carrier",
+      "evidence": "audit.md Contradictions #1",
+      "artifact_revision": "audit.md@2026-09-25T09:00:00Z"
+    },
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "accepted scope expansion AC-7..AC-9",
+      "evidence": "sprint.md AC-1..AC-9; decisions-log.md",
+      "artifact_revision": "sprint.md@2026-09-25T09:00:00Z"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "user",
+      "reason": "audit findings answered",
+      "evidence": "audit.md; decisions-log.md",
+      "artifact_revision": "audit.md@2026-09-25T09:00:00Z"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "orchestrator",
+      "reason": "covered by scope+audit user decisions",
+      "evidence": "plan.md; decisions-log.002.md; surface 67/100",
+      "artifact_revision": "plan.md@2026-09-25T09:20:00Z"
+    },
+    {
+      "gate": "impl-assessment",
+      "decision_actor": "orchestrator",
+      "reason": "all tasks done; flagged choices resolved; build+lint clean",
+      "evidence": "plan.md Tasks 1-6; sync --check clean; decisions-log.md",
+      "artifact_revision": "HEAD@dfb9370"
+    },
+    {
+      "gate": "impl-review-fail-escalation",
+      "decision_actor": "user",
+      "reason": "accept both external FAIL findings for fix",
+      "evidence": "reviews/impl/wave-1/iter-04/external.md",
+      "artifact_revision": "iter-04"
+    },
+    {
+      "gate": "impl-review-green-handoff",
+      "decision_actor": "orchestrator",
+      "reason": "all reviewers APPROVE/latched; full suite green",
+      "evidence": "reviews/impl/wave-1/iter-05; test-plan.md Suite run 229/229 @ed81831",
+      "artifact_revision": "HEAD@1fff95e"
+    },
+    {
+      "gate": "pr-publication",
+      "decision_actor": "user",
+      "reason": "explicit approve to push and open PR",
+      "evidence": "PR #51",
+      "artifact_revision": "HEAD@6aeaaea"
+    }
+  ],
+  "task_routing": {
+    "Task 1": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "risk:public contract"
+    },
+    "Task 2": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "Task 3": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "risk:public contract"
+    },
+    "Task 4": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "Task 5": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "Task 6": {
+      "execution": "agent",
+      "tier": "standard",
+      "resolved_model": "claude:sonnet",
+      "reason": "artifact-risk:README mirror and generated provider views"
+    },
+    "impl-test entry 1": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "D-1": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "D-2": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "impl-test entry 2": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "review-fix wave-1/iter-01 dev chain": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "no-downgrade"
+    },
+    "review-fix wave-1/iter-01 tester chain": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "no-downgrade"
+    },
+    "impl-test entry 3": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "no-downgrade"
+    },
+    "review-fix wave-1/iter-02 dev chain": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "no-downgrade"
+    },
+    "review-fix wave-1/iter-02 tester chain": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "no-downgrade"
+    },
+    "impl-test entry 4": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "no-downgrade"
+    },
+    "review-fix wave-1/iter-03 dev chain": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "no-downgrade"
+    },
+    "impl-test entry 5": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "no-downgrade"
+    },
+    "review-fix wave-1/iter-04 dev chain": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "no-downgrade"
+    },
+    "impl-test entry 6": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "no-downgrade"
+    },
+    "D-3": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "no-downgrade"
+    },
+    "impl-test entry 7": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "no-downgrade"
+    },
+    "impl-review wave-1/iter-05 suite": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "no-downgrade"
+    }
+  },
+  "skipped_phases": [
+    "design",
+    "design-review",
+    "design-promote"
+  ],
+  "reviews": {
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "wave": 1,
+      "waves": [
+        {
+          "iteration": 5,
+          "verdicts": {
+            "iter-01": {
+              "correctness": "CONCERNS",
+              "efficiency": "APPROVE",
+              "testing": "CONCERNS",
+              "documentation": "CONCERNS",
+              "external": "CONCERNS"
+            },
+            "iter-02": {
+              "correctness": "CONCERNS",
+              "efficiency": "APPROVE",
+              "testing": "CONCERNS",
+              "documentation": "CONCERNS",
+              "external": "CONCERNS"
+            },
+            "iter-03": {
+              "correctness": "APPROVE",
+              "efficiency": "APPROVE",
+              "testing": "APPROVE",
+              "documentation": "APPROVE",
+              "external": "CONCERNS"
+            },
+            "iter-04": {
+              "correctness": "APPROVE",
+              "efficiency": "APPROVE",
+              "testing": "APPROVE",
+              "documentation": "APPROVE",
+              "external": "FAIL"
+            },
+            "iter-05": {
+              "correctness": "APPROVE",
+              "efficiency": "APPROVE",
+              "testing": "APPROVE",
+              "documentation": "APPROVE",
+              "external": "APPROVE"
+            }
+          },
+          "iteration_heads": {
+            "iter-01": "68fb39df0ff3b23865b7d1e38dafdb61ce2a9f6b",
+            "iter-02": "14a3f204a08eb9f645fc8d59a8e0459e563212be",
+            "iter-03": "f009586f10324c3004bda1ec7d317e0dfc42f6d7",
+            "iter-04": "b4d60c0e3a780957dec7c3037efa1914be781bcc",
+            "iter-05": "7261bac3cb5bc8843e4d81c480148e7e61191c6d"
+          },
+          "latched": {
+            "efficiency": "iter-01",
+            "correctness": "iter-03",
+            "testing": "iter-03",
+            "documentation": "iter-03",
+            "external": "iter-05"
+          }
+        }
+      ]
+    }
+  },
+  "created_at": "2026-09-25T08:23:09Z",
+  "updated_at": "2026-09-25T15:40:00Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": {
+    "number": 51,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/51",
+    "state": "open"
+  },
+  "archived_at": null
+}

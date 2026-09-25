@@ -25,6 +25,11 @@ responsibility:
 - Below severity floor (iter {{N}}, floor {{floor}}): {{count}}
 - Nitpick, by category: {{nitpick category}}: {{count}}{{, ...}}
 
+## Stalemate
+{{stalemate FAIL only — omit otherwise; options and effects: external-review.md "Stalemate detection"}}
+
+Stalemate: {{N}} iterations, identical findings — options: stop / continue fixing / abort
+
 ## Verdict
 {{APPROVE | CONCERNS: <count> | FAIL: <count>}}
 

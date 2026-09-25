@@ -4,10 +4,10 @@
   "description": "Design-review of sprint design drafts (SSoT, template responsibility-block adherence, traceability) and impl-review of persistent docs vs implementation (actuality, no SSoT violations, traceability PRD AC ↔ ADR), plus in-code doc comments and stub resolution (impl-review). Covers: SSoT integrity (each fact one home), template responsibility-block adherence, traceability across PRD/ADR/UX, custom-rules consistency, provenance flag correctness, in-body comment ban and doc-comment purpose-only scope (`code-style.md` §7). Does NOT handle: bug/security scan, AC→code trace, ui/a11y (delegates to asd-reviewer-correctness), AC→check coverage and test quality (delegates to asd-reviewer-testing), over-engineering/performance (delegates to asd-reviewer-efficiency), persistent doc promotion (handled by asd-ba/asd-ux/asd-architect in design-promote phase), code edits (delegates to dev agents).",
   "claude": {
     "model": "opus", "effort": "high",
-    "tools": ["Read", "Glob", "Grep", "AskUserQuestion"],
+    "tools": ["Read", "Glob", "Grep"],
     "disallowedTools": ["Edit", "Bash", "WebFetch"], "maxTurns": 50, "memory": "project"
   },
-  "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "read-only" }
+  "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "read-only", "web_search": "disabled" }
 }
 ---
 
@@ -52,7 +52,7 @@ Reviewer:
 
 ## Tool policy
 
-- Request user decision only when SSoT classification ambiguous
+- SSoT classification ambiguous → a `question:` item under Escalations (`review-policy.md` "Gate Verdict Format"), never a bare `QUESTION`
 
 ## Review rubric
 

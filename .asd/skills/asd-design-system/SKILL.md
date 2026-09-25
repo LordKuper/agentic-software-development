@@ -20,6 +20,7 @@
 - Read files — `.asd/project/config.yaml`, concept.html, stack.html, existing DESIGN.md/design-system.html/accessibility.html, source CSS/components, theme files
 - Search repo — silent scan for brownfield signals (CSS, SCSS, Tailwind config, theme.ts, styled-components, design exports)
 - Request user decision/input — variant choice, constraints, section approvals, lock-in/revise loop
+- Run command — `designmd-install` (Windows, once per session)
 - Delegate to agents — `asd-ux` (author, fetch external spec, lint, render previews, accessibility baseline)
 
 ## Phase 1 — silent detection (NO asking)
@@ -87,7 +88,7 @@ Order per Google Labs DESIGN.md spec:
   - next section
 
 After all DESIGN.md sections approved:
-- Designer runs `designmd-lint` via command execution (`commands.yaml` alias). On Windows, ensure `designmd-install` ran once this session.
+- Orchestrator: on Windows, run command `designmd-install` once per session before dispatching `asd-ux` for the lint. Designer runs `designmd-lint` via command execution (`commands.yaml` alias).
 - Pass criteria per `.asd/rules/design-system.md` §11: ≥1 error OR ≥1 un-excluded warning = fail.
 - Fail → designer fixes on disk, re-lint. Per persistent warning, request user decision to exclude; on approval record decision + rationale in DESIGN.md lint-exclusions block, written on disk.
 - Clean pass → continue

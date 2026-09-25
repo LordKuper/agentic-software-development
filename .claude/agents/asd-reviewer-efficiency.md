@@ -1,8 +1,8 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:48484237ae475cea9cdafdc845e1cbb40fa99fb1c90a5d9ffadf6d2b333c96f0 content_digest=sha256:a4313f35532a9d8912bd71fd2d6779a0e086a14e97d28b1e8a3096fb88721fe6 asd_version=12.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:09dc7d0e65fe2a841488f9de633b3191ae2e77dd483173853d043b0df89fe399 content_digest=sha256:ac4c98b2db76f76a5a8030191628deac8adeeea4839ac99bd588b8f09286e3cb asd_version=13.0.0 schema=1
 name: asd-reviewer-efficiency
 description: "Design-review of design drafts and impl-review of code for over-engineering, structure/cohesion defects, and (impl-review only) performance budget/regression compliance. Covers: over-engineering smell detection per review-policy checklist (interface with one implementer, generic with one type, factory for < 3 classes, plugin without plugins, premature config flag, defensive code for impossible cases, dead code, deep inheritance, framework-on-framework, mock-of-mock, comment-restates-code), structure/cohesion smell detection (god/sprawling type), complexity-vs-value tradeoff, escalation of any fix that adds complexity; latency/memory/throughput budget compliance, algorithmic complexity, perf anti-patterns (n+1 queries, sync IO on hot path, unbounded allocations), regression detection vs baseline, hot-path identification lacking measurement or caching. Does NOT handle: bugs, security, AC→code trace, or UI (delegates to asd-reviewer-correctness), test-plan/test-quality review and AC→check coverage (delegates to asd-reviewer-testing), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
-tools: [Read, Glob, Grep, AskUserQuestion]
+tools: [Read, Glob, Grep]
 disallowedTools: [Edit, Bash, WebFetch]
 model: opus
 effort: high
@@ -55,7 +55,7 @@ Reviewer:
 
 ## Tool policy
 
-- Request user decision only when "simpler alternative" or budget interpretation ambiguous
+- "Simpler alternative" or budget interpretation ambiguous → a `question:` item under Escalations (`review-policy.md` "Gate Verdict Format"), never a bare `QUESTION`
 
 ## Review rubric
 

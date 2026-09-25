@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-design-system/SKILL.md. source_digest=sha256:f0328b550aa0fa11f03c2177c45ffa628f5942580d1f39689a212136fd3efa7f content_digest=sha256:607894519dda944f4ee850944bb05b99a2270be8505f4ac70b1cefd43ceabfa1 asd_version=5.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-design-system/SKILL.md. source_digest=sha256:9f8153a0f278a1234202771df5118f2228dd4edfd99594c1eeb0536d8d22d07f content_digest=sha256:2316d64aa7a7ea84449bd1ded9a6d0bbddbba8c5c40beeffc67fbff05b3fa07f asd_version=13.0.0 schema=1
 name: asd-design-system
 description: "Forms or edits the project design system (docs/ux/DESIGN.md, design-system.html, accessibility.html) via asd-ux, branching by silent detection into one of three flows (greenfield / constraints / brownfield extraction). Fetches the Google Labs DESIGN.md spec, lints tokens, regenerates design-system.html previews, and authors the accessibility baseline. Use when the user runs /asd-design-system, when asd-init or asd-phase-design detects missing DESIGN.md/design-system.html/accessibility.html and suggests this skill, or when the user asks to define, draft, refine, edit, augment, or reverse-engineer the project design system, design tokens, or accessibility baseline."
 allowed-tools: "Read Glob Grep AskUserQuestion Task"
@@ -19,6 +19,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 - Read files — `.asd/project/config.yaml`, concept.html, stack.html, existing DESIGN.md/design-system.html/accessibility.html, source CSS/components, theme files
 - Search repo — silent scan for brownfield signals (CSS, SCSS, Tailwind config, theme.ts, styled-components, design exports)
 - Request user decision/input — variant choice, constraints, section approvals, lock-in/revise loop
+- Run command — `designmd-install` (Windows, once per session)
 - Delegate to agents — `asd-ux` (author, fetch external spec, lint, render previews, accessibility baseline)
 
 ## Phase 1 — silent detection (NO asking)
@@ -86,7 +87,7 @@ Order per Google Labs DESIGN.md spec:
   - next section
 
 After all DESIGN.md sections approved:
-- Designer runs `designmd-lint` via command execution (`commands.yaml` alias). On Windows, ensure `designmd-install` ran once this session.
+- Orchestrator: on Windows, run command `designmd-install` once per session before dispatching `asd-ux` for the lint. Designer runs `designmd-lint` via command execution (`commands.yaml` alias).
 - Pass criteria per `.asd/rules/design-system.md` §11: ≥1 error OR ≥1 un-excluded warning = fail.
 - Fail → designer fixes on disk, re-lint. Per persistent warning, request user decision to exclude; on approval record decision + rationale in DESIGN.md lint-exclusions block, written on disk.
 - Clean pass → continue

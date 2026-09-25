@@ -326,12 +326,14 @@ function transformAgentCodexToml(meta, body, manifest) {
   const model = resolveModelFamily(manifest, 'codex', c.model, { name: meta && meta.name, effort: c.model_reasoning_effort });
   if (c.model_reasoning_effort === undefined) fail('missing model reasoning effort', model);
   if (c.sandbox_mode !== 'workspace-write' && c.sandbox_mode !== 'read-only') fail('invalid sandbox mode', model);
+  if (c.web_search !== undefined && !['disabled', 'cached', 'indexed', 'live'].includes(c.web_search)) fail('invalid web_search mode', model);
   const lines = [];
   lines.push(`name = "${tomlEscapeBasic(meta.name)}"`);
   lines.push(`description = "${tomlEscapeBasic(meta.description)}"`);
   lines.push(`model = "${tomlEscapeBasic(model)}"`);
   lines.push(`model_reasoning_effort = "${tomlEscapeBasic(c.model_reasoning_effort)}"`);
   lines.push(`sandbox_mode = "${tomlEscapeBasic(c.sandbox_mode)}"`);
+  if (c.web_search !== undefined) lines.push(`web_search = "${c.web_search}"`);
   const substitutedBody = substitutePlaceholders(body, wrapsCliValues(c, manifest, 'claude'));
   lines.push(`developer_instructions = ${tomlMultilineBody(substitutedBody)}`);
   lines.push('');

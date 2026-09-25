@@ -59,7 +59,8 @@ Phase 1 brownfield candidates auto-suggest D as default.
 - Proceed to Phase 4
 
 **Variant C — clear stack**
-- Delegate to agent `asd-architect` to ask user to describe chosen stack
+- Request user input: describe the chosen stack
+- Delegate to agent `asd-architect` with concept + that description
 - Architect validates compatibility with concept; flags conflicts (e.g., "concept implies mobile but stack is server-only")
 - Architect fills unstated gaps per `t_stack.html` (proposes defaults; user approves)
 - Proceed to Phase 4
