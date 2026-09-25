@@ -112,14 +112,14 @@ Material risk: artifact: tester and External Review agent bodies plus hand-autho
 
 ### Task 7: README, manifest, version
 Material risk: artifact: README mirror, release manifest and changelog
-- [ ] README.md:
+- [x] README.md:
   - L159 scope row (retro intake, no cleanup question);
   - L168 retro row (row ids);
   - L215 memory channel (AC-14);
   - folder map (`.asd/project/retro-backlog.md`);
   - update-ownership table (backlog never touched).
-- [ ] `.asd/release-manifest.json`: `upstream_hashes` for `t_retro-backlog.md` and the edited templates, and `canon_hashes` via `sync.js --apply`. Bump `asd_version` (minor, for the new runtime command and backlog) and add a `CHANGELOG.md` entry.
-- [ ] `node .asd/sync.js --check` is clean.
+- [x] `.asd/release-manifest.json`: `upstream_hashes` for `t_retro-backlog.md` and the edited templates, and `canon_hashes` via `sync.js --apply`. Bump `asd_version` (minor, for the new runtime command and backlog) and add a `CHANGELOG.md` entry.
+- [x] `node .asd/sync.js --check` is clean.
 
 ## Risks
 - Tests pinned to current wording go red by design and are updated in impl-test: `tests/run.js` 5462/5505 (AC-6), 3412/3417 (AC-14), 3427 (AC-10), 3452-3453, 4932-4937 (rotation), 3704-3714 (only if the whole-tree clause moves). impl-test also adds a `retro-candidates` unit test and a backlog shape and seed assertion (input for impl-test, not a Task here).

@@ -2,6 +2,25 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v13.2.0
+
+Retro findings no longer wait for someone to remember them. Scope now offers the open Action/Systemic-proposal rows of the last archived retro automatically, and a few workflow-gate fixes from prior retros land: the commit contract, the dispatch payload header, review-fix consumer search, decisions-log rotation, per-entry tester lifecycle, memory-finding routing and the `impl-test` review-fix boundary.
+
+### Added
+- **Retro intake** (`sprint-lifecycle.md` "Retro intake"). At scope, after the raw scope is collected and before the scope gate, `node .asd/runtime.js retro-candidates` offers every open Action/Systemic-proposal row of the most recent archived retro plus every backlog `deferred` row (self-hosting also gets `asd`-scoped rows). Each candidate is re-verified at `HEAD`; an already-resolved one closes without asking. The rest go to you with a recommendation each: include becomes an `AC-N`, defer offers it again next sprint, reject drops it for good. No prior retro or no candidates after filtering is a silent no-op.
+- **Retro backlog** (`.asd/project/retro-backlog.md`, `t_retro-backlog.md`). One persistent, orchestrator-owned table of cross-sprint retro-row dispositions (`deferred | included | rejected | closed`), created lazily, never touched by `/asd-update`.
+- **Retro row ids.** `t_retrospective.html` and the retro phase now emit a stable `A-N`/`P-N` id per Actions/Systemic-proposals row, addressable cross-sprint as `<NNN-slug>#A-N`. Legacy retros derive the same id from table + row ordinal.
+
+### Changed
+- **Scope phase** drops the mandatory cleanup/quality-criteria question; such criteria now enter scope only via the raw ask or an included retro candidate.
+- **Commit contract** (`git-strategy.md` "Commit before review"). A dispatched agent now commits in one compound command — stage, `--check`, `commit --only` — resetting on failure, never leaving a path staged between commands.
+- **Dispatch payload header** (`providers.md`). Every dispatch payload opens with `Repo root: <absolute path>`; a reviewer/External/advisor payload also carries a turn budget. `maxTurns` is now documented as host-enforced on Claude and absent on Codex, not "emitted on trust".
+- **Review-fix consumer search** (`review-policy.md` "Autofix vs escalation"). A review-fix that changes a rule other files consume now searches for and updates every consumer in the same commit, listed in its completion signal.
+- **Decisions-log rotation** (`artifact-layout.md` "Decisions log") now happens once per entry into the `impl`/`impl-test`/`impl-review` cycle, not at each transition inside it.
+- **Fresh tester per entry** (`sprint-lifecycle.md` "Impl-test phase"). Each `impl-test` entry and each terminal full-suite run dispatches a fresh tester; a tester is never resumed across entries. A review-fix tester amends only `test-plan.md`'s risk and added-test rows — `Entry log` and segment rotation stay with `impl-test`.
+- **Memory-finding routing** (AC-14). A finding in `.claude/agent-memory/<owner>/` routes to `<owner>`; an owner without a write tool gets a memory-fix dispatch that returns replacement text for the orchestrator to apply and commit. `review-policy.md`'s prior "reviewers write their own memory" claim is corrected.
+- **Leftover-term check** (`artifact-layout.md` "Agent memory") now covers `.claude/agent-memory/**`, including orphan agent directories, from a sprint's first `impl-test` entry that removes a mechanism or term.
+
 ## v13.1.0
 
 Agent tool grants now match how agents are actually dispatched. No subagent can reach the user on either host, so every user prompt comes from the main orchestrator. BA and UX get a bounded shell. Web access moves to the agents that benefit from it, on Claude and on Codex.
