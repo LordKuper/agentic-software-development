@@ -71,3 +71,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-26 — memory-fix applied: D-2 asd-reviewer-documentation returned text, applied verbatim in 1353ea8; second return (the first quoted the sweep's own patterns) applied in 3cf27e5
 - 2026-09-26 — impl test-fix: defects D-1, D-2 resolved
 - 2026-09-26 — route impl-test entry 2: critical, dispatch HEAD 4cb9331
+- 2026-09-26 — impl-test: impacted set green (238/238), 0/0 tests (entry 2)
