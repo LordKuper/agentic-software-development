@@ -1,7 +1,7 @@
 {
   "sprint_id": "018-agent-tool-permissions",
   "branch": "sprint/018-agent-tool-permissions",
-  "phase": "impl-review",
+  "phase": "impl",
   "documents": {
     "audit": true,
     "prd": false,
@@ -128,6 +128,18 @@
       "reason": "no-downgrade"
     },
     "impl-test entry 3": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "no-downgrade"
+    },
+    "review-fix wave-1/iter-02 dev chain": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "no-downgrade"
+    },
+    "review-fix wave-1/iter-02 tester chain": {
       "execution": "agent",
       "tier": "critical",
       "resolved_model": "claude:opus",

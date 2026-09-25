@@ -34,3 +34,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+- 2026-09-25 — impl-review wave-1/iter-02 (floor medium): efficiency latched (inherited APPROVE); correctness, testing, documentation, external CONCERNS (7 findings) → impl review-fix
