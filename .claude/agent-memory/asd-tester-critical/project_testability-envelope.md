@@ -104,7 +104,12 @@ Exception: when the stale hits sit in another owner's memory and that owner's me
 *after* the tester chain in the same round (sprint 019 review-fix, COR-1/DOC-1), an exact pin reddens
 the moment the fix lands, and nobody left in the round can edit the test. Exempt those files by name
 with the finding ids in the assert message (a subset filter, not a `deepStrictEqual`), prove the list is
-load-bearing by emptying it, and hand its deletion to the next `impl-test` entry.
+load-bearing by emptying it, and hand its deletion to the next `impl-test` entry. That entry (019 entry 3)
+proves the deletion by appending a refuted line to a formerly exempted file: the sweep must now redden.
+
+Review-fix tester rows sit in the live tables when the next entry starts, with no `Entry log` row of their
+own. Rotate them with the previous entry's rows into its segment, say so in the segment header, and act
+on any removal row before rotating it (`artifact-layout.md` "Test plan").
 
 A pin like that carries a **closing obligation**, and it falls to this role because the pin is test text.
 When the defect is fixed the exemption line goes with it (say so in `test-plan.md`, since a fix without
