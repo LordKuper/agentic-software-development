@@ -79,3 +79,8 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: The reviewer dispatches themselves showed the host serving `Write`, so the AC-14 claim was false. Keeping memory writes preserves reviewer learning, which is the purpose of `memory: project`.
 - **Affected docs**: [correctness.md](reviews/impl/wave-1/iter-01/correctness.md), [documentation.md](reviews/impl/wave-1/iter-01/documentation.md), [external.md](reviews/impl/wave-1/iter-01/external.md)
 - 2026-09-26 — route review-fix wave-1/iter-01 dev chain (COR-1..7, DOC-1..5 canon parts, EFF-1, external #1/#2): critical, dispatch HEAD 5851906
+- 2026-09-26 — route review-fix wave-1/iter-01 tester chain (testing.md TST-1-1, TST-1-2): critical, dispatch HEAD 1fc1abe
+- 2026-09-26 — route review-fix wave-1/iter-01 memory-fix: asd-reviewer-documentation (COR-1/DOC-1/DOC-2 memory sites), then asd-reviewer-testing (COR-1/DOC-1), dispatch HEAD 694c28f
+- 2026-09-26 — memory-fix applied: asd-reviewer-documentation edited own memory (5c48db2), asd-reviewer-testing edited own memory (b06232a); orchestrator committed
+- 2026-09-26 — impl fix for wave-1/iter-01: findings resolved (dev chain 0f9f77c..1fc1abe: COR-1..7, DOC-1..5, EFF-1, external #1/#2; tester 694c28f: TST-1-1, TST-1-2 + pins; memory-fix 5c48db2, b06232a); flagged choices accepted — the `pendingMemoryFix` sweep exemption must be removed at impl-test entry 3, and the COR-4 removal carry-over row survives rotation only if entry 3's tester reads the rotated segment
+- 2026-09-26 — route impl-test entry 3: critical, dispatch HEAD b06232a
