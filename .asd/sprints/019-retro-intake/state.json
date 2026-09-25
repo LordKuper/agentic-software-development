@@ -1,7 +1,7 @@
 {
   "sprint_id": "019-retro-intake",
   "branch": "sprint/019-retro-intake",
-  "phase": "scope",
+  "phase": "design-promote",
   "documents": {
     "audit": true,
     "prd": false,
@@ -17,10 +17,28 @@
       "reason": "explicit accept",
       "evidence": "sprint.md AC-1..AC-17",
       "artifact_revision": "sprint.md@ccbb806"
+    },
+    {
+      "gate": "audit-contradiction",
+      "decision_actor": "user",
+      "reason": "AC-8 vs code-style §19: option (a) compound command",
+      "evidence": "audit.md Contradictions #1",
+      "artifact_revision": "audit.md@2026-09-25T14:00:30Z"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "contradictions settled; gaps inside accepted ACs",
+      "evidence": "audit.md; decisions-log 2026-09-25",
+      "artifact_revision": "audit.md@2026-09-25T14:00:30Z"
     }
   ],
   "task_routing": {},
-  "skipped_phases": [],
+  "skipped_phases": [
+    "design",
+    "design-review",
+    "design-promote"
+  ],
   "reviews": {
     "design": {
       "iteration": 0,
@@ -40,7 +58,7 @@
     }
   },
   "created_at": "2026-09-25T13:09:07Z",
-  "updated_at": "2026-09-25T13:32:14Z",
+  "updated_at": "2026-09-25T14:00:30Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
