@@ -54,7 +54,7 @@
     "agents/asd-reviewer-correctness.md": "sha256:b88c9adce657d43282d252a09555b9157a367cce9076a7b013f4ceb871f69942",
     "agents/asd-reviewer-efficiency.md": "sha256:09dc7d0e65fe2a841488f9de633b3191ae2e77dd483173853d043b0df89fe399",
     "agents/asd-dev.md": "sha256:88cfaa9fa44f68ca68943b908b89f81c438f36b223a58b6b65167b98c5e3bd81",
-    "agents/asd-tester.md": "sha256:d5a33d8339ba4526e2794c3d5eb1ad7d3e51e35194155431dbbff98ad8a95c6e",
+    "agents/asd-tester.md": "sha256:49e18ab5556e7525a819d2a8f75d4e959f6699abcdfa126515f0c4c071ebf142",
     "agents/asd-ux.md": "sha256:3f8e826aa2c5d3467c8e143e59dce8ff2fe97420e931387916aec3070f893f90",
     "skills/asd-phase-retro/SKILL.md": "sha256:d40dea69c3415c91b8043f4fff9bbda9dbf5750f76ebd2ff762942ab56fb4bef"
   },
@@ -143,7 +143,7 @@
     ".asd/agents/asd-reviewer-correctness.md": "b88c9adce657d43282d252a09555b9157a367cce9076a7b013f4ceb871f69942",
     ".asd/agents/asd-reviewer-efficiency.md": "09dc7d0e65fe2a841488f9de633b3191ae2e77dd483173853d043b0df89fe399",
     ".asd/agents/asd-dev.md": "88cfaa9fa44f68ca68943b908b89f81c438f36b223a58b6b65167b98c5e3bd81",
-    ".asd/agents/asd-tester.md": "d5a33d8339ba4526e2794c3d5eb1ad7d3e51e35194155431dbbff98ad8a95c6e",
+    ".asd/agents/asd-tester.md": "49e18ab5556e7525a819d2a8f75d4e959f6699abcdfa126515f0c4c071ebf142",
     ".asd/agents/asd-ux.md": "3f8e826aa2c5d3467c8e143e59dce8ff2fe97420e931387916aec3070f893f90",
     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
