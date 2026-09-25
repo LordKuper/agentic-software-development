@@ -34,3 +34,11 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-09-25 — impl-review wave-1/iter-04 FAIL escalation
+
+- **Decision**: User accepted both External Review FAIL findings for fix (out-of-policy refusal recorded as a finding its question names; resolved-line exception at both review aggregation steps).
+- **Rationale**: Both are real gaps introduced by review-fix round 3 and cost a line or two each.
+- **Affected docs**: [reviews/impl/wave-1/iter-04/external.md](reviews/impl/wave-1/iter-04/external.md)
+
+- 2026-09-25 — impl-review wave-1/iter-04 (floor high): internal reviewers latched; external FAIL (2 high, accepted) → impl review-fix

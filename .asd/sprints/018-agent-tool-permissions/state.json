@@ -1,7 +1,7 @@
 {
   "sprint_id": "018-agent-tool-permissions",
   "branch": "sprint/018-agent-tool-permissions",
-  "phase": "impl-test",
+  "phase": "impl-review",
   "documents": {
     "audit": true,
     "prd": false,
@@ -52,6 +52,13 @@
       "reason": "all tasks done; flagged choices resolved; build+lint clean",
       "evidence": "plan.md Tasks 1-6; sync --check clean; decisions-log.md",
       "artifact_revision": "HEAD@dfb9370"
+    },
+    {
+      "gate": "impl-review-fail-escalation",
+      "decision_actor": "user",
+      "reason": "accept both external FAIL findings for fix",
+      "evidence": "reviews/impl/wave-1/iter-04/external.md",
+      "artifact_revision": "iter-04"
     }
   ],
   "task_routing": {
@@ -179,7 +186,7 @@
       "wave": 1,
       "waves": [
         {
-          "iteration": 3,
+          "iteration": 4,
           "verdicts": {
             "iter-01": {
               "correctness": "CONCERNS",
@@ -201,12 +208,20 @@
               "testing": "APPROVE",
               "documentation": "APPROVE",
               "external": "CONCERNS"
+            },
+            "iter-04": {
+              "correctness": "APPROVE",
+              "efficiency": "APPROVE",
+              "testing": "APPROVE",
+              "documentation": "APPROVE",
+              "external": "FAIL"
             }
           },
           "iteration_heads": {
             "iter-01": "68fb39df0ff3b23865b7d1e38dafdb61ce2a9f6b",
             "iter-02": "14a3f204a08eb9f645fc8d59a8e0459e563212be",
-            "iter-03": "f009586f10324c3004bda1ec7d317e0dfc42f6d7"
+            "iter-03": "f009586f10324c3004bda1ec7d317e0dfc42f6d7",
+            "iter-04": "b4d60c0e3a780957dec7c3037efa1914be781bcc"
           },
           "latched": {
             "efficiency": "iter-01",
@@ -220,7 +235,7 @@
   },
   "created_at": "2026-09-25T08:23:09Z",
   "updated_at": "2026-09-25T15:40:00Z",
-  "review_fixes_pending": null,
+  "review_fixes_pending": "wave-1/iter-04",
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null
