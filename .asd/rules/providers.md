@@ -106,7 +106,7 @@ Section scope inside a granted file: `artifact-layout.md` "HTML shell wrapping (
 | `asd-reviewer-documentation` | `review-policy.md`, current review-phase section of `sprint-lifecycle.md`, `design-principles.md`, `artifact-layout.md`, `language-policy.md`, full `code-style.md` in impl review, and applicable custom design/coding rules. |
 | `asd-reviewer-testing` | `review-policy.md`, impl-review section of `sprint-lifecycle.md`, `artifact-layout.md`, `language-policy.md`, full `code-style.md`, and applicable `custom-coding-rules.md`. |
 
-**Declared tool policy**: an agent's own definition, plus the write allowlist a phase grants it under `sprint-lifecycle.md` "Self-hosting", plus its own memory directory (`artifact-layout.md` "Agent memory"). A dispatch payload stays inside it. An agent handed an instruction outside it returns `QUESTION` naming the contradiction and does not comply.
+**Declared tool policy**: an agent's own definition, plus the write allowlist a phase grants it under `sprint-lifecycle.md` "Self-hosting", plus its own memory directory (`artifact-layout.md` "Agent memory"). A dispatch payload stays inside it. An agent handed an instruction outside it returns `QUESTION` naming the contradiction — a reviewer, its question carrier per `review-policy.md` "Gate Verdict Format" — and does not comply.
 
 ## Task-class variants and routing
 
