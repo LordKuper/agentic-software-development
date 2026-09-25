@@ -34,3 +34,12 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-09-25 — Scope accepted
+
+- **Decision**: User accepted sprint.md AC-1..AC-6 unchanged; no extra cleanup/quality criteria beyond AC-6 (tests green, sync --check clean); migration need left to audit.
+- **Rationale**: Permission changes were agreed in chat before the sprint (Bash for BA/UX; web for dev/tester/advisor/correctness only; AskUserQuestion removed in favour of `QUESTION`).
+- **Affected docs**: [sprint.md](sprint.md)
+
+- 2026-09-25 — audit frozen true: `documents.audit: auto`, scope changes agent behaviour and the agent↔orchestrator question contract (not mechanical)
+- 2026-09-25 — prd, ux_spec, adr frozen false (config-disabled); c4 frozen false (`project.diagram_tool: none`)
