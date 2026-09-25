@@ -34,3 +34,12 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-09-25 — Audit decisions and scope expansion
+
+- **Decision**: External Review stalemate keeps the two-outcome contract (`FAIL` + `Stalemate` block, orchestrator asks). Scope expanded (AC-7..AC-9): design-phase accept loops, concept/stack user prompts, a `QUESTION` re-dispatch protocol and manual-verification collection move to the orchestrator; BA/UX Bash is bounded with commits and promote git ops kept with the orchestrator; web grants get scoped policy lines. Codex renders `web_search = "live"` for the seven web-granted agents, `"disabled"` for the other four.
+- **Rationale**: Subagents cannot reach the user on either host, so every user-contact path must route through the orchestrator; the chosen carriers keep the reviewer verdict and External Review outcome contracts intact (MINOR release). Live/disabled gives full Claude↔Codex parity as AC-3 asked.
+- **Affected docs**: [sprint.md](sprint.md), [audit.md](audit.md)
+
+- 2026-09-25 — audit reevaluated after scope expansion: stays true
+- 2026-09-25 — design/design-review/design-promote skipped (no documents enabled)
