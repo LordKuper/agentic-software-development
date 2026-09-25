@@ -34,3 +34,14 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+- 2026-09-25 — impl-review wave 1 division: 1 wave (543 lines ≤ 3000), surface 38/100
+- 2026-09-25 — correctness interrupted attempt 1 in wave-1/iter-01 (maxTurns 50 reached, no report)
+- 2026-09-25 — documentation interrupted attempt 1 in wave-1/iter-01 (maxTurns 50 reached, no report)
+
+## 2026-09-25 — Reviewer question answered (wave-1/iter-01 correctness #1)
+
+- **Decision**: A reviewer holding an open `question:` item returns at least CONCERNS, never `APPROVE`; the answer rides into review-fix with the findings.
+- **Rationale**: One rule closes the gap: the latch fires only on a bare `APPROVE`, so no answered question can be dropped by a latch or an all-approve DoD.
+- **Affected docs**: `review-policy.md` "Gate Verdict Format", `asd-phase-design-review.md`, `asd-phase-impl-review.md`
+
+- 2026-09-25 — impl-review wave-1/iter-01: efficiency APPROVE (latched); correctness, testing, documentation, external CONCERNS (14 findings) → impl review-fix

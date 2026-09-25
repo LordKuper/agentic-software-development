@@ -20,6 +20,7 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 |---|---|---|---|
 | F-1 | impl | Concurrent wave-2 dev commits swept a sibling's staged files; three agents reset and recommitted | — |
 | F-2 | impl | Dispatched agents inherited the sprint folder as cwd and wrote agent memory under the sprint folder | — |
+| F-3 | impl-review | Two internal reviewers hit the 50-turn cap on a 38-file scope with no report | reviews/impl/wave-1/iter-01/correctness, reviews/impl/wave-1/iter-01/documentation |
 
 ## F-1 — Concurrent wave-2 dev commits swept a sibling's staged files
 
@@ -36,3 +37,11 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 - **What happened**: an orchestrator bookkeeping command changed the session's working directory to `.asd/sprints/018-agent-tool-permissions/`. The Task 1 and Task 2 dev agents, dispatched afterwards, resolved `.claude/agent-memory/...` against that directory and created a stray `.claude/` tree inside the sprint folder.
 - **Impact**: memory landed outside the host-served memory path; it duplicated an existing memory and needed a manual move plus cleanup.
 - **Refs**: —
+
+## F-3 — Reviewers exhausted maxTurns before returning a report
+
+- **Phase**: impl-review
+- **Surface**: agent — `asd-reviewer-correctness`, `asd-reviewer-documentation` frontmatter `maxTurns: 50`
+- **What happened**: on a 38-file, 543-line wave (well under the 3000-line wave threshold) both reviewers spent all 50 turns reading and returned no text; each needed a fresh re-dispatch with an explicit turn budget in the payload.
+- **Impact**: two interrupted attempts, a second full review pass for each (~400k extra subagent tokens), and a longer iteration. The wave threshold measures diff lines, not reviewer turn cost.
+- **Refs**: reviews/impl/wave-1/iter-01/correctness, reviews/impl/wave-1/iter-01/documentation
