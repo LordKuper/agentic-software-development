@@ -1,7 +1,7 @@
 {
   "sprint_id": "018-agent-tool-permissions",
   "branch": "sprint/018-agent-tool-permissions",
-  "phase": "impl-review",
+  "phase": "retro",
   "documents": {
     "audit": true,
     "prd": false,
