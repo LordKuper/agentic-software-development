@@ -34,3 +34,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+- 2026-09-25 — route external.md 1-2 (iter-04): critical, dispatch HEAD 960851f
+- 2026-09-25 — review-fix round 4 flagged choices accepted: plain trailer form; review-policy DoD table header carve-out added; README flowchart labels left as summaries
+- 2026-09-25 — impl fix for wave-1/iter-04: findings resolved (external.md 1, external.md 2)
