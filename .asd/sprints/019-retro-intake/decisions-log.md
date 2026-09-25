@@ -66,3 +66,7 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-25 — route impl-test entry 1: critical, dispatch HEAD f9d31d7
 - 2026-09-26 — reconstruction: landed none; re-dispatched impl-test entry 1
 - 2026-09-26 — impl-test: defects D-1, D-2 → impl test-fix (digest 3ec2fc12df1ccac02262dab533d64e635d766ebf5270c2b5e8c74556ec4b83c5)
+- 2026-09-26 — route D-1: memory-fix dispatch to owner asd-reviewer-testing, then D-2 to owner asd-reviewer-documentation, dispatch HEAD ebae6b3
+- 2026-09-26 — memory-fix applied: D-1 asd-reviewer-testing returned text, applied verbatim in 1353ea8
+- 2026-09-26 — memory-fix applied: D-2 asd-reviewer-documentation returned text, applied verbatim in 1353ea8; second return (the first quoted the sweep's own patterns) applied in 3cf27e5
+- 2026-09-26 — impl test-fix: defects D-1, D-2 resolved

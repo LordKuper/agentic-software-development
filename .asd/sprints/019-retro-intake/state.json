@@ -1,7 +1,7 @@
 {
   "sprint_id": "019-retro-intake",
   "branch": "sprint/019-retro-intake",
-  "phase": "impl-test",
+  "phase": "impl",
   "documents": {
     "audit": true,
     "prd": false,
@@ -121,9 +121,9 @@
     }
   },
   "created_at": "2026-09-25T13:09:07Z",
-  "updated_at": "2026-09-25T22:21:07Z",
+  "updated_at": "2026-09-25T22:25:50Z",
   "review_fixes_pending": null,
-  "test_defects_pending": true,
+  "test_defects_pending": null,
   "pr": null,
   "archived_at": null
 }
