@@ -5671,6 +5671,20 @@ test('sprint-018 AC-1/AC-2/AC-4/AC-8/AC-9: no agent grants AskUserQuestion, web 
   for (const op of ops) {
     assert.ok(providers.some((line) => line.startsWith(`| ${op} |`)), `AC-9: agent bodies name the semantic op "${op}", so providers.md must map it to both hosts`);
   }
+  const fetchLines = agents.filter(hasWeb).flatMap((a) => sectionOf(a.rel, 'Tool policy').split('\n').filter((line) => line.toLowerCase().startsWith(`- ${ops[0].toLowerCase()}`)).map((line) => [a.name, line]));
+  assert.ok(fetchLines.length >= 5, `sanity: the web-granted agents whose policy names the fetch op must be found - got ${fetchLines.length}`);
+  for (const [name, line] of fetchLines) {
+    const scoped = /^- (.+?) only for /.exec(line);
+    assert.deepStrictEqual(scoped && scoped[1].split(' / ').map((op) => op[0].toLowerCase() + op.slice(1)), ops, `AC-9 (TST-2-3): ${name} holds both web tools, so its scoped policy line must bound search as well as fetch ("<fetch> / <search> only for") - a fetch-only scope leaves web search unbounded`);
+  }
+  const uxInstall = sectionOf('.asd/agents/asd-ux.md', "Do's").split('\n').find((line) => line.includes('Never run `designmd-install`'));
+  const installSites = uxInstall ? [...uxInstall.matchAll(/`(asd-[a-z-]+)(\.md)?`(?: step (\d+))?/g)] : [];
+  assert.ok(installSites.length >= 3, 'AC-8: asd-ux may not run designmd-install, so it must name the orchestrator sites that run it instead');
+  for (const [, name, isWorkflow, step] of installSites) {
+    const rel = isWorkflow ? `.asd/workflows/${name}.md` : `.asd/skills/${name}/SKILL.md`;
+    const source = canonText(rel).includes('\n## Workflow') ? sectionOf(rel, 'Workflow') : canonText(rel);
+    assert.ok(/run command `designmd-install`/i.test(step ? stepOf(source, step) : source), `AC-8: asd-ux cites ${rel}${step ? ` step ${step}` : ''} as where the orchestrator runs designmd-install - that site must run it, or DESIGN.md lint fails on Windows with nobody allowed to install`);
+  }
 
   const shells = agents.filter((a) => a.meta.claude.tools.includes('Bash'));
   const runLine = (a) => sectionOf(a.rel, 'Tool policy').split('\n').find((line) => line.startsWith('- Run command:'));
@@ -5756,8 +5770,17 @@ test('sprint-018 AC-4/AC-5/AC-7: a reviewer\'s question and External Review\'s s
   assert.ok(form && carrier.includes('`## Escalations`'), 'AC-4: review-policy.md must state the reviewer question carrier and its Escalations placement');
   assert.strictEqual(shape(form[1]), shape(templateItem.slice(2)), 'AC-4: the carrier form in review-policy.md and the item t_review.md ships must be one shape, or a workflow parses one and a reviewer writes the other');
   assert.ok(carrier.split(/(?<=[.;])\s/).some((sentence) => sentence.includes('`CONCERNS`') && sentence.includes('`APPROVE`') && /\bnever\b/.test(sentence)), 'AC-4: a reviewer holding an open question returns at least CONCERNS, never APPROVE - an APPROVE latches the reviewer and the question never reaches a fix route');
-  const genericReturns = fs.readdirSync(path.join(REPO_ROOT, '.asd/rules')).flatMap((file) => canonText(`.asd/rules/${file}`).split('\n').filter((line) => /\breturns `QUESTION`/.test(line)).map((line) => `${file}: ${line}`));
-  assert.ok(genericReturns.length >= 3, 'sanity: the rule-doc lines telling any agent to return QUESTION must be found');
+  const answerItem = canonText('.asd/templates/t_review.md').split('## Escalations')[1].split('\n').find((line) => /^\s+answer:/.test(line));
+  const answerForm = /`(\s*answer: [^`]+)`/.exec(carrier);
+  assert.ok(answerItem && answerForm, 'AC-4: the carrier must state where the user\'s answer is written, and t_review.md must ship that line under the question item');
+  assert.strictEqual(shape(answerForm[1]), shape(answerItem), 'AC-4: review-policy.md and t_review.md must agree on the answer line form');
+  const reviewFix = stepOf(sectionOf('.asd/workflows/asd-phase-impl.md', 'Workflow'), 3).split('\n').find((line) => line.includes('**review-fix**'));
+  assert.ok(reviewFix && reviewFix.includes('`answer:`') && reviewFix.includes('`review-policy.md` "Gate Verdict Format"'), 'AC-4: impl review-fix must collect the answer lines with the findings, citing the carrier - otherwise the answer sits in decisions-log and the fixer never reads it');
+  const routesToQuestion = /\b(?:returns?|via|as) `QUESTION`/;
+  const questionRoutes = fs.readdirSync(path.join(REPO_ROOT, '.asd/rules')).flatMap((file) => canonText(`.asd/rules/${file}`).split('\n').filter((line) => routesToQuestion.test(line)).map((line) => ({ file, line })));
+  assert.deepStrictEqual(questionRoutes.filter(({ line }) => !/\bagent\b/.test(line)).map(({ file }) => file), ['design-principles.md'], 'TST-2-1: a QUESTION route whose line names no agent is creator-scoped and exempt; the exempt set is compared exactly, so a generic route cannot drop out of the sweep by rewording its subject');
+  const genericReturns = questionRoutes.filter(({ line }) => /\bagent\b/.test(line)).map(({ file, line }) => `${file}: ${line}`);
+  assert.ok(genericReturns.length >= 5, 'sanity: the rule-doc lines routing any agent to QUESTION must be found');
   assert.deepStrictEqual(genericReturns.filter((line) => !(/\breviewer\b/.test(line) && /\bcarrier\b/.test(line))), [], 'AC-4/AC-5: a rule line telling any agent to return QUESTION reaches reviewers too, so it must carve them out to their carrier on the same line (D-1, then ADVICE_NEEDED steps 4/6 - the class recurs)');
 
   const external = sectionOf('.asd/rules/external-review.md', 'Stalemate detection');
@@ -5785,6 +5808,8 @@ test('sprint-018 AC-4/AC-5/AC-7: a reviewer\'s question and External Review\'s s
     assert.ok(/request user decision/.test(flow[q]) && /decisions-log/.test(flow[q]), `AC-4: ${rel} asks the user per question and logs the answers`);
     const stalemate = flow.find((line) => line.includes(`\`${label[1]}\``));
     assert.ok(stalemate && /request user decision/.test(stalemate) && stalemate.includes('`external-review.md` "Stalemate detection"'), `AC-4: ${rel} must recognise External Review's Stalemate block, ask the user and take the options from their home`);
+    assert.deepStrictEqual(options.filter((option) => new RegExp(`\\b${option}\\b`).test(stalemate)), [], `AC-4 (TST-2-2): ${rel} takes the stalemate options from external-review.md and must not restate them - a restated name goes stale on the next rename while the citation keeps this test green`);
+    assert.ok(flow[q].split(/(?<=[;.])\s|, and /).some((clause) => /\bwrite\b/.test(clause) && /reviewer's file/.test(clause)), `AC-4: ${rel} must write each answer into that reviewer's file, where the fixer reads it - an answer only in decisions-log never reaches the fix`);
   }
 
   const collect = sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Workflow').split('\n').find((line) => line.includes('`asd-reviewer-testing`') && /Manual verification/.test(line));
