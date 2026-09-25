@@ -55,7 +55,7 @@
     "agents/asd-reviewer-efficiency.md": "sha256:09dc7d0e65fe2a841488f9de633b3191ae2e77dd483173853d043b0df89fe399",
     "agents/asd-dev.md": "sha256:88cfaa9fa44f68ca68943b908b89f81c438f36b223a58b6b65167b98c5e3bd81",
     "agents/asd-tester.md": "sha256:a10cc3be429c4527c602ec336f803b530cb931a9592ac2043cd0b367e01ff78e",
-    "agents/asd-ux.md": "sha256:f5f3bd17da2b496412de6846e739a8fe7764273fe02a5ab3e2f8e20004f44837",
+    "agents/asd-ux.md": "sha256:d96e5a52e06cf3de81b46f167aeef02474f42bdfd17569ce597930e631504bb2",
     "skills/asd-phase-retro/SKILL.md": "sha256:d40dea69c3415c91b8043f4fff9bbda9dbf5750f76ebd2ff762942ab56fb4bef"
   },
   "upstream_hashes": {
@@ -144,7 +144,7 @@
     ".asd/agents/asd-reviewer-efficiency.md": "09dc7d0e65fe2a841488f9de633b3191ae2e77dd483173853d043b0df89fe399",
     ".asd/agents/asd-dev.md": "88cfaa9fa44f68ca68943b908b89f81c438f36b223a58b6b65167b98c5e3bd81",
     ".asd/agents/asd-tester.md": "a10cc3be429c4527c602ec336f803b530cb931a9592ac2043cd0b367e01ff78e",
-    ".asd/agents/asd-ux.md": "f5f3bd17da2b496412de6846e739a8fe7764273fe02a5ab3e2f8e20004f44837",
+    ".asd/agents/asd-ux.md": "d96e5a52e06cf3de81b46f167aeef02474f42bdfd17569ce597930e631504bb2",
     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
