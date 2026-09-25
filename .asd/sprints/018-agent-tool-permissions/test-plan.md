@@ -45,11 +45,11 @@ None this entry: the D-3 fix is guarded by entry 6's assertion, re-proven above.
 
 ## Suite run
 
-- Command: `node tests/run.js`
-- Scope: impacted = full (safety valve: the delta touches `sprint-lifecycle.md` and `release-manifest.json`)
-- Result: pass — 229/229 passed, 0 failed, 0 skipped (exit 0), at both the pre-strategy run (step 3) and the suite gate (step 8). This entry changed no test code
-- Lint / build: pass — `git diff --check` exit 0; `node .asd/sync.js --check` exit 0, `"ok": true`
-- HEAD: 2b343aa
+- Command: `node tests/run.js`, unscoped (impl-review step 9 terminal full-suite gate, wave-1/iter-05; overwrites entry 7's impacted-run record)
+- Scope: full
+- Result: pass — 229/229 passed, 0 failed, 0 skipped (exit 0). 229 top-level `test(` declarations, so every test ran
+- Lint / build: pass — `git diff --cached --check` exit 0, `git diff --check` exit 0; `node .asd/sync.js --check` exit 0, `"ok": true`
+- HEAD: ed818311000b72dde0e47b11ce0e4a018b6e2eef — clean worktree. Since entry 7's record (a8ebdf5) only `.asd/sprints/**` bookkeeping has landed, so no code or test file changed
 
 ## Defects
 
