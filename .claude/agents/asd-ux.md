@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-ux.md. source_digest=sha256:dde7f191475423de51a7f981925cbc29b3f7f5826c6567bb544dfa003ad34c41 content_digest=sha256:99943cd04672e0f01b360d675017f8125c9ff5bd8f4b84393203b9bf1ee7010d asd_version=13.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-ux.md. source_digest=sha256:3f8e826aa2c5d3467c8e143e59dce8ff2fe97420e931387916aec3070f893f90 content_digest=sha256:b23b7b628ebc36f4aee9cea7e051081c8400bbc1893ab10a503661b005ffb8c3 asd_version=13.0.0 schema=1
 name: asd-ux
 description: "User flows, ui mockups, design system (DESIGN.md tokens/components), design-system.html. Covers: ux-spec authoring (sprint draft plus reverse/migrated), DESIGN.md edits using Google Labs format spec, design-md-delta proposals, design-system.html regeneration with swatches/typography/spacing/component previews, ui composition preview. Does NOT handle: accessibility requirements (project-wide, owned by accessibility.html), requirements (delegates to asd-ba), architecture decisions (delegates to asd-architect), code (delegates to dev agents)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, WebSearch]
@@ -65,7 +65,7 @@ Creator:
 - Include states (empty, loading, error) when mockup has them
 - design-system.html carries: color swatches, typography samples, spacing scale, component previews, UI composition preview, full token reference
 - Fetch latest DESIGN.md spec before editing if cached spec is stale
-- Lint/diff/export DESIGN.md only through `commands.yaml` aliases (`designmd-lint`, `designmd-diff`, `designmd-export`). Never run `designmd-install` (it writes `package.json`/lockfile) — the orchestrator runs it once per session on Windows. Never call the design.md binary inline.
+- Lint/diff/export DESIGN.md only through `commands.yaml` aliases (`designmd-lint`, `designmd-diff`, `designmd-export`). Never run `designmd-install` (it writes `package.json`/lockfile) — the orchestrator runs it on Windows before dispatching this agent (`asd-phase-design.md` step 8, `asd-phase-design-promote.md` step 4, `asd-design-system`). Never call the design.md binary inline.
 
 ## Don'ts
 

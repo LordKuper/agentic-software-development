@@ -67,7 +67,7 @@ Creator:
 - Include states (empty, loading, error) when mockup has them
 - design-system.html carries: color swatches, typography samples, spacing scale, component previews, UI composition preview, full token reference
 - Fetch latest DESIGN.md spec before editing if cached spec is stale
-- Lint/diff/export DESIGN.md only through `commands.yaml` aliases (`designmd-lint`, `designmd-diff`, `designmd-export`). Never run `designmd-install` (it writes `package.json`/lockfile) — the orchestrator runs it once per session on Windows. Never call the design.md binary inline.
+- Lint/diff/export DESIGN.md only through `commands.yaml` aliases (`designmd-lint`, `designmd-diff`, `designmd-export`). Never run `designmd-install` (it writes `package.json`/lockfile) — the orchestrator runs it on Windows before dispatching this agent (`asd-phase-design.md` step 8, `asd-phase-design-promote.md` step 4, `asd-design-system`). Never call the design.md binary inline.
 
 ## Don'ts
 
