@@ -1,7 +1,7 @@
 {
   "sprint_id": "019-retro-intake",
   "branch": "sprint/019-retro-intake",
-  "phase": "plan",
+  "phase": "impl",
   "documents": {
     "audit": true,
     "prd": false,
@@ -40,7 +40,50 @@
       "artifact_revision": "plan.md@ead8832"
     }
   ],
-  "task_routing": {},
+  "task_routing": {
+    "Task 1": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "Task 2": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "risk:public contract"
+    },
+    "Task 3": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "Task 4": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "Task 5": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "risk:public contract"
+    },
+    "Task 6": {
+      "execution": "agent",
+      "tier": "standard",
+      "resolved_model": "claude:sonnet",
+      "reason": "artifact-risk:tester and External Review agent bodies plus hand-authored memory"
+    },
+    "Task 7": {
+      "execution": "agent",
+      "tier": "standard",
+      "resolved_model": "claude:sonnet",
+      "reason": "artifact-risk:README mirror, release manifest and changelog"
+    }
+  },
   "skipped_phases": [
     "design",
     "design-review",
@@ -65,7 +108,7 @@
     }
   },
   "created_at": "2026-09-25T13:09:07Z",
-  "updated_at": "2026-09-25T14:52:12Z",
+  "updated_at": "2026-09-25T14:52:43Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
