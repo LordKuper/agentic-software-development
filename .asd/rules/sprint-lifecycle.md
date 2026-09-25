@@ -282,7 +282,7 @@ Runs between `impl-review` and `pr`. Unconditional (never no-op). Owner: main or
 
 Input `<sprint>/friction-log.md`; output `<sprint>/retrospective.html` per `t_retrospective.html` — derived analysis, sprint-scoped, archived with the sprint. Nothing is promoted to a persistent doc; the retro backlog holds only scope-time dispositions of its rows ("Retro intake" above), never retro content.
 
-**Retro row id** — `A-N` names the Nth row of the Actions table, `P-N` the Nth of the Systemic proposals table; N is the 1-based `<tbody>` ordinal, `covered by:` rows counted. Written as `<tr id="A-N">`; a legacy retro without ids gets the same ids from the same ordinal. Cross-sprint address: `<NNN-slug>#A-N`. Row ids and `Acts on` values are English literals under any `language.docs`.
+**Retro row id** — `A-N` names the Nth row of the Actions table, `P-N` the Nth of the Systemic proposals table; N is the 1-based `<tbody>` ordinal, `covered by:` rows counted. Written as `<tr id="A-N">`; a legacy retro without ids gets the same ids from the same ordinal. Cross-sprint address: `<NNN-slug>#A-N`. Row ids, `Acts on` values and the `covered by:` prefix are English literals under any `language.docs`.
 
 **Two output classes.** Both are split into consumer-project and ASD-framework actions so every row names the side that acts and its home; both are proposals the phase never executes and never promotes — promoting a guardrail is the user's decision.
 
