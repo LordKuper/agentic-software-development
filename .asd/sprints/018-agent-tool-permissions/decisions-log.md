@@ -34,3 +34,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+- 2026-09-25 — route impl-test entry 1: critical, dispatch HEAD e2d919d
+- 2026-09-25 — impl-test flagged choices accepted: stale reviewer memories left to their owners (flagged in impl-review payload); AC-2 web-less list hardcoded in test; audit workflow `QUESTION` branch asserted (AC-7); Suite run HEAD d3587cc (6c9d8d7 changes only test-plan.md)
+- 2026-09-25 — impl-test: defects D-1, D-2 → impl test-fix (digest dbae663a92f789a90e97e185abe05ed95aa727ebe71bc02776cacc13b35f216a)
