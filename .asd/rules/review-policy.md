@@ -183,7 +183,7 @@ Sole owner map: each concern below has exactly one reviewer; agent rubrics hold 
 
 ## DoD per review phase
 
-| Phase | Required reviewers (all APPROVE or APPROVE-latched, same iteration; External Review's skip form counts, `external-review.md` "Outcome contract") |
+| Phase | Required reviewers (all APPROVE or APPROVE-latched, same iteration; External Review's skip form counts, `external-review.md` "Outcome contract"; so does a user-resolved verdict, `sprint-lifecycle.md` "State recovery") |
 |---|---|
 | design-review | Correctness, Efficiency, Documentation — dispatched for any non-empty draft set unless APPROVE-latched (below); Correctness's UI rubric section is `n/a: outside phase gate` when no ux-spec/design-system artifact is in scope; External Review (if enabled) |
 | impl-review | Correctness, Efficiency, Documentation, Testing — dispatched unless APPROVE-latched (below); External Review (if enabled) — met in every review wave, in order (`sprint-lifecycle.md` "Review iteration counters") |
