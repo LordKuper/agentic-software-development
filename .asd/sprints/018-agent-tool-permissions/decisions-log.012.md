@@ -34,3 +34,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+- 2026-09-25 — route correctness.md 1, documentation.md DOC-5, external.md 1-2, testing.md TST-2-1 (canon part): critical, dispatch HEAD f69d1c1
+- 2026-09-25 — review-fix round 2 flagged choices accepted: no Bash in asd-design-system allowed-tools (operation line only); install step kept at design step 8 (harmless if unused); design-principles.md:47 creator-scoped; tester "no agent named = creator-scoped" with exact exempt set; optional answer:/designmd-install pins added this round
+- 2026-09-25 — impl fix for wave-1/iter-02: findings resolved (correctness.md 1, documentation.md DOC-5, external.md 1-2, testing.md TST-2-1..TST-2-3)
