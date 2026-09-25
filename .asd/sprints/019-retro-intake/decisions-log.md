@@ -84,3 +84,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-26 — memory-fix applied: asd-reviewer-documentation edited own memory (5c48db2), asd-reviewer-testing edited own memory (b06232a); orchestrator committed
 - 2026-09-26 — impl fix for wave-1/iter-01: findings resolved (dev chain 0f9f77c..1fc1abe: COR-1..7, DOC-1..5, EFF-1, external #1/#2; tester 694c28f: TST-1-1, TST-1-2 + pins; memory-fix 5c48db2, b06232a); flagged choices accepted — the `pendingMemoryFix` sweep exemption must be removed at impl-test entry 3, and the COR-4 removal carry-over row survives rotation only if entry 3's tester reads the rotated segment
 - 2026-09-26 — route impl-test entry 3: critical, dispatch HEAD b06232a
+- 2026-09-26 — impl-test: impacted set green (238/238), 0/0 tests, assertions extended in 4 tests (entry 3)
