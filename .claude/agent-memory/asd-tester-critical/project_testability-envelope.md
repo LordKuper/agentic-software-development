@@ -137,6 +137,11 @@ as proof. A regex whose capture group spans less than the fixed literal (sprint 
 the suffix, which the pre-fix line also held) passes on the old text too. Put the capture around the
 whole changed literal, then run the revert (TST-3).
 
+A render property of tier variants (`-mechanical`/`-critical`) is only proven by rendering, never by reading
+the generated `.codex/`/`.claude/` views: a `variantMeta` regression leaves the committed views untouched,
+so a disk read stays green and only §9's `--check` drift fires. `sync.buildSyncPlan(REPO_ROOT)` items carry
+the variant meta as `metaOverride` (`agentVariants` is not exported) — render those (sprint 018).
+
 A "tight somewhere" assert on an upper bound only catches an overcount that hits every sampled point.
 When a fix adds a parameter with a default, the old and new formulas usually agree only at some inputs
 (sprint 015 EXT-4: only at multiples of 25). Compute both at each sampled point before writing
