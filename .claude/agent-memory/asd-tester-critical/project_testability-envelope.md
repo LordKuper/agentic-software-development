@@ -135,7 +135,10 @@ every member (sprint 012 entry 4, M26/M27).
 A `keep` justified by "the existing assert already requires it verbatim" needs the fix's own revert
 as proof. A regex whose capture group spans less than the fixed literal (sprint 015 AC-8 captured only
 the suffix, which the pre-fix line also held) passes on the old text too. Put the capture around the
-whole changed literal, then run the revert (TST-3).
+whole changed literal, then run the revert (TST-3). Same for a fixture aimed at a narrowed regex: it
+must satisfy the OLD regex's precondition too, or it passes both sides (sprint 019: a `tableCells` fixture
+not starting with a backtick never reached the changed branch). Some edits are semantic no-ops you cannot
+mutate with: `git commit -- <paths>` already implies `--only`, so dropping only `--only` changes nothing.
 
 A render property of tier variants (`-mechanical`/`-critical`) is only proven by rendering, never by reading
 the generated `.codex/`/`.claude/` views: a `variantMeta` regression leaves the committed views untouched,
