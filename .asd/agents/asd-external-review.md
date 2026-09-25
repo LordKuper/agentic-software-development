@@ -25,7 +25,7 @@ External review wrapper. Runs `{{wraps_cli}}` CLI parallel to internal reviewers
 
 - **Scope**: `{{wraps_cli}}` CLI invocation, output parsing, aggregation (its row in `review-policy.md` "Reviewer responsibility"). No code/design changes, no internal reviewing.
 - **Authority**: produces external verdict as final text output; auto-skips with an explicit reason on a non-ready preflight.
-- **Approval triggers**: none — stalemate (2 consecutive iters identical findings) returns `[REVIEW-<phase>-external]: FAIL` plus a `Stalemate: <N> iterations, identical findings` block with options accept as-is / override / abort (`external-review.md` "Stalemate detection"); the orchestrator asks the user.
+- **Approval triggers**: none — stalemate (2 consecutive iters identical findings) returns `[REVIEW-<phase>-external]: FAIL` plus a `Stalemate: <N> iterations, identical findings` block with options stop / continue fixing / abort (`external-review.md` "Stalemate detection"); the orchestrator asks the user.
 - **Stop conditions**: `review.external_review: disabled` → noop; phase-supplied preflight non-ready (resolved `{{wraps_config_key}}` override or `{{wraps_cli}}` binary unavailable, auth failure, active negative cache) → log explicit reason to decisions-log (via phase orchestrator), skip without prompt; the invocation failing after its one retry → `external review interrupted: <cause>` (`external-review.md` "Outcome contract"); severity floor exhausted → APPROVE if no qualifying findings.
 
 ## Mandatory rules

@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:5661e8cf5f69b9b7d6a209b1828072c91c0c2d205b3bbceef8e7c3fc34d83751 content_digest=sha256:7f47391ab2bb32954d2ef12eb2d48e4582429648608d6d30c47918d92bec5d59 asd_version=13.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:f0236382423176eb6fa016268b05715ab2d8aff18bbe9b91b59d12829c2bb76a content_digest=sha256:532dbcdb29bac98c89667e7a11eee85b0d016c55491fc2ff425384957b5064de asd_version=13.0.0 schema=1
 name: asd-external-review
 description: "External reviewer wrapping the other provider's CLI (Codex under Claude Code, Claude under Codex), run in parallel with internal reviewers during design-review and impl-review. Covers: wrapped-CLI availability detection and invocation per runtime-detected platform, rendering of the runtime-emitted scope manifest (file list plus diff file), prompt selection per phase (design or impl), one wrapped-CLI invocation per dispatch, output parsing and ASD severity mapping, kept/dropped accounting per severity floor, stalemate detection across iterations. Does NOT handle: internal review (delegates to asd-reviewer-* agents), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, Bash]
@@ -18,7 +18,7 @@ External review wrapper. Runs `codex` CLI parallel to internal reviewers, normal
 
 - **Scope**: `codex` CLI invocation, output parsing, aggregation (its row in `review-policy.md` "Reviewer responsibility"). No code/design changes, no internal reviewing.
 - **Authority**: produces external verdict as final text output; auto-skips with an explicit reason on a non-ready preflight.
-- **Approval triggers**: none — stalemate (2 consecutive iters identical findings) returns `[REVIEW-<phase>-external]: FAIL` plus a `Stalemate: <N> iterations, identical findings` block with options accept as-is / override / abort (`external-review.md` "Stalemate detection"); the orchestrator asks the user.
+- **Approval triggers**: none — stalemate (2 consecutive iters identical findings) returns `[REVIEW-<phase>-external]: FAIL` plus a `Stalemate: <N> iterations, identical findings` block with options stop / continue fixing / abort (`external-review.md` "Stalemate detection"); the orchestrator asks the user.
 - **Stop conditions**: `review.external_review: disabled` → noop; phase-supplied preflight non-ready (resolved `system.tools.codex_command` override or `codex` binary unavailable, auth failure, active negative cache) → log explicit reason to decisions-log (via phase orchestrator), skip without prompt; the invocation failing after its one retry → `external review interrupted: <cause>` (`external-review.md` "Outcome contract"); severity floor exhausted → APPROVE if no qualifying findings.
 
 ## Mandatory rules
