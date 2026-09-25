@@ -208,7 +208,7 @@ Only the main orchestrator (and a skill it runs inline) ever prompts you for a d
 
 The main orchestrator owns scope, plan, state, decisions, manual-step validation, Git and release/archival sequencing; no PM agent is spawned. Dev/Tester task variants share each canonical role body and permissions: `-mechanical` uses Haiku (no effort)/Luna low, `-critical` Opus/Sol high; tier `standard` has no variant and dispatches the base agent (Sonnet/Sol medium). Deterministic bookkeeping uses commands. Routing uses objective eligibility, escalates on a risk declared against the change or a failed check — a risk declared against the artifact alone does not — and never changes the main model. Experimental cheap outputs retain strong independent review.
 
-All five creators carry `WebFetch`/`WebSearch` (Codex `web_search: "live"`) for docs/library/framework/runtime lookups. BA and UX also carry `Bash`, bounded to a read-only run-command policy (BA: read-only git inspection; UX: `designmd-*` lint/export) — neither writes an artifact or touches git via shell. Architect, Dev, and Tester carry the same `Bash` grant unrestricted within project scope (build/lint/test/git commands from `commands.yaml`).
+All five creators carry `WebFetch`/`WebSearch` (Codex `web_search: "live"`) for docs/library/framework/runtime lookups. BA, UX, and Architect also carry `Bash`, each bounded to its own run-command policy: BA to read-only git inspection (`git log`/`git show`/`git diff`); UX to the `designmd-*` `commands.yaml` aliases (lint/export); Architect to the `likec4` CLI (lint/validate only, never `build` inside a sprint draft) — none of the three writes an artifact via shell or holds a commit tool (`.asd/rules/git-strategy.md` "Commit before review"). Dev and Tester carry `Bash` unrestricted within project scope (build/lint/test/git commands from `commands.yaml`) and are the only two agents holding a commit tool.
 
 ### Reviewers (4 internal + 1 external)
 
@@ -413,7 +413,7 @@ The canonical SessionStart hook (`.asd/hooks/session-start.js`) prints a one-blo
 
 ### Settings.json / hooks.json
 
-`.claude/settings.json` pre-allows common git / gh / likec4 / designmd / codex commands so Claude Code does not prompt you for permission each time; edit its `permissions.allow` array to extend. Since several agents now carry `WebFetch`/`WebSearch` (creators, Correctness, Advisor — see "Agents" above), also pre-allow those tools there if you don't want a permission prompt on first use. `.codex/hooks.json` registers the same hook for Codex. Both files are JSON-merge targets — ASD owns only its own hook entry in each, never the rest of the file.
+`.claude/settings.json` pre-allows common git / gh / likec4 / designmd / codex commands so Claude Code does not prompt you for permission each time; edit its `permissions.allow` array to extend. Since several agents carry `WebFetch`/`WebSearch` (creators, Correctness, Advisor — see "Agents" above), also pre-allow those tools there if you don't want a permission prompt on first use. `.codex/hooks.json` registers the same hook for Codex. Both files are JSON-merge targets — ASD owns only its own hook entry in each, never the rest of the file.
 
 ---
 
