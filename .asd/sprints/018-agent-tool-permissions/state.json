@@ -1,7 +1,7 @@
 {
   "sprint_id": "018-agent-tool-permissions",
   "branch": "sprint/018-agent-tool-permissions",
-  "phase": "scope",
+  "phase": "design-promote",
   "documents": {
     "audit": true,
     "prd": false,
@@ -17,10 +17,35 @@
       "reason": "explicit accept",
       "evidence": "sprint.md AC-1..AC-6",
       "artifact_revision": "sprint.md@2026-09-25T08:23:09Z"
+    },
+    {
+      "gate": "audit-contradiction",
+      "decision_actor": "user",
+      "reason": "external-review stalemate carrier",
+      "evidence": "audit.md Contradictions #1",
+      "artifact_revision": "audit.md@2026-09-25T09:00:00Z"
+    },
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "accepted scope expansion AC-7..AC-9",
+      "evidence": "sprint.md AC-1..AC-9; decisions-log.md",
+      "artifact_revision": "sprint.md@2026-09-25T09:00:00Z"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "user",
+      "reason": "audit findings answered",
+      "evidence": "audit.md; decisions-log.md",
+      "artifact_revision": "audit.md@2026-09-25T09:00:00Z"
     }
   ],
   "task_routing": {},
-  "skipped_phases": [],
+  "skipped_phases": [
+    "design",
+    "design-review",
+    "design-promote"
+  ],
   "reviews": {
     "design": {
       "iteration": 0,
@@ -40,7 +65,7 @@
     }
   },
   "created_at": "2026-09-25T08:23:09Z",
-  "updated_at": "2026-09-25T08:25:00Z",
+  "updated_at": "2026-09-25T09:02:00Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
