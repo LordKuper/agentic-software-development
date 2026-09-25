@@ -1,7 +1,7 @@
 {
   "sprint_id": "018-agent-tool-permissions",
   "branch": "sprint/018-agent-tool-permissions",
-  "phase": "plan",
+  "phase": "impl",
   "documents": {
     "audit": true,
     "prd": false,
@@ -47,7 +47,44 @@
       "artifact_revision": "plan.md@2026-09-25T09:20:00Z"
     }
   ],
-  "task_routing": {},
+  "task_routing": {
+    "Task 1": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "risk:public contract"
+    },
+    "Task 2": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "Task 3": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "risk:public contract"
+    },
+    "Task 4": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "Task 5": {
+      "execution": "agent",
+      "tier": "critical",
+      "resolved_model": "claude:opus",
+      "reason": "risk:workflow gate"
+    },
+    "Task 6": {
+      "execution": "agent",
+      "tier": "standard",
+      "resolved_model": "claude:sonnet",
+      "reason": "artifact-risk:README mirror and generated provider views"
+    }
+  },
   "skipped_phases": [
     "design",
     "design-review",
@@ -72,7 +109,7 @@
     }
   },
   "created_at": "2026-09-25T08:23:09Z",
-  "updated_at": "2026-09-25T09:20:00Z",
+  "updated_at": "2026-09-25T09:30:00Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

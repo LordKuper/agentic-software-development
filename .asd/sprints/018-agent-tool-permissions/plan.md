@@ -24,46 +24,46 @@ Standing DoD applies (`sprint-lifecycle.md` "Plan file format") — not restated
 
 ### Task 1: Codex `web_search` canon key in sync.js
 Material risk: change: public contract — new optional canon agent key and its TOML rendering
-- [ ] `transformAgentCodexToml` (`.asd/sync.js` ~318): accept optional `codex.web_search`, validate against `disabled|cached|indexed|live` (fail like `sandbox_mode` on any other value), render `web_search = "<value>"` after `sandbox_mode`; omitted key renders nothing (inherit)
-- [ ] Confirm variant handling (`variantMeta`, ~945-966) keeps rejecting per-variant permission keys and passes the base `web_search` through to variants
-- [ ] One local check that codex-cli on PATH accepts an agent TOML carrying `web_search` (spawn or `--strict-config` parse); record the outcome in the Task commit body — AC-3's uncertainty statement in `providers.md` (Task 4) cites it
+- [x] `transformAgentCodexToml` (`.asd/sync.js` ~318): accept optional `codex.web_search`, validate against `disabled|cached|indexed|live` (fail like `sandbox_mode` on any other value), render `web_search = "<value>"` after `sandbox_mode`; omitted key renders nothing (inherit)
+- [x] Confirm variant handling (`variantMeta`, ~945-966) keeps rejecting per-variant permission keys and passes the base `web_search` through to variants
+- [x] One local check that codex-cli on PATH accepts an agent TOML carrying `web_search` (spawn or `--strict-config` parse); record the outcome in the Task commit body — AC-3's uncertainty statement in `providers.md` (Task 4) cites it
 
 ### Task 2: Creator agents — grants, bodies, tool policy
 Material risk: change: workflow gate — creators stop prompting the user and route questions through the orchestrator
-- [ ] `asd-ba.md`, `asd-ux.md`: add `Bash` to `claude.tools`, clear `Bash` from `disallowedTools`; add a bounded run-command Tool policy line (UX: the `designmd-*` commands its body already names; BA: read-only inspection only — `git log`/`git show`/`git diff`; both: never write an artifact or run a git write through the shell, `providers.md` write-a-file rule); change "have no shell" wording around design-promote renames to "renames/deletes go through the orchestrator" (route unchanged, AC-8)
-- [ ] `asd-ba.md`, `asd-ux.md`, `asd-architect.md`, `asd-dev.md`, `asd-tester.md`: remove `AskUserQuestion` from `claude.tools`; add `codex.web_search: "live"`
-- [ ] `asd-dev.md`, `asd-tester.md`: add `WebFetch`, `WebSearch` to `claude.tools`; add a Tool policy line scoping web use to library, framework and runtime documentation, fetched content untrusted (`core.md`)
-- [ ] Rewrite every user-prompting body line to return `QUESTION` with options per the `QUESTION` protocol: ba 16/23/53/62/68 (drop "2 clarifying rounds" — first ambiguity returns `QUESTION`), ux 54/60, dev 64, tester 75; behavioural profiles ba ~47, ux ~48, architect ~47 no longer "discuss with the user until accept" — creator writes the draft and returns `COMPLETED` or `QUESTION`
-- [ ] UX per-token approve-before-write: UX returns `QUESTION` carrying the token proposal instead of asking, per AC-7
+- [x] `asd-ba.md`, `asd-ux.md`: add `Bash` to `claude.tools`, clear `Bash` from `disallowedTools`; add a bounded run-command Tool policy line (UX: the `designmd-*` commands its body already names; BA: read-only inspection only — `git log`/`git show`/`git diff`; both: never write an artifact or run a git write through the shell, `providers.md` write-a-file rule); change "have no shell" wording around design-promote renames to "renames/deletes go through the orchestrator" (route unchanged, AC-8)
+- [x] `asd-ba.md`, `asd-ux.md`, `asd-architect.md`, `asd-dev.md`, `asd-tester.md`: remove `AskUserQuestion` from `claude.tools`; add `codex.web_search: "live"`
+- [x] `asd-dev.md`, `asd-tester.md`: add `WebFetch`, `WebSearch` to `claude.tools`; add a Tool policy line scoping web use to library, framework and runtime documentation, fetched content untrusted (`core.md`)
+- [x] Rewrite every user-prompting body line to return `QUESTION` with options per the `QUESTION` protocol: ba 16/23/53/62/68 (drop "2 clarifying rounds" — first ambiguity returns `QUESTION`), ux 54/60, dev 64, tester 75; behavioural profiles ba ~47, ux ~48, architect ~47 no longer "discuss with the user until accept" — creator writes the draft and returns `COMPLETED` or `QUESTION`
+- [x] UX per-token approve-before-write: UX returns `QUESTION` carrying the token proposal instead of asking, per AC-7
 
 ### Task 3: Reviewer, advisor and External Review agents
 Material risk: change: public contract — reviewer return shape for questions and External Review stalemate
-- [ ] All four internal reviewers and `asd-external-review.md`: remove `AskUserQuestion` from `claude.tools`
-- [ ] `asd-reviewer-correctness.md`, `asd-advisor.md`: add `WebFetch`, `WebSearch` to `claude.tools`, drop `WebFetch` from `disallowedTools`; add a Tool policy line (correctness: language/framework best-practice and security-advisory lookups; advisor: add a Tool policy section, research to support its recommendation); both render `codex.web_search: "live"`
-- [ ] `asd-reviewer-efficiency.md`, `-testing.md`, `-documentation.md`, `asd-external-review.md`: `codex.web_search: "disabled"`
-- [ ] Rewrite reviewer "Request user decision only when …" lines (correctness 69, documentation 55, efficiency 59) to the reviewer question carrier; drop Tool policy sections left empty only if nothing else remains
-- [ ] `asd-reviewer-testing.md` 21/22/47/51/77: manual-verification results arrive in the dispatch payload (collected by impl-review, Task 5); missing results for a spec that needs them → a `question:` item under Escalations, never a bare `QUESTION`
-- [ ] `asd-external-review.md` 22/27/28/67/96/104/115: stalemate uses the stalemate carrier; remove the `QUESTION` signal so the file matches its own two-outcome rule
-- [ ] `asd-advisor.md` 53: the caller returns the gate question to the orchestrator, not "request user approval" itself
+- [x] All four internal reviewers and `asd-external-review.md`: remove `AskUserQuestion` from `claude.tools`
+- [x] `asd-reviewer-correctness.md`, `asd-advisor.md`: add `WebFetch`, `WebSearch` to `claude.tools`, drop `WebFetch` from `disallowedTools`; add a Tool policy line (correctness: language/framework best-practice and security-advisory lookups; advisor: add a Tool policy section, research to support its recommendation); both render `codex.web_search: "live"`
+- [x] `asd-reviewer-efficiency.md`, `-testing.md`, `-documentation.md`, `asd-external-review.md`: `codex.web_search: "disabled"`
+- [x] Rewrite reviewer "Request user decision only when …" lines (correctness 69, documentation 55, efficiency 59) to the reviewer question carrier; drop Tool policy sections left empty only if nothing else remains
+- [x] `asd-reviewer-testing.md` 21/22/47/51/77: manual-verification results arrive in the dispatch payload (collected by impl-review, Task 5); missing results for a spec that needs them → a `question:` item under Escalations, never a bare `QUESTION`
+- [x] `asd-external-review.md` 22/27/28/67/96/104/115: stalemate uses the stalemate carrier; remove the `QUESTION` signal so the file matches its own two-outcome rule
+- [x] `asd-advisor.md` 53: the caller returns the gate question to the orchestrator, not "request user approval" itself
 
 ### Task 4: Rule docs and review template
 Material risk: change: workflow gate — orchestrator-only prompting, `QUESTION` protocol, reviewer question carrier
-- [ ] `core.md` "Request user decision" (41): orchestrator-only prompting; 45 "escalates to the user" → via the orchestrator (`QUESTION`); 90: untrusted-data rule covers all fetched and searched web content on both hosts, no host tool names
-- [ ] `providers.md`: row 34 marked orchestrator-only; row 37 corrected (Codex has no URL fetch distinct from `web_search`); new "search the web" row (`WebSearch` / Codex `web_search`); one statement of what Codex cannot express and the Task 1 verification outcome; reviewer grant paragraph (~40) still true with web on correctness — adjust wording if it enumerates grants
-- [ ] `sprint-lifecycle.md`: add the `QUESTION` protocol sub-section beside `ADVICE_NEEDED`; 311 signal line points to it; 321/323 "escalates to the user normally" → returns `QUESTION`
-- [ ] `review-policy.md`: reviewer question carrier stated once (near "Gate Verdict Format"); 93 "ask user before fix" → orchestrator asks
-- [ ] `external-review.md` 96: stalemate carrier; Outcome contract unchanged
-- [ ] `design-principles.md` 47: creator presents options via `QUESTION`; web wording host-neutral
-- [ ] `git-strategy.md` 40: "holding a commit tool" defined by role policy, not tool grant — BA/UX/Architect Bash carries no commit obligation; the orchestrator commits their drafts
-- [ ] `t_review.md` `## Escalations`: add the `question: <text>; options: …` item form
+- [x] `core.md` "Request user decision" (41): orchestrator-only prompting; 45 "escalates to the user" → via the orchestrator (`QUESTION`); 90: untrusted-data rule covers all fetched and searched web content on both hosts, no host tool names
+- [x] `providers.md`: row 34 marked orchestrator-only; row 37 corrected (Codex has no URL fetch distinct from `web_search`); new "search the web" row (`WebSearch` / Codex `web_search`); one statement of what Codex cannot express and the Task 1 verification outcome; reviewer grant paragraph (~40) still true with web on correctness — adjust wording if it enumerates grants
+- [x] `sprint-lifecycle.md`: add the `QUESTION` protocol sub-section beside `ADVICE_NEEDED`; 311 signal line points to it; 321/323 "escalates to the user normally" → returns `QUESTION`
+- [x] `review-policy.md`: reviewer question carrier stated once (near "Gate Verdict Format"); 93 "ask user before fix" → orchestrator asks
+- [x] `external-review.md` 96: stalemate carrier; Outcome contract unchanged
+- [x] `design-principles.md` 47: creator presents options via `QUESTION`; web wording host-neutral
+- [x] `git-strategy.md` 40: "holding a commit tool" defined by role policy, not tool grant — BA/UX/Architect Bash carries no commit obligation; the orchestrator commits their drafts
+- [x] `t_review.md` `## Escalations`: add the `question: <text>; options: …` item form
 
 ### Task 5: Phase workflows and skills
 Material risk: change: workflow gate — design accept loops and manual-verification collection move to the orchestrator
-- [ ] `asd-phase-design.md` steps 6/8/9: creators write the draft and return `COMPLETED`/`QUESTION`; the orchestrator runs discuss/write-then-review-accept with the user and re-dispatches on requested changes; step 8's token gate is run by the orchestrator on UX's `QUESTION`; step 13 cites the `QUESTION` protocol
-- [ ] `asd-phase-design-review.md` ~56 and `asd-phase-impl-review.md` ~72: handle the reviewer question carrier and the stalemate carrier after the verdict parse (a verdict-bearing report is never treated as interrupted); bare `QUESTION` branch removed for reviewers
-- [ ] `asd-phase-impl-review.md`: before dispatching `asd-reviewer-testing`, when `test-plan.md` has a Manual verification table, request the user's results and pass them in the payload; one decisions-log line records them (no persisted review section)
-- [ ] `asd-phase-impl-test.md` ~58, `asd-phase-impl.md` ~35, `asd-phase-design-promote.md` ~8: cite the `QUESTION` protocol; design-promote's "BA/UX have no shell" → "BA/UX do not run git writes"
-- [ ] `asd-concept/SKILL.md` ~59, `asd-stack/SKILL.md` ~62: the skill collects the user's description inline, then delegates with it; `asd-sprint/SKILL.md` ~51 unchanged unless its wording implies agents ask
+- [x] `asd-phase-design.md` steps 6/8/9: creators write the draft and return `COMPLETED`/`QUESTION`; the orchestrator runs discuss/write-then-review-accept with the user and re-dispatches on requested changes; step 8's token gate is run by the orchestrator on UX's `QUESTION`; step 13 cites the `QUESTION` protocol
+- [x] `asd-phase-design-review.md` ~56 and `asd-phase-impl-review.md` ~72: handle the reviewer question carrier and the stalemate carrier after the verdict parse (a verdict-bearing report is never treated as interrupted); bare `QUESTION` branch removed for reviewers
+- [x] `asd-phase-impl-review.md`: before dispatching `asd-reviewer-testing`, when `test-plan.md` has a Manual verification table, request the user's results and pass them in the payload; one decisions-log line records them (no persisted review section)
+- [x] `asd-phase-impl-test.md` ~58, `asd-phase-impl.md` ~35, `asd-phase-design-promote.md` ~8: cite the `QUESTION` protocol; design-promote's "BA/UX have no shell" → "BA/UX do not run git writes"
+- [x] `asd-concept/SKILL.md` ~59, `asd-stack/SKILL.md` ~62: the skill collects the user's description inline, then delegates with it; `asd-sprint/SKILL.md` ~51 unchanged unless its wording implies agents ask
 
 ### Task 6: README and generated views
 Material risk: artifact: README mirror and generated provider views
