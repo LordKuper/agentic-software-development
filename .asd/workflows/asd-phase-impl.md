@@ -53,7 +53,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
 3. **Build work set** per mode:
    - **initial** — read `<sprint>/plan.md` → parse Task blocks (title, subtask checkboxes) plus the `## Dependencies` wave table and dependency lines
    - **review-fix** — read every reviewer file in `<sprint>/reviews/impl/<id>/`, `<reviewer>.late.md` included; collect all CONCERNS findings, every admitted late finding, plus all FAIL findings the user accepted for fix or kept by a stalemate **continue fixing**, skipping each finding a `resolved:` line names (`sprint-lifecycle.md` "State recovery" user-resolved findings), plus every `answer:` line under a `question:` item (`review-policy.md` "Gate Verdict Format"), part of that reviewer's finding set; group into fix tasks, one dev task per independent group; findings located in test files route to `asd-tester` instead; findings located in `.claude/agent-memory/<owner>/` route to `<owner>` (Claude only, `review-policy.md` "Autofix vs escalation" memory-fix dispatch): an owner holding a write tool fixes them in its own chain (step 5), an owner without one gets a fresh memory-fix dispatch whose `MEMORY-FIX <path>` text the orchestrator applies verbatim, commits and logs in one decisions-log line
-   - **test-fix** — read `<sprint>/test-plan.md` `Defects` section; collect every `D-N` with status `pending`; group into fix tasks, one dev task per independent group
+   - **test-fix** — read `<sprint>/test-plan.md` `Defects` section; collect every `D-N` with status `pending`; group into fix tasks, one dev task per independent group; a `D-N` located in `.claude/agent-memory/<owner>/` routes to `<owner>` exactly as a review-fix memory finding does (`review-policy.md` "Autofix vs escalation" memory-fix dispatch)
 4. Write `state.json` (phase=impl) inline (mechanical, no gate)
 5. **Build execution graph**:
    - initial — the plan's wave table is the graph (`sprint-lifecycle.md` "Plan file format"): waves ascending, tasks within one wave parallelisable, never re-derived from the dependency lines. A plan predating that rule carries no table: fall back to a topological sort over its dependency lines
@@ -138,7 +138,7 @@ Impl completion gate (step 9) and, initial mode only, impl assessment gate (step
 - The main orchestrator (manual-step validation, completion/assessment gates and decisions-log); no orchestration agent is dispatched.
 - `asd-dev` (per Task, finding group, or defect group)
 - `asd-tester` (review-fix mode only, for findings located in test files)
-- a memory finding's owner (review-fix mode, Claude only; step 3)
+- a memory finding's owner (review-fix and test-fix modes, Claude only; step 3)
 
 ## Return contract (single line)
 ```

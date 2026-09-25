@@ -88,7 +88,7 @@ Default: the responsible creator autofixes any reviewer issue without user promp
 
 **Consumer search.** A review-fix that changes a rule other files consume searches for every consumer of that rule's home, updates them in the same commit, and lists them in its completion signal.
 
-**Memory-fix dispatch** (Claude only; Codex renders no `memory`). A finding located in `.claude/agent-memory/<owner>/` routes to `<owner>`; a non-owner never authors memory text. An owner holding a write tool fixes it itself in the review-fix chain. An owner without one (reviewers) gets a fresh memory-fix dispatch returning only a `MEMORY-FIX <path>` block holding the replacement text — no verdict token, it is not a review. The orchestrator applies that text verbatim, commits it (`git-strategy.md` "Commit before review") and appends one decisions-log line.
+**Memory-fix dispatch** (Claude only; Codex renders no `memory`). A finding located in `.claude/agent-memory/<owner>/` routes to `<owner>`; a non-owner never authors memory text. An owner holding a write tool fixes it itself in the review-fix chain. An owner without one (reviewers, External Review included — its `Bash` runs only the wrapped CLI) gets a fresh memory-fix dispatch returning only a `MEMORY-FIX <path>` block holding the replacement text — no verdict token, it is not a review. The orchestrator applies that text verbatim, commits it (`git-strategy.md` "Commit before review") and appends one decisions-log line.
 
 **Where the fix happens:**
 - **design-review** — the creator (asd-ba / asd-ux / asd-architect) autofixes within the loop; iteration advances.
