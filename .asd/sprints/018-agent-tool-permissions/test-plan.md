@@ -20,15 +20,15 @@ were scoped through; the next re-entry's delta is `git diff <this sha>...HEAD`.
 | 4 | 7d16856 | delta since entry 3 |
 | 5 | b986d17 | delta since entry 4 |
 | 6 | 0fcc88c | delta since entry 5 |
+| 7 | | delta since entry 6 |
 
 ## Risk → check decisions
 
-Entry 6 (delta since entry 5: `git diff b986d17...HEAD`, review-fix round 4: dev d62412e, 104feda). Impacted set: the **full suite**. The safety valve fires because the delta touches `review-policy.md` and `release-manifest.json`.
+Entry 7 (delta since entry 6: `git diff 0fcc88c...HEAD`, the D-3 test-fix: cee9c09 plus bookkeeping f005259). Impacted set: the **full suite**. The safety valve fires because the delta touches `sprint-lifecycle.md` and `release-manifest.json`.
 
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
-| d62412e: a reviewer's out-of-policy refusal becomes a finding at the dispatch payload, which its question names (`review-policy.md` carrier) | the clause is deleted, and the two pinned rules "a reviewer refuses via its carrier" (providers.md) and "no finding, no question" contradict each other: the refusal can no longer reach the user | static | add (carriers test) | Some sentence of the carrier must cite `providers.md` "Declared tool policy" and name a finding. It relates two pinned sites instead of pinning a phrase |
-| 104feda: aggregation steps read `verdicts["iter-NN"]` "alone, except per … User-resolved findings"; DoD table header admits a user-resolved verdict | a consumer that reads verdicts alone treats a user-resolved CONCERNS/FAIL as blocking forever (external iter-04 #2, high) | static | add (user-resolved test); **red at HEAD → D-3** | Keyed on the claim, not on a hand list of consumers: every canon/README line saying a consumer reads `verdicts["iter-NN"]` alone must carry the user-resolved exception. It also finds `sprint-lifecycle.md` "APPROVE latch" **Invariant** ("DoD or pr-gate aggregation; both read `verdicts["iter-NN"]` alone"), which states the same verdicts-only read with no exception. That is the same class as the fixed workflow lines, not reached by 104feda → D-3. This assert sits last in its test, so the checks before it keep guarding while D-3 is open. Also pinned: the DoD table header cites `sprint-lifecycle.md` "State recovery" for user-resolved verdicts, and the pr gate (the other gating consumer) judges satisfied per "State recovery" |
+| cee9c09: `sprint-lifecycle.md` "APPROVE latch" **Invariant** now reads verdicts "alone, except per "State recovery" "User-resolved findings"" (D-3 fix) | the carve-out is dropped again, and the latch invariant goes back to saying DoD/pr-gate read verdicts alone | static | none | Already pinned by entry 6's verdict-only sweep (rotated `test-plan.entry-06.md`). Re-proven on the fix: `sprint-lifecycle.md` reverted to `cee9c09~1` (`MUT=./mut8.js node <scratchpad>/mutate.js`, restored with a byte compare) → exit 1, 227/229, `sprint-018 AC-4: a finding the user resolves without a fix …` fails on "AC-4 (104feda): a line saying a consumer reads verdicts["iter-NN"] alone must carry the user-resolved exception". A new test would duplicate that assertion |
 | `release-manifest.json` hash refresh | stale ledger | static | keep | The existing `upstream_hashes` and `canon_hashes` tests pass |
 
 ## Removed tests
@@ -38,20 +38,18 @@ Entry 6 (delta since entry 5: `git diff b986d17...HEAD`, review-fix round 4: dev
 
 ## Added tests
 
-Mutations were run with `MUT=./mut7.js node <scratchpad>/mutate.js`: a `git show <sha>~1` revert or an anchor-exact edit, restored in `finally` with a byte compare. `upstream_hashes` noise is not listed; every mutation run exited 1.
+None this entry: the D-3 fix is guarded by entry 6's assertion, re-proven above.
 
 | Test | Regression proof |
 |---|---|
-| tests/run.js:`sprint-018 AC-4/AC-5/AC-7: a reviewer's question and External Review's stalemate …` (refusal clause) | V1: `review-policy.md` reverted to `d62412e~1` → exit 1, "AC-4/AC-5: a reviewer's out-of-policy refusal must become a finding the carrier question names" |
-| tests/run.js:`sprint-018 AC-4: a finding the user resolves without a fix is recorded by one resolved: line form …` (verdict-only sweep, DoD header, pr gate) | fail-first at HEAD b343e5a (D-3): "AC-4 (104feda): a line saying a consumer reads verdicts["iter-NN"] alone must carry the user-resolved exception", actual list holding the one `.asd/rules/sprint-lifecycle.md` line "… both read `verdicts["iter-NN"]` alone …". V2/V3: design-review / impl-review reverted to `104feda~1` → exit 1, same assert, whose actual list gains that workflow's aggregation line beside the D-3 line; V4: DoD header carve-out removed → "AC-4: the DoD table says what counts as met, so it must admit a user-resolved verdict with its home" (V1's full revert also hits it); V5: pr step 1 citation changed to "APPROVE latch" → "AC-4: the pr gate, the other gating consumer, must judge satisfied-vs-blocking per State recovery" |
 
 ## Suite run
 
 - Command: `node tests/run.js`
-- Scope: impacted = full (safety valve: the delta touches `review-policy.md` and `release-manifest.json`)
-- Result: fail — 228/229 passed, 1 failed, 0 skipped (exit 1). The one failure is code defect D-3 below: an assertion this entry added, red because canon lacks the contract. The pre-strategy run (step 3) was 229/229, exit 0
+- Scope: impacted = full (safety valve: the delta touches `sprint-lifecycle.md` and `release-manifest.json`)
+- Result: pass — 229/229 passed, 0 failed, 0 skipped (exit 0), at both the pre-strategy run (step 3) and the suite gate (step 8). This entry changed no test code
 - Lint / build: pass — `git diff --check` exit 0; `node .asd/sync.js --check` exit 0, `"ok": true`
-- HEAD: b343e5a, worktree carrying this entry's uncommitted `tests/run.js` assertions; they land in the commit that records this run
+- HEAD: 2b343aa
 
 ## Defects
 
