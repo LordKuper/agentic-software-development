@@ -52,7 +52,7 @@ it, so it fails in both directions while reporting coverage. Assert the *substan
 instead — for a declaration, the carve-out it now names plus the pointer to the rule that owns the
 excluded surface (a pointer is the one machine-decidable property of a declaration here). A prose claim
 about config is even better: bind it to the config (`claude.memory === 'project'` for a body that cites
-its own `memory: project` grant) — that is a fact, not a phrasing.
+its own `memory: project` grant, per `artifact-layout.md` "Agent memory") — that is a fact, not a phrasing.
 
 **Why:** sprint 010 entry 7. The dev flagged qualifier presence as the only checkable new fact; it was
 not, and the qualifier form would have reddened the very next legitimate rewrite of that paragraph.
