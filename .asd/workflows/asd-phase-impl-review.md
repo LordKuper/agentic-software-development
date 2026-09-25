@@ -54,7 +54,7 @@ Orchestration body for the `asd-phase-impl-review` skill. Operation-mapping to h
      - parse FAIL findings; group by escalation cause (concept / requirement / contract change; new abstraction; scope expansion; complexity increase)
      - request user decision in `language.chat`: present each FAIL using Complication Approval format from `core.md`; collect decisions
      - External Review's stalemate FAIL (`Stalemate:` block, `external-review.md` "Stalemate detection") → request user decision; options and routing per that section, instead of the accept/override bullets below
-     - on override → mark that finding resolved (no fix needed); exclude from fix set
+     - on override → record that finding resolved (`sprint-lifecycle.md` "State recovery" user-resolved findings); exclude from fix set
      - on accept → keep finding in fix set; note approved change in its reviewer file
      - then continue to routing step below with surviving findings
    - **Any unresolved finding remains** (CONCERNS findings, FAIL findings user accepted for fix, and any closed-wave late finding admitted at step 7a) → route to impl review-fix mode (the sprint returns here via impl-test, re-entering wave K) — the terminal suite gate (step 9) is skipped, reviewer DoD was not met:
@@ -69,7 +69,7 @@ Orchestration body for the `asd-phase-impl-review` skill. Operation-mapping to h
 10. Iteration cap reached (wave K's next iteration would exceed all severity-tier budgets per `review-policy.md`; the cap is per wave) — checked when step 8 would route to impl review-fix mode:
     - request user decision: override cap and continue / accept current findings / abort sprint
     - on override → route to impl review-fix mode; the orchestrator sets `review_fixes_pending` = `<id>` inline.
-    - on accept → wave K's roster met by cap-accept → as step 8's roster-met branch (next wave, or step 9 when K = n); the COMPLETED note folds in "iteration cap reached in wave K, user accepted"
+    - on accept → record every open finding resolved (`cap-accept`, same home); wave K's roster met by cap-accept → as step 8's roster-met branch (next wave, or step 9 when K = n); the COMPLETED note folds in "iteration cap reached in wave K, user accepted"
     - on abort → emit ABORT
 11. Any reviewer or `asd-tester` FAILED / ABORT → relay, halt; `asd-tester` `QUESTION` → per `sprint-lifecycle.md`'s `QUESTION` protocol; a reviewer never returns a bare `QUESTION` (step 8)
 12. On `ADVICE_NEEDED` from any dispatched agent → relay per `sprint-lifecycle.md`'s `ADVICE_NEEDED` protocol; execution resumes, no halt.

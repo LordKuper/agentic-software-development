@@ -95,7 +95,7 @@ Phase skill supplies the finding set of the latest earlier verdict iteration —
 
 If two consecutive verdict iterations produce an identical issue set (same files, lines, messages), the agent returns a verdict ("Outcome contract"): first line `[REVIEW-<phase>-external]: FAIL`, plus a `Stalemate: <N> iterations, identical findings` block (`t_review-report.md` `## Stalemate`). The orchestrator asks the user (`core.md` "Request user decision") and applies the choice to the stalemated findings; the review workflows' generic FAIL accept/override bullets do not apply:
 
-- **stop** — accept the current state: the findings are marked resolved without fix, and routing continues with the rest
+- **stop** — accept the current state: the orchestrator records the findings resolved without fix (`sprint-lifecycle.md` "State recovery" user-resolved findings), and routing continues with the rest
 - **continue fixing** — the findings stay in the fix set: impl-review routes them to review-fix, design-review to the creator fix and the next iteration
 - **abort** — emit ABORT
 
