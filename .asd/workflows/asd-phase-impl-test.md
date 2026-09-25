@@ -12,7 +12,7 @@ Orchestration body for the `asd-phase-impl-test` skill. Operation-mapping to hos
 - run command: change-surface diff; `commands.yaml` `test`/`lint`/`build`, impacted-scoped (`sprint-lifecycle.md` "Impacted test set") for the pre-strategy run and the suite gate alike
 - write `state.json` and decisions-log inline for mechanical phase work; on an accept-as-debt answer (step 9), `test-plan.md` `Defects` status edits and `.asd/project/stubs.md` registrations
 - request user decision: out-of-scope test removal gate; escalation
-- delegate one live `asd-tester` instance for the whole phase (pre-strategy run, strategy, prune/author and suite run); recover from on-disk evidence only after session loss
+- delegate one fresh `asd-tester` instance per entry, live across that entry's steps (pre-strategy run, strategy, prune/author and suite run) and never resumed into a later entry — `test-plan.md` is the only hand-off (`sprint-lifecycle.md` "Impl-test phase"); recover from on-disk evidence only after session loss
 - append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log"
 
 ## Execution mode
@@ -27,7 +27,7 @@ No user gate on a green impacted-set run, and none on routing defects back to im
 
 ## Workflow
 
-1. Read `.asd/project/config.yaml` (`language.chat`, `language.docs`, `backward_compat`, `self_hosting`), `<sprint>/state.json` → write `phase=impl-test` inline (mechanical, no gate). Check `<sprint>/test-plan.md` for an `Entry log` with a prior row: none → this is **entry 1** (first entry this sprint); a prior row exists → this is a **re-entry**, and its `HEAD analysed` is `<prior-sha>`. A last row with an empty `HEAD analysed` is the **interrupted current entry** (e.g. a stalemate halt) — resume it: keep its row (step 4 appends none), take `<prior-sha>` from the row before it (none → entry 1, amended not rewritten), never re-append its `D-N` rows; when they exist and a current answer (step 9) names their digest, go straight to step 9's current-answer branch
+1. Read `.asd/project/config.yaml` (`language.chat`, `language.docs`, `backward_compat`, `self_hosting`), `<sprint>/state.json` → write `phase=impl-test` inline (mechanical, no gate). Check `<sprint>/test-plan.md` for an `Entry log` with a prior row: none → this is **entry 1** (first entry this sprint); a prior row exists → this is a **re-entry**, and its `HEAD analysed` is `<prior-sha>`. A last row with an empty `HEAD analysed` is the **interrupted current entry** (e.g. a stalemate halt) — resume it: keep its row (step 4 appends none), take `<prior-sha>` from the row before it (none → entry 1, amended not rewritten), never re-append its `D-N` rows; when they exist and a current answer (step 9) names their digest, go straight to step 9's current-answer branch. Entry 1 of a sprint that removes a mechanism or term also runs the leftover-term check `artifact-layout.md` "Agent memory" requires, in the strategy pass (step 4)
 1a. Route Tester work through `node .asd/runtime.js route-task --input <path>` and persist its result. `execution="command"` runs directly; `execution="agent"` dispatches `asd-tester-<tier>` for `mechanical`/`critical`, or the base `asd-tester` for `tier: standard` (no `-standard` variant exists — `providers.md` "Task-class variants and routing"). Persist `state.json.task_routing[taskId]` per `providers.md`; reuse its tier on re-entry. Append the decisions-log routing line `- YYYY-MM-DD — route <taskId>: <tier>, dispatch HEAD <sha>` (`git rev-parse HEAD`) at each tester dispatch. A risk declared against the change and a failed objective check after one correction are critical and never later downgraded.
 2. **Change surface**:
    - **Entry 1**: run command for `git diff <git.base_branch>...HEAD --stat <pathspec>` plus file list, the pathspec excluding the impl-review row's exclusions (`.asd/rules/external-review.md` "Phase-scoped payload" — consumer default excludes `.asd/**`/`docs/**`; `self_hosting: enabled` includes the whole repo minus `.asd/project/**`/`.asd/sprints/**`/generated views). This is the **full change surface**
@@ -71,7 +71,7 @@ Delta scoping, amend-not-rewrite, the suite-gate rule and its bounded risk: `spr
 - decisions-log entry on green impacted run or defect routing
 
 ## Agents delegated to
-- One live `asd-tester` (pre-strategy, strategy, prune/author, suite); after session loss re-dispatch from disk evidence
+- One fresh `asd-tester` per entry (pre-strategy, strategy, prune/author, suite), never resumed across entries; after session loss re-dispatch from disk evidence
 - No orchestration dispatch — state/log writes are inline.
 - No reviewers — test quality is judged in impl-review by `asd-reviewer-testing`
 
