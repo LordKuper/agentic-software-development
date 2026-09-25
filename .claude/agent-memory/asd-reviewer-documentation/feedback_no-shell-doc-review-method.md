@@ -1,6 +1,6 @@
 ---
 name: no-shell-doc-review-method
-description: How documentation review runs in this framework repo - no shell, manifest-driven ledger vocabulary (emitter-produced list plus one fingerprint-named .diff, review-policy.md "Scope hand-off"), and the defect shapes that actually pay off (acting-site scope contradicting the cited SSoT, partial mirror updates when a rule gains a trigger, sole-home claims wider than the code, authority bounds narrower than their only instance, a fix narrowing code while the file's second description of it stays wide, new failure branches missing from an exhaustive blocker list, a new record-and-carry rule bound only on its read side, new in-body `// ponytail:` comments in Node sources, README FAQ answers left stale by a new feature, and agent-memory claims stale at HEAD or contradicting the writer's definition)
+description: How documentation review runs in this framework repo - no shell, manifest-driven ledger vocabulary (emitter-produced list plus one fingerprint-named .diff, review-policy.md "Scope hand-off"), and the defect shapes that actually pay off (acting-site scope contradicting the cited SSoT, partial mirror updates when a rule gains a trigger, sole-home claims wider than the code, authority bounds narrower than their only instance, a fix narrowing code while the file's second description of it stays wide, new failure branches missing from an exhaustive blocker list, a new record-and-carry rule bound only on its read side, a duty moved off an agent onto "the orchestrator" with no acting site, new in-body `// ponytail:` comments in Node sources, README FAQ answers left stale by a new feature, and agent-memory claims stale at HEAD or contradicting the writer's definition)
 metadata:
   type: feedback
 ---
@@ -28,6 +28,9 @@ current `reviews/impl/wave-<K>/iter-NN/` (design: `reviews/design/iter-NN/`), an
 - **Acting-site scope vs cited SSoT.** A rule doc's branch and its binding in `.asd/workflows/asd-phase-*.md`
   must agree on *reach* and on quoted literals (015: scope step 3a's log line drops the SSoT's `<doc>`;
   the test only checks the substring). Read the step header, not only the bullet.
+- **A duty moved off an agent needs a new acting site.** "Never run X — the orchestrator runs it" is only
+  true if a workflow/skill step says so; grep X across workflows and skills (018 iter-02: UX lost
+  `designmd-install`, no design workflow or `asd-design-system` step picked it up).
 - **A rule gaining a second trigger/site leaves unnamed mirrors stale.** Grep the old attribution phrase
   across the whole phase's files - sibling steps AND the skill `description` (always-loaded, in no
   manifest). Valid under the change-surface exception (change made unchanged text wrong).
@@ -55,6 +58,8 @@ current `reviews/impl/wave-<K>/iter-NN/` (design: `reviews/design/iter-NN/`), an
   the dispatch that finds it, not raised. A memory line is in Documentation economy's Reach. A sibling
   memory written in the same diff range as a code fix often cites the defect that range already fixed
   (015 iter-02: testing memory vs the run.js AC-7 message) - check each memory "re-read X" against the diff.
+  When a rule changes, grep ALL `.claude/agent-memory/` for the old wording: a sibling memory outside the
+  manifest list stays stale (018: correctness memory kept "return `QUESTION`") - pass it on as a note only.
 - The documentation-economy preserve-list keeps per-case tables whole: a logically subsumed clause in a
   table row is not a cut candidate.
 - The session-start AGENTS.md/CLAUDE.md snapshot in context can predate the branch's last sync - grep the

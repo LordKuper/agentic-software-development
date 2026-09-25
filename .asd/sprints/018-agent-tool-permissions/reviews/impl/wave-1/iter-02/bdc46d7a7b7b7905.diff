@@ -1,0 +1,150 @@
+diff --git a/.asd/sprints/018-agent-tool-permissions/test-plan.entry-02.md b/.asd/sprints/018-agent-tool-permissions/test-plan.entry-02.md
+new file mode 100644
+index 0000000..b4035da
+--- /dev/null
++++ b/.asd/sprints/018-agent-tool-permissions/test-plan.entry-02.md
+@@ -0,0 +1,31 @@
++# Test plan — entry 2 (rotated segment)
++
++Rotated from `test-plan.md` at entry 3's strategy pass (`artifact-layout.md` "Test plan" rotation). Includes the review-fix wave-1/iter-01 rows recorded while entry 2 was live. A cross-span reader reads this segment in ordinal order, then the live file.
++
++## Risk → check decisions
++
++Entry 2 (delta since entry 1: `git diff 6c9d8d7...HEAD`). Impacted set: the **full suite**. The safety valve still fires because the delta touches `providers.md` (every agent's host mapping) and `release-manifest.json`.
++
++| Change | Material risk | Chosen check | Decision | Reason |
++|---|---|---|---|---|
++| `providers.md` "Declared tool policy" D-1 fix (0533ef8) | the reviewer carve-out is dropped or reworded out of the refusal line, and a reviewer goes back to returning a bare `QUESTION` | static | none | The entry-1 carriers test already pins it (rotated `test-plan.entry-01.md`). Re-proven on the fix itself: the line reverted to `0533ef8~1` → exit 1, `sprint-018 AC-4/AC-5/AC-7: a reviewer's question and External Review's stalemate …` fails first on "AC-4/AC-5: the out-of-policy refusal must route a reviewer through its question carrier". A new test would duplicate that assertion |
++| `asd-phase-audit.md` step 3c D-2 fix (4df9bf4) | the audit workflow loses its `QUESTION` branch, or the branch goes back to relay-halt | static | none | Pinned twice by the entry-1 orchestrator-only test: the dispatcher-citation assert, and the `QUESTION … →` clause sweep, which now reaches step 3c's arrow clause. Re-proven on the fix itself: the file reverted to `4df9bf4~1` → exit 1, `sprint-018 AC-4/AC-5/AC-7: only the main orchestrator prompts the user …` fails on "AC-7: every workflow dispatching a role that can return QUESTION must cite the QUESTION protocol" |
++| `release-manifest.json` hash refresh | stale ledger after the two canon edits | static | keep | The existing `upstream_hashes` and `canon_hashes` tests cover it; they pass at dd8f6ba |
++| review-fix wave-1/iter-01 `testing.md TST-1-1`: `providers.md` "Declared tool policy" carve-out | the entry-2 `none` row above over-claimed. The pin checked only the citation, so a reword like `(see review-policy.md …)` stayed green while the line again sent reviewers to a bare `QUESTION` | static | add (supersedes the entry-2 D-1 row's claim) | The carriers test now requires one clause (split on `.`/`;`/` — `) that names the reviewer **and** cites `review-policy.md` "Gate Verdict Format". This checks the relation, not a phrase: rewording R3 (the carve-out rewritten as its own `;` clause) stays green |
++| review-fix wave-1/iter-01 `testing.md TST-1-2`: BA/UX `Run command:` allowlist half (AC-8) | a line widened to "any command; never …" still passed, because only the never-half was pinned; UX's old `designmd-*` glob reached `designmd-install`, which writes `package.json`/lockfile (dev fix 009f2e8) | static | add (sprint-015 test, BA/UX loop) | Each line needs ≥1 backticked command in an `only` clause that is not a `never` clause. That allowlist must not cover (literally or by a `*` glob) any command its own body says `Never run` — two derived sites, not a pinned command list |
++| review-fix wave-1/iter-01 correctness 2 / dev 0ae55c7: External Review stalemate options renamed to stop / continue fixing / abort, defined once in `external-review.md` "Stalemate detection"; new `## Stalemate` section in `t_review-report.md` | the old pin (`accept as-is`/`override`/`abort` in each workflow) was red by intent; the emitters (agent trigger, report template) drift from the home | static | keep (rewritten in place, carriers test) | The options are derived from the home's bold bullets (exactly 3, each with an effect). The agent trigger and the template's `Stalemate:` line must list exactly those options. The template section and both workflows' stalemate lines cite the home, and the workflows no longer restate option names |
++
++## Removed tests
++
++| Test | Reason | In change scope |
++|---|---|---|
++
++## Added tests
++
++Entry 2 added none: both fixes are guarded by assertions added in entry 1, and each fix was re-proven by reverting the fix commit (`node <scratchpad>/mutate.js F1|F2`, a `git show <sha>~1:<file>` revert restored in `finally` with a byte compare; the worktree was clean of canon edits afterwards). The rows below are review-fix wave-1/iter-01, proved the same way (`MUT=./mut2.js node <scratchpad>/mutate.js`).
++
++| Test | Regression proof |
++|---|---|
++| tests/run.js:`sprint-018 AC-4/AC-5/AC-7: a reviewer's question and External Review's stalemate …` (TST-1-1 clause assert) | T1a: carve-out reworded to `(see review-policy.md "Gate Verdict Format")` → exit 1, "AC-4/AC-5 (TST-1-1): one clause must name the reviewer and route it to its carrier home"; F1 re-recorded: `providers.md` reverted to `0533ef8~1` → exit 1, same test, same message. Rewording R3 → only the `upstream_hashes` noise failed; this test stayed green |
++| tests/run.js:`sprint-015 AC-1/AC-6/AC-7/AC-8/AC-10/AC-12: …` (TST-1-2 allowlist asserts) | T2a: BA line widened to `Run command: any command; never …` → exit 1, "sprint-018 AC-8 (TST-1-2): asd-ba's Run command line must name the commands it may run under an "only" scope"; T2b: UX allowlist restored to `designmd-*` (second loop member) → exit 1, "sprint-018 AC-8: asd-ux's Run command allowlist must not reach a command its own body says never to run" |
++| tests/run.js:`sprint-018 AC-4/AC-5/AC-7: a reviewer's question and External Review's stalemate …` (stalemate options re-pinned to the home) | S1: `abort` bullet removed from the home → exit 1, "AC-4: "Stalemate detection" is the one home of the stalemate options, each with its effect - got ["stop","continue fixing"]"; S2: template options set back to accept as-is/override/abort → "AC-4: the Stalemate block the report template renders must offer exactly the options external-review.md defines"; S3: same drift in the agent trigger → "AC-4: External Review's stalemate trigger must offer exactly the options"; S6: template citation dropped → "AC-4: the report template's Stalemate section must point at the options' home"; S4/S5: citation dropped from the design-review / impl-review stalemate line → "AC-4: .asd/workflows/asd-phase-design-review.md must recognise External Review's Stalemate block, ask the user and take the options from their home" (and the impl-review message for S5). All exit 1 |
+diff --git a/.asd/sprints/018-agent-tool-permissions/test-plan.md b/.asd/sprints/018-agent-tool-permissions/test-plan.md
+index 844a5c4..8b6d2ef 100644
+--- a/.asd/sprints/018-agent-tool-permissions/test-plan.md
++++ b/.asd/sprints/018-agent-tool-permissions/test-plan.md
+@@ -16,16 +16,18 @@ were scoped through; the next re-entry's delta is `git diff <this sha>...HEAD`.
+ |---|---|---|
+ | 1 | 6c9d8d7 | full change surface |
+ | 2 | 67cc9a8 | delta since entry 1 |
++| 3 | 0bd998c | delta since entry 2 |
+ 
+ ## Risk → check decisions
+ 
+-Entry 2 (delta since entry 1: `git diff 6c9d8d7...HEAD`). Impacted set: the **full suite**. The safety valve still fires because the delta touches `providers.md` (every agent's host mapping) and `release-manifest.json`.
++Entry 3 (delta since entry 2: `git diff 67cc9a8...HEAD`, the review-fix wave-1/iter-01 round). Impacted set: the **full suite**. The safety valve fires because the delta touches `sync.js`, `review-policy.md`, `sprint-lifecycle.md` and `release-manifest.json`. Most of the delta is already pinned by bd266c7: stalemate options, UX allowlist and the providers carve-out (rotated `test-plan.entry-02.md`).
+ 
+ | Change | Material risk | Chosen check | Decision | Reason |
+ |---|---|---|---|---|
+-| `providers.md` "Declared tool policy" D-1 fix (0533ef8) | the reviewer carve-out is dropped or reworded out of the refusal line, and a reviewer goes back to returning a bare `QUESTION` | static | none | The entry-1 carriers test already pins it (rotated `test-plan.entry-01.md`). Re-proven on the fix itself: the line reverted to `0533ef8~1` → exit 1, `sprint-018 AC-4/AC-5/AC-7: a reviewer's question and External Review's stalemate …` fails first on "AC-4/AC-5: the out-of-policy refusal must route a reviewer through its question carrier". A new test would duplicate that assertion |
+-| `asd-phase-audit.md` step 3c D-2 fix (4df9bf4) | the audit workflow loses its `QUESTION` branch, or the branch goes back to relay-halt | static | none | Pinned twice by the entry-1 orchestrator-only test: the dispatcher-citation assert, and the `QUESTION … →` clause sweep, which now reaches step 3c's arrow clause. Re-proven on the fix itself: the file reverted to `4df9bf4~1` → exit 1, `sprint-018 AC-4/AC-5/AC-7: only the main orchestrator prompts the user …` fails on "AC-7: every workflow dispatching a role that can return QUESTION must cite the QUESTION protocol" |
+-| `release-manifest.json` hash refresh | stale ledger after the two canon edits | static | keep | The existing `upstream_hashes` and `canon_hashes` tests cover it; they pass at dd8f6ba |
++| `review-policy.md` "Reviewer question carrier": an open question means at least `CONCERNS` (4afdbb4) | a reviewer with an open question returns `APPROVE`, gets latched, and the question never reaches a fix route. The rule states this failure mode itself, and nothing pinned the sentence | static | add (carriers test) | Some sentence of the carrier paragraph must hold `CONCERNS`, `APPROVE` and `never` together, checked per token so it is not a phrase pin (rewording R4 stays green). The workflows' "(such a report is at least CONCERNS, per that carrier)" is a pointer back to this home, so it is not pinned separately |
++| `sprint-lifecycle.md` ADVICE_NEEDED steps 4/6 reviewer carve-out (5746479) | a reviewer whose advisor consult ends in gate uncertainty returns a bare `QUESTION`, read as an interrupted dispatch. This is the D-1 class a second time | static | add (carriers test, sweep) | Every `.asd/rules/*.md` line where an agent "returns `QUESTION`" must carve out the reviewer to its carrier on the same line. Scoped to rule docs because they apply to every role; workflow and agent lines are role-specific (for example the UX token `QUESTION` in `asd-phase-design.md`). This covers core.md, providers.md and ADVICE steps 4/6 today, and any new generic line automatically |
++| `sync.js` in-body comment removed (682f4f7) | none — comment-only | — | none | No behaviour changed. The `web_search` validation and render tests (rotated `test-plan.entry-01.md`) pass unchanged |
++| BA/UX/Architect web search scope, README, dev memory (d802f2c, f590a76) | a web grant loses its scoped policy line | static | keep | The entry-1 grants test still requires a web/URL policy bullet on every web-granted agent. README is prose owned by the documentation reviewer (entry-1 `none`). Agent memory is not canon |
+ 
+ ## Removed tests
+ 
+@@ -34,18 +36,20 @@ Entry 2 (delta since entry 1: `git diff 6c9d8d7...HEAD`). Impacted set: the **fu
+ 
+ ## Added tests
+ 
+-None this entry. Both fixes are guarded by assertions added in entry 1, and each fix was re-proven by reverting the fix commit (`node <scratchpad>/mutate.js F1|F2`, a `git show <sha>~1:<file>` revert restored in `finally` with a byte compare; the worktree was clean of canon edits afterwards).
++Mutations were run with `MUT=./mut3.js node <scratchpad>/mutate.js`: one anchor-exact edit or a `git show <sha>~1` revert, restored in `finally` with a byte compare. `upstream_hashes` noise is not listed.
+ 
+ | Test | Regression proof |
+ |---|---|
++| tests/run.js:`sprint-018 AC-4/AC-5/AC-7: a reviewer's question and External Review's stalemate …` (at-least-CONCERNS assert) | C1: the carrier's CONCERNS sentence deleted → exit 1, "AC-4: a reviewer holding an open question returns at least CONCERNS, never APPROVE". Rewording R4 ("keeps a reviewer's verdict at `CONCERNS` or worse - it may never be `APPROVE`") → only `upstream_hashes` failed; this test stayed green |
++| tests/run.js:`sprint-018 AC-4/AC-5/AC-7: a reviewer's question and External Review's stalemate …` (generic returns-QUESTION sweep) | C2: `sprint-lifecycle.md` reverted to `5746479~1` (the fix commit) → exit 1, "AC-4/AC-5: a rule line telling any agent to return QUESTION reaches reviewers too, so it must carve them out to their carrier on the same line"; C3: only step 6's carve-out removed (a later line than step 4) → exit 1, same message |
+ 
+ ## Suite run
+ 
+ - Command: `node tests/run.js`
+-- Scope: impacted = full (safety valve: the delta touches `providers.md` and `release-manifest.json`)
+-- Result: pass — 228/228 passed, 0 failed, 0 skipped (exit 0). Same count at the pre-strategy run (step 3) and at the suite gate (step 8); this entry changed no test code in between
++- Scope: impacted = full (safety valve: the delta touches `sync.js`, `review-policy.md`, `sprint-lifecycle.md` and `release-manifest.json`)
++- Result: pass — 228/228 passed, 0 failed, 0 skipped (exit 0), both at the pre-strategy run (step 3, before the two new assertions) and at the suite gate (step 8, with them). The count is unchanged because the assertions went into an existing test
+ - Lint / build: pass — `git diff --check` exit 0; `node .asd/sync.js --check` exit 0, `"ok": true`
+-- HEAD: dd8f6ba
++- HEAD: 802cf24, worktree carrying this entry's uncommitted `tests/run.js` assertions; they land in the commit that records this run
+ 
+ ## Defects
+ 
+diff --git a/tests/run.js b/tests/run.js
+index 4fcdd59..de2e2d5 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -5483,6 +5483,12 @@ test('sprint-015 AC-1/AC-6/AC-7/AC-8/AC-10/AC-12: no canon tells anyone to clear
+     assert.ok(runCommand.some((clause) => /\bnever\b/.test(clause) && /\bartifact\b/.test(clause)), `sprint-018 AC-8: ${name}'s shell is bounded by its Run command policy line, which must forbid writing an artifact through it (providers.md write-a-file rule)`);
+     assert.ok(runCommand.some((clause) => /\bnever\b/.test(clause) && /\bgit write\b/.test(clause)), `AC-6/sprint-018 AC-8: ${name}'s Run command line must forbid git writes - holding Bash, its renames and deletions still route through the orchestrator`);
+     assert.ok(runCommand.some((clause) => /\borchestrator\b/.test(clause) && /\brenames?\b/.test(clause)), `AC-6/sprint-018 AC-8: ${name}'s Run command line must route renames/deletes to the orchestrator`);
++    const allowClauses = runCommand.filter((clause) => /\bonly\b/.test(clause) && !/\bnever\b/.test(clause));
++    const allowed = allowClauses.flatMap((clause) => [...clause.matchAll(/`([^`]+)`/g)].map((match) => match[1]));
++    assert.ok(allowed.length > 0, `sprint-018 AC-8 (TST-1-2): ${name}'s Run command line must name the commands it may run under an "only" scope - a never-list alone leaves every other command open`);
++    const neverRun = [...text.matchAll(/Never run `([^`]+)`/g)].map((match) => match[1]);
++    const covers = (grant, command) => (grant.endsWith('*') ? command.startsWith(grant.slice(0, -1)) : command === grant);
++    assert.deepStrictEqual(allowed.filter((grant) => neverRun.some((command) => covers(grant, command))), [], `sprint-018 AC-8: ${name}'s Run command allowlist must not reach a command its own body says never to run (\`designmd-install\` writes package.json/lockfile)`);
+     assert.ok(text.split('\n').some((line) => line.startsWith('- Never') && /\brename\b/.test(line) && /\bpropos/.test(line)), `AC-6 (P2-2): ${name} proposes a doc rename or deletion in its final text instead of performing it, or design-promote never receives the proposal`);
+   }
+ 
+@@ -5749,6 +5755,10 @@ test('sprint-018 AC-4/AC-5/AC-7: a reviewer\'s question and External Review\'s s
+   const form = carrier && /`(question: [^`]+)`/.exec(carrier);
+   assert.ok(form && carrier.includes('`## Escalations`'), 'AC-4: review-policy.md must state the reviewer question carrier and its Escalations placement');
+   assert.strictEqual(shape(form[1]), shape(templateItem.slice(2)), 'AC-4: the carrier form in review-policy.md and the item t_review.md ships must be one shape, or a workflow parses one and a reviewer writes the other');
++  assert.ok(carrier.split(/(?<=[.;])\s/).some((sentence) => sentence.includes('`CONCERNS`') && sentence.includes('`APPROVE`') && /\bnever\b/.test(sentence)), 'AC-4: a reviewer holding an open question returns at least CONCERNS, never APPROVE - an APPROVE latches the reviewer and the question never reaches a fix route');
++  const genericReturns = fs.readdirSync(path.join(REPO_ROOT, '.asd/rules')).flatMap((file) => canonText(`.asd/rules/${file}`).split('\n').filter((line) => /\breturns `QUESTION`/.test(line)).map((line) => `${file}: ${line}`));
++  assert.ok(genericReturns.length >= 3, 'sanity: the rule-doc lines telling any agent to return QUESTION must be found');
++  assert.deepStrictEqual(genericReturns.filter((line) => !(/\breviewer\b/.test(line) && /\bcarrier\b/.test(line))), [], 'AC-4/AC-5: a rule line telling any agent to return QUESTION reaches reviewers too, so it must carve them out to their carrier on the same line (D-1, then ADVICE_NEEDED steps 4/6 - the class recurs)');
+ 
+   const external = sectionOf('.asd/rules/external-review.md', 'Stalemate detection');
+   const token = /first line `(\[REVIEW-<phase>-external\]: FAIL)`/.exec(external);
+@@ -5756,6 +5766,13 @@ test('sprint-018 AC-4/AC-5/AC-7: a reviewer\'s question and External Review\'s s
+   assert.ok(token && label, 'AC-4: a stalemate returns the FAIL verdict token plus a Stalemate block - a verdict, inside the two-outcome contract');
+   const trigger = canonText('.asd/agents/asd-external-review.md').split('\n').find((line) => line.startsWith('- **Approval triggers**'));
+   assert.ok(trigger && trigger.includes(token[1]) && trigger.includes(`\`${label[1]}`), 'AC-4: External Review\'s stalemate trigger must return the same token and block external-review.md defines');
++  const options = [...external.matchAll(/^- \*\*([a-z ]+)\*\* — \S/gm)].map((match) => match[1]);
++  assert.strictEqual(options.length, 3, `AC-4: "Stalemate detection" is the one home of the stalemate options, each with its effect - got ${JSON.stringify(options)}`);
++  const optionList = (text) => ((/options:? ([a-z /]+?)(?: \(|\.|$)/m.exec(text) || [])[1] || '').split(' / ').map((option) => option.trim());
++  const report = sectionOf('.asd/templates/external-review/t_review-report.md', 'Stalemate');
++  assert.ok(report.includes('`external-review.md` "Stalemate detection"') || report.includes('external-review.md "Stalemate detection"'), 'AC-4: the report template\'s Stalemate section must point at the options\' home');
++  assert.deepStrictEqual(optionList(report.split('\n').find((line) => line.startsWith(label[1])) || ''), options, 'AC-4: the Stalemate block the report template renders must offer exactly the options external-review.md defines');
++  assert.deepStrictEqual(optionList(trigger), options, 'AC-4: External Review\'s stalemate trigger must offer exactly the options external-review.md defines');
+ 
+   for (const rel of ['.asd/workflows/asd-phase-design-review.md', '.asd/workflows/asd-phase-impl-review.md']) {
+     const flow = sectionOf(rel, 'Workflow').split('\n');
+@@ -5767,7 +5784,7 @@ test('sprint-018 AC-4/AC-5/AC-7: a reviewer\'s question and External Review\'s s
+     assert.ok(clauses.some((c) => /\bnever\b/.test(c) && /interrupted/.test(c)), `AC-4: ${rel} must not treat a question-carrying report as an interrupted dispatch`);
+     assert.ok(/request user decision/.test(flow[q]) && /decisions-log/.test(flow[q]), `AC-4: ${rel} asks the user per question and logs the answers`);
+     const stalemate = flow.find((line) => line.includes(`\`${label[1]}\``));
+-    assert.ok(stalemate && /request user decision/.test(stalemate) && ['accept as-is', 'override', 'abort'].every((option) => stalemate.includes(option)), `AC-4: ${rel} must recognise External Review's Stalemate block and ask the user its options`);
++    assert.ok(stalemate && /request user decision/.test(stalemate) && stalemate.includes('`external-review.md` "Stalemate detection"'), `AC-4: ${rel} must recognise External Review's Stalemate block, ask the user and take the options from their home`);
+   }
+ 
+   const collect = sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Workflow').split('\n').find((line) => line.includes('`asd-reviewer-testing`') && /Manual verification/.test(line));
+@@ -5775,7 +5792,8 @@ test('sprint-018 AC-4/AC-5/AC-7: a reviewer\'s question and External Review\'s s
+   assert.ok(sectionOf('.asd/agents/asd-reviewer-testing.md', 'Inputs').split('\n').some((line) => /manual-verification results/.test(line) && /\bpayload\b/.test(line)), 'AC-7: the testing reviewer reads the results from its payload - the consuming end of the collection above');
+ 
+   const declared = sectionOf('.asd/rules/providers.md', 'Role-scoped context').split('\n').find((line) => line.startsWith('**Declared tool policy**'));
+-  assert.ok(declared && declared.includes('`review-policy.md` "Gate Verdict Format"'), 'AC-4/AC-5: the out-of-policy refusal must route a reviewer through its question carrier - "an agent ... returns `QUESTION`" alone makes a reviewer return a bare QUESTION, which reads as an interrupted dispatch');
++  const carveOut = declared && declared.split(/[.;]\s|\s—\s/).find((clause) => /\breviewer\b/.test(clause) && clause.includes('`review-policy.md` "Gate Verdict Format"'));
++  assert.ok(carveOut, 'AC-4/AC-5 (TST-1-1): one clause must name the reviewer and route it to its carrier home - the out-of-policy refusal must route a reviewer through its question carrier - "an agent ... returns `QUESTION`" alone makes a reviewer return a bare QUESTION, which reads as an interrupted dispatch');
+ });
+ 
+ // ===========================================================================
