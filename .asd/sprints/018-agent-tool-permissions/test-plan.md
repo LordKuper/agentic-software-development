@@ -19,16 +19,16 @@ were scoped through; the next re-entry's delta is `git diff <this sha>...HEAD`.
 | 3 | 0bd998c | delta since entry 2 |
 | 4 | 7d16856 | delta since entry 3 |
 | 5 | b986d17 | delta since entry 4 |
+| 6 | | delta since entry 5 |
 
 ## Risk → check decisions
 
-Entry 5 (delta since entry 4: `git diff 7d16856...HEAD`, review-fix round 3: dev e5d36b4, 308c214; no test findings). Impacted set: the **full suite**. The safety valve fires because the delta touches `sprint-lifecycle.md`, `review-policy.md` and `release-manifest.json`.
+Entry 6 (delta since entry 5: `git diff b986d17...HEAD`, review-fix round 4: dev d62412e, 104feda). Impacted set: the **full suite**. The safety valve fires because the delta touches `review-policy.md` and `release-manifest.json`.
 
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
-| e5d36b4: every `question:` names its finding id (`review-policy.md` carrier, `t_review.md`) | the binding is dropped from both sites at once, so an answer again has no finding to ride with. The existing carrier↔template shape comparison catches one side drifting, not both | static | add (carriers test) | The carrier's form must open with a `<…finding…>` placeholder. Together with the existing shape comparison, this pins the template too |
-| 308c214: user-resolved findings (`sprint-lifecycle.md` "State recovery" home; `resolved:` line cited from `external-review.md` stop, both review workflows, `asd-phase-impl.md` step 3) | a resolution with no recording site (override/stop/cap-accept) leaves no `resolved:` line, so review-fix re-fixes the finding or the pr/DoD gate stays blocked on a bare CONCERNS/FAIL; the collector does not skip named findings | static | add (new test) | Everything is derived from the home. The reasons come from its `resolved:` form; the sites are the canon files that cite it; the review workflows are derived by filename. Every reason must have a citing recording site. Each review workflow must record override and `cap-accept`. The impl review-fix collector must name the form's `resolved:` prefix and cite the home. The home must state both effects (skip, satisfied) |
-| 308c214: design-review DoD branch "All APPROVE, latched or user-resolved"; pr-gate "or for a user-resolved entry" | the satisfied semantics are misapplied at a gate | — | none | Both gates aggregate per the home's satisfied-vs-blocking semantics. The home's "satisfied" statement is pinned above, and the branch wording itself is a pointer to it. Checking whether each gate applies it correctly is a runtime judgement with no machine-checkable form here. Owner: the impl-review correctness reviewer |
+| d62412e: a reviewer's out-of-policy refusal becomes a finding at the dispatch payload, which its question names (`review-policy.md` carrier) | the clause is deleted, and the two pinned rules "a reviewer refuses via its carrier" (providers.md) and "no finding, no question" contradict each other: the refusal can no longer reach the user | static | add (carriers test) | Some sentence of the carrier must cite `providers.md` "Declared tool policy" and name a finding. It relates two pinned sites instead of pinning a phrase |
+| 104feda: aggregation steps read `verdicts["iter-NN"]` "alone, except per … User-resolved findings"; DoD table header admits a user-resolved verdict | a consumer that reads verdicts alone treats a user-resolved CONCERNS/FAIL as blocking forever (external iter-04 #2, high) | static | add (user-resolved test); **red at HEAD → D-3** | Keyed on the claim, not on a hand list of consumers: every canon/README line saying a consumer reads `verdicts["iter-NN"]` alone must carry the user-resolved exception. It also finds `sprint-lifecycle.md` "APPROVE latch" **Invariant** ("DoD or pr-gate aggregation; both read `verdicts["iter-NN"]` alone"), which states the same verdicts-only read with no exception. That is the same class as the fixed workflow lines, not reached by 104feda → D-3. This assert sits last in its test, so the checks before it keep guarding while D-3 is open. Also pinned: the DoD table header cites `sprint-lifecycle.md` "State recovery" for user-resolved verdicts, and the pr gate (the other gating consumer) judges satisfied per "State recovery" |
 | `release-manifest.json` hash refresh | stale ledger | static | keep | The existing `upstream_hashes` and `canon_hashes` tests pass |
 
 ## Removed tests
@@ -38,20 +38,20 @@ Entry 5 (delta since entry 4: `git diff 7d16856...HEAD`, review-fix round 3: dev
 
 ## Added tests
 
-Mutations were run with `MUT=./mut6.js node <scratchpad>/mutate.js`: a `git show <sha>~1` revert or an anchor-exact edit, restored in `finally` with a byte compare. `upstream_hashes` noise is not listed; every mutation run exited 1.
+Mutations were run with `MUT=./mut7.js node <scratchpad>/mutate.js`: a `git show <sha>~1` revert or an anchor-exact edit, restored in `finally` with a byte compare. `upstream_hashes` noise is not listed; every mutation run exited 1.
 
 | Test | Regression proof |
 |---|---|
-| tests/run.js:`sprint-018 AC-4/AC-5/AC-7: a reviewer's question and External Review's stalemate …` (finding-id placeholder) | Y1: `review-policy.md` reverted to `e5d36b4~1` → exit 1, "AC-4: every question names the finding it qualifies (no finding, no question)". The new assert sits before the shape comparison, so it fires first |
-| tests/run.js:`sprint-018 AC-4: a finding the user resolves without a fix is recorded by one resolved: line form …` | U1: `sprint-lifecycle.md` reverted to `308c214~1` → exit 1, "the user-resolved record must be defined once, as a line form naming every resolving reason"; U2: `external-review.md` reverted → "resolving reason \"stop\" must be recorded at a site that cites the home"; U3/U4: design-review / impl-review reverted → "… resolves findings without a fix, so it must cite the user-resolved home"; U5: `asd-phase-impl.md` reverted → "impl review-fix must skip each finding a resolved: line names, citing the home"; U6: impl-review cap-accept recording removed (citation left) → "… an iteration-cap accept must record the open findings resolved"; U7: design-review override recording set back to "mark resolved" (citation left elsewhere) → "… a FAIL override must be recorded as resolved"; U8: "skips" → "fixes" in the home → "the home must state both effects". Rewording R5 ("is skipped by the review-fix collector") first reddened the `/\bskips?\b/` check, which exposed a wording lock. It was relaxed to `/\bskip/` before commit, and R5 then left this test green |
+| tests/run.js:`sprint-018 AC-4/AC-5/AC-7: a reviewer's question and External Review's stalemate …` (refusal clause) | V1: `review-policy.md` reverted to `d62412e~1` → exit 1, "AC-4/AC-5: a reviewer's out-of-policy refusal must become a finding the carrier question names" |
+| tests/run.js:`sprint-018 AC-4: a finding the user resolves without a fix is recorded by one resolved: line form …` (verdict-only sweep, DoD header, pr gate) | fail-first at HEAD b343e5a (D-3): "AC-4 (104feda): a line saying a consumer reads verdicts["iter-NN"] alone must carry the user-resolved exception", actual list holding the one `.asd/rules/sprint-lifecycle.md` line "… both read `verdicts["iter-NN"]` alone …". V2/V3: design-review / impl-review reverted to `104feda~1` → exit 1, same assert, whose actual list gains that workflow's aggregation line beside the D-3 line; V4: DoD header carve-out removed → "AC-4: the DoD table says what counts as met, so it must admit a user-resolved verdict with its home" (V1's full revert also hits it); V5: pr step 1 citation changed to "APPROVE latch" → "AC-4: the pr gate, the other gating consumer, must judge satisfied-vs-blocking per State recovery" |
 
 ## Suite run
 
 - Command: `node tests/run.js`
-- Scope: impacted = full (safety valve: the delta touches `sprint-lifecycle.md`, `review-policy.md` and `release-manifest.json`)
-- Result: pass — 229/229 passed, 0 failed, 0 skipped (exit 0) at the suite gate (step 8). The pre-strategy run (step 3) was 228/228, exit 0; this entry added one test
+- Scope: impacted = full (safety valve: the delta touches `review-policy.md` and `release-manifest.json`)
+- Result: fail — 228/229 passed, 1 failed, 0 skipped (exit 1). The one failure is code defect D-3 below: an assertion this entry added, red because canon lacks the contract. The pre-strategy run (step 3) was 229/229, exit 0
 - Lint / build: pass — `git diff --check` exit 0; `node .asd/sync.js --check` exit 0, `"ok": true`
-- HEAD: 03fea36, worktree carrying this entry's uncommitted `tests/run.js` assertions; they land in the commit that records this run
+- HEAD: b343e5a, worktree carrying this entry's uncommitted `tests/run.js` assertions; they land in the commit that records this run
 
 ## Defects
 
@@ -59,3 +59,4 @@ Mutations were run with `MUT=./mut6.js node <scratchpad>/mutate.js`: a `git show
 |---|---|---|---|---|---|---|
 | D-1 | 1 | .asd/rules/providers.md | AssertionError [ERR_ASSERTION]: AC-4/AC-5: the out-of-policy refusal must route a reviewer through its question carrier - "an agent ... returns `QUESTION`" alone makes a reviewer return a bare QUESTION, which reads as an interrupted dispatch | sprint-018 AC-4/AC-5/AC-7: a reviewer's question and External Review's stalemate ride the verdict-bearing report - one carrier form across template, rule, agents and both review workflows - and impl-review collects manual-verification results before dispatching the testing reviewer | fixed | 0533ef8 |
 | D-2 | 1 | .asd/workflows/asd-phase-audit.md | AssertionError [ERR_ASSERTION]: AC-7: every workflow dispatching a role that can return QUESTION must cite the QUESTION protocol, or that question has no handling path in the phase | sprint-018 AC-4/AC-5/AC-7: only the main orchestrator prompts the user - core.md says so, the QUESTION protocol carries every dispatched question, every creator/dev/tester-dispatching workflow cites it, and no agent body, skill or design step hands user contact to a dispatched agent | fixed | 4df9bf4 |
+| D-3 | 6 | .asd/rules/sprint-lifecycle.md | AssertionError [ERR_ASSERTION]: AC-4 (104feda): a line saying a consumer reads verdicts["iter-NN"] alone must carry the user-resolved exception - read literally, it blocks a user-resolved CONCERNS/FAIL forever | sprint-018 AC-4: a finding the user resolves without a fix is recorded by one resolved: line form, every resolving site and the review-fix collector cite its one home, and review-fix skips what it names | pending | |
