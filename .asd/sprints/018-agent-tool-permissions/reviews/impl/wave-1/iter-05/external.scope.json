@@ -1,0 +1,1 @@
+{"phase":"impl-review","iteration":5,"wave":1,"files":[".asd/release-manifest.json",".asd/rules/review-policy.md",".asd/rules/sprint-lifecycle.md",".asd/workflows/asd-phase-design-review.md",".asd/workflows/asd-phase-impl-review.md","tests/run.js"],"diff":".asd\\sprints\\018-agent-tool-permissions\\reviews\\impl\\wave-1\\iter-05\\b7ecb306c135fbf9.diff"}

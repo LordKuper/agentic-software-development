@@ -1,0 +1,114 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 26d20a3..7b53335 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -75,8 +75,8 @@
+     ".asd/rules/git-strategy.md": "8c9d95200eadab373cb6bd29aae85efb08f4a0a15891661ff023f2c04b130091",
+     ".asd/rules/language-policy.md": "e9b488a4cff5ed193208a52324601bede1a41e2512f2a6f06d0660576940f322",
+     ".asd/rules/providers.md": "b786caf04f57647f216f479d4922272cfdff6b586db0e27a8e2ca711b7e72a59",
+-    ".asd/rules/review-policy.md": "be7bd26b500184672681bd407a8f181b5f5c5bee9dba79fbfd2eb876afd822f1",
+-    ".asd/rules/sprint-lifecycle.md": "0de9e4c04879396351b017634202104c53514dd689024137d55351a856f0c4d5",
++    ".asd/rules/review-policy.md": "de277dadd1a21d4beb1b64223e0b2f6a8c08ed856e582a2ed6c455c13dac077e",
++    ".asd/rules/sprint-lifecycle.md": "580e709ada1feee1faa2bd63d7fca2c44d904262baa5c2e62c5752170a1d3348",
+     ".asd/rules/ux-principles.md": "9f2af8c90d969c73654812b80e523e33b4c5696f506acf49e4bacb4c0dc6750c",
+     ".asd/skills/asd-concept/SKILL.md": "9a3cb2331b3aceb4a670d8d0ac94de3808771406036f9ba11dce3239e21cee42",
+     ".asd/skills/asd-design-system/SKILL.md": "9f8153a0f278a1234202771df5118f2228dd4edfd99594c1eeb0536d8d22d07f",
+@@ -131,9 +131,9 @@
+     ".asd/templates/t_ux-spec.html": "4740d0c9219ceaca240aa598aa95cce039d2e6629a63b7801a54769f98f900c5",
+     ".asd/workflows/asd-phase-audit.md": "5aa18709b0367269f9c3cc5f72e9271071603969c79b3081295ed09c3bdc62cd",
+     ".asd/workflows/asd-phase-design-promote.md": "a5b1a583942cacdfecf32a941ab3bff662ec76c76cfd31311f36574cc396881c",
+-    ".asd/workflows/asd-phase-design-review.md": "d2f27e0e957b549387c2bac9b63b580a7985a76ad79927137689391194841256",
++    ".asd/workflows/asd-phase-design-review.md": "687e07e4602df79df722b31515e500062d154f32ed09e57070da0243c48d5421",
+     ".asd/workflows/asd-phase-design.md": "d3204afe13cc91755ba8579fcf949a4dd8d00eab983d4d470236315f9d67a28e",
+-    ".asd/workflows/asd-phase-impl-review.md": "0a96be1d064d793f46f117f287ca98d24bf56e2d6238c244906d51c62c0f9511",
++    ".asd/workflows/asd-phase-impl-review.md": "1e41e229b45430941fde7c7eb432e3372804c0491e51a6037fe2aeed15103960",
+     ".asd/workflows/asd-phase-impl-test.md": "73eba14a5f8b59201aa73e8915b71e85708483b802f831ba4d0f002ca90f5c60",
+     ".asd/workflows/asd-phase-impl.md": "d0784da9c3356d129c72ea259b1d4b114ac7df0be6c45e4a828154608a652eff",
+     ".asd/workflows/asd-phase-plan.md": "43be52c664f4eaf2db293bd8d0e5aa27d03cc696deaf2d3d1ec63e122d7e6052",
+diff --git a/.asd/rules/review-policy.md b/.asd/rules/review-policy.md
+index 7864ba6..54e468e 100644
+--- a/.asd/rules/review-policy.md
++++ b/.asd/rules/review-policy.md
+@@ -151,7 +151,7 @@ Reviewers write no review artifact, code or doc — that is why the phase workfl
+ 
+ Examples: `[REVIEW-impl-correctness]: APPROVE` · `[REVIEW-design-documentation]: FAIL` · `[REVIEW-impl-external]: CONCERNS`
+ 
+-**Reviewer question carrier.** A reviewer never returns a bare `QUESTION` — without the verdict token it reads as an interrupted dispatch ("Interrupted dispatch"). A question needing the user stays in the verdict-bearing report, listed under `t_review.md`'s `## Escalations` as `question: <finding id> — <text>; options: <a> / <b> …`; the review workflow asks the user before routing that iteration and writes each answer into that reviewer's review file directly under its item, as `  answer: <text>` — the fixer reads it as part of that reviewer's finding set. A reviewer holding an open question returns at least `CONCERNS`, never `APPROVE`, so the answer rides with its findings into the fix route and no latch drops it. Every question qualifies one finding of the same report, named by its id — no finding, no question — so an answer always has a finding to ride with.
++**Reviewer question carrier.** A reviewer never returns a bare `QUESTION` — without the verdict token it reads as an interrupted dispatch ("Interrupted dispatch"). A question needing the user stays in the verdict-bearing report, listed under `t_review.md`'s `## Escalations` as `question: <finding id> — <text>; options: <a> / <b> …`; the review workflow asks the user before routing that iteration and writes each answer into that reviewer's review file directly under its item, as `  answer: <text>` — the fixer reads it as part of that reviewer's finding set. A reviewer holding an open question returns at least `CONCERNS`, never `APPROVE`, so the answer rides with its findings into the fix route and no latch drops it. Every question qualifies one finding of the same report, named by its id — no finding, no question — so an answer always has a finding to ride with. A reviewer refusing an out-of-policy instruction (`providers.md` "Declared tool policy") records the refusal as a finding located at the dispatch payload, and its question names that finding.
+ 
+ The dispatching phase workflow writes the verdict token, findings, and the validated compact coverage evidence (above) to `<sprint>/reviews/<phase>/[wave-<K>/]iter-NN/<reviewer>.md`; phase orchestration reads the first non-empty content line of that written file.
+ 
+@@ -183,7 +183,7 @@ Sole owner map: each concern below has exactly one reviewer; agent rubrics hold
+ 
+ ## DoD per review phase
+ 
+-| Phase | Required reviewers (all APPROVE or APPROVE-latched, same iteration; External Review's skip form counts, `external-review.md` "Outcome contract") |
++| Phase | Required reviewers (all APPROVE or APPROVE-latched, same iteration; External Review's skip form counts, `external-review.md` "Outcome contract"; so does a user-resolved verdict, `sprint-lifecycle.md` "State recovery") |
+ |---|---|
+ | design-review | Correctness, Efficiency, Documentation — dispatched for any non-empty draft set unless APPROVE-latched (below); Correctness's UI rubric section is `n/a: outside phase gate` when no ux-spec/design-system artifact is in scope; External Review (if enabled) |
+ | impl-review | Correctness, Efficiency, Documentation, Testing — dispatched unless APPROVE-latched (below); External Review (if enabled) — met in every review wave, in order (`sprint-lifecycle.md` "Review iteration counters") |
+diff --git a/.asd/rules/sprint-lifecycle.md b/.asd/rules/sprint-lifecycle.md
+index e242194..113d7b2 100644
+--- a/.asd/rules/sprint-lifecycle.md
++++ b/.asd/rules/sprint-lifecycle.md
+@@ -68,7 +68,7 @@ Verdict files: design-review → `<sprint>/reviews/design/iter-NN/`, impl-review
+ 
+ In impl-review, `reviews.<phase>.<field>` below means the current wave node's (`reviews.impl.waves[K-1]`, "Review iteration counters"); "same phase" means same wave, and a new wave starts unlatched.
+ 
+-**Invariant**: a reviewer's key is ALWAYS written to `state.json.reviews.<phase>.verdicts["iter-NN"]` for every iteration of that phase that runs. A latch-skipped reviewer gets its inherited `APPROVE` recorded there without being dispatched. `latched` is purely a dispatch-time optimisation — it decides whether a reviewer is called again — and NEVER participates in DoD or pr-gate aggregation; both read `verdicts["iter-NN"]` alone. Consequence: clearing `latched` can never change satisfied-vs-blocking for any iteration, because the verdict keys it would have gated are already there.
++**Invariant**: a reviewer's key is ALWAYS written to `state.json.reviews.<phase>.verdicts["iter-NN"]` for every iteration of that phase that runs. A latch-skipped reviewer gets its inherited `APPROVE` recorded there without being dispatched. `latched` is purely a dispatch-time optimisation — it decides whether a reviewer is called again — and NEVER participates in DoD or pr-gate aggregation; both read `verdicts["iter-NN"]` alone, except per "State recovery" "User-resolved findings". Consequence: clearing `latched` can never change satisfied-vs-blocking for any iteration, because the verdict keys it would have gated are already there.
+ 
+ Persisted per phase per reviewer key in `state.json.reviews.<phase>.latched` (`t_state.json`) — a map from reviewer key (the same keys used in `verdicts["iter-NN"]`: `correctness`/`efficiency`/`testing`/`documentation`/`external` for impl-review, `correctness`/`efficiency`/`documentation`/`external` for design-review) to the iteration number at which that reviewer returned `APPROVE`. An absent key means that reviewer has never latched, or its latch was cleared. A sprint in flight when this field shipped carries no `latched` object at all under one or both phase nodes — treat a wholly absent `latched` object the same as an empty one (`{}`, no latches), mirroring the `iteration_heads` absent-key fallback ("State recovery" below); never an error.
+ 
+diff --git a/.asd/workflows/asd-phase-design-review.md b/.asd/workflows/asd-phase-design-review.md
+index f5f6cbf..66a05a8 100644
+--- a/.asd/workflows/asd-phase-design-review.md
++++ b/.asd/workflows/asd-phase-design-review.md
+@@ -38,7 +38,7 @@ Orchestration body for the `asd-phase-design-review` skill. Operation-mapping to
+ 8a. **Interrupted dispatch** — `review-policy.md` "Interrupted dispatch" is the sole SSoT for the durable record, the escalation and the correlated branch, not restated here; its `<id>` is `iter-NN`. The step header carries no reach; each branch below states its own.
+    - Interrupted dispatch — reaches any dispatch, External Review included, per `external-review.md` "Outcome contract": takes the same reject-and-re-dispatch-fresh path as a failed validation above, never that step's transcription branch; a second consecutive interruption on the same manifest → request user decision per that section's Escalation (retry fresh / abort), never a split.
+    - Late duplicate return — reaches any replaced dispatch, External Review included, per `review-policy.md` "Late duplicate return" (sole SSoT for the admission test and every action it mandates). Phase bindings: a return delivering after step 9 recorded its replacement's verdict, once admitted, is written to `<sprint>/reviews/design/iter-NN/<reviewer>.late.md`, linked from `<reviewer>.md`, and carries that section's `verdicts["iter-NN"]`, `latched` and decisions-log writes even though step 9 already ran.
+-9. Parse first-line tokens from all written reviewer files; write `state.json` `reviews.design.verdicts["iter-NN"]` (keyed `correctness`/`efficiency`/`documentation`/`external`) and `reviews.design.latched` per `sprint-lifecycle.md` "APPROVE latch" — sole SSoT for the every-reviewer-gets-an-entry invariant, the inherited `APPROVE` a latch-skipped reviewer receives and the bare-`APPROVE`-only latch condition; not restated here. Phase bindings: an interrupted attempt contributes no entry, its attempts already logged at step 8a. External Review's availability skip is recorded as `"APPROVE (skipped: <reason>)"` when the phase-supplied preflight returns non-ready; its other persistence duties (the skip's `Unreviewed files` line, the `files[]` step 7's scope manifest would carry, included) are `external-review.md` "Outcome contract"'s, not this step's. Aggregate per `sprint-lifecycle.md` "State recovery" satisfied-vs-blocking semantics, reading `verdicts["iter-NN"]` alone:
++9. Parse first-line tokens from all written reviewer files; write `state.json` `reviews.design.verdicts["iter-NN"]` (keyed `correctness`/`efficiency`/`documentation`/`external`) and `reviews.design.latched` per `sprint-lifecycle.md` "APPROVE latch" — sole SSoT for the every-reviewer-gets-an-entry invariant, the inherited `APPROVE` a latch-skipped reviewer receives and the bare-`APPROVE`-only latch condition; not restated here. Phase bindings: an interrupted attempt contributes no entry, its attempts already logged at step 8a. External Review's availability skip is recorded as `"APPROVE (skipped: <reason>)"` when the phase-supplied preflight returns non-ready; its other persistence duties (the skip's `Unreviewed files` line, the `files[]` step 7's scope manifest would carry, included) are `external-review.md` "Outcome contract"'s, not this step's. Aggregate per `sprint-lifecycle.md` "State recovery" satisfied-vs-blocking semantics, reading `verdicts["iter-NN"]` alone, except per `sprint-lifecycle.md` "State recovery" "User-resolved findings":
+    - **Reviewer questions first** — a report carrying `question:` items under `## Escalations` (`review-policy.md` "Gate Verdict Format" question carrier) is verdict-bearing, never interrupted (step 8a): request user decision per item, append the answers to decisions-log, and write each under its item in that reviewer's file per that carrier, passing it with that reviewer's findings to the creator fix dispatch (such a report is at least CONCERNS, per that carrier)
+    - **All APPROVE, latched or user-resolved** (`sprint-lifecycle.md` "State recovery" user-resolved findings) → DoD met; apply the adaptive gate policy and append the decision inline; emit phase COMPLETED
+    - **Any FAIL** → escalation:
+diff --git a/.asd/workflows/asd-phase-impl-review.md b/.asd/workflows/asd-phase-impl-review.md
+index 6e47cac..470e92a 100644
+--- a/.asd/workflows/asd-phase-impl-review.md
++++ b/.asd/workflows/asd-phase-impl-review.md
+@@ -48,7 +48,7 @@ Orchestration body for the `asd-phase-impl-review` skill. Operation-mapping to h
+ 7a. **Interrupted dispatch** — `review-policy.md` "Interrupted dispatch" is the sole SSoT for the durable record, the escalation and the correlated branch, not restated here; its `<id>` is this iteration's. The step header carries no reach; each branch below states its own.
+    - Interrupted dispatch — reaches any dispatch, External Review included, per `external-review.md` "Outcome contract": takes the same reject-and-re-dispatch-fresh path as a failed validation above, never that step's transcription branch; a second consecutive interruption on the same manifest → request user decision per that section's Escalation (retry fresh / abort), never a split.
+    - Late duplicate return — reaches any replaced dispatch, External Review included, per `review-policy.md` "Late duplicate return" (sole SSoT for the admission test and every action it mandates). Phase bindings: a return delivering after step 8 recorded its replacement's verdict, once admitted, is written to `<reviewer>.late.md` in the replaced dispatch's iteration dir (`<sprint>/reviews/impl/<id>/`), linked from `<reviewer>.md`, and carries that section's `verdicts["iter-NN"]`, `latched` and decisions-log writes even though step 8 already ran — for a closed wave, its `.late.md` goes to this iteration's `<sprint>/reviews/impl/<id>/` instead and its finding joins step 8's unresolved set.
+-8. Parse first-line verdict tokens from all written reviewer files; write the wave node's `verdicts["iter-NN"]` (keyed `correctness`/`efficiency`/`testing`/`documentation`/`external`) and `latched` per `sprint-lifecycle.md` "APPROVE latch" — sole SSoT for the every-reviewer-gets-an-entry invariant, the inherited `APPROVE` a latch-skipped reviewer receives and the bare-`APPROVE`-only latch condition; not restated here. Phase bindings: an interrupted attempt contributes no entry, its attempts already logged at step 7a. External Review's availability skip is recorded as `"APPROVE (skipped: <reason>)"` when the phase-supplied preflight returns non-ready; its other persistence duties (the `Unreviewed files` line from step 1b included) are `external-review.md` "Outcome contract"'s, not this step's. Aggregate per `sprint-lifecycle.md` "State recovery" satisfied-vs-blocking semantics, reading `verdicts["iter-NN"]` alone. impl-review does NOT fix findings itself — fixes route to impl phase (fix mode):
++8. Parse first-line verdict tokens from all written reviewer files; write the wave node's `verdicts["iter-NN"]` (keyed `correctness`/`efficiency`/`testing`/`documentation`/`external`) and `latched` per `sprint-lifecycle.md` "APPROVE latch" — sole SSoT for the every-reviewer-gets-an-entry invariant, the inherited `APPROVE` a latch-skipped reviewer receives and the bare-`APPROVE`-only latch condition; not restated here. Phase bindings: an interrupted attempt contributes no entry, its attempts already logged at step 7a. External Review's availability skip is recorded as `"APPROVE (skipped: <reason>)"` when the phase-supplied preflight returns non-ready; its other persistence duties (the `Unreviewed files` line from step 1b included) are `external-review.md` "Outcome contract"'s, not this step's. Aggregate per `sprint-lifecycle.md` "State recovery" satisfied-vs-blocking semantics, reading `verdicts["iter-NN"]` alone, except per `sprint-lifecycle.md` "State recovery" "User-resolved findings". impl-review does NOT fix findings itself — fixes route to impl phase (fix mode):
+    - **Reviewer questions first** — a report carrying `question:` items under `## Escalations` (`review-policy.md` "Gate Verdict Format" question carrier) is verdict-bearing, never interrupted (step 7a): request user decision per item, append the answers to decisions-log, and write each under its item in that reviewer's file per that carrier, so review-fix reads it with the findings (such a report is at least CONCERNS, per that carrier)
+    - **Any FAIL** → escalation (impl-review owns review escalation):
+      - parse FAIL findings; group by escalation cause (concept / requirement / contract change; new abstraction; scope expansion; complexity increase)
+diff --git a/tests/run.js b/tests/run.js
+index 2a8f480..b609ea1 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -5769,6 +5769,7 @@ test('sprint-018 AC-4/AC-5/AC-7: a reviewer\'s question and External Review\'s s
+   const form = carrier && /`(question: [^`]+)`/.exec(carrier);
+   assert.ok(form && carrier.includes('`## Escalations`'), 'AC-4: review-policy.md must state the reviewer question carrier and its Escalations placement');
+   assert.ok(/^question: <[^>]*\bfinding\b[^>]*>/.test(form[1]), 'AC-4: every question names the finding it qualifies (no finding, no question) - an answer with no finding has nothing to ride into the fix route');
++  assert.ok(carrier.split(/(?<=\.)\s/).some((sentence) => sentence.includes('`providers.md` "Declared tool policy"') && /\bfinding\b/.test(sentence)), 'AC-4/AC-5: a reviewer\'s out-of-policy refusal must become a finding the carrier question names - "no finding, no question" otherwise leaves the refusal no way to reach the user');
+   assert.strictEqual(shape(form[1]), shape(templateItem.slice(2)), 'AC-4: the carrier form in review-policy.md and the item t_review.md ships must be one shape, or a workflow parses one and a reviewer writes the other');
+   assert.ok(carrier.split(/(?<=[.;])\s/).some((sentence) => sentence.includes('`CONCERNS`') && sentence.includes('`APPROVE`') && /\bnever\b/.test(sentence)), 'AC-4: a reviewer holding an open question returns at least CONCERNS, never APPROVE - an APPROVE latches the reviewer and the question never reaches a fix route');
+   const answerItem = canonText('.asd/templates/t_review.md').split('## Escalations')[1].split('\n').find((line) => /^\s+answer:/.test(line));
+@@ -5846,6 +5847,13 @@ test('sprint-018 AC-4: a finding the user resolves without a fix is recorded by
+   const prefix = form[1].split(' ')[0];
+   const reviewFix = stepOf(sectionOf('.asd/workflows/asd-phase-impl.md', 'Workflow'), 3).split('\n').find((line) => line.includes('**review-fix**'));
+   assert.ok(reviewFix && reviewFix.includes(`\`${prefix}\``) && reviewFix.includes(citation), 'impl review-fix must skip each finding a resolved: line names, citing the home - the collector is the consuming end of the record');
++
++  const verdictOnly = [...canonMarkdownFiles(), 'README.md'].flatMap((rel) => canonText(rel).split('\n').filter((line) => line.includes('`verdicts["iter-NN"]` alone')).map((line) => ({ rel, line })));
++  assert.ok(verdictOnly.length >= 2, 'sanity: the aggregation steps that read verdicts must be found');
++  const dodHeader = sectionOf('.asd/rules/review-policy.md', 'DoD per review phase').split('\n').find((line) => line.startsWith('| Phase |'));
++  assert.ok(dodHeader && dodHeader.includes('`sprint-lifecycle.md` "State recovery"') && /user-resolved/.test(dodHeader), 'AC-4: the DoD table says what counts as met, so it must admit a user-resolved verdict with its home');
++  assert.ok(/satisfied per its "State recovery"/.test(stepOf(canonText('.asd/workflows/asd-phase-pr.md'), 1)), 'AC-4: the pr gate, the other gating consumer, must judge satisfied-vs-blocking per State recovery, where the user-resolved rule lives');
++  assert.deepStrictEqual(verdictOnly.filter(({ line }) => !line.includes('"User-resolved findings"')).map(({ rel, line }) => `${rel}: …${line.slice(Math.max(0, line.indexOf('alone') - 80), line.indexOf('alone') + 40)}…`), [], 'AC-4 (104feda): a line saying a consumer reads verdicts["iter-NN"] alone must carry the user-resolved exception - read literally, it blocks a user-resolved CONCERNS/FAIL forever');
+ });
+ 
+ // ===========================================================================
