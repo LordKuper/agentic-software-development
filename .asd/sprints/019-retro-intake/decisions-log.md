@@ -72,3 +72,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-26 — impl test-fix: defects D-1, D-2 resolved
 - 2026-09-26 — route impl-test entry 2: critical, dispatch HEAD 4cb9331
 - 2026-09-26 — impl-test: impacted set green (238/238), 0/0 tests (entry 2)
+
+## 2026-09-26 — impl-review wave-1/iter-01: user answers and routing
+
+- **Decision**: COR-1/DOC-1 → option (b). On Claude a reviewer holds `Write` for its own memory via `memory: project`, and canon will say so truthfully: policy, not the host, keeps it to its own memory directory. A finding in its memory is fixed by that owner in a fresh memory-fix dispatch, and the orchestrator commits. `disallowedTools` are unchanged. External FAIL #1 (multi-owner memory-fix order) and #2 (deferred `acts_on` source) are accepted for fix. Verdicts: correctness/efficiency/testing/documentation CONCERNS, external FAIL. Routed to impl review-fix (`review_fixes_pending = wave-1/iter-01`).
+- **Rationale**: The reviewer dispatches themselves showed the host serving `Write`, so the AC-14 claim was false. Keeping memory writes preserves reviewer learning, which is the purpose of `memory: project`.
+- **Affected docs**: [correctness.md](reviews/impl/wave-1/iter-01/correctness.md), [documentation.md](reviews/impl/wave-1/iter-01/documentation.md), [external.md](reviews/impl/wave-1/iter-01/external.md)

@@ -1,7 +1,7 @@
 {
   "sprint_id": "019-retro-intake",
   "branch": "sprint/019-retro-intake",
-  "phase": "impl-test",
+  "phase": "impl-review",
   "documents": {
     "audit": true,
     "prd": false,
@@ -45,6 +45,13 @@
       "reason": "all Tasks done; flagged choices resolved; build+lint clean",
       "evidence": "plan.md all [x]; sync --check ok; git diff --check clean; stubs 0; DoD seed check 3 rows",
       "artifact_revision": "HEAD@8134fbf"
+    },
+    {
+      "gate": "impl-review-fail-escalation",
+      "decision_actor": "user",
+      "reason": "external #1,#2 accepted for fix; COR-1/DOC-1 option (b)",
+      "evidence": "reviews/impl/wave-1/iter-01/{external,correctness,documentation}.md",
+      "artifact_revision": "wave-1/iter-01"
     }
   ],
   "task_routing": {
@@ -118,17 +125,27 @@
       "wave": 1,
       "waves": [
         {
-          "iteration": 0,
-          "verdicts": {},
-          "iteration_heads": {},
+          "iteration": 1,
+          "verdicts": {
+            "iter-01": {
+              "correctness": "CONCERNS",
+              "efficiency": "CONCERNS",
+              "testing": "CONCERNS",
+              "documentation": "CONCERNS",
+              "external": "FAIL"
+            }
+          },
+          "iteration_heads": {
+            "iter-01": "3f4217c529612d14f8c5765fe4de93250d94a670"
+          },
           "latched": {}
         }
       ]
     }
   },
   "created_at": "2026-09-25T13:09:07Z",
-  "updated_at": "2026-09-25T22:25:58Z",
-  "review_fixes_pending": null,
+  "updated_at": "2026-09-25T22:55:20Z",
+  "review_fixes_pending": "wave-1/iter-01",
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null
