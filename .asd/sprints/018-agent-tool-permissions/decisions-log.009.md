@@ -34,3 +34,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+- 2026-09-25 — route correctness.md 1-5, documentation.md DOC-1..DOC-4, external.md 1-3: critical, dispatch HEAD 1608af0
+- 2026-09-25 — review-fix flagged choices accepted: BA search scope "user-provided URLs and public standards/regulations a requirement cites"; README web purposes point to each agent's Tool policy; UX README mirror in d802f2c; design-review "continue fixing" = creator fix; tester single commit, widened TST-1-2 (allowlist never reaches a "Never run" command) and stalemate pin (options from the external-review.md home)
+- 2026-09-25 — impl fix for wave-1/iter-01: findings resolved (correctness.md 1-5, documentation.md DOC-1..DOC-4, external.md 1-3, testing.md TST-1-1, TST-1-2)
