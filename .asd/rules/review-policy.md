@@ -151,7 +151,7 @@ Reviewers write no review artifact, code or doc — that is why the phase workfl
 
 Examples: `[REVIEW-impl-correctness]: APPROVE` · `[REVIEW-design-documentation]: FAIL` · `[REVIEW-impl-external]: CONCERNS`
 
-**Reviewer question carrier.** A reviewer never returns a bare `QUESTION` — without the verdict token it reads as an interrupted dispatch ("Interrupted dispatch"). A question needing the user stays in the verdict-bearing report, listed under `t_review.md`'s `## Escalations` as `question: <text>; options: <a> / <b> …`; the review workflow asks the user before routing that iteration.
+**Reviewer question carrier.** A reviewer never returns a bare `QUESTION` — without the verdict token it reads as an interrupted dispatch ("Interrupted dispatch"). A question needing the user stays in the verdict-bearing report, listed under `t_review.md`'s `## Escalations` as `question: <text>; options: <a> / <b> …`; the review workflow asks the user before routing that iteration. A reviewer holding an open question returns at least `CONCERNS`, never `APPROVE`, so the answer rides with its findings into the fix route and no latch drops it.
 
 The dispatching phase workflow writes the verdict token, findings, and the validated compact coverage evidence (above) to `<sprint>/reviews/<phase>/[wave-<K>/]iter-NN/<reviewer>.md`; phase orchestration reads the first non-empty content line of that written file.
 
