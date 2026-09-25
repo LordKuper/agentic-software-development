@@ -53,7 +53,7 @@ Orchestration body for the `asd-phase-impl-review` skill. Operation-mapping to h
    - **Any FAIL** → escalation (impl-review owns review escalation):
      - parse FAIL findings; group by escalation cause (concept / requirement / contract change; new abstraction; scope expansion; complexity increase)
      - request user decision in `language.chat`: present each FAIL using Complication Approval format from `core.md`; collect decisions
-     - External Review's stalemate FAIL (`Stalemate:` block, `external-review.md` "Stalemate detection") → request user decision with its options (stop / continue fixing / abort, effects per that section) instead of the accept/override bullets below
+     - External Review's stalemate FAIL (`Stalemate:` block, `external-review.md` "Stalemate detection") → request user decision; options and routing per that section, instead of the accept/override bullets below
      - on override → mark that finding resolved (no fix needed); exclude from fix set
      - on accept → keep finding in fix set; note approved change in its reviewer file
      - then continue to routing step below with surviving findings

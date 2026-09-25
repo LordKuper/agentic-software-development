@@ -44,7 +44,7 @@ Orchestration body for the `asd-phase-design-review` skill. Operation-mapping to
    - **Any FAIL** → escalation:
      - parse FAIL findings; group by escalation cause (concept change / new abstraction / scope expansion / contract change)
      - request user decision in `language.chat`: present each FAIL using Complication Approval format from `core.md`; collect decisions
-     - External Review's stalemate FAIL (`Stalemate:` block, `external-review.md` "Stalemate detection") → request user decision with its options (stop / continue fixing / abort, effects per that section) instead of the accept/override bullets below
+     - External Review's stalemate FAIL (`Stalemate:` block, `external-review.md` "Stalemate detection") → request user decision; options and routing per that section, instead of the accept/override bullets below
      - on override → mark resolved, continue
      - on accept → delegate to agent corresponding creator (BA / UX / Architect) to apply approved changes; on creator COMPLETED → loop step 4 (increment iteration)
    - **Only CONCERNS** (no FAIL) → autofix loop:
