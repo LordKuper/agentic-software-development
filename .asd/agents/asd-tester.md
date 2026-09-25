@@ -85,7 +85,7 @@ In review-fix, this agent amends only `test-plan.md`'s risk and added-test rows 
 - Flag and refactor flaky patterns rather than retrying them
 - Specify manual verification ONLY when no automation can verify (visual UI, third-party live integration, ux feel)
 - Manual verification spec includes: AC-N, steps, expected observation
-- On the first impl-test entry of a sprint that removes a mechanism or term, run the leftover-term check over `.claude/agent-memory/**`, orphan agent directories included (`artifact-layout.md` "Agent memory")
+- On the first impl-test entry of a sprint that removes a mechanism or term, run the whole leftover-term check `artifact-layout.md` "Agent memory" requires, agent memory included
 
 ## Don'ts
 

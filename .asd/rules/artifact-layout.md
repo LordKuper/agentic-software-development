@@ -95,7 +95,7 @@ Agent memory lives at the provider-view root — `.claude/agent-memory/<agent>/`
 
 **In the review surface, both modes**: agent memory is hand-authored source, not generated output, so it is never an exclusion in any review scope — `self_hosting` enabled or disabled alike. Sole statement of the property; `sprint-lifecycle.md` "Self-hosting", `external-review.md` "Phase-scoped payload" and `t_prompt-external-impl.md` cite it, never restate it. A memory file loads on every dispatch of its agent, so a false line in one is paid again per dispatch until a review catches it. How such a write reaches a reviewed diff at all: `review-policy.md` "Change-surface rule".
 
-**Leftover-term check**: a sprint that removes a mechanism or term searches for every remaining mention of it, and from its first `impl-test` entry that search covers `.claude/agent-memory/**`, directories of no longer existing agents included.
+**Leftover-term check**: a sprint that removes a mechanism or term searches, at its first `impl-test` entry, for every remaining mention of it anywhere in the repo, `.claude/agent-memory/**` included, directories of no longer existing agents too.
 
 ## Subsystem registry
 
