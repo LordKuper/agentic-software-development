@@ -65,11 +65,11 @@ record, by the time `pr` runs. Each per-entry record measures only the tree that
 analysed, not any tree produced later
 (`.asd/rules/sprint-lifecycle.md` "Impacted test set").
 
-- Command: `node tests/run.js` (the impacted set is the whole runner)
-- Scope: impacted
-- Result: pass. 238/238 passed, 0 failed, 0 skipped (exit 0). This is entry 4's run, and it replaces entry 3's record.
-- Lint / build: pass. `git diff --check c43681a HEAD -- . ':!.asd/sprints/**'` exited 0. The unscoped form flags only blank context lines inside the review-archived `.diff` files under `reviews/impl/wave-1/iter-02/`, which is sprint bookkeeping. `node .asd/sync.js --check` exited 0 with `ok: true`.
-- HEAD: e927938. This is the commit the run was verified at; the pr phase compares current HEAD against it to decide whether to skip re-running. This entry changes no test or canon file. Its only commit touches `test-plan.md` and `test-plan.entry-03.md` in this sprint's directory, and no test reads `.asd/sprints/019-retro-intake/`.
+- Command: `node tests/run.js`, unscoped. This is impl-review wave-1/iter-03's terminal full-suite run.
+- Scope: full
+- Result: pass. 238/238 passed, 0 failed, 0 skipped (exit 0). This run replaces entry 4's impacted-set record.
+- Lint / build: pass. `git diff --cached --check` exited 0, but the index was empty, so it checked nothing. `git diff --check ae09bac HEAD -- . ':!.asd/sprints/**'` (merge-base with main) exited 0. `node .asd/sync.js --check` exited 0 with `ok: true`, and all 72 targets are `current`.
+- HEAD: 746ed3c. This is the commit the run was verified at; the pr phase compares current HEAD against it to decide whether to skip re-running. The commit that records this run touches only `test-plan.md` in this sprint's directory, and no test reads `.asd/sprints/019-retro-intake/`.
 
 ## Defects
 
