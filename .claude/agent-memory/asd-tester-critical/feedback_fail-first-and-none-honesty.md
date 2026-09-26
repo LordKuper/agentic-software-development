@@ -22,6 +22,11 @@ one bash call" — and paste the assertion message from the FAIL output into the
 records on re-entry: a dev fix commit can rewrite the implementation out from under an entry-1
 mutation.
 
+The converse bites when re-pinning: a red list names only each test's FIRST failing assert, so a
+later one in the same body can be red too, hidden. Re-run after every re-pin before calling the set
+done (sprint 019 iter-02: the fixed L6212 exposed a sweep hit on a backticked quote in reviewer
+memory, committed a round earlier).
+
 ## A `none` decision needs a reason that survives inspection
 
 "It's prose interpreted at runtime, no executable surface" is false for anything that is a literal
