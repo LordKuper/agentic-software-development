@@ -97,3 +97,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-26 — impl fix for wave-1/iter-02: findings resolved (COR-1, DOC-2-2, DOC-2-3 in 6ed5150; DOC-2-1 in 5db902a; tester pins 0453431; memory-fix 89ffa46)
 - 2026-09-26 — route impl-test entry 4: critical, dispatch HEAD 89ffa46
 - 2026-09-26 — impl-test: impacted set green (238/238), 0/0 tests (entry 4)
+- 2026-09-26 — impl-review wave-1/iter-03: correctness, documentation APPROVE; efficiency, testing, external latched APPROVE → wave 1 of 1 roster met, reviewer DoD met; terminal full suite next
+- 2026-09-26 — route impl-review wave-1/iter-03 suite: critical, dispatch HEAD 7d03415
