@@ -99,3 +99,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-26 — impl-test: impacted set green (238/238), 0/0 tests (entry 4)
 - 2026-09-26 — impl-review wave-1/iter-03: correctness, documentation APPROVE; efficiency, testing, external latched APPROVE → wave 1 of 1 roster met, reviewer DoD met; terminal full suite next
 - 2026-09-26 — route impl-review wave-1/iter-03 suite: critical, dispatch HEAD 7d03415
+
+## 2026-09-26 — impl-review DoD met (adaptive green handoff)
+
+- **Decision**: Wave 1 of 1 closed at iter-03 with all five reviewers APPROVE or latched. The terminal full suite is green: `node tests/run.js` 238/238, lint and build clean, HEAD `746ed3c`, recorded in 1f00d46. Handed off to retro.
+- **Rationale**: `user_gates: adaptive`. The green handoff is routine, backed by recorded runner evidence, and leaves no open findings, questions or material alternatives.
+- **Affected docs**: [test-plan.md](test-plan.md), [reviews/impl/wave-1/iter-03/](reviews/impl/wave-1/iter-03/)
