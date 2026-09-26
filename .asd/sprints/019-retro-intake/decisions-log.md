@@ -92,3 +92,7 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: One consistent fix set for the conflicting reviewer guidance, within the accepted AC-14. The next iteration's floor is high.
 - **Affected docs**: [correctness.md](reviews/impl/wave-1/iter-02/correctness.md), [documentation.md](reviews/impl/wave-1/iter-02/documentation.md)
 - 2026-09-26 — route review-fix wave-1/iter-02 dev chain (correctness.md COR-1, DOC-2-1..3): critical, dispatch HEAD c3cdad4
+- 2026-09-26 — route review-fix wave-1/iter-02 tester chain (pins broken by COR-1/DOC-2-1..3 fixes): critical, dispatch HEAD c8f2e28
+- 2026-09-26 — memory-fix applied: asd-tester-critical edited own memory (89ffa46)
+- 2026-09-26 — impl fix for wave-1/iter-02: findings resolved (COR-1, DOC-2-2, DOC-2-3 in 6ed5150; DOC-2-1 in 5db902a; tester pins 0453431; memory-fix 89ffa46)
+- 2026-09-26 — route impl-test entry 4: critical, dispatch HEAD 89ffa46
