@@ -10,3 +10,5 @@
 - [False SSoT declarations](feedback_false-ssot-declarations.md) — "not restated here" above surviving text: narrow the denial, keep what acts at its site
 - [JSON frontmatter quotes](project_json-frontmatter-quotes.md) — a `"Section"` citation in an agent `description` breaks sync.js JSON parsing
 - [Codex agent TOML probe](reference_codex-agent-toml-probe.md) — local no-auth check of agent TOML keys via `codex exec --strict-config` (prompt-input skips agents)
+- [Parallel-wave home citations](project_parallel-wave-home-citations.md) — read sibling Tasks' uncommitted diffs before choosing the section a cited rule lands in
+- [Heredoc backslash collapse](project_heredoc-backslash-collapse.md) — quoted heredoc still halves double backslashes here; write backslash scripts via the write tool

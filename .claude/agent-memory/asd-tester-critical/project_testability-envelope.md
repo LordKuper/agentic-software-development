@@ -100,6 +100,18 @@ citations; the local precedent is entry 4's `asd-pm` fallout-set comparison. Shi
 `impl-review` entry on work no round of the sprint touched, and an exemption list with defect ids in it
 is visible where a silent filter is not.
 
+Exception: when the stale hits sit in another owner's memory and that owner's memory-fix dispatch runs
+*after* the tester chain in the same round (sprint 019 review-fix, COR-1/DOC-1), an exact pin reddens
+the moment the fix lands, and nobody left in the round can edit the test. Exempt those files by name
+with the finding ids in the assert message (a subset filter, not a `deepStrictEqual`), prove the list is
+load-bearing by emptying it, and hand its deletion to the next `impl-test` entry. That entry (019 entry 3)
+proves the deletion by appending a refuted line to a formerly exempted file: the sweep must now redden.
+
+Review-fix tester rows sit in the live tables when the next entry starts, with no `Entry log` row of their
+own. Rotate them with the previous entry's rows into its segment (`artifact-layout.md` "Test plan"
+Rotation), after carrying each review-fix removal row forward as a live `Removed tests` row that step 5
+collects (`asd-phase-impl-test.md` step 4 re-entry). Own practice, no canon: say so in the segment header.
+
 A pin like that carries a **closing obligation**, and it falls to this role because the pin is test text.
 When the defect is fixed the exemption line goes with it (say so in `test-plan.md`, since a fix without
 the deletion reddens the suite), and then check what the emptied list leaves behind. In sprint 010 it
@@ -135,7 +147,10 @@ every member (sprint 012 entry 4, M26/M27).
 A `keep` justified by "the existing assert already requires it verbatim" needs the fix's own revert
 as proof. A regex whose capture group spans less than the fixed literal (sprint 015 AC-8 captured only
 the suffix, which the pre-fix line also held) passes on the old text too. Put the capture around the
-whole changed literal, then run the revert (TST-3).
+whole changed literal, then run the revert (TST-3). Same for a fixture aimed at a narrowed regex: it
+must satisfy the OLD regex's precondition too, or it passes both sides (sprint 019: a `tableCells` fixture
+not starting with a backtick never reached the changed branch). Some edits are semantic no-ops you cannot
+mutate with: `git commit -- <paths>` already implies `--only`, so dropping only `--only` changes nothing.
 
 A render property of tier variants (`-mechanical`/`-critical`) is only proven by rendering, never by reading
 the generated `.codex/`/`.claude/` views: a `variantMeta` regression leaves the committed views untouched,

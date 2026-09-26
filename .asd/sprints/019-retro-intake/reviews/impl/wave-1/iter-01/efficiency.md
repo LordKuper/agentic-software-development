@@ -1,0 +1,32 @@
+[REVIEW-impl-efficiency]: CONCERNS
+
+# Review — efficiency
+
+- **Phase**: impl-review
+- **Iteration**: wave-1/iter-01
+
+## Findings
+
+| # | Severity | Location | Description | Suggested fix |
+|---|---|---|---|---|
+| EFF-1 | low | `.asd/runtime.js:520-523` (`retroCandidates`, deferred branch) | **Complexity-vs-value, category `simplify`.** Each deferred candidate is built from two sources: `acts_on` and `guardrail` from the backlog copy, `home` from the retro row. The code already reads that retro row for every deferred entry and fails if it is missing, so the retro is always there. That makes the backlog copy a second source of truth that the code prefers for no reason. The tests pin contradictory intents on it: the unit fixture (`tests/run.js`, `INTAKE_BACKLOG` "Deferred latest action, as the backlog words it") requires the backlog wording to win, while the live-backlog test (`sprint-019 AC-4`, `deepStrictEqual([entry.acts_on, entry.guardrail], [source.acts_on, source.guardrail])`) forbids the two from ever differing. Where they never differ, the preference is dead code. Where they do differ, it filters on (`acts_on`) and shows the user a drifted copy instead of the retro row. | Return the retro row as found: `const deferred = backlog.filter((entry) => entry.disposition === 'deferred').map((entry) => rowsOf(entry.row.split('#')[0]).find((candidate) => candidate.row === entry.row) \|\| fail(...))`. Keep the backlog's `Acts on` and `Guardrail` columns as human-readable text that the live test checks against the retro. In the unit fixture, change the expected guardrail of `017-b#A-4` to the retro's own text. No new abstraction, so no escalation. |
+
+## Coverage (internal reviewers only)
+
+- **Over-engineering checklist**: pass. The runtime.js `typeof … !== 'string'` guards on `retroRows`/`backlogRows` match the existing guard convention on exported parsers (runtime.js:313, `defectStalemate` at :418). `RETRO_TABLES` pays for itself (two tables, different cell positions, a real `required` difference). `--self-hosting` has a real non-default caller. `sprintPhase` and `htmlText` add error handling and entity decoding.
+- **Structure / cohesion**: pass. `.asd/runtime.js` falls under the standing single-file override; `tests/run.js` only gains test blocks.
+- **Perf**: `rowsOf` re-parses one retro per deferred row, O(D × parse), in a one-shot CLI with D small, so a cache would not pay. `disposed` is a Set lookup, and `latestRetroSprint` stops early. No baseline exists, and the `tableCells` regex narrowing has no perf effect. The payload header adds two lines per dispatch, as AC-9/AC-10 require.
+- **Custom rules**: runtime.js stays zero-dependency (`fs`/`path`).
+
+```json
+{"manifest_digest":"3d0cd3255f7c496d5196ca8fe2dfe5f53da24238b013a1218f89296a9358f07b","findings":["EFF-1"],"files":[{"i":".asd/agents/asd-external-review.md","s":"checked"},{"i":".asd/agents/asd-tester.md","s":"checked"},{"i":".asd/release-manifest.json","s":"checked"},{"i":".asd/rules/artifact-layout.md","s":"checked"},{"i":".asd/rules/checkpoints.md","s":"checked"},{"i":".asd/rules/external-review.md","s":"checked"},{"i":".asd/rules/git-strategy.md","s":"checked"},{"i":".asd/rules/providers.md","s":"checked"},{"i":".asd/rules/review-policy.md","s":"checked"},{"i":".asd/rules/sprint-lifecycle.md","s":"checked"},{"i":".asd/runtime.js","s":"checked"},{"i":".asd/templates/t_decisions-log.md","s":"checked"},{"i":".asd/templates/t_retro-backlog.md","s":"checked"},{"i":".asd/templates/t_retrospective.html","s":"checked"},{"i":".asd/workflows/asd-phase-design-review.md","s":"checked"},{"i":".asd/workflows/asd-phase-impl-review.md","s":"checked"},{"i":".asd/workflows/asd-phase-impl-test.md","s":"checked"},{"i":".asd/workflows/asd-phase-impl.md","s":"checked"},{"i":".asd/workflows/asd-phase-retro.md","s":"checked"},{"i":".asd/workflows/asd-phase-scope.md","s":"checked"},{"i":".claude/agent-memory/asd-dev-critical/MEMORY.md","s":"checked"},{"i":".claude/agent-memory/asd-dev-critical/project_parallel-agent-commit-sweep.md","s":"checked"},{"i":".claude/agent-memory/asd-dev-critical/project_parallel-wave-home-citations.md","s":"checked"},{"i":".claude/agent-memory/asd-reviewer-documentation/project_reviewer-write-scope-declaration.md","s":"checked"},{"i":".claude/agent-memory/asd-reviewer-testing/feedback_no-shell-review-method.md","s":"checked"},{"i":".claude/agent-memory/asd-tester-critical/feedback_fail-first-and-none-honesty.md","s":"checked"},{"i":".claude/agent-memory/asd-tester-critical/project_mutation-runs-trip-the-hash-ledger.md","s":"checked"},{"i":".claude/agent-memory/asd-tester-critical/project_testability-envelope.md","s":"checked"},{"i":"CHANGELOG.md","s":"checked"},{"i":"README.md","s":"checked"},{"i":"tests/run.js","s":"checked"}],"rules":[{"i":"Over-engineering checklist [design-review, impl-review] — critical, undroppable","s":"pass"},{"i":"Structure / cohesion checklist [design-review, impl-review] — critical, undroppable","s":"pass"},{"i":"Complexity-vs-value tradeoff [design-review, impl-review]","s":"finding","f":"EFF-1"},{"i":"Perf budget compliance [impl-review]","s":"n/a","p":"no budgets defined"},{"i":"Perf anti-patterns [impl-review]","s":"pass"},{"i":"Algorithmic complexity [impl-review]","s":"pass"},{"i":"Regression detection [impl-review]","s":"pass"},{"i":"Hot path identification [impl-review]","s":"pass"},{"i":".asd/project/custom-common-rules.md","s":"pass"},{"i":".asd/project/custom-coding-rules.md","s":"pass"}],"sections":[{"i":"Over-engineering checklist [design-review, impl-review] — critical, undroppable","s":"reviewed"},{"i":"Structure / cohesion checklist [design-review, impl-review] — critical, undroppable","s":"reviewed"},{"i":"Complexity-vs-value tradeoff [design-review, impl-review]","s":"reviewed"},{"i":"Perf budget compliance [impl-review]","s":"n/a","p":"no budgets defined"},{"i":"Perf anti-patterns [impl-review]","s":"reviewed"},{"i":"Algorithmic complexity [impl-review]","s":"reviewed"},{"i":"Regression detection [impl-review]","s":"reviewed"},{"i":"Hot path identification [impl-review]","s":"reviewed"}]}
+```
+
+## Verdict
+CONCERNS: 1
+
+## Next action
+The review-fix dev applies EFF-1: build deferred candidates from the retro row alone in `.asd/runtime.js` `retroCandidates`, and update the `tests/run.js` fixture expectation for `017-b#A-4` in the same commit. No Complication Approval is needed.
+
+## Escalations (optional)
+None.
