@@ -129,7 +129,7 @@ This repo (the ASD framework source itself) runs `node .asd/sync.js --check` in 
 
 Every sprint runs one of two workflows, declared in `.asd/workflows/<name>.json` and chosen by a hard user decision at the first scope step — never defaulted, never read from config, frozen in `state.json.workflow` for the sprint's lifetime:
 
-- **`standard`** (the default when nothing is selected) — the full eleven-phase chain below: design and design-review run, four internal reviewers plus External Review cover impl-review.
+- **`standard`** (what a `state.json` without the field reads as — a sprint started before v13.3.0) — the full eleven-phase chain below: design and design-review run, four internal reviewers plus External Review cover impl-review.
 - **`lite`** — a nine-phase chain for lean changes: `scope → audit → plan → impl ⇄ impl-test → impl-review → design-promote → retro → pr`. No `design`/`design-review`, no drafts; acceptance criteria always come from `sprint.md`'s own `AC-N` list. impl-review dispatches one combined internal reviewer (`asd-reviewer-combined`, applying the Correctness/Efficiency/Documentation rubrics in a single pass) plus External Review. `design-promote` runs after impl-review acceptance and writes any enabled persistent docs straight from the accepted implementation — unreviewed, no draft.
 
 | Phase | standard | lite |
