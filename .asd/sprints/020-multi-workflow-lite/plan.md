@@ -47,7 +47,7 @@ Reachability: scope writes `state.json.workflow` at step 1; the hook, `asd-sprin
 ### Task 2: Session-start hook reads the frozen workflow
 AC: AC-1, AC-6
 Material risk: artifact: hook must exit 0 and never throw
-- [ ] `.asd/hooks/session-start.js`: remove the `PHASE_CHAIN` literal. Resolve `<root>/.asd/workflows/<state.workflow || 'standard'>.json` and use its `phases` for the archived check, `nextPhase` and the display. Apply the design-collapse special case only when the definition's `phases` contain `design`. A missing, malformed or unknown definition degrades silently: no chain info, exit 0.
+- [x] `.asd/hooks/session-start.js`: remove the `PHASE_CHAIN` literal. Resolve `<root>/.asd/workflows/<state.workflow || 'standard'>.json` and use its `phases` for the archived check, `nextPhase` and the display. Apply the design-collapse special case only when the definition's `phases` contain `design`. A missing, malformed or unknown definition degrades silently: no chain info, exit 0.
 
 ### Task 3: Lifecycle rule docs — workflow model and lite deltas
 AC: AC-1, AC-2, AC-3, AC-5, AC-6, AC-8
