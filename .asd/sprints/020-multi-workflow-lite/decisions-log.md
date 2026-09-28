@@ -63,3 +63,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-28 — correctness ledger transcribed once (files rows `finding`→`checked`), re-run passed (F-3)
 - 2026-09-28 — testing rejected attempt 1 in wave-1/iter-01 (findings table malformed: unescaped `|` in a cell); re-dispatched fresh (F-4)
 - 2026-09-28 — impl-review wave-1/iter-01: correctness/efficiency/testing/documentation/external CONCERNS (4+2+6+4+2 findings); AC-8 test-only route not applicable (medium/high and non-test findings); → impl review-fix (review_fixes_pending=wave-1/iter-01)
+- 2026-09-28 — route wave-1/iter-01 review-fix dev chain (correctness 1-4, efficiency 1-2, documentation F-1..F-4, external 1-2): critical, dispatch HEAD 64c8f8a
+- 2026-09-28 — route wave-1/iter-01 review-fix tester chain (testing 1-6): critical, dispatch HEAD 2cecb8b
+- 2026-09-28 — impl fix for wave-1/iter-01: findings resolved (dev chain 1a1a983..2cecb8b: correctness 1-4, efficiency 1-2, documentation F-1..F-4, external 1-2; tester chain c8a34db: testing 1-6)
