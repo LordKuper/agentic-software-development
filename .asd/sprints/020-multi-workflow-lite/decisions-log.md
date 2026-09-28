@@ -40,3 +40,17 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-28 — route Task 3, Task 4, Task 5, Task 6: critical, dispatch HEAD 848168f
 - 2026-09-28 — wave 2 runs 5 parallel dispatches; generated-view sync (`sync.js --apply`) deferred to Task 7 so concurrent devs never race on `.asd/sync-state.json`
 - 2026-09-28 — route Task 7: standard, dispatch HEAD 913ef64
+
+## 2026-09-28 — Impl assessment approved (adaptive)
+
+- **Decision**: All 7 Tasks done (25/25 subtasks; commits 848168f..9f29356), build `sync.js --check` ok (74/74), lint clean, every touched path authorised, no sprint stubs. Flagged dev choices accepted as in-plan:
+  - persist-review: optional `--manifest`, `.late` renames both outputs, findings JSON `[{id,severity,location}]`, column-position table parse, refuse-overwrite, reject empty CONCERNS/FAIL;
+  - the combined agent copies correctness tools, and its n/a for docs covers in-code doc comments on a code-only scope;
+  - AC-8 fires only with no FAIL and floor-filtered findings;
+  - lite promotes into `{{STATUS}}` `approved`;
+  - lite relaxes the asd-dev stop condition;
+  - asd-sprint relays an unlisted `NEXT:` as FAILED;
+  - manual verification is an orchestrator step for both workflows;
+  - the rollback-reset table is replaced by the definition's `rollback_reset`.
+- **Rationale**: Every choice stays inside the plan Overview decisions and the user's AC wording, and none opens a material alternative. `tests/run.js` is red by design (removed hook literal, new agent); that work belongs to impl-test. Commit 753325a's 53-char subject is left as is, since rewriting it would mean rewriting landed history under sibling commits.
+- **Affected docs**: [plan.md](plan.md)
