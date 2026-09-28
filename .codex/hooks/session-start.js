@@ -1,4 +1,4 @@
-// ASD generated. Edit .asd/hooks/session-start.js. source_digest=sha256:8f554f1121ec9d65c3d6769ff361de70c0f5feef352777a1f2c707ca5c01f677 content_digest=sha256:8f554f1121ec9d65c3d6769ff361de70c0f5feef352777a1f2c707ca5c01f677 asd_version=13.3.0 schema=1
+// ASD generated. Edit .asd/hooks/session-start.js. source_digest=sha256:999fe7b8842bfd850aca55628e7f202ac04fb4a7cf9808d04d7ad55efa1134bf content_digest=sha256:999fe7b8842bfd850aca55628e7f202ac04fb4a7cf9808d04d7ad55efa1134bf asd_version=13.3.0 schema=1
 // ASD SessionStart hook (canonical, provider-agnostic).
 // No shebang: this file is never executed directly (`./session-start.js`),
 // always invoked as `node <path> --provider ...`, and every generated
@@ -41,7 +41,7 @@ function loadWorkflowPhases(repoRoot, name) {
   }
 }
 
-// `state.workflow` absent = standard (t1-contract).
+// `state.workflow` absent reads as `standard` (`sprint-lifecycle.md` "Workflows").
 function phasesForState(repoRoot, state) {
   const name = state && typeof state.workflow === 'string' ? state.workflow : 'standard';
   return loadWorkflowPhases(repoRoot, name);
@@ -81,10 +81,7 @@ function findActiveSprints(repoRoot) {
       if (!state || typeof state !== 'object' || Array.isArray(state)) return;
       if (archived) {
         const phases = phasesForState(repoRoot, state);
-        // No chain info (missing/malformed/unknown definition) -> can't
-        // validate phase membership, only the literal 'done' value degrades.
-        const invalidPhase = phases ? !phases.includes(state.phase) : false;
-        if (invalidPhase || state.phase === 'done') return;
+        if ((phases && !phases.includes(state.phase)) || state.phase === 'done') return;
       }
       active.push({ folder, state });
     } catch (_) {
@@ -203,7 +200,7 @@ function summary(active, provider, repoRoot) {
   const verdict = lastReviewVerdict(reviewNode);
   const phases = phasesForState(repoRoot, state);
   const next = phase === 'pr' ? (state.pr && state.pr.state === 'closure-pending' ? 'await-user-closure' : 'await-merge')
-    : !phases ? null // no chain info (missing/malformed/unknown definition) -> omit
+    : !phases ? null
     : (phase === 'audit' && phases.includes('design') && isDesignCollapsed(state.documents)) ? 'plan'
     : nextPhase(phases, phase);
   const implInfo = phase === 'impl-review' ? normalizeImplReviews(state.reviews) : null;
