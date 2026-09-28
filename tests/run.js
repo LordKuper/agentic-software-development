@@ -2055,6 +2055,13 @@ test('AC-2/4/5/6/7: SessionStart recovers only archived active sprints and repor
   writeFile(tempRoot, '.asd/sprints/111-current/state.json', JSON.stringify({ sprint_id: '111-current', phase: 'impl', branch: 'sprint/111-current' }));
   const conflict = run();
   assert.ok(conflict.includes('WARNING: multiple active sprints found (111-current, 777-open)'), `expected active/archive conflict warning, got: ${conflict}`);
+
+  const degraded = mkTempDir();
+  installHook(degraded);
+  const archived = { '780-stale': { phase: 'bogus' }, '781-unknown': { workflow: 'nope', phase: 'impl' }, '782-unknown-done': { workflow: 'nope', phase: 'done' } };
+  for (const [id, fields] of Object.entries(archived)) writeFile(degraded, `.asd/sprints/archived/${id}/state.json`, JSON.stringify({ sprint_id: id, ...fields }));
+  const text = JSON.parse(execFileSync('node', [path.join(degraded, '.asd/hooks/session-start.js'), '--provider', 'codex'], { cwd: degraded, encoding: 'utf8' })).hookSpecificOutput.additionalContext;
+  assert.deepStrictEqual(Object.keys(archived).filter((id) => text.includes(id)), ['781-unknown'], `sprint-lifecycle.md "State recovery": an archived sprint is recovered only while non-done - a phase outside its resolved chain is not active, and an unresolvable definition drops only the chain check, never the done check (got: ${text})`);
 });
 
 test('AC-2/4/6/7: review workflow contracts retain Correctness and incremental diff scope', () => {
@@ -2978,6 +2985,11 @@ test('AC-8/G-11, sprint-020 AC-7: the ordered chain mirrors match their definiti
       const designDocs = Object.keys(JSON.parse(readRepoFile('.asd/templates/t_state.json')).documents).filter((doc) => doc !== 'audit');
       const promote = block.split('\n').find((line) => line.startsWith('- design-promote')) || '';
       assert.ok(/\bNo-op\b/.test(promote) && designDocs.every((doc) => promote.includes(`\`${doc}\``)), `sprint-020 AC-5: ${name} promotes after impl-review, so its "Workflows" design-promote bullet must state the no-op over every frozen design document (${designDocs.join(', ')}) - a dropped one runs creators for a document the sprint disabled, or skips one it enabled`);
+      const inputsOf = (text) => [...text.slice(0, text.indexOf('in place of drafts')).replace(/`[^`]+\.md` "[^"]+"/g, '').matchAll(/`([^`]+\.md)`/g)].map((match) => path.posix.basename(match[1])).sort();
+      const promoteInputs = inputsOf(promote);
+      const inputSites = canonMarkdownFiles().filter((rel) => rel !== '.asd/rules/sprint-lifecycle.md').flatMap((rel) => canonText(rel).split('\n').filter((line) => line.includes('in place of drafts')).map((line) => [rel, inputsOf(line.slice(line.lastIndexOf('lite', line.indexOf('in place of drafts'))))]));
+      assert.ok(promoteInputs.length > 0 && inputSites.some(([rel]) => rel === '.asd/workflows/asd-phase-design-promote.md'), `sanity: the "Workflows" design-promote bullet and asd-phase-design-promote.md must each name the files read "in place of drafts", or the input comparison below compares nothing`);
+      assert.deepStrictEqual(inputSites.filter(([, inputs]) => inputs.join() !== promoteInputs.join()), [], `documentation.md F-3 (wave-1/iter-01): every site stating what ${name}'s design-promote reads in place of drafts must name the same files as its "Workflows" home (${promoteInputs.join(', ')}) - a wider acting site reads what its cited rule never grants, a narrower one promotes without it`);
     }
     const deltas = precondition.split('\n').find((line) => line.includes(`In \`${name}\``));
     assert.ok(deltas, `checkpoints.md "Precondition chain" fences standard's chain only, so it must state ${name}'s differing predecessors on an "In \`${name}\`" line`);
@@ -6362,6 +6374,7 @@ test('sprint-019 AC-11/AC-12/AC-13/AC-15/AC-16: each review-fix, rotation and te
   for (const rel of ['.asd/workflows/asd-phase-impl.md', '.asd/agents/asd-tester.md']) {
     assert.ok(canonText(rel).split('\n').some((line) => /review-fix|tester chain/.test(line) && line.includes('`artifact-layout.md` "Test plan"')), `AC-15: ${rel} must bound the review-fix tester by pointing at the "Test plan" grant`);
   }
+  assert.ok(canonText('.asd/agents/asd-tester.md').split('\n').some((line) => /in-place/.test(line) && line.includes('`artifact-layout.md` "Test plan"')) && sectionOf('.asd/rules/artifact-layout.md', 'Test plan').split(/(?<=\.)\s/).some((sentence) => /in-place tester/.test(sentence) && sentence.includes('`review-policy.md` "Low-severity test-only findings"')), 'documentation.md F-2 (wave-1/iter-01): asd-tester.md bounds its in-place test fix by the "Test plan" grant alone, so that grant must state the in-place tester\'s reach, citing the route it serves');
   assert.ok(sectionOf('.asd/rules/artifact-layout.md', 'Test plan').split(/(?<=\.)\s/).some((sentence) => sentence.includes('`Removed tests`') && /\bnever\b/.test(sentence) && /\bdelet/.test(sentence) && /\bnext\b/.test(sentence) && sentence.includes('`impl-test`')), 'sprint-019 COR-4: the review-fix tester may not touch Removed tests, the home of why a test went, so the grant must say it never deletes a test and that the next impl-test entry removes it and records the reason there');
   assert.ok(canonText('.asd/agents/asd-tester.md').split('\n').some((line) => /^In review-fix\b/.test(line) && /\bdelet/.test(line) && /\bno test\b|\bnever\b/.test(line)), 'sprint-019 COR-4: the tester body bounds its review-fix pass, so it must say that pass deletes no test');
   const testPlanRotation = sectionOf('.asd/rules/artifact-layout.md', 'Test plan').split('\n').find((line) => line.startsWith('**Rotation**')) || '';
@@ -6573,6 +6586,18 @@ test("sprint-020 AC-4: emit-manifest --reviewer combined composes the rubrics it
   assert.deepStrictEqual(holders(emit('documentation', 'impl-review', ['src/a.js'])), [], "the predicate reaches only the combined manifest - standard's Documentation reviewer is dispatched for its rubric and never n/a's it wholesale");
   const design = emit(runtime.COMBINED_REVIEWER, 'design-review', ['s/design/prd.md']);
   assert.ok(design.status === 2 && /one of/.test(design.stderr), `no workflow dispatches combined in design-review, so emit-manifest must refuse it there (got: ${JSON.stringify(design)})`);
+
+  const reviewsBeforePromote = readWorkflowDefinitions().some(({ phases, reviewers }) => reviewers.impl.includes(runtime.COMBINED_REVIEWER) && phases.includes('design-promote') && phases.indexOf('impl-review') < phases.indexOf('design-promote'));
+  const carves = canonText('.asd/agents/asd-reviewer-combined.md').split('\n').filter((line) => /`asd-phase-design-promote\.md` step \d+/.test(line));
+  assert.strictEqual(carves.length, reviewsBeforePromote ? 1 : 0, 'external.md 2 (wave-1/iter-01): a workflow that runs combined in impl-review before its design-promote writes the persistent docs needs exactly one asd-reviewer-combined.md bullet scoping the inherited actuality entry to the diff, citing the design-promote step that writes those docs - without it every lite sprint FAILs on docs not yet promoted');
+  if (reviewsBeforePromote) {
+    const label = (/^- \*\*([^*]+)\*\*/.exec(carves[0]) || [])[1] || '';
+    assert.ok(idsOf('documentation').some((id) => label.startsWith(id.replace(/\s*\(.*\)$/, ''))), `the carve-out "${label}" must name the Documentation rubric entry it narrows, so a rename of that entry cannot leave it pointing at nothing`);
+    assert.ok(carves[0].includes('`sprint-lifecycle.md` "Workflows"'), 'the carve-out must cite sprint-lifecycle.md "Workflows", the rule ordering impl-review before design-promote');
+    const step = /`asd-phase-design-promote\.md` step (\d+)/.exec(carves[0])[1];
+    const promoteStep = canonText('.asd/workflows/asd-phase-design-promote.md').split('\n').find((line) => line.startsWith(`${step}. `)) || '';
+    assert.ok(/\bcreators?\b/.test(promoteStep) && promoteStep.includes('`lite`'), `the carve-out cites asd-phase-design-promote.md step ${step}, which must be the step whose creators write the lite persistent docs - a renumbered workflow leaves it scoping the wrong docs`);
+  }
 });
 
 test('sprint-020 AC-6: the workflow is a hard, never-defaulted choice asked only at scope step 1, frozen through the t_state.json seed and gated in checkpoints.md, held by no config key, and no doc calls a workflow the default', () => {

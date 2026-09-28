@@ -178,6 +178,15 @@ that, an ordinal-keyed one reddens on a correct edit.
 Table rows likewise: a `^\| design \|` row locator hits `sprint-lifecycle.md`'s phase table before
 the no-op table. Anchor on the table's header row (`\| Phase \| No-op when \|[\s\S]*?^\| design \|`).
 
+Co-occurrence sweeps ("a line quoting a workflow name may not say default") scope per **sentence**, not
+per line: canon lines hold several sentences, and an unrelated "resume (default)" shares a line with a
+quoted `standard` (sprint 020 review-fix). Re-measure any reviewer claim like "a line-scoped widening
+needs no exemption" at the current HEAD: the dev chain in the same round can make it false.
+
+A reviewer-requested cleanup of hook/runtime code (dropping comments, collapsing a branch) is a
+behaviour change candidate: mutate the rewritten line. Sprint 020 entry 3 found three slips on the
+archived-sprint filter that no test caught.
+
 ## Citations and "not restated here" are checkable, as relations
 
 Two classes that look like unassertable prose and are not.
