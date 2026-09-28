@@ -99,13 +99,13 @@ Reachability: impl-review writes `NEXT: design-promote` (lite) at its green exit
 AC: AC-4, AC-8, AC-9
 Material risk: change: review routing and DoD aggregation
 Reachability: impl-review step 8 reads `persist-review`'s findings JSON to test the AC-8 condition; the same step writes the `resolved: … — test-fix` line that DoD aggregation reads
-- [ ] `asd-phase-impl-review.md`:
+- [x] `asd-phase-impl-review.md`:
   - step 6 dispatches `reviewers.impl` of the frozen workflow;
   - the lite manual-verification decision moves to the orchestrator;
   - steps 6-7 persist every return through `persist-review`;
   - step 8 gains the AC-8 branch per `review-policy.md` "Low-severity test-only findings";
   - the green exit is `NEXT: retro` (standard) or `NEXT: design-promote` (lite), and the return contract is updated.
-- [ ] `asd-phase-design-review.md`: persist returns through `persist-review`.
+- [x] `asd-phase-design-review.md`: persist returns through `persist-review`.
 
 ### Task 7: README, AGENTS.md, release and sync
 AC: AC-7
