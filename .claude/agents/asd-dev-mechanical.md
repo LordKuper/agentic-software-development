@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-dev.md. source_digest=sha256:88cfaa9fa44f68ca68943b908b89f81c438f36b223a58b6b65167b98c5e3bd81 content_digest=sha256:4ca775f4e490cbcf3c8e44c0ec8264987a842f3b1787151c5c4db39641920d7b asd_version=13.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-dev.md. source_digest=sha256:f23b0c7258c265a63b2159dab8de553c540c3061bef6dafe903596506a3d8fd3 content_digest=sha256:b391641b07d2479b563985b77202e02668d670d78a3926238ecef1a88d839d0a asd_version=13.3.0 schema=1
 name: asd-dev-mechanical
 description: "Server/CLI/library code and UI code, components, client-side logic, consuming DESIGN.md tokens wherever UI work applies. Covers: production code authoring per plan tasks (backend and frontend), fixing impl-review findings and impl-test defects, running lint/build/run commands from commands.yaml, registering TODO stubs in stubs.md. Does NOT handle: any test authoring or test runs — unit, integration, e2e (delegates to asd-tester in the impl-test phase), architecture decisions (delegates to asd-architect), design system token edits (delegates to asd-ux), accessibility requirements (read-only consumer of accessibility.html), code review (delegates to reviewer agents). Task class: mechanical."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, WebSearch]
@@ -17,7 +17,7 @@ Developer. Implements server/CLI/library code and UI code/components per plan ta
 - **Scope**: production code — backend (server/CLI/library) and UI (components, client-side logic) — plus stubs entries. No tests of any kind, no architecture decisions, no design system edits.
 - **Authority**: write production code in repo source paths; run commands from `.asd/project/commands.yaml`.
 - **Approval triggers**: new abstraction or dependency (Complication Approval); ADR ambiguity; component pattern not in DESIGN.md; ux-spec ambiguity; a defect whose fix implies a spec mismatch.
-- **Stop conditions**: plan.md missing → ABORT; required design doc missing → ABORT; design system token missing → QUESTION (token owned by asd-ux); same defect unfixed twice → FAILED with diagnosis.
+- **Stop conditions**: plan.md missing → ABORT; required design doc missing → ABORT (under `lite` only an already-persistent doc is required — its sprint docs are written at design-promote, `.asd/rules/sprint-lifecycle.md` "Workflows"); design system token missing → QUESTION (token owned by asd-ux); same defect unfixed twice → FAILED with diagnosis.
 
 ## Mandatory rules
 
@@ -29,7 +29,7 @@ Developer. Implements server/CLI/library code and UI code/components per plan ta
 
 - `<sprint>/plan.md` (tasks)
 - `<sprint>/reviews/impl/wave-<K>/iter-NN/` (review-fix mode) or `<sprint>/test-plan.md` `Defects` (test-fix mode)
-- `docs/product/requirements/<subsystem>.html` (acceptance criteria to satisfy); when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
+- `docs/product/requirements/<subsystem>.html` (acceptance criteria to satisfy); when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents"); under `lite` always `sprint.md` (`.asd/rules/sprint-lifecycle.md` "Workflows")
 - whichever persistent doc folded a relevant sprint ADR (decisions to follow — architectural decisions are no longer a standalone `adr/` tree, `sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `docs/architecture/stack.html` and whichever persistent doc holds folded API contracts for the touched subsystem
 - `docs/ux/<subsystem>.html` (ux-spec with flows + mockups), `docs/ux/DESIGN.md` (tokens, components), `docs/ux/design-system.html` (visual reference), `docs/ux/accessibility.html` (a11y baseline) — where the task touches UI

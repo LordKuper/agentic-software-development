@@ -14,8 +14,9 @@ accepted answer for a mostly-docs change surface:
    finding, and a new test dependency trips the Simplicity Default.
 2. **Static canon-consistency assertions inside `tests/run.js`** where a machine-checkable invariant
    exists across files (derive the value from its SSoT, assert every mirror). Precedents in-file:
-   the retired-`asd-pm` canon scan, `upstream_hashes`/`canon_hashes` checks, and (added sprint 007)
-   the `PHASE_CHAIN` ↔ skill/workflow bijection + ordered prose mirrors. Prefer a new assertion in a
+   the retired-`asd-pm` canon scan, `upstream_hashes`/`canon_hashes` checks, and the §16 chain
+   checks (sprint 007; since sprint 020 sourced from `.asd/workflows/<name>.json` via
+   `runtime.loadWorkflow`, one relation per definition). Prefer a new assertion in a
    loop that already reads those files over a new test — the suite count going *down* while coverage
    goes up is a good outcome here.
 
@@ -176,6 +177,15 @@ that, an ordinal-keyed one reddens on a correct edit.
 
 Table rows likewise: a `^\| design \|` row locator hits `sprint-lifecycle.md`'s phase table before
 the no-op table. Anchor on the table's header row (`\| Phase \| No-op when \|[\s\S]*?^\| design \|`).
+
+Co-occurrence sweeps ("a line quoting a workflow name may not say default") scope per **sentence**, not
+per line: canon lines hold several sentences, and an unrelated "resume (default)" shares a line with a
+quoted `standard` (sprint 020 review-fix). Re-measure any reviewer claim like "a line-scoped widening
+needs no exemption" at the current HEAD: the dev chain in the same round can make it false.
+
+A reviewer-requested cleanup of hook/runtime code (dropping comments, collapsing a branch) is a
+behaviour change candidate: mutate the rewritten line. Sprint 020 entry 3 found three slips on the
+archived-sprint filter that no test caught.
 
 ## Citations and "not restated here" are checkable, as relations
 

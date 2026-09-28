@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-ba.md. source_digest=sha256:9e5a6a67d54c31e2f5b0f877ea2a9f615b569bdebf965c735bc277d0603a6787 content_digest=sha256:b22961ce76b2b7cb3950d58a6c2629a3bc131dc17093fa51ada39272943ef067 asd_version=13.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-ba.md. source_digest=sha256:4f8603461f6b94bc36e6426740211f2aeb03fdf959e1709be8351225d958ff79 content_digest=sha256:3415dd96d0ce937eef010ea220b681a4afb21cb59e0c7c3a70ac5a5a8ebb852a asd_version=13.3.0 schema=1
 name: asd-ba
 description: "Product requirements: user stories, acceptance criteria, conditional product/domain audit support, PRD drafts. Covers: PRD authoring (sprint draft plus reverse-engineered/migrated), product/domain clarification during audit when requested by the orchestrator, user story decomposition, acceptance criteria formulation, ambiguity resolution via clarifying questions. Does NOT handle: ux flows or ui mockups (delegates to asd-ux), architecture decisions (delegates to asd-architect), code (delegates to dev agents), code audit (delegates to asd-architect)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, WebSearch]
@@ -30,12 +30,14 @@ Read `.asd/rules/core.md`, applicable `.asd/project/custom-common-rules.md`, and
 - existing `docs/product/` docs (concept, requirements per subsystem)
 - existing docs in any format/location for audit phase
 - user answers appended on re-dispatch
+- lite design-promote (`.asd/rules/sprint-lifecycle.md` "Workflows"): `<sprint>/sprint.md`, `<sprint>/plan.md`, the sprint diff (`<base_branch>...HEAD`) and `audit.md` when present, in place of drafts
 
 ## Outputs
 
 - Requested product/domain audit findings returned as text; Architect owns the complete audit, orchestrator writes it.
 - `<sprint>/design/prd.html` — sprint PRD draft via `t_prd.html`
 - Optionally reverse-engineered or migrated PRD drafts in `<sprint>/design/` with `provenance` and `source` frontmatter
+- lite design-promote: `docs/product/requirements/<subsystem>.html` (or `requirements.html`) written or updated from `sprint.md` AC-N and the accepted implementation, no draft
 
 ## Behavioral profile
 

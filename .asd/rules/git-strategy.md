@@ -13,7 +13,7 @@ Before creating: `git fetch origin`, fast-forward local `git.base_branch` to `or
 - Body describes WHY, not WHAT
 - One commit per task when possible; phase-grouped acceptable for small tasks
 - A dispatched agent commits in the one-command form of "Commit before review"
-- A dispatched `asd-dev`/`asd-tester` commit carries one trailer line `ASD-Task: <id>` per id it covers — `Task N`, a review finding id (its id in the reviewer's ledger `findings`, prefixed by its review file when another file of the iteration reuses it: `testing.md F-1`), `D-N`, `impl-test entry N` for impl-test's own commits, or `impl-review wave-<K>/iter-NN suite` (its iteration id, `sprint-lifecycle.md` "Review iteration counters") for impl-review step 9's in-place test fix
+- A dispatched `asd-dev`/`asd-tester` commit carries one trailer line `ASD-Task: <id>` per id it covers — `Task N`, a review finding id (its id in the reviewer's ledger `findings`, prefixed by its review file when another file of the iteration reuses it: `testing.md F-1`), `D-N`, `impl-test entry N` for impl-test's own commits, or `impl-review wave-<K>/iter-NN suite` (its iteration id, `sprint-lifecycle.md` "Review iteration counters") for impl-review step 9's in-place test fix; impl-review's in-place fix of low-severity test-only findings (`review-policy.md` "Low-severity test-only findings") uses the review finding id form
 - Before push: squash local WIP/fixup commits into task-level commits (`git reset --soft` + recommit, or non-interactive rebase). Applies to unpushed commits only — published history stays untouched (see Forbidden)
 
 ## Forbidden

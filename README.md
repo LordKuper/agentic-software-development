@@ -2,7 +2,7 @@
 
 A multi-agent workflow for **Claude Code and Codex** that drives software projects end-to-end through fixed-shape sprints: from concept and tech-stack definition, through design and review, all the way to a green PR.
 
-ASD is **stack-agnostic** — it works on any language, framework, or runtime. The workflow itself never touches your application code directly; it dispatches 11 specialized agents (BA, UX, Architect, Dev, Tester, reviewers, advisor), coordinated by the main orchestrator and 18 skills.
+ASD is **stack-agnostic** — it works on any language, framework, or runtime. The workflow itself never touches your application code directly; it dispatches 12 specialized agents (BA, UX, Architect, Dev, Tester, reviewers, advisor), coordinated by the main orchestrator and 18 skills.
 
 Both providers run from one canonical source under `.asd/` (agents, skills, hooks); `.asd/sync.js` generates each provider's own view (`.claude/`, `.codex/`, `.agents/skills/`) and keeps them in sync. See [`.asd/rules/providers.md`](.asd/rules/providers.md) for the canonical/provider path map and semantic-operation mapping.
 
@@ -10,9 +10,9 @@ Both providers run from one canonical source under `.asd/` (agents, skills, hook
 
 ## Why use it
 
-- **Repeatable structure.** Every sprint follows the same 11 phases — no improvisation, no forgotten steps.
+- **Repeatable structure.** Every sprint follows one of two fixed-shape workflows, chosen at sprint start — no improvisation, no forgotten steps (see "Workflows").
 - **Documentation that stays alive.** Persistent docs (concept, stack, UX) update on every sprint instead of rotting; architecture decisions fold into whichever of them already owns the subject.
-- **Reviews that converge.** Iteration severity floor stops reviewers from nitpicking the same low-severity issue forever, computed per review wave in impl-review. Each iteration dispatches reviewers with clean context, so verdicts aren't biased by the authoring that produced the artifact. Each internal reviewer must return a complete coverage ledger — every scoped file and every checklist rule accounted for — and the phase skill validates that full ledger before writing, rejecting and re-dispatching any reviewer whose ledger is incomplete, so no file or rule is skipped silently. Only a coverage summary line, the full n/a list, and non-passing rows are persisted to the review file — the gate runs on the full returned ledger regardless.
+- **Reviews that converge.** Iteration severity floor stops reviewers from nitpicking the same low-severity issue forever, computed per review wave in impl-review. Each iteration dispatches reviewers with clean context, so verdicts aren't biased by the authoring that produced the artifact. Each internal reviewer must return a complete coverage ledger — every scoped file and every checklist rule accounted for — and the phase skill validates that full ledger before writing, rejecting and re-dispatching any reviewer whose ledger is incomplete, so no file or rule is skipped silently. The validated return is persisted as-is through `node .asd/runtime.js persist-review`, with a findings JSON beside it.
 - **Brownfield-friendly.** The audit phase reads any existing docs and code (in any format and location) and reverse-engineers them into the workflow's structure.
 - **One source of truth.** SSoT iron rule is enforced by a dedicated Documentation reviewer.
 - **Subsystem-aware.** A subsystem registry (`docs/architecture/subsystems.md`) organises persistent docs per subsystem, with an optional LikeC4 or Mermaid C4 diagram.
@@ -121,13 +121,36 @@ This repo (the ASD framework source itself) runs `node .asd/sync.js --check` in 
 /asd-sprint         # start your first sprint
 ```
 
-`/asd-sprint` then walks you through the eleven sprint phases automatically, gating on your approval at every checkpoint — some gates pause before writing the artifact, others write it first and gate on your review of the file (see `.asd/rules/checkpoints.md`).
+`/asd-sprint` then walks you through the sprint phases automatically — eleven for `standard`, nine for `lite` (see "Workflows") — gating on your approval at every checkpoint — some gates pause before writing the artifact, others write it first and gate on your review of the file (see `.asd/rules/checkpoints.md`).
 
 ---
 
-## Workflow overview
+## Workflows
 
-Each sprint runs through eleven mandatory phases in order:
+Every sprint runs one of two workflows, declared in `.asd/workflows/<name>.json` and chosen by a hard user decision at the first scope step — never defaulted, never read from config, frozen in `state.json.workflow` for the sprint's lifetime:
+
+- **`standard`** (what a `state.json` without the field reads as — a sprint started before v13.3.0) — the full eleven-phase chain below: design and design-review run, four internal reviewers plus External Review cover impl-review.
+- **`lite`** — a nine-phase chain for lean changes: `scope → audit → plan → impl ⇄ impl-test → impl-review → design-promote → retro → pr`. No `design`/`design-review`, no drafts; acceptance criteria always come from `sprint.md`'s own `AC-N` list. impl-review dispatches one combined internal reviewer (`asd-reviewer-combined`, applying the Correctness/Efficiency/Documentation rubrics in a single pass) plus External Review. `design-promote` runs after impl-review acceptance and writes any enabled persistent docs straight from the accepted implementation — unreviewed, no draft.
+
+| Phase | standard | lite |
+|---|---|---|
+| **scope** | yes | yes |
+| **audit** | yes | yes |
+| **design** | yes | — |
+| **design-review** | yes | — |
+| **design-promote** | after design-review, promotes drafts | after impl-review, promotes the accepted implementation |
+| **plan** | yes | yes |
+| **impl** | yes | yes |
+| **impl-test** | yes | yes |
+| **impl-review** | 4 internal reviewers + External | 1 combined internal reviewer + External |
+| **retro** | yes | yes |
+| **pr** | yes | yes |
+
+See `.asd/rules/sprint-lifecycle.md` "Workflows" for the full rule set.
+
+### Workflow overview (standard)
+
+Each sprint running `standard` runs through eleven mandatory phases in order:
 
 ```mermaid
 flowchart TD
@@ -192,7 +215,7 @@ Phase skills (`asd-phase-*`) are dispatched internally by `/asd-sprint`/`$asd-sp
 
 ## Agents
 
-Eleven specialized agents are canonically defined in `.asd/agents/` and generated per provider: `.claude/agents/*.md` for Claude Code, `.codex/agents/*.toml` for Codex. Each declares a model family alias per provider (Claude: fable/opus/sonnet/haiku; Codex: sol/luna) plus supported reasoning effort (omitted for Haiku); `.asd/sync.js` resolves aliases to concrete model ids via `.asd/release-manifest.json`'s `model_families` table (mirrored in [`.asd/rules/providers.md`](.asd/rules/providers.md)). Effort is shown as `model/effort`.
+Twelve specialized agents are canonically defined in `.asd/agents/` and generated per provider: `.claude/agents/*.md` for Claude Code, `.codex/agents/*.toml` for Codex. Each declares a model family alias per provider (Claude: fable/opus/sonnet/haiku; Codex: sol/luna) plus supported reasoning effort (omitted for Haiku); `.asd/sync.js` resolves aliases to concrete model ids via `.asd/release-manifest.json`'s `model_families` table (mirrored in [`.asd/rules/providers.md`](.asd/rules/providers.md)). Effort is shown as `model/effort`.
 
 Only the main orchestrator (and a skill it runs inline) ever prompts you for a discrete decision (`AskUserQuestion` on Claude Code, chat-and-block on Codex — `.asd/rules/providers.md` "Semantic operations -> host convention"). No creator, reviewer, or advisor agent carries that grant on either host: a dispatched agent facing a hard or unresolved decision returns `QUESTION` (creators) or its `Escalations`/`Stalemate` carrier (reviewers/External) to the orchestrator instead (`.asd/rules/sprint-lifecycle.md` "`QUESTION` protocol", `.asd/rules/review-policy.md` "Gate Verdict Format").
 
@@ -210,11 +233,11 @@ The main orchestrator owns scope, plan, state, decisions, manual-step validation
 
 All five creators carry `WebFetch`/`WebSearch` (Codex `web_search: "live"`), each scoped by its own Tool policy. BA, UX, and Architect also carry `Bash`, each bounded to its own run-command policy: BA to read-only git inspection (`git log`/`git show`/`git diff`); UX to the `designmd-lint`/`-diff`/`-export` `commands.yaml` aliases (`designmd-install` is the orchestrator's, run before dispatching UX); Architect to the `likec4` CLI (lint/validate only, never `build` inside a sprint draft) — none of the three writes an artifact via shell or holds a commit tool (`.asd/rules/git-strategy.md` "Commit before review"). Dev and Tester carry `Bash` limited by their run-command policy (`commands.yaml` commands plus `git add`/`git commit` for their own work; Dev never runs `test`) and are the only two agents holding a commit tool.
 
-### Reviewers (4 internal + 1 external)
+### Reviewers (5 internal + 1 external)
 
-Reviewers write no review artifact, code or doc on any provider; on Claude `memory: project` serves them `Write`, and policy, not config, keeps it to their own memory directory (scope: `review-policy.md` "Gate Verdict Format"). A finding in a reviewer's memory goes to that reviewer's memory-fix dispatch, and the orchestrator commits the fix. The 4 internal Claude reviewer agents list no `Write`/`Edit`/`Bash` in `tools`; their Codex counterparts set `sandbox_mode: "read-only"`. External Review is the one exception with `Bash` in its Claude `tools` (it necessarily needs a command-runner to invoke the wrapped CLI at all) — its read-only guarantee is instead enforced explicitly on the WRAPPED subprocess itself: `codex exec --sandbox read-only` when running under Claude Code, `claude -p ... --tools "Read,Grep,Glob"` when running under Codex. Every reviewer returns its verdict as final text; the dispatching phase workflow writes the review file. Every reviewer gets its scope per `.asd/rules/review-policy.md` "Scope hand-off": its own file list, a precomputed `.diff`, whole files as context only; "Reviewer responsibility" there is the sole owner map — one reviewer per concern, one file list per reviewer.
+Reviewers write no review artifact, code or doc on any provider; on Claude `memory: project` serves them `Write`, and policy, not config, keeps it to their own memory directory (scope: `review-policy.md` "Gate Verdict Format"). A finding in a reviewer's memory goes to that reviewer's memory-fix dispatch, and the orchestrator commits the fix. The 5 internal Claude reviewer agents list no `Write`/`Edit`/`Bash` in `tools`; their Codex counterparts set `sandbox_mode: "read-only"`. External Review is the one exception with `Bash` in its Claude `tools` (it necessarily needs a command-runner to invoke the wrapped CLI at all) — its read-only guarantee is instead enforced explicitly on the WRAPPED subprocess itself: `codex exec --sandbox read-only` when running under Claude Code, `claude -p ... --tools "Read,Grep,Glob"` when running under Codex. Every reviewer returns its verdict as final text; the dispatching phase workflow writes the review file. Every reviewer gets its scope per `.asd/rules/review-policy.md` "Scope hand-off": its own file list, a precomputed `.diff`, whole files as context only; "Reviewer responsibility" there is the sole owner map — one reviewer per concern per workflow roster, one file list per reviewer.
 
-Web grants split per reviewer: only Correctness carries `WebFetch`/`WebSearch` (Codex `web_search: "live"`), scoped by its Tool policy. Efficiency, Testing, Documentation, and External Review carry neither (Codex `web_search: "disabled"`).
+Web grants split per reviewer: Correctness and the `lite`-only combined reviewer carry `WebFetch`/`WebSearch` (Codex `web_search: "live"`), each scoped by its Tool policy. Efficiency, Testing, Documentation, and External Review carry neither (Codex `web_search: "disabled"`).
 
 | Agent | Claude | Codex | Phase(s) | Scope |
 |---|---|---|---|---|
@@ -222,11 +245,12 @@ Web grants split per reviewer: only Correctness carries `WebFetch`/`WebSearch` (
 | `asd-reviewer-efficiency` | opus/high | sol/high | design-review + impl-review | Over-engineering (13-item checklist) + structure/cohesion (god/sprawling type) detection; impl-review-only perf budgets, regression, anti-patterns — perf sections n/a-able (see below). Receives every file in scope. |
 | `asd-reviewer-testing` | opus/high | sol/high | impl-review | `test-plan.md` decisions (risk fit, justified removals and no-test calls, fail-first proof), test quality, manual verification capture. Receives only the `isTest` scope files plus `test-plan.md` and its segments — the one narrowed reviewer list. |
 | `asd-reviewer-documentation` | opus/high | sol/high | design-review + impl-review | SSoT integrity, documentation economy, template adherence, traceability, in-code doc comments and stub resolution (impl-review). Receives every file in scope. |
+| `asd-reviewer-combined` | opus/high | sol/high | impl-review (`lite` only) | Single-pass reviewer for `lite`'s impl-review: applies the Correctness, Efficiency, and (when a documentation file is in scope) Documentation rubrics, plus its own overall-quality entry. Receives every file in scope. |
 | `asd-external-review` | sonnet/medium | sol/medium | both | Wraps the *other* provider's CLI (Codex CLI under Claude Code, Claude CLI under Codex), reads its own content from a structured scope manifest — file list plus a `.diff` file, per `.asd/rules/review-policy.md` § Scope hand-off (`.asd/rules/external-review.md` § Phase-scoped payload) — parses output, applies severity floor |
 
-Reviewers emit a machine-parseable first-line verdict token: `[REVIEW-<phase>-<reviewer>]: APPROVE|CONCERNS|FAIL`, where `<phase>` is `design` or `impl` and `<reviewer>` is `correctness | efficiency | testing | documentation | external`. External Review's first line may also be the skip form, per `.asd/rules/external-review.md` § Outcome contract.
+Reviewers emit a machine-parseable first-line verdict token: `[REVIEW-<phase>-<reviewer>]: APPROVE|CONCERNS|FAIL`, where `<phase>` is `design` or `impl` and `<reviewer>` is `correctness | efficiency | testing | documentation | combined | external`. External Review's first line may also be the skip form, per `.asd/rules/external-review.md` § Outcome contract.
 
-**Diff-scoped rubric-section gating** (always on — SSoT: `.asd/workflows/asd-phase-impl-review.md` step 5): Correctness and Efficiency are always dispatched; two diff-derived predicates instead mark a rubric SECTION `n/a: <predicate>` inside that reviewer's own returned coverage ledger, so the agent never loads that domain's inputs for the n/a'd section. Correctness's UI conformance section is n/a only when no file in the iteration's scope list is a UI surface; Efficiency's five performance sections are n/a only when both no perf-budgets section exists in `custom-coding-rules.md` and the scope list contains no executable file (conjunctive). Each n/a'd section re-enters automatically the moment a qualifying file re-enters the diff. `checkpoints.md`'s impl-review approval gate is unaffected (`review-policy.md` DoD table).
+**Diff-scoped rubric-section gating** (always on — SSoT: `.asd/workflows/asd-phase-impl-review.md` step 5): Correctness and Efficiency (in `lite`, Combined) are always dispatched; two diff-derived predicates instead mark a rubric SECTION `n/a: <predicate>` inside that reviewer's own returned coverage ledger, so the agent never loads that domain's inputs for the n/a'd section. Correctness's UI conformance section is n/a only when no file in the iteration's scope list is a UI surface; Efficiency's five performance sections are n/a only when both no perf-budgets section exists in `custom-coding-rules.md` and the scope list contains no executable file (conjunctive). Each n/a'd section re-enters automatically the moment a qualifying file re-enters the diff. `checkpoints.md`'s impl-review approval gate is unaffected (`review-policy.md` DoD table).
 
 An **APPROVE latch** persists per phase per reviewer key in `state.json` — in impl-review, per review wave: a reviewer that returned APPROVE on iteration N is not re-dispatched on N+1+ within the same wave, and counts as satisfied at that wave's DoD. A red full suite at the end of impl-review (see below) clears every latch sprint-wide.
 
@@ -300,12 +324,12 @@ your-project/
 │   ├── release-manifest.json        # schema/asd version, managed-path list, model-family table; drives /asd-update + sync.js
 │   ├── sync-state.json              # last-written digests for managed-block / JSON-merge targets (committed)
 │   ├── sync.js                      # generator: canon -> .claude/ + .codex/ + .agents/skills/ (--check / --apply)
-│   ├── runtime.js                   # deterministic helper: task-cost routing, external-review preflight, per-reviewer coverage-manifest emission (`--base/--head` writes the manifest's `.diff` patch, one file per distinct list and range, and authorizes compact `pureRename` rows on renames with identical content and mode; `--test-plan` narrows Testing's impl-review list; `--full-files <path> --full-base <sha>` adds External Review's carried-over files, diffed over that base — in design-review, without `--full-base`, left out of the snapshot diff and read whole; `--reviewer external` emits External Review's scope manifest plus its own `.diff`, no rubric or ledger), coverage-ledger validation, manifest digests, impl-test defect-stalemate comparison (multi-`## Defects`-section fail-closed), change-surface cap check (`surface-check`), review-wave measurement and division (`review-waves`) and a wave's iteration-1 list at current paths (`wave-files`), design-review iteration draft snapshots (`draft-snapshot`, copying draft content under the iteration dir; `--snapshot <prev iter dir>` diffs against it from iteration 2)
+│   ├── runtime.js                   # deterministic helper: task-cost routing, external-review preflight, per-reviewer coverage-manifest emission (`--base/--head` writes the manifest's `.diff` patch, one file per distinct list and range, and authorizes compact `pureRename` rows on renames with identical content and mode; `--test-plan` narrows Testing's impl-review list; `--full-files <path> --full-base <sha>` adds External Review's carried-over files, diffed over that base — in design-review, without `--full-base`, left out of the snapshot diff and read whole; `--reviewer external` emits External Review's scope manifest plus its own `.diff`, no rubric or ledger; `--reviewer combined` composes `lite`'s single-pass reviewer manifest from the Correctness/Efficiency/Documentation rubrics), coverage-ledger validation, manifest digests, impl-test defect-stalemate comparison (multi-`## Defects`-section fail-closed), change-surface cap check (`surface-check`), review-wave measurement and division (`review-waves`) and a wave's iteration-1 list at current paths (`wave-files`), design-review iteration draft snapshots (`draft-snapshot`, copying draft content under the iteration dir; `--snapshot <prev iter dir>` diffs against it from iteration 2), retro candidate discovery (`retro-candidates`), and every reviewer/External return persisted to its review file plus findings JSON (`persist-review`)
 │   ├── rules/                       # workflow rules (role/phase-scoped reads), incl. providers.md
 │   ├── templates/                   # artifact templates (t_*.html / .md / .yaml / .c4), incl. t_AGENTS.md / t_CLAUDE.md
-│   ├── agents/                      # 11 canonical agent specs plus declared tier variants (JSON frontmatter: claude{} + codex{} blocks)
+│   ├── agents/                      # 12 canonical agent specs plus declared tier variants (JSON frontmatter: claude{} + codex{} blocks)
 │   ├── skills/                      # 18 canonical skill specs (SKILL.md)
-│   ├── workflows/                   # 11 phase orchestration files (referenced by path, not generated)
+│   ├── workflows/                   # 11 phase orchestration files (referenced by path, not generated) + 2 workflow definitions (`standard.json`, `lite.json`, see "Workflows")
 │   ├── hooks/                       # canonical session-start.js (--provider claude|codex)
 │   ├── migrations/                  # one zero-dependency Node script per ASD version, run by /asd-update in ascending order
 │   ├── project/
@@ -320,13 +344,13 @@ your-project/
 │       ├── <NNN-slug>/              # active sprint (one at a time); decisions-log.md and test-plan.md created here, rotating into numbered `decisions-log.NNN.md` / `test-plan.entry-NN.md` segments so neither grows unbounded (`artifact-layout.md`); archived with the sprint
 │       └── archived/<NNN-slug>/     # moved here after explicit closure approval; completed sprints immutable
 ├── .claude/                         # generated Claude Code view
-│   ├── agents/                      # 15 agent definitions: 11 roles + 4 tier variants (*.md)
+│   ├── agents/                      # 16 agent definitions: 12 roles + 4 tier variants (*.md)
 │   ├── skills/                      # 18 skill definitions (SKILL.md)
 │   ├── hooks/                       # SessionStart hook (Node.js)
 │   ├── agent-memory/<agent>/        # hand-authored, never generated — see "Agent memory" in artifact-layout.md
 │   └── settings.json                # hook registration + permissions allowlist (JSON-merge: ASD owns only its own entry)
 ├── .codex/                          # generated Codex view
-│   ├── agents/                      # 15 agent definitions: 11 roles + 4 tier variants (*.toml)
+│   ├── agents/                      # 16 agent definitions: 12 roles + 4 tier variants (*.toml)
 │   ├── hooks/                       # SessionStart hook (Node.js)
 │   └── hooks.json                   # hook registration (JSON-merge: ASD owns only its own entry); requires trust before hooks run
 ├── .agents/
@@ -414,7 +438,7 @@ The canonical SessionStart hook (`.asd/hooks/session-start.js`) prints a one-blo
 
 ### Settings.json / hooks.json
 
-`.claude/settings.json` pre-allows common git / gh / likec4 / designmd / codex commands so Claude Code does not prompt you for permission each time; edit its `permissions.allow` array to extend. Since several agents carry `WebFetch`/`WebSearch` (creators, Correctness, Advisor — see "Agents" above), also pre-allow those tools there if you don't want a permission prompt on first use. `.codex/hooks.json` registers the same hook for Codex. Both files are JSON-merge targets — ASD owns only its own hook entry in each, never the rest of the file.
+`.claude/settings.json` pre-allows common git / gh / likec4 / designmd / codex commands so Claude Code does not prompt you for permission each time; edit its `permissions.allow` array to extend. Since several agents carry `WebFetch`/`WebSearch` (creators, Correctness, the combined reviewer, Advisor — see "Agents" above), also pre-allow those tools there if you don't want a permission prompt on first use. `.codex/hooks.json` registers the same hook for Codex. Both files are JSON-merge targets — ASD owns only its own hook entry in each, never the rest of the file.
 
 ---
 
@@ -436,7 +460,7 @@ FAIL findings block progression. Fixes within scope may proceed under the active
 Yes. Set `project.subsystem_decomposition: disabled` during `/asd-init`. Persistent docs become flat project-wide files. No subsystem registry is maintained.
 
 **Can I skip PRD/UX-spec/ADR/C4 for a lean sprint?**
-Yes. PRD, UX-spec and ADR are independently toggleable under `documents.*` in `config.yaml`; the diagram is off with `project.diagram_tool: none` or decomposition disabled. All are frozen into the sprint's `state.json` at scope time (a later config edit never changes an active sprint's rules). To skip one for the active sprint only, ask at the scope gate, or at the audit exit, before any draft of it exists: a hard gate that flips its frozen value and leaves `config.yaml` untouched (`.asd/rules/sprint-lifecycle.md` "Optional documents"). `audit` becomes a fast no-op on its own when `documents.audit` resolves to off: it advances immediately, writes nothing, with one skip line in the decisions log. When `prd`/`ux_spec`/`adr` and the diagram are **all** off, one deterministic write at the audit exit collapses `design`, `design-review`, and `design-promote` together and advances straight to `plan`; none of the three is dispatched. `plan`/`impl`/`impl-test`/`impl-review`/`retro`/`pr` always run; acceptance criteria then come from `sprint.md`'s own `AC-N` list instead of the PRD. See `.asd/rules/sprint-lifecycle.md` "Optional documents" and "No-op phase rule".
+Yes. PRD, UX-spec and ADR are independently toggleable under `documents.*` in `config.yaml`; the diagram is off with `project.diagram_tool: none` or decomposition disabled. All are frozen into the sprint's `state.json` at scope time (a later config edit never changes an active sprint's rules). To skip one for the active sprint only, ask at the scope gate, or at the audit exit, before any draft of it exists: a hard gate that flips its frozen value and leaves `config.yaml` untouched (`.asd/rules/sprint-lifecycle.md` "Optional documents"). `audit` becomes a fast no-op on its own when `documents.audit` resolves to off: it advances immediately, writes nothing, with one skip line in the decisions log. In the `standard` workflow, when `prd`/`ux_spec`/`adr` and the diagram are **all** off, one deterministic write at the audit exit collapses `design`, `design-review`, and `design-promote` together and advances straight to `plan`; none of the three is dispatched. `plan`/`impl`/`impl-test`/`impl-review`/`retro`/`pr` always run; acceptance criteria then come from `sprint.md`'s own `AC-N` list instead of the PRD. For a sprint with no design phases at all, pick the `lite` workflow at scope: `design-promote` then runs after `impl-review`, writing the enabled docs from the implementation. See `.asd/rules/sprint-lifecycle.md` "Optional documents", "No-op phase rule" and "Workflows".
 
 **Can ASD develop itself?**
 Yes — set `self_hosting: enabled` in `config.yaml` (this repo ships with it enabled, `documents.audit` only). `/asd-sprint` then edits ASD's own canonical sources per the exhaustive write allowlist in `.asd/rules/sprint-lifecycle.md` "Self-hosting" — generated `.claude/`/`.codex/`/`.agents/skills/` stay off-limits, resynced via `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `.asd/rules/providers.md` "Canonical path -> per-provider path") after every canon edit. Root `AGENTS.md`'s managed-block/hand-edited-tail split: `.asd/rules/providers.md` "Canonical path -> per-provider path" (ownership home). `/asd-update` refuses to run here (it pulls framework files INTO a consumer; a self-hosting repo IS the framework).

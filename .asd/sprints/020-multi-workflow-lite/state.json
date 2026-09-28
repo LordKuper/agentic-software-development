@@ -1,0 +1,234 @@
+{
+  "sprint_id": "020-multi-workflow-lite",
+  "branch": "sprint/020-multi-workflow-lite",
+  "phase": "pr",
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "adr": false,
+    "c4": false
+  },
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "explicit accept",
+      "evidence": "sprint.md AC-1..AC-9",
+      "artifact_revision": "sprint.md@2026-09-28T08:31:38Z"
+    },
+    {
+      "gate": "retro-intake",
+      "decision_actor": "user",
+      "reason": "include 016#P-1, 017#P-3; defer rest",
+      "evidence": "retro-backlog.md 020 rows",
+      "artifact_revision": "retro-backlog.md@2026-09-28T08:31:38Z"
+    },
+    {
+      "gate": "audit-contradiction",
+      "decision_actor": "user",
+      "reason": "AC-8/AC-9 apply to both workflows",
+      "evidence": "audit.md Contradictions #3",
+      "artifact_revision": "audit.md@2026-09-28T08:44:40Z"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "contradictions settled, user decided A1/A2/A10",
+      "evidence": "audit.md; decisions-log.md",
+      "artifact_revision": "audit.md@2026-09-28T08:44:40Z"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "user",
+      "reason": "explicit accept",
+      "evidence": "plan.md Tasks 1-7, surface 40/100",
+      "artifact_revision": "plan.md@2026-09-28T09:53:57Z"
+    },
+    {
+      "gate": "impl-assessment",
+      "decision_actor": "orchestrator",
+      "reason": "all tasks done, build+lint green, flagged choices in-plan",
+      "evidence": "plan.md 25/25; sync --check ok",
+      "artifact_revision": "HEAD@9f29356"
+    },
+    {
+      "gate": "impl-review-green-handoff",
+      "decision_actor": "orchestrator",
+      "reason": "wave 1/1 roster APPROVE, terminal full suite green",
+      "evidence": "reviews/impl/wave-1/iter-03; test-plan.md Suite run 246/246",
+      "artifact_revision": "HEAD@6a2ddf2"
+    },
+    {
+      "gate": "pr-publication",
+      "decision_actor": "user",
+      "reason": "explicit: open PR and merge",
+      "evidence": "DoD: plan 25/25, wave 1/1 APPROVE, suite 246/246 @39a77a3",
+      "artifact_revision": "HEAD@283e5c4"
+    }
+  ],
+  "task_routing": {
+    "Task 1": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:public contract",
+      "resolved_model": "opus"
+    },
+    "Task 2": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:hook must never throw",
+      "resolved_model": "sonnet"
+    },
+    "Task 3": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow-gate rules",
+      "resolved_model": "opus"
+    },
+    "Task 4": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow-gate rules",
+      "resolved_model": "opus"
+    },
+    "Task 5": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow-gate rules",
+      "resolved_model": "opus"
+    },
+    "Task 6": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow-gate rules",
+      "resolved_model": "opus"
+    },
+    "Task 7": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:cross-file mirrors",
+      "resolved_model": "sonnet"
+    },
+    "impl-test entry 1": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow-gate rules",
+      "resolved_model": "opus"
+    },
+    "D-1": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:rule doc wording",
+      "resolved_model": "sonnet"
+    },
+    "D-2": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:rule doc wording",
+      "resolved_model": "sonnet"
+    },
+    "impl-test entry 2": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow-gate rules",
+      "resolved_model": "opus"
+    },
+    "wave-1/iter-01 dev chain": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow-gate rules",
+      "resolved_model": "opus"
+    },
+    "wave-1/iter-01 tester chain": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow-gate rules",
+      "resolved_model": "opus"
+    },
+    "impl-test entry 3": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow-gate rules",
+      "resolved_model": "opus"
+    },
+    "impl-test entry 4": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow-gate rules",
+      "resolved_model": "opus"
+    },
+    "impl-review terminal suite": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow-gate rules",
+      "resolved_model": "opus"
+    }
+  },
+  "skipped_phases": [
+    "design",
+    "design-review",
+    "design-promote"
+  ],
+  "reviews": {
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "wave": 1,
+      "waves": [
+        {
+          "iteration": 3,
+          "verdicts": {
+            "iter-01": {
+              "correctness": "CONCERNS",
+              "efficiency": "CONCERNS",
+              "testing": "CONCERNS",
+              "documentation": "CONCERNS",
+              "external": "CONCERNS"
+            },
+            "iter-02": {
+              "correctness": "APPROVE",
+              "efficiency": "APPROVE",
+              "testing": "APPROVE",
+              "documentation": "CONCERNS",
+              "external": "APPROVE"
+            },
+            "iter-03": {
+              "correctness": "APPROVE",
+              "efficiency": "APPROVE",
+              "testing": "APPROVE",
+              "documentation": "APPROVE",
+              "external": "APPROVE"
+            }
+          },
+          "iteration_heads": {
+            "iter-01": "1d1a4af1733110e4d8c0a26993db7dc4be1b14d6",
+            "iter-02": "4cec9418995073a12efb292fb7e3fb947c1d0748",
+            "iter-03": "2d4054d4479c70a177da043470a7c37fd03fa67e"
+          },
+          "latched": {
+            "correctness": 2,
+            "efficiency": 2,
+            "testing": 2,
+            "external": 2,
+            "documentation": 3
+          }
+        }
+      ]
+    }
+  },
+  "created_at": "2026-09-28T08:27:23Z",
+  "updated_at": "2026-09-28T12:39:14Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": {
+    "number": 55,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/55",
+    "state": "open"
+  },
+  "archived_at": null
+}

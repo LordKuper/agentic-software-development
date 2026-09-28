@@ -1,0 +1,84 @@
+diff --git a/.claude/agent-memory/asd-reviewer-correctness/MEMORY.md b/.claude/agent-memory/asd-reviewer-correctness/MEMORY.md
+index 8e4ab5b..fdf4b7a 100644
+--- a/.claude/agent-memory/asd-reviewer-correctness/MEMORY.md
++++ b/.claude/agent-memory/asd-reviewer-correctness/MEMORY.md
+@@ -6,3 +6,4 @@
+ - [OS is not shell](project_os-is-not-shell.md) — Claude Code runs commands via POSIX `Bash` even on win32; OS-keyed shell syntax is wrong for one provider
+ - [Check host claims against own dispatch](feedback_check-host-claims-against-own-dispatch.md) — host-capability canon claims: compare with your own tool list + host docs, not just the retro row
+ - [Read deferred gaps in sprint logs](feedback_read-deferred-gaps-in-sprint-logs.md) — grep decisions-log/friction-log for gaps "left for impl-review" before the verdict
++- [persist-review return shape](reference_persist-review-return-shape.md) — first table parsed by column; bare APPROVE keeps only the `—` row; no table before Findings
+diff --git a/.claude/agent-memory/asd-reviewer-correctness/reference_persist-review-return-shape.md b/.claude/agent-memory/asd-reviewer-correctness/reference_persist-review-return-shape.md
+new file mode 100644
+index 0000000..bb3a68c
+--- /dev/null
++++ b/.claude/agent-memory/asd-reviewer-correctness/reference_persist-review-return-shape.md
+@@ -0,0 +1,16 @@
++---
++name: persist-review-return-shape
++description: Since sprint 020 my return is parsed by runtime.js persist-review - first table by column position, bare APPROVE must carry only the `—` placeholder row
++metadata:
++  type: reference
++---
++
++Since sprint 020 the orchestrator persists my returned text with `node .asd/runtime.js persist-review` (`runtime.js` `reviewFindings`/`persistReview`). It reads the FIRST markdown table in the text by column position: id, severity, location.
++
++- `#` cell: a bare id; Severity cell exactly `low|medium|high|critical`.
++- A bare `APPROVE` with any real findings row is rejected; with no findings, leave the single `| — | — | — | no findings | — |` row.
++- CONCERNS/FAIL with no findings row is rejected.
++- Do not put any other table before the Findings table.
++- Files rows in the ledger stay `checked`/`n/a` (never `finding`); finding ids go on rules rows as `f`.
++
++**How to apply:** check this shape before handing back; a failed parse costs a transcription or a fresh re-dispatch. Related: [[review-method-no-shell]].
+diff --git a/.claude/agent-memory/asd-reviewer-efficiency/project_020-workflow-definition-keys.md b/.claude/agent-memory/asd-reviewer-efficiency/project_020-workflow-definition-keys.md
+index cf1d6a5..51d382f 100644
+--- a/.claude/agent-memory/asd-reviewer-efficiency/project_020-workflow-definition-keys.md
++++ b/.claude/agent-memory/asd-reviewer-efficiency/project_020-workflow-definition-keys.md
+@@ -5,7 +5,7 @@ metadata:
+   type: project
+ ---
+ 
+-`.asd/workflows/<name>.json` stores `next` and `rollback_reset` even though both are mostly derivable from `phases`. In 020 impl-review wave-1 iter-01 I judged both keep-as-is: they are plan-Overview-binding, the orchestrator (an LLM) reads them directly instead of re-deriving them, and `tests/run.js` asserts `rollback_reset` equals the derivation. Only the unused `dir` parameter and the hand-listed Documentation ids in `NA_TARGETS.docs` were raised.
++`.asd/workflows/<name>.json` stores `next` and `rollback_reset` even though both are mostly derivable from `phases`. In 020 impl-review wave-1 iter-01 I judged both keep-as-is: they are plan-Overview-binding, the orchestrator (an LLM) reads them directly instead of re-deriving them, and `tests/run.js` asserts `rollback_reset` equals the derivation. Only the unused `dir` parameter and the hand-listed Documentation ids in `NA_TARGETS.docs` were raised; both were fixed by iter-02 (APPROVE).
+ 
+ **Why:** if a later iteration flips this call without new evidence, the result is churn and inconsistent verdicts.
+ 
+diff --git a/.claude/agent-memory/asd-reviewer-testing/MEMORY.md b/.claude/agent-memory/asd-reviewer-testing/MEMORY.md
+index 593ad2a..1f97654 100644
+--- a/.claude/agent-memory/asd-reviewer-testing/MEMORY.md
++++ b/.claude/agent-memory/asd-reviewer-testing/MEMORY.md
+@@ -6,4 +6,4 @@
+ - [Review-fix defect proof](feedback_review-fix-defect-proof.md) — COR-* fixes need §17 fail-first record; re-read falsified or over-claiming assert messages; compare fix `none` reasons with sibling rows
+ - [Temp-repo git determinism](feedback_temp-repo-git-determinism.md) — runtime-spawned git inherits host config (diff.noprefix); Testing manifest = the wave's isTest files + test-plan (sprints 015/017); resolve rows from it
+ - [Value-removal sprints](feedback_value-removal-sprints.md) — swapped fixtures must hit the same disjunct; hand-enumerated sets on touched asserts = §17 low; pr-deferred ACs need a plan line
+-- [Workflow-definition sprints](feedback_workflow-definition-sprints.md) — predecessor pins stop at checkpoints.md; 3 collapse acting sites; name-guard cases need an existing target; memory dir leftover-swept
++- [Workflow-definition sprints](feedback_workflow-definition-sprints.md) — predecessor + collapse acting sites pinned (closed, 020 wave-1 review-fix); grep+compare per new workflow; name-guard target; memory dir swept
+diff --git a/.claude/agent-memory/asd-reviewer-testing/feedback_workflow-definition-sprints.md b/.claude/agent-memory/asd-reviewer-testing/feedback_workflow-definition-sprints.md
+index af0c506..025b9c9 100644
+--- a/.claude/agent-memory/asd-reviewer-testing/feedback_workflow-definition-sprints.md
++++ b/.claude/agent-memory/asd-reviewer-testing/feedback_workflow-definition-sprints.md
+@@ -1,17 +1,19 @@
+ ---
+ name: workflow-definition-sprints
+-description: Since sprint 020 the chain lives in .asd/workflows/<name>.json; per-workflow predecessor pins reach checkpoints.md only; collapse has 3 acting sites; name-guard cases need an existing target; this memory dir is swept for removed-mechanism terms
++description: Since sprint 020 the chain lives in .asd/workflows/<name>.json; predecessor pins reach checkpoints.md plus the acting-site workflow lines, all three design-collapse sites pinned (closed in 020 wave-1 review-fix); still grep+compare per new workflow; name-guard needs existing target; step-citation predicates; memory dir swept
+ metadata:
+   type: feedback
+ ---
+ 
+ Since sprint 020, each sprint workflow (`standard`, `lite`) is a definition in `.asd/workflows/<name>.json`, loaded by `runtime.loadWorkflow`. The §16 tests in `tests/run.js` derive everything from `readWorkflowDefinitions()`.
+ 
+-- **Predecessor pins stop at the rule home.** The chain-mirror test checks the "In `<workflow>`" predecessor clauses of `checkpoints.md` against each definition. The acting sites that actually fire `ABORT — precondition not met` are not checked: the `## Preconditions` / step 1 lines of `asd-phase-plan.md`, `asd-phase-retro.md` and `asd-phase-design-promote.md`, each naming a per-workflow predecessor. Raised low in sprint 020 wave-1 iter-01. Re-check this whenever a workflow is added or a predecessor moves.
+-- **The design collapse has three acting sites**: the audit exit (pinned to "workflows whose phases hold design"), the hook (`phases.includes('design')`, pinned by the probe case), and the `asd-sprint` SKILL.md resume/re-run exception (unpinned in sprint 020 — a real lite stuck-resume defect slipped through, COR-1). Check all three.
+-- **Name-guard negative cases must target a file that exists.** A traversal value like `../standard` that resolves to a path the fixture never wrote passes with or without the guard; a case variant like `Lite` fails without the guard only on a case-insensitive FS (Windows/macOS), not on Linux. Ask for a value that resolves to an installed definition (`../workflows/lite`).
++- **Predecessor pins (closed history).** Sprint 020 wave-1 iter-01 raised them because they stopped at `checkpoints.md`. Closed in the wave-1 review-fix: the chain-mirror loop now checks each predecessor that differs from `standard` both on the `checkpoints.md` "In `<name>`" line and in the acting workflow, `asd-phase-<phase>.md`, which emits `ABORT — precondition not met` (for lite: `asd-phase-plan.md`, `asd-phase-retro.md`, `asd-phase-design-promote.md`). Known limit: the acting-site regex matches anywhere in the file, not only on the Preconditions line (low).
++- **The design collapse has three acting sites, all pinned (closed history).** They are the audit exit (the AC-3 relation over `phases.includes('design')`), the session hook (per-workflow audit cases), and `asd-sprint` SKILL.md Step 2B. For Step 2B, both resume-flow collapse clauses (the re-run menu and the resume exception) are pinned by the AC-6 `collapseSentences` relation to the workflows whose chain holds `design`. This has been in place since the wave-1 review-fix.
++- **Name-guard negative cases must target a file that exists.** A traversal value like `../standard` that resolves to a path the fixture never wrote passes with or without the guard. A case variant like `Lite` fails without the guard only on a case-insensitive FS (Windows/macOS), not on Linux. Use a value that resolves to an installed definition (`../workflows/lite`).
++- **Step-citation pins.** Check which step the predicate actually picks out. The sprint-020 combined carve-out test requires the cited `asd-phase-design-promote.md` step to contain `creators` and `` `lite` ``, but step 5 (the "wait for creators" step) also matches. So the message "the step whose creators write the docs" claims more than the predicate checks. Judged low.
+ - **The NEXT-contract check uses the union over definitions.** A target added to one definition that another definition already routes (for example `retro` in lite's `impl-review`) stays green. This is recorded as a known limit.
+ - **This memory directory is inside a leftover-term sweep.** The sprint-020 AC-1 test greps every `.claude/agent-memory/**/*.md` for the name of the removed hook chain constant and for the removed reset-table phrase. If a memory write quotes either literally, the suite goes red. Paraphrase them.
++- **Ledger arithmetic.** README.md is not in `release-manifest.json` `upstream_hashes`, so a README-only mutation adds no hash-noise FAIL line. Rule docs add 1 noise line (`upstream_hashes`). Agents and skills add 3 (`canon_hashes`, `upstream_hashes`, `sync --check`). The hook adds 2.
+ 
+-**Why:** a rule-home pin looks complete, but it guards nothing at the site that executes. Writing to memory while reviewing can also break the suite for the next impl-test.
+-**How to apply:** in any sprint that edits workflow definitions, grep `.asd/workflows/asd-phase-*.md` and `.asd/skills/asd-sprint/SKILL.md` for per-workflow clauses and compare them with the tests. Before writing memory, check the removed-term regexes in `tests/run.js`. See [[sweep-exemption-granularity]], [[no-shell-review-method]], [[removed-flag-vacuity]].
++**Why:** a rule-home pin looks complete, but it guards nothing at the site that executes. Writing to memory while reviewing can also break the suite for the next impl-test. Memory that describes the suite before the same range's fixes makes the next reviewer re-raise closed gaps.
++**How to apply:** in any sprint that edits workflow definitions or adds a workflow, grep `.asd/workflows/asd-phase-*.md` and `.asd/skills/asd-sprint/SKILL.md` for per-workflow clauses and compare them with the tests. A new workflow can add acting sites the existing relations do not reach. Before writing memory, check the removed-term regexes in `tests/run.js`, and re-check each memory claim against HEAD. See [[sweep-exemption-granularity]], [[no-shell-review-method]], [[removed-flag-vacuity]].

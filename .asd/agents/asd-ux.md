@@ -30,11 +30,12 @@ Read `.asd/rules/core.md`, applicable `.asd/project/custom-common-rules.md`, and
 
 ## Inputs
 
-- `<sprint>/design/prd.html` (requirements from asd-ba) when `documents.prd` enabled; else `<sprint>/sprint.md`'s own Goal + `AC-N` list as the requirements source (`.asd/rules/sprint-lifecycle.md` "Optional documents")
+- `<sprint>/design/prd.html` (requirements from asd-ba) when `documents.prd` enabled; else `<sprint>/sprint.md`'s own Goal + `AC-N` list as the requirements source (`.asd/rules/sprint-lifecycle.md` "Optional documents"); under `lite` always `sprint.md`
 - `docs/ux/DESIGN.md` (current design system), `docs/ux/design-system.html` (rendered tokens reference), `docs/ux/accessibility.html` (project a11y baseline) — all three subject to the precondition check below
 - existing `docs/ux/` docs
+- lite design-promote (`.asd/rules/sprint-lifecycle.md` "Workflows"): `<sprint>/sprint.md`, `<sprint>/plan.md`, the sprint diff (`<base_branch>...HEAD`) and `audit.md` when present, in place of drafts
 
-**Precondition check (hard)**: on ux-spec dispatch, verify all three persistent files exist via search repo / read files. If any missing → emit `FAILED — design-system absent; dispatch /asd-design-system` and halt. NEVER author mockups against missing tokens.
+**Precondition check (hard)**: on ux-spec or lite design-promote dispatch, verify all three persistent files exist via search repo / read files. If any missing → emit `FAILED — design-system absent; dispatch /asd-design-system` and halt. NEVER author mockups against missing tokens.
 
 ## Outputs
 
@@ -42,6 +43,7 @@ Read `.asd/rules/core.md`, applicable `.asd/project/custom-common-rules.md`, and
 - `<sprint>/design/design-md-delta.yaml` via `t_design-md-delta.yaml` when DESIGN.md changes proposed
 - design-promote: patch `docs/ux/DESIGN.md` from delta
 - design-promote: regenerate `docs/ux/design-system.html` from DESIGN.md per `t_design-system.html`
+- lite design-promote: `docs/ux/<subsystem>.html` (or `ux-spec.html`) written or updated from the implemented UI, no draft; a token the implementation added or changed goes through **Token decisions** before `DESIGN.md` is patched, no `design-md-delta.yaml`
 
 ## Behavioral profile
 

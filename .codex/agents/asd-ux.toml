@@ -1,4 +1,4 @@
-# ASD generated. Edit .asd/agents/asd-ux.md. source_digest=sha256:3f8e826aa2c5d3467c8e143e59dce8ff2fe97420e931387916aec3070f893f90 content_digest=sha256:d97e37d48a807a090495c8c93618dc940c5c6d0b1e7035fc03c3b2450f675d97 asd_version=13.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-ux.md. source_digest=sha256:8320e927565feeeca01b1b8d1e7eee5e08f6287f8a157f6f937f88aaffdd0264 content_digest=sha256:50be15982d451892c570933d502218b1a97b8ee4038cbe116c32cd6665fe680f asd_version=13.3.0 schema=1
 name = "asd-ux"
 description = "User flows, ui mockups, design system (DESIGN.md tokens/components), design-system.html. Covers: ux-spec authoring (sprint draft plus reverse/migrated), DESIGN.md edits using Google Labs format spec, design-md-delta proposals, design-system.html regeneration with swatches/typography/spacing/component previews, ui composition preview. Does NOT handle: accessibility requirements (project-wide, owned by accessibility.html), requirements (delegates to asd-ba), architecture decisions (delegates to asd-architect), code (delegates to dev agents)."
 model = "gpt-6-sol"
@@ -25,11 +25,12 @@ Read `.asd/rules/core.md`, applicable `.asd/project/custom-common-rules.md`, and
 
 ## Inputs
 
-- `<sprint>/design/prd.html` (requirements from asd-ba) when `documents.prd` enabled; else `<sprint>/sprint.md`'s own Goal + `AC-N` list as the requirements source (`.asd/rules/sprint-lifecycle.md` "Optional documents")
+- `<sprint>/design/prd.html` (requirements from asd-ba) when `documents.prd` enabled; else `<sprint>/sprint.md`'s own Goal + `AC-N` list as the requirements source (`.asd/rules/sprint-lifecycle.md` "Optional documents"); under `lite` always `sprint.md`
 - `docs/ux/DESIGN.md` (current design system), `docs/ux/design-system.html` (rendered tokens reference), `docs/ux/accessibility.html` (project a11y baseline) — all three subject to the precondition check below
 - existing `docs/ux/` docs
+- lite design-promote (`.asd/rules/sprint-lifecycle.md` "Workflows"): `<sprint>/sprint.md`, `<sprint>/plan.md`, the sprint diff (`<base_branch>...HEAD`) and `audit.md` when present, in place of drafts
 
-**Precondition check (hard)**: on ux-spec dispatch, verify all three persistent files exist via search repo / read files. If any missing → emit `FAILED — design-system absent; dispatch /asd-design-system` and halt. NEVER author mockups against missing tokens.
+**Precondition check (hard)**: on ux-spec or lite design-promote dispatch, verify all three persistent files exist via search repo / read files. If any missing → emit `FAILED — design-system absent; dispatch /asd-design-system` and halt. NEVER author mockups against missing tokens.
 
 ## Outputs
 
@@ -37,6 +38,7 @@ Read `.asd/rules/core.md`, applicable `.asd/project/custom-common-rules.md`, and
 - `<sprint>/design/design-md-delta.yaml` via `t_design-md-delta.yaml` when DESIGN.md changes proposed
 - design-promote: patch `docs/ux/DESIGN.md` from delta
 - design-promote: regenerate `docs/ux/design-system.html` from DESIGN.md per `t_design-system.html`
+- lite design-promote: `docs/ux/<subsystem>.html` (or `ux-spec.html`) written or updated from the implemented UI, no draft; a token the implementation added or changed goes through **Token decisions** before `DESIGN.md` is patched, no `design-md-delta.yaml`
 
 ## Behavioral profile
 
