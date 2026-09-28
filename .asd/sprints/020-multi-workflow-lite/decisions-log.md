@@ -56,3 +56,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: [plan.md](plan.md)
 - 2026-09-28 — route impl-test entry 1: critical, dispatch HEAD 6a6d3f9
 - 2026-09-28 — impl-test: defects D-1, D-2 → impl test-fix (digest ee5ac1d9979d0eb3c503434e1f405dd6967d7eb7a773da8535edfee632aeb0c1)
+- 2026-09-28 — route D-1, D-2: standard, dispatch HEAD 758aa7a
+- 2026-09-28 — impl test-fix: defects D-1, D-2 resolved (52c72ed, 3550328); build + lint green

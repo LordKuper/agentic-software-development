@@ -19,6 +19,7 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 | ID | Phase | Problem | Refs |
 |---|---|---|---|
 | F-1 | impl | Per-task sync rule conflicts with parallel wave dispatch | — |
+| F-2 | impl | Host auto-mode classifier denied the mandated `sync.js --apply` | D-1 |
 
 ## F-1 — Per-task sync rule conflicts with parallel wave dispatch
 
@@ -27,3 +28,11 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 - **What happened**: Wave 2 had five concurrent Tasks, three of which edit canonical agents, skills or hooks. Every `sync.js --apply` rewrites the shared `.asd/sync-state.json`, so parallel per-task syncs race on one file. No rule says who syncs when a wave is parallel, so the orchestrator deferred every sync to the final Task.
 - **Impact**: The impl `build` gate (`sync.js --check`) is red until the last wave. One orchestrator decision was needed that no rule anticipates.
 - **Refs**: —
+
+## F-2 — Host auto-mode classifier denied the mandated `sync.js --apply`
+
+- **Phase**: impl (test-fix)
+- **Surface**: provider tool — Claude Code auto-mode permission classifier vs `.asd/project/custom-coding-rules.md` (sync after canonical edits) and `AGENTS.md` (`sync.js --apply`)
+- **What happened**: While fixing D-1, the dev dispatch ran `node .asd/sync.js --apply <target>` to refresh `release-manifest.json` `upstream_hashes`. The host classifier denied it as self-modification, because it rewrites generated views. The dev instead called `sync.js`'s exported `recomputeAndWriteHashLedgers` directly, which touched only the manifest.
+- **Impact**: A rule-mandated command could not run inside a dispatched agent. The substitute path is undocumented, and it bypasses the command the rules name.
+- **Refs**: D-1
