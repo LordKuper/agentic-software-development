@@ -34,3 +34,17 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-09-28 — Audit contradiction and lite ambiguities decided by user
+
+- **Decision**: AC-2 vs AC-8/AC-9: AC-8 and AC-9 apply to both workflows; AC-2 means today's lifecycle plus AC-8/AC-9. Lite combined internal reviewer = Correctness + Efficiency rubrics, `test-plan.md` as context, manual-verification decision moves to the orchestrator; no separate Testing/Documentation review in lite. Lite is allowed under `self_hosting` with no extra warning.
+- **Rationale**: Hard audit-contradiction decision (`checkpoints.md` "Gate policy") plus user-value ambiguities A1/A10 flagged by audit; user chose the recommended option each time.
+- **Affected docs**: [audit.md](audit.md) Contradictions, [sprint.md](sprint.md) AC-2/AC-4/AC-8/AC-9
+
+## 2026-09-28 — Audit gate passed adaptively
+
+- **Decision**: audit.md accepted by the orchestrator. Remaining flagged items A3 (workflow choice = hard gate, asked at scope), A5 (lite AC source = sprint.md), A6 (AC-9 command = token/findings/ledger file, returns JSON, state stays orchestrator-written), A7 (AC-8 fires when every unresolved wave finding qualifies), A8 (runtime reads per-workflow roster only) carry as audit recommendations into plan, decided at plan acceptance.
+- **Rationale**: User authority covers scope and every material ambiguity; contradictions settled; no hard item left. Routine gate under `user_gates: adaptive`.
+- **Affected docs**: [audit.md](audit.md)
+
+- 2026-09-28 — design/design-review/design-promote skipped (no documents enabled)

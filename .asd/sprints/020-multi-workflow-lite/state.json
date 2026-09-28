@@ -1,7 +1,7 @@
 {
   "sprint_id": "020-multi-workflow-lite",
   "branch": "sprint/020-multi-workflow-lite",
-  "phase": "scope",
+  "phase": "design-promote",
   "documents": {
     "audit": true,
     "prd": false,
@@ -24,10 +24,28 @@
       "reason": "include 016#P-1, 017#P-3; defer rest",
       "evidence": "retro-backlog.md 020 rows",
       "artifact_revision": "retro-backlog.md@2026-09-28T08:31:38Z"
+    },
+    {
+      "gate": "audit-contradiction",
+      "decision_actor": "user",
+      "reason": "AC-8/AC-9 apply to both workflows",
+      "evidence": "audit.md Contradictions #3",
+      "artifact_revision": "audit.md@2026-09-28T08:44:40Z"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "contradictions settled, user decided A1/A2/A10",
+      "evidence": "audit.md; decisions-log.md",
+      "artifact_revision": "audit.md@2026-09-28T08:44:40Z"
     }
   ],
   "task_routing": {},
-  "skipped_phases": [],
+  "skipped_phases": [
+    "design",
+    "design-review",
+    "design-promote"
+  ],
   "reviews": {
     "design": {
       "iteration": 0,
@@ -47,7 +65,7 @@
     }
   },
   "created_at": "2026-09-28T08:27:23Z",
-  "updated_at": "2026-09-28T08:31:38Z",
+  "updated_at": "2026-09-28T08:44:40Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
