@@ -75,3 +75,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-28 — impl-test: impacted set green (full suite 246/246), 0/0 tests
 - 2026-09-28 — impl-review wave-1/iter-03: documentation APPROVE; correctness/efficiency/testing/external inherited APPROVE (latched at iter-02); wave 1 of 1 roster met → terminal full suite
 - 2026-09-28 — route impl-review terminal suite: critical, dispatch HEAD 2d4054d
+- 2026-09-28 — impl-review DoD met: wave 1/1 all reviewers APPROVE (iter-03), terminal full suite green 246/246 at 39a77a3 (6a2ddf2); green handoff passed adaptively → retro

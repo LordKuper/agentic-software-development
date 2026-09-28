@@ -52,6 +52,13 @@
       "reason": "all tasks done, build+lint green, flagged choices in-plan",
       "evidence": "plan.md 25/25; sync --check ok",
       "artifact_revision": "HEAD@9f29356"
+    },
+    {
+      "gate": "impl-review-green-handoff",
+      "decision_actor": "orchestrator",
+      "reason": "wave 1/1 roster APPROVE, terminal full suite green",
+      "evidence": "reviews/impl/wave-1/iter-03; test-plan.md Suite run 246/246",
+      "artifact_revision": "HEAD@6a2ddf2"
     }
   ],
   "task_routing": {
@@ -208,7 +215,7 @@
     }
   },
   "created_at": "2026-09-28T08:27:23Z",
-  "updated_at": "2026-09-28T12:33:06Z",
+  "updated_at": "2026-09-28T12:34:30Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
