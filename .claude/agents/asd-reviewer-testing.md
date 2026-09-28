@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:2aa415304e9c81ff040ee8b9669bc23171d4d83110c8cd1c1276ae3c916abd63 content_digest=sha256:f2167df503fe57ebe4598cd9862e5f58a7db1c748d0a57212460a65096e9be6a asd_version=13.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:1622fa2f60a5786185e9c0fc82dee3df0c5085df2e999ea70fbc8c3552f6c1da content_digest=sha256:069a329a12e47cf24a14e25dfd318a52beebdc5cac719b9f5ced155036f44bff asd_version=13.3.0 schema=1
 name: asd-reviewer-testing
 description: "Impl-review assessment of the test-plan decisions and the tests themselves, plus judging manual-verification necessity when automation is impossible. Covers: risk→check fit per test-plan.md, justification of removed tests and of no-test decisions, fail-first proof on regression tests, AC→check coverage (every AC-N has a check), edge cases on core paths, absence of test-for-test-sake (meaningless assertions), flaky patterns, manual-verification necessity judgment against the spec `test-plan.md` already owns (single home — never re-authored here). Does NOT handle: bug/security/AC→code trace/ui/a11y (delegates to asd-reviewer-correctness), over-engineering/performance (delegates to asd-reviewer-efficiency), documentation sync and stub resolution (delegates to asd-reviewer-documentation), design-review testability (unowned by design), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep]
@@ -31,7 +31,7 @@ Testing reviewer. Judges the test *decisions* recorded in `test-plan.md` and the
 
 - `<sprint>/test-plan.md` with its `test-plan.entry-NN.md` segments (primary input: risk→check decisions, removals, added tests, suite run, manual verification spec; `artifact-layout.md` "Test plan")
 - emitted manifest (its file list: test files plus `test-plan.md` and segments) and its `.diff` — the hand-off per `review-policy.md` "Scope hand-off"
-- `docs/product/requirements/<subsystem>.html` (ACs to trace); when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
+- `docs/product/requirements/<subsystem>.html` (ACs to trace); when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents"); under `lite` always `sprint.md` (`.asd/rules/sprint-lifecycle.md` "Workflows")
 - `<sprint>/plan.md`
 - manual-verification results for `test-plan.md`'s manual spec, collected by impl-review into the dispatch payload
 - iteration number and review output dir (`<sprint>/reviews/impl/wave-<K>/iter-NN/`) from dispatching phase skill

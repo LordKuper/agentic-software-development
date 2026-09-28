@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-correctness.md. source_digest=sha256:b88c9adce657d43282d252a09555b9157a367cce9076a7b013f4ceb871f69942 content_digest=sha256:c3af0d3ef3ea3d3c3805b041f37edbc11f69dece16f610cee083413b140f05e3 asd_version=13.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-correctness.md. source_digest=sha256:7041b2eefcd22a7d0195cd4ff139c25396200453b508ebf3d8e8d13a1ba52b96 content_digest=sha256:a2fc9ec94206b4bd47bffa48b6645ff0eb770d7dbe97a02319e2cf8c386f25a8 asd_version=13.3.0 schema=1
 name: asd-reviewer-correctness
 description: "Design-review of draft correctness (AC completeness, contract and ADR decision soundness) and UI drafts (UI section n/a without a ux-spec/design-system draft), and impl-review of code, tests and UI for bugs, security, best-practice/contract drift, the AC→code trace, and UI/accessibility conformance. Covers: bug patterns (off-by-one, null paths, race conditions, resource leaks), security holes (secrets, injection, auth bypass, crypto misuse, input validation), language/framework best practices, contract violations vs ADR, AC→code trace against PRD/`sprint.md` AC-N, ux-spec compliance check, UI implementation match to ux-spec mockups, design-system token/component usage, accessibility baseline compliance. Does NOT handle: over-engineering, structure/cohesion, or performance (delegates to asd-reviewer-efficiency), test-plan/test-quality review and AC→check coverage (delegates to asd-reviewer-testing), design-review testability (unowned by design), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, WebFetch, WebSearch]
@@ -45,7 +45,7 @@ Correctness reviewer. Merges the former Quality, Implementation and UI reviewers
 - whichever persistent doc folded a relevant sprint ADR (decisions for contract checks — `sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `docs/architecture/stack.html` (stack constraints)
 - `.asd/project/custom-coding-rules.md` (forbidden patterns, security policy)
-- `docs/product/requirements/<subsystem>.html` or `<sprint>/design/prd.html` for sprint-scoped ACs; when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
+- `docs/product/requirements/<subsystem>.html` or `<sprint>/design/prd.html` for sprint-scoped ACs; when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents"); under `lite` always `sprint.md` (`.asd/rules/sprint-lifecycle.md` "Workflows")
 - `<sprint>/plan.md` (task-to-AC mapping)
 - `docs/ux/<subsystem>.html` (promoted ux-spec) — when absent, review against `docs/ux/DESIGN.md` and `accessibility.html` directly; absence of a spec never means absence of UI code to review
 - `docs/ux/DESIGN.md`

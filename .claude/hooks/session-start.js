@@ -1,4 +1,4 @@
-// ASD generated. Edit .asd/hooks/session-start.js. source_digest=sha256:9dca95369da17b765c3e91db94211d6f14be6ba9e531a14e63aca3d186431929 content_digest=sha256:9dca95369da17b765c3e91db94211d6f14be6ba9e531a14e63aca3d186431929 asd_version=12.0.0 schema=1
+// ASD generated. Edit .asd/hooks/session-start.js. source_digest=sha256:8f554f1121ec9d65c3d6769ff361de70c0f5feef352777a1f2c707ca5c01f677 content_digest=sha256:8f554f1121ec9d65c3d6769ff361de70c0f5feef352777a1f2c707ca5c01f677 asd_version=13.3.0 schema=1
 // ASD SessionStart hook (canonical, provider-agnostic).
 // No shebang: this file is never executed directly (`./session-start.js`),
 // always invoked as `node <path> --provider ...`, and every generated
@@ -22,20 +22,30 @@
 const fs = require('fs');
 const path = require('path');
 
-const PHASE_CHAIN = [
-  'scope',
-  'audit',
-  'design',
-  'design-review',
-  'design-promote',
-  'plan',
-  'impl',
-  'impl-test',
-  'impl-review',
-  'retro',
-  'pr',
-  'done',
-];
+const WORKFLOW_NAME_RE = /^[a-z]+$/;
+
+// Loads `<root>/.asd/workflows/<name>.json` and returns its `phases` array,
+// or null on any missing/malformed/unknown definition (or invalid name) -
+// the hook degrades silently: no chain info, never throws.
+function loadWorkflowPhases(repoRoot, name) {
+  if (typeof name !== 'string' || !WORKFLOW_NAME_RE.test(name)) return null;
+  const filePath = path.join(repoRoot, '.asd', 'workflows', `${name}.json`);
+  try {
+    const def = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    if (!def || typeof def !== 'object' || !Array.isArray(def.phases) || !def.phases.every(p => typeof p === 'string')) {
+      return null;
+    }
+    return def.phases;
+  } catch (_) {
+    return null;
+  }
+}
+
+// `state.workflow` absent = standard (t1-contract).
+function phasesForState(repoRoot, state) {
+  const name = state && typeof state.workflow === 'string' ? state.workflow : 'standard';
+  return loadWorkflowPhases(repoRoot, name);
+}
 
 function findUp(startDir) {
   let dir = path.resolve(startDir);
@@ -69,7 +79,13 @@ function findActiveSprints(repoRoot) {
     try {
       const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
       if (!state || typeof state !== 'object' || Array.isArray(state)) return;
-      if (archived && (!PHASE_CHAIN.includes(state.phase) || state.phase === 'done')) return;
+      if (archived) {
+        const phases = phasesForState(repoRoot, state);
+        // No chain info (missing/malformed/unknown definition) -> can't
+        // validate phase membership, only the literal 'done' value degrades.
+        const invalidPhase = phases ? !phases.includes(state.phase) : false;
+        if (invalidPhase || state.phase === 'done') return;
+      }
       active.push({ folder, state });
     } catch (_) {
       return;
@@ -93,10 +109,10 @@ function findActiveSprints(repoRoot) {
   return active;
 }
 
-function nextPhase(current) {
-  const idx = PHASE_CHAIN.indexOf(current);
-  if (idx < 0 || idx >= PHASE_CHAIN.length - 1) return 'done';
-  return PHASE_CHAIN[idx + 1];
+function nextPhase(phases, current) {
+  const idx = phases.indexOf(current);
+  if (idx < 0 || idx >= phases.length - 1) return 'done';
+  return phases[idx + 1];
 }
 
 // Design-block collapse test (sprint-lifecycle.md): every frozen design document is false.
@@ -170,7 +186,7 @@ function skillRef(provider, name) {
   return provider === 'codex' ? `$${name}` : `/${name}`;
 }
 
-function summary(active, provider) {
+function summary(active, provider, repoRoot) {
   if (active.length === 0) {
     return `[ASD] No active sprint. Run ${skillRef(provider, 'asd-sprint')} to begin, or ${skillRef(provider, 'asd-init')} to set up the workflow.`;
   }
@@ -185,21 +201,24 @@ function summary(active, provider) {
   const iter = reviewNode && reviewNode.iteration != null ? reviewNode.iteration : 0;
   const branch = state.branch || 'unknown';
   const verdict = lastReviewVerdict(reviewNode);
+  const phases = phasesForState(repoRoot, state);
   const next = phase === 'pr' ? (state.pr && state.pr.state === 'closure-pending' ? 'await-user-closure' : 'await-merge')
-    : (phase === 'audit' && isDesignCollapsed(state.documents)) ? 'plan'
-    : nextPhase(phase);
+    : !phases ? null // no chain info (missing/malformed/unknown definition) -> omit
+    : (phase === 'audit' && phases.includes('design') && isDesignCollapsed(state.documents)) ? 'plan'
+    : nextPhase(phases, phase);
   const implInfo = phase === 'impl-review' ? normalizeImplReviews(state.reviews) : null;
   const iterPart = !phase.endsWith('-review') ? ''
     : (implInfo && implInfo.total > 1) ? ` (wave ${implInfo.wave}/${implInfo.total}, iter ${iter})`
     : ` (iter ${iter})`;
-  return [
+  const lines = [
     `[ASD] Active sprint: ${id}`,
     `  Phase: ${phase}${iterPart}`,
     `  Branch: ${branch}`,
     `  Last review verdict: ${verdict}`,
-    `  Next phase: ${next}`,
-    `  Continue with ${skillRef(provider, 'asd-sprint')}.`,
-  ].join('\n');
+  ];
+  if (next !== null) lines.push(`  Next phase: ${next}`);
+  lines.push(`  Continue with ${skillRef(provider, 'asd-sprint')}.`);
+  return lines.join('\n');
 }
 
 (function main() {
@@ -207,7 +226,7 @@ function summary(active, provider) {
     const provider = parseProvider(process.argv.slice(2)) || 'claude'; // defaults to claude's slash-command form if wiring ever omits the arg
     const repoRoot = resolveRepoRoot();
     const active = findActiveSprints(repoRoot);
-    const text = summary(active, provider);
+    const text = summary(active, provider, repoRoot);
     const output = {
       hookSpecificOutput: {
         hookEventName: 'SessionStart',
