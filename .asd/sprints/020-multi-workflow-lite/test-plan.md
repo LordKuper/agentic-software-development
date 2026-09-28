@@ -89,9 +89,9 @@ All in `tests/run.js`. Proofs were run as `node tests/run.js` at HEAD 47e0d13 pl
 
 - Command: `node tests/run.js`
 - Scope: full (safety valve: shared infrastructure)
-- Result: pending the suite gate
-- Lint / build: pending
-- HEAD: pending
+- Result: fail — 243/245 passed, 2 failed, 0 skipped (exit 1); both failures are code defects D-1 and D-2 below
+- Lint / build: pass — `git diff --cached --check` exit 0; `node .asd/sync.js --check` exit 0, `ok: true`, 74/74 items current
+- HEAD: c200cec
 
 ## Defects
 
