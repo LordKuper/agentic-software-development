@@ -14,7 +14,7 @@ responsibility:
 | 1 | 9463f2c35157d12d97a6e91e1285f1407536a101 | full change surface |
 | 2 | a4f4e51c0ac79575740a81734986fd9307e59a96 | delta since entry 1 |
 | 3 | afa606eef858f3d18aa1cab15afd3457b3cd8cc4 | delta since entry 2 |
-| 4 |  | delta since entry 3 |
+| 4 | e83d5396bce9153a4e26c4a74b72a5dfb2880695 | delta since entry 3 |
 
 Entry 4: the delta is `git diff afa606e...HEAD` over the same pathspec. It holds 5 files (+27/−8), all agent memory: the wave-1/iter-02 memory-fix 028ce49 (`asd-reviewer-testing/{feedback_workflow-definition-sprints.md,MEMORY.md}`) and the reviewer memory committed with the iter-02 reviews (`asd-reviewer-correctness/{reference_persist-review-return-shape.md,MEMORY.md}`, `asd-reviewer-efficiency/project_020-workflow-definition-keys.md`). No canon, code or test changed, so the safety valve does not apply. The search-derived impacted set is every test that reads `.claude/agent-memory/**`: the T-2/T-4 index bijection, the sprint-017 AC-5 and DOC-2 memory sweeps, the sprint-019 AC-14/AC-16 sweep, the sprint-020 AC-1 leftover sweep, and the two single-file readers `T-2: feedback_no-shell-review-method.md …` and `T-2/iter-05 …`, whose files sit in touched directories but are unchanged. The full suite was run instead, because it takes seconds and a hand-picked set of 7 could miss a reader. The pre-strategy run (full suite, HEAD be399d4, tests as found) was `node tests/run.js` → exit 0, 246/246 passed. Entry 3's rows were rotated into `test-plan.entry-03.md`. No review-fix or in-place tester rows had been added after entry 3, and none was a removal row to carry forward.
 

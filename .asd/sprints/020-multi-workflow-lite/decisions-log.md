@@ -72,3 +72,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-28 — memory-fix asd-reviewer-testing for documentation.md F-1 committed (028ce49)
 - 2026-09-28 — impl fix for wave-1/iter-02: findings resolved (documentation.md F-1 via memory-fix 028ce49)
 - 2026-09-28 — route impl-test entry 4: critical, dispatch HEAD 028ce49
+- 2026-09-28 — impl-test: impacted set green (full suite 246/246), 0/0 tests
