@@ -12,7 +12,7 @@ responsibility:
 | Entry | HEAD analysed | Scope |
 |---|---|---|
 | 1 | 9463f2c35157d12d97a6e91e1285f1407536a101 | full change surface |
-| 2 |  | delta since entry 1 |
+| 2 | a4f4e51c0ac79575740a81734986fd9307e59a96 | delta since entry 1 |
 
 Entry 2: the delta is `git diff 9463f2c...HEAD` over the same pathspec. It holds 3 files and 3 changed lines (`.asd/rules/sprint-lifecycle.md`, `README.md`, `.asd/release-manifest.json`) from the D-1/D-2 test-fix commits 52c72ed and 3550328. Those are framework-wide files, so the safety valve applies again and the impacted set is the full suite. The pre-strategy run (full suite, HEAD 7ab8347, tests as found) was `node tests/run.js` → exit 0, 245/245 passed.
 

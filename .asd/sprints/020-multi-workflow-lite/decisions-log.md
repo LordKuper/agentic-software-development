@@ -59,3 +59,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-28 — route D-1, D-2: standard, dispatch HEAD 758aa7a
 - 2026-09-28 — impl test-fix: defects D-1, D-2 resolved (52c72ed, 3550328); build + lint green
 - 2026-09-28 — route impl-test entry 2: critical, dispatch HEAD f6fa8b5
+- 2026-09-28 — impl-test: impacted set green (full suite 245/245, safety valve), 0/0 tests
