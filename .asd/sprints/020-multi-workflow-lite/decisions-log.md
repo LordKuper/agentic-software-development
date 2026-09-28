@@ -69,3 +69,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-28 — route impl-test entry 3: critical, dispatch HEAD 3ce6936
 - 2026-09-28 — impl-test: impacted set green (full suite 246/246, safety valve), 0/0 tests (4 extended)
 - 2026-09-28 — impl-review wave-1/iter-02: correctness/efficiency/testing/external APPROVE (latched), documentation CONCERNS (F-1 medium, agent memory of asd-reviewer-testing) → impl review-fix (review_fixes_pending=wave-1/iter-02)
+- 2026-09-28 — memory-fix asd-reviewer-testing for documentation.md F-1 committed (028ce49)
+- 2026-09-28 — impl fix for wave-1/iter-02: findings resolved (documentation.md F-1 via memory-fix 028ce49)
+- 2026-09-28 — route impl-test entry 4: critical, dispatch HEAD 028ce49
