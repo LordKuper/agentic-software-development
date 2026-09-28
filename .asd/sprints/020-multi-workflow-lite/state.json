@@ -1,7 +1,7 @@
 {
   "sprint_id": "020-multi-workflow-lite",
   "branch": "sprint/020-multi-workflow-lite",
-  "phase": "impl-test",
+  "phase": "impl-review",
   "documents": {
     "audit": true,
     "prd": false,
@@ -144,6 +144,12 @@
       "execution": "agent",
       "reason": "risk:workflow-gate rules",
       "resolved_model": "opus"
+    },
+    "impl-review terminal suite": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow-gate rules",
+      "resolved_model": "opus"
     }
   },
   "skipped_phases": [
@@ -161,7 +167,7 @@
       "wave": 1,
       "waves": [
         {
-          "iteration": 2,
+          "iteration": 3,
           "verdicts": {
             "iter-01": {
               "correctness": "CONCERNS",
@@ -176,24 +182,33 @@
               "testing": "APPROVE",
               "documentation": "CONCERNS",
               "external": "APPROVE"
+            },
+            "iter-03": {
+              "correctness": "APPROVE",
+              "efficiency": "APPROVE",
+              "testing": "APPROVE",
+              "documentation": "APPROVE",
+              "external": "APPROVE"
             }
           },
           "iteration_heads": {
             "iter-01": "1d1a4af1733110e4d8c0a26993db7dc4be1b14d6",
-            "iter-02": "4cec9418995073a12efb292fb7e3fb947c1d0748"
+            "iter-02": "4cec9418995073a12efb292fb7e3fb947c1d0748",
+            "iter-03": "2d4054d4479c70a177da043470a7c37fd03fa67e"
           },
           "latched": {
             "correctness": 2,
             "efficiency": 2,
             "testing": 2,
-            "external": 2
+            "external": 2,
+            "documentation": 3
           }
         }
       ]
     }
   },
   "created_at": "2026-09-28T08:27:23Z",
-  "updated_at": "2026-09-28T12:26:44Z",
+  "updated_at": "2026-09-28T12:33:06Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

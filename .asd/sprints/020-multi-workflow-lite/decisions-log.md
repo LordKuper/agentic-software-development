@@ -73,3 +73,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-28 — impl fix for wave-1/iter-02: findings resolved (documentation.md F-1 via memory-fix 028ce49)
 - 2026-09-28 — route impl-test entry 4: critical, dispatch HEAD 028ce49
 - 2026-09-28 — impl-test: impacted set green (full suite 246/246), 0/0 tests
+- 2026-09-28 — impl-review wave-1/iter-03: documentation APPROVE; correctness/efficiency/testing/external inherited APPROVE (latched at iter-02); wave 1 of 1 roster met → terminal full suite
+- 2026-09-28 — route impl-review terminal suite: critical, dispatch HEAD 2d4054d
