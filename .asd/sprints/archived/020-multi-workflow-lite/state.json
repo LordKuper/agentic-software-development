@@ -1,7 +1,7 @@
 {
   "sprint_id": "020-multi-workflow-lite",
   "branch": "sprint/020-multi-workflow-lite",
-  "phase": "pr",
+  "phase": "done",
   "documents": {
     "audit": true,
     "prd": false,
@@ -66,6 +66,13 @@
       "reason": "explicit: open PR and merge",
       "evidence": "DoD: plan 25/25, wave 1/1 APPROVE, suite 246/246 @39a77a3",
       "artifact_revision": "HEAD@283e5c4"
+    },
+    {
+      "gate": "sprint-closure",
+      "decision_actor": "user",
+      "reason": "explicit closure approval",
+      "evidence": "PR 55 merged 598615d; DoD evidence",
+      "artifact_revision": "HEAD@e7f485d"
     }
   ],
   "task_routing": {
@@ -222,13 +229,14 @@
     }
   },
   "created_at": "2026-09-28T08:27:23Z",
-  "updated_at": "2026-09-28T12:39:14Z",
+  "updated_at": "2026-09-28T12:57:49Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": {
     "number": 55,
     "url": "https://github.com/LordKuper/agentic-software-development/pull/55",
-    "state": "open"
+    "state": "merged",
+    "merge_commit": "598615d51aef3adf8a814fca489af85193dafdd2"
   },
-  "archived_at": null
+  "archived_at": "2026-09-28T12:57:49Z"
 }
