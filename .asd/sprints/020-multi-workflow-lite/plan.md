@@ -79,21 +79,21 @@ Material risk: change: reviewer roster and verdict contract
 AC: AC-3, AC-5, AC-6
 Material risk: change: phase routing and gates
 Reachability: impl-review writes `NEXT: design-promote` (lite) at its green exit; `asd-sprint` Step 3 and `asd-phase-design-promote.md` preconditions read it
-- [ ] `asd-phase-scope.md`: step 1 asks the hard workflow choice (`standard` / `lite`, never defaulted) and seeds `{{WORKFLOW}}`; record it in `gate_decisions` and the decisions log.
-- [ ] `asd-phase-audit.md`: the lite exit always sets `NEXT: plan` with no collapse write; the return contract stays valid.
-- [ ] `asd-phase-plan.md`: the precondition becomes design-promote done, or the collapse (standard), or audit done (lite); the lite AC source is always `sprint.md`.
-- [ ] `asd-phase-design-promote.md`: add lite mode:
+- [x] `asd-phase-scope.md`: step 1 asks the hard workflow choice (`standard` / `lite`, never defaulted) and seeds `{{WORKFLOW}}`; record it in `gate_decisions` and the decisions log.
+- [x] `asd-phase-audit.md`: the lite exit always sets `NEXT: plan` with no collapse write; the return contract stays valid.
+- [x] `asd-phase-plan.md`: the precondition becomes design-promote done, or the collapse (standard), or audit done (lite); the lite AC source is always `sprint.md`.
+- [x] `asd-phase-design-promote.md`: add lite mode:
   - precondition impl-review DoD;
   - no-op when no document is enabled;
   - otherwise creators write or update persistent docs from `sprint.md`, `plan.md` and the sprint diff;
   - hard gates kept;
   - commit before `NEXT: retro`.
-- [ ] `asd-phase-retro.md`: the precondition names the predecessor per workflow. `asd-phase-design.md`: remove the `PHASE_CHAIN[idx+1]` wording.
-- [ ] `.asd/skills/asd-sprint/SKILL.md`:
+- [x] `asd-phase-retro.md`: the precondition names the predecessor per workflow. `asd-phase-design.md`: remove the `PHASE_CHAIN[idx+1]` wording.
+- [x] `.asd/skills/asd-sprint/SKILL.md`:
   - resume display, re-run menu (only phases of the frozen workflow) and Step 3 routing follow `state.json.workflow`;
   - update the "Skills dispatched" wording.
-- [ ] Skill descriptions: `asd-phase-impl-review`, `asd-phase-design-promote`, `asd-phase-plan`, `asd-phase-design`, `asd-phase-scope`.
-- [ ] Creator agents `asd-architect.md`, `asd-ba.md`, `asd-ux.md`: add promote-from-implementation inputs for lite. `asd-dev.md`, `asd-reviewer-correctness.md`, `asd-reviewer-testing.md`: in lite the AC source is always `sprint.md` (cite "Workflows").
+- [x] Skill descriptions: `asd-phase-impl-review`, `asd-phase-design-promote`, `asd-phase-plan`, `asd-phase-design`, `asd-phase-scope`.
+- [x] Creator agents `asd-architect.md`, `asd-ba.md`, `asd-ux.md`: add promote-from-implementation inputs for lite. `asd-dev.md`, `asd-reviewer-correctness.md`, `asd-reviewer-testing.md`: in lite the AC source is always `sprint.md` (cite "Workflows").
 
 ### Task 6: Review phase workflows — per-workflow roster, persist-review, AC-8
 AC: AC-4, AC-8, AC-9

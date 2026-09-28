@@ -32,7 +32,7 @@ Testing reviewer. Judges the test *decisions* recorded in `test-plan.md` and the
 
 - `<sprint>/test-plan.md` with its `test-plan.entry-NN.md` segments (primary input: risk→check decisions, removals, added tests, suite run, manual verification spec; `artifact-layout.md` "Test plan")
 - emitted manifest (its file list: test files plus `test-plan.md` and segments) and its `.diff` — the hand-off per `review-policy.md` "Scope hand-off"
-- `docs/product/requirements/<subsystem>.html` (ACs to trace); when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
+- `docs/product/requirements/<subsystem>.html` (ACs to trace); when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents"); under `lite` always `sprint.md` (`.asd/rules/sprint-lifecycle.md` "Workflows")
 - `<sprint>/plan.md`
 - manual-verification results for `test-plan.md`'s manual spec, collected by impl-review into the dispatch payload
 - iteration number and review output dir (`<sprint>/reviews/impl/wave-<K>/iter-NN/`) from dispatching phase skill

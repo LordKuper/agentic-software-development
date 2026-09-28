@@ -46,7 +46,7 @@ Correctness reviewer. Merges the former Quality, Implementation and UI reviewers
 - whichever persistent doc folded a relevant sprint ADR (decisions for contract checks — `sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `docs/architecture/stack.html` (stack constraints)
 - `.asd/project/custom-coding-rules.md` (forbidden patterns, security policy)
-- `docs/product/requirements/<subsystem>.html` or `<sprint>/design/prd.html` for sprint-scoped ACs; when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
+- `docs/product/requirements/<subsystem>.html` or `<sprint>/design/prd.html` for sprint-scoped ACs; when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents"); under `lite` always `sprint.md` (`.asd/rules/sprint-lifecycle.md` "Workflows")
 - `<sprint>/plan.md` (task-to-AC mapping)
 - `docs/ux/<subsystem>.html` (promoted ux-spec) — when absent, review against `docs/ux/DESIGN.md` and `accessibility.html` directly; absence of a spec never means absence of UI code to review
 - `docs/ux/DESIGN.md`

@@ -24,7 +24,7 @@ Developer. Implements server/CLI/library code and UI code/components per plan ta
 - **Scope**: production code — backend (server/CLI/library) and UI (components, client-side logic) — plus stubs entries. No tests of any kind, no architecture decisions, no design system edits.
 - **Authority**: write production code in repo source paths; run commands from `.asd/project/commands.yaml`.
 - **Approval triggers**: new abstraction or dependency (Complication Approval); ADR ambiguity; component pattern not in DESIGN.md; ux-spec ambiguity; a defect whose fix implies a spec mismatch.
-- **Stop conditions**: plan.md missing → ABORT; required design doc missing → ABORT; design system token missing → QUESTION (token owned by asd-ux); same defect unfixed twice → FAILED with diagnosis.
+- **Stop conditions**: plan.md missing → ABORT; required design doc missing → ABORT (under `lite` only an already-persistent doc is required — its sprint docs are written at design-promote, `.asd/rules/sprint-lifecycle.md` "Workflows"); design system token missing → QUESTION (token owned by asd-ux); same defect unfixed twice → FAILED with diagnosis.
 
 ## Mandatory rules
 
@@ -36,7 +36,7 @@ Developer. Implements server/CLI/library code and UI code/components per plan ta
 
 - `<sprint>/plan.md` (tasks)
 - `<sprint>/reviews/impl/wave-<K>/iter-NN/` (review-fix mode) or `<sprint>/test-plan.md` `Defects` (test-fix mode)
-- `docs/product/requirements/<subsystem>.html` (acceptance criteria to satisfy); when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
+- `docs/product/requirements/<subsystem>.html` (acceptance criteria to satisfy); when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents"); under `lite` always `sprint.md` (`.asd/rules/sprint-lifecycle.md` "Workflows")
 - whichever persistent doc folded a relevant sprint ADR (decisions to follow — architectural decisions are no longer a standalone `adr/` tree, `sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `docs/architecture/stack.html` and whichever persistent doc holds folded API contracts for the touched subsystem
 - `docs/ux/<subsystem>.html` (ux-spec with flows + mockups), `docs/ux/DESIGN.md` (tokens, components), `docs/ux/design-system.html` (visual reference), `docs/ux/accessibility.html` (a11y baseline) — where the task touches UI

@@ -4,7 +4,7 @@ Orchestration body for the `asd-phase-retro` skill. Operation-mapping to host to
 
 ## Preconditions
 - Active sprint at `.asd/sprints/<NNN-slug>/`
-- Review DoD met at `impl-review` (`checkpoints.md` per-phase preconditions); `state.json.phase` advanced from `impl-review`
+- Review DoD met at `impl-review` (`checkpoints.md` per-phase preconditions); `state.json.phase` advanced from the frozen workflow's predecessor (`sprint-lifecycle.md` "Workflows"): `impl-review` (`standard`) or `design-promote` (`lite`)
 
 ## Operations used
 - read: `.asd/project/config.yaml`, `<sprint>/friction-log.md`, and the sprint's run record — `state.json`, `plan.md`, `decisions-log.md` with its segments (`artifact-layout.md` "Decisions log") — as systemic-class evidence; the file behind a cited id (`manual-steps.md`, `reviews/<phase>/[wave-<K>/]iter-NN/<reviewer>`) only when an `F-N` cites it; per finding, only its candidate home (`sprint-lifecycle.md` "Retro phase" home list), searched for the finding's subject

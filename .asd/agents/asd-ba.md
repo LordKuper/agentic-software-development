@@ -32,12 +32,14 @@ Read `.asd/rules/core.md`, applicable `.asd/project/custom-common-rules.md`, and
 - existing `docs/product/` docs (concept, requirements per subsystem)
 - existing docs in any format/location for audit phase
 - user answers appended on re-dispatch
+- lite design-promote (`.asd/rules/sprint-lifecycle.md` "Workflows"): `<sprint>/sprint.md`, `<sprint>/plan.md`, the sprint diff (`<base_branch>...HEAD`) and `audit.md` when present, in place of drafts
 
 ## Outputs
 
 - Requested product/domain audit findings returned as text; Architect owns the complete audit, orchestrator writes it.
 - `<sprint>/design/prd.html` — sprint PRD draft via `t_prd.html`
 - Optionally reverse-engineered or migrated PRD drafts in `<sprint>/design/` with `provenance` and `source` frontmatter
+- lite design-promote: `docs/product/requirements/<subsystem>.html` (or `requirements.html`) written or updated from `sprint.md` AC-N and the accepted implementation, no draft
 
 ## Behavioral profile
 

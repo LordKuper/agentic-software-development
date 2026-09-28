@@ -4,8 +4,8 @@ Orchestration body for the `asd-phase-plan` skill. Operation-mapping to host too
 
 ## Preconditions
 - Active sprint at `.asd/sprints/<NNN-slug>/`
-- design-promote done: persistent docs reflect approved sprint design, or the collapse test holds (`sprint-lifecycle.md` "Design/design-review/design-promote collapse")
-- `state.json.phase` advanced from `design-promote`
+- Predecessor done per the frozen workflow (`sprint-lifecycle.md` "Workflows"): `standard` — design-promote done (persistent docs reflect approved sprint design) or the collapse test holds (`sprint-lifecycle.md` "Design/design-review/design-promote collapse"); `lite` — audit done or skipped
+- `state.json.phase` advanced from `design-promote` (`standard`) or `audit` (`lite`)
 
 ## Operations used
 - read: `.asd/project/config.yaml`, `state.json`, sprint.md, persistent docs touched by sprint
@@ -16,9 +16,9 @@ Orchestration body for the `asd-phase-plan` skill. Operation-mapping to host too
 
 ## Workflow
 
-1. Read `.asd/project/config.yaml` (`language.chat`, `language.docs`, `project.subsystem_decomposition`); read `<sprint>/state.json` — frozen `documents.prd`, `documents.audit`
-2. Read `<sprint>/state.json` → confirm design-promote done
-3. Read `<sprint>/sprint.md`, persistent docs referenced (decomposition enabled: `docs/architecture/subsystems.md` and each touched subsystem's `<id>.md`, to locate its code; per-subsystem files updated this sprint, plus shared concept.html, stack.html, DESIGN.md, accessibility.html — only whichever exist), `.asd/project/commands.yaml`. Acceptance-criteria source: PRD AC-N when `documents.prd` enabled, else `sprint.md`'s own `AC-N` list (`sprint-lifecycle.md` "Optional documents").
+1. Read `.asd/project/config.yaml` (`language.chat`, `language.docs`, `project.subsystem_decomposition`); read `<sprint>/state.json` — frozen `workflow`, `documents.prd`, `documents.audit`
+2. Confirm the predecessor per Preconditions
+3. Read `<sprint>/sprint.md`, persistent docs referenced (decomposition enabled: `docs/architecture/subsystems.md` and each touched subsystem's `<id>.md`, to locate its code; per-subsystem files updated this sprint, plus shared concept.html, stack.html, DESIGN.md, accessibility.html — only whichever exist), `.asd/project/commands.yaml`; under `lite` also `<sprint>/audit.md` when audit ran. Acceptance-criteria source: PRD AC-N when `documents.prd` enabled, else `sprint.md`'s own `AC-N` list (`sprint-lifecycle.md` "Optional documents"); under `lite` always `sprint.md` (`sprint-lifecycle.md` "Workflows").
 4. Write `state.json` (phase=plan) inline; the main orchestrator performs:
    - sprint.md path, list of relevant persistent doc paths, acceptance-criteria source, `language.chat`, `language.docs`; template `t_plan.md`
    - instruction:
