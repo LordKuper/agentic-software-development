@@ -2302,7 +2302,7 @@ test('sprint-020 AC-1/AC-6: SessionStart takes its chain from the frozen workflo
     [{ phase: 'audit', workflow: 'probe', documents: off }, { probe: JSON.stringify({ phases: ['scope', 'audit', 'impl', 'retro', 'pr'] }) }, true, 'impl'],
     [{ phase: 'audit', workflow: 'nope' }, {}, true, none],
     [{ phase: 'audit', workflow: 'Lite' }, {}, true, none],
-    [{ phase: 'audit', workflow: '../standard' }, {}, true, none],
+    [{ phase: 'audit', workflow: '../workflows/lite' }, {}, true, none],
     [{ phase: 'audit', workflow: 'lite' }, { lite: '{' }, true, none],
     [{ phase: 'audit', workflow: 'lite' }, { lite: '{"phases":"scope"}' }, true, none],
     [{ phase: 'audit', workflow: 'lite' }, { lite: '{"phases":[1,2]}' }, true, none],
@@ -2987,6 +2987,8 @@ test('AC-8/G-11, sprint-020 AC-7: the ordered chain mirrors match their definiti
       if (predecessor === standardPredecessor) return;
       const clause = new RegExp(`\`${phase}\` requires ([^,;]+)`).exec(deltas);
       assert.ok(clause && new RegExp(`^${predecessor}\\b`).test(clause[1]), `checkpoints.md: in ${name}, ${phase} follows ${predecessor}, not standard's ${standardPredecessor} - its "In \`${name}\`" line must say \`${phase}\` requires ${predecessor}, or the precondition check aborts a valid sprint (got: ${clause ? clause[1] : 'no clause'})`);
+      const acting = new RegExp(`advanced from [^;\\n]*?\`${predecessor}\` \\(\`${name}\`\\)|\`${name}\`:[^;\\n]*?advanced from \`${predecessor}\``);
+      assert.ok(acting.test(readWorkflow(phase)), `asd-phase-${phase}.md emits the ABORT for a missing predecessor, so its state.json.phase check must bind ${name} to ${predecessor} - as "advanced from ... \`${predecessor}\` (\`${name}\`)" or in a "\`${name}\`: ..." clause - or a lite sprint aborts at a valid transition while checkpoints.md stays right`);
     });
   }
 });
@@ -4630,7 +4632,7 @@ test('sprint-012 AC-3/AC-12: every `.asd/runtime.js` symbol canon cites is decla
   assert.ok((citers.get('SURFACE_CAP_FILES') || []).includes('.asd/rules/sprint-lifecycle.md'), 'sprint-014 AC-5: the change-surface cap is one runtime constant, so sprint-lifecycle.md "Plan file format" must cite it by symbol rather than restate a number that drifts from the one surface-check applies');
 });
 
-test('sprint-012 AC-2/AC-4/AC-12: both review workflows emit manifests through emit-manifest and never stamp one by hand, keep a dispatched manifest immutable per review-policy.md "Coverage ledger", and carry the interrupted-attempt record the "Clean-context review iteration" payload list admits', () => {
+test('sprint-012 AC-2/AC-4/AC-12: both review workflows emit manifests through emit-manifest and never stamp one by hand, keep a dispatched manifest immutable per review-policy.md "Coverage ledger", carry the interrupted-attempt record the "Clean-context review iteration" payload list admits, and persist External Review\'s availability skip through persist-review (sprint-020 AC-9)', () => {
   const policy = '.asd/rules/review-policy.md';
   assert.ok(/\*\*Immutability\*\*[^\n]*orchestrator[^\n]*re-stamp/.test(sectionOf(policy, 'Coverage ledger')), 'AC-2: "Coverage ledger" must make a dispatched manifest immutable to the orchestrator as well as the reviewer, and send a correction through a fresh dispatch rather than a re-stamp (010 F-2)');
   const payloadRule = sectionOf(policy, 'Clean-context review iteration').split('\n').find((line) => line.startsWith('- Reviewer payload carries only'));
@@ -4642,9 +4644,15 @@ test('sprint-012 AC-2/AC-4/AC-12: both review workflows emit manifests through e
     const validateStep = flow.split('\n').find((line) => line.includes(`node .asd/runtime.js persist-review --phase ${phase.replace(/-review$/, '')} `));
     assert.ok(validateStep && /never re-stamped/.test(validateStep) && validateStep.includes('`review-policy.md` "Coverage ledger"'), `${rel}: AC-2 - the ledger-validation step, where a failing manifest tempts a fix, must forbid the re-stamp and cite the rule; since sprint 020 that step is the persist-review run, which validates the ledger before any write`);
     assert.ok(/never re-authored by hand/.test(validateStep) && validateStep.includes('`review-policy.md` "Coverage ledger" Persistence'), `${rel}: sprint-020 AC-9 - the persist-review run is the sole write of a review file for this phase's own --phase node, so the step must say no review file is re-authored by hand and cite the Persistence rule`);
+    const skipRecord = flow.split('\n').find((line) => line.includes('`"APPROVE (skipped: <reason>)"`')) || '';
+    assert.ok(/`persist-review`/.test(skipRecord) && skipRecord.includes('`review-policy.md` "Coverage ledger" Persistence'), `${rel}: sprint-020 AC-9 - the step recording External Review's availability skip must persist its external.md through persist-review, citing the Persistence rule - the skip has no dispatch, so a hand-written external.md leaves no external.findings.json for the low-severity test-only route to read`);
     const payload = flow.split('\n').find((line) => line.includes('payload to each internal reviewer'));
     assert.ok(payload && /interrupted-attempt record/.test(payload) && payload.includes('`review-policy.md` "Clean-context review iteration"'), `${rel}: AC-4 - a re-dispatched reviewer's payload must carry its own interrupted-attempt record, citing the list that admits it`);
   }
+  const persistence = sectionOf(policy, 'Coverage ledger').split('\n').find((line) => line.startsWith('**Persistence**')) || '';
+  assert.ok(persistence.split(/(?<=\.)\s+/).some((sentence) => /availability skip/.test(sentence) && sentence.includes('`external-review.md` "Detection and negative cache"')), 'sprint-020 AC-9: "Coverage ledger" Persistence must bring External Review\'s availability skip - the one outcome with no returned text - under the persist-review command, pointing at the rule that defines the skip');
+  const skipBullet = sectionOf('.asd/rules/external-review.md', 'Detection and negative cache').split('\n').find((line) => line.startsWith('- Return `APPROVE (skipped:')) || '';
+  assert.ok(/`persist-review`/.test(skipBullet) && skipBullet.includes('`review-policy.md` "Coverage ledger" Persistence'), 'sprint-020 AC-9: external-review.md "Detection and negative cache" tells the dispatching workflow to persist the skip, so it must route that write through persist-review and cite the Persistence rule, never have the workflow write external.md itself');
 });
 
 test('sprint-012 AC-5/AC-6: providers.md "Role-scoped context" defines the declared tool policy with its refusal signal, and core.md "Autonomy and escalation" and artifact-layout.md "Agent memory" hand their obligations to it', () => {
@@ -6511,6 +6519,7 @@ test('sprint-020 AC-9: persist-review validates a returned review and writes it 
     ['a ledger whose findings disagree with the table', 'correctness', 'impl', review('[REVIEW-impl-correctness]: CONCERNS', ['| 1 | low | `a.md` | d | f |'], [])],
     ['CONCERNS listing no finding', 'correctness', 'impl', review('[REVIEW-impl-correctness]: CONCERNS', ['| — | — | — | no findings | — |'], [])],
     ['a severity outside the four levels', 'correctness', 'impl', review('[REVIEW-impl-correctness]: CONCERNS', ['| 1 | minor | `a.md` | d | f |'], ['1'])],
+    ['a bare APPROVE listing findings, which would persist them as a clean verdict', 'correctness', 'impl', review('[REVIEW-impl-correctness]: APPROVE', ['| 1 | low | `tests/run.js:10` | d | f |'], ['1'])],
   ];
   const definitions = readWorkflowDefinitions();
   const rosterOf = (node) => new Set(definitions.flatMap((definition) => definition.reviewers[node]));
@@ -6519,7 +6528,7 @@ test('sprint-020 AC-9: persist-review validates a returned review and writes it 
       rejected.push([`${key}, which no workflow dispatches in ${node}-review`, key, node, `[REVIEW-${node}-${key}]: APPROVE\n\n${table(['| — | — | — | no findings | — |'])}\n`, /--reviewer must be one of/]);
     }
   }
-  assert.ok(rejected.length > 7, 'sanity: some roster key must be dispatched in one review phase only (testing, combined), or the roster check below compares nothing');
+  assert.ok(rejected.length > 8, 'sanity: some roster key must be dispatched in one review phase only (testing, combined), or the roster check below compares nothing');
   rejected.forEach(([label, reviewer, node, text, reason], index) => {
     const dir = path.join(root, `rejected-${index}`);
     fs.mkdirSync(dir);
@@ -6567,7 +6576,8 @@ test("sprint-020 AC-4: emit-manifest --reviewer combined composes the rubrics it
 });
 
 test('sprint-020 AC-6: the workflow is a hard, never-defaulted choice asked only at scope step 1, frozen through the t_state.json seed and gated in checkpoints.md, held by no config key, and no doc calls a workflow the default', () => {
-  const names = readWorkflowDefinitions().map((definition) => definition.name);
+  const definitions = readWorkflowDefinitions();
+  const names = definitions.map((definition) => definition.name);
   assert.strictEqual(JSON.parse(readRepoFile('.asd/templates/t_state.json')).workflow, '{{WORKFLOW}}', 't_state.json must seed the frozen workflow, since artifact-layout.md reads state keys only from the template');
   const ask = canonText('.asd/workflows/asd-phase-scope.md').split('\n').find((line) => /^1\. /.test(line)) || '';
   assert.ok(/request user decision/i.test(ask) && ask.includes('{{WORKFLOW}}') && names.every((name) => ask.includes(`\`${name}\``)), `asd-phase-scope.md step 1 must ask the user to choose among every workflow (${names.join(', ')}) and seed {{WORKFLOW}} from the answer`);
@@ -6586,9 +6596,26 @@ test('sprint-020 AC-6: the workflow is a hard, never-defaulted choice asked only
   assert.ok(menu.includes("definition's `phases`"), 'AC-6: the resume menu offers only phases of the frozen definition - a lite sprint offered design would re-run a phase its chain lacks');
   const rollback = sprintSkill.find((line) => line.includes('*re-run earlier phase* = rollback')) || '';
   assert.ok(rollback.includes('`rollback_reset`'), "AC-6: the rollback the resume menu triggers must reset per the frozen definition's rollback_reset");
+  const resumeFlow = (/### Step 2B[\s\S]*?\n### /.exec(sprintSkill.join('\n')) || [''])[0];
+  const collapseSentences = resumeFlow.split(/(?<=\.)\s+/).filter((sentence) => /collapse test/.test(sentence));
+  assert.ok(collapseSentences.some((sentence) => /Re-run options/.test(sentence)) && collapseSentences.some((sentence) => /\*resume\* re-enters/.test(sentence)), 'sanity: the asd-sprint resume flow must still apply the collapse test at both acting sites - the re-run menu and the resume exception - or the relation below compares nothing');
+  const holders = definitions.filter((definition) => definition.phases.includes('design')).map((definition) => definition.name);
+  for (const sentence of collapseSentences) {
+    assert.deepStrictEqual(names.filter((name) => sentence.includes(`\`${name}\``)), holders, `AC-6: sprint-lifecycle.md "Workflows" derives the design-block collapse from phases, so each asd-sprint resume-flow collapse clause must name exactly the workflows whose chain holds design (${holders.join(', ')}) - an unscoped clause dispatches plan for a lite sprint resumed at design-promote, which lite's plan precondition aborts. Clause: ${sentence}`);
+  }
   const quoted = new RegExp(`\`(?:${names.join('|')})\``);
-  const claims = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md'].flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => (quoted.test(line) && /\bthe default\b/i.test(line) ? [`${rel}:${index + 1}`] : [])));
-  assert.deepStrictEqual(claims, [], `AC-6: the user always chooses the workflow and no config default exists, so no line may call a workflow "the default" - an absent state field reading standard is legacy handling, not a default a user can rely on. Found: ${claims.join(', ')}`);
+  const claims = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md'].flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => (line.split(/(?<=\.)\s+/).some((sentence) => quoted.test(sentence) && /\bdefaults?\b/i.test(sentence)) ? [`${rel}:${index + 1}`] : [])));
+  assert.deepStrictEqual(claims, [], `AC-6: the user always chooses the workflow and no config default exists, so no sentence quoting a workflow may call it a default ("the default", "by default", "defaults to", "(default)") - an absent state field reading standard is legacy handling, not a default a user can rely on. Found: ${claims.join(', ')}`);
+});
+
+test('sprint-020 AC-3: every agent reading acceptance criteria from docs/product/requirements/ cites sprint-lifecycle.md "Workflows" on that input - under lite the promoted requirements are last sprint\'s until design-promote, so the AC source is always sprint.md', () => {
+  const readers = fs.readdirSync(path.join(REPO_ROOT, '.asd/agents')).filter((file) => file.endsWith('.md')).flatMap((file) => {
+    const inputs = (canonText(`.asd/agents/${file}`).split('\n## Inputs')[1] || '').split('\n## ')[0];
+    return inputs.split('\n').filter((line) => line.includes('`docs/product/requirements/')).map((line) => [file, line]);
+  });
+  assert.ok(readers.length > 0, 'sanity: some agent Inputs must still read docs/product/requirements/, or the citation check below compares nothing');
+  const uncited = readers.filter(([, line]) => !line.includes('`.asd/rules/sprint-lifecycle.md` "Workflows"')).map(([file]) => file);
+  assert.deepStrictEqual(uncited, [], `sprint-lifecycle.md "Workflows" makes sprint.md the lite AC source, so every Inputs line reading ACs from docs/product/requirements/ must cite it - an agent without the clause checks a lite sprint against the previous sprint's requirements. Uncited: ${uncited.join(', ')}`);
 });
 
 test('sprint-020 AC-8: review-policy.md "Low-severity test-only findings" states its whole trigger and fix once, every resolved: kind canon writes is one "State recovery" admits, and each acting site cites the home', () => {
