@@ -59,10 +59,10 @@ None in entry 4.
 ## Suite run
 
 - Command: `node tests/run.js`
-- Scope: full. The safety valve does not apply, because the delta is agent memory only. The full suite was chosen over the 7-test search-derived set (see Entry 4) because it runs in seconds.
-- Result: pass — 246/246 passed, 0 failed, 0 skipped (exit 0) at HEAD be399d4. This entry changed no test.
-- Lint / build: pass. Lint (`git diff --cached --check`) exited 0 on this entry's staged commit. Build (`node .asd/sync.js --check`) exited 0, `ok: true`, 74/74 items current.
-- HEAD: be399d4
+- Scope: full, unscoped. This is the impl-review terminal full-suite gate for wave-1/iter-03, the cycle's one full-suite run.
+- Result: pass — 246/246 passed, 0 failed, 0 skipped (exit 0) at HEAD 39a77a3. No test changed.
+- Lint / build: pass. Lint (`git diff --cached --check`) exited 0. Build (`node .asd/sync.js --check`) exited 0, `ok: true`, 74/74 items current.
+- HEAD: 39a77a386de73e8cbbe111ddd966cc6efd547f79
 
 ## Defects
 
