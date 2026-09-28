@@ -11,7 +11,7 @@ responsibility:
 
 | Entry | HEAD analysed | Scope |
 |---|---|---|
-| 1 |  | full change surface |
+| 1 | 9463f2c35157d12d97a6e91e1285f1407536a101 | full change surface |
 
 Impacted set (entry 1): the change surface (`git diff main...HEAD`, 38 files, commits 848168f..9f29356) touches `.asd/runtime.js`, `.asd/hooks/session-start.js`, the workflow definitions, every rule doc the chain lives in, README and AGENTS.md. That is framework-wide shared infrastructure, so the `sprint-lifecycle.md` "Impacted test set" safety valve applies and the impacted set is the full suite (`node tests/run.js`). `commands.yaml` carries no `test_affected`.
 
