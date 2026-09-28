@@ -12,12 +12,13 @@ All project work goes through `/asd-sprint`.
 ## Glossary
 
 - **Sprint** — one unit of scoped work. One active at a time. Closed sprints archived, immutable.
-- **Phase** — fixed step in sprint lifecycle. Eleven mandatory: scope, audit, design, design-review, design-promote, plan, impl, impl-test, impl-review, retro, pr.
+- **Phase** — step in a sprint lifecycle; the sprint's workflow fixes which phases run and their order (`.asd/workflows/standard.json`, `.asd/workflows/lite.json`). `standard`, all mandatory: scope, audit, design, design-review, design-promote, plan, impl, impl-test, impl-review, retro, pr.
+- **Workflow** — a sprint lifecycle definition, `standard` or `lite`, chosen at scope and frozen per sprint (`sprint-lifecycle.md` "Workflows"). Distinct from ASD as a whole and from the `asd-phase-*.md` orchestration bodies sharing its folder.
 - **Iteration** — one pass of the review loop in a `*-review` phase. Each dispatches every reviewer fresh with clean context (`review-policy.md`).
 - **Review wave** — one of the sequential slices a large impl-review scope divides into, each with its own iterations (`sprint-lifecycle.md` "Review iteration counters").
 - **Creator agent** — produces artifacts (BA, UX, Architect, Dev, Tester).
 - **Main orchestrator** — the role (not a spawned agent) that dispatches phase skills/agents and owns scope, plan, state, decisions-log, gates, manual-step validation, Git and release/archival sequencing. No PM agent is spawned; this replaces that responsibility. Role-scoped context: `providers.md` "Role-scoped context" table.
-- **Reviewer agent** — evaluates artifacts (Correctness, Efficiency, Testing, Documentation, External Review).
+- **Reviewer agent** — evaluates artifacts (Correctness, Efficiency, Testing, Documentation, Combined, External Review); a review phase dispatches its workflow's `reviewers` roster.
 - **Advisor agent** (`asd-advisor.md`) — read-only, consulted on non-gate uncertainty via a workflow-mediated `ADVICE_NEEDED` signal (never agent-to-agent). Returns a free-text recommendation, never binding — never authorizes a HARD gate or substitutes for user approval.
 - **Artifact** — file produced by an agent. User-facing (PRD, ADR, plan, …) or machine-readable (state.json, config.yaml).
 - **Persistent doc** — living document under `docs/`. Updated across sprints.

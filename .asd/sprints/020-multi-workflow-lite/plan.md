@@ -52,15 +52,15 @@ Material risk: artifact: hook must exit 0 and never throw
 ### Task 3: Lifecycle rule docs — workflow model and lite deltas
 AC: AC-1, AC-2, AC-3, AC-5, AC-6, AC-8
 Material risk: change: workflow-gate rules
-- [ ] `.asd/rules/sprint-lifecycle.md`:
+- [x] `.asd/rules/sprint-lifecycle.md`:
   - add the `## Workflows` section per Overview;
   - scope "Phases (all mandatory)", the chain line, the phase table, "Multi-phase skip", the no-op table and collapse, "Design-promote phase", "Retro phase" placement and the AC-source line to `standard`, or cite "Workflows";
   - make the rollback-reset table read from each definition's `rollback_reset`;
   - add the `test-fix` kind to "State recovery" "User-resolved findings".
-- [ ] `.asd/rules/checkpoints.md`: add `workflow choice` to the "Gate policy" hard list and "Gate inventory" (hard approve-before-write), and make the precondition chain per-workflow by citing `sprint-lifecycle.md` "Workflows" for lite's predecessors.
-- [ ] `.asd/rules/core.md`: in the glossary, the Phase entry names the two workflows and cites the definition files instead of "Eleven mandatory"; add a `Workflow` glossary entry (a sprint lifecycle definition, distinct from the ASD workflow as a whole and from the `asd-phase-*.md` orchestration bodies); the reviewer roster entry mentions the combined reviewer.
-- [ ] `.asd/rules/artifact-layout.md`: the "Decisions log" rotation exit becomes "impl-review → its successor"; the `{{STATUS}}` note covers docs that lite writes unreviewed; the "Test plan" grants cover the AC-8 tester's rows.
-- [ ] `.asd/rules/git-strategy.md` "Commits": the AC-8 in-place tester commit uses the existing finding-id trailer form (one clause).
+- [x] `.asd/rules/checkpoints.md`: add `workflow choice` to the "Gate policy" hard list and "Gate inventory" (hard approve-before-write), and make the precondition chain per-workflow by citing `sprint-lifecycle.md` "Workflows" for lite's predecessors.
+- [x] `.asd/rules/core.md`: in the glossary, the Phase entry names the two workflows and cites the definition files instead of "Eleven mandatory"; add a `Workflow` glossary entry (a sprint lifecycle definition, distinct from the ASD workflow as a whole and from the `asd-phase-*.md` orchestration bodies); the reviewer roster entry mentions the combined reviewer.
+- [x] `.asd/rules/artifact-layout.md`: the "Decisions log" rotation exit becomes "impl-review → its successor"; the `{{STATUS}}` note covers docs that lite writes unreviewed; the "Test plan" grants cover the AC-8 tester's rows.
+- [x] `.asd/rules/git-strategy.md` "Commits": the AC-8 in-place tester commit uses the existing finding-id trailer form (one clause).
 
 ### Task 4: Review policy, providers and the combined reviewer agent
 AC: AC-4, AC-8, AC-9

@@ -12,7 +12,23 @@ At scope, accept only `documents.audit: auto|always|off`; any other value, legac
 
 Use `checkpoints.md` for every user-gate decision. A closure request is mandatory after merge and all DoD evidence, before `phase=done`, finalization or archival; it cannot be passed adaptively. Existing archived-active recovery remains active until that explicit closure approval.
 
+## Workflows
+
+A workflow is one sprint lifecycle, declared in `.asd/workflows/<name>.json`; only `standard` and `lite` exist. Keys, and nothing else: `name`; `phases` (ordered, ending before the `done` pseudo-phase); `next` (phase → its allowed `NEXT:` targets); `reviewers.design`/`reviewers.impl` (the verdict keys each review phase dispatches); `rollback_reset` (review node → the phases whose setting resets it, "Review iteration counters").
+
+**Selection**: a hard user decision at `asd-phase-scope.md` step 1 (`checkpoints.md` "Gate policy"), never defaulted — no config key holds one. Frozen in `state.json.workflow`, never changed mid-sprint; an absent field reads `standard`. `NEXT:` routing, preconditions, resume, the re-run menu and the rollback reset follow the frozen workflow.
+
+**Derived from `phases`, never stored**: the design-block collapse ("Optional documents") applies only to a workflow whose `phases` contain `design`; design-promote promotes drafts when `design` precedes it, the accepted implementation when it follows `impl-review`.
+
+**`lite`** — every rule not named here is `standard`'s:
+- Chain: scope → audit → plan → impl ⇄ impl-test → impl-review → design-promote → retro → pr. No `design`, no `design-review`, no drafts.
+- Acceptance criteria: always `sprint.md`'s `AC-N` list, whatever `documents.prd`. `plan` reads `sprint.md` plus `audit.md` when audit ran; it needs no promoted doc.
+- impl-review dispatches `combined` plus External Review (`reviewers.impl`); waves, counters, severity floors, latches, the terminal full suite and fix routing are unchanged. Its green exit is `NEXT: design-promote`.
+- design-promote runs after impl-review DoD, "Design-promote phase" steps 1-5 with `sprint.md`, `plan.md` and the sprint diff in place of drafts: each domain creator writes or updates the persistent docs of every document the frozen `documents.*` enables — no draft, no review. With `ux_spec` enabled the design-system gate ("Design phase") precedes UX's write. Hard gates stay: a new subsystem, material stack/UX/brand direction, each `DESIGN.md` token change (`checkpoints.md` "Gate policy"). No-op when frozen `prd`, `ux_spec`, `adr` and `c4` are all `false`. Its writes are committed before `NEXT: retro`.
+
 ## Phases (all mandatory)
+
+The chain below is `standard`'s; `lite`'s: "Workflows".
 
 ```
 scope → audit → design → design-review → design-promote → plan → impl ⇄ impl-test → impl-review → retro → pr
@@ -23,7 +39,7 @@ scope → audit → design → design-review → design-promote → plan → imp
 
 - `impl` always routes to `impl-test`. impl writes **no tests** — its gate is build + lint; a dev may run the impacted set (below) for self-verification only, never as a substitute for `impl-test`/`impl-review`.
 - `impl-test` selects the test approach for the whole change scope, prunes redundant tests, writes missing ones, runs the **impacted set** (below) as its suite gate. Code defects → back to `impl` (test-fix mode), then `impl-test` again. Impacted set green → `impl-review`.
-- `impl-review` does NOT fix findings — routes back to `impl` (review-fix mode) on unresolved findings; the sprint then re-enters `impl-test` (code changed → tests re-selected + re-run) before returning to `impl-review`. Once the last review wave's required reviewers return `APPROVE` or are latched ("Review iteration counters" below), `impl-review` runs the **full suite exactly once** — the cycle's only full-suite run — via `asd-tester`, before `NEXT: retro`. On red: test defects are fixed by `asd-tester` and the suite re-run; code defects instead become `D-N` rows in `test-plan.md` + `state.json.test_defects_pending`, and the phase exits to `impl` test-fix mode rather than fixing code in place. Either red path also clears every APPROVE latch sprint-wide (`APPROVE latch` below).
+- `impl-review` does NOT fix findings — routes back to `impl` (review-fix mode) on unresolved findings, low-severity test-only ones excepted (`review-policy.md` "Low-severity test-only findings"); the sprint then re-enters `impl-test` (code changed → tests re-selected + re-run) before returning to `impl-review`. Once the last review wave's required reviewers return `APPROVE` or are latched ("Review iteration counters" below), `impl-review` runs the **full suite exactly once** — the cycle's only full-suite run — via `asd-tester`, before its green exit. On red: test defects are fixed by `asd-tester` and the suite re-run; code defects instead become `D-N` rows in `test-plan.md` + `state.json.test_defects_pending`, and the phase exits to `impl` test-fix mode rather than fixing code in place. Either red path also clears every APPROVE latch sprint-wide (`APPROVE latch` below).
 
 No cap on `impl⇄impl-test` rounds: loop until the impacted set is green, a dev blocker escalates (`FAILED`/`QUESTION`) or a stalemate escalates ("Impl-test phase" below). `impl-review` keeps its iteration cap. Phase routing follows the `NEXT:` token in each phase skill's return contract, not a fixed linear chain.
 
@@ -53,14 +69,7 @@ Each review phase reads, increments, and reports only its own counter; severity 
 - Created at `0` in `scope` (`t_state.json`: impl as one seed wave node).
 - `reviews.design.iteration` increments at the **start of every entry** (`1` on first); design-review is entered once and loops internally.
 - A wave's counter increments at the **start of every iteration of that wave** (`1` on its first); `impl` and `impl-test` never touch it. Wave K's reviewer roster met (`review-policy.md` "DoD per review phase") and K < n → the same entry moves to wave K+1, iteration 1, with no `impl`/`impl-test` between (no code changed). Unresolved findings in wave K → `impl` review-fix → `impl-test` → re-entry on wave K. The terminal full suite ("Impacted test set") runs once, after wave n's roster is met.
-- **Rollback reset.** When `state.json.phase` is set strictly earlier in the chain than a review's input-producing phase, that review's state resets: `reviews.design` counter to `0`, `verdicts` and `latched` to `{}`; `reviews.impl` to its `t_state.json` seed (wave 1, one fresh node), every wave dropped, so the next entry re-divides and a fresh `waves.json` overwrites the old. Severity floors reset with the counters, latches with the rest (APPROVE latch, below — no second mechanism); nothing on disk is deleted. Input-producing phases: `design` for design-review, `impl` for impl-review.
-
-  | State | Resets when phase set to |
-  |---|---|
-  | `reviews.design` | `scope`, `audit` |
-  | `reviews.impl` | `scope`, `audit`, `design`, `design-review`, `design-promote`, `plan` |
-
-  Setting phase to `impl` or `impl-test` is not earlier than `impl` — normal cycle re-entry never resets. Reset fires only on a genuine rollback (the `asd-sprint` resume menu's *re-run earlier phase*).
+- **Rollback reset.** When `state.json.phase` is set strictly earlier in the chain than a review's input-producing phase, that review's state resets: `reviews.design` counter to `0`, `verdicts` and `latched` to `{}`; `reviews.impl` to its `t_state.json` seed (wave 1, one fresh node), every wave dropped, so the next entry re-divides and a fresh `waves.json` overwrites the old. Severity floors reset with the counters, latches with the rest (APPROVE latch, below — no second mechanism); nothing on disk is deleted. Input-producing phases: `design` for design-review, `impl` for impl-review. The phases that reset `reviews.<node>` are the frozen workflow's `rollback_reset.<node>` ("Workflows"). Setting phase to `impl` or `impl-test` is not earlier than `impl` — normal cycle re-entry never resets. Reset fires only on a genuine rollback (the `asd-sprint` resume menu's *re-run earlier phase*).
 - On iteration-cap override (per wave in impl-review), the counter keeps incrementing — not reset. Severity floor stays pinned at `critical`.
 - **Legacy shape**: a `reviews.impl` without `waves` (a sprint in flight before review waves) reads as `{wave: 1, waves: [<that node>]}`, and its `reviews/impl/iter-NN/` dirs and a bare `review_fixes_pending: "iter-NN"` as wave 1; the first wave-aware write, at impl-review entry, stores that shape verbatim.
 
@@ -72,7 +81,7 @@ In impl-review, `reviews.<phase>.<field>` below means the current wave node's (`
 
 **Invariant**: a reviewer's key is ALWAYS written to `state.json.reviews.<phase>.verdicts["iter-NN"]` for every iteration of that phase that runs. A latch-skipped reviewer gets its inherited `APPROVE` recorded there without being dispatched. `latched` is purely a dispatch-time optimisation — it decides whether a reviewer is called again — and NEVER participates in DoD or pr-gate aggregation; both read `verdicts["iter-NN"]` alone, except per "State recovery" "User-resolved findings". Consequence: clearing `latched` can never change satisfied-vs-blocking for any iteration, because the verdict keys it would have gated are already there.
 
-Persisted per phase per reviewer key in `state.json.reviews.<phase>.latched` (`t_state.json`) — a map from reviewer key (the same keys used in `verdicts["iter-NN"]`: `correctness`/`efficiency`/`testing`/`documentation`/`external` for impl-review, `correctness`/`efficiency`/`documentation`/`external` for design-review) to the iteration number at which that reviewer returned `APPROVE`. An absent key means that reviewer has never latched, or its latch was cleared. A sprint in flight when this field shipped carries no `latched` object at all under one or both phase nodes — treat a wholly absent `latched` object the same as an empty one (`{}`, no latches), mirroring the `iteration_heads` absent-key fallback ("State recovery" below); never an error.
+Persisted per phase per reviewer key in `state.json.reviews.<phase>.latched` (`t_state.json`) — a map from reviewer key (the same keys used in `verdicts["iter-NN"]`: the frozen workflow's `reviewers.impl` for impl-review, `reviewers.design` for design-review — "Workflows") to the iteration number at which that reviewer returned `APPROVE`. An absent key means that reviewer has never latched, or its latch was cleared. A sprint in flight when this field shipped carries no `latched` object at all under one or both phase nodes — treat a wholly absent `latched` object the same as an empty one (`{}`, no latches), mirroring the `iteration_heads` absent-key fallback ("State recovery" below); never an error.
 
 A reviewer key present in `reviews.<phase>.latched` is NOT dispatched on any later iteration of the same phase (`asd-phase-impl-review.md` step 6, `asd-phase-design-review.md` step 7). Per the invariant above, its inherited `APPROVE` is still written into that iteration's `verdicts["iter-NN"]` — its existing review file from the iteration it actually latched stands as the evidence backing that entry, unchanged.
 
@@ -101,11 +110,13 @@ Every scoped test run in `impl` and `impl-test` uses the **impacted set** — so
 
 **Where impacted-only applies**: `impl` (self-verification only, below — devs never author/modify/prune a test); `impl-test`'s suite gate (below).
 
-**Where the full suite still runs**: exactly once per sprint cycle, at the end of `impl-review`, after the last review wave's required reviewers return `APPROVE` or are latched and before `NEXT: retro` — dispatched to `asd-tester` (reviewers are read-only, `providers.md`; the phase gains this capability only through that one dispatch). Recorded in `test-plan.md`'s existing `Suite run` section including `HEAD`; the `pr` gate keeps reading it from there, wording unchanged (`PR phase` below). Red path and latch-clearing: `impl` bullet above and `APPROVE latch` above. Green full suite is part of impl-review's DoD (`review-policy.md` "DoD per review phase").
+**Where the full suite still runs**: exactly once per sprint cycle, at the end of `impl-review`, after the last review wave's required reviewers return `APPROVE` or are latched and before the phase's green exit — dispatched to `asd-tester` (reviewers are read-only, `providers.md`; the phase gains this capability only through that one dispatch). Recorded in `test-plan.md`'s existing `Suite run` section including `HEAD`; the `pr` gate keeps reading it from there, wording unchanged (`PR phase` below). Red path and latch-clearing: `impl` bullet above and `APPROVE latch` above. Green full suite is part of impl-review's DoD (`review-policy.md` "DoD per review phase").
 
 Each `impl-test` entry's `Suite run` record measures the tree that entry analysed. Only the terminal full-suite run at the end of `impl-review` measures the final tree.
 
 ## Phase table
+
+Rows are `standard`'s; `lite` deltas: "Workflows".
 
 | Phase | Owner | Input | Output | Exit criteria |
 |---|---|---|---|---|
@@ -117,7 +128,7 @@ Each `impl-test` entry's `Suite run` record measures the tree that entry analyse
 | plan | Main orchestrator | promoted persistent docs | `plan.md` | plan gate passed |
 | impl | Dev | `plan.md` (initial), `reviews/impl/wave-<K>/iter-NN/` findings (review-fix), or `test-plan.md` Defects (test-fix) | code, `manual-steps.md` | all tasks/findings/defects done; build + lint pass (completion gate) |
 | impl-test | Tester | code diff, `plan.md`, PRD ACs, existing tests | `test-plan.md`, tests in repo | impacted set green (`Impacted test set` above) → `impl-review`; code defects → `impl` test-fix mode |
-| impl-review | Correctness + Efficiency + Testing + Documentation + External Review | code + tests + `test-plan.md` | `reviews/impl/waves.json`, `reviews/impl/wave-<K>/iter-NN/<reviewer>.md` | every review wave's reviewers APPROVE/latched, in order (`Review iteration counters` above), AND terminal full suite green (`Impacted test set` above) → `retro`; red suite → `impl` test-fix mode, latches cleared; unresolved findings → `impl` review-fix mode, same wave |
+| impl-review | Correctness + Efficiency + Testing + Documentation + External Review | code + tests + `test-plan.md` | `reviews/impl/waves.json`, `reviews/impl/wave-<K>/iter-NN/<reviewer>.md` | every review wave's reviewers APPROVE/latched, in order (`Review iteration counters` above), AND terminal full suite green (`Impacted test set` above) → `retro`; red suite → `impl` test-fix mode, latches cleared; unresolved findings → `impl` review-fix mode, same wave, low-severity test-only ones excepted (`review-policy.md` "Low-severity test-only findings") |
 | retro | Main orchestrator | `friction-log.md` (may be absent) | `retrospective.html` | retrospective written, empty-log branch included → `pr` |
 | pr | Main orchestrator | everything | PR, then terminal archive | merged and explicit closure approval |
 
@@ -143,11 +154,11 @@ Framework impl-review/External Review change surface: the whole repo diff (every
 
 **Skip record**: `t_state.json.skipped_phases` starts `[]`. A no-op phase (below) appends its own phase name to this array in the same write that advances `phase` — this is what lets a resumed sprint or a later audit tell "phase legitimately skipped, empty applicable-artifact set" apart from "phase ran and produced nothing," which the `phase`/`updated_at` fields alone cannot distinguish. Never removed or reordered; a phase re-run after a rollback (`checkpoints.md` "Re-run") that turns out non-empty this time does not retroactively remove its earlier skip entry — the array is a historical record, not current status.
 
-**Multi-phase skip**: when one deterministic check subsumes several consecutive no-op phases in a single write — the `design`/`design-review`/`design-promote` collapse below — that one write appends **every** subsumed phase name to `skipped_phases` (`["design", "design-review", "design-promote"]`) and sets `phase` to the **last** subsumed phase name, never one array append per phase and never the first; at the audit exit, a skipped audit's own `"audit"` precedes them in that same write. This way `PHASE_CHAIN[idx+1]` mechanically yields the next real phase and a resumed session cannot re-enter the collapsed block. The subsumed phases are never separately dispatched, so they never make their own individual `skipped_phases` write.
+**Multi-phase skip**: when one deterministic check subsumes several consecutive no-op phases in a single write — the `design`/`design-review`/`design-promote` collapse below — that one write appends **every** subsumed phase name to `skipped_phases` (`["design", "design-review", "design-promote"]`) and sets `phase` to the **last** subsumed phase name, never one array append per phase and never the first; at the audit exit, a skipped audit's own `"audit"` precedes them in that same write. This way the successor of `phase` in the workflow's `phases` mechanically yields the next real phase and a resumed session cannot re-enter the collapsed block. The subsumed phases are never separately dispatched, so they never make their own individual `skipped_phases` write.
 
 Never optional: `sprint.md`, `state.json`, `plan.md`, `test-plan.md`, impl-review reports, `manual-steps.md` (already lazy), `friction-log.md` (already lazy), `retrospective.html`, `<sprint>/decisions-log.md`, `stubs.md`. A disabled document is never written as an empty stub — skip recorded in `state.json` plus one decisions-log line.
 
-**Acceptance-criteria source**: PRD AC-N when `documents.prd` enabled; else `sprint.md`'s own `AC-N` list (`t_sprint.md`). Every phase citing AC-N (plan, impl, impl-test, impl-review, pr) uses whichever source the sprint's frozen `documents.prd` selects.
+**Acceptance-criteria source**: PRD AC-N when `documents.prd` enabled; else `sprint.md`'s own `AC-N` list (`t_sprint.md`); `lite`: "Workflows". Every phase citing AC-N (plan, impl, impl-test, impl-review, pr) uses the source this rule selects.
 
 **Independent design docs** (replaces the old hard PRD→UX→ADR chain):
 - PRD (`prd`) reads `sprint.md` + `audit.md` (if `audit` enabled).
@@ -163,11 +174,11 @@ Never optional: `sprint.md`, `state.json`, `plan.md`, `test-plan.md`, impl-revie
 | audit | `audit` disabled |
 | design | `prd`, `ux_spec`, `adr`, effective `c4` all disabled |
 | design-review | design phase produced zero drafts |
-| design-promote | zero approved drafts to promote |
+| design-promote | zero approved drafts to promote (`lite`: "Workflows") |
 
 `plan`, `impl`, `impl-test`, `impl-review`, `retro`, `pr` are never no-op.
 
-**Design/design-review/design-promote collapse**: one deterministic no-op write at the audit exit — design is never dispatched either; the design workflow repeats it only as a defensive fallback for a direct re-dispatch. Design-review and design-promote are not dispatched. Collapse test, on frozen state and never on the historical `skipped_phases`: `documents.prd`/`ux_spec`/`adr`/`c4` are all `false`. A legacy `state.json.skip_design_phases` is ignored: the scope that froze it `true` froze those documents `false`. Under it no design draft is produced or promoted, so `phase="design-promote"` is the collapse write: resume dispatches `plan`, and `plan` needs no promotion.
+**Design/design-review/design-promote collapse**: `standard` only ("Workflows"). One deterministic no-op write at the audit exit — design is never dispatched either; the design workflow repeats it only as a defensive fallback for a direct re-dispatch. Design-review and design-promote are not dispatched. Collapse test, on frozen state and never on the historical `skipped_phases`: `documents.prd`/`ux_spec`/`adr`/`c4` are all `false`. A legacy `state.json.skip_design_phases` is ignored: the scope that froze it `true` froze those documents `false`. Under it no design draft is produced or promoted, so `phase="design-promote"` is the collapse write: resume dispatches `plan`, and `plan` needs no promotion.
 
 ## Audit phase
 
@@ -201,7 +212,7 @@ Order among enabled documents: PRD (if enabled) before design-system gate. Desig
 
 ## Design-promote phase
 
-No-op when the design phase produced zero drafts (see "Optional documents"). Otherwise each domain creator promotes only the draft(s) that exist for its domain.
+Promotion from drafts (`standard`); from the accepted implementation: "Workflows". No-op when the design phase produced zero drafts (see "Optional documents"). Otherwise each domain creator promotes only the draft(s) that exist for its domain.
 
 The main orchestrator handles gates; three domain creators promote (Documentation reviewer NOT involved):
 
@@ -278,7 +289,7 @@ One problem that is both a code defect and a workflow malfunction (routine under
 
 ## Retro phase
 
-Runs between `impl-review` and `pr`. Unconditional (never no-op). Owner: main orchestrator (`asd-phase-retro.md`).
+Runs between `impl-review` (`lite`: `design-promote`) and `pr`. Unconditional (never no-op). Owner: main orchestrator (`asd-phase-retro.md`).
 
 Input `<sprint>/friction-log.md`; output `<sprint>/retrospective.html` per `t_retrospective.html` — derived analysis, sprint-scoped, archived with the sprint. Nothing is promoted to a persistent doc; the retro backlog holds only scope-time dispositions of its rows ("Retro intake" above), never retro content.
 
@@ -365,13 +376,13 @@ A sprint folder under `.asd/sprints/archived/<NNN-slug>/` is read-only. Archival
 
 `iteration_heads["iter-NN"]` of impl-review wave K's node (`t_state.json` schema) holds the `git rev-parse HEAD` sha recorded when that wave's iteration NN starts (the same `asd-phase-impl-review.md` step 2 write that increments its counter); it anchors the incremental ranges of "Review iteration counters" above. An absent or empty `iter-(NN-1)` key (a sprint in flight when this field shipped) falls back to `<base_branch>` — never an empty left operand — with the widened scope noted in that iteration's decisions-log entry.
 
-Each impl-review wave node's `verdicts["iter-NN"]` (`t_state.json` schema) holds one entry per reviewer name (`correctness`/`efficiency`/`testing`/`documentation`/`external`) — every one of these reviewers is always dispatched (`review-policy.md` "DoD per review phase") UNLESS the APPROVE latch above skips it, and per that section's invariant a latch-skipped reviewer still gets its inherited `APPROVE` written here. Each value is one of five distinct things, never conflated:
+Each impl-review wave node's `verdicts["iter-NN"]` (`t_state.json` schema) holds one entry per reviewer key of the frozen workflow's `reviewers.impl` ("Workflows") — every one of these reviewers is always dispatched (`review-policy.md` "DoD per review phase") UNLESS the APPROVE latch above skips it, and per that section's invariant a latch-skipped reviewer still gets its inherited `APPROVE` written here. Each value is one of five distinct things, never conflated:
 - a bare verdict token string (`"APPROVE"`/`"CONCERNS"`/`"FAIL"`, parsed from that reviewer's written review file, covering whatever rubric sections it reviewed that dispatch — a section the reviewer itself marked `n/a: <predicate>` in its own returned section-coverage ledger (`review-policy.md` "Diff-scoped impl-review fan-out") is bookkeeping internal to that reviewer's file, never a separate state value);
 - External Review's availability-skip verdict, `"APPROVE (skipped: <reason>)"` — never the bare token — written when the phase-supplied preflight returns a non-ready status (unavailable command/auth, or active negative cache; `external-review.md` "Detection and negative cache"); satisfies DoD identically to a bare `"APPROVE"` but is never written to `latched` ("APPROVE latch" "Availability-skip carve-out" above);
 - a legacy External Review partial outcome, `"APPROVE (partial: <n>/<m> files; <cause>)"` (never written by a current-version workflow; recorded before review waves replaced External Review's file batches) — satisfied for its iteration, never latched (same carve-out);
 - a legacy `"skipped: <predicate>"` string (no `APPROVE` prefix, never written by any current-version workflow) — may still be present in `state.json` when a consumer upgrades mid-sprint from a pre-4.0.0 `scoped_fan_out`-driven agent-level dispatch skip; every consumer of this map (`asd-phase-pr.md` open mode step 1 included) treats it as **satisfied**, identically to `APPROVE`;
 - an absent key for the current iteration — the reviewer was required, dispatched, and its dispatch was lost, crashed, or ledger-rejected without ever producing a recorded verdict. Always **blocking**, no exception: the APPROVE latch invariant above guarantees a latch-skipped reviewer's key is written anyway, so an absent key never has a second, satisfied meaning.
 
-**User-resolved findings**: a finding the user resolves without a fix — a FAIL override, a stalemate **stop** (`external-review.md` "Stalemate detection"), an iteration-cap accept — is recorded by the orchestrator as one line appended to that reviewer's review file: `resolved: <finding id, …> — <override | stop | cap-accept>, <YYYY-MM-DD>`. The review-fix collector skips each named finding. A bare `"CONCERNS"`/`"FAIL"` whose file names every one of its findings so is **satisfied** for both gating consumers below and for each review phase's own aggregation — the one case they read the review file behind a state value.
+**User-resolved findings**: a finding resolved outside review-fix — by the user without a fix (a FAIL override, a stalemate **stop** (`external-review.md` "Stalemate detection"), an iteration-cap accept), or by impl-review's in-place tester fix (`review-policy.md` "Low-severity test-only findings") — is recorded by the orchestrator as one line appended to that reviewer's review file: `resolved: <finding id, …> — <override | stop | cap-accept | test-fix>, <YYYY-MM-DD>`. The review-fix collector skips each named finding. A bare `"CONCERNS"`/`"FAIL"` whose file names every one of its findings so is **satisfied** for both gating consumers below and for each review phase's own aggregation — the one case they read the review file behind a state value.
 
 `null` is never written deliberately. Two gating consumers of this map — `asd-phase-pr.md` open mode step 1, and impl-review's own DoD aggregation (this rule's "Impl-review" phase-table row / `review-policy.md` "DoD per review phase") — treat an absent key for a required reviewer as blocking, full stop; neither consults `latched`. `.asd/hooks/session-start.js`'s `lastReviewVerdict` is a third, display-only consumer (session-summary text, never a gate): it reads only `verdicts["iter-NN"]` for the relevant review node (impl-review: the current wave's, legacy shape included) — no `latched` awareness — counting any value starting with `"APPROVE"` (bare, availability-skip or legacy partial) or a legacy `"skipped: ..."` string as satisfied, and — like every hook — must keep failing silently (exit 0, never throw) on any malformed or missing shape.
