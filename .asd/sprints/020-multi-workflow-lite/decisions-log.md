@@ -36,3 +36,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 <!-- entries appended below this line -->
 
 - 2026-09-28 — pr open mode: DoD verified (plan 25/25, reviews green wave 1/1, full suite 246/246 at 39a77a3 with no code/test diff since, no sprint stubs, v13.3.0 + CHANGELOG, migrations <= 13.3.0); user approved PR publication and merge
+- 2026-09-28 — PR opened: https://github.com/LordKuper/agentic-software-development/pull/55
