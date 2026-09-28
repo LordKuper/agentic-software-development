@@ -2,6 +2,20 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v13.3.0
+
+A sprint now picks its shape. `standard` keeps today's eleven-phase lifecycle unchanged; the new `lite` workflow drops design/design-review for lean changes, replacing the four internal impl-review reviewers with one combined reviewer and running design-promote straight off the accepted implementation. In-flight sprints read `standard` — nothing migrates.
+
+### Added
+- **Workflows** (`sprint-lifecycle.md` "Workflows"). A workflow is declared in `.asd/workflows/<name>.json`; only `standard` and `lite` exist. Selection is a hard user decision at the first scope step, never defaulted or config-driven, frozen in `state.json.workflow` for the sprint's lifetime; an absent field reads `standard`.
+- **`lite` workflow**. Chain: `scope → audit → plan → impl ⇄ impl-test → impl-review → design-promote → retro → pr`. No `design`/`design-review`, no drafts; acceptance criteria always come from `sprint.md`'s own `AC-N` list. impl-review dispatches the new combined reviewer plus External Review. `design-promote` runs after impl-review acceptance and writes any enabled persistent docs straight from the accepted implementation.
+- **`asd-reviewer-combined` agent** (`.asd/agents/asd-reviewer-combined.md`) — the 12th canonical agent, a 5th internal reviewer. In one pass it composes the Correctness and Efficiency rubrics, the Documentation rubric when a documentation file is in scope, and its own overall-quality entry (`.asd/runtime.js emit-manifest --reviewer combined`).
+- **`node .asd/runtime.js persist-review`**. Every reviewer/External Review return is now persisted through one command, writing `<reviewer>.md` plus `<reviewer>.findings.json`.
+
+### Changed
+- Low-severity, test-only impl-review findings are now fixed in place by `asd-tester` rather than routed back to `impl` (`review-policy.md` "Low-severity test-only findings").
+- Both workflows share iteration counters, severity floors, review waves, latches, the terminal full-suite check and fix routing unchanged.
+
 ## v13.2.0
 
 Retro findings no longer wait for someone to remember them. Scope now offers the open Action/Systemic-proposal rows of the last archived retro automatically, and a few workflow-gate fixes from prior retros land: the commit contract, the dispatch payload header, review-fix consumer search, decisions-log rotation, per-entry tester lifecycle, memory-finding routing and the `impl-test` review-fix boundary.

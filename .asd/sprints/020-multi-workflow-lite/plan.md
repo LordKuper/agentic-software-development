@@ -110,12 +110,12 @@ Reachability: impl-review step 8 reads `persist-review`'s findings JSON to test 
 ### Task 7: README, AGENTS.md, release and sync
 AC: AC-7
 Material risk: artifact: cross-file mirrors
-- [ ] `README.md`:
+- [x] `README.md`:
   - add a workflows section (standard/lite chains, selection at sprint start, a lite phase table);
   - change "11/eleven phases" wording to a per-workflow form;
   - add the combined reviewer to the roster, model-tier table (both providers), agent counts, verdict enum, `runtime.js` command inventory and folder map.
-- [ ] `AGENTS.md` (the repo tail below `<!-- asd:end -->` only): update the phase-chain and agent-roster lines.
-- [ ] Bump `asd_version` (minor, per `CHANGELOG.md` convention) in `.asd/release-manifest.json`, add the `CHANGELOG.md` entry (the new sprint-start question; in-flight sprints read `standard`, nothing migrates), then run `node .asd/sync.js --apply` for every generated view and refresh `canon_hashes`/`upstream_hashes`.
+- [x] `AGENTS.md` (the repo tail below `<!-- asd:end -->` only): update the phase-chain and agent-roster lines.
+- [x] Bump `asd_version` (minor, per `CHANGELOG.md` convention) in `.asd/release-manifest.json`, add the `CHANGELOG.md` entry (the new sprint-start question; in-flight sprints read `standard`, nothing migrates), then run `node .asd/sync.js --apply` for every generated view and refresh `canon_hashes`/`upstream_hashes`.
 
 ## Risks
 - Hard-coded chain and roster sites can drift (`audit.md` Risks). The mitigation is the DoD grep plus impl-test's per-definition §16 checks.
