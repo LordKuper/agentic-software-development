@@ -1,0 +1,717 @@
+diff --git a/.asd/agents/asd-reviewer-combined.md b/.asd/agents/asd-reviewer-combined.md
+index b5857a6..14ca54b 100644
+--- a/.asd/agents/asd-reviewer-combined.md
++++ b/.asd/agents/asd-reviewer-combined.md
+@@ -21,6 +21,7 @@ Combined reviewer. The one internal reviewer of an impl-review whose workflow ro
+ - **Authority**: produces one verdict (APPROVE | CONCERNS | FAIL) and findings list per dispatch, as final text output; categorises every over-engineering/structure finding as `keep-as-is`, `simplify` or `escalate`; judges each manual-verification row its payload reports failing and raises it as a finding like any other defect, located at that row's AC-N; never modifies code or docs.
+ - **Composed rubric**: its manifest (`.asd/runtime.js` `emit-manifest --reviewer combined`) enumerates, in order, the `## Review rubric` entries of `asd-reviewer-correctness.md`, `asd-reviewer-efficiency.md` and `asd-reviewer-documentation.md` (in `.asd/agents/`), then this agent's own. Read each entry's detail, carve-outs and severity rules from its home agent file; the manifest's `n_a` is the section gate.
+ - **Conditional Documentation rubric**: with no documentation file in scope, every Documentation entry carries `n/a: no documentation file in scope`; mark it so, never review it.
++- **Persistent actuality before promotion**: impl-review runs before lite's design-promote writes the persistent docs (`sprint-lifecycle.md` "Workflows"), so for a doc a design-promote creator writes (`asd-phase-design-promote.md` step 4) judge only a change this sprint's diff itself makes, never drift from the not-yet-promoted implementation; any other persistent doc per the home entry.
+ - **Approval triggers**: rare — ambiguous severity classification, AC text, token applicability, "simpler alternative" or perf-budget interpretation.
+ - **Stop conditions**: code under review missing → ABORT; `sprint.md` AC-N list missing → ABORT; a UI section, performance section or Documentation entry whose predicate holds → `n/a: <predicate>`, never an ABORT. Coverage ledger incomplete (scoped file, rule item, or rubric section unresolved) → keep reviewing, never emit verdict (`review-policy.md`).
+ 
+diff --git a/.asd/agents/asd-tester.md b/.asd/agents/asd-tester.md
+index cfc7010..11c9d4c 100644
+--- a/.asd/agents/asd-tester.md
++++ b/.asd/agents/asd-tester.md
+@@ -37,7 +37,7 @@ Test engineer. Sole owner of tests. In `impl-test`, after the code exists: picks
+ 
+ - change surface (diff file list plus the existing tests covering those files), supplied by the phase skill
+ - `<sprint>/plan.md` (Task-level material risks)
+-- `docs/product/requirements/<subsystem>.html` (acceptance criteria to cover); when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
++- `docs/product/requirements/<subsystem>.html` (acceptance criteria to cover); when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents"); under `lite` always `sprint.md` (`.asd/rules/sprint-lifecycle.md` "Workflows")
+ - `docs/ux/<subsystem>.html` (flows for e2e coverage)
+ - whichever persistent doc holds folded API contracts for the touched subsystem (contract tests; `sprint-lifecycle.md` "Design-promote phase" fold rule)
+ - `.asd/project/commands.yaml`
+@@ -64,7 +64,7 @@ Authoring bar, check-ladder selection, prune criteria, no-new-test decision rule
+ 
+ On re-entry, scope strategy and prune to the delta since the prior entry (`test-plan.md`'s `Entry log`) and amend `test-plan.md` rather than rewrite it — `sprint-lifecycle.md` "Impl-test phase" Re-entry, sole SSoT, not restated here — after rotating the previous entry's narrative rows into `test-plan.entry-NN.md` (`artifact-layout.md` "Test plan"). In-scope test deletions proceed with a recorded reason; out-of-scope deletions need Complication Approval.
+ 
+-In review-fix and the in-place test fix, this agent amends only `test-plan.md`'s risk and added-test rows and deletes no test; `Entry log` and entry-segment rotation stay with the impl-test dispatch (`sprint-lifecycle.md` "Impl-test phase", `artifact-layout.md` "Test plan").
++In review-fix and the in-place test fix, this agent deletes no test and amends `test-plan.md` only within `artifact-layout.md` "Test plan"'s grant; `Entry log` and entry-segment rotation stay with the impl-test dispatch (`sprint-lifecycle.md` "Impl-test phase").
+ 
+ ## Failure triage
+ 
+diff --git a/.asd/hooks/session-start.js b/.asd/hooks/session-start.js
+index 1926956..fc6d4be 100644
+--- a/.asd/hooks/session-start.js
++++ b/.asd/hooks/session-start.js
+@@ -40,7 +40,7 @@ function loadWorkflowPhases(repoRoot, name) {
+   }
+ }
+ 
+-// `state.workflow` absent = standard (t1-contract).
++// `state.workflow` absent reads as `standard` (`sprint-lifecycle.md` "Workflows").
+ function phasesForState(repoRoot, state) {
+   const name = state && typeof state.workflow === 'string' ? state.workflow : 'standard';
+   return loadWorkflowPhases(repoRoot, name);
+@@ -80,10 +80,7 @@ function findActiveSprints(repoRoot) {
+       if (!state || typeof state !== 'object' || Array.isArray(state)) return;
+       if (archived) {
+         const phases = phasesForState(repoRoot, state);
+-        // No chain info (missing/malformed/unknown definition) -> can't
+-        // validate phase membership, only the literal 'done' value degrades.
+-        const invalidPhase = phases ? !phases.includes(state.phase) : false;
+-        if (invalidPhase || state.phase === 'done') return;
++        if ((phases && !phases.includes(state.phase)) || state.phase === 'done') return;
+       }
+       active.push({ folder, state });
+     } catch (_) {
+@@ -202,7 +199,7 @@ function summary(active, provider, repoRoot) {
+   const verdict = lastReviewVerdict(reviewNode);
+   const phases = phasesForState(repoRoot, state);
+   const next = phase === 'pr' ? (state.pr && state.pr.state === 'closure-pending' ? 'await-user-closure' : 'await-merge')
+-    : !phases ? null // no chain info (missing/malformed/unknown definition) -> omit
++    : !phases ? null
+     : (phase === 'audit' && phases.includes('design') && isDesignCollapsed(state.documents)) ? 'plan'
+     : nextPhase(phases, phase);
+   const implInfo = phase === 'impl-review' ? normalizeImplReviews(state.reviews) : null;
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index d64a6a9..4bdc3be 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -36,7 +36,7 @@
+     "skills/asd-concept/SKILL.md": "sha256:9a3cb2331b3aceb4a670d8d0ac94de3808771406036f9ba11dce3239e21cee42",
+     "skills/asd-design-system/SKILL.md": "sha256:9f8153a0f278a1234202771df5118f2228dd4edfd99594c1eeb0536d8d22d07f",
+     "skills/asd-init/SKILL.md": "sha256:63f2ca4ca340bffaf444e06e64ce262b8f81c26ee968ce61dadad87ec31f7587",
+-    "skills/asd-sprint/SKILL.md": "sha256:ded4424ba55da8c3d4e0a246c66f03d4aa4e4fd478ba8d1b959b9773b976459d",
++    "skills/asd-sprint/SKILL.md": "sha256:6869786d00fed1e30f0f6a557ab4f289137af57e4aea83bd04d9f9ac9869a349",
+     "skills/asd-stack/SKILL.md": "sha256:1afe58b6e4c6611adf468e9dfee361d017412dad8465f52423afdd1ae5ac9354",
+     "skills/asd-sync/SKILL.md": "sha256:f198477e9f35ba73c0b4088a690373e504ea0dd731d5fb501af54e477f3d7baa",
+     "skills/asd-update/SKILL.md": "sha256:fa71a8e3afe4f6942d8a4011dd5f682ae2671b80a73b26a51bffdf9d0b2a1365",
+@@ -54,10 +54,10 @@
+     "agents/asd-reviewer-correctness.md": "sha256:7041b2eefcd22a7d0195cd4ff139c25396200453b508ebf3d8e8d13a1ba52b96",
+     "agents/asd-reviewer-efficiency.md": "sha256:09dc7d0e65fe2a841488f9de633b3191ae2e77dd483173853d043b0df89fe399",
+     "agents/asd-dev.md": "sha256:f23b0c7258c265a63b2159dab8de553c540c3061bef6dafe903596506a3d8fd3",
+-    "agents/asd-tester.md": "sha256:acde8948b6269f946b7dad2244d90a9b9db00aebfe6f78455a160b8d1d5f942c",
++    "agents/asd-tester.md": "sha256:c3f10cf49cf72b5ca38401564c61062dd4a8d491330a1f2e25e89d2efb3e9b1b",
+     "agents/asd-ux.md": "sha256:8320e927565feeeca01b1b8d1e7eee5e08f6287f8a157f6f937f88aaffdd0264",
+     "skills/asd-phase-retro/SKILL.md": "sha256:d40dea69c3415c91b8043f4fff9bbda9dbf5750f76ebd2ff762942ab56fb4bef",
+-    "agents/asd-reviewer-combined.md": "sha256:0cc2620692a037ffea860b77a8f6052d5fee8e241f1fd4f656a11308c88d3d87"
++    "agents/asd-reviewer-combined.md": "sha256:cbec43a3ebda707696d8db44bd1612fc24cb9d878df75eebb5f0e392585386c4"
+   },
+   "upstream_hashes": {
+     ".asd/agents/asd-architect.md": "25dec1d0c20de204997f0c914f475a1b7fd6730a8e35d251d64e8fa3c7356d31",
+@@ -65,19 +65,19 @@
+     ".asd/agents/asd-external-review.md": "5932057c57bf0e42826b77a75bb084b842ba437fe8e40b5578d2af5ff94fcc94",
+     ".asd/agents/asd-reviewer-documentation.md": "97eaa2fcb1d0d0884b5a0657142ff972b13054d2c8ac03686afb774ededed8c7",
+     ".asd/agents/asd-reviewer-testing.md": "1622fa2f60a5786185e9c0fc82dee3df0c5085df2e999ea70fbc8c3552f6c1da",
+-    ".asd/hooks/session-start.js": "8f554f1121ec9d65c3d6769ff361de70c0f5feef352777a1f2c707ca5c01f677",
+-    ".asd/rules/artifact-layout.md": "d5b0509d9b447396699f1e826b3530dd482d81c3f8413c2fac69a6ebe9cd5356",
++    ".asd/hooks/session-start.js": "999fe7b8842bfd850aca55628e7f202ac04fb4a7cf9808d04d7ad55efa1134bf",
++    ".asd/rules/artifact-layout.md": "30f1bfe0ff1145b6e6431e52b805fa65b5f4addc1688fe4616f779f9e2598c4d",
+     ".asd/rules/checkpoints.md": "4f327a6eb2f943879b48e504c5f43c0402031ba79990a2331dcfd2f7c5e50967",
+     ".asd/rules/code-style.md": "58167d3f89b718761535dfc887824c264810bfb8bf6b266bfaefed85837d50d0",
+     ".asd/rules/core.md": "011d72e54abc6de64e98870fe6f145abc025a6bcfd99534475a17d3f93a0f7d1",
+     ".asd/rules/design-principles.md": "0bf73cc3eed6e723821c39f008b63c5fa04eea1e829567290a3365a9a912b938",
+     ".asd/rules/design-system.md": "c583c8ba2c08b26685b0a30dea665bb9ac19cc714e8df3622e582f33d1c95371",
+-    ".asd/rules/external-review.md": "a6c26f9eea628b380910472cf47e0e267db6e77a894068c6ab4fb4df014032ea",
++    ".asd/rules/external-review.md": "76187ff1a497e44dec5e6c8a31d6b959585467ca9aa402e0022d9958775f1087",
+     ".asd/rules/git-strategy.md": "d03183f87f875a752edf3b1f946b504663c5ae03a42acf5ab5bc0c766a484092",
+     ".asd/rules/language-policy.md": "e9b488a4cff5ed193208a52324601bede1a41e2512f2a6f06d0660576940f322",
+     ".asd/rules/providers.md": "8b21717cbf2a72b4d0dc179bc86b3f7c8ed8d44a68fe807a1ea986df48823361",
+-    ".asd/rules/review-policy.md": "6e9bc1526fd4ef4747fbfdfcb8efc5489570ff22756567d1b9d3a369f62537dc",
+-    ".asd/rules/sprint-lifecycle.md": "4e7a052c4f7525869e93a22b486d60f13480a78f5bbfc955db338d548fba1b93",
++    ".asd/rules/review-policy.md": "705c69822abb44a30a2bb6fa373895494e661b0aebab6547e3ee32a3f5fbc053",
++    ".asd/rules/sprint-lifecycle.md": "30109c1b4be1c69be932f4c0c86454447309f6474fd2b18d617a25524f6a1113",
+     ".asd/rules/ux-principles.md": "9f2af8c90d969c73654812b80e523e33b4c5696f506acf49e4bacb4c0dc6750c",
+     ".asd/skills/asd-concept/SKILL.md": "9a3cb2331b3aceb4a670d8d0ac94de3808771406036f9ba11dce3239e21cee42",
+     ".asd/skills/asd-design-system/SKILL.md": "9f8153a0f278a1234202771df5118f2228dd4edfd99594c1eeb0536d8d22d07f",
+@@ -92,7 +92,7 @@
+     ".asd/skills/asd-phase-plan/SKILL.md": "a5856fbb79957301101dc65b7eb2f6269103d1e09a3b6053bc4f38d083494829",
+     ".asd/skills/asd-phase-pr/SKILL.md": "49e18f17eb18417dbe85120f9743c6763a753fab337b06e2646b40a22eb9d6bd",
+     ".asd/skills/asd-phase-scope/SKILL.md": "a21d695d2ddb947e45b55519c54e3654eb42b5db7d8d1a9bc6be01586b62eaa7",
+-    ".asd/skills/asd-sprint/SKILL.md": "ded4424ba55da8c3d4e0a246c66f03d4aa4e4fd478ba8d1b959b9773b976459d",
++    ".asd/skills/asd-sprint/SKILL.md": "6869786d00fed1e30f0f6a557ab4f289137af57e4aea83bd04d9f9ac9869a349",
+     ".asd/skills/asd-stack/SKILL.md": "1afe58b6e4c6611adf468e9dfee361d017412dad8465f52423afdd1ae5ac9354",
+     ".asd/skills/asd-sync/SKILL.md": "f198477e9f35ba73c0b4088a690373e504ea0dd731d5fb501af54e477f3d7baa",
+     ".asd/skills/asd-update/SKILL.md": "fa71a8e3afe4f6942d8a4011dd5f682ae2671b80a73b26a51bffdf9d0b2a1365",
+@@ -132,9 +132,9 @@
+     ".asd/templates/t_ux-spec.html": "4740d0c9219ceaca240aa598aa95cce039d2e6629a63b7801a54769f98f900c5",
+     ".asd/workflows/asd-phase-audit.md": "da07cc681b00235b17f53eda2c024ffe183fbed534926d9084f0ad11c0104ac0",
+     ".asd/workflows/asd-phase-design-promote.md": "b24bc895c3cceb0e36cdd7794c9ae409e8ec1faf3492849b868d555eee68fb1f",
+-    ".asd/workflows/asd-phase-design-review.md": "526c9dec346a32a021c1c49760afe9e999a2592b0bfcca950ee3f92316cad41e",
++    ".asd/workflows/asd-phase-design-review.md": "6530548bb2fc3ea148adc4071c6e4bff49796bea342a659ec14fd6788ee61f90",
+     ".asd/workflows/asd-phase-design.md": "f4686880b9e40261dbb16e2818c6c657247fc7d48aee5ead3fe8a909ac328014",
+-    ".asd/workflows/asd-phase-impl-review.md": "3f786679bf7d5c45ee30f2fc4ab5e6a1d8bf22f6cbc98b28258ff0cb6cd3ccc2",
++    ".asd/workflows/asd-phase-impl-review.md": "618f323f94c0455cc8f44152ae81282cb9851f2afe7ae8f9ca51e3fe2477c85f",
+     ".asd/workflows/asd-phase-impl-test.md": "d032643fc55f7991dab138482e7d306c5f157b1d36642e7889d3558369350a72",
+     ".asd/workflows/asd-phase-impl.md": "e9361ff192ffa408315c0209f3a9105664d7659dd6d1c424af161ed32a0e4353",
+     ".asd/workflows/asd-phase-plan.md": "8b57be9a33982c47af4d8a2eb8d2c6dd87019eb1ac7095fe2d6f0f9cdb597745",
+@@ -144,12 +144,12 @@
+     ".asd/agents/asd-reviewer-correctness.md": "7041b2eefcd22a7d0195cd4ff139c25396200453b508ebf3d8e8d13a1ba52b96",
+     ".asd/agents/asd-reviewer-efficiency.md": "09dc7d0e65fe2a841488f9de633b3191ae2e77dd483173853d043b0df89fe399",
+     ".asd/agents/asd-dev.md": "f23b0c7258c265a63b2159dab8de553c540c3061bef6dafe903596506a3d8fd3",
+-    ".asd/agents/asd-tester.md": "acde8948b6269f946b7dad2244d90a9b9db00aebfe6f78455a160b8d1d5f942c",
++    ".asd/agents/asd-tester.md": "c3f10cf49cf72b5ca38401564c61062dd4a8d491330a1f2e25e89d2efb3e9b1b",
+     ".asd/agents/asd-ux.md": "8320e927565feeeca01b1b8d1e7eee5e08f6287f8a157f6f937f88aaffdd0264",
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
+     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
+-    ".asd/runtime.js": "d453d5742abea2ada60565aae771bd29b46d97fc2c77887569cb953d7fc80ec0",
++    ".asd/runtime.js": "df1a97c5a7913c09a340b65ee4a2afbc0b80beb953a33d40b6d7a04823d45934",
+     ".asd/templates/external-review/t_review-scope.json": "a17ee84e64cc6a693aaa30dacaef660c841b23a92331abf217ff64c8fc2d4951",
+     ".asd/templates/t_friction-log.md": "8ceae936077b1c0b869fe439965e859059b6dab971b79a89126f8074e379ce33",
+     ".asd/templates/t_retrospective.html": "7df5586afa9ee7eebf2a878544dbe5336b90efadf9fbb1a7dec6f1957b8e53d0",
+@@ -159,7 +159,7 @@
+     ".asd/templates/t_subsystems.md": "54b1e273e9e74a57e08b43d1b671f880b7f682d9ec1bc4afb95a55d98b2531dd",
+     ".asd/migrations/9.0.0.js": "1a1da6ebd2576d92ed44ccde308969856f3aeaa7be152438137e94b43cd015b1",
+     ".asd/templates/t_retro-backlog.md": "0fd817d2ba64894dd8e5a4c01ca57309e7c51b0f2a270f94175ddf71b933f3d9",
+-    ".asd/agents/asd-reviewer-combined.md": "0cc2620692a037ffea860b77a8f6052d5fee8e241f1fd4f656a11308c88d3d87",
++    ".asd/agents/asd-reviewer-combined.md": "cbec43a3ebda707696d8db44bd1612fc24cb9d878df75eebb5f0e392585386c4",
+     ".asd/workflows/lite.json": "2fc12fc41cac51a22b19d67ff5d47c9765c105fec1ad67e8eb5d765b882622ea",
+     ".asd/workflows/standard.json": "7a7c04da7a13ec9dab9bb782d8a9981b703d34859d55614cd9354808b1721fb2"
+   }
+diff --git a/.asd/rules/artifact-layout.md b/.asd/rules/artifact-layout.md
+index 6ff142e..d1fe355 100644
+--- a/.asd/rules/artifact-layout.md
++++ b/.asd/rules/artifact-layout.md
+@@ -184,7 +184,7 @@ Manual step = operational action a human must perform for the plan to complete (
+ 
+ ## Test plan
+ 
+-`<sprint>/test-plan.md` per `t_test-plan.md`. Per-sprint: entry 1 writes it fresh; every re-entry amends it (Defects section carried over with resolved entries kept for the record). Owner: the `impl-test` Tester — it alone appends the `Entry log` and rotates. A `Defects` row's `Status` is flipped by its test-fix fixer; for a memory `D-N`, by the orchestrator (`review-policy.md` "Autofix vs escalation"). A review-fix tester (`asd-phase-impl.md` step 5) amends only `Risk → check decisions` and `Added tests` rows. It never deletes a test: it records a removal finding as a `Risk → check decisions` row, and the next `impl-test` entry, which always follows `impl`, performs the removal and records its reason under `Removed tests`. An impl-review in-place tester (`review-policy.md` "Low-severity test-only findings") amends only the live rows its findings name — a rotated row by a superseding live row — and `Added tests` rows, and never deletes a test.
++`<sprint>/test-plan.md` per `t_test-plan.md`. Per-sprint: entry 1 writes it fresh; every re-entry amends it (Defects section carried over with resolved entries kept for the record). Owner: the `impl-test` Tester — it alone appends the `Entry log` and rotates. A `Defects` row's `Status` is flipped by its test-fix fixer; for a memory `D-N`, by the orchestrator (`review-policy.md` "Autofix vs escalation"). A review-fix tester (`asd-phase-impl.md` step 5) amends only `Risk → check decisions` and `Added tests` rows. It never deletes a test: it records a removal finding as a `Risk → check decisions` row, and the next `impl-test` entry, which always follows `impl`, performs the removal and records its reason under `Removed tests`. An impl-review in-place tester (`review-policy.md` "Low-severity test-only findings") has the same reach and reports a finding outside it unfixed.
+ 
+ **Rotation**: at a re-entry's strategy pass, before any new row and never when resuming an interrupted current entry (`asd-phase-impl-test.md` step 1), the Tester moves the `Risk → check decisions`, `Removed tests` and `Added tests` rows of the previous `Entry log` entry N, if any, plus the review-fix and impl-review in-place tester rows added since (they have no `Entry log` row of their own), into `test-plan.entry-NN.md` (same section headings, N zero-padded to 2) when that file is absent, leaving those tables empty in the live file. Live `test-plan.md` keeps the `Entry log`, `Suite run`, `Defects` and `Manual verification`. A segment is never edited: a fix that changes a rotated row's risk gets a superseding row in the live file. Readers: "Decisions log" below.
+ 
+diff --git a/.asd/rules/external-review.md b/.asd/rules/external-review.md
+index 54a65a4..4b70b6e 100644
+--- a/.asd/rules/external-review.md
++++ b/.asd/rules/external-review.md
+@@ -32,7 +32,7 @@ On a real-request authentication, quota, reachability, or command failure, phase
+ 
+ On a non-ready preflight (command/auth failure) or an active negative cache — never on a failure after invocation (Outcome contract):
+ 
+-- Return `APPROVE (skipped: external review unavailable: <specific status>)`; the dispatching workflow persists the exact status in that iteration's `external.md` — its first-line token plus an `Unreviewed files` line naming the `files[]` the scope manifest would have carried ("Iteration semantics"), no other section — appends it to `<sprint>/decisions-log.md` for sprint `<NNN-slug>` iteration `<id>` (the iteration id, `sprint-lifecycle.md` "Review iteration counters"), and appends an `F-N` friction entry for it (`sprint-lifecycle.md` "Friction log")
++- Return `APPROVE (skipped: external review unavailable: <specific status>)`; the dispatching workflow persists the exact status in that iteration's `external.md` through `persist-review` (`review-policy.md` "Coverage ledger" Persistence) — its first-line token plus an `Unreviewed files` line naming the `files[]` the scope manifest would have carried ("Iteration semantics"), no other section — appends it to `<sprint>/decisions-log.md` for sprint `<NNN-slug>` iteration `<id>` (the iteration id, `sprint-lifecycle.md` "Review iteration counters"), and appends an `F-N` friction entry for it (`sprint-lifecycle.md` "Friction log")
+ - Continue without external review, no user prompt
+ 
+ An availability skip satisfies only that iteration and never creates an APPROVE latch. A later local-ready result dispatches External Review normally.
+diff --git a/.asd/rules/review-policy.md b/.asd/rules/review-policy.md
+index b85b29e..95098b3 100644
+--- a/.asd/rules/review-policy.md
++++ b/.asd/rules/review-policy.md
+@@ -135,7 +135,7 @@ A verdict whose ledger omits a scoped file, omits a checklist item, omits a requ
+ 
+ **Enforcement (phase-workflow gate):** validation runs before the review file is written; no verdict counts until it passes. A first failure earns one transcription, performed by the phase workflow: re-encode the returned ledger into the required shape — drop rows outside the manifest, collapse agreeing duplicates, re-key values the return already carries — then re-run the helper. Transcription never supplies a status, predicate or finding id the return did not carry, and never runs twice on one return. Re-run passes: the transcript is the persisted ledger, the verdict counts, and the workflow appends the deviation as a friction entry naming the reviewer and the shape defect. Re-run fails: the ledger is rejected and the same reviewer is re-dispatched fresh in the same iteration. So the re-run, not a failure message, decides which half of the partition a return fell in — the generated manifest, not model prose or totals, defines completeness.
+ 
+-**Persistence** (both review phases, both workflows, every reviewer — External Review's return and a late return included): the phase workflow persists each return with one command, `node .asd/runtime.js persist-review --phase <design|impl> --reviewer <key> --in <file holding the returned text> --out-dir <iteration dir> [--late] [--manifest <path>]`. It checks the first-line token ("Gate Verdict Format") and, for an internal reviewer, the ledger against `<out-dir>/<reviewer>.manifest.json` (`--manifest`: a closed wave's manifest, for a late return); then writes `<reviewer>.md` — the return from its token line on — and `<reviewer>.findings.json` (`[{id, severity, location}]`), `<reviewer>.late.*` with `--late`, and prints `{token, findings}`. A failure writes nothing; the transcription above re-runs it on the transcript; an existing `<reviewer>.md` is never overwritten. The orchestrator never hand-writes or re-authors a review file: its later writes there are appended lines only — `resolved:` (`sprint-lifecycle.md` "State recovery"), `answer:` ("Gate Verdict Format"), `Interrupted attempts:` ("Interrupted dispatch"). `state.json` stays orchestrator-written, from the printed token. The validated compact ledger and immutable manifest stay beside the verdict/findings report, with relative evidence links. No full prose ledger is generated first; no second compression pass discards the evidence needed for deterministic revalidation.
++**Persistence** (both review phases, both workflows, every reviewer — External Review's return and a late return included): the phase workflow persists each return with one command, `node .asd/runtime.js persist-review --phase <design|impl> --reviewer <key> --in <file holding the returned text> --out-dir <iteration dir> [--late] [--manifest <path>]`. External Review's availability skip (`external-review.md` "Detection and negative cache") returns no text: the workflow writes the skip's token line and `Unreviewed files` line to that file and persists it the same way. It checks the first-line token ("Gate Verdict Format") and, for an internal reviewer, the ledger against `<out-dir>/<reviewer>.manifest.json` (`--manifest`: a closed wave's manifest, for a late return); then writes `<reviewer>.md` — the return from its token line on — and `<reviewer>.findings.json` (`[{id, severity, location}]`), `<reviewer>.late.*` with `--late`, and prints `{token, findings}`. A failure writes nothing; the transcription above re-runs it on the transcript; an existing `<reviewer>.md` is never overwritten. The orchestrator never hand-writes or re-authors a review file: its later writes there are appended lines only — `resolved:` (`sprint-lifecycle.md` "State recovery"), `answer:` ("Gate Verdict Format"), `Interrupted attempts:` ("Interrupted dispatch"). `state.json` stays orchestrator-written, from the printed token. The validated compact ledger and immutable manifest stay beside the verdict/findings report, with relative evidence links. No full prose ledger is generated first; no second compression pass discards the evidence needed for deterministic revalidation.
+ 
+ ## Verdict format
+ 
+@@ -181,7 +181,7 @@ An internal reviewer is NEVER recorded as skipped and never satisfies DoD withou
+ 
+ ## Reviewer responsibility
+ 
+-Sole owner map: each concern below has exactly one reviewer; agent rubrics hold the detail. "Receives" is the reviewer's manifest file list, built from the iteration's scope by `.asd/runtime.js` `reviewerFiles`.
++Sole owner map: each concern below has exactly one reviewer per workflow roster (`reviewers.<node>`, `sprint-lifecycle.md` "Workflows"); agent rubrics hold the detail. "Receives" is the reviewer's manifest file list, built from the iteration's scope by `.asd/runtime.js` `reviewerFiles`.
+ 
+ | Reviewer | design-review: judges · receives | impl-review: judges · receives |
+ |---|---|---|
+diff --git a/.asd/rules/sprint-lifecycle.md b/.asd/rules/sprint-lifecycle.md
+index cd825c3..c992405 100644
+--- a/.asd/rules/sprint-lifecycle.md
++++ b/.asd/rules/sprint-lifecycle.md
+@@ -24,7 +24,7 @@ A workflow is one sprint lifecycle, declared in `.asd/workflows/<name>.json`; on
+ - Chain: scope → audit → plan → impl ⇄ impl-test → impl-review → design-promote → retro → pr. No `design`, no `design-review`, no drafts.
+ - Acceptance criteria: always `sprint.md`'s `AC-N` list, whatever `documents.prd`. `plan` reads `sprint.md` plus `audit.md` when audit ran; it needs no promoted doc.
+ - impl-review dispatches `combined` plus External Review (`reviewers.impl`); waves, counters, severity floors, latches, the terminal full suite and fix routing are unchanged. Its green exit is `NEXT: design-promote`.
+-- design-promote runs after impl-review DoD, "Design-promote phase" steps 1-5 with `sprint.md`, `plan.md` and the sprint diff in place of drafts: each domain creator writes or updates the persistent docs of every document the frozen `documents.*` enables — no draft, no review. With `ux_spec` enabled the design-system gate ("Design phase") precedes UX's write. Hard gates stay: a new subsystem, material stack/UX/brand direction, each `DESIGN.md` token change (`checkpoints.md` "Gate policy"). No-op when frozen `prd`, `ux_spec`, `adr` and `c4` are all `false`. Its writes are committed before `NEXT: retro`.
++- design-promote runs after impl-review DoD, "Design-promote phase" steps 1-5 with `sprint.md`, `plan.md`, the sprint diff and `audit.md` when present in place of drafts: each domain creator writes or updates the persistent docs of every document the frozen `documents.*` enables — no draft, no review. With `ux_spec` enabled the design-system gate ("Design phase") precedes UX's write. Hard gates stay: a new subsystem, material stack/UX/brand direction, each `DESIGN.md` token change (`checkpoints.md` "Gate policy"). No-op when frozen `prd`, `ux_spec`, `adr` and `c4` are all `false`. Its writes are committed before `NEXT: retro`.
+ 
+ ## Phases (all mandatory)
+ 
+diff --git a/.asd/runtime.js b/.asd/runtime.js
+index 77c0beb..6bf4f00 100644
+--- a/.asd/runtime.js
++++ b/.asd/runtime.js
+@@ -54,7 +54,7 @@ const NA_PREDICATES = {
+   pureRename: 'pure rename: identical content and mode',
+   noDocs: 'no documentation file in scope',
+ };
+-/** Rubric entries each conditional predicate covers, by reviewer and id prefix, a combined manifest taking those of every rubric it composes; a prefix matching no entry fails the emit closed. */
++/** Rubric entries each conditional predicate covers, by reviewer and id prefix, a combined manifest taking those of every rubric it composes; a prefix matching no entry fails the emit closed. A combined manifest's `no documentation file in scope` covers its whole composed Documentation part instead. */
+ const NA_TARGETS = {
+   ui: { correctness: ['UI conformance'] },
+   perf: { efficiency: ['Perf budget compliance', 'Perf anti-patterns', 'Algorithmic complexity', 'Regression detection', 'Hot path identification'] },
+@@ -62,7 +62,6 @@ const NA_TARGETS = {
+   html: { documentation: ['HTML shell wrapping', 'Provenance', 'Traceability'] },
+   selfHosting: { documentation: ['Framework mode'] },
+   templated: { documentation: ['Template adherence'] },
+-  docs: { combined: ['SSoT', 'Template adherence', 'HTML shell wrapping', 'Provenance', 'Traceability', 'Persistent actuality', 'In-code doc comments', 'Stub-resolution verification', 'Framework mode', 'Documentation economy', 'Custom rules consistency'] },
+ };
+ const PHASES = ['design-review', 'impl-review'];
+ /** A retro row's acting side; like its row id, an English literal under any docs language, so intake can filter on it. */
+@@ -112,10 +111,10 @@ function riskArray(value, name) {
+   return value.map(riskEntry);
+ }
+ 
+-/** Reads and shape-validates one workflow definition, `<dir>/<name>.json`; an unknown name or a malformed file throws. */
+-function loadWorkflow(name, dir = WORKFLOWS_DIR) {
++/** Reads and shape-validates one workflow definition, `.asd/workflows/<name>.json`; an unknown name or a malformed file throws. */
++function loadWorkflow(name) {
+   if (typeof name !== 'string' || !/^[a-z]+$/.test(name)) fail(`workflow name invalid: ${name}`);
+-  const file = path.join(dir, `${name}.json`);
++  const file = path.join(WORKFLOWS_DIR, `${name}.json`);
+   if (!fs.existsSync(file)) fail(`unknown workflow: ${name}`);
+   const malformed = (what) => fail(`${file} malformed: ${what}`);
+   let definition;
+@@ -147,9 +146,9 @@ function loadWorkflow(name, dir = WORKFLOWS_DIR) {
+ }
+ 
+ /** The reviewer keys one review node accepts: the union of every definition's `reviewers[node]`. */
+-function reviewerKeys(node, dir = WORKFLOWS_DIR) {
+-  const names = fs.readdirSync(dir).filter((file) => file.endsWith('.json')).map((file) => file.slice(0, -'.json'.length));
+-  return [...new Set(names.flatMap((name) => loadWorkflow(name, dir).reviewers[node]))];
++function reviewerKeys(node) {
++  const names = fs.readdirSync(WORKFLOWS_DIR).filter((file) => file.endsWith('.json')).map((file) => file.slice(0, -'.json'.length));
++  return [...new Set(names.flatMap((name) => loadWorkflow(name).reviewers[node]))];
+ }
+ 
+ /** Builds the spawn shape for a command: direct argv, or the Windows PowerShell JSON-stdin fallback. */
+@@ -401,8 +400,9 @@ function isDocumentation(file, templates) {
+   return /\.(md|mdx|markdown|rst|adoc|txt)$/i.test(file) || isTemplated(file, templates);
+ }
+ 
+-/** Maps every rule id to the standing n/a predicates its condition authorizes for this dispatch; `rubrics` names the reviewers whose rubrics the manifest holds. */
+-function standingPredicates(input, rubrics, ids, customRules, templates) {
++/** Maps every rule id to the standing n/a predicates its condition authorizes for this dispatch; `parts` maps each reviewer whose rubric the manifest holds to its rule ids. */
++function standingPredicates(input, parts, ids, customRules, templates) {
++  const rubrics = Object.keys(parts);
+   const granted = new Map(ids.map((id) => [id, []]));
+   const targets = (key) => rubrics.flatMap((name) => NA_TARGETS[key][name] || []).map((prefix) => ids.find((id) => id.startsWith(prefix)) || fail(`rubric entry missing for n/a predicate: ${prefix}`));
+   const grant = (key, predicate) => targets(key).forEach((id) => granted.get(id).push(predicate));
+@@ -413,7 +413,7 @@ function standingPredicates(input, rubrics, ids, customRules, templates) {
+   if (!input.files.some((file) => /\.html?$/i.test(file))) grant('html', NA_PREDICATES.noHtml);
+   if (input.selfHosting !== true) grant('selfHosting', NA_PREDICATES.noSelfHosting);
+   if (!input.files.some((file) => isTemplated(file, templates))) grant('templated', NA_PREDICATES.noTemplated);
+-  if (!input.files.some((file) => isDocumentation(file, templates))) grant('docs', NA_PREDICATES.noDocs);
++  if (rubrics.includes(COMBINED_REVIEWER) && !input.files.some((file) => isDocumentation(file, templates))) (parts.documentation || fail('combined manifest composes no documentation rubric')).forEach((id) => granted.get(id).push(NA_PREDICATES.noDocs));
+   if (input.phase === 'design-review') {
+     if (!input.files.some((file) => /(^|\/)(ux-spec\.html|design-md-delta\.yaml)$/.test(file))) grant('ui', NA_PREDICATES.phaseGate);
+     return granted;
+@@ -436,7 +436,7 @@ function emitCoverageManifest(input) {
+   const rules = rubric.rules.concat(Object.keys(customRules));
+   if (new Set(rules).size !== rules.length) fail('rubric and custom-rule ids must be distinct');
+   const templates = input.templates === undefined ? [] : stringArray(input.templates, 'templates');
+-  const granted = standingPredicates(input, Object.keys(composed), rules, customRules, templates);
++  const granted = standingPredicates(input, Object.fromEntries(Object.keys(composed).map((name, i) => [name, rubrics[i].rules])), rules, customRules, templates);
+   const naFor = (ids) => Object.fromEntries(ids.map((id) => [id, granted.get(id)]).filter(([, predicates]) => predicates.length > 0));
+   const renamed = new Set(input.pureRenames === undefined ? [] : stringArray(input.pureRenames, 'pureRenames'));
+   return stampManifest({
+@@ -511,6 +511,7 @@ function persistReview(input) {
+   const verdict = token[1];
+   const findings = verdict.startsWith('APPROVE (') ? [] : reviewFindings(body);
+   if (!verdict.startsWith('APPROVE') && findings.length === 0) fail(`${verdict} verdict lists no finding`);
++  if (verdict === 'APPROVE' && findings.length > 0) fail('APPROVE verdict lists findings');
+   if (INTERNAL_REVIEWERS.includes(reviewer)) {
+     const manifest = JSON.parse(fs.readFileSync(input.manifest || path.join(outDir, `${reviewer}.manifest.json`), 'utf8'));
+     validateCoverageLedger(manifest, ledgerFromText(body), findings.map((finding) => finding.id));
+diff --git a/.asd/skills/asd-sprint/SKILL.md b/.asd/skills/asd-sprint/SKILL.md
+index 7e11dab..0b8b7b1 100644
+--- a/.asd/skills/asd-sprint/SKILL.md
++++ b/.asd/skills/asd-sprint/SKILL.md
+@@ -41,8 +41,8 @@ Before a phase-skill delegation below, rotate the decisions log when `.asd/rules
+ ### Step 2B: resume flow
+ 1. Read `.asd/sprints/<NNN-slug>/state.json` and its frozen workflow definition
+ 2. Show: sprint id, workflow, current phase, review iteration (`reviews.design.iteration` when phase=`design-review`; when phase=`impl-review`, `wave <K>/<n>` = `reviews.impl.wave`/`waves.length` plus that wave's `iteration`, a legacy flat `reviews.impl` read as wave 1 of 1 — `sprint-lifecycle.md` "Review iteration counters"), last review verdict (if any)
+-3. Request user decision: resume (default) | re-run current phase | re-run earlier phase | abort sprint. Re-run options offer only phases of the definition's `phases`; under the design-block collapse test (`sprint-lifecycle.md`), neither offers `design`, `design-review` or `design-promote`.
+-4. Delegate to the matching phase skill. *resume* re-enters `phase`, except `phase="design-promote"` under the collapse test (`sprint-lifecycle.md` "Design/design-review/design-promote collapse"): then dispatch `plan`. *re-run earlier phase* = rollback: its inline state update resets the review state per **rollback reset** in `sprint-lifecycle.md`, reading the definition's `rollback_reset` — `reviews.design`'s counter, `reviews.impl` to its seed wave node — with the severity floors.
++3. Request user decision: resume (default) | re-run current phase | re-run earlier phase | abort sprint. Re-run options offer only phases of the definition's `phases`; under the design-block collapse test (`standard` only, `sprint-lifecycle.md` "Workflows"), neither offers `design`, `design-review` or `design-promote`.
++4. Delegate to the matching phase skill. *resume* re-enters `phase`, except `phase="design-promote"` under the collapse test (`standard` only; `sprint-lifecycle.md` "Design/design-review/design-promote collapse"): then dispatch `plan`. *re-run earlier phase* = rollback: its inline state update resets the review state per **rollback reset** in `sprint-lifecycle.md`, reading the definition's `rollback_reset` — `reviews.design`'s counter, `reviews.impl` to its seed wave node — with the severity floors.
+ 
+ ### Step 3: phase chain advancement
+ After any phase skill returns:
+diff --git a/.asd/workflows/asd-phase-design-review.md b/.asd/workflows/asd-phase-design-review.md
+index 6c0eaac..6fee70b 100644
+--- a/.asd/workflows/asd-phase-design-review.md
++++ b/.asd/workflows/asd-phase-design-review.md
+@@ -38,7 +38,7 @@ Orchestration body for the `asd-phase-design-review` skill. Operation-mapping to
+ 8a. **Interrupted dispatch** — `review-policy.md` "Interrupted dispatch" is the sole SSoT for the durable record, the escalation and the correlated branch, not restated here; its `<id>` is `iter-NN`. The step header carries no reach; each branch below states its own.
+    - Interrupted dispatch — reaches any dispatch, External Review included, per `external-review.md` "Outcome contract": takes the same reject-and-re-dispatch-fresh path as a failed validation above, never that step's transcription branch; a second consecutive interruption on the same manifest → request user decision per that section's Escalation (retry fresh / abort), never a split.
+    - Late duplicate return — reaches any replaced dispatch, External Review included, per `review-policy.md` "Late duplicate return" (sole SSoT for the admission test and every action it mandates). Phase bindings: a return delivering after step 9 recorded its replacement's verdict, once admitted, is persisted by step 8's `persist-review` plus `--late` to `<sprint>/reviews/design/iter-NN/<reviewer>.late.md`, linked from `<reviewer>.md`, and carries that section's `verdicts["iter-NN"]`, `latched` and decisions-log writes even though step 9 already ran.
+-9. Parse first-line tokens from all written reviewer files; write `state.json` `reviews.design.verdicts["iter-NN"]` (keyed `correctness`/`efficiency`/`documentation`/`external`) and `reviews.design.latched` per `sprint-lifecycle.md` "APPROVE latch" — sole SSoT for the every-reviewer-gets-an-entry invariant, the inherited `APPROVE` a latch-skipped reviewer receives and the bare-`APPROVE`-only latch condition; not restated here. Phase bindings: an interrupted attempt contributes no entry, its attempts already logged at step 8a. External Review's availability skip is recorded as `"APPROVE (skipped: <reason>)"` when the phase-supplied preflight returns non-ready; its other persistence duties (the skip's `Unreviewed files` line, the `files[]` step 7's scope manifest would carry, included) are `external-review.md` "Outcome contract"'s, not this step's. Aggregate per `sprint-lifecycle.md` "State recovery" satisfied-vs-blocking semantics, reading `verdicts["iter-NN"]` alone, except per `sprint-lifecycle.md` "State recovery" "User-resolved findings":
++9. Parse first-line tokens from all written reviewer files; write `state.json` `reviews.design.verdicts["iter-NN"]` (keyed `correctness`/`efficiency`/`documentation`/`external`) and `reviews.design.latched` per `sprint-lifecycle.md` "APPROVE latch" — sole SSoT for the every-reviewer-gets-an-entry invariant, the inherited `APPROVE` a latch-skipped reviewer receives and the bare-`APPROVE`-only latch condition; not restated here. Phase bindings: an interrupted attempt contributes no entry, its attempts already logged at step 8a. External Review's availability skip is recorded as `"APPROVE (skipped: <reason>)"` when the phase-supplied preflight returns non-ready; its `external.md` (the skip's `Unreviewed files` line, the `files[]` step 7's scope manifest would carry, included) is persisted through step 8's `persist-review` per `review-policy.md` "Coverage ledger" Persistence, its other duties `external-review.md` "Detection and negative cache"'s, not this step's. Aggregate per `sprint-lifecycle.md` "State recovery" satisfied-vs-blocking semantics, reading `verdicts["iter-NN"]` alone, except per `sprint-lifecycle.md` "State recovery" "User-resolved findings":
+    - **Reviewer questions first** — a report carrying `question:` items under `## Escalations` (`review-policy.md` "Gate Verdict Format" question carrier) is verdict-bearing, never interrupted (step 8a): request user decision per item, append the answers to decisions-log, and write each under its item in that reviewer's file per that carrier, passing it with that reviewer's findings to the creator fix dispatch (such a report is at least CONCERNS, per that carrier)
+    - **All APPROVE, latched or user-resolved** (`sprint-lifecycle.md` "State recovery" user-resolved findings) → DoD met; apply the adaptive gate policy and append the decision inline; emit phase COMPLETED
+    - **Any FAIL** → escalation:
+diff --git a/.asd/workflows/asd-phase-impl-review.md b/.asd/workflows/asd-phase-impl-review.md
+index ae5114f..fa6bd52 100644
+--- a/.asd/workflows/asd-phase-impl-review.md
++++ b/.asd/workflows/asd-phase-impl-review.md
+@@ -50,7 +50,7 @@ Orchestration body for the `asd-phase-impl-review` skill. Operation-mapping to h
+ 7a. **Interrupted dispatch** — `review-policy.md` "Interrupted dispatch" is the sole SSoT for the durable record, the escalation and the correlated branch, not restated here; its `<id>` is this iteration's. The step header carries no reach; each branch below states its own.
+    - Interrupted dispatch — reaches any dispatch, External Review included, per `external-review.md` "Outcome contract": takes the same reject-and-re-dispatch-fresh path as a failed validation above, never that step's transcription branch; a second consecutive interruption on the same manifest → request user decision per that section's Escalation (retry fresh / abort), never a split.
+    - Late duplicate return — reaches any replaced dispatch, External Review included, per `review-policy.md` "Late duplicate return" (sole SSoT for the admission test and every action it mandates). Phase bindings: a return delivering after step 8 recorded its replacement's verdict, once admitted, is persisted by step 7's `persist-review` plus `--late` to `<reviewer>.late.md` in the replaced dispatch's iteration dir (`<sprint>/reviews/impl/<id>/`), linked from `<reviewer>.md`, and carries that section's `verdicts["iter-NN"]`, `latched` and decisions-log writes even though step 8 already ran — for a closed wave, its `.late.md` goes to this iteration's `<sprint>/reviews/impl/<id>/` instead, `--manifest` naming the closed wave's manifest, and its finding joins step 8's unresolved set.
+-8. Parse first-line verdict tokens from all written reviewer files; write the wave node's `verdicts["iter-NN"]` (keyed by `reviewers.impl`) and `latched` per `sprint-lifecycle.md` "APPROVE latch" — sole SSoT for the every-reviewer-gets-an-entry invariant, the inherited `APPROVE` a latch-skipped reviewer receives and the bare-`APPROVE`-only latch condition; not restated here. Phase bindings: an interrupted attempt contributes no entry, its attempts already logged at step 7a. External Review's availability skip is recorded as `"APPROVE (skipped: <reason>)"` when the phase-supplied preflight returns non-ready; its other persistence duties (the `Unreviewed files` line from step 1b included) are `external-review.md` "Outcome contract"'s, not this step's. Aggregate per `sprint-lifecycle.md` "State recovery" satisfied-vs-blocking semantics, reading `verdicts["iter-NN"]` alone, except per `sprint-lifecycle.md` "State recovery" "User-resolved findings". impl-review does NOT fix findings itself — fixes route to impl phase (fix mode):
++8. Parse first-line verdict tokens from all written reviewer files; write the wave node's `verdicts["iter-NN"]` (keyed by `reviewers.impl`) and `latched` per `sprint-lifecycle.md` "APPROVE latch" — sole SSoT for the every-reviewer-gets-an-entry invariant, the inherited `APPROVE` a latch-skipped reviewer receives and the bare-`APPROVE`-only latch condition; not restated here. Phase bindings: an interrupted attempt contributes no entry, its attempts already logged at step 7a. External Review's availability skip is recorded as `"APPROVE (skipped: <reason>)"` when the phase-supplied preflight returns non-ready; its `external.md` (the `Unreviewed files` line from step 1b included) is persisted through step 7's `persist-review` per `review-policy.md` "Coverage ledger" Persistence, its other duties `external-review.md` "Detection and negative cache"'s, not this step's. Aggregate per `sprint-lifecycle.md` "State recovery" satisfied-vs-blocking semantics, reading `verdicts["iter-NN"]` alone, except per `sprint-lifecycle.md` "State recovery" "User-resolved findings". impl-review does NOT fix findings itself — fixes route to impl phase (fix mode):
+    - **Reviewer questions first** — a report carrying `question:` items under `## Escalations` (`review-policy.md` "Gate Verdict Format" question carrier) is verdict-bearing, never interrupted (step 7a): request user decision per item, append the answers to decisions-log, and write each under its item in that reviewer's file per that carrier, so review-fix reads it with the findings (such a report is at least CONCERNS, per that carrier)
+    - **Any FAIL** → escalation (impl-review owns review escalation):
+      - parse FAIL findings; group by escalation cause (concept / requirement / contract change; new abstraction; scope expansion; complexity increase)
+diff --git a/.claude/agent-memory/asd-external-review/reference_codex-invocation.md b/.claude/agent-memory/asd-external-review/reference_codex-invocation.md
+index a87b28a..9840e8e 100644
+--- a/.claude/agent-memory/asd-external-review/reference_codex-invocation.md
++++ b/.claude/agent-memory/asd-external-review/reference_codex-invocation.md
+@@ -34,3 +34,18 @@ a file, even a scratch one deleted immediately after reading it back. This agent
+ "no file writes at all" and "no temp file, no cleanup step needed since nothing was created" — that
+ covers the CLI's own stdout, not only the prompt/scope-manifest going in. On an interrupted turn,
+ re-run the invocation clean rather than adding a redirect-and-delete workaround.
++
++## Always pass an explicit `timeout` on the Bash tool call (2026-09-28)
++
++A 349 KB diff dispatch (sprint 020, impl-review wave-1 iter-01) took >120s and the Bash tool's default
++timeout auto-backgrounded the call (harness behavior, not a failure) — separately, in the same call I
++had also tacked on `2>&1 > scratch.txt`, redirecting codex's own stdout to a file, which directly
++violates the "no file writes at all, stdout capture only" contract this section already states. Root
++cause was not passing the `timeout` parameter (up to 600000ms per this doc) up front, which invited the
++disk-redirect reflex once the call looked like it might time out. Always set `timeout: 600000` (or a
++size-appropriate value per the KB-payload/token table above) on the very first foreground Bash call for
++the codex invocation — never rely on the tool's ~120s default, and never add a `>`/`>>` redirect to
++codex's own output as a workaround for an anticipated timeout, backgrounding, or interruption. If a
++call still gets auto-backgrounded despite an explicit timeout, read the result back via the harness's
++own background-task output file it reports (that is the tool's internal tracking, not a file this
++agent chose to create) — still never add a deliberate redirect of your own.
+diff --git a/.claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md b/.claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md
+index ae6cdcb..c377f76 100644
+--- a/.claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md
++++ b/.claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md
+@@ -1,6 +1,6 @@
+ ---
+ name: no-shell-doc-review-method
+-description: How documentation review runs in this framework repo - no shell, manifest-driven ledger vocabulary (emitter-produced list plus one fingerprint-named .diff, review-policy.md "Scope hand-off"), and the defect shapes that actually pay off (acting-site scope contradicting the cited SSoT, partial mirror updates when a rule gains a trigger, sole-home claims wider than the code, authority bounds narrower than their only instance, a fix narrowing code while the file's second description of it stays wide, new failure branches missing from an exhaustive blocker list, a new record-and-carry rule bound only on its read side, a duty moved off an agent onto "the orchestrator" with no acting site, a universal grant claim leaving a sibling fallback branch unreachable, new in-body `// ponytail:` comments in Node sources, README FAQ answers left stale by a new feature, and agent-memory claims stale at HEAD or contradicting the writer's definition)
++description: How documentation review runs in this framework repo - no shell, manifest-driven ledger vocabulary (emitter-produced list plus one fingerprint-named .diff, review-policy.md "Scope hand-off"), and the defect shapes that actually pay off (acting-site scope contradicting the cited SSoT, partial mirror updates when a rule gains a trigger, sole-home claims wider than the code, authority bounds narrower than their only instance, a fix narrowing code while the file's second description of it stays wide, new failure branches missing from an exhaustive blocker list, a new record-and-carry rule bound only on its read side, a duty moved off an agent onto "the orchestrator" with no acting site, a universal grant claim leaving a sibling fallback branch unreachable, new in-body comments in Node sources and hooks, README FAQ answers left stale by a new feature, and agent-memory claims stale at HEAD or contradicting the writer's definition)
+ metadata:
+   type: feedback
+ ---
+@@ -14,9 +14,12 @@ The impl-test decisions-log entry often carries "Tester notes for impl-review" n
+ Ledger statuses, `n/a` predicates and `p`/`f` placement come off the dispatched manifest's
+ `vocabulary`/`n_a` fields, copied byte-identically; `review-policy.md` "Coverage ledger" is the shape rule
+ only. Files-row vocabulary is `checked`/`n/a` with no `finding` status, so a file carrying a
+-finding is still `checked` and the finding id hangs off the rules row (one `f` per row: spread two findings
+-over the two rubric ids they best fit). An empty `n_a` means no row may be `n/a` at all. Sha256 freshness
+-(`upstream_hashes`) cannot be recomputed - say it was corroborated structurally. Iter 2+: the decisions-log
++finding is still `checked` and the finding id hangs off the rules row (one `f` per row: spread findings
++over the rubric ids they best fit, or merge same-kind drift into one finding). An empty `n_a` means no row
++may be `n/a` at all. Sha256 freshness (`upstream_hashes`) cannot be recomputed - say it was corroborated
++structurally. Since sprint 020 the return is persisted by `runtime.js persist-review`, which parses the
++Findings table by column position: keep the `#` cell a bare id and the Severity cell exactly
++`low|medium|high|critical`. Iter 2+: the decisions-log
+ "impl fix for <id>: findings resolved" entry names what changed (impl-review
+ <id> = `wave-<K>/iter-NN`); other iterations' `reviews/` files, any wave's, stay unread - glob only the
+ current `reviews/impl/wave-<K>/iter-NN/` (design: `reviews/design/iter-NN/`), and scope greps to canon
+@@ -28,13 +31,16 @@ current `reviews/impl/wave-<K>/iter-NN/` (design: `reviews/design/iter-NN/`), an
+ **How to apply — the highest-yield checks in this repo:**
+ - **Acting-site scope vs cited SSoT.** A rule doc's branch and its binding in `.asd/workflows/asd-phase-*.md`
+   must agree on *reach* and on quoted literals (015: scope step 3a's log line drops the SSoT's `<doc>`;
+-  the test only checks the substring). Read the step header, not only the bullet.
++  the test only checks the substring). Read the step header, not only the bullet. A new agent mode is
++  usually written twice - `artifact-layout.md`'s grant and the agent's own mode paragraph - with different
++  reach (020: impl-review in-place tester, "live rows its findings name" vs "risk and added-test rows").
+ - **A duty moved off an agent needs a new acting site.** "Never run X — the orchestrator runs it" is only
+   true if a workflow/skill step says so; grep X across workflows and skills (018 iter-02: UX lost
+   `designmd-install`, no design workflow or `asd-design-system` step picked it up).
+ - **A rule gaining a second trigger/site leaves unnamed mirrors stale.** Grep the old attribution phrase
+   across the whole phase's files - sibling steps AND the skill `description` (always-loaded, in no
+-  manifest). Valid under the change-surface exception (change made unchanged text wrong).
++  manifest). Valid under the change-surface exception (change made unchanged text wrong). A new reviewer
++  or workflow variant: grep README for "always dispatched", web-grant lists and "one reviewer per concern".
+ - **README FAQ vs a new feature.** A feature adding an exception to a stated invariant leaves the FAQ that
+   asks exactly that question stale (015: per-sprint document skip vs "Can I skip PRD/UX-spec/ADR/C4 for a
+   lean sprint?"). Grep README FAQ for the feature's question, not only tables and folder map.
+@@ -54,9 +60,11 @@ current `reviews/impl/wave-<K>/iter-NN/` (design: `reviews/design/iter-NN/`), an
+ - **Authority bounds narrower than their only instance.** A sanctioned writer's "limited to X" vs what the
+   one script actually does. Read the code.
+ - **Fix narrows code, file's other description stays wide.** Grep the file header for every statement of it.
+-- **In-body `// ponytail:` comments in Node sources** (`tests/run.js`, `.asd/runtime.js`): the dev agents
+-  leave them; each is §7 high. Grep `^\s+// ` in changed files; in `tests/run.js` keep only hits inside
+-  tests named for the current sprint (013 run.js, 015 runtime.js `surfaceCheck`).
++- **In-body comments in Node sources** (`tests/run.js`, `.asd/runtime.js`, `.asd/hooks/*.js`): the dev
++  agents leave them (`// ponytail:` or plain narration); each is §7 high. Grep the diff for `^\+\s+// `
++  AND `^\+.*\S\s+// ` (trailing comment after an expression, 020 session-start.js); in `tests/run.js` keep
++  only hits inside tests named for the current sprint (013 run.js, 015 runtime.js `surfaceCheck`). A member
++  doc citing a sprint-plan anchor ("t1-contract") is the same finding.
+ - Migration comments in `.asd/migrations/*.js` follow the `6.0.0.js` precedent (member docs carrying WHY);
+   that style alone is not a §7 finding.
+ - **Agent-memory files are reviewable source** (`artifact-layout.md` "Agent memory"): verify durable claims
+diff --git a/.claude/agent-memory/asd-reviewer-efficiency/MEMORY.md b/.claude/agent-memory/asd-reviewer-efficiency/MEMORY.md
+index ebed8de..a7ac861 100644
+--- a/.claude/agent-memory/asd-reviewer-efficiency/MEMORY.md
++++ b/.claude/agent-memory/asd-reviewer-efficiency/MEMORY.md
+@@ -1,3 +1,4 @@
+ - [runtime.js stays one file](feedback_runtime-js-single-file.md) — user overrode the SC-1 split for `.asd/runtime.js`; never re-raise it, judge only new code.
+ - [No-shell change surface](feedback_no-shell-incremental-scope.md) — manifest list = scope, fingerprint .diff = change content (impl every iter, design iter 2+), no git, no parts; memory bloat and test micro-costs not raised.
+ - [MEMORY-FIX fallback is AC-mandated](project_memory-fix-fallback-keep.md) — owner-without-write-tool branch never fires for canon agents, but AC-14 requires it; keep-as-is, don't raise.
++- [020 workflow definition keys](project_020-workflow-definition-keys.md) — stored `next`/`rollback_reset` judged keep-as-is; persist-review parses Findings columns by position (Category goes last).
+diff --git a/.claude/agent-memory/asd-reviewer-efficiency/project_020-workflow-definition-keys.md b/.claude/agent-memory/asd-reviewer-efficiency/project_020-workflow-definition-keys.md
+new file mode 100644
+index 0000000..cf1d6a5
+--- /dev/null
++++ b/.claude/agent-memory/asd-reviewer-efficiency/project_020-workflow-definition-keys.md
+@@ -0,0 +1,12 @@
++---
++name: 020-workflow-definition-keys
++description: Sprint 020 workflow definitions — next/rollback_reset are derivable from phases but judged keep-as-is; persist-review parses Findings columns by position
++metadata:
++  type: project
++---
++
++`.asd/workflows/<name>.json` stores `next` and `rollback_reset` even though both are mostly derivable from `phases`. In 020 impl-review wave-1 iter-01 I judged both keep-as-is: they are plan-Overview-binding, the orchestrator (an LLM) reads them directly instead of re-deriving them, and `tests/run.js` asserts `rollback_reset` equals the derivation. Only the unused `dir` parameter and the hand-listed Documentation ids in `NA_TARGETS.docs` were raised.
++
++**Why:** if a later iteration flips this call without new evidence, the result is churn and inconsistent verdicts.
++
++**How to apply:** do not raise the stored-derivable keys unless the test guard is dropped or a new consumer appears. Since 020, `persist-review` (`runtime.js` `reviewFindings`) reads a review's first table by column position (id, severity, location). A Category column must go after Location, never before it. Related: [[runtime-js-single-file]].
+diff --git a/.claude/agent-memory/asd-reviewer-testing/MEMORY.md b/.claude/agent-memory/asd-reviewer-testing/MEMORY.md
+index c9a89c4..593ad2a 100644
+--- a/.claude/agent-memory/asd-reviewer-testing/MEMORY.md
++++ b/.claude/agent-memory/asd-reviewer-testing/MEMORY.md
+@@ -6,3 +6,4 @@
+ - [Review-fix defect proof](feedback_review-fix-defect-proof.md) — COR-* fixes need §17 fail-first record; re-read falsified or over-claiming assert messages; compare fix `none` reasons with sibling rows
+ - [Temp-repo git determinism](feedback_temp-repo-git-determinism.md) — runtime-spawned git inherits host config (diff.noprefix); Testing manifest = the wave's isTest files + test-plan (sprints 015/017); resolve rows from it
+ - [Value-removal sprints](feedback_value-removal-sprints.md) — swapped fixtures must hit the same disjunct; hand-enumerated sets on touched asserts = §17 low; pr-deferred ACs need a plan line
++- [Workflow-definition sprints](feedback_workflow-definition-sprints.md) — predecessor pins stop at checkpoints.md; 3 collapse acting sites; name-guard cases need an existing target; memory dir leftover-swept
+diff --git a/.claude/agent-memory/asd-reviewer-testing/feedback_workflow-definition-sprints.md b/.claude/agent-memory/asd-reviewer-testing/feedback_workflow-definition-sprints.md
+new file mode 100644
+index 0000000..af0c506
+--- /dev/null
++++ b/.claude/agent-memory/asd-reviewer-testing/feedback_workflow-definition-sprints.md
+@@ -0,0 +1,17 @@
++---
++name: workflow-definition-sprints
++description: Since sprint 020 the chain lives in .asd/workflows/<name>.json; per-workflow predecessor pins reach checkpoints.md only; collapse has 3 acting sites; name-guard cases need an existing target; this memory dir is swept for removed-mechanism terms
++metadata:
++  type: feedback
++---
++
++Since sprint 020, each sprint workflow (`standard`, `lite`) is a definition in `.asd/workflows/<name>.json`, loaded by `runtime.loadWorkflow`. The §16 tests in `tests/run.js` derive everything from `readWorkflowDefinitions()`.
++
++- **Predecessor pins stop at the rule home.** The chain-mirror test checks the "In `<workflow>`" predecessor clauses of `checkpoints.md` against each definition. The acting sites that actually fire `ABORT — precondition not met` are not checked: the `## Preconditions` / step 1 lines of `asd-phase-plan.md`, `asd-phase-retro.md` and `asd-phase-design-promote.md`, each naming a per-workflow predecessor. Raised low in sprint 020 wave-1 iter-01. Re-check this whenever a workflow is added or a predecessor moves.
++- **The design collapse has three acting sites**: the audit exit (pinned to "workflows whose phases hold design"), the hook (`phases.includes('design')`, pinned by the probe case), and the `asd-sprint` SKILL.md resume/re-run exception (unpinned in sprint 020 — a real lite stuck-resume defect slipped through, COR-1). Check all three.
++- **Name-guard negative cases must target a file that exists.** A traversal value like `../standard` that resolves to a path the fixture never wrote passes with or without the guard; a case variant like `Lite` fails without the guard only on a case-insensitive FS (Windows/macOS), not on Linux. Ask for a value that resolves to an installed definition (`../workflows/lite`).
++- **The NEXT-contract check uses the union over definitions.** A target added to one definition that another definition already routes (for example `retro` in lite's `impl-review`) stays green. This is recorded as a known limit.
++- **This memory directory is inside a leftover-term sweep.** The sprint-020 AC-1 test greps every `.claude/agent-memory/**/*.md` for the name of the removed hook chain constant and for the removed reset-table phrase. If a memory write quotes either literally, the suite goes red. Paraphrase them.
++
++**Why:** a rule-home pin looks complete, but it guards nothing at the site that executes. Writing to memory while reviewing can also break the suite for the next impl-test.
++**How to apply:** in any sprint that edits workflow definitions, grep `.asd/workflows/asd-phase-*.md` and `.asd/skills/asd-sprint/SKILL.md` for per-workflow clauses and compare them with the tests. Before writing memory, check the removed-term regexes in `tests/run.js`. See [[sweep-exemption-granularity]], [[no-shell-review-method]], [[removed-flag-vacuity]].
+diff --git a/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md b/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md
+index 18d14a3..eab2998 100644
+--- a/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md
++++ b/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md
+@@ -178,6 +178,15 @@ that, an ordinal-keyed one reddens on a correct edit.
+ Table rows likewise: a `^\| design \|` row locator hits `sprint-lifecycle.md`'s phase table before
+ the no-op table. Anchor on the table's header row (`\| Phase \| No-op when \|[\s\S]*?^\| design \|`).
+ 
++Co-occurrence sweeps ("a line quoting a workflow name may not say default") scope per **sentence**, not
++per line: canon lines hold several sentences, and an unrelated "resume (default)" shares a line with a
++quoted `standard` (sprint 020 review-fix). Re-measure any reviewer claim like "a line-scoped widening
++needs no exemption" at the current HEAD: the dev chain in the same round can make it false.
++
++A reviewer-requested cleanup of hook/runtime code (dropping comments, collapsing a branch) is a
++behaviour change candidate: mutate the rewritten line. Sprint 020 entry 3 found three slips on the
++archived-sprint filter that no test caught.
++
+ ## Citations and "not restated here" are checkable, as relations
+ 
+ Two classes that look like unassertable prose and are not.
+diff --git a/README.md b/README.md
+index 9cedb63..507daa1 100644
+--- a/README.md
++++ b/README.md
+@@ -12,7 +12,7 @@ Both providers run from one canonical source under `.asd/` (agents, skills, hook
+ 
+ - **Repeatable structure.** Every sprint follows one of two fixed-shape workflows, chosen at sprint start — no improvisation, no forgotten steps (see "Workflows").
+ - **Documentation that stays alive.** Persistent docs (concept, stack, UX) update on every sprint instead of rotting; architecture decisions fold into whichever of them already owns the subject.
+-- **Reviews that converge.** Iteration severity floor stops reviewers from nitpicking the same low-severity issue forever, computed per review wave in impl-review. Each iteration dispatches reviewers with clean context, so verdicts aren't biased by the authoring that produced the artifact. Each internal reviewer must return a complete coverage ledger — every scoped file and every checklist rule accounted for — and the phase skill validates that full ledger before writing, rejecting and re-dispatching any reviewer whose ledger is incomplete, so no file or rule is skipped silently. Only a coverage summary line, the full n/a list, and non-passing rows are persisted to the review file — the gate runs on the full returned ledger regardless.
++- **Reviews that converge.** Iteration severity floor stops reviewers from nitpicking the same low-severity issue forever, computed per review wave in impl-review. Each iteration dispatches reviewers with clean context, so verdicts aren't biased by the authoring that produced the artifact. Each internal reviewer must return a complete coverage ledger — every scoped file and every checklist rule accounted for — and the phase skill validates that full ledger before writing, rejecting and re-dispatching any reviewer whose ledger is incomplete, so no file or rule is skipped silently. The validated return is persisted as-is through `node .asd/runtime.js persist-review`, with a findings JSON beside it.
+ - **Brownfield-friendly.** The audit phase reads any existing docs and code (in any format and location) and reverse-engineers them into the workflow's structure.
+ - **One source of truth.** SSoT iron rule is enforced by a dedicated Documentation reviewer.
+ - **Subsystem-aware.** A subsystem registry (`docs/architecture/subsystems.md`) organises persistent docs per subsystem, with an optional LikeC4 or Mermaid C4 diagram.
+@@ -235,7 +235,7 @@ All five creators carry `WebFetch`/`WebSearch` (Codex `web_search: "live"`), eac
+ 
+ ### Reviewers (5 internal + 1 external)
+ 
+-Reviewers write no review artifact, code or doc on any provider; on Claude `memory: project` serves them `Write`, and policy, not config, keeps it to their own memory directory (scope: `review-policy.md` "Gate Verdict Format"). A finding in a reviewer's memory goes to that reviewer's memory-fix dispatch, and the orchestrator commits the fix. The 5 internal Claude reviewer agents list no `Write`/`Edit`/`Bash` in `tools`; their Codex counterparts set `sandbox_mode: "read-only"`. External Review is the one exception with `Bash` in its Claude `tools` (it necessarily needs a command-runner to invoke the wrapped CLI at all) — its read-only guarantee is instead enforced explicitly on the WRAPPED subprocess itself: `codex exec --sandbox read-only` when running under Claude Code, `claude -p ... --tools "Read,Grep,Glob"` when running under Codex. Every reviewer returns its verdict as final text; the dispatching phase workflow writes the review file. Every reviewer gets its scope per `.asd/rules/review-policy.md` "Scope hand-off": its own file list, a precomputed `.diff`, whole files as context only; "Reviewer responsibility" there is the sole owner map — one reviewer per concern, one file list per reviewer.
++Reviewers write no review artifact, code or doc on any provider; on Claude `memory: project` serves them `Write`, and policy, not config, keeps it to their own memory directory (scope: `review-policy.md` "Gate Verdict Format"). A finding in a reviewer's memory goes to that reviewer's memory-fix dispatch, and the orchestrator commits the fix. The 5 internal Claude reviewer agents list no `Write`/`Edit`/`Bash` in `tools`; their Codex counterparts set `sandbox_mode: "read-only"`. External Review is the one exception with `Bash` in its Claude `tools` (it necessarily needs a command-runner to invoke the wrapped CLI at all) — its read-only guarantee is instead enforced explicitly on the WRAPPED subprocess itself: `codex exec --sandbox read-only` when running under Claude Code, `claude -p ... --tools "Read,Grep,Glob"` when running under Codex. Every reviewer returns its verdict as final text; the dispatching phase workflow writes the review file. Every reviewer gets its scope per `.asd/rules/review-policy.md` "Scope hand-off": its own file list, a precomputed `.diff`, whole files as context only; "Reviewer responsibility" there is the sole owner map — one reviewer per concern per workflow roster, one file list per reviewer.
+ 
+ Web grants split per reviewer: Correctness and the `lite`-only combined reviewer carry `WebFetch`/`WebSearch` (Codex `web_search: "live"`), each scoped by its Tool policy. Efficiency, Testing, Documentation, and External Review carry neither (Codex `web_search: "disabled"`).
+ 
+@@ -250,7 +250,7 @@ Web grants split per reviewer: Correctness and the `lite`-only combined reviewer
+ 
+ Reviewers emit a machine-parseable first-line verdict token: `[REVIEW-<phase>-<reviewer>]: APPROVE|CONCERNS|FAIL`, where `<phase>` is `design` or `impl` and `<reviewer>` is `correctness | efficiency | testing | documentation | combined | external`. External Review's first line may also be the skip form, per `.asd/rules/external-review.md` § Outcome contract.
+ 
+-**Diff-scoped rubric-section gating** (always on — SSoT: `.asd/workflows/asd-phase-impl-review.md` step 5): Correctness and Efficiency are always dispatched; two diff-derived predicates instead mark a rubric SECTION `n/a: <predicate>` inside that reviewer's own returned coverage ledger, so the agent never loads that domain's inputs for the n/a'd section. Correctness's UI conformance section is n/a only when no file in the iteration's scope list is a UI surface; Efficiency's five performance sections are n/a only when both no perf-budgets section exists in `custom-coding-rules.md` and the scope list contains no executable file (conjunctive). Each n/a'd section re-enters automatically the moment a qualifying file re-enters the diff. `checkpoints.md`'s impl-review approval gate is unaffected (`review-policy.md` DoD table).
++**Diff-scoped rubric-section gating** (always on — SSoT: `.asd/workflows/asd-phase-impl-review.md` step 5): Correctness and Efficiency (in `lite`, Combined) are always dispatched; two diff-derived predicates instead mark a rubric SECTION `n/a: <predicate>` inside that reviewer's own returned coverage ledger, so the agent never loads that domain's inputs for the n/a'd section. Correctness's UI conformance section is n/a only when no file in the iteration's scope list is a UI surface; Efficiency's five performance sections are n/a only when both no perf-budgets section exists in `custom-coding-rules.md` and the scope list contains no executable file (conjunctive). Each n/a'd section re-enters automatically the moment a qualifying file re-enters the diff. `checkpoints.md`'s impl-review approval gate is unaffected (`review-policy.md` DoD table).
+ 
+ An **APPROVE latch** persists per phase per reviewer key in `state.json` — in impl-review, per review wave: a reviewer that returned APPROVE on iteration N is not re-dispatched on N+1+ within the same wave, and counts as satisfied at that wave's DoD. A red full suite at the end of impl-review (see below) clears every latch sprint-wide.
+ 
+@@ -438,7 +438,7 @@ The canonical SessionStart hook (`.asd/hooks/session-start.js`) prints a one-blo
+ 
+ ### Settings.json / hooks.json
+ 
+-`.claude/settings.json` pre-allows common git / gh / likec4 / designmd / codex commands so Claude Code does not prompt you for permission each time; edit its `permissions.allow` array to extend. Since several agents carry `WebFetch`/`WebSearch` (creators, Correctness, Advisor — see "Agents" above), also pre-allow those tools there if you don't want a permission prompt on first use. `.codex/hooks.json` registers the same hook for Codex. Both files are JSON-merge targets — ASD owns only its own hook entry in each, never the rest of the file.
++`.claude/settings.json` pre-allows common git / gh / likec4 / designmd / codex commands so Claude Code does not prompt you for permission each time; edit its `permissions.allow` array to extend. Since several agents carry `WebFetch`/`WebSearch` (creators, Correctness, the combined reviewer, Advisor — see "Agents" above), also pre-allow those tools there if you don't want a permission prompt on first use. `.codex/hooks.json` registers the same hook for Codex. Both files are JSON-merge targets — ASD owns only its own hook entry in each, never the rest of the file.
+ 
+ ---
+ 
+@@ -460,7 +460,7 @@ FAIL findings block progression. Fixes within scope may proceed under the active
+ Yes. Set `project.subsystem_decomposition: disabled` during `/asd-init`. Persistent docs become flat project-wide files. No subsystem registry is maintained.
+ 
+ **Can I skip PRD/UX-spec/ADR/C4 for a lean sprint?**
+-Yes. PRD, UX-spec and ADR are independently toggleable under `documents.*` in `config.yaml`; the diagram is off with `project.diagram_tool: none` or decomposition disabled. All are frozen into the sprint's `state.json` at scope time (a later config edit never changes an active sprint's rules). To skip one for the active sprint only, ask at the scope gate, or at the audit exit, before any draft of it exists: a hard gate that flips its frozen value and leaves `config.yaml` untouched (`.asd/rules/sprint-lifecycle.md` "Optional documents"). `audit` becomes a fast no-op on its own when `documents.audit` resolves to off: it advances immediately, writes nothing, with one skip line in the decisions log. When `prd`/`ux_spec`/`adr` and the diagram are **all** off, one deterministic write at the audit exit collapses `design`, `design-review`, and `design-promote` together and advances straight to `plan`; none of the three is dispatched. `plan`/`impl`/`impl-test`/`impl-review`/`retro`/`pr` always run; acceptance criteria then come from `sprint.md`'s own `AC-N` list instead of the PRD. See `.asd/rules/sprint-lifecycle.md` "Optional documents" and "No-op phase rule".
++Yes. PRD, UX-spec and ADR are independently toggleable under `documents.*` in `config.yaml`; the diagram is off with `project.diagram_tool: none` or decomposition disabled. All are frozen into the sprint's `state.json` at scope time (a later config edit never changes an active sprint's rules). To skip one for the active sprint only, ask at the scope gate, or at the audit exit, before any draft of it exists: a hard gate that flips its frozen value and leaves `config.yaml` untouched (`.asd/rules/sprint-lifecycle.md` "Optional documents"). `audit` becomes a fast no-op on its own when `documents.audit` resolves to off: it advances immediately, writes nothing, with one skip line in the decisions log. In the `standard` workflow, when `prd`/`ux_spec`/`adr` and the diagram are **all** off, one deterministic write at the audit exit collapses `design`, `design-review`, and `design-promote` together and advances straight to `plan`; none of the three is dispatched. `plan`/`impl`/`impl-test`/`impl-review`/`retro`/`pr` always run; acceptance criteria then come from `sprint.md`'s own `AC-N` list instead of the PRD. For a sprint with no design phases at all, pick the `lite` workflow at scope: `design-promote` then runs after `impl-review`, writing the enabled docs from the implementation. See `.asd/rules/sprint-lifecycle.md` "Optional documents", "No-op phase rule" and "Workflows".
+ 
+ **Can ASD develop itself?**
+ Yes — set `self_hosting: enabled` in `config.yaml` (this repo ships with it enabled, `documents.audit` only). `/asd-sprint` then edits ASD's own canonical sources per the exhaustive write allowlist in `.asd/rules/sprint-lifecycle.md` "Self-hosting" — generated `.claude/`/`.codex/`/`.agents/skills/` stay off-limits, resynced via `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `.asd/rules/providers.md` "Canonical path -> per-provider path") after every canon edit. Root `AGENTS.md`'s managed-block/hand-edited-tail split: `.asd/rules/providers.md` "Canonical path -> per-provider path" (ownership home). `/asd-update` refuses to run here (it pulls framework files INTO a consumer; a self-hosting repo IS the framework).
+diff --git a/tests/run.js b/tests/run.js
+index be24a30..887db2a 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -2055,6 +2055,13 @@ test('AC-2/4/5/6/7: SessionStart recovers only archived active sprints and repor
+   writeFile(tempRoot, '.asd/sprints/111-current/state.json', JSON.stringify({ sprint_id: '111-current', phase: 'impl', branch: 'sprint/111-current' }));
+   const conflict = run();
+   assert.ok(conflict.includes('WARNING: multiple active sprints found (111-current, 777-open)'), `expected active/archive conflict warning, got: ${conflict}`);
++
++  const degraded = mkTempDir();
++  installHook(degraded);
++  const archived = { '780-stale': { phase: 'bogus' }, '781-unknown': { workflow: 'nope', phase: 'impl' }, '782-unknown-done': { workflow: 'nope', phase: 'done' } };
++  for (const [id, fields] of Object.entries(archived)) writeFile(degraded, `.asd/sprints/archived/${id}/state.json`, JSON.stringify({ sprint_id: id, ...fields }));
++  const text = JSON.parse(execFileSync('node', [path.join(degraded, '.asd/hooks/session-start.js'), '--provider', 'codex'], { cwd: degraded, encoding: 'utf8' })).hookSpecificOutput.additionalContext;
++  assert.deepStrictEqual(Object.keys(archived).filter((id) => text.includes(id)), ['781-unknown'], `sprint-lifecycle.md "State recovery": an archived sprint is recovered only while non-done - a phase outside its resolved chain is not active, and an unresolvable definition drops only the chain check, never the done check (got: ${text})`);
+ });
+ 
+ test('AC-2/4/6/7: review workflow contracts retain Correctness and incremental diff scope', () => {
+@@ -2302,7 +2309,7 @@ test('sprint-020 AC-1/AC-6: SessionStart takes its chain from the frozen workflo
+     [{ phase: 'audit', workflow: 'probe', documents: off }, { probe: JSON.stringify({ phases: ['scope', 'audit', 'impl', 'retro', 'pr'] }) }, true, 'impl'],
+     [{ phase: 'audit', workflow: 'nope' }, {}, true, none],
+     [{ phase: 'audit', workflow: 'Lite' }, {}, true, none],
+-    [{ phase: 'audit', workflow: '../standard' }, {}, true, none],
++    [{ phase: 'audit', workflow: '../workflows/lite' }, {}, true, none],
+     [{ phase: 'audit', workflow: 'lite' }, { lite: '{' }, true, none],
+     [{ phase: 'audit', workflow: 'lite' }, { lite: '{"phases":"scope"}' }, true, none],
+     [{ phase: 'audit', workflow: 'lite' }, { lite: '{"phases":[1,2]}' }, true, none],
+@@ -2978,6 +2985,11 @@ test('AC-8/G-11, sprint-020 AC-7: the ordered chain mirrors match their definiti
+       const designDocs = Object.keys(JSON.parse(readRepoFile('.asd/templates/t_state.json')).documents).filter((doc) => doc !== 'audit');
+       const promote = block.split('\n').find((line) => line.startsWith('- design-promote')) || '';
+       assert.ok(/\bNo-op\b/.test(promote) && designDocs.every((doc) => promote.includes(`\`${doc}\``)), `sprint-020 AC-5: ${name} promotes after impl-review, so its "Workflows" design-promote bullet must state the no-op over every frozen design document (${designDocs.join(', ')}) - a dropped one runs creators for a document the sprint disabled, or skips one it enabled`);
++      const inputsOf = (text) => [...text.slice(0, text.indexOf('in place of drafts')).replace(/`[^`]+\.md` "[^"]+"/g, '').matchAll(/`([^`]+\.md)`/g)].map((match) => path.posix.basename(match[1])).sort();
++      const promoteInputs = inputsOf(promote);
++      const inputSites = canonMarkdownFiles().filter((rel) => rel !== '.asd/rules/sprint-lifecycle.md').flatMap((rel) => canonText(rel).split('\n').filter((line) => line.includes('in place of drafts')).map((line) => [rel, inputsOf(line.slice(line.lastIndexOf('lite', line.indexOf('in place of drafts'))))]));
++      assert.ok(promoteInputs.length > 0 && inputSites.some(([rel]) => rel === '.asd/workflows/asd-phase-design-promote.md'), `sanity: the "Workflows" design-promote bullet and asd-phase-design-promote.md must each name the files read "in place of drafts", or the input comparison below compares nothing`);
++      assert.deepStrictEqual(inputSites.filter(([, inputs]) => inputs.join() !== promoteInputs.join()), [], `documentation.md F-3 (wave-1/iter-01): every site stating what ${name}'s design-promote reads in place of drafts must name the same files as its "Workflows" home (${promoteInputs.join(', ')}) - a wider acting site reads what its cited rule never grants, a narrower one promotes without it`);
+     }
+     const deltas = precondition.split('\n').find((line) => line.includes(`In \`${name}\``));
+     assert.ok(deltas, `checkpoints.md "Precondition chain" fences standard's chain only, so it must state ${name}'s differing predecessors on an "In \`${name}\`" line`);
+@@ -2987,6 +2999,8 @@ test('AC-8/G-11, sprint-020 AC-7: the ordered chain mirrors match their definiti
+       if (predecessor === standardPredecessor) return;
+       const clause = new RegExp(`\`${phase}\` requires ([^,;]+)`).exec(deltas);
+       assert.ok(clause && new RegExp(`^${predecessor}\\b`).test(clause[1]), `checkpoints.md: in ${name}, ${phase} follows ${predecessor}, not standard's ${standardPredecessor} - its "In \`${name}\`" line must say \`${phase}\` requires ${predecessor}, or the precondition check aborts a valid sprint (got: ${clause ? clause[1] : 'no clause'})`);
++      const acting = new RegExp(`advanced from [^;\\n]*?\`${predecessor}\` \\(\`${name}\`\\)|\`${name}\`:[^;\\n]*?advanced from \`${predecessor}\``);
++      assert.ok(acting.test(readWorkflow(phase)), `asd-phase-${phase}.md emits the ABORT for a missing predecessor, so its state.json.phase check must bind ${name} to ${predecessor} - as "advanced from ... \`${predecessor}\` (\`${name}\`)" or in a "\`${name}\`: ..." clause - or a lite sprint aborts at a valid transition while checkpoints.md stays right`);
+     });
+   }
+ });
+@@ -4630,7 +4644,7 @@ test('sprint-012 AC-3/AC-12: every `.asd/runtime.js` symbol canon cites is decla
+   assert.ok((citers.get('SURFACE_CAP_FILES') || []).includes('.asd/rules/sprint-lifecycle.md'), 'sprint-014 AC-5: the change-surface cap is one runtime constant, so sprint-lifecycle.md "Plan file format" must cite it by symbol rather than restate a number that drifts from the one surface-check applies');
+ });
+ 
+-test('sprint-012 AC-2/AC-4/AC-12: both review workflows emit manifests through emit-manifest and never stamp one by hand, keep a dispatched manifest immutable per review-policy.md "Coverage ledger", and carry the interrupted-attempt record the "Clean-context review iteration" payload list admits', () => {
++test('sprint-012 AC-2/AC-4/AC-12: both review workflows emit manifests through emit-manifest and never stamp one by hand, keep a dispatched manifest immutable per review-policy.md "Coverage ledger", carry the interrupted-attempt record the "Clean-context review iteration" payload list admits, and persist External Review\'s availability skip through persist-review (sprint-020 AC-9)', () => {
+   const policy = '.asd/rules/review-policy.md';
+   assert.ok(/\*\*Immutability\*\*[^\n]*orchestrator[^\n]*re-stamp/.test(sectionOf(policy, 'Coverage ledger')), 'AC-2: "Coverage ledger" must make a dispatched manifest immutable to the orchestrator as well as the reviewer, and send a correction through a fresh dispatch rather than a re-stamp (010 F-2)');
+   const payloadRule = sectionOf(policy, 'Clean-context review iteration').split('\n').find((line) => line.startsWith('- Reviewer payload carries only'));
+@@ -4642,9 +4656,15 @@ test('sprint-012 AC-2/AC-4/AC-12: both review workflows emit manifests through e
+     const validateStep = flow.split('\n').find((line) => line.includes(`node .asd/runtime.js persist-review --phase ${phase.replace(/-review$/, '')} `));
+     assert.ok(validateStep && /never re-stamped/.test(validateStep) && validateStep.includes('`review-policy.md` "Coverage ledger"'), `${rel}: AC-2 - the ledger-validation step, where a failing manifest tempts a fix, must forbid the re-stamp and cite the rule; since sprint 020 that step is the persist-review run, which validates the ledger before any write`);
+     assert.ok(/never re-authored by hand/.test(validateStep) && validateStep.includes('`review-policy.md` "Coverage ledger" Persistence'), `${rel}: sprint-020 AC-9 - the persist-review run is the sole write of a review file for this phase's own --phase node, so the step must say no review file is re-authored by hand and cite the Persistence rule`);
++    const skipRecord = flow.split('\n').find((line) => line.includes('`"APPROVE (skipped: <reason>)"`')) || '';
++    assert.ok(/`persist-review`/.test(skipRecord) && skipRecord.includes('`review-policy.md` "Coverage ledger" Persistence'), `${rel}: sprint-020 AC-9 - the step recording External Review's availability skip must persist its external.md through persist-review, citing the Persistence rule - the skip has no dispatch, so a hand-written external.md leaves no external.findings.json for the low-severity test-only route to read`);
+     const payload = flow.split('\n').find((line) => line.includes('payload to each internal reviewer'));
+     assert.ok(payload && /interrupted-attempt record/.test(payload) && payload.includes('`review-policy.md` "Clean-context review iteration"'), `${rel}: AC-4 - a re-dispatched reviewer's payload must carry its own interrupted-attempt record, citing the list that admits it`);
+   }
++  const persistence = sectionOf(policy, 'Coverage ledger').split('\n').find((line) => line.startsWith('**Persistence**')) || '';
++  assert.ok(persistence.split(/(?<=\.)\s+/).some((sentence) => /availability skip/.test(sentence) && sentence.includes('`external-review.md` "Detection and negative cache"')), 'sprint-020 AC-9: "Coverage ledger" Persistence must bring External Review\'s availability skip - the one outcome with no returned text - under the persist-review command, pointing at the rule that defines the skip');
++  const skipBullet = sectionOf('.asd/rules/external-review.md', 'Detection and negative cache').split('\n').find((line) => line.startsWith('- Return `APPROVE (skipped:')) || '';
++  assert.ok(/`persist-review`/.test(skipBullet) && skipBullet.includes('`review-policy.md` "Coverage ledger" Persistence'), 'sprint-020 AC-9: external-review.md "Detection and negative cache" tells the dispatching workflow to persist the skip, so it must route that write through persist-review and cite the Persistence rule, never have the workflow write external.md itself');
+ });
+ 
+ test('sprint-012 AC-5/AC-6: providers.md "Role-scoped context" defines the declared tool policy with its refusal signal, and core.md "Autonomy and escalation" and artifact-layout.md "Agent memory" hand their obligations to it', () => {
+@@ -6354,6 +6374,7 @@ test('sprint-019 AC-11/AC-12/AC-13/AC-15/AC-16: each review-fix, rotation and te
+   for (const rel of ['.asd/workflows/asd-phase-impl.md', '.asd/agents/asd-tester.md']) {
+     assert.ok(canonText(rel).split('\n').some((line) => /review-fix|tester chain/.test(line) && line.includes('`artifact-layout.md` "Test plan"')), `AC-15: ${rel} must bound the review-fix tester by pointing at the "Test plan" grant`);
+   }
++  assert.ok(canonText('.asd/agents/asd-tester.md').split('\n').some((line) => /in-place/.test(line) && line.includes('`artifact-layout.md` "Test plan"')) && sectionOf('.asd/rules/artifact-layout.md', 'Test plan').split(/(?<=\.)\s/).some((sentence) => /in-place tester/.test(sentence) && sentence.includes('`review-policy.md` "Low-severity test-only findings"')), 'documentation.md F-2 (wave-1/iter-01): asd-tester.md bounds its in-place test fix by the "Test plan" grant alone, so that grant must state the in-place tester\'s reach, citing the route it serves');
+   assert.ok(sectionOf('.asd/rules/artifact-layout.md', 'Test plan').split(/(?<=\.)\s/).some((sentence) => sentence.includes('`Removed tests`') && /\bnever\b/.test(sentence) && /\bdelet/.test(sentence) && /\bnext\b/.test(sentence) && sentence.includes('`impl-test`')), 'sprint-019 COR-4: the review-fix tester may not touch Removed tests, the home of why a test went, so the grant must say it never deletes a test and that the next impl-test entry removes it and records the reason there');
+   assert.ok(canonText('.asd/agents/asd-tester.md').split('\n').some((line) => /^In review-fix\b/.test(line) && /\bdelet/.test(line) && /\bno test\b|\bnever\b/.test(line)), 'sprint-019 COR-4: the tester body bounds its review-fix pass, so it must say that pass deletes no test');
+   const testPlanRotation = sectionOf('.asd/rules/artifact-layout.md', 'Test plan').split('\n').find((line) => line.startsWith('**Rotation**')) || '';
+@@ -6511,6 +6532,7 @@ test('sprint-020 AC-9: persist-review validates a returned review and writes it
+     ['a ledger whose findings disagree with the table', 'correctness', 'impl', review('[REVIEW-impl-correctness]: CONCERNS', ['| 1 | low | `a.md` | d | f |'], [])],
+     ['CONCERNS listing no finding', 'correctness', 'impl', review('[REVIEW-impl-correctness]: CONCERNS', ['| — | — | — | no findings | — |'], [])],
+     ['a severity outside the four levels', 'correctness', 'impl', review('[REVIEW-impl-correctness]: CONCERNS', ['| 1 | minor | `a.md` | d | f |'], ['1'])],
++    ['a bare APPROVE listing findings, which would persist them as a clean verdict', 'correctness', 'impl', review('[REVIEW-impl-correctness]: APPROVE', ['| 1 | low | `tests/run.js:10` | d | f |'], ['1'])],
+   ];
+   const definitions = readWorkflowDefinitions();
+   const rosterOf = (node) => new Set(definitions.flatMap((definition) => definition.reviewers[node]));
+@@ -6519,7 +6541,7 @@ test('sprint-020 AC-9: persist-review validates a returned review and writes it
+       rejected.push([`${key}, which no workflow dispatches in ${node}-review`, key, node, `[REVIEW-${node}-${key}]: APPROVE\n\n${table(['| — | — | — | no findings | — |'])}\n`, /--reviewer must be one of/]);
+     }
+   }
+-  assert.ok(rejected.length > 7, 'sanity: some roster key must be dispatched in one review phase only (testing, combined), or the roster check below compares nothing');
++  assert.ok(rejected.length > 8, 'sanity: some roster key must be dispatched in one review phase only (testing, combined), or the roster check below compares nothing');
+   rejected.forEach(([label, reviewer, node, text, reason], index) => {
+     const dir = path.join(root, `rejected-${index}`);
+     fs.mkdirSync(dir);
+@@ -6564,10 +6586,23 @@ test("sprint-020 AC-4: emit-manifest --reviewer combined composes the rubrics it
+   assert.deepStrictEqual(holders(emit('documentation', 'impl-review', ['src/a.js'])), [], "the predicate reaches only the combined manifest - standard's Documentation reviewer is dispatched for its rubric and never n/a's it wholesale");
+   const design = emit(runtime.COMBINED_REVIEWER, 'design-review', ['s/design/prd.md']);
+   assert.ok(design.status === 2 && /one of/.test(design.stderr), `no workflow dispatches combined in design-review, so emit-manifest must refuse it there (got: ${JSON.stringify(design)})`);
++
++  const reviewsBeforePromote = readWorkflowDefinitions().some(({ phases, reviewers }) => reviewers.impl.includes(runtime.COMBINED_REVIEWER) && phases.includes('design-promote') && phases.indexOf('impl-review') < phases.indexOf('design-promote'));
++  const carves = canonText('.asd/agents/asd-reviewer-combined.md').split('\n').filter((line) => /`asd-phase-design-promote\.md` step \d+/.test(line));
++  assert.strictEqual(carves.length, reviewsBeforePromote ? 1 : 0, 'external.md 2 (wave-1/iter-01): a workflow that runs combined in impl-review before its design-promote writes the persistent docs needs exactly one asd-reviewer-combined.md bullet scoping the inherited actuality entry to the diff, citing the design-promote step that writes those docs - without it every lite sprint FAILs on docs not yet promoted');
++  if (reviewsBeforePromote) {
++    const label = (/^- \*\*([^*]+)\*\*/.exec(carves[0]) || [])[1] || '';
++    assert.ok(idsOf('documentation').some((id) => label.startsWith(id.replace(/\s*\(.*\)$/, ''))), `the carve-out "${label}" must name the Documentation rubric entry it narrows, so a rename of that entry cannot leave it pointing at nothing`);
++    assert.ok(carves[0].includes('`sprint-lifecycle.md` "Workflows"'), 'the carve-out must cite sprint-lifecycle.md "Workflows", the rule ordering impl-review before design-promote');
++    const step = /`asd-phase-design-promote\.md` step (\d+)/.exec(carves[0])[1];
++    const promoteStep = canonText('.asd/workflows/asd-phase-design-promote.md').split('\n').find((line) => line.startsWith(`${step}. `)) || '';
++    assert.ok(/\bcreators?\b/.test(promoteStep) && promoteStep.includes('`lite`'), `the carve-out cites asd-phase-design-promote.md step ${step}, which must be the step whose creators write the lite persistent docs - a renumbered workflow leaves it scoping the wrong docs`);
++  }
+ });
+ 
+ test('sprint-020 AC-6: the workflow is a hard, never-defaulted choice asked only at scope step 1, frozen through the t_state.json seed and gated in checkpoints.md, held by no config key, and no doc calls a workflow the default', () => {
+-  const names = readWorkflowDefinitions().map((definition) => definition.name);
++  const definitions = readWorkflowDefinitions();
++  const names = definitions.map((definition) => definition.name);
+   assert.strictEqual(JSON.parse(readRepoFile('.asd/templates/t_state.json')).workflow, '{{WORKFLOW}}', 't_state.json must seed the frozen workflow, since artifact-layout.md reads state keys only from the template');
+   const ask = canonText('.asd/workflows/asd-phase-scope.md').split('\n').find((line) => /^1\. /.test(line)) || '';
+   assert.ok(/request user decision/i.test(ask) && ask.includes('{{WORKFLOW}}') && names.every((name) => ask.includes(`\`${name}\``)), `asd-phase-scope.md step 1 must ask the user to choose among every workflow (${names.join(', ')}) and seed {{WORKFLOW}} from the answer`);
+@@ -6586,9 +6621,26 @@ test('sprint-020 AC-6: the workflow is a hard, never-defaulted choice asked only
+   assert.ok(menu.includes("definition's `phases`"), 'AC-6: the resume menu offers only phases of the frozen definition - a lite sprint offered design would re-run a phase its chain lacks');
+   const rollback = sprintSkill.find((line) => line.includes('*re-run earlier phase* = rollback')) || '';
+   assert.ok(rollback.includes('`rollback_reset`'), "AC-6: the rollback the resume menu triggers must reset per the frozen definition's rollback_reset");
++  const resumeFlow = (/### Step 2B[\s\S]*?\n### /.exec(sprintSkill.join('\n')) || [''])[0];
++  const collapseSentences = resumeFlow.split(/(?<=\.)\s+/).filter((sentence) => /collapse test/.test(sentence));
++  assert.ok(collapseSentences.some((sentence) => /Re-run options/.test(sentence)) && collapseSentences.some((sentence) => /\*resume\* re-enters/.test(sentence)), 'sanity: the asd-sprint resume flow must still apply the collapse test at both acting sites - the re-run menu and the resume exception - or the relation below compares nothing');
++  const holders = definitions.filter((definition) => definition.phases.includes('design')).map((definition) => definition.name);
++  for (const sentence of collapseSentences) {
++    assert.deepStrictEqual(names.filter((name) => sentence.includes(`\`${name}\``)), holders, `AC-6: sprint-lifecycle.md "Workflows" derives the design-block collapse from phases, so each asd-sprint resume-flow collapse clause must name exactly the workflows whose chain holds design (${holders.join(', ')}) - an unscoped clause dispatches plan for a lite sprint resumed at design-promote, which lite's plan precondition aborts. Clause: ${sentence}`);
++  }
+   const quoted = new RegExp(`\`(?:${names.join('|')})\``);
+-  const claims = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md'].flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => (quoted.test(line) && /\bthe default\b/i.test(line) ? [`${rel}:${index + 1}`] : [])));
+-  assert.deepStrictEqual(claims, [], `AC-6: the user always chooses the workflow and no config default exists, so no line may call a workflow "the default" - an absent state field reading standard is legacy handling, not a default a user can rely on. Found: ${claims.join(', ')}`);
++  const claims = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md'].flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => (line.split(/(?<=\.)\s+/).some((sentence) => quoted.test(sentence) && /\bdefaults?\b/i.test(sentence)) ? [`${rel}:${index + 1}`] : [])));
++  assert.deepStrictEqual(claims, [], `AC-6: the user always chooses the workflow and no config default exists, so no sentence quoting a workflow may call it a default ("the default", "by default", "defaults to", "(default)") - an absent state field reading standard is legacy handling, not a default a user can rely on. Found: ${claims.join(', ')}`);
++});
++
++test('sprint-020 AC-3: every agent reading acceptance criteria from docs/product/requirements/ cites sprint-lifecycle.md "Workflows" on that input - under lite the promoted requirements are last sprint\'s until design-promote, so the AC source is always sprint.md', () => {
++  const readers = fs.readdirSync(path.join(REPO_ROOT, '.asd/agents')).filter((file) => file.endsWith('.md')).flatMap((file) => {
++    const inputs = (canonText(`.asd/agents/${file}`).split('\n## Inputs')[1] || '').split('\n## ')[0];
++    return inputs.split('\n').filter((line) => line.includes('`docs/product/requirements/')).map((line) => [file, line]);
++  });
++  assert.ok(readers.length > 0, 'sanity: some agent Inputs must still read docs/product/requirements/, or the citation check below compares nothing');
++  const uncited = readers.filter(([, line]) => !line.includes('`.asd/rules/sprint-lifecycle.md` "Workflows"')).map(([file]) => file);
++  assert.deepStrictEqual(uncited, [], `sprint-lifecycle.md "Workflows" makes sprint.md the lite AC source, so every Inputs line reading ACs from docs/product/requirements/ must cite it - an agent without the clause checks a lite sprint against the previous sprint's requirements. Uncited: ${uncited.join(', ')}`);
+ });
+ 
+ test('sprint-020 AC-8: review-policy.md "Low-severity test-only findings" states its whole trigger and fix once, every resolved: kind canon writes is one "State recovery" admits, and each acting site cites the home', () => {
