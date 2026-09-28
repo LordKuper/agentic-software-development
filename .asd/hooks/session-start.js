@@ -40,7 +40,7 @@ function loadWorkflowPhases(repoRoot, name) {
   }
 }
 
-// `state.workflow` absent = standard (t1-contract).
+// `state.workflow` absent reads as `standard` (`sprint-lifecycle.md` "Workflows").
 function phasesForState(repoRoot, state) {
   const name = state && typeof state.workflow === 'string' ? state.workflow : 'standard';
   return loadWorkflowPhases(repoRoot, name);
@@ -80,10 +80,7 @@ function findActiveSprints(repoRoot) {
       if (!state || typeof state !== 'object' || Array.isArray(state)) return;
       if (archived) {
         const phases = phasesForState(repoRoot, state);
-        // No chain info (missing/malformed/unknown definition) -> can't
-        // validate phase membership, only the literal 'done' value degrades.
-        const invalidPhase = phases ? !phases.includes(state.phase) : false;
-        if (invalidPhase || state.phase === 'done') return;
+        if ((phases && !phases.includes(state.phase)) || state.phase === 'done') return;
       }
       active.push({ folder, state });
     } catch (_) {
@@ -202,7 +199,7 @@ function summary(active, provider, repoRoot) {
   const verdict = lastReviewVerdict(reviewNode);
   const phases = phasesForState(repoRoot, state);
   const next = phase === 'pr' ? (state.pr && state.pr.state === 'closure-pending' ? 'await-user-closure' : 'await-merge')
-    : !phases ? null // no chain info (missing/malformed/unknown definition) -> omit
+    : !phases ? null
     : (phase === 'audit' && phases.includes('design') && isDesignCollapsed(state.documents)) ? 'plan'
     : nextPhase(phases, phase);
   const implInfo = phase === 'impl-review' ? normalizeImplReviews(state.reviews) : null;
