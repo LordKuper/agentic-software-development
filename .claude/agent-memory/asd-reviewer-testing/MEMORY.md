@@ -6,3 +6,4 @@
 - [Review-fix defect proof](feedback_review-fix-defect-proof.md) — COR-* fixes need §17 fail-first record; re-read falsified or over-claiming assert messages; compare fix `none` reasons with sibling rows
 - [Temp-repo git determinism](feedback_temp-repo-git-determinism.md) — runtime-spawned git inherits host config (diff.noprefix); Testing manifest = the wave's isTest files + test-plan (sprints 015/017); resolve rows from it
 - [Value-removal sprints](feedback_value-removal-sprints.md) — swapped fixtures must hit the same disjunct; hand-enumerated sets on touched asserts = §17 low; pr-deferred ACs need a plan line
+- [Workflow-definition sprints](feedback_workflow-definition-sprints.md) — predecessor pins stop at checkpoints.md; 3 collapse acting sites; name-guard cases need an existing target; memory dir leftover-swept

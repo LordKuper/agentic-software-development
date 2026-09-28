@@ -1,6 +1,6 @@
 ---
 name: no-shell-doc-review-method
-description: How documentation review runs in this framework repo - no shell, manifest-driven ledger vocabulary (emitter-produced list plus one fingerprint-named .diff, review-policy.md "Scope hand-off"), and the defect shapes that actually pay off (acting-site scope contradicting the cited SSoT, partial mirror updates when a rule gains a trigger, sole-home claims wider than the code, authority bounds narrower than their only instance, a fix narrowing code while the file's second description of it stays wide, new failure branches missing from an exhaustive blocker list, a new record-and-carry rule bound only on its read side, a duty moved off an agent onto "the orchestrator" with no acting site, a universal grant claim leaving a sibling fallback branch unreachable, new in-body `// ponytail:` comments in Node sources, README FAQ answers left stale by a new feature, and agent-memory claims stale at HEAD or contradicting the writer's definition)
+description: How documentation review runs in this framework repo - no shell, manifest-driven ledger vocabulary (emitter-produced list plus one fingerprint-named .diff, review-policy.md "Scope hand-off"), and the defect shapes that actually pay off (acting-site scope contradicting the cited SSoT, partial mirror updates when a rule gains a trigger, sole-home claims wider than the code, authority bounds narrower than their only instance, a fix narrowing code while the file's second description of it stays wide, new failure branches missing from an exhaustive blocker list, a new record-and-carry rule bound only on its read side, a duty moved off an agent onto "the orchestrator" with no acting site, a universal grant claim leaving a sibling fallback branch unreachable, new in-body comments in Node sources and hooks, README FAQ answers left stale by a new feature, and agent-memory claims stale at HEAD or contradicting the writer's definition)
 metadata:
   type: feedback
 ---
@@ -14,9 +14,12 @@ The impl-test decisions-log entry often carries "Tester notes for impl-review" n
 Ledger statuses, `n/a` predicates and `p`/`f` placement come off the dispatched manifest's
 `vocabulary`/`n_a` fields, copied byte-identically; `review-policy.md` "Coverage ledger" is the shape rule
 only. Files-row vocabulary is `checked`/`n/a` with no `finding` status, so a file carrying a
-finding is still `checked` and the finding id hangs off the rules row (one `f` per row: spread two findings
-over the two rubric ids they best fit). An empty `n_a` means no row may be `n/a` at all. Sha256 freshness
-(`upstream_hashes`) cannot be recomputed - say it was corroborated structurally. Iter 2+: the decisions-log
+finding is still `checked` and the finding id hangs off the rules row (one `f` per row: spread findings
+over the rubric ids they best fit, or merge same-kind drift into one finding). An empty `n_a` means no row
+may be `n/a` at all. Sha256 freshness (`upstream_hashes`) cannot be recomputed - say it was corroborated
+structurally. Since sprint 020 the return is persisted by `runtime.js persist-review`, which parses the
+Findings table by column position: keep the `#` cell a bare id and the Severity cell exactly
+`low|medium|high|critical`. Iter 2+: the decisions-log
 "impl fix for <id>: findings resolved" entry names what changed (impl-review
 <id> = `wave-<K>/iter-NN`); other iterations' `reviews/` files, any wave's, stay unread - glob only the
 current `reviews/impl/wave-<K>/iter-NN/` (design: `reviews/design/iter-NN/`), and scope greps to canon
@@ -28,13 +31,16 @@ current `reviews/impl/wave-<K>/iter-NN/` (design: `reviews/design/iter-NN/`), an
 **How to apply — the highest-yield checks in this repo:**
 - **Acting-site scope vs cited SSoT.** A rule doc's branch and its binding in `.asd/workflows/asd-phase-*.md`
   must agree on *reach* and on quoted literals (015: scope step 3a's log line drops the SSoT's `<doc>`;
-  the test only checks the substring). Read the step header, not only the bullet.
+  the test only checks the substring). Read the step header, not only the bullet. A new agent mode is
+  usually written twice - `artifact-layout.md`'s grant and the agent's own mode paragraph - with different
+  reach (020: impl-review in-place tester, "live rows its findings name" vs "risk and added-test rows").
 - **A duty moved off an agent needs a new acting site.** "Never run X — the orchestrator runs it" is only
   true if a workflow/skill step says so; grep X across workflows and skills (018 iter-02: UX lost
   `designmd-install`, no design workflow or `asd-design-system` step picked it up).
 - **A rule gaining a second trigger/site leaves unnamed mirrors stale.** Grep the old attribution phrase
   across the whole phase's files - sibling steps AND the skill `description` (always-loaded, in no
-  manifest). Valid under the change-surface exception (change made unchanged text wrong).
+  manifest). Valid under the change-surface exception (change made unchanged text wrong). A new reviewer
+  or workflow variant: grep README for "always dispatched", web-grant lists and "one reviewer per concern".
 - **README FAQ vs a new feature.** A feature adding an exception to a stated invariant leaves the FAQ that
   asks exactly that question stale (015: per-sprint document skip vs "Can I skip PRD/UX-spec/ADR/C4 for a
   lean sprint?"). Grep README FAQ for the feature's question, not only tables and folder map.
@@ -54,9 +60,11 @@ current `reviews/impl/wave-<K>/iter-NN/` (design: `reviews/design/iter-NN/`), an
 - **Authority bounds narrower than their only instance.** A sanctioned writer's "limited to X" vs what the
   one script actually does. Read the code.
 - **Fix narrows code, file's other description stays wide.** Grep the file header for every statement of it.
-- **In-body `// ponytail:` comments in Node sources** (`tests/run.js`, `.asd/runtime.js`): the dev agents
-  leave them; each is §7 high. Grep `^\s+// ` in changed files; in `tests/run.js` keep only hits inside
-  tests named for the current sprint (013 run.js, 015 runtime.js `surfaceCheck`).
+- **In-body comments in Node sources** (`tests/run.js`, `.asd/runtime.js`, `.asd/hooks/*.js`): the dev
+  agents leave them (`// ponytail:` or plain narration); each is §7 high. Grep the diff for `^\+\s+// `
+  AND `^\+.*\S\s+// ` (trailing comment after an expression, 020 session-start.js); in `tests/run.js` keep
+  only hits inside tests named for the current sprint (013 run.js, 015 runtime.js `surfaceCheck`). A member
+  doc citing a sprint-plan anchor ("t1-contract") is the same finding.
 - Migration comments in `.asd/migrations/*.js` follow the `6.0.0.js` precedent (member docs carrying WHY);
   that style alone is not a §7 finding.
 - **Agent-memory files are reviewable source** (`artifact-layout.md` "Agent memory"): verify durable claims

@@ -20,6 +20,10 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 |---|---|---|---|
 | F-1 | impl | Per-task sync rule conflicts with parallel wave dispatch | — |
 | F-2 | impl | Host auto-mode classifier denied the mandated `sync.js --apply` | D-1 |
+| F-3 | impl-review | Correctness ledger used `finding` status on file rows; needed one transcription | reviews/impl/wave-1/iter-01/correctness |
+| F-4 | impl-review | Testing return rejected: unescaped `|` inside a findings-table cell | reviews/impl/wave-1/iter-01/testing |
+| F-5 | impl-review | `persist-review` needs the return in a file, but the host delivers it only in context | — |
+| F-6 | impl-review | External wrapper redirected wrapped-CLI stdout to a file on an auto-backgrounded call | reviews/impl/wave-1/iter-01/external |
 
 ## F-1 — Per-task sync rule conflicts with parallel wave dispatch
 
@@ -36,3 +40,35 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 - **What happened**: While fixing D-1, the dev dispatch ran `node .asd/sync.js --apply <target>` to refresh `release-manifest.json` `upstream_hashes`. The host classifier denied it as self-modification, because it rewrites generated views. The dev instead called `sync.js`'s exported `recomputeAndWriteHashLedgers` directly, which touched only the manifest.
 - **Impact**: A rule-mandated command could not run inside a dispatched agent. The substitute path is undocumented, and it bypasses the command the rules name.
 - **Refs**: D-1
+
+## F-3 — Correctness ledger used `finding` status on file rows; needed one transcription
+
+- **Phase**: impl-review
+- **Surface**: agent — `asd-reviewer-correctness` vs `runtime.js` `LEDGER_VOCABULARY` (files: `checked`, `n/a` only)
+- **What happened**: The correctness return marked four `files` rows `{"s":"finding","f":…}`. `persist-review` rejected them with `files status invalid: finding`. One transcription per review-policy "Coverage ledger" enforcement re-keyed those rows to `checked`, and the re-run passed.
+- **Impact**: An extra persist round. The persisted ledger is a transcript, not the raw return.
+- **Refs**: reviews/impl/wave-1/iter-01/correctness
+
+## F-4 — Testing return rejected: unescaped pipe inside a findings-table cell
+
+- **Phase**: impl-review
+- **Surface**: template/agent — `t_review.md` findings table vs `runtime.js` `tableCells` (splits on unescaped `|`, including inside code spans, which is GFM-conformant)
+- **What happened**: Testing finding 3 quoted the regex `/default(s|ed)?/` with a bare `|` inside backticks. `persist-review` split the cell and rejected the row. Neither the reviewer contract nor the template tells reviewers to escape `|` in cells, so the return was rejected and the reviewer re-dispatched fresh.
+- **Impact**: A full testing review was paid for twice.
+- **Refs**: reviews/impl/wave-1/iter-01/testing
+
+## F-5 — `persist-review` needs the return in a file, but the host delivers it only in context
+
+- **Phase**: impl-review
+- **Surface**: rule — `review-policy.md` "Coverage ledger" Persistence ("never hand-writes or re-authors a review file") vs the host, which returns a dispatched agent's final text only into the orchestrator's context
+- **What happened**: For each reviewer, the orchestrator had to re-emit the whole returned text through its own file-write before `persist-review` could read it. That is a model-mediated copy of 5–10 KB per review, so byte-fidelity to the return rests on the orchestrator, not on the command.
+- **Impact**: About 5 large re-emissions per iteration in output tokens, and the "never re-authored" guarantee is not mechanical.
+- **Refs**: —
+
+## F-6 — External wrapper redirected wrapped-CLI stdout to a file on an auto-backgrounded call
+
+- **Phase**: impl-review
+- **Surface**: agent — `asd-external-review` vs `external-review.md` (stdout capture only, no file writes) and the host Bash tool, which auto-backgrounds calls longer than its default timeout
+- **What happened**: The `codex exec` run (about 147k tokens) outlived the default Bash timeout. The wrapper's first attempt redirected stdout to a scratch file. It recovered the review from the harness's background-task output instead and self-reported the contract breach.
+- **Impact**: A contract violation plus a retry inside the dispatch. No payload or rule tells the wrapper to set a long foreground timeout.
+- **Refs**: reviews/impl/wave-1/iter-01/external

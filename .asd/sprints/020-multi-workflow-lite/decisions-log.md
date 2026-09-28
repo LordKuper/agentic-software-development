@@ -60,3 +60,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-28 — impl test-fix: defects D-1, D-2 resolved (52c72ed, 3550328); build + lint green
 - 2026-09-28 — route impl-test entry 2: critical, dispatch HEAD f6fa8b5
 - 2026-09-28 — impl-test: impacted set green (full suite 245/245, safety valve), 0/0 tests
+- 2026-09-28 — correctness ledger transcribed once (files rows `finding`→`checked`), re-run passed (F-3)
+- 2026-09-28 — testing rejected attempt 1 in wave-1/iter-01 (findings table malformed: unescaped `|` in a cell); re-dispatched fresh (F-4)
+- 2026-09-28 — impl-review wave-1/iter-01: correctness/efficiency/testing/documentation/external CONCERNS (4+2+6+4+2 findings); AC-8 test-only route not applicable (medium/high and non-test findings); → impl review-fix (review_fixes_pending=wave-1/iter-01)
