@@ -34,3 +34,15 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-09-28 — Lite internal reviewer scope refined by user (supersedes audit A1 answer)
+
+- **Decision**: Lite's internal reviewer always applies the Correctness + Efficiency rubrics and gives an overall quality assessment of all changes; when a documentation file changed in scope it also applies the Documentation rubric to it. The Testing rubric is not a separate check. AC-4 reworded to match.
+- **Rationale**: User message during plan; it narrows the earlier "Correctness+Efficiency only" answer by adding conditional documentation review.
+- **Affected docs**: [sprint.md](sprint.md) AC-4
+
+## 2026-09-28 — `.asd/sprints/020-multi-workflow-lite/plan.md` accepted
+
+- **Decision**: User accepted plan.md explicitly: 7 Tasks in 3 waves (T1 / T2-T6 / T7), change surface 40 files (cap 100). Plan-level decisions: `.asd/workflows/{standard,lite}.json` definitions, `state.json.workflow` frozen by a hard scope-step-1 choice, `sprint-lifecycle.md` "Workflows" home, new `asd-reviewer-combined` agent with runtime-composed rubric, `persist-review` command (AC-9), `review-policy.md` "Low-severity test-only findings" (AC-8). No open stubs in scope.
+- **Rationale**: Hard gate (material architecture and public contract change: new agent, state schema field, runtime CLI).
+- **Affected docs**: [plan.md](plan.md)
