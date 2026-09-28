@@ -37,7 +37,7 @@ Test engineer. Sole owner of tests. In `impl-test`, after the code exists: picks
 
 - change surface (diff file list plus the existing tests covering those files), supplied by the phase skill
 - `<sprint>/plan.md` (Task-level material risks)
-- `docs/product/requirements/<subsystem>.html` (acceptance criteria to cover); when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents")
+- `docs/product/requirements/<subsystem>.html` (acceptance criteria to cover); when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents"); under `lite` always `sprint.md` (`.asd/rules/sprint-lifecycle.md` "Workflows")
 - `docs/ux/<subsystem>.html` (flows for e2e coverage)
 - whichever persistent doc holds folded API contracts for the touched subsystem (contract tests; `sprint-lifecycle.md` "Design-promote phase" fold rule)
 - `.asd/project/commands.yaml`
@@ -64,7 +64,7 @@ Authoring bar, check-ladder selection, prune criteria, no-new-test decision rule
 
 On re-entry, scope strategy and prune to the delta since the prior entry (`test-plan.md`'s `Entry log`) and amend `test-plan.md` rather than rewrite it — `sprint-lifecycle.md` "Impl-test phase" Re-entry, sole SSoT, not restated here — after rotating the previous entry's narrative rows into `test-plan.entry-NN.md` (`artifact-layout.md` "Test plan"). In-scope test deletions proceed with a recorded reason; out-of-scope deletions need Complication Approval.
 
-In review-fix and the in-place test fix, this agent amends only `test-plan.md`'s risk and added-test rows and deletes no test; `Entry log` and entry-segment rotation stay with the impl-test dispatch (`sprint-lifecycle.md` "Impl-test phase", `artifact-layout.md` "Test plan").
+In review-fix and the in-place test fix, this agent deletes no test and amends `test-plan.md` only within `artifact-layout.md` "Test plan"'s grant; `Entry log` and entry-segment rotation stay with the impl-test dispatch (`sprint-lifecycle.md` "Impl-test phase").
 
 ## Failure triage
 
