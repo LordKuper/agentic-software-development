@@ -54,7 +54,7 @@ const NA_PREDICATES = {
   pureRename: 'pure rename: identical content and mode',
   noDocs: 'no documentation file in scope',
 };
-/** Rubric entries each conditional predicate covers, by reviewer and id prefix, a combined manifest taking those of every rubric it composes; a prefix matching no entry fails the emit closed. */
+/** Rubric entries each conditional predicate covers, by reviewer and id prefix, a combined manifest taking those of every rubric it composes; a prefix matching no entry fails the emit closed. A combined manifest's `no documentation file in scope` covers its whole composed Documentation part instead. */
 const NA_TARGETS = {
   ui: { correctness: ['UI conformance'] },
   perf: { efficiency: ['Perf budget compliance', 'Perf anti-patterns', 'Algorithmic complexity', 'Regression detection', 'Hot path identification'] },
@@ -62,7 +62,6 @@ const NA_TARGETS = {
   html: { documentation: ['HTML shell wrapping', 'Provenance', 'Traceability'] },
   selfHosting: { documentation: ['Framework mode'] },
   templated: { documentation: ['Template adherence'] },
-  docs: { combined: ['SSoT', 'Template adherence', 'HTML shell wrapping', 'Provenance', 'Traceability', 'Persistent actuality', 'In-code doc comments', 'Stub-resolution verification', 'Framework mode', 'Documentation economy', 'Custom rules consistency'] },
 };
 const PHASES = ['design-review', 'impl-review'];
 /** A retro row's acting side; like its row id, an English literal under any docs language, so intake can filter on it. */
@@ -112,10 +111,10 @@ function riskArray(value, name) {
   return value.map(riskEntry);
 }
 
-/** Reads and shape-validates one workflow definition, `<dir>/<name>.json`; an unknown name or a malformed file throws. */
-function loadWorkflow(name, dir = WORKFLOWS_DIR) {
+/** Reads and shape-validates one workflow definition, `.asd/workflows/<name>.json`; an unknown name or a malformed file throws. */
+function loadWorkflow(name) {
   if (typeof name !== 'string' || !/^[a-z]+$/.test(name)) fail(`workflow name invalid: ${name}`);
-  const file = path.join(dir, `${name}.json`);
+  const file = path.join(WORKFLOWS_DIR, `${name}.json`);
   if (!fs.existsSync(file)) fail(`unknown workflow: ${name}`);
   const malformed = (what) => fail(`${file} malformed: ${what}`);
   let definition;
@@ -147,9 +146,9 @@ function loadWorkflow(name, dir = WORKFLOWS_DIR) {
 }
 
 /** The reviewer keys one review node accepts: the union of every definition's `reviewers[node]`. */
-function reviewerKeys(node, dir = WORKFLOWS_DIR) {
-  const names = fs.readdirSync(dir).filter((file) => file.endsWith('.json')).map((file) => file.slice(0, -'.json'.length));
-  return [...new Set(names.flatMap((name) => loadWorkflow(name, dir).reviewers[node]))];
+function reviewerKeys(node) {
+  const names = fs.readdirSync(WORKFLOWS_DIR).filter((file) => file.endsWith('.json')).map((file) => file.slice(0, -'.json'.length));
+  return [...new Set(names.flatMap((name) => loadWorkflow(name).reviewers[node]))];
 }
 
 /** Builds the spawn shape for a command: direct argv, or the Windows PowerShell JSON-stdin fallback. */
@@ -401,8 +400,9 @@ function isDocumentation(file, templates) {
   return /\.(md|mdx|markdown|rst|adoc|txt)$/i.test(file) || isTemplated(file, templates);
 }
 
-/** Maps every rule id to the standing n/a predicates its condition authorizes for this dispatch; `rubrics` names the reviewers whose rubrics the manifest holds. */
-function standingPredicates(input, rubrics, ids, customRules, templates) {
+/** Maps every rule id to the standing n/a predicates its condition authorizes for this dispatch; `parts` maps each reviewer whose rubric the manifest holds to its rule ids. */
+function standingPredicates(input, parts, ids, customRules, templates) {
+  const rubrics = Object.keys(parts);
   const granted = new Map(ids.map((id) => [id, []]));
   const targets = (key) => rubrics.flatMap((name) => NA_TARGETS[key][name] || []).map((prefix) => ids.find((id) => id.startsWith(prefix)) || fail(`rubric entry missing for n/a predicate: ${prefix}`));
   const grant = (key, predicate) => targets(key).forEach((id) => granted.get(id).push(predicate));
@@ -413,7 +413,7 @@ function standingPredicates(input, rubrics, ids, customRules, templates) {
   if (!input.files.some((file) => /\.html?$/i.test(file))) grant('html', NA_PREDICATES.noHtml);
   if (input.selfHosting !== true) grant('selfHosting', NA_PREDICATES.noSelfHosting);
   if (!input.files.some((file) => isTemplated(file, templates))) grant('templated', NA_PREDICATES.noTemplated);
-  if (!input.files.some((file) => isDocumentation(file, templates))) grant('docs', NA_PREDICATES.noDocs);
+  if (rubrics.includes(COMBINED_REVIEWER) && !input.files.some((file) => isDocumentation(file, templates))) (parts.documentation || fail('combined manifest composes no documentation rubric')).forEach((id) => granted.get(id).push(NA_PREDICATES.noDocs));
   if (input.phase === 'design-review') {
     if (!input.files.some((file) => /(^|\/)(ux-spec\.html|design-md-delta\.yaml)$/.test(file))) grant('ui', NA_PREDICATES.phaseGate);
     return granted;
@@ -436,7 +436,7 @@ function emitCoverageManifest(input) {
   const rules = rubric.rules.concat(Object.keys(customRules));
   if (new Set(rules).size !== rules.length) fail('rubric and custom-rule ids must be distinct');
   const templates = input.templates === undefined ? [] : stringArray(input.templates, 'templates');
-  const granted = standingPredicates(input, Object.keys(composed), rules, customRules, templates);
+  const granted = standingPredicates(input, Object.fromEntries(Object.keys(composed).map((name, i) => [name, rubrics[i].rules])), rules, customRules, templates);
   const naFor = (ids) => Object.fromEntries(ids.map((id) => [id, granted.get(id)]).filter(([, predicates]) => predicates.length > 0));
   const renamed = new Set(input.pureRenames === undefined ? [] : stringArray(input.pureRenames, 'pureRenames'));
   return stampManifest({
@@ -511,6 +511,7 @@ function persistReview(input) {
   const verdict = token[1];
   const findings = verdict.startsWith('APPROVE (') ? [] : reviewFindings(body);
   if (!verdict.startsWith('APPROVE') && findings.length === 0) fail(`${verdict} verdict lists no finding`);
+  if (verdict === 'APPROVE' && findings.length > 0) fail('APPROVE verdict lists findings');
   if (INTERNAL_REVIEWERS.includes(reviewer)) {
     const manifest = JSON.parse(fs.readFileSync(input.manifest || path.join(outDir, `${reviewer}.manifest.json`), 'utf8'));
     validateCoverageLedger(manifest, ledgerFromText(body), findings.map((finding) => finding.id));
