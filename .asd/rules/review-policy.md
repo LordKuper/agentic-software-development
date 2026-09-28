@@ -181,7 +181,7 @@ An internal reviewer is NEVER recorded as skipped and never satisfies DoD withou
 
 ## Reviewer responsibility
 
-Sole owner map: each concern below has exactly one reviewer; agent rubrics hold the detail. "Receives" is the reviewer's manifest file list, built from the iteration's scope by `.asd/runtime.js` `reviewerFiles`.
+Sole owner map: each concern below has exactly one reviewer per workflow roster (`reviewers.<node>`, `sprint-lifecycle.md` "Workflows"); agent rubrics hold the detail. "Receives" is the reviewer's manifest file list, built from the iteration's scope by `.asd/runtime.js` `reviewerFiles`.
 
 | Reviewer | design-review: judges · receives | impl-review: judges · receives |
 |---|---|---|
