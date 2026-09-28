@@ -34,3 +34,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+- 2026-09-28 — `.asd/sprints/020-multi-workflow-lite/retrospective.html` written: 6 entries (F-1..F-6), 5 framework actions (A-1 merges F-1+F-2; A-2 covered by), 2 systemic proposals; analysed branch
