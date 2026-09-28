@@ -26,9 +26,22 @@ const MAX_REVIEW_WAVES = 3;
 /** An audit whose touched areas track more than this many files gets a batched-read plan in the architect payload. */
 const AUDIT_BATCH_THRESHOLD_FILES = 200;
 /** Internal reviewers, named as `emit-manifest --reviewer` takes them. */
-const INTERNAL_REVIEWERS = ['correctness', 'efficiency', 'testing', 'documentation'];
+const INTERNAL_REVIEWERS = ['correctness', 'efficiency', 'testing', 'documentation', 'combined'];
 /** The `emit-manifest --reviewer` name that emits External Review's scope manifest instead of a coverage manifest. */
 const EXTERNAL_REVIEWER = 'external';
+/** The lite internal reviewer: its manifest composes these reviewers' rubrics by reference, in order, then its own agent's rubric. */
+const COMBINED_REVIEWER = 'combined';
+const COMBINED_RUBRICS = ['correctness', 'efficiency', 'documentation'];
+/** Sprint workflow definitions, one `<name>.json` each, beside the phase orchestration bodies. */
+const WORKFLOWS_DIR = path.join(__dirname, 'workflows');
+/** The exact key set of a workflow definition; its semantics stay prose in the rule docs. */
+const WORKFLOW_KEYS = ['name', 'next', 'phases', 'reviewers', 'rollback_reset'];
+/** Review nodes a definition's `reviewers` and `rollback_reset` are keyed by, as `persist-review --phase` takes them. */
+const REVIEW_NODES = ['design', 'impl'];
+/** `NEXT:` targets that end the chain instead of naming a phase: `pr`'s open and merge exits. */
+const CHAIN_EXITS = ['await-merge', 'done'];
+/** Severities a finding row may carry (`review-policy.md` "Severity levels"). */
+const SEVERITIES = ['low', 'medium', 'high', 'critical'];
 /** The standing n/a predicates, each the exact text a ledger row records. The emitter authorizes one only where its condition holds; this is their sole home. */
 const NA_PREDICATES = {
   phaseGate: 'outside phase gate',
@@ -39,8 +52,9 @@ const NA_PREDICATES = {
   noSelfHosting: 'self_hosting not enabled',
   noTemplated: 'no templated artefact in scope',
   pureRename: 'pure rename: identical content and mode',
+  noDocs: 'no documentation file in scope',
 };
-/** Rubric entries each conditional predicate covers, by reviewer and id prefix; a prefix matching no entry fails the emit closed. */
+/** Rubric entries each conditional predicate covers, by reviewer and id prefix, a combined manifest taking those of every rubric it composes; a prefix matching no entry fails the emit closed. */
 const NA_TARGETS = {
   ui: { correctness: ['UI conformance'] },
   perf: { efficiency: ['Perf budget compliance', 'Perf anti-patterns', 'Algorithmic complexity', 'Regression detection', 'Hot path identification'] },
@@ -48,6 +62,7 @@ const NA_TARGETS = {
   html: { documentation: ['HTML shell wrapping', 'Provenance', 'Traceability'] },
   selfHosting: { documentation: ['Framework mode'] },
   templated: { documentation: ['Template adherence'] },
+  docs: { combined: ['SSoT', 'Template adherence', 'HTML shell wrapping', 'Provenance', 'Traceability', 'Persistent actuality', 'In-code doc comments', 'Stub-resolution verification', 'Framework mode', 'Documentation economy', 'Custom rules consistency'] },
 };
 const PHASES = ['design-review', 'impl-review'];
 /** A retro row's acting side; like its row id, an English literal under any docs language, so intake can filter on it. */
@@ -95,6 +110,46 @@ function riskEntry(value) {
 function riskArray(value, name) {
   if (!Array.isArray(value)) fail(`${name} must be an array of risks`);
   return value.map(riskEntry);
+}
+
+/** Reads and shape-validates one workflow definition, `<dir>/<name>.json`; an unknown name or a malformed file throws. */
+function loadWorkflow(name, dir = WORKFLOWS_DIR) {
+  if (typeof name !== 'string' || !/^[a-z]+$/.test(name)) fail(`workflow name invalid: ${name}`);
+  const file = path.join(dir, `${name}.json`);
+  if (!fs.existsSync(file)) fail(`unknown workflow: ${name}`);
+  const malformed = (what) => fail(`${file} malformed: ${what}`);
+  let definition;
+  try {
+    definition = JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch (error) {
+    malformed(error.message);
+  }
+  const isMap = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+  const distinct = (value, what, allowed, empty) => {
+    if (!Array.isArray(value) || (!empty && value.length === 0) || new Set(value).size !== value.length || value.some((item) => typeof item !== 'string' || !allowed(item))) malformed(`${what} must be a list of distinct valid names`);
+  };
+  const keyed = (value, what, keys) => {
+    if (!isMap(value) || stable(Object.keys(value).sort()) !== stable(keys.slice().sort())) malformed(`${what} keys must be exactly ${keys.join(', ')}`);
+  };
+  keyed(definition, 'definition', WORKFLOW_KEYS);
+  if (definition.name !== name) malformed(`name must be ${name}`);
+  const { phases } = definition;
+  distinct(phases, 'phases', (phase) => /^[a-z]+(-[a-z]+)*$/.test(phase), false);
+  keyed(definition.next, 'next', phases);
+  phases.forEach((phase) => distinct(definition.next[phase], `next.${phase}`, (target) => phases.includes(target) || CHAIN_EXITS.includes(target), false));
+  keyed(definition.reviewers, 'reviewers', REVIEW_NODES);
+  keyed(definition.rollback_reset, 'rollback_reset', REVIEW_NODES);
+  REVIEW_NODES.forEach((node) => {
+    distinct(definition.reviewers[node], `reviewers.${node}`, (key) => /^[a-z]+$/.test(key), true);
+    distinct(definition.rollback_reset[node], `rollback_reset.${node}`, (phase) => phases.includes(phase), true);
+  });
+  return definition;
+}
+
+/** The reviewer keys one review node accepts: the union of every definition's `reviewers[node]`. */
+function reviewerKeys(node, dir = WORKFLOWS_DIR) {
+  const names = fs.readdirSync(dir).filter((file) => file.endsWith('.json')).map((file) => file.slice(0, -'.json'.length));
+  return [...new Set(names.flatMap((name) => loadWorkflow(name, dir).reviewers[node]))];
 }
 
 /** Builds the spawn shape for a command: direct argv, or the Windows PowerShell JSON-stdin fallback. */
@@ -341,10 +396,15 @@ function templateNames(dir) {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => (entry.isDirectory() ? templateNames(path.join(dir, entry.name)) : entry.name.startsWith('t_') ? [entry.name.slice(2)] : []));
 }
 
-/** Maps every rule id to the standing n/a predicates its condition authorizes for this dispatch. */
-function standingPredicates(input, ids, customRules, templates) {
+/** A documentation file: prose (Markdown, reStructuredText, AsciiDoc, plain text) or a templated artefact, whatever its extension. */
+function isDocumentation(file, templates) {
+  return /\.(md|mdx|markdown|rst|adoc|txt)$/i.test(file) || isTemplated(file, templates);
+}
+
+/** Maps every rule id to the standing n/a predicates its condition authorizes for this dispatch; `rubrics` names the reviewers whose rubrics the manifest holds. */
+function standingPredicates(input, rubrics, ids, customRules, templates) {
   const granted = new Map(ids.map((id) => [id, []]));
-  const targets = (key) => (NA_TARGETS[key][input.reviewer] || []).map((prefix) => ids.find((id) => id.startsWith(prefix)) || fail(`rubric entry missing for n/a predicate: ${prefix}`));
+  const targets = (key) => rubrics.flatMap((name) => NA_TARGETS[key][name] || []).map((prefix) => ids.find((id) => id.startsWith(prefix)) || fail(`rubric entry missing for n/a predicate: ${prefix}`));
   const grant = (key, predicate) => targets(key).forEach((id) => granted.get(id).push(predicate));
   const otherPhase = PHASES.find((phase) => phase !== input.phase);
   const hasBudgets = Object.entries(customRules).some(([file, text]) => file.endsWith('custom-coding-rules.md') && /^#+ [^\n]*perf[^\n]*budget/im.test(text));
@@ -353,6 +413,7 @@ function standingPredicates(input, ids, customRules, templates) {
   if (!input.files.some((file) => /\.html?$/i.test(file))) grant('html', NA_PREDICATES.noHtml);
   if (input.selfHosting !== true) grant('selfHosting', NA_PREDICATES.noSelfHosting);
   if (!input.files.some((file) => isTemplated(file, templates))) grant('templated', NA_PREDICATES.noTemplated);
+  if (!input.files.some((file) => isDocumentation(file, templates))) grant('docs', NA_PREDICATES.noDocs);
   if (input.phase === 'design-review') {
     if (!input.files.some((file) => /(^|\/)(ux-spec\.html|design-md-delta\.yaml)$/.test(file))) grant('ui', NA_PREDICATES.phaseGate);
     return granted;
@@ -363,16 +424,19 @@ function standingPredicates(input, ids, customRules, templates) {
   return granted;
 }
 
-/** Emits one reviewer's stamped coverage manifest over its whole file list. */
+/** Emits one reviewer's stamped coverage manifest over its whole file list; `rubric` is its agent markdown, or a combined reviewer's `{reviewer: markdown}` map whose rubrics compose in order. */
 function emitCoverageManifest(input) {
   if (!input || typeof input !== 'object') fail('emit input required');
   if (!PHASES.includes(input.phase)) fail('phase must be design-review or impl-review');
   const files = stringArray(input.files, 'files');
   const customRules = input.customRules || {};
-  const rubric = rubricIds(input.rubric);
+  const composed = input.rubric !== null && typeof input.rubric === 'object' ? input.rubric : { [input.reviewer]: input.rubric };
+  const rubrics = Object.values(composed).map(rubricIds);
+  const rubric = { rules: rubrics.flatMap((part) => part.rules), sections: rubrics.flatMap((part) => part.sections) };
   const rules = rubric.rules.concat(Object.keys(customRules));
+  if (new Set(rules).size !== rules.length) fail('rubric and custom-rule ids must be distinct');
   const templates = input.templates === undefined ? [] : stringArray(input.templates, 'templates');
-  const granted = standingPredicates(input, rules, customRules, templates);
+  const granted = standingPredicates(input, Object.keys(composed), rules, customRules, templates);
   const naFor = (ids) => Object.fromEntries(ids.map((id) => [id, granted.get(id)]).filter(([, predicates]) => predicates.length > 0));
   const renamed = new Set(input.pureRenames === undefined ? [] : stringArray(input.pureRenames, 'pureRenames'));
   return stampManifest({
@@ -411,6 +475,51 @@ function ledgerFromText(text) {
 /** Splits one markdown table row into trimmed cells, honouring `\|` escapes and dropping one enclosing backtick pair. */
 function tableCells(line) {
   return line.trim().replace(/^\||\|$/g, '').split(/(?<!\\)\|/).map((cell) => cell.trim().replace(/\\\|/g, '|').replace(/^`([^`]*)`$/, '$1'));
+}
+
+/** A review's findings as `{id, severity, location}`, read by column position from its first table: `t_review.md`'s Findings or the external report's Kept findings, whose column order the templates fix while headings follow the docs language. A `—` id row is the empty table's placeholder. */
+function reviewFindings(text) {
+  const lines = text.split(/\r?\n/).map((line) => line.trim());
+  const start = lines.findIndex((line) => line.startsWith('|'));
+  if (start === -1) fail('review has no findings table');
+  const end = lines.findIndex((line, i) => i > start && !line.startsWith('|'));
+  const [header, separator, ...rows] = lines.slice(start, end === -1 ? lines.length : end).map(tableCells);
+  if (header.length < 3 || separator === undefined || separator.length !== header.length || !separator.every((cell) => /^:?-+:?$/.test(cell))) fail('findings table header or separator malformed');
+  const seen = new Set();
+  return rows.filter((cells) => cells[0] !== '—').map((cells) => {
+    const [id, severity, location] = cells;
+    if (cells.length !== header.length || id === '' || seen.has(id)) fail(`findings row malformed or id repeated: ${cells.join(' | ')}`);
+    if (!SEVERITIES.includes(severity)) fail(`finding ${id} severity must be one of ${SEVERITIES.join(', ')}: ${severity}`);
+    seen.add(id);
+    return { id, severity, location };
+  });
+}
+
+/** Validates one reviewer's returned text and persists it, from its verdict token on, as `<reviewer>.md` (`<reviewer>.late.md` for a late return) plus `<stem>.findings.json`; an internal reviewer's ledger must first validate against its manifest (default `<outDir>/<reviewer>.manifest.json`). A written review is never overwritten, so the orchestrator's later appends survive. */
+function persistReview(input) {
+  const { phase, reviewer, text, outDir } = input;
+  if (!REVIEW_NODES.includes(phase)) fail(`--phase must be ${REVIEW_NODES.join(' or ')}`);
+  const keys = reviewerKeys(phase);
+  if (!keys.includes(reviewer)) fail(`--reviewer must be one of ${keys.join(', ')}`);
+  if (typeof text !== 'string' || typeof outDir !== 'string') fail('review text and output dir required');
+  const start = /^[ \t]*\[REVIEW-/m.exec(text);
+  if (start === null) fail('returned text carries no verdict token: an interrupted dispatch, not a verdict');
+  const body = text.slice(start.index).trimStart();
+  const skip = reviewer === EXTERNAL_REVIEWER ? '|APPROVE \\(skipped: .+\\)' : '';
+  const token = new RegExp(`^\\[REVIEW-${phase}-${reviewer}\\]: (APPROVE|CONCERNS|FAIL${skip})$`).exec(body.split(/\r?\n/, 1)[0].trimEnd());
+  if (token === null) fail(`first line must be [REVIEW-${phase}-${reviewer}]: APPROVE|CONCERNS|FAIL`);
+  const verdict = token[1];
+  const findings = verdict.startsWith('APPROVE (') ? [] : reviewFindings(body);
+  if (!verdict.startsWith('APPROVE') && findings.length === 0) fail(`${verdict} verdict lists no finding`);
+  if (INTERNAL_REVIEWERS.includes(reviewer)) {
+    const manifest = JSON.parse(fs.readFileSync(input.manifest || path.join(outDir, `${reviewer}.manifest.json`), 'utf8'));
+    validateCoverageLedger(manifest, ledgerFromText(body), findings.map((finding) => finding.id));
+  }
+  const stem = path.join(outDir, input.late ? `${reviewer}.late` : reviewer);
+  if (fs.existsSync(`${stem}.md`)) fail(`${stem}.md already persisted`);
+  fs.writeFileSync(`${stem}.findings.json`, JSON.stringify(findings) + '\n', 'utf8');
+  fs.writeFileSync(`${stem}.md`, body.endsWith('\n') ? body : `${body}\n`, 'utf8');
+  return { token: verdict, findings };
 }
 
 /** Compares the code-defect identity sets (file path without line, runner failure line, failing test) of the last two impl-test entries that routed defects in a test plan's `Defects` table, a stalemate only when those entry numbers are consecutive; `D-N` ids and `impl-review` rows never take part. `digest` identifies the latest set, so a recorded answer can be keyed to it. */
@@ -728,10 +837,11 @@ function emitInternalManifest(flags, files, ranges, snapshot) {
   const customPaths = typeof flags['custom-rules'] === 'string' ? flags['custom-rules'].split(',') : [];
   const testPlan = typeof flags['test-plan'] === 'string' ? flags['test-plan'].split(',') : [];
   const reviewed = reviewerFiles(flags.phase, flags.reviewer, files, testPlan);
+  const rubricOf = (reviewer) => fs.readFileSync(path.join(__dirname, 'agents', `asd-reviewer-${reviewer}.md`), 'utf8');
   const manifest = emitCoverageManifest({
     reviewer: flags.reviewer,
     phase: flags.phase,
-    rubric: fs.readFileSync(path.join(__dirname, 'agents', `asd-reviewer-${flags.reviewer}.md`), 'utf8'),
+    rubric: flags.reviewer === COMBINED_REVIEWER ? Object.fromEntries(COMBINED_RUBRICS.concat(COMBINED_REVIEWER).map((reviewer) => [reviewer, rubricOf(reviewer)])) : rubricOf(flags.reviewer),
     files: reviewed,
     customRules: Object.fromEntries(customPaths.map((file) => [file, fs.readFileSync(file, 'utf8')])),
     selfHosting: flags['self-hosting'] === true,
@@ -745,9 +855,10 @@ function emitInternalManifest(flags, files, ranges, snapshot) {
 }
 
 function emitManifestCommand(flags) {
-  if (!/^[a-z]+$/.test(flags.reviewer || '')) fail('--reviewer <name> required');
   if (typeof flags.files !== 'string' || typeof flags.out !== 'string') fail('--files <path> and --out <dir> required');
   if (!PHASES.includes(flags.phase)) fail('phase must be design-review or impl-review');
+  const keys = reviewerKeys(flags.phase.replace(/-review$/, ''));
+  if (!keys.includes(flags.reviewer)) fail(`--reviewer <name> required, one of ${keys.join(', ')}`);
   const snapshot = snapshotSource(flags);
   const ranges = manifestRanges(flags);
   const whole = ranges !== null ? ranges.fullFiles : snapshot !== null ? snapshot.whole : new Set();
@@ -808,7 +919,7 @@ function inputJson(flags) {
 
 function main(argv) {
   const command = argv[2];
-  const flags = parseFlagArgs(argv.slice(3), ['self-hosting']);
+  const flags = parseFlagArgs(argv.slice(3), ['self-hosting', 'late']);
   if (command === 'manifest-digest') {
     process.stdout.write(coverageManifestDigest(JSON.parse(fs.readFileSync(flags.manifest, 'utf8'))) + '\n');
     return 0;
@@ -819,6 +930,12 @@ function main(argv) {
   }
   if (command === 'validate-ledger') {
     const result = validateCoverageLedger(JSON.parse(fs.readFileSync(flags.manifest, 'utf8')), ledgerFromText(fs.readFileSync(flags.ledger, 'utf8')), JSON.parse(fs.readFileSync(flags.findings, 'utf8')));
+    process.stdout.write(JSON.stringify(result) + '\n');
+    return 0;
+  }
+  if (command === 'persist-review') {
+    if (typeof flags.in !== 'string' || typeof flags['out-dir'] !== 'string') fail('--in <path> and --out-dir <iteration dir> required');
+    const result = persistReview({ phase: flags.phase, reviewer: flags.reviewer, text: fs.readFileSync(flags.in, 'utf8'), outDir: flags['out-dir'], late: flags.late === true, manifest: flags.manifest });
     process.stdout.write(JSON.stringify(result) + '\n');
     return 0;
   }
@@ -864,11 +981,11 @@ function main(argv) {
     process.stdout.write(JSON.stringify(retroCandidates(flags.sprints, flags.backlog, flags['self-hosting'] === true)) + '\n');
     return 0;
   }
-  fail('usage: emit-manifest, manifest-digest, validate-ledger, external-preflight, external-record-failure, route-task, defect-stalemate, surface-check, draft-snapshot, review-waves, wave-files, or retro-candidates');
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, surface-check, draft-snapshot, review-waves, wave-files, or retro-candidates');
 }
 
 if (require.main === module) {
   try { process.exitCode = main(process.argv); } catch (error) { process.stderr.write(`${error.message}\n`); process.exitCode = 2; }
 }
 
-module.exports = { AUDIT_BATCH_THRESHOLD_FILES, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, SURFACE_CAP_FILES, WAVE_THRESHOLD_LINES, backlogRows, buildInvocation, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, isTest, numstatLines, recordExternalFailure, retroCandidates, retroRows, reviewWaveCount, reviewerFiles, routeTask, surfaceCheck, validateCoverageLedger, validateWaveDivision, waveFiles, fingerprint };
+module.exports = { AUDIT_BATCH_THRESHOLD_FILES, COMBINED_REVIEWER, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, SURFACE_CAP_FILES, WAVE_THRESHOLD_LINES, backlogRows, buildInvocation, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, isDocumentation, isTest, loadWorkflow, numstatLines, persistReview, recordExternalFailure, retroCandidates, retroRows, reviewFindings, reviewWaveCount, reviewerFiles, reviewerKeys, routeTask, surfaceCheck, validateCoverageLedger, validateWaveDivision, waveFiles, fingerprint };

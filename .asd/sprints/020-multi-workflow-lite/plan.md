@@ -38,11 +38,11 @@ Sprint-specific additions:
 AC: AC-1, AC-2, AC-3, AC-4, AC-6, AC-9
 Material risk: change: public contract (state.json schema, runtime CLI)
 Reachability: scope writes `state.json.workflow` at step 1; the hook, `asd-sprint` resume and the phase workflows read it at entry (absent = `standard`)
-- [ ] Add `.asd/workflows/standard.json` and `.asd/workflows/lite.json` with exactly the keys in Overview; the `standard` values must reproduce today's chain, `NEXT:` targets, rosters and rollback-reset table (`sprint-lifecycle.md` lines 17-20, 56-63)
-- [ ] Add `"workflow": "{{WORKFLOW}}"` to `.asd/templates/t_state.json`
-- [ ] `.asd/runtime.js`: add a zero-dependency definition loader (read + shape-validate, throw on unknown name or malformed file) and derive the accepted reviewer keys from the union of every definition's `reviewers`; add `combined` to `INTERNAL_REVIEWERS`
-- [ ] `.asd/runtime.js` `emit-manifest --reviewer combined`: compose the correctness + efficiency + documentation rubric entries plus the combined agent's own entry; add the `no documentation file in scope` predicate to `NA_PREDICATES` and wire the documentation entries to it in `NA_TARGETS`
-- [ ] `.asd/runtime.js`: add the `persist-review` command per Overview (token and ledger validation reuse `ledgerFromText`/`validateCoverageLedger`; findings parsed from the Findings table of `t_review.md` / `external-review/t_review-report.md`), plus its usage string and export
+- [x] Add `.asd/workflows/standard.json` and `.asd/workflows/lite.json` with exactly the keys in Overview; the `standard` values must reproduce today's chain, `NEXT:` targets, rosters and rollback-reset table (`sprint-lifecycle.md` lines 17-20, 56-63)
+- [x] Add `"workflow": "{{WORKFLOW}}"` to `.asd/templates/t_state.json`
+- [x] `.asd/runtime.js`: add a zero-dependency definition loader (read + shape-validate, throw on unknown name or malformed file) and derive the accepted reviewer keys from the union of every definition's `reviewers`; add `combined` to `INTERNAL_REVIEWERS`
+- [x] `.asd/runtime.js` `emit-manifest --reviewer combined`: compose the correctness + efficiency + documentation rubric entries plus the combined agent's own entry; add the `no documentation file in scope` predicate to `NA_PREDICATES` and wire the documentation entries to it in `NA_TARGETS`
+- [x] `.asd/runtime.js`: add the `persist-review` command per Overview (token and ledger validation reuse `ledgerFromText`/`validateCoverageLedger`; findings parsed from the Findings table of `t_review.md` / `external-review/t_review-report.md`), plus its usage string and export
 
 ### Task 2: Session-start hook reads the frozen workflow
 AC: AC-1, AC-6
