@@ -13,7 +13,7 @@ responsibility:
 |---|---|---|
 | 1 | 9463f2c35157d12d97a6e91e1285f1407536a101 | full change surface |
 | 2 | a4f4e51c0ac79575740a81734986fd9307e59a96 | delta since entry 1 |
-| 3 |  | delta since entry 2 |
+| 3 | afa606eef858f3d18aa1cab15afd3457b3cd8cc4 | delta since entry 2 |
 
 Entry 3: the delta is `git diff a4f4e51...HEAD` over the same pathspec. It holds 21 files (+147/−70) from review-fix wave-1/iter-01: the dev chain 1a1a983..2cecb8b and the review-fix tester commit c8a34db. It touches `.asd/runtime.js`, the hook and rule docs, so the safety valve applies and the impacted set is the full suite. The pre-strategy run (full suite, HEAD 05f0df4, tests as found) was `node tests/run.js` → exit 0, 246/246 passed. No review-fix removal row existed to carry forward. Entry 2's rows and the review-fix tester rows were rotated into `test-plan.entry-02.md`.
 
