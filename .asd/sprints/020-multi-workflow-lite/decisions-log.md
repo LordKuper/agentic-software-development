@@ -34,3 +34,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+- 2026-09-28 — route Task 1: critical, dispatch HEAD dbfd199
+- 2026-09-28 — route Task 2: standard, dispatch HEAD 848168f
+- 2026-09-28 — route Task 3, Task 4, Task 5, Task 6: critical, dispatch HEAD 848168f
+- 2026-09-28 — wave 2 runs 5 parallel dispatches; generated-view sync (`sync.js --apply`) deferred to Task 7 so concurrent devs never race on `.asd/sync-state.json`
+- 2026-09-28 — route Task 7: standard, dispatch HEAD 913ef64

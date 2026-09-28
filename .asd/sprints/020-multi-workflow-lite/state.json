@@ -1,7 +1,7 @@
 {
   "sprint_id": "020-multi-workflow-lite",
   "branch": "sprint/020-multi-workflow-lite",
-  "phase": "plan",
+  "phase": "impl",
   "documents": {
     "audit": true,
     "prd": false,
@@ -47,7 +47,50 @@
       "artifact_revision": "plan.md@2026-09-28T09:53:57Z"
     }
   ],
-  "task_routing": {},
+  "task_routing": {
+    "Task 1": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:public contract",
+      "resolved_model": "opus"
+    },
+    "Task 2": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:hook must never throw",
+      "resolved_model": "sonnet"
+    },
+    "Task 3": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow-gate rules",
+      "resolved_model": "opus"
+    },
+    "Task 4": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow-gate rules",
+      "resolved_model": "opus"
+    },
+    "Task 5": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow-gate rules",
+      "resolved_model": "opus"
+    },
+    "Task 6": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow-gate rules",
+      "resolved_model": "opus"
+    },
+    "Task 7": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:cross-file mirrors",
+      "resolved_model": "sonnet"
+    }
+  },
   "skipped_phases": [
     "design",
     "design-review",
@@ -72,7 +115,7 @@
     }
   },
   "created_at": "2026-09-28T08:27:23Z",
-  "updated_at": "2026-09-28T09:53:57Z",
+  "updated_at": "2026-09-28T10:14:16Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
