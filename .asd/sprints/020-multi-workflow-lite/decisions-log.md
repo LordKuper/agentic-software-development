@@ -54,3 +54,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
   - the rollback-reset table is replaced by the definition's `rollback_reset`.
 - **Rationale**: Every choice stays inside the plan Overview decisions and the user's AC wording, and none opens a material alternative. `tests/run.js` is red by design (removed hook literal, new agent); that work belongs to impl-test. Commit 753325a's 53-char subject is left as is, since rewriting it would mean rewriting landed history under sibling commits.
 - **Affected docs**: [plan.md](plan.md)
+- 2026-09-28 — route impl-test entry 1: critical, dispatch HEAD 6a6d3f9
