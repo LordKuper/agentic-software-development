@@ -163,7 +163,7 @@ test('AC-3/6/7: every canonical Codex agent renders a supported delegate config'
   const manifest = loadManifest();
   const agentsDir = path.join(REPO_ROOT, '.asd', 'agents');
   const files = fs.readdirSync(agentsDir).filter(f => f.endsWith('.md'));
-  assert.strictEqual(files.length, 11, 'sanity: every dispatched role must be covered');
+  assert.deepStrictEqual(workflowReviewerAgents().filter((agent) => !files.includes(`${agent}.md`)), [], 'sprint-020 AC-4: every reviewer key a workflow definition dispatches must have a canonical agent this loop renders - a roster key with no agent is dispatched into nothing');
   const codexFamilies = Object.keys(manifest.model_families.codex).join('|');
   const codexModelRe = new RegExp(`^model = "gpt-\\d+(\\.\\d+)?-(${codexFamilies})"$`, 'm');
   for (const file of files) {
@@ -1024,22 +1024,20 @@ test('`node .asd/sync.js --check` reports every item current (no drift), includi
 });
 
 // ===========================================================================
-// 9a. Read-only agent contract (AC-6): the 5 reviewers + asd-advisor must
+// 9a. Read-only agent contract (AC-6): every reviewer + asd-advisor must
 // never carry a write tool and must declare sandbox_mode read-only on Codex.
-// Directory-driven (derives the read-only set from .asd/agents/ filenames,
-// not a hardcoded list) so a future 7th read-only agent is covered for free.
-// Count updated 9 -> 6 for sprint 004's reviewer-merge roster (AC-7/AC-11):
-// asd-advisor, asd-external-review, asd-reviewer-correctness,
-// asd-reviewer-documentation, asd-reviewer-efficiency, asd-reviewer-testing.
+// The read-only set is derived from .asd/agents/ filenames and compared to the
+// reviewers the workflow definitions dispatch, so a new reviewer is covered
+// the day it joins a roster.
 // ===========================================================================
 
-test('read-only agents (5 reviewers + asd-advisor): no Write/Edit tool, codex sandbox_mode read-only', () => {
+test('read-only agents (every workflow reviewer + asd-advisor): no Write/Edit tool, codex sandbox_mode read-only', () => {
   const agentsDir = path.join(REPO_ROOT, '.asd', 'agents');
   const files = fs.readdirSync(agentsDir).filter((f) => f.endsWith('.md'));
   const readOnlyNames = files
     .map((f) => f.slice(0, -3))
     .filter((name) => name === 'asd-external-review' || name === 'asd-advisor' || name.startsWith('asd-reviewer-'));
-  assert.strictEqual(readOnlyNames.length, 6, `expected 6 read-only agents (5 reviewers + advisor), found ${readOnlyNames.length}: ${readOnlyNames.join(', ')}`);
+  assert.deepStrictEqual(readOnlyNames.sort(), [...workflowReviewerAgents(), 'asd-advisor'].sort(), 'the read-only set is every reviewer a workflow definition dispatches plus asd-advisor - a reviewer agent no roster names is dead canon, and a roster key whose agent is missing here escapes the read-only check');
   for (const name of readOnlyNames) {
     const raw = sync.readNormalized(path.join(agentsDir, `${name}.md`));
     const { meta } = sync.parseCanonicalFrontmatter(raw);
@@ -2011,10 +2009,18 @@ test('AC-2/4/6/7/sprint-017 AC-8: t_review-scope.json key set matches external-r
 // 7. SessionStart hook: --provider must change the printed skill form
 // ===========================================================================
 
+/** Installs a copy of the SessionStart hook plus every workflow definition it reads its chain from into a temp repo root, so a run never sees the live sprint. */
+function installHook(tempRoot) {
+  writeFile(tempRoot, '.asd/hooks/session-start.js', readRepoFile('.asd/hooks/session-start.js'));
+  for (const file of fs.readdirSync(path.join(REPO_ROOT, '.asd/workflows')).filter((name) => name.endsWith('.json'))) {
+    writeFile(tempRoot, `.asd/workflows/${file}`, readRepoFile(`.asd/workflows/${file}`));
+  }
+}
+
 /** Runs a copy of the hook in a temp repo holding one fixture sprint, so the output never depends on the live sprint - whose branch name may itself contain `/asd-sprint`. */
 function runHook(provider) {
   const tempRoot = mkTempDir();
-  writeFile(tempRoot, '.asd/hooks/session-start.js', fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8'));
+  installHook(tempRoot);
   writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({ sprint_id: '999-fixture', phase: 'impl', branch: 'feat/999-fixture' }));
   const out = execFileSync('node', [path.join(tempRoot, '.asd/hooks/session-start.js'), '--provider', provider], {
     cwd: tempRoot,
@@ -2038,7 +2044,7 @@ test('SessionStart hook: Codex gets $asd-* form, never a Claude-only slash comma
 test('AC-2/4/5/6/7: SessionStart recovers only archived active sprints and reports conflicts', () => {
   const tempRoot = mkTempDir();
   const hookPath = path.join(tempRoot, '.asd/hooks/session-start.js');
-  writeFile(tempRoot, '.asd/hooks/session-start.js', fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8'));
+  installHook(tempRoot);
   writeFile(tempRoot, '.asd/sprints/archived/777-open/state.json', JSON.stringify({ sprint_id: '777-open', phase: 'pr', branch: 'sprint/777-open' }));
   writeFile(tempRoot, '.asd/sprints/archived/778-done/state.json', JSON.stringify({ sprint_id: '778-done', phase: 'done', branch: 'sprint/778-done' }));
   writeFile(tempRoot, '.asd/sprints/archived/779-bad/state.json', '{');
@@ -2101,8 +2107,7 @@ test('SessionStart hook: a "skipped: <predicate>" verdict counts as satisfied, n
   // findUp(__dirname) walks up from the temp script location and finds this
   // temp .asd/ - never the real repo's own active sprint state.
   const tempRoot = mkTempDir();
-  const hookSrc = fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8');
-  writeFile(tempRoot, '.asd/hooks/session-start.js', hookSrc);
+  installHook(tempRoot);
   writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({
     sprint_id: '999-fixture',
     phase: 'impl-review',
@@ -2130,8 +2135,7 @@ test('SessionStart hook: a "skipped: <predicate>" verdict counts as satisfied, n
 
 test('SessionStart hook: an availability-skip "APPROVE (skipped: <reason>)" or partial "APPROVE (partial: <n>/<m> files; <cause>)" value counts as satisfied - verdict map reads "green"', () => {
   const tempRoot = mkTempDir();
-  const hookSrc = fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8');
-  writeFile(tempRoot, '.asd/hooks/session-start.js', hookSrc);
+  installHook(tempRoot);
   for (const external of ['APPROVE (skipped: codex quota exhausted)', 'APPROVE (partial: 25/40 files; codex timeout)']) {
     writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({
       sprint_id: '999-fixture',
@@ -2150,8 +2154,7 @@ test('SessionStart hook: an availability-skip "APPROVE (skipped: <reason>)" or p
 
 test('SessionStart hook: an all-legacy-"skipped:" verdict map (no bare APPROVE anywhere) reads "mixed", not "green"', () => {
   const tempRoot = mkTempDir();
-  const hookSrc = fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8');
-  writeFile(tempRoot, '.asd/hooks/session-start.js', hookSrc);
+  installHook(tempRoot);
   writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({
     sprint_id: '999-fixture',
     phase: 'impl-review',
@@ -2178,7 +2181,7 @@ test('SessionStart hook: an all-legacy-"skipped:" verdict map (no bare APPROVE a
 
 test('sprint-017 AC-6 (D3/D10): SessionStart reads the current review wave\'s node and the legacy flat reviews.impl alike, picks the highest iteration numerically, shows wave K/n only past one wave, and never throws on a malformed wave shape', () => {
   const tempRoot = mkTempDir();
-  writeFile(tempRoot, '.asd/hooks/session-start.js', fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8'));
+  installHook(tempRoot);
   const hook = (impl) => {
     writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({ sprint_id: '999-fixture', phase: 'impl-review', branch: 'feat/999-fixture', reviews: { design: { iteration: 0, verdicts: {} }, impl } }));
     const out = execFileSync('node', [path.join(tempRoot, '.asd/hooks/session-start.js'), '--provider', 'claude'], { cwd: tempRoot, encoding: 'utf8' });
@@ -2205,7 +2208,7 @@ test('sprint-017 AC-6 (D3/D10): SessionStart reads the current review wave\'s no
 
 test('sprint-017 (COR-6): outside a review phase, SessionStart prefers the impl-review wave node over design\'s once any wave has iterated, and design\'s own node otherwise, rather than comparing per-wave counters directly', () => {
   const tempRoot = mkTempDir();
-  writeFile(tempRoot, '.asd/hooks/session-start.js', fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8'));
+  installHook(tempRoot);
   const node = (iteration, verdicts) => ({ iteration, verdicts, iteration_heads: {}, latched: {} });
   const summaryFor = (phase, reviews) => {
     writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({ sprint_id: '999-fixture', phase, branch: 'feat/999-fixture', reviews }));
@@ -2222,8 +2225,7 @@ test('sprint-017 (COR-6): outside a review phase, SessionStart prefers the impl-
 
 test('AC-21: SessionStart reports "Next phase: await-user-closure" when pr.state is closure-pending', () => {
   const tempRoot = mkTempDir();
-  const hookSrc = fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8');
-  writeFile(tempRoot, '.asd/hooks/session-start.js', hookSrc);
+  installHook(tempRoot);
   writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({
     sprint_id: '999-fixture',
     phase: 'pr',
@@ -2240,8 +2242,7 @@ test('AC-21: SessionStart reports "Next phase: await-user-closure" when pr.state
 
 test('AC-21: SessionStart reports "Next phase: await-merge" for an ordinary pr phase without pr.state', () => {
   const tempRoot = mkTempDir();
-  const hookSrc = fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8');
-  writeFile(tempRoot, '.asd/hooks/session-start.js', hookSrc);
+  installHook(tempRoot);
   writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({
     sprint_id: '999-fixture',
     phase: 'pr',
@@ -2260,7 +2261,6 @@ test('sprint-013 AC-14: SessionStart reports "Next phase: plan" after audit exac
   const designDocs = Object.keys(template.documents || {}).filter((name) => name !== 'audit');
   assert.ok(designDocs.length >= 4, `t_state.json "documents" must still freeze the design documents the collapse test reads - only [${designDocs.join(', ')}] found, so the cases below assert nothing`);
   const off = Object.fromEntries(designDocs.map((name) => [name, false]));
-  const hookSrc = readRepoFile('.asd/hooks/session-start.js');
   const cases = [
     ['audit', { documents: { audit: true, ...off } }, 'plan'],
     ['audit', { documents: off, skip_design_phases: true }, 'plan'],
@@ -2276,14 +2276,58 @@ test('sprint-013 AC-14: SessionStart reports "Next phase: plan" after audit exac
 
   const observed = cases.map(([phase, fields]) => {
     const tempRoot = mkTempDir();
-    writeFile(tempRoot, '.asd/hooks/session-start.js', hookSrc);
+    installHook(tempRoot);
     writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({ sprint_id: '999-fixture', phase, branch: 'sprint/999-fixture', ...fields }));
     const out = execFileSync('node', [path.join(tempRoot, '.asd/hooks/session-start.js'), '--provider', 'claude'], { cwd: tempRoot, encoding: 'utf8' });
     const next = /Next phase: (\S+)/.exec(JSON.parse(out).hookSpecificOutput.additionalContext);
     return label([phase, fields, next ? next[1] : '<no Next phase line>']);
   });
 
-  assert.deepStrictEqual(observed, cases.map(label), 'the session hook must agree with the audit exit (sprint-lifecycle.md "Design/design-review/design-promote collapse"): plan only when every frozen design document is a bare false, whatever a legacy skip_design_phases says, and only while phase is audit - any other phase keeps its PHASE_CHAIN successor');
+  assert.deepStrictEqual(observed, cases.map(label), 'the session hook must agree with the audit exit (sprint-lifecycle.md "Design/design-review/design-promote collapse"): plan only when every frozen design document is a bare false, whatever a legacy skip_design_phases says, and only while phase is audit - any other phase keeps its successor in the standard definition');
+});
+
+test('sprint-020 AC-1/AC-6: SessionStart takes its chain from the frozen workflow definition - an absent workflow reads standard, every phase of every definition reports its successor, the design collapse moves only a chain holding design, and a missing, unknown, invalid or malformed definition drops the Next phase line with exit 0 and the summary intact', () => {
+  const definitions = readWorkflowDefinitions();
+  const off = Object.fromEntries(Object.keys(JSON.parse(readRepoFile('.asd/templates/t_state.json')).documents).filter((name) => name !== 'audit').map((name) => [name, false]));
+  const none = '<no Next phase line>';
+  const cases = [];
+  for (const { name, phases } of definitions) {
+    phases.slice(0, -1).forEach((phase, index) => {
+      cases.push([{ phase, workflow: name }, {}, true, phases[index + 1]]);
+      if (name === 'standard') cases.push([{ phase }, {}, true, phases[index + 1]]);
+    });
+    if (!phases.includes('design')) cases.push([{ phase: 'audit', workflow: name, documents: off }, {}, true, phases[phases.indexOf('audit') + 1]]);
+  }
+  cases.push(
+    [{ phase: 'audit', workflow: 'probe', documents: off }, { probe: JSON.stringify({ phases: ['scope', 'audit', 'impl', 'retro', 'pr'] }) }, true, 'impl'],
+    [{ phase: 'audit', workflow: 'nope' }, {}, true, none],
+    [{ phase: 'audit', workflow: 'Lite' }, {}, true, none],
+    [{ phase: 'audit', workflow: '../standard' }, {}, true, none],
+    [{ phase: 'audit', workflow: 'lite' }, { lite: '{' }, true, none],
+    [{ phase: 'audit', workflow: 'lite' }, { lite: '{"phases":"scope"}' }, true, none],
+    [{ phase: 'audit', workflow: 'lite' }, { lite: '{"phases":[1,2]}' }, true, none],
+    [{ phase: 'audit' }, {}, false, none],
+  );
+  const label = ([fields, overrides, withDefinitions, next]) => `${JSON.stringify(fields)} ${JSON.stringify(overrides)}${withDefinitions ? '' : ' without definitions'} -> ${next}`;
+
+  const observed = cases.map(([fields, overrides, withDefinitions]) => {
+    const tempRoot = mkTempDir();
+    if (withDefinitions) installHook(tempRoot);
+    else writeFile(tempRoot, '.asd/hooks/session-start.js', readRepoFile('.asd/hooks/session-start.js'));
+    for (const [name, text] of Object.entries(overrides)) writeFile(tempRoot, `.asd/workflows/${name}.json`, text);
+    writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({ sprint_id: '999-fixture', branch: 'sprint/999-fixture', ...fields }));
+    let out;
+    try {
+      out = execFileSync('node', [path.join(tempRoot, '.asd/hooks/session-start.js'), '--provider', 'claude'], { cwd: tempRoot, encoding: 'utf8' });
+    } catch (error) {
+      return label([fields, overrides, withDefinitions, `exit ${error.status}`]);
+    }
+    const text = JSON.parse(out).hookSpecificOutput.additionalContext;
+    const next = /Next phase: (\S+)/.exec(text);
+    return label([fields, overrides, withDefinitions, !text.includes('Active sprint: 999-fixture') ? `<no summary: ${text}>` : next ? next[1] : none]);
+  });
+
+  assert.deepStrictEqual(observed, cases.map(label), 'sprint-lifecycle.md "Workflows": the hook resolves .asd/workflows/<state.workflow || standard>.json and shows the successor in its phases - a sprint in flight before this field (sprint 020 itself) must still resolve standard, a lite sprint must never be told its next phase is a standard one, the collapse to plan is derived from a chain that holds design and never applied to one without it, and any unreadable definition must degrade to no chain info rather than a wrong phase, a throw or a lost summary (hooks must never block a session)');
 });
 
 test('AC-7: no canonical rule, workflow, agent, or skill file references the retired asd-pm role', () => {
@@ -2782,16 +2826,15 @@ test('AC-9: the 6.0.0 migration prints the escalations it dropped and where to r
 });
 
 // ===========================================================================
-// 16. Phase-chain consistency (AC-8, audit gap G-11). PHASE_CHAIN in the
-// SessionStart hook is the machine-readable phase set; roughly twenty other
-// sites mirror it by hand. These tests derive the chain from the hook source
-// and assert every mirror that is machine-checkable: the skill and workflow
-// files a phase needs to exist at all, the `NEXT:` token that does the actual
-// routing, the friction-append reference every workflow carries, the ordered
-// phase sequences in the rule docs, and the phase table, flowchart and count
-// words in README and AGENTS.md. PHASE_CHAIN only drives the session
-// hook's display, so a green chain array over a stale `NEXT:` or a stale
-// user-facing doc is exactly the silent desync these assertions exist for.
+// 16. Phase-chain consistency (AC-8, audit gap G-11; sprint 020 AC-1/AC-7).
+// Each `.asd/workflows/<name>.json` definition is one sprint workflow's
+// machine-readable chain, `NEXT:` routing and review roster; many other sites
+// mirror them by hand. These tests load every definition through the
+// runtime's own loader and assert each mirror that is machine-checkable: the
+// skill and workflow files a phase needs to exist at all, the `NEXT:` tokens
+// that do the actual routing, the friction-append reference every workflow
+// carries, the ordered phase sequences in the rule docs, and the phase
+// tables, flowchart, rosters and count words in README and AGENTS.md.
 // ===========================================================================
 
 const PHASE_COUNT_WORDS = [
@@ -2807,11 +2850,23 @@ function readTocH2Threshold() {
   return Number(stated[1]);
 }
 
-function readPhaseChain() {
-  const src = fs.readFileSync(path.join(REPO_ROOT, '.asd/hooks/session-start.js'), 'utf8');
-  const block = /const PHASE_CHAIN = \[([\s\S]*?)\];/.exec(src);
-  assert.ok(block, 'session-start.js must keep PHASE_CHAIN as a literal array - it is the chain SSoT');
-  return (block[1].match(/'([^']+)'/g) || []).map((quoted) => quoted.slice(1, -1));
+/** Every sprint workflow definition, loaded and shape-checked by the runtime's own loader - the chain, routing and roster source since sprint 020. */
+function readWorkflowDefinitions() {
+  const names = fs.readdirSync(path.join(REPO_ROOT, '.asd/workflows')).filter((file) => file.endsWith('.json')).map((file) => file.slice(0, -'.json'.length)).sort();
+  assert.ok(names.includes('standard'), 'sprint-lifecycle.md "Workflows": a state.json without `workflow` reads standard, so .asd/workflows/standard.json must exist');
+  return names.map((name) => runtime.loadWorkflow(name));
+}
+
+/** The agent file each reviewer key of any definition's rosters dispatches, sorted. */
+function workflowReviewerAgents() {
+  const keys = new Set(readWorkflowDefinitions().flatMap((definition) => [...definition.reviewers.design, ...definition.reviewers.impl]));
+  return [...keys].map((key) => (key === runtime.EXTERNAL_REVIEWER ? 'asd-external-review' : `asd-reviewer-${key}`)).sort();
+}
+
+/** The first arrow chain (`a → b ⇄ c`) in a text, as its phase names, or null. */
+function arrowChain(text) {
+  const chain = /[a-z-]+(?:\s*(?:→|⇄)\s*[a-z-]+)+/.exec(text);
+  return chain ? chain[0].split(/\s*(?:→|⇄)\s*/) : null;
 }
 
 function readWorkflow(phase) {
@@ -2824,23 +2879,28 @@ function readReturnContractTargets(phase, src) {
   return contract[1].replace(/[<>`]/g, '').split('|').map((target) => target.trim());
 }
 
-test('AC-8/G-11: PHASE_CHAIN is the single source for the phase set - every phase has a skill AND a workflow, every phase skill/workflow is in the chain, and retro sits between impl-review and pr', () => {
-  const chain = readPhaseChain();
-  assert.deepStrictEqual([...new Set(chain)], chain, 'PHASE_CHAIN must not repeat a phase');
-  assert.strictEqual(chain[chain.length - 1], 'done', 'the chain terminates at the pseudo-phase "done"');
+test('AC-8/G-11, sprint-020 AC-1: the workflow definitions are the single source for the phase set - every chain successor is an allowed NEXT target, retro runs directly before pr and pr ends every chain, every definition is documented in sprint-lifecycle.md "Workflows", and the union of their phases is in bijection with the phase skills and workflows', () => {
+  const definitions = readWorkflowDefinitions();
+  const documented = sectionOf('.asd/rules/sprint-lifecycle.md', 'Workflows');
+  const union = new Set();
+  for (const { name, phases, next } of definitions) {
+    assert.ok(documented.includes(`\`${name}\``), `${name}.json is a workflow sprint-lifecycle.md "Workflows" never names - the definition contract and every per-workflow delta live there, so an undocumented definition runs on rules nobody wrote`);
+    assert.deepStrictEqual(phases.slice(-2), ['retro', 'pr'], `${name}: retro runs directly before pr, and pr ends the chain - its NEXT targets are the chain exits`);
+    phases.slice(0, -1).forEach((phase, index) => {
+      assert.ok(next[phase].includes(phases[index + 1]), `${name}: next["${phase}"] must allow its chain successor "${phases[index + 1]}" - asd-sprint relays a NEXT outside the frozen definition's next as FAILED, so the chain would halt there (got: ${next[phase].join(', ')})`);
+    });
+    phases.forEach((phase) => union.add(phase));
+  }
+  const glossary = canonText('.asd/rules/core.md').split('\n').find((line) => line.startsWith('- **Workflow**')) || '';
+  assert.ok(glossary.includes('`sprint-lifecycle.md` "Workflows"') && definitions.every(({ name }) => glossary.includes(`\`${name}\``)), 'core.md glossary must define Workflow - naming every definition and citing its rule - since "workflow" also names ASD itself and the asd-phase-*.md bodies sharing the folder');
 
-  const retro = chain.indexOf('retro');
-  assert.ok(retro > 0, 'retro must be in the chain');
-  assert.strictEqual(chain[retro - 1], 'impl-review', 'retro runs directly after impl-review');
-  assert.strictEqual(chain[retro + 1], 'pr', 'retro runs directly before pr');
-
-  const phases = chain.filter((phase) => phase !== 'done');
+  const phases = [...union];
   const missing = [];
   for (const phase of phases) {
     if (!fs.existsSync(path.join(REPO_ROOT, `.asd/skills/asd-phase-${phase}/SKILL.md`))) missing.push(`skill for ${phase}`);
     if (!fs.existsSync(path.join(REPO_ROOT, `.asd/workflows/asd-phase-${phase}.md`))) missing.push(`workflow for ${phase}`);
   }
-  assert.deepStrictEqual(missing, [], `a phase in the chain with no dispatch target routes into nothing: ${missing.join(', ')}`);
+  assert.deepStrictEqual(missing, [], `a phase in a chain with no dispatch target routes into nothing: ${missing.join(', ')}`);
 
   const workflowPhases = fs
     .readdirSync(path.join(REPO_ROOT, '.asd/workflows'))
@@ -2853,43 +2913,41 @@ test('AC-8/G-11: PHASE_CHAIN is the single source for the phase set - every phas
   assert.deepStrictEqual(
     [...workflowPhases].sort(),
     [...phases].sort(),
-    'phase workflows and PHASE_CHAIN must be in bijection - an orphaned workflow means the chain was edited or reverted without its dispatch targets, the same desync mirrored'
+    "phase workflows and the union of every definition's phases must be in bijection - an orphaned workflow means a chain was edited or reverted without its dispatch targets, the same desync mirrored"
   );
-  assert.deepStrictEqual([...skillPhases].sort(), [...phases].sort(), 'phase skills and PHASE_CHAIN must be in bijection, for the same reason');
+  assert.deepStrictEqual([...skillPhases].sort(), [...phases].sort(), "phase skills and the union of every definition's phases must be in bijection, for the same reason");
 });
 
-test('AC-2/AC-3/AC-6/AC-8: every phase workflow offers its PHASE_CHAIN successor as a NEXT target and carries the friction-append reference - NEXT is what routes the sprint, PHASE_CHAIN only what the session hook displays', () => {
-  const chain = readPhaseChain();
-  const phases = chain.filter((phase) => phase !== 'done');
-  const knownTargets = new Set([...chain, 'await-merge', 'halted']);
-
-  for (const [index, phase] of phases.entries()) {
-    const successor = chain[index + 1];
+test("AC-2/AC-3/AC-6/AC-8, sprint-020 AC-1/AC-6: every phase workflow offers exactly the NEXT targets its workflows' definitions route it to and carries the friction-append reference - NEXT is what routes the sprint, and asd-sprint accepts only a target in the frozen definition's next", () => {
+  const definitions = readWorkflowDefinitions();
+  for (const phase of new Set(definitions.flatMap((definition) => definition.phases))) {
     const src = readWorkflow(phase);
     assert.ok(
       src.includes(FRICTION_APPEND_REF),
       `asd-phase-${phase}.md must carry the friction-append reference line verbatim: the orchestrator running a phase with no such line records no friction at all, the retro phase then analyses a log that is silently partial, and every other assertion stays green (sprint-lifecycle.md "Friction log" states the mechanism once and every phase workflow references it)`
     );
-    const targets = readReturnContractTargets(phase, src);
-    assert.ok(
-      targets.includes(successor),
-      `asd-phase-${phase}.md must offer "NEXT: ${successor}": PHASE_CHAIN routes ${phase} there, and a stale NEXT token skips the successor phase silently, with every chain assertion still green (got: ${targets.join(', ')})`
+    const offered = readReturnContractTargets(phase, src).filter((target) => target !== 'halted');
+    const routed = [...new Set(definitions.filter((definition) => definition.phases.includes(phase)).flatMap((definition) => definition.next[phase]))];
+    assert.deepStrictEqual(
+      offered.sort(),
+      routed.sort(),
+      `asd-phase-${phase}.md's return contract must offer exactly the union of next["${phase}"] over the definitions holding ${phase} ("halted" aside, a stop that routes nowhere) - a stale token skips a phase silently, and a definition target no contract offers is a route no orchestrator emits`
     );
-    const unknown = targets.filter((target) => !knownTargets.has(target));
-    assert.deepStrictEqual(unknown, [], `asd-phase-${phase}.md names a NEXT target that is neither a phase nor a known terminal: ${unknown.join(', ')}`);
   }
 });
 
-test('AC-8/G-11: the ordered phase-chain mirrors in core.md, sprint-lifecycle.md and checkpoints.md match PHASE_CHAIN exactly', () => {
-  const phases = readPhaseChain().filter((phase) => phase !== 'done');
+test('AC-8/G-11, sprint-020 AC-7: the ordered chain mirrors match their definitions - standard in core.md, sprint-lifecycle.md and checkpoints.md, every other workflow in sprint-lifecycle.md "Workflows" and as the predecessor deltas of checkpoints.md "Precondition chain"', () => {
+  const definitions = readWorkflowDefinitions();
+  const standard = definitions.find((definition) => definition.name === 'standard');
+  const phases = standard.phases;
 
   const core = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/core.md'), 'utf8');
   const glossary = /mandatory:\s*([^.]+)\./.exec(core);
-  assert.ok(glossary, 'core.md glossary must keep its "N mandatory: <phase>, <phase>, ..." phase list');
+  assert.ok(glossary, 'core.md glossary must keep its "... mandatory: <phase>, <phase>, ..." phase list');
   assert.deepStrictEqual(
     glossary[1].split(',').map((phase) => phase.trim()),
     phases,
-    'core.md glossary phase list drifted from PHASE_CHAIN'
+    'core.md glossary phase list drifted from standard.json'
   );
 
   const lifecycle = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/sprint-lifecycle.md'), 'utf8');
@@ -2898,7 +2956,7 @@ test('AC-8/G-11: the ordered phase-chain mirrors in core.md, sprint-lifecycle.md
   assert.deepStrictEqual(
     arrowLine[0].split(/\s*(?:→|⇄)\s*/).map((phase) => phase.trim()),
     phases,
-    'sprint-lifecycle.md chain line drifted from PHASE_CHAIN'
+    'sprint-lifecycle.md chain line drifted from standard.json'
   );
 
   const checkpoints = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/checkpoints.md'), 'utf8');
@@ -2907,36 +2965,118 @@ test('AC-8/G-11: the ordered phase-chain mirrors in core.md, sprint-lifecycle.md
   assert.deepStrictEqual(
     preconditions[1].split(/\s*(?:→|⇄)\s*/).map((phase) => phase.trim()),
     phases.slice(1),
-    'checkpoints.md precondition chain drifted from PHASE_CHAIN - it lists every phase that HAS a predecessor, so the first phase is excluded by construction'
+    'checkpoints.md precondition chain drifted from standard.json - it lists every phase that HAS a predecessor, so the first phase is excluded by construction'
   );
+
+  const documented = sectionOf('.asd/rules/sprint-lifecycle.md', 'Workflows');
+  const precondition = sectionOf('.asd/rules/checkpoints.md', 'Precondition chain');
+  for (const { name, phases: chain } of definitions.filter((definition) => definition !== standard)) {
+    const block = documented.split(`**\`${name}\`**`)[1];
+    assert.ok(block, `sprint-lifecycle.md "Workflows" must carry a **\`${name}\`** block - it is the one home of that workflow's deltas`);
+    assert.deepStrictEqual(arrowChain(block), chain, `sprint-lifecycle.md "Workflows" states ${name}'s chain in prose, and it drifted from ${name}.json`);
+    if (chain.indexOf('design-promote') > chain.indexOf('impl-review')) {
+      const designDocs = Object.keys(JSON.parse(readRepoFile('.asd/templates/t_state.json')).documents).filter((doc) => doc !== 'audit');
+      const promote = block.split('\n').find((line) => line.startsWith('- design-promote')) || '';
+      assert.ok(/\bNo-op\b/.test(promote) && designDocs.every((doc) => promote.includes(`\`${doc}\``)), `sprint-020 AC-5: ${name} promotes after impl-review, so its "Workflows" design-promote bullet must state the no-op over every frozen design document (${designDocs.join(', ')}) - a dropped one runs creators for a document the sprint disabled, or skips one it enabled`);
+    }
+    const deltas = precondition.split('\n').find((line) => line.includes(`In \`${name}\``));
+    assert.ok(deltas, `checkpoints.md "Precondition chain" fences standard's chain only, so it must state ${name}'s differing predecessors on an "In \`${name}\`" line`);
+    chain.slice(1).forEach((phase, index) => {
+      const predecessor = chain[index];
+      const standardPredecessor = phases[phases.indexOf(phase) - 1];
+      if (predecessor === standardPredecessor) return;
+      const clause = new RegExp(`\`${phase}\` requires ([^,;]+)`).exec(deltas);
+      assert.ok(clause && new RegExp(`^${predecessor}\\b`).test(clause[1]), `checkpoints.md: in ${name}, ${phase} follows ${predecessor}, not standard's ${standardPredecessor} - its "In \`${name}\`" line must say \`${phase}\` requires ${predecessor}, or the precondition check aborts a valid sprint (got: ${clause ? clause[1] : 'no clause'})`);
+    });
+  }
 });
 
-test('AC-8: the always-loaded mirrors of PHASE_CHAIN - README\'s phase table and flowchart, and every phase-count word in README and AGENTS.md', () => {
-  const phases = readPhaseChain().filter((phase) => phase !== 'done');
-  const readme = fs.readFileSync(path.join(REPO_ROOT, 'README.md'), 'utf8');
+test("AC-8, sprint-020 AC-7: the always-loaded mirrors of the definitions - README's phase table, per-workflow phase table, chains, flowchart nodes and rosters, folder-map counts, and every phase-count word in README and AGENTS.md bound to its workflow", () => {
+  const definitions = readWorkflowDefinitions();
+  const standard = definitions.find((definition) => definition.name === 'standard');
+  const names = definitions.map((definition) => definition.name);
+  const readme = canonText('README.md');
+  const lines = readme.split('\n');
+  const cells = (line) => line.split('|').slice(1, -1).map((cell) => cell.trim());
+  const tableRows = (isHeader) => {
+    const at = lines.findIndex(isHeader);
+    if (at < 0) return null;
+    const rows = [];
+    for (let i = at + 2; i < lines.length && lines[i].startsWith('|'); i += 1) rows.push(cells(lines[i]));
+    return rows;
+  };
+  const phaseOf = (row) => (/^\*\*([a-z-]+)\*\*$/.exec(row[0]) || [])[1];
 
-  const tableRows = [...readme.matchAll(/^\| \*\*([a-z-]+)\*\* \|/gm)].map((row) => row[1]);
-  assert.deepStrictEqual(tableRows, phases, 'README phase table drifted from PHASE_CHAIN - it is the user-facing entry point, and a stale row describes a workflow that no longer exists');
+  const described = tableRows((line) => /^\| Phase \| What happens \|/.test(line));
+  assert.ok(described, 'README must keep its "| Phase | What happens |" table');
+  assert.deepStrictEqual(described.map(phaseOf), standard.phases, 'README phase table drifted from standard.json - it is the user-facing entry point, and a stale row describes a workflow that no longer exists');
+
+  const isMatrixHeader = (line) => line.startsWith('| Phase |') && cells(line).slice(1).sort().join() === [...names].sort().join();
+  const matrix = tableRows(isMatrixHeader);
+  assert.ok(matrix, `README "Workflows" must keep one phase table with a column per definition (${names.join(', ')})`);
+  const columns = cells(lines.find(isMatrixHeader));
+  assert.deepStrictEqual(matrix.map(phaseOf).sort(), [...new Set(definitions.flatMap((definition) => definition.phases))].sort(), 'README per-workflow phase table must list every phase some workflow runs, once');
+  for (const definition of definitions) {
+    const column = columns.indexOf(definition.name);
+    assert.deepStrictEqual(matrix.filter((row) => row[column] !== '—').map(phaseOf).sort(), [...definition.phases].sort(), `README per-workflow table: the ${definition.name} column must mark exactly the phases ${definition.name}.json runs, "—" for the rest`);
+    const internal = definition.reviewers.impl.filter((key) => key !== runtime.EXTERNAL_REVIEWER).length;
+    const reviewCell = (matrix.find((row) => phaseOf(row) === 'impl-review') || [])[column] || '';
+    const stated = /^(\d+) .*internal reviewers?\b/.exec(reviewCell);
+    assert.ok(stated && Number(stated[1]) === internal, `README per-workflow table: ${definition.name}'s impl-review cell must count the ${internal} internal reviewer(s) of its reviewers.impl (got: ${reviewCell})`);
+    if (definition === standard) continue;
+    const bullet = lines.find((line) => line.startsWith(`- **\`${definition.name}\`**`));
+    assert.ok(bullet, `README "Workflows" must describe ${definition.name} in a **\`${definition.name}\`** bullet`);
+    assert.deepStrictEqual(arrowChain(bullet), definition.phases, `README's ${definition.name} bullet states its chain, and it drifted from ${definition.name}.json`);
+  }
 
   const graphNodes = [...new Set([...readme.matchAll(/\w+\["([a-z-]+)<br\//g)].map((node) => node[1]))];
   assert.deepStrictEqual(
     graphNodes.sort(),
-    [...phases].sort(),
-    'the README flowchart must declare a node for exactly the phases in PHASE_CHAIN - declaration order belongs to the graph author, the node set does not'
+    [...standard.phases].sort(),
+    'the README flowchart must declare a node for exactly the phases in standard.json - declaration order belongs to the graph author, the node set does not'
   );
+  for (const node of ['design', 'impl']) {
+    const roster = new RegExp(`\\["${node}-review<br\\/><i>([^<]+)<\\/i>"\\]`).exec(readme);
+    const named = roster ? roster[1].split('·').map((reviewer) => reviewer.trim().toLowerCase()).sort() : [];
+    assert.deepStrictEqual(named, [...standard.reviewers[node]].sort(), `the README flowchart's ${node}-review node must name exactly standard.json's reviewers.${node} - the one roster a reader sees before any rule doc`);
+  }
 
-  const countPattern = new RegExp(`\\b(\\d+|${PHASE_COUNT_WORDS.join('|')})\\s+(?:mandatory |sprint )?phases\\b`, 'gi');
-  const expected = new Set([String(phases.length), PHASE_COUNT_WORDS[phases.length]]);
+  const folder = /(\d+) phase orchestration files[^\n]*?(\d+) workflow definitions/.exec(readme);
+  const orchestration = fs.readdirSync(path.join(REPO_ROOT, '.asd/workflows')).filter((file) => /^asd-phase-.*\.md$/.test(file)).length;
+  assert.ok(folder && Number(folder[1]) === orchestration && Number(folder[2]) === definitions.length, `README folder map must count the ${orchestration} phase orchestration files and ${definitions.length} workflow definitions .asd/workflows/ holds (got: ${folder ? folder[0] : 'no match'})`);
+
+  const lengths = Object.fromEntries(definitions.map((definition) => [definition.name, definition.phases.length]));
+  const toNumber = (word) => (/^\d+$/.test(word) ? Number(word) : PHASE_COUNT_WORDS.indexOf(word.toLowerCase()));
+  const count = `(\\d+|${PHASE_COUNT_WORDS.join('|')})`;
+  const bound = new RegExp(`\\b${count} for \`(${names.join('|')})\``, 'gi');
+  const loose = new RegExp(`\\b${count}(?:[- ](?:mandatory |sprint )?phases\\b|-phase\\b)`, 'gi');
   for (const [file, minSites] of [['README.md', 3], ['AGENTS.md', 2]]) {
-    const counts = [...fs.readFileSync(path.join(REPO_ROOT, file), 'utf8').matchAll(countPattern)].map((count) => count[1].toLowerCase());
-    assert.ok(counts.length >= minSites, `${file} states the phase count in prose in at least ${minSites} places - only ${counts.length} found, so this pattern has itself drifted and asserts nothing`);
-    const stale = counts.filter((count) => !expected.has(count));
-    assert.deepStrictEqual(stale, [], `${file} phase-count word disagrees with PHASE_CHAIN's ${phases.length}: ${stale.join(', ')} - README is the user-facing entry point and AGENTS.md is loaded as project instructions on every turn, so a stale count in either describes a workflow that no longer exists`);
+    const stale = [];
+    const seen = new Set();
+    let sites = 0;
+    for (const line of canonText(file).split('\n')) {
+      for (const match of line.matchAll(bound)) {
+        sites += 1;
+        seen.add(match[2]);
+        if (toNumber(match[1]) !== lengths[match[2]]) stale.push(`"${match[0]}" (${match[2]} has ${lengths[match[2]]})`);
+      }
+      const named = names.filter((name) => line.includes(`\`${name}\``));
+      for (const match of line.matchAll(loose)) {
+        sites += 1;
+        if (named.length === 1) seen.add(named[0]);
+        const expected = named.length === 1 ? [lengths[named[0]]] : Object.values(lengths);
+        if (!expected.includes(toNumber(match[1]))) stale.push(`"${match[0]}" (expected ${expected.join(' or ')})`);
+      }
+    }
+    assert.ok(sites >= minSites, `${file} states the phase count in prose in at least ${minSites} places - only ${sites} found, so this pattern has itself drifted and asserts nothing`);
+    assert.deepStrictEqual(stale, [], `${file} phase-count word disagrees with its workflow's definition: ${stale.join(', ')} - a count on a line naming one workflow must be that workflow's, and README is the user-facing entry point while AGENTS.md is loaded as project instructions on every turn`);
+    assert.deepStrictEqual(names.filter((name) => !seen.has(name)), [], `${file} must state the phase count of every workflow at least once, bound to its name - with two chains an unbound count no longer says which one it describes`);
   }
 });
 
 test('sprint-011 AC-3/AC-5/AC-7, sprint-013 AC-14: the audit exit that emits NEXT: plan is keyed on the documents-only collapse test, lands phase on the chain predecessor of plan, records exactly the phases between audit and plan as skipped in the one exit write that also carries a skipped audit and logs the skip, and the plan precondition, checkpoints chain and resume flow accept that state through the same frozen collapse test', () => {
-  const chain = readPhaseChain();
+  const definitions = readWorkflowDefinitions();
+  const chain = definitions.find((definition) => definition.name === 'standard').phases;
   const between = chain.slice(chain.indexOf('audit') + 1, chain.indexOf('plan'));
   const audit = readWorkflow('audit');
   const lifecycle = readRepoFile('.asd/rules/sprint-lifecycle.md');
@@ -2952,10 +3092,10 @@ test('sprint-011 AC-3/AC-5/AC-7, sprint-013 AC-14: the audit exit that emits NEX
   assert.ok(exit.includes(citation), `the audit step emitting NEXT: plan must be conditioned on the collapse test cited as ${citation} - an unconditioned route skips design for every sprint`);
   const landed = /phase="([a-z-]+)"/.exec(exit);
   assert.ok(landed, 'the audit skip write must set phase="<name>" explicitly');
-  assert.strictEqual(chain[chain.indexOf(landed[1]) + 1], 'plan', `the skip write must land phase on the PHASE_CHAIN predecessor of plan (sprint-lifecycle.md "Multi-phase skip": the LAST subsumed phase) - the session hook and resume derive the next phase from it, so phase="${landed[1]}" would re-enter the skipped block`);
+  assert.strictEqual(chain[chain.indexOf(landed[1]) + 1], 'plan', `the skip write must land phase on the standard chain's predecessor of plan (sprint-lifecycle.md "Multi-phase skip": the LAST subsumed phase) - the session hook and resume derive the next phase from it, so phase="${landed[1]}" would re-enter the skipped block`);
   const appended = /\[\s*("[a-z-]+"(?:\s*,\s*"[a-z-]+")*)\s*\]/.exec(exit);
   assert.ok(appended, 'the audit skip write must name the skipped_phases it appends as a literal array');
-  assert.deepStrictEqual(JSON.parse(`[${appended[1]}]`), between, 'the skip write must record exactly the phases PHASE_CHAIN places between audit and plan, in order - a missing name is a phase a later audit cannot tell from one that ran and produced nothing');
+  assert.deepStrictEqual(JSON.parse(`[${appended[1]}]`), between, 'the skip write must record exactly the phases standard.json places between audit and plan, in order - a missing name is a phase a later audit cannot tell from one that ran and produced nothing');
   const logged = exit.split(/;\s|\.\s/).filter((clause) => clause.includes('decisions-log')).flatMap((clause) => [...clause.matchAll(/"([^"]*)"/g)].map((match) => match[1]));
   assert.ok(logged.some((line) => between.every((phase) => line.includes(phase))), `the audit skip write must add a quoted decisions-log line naming the skipped ${between.join('/')} - sprint-lifecycle.md "Optional documents" records every skip as state plus one decisions-log line`);
 
@@ -2967,6 +3107,11 @@ test('sprint-011 AC-3/AC-5/AC-7, sprint-013 AC-14: the audit exit that emits NEX
   assert.ok(auditRecord !== -1 && auditRecord < appended.index, "the exit write must carry a skipped audit's \"audit\" record ahead of the design-block names it appends - it is the one write for both skips, so the audit record cannot land on its own (EXT-1, sprint-lifecycle.md \"Multi-phase skip\")");
   const auditOnly = exit.split(/\.\s+/).find((sentence) => sentence.includes(`NEXT: ${chain[chain.indexOf('audit') + 1]}`));
   assert.ok(auditOnly && auditOnly.includes('phase="audit"'), 'the exit branch emitting NEXT: design must set phase="audit" - with step 1 carrying no write, it is the only write that advances phase past a skipped audit, and a skip recorded without that advance is the state "Skip record" forbids');
+  const skipSentence = exit.split(/\.\s+/).find((sentence) => sentence.includes(citation));
+  for (const { name, phases, next } of definitions) {
+    assert.strictEqual(skipSentence.includes(`\`${name}\``), phases.includes('design'), `sprint-020 AC-3: sprint-lifecycle.md "Workflows" derives the collapse from phases, so the audit skip write must name exactly the workflows whose chain holds design - ${name} ${phases.includes('design') ? 'holds' : 'has no'} design`);
+    if (!phases.includes('design')) assert.ok(auditOnly.includes(`\`${name}\``) && next.audit.every((target) => auditOnly.includes(`NEXT: ${target}`)), `sprint-020 AC-3: ${name} has no design block and never takes the collapse write, so the other exit branch must route it to its next.audit (${next.audit.join(', ')})`);
+  }
 
   const designRow = /^\| Phase \| No-op when \|[\s\S]*?^\| design \| (.*?) \|\s*$/m.exec(lifecycle);
   const designDocs = designRow ? [...designRow[1].matchAll(/`([a-z0-9_]+)`/g)].map((token) => token[1]) : [];
@@ -3244,7 +3389,8 @@ test('AC-6/sprint-010 AC-6a: review-policy.md states the bounded one-transcripti
     const interrupted = workflow.split('\n').find((line) => line.trimStart().startsWith('- Interrupted dispatch'));
     assert.ok(interrupted && interrupted.includes('second consecutive interruption') && interrupted.includes('never a split'), `sprint-017 AC-5: ${file}'s interrupted bullet must bind the twice-interrupted escalation and exclude a split - the old acting site re-split the manifest`);
     assert.ok(workflow.includes(reDispatchPhrase), `${file} must route an interrupted dispatch (no verdict token, no ledger) through the same reject-and-re-dispatch-fresh handling as a failed ledger validation - a future edit dropping this from one workflow while review-policy.md still claims it must fail here`);
-    assert.ok(workflow.includes('A failure earns one transcription and re-run per `review-policy.md` "Coverage ledger" enforcement'), `${file} is the acting site for AC-6a: the validation step must carry the transcription branch and cite its owner, or the rule's second case exists in prose and never in any workflow that could perform it`);
+    const persistStep = workflow.split('\n').find((line) => line.includes('persist-review --phase'));
+    assert.ok(persistStep && /\bone transcription\b/.test(persistStep) && persistStep.includes('`review-policy.md` "Coverage ledger" enforcement'), `${file} is the acting site for AC-6a: the validation step must carry the transcription branch and cite its owner, or the rule's second case exists in prose and never in any workflow that could perform it`);
     assert.ok(workflow.includes('never that step\'s transcription branch'), `${file} must exclude an interrupted dispatch from transcription at the branch itself - the exclusion holds only where the two paths are adjacent`);
   }
 });
@@ -3505,6 +3651,16 @@ function readRepoFile(rel) {
 /** Every internal reviewer, named as `emit-manifest --reviewer` takes it, derived from the canonical agents it reads rubrics from. */
 function internalReviewers() {
   return fs.readdirSync(path.join(REPO_ROOT, '.asd/agents')).map((file) => /^asd-reviewer-([a-z]+)\.md$/.exec(file)).filter(Boolean).map((match) => match[1]);
+}
+
+/** A reviewer's rubric as `emitCoverageManifest` takes it: its agent file, or for the combined reviewer the `{reviewer: markdown}` map of the rubrics its "Composed rubric" line names, in order, its own last. */
+function reviewerRubric(reviewer) {
+  const own = readRepoFile(`.asd/agents/asd-reviewer-${reviewer}.md`);
+  if (reviewer !== runtime.COMBINED_REVIEWER) return own;
+  const composed = own.split('\n').find((line) => line.includes('**Composed rubric**')) || '';
+  const parts = [...composed.matchAll(/`asd-reviewer-([a-z]+)\.md`/g)].map((match) => match[1]);
+  assert.ok(parts.length > 0, 'asd-reviewer-combined.md must name the rubrics it composes on its "Composed rubric" line');
+  return Object.fromEntries([...parts, reviewer].map((name) => [name, readRepoFile(`.asd/agents/asd-reviewer-${name}.md`)]));
 }
 
 /** A canon file with line endings normalized, so `^`/`$` anchors hold in a CRLF working tree. */
@@ -3784,8 +3940,8 @@ test('AC-4/AC-11/AC-14: review-policy.md carries the correlated-interruption bra
     assert.ok(row && row.includes('<reviewer>.late.md'), `artifact-layout.md's ${phase} reviews row must carry the artefact name review-policy.md mandates: that path map is exhaustive ("A sprint folder holds **only** the artifacts named above"), so a late-return file it omits is one the orchestrator is told to write and a Documentation reviewer is told to flag as stray`);
   }
   const policyReach = policy.split('\n').find((line) => line.includes('**Late duplicate return**') && line.includes('holds for any replaced dispatch'));
-  assert.ok(policyReach && policyReach.includes('External Review included'), 'review-policy.md scopes the whole section to the 4 internal reviewers, so the late-duplicate branch only reaches a replaced External Review dispatch while this carve-out stays attached to it - it is the SSoT the two workflow mirrors below are checked against, never a second copy of the reach');
-  assert.ok(policyReach.includes('Applies to the 4 internal reviewers, except where a branch states its own reach'), 'the section default plus its delegation clause are what make every acting bullet below load-bearing: a branch silent on reach is not unscoped, it inherits the 4-internal-reviewers default - so a bullet that drops its own reach is wrong rather than merely vague');
+  assert.ok(policyReach && policyReach.includes('External Review included'), 'review-policy.md scopes the whole section to the internal reviewers, so the late-duplicate branch only reaches a replaced External Review dispatch while this carve-out stays attached to it - it is the SSoT the two workflow mirrors below are checked against, never a second copy of the reach');
+  assert.ok(/^Applies to [^,.]*\binternal reviewers?\b/.test(policyReach) && policyReach.includes('except where a branch states its own reach'), 'the section default plus its delegation clause are what make every acting bullet below load-bearing: a branch silent on reach is not unscoped, it inherits the internal-reviewers default - so a bullet that drops its own reach is wrong rather than merely vague');
   const importedWhole = readRepoFile('.asd/rules/external-review.md').split('\n').find((line) => line.includes('`review-policy.md` "Interrupted dispatch"') && line.includes('imported here whole'));
   assert.ok(importedWhole, 'external-review.md must hand a non-outcome to review-policy.md "Interrupted dispatch" as a WHOLE import: that import is the only thing placing External Review inside a branch whose section default is the 4 internal reviewers, so it is the source the two interrupted-bullet mirrors below are derived from - narrow it and their reach becomes an unsourced claim (the AC-8 test checks only that the boundary is named, never that the import is whole)');
   for (const [dir, rel] of [['design/iter-NN', '.asd/workflows/asd-phase-design-review.md'], ['impl/<id>', '.asd/workflows/asd-phase-impl-review.md']]) {
@@ -4043,7 +4199,7 @@ test('sprint-010 AC-7/G-9: artifact-layout.md "Documentation economy" is the rul
 
   const rubricIds = (reviewer) => {
     try {
-      return runtime.emitCoverageManifest({ reviewer, phase: 'impl-review', rubric: readRepoFile(`.asd/agents/asd-reviewer-${reviewer}.md`), files: [] }).rules;
+      return runtime.emitCoverageManifest({ reviewer, phase: 'impl-review', rubric: reviewerRubric(reviewer), files: [] }).rules;
     } catch (error) {
       return `rejected: ${error.message}`;
     }
@@ -4290,7 +4446,7 @@ test("sprint-012 AC-12: emit-manifest derives rule and section ids from a review
   assert.throws(() => fixture('# Reviewer\n\n## Signals emitted\n', {}), /Review rubric/, 'a reviewer file with no `## Review rubric` must fail the emit closed: a manifest with no rubric rows validates while proving nothing was reviewed');
 
   const agent = (reviewer) => readRepoFile(`.asd/agents/asd-reviewer-${reviewer}.md`);
-  const emitReal = (reviewer, phase, files, extra) => runtime.emitCoverageManifest(Object.assign({ reviewer, phase, rubric: agent(reviewer), files, customRules: {} }, extra));
+  const emitReal = (reviewer, phase, files, extra) => runtime.emitCoverageManifest(Object.assign({ reviewer, phase, rubric: reviewerRubric(reviewer), files, customRules: {} }, extra));
   const holders = (manifest, predicate) => Object.entries(manifest.n_a.rules).filter(([, predicates]) => predicates.includes(predicate)).map(([id]) => id);
   const predicates = runtime.NA_PREDICATES;
 
@@ -4483,8 +4639,9 @@ test('sprint-012 AC-2/AC-4/AC-12: both review workflows emit manifests through e
     const flow = sectionOf(rel, 'Workflow');
     assert.ok(flow.includes(`node .asd/runtime.js emit-manifest --reviewer <name> --phase ${phase}`), `${rel}: AC-12 - manifests must come from emit-manifest for this workflow's own phase`);
     assert.ok(!canonText(rel).includes('manifest-digest --manifest <path> --write'), `${rel}: the hand-stamping instruction the emitter replaced must be gone, or a split half is still assembled and stamped by hand beside the emitted parts`);
-    const validateStep = flow.split('\n').find((line) => line.includes('validate-ledger --manifest'));
-    assert.ok(validateStep && /never re-stamped/.test(validateStep) && validateStep.includes('`review-policy.md` "Coverage ledger"'), `${rel}: AC-2 - the ledger-validation step, where a failing manifest tempts a fix, must forbid the re-stamp and cite the rule`);
+    const validateStep = flow.split('\n').find((line) => line.includes(`node .asd/runtime.js persist-review --phase ${phase.replace(/-review$/, '')} `));
+    assert.ok(validateStep && /never re-stamped/.test(validateStep) && validateStep.includes('`review-policy.md` "Coverage ledger"'), `${rel}: AC-2 - the ledger-validation step, where a failing manifest tempts a fix, must forbid the re-stamp and cite the rule; since sprint 020 that step is the persist-review run, which validates the ledger before any write`);
+    assert.ok(/never re-authored by hand/.test(validateStep) && validateStep.includes('`review-policy.md` "Coverage ledger" Persistence'), `${rel}: sprint-020 AC-9 - the persist-review run is the sole write of a review file for this phase's own --phase node, so the step must say no review file is re-authored by hand and cite the Persistence rule`);
     const payload = flow.split('\n').find((line) => line.includes('payload to each internal reviewer'));
     assert.ok(payload && /interrupted-attempt record/.test(payload) && payload.includes('`review-policy.md` "Clean-context review iteration"'), `${rel}: AC-4 - a re-dispatched reviewer's payload must carry its own interrupted-attempt record, citing the list that admits it`);
   }
@@ -4721,7 +4878,7 @@ function defectPlanFixture() {
 const DEFECT_PARSER = ['tests/run.js:120', 'AssertionError [ERR_ASSERTION]: expected a \\| b', 'parser: rejects a tab indent'];
 const DEFECT_SPLITTER = ['.asd/runtime.js:40:7', 'TypeError: Cannot read properties of undefined', 'runtime: splits a table row'];
 
-/** The key list 9.0.0.js drops, read from its literal array as §16 reads PHASE_CHAIN - the removed-key checks take their set from the migration itself. */
+/** The key list 9.0.0.js drops, read from its literal array - the removed-key checks take their set from the migration itself. */
 function readRemovedConfigKeys() {
   const block = /const REMOVED_KEYS = \[([\s\S]*?)\];/.exec(canonText('.asd/migrations/9.0.0.js'));
   assert.ok(block, '9.0.0.js must keep REMOVED_KEYS as a literal array');
@@ -5676,7 +5833,7 @@ function canonAgents() {
 
 test('sprint-018 AC-1/AC-2/AC-4/AC-8/AC-9: no agent grants AskUserQuestion, web access is granted whole or withheld whole with every grant scoped by policy, and every shell is bounded with commit holders matching git-strategy.md', () => {
   const agents = canonAgents();
-  assert.strictEqual(agents.length, 11, 'sanity: every dispatched role must be swept');
+  assert.deepStrictEqual(workflowReviewerAgents().filter((agent) => !agents.some((a) => a.name === agent)), [], 'sprint-020 AC-4: every reviewer a workflow definition dispatches must be a canonical agent this sweep reaches');
   assert.deepStrictEqual(agents.filter((a) => a.meta.claude.tools.includes('AskUserQuestion')).map((a) => a.name), [], 'AC-4: a dispatched agent never reaches the user, so no canonical agent may carry the user-prompting tool');
 
   const webTools = ['WebFetch', 'WebSearch'];
@@ -5786,7 +5943,7 @@ test('sprint-018 AC-4/AC-5/AC-7: only the main orchestrator prompts the user - c
 
 test('sprint-018 AC-4/AC-5/AC-7: a reviewer\'s question and External Review\'s stalemate ride the verdict-bearing report - one carrier form across template, rule, agents and both review workflows - and impl-review collects manual-verification results before dispatching the testing reviewer', () => {
   const reviewers = canonAgents().filter((a) => /^asd-(reviewer-|external-review)/.test(a.name));
-  assert.strictEqual(reviewers.length, 5, 'sanity: four internal reviewers plus External Review');
+  assert.deepStrictEqual(reviewers.map((a) => a.name).sort(), workflowReviewerAgents(), 'sanity: exactly the reviewers the workflow definitions dispatch');
   for (const r of reviewers) {
     assert.ok(!sectionOf(r.rel, 'Signals emitted').includes('`QUESTION`'), `AC-4: ${r.name} never returns a bare QUESTION - without its verdict token it reads as an interrupted dispatch and the question is lost`);
     for (const line of r.body.split('\n').filter((l) => l.includes('`question:`'))) {
@@ -5848,7 +6005,11 @@ test('sprint-018 AC-4/AC-5/AC-7: a reviewer\'s question and External Review\'s s
 
   const collect = sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Workflow').split('\n').find((line) => line.includes('`asd-reviewer-testing`') && /Manual verification/.test(line));
   assert.ok(collect && /request user decision/.test(collect) && /\bpayload\b/.test(collect) && /decisions-log/.test(collect), 'AC-7: impl-review collects the manual-verification results from the user, logs them and passes them in the testing reviewer\'s payload');
-  assert.ok(sectionOf('.asd/agents/asd-reviewer-testing.md', 'Inputs').split('\n').some((line) => /manual-verification results/.test(line) && /\bpayload\b/.test(line)), 'AC-7: the testing reviewer reads the results from its payload - the consuming end of the collection above');
+  for (const { name, reviewers: roster } of readWorkflowDefinitions()) {
+    const recipient = roster.impl.find((key) => collect.includes(`\`asd-reviewer-${key}\``));
+    assert.ok(recipient, `sprint-020 AC-4: the manual-verification results must reach a reviewer of every workflow - ${name}'s impl-review roster (${roster.impl.join(', ')}) has none named on the collection line`);
+    assert.ok(sectionOf(`.asd/agents/asd-reviewer-${recipient}.md`, 'Inputs').split('\n').some((line) => /manual-verification results/.test(line) && /\bpayload\b/.test(line)), `AC-7/sprint-020 AC-4: asd-reviewer-${recipient} receives the results in ${name}, so its Inputs must read them from its payload - the consuming end of the collection above`);
+  }
 
   const declared = sectionOf('.asd/rules/providers.md', 'Role-scoped context').split('\n').find((line) => line.startsWith('**Declared tool policy**'));
   const carveOut = declared && declared.split(/[.;]\s|\s—\s/).find((clause) => /\breviewer\b/.test(clause) && clause.includes('`review-policy.md` "Gate Verdict Format"'));
@@ -6172,8 +6333,9 @@ test('sprint-019 AC-11/AC-12/AC-13/AC-15/AC-16: each review-fix, rotation and te
 
   const rotation = sectionOf('.asd/rules/artifact-layout.md', 'Decisions log').split('\n').find((line) => line.startsWith('**Rotation**')) || '';
   const cycle = /\{([^}]+)\}/.exec(rotation);
-  const chain = readPhaseChain();
-  assert.deepStrictEqual(cycle && [...cycle[1].matchAll(/`([a-z-]+)`/g)].map((match) => match[1]), chain.slice(chain.indexOf('impl'), chain.indexOf('impl-review') + 1), 'AC-12: the no-rotation cycle must be exactly the impl..impl-review span of PHASE_CHAIN - a phase missing rotates mid-cycle, one extra keeps the log growing across the cycle exit');
+  for (const { name, phases: chain } of readWorkflowDefinitions()) {
+    assert.deepStrictEqual(cycle && [...cycle[1].matchAll(/`([a-z-]+)`/g)].map((match) => match[1]), chain.slice(chain.indexOf('impl'), chain.indexOf('impl-review') + 1), `AC-12: the no-rotation cycle must be exactly the impl..impl-review span of ${name}.json - a phase missing rotates mid-cycle, one extra keeps the log growing across the cycle exit`);
+  }
   assert.deepStrictEqual(canonMarkdownFiles().filter((rel) => canonText(rel).includes('newest `decisions-log.NNN.md`')), [], 'AC-12: a within-cycle reader (the stalemate answer) reads the live file now that the cycle never rotates');
   const anchor = sectionOf('.asd/rules/sprint-lifecycle.md', 'State recovery').split(/(?<=\.)\s/).find((sentence) => sentence.startsWith('Anchor:')) || '';
   assert.ok(/\blatest\b/.test(anchor) && anchor.includes('routing line'), 'AC-12: with no rotation inside the cycle the live log holds every routing line of the cycle, so the failed-dispatch anchor must be the latest one naming the ids');
@@ -6244,6 +6406,226 @@ test('sprint-019 AC-14/AC-16: review-policy.md "Autofix vs escalation" routes a 
   const claim = /\b(?:serves|gives) (?:a reviewer|it|this agent) no write tool|only loads (?:it|its memory)/i;
   const leftovers = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', ...memoryFiles].flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => (claim.test(line.replace(/`[^`]*`/g, '')) ? [`${rel}:${index + 1}`] : [])));
   assert.deepStrictEqual(leftovers, [], `AC-14/AC-16 (iter-01 answer b): on Claude \`memory: project\` serves a reviewer Write, so a line saying the host serves it no write tool, or that \`memory: project\` only loads its memory, restates the claim iter-01 refuted - its owner rewrites it through the memory-fix dispatch; an orphan directory's file is deleted. If you ever exempt a file here, name its finding id in this message and delete the exemption once the fix lands. Found: ${leftovers.join(', ')}`);
+});
+
+test("sprint-020 AC-2/AC-4/AC-6: every definition's roster and rollback reset follow their rules - each review key is a verdict key with an agent and a matching token, each review phase has its DoD row naming exactly its roster, INTERNAL_REVIEWERS is the internal union, and rollback_reset is the phases before each review's input-producing phase", () => {
+  const definitions = readWorkflowDefinitions();
+  const nodes = ['design', 'impl'];
+  const counters = sectionOf('.asd/rules/sprint-lifecycle.md', 'Review iteration counters');
+  const inputs = /Input-producing phases: ([^.]+)\./.exec(counters);
+  assert.ok(inputs, 'sprint-lifecycle.md "Review iteration counters" must name each review\'s input-producing phase - the rollback reset is defined against it');
+  const inputOf = Object.fromEntries([...inputs[1].matchAll(/`([a-z-]+)` for ([a-z-]+)/g)].map((match) => [match[2], match[1]]));
+  const reset = counters.split('\n').find((line) => line.includes('**Rollback reset.**')) || '';
+  assert.ok(reset.includes('`rollback_reset.<node>`') && reset.includes('"Workflows"'), 'sprint-lifecycle.md "Rollback reset" must read the phases that reset a review from the frozen definition\'s rollback_reset, citing "Workflows" - the resume menu resets from there');
+  assert.deepStrictEqual(counters.split('\n').filter((line) => /^\s*\|/.test(line)), [], 'sprint-020: the rollback-reset table moved into each definition\'s rollback_reset - a table back in "Review iteration counters" is a second source that drifts from the one the resume menu reads');
+  for (const { name, phases, reviewers, rollback_reset: rollbackReset } of definitions) {
+    for (const node of nodes) {
+      const review = `${node}-review`;
+      const runs = phases.includes(review);
+      assert.strictEqual(reviewers[node].length > 0, runs, `${name}: reviewers.${node} must be non-empty exactly when ${review} is in its chain`);
+      const expected = runs ? phases.slice(0, phases.indexOf(inputOf[review])) : [];
+      assert.deepStrictEqual(rollbackReset[node], expected, `${name}: rollback_reset.${node} must be exactly the phases before ${review}'s input-producing phase (${inputOf[review]}), per "Rollback reset" - a later phase would wipe a live review (a lite design-promote re-run resetting reviews.impl), a missing one keeps stale verdicts across a rollback`);
+    }
+  }
+
+  const keys = new Map();
+  for (const definition of definitions) {
+    for (const node of nodes) definition.reviewers[node].forEach((key) => keys.set(key, (keys.get(key) || new Set()).add(node)));
+  }
+  const external = runtime.EXTERNAL_REVIEWER;
+  assert.deepStrictEqual(runtime.INTERNAL_REVIEWERS.slice().sort(), [...keys.keys()].filter((key) => key !== external).sort(), 'INTERNAL_REVIEWERS must be exactly the internal keys the definitions dispatch - persist-review validates a ledger only for these, and emit-manifest emits a coverage manifest only for these');
+  const enumerated = /^- `<reviewer>` = `([^`]+)`/m.exec(sectionOf('.asd/rules/review-policy.md', 'Gate Verdict Format'));
+  assert.ok(enumerated, 'review-policy.md "Gate Verdict Format" must enumerate the <reviewer> verdict keys');
+  assert.deepStrictEqual(enumerated[1].split('|').map((key) => key.trim()).sort(), [...keys.keys()].sort(), 'the verdict-key enum must be exactly the union of every definition\'s rosters - an unlisted key is a verdict nobody parses, a listed one no roster dispatches is dead');
+  for (const [key, where] of keys) {
+    const agent = key === external ? 'asd-external-review' : `asd-reviewer-${key}`;
+    const phase = where.size === nodes.length ? '<phase>' : [...where][0];
+    assert.ok(sectionOf(`.asd/agents/${agent}.md`, 'Gate Verdict Format').includes(`\`[REVIEW-${phase}-${key}]: <APPROVE | CONCERNS | FAIL>\``), `${agent} is dispatched in ${[...where].join(' and ')}-review, so its Gate Verdict Format must state the token [REVIEW-${phase}-${key}] - persist-review rejects any other first line`);
+  }
+
+  const cells = (line) => line.split('|').slice(1, -1).map((cell) => cell.trim());
+  const responsibility = sectionOf('.asd/rules/review-policy.md', 'Reviewer responsibility').split('\n').filter((line) => line.startsWith('|')).slice(2).map((line) => cells(line)[0]);
+  const labels = responsibility.map((label) => [label, label === 'External Review' ? external : label.toLowerCase()]);
+  assert.deepStrictEqual(labels.map(([, key]) => key).sort(), [...keys.keys()].sort(), 'review-policy.md "Reviewer responsibility" must hold one row per roster key, labelled by its reviewer name');
+  const dod = sectionOf('.asd/rules/review-policy.md', 'DoD per review phase').split('\n').filter((line) => line.startsWith('|')).slice(2).map(cells);
+  for (const { name, phases, reviewers } of definitions) {
+    for (const node of nodes) {
+      const row = dod.find((candidate) => candidate[0] === `${node}-review (${name})`);
+      if (!phases.includes(`${node}-review`)) {
+        assert.ok(!row, `review-policy.md "DoD per review phase" has a ${node}-review (${name}) row, but ${name} runs no ${node}-review`);
+        continue;
+      }
+      assert.ok(row, `review-policy.md "DoD per review phase" must carry a "${node}-review (${name})" row - the pr gate checks the reviewers this table requires`);
+      const named = labels.filter(([label]) => new RegExp(`\\b${label}\\b`).test(row[1])).map(([, key]) => key);
+      assert.deepStrictEqual(named.sort(), [...reviewers[node]].sort(), `review-policy.md "DoD per review phase": the ${node}-review (${name}) row must require exactly ${name}.json's reviewers.${node}`);
+    }
+  }
+});
+
+test('sprint-020 AC-9: persist-review validates a returned review and writes it with its findings JSON in one command - token, roster and ledger checked first, the preamble dropped, the late form beside, an existing review never overwritten, and any failure exits 2 writing nothing', () => {
+  const root = mkTempDir();
+  const scopePath = path.join(root, 'scope.txt');
+  fs.writeFileSync(scopePath, 'src/a.md\n', 'utf8');
+  const iter = path.join(root, 'iter');
+  fs.mkdirSync(iter);
+  runtimeCli(['emit-manifest', '--reviewer', 'correctness', '--phase', 'impl-review', '--files', scopePath, '--out', iter], { stdio: 'pipe' });
+  const manifestText = fs.readFileSync(path.join(iter, 'correctness.manifest.json'), 'utf8');
+  const manifest = JSON.parse(manifestText);
+  const vocabulary = runtime.LEDGER_VOCABULARY;
+  const ledgerFor = (findings) => ({
+    manifest_digest: manifest.digest,
+    findings,
+    files: manifest.files.map((i) => ({ i, s: vocabulary.files[0] })),
+    rules: manifest.rules.map((i, index) => (index === 0 && findings.length > 0 ? { i, s: vocabulary.f, f: findings[0] } : manifest.n_a.rules[i] ? { i, s: vocabulary.p, p: manifest.n_a.rules[i][0] } : { i, s: vocabulary.rules[0] })),
+    sections: manifest.sections.map((i) => ({ i, s: vocabulary.sections[0] })),
+  });
+  const table = (rows) => ['| # | Severity | Location | Description | Suggested fix |', '|---|---|---|---|---|', ...rows].join('\n');
+  const review = (first, rows, findings, preamble = '') => `${preamble}${first}\n\n# Review - correctness\n\n## Findings\n\n${table(rows)}\n\n## Coverage\n\n\`\`\`json\n${JSON.stringify(ledgerFor(findings))}\n\`\`\`\n`;
+  let inputs = 0;
+  const persist = (dir, reviewer, phase, text, extra = []) => {
+    inputs += 1;
+    const input = path.join(root, `returned-${inputs}.md`);
+    fs.writeFileSync(input, text, 'utf8');
+    return runtimeCliResult(['persist-review', '--phase', phase, '--reviewer', reviewer, '--in', input, '--out-dir', dir, ...extra]);
+  };
+
+  const finding = { id: '1', severity: 'low', location: 'tests/run.js:10' };
+  const concerns = review('[REVIEW-impl-correctness]: CONCERNS', ['| 1 | low | `tests/run.js:10` | stale pin | re-pin |'], ['1'], 'Reviewed every file; returning now.\n\n');
+  assert.deepStrictEqual(persist(iter, 'correctness', 'impl', concerns), { status: 0, result: { token: 'CONCERNS', findings: [finding] } }, 'review-policy.md "Coverage ledger" Persistence: a valid return prints its token and its findings as {id, severity, location}, the location read from the Findings table');
+  const written = fs.readFileSync(path.join(iter, 'correctness.md'), 'utf8');
+  assert.ok(written.startsWith('[REVIEW-impl-correctness]: CONCERNS\n'), `the review file is the return from its token line on - a preamble before it would make the first line no verdict token for every later parser (got: ${JSON.stringify(written.slice(0, 60))})`);
+  assert.deepStrictEqual(JSON.parse(fs.readFileSync(path.join(iter, 'correctness.findings.json'), 'utf8')), [finding], 'the findings JSON beside the review is what the low-severity test-only route reads (review-policy.md "Low-severity test-only findings"), so it must carry what was printed');
+
+  const resolved = 'resolved: 1 — test-fix, 2026-09-28\n';
+  fs.appendFileSync(path.join(iter, 'correctness.md'), resolved, 'utf8');
+  const again = persist(iter, 'correctness', 'impl', concerns);
+  assert.ok(again.status === 2 && fs.readFileSync(path.join(iter, 'correctness.md'), 'utf8').endsWith(resolved), `a persisted review is never overwritten - the orchestrator's later resolved:/answer: appends must survive a second run (got: ${JSON.stringify(again)})`);
+  assert.deepStrictEqual(persist(iter, 'correctness', 'impl', concerns, ['--late']).status, 0, 'an admitted late return persists beside the original with --late');
+  assert.ok(['correctness.late.md', 'correctness.late.findings.json'].every((file) => fs.existsSync(path.join(iter, file))), 'review-policy.md "Late duplicate return": --late writes <reviewer>.late.md and its own findings JSON, never touching <reviewer>.md');
+
+  const rejected = [
+    ['no verdict token (an interrupted dispatch)', 'correctness', 'impl', 'I ran out of turns before the ledger.\n'],
+    ['another reviewer\'s token', 'correctness', 'impl', review('[REVIEW-impl-efficiency]: APPROVE', ['| — | — | — | no findings | — |'], [])],
+    ['another phase\'s token', 'correctness', 'impl', review('[REVIEW-design-correctness]: APPROVE', ['| — | — | — | no findings | — |'], [])],
+    ['the availability-skip form from an internal reviewer', 'correctness', 'impl', review('[REVIEW-impl-correctness]: APPROVE (skipped: busy)', ['| — | — | — | no findings | — |'], [])],
+    ['a ledger whose findings disagree with the table', 'correctness', 'impl', review('[REVIEW-impl-correctness]: CONCERNS', ['| 1 | low | `a.md` | d | f |'], [])],
+    ['CONCERNS listing no finding', 'correctness', 'impl', review('[REVIEW-impl-correctness]: CONCERNS', ['| — | — | — | no findings | — |'], [])],
+    ['a severity outside the four levels', 'correctness', 'impl', review('[REVIEW-impl-correctness]: CONCERNS', ['| 1 | minor | `a.md` | d | f |'], ['1'])],
+  ];
+  const definitions = readWorkflowDefinitions();
+  const rosterOf = (node) => new Set(definitions.flatMap((definition) => definition.reviewers[node]));
+  for (const [node, other] of [['design', 'impl'], ['impl', 'design']]) {
+    for (const key of [...rosterOf(other)].filter((candidate) => !rosterOf(node).has(candidate))) {
+      rejected.push([`${key}, which no workflow dispatches in ${node}-review`, key, node, `[REVIEW-${node}-${key}]: APPROVE\n\n${table(['| — | — | — | no findings | — |'])}\n`, /--reviewer must be one of/]);
+    }
+  }
+  assert.ok(rejected.length > 7, 'sanity: some roster key must be dispatched in one review phase only (testing, combined), or the roster check below compares nothing');
+  rejected.forEach(([label, reviewer, node, text, reason], index) => {
+    const dir = path.join(root, `rejected-${index}`);
+    fs.mkdirSync(dir);
+    fs.writeFileSync(path.join(dir, `${reviewer}.manifest.json`), manifestText, 'utf8');
+    const result = persist(dir, reviewer, node, text);
+    assert.ok(result.status === 2 && (!reason || reason.test(result.stderr)), `persist-review must refuse ${label}${reason ? ` on its roster check (${reason})` : ''} (got: ${JSON.stringify(result)})`);
+    assert.deepStrictEqual(fs.readdirSync(dir), [`${reviewer}.manifest.json`], `a refused return (${label}) must write nothing - the transcription re-run or a fresh dispatch starts from an empty slot`);
+  });
+
+  const externalDir = path.join(root, 'external');
+  fs.mkdirSync(externalDir);
+  assert.deepStrictEqual(persist(externalDir, 'external', 'impl', '[REVIEW-impl-external]: APPROVE (skipped: external review unavailable: not installed)\n'), { status: 0, result: { token: 'APPROVE (skipped: external review unavailable: not installed)', findings: [] } }, 'External Review\'s availability skip is its one tableless return, and carries no ledger to validate');
+  const kept = `[REVIEW-impl-external]: CONCERNS\n\n## Kept findings\n\n${table(['| 1 | low | `tests/run.js:3` | d | f |'])}\n`;
+  const externalLate = persist(externalDir, 'external', 'impl', kept, ['--late']);
+  assert.deepStrictEqual(externalLate, { status: 0, result: { token: 'CONCERNS', findings: [{ id: '1', severity: 'low', location: 'tests/run.js:3' }] } }, 'External Review\'s Kept findings table yields its findings too - the low-severity test-only route counts External Review\'s findings');
+});
+
+test("sprint-020 AC-4: emit-manifest --reviewer combined composes the rubrics its agent names, in order, its own entries last, n/a's every Documentation entry - and only those - when no documentation file is in scope, and is refused outside impl-review", () => {
+  const root = mkTempDir();
+  let runs = 0;
+  const emit = (reviewer, phase, files) => {
+    runs += 1;
+    const dir = path.join(root, `run-${runs}`);
+    fs.mkdirSync(dir);
+    fs.writeFileSync(path.join(dir, 'scope.txt'), `${files.join('\n')}\n`, 'utf8');
+    const result = runtimeCliResult(['emit-manifest', '--reviewer', reviewer, '--phase', phase, '--files', path.join(dir, 'scope.txt'), '--out', dir]);
+    return result.status === 0 ? JSON.parse(fs.readFileSync(result.result.manifest, 'utf8')) : result;
+  };
+  const noDocs = runtime.NA_PREDICATES.noDocs;
+  const holders = (manifest) => manifest.rules.filter((id) => (manifest.n_a.rules[id] || []).includes(noDocs));
+  const composed = reviewerRubric(runtime.COMBINED_REVIEWER);
+  const idsOf = (reviewer) => runtime.emitCoverageManifest({ reviewer, phase: 'impl-review', rubric: reviewerRubric(reviewer), files: [] }).rules;
+  const own = composed[runtime.COMBINED_REVIEWER].split('\n## Review rubric')[1].split('\n## ')[0];
+  const ownIds = [...own.matchAll(/^### (.+)$/gm)].map((match) => match[1].trim());
+  assert.ok(ownIds.length > 0, 'asd-reviewer-combined.md must keep its own ### rubric entries (Overall quality)');
+
+  const code = emit(runtime.COMBINED_REVIEWER, 'impl-review', ['src/a.js']);
+  const parts = Object.keys(composed).filter((name) => name !== runtime.COMBINED_REVIEWER);
+  assert.deepStrictEqual(code.rules, [...parts.flatMap(idsOf), ...ownIds], `the combined manifest must enumerate the rubrics asd-reviewer-combined.md says it composes (${parts.join(', ')}), in that order, then its own entries - the agent reads each entry's detail from the home its body names, so runtime and body must compose the same list`);
+  assert.deepStrictEqual(holders(code), idsOf('documentation'), `with no documentation file in scope every Documentation entry - and nothing else - must carry "n/a: ${noDocs}": a rubric entry the predicate misses is reviewed against nothing, one it over-reaches is a Correctness/Efficiency concern silently skipped`);
+  assert.deepStrictEqual(holders(emit(runtime.COMBINED_REVIEWER, 'impl-review', ['src/a.js', 'README.md'])), [], 'one documentation file in scope keeps the whole Documentation rubric reviewed (AC-4)');
+  assert.deepStrictEqual(holders(emit('documentation', 'impl-review', ['src/a.js'])), [], "the predicate reaches only the combined manifest - standard's Documentation reviewer is dispatched for its rubric and never n/a's it wholesale");
+  const design = emit(runtime.COMBINED_REVIEWER, 'design-review', ['s/design/prd.md']);
+  assert.ok(design.status === 2 && /one of/.test(design.stderr), `no workflow dispatches combined in design-review, so emit-manifest must refuse it there (got: ${JSON.stringify(design)})`);
+});
+
+test('sprint-020 AC-6: the workflow is a hard, never-defaulted choice asked only at scope step 1, frozen through the t_state.json seed and gated in checkpoints.md, held by no config key, and no doc calls a workflow the default', () => {
+  const names = readWorkflowDefinitions().map((definition) => definition.name);
+  assert.strictEqual(JSON.parse(readRepoFile('.asd/templates/t_state.json')).workflow, '{{WORKFLOW}}', 't_state.json must seed the frozen workflow, since artifact-layout.md reads state keys only from the template');
+  const ask = canonText('.asd/workflows/asd-phase-scope.md').split('\n').find((line) => /^1\. /.test(line)) || '';
+  assert.ok(/request user decision/i.test(ask) && ask.includes('{{WORKFLOW}}') && names.every((name) => ask.includes(`\`${name}\``)), `asd-phase-scope.md step 1 must ask the user to choose among every workflow (${names.join(', ')}) and seed {{WORKFLOW}} from the answer`);
+  assert.ok(/never defaulted/.test(ask) && ask.includes('`workflow choice`') && ask.includes('`sprint-lifecycle.md` "Workflows"'), 'scope step 1 is the single home of the ask: it must name the hard gate, forbid a default and cite the rule');
+  const selection = sectionOf('.asd/rules/sprint-lifecycle.md', 'Workflows').split('\n').find((line) => line.startsWith('**Selection**')) || '';
+  assert.ok(/never defaulted/.test(selection) && /absent field reads `standard`/.test(selection), 'sprint-lifecycle.md "Workflows" Selection: no default at sprint start, while a state.json without the field reads standard - the one rule that keeps an in-flight sprint running');
+  const gatePolicy = sectionOf('.asd/rules/checkpoints.md', 'Gate policy');
+  assert.ok(gatePolicy.split('\n').some((line) => line.startsWith('Hard in both modes:') && /workflow choice/.test(line) && line.includes('`sprint-lifecycle.md` "Workflows"')), 'checkpoints.md "Gate policy" must list the workflow choice as hard in both modes, citing its rule');
+  const inventory = canonText('.asd/rules/checkpoints.md').split('\n').find((line) => line.startsWith('| workflow choice'));
+  assert.ok(inventory && /^hard\b/.test(inventory.split('|')[2].trim()), 'checkpoints.md "Gate inventory" must class the workflow choice hard');
+  assert.ok(!/^\s*workflow\s*:/m.test(readRepoFile('.asd/templates/t_config.yaml')), 'AC-6: the config holds no workflow default - a workflow key in t_config.yaml would be read as one');
+  const sprintSkill = canonText('.asd/skills/asd-sprint/SKILL.md').split('\n');
+  const advance = sprintSkill.find((line) => line.startsWith('- `COMPLETED`')) || '';
+  assert.ok(advance.includes('`next[<phase>]`') && /relay FAILED/.test(advance), "AC-6: asd-sprint Step 3 dispatches only a NEXT inside the frozen definition's next[<phase>] and relays any other as FAILED - the guard every return-contract check above relies on");
+  const menu = sprintSkill.find((line) => /re-run earlier phase/.test(line) && /Re-run options/.test(line)) || '';
+  assert.ok(menu.includes("definition's `phases`"), 'AC-6: the resume menu offers only phases of the frozen definition - a lite sprint offered design would re-run a phase its chain lacks');
+  const rollback = sprintSkill.find((line) => line.includes('*re-run earlier phase* = rollback')) || '';
+  assert.ok(rollback.includes('`rollback_reset`'), "AC-6: the rollback the resume menu triggers must reset per the frozen definition's rollback_reset");
+  const quoted = new RegExp(`\`(?:${names.join('|')})\``);
+  const claims = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md'].flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => (quoted.test(line) && /\bthe default\b/i.test(line) ? [`${rel}:${index + 1}`] : [])));
+  assert.deepStrictEqual(claims, [], `AC-6: the user always chooses the workflow and no config default exists, so no line may call a workflow "the default" - an absent state field reading standard is legacy handling, not a default a user can rely on. Found: ${claims.join(', ')}`);
+});
+
+test('sprint-020 AC-8: review-policy.md "Low-severity test-only findings" states its whole trigger and fix once, every resolved: kind canon writes is one "State recovery" admits, and each acting site cites the home', () => {
+  const home = sectionOf('.asd/rules/review-policy.md', 'Autofix vs escalation').split('\n### Low-severity test-only findings')[1];
+  assert.ok(home, 'review-policy.md "Autofix vs escalation" must hold the "### Low-severity test-only findings" subsection - the one home of AC-8');
+  const sentences = home.split('\n### ')[0].split(/(?<=\.)\s+/);
+  const trigger = sentences.find((sentence) => /\bFires when\b/.test(sentence)) || '';
+  for (const [property, token] of [['no FAIL verdict', '`FAIL`'], ['low severity only', '`low`'], ['test files by the runtime classifier', '`isTest`'], ['test-plan.md and its segments', '`test-plan.md`'], ["External Review's findings included", 'External Review'], ['read from the persisted findings JSON', 'findings JSON']]) {
+    assert.ok(trigger.includes(token), `AC-8: the trigger sentence must state its condition "${property}" (${token}) - each clause dropped widens the route to findings a tester alone must not fix`);
+  }
+  assert.ok(sentences.some((sentence) => /no parseable path/.test(sentence) && /does not qualify/.test(sentence)), 'AC-8: an unparseable location must fall to review-fix, never to the tester');
+  assert.ok(sentences.some((sentence) => /^Otherwise\b/.test(sentence) && /review-fix/.test(sentence)), 'AC-8: a wave that does not qualify routes to review-fix as before');
+  assert.ok(sentences.some((sentence) => sentence.includes('`asd-tester`') && sentence.includes('`ASD-Task: <finding id>`')), 'AC-8: the tester fixes in place and commits with the finding-id trailer, so a reconstruction can tell which finding landed');
+  assert.ok(sentences.some((sentence) => /not re-reviewed/.test(sentence) && /full suite/.test(sentence)), 'AC-8: an unreviewed fix is caught only by the terminal full suite, and the home must say so');
+
+  const recovery = sectionOf('.asd/rules/sprint-lifecycle.md', 'State recovery').split('\n').find((line) => line.startsWith('**User-resolved findings**')) || '';
+  const kinds = (/`resolved: [^`]*? — <([^>]+)>, <YYYY-MM-DD>`/.exec(recovery) || [])[1];
+  assert.ok(kinds && kinds.split('|').map((kind) => kind.trim()).includes('test-fix'), 'sprint-lifecycle.md "State recovery" "User-resolved findings" must admit the test-fix kind, or a verdict whose findings the tester fixed never counts as satisfied');
+  const admitted = kinds.split('|').map((kind) => kind.trim());
+  const written = canonMarkdownFiles().flatMap((rel) => [...canonText(rel).matchAll(/`resolved: [^`]*? — ([a-z-]+), <YYYY-MM-DD>`/g)].map((match) => `${rel}: ${match[1]}`));
+  assert.ok(written.some((entry) => entry.endsWith(': test-fix')), 'sanity: the resolved: line sweep must reach the test-fix writers');
+  assert.deepStrictEqual(written.filter((entry) => !admitted.includes(entry.slice(entry.lastIndexOf(': ') + 2))), [], 'every resolved: kind canon tells the orchestrator to write must be one "User-resolved findings" admits - any other leaves the verdict blocking with its findings fixed');
+
+  const citation = '`review-policy.md` "Low-severity test-only findings"';
+  const acting = stepOf(sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Workflow'), 8).split('\n').find((line) => line.includes(citation)) || '';
+  assert.ok(acting.includes('`asd-tester`') && /test-fix/.test(acting), 'asd-phase-impl-review.md step 8 is where the route fires, so it must cite the home, dispatch asd-tester and write the test-fix resolution');
+  for (const rel of ['.asd/rules/git-strategy.md', '.asd/agents/asd-tester.md', '.asd/rules/sprint-lifecycle.md']) {
+    assert.ok(canonText(rel).includes(citation), `${rel} acts on the in-place tester fix (commit trailer, tester contract, the cycle's review-fix exception), so it must cite the home rather than restate it`);
+  }
+});
+
+test('sprint-020 AC-1: no canon, README, AGENTS.md or agent-memory line still names a mechanism the workflow definitions replaced - the PHASE_CHAIN literal or the rollback-reset table', () => {
+  const memoryFiles = fs.readdirSync(path.join(REPO_ROOT, '.claude/agent-memory'), { recursive: true }).map((entry) => `.claude/agent-memory/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
+  assert.ok(memoryFiles.length > 0, 'sanity: the sweep must reach agent memory (artifact-layout.md "Agent memory" leftover-term check)');
+  const removed = /\bPHASE_CHAIN\b|rollback[- ]reset table/i;
+  const hits = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/hooks/session-start.js', '.asd/runtime.js', ...memoryFiles].flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => (removed.test(line) ? [`${rel}:${index + 1}`] : [])));
+  assert.deepStrictEqual(hits, [], `sprint 020 moved the chain into .asd/workflows/<name>.json and the reset phases into each definition's rollback_reset, so a line still naming PHASE_CHAIN or the rollback-reset table points a reader at something that no longer exists (CHANGELOG.md and .asd/project/decisions-log.md are history and stay out of the sweep). Found: ${hits.join(', ')}`);
 });
 
 // ===========================================================================
