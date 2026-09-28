@@ -65,15 +65,15 @@ Material risk: change: workflow-gate rules
 ### Task 4: Review policy, providers and the combined reviewer agent
 AC: AC-4, AC-8, AC-9
 Material risk: change: reviewer roster and verdict contract
-- [ ] Add `.asd/agents/asd-reviewer-combined.md`: JSON frontmatter mirroring the other reviewers' tools, disallowedTools, model tiers, memory and maxTurns; its description lists what it covers and what it does not; its role body states the composed rubric, the conditional Documentation rubric and its own `Overall quality` rubric entry.
-- [ ] `.asd/rules/review-policy.md`:
+- [x] Add `.asd/agents/asd-reviewer-combined.md`: JSON frontmatter mirroring the other reviewers' tools, disallowedTools, model tiers, memory and maxTurns; its description lists what it covers and what it does not; its role body states the composed rubric, the conditional Documentation rubric and its own `Overall quality` rubric entry.
+- [x] `.asd/rules/review-policy.md`:
   - "4 internal reviewers" becomes per-workflow wording citing `sprint-lifecycle.md` "Workflows";
   - add `combined` to the verdict enum and a row to the "Reviewer responsibility" table (the design-review cell is `n/a (lite has no design-review)`);
   - add a lite impl-review row to the "DoD per review phase" table;
   - add the Persistence paragraph for `persist-review` (AC-9);
   - add the `### Low-severity test-only findings` subsection (AC-8).
-- [ ] `.asd/rules/providers.md`: add the combined reviewer to the reviewer-grant sentence, the tier-matrix count and the role-scoped context row.
-- [ ] `.asd/agents/asd-tester.md`: add the AC-8 in-place test-fix dispatch to its description and operating contract.
+- [x] `.asd/rules/providers.md`: add the combined reviewer to the reviewer-grant sentence, the tier-matrix count and the role-scoped context row.
+- [x] `.asd/agents/asd-tester.md`: add the AC-8 in-place test-fix dispatch to its description and operating contract.
 
 ### Task 5: Phase workflows, sprint skill and creators follow the frozen workflow
 AC: AC-3, AC-5, AC-6
