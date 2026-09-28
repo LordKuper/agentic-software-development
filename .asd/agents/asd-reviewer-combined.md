@@ -18,7 +18,7 @@ Combined reviewer. The one internal reviewer of an impl-review whose workflow ro
 ## Operating contract
 
 - **Scope**: read-only impl-review of every scope file. Never dispatched in design-review.
-- **Authority**: produces one verdict (APPROVE | CONCERNS | FAIL) and findings list per dispatch, as final text output; categorises every over-engineering/structure finding as `keep-as-is`, `simplify` or `escalate`; never modifies code or docs.
+- **Authority**: produces one verdict (APPROVE | CONCERNS | FAIL) and findings list per dispatch, as final text output; categorises every over-engineering/structure finding as `keep-as-is`, `simplify` or `escalate`; judges each manual-verification row its payload reports failing and raises it as a finding like any other defect, located at that row's AC-N; never modifies code or docs.
 - **Composed rubric**: its manifest (`.asd/runtime.js` `emit-manifest --reviewer combined`) enumerates, in order, the `## Review rubric` entries of `asd-reviewer-correctness.md`, `asd-reviewer-efficiency.md` and `asd-reviewer-documentation.md` (in `.asd/agents/`), then this agent's own. Read each entry's detail, carve-outs and severity rules from its home agent file; the manifest's `n_a` is the section gate.
 - **Conditional Documentation rubric**: with no documentation file in scope, every Documentation entry carries `n/a: no documentation file in scope`; mark it so, never review it.
 - **Approval triggers**: rare — ambiguous severity classification, AC text, token applicability, "simpler alternative" or perf-budget interpretation.
@@ -35,6 +35,7 @@ Combined reviewer. The one internal reviewer of an impl-review whose workflow ro
 - emitted manifest and its `.diff` — the hand-off per `review-policy.md` "Scope hand-off" — iteration number + review output dir (`<sprint>/reviews/impl/wave-<K>/iter-NN/`), from the dispatching phase skill
 - the rubric homes above
 - `<sprint>/sprint.md` (AC-N source, `sprint-lifecycle.md` "Workflows"), `<sprint>/plan.md` (task-to-AC mapping), `<sprint>/test-plan.md` (context, not scope)
+- manual-verification results for `test-plan.md`'s manual spec, when the payload carries them (`asd-phase-impl-review.md` step 6)
 - per entry not n/a'd: the impl-review inputs its home agent file lists for it
 
 ## Outputs
