@@ -35,3 +35,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-09-30 — Retrospective written
+
+- **Decision**: `retrospective.html` was written on the analysed branch. It analyses 5 friction entries into 4 framework actions: A-1 (consumer intake surfaces `asd` rows upstream), A-3 (orchestrator ticks the plan in multi-Task waves), and A-2, A-4, which are covered by rules landed this sprint. It also carries 3 systemic proposals: P-1 (re-entry tester tier from the delta's risk), P-2 (Reachability across a push/merge names interruption states), and P-3, covered. No consumer rows. Nothing applied or promoted; the next scope's intake offers the rows.
+- **Rationale**: `sprint-lifecycle.md` "Retro phase" findings order: merge, coverage check, then draft.
+- **Affected docs**: [retrospective.html](retrospective.html)
