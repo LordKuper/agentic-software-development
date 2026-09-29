@@ -18,7 +18,11 @@ responsibility:
 
 | # | Severity | Location | Description | Suggested fix |
 |---|---|---|---|---|
-| 1 | {{sev}} | {{location}} | {{description}} | {{fix}} |
+| 1 | {{low/medium/high/critical}} | {{location}} | {{description}} | {{fix}} |
+
+<!-- Severity cell: exactly one of low|medium|high|critical, nothing else (no CLI label) -->
+<!-- when no findings, leave one row: -->
+<!-- | — | — | — | no findings | — | -->
 
 ## Dropped findings (counts only)
 
