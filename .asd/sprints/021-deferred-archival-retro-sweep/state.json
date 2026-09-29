@@ -1,7 +1,7 @@
 {
   "sprint_id": "021-deferred-archival-retro-sweep",
   "branch": "sprint/021-deferred-archival-retro-sweep",
-  "phase": "scope",
+  "phase": "audit",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -32,6 +32,20 @@
       "reason": "30 included, 27 rejected",
       "evidence": "retro-backlog.md 021 rows; decisions-log.md 2026-09-29",
       "artifact_revision": "retro-backlog.md@scope"
+    },
+    {
+      "gate": "audit contradiction",
+      "decision_actor": "user",
+      "reason": "C5 codex reviewers workspace-write; C6 exempt in-flight tool call; C7 per-host degraded mode",
+      "evidence": "audit.md Contradictions 5-7",
+      "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "all sections present, contradictions settled, no BA ambiguity, no registry (decomposition disabled)",
+      "evidence": "audit.md; decisions-log.md 2026-09-29 audit",
+      "artifact_revision": "audit.md@audit"
     }
   ],
   "task_routing": {},
@@ -55,7 +69,7 @@
     }
   },
   "created_at": "2026-09-29T00:00:00Z",
-  "updated_at": "2026-09-29T16:42:33.344Z",
+  "updated_at": "2026-09-29T18:47:24.836Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
