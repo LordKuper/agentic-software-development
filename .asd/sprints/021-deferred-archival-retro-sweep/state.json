@@ -1,7 +1,7 @@
 {
   "sprint_id": "021-deferred-archival-retro-sweep",
   "branch": "sprint/021-deferred-archival-retro-sweep",
-  "phase": "impl",
+  "phase": "impl-test",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -158,6 +158,12 @@
       "execution": "agent",
       "reason": "no-downgrade",
       "resolved_model": "opus"
+    },
+    "impl-test entry 4": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "no-downgrade",
+      "resolved_model": "opus"
     }
   },
   "skipped_phases": [],
@@ -194,8 +200,8 @@
     }
   },
   "created_at": "2026-09-29T00:00:00Z",
-  "updated_at": "2026-09-29T20:20:33.859Z",
-  "review_fixes_pending": "wave-1/iter-02",
+  "updated_at": "2026-09-29T20:21:51.877Z",
+  "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null
