@@ -6860,7 +6860,7 @@ test('sprint-021 AC-1/AC-2 (D1): pr ends at await-merge or await-closure and asd
   assert.deepStrictEqual(tokens.filter((token) => !scopeStep.includes(token) && !scopeStep.includes(token.replace(/ /g, '-'))), [], 'AC-2: asd-phase-scope.md step 1 performs the closure write "PR phase" defines, so it must name each of its tokens (a gate name as its gate_decisions value, spaces hyphenated) - one dropped is a field the closing sprint never gets');
 });
 
-test('sprint-021 AC-2 (iter-03 external #1): a phase="pr" sprint without pr.number is looked up by head branch - asd-sprint Step 1 runs the lookup "PR phase" "Merged-unclosed" defines and carries a MERGED hit\'s number to the closure write, and pr open mode runs it before opening a PR, so it never opens a second one', () => {
+test('sprint-021 AC-2 (iter-03 external #1): a phase="pr" sprint without pr.number is looked up by head branch - asd-sprint Step 1 runs the lookup "PR phase" "Merged-unclosed" defines and carries a MERGED hit\'s number to the closure write, and pr open mode runs it before opening a PR, so it never opens a second one, after committing the phase Step 1 gates on so every PR head carries it', () => {
   const home = sectionOf('.asd/rules/sprint-lifecycle.md', 'PR phase').split('**Merged-unclosed**')[1];
   assert.ok(home, 'sanity: sprint-lifecycle.md "PR phase" must keep its **Merged-unclosed** paragraph, the lookup\'s home');
   const spans = (text) => [...text.matchAll(/`([^`]+)`/g)].map(([, span]) => span);
@@ -6875,8 +6875,11 @@ test('sprint-021 AC-2 (iter-03 external #1): a phase="pr" sprint without pr.numb
   const sprintSkill = canonText('.asd/skills/asd-sprint/SKILL.md');
   const detect = sprintSkill.split('### Step 1:')[1].split('\n### ')[0].split('\n').find((line) => spans(line).includes(lookup));
   assert.ok(detect && /merged-unclosed/i.test(detect), `AC-2: asd-sprint Step 1 must run the lookup "Merged-unclosed" defines, the same command, and read its MERGED hit as merged-unclosed - ${lost}`);
-  const approve = stepOf(sprintSkill.split('### Step 1A')[1].split('\n### ')[0], 2).replace(/`[^`]*`/g, '');
+  const approveStep = stepOf(sprintSkill.split('### Step 1A')[1].split('\n### ')[0], 2);
+  const approve = approveStep.replace(/`[^`]*`/g, '');
   assert.ok(/\bnumber\b/i.test(approve), `AC-2: asd-sprint Step 1A must carry the head-branch lookup's PR number with the closure approval - scope's closure write has no other source for it when pr is null`);
+  const carry = clauses(approveStep).filter((clause) => /\bnumber\b/i.test(clause.replace(/`[^`]*`/g, '')));
+  assert.deepStrictEqual(carry.filter((clause) => /\bnull\b/.test(clause)), [], "AC-2: asd-sprint Step 1A must carry the confirmed PR number whenever detection found one, not only when the detected copy's pr is null - a sprint-branch copy holding pr.number over a base copy with pr=null reaches scope's closure write, which reads the base copy, with no number (impl-review wave-1/iter-04 #1)");
   const scopeSpans = spans(stepOf(canonText('.asd/workflows/asd-phase-scope.md').split('\n## ')[0], 1));
   assert.ok(scopeSpans.includes('pr.number'), 'AC-2: asd-phase-scope.md step 1\'s closure write must write pr.number as a field of its own, not only inside the gh pr view command - a closing sprint with pr=null is archived with no PR number and no way to read its merge commit');
   const openSteps = sectionOf('.asd/workflows/asd-phase-pr.md', 'Open mode').split(/\n(?=\d+[a-z]?\. )/);
@@ -6886,6 +6889,16 @@ test('sprint-021 AC-2 (iter-03 external #1): a phase="pr" sprint without pr.numb
   assert.ok(beforeCreate.includes('"Merged-unclosed"'), `AC-2: pr open mode must run the head-branch lookup ("PR phase" "Merged-unclosed") before opening a PR - ${lost}`);
   assert.ok(clauses(beforeCreate).some((clause) => clause.includes('`MERGED`') && clause.includes('`NEXT: await-closure`')), `AC-2: pr open mode must emit NEXT: await-closure on a MERGED head-branch hit, opening nothing - ${lost}`);
   assert.ok(clauses(beforeCreate).some((clause) => clause.includes('`OPEN`') && /merge mode/.test(clause)), `AC-2: pr open mode must adopt an OPEN head-branch hit into merge mode instead of opening a second PR - ${lost}`);
+  const gate = spans(sprintSkill.split('### Step 1:')[1].split('\n### ')[0]).map((span) => /^phase="([^"]+)"$/.exec(span)).find(Boolean);
+  assert.ok(gate, 'sanity: asd-sprint Step 1 must gate merged-unclosed detection on a `phase="…"` value');
+  const unguarded = `the PR head is base's copy after a squash merge, so a phase="${gate[1]}" write left uncommitted at the push leaves base at retro's phase with pr=null: asd-sprint Step 1 never runs the lookup and its resume flow re-runs retro on git.base_branch (impl-review wave-1/iter-04 #1)`;
+  const openPaths = clauses(beforeCreate).filter((clause) => !clause.includes('`MERGED`'));
+  const adoptAt = openPaths.findIndex((clause) => clause.includes('`OPEN`') && /merge mode/.test(clause));
+  const gateWrites = openPaths.map((clause, at) => ({ clause, at })).filter(({ clause }) => spans(clause).some((span) => span.replace(/"/g, '') === `phase=${gate[1]}`));
+  assert.ok(gateWrites.length > 0, `AC-2: pr open mode must write the phase="${gate[1]}" asd-sprint Step 1 gates detection on, before opening a PR - ${unguarded}`);
+  assert.deepStrictEqual(gateWrites.filter(({ clause }) => !/\bcommit/i.test(clause.replace(/`[^`]*`/g, ''))).map(({ clause }) => clause.trim()), [], `AC-2: every pr open mode clause writing phase="${gate[1]}" must commit it on the sprint branch, before step 3's PR-creation push - ${unguarded}`);
+  assert.ok(gateWrites.some(({ at }) => at <= adoptAt), `AC-2: pr open mode must commit phase="${gate[1]}" before adopting an OPEN hit into merge mode, so the adopted PR's head carries it too - ${unguarded}`);
+  assert.ok(openPaths.slice(0, adoptAt + 1).some((clause) => /self-hosting/i.test(clause) && /\bversion\b/i.test(clause)), 'AC-2: pr open mode must bump the self-hosting version before adopting an OPEN hit into merge mode - an adopted PR merged without it releases under the previous version (impl-review wave-1/iter-04 #1, folded medium)');
 });
 
 test('sprint-021 F-4/F-5: each review template\'s empty findings row and Severity values parse through reviewFindings, the parser persist-review runs on them - a template row the runtime rejects is a verdict no reviewer can persist', () => {

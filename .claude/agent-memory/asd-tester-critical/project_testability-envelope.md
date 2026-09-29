@@ -247,6 +247,13 @@ longer span on the target: sprint 021 entry 5's new closure-write field `pr.numb
 older `` `gh pr view <pr.number>` ``, so reverting the fix stayed green. Compare code span to span
 (`spans(site).includes(token)`) for a field the fix adds.
 
+A fix that makes one site produce the value another site gates on ("commit `phase=pr` so Step 1's `phase="pr"`
+gate matches base") is pinned by deriving the gate's value from the gating site's code span and requiring the
+producer to write it (quotes ignored). Mutating only the gate proves the derivation (sprint 021 entry 6, M-AG).
+A fix that *removes* a narrowing condition has no positive substance: require its clause to lack the condition's
+one word (`null`), keep the positive assert on the clause itself so deletion cannot pass vacuously, and record
+both ceilings (a synonym passes; "whether or not null" reddens).
+
 ## Fixtures whose bytes are the input
 
 Never commit one whose distinguishing bytes cannot survive checkout. Sprint 009 shipped
