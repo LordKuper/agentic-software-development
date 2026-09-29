@@ -6824,7 +6824,7 @@ test('sprint-021 AC-10/AC-11 (D5): scratch-dir creates .asd/tmp/ beside the runt
   assert.strictEqual(git('status', '--porcelain', '--untracked-files=all'), '', 'the directory and its own .gitignore must be ignored with no root .gitignore entry - a consumer needs no migration, and a helper or return file never reaches a commit or a review');
 });
 
-test('sprint-021 AC-1/AC-2 (D1): pr ends at await-merge or await-closure and asd-sprint takes each chain exit; pr open mode commits and pushes its state.json.pr write before await-merge, pr merge mode performs no part of the closure write, and scope step 1 carries every token of it', () => {
+test('sprint-021 AC-1/AC-2 (D1): pr ends at await-merge or await-closure and asd-sprint takes each chain exit; pr open mode commits and pushes its state.json.pr write before await-merge, pr merge mode republishes it if the PR head lacks it before merging and performs no part of the closure write, and scope step 1 carries every token of it', () => {
   const definitions = readWorkflowDefinitions();
   const exits = [...new Set(definitions.flatMap(({ phases, next }) => Object.values(next).flat().filter((target) => !phases.includes(target))))].sort();
   assert.deepStrictEqual(exits, ['await-closure', 'await-merge'], 'AC-1: the chain ends at pr\'s two exits - the PR opened, then merged and awaiting closure; no definition ends at done any more, since pr never writes the terminal state');
@@ -6848,6 +6848,14 @@ test('sprint-021 AC-1/AC-2 (D1): pr ends at await-merge or await-closure and asd
   const unpublished = 'merge mode writes nothing, so pr.number reaches git.base_branch only through the squash merge; unpublished, base keeps pr=null and asd-sprint never requests closure for the merged sprint (sprint-lifecycle.md "PR phase" "Merged-unclosed", impl-review wave-1/iter-01 C-1)';
   assert.ok(/\bcommit/i.test(publish), `AC-2: pr open mode must commit its state.json.pr write before NEXT: await-merge - ${unpublished}`);
   assert.ok(/\bpush/i.test(publish), `AC-2: pr open mode must push the sprint branch carrying its state.json.pr write before NEXT: await-merge - ${unpublished}`);
+  const mergeCall = merge.indexOf('"Merging a PR"');
+  assert.ok(mergeCall >= 0, 'sanity: pr merge mode must merge through git-strategy.md "Merging a PR", the site the checks below must precede');
+  const beforeMerge = merge.slice(0, mergeCall);
+  const unconfirmed = 'an open-mode push that failed or never ran leaves the PR head without pr.number, and the squash merge then lands pr=null on base, so asd-sprint never requests closure (impl-review wave-1/iter-02 external #1)';
+  assert.ok([...beforeMerge.matchAll(/`([^`]+)`/g)].some(([, span]) => span.includes('origin/') && span.includes('state.json')), `AC-2: pr merge mode must read state.json from the remote sprint branch before merging - ${unconfirmed}`);
+  const republish = beforeMerge.split(/[;.]\s/).filter((clause) => !clause.includes('`FAILED`')).join(' ').replace(/`[^`]*`/g, '');
+  assert.ok(/\bcommit/i.test(republish), `AC-2: pr merge mode must commit a local state.json.pr write the remote branch lacks before merging - ${unconfirmed}`);
+  assert.ok(/\bpush/i.test(republish), `AC-2: pr merge mode must push the sprint branch when the remote lacks pr.number, before merging - ${unconfirmed}`);
   const scopeStep = stepOf(canonText('.asd/workflows/asd-phase-scope.md').split('\n## ')[0], 1);
   assert.deepStrictEqual(tokens.filter((token) => !scopeStep.includes(token) && !scopeStep.includes(token.replace(/ /g, '-'))), [], 'AC-2: asd-phase-scope.md step 1 performs the closure write "PR phase" defines, so it must name each of its tokens (a gate name as its gate_decisions value, spaces hyphenated) - one dropped is a field the closing sprint never gets');
 });
