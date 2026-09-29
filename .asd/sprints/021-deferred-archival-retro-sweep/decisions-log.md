@@ -34,3 +34,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-09-29 — `021-deferred-archival-retro-sweep/plan.md` accepted
+
+- **Decision**: The user explicitly accepted plan.md: design decisions D1–D7, 10 Tasks in 2 waves, change surface 56 files (cap 100, no breach). No stubs are in scope (audit found none). Sync and memory fixes are orchestrator lines, not dev Tasks.
+- **Rationale**: Plan gate, write-then-review-accept. A user gate was chosen over adaptive because the plan fixes new public contracts: the `await-closure` token, `.asd/tmp/`, and the new runtime commands.
+- **Affected docs**: [plan.md](plan.md)
