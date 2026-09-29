@@ -79,3 +79,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-29 — route external.md 1: critical, dispatch HEAD 0dbfa45
 - 2026-09-29 — impl fix for wave-1/iter-02: findings resolved (external 1 b0f0daf). Flagged choices were accepted: merge-mode step 2 "write nothing" is unchanged because step 1 only publishes open mode's existing write; an already-merged PR without `pr.number` on base stays a known residual (no base write is possible).
 - 2026-09-29 — route impl-test entry 4: critical, dispatch HEAD 7a9b496
+- 2026-09-29 — impl-test: impacted set green (253/253), 0/0 tests (1 extended); no manual-verification rows
