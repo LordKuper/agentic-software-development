@@ -52,3 +52,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: Step 10 requires every non-`none` flagged choice to be resolved or routed back before the assessment. The follow-ups fixed reachability and SSoT gaps. The remaining choices are bounded, in-scope calls.
 - **Affected docs**: [plan.md](plan.md), [friction-log.md](friction-log.md)
 - 2026-09-29 — route Task 10: standard, dispatch HEAD 95aa33e
+
+## 2026-09-29 — Impl assessment approved (adaptive)
+
+- **Decision**: Initial impl is complete. All 10 Tasks are ticked; AC-1…AC-5 and AC-7…AC-13 are covered, and AC-6 was done at scope. Build (`sync.js --check`) and lint are clean. The authorised-paths gate over `d5d84b3..HEAD` is clean: canon, the orchestrator's sync outputs, owner memory fixes, the ownerless asd-pm deletions and `custom-coding-rules.md`. No stubs were introduced. Every flagged choice is resolved (entry above), and the extra ones (the ledger refresh for rules-only waves, the CRLF memory note) were closed by follow-ups 051e86e and 95aa33e. The orchestrator ran both syncs (056e1fa, 7d4fae0).
+- **Rationale**: This is a routine adaptive pass under `checkpoints.md`: exact authority (sprint.md, plan.md), the checks pass, and no material alternative is left open. The known test breaks (prose pins, sandbox, hook token, retry-after, manual-verification payload) go to impl-test, not back to impl.
+- **Affected docs**: [plan.md](plan.md)

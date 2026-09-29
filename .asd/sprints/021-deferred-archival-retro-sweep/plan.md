@@ -184,9 +184,9 @@ Material risk: change: security
 
 ### Task 10: README, AGENTS.md tail, decisions-log template
 Material risk: artifact: documentation mirror
-- [ ] Root `AGENTS.md` hand-edited tail (below `<!-- asd:end -->`): drop the per-task `--apply` wording; devs edit canon only, the orchestrator syncs once per wave (`sprint-lifecycle.md` "Self-hosting") — restating site found by Task 1.
-- [ ] `.asd/templates/t_decisions-log.md`: add the one-line form `- YYYY-MM-DD — stall: <agent> <dispatch ids>` that `sprint-lifecycle.md` "Agent liveness" introduced.
-- [ ] Update README for:
+- [x] Root `AGENTS.md` hand-edited tail (below `<!-- asd:end -->`): drop the per-task `--apply` wording; devs edit canon only, the orchestrator syncs once per wave (`sprint-lifecycle.md` "Self-hosting") — restating site found by Task 1.
+- [x] `.asd/templates/t_decisions-log.md`: add the one-line form `- YYYY-MM-DD — stall: <agent> <dispatch ids>` that `sprint-lifecycle.md` "Agent liveness" introduced.
+- [x] Update README for:
   - the `pr` phase row and the flowchart exit tokens;
   - the folder map (`.asd/tmp/`);
   - the FAQ at L448 (stale archive claim, audit C2);
