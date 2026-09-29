@@ -36,7 +36,7 @@ Before a phase-skill delegation below, rotate the decisions log when `.asd/rules
 ### Step 1A: closure request
 Reached from Step 1 (merged-unclosed) or Step 3 (`NEXT: await-closure`), before anything else.
 1. Request user decision on the hard `sprint closure` gate (`checkpoints.md` "Gate policy"), presenting the completion evidence (`sprint-lifecycle.md` "PR phase"): approve | refuse. The merge and the adaptive policy never satisfy it.
-2. Approve → new-sprint flow (Step 2A), carrying the approval (closing sprint path, plus the head-branch lookup's PR number when `pr` is null) unwritten until scope step 1's closure write records it; aborted before that, nothing is written and Step 1 asks again.
+2. Approve → new-sprint flow (Step 2A), carrying the approval (closing sprint path, plus the merged PR's number detection confirmed, whichever copy or lookup it came from) unwritten until scope step 1's closure write records it; aborted before that, nothing is written and Step 1 asks again.
 3. Refuse or feedback → the sprint stays active and resumable; halt, `NEXT: await-closure`.
 
 ### Step 2A: new-sprint flow
