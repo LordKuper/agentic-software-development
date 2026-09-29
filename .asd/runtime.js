@@ -971,7 +971,7 @@ function transcriptSnapshot(file) {
   return { size: stat.size, mtimeMs: stat.mtimeMs, text: fs.readFileSync(file, 'utf8') };
 }
 
-/** Checks each `--agents` Claude subagent's transcript every `--interval` seconds and prints one `STALL <id> <reason>` line per stalled agent, which it then stops watching; silent while agents progress, it returns once every agent is done or stalled. A transcript missing on two consecutive checks fails the command with a non-zero exit instead of a stall line, so a host whose transcripts it cannot find never gets a healthy agent stopped. */
+/** Checks each `--agents` Claude subagent's transcript, under `$CLAUDE_CONFIG_DIR/projects` when that is set and `~/.claude/projects` otherwise, every `--interval` seconds and prints one `STALL <id> <reason>` line per stalled agent, which it then stops watching; silent while agents progress, it returns once every agent is done or stalled. A transcript missing on two consecutive checks fails the command with a non-zero exit instead of a stall line, so a host whose transcripts it cannot find never gets a healthy agent stopped. */
 async function agentLivenessCommand(flags) {
   if (typeof flags.agents !== 'string') fail('--agents <id,...> required');
   const ids = [...new Set(flags.agents.split(','))];
@@ -979,14 +979,14 @@ async function agentLivenessCommand(flags) {
   if (invalid !== undefined) fail(`--agents id invalid: ${invalid}`);
   const intervalMs = positiveInteger(flags.interval, '--interval') * 1000;
   const budgetMs = flags['budget-min'] === undefined ? undefined : positiveInteger(flags['budget-min'], '--budget-min') * 60000;
-  const projectsDir = path.join(os.homedir(), '.claude', 'projects');
+  const projectsDir = path.join(process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude'), 'projects');
   const watched = new Map(ids.map((id) => [id, { file: null, previous: undefined }]));
   for (;;) {
     for (const [id, agent] of watched) {
       agent.file = agent.file || findTranscript(projectsDir, id);
       const current = transcriptSnapshot(agent.file);
       const verdict = agentLiveness(agent.previous, current, Date.now(), budgetMs);
-      if (verdict.status === 'unobservable') fail(`agent-liveness: no transcript for agent ${id} under ${projectsDir}`);
+      if (verdict.status === 'unobservable') fail(`agent-liveness: no transcript for agent ${id} under ${projectsDir} ($CLAUDE_CONFIG_DIR/projects, else ~/.claude/projects)`);
       if (verdict.status === 'stalled') process.stdout.write(`STALL ${id} ${verdict.reason}\n`);
       if (verdict.status !== 'running') watched.delete(id);
       agent.previous = current === null ? null : { size: current.size, mtimeMs: current.mtimeMs };
