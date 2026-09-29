@@ -80,7 +80,9 @@ Phase skills named `asd-phase-<phase>`, one per phase in `sprint-lifecycle.md`. 
 3. A compaction summary MUST preserve: sprint id; phase and mode; outstanding signals (`QUESTION`,
    `BLOCKED_MANUAL`, `ADVICE_NEEDED`); any gate answer not yet written to disk; paths written this phase;
    remaining task/finding/defect ids.
-4. Write a gate answer to `decisions-log.md`/`state.json` before any further work.
+4. Write a gate answer to `decisions-log.md`/`state.json` before any further work — except a sprint-closure
+   approval, written at the scope closure write, the new branch's first commit (`sprint-lifecycle.md` "PR phase"),
+   and kept until then by item 3.
 5. Dispatch payloads carry paths and explicit parameters, never transcript excerpts. A dispatched agent
    never inherits the main orchestrator's conversation.
 6. Reviewers get fresh context per iteration and never receive prior-iteration findings (external
