@@ -6848,6 +6848,7 @@ test('sprint-021 AC-13: no canon, README, AGENTS.md, runtime, hook, workflow def
     'temp file outside the repo',
     'in the same task before marking it done',
     'after any canonical edit, run `node .asd/sync.js --apply',
+    'for a dev to fix via `sync-apply`',
     'the explanatory parenthetical naming the four view path shapes lives only in `AGENTS.md`',
     'const NEGATIVE_TTL_MS',
     'now + NEGATIVE_TTL_MS',

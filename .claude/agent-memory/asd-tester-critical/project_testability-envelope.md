@@ -173,6 +173,11 @@ Rule prose here routinely narrates the alternative it just rejected inside the s
 absence check (`!/parallel/i`) therefore goes red against unmutated HEAD. Assert the absence of the
 specific *removed instruction phrases*, never of a topic word.
 
+A defect the manual leftover check found (no runner line) still owes a §17 regression proof: append its
+fix commit's exact removed phrase to the sprint's leftover-sweep list, then restore the `<sha>~1` blob to
+prove it (sprint 021 D-4). Widening an actor rule ("a sentence naming `--apply` must deny it") to all memory
+instead false-hits factual mentions of the command.
+
 Same family, for locating a sentence: key the locator to the sentence's **citation**, never its
 ordinal or adverb. `sprint-lifecycle.md`'s latch-clearing route was renamed "A THIRD" → "A further"
 mid-sprint; a `find` on the citation (`` `review-policy.md` "Late duplicate return" ``) survives
