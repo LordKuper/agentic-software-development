@@ -62,3 +62,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-29 — impl-test: defects D-1, D-2, D-3, D-4 → impl test-fix (digest 9b55eeb7a5f954ec153d1cb8ff2b7f08b37e6535c980ae212a632a84333795dd)
 - 2026-09-29 — route D-1, D-2, D-3: standard, dispatch HEAD 937fbc6
 - 2026-09-29 — impl test-fix: defects D-1, D-2, D-3, D-4 resolved (4d3a7d3, b48906e); orchestrator sync: ledgers already current, no view change
+- 2026-09-29 — route impl-test entry 2: critical, dispatch HEAD 1e1d34e

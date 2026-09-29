@@ -1,7 +1,7 @@
 {
   "sprint_id": "021-deferred-archival-retro-sweep",
   "branch": "sprint/021-deferred-archival-retro-sweep",
-  "phase": "impl",
+  "phase": "impl-test",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -134,6 +134,12 @@
       "execution": "agent",
       "reason": "artifact-risk:documentation mirror",
       "resolved_model": "sonnet"
+    },
+    "impl-test entry 2": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "no-downgrade",
+      "resolved_model": "opus"
     }
   },
   "skipped_phases": [],
@@ -156,7 +162,7 @@
     }
   },
   "created_at": "2026-09-29T00:00:00Z",
-  "updated_at": "2026-09-29T19:48:44.853Z",
+  "updated_at": "2026-09-29T19:49:01.277Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
