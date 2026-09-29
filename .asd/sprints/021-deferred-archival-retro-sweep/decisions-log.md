@@ -100,3 +100,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-30 — impl-test: impacted set green (255/255), 0/0 tests (1 extended); no manual-verification rows
 - 2026-09-30 — impl-review wave-1/iter-05: combined APPROVE (latched at 5), external APPROVE (latched at 4, inherited); wave 1 roster met → terminal full suite. Known residual, dropped below the critical floor: a pr open-mode MERGED hit writes nothing locally, so after a refused closure the next Step 1 misses a sprint whose `phase` is still retro's. The sprint re-runs retro, then pr finds the hit again. The same applies to a hand-opened PR merged before pr. This is a retro candidate.
 - 2026-09-30 — route impl-review wave-1/iter-05 suite: critical, dispatch HEAD 48c5b7f
+- 2026-09-30 — impl-review DoD met: 1 wave, 5 iterations; terminal full suite green (255/255, lint and build clean, HEAD 901bdda); green handoff passed adaptively → design-promote

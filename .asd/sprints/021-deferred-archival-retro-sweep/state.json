@@ -60,6 +60,13 @@
       "reason": "all 10 Tasks done, flagged choices resolved, build+lint clean, authorised-paths gate clean",
       "evidence": "plan.md all ticked; sync --check ok; decisions-log.md 2026-09-29 impl assessment",
       "artifact_revision": "HEAD 7d4fae0"
+    },
+    {
+      "gate": "impl-review green handoff",
+      "decision_actor": "orchestrator",
+      "reason": "wave 1 roster met (combined, external APPROVE), terminal full suite green 255/255",
+      "evidence": "reviews/impl/wave-1/iter-05; test-plan.md Suite run HEAD 901bdda",
+      "artifact_revision": "HEAD 6fd71be"
     }
   ],
   "task_routing": {
@@ -233,7 +240,7 @@
     }
   },
   "created_at": "2026-09-29T00:00:00Z",
-  "updated_at": "2026-09-29T21:25:22.912Z",
+  "updated_at": "2026-09-29T21:26:17.549Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
