@@ -51,3 +51,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
   - The orchestrator ticked the plan checkboxes because parallel devs cannot share `plan.md` (F-3).
 - **Rationale**: Step 10 requires every non-`none` flagged choice to be resolved or routed back before the assessment. The follow-ups fixed reachability and SSoT gaps. The remaining choices are bounded, in-scope calls.
 - **Affected docs**: [plan.md](plan.md), [friction-log.md](friction-log.md)
+- 2026-09-29 — route Task 10: standard, dispatch HEAD 95aa33e
