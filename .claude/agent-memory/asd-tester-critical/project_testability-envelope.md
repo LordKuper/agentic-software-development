@@ -222,7 +222,9 @@ across `canonMarkdownFiles()`, resolve base name → repo root → `.asd/templat
 and `audit.md` resolve with no hardcoded pair), and accept the target as a `## heading` **or** a
 `**bold label**` — 10 of canon's 185 citations name a bold label, `sprint-lifecycle.md` "Impl-review
 clean-worktree precondition" among them, so a heading-only check reddens on correct edits. Match
-headings prefix-anchored: `## Related open stubs (optional)` is cited without its parenthetical. It found
+headings prefix-anchored: `## Related open stubs (optional)` is cited without its parenthetical. A
+two-label citation (`` `x.md` "PR phase" "Merged-unclosed" ``) is resolved on its first label only; do
+not claim the sweep covers the second (sprint 021 entry 3). It found
 two dangling pointers (`checkpoints.md` "Re-running a phase", `external-review.md` "Iteration-aware
 diff"), both from PR #25 renames whose two sibling citations sprint 006's documentation reviewer fixed by
 hand; the class is recurrent and human review catches it only partly. Both were fixed at `ac3073a` and the

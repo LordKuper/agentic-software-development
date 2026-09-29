@@ -4493,7 +4493,9 @@ test("sprint-012 AC-12: emit-manifest derives rule and section ids from a review
   for (const surface of ['.asd/templates/t_prd.html', 'docs/site/index.html', 'app/theme.scss', 'src/components/button.ts', 'src/App.tsx', 'Assets/Menu.uxml', 'Assets/Menu.USS', 'Assets/Theme.tss', 'Assets/Scripts/UI/HudPresenter.cs', 'src/Components/Button.cs']) {
     assert.deepStrictEqual(uiHolders(['README.md', surface]), [], `${surface} is a UI surface, so it must keep UI conformance reviewed - framework .asd/templates/*.html included, the whole subject of the correctness reviewer's self-hosting carve-out; sprint-021 AC-12: Unity UI Toolkit files (.uxml/.uss/.tss) and a UI path segment in any case too`);
   }
-  assert.strictEqual(uiHolders(['README.md', '.asd/rules/notes.html']).length, 1, 'an .html under .asd/ outside .asd/templates/ is framework infrastructure, not a UI surface');
+  for (const framework of ['.asd/rules/notes.html', '.ASD/rules/notes.html']) {
+    assert.strictEqual(uiHolders(['README.md', framework]).length, 1, `${framework}: an .html under .asd/ outside .asd/templates/ is framework infrastructure, not a UI surface - the .asd/ exception is matched case-insensitively like the rest of the classifier (impl-review wave-1/iter-01 external #2)`);
+  }
 
   const htmlHolders = (manifest) => holders(manifest, predicates.noHtml);
   const htmlIds = htmlHolders(emitReal('documentation', 'impl-review', ['README.md', '.asd/runtime.js'], {}));
@@ -6708,22 +6710,31 @@ test('sprint-020 AC-1: no canon, README, AGENTS.md or agent-memory line still na
   assert.deepStrictEqual(hits, [], `sprint 020 moved the chain into .asd/workflows/<name>.json and the reset phases into each definition's rollback_reset, so a line still naming PHASE_CHAIN or the rollback-reset table points a reader at something that no longer exists (CHANGELOG.md and .asd/project/decisions-log.md are history and stay out of the sweep). Found: ${hits.join(', ')}`);
 });
 
-test('sprint-021 AC-12: surface-check never counts a generated provider view or a pure rename - the views it drops are exactly the provider-tree targets sync.js writes, the consumer impl-review pathspec excludes each of them, and --base/--head drops only a rename git reports with identical content', () => {
-  const targets = [...new Set(sync.buildSyncPlan(REPO_ROOT).map((item) => path.relative(REPO_ROOT, item.targetPath).split(path.sep).join('/')))];
-  const views = targets.filter((rel) => rel.includes('/'));
+test('sprint-021 AC-12: surface-check never counts a generated provider view or a pure rename - the views it drops are exactly the provider-tree targets sync.js regenerates wholesale, the JSON-merge hook registrations still count, both review pathspecs agree on each, and --base/--head drops only a rename git reports with identical content', () => {
+  const plan = sync.buildSyncPlan(REPO_ROOT);
+  const relOf = (item) => path.relative(REPO_ROOT, item.targetPath).split(path.sep).join('/');
+  const targets = [...new Set(plan.map(relOf))];
+  const jsonMerge = [...new Set(plan.filter((item) => item.class === 'json-merge').map(relOf))];
+  const views = targets.filter((rel) => rel.includes('/') && !jsonMerge.includes(rel));
   const rootTargets = targets.filter((rel) => !rel.includes('/'));
-  assert.ok(views.length > 0 && rootTargets.includes('AGENTS.md'), `sanity: the sync plan must yield provider-tree views and the root managed-block targets, got ${targets.join(', ')}`);
-  assert.strictEqual(runtime.surfaceCheck(views).files, 0, 'every provider-tree file sync.js writes is regenerated from canon, never reviewable change surface, so none may count against the cap');
-  const handEdited = [...rootTargets, '.claude/agent-memory/asd-dev/MEMORY.md', '.claude/settings.local.json', 'src/a.js'];
-  assert.strictEqual(runtime.surfaceCheck(handEdited).files, handEdited.length, 'root managed-block targets carry hand-edited tails, agent memory is hand-authored and settings.local.json is no sync target - each still counts');
+  assert.ok(views.length > 0 && rootTargets.includes('AGENTS.md') && jsonMerge.length > 0, `sanity: the sync plan must yield provider-tree views, the root managed-block targets and the JSON-merge hook registrations, got ${targets.join(', ')}`);
+  assert.strictEqual(runtime.surfaceCheck(views).files, 0, 'every provider-tree file sync.js regenerates wholesale from canon is never reviewable change surface, so none may count against the cap');
+  const handEdited = [...rootTargets, ...jsonMerge, '.claude/agent-memory/asd-dev/MEMORY.md', '.claude/settings.local.json', 'src/a.js'];
+  assert.strictEqual(runtime.surfaceCheck(handEdited).files, handEdited.length, 'root managed-block targets carry hand-edited tails, the JSON-merge hook registrations (ASD owns only its hook entry) can hold user content, agent memory is hand-authored and settings.local.json is no sync target - each still counts (impl-review wave-1/iter-01 external #1)');
 
-  const consumerRow = sectionOf('.asd/rules/external-review.md', 'Phase-scoped payload').split('\n').find((line) => line.startsWith('| impl-review, `self_hosting: disabled`')) || '';
-  const globs = [...(consumerRow.split('|')[3] || '').matchAll(/`([^`]+)`/g)].flatMap(([, glob]) => {
+  const expand = (spans) => [...spans.matchAll(/`([^`]+)`/g)].flatMap(([, glob]) => {
     const brace = /\{([^}]+)\}/.exec(glob);
     return brace ? brace[1].split(',').map((part) => glob.replace(brace[0], part)) : [glob];
   });
-  const excluded = (rel) => globs.some((glob) => (glob.endsWith('/**') ? rel.startsWith(glob.slice(0, -2)) : rel === glob));
-  assert.deepStrictEqual(views.filter((rel) => !excluded(rel)), [], 'external-review.md "Phase-scoped payload": the consumer impl-review pathspec must exclude every generated provider view, or a consumer review ships regenerated output to every reviewer');
+  const consumerRow = sectionOf('.asd/rules/external-review.md', 'Phase-scoped payload').split('\n').find((line) => line.startsWith('| impl-review, `self_hosting: disabled`')) || '';
+  const selfHosting = /the generated provider views \(([^;)]*)/.exec(sectionOf('.asd/rules/sprint-lifecycle.md', 'Self-hosting'));
+  assert.ok(selfHosting, 'sanity: sprint-lifecycle.md "Self-hosting" must still list the generated provider views its change surface drops');
+  for (const [site, spans] of [['external-review.md "Phase-scoped payload" consumer impl-review row', consumerRow.split('|')[3] || ''], ['sprint-lifecycle.md "Self-hosting" framework change surface', selfHosting[1]]]) {
+    const globs = expand(spans);
+    const excluded = (rel) => globs.some((glob) => (glob.endsWith('/**') ? rel.startsWith(glob.slice(0, -2)) : rel === glob));
+    assert.deepStrictEqual(views.filter((rel) => !excluded(rel)), [], `${site}: the pathspec must exclude every generated provider view, or a review ships regenerated output to every reviewer`);
+    assert.deepStrictEqual(jsonMerge.filter(excluded), [], `${site}: the pathspec must keep the JSON-merge hook registrations in, as surfaceCheck does - they can hold user content, and a hand edit there would escape review (impl-review wave-1/iter-01 external #1)`);
+  }
 
   const { repo, env, git } = sandboxGitRepo();
   const body = Array.from({ length: 20 }, (_, index) => `line ${index + 1}`).join('\n');
@@ -6813,7 +6824,7 @@ test('sprint-021 AC-10/AC-11 (D5): scratch-dir creates .asd/tmp/ beside the runt
   assert.strictEqual(git('status', '--porcelain', '--untracked-files=all'), '', 'the directory and its own .gitignore must be ignored with no root .gitignore entry - a consumer needs no migration, and a helper or return file never reaches a commit or a review');
 });
 
-test('sprint-021 AC-1/AC-2 (D1): pr ends at await-merge or await-closure and asd-sprint takes each chain exit; pr merge mode performs no part of the closure write, and scope step 1 carries every token of it', () => {
+test('sprint-021 AC-1/AC-2 (D1): pr ends at await-merge or await-closure and asd-sprint takes each chain exit; pr open mode commits and pushes its state.json.pr write before await-merge, pr merge mode performs no part of the closure write, and scope step 1 carries every token of it', () => {
   const definitions = readWorkflowDefinitions();
   const exits = [...new Set(definitions.flatMap(({ phases, next }) => Object.values(next).flat().filter((target) => !phases.includes(target))))].sort();
   assert.deepStrictEqual(exits, ['await-closure', 'await-merge'], 'AC-1: the chain ends at pr\'s two exits - the PR opened, then merged and awaiting closure; no definition ends at done any more, since pr never writes the terminal state');
@@ -6829,6 +6840,14 @@ test('sprint-021 AC-1/AC-2 (D1): pr ends at await-merge or await-closure and asd
   const merge = sectionOf('.asd/workflows/asd-phase-pr.md', 'Merge mode');
   assert.ok(merge.includes('`NEXT: await-closure`'), 'AC-1: pr merge mode returns `NEXT: await-closure` once the merge is confirmed');
   assert.deepStrictEqual(writes.filter((token) => merge.includes(token)), [], 'AC-1: pr merge mode makes no write on git.base_branch - the archive move and terminal state belong to the next sprint\'s scope');
+  const openSteps = sectionOf('.asd/workflows/asd-phase-pr.md', 'Open mode').split(/\n(?=\d+[a-z]?\. )/);
+  const writeAt = openSteps.findIndex((step) => step.includes('`state.json.pr`'));
+  const nextAt = openSteps.findIndex((step) => step.includes('`NEXT: await-merge`'));
+  assert.ok(writeAt >= 0 && writeAt < nextAt, 'sanity: pr open mode must write `state.json.pr` in a step before the one emitting `NEXT: await-merge`');
+  const publish = openSteps.slice(writeAt, nextAt).join('\n').split('`state.json.pr`').slice(1).join('').replace(/`[^`]*`/g, '');
+  const unpublished = 'merge mode writes nothing, so pr.number reaches git.base_branch only through the squash merge; unpublished, base keeps pr=null and asd-sprint never requests closure for the merged sprint (sprint-lifecycle.md "PR phase" "Merged-unclosed", impl-review wave-1/iter-01 C-1)';
+  assert.ok(/\bcommit/i.test(publish), `AC-2: pr open mode must commit its state.json.pr write before NEXT: await-merge - ${unpublished}`);
+  assert.ok(/\bpush/i.test(publish), `AC-2: pr open mode must push the sprint branch carrying its state.json.pr write before NEXT: await-merge - ${unpublished}`);
   const scopeStep = stepOf(canonText('.asd/workflows/asd-phase-scope.md').split('\n## ')[0], 1);
   assert.deepStrictEqual(tokens.filter((token) => !scopeStep.includes(token) && !scopeStep.includes(token.replace(/ /g, '-'))), [], 'AC-2: asd-phase-scope.md step 1 performs the closure write "PR phase" defines, so it must name each of its tokens (a gate name as its gate_decisions value, spaces hyphenated) - one dropped is a field the closing sprint never gets');
 });
