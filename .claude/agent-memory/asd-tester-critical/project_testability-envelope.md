@@ -242,6 +242,11 @@ from the workflow and asserts it *ends with* the tail read out of `checkpoints.m
 may be reworded freely as long as the counter still selects the emitter. String equality between the
 two would have gone red on the correct fix, exactly as it did.
 
+A substring token relation (`site.includes(token)`) goes vacuous when the token already sits inside a
+longer span on the target: sprint 021 entry 5's new closure-write field `pr.number` was "named" by scope's
+older `` `gh pr view <pr.number>` ``, so reverting the fix stayed green. Compare code span to span
+(`spans(site).includes(token)`) for a field the fix adds.
+
 ## Fixtures whose bytes are the input
 
 Never commit one whose distinguishing bytes cannot survive checkout. Sprint 009 shipped
