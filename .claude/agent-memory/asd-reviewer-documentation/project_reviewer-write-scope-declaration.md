@@ -1,15 +1,17 @@
 ---
 name: reviewer-write-scope-declaration
-description: Resolved shape (sprint 010 iter-05, updated sprint 019 AC-14 answer b) of review-policy.md "Gate Verdict Format"'s sole-statement declaration — bounded to canon, agent memory excluded, a reviewer's own memory the one place it writes (Claude `memory: project` serves `Write`), a finding there routed to its memory-fix dispatch; which restating sites are authorized and must not be re-raised
+description: Resolved shape (sprint 010 iter-05, sprint 019 AC-14 answer b, sprint 021) of review-policy.md "Gate Verdict Format"'s sole-statement declaration — bounded to canon, agent memory excluded, a reviewer writes only its own memory plus (internal reviewer) its payload's return file, policy-bounded; a memory finding routed to its memory-fix dispatch; which restating sites are authorized and must not be re-raised
 metadata:
   type: project
 ---
 
 `review-policy.md` "Gate Verdict Format" owns the reviewer read-only reconciliation: what the
-read-only claim covers and how a reviewer's memory is written. Since sprint 019 AC-14 (iter-01 answer b)
-a reviewer's own memory directory is the one place it writes. On Claude `memory: project` serves every
-reviewer `Write` (no reviewer's `disallowedTools` names it); policy, not the host, keeps that write to
-its own memory. A finding located there goes to that reviewer's memory-fix dispatch (`review-policy.md`
+read-only claim covers and how a reviewer's memory is written. A reviewer writes only its own memory
+directory and, for an internal reviewer, the return file its payload names ("Coverage ledger"
+Persistence; added sprint 021). Policy, not the host, keeps it there. On Claude `memory: project`
+serves every reviewer `Write` (no reviewer's `disallowedTools` names it); on Codex the internal
+reviewers run `sandbox_mode: "workspace-write"`, which cannot be path-scoped (`providers.md`). A finding
+located in a reviewer's memory goes to that reviewer's memory-fix dispatch (`review-policy.md`
 "Autofix vs escalation"); the orchestrator commits memory writes ("Diff reachability").
 Since sprint 010 iter-05 the declaration is **bounded to canon** and names hand-authored agent memory
 as outside its reach (`artifact-layout.md` "Agent memory"). These sites legitimately restate or scope
@@ -20,16 +22,20 @@ it and are non-contradicting at sprint 019 HEAD. Do not raise them as SSoT dupli
   non-owner never authors memory text.
 - `README.md`: a user-facing mirror with no canonical source under `.asd/`. It cites
   `review-policy.md` for scope, says `memory: project` serves reviewers `Write` kept to their own memory
-  by policy, and names the memory-fix dispatch. The AGENTS.md cross-file list authorizes it as a roster mirror.
+  by policy, and names the memory-fix dispatch. The AGENTS.md cross-file list authorizes it as a roster
+  mirror. Its Codex sandbox claim must track `providers.md` (internal reviewers `workspace-write` since
+  sprint 021); a stale `read-only` there is roster drift, not duplication.
 - `.asd/agents/asd-external-review.md` tool policy: its "no file writes at all" is a separate,
   transport-level rule for the review itself. The same bullet names the one exception, its own memory
   written with the `Write` `memory: project` serves on Claude, and routes a finding there through the
   memory-fix dispatch. It points at "Autofix vs escalation" and cites "Gate Verdict Format" for scope,
-  so it is not a second statement of the reviewer-class scope. Its `Bash` runs only the wrapped CLI.
-- `providers.md` "Reviewer agents carry no artifact-write grant…": owns only the tool-grant fact
-  (including that `memory: project` adds `Write` to every reviewer) and cites Gate Verdict Format for
-  what the read-only claim covers, including the reviewer's own memory directory it leaves writable.
-  A test checks that citation and checks that the file holds no copy of the MEMORY-FIX contract.
+  so it is not a second statement of the reviewer-class scope. Its `Bash` runs only the wrapped CLI;
+  its Codex `sandbox_mode` stays `"read-only"`.
+- `providers.md` "Reviewer agents carry no artifact-write grant…": owns only the tool-grant facts
+  (`memory: project` adds `Write` to every reviewer on Claude; Codex internal reviewers run
+  `workspace-write`, policy-bounded) and cites Gate Verdict Format for what the read-only claim covers,
+  including the memory directory and return file it leaves writable. A test checks that citation and
+  checks that the file holds no copy of the MEMORY-FIX contract.
 
 **Why:** SSoT findings use this declaration as their premise, so a false declaration is a trap. Iters 03
 and 04 each disproved an earlier, wider version of it (first the workflows, then a reviewer's own

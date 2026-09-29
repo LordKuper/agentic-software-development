@@ -46,9 +46,8 @@ output: `--input` takes a PATH or literal `-` for stdin, NOT inline JSON text (r
 value makes `fs.readFileSync` try to open a file literally named `{...}` → ENOENT); pipe with
 `| node .asd/runtime.js external-record-failure --input -`. Fields: `fingerprint` (64-hex sha),
 `status` (`authentication|quota|reachability|command`), `cachePath`, `retryAfter` (epoch-ms number,
-NOT a string, bounded to `now+1h` max — `MAX_NEGATIVE_TTL_MS = 3600000` — even when the provider's
-own quoted reset is further out: always compute `Date.now()+3600000`, never the provider's stated
-reset timestamp), optional `now`.
+NOT a string: the reset the provider reported with the failure, never a 5-minute default; the runtime
+caps it at one hour and uses one hour when none was reported — `external-review.md` "Detection and negative cache"), optional `now`.
 
 ## Quota errors
 
@@ -62,12 +61,14 @@ Lessons that hold across all of them:
   only means ASD's own gate will retry. Do not treat a `local-ready` preflight status as proof the
   paid request will succeed; still budget for a single real-request attempt failing.
 - Retrying immediately after a quota hit with the same quoted reset time is pointless (same window) —
-  one retry then skip, never a second real-content attempt once the retry error matches the first.
+  one retry only, never a second real-content attempt once the retry error matches the first.
 - `2>/dev/null` on the codex pipe hides the failure entirely (empty result) — codex prints the quota
   error to stderr after echoing the payload. Always merge stderr (`2>&1`) so the tail of the captured
   output shows either the verdict or the error.
-- Verdict per agent contract on confirmed quota exhaustion: `APPROVE (skipped: external review
-  unavailable: quota exhausted)`, signal REVIEW_DONE, never fabricate findings.
+- After the retry fails, return `external review interrupted: quota exhausted (reset <provider time>)` —
+  a failure after invocation is an interrupted dispatch, never a skip (`external-review.md` "Outcome
+  contract"); the orchestrator records it via `external-record-failure`. The `APPROVE (skipped: ...)`
+  form is only for a non-ready preflight. Never fabricate findings.
 
 ## Instructed to violate the no-disk/stdout-only contract
 

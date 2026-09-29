@@ -42,8 +42,7 @@ timeout auto-backgrounded the call (harness behavior, not a failure) — separat
 had also tacked on `2>&1 > scratch.txt`, redirecting codex's own stdout to a file, which directly
 violates the "no file writes at all, stdout capture only" contract this section already states. Root
 cause was not passing the `timeout` parameter (up to 600000ms per this doc) up front, which invited the
-disk-redirect reflex once the call looked like it might time out. Always set `timeout: 600000` (or a
-size-appropriate value per the KB-payload/token table above) on the very first foreground Bash call for
+disk-redirect reflex once the call looked like it might time out. Always set `timeout: 600000` (the canon minimum is 10 minutes — never shorter) on the very first foreground Bash call for
 the codex invocation — never rely on the tool's ~120s default, and never add a `>`/`>>` redirect to
 codex's own output as a workaround for an anticipated timeout, backgrounding, or interruption. If a
 call still gets auto-backgrounded despite an explicit timeout, read the result back via the harness's
