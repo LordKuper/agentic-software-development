@@ -90,3 +90,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: This was a hard escalation after two consecutive interruptions (`review-policy.md` "Interrupted dispatch" Escalation). Both rejections were format issues, and the second exposed a template gap (F-5). The first attempt's high finding was real, and it is fixed.
 - **Affected docs**: [friction-log.md](friction-log.md)
 - 2026-09-29 — route external.md 1 (template placeholder, user-directed): standard, dispatch HEAD 81a0000
+- 2026-09-29 — impl fix for wave-1/iter-03: findings resolved (external 1 fd0a5b0; template placeholder ff0ef0c, user-directed)
+- 2026-09-29 — route impl-test entry 5: critical, dispatch HEAD 0307c65
