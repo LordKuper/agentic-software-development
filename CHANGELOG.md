@@ -2,6 +2,39 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v13.4.0
+
+One PR per sprint. Closing a sprint no longer opens a second "finalize" PR, so there is no second CI/CD run on your base branch. The closed sprint's archive move rides the next sprint's first commit. The orchestrator also watches in-flight agents for stalls, and a large batch of retro-driven rule fixes lands.
+
+### Changed
+- **Sprint closure** (`sprint-lifecycle.md` "PR phase"). pr merge mode merges and writes nothing on the base branch; it returns the new `NEXT: await-closure` (`done` is gone from `pr`'s exits). `/asd-sprint` detects a merged-but-unclosed sprint through `gh pr view`, or a head-branch lookup when `pr.number` is missing, and asks for the hard closure approval. On approval, the next sprint's scope writes the terminal state, moves the folder to `archived/` and commits both as its first commit. The self-hosting tag/release now targets the sprint PR's merge commit. Open mode commits `phase=pr` and `state.json.pr` and pushes them, so the squash merge carries them to base.
+- **Generated-view sync** is the orchestrator's alone, run once per wave or fix round (`--apply AGENTS.md` refreshes the hash ledgers when no view changed). A dev edits canon only.
+- **Codex internal reviewers** run `sandbox_mode: "workspace-write"`, bounded by policy to their memory directory plus their return file. The host-enforced read-only guarantee on Codex is knowingly traded for identical behaviour on both hosts.
+- **Reviewer returns**: an internal reviewer writes its final return verbatim to `.asd/tmp/<sprint>-<phase>-<iteration id>-<reviewer>.return.md`, which `persist-review --in` reads. The orchestrator never re-types a report. The manifest carries a pre-filled `ledger` skeleton, excluded from its digest.
+- **External Review**: the wrapped CLI runs with an explicit timeout of at least 10 minutes and unredirected stdout. The negative-cache retry-after comes from the provider's reported reset, capped at 1 hour (default 1 hour) instead of refusing larger values. `t_review-report.md` states the single-value Severity cell and the empty `—` row.
+- **Change surface**: `surface-check` excludes wholly generated provider views but counts the JSON-merge `.claude/settings.json`/`.codex/hooks.json`. With `--base/--head` it drops pure renames. The consumer review pathspec matches.
+- **Manual-verification smoke check** moves from impl-review to impl-test's first green entry; results live in `test-plan.md`.
+- **Plan, scope and audit rules** (`sprint-lifecycle.md` "Plan file format", "Audit phase", new "Scope amendment"):
+  - the plan grep-assigns restating sites and names new homes by file and heading;
+  - one Task per multi-AC rule doc, and no overlapping paths within a wave;
+  - orchestrator-only actions are their own plan lines;
+  - a tests-only stub routes to impl-test;
+  - a host-behaviour criterion is verified against host docs or a live dispatch;
+  - audit checks each criterion's deliverability;
+  - authority/preference ambiguity goes straight to the user;
+  - scope offers to split unrelated strands.
+
+### Added
+- **Agent liveness** (`sprint-lifecycle.md` "Agent liveness", `providers.md` "Agent liveness per host"). While agents are in flight, the orchestrator checks their progress at least every 5 minutes. On Claude it runs the new `node .asd/runtime.js agent-liveness` through `Monitor` (fallback `CronCreate`); on Codex it uses `wait_agent`, best-effort. A stall is no transcript growth with no open tool call inside its timeout, or elapsed time over budget. A stalled agent is stopped and recovered as an interrupted or failed dispatch; a second stall escalates. Where the host offers neither mechanism, the degraded mode is logged once per sprint.
+- **`node .asd/runtime.js scratch-dir`**: a self-ignoring `.asd/tmp/` for helper files, replacing OS temp. It needs no `.gitignore` edit.
+- Review-fix deduplicates findings across reviewers by target and claim. A reach finding's fix states the reach for every branch. A flagged choice is checked against earlier dispositions in the decisions log.
+
+### Fixed
+- `isTest` recognises dotted test directories (`Core.Tests/`). The UI-surface classifier is case-insensitive and covers `.uxml`/`.uss`/`.tss`.
+
+### Migration
+- No migration script. A sprint left locally `closure-pending` by the old flow, or archived without `phase=done`, resolves through the new closure path at the next `/asd-sprint`. An open `chore/finalize-sprint-*` PR is merged as already approved, and that sprint's closure write is skipped. A sprint closed with no following sprint stays unarchived on base until the next sprint starts.
+
 ## v13.3.0
 
 A sprint now picks its shape. `standard` keeps today's eleven-phase lifecycle unchanged; the new `lite` workflow drops design/design-review for lean changes, replacing the four internal impl-review reviewers with one combined reviewer and running design-promote straight off the accepted implementation. In-flight sprints read `standard` — nothing migrates.
