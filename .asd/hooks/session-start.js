@@ -70,10 +70,30 @@ function parseProvider(argv) {
   return value === 'claude' || value === 'codex' ? value : null;
 }
 
+// Current branch from `<root>/.git/HEAD` (offline). Null on a detached HEAD,
+// a worktree `.git` file, or any missing/odd shape - callers degrade silently.
+function currentBranch(repoRoot) {
+  try {
+    const m = /^ref: refs\/heads\/(.+)\s*$/.exec(fs.readFileSync(path.join(repoRoot, '.git', 'HEAD'), 'utf8'));
+    return m ? m[1] : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+// Merged-unclosed, offline: phase `pr` with a PR number, and the sprint's
+// branch is not the checked-out one (the sprint branch was left after merge).
+function isMergedUnclosed(state, branch) {
+  const pr = state.pr;
+  return state.phase === 'pr' && Boolean(pr) && typeof pr === 'object' && pr.number != null
+    && branch !== null && typeof state.branch === 'string' && state.branch !== branch;
+}
+
 function findActiveSprints(repoRoot) {
   const sprintsDir = path.join(repoRoot, '.asd', 'sprints');
   if (!fs.existsSync(sprintsDir)) return [];
   const active = [];
+  const branch = currentBranch(repoRoot);
   const addState = (folder, statePath, archived) => {
     try {
       const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
@@ -82,7 +102,7 @@ function findActiveSprints(repoRoot) {
         const phases = phasesForState(repoRoot, state);
         if ((phases && !phases.includes(state.phase)) || state.phase === 'done') return;
       }
-      active.push({ folder, state });
+      active.push({ folder, state, mergedUnclosed: isMergedUnclosed(state, branch) });
     } catch (_) {
       return;
     }
@@ -190,7 +210,7 @@ function summary(active, provider, repoRoot) {
     const ids = active.map(a => a.state.sprint_id || a.folder).join(', ');
     return `[ASD] WARNING: multiple active sprints found (${ids}). Manual cleanup needed in .asd/sprints/.`;
   }
-  const { state, folder } = active[0];
+  const { state, folder, mergedUnclosed } = active[0];
   const id = state.sprint_id || folder;
   const phase = state.phase || 'unknown';
   const reviewNode = reviewNodeForPhase(state.reviews, phase);
@@ -198,7 +218,7 @@ function summary(active, provider, repoRoot) {
   const branch = state.branch || 'unknown';
   const verdict = lastReviewVerdict(reviewNode);
   const phases = phasesForState(repoRoot, state);
-  const next = phase === 'pr' ? (state.pr && state.pr.state === 'closure-pending' ? 'await-user-closure' : 'await-merge')
+  const next = phase === 'pr' ? (mergedUnclosed ? 'await-closure' : 'await-merge')
     : !phases ? null
     : (phase === 'audit' && phases.includes('design') && isDesignCollapsed(state.documents)) ? 'plan'
     : nextPhase(phases, phase);
