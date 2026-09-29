@@ -70,10 +70,10 @@ analysed, not any tree produced later
 (`.asd/rules/sprint-lifecycle.md` "Impacted test set").
 
 - Command: `node tests/run.js`
-- Scope: impacted set (entry 7). The safety valve does not fire, and the runner has no selector, so the whole file runs
-- Result: pass. 255/255 passed, 0 failed, 0 skipped (exit 0). The count did not change, because this entry rewrote an existing test in place
-- Lint / build: pass. `git diff --cached --check` is clean at commit; `node .asd/sync.js --check` exits 0, `ok: true`, 74/74 items current
-- HEAD: eeb52d8, plus this entry's uncommitted test edit, committed right after this record
+- Scope: full suite (impl-review terminal gate, wave-1/iter-06), unscoped
+- Result: pass. 255/255 passed, 0 failed, 0 skipped (exit 0)
+- Lint / build: pass. `git diff --cached --check` exits 0, clean; `node .asd/sync.js --check` exits 0, `ok: true`, 74/74 items current
+- HEAD: 0c7eb7a66478a220ccbf35881c56d346247b645f, clean tree
 
 ## Defects
 
