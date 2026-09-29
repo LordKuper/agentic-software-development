@@ -83,3 +83,10 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-29 — route external.md 1: critical, dispatch HEAD 969e362
 - 2026-09-29 — external interrupted attempt 1 in wave-1/iter-03 (persist-review rejected: severity cell `high (codex: major)` not a bare severity)
 - 2026-09-29 — external interrupted attempt 2 in wave-1/iter-03 (persist-review rejected: empty Kept-findings placeholder `-`, runtime accepts only `—`; t_review-report.md defines no empty-table row)
+
+## 2026-09-29 — External iter-03 escalation: retry after fix
+
+- **Decision**: The user chose to retry after the fix. The fix fd0a5b0 (head-branch PR lookup when `pr.number` is absent) lands first, and so does a template fix adding the empty Kept-findings placeholder row (`—`) to `t_review-report.md`. Impl-test entry 5 follows, then impl-review iteration 4. External reviews the delta since iter-02, explicitly told the `—` placeholder. combined re-reviews the fix: its latch is cleared by this decision, because post-APPROVE code needs a review. fd0a5b0 overturns the iter-02 disposition that "an already-merged PR without `pr.number` on base stays a known residual"; the case is now recovered through the lookup.
+- **Rationale**: This was a hard escalation after two consecutive interruptions (`review-policy.md` "Interrupted dispatch" Escalation). Both rejections were format issues, and the second exposed a template gap (F-5). The first attempt's high finding was real, and it is fixed.
+- **Affected docs**: [friction-log.md](friction-log.md)
+- 2026-09-29 — route external.md 1 (template placeholder, user-directed): standard, dispatch HEAD 81a0000
