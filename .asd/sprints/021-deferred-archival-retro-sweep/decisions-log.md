@@ -82,3 +82,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-29 — impl-test: impacted set green (253/253), 0/0 tests (1 extended); no manual-verification rows
 - 2026-09-29 — route external.md 1: critical, dispatch HEAD 969e362
 - 2026-09-29 — external interrupted attempt 1 in wave-1/iter-03 (persist-review rejected: severity cell `high (codex: major)` not a bare severity)
+- 2026-09-29 — external interrupted attempt 2 in wave-1/iter-03 (persist-review rejected: empty Kept-findings placeholder `-`, runtime accepts only `—`; t_review-report.md defines no empty-table row)

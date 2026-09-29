@@ -22,6 +22,7 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 | F-2 | audit | A Claude Code background agent's task output file stays 0 bytes on Windows, so it cannot signal liveness | — |
 | F-3 | impl | Parallel devs told to tick one shared plan.md and write one shared memory index | — |
 | F-4 | impl-review | External Review wrapper emitted a non-canonical severity cell; persist-review rejected it | reviews/impl/wave-1/iter-03/external |
+| F-5 | impl-review | External report template defines no empty Kept-findings row; runtime rejects `-` | reviews/impl/wave-1/iter-03/external |
 
 ## F-1 — Retro intake cannot reach legacy or cross-repo rows
 
@@ -53,4 +54,12 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 - **Surface**: agent — `asd-external-review` (report shape per `external-review/t_review-report.md`)
 - **What happened**: In wave-1/iter-03 the wrapper wrote `high (codex: major)` in the Kept findings Severity cell. `persist-review` rejected it ("severity must be one of low, medium, high, critical"), so the return became an interrupted dispatch and External Review was re-dispatched fresh. In iter-02 the same wrapper had appended its own mapping musings to a Description cell. The orchestrator also ran a review-fix dispatch on the unpersisted finding before persistence failed, because a `&&` chain split its bookkeeping.
 - **Impact**: One extra External dispatch, and a partial bookkeeping commit (route line without the verdict write).
+- **Refs**: reviews/impl/wave-1/iter-03/external
+
+## F-5 — External report template defines no empty Kept-findings row
+
+- **Phase**: impl-review
+- **Surface**: template — `.asd/templates/external-review/t_review-report.md` vs `.asd/runtime.js` `reviewFindings`
+- **What happened**: The iter-03 fresh re-dispatch returned APPROVE with a `| - | - | - | none | - |` placeholder row. `reviewFindings` accepts only the `—` id row as the empty table's placeholder, and `t_review-report.md` shows no empty-table form at all, so a correct APPROVE was rejected. This was the second consecutive interruption of the same iteration, which escalated to the user.
+- **Impact**: A correct verdict was discarded, and a hard user decision was forced by a template/runtime mismatch.
 - **Refs**: reviews/impl/wave-1/iter-03/external
