@@ -49,9 +49,10 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │       │       ├── impl/waves.json                # review-wave division, sprint-lifecycle.md "Review iteration counters"
 │       │       └── impl/wave-<K>/iter-NN/<reviewer>.md, <reviewer>.late.md   # legacy impl/iter-NN/ read as wave 1
 │       └── archived/<NNN-slug>/
-├── .claude/{agents/, skills/, hooks/, settings.json}   # generated provider view
+├── .claude/{agents/, skills/, hooks/}                  # generated provider view
+├── .claude/settings.json, .codex/hooks.json            # JSON-merge: ASD owns only its hook entry (providers.md)
 ├── .claude/agent-memory/<agent>/                       # hand-authored, never generated — see "Agent memory"
-├── .codex/{agents/, hooks/, hooks.json}                # generated provider view
+├── .codex/{agents/, hooks/}                            # generated provider view
 ├── .agents/skills/<name>/SKILL.md                      # generated provider view (Codex reads skills only here)
 ├── docs/
 │   ├── product/

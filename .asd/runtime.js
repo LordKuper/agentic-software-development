@@ -665,9 +665,9 @@ function draftSnapshot(files, out, previous) {
   return changed;
 }
 
-/** A generated provider view: sync output regenerated from canon, so it is never reviewable change surface. */
+/** A generated provider view: sync output regenerated from canon, so it is never reviewable change surface. The JSON-merge hook registrations (`.claude/settings.json`, `.codex/hooks.json`) can hold user content, so they count. */
 function isGeneratedView(file) {
-  return /^(\.claude\/(agents|skills|hooks)\/|\.claude\/settings\.json$|\.codex\/|\.agents\/skills\/)/.test(file);
+  return /^(\.claude\/(agents|skills|hooks)\/|\.codex\/(agents|hooks)\/|\.agents\/skills\/)/.test(file);
 }
 
 /** Measures a file list, generated provider views excluded, against SURFACE_CAP_FILES, or against the user-approved override bound when one is recorded. */
