@@ -93,3 +93,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-29 — impl fix for wave-1/iter-03: findings resolved (external 1 fd0a5b0; template placeholder ff0ef0c, user-directed)
 - 2026-09-29 — route impl-test entry 5: critical, dispatch HEAD 0307c65
 - 2026-09-30 — impl-test: impacted set green (255/255), 2/0 tests (1 message fix); no manual-verification rows
+- 2026-09-30 — impl-review wave-1/iter-04: external APPROVE (latched at 4), combined CONCERNS (1 high: `phase=pr` is not committed before the PR-creation push, so the base copy keeps the retro phase and the head-branch lookup never runs; the Step 1A carry condition is too narrow) → impl review-fix; iteration 5 floor is critical
+- 2026-09-30 — route combined.md 1: critical, dispatch HEAD 482f1b3
