@@ -21,6 +21,7 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 | F-1 | scope | Retro intake offers only the latest retro plus deferred rows, so a full sweep needed hand-run verifier dispatches | — |
 | F-2 | audit | A Claude Code background agent's task output file stays 0 bytes on Windows, so it cannot signal liveness | — |
 | F-3 | impl | Parallel devs told to tick one shared plan.md and write one shared memory index | — |
+| F-4 | impl-review | External Review wrapper emitted a non-canonical severity cell; persist-review rejected it | reviews/impl/wave-1/iter-03/external |
 
 ## F-1 — Retro intake cannot reach legacy or cross-repo rows
 
@@ -45,3 +46,11 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 - **What happened**: Wave 1 dispatches 9 Tasks concurrently. Step 6 has every dev edit and commit `plan.md`, one shared path. `git-strategy.md` "Commit before review" forbids a dev committing a path a sibling holds mid-edit. The shared `asd-dev-critical/MEMORY.md` index hits the same collision. The orchestrator took plan ticking over and barred memory writes in this dispatch.
 - **Impact**: A workflow step contradicts the concurrency rule. The orchestrator deviates to keep commits clean.
 - **Refs**: —
+
+## F-4 — External Review wrapper emitted a non-canonical severity cell
+
+- **Phase**: impl-review
+- **Surface**: agent — `asd-external-review` (report shape per `external-review/t_review-report.md`)
+- **What happened**: In wave-1/iter-03 the wrapper wrote `high (codex: major)` in the Kept findings Severity cell. `persist-review` rejected it ("severity must be one of low, medium, high, critical"), so the return became an interrupted dispatch and External Review was re-dispatched fresh. In iter-02 the same wrapper had appended its own mapping musings to a Description cell. The orchestrator also ran a review-fix dispatch on the unpersisted finding before persistence failed, because a `&&` chain split its bookkeeping.
+- **Impact**: One extra External dispatch, and a partial bookkeeping commit (route line without the verdict write).
+- **Refs**: reviews/impl/wave-1/iter-03/external
