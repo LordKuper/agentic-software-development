@@ -13,7 +13,7 @@ Staging: a dispatched agent stages only the paths it authored. The whole-tree co
 
 Framework repo specifics (`self_hosting: enabled`):
 - No YAML parser dependency in `.asd/sync.js` or `.asd/skills/*/update.js` — stay zero-dependency Node (`fs`, `path`, `crypto` only); config field reads use minimal fail-closed line scanners, never a full YAML library.
-- Any canonical `.asd/agents/`, `.asd/skills/`, `.asd/hooks/` edit MUST be followed by `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `.asd/rules/providers.md` "Canonical path -> per-provider path") in the same task before marking it done.
+- A dev edits canonical `.asd/` sources only and never runs `node .asd/sync.js --apply`; the orchestrator regenerates the views once per wave or fix round (`.asd/rules/sprint-lifecycle.md` "Self-hosting").
 - Never hand-edit *generated* `.claude/`, `.codex/`, or `.agents/skills/` files — always edit the `.asd/` canonical source. Hand-authored agent memory is the carve-out: `artifact-layout.md` "Agent memory".
 
 ASD never overwrites this file.
