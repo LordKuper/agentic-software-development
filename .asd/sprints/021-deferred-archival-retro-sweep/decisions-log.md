@@ -44,3 +44,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-30 — route Task 11: critical, dispatch HEAD d590220
 - 2026-09-30 — impl wave 3 (Task 11, 5645459) assessed adaptively. Flagged choices were accepted: plan D1 detection wording now lags canon (AC-14 supersedes it); the OPEN rule sits on the resume bullet; the "State recovery" sentence was aligned.
 - 2026-09-30 — route impl-test entry 7: critical, dispatch HEAD 56db444
+- 2026-09-30 — impl-test: impacted set green (255/255), 0/0 tests (1 rewritten for AC-14); no manual-verification rows
