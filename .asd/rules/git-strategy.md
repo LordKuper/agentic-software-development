@@ -61,15 +61,13 @@ Triggered only after DoD met and the active `checkpoints.md` policy permits publ
 
 ## Merging a PR
 
-Sole statement of who merges. The main orchestrator merges the sprint PR and the companion closure PR itself — `gh pr merge --squash`, after checks pass and the PR is mergeable; it never waits for a human to click merge.
+Sole statement of who merges. A sprint has exactly one PR; its closure never opens another. The main orchestrator merges the sprint PR itself — `gh pr merge --squash`, after checks pass and the PR is mergeable; it never waits for a human to click merge.
 
-Merging is not closure. It ends the branch, not the sprint: the orchestrator records `pr.state="closure-pending"` and the hard closure gate (`checkpoints.md`) still requires explicit user approval before any terminal state, archive move or release tag. A merge the orchestrator performed never satisfies that gate.
+Merging is not closure. It ends the branch, not the sprint: the merge writes nothing on `git.base_branch`, so the sprint stays active there, merged-unclosed, and the hard closure gate (`checkpoints.md`) still requires explicit user approval before any terminal state, archive move or release tag. A merge the orchestrator performed never satisfies that gate. The approved terminal write and archive move are the next sprint branch's first commit (`sprint-lifecycle.md` "PR phase").
+
+Legacy recovery: an open `chore/finalize-sprint-<NNN-slug>` PR left by an earlier workflow version, found via `gh pr list --head chore/finalize-sprint-<NNN-slug>`, is merged once that sprint's closure is approved, and its closure write is skipped.
 
 A merge blocked by a failing check, a conflict or a branch-protection rule is reported, not forced: never `--admin`, never a local merge pushed to `git.base_branch`.
-
-## Finalize after closure
-
-After confirmed merge and explicit hard closure approval, the main orchestrator creates `chore/finalize-sprint-<NNN-slug>` from `git.base_branch`. Its companion PR contains the terminal state and archive move, then merges through `gh` like the sprint PR. No direct base push. If the companion PR cannot merge, leave it open and keep the sprint closure pending.
 
 ## Pre-existing uncommitted changes
 
@@ -81,4 +79,4 @@ Applies only when `self_hosting: enabled` (`sprint-lifecycle.md` "Self-hosting")
 
 `pr` phase, open mode, before composing the PR: bump `asd_version` in `.asd/release-manifest.json` per [SemVer](https://semver.org/), inferred from the sprint's Conventional Commit types (highest wins): `fix`→PATCH, `feat`→MINOR, `!`/`BREAKING CHANGE` footer→MAJOR. Add a matching `## v<version>` section to root `CHANGELOG.md` (newest first, English), grouped `Added|Changed|Deprecated|Removed|Fixed|Security`, describing consumer-facing impact — not implementation detail. Under `backward_compat: migration`, this bump is also the blocking DoD check that `max(.asd/migrations/*.js filename version) <= asd_version` — a migration a consumer never reaches because the version bump does not cover it fails the bump, not just the migration.
 
-After the companion closure PR merges: create annotated tag `v<asd_version>` on that merge commit; `gh release create v<asd_version> --title v<asd_version> --notes-file <extracted CHANGELOG section>`.
+At the closure write, after its commit (`sprint-lifecycle.md` "PR phase"): target the sprint PR's merge commit, `pr.merge_commit` from `gh pr view <pr.number> --json mergeCommit`, and read `asd_version` from it (`git show <merge_commit>:.asd/release-manifest.json`). When `v<asd_version>` already exists on `origin`, skip the rest. Else create annotated tag `v<asd_version>` on that commit, `git push origin v<asd_version>`, then `gh release create v<asd_version> --verify-tag --title v<asd_version> --notes-file <extracted CHANGELOG section>` (notes file under `.asd/tmp/`, `artifact-layout.md` "Scratch directory").

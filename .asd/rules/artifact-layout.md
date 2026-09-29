@@ -23,6 +23,7 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │   │   ├── custom-coding-rules.md
 │   │   ├── retro-backlog.md                 # lazy, "Retro backlog"
 │   │   └── stubs.md
+│   ├── tmp/                                 # git-ignored helper files, "Scratch directory"
 │   └── sprints/
 │       ├── <NNN-slug>/
 │       │   ├── sprint.md
@@ -95,7 +96,11 @@ Agent memory lives at the provider-view root — `.claude/agent-memory/<agent>/`
 
 **In the review surface, both modes**: agent memory is hand-authored source, not generated output, so it is never an exclusion in any review scope — `self_hosting` enabled or disabled alike. Sole statement of the property; `sprint-lifecycle.md` "Self-hosting", `external-review.md` "Phase-scoped payload" and `t_prompt-external-impl.md` cite it, never restate it. A memory file loads on every dispatch of its agent, so a false line in one is paid again per dispatch until a review catches it. How such a write reaches a reviewed diff at all: `review-policy.md` "Change-surface rule".
 
-**Leftover-term check**: a sprint that removes a mechanism or term searches, at its first `impl-test` entry, for every remaining mention of it anywhere in the repo, `.claude/agent-memory/**` included, directories of no longer existing agents too.
+**Leftover-term check**: a sprint that removes a mechanism or term searches, at its first `impl-test` entry, for every remaining mention of it anywhere in the repo, `.claude/agent-memory/**` included, directories of no longer existing agents too. The check pins the exact sentences and terms the sprint removed, taken from its own diff's removed lines, never a free-phrasing regex.
+
+## Scratch directory
+
+`.asd/tmp/` holds every helper file a workflow or agent writes that is no artifact — path lists, the review-wave division, release notes, the reviewer return file (`review-policy.md` "Coverage ledger") — never OS temp, never a sprint folder. Resolve it with `node .asd/runtime.js scratch-dir`, which creates it on first use and prints its absolute path. It ignores itself (its own `.gitignore` holds `*`), so nothing in it is committed or reviewed.
 
 ## Subsystem registry
 
@@ -190,7 +195,7 @@ Manual step = operational action a human must perform for the plan to complete (
 
 SSoT for two things invisible in the diff: **why** a test was removed, and **why** a change needed no new test. Also the handoff channel for code defects to `impl` test-fix mode (`Defects` section). Not a task list (that is `plan.md`) and not a review verdict (that is `reviews/impl/wave-<K>/iter-NN/testing.md`).
 
-**Manual verification — single home.** The optional `Manual verification` table (AC, steps, expected observation) is authored only here, by the Tester, when automation is impossible (visual UI, third-party live integration, ux feel). No review file duplicates or re-authors this spec; `asd-reviewer-testing` judges whether the spec is justified and reports any result as an ordinary finding, never as a persisted section of its own.
+**Manual verification — single home.** The optional `Manual verification` table (AC, steps, expected observation) is authored only here, by the Tester, when automation is impossible (visual UI, third-party live integration, ux feel). The user smoke check of its rows runs at `impl-test`'s first green entry (`asd-phase-impl-test.md`), and its result is recorded in this file, where reviewers read it. No review file duplicates or re-authors this spec; `asd-reviewer-testing` judges whether the spec is justified and reports any result as an ordinary finding, never as a persisted section of its own.
 
 ## Friction log
 
@@ -240,7 +245,7 @@ Agents preserve the block. Reviewers verify content respects the declared scope.
 
 ## Sprint archival
 
-Archived path: `.asd/sprints/archived/<NNN-slug>/`. Closure/archival sequence (closure-pending → explicit approval → companion PR → terminal write + move) is owned by `sprint-lifecycle.md` "PR phase" — not restated here.
+Archived path: `.asd/sprints/archived/<NNN-slug>/`. The archive move rides the next sprint's branch after explicit closure approval; the sequence is owned by `sprint-lifecycle.md` "PR phase".
 
 ## State file
 

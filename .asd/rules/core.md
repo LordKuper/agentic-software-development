@@ -11,7 +11,7 @@ All project work goes through `/asd-sprint`.
 
 ## Glossary
 
-- **Sprint** — one unit of scoped work. One active at a time. Closed sprints archived, immutable.
+- **Sprint** — one unit of scoped work. One active at a time. Closed sprints archived by the next sprint's first commit, immutable.
 - **Phase** — step in a sprint lifecycle; the sprint's workflow fixes which phases run and their order (`.asd/workflows/standard.json`, `.asd/workflows/lite.json`). `standard`, all mandatory: scope, audit, design, design-review, design-promote, plan, impl, impl-test, impl-review, retro, pr.
 - **Workflow** — a sprint lifecycle definition, `standard` or `lite`, chosen at scope and frozen per sprint (`sprint-lifecycle.md` "Workflows"). Distinct from ASD as a whole and from the `asd-phase-*.md` orchestration bodies sharing its folder.
 - **Iteration** — one pass of the review loop in a `*-review` phase. Each dispatches every reviewer fresh with clean context (`review-policy.md`).
@@ -28,7 +28,7 @@ All project work goes through `/asd-sprint`.
 
 ## Invariants
 
-- One active sprint. New sprint blocked until current archived.
+- One active sprint. New sprint blocked until current archived, except a merged-unclosed sprint whose closure the user approves in the same flow (`sprint-lifecycle.md` "PR phase").
 - Infrastructure files read-only during sprint work. Only `/asd-init` may edit settings — run by the user, or sprint-mediated for a plan's declared settings change (`sprint-lifecycle.md` "Plan file format") — or by a release migration run by `/asd-update`, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent. **Exception**: `self_hosting: enabled` lifts this for the exhaustive allowlist in `sprint-lifecycle.md` "Self-hosting" — generated `.claude/`/`.codex/`/`.agents/skills/` stay read-only always.
 - Every project task flows through a sprint. Ad-hoc edits forbidden.
 - Folder structure follows `artifact-layout.md`.
