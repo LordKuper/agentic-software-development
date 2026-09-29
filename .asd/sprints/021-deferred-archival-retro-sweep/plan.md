@@ -88,102 +88,104 @@ Sprint-specific additions:
 ### Task 1: sprint-lifecycle.md — archival, liveness, plan/scope/audit rules, dispatch recovery
 Material risk: change: workflow gate
 Reachability: pr writes `NEXT: await-closure` at merge-mode exit; asd-sprint reads it at Step 3 and the scope closure write consumes the approval it collects at scope step 1
-- [ ] AC-1…AC-5 (D1, D2, D4): rewrite `## PR phase`; update the `pr` row of `## Phase table`, L13 in `## Orchestration and adaptive gates`, `## Self-hosting` L143 (tag timing), `## Sprint immutability` (in-place write only in the D1 closure write) and `## State recovery` L373 (no `closure-pending` record; merged-unclosed detection).
-- [ ] AC-7 (D7): add `## Agent liveness`. In `## State recovery` "Failed dispatch", extend the scope to creator and tester dispatches that end without a signal, and count one host-wide cause as one event, modelled on `review-policy.md` "Correlated interruption" (AC-11, 013#A-1).
-- [ ] AC-8: in `## Plan file format` add the rules: restating sites grepped and assigned; each new home named by file and heading; one Task per multi-AC rule doc; a Task holds only agent-performable work, with orchestrator actions as their own lines and an execution point; no overlapping paths within a wave; no helper, guard or export without a named caller or reachable failure; external APIs listed and the tech reference extended; stub inclusion states verified cost and behaviour change; a tests-only stub routes to impl-test.
-- [ ] AC-9:
+- [x] AC-1…AC-5 (D1, D2, D4): rewrite `## PR phase`; update the `pr` row of `## Phase table`, L13 in `## Orchestration and adaptive gates`, `## Self-hosting` L143 (tag timing), `## Sprint immutability` (in-place write only in the D1 closure write) and `## State recovery` L373 (no `closure-pending` record; merged-unclosed detection).
+- [x] AC-7 (D7): add `## Agent liveness`. In `## State recovery` "Failed dispatch", extend the scope to creator and tester dispatches that end without a signal, and count one host-wide cause as one event, modelled on `review-policy.md` "Correlated interruption" (AC-11, 013#A-1).
+- [x] AC-8: in `## Plan file format` add the rules: restating sites grepped and assigned; each new home named by file and heading; one Task per multi-AC rule doc; a Task holds only agent-performable work, with orchestrator actions as their own lines and an execution point; no overlapping paths within a wave; no helper, guard or export without a named caller or reachable failure; external APIs listed and the tech reference extended; stub inclusion states verified cost and behaviour change; a tests-only stub routes to impl-test.
+- [x] AC-9:
   - extend L7's re-verification: a host-behaviour criterion is checked against host docs or a live dispatch;
   - in `## Audit phase`, add the per-criterion deliverability and consistency check;
   - at L11, send authority- or preference-only ambiguity straight to the user, and dispatch BA only when a source can resolve it;
   - add `## Scope amendment`: the AC, the plan Task and its wave, the gate records, and a re-run of the change-surface estimate.
-- [ ] AC-11: `## Self-hosting` L139 — dev edits canon; the orchestrator syncs once, after a wave's or fix round's last canon-editing dispatch.
-- [ ] AC-10: move the manual-verification smoke check to impl-test's first green entry wherever `## Impl-test phase` or the impl-review text states its timing.
+- [x] AC-11: `## Self-hosting` L139 — dev edits canon; the orchestrator syncs once, after a wave's or fix round's last canon-editing dispatch.
+- [x] AC-10: move the manual-verification smoke check to impl-test's first green entry wherever `## Impl-test phase` or the impl-review text states its timing.
 
 ### Task 2: git-strategy, artifact-layout, checkpoints, core, t_AGENTS — archival and scratch wording
 Material risk: change: workflow gate
-- [ ] AC-1…AC-4 in `git-strategy.md`: `## Merging a PR` (one PR per sprint, no closure-pending record), delete `## Finalize after closure` and move the D2 legacy-PR sentence into `## Merging a PR`, and `## Versioning & Changelog (self-hosting only)` (D4 tag target and timing).
-- [ ] `artifact-layout.md`:
+- [x] AC-1…AC-4 in `git-strategy.md`: `## Merging a PR` (one PR per sprint, no closure-pending record), delete `## Finalize after closure` and move the D2 legacy-PR sentence into `## Merging a PR`, and `## Versioning & Changelog (self-hosting only)` (D4 tag target and timing).
+- [x] `artifact-layout.md`:
   - `## Sprint archival`: point to D1;
   - add `## Scratch directory` (D5), and add the path to the path map;
   - `## Test plan` L193: smoke timing (AC-10);
   - "Leftover-term check": pin the removed sentences taken from the diff (AC-13, 019#P-3).
-- [ ] `checkpoints.md`: the L52 sprint-closure row wording (approval before the next scope's closure write), and cite `## Scope amendment` beside the hard "new or changed scope" gate.
-- [ ] AC-3: `core.md` L14 and L31, and `.asd/templates/t_AGENTS.md` L48 (the one-active-sprint exemption for an approved merged-unclosed sprint).
+- [x] `checkpoints.md`: the L52 sprint-closure row wording (approval before the next scope's closure write), and cite `## Scope amendment` beside the hard "new or changed scope" gate.
+- [x] AC-3: `core.md` L14 and L31, and `.asd/templates/t_AGENTS.md` L48 (the one-active-sprint exemption for an approved merged-unclosed sprint).
 
 ### Task 3: review-policy, providers, code-style, t_review — review contract, liveness mapping, test contracts
 Material risk: change: public contract
-- [ ] AC-10 in `review-policy.md`:
+- [x] AC-10 in `review-policy.md`:
   - `|` escaping beside the Findings table shape;
   - D6 in "Coverage ledger" Persistence and "Gate Verdict Format";
   - the ledger skeleton in "Manifest vocabulary";
   - "Autofix vs escalation": deduplicate findings across reviewers by target and claim before fix routing, and a reach finding's fix states the reach for every branch at the site;
   - "Interrupted dispatch": cite `sprint-lifecycle.md` `## Agent liveness`.
-- [ ] `t_review.md` "## Findings": the `\|` escape note.
-- [ ] `providers.md`:
+- [x] `t_review.md` "## Findings": the `\|` escape note.
+- [x] `providers.md`:
   - new semantic-operation rows "observe in-flight agent" and "stop in-flight agent" (Claude: `agent-liveness` via `Monitor`/`CronCreate`, `TaskStop`; Codex: `wait_agent`, `close_agent`);
   - `### Agent liveness per host` with the verified facts, source URLs and verification date from `audit.md`;
   - on the `delegate to agent` row: a return is read from the completion notification, never the task output file (AC-11, glings:004#A-2);
   - L46: D6, including the Codex `workspace-write` trade-off.
-- [ ] AC-13 in `code-style.md` §17: a content-contract test pins a token that cannot be reworded, never surrounding prose.
+- [x] AC-13 in `code-style.md` §17: a content-contract test pins a token that cannot be reworded, never surrounding prose.
 
 ### Task 4: external-review rule and wrapper — timeout, retry-after, consumer pathspec
 Material risk: change: public contract
-- [ ] AC-11 in `external-review.md` "Outcome contract" and in `asd-external-review.md` L59/L66/L103: invoke the wrapped CLI with an explicit shell timeout of ≥10 minutes and never redirect its stdout.
-- [ ] AC-11 in `external-review.md` L31 "Detection and negative cache": retry-after comes from the provider-reported reset and is capped at 1 hour, never the 5-minute default.
-- [ ] AC-12 in `external-review.md` "Phase-scoped payload", consumer row L62: also exclude the generated provider views (`.claude/{agents,skills,hooks}/**`, `.claude/settings.json`, `.codex/**`, `.agents/skills/**`).
+- [x] AC-11 in `external-review.md` "Outcome contract" and in `asd-external-review.md` L59/L66/L103: invoke the wrapped CLI with an explicit shell timeout of ≥10 minutes and never redirect its stdout.
+- [x] AC-11 in `external-review.md` L31 "Detection and negative cache": retry-after comes from the provider-reported reset and is capped at 1 hour, never the 5-minute default.
+- [x] AC-12 in `external-review.md` "Phase-scoped payload", consumer row L62: also exclude the generated provider views (`.claude/{agents,skills,hooks}/**`, `.claude/settings.json`, `.codex/**`, `.agents/skills/**`).
 
 ### Task 5: runtime.js and workflow definitions — classifiers, surface, retry clamp, ledger skeleton, scratch, liveness, chain exit
 Material risk: change: public contract
-- [ ] AC-12:
+- [x] AC-12:
   - `isTest` also matches dotted test directories (`Core.Tests/`, `Game.Tests.Unit/`);
   - `isUiSurface` becomes case-insensitive, gains `.uxml`/`.uss`/`.tss`, and is exported (caller: impl-test's fail-first check);
   - `surfaceCheck` excludes the generated provider views;
   - `surface-check` accepts `--base <ref> --head <ref>`, which counts the diff's paths minus pure renames (`--name-status -M`, `R100` dropped), for impl-review's division-point check.
-- [ ] AC-11: `recordExternalFailure` clamps retry-after to 1 hour instead of throwing. Its default is the provider-reported reset when the caller passes one, and 1 hour otherwise, never 5 minutes. `NEGATIVE_TTL_MS` goes.
-- [ ] AC-10:
+- [x] AC-11: `recordExternalFailure` clamps retry-after to 1 hour instead of throwing. Its default is the provider-reported reset when the caller passes one, and 1 hour otherwise, never 5 minutes. `NEGATIVE_TTL_MS` goes.
+- [x] AC-10:
   - `emitCoverageManifest` adds a ledger skeleton (manifest digest, empty findings, files/rules/sections rows to fill), pre-filled with the digest;
   - `persist-review --in` reads the D6 return file unchanged.
-- [ ] D5: `scratch-dir` command. D7: `agent-liveness` command.
-- [ ] D1: `CHAIN_EXITS` becomes `['await-merge', 'await-closure']`, and `next.pr` in `.asd/workflows/standard.json` and `.asd/workflows/lite.json` becomes `["await-merge", "await-closure"]`. Update the usage string.
+- [x] D5: `scratch-dir` command. D7: `agent-liveness` command.
+- [x] D1: `CHAIN_EXITS` becomes `['await-merge', 'await-closure']`, and `next.pr` in `.asd/workflows/standard.json` and `.asd/workflows/lite.json` becomes `["await-merge", "await-closure"]`. Update the usage string.
 
 ### Task 6: session-start hook — merged-unclosed report
 Material risk: artifact: hook display
-- [ ] AC-3 (D3) in `.asd/hooks/session-start.js`: `findActiveSprints` classifies merged-unclosed offline, and `next` reports `await-closure`. The `closure-pending` branch is dropped. Exit 0 and never throw on any malformed shape.
+- [x] AC-3 (D3) in `.asd/hooks/session-start.js`: `findActiveSprints` classifies merged-unclosed offline, and `next` reports `await-closure`. The `closure-pending` branch is dropped. Exit 0 and never throw on any malformed shape.
 
 ### Task 7: pr and scope workflows, asd-sprint and asd-phase-pr skills — closure flow
 Material risk: change: workflow gate
 Reachability: asd-sprint collects the closure approval at Step 1 or at Step 3's `await-closure`; asd-phase-scope step 1 performs the closure write after branch creation
-- [ ] AC-1/AC-4 in `.asd/workflows/asd-phase-pr.md` "Merge and closure mode": merge, confirm, no base write, return `NEXT: await-closure`. Steps 3-5 become the D1/D4 closure write and move to the scope workflow; update the return contract. Update the `.asd/skills/asd-phase-pr/SKILL.md` description to match.
-- [ ] AC-2/AC-3 in `.asd/skills/asd-sprint/SKILL.md` (Preconditions, Step 1, Step 3, return contract): merged-unclosed detection (D1, confirmed via `gh`), the closure request before new-sprint or resume, the one-active exemption, the legacy shapes (D2), and the `await-closure` handling. Fix the stale "archived pre-merge" text (audit C1).
-- [ ] AC-2 in `.asd/workflows/asd-phase-scope.md` step 1: the closure write (D1, D2) plus the tag (D4), before seeding.
-- [ ] AC-9 in `asd-phase-scope.md`: step 2 verifies host-behaviour criteria against host docs or a live dispatch; step 4's gate offers to split unrelated strands or independent contracts into consecutive sprints.
+- [x] AC-1/AC-4 in `.asd/workflows/asd-phase-pr.md` "Merge and closure mode": merge, confirm, no base write, return `NEXT: await-closure`. Steps 3-5 become the D1/D4 closure write and move to the scope workflow; update the return contract. Update the `.asd/skills/asd-phase-pr/SKILL.md` description to match.
+- [x] AC-2/AC-3 in `.asd/skills/asd-sprint/SKILL.md` (Preconditions, Step 1, Step 3, return contract): merged-unclosed detection (D1, confirmed via `gh`), the closure request before new-sprint or resume, the one-active exemption, the legacy shapes (D2), and the `await-closure` handling. Fix the stale "archived pre-merge" text (audit C1).
+- [x] AC-2 in `.asd/workflows/asd-phase-scope.md` step 1: the closure write (D1, D2) plus the tag (D4), before seeding.
+- [x] AC-9 in `asd-phase-scope.md`: step 2 verifies host-behaviour criteria against host docs or a live dispatch; step 4's gate offers to split unrelated strands or independent contracts into consecutive sprints.
 
 ### Task 8: plan and audit workflows, templates, architect/BA agents — plan and audit rules
 Material risk: change: workflow gate
-- [ ] AC-8 in `.asd/workflows/asd-phase-plan.md` step 4 (the "Task decomposition rules" and "Stub inclusion step"): the acting-site form of the Task 1 rules. Resolve the L31/L38 conflict: a tests-only stub goes to impl-test with no Task. The L40 surface list is written under `.asd/tmp/` (D5).
-- [ ] AC-8 in the `.asd/templates/t_plan.md` format-rules comment: only the parser-relevant lines change; cite `sprint-lifecycle.md` for the rest.
-- [ ] AC-9 in `.asd/workflows/asd-phase-audit.md`:
+- [x] AC-8 in `.asd/workflows/asd-phase-plan.md` step 4 (the "Task decomposition rules" and "Stub inclusion step"): the acting-site form of the Task 1 rules. Resolve the L31/L38 conflict: a tests-only stub goes to impl-test with no Task. The L40 surface list is written under `.asd/tmp/` (D5).
+- [x] AC-8 in the `.asd/templates/t_plan.md` format-rules comment: only the parser-relevant lines change; cite `sprint-lifecycle.md` for the rest.
+- [x] AC-9 in `.asd/workflows/asd-phase-audit.md`:
   - step 2 payload: the per-criterion deliverability and consistency check;
   - step 3 and Delegates: authority- or preference-only ambiguity becomes a `QUESTION` straight to the user, and BA is dispatched only for source-resolvable ambiguity.
-- [ ] The same AC-9 wording lands in `.asd/templates/t_audit.md` L12, `.asd/agents/asd-architect.md` Outputs L40 and `.asd/agents/asd-ba.md` L16.
+- [x] The same AC-9 wording lands in `.asd/templates/t_audit.md` L12, `.asd/agents/asd-architect.md` Outputs L40 and `.asd/agents/asd-ba.md` L16.
 
 ### Task 9: impl, impl-test, impl-review and design-review workflows, dev and reviewer agents — fix routing, return file, sync
 Material risk: change: security
-- [ ] AC-10 in `.asd/workflows/asd-phase-impl.md`:
+- [x] AC-10 in `.asd/workflows/asd-phase-impl.md`:
   - step 3 review-fix: deduplicate findings across reviewers by target and claim before grouping;
   - step 6: a reach finding's fix states the reach for every branch;
   - steps 10-11: check the decisions log for an earlier disposition before accepting a flagged choice, and record any reversal (also `.asd/agents/asd-dev.md` L93).
-- [ ] AC-11 in `asd-phase-impl.md`:
+- [x] AC-11 in `asd-phase-impl.md`:
   - step 1 L48: devs never `--apply`; the orchestrator syncs once per wave or fix round;
   - step 9's authorised-paths gate admits orchestrator-regenerated views;
   - "Execution mode": a denied command means commit, then return `FAILED` naming the command (also the `asd-dev.md` Signals).
-- [ ] AC-10/D6 in `.asd/workflows/asd-phase-impl-review.md` (L9, L17, L24, L25, L49) and `.asd/workflows/asd-phase-design-review.md` (L13, L37): the return file path in the payload, `persist-review --in` on it, and `.asd/tmp/` for every helper file.
-- [ ] Move the smoke check from `asd-phase-impl-review.md` step 6 to `.asd/workflows/asd-phase-impl-test.md`'s first green entry. The Inputs of `asd-reviewer-testing.md`/`asd-reviewer-combined.md` read the result from `test-plan.md`.
-- [ ] AC-12: `asd-phase-impl-test.md` L33, the consumer pathspec restated with the generated views excluded.
-- [ ] D6 in the Output sections of `.asd/agents/asd-reviewer-{correctness,efficiency,testing,documentation,combined}.md`: write the final return verbatim to the payload's return file. Codex frontmatter `sandbox_mode: "workspace-write"`, with a policy line naming the two permitted paths.
+- [x] AC-10/D6 in `.asd/workflows/asd-phase-impl-review.md` (L9, L17, L24, L25, L49) and `.asd/workflows/asd-phase-design-review.md` (L13, L37): the return file path in the payload, `persist-review --in` on it, and `.asd/tmp/` for every helper file.
+- [x] Move the smoke check from `asd-phase-impl-review.md` step 6 to `.asd/workflows/asd-phase-impl-test.md`'s first green entry. The Inputs of `asd-reviewer-testing.md`/`asd-reviewer-combined.md` read the result from `test-plan.md`.
+- [x] AC-12: `asd-phase-impl-test.md` L33, the consumer pathspec restated with the generated views excluded.
+- [x] D6 in the Output sections of `.asd/agents/asd-reviewer-{correctness,efficiency,testing,documentation,combined}.md`: write the final return verbatim to the payload's return file. Codex frontmatter `sandbox_mode: "workspace-write"`, with a policy line naming the two permitted paths.
 
-### Task 10: README
+### Task 10: README, AGENTS.md tail, decisions-log template
 Material risk: artifact: documentation mirror
+- [ ] Root `AGENTS.md` hand-edited tail (below `<!-- asd:end -->`): drop the per-task `--apply` wording; devs edit canon only, the orchestrator syncs once per wave (`sprint-lifecycle.md` "Self-hosting") — restating site found by Task 1.
+- [ ] `.asd/templates/t_decisions-log.md`: add the one-line form `- YYYY-MM-DD — stall: <agent> <dispatch ids>` that `sprint-lifecycle.md` "Agent liveness" introduced.
 - [ ] Update README for:
   - the `pr` phase row and the flowchart exit tokens;
   - the folder map (`.asd/tmp/`);

@@ -36,3 +36,18 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 <!-- entries appended below this line -->
 - 2026-09-29 — route Task 1, Task 2, Task 3, Task 4, Task 5, Task 7, Task 8, Task 9: critical, dispatch HEAD 26b42d8
 - 2026-09-29 — route Task 6: standard, dispatch HEAD 26b42d8
+
+## 2026-09-29 — Wave 1 landed; flagged choices resolved; Task 10 scope widened
+
+- **Decision**: Tasks 1–9 are complete. Commits: 4451a1f; d98f431 and e44e64c; a38b020 and fdfeb8a; 716db14; 8624b95 and 1143591; 71781e3; b9cd9af; 9dc3b19 and d75187d; 5b0ecf1 and 99365b3. The orchestrator sync is 056e1fa.
+  - Flagged choices were accepted as returned, except where a follow-up closed a real gap:
+    - the tests-only stub now rides a `Stub <ref> → impl-test` line in `plan.md` that impl-test reads (Task 8 and Task 9);
+    - the sprint-closure approval has an explicit Context-hygiene exception (Task 2);
+    - the manifest digest prose now excludes the `ledger` skeleton, and the Monitor deadline exceeds the interval (Task 3);
+    - impl-review passes `--base/--head` to `surface-check` (Task 9);
+    - `agent-liveness` honours `CLAUDE_CONFIG_DIR` (Task 5).
+  - Task 10 gains two restating sites that no wave-1 Task owned: the root `AGENTS.md` tail, and the `t_decisions-log.md` stall line form.
+  - The orchestrator edited `.asd/project/custom-coding-rules.md` (5097637), removing the per-task `--apply` rule, and deleted two ownerless `asd-pm` notes (f127267).
+  - The orchestrator ticked the plan checkboxes because parallel devs cannot share `plan.md` (F-3).
+- **Rationale**: Step 10 requires every non-`none` flagged choice to be resolved or routed back before the assessment. The follow-ups fixed reachability and SSoT gaps. The remaining choices are bounded, in-scope calls.
+- **Affected docs**: [plan.md](plan.md), [friction-log.md](friction-log.md)
