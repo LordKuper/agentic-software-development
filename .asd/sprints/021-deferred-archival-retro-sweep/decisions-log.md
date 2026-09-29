@@ -59,3 +59,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: This is a routine adaptive pass under `checkpoints.md`: exact authority (sprint.md, plan.md), the checks pass, and no material alternative is left open. The known test breaks (prose pins, sandbox, hook token, retry-after, manual-verification payload) go to impl-test, not back to impl.
 - **Affected docs**: [plan.md](plan.md)
 - 2026-09-29 — route impl-test entry 1: critical, dispatch HEAD a67a295
+- 2026-09-29 — impl-test: defects D-1, D-2, D-3, D-4 → impl test-fix (digest 9b55eeb7a5f954ec153d1cb8ff2b7f08b37e6535c980ae212a632a84333795dd)
