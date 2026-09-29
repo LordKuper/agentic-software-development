@@ -27,7 +27,7 @@ Before a phase-skill delegation below, rotate the decisions log when `.asd/rules
 
 ### Step 1: detect active sprint
 - Search repo for `.asd/sprints/*/state.json` (excluding `archived/`) UNION `.asd/sprints/archived/*/state.json` where `phase != "done"` (legacy archived-non-done shape)
-- Each with `phase="pr"` and `pr.number` set: `gh pr view <pr.number> --json state,mergeCommit` reporting `MERGED` makes it **merged-unclosed**, whatever `pr.state` records (legacy `closure-pending` included) — unless `gh pr list --head chore/finalize-sprint-<NNN-slug> --state all` finds a legacy companion PR: an `OPEN` one, created only after closure approval, is merged per `git-strategy.md` "Merging a PR"; an `OPEN` or `MERGED` one closes the sprint on `git.base_branch`, so it is no longer active and gets no closure write. A `gh` failure is FAILED naming the fix (`git-strategy.md` "PR creation").
+- Each with `phase="pr"`: `gh pr view <pr.number> --json state,mergeCommit` reporting `MERGED` — or, with no `pr.number`, a `MERGED` hit of `gh pr list --head <state.branch> --state all --json number,state,mergeCommit` (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"), its number carried to the closure write — makes it **merged-unclosed**, whatever `pr.state` records (legacy `closure-pending` included) — unless `gh pr list --head chore/finalize-sprint-<NNN-slug> --state all` finds a legacy companion PR: an `OPEN` one, created only after closure approval, is merged per `git-strategy.md` "Merging a PR"; an `OPEN` or `MERGED` one closes the sprint on `git.base_branch`, so it is no longer active and gets no closure write. A `gh` failure is FAILED naming the fix (`git-strategy.md` "PR creation").
 - 0 active → new-sprint flow
 - 1 active, merged-unclosed → Step 1A
 - 1 active otherwise → resume flow
@@ -36,7 +36,7 @@ Before a phase-skill delegation below, rotate the decisions log when `.asd/rules
 ### Step 1A: closure request
 Reached from Step 1 (merged-unclosed) or Step 3 (`NEXT: await-closure`), before anything else.
 1. Request user decision on the hard `sprint closure` gate (`checkpoints.md` "Gate policy"), presenting the completion evidence (`sprint-lifecycle.md` "PR phase"): approve | refuse. The merge and the adaptive policy never satisfy it.
-2. Approve → new-sprint flow (Step 2A), carrying the approval (closing sprint path) unwritten until scope step 1's closure write records it; aborted before that, nothing is written and Step 1 asks again.
+2. Approve → new-sprint flow (Step 2A), carrying the approval (closing sprint path, plus the head-branch lookup's PR number when `pr` is null) unwritten until scope step 1's closure write records it; aborted before that, nothing is written and Step 1 asks again.
 3. Refuse or feedback → the sprint stays active and resumable; halt, `NEXT: await-closure`.
 
 ### Step 2A: new-sprint flow
