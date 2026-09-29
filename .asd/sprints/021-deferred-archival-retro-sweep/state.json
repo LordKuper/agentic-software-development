@@ -1,7 +1,7 @@
 {
   "sprint_id": "021-deferred-archival-retro-sweep",
   "branch": "sprint/021-deferred-archival-retro-sweep",
-  "phase": "impl-test",
+  "phase": "impl-review",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -195,7 +195,7 @@
       "wave": 1,
       "waves": [
         {
-          "iteration": 4,
+          "iteration": 5,
           "verdicts": {
             "iter-01": {
               "combined": "CONCERNS",
@@ -211,23 +211,29 @@
             "iter-04": {
               "combined": "CONCERNS",
               "external": "APPROVE"
+            },
+            "iter-05": {
+              "combined": "APPROVE",
+              "external": "APPROVE"
             }
           },
           "iteration_heads": {
             "iter-01": "c9bb97c343c7bfef1e4e469f287210326b11cf42",
             "iter-02": "0dbfa454f6227ccf029836756f55163a46a76cb2",
             "iter-03": "969e362bdd8300831718000cde9dc2a39c40f2ba",
-            "iter-04": "482f1b3a517ea8acb03491fc3ac83c4b901436d1"
+            "iter-04": "482f1b3a517ea8acb03491fc3ac83c4b901436d1",
+            "iter-05": "48c5b7f6ad34ad53c7a8b8e58d4877d546f61e05"
           },
           "latched": {
-            "external": 4
+            "external": 4,
+            "combined": 5
           }
         }
       ]
     }
   },
   "created_at": "2026-09-29T00:00:00Z",
-  "updated_at": "2026-09-29T21:13:49.953Z",
+  "updated_at": "2026-09-29T21:25:22.912Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

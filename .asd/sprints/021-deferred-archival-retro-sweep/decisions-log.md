@@ -98,3 +98,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-30 — impl fix for wave-1/iter-04: findings resolved (combined 1 56c2089). Flagged choices were accepted: the MERGED hit keeps its no-write rule, the self-hosting bump is idempotent on an adopted PR, scope step 1 reads the carried number, and base copies merged before this fix stay unrecovered (legacy residual).
 - 2026-09-30 — route impl-test entry 6: critical, dispatch HEAD 29b1ae3
 - 2026-09-30 — impl-test: impacted set green (255/255), 0/0 tests (1 extended); no manual-verification rows
+- 2026-09-30 — impl-review wave-1/iter-05: combined APPROVE (latched at 5), external APPROVE (latched at 4, inherited); wave 1 roster met → terminal full suite. Known residual, dropped below the critical floor: a pr open-mode MERGED hit writes nothing locally, so after a refused closure the next Step 1 misses a sprint whose `phase` is still retro's. The sprint re-runs retro, then pr finds the hit again. The same applies to a hand-opened PR merged before pr. This is a retro candidate.
+- 2026-09-30 — route impl-review wave-1/iter-05 suite: critical, dispatch HEAD 48c5b7f
