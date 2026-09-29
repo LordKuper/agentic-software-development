@@ -20,6 +20,7 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 |---|---|---|---|
 | F-1 | scope | Retro intake offers only the latest retro plus deferred rows, so a full sweep needed hand-run verifier dispatches | — |
 | F-2 | audit | A Claude Code background agent's task output file stays 0 bytes on Windows, so it cannot signal liveness | — |
+| F-3 | impl | Parallel devs told to tick one shared plan.md and write one shared memory index | — |
 
 ## F-1 — Retro intake cannot reach legacy or cross-repo rows
 
@@ -35,4 +36,12 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 - **Surface**: provider tool — Claude Code background `Agent` dispatch `output_file`
 - **What happened**: While applying the AC-7 intent early, the orchestrator armed a 5-minute monitor on the audit architect's `output_file` size. Every `tasks/*.output` agent file is 0 bytes, running and completed alike, so size growth cannot distinguish progress from a stall. The monitor was stopped.
 - **Impact**: The obvious liveness probe for AC-7 is unusable on Windows. The AC-7 host mapping needs another observable signal.
+- **Refs**: —
+
+## F-3 — Parallel devs told to tick one shared plan.md
+
+- **Phase**: impl
+- **Surface**: phase — `.asd/workflows/asd-phase-impl.md` step 6 ("initial — tick corresponding checkboxes in `<sprint>/plan.md`")
+- **What happened**: Wave 1 dispatches 9 Tasks concurrently. Step 6 has every dev edit and commit `plan.md`, one shared path. `git-strategy.md` "Commit before review" forbids a dev committing a path a sibling holds mid-edit. The shared `asd-dev-critical/MEMORY.md` index hits the same collision. The orchestrator took plan ticking over and barred memory writes in this dispatch.
+- **Impact**: A workflow step contradicts the concurrency rule. The orchestrator deviates to keep commits clean.
 - **Refs**: —
