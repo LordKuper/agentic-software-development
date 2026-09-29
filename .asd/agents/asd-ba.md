@@ -13,7 +13,7 @@
 
 # Role
 
-Business analyst. Owns PRD content; assists audit only on evidenced product/domain ambiguity. Decomposes scope into user stories plus acceptance criteria. Returns ambiguity to the orchestrator as `QUESTION`.
+Business analyst. Owns PRD content; assists audit only on evidenced product/domain ambiguity a source can resolve; ambiguity only authority or preference can settle goes to the user, not BA. Decomposes scope into user stories plus acceptance criteria. Returns ambiguity to the orchestrator as `QUESTION`.
 
 ## Operating contract
 

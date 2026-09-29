@@ -27,17 +27,21 @@ Orchestration body for the `asd-phase-plan` skill. Operation-mapping to host too
      - **Stub inclusion step** (before task decomposition):
        - if `documents.audit` enabled: read `<sprint>/audit.md` "Related open stubs" section
        - if `documents.audit` disabled: grep touched-area files (from sprint.md scope) directly against `.asd/project/stubs.md` File:Line column for matches
-       - if any found: request user decision per stub: include resolution this sprint / defer (leave open) / mark accepted-debt
-       - per "include": add explicit `### Task N: Resolve stub <ref>` with owner derived from stub Owner column
+       - if any found: request user decision per stub: include resolution this sprint / defer (leave open) / mark accepted-debt; each offer states the stub's verified cost and behaviour change (`sprint-lifecycle.md` "Plan file format")
+       - per "include": add explicit `### Task N: Resolve stub <ref>` with owner derived from stub Owner column — except a stub whose files are all tests: it gets no Task and routes to `impl-test`, recorded in the decisions-log entry below
        - per "accepted-debt": edit stubs.md Reason field prepending `(accepted-debt)` inline after its applicable gate
        - decisions-log entry summarising stub decisions
-     - **Task decomposition rules**:
-       - one Task per coherent unit of work
+     - **Task decomposition rules** (`sprint-lifecycle.md` "Plan file format"):
+       - one Task per coherent unit of work; every edit to one rule doc that several ACs touch sits in one Task
        - each Task references an AC-N from the acceptance-criteria source it satisfies (cite in Task body)
+       - a Task changing a rule other files restate: grep the repo for every restating site and assign each to one Task; parallel Tasks citing each other's new rule homes name each home's file and section heading
+       - a Task holds only work its dispatched agent may perform; an orchestrator-only action is its own plain-text line outside every `### Task N:` block, naming its execution point
+       - a subtask adds a helper, guard or export only with a named caller or reachable failure
+       - list the external APIs each Task needs; extend the tech reference (`artifact-layout.md` "Tech reference docs") where one is missing
        - subtasks as checkboxes inside `### Task N:` block only (parser-critical)
        - no test-authoring Tasks or subtasks — tests are selected and written in `impl-test`, after the code exists; note per Task only the **material risk** the change carries, as input for impl-test
-       - assign every Task to a wave and write the wave table into `## Dependencies`, a settings-change Task alone in its wave (wave 1, or a wave after every Task adding one of its keys to `t_config.yaml`), each Task that changes the dispatch or commit contract isolated ahead of the Tasks dispatched under it, per `sprint-lifecycle.md` "Plan file format"; list non-trivial dependencies under the table
-       - write the Tasks' touched paths, one per line, to a temp file outside the repo; run `node .asd/runtime.js surface-check --files <path>` and declare its `files` as `Change surface: <n> files` in `## Overview`. `breach: true` blocks acceptance until a split or an approved `change-surface cap override` bound (`sprint-lifecycle.md` "Plan file format")
+       - assign every Task to a wave and write the wave table into `## Dependencies`, a settings-change Task alone in its wave (wave 1, or a wave after every Task adding one of its keys to `t_config.yaml`), each Task that changes the dispatch or commit contract isolated ahead of the Tasks dispatched under it, per `sprint-lifecycle.md` "Plan file format"; no two Tasks in one wave touch overlapping paths; list non-trivial dependencies under the table
+       - write the Tasks' touched paths, one per line, to a file in the directory `node .asd/runtime.js scratch-dir` prints (`artifact-layout.md` "Scratch directory"); run `node .asd/runtime.js surface-check --files <path>` and declare its `files` as `Change surface: <n> files` in `## Overview`. `breach: true` blocks acceptance until a split or an approved `change-surface cap override` bound (`sprint-lifecycle.md` "Plan file format")
      - **Definition of Done**: reference the standing DoD (`sprint-lifecycle.md` "Plan file format") instead of restating it; author only sprint-specific additions, if any
      - translate skeleton + full draft to `language.docs`, write `<sprint>/plan.md`; gate mechanic (approve-before-write vs write-then-review-accept) and strict-vs-adaptive evidence requirement per `checkpoints.md` — deferred to step 5, not fixed here
      - on gate satisfied: append decisions-log entry ("`<sprint>/plan.md` accepted")
