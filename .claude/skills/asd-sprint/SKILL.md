@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:a3d1649bdf51ffd107478e204c1dfefc2325e942a3d2b9088042822644b0cd00 content_digest=sha256:91e7d5aca1a05bfa01df748fb5d3595021b19f3a0eb342d5c96632c1617c7896 asd_version=13.3.0 schema=1
+# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:ed18c321c599fa639d239716db262377c257fcf28ceded66487dfef277a67268 content_digest=sha256:2570f51852c4e4fc2cd88e89cac7f725a4deac42df9903f0359777e3f62d3feb asd_version=13.3.0 schema=1
 name: asd-sprint
 description: "Starts a new ASD sprint or resumes the active one, dispatching the matching asd-phase-* skill and routing phase signals back to the user. Use when the user runs /asd-sprint or asks to start, continue, resume, or work on an ASD sprint."
 allowed-tools: "Read Glob Grep Bash AskUserQuestion Skill"
@@ -35,7 +35,7 @@ Before a phase-skill delegation below, rotate the decisions log when `.asd/rules
 ### Step 1A: closure request
 Reached from Step 1 (merged-unclosed) or Step 3 (`NEXT: await-closure`), before anything else.
 1. Request user decision on the hard `sprint closure` gate (`checkpoints.md` "Gate policy"), presenting the completion evidence (`sprint-lifecycle.md` "PR phase"): approve | refuse. The merge and the adaptive policy never satisfy it.
-2. Approve → new-sprint flow (Step 2A), carrying the approval (closing sprint path, plus the head-branch lookup's PR number when `pr` is null) unwritten until scope step 1's closure write records it; aborted before that, nothing is written and Step 1 asks again.
+2. Approve → new-sprint flow (Step 2A), carrying the approval (closing sprint path, plus the merged PR's number detection confirmed, whichever copy or lookup it came from) unwritten until scope step 1's closure write records it; aborted before that, nothing is written and Step 1 asks again.
 3. Refuse or feedback → the sprint stays active and resumable; halt, `NEXT: await-closure`.
 
 ### Step 2A: new-sprint flow
