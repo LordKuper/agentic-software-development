@@ -72,3 +72,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: The iteration's DoD is not met. First live run of D6: combined wrote its return file itself and `persist-review --in` validated its ledger from that file, with no orchestrator re-typing.
 - **Affected docs**: [reviews/impl/wave-1/iter-01/](reviews/impl/wave-1/iter-01/)
 - 2026-09-29 — route combined.md C-1, C-2, C-3, C-4, external.md 1, 2, 3: critical, dispatch HEAD 50e4013
+- 2026-09-29 — impl fix for wave-1/iter-01: findings resolved (combined C-1 f9df1c3; external 1 4d6286a; external 2 + combined C-4 9e88920; combined C-2 + external 3 deduplicated 73745d4; combined C-3 fcb9d2c). Flagged choices were accepted: the artifact-layout folder-map relabel came from the consumer search, the impl-test pathspec holds no concrete list, and the shared commit covers one function. Broken test L6711 and the missing `.ASD/` case go to impl-test re-entry.
