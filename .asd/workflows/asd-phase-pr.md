@@ -13,7 +13,7 @@ Append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecyc
 
 ## Merge mode
 
-1. Re-enter from either active or legacy archived path. Merge the sprint PR through `gh` per `git-strategy.md` "Merging a PR", unless `gh pr view <pr.number> --json state` already reports `MERGED`; a `gh` failure is `FAILED` naming the fix ("PR creation"). Confirm the merge landed before proceeding; a PR that did not merge leaves the sprint active.
+1. Re-enter from either active or legacy archived path. Unless `gh pr view <pr.number> --json state` already reports `MERGED`, first confirm the PR head carries open mode step 3's publication, since the squash merge is base's only source of `pr.number` (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"): `git fetch origin <state.branch>`, then `git show origin/<state.branch>:<sprint>/state.json` must hold this `pr.number`. If it does not, commit the local `state.json.pr` write if uncommitted, push the sprint branch and re-confirm; a push failure is `FAILED`. Then merge the sprint PR through `gh` per `git-strategy.md` "Merging a PR"; a `gh` failure is `FAILED` naming the fix ("PR creation"). Confirm the merge landed before proceeding; a PR that did not merge leaves the sprint active.
 2. Write nothing — no state, archive move or tag, on any branch: the closure request belongs to `asd-sprint`, the terminal write and self-hosting tag to the next sprint's scope step 1 (`sprint-lifecycle.md` "PR phase"). Emit `NEXT: await-closure`.
 
 ## Artefacts
