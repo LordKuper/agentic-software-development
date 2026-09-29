@@ -249,7 +249,9 @@ older `` `gh pr view <pr.number>` ``, so reverting the fix stayed green. Compare
 
 A fix that makes one site produce the value another site gates on ("commit `phase=pr` so Step 1's `phase="pr"`
 gate matches base") is pinned by deriving the gate's value from the gating site's code span and requiring the
-producer to write it (quotes ignored). Mutating only the gate proves the derivation (sprint 021 entry 6, M-AG).
+producer to write it (quotes ignored). Mutating only the gate proves the derivation (sprint 021 entry 6, M-AG). A "first matching span in the section"
+derivation re-sources silently: when canon removed that gate and added the same token elsewhere in the section, the
+test stayed green on the wrong site (entry 7). Key the derivation to the clause that states the relation.
 A fix that *removes* a narrowing condition has no positive substance: require its clause to lack the condition's
 one word (`null`), keep the positive assert on the clause itself so deletion cannot pass vacuously, and record
 both ceilings (a synonym passes; "whether or not null" reddens).

@@ -6860,21 +6860,33 @@ test('sprint-021 AC-1/AC-2 (D1): pr ends at await-merge or await-closure and asd
   assert.deepStrictEqual(tokens.filter((token) => !scopeStep.includes(token) && !scopeStep.includes(token.replace(/ /g, '-'))), [], 'AC-2: asd-phase-scope.md step 1 performs the closure write "PR phase" defines, so it must name each of its tokens (a gate name as its gate_decisions value, spaces hyphenated) - one dropped is a field the closing sprint never gets');
 });
 
-test('sprint-021 AC-2 (iter-03 external #1): a phase="pr" sprint without pr.number is looked up by head branch - asd-sprint Step 1 runs the lookup "PR phase" "Merged-unclosed" defines and carries a MERGED hit\'s number to the closure write, and pr open mode runs it before opening a PR, so it never opens a second one, after committing the phase Step 1 gates on so every PR head carries it', () => {
+test('sprint-021 AC-2 (iter-03 external #1), AC-14: a sprint without pr.number is looked up by head branch at any phase - asd-sprint Step 1 runs the lookup "PR phase" "Merged-unclosed" defines with no phase gate, reads a MERGED hit as merged-unclosed and carries its number to the closure write, and adopts an OPEN hit only at phase="pr"; pr open mode runs the lookup before opening a PR, so it never opens a second one, after committing the phase "Merged-unclosed" says base carries', () => {
   const home = sectionOf('.asd/rules/sprint-lifecycle.md', 'PR phase').split('**Merged-unclosed**')[1];
   assert.ok(home, 'sanity: sprint-lifecycle.md "PR phase" must keep its **Merged-unclosed** paragraph, the lookup\'s home');
   const spans = (text) => [...text.matchAll(/`([^`]+)`/g)].map(([, span]) => span);
   const clauses = (text) => text.split(/[;.]\s/);
   const lookup = spans(home.split('\n\n')[0]).find((span) => span.startsWith('gh pr list --head <state.branch>'));
   const lost = 'a PR merged before open mode\'s state.json.pr write reached the sprint branch leaves base at pr=null, so without the head-branch lookup asd-sprint never requests closure and a pr re-run opens a second PR (impl-review wave-1/iter-03 external #1)';
-  assert.ok(lookup, `AC-2: "Merged-unclosed" must define the head-branch lookup for a phase="pr" sprint without pr.number - ${lost}`);
+  assert.ok(lookup, `AC-2: "Merged-unclosed" must define the head-branch lookup for a sprint without pr.number - ${lost}`);
   assert.ok(/--state all\b/.test(lookup), `AC-2: the head-branch lookup must list every PR state - gh pr list defaults to open PRs only and would never report the MERGED one - ${lost}`);
   const outcomes = clauses(home.slice(home.indexOf(lookup)));
-  assert.ok(outcomes.some((clause) => clause.includes('`MERGED`') && /merged-unclosed/i.test(clause)), `AC-2: "Merged-unclosed" must read a MERGED head-branch hit as merged-unclosed - ${lost}`);
-  assert.ok(outcomes.some((clause) => clause.includes('`OPEN`') && /merge mode/.test(clause)), `AC-2: "Merged-unclosed" must resume merge mode on an OPEN head-branch hit - ${lost}`);
+  const mergedHit = outcomes.find((clause) => clause.includes('`MERGED`') && /merged-unclosed/i.test(clause));
+  const openHit = outcomes.find((clause) => clause.includes('`OPEN`') && /merge mode/.test(clause));
+  assert.ok(mergedHit, `AC-2: "Merged-unclosed" must read a MERGED head-branch hit as merged-unclosed - ${lost}`);
+  assert.ok(openHit, `AC-2: "Merged-unclosed" must resume merge mode on an OPEN head-branch hit - ${lost}`);
+  const phaseGated = (text) => spans(text).some((span) => /^phase\s*!?=/.test(span));
+  const anyPhase = 'a PR opened and merged by hand before the pr phase, or an open-mode MERGED hit whose closure was refused, leaves the sprint at an earlier phase with pr=null; a phase-gated lookup never runs for it and the sprint resumes that phase on git.base_branch instead of requesting closure';
+  const definition = clauses(home.split('\n\n')[0])[0];
+  assert.ok(definition.includes('`MERGED`'), 'sanity: "Merged-unclosed" must open by defining the state as a sprint PR gh reports MERGED');
+  assert.deepStrictEqual([definition, clauses(home).find((clause) => spans(clause).includes(lookup)), mergedHit].filter(phaseGated).map((clause) => clause.trim()), [], `AC-14: "Merged-unclosed"'s definition, its head-branch lookup and its MERGED outcome must name no phase="…" condition - ${anyPhase}`);
+  assert.ok(spans(openHit).includes('phase="pr"'), 'AC-14: "Merged-unclosed" must adopt an OPEN head-branch hit into merge mode only at phase="pr" - at an earlier phase the sprint has phases left to run, and merge mode would skip them');
   const sprintSkill = canonText('.asd/skills/asd-sprint/SKILL.md');
-  const detect = sprintSkill.split('### Step 1:')[1].split('\n### ')[0].split('\n').find((line) => spans(line).includes(lookup));
+  const stepOne = sprintSkill.split('### Step 1:')[1].split('\n### ')[0].split('\n');
+  const detect = stepOne.find((line) => spans(line).includes(lookup));
   assert.ok(detect && /merged-unclosed/i.test(detect), `AC-2: asd-sprint Step 1 must run the lookup "Merged-unclosed" defines, the same command, and read its MERGED hit as merged-unclosed - ${lost}`);
+  assert.ok(!phaseGated(detect), `AC-14: asd-sprint Step 1's merged-unclosed detection must run for every active sprint, with no phase="…" condition - ${anyPhase}`);
+  const openLine = stepOne.find((line) => line !== detect && spans(line).includes('OPEN'));
+  assert.ok(openLine && spans(openLine).includes('phase="pr"'), 'AC-14: asd-sprint Step 1 must say an OPEN head-branch hit is adopted into merge mode only at phase="pr" - detection now runs at every phase, and without the restriction an earlier-phase sprint with an open PR reads as ready to merge');
   const approveStep = stepOf(sprintSkill.split('### Step 1A')[1].split('\n### ')[0], 2);
   const approve = approveStep.replace(/`[^`]*`/g, '');
   assert.ok(/\bnumber\b/i.test(approve), `AC-2: asd-sprint Step 1A must carry the head-branch lookup's PR number with the closure approval - scope's closure write has no other source for it when pr is null`);
@@ -6889,13 +6901,13 @@ test('sprint-021 AC-2 (iter-03 external #1): a phase="pr" sprint without pr.numb
   assert.ok(beforeCreate.includes('"Merged-unclosed"'), `AC-2: pr open mode must run the head-branch lookup ("PR phase" "Merged-unclosed") before opening a PR - ${lost}`);
   assert.ok(clauses(beforeCreate).some((clause) => clause.includes('`MERGED`') && clause.includes('`NEXT: await-closure`')), `AC-2: pr open mode must emit NEXT: await-closure on a MERGED head-branch hit, opening nothing - ${lost}`);
   assert.ok(clauses(beforeCreate).some((clause) => clause.includes('`OPEN`') && /merge mode/.test(clause)), `AC-2: pr open mode must adopt an OPEN head-branch hit into merge mode instead of opening a second PR - ${lost}`);
-  const gate = spans(sprintSkill.split('### Step 1:')[1].split('\n### ')[0]).map((span) => /^phase="([^"]+)"$/.exec(span)).find(Boolean);
-  assert.ok(gate, 'sanity: asd-sprint Step 1 must gate merged-unclosed detection on a `phase="…"` value');
-  const unguarded = `the PR head is base's copy after a squash merge, so a phase="${gate[1]}" write left uncommitted at the push leaves base at retro's phase with pr=null: asd-sprint Step 1 never runs the lookup and its resume flow re-runs retro on git.base_branch (impl-review wave-1/iter-04 #1)`;
+  const gate = clauses(home.split('\n\n')[0]).map(spans).filter((clauseSpans) => clauseSpans.includes('pr.number')).flat().map((span) => /^phase="([^"]+)"$/.exec(span)).find(Boolean);
+  assert.ok(gate, 'sanity: "Merged-unclosed" must name the `phase="…"` a PR carrying pr.number brings to base');
+  const unguarded = `"Merged-unclosed" says a PR pr open mode opened carries phase="${gate[1]}" to base because open mode commits that write before any push; the PR head is base's copy after a squash merge, so a write left uncommitted at the push leaves base at retro's phase and makes that statement false (impl-review wave-1/iter-04 #1)`;
   const openPaths = clauses(beforeCreate).filter((clause) => !clause.includes('`MERGED`'));
   const adoptAt = openPaths.findIndex((clause) => clause.includes('`OPEN`') && /merge mode/.test(clause));
   const gateWrites = openPaths.map((clause, at) => ({ clause, at })).filter(({ clause }) => spans(clause).some((span) => span.replace(/"/g, '') === `phase=${gate[1]}`));
-  assert.ok(gateWrites.length > 0, `AC-2: pr open mode must write the phase="${gate[1]}" asd-sprint Step 1 gates detection on, before opening a PR - ${unguarded}`);
+  assert.ok(gateWrites.length > 0, `AC-2: pr open mode must write the phase="${gate[1]}" "Merged-unclosed" says base carries, before opening a PR - ${unguarded}`);
   assert.deepStrictEqual(gateWrites.filter(({ clause }) => !/\bcommit/i.test(clause.replace(/`[^`]*`/g, ''))).map(({ clause }) => clause.trim()), [], `AC-2: every pr open mode clause writing phase="${gate[1]}" must commit it on the sprint branch, before step 3's PR-creation push - ${unguarded}`);
   assert.ok(gateWrites.some(({ at }) => at <= adoptAt), `AC-2: pr open mode must commit phase="${gate[1]}" before adopting an OPEN hit into merge mode, so the adopted PR's head carries it too - ${unguarded}`);
   assert.ok(openPaths.slice(0, adoptAt + 1).some((clause) => /self-hosting/i.test(clause) && /\bversion\b/i.test(clause)), 'AC-2: pr open mode must bump the self-hosting version before adopting an OPEN hit into merge mode - an adopted PR merged without it releases under the previous version (impl-review wave-1/iter-04 #1, folded medium)');
