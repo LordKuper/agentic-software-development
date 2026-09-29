@@ -95,3 +95,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-30 — impl-test: impacted set green (255/255), 2/0 tests (1 message fix); no manual-verification rows
 - 2026-09-30 — impl-review wave-1/iter-04: external APPROVE (latched at 4), combined CONCERNS (1 high: `phase=pr` is not committed before the PR-creation push, so the base copy keeps the retro phase and the head-branch lookup never runs; the Step 1A carry condition is too narrow) → impl review-fix; iteration 5 floor is critical
 - 2026-09-30 — route combined.md 1: critical, dispatch HEAD 482f1b3
+- 2026-09-30 — impl fix for wave-1/iter-04: findings resolved (combined 1 56c2089). Flagged choices were accepted: the MERGED hit keeps its no-write rule, the self-hosting bump is idempotent on an adopted PR, scope step 1 reads the carried number, and base copies merged before this fix stay unrecovered (legacy residual).
+- 2026-09-30 — route impl-test entry 6: critical, dispatch HEAD 29b1ae3
