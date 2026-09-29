@@ -47,3 +47,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-30 — impl-test: impacted set green (255/255), 0/0 tests (1 rewritten for AC-14); no manual-verification rows
 - 2026-09-30 — impl-review wave-1/iter-06: combined APPROVE, external APPROVE (both latched at 6) → terminal full suite. Dropped below the critical floor: (high) Step 1's lookup at every phase makes every `/asd-sprint` need `gh` online; (medium) a CLOSED hit is unspecified; (medium) a refused closure at an earlier phase blocks the remaining phases; (low) CHANGELOG does not mention the per-invocation `gh` call
 - 2026-09-30 — route impl-review wave-1/iter-06 suite: critical, dispatch HEAD 76cd684
+- 2026-09-30 — impl-review DoD met after the AC-14 amendment: 6 iterations; terminal full suite green (255/255, HEAD 0c7eb7a) → design-promote
+- 2026-09-30 — design-promote skipped: frozen prd/ux_spec/adr/c4 all false (lite empty scope; already in skipped_phases)
+- 2026-09-30 — retro re-run after the AC-14 amendment: no new friction entries and no new systemic evidence beyond P-2 (the handoff gaps, which AC-14 closes); `retrospective.html` stands unchanged

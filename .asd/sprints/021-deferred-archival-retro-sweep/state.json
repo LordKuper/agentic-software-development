@@ -1,7 +1,7 @@
 {
   "sprint_id": "021-deferred-archival-retro-sweep",
   "branch": "sprint/021-deferred-archival-retro-sweep",
-  "phase": "impl-review",
+  "phase": "retro",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -81,6 +81,13 @@
       "reason": "Task 11 done, build+lint clean, flagged choices resolved",
       "evidence": "5645459; sync --check ok",
       "artifact_revision": "HEAD 5645459"
+    },
+    {
+      "gate": "impl-review green handoff",
+      "decision_actor": "orchestrator",
+      "reason": "iter-06 roster met, terminal full suite green 255/255",
+      "evidence": "reviews/impl/wave-1/iter-06; test-plan.md Suite run HEAD 0c7eb7a",
+      "artifact_revision": "HEAD 4a7f46a"
     }
   ],
   "task_routing": {
@@ -273,7 +280,7 @@
     }
   },
   "created_at": "2026-09-29T00:00:00Z",
-  "updated_at": "2026-09-29T23:32:41.543Z",
+  "updated_at": "2026-09-29T23:33:36.520Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
