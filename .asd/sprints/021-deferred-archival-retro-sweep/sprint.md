@@ -62,6 +62,7 @@ Two parts.
 
   Each fix is proven by a fail-first test.
 - AC-13 (test contracts; retro 019#P-3, 009#P-6): A leftover-term check pins the exact sentences the sprint removed, taken from its diff, never a free-phrasing regex. A content-contract test pins a token that cannot be reworded, never the surrounding prose.
+- AC-14 (scope amendment, user request at pr): A merged sprint PR is detected as merged-unclosed whatever phase the sprint records. `/asd-sprint` runs the head-branch PR lookup for every active sprint without `pr.number`. A `MERGED` hit reaches the closure request at any phase. An `OPEN` hit resumes merge mode only at `phase="pr"`. This covers a PR merged by hand before the `pr` phase, and a closure refused after an open-mode `MERGED` hit.
 
 ## Out of scope (optional)
 - Editing `D:\Projects\Glings` code or rules. Glings has its own active sprint 007. Its `consumer` rows belong to Glings' own retro intake.

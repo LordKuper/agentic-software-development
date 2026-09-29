@@ -35,3 +35,10 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-09-30 — Scope amendment: AC-14 (merged-unclosed at any phase)
+
+- **Decision**: At the pr publication gate the user asked to fix, now, the residual that iter-05 dropped below the floor. It is added as AC-14, carried by Task 11 in the new wave 3: the head-branch lookup runs for every active sprint without `pr.number`, and a `MERGED` hit is merged-unclosed at any phase. The change surface is unchanged: Task 11 edits only `sprint-lifecycle.md` and the `asd-sprint` SKILL, both already counted (plan estimate 56, real scope 69/100). Audit stays true. The phase goes back to `impl`, which is not strictly earlier than impl-review's input phase, so review counters are kept (wave 1 continues at iteration 6, floor critical). Both review latches are cleared by this user-authorised amendment, because post-APPROVE code needs a review. The 13.4.0 bump commit stays: the pr step 2 bump is idempotent.
+- **Rationale**: `sprint-lifecycle.md` "Scope amendment", run for the first time on the sprint that introduced it. The hard `new or changed scope` gate was satisfied by the user's explicit request.
+- **Affected docs**: [sprint.md](sprint.md), [plan.md](plan.md)
+- 2026-09-30 — route Task 11: critical, dispatch HEAD d590220

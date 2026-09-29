@@ -195,6 +195,12 @@ Material risk: artifact: documentation mirror
 
   Confirm that the phase lists, roster, model tiers, config schema and command list are otherwise accurate.
 
+### Task 11: merged-unclosed detection at any phase (AC-14, scope amendment)
+Material risk: change: workflow gate
+Reachability: asd-sprint Step 1 writes the lookup's PR number into the carried closure approval; asd-phase-scope step 1 reads it at the closure write
+- [ ] `.asd/rules/sprint-lifecycle.md` "PR phase" "Merged-unclosed" (home): the head-branch lookup runs for every active sprint without `pr.number`. A `MERGED` hit is merged-unclosed at any `phase`, and an `OPEN` hit resumes merge mode only at `phase="pr"`.
+- [ ] `.asd/skills/asd-sprint/SKILL.md` Step 1 (acting site): the same gate, citing the home.
+
 ## Orchestrator lines (not dev Tasks, 019#A-1)
 - After wave 1's last dispatch: run `node .asd/sync.js --apply` on every generated view whose canon changed, then run `sync.js --check`. Commit the views and the root `AGENTS.md` managed block.
 - After wave 1's sync, and before wave 2: memory fixes, routed to each owner per `artifact-layout.md` "Agent memory". Owners and files:
@@ -219,6 +225,7 @@ Material risk: artifact: documentation mirror
 |---|---|
 | 1 | 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 | 2 | 10 |
+| 3 | 11 |
 
 - Task 10 depends on Tasks 1–9 (README mirrors their final text).
 - Tasks 1–9 touch disjoint paths. Cross-references between them use only the new homes in the Overview table.

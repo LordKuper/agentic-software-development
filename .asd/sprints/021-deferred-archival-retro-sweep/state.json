@@ -1,7 +1,7 @@
 {
   "sprint_id": "021-deferred-archival-retro-sweep",
   "branch": "sprint/021-deferred-archival-retro-sweep",
-  "phase": "pr",
+  "phase": "impl",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -67,6 +67,13 @@
       "reason": "wave 1 roster met (combined, external APPROVE), terminal full suite green 255/255",
       "evidence": "reviews/impl/wave-1/iter-05; test-plan.md Suite run HEAD 901bdda",
       "artifact_revision": "HEAD 6fd71be"
+    },
+    {
+      "gate": "new or changed scope",
+      "decision_actor": "user",
+      "reason": "AC-14 added at pr: merged-unclosed at any phase",
+      "evidence": "user answer at pr publication gate; decisions-log.md 2026-09-30 scope amendment",
+      "artifact_revision": "sprint.md@pr"
     }
   ],
   "task_routing": {
@@ -189,6 +196,12 @@
       "execution": "agent",
       "reason": "no-downgrade",
       "resolved_model": "opus"
+    },
+    "Task 11": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
     }
   },
   "skipped_phases": [
@@ -233,16 +246,13 @@
             "iter-04": "482f1b3a517ea8acb03491fc3ac83c4b901436d1",
             "iter-05": "48c5b7f6ad34ad53c7a8b8e58d4877d546f61e05"
           },
-          "latched": {
-            "external": 4,
-            "combined": 5
-          }
+          "latched": {}
         }
       ]
     }
   },
   "created_at": "2026-09-29T00:00:00Z",
-  "updated_at": "2026-09-29T21:29:14.175Z",
+  "updated_at": "2026-09-29T23:14:52.863Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
