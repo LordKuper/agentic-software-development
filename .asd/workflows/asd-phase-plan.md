@@ -28,7 +28,7 @@ Orchestration body for the `asd-phase-plan` skill. Operation-mapping to host too
        - if `documents.audit` enabled: read `<sprint>/audit.md` "Related open stubs" section
        - if `documents.audit` disabled: grep touched-area files (from sprint.md scope) directly against `.asd/project/stubs.md` File:Line column for matches
        - if any found: request user decision per stub: include resolution this sprint / defer (leave open) / mark accepted-debt; each offer states the stub's verified cost and behaviour change (`sprint-lifecycle.md` "Plan file format")
-       - per "include": add explicit `### Task N: Resolve stub <ref>` with owner derived from stub Owner column — except a stub whose files are all tests: it gets no Task and routes to `impl-test`, recorded in the decisions-log entry below
+       - per "include": add explicit `### Task N: Resolve stub <ref>` with owner derived from stub Owner column — except a stub whose files are all tests: it gets no Task and routes to `impl-test` as a plain-text line `Stub <ref> → impl-test` outside every `### Task N:` block, never a checkbox, also recorded in the decisions-log entry below
        - per "accepted-debt": edit stubs.md Reason field prepending `(accepted-debt)` inline after its applicable gate
        - decisions-log entry summarising stub decisions
      - **Task decomposition rules** (`sprint-lifecycle.md` "Plan file format"):
