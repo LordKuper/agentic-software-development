@@ -23,6 +23,7 @@ Interrupted attempts: {{count}} ({{cause}})
 
 <!-- when no findings, leave one row: -->
 <!-- | — | — | — | no findings | — | -->
+<!-- a literal | inside a cell, code spans included, is written \| (`review-policy.md` "Gate Verdict Format") -->
 
 ## Coverage (internal reviewers only)
 
