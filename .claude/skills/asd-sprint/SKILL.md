@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:ed18c321c599fa639d239716db262377c257fcf28ceded66487dfef277a67268 content_digest=sha256:2570f51852c4e4fc2cd88e89cac7f725a4deac42df9903f0359777e3f62d3feb asd_version=13.3.0 schema=1
+# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:a365786bed83a63a14dc57533f45c99897ebe3475d62d5f50a03f4bcffd4b73b content_digest=sha256:ba6ee1eac57938223cbfffd7320fe2db32a3251a8a631415ea7f46e3ecbe96e1 asd_version=13.4.0 schema=1
 name: asd-sprint
 description: "Starts a new ASD sprint or resumes the active one, dispatching the matching asd-phase-* skill and routing phase signals back to the user. Use when the user runs /asd-sprint or asks to start, continue, resume, or work on an ASD sprint."
 allowed-tools: "Read Glob Grep Bash AskUserQuestion Skill"
@@ -26,10 +26,10 @@ Before a phase-skill delegation below, rotate the decisions log when `.asd/rules
 
 ### Step 1: detect active sprint
 - Search repo for `.asd/sprints/*/state.json` (excluding `archived/`) UNION `.asd/sprints/archived/*/state.json` where `phase != "done"` (legacy archived-non-done shape)
-- Each with `phase="pr"`: `gh pr view <pr.number> --json state,mergeCommit` reporting `MERGED` — or, with no `pr.number`, a `MERGED` hit of `gh pr list --head <state.branch> --state all --json number,state,mergeCommit` (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"), its number carried to the closure write — makes it **merged-unclosed**, whatever `pr.state` records (legacy `closure-pending` included) — unless `gh pr list --head chore/finalize-sprint-<NNN-slug> --state all` finds a legacy companion PR: an `OPEN` one, created only after closure approval, is merged per `git-strategy.md` "Merging a PR"; an `OPEN` or `MERGED` one closes the sprint on `git.base_branch`, so it is no longer active and gets no closure write. A `gh` failure is FAILED naming the fix (`git-strategy.md` "PR creation").
+- Each, whatever its `phase`: `gh pr view <pr.number> --json state,mergeCommit` reporting `MERGED` — or, with no `pr.number`, a `MERGED` hit of `gh pr list --head <state.branch> --state all --json number,state,mergeCommit` (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"), its number carried to the closure write — makes it **merged-unclosed**, whatever `pr.state` records (legacy `closure-pending` included) — unless `gh pr list --head chore/finalize-sprint-<NNN-slug> --state all` finds a legacy companion PR: an `OPEN` one, created only after closure approval, is merged per `git-strategy.md` "Merging a PR"; an `OPEN` or `MERGED` one closes the sprint on `git.base_branch`, so it is no longer active and gets no closure write. A `gh` failure is FAILED naming the fix (`git-strategy.md` "PR creation").
 - 0 active → new-sprint flow
 - 1 active, merged-unclosed → Step 1A
-- 1 active otherwise → resume flow
+- 1 active otherwise → resume flow; an `OPEN` head-branch hit changes nothing here, pr open mode adopting it at `phase="pr"` only ("Merged-unclosed")
 - >1 → emit FAILED "multiple active sprints found, manual cleanup needed"
 
 ### Step 1A: closure request
