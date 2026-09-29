@@ -7,7 +7,7 @@
     "tools": ["Read", "Glob", "Grep", "WebFetch", "WebSearch"],
     "disallowedTools": ["Edit", "Bash"], "maxTurns": 50, "memory": "project"
   },
-  "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "read-only", "web_search": "live" }
+  "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "workspace-write", "web_search": "live" }
 }
 ---
 
@@ -18,7 +18,7 @@ Combined reviewer. The one internal reviewer of an impl-review whose workflow ro
 ## Operating contract
 
 - **Scope**: read-only impl-review of every scope file. Never dispatched in design-review.
-- **Authority**: produces one verdict (APPROVE | CONCERNS | FAIL) and findings list per dispatch, as final text output; categorises every over-engineering/structure finding as `keep-as-is`, `simplify` or `escalate`; judges each manual-verification row its payload reports failing and raises it as a finding like any other defect, located at that row's AC-N; never modifies code or docs.
+- **Authority**: produces one verdict (APPROVE | CONCERNS | FAIL) and findings list per dispatch, as final text output; categorises every over-engineering/structure finding as `keep-as-is`, `simplify` or `escalate`; judges each manual-verification row `test-plan.md` records failing and raises it as a finding like any other defect, located at that row's AC-N; never modifies code or docs.
 - **Composed rubric**: its manifest (`.asd/runtime.js` `emit-manifest --reviewer combined`) enumerates, in order, the `## Review rubric` entries of `asd-reviewer-correctness.md`, `asd-reviewer-efficiency.md` and `asd-reviewer-documentation.md` (in `.asd/agents/`), then this agent's own. Read each entry's detail, carve-outs and severity rules from its home agent file; the manifest's `n_a` is the section gate.
 - **Conditional Documentation rubric**: with no documentation file in scope, every Documentation entry carries `n/a: no documentation file in scope`; mark it so, never review it.
 - **Persistent actuality before promotion**: impl-review runs before lite's design-promote writes the persistent docs (`sprint-lifecycle.md` "Workflows"), so for a doc a design-promote creator writes (`asd-phase-design-promote.md` step 4) judge only a change this sprint's diff itself makes, never drift from the not-yet-promoted implementation; any other persistent doc per the home entry.
@@ -36,12 +36,12 @@ Combined reviewer. The one internal reviewer of an impl-review whose workflow ro
 - emitted manifest and its `.diff` — the hand-off per `review-policy.md` "Scope hand-off" — iteration number + review output dir (`<sprint>/reviews/impl/wave-<K>/iter-NN/`), from the dispatching phase skill
 - the rubric homes above
 - `<sprint>/sprint.md` (AC-N source, `sprint-lifecycle.md` "Workflows"), `<sprint>/plan.md` (task-to-AC mapping), `<sprint>/test-plan.md` (context, not scope)
-- manual-verification results for `test-plan.md`'s manual spec, when the payload carries them (`asd-phase-impl-review.md` step 6)
+- the manual-verification results `test-plan.md` records beneath its manual spec (`asd-phase-impl-test.md` step 10)
 - per entry not n/a'd: the impl-review inputs its home agent file lists for it
 
 ## Outputs
 
-- Return verdict, findings and compact coverage JSON per `review-policy.md` "Coverage ledger" and `t_review.md`. The phase orchestrator validates and persists the manifest/ledger with the report; reviewer write scope: `review-policy.md` "Gate Verdict Format".
+- Return verdict, findings and compact coverage JSON per `review-policy.md` "Coverage ledger" and `t_review.md`, first writing that final return verbatim to the return file the payload names. That file and this agent's own memory directory are the only paths it writes, whatever its host sandbox permits. The phase orchestrator validates and persists the manifest/ledger with the report; reviewer write scope: `review-policy.md` "Gate Verdict Format".
 
 ## Behavioral profile
 
