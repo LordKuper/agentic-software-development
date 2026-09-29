@@ -2,13 +2,16 @@
 
 const crypto = require('crypto');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const { setTimeout: delay } = require('timers/promises');
 
 const CACHE_SCHEMA = 1;
 const PROBE_TIMEOUT_MS = 3000;
-const NEGATIVE_TTL_MS = 300000;
 const MAX_NEGATIVE_TTL_MS = 3600000;
+/** The longest a tool call may run before its silent transcript counts as a stall: the host's maximum command timeout. */
+const TOOL_CALL_CEILING_MS = 600000;
 const RESERVED_CHANGE_RISKS = ['security', 'authentication', 'migration', 'public contract', 'workflow gate'];
 /** The single review-ledger row vocabulary: allowed statuses per row type, plus the one status carrying `p` and the one carrying `f`. Emitted into every manifest and enforced on every ledger from here, so published and enforced vocabulary cannot drift. */
 const LEDGER_VOCABULARY = { files: ['checked', 'n/a'], rules: ['pass', 'n/a', 'finding'], sections: ['reviewed', 'n/a'], p: 'n/a', f: 'finding' };
@@ -38,8 +41,8 @@ const WORKFLOWS_DIR = path.join(__dirname, 'workflows');
 const WORKFLOW_KEYS = ['name', 'next', 'phases', 'reviewers', 'rollback_reset'];
 /** Review nodes a definition's `reviewers` and `rollback_reset` are keyed by, as `persist-review --phase` takes them. */
 const REVIEW_NODES = ['design', 'impl'];
-/** `NEXT:` targets that end the chain instead of naming a phase: `pr`'s open and merge exits. */
-const CHAIN_EXITS = ['await-merge', 'done'];
+/** `NEXT:` targets that end the chain instead of naming a phase: `pr`'s open and merge exits; closure follows the merge at the next sprint's start. */
+const CHAIN_EXITS = ['await-merge', 'await-closure'];
 /** Severities a finding row may carry (`review-policy.md` "Severity levels"). */
 const SEVERITIES = ['low', 'medium', 'high', 'critical'];
 /** The standing n/a predicates, each the exact text a ledger row records. The emitter authorizes one only where its condition holds; this is their sole home. */
@@ -251,13 +254,15 @@ function localReadiness(input) {
   return { status: 'local-ready', model_access: 'unknown', fingerprint: key };
 }
 
-/** Stores one bounded, sanitized external-model failure for later retry control. */
+/** Stores one sanitized external-model failure for later retry control: retry-after is the provider-reported reset, capped at one hour, and one hour when none was reported, so a quota never reads as reset minutes after it hit. */
 function recordExternalFailure(input) {
   if (!input || !/^[a-f0-9]{64}$/.test(input.fingerprint || '')) fail('valid fingerprint required');
   if (!['authentication', 'quota', 'reachability', 'command'].includes(input.status)) fail('unsupported external failure status');
   const now = Number.isFinite(input.now) ? input.now : Date.now();
-  const retryAfter = input.retryAfter || now + NEGATIVE_TTL_MS;
-  if (!Number.isFinite(retryAfter) || retryAfter <= now || retryAfter > now + MAX_NEGATIVE_TTL_MS) fail('retryAfter outside bounded future');
+  const cap = now + MAX_NEGATIVE_TTL_MS;
+  const reported = input.retryAfter === undefined || input.retryAfter === null ? cap : input.retryAfter;
+  if (!Number.isFinite(reported) || reported <= now) fail('retryAfter outside bounded future');
+  const retryAfter = Math.min(reported, cap);
   const cache = readCache(input.cachePath, now);
   cache.entries[input.fingerprint] = { status: input.status, retry_after: retryAfter };
   writeCache(input.cachePath, cache);
@@ -305,11 +310,12 @@ function rowsById(rows, expected, allowedNa, findings, label) {
   if (seen.size !== expected.size) fail(`${label} rows incomplete`);
 }
 
-/** Returns the required manifest digest for a review coverage ledger: the manifest exactly as written, minus `digest`. A manifest missing a published constant keeps the identity it was stamped with, so one written before that field existed still validates; a divergent one is digested as written and rejected on validation. */
+/** Returns the required manifest digest for a review coverage ledger: the manifest exactly as written, minus `digest` and the `ledger` skeleton, which carries the digest and so cannot be inside it. A manifest missing a published constant keeps the identity it was stamped with, so one written before that field existed still validates; a divergent one is digested as written and rejected on validation. */
 function coverageManifestDigest(manifest) {
   if (!manifest || typeof manifest !== 'object') fail('manifest required');
   const copy = Object.assign({}, manifest);
   delete copy.digest;
+  delete copy.ledger;
   return fingerprint(copy);
 }
 
@@ -356,10 +362,12 @@ function validateCoverageLedger(manifest, ledger, actualFindings) {
   return { ok: true };
 }
 
-/** Stamps every published constant into an emitted manifest and sets its digest. */
+/** Stamps every published constant into an emitted manifest, sets its digest, and adds the ledger skeleton the reviewer completes: the digest pre-filled, no findings, one row per manifest id with its status left to fill. */
 function stampManifest(manifest) {
   const stamped = Object.assign({}, manifest, { vocabulary: LEDGER_VOCABULARY, row_example: LEDGER_ROW_EXAMPLE, n_a_shape: LEDGER_NA_SHAPE });
-  return Object.assign(stamped, { digest: coverageManifestDigest(stamped) });
+  const digest = coverageManifestDigest(stamped);
+  const rows = (ids) => ids.map((id) => ({ i: id }));
+  return Object.assign(stamped, { digest, ledger: { manifest_digest: digest, findings: [], files: rows(stamped.files), rules: rows(stamped.rules), sections: rows(stamped.sections) } });
 }
 
 /** Parses a reviewer's `## Review rubric`: rule ids are its `###` headings, else its bullets' bold lead-in labels; section ids are its `###` headings. */
@@ -374,10 +382,10 @@ function rubricIds(markdown) {
   return { rules, sections };
 }
 
-/** A UI surface: `.html`/`.htm` outside `.asd/` or under `.asd/templates/`, a stylesheet or component-framework file, or any file under a `ui`/`components`/`views`/`pages` path segment. */
+/** A UI surface: `.html`/`.htm` outside `.asd/` or under `.asd/templates/`, a stylesheet, component-framework or Unity UI Toolkit file, or any file under a `ui`/`components`/`views`/`pages` path segment, matched case-insensitively. */
 function isUiSurface(file) {
   if (/\.html?$/i.test(file)) return !file.startsWith('.asd/') || file.startsWith('.asd/templates/');
-  return /\.(css|scss|less|jsx|tsx|vue|svelte)$/i.test(file) || /(^|\/)(ui|components|views|pages)\//.test(file);
+  return /\.(css|scss|less|jsx|tsx|vue|svelte|uxml|uss|tss)$/i.test(file) || /(^|\/)(ui|components|views|pages)\//i.test(file);
 }
 
 /** An executable file is anything that is not prose, config or markup, so an unrecognised extension keeps the performance sections reviewed. */
@@ -449,9 +457,9 @@ function emitCoverageManifest(input) {
   });
 }
 
-/** A test file: under a `test`/`tests`/`__tests__`/`spec`/`specs` path segment, or a basename in a common test naming convention. Heuristic, so Correctness's full list stays the backstop for a miss. */
+/** A test file: under a `test`/`tests`/`__tests__`/`spec`/`specs` path segment or a dotted one carrying it (`Core.Tests/`, `Game.Tests.Unit/`), or a basename in a common test naming convention. Heuristic, so Correctness's full list stays the backstop for a miss. */
 function isTest(file) {
-  return /(^|\/)(test|tests|__tests__|spec|specs)\//i.test(file) || /\.(test|spec)\.|^test_|_test\.|Tests?\./.test(file.split('/').pop());
+  return /(^|\/)([^/]*\.)?(test|tests|__tests__|spec|specs)(\.[^/]*)?\//i.test(file) || /\.(test|spec)\.|^test_|_test\.|Tests?\./.test(file.split('/').pop());
 }
 
 /** One reviewer's file list, the single selector every manifest is built from: impl-review Testing narrows to test files plus the explicitly passed test-plan paths, which the scope pathspec excludes; every other reviewer gets the whole scope. */
@@ -657,12 +665,26 @@ function draftSnapshot(files, out, previous) {
   return changed;
 }
 
-/** Measures a file list against SURFACE_CAP_FILES, or against the user-approved override bound when one is recorded. */
+/** A generated provider view: sync output regenerated from canon, so it is never reviewable change surface. */
+function isGeneratedView(file) {
+  return /^(\.claude\/(agents|skills|hooks)\/|\.claude\/settings\.json$|\.codex\/|\.agents\/skills\/)/.test(file);
+}
+
+/** Measures a file list, generated provider views excluded, against SURFACE_CAP_FILES, or against the user-approved override bound when one is recorded. */
 function surfaceCheck(files, bound) {
   if (bound !== undefined && !(Number.isInteger(bound) && bound > 0)) fail('--bound must be a positive integer');
   const cap = bound === undefined ? SURFACE_CAP_FILES : bound;
-  const count = new Set(files).size;
+  const count = new Set(files.filter((file) => !isGeneratedView(file))).size;
   return { files: count, cap, breach: count > cap };
+}
+
+/** A surface-check file list: `--files`, minus each path the `--base...--head` range renames with identical content and mode when that range is given, so a pure move never counts as change surface. */
+function surfaceFiles(flags) {
+  if (typeof flags.files !== 'string') fail('--files <path> required');
+  const files = readFileList(flags.files);
+  if (flags.base === undefined && flags.head === undefined) return files;
+  const renames = rangeRenames(gitRef(flags.base, '--base'), gitRef(flags.head, '--head'));
+  return files.filter((file) => !(renames.has(file) && renames.get(file).pure));
 }
 
 /** Sums added plus deleted lines of `git diff --numstat -z -M` output over the listed paths, a rename counted at its destination; a binary file (`-`) and a pure rename (0 and 0) add nothing. */
@@ -899,6 +921,81 @@ function waveFilesCommand(flags) {
   return { out: flags.out, files: files.length };
 }
 
+/** The git-ignored directory every helper file lives in, created on first use with a `.gitignore` of `*` so it ignores itself without a root `.gitignore` entry; returns its absolute path. */
+function scratchDir() {
+  const dir = path.join(__dirname, 'tmp');
+  const ignore = path.join(dir, '.gitignore');
+  fs.mkdirSync(dir, { recursive: true });
+  if (!fs.existsSync(ignore)) fs.writeFileSync(ignore, '*\n', 'utf8');
+  return dir;
+}
+
+/** What a liveness decision reads off a Claude subagent transcript (JSONL): when the agent started, when its newest still-unanswered tool call began (null when none is open), and whether its last message is a final assistant answer. An unparseable line, such as a half-written tail, is skipped. */
+function transcriptProgress(text) {
+  const parse = (line) => {
+    try { return JSON.parse(line); } catch (_) { return null; }
+  };
+  const messages = text.split('\n').map(parse).filter((entry) => entry && (entry.type === 'assistant' || entry.type === 'user') && entry.message);
+  const blocks = (entry, type) => (Array.isArray(entry.message.content) ? entry.message.content.filter((block) => block && block.type === type) : []);
+  const answered = new Set(messages.flatMap((entry) => blocks(entry, 'tool_result').map((block) => block.tool_use_id)));
+  const open = messages.flatMap((entry) => blocks(entry, 'tool_use').filter((block) => !answered.has(block.id)).map(() => Date.parse(entry.timestamp)));
+  const last = messages[messages.length - 1];
+  return {
+    startedAt: messages.length === 0 ? NaN : Date.parse(messages[0].timestamp),
+    openCallSince: open.length === 0 ? null : Math.max(...open),
+    done: last !== undefined && last.type === 'assistant' && last.message.stop_reason === 'end_turn' && blocks(last, 'tool_use').length === 0,
+  };
+}
+
+/** One liveness check of one agent, as `{status, reason?}`: `done` once its last message is a final answer; `stalled` when over `budgetMs` since it started (`over-budget`), or when its transcript neither grew nor changed mtime since `previous` while no tool call is open (`no-progress`) or its open call has passed the host's command ceiling (`tool-call-overrun`); `unobservable` when the transcript is missing on this and the previous check; else `running`. `previous` is the last check's `{size, mtimeMs}`, null when the transcript was missing then, undefined before the first check; `current` is `{size, mtimeMs, text}`, or null when missing. A first miss waits a check, since a just-dispatched agent may not have written its transcript yet. */
+function agentLiveness(previous, current, now, budgetMs) {
+  if (current === null) return previous === null ? { status: 'unobservable' } : { status: 'running' };
+  const progress = transcriptProgress(current.text);
+  if (progress.done) return { status: 'done' };
+  if (budgetMs !== undefined && now - progress.startedAt > budgetMs) return { status: 'stalled', reason: 'over-budget' };
+  if (!previous || previous.size !== current.size || previous.mtimeMs !== current.mtimeMs) return { status: 'running' };
+  if (progress.openCallSince !== null && now - progress.openCallSince < TOOL_CALL_CEILING_MS) return { status: 'running' };
+  return { status: 'stalled', reason: progress.openCallSince === null ? 'no-progress' : 'tool-call-overrun' };
+}
+
+/** The transcript of subagent `id` under `<projectsDir>/<project>/<session>/subagents/`, or null. */
+function findTranscript(projectsDir, id) {
+  if (!fs.existsSync(projectsDir)) return null;
+  const subdirs = (dir) => fs.readdirSync(dir, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => path.join(dir, entry.name));
+  return subdirs(projectsDir).flatMap(subdirs).map((session) => path.join(session, 'subagents', `agent-${id}.jsonl`)).find((file) => fs.existsSync(file)) || null;
+}
+
+function transcriptSnapshot(file) {
+  if (file === null || !fs.existsSync(file)) return null;
+  const stat = fs.statSync(file);
+  return { size: stat.size, mtimeMs: stat.mtimeMs, text: fs.readFileSync(file, 'utf8') };
+}
+
+/** Checks each `--agents` Claude subagent's transcript every `--interval` seconds and prints one `STALL <id> <reason>` line per stalled agent, which it then stops watching; silent while agents progress, it returns once every agent is done or stalled. A transcript missing on two consecutive checks fails the command with a non-zero exit instead of a stall line, so a host whose transcripts it cannot find never gets a healthy agent stopped. */
+async function agentLivenessCommand(flags) {
+  if (typeof flags.agents !== 'string') fail('--agents <id,...> required');
+  const ids = [...new Set(flags.agents.split(','))];
+  const invalid = ids.find((id) => !/^[A-Za-z0-9_-]+$/.test(id));
+  if (invalid !== undefined) fail(`--agents id invalid: ${invalid}`);
+  const intervalMs = positiveInteger(flags.interval, '--interval') * 1000;
+  const budgetMs = flags['budget-min'] === undefined ? undefined : positiveInteger(flags['budget-min'], '--budget-min') * 60000;
+  const projectsDir = path.join(os.homedir(), '.claude', 'projects');
+  const watched = new Map(ids.map((id) => [id, { file: null, previous: undefined }]));
+  for (;;) {
+    for (const [id, agent] of watched) {
+      agent.file = agent.file || findTranscript(projectsDir, id);
+      const current = transcriptSnapshot(agent.file);
+      const verdict = agentLiveness(agent.previous, current, Date.now(), budgetMs);
+      if (verdict.status === 'unobservable') fail(`agent-liveness: no transcript for agent ${id} under ${projectsDir}`);
+      if (verdict.status === 'stalled') process.stdout.write(`STALL ${id} ${verdict.reason}\n`);
+      if (verdict.status !== 'running') watched.delete(id);
+      agent.previous = current === null ? null : { size: current.size, mtimeMs: current.mtimeMs };
+    }
+    if (watched.size === 0) return 0;
+    await delay(intervalMs);
+  }
+}
+
 function parseFlagArgs(argv, booleanFlags) {
   const bools = booleanFlags || [];
   const out = {};
@@ -918,7 +1015,7 @@ function inputJson(flags) {
   return JSON.parse(flags.input === '-' ? fs.readFileSync(0, 'utf8') : fs.readFileSync(flags.input, 'utf8'));
 }
 
-function main(argv) {
+async function main(argv) {
   const command = argv[2];
   const flags = parseFlagArgs(argv.slice(3), ['self-hosting', 'late']);
   if (command === 'manifest-digest') {
@@ -959,8 +1056,7 @@ function main(argv) {
     return 0;
   }
   if (command === 'surface-check') {
-    if (typeof flags.files !== 'string') fail('--files <path> required');
-    const result = surfaceCheck(readFileList(flags.files), flags.bound === undefined ? undefined : Number(flags.bound));
+    const result = surfaceCheck(surfaceFiles(flags), flags.bound === undefined ? undefined : Number(flags.bound));
     process.stdout.write(JSON.stringify(result) + '\n');
     return result.breach ? 1 : 0;
   }
@@ -982,11 +1078,16 @@ function main(argv) {
     process.stdout.write(JSON.stringify(retroCandidates(flags.sprints, flags.backlog, flags['self-hosting'] === true)) + '\n');
     return 0;
   }
-  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, surface-check, draft-snapshot, review-waves, wave-files, or retro-candidates');
+  if (command === 'scratch-dir') {
+    process.stdout.write(`${scratchDir()}\n`);
+    return 0;
+  }
+  if (command === 'agent-liveness') return agentLivenessCommand(flags);
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, surface-check, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, or agent-liveness');
 }
 
 if (require.main === module) {
-  try { process.exitCode = main(process.argv); } catch (error) { process.stderr.write(`${error.message}\n`); process.exitCode = 2; }
+  main(process.argv).then((code) => { process.exitCode = code; }, (error) => { process.stderr.write(`${error.message}\n`); process.exitCode = 2; });
 }
 
-module.exports = { AUDIT_BATCH_THRESHOLD_FILES, COMBINED_REVIEWER, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, SURFACE_CAP_FILES, WAVE_THRESHOLD_LINES, backlogRows, buildInvocation, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, isDocumentation, isTest, loadWorkflow, numstatLines, persistReview, recordExternalFailure, retroCandidates, retroRows, reviewFindings, reviewWaveCount, reviewerFiles, reviewerKeys, routeTask, surfaceCheck, validateCoverageLedger, validateWaveDivision, waveFiles, fingerprint };
+module.exports = { AUDIT_BATCH_THRESHOLD_FILES, COMBINED_REVIEWER, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, SURFACE_CAP_FILES, WAVE_THRESHOLD_LINES, agentLiveness, backlogRows, buildInvocation, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, isDocumentation, isTest, isUiSurface, loadWorkflow, numstatLines, persistReview, recordExternalFailure, retroCandidates, retroRows, reviewFindings, reviewWaveCount, reviewerFiles, reviewerKeys, routeTask, surfaceCheck, validateCoverageLedger, validateWaveDivision, waveFiles, fingerprint };
