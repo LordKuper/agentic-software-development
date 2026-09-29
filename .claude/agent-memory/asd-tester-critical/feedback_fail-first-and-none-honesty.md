@@ -74,6 +74,9 @@ catches a missing anchor, never a semantic no-op; confirm the run actually redde
 A word test on a sentence that also cites a file is vacuous when the word is inside the citation:
 `/\bpolicy\b/` matches `` `review-policy.md` ``, so deleting the policy clause stayed green (sprint 021
 M18). Strip code spans (`` s.replace(/`[^`]*`/g, '') ``) before testing a prose word next to a citation.
+The failure route is the same trap: "a push failure is `FAILED`" satisfies `/\bpush/` after the push
+instruction is gone. Drop clauses naming `` `FAILED` `` first, and prove it with a mutation that keeps
+that clause (sprint 021 entry 4, M-L).
 
 A *signal-token* presence assert (`includes('\`FAILED\`')`) is the same trap from the other side. It
 proves the signal is mentioned, not handled, so "on `FAILED`, continue" passes (sprint 012 external
