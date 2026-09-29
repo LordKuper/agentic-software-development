@@ -1,7 +1,7 @@
 {
   "sprint_id": "021-deferred-archival-retro-sweep",
   "branch": "sprint/021-deferred-archival-retro-sweep",
-  "phase": "impl",
+  "phase": "impl-test",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -74,6 +74,13 @@
       "reason": "AC-14 added at pr: merged-unclosed at any phase",
       "evidence": "user answer at pr publication gate; decisions-log.md 2026-09-30 scope amendment",
       "artifact_revision": "sprint.md@pr"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "Task 11 done, build+lint clean, flagged choices resolved",
+      "evidence": "5645459; sync --check ok",
+      "artifact_revision": "HEAD 5645459"
     }
   ],
   "task_routing": {
@@ -202,6 +209,12 @@
       "execution": "agent",
       "reason": "risk:workflow gate",
       "resolved_model": "opus"
+    },
+    "impl-test entry 7": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "no-downgrade",
+      "resolved_model": "opus"
     }
   },
   "skipped_phases": [
@@ -252,7 +265,7 @@
     }
   },
   "created_at": "2026-09-29T00:00:00Z",
-  "updated_at": "2026-09-29T23:14:52.863Z",
+  "updated_at": "2026-09-29T23:18:16.152Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

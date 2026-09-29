@@ -42,3 +42,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: `sprint-lifecycle.md` "Scope amendment", run for the first time on the sprint that introduced it. The hard `new or changed scope` gate was satisfied by the user's explicit request.
 - **Affected docs**: [sprint.md](sprint.md), [plan.md](plan.md)
 - 2026-09-30 — route Task 11: critical, dispatch HEAD d590220
+- 2026-09-30 — impl wave 3 (Task 11, 5645459) assessed adaptively. Flagged choices were accepted: plan D1 detection wording now lags canon (AC-14 supersedes it); the OPEN rule sits on the resume bullet; the "State recovery" sentence was aligned.
+- 2026-09-30 — route impl-test entry 7: critical, dispatch HEAD 56db444
