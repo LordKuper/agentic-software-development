@@ -63,3 +63,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-29 — route D-1, D-2, D-3: standard, dispatch HEAD 937fbc6
 - 2026-09-29 — impl test-fix: defects D-1, D-2, D-3, D-4 resolved (4d3a7d3, b48906e); orchestrator sync: ledgers already current, no view change
 - 2026-09-29 — route impl-test entry 2: critical, dispatch HEAD 1e1d34e
+- 2026-09-29 — impl-test: impacted set green (253/253, full file; safety valve not triggered), 1/0 tests; no manual-verification rows

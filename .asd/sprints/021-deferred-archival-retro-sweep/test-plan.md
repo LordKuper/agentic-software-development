@@ -15,7 +15,7 @@ were scoped through; the next re-entry's delta is `git diff <this sha>...HEAD`.
 | Entry | HEAD analysed | Scope |
 |---|---|---|
 | 1 | f4ccc40 | full change surface |
-| 2 |  | delta since entry 1 |
+| 2 | 74948d3 | delta since entry 1 |
 
 Entry 2: the delta is `git diff f4ccc40...HEAD` over the self-hosting pathspec. It holds 5 files (+8/−8), README's self-hosting answer and agent memory only: test-fix 4d3a7d3 (D-1..D-3), the asd-dev index line ac11fee and b48906e (D-4). No canon, runtime, hook or test changed, so the safety valve does not fire. The impacted set is every test reading `README.md` or `.claude/agent-memory/**` (the README mirrors, the memory index bijection, the memory sweeps, sprint-021 AC-11 and AC-13). `tests/run.js` has no selector, so the set runs as the whole file. Pre-strategy run (HEAD d9a047c, tests as found): `node tests/run.js` → exit 0, 253/253 passed. Entry 1's rows were rotated into `test-plan.entry-01.md`; it held no live removal row to carry forward.
 
