@@ -1,7 +1,7 @@
 {
   "sprint_id": "021-deferred-archival-retro-sweep",
   "branch": "sprint/021-deferred-archival-retro-sweep",
-  "phase": "impl-test",
+  "phase": "impl-review",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -153,17 +153,24 @@
       "wave": 1,
       "waves": [
         {
-          "iteration": 0,
-          "verdicts": {},
-          "iteration_heads": {},
+          "iteration": 1,
+          "verdicts": {
+            "iter-01": {
+              "combined": "CONCERNS",
+              "external": "CONCERNS"
+            }
+          },
+          "iteration_heads": {
+            "iter-01": "c9bb97c343c7bfef1e4e469f287210326b11cf42"
+          },
           "latched": {}
         }
       ]
     }
   },
   "created_at": "2026-09-29T00:00:00Z",
-  "updated_at": "2026-09-29T19:49:01.277Z",
-  "review_fixes_pending": null,
+  "updated_at": "2026-09-29T20:03:46.970Z",
+  "review_fixes_pending": "wave-1/iter-01",
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null

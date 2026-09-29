@@ -1,0 +1,1 @@
+- [Live subagent transcripts](reference_live-subagent-transcripts.md) — check transcript-shape claims against this session's own subagents/*.jsonl; final line stop_reason end_turn, others null

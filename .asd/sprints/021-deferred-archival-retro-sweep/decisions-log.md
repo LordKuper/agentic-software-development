@@ -64,3 +64,10 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-29 — impl test-fix: defects D-1, D-2, D-3, D-4 resolved (4d3a7d3, b48906e); orchestrator sync: ledgers already current, no view change
 - 2026-09-29 — route impl-test entry 2: critical, dispatch HEAD 1e1d34e
 - 2026-09-29 — impl-test: impacted set green (253/253, full file; safety valve not triggered), 1/0 tests; no manual-verification rows
+- 2026-09-29 — impl-review division: 1 wave (1193 lines, threshold 3000), surface 69/100 (`surface-check --base/--head`)
+
+## 2026-09-29 — impl-review wave-1/iter-01: CONCERNS → review-fix
+
+- **Decision**: combined returned CONCERNS with C-1 (medium: open mode must commit and push `state.json.pr` so merged-unclosed detection sees `pr.number` on base), C-2/C-3/C-4 (low). External returned CONCERNS with #1 (medium: `isGeneratedView`/consumer pathspec exclude `.claude/settings.json`/`.codex/hooks.json`, which are JSON-merge files that can hold user content), #2 and #3 (low). The findings go to impl review-fix. External #3 and combined C-2 are one README claim and are deduplicated in review-fix (`review-policy.md` "Autofix vs escalation" "Deduplication"). No low-severity test-only branch applies.
+- **Rationale**: The iteration's DoD is not met. First live run of D6: combined wrote its return file itself and `persist-review --in` validated its ledger from that file, with no orchestrator re-typing.
+- **Affected docs**: [reviews/impl/wave-1/iter-01/](reviews/impl/wave-1/iter-01/)
