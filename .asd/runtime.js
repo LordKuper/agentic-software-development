@@ -384,7 +384,8 @@ function rubricIds(markdown) {
 
 /** A UI surface: `.html`/`.htm` outside `.asd/` or under `.asd/templates/`, a stylesheet, component-framework or Unity UI Toolkit file, or any file under a `ui`/`components`/`views`/`pages` path segment, matched case-insensitively. */
 function isUiSurface(file) {
-  if (/\.html?$/i.test(file)) return !file.startsWith('.asd/') || file.startsWith('.asd/templates/');
+  const lower = file.toLowerCase();
+  if (/\.html?$/.test(lower)) return !lower.startsWith('.asd/') || lower.startsWith('.asd/templates/');
   return /\.(css|scss|less|jsx|tsx|vue|svelte|uxml|uss|tss)$/i.test(file) || /(^|\/)(ui|components|views|pages)\//i.test(file);
 }
 
@@ -1090,4 +1091,4 @@ if (require.main === module) {
   main(process.argv).then((code) => { process.exitCode = code; }, (error) => { process.stderr.write(`${error.message}\n`); process.exitCode = 2; });
 }
 
-module.exports = { AUDIT_BATCH_THRESHOLD_FILES, COMBINED_REVIEWER, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, SURFACE_CAP_FILES, WAVE_THRESHOLD_LINES, agentLiveness, backlogRows, buildInvocation, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, isDocumentation, isTest, isUiSurface, loadWorkflow, numstatLines, persistReview, recordExternalFailure, retroCandidates, retroRows, reviewFindings, reviewWaveCount, reviewerFiles, reviewerKeys, routeTask, surfaceCheck, validateCoverageLedger, validateWaveDivision, waveFiles, fingerprint };
+module.exports = { AUDIT_BATCH_THRESHOLD_FILES, COMBINED_REVIEWER, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, SURFACE_CAP_FILES, WAVE_THRESHOLD_LINES, agentLiveness, backlogRows, buildInvocation, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, isDocumentation, isTest, loadWorkflow, numstatLines, persistReview, recordExternalFailure, retroCandidates, retroRows, reviewFindings, reviewWaveCount, reviewerFiles, reviewerKeys, routeTask, surfaceCheck, validateCoverageLedger, validateWaveDivision, waveFiles, fingerprint };
