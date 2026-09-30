@@ -40,3 +40,10 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-30 — wave 2 landed (T6 9dd3e3c); README working copy renormalised to LF (F-1); route Task 7: settings change user_gates=adaptive via asd-init sprint-mediated
 - 2026-09-30 — wave 3 (Task 7) applied through asd-init sprint-mediated: user_gates adaptive → adaptive, comment refreshed; impl assessment approved adaptively; route impl-test entry 1: critical, dispatch HEAD 44d30a7
 - 2026-09-30 — impl-test: full suite green (262/262, safety valve), 7 tests added, 4 reworked; no manual-verification rows
+
+## 2026-09-30 — impl-review wave-1/iter-01: external FAIL accepted for fix; combined question answered
+
+- **Decision**: external FAIL #1 (no guard for a PR merged before the version bump) and #2 (retry blocked by an unpushed local tag) are accepted for fix by the user. combined question 1 was answered "ask each time": a release retry that ends `FAILED` prompts on the next `/asd-sprint` to retry, or to continue to the new-sprint flow without the release, recorded in the decisions log. Routed to impl review-fix with combined #1–#5 and external #1–#2; external #2 = combined #4 (deduplicated).
+- **Rationale**: FAIL escalation (Complication Approval); reviewer question carrier (`review-policy.md` "Gate Verdict Format").
+- **Affected docs**: [reviews/impl/wave-1/iter-01/](reviews/impl/wave-1/iter-01/)
+- 2026-09-30 — route combined.md 1-5, external.md 1-2: critical, dispatch HEAD ce77f96
