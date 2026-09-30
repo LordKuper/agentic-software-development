@@ -84,3 +84,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-30 — route Task 10: critical, dispatch HEAD 4fe03f1
 - 2026-09-30 — wave 6 (Task 10, e22b23d) landed and synced; no flagged choices; impl assessment approved adaptively; route impl-test entry 4
 - 2026-09-30 — route impl-test entry 4: critical, dispatch HEAD a26b22d
+- 2026-09-30 — impl-test: impacted set green (264/264), 1/1 tests added/removed (entry 4: one new AC-10 pin, one duplicate assertion deleted); no manual-verification rows
