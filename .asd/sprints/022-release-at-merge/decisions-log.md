@@ -35,3 +35,16 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-09-30 — Audit accepted (adaptive), one contradiction decided by user
+
+- **Decision**: `audit.md` written. Five contradictions were settled by precedence; the later user-accepted AC wins in each case:
+  - the orchestrator ticks `plan.md` for every wave;
+  - the 021 leftover-sweep entries for `done` are deleted;
+  - an amendment after division clears the wave's latches;
+  - the floor/cap is computed on the amendment base;
+  - the `gh` fix list is given per cause.
+
+  The user decided the sixth: `.asd/project/config.yaml`'s stale closure comment is fixed through `/asd-init` inside the sprint. Design inputs for plan: the terminal token `done`; release in merge mode after `git fetch` of base, idempotent per step, with a retry route from `asd-sprint` Step 1 for a missing tag; AC-7 `floor_base=wave-<K>/<A>` in the amendment's gate evidence.
+- **Rationale**: Audit gate, adaptive: every section is present, every contradiction is settled, and there is no BA ambiguity.
+- **Affected docs**: [audit.md](audit.md)
