@@ -2,6 +2,23 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v13.5.0
+
+The release now publishes the moment the sprint PR merges, and closing a sprint no longer asks you anything. A merged PR completes the sprint; the next sprint's scope archives it mechanically. Claude-side agents move to Sonnet tiers and the Codex `sol` family resolves to `gpt-6.1-sol`.
+
+### Changed
+- **Release at merge** (`git-strategy.md` "Versioning & Changelog (self-hosting only)", `sprint-lifecycle.md` "PR phase"). In a `self_hosting: enabled` project, `pr` merge mode publishes the annotated tag `v<asd_version>` and the GitHub release right after it confirms the merge. Each step is skipped when already done. If the merge commit lacks the sprint's version bump (a PR merged before open mode's bump), the release waits for the first later base commit that carries it, else `FAILED` names the recovery. While the release is missing, each `/asd-sprint` asks you to retry it or continue without it; a continue is logged as your decision.
+- **Sprint closure is mechanical.** The hard `sprint closure` gate is gone. `pr` merge mode ends the chain with `NEXT: done` (`await-closure` is removed) and writes nothing on the base branch. The next sprint's scope archives the merged sprint as its first commit, recorded with `decision_actor: orchestrator`. A merged sprint never blocks the one-active-sprint rule.
+- **PR lookup** by head branch tolerates an unreachable `gh` outside the `pr` phase: it warns and resumes, and `FAILED` names "host unreachable, retry online". A `CLOSED` PR counts as no hit.
+- **Impl waves.** When a wave dispatches more than one Task, devs no longer edit `plan.md` or a shared memory index; the orchestrator ticks the wave's checkboxes after its last signal.
+- **Plans** whose `Reachability` line crosses a push or merge also name the value each interruption point leaves on the receiving branch.
+- **Scope amendments** are reviewed at the severity floor of their own first iteration: the wave's counter is measured from the amendment.
+- **Agent models.** On Claude, `asd-ba` and `asd-ux` run Sonnet at `high` effort; `asd-architect`, the five reviewers and the `critical` variants of `asd-dev`/`asd-tester` run Sonnet at `xhigh`. The `mechanical` variants stay Haiku. The `effort` field needs Claude Code v2.1.242 or later; an older host falls back downward. Under Codex, External Review wraps Claude `sonnet` at `--effort xhigh`. The Codex `sol` family resolves to `gpt-6.1-sol`; `luna` is unchanged.
+- **`/asd-init`** sprint-mediated writes carry the template's inline comment for the key they write.
+
+### Migration
+- No migration script. A merged sprint left at its active path resolves through the closure write at the next `/asd-sprint`; nothing asks for approval. A `user_gates` line in an existing `.asd/project/config.yaml` may still carry the shipped comment naming sprint closure as a hard gate; the comment is stale, and the value is unchanged. A self-hosting fork now releases at merge instead of at closure, so a release missing after an interrupted merge is retried from the next `/asd-sprint`. Codex users pin nothing: the `sol` model ID comes from the framework's model map, so a host that does not know `gpt-6.1-sol` fails at the first Codex dispatch.
+
 ## v13.4.0
 
 One PR per sprint. Closing a sprint no longer opens a second "finalize" PR, so there is no second CI/CD run on your base branch. The closed sprint's archive move rides the next sprint's first commit. The orchestrator also watches in-flight agents for stalls, and a large batch of retro-driven rule fixes lands.
