@@ -23,7 +23,7 @@
       "haiku": "haiku"
     },
     "codex": {
-      "sol": "gpt-6-sol",
+      "sol": "gpt-6.1-sol",
       "luna": "gpt-6-luna"
     }
   },

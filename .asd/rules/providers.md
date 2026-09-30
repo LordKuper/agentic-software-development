@@ -76,7 +76,7 @@ Canonical agent frontmatter speaks in family aliases only (`claude.model`, `code
 | opus | opus | — |
 | sonnet | sonnet | — |
 | haiku | haiku | — |
-| sol | — | gpt-6-sol |
+| sol | — | gpt-6.1-sol |
 | luna | — | gpt-6-luna |
 
 A provider's id is always its rolling alias (newest model in the family), so a family's model bump is a one-line edit to `release-manifest.json` — canonical agent bodies never change.
