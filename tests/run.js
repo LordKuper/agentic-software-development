@@ -6841,7 +6841,7 @@ test('sprint-021 AC-10/AC-11 (D5): scratch-dir creates .asd/tmp/ beside the runt
   assert.strictEqual(git('status', '--porcelain', '--untracked-files=all'), '', 'the directory and its own .gitignore must be ignored with no root .gitignore entry - a consumer needs no migration, and a helper or return file never reaches a commit or a review');
 });
 
-test('sprint-021 AC-1/AC-2 (D1), sprint-022 AC-1/AC-2/AC-3: pr ends at await-merge or done, and runtime CHAIN_EXITS, asd-sprint and README agree; pr open mode commits and pushes its state.json.pr write before await-merge, pr merge mode, entered on any confirmed MERGED number, skips the merge for a PR already MERGED, republishes it if the PR head lacks it before merging, fetches base before the self-hosting release and, in every project, performs no part of the closure write, which releases nothing and is the orchestrator\'s, and scope step 1 carries every token of it', () => {
+test('sprint-021 AC-1/AC-2 (D1), sprint-022 AC-1/AC-2/AC-3: pr ends at await-merge or done, and runtime CHAIN_EXITS, asd-sprint and README agree; pr open mode commits and pushes its state.json.pr write before await-merge, pr merge mode, entered on any confirmed MERGED number (only the release retry skips open mode\'s DoD gate), skips the merge for a PR already MERGED, republishes it if the PR head lacks it before merging, fetches base before the self-hosting release and, in every project, performs no part of the closure write, which releases nothing and is the orchestrator\'s, and scope step 1 carries every token of it', () => {
   const definitions = readWorkflowDefinitions();
   const exits = [...new Set(definitions.flatMap(({ phases, next }) => Object.values(next).flat().filter((target) => !phases.includes(target))))].sort();
   assert.deepStrictEqual(exits, ['await-merge', 'done'], 'sprint-022 AC-3 (D1): the chain ends at pr\'s two exits - the PR opened, then merged; done names completion, not a write, since pr never writes the terminal state');
@@ -6879,6 +6879,12 @@ test('sprint-021 AC-1/AC-2 (D1), sprint-022 AC-1/AC-2/AC-3: pr ends at await-mer
   const modes = sectionOf('.asd/rules/sprint-lifecycle.md', 'PR phase').split('\n\n')[1] || '';
   const override = modes.split(/(?<=\.)\s/).find((sentence) => sentence.includes('`MERGED`') && /merge mode/.test(sentence)) || '';
   assert.ok(override.includes('`pr`') && /\bDoD\b/.test(override), `${mergedSkip} - "PR phase" Modes: a dispatch carrying a confirmed MERGED number enters merge mode whatever pr holds, skipping open mode's DoD gate, which a hand-merged sprint with pr=null could fail; got: ${override}`);
+  const openMode = sectionOf('.asd/workflows/asd-phase-pr.md', 'Open mode');
+  const gateAt = openMode.search(/\bDoD\b/);
+  assert.ok(gateAt >= 0 && gateAt < openMode.indexOf('`MERGED` hit'), 'sanity: pr open mode runs its DoD gate (step 1) before the head-branch lookup that finds a MERGED hit (step 2), so a hit found there has passed the gate');
+  const skipClause = override.split(/;\s/).find((clause) => /\bDoD\b/.test(clause)) || '';
+  const skippers = skipClause.split('merge mode')[0];
+  assert.ok(!/open[- ]mode(?:'s)?\s+(?:own\s+)?`MERGED`/i.test(skippers), `${mergedSkip} - "PR phase" Modes: open mode finds its MERGED hit after its DoD gate has run, so it skips nothing and the dispatches the DoD-skip clause lists may not include it, only asd-sprint's release retry (impl-review wave-1/iter-02 combined #1); got: ${skipClause}`);
   assert.deepStrictEqual(writes.filter((token) => merge.includes(token)), [], 'AC-1: pr merge mode makes no write on git.base_branch - the archive move and terminal state belong to the next sprint\'s scope');
   const openSteps = sectionOf('.asd/workflows/asd-phase-pr.md', 'Open mode').split(/\n(?=\d+[a-z]?\. )/);
   const writeAt = openSteps.findIndex((step) => step.includes('`state.json.pr`'));
