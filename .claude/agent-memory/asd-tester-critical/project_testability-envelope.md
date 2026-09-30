@@ -161,6 +161,10 @@ the generated `.codex/`/`.claude/` views: a `variantMeta` regression leaves the 
 so a disk read stays green and only §9's `--check` drift fires. `sync.buildSyncPlan(REPO_ROOT)` items carry
 the variant meta as `metaOverride` (`agentVariants` is not exported) — render those (sprint 018).
 
+A mutation that also reddens an OLDER sprint's test shows your new assert repeats part of it. Drop that half and keep
+only the new relation. Then re-prove with a mutation that reaches only yours (sprint 022 entry 2: the rollback
+`re-divides` token was already sprint-017 D3's, and only the shared `waves.json` span was new).
+
 A "tight somewhere" assert on an upper bound only catches an overcount that hits every sampled point.
 When a fix adds a parameter with a default, the old and new formulas usually agree only at some inputs
 (sprint 015 EXT-4: only at multiples of 25). Compute both at each sampled point before writing

@@ -6834,7 +6834,7 @@ test('sprint-021 AC-10/AC-11 (D5): scratch-dir creates .asd/tmp/ beside the runt
   assert.strictEqual(git('status', '--porcelain', '--untracked-files=all'), '', 'the directory and its own .gitignore must be ignored with no root .gitignore entry - a consumer needs no migration, and a helper or return file never reaches a commit or a review');
 });
 
-test('sprint-021 AC-1/AC-2 (D1), sprint-022 AC-1/AC-2/AC-3: pr ends at await-merge or done, and runtime CHAIN_EXITS, asd-sprint and README agree; pr open mode commits and pushes its state.json.pr write before await-merge, pr merge mode republishes it if the PR head lacks it before merging, fetches base before the self-hosting release and performs no part of the closure write, which releases nothing and is the orchestrator\'s, and scope step 1 carries every token of it', () => {
+test('sprint-021 AC-1/AC-2 (D1), sprint-022 AC-1/AC-2/AC-3: pr ends at await-merge or done, and runtime CHAIN_EXITS, asd-sprint and README agree; pr open mode commits and pushes its state.json.pr write before await-merge, pr merge mode, entered on any confirmed MERGED number, skips the merge for a PR already MERGED, republishes it if the PR head lacks it before merging, fetches base before the self-hosting release and, in every project, performs no part of the closure write, which releases nothing and is the orchestrator\'s, and scope step 1 carries every token of it', () => {
   const definitions = readWorkflowDefinitions();
   const exits = [...new Set(definitions.flatMap(({ phases, next }) => Object.values(next).flat().filter((target) => !phases.includes(target))))].sort();
   assert.deepStrictEqual(exits, ['await-merge', 'done'], 'sprint-022 AC-3 (D1): the chain ends at pr\'s two exits - the PR opened, then merged; done names completion, not a write, since pr never writes the terminal state');
@@ -6863,6 +6863,15 @@ test('sprint-021 AC-1/AC-2 (D1), sprint-022 AC-1/AC-2/AC-3: pr ends at await-mer
   const release = stepOf(merge, 2);
   const [fetchAt, releaseAt, doneAt] = ['`git fetch origin <git.base_branch>`', '"Versioning & Changelog (self-hosting only)"', '`NEXT: done`'].map((token) => release.indexOf(token));
   assert.ok(fetchAt >= 0 && fetchAt < releaseAt && releaseAt < doneAt, 'sprint-022 AC-1 (D2): pr merge mode step 2 fetches git.base_branch, then publishes the release per git-strategy.md "Versioning & Changelog (self-hosting only)", then emits NEXT: done - the squash merge commit the tag targets is not local on the sprint branch until the fetch');
+  const noWrite = release.split(/(?<=\.)\s/).find((sentence) => /\barchive move\b/.test(sentence)) || '';
+  const noWriteAt = noWrite ? release.indexOf(noWrite) : -1;
+  assert.ok(releaseAt < noWriteAt && noWriteAt < doneAt, 'sprint-022 iter-01 combined #3: pr merge mode step 2 publishes the self-hosting release, then states the no-write rule, then emits NEXT: done');
+  assert.ok(!release.startsWith('2. `self_hosting: enabled`:') || /\bevery project\b/i.test(noWrite), `sprint-022 iter-01 combined #3: under a step opening with the self_hosting condition, the no-write rule and NEXT: done must be re-scoped to every project - read literally, a consumer project gets neither, on its most common chain exit; got: ${noWrite}`);
+  const mergedSkip = 'sprint-022 iter-01 combined #5: the release retry and open mode\'s MERGED hit enter merge mode for a PR already MERGED';
+  assert.ok(/\bstep 2\b/.test(stepOf(merge, 1).split(/(?<=\.)\s/).find((sentence) => sentence.includes('`MERGED`')) || ''), `${mergedSkip} - merge step 1 must send an already-MERGED PR straight to step 2, the release, or it runs gh pr merge on a merged PR and ends FAILED`);
+  const modes = sectionOf('.asd/rules/sprint-lifecycle.md', 'PR phase').split('\n\n')[1] || '';
+  const override = modes.split(/(?<=\.)\s/).find((sentence) => sentence.includes('`MERGED`') && /merge mode/.test(sentence)) || '';
+  assert.ok(override.includes('`pr`') && /\bDoD\b/.test(override), `${mergedSkip} - "PR phase" Modes: a dispatch carrying a confirmed MERGED number enters merge mode whatever pr holds, skipping open mode's DoD gate, which a hand-merged sprint with pr=null could fail; got: ${override}`);
   assert.deepStrictEqual(writes.filter((token) => merge.includes(token)), [], 'AC-1: pr merge mode makes no write on git.base_branch - the archive move and terminal state belong to the next sprint\'s scope');
   const openSteps = sectionOf('.asd/workflows/asd-phase-pr.md', 'Open mode').split(/\n(?=\d+[a-z]?\. )/);
   const writeAt = openSteps.findIndex((step) => step.includes('`state.json.pr`'));
@@ -7034,7 +7043,7 @@ test('sprint-021 AC-7/AC-10/AC-11: each literal the sprint states at two sites a
   assert.ok(cadenceMinutes > 0 && intervalSeconds === cadenceMinutes * 60, `AC-7: providers.md "Agent liveness per host" must run agent-liveness at the cadence "Agent liveness" sets - ${cadenceMinutes} min vs --interval ${intervalSeconds} s`);
 });
 
-test('sprint-022 AC-1 (D2): git-strategy.md "Versioning & Changelog (self-hosting only)" publishes the release in pr merge mode after fetching base, skipping each step already done, and a missing tag or release routes a merged-unclosed sprint back to merge mode at its home and in asd-sprint Step 1', () => {
+test('sprint-022 AC-1 (D2), iter-01 external #1/#2, combined #1: git-strategy.md "Versioning & Changelog (self-hosting only)" publishes the release in pr merge mode after fetching base, on the base commit carrying the sprint\'s bump or FAILED, creating a tag only when absent locally and skipping each step already done, and a missing release commit, tag or release makes asd-sprint ask the user, each time, to retry in merge mode or continue without it, at its home and in asd-sprint Step 1', () => {
   const spans = (text) => [...text.matchAll(/`([^`]+)`/g)].map(([, span]) => span);
   const release = sectionOf('.asd/rules/git-strategy.md', 'Versioning & Changelog (self-hosting only)').split('\n\n').find((paragraph) => paragraph.includes('`gh release create')) || '';
   const trigger = release.split(':')[0];
@@ -7046,18 +7055,54 @@ test('sprint-022 AC-1 (D2): git-strategy.md "Versioning & Changelog (self-hostin
   const releaseStep = steps.find((clause) => spans(clause).some((span) => span.startsWith('gh release create'))) || '';
   assert.ok(spans(tagStep).some((span) => span.startsWith('git ls-remote --tags origin')), 'AC-1 (D2): the tag step is skipped when the tag exists on origin - a retry after a failed release must not re-tag');
   assert.ok(spans(releaseStep).some((span) => span.startsWith('gh release view')), 'AC-1 (D2): the release step is skipped when gh release view finds it - idempotency is per step, so a tag pushed before a failed release still gets its release');
+  const tagCreate = tagStep.slice(0, tagStep.indexOf('`git push origin v'));
+  assert.ok(spans(tagCreate).some((span) => span.includes('refs/tags/v<asd_version>')) && !spans(tagCreate).some((span) => span.startsWith('git ls-remote')), 'external #2: the tag is created only when it is absent locally (refs/tags/v<asd_version>), and pushed only when it is absent on origin - a tag created before a failed push makes the retry\'s tag creation fail with "already exists" when both steps are keyed to origin, so the retry never succeeds');
+  const mergeRead = spans(release).find((span) => /^git show <merge_commit>:\S+$/.test(span));
+  assert.ok(mergeRead, 'sanity: the release reads asd_version at the merge commit with git show <merge_commit>:<manifest>');
+  const bumpMissing = 'external #1: a PR merged before open mode\'s bump carries the previous version, whose tag and release already exist, so the sprint reads as released and is archived without its own release';
+  assert.ok(spans(release).includes(mergeRead.replace('<merge_commit>:', '<merge_commit>^:')), `${bumpMissing} - the release commit's asd_version must be compared with its parent's`);
+  const heading = (/`(## v<version>)`/.exec(sectionOf('.asd/rules/git-strategy.md', 'Versioning & Changelog (self-hosting only)')) || [])[1];
+  assert.ok(heading && spans(release).includes(heading.replace('<version>', '<asd_version>')), `${bumpMissing} - the release commit must also carry the CHANGELOG heading open mode adds (${heading})`);
+  const followUp = spans(release).find((span) => span.startsWith('git log')) || '';
+  assert.ok(/\s--reverse\b/.test(followUp) && followUp.includes('<merge_commit>..origin/<git.base_branch>') && followUp.endsWith(`-- ${mergeRead.split(':')[1]}`), `${bumpMissing} - a merge commit without the bump yields to the FIRST later base commit touching the manifest (git log --reverse <merge_commit>..origin/<git.base_branch> -- <manifest>); newest-first picks a later sprint's bump; got: ${followUp}`);
+  const noBump = release.split(/;\s|(?<=\.)\s/).find((clause) => clause.includes('`FAILED`')) || '';
+  assert.ok(spans(noBump).includes('asd_version') && /\bCHANGELOG\b/.test(noBump) && /\bfollow-up PR\b/.test(noBump), `${bumpMissing} - with no base commit carrying the bump the release is FAILED naming the recovery, a follow-up PR bumping asd_version with its CHANGELOG section; got: ${noBump}`);
+  const releaseCommit = 'external #1: "no release commit" is a missing release - without it in the condition, a merge commit lacking the bump reads as released through the previous version\'s tag';
+  assert.ok(release.includes('the release commit'), 'sanity: git-strategy.md defines "the release commit" the release targets');
   const retry = release.split(/(?<=\.)\s/).find((sentence) => sentence.includes('`asd-sprint`')) || '';
   const condition = retry.split('`asd-sprint`')[0].replace(/`[^`]*`/g, '');
   assert.ok(/\btag\b/.test(condition) && /\brelease\b/.test(condition) && retry.includes('"Merged-unclosed"'), 'AC-1 (D2): the retry route fires on the tag OR the release missing, citing its home "Merged-unclosed" - after a confirmed merge nothing else ever re-runs the release');
+  assert.ok(/\brelease commit\b/.test(condition), `${releaseCommit}; got: ${condition}`);
 
   const home = sectionOf('.asd/rules/sprint-lifecycle.md', 'PR phase').split('**Merged-unclosed**')[1].split('\n\n')[0];
   const homeRetry = home.split(/(?<=\.)\s/).find((sentence) => spans(sentence).some((span) => span.startsWith('gh release view'))) || '';
   assert.ok(spans(homeRetry).some((span) => span.startsWith('git ls-remote --tags origin')) && /merge mode/.test(homeRetry), '"Merged-unclosed" retry route: a tag absent on origin or a failing gh release view sends the sprint back to merge mode');
-  const stepOne = canonText('.asd/skills/asd-sprint/SKILL.md').split('### Step 1:')[1].split('\n### ')[0].split('\n');
+  assert.ok(/\brelease commit\b/.test(homeRetry.replace(/`[^`]*`/g, '')), `"Merged-unclosed": ${releaseCommit}`);
+  const noExit = 'combined #1 (user answer 2026-09-30): a release that keeps failing held every new sprint behind a retry with no exit, so asd-sprint asks the user each time - retry, or continue without the release, recorded in the closing sprint\'s decisions log';
+  assert.ok(/\buser decision\b/.test(homeRetry) && /\beach time\b/.test(homeRetry), `"Merged-unclosed": ${noExit}`);
+  const homeContinue = homeRetry.split(/;\s/).find((clause) => /\bcontinue\b/.test(clause)) || '';
+  const actor = spans(homeContinue).find((span) => span.startsWith('decision_actor:'));
+  assert.ok(actor === 'decision_actor: user' && /\bdecisions log\b/.test(homeContinue), `"Merged-unclosed": the continue option is recorded in the decisions log as the user's decision - ${noExit}; got: ${homeContinue}`);
+  const homeSentences = home.split(/(?<=\.)\s/);
+  const afterRetry = homeSentences[homeSentences.indexOf(homeRetry) + 1] || '';
+  assert.ok(/\bcontinue\b/.test(afterRetry) && /new-sprint flow/.test(afterRetry), `"Merged-unclosed": a continue choice enters the new-sprint flow - ${noExit}`);
+  const scopeStep = stepOf(canonText('.asd/workflows/asd-phase-scope.md').split('\n## ')[0], 1);
+  const logClause = scopeStep.split(/;\s/).find((clause) => clause.includes('`decisions-log.md`')) || '';
+  assert.ok(spans(logClause).includes(actor), `asd-phase-scope.md step 1: the closure write's decisions-log entry names a continue choice asd-sprint carries (${actor}) - ${noExit}`);
+  const sprintSkill = canonText('.asd/skills/asd-sprint/SKILL.md');
+  const stepOne = sprintSkill.split('### Step 1:')[1].split('\n### ')[0].split('\n');
   const skillRetry = stepOne.find((line) => spans(line).includes('self_hosting: enabled') && line.includes('→')) || '';
   const [skillCondition, skillRoute = ''] = skillRetry.split('→');
   assert.ok(/\btag\b/.test(skillCondition.replace(/`[^`]*`/g, '')) && /\brelease\b/.test(skillCondition.replace(/`[^`]*`/g, '')), `asd-sprint Step 1 routes a self-hosting merged-unclosed sprint to the release retry when its tag OR its release is missing; got: ${skillCondition}`);
+  assert.ok(/\brelease commit\b/.test(skillCondition.replace(/`[^`]*`/g, '')), `asd-sprint Step 1: ${releaseCommit}`);
   assert.ok(skillRoute.includes('`asd-phase-pr`') && /merge mode/.test(skillRoute), 'asd-sprint Step 1\'s release retry dispatches asd-phase-pr, whose merge mode runs only the release');
+  assert.ok(/\buser decision\b/.test(skillRoute) && /\beach time\b/.test(skillRoute), `asd-sprint Step 1: ${noExit}`);
+  assert.ok(skillRoute.split(/;\s/).some((clause) => /\bcontinue\b/.test(clause)) && (stepOne[stepOne.indexOf(skillRetry) + 1] || '').includes('Step 2A'), `asd-sprint Step 1: the continue option takes the next route, the new-sprint flow (Step 2A) - ${noExit}`);
+  const routeName = skillRoute.trim().split(' (')[0];
+  const operations = sprintSkill.split('\n');
+  assert.ok((operations.find((line) => line.startsWith('- Request user decision')) || '').includes(routeName), `asd-sprint "Operations used": Request user decision must list the ${routeName} choice Step 1 requests`);
+  const logHead = followUp.split(' ').slice(0, 2).join(' ');
+  assert.ok(spans(operations.find((line) => line.startsWith('- Run command')) || '').includes(logHead), `asd-sprint "Operations used": Run command must list ${logHead}, the follow-up search Step 1's release-commit check runs`);
 
   const opening = sectionOf('.asd/rules/sprint-lifecycle.md', 'PR phase').split('\n\n')[1] || '';
   const note = opening.split(/(?<=\.)\s/).find((sentence) => sentence.startsWith('`NEXT: done`')) || '';
@@ -7108,7 +7153,7 @@ test('sprint-022 AC-5 (D5): the orchestrator ticks a wave\'s plan.md checkboxes 
   assert.ok(stepOf(impl, 9).includes('`<sprint>/plan.md`'), 'AC-5: asd-phase-impl step 9\'s authorised-paths gate must admit the plan.md step 7 writes - otherwise the orchestrator\'s own tick commit fails the gate as an unauthorised path');
 });
 
-test('sprint-022 AC-7 (D4): an amendment accepted after the division point records floor_base, impl-review computes floor and cap on iteration minus that base, and the amendment write clears the wave\'s latch', () => {
+test('sprint-022 AC-7 (D4), iter-01 combined #2: an amendment accepted after the division point records floor_base, impl-review computes floor and cap on iteration minus the base of the latest record since the current waves.json division, and the amendment write clears the wave\'s latch', () => {
   const spans = (text) => [...text.matchAll(/`([^`]+)`/g)].map(([, span]) => span);
   const amendment = stepOf(sectionOf('.asd/rules/sprint-lifecycle.md', 'Scope amendment'), 3);
   const floorBase = spans(amendment).find((span) => span.startsWith('floor_base='));
@@ -7117,8 +7162,16 @@ test('sprint-022 AC-7 (D4): an amendment accepted after the division point recor
   assert.ok(spans(amendment).includes('latched') && amendment.includes('"APPROVE latch"'), 'AC-7: the amendment write clears wave K\'s latched, citing "APPROVE latch" - a latched reviewer would otherwise never see the amended code');
   const latchRoute = sectionOf('.asd/rules/sprint-lifecycle.md', 'APPROVE latch').split('\n').find((line) => /clearing route/.test(line) && line.includes('"Scope amendment"')) || '';
   assert.ok(spans(latchRoute).includes('latched'), 'AC-7: "APPROVE latch" names every route that clears a latch, so the scope-amendment route must be listed there');
+  const staleBase = 'iter-01 combined #2: floor_base lives in gate_decisions, which the rollback reset never touches, so a record from before a rollback would rebase the re-divided wave K, pinning its floor at low and extending its cap';
+  const selection = amendment.split(/;\s|(?<=\.)\s/).find((clause) => /\blatest\b/.test(clause)) || '';
+  const division = spans(selection).find((span) => span.endsWith('waves.json'));
+  assert.ok(division && /\bdivision\b/.test(selection), `AC-7: "Scope amendment" step 3 takes A from the latest record accepted since the current waves.json division - ${staleBase}; got: ${selection}`);
+  const rollback = canonText('.asd/rules/sprint-lifecycle.md').split('\n').find((line) => line.startsWith('- **Rollback reset.**')) || '';
+  assert.ok(spans(rollback).includes(division), `AC-7: the division-scoped A retires pre-rollback records only because the rollback reset overwrites ${division}, the division the scope names (re-division itself: the sprint-017 D3 assert) - ${staleBase}`);
   const policy = sectionOf('.asd/rules/review-policy.md', 'Iteration severity floor');
   assert.ok(policy.includes(`\`${floorBase}\``) && policy.includes('"Scope amendment"'), `AC-7: review-policy.md "Iteration severity floor" subtracts the base the amendment records (${floorBase}) from N`);
+  const policyN = policy.split('\n').find((line) => line.includes(`\`${floorBase}\``)) || '';
+  assert.ok(!/\blatest\b/.test(policyN) || spans(policyN).includes(division), `AC-7: review-policy.md points at "Scope amendment" for A; a restated selection must carry its ${division} division scope - ${staleBase}`);
   const counters = sectionOf('.asd/rules/sprint-lifecycle.md', 'Review iteration counters').split('\n').find((line) => line.includes('severity floor and iteration cap')) || '';
   assert.ok(counters.includes('"Scope amendment"'), 'AC-7: "Review iteration counters" - floor and cap are per counter less the amendment base');
   const implReview = canonText('.asd/workflows/asd-phase-impl-review.md');
