@@ -75,3 +75,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-30 — impl assessment (Task 9, wave 5) approved adaptively: plan fully ticked, build+lint clean, sync clean, flagged choice already accepted; no sprint stubs; route impl-test entry 3
 - 2026-09-30 — route impl-test entry 3: critical, dispatch HEAD 1b243b4
 - 2026-09-30 — impl-test: impacted set green (263/263), 1/0 tests added/removed (entry 3); no manual-verification rows
+
+## 2026-09-30 — Scope amendment: AC-10 (sol resolves to gpt-6.1-sol)
+
+- **Decision**: The user asked, in chat, to update the `sol` model to `gpt-6.1-sol`. Read as: the concrete ID behind the `sol` family alias changes from `gpt-6-sol` to `gpt-6.1-sol`; the alias, all tiers and `luna` stay. Carried by Task 10 in the new wave 6; the change surface stays 37 (the manifest, `providers.md` and README are already counted). The record carries `floor_base=wave-1/1`, since wave 1 is still at counter 1, and latches were cleared (none held). The ID is user-supplied and unchecked against a host doc.
+- **Rationale**: Hard scope gate, decided by the user's request. `sync.js` validator `gpt-<n>[.<n>]-(sol|luna)` accepts the ID.
+- **Affected docs**: [sprint.md](sprint.md), [plan.md](plan.md)

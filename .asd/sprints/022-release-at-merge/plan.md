@@ -109,6 +109,12 @@ Material risk: change: public contract
 - [x] `.asd/agents/asd-external-review.md`: `codex.wraps_model` "sonnet"; `codex.wraps_invoke_args` `--effort xhigh`
 - [x] `.asd/rules/providers.md` "Agent tier matrix" (variants row, wrapped-reviewer row) and variants sentence; README mirrors
 
+### Task 10: sol resolves to gpt-6.1-sol (AC-10, scope amendment)
+Material risk: change: public contract
+- [ ] `.asd/release-manifest.json` `model_families.codex.sol`: `gpt-6-sol` → `gpt-6.1-sol`; no other key changes (the hash ledgers are recomputed by the orchestrator's `sync.js --apply`)
+- [ ] `.asd/rules/providers.md` model-family table row `sol`; README line naming `sol` → the concrete ID (keep the `luna` ID and the unsuffixed-ID warning); leave a search-derived sweep of `gpt-6-sol` in non-archived, non-generated docs clean
+- Tests pinning `gpt-6-sol` in `tests/run.js` are updated by the tester in impl-test entry 4, not by the dev.
+
 ## Orchestrator lines (not dev Tasks)
 - After each wave: tick the wave's checkboxes (D5); `sync.js --apply` on changed views, or `--apply AGENTS.md`; `--check`; commit.
 - At pr open mode: `asd_version` bump plus CHANGELOG, with a migration note (`await-closure` removed, closure gate gone, stale shipped `user_gates` comment in existing configs, self-hosting forks release at merge).
@@ -126,5 +132,6 @@ Material risk: change: public contract
 | 3 | 7 |
 | 4 | 8 |
 | 5 | 9 |
+| 6 | 10 |
 
 - Task 6 mirrors wave 1. Task 7 needs Task 2's `t_config.yaml` comment and Task 5's `asd-init` change, synced.
