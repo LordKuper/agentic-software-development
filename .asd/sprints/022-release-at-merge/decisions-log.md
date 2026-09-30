@@ -39,3 +39,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-30 — wave 1 landed (T1 117f16e, T2 5638ced+40bd48e, T3 74c2954, T4 274bbd2, T5 107f5f8); flagged choices accepted; D2 retry refined to 'tag or release missing' across T1/T2/T3; orchestrator sync done; route Task 6: standard, dispatch HEAD 4779ab5
 - 2026-09-30 — wave 2 landed (T6 9dd3e3c); README working copy renormalised to LF (F-1); route Task 7: settings change user_gates=adaptive via asd-init sprint-mediated
 - 2026-09-30 — wave 3 (Task 7) applied through asd-init sprint-mediated: user_gates adaptive → adaptive, comment refreshed; impl assessment approved adaptively; route impl-test entry 1: critical, dispatch HEAD 44d30a7
+- 2026-09-30 — impl-test: full suite green (262/262, safety valve), 7 tests added, 4 reworked; no manual-verification rows
