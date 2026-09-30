@@ -246,7 +246,7 @@ Agents preserve the block. Reviewers verify content respects the declared scope.
 
 ## Sprint archival
 
-Archived path: `.asd/sprints/archived/<NNN-slug>/`. The archive move rides the next sprint's branch after explicit closure approval; the sequence is owned by `sprint-lifecycle.md` "PR phase".
+Archived path: `.asd/sprints/archived/<NNN-slug>/`. The archive move rides the next sprint's branch; the sequence is owned by `sprint-lifecycle.md` "PR phase".
 
 ## State file
 

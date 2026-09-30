@@ -15,7 +15,7 @@ Format rules (parser-critical):
 - Subtask deferred for a manual action stays `- [ ]`, suffixed ` — BLOCKED: MS-N` (see manual-steps.md)
 - No test-authoring tasks or subtasks: tests are selected and written in impl-test, after the code exists
 - Every task carries a `Material risk:` line, plain text, never a checkbox (see sprint-lifecycle.md "Plan file format")
-- A task whose value depends on two phases agreeing also carries a `Reachability:` line, same placement; absent = no cross-phase dependency, never a fail-closed default (same section)
+- A task whose value depends on two phases agreeing also carries a `Reachability:` line, same placement; a value crossing a push or merge also names what each interruption point leaves on the receiving branch; absent = no cross-phase dependency, never a fail-closed default (same section)
 - A task declaring a project-settings change carries a `Settings change: <key>=<value>[, …]` line, same placement; plan acceptance approves exactly those pairs, and the task sits alone in its wave: wave 1, ahead of any contract-changing task, or a wave after the task adding its key to t_config.yaml (same section)
 - Overview carries one required `Change surface: <n> files` line (same section)
 - `## Dependencies` is required and opens with the wave table impl dispatches from; every task sits in exactly one wave, and no two tasks in one wave touch overlapping paths (same section)
@@ -34,7 +34,7 @@ Standing DoD applies (`sprint-lifecycle.md` "Plan file format") — not restated
 
 ### Task 1: {{title}}
 Material risk: change: {{short risk class — the edit's own correctness is uncertain}}
-Reachability: {{which two phases must agree, on what value, and the point in each where it is written and read — omit this line entirely when the task has no cross-phase dependency}}
+Reachability: {{which two phases must agree, on what value, and the point in each where it is written and read; a value crossing a push or merge adds `; interrupted at <point>, <branch> holds <value>` per interruption point — omit this line entirely when the task has no cross-phase dependency}}
 - [ ] {{subtask}}
 - [ ] {{subtask}}
 
