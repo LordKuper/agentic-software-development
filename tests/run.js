@@ -91,7 +91,6 @@ test('canonical agent -> Codex .toml matches fixture', () => {
   const expected = readExpectedFixture(path.join(FIXTURES, 'expected/agents/demo-agent.codex.toml'), manifest);
   assert.strictEqual(rendered.output, expected);
   assert.ok(rendered.output.startsWith('# ASD generated. Edit .asd/agents/demo-agent.md.'));
-  assert.ok(rendered.output.includes('model = "gpt-6-sol"'), 'codex model family alias must resolve via release-manifest table');
   assert.ok(rendered.output.includes('developer_instructions = """'));
 });
 
@@ -227,7 +226,9 @@ test('agent-claude / agent-codex transforms resolve {{wraps_cli}}/{{wraps_config
 test('asd-external-review: the wrapped CLI subprocess carries an explicit read-only flag on both providers', () => {
   const claudeAgent = fs.readFileSync(path.join(REPO_ROOT, '.claude/agents/asd-external-review.md'), 'utf8');
   const codexAgent = fs.readFileSync(path.join(REPO_ROOT, '.codex/agents/asd-external-review.toml'), 'utf8');
-  assert.ok(claudeAgent.includes('codex exec --model gpt-6-sol -c model_reasoning_effort="high" --sandbox read-only -'), 'Claude-side must invoke the wrapped Codex CLI with explicit model, effort, and read-only sandbox');
+  const wrapper = sync.parseCanonicalFrontmatter(sync.readNormalized(path.join(REPO_ROOT, '.asd', 'agents', 'asd-external-review.md'))).meta;
+  const wrappedModel = loadManifest().model_families.codex[wrapper.claude.wraps_model];
+  assert.ok(claudeAgent.includes(`codex exec --model ${wrappedModel} -c model_reasoning_effort="high" --sandbox read-only -`),'Claude-side must invoke the wrapped Codex CLI with explicit model, effort, and read-only sandbox');
   assert.ok(codexAgent.includes('--restricted --tools "Read,Grep,Glob" --strict-mcp-config'), 'Codex-side must invoke the wrapped Claude CLI with explicit read-only tool restriction, not rely on ambient project permissions');
 });
 
@@ -246,11 +247,13 @@ test('AC-3: wrapped model aliases resolve through the wrapped provider table', (
   const manifest = loadManifest();
   const raw = sync.readNormalized(path.join(REPO_ROOT, '.asd', 'agents', 'asd-external-review.md'));
   const { meta, body } = sync.parseCanonicalFrontmatter(raw);
-  assert.ok(!raw.includes('gpt-6-sol'), 'canonical wrapper source must store family aliases only');
+  const concreteId = new RegExp(`gpt-\\d+(\\.\\d+)?-(${Object.keys(manifest.model_families.codex).join('|')})`);
+  assert.ok(!concreteId.test(raw), 'canonical wrapper source must store family aliases only - a concrete Codex id of any version is the pin a model bump would leave stale');
+  const override = 'gpt-0-sol';
   const changed = structuredClone(manifest);
-  changed.model_families.codex.sol = 'gpt-6-sol';
+  changed.model_families.codex.sol = override;
   const rendered = sync.transformAgentClaude(meta, body, changed);
-  assert.ok(rendered.includes('--model gpt-6-sol'), 'nested wrapper arguments must receive the resolved wrapped model');
+  assert.ok(rendered.includes(`--model ${override}`), 'nested wrapper arguments must receive the resolved wrapped model from the table the render is given - the override is an id (version 0) no live table holds, so the live table cannot satisfy this');
   assert.ok(!rendered.includes('{{wraps_model}}'));
 });
 
@@ -7297,6 +7300,20 @@ test('sprint-022 AC-8/AC-9: the model family and effort each agent renders - bot
 
   const aliasSentence = sentenceOf('.asd/rules/providers.md', (sentence) => spans(sentence).includes('wraps_config_key'));
   assert.deepStrictEqual([wrapper.claude.wraps_model, wrapper.codex.wraps_model].filter((family) => !spans(aliasSentence).includes(family)), [], 'AC-9: providers.md "External review symmetry" names the wrapped provider\'s family alias for both hosts as canon sets it (wraps_model) - the retired opus is what a half-applied retier leaves');
+});
+
+test('sprint-022 AC-10: providers.md "Model family resolution" table is release-manifest.json model_families row for row, and README names exactly the concrete Codex ids the manifest maps the families to', () => {
+  const { claude, codex } = loadManifest().model_families;
+  const families = [...new Set([...Object.keys(claude), ...Object.keys(codex)])];
+  const section = sectionOf('.asd/rules/providers.md', 'Model family resolution');
+  const rows = section.slice(section.indexOf('| Family |')).split('\n\n')[0].split('\n').slice(2).map((line) => line.split('|').slice(1, -1).map((cell) => cell.trim()));
+  assert.deepStrictEqual(rows.map(([family]) => family).sort(), [...families].sort(), 'providers.md "Model family resolution" table must hold one row per model_families family in release-manifest.json - a family added, dropped or repeated on one side only');
+  for (const [family, claudeCell, codexCell] of rows) {
+    if (claude[family]) assert.strictEqual(claudeCell, claude[family], `providers.md "Model family resolution" row "${family}": its Claude id must be the one release-manifest.json maps it to`);
+    if (codex[family]) assert.strictEqual(codexCell, codex[family], `providers.md "Model family resolution" row "${family}": its Codex id must be the one release-manifest.json maps it to - a model bump edits the manifest and leaves this mirror on the retired id`);
+  }
+  const named = [...canonText('README.md').matchAll(new RegExp(`gpt-\\d+(?:\\.\\d+)?-(?:${Object.keys(codex).join('|')})\\b`, 'g'))].map(([id]) => id);
+  assert.deepStrictEqual([...new Set(named)].sort(), Object.values(codex).sort(), 'README names the concrete Codex ids the manifest maps the families to (AGENTS.md: a change to the family map updates README in the same change) - none retired, none missing');
 });
 
 // ===========================================================================
