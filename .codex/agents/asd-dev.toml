@@ -1,7 +1,7 @@
-# ASD generated. Edit .asd/agents/asd-dev.md. source_digest=sha256:87427691a2e33a427713096a8510d6801535e420c09f351b51abedbf26d62640 content_digest=sha256:b18900f99a594c729a1c832e59c39847f692bf7300cbf0e509c1bc853eebc499 asd_version=13.3.0 schema=1
+# ASD generated. Edit .asd/agents/asd-dev.md. source_digest=sha256:6b23c5feb65e489161a16c0788c4431a82f957c2db8f69040e00b763bab9b997 content_digest=sha256:fbb5cf77b274471d363734aadb18aa9c5766619a10c8a629951be61c1549bc59 asd_version=13.4.0 schema=1
 name = "asd-dev"
 description = "Server/CLI/library code and UI code, components, client-side logic, consuming DESIGN.md tokens wherever UI work applies. Covers: production code authoring per plan tasks (backend and frontend), fixing impl-review findings and impl-test defects, running lint/build/run commands from commands.yaml, registering TODO stubs in stubs.md. Does NOT handle: any test authoring or test runs — unit, integration, e2e (delegates to asd-tester in the impl-test phase), architecture decisions (delegates to asd-architect), design system token edits (delegates to asd-ux), accessibility requirements (read-only consumer of accessibility.html), code review (delegates to reviewer agents)."
-model = "gpt-6-sol"
+model = "gpt-6.1-sol"
 model_reasoning_effort = "medium"
 sandbox_mode = "workspace-write"
 web_search = "live"

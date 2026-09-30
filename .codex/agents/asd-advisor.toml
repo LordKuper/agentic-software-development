@@ -1,7 +1,7 @@
-# ASD generated. Edit .asd/agents/asd-advisor.md. source_digest=sha256:f572a04da3165a11b9865df911a1b1212ddfb21a847f8df5428f685a9dab68ce content_digest=sha256:8a57e8f2a28521c406727992389ca3de03913a4267cbba1b2d2348fa28fc9c07 asd_version=13.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-advisor.md. source_digest=sha256:f572a04da3165a11b9865df911a1b1212ddfb21a847f8df5428f685a9dab68ce content_digest=sha256:36a6a35d280fcad9ca99d4b275da2b0a3febe4b91b5cee6fb6a5b0a9ba79e4aa asd_version=13.4.0 schema=1
 name = "asd-advisor"
 description = "Read-only consultation agent for non-gate uncertainty — any agent stuck on ambiguity that is NOT one of the HARD gates in checkpoints.md's approval-gates tables can consult it instead of escalating to the user. Covers: free-text recommendation with rationale on an in-scope question, given a question plus relevant file paths. Does NOT handle: HARD gate approval (only the user can grant that, per checkpoints.md — advisor consults never authorize and never substitute for a gate), verdict-format review (delegates to the asd-reviewer-* agents), fixing or writing code/docs (read-only, no Write/Edit/Bash)."
-model = "gpt-6-sol"
+model = "gpt-6.1-sol"
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 web_search = "live"

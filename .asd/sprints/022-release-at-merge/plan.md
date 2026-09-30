@@ -111,8 +111,8 @@ Material risk: change: public contract
 
 ### Task 10: sol resolves to gpt-6.1-sol (AC-10, scope amendment)
 Material risk: change: public contract
-- [ ] `.asd/release-manifest.json` `model_families.codex.sol`: `gpt-6-sol` → `gpt-6.1-sol`; no other key changes (the hash ledgers are recomputed by the orchestrator's `sync.js --apply`)
-- [ ] `.asd/rules/providers.md` model-family table row `sol`; README line naming `sol` → the concrete ID (keep the `luna` ID and the unsuffixed-ID warning); leave a search-derived sweep of `gpt-6-sol` in non-archived, non-generated docs clean
+- [x] `.asd/release-manifest.json` `model_families.codex.sol`: `gpt-6-sol` → `gpt-6.1-sol`; no other key changes (the hash ledgers are recomputed by the orchestrator's `sync.js --apply`)
+- [x] `.asd/rules/providers.md` model-family table row `sol`; README line naming `sol` → the concrete ID (keep the `luna` ID and the unsuffixed-ID warning); leave a search-derived sweep of `gpt-6-sol` in non-archived, non-generated docs clean
 - Tests pinning `gpt-6-sol` in `tests/run.js` are updated by the tester in impl-test entry 4, not by the dev.
 
 ## Orchestrator lines (not dev Tasks)

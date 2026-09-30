@@ -1,7 +1,7 @@
-# ASD generated. Edit .asd/agents/asd-reviewer-combined.md. source_digest=sha256:0d3be49d57917b76f733e5c5f3d916ba48f1124ce97cadc0421c6d587da8c088 content_digest=sha256:f14b2168edf51bfe0b23ab7a6f96e183b9b70e37d88464faa735738005826f26 asd_version=13.3.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-combined.md. source_digest=sha256:4465f519d7360af8ed263d298fbfb868a75ed72524b8336abe93782ab55c09d2 content_digest=sha256:c89d1f8d57be783c96af271c176fe46596ff2605d3494ac173e2e6d7ee07f863 asd_version=13.4.0 schema=1
 name = "asd-reviewer-combined"
 description = "Impl-review single-pass internal reviewer for workflows whose `reviewers.impl` names `combined` (lite): applies the Correctness and Efficiency rubrics to every change, the Documentation rubric when a documentation file is in scope, and gives an overall quality assessment of every change. Covers: bugs, security, contracts, best practices, AC→code trace against `sprint.md` AC-N, UI/accessibility conformance, over-engineering and structure/cohesion checklists, complexity-vs-value, performance; conditionally SSoT, template adherence, persistent-doc actuality, in-code doc comments, stub resolution, Framework mode, documentation economy; overall quality. Does NOT handle: design-review (lite has none; standard dispatches asd-reviewer-correctness/efficiency/documentation), test-plan/test-quality review and AC→check coverage (no Testing review in lite; `test-plan.md` is context only, the manual-verification decision is the orchestrator's), standard's impl-review (asd-reviewer-correctness/efficiency/testing/documentation), fixing (creators autofix per review-policy)."
-model = "gpt-6-sol"
+model = "gpt-6.1-sol"
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 web_search = "live"

@@ -1,7 +1,7 @@
-# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:eef13d51a97c9691ad2f759a3b25bd32522060d2722ee18605a3d708e5f455ca content_digest=sha256:77b96b5a124c6dd546ad52f0bca150d3a6c9d7bb5ece33407f1fa50223dea000 asd_version=13.4.0 schema=1
+# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:eef13d51a97c9691ad2f759a3b25bd32522060d2722ee18605a3d708e5f455ca content_digest=sha256:ed4a9b3541336f73665251975352872a6f9addffe7a479eff6faa7b4c144c8a2 asd_version=13.4.0 schema=1
 name = "asd-external-review"
 description = "External reviewer wrapping the other provider's CLI (Codex under Claude Code, Claude under Codex), run in parallel with internal reviewers during design-review and impl-review. Covers: wrapped-CLI availability detection and invocation per runtime-detected platform, rendering of the runtime-emitted scope manifest (file list plus diff file), prompt selection per phase (design or impl), one wrapped-CLI invocation per dispatch, output parsing and ASD severity mapping, kept/dropped accounting per severity floor, stalemate detection across iterations. Does NOT handle: internal review (delegates to asd-reviewer-* agents), fixing (creators autofix per review-policy)."
-model = "gpt-6-sol"
+model = "gpt-6.1-sol"
 model_reasoning_effort = "medium"
 sandbox_mode = "read-only"
 web_search = "disabled"
