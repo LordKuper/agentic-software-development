@@ -7215,6 +7215,90 @@ test('sprint-022 AC-2/AC-3/AC-5 leftover-term check: no canon, README, AGENTS.md
   assert.deepStrictEqual(hits, [], 'each phrase is from a line this sprint deleted (git diff main...HEAD) - one surviving restates the closure gate, its approval, the await-closure exit, the release at the closure write or dev plan ticking. CHANGELOG.md and sprint folders are history and stay out of the sweep');
 });
 
+test('sprint-022 AC-8/AC-9: the model family and effort each agent renders - both providers, mechanical and critical variants, the wrapped reviewer - is the tier providers.md "Agent tier matrix" and README state, the variant-tier prose names the same families and efforts, and README names no family no agent renders', () => {
+  const manifest = loadManifest();
+  const tierOf = (family, effort) => `${family}/${effort || 'none'}`;
+  const spans = (text) => [...text.matchAll(/`([^`]+)`/g)].map(([, span]) => span);
+  const plan = sync.buildSyncPlan(REPO_ROOT).filter((item) => item.kind === 'agent-claude');
+  assert.ok(plan.some((item) => item.metaOverride), 'sanity: the plan must carry the tier variants, or no variant row below is compared');
+  const metas = plan.map((item) => item.metaOverride || item.source.meta);
+  const tiers = new Map(metas.map((meta) => [meta.name, { claude: tierOf(meta.claude.model, meta.claude.effort), codex: tierOf(meta.codex.model, meta.codex.model_reasoning_effort) }]));
+  const baseNames = plan.filter((item) => !item.metaOverride).map((item) => item.source.meta.name);
+  const wrapper = plan.find((item) => item.source.meta.name === 'asd-external-review').source.meta;
+  const wrappedEffort = (args, flag) => {
+    const hit = new RegExp(`${flag}[= ]"?(\\w+)`).exec(args);
+    assert.ok(hit, `asd-external-review wraps_invoke_args must state the wrapped reviewer's effort with ${flag}, or the wrapped-reviewer row has nothing to be compared with`);
+    return hit[1];
+  };
+  const wrapped = {
+    claude: tierOf(wrapper.claude.wraps_model, wrappedEffort(wrapper.claude.wraps_invoke_args, 'model_reasoning_effort')),
+    codex: tierOf(wrapper.codex.wraps_model, wrappedEffort(wrapper.codex.wraps_invoke_args, '--effort')),
+  };
+
+  const matrix = sectionOf('.asd/rules/providers.md', 'Model family resolution').split('### Agent tier matrix')[1].split('\n').filter((line) => line.startsWith('| asd-')).map((line) => line.split('|').slice(1, -1).map((cell) => cell.trim().replace(/ \/ /g, '/')));
+  const cellFor = (cell, variant) => {
+    const part = cell.split(';').map((piece) => piece.trim()).find((piece) => piece.startsWith(`${variant}:`));
+    return part ? part.slice(variant.length + 1).replace(/\(.*$/, '').trim() : cell;
+  };
+  const claimed = [];
+  for (const [agents, claudeCell, codexCell] of matrix) {
+    for (const stem of agents.split(',').map((part) => part.trim().replace(/ \([^)]*\)$/, ''))) {
+      const isWrapped = stem === 'asd-external-review wrapped reviewer';
+      const label = isWrapped || stem === 'asd-external-review wrapper' ? 'asd-external-review' : stem;
+      const prefix = label.endsWith('*') ? label.slice(0, -1) : null;
+      const names = prefix === null ? [label].filter((name) => tiers.has(name)) : [...tiers.keys()].filter((name) => name.startsWith(prefix));
+      assert.ok(names.length > 0, `providers.md "Agent tier matrix" row "${stem}" names no agent canon renders - a stale or misspelled row`);
+      for (const name of names) {
+        const expected = isWrapped ? wrapped : tiers.get(name);
+        const variant = prefix === null ? '' : name.slice(prefix.length);
+        assert.strictEqual(cellFor(claudeCell, variant), expected.claude, `providers.md "Agent tier matrix" row "${stem}": ${name}'s Claude cell must be the model/effort canon renders for it (AC-8/AC-9 moved 11 agents across three mirrors)`);
+        assert.strictEqual(cellFor(codexCell, variant), expected.codex, `providers.md "Agent tier matrix" row "${stem}": ${name}'s Codex cell must be the model/effort canon renders for it`);
+        if (!isWrapped) claimed.push(name);
+      }
+    }
+  }
+  assert.deepStrictEqual(claimed.sort(), [...tiers.keys()].sort(), 'each agent canon renders, variants included, appears in exactly one matrix row - the diff shows the name a row is missing or repeats');
+
+  const agentsSection = sectionOf('README.md', 'Agents');
+  const readmeRows = [...agentsSection.matchAll(/^\| `(asd-[a-z-]+)` \| ([^|]+) \| ([^|]+) \|/gm)].map(([, name, claude, codex]) => [name, claude.trim(), codex.trim()]);
+  assert.deepStrictEqual(readmeRows.map(([name]) => name).sort(), [...baseNames].sort(), 'README\'s agent tables list each canonical agent once - variants are described in prose, not rows');
+  for (const [name, claude, codex] of readmeRows) {
+    assert.deepStrictEqual({ claude, codex }, tiers.get(name), `README "Agents" row ${name}: its Claude and Codex cells must be the model/effort canon renders for it (AGENTS.md: a tier change updates the README table in the same change)`);
+  }
+
+  const used = { claude: new Set(), codex: new Set() };
+  for (const { claude, codex } of tiers.values()) {
+    used.claude.add(claude.split('/')[0]);
+    used.codex.add(codex.split('/')[0]);
+  }
+  const listed = /\(Claude: ([a-z/]+); Codex: ([a-z/]+)\)/.exec(agentsSection);
+  assert.ok(listed, 'README "Agents" must list the model families its agents declare per provider');
+  assert.deepStrictEqual([listed[1].split('/').sort(), listed[2].split('/').sort()], [[...used.claude].sort(), [...used.codex].sort()], 'README\'s per-provider family list is the families the agents render, variants included: a family no agent renders listed (opus after the retier), or a rendered one dropped (haiku), misstates the tiers');
+  const unused = ['claude', 'codex'].flatMap((provider) => Object.keys(manifest.model_families[provider]).filter((family) => !used[provider].has(family)));
+  assert.deepStrictEqual(unused.filter((family) => new RegExp(`\\b${family}\\b`, 'i').test(agentsSection)), [], 'README "Agents" names a model family no agent renders - a tier sentence still on the retired family');
+
+  const efforts = new Set([...tiers.values(), wrapped].flatMap((tier) => [tier.claude, tier.codex]).map((tier) => tier.split('/')[1]));
+  const vocabulary = new Set([...unused, ...used.claude, ...used.codex, ...efforts]);
+  vocabulary.delete('none');
+  const wordsIn = (sentence) => new Set([...sentence.toLowerCase().matchAll(/[a-z]+/g)].map(([word]) => word).filter((word) => vocabulary.has(word)));
+  const wordsOfTiers = (names) => new Set(names.flatMap((name) => [tiers.get(name).claude, tiers.get(name).codex]).flatMap((tier) => tier.split('/')).filter((word) => word !== 'none'));
+  const variantNames = [...tiers.keys()].filter((name) => !baseNames.includes(name));
+  const variantBases = baseNames.filter((name) => tiers.has(`${name}-mechanical`));
+  const sentenceOf = (rel, isTierSentence) => {
+    const hits = canonText(rel).split('\n').filter((line) => !/^[|#]/.test(line)).join('\n').split(/(?<=\.)\s+/).filter(isTierSentence);
+    assert.strictEqual(hits.length, 1, `${rel} must state the variant tiers in exactly one sentence, or the tier words below are compared with the wrong text`);
+    return hits[0];
+  };
+  const bare = (sentence) => sentence.replace(/`[^`]*`/g, '');
+  const providersSentence = sentenceOf('.asd/rules/providers.md', (sentence) => /\bmechanical\b/.test(bare(sentence)) && /\bcritical\b/.test(bare(sentence)));
+  assert.deepStrictEqual([...wordsIn(providersSentence)].sort(), [...wordsOfTiers(variantNames)].sort(), 'AC-9: providers.md "Task-class variants and routing" names exactly the families and efforts the variants render (mechanical: haiku, no effort) - none stale, none missing');
+  const readmeSentence = sentenceOf('README.md', (sentence) => sentence.includes('`-mechanical`') && sentence.includes('`-critical`'));
+  assert.deepStrictEqual([...wordsIn(readmeSentence)].sort(), [...new Set([...wordsOfTiers(variantNames), ...wordsOfTiers(variantBases)])].sort(), 'AC-9: README\'s variant sentence names exactly the families and efforts the variants and the base agent they fall back to render');
+
+  const aliasSentence = sentenceOf('.asd/rules/providers.md', (sentence) => spans(sentence).includes('wraps_config_key'));
+  assert.deepStrictEqual([wrapper.claude.wraps_model, wrapper.codex.wraps_model].filter((family) => !spans(aliasSentence).includes(family)), [], 'AC-9: providers.md "External review symmetry" names the wrapped provider\'s family alias for both hosts as canon sets it (wraps_model) - the retired opus is what a half-applied retier leaves');
+});
+
 // ===========================================================================
 // Runner
 // ===========================================================================
