@@ -273,6 +273,13 @@ vocabulary set (families plus efforts) of the one sentence that states it, so a 
 mutations). Record the ceiling: pairings inside a sentence are not compared. Find that sentence after dropping table and
 heading lines: a matrix table has no full stop, so it reads as one sentence and the locator hits twice.
 
+A **concrete-id bump** (sprint 022 entry 4, `sol` to `gpt-6.1-sol`) lands in four kinds of pin. A byte-for-byte fixture's
+`content_digest` covers the id line: recompute it with `node:crypto` over the edited body and check it equals the runner's,
+keep the fixture literal, and derive every other expectation from `model_families`. A literal absence guard
+(`!includes('gpt-6-sol')`) cannot see `gpt-6.1-sol`, so guard the shape. An override proving "the table you pass wins" must be
+an id no live table can hold (`gpt-0-sol`), or the live lookup satisfies it. An `includes` placed after a `strictEqual`
+against the same fixture is unreachable, so delete it.
+
 ## Fixtures whose bytes are the input
 
 Never commit one whose distinguishing bytes cannot survive checkout. Sprint 009 shipped
