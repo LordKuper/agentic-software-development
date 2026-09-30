@@ -68,11 +68,11 @@ record, by the time `pr` runs. Each per-entry record measures only the tree that
 analysed, not any tree produced later
 (`.asd/rules/sprint-lifecycle.md` "Impacted test set").
 
-- Command: `node tests/run.js`, unscoped: the shared-infrastructure safety valve fires on the `git-strategy.md` and `sprint-lifecycle.md` rule-doc changes and the release-manifest ledger
+- Command: `node tests/run.js`, unscoped (impl-review wave-1/iter-03 terminal full-suite gate)
 - Scope: full
-- Result (entry 5): pass — 264/264 (exit 0, no FAIL line). The pre-strategy run at the same HEAD was also 264/264, exit 0, so no delta pin was red before authoring. The count does not move: the sanity and the absence assert added sit inside an existing test, and the delta's removed assertions and reworked ones were already counted at `de99a72`
-- Lint / build: pass — `git diff --cached --check` clean on the commit's paths (exit 0); `node .asd/sync.js --check` `ok: true`, 74/74 `current`
-- HEAD: 9f81e7e plus this entry's `tests/run.js` edit, committed unchanged afterwards (no test reads the test-plan files). The terminal full suite is the first run at a HEAD that contains the commit
+- Result: pass — 264/264 (exit 0; 264 `ok -` lines, no `not ok` line, no line starting `FAIL`)
+- Lint / build: pass — `git diff --cached --check` exit 0; `node .asd/sync.js --check` exit 0, `ok: true`, 74/74 `current`
+- HEAD: 8c4055217bb19ada5da2260731c448a477946b3b; this record's own commit follows
 
 ## Defects
 
