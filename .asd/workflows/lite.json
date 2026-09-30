@@ -10,7 +10,7 @@
     "impl-review": ["design-promote", "impl"],
     "design-promote": ["retro"],
     "retro": ["pr"],
-    "pr": ["await-merge", "await-closure"]
+    "pr": ["await-merge", "done"]
   },
   "reviewers": {
     "design": [],

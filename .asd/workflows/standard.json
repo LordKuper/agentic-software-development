@@ -12,7 +12,7 @@
     "impl-test": ["impl-review", "impl"],
     "impl-review": ["retro", "impl"],
     "retro": ["pr"],
-    "pr": ["await-merge", "await-closure"]
+    "pr": ["await-merge", "done"]
   },
   "reviewers": {
     "design": ["correctness", "efficiency", "documentation", "external"],

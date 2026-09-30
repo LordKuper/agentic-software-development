@@ -41,8 +41,8 @@ const WORKFLOWS_DIR = path.join(__dirname, 'workflows');
 const WORKFLOW_KEYS = ['name', 'next', 'phases', 'reviewers', 'rollback_reset'];
 /** Review nodes a definition's `reviewers` and `rollback_reset` are keyed by, as `persist-review --phase` takes them. */
 const REVIEW_NODES = ['design', 'impl'];
-/** `NEXT:` targets that end the chain instead of naming a phase: `pr`'s open and merge exits; closure follows the merge at the next sprint's start. */
-const CHAIN_EXITS = ['await-merge', 'await-closure'];
+/** `NEXT:` targets that end the chain instead of naming a phase: `pr`'s open and merge exits; `done` names completion, the closure write follows at the next sprint's start. */
+const CHAIN_EXITS = ['await-merge', 'done'];
 /** Severities a finding row may carry (`review-policy.md` "Severity levels"). */
 const SEVERITIES = ['low', 'medium', 'high', 'critical'];
 /** The standing n/a predicates, each the exact text a ledger row records. The emitter authorizes one only where its condition holds; this is their sole home. */
