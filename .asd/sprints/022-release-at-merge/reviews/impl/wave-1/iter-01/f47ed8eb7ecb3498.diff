@@ -1,0 +1,1070 @@
+diff --git a/.asd/hooks/session-start.js b/.asd/hooks/session-start.js
+index 118377d..43958e6 100644
+--- a/.asd/hooks/session-start.js
++++ b/.asd/hooks/session-start.js
+@@ -218,7 +218,7 @@ function summary(active, provider, repoRoot) {
+   const branch = state.branch || 'unknown';
+   const verdict = lastReviewVerdict(reviewNode);
+   const phases = phasesForState(repoRoot, state);
+-  const next = phase === 'pr' ? (mergedUnclosed ? 'await-closure' : 'await-merge')
++  const next = phase === 'pr' ? (mergedUnclosed ? 'done' : 'await-merge')
+     : !phases ? null
+     : (phase === 'audit' && phases.includes('design') && isDesignCollapsed(state.documents)) ? 'plan'
+     : nextPhase(phases, phase);
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 6ced77c..5a75a3a 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -35,8 +35,8 @@
+     "agents/asd-reviewer-testing.md": "sha256:0040ab0308f2bbb642ad9a8dba5874d4166bb3c31355121757d8c841cdfed0a3",
+     "skills/asd-concept/SKILL.md": "sha256:9a3cb2331b3aceb4a670d8d0ac94de3808771406036f9ba11dce3239e21cee42",
+     "skills/asd-design-system/SKILL.md": "sha256:9f8153a0f278a1234202771df5118f2228dd4edfd99594c1eeb0536d8d22d07f",
+-    "skills/asd-init/SKILL.md": "sha256:63f2ca4ca340bffaf444e06e64ce262b8f81c26ee968ce61dadad87ec31f7587",
+-    "skills/asd-sprint/SKILL.md": "sha256:a365786bed83a63a14dc57533f45c99897ebe3475d62d5f50a03f4bcffd4b73b",
++    "skills/asd-init/SKILL.md": "sha256:79413ccde0b404e63f8e1bedcf3e467311a3dd83021d7a5d50385b91c0f7d4e0",
++    "skills/asd-sprint/SKILL.md": "sha256:dd93fc548477ff6fe73b40470675079fb3a961479ed4022031eb4bc465dc8b2f",
+     "skills/asd-stack/SKILL.md": "sha256:1afe58b6e4c6611adf468e9dfee361d017412dad8465f52423afdd1ae5ac9354",
+     "skills/asd-sync/SKILL.md": "sha256:f198477e9f35ba73c0b4088a690373e504ea0dd731d5fb501af54e477f3d7baa",
+     "skills/asd-update/SKILL.md": "sha256:fa71a8e3afe4f6942d8a4011dd5f682ae2671b80a73b26a51bffdf9d0b2a1365",
+@@ -49,7 +49,7 @@
+     "skills/asd-phase-impl/SKILL.md": "sha256:ccbc9be28c2a69865c1b241b4ded3c01e98dda16873f013d81458ca17b54f338",
+     "skills/asd-phase-impl-test/SKILL.md": "sha256:2ab69e3e919b66863b95c2097bba108cc2f49dfc04b2c2926a37bc96c38ec6c2",
+     "skills/asd-phase-impl-review/SKILL.md": "sha256:adf1550463ceb2f5db4f80c4078aba072304545d1aab72a9f53d2e50f4d2c480",
+-    "skills/asd-phase-pr/SKILL.md": "sha256:47346b2b04e19868ba3a726def827f11d8e3709f8f33285a3b0c1c9c264b4660",
++    "skills/asd-phase-pr/SKILL.md": "sha256:e82f127971031309e4d5d59621222a8c759e7b22b96b3231e57fe8acb32a1d2e",
+     "agents/asd-advisor.md": "sha256:f572a04da3165a11b9865df911a1b1212ddfb21a847f8df5428f685a9dab68ce",
+     "agents/asd-reviewer-correctness.md": "sha256:b1014ac285953d31504a2a57beeb9c9fe071c49a6945c8aa332d136e46299d7e",
+     "agents/asd-reviewer-efficiency.md": "sha256:5fc12dd16afa15d7e6f44210b357120db4afac91be3b47435842e9a0211d5e6c",
+@@ -65,23 +65,23 @@
+     ".asd/agents/asd-external-review.md": "1119ba279f3c4490717f10d23e44918cffdc0f2a47d5bd08f2577d8453a0872f",
+     ".asd/agents/asd-reviewer-documentation.md": "d35bfff44a7e45b79b8468b840533970a359038a1f0e461da602efb51efb30f7",
+     ".asd/agents/asd-reviewer-testing.md": "0040ab0308f2bbb642ad9a8dba5874d4166bb3c31355121757d8c841cdfed0a3",
+-    ".asd/hooks/session-start.js": "18676c347015cb54c446b8ff78256910613d38c1bb313848d64e76c4bbd8377b",
+-    ".asd/rules/artifact-layout.md": "888a38dfdbb0d2afb1aa8335636a42e7e41c234d080e37fd456995d4fcd1a4ee",
+-    ".asd/rules/checkpoints.md": "f68548dd074ab04ee576e7681a9f804c792462427e491265d131be1484801ff1",
++    ".asd/hooks/session-start.js": "f0ebc50ed2cbe3557dd5100064feb4499091bdb14ffc2385c74ac2cd3b95eb23",
++    ".asd/rules/artifact-layout.md": "28947b78ae7d52b227f36b4ca715ba25d68a8558843bf274715467aa72601d8d",
++    ".asd/rules/checkpoints.md": "dc3a0b83de9bcca60553037e61e66e1e82b34acf91bad1296f32047824ec1585",
+     ".asd/rules/code-style.md": "42a9d11fe0949261a780b49c5dc4ba27f349248f47b2168d63adb8680872eb56",
+-    ".asd/rules/core.md": "20fe1814e0ef50d7196bfcbaf6230d010d7e7f056a2a4fc912d779d462b1cb76",
++    ".asd/rules/core.md": "ebcb6f0965dd3078aa755486f6702816198af4f72566594f25dbbfbdf525ce3a",
+     ".asd/rules/design-principles.md": "0bf73cc3eed6e723821c39f008b63c5fa04eea1e829567290a3365a9a912b938",
+     ".asd/rules/design-system.md": "c583c8ba2c08b26685b0a30dea665bb9ac19cc714e8df3622e582f33d1c95371",
+     ".asd/rules/external-review.md": "5537c69a04f7ac6016ddfd63b2d8fa13a2887a7c3c8bd690c855736130481acb",
+-    ".asd/rules/git-strategy.md": "acc1c825983e0b874278497c604332648fdf53153fb7dbba043f78ade9d76945",
++    ".asd/rules/git-strategy.md": "cebc0e79a90c5dcd481c61715b21795be6b29374717b6c598f4c87bc005c0a24",
+     ".asd/rules/language-policy.md": "e9b488a4cff5ed193208a52324601bede1a41e2512f2a6f06d0660576940f322",
+     ".asd/rules/providers.md": "7b67916fc6898ecc6149879de2e0d00fdcb0a5ab59bf78c888a9886961cac32e",
+-    ".asd/rules/review-policy.md": "a985afbf07d98ff12f6273f11db69fa9e85768082228dc50fc79c003a1bc589d",
+-    ".asd/rules/sprint-lifecycle.md": "a969567817688176ca038da0d722caf527edfbe399bbe681e109831eb4087c32",
++    ".asd/rules/review-policy.md": "abf050bf15d92c02abc8846e67915bd4fc4e3e257d9d0d082b9b4fd8a9d1fa4c",
++    ".asd/rules/sprint-lifecycle.md": "41e6d22a5e984687501b7953a13210d8281bf58e8090915b46e2c49de8f4db7b",
+     ".asd/rules/ux-principles.md": "9f2af8c90d969c73654812b80e523e33b4c5696f506acf49e4bacb4c0dc6750c",
+     ".asd/skills/asd-concept/SKILL.md": "9a3cb2331b3aceb4a670d8d0ac94de3808771406036f9ba11dce3239e21cee42",
+     ".asd/skills/asd-design-system/SKILL.md": "9f8153a0f278a1234202771df5118f2228dd4edfd99594c1eeb0536d8d22d07f",
+-    ".asd/skills/asd-init/SKILL.md": "63f2ca4ca340bffaf444e06e64ce262b8f81c26ee968ce61dadad87ec31f7587",
++    ".asd/skills/asd-init/SKILL.md": "79413ccde0b404e63f8e1bedcf3e467311a3dd83021d7a5d50385b91c0f7d4e0",
+     ".asd/skills/asd-phase-audit/SKILL.md": "8bbda9f2eb8b7925599c387f783d888ba92b12772f82942e8fc28c1e92383eb8",
+     ".asd/skills/asd-phase-design-promote/SKILL.md": "b4ec2db3e65e6dbf27b9d50877eb91b011c641933c8d91517acd75e34025101e",
+     ".asd/skills/asd-phase-design-review/SKILL.md": "62db3bbdc0e8206b970a3c3e651470fe9b68b0db3e69b87b3bd109881643b4f7",
+@@ -90,9 +90,9 @@
+     ".asd/skills/asd-phase-impl-test/SKILL.md": "2ab69e3e919b66863b95c2097bba108cc2f49dfc04b2c2926a37bc96c38ec6c2",
+     ".asd/skills/asd-phase-impl/SKILL.md": "ccbc9be28c2a69865c1b241b4ded3c01e98dda16873f013d81458ca17b54f338",
+     ".asd/skills/asd-phase-plan/SKILL.md": "a5856fbb79957301101dc65b7eb2f6269103d1e09a3b6053bc4f38d083494829",
+-    ".asd/skills/asd-phase-pr/SKILL.md": "47346b2b04e19868ba3a726def827f11d8e3709f8f33285a3b0c1c9c264b4660",
++    ".asd/skills/asd-phase-pr/SKILL.md": "e82f127971031309e4d5d59621222a8c759e7b22b96b3231e57fe8acb32a1d2e",
+     ".asd/skills/asd-phase-scope/SKILL.md": "a21d695d2ddb947e45b55519c54e3654eb42b5db7d8d1a9bc6be01586b62eaa7",
+-    ".asd/skills/asd-sprint/SKILL.md": "a365786bed83a63a14dc57533f45c99897ebe3475d62d5f50a03f4bcffd4b73b",
++    ".asd/skills/asd-sprint/SKILL.md": "dd93fc548477ff6fe73b40470675079fb3a961479ed4022031eb4bc465dc8b2f",
+     ".asd/skills/asd-stack/SKILL.md": "1afe58b6e4c6611adf468e9dfee361d017412dad8465f52423afdd1ae5ac9354",
+     ".asd/skills/asd-sync/SKILL.md": "f198477e9f35ba73c0b4088a690373e504ea0dd731d5fb501af54e477f3d7baa",
+     ".asd/skills/asd-update/SKILL.md": "fa71a8e3afe4f6942d8a4011dd5f682ae2671b80a73b26a51bffdf9d0b2a1365",
+@@ -101,7 +101,7 @@
+     ".asd/templates/external-review/t_prompt-external-design.md": "3190d6b9be694f2fd1e911b4279e48c8e4631dd30ad99f941f4f47a2f6284ad9",
+     ".asd/templates/external-review/t_prompt-external-impl.md": "5f370167f9f0b9bf51f35cefcfca382e3810747f3d33b176dbf76bd5dea5506c",
+     ".asd/templates/external-review/t_review-report.md": "237bbb9091758042335a546db11d7408e3a69e1240d160a6ad78206cd0b9b2ed",
+-    ".asd/templates/t_AGENTS.md": "262f90e8043123c5d9e78e5a58b73698ef78e0c0edfa614bf83d1c285cafc139",
++    ".asd/templates/t_AGENTS.md": "60264d776662369991b7fcd7242704b5cda6c7bf1ffc83cfc06f2c5389acd368",
+     ".asd/templates/t_CLAUDE.md": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49",
+     ".asd/templates/t_accessibility.html": "ac188f67b5a5b19dfc0a5e5e4a3f4d940b764df3917fbb6cc75bbaefb32b50f9",
+     ".asd/templates/t_adr.html": "9ac045ee1190cf8ee2a54e19b1d76f7e206c726892583267cfb8a657024aea9d",
+@@ -110,7 +110,7 @@
+     ".asd/templates/t_c4-views.c4": "af78bf82f31e08a3247dfec5abd1a58b6ebc94e8f49cd3984d80cf21782b8ac7",
+     ".asd/templates/t_commands.yaml": "1e98dc0b867f0f1cabd5c5b3bfc95459b816c305a94ec2de0f9a9c19784f59df",
+     ".asd/templates/t_concept.html": "352eebce830f9de3205e3f80c5037e25b9e554a0530bcc2ca3aa31edecea197f",
+-    ".asd/templates/t_config.yaml": "6dcac7677cc3f2a82b79ac06cb52d53cbea94320c1fa8033d7f22f0edd9f3276",
++    ".asd/templates/t_config.yaml": "30bb8661016efaee86b49dd178322760d3f8867411716144b356417f453ed983",
+     ".asd/templates/t_custom-coding-rules.md": "0d2b33b14599c4f60f3c6fb9a410e10eda94a96784ff46c6403ac720faabb209",
+     ".asd/templates/t_custom-common-rules.md": "a81363c75ae5af853cd6d49e265518e32a9a37ea06ba08d9afef7c48191ed96b",
+     ".asd/templates/t_custom-design-rules.md": "7691c3449f54f7827cbdfd654a49f9d92e1bc1c603ed736a44c0428505cd1565",
+@@ -119,7 +119,7 @@
+     ".asd/templates/t_design-system.html": "8112456b9f50eb212de1117dfcecc9eb4f23bcfdcdb5d27de21b29f7574cf392",
+     ".asd/templates/t_html-shell.html": "26fea46a6396e1648da8c2fd82153475588662ce0ba460c8ede4fed30d1e209d",
+     ".asd/templates/t_manual-steps.md": "e4ac5dac421917b5ae2e007e837e7aca51df8e94c614b835bc3c7e4db0f4d30e",
+-    ".asd/templates/t_plan.md": "09943da32f9e2022ab68a46bd9044335a77996ab088d79a593adff17c3ce4ded",
++    ".asd/templates/t_plan.md": "325b93334e9a9005f832f367999e3128853f7bbd7246ffa8c4b5af9c29c07c1e",
+     ".asd/templates/t_pr-description.md": "d2cc0895f66869ea29f9ee36e4c19c7e5d1a866a94b5a315e37ec3ed92bf9d79",
+     ".asd/templates/t_prd.html": "9da3c60c58331574e0e2bedfb235751ca8570d414fb2fd81ed2d5cd568a6c6c7",
+     ".asd/templates/t_review.md": "66407ecb28b4e5e69965766a48e1e4b5f0a3a4af7d6e42747020a421a0c9e7c3",
+@@ -134,12 +134,12 @@
+     ".asd/workflows/asd-phase-design-promote.md": "b24bc895c3cceb0e36cdd7794c9ae409e8ec1faf3492849b868d555eee68fb1f",
+     ".asd/workflows/asd-phase-design-review.md": "c86e34b32ada8706bf55739e5aad88c31bff59f12fb5f5a3a93e117976f8340e",
+     ".asd/workflows/asd-phase-design.md": "f4686880b9e40261dbb16e2818c6c657247fc7d48aee5ead3fe8a909ac328014",
+-    ".asd/workflows/asd-phase-impl-review.md": "ec31d635ea1ba77633e785697b3adec80d37a1024b0e563819665e899fe9fc54",
++    ".asd/workflows/asd-phase-impl-review.md": "022d47749f86327403c754c81ae751e45bf53738822e9b0985f386119226283a",
+     ".asd/workflows/asd-phase-impl-test.md": "6681d6ad58f20e7f34a4e8c5555fb4ae90c55686bfac15fb6620b87863e0d033",
+-    ".asd/workflows/asd-phase-impl.md": "5acc28c7ea4dba28adca9dfbe2ff7eda1d3f8b855f6158ecec1a63574242e0f2",
++    ".asd/workflows/asd-phase-impl.md": "4db069f15e3e459edd8a5ec7d47885ad8848d2262f0308ae644104c977b28938",
+     ".asd/workflows/asd-phase-plan.md": "2fc4caca0927e50f8e5751bbe49e5b42d131c2866635d2fbceab8d366bfe2c1e",
+-    ".asd/workflows/asd-phase-pr.md": "10ca8d26f9f12259ad699990bacf690d33794c9165f9b3ca6ca042dee401a1de",
+-    ".asd/workflows/asd-phase-scope.md": "57b11ef935c908a416ff69bdb08e58d45b6c6d383b60b3579613fc75843fac38",
++    ".asd/workflows/asd-phase-pr.md": "1b8548b480c322c6b61411d97986f695af645fbf442223dcd947174931ef34be",
++    ".asd/workflows/asd-phase-scope.md": "d2c5d245cb5520dc0200ab2361167a2c2630a7b52d1cf97e338fe36fa126edc5",
+     ".asd/agents/asd-advisor.md": "f572a04da3165a11b9865df911a1b1212ddfb21a847f8df5428f685a9dab68ce",
+     ".asd/agents/asd-reviewer-correctness.md": "b1014ac285953d31504a2a57beeb9c9fe071c49a6945c8aa332d136e46299d7e",
+     ".asd/agents/asd-reviewer-efficiency.md": "5fc12dd16afa15d7e6f44210b357120db4afac91be3b47435842e9a0211d5e6c",
+@@ -149,7 +149,7 @@
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
+     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
+-    ".asd/runtime.js": "163cc08deb7d05fd8b9d7b746b6dc18090bf471bfd8e89f4e7cca260c3b5b6b0",
++    ".asd/runtime.js": "91f2ddd38d8936962dc050c6c3213d8b32bdc60eaa0c10c853ae4baed0ea3f55",
+     ".asd/templates/external-review/t_review-scope.json": "a17ee84e64cc6a693aaa30dacaef660c841b23a92331abf217ff64c8fc2d4951",
+     ".asd/templates/t_friction-log.md": "8ceae936077b1c0b869fe439965e859059b6dab971b79a89126f8074e379ce33",
+     ".asd/templates/t_retrospective.html": "7df5586afa9ee7eebf2a878544dbe5336b90efadf9fbb1a7dec6f1957b8e53d0",
+@@ -160,7 +160,7 @@
+     ".asd/migrations/9.0.0.js": "1a1da6ebd2576d92ed44ccde308969856f3aeaa7be152438137e94b43cd015b1",
+     ".asd/templates/t_retro-backlog.md": "0fd817d2ba64894dd8e5a4c01ca57309e7c51b0f2a270f94175ddf71b933f3d9",
+     ".asd/agents/asd-reviewer-combined.md": "0d3be49d57917b76f733e5c5f3d916ba48f1124ce97cadc0421c6d587da8c088",
+-    ".asd/workflows/lite.json": "52273c9dd5bb9fa9506ca242c1d7fd23d6d5457ecfe5712b25c899445297aa0a",
+-    ".asd/workflows/standard.json": "4adc7c68ccae2b11363a4c0705c9bc8c5f6d854b11fcb2062bf65ceb15540b55"
++    ".asd/workflows/lite.json": "2fc12fc41cac51a22b19d67ff5d47c9765c105fec1ad67e8eb5d765b882622ea",
++    ".asd/workflows/standard.json": "7a7c04da7a13ec9dab9bb782d8a9981b703d34859d55614cd9354808b1721fb2"
+   }
+ }
+diff --git a/.asd/rules/artifact-layout.md b/.asd/rules/artifact-layout.md
+index 70ee270..54ef2dd 100644
+--- a/.asd/rules/artifact-layout.md
++++ b/.asd/rules/artifact-layout.md
+@@ -246,7 +246,7 @@ Agents preserve the block. Reviewers verify content respects the declared scope.
+ 
+ ## Sprint archival
+ 
+-Archived path: `.asd/sprints/archived/<NNN-slug>/`. The archive move rides the next sprint's branch after explicit closure approval; the sequence is owned by `sprint-lifecycle.md` "PR phase".
++Archived path: `.asd/sprints/archived/<NNN-slug>/`. The archive move rides the next sprint's branch; the sequence is owned by `sprint-lifecycle.md` "PR phase".
+ 
+ ## State file
+ 
+diff --git a/.asd/rules/checkpoints.md b/.asd/rules/checkpoints.md
+index 682c739..2c0ad6e 100644
+--- a/.asd/rules/checkpoints.md
++++ b/.asd/rules/checkpoints.md
+@@ -4,7 +4,7 @@
+ 
+ `config.yaml`'s top-level `user_gates` is the source; `state.json.user_gates` is the frozen per-sprint copy, seeded at scope from config (`asd-phase-scope.md`) — a later config edit never changes an active sprint. Value is `strict` or `adaptive`; absent legacy value means `strict`. Invalid or unreadable policy blocks. A standalone skill with no active sprint (`/asd-concept`, `/asd-stack`, `/asd-design-system`) reads `config.user_gates` directly, default `strict`. `strict` uses the gate classes below with explicit approval. In `adaptive`, the main orchestrator may advance a routine gate only when exact user authority and documented constraints cover the choice, effects/resources are understood, applicable checks pass, and no unresolved material alternative remains. It records `{gate, decision_actor:"orchestrator", reason, evidence, artifact_revision}` in `state.json.gate_decisions` (short refs only, `artifact-layout.md` "State file") and the decisions log (narrative). Confidence alone is insufficient. Missing facts require investigation; missing authority, preference or material trade-off requires the user. A semantic revision makes its prior decision stale. Exact existing user authorization may be reused.
+ 
+-Hard in both modes: new or changed scope, acceptance criteria or user value not already explicitly authorized (mid-sprint procedure: `sprint-lifecycle.md` "Scope amendment"); initial/material UX, brand, accessibility or stack direction not already authorized; a new subsystem boundary; deletion of project files during migration; an audit contradiction precedence cannot settle (`sprint-lifecycle.md` "Audit phase"); material architecture, public contract or compatibility change; debt or any reviewer/coverage/quality waiver; review-cap override (per review wave in impl-review); change-surface cap override (`sprint-lifecycle.md` "Plan file format"), distinct from review-cap override; a per-sprint document skip (`sprint-lifecycle.md` "Optional documents"); retro intake dispositions, decided inside the scope gate (`sprint-lifecycle.md` "Retro intake"); the sprint's workflow choice (`sprint-lifecycle.md` "Workflows"); abort; and sprint closure. Machine checks never become approvals.
++Hard in both modes: new or changed scope, acceptance criteria or user value not already explicitly authorized (mid-sprint procedure: `sprint-lifecycle.md` "Scope amendment"); initial/material UX, brand, accessibility or stack direction not already authorized; a new subsystem boundary; deletion of project files during migration; an audit contradiction precedence cannot settle (`sprint-lifecycle.md` "Audit phase"); material architecture, public contract or compatibility change; debt or any reviewer/coverage/quality waiver; review-cap override (per review wave in impl-review); change-surface cap override (`sprint-lifecycle.md` "Plan file format"), distinct from review-cap override; a per-sprint document skip (`sprint-lifecycle.md` "Optional documents"); retro intake dispositions, decided inside the scope gate (`sprint-lifecycle.md` "Retro intake"); the sprint's workflow choice (`sprint-lifecycle.md` "Workflows"); and abort. Machine checks never become approvals.
+ 
+ Routine candidates: audit/plan acceptance, initial impl assessment, green review handoff, in-bounds ADR, factual tech reference, mechanical docs/design-system update, approved decomposition, and bounded complication decisions. Expenses, external actions, out-of-scope test deletion and PR publication use the same evidence rule; host permissions and machine checks remain mandatory.
+ 
+@@ -49,7 +49,6 @@ The normal gate class is retained for `strict`, and is the fallback when an adap
+ | per-sprint document skip (scope gate or audit exit) | hard approve-before-write |
+ | retro intake dispositions (scope gate; written on acceptance) | hard approve-before-write |
+ | workflow choice (scope step 1) | hard approve-before-write |
+-| sprint closure | hard approve-before-write (before the next scope's closure write) |
+ 
+ `c4-full/` has no standalone artifact gate. Per-section QODDA uses this same policy; it does not create a second mandatory pause.
+ 
+diff --git a/.asd/rules/core.md b/.asd/rules/core.md
+index 4050310..c43488b 100644
+--- a/.asd/rules/core.md
++++ b/.asd/rules/core.md
+@@ -28,7 +28,7 @@ All project work goes through `/asd-sprint`.
+ 
+ ## Invariants
+ 
+-- One active sprint. New sprint blocked until current archived, except a merged-unclosed sprint whose closure the user approves in the same flow (`sprint-lifecycle.md` "PR phase").
++- One active sprint. New sprint blocked until current archived, except a merged sprint, which the next sprint's scope archives (`sprint-lifecycle.md` "PR phase").
+ - Infrastructure files read-only during sprint work. Only `/asd-init` may edit settings — run by the user, or sprint-mediated for a plan's declared settings change (`sprint-lifecycle.md` "Plan file format") — or by a release migration run by `/asd-update`, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent. **Exception**: `self_hosting: enabled` lifts this for the exhaustive allowlist in `sprint-lifecycle.md` "Self-hosting" — generated `.claude/`/`.codex/`/`.agents/skills/` stay read-only always.
+ - Every project task flows through a sprint. Ad-hoc edits forbidden.
+ - Folder structure follows `artifact-layout.md`.
+@@ -80,9 +80,7 @@ Phase skills named `asd-phase-<phase>`, one per phase in `sprint-lifecycle.md`.
+ 3. A compaction summary MUST preserve: sprint id; phase and mode; outstanding signals (`QUESTION`,
+    `BLOCKED_MANUAL`, `ADVICE_NEEDED`); any gate answer not yet written to disk; paths written this phase;
+    remaining task/finding/defect ids.
+-4. Write a gate answer to `decisions-log.md`/`state.json` before any further work — except a sprint-closure
+-   approval, written at the scope closure write, the new branch's first commit (`sprint-lifecycle.md` "PR phase"),
+-   and kept until then by item 3.
++4. Write a gate answer to `decisions-log.md`/`state.json` before any further work.
+ 5. Dispatch payloads carry paths and explicit parameters, never transcript excerpts. A dispatched agent
+    never inherits the main orchestrator's conversation.
+ 6. Reviewers get fresh context per iteration and never receive prior-iteration findings (external
+diff --git a/.asd/rules/git-strategy.md b/.asd/rules/git-strategy.md
+index 34cb8e9..663e5e6 100644
+--- a/.asd/rules/git-strategy.md
++++ b/.asd/rules/git-strategy.md
+@@ -57,15 +57,15 @@ Triggered only after DoD met and the active `checkpoints.md` policy permits publ
+ 
+ - PR title MUST follow Conventional Commits (`<type>(<scope>): <subject>`) — becomes the squash-merge commit subject
+ - Push branch, then `gh pr create` with body from `t_pr-description.md`
+-- `gh` is the only PR path (`/asd-init` requires it). `gh` itself failing — not installed, not authenticated, host unreachable — is `FAILED` naming the fix: install gh (https://cli.github.com) or `gh auth login`. Never a manual-PR fallback.
++- `gh` is the only PR path (`/asd-init` requires it). `gh` itself failing is `FAILED` naming the fix for its cause: not installed → install gh (https://cli.github.com); not authenticated → `gh auth login`; host unreachable → "host unreachable, retry online". Never a manual-PR fallback. Sole exception: a head-branch lookup outside `phase="pr"` warns and resumes (`sprint-lifecycle.md` "PR phase", "Merged-unclosed").
+ 
+ ## Merging a PR
+ 
+ Sole statement of who merges. A sprint has exactly one PR; its closure never opens another. The main orchestrator merges the sprint PR itself — `gh pr merge --squash`, after checks pass and the PR is mergeable; it never waits for a human to click merge.
+ 
+-Merging is not closure. It ends the branch, not the sprint: the merge writes nothing on `git.base_branch`, so the sprint stays active there, merged-unclosed, and the hard closure gate (`checkpoints.md`) still requires explicit user approval before any terminal state, archive move or release tag. A merge the orchestrator performed never satisfies that gate. The approved terminal write and archive move are the next sprint branch's first commit (`sprint-lifecycle.md` "PR phase").
++The merge completes the sprint; no user gate follows it. It writes nothing on `git.base_branch`, so the sprint stays at its active path there, merged-unclosed, until the next sprint's scope archives it mechanically: terminal write and archive move as that branch's first commit (`sprint-lifecycle.md` "PR phase", "Closure write"). The self-hosting release follows the merge ("Versioning & Changelog (self-hosting only)").
+ 
+-Legacy recovery: an open `chore/finalize-sprint-<NNN-slug>` PR left by an earlier workflow version, found via `gh pr list --head chore/finalize-sprint-<NNN-slug>`, is merged once that sprint's closure is approved, and its closure write is skipped.
++Legacy recovery: an open `chore/finalize-sprint-<NNN-slug>` PR left by an earlier workflow version, found via `gh pr list --head chore/finalize-sprint-<NNN-slug>`, is merged as already approved (that flow opened it only after the user approved closing the sprint), and its closure write is skipped.
+ 
+ A merge blocked by a failing check, a conflict or a branch-protection rule is reported, not forced: never `--admin`, never a local merge pushed to `git.base_branch`.
+ 
+@@ -79,4 +79,4 @@ Applies only when `self_hosting: enabled` (`sprint-lifecycle.md` "Self-hosting")
+ 
+ `pr` phase, open mode, before composing the PR: bump `asd_version` in `.asd/release-manifest.json` per [SemVer](https://semver.org/), inferred from the sprint's Conventional Commit types (highest wins): `fix`→PATCH, `feat`→MINOR, `!`/`BREAKING CHANGE` footer→MAJOR. Add a matching `## v<version>` section to root `CHANGELOG.md` (newest first, English), grouped `Added|Changed|Deprecated|Removed|Fixed|Security`, describing consumer-facing impact — not implementation detail. Under `backward_compat: migration`, this bump is also the blocking DoD check that `max(.asd/migrations/*.js filename version) <= asd_version` — a migration a consumer never reaches because the version bump does not cover it fails the bump, not just the migration.
+ 
+-At the closure write, after its commit (`sprint-lifecycle.md` "PR phase"): target the sprint PR's merge commit, `pr.merge_commit` from `gh pr view <pr.number> --json mergeCommit`, and read `asd_version` from it (`git show <merge_commit>:.asd/release-manifest.json`). When `v<asd_version>` already exists on `origin`, skip the rest. Else create annotated tag `v<asd_version>` on that commit, `git push origin v<asd_version>`, then `gh release create v<asd_version> --verify-tag --title v<asd_version> --notes-file <extracted CHANGELOG section>` (notes file under `.asd/tmp/`, `artifact-layout.md` "Scratch directory").
++In `pr` merge mode, once the merge is confirmed (`sprint-lifecycle.md` "PR phase"): `git fetch origin <git.base_branch>` (the squash merge commit is not local on the sprint branch), target the sprint PR's merge commit, `mergeCommit` from `gh pr view <pr.number> --json mergeCommit`, and read `asd_version` from it (`git show <merge_commit>:.asd/release-manifest.json`). Each step is skipped when already done: create annotated tag `v<asd_version>` on that commit and `git push origin v<asd_version>`, unless the tag exists on `origin` (`git ls-remote --tags origin v<asd_version>`); then `gh release create v<asd_version> --verify-tag --title v<asd_version> --notes-file <extracted CHANGELOG section>` (notes file under `.asd/tmp/`, `artifact-layout.md` "Scratch directory"), unless `gh release view v<asd_version>` succeeds. The tag and release are a tag ref and a host object, not a branch write. While the tag `v<asd_version>` is absent on `origin` or its release is missing, `asd-sprint` Step 1 routes the merged-unclosed sprint back to merge mode, which runs only the release (`sprint-lifecycle.md` "PR phase", "Merged-unclosed").
+diff --git a/.asd/rules/review-policy.md b/.asd/rules/review-policy.md
+index 89e9da2..cf52b09 100644
+--- a/.asd/rules/review-policy.md
++++ b/.asd/rules/review-policy.md
+@@ -13,7 +13,7 @@
+ 
+ Config sets `iterations_<severity>` (default: low=1, medium=1, high=2, critical=10). Each tier gets its own consecutive iteration budget in order low → medium → high → critical. On iteration N, the floor is the tier whose **cumulative budget** first covers N. Only findings at floor severity or higher count.
+ 
+-`N` is the **phase-local** counter — `reviews.design.iteration`, or in impl-review the current review wave's counter (`sprint-lifecycle.md` "Review iteration counters"). Each review phase computes its floor from its own counter; each wave has its own floor and cap.
++`N` is the **phase-local** counter — `reviews.design.iteration`, or in impl-review the current review wave's counter (`sprint-lifecycle.md` "Review iteration counters") minus that wave's amendment base `A`: the latest `floor_base=wave-<K>/<A>` a scope amendment accepted after the division point recorded, `0` when none (`sprint-lifecycle.md` "Scope amendment"). Each review phase computes its floor and cap from its own `N`; each wave has its own floor and cap.
+ 
+ Cumulative budgets with defaults:
+ 
+@@ -23,7 +23,7 @@ Cumulative budgets with defaults:
+ - critical: cum 14 → iters 5-14 → floor=critical (drop low, medium, high)
+ - iter ≥ 15 → stop, escalate to user
+ 
+-User may override the cap (per wave in impl-review). On override the counter keeps incrementing (not reset); floor stays pinned at `critical`, so extra rounds do not re-admit lower-severity findings.
++User may override the cap (per wave in impl-review). On override the counter keeps incrementing (not reset); floor stays pinned at `critical` until a later scope amendment rebases `N` (above), so extra rounds do not re-admit lower-severity findings.
+ 
+ ## Clean-context review iteration
+ 
+diff --git a/.asd/rules/sprint-lifecycle.md b/.asd/rules/sprint-lifecycle.md
+index 5839f83..fe4b65d 100644
+--- a/.asd/rules/sprint-lifecycle.md
++++ b/.asd/rules/sprint-lifecycle.md
+@@ -10,7 +10,7 @@ The main orchestrator owns scope and plan writing, phase/state transitions, deci
+ 
+ At scope, accept only `documents.audit: auto|always|off`; any other value, legacy `enabled`/`disabled` included, blocks (`checkpoints.md` "Gate policy" invalid-policy rule). Freeze the effective audit boolean in state (`documents.audit`) — the rule below is deterministic, so no separate reason field is stored. `auto` skips only a complete, verifiably mechanical scope with no behaviour, contract, migration or gate impact; unknown/risky scope audits. An accepted scope expansion ("Scope amendment") reevaluates it. Architect owns audit. An ambiguity only authority or preference can settle goes straight to the user; BA is dispatched only for evidenced material product/domain ambiguity its sources can resolve.
+ 
+-Use `checkpoints.md` for every user-gate decision. Sprint closure is requested after the sprint PR merged, with all DoD evidence, before any terminal write or archive move ("PR phase"); it cannot be passed adaptively. An unclosed sprint, archived or not, stays active and recoverable until that explicit approval.
++Use `checkpoints.md` for every user-gate decision. A merged sprint PR completes the sprint; the next sprint's scope archives it mechanically, no user gate ("PR phase"), and it never blocks the one-active-sprint rule.
+ 
+ ## Workflows
+ 
+@@ -55,7 +55,7 @@ Independent counters in `state.json`, never shared:
+ - `reviews.design.iteration` — design-review iterations
+ - `reviews.impl.waves[K-1].iteration` — impl-review iterations of review wave K; `reviews.impl.wave` = K, the current wave
+ 
+-Each review phase reads, increments, and reports only its own counter; severity floor and iteration cap (`review-policy.md`) are computed per counter, so per wave in impl-review.
++Each review phase reads, increments, and reports only its own counter; severity floor and iteration cap (`review-policy.md`) are computed per counter, so per wave in impl-review, less a scope amendment's base ("Scope amendment").
+ 
+ **Review wave** (sole definition; the only other "wave" is the plan Task wave, "Plan file format" Wave declaration): one of the disjoint, sequentially reviewed slices of the impl-review scope, each a standard impl-review over its own node — `iteration`, `verdicts`, `iteration_heads`, `latched` (`t_state.json`), keys inside staying `iter-NN`. Design-review has no waves.
+ 
+@@ -70,7 +70,7 @@ Each review phase reads, increments, and reports only its own counter; severity
+ - `reviews.design.iteration` increments at the **start of every entry** (`1` on first); design-review is entered once and loops internally.
+ - A wave's counter increments at the **start of every iteration of that wave** (`1` on its first); `impl` and `impl-test` never touch it. Wave K's reviewer roster met (`review-policy.md` "DoD per review phase") and K < n → the same entry moves to wave K+1, iteration 1, with no `impl`/`impl-test` between (no code changed). Unresolved findings in wave K → `impl` review-fix → `impl-test` → re-entry on wave K. The terminal full suite ("Impacted test set") runs once, after wave n's roster is met.
+ - **Rollback reset.** When `state.json.phase` is set strictly earlier in the chain than a review's input-producing phase, that review's state resets: `reviews.design` counter to `0`, `verdicts` and `latched` to `{}`; `reviews.impl` to its `t_state.json` seed (wave 1, one fresh node), every wave dropped, so the next entry re-divides and a fresh `waves.json` overwrites the old. Severity floors reset with the counters, latches with the rest (APPROVE latch, below — no second mechanism); nothing on disk is deleted. Input-producing phases: `design` for design-review, `impl` for impl-review. The phases that reset `reviews.<node>` are the frozen workflow's `rollback_reset.<node>` ("Workflows"). Setting phase to `impl` or `impl-test` is not earlier than `impl` — normal cycle re-entry never resets. Reset fires only on a genuine rollback (the `asd-sprint` resume menu's *re-run earlier phase*).
+-- On iteration-cap override (per wave in impl-review), the counter keeps incrementing — not reset. Severity floor stays pinned at `critical`.
++- On iteration-cap override (per wave in impl-review), the counter keeps incrementing — not reset. Severity floor stays pinned at `critical` until a later scope amendment re-bases it ("Scope amendment").
+ - **Legacy shape**: a `reviews.impl` without `waves` (a sprint in flight before review waves) reads as `{wave: 1, waves: [<that node>]}`, and its `reviews/impl/iter-NN/` dirs and a bare `review_fixes_pending: "iter-NN"` as wave 1; the first wave-aware write, at impl-review entry, stores that shape verbatim.
+ 
+ Verdict files: design-review → `<sprint>/reviews/design/iter-NN/`, impl-review → `<sprint>/reviews/impl/wave-<K>/iter-NN/`, `NN` = that counter.
+@@ -93,6 +93,8 @@ The dispatching phase workflow writes a reviewer's latch entry the moment that r
+ 
+ **Late-return admission.** A further clearing route: admitting a verified late duplicate return for a reviewer clears that reviewer's latch, that one key only, never in a closed review wave. Mechanics and the admission test stay in `review-policy.md` "Late duplicate return"; this line exists so the sole home of latch persistence names every route that clears it.
+ 
++**Scope amendment.** A further clearing route: an amendment accepted after impl-review's division point clears the current wave's `latched` to `{}` in its own write ("Scope amendment" step 3), so the amended code meets the full roster. Recorded verdicts are untouched.
++
+ **Red-full-suite invalidation.** A red full suite (the end-of-`impl-review` terminal suite run) proves previously-approved code was wrong: on that failure, clear `reviews.design.latched` and every impl-review wave node's `latched` to `{}` sprint-wide — not only the reviewer(s) whose domain the regression touched — before the sprint routes back to `impl`. This clears the dispatch-skip optimisation only: the next `impl-review` entry re-dispatches its full required roster. A closed wave is never dispatched again, so this re-arms only the current (last) wave. Recorded verdicts are untouched (invariant above). A DISTINCT clearing route from the rollback reset above, not a consequence of it: a red-suite failure routes to `impl` in test-fix mode, and re-entering `impl`/`impl-test` from `impl-review` is normal cycle re-entry, never a rollback — "Setting phase to `impl` or `impl-test` is not earlier than `impl`" above, so `rollback_reset` never fires for this route. This paragraph is the contract the full-suite step must satisfy; where in that step the clearing happens is out of scope.
+ 
+ ## Impacted test set
+@@ -130,7 +132,7 @@ Rows are `standard`'s; `lite` deltas: "Workflows".
+ | impl-test | Tester | code diff, `plan.md`, PRD ACs, existing tests | `test-plan.md`, tests in repo | impacted set green (`Impacted test set` above) → `impl-review`; code defects → `impl` test-fix mode |
+ | impl-review | Correctness + Efficiency + Testing + Documentation + External Review | code + tests + `test-plan.md` | `reviews/impl/waves.json`, `reviews/impl/wave-<K>/iter-NN/<reviewer>.md` | every review wave's reviewers APPROVE/latched, in order (`Review iteration counters` above), AND terminal full suite green (`Impacted test set` above) → `retro`; red suite → `impl` test-fix mode, latches cleared; unresolved findings → `impl` review-fix mode, same wave, low-severity test-only ones excepted (`review-policy.md` "Low-severity test-only findings") |
+ | retro | Main orchestrator | `friction-log.md` (may be absent) | `retrospective.html` | retrospective written, empty-log branch included → `pr` |
+-| pr | Main orchestrator | everything | PR, merged | sprint PR merged → `await-closure`; closure approval and the closure write follow at the next `asd-sprint` ("PR phase") |
++| pr | Main orchestrator | everything | PR, merged; self-hosting release | sprint PR merged → `done`; the next sprint's scope archives it, no user gate ("PR phase") |
+ 
+ ## Self-hosting
+ 
+@@ -140,7 +142,7 @@ When enabled: Dev may write canonical `.asd/rules/`, `.asd/templates/`, `.asd/ag
+ 
+ Root `AGENTS.md`'s managed-block/hand-edited-tail split: `providers.md` "Canonical path -> per-provider path" (ownership home). `asd-update` is a no-op here (it pulls framework files INTO a consumer; this repo IS the framework).
+ 
+-Versioning: bump `asd_version` and update `CHANGELOG.md` before PR review; tag and release at the closure write, on the sprint PR's merge commit ("PR phase").
++Versioning: bump `asd_version` and update `CHANGELOG.md` before PR review; tag and release in `pr` merge mode once the merge is confirmed, on the sprint PR's merge commit (`git-strategy.md` "Versioning & Changelog (self-hosting only)").
+ 
+ Framework impl-review/External Review change surface: the whole repo diff (everything here IS framework source — canonical `.asd/**`, `README.md`, `AGENTS.md`, `tests/**`, and anything else added later, e.g. CI configs), minus `.asd/project/**`, `.asd/sprints/**`, the generated provider views (`.claude/{agents,skills,hooks}/**`, `.codex/{agents,hooks}/**`, `.agents/skills/**`; the JSON-merge `.claude/settings.json` and `.codex/hooks.json` can hold user content, so they stay in), build output — never an allow-list of named paths, so nothing new needs a matching rule edit to be reviewed. `.claude/agent-memory/**` is not one of those views — `artifact-layout.md` "Agent memory".
+ 
+@@ -237,6 +239,8 @@ If `subsystem_decomposition: disabled`: drafts merge into flat project-level doc
+ 
+ Devs implement plan tasks. A human-only operational action is registered as `MS-N`; the main orchestrator validates necessity and presents validated pending entries. On resume the dev verifies and completes them.
+ 
++After a wave's last signal the orchestrator ticks its `plan.md` checkboxes, appends the `MEMORY.md` index lines its devs returned and commits; devs never edit `plan.md`, and in a wave of more than one Task leave a shared `MEMORY.md` untouched, returning their index line in `COMPLETED`.
++
+ Devs write **production code only** — no tests, no test runs, except self-verification: a dev may run the impacted set (`Impacted test set` above) to self-check work in progress, but never authors, modifies, or prunes a test, and this run never substitutes for or satisfies the `impl-test`/`impl-review` gates. All test work belongs to `impl-test`.
+ 
+ **Modes** — detected from `state.json`:
+@@ -316,23 +320,22 @@ Closes with a short `language.chat` summary covering both classes, then `NEXT: p
+ 
+ ## PR phase
+ 
+-Modes are `pr=null` (open the PR, `NEXT: await-merge`, unless the "Merged-unclosed" lookup finds one) and `pr.state="open"` (merge it). DoD checks gate publication but are not user approvals. The main orchestrator performs the merge itself where the Git host allows it — who merges, and the fact that merging is never closure, is stated once in `git-strategy.md` "Merging a PR". Merge mode confirms the sprint PR merged, writes nothing on `git.base_branch`, and returns `NEXT: await-closure`; the sprint stays at its active path with `phase="pr"`, `pr.state="open"`. One PR per sprint.
++Modes are `pr=null` (open the PR, `NEXT: await-merge`, unless the "Merged-unclosed" lookup finds one) and `pr.state="open"` (merge it). DoD checks gate publication but are not user approvals. The main orchestrator performs the merge itself where the Git host allows it — who merges is stated once in `git-strategy.md` "Merging a PR". Merge mode confirms the sprint PR merged, publishes the self-hosting release (`git-strategy.md` "Versioning & Changelog (self-hosting only)"), and returns `NEXT: done`. It writes no state, archive move or commit on any branch; a tag ref and a host release are not branch writes. `NEXT: done` names completion, not a write: the sprint stays at its active path with `phase="pr"`, `pr.state="open"` on base until the next sprint's closure write. One PR per sprint.
+ 
+-**Merged-unclosed**: a sprint folder at the active path whose sprint PR `gh` reports `MERGED`, whatever its `phase`. With `pr.number` set, `gh pr view <n> --json state,mergeCommit` decides; a PR `pr` open mode opened carries `phase="pr"` and `pr.number` to base, because open mode commits the phase write before any push and commits and pushes its `state.json.pr` write before `NEXT: await-merge`. Every sprint without `pr.number`, at any `phase`, is looked up by head branch — a PR merged before that write reached the sprint branch (after a failed push), one opened and merged by hand before the `pr` phase, or an open-mode `MERGED` hit, which writes nothing: `gh pr list --head <state.branch> --state all --json number,state,mergeCommit`. A `MERGED` hit is merged-unclosed with that number, which the closure write records; an `OPEN` hit resumes merge mode with that number only at `phase="pr"`, and at any other phase is ignored, the sprint resuming normally; no hit resumes normally (open mode at `phase="pr"`). `asd-sprint` detects it on `NEXT: await-closure` and on any later invocation, and before starting or resuming anything else requests the hard sprint-closure approval (`checkpoints.md` "Gate policy") with the completion evidence. Refusal leaves the sprint active and resumable. Approval is carried into the new-sprint flow, and the one-active-sprint rule exempts that sprint within it. The session-start hook reports the state offline (`phase="pr"`, `pr.number` set, `state.branch` ≠ the current branch), display only, so it misses a sprint without `pr.number`; `asd-sprint` confirms through `gh` before asking.
++**Merged-unclosed**: a sprint folder at the active path whose sprint PR `gh` reports `MERGED`, whatever its `phase`. With `pr.number` set, `gh pr view <n> --json state,mergeCommit` decides; a PR `pr` open mode opened carries `phase="pr"` and `pr.number` to base, because open mode commits the phase write before any push and commits and pushes its `state.json.pr` write before `NEXT: await-merge`. Every sprint without `pr.number`, at any `phase`, is looked up by head branch — a PR merged before that write reached the sprint branch (after a failed push), one opened and merged by hand before the `pr` phase, or an open-mode `MERGED` hit, which continues in merge mode with that number and writes no state: `gh pr list --head <state.branch> --state all --json number,state,mergeCommit`. A `CLOSED` hit counts as no hit, and across several hits `MERGED` wins, then `OPEN`. A `MERGED` hit is merged-unclosed with that number, which the closure write records; an `OPEN` hit resumes merge mode with that number only at `phase="pr"`, and at any other phase is ignored, the sprint resuming normally; no hit resumes normally (open mode at `phase="pr"`). A lookup that cannot reach `gh` outside `phase="pr"` warns that a merged PR stays undetected until an online run, and resumes normally; at `phase="pr"`, and for `gh pr view <pr.number>`, it is `FAILED` naming "host unreachable, retry online" (`git-strategy.md` "PR creation"). `asd-sprint` detects the state on `NEXT: done` and on any later invocation and routes it with no user gate. Retry route: under `self_hosting`, while the release of `v<asd_version>`, read at the merge commit, is missing — the tag absent on `origin` (`git ls-remote --tags origin`) or `gh release view v<asd_version>` failing — back to merge mode, which, the PR already merged, runs only the release. Otherwise it enters the new-sprint flow, carrying the sprint's path and PR number; the one-active-sprint rule exempts that sprint within it. The session-start hook reports the state offline (`phase="pr"`, `pr.number` set, `state.branch` ≠ the current branch), display only, so it misses a sprint without `pr.number`; `asd-sprint` confirms through `gh`.
+ 
+-**Closure write** — `asd-phase-scope.md` step 1, right after the new sprint branch is created and before the new sprint is seeded:
++**Closure write** — `asd-phase-scope.md` step 1, for the merged-unclosed sprint `asd-sprint` passes, right after the new sprint branch is created and before the new sprint is seeded; no user gate:
+ 1. `git mv` the closing sprint folder to `archived/`;
+-2. write its `pr.state="merged"`, `pr.merge_commit` (the `mergeCommit` above), `pr.number` when `pr` is null (the one `asd-sprint` carries), `phase="done"`, `updated_at`, `archived_at`, and a `sprint closure` `gate_decisions` entry with `decision_actor: user`;
++2. write its `pr.state="merged"`, `pr.merge_commit` (the `mergeCommit` above), `pr.number` when `pr` is null (the one `asd-sprint` carries), `phase="done"`, `updated_at`, `archived_at`, and a `sprint closure` `gate_decisions` entry with `decision_actor: orchestrator`, its evidence the merge commit;
+ 3. append one entry to its decisions log;
+-4. commit, as the new branch's first commit;
+-5. `self_hosting` only: tag `v<asd_version>` on `pr.merge_commit`, the version read by `git show <merge_commit>:.asd/release-manifest.json`, and create its release (`git-strategy.md` "Versioning & Changelog (self-hosting only)"); skipped when the tag exists.
++4. commit, as the new branch's first commit.
+ 
+-A scope aborted before its branch exists writes nothing; the closure question is asked again next time. The closure reaches `git.base_branch` with the next sprint's PR.
++A scope aborted before its branch exists writes nothing; the next `asd-sprint` detects the sprint again. The closure reaches `git.base_branch` with the next sprint's PR.
+ 
+ **Legacy shapes**, each resolved by the flow above:
+ - `pr.state="closure-pending"` (local state of the retired companion flow; the base copy says `open`) — a merged-unclosed sprint.
+ - an archived non-done sprint — its terminal write lands in place, inside the closure write, with no `git mv` ("Sprint immutability").
+-- an open `chore/finalize-sprint-<NNN-slug>` PR (`gh pr list --head`) — merged once closure is approved; the closure write is skipped for that sprint.
++- an open `chore/finalize-sprint-<NNN-slug>` PR (`gh pr list --head`) — merged at detection; the closure write is skipped for that sprint.
+ 
+ **Open mode's DoD verification is conditional on two checks, neither a `checkpoints.md` gate** (`asd-phase-pr.md` open mode step 1 — internal verification only, gates PR opening, never a user-facing pause):
+ - **Tests/lint re-run**: content-scoped, not HEAD-sha-equality (HEAD always moves past the recorded sha — the recording commit itself, plus later phase-transition commits, guarantee it). Skipped when `git diff --quiet <recorded HEAD>...HEAD -- <code/test/stub pathspec, excluding .asd/sprints/** and .asd/project/**>` is empty, where `<recorded HEAD>` is the sha in test-plan.md's `Suite run` section — the commit impl-review's terminal full-suite step (`Impacted test set` above) last verified the full suite at, which is also the last point any code/test/stub file can change before `pr`. The check is sha-independent, not read-only-dependent: whatever landed since that recording — a review-fix commit, or the rare in-phase test-defect fix — shows up as a non-empty diff and forces a re-run; an empty diff means nothing changed, full stop.
+@@ -372,7 +375,7 @@ See `t_plan.md` for canonical structure.
+ 
+ The main orchestrator passes these lines as `route-task`'s `risks` input, one entry per line, typed by its kind (`providers.md` "Task-class variants and routing", which owns the routing semantics). When in doubt between the two kinds, declare `change`. A Task block with no conforming line — absent, or off-grammar (prose, or inside a subtask checkbox) — reads `change: unclassified` and routes `critical` until the plan is updated; missing is never `none`.
+ 
+-**Reachability declaration** (conditional, at most one per `### Task N:` block, its own plain-text line directly under the `Material risk` line(s), never a checkbox): a task whose value depends on two phases agreeing carries `Reachability: <phase> writes <value> at <point>; <phase> reads it at <point>`. Accepting the plan means checking that those two points observe the same value — a purpose unreachable by construction is rewritten or dropped at plan approval, never planned and then closed finding by finding.
++**Reachability declaration** (conditional, at most one per `### Task N:` block, its own plain-text line directly under the `Material risk` line(s), never a checkbox): a task whose value depends on two phases agreeing carries `Reachability: <phase> writes <value> at <point>; <phase> reads it at <point>`. A value crossing a push or merge also names, per interruption point between write and read, the value the receiving branch then holds: `; interrupted at <point>, <branch> holds <value>`. Accepting the plan means checking that those two points observe the same value, and that the reader handles each named interrupted value — a purpose unreachable by construction is rewritten or dropped at plan approval, never planned and then closed finding by finding.
+ 
+ Its absence semantics are deliberately not `Material risk`'s, and the two are never conflated: an absent `Reachability` line asserts the task has no cross-phase dependency — never `unclassified`, never `critical`, and never input to `route-task`, which reads `Material risk` lines only. An off-grammar `Reachability` line is a plan defect fixed before approval, not a fail-closed default.
+ 
+@@ -399,7 +402,7 @@ Its absence semantics are deliberately not `Material risk`'s, and the two are ne
+ A criterion added, changed or retired after scope acceptance needs the hard `new or changed scope` approval (`checkpoints.md` "Gate policy") and then, in one orchestrator write:
+ 1. `sprint.md`: the `AC-N` — a new id, never a reused one;
+ 2. `plan.md`: the Task carrying it, new or amended, in a wave not yet dispatched (a new last wave when none is left), per "Plan file format";
+-3. the gate records: a `gate_decisions` entry and one decisions-log entry naming the AC, the Task and its wave;
++3. the gate records: a `gate_decisions` entry and one decisions-log entry naming the AC, the Task and its wave. Accepted after impl-review's division point ("Review iteration counters"), the entry's evidence adds `floor_base=wave-<K>/<A>`, A being current review wave K's counter then, and the write clears wave K's `latched` ("APPROVE latch"). impl-review computes wave K's severity floor and iteration cap on `iteration − A`, A from the latest such record (none → 0), so the amended code's first iteration `wave-<K>/iter-(A+1)` reviews at a first iteration's floor;
+ 4. `node .asd/runtime.js surface-check` re-run over the amended plan's paths and the `Change surface:` line updated; above the cap, "Change surface declaration" applies.
+ 
+ The audit boolean is then reevaluated ("Orchestration and adaptive gates").
+@@ -410,7 +413,7 @@ A sprint folder under `.asd/sprints/archived/<NNN-slug>/` is read-only. The arch
+ 
+ ## State recovery
+ 
+-`state.json` is the single recovery point. The dispatching main orchestrator is its sole writer for transitions, verdicts and gate evidence; no delegated agent writes it. A merged sprint keeps its recorded `phase` and `pr` (after merge mode: `phase="pr"`, `pr.state="open"`) until the closure write ("PR phase"), the only writer of the terminal state and archive move; no merged-but-unclosed record exists, the state is detected ("PR phase" "Merged-unclosed"). A legacy `closure-pending` or archived non-done sprint stays recoverable through the same flow.
++`state.json` is the single recovery point. The dispatching main orchestrator is its sole writer for transitions, verdicts and gate evidence; no delegated agent writes it. A merged sprint keeps its recorded `phase` and `pr` (after merge mode: `phase="pr"`, `pr.state="open"`) until the closure write ("PR phase"), the only writer of the terminal state and archive move; no merged-but-unclosed record exists, the state is detected ("PR phase" "Merged-unclosed"), and so is a missing self-hosting tag or release (its retry route). A legacy `closure-pending` or archived non-done sprint stays recoverable through the same flow.
+ 
+ **Failed dispatch**: a creator (`asd-ba`, `asd-ux`, `asd-architect`, `asd-dev`) or `asd-tester` dispatch that ends without a completion signal — a stall stop ("Agent liveness") included — is never read as done; its task is re-dispatched fresh. An `impl` (initial, review-fix, test-fix) or `impl-test` dispatch is reconstructed before that re-dispatch. Anchor: the `dispatch HEAD <sha>` of the latest decisions-log routing line naming that dispatch's ids. Run `git status --porcelain` and `git log --format='%h %s%n%(trailers:key=ASD-Task,valueonly)' <anchor>..HEAD` (trailer-less commits contribute nothing). Ids named by an `ASD-Task` trailer (`git-strategy.md` "Commits") landed and are dropped from the re-dispatch — except `impl-test entry N`, which never marks the entry landed: the re-dispatched tester resumes the interrupted current entry from on-disk evidence (`asd-phase-impl-test.md` step 1), re-running each step lacking its output (e.g. no `Suite run` for the entry); and `D-N`, which lands only once its `test-plan.md` `Defects` row reads `fixed` with its fix commit — otherwise the re-dispatch carries that `D-N` only to set the row from the trailer commit's sha, no second fix. The payload names each uncommitted leftover path the failed dispatch was authorised to touch — never orchestrator-owned bookkeeping or an in-flight sibling dispatch's paths — for the agent to finish or revert; the orchestrator never stages, commits or discards them. Append one decisions-log line `- YYYY-MM-DD — reconstruction: landed <ids>; re-dispatched <ids>`. One cause (session-wide limit, host outage) ending every dispatch then in flight at the same moment is one event, never one per dispatch: one reconstruction covers them all and no dispatch's stall count rises ("Agent liveness"); anything narrower stays per-dispatch — the creator/tester form of `review-policy.md` "Correlated interruption".
+ 
+diff --git a/.asd/runtime.js b/.asd/runtime.js
+index dd4a3a6..5f2d8c8 100644
+--- a/.asd/runtime.js
++++ b/.asd/runtime.js
+@@ -41,8 +41,8 @@ const WORKFLOWS_DIR = path.join(__dirname, 'workflows');
+ const WORKFLOW_KEYS = ['name', 'next', 'phases', 'reviewers', 'rollback_reset'];
+ /** Review nodes a definition's `reviewers` and `rollback_reset` are keyed by, as `persist-review --phase` takes them. */
+ const REVIEW_NODES = ['design', 'impl'];
+-/** `NEXT:` targets that end the chain instead of naming a phase: `pr`'s open and merge exits; closure follows the merge at the next sprint's start. */
+-const CHAIN_EXITS = ['await-merge', 'await-closure'];
++/** `NEXT:` targets that end the chain instead of naming a phase: `pr`'s open and merge exits; `done` names completion, the closure write follows at the next sprint's start. */
++const CHAIN_EXITS = ['await-merge', 'done'];
+ /** Severities a finding row may carry (`review-policy.md` "Severity levels"). */
+ const SEVERITIES = ['low', 'medium', 'high', 'critical'];
+ /** The standing n/a predicates, each the exact text a ledger row records. The emitter authorizes one only where its condition holds; this is their sole home. */
+diff --git a/.asd/skills/asd-init/SKILL.md b/.asd/skills/asd-init/SKILL.md
+index a3c74de..b01bd7c 100644
+--- a/.asd/skills/asd-init/SKILL.md
++++ b/.asd/skills/asd-init/SKILL.md
+@@ -90,7 +90,7 @@ Plan acceptance is the approval of record: no config dump, no section prompt, no
+ 
+ 1. Read current `.asd/project/config.yaml`
+ 2. Validate every pair against the working-tree `.asd/templates/t_config.yaml` (a key an earlier-wave Task added counts) before any write: the dotted key must name a leaf field there, and the value must fit that field: one of its enumerated values where it enumerates them (`Values:` or an inline `a | b` comment), else the type of its template value — a non-negative integer for an integer, a string for a string. Any failing pair → `FAILED` naming it; nothing written.
+-3. Set each declared `<key>=<value>` pair (dotted path); touch no other field. A pair already equal is a no-op.
++3. Set each declared `<key>=<value>` pair (dotted path); its line takes that key's inline comment from the template, when the template line has one; touch no other field. A pair whose value and comment already match is a no-op.
+ 4. Write config
+ 5. Post the diff in `language.chat`: one `<key>: <old|absent> → <new>` line per pair
+ 6. Re-init step 7 applies when a pair touches `review.external_review` or `system.tools`
+diff --git a/.asd/skills/asd-phase-pr/SKILL.md b/.asd/skills/asd-phase-pr/SKILL.md
+index 8a10b3f..67ec590 100644
+--- a/.asd/skills/asd-phase-pr/SKILL.md
++++ b/.asd/skills/asd-phase-pr/SKILL.md
+@@ -1,7 +1,7 @@
+ ---
+ {
+   "name": "asd-phase-pr",
+-  "description": "Runs the final ASD pr phase: the phase orchestrator verifies DoD, opens the sprint PR and later merges it, then hands closure back to asd-sprint; it never archives or marks the sprint done. Use when asd-sprint dispatches the pr phase, or when the user explicitly asks to run or re-run the pr phase for the active sprint.",
++  "description": "Runs the final ASD pr phase: the phase orchestrator verifies DoD, opens the sprint PR and later merges it, publishing the self-hosting release after the merge; it never archives or marks the sprint done, which the next sprint's scope does. Use when asd-sprint dispatches the pr phase, or when the user explicitly asks to run or re-run the pr phase for the active sprint.",
+   "claude": { "allowed-tools": "Read Glob Grep AskUserQuestion Task" },
+   "codex": {}
+ }
+diff --git a/.asd/skills/asd-sprint/SKILL.md b/.asd/skills/asd-sprint/SKILL.md
+index c44e7dc..a5fb548 100644
+--- a/.asd/skills/asd-sprint/SKILL.md
++++ b/.asd/skills/asd-sprint/SKILL.md
+@@ -12,12 +12,12 @@
+ 
+ ## Preconditions
+ - `.asd/project/config.yaml` exists (else: tell user `/asd-init`)
+-- ≤1 active sprint. A sprint counts as active while `state.json.phase != "done"`, whether its folder lives at `.asd/sprints/<NNN-slug>/` or, legacy, at `.asd/sprints/archived/<NNN-slug>/` (archived before closure by an older workflow version). Exempt: a merged-unclosed sprint (Step 1) whose closure the user approves in this invocation (`sprint-lifecycle.md` "PR phase").
++- ≤1 active sprint. A sprint counts as active while `state.json.phase != "done"`, whether its folder lives at `.asd/sprints/<NNN-slug>/` or, legacy, at `.asd/sprints/archived/<NNN-slug>/` (archived before closure by an older workflow version). Exempt: a merged-unclosed sprint (Step 1), which the next sprint's scope archives (`sprint-lifecycle.md` "PR phase").
+ 
+ ## Operations used
+ - Read files / search repo — detect active sprint; read state.json, its frozen workflow definition `.asd/workflows/<workflow>.json` (`sprint-lifecycle.md` "Workflows"), config.yaml, custom-common-rules.md
+-- Run command — `git status`, `git branch --show-current`; `gh pr view`/`gh pr list` (merged-unclosed detection), `gh pr merge` (a legacy finalize PR only); decisions-log rotation (rename, copy template, commit those paths)
+-- Request user decision — closure approval, new-sprint confirm, resume/abort choice (never free-form scope text)
++- Run command — `git status`, `git branch --show-current`; `gh pr view`/`gh pr list` (merged-unclosed detection), `git fetch`/`git show`/`git ls-remote --tags origin`/`gh release view` (release retry check), `gh pr merge` (a legacy finalize PR only); decisions-log rotation (rename, copy template, commit those paths)
++- Request user decision — new-sprint confirm, resume/abort choice (never free-form scope text)
+ - Delegate to skill — phase skills, plus `asd-init` per "Skills dispatched"
+ - No other writes — phase skills and their inline orchestrator own writes
+ 
+@@ -27,23 +27,19 @@ Before a phase-skill delegation below, rotate the decisions log when `.asd/rules
+ 
+ ### Step 1: detect active sprint
+ - Search repo for `.asd/sprints/*/state.json` (excluding `archived/`) UNION `.asd/sprints/archived/*/state.json` where `phase != "done"` (legacy archived-non-done shape)
+-- Each, whatever its `phase`: `gh pr view <pr.number> --json state,mergeCommit` reporting `MERGED` — or, with no `pr.number`, a `MERGED` hit of `gh pr list --head <state.branch> --state all --json number,state,mergeCommit` (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"), its number carried to the closure write — makes it **merged-unclosed**, whatever `pr.state` records (legacy `closure-pending` included) — unless `gh pr list --head chore/finalize-sprint-<NNN-slug> --state all` finds a legacy companion PR: an `OPEN` one, created only after closure approval, is merged per `git-strategy.md` "Merging a PR"; an `OPEN` or `MERGED` one closes the sprint on `git.base_branch`, so it is no longer active and gets no closure write. A `gh` failure is FAILED naming the fix (`git-strategy.md` "PR creation").
++- Each, whatever its `phase`: `gh pr view <pr.number> --json state,mergeCommit` reporting `MERGED` — or, with no `pr.number`, a `MERGED` hit of `gh pr list --head <state.branch> --state all --json number,state,mergeCommit` (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"), its number carried to the closure write — makes it **merged-unclosed**, whatever `pr.state` records (legacy `closure-pending` included) — unless `gh pr list --head chore/finalize-sprint-<NNN-slug> --state all` finds a legacy companion PR: an `OPEN` one is merged per `git-strategy.md` "Merging a PR"; an `OPEN` or `MERGED` one closes the sprint on `git.base_branch`, so it is no longer active and gets no closure write.
++- A `CLOSED` head-branch hit counts as no hit. A head-branch lookup that cannot reach `gh` outside `phase="pr"` warns and resumes the sprint ("Merged-unclosed"); any other `gh` failure is FAILED naming the fix for its cause (`git-strategy.md` "PR creation").
+ - 0 active → new-sprint flow
+-- 1 active, merged-unclosed → Step 1A
++- 1 active, merged-unclosed, `self_hosting: enabled`, its `v<asd_version>` tag or release missing → release retry ("Merged-unclosed"): dispatch `asd-phase-pr` with the confirmed PR number; its merge mode, the PR already `MERGED`, runs only the release
++- 1 active, merged-unclosed otherwise → new-sprint flow (Step 2A), carrying its path and the merged PR's number detection confirmed, whichever copy or lookup it came from
+ - 1 active otherwise → resume flow; an `OPEN` head-branch hit changes nothing here, pr open mode adopting it at `phase="pr"` only ("Merged-unclosed")
+ - >1 → emit FAILED "multiple active sprints found, manual cleanup needed"
+ 
+-### Step 1A: closure request
+-Reached from Step 1 (merged-unclosed) or Step 3 (`NEXT: await-closure`), before anything else.
+-1. Request user decision on the hard `sprint closure` gate (`checkpoints.md` "Gate policy"), presenting the completion evidence (`sprint-lifecycle.md` "PR phase"): approve | refuse. The merge and the adaptive policy never satisfy it.
+-2. Approve → new-sprint flow (Step 2A), carrying the approval (closing sprint path, plus the merged PR's number detection confirmed, whichever copy or lookup it came from) unwritten until scope step 1's closure write records it; aborted before that, nothing is written and Step 1 asks again.
+-3. Refuse or feedback → the sprint stays active and resumable; halt, `NEXT: await-closure`.
+-
+ ### Step 2A: new-sprint flow
+ 1. Read `.asd/project/config.yaml` (confirm init complete)
+ 2. `git status` — if dirty, request user decision: commit / stash / abort
+ 3. Collect scope as a plain chat message; request user decision only to confirm start or abort
+-4. Delegate to skill `asd-phase-scope`, passing scope text and any Step 1A approval; its step 1 asks the workflow choice and runs the closure write
++4. Delegate to skill `asd-phase-scope`, passing scope text and any merged-unclosed sprint Step 1 carries; its step 1 asks the workflow choice and runs the closure write
+ 5. On COMPLETED → advance per Step 3
+ 
+ ### Step 2B: resume flow
+@@ -54,7 +50,7 @@ Reached from Step 1 (merged-unclosed) or Step 3 (`NEXT: await-closure`), before
+ 
+ ### Step 3: phase chain advancement
+ After any phase skill returns:
+-- `COMPLETED` → read the phase skill's `NEXT:` field; a target outside the frozen definition's `next[<phase>]` → relay FAILED, halt; else dispatch that phase skill. `NEXT:` is authoritative — follows the definition's `phases` order except the design-block collapse (`audit` returns `NEXT: plan` under the collapse test; `design` returns `NEXT: plan` on its defensive-fallback no-op) and the `impl`/`impl-test`/`impl-review` cycle: `impl` always returns `NEXT: impl-test`; `impl-test` returns `NEXT: impl` on code defects (routes to impl test-fix mode) or `NEXT: impl-review` on a green suite; `impl-review` returns `NEXT: impl` on unresolved findings (routes to impl review-fix mode) or the next phase of `phases` on DoD met; `retro` always returns `NEXT: pr`, on its analysed and its empty-log branch alike. The `pr` phase ends the chain in two steps: open mode returns `NEXT: await-merge` (PR open, sprint at its active path, `phase="pr"` — halt, no further dispatch); a later resume re-enters `pr` in merge mode, which returns `NEXT: await-closure` once the merge is confirmed → Step 1A.
++- `COMPLETED` → read the phase skill's `NEXT:` field; a target outside the frozen definition's `next[<phase>]` → relay FAILED, halt; else dispatch that phase skill. `NEXT:` is authoritative — follows the definition's `phases` order except the design-block collapse (`audit` returns `NEXT: plan` under the collapse test; `design` returns `NEXT: plan` on its defensive-fallback no-op) and the `impl`/`impl-test`/`impl-review` cycle: `impl` always returns `NEXT: impl-test`; `impl-test` returns `NEXT: impl` on code defects (routes to impl test-fix mode) or `NEXT: impl-review` on a green suite; `impl-review` returns `NEXT: impl` on unresolved findings (routes to impl review-fix mode) or the next phase of `phases` on DoD met; `retro` always returns `NEXT: pr`, on its analysed and its empty-log branch alike. The `pr` phase ends the chain in two steps: open mode returns `NEXT: await-merge` (PR open, sprint at its active path, `phase="pr"` — halt, no further dispatch); a later resume re-enters `pr` in merge mode, which returns `NEXT: done` once the merge is confirmed and, self-hosting, the release published → halt; the next sprint's scope archives it (`sprint-lifecycle.md` "PR phase").
+ - `FAILED` → relay, halt
+ - `QUESTION` → relay pending question, halt until reply
+ - `ABORT — precondition not met` → relay, halt
+@@ -66,7 +62,7 @@ Phase skills of the frozen workflow's `phases` (`.asd/workflows/<workflow>.json`
+ 
+ ## Return contract (single line)
+ ```
+-SPRINT: <NNN-slug> | PHASE: <phase> | STATUS: <complete|in-progress|blocked|aborted> | NEXT: <next-phase|await-merge|await-closure|halted-on-question|halted-on-failure>
++SPRINT: <NNN-slug> | PHASE: <phase> | STATUS: <complete|in-progress|blocked|aborted> | NEXT: <next-phase|await-merge|done|halted-on-question|halted-on-failure>
+ ```
+ 
+ ## References
+diff --git a/.asd/sync-state.json b/.asd/sync-state.json
+index 0aba0e0..3f16929 100644
+--- a/.asd/sync-state.json
++++ b/.asd/sync-state.json
+@@ -4,7 +4,7 @@
+   "entries": {
+     "AGENTS.md": {
+       "kind": "managed-block",
+-      "content_digest": "sha256:262f90e8043123c5d9e78e5a58b73698ef78e0c0edfa614bf83d1c285cafc139"
++      "content_digest": "sha256:60264d776662369991b7fcd7242704b5cda6c7bf1ffc83cfc06f2c5389acd368"
+     },
+     "CLAUDE.md": {
+       "kind": "managed-block",
+diff --git a/.asd/templates/t_AGENTS.md b/.asd/templates/t_AGENTS.md
+index 28bd505..6eb9107 100644
+--- a/.asd/templates/t_AGENTS.md
++++ b/.asd/templates/t_AGENTS.md
+@@ -45,4 +45,4 @@ When subsystem decomposition is enabled (`project.subsystem_decomposition`), per
+ 
+ - Never modify workflow infrastructure (`.asd/rules/`, `.asd/templates/`, generated agent/skill/hook trees). Only `/asd-init`/`$asd-init` edits settings — run by the user, or by `impl` for a plan-declared settings change — or by a release migration `/asd-update`/`$asd-update` runs, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent.
+ - All project work flows through `/asd-sprint`/`$asd-sprint`. No ad-hoc edits to project code outside a sprint.
+-- One active sprint at a time. New sprint blocked until active one archived, except a merged sprint whose closure the user approves as the new sprint starts.
++- One active sprint at a time. New sprint blocked until active one archived, except a merged sprint, which the next sprint's scope archives.
+diff --git a/.asd/templates/t_config.yaml b/.asd/templates/t_config.yaml
+index 53cf82d..d40f6da 100644
+--- a/.asd/templates/t_config.yaml
++++ b/.asd/templates/t_config.yaml
+@@ -1,4 +1,4 @@
+-user_gates: strict # adaptive | strict; closure always requires user approval
++user_gates: strict # adaptive | strict; hard gates always require user approval
+ 
+ # ASD workflow configuration.
+ # Generated by /asd-init. Edit only via /asd-init (diff mode).
+diff --git a/.asd/templates/t_plan.md b/.asd/templates/t_plan.md
+index 6fff064..589b143 100644
+--- a/.asd/templates/t_plan.md
++++ b/.asd/templates/t_plan.md
+@@ -15,7 +15,7 @@ Format rules (parser-critical):
+ - Subtask deferred for a manual action stays `- [ ]`, suffixed ` — BLOCKED: MS-N` (see manual-steps.md)
+ - No test-authoring tasks or subtasks: tests are selected and written in impl-test, after the code exists
+ - Every task carries a `Material risk:` line, plain text, never a checkbox (see sprint-lifecycle.md "Plan file format")
+-- A task whose value depends on two phases agreeing also carries a `Reachability:` line, same placement; absent = no cross-phase dependency, never a fail-closed default (same section)
++- A task whose value depends on two phases agreeing also carries a `Reachability:` line, same placement; a value crossing a push or merge also names what each interruption point leaves on the receiving branch; absent = no cross-phase dependency, never a fail-closed default (same section)
+ - A task declaring a project-settings change carries a `Settings change: <key>=<value>[, …]` line, same placement; plan acceptance approves exactly those pairs, and the task sits alone in its wave: wave 1, ahead of any contract-changing task, or a wave after the task adding its key to t_config.yaml (same section)
+ - Overview carries one required `Change surface: <n> files` line (same section)
+ - `## Dependencies` is required and opens with the wave table impl dispatches from; every task sits in exactly one wave, and no two tasks in one wave touch overlapping paths (same section)
+@@ -34,7 +34,7 @@ Standing DoD applies (`sprint-lifecycle.md` "Plan file format") — not restated
+ 
+ ### Task 1: {{title}}
+ Material risk: change: {{short risk class — the edit's own correctness is uncertain}}
+-Reachability: {{which two phases must agree, on what value, and the point in each where it is written and read — omit this line entirely when the task has no cross-phase dependency}}
++Reachability: {{which two phases must agree, on what value, and the point in each where it is written and read; a value crossing a push or merge adds `; interrupted at <point>, <branch> holds <value>` per interruption point — omit this line entirely when the task has no cross-phase dependency}}
+ - [ ] {{subtask}}
+ - [ ] {{subtask}}
+ 
+diff --git a/.asd/workflows/asd-phase-impl-review.md b/.asd/workflows/asd-phase-impl-review.md
+index 2422101..a1e31b6 100644
+--- a/.asd/workflows/asd-phase-impl-review.md
++++ b/.asd/workflows/asd-phase-impl-review.md
+@@ -28,7 +28,7 @@ Orchestration body for the `asd-phase-impl-review` skill. Operation-mapping to h
+ 1b. When `review.external_review=enabled`, External Review's `files[]` = step 1's scope file list, unioned at iteration 2+ with the same wave's previous iteration's `Unreviewed files` (`external-review.md` "Iteration semantics"). 1a ready → emitted at step 6. 1a non-ready → nothing is emitted or dispatched; that `files[]` is the skip's `Unreviewed files`.
+ 1c. **Division** — at the division point only (`reviews.impl.waves[0].iteration` 0); wave count, grouping rule and what `review-waves` accepts: `sprint-lifecycle.md` "Review iteration counters" (sole SSoT). Derive the `<base_branch>...HEAD` list as step 1 does and run `node .asd/runtime.js review-waves --files <list> --base <base_branch> --head <git rev-parse HEAD>`; its `waves` is n. Group the list into n waves (an empty list: `[[]]`), write them as a JSON array of n path arrays to a scratch file, and re-run adding `--division <that file> --out <sprint>/reviews/impl/waves.json` — for every n, 1 included; a rejection → regroup. Then write inline `reviews.impl` = `{wave: 1, waves: [n t_state.json seed nodes]}`; n > 1 → one decisions-log entry naming n, the measured `lines` and each wave's theme.
+ 2. **Inline** — set phase; in the wave node, increment `iteration` and record `iteration_heads["iter-NN"]` = `git rev-parse HEAD`.
+-3. Compute severity floor for current iteration per `review-policy.md` "Iteration severity floor" (wave K's counter)
++3. Compute severity floor and iteration cap per `review-policy.md` "Iteration severity floor" on wave K's `iteration − A`, A its amendment floor base (`sprint-lifecycle.md` "Review iteration counters")
+ 4. Create folder `<sprint>/reviews/impl/<id>/` if absent
+ 5. **Diff-scoped fan-out** — two skip predicates, evaluated by step 6's `emit-manifest` from the iteration's **file list only** (step 1's scope file list — "the scope list" below); NEVER from `documents.*` (preserves `review-policy.md` "DoD per review phase" table note verbatim: "absence of a ux-spec draft never implies absence of UI code to review"). Their member lists live only in `.asd/runtime.js` (`isUiSurface`, `isExecutable`, `NA_TARGETS`); their `n/a` text is owned by `NA_PREDICATES` there, and any canon quote of it must match. A `true` predicate degrades the affected rubric section to `n/a` — in `asd-reviewer-combined` too, whose manifest composes those rubrics — never the agent's dispatch: **the reviewers carrying those rubrics (`asd-reviewer-correctness` and `asd-reviewer-efficiency`, or `asd-reviewer-combined`) are always dispatched at step 6, every iteration, unconditionally.**
+    - **UI-surface predicate — Correctness's UI conformance section n/a'd** only when **no file in the scope list is a UI surface** (`isUiSurface` decides which files qualify; a framework template among them is reviewed under `asd-reviewer-correctness.md`'s reduced/carve-out rubric, never n/a'd). Any such file entering the diff — this iteration or a later one — re-includes the section automatically; the predicate is re-evaluated every iteration, never cached. `asd-reviewer-correctness.md`'s carve-out (2) trigger points here rather than restating it.
+@@ -68,7 +68,7 @@ Orchestration body for the `asd-phase-impl-review` skill. Operation-mapping to h
+    - **Red, test defect** (bad assertion, wrong fixture, flaky pattern) → write inline (mechanical, no gate) clear `state.json.reviews.design.latched` and every impl wave node's `latched` to `{}` sprint-wide (red-full-suite invalidation, `sprint-lifecycle.md` "APPROVE latch" — every red full suite clears every latch sprint-wide regardless of which triage branch follows; a no-op if the code-defect sub-bullet below already cleared them this same red event) — then `asd-tester` fixes the test in place, **commits the fix** (Conventional Commits, per `git-strategy.md` "Commit before review"; its `impl-review <id> suite` trailer per "Commits") before re-running, and re-runs this step; loop until green or an unfixable state surfaces as `FAILED`. Never a code fix — only the test itself. The commit is mandatory before the re-run's `HEAD` is recorded — an uncommitted fix would leave `Suite run`'s `HEAD` predating it and the `pr`-phase skip check blind to it
+    - **Red, code defect** → record pending defect, clear latches and append the routing log inline; emit `NEXT: impl` (test-fix mode).
+    - both kinds present → fix the test defects first (sub-bullet above), re-run, then route the remaining code defects back per the code-defect sub-bullet
+-10. Iteration cap reached (wave K's next iteration would exceed all severity-tier budgets per `review-policy.md`; the cap is per wave) — checked when step 8 would route to impl review-fix mode:
++10. Iteration cap reached (step 3's cap: wave K's next `iteration − A` would exceed all severity-tier budgets per `review-policy.md`; the cap is per wave) — checked when step 8 would route to impl review-fix mode:
+     - request user decision: override cap and continue / accept current findings / abort sprint
+     - on override → route to impl review-fix mode; the orchestrator sets `review_fixes_pending` = `<id>` inline.
+     - on accept → record every open finding resolved (`cap-accept`, same home); wave K's roster met by cap-accept → as step 8's roster-met branch (next wave, or step 9 when K = n); the COMPLETED note folds in "iteration cap reached in wave K, user accepted"
+diff --git a/.asd/workflows/asd-phase-impl.md b/.asd/workflows/asd-phase-impl.md
+index 3a562f6..9c4c2ba 100644
+--- a/.asd/workflows/asd-phase-impl.md
++++ b/.asd/workflows/asd-phase-impl.md
+@@ -10,8 +10,8 @@ Orchestration body for the `asd-phase-impl` skill. Operation-mapping to host too
+ 
+ ## Operations used
+ - read: `.asd/project/config.yaml`, `state.json`, `plan.md`, `<sprint>/reviews/impl/<id>/` (review-fix), `<sprint>/test-plan.md` (test-fix), persistent docs, `.asd/project/custom-common-rules.md`, `custom-coding-rules.md`, `stubs.md`, `<sprint>/manual-steps.md`
+-- run command: `git status --porcelain`/`git diff` to read the round's committed-plus-uncommitted diff for step 9's authorised-paths gate; `commands.yaml` `build`/`lint` for the same gate; `git rm` of an ownerless agent-memory file (step 3); `node .asd/sync.js --apply`/`--check` and the commit of the regenerated views (step 7, `self_hosting: enabled`)
+-- write a file: `state.json` inline, for the mechanical non-gate writes at steps 4, 11 (`sprint-lifecycle.md` "State recovery"); a memory-fix dispatch's returned text, verbatim, and a memory `D-N`'s `Status` in `test-plan.md` (step 3)
++- run command: `git status --porcelain`/`git diff` to read the round's committed-plus-uncommitted diff for step 9's authorised-paths gate; `commands.yaml` `build`/`lint` for the same gate; `git rm` of an ownerless agent-memory file (step 3); `node .asd/sync.js --apply`/`--check` and the commit of the regenerated views (step 7, `self_hosting: enabled`); the commit of step 7's plan ticks and index lines
++- write a file: `state.json` inline, for the mechanical non-gate writes at steps 4, 11 (`sprint-lifecycle.md` "State recovery"); `plan.md` checkboxes and devs' returned `MEMORY.md` index lines (step 7); a memory-fix dispatch's returned text, verbatim, and a memory `D-N`'s `Status` in `test-plan.md` (step 3)
+ - request user decision: escalation only (see Execution mode)
+ - delegate to agent: `asd-dev` per task / finding group / defect group (test-file findings to `asd-tester`, memory findings to their owner — step 3); the main orchestrator owns manual-step validation, gates and decisions-log inline
+ - dispatch a skill: `asd-init` sprint-mediated mode, for a declared settings change, as its Task's wave opens (step 6)
+@@ -79,9 +79,9 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
+        - stub handling: see `git-strategy.md` "TODO stubs" — do not restate here
+        - staging + commit ownership — concurrently dispatched tasks share one worktree: see `git-strategy.md` "Commit before review" — do not restate here
+        - commit per Conventional Commits (one logical change per commit; subject ≤50 chars; body describes WHY)
+-       - initial — tick corresponding checkboxes in `<sprint>/plan.md`
++       - initial — leave `<sprint>/plan.md` untouched (step 7 ticks it); a wave of more than one Task adds: leave a shared `MEMORY.md` untouched and return its index line in COMPLETED (`sprint-lifecycle.md` "Impl phase")
+        - emit COMPLETED with summary (files touched; initial: AC-N satisfied, stubs added; review-fix: findings resolved by id, plus the consumers the consumer search updated; test-fix: defects resolved by `D-N`; every mode: `Flagged choices:` `none` or a list) when all subtasks/findings/defects done; when some subtasks manual-blocked, emit COMPLETED for unblocked portion plus `BLOCKED_MANUAL` listing deferred `MS-N`
+-7. Wait all task signals (COMPLETED and/or BLOCKED_MANUAL); a dispatch returning none → `sprint-lifecycle.md` "State recovery" failed dispatch. `self_hosting: enabled`: once a wave's (initial) or the round's (fix modes) last canon-editing dispatch has signalled, before the next wave opens or step 9 runs, the orchestrator runs `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `providers.md` "Canonical path -> per-provider path") over every view whose canon changed — `--apply AGENTS.md` when canon changed but no view did, since any valid `--apply` recomputes `release-manifest.json`'s hash ledgers — then `node .asd/sync.js --check`, and commits the regenerated views
++7. Wait all task signals (COMPLETED and/or BLOCKED_MANUAL); a dispatch returning none → `sprint-lifecycle.md` "State recovery" failed dispatch. Initial mode, after a wave's last signal and before the next wave opens: the orchestrator ticks the `plan.md` checkboxes of the subtasks that wave's COMPLETED signals report done, appends each returned index line to its `MEMORY.md`, and commits (`sprint-lifecycle.md` "Impl phase"). `self_hosting: enabled`: once a wave's (initial) or the round's (fix modes) last canon-editing dispatch has signalled, before the next wave opens or step 9 runs, the orchestrator runs `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `providers.md` "Canonical path -> per-provider path") over every view whose canon changed — `--apply AGENTS.md` when canon changed but no view did, since any valid `--apply` recomputes `release-manifest.json`'s hash ledgers — then `node .asd/sync.js --check`, and commits the regenerated views
+ 8. **Manual-steps validation + gate** — when any `BLOCKED_MANUAL` emitted:
+    - the main orchestrator validates each new `MS-N` for necessity:
+      - keep only when action genuinely cannot be done autonomously (needs access, secret, external account, or authority agent lacks)
+@@ -91,13 +91,13 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
+      - present `manual-steps.md` to user (per `checkpoints.md` "Gate mechanics"); wait for explicit continue command
+    - on user continue: re-dispatch each deferred task to owning dev with instruction:
+      - verify referenced `MS-N` per its `Verification` field
+-     - if verified → flip entry `Status` to `done`, finish `BLOCKED:` subtasks, tick `plan.md` checkboxes, emit COMPLETED
++     - if verified → flip entry `Status` to `done`, finish `BLOCKED:` subtasks, emit COMPLETED; the orchestrator then ticks their `plan.md` checkboxes as step 7 does
+      - if not verified → emit `BLOCKED_MANUAL` again (entry stays `pending`); relay to user
+    - loop until every `MS-N` is `done` and every deferred task COMPLETED
+ 9. **Impl completion gate** (all modes) — the main orchestrator verifies, via `commands.yaml`:
+    - `build` command executed and finished with no errors and no warnings
+    - `lint` command executed and finished with no errors and no warnings
+-   - the round's diff — what its agents committed plus anything still uncommitted — read before committing or advancing: every path it touches is one those agents were authorised to touch, plus `.asd/project/config.yaml` when step 6 applied a declared settings change, plus each memory file the orchestrator applied from a memory-fix dispatch or deleted as ownerless, and `<sprint>/test-plan.md` when it set a memory `D-N`'s `Status` (step 3), plus each generated view step 7's sync regenerated. Any other path fails the gate as a build error does — a file no dispatched task named, a generated view an agent edited, a scripted edit that rewrote more than its target. Distinct from `code-style.md` §19's staged-content lint: same tool, different question
++   - the round's diff — what its agents committed plus anything still uncommitted — read before committing or advancing: every path it touches is one those agents were authorised to touch, plus `.asd/project/config.yaml` when step 6 applied a declared settings change, plus each memory file the orchestrator applied from a memory-fix dispatch or deleted as ownerless, and `<sprint>/test-plan.md` when it set a memory `D-N`'s `Status` (step 3), plus each generated view step 7's sync regenerated, plus `<sprint>/plan.md` and each `MEMORY.md` step 7 wrote. Any other path fails the gate as a build error does — a file no dispatched task named, a generated view an agent edited, a scripted edit that rewrote more than its target. Distinct from `code-style.md` §19's staged-content lint: same tool, different question
+    - the gate itself never runs tests — a dev's optional impacted-set self-verification run (`sprint-lifecycle.md` "Impacted test set") is not part of it; the suite/impacted-set gates belong to `impl-test`/`impl-review`
+    - if any condition fails → phase MUST NOT advance: relay specific failure to owning dev(s) to fix and re-run; loop step 7. Unrecoverable failure escalates as a blocker (`FAILED`).
+    - automatic verification — no user pause
+@@ -127,7 +127,7 @@ Impl completion gate (step 9) and, initial mode only, impl assessment gate (step
+ - Production source code in repo (no tests — see `impl-test`)
+ - Updated `.asd/project/stubs.md` (project-global; open stubs only, deleted on resolution)
+ - `<sprint>/manual-steps.md` when a manual action arose (per-sprint, append-only)
+-- Updated `<sprint>/plan.md` checkboxes (initial mode)
++- Updated `<sprint>/plan.md` checkboxes and devs' returned `MEMORY.md` index lines, written by the orchestrator (initial mode, step 7)
+ - Updated reviewer files in `<sprint>/reviews/impl/<id>/` with user-approved change notes (review-fix mode)
+ - Updated `<sprint>/test-plan.md` defect rows flipped to `fixed` (test-fix mode)
+ - Updated `state.json` (phase=impl; the entered mode's fix flag cleared on exit)
+diff --git a/.asd/workflows/asd-phase-pr.md b/.asd/workflows/asd-phase-pr.md
+index 70533af..9adf671 100644
+--- a/.asd/workflows/asd-phase-pr.md
++++ b/.asd/workflows/asd-phase-pr.md
+@@ -7,24 +7,25 @@ Append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecyc
+ ## Open mode
+ 
+ 1. Read config, state, plan, reviews, test-plan with its segments (`artifact-layout.md` "Test plan"), retrospective and stubs. Confirm every plan task, AC trace, required review verdict (reviews-green over every impl-review wave per `sprint-lifecycle.md` "PR phase"; satisfied per its "State recovery", External Review's skip form and legacy values included), full-suite record, lint/build record and stub rule; `pr` requires review DoD plus a completed `retro` (`checkpoints.md`), so `<sprint>/retrospective.html` is a DoD input and its absence blocks. Re-run required checks after a relevant diff. A failed or missing check blocks.
+-2. Never open a second PR for `state.branch`: before any write, look its PR up by head branch (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"). A `MERGED` hit writes nothing and emits `NEXT: await-closure`. Otherwise, on an `OPEN` hit or none, write `phase=pr` (for self-hosting also bump version and changelog, unless the sprint branch already carries this sprint's bump) and commit it on the sprint branch before any push ("Merged-unclosed"). Then an `OPEN` hit is written as `state.json.pr` and continues in merge mode, whose step 1 publishes it with those commits; no hit composes the PR title/body and continues below.
++2. Never open a second PR for `state.branch`: before any write, look its PR up by head branch (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"). A `MERGED` hit writes nothing and continues in merge mode with that number, which there runs only the release. Otherwise, on an `OPEN` hit or none, write `phase=pr` (for self-hosting also bump version and changelog, unless the sprint branch already carries this sprint's bump) and commit it on the sprint branch before any push ("Merged-unclosed"). Then an `OPEN` hit is written as `state.json.pr` and continues in merge mode, whose step 1 publishes it with those commits; no hit composes the PR title/body and continues below.
+ 3. Apply the active policy to publication. Adaptive publication needs recorded scope authority, evidence and host permission; otherwise request the user. Open the PR per `git-strategy.md` "PR creation"; a `gh` failure is `FAILED` naming the fix given there. On successful PR creation, write `state.json.pr` and append the decision/log record, then commit both and push the sprint branch before step 4, so the squash merge carries `pr.number` to base (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"). Do not archive or mark done.
+ 4. Emit `NEXT: await-merge`; the active sprint remains at its normal path while the PR is open.
+ 
+ ## Merge mode
+ 
+-1. Re-enter from either active or legacy archived path. Unless `gh pr view <pr.number> --json state` already reports `MERGED`, first confirm the PR head carries open mode step 3's publication, since the squash merge is base's only source of `pr.number` (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"): `git fetch origin <state.branch>`, then `git show origin/<state.branch>:<sprint>/state.json` must hold this `pr.number`. If it does not, commit the local `state.json.pr` write if uncommitted, push the sprint branch and re-confirm; a push failure is `FAILED`. Then merge the sprint PR through `gh` per `git-strategy.md` "Merging a PR"; a `gh` failure is `FAILED` naming the fix ("PR creation"). Confirm the merge landed before proceeding; a PR that did not merge leaves the sprint active.
+-2. Write nothing — no state, archive move or tag, on any branch: the closure request belongs to `asd-sprint`, the terminal write and self-hosting tag to the next sprint's scope step 1 (`sprint-lifecycle.md` "PR phase"). Emit `NEXT: await-closure`.
++1. Re-enter from either active or legacy archived path. Unless `gh pr view <pr.number> --json state` (with `pr` null, the number open mode or `asd-sprint` carries) already reports `MERGED`, first confirm the PR head carries open mode step 3's publication, since the squash merge is base's only source of `pr.number` (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"): `git fetch origin <state.branch>`, then `git show origin/<state.branch>:<sprint>/state.json` must hold this `pr.number`. If it does not, commit the local `state.json.pr` write if uncommitted, push the sprint branch and re-confirm; a push failure is `FAILED`. Then merge the sprint PR through `gh` per `git-strategy.md` "Merging a PR"; a `gh` failure is `FAILED` naming the fix ("PR creation"). Confirm the merge landed before proceeding; a PR that did not merge leaves the sprint active.
++2. `self_hosting: enabled`: `git fetch origin <git.base_branch>`, then publish the release per `git-strategy.md` "Versioning & Changelog (self-hosting only)". Write no state, archive move or commit, on any branch; the self-hosting tag and release are a tag ref and a host object, not a branch write (`sprint-lifecycle.md` "PR phase"). Emit `NEXT: done`.
+ 
+ ## Artefacts
+ 
+ - `state.json.pr` and decisions-log records (open mode)
+ - PR when authorized
++- self-hosting tag and release (merge mode)
+ 
+ ## Return contract
+ 
+ ```
+-PHASE: pr | SPRINT: <NNN-slug> | STATUS: <pr-open|merged|blocked|aborted> | NEXT: <await-merge|await-closure|halted>
++PHASE: pr | SPRINT: <NNN-slug> | STATUS: <pr-open|merged|blocked|aborted> | NEXT: <await-merge|done|halted>
+ ```
+ 
+ ## References
+diff --git a/.asd/workflows/asd-phase-scope.md b/.asd/workflows/asd-phase-scope.md
+index 99a6426..70727fd 100644
+--- a/.asd/workflows/asd-phase-scope.md
++++ b/.asd/workflows/asd-phase-scope.md
+@@ -2,12 +2,11 @@
+ 
+ The main orchestrator owns this phase inline.
+ 
+-1. Read config and existing active/legacy archived sprints. Obtain raw scope when absent, as a plain chat message, fast-forward the base branch, require a clean tree, create the sprint branch, run the closure write below when `asd-sprint` passed a closure approval, then create the sprint folder. Request user decision on the sprint workflow, `standard` or `lite` (`sprint-lifecycle.md` "Workflows"): hard `workflow choice` gate, never defaulted in either gate mode, asked only here; a scope re-run keeps the frozen value. The answer seeds `{{WORKFLOW}}`; step 2's seeding records it in `gate_decisions` and one decisions-log line.
++1. Read config and existing active/legacy archived sprints. Obtain raw scope when absent, as a plain chat message, fast-forward the base branch, require a clean tree, create the sprint branch, run the closure write below when `asd-sprint` passed a merged-unclosed sprint, then create the sprint folder. Request user decision on the sprint workflow, `standard` or `lite` (`sprint-lifecycle.md` "Workflows"): hard `workflow choice` gate, never defaulted in either gate mode, asked only here; a scope re-run keeps the frozen value. The answer seeds `{{WORKFLOW}}`; step 2's seeding records it in `gate_decisions` and one decisions-log line.
+    **Closure write** (`sprint-lifecycle.md` "PR phase"; the closing sprint is exempt from the one-active rule):
+    - `git mv` the closing sprint folder into `.asd/sprints/archived/`; a legacy folder already there is written in place (`sprint-lifecycle.md` "Sprint immutability");
+-   - in its `state.json` write `pr.state="merged"`, `pr.merge_commit` (`gh pr view <pr.number> --json mergeCommit`; a null `pr` takes `pr.number` from the confirmed number `asd-sprint` carries and writes it too), `phase="done"`, `updated_at`, `archived_at`, and append a `gate_decisions` entry `gate: sprint-closure`, `decision_actor: user`; append one entry to its `decisions-log.md`;
+-   - commit those paths as the new branch's first commit;
+-   - `self_hosting: enabled`: then tag `v<asd_version>` on `pr.merge_commit`, `asd_version` read by `git show <merge_commit>:.asd/release-manifest.json`, skipped when that tag exists, and create the release, per `git-strategy.md` "Versioning & Changelog (self-hosting only)".
++   - in its `state.json` write `pr.state="merged"`, `pr.merge_commit` (`gh pr view <pr.number> --json mergeCommit`; a null `pr` takes `pr.number` from the confirmed number `asd-sprint` carries and writes it too), `phase="done"`, `updated_at`, `archived_at`, and append a `gate_decisions` entry `gate: sprint-closure`, `decision_actor: orchestrator`, its evidence the merge commit; append one entry to its `decisions-log.md`;
++   - commit those paths as the new branch's first commit.
+ 2. Refine scope into `sprint.md` with stable `AC-N` ids; ask the user only for ambiguity that prevents a concrete scope. Verify every retrospective-derived criterion against current `HEAD` — one asserting host behaviour also against the host docs or a live dispatch — before writing it, and record that verification in `decisions-log.md` per `sprint-lifecycle.md` "Orchestration and adaptive gates". Seed state and decisions log.
+ 2a. **Retro intake** per `sprint-lifecycle.md` "Retro intake" (sole SSoT, not restated here): run `node .asd/runtime.js retro-candidates --sprints .asd/sprints --backlog .asd/project/retro-backlog.md`, adding `--self-hosting` when `self_hosting: enabled`; verify each candidate at `HEAD`; the unresolved rest ride the step 4 gate, and an included one becomes an `AC-N` in `sprint.md`.
+ 3. Read `documents.audit`: accept only `auto|always|off`, any other value blocks (`sprint-lifecycle.md` "Orchestration and adaptive gates"); `auto` skips only a complete mechanical scope with no behaviour, contract, migration or gate impact. Freeze the effective boolean into `state.json.documents.audit` (no separate reason field — the rule is deterministic, per `sprint-lifecycle.md`). Reevaluate after an accepted scope expansion.
+@@ -22,7 +21,7 @@ Append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecyc
+ - `.asd/sprints/<NNN-slug>/sprint.md`
+ - `state.json`, `decisions-log.md`, branch
+ - `.asd/project/retro-backlog.md` (when intake records a disposition)
+-- closing sprint's archive move and terminal state; self-hosting tag/release (closure write)
++- closing sprint's archive move and terminal state (closure write)
+ 
+ ## Return contract
+ 
+diff --git a/.asd/workflows/lite.json b/.asd/workflows/lite.json
+index b1fa8be..f4e8f5a 100644
+--- a/.asd/workflows/lite.json
++++ b/.asd/workflows/lite.json
+@@ -10,7 +10,7 @@
+     "impl-review": ["design-promote", "impl"],
+     "design-promote": ["retro"],
+     "retro": ["pr"],
+-    "pr": ["await-merge", "await-closure"]
++    "pr": ["await-merge", "done"]
+   },
+   "reviewers": {
+     "design": [],
+diff --git a/.asd/workflows/standard.json b/.asd/workflows/standard.json
+index 60dc232..858019e 100644
+--- a/.asd/workflows/standard.json
++++ b/.asd/workflows/standard.json
+@@ -12,7 +12,7 @@
+     "impl-test": ["impl-review", "impl"],
+     "impl-review": ["retro", "impl"],
+     "retro": ["pr"],
+-    "pr": ["await-merge", "await-closure"]
++    "pr": ["await-merge", "done"]
+   },
+   "reviewers": {
+     "design": ["correctness", "efficiency", "documentation", "external"],
+diff --git a/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md b/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md
+index a75c989..2dce174 100644
+--- a/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md
++++ b/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md
+@@ -178,6 +178,10 @@ fix commit's exact removed phrase to the sprint's leftover-sweep list, then rest
+ prove it (sprint 021 D-4). Widening an actor rule ("a sentence naming `--apply` must deny it") to all memory
+ instead false-hits factual mentions of the command.
+ 
++A removed-phrase sweep outlives its sprint, so a later sprint can legitimately re-adopt a banned literal. Sprint 021
++banned the `done` pr exits and sprint 022 made `done` the exit. Delete those entries and cite the audit
++Contradictions ruling as the reason. Do not exempt them: an exemption keeps a ban on text that is now canon.
++
+ Same family, for locating a sentence: key the locator to the sentence's **citation**, never its
+ ordinal or adverb. `sprint-lifecycle.md`'s latch-clearing route was renamed "A THIRD" → "A further"
+ mid-sprint; a `find` on the citation (`` `review-policy.md` "Late duplicate return" ``) survives
+diff --git a/AGENTS.md b/AGENTS.md
+index 463c927..30739d9 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -46,7 +46,7 @@ When subsystem decomposition is enabled (`project.subsystem_decomposition`), per
+ 
+ - Never modify workflow infrastructure (`.asd/rules/`, `.asd/templates/`, generated agent/skill/hook trees). Only `/asd-init`/`$asd-init` edits settings — run by the user, or by `impl` for a plan-declared settings change — or by a release migration `/asd-update`/`$asd-update` runs, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent.
+ - All project work flows through `/asd-sprint`/`$asd-sprint`. No ad-hoc edits to project code outside a sprint.
+-- One active sprint at a time. New sprint blocked until active one archived, except a merged sprint whose closure the user approves as the new sprint starts.
++- One active sprint at a time. New sprint blocked until active one archived, except a merged sprint, which the next sprint's scope archives.
+ <!-- asd:end -->
+ 
+ ## This repo (framework source) — deltas from the block above
+diff --git a/README.md b/README.md
+index a71a09e..0699cce 100644
+--- a/README.md
++++ b/README.md
+@@ -189,7 +189,7 @@ flowchart TD
+ | **impl-test** | Tester picks the risk-based test approach for the change scope, deletes redundant/flaky/implementation-coupled tests, writes the missing ones, runs the impacted set; records everything in `test-plan.md`, each regression proof with its failing command, non-zero exit code and test name; code defects route back to `impl` |
+ | **impl-review** | 4 internal reviewers (Correctness, Efficiency, Testing, Documentation) plus External Review; a large scope is reviewed as up to 3 sequential review waves, each with its own iteration counter; routes findings back to `impl` review-fix mode; once every wave's reviewers approve, runs the sprint's one full-suite check — green advances to `retro`, red exits to `impl` test-fix mode and clears every APPROVE latch |
+ | **retro** | Orchestrator reads the sprint's friction log and writes `retrospective.html` in two classes: remediation traced to `F-N` entries, and systemic proposals for a cheaper next sprint (derived from how the sprint ran, not bounded by the entries); findings sharing a root cause merge first, one an existing rule already covers is dropped citing it, and each survivor gets a one-line `Guardrail`, its `Home`, and a stable row id (`A-N` for Actions, `P-N` for Systemic proposals, `N` the table's 1-based row ordinal) — every row marked as acting on the consumer project or the ASD framework, never applied by retro; an entry-free log skips remediation only, proposals still ship; closes with a chat summary |
+-| **pr** | DoD verification + `gh pr create`, then ASD merges the PR itself through `gh` (a `gh` failure is `FAILED` naming the fix); one PR per sprint. Exit tokens are `await-merge` (PR opened) and `await-closure` (merge confirmed, nothing written on the base branch). Merging is not closure: `/asd-sprint` requests the explicit user closure approval, and the next sprint's scope writes the closure (archive move, terminal state, tag and release) as its first commit |
++| **pr** | DoD verification + `gh pr create`, then ASD merges the PR itself through `gh` (a `gh` failure is `FAILED` naming the fix); one PR per sprint. Exit tokens are `await-merge` (PR opened) and `done` (merge confirmed). A merged PR completes the sprint with no user gate; under self-hosting the merge step also publishes the tag and release (idempotent, retried on the next `/asd-sprint`). Nothing is written on the base branch: the next sprint's scope archives the merged sprint (archive move, terminal state) as its first commit |
+ 
+ You can resume an interrupted sprint at any time: `/asd-sprint` reads `state.json`, detects the current phase, and dispatches the matching phase skill.
+ 
+@@ -266,14 +266,14 @@ Read-only, consulted by any agent on non-gate uncertainty — an open question a
+ 
+ ## User gates
+ 
+-`adaptive` lets the main orchestrator pass routine audit/plan/assessment/review and already-authorized document decisions with recorded authority, evidence and artifact revision. `strict` retains explicit pauses. Material new scope/product/UX/stack/architecture/contract decisions, quality waivers, review-cap overrides and change-surface cap overrides (a reviewable change surface above `SURFACE_CAP_FILES`, checked at plan acceptance and again at impl-review entry) retain hard gates. **Sprint closure (finalization and archival) always requires explicit user approval.** PR publication, expenses, external commitments, sensitive irreversible actions and out-of-scope test deletion are not categorical ASD hard gates; applicable permissions, authority and quality checks still apply. All modes retain build/lint/tests/review coverage and confirmed-merge requirements.
++`adaptive` lets the main orchestrator pass routine audit/plan/assessment/review and already-authorized document decisions with recorded authority, evidence and artifact revision. `strict` retains explicit pauses. Material new scope/product/UX/stack/architecture/contract decisions, quality waivers, review-cap overrides and change-surface cap overrides (a reviewable change surface above `SURFACE_CAP_FILES`, checked at plan acceptance and again at impl-review entry) retain hard gates. PR publication, expenses, external commitments, sensitive irreversible actions and out-of-scope test deletion are not categorical ASD hard gates; applicable permissions, authority and quality checks still apply. All modes retain build/lint/tests/review coverage and confirmed-merge requirements.
+ 
+ ## Configuration
+ 
+ All settings live in `.asd/project/config.yaml`, generated by `/asd-init`:
+ 
+ ```yaml
+-user_gates: strict        # adaptive | strict — closure always requires user approval
++user_gates: strict        # adaptive | strict — hard gates always require user approval
+ 
+ self_hosting: disabled   # enabled | disabled — ASD developing itself through its own workflow
+ 
+@@ -343,7 +343,7 @@ your-project/
+ │   │   └── retro-backlog.md         # lazy; cross-sprint disposition of open retro rows; /asd-update never touches it
+ │   └── sprints/
+ │       ├── <NNN-slug>/              # active sprint (one at a time); decisions-log.md and test-plan.md created here, rotating into numbered `decisions-log.NNN.md` / `test-plan.entry-NN.md` segments so neither grows unbounded (`artifact-layout.md`); archived with the sprint
+-│       └── archived/<NNN-slug>/     # moved here by the next sprint's closure write, after explicit closure approval; completed sprints immutable
++│       └── archived/<NNN-slug>/     # moved here by the next sprint's closure write, by the next sprint's scope, with no user gate; completed sprints immutable
+ ├── .claude/                         # generated Claude Code view
+ │   ├── agents/                      # 16 agent definitions: 12 roles + 4 tier variants (*.md)
+ │   ├── skills/                      # 18 skill definitions (SKILL.md)
+@@ -446,7 +446,7 @@ The canonical SessionStart hook (`.asd/hooks/session-start.js`) prints a one-blo
+ ## FAQ
+ 
+ **Can I run multiple sprints in parallel?**
+-No. ASD enforces one active sprint at a time. The sprint stays at its active path after its PR is opened and merged, and blocks a new one until you approve its closure; `/asd-sprint` asks right after the merge (or on the next run), and the new sprint's scope then writes the closure as its first commit. This keeps state recovery simple.
++No. ASD enforces one active sprint at a time. The sprint stays at its active path while its PR is open. Once the PR is merged the sprint is complete and no longer blocks: the next `/asd-sprint` starts a new sprint, and that sprint's scope archives the merged one as its first commit, with no approval step. This keeps state recovery simple.
+ 
+ **What if a reviewer keeps blocking the same finding?**
+ The iteration severity floor uses cumulative budgets, computed per phase-local counter (in impl-review, per review wave): by default iter 1 considers all severities, iter 2 considers medium+, iter 3-4 considers high+, iter 5-14 considers only critical, iter 15+ escalates to you. Tune the limits in `config.yaml`.
+diff --git a/tests/run.js b/tests/run.js
+index 9a972b1..2bed1da 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -2239,7 +2239,7 @@ test('sprint-017 (COR-6): outside a review phase, SessionStart prefers the impl-
+   assert.ok(afterWaveIterated.includes('Last review verdict: yellow'), `COR-6: once any wave has iterated, an impl-phase summary must prefer the impl wave node over design's - comparing counters directly would compare wave 2's iteration 1 to design's iteration 2 and wrongly pick design's green, got: ${afterWaveIterated}`);
+ });
+ 
+-test('sprint-021 AC-3 (D3): SessionStart reports "Next phase: await-closure" for a merged-unclosed sprint read offline - phase pr, a PR number, and a checked-out branch other than the sprint\'s - legacy closure-pending included, and degrades to await-merge on the sprint branch, a detached HEAD or a worktree .git file', () => {
++test('sprint-021 AC-3 (D3), sprint-022 AC-3: SessionStart reports "Next phase: done" for a merged-unclosed sprint read offline - phase pr, a PR number, and a checked-out branch other than the sprint\'s - legacy closure-pending included, and degrades to await-merge on the sprint branch, a detached HEAD or a worktree .git file', () => {
+   const sprintBranch = 'sprint/999-fixture';
+   const nextFor = (pr, git) => {
+     const tempRoot = mkTempDir();
+@@ -2252,8 +2252,8 @@ test('sprint-021 AC-3 (D3): SessionStart reports "Next phase: await-closure" for
+   };
+   const onBase = { head: 'ref: refs/heads/main\n' };
+   const cases = [
+-    ['merged, back on the base branch', { number: 7, state: 'open' }, onBase, 'await-closure'],
+-    ['legacy closure-pending with a PR number (D2)', { number: 7, state: 'closure-pending' }, onBase, 'await-closure'],
++    ['merged, back on the base branch', { number: 7, state: 'open' }, onBase, 'done'],
++    ['legacy closure-pending with a PR number (D2)', { number: 7, state: 'closure-pending' }, onBase, 'done'],
+     ['PR open, still on the sprint branch', { number: 7, state: 'open' }, { head: `ref: refs/heads/${sprintBranch}\n` }, 'await-merge'],
+     ['no PR number yet', { state: 'open' }, onBase, 'await-merge'],
+     ['detached HEAD', { number: 7, state: 'open' }, { head: `${'a'.repeat(40)}\n` }, 'await-merge'],
+@@ -2262,7 +2262,7 @@ test('sprint-021 AC-3 (D3): SessionStart reports "Next phase: await-closure" for
+   for (const [label, pr, git, expected] of cases) {
+     let next;
+     assert.doesNotThrow(() => { next = nextFor(pr, git); }, `${label}: the hook must exit 0 on any .git shape - it fails silently by design`);
+-    assert.strictEqual(next, expected, `${label}: merged-unclosed is phase pr + pr.number + a readable current branch other than state.branch (sprint-lifecycle.md "PR phase"); any shape the hook cannot read offline degrades to await-merge, never a false closure prompt`);
++    assert.strictEqual(next, expected, `${label}: merged-unclosed is phase pr + pr.number + a readable current branch other than state.branch (sprint-lifecycle.md "PR phase"); any shape the hook cannot read offline degrades to await-merge, never a false done; merged-unclosed reports done, pr merge mode's terminal exit (sprint-022 AC-3)`);
+   }
+ });
+ 
+@@ -4119,6 +4119,16 @@ test('AC-3/AC-12: sprint-lifecycle.md owns retro-criterion re-verification and t
+   assert.ok(taskBlocks.length >= 2, 'sanity: t_plan.md must ship more than one example Task block');
+   for (const block of taskBlocks) assert.ok(/^Material risk:/m.test(block), 'every example Task block must carry the mandatory Material risk line');
+   assert.ok(taskBlocks.some((block) => !/^Reachability:/m.test(block)), 't_plan.md must ship at least one example Task without a Reachability line - the template is where an author reads whether the line is conditional or mandatory, and a copy on every block teaches the wrong one');
++
++  const reachability = lifecycle.split('\n').find((line) => line.startsWith('**Reachability declaration**')) || '';
++  const interrupted = /`(; interrupted at [^`]+)`/.exec(reachability);
++  assert.ok(interrupted, 'sprint-022 AC-6: the Reachability declaration must give a value crossing a push or merge a grammar for each interruption point and the value the receiving branch then holds - sprint 021 planned a write/read pair whose interrupted state nobody named');
++  const acceptance = reachability.split(/(?<=\.)\s/).find((sentence) => sentence.includes('Accepting the plan')) || '';
++  assert.ok(/\binterrupted\b/.test(acceptance), 'sprint-022 AC-6: accepting the plan must also check the reader handles each named interrupted value, before plan acceptance');
++  const exampleReach = template.split('\n').find((line) => line.startsWith('Reachability:')) || '';
++  assert.ok(exampleReach.includes(interrupted[1]), `sprint-022 AC-6: t_plan.md's example Reachability line must carry the interruption clause in the home's grammar (${interrupted[1]})`);
++  const formatRule = template.split('\n').find((line) => line.includes('`Reachability:` line')) || '';
++  assert.ok(/\binterruption point\b/.test(formatRule), 'sprint-022 AC-6: t_plan.md\'s parser-critical Reachability rule must mirror the interruption-point clause');
+ });
+ 
+ test('AC-15: checkpoints.md surfaces a criterion\'s running cost from artefacts the sprint already writes, and the decisions-log literal it counts is the one asd-phase-impl.md actually emits', () => {
+@@ -6824,21 +6834,35 @@ test('sprint-021 AC-10/AC-11 (D5): scratch-dir creates .asd/tmp/ beside the runt
+   assert.strictEqual(git('status', '--porcelain', '--untracked-files=all'), '', 'the directory and its own .gitignore must be ignored with no root .gitignore entry - a consumer needs no migration, and a helper or return file never reaches a commit or a review');
+ });
+ 
+-test('sprint-021 AC-1/AC-2 (D1): pr ends at await-merge or await-closure and asd-sprint takes each chain exit; pr open mode commits and pushes its state.json.pr write before await-merge, pr merge mode republishes it if the PR head lacks it before merging and performs no part of the closure write, and scope step 1 carries every token of it', () => {
++test('sprint-021 AC-1/AC-2 (D1), sprint-022 AC-1/AC-2/AC-3: pr ends at await-merge or done, and runtime CHAIN_EXITS, asd-sprint and README agree; pr open mode commits and pushes its state.json.pr write before await-merge, pr merge mode republishes it if the PR head lacks it before merging, fetches base before the self-hosting release and performs no part of the closure write, which releases nothing and is the orchestrator\'s, and scope step 1 carries every token of it', () => {
+   const definitions = readWorkflowDefinitions();
+   const exits = [...new Set(definitions.flatMap(({ phases, next }) => Object.values(next).flat().filter((target) => !phases.includes(target))))].sort();
+-  assert.deepStrictEqual(exits, ['await-closure', 'await-merge'], 'AC-1: the chain ends at pr\'s two exits - the PR opened, then merged and awaiting closure; no definition ends at done any more, since pr never writes the terminal state');
++  assert.deepStrictEqual(exits, ['await-merge', 'done'], 'sprint-022 AC-3 (D1): the chain ends at pr\'s two exits - the PR opened, then merged; done names completion, not a write, since pr never writes the terminal state');
++  const chainExits = /^const CHAIN_EXITS = (\[[^\]]*\]);/m.exec(canonText('.asd/runtime.js'));
++  assert.ok(chainExits, 'sanity: .asd/runtime.js must declare CHAIN_EXITS as a one-line array literal');
++  assert.deepStrictEqual(JSON.parse(chainExits[1].replace(/'/g, '"')).sort(), exits, 'sprint-022 AC-3: runtime.js CHAIN_EXITS must be exactly the exits the definitions route pr to - loadWorkflow accepts any CHAIN_EXITS member as a target, so a stale extra token stays loadable and routable');
+   const sprintSkill = canonText('.asd/skills/asd-sprint/SKILL.md');
+   const skillExits = /^SPRINT: .*\bNEXT:\s*<([^>]+)>/m.exec(sprintSkill);
+   assert.ok(skillExits && exits.every((exit) => skillExits[1].split('|').includes(exit)), 'asd-sprint must offer every chain exit in its return contract - an exit it cannot relay halts the sprint with no route');
+-  assert.ok(sprintSkill.split('\n').some((line) => line.includes('`NEXT: await-closure`') && line.includes('Step 1A')), 'AC-2: asd-sprint routes pr\'s `NEXT: await-closure` to its closure request (Step 1A)');
++  const doneRoute = (sprintSkill.split('\n').find((line) => line.includes('`NEXT: done`')) || '').split('`NEXT: done`')[1];
++  assert.ok(doneRoute && /\bhalt\b/.test(doneRoute.split(';')[0]), 'sprint-022 AC-2/AC-3: asd-sprint Step 3 must halt on pr\'s `NEXT: done` - no closure request follows the merge, the next sprint\'s scope archives it');
++  assert.ok(!/^### Step 1A\b/m.test(sprintSkill), 'sprint-022 AC-2 (D3): asd-sprint Step 1A, the closure request, is deleted - a merged-unclosed sprint goes to the new-sprint flow with no user gate');
++  const readmePr = canonText('README.md').split('\n').find((line) => line.startsWith('| **pr** |') && line.includes('`gh pr create`')) || '';
++  assert.deepStrictEqual(exits.filter((exit) => !readmePr.includes(`\`${exit}\``)), [], 'sprint-022 AC-3: README\'s pr row must name every chain exit the definitions route pr to');
++  const tablePr = sectionOf('.asd/rules/sprint-lifecycle.md', 'Phase table').split('\n').find((line) => line.startsWith('| pr |')) || '';
++  assert.ok(exits.includes((/→ `([^`]+)`/.exec(tablePr) || [])[1]), `sprint-022 AC-3: sprint-lifecycle.md "Phase table" pr row must exit to a chain exit the definitions route pr to; got: ${tablePr}`);
+ 
+   const closure = sectionOf('.asd/rules/sprint-lifecycle.md', 'PR phase').split('**Closure write**')[1].split('\n\n')[0];
+   const tokens = [...new Set([...closure.matchAll(/`([^`]+)`/g)].map((match) => match[1]).filter((token) => !token.endsWith('.md')))];
+   const writes = ['git mv', 'phase="done"', 'archived_at'];
+   assert.deepStrictEqual(writes.filter((token) => !tokens.includes(token)), [], 'sanity: sprint-lifecycle.md "PR phase" "Closure write" must name the archive move and the terminal fields this test holds pr merge mode free of');
++  assert.ok(tokens.includes('decision_actor: orchestrator'), 'sprint-022 AC-2 (D3): the closure write records its gate_decisions entry with decision_actor: orchestrator - no user gate precedes it, so a user actor would claim an approval nobody gave');
++  assert.ok(!/\b(?:tag|release)\b/i.test(closure), 'sprint-022 AC-1: the closure write no longer tags or releases - pr merge mode publishes the self-hosting release right after the merge');
+   const merge = sectionOf('.asd/workflows/asd-phase-pr.md', 'Merge mode');
+-  assert.ok(merge.includes('`NEXT: await-closure`'), 'AC-1: pr merge mode returns `NEXT: await-closure` once the merge is confirmed');
++  assert.ok(merge.includes('`NEXT: done`'), 'sprint-022 AC-3: pr merge mode returns `NEXT: done` once the merge is confirmed');
++  const release = stepOf(merge, 2);
++  const [fetchAt, releaseAt, doneAt] = ['`git fetch origin <git.base_branch>`', '"Versioning & Changelog (self-hosting only)"', '`NEXT: done`'].map((token) => release.indexOf(token));
++  assert.ok(fetchAt >= 0 && fetchAt < releaseAt && releaseAt < doneAt, 'sprint-022 AC-1 (D2): pr merge mode step 2 fetches git.base_branch, then publishes the release per git-strategy.md "Versioning & Changelog (self-hosting only)", then emits NEXT: done - the squash merge commit the tag targets is not local on the sprint branch until the fetch');
+   assert.deepStrictEqual(writes.filter((token) => merge.includes(token)), [], 'AC-1: pr merge mode makes no write on git.base_branch - the archive move and terminal state belong to the next sprint\'s scope');
+   const openSteps = sectionOf('.asd/workflows/asd-phase-pr.md', 'Open mode').split(/\n(?=\d+[a-z]?\. )/);
+   const writeAt = openSteps.findIndex((step) => step.includes('`state.json.pr`'));
+@@ -6858,15 +6882,16 @@ test('sprint-021 AC-1/AC-2 (D1): pr ends at await-merge or await-closure and asd
+   assert.ok(/\bpush/i.test(republish), `AC-2: pr merge mode must push the sprint branch when the remote lacks pr.number, before merging - ${unconfirmed}`);
+   const scopeStep = stepOf(canonText('.asd/workflows/asd-phase-scope.md').split('\n## ')[0], 1);
+   assert.deepStrictEqual(tokens.filter((token) => !scopeStep.includes(token) && !scopeStep.includes(token.replace(/ /g, '-'))), [], 'AC-2: asd-phase-scope.md step 1 performs the closure write "PR phase" defines, so it must name each of its tokens (a gate name as its gate_decisions value, spaces hyphenated) - one dropped is a field the closing sprint never gets');
++  assert.ok(!/\b(?:tag|release)\b/i.test(scopeStep), 'sprint-022 AC-1: asd-phase-scope.md step 1 no longer tags or releases - the release moved to pr merge mode');
+ });
+ 
+-test('sprint-021 AC-2 (iter-03 external #1), AC-14: a sprint without pr.number is looked up by head branch at any phase - asd-sprint Step 1 runs the lookup "PR phase" "Merged-unclosed" defines with no phase gate, reads a MERGED hit as merged-unclosed and carries its number to the closure write, and adopts an OPEN hit only at phase="pr"; pr open mode runs the lookup before opening a PR, so it never opens a second one, after committing the phase "Merged-unclosed" says base carries', () => {
++test('sprint-021 AC-2 (iter-03 external #1), AC-14, sprint-022 AC-2: a sprint without pr.number is looked up by head branch at any phase - asd-sprint Step 1 runs the lookup "PR phase" "Merged-unclosed" defines with no phase gate, reads a MERGED hit as merged-unclosed and carries its number through Step 2A to the closure write, and adopts an OPEN hit only at phase="pr"; pr open mode runs the lookup before opening a PR, so it never opens a second one, after committing the phase "Merged-unclosed" says base carries', () => {
+   const home = sectionOf('.asd/rules/sprint-lifecycle.md', 'PR phase').split('**Merged-unclosed**')[1];
+   assert.ok(home, 'sanity: sprint-lifecycle.md "PR phase" must keep its **Merged-unclosed** paragraph, the lookup\'s home');
+   const spans = (text) => [...text.matchAll(/`([^`]+)`/g)].map(([, span]) => span);
+   const clauses = (text) => text.split(/[;.]\s/);
+   const lookup = spans(home.split('\n\n')[0]).find((span) => span.startsWith('gh pr list --head <state.branch>'));
+-  const lost = 'a PR merged before open mode\'s state.json.pr write reached the sprint branch leaves base at pr=null, so without the head-branch lookup asd-sprint never requests closure and a pr re-run opens a second PR (impl-review wave-1/iter-03 external #1)';
++  const lost = 'a PR merged before open mode\'s state.json.pr write reached the sprint branch leaves base at pr=null, so without the head-branch lookup asd-sprint never archives it and a pr re-run opens a second PR (impl-review wave-1/iter-03 external #1)';
+   assert.ok(lookup, `AC-2: "Merged-unclosed" must define the head-branch lookup for a sprint without pr.number - ${lost}`);
+   assert.ok(/--state all\b/.test(lookup), `AC-2: the head-branch lookup must list every PR state - gh pr list defaults to open PRs only and would never report the MERGED one - ${lost}`);
+   const outcomes = clauses(home.slice(home.indexOf(lookup)));
+@@ -6875,7 +6900,7 @@ test('sprint-021 AC-2 (iter-03 external #1), AC-14: a sprint without pr.number i
+   assert.ok(mergedHit, `AC-2: "Merged-unclosed" must read a MERGED head-branch hit as merged-unclosed - ${lost}`);
+   assert.ok(openHit, `AC-2: "Merged-unclosed" must resume merge mode on an OPEN head-branch hit - ${lost}`);
+   const phaseGated = (text) => spans(text).some((span) => /^phase\s*!?=/.test(span));
+-  const anyPhase = 'a PR opened and merged by hand before the pr phase, or an open-mode MERGED hit whose closure was refused, leaves the sprint at an earlier phase with pr=null; a phase-gated lookup never runs for it and the sprint resumes that phase on git.base_branch instead of requesting closure';
++  const anyPhase = 'a PR opened and merged by hand before the pr phase leaves the sprint at an earlier phase with pr=null; a phase-gated lookup never runs for it and the sprint resumes that phase on git.base_branch instead of being archived';
+   const definition = clauses(home.split('\n\n')[0])[0];
+   assert.ok(definition.includes('`MERGED`'), 'sanity: "Merged-unclosed" must open by defining the state as a sprint PR gh reports MERGED');
+   assert.deepStrictEqual([definition, clauses(home).find((clause) => spans(clause).includes(lookup)), mergedHit].filter(phaseGated).map((clause) => clause.trim()), [], `AC-14: "Merged-unclosed"'s definition, its head-branch lookup and its MERGED outcome must name no phase="…" condition - ${anyPhase}`);
+@@ -6887,11 +6912,13 @@ test('sprint-021 AC-2 (iter-03 external #1), AC-14: a sprint without pr.number i
+   assert.ok(!phaseGated(detect), `AC-14: asd-sprint Step 1's merged-unclosed detection must run for every active sprint, with no phase="…" condition - ${anyPhase}`);
+   const openLine = stepOne.find((line) => line !== detect && spans(line).includes('OPEN'));
+   assert.ok(openLine && spans(openLine).includes('phase="pr"'), 'AC-14: asd-sprint Step 1 must say an OPEN head-branch hit is adopted into merge mode only at phase="pr" - detection now runs at every phase, and without the restriction an earlier-phase sprint with an open PR reads as ready to merge');
+-  const approveStep = stepOf(sprintSkill.split('### Step 1A')[1].split('\n### ')[0], 2);
+-  const approve = approveStep.replace(/`[^`]*`/g, '');
+-  assert.ok(/\bnumber\b/i.test(approve), `AC-2: asd-sprint Step 1A must carry the head-branch lookup's PR number with the closure approval - scope's closure write has no other source for it when pr is null`);
+-  const carry = clauses(approveStep).filter((clause) => /\bnumber\b/i.test(clause.replace(/`[^`]*`/g, '')));
+-  assert.deepStrictEqual(carry.filter((clause) => /\bnull\b/.test(clause)), [], "AC-2: asd-sprint Step 1A must carry the confirmed PR number whenever detection found one, not only when the detected copy's pr is null - a sprint-branch copy holding pr.number over a base copy with pr=null reaches scope's closure write, which reads the base copy, with no number (impl-review wave-1/iter-04 #1)");
++  const toNewSprint = stepOne.find((line) => /merged-unclosed/i.test(line) && line.includes('Step 2A')) || '';
++  const route = toNewSprint.slice(toNewSprint.indexOf('→'));
++  assert.ok(/\bnumber\b/i.test(route.replace(/`[^`]*`/g, '')), "sprint-022 AC-2 (D3): asd-sprint Step 1's merged-unclosed route to the new-sprint flow must carry the head-branch lookup's PR number - scope's closure write has no other source for it when pr is null");
++  const carry = clauses(route).filter((clause) => /\bnumber\b/i.test(clause.replace(/`[^`]*`/g, '')));
++  assert.deepStrictEqual(carry.filter((clause) => /\bnull\b/.test(clause)), [], "AC-2: asd-sprint Step 1 must carry the confirmed PR number whenever detection found one, not only when the detected copy's pr is null - a sprint-branch copy holding pr.number over a base copy with pr=null reaches scope's closure write, which reads the base copy, with no number (impl-review wave-1/iter-04 #1)");
++  const handOff = stepOf(sprintSkill.split('### Step 2A')[1].split('\n### ')[0], 4);
++  assert.ok(handOff.includes('`asd-phase-scope`') && /merged-unclosed/i.test(handOff), 'sprint-022 AC-2 (D3): asd-sprint Step 2A.4 must pass the merged-unclosed sprint Step 1 carries to asd-phase-scope, whose step 1 runs the closure write');
+   const scopeSpans = spans(stepOf(canonText('.asd/workflows/asd-phase-scope.md').split('\n## ')[0], 1));
+   assert.ok(scopeSpans.includes('pr.number'), 'AC-2: asd-phase-scope.md step 1\'s closure write must write pr.number as a field of its own, not only inside the gh pr view command - a closing sprint with pr=null is archived with no PR number and no way to read its merge commit');
+   const openSteps = sectionOf('.asd/workflows/asd-phase-pr.md', 'Open mode').split(/\n(?=\d+[a-z]?\. )/);
+@@ -6899,7 +6926,7 @@ test('sprint-021 AC-2 (iter-03 external #1), AC-14: a sprint without pr.number i
+   assert.ok(createAt > 0, 'sanity: pr open mode must open the PR through git-strategy.md "PR creation", in a step after its first, the site the lookup must precede');
+   const beforeCreate = openSteps.slice(0, createAt).join('\n');
+   assert.ok(beforeCreate.includes('"Merged-unclosed"'), `AC-2: pr open mode must run the head-branch lookup ("PR phase" "Merged-unclosed") before opening a PR - ${lost}`);
+-  assert.ok(clauses(beforeCreate).some((clause) => clause.includes('`MERGED`') && clause.includes('`NEXT: await-closure`')), `AC-2: pr open mode must emit NEXT: await-closure on a MERGED head-branch hit, opening nothing - ${lost}`);
++  assert.ok(clauses(beforeCreate).some((clause) => clause.includes('`MERGED`') && /merge mode/.test(clause)), `sprint-022 AC-1 (D2): pr open mode must continue in merge mode on a MERGED head-branch hit, opening nothing, so the release runs - ${lost}`);
+   assert.ok(clauses(beforeCreate).some((clause) => clause.includes('`OPEN`') && /merge mode/.test(clause)), `AC-2: pr open mode must adopt an OPEN head-branch hit into merge mode instead of opening a second PR - ${lost}`);
+   const gate = clauses(home.split('\n\n')[0]).map(spans).filter((clauseSpans) => clauseSpans.includes('pr.number')).flat().map((span) => /^phase="([^"]+)"$/.exec(span)).find(Boolean);
+   assert.ok(gate, 'sanity: "Merged-unclosed" must name the `phase="…"` a PR carrying pr.number brings to base');
+@@ -6961,8 +6988,6 @@ test('sprint-021 AC-13: no canon, README, AGENTS.md, runtime, hook, workflow def
+     'the explanatory parenthetical naming the four view path shapes lives only in `AGENTS.md`',
+     'const NEGATIVE_TTL_MS',
+     'now + NEGATIVE_TTL_MS',
+-    "CHAIN_EXITS = ['await-merge', 'done']",
+-    '"pr": ["await-merge", "done"]',
+   ];
+   const memoryFiles = fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT), { recursive: true }).map((entry) => `${AGENT_MEMORY_ROOT}/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
+   assert.ok(memoryFiles.some((rel) => rel.startsWith(`${AGENT_MEMORY_ROOT}/asd-pm/`)), 'sanity: the sweep must reach every memory directory, those of retired agents included (artifact-layout.md "Leftover-term check")');
+@@ -7009,6 +7034,134 @@ test('sprint-021 AC-7/AC-10/AC-11: each literal the sprint states at two sites a
+   assert.ok(cadenceMinutes > 0 && intervalSeconds === cadenceMinutes * 60, `AC-7: providers.md "Agent liveness per host" must run agent-liveness at the cadence "Agent liveness" sets - ${cadenceMinutes} min vs --interval ${intervalSeconds} s`);
+ });
+ 
++test('sprint-022 AC-1 (D2): git-strategy.md "Versioning & Changelog (self-hosting only)" publishes the release in pr merge mode after fetching base, skipping each step already done, and a missing tag or release routes a merged-unclosed sprint back to merge mode at its home and in asd-sprint Step 1', () => {
++  const spans = (text) => [...text.matchAll(/`([^`]+)`/g)].map(([, span]) => span);
++  const release = sectionOf('.asd/rules/git-strategy.md', 'Versioning & Changelog (self-hosting only)').split('\n\n').find((paragraph) => paragraph.includes('`gh release create')) || '';
++  const trigger = release.split(':')[0];
++  assert.ok(/merge mode/.test(trigger) && !/closure/i.test(trigger), `AC-1: the release runs in pr merge mode once the merge is confirmed, never at the closure write - the next scope's closure write is no longer gated and may come much later; got: ${trigger}`);
++  const [fetchAt, mergeCommitAt] = ['`git fetch origin <git.base_branch>`', '--json mergeCommit`'].map((token) => release.indexOf(token));
++  assert.ok(fetchAt >= 0 && fetchAt < mergeCommitAt, 'AC-1 (D2): the release fetches git.base_branch before it reads the merge commit - the squash merge commit is not local on the sprint branch');
++  const steps = release.split(/;\s/);
++  const tagStep = steps.find((clause) => spans(clause).some((span) => span.startsWith('git push origin v'))) || '';
++  const releaseStep = steps.find((clause) => spans(clause).some((span) => span.startsWith('gh release create'))) || '';
++  assert.ok(spans(tagStep).some((span) => span.startsWith('git ls-remote --tags origin')), 'AC-1 (D2): the tag step is skipped when the tag exists on origin - a retry after a failed release must not re-tag');
++  assert.ok(spans(releaseStep).some((span) => span.startsWith('gh release view')), 'AC-1 (D2): the release step is skipped when gh release view finds it - idempotency is per step, so a tag pushed before a failed release still gets its release');
++  const retry = release.split(/(?<=\.)\s/).find((sentence) => sentence.includes('`asd-sprint`')) || '';
++  const condition = retry.split('`asd-sprint`')[0].replace(/`[^`]*`/g, '');
++  assert.ok(/\btag\b/.test(condition) && /\brelease\b/.test(condition) && retry.includes('"Merged-unclosed"'), 'AC-1 (D2): the retry route fires on the tag OR the release missing, citing its home "Merged-unclosed" - after a confirmed merge nothing else ever re-runs the release');
++
++  const home = sectionOf('.asd/rules/sprint-lifecycle.md', 'PR phase').split('**Merged-unclosed**')[1].split('\n\n')[0];
++  const homeRetry = home.split(/(?<=\.)\s/).find((sentence) => spans(sentence).some((span) => span.startsWith('gh release view'))) || '';
++  assert.ok(spans(homeRetry).some((span) => span.startsWith('git ls-remote --tags origin')) && /merge mode/.test(homeRetry), '"Merged-unclosed" retry route: a tag absent on origin or a failing gh release view sends the sprint back to merge mode');
++  const stepOne = canonText('.asd/skills/asd-sprint/SKILL.md').split('### Step 1:')[1].split('\n### ')[0].split('\n');
++  const skillRetry = stepOne.find((line) => spans(line).includes('self_hosting: enabled') && line.includes('→')) || '';
++  const [skillCondition, skillRoute = ''] = skillRetry.split('→');
++  assert.ok(/\btag\b/.test(skillCondition.replace(/`[^`]*`/g, '')) && /\brelease\b/.test(skillCondition.replace(/`[^`]*`/g, '')), `asd-sprint Step 1 routes a self-hosting merged-unclosed sprint to the release retry when its tag OR its release is missing; got: ${skillCondition}`);
++  assert.ok(skillRoute.includes('`asd-phase-pr`') && /merge mode/.test(skillRoute), 'asd-sprint Step 1\'s release retry dispatches asd-phase-pr, whose merge mode runs only the release');
++
++  const opening = sectionOf('.asd/rules/sprint-lifecycle.md', 'PR phase').split('\n\n')[1] || '';
++  const note = opening.split(/(?<=\.)\s/).find((sentence) => sentence.startsWith('`NEXT: done`')) || '';
++  assert.ok(spans(note).includes('phase="pr"'), 'D1: "PR phase" says once that NEXT: done names completion, not a write - phase stays "pr" on base until the closure write, or NEXT: done reads as an early phase="done" write');
++});
++
++test('sprint-022 AC-2: checkpoints.md keeps no sprint-closure hard gate, in its hard list or its inventory', () => {
++  const lines = canonText('.asd/rules/checkpoints.md').split('\n');
++  const hard = lines.find((line) => line.startsWith('Hard in both modes:')) || '';
++  assert.ok(/\babort\b/.test(hard), 'sanity: checkpoints.md must keep its "Hard in both modes:" list');
++  assert.ok(!/closure/i.test(hard), 'AC-2: the PR merge completes the sprint - no hard closure gate remains, and a merged sprint is archived by the next scope with no approval');
++  const inventory = sectionOf('.asd/rules/checkpoints.md', 'Gate inventory').split('\n').filter((line) => line.startsWith('| '));
++  assert.ok(inventory.length > 2, 'sanity: checkpoints.md "Gate inventory" must keep its table');
++  assert.deepStrictEqual(inventory.filter((row) => /closure/i.test(row.split('|')[1])), [], 'AC-2: the gate inventory has no sprint-closure row');
++});
++
++test('sprint-022 AC-4: a CLOSED head-branch hit counts as no hit, a lookup that cannot reach gh outside phase="pr" warns and resumes, and each gh failure cause names its own fix', () => {
++  const spans = (text) => [...text.matchAll(/`([^`]+)`/g)].map(([, span]) => span);
++  const unreachable = '"host unreachable, retry online"';
++  const home = sectionOf('.asd/rules/sprint-lifecycle.md', 'PR phase').split('**Merged-unclosed**')[1].split('\n\n')[0].split(/(?<=\.)\s/);
++  assert.ok(/\bno hit\b/.test(home.find((sentence) => sentence.includes('`CLOSED`')) || ''), '"Merged-unclosed": a CLOSED (unmerged) hit counts as no hit - it is neither merged-unclosed nor adoptable into merge mode');
++  const [offline, online = ''] = (home.find((sentence) => sentence.includes(unreachable)) || '').split(/;\s/);
++  assert.ok(spans(offline).includes('phase="pr"') && /\bwarns?\b/.test(offline) && /\bresumes?\b/.test(offline), `"Merged-unclosed": a lookup that cannot reach gh outside phase="pr" warns and resumes the sprint, never FAILED - an offline run must not block every non-pr phase; got: ${offline}`);
++  assert.ok(online.includes('`FAILED`'), `"Merged-unclosed": at phase="pr" an unreachable host stays FAILED naming ${unreachable}`);
++  const stepOne = canonText('.asd/skills/asd-sprint/SKILL.md').split('### Step 1:')[1].split('\n### ')[0].split(/(?<=\.)\s|\n/);
++  assert.ok(/\bno hit\b/.test(stepOne.find((sentence) => sentence.includes('`CLOSED`')) || ''), 'asd-sprint Step 1: a CLOSED head-branch hit counts as no hit');
++  const skillOffline = stepOne.map((sentence) => sentence.split(/;\s/)[0]).find((clause) => spans(clause).includes('phase="pr"') && /\bwarns?\b/.test(clause)) || '';
++  assert.ok(/\bresumes?\b/.test(skillOffline), 'asd-sprint Step 1: a head-branch lookup that cannot reach gh outside phase="pr" warns and resumes');
++  const bullet = sectionOf('.asd/rules/git-strategy.md', 'PR creation').split('\n').find((line) => line.includes('`gh auth login`')) || '';
++  const fixes = [['not installed', 'install gh'], ['not authenticated', '`gh auth login`'], ['host unreachable', unreachable]];
++  for (const [cause, fix] of fixes) {
++    const clause = bullet.split(/;\s|:\s/).find((candidate) => candidate.includes(cause)) || '';
++    assert.ok(clause.includes(fix) && fixes.every(([, other]) => other === fix || !clause.includes(other)), `git-strategy.md "PR creation": the "${cause}" cause names its own fix (${fix}) and no other cause's - install or auth advice does nothing for an unreachable host (021 F-6); got: ${clause}`);
++  }
++  assert.ok(spans(bullet).includes('phase="pr"') && bullet.includes('"Merged-unclosed"'), 'git-strategy.md "PR creation" must name the one warn-and-resume exception to FAILED and point at its home');
++});
++
++test('sprint-022 AC-5 (D5): the orchestrator ticks a wave\'s plan.md checkboxes after its last signal and devs never edit plan.md, at the home and in asd-phase-impl steps 7 and 8', () => {
++  const home = sectionOf('.asd/rules/sprint-lifecycle.md', 'Impl phase').split(/(?<=\.)\s/).find((sentence) => sentence.includes('`plan.md`') && sentence.includes('`MEMORY.md`')) || '';
++  const clauses = home.split(/;\s/);
++  assert.ok(clauses.some((clause) => /\borchestrator\b/.test(clause) && /\bticks\b/.test(clause) && clause.includes('`plan.md`')), 'AC-5: "Impl phase" - the orchestrator ticks the wave\'s plan.md checkboxes after its last signal');
++  assert.ok(clauses.some((clause) => /\bdevs\b/.test(clause) && /\bnever\b/.test(clause) && clause.includes('`plan.md`')), 'AC-5: "Impl phase" - devs never edit plan.md, so concurrent Tasks never race on one file (021 A-3)');
++  assert.ok(clauses.some((clause) => /more than one Task/.test(clause) && clause.includes('`MEMORY.md`') && clause.includes('`COMPLETED`')), 'AC-5: in a wave of more than one Task, devs leave a shared MEMORY.md untouched and return their index line in COMPLETED');
++  const impl = sectionOf('.asd/workflows/asd-phase-impl.md', 'Workflow');
++  const tickedBy = (step) => stepOf(impl, step).split(/(?<=\.)\s|;\s/).filter((clause) => clause.includes('`plan.md`') && /\bticks\b/.test(clause));
++  assert.ok(tickedBy(7).some((clause) => /\borchestrator\b/.test(clause) && /last signal/.test(clause)), 'AC-5: asd-phase-impl step 7 - the orchestrator ticks after the wave\'s last signal');
++  assert.ok(tickedBy(8).length > 0 && tickedBy(8).every((clause) => /\borchestrator\b/.test(clause)), 'AC-5: asd-phase-impl step 8 - a resumed manual-blocked task\'s checkboxes are ticked by the orchestrator, not the dev');
++  assert.ok(stepOf(impl, 9).includes('`<sprint>/plan.md`'), 'AC-5: asd-phase-impl step 9\'s authorised-paths gate must admit the plan.md step 7 writes - otherwise the orchestrator\'s own tick commit fails the gate as an unauthorised path');
++});
++
++test('sprint-022 AC-7 (D4): an amendment accepted after the division point records floor_base, impl-review computes floor and cap on iteration minus that base, and the amendment write clears the wave\'s latch', () => {
++  const spans = (text) => [...text.matchAll(/`([^`]+)`/g)].map(([, span]) => span);
++  const amendment = stepOf(sectionOf('.asd/rules/sprint-lifecycle.md', 'Scope amendment'), 3);
++  const floorBase = spans(amendment).find((span) => span.startsWith('floor_base='));
++  const rebased = spans(amendment).find((span) => /^iteration\s*[−-]\s*A$/.test(span));
++  assert.ok(floorBase && rebased, 'AC-7: "Scope amendment" step 3 records floor_base in its gate evidence and names the iteration - A the floor and cap are computed on');
++  assert.ok(spans(amendment).includes('latched') && amendment.includes('"APPROVE latch"'), 'AC-7: the amendment write clears wave K\'s latched, citing "APPROVE latch" - a latched reviewer would otherwise never see the amended code');
++  const latchRoute = sectionOf('.asd/rules/sprint-lifecycle.md', 'APPROVE latch').split('\n').find((line) => /clearing route/.test(line) && line.includes('"Scope amendment"')) || '';
++  assert.ok(spans(latchRoute).includes('latched'), 'AC-7: "APPROVE latch" names every route that clears a latch, so the scope-amendment route must be listed there');
++  const policy = sectionOf('.asd/rules/review-policy.md', 'Iteration severity floor');
++  assert.ok(policy.includes(`\`${floorBase}\``) && policy.includes('"Scope amendment"'), `AC-7: review-policy.md "Iteration severity floor" subtracts the base the amendment records (${floorBase}) from N`);
++  const counters = sectionOf('.asd/rules/sprint-lifecycle.md', 'Review iteration counters').split('\n').find((line) => line.includes('severity floor and iteration cap')) || '';
++  assert.ok(counters.includes('"Scope amendment"'), 'AC-7: "Review iteration counters" - floor and cap are per counter less the amendment base');
++  const implReview = canonText('.asd/workflows/asd-phase-impl-review.md');
++  for (const step of [3, 10]) assert.ok(spans(stepOf(implReview, step)).includes(rebased), `AC-7: asd-phase-impl-review step ${step} computes the floor and cap on ${rebased}, the value "Scope amendment" defines`);
++});
++
++test('sprint-022 D6: asd-init sprint-mediated mode writes each pair with the template\'s inline comment, and the project config carries the template\'s user_gates comment', () => {
++  const mediated = sectionOf('.asd/skills/asd-init/SKILL.md', 'Workflow (sprint-mediated)');
++  assert.ok(/inline comment/.test(stepOf(mediated, 3)) && /\btemplate\b/.test(stepOf(mediated, 3)), 'D6: sprint-mediated step 3 - a written pair\'s line takes the template\'s inline comment for its key, or a shipped comment rewrite never reaches an existing config');
++  const comment = (rel) => (/^user_gates:[^#\n]*(#.*)$/m.exec(canonText(rel)) || [])[1];
++  assert.ok(comment('.asd/templates/t_config.yaml'), 'sanity: t_config.yaml user_gates carries an inline comment');
++  assert.strictEqual(comment('.asd/project/config.yaml'), comment('.asd/templates/t_config.yaml'), 'D6 (Task 7): the project config\'s user_gates comment is the template\'s - the stale closure comment was refreshed by a same-value sprint-mediated settings change');
++});
++
++test('sprint-022 AC-2/AC-3/AC-5 leftover-term check: no canon, README, AGENTS.md, template, runtime, hook, workflow definition or agent-memory line keeps a sentence or term the sprint removed - await-closure, Step 1A, the sprint-closure hard gate and its approval, the closure-write release, dev plan ticking', () => {
++  const removed = [
++    'await-closure',
++    'Step 1A',
++    '; and sprint closure',
++    '| sprint closure |',
++    'closure approval',
++    'closure always requires user approval',
++    'whose closure the user approves',
++    'sprint-closure approval',
++    'hard closure gate',
++    'Merging is not closure',
++    'Sprint closure is requested',
++    'Sprint closure (finalization and archival)',
++    'until you approve its closure',
++    'the closure request belongs to',
++    'tag and release at the closure write',
++    'At the closure write, after its commit',
++    'hands closure back to asd-sprint',
++    'initial — tick corresponding checkboxes',
++    'finish `BLOCKED:` subtasks, tick `plan.md` checkboxes',
++  ];
++  const memoryFiles = fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT), { recursive: true }).map((entry) => `${AGENT_MEMORY_ROOT}/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
++  assert.ok(memoryFiles.some((rel) => rel.startsWith(`${AGENT_MEMORY_ROOT}/asd-pm/`)), 'sanity: the sweep must reach every memory directory, those of retired agents included (artifact-layout.md "Leftover-term check")');
++  const swept = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/templates/t_config.yaml', '.asd/hooks/session-start.js', '.asd/runtime.js', '.asd/workflows/standard.json', '.asd/workflows/lite.json', ...memoryFiles];
++  const hits = swept.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => removed.filter((phrase) => line.includes(phrase)).map((phrase) => `${rel}:${index + 1} ${phrase}`)));
++  assert.deepStrictEqual(hits, [], 'each phrase is from a line this sprint deleted (git diff main...HEAD) - one surviving restates the closure gate, its approval, the await-closure exit, the release at the closure write or dev plan ticking. CHANGELOG.md and sprint folders are history and stay out of the sweep');
++});
++
+ // ===========================================================================
+ // Runner
+ // ===========================================================================

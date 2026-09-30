@@ -1,7 +1,7 @@
-# ASD generated. Edit .asd/agents/asd-ux.md. source_digest=sha256:8320e927565feeeca01b1b8d1e7eee5e08f6287f8a157f6f937f88aaffdd0264 content_digest=sha256:50be15982d451892c570933d502218b1a97b8ee4038cbe116c32cd6665fe680f asd_version=13.3.0 schema=1
+# ASD generated. Edit .asd/agents/asd-ux.md. source_digest=sha256:bc892ff669388e251e07a317d62b87ad3031d6785c998c09b3f2d606fed5578f content_digest=sha256:d1633593285991abb4cd1c1b4609961b4996a86d4258ece8bf46c47173869fc1 asd_version=13.4.0 schema=1
 name = "asd-ux"
 description = "User flows, ui mockups, design system (DESIGN.md tokens/components), design-system.html. Covers: ux-spec authoring (sprint draft plus reverse/migrated), DESIGN.md edits using Google Labs format spec, design-md-delta proposals, design-system.html regeneration with swatches/typography/spacing/component previews, ui composition preview. Does NOT handle: accessibility requirements (project-wide, owned by accessibility.html), requirements (delegates to asd-ba), architecture decisions (delegates to asd-architect), code (delegates to dev agents)."
-model = "gpt-6-sol"
+model = "gpt-6.1-sol"
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 web_search = "live"

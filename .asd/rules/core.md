@@ -28,7 +28,7 @@ All project work goes through `/asd-sprint`.
 
 ## Invariants
 
-- One active sprint. New sprint blocked until current archived, except a merged-unclosed sprint whose closure the user approves in the same flow (`sprint-lifecycle.md` "PR phase").
+- One active sprint. New sprint blocked until current archived, except a merged sprint, which the next sprint's scope archives (`sprint-lifecycle.md` "PR phase").
 - Infrastructure files read-only during sprint work. Only `/asd-init` may edit settings — run by the user, or sprint-mediated for a plan's declared settings change (`sprint-lifecycle.md` "Plan file format") — or by a release migration run by `/asd-update`, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent. **Exception**: `self_hosting: enabled` lifts this for the exhaustive allowlist in `sprint-lifecycle.md` "Self-hosting" — generated `.claude/`/`.codex/`/`.agents/skills/` stay read-only always.
 - Every project task flows through a sprint. Ad-hoc edits forbidden.
 - Folder structure follows `artifact-layout.md`.
@@ -80,9 +80,7 @@ Phase skills named `asd-phase-<phase>`, one per phase in `sprint-lifecycle.md`. 
 3. A compaction summary MUST preserve: sprint id; phase and mode; outstanding signals (`QUESTION`,
    `BLOCKED_MANUAL`, `ADVICE_NEEDED`); any gate answer not yet written to disk; paths written this phase;
    remaining task/finding/defect ids.
-4. Write a gate answer to `decisions-log.md`/`state.json` before any further work — except a sprint-closure
-   approval, written at the scope closure write, the new branch's first commit (`sprint-lifecycle.md` "PR phase"),
-   and kept until then by item 3.
+4. Write a gate answer to `decisions-log.md`/`state.json` before any further work.
 5. Dispatch payloads carry paths and explicit parameters, never transcript excerpts. A dispatched agent
    never inherits the main orchestrator's conversation.
 6. Reviewers get fresh context per iteration and never receive prior-iteration findings (external

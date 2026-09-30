@@ -1,0 +1,264 @@
+{
+  "sprint_id": "022-release-at-merge",
+  "branch": "sprint/022-release-at-merge",
+  "phase": "pr",
+  "workflow": "lite",
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "adr": false,
+    "c4": false
+  },
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "workflow choice",
+      "decision_actor": "user",
+      "reason": "scope step 1 answer: lite",
+      "evidence": "decisions-log.md 2026-09-30 sprint opened",
+      "artifact_revision": "state.json@scope"
+    },
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "sprint.md AC-1..AC-7 accepted",
+      "evidence": "decisions-log.md 2026-09-30 scope gate",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "retro intake dispositions",
+      "decision_actor": "user",
+      "reason": "4 included, 2 deferred",
+      "evidence": "retro-backlog.md 022 rows",
+      "artifact_revision": "retro-backlog.md@scope"
+    },
+    {
+      "gate": "audit contradiction",
+      "decision_actor": "user",
+      "reason": "project config.yaml closure comment fixed via asd-init in sprint",
+      "evidence": "audit.md Contradictions",
+      "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "all sections present, contradictions settled",
+      "evidence": "audit.md",
+      "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "orchestrator",
+      "reason": "design D1-D6 follow audit recommendations and user decision; surface 26/100",
+      "evidence": "plan.md; audit.md Gaps",
+      "artifact_revision": "plan.md@plan"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "Tasks 1-7 done, build+lint clean, flagged choices resolved, authorised paths only",
+      "evidence": "plan.md ticked; sync --check ok",
+      "artifact_revision": "HEAD 44d30a7"
+    },
+    {
+      "gate": "new or changed scope",
+      "decision_actor": "user",
+      "reason": "AC-8 opus/haiku -> sonnet tiers",
+      "evidence": "floor_base=wave-1/1; decisions-log.md 2026-09-30 scope amendment",
+      "artifact_revision": "sprint.md@impl-test"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "Task 8 done, sync clean, flagged choices resolved",
+      "evidence": "8730e31",
+      "artifact_revision": "HEAD 8730e31"
+    },
+    {
+      "gate": "new or changed scope",
+      "decision_actor": "user",
+      "reason": "AC-9 mechanical back to haiku; Codex-host wrapped Claude sonnet/xhigh",
+      "evidence": "floor_base=wave-1/1; decisions-log.md 2026-09-30 AC-9",
+      "artifact_revision": "sprint.md@impl"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "Task 9 done, build+lint clean, sync clean, flagged choice resolved, plan fully ticked",
+      "evidence": "d83ea8e",
+      "artifact_revision": "HEAD 23c195a"
+    },
+    {
+      "gate": "new or changed scope",
+      "decision_actor": "user",
+      "reason": "AC-10 sol family resolves to gpt-6.1-sol",
+      "evidence": "floor_base=wave-1/1; decisions-log.md 2026-09-30 AC-10",
+      "artifact_revision": "sprint.md@impl-test"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "Task 10 done, build+lint clean, sync clean, no flagged choices, authorised paths only",
+      "evidence": "e22b23d",
+      "artifact_revision": "HEAD 3b67339"
+    },
+    {
+      "gate": "impl-review green handoff",
+      "decision_actor": "orchestrator",
+      "reason": "wave 1/1 all reviewers APPROVE at iter-03, terminal full suite green 264/264, build+lint clean",
+      "evidence": "test-plan.md Suite run; reviews/impl/wave-1/iter-03",
+      "artifact_revision": "HEAD e502bb1"
+    },
+    {
+      "gate": "PR publication",
+      "decision_actor": "user",
+      "reason": "user confirmed push and PR open",
+      "evidence": "chat confirmation 2026-09-30",
+      "artifact_revision": "HEAD b0b2653"
+    }
+  ],
+  "task_routing": {
+    "Task 1": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "Task 2": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "Task 3": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "Task 4": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:public contract",
+      "resolved_model": "opus"
+    },
+    "Task 5": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "impl-test entry 1": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "review-fix wave-1/iter-01": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "no-downgrade",
+      "resolved_model": "opus"
+    },
+    "impl-test entry 2": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "no-downgrade",
+      "resolved_model": "opus"
+    },
+    "Task 8": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:public contract",
+      "resolved_model": "opus"
+    },
+    "Task 9": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:public contract",
+      "resolved_model": "sonnet"
+    },
+    "impl-test entry 3": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:public contract",
+      "resolved_model": "sonnet"
+    },
+    "Task 10": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:public contract",
+      "resolved_model": "sonnet"
+    },
+    "impl-test entry 4": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:public contract",
+      "resolved_model": "sonnet"
+    },
+    "review-fix wave-1/iter-02": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "no-downgrade",
+      "resolved_model": "sonnet"
+    },
+    "impl-test entry 5": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "no-downgrade",
+      "resolved_model": "sonnet"
+    }
+  },
+  "skipped_phases": [
+    "design-promote"
+  ],
+  "reviews": {
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "wave": 1,
+      "waves": [
+        {
+          "iteration": 3,
+          "verdicts": {
+            "iter-01": {
+              "combined": "CONCERNS",
+              "external": "FAIL"
+            },
+            "iter-02": {
+              "combined": "CONCERNS",
+              "external": "CONCERNS"
+            },
+            "iter-03": {
+              "combined": "APPROVE",
+              "external": "APPROVE"
+            }
+          },
+          "iteration_heads": {
+            "iter-01": "ce77f96eeedffa4c4969eacfcc8bb4a2a21bdcc7",
+            "iter-02": "68424c4fb2d08232b81fec5510ca630a4651d565",
+            "iter-03": "67bee3a0c04a3491746bdce60c9a868a255f91bb"
+          },
+          "latched": {
+            "combined": 3,
+            "external": 3
+          }
+        }
+      ]
+    }
+  },
+  "created_at": "2026-09-30T07:52:07.411Z",
+  "updated_at": "2026-09-30T12:34:31.541Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": {
+    "number": 58,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/58",
+    "state": "open"
+  },
+  "archived_at": null
+}

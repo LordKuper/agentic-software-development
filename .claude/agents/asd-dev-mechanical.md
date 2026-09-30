@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-dev.md. source_digest=sha256:87427691a2e33a427713096a8510d6801535e420c09f351b51abedbf26d62640 content_digest=sha256:0e900c9d630009c1d11ab0dcfa0f9397624df7753cf4941ba13d10dc753a7cf9 asd_version=13.3.0 schema=1
+# ASD generated. Edit .asd/agents/asd-dev.md. source_digest=sha256:6b23c5feb65e489161a16c0788c4431a82f957c2db8f69040e00b763bab9b997 content_digest=sha256:0e900c9d630009c1d11ab0dcfa0f9397624df7753cf4941ba13d10dc753a7cf9 asd_version=13.4.0 schema=1
 name: asd-dev-mechanical
 description: "Server/CLI/library code and UI code, components, client-side logic, consuming DESIGN.md tokens wherever UI work applies. Covers: production code authoring per plan tasks (backend and frontend), fixing impl-review findings and impl-test defects, running lint/build/run commands from commands.yaml, registering TODO stubs in stubs.md. Does NOT handle: any test authoring or test runs — unit, integration, e2e (delegates to asd-tester in the impl-test phase), architecture decisions (delegates to asd-architect), design system token edits (delegates to asd-ux), accessibility requirements (read-only consumer of accessibility.html), code review (delegates to reviewer agents). Task class: mechanical."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, WebSearch]

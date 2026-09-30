@@ -42,6 +42,12 @@ it. Before accepting a no-mirror argument, check whether the preserve-list (or w
 keep-rule is) actually covers that text's class — a procedural instruction is not a contract token, an
 enumeration, a case distinction or a stated failure mode, so nothing protects it.
 
+A `none` that says "an absence check would redden a correct reword" is falsifiable too, and a fixed defect
+owes a regression proof (`code-style.md` §17) that a `none` must overcome. Scope the absence to the one
+clause that carries the claim and to the sub-span that lists the culprit (sprint 022 entry 5: the `;`-clause
+naming the DoD gate, the text before `merge mode`), then take the reviewer's own suggested rewrite and a
+two-sentence form as reword controls; both stayed green, so the rotated `none` was superseded by an add.
+
 **Why:** TST-01/TST-03 in sprint 007 — the `none` reason was contradicted by assertions the same test
 plan had already written.
 

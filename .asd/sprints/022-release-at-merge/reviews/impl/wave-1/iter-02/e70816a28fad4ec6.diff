@@ -1,0 +1,820 @@
+diff --git a/.asd/agents/asd-architect.md b/.asd/agents/asd-architect.md
+index 41dab95..bb01c5e 100644
+--- a/.asd/agents/asd-architect.md
++++ b/.asd/agents/asd-architect.md
+@@ -3,7 +3,7 @@
+   "name": "asd-architect",
+   "description": "Architecture decisions, subsystem registry, C4 model, tech stack, API contracts, brownfield code and documentation audit. Covers: ADR drafting (sprint-scoped only, never promoted as a standalone persistent document; sprint and reverse-engineered), c4-full schema (LikeC4 or Mermaid) for sprint scope, subsystem registry docs/architecture/subsystems.md and per-subsystem <id>.md (written at design-promote, created at audit when absent after user confirmation), design-promote c4 delta application, stack.html updates, folding approved ADRs and API contracts into whichever persistent doc's `responsibility.owns` frontmatter already claims the subject, audit of existing source code, documentation, stubs and risks. Does NOT handle: requirements (delegates to asd-ba), ux flows or design system (delegates to asd-ux), code implementation (delegates to dev agents).",
+   "claude": {
+-    "model": "opus", "effort": "high",
++    "model": "sonnet", "effort": "xhigh",
+     "tools": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "WebFetch", "WebSearch"],
+     "disallowedTools": [], "maxTurns": 150, "memory": "project"
+   },
+diff --git a/.asd/agents/asd-ba.md b/.asd/agents/asd-ba.md
+index 7114af5..4d3db3b 100644
+--- a/.asd/agents/asd-ba.md
++++ b/.asd/agents/asd-ba.md
+@@ -3,7 +3,7 @@
+   "name": "asd-ba",
+   "description": "Product requirements: user stories, acceptance criteria, conditional product/domain audit support, PRD drafts. Covers: PRD authoring (sprint draft plus reverse-engineered/migrated), product/domain clarification during audit when requested by the orchestrator, user story decomposition, acceptance criteria formulation, ambiguity resolution via clarifying questions. Does NOT handle: ux flows or ui mockups (delegates to asd-ux), architecture decisions (delegates to asd-architect), code (delegates to dev agents), code audit (delegates to asd-architect).",
+   "claude": {
+-    "model": "opus", "effort": "high",
++    "model": "sonnet", "effort": "high",
+     "tools": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "WebFetch", "WebSearch"],
+     "disallowedTools": [], "maxTurns": 50, "memory": "project"
+   },
+diff --git a/.asd/agents/asd-dev.md b/.asd/agents/asd-dev.md
+index 2c7e3ee..57c18ff 100644
+--- a/.asd/agents/asd-dev.md
++++ b/.asd/agents/asd-dev.md
+@@ -10,7 +10,7 @@
+   "codex": { "model": "sol", "model_reasoning_effort": "medium", "sandbox_mode": "workspace-write", "web_search": "live" },
+   "variants": {
+     "mechanical": { "claude": { "model": "haiku" }, "codex": { "model": "luna", "model_reasoning_effort": "low" } },
+-    "critical": { "claude": { "model": "opus", "effort": "high" }, "codex": { "model": "sol", "model_reasoning_effort": "high" } }
++    "critical": { "claude": { "model": "sonnet", "effort": "xhigh" }, "codex": { "model": "sol", "model_reasoning_effort": "high" } }
+   }
+ }
+ ---
+diff --git a/.asd/agents/asd-external-review.md b/.asd/agents/asd-external-review.md
+index d0b64ea..37cda6b 100644
+--- a/.asd/agents/asd-external-review.md
++++ b/.asd/agents/asd-external-review.md
+@@ -11,8 +11,8 @@
+   },
+   "codex": {
+     "model": "sol", "model_reasoning_effort": "medium", "sandbox_mode": "read-only", "web_search": "disabled",
+-    "wraps_cli": "claude", "wraps_config_key": "system.tools.claude_command", "wraps_model": "opus",
+-    "wraps_invoke_args": "-p \"Follow the review instructions and scope manifest provided via stdin above; your scope is the manifest's files list, its diff file the change content; read both from the repo yourself, never from the manifest bytes, and never compute a diff; output only the review report in the required format.\" --model {{wraps_model}} --effort high --restricted --tools \"Read,Grep,Glob\" --strict-mcp-config --disable-slash-commands --no-session-persistence --output-format text"
++    "wraps_cli": "claude", "wraps_config_key": "system.tools.claude_command", "wraps_model": "sonnet",
++    "wraps_invoke_args": "-p \"Follow the review instructions and scope manifest provided via stdin above; your scope is the manifest's files list, its diff file the change content; read both from the repo yourself, never from the manifest bytes, and never compute a diff; output only the review report in the required format.\" --model {{wraps_model}} --effort xhigh --restricted --tools \"Read,Grep,Glob\" --strict-mcp-config --disable-slash-commands --no-session-persistence --output-format text"
+   }
+ }
+ ---
+diff --git a/.asd/agents/asd-reviewer-combined.md b/.asd/agents/asd-reviewer-combined.md
+index 33c6468..082cea5 100644
+--- a/.asd/agents/asd-reviewer-combined.md
++++ b/.asd/agents/asd-reviewer-combined.md
+@@ -3,7 +3,7 @@
+   "name": "asd-reviewer-combined",
+   "description": "Impl-review single-pass internal reviewer for workflows whose `reviewers.impl` names `combined` (lite): applies the Correctness and Efficiency rubrics to every change, the Documentation rubric when a documentation file is in scope, and gives an overall quality assessment of every change. Covers: bugs, security, contracts, best practices, AC→code trace against `sprint.md` AC-N, UI/accessibility conformance, over-engineering and structure/cohesion checklists, complexity-vs-value, performance; conditionally SSoT, template adherence, persistent-doc actuality, in-code doc comments, stub resolution, Framework mode, documentation economy; overall quality. Does NOT handle: design-review (lite has none; standard dispatches asd-reviewer-correctness/efficiency/documentation), test-plan/test-quality review and AC→check coverage (no Testing review in lite; `test-plan.md` is context only, the manual-verification decision is the orchestrator's), standard's impl-review (asd-reviewer-correctness/efficiency/testing/documentation), fixing (creators autofix per review-policy).",
+   "claude": {
+-    "model": "opus", "effort": "high",
++    "model": "sonnet", "effort": "xhigh",
+     "tools": ["Read", "Glob", "Grep", "WebFetch", "WebSearch"],
+     "disallowedTools": ["Edit", "Bash"], "maxTurns": 50, "memory": "project"
+   },
+diff --git a/.asd/agents/asd-reviewer-correctness.md b/.asd/agents/asd-reviewer-correctness.md
+index d0c7a5d..306a8ca 100644
+--- a/.asd/agents/asd-reviewer-correctness.md
++++ b/.asd/agents/asd-reviewer-correctness.md
+@@ -3,7 +3,7 @@
+   "name": "asd-reviewer-correctness",
+   "description": "Design-review of draft correctness (AC completeness, contract and ADR decision soundness) and UI drafts (UI section n/a without a ux-spec/design-system draft), and impl-review of code, tests and UI for bugs, security, best-practice/contract drift, the AC→code trace, and UI/accessibility conformance. Covers: bug patterns (off-by-one, null paths, race conditions, resource leaks), security holes (secrets, injection, auth bypass, crypto misuse, input validation), language/framework best practices, contract violations vs ADR, AC→code trace against PRD/`sprint.md` AC-N, ux-spec compliance check, UI implementation match to ux-spec mockups, design-system token/component usage, accessibility baseline compliance. Does NOT handle: over-engineering, structure/cohesion, or performance (delegates to asd-reviewer-efficiency), test-plan/test-quality review and AC→check coverage (delegates to asd-reviewer-testing), design-review testability (unowned by design), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy).",
+   "claude": {
+-    "model": "opus", "effort": "high",
++    "model": "sonnet", "effort": "xhigh",
+     "tools": ["Read", "Glob", "Grep", "WebFetch", "WebSearch"],
+     "disallowedTools": ["Edit", "Bash"], "maxTurns": 50, "memory": "project"
+   },
+diff --git a/.asd/agents/asd-reviewer-documentation.md b/.asd/agents/asd-reviewer-documentation.md
+index 4ebff45..54c24fa 100644
+--- a/.asd/agents/asd-reviewer-documentation.md
++++ b/.asd/agents/asd-reviewer-documentation.md
+@@ -3,7 +3,7 @@
+   "name": "asd-reviewer-documentation",
+   "description": "Design-review of sprint design drafts (SSoT, template responsibility-block adherence, traceability) and impl-review of persistent docs vs implementation (actuality, no SSoT violations, traceability PRD AC ↔ ADR), plus in-code doc comments and stub resolution (impl-review). Covers: SSoT integrity (each fact one home), template responsibility-block adherence, traceability across PRD/ADR/UX, custom-rules consistency, provenance flag correctness, in-body comment ban and doc-comment purpose-only scope (`code-style.md` §7). Does NOT handle: bug/security scan, AC→code trace, ui/a11y (delegates to asd-reviewer-correctness), AC→check coverage and test quality (delegates to asd-reviewer-testing), over-engineering/performance (delegates to asd-reviewer-efficiency), persistent doc promotion (handled by asd-ba/asd-ux/asd-architect in design-promote phase), code edits (delegates to dev agents).",
+   "claude": {
+-    "model": "opus", "effort": "high",
++    "model": "sonnet", "effort": "xhigh",
+     "tools": ["Read", "Glob", "Grep"],
+     "disallowedTools": ["Edit", "Bash", "WebFetch"], "maxTurns": 50, "memory": "project"
+   },
+diff --git a/.asd/agents/asd-reviewer-efficiency.md b/.asd/agents/asd-reviewer-efficiency.md
+index 4148050..b718c4a 100644
+--- a/.asd/agents/asd-reviewer-efficiency.md
++++ b/.asd/agents/asd-reviewer-efficiency.md
+@@ -3,7 +3,7 @@
+   "name": "asd-reviewer-efficiency",
+   "description": "Design-review of design drafts and impl-review of code for over-engineering, structure/cohesion defects, and (impl-review only) performance budget/regression compliance. Covers: over-engineering smell detection per review-policy checklist (interface with one implementer, generic with one type, factory for < 3 classes, plugin without plugins, premature config flag, defensive code for impossible cases, dead code, deep inheritance, framework-on-framework, mock-of-mock, comment-restates-code), structure/cohesion smell detection (god/sprawling type), complexity-vs-value tradeoff, escalation of any fix that adds complexity; latency/memory/throughput budget compliance, algorithmic complexity, perf anti-patterns (n+1 queries, sync IO on hot path, unbounded allocations), regression detection vs baseline, hot-path identification lacking measurement or caching. Does NOT handle: bugs, security, AC→code trace, or UI (delegates to asd-reviewer-correctness), test-plan/test-quality review and AC→check coverage (delegates to asd-reviewer-testing), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy).",
+   "claude": {
+-    "model": "opus", "effort": "high",
++    "model": "sonnet", "effort": "xhigh",
+     "tools": ["Read", "Glob", "Grep"],
+     "disallowedTools": ["Edit", "Bash", "WebFetch"], "maxTurns": 50, "memory": "project"
+   },
+diff --git a/.asd/agents/asd-reviewer-testing.md b/.asd/agents/asd-reviewer-testing.md
+index a0572ae..d5406e5 100644
+--- a/.asd/agents/asd-reviewer-testing.md
++++ b/.asd/agents/asd-reviewer-testing.md
+@@ -3,7 +3,7 @@
+   "name": "asd-reviewer-testing",
+   "description": "Impl-review assessment of the test-plan decisions and the tests themselves, plus judging manual-verification necessity when automation is impossible. Covers: risk→check fit per test-plan.md, justification of removed tests and of no-test decisions, fail-first proof on regression tests, AC→check coverage (every AC-N has a check), edge cases on core paths, absence of test-for-test-sake (meaningless assertions), flaky patterns, manual-verification necessity judgment against the spec `test-plan.md` already owns (single home — never re-authored here). Does NOT handle: bug/security/AC→code trace/ui/a11y (delegates to asd-reviewer-correctness), over-engineering/performance (delegates to asd-reviewer-efficiency), documentation sync and stub resolution (delegates to asd-reviewer-documentation), design-review testability (unowned by design), fixing (creators autofix per review-policy).",
+   "claude": {
+-    "model": "opus", "effort": "high",
++    "model": "sonnet", "effort": "xhigh",
+     "tools": ["Read", "Glob", "Grep"],
+     "disallowedTools": ["Edit", "Bash", "WebFetch"], "maxTurns": 50, "memory": "project"
+   },
+diff --git a/.asd/agents/asd-tester.md b/.asd/agents/asd-tester.md
+index 11c9d4c..68ef758 100644
+--- a/.asd/agents/asd-tester.md
++++ b/.asd/agents/asd-tester.md
+@@ -10,7 +10,7 @@
+   "codex": { "model": "sol", "model_reasoning_effort": "medium", "sandbox_mode": "workspace-write", "web_search": "live" },
+   "variants": {
+     "mechanical": { "claude": { "model": "haiku" }, "codex": { "model": "luna", "model_reasoning_effort": "low" } },
+-    "critical": { "claude": { "model": "opus", "effort": "high" }, "codex": { "model": "sol", "model_reasoning_effort": "high" } }
++    "critical": { "claude": { "model": "sonnet", "effort": "xhigh" }, "codex": { "model": "sol", "model_reasoning_effort": "high" } }
+   }
+ }
+ ---
+diff --git a/.asd/agents/asd-ux.md b/.asd/agents/asd-ux.md
+index 9260d84..5825d44 100644
+--- a/.asd/agents/asd-ux.md
++++ b/.asd/agents/asd-ux.md
+@@ -3,7 +3,7 @@
+   "name": "asd-ux",
+   "description": "User flows, ui mockups, design system (DESIGN.md tokens/components), design-system.html. Covers: ux-spec authoring (sprint draft plus reverse/migrated), DESIGN.md edits using Google Labs format spec, design-md-delta proposals, design-system.html regeneration with swatches/typography/spacing/component previews, ui composition preview. Does NOT handle: accessibility requirements (project-wide, owned by accessibility.html), requirements (delegates to asd-ba), architecture decisions (delegates to asd-architect), code (delegates to dev agents).",
+   "claude": {
+-    "model": "opus", "effort": "high",
++    "model": "sonnet", "effort": "high",
+     "tools": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "WebFetch", "WebSearch"],
+     "disallowedTools": [], "maxTurns": 50, "memory": "project"
+   },
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 5a75a3a..1aac45d 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -23,20 +23,20 @@
+       "haiku": "haiku"
+     },
+     "codex": {
+-      "sol": "gpt-6-sol",
++      "sol": "gpt-6.1-sol",
+       "luna": "gpt-6-luna"
+     }
+   },
+   "canon_hashes": {
+-    "agents/asd-architect.md": "sha256:5409d427d3aecfd8d2dd667fa5d3aeb4c2deea467ca5f528965d76225d4cbc45",
+-    "agents/asd-ba.md": "sha256:7d07c07b75ca14ac69975e1f37f352a3a147797aa05147a5f3adf8b8b8ebd680",
+-    "agents/asd-external-review.md": "sha256:1119ba279f3c4490717f10d23e44918cffdc0f2a47d5bd08f2577d8453a0872f",
+-    "agents/asd-reviewer-documentation.md": "sha256:d35bfff44a7e45b79b8468b840533970a359038a1f0e461da602efb51efb30f7",
+-    "agents/asd-reviewer-testing.md": "sha256:0040ab0308f2bbb642ad9a8dba5874d4166bb3c31355121757d8c841cdfed0a3",
++    "agents/asd-architect.md": "sha256:fbe178e31b76dbe8011bd707200b365ce4da5c0e0dd3c31f768ffd1f7772d8c7",
++    "agents/asd-ba.md": "sha256:8f087c3299b09c170b3461a3e8d3c75b786946c6fec41996a873ec8772d84bbd",
++    "agents/asd-external-review.md": "sha256:eef13d51a97c9691ad2f759a3b25bd32522060d2722ee18605a3d708e5f455ca",
++    "agents/asd-reviewer-documentation.md": "sha256:6916b26e44b77f1e73d48ab29a6f50d8f49f42fd54d4521f3ecb735c1f9999cc",
++    "agents/asd-reviewer-testing.md": "sha256:5e238db6d027d71879359601fb9c57f00d583999af92b45e7b01dcb431a166f4",
+     "skills/asd-concept/SKILL.md": "sha256:9a3cb2331b3aceb4a670d8d0ac94de3808771406036f9ba11dce3239e21cee42",
+     "skills/asd-design-system/SKILL.md": "sha256:9f8153a0f278a1234202771df5118f2228dd4edfd99594c1eeb0536d8d22d07f",
+     "skills/asd-init/SKILL.md": "sha256:79413ccde0b404e63f8e1bedcf3e467311a3dd83021d7a5d50385b91c0f7d4e0",
+-    "skills/asd-sprint/SKILL.md": "sha256:dd93fc548477ff6fe73b40470675079fb3a961479ed4022031eb4bc465dc8b2f",
++    "skills/asd-sprint/SKILL.md": "sha256:4cb94e6d7f2a9e1d960308df0075be86a930cf24be86e347b22e8daaeb2d9128",
+     "skills/asd-stack/SKILL.md": "sha256:1afe58b6e4c6611adf468e9dfee361d017412dad8465f52423afdd1ae5ac9354",
+     "skills/asd-sync/SKILL.md": "sha256:f198477e9f35ba73c0b4088a690373e504ea0dd731d5fb501af54e477f3d7baa",
+     "skills/asd-update/SKILL.md": "sha256:fa71a8e3afe4f6942d8a4011dd5f682ae2671b80a73b26a51bffdf9d0b2a1365",
+@@ -51,20 +51,20 @@
+     "skills/asd-phase-impl-review/SKILL.md": "sha256:adf1550463ceb2f5db4f80c4078aba072304545d1aab72a9f53d2e50f4d2c480",
+     "skills/asd-phase-pr/SKILL.md": "sha256:e82f127971031309e4d5d59621222a8c759e7b22b96b3231e57fe8acb32a1d2e",
+     "agents/asd-advisor.md": "sha256:f572a04da3165a11b9865df911a1b1212ddfb21a847f8df5428f685a9dab68ce",
+-    "agents/asd-reviewer-correctness.md": "sha256:b1014ac285953d31504a2a57beeb9c9fe071c49a6945c8aa332d136e46299d7e",
+-    "agents/asd-reviewer-efficiency.md": "sha256:5fc12dd16afa15d7e6f44210b357120db4afac91be3b47435842e9a0211d5e6c",
+-    "agents/asd-dev.md": "sha256:87427691a2e33a427713096a8510d6801535e420c09f351b51abedbf26d62640",
+-    "agents/asd-tester.md": "sha256:c3f10cf49cf72b5ca38401564c61062dd4a8d491330a1f2e25e89d2efb3e9b1b",
+-    "agents/asd-ux.md": "sha256:8320e927565feeeca01b1b8d1e7eee5e08f6287f8a157f6f937f88aaffdd0264",
++    "agents/asd-reviewer-correctness.md": "sha256:fdc52fd07949bdf3d401155f309afb07251bf1c15cf201a34cda90ba78cf68f6",
++    "agents/asd-reviewer-efficiency.md": "sha256:86ba3f85ee181c4b586bc2fa5caab3e720759f1cab9b7e052673b9ea6c8c0d3a",
++    "agents/asd-dev.md": "sha256:6b23c5feb65e489161a16c0788c4431a82f957c2db8f69040e00b763bab9b997",
++    "agents/asd-tester.md": "sha256:50153e88c38930419393804d281284849f1dab5b284c89734846cae23e9888bf",
++    "agents/asd-ux.md": "sha256:bc892ff669388e251e07a317d62b87ad3031d6785c998c09b3f2d606fed5578f",
+     "skills/asd-phase-retro/SKILL.md": "sha256:d40dea69c3415c91b8043f4fff9bbda9dbf5750f76ebd2ff762942ab56fb4bef",
+-    "agents/asd-reviewer-combined.md": "sha256:0d3be49d57917b76f733e5c5f3d916ba48f1124ce97cadc0421c6d587da8c088"
++    "agents/asd-reviewer-combined.md": "sha256:4465f519d7360af8ed263d298fbfb868a75ed72524b8336abe93782ab55c09d2"
+   },
+   "upstream_hashes": {
+-    ".asd/agents/asd-architect.md": "5409d427d3aecfd8d2dd667fa5d3aeb4c2deea467ca5f528965d76225d4cbc45",
+-    ".asd/agents/asd-ba.md": "7d07c07b75ca14ac69975e1f37f352a3a147797aa05147a5f3adf8b8b8ebd680",
+-    ".asd/agents/asd-external-review.md": "1119ba279f3c4490717f10d23e44918cffdc0f2a47d5bd08f2577d8453a0872f",
+-    ".asd/agents/asd-reviewer-documentation.md": "d35bfff44a7e45b79b8468b840533970a359038a1f0e461da602efb51efb30f7",
+-    ".asd/agents/asd-reviewer-testing.md": "0040ab0308f2bbb642ad9a8dba5874d4166bb3c31355121757d8c841cdfed0a3",
++    ".asd/agents/asd-architect.md": "fbe178e31b76dbe8011bd707200b365ce4da5c0e0dd3c31f768ffd1f7772d8c7",
++    ".asd/agents/asd-ba.md": "8f087c3299b09c170b3461a3e8d3c75b786946c6fec41996a873ec8772d84bbd",
++    ".asd/agents/asd-external-review.md": "eef13d51a97c9691ad2f759a3b25bd32522060d2722ee18605a3d708e5f455ca",
++    ".asd/agents/asd-reviewer-documentation.md": "6916b26e44b77f1e73d48ab29a6f50d8f49f42fd54d4521f3ecb735c1f9999cc",
++    ".asd/agents/asd-reviewer-testing.md": "5e238db6d027d71879359601fb9c57f00d583999af92b45e7b01dcb431a166f4",
+     ".asd/hooks/session-start.js": "f0ebc50ed2cbe3557dd5100064feb4499091bdb14ffc2385c74ac2cd3b95eb23",
+     ".asd/rules/artifact-layout.md": "28947b78ae7d52b227f36b4ca715ba25d68a8558843bf274715467aa72601d8d",
+     ".asd/rules/checkpoints.md": "dc3a0b83de9bcca60553037e61e66e1e82b34acf91bad1296f32047824ec1585",
+@@ -73,11 +73,11 @@
+     ".asd/rules/design-principles.md": "0bf73cc3eed6e723821c39f008b63c5fa04eea1e829567290a3365a9a912b938",
+     ".asd/rules/design-system.md": "c583c8ba2c08b26685b0a30dea665bb9ac19cc714e8df3622e582f33d1c95371",
+     ".asd/rules/external-review.md": "5537c69a04f7ac6016ddfd63b2d8fa13a2887a7c3c8bd690c855736130481acb",
+-    ".asd/rules/git-strategy.md": "cebc0e79a90c5dcd481c61715b21795be6b29374717b6c598f4c87bc005c0a24",
++    ".asd/rules/git-strategy.md": "5cda026b62ac275e482c0fcdac3bedda96100c2dd0fef2dacf2e33ec1c02fd04",
+     ".asd/rules/language-policy.md": "e9b488a4cff5ed193208a52324601bede1a41e2512f2a6f06d0660576940f322",
+-    ".asd/rules/providers.md": "7b67916fc6898ecc6149879de2e0d00fdcb0a5ab59bf78c888a9886961cac32e",
+-    ".asd/rules/review-policy.md": "abf050bf15d92c02abc8846e67915bd4fc4e3e257d9d0d082b9b4fd8a9d1fa4c",
+-    ".asd/rules/sprint-lifecycle.md": "41e6d22a5e984687501b7953a13210d8281bf58e8090915b46e2c49de8f4db7b",
++    ".asd/rules/providers.md": "3934683c6375d7e255b173b211880f002de3eef96d7e6540e6600f80c72282b9",
++    ".asd/rules/review-policy.md": "698a07a3db488109eb854b7f728138555f94096aa9058fbe550f86dc2eec35d1",
++    ".asd/rules/sprint-lifecycle.md": "07dc8a02020e40726effabd65b28c8ee137f0ceaf4db83dcbb997807291cafaa",
+     ".asd/rules/ux-principles.md": "9f2af8c90d969c73654812b80e523e33b4c5696f506acf49e4bacb4c0dc6750c",
+     ".asd/skills/asd-concept/SKILL.md": "9a3cb2331b3aceb4a670d8d0ac94de3808771406036f9ba11dce3239e21cee42",
+     ".asd/skills/asd-design-system/SKILL.md": "9f8153a0f278a1234202771df5118f2228dd4edfd99594c1eeb0536d8d22d07f",
+@@ -92,7 +92,7 @@
+     ".asd/skills/asd-phase-plan/SKILL.md": "a5856fbb79957301101dc65b7eb2f6269103d1e09a3b6053bc4f38d083494829",
+     ".asd/skills/asd-phase-pr/SKILL.md": "e82f127971031309e4d5d59621222a8c759e7b22b96b3231e57fe8acb32a1d2e",
+     ".asd/skills/asd-phase-scope/SKILL.md": "a21d695d2ddb947e45b55519c54e3654eb42b5db7d8d1a9bc6be01586b62eaa7",
+-    ".asd/skills/asd-sprint/SKILL.md": "dd93fc548477ff6fe73b40470675079fb3a961479ed4022031eb4bc465dc8b2f",
++    ".asd/skills/asd-sprint/SKILL.md": "4cb94e6d7f2a9e1d960308df0075be86a930cf24be86e347b22e8daaeb2d9128",
+     ".asd/skills/asd-stack/SKILL.md": "1afe58b6e4c6611adf468e9dfee361d017412dad8465f52423afdd1ae5ac9354",
+     ".asd/skills/asd-sync/SKILL.md": "f198477e9f35ba73c0b4088a690373e504ea0dd731d5fb501af54e477f3d7baa",
+     ".asd/skills/asd-update/SKILL.md": "fa71a8e3afe4f6942d8a4011dd5f682ae2671b80a73b26a51bffdf9d0b2a1365",
+@@ -138,14 +138,14 @@
+     ".asd/workflows/asd-phase-impl-test.md": "6681d6ad58f20e7f34a4e8c5555fb4ae90c55686bfac15fb6620b87863e0d033",
+     ".asd/workflows/asd-phase-impl.md": "4db069f15e3e459edd8a5ec7d47885ad8848d2262f0308ae644104c977b28938",
+     ".asd/workflows/asd-phase-plan.md": "2fc4caca0927e50f8e5751bbe49e5b42d131c2866635d2fbceab8d366bfe2c1e",
+-    ".asd/workflows/asd-phase-pr.md": "1b8548b480c322c6b61411d97986f695af645fbf442223dcd947174931ef34be",
+-    ".asd/workflows/asd-phase-scope.md": "d2c5d245cb5520dc0200ab2361167a2c2630a7b52d1cf97e338fe36fa126edc5",
++    ".asd/workflows/asd-phase-pr.md": "9d15645564ef52ebd12571d14c51488d94e3fae3d9f4c28785c48c73a3eabb58",
++    ".asd/workflows/asd-phase-scope.md": "e808b27e1464876df61052e659e616e36dde07ecc0046dcaf88e7bb3a1ff29fc",
+     ".asd/agents/asd-advisor.md": "f572a04da3165a11b9865df911a1b1212ddfb21a847f8df5428f685a9dab68ce",
+-    ".asd/agents/asd-reviewer-correctness.md": "b1014ac285953d31504a2a57beeb9c9fe071c49a6945c8aa332d136e46299d7e",
+-    ".asd/agents/asd-reviewer-efficiency.md": "5fc12dd16afa15d7e6f44210b357120db4afac91be3b47435842e9a0211d5e6c",
+-    ".asd/agents/asd-dev.md": "87427691a2e33a427713096a8510d6801535e420c09f351b51abedbf26d62640",
+-    ".asd/agents/asd-tester.md": "c3f10cf49cf72b5ca38401564c61062dd4a8d491330a1f2e25e89d2efb3e9b1b",
+-    ".asd/agents/asd-ux.md": "8320e927565feeeca01b1b8d1e7eee5e08f6287f8a157f6f937f88aaffdd0264",
++    ".asd/agents/asd-reviewer-correctness.md": "fdc52fd07949bdf3d401155f309afb07251bf1c15cf201a34cda90ba78cf68f6",
++    ".asd/agents/asd-reviewer-efficiency.md": "86ba3f85ee181c4b586bc2fa5caab3e720759f1cab9b7e052673b9ea6c8c0d3a",
++    ".asd/agents/asd-dev.md": "6b23c5feb65e489161a16c0788c4431a82f957c2db8f69040e00b763bab9b997",
++    ".asd/agents/asd-tester.md": "50153e88c38930419393804d281284849f1dab5b284c89734846cae23e9888bf",
++    ".asd/agents/asd-ux.md": "bc892ff669388e251e07a317d62b87ad3031d6785c998c09b3f2d606fed5578f",
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
+     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
+@@ -159,7 +159,7 @@
+     ".asd/templates/t_subsystems.md": "54b1e273e9e74a57e08b43d1b671f880b7f682d9ec1bc4afb95a55d98b2531dd",
+     ".asd/migrations/9.0.0.js": "1a1da6ebd2576d92ed44ccde308969856f3aeaa7be152438137e94b43cd015b1",
+     ".asd/templates/t_retro-backlog.md": "0fd817d2ba64894dd8e5a4c01ca57309e7c51b0f2a270f94175ddf71b933f3d9",
+-    ".asd/agents/asd-reviewer-combined.md": "0d3be49d57917b76f733e5c5f3d916ba48f1124ce97cadc0421c6d587da8c088",
++    ".asd/agents/asd-reviewer-combined.md": "4465f519d7360af8ed263d298fbfb868a75ed72524b8336abe93782ab55c09d2",
+     ".asd/workflows/lite.json": "2fc12fc41cac51a22b19d67ff5d47c9765c105fec1ad67e8eb5d765b882622ea",
+     ".asd/workflows/standard.json": "7a7c04da7a13ec9dab9bb782d8a9981b703d34859d55614cd9354808b1721fb2"
+   }
+diff --git a/.asd/rules/git-strategy.md b/.asd/rules/git-strategy.md
+index 663e5e6..b320fe4 100644
+--- a/.asd/rules/git-strategy.md
++++ b/.asd/rules/git-strategy.md
+@@ -79,4 +79,4 @@ Applies only when `self_hosting: enabled` (`sprint-lifecycle.md` "Self-hosting")
+ 
+ `pr` phase, open mode, before composing the PR: bump `asd_version` in `.asd/release-manifest.json` per [SemVer](https://semver.org/), inferred from the sprint's Conventional Commit types (highest wins): `fix`→PATCH, `feat`→MINOR, `!`/`BREAKING CHANGE` footer→MAJOR. Add a matching `## v<version>` section to root `CHANGELOG.md` (newest first, English), grouped `Added|Changed|Deprecated|Removed|Fixed|Security`, describing consumer-facing impact — not implementation detail. Under `backward_compat: migration`, this bump is also the blocking DoD check that `max(.asd/migrations/*.js filename version) <= asd_version` — a migration a consumer never reaches because the version bump does not cover it fails the bump, not just the migration.
+ 
+-In `pr` merge mode, once the merge is confirmed (`sprint-lifecycle.md` "PR phase"): `git fetch origin <git.base_branch>` (the squash merge commit is not local on the sprint branch), target the sprint PR's merge commit, `mergeCommit` from `gh pr view <pr.number> --json mergeCommit`, and read `asd_version` from it (`git show <merge_commit>:.asd/release-manifest.json`). Each step is skipped when already done: create annotated tag `v<asd_version>` on that commit and `git push origin v<asd_version>`, unless the tag exists on `origin` (`git ls-remote --tags origin v<asd_version>`); then `gh release create v<asd_version> --verify-tag --title v<asd_version> --notes-file <extracted CHANGELOG section>` (notes file under `.asd/tmp/`, `artifact-layout.md` "Scratch directory"), unless `gh release view v<asd_version>` succeeds. The tag and release are a tag ref and a host object, not a branch write. While the tag `v<asd_version>` is absent on `origin` or its release is missing, `asd-sprint` Step 1 routes the merged-unclosed sprint back to merge mode, which runs only the release (`sprint-lifecycle.md` "PR phase", "Merged-unclosed").
++In `pr` merge mode, once the merge is confirmed (`sprint-lifecycle.md` "PR phase"): `git fetch origin <git.base_branch>` (the squash merge commit is not local on the sprint branch), then find the release commit: the sprint PR's merge commit, `mergeCommit` from `gh pr view <pr.number> --json mergeCommit`, when it carries this sprint's bump — its `asd_version` (`git show <merge_commit>:.asd/release-manifest.json`) above its parent's (`git show <merge_commit>^:.asd/release-manifest.json`) and a `## v<asd_version>` heading in its `CHANGELOG.md`. A merge commit without them (a PR merged before open mode's bump) yields to the first later commit of `git log --reverse --format=%H <merge_commit>..origin/<git.base_branch> -- .asd/release-manifest.json` passing the same check, a follow-up PR's merge; none is `FAILED` naming the recovery "merge a follow-up PR bumping `asd_version` with its CHANGELOG section, then re-run". Read `asd_version` at the release commit. Each step is skipped when already done: create annotated tag `v<asd_version>` on that commit unless it exists locally (`git rev-parse -q --verify refs/tags/v<asd_version>`), and `git push origin v<asd_version>` unless the tag exists on `origin` (`git ls-remote --tags origin v<asd_version>`); then `gh release create v<asd_version> --verify-tag --title v<asd_version> --notes-file <extracted CHANGELOG section>` (notes file under `.asd/tmp/`, `artifact-layout.md` "Scratch directory"), unless `gh release view v<asd_version>` succeeds. The tag and release are a tag ref and a host object, not a branch write. While the release commit, its tag `v<asd_version>` on `origin` or its release is missing, `asd-sprint` Step 1 offers the user a retry in merge mode, which runs only the release, or the new-sprint flow without it (`sprint-lifecycle.md` "PR phase", "Merged-unclosed").
+diff --git a/.asd/rules/providers.md b/.asd/rules/providers.md
+index 1adf125..ccedd0d 100644
+--- a/.asd/rules/providers.md
++++ b/.asd/rules/providers.md
+@@ -76,7 +76,7 @@ Canonical agent frontmatter speaks in family aliases only (`claude.model`, `code
+ | opus | opus | — |
+ | sonnet | sonnet | — |
+ | haiku | haiku | — |
+-| sol | — | gpt-6-sol |
++| sol | — | gpt-6.1-sol |
+ | luna | — | gpt-6-luna |
+ 
+ A provider's id is always its rolling alias (newest model in the family), so a family's model bump is a one-line edit to `release-manifest.json` — canonical agent bodies never change.
+@@ -85,12 +85,13 @@ A provider's id is always its rolling alias (newest model in the family), so a f
+ 
+ | Agent | Claude model / effort | Codex model / effort | Codex sandbox |
+ |---|---|---|---|
+-| asd-ba, asd-ux, asd-architect | opus / high | sol / high | workspace-write |
++| asd-ba, asd-ux | sonnet / high | sol / high | workspace-write |
++| asd-architect | sonnet / xhigh | sol / high | workspace-write |
+ | asd-dev, asd-tester (base) | sonnet / medium | sol / medium | workspace-write |
+-| asd-dev-*, asd-tester-* | mechanical: haiku / none; critical: opus / high (standard: no variant, dispatches base) | mechanical: luna / low; critical: sol / high (standard: no variant, dispatches base) | workspace-write |
+-| asd-reviewer-* (5) | opus / high | sol / high | workspace-write (policy-bounded) |
++| asd-dev-*, asd-tester-* | mechanical: haiku / none; critical: sonnet / xhigh (standard: no variant, dispatches base) | mechanical: luna / low; critical: sol / high (standard: no variant, dispatches base) | workspace-write |
++| asd-reviewer-* (5) | sonnet / xhigh | sol / high | workspace-write (policy-bounded) |
+ | asd-external-review wrapper | sonnet / medium | sol / medium | read-only |
+-| asd-external-review wrapped reviewer | sol / high | opus / high | read-only |
++| asd-external-review wrapped reviewer | sol / high | sonnet / xhigh | read-only |
+ | asd-advisor | fable / high | sol / high | read-only |
+ 
+ ## External review symmetry
+@@ -100,7 +101,7 @@ External Review always wraps the CLI of the *other* provider, never its own host
+ - Running under Claude Code -> wraps **Codex CLI** (`codex exec`, per `.asd/rules/external-review.md`).
+ - Running under Codex -> wraps **Claude CLI** the same way (probe, stdin-piped prompt+diff, text-verdict output, severity mapping, stalemate detection — mirror the Claude-under-Codex case symmetrically against `.asd/rules/external-review.md`'s Codex-under-Claude contract).
+ 
+-Which CLI to wrap is resolved per-provider at generation time: `asd-external-review.md`'s canonical frontmatter sets `claude.wraps_cli: "codex"` / `codex.wraps_cli: "claude"`, plus the wrapped provider's family alias (`sol` / `opus`) and a matching `wraps_config_key` naming the runtime config override. `.asd/sync.js` resolves `{{wraps_model}}` through the release manifest for the wrapped provider; canonical invocation text never pins a concrete model ID. Phase orchestration performs the bounded runtime preflight before the wrapper and records a specific availability skip when it is non-ready.
++Which CLI to wrap is resolved per-provider at generation time: `asd-external-review.md`'s canonical frontmatter sets `claude.wraps_cli: "codex"` / `codex.wraps_cli: "claude"`, plus the wrapped provider's family alias (`sol` / `sonnet`) and a matching `wraps_config_key` naming the runtime config override. `.asd/sync.js` resolves `{{wraps_model}}` through the release manifest for the wrapped provider; canonical invocation text never pins a concrete model ID. Phase orchestration performs the bounded runtime preflight before the wrapper and records a specific availability skip when it is non-ready.
+ 
+ ## Role-scoped context
+ 
+@@ -130,7 +131,7 @@ Section scope inside a granted file: `artifact-layout.md` "HTML shell wrapping (
+ 
+ An agent may declare `variants` in its canonical JSON frontmatter. Each fixed suffix is `mechanical` or `critical`; it changes only Claude `model`/optional `effort` and Codex `model`/`model_reasoning_effort`. `.asd/sync.js` emits `<base>-<suffix>` from the base body and permissions, rejects malformed metadata and name collisions. No dispatcher mutates generated configuration. Tier `standard` has no variant — it dispatches the **base** agent id (`asd-dev`, `asd-tester`) directly, since a `standard` variant would only re-declare the base's own model/effort.
+ 
+-Only `asd-dev` and `asd-tester` declare variants: mechanical uses haiku without an effort override or luna/low; critical uses opus/high or sol/high. Reviewers remain strong and fresh. The main orchestrator calls `node .asd/runtime.js route-task --input <json>` before dispatch and persists `{execution,tier,reason,resolved_model}` under `state.json.task_routing[taskId]`; `resolved_model` is not returned by `route-task` — the main orchestrator derives it from `.asd/release-manifest.json`'s `model_families` for the dispatched agent/tier before persisting. Re-entry passes its prior `tier` as `priorTier`. `execution` is the selector of record for how the executor was chosen — `route-task` returns no separate `selector` field; `execution` plus `tier` and `reason` fully determine and evidence the dispatch choice.
++Only `asd-dev` and `asd-tester` declare variants: mechanical uses haiku without an effort override or luna/low; critical uses sonnet/xhigh or sol/high. Reviewers remain strong and fresh. The main orchestrator calls `node .asd/runtime.js route-task --input <json>` before dispatch and persists `{execution,tier,reason,resolved_model}` under `state.json.task_routing[taskId]`; `resolved_model` is not returned by `route-task` — the main orchestrator derives it from `.asd/release-manifest.json`'s `model_families` for the dispatched agent/tier before persisting. Re-entry passes its prior `tier` as `priorTier`. `execution` is the selector of record for how the executor was chosen — `route-task` returns no separate `selector` field; `execution` plus `tier` and `reason` fully determine and evidence the dispatch choice.
+ 
+ Routing input requires objective evidence. A deterministic zero-judgment command with `deterministic-state` returns `execution: command`; mechanical agent work requires `deterministic-check` and `exhaustive-match-validation`.
+ 
+diff --git a/.asd/rules/review-policy.md b/.asd/rules/review-policy.md
+index cf52b09..2dcf68c 100644
+--- a/.asd/rules/review-policy.md
++++ b/.asd/rules/review-policy.md
+@@ -13,7 +13,7 @@
+ 
+ Config sets `iterations_<severity>` (default: low=1, medium=1, high=2, critical=10). Each tier gets its own consecutive iteration budget in order low → medium → high → critical. On iteration N, the floor is the tier whose **cumulative budget** first covers N. Only findings at floor severity or higher count.
+ 
+-`N` is the **phase-local** counter — `reviews.design.iteration`, or in impl-review the current review wave's counter (`sprint-lifecycle.md` "Review iteration counters") minus that wave's amendment base `A`: the latest `floor_base=wave-<K>/<A>` a scope amendment accepted after the division point recorded, `0` when none (`sprint-lifecycle.md` "Scope amendment"). Each review phase computes its floor and cap from its own `N`; each wave has its own floor and cap.
++`N` is the **phase-local** counter — `reviews.design.iteration`, or in impl-review the current review wave's counter (`sprint-lifecycle.md` "Review iteration counters") minus that wave's amendment base `A` from a `floor_base=wave-<K>/<A>` record (`sprint-lifecycle.md` "Scope amendment"). Each review phase computes its floor and cap from its own `N`; each wave has its own floor and cap.
+ 
+ Cumulative budgets with defaults:
+ 
+diff --git a/.asd/rules/sprint-lifecycle.md b/.asd/rules/sprint-lifecycle.md
+index fe4b65d..6fa4330 100644
+--- a/.asd/rules/sprint-lifecycle.md
++++ b/.asd/rules/sprint-lifecycle.md
+@@ -142,7 +142,7 @@ When enabled: Dev may write canonical `.asd/rules/`, `.asd/templates/`, `.asd/ag
+ 
+ Root `AGENTS.md`'s managed-block/hand-edited-tail split: `providers.md` "Canonical path -> per-provider path" (ownership home). `asd-update` is a no-op here (it pulls framework files INTO a consumer; this repo IS the framework).
+ 
+-Versioning: bump `asd_version` and update `CHANGELOG.md` before PR review; tag and release in `pr` merge mode once the merge is confirmed, on the sprint PR's merge commit (`git-strategy.md` "Versioning & Changelog (self-hosting only)").
++Versioning: bump `asd_version` and update `CHANGELOG.md` before PR review; tag and release in `pr` merge mode once the merge is confirmed, on the base commit carrying that bump (`git-strategy.md` "Versioning & Changelog (self-hosting only)").
+ 
+ Framework impl-review/External Review change surface: the whole repo diff (everything here IS framework source — canonical `.asd/**`, `README.md`, `AGENTS.md`, `tests/**`, and anything else added later, e.g. CI configs), minus `.asd/project/**`, `.asd/sprints/**`, the generated provider views (`.claude/{agents,skills,hooks}/**`, `.codex/{agents,hooks}/**`, `.agents/skills/**`; the JSON-merge `.claude/settings.json` and `.codex/hooks.json` can hold user content, so they stay in), build output — never an allow-list of named paths, so nothing new needs a matching rule edit to be reviewed. `.claude/agent-memory/**` is not one of those views — `artifact-layout.md` "Agent memory".
+ 
+@@ -320,9 +320,9 @@ Closes with a short `language.chat` summary covering both classes, then `NEXT: p
+ 
+ ## PR phase
+ 
+-Modes are `pr=null` (open the PR, `NEXT: await-merge`, unless the "Merged-unclosed" lookup finds one) and `pr.state="open"` (merge it). DoD checks gate publication but are not user approvals. The main orchestrator performs the merge itself where the Git host allows it — who merges is stated once in `git-strategy.md` "Merging a PR". Merge mode confirms the sprint PR merged, publishes the self-hosting release (`git-strategy.md` "Versioning & Changelog (self-hosting only)"), and returns `NEXT: done`. It writes no state, archive move or commit on any branch; a tag ref and a host release are not branch writes. `NEXT: done` names completion, not a write: the sprint stays at its active path with `phase="pr"`, `pr.state="open"` on base until the next sprint's closure write. One PR per sprint.
++Modes are `pr=null` (open the PR, `NEXT: await-merge`, unless the "Merged-unclosed" lookup finds one) and `pr.state="open"` (merge it). A dispatch carrying a confirmed `MERGED` number, `asd-sprint`'s release retry or open mode's `MERGED` hit, enters merge mode whatever `pr` holds, skipping open mode's DoD gate. DoD checks gate publication but are not user approvals. The main orchestrator performs the merge itself where the Git host allows it — who merges is stated once in `git-strategy.md` "Merging a PR". Merge mode confirms the sprint PR merged, publishes the self-hosting release (`git-strategy.md` "Versioning & Changelog (self-hosting only)"), and returns `NEXT: done`. It writes no state, archive move or commit on any branch; a tag ref and a host release are not branch writes. `NEXT: done` names completion, not a write: the sprint stays at its active path with `phase="pr"`, `pr.state="open"` on base until the next sprint's closure write. One PR per sprint.
+ 
+-**Merged-unclosed**: a sprint folder at the active path whose sprint PR `gh` reports `MERGED`, whatever its `phase`. With `pr.number` set, `gh pr view <n> --json state,mergeCommit` decides; a PR `pr` open mode opened carries `phase="pr"` and `pr.number` to base, because open mode commits the phase write before any push and commits and pushes its `state.json.pr` write before `NEXT: await-merge`. Every sprint without `pr.number`, at any `phase`, is looked up by head branch — a PR merged before that write reached the sprint branch (after a failed push), one opened and merged by hand before the `pr` phase, or an open-mode `MERGED` hit, which continues in merge mode with that number and writes no state: `gh pr list --head <state.branch> --state all --json number,state,mergeCommit`. A `CLOSED` hit counts as no hit, and across several hits `MERGED` wins, then `OPEN`. A `MERGED` hit is merged-unclosed with that number, which the closure write records; an `OPEN` hit resumes merge mode with that number only at `phase="pr"`, and at any other phase is ignored, the sprint resuming normally; no hit resumes normally (open mode at `phase="pr"`). A lookup that cannot reach `gh` outside `phase="pr"` warns that a merged PR stays undetected until an online run, and resumes normally; at `phase="pr"`, and for `gh pr view <pr.number>`, it is `FAILED` naming "host unreachable, retry online" (`git-strategy.md` "PR creation"). `asd-sprint` detects the state on `NEXT: done` and on any later invocation and routes it with no user gate. Retry route: under `self_hosting`, while the release of `v<asd_version>`, read at the merge commit, is missing — the tag absent on `origin` (`git ls-remote --tags origin`) or `gh release view v<asd_version>` failing — back to merge mode, which, the PR already merged, runs only the release. Otherwise it enters the new-sprint flow, carrying the sprint's path and PR number; the one-active-sprint rule exempts that sprint within it. The session-start hook reports the state offline (`phase="pr"`, `pr.number` set, `state.branch` ≠ the current branch), display only, so it misses a sprint without `pr.number`; `asd-sprint` confirms through `gh`.
++**Merged-unclosed**: a sprint folder at the active path whose sprint PR `gh` reports `MERGED`, whatever its `phase`. With `pr.number` set, `gh pr view <n> --json state,mergeCommit` decides; a PR `pr` open mode opened carries `phase="pr"` and `pr.number` to base, because open mode commits the phase write before any push and commits and pushes its `state.json.pr` write before `NEXT: await-merge`. Every sprint without `pr.number`, at any `phase`, is looked up by head branch — a PR merged before that write reached the sprint branch (after a failed push), one opened and merged by hand before the `pr` phase, or an open-mode `MERGED` hit, which continues in merge mode with that number and writes no state: `gh pr list --head <state.branch> --state all --json number,state,mergeCommit`. A `CLOSED` hit counts as no hit, and across several hits `MERGED` wins, then `OPEN`. A `MERGED` hit is merged-unclosed with that number, which the closure write records; an `OPEN` hit resumes merge mode with that number only at `phase="pr"`, and at any other phase is ignored, the sprint resuming normally; no hit resumes normally (open mode at `phase="pr"`). A lookup that cannot reach `gh` outside `phase="pr"` warns that a merged PR stays undetected until an online run, and resumes normally; at `phase="pr"`, and for `gh pr view <pr.number>`, it is `FAILED` naming "host unreachable, retry online" (`git-strategy.md` "PR creation"). `asd-sprint` detects the state on `NEXT: done` and on any later invocation and routes it with no closure gate. Release retry: under `self_hosting`, while the release is missing — no release commit (`git-strategy.md` "Versioning & Changelog (self-hosting only)"), the tag `v<asd_version>` read at it absent on `origin` (`git ls-remote --tags origin`), or `gh release view v<asd_version>` failing, so a merge-mode release ended `FAILED` or never ran — `asd-sprint` requests a user decision, each time: retry, back to merge mode, which, the PR already merged, runs only the release; or continue without it, which the entry the closure write appends to the closing sprint's decisions log records (`decision_actor: user`). Otherwise, and on continue, it enters the new-sprint flow, carrying the sprint's path and PR number; the one-active-sprint rule exempts that sprint within it. The session-start hook reports the state offline (`phase="pr"`, `pr.number` set, `state.branch` ≠ the current branch), display only, so it misses a sprint without `pr.number`; `asd-sprint` confirms through `gh`.
+ 
+ **Closure write** — `asd-phase-scope.md` step 1, for the merged-unclosed sprint `asd-sprint` passes, right after the new sprint branch is created and before the new sprint is seeded; no user gate:
+ 1. `git mv` the closing sprint folder to `archived/`;
+@@ -402,7 +402,7 @@ Its absence semantics are deliberately not `Material risk`'s, and the two are ne
+ A criterion added, changed or retired after scope acceptance needs the hard `new or changed scope` approval (`checkpoints.md` "Gate policy") and then, in one orchestrator write:
+ 1. `sprint.md`: the `AC-N` — a new id, never a reused one;
+ 2. `plan.md`: the Task carrying it, new or amended, in a wave not yet dispatched (a new last wave when none is left), per "Plan file format";
+-3. the gate records: a `gate_decisions` entry and one decisions-log entry naming the AC, the Task and its wave. Accepted after impl-review's division point ("Review iteration counters"), the entry's evidence adds `floor_base=wave-<K>/<A>`, A being current review wave K's counter then, and the write clears wave K's `latched` ("APPROVE latch"). impl-review computes wave K's severity floor and iteration cap on `iteration − A`, A from the latest such record (none → 0), so the amended code's first iteration `wave-<K>/iter-(A+1)` reviews at a first iteration's floor;
++3. the gate records: a `gate_decisions` entry and one decisions-log entry naming the AC, the Task and its wave. Accepted after impl-review's division point ("Review iteration counters"), the entry's evidence adds `floor_base=wave-<K>/<A>`, A being current review wave K's counter then, and the write clears wave K's `latched` ("APPROVE latch"). impl-review computes wave K's severity floor and iteration cap on `iteration − A`, A from the latest such record accepted since the current `waves.json` division (none → 0), so a rollback reset, which re-divides, retires every earlier one, and the amended code's first iteration `wave-<K>/iter-(A+1)` reviews at a first iteration's floor;
+ 4. `node .asd/runtime.js surface-check` re-run over the amended plan's paths and the `Change surface:` line updated; above the cap, "Change surface declaration" applies.
+ 
+ The audit boolean is then reevaluated ("Orchestration and adaptive gates").
+@@ -413,7 +413,7 @@ A sprint folder under `.asd/sprints/archived/<NNN-slug>/` is read-only. The arch
+ 
+ ## State recovery
+ 
+-`state.json` is the single recovery point. The dispatching main orchestrator is its sole writer for transitions, verdicts and gate evidence; no delegated agent writes it. A merged sprint keeps its recorded `phase` and `pr` (after merge mode: `phase="pr"`, `pr.state="open"`) until the closure write ("PR phase"), the only writer of the terminal state and archive move; no merged-but-unclosed record exists, the state is detected ("PR phase" "Merged-unclosed"), and so is a missing self-hosting tag or release (its retry route). A legacy `closure-pending` or archived non-done sprint stays recoverable through the same flow.
++`state.json` is the single recovery point. The dispatching main orchestrator is its sole writer for transitions, verdicts and gate evidence; no delegated agent writes it. A merged sprint keeps its recorded `phase` and `pr` (after merge mode: `phase="pr"`, `pr.state="open"`) until the closure write ("PR phase"), the only writer of the terminal state and archive move; no merged-but-unclosed record exists, the state is detected ("PR phase" "Merged-unclosed"), and so is a missing self-hosting release (its release retry). A legacy `closure-pending` or archived non-done sprint stays recoverable through the same flow.
+ 
+ **Failed dispatch**: a creator (`asd-ba`, `asd-ux`, `asd-architect`, `asd-dev`) or `asd-tester` dispatch that ends without a completion signal — a stall stop ("Agent liveness") included — is never read as done; its task is re-dispatched fresh. An `impl` (initial, review-fix, test-fix) or `impl-test` dispatch is reconstructed before that re-dispatch. Anchor: the `dispatch HEAD <sha>` of the latest decisions-log routing line naming that dispatch's ids. Run `git status --porcelain` and `git log --format='%h %s%n%(trailers:key=ASD-Task,valueonly)' <anchor>..HEAD` (trailer-less commits contribute nothing). Ids named by an `ASD-Task` trailer (`git-strategy.md` "Commits") landed and are dropped from the re-dispatch — except `impl-test entry N`, which never marks the entry landed: the re-dispatched tester resumes the interrupted current entry from on-disk evidence (`asd-phase-impl-test.md` step 1), re-running each step lacking its output (e.g. no `Suite run` for the entry); and `D-N`, which lands only once its `test-plan.md` `Defects` row reads `fixed` with its fix commit — otherwise the re-dispatch carries that `D-N` only to set the row from the trailer commit's sha, no second fix. The payload names each uncommitted leftover path the failed dispatch was authorised to touch — never orchestrator-owned bookkeeping or an in-flight sibling dispatch's paths — for the agent to finish or revert; the orchestrator never stages, commits or discards them. Append one decisions-log line `- YYYY-MM-DD — reconstruction: landed <ids>; re-dispatched <ids>`. One cause (session-wide limit, host outage) ending every dispatch then in flight at the same moment is one event, never one per dispatch: one reconstruction covers them all and no dispatch's stall count rises ("Agent liveness"); anything narrower stays per-dispatch — the creator/tester form of `review-policy.md` "Correlated interruption".
+ 
+diff --git a/.asd/skills/asd-sprint/SKILL.md b/.asd/skills/asd-sprint/SKILL.md
+index a5fb548..33838fa 100644
+--- a/.asd/skills/asd-sprint/SKILL.md
++++ b/.asd/skills/asd-sprint/SKILL.md
+@@ -16,8 +16,8 @@
+ 
+ ## Operations used
+ - Read files / search repo — detect active sprint; read state.json, its frozen workflow definition `.asd/workflows/<workflow>.json` (`sprint-lifecycle.md` "Workflows"), config.yaml, custom-common-rules.md
+-- Run command — `git status`, `git branch --show-current`; `gh pr view`/`gh pr list` (merged-unclosed detection), `git fetch`/`git show`/`git ls-remote --tags origin`/`gh release view` (release retry check), `gh pr merge` (a legacy finalize PR only); decisions-log rotation (rename, copy template, commit those paths)
+-- Request user decision — new-sprint confirm, resume/abort choice (never free-form scope text)
++- Run command — `git status`, `git branch --show-current`; `gh pr view`/`gh pr list` (merged-unclosed detection), `git fetch`/`git show`/`git log`/`git ls-remote --tags origin`/`gh release view` (release retry check), `gh pr merge` (a legacy finalize PR only); decisions-log rotation (rename, copy template, commit those paths)
++- Request user decision — new-sprint confirm, resume/abort choice, release retry or continue (never free-form scope text)
+ - Delegate to skill — phase skills, plus `asd-init` per "Skills dispatched"
+ - No other writes — phase skills and their inline orchestrator own writes
+ 
+@@ -30,7 +30,7 @@ Before a phase-skill delegation below, rotate the decisions log when `.asd/rules
+ - Each, whatever its `phase`: `gh pr view <pr.number> --json state,mergeCommit` reporting `MERGED` — or, with no `pr.number`, a `MERGED` hit of `gh pr list --head <state.branch> --state all --json number,state,mergeCommit` (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"), its number carried to the closure write — makes it **merged-unclosed**, whatever `pr.state` records (legacy `closure-pending` included) — unless `gh pr list --head chore/finalize-sprint-<NNN-slug> --state all` finds a legacy companion PR: an `OPEN` one is merged per `git-strategy.md` "Merging a PR"; an `OPEN` or `MERGED` one closes the sprint on `git.base_branch`, so it is no longer active and gets no closure write.
+ - A `CLOSED` head-branch hit counts as no hit. A head-branch lookup that cannot reach `gh` outside `phase="pr"` warns and resumes the sprint ("Merged-unclosed"); any other `gh` failure is FAILED naming the fix for its cause (`git-strategy.md` "PR creation").
+ - 0 active → new-sprint flow
+-- 1 active, merged-unclosed, `self_hosting: enabled`, its `v<asd_version>` tag or release missing → release retry ("Merged-unclosed"): dispatch `asd-phase-pr` with the confirmed PR number; its merge mode, the PR already `MERGED`, runs only the release
++- 1 active, merged-unclosed, `self_hosting: enabled`, its release commit, `v<asd_version>` tag or release missing → release retry ("Merged-unclosed"): request user decision, each time — retry dispatches `asd-phase-pr` with the confirmed PR number, its merge mode running only the release; continue takes the route below, carrying that choice
+ - 1 active, merged-unclosed otherwise → new-sprint flow (Step 2A), carrying its path and the merged PR's number detection confirmed, whichever copy or lookup it came from
+ - 1 active otherwise → resume flow; an `OPEN` head-branch hit changes nothing here, pr open mode adopting it at `phase="pr"` only ("Merged-unclosed")
+ - >1 → emit FAILED "multiple active sprints found, manual cleanup needed"
+diff --git a/.asd/workflows/asd-phase-pr.md b/.asd/workflows/asd-phase-pr.md
+index 9adf671..6130396 100644
+--- a/.asd/workflows/asd-phase-pr.md
++++ b/.asd/workflows/asd-phase-pr.md
+@@ -13,8 +13,8 @@ Append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecyc
+ 
+ ## Merge mode
+ 
+-1. Re-enter from either active or legacy archived path. Unless `gh pr view <pr.number> --json state` (with `pr` null, the number open mode or `asd-sprint` carries) already reports `MERGED`, first confirm the PR head carries open mode step 3's publication, since the squash merge is base's only source of `pr.number` (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"): `git fetch origin <state.branch>`, then `git show origin/<state.branch>:<sprint>/state.json` must hold this `pr.number`. If it does not, commit the local `state.json.pr` write if uncommitted, push the sprint branch and re-confirm; a push failure is `FAILED`. Then merge the sprint PR through `gh` per `git-strategy.md` "Merging a PR"; a `gh` failure is `FAILED` naming the fix ("PR creation"). Confirm the merge landed before proceeding; a PR that did not merge leaves the sprint active.
+-2. `self_hosting: enabled`: `git fetch origin <git.base_branch>`, then publish the release per `git-strategy.md` "Versioning & Changelog (self-hosting only)". Write no state, archive move or commit, on any branch; the self-hosting tag and release are a tag ref and a host object, not a branch write (`sprint-lifecycle.md` "PR phase"). Emit `NEXT: done`.
++1. Re-enter from either active or legacy archived path. When `gh pr view <pr.number> --json state` (with `pr` null, the number open mode or `asd-sprint` carries) already reports `MERGED`, go to step 2. Otherwise first confirm the PR head carries open mode step 3's publication, since the squash merge is base's only source of `pr.number` (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"): `git fetch origin <state.branch>`, then `git show origin/<state.branch>:<sprint>/state.json` must hold this `pr.number`. If it does not, commit the local `state.json.pr` write if uncommitted, push the sprint branch and re-confirm; a push failure is `FAILED`. Then merge the sprint PR through `gh` per `git-strategy.md` "Merging a PR"; a `gh` failure is `FAILED` naming the fix ("PR creation"). Confirm the merge landed before proceeding; a PR that did not merge leaves the sprint active.
++2. `self_hosting: enabled`: `git fetch origin <git.base_branch>`, then publish the release per `git-strategy.md` "Versioning & Changelog (self-hosting only)", which first confirms a base commit carries this sprint's version bump and CHANGELOG section. Then, every project: write no state, archive move or commit, on any branch; the self-hosting tag and release are a tag ref and a host object, not a branch write (`sprint-lifecycle.md` "PR phase"). Emit `NEXT: done`.
+ 
+ ## Artefacts
+ 
+diff --git a/.asd/workflows/asd-phase-scope.md b/.asd/workflows/asd-phase-scope.md
+index 70727fd..5efee1b 100644
+--- a/.asd/workflows/asd-phase-scope.md
++++ b/.asd/workflows/asd-phase-scope.md
+@@ -5,7 +5,7 @@ The main orchestrator owns this phase inline.
+ 1. Read config and existing active/legacy archived sprints. Obtain raw scope when absent, as a plain chat message, fast-forward the base branch, require a clean tree, create the sprint branch, run the closure write below when `asd-sprint` passed a merged-unclosed sprint, then create the sprint folder. Request user decision on the sprint workflow, `standard` or `lite` (`sprint-lifecycle.md` "Workflows"): hard `workflow choice` gate, never defaulted in either gate mode, asked only here; a scope re-run keeps the frozen value. The answer seeds `{{WORKFLOW}}`; step 2's seeding records it in `gate_decisions` and one decisions-log line.
+    **Closure write** (`sprint-lifecycle.md` "PR phase"; the closing sprint is exempt from the one-active rule):
+    - `git mv` the closing sprint folder into `.asd/sprints/archived/`; a legacy folder already there is written in place (`sprint-lifecycle.md` "Sprint immutability");
+-   - in its `state.json` write `pr.state="merged"`, `pr.merge_commit` (`gh pr view <pr.number> --json mergeCommit`; a null `pr` takes `pr.number` from the confirmed number `asd-sprint` carries and writes it too), `phase="done"`, `updated_at`, `archived_at`, and append a `gate_decisions` entry `gate: sprint-closure`, `decision_actor: orchestrator`, its evidence the merge commit; append one entry to its `decisions-log.md`;
++   - in its `state.json` write `pr.state="merged"`, `pr.merge_commit` (`gh pr view <pr.number> --json mergeCommit`; a null `pr` takes `pr.number` from the confirmed number `asd-sprint` carries and writes it too), `phase="done"`, `updated_at`, `archived_at`, and append a `gate_decisions` entry `gate: sprint-closure`, `decision_actor: orchestrator`, its evidence the merge commit; append one entry to its `decisions-log.md`, naming a continue choice `asd-sprint` carries (`decision_actor: user`, "Merged-unclosed");
+    - commit those paths as the new branch's first commit.
+ 2. Refine scope into `sprint.md` with stable `AC-N` ids; ask the user only for ambiguity that prevents a concrete scope. Verify every retrospective-derived criterion against current `HEAD` — one asserting host behaviour also against the host docs or a live dispatch — before writing it, and record that verification in `decisions-log.md` per `sprint-lifecycle.md` "Orchestration and adaptive gates". Seed state and decisions log.
+ 2a. **Retro intake** per `sprint-lifecycle.md` "Retro intake" (sole SSoT, not restated here): run `node .asd/runtime.js retro-candidates --sprints .asd/sprints --backlog .asd/project/retro-backlog.md`, adding `--self-hosting` when `self_hosting: enabled`; verify each candidate at `HEAD`; the unresolved rest ride the step 4 gate, and an included one becomes an `AC-N` in `sprint.md`.
+diff --git a/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md b/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md
+index 2dce174..f445e64 100644
+--- a/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md
++++ b/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md
+@@ -131,7 +131,9 @@ dressing the round up with a new test.
+ Related, when the dispatching message hands you a commit range: check it contains the changes it
+ names. Entry 4 (cont.) was pointed at `11bf405..dd47159`, which held only sprint bookkeeping — the
+ dev chain was `5add9f5..2ae44c6`, an ancestor of the entry's own test commit, so the suite run
+-already recorded had covered it and the range as given would have produced an empty gate.
++already recorded had covered it and the range as given would have produced an empty gate. A payload's numeric claim is
++the same trap: "61 lines already changed in tests/run.js" (entry 3) was entry 2's own commit, outside the delta. Run
++`git diff <prior>...HEAD -- <file>` before trusting it.
+ 
+ ## Match the mutation to what the assertion claims
+ 
+@@ -161,6 +163,10 @@ the generated `.codex/`/`.claude/` views: a `variantMeta` regression leaves the
+ so a disk read stays green and only §9's `--check` drift fires. `sync.buildSyncPlan(REPO_ROOT)` items carry
+ the variant meta as `metaOverride` (`agentVariants` is not exported) — render those (sprint 018).
+ 
++A mutation that also reddens an OLDER sprint's test shows your new assert repeats part of it. Drop that half and keep
++only the new relation. Then re-prove with a mutation that reaches only yours (sprint 022 entry 2: the rollback
++`re-divides` token was already sprint-017 D3's, and only the shared `waves.json` span was new).
++
+ A "tight somewhere" assert on an upper bound only catches an overcount that hits every sampled point.
+ When a fix adds a parameter with a default, the old and new formulas usually agree only at some inputs
+ (sprint 015 EXT-4: only at multiples of 25). Compute both at each sampled point before writing
+@@ -260,6 +266,20 @@ A fix that *removes* a narrowing condition has no positive substance: require it
+ one word (`null`), keep the positive assert on the clause itself so deletion cannot pass vacuously, and record
+ both ceilings (a synonym passes; "whether or not null" reddens).
+ 
++A **value mirror** (one tier stated in agent frontmatter, `providers.md` "Agent tier matrix", README tables and two prose
++sentences) is a relation, not a literal. Take the effective value from `sync.buildSyncPlan` metas (`variantMeta` already drops
++a variant's unset effort; do not re-derive it), compare structured cells exactly, and compare prose as the whole-word
++vocabulary set (families plus efforts) of the one sentence that states it, so a reword stays green (sprint 022 entry 3, 27
++mutations). Record the ceiling: pairings inside a sentence are not compared. Find that sentence after dropping table and
++heading lines: a matrix table has no full stop, so it reads as one sentence and the locator hits twice.
++
++A **concrete-id bump** (sprint 022 entry 4, `sol` to `gpt-6.1-sol`) lands in four kinds of pin. A byte-for-byte fixture's
++`content_digest` covers the id line: recompute it with `node:crypto` over the edited body and check it equals the runner's,
++keep the fixture literal, and derive every other expectation from `model_families`. A literal absence guard
++(`!includes('gpt-6-sol')`) cannot see `gpt-6.1-sol`, so guard the shape. An override proving "the table you pass wins" must be
++an id no live table can hold (`gpt-0-sol`), or the live lookup satisfies it. An `includes` placed after a `strictEqual`
++against the same fixture is unreachable, so delete it.
++
+ ## Fixtures whose bytes are the input
+ 
+ Never commit one whose distinguishing bytes cannot survive checkout. Sprint 009 shipped
+diff --git a/README.md b/README.md
+index 0699cce..c044af9 100644
+--- a/README.md
++++ b/README.md
+@@ -35,7 +35,7 @@ When External Review is enabled, `/asd-init` probes the other provider's configu
+ 
+ ### Codex with a ChatGPT account
+ 
+-Codex delegates use the concrete model IDs in the canonical family map: `sol` → `gpt-6-sol` and `luna` → `gpt-6-luna`. Do not substitute the unsuffixed API-style identifier (e.g. `gpt-6`): a delegate-startup error naming an unsupported model means the canonical map or generated agent view is stale. Update ASD or correct the canonical mapping, regenerate the affected view with `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `.asd/rules/providers.md` "Canonical path -> per-provider path"), then run `node .asd/sync.js --check`.
++Codex delegates use the concrete model IDs in the canonical family map: `sol` → `gpt-6.1-sol` and `luna` → `gpt-6-luna`. Do not substitute the unsuffixed API-style identifier (e.g. `gpt-6`): a delegate-startup error naming an unsupported model means the canonical map or generated agent view is stale. Update ASD or correct the canonical mapping, regenerate the affected view with `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `.asd/rules/providers.md` "Canonical path -> per-provider path"), then run `node .asd/sync.js --check`.
+ 
+ Optional external tools auto-detected by `/asd-init`:
+ 
+@@ -189,7 +189,7 @@ flowchart TD
+ | **impl-test** | Tester picks the risk-based test approach for the change scope, deletes redundant/flaky/implementation-coupled tests, writes the missing ones, runs the impacted set; records everything in `test-plan.md`, each regression proof with its failing command, non-zero exit code and test name; code defects route back to `impl` |
+ | **impl-review** | 4 internal reviewers (Correctness, Efficiency, Testing, Documentation) plus External Review; a large scope is reviewed as up to 3 sequential review waves, each with its own iteration counter; routes findings back to `impl` review-fix mode; once every wave's reviewers approve, runs the sprint's one full-suite check — green advances to `retro`, red exits to `impl` test-fix mode and clears every APPROVE latch |
+ | **retro** | Orchestrator reads the sprint's friction log and writes `retrospective.html` in two classes: remediation traced to `F-N` entries, and systemic proposals for a cheaper next sprint (derived from how the sprint ran, not bounded by the entries); findings sharing a root cause merge first, one an existing rule already covers is dropped citing it, and each survivor gets a one-line `Guardrail`, its `Home`, and a stable row id (`A-N` for Actions, `P-N` for Systemic proposals, `N` the table's 1-based row ordinal) — every row marked as acting on the consumer project or the ASD framework, never applied by retro; an entry-free log skips remediation only, proposals still ship; closes with a chat summary |
+-| **pr** | DoD verification + `gh pr create`, then ASD merges the PR itself through `gh` (a `gh` failure is `FAILED` naming the fix); one PR per sprint. Exit tokens are `await-merge` (PR opened) and `done` (merge confirmed). A merged PR completes the sprint with no user gate; under self-hosting the merge step also publishes the tag and release (idempotent, retried on the next `/asd-sprint`). Nothing is written on the base branch: the next sprint's scope archives the merged sprint (archive move, terminal state) as its first commit |
++| **pr** | DoD verification + `gh pr create`, then ASD merges the PR itself through `gh` (a `gh` failure is `FAILED` naming the fix); one PR per sprint. Exit tokens are `await-merge` (PR opened) and `done` (merge confirmed). A merged PR completes the sprint with no user gate; under self-hosting the merge step also publishes the tag and release on the commit carrying the sprint's version bump (idempotent; while it is missing, each `/asd-sprint` asks to retry it or continue without it). Nothing is written on the base branch: the next sprint's scope archives the merged sprint (archive move, terminal state) as its first commit |
+ 
+ You can resume an interrupted sprint at any time: `/asd-sprint` reads `state.json`, detects the current phase, and dispatches the matching phase skill.
+ 
+@@ -215,7 +215,7 @@ Phase skills (`asd-phase-*`) are dispatched internally by `/asd-sprint`/`$asd-sp
+ 
+ ## Agents
+ 
+-Twelve specialized agents are canonically defined in `.asd/agents/` and generated per provider: `.claude/agents/*.md` for Claude Code, `.codex/agents/*.toml` for Codex. Each declares a model family alias per provider (Claude: fable/opus/sonnet/haiku; Codex: sol/luna) plus supported reasoning effort (omitted for Haiku); `.asd/sync.js` resolves aliases to concrete model ids via `.asd/release-manifest.json`'s `model_families` table (mirrored in [`.asd/rules/providers.md`](.asd/rules/providers.md)). Effort is shown as `model/effort`.
++Twelve specialized agents are canonically defined in `.asd/agents/` and generated per provider: `.claude/agents/*.md` for Claude Code, `.codex/agents/*.toml` for Codex. Each declares a model family alias per provider (Claude: fable/sonnet/haiku; Codex: sol/luna) plus supported reasoning effort (omitted for Haiku); `.asd/sync.js` resolves aliases to concrete model ids via `.asd/release-manifest.json`'s `model_families` table (mirrored in [`.asd/rules/providers.md`](.asd/rules/providers.md)). Effort is shown as `model/effort`.
+ 
+ Only the main orchestrator (and a skill it runs inline) ever prompts you for a discrete decision (`AskUserQuestion` on Claude Code, chat-and-block on Codex — `.asd/rules/providers.md` "Semantic operations -> host convention"). No creator, reviewer, or advisor agent carries that grant on either host: a dispatched agent facing a hard or unresolved decision returns `QUESTION` (creators) or its `Escalations`/`Stalemate` carrier (reviewers/External) to the orchestrator instead (`.asd/rules/sprint-lifecycle.md` "`QUESTION` protocol", `.asd/rules/review-policy.md` "Gate Verdict Format").
+ 
+@@ -223,13 +223,13 @@ Only the main orchestrator (and a skill it runs inline) ever prompts you for a d
+ 
+ | Agent | Claude | Codex | Role |
+ |---|---|---|---|
+-| `asd-ba` | opus/high | sol/high | Business analyst: PRD, acceptance criteria; conditional domain audit support |
+-| `asd-ux` | opus/high | sol/high | UX flows, UI mockups, DESIGN.md tokens, design-system.html |
+-| `asd-architect` | opus/high | sol/high | Complete docs/code audit; ADRs, subsystem registry, C4, stack, API contracts, tech references |
++| `asd-ba` | sonnet/high | sol/high | Business analyst: PRD, acceptance criteria; conditional domain audit support |
++| `asd-ux` | sonnet/high | sol/high | UX flows, UI mockups, DESIGN.md tokens, design-system.html |
++| `asd-architect` | sonnet/xhigh | sol/high | Complete docs/code audit; ADRs, subsystem registry, C4, stack, API contracts, tech references |
+ | `asd-dev` | sonnet/medium | sol/medium | Server/CLI/library code and UI code (no tests; consumes DESIGN.md tokens where UI work applies) |
+ | `asd-tester` | sonnet/medium | sol/medium | All tests: risk-based selection, pruning, authoring at every level, suite runs, manual verification specs |
+ 
+-The main orchestrator owns scope, plan, state, decisions, manual-step validation, Git and release/archival sequencing; no PM agent is spawned. Dev/Tester task variants share each canonical role body and permissions: `-mechanical` uses Haiku (no effort)/Luna low, `-critical` Opus/Sol high; tier `standard` has no variant and dispatches the base agent (Sonnet/Sol medium). Deterministic bookkeeping uses commands. Routing uses objective eligibility, escalates on a risk declared against the change or a failed check — a risk declared against the artifact alone does not — and never changes the main model. Experimental cheap outputs retain strong independent review.
++The main orchestrator owns scope, plan, state, decisions, manual-step validation, Git and release/archival sequencing; no PM agent is spawned. Dev/Tester task variants share each canonical role body and permissions: `-mechanical` uses Haiku (no effort)/Luna low, `-critical` Sonnet xhigh/Sol high; tier `standard` has no variant and dispatches the base agent (Sonnet/Sol medium). Deterministic bookkeeping uses commands. Routing uses objective eligibility, escalates on a risk declared against the change or a failed check — a risk declared against the artifact alone does not — and never changes the main model. Experimental cheap outputs retain strong independent review.
+ 
+ All five creators carry `WebFetch`/`WebSearch` (Codex `web_search: "live"`), each scoped by its own Tool policy. BA, UX, and Architect also carry `Bash`, each bounded to its own run-command policy: BA to read-only git inspection (`git log`/`git show`/`git diff`); UX to the `designmd-lint`/`-diff`/`-export` `commands.yaml` aliases (`designmd-install` is the orchestrator's, run before dispatching UX); Architect to the `likec4` CLI (lint/validate only, never `build` inside a sprint draft) — none of the three writes an artifact via shell or holds a commit tool (`.asd/rules/git-strategy.md` "Commit before review"). Dev and Tester carry `Bash` limited by their run-command policy (`commands.yaml` commands plus `git add`/`git commit` for their own work; Dev never runs `test`) and are the only two agents holding a commit tool.
+ 
+@@ -241,11 +241,11 @@ Web grants split per reviewer: Correctness and the `lite`-only combined reviewer
+ 
+ | Agent | Claude | Codex | Phase(s) | Scope |
+ |---|---|---|---|---|
+-| `asd-reviewer-correctness` | opus/high | sol/high | design-review (draft correctness + UI section) + impl-review | Bugs, security, best-practice, contract drift; PRD/AC-N coverage trace; UX-spec compliance, design-system tokens, a11y — UI conformance section n/a-able (see below); design-review also judges draft correctness (AC completeness, contract/ADR soundness). Receives every file in scope. |
+-| `asd-reviewer-efficiency` | opus/high | sol/high | design-review + impl-review | Over-engineering (13-item checklist) + structure/cohesion (god/sprawling type) detection; impl-review-only perf budgets, regression, anti-patterns — perf sections n/a-able (see below). Receives every file in scope. |
+-| `asd-reviewer-testing` | opus/high | sol/high | impl-review | `test-plan.md` decisions (risk fit, justified removals and no-test calls, fail-first proof), test quality, manual verification capture. Receives only the `isTest` scope files plus `test-plan.md` and its segments — the one narrowed reviewer list. |
+-| `asd-reviewer-documentation` | opus/high | sol/high | design-review + impl-review | SSoT integrity, documentation economy, template adherence, traceability, in-code doc comments and stub resolution (impl-review). Receives every file in scope. |
+-| `asd-reviewer-combined` | opus/high | sol/high | impl-review (`lite` only) | Single-pass reviewer for `lite`'s impl-review: applies the Correctness, Efficiency, and (when a documentation file is in scope) Documentation rubrics, plus its own overall-quality entry. Receives every file in scope. |
++| `asd-reviewer-correctness` | sonnet/xhigh | sol/high | design-review (draft correctness + UI section) + impl-review | Bugs, security, best-practice, contract drift; PRD/AC-N coverage trace; UX-spec compliance, design-system tokens, a11y — UI conformance section n/a-able (see below); design-review also judges draft correctness (AC completeness, contract/ADR soundness). Receives every file in scope. |
++| `asd-reviewer-efficiency` | sonnet/xhigh | sol/high | design-review + impl-review | Over-engineering (13-item checklist) + structure/cohesion (god/sprawling type) detection; impl-review-only perf budgets, regression, anti-patterns — perf sections n/a-able (see below). Receives every file in scope. |
++| `asd-reviewer-testing` | sonnet/xhigh | sol/high | impl-review | `test-plan.md` decisions (risk fit, justified removals and no-test calls, fail-first proof), test quality, manual verification capture. Receives only the `isTest` scope files plus `test-plan.md` and its segments — the one narrowed reviewer list. |
++| `asd-reviewer-documentation` | sonnet/xhigh | sol/high | design-review + impl-review | SSoT integrity, documentation economy, template adherence, traceability, in-code doc comments and stub resolution (impl-review). Receives every file in scope. |
++| `asd-reviewer-combined` | sonnet/xhigh | sol/high | impl-review (`lite` only) | Single-pass reviewer for `lite`'s impl-review: applies the Correctness, Efficiency, and (when a documentation file is in scope) Documentation rubrics, plus its own overall-quality entry. Receives every file in scope. |
+ | `asd-external-review` | sonnet/medium | sol/medium | both | Wraps the *other* provider's CLI (Codex CLI under Claude Code, Claude CLI under Codex), reads its own content from a structured scope manifest — file list plus a `.diff` file, per `.asd/rules/review-policy.md` § Scope hand-off (`.asd/rules/external-review.md` § Phase-scoped payload) — parses output, applies severity floor |
+ 
+ Reviewers emit a machine-parseable first-line verdict token: `[REVIEW-<phase>-<reviewer>]: APPROVE|CONCERNS|FAIL`, where `<phase>` is `design` or `impl` and `<reviewer>` is `correctness | efficiency | testing | documentation | combined | external`. External Review's first line may also be the skip form, per `.asd/rules/external-review.md` § Outcome contract.
+diff --git a/tests/fixtures/expected/agents/demo-agent.codex.toml b/tests/fixtures/expected/agents/demo-agent.codex.toml
+index 022718c..dd8cd26 100644
+--- a/tests/fixtures/expected/agents/demo-agent.codex.toml
++++ b/tests/fixtures/expected/agents/demo-agent.codex.toml
+@@ -1,7 +1,7 @@
+-# ASD generated. Edit .asd/agents/demo-agent.md. source_digest=sha256:2b4ab6273b26818263b14a6960d9913e55e7b8ee716d2143cc911078004404e3 content_digest=sha256:0e588a725c473f3b38851225b7464ac2d2a81a1a5f0ec39bd0ff09b7965088ef asd_version={{FIXTURE_ASD_VERSION}} schema=1
++# ASD generated. Edit .asd/agents/demo-agent.md. source_digest=sha256:2b4ab6273b26818263b14a6960d9913e55e7b8ee716d2143cc911078004404e3 content_digest=sha256:c8e9c41b5fc46120d9e4fee762b547e1ebeb6fdad4bedc83a305d2d1363758fb asd_version={{FIXTURE_ASD_VERSION}} schema=1
+ name = "asd-demo"
+ description = "Demo agent used only by tests/run.js fixtures for sync.js transforms."
+-model = "gpt-6-sol"
++model = "gpt-6.1-sol"
+ model_reasoning_effort = "high"
+ sandbox_mode = "workspace-write"
+ developer_instructions = """
+diff --git a/tests/run.js b/tests/run.js
+index 2bed1da..fcdc1ed 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -91,7 +91,6 @@ test('canonical agent -> Codex .toml matches fixture', () => {
+   const expected = readExpectedFixture(path.join(FIXTURES, 'expected/agents/demo-agent.codex.toml'), manifest);
+   assert.strictEqual(rendered.output, expected);
+   assert.ok(rendered.output.startsWith('# ASD generated. Edit .asd/agents/demo-agent.md.'));
+-  assert.ok(rendered.output.includes('model = "gpt-6-sol"'), 'codex model family alias must resolve via release-manifest table');
+   assert.ok(rendered.output.includes('developer_instructions = """'));
+ });
+ 
+@@ -227,7 +226,9 @@ test('agent-claude / agent-codex transforms resolve {{wraps_cli}}/{{wraps_config
+ test('asd-external-review: the wrapped CLI subprocess carries an explicit read-only flag on both providers', () => {
+   const claudeAgent = fs.readFileSync(path.join(REPO_ROOT, '.claude/agents/asd-external-review.md'), 'utf8');
+   const codexAgent = fs.readFileSync(path.join(REPO_ROOT, '.codex/agents/asd-external-review.toml'), 'utf8');
+-  assert.ok(claudeAgent.includes('codex exec --model gpt-6-sol -c model_reasoning_effort="high" --sandbox read-only -'), 'Claude-side must invoke the wrapped Codex CLI with explicit model, effort, and read-only sandbox');
++  const wrapper = sync.parseCanonicalFrontmatter(sync.readNormalized(path.join(REPO_ROOT, '.asd', 'agents', 'asd-external-review.md'))).meta;
++  const wrappedModel = loadManifest().model_families.codex[wrapper.claude.wraps_model];
++  assert.ok(claudeAgent.includes(`codex exec --model ${wrappedModel} -c model_reasoning_effort="high" --sandbox read-only -`),'Claude-side must invoke the wrapped Codex CLI with explicit model, effort, and read-only sandbox');
+   assert.ok(codexAgent.includes('--restricted --tools "Read,Grep,Glob" --strict-mcp-config'), 'Codex-side must invoke the wrapped Claude CLI with explicit read-only tool restriction, not rely on ambient project permissions');
+ });
+ 
+@@ -246,11 +247,13 @@ test('AC-3: wrapped model aliases resolve through the wrapped provider table', (
+   const manifest = loadManifest();
+   const raw = sync.readNormalized(path.join(REPO_ROOT, '.asd', 'agents', 'asd-external-review.md'));
+   const { meta, body } = sync.parseCanonicalFrontmatter(raw);
+-  assert.ok(!raw.includes('gpt-6-sol'), 'canonical wrapper source must store family aliases only');
++  const concreteId = new RegExp(`gpt-\\d+(\\.\\d+)?-(${Object.keys(manifest.model_families.codex).join('|')})`);
++  assert.ok(!concreteId.test(raw), 'canonical wrapper source must store family aliases only - a concrete Codex id of any version is the pin a model bump would leave stale');
++  const override = 'gpt-0-sol';
+   const changed = structuredClone(manifest);
+-  changed.model_families.codex.sol = 'gpt-6-sol';
++  changed.model_families.codex.sol = override;
+   const rendered = sync.transformAgentClaude(meta, body, changed);
+-  assert.ok(rendered.includes('--model gpt-6-sol'), 'nested wrapper arguments must receive the resolved wrapped model');
++  assert.ok(rendered.includes(`--model ${override}`), 'nested wrapper arguments must receive the resolved wrapped model from the table the render is given - the override is an id (version 0) no live table holds, so the live table cannot satisfy this');
+   assert.ok(!rendered.includes('{{wraps_model}}'));
+ });
+ 
+@@ -6834,7 +6837,7 @@ test('sprint-021 AC-10/AC-11 (D5): scratch-dir creates .asd/tmp/ beside the runt
+   assert.strictEqual(git('status', '--porcelain', '--untracked-files=all'), '', 'the directory and its own .gitignore must be ignored with no root .gitignore entry - a consumer needs no migration, and a helper or return file never reaches a commit or a review');
+ });
+ 
+-test('sprint-021 AC-1/AC-2 (D1), sprint-022 AC-1/AC-2/AC-3: pr ends at await-merge or done, and runtime CHAIN_EXITS, asd-sprint and README agree; pr open mode commits and pushes its state.json.pr write before await-merge, pr merge mode republishes it if the PR head lacks it before merging, fetches base before the self-hosting release and performs no part of the closure write, which releases nothing and is the orchestrator\'s, and scope step 1 carries every token of it', () => {
++test('sprint-021 AC-1/AC-2 (D1), sprint-022 AC-1/AC-2/AC-3: pr ends at await-merge or done, and runtime CHAIN_EXITS, asd-sprint and README agree; pr open mode commits and pushes its state.json.pr write before await-merge, pr merge mode, entered on any confirmed MERGED number, skips the merge for a PR already MERGED, republishes it if the PR head lacks it before merging, fetches base before the self-hosting release and, in every project, performs no part of the closure write, which releases nothing and is the orchestrator\'s, and scope step 1 carries every token of it', () => {
+   const definitions = readWorkflowDefinitions();
+   const exits = [...new Set(definitions.flatMap(({ phases, next }) => Object.values(next).flat().filter((target) => !phases.includes(target))))].sort();
+   assert.deepStrictEqual(exits, ['await-merge', 'done'], 'sprint-022 AC-3 (D1): the chain ends at pr\'s two exits - the PR opened, then merged; done names completion, not a write, since pr never writes the terminal state');
+@@ -6863,6 +6866,15 @@ test('sprint-021 AC-1/AC-2 (D1), sprint-022 AC-1/AC-2/AC-3: pr ends at await-mer
+   const release = stepOf(merge, 2);
+   const [fetchAt, releaseAt, doneAt] = ['`git fetch origin <git.base_branch>`', '"Versioning & Changelog (self-hosting only)"', '`NEXT: done`'].map((token) => release.indexOf(token));
+   assert.ok(fetchAt >= 0 && fetchAt < releaseAt && releaseAt < doneAt, 'sprint-022 AC-1 (D2): pr merge mode step 2 fetches git.base_branch, then publishes the release per git-strategy.md "Versioning & Changelog (self-hosting only)", then emits NEXT: done - the squash merge commit the tag targets is not local on the sprint branch until the fetch');
++  const noWrite = release.split(/(?<=\.)\s/).find((sentence) => /\barchive move\b/.test(sentence)) || '';
++  const noWriteAt = noWrite ? release.indexOf(noWrite) : -1;
++  assert.ok(releaseAt < noWriteAt && noWriteAt < doneAt, 'sprint-022 iter-01 combined #3: pr merge mode step 2 publishes the self-hosting release, then states the no-write rule, then emits NEXT: done');
++  assert.ok(!release.startsWith('2. `self_hosting: enabled`:') || /\bevery project\b/i.test(noWrite), `sprint-022 iter-01 combined #3: under a step opening with the self_hosting condition, the no-write rule and NEXT: done must be re-scoped to every project - read literally, a consumer project gets neither, on its most common chain exit; got: ${noWrite}`);
++  const mergedSkip = 'sprint-022 iter-01 combined #5: the release retry and open mode\'s MERGED hit enter merge mode for a PR already MERGED';
++  assert.ok(/\bstep 2\b/.test(stepOf(merge, 1).split(/(?<=\.)\s/).find((sentence) => sentence.includes('`MERGED`')) || ''), `${mergedSkip} - merge step 1 must send an already-MERGED PR straight to step 2, the release, or it runs gh pr merge on a merged PR and ends FAILED`);
++  const modes = sectionOf('.asd/rules/sprint-lifecycle.md', 'PR phase').split('\n\n')[1] || '';
++  const override = modes.split(/(?<=\.)\s/).find((sentence) => sentence.includes('`MERGED`') && /merge mode/.test(sentence)) || '';
++  assert.ok(override.includes('`pr`') && /\bDoD\b/.test(override), `${mergedSkip} - "PR phase" Modes: a dispatch carrying a confirmed MERGED number enters merge mode whatever pr holds, skipping open mode's DoD gate, which a hand-merged sprint with pr=null could fail; got: ${override}`);
+   assert.deepStrictEqual(writes.filter((token) => merge.includes(token)), [], 'AC-1: pr merge mode makes no write on git.base_branch - the archive move and terminal state belong to the next sprint\'s scope');
+   const openSteps = sectionOf('.asd/workflows/asd-phase-pr.md', 'Open mode').split(/\n(?=\d+[a-z]?\. )/);
+   const writeAt = openSteps.findIndex((step) => step.includes('`state.json.pr`'));
+@@ -7034,7 +7046,7 @@ test('sprint-021 AC-7/AC-10/AC-11: each literal the sprint states at two sites a
+   assert.ok(cadenceMinutes > 0 && intervalSeconds === cadenceMinutes * 60, `AC-7: providers.md "Agent liveness per host" must run agent-liveness at the cadence "Agent liveness" sets - ${cadenceMinutes} min vs --interval ${intervalSeconds} s`);
+ });
+ 
+-test('sprint-022 AC-1 (D2): git-strategy.md "Versioning & Changelog (self-hosting only)" publishes the release in pr merge mode after fetching base, skipping each step already done, and a missing tag or release routes a merged-unclosed sprint back to merge mode at its home and in asd-sprint Step 1', () => {
++test('sprint-022 AC-1 (D2), iter-01 external #1/#2, combined #1: git-strategy.md "Versioning & Changelog (self-hosting only)" publishes the release in pr merge mode after fetching base, on the base commit carrying the sprint\'s bump or FAILED, creating a tag only when absent locally and skipping each step already done, and a missing release commit, tag or release makes asd-sprint ask the user, each time, to retry in merge mode or continue without it, at its home and in asd-sprint Step 1', () => {
+   const spans = (text) => [...text.matchAll(/`([^`]+)`/g)].map(([, span]) => span);
+   const release = sectionOf('.asd/rules/git-strategy.md', 'Versioning & Changelog (self-hosting only)').split('\n\n').find((paragraph) => paragraph.includes('`gh release create')) || '';
+   const trigger = release.split(':')[0];
+@@ -7046,18 +7058,54 @@ test('sprint-022 AC-1 (D2): git-strategy.md "Versioning & Changelog (self-hostin
+   const releaseStep = steps.find((clause) => spans(clause).some((span) => span.startsWith('gh release create'))) || '';
+   assert.ok(spans(tagStep).some((span) => span.startsWith('git ls-remote --tags origin')), 'AC-1 (D2): the tag step is skipped when the tag exists on origin - a retry after a failed release must not re-tag');
+   assert.ok(spans(releaseStep).some((span) => span.startsWith('gh release view')), 'AC-1 (D2): the release step is skipped when gh release view finds it - idempotency is per step, so a tag pushed before a failed release still gets its release');
++  const tagCreate = tagStep.slice(0, tagStep.indexOf('`git push origin v'));
++  assert.ok(spans(tagCreate).some((span) => span.includes('refs/tags/v<asd_version>')) && !spans(tagCreate).some((span) => span.startsWith('git ls-remote')), 'external #2: the tag is created only when it is absent locally (refs/tags/v<asd_version>), and pushed only when it is absent on origin - a tag created before a failed push makes the retry\'s tag creation fail with "already exists" when both steps are keyed to origin, so the retry never succeeds');
++  const mergeRead = spans(release).find((span) => /^git show <merge_commit>:\S+$/.test(span));
++  assert.ok(mergeRead, 'sanity: the release reads asd_version at the merge commit with git show <merge_commit>:<manifest>');
++  const bumpMissing = 'external #1: a PR merged before open mode\'s bump carries the previous version, whose tag and release already exist, so the sprint reads as released and is archived without its own release';
++  assert.ok(spans(release).includes(mergeRead.replace('<merge_commit>:', '<merge_commit>^:')), `${bumpMissing} - the release commit's asd_version must be compared with its parent's`);
++  const heading = (/`(## v<version>)`/.exec(sectionOf('.asd/rules/git-strategy.md', 'Versioning & Changelog (self-hosting only)')) || [])[1];
++  assert.ok(heading && spans(release).includes(heading.replace('<version>', '<asd_version>')), `${bumpMissing} - the release commit must also carry the CHANGELOG heading open mode adds (${heading})`);
++  const followUp = spans(release).find((span) => span.startsWith('git log')) || '';
++  assert.ok(/\s--reverse\b/.test(followUp) && followUp.includes('<merge_commit>..origin/<git.base_branch>') && followUp.endsWith(`-- ${mergeRead.split(':')[1]}`), `${bumpMissing} - a merge commit without the bump yields to the FIRST later base commit touching the manifest (git log --reverse <merge_commit>..origin/<git.base_branch> -- <manifest>); newest-first picks a later sprint's bump; got: ${followUp}`);
++  const noBump = release.split(/;\s|(?<=\.)\s/).find((clause) => clause.includes('`FAILED`')) || '';
++  assert.ok(spans(noBump).includes('asd_version') && /\bCHANGELOG\b/.test(noBump) && /\bfollow-up PR\b/.test(noBump), `${bumpMissing} - with no base commit carrying the bump the release is FAILED naming the recovery, a follow-up PR bumping asd_version with its CHANGELOG section; got: ${noBump}`);
++  const releaseCommit = 'external #1: "no release commit" is a missing release - without it in the condition, a merge commit lacking the bump reads as released through the previous version\'s tag';
++  assert.ok(release.includes('the release commit'), 'sanity: git-strategy.md defines "the release commit" the release targets');
+   const retry = release.split(/(?<=\.)\s/).find((sentence) => sentence.includes('`asd-sprint`')) || '';
+   const condition = retry.split('`asd-sprint`')[0].replace(/`[^`]*`/g, '');
+   assert.ok(/\btag\b/.test(condition) && /\brelease\b/.test(condition) && retry.includes('"Merged-unclosed"'), 'AC-1 (D2): the retry route fires on the tag OR the release missing, citing its home "Merged-unclosed" - after a confirmed merge nothing else ever re-runs the release');
++  assert.ok(/\brelease commit\b/.test(condition), `${releaseCommit}; got: ${condition}`);
+ 
+   const home = sectionOf('.asd/rules/sprint-lifecycle.md', 'PR phase').split('**Merged-unclosed**')[1].split('\n\n')[0];
+   const homeRetry = home.split(/(?<=\.)\s/).find((sentence) => spans(sentence).some((span) => span.startsWith('gh release view'))) || '';
+   assert.ok(spans(homeRetry).some((span) => span.startsWith('git ls-remote --tags origin')) && /merge mode/.test(homeRetry), '"Merged-unclosed" retry route: a tag absent on origin or a failing gh release view sends the sprint back to merge mode');
+-  const stepOne = canonText('.asd/skills/asd-sprint/SKILL.md').split('### Step 1:')[1].split('\n### ')[0].split('\n');
++  assert.ok(/\brelease commit\b/.test(homeRetry.replace(/`[^`]*`/g, '')), `"Merged-unclosed": ${releaseCommit}`);
++  const noExit = 'combined #1 (user answer 2026-09-30): a release that keeps failing held every new sprint behind a retry with no exit, so asd-sprint asks the user each time - retry, or continue without the release, recorded in the closing sprint\'s decisions log';
++  assert.ok(/\buser decision\b/.test(homeRetry) && /\beach time\b/.test(homeRetry), `"Merged-unclosed": ${noExit}`);
++  const homeContinue = homeRetry.split(/;\s/).find((clause) => /\bcontinue\b/.test(clause)) || '';
++  const actor = spans(homeContinue).find((span) => span.startsWith('decision_actor:'));
++  assert.ok(actor === 'decision_actor: user' && /\bdecisions log\b/.test(homeContinue), `"Merged-unclosed": the continue option is recorded in the decisions log as the user's decision - ${noExit}; got: ${homeContinue}`);
++  const homeSentences = home.split(/(?<=\.)\s/);
++  const afterRetry = homeSentences[homeSentences.indexOf(homeRetry) + 1] || '';
++  assert.ok(/\bcontinue\b/.test(afterRetry) && /new-sprint flow/.test(afterRetry), `"Merged-unclosed": a continue choice enters the new-sprint flow - ${noExit}`);
++  const scopeStep = stepOf(canonText('.asd/workflows/asd-phase-scope.md').split('\n## ')[0], 1);
++  const logClause = scopeStep.split(/;\s/).find((clause) => clause.includes('`decisions-log.md`')) || '';
++  assert.ok(spans(logClause).includes(actor), `asd-phase-scope.md step 1: the closure write's decisions-log entry names a continue choice asd-sprint carries (${actor}) - ${noExit}`);
++  const sprintSkill = canonText('.asd/skills/asd-sprint/SKILL.md');
++  const stepOne = sprintSkill.split('### Step 1:')[1].split('\n### ')[0].split('\n');
+   const skillRetry = stepOne.find((line) => spans(line).includes('self_hosting: enabled') && line.includes('→')) || '';
+   const [skillCondition, skillRoute = ''] = skillRetry.split('→');
+   assert.ok(/\btag\b/.test(skillCondition.replace(/`[^`]*`/g, '')) && /\brelease\b/.test(skillCondition.replace(/`[^`]*`/g, '')), `asd-sprint Step 1 routes a self-hosting merged-unclosed sprint to the release retry when its tag OR its release is missing; got: ${skillCondition}`);
++  assert.ok(/\brelease commit\b/.test(skillCondition.replace(/`[^`]*`/g, '')), `asd-sprint Step 1: ${releaseCommit}`);
+   assert.ok(skillRoute.includes('`asd-phase-pr`') && /merge mode/.test(skillRoute), 'asd-sprint Step 1\'s release retry dispatches asd-phase-pr, whose merge mode runs only the release');
++  assert.ok(/\buser decision\b/.test(skillRoute) && /\beach time\b/.test(skillRoute), `asd-sprint Step 1: ${noExit}`);
++  assert.ok(skillRoute.split(/;\s/).some((clause) => /\bcontinue\b/.test(clause)) && (stepOne[stepOne.indexOf(skillRetry) + 1] || '').includes('Step 2A'), `asd-sprint Step 1: the continue option takes the next route, the new-sprint flow (Step 2A) - ${noExit}`);
++  const routeName = skillRoute.trim().split(' (')[0];
++  const operations = sprintSkill.split('\n');
++  assert.ok((operations.find((line) => line.startsWith('- Request user decision')) || '').includes(routeName), `asd-sprint "Operations used": Request user decision must list the ${routeName} choice Step 1 requests`);
++  const logHead = followUp.split(' ').slice(0, 2).join(' ');
++  assert.ok(spans(operations.find((line) => line.startsWith('- Run command')) || '').includes(logHead), `asd-sprint "Operations used": Run command must list ${logHead}, the follow-up search Step 1's release-commit check runs`);
+ 
+   const opening = sectionOf('.asd/rules/sprint-lifecycle.md', 'PR phase').split('\n\n')[1] || '';
+   const note = opening.split(/(?<=\.)\s/).find((sentence) => sentence.startsWith('`NEXT: done`')) || '';
+@@ -7108,7 +7156,7 @@ test('sprint-022 AC-5 (D5): the orchestrator ticks a wave\'s plan.md checkboxes
+   assert.ok(stepOf(impl, 9).includes('`<sprint>/plan.md`'), 'AC-5: asd-phase-impl step 9\'s authorised-paths gate must admit the plan.md step 7 writes - otherwise the orchestrator\'s own tick commit fails the gate as an unauthorised path');
+ });
+ 
+-test('sprint-022 AC-7 (D4): an amendment accepted after the division point records floor_base, impl-review computes floor and cap on iteration minus that base, and the amendment write clears the wave\'s latch', () => {
++test('sprint-022 AC-7 (D4), iter-01 combined #2: an amendment accepted after the division point records floor_base, impl-review computes floor and cap on iteration minus the base of the latest record since the current waves.json division, and the amendment write clears the wave\'s latch', () => {
+   const spans = (text) => [...text.matchAll(/`([^`]+)`/g)].map(([, span]) => span);
+   const amendment = stepOf(sectionOf('.asd/rules/sprint-lifecycle.md', 'Scope amendment'), 3);
+   const floorBase = spans(amendment).find((span) => span.startsWith('floor_base='));
+@@ -7117,8 +7165,16 @@ test('sprint-022 AC-7 (D4): an amendment accepted after the division point recor
+   assert.ok(spans(amendment).includes('latched') && amendment.includes('"APPROVE latch"'), 'AC-7: the amendment write clears wave K\'s latched, citing "APPROVE latch" - a latched reviewer would otherwise never see the amended code');
+   const latchRoute = sectionOf('.asd/rules/sprint-lifecycle.md', 'APPROVE latch').split('\n').find((line) => /clearing route/.test(line) && line.includes('"Scope amendment"')) || '';
+   assert.ok(spans(latchRoute).includes('latched'), 'AC-7: "APPROVE latch" names every route that clears a latch, so the scope-amendment route must be listed there');
++  const staleBase = 'iter-01 combined #2: floor_base lives in gate_decisions, which the rollback reset never touches, so a record from before a rollback would rebase the re-divided wave K, pinning its floor at low and extending its cap';
++  const selection = amendment.split(/;\s|(?<=\.)\s/).find((clause) => /\blatest\b/.test(clause)) || '';
++  const division = spans(selection).find((span) => span.endsWith('waves.json'));
++  assert.ok(division && /\bdivision\b/.test(selection), `AC-7: "Scope amendment" step 3 takes A from the latest record accepted since the current waves.json division - ${staleBase}; got: ${selection}`);
++  const rollback = canonText('.asd/rules/sprint-lifecycle.md').split('\n').find((line) => line.startsWith('- **Rollback reset.**')) || '';
++  assert.ok(spans(rollback).includes(division), `AC-7: the division-scoped A retires pre-rollback records only because the rollback reset overwrites ${division}, the division the scope names (re-division itself: the sprint-017 D3 assert) - ${staleBase}`);
+   const policy = sectionOf('.asd/rules/review-policy.md', 'Iteration severity floor');
+   assert.ok(policy.includes(`\`${floorBase}\``) && policy.includes('"Scope amendment"'), `AC-7: review-policy.md "Iteration severity floor" subtracts the base the amendment records (${floorBase}) from N`);
++  const policyN = policy.split('\n').find((line) => line.includes(`\`${floorBase}\``)) || '';
++  assert.ok(!/\blatest\b/.test(policyN) || spans(policyN).includes(division), `AC-7: review-policy.md points at "Scope amendment" for A; a restated selection must carry its ${division} division scope - ${staleBase}`);
+   const counters = sectionOf('.asd/rules/sprint-lifecycle.md', 'Review iteration counters').split('\n').find((line) => line.includes('severity floor and iteration cap')) || '';
+   assert.ok(counters.includes('"Scope amendment"'), 'AC-7: "Review iteration counters" - floor and cap are per counter less the amendment base');
+   const implReview = canonText('.asd/workflows/asd-phase-impl-review.md');
+@@ -7162,6 +7218,104 @@ test('sprint-022 AC-2/AC-3/AC-5 leftover-term check: no canon, README, AGENTS.md
+   assert.deepStrictEqual(hits, [], 'each phrase is from a line this sprint deleted (git diff main...HEAD) - one surviving restates the closure gate, its approval, the await-closure exit, the release at the closure write or dev plan ticking. CHANGELOG.md and sprint folders are history and stay out of the sweep');
+ });
+ 
++test('sprint-022 AC-8/AC-9: the model family and effort each agent renders - both providers, mechanical and critical variants, the wrapped reviewer - is the tier providers.md "Agent tier matrix" and README state, the variant-tier prose names the same families and efforts, and README names no family no agent renders', () => {
++  const manifest = loadManifest();
++  const tierOf = (family, effort) => `${family}/${effort || 'none'}`;
++  const spans = (text) => [...text.matchAll(/`([^`]+)`/g)].map(([, span]) => span);
++  const plan = sync.buildSyncPlan(REPO_ROOT).filter((item) => item.kind === 'agent-claude');
++  assert.ok(plan.some((item) => item.metaOverride), 'sanity: the plan must carry the tier variants, or no variant row below is compared');
++  const metas = plan.map((item) => item.metaOverride || item.source.meta);
++  const tiers = new Map(metas.map((meta) => [meta.name, { claude: tierOf(meta.claude.model, meta.claude.effort), codex: tierOf(meta.codex.model, meta.codex.model_reasoning_effort) }]));
++  const baseNames = plan.filter((item) => !item.metaOverride).map((item) => item.source.meta.name);
++  const wrapper = plan.find((item) => item.source.meta.name === 'asd-external-review').source.meta;
++  const wrappedEffort = (args, flag) => {
++    const hit = new RegExp(`${flag}[= ]"?(\\w+)`).exec(args);
++    assert.ok(hit, `asd-external-review wraps_invoke_args must state the wrapped reviewer's effort with ${flag}, or the wrapped-reviewer row has nothing to be compared with`);
++    return hit[1];
++  };
++  const wrapped = {
++    claude: tierOf(wrapper.claude.wraps_model, wrappedEffort(wrapper.claude.wraps_invoke_args, 'model_reasoning_effort')),
++    codex: tierOf(wrapper.codex.wraps_model, wrappedEffort(wrapper.codex.wraps_invoke_args, '--effort')),
++  };
++
++  const matrix = sectionOf('.asd/rules/providers.md', 'Model family resolution').split('### Agent tier matrix')[1].split('\n').filter((line) => line.startsWith('| asd-')).map((line) => line.split('|').slice(1, -1).map((cell) => cell.trim().replace(/ \/ /g, '/')));
++  const cellFor = (cell, variant) => {
++    const part = cell.split(';').map((piece) => piece.trim()).find((piece) => piece.startsWith(`${variant}:`));
++    return part ? part.slice(variant.length + 1).replace(/\(.*$/, '').trim() : cell;
++  };
++  const claimed = [];
++  for (const [agents, claudeCell, codexCell] of matrix) {
++    for (const stem of agents.split(',').map((part) => part.trim().replace(/ \([^)]*\)$/, ''))) {
++      const isWrapped = stem === 'asd-external-review wrapped reviewer';
++      const label = isWrapped || stem === 'asd-external-review wrapper' ? 'asd-external-review' : stem;
++      const prefix = label.endsWith('*') ? label.slice(0, -1) : null;
++      const names = prefix === null ? [label].filter((name) => tiers.has(name)) : [...tiers.keys()].filter((name) => name.startsWith(prefix));
++      assert.ok(names.length > 0, `providers.md "Agent tier matrix" row "${stem}" names no agent canon renders - a stale or misspelled row`);
++      for (const name of names) {
++        const expected = isWrapped ? wrapped : tiers.get(name);
++        const variant = prefix === null ? '' : name.slice(prefix.length);
++        assert.strictEqual(cellFor(claudeCell, variant), expected.claude, `providers.md "Agent tier matrix" row "${stem}": ${name}'s Claude cell must be the model/effort canon renders for it (AC-8/AC-9 moved 11 agents across three mirrors)`);
++        assert.strictEqual(cellFor(codexCell, variant), expected.codex, `providers.md "Agent tier matrix" row "${stem}": ${name}'s Codex cell must be the model/effort canon renders for it`);
++        if (!isWrapped) claimed.push(name);
++      }
++    }
++  }
++  assert.deepStrictEqual(claimed.sort(), [...tiers.keys()].sort(), 'each agent canon renders, variants included, appears in exactly one matrix row - the diff shows the name a row is missing or repeats');
++
++  const agentsSection = sectionOf('README.md', 'Agents');
++  const readmeRows = [...agentsSection.matchAll(/^\| `(asd-[a-z-]+)` \| ([^|]+) \| ([^|]+) \|/gm)].map(([, name, claude, codex]) => [name, claude.trim(), codex.trim()]);
++  assert.deepStrictEqual(readmeRows.map(([name]) => name).sort(), [...baseNames].sort(), 'README\'s agent tables list each canonical agent once - variants are described in prose, not rows');
++  for (const [name, claude, codex] of readmeRows) {
++    assert.deepStrictEqual({ claude, codex }, tiers.get(name), `README "Agents" row ${name}: its Claude and Codex cells must be the model/effort canon renders for it (AGENTS.md: a tier change updates the README table in the same change)`);
++  }
++
++  const used = { claude: new Set(), codex: new Set() };
++  for (const { claude, codex } of tiers.values()) {
++    used.claude.add(claude.split('/')[0]);
++    used.codex.add(codex.split('/')[0]);
++  }
++  const listed = /\(Claude: ([a-z/]+); Codex: ([a-z/]+)\)/.exec(agentsSection);
++  assert.ok(listed, 'README "Agents" must list the model families its agents declare per provider');
++  assert.deepStrictEqual([listed[1].split('/').sort(), listed[2].split('/').sort()], [[...used.claude].sort(), [...used.codex].sort()], 'README\'s per-provider family list is the families the agents render, variants included: a family no agent renders listed (opus after the retier), or a rendered one dropped (haiku), misstates the tiers');
++  const unused = ['claude', 'codex'].flatMap((provider) => Object.keys(manifest.model_families[provider]).filter((family) => !used[provider].has(family)));
++  assert.deepStrictEqual(unused.filter((family) => new RegExp(`\\b${family}\\b`, 'i').test(agentsSection)), [], 'README "Agents" names a model family no agent renders - a tier sentence still on the retired family');
++
++  const efforts = new Set([...tiers.values(), wrapped].flatMap((tier) => [tier.claude, tier.codex]).map((tier) => tier.split('/')[1]));
++  const vocabulary = new Set([...unused, ...used.claude, ...used.codex, ...efforts]);
++  vocabulary.delete('none');
++  const wordsIn = (sentence) => new Set([...sentence.toLowerCase().matchAll(/[a-z]+/g)].map(([word]) => word).filter((word) => vocabulary.has(word)));
++  const wordsOfTiers = (names) => new Set(names.flatMap((name) => [tiers.get(name).claude, tiers.get(name).codex]).flatMap((tier) => tier.split('/')).filter((word) => word !== 'none'));
++  const variantNames = [...tiers.keys()].filter((name) => !baseNames.includes(name));
++  const variantBases = baseNames.filter((name) => tiers.has(`${name}-mechanical`));
++  const sentenceOf = (rel, isTierSentence) => {
++    const hits = canonText(rel).split('\n').filter((line) => !/^[|#]/.test(line)).join('\n').split(/(?<=\.)\s+/).filter(isTierSentence);
++    assert.strictEqual(hits.length, 1, `${rel} must state the variant tiers in exactly one sentence, or the tier words below are compared with the wrong text`);
++    return hits[0];
++  };
++  const bare = (sentence) => sentence.replace(/`[^`]*`/g, '');
++  const providersSentence = sentenceOf('.asd/rules/providers.md', (sentence) => /\bmechanical\b/.test(bare(sentence)) && /\bcritical\b/.test(bare(sentence)));
++  assert.deepStrictEqual([...wordsIn(providersSentence)].sort(), [...wordsOfTiers(variantNames)].sort(), 'AC-9: providers.md "Task-class variants and routing" names exactly the families and efforts the variants render (mechanical: haiku, no effort) - none stale, none missing');
++  const readmeSentence = sentenceOf('README.md', (sentence) => sentence.includes('`-mechanical`') && sentence.includes('`-critical`'));
++  assert.deepStrictEqual([...wordsIn(readmeSentence)].sort(), [...new Set([...wordsOfTiers(variantNames), ...wordsOfTiers(variantBases)])].sort(), 'AC-9: README\'s variant sentence names exactly the families and efforts the variants and the base agent they fall back to render');
++
++  const aliasSentence = sentenceOf('.asd/rules/providers.md', (sentence) => spans(sentence).includes('wraps_config_key'));
++  assert.deepStrictEqual([wrapper.claude.wraps_model, wrapper.codex.wraps_model].filter((family) => !spans(aliasSentence).includes(family)), [], 'AC-9: providers.md "External review symmetry" names the wrapped provider\'s family alias for both hosts as canon sets it (wraps_model) - the retired opus is what a half-applied retier leaves');
++});
++
++test('sprint-022 AC-10: providers.md "Model family resolution" table is release-manifest.json model_families row for row, and README names exactly the concrete Codex ids the manifest maps the families to', () => {
++  const { claude, codex } = loadManifest().model_families;
++  const families = [...new Set([...Object.keys(claude), ...Object.keys(codex)])];
++  const section = sectionOf('.asd/rules/providers.md', 'Model family resolution');
++  const rows = section.slice(section.indexOf('| Family |')).split('\n\n')[0].split('\n').slice(2).map((line) => line.split('|').slice(1, -1).map((cell) => cell.trim()));
++  assert.deepStrictEqual(rows.map(([family]) => family).sort(), [...families].sort(), 'providers.md "Model family resolution" table must hold one row per model_families family in release-manifest.json - a family added, dropped or repeated on one side only');
++  for (const [family, claudeCell, codexCell] of rows) {
++    if (claude[family]) assert.strictEqual(claudeCell, claude[family], `providers.md "Model family resolution" row "${family}": its Claude id must be the one release-manifest.json maps it to`);
++    if (codex[family]) assert.strictEqual(codexCell, codex[family], `providers.md "Model family resolution" row "${family}": its Codex id must be the one release-manifest.json maps it to - a model bump edits the manifest and leaves this mirror on the retired id`);
++  }
++  const named = [...canonText('README.md').matchAll(new RegExp(`gpt-\\d+(?:\\.\\d+)?-(?:${Object.keys(codex).join('|')})\\b`, 'g'))].map(([id]) => id);
++  assert.deepStrictEqual([...new Set(named)].sort(), Object.values(codex).sort(), 'README names the concrete Codex ids the manifest maps the families to (AGENTS.md: a change to the family map updates README in the same change) - none retired, none missing');
++});
++
+ // ===========================================================================
+ // Runner
+ // ===========================================================================

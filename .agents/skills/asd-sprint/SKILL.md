@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:a365786bed83a63a14dc57533f45c99897ebe3475d62d5f50a03f4bcffd4b73b content_digest=sha256:5f1efade3a7b77ad85d351901b4cff11065924ab9f7cfa37bab73311f60c6c46 asd_version=13.4.0 schema=1
+# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:4cb94e6d7f2a9e1d960308df0075be86a930cf24be86e347b22e8daaeb2d9128 content_digest=sha256:20f88d680cf22b53bbae738111ca94512df7e1e5dbd58d39b8af20f01466437a asd_version=13.4.0 schema=1
 name: asd-sprint
 description: "Starts a new ASD sprint or resumes the active one, dispatching the matching asd-phase-* skill and routing phase signals back to the user. Use when the user runs $asd-sprint or asks to start, continue, resume, or work on an ASD sprint."
 ---
@@ -10,12 +10,12 @@ Operation mapping: see `.asd/rules/providers.md`.
 
 ## Preconditions
 - `.asd/project/config.yaml` exists (else: tell user `$asd-init`)
-- ≤1 active sprint. A sprint counts as active while `state.json.phase != "done"`, whether its folder lives at `.asd/sprints/<NNN-slug>/` or, legacy, at `.asd/sprints/archived/<NNN-slug>/` (archived before closure by an older workflow version). Exempt: a merged-unclosed sprint (Step 1) whose closure the user approves in this invocation (`sprint-lifecycle.md` "PR phase").
+- ≤1 active sprint. A sprint counts as active while `state.json.phase != "done"`, whether its folder lives at `.asd/sprints/<NNN-slug>/` or, legacy, at `.asd/sprints/archived/<NNN-slug>/` (archived before closure by an older workflow version). Exempt: a merged-unclosed sprint (Step 1), which the next sprint's scope archives (`sprint-lifecycle.md` "PR phase").
 
 ## Operations used
 - Read files / search repo — detect active sprint; read state.json, its frozen workflow definition `.asd/workflows/<workflow>.json` (`sprint-lifecycle.md` "Workflows"), config.yaml, custom-common-rules.md
-- Run command — `git status`, `git branch --show-current`; `gh pr view`/`gh pr list` (merged-unclosed detection), `gh pr merge` (a legacy finalize PR only); decisions-log rotation (rename, copy template, commit those paths)
-- Request user decision — closure approval, new-sprint confirm, resume/abort choice (never free-form scope text)
+- Run command — `git status`, `git branch --show-current`; `gh pr view`/`gh pr list` (merged-unclosed detection), `git fetch`/`git show`/`git log`/`git ls-remote --tags origin`/`gh release view` (release retry check), `gh pr merge` (a legacy finalize PR only); decisions-log rotation (rename, copy template, commit those paths)
+- Request user decision — new-sprint confirm, resume/abort choice, release retry or continue (never free-form scope text)
 - Delegate to skill — phase skills, plus `asd-init` per "Skills dispatched"
 - No other writes — phase skills and their inline orchestrator own writes
 
@@ -25,23 +25,19 @@ Before a phase-skill delegation below, rotate the decisions log when `.asd/rules
 
 ### Step 1: detect active sprint
 - Search repo for `.asd/sprints/*/state.json` (excluding `archived/`) UNION `.asd/sprints/archived/*/state.json` where `phase != "done"` (legacy archived-non-done shape)
-- Each, whatever its `phase`: `gh pr view <pr.number> --json state,mergeCommit` reporting `MERGED` — or, with no `pr.number`, a `MERGED` hit of `gh pr list --head <state.branch> --state all --json number,state,mergeCommit` (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"), its number carried to the closure write — makes it **merged-unclosed**, whatever `pr.state` records (legacy `closure-pending` included) — unless `gh pr list --head chore/finalize-sprint-<NNN-slug> --state all` finds a legacy companion PR: an `OPEN` one, created only after closure approval, is merged per `git-strategy.md` "Merging a PR"; an `OPEN` or `MERGED` one closes the sprint on `git.base_branch`, so it is no longer active and gets no closure write. A `gh` failure is FAILED naming the fix (`git-strategy.md` "PR creation").
+- Each, whatever its `phase`: `gh pr view <pr.number> --json state,mergeCommit` reporting `MERGED` — or, with no `pr.number`, a `MERGED` hit of `gh pr list --head <state.branch> --state all --json number,state,mergeCommit` (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"), its number carried to the closure write — makes it **merged-unclosed**, whatever `pr.state` records (legacy `closure-pending` included) — unless `gh pr list --head chore/finalize-sprint-<NNN-slug> --state all` finds a legacy companion PR: an `OPEN` one is merged per `git-strategy.md` "Merging a PR"; an `OPEN` or `MERGED` one closes the sprint on `git.base_branch`, so it is no longer active and gets no closure write.
+- A `CLOSED` head-branch hit counts as no hit. A head-branch lookup that cannot reach `gh` outside `phase="pr"` warns and resumes the sprint ("Merged-unclosed"); any other `gh` failure is FAILED naming the fix for its cause (`git-strategy.md` "PR creation").
 - 0 active → new-sprint flow
-- 1 active, merged-unclosed → Step 1A
+- 1 active, merged-unclosed, `self_hosting: enabled`, its release commit, `v<asd_version>` tag or release missing → release retry ("Merged-unclosed"): request user decision, each time — retry dispatches `asd-phase-pr` with the confirmed PR number, its merge mode running only the release; continue takes the route below, carrying that choice
+- 1 active, merged-unclosed otherwise → new-sprint flow (Step 2A), carrying its path and the merged PR's number detection confirmed, whichever copy or lookup it came from
 - 1 active otherwise → resume flow; an `OPEN` head-branch hit changes nothing here, pr open mode adopting it at `phase="pr"` only ("Merged-unclosed")
 - >1 → emit FAILED "multiple active sprints found, manual cleanup needed"
-
-### Step 1A: closure request
-Reached from Step 1 (merged-unclosed) or Step 3 (`NEXT: await-closure`), before anything else.
-1. Request user decision on the hard `sprint closure` gate (`checkpoints.md` "Gate policy"), presenting the completion evidence (`sprint-lifecycle.md` "PR phase"): approve | refuse. The merge and the adaptive policy never satisfy it.
-2. Approve → new-sprint flow (Step 2A), carrying the approval (closing sprint path, plus the merged PR's number detection confirmed, whichever copy or lookup it came from) unwritten until scope step 1's closure write records it; aborted before that, nothing is written and Step 1 asks again.
-3. Refuse or feedback → the sprint stays active and resumable; halt, `NEXT: await-closure`.
 
 ### Step 2A: new-sprint flow
 1. Read `.asd/project/config.yaml` (confirm init complete)
 2. `git status` — if dirty, request user decision: commit / stash / abort
 3. Collect scope as a plain chat message; request user decision only to confirm start or abort
-4. Delegate to skill `asd-phase-scope`, passing scope text and any Step 1A approval; its step 1 asks the workflow choice and runs the closure write
+4. Delegate to skill `asd-phase-scope`, passing scope text and any merged-unclosed sprint Step 1 carries; its step 1 asks the workflow choice and runs the closure write
 5. On COMPLETED → advance per Step 3
 
 ### Step 2B: resume flow
@@ -52,7 +48,7 @@ Reached from Step 1 (merged-unclosed) or Step 3 (`NEXT: await-closure`), before 
 
 ### Step 3: phase chain advancement
 After any phase skill returns:
-- `COMPLETED` → read the phase skill's `NEXT:` field; a target outside the frozen definition's `next[<phase>]` → relay FAILED, halt; else dispatch that phase skill. `NEXT:` is authoritative — follows the definition's `phases` order except the design-block collapse (`audit` returns `NEXT: plan` under the collapse test; `design` returns `NEXT: plan` on its defensive-fallback no-op) and the `impl`/`impl-test`/`impl-review` cycle: `impl` always returns `NEXT: impl-test`; `impl-test` returns `NEXT: impl` on code defects (routes to impl test-fix mode) or `NEXT: impl-review` on a green suite; `impl-review` returns `NEXT: impl` on unresolved findings (routes to impl review-fix mode) or the next phase of `phases` on DoD met; `retro` always returns `NEXT: pr`, on its analysed and its empty-log branch alike. The `pr` phase ends the chain in two steps: open mode returns `NEXT: await-merge` (PR open, sprint at its active path, `phase="pr"` — halt, no further dispatch); a later resume re-enters `pr` in merge mode, which returns `NEXT: await-closure` once the merge is confirmed → Step 1A.
+- `COMPLETED` → read the phase skill's `NEXT:` field; a target outside the frozen definition's `next[<phase>]` → relay FAILED, halt; else dispatch that phase skill. `NEXT:` is authoritative — follows the definition's `phases` order except the design-block collapse (`audit` returns `NEXT: plan` under the collapse test; `design` returns `NEXT: plan` on its defensive-fallback no-op) and the `impl`/`impl-test`/`impl-review` cycle: `impl` always returns `NEXT: impl-test`; `impl-test` returns `NEXT: impl` on code defects (routes to impl test-fix mode) or `NEXT: impl-review` on a green suite; `impl-review` returns `NEXT: impl` on unresolved findings (routes to impl review-fix mode) or the next phase of `phases` on DoD met; `retro` always returns `NEXT: pr`, on its analysed and its empty-log branch alike. The `pr` phase ends the chain in two steps: open mode returns `NEXT: await-merge` (PR open, sprint at its active path, `phase="pr"` — halt, no further dispatch); a later resume re-enters `pr` in merge mode, which returns `NEXT: done` once the merge is confirmed and, self-hosting, the release published → halt; the next sprint's scope archives it (`sprint-lifecycle.md` "PR phase").
 - `FAILED` → relay, halt
 - `QUESTION` → relay pending question, halt until reply
 - `ABORT — precondition not met` → relay, halt
@@ -64,7 +60,7 @@ Phase skills of the frozen workflow's `phases` (`.asd/workflows/<workflow>.json`
 
 ## Return contract (single line)
 ```
-SPRINT: <NNN-slug> | PHASE: <phase> | STATUS: <complete|in-progress|blocked|aborted> | NEXT: <next-phase|await-merge|await-closure|halted-on-question|halted-on-failure>
+SPRINT: <NNN-slug> | PHASE: <phase> | STATUS: <complete|in-progress|blocked|aborted> | NEXT: <next-phase|await-merge|done|halted-on-question|halted-on-failure>
 ```
 
 ## References

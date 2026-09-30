@@ -76,7 +76,7 @@ Canonical agent frontmatter speaks in family aliases only (`claude.model`, `code
 | opus | opus | — |
 | sonnet | sonnet | — |
 | haiku | haiku | — |
-| sol | — | gpt-6-sol |
+| sol | — | gpt-6.1-sol |
 | luna | — | gpt-6-luna |
 
 A provider's id is always its rolling alias (newest model in the family), so a family's model bump is a one-line edit to `release-manifest.json` — canonical agent bodies never change.
@@ -85,12 +85,13 @@ A provider's id is always its rolling alias (newest model in the family), so a f
 
 | Agent | Claude model / effort | Codex model / effort | Codex sandbox |
 |---|---|---|---|
-| asd-ba, asd-ux, asd-architect | opus / high | sol / high | workspace-write |
+| asd-ba, asd-ux | sonnet / high | sol / high | workspace-write |
+| asd-architect | sonnet / xhigh | sol / high | workspace-write |
 | asd-dev, asd-tester (base) | sonnet / medium | sol / medium | workspace-write |
-| asd-dev-*, asd-tester-* | mechanical: haiku / none; critical: opus / high (standard: no variant, dispatches base) | mechanical: luna / low; critical: sol / high (standard: no variant, dispatches base) | workspace-write |
-| asd-reviewer-* (5) | opus / high | sol / high | workspace-write (policy-bounded) |
+| asd-dev-*, asd-tester-* | mechanical: haiku / none; critical: sonnet / xhigh (standard: no variant, dispatches base) | mechanical: luna / low; critical: sol / high (standard: no variant, dispatches base) | workspace-write |
+| asd-reviewer-* (5) | sonnet / xhigh | sol / high | workspace-write (policy-bounded) |
 | asd-external-review wrapper | sonnet / medium | sol / medium | read-only |
-| asd-external-review wrapped reviewer | sol / high | opus / high | read-only |
+| asd-external-review wrapped reviewer | sol / high | sonnet / xhigh | read-only |
 | asd-advisor | fable / high | sol / high | read-only |
 
 ## External review symmetry
@@ -100,7 +101,7 @@ External Review always wraps the CLI of the *other* provider, never its own host
 - Running under Claude Code -> wraps **Codex CLI** (`codex exec`, per `.asd/rules/external-review.md`).
 - Running under Codex -> wraps **Claude CLI** the same way (probe, stdin-piped prompt+diff, text-verdict output, severity mapping, stalemate detection — mirror the Claude-under-Codex case symmetrically against `.asd/rules/external-review.md`'s Codex-under-Claude contract).
 
-Which CLI to wrap is resolved per-provider at generation time: `asd-external-review.md`'s canonical frontmatter sets `claude.wraps_cli: "codex"` / `codex.wraps_cli: "claude"`, plus the wrapped provider's family alias (`sol` / `opus`) and a matching `wraps_config_key` naming the runtime config override. `.asd/sync.js` resolves `{{wraps_model}}` through the release manifest for the wrapped provider; canonical invocation text never pins a concrete model ID. Phase orchestration performs the bounded runtime preflight before the wrapper and records a specific availability skip when it is non-ready.
+Which CLI to wrap is resolved per-provider at generation time: `asd-external-review.md`'s canonical frontmatter sets `claude.wraps_cli: "codex"` / `codex.wraps_cli: "claude"`, plus the wrapped provider's family alias (`sol` / `sonnet`) and a matching `wraps_config_key` naming the runtime config override. `.asd/sync.js` resolves `{{wraps_model}}` through the release manifest for the wrapped provider; canonical invocation text never pins a concrete model ID. Phase orchestration performs the bounded runtime preflight before the wrapper and records a specific availability skip when it is non-ready.
 
 ## Role-scoped context
 
@@ -130,7 +131,7 @@ Section scope inside a granted file: `artifact-layout.md` "HTML shell wrapping (
 
 An agent may declare `variants` in its canonical JSON frontmatter. Each fixed suffix is `mechanical` or `critical`; it changes only Claude `model`/optional `effort` and Codex `model`/`model_reasoning_effort`. `.asd/sync.js` emits `<base>-<suffix>` from the base body and permissions, rejects malformed metadata and name collisions. No dispatcher mutates generated configuration. Tier `standard` has no variant — it dispatches the **base** agent id (`asd-dev`, `asd-tester`) directly, since a `standard` variant would only re-declare the base's own model/effort.
 
-Only `asd-dev` and `asd-tester` declare variants: mechanical uses haiku without an effort override or luna/low; critical uses opus/high or sol/high. Reviewers remain strong and fresh. The main orchestrator calls `node .asd/runtime.js route-task --input <json>` before dispatch and persists `{execution,tier,reason,resolved_model}` under `state.json.task_routing[taskId]`; `resolved_model` is not returned by `route-task` — the main orchestrator derives it from `.asd/release-manifest.json`'s `model_families` for the dispatched agent/tier before persisting. Re-entry passes its prior `tier` as `priorTier`. `execution` is the selector of record for how the executor was chosen — `route-task` returns no separate `selector` field; `execution` plus `tier` and `reason` fully determine and evidence the dispatch choice.
+Only `asd-dev` and `asd-tester` declare variants: mechanical uses haiku without an effort override or luna/low; critical uses sonnet/xhigh or sol/high. Reviewers remain strong and fresh. The main orchestrator calls `node .asd/runtime.js route-task --input <json>` before dispatch and persists `{execution,tier,reason,resolved_model}` under `state.json.task_routing[taskId]`; `resolved_model` is not returned by `route-task` — the main orchestrator derives it from `.asd/release-manifest.json`'s `model_families` for the dispatched agent/tier before persisting. Re-entry passes its prior `tier` as `priorTier`. `execution` is the selector of record for how the executor was chosen — `route-task` returns no separate `selector` field; `execution` plus `tier` and `reason` fully determine and evidence the dispatch choice.
 
 Routing input requires objective evidence. A deterministic zero-judgment command with `deterministic-state` returns `execution: command`; mechanical agent work requires `deterministic-check` and `exhaustive-match-validation`.
 

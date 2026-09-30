@@ -131,7 +131,9 @@ dressing the round up with a new test.
 Related, when the dispatching message hands you a commit range: check it contains the changes it
 names. Entry 4 (cont.) was pointed at `11bf405..dd47159`, which held only sprint bookkeeping — the
 dev chain was `5add9f5..2ae44c6`, an ancestor of the entry's own test commit, so the suite run
-already recorded had covered it and the range as given would have produced an empty gate.
+already recorded had covered it and the range as given would have produced an empty gate. A payload's numeric claim is
+the same trap: "61 lines already changed in tests/run.js" (entry 3) was entry 2's own commit, outside the delta. Run
+`git diff <prior>...HEAD -- <file>` before trusting it.
 
 ## Match the mutation to what the assertion claims
 
@@ -161,6 +163,10 @@ the generated `.codex/`/`.claude/` views: a `variantMeta` regression leaves the 
 so a disk read stays green and only §9's `--check` drift fires. `sync.buildSyncPlan(REPO_ROOT)` items carry
 the variant meta as `metaOverride` (`agentVariants` is not exported) — render those (sprint 018).
 
+A mutation that also reddens an OLDER sprint's test shows your new assert repeats part of it. Drop that half and keep
+only the new relation. Then re-prove with a mutation that reaches only yours (sprint 022 entry 2: the rollback
+`re-divides` token was already sprint-017 D3's, and only the shared `waves.json` span was new).
+
 A "tight somewhere" assert on an upper bound only catches an overcount that hits every sampled point.
 When a fix adds a parameter with a default, the old and new formulas usually agree only at some inputs
 (sprint 015 EXT-4: only at multiples of 25). Compute both at each sampled point before writing
@@ -177,6 +183,10 @@ A defect the manual leftover check found (no runner line) still owes a §17 regr
 fix commit's exact removed phrase to the sprint's leftover-sweep list, then restore the `<sha>~1` blob to
 prove it (sprint 021 D-4). Widening an actor rule ("a sentence naming `--apply` must deny it") to all memory
 instead false-hits factual mentions of the command.
+
+A removed-phrase sweep outlives its sprint, so a later sprint can legitimately re-adopt a banned literal. Sprint 021
+banned the `done` pr exits and sprint 022 made `done` the exit. Delete those entries and cite the audit
+Contradictions ruling as the reason. Do not exempt them: an exemption keeps a ban on text that is now canon.
 
 Same family, for locating a sentence: key the locator to the sentence's **citation**, never its
 ordinal or adverb. `sprint-lifecycle.md`'s latch-clearing route was renamed "A THIRD" → "A further"
@@ -255,6 +265,20 @@ test stayed green on the wrong site (entry 7). Key the derivation to the clause 
 A fix that *removes* a narrowing condition has no positive substance: require its clause to lack the condition's
 one word (`null`), keep the positive assert on the clause itself so deletion cannot pass vacuously, and record
 both ceilings (a synonym passes; "whether or not null" reddens).
+
+A **value mirror** (one tier stated in agent frontmatter, `providers.md` "Agent tier matrix", README tables and two prose
+sentences) is a relation, not a literal. Take the effective value from `sync.buildSyncPlan` metas (`variantMeta` already drops
+a variant's unset effort; do not re-derive it), compare structured cells exactly, and compare prose as the whole-word
+vocabulary set (families plus efforts) of the one sentence that states it, so a reword stays green (sprint 022 entry 3, 27
+mutations). Record the ceiling: pairings inside a sentence are not compared. Find that sentence after dropping table and
+heading lines: a matrix table has no full stop, so it reads as one sentence and the locator hits twice.
+
+A **concrete-id bump** (sprint 022 entry 4, `sol` to `gpt-6.1-sol`) lands in four kinds of pin. A byte-for-byte fixture's
+`content_digest` covers the id line: recompute it with `node:crypto` over the edited body and check it equals the runner's,
+keep the fixture literal, and derive every other expectation from `model_families`. A literal absence guard
+(`!includes('gpt-6-sol')`) cannot see `gpt-6.1-sol`, so guard the shape. An override proving "the table you pass wins" must be
+an id no live table can hold (`gpt-0-sol`), or the live lookup satisfies it. An `includes` placed after a `strictEqual`
+against the same fixture is unreachable, so delete it.
 
 ## Fixtures whose bytes are the input
 

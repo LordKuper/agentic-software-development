@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:63f2ca4ca340bffaf444e06e64ce262b8f81c26ee968ce61dadad87ec31f7587 content_digest=sha256:ba0a8835d9fc16309a4e49f8fb8614da3032fcb10c073c67e421601753ff5d6d asd_version=8.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:79413ccde0b404e63f8e1bedcf3e467311a3dd83021d7a5d50385b91c0f7d4e0 content_digest=sha256:ea7a12de53e7c3a37e60c633c90a9b774b64e1f2686402291446cf846165c01c asd_version=13.4.0 schema=1
 name: asd-init
 description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode, or applies a plan-declared settings change for the active sprint's impl phase. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
@@ -89,7 +89,7 @@ Plan acceptance is the approval of record: no config dump, no section prompt, no
 
 1. Read current `.asd/project/config.yaml`
 2. Validate every pair against the working-tree `.asd/templates/t_config.yaml` (a key an earlier-wave Task added counts) before any write: the dotted key must name a leaf field there, and the value must fit that field: one of its enumerated values where it enumerates them (`Values:` or an inline `a | b` comment), else the type of its template value — a non-negative integer for an integer, a string for a string. Any failing pair → `FAILED` naming it; nothing written.
-3. Set each declared `<key>=<value>` pair (dotted path); touch no other field. A pair already equal is a no-op.
+3. Set each declared `<key>=<value>` pair (dotted path); its line takes that key's inline comment from the template, when the template line has one; touch no other field. A pair whose value and comment already match is a no-op.
 4. Write config
 5. Post the diff in `language.chat`: one `<key>: <old|absent> → <new>` line per pair
 6. Re-init step 7 applies when a pair touches `review.external_review` or `system.tools`

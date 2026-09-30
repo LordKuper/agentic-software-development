@@ -218,7 +218,7 @@ function summary(active, provider, repoRoot) {
   const branch = state.branch || 'unknown';
   const verdict = lastReviewVerdict(reviewNode);
   const phases = phasesForState(repoRoot, state);
-  const next = phase === 'pr' ? (mergedUnclosed ? 'await-closure' : 'await-merge')
+  const next = phase === 'pr' ? (mergedUnclosed ? 'done' : 'await-merge')
     : !phases ? null
     : (phase === 'audit' && phases.includes('design') && isDesignCollapsed(state.documents)) ? 'plan'
     : nextPhase(phases, phase);

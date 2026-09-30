@@ -11,8 +11,8 @@
   },
   "codex": {
     "model": "sol", "model_reasoning_effort": "medium", "sandbox_mode": "read-only", "web_search": "disabled",
-    "wraps_cli": "claude", "wraps_config_key": "system.tools.claude_command", "wraps_model": "opus",
-    "wraps_invoke_args": "-p \"Follow the review instructions and scope manifest provided via stdin above; your scope is the manifest's files list, its diff file the change content; read both from the repo yourself, never from the manifest bytes, and never compute a diff; output only the review report in the required format.\" --model {{wraps_model}} --effort high --restricted --tools \"Read,Grep,Glob\" --strict-mcp-config --disable-slash-commands --no-session-persistence --output-format text"
+    "wraps_cli": "claude", "wraps_config_key": "system.tools.claude_command", "wraps_model": "sonnet",
+    "wraps_invoke_args": "-p \"Follow the review instructions and scope manifest provided via stdin above; your scope is the manifest's files list, its diff file the change content; read both from the repo yourself, never from the manifest bytes, and never compute a diff; output only the review report in the required format.\" --model {{wraps_model}} --effort xhigh --restricted --tools \"Read,Grep,Glob\" --strict-mcp-config --disable-slash-commands --no-session-persistence --output-format text"
   }
 }
 ---
