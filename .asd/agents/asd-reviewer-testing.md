@@ -3,7 +3,7 @@
   "name": "asd-reviewer-testing",
   "description": "Impl-review assessment of the test-plan decisions and the tests themselves, plus judging manual-verification necessity when automation is impossible. Covers: risk→check fit per test-plan.md, justification of removed tests and of no-test decisions, fail-first proof on regression tests, AC→check coverage (every AC-N has a check), edge cases on core paths, absence of test-for-test-sake (meaningless assertions), flaky patterns, manual-verification necessity judgment against the spec `test-plan.md` already owns (single home — never re-authored here). Does NOT handle: bug/security/AC→code trace/ui/a11y (delegates to asd-reviewer-correctness), over-engineering/performance (delegates to asd-reviewer-efficiency), documentation sync and stub resolution (delegates to asd-reviewer-documentation), design-review testability (unowned by design), fixing (creators autofix per review-policy).",
   "claude": {
-    "model": "opus", "effort": "high",
+    "model": "sonnet", "effort": "xhigh",
     "tools": ["Read", "Glob", "Grep"],
     "disallowedTools": ["Edit", "Bash", "WebFetch"], "maxTurns": 50, "memory": "project"
   },

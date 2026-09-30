@@ -85,10 +85,11 @@ A provider's id is always its rolling alias (newest model in the family), so a f
 
 | Agent | Claude model / effort | Codex model / effort | Codex sandbox |
 |---|---|---|---|
-| asd-ba, asd-ux, asd-architect | opus / high | sol / high | workspace-write |
+| asd-ba, asd-ux | sonnet / high | sol / high | workspace-write |
+| asd-architect | sonnet / xhigh | sol / high | workspace-write |
 | asd-dev, asd-tester (base) | sonnet / medium | sol / medium | workspace-write |
-| asd-dev-*, asd-tester-* | mechanical: haiku / none; critical: opus / high (standard: no variant, dispatches base) | mechanical: luna / low; critical: sol / high (standard: no variant, dispatches base) | workspace-write |
-| asd-reviewer-* (5) | opus / high | sol / high | workspace-write (policy-bounded) |
+| asd-dev-*, asd-tester-* | mechanical: sonnet / low; critical: sonnet / xhigh (standard: no variant, dispatches base) | mechanical: luna / low; critical: sol / high (standard: no variant, dispatches base) | workspace-write |
+| asd-reviewer-* (5) | sonnet / xhigh | sol / high | workspace-write (policy-bounded) |
 | asd-external-review wrapper | sonnet / medium | sol / medium | read-only |
 | asd-external-review wrapped reviewer | sol / high | opus / high | read-only |
 | asd-advisor | fable / high | sol / high | read-only |
@@ -130,7 +131,7 @@ Section scope inside a granted file: `artifact-layout.md` "HTML shell wrapping (
 
 An agent may declare `variants` in its canonical JSON frontmatter. Each fixed suffix is `mechanical` or `critical`; it changes only Claude `model`/optional `effort` and Codex `model`/`model_reasoning_effort`. `.asd/sync.js` emits `<base>-<suffix>` from the base body and permissions, rejects malformed metadata and name collisions. No dispatcher mutates generated configuration. Tier `standard` has no variant — it dispatches the **base** agent id (`asd-dev`, `asd-tester`) directly, since a `standard` variant would only re-declare the base's own model/effort.
 
-Only `asd-dev` and `asd-tester` declare variants: mechanical uses haiku without an effort override or luna/low; critical uses opus/high or sol/high. Reviewers remain strong and fresh. The main orchestrator calls `node .asd/runtime.js route-task --input <json>` before dispatch and persists `{execution,tier,reason,resolved_model}` under `state.json.task_routing[taskId]`; `resolved_model` is not returned by `route-task` — the main orchestrator derives it from `.asd/release-manifest.json`'s `model_families` for the dispatched agent/tier before persisting. Re-entry passes its prior `tier` as `priorTier`. `execution` is the selector of record for how the executor was chosen — `route-task` returns no separate `selector` field; `execution` plus `tier` and `reason` fully determine and evidence the dispatch choice.
+Only `asd-dev` and `asd-tester` declare variants: mechanical uses sonnet/low or luna/low; critical uses sonnet/xhigh or sol/high. Reviewers remain strong and fresh. The main orchestrator calls `node .asd/runtime.js route-task --input <json>` before dispatch and persists `{execution,tier,reason,resolved_model}` under `state.json.task_routing[taskId]`; `resolved_model` is not returned by `route-task` — the main orchestrator derives it from `.asd/release-manifest.json`'s `model_families` for the dispatched agent/tier before persisting. Re-entry passes its prior `tier` as `priorTier`. `execution` is the selector of record for how the executor was chosen — `route-task` returns no separate `selector` field; `execution` plus `tier` and `reason` fully determine and evidence the dispatch choice.
 
 Routing input requires objective evidence. A deterministic zero-judgment command with `deterministic-state` returns `execution: command`; mechanical agent work requires `deterministic-check` and `exhaustive-match-validation`.
 
