@@ -37,3 +37,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 <!-- entries appended below this line -->
 - 2026-09-30 — route Task 1, Task 2, Task 3, Task 4, Task 5: critical, dispatch HEAD a144cd1
 - 2026-09-30 — wave 1 landed (T1 117f16e, T2 5638ced+40bd48e, T3 74c2954, T4 274bbd2, T5 107f5f8); flagged choices accepted; D2 retry refined to 'tag or release missing' across T1/T2/T3; orchestrator sync done; route Task 6: standard, dispatch HEAD 4779ab5
+- 2026-09-30 — wave 2 landed (T6 9dd3e3c); README working copy renormalised to LF (F-1); route Task 7: settings change user_gates=adaptive via asd-init sprint-mediated

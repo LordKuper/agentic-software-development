@@ -89,7 +89,7 @@ Material risk: change: workflow gate
 
 ### Task 6: README
 Material risk: artifact: documentation mirror
-- [ ] README L192 (pr row, `done`), L269 (drop the closure sentence), L276, L346, L449 FAQ; confirm the rest is accurate.
+- [x] README L192 (pr row, `done`), L269 (drop the closure sentence), L276, L346, L449 FAQ; confirm the rest is accurate.
 
 ### Task 7: refresh project config comment
 Material risk: artifact: project config comment
