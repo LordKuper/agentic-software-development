@@ -47,7 +47,7 @@ Reachability (AC-6, applied to this plan):
 - The squash merge carries `pr.number` to base.
 - If the session stops after the merge but before the release, base has `phase="pr"` and no `v<x>` tag, and the retry route recovers it.
 
-Change surface: 26 files
+Change surface: 37 files
 
 ## Definition of Done
 Standing DoD applies (`sprint-lifecycle.md` "Plan file format") — not restated here.
@@ -96,6 +96,13 @@ Material risk: artifact: project config comment
 Settings change: user_gates=adaptive
 - [x] Applied by the orchestrator through `asd-init` sprint-mediated mode as wave 3 opens (value unchanged; the line takes the template's new comment, D6).
 
+### Task 8: opus/haiku → sonnet tiers (AC-8, scope amendment)
+Material risk: change: public contract
+- [ ] `.asd/agents/asd-ba.md`, `asd-ux.md`: `claude.model` sonnet, `effort` high
+- [ ] `.asd/agents/asd-architect.md`, `asd-reviewer-{correctness,efficiency,testing,documentation,combined}.md`: sonnet / xhigh
+- [ ] `.asd/agents/asd-dev.md`, `asd-tester.md` variants: mechanical `{"model":"sonnet","effort":"low"}`, critical `{"model":"sonnet","effort":"xhigh"}`; Codex sides unchanged
+- [ ] `.asd/rules/providers.md` "Agent tier matrix" rows and the "Task-class variants and routing" variants sentence; README model-tier table (both-provider columns); `model_families` untouched
+
 ## Orchestrator lines (not dev Tasks)
 - After each wave: tick the wave's checkboxes (D5); `sync.js --apply` on changed views, or `--apply AGENTS.md`; `--check`; commit.
 - At pr open mode: `asd_version` bump plus CHANGELOG, with a migration note (`await-closure` removed, closure gate gone, stale shipped `user_gates` comment in existing configs, self-hosting forks release at merge).
@@ -111,5 +118,6 @@ Settings change: user_gates=adaptive
 | 1 | 1, 2, 3, 4, 5 |
 | 2 | 6 |
 | 3 | 7 |
+| 4 | 8 |
 
 - Task 6 mirrors wave 1. Task 7 needs Task 2's `t_config.yaml` comment and Task 5's `asd-init` change, synced.

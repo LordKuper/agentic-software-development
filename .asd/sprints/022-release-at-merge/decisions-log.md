@@ -49,3 +49,17 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-30 — route combined.md 1-5, external.md 1-2: critical, dispatch HEAD ce77f96
 - 2026-09-30 — impl fix for wave-1/iter-01: findings resolved (ca370c3; external 2 = combined 4 deduplicated). Flagged choices accepted: ask whenever the release is missing (the user's answer), the bump check against the parent manifest, the follow-up-PR release commit, no local-tag target check, no gate-inventory row (left to review). route impl-test entry 2: critical, dispatch HEAD 7c39ff3
 - 2026-09-30 — impl-test entry 2: impacted set green (262/262), 3 tests extended; no manual-verification rows; halted here at the user's request, before impl-review wave-1/iter-02
+
+## 2026-09-30 — Scope amendment: AC-8 (opus/haiku → sonnet tiers)
+
+- **Decision**: The user decided the Claude-side tiers:
+  - ba and ux: sonnet/high;
+  - architect and the five reviewers: sonnet/xhigh ("extra");
+  - the `critical` variants of dev and tester: sonnet/xhigh;
+  - the `mechanical` variants: sonnet/low;
+  - the `haiku` and `opus` families stay in `model_families`.
+
+  Carried by Task 8 in the new wave 4; change surface 37/100. This is the first run of AC-7: the amendment comes after the division point (wave 1, counter 1), so the record carries `floor_base=wave-1/1`, and wave 1's latches are cleared (none held). Out of scope: the Codex-host wrapped model (`wraps_model: "opus"`) and every Codex-side tier.
+- **Rationale**: Hard scope gate decided by the user. Host behaviour was verified before the AC per 019#P-1: the code.claude.com sub-agents doc lists `effort` values `low|medium|high|xhigh|max`; the model-config doc says Sonnet 5.5 supports all five and falls back downward; the field needs Claude Code ≥ v2.1.242. `sync.js` already accepts `xhigh`.
+- **Affected docs**: [sprint.md](sprint.md), [plan.md](plan.md)
+- 2026-09-30 — route Task 8: critical, dispatch HEAD 8950b32

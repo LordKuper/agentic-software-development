@@ -18,6 +18,8 @@ Publish the release as soon as the sprint PR merges, and turn sprint closure int
 - AC-5 (retro 021#A-3): When a plan wave dispatches more than one Task, devs never edit `plan.md` or a shared memory index. The orchestrator ticks the wave's checkboxes after its last signal.
 - AC-6 (retro 021#P-2): A `Reachability` line whose value crosses a push or merge also names the value each interruption point leaves on the receiving branch, before plan acceptance.
 - AC-7 (retro 021#A-6): Code added by a scope amendment is reviewed at the severity floor of its own first iteration: its iteration count starts at the amendment, not at the wave's counter.
+- AC-8 (scope amendment, user request): The Claude-side model tier moves from `opus`/`haiku` to `sonnet`. `asd-ba` and `asd-ux` become sonnet/`high`. `asd-architect`, all five `asd-reviewer-*` and the `critical` variants of `asd-dev`/`asd-tester` become sonnet/`xhigh`. The `mechanical` variants become sonnet/`low`. The `haiku` and `opus` model families stay in `model_families` for future use. Mirrors agree: `providers.md` "Agent tier matrix" and the variants sentence, and the README model-tier table. Verified against the host docs (code.claude.com sub-agents and model-config, 2026-09-30): `effort` accepts `low|medium|high|xhigh|max`, Sonnet 5.5 supports all five, and an unsupported level falls back downward. The field needs Claude Code ≥ v2.1.242.
 
 ## Out of scope (optional)
+- The Codex-host External Review wrapped model (`wraps_model: "opus"`) and every Codex-side tier.
 - Changing when the archive move happens. It stays the next sprint's first commit, per sprint 021's one-PR-per-sprint design.
