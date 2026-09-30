@@ -23,6 +23,7 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 | F-3 | impl | Parallel devs told to tick one shared plan.md and write one shared memory index | — |
 | F-4 | impl-review | External Review wrapper emitted a non-canonical severity cell; persist-review rejected it | reviews/impl/wave-1/iter-03/external |
 | F-5 | impl-review | External report template defines no empty Kept-findings row; runtime rejects `-` | reviews/impl/wave-1/iter-03/external |
+| F-6 | impl-review | The critical severity floor after a late scope amendment dropped a high finding on the amended code | reviews/impl/wave-1/iter-06/combined |
 
 ## F-1 — Retro intake cannot reach legacy or cross-repo rows
 
@@ -63,3 +64,11 @@ Consumed by the retro phase (.asd/rules/sprint-lifecycle.md "Retro phase").
 - **What happened**: The iter-03 fresh re-dispatch returned APPROVE with a `| - | - | - | none | - |` placeholder row. `reviewFindings` accepts only the `—` id row as the empty table's placeholder, and `t_review-report.md` shows no empty-table form at all, so a correct APPROVE was rejected. This was the second consecutive interruption of the same iteration, which escalated to the user.
 - **Impact**: A correct verdict was discarded, and a hard user decision was forced by a template/runtime mismatch.
 - **Refs**: reviews/impl/wave-1/iter-03/external
+
+## F-6 — Late-iteration floor dropped a high finding on freshly amended code
+
+- **Phase**: impl-review
+- **Surface**: rule — `review-policy.md` "Iteration severity floor"
+- **What happened**: AC-14 was added by scope amendment at pr and first reviewed at iteration 6, whose floor is `critical`. combined found a high defect in the new code: every `/asd-sprint` now needs `gh` online, and FAILED names the wrong fix. The floor dropped it, and dropped two medium gaps with it (unspecified CLOSED hit; a refused closure at an earlier phase blocks the remaining phases). The floor is keyed to the wave's counter, not to how new the reviewed code is.
+- **Impact**: A real high defect shipped as a known residual, carried to the next sprint through this retro.
+- **Refs**: reviews/impl/wave-1/iter-06/combined

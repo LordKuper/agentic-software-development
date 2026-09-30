@@ -50,3 +50,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-30 — impl-review DoD met after the AC-14 amendment: 6 iterations; terminal full suite green (255/255, HEAD 0c7eb7a) → design-promote
 - 2026-09-30 — design-promote skipped: frozen prd/ux_spec/adr/c4 all false (lite empty scope; already in skipped_phases)
 - 2026-09-30 — retro re-run after the AC-14 amendment: no new friction entries and no new systemic evidence beyond P-2 (the handoff gaps, which AC-14 closes); `retrospective.html` stands unchanged
+- 2026-09-30 — retro amended: F-6 (late-iteration floor dropped a high finding) → A-5 (gh-offline tolerance, CLOSED hit), A-6 (amended code reviewed at its own first-iteration floor). The user chose to publish and carry these forward through the next intake.
