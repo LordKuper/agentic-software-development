@@ -48,3 +48,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: [reviews/impl/wave-1/iter-01/](reviews/impl/wave-1/iter-01/)
 - 2026-09-30 — route combined.md 1-5, external.md 1-2: critical, dispatch HEAD ce77f96
 - 2026-09-30 — impl fix for wave-1/iter-01: findings resolved (ca370c3; external 2 = combined 4 deduplicated). Flagged choices accepted: ask whenever the release is missing (the user's answer), the bump check against the parent manifest, the follow-up-PR release commit, no local-tag target check, no gate-inventory row (left to review). route impl-test entry 2: critical, dispatch HEAD 7c39ff3
+- 2026-09-30 — impl-test entry 2: impacted set green (262/262), 3 tests extended; no manual-verification rows; halted here at the user's request, before impl-review wave-1/iter-02
