@@ -94,7 +94,7 @@ Material risk: artifact: documentation mirror
 ### Task 7: refresh project config comment
 Material risk: artifact: project config comment
 Settings change: user_gates=adaptive
-- [ ] Applied by the orchestrator through `asd-init` sprint-mediated mode as wave 3 opens (value unchanged; the line takes the template's new comment, D6).
+- [x] Applied by the orchestrator through `asd-init` sprint-mediated mode as wave 3 opens (value unchanged; the line takes the template's new comment, D6).
 
 ## Orchestrator lines (not dev Tasks)
 - After each wave: tick the wave's checkboxes (D5); `sync.js --apply` on changed views, or `--apply AGENTS.md`; `--check`; commit.
