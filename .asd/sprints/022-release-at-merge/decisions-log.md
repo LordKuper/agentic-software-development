@@ -47,3 +47,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: FAIL escalation (Complication Approval); reviewer question carrier (`review-policy.md` "Gate Verdict Format").
 - **Affected docs**: [reviews/impl/wave-1/iter-01/](reviews/impl/wave-1/iter-01/)
 - 2026-09-30 — route combined.md 1-5, external.md 1-2: critical, dispatch HEAD ce77f96
+- 2026-09-30 — impl fix for wave-1/iter-01: findings resolved (ca370c3; external 2 = combined 4 deduplicated). Flagged choices accepted: ask whenever the release is missing (the user's answer), the bump check against the parent manifest, the follow-up-PR release commit, no local-tag target check, no gate-inventory row (left to review). route impl-test entry 2: critical, dispatch HEAD 7c39ff3
