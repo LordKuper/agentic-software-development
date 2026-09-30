@@ -1,10 +1,10 @@
 ---
-# ASD generated. Edit .asd/agents/asd-architect.md. source_digest=sha256:5409d427d3aecfd8d2dd667fa5d3aeb4c2deea467ca5f528965d76225d4cbc45 content_digest=sha256:aa9b57358bfa558f8b3acf53e6bf77473e431cfdbd55cb1bc8c96afdb84a13ff asd_version=13.3.0 schema=1
+# ASD generated. Edit .asd/agents/asd-architect.md. source_digest=sha256:fbe178e31b76dbe8011bd707200b365ce4da5c0e0dd3c31f768ffd1f7772d8c7 content_digest=sha256:6fd7d550fed25bdf5012443d1b2212a1f892e38740474043548acea2315a408c asd_version=13.4.0 schema=1
 name: asd-architect
 description: "Architecture decisions, subsystem registry, C4 model, tech stack, API contracts, brownfield code and documentation audit. Covers: ADR drafting (sprint-scoped only, never promoted as a standalone persistent document; sprint and reverse-engineered), c4-full schema (LikeC4 or Mermaid) for sprint scope, subsystem registry docs/architecture/subsystems.md and per-subsystem <id>.md (written at design-promote, created at audit when absent after user confirmation), design-promote c4 delta application, stack.html updates, folding approved ADRs and API contracts into whichever persistent doc's `responsibility.owns` frontmatter already claims the subject, audit of existing source code, documentation, stubs and risks. Does NOT handle: requirements (delegates to asd-ba), ux flows or design system (delegates to asd-ux), code implementation (delegates to dev agents)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, WebSearch]
-model: opus
-effort: high
+model: sonnet
+effort: xhigh
 maxTurns: 150
 memory: project
 ---

@@ -1,11 +1,11 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:0040ab0308f2bbb642ad9a8dba5874d4166bb3c31355121757d8c841cdfed0a3 content_digest=sha256:aa7404922e7fe61c16843a2b7ebcb135f2f7852600bbe6c43da49dd30cfe6f3d asd_version=13.3.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:5e238db6d027d71879359601fb9c57f00d583999af92b45e7b01dcb431a166f4 content_digest=sha256:9bbadefe47c53f844e45b86b7d95bd99d7d7ee2ab446a6441bca98a360e90587 asd_version=13.4.0 schema=1
 name: asd-reviewer-testing
 description: "Impl-review assessment of the test-plan decisions and the tests themselves, plus judging manual-verification necessity when automation is impossible. Covers: risk→check fit per test-plan.md, justification of removed tests and of no-test decisions, fail-first proof on regression tests, AC→check coverage (every AC-N has a check), edge cases on core paths, absence of test-for-test-sake (meaningless assertions), flaky patterns, manual-verification necessity judgment against the spec `test-plan.md` already owns (single home — never re-authored here). Does NOT handle: bug/security/AC→code trace/ui/a11y (delegates to asd-reviewer-correctness), over-engineering/performance (delegates to asd-reviewer-efficiency), documentation sync and stub resolution (delegates to asd-reviewer-documentation), design-review testability (unowned by design), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep]
 disallowedTools: [Edit, Bash, WebFetch]
-model: opus
-effort: high
+model: sonnet
+effort: xhigh
 maxTurns: 50
 memory: project
 ---

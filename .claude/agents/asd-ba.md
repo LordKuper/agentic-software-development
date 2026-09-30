@@ -1,9 +1,9 @@
 ---
-# ASD generated. Edit .asd/agents/asd-ba.md. source_digest=sha256:7d07c07b75ca14ac69975e1f37f352a3a147797aa05147a5f3adf8b8b8ebd680 content_digest=sha256:9c6fba1aec8640985a3881f0724e349cd73a5524fe4655b637eaa63d5cf2b14f asd_version=13.3.0 schema=1
+# ASD generated. Edit .asd/agents/asd-ba.md. source_digest=sha256:8f087c3299b09c170b3461a3e8d3c75b786946c6fec41996a873ec8772d84bbd content_digest=sha256:c1b35a905779ab4db6e6d100f0b3e6e2bbe70e0aa8480d09b3dcfd8fba336329 asd_version=13.4.0 schema=1
 name: asd-ba
 description: "Product requirements: user stories, acceptance criteria, conditional product/domain audit support, PRD drafts. Covers: PRD authoring (sprint draft plus reverse-engineered/migrated), product/domain clarification during audit when requested by the orchestrator, user story decomposition, acceptance criteria formulation, ambiguity resolution via clarifying questions. Does NOT handle: ux flows or ui mockups (delegates to asd-ux), architecture decisions (delegates to asd-architect), code (delegates to dev agents), code audit (delegates to asd-architect)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, WebSearch]
-model: opus
+model: sonnet
 effort: high
 maxTurns: 50
 memory: project

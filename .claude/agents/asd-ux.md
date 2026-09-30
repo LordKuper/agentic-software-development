@@ -1,9 +1,9 @@
 ---
-# ASD generated. Edit .asd/agents/asd-ux.md. source_digest=sha256:8320e927565feeeca01b1b8d1e7eee5e08f6287f8a157f6f937f88aaffdd0264 content_digest=sha256:b8f558dab8294be5e25e56329aa8b3fbcd6e8e4d966d0adf16dddae017c07783 asd_version=13.3.0 schema=1
+# ASD generated. Edit .asd/agents/asd-ux.md. source_digest=sha256:bc892ff669388e251e07a317d62b87ad3031d6785c998c09b3f2d606fed5578f content_digest=sha256:fec644d499205e1e10bb3cd249e8f685a5e344d1deef5500fcc91d938b8c47ce asd_version=13.4.0 schema=1
 name: asd-ux
 description: "User flows, ui mockups, design system (DESIGN.md tokens/components), design-system.html. Covers: ux-spec authoring (sprint draft plus reverse/migrated), DESIGN.md edits using Google Labs format spec, design-md-delta proposals, design-system.html regeneration with swatches/typography/spacing/component previews, ui composition preview. Does NOT handle: accessibility requirements (project-wide, owned by accessibility.html), requirements (delegates to asd-ba), architecture decisions (delegates to asd-architect), code (delegates to dev agents)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, WebSearch]
-model: opus
+model: sonnet
 effort: high
 maxTurns: 50
 memory: project

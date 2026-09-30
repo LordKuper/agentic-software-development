@@ -1,11 +1,11 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-combined.md. source_digest=sha256:0d3be49d57917b76f733e5c5f3d916ba48f1124ce97cadc0421c6d587da8c088 content_digest=sha256:d026ef255d5f316cd9a3f4b06bcedf7406f5d4ce6d06767137db9d8380c62550 asd_version=13.3.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-combined.md. source_digest=sha256:4465f519d7360af8ed263d298fbfb868a75ed72524b8336abe93782ab55c09d2 content_digest=sha256:f16f26d1d02821282512072b9b971cc039693812aaab76a2bf76b7b9e139de87 asd_version=13.4.0 schema=1
 name: asd-reviewer-combined
 description: "Impl-review single-pass internal reviewer for workflows whose `reviewers.impl` names `combined` (lite): applies the Correctness and Efficiency rubrics to every change, the Documentation rubric when a documentation file is in scope, and gives an overall quality assessment of every change. Covers: bugs, security, contracts, best practices, AC→code trace against `sprint.md` AC-N, UI/accessibility conformance, over-engineering and structure/cohesion checklists, complexity-vs-value, performance; conditionally SSoT, template adherence, persistent-doc actuality, in-code doc comments, stub resolution, Framework mode, documentation economy; overall quality. Does NOT handle: design-review (lite has none; standard dispatches asd-reviewer-correctness/efficiency/documentation), test-plan/test-quality review and AC→check coverage (no Testing review in lite; `test-plan.md` is context only, the manual-verification decision is the orchestrator's), standard's impl-review (asd-reviewer-correctness/efficiency/testing/documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, WebFetch, WebSearch]
 disallowedTools: [Edit, Bash]
-model: opus
-effort: high
+model: sonnet
+effort: xhigh
 maxTurns: 50
 memory: project
 ---
