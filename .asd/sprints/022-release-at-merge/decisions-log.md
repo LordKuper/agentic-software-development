@@ -85,3 +85,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-30 — wave 6 (Task 10, e22b23d) landed and synced; no flagged choices; impl assessment approved adaptively; route impl-test entry 4
 - 2026-09-30 — route impl-test entry 4: critical, dispatch HEAD a26b22d
 - 2026-09-30 — impl-test: impacted set green (264/264), 1/1 tests added/removed (entry 4: one new AC-10 pin, one duplicate assertion deleted); no manual-verification rows
+- 2026-09-30 — combined interrupted attempt 1 in wave-1/iter-02 (50-turn cap, no report or return file)
+
+- 2026-09-30 — impl-review wave-1/iter-02: combined CONCERNS (4 low: #1 sprint-lifecycle Modes over-claim, #2 tag creation ignores origin, #3 duplicated `spans` helper in tests, #4 git-strategy retry sentence restates its home), external CONCERNS (1 low: #1 prose pin in tests/run.js:7085). No FAIL, no reviewer question. Findings span canon, so the test-only in-place fix does not fire: routed to impl review-fix (review_fixes_pending=wave-1/iter-02). F-2 logged (combined read iter-01 file).
