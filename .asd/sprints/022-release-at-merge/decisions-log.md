@@ -81,3 +81,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: The user asked, in chat, to update the `sol` model to `gpt-6.1-sol`. Read as: the concrete ID behind the `sol` family alias changes from `gpt-6-sol` to `gpt-6.1-sol`; the alias, all tiers and `luna` stay. Carried by Task 10 in the new wave 6; the change surface stays 37 (the manifest, `providers.md` and README are already counted). The record carries `floor_base=wave-1/1`, since wave 1 is still at counter 1, and latches were cleared (none held). The ID is user-supplied and unchecked against a host doc.
 - **Rationale**: Hard scope gate, decided by the user's request. `sync.js` validator `gpt-<n>[.<n>]-(sol|luna)` accepts the ID.
 - **Affected docs**: [sprint.md](sprint.md), [plan.md](plan.md)
+- 2026-09-30 — route Task 10: critical, dispatch HEAD 4fe03f1
