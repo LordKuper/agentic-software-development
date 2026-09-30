@@ -36,3 +36,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 <!-- entries appended below this line -->
 - 2026-09-30 — design-promote skipped: frozen prd/ux_spec/adr/c4 all false (lite empty scope)
+- 2026-09-30 — retro: retrospective.html written; 2 entries analysed (both covered by existing rules, 0 new actions), 3 systemic proposals (turn budget vs file count, bounded fail-first mutation runs, single-home tier tables); non-empty-log branch
