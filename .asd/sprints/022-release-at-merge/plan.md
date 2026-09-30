@@ -105,9 +105,9 @@ Material risk: change: public contract
 
 ### Task 9: revert mechanical to haiku; Codex-host wrapped Claude sonnet/xhigh (AC-9, scope amendment)
 Material risk: change: public contract
-- [ ] `.asd/agents/asd-dev.md`, `asd-tester.md`: `mechanical.claude` back to `{"model": "haiku"}` (no effort)
-- [ ] `.asd/agents/asd-external-review.md`: `codex.wraps_model` "sonnet"; `codex.wraps_invoke_args` `--effort xhigh`
-- [ ] `.asd/rules/providers.md` "Agent tier matrix" (variants row, wrapped-reviewer row) and variants sentence; README mirrors
+- [x] `.asd/agents/asd-dev.md`, `asd-tester.md`: `mechanical.claude` back to `{"model": "haiku"}` (no effort)
+- [x] `.asd/agents/asd-external-review.md`: `codex.wraps_model` "sonnet"; `codex.wraps_invoke_args` `--effort xhigh`
+- [x] `.asd/rules/providers.md` "Agent tier matrix" (variants row, wrapped-reviewer row) and variants sentence; README mirrors
 
 ## Orchestrator lines (not dev Tasks)
 - After each wave: tick the wave's checkboxes (D5); `sync.js --apply` on changed views, or `--apply AGENTS.md`; `--check`; commit.

@@ -71,3 +71,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: Hard scope gate, decided by the user. The host was verified per 019#P-1: the code.claude.com CLI reference lists `--effort` as `low|medium|high|xhigh|max` and `--model` as accepting the `sonnet` alias.
 - **Affected docs**: [sprint.md](sprint.md), [plan.md](plan.md)
 - 2026-09-30 — route Task 9: critical, dispatch HEAD 46e0187
+- 2026-09-30 — wave 5 (Task 9, d83ea8e) landed and synced; flagged choice accepted (providers.md External review symmetry alias sol/sonnet); halted before impl-test entry 3 at the user's request
