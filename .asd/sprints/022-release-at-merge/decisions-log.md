@@ -82,3 +82,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: Hard scope gate, decided by the user's request. `sync.js` validator `gpt-<n>[.<n>]-(sol|luna)` accepts the ID.
 - **Affected docs**: [sprint.md](sprint.md), [plan.md](plan.md)
 - 2026-09-30 — route Task 10: critical, dispatch HEAD 4fe03f1
+- 2026-09-30 — wave 6 (Task 10, e22b23d) landed and synced; no flagged choices; impl assessment approved adaptively; route impl-test entry 4
