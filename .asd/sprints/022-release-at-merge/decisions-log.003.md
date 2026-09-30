@@ -35,4 +35,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
-- 2026-09-30 — route Task 1, Task 2, Task 3, Task 4, Task 5: critical, dispatch HEAD a144cd1
+
+## 2026-09-30 — `022-release-at-merge/plan.md` accepted (adaptive)
+
+- **Decision**: 7 Tasks in 3 waves, change surface 26/100. Design D1–D6: token `done`; release in merge mode with a retry route; no closure gate; an amendment floor base in gate evidence; the orchestrator ticks the plan; `asd-init` carries inline comments for Task 7's same-value settings change.
+- **Rationale**: Routine adaptive pass: the authority is sprint.md AC-1…AC-7, every design choice is the audit's recommendation or the user's recorded decision (D6), and no material alternative is left open.
+- **Affected docs**: [plan.md](plan.md)
