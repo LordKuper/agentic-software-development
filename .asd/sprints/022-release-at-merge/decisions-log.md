@@ -88,3 +88,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-30 — combined interrupted attempt 1 in wave-1/iter-02 (50-turn cap, no report or return file)
 
 - 2026-09-30 — impl-review wave-1/iter-02: combined CONCERNS (4 low: #1 sprint-lifecycle Modes over-claim, #2 tag creation ignores origin, #3 duplicated `spans` helper in tests, #4 git-strategy retry sentence restates its home), external CONCERNS (1 low: #1 prose pin in tests/run.js:7085). No FAIL, no reviewer question. Findings span canon, so the test-only in-place fix does not fire: routed to impl review-fix (review_fixes_pending=wave-1/iter-02). F-2 logged (combined read iter-01 file).
+- 2026-09-30 — route combined.md 1-4, external.md 1: critical, dispatch HEAD 716d5ec

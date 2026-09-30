@@ -1,7 +1,7 @@
 {
   "sprint_id": "022-release-at-merge",
   "branch": "sprint/022-release-at-merge",
-  "phase": "impl-review",
+  "phase": "impl",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -182,6 +182,12 @@
       "execution": "agent",
       "reason": "risk:public contract",
       "resolved_model": "sonnet"
+    },
+    "review-fix wave-1/iter-02": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "no-downgrade",
+      "resolved_model": "sonnet"
     }
   },
   "skipped_phases": [],
@@ -216,7 +222,7 @@
     }
   },
   "created_at": "2026-09-30T07:52:07.411Z",
-  "updated_at": "2026-09-30T11:03:31.859Z",
+  "updated_at": "2026-09-30T11:04:00.657Z",
   "review_fixes_pending": "wave-1/iter-02",
   "test_defects_pending": null,
   "pr": null,
