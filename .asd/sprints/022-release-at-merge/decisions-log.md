@@ -64,3 +64,10 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: [sprint.md](sprint.md), [plan.md](plan.md)
 - 2026-09-30 — route Task 8: critical, dispatch HEAD 8950b32
 - 2026-09-30 — wave 4 (Task 8, 8730e31) landed and synced; flagged choices accepted (matrix row split, README intro, Claude column only); halted before impl-test entry 3 at the user's request
+
+## 2026-09-30 — Scope amendment: AC-9 (mechanical back to haiku; Codex-host wrapped Claude sonnet/xhigh)
+
+- **Decision**: The user asked for two changes. First, revert the mechanical variants to `haiku` with no effort, which supersedes AC-8's mechanical clause. Second, move the Codex-host External Review wrapped Claude from `opus`/`high` to `sonnet`/`xhigh`. Both are carried by Task 9 in the new wave 5. The change surface stays 37, because every file is already counted (`asd-external-review.md` adds one → 38/100). The record carries `floor_base=wave-1/1`, since wave 1 is still at counter 1, and latches were cleared (none held).
+- **Rationale**: Hard scope gate, decided by the user. The host was verified per 019#P-1: the code.claude.com CLI reference lists `--effort` as `low|medium|high|xhigh|max` and `--model` as accepting the `sonnet` alias.
+- **Affected docs**: [sprint.md](sprint.md), [plan.md](plan.md)
+- 2026-09-30 — route Task 9: critical, dispatch HEAD 46e0187

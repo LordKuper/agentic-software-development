@@ -103,6 +103,12 @@ Material risk: change: public contract
 - [x] `.asd/agents/asd-dev.md`, `asd-tester.md` variants: mechanical `{"model":"sonnet","effort":"low"}`, critical `{"model":"sonnet","effort":"xhigh"}`; Codex sides unchanged
 - [x] `.asd/rules/providers.md` "Agent tier matrix" rows and the "Task-class variants and routing" variants sentence; README model-tier table (both-provider columns); `model_families` untouched
 
+### Task 9: revert mechanical to haiku; Codex-host wrapped Claude sonnet/xhigh (AC-9, scope amendment)
+Material risk: change: public contract
+- [ ] `.asd/agents/asd-dev.md`, `asd-tester.md`: `mechanical.claude` back to `{"model": "haiku"}` (no effort)
+- [ ] `.asd/agents/asd-external-review.md`: `codex.wraps_model` "sonnet"; `codex.wraps_invoke_args` `--effort xhigh`
+- [ ] `.asd/rules/providers.md` "Agent tier matrix" (variants row, wrapped-reviewer row) and variants sentence; README mirrors
+
 ## Orchestrator lines (not dev Tasks)
 - After each wave: tick the wave's checkboxes (D5); `sync.js --apply` on changed views, or `--apply AGENTS.md`; `--check`; commit.
 - At pr open mode: `asd_version` bump plus CHANGELOG, with a migration note (`await-closure` removed, closure gate gone, stale shipped `user_gates` comment in existing configs, self-hosting forks release at merge).
@@ -119,5 +125,6 @@ Material risk: change: public contract
 | 2 | 6 |
 | 3 | 7 |
 | 4 | 8 |
+| 5 | 9 |
 
 - Task 6 mirrors wave 1. Task 7 needs Task 2's `t_config.yaml` comment and Task 5's `asd-init` change, synced.
