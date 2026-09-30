@@ -2239,7 +2239,7 @@ test('sprint-017 (COR-6): outside a review phase, SessionStart prefers the impl-
   assert.ok(afterWaveIterated.includes('Last review verdict: yellow'), `COR-6: once any wave has iterated, an impl-phase summary must prefer the impl wave node over design's - comparing counters directly would compare wave 2's iteration 1 to design's iteration 2 and wrongly pick design's green, got: ${afterWaveIterated}`);
 });
 
-test('sprint-021 AC-3 (D3): SessionStart reports "Next phase: await-closure" for a merged-unclosed sprint read offline - phase pr, a PR number, and a checked-out branch other than the sprint\'s - legacy closure-pending included, and degrades to await-merge on the sprint branch, a detached HEAD or a worktree .git file', () => {
+test('sprint-021 AC-3 (D3), sprint-022 AC-3: SessionStart reports "Next phase: done" for a merged-unclosed sprint read offline - phase pr, a PR number, and a checked-out branch other than the sprint\'s - legacy closure-pending included, and degrades to await-merge on the sprint branch, a detached HEAD or a worktree .git file', () => {
   const sprintBranch = 'sprint/999-fixture';
   const nextFor = (pr, git) => {
     const tempRoot = mkTempDir();
@@ -2252,8 +2252,8 @@ test('sprint-021 AC-3 (D3): SessionStart reports "Next phase: await-closure" for
   };
   const onBase = { head: 'ref: refs/heads/main\n' };
   const cases = [
-    ['merged, back on the base branch', { number: 7, state: 'open' }, onBase, 'await-closure'],
-    ['legacy closure-pending with a PR number (D2)', { number: 7, state: 'closure-pending' }, onBase, 'await-closure'],
+    ['merged, back on the base branch', { number: 7, state: 'open' }, onBase, 'done'],
+    ['legacy closure-pending with a PR number (D2)', { number: 7, state: 'closure-pending' }, onBase, 'done'],
     ['PR open, still on the sprint branch', { number: 7, state: 'open' }, { head: `ref: refs/heads/${sprintBranch}\n` }, 'await-merge'],
     ['no PR number yet', { state: 'open' }, onBase, 'await-merge'],
     ['detached HEAD', { number: 7, state: 'open' }, { head: `${'a'.repeat(40)}\n` }, 'await-merge'],
@@ -2262,7 +2262,7 @@ test('sprint-021 AC-3 (D3): SessionStart reports "Next phase: await-closure" for
   for (const [label, pr, git, expected] of cases) {
     let next;
     assert.doesNotThrow(() => { next = nextFor(pr, git); }, `${label}: the hook must exit 0 on any .git shape - it fails silently by design`);
-    assert.strictEqual(next, expected, `${label}: merged-unclosed is phase pr + pr.number + a readable current branch other than state.branch (sprint-lifecycle.md "PR phase"); any shape the hook cannot read offline degrades to await-merge, never a false closure prompt`);
+    assert.strictEqual(next, expected, `${label}: merged-unclosed is phase pr + pr.number + a readable current branch other than state.branch (sprint-lifecycle.md "PR phase"); any shape the hook cannot read offline degrades to await-merge, never a false done; merged-unclosed reports done, pr merge mode's terminal exit (sprint-022 AC-3)`);
   }
 });
 
@@ -4119,6 +4119,16 @@ test('AC-3/AC-12: sprint-lifecycle.md owns retro-criterion re-verification and t
   assert.ok(taskBlocks.length >= 2, 'sanity: t_plan.md must ship more than one example Task block');
   for (const block of taskBlocks) assert.ok(/^Material risk:/m.test(block), 'every example Task block must carry the mandatory Material risk line');
   assert.ok(taskBlocks.some((block) => !/^Reachability:/m.test(block)), 't_plan.md must ship at least one example Task without a Reachability line - the template is where an author reads whether the line is conditional or mandatory, and a copy on every block teaches the wrong one');
+
+  const reachability = lifecycle.split('\n').find((line) => line.startsWith('**Reachability declaration**')) || '';
+  const interrupted = /`(; interrupted at [^`]+)`/.exec(reachability);
+  assert.ok(interrupted, 'sprint-022 AC-6: the Reachability declaration must give a value crossing a push or merge a grammar for each interruption point and the value the receiving branch then holds - sprint 021 planned a write/read pair whose interrupted state nobody named');
+  const acceptance = reachability.split(/(?<=\.)\s/).find((sentence) => sentence.includes('Accepting the plan')) || '';
+  assert.ok(/\binterrupted\b/.test(acceptance), 'sprint-022 AC-6: accepting the plan must also check the reader handles each named interrupted value, before plan acceptance');
+  const exampleReach = template.split('\n').find((line) => line.startsWith('Reachability:')) || '';
+  assert.ok(exampleReach.includes(interrupted[1]), `sprint-022 AC-6: t_plan.md's example Reachability line must carry the interruption clause in the home's grammar (${interrupted[1]})`);
+  const formatRule = template.split('\n').find((line) => line.includes('`Reachability:` line')) || '';
+  assert.ok(/\binterruption point\b/.test(formatRule), 'sprint-022 AC-6: t_plan.md\'s parser-critical Reachability rule must mirror the interruption-point clause');
 });
 
 test('AC-15: checkpoints.md surfaces a criterion\'s running cost from artefacts the sprint already writes, and the decisions-log literal it counts is the one asd-phase-impl.md actually emits', () => {
@@ -6824,21 +6834,35 @@ test('sprint-021 AC-10/AC-11 (D5): scratch-dir creates .asd/tmp/ beside the runt
   assert.strictEqual(git('status', '--porcelain', '--untracked-files=all'), '', 'the directory and its own .gitignore must be ignored with no root .gitignore entry - a consumer needs no migration, and a helper or return file never reaches a commit or a review');
 });
 
-test('sprint-021 AC-1/AC-2 (D1): pr ends at await-merge or await-closure and asd-sprint takes each chain exit; pr open mode commits and pushes its state.json.pr write before await-merge, pr merge mode republishes it if the PR head lacks it before merging and performs no part of the closure write, and scope step 1 carries every token of it', () => {
+test('sprint-021 AC-1/AC-2 (D1), sprint-022 AC-1/AC-2/AC-3: pr ends at await-merge or done, and runtime CHAIN_EXITS, asd-sprint and README agree; pr open mode commits and pushes its state.json.pr write before await-merge, pr merge mode republishes it if the PR head lacks it before merging, fetches base before the self-hosting release and performs no part of the closure write, which releases nothing and is the orchestrator\'s, and scope step 1 carries every token of it', () => {
   const definitions = readWorkflowDefinitions();
   const exits = [...new Set(definitions.flatMap(({ phases, next }) => Object.values(next).flat().filter((target) => !phases.includes(target))))].sort();
-  assert.deepStrictEqual(exits, ['await-closure', 'await-merge'], 'AC-1: the chain ends at pr\'s two exits - the PR opened, then merged and awaiting closure; no definition ends at done any more, since pr never writes the terminal state');
+  assert.deepStrictEqual(exits, ['await-merge', 'done'], 'sprint-022 AC-3 (D1): the chain ends at pr\'s two exits - the PR opened, then merged; done names completion, not a write, since pr never writes the terminal state');
+  const chainExits = /^const CHAIN_EXITS = (\[[^\]]*\]);/m.exec(canonText('.asd/runtime.js'));
+  assert.ok(chainExits, 'sanity: .asd/runtime.js must declare CHAIN_EXITS as a one-line array literal');
+  assert.deepStrictEqual(JSON.parse(chainExits[1].replace(/'/g, '"')).sort(), exits, 'sprint-022 AC-3: runtime.js CHAIN_EXITS must be exactly the exits the definitions route pr to - loadWorkflow accepts any CHAIN_EXITS member as a target, so a stale extra token stays loadable and routable');
   const sprintSkill = canonText('.asd/skills/asd-sprint/SKILL.md');
   const skillExits = /^SPRINT: .*\bNEXT:\s*<([^>]+)>/m.exec(sprintSkill);
   assert.ok(skillExits && exits.every((exit) => skillExits[1].split('|').includes(exit)), 'asd-sprint must offer every chain exit in its return contract - an exit it cannot relay halts the sprint with no route');
-  assert.ok(sprintSkill.split('\n').some((line) => line.includes('`NEXT: await-closure`') && line.includes('Step 1A')), 'AC-2: asd-sprint routes pr\'s `NEXT: await-closure` to its closure request (Step 1A)');
+  const doneRoute = (sprintSkill.split('\n').find((line) => line.includes('`NEXT: done`')) || '').split('`NEXT: done`')[1];
+  assert.ok(doneRoute && /\bhalt\b/.test(doneRoute.split(';')[0]), 'sprint-022 AC-2/AC-3: asd-sprint Step 3 must halt on pr\'s `NEXT: done` - no closure request follows the merge, the next sprint\'s scope archives it');
+  assert.ok(!/^### Step 1A\b/m.test(sprintSkill), 'sprint-022 AC-2 (D3): asd-sprint Step 1A, the closure request, is deleted - a merged-unclosed sprint goes to the new-sprint flow with no user gate');
+  const readmePr = canonText('README.md').split('\n').find((line) => line.startsWith('| **pr** |') && line.includes('`gh pr create`')) || '';
+  assert.deepStrictEqual(exits.filter((exit) => !readmePr.includes(`\`${exit}\``)), [], 'sprint-022 AC-3: README\'s pr row must name every chain exit the definitions route pr to');
+  const tablePr = sectionOf('.asd/rules/sprint-lifecycle.md', 'Phase table').split('\n').find((line) => line.startsWith('| pr |')) || '';
+  assert.ok(exits.includes((/→ `([^`]+)`/.exec(tablePr) || [])[1]), `sprint-022 AC-3: sprint-lifecycle.md "Phase table" pr row must exit to a chain exit the definitions route pr to; got: ${tablePr}`);
 
   const closure = sectionOf('.asd/rules/sprint-lifecycle.md', 'PR phase').split('**Closure write**')[1].split('\n\n')[0];
   const tokens = [...new Set([...closure.matchAll(/`([^`]+)`/g)].map((match) => match[1]).filter((token) => !token.endsWith('.md')))];
   const writes = ['git mv', 'phase="done"', 'archived_at'];
   assert.deepStrictEqual(writes.filter((token) => !tokens.includes(token)), [], 'sanity: sprint-lifecycle.md "PR phase" "Closure write" must name the archive move and the terminal fields this test holds pr merge mode free of');
+  assert.ok(tokens.includes('decision_actor: orchestrator'), 'sprint-022 AC-2 (D3): the closure write records its gate_decisions entry with decision_actor: orchestrator - no user gate precedes it, so a user actor would claim an approval nobody gave');
+  assert.ok(!/\b(?:tag|release)\b/i.test(closure), 'sprint-022 AC-1: the closure write no longer tags or releases - pr merge mode publishes the self-hosting release right after the merge');
   const merge = sectionOf('.asd/workflows/asd-phase-pr.md', 'Merge mode');
-  assert.ok(merge.includes('`NEXT: await-closure`'), 'AC-1: pr merge mode returns `NEXT: await-closure` once the merge is confirmed');
+  assert.ok(merge.includes('`NEXT: done`'), 'sprint-022 AC-3: pr merge mode returns `NEXT: done` once the merge is confirmed');
+  const release = stepOf(merge, 2);
+  const [fetchAt, releaseAt, doneAt] = ['`git fetch origin <git.base_branch>`', '"Versioning & Changelog (self-hosting only)"', '`NEXT: done`'].map((token) => release.indexOf(token));
+  assert.ok(fetchAt >= 0 && fetchAt < releaseAt && releaseAt < doneAt, 'sprint-022 AC-1 (D2): pr merge mode step 2 fetches git.base_branch, then publishes the release per git-strategy.md "Versioning & Changelog (self-hosting only)", then emits NEXT: done - the squash merge commit the tag targets is not local on the sprint branch until the fetch');
   assert.deepStrictEqual(writes.filter((token) => merge.includes(token)), [], 'AC-1: pr merge mode makes no write on git.base_branch - the archive move and terminal state belong to the next sprint\'s scope');
   const openSteps = sectionOf('.asd/workflows/asd-phase-pr.md', 'Open mode').split(/\n(?=\d+[a-z]?\. )/);
   const writeAt = openSteps.findIndex((step) => step.includes('`state.json.pr`'));
@@ -6858,15 +6882,16 @@ test('sprint-021 AC-1/AC-2 (D1): pr ends at await-merge or await-closure and asd
   assert.ok(/\bpush/i.test(republish), `AC-2: pr merge mode must push the sprint branch when the remote lacks pr.number, before merging - ${unconfirmed}`);
   const scopeStep = stepOf(canonText('.asd/workflows/asd-phase-scope.md').split('\n## ')[0], 1);
   assert.deepStrictEqual(tokens.filter((token) => !scopeStep.includes(token) && !scopeStep.includes(token.replace(/ /g, '-'))), [], 'AC-2: asd-phase-scope.md step 1 performs the closure write "PR phase" defines, so it must name each of its tokens (a gate name as its gate_decisions value, spaces hyphenated) - one dropped is a field the closing sprint never gets');
+  assert.ok(!/\b(?:tag|release)\b/i.test(scopeStep), 'sprint-022 AC-1: asd-phase-scope.md step 1 no longer tags or releases - the release moved to pr merge mode');
 });
 
-test('sprint-021 AC-2 (iter-03 external #1), AC-14: a sprint without pr.number is looked up by head branch at any phase - asd-sprint Step 1 runs the lookup "PR phase" "Merged-unclosed" defines with no phase gate, reads a MERGED hit as merged-unclosed and carries its number to the closure write, and adopts an OPEN hit only at phase="pr"; pr open mode runs the lookup before opening a PR, so it never opens a second one, after committing the phase "Merged-unclosed" says base carries', () => {
+test('sprint-021 AC-2 (iter-03 external #1), AC-14, sprint-022 AC-2: a sprint without pr.number is looked up by head branch at any phase - asd-sprint Step 1 runs the lookup "PR phase" "Merged-unclosed" defines with no phase gate, reads a MERGED hit as merged-unclosed and carries its number through Step 2A to the closure write, and adopts an OPEN hit only at phase="pr"; pr open mode runs the lookup before opening a PR, so it never opens a second one, after committing the phase "Merged-unclosed" says base carries', () => {
   const home = sectionOf('.asd/rules/sprint-lifecycle.md', 'PR phase').split('**Merged-unclosed**')[1];
   assert.ok(home, 'sanity: sprint-lifecycle.md "PR phase" must keep its **Merged-unclosed** paragraph, the lookup\'s home');
   const spans = (text) => [...text.matchAll(/`([^`]+)`/g)].map(([, span]) => span);
   const clauses = (text) => text.split(/[;.]\s/);
   const lookup = spans(home.split('\n\n')[0]).find((span) => span.startsWith('gh pr list --head <state.branch>'));
-  const lost = 'a PR merged before open mode\'s state.json.pr write reached the sprint branch leaves base at pr=null, so without the head-branch lookup asd-sprint never requests closure and a pr re-run opens a second PR (impl-review wave-1/iter-03 external #1)';
+  const lost = 'a PR merged before open mode\'s state.json.pr write reached the sprint branch leaves base at pr=null, so without the head-branch lookup asd-sprint never archives it and a pr re-run opens a second PR (impl-review wave-1/iter-03 external #1)';
   assert.ok(lookup, `AC-2: "Merged-unclosed" must define the head-branch lookup for a sprint without pr.number - ${lost}`);
   assert.ok(/--state all\b/.test(lookup), `AC-2: the head-branch lookup must list every PR state - gh pr list defaults to open PRs only and would never report the MERGED one - ${lost}`);
   const outcomes = clauses(home.slice(home.indexOf(lookup)));
@@ -6875,7 +6900,7 @@ test('sprint-021 AC-2 (iter-03 external #1), AC-14: a sprint without pr.number i
   assert.ok(mergedHit, `AC-2: "Merged-unclosed" must read a MERGED head-branch hit as merged-unclosed - ${lost}`);
   assert.ok(openHit, `AC-2: "Merged-unclosed" must resume merge mode on an OPEN head-branch hit - ${lost}`);
   const phaseGated = (text) => spans(text).some((span) => /^phase\s*!?=/.test(span));
-  const anyPhase = 'a PR opened and merged by hand before the pr phase, or an open-mode MERGED hit whose closure was refused, leaves the sprint at an earlier phase with pr=null; a phase-gated lookup never runs for it and the sprint resumes that phase on git.base_branch instead of requesting closure';
+  const anyPhase = 'a PR opened and merged by hand before the pr phase leaves the sprint at an earlier phase with pr=null; a phase-gated lookup never runs for it and the sprint resumes that phase on git.base_branch instead of being archived';
   const definition = clauses(home.split('\n\n')[0])[0];
   assert.ok(definition.includes('`MERGED`'), 'sanity: "Merged-unclosed" must open by defining the state as a sprint PR gh reports MERGED');
   assert.deepStrictEqual([definition, clauses(home).find((clause) => spans(clause).includes(lookup)), mergedHit].filter(phaseGated).map((clause) => clause.trim()), [], `AC-14: "Merged-unclosed"'s definition, its head-branch lookup and its MERGED outcome must name no phase="…" condition - ${anyPhase}`);
@@ -6887,11 +6912,13 @@ test('sprint-021 AC-2 (iter-03 external #1), AC-14: a sprint without pr.number i
   assert.ok(!phaseGated(detect), `AC-14: asd-sprint Step 1's merged-unclosed detection must run for every active sprint, with no phase="…" condition - ${anyPhase}`);
   const openLine = stepOne.find((line) => line !== detect && spans(line).includes('OPEN'));
   assert.ok(openLine && spans(openLine).includes('phase="pr"'), 'AC-14: asd-sprint Step 1 must say an OPEN head-branch hit is adopted into merge mode only at phase="pr" - detection now runs at every phase, and without the restriction an earlier-phase sprint with an open PR reads as ready to merge');
-  const approveStep = stepOf(sprintSkill.split('### Step 1A')[1].split('\n### ')[0], 2);
-  const approve = approveStep.replace(/`[^`]*`/g, '');
-  assert.ok(/\bnumber\b/i.test(approve), `AC-2: asd-sprint Step 1A must carry the head-branch lookup's PR number with the closure approval - scope's closure write has no other source for it when pr is null`);
-  const carry = clauses(approveStep).filter((clause) => /\bnumber\b/i.test(clause.replace(/`[^`]*`/g, '')));
-  assert.deepStrictEqual(carry.filter((clause) => /\bnull\b/.test(clause)), [], "AC-2: asd-sprint Step 1A must carry the confirmed PR number whenever detection found one, not only when the detected copy's pr is null - a sprint-branch copy holding pr.number over a base copy with pr=null reaches scope's closure write, which reads the base copy, with no number (impl-review wave-1/iter-04 #1)");
+  const toNewSprint = stepOne.find((line) => /merged-unclosed/i.test(line) && line.includes('Step 2A')) || '';
+  const route = toNewSprint.slice(toNewSprint.indexOf('→'));
+  assert.ok(/\bnumber\b/i.test(route.replace(/`[^`]*`/g, '')), "sprint-022 AC-2 (D3): asd-sprint Step 1's merged-unclosed route to the new-sprint flow must carry the head-branch lookup's PR number - scope's closure write has no other source for it when pr is null");
+  const carry = clauses(route).filter((clause) => /\bnumber\b/i.test(clause.replace(/`[^`]*`/g, '')));
+  assert.deepStrictEqual(carry.filter((clause) => /\bnull\b/.test(clause)), [], "AC-2: asd-sprint Step 1 must carry the confirmed PR number whenever detection found one, not only when the detected copy's pr is null - a sprint-branch copy holding pr.number over a base copy with pr=null reaches scope's closure write, which reads the base copy, with no number (impl-review wave-1/iter-04 #1)");
+  const handOff = stepOf(sprintSkill.split('### Step 2A')[1].split('\n### ')[0], 4);
+  assert.ok(handOff.includes('`asd-phase-scope`') && /merged-unclosed/i.test(handOff), 'sprint-022 AC-2 (D3): asd-sprint Step 2A.4 must pass the merged-unclosed sprint Step 1 carries to asd-phase-scope, whose step 1 runs the closure write');
   const scopeSpans = spans(stepOf(canonText('.asd/workflows/asd-phase-scope.md').split('\n## ')[0], 1));
   assert.ok(scopeSpans.includes('pr.number'), 'AC-2: asd-phase-scope.md step 1\'s closure write must write pr.number as a field of its own, not only inside the gh pr view command - a closing sprint with pr=null is archived with no PR number and no way to read its merge commit');
   const openSteps = sectionOf('.asd/workflows/asd-phase-pr.md', 'Open mode').split(/\n(?=\d+[a-z]?\. )/);
@@ -6899,7 +6926,7 @@ test('sprint-021 AC-2 (iter-03 external #1), AC-14: a sprint without pr.number i
   assert.ok(createAt > 0, 'sanity: pr open mode must open the PR through git-strategy.md "PR creation", in a step after its first, the site the lookup must precede');
   const beforeCreate = openSteps.slice(0, createAt).join('\n');
   assert.ok(beforeCreate.includes('"Merged-unclosed"'), `AC-2: pr open mode must run the head-branch lookup ("PR phase" "Merged-unclosed") before opening a PR - ${lost}`);
-  assert.ok(clauses(beforeCreate).some((clause) => clause.includes('`MERGED`') && clause.includes('`NEXT: await-closure`')), `AC-2: pr open mode must emit NEXT: await-closure on a MERGED head-branch hit, opening nothing - ${lost}`);
+  assert.ok(clauses(beforeCreate).some((clause) => clause.includes('`MERGED`') && /merge mode/.test(clause)), `sprint-022 AC-1 (D2): pr open mode must continue in merge mode on a MERGED head-branch hit, opening nothing, so the release runs - ${lost}`);
   assert.ok(clauses(beforeCreate).some((clause) => clause.includes('`OPEN`') && /merge mode/.test(clause)), `AC-2: pr open mode must adopt an OPEN head-branch hit into merge mode instead of opening a second PR - ${lost}`);
   const gate = clauses(home.split('\n\n')[0]).map(spans).filter((clauseSpans) => clauseSpans.includes('pr.number')).flat().map((span) => /^phase="([^"]+)"$/.exec(span)).find(Boolean);
   assert.ok(gate, 'sanity: "Merged-unclosed" must name the `phase="…"` a PR carrying pr.number brings to base');
@@ -6961,8 +6988,6 @@ test('sprint-021 AC-13: no canon, README, AGENTS.md, runtime, hook, workflow def
     'the explanatory parenthetical naming the four view path shapes lives only in `AGENTS.md`',
     'const NEGATIVE_TTL_MS',
     'now + NEGATIVE_TTL_MS',
-    "CHAIN_EXITS = ['await-merge', 'done']",
-    '"pr": ["await-merge", "done"]',
   ];
   const memoryFiles = fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT), { recursive: true }).map((entry) => `${AGENT_MEMORY_ROOT}/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
   assert.ok(memoryFiles.some((rel) => rel.startsWith(`${AGENT_MEMORY_ROOT}/asd-pm/`)), 'sanity: the sweep must reach every memory directory, those of retired agents included (artifact-layout.md "Leftover-term check")');
@@ -7007,6 +7032,134 @@ test('sprint-021 AC-7/AC-10/AC-11: each literal the sprint states at two sites a
   const cadenceMinutes = Number((/at least every (\d+) minutes/.exec(liveness) || [])[1]);
   const intervalSeconds = Number((/agent-liveness --interval (\d+)/.exec(canonText('.asd/rules/providers.md')) || [])[1]);
   assert.ok(cadenceMinutes > 0 && intervalSeconds === cadenceMinutes * 60, `AC-7: providers.md "Agent liveness per host" must run agent-liveness at the cadence "Agent liveness" sets - ${cadenceMinutes} min vs --interval ${intervalSeconds} s`);
+});
+
+test('sprint-022 AC-1 (D2): git-strategy.md "Versioning & Changelog (self-hosting only)" publishes the release in pr merge mode after fetching base, skipping each step already done, and a missing tag or release routes a merged-unclosed sprint back to merge mode at its home and in asd-sprint Step 1', () => {
+  const spans = (text) => [...text.matchAll(/`([^`]+)`/g)].map(([, span]) => span);
+  const release = sectionOf('.asd/rules/git-strategy.md', 'Versioning & Changelog (self-hosting only)').split('\n\n').find((paragraph) => paragraph.includes('`gh release create')) || '';
+  const trigger = release.split(':')[0];
+  assert.ok(/merge mode/.test(trigger) && !/closure/i.test(trigger), `AC-1: the release runs in pr merge mode once the merge is confirmed, never at the closure write - the next scope's closure write is no longer gated and may come much later; got: ${trigger}`);
+  const [fetchAt, mergeCommitAt] = ['`git fetch origin <git.base_branch>`', '--json mergeCommit`'].map((token) => release.indexOf(token));
+  assert.ok(fetchAt >= 0 && fetchAt < mergeCommitAt, 'AC-1 (D2): the release fetches git.base_branch before it reads the merge commit - the squash merge commit is not local on the sprint branch');
+  const steps = release.split(/;\s/);
+  const tagStep = steps.find((clause) => spans(clause).some((span) => span.startsWith('git push origin v'))) || '';
+  const releaseStep = steps.find((clause) => spans(clause).some((span) => span.startsWith('gh release create'))) || '';
+  assert.ok(spans(tagStep).some((span) => span.startsWith('git ls-remote --tags origin')), 'AC-1 (D2): the tag step is skipped when the tag exists on origin - a retry after a failed release must not re-tag');
+  assert.ok(spans(releaseStep).some((span) => span.startsWith('gh release view')), 'AC-1 (D2): the release step is skipped when gh release view finds it - idempotency is per step, so a tag pushed before a failed release still gets its release');
+  const retry = release.split(/(?<=\.)\s/).find((sentence) => sentence.includes('`asd-sprint`')) || '';
+  const condition = retry.split('`asd-sprint`')[0].replace(/`[^`]*`/g, '');
+  assert.ok(/\btag\b/.test(condition) && /\brelease\b/.test(condition) && retry.includes('"Merged-unclosed"'), 'AC-1 (D2): the retry route fires on the tag OR the release missing, citing its home "Merged-unclosed" - after a confirmed merge nothing else ever re-runs the release');
+
+  const home = sectionOf('.asd/rules/sprint-lifecycle.md', 'PR phase').split('**Merged-unclosed**')[1].split('\n\n')[0];
+  const homeRetry = home.split(/(?<=\.)\s/).find((sentence) => spans(sentence).some((span) => span.startsWith('gh release view'))) || '';
+  assert.ok(spans(homeRetry).some((span) => span.startsWith('git ls-remote --tags origin')) && /merge mode/.test(homeRetry), '"Merged-unclosed" retry route: a tag absent on origin or a failing gh release view sends the sprint back to merge mode');
+  const stepOne = canonText('.asd/skills/asd-sprint/SKILL.md').split('### Step 1:')[1].split('\n### ')[0].split('\n');
+  const skillRetry = stepOne.find((line) => spans(line).includes('self_hosting: enabled') && line.includes('→')) || '';
+  const [skillCondition, skillRoute = ''] = skillRetry.split('→');
+  assert.ok(/\btag\b/.test(skillCondition.replace(/`[^`]*`/g, '')) && /\brelease\b/.test(skillCondition.replace(/`[^`]*`/g, '')), `asd-sprint Step 1 routes a self-hosting merged-unclosed sprint to the release retry when its tag OR its release is missing; got: ${skillCondition}`);
+  assert.ok(skillRoute.includes('`asd-phase-pr`') && /merge mode/.test(skillRoute), 'asd-sprint Step 1\'s release retry dispatches asd-phase-pr, whose merge mode runs only the release');
+
+  const opening = sectionOf('.asd/rules/sprint-lifecycle.md', 'PR phase').split('\n\n')[1] || '';
+  const note = opening.split(/(?<=\.)\s/).find((sentence) => sentence.startsWith('`NEXT: done`')) || '';
+  assert.ok(spans(note).includes('phase="pr"'), 'D1: "PR phase" says once that NEXT: done names completion, not a write - phase stays "pr" on base until the closure write, or NEXT: done reads as an early phase="done" write');
+});
+
+test('sprint-022 AC-2: checkpoints.md keeps no sprint-closure hard gate, in its hard list or its inventory', () => {
+  const lines = canonText('.asd/rules/checkpoints.md').split('\n');
+  const hard = lines.find((line) => line.startsWith('Hard in both modes:')) || '';
+  assert.ok(/\babort\b/.test(hard), 'sanity: checkpoints.md must keep its "Hard in both modes:" list');
+  assert.ok(!/closure/i.test(hard), 'AC-2: the PR merge completes the sprint - no hard closure gate remains, and a merged sprint is archived by the next scope with no approval');
+  const inventory = sectionOf('.asd/rules/checkpoints.md', 'Gate inventory').split('\n').filter((line) => line.startsWith('| '));
+  assert.ok(inventory.length > 2, 'sanity: checkpoints.md "Gate inventory" must keep its table');
+  assert.deepStrictEqual(inventory.filter((row) => /closure/i.test(row.split('|')[1])), [], 'AC-2: the gate inventory has no sprint-closure row');
+});
+
+test('sprint-022 AC-4: a CLOSED head-branch hit counts as no hit, a lookup that cannot reach gh outside phase="pr" warns and resumes, and each gh failure cause names its own fix', () => {
+  const spans = (text) => [...text.matchAll(/`([^`]+)`/g)].map(([, span]) => span);
+  const unreachable = '"host unreachable, retry online"';
+  const home = sectionOf('.asd/rules/sprint-lifecycle.md', 'PR phase').split('**Merged-unclosed**')[1].split('\n\n')[0].split(/(?<=\.)\s/);
+  assert.ok(/\bno hit\b/.test(home.find((sentence) => sentence.includes('`CLOSED`')) || ''), '"Merged-unclosed": a CLOSED (unmerged) hit counts as no hit - it is neither merged-unclosed nor adoptable into merge mode');
+  const [offline, online = ''] = (home.find((sentence) => sentence.includes(unreachable)) || '').split(/;\s/);
+  assert.ok(spans(offline).includes('phase="pr"') && /\bwarns?\b/.test(offline) && /\bresumes?\b/.test(offline), `"Merged-unclosed": a lookup that cannot reach gh outside phase="pr" warns and resumes the sprint, never FAILED - an offline run must not block every non-pr phase; got: ${offline}`);
+  assert.ok(online.includes('`FAILED`'), `"Merged-unclosed": at phase="pr" an unreachable host stays FAILED naming ${unreachable}`);
+  const stepOne = canonText('.asd/skills/asd-sprint/SKILL.md').split('### Step 1:')[1].split('\n### ')[0].split(/(?<=\.)\s|\n/);
+  assert.ok(/\bno hit\b/.test(stepOne.find((sentence) => sentence.includes('`CLOSED`')) || ''), 'asd-sprint Step 1: a CLOSED head-branch hit counts as no hit');
+  const skillOffline = stepOne.map((sentence) => sentence.split(/;\s/)[0]).find((clause) => spans(clause).includes('phase="pr"') && /\bwarns?\b/.test(clause)) || '';
+  assert.ok(/\bresumes?\b/.test(skillOffline), 'asd-sprint Step 1: a head-branch lookup that cannot reach gh outside phase="pr" warns and resumes');
+  const bullet = sectionOf('.asd/rules/git-strategy.md', 'PR creation').split('\n').find((line) => line.includes('`gh auth login`')) || '';
+  const fixes = [['not installed', 'install gh'], ['not authenticated', '`gh auth login`'], ['host unreachable', unreachable]];
+  for (const [cause, fix] of fixes) {
+    const clause = bullet.split(/;\s|:\s/).find((candidate) => candidate.includes(cause)) || '';
+    assert.ok(clause.includes(fix) && fixes.every(([, other]) => other === fix || !clause.includes(other)), `git-strategy.md "PR creation": the "${cause}" cause names its own fix (${fix}) and no other cause's - install or auth advice does nothing for an unreachable host (021 F-6); got: ${clause}`);
+  }
+  assert.ok(spans(bullet).includes('phase="pr"') && bullet.includes('"Merged-unclosed"'), 'git-strategy.md "PR creation" must name the one warn-and-resume exception to FAILED and point at its home');
+});
+
+test('sprint-022 AC-5 (D5): the orchestrator ticks a wave\'s plan.md checkboxes after its last signal and devs never edit plan.md, at the home and in asd-phase-impl steps 7 and 8', () => {
+  const home = sectionOf('.asd/rules/sprint-lifecycle.md', 'Impl phase').split(/(?<=\.)\s/).find((sentence) => sentence.includes('`plan.md`') && sentence.includes('`MEMORY.md`')) || '';
+  const clauses = home.split(/;\s/);
+  assert.ok(clauses.some((clause) => /\borchestrator\b/.test(clause) && /\bticks\b/.test(clause) && clause.includes('`plan.md`')), 'AC-5: "Impl phase" - the orchestrator ticks the wave\'s plan.md checkboxes after its last signal');
+  assert.ok(clauses.some((clause) => /\bdevs\b/.test(clause) && /\bnever\b/.test(clause) && clause.includes('`plan.md`')), 'AC-5: "Impl phase" - devs never edit plan.md, so concurrent Tasks never race on one file (021 A-3)');
+  assert.ok(clauses.some((clause) => /more than one Task/.test(clause) && clause.includes('`MEMORY.md`') && clause.includes('`COMPLETED`')), 'AC-5: in a wave of more than one Task, devs leave a shared MEMORY.md untouched and return their index line in COMPLETED');
+  const impl = sectionOf('.asd/workflows/asd-phase-impl.md', 'Workflow');
+  const tickedBy = (step) => stepOf(impl, step).split(/(?<=\.)\s|;\s/).filter((clause) => clause.includes('`plan.md`') && /\bticks\b/.test(clause));
+  assert.ok(tickedBy(7).some((clause) => /\borchestrator\b/.test(clause) && /last signal/.test(clause)), 'AC-5: asd-phase-impl step 7 - the orchestrator ticks after the wave\'s last signal');
+  assert.ok(tickedBy(8).length > 0 && tickedBy(8).every((clause) => /\borchestrator\b/.test(clause)), 'AC-5: asd-phase-impl step 8 - a resumed manual-blocked task\'s checkboxes are ticked by the orchestrator, not the dev');
+  assert.ok(stepOf(impl, 9).includes('`<sprint>/plan.md`'), 'AC-5: asd-phase-impl step 9\'s authorised-paths gate must admit the plan.md step 7 writes - otherwise the orchestrator\'s own tick commit fails the gate as an unauthorised path');
+});
+
+test('sprint-022 AC-7 (D4): an amendment accepted after the division point records floor_base, impl-review computes floor and cap on iteration minus that base, and the amendment write clears the wave\'s latch', () => {
+  const spans = (text) => [...text.matchAll(/`([^`]+)`/g)].map(([, span]) => span);
+  const amendment = stepOf(sectionOf('.asd/rules/sprint-lifecycle.md', 'Scope amendment'), 3);
+  const floorBase = spans(amendment).find((span) => span.startsWith('floor_base='));
+  const rebased = spans(amendment).find((span) => /^iteration\s*[−-]\s*A$/.test(span));
+  assert.ok(floorBase && rebased, 'AC-7: "Scope amendment" step 3 records floor_base in its gate evidence and names the iteration - A the floor and cap are computed on');
+  assert.ok(spans(amendment).includes('latched') && amendment.includes('"APPROVE latch"'), 'AC-7: the amendment write clears wave K\'s latched, citing "APPROVE latch" - a latched reviewer would otherwise never see the amended code');
+  const latchRoute = sectionOf('.asd/rules/sprint-lifecycle.md', 'APPROVE latch').split('\n').find((line) => /clearing route/.test(line) && line.includes('"Scope amendment"')) || '';
+  assert.ok(spans(latchRoute).includes('latched'), 'AC-7: "APPROVE latch" names every route that clears a latch, so the scope-amendment route must be listed there');
+  const policy = sectionOf('.asd/rules/review-policy.md', 'Iteration severity floor');
+  assert.ok(policy.includes(`\`${floorBase}\``) && policy.includes('"Scope amendment"'), `AC-7: review-policy.md "Iteration severity floor" subtracts the base the amendment records (${floorBase}) from N`);
+  const counters = sectionOf('.asd/rules/sprint-lifecycle.md', 'Review iteration counters').split('\n').find((line) => line.includes('severity floor and iteration cap')) || '';
+  assert.ok(counters.includes('"Scope amendment"'), 'AC-7: "Review iteration counters" - floor and cap are per counter less the amendment base');
+  const implReview = canonText('.asd/workflows/asd-phase-impl-review.md');
+  for (const step of [3, 10]) assert.ok(spans(stepOf(implReview, step)).includes(rebased), `AC-7: asd-phase-impl-review step ${step} computes the floor and cap on ${rebased}, the value "Scope amendment" defines`);
+});
+
+test('sprint-022 D6: asd-init sprint-mediated mode writes each pair with the template\'s inline comment, and the project config carries the template\'s user_gates comment', () => {
+  const mediated = sectionOf('.asd/skills/asd-init/SKILL.md', 'Workflow (sprint-mediated)');
+  assert.ok(/inline comment/.test(stepOf(mediated, 3)) && /\btemplate\b/.test(stepOf(mediated, 3)), 'D6: sprint-mediated step 3 - a written pair\'s line takes the template\'s inline comment for its key, or a shipped comment rewrite never reaches an existing config');
+  const comment = (rel) => (/^user_gates:[^#\n]*(#.*)$/m.exec(canonText(rel)) || [])[1];
+  assert.ok(comment('.asd/templates/t_config.yaml'), 'sanity: t_config.yaml user_gates carries an inline comment');
+  assert.strictEqual(comment('.asd/project/config.yaml'), comment('.asd/templates/t_config.yaml'), 'D6 (Task 7): the project config\'s user_gates comment is the template\'s - the stale closure comment was refreshed by a same-value sprint-mediated settings change');
+});
+
+test('sprint-022 AC-2/AC-3/AC-5 leftover-term check: no canon, README, AGENTS.md, template, runtime, hook, workflow definition or agent-memory line keeps a sentence or term the sprint removed - await-closure, Step 1A, the sprint-closure hard gate and its approval, the closure-write release, dev plan ticking', () => {
+  const removed = [
+    'await-closure',
+    'Step 1A',
+    '; and sprint closure',
+    '| sprint closure |',
+    'closure approval',
+    'closure always requires user approval',
+    'whose closure the user approves',
+    'sprint-closure approval',
+    'hard closure gate',
+    'Merging is not closure',
+    'Sprint closure is requested',
+    'Sprint closure (finalization and archival)',
+    'until you approve its closure',
+    'the closure request belongs to',
+    'tag and release at the closure write',
+    'At the closure write, after its commit',
+    'hands closure back to asd-sprint',
+    'initial — tick corresponding checkboxes',
+    'finish `BLOCKED:` subtasks, tick `plan.md` checkboxes',
+  ];
+  const memoryFiles = fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT), { recursive: true }).map((entry) => `${AGENT_MEMORY_ROOT}/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
+  assert.ok(memoryFiles.some((rel) => rel.startsWith(`${AGENT_MEMORY_ROOT}/asd-pm/`)), 'sanity: the sweep must reach every memory directory, those of retired agents included (artifact-layout.md "Leftover-term check")');
+  const swept = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/templates/t_config.yaml', '.asd/hooks/session-start.js', '.asd/runtime.js', '.asd/workflows/standard.json', '.asd/workflows/lite.json', ...memoryFiles];
+  const hits = swept.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => removed.filter((phrase) => line.includes(phrase)).map((phrase) => `${rel}:${index + 1} ${phrase}`)));
+  assert.deepStrictEqual(hits, [], 'each phrase is from a line this sprint deleted (git diff main...HEAD) - one surviving restates the closure gate, its approval, the await-closure exit, the release at the closure write or dev plan ticking. CHANGELOG.md and sprint folders are history and stay out of the sweep');
 });
 
 // ===========================================================================

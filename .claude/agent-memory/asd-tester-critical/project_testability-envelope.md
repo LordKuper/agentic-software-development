@@ -178,6 +178,10 @@ fix commit's exact removed phrase to the sprint's leftover-sweep list, then rest
 prove it (sprint 021 D-4). Widening an actor rule ("a sentence naming `--apply` must deny it") to all memory
 instead false-hits factual mentions of the command.
 
+A removed-phrase sweep outlives its sprint, so a later sprint can legitimately re-adopt a banned literal. Sprint 021
+banned the `done` pr exits and sprint 022 made `done` the exit. Delete those entries and cite the audit
+Contradictions ruling as the reason. Do not exempt them: an exemption keeps a ban on text that is now canon.
+
 Same family, for locating a sentence: key the locator to the sentence's **citation**, never its
 ordinal or adverb. `sprint-lifecycle.md`'s latch-clearing route was renamed "A THIRD" → "A further"
 mid-sprint; a `find` on the citation (`` `review-policy.md` "Late duplicate return" ``) survives
