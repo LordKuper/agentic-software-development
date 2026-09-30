@@ -91,3 +91,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-30 — route combined.md 1-4, external.md 1: critical, dispatch HEAD 716d5ec
 - 2026-09-30 — impl fix for wave-1/iter-02: findings resolved (dev 7e124bb: combined.md 1, 2, 4; tester de99a72: external.md 1, combined.md 3 plus pin follow-ups for 2 and 4). Flagged choices accepted (second "each time" pin at asd-sprint Step 1 also dropped; `listed`/`expand` folded into the `spans` helper; ls-remote assert split into create/push asserts; combined.md 1 fixed without the reviewer's extra clause, combined.md 4 dropped rather than pointered). route impl-test entry 5: critical
 - 2026-09-30 — route impl-test entry 5: critical, dispatch HEAD 08e03ca
+- 2026-09-30 — impl-test: impacted set green (264/264), 0/0 tests added/removed (entry 5: two asserts added to an existing test, one review-fix removal carried); no manual-verification rows
