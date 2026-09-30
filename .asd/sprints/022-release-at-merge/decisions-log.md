@@ -74,3 +74,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-30 — wave 5 (Task 9, d83ea8e) landed and synced; flagged choice accepted (providers.md External review symmetry alias sol/sonnet); halted before impl-test entry 3 at the user's request
 - 2026-09-30 — impl assessment (Task 9, wave 5) approved adaptively: plan fully ticked, build+lint clean, sync clean, flagged choice already accepted; no sprint stubs; route impl-test entry 3
 - 2026-09-30 — route impl-test entry 3: critical, dispatch HEAD 1b243b4
+- 2026-09-30 — impl-test: impacted set green (263/263), 1/0 tests added/removed (entry 3); no manual-verification rows
