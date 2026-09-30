@@ -53,3 +53,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-30 — retro amended: F-6 (late-iteration floor dropped a high finding) → A-5 (gh-offline tolerance, CLOSED hit), A-6 (amended code reviewed at its own first-iteration floor). The user chose to publish and carry these forward through the next intake.
 - 2026-09-30 — pr open mode: DoD verified (plan 11/11 Tasks, AC-1…AC-14 traced, wave 1 reviews green at iter-06, full suite 255/255 at 0c7eb7a with only CHANGELOG/sprint files since, re-run 255/255; no sprint stubs; retrospective present; v13.4.0 + CHANGELOG; migrations ≤ 13.4.0); the user approved PR publication and merge; head-branch lookup: no PR
 - 2026-09-30 — PR opened: https://github.com/LordKuper/agentic-software-development/pull/57
+
+## 2026-09-30 — Sprint closed
+
+- **Decision**: The user approved closure ("Закрывай спринт"). PR #57 is merged as 8934231, and the full DoD evidence was presented before merge (reviews green at iter-06, full suite 255/255, retrospective). Closure write done: the folder moved to `archived/` and the terminal state was written as the first commit of `sprint/022-release-at-merge`. Tag/release v13.4.0 is created on 8934231.
+- **Rationale**: `sprint-lifecycle.md` "PR phase" closure write, first live run of the D1 flow this sprint introduced.
+- **Affected docs**: [state.json](state.json)
