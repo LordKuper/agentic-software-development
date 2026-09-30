@@ -10,8 +10,8 @@ Orchestration body for the `asd-phase-impl` skill. Operation-mapping to host too
 
 ## Operations used
 - read: `.asd/project/config.yaml`, `state.json`, `plan.md`, `<sprint>/reviews/impl/<id>/` (review-fix), `<sprint>/test-plan.md` (test-fix), persistent docs, `.asd/project/custom-common-rules.md`, `custom-coding-rules.md`, `stubs.md`, `<sprint>/manual-steps.md`
-- run command: `git status --porcelain`/`git diff` to read the round's committed-plus-uncommitted diff for step 9's authorised-paths gate; `commands.yaml` `build`/`lint` for the same gate; `git rm` of an ownerless agent-memory file (step 3); `node .asd/sync.js --apply`/`--check` and the commit of the regenerated views (step 7, `self_hosting: enabled`)
-- write a file: `state.json` inline, for the mechanical non-gate writes at steps 4, 11 (`sprint-lifecycle.md` "State recovery"); a memory-fix dispatch's returned text, verbatim, and a memory `D-N`'s `Status` in `test-plan.md` (step 3)
+- run command: `git status --porcelain`/`git diff` to read the round's committed-plus-uncommitted diff for step 9's authorised-paths gate; `commands.yaml` `build`/`lint` for the same gate; `git rm` of an ownerless agent-memory file (step 3); `node .asd/sync.js --apply`/`--check` and the commit of the regenerated views (step 7, `self_hosting: enabled`); the commit of step 7's plan ticks and index lines
+- write a file: `state.json` inline, for the mechanical non-gate writes at steps 4, 11 (`sprint-lifecycle.md` "State recovery"); `plan.md` checkboxes and devs' returned `MEMORY.md` index lines (step 7); a memory-fix dispatch's returned text, verbatim, and a memory `D-N`'s `Status` in `test-plan.md` (step 3)
 - request user decision: escalation only (see Execution mode)
 - delegate to agent: `asd-dev` per task / finding group / defect group (test-file findings to `asd-tester`, memory findings to their owner — step 3); the main orchestrator owns manual-step validation, gates and decisions-log inline
 - dispatch a skill: `asd-init` sprint-mediated mode, for a declared settings change, as its Task's wave opens (step 6)
@@ -79,9 +79,9 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
        - stub handling: see `git-strategy.md` "TODO stubs" — do not restate here
        - staging + commit ownership — concurrently dispatched tasks share one worktree: see `git-strategy.md` "Commit before review" — do not restate here
        - commit per Conventional Commits (one logical change per commit; subject ≤50 chars; body describes WHY)
-       - initial — tick corresponding checkboxes in `<sprint>/plan.md`
+       - initial — leave `<sprint>/plan.md` untouched (step 7 ticks it); a wave of more than one Task adds: leave a shared `MEMORY.md` untouched and return its index line in COMPLETED (`sprint-lifecycle.md` "Impl phase")
        - emit COMPLETED with summary (files touched; initial: AC-N satisfied, stubs added; review-fix: findings resolved by id, plus the consumers the consumer search updated; test-fix: defects resolved by `D-N`; every mode: `Flagged choices:` `none` or a list) when all subtasks/findings/defects done; when some subtasks manual-blocked, emit COMPLETED for unblocked portion plus `BLOCKED_MANUAL` listing deferred `MS-N`
-7. Wait all task signals (COMPLETED and/or BLOCKED_MANUAL); a dispatch returning none → `sprint-lifecycle.md` "State recovery" failed dispatch. `self_hosting: enabled`: once a wave's (initial) or the round's (fix modes) last canon-editing dispatch has signalled, before the next wave opens or step 9 runs, the orchestrator runs `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `providers.md` "Canonical path -> per-provider path") over every view whose canon changed — `--apply AGENTS.md` when canon changed but no view did, since any valid `--apply` recomputes `release-manifest.json`'s hash ledgers — then `node .asd/sync.js --check`, and commits the regenerated views
+7. Wait all task signals (COMPLETED and/or BLOCKED_MANUAL); a dispatch returning none → `sprint-lifecycle.md` "State recovery" failed dispatch. Initial mode, after a wave's last signal and before the next wave opens: the orchestrator ticks the `plan.md` checkboxes of the subtasks that wave's COMPLETED signals report done, appends each returned index line to its `MEMORY.md`, and commits (`sprint-lifecycle.md` "Impl phase"). `self_hosting: enabled`: once a wave's (initial) or the round's (fix modes) last canon-editing dispatch has signalled, before the next wave opens or step 9 runs, the orchestrator runs `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `providers.md` "Canonical path -> per-provider path") over every view whose canon changed — `--apply AGENTS.md` when canon changed but no view did, since any valid `--apply` recomputes `release-manifest.json`'s hash ledgers — then `node .asd/sync.js --check`, and commits the regenerated views
 8. **Manual-steps validation + gate** — when any `BLOCKED_MANUAL` emitted:
    - the main orchestrator validates each new `MS-N` for necessity:
      - keep only when action genuinely cannot be done autonomously (needs access, secret, external account, or authority agent lacks)
@@ -91,13 +91,13 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
      - present `manual-steps.md` to user (per `checkpoints.md` "Gate mechanics"); wait for explicit continue command
    - on user continue: re-dispatch each deferred task to owning dev with instruction:
      - verify referenced `MS-N` per its `Verification` field
-     - if verified → flip entry `Status` to `done`, finish `BLOCKED:` subtasks, tick `plan.md` checkboxes, emit COMPLETED
+     - if verified → flip entry `Status` to `done`, finish `BLOCKED:` subtasks, emit COMPLETED; the orchestrator then ticks their `plan.md` checkboxes as step 7 does
      - if not verified → emit `BLOCKED_MANUAL` again (entry stays `pending`); relay to user
    - loop until every `MS-N` is `done` and every deferred task COMPLETED
 9. **Impl completion gate** (all modes) — the main orchestrator verifies, via `commands.yaml`:
    - `build` command executed and finished with no errors and no warnings
    - `lint` command executed and finished with no errors and no warnings
-   - the round's diff — what its agents committed plus anything still uncommitted — read before committing or advancing: every path it touches is one those agents were authorised to touch, plus `.asd/project/config.yaml` when step 6 applied a declared settings change, plus each memory file the orchestrator applied from a memory-fix dispatch or deleted as ownerless, and `<sprint>/test-plan.md` when it set a memory `D-N`'s `Status` (step 3), plus each generated view step 7's sync regenerated. Any other path fails the gate as a build error does — a file no dispatched task named, a generated view an agent edited, a scripted edit that rewrote more than its target. Distinct from `code-style.md` §19's staged-content lint: same tool, different question
+   - the round's diff — what its agents committed plus anything still uncommitted — read before committing or advancing: every path it touches is one those agents were authorised to touch, plus `.asd/project/config.yaml` when step 6 applied a declared settings change, plus each memory file the orchestrator applied from a memory-fix dispatch or deleted as ownerless, and `<sprint>/test-plan.md` when it set a memory `D-N`'s `Status` (step 3), plus each generated view step 7's sync regenerated, plus `<sprint>/plan.md` and each `MEMORY.md` step 7 wrote. Any other path fails the gate as a build error does — a file no dispatched task named, a generated view an agent edited, a scripted edit that rewrote more than its target. Distinct from `code-style.md` §19's staged-content lint: same tool, different question
    - the gate itself never runs tests — a dev's optional impacted-set self-verification run (`sprint-lifecycle.md` "Impacted test set") is not part of it; the suite/impacted-set gates belong to `impl-test`/`impl-review`
    - if any condition fails → phase MUST NOT advance: relay specific failure to owning dev(s) to fix and re-run; loop step 7. Unrecoverable failure escalates as a blocker (`FAILED`).
    - automatic verification — no user pause
@@ -127,7 +127,7 @@ Impl completion gate (step 9) and, initial mode only, impl assessment gate (step
 - Production source code in repo (no tests — see `impl-test`)
 - Updated `.asd/project/stubs.md` (project-global; open stubs only, deleted on resolution)
 - `<sprint>/manual-steps.md` when a manual action arose (per-sprint, append-only)
-- Updated `<sprint>/plan.md` checkboxes (initial mode)
+- Updated `<sprint>/plan.md` checkboxes and devs' returned `MEMORY.md` index lines, written by the orchestrator (initial mode, step 7)
 - Updated reviewer files in `<sprint>/reviews/impl/<id>/` with user-approved change notes (review-fix mode)
 - Updated `<sprint>/test-plan.md` defect rows flipped to `fixed` (test-fix mode)
 - Updated `state.json` (phase=impl; the entered mode's fix flag cleared on exit)
