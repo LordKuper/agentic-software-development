@@ -2,12 +2,11 @@
 
 The main orchestrator owns this phase inline.
 
-1. Read config and existing active/legacy archived sprints. Obtain raw scope when absent, as a plain chat message, fast-forward the base branch, require a clean tree, create the sprint branch, run the closure write below when `asd-sprint` passed a closure approval, then create the sprint folder. Request user decision on the sprint workflow, `standard` or `lite` (`sprint-lifecycle.md` "Workflows"): hard `workflow choice` gate, never defaulted in either gate mode, asked only here; a scope re-run keeps the frozen value. The answer seeds `{{WORKFLOW}}`; step 2's seeding records it in `gate_decisions` and one decisions-log line.
+1. Read config and existing active/legacy archived sprints. Obtain raw scope when absent, as a plain chat message, fast-forward the base branch, require a clean tree, create the sprint branch, run the closure write below when `asd-sprint` passed a merged-unclosed sprint, then create the sprint folder. Request user decision on the sprint workflow, `standard` or `lite` (`sprint-lifecycle.md` "Workflows"): hard `workflow choice` gate, never defaulted in either gate mode, asked only here; a scope re-run keeps the frozen value. The answer seeds `{{WORKFLOW}}`; step 2's seeding records it in `gate_decisions` and one decisions-log line.
    **Closure write** (`sprint-lifecycle.md` "PR phase"; the closing sprint is exempt from the one-active rule):
    - `git mv` the closing sprint folder into `.asd/sprints/archived/`; a legacy folder already there is written in place (`sprint-lifecycle.md` "Sprint immutability");
-   - in its `state.json` write `pr.state="merged"`, `pr.merge_commit` (`gh pr view <pr.number> --json mergeCommit`; a null `pr` takes `pr.number` from the confirmed number `asd-sprint` carries and writes it too), `phase="done"`, `updated_at`, `archived_at`, and append a `gate_decisions` entry `gate: sprint-closure`, `decision_actor: user`; append one entry to its `decisions-log.md`;
-   - commit those paths as the new branch's first commit;
-   - `self_hosting: enabled`: then tag `v<asd_version>` on `pr.merge_commit`, `asd_version` read by `git show <merge_commit>:.asd/release-manifest.json`, skipped when that tag exists, and create the release, per `git-strategy.md` "Versioning & Changelog (self-hosting only)".
+   - in its `state.json` write `pr.state="merged"`, `pr.merge_commit` (`gh pr view <pr.number> --json mergeCommit`; a null `pr` takes `pr.number` from the confirmed number `asd-sprint` carries and writes it too), `phase="done"`, `updated_at`, `archived_at`, and append a `gate_decisions` entry `gate: sprint-closure`, `decision_actor: orchestrator`, `evidence: <merge_commit>`; append one entry to its `decisions-log.md`;
+   - commit those paths as the new branch's first commit.
 2. Refine scope into `sprint.md` with stable `AC-N` ids; ask the user only for ambiguity that prevents a concrete scope. Verify every retrospective-derived criterion against current `HEAD` — one asserting host behaviour also against the host docs or a live dispatch — before writing it, and record that verification in `decisions-log.md` per `sprint-lifecycle.md` "Orchestration and adaptive gates". Seed state and decisions log.
 2a. **Retro intake** per `sprint-lifecycle.md` "Retro intake" (sole SSoT, not restated here): run `node .asd/runtime.js retro-candidates --sprints .asd/sprints --backlog .asd/project/retro-backlog.md`, adding `--self-hosting` when `self_hosting: enabled`; verify each candidate at `HEAD`; the unresolved rest ride the step 4 gate, and an included one becomes an `AC-N` in `sprint.md`.
 3. Read `documents.audit`: accept only `auto|always|off`, any other value blocks (`sprint-lifecycle.md` "Orchestration and adaptive gates"); `auto` skips only a complete mechanical scope with no behaviour, contract, migration or gate impact. Freeze the effective boolean into `state.json.documents.audit` (no separate reason field — the rule is deterministic, per `sprint-lifecycle.md`). Reevaluate after an accepted scope expansion.
@@ -22,7 +21,7 @@ Append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecyc
 - `.asd/sprints/<NNN-slug>/sprint.md`
 - `state.json`, `decisions-log.md`, branch
 - `.asd/project/retro-backlog.md` (when intake records a disposition)
-- closing sprint's archive move and terminal state; self-hosting tag/release (closure write)
+- closing sprint's archive move and terminal state (closure write)
 
 ## Return contract
 
