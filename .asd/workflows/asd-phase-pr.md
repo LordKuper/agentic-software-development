@@ -7,28 +7,24 @@ Append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecyc
 ## Open mode
 
 1. Read config, state, plan, reviews, test-plan with its segments (`artifact-layout.md` "Test plan"), retrospective and stubs. Confirm every plan task, AC trace, required review verdict (reviews-green over every impl-review wave per `sprint-lifecycle.md` "PR phase"; satisfied per its "State recovery", External Review's skip form and legacy values included), full-suite record, lint/build record and stub rule; `pr` requires review DoD plus a completed `retro` (`checkpoints.md`), so `<sprint>/retrospective.html` is a DoD input and its absence blocks. Re-run required checks after a relevant diff. A failed or missing check blocks.
-2. Write `phase=pr` inline. For self-hosting, first bump version and changelog, commit them on the sprint branch, then compose the PR title/body.
-3. Apply the active policy to publication. Adaptive publication needs recorded scope authority, evidence and host permission; otherwise request the user. Open the PR per `git-strategy.md` "PR creation"; a `gh` failure is `FAILED` naming the fix given there. On successful PR creation, write `state.json.pr` and append the decision/log record. Do not archive or mark done.
+2. Never open a second PR for `state.branch`: before any write, look its PR up by head branch (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"). A `MERGED` hit writes nothing and emits `NEXT: await-closure`. Otherwise, on an `OPEN` hit or none, write `phase=pr` (for self-hosting also bump version and changelog, unless the sprint branch already carries this sprint's bump) and commit it on the sprint branch before any push ("Merged-unclosed"). Then an `OPEN` hit is written as `state.json.pr` and continues in merge mode, whose step 1 publishes it with those commits; no hit composes the PR title/body and continues below.
+3. Apply the active policy to publication. Adaptive publication needs recorded scope authority, evidence and host permission; otherwise request the user. Open the PR per `git-strategy.md` "PR creation"; a `gh` failure is `FAILED` naming the fix given there. On successful PR creation, write `state.json.pr` and append the decision/log record, then commit both and push the sprint branch before step 4, so the squash merge carries `pr.number` to base (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"). Do not archive or mark done.
 4. Emit `NEXT: await-merge`; the active sprint remains at its normal path while the PR is open.
 
-## Merge and closure mode
+## Merge mode
 
-1. Re-enter from either active or legacy archived path. Merge the sprint PR through `gh` per `git-strategy.md` "Merging a PR"; a `gh` failure is `FAILED` naming the fix ("PR creation"). Confirm the merge landed before proceeding; a PR that did not merge leaves the sprint active.
-2. Set `pr.state="closure-pending"`, retain `phase="pr"`, then present completion evidence and request explicit closure approval. PR publication, merge, or an adaptive policy never satisfies it. On refusal or feedback, leave the sprint active and unarchived.
-3. Only after recording closure approval in the active checkpoint, prepare a companion branch from the updated `git.base_branch` in an isolated checkout; retain the original active checkpoint until the companion is confirmed merged. On resume, locate the existing companion PR before creating another; move the sprint folder to archive and write `pr.state="merged"`, `phase="done"`, `updated_at`, `archived_at` there. Open and merge that companion PR through `gh`. A merge failure leaves the original checkpoint closure-pending and records the companion PR identifier there; never record terminal state only on the already-merged sprint branch.
-4. After the companion PR merges, create the self-hosting tag/release from that merge commit.
-5. Emit `NEXT: done`.
+1. Re-enter from either active or legacy archived path. Unless `gh pr view <pr.number> --json state` already reports `MERGED`, first confirm the PR head carries open mode step 3's publication, since the squash merge is base's only source of `pr.number` (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"): `git fetch origin <state.branch>`, then `git show origin/<state.branch>:<sprint>/state.json` must hold this `pr.number`. If it does not, commit the local `state.json.pr` write if uncommitted, push the sprint branch and re-confirm; a push failure is `FAILED`. Then merge the sprint PR through `gh` per `git-strategy.md` "Merging a PR"; a `gh` failure is `FAILED` naming the fix ("PR creation"). Confirm the merge landed before proceeding; a PR that did not merge leaves the sprint active.
+2. Write nothing — no state, archive move or tag, on any branch: the closure request belongs to `asd-sprint`, the terminal write and self-hosting tag to the next sprint's scope step 1 (`sprint-lifecycle.md` "PR phase"). Emit `NEXT: await-closure`.
 
 ## Artefacts
 
-- `state.json.pr` and decisions-log records
-- PR/release when authorized
-- terminal archived sprint only after the hard closure gate
+- `state.json.pr` and decisions-log records (open mode)
+- PR when authorized
 
 ## Return contract
 
 ```
-PHASE: pr | SPRINT: <NNN-slug> | STATUS: <pr-open|complete|blocked|aborted> | NEXT: <await-merge|done|halted>
+PHASE: pr | SPRINT: <NNN-slug> | STATUS: <pr-open|merged|blocked|aborted> | NEXT: <await-merge|await-closure|halted>
 ```
 
 ## References

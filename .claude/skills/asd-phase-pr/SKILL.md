@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-phase-pr/SKILL.md. source_digest=sha256:49e18f17eb18417dbe85120f9743c6763a753fab337b06e2646b40a22eb9d6bd content_digest=sha256:a933a02e8cd3cf52777bea07924a3cabe10431eaa4c48934670538085247af95 asd_version=7.1.0 schema=1
+# ASD generated. Edit .asd/skills/asd-phase-pr/SKILL.md. source_digest=sha256:47346b2b04e19868ba3a726def827f11d8e3709f8f33285a3b0c1c9c264b4660 content_digest=sha256:35576cafa41c2574f6af900b00db6245ee49df7455c88dbef0209c5b0e6a2fb5 asd_version=13.3.0 schema=1
 name: asd-phase-pr
-description: "Runs the final ASD pr phase: the phase orchestrator verifies DoD, handles PR and merge recovery, then requires explicit closure approval before finalization and archival. Use when asd-sprint dispatches the pr phase, or when the user explicitly asks to run or re-run the pr phase for the active sprint."
+description: "Runs the final ASD pr phase: the phase orchestrator verifies DoD, opens the sprint PR and later merges it, then hands closure back to asd-sprint; it never archives or marks the sprint done. Use when asd-sprint dispatches the pr phase, or when the user explicitly asks to run or re-run the pr phase for the active sprint."
 allowed-tools: "Read Glob Grep AskUserQuestion Task"
 ---
 

@@ -1,0 +1,299 @@
+{
+  "sprint_id": "021-deferred-archival-retro-sweep",
+  "branch": "sprint/021-deferred-archival-retro-sweep",
+  "phase": "pr",
+  "workflow": "lite",
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "adr": false,
+    "c4": false
+  },
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "workflow choice",
+      "decision_actor": "user",
+      "reason": "scope step 1 answer: lite",
+      "evidence": "decisions-log.md 2026-09-29 sprint opened",
+      "artifact_revision": "state.json@scope"
+    },
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "sprint.md AC-1..AC-13 accepted",
+      "evidence": "decisions-log.md 2026-09-29 scope gate accepted",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "retro intake dispositions",
+      "decision_actor": "user",
+      "reason": "30 included, 27 rejected",
+      "evidence": "retro-backlog.md 021 rows; decisions-log.md 2026-09-29",
+      "artifact_revision": "retro-backlog.md@scope"
+    },
+    {
+      "gate": "audit contradiction",
+      "decision_actor": "user",
+      "reason": "C5 codex reviewers workspace-write; C6 exempt in-flight tool call; C7 per-host degraded mode",
+      "evidence": "audit.md Contradictions 5-7",
+      "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "all sections present, contradictions settled, no BA ambiguity, no registry (decomposition disabled)",
+      "evidence": "audit.md; decisions-log.md 2026-09-29 audit",
+      "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "user",
+      "reason": "explicit accept",
+      "evidence": "plan.md D1-D7, 10 Tasks, surface 56/100",
+      "artifact_revision": "plan.md@plan"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "all 10 Tasks done, flagged choices resolved, build+lint clean, authorised-paths gate clean",
+      "evidence": "plan.md all ticked; sync --check ok; decisions-log.md 2026-09-29 impl assessment",
+      "artifact_revision": "HEAD 7d4fae0"
+    },
+    {
+      "gate": "impl-review green handoff",
+      "decision_actor": "orchestrator",
+      "reason": "wave 1 roster met (combined, external APPROVE), terminal full suite green 255/255",
+      "evidence": "reviews/impl/wave-1/iter-05; test-plan.md Suite run HEAD 901bdda",
+      "artifact_revision": "HEAD 6fd71be"
+    },
+    {
+      "gate": "new or changed scope",
+      "decision_actor": "user",
+      "reason": "AC-14 added at pr: merged-unclosed at any phase",
+      "evidence": "user answer at pr publication gate; decisions-log.md 2026-09-30 scope amendment",
+      "artifact_revision": "sprint.md@pr"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "Task 11 done, build+lint clean, flagged choices resolved",
+      "evidence": "5645459; sync --check ok",
+      "artifact_revision": "HEAD 5645459"
+    },
+    {
+      "gate": "impl-review green handoff",
+      "decision_actor": "orchestrator",
+      "reason": "iter-06 roster met, terminal full suite green 255/255",
+      "evidence": "reviews/impl/wave-1/iter-06; test-plan.md Suite run HEAD 0c7eb7a",
+      "artifact_revision": "HEAD 4a7f46a"
+    },
+    {
+      "gate": "PR publication",
+      "decision_actor": "user",
+      "reason": "publish and merge approved at pr gate",
+      "evidence": "decisions-log.md 2026-09-30 pr open mode",
+      "artifact_revision": "HEAD 53f8c7d"
+    }
+  ],
+  "task_routing": {
+    "Task 1": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "Task 2": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "Task 3": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:public contract",
+      "resolved_model": "opus"
+    },
+    "Task 4": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:public contract",
+      "resolved_model": "opus"
+    },
+    "Task 5": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:public contract",
+      "resolved_model": "opus"
+    },
+    "Task 6": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:hook display",
+      "resolved_model": "sonnet"
+    },
+    "Task 7": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "Task 8": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "Task 9": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:security",
+      "resolved_model": "opus"
+    },
+    "Task 10": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:documentation mirror",
+      "resolved_model": "sonnet"
+    },
+    "impl-test entry 1": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "test-fix D-1,D-2,D-3": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:documentation mirror",
+      "resolved_model": "sonnet"
+    },
+    "impl-test entry 2": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "no-downgrade",
+      "resolved_model": "opus"
+    },
+    "review-fix wave-1/iter-01": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "no-downgrade",
+      "resolved_model": "opus"
+    },
+    "impl-test entry 3": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "no-downgrade",
+      "resolved_model": "opus"
+    },
+    "review-fix wave-1/iter-02": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "no-downgrade",
+      "resolved_model": "opus"
+    },
+    "impl-test entry 4": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "no-downgrade",
+      "resolved_model": "opus"
+    },
+    "impl-test entry 5": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "no-downgrade",
+      "resolved_model": "opus"
+    },
+    "review-fix wave-1/iter-04": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "no-downgrade",
+      "resolved_model": "opus"
+    },
+    "impl-test entry 6": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "no-downgrade",
+      "resolved_model": "opus"
+    },
+    "Task 11": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "opus"
+    },
+    "impl-test entry 7": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "no-downgrade",
+      "resolved_model": "opus"
+    }
+  },
+  "skipped_phases": [
+    "design-promote"
+  ],
+  "reviews": {
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "wave": 1,
+      "waves": [
+        {
+          "iteration": 6,
+          "verdicts": {
+            "iter-01": {
+              "combined": "CONCERNS",
+              "external": "CONCERNS"
+            },
+            "iter-02": {
+              "combined": "APPROVE",
+              "external": "CONCERNS"
+            },
+            "iter-03": {
+              "combined": "APPROVE"
+            },
+            "iter-04": {
+              "combined": "CONCERNS",
+              "external": "APPROVE"
+            },
+            "iter-05": {
+              "combined": "APPROVE",
+              "external": "APPROVE"
+            },
+            "iter-06": {
+              "combined": "APPROVE",
+              "external": "APPROVE"
+            }
+          },
+          "iteration_heads": {
+            "iter-01": "c9bb97c343c7bfef1e4e469f287210326b11cf42",
+            "iter-02": "0dbfa454f6227ccf029836756f55163a46a76cb2",
+            "iter-03": "969e362bdd8300831718000cde9dc2a39c40f2ba",
+            "iter-04": "482f1b3a517ea8acb03491fc3ac83c4b901436d1",
+            "iter-05": "48c5b7f6ad34ad53c7a8b8e58d4877d546f61e05",
+            "iter-06": "76cd684a044550a837ed20513fe2ac15567e1e6f"
+          },
+          "latched": {
+            "combined": 6,
+            "external": 6
+          }
+        }
+      ]
+    }
+  },
+  "created_at": "2026-09-29T00:00:00Z",
+  "updated_at": "2026-09-30T06:47:28.354Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": {
+    "number": 57,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/57",
+    "state": "open"
+  },
+  "archived_at": null
+}

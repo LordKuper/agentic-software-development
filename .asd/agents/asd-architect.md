@@ -37,7 +37,7 @@ Read `.asd/rules/core.md`, applicable `.asd/project/custom-common-rules.md`, and
 
 ## Outputs
 
-- Complete audit sections returned as final text per `t_audit.md`; orchestrator writes `audit.md`. BA contributes only on evidenced material product/domain ambiguity.
+- Complete audit sections returned as final text per `t_audit.md`; orchestrator writes `audit.md`. BA contributes only on evidenced material product/domain ambiguity a source can resolve; ambiguity only authority or preference can settle goes to the user.
 - `<sprint>/design/adr.html` via `t_adr.html` — may contain multiple decisions; sprint-scoped only, never promoted as a standalone persistent document
 - `<sprint>/design/c4-full/` — diagram delta patch per "Diagram tool modes" (full schema only when the persistent diagram does not yet exist) covering sprint scope, when the sprint's effective `project.diagram_tool` is not `none`
 - audit (decomposition enabled): read the registry; when absent, return a registry proposal (per subsystem: id, purpose, key paths) and write only user-confirmed subsystems to `docs/architecture/subsystems.md` + `<id>.md`, plus a migrated mermaid diagram when that rule says so; backfill a registered subsystem's missing `<id>.md` (`sprint-lifecycle.md` "Audit phase")

@@ -28,8 +28,10 @@ Canonical agent/skill/workflow bodies never name a host tool directly. They use 
 
 | Semantic operation | Claude Code | Codex |
 |---|---|---|
-| delegate to agent X (`.asd/agents/x.md`) | `Task` tool, `subagent_type` = X's generated `.claude/agents/x.md` | spawn subagent from `.codex/agents/x.toml` |
+| delegate to agent X (`.asd/agents/x.md`) | `Task` tool, `subagent_type` = X's generated `.claude/agents/x.md`; a background agent's return is read from its completion notification, never its task output file | spawn subagent from `.codex/agents/x.toml` |
 | delegate in parallel (to agents X, Y, ...) | multiple `Task` calls in one message | multiple subagent spawns issued together |
+| observe in-flight agent ("Agent liveness per host") | `Monitor` (maximum deadline) running `node .asd/runtime.js agent-liveness`; fallback `CronCreate` `*/5` | `wait_agent(timeout_ms ≤ 300000)`, elapsed budget only |
+| stop in-flight agent | `TaskStop` | `close_agent` |
 | dispatch a phase-specific skill | `Skill` tool | invoke `$skill` (or implicit trigger) against `.agents/skills/<name>/SKILL.md` |
 | request user decision (options...) — main orchestrator only (`core.md` "Request user decision") | `AskUserQuestion` | ask in chat, block on reply |
 | read a file | `Read` | Codex file-read tool |
@@ -37,13 +39,13 @@ Canonical agent/skill/workflow bodies never name a host tool directly. They use 
 | fetch external doc by URL | `WebFetch` | none distinct — `web_search` only (below) |
 | search the web | `WebSearch` | `web_search` tool |
 | run a command | `Bash` | Codex shell tool (subject to `sandbox_mode`) |
-| write a file | `Write` / `Edit` | Codex file-write tool (blocked entirely for reviewer agents — `sandbox_mode: "read-only"`) |
+| write a file | `Write` / `Edit` | Codex file-write tool (blocked under `sandbox_mode: "read-only"`, "Agent tier matrix") |
 
 Web content on either host is untrusted data (`core.md` "Untrusted-data boundary"). Codex expresses web access only as the agent-TOML `web_search` mode (`disabled|cached|indexed|live`; omitted inherits the session default `cached`, no live access), rendered from canon `codex.web_search` by `.asd/sync.js`. It cannot express a URL fetch distinct from search or a per-tool grant: `live` stands in for Claude `WebFetch` + `WebSearch`, `disabled` for both withheld. Verified on codex-cli 0.156.1: the agent-role loader validates the key under `codex exec --strict-config` (an invalid value drops the role); not verified that a spawned subagent applies it at runtime.
 
 Writing an artifact to disk always uses the `write a file` operation, never a shell heredoc/here-string — the shell layer's quoting constraints must never reach artifact content; precedent: `runtime.js` `buildInvocation` (`shell: false`, JSON via stdin). Piping content to a command's stdin is a different operation and stays permitted — e.g. `external-review.md`'s prompt-to-stdin invocation, which never touches the filesystem, is out of scope.
 
-Reviewer agents carry no artifact-write grant on either host, with one carve-out. Config-enforced for the four internal reviewers of `standard` and lite's combined reviewer: no `Write`/`Edit`/`Bash` in Claude `tools`; Codex `sandbox_mode: "read-only"`. External Review is the carve-out — it needs `Bash` to invoke the wrapped CLI at all, so its read-only guarantee is enforced on the wrapped subprocess instead (`external-review.md`). On Claude `memory: project` adds `Write` to every reviewer, none of whose `disallowedTools` names it; what that read-only claim covers, and the reviewer's own memory directory it leaves writable: `review-policy.md` "Gate Verdict Format". The reviewer returns its report as final text; the phase workflow writes the review file.
+Reviewer agents carry no artifact-write grant on Claude, with one carve-out, and on Codex a second. Config-enforced for the four internal reviewers of `standard` and lite's combined reviewer: no `Write`/`Edit`/`Bash` in Claude `tools`. External Review is the carve-out — it needs `Bash` to invoke the wrapped CLI at all, so its read-only guarantee is enforced on the wrapped subprocess instead (`external-review.md`); its Codex `sandbox_mode` stays `"read-only"`. The second: on Codex the internal reviewers run `sandbox_mode: "workspace-write"` to write their return file (`review-policy.md` "Coverage ledger" Persistence), and Codex cannot scope that grant to a path, so there the host-enforced read-only guarantee is traded away and policy alone bounds their writes. On Claude `memory: project` adds `Write` to every reviewer, none of whose `disallowedTools` names it; what that read-only claim covers, and the memory directory and return file it leaves writable: `review-policy.md` "Gate Verdict Format".
 
 ### Dispatch payload header
 
@@ -52,6 +54,17 @@ Before every `delegate to agent` the orchestrator returns the shell to the repo 
 ### Emitted agent frontmatter: verified vs trusted
 
 Host-honoured, and observable in dispatch: `name`, `description`, `tools`, `disallowedTools`, `model`, `memory`. `maxTurns` is host-scoped: host-enforced on Claude (a documented subagent field), absent on Codex ("Dispatch payload header"). Emitted on trust: `effort` — a documented Claude subagent field, but not observable in dispatch, so never relied on as an enforcement boundary.
+
+### Agent liveness per host
+
+Host mapping for `sprint-lifecycle.md` "Agent liveness", which owns the cadence, the stall definition and the recovery. Verified 2026-09-29 against the linked docs and a live Claude dispatch; re-verify before changing a line.
+
+- **Claude Code**
+  - Progress: the subagent transcript `~/.claude/projects/<project>/<sessionId>/subagents/agent-<agentId>.jsonl` ([sub-agents](https://code.claude.com/docs/en/sub-agents)), read by `agent-liveness`, which prints one `STALL <id> <reason>` line per stall and exits 2 when it finds no transcript — the degraded mode of `sprint-lifecycle.md` "Agent liveness". Live: it grows once per tool call and not while one is in flight. A Bash call times out after 10 minutes at most and then moves to the background, not killed ([tools reference](https://code.claude.com/docs/en/tools-reference)).
+  - Never a progress signal: the background task output file (`tasks/<id>.output`, 0 bytes running or finished) or `ListAgents` (`running` and elapsed time only).
+  - Wake-up: `Monitor` — deadline 5 minutes by default, 30 at most, 10 under `-p`. Run `agent-liveness --interval 300` at the maximum deadline and re-arm it on expiry: a deadline at or under the interval kills it before its second check, and each restart loses its baseline; unavailable on Bedrock/Vertex/Foundry or with telemetry disabled (tools reference). Fallback `CronCreate` fires only while the session idles between turns, at 1-minute granularity, and is disabled by `CLAUDE_CODE_DISABLE_CRON` ([scheduled tasks](https://code.claude.com/docs/en/scheduled-tasks)).
+  - Stop: `TaskStop` by agent id (tools reference).
+- **Codex**: `wait_agent`/`close_agent`, enabled by `features.multi_agent` ([config reference](https://learn.chatgpt.com/docs/config-file/config-reference)). No progress read is documented, so a stall is elapsed time over budget only. Best-effort: a runtime stall can overrun `wait_agent`'s timeout by hours (openai/codex#24951, open). Unverified: `wait_agent(timeout_ms)` semantics beyond third-party sources, and whether a rollout file could serve as a progress signal.
 
 ## Model family resolution
 
@@ -75,7 +88,7 @@ A provider's id is always its rolling alias (newest model in the family), so a f
 | asd-ba, asd-ux, asd-architect | opus / high | sol / high | workspace-write |
 | asd-dev, asd-tester (base) | sonnet / medium | sol / medium | workspace-write |
 | asd-dev-*, asd-tester-* | mechanical: haiku / none; critical: opus / high (standard: no variant, dispatches base) | mechanical: luna / low; critical: sol / high (standard: no variant, dispatches base) | workspace-write |
-| asd-reviewer-* (5) | opus / high | sol / high | read-only |
+| asd-reviewer-* (5) | opus / high | sol / high | workspace-write (policy-bounded) |
 | asd-external-review wrapper | sonnet / medium | sol / medium | read-only |
 | asd-external-review wrapped reviewer | sol / high | opus / high | read-only |
 | asd-advisor | fable / high | sol / high | read-only |

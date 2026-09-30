@@ -1,0 +1,160 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index ec4e988..dc523f1 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -36,7 +36,7 @@
+     "skills/asd-concept/SKILL.md": "sha256:9a3cb2331b3aceb4a670d8d0ac94de3808771406036f9ba11dce3239e21cee42",
+     "skills/asd-design-system/SKILL.md": "sha256:9f8153a0f278a1234202771df5118f2228dd4edfd99594c1eeb0536d8d22d07f",
+     "skills/asd-init/SKILL.md": "sha256:63f2ca4ca340bffaf444e06e64ce262b8f81c26ee968ce61dadad87ec31f7587",
+-    "skills/asd-sprint/SKILL.md": "sha256:a3d1649bdf51ffd107478e204c1dfefc2325e942a3d2b9088042822644b0cd00",
++    "skills/asd-sprint/SKILL.md": "sha256:ed18c321c599fa639d239716db262377c257fcf28ceded66487dfef277a67268",
+     "skills/asd-stack/SKILL.md": "sha256:1afe58b6e4c6611adf468e9dfee361d017412dad8465f52423afdd1ae5ac9354",
+     "skills/asd-sync/SKILL.md": "sha256:f198477e9f35ba73c0b4088a690373e504ea0dd731d5fb501af54e477f3d7baa",
+     "skills/asd-update/SKILL.md": "sha256:fa71a8e3afe4f6942d8a4011dd5f682ae2671b80a73b26a51bffdf9d0b2a1365",
+@@ -77,7 +77,7 @@
+     ".asd/rules/language-policy.md": "e9b488a4cff5ed193208a52324601bede1a41e2512f2a6f06d0660576940f322",
+     ".asd/rules/providers.md": "7b67916fc6898ecc6149879de2e0d00fdcb0a5ab59bf78c888a9886961cac32e",
+     ".asd/rules/review-policy.md": "a985afbf07d98ff12f6273f11db69fa9e85768082228dc50fc79c003a1bc589d",
+-    ".asd/rules/sprint-lifecycle.md": "a4795e05abc4c4051e1a5afbc85209be505291f186c0939a417ee1a9b85505ce",
++    ".asd/rules/sprint-lifecycle.md": "25aa15080aaeb5df1f80bc825aff57985e96fa30c94d97ba7bf605f9e0a6d136",
+     ".asd/rules/ux-principles.md": "9f2af8c90d969c73654812b80e523e33b4c5696f506acf49e4bacb4c0dc6750c",
+     ".asd/skills/asd-concept/SKILL.md": "9a3cb2331b3aceb4a670d8d0ac94de3808771406036f9ba11dce3239e21cee42",
+     ".asd/skills/asd-design-system/SKILL.md": "9f8153a0f278a1234202771df5118f2228dd4edfd99594c1eeb0536d8d22d07f",
+@@ -92,7 +92,7 @@
+     ".asd/skills/asd-phase-plan/SKILL.md": "a5856fbb79957301101dc65b7eb2f6269103d1e09a3b6053bc4f38d083494829",
+     ".asd/skills/asd-phase-pr/SKILL.md": "47346b2b04e19868ba3a726def827f11d8e3709f8f33285a3b0c1c9c264b4660",
+     ".asd/skills/asd-phase-scope/SKILL.md": "a21d695d2ddb947e45b55519c54e3654eb42b5db7d8d1a9bc6be01586b62eaa7",
+-    ".asd/skills/asd-sprint/SKILL.md": "a3d1649bdf51ffd107478e204c1dfefc2325e942a3d2b9088042822644b0cd00",
++    ".asd/skills/asd-sprint/SKILL.md": "ed18c321c599fa639d239716db262377c257fcf28ceded66487dfef277a67268",
+     ".asd/skills/asd-stack/SKILL.md": "1afe58b6e4c6611adf468e9dfee361d017412dad8465f52423afdd1ae5ac9354",
+     ".asd/skills/asd-sync/SKILL.md": "f198477e9f35ba73c0b4088a690373e504ea0dd731d5fb501af54e477f3d7baa",
+     ".asd/skills/asd-update/SKILL.md": "fa71a8e3afe4f6942d8a4011dd5f682ae2671b80a73b26a51bffdf9d0b2a1365",
+@@ -138,8 +138,8 @@
+     ".asd/workflows/asd-phase-impl-test.md": "6681d6ad58f20e7f34a4e8c5555fb4ae90c55686bfac15fb6620b87863e0d033",
+     ".asd/workflows/asd-phase-impl.md": "5acc28c7ea4dba28adca9dfbe2ff7eda1d3f8b855f6158ecec1a63574242e0f2",
+     ".asd/workflows/asd-phase-plan.md": "2fc4caca0927e50f8e5751bbe49e5b42d131c2866635d2fbceab8d366bfe2c1e",
+-    ".asd/workflows/asd-phase-pr.md": "9e6205cfcae03b76915bf25f11f370edb2d537f154ef0154ca85851d33c7a837",
+-    ".asd/workflows/asd-phase-scope.md": "36f42f3487319818da1e31be9c07c33985365340b30111151dceb0181cb64b47",
++    ".asd/workflows/asd-phase-pr.md": "10ca8d26f9f12259ad699990bacf690d33794c9165f9b3ca6ca042dee401a1de",
++    ".asd/workflows/asd-phase-scope.md": "57b11ef935c908a416ff69bdb08e58d45b6c6d383b60b3579613fc75843fac38",
+     ".asd/agents/asd-advisor.md": "f572a04da3165a11b9865df911a1b1212ddfb21a847f8df5428f685a9dab68ce",
+     ".asd/agents/asd-reviewer-correctness.md": "b1014ac285953d31504a2a57beeb9c9fe071c49a6945c8aa332d136e46299d7e",
+     ".asd/agents/asd-reviewer-efficiency.md": "5fc12dd16afa15d7e6f44210b357120db4afac91be3b47435842e9a0211d5e6c",
+diff --git a/.asd/rules/sprint-lifecycle.md b/.asd/rules/sprint-lifecycle.md
+index 7928bbe..2686208 100644
+--- a/.asd/rules/sprint-lifecycle.md
++++ b/.asd/rules/sprint-lifecycle.md
+@@ -318,11 +318,11 @@ Closes with a short `language.chat` summary covering both classes, then `NEXT: p
+ 
+ Modes are `pr=null` (open the PR, `NEXT: await-merge`, unless the "Merged-unclosed" lookup finds one) and `pr.state="open"` (merge it). DoD checks gate publication but are not user approvals. The main orchestrator performs the merge itself where the Git host allows it — who merges, and the fact that merging is never closure, is stated once in `git-strategy.md` "Merging a PR". Merge mode confirms the sprint PR merged, writes nothing on `git.base_branch`, and returns `NEXT: await-closure`; the sprint stays at its active path with `phase="pr"`, `pr.state="open"`. One PR per sprint.
+ 
+-**Merged-unclosed**: a sprint folder at the active path with `phase="pr"` and a `pr.number` that `gh pr view <n> --json state,mergeCommit` reports `MERGED`. The base copy carries `pr.number` because `pr` open mode commits and pushes its `state.json.pr` write before `NEXT: await-merge`. A PR merged before that write reached the sprint branch (by hand, or after a failed push) leaves base at `pr=null`, so a `phase="pr"` sprint without `pr.number` is looked up by head branch, `gh pr list --head <state.branch> --state all --json number,state,mergeCommit`: a `MERGED` hit is merged-unclosed with that number, which the closure write records; an `OPEN` hit resumes merge mode with that number; no hit means open mode. `asd-sprint` detects it on `NEXT: await-closure` and on any later invocation, and before starting or resuming anything else requests the hard sprint-closure approval (`checkpoints.md` "Gate policy") with the completion evidence. Refusal leaves the sprint active and resumable. Approval is carried into the new-sprint flow, and the one-active-sprint rule exempts that sprint within it. The session-start hook reports the state offline (`phase="pr"`, `pr.number` set, `state.branch` ≠ the current branch), display only, so it misses a sprint without `pr.number`; `asd-sprint` confirms through `gh` before asking.
++**Merged-unclosed**: a sprint folder at the active path with `phase="pr"` and a `pr.number` that `gh pr view <n> --json state,mergeCommit` reports `MERGED`. The base copy carries `phase="pr"` because `pr` open mode commits that write before any push, so every PR head carries it, and `pr.number` because open mode commits and pushes its `state.json.pr` write before `NEXT: await-merge`. A PR merged before that write reached the sprint branch (by hand, or after a failed push) leaves base at `pr=null`, so a `phase="pr"` sprint without `pr.number` is looked up by head branch, `gh pr list --head <state.branch> --state all --json number,state,mergeCommit`: a `MERGED` hit is merged-unclosed with that number, which the closure write records; an `OPEN` hit resumes merge mode with that number; no hit means open mode. `asd-sprint` detects it on `NEXT: await-closure` and on any later invocation, and before starting or resuming anything else requests the hard sprint-closure approval (`checkpoints.md` "Gate policy") with the completion evidence. Refusal leaves the sprint active and resumable. Approval is carried into the new-sprint flow, and the one-active-sprint rule exempts that sprint within it. The session-start hook reports the state offline (`phase="pr"`, `pr.number` set, `state.branch` ≠ the current branch), display only, so it misses a sprint without `pr.number`; `asd-sprint` confirms through `gh` before asking.
+ 
+ **Closure write** — `asd-phase-scope.md` step 1, right after the new sprint branch is created and before the new sprint is seeded:
+ 1. `git mv` the closing sprint folder to `archived/`;
+-2. write its `pr.state="merged"`, `pr.merge_commit` (the `mergeCommit` above), `pr.number` when `pr` is null (the head-branch lookup's), `phase="done"`, `updated_at`, `archived_at`, and a `sprint closure` `gate_decisions` entry with `decision_actor: user`;
++2. write its `pr.state="merged"`, `pr.merge_commit` (the `mergeCommit` above), `pr.number` when `pr` is null (the one `asd-sprint` carries), `phase="done"`, `updated_at`, `archived_at`, and a `sprint closure` `gate_decisions` entry with `decision_actor: user`;
+ 3. append one entry to its decisions log;
+ 4. commit, as the new branch's first commit;
+ 5. `self_hosting` only: tag `v<asd_version>` on `pr.merge_commit`, the version read by `git show <merge_commit>:.asd/release-manifest.json`, and create its release (`git-strategy.md` "Versioning & Changelog (self-hosting only)"); skipped when the tag exists.
+diff --git a/.asd/skills/asd-sprint/SKILL.md b/.asd/skills/asd-sprint/SKILL.md
+index 1a41c28..600984d 100644
+--- a/.asd/skills/asd-sprint/SKILL.md
++++ b/.asd/skills/asd-sprint/SKILL.md
+@@ -36,7 +36,7 @@ Before a phase-skill delegation below, rotate the decisions log when `.asd/rules
+ ### Step 1A: closure request
+ Reached from Step 1 (merged-unclosed) or Step 3 (`NEXT: await-closure`), before anything else.
+ 1. Request user decision on the hard `sprint closure` gate (`checkpoints.md` "Gate policy"), presenting the completion evidence (`sprint-lifecycle.md` "PR phase"): approve | refuse. The merge and the adaptive policy never satisfy it.
+-2. Approve → new-sprint flow (Step 2A), carrying the approval (closing sprint path, plus the head-branch lookup's PR number when `pr` is null) unwritten until scope step 1's closure write records it; aborted before that, nothing is written and Step 1 asks again.
++2. Approve → new-sprint flow (Step 2A), carrying the approval (closing sprint path, plus the merged PR's number detection confirmed, whichever copy or lookup it came from) unwritten until scope step 1's closure write records it; aborted before that, nothing is written and Step 1 asks again.
+ 3. Refuse or feedback → the sprint stays active and resumable; halt, `NEXT: await-closure`.
+ 
+ ### Step 2A: new-sprint flow
+diff --git a/.asd/workflows/asd-phase-pr.md b/.asd/workflows/asd-phase-pr.md
+index 93f8fed..70533af 100644
+--- a/.asd/workflows/asd-phase-pr.md
++++ b/.asd/workflows/asd-phase-pr.md
+@@ -7,7 +7,7 @@ Append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecyc
+ ## Open mode
+ 
+ 1. Read config, state, plan, reviews, test-plan with its segments (`artifact-layout.md` "Test plan"), retrospective and stubs. Confirm every plan task, AC trace, required review verdict (reviews-green over every impl-review wave per `sprint-lifecycle.md` "PR phase"; satisfied per its "State recovery", External Review's skip form and legacy values included), full-suite record, lint/build record and stub rule; `pr` requires review DoD plus a completed `retro` (`checkpoints.md`), so `<sprint>/retrospective.html` is a DoD input and its absence blocks. Re-run required checks after a relevant diff. A failed or missing check blocks.
+-2. Never open a second PR for `state.branch`: before any write, look its PR up by head branch (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"). A `MERGED` hit writes nothing and emits `NEXT: await-closure`; an `OPEN` hit is written as `state.json.pr` and continues in merge mode, whose step 1 publishes it; no hit continues below. Write `phase=pr` inline. For self-hosting, first bump version and changelog, commit them on the sprint branch, then compose the PR title/body.
++2. Never open a second PR for `state.branch`: before any write, look its PR up by head branch (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"). A `MERGED` hit writes nothing and emits `NEXT: await-closure`. Otherwise, on an `OPEN` hit or none, write `phase=pr` (for self-hosting also bump version and changelog, unless the sprint branch already carries this sprint's bump) and commit it on the sprint branch before any push ("Merged-unclosed"). Then an `OPEN` hit is written as `state.json.pr` and continues in merge mode, whose step 1 publishes it with those commits; no hit composes the PR title/body and continues below.
+ 3. Apply the active policy to publication. Adaptive publication needs recorded scope authority, evidence and host permission; otherwise request the user. Open the PR per `git-strategy.md` "PR creation"; a `gh` failure is `FAILED` naming the fix given there. On successful PR creation, write `state.json.pr` and append the decision/log record, then commit both and push the sprint branch before step 4, so the squash merge carries `pr.number` to base (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"). Do not archive or mark done.
+ 4. Emit `NEXT: await-merge`; the active sprint remains at its normal path while the PR is open.
+ 
+diff --git a/.asd/workflows/asd-phase-scope.md b/.asd/workflows/asd-phase-scope.md
+index 4d19859..99a6426 100644
+--- a/.asd/workflows/asd-phase-scope.md
++++ b/.asd/workflows/asd-phase-scope.md
+@@ -5,7 +5,7 @@ The main orchestrator owns this phase inline.
+ 1. Read config and existing active/legacy archived sprints. Obtain raw scope when absent, as a plain chat message, fast-forward the base branch, require a clean tree, create the sprint branch, run the closure write below when `asd-sprint` passed a closure approval, then create the sprint folder. Request user decision on the sprint workflow, `standard` or `lite` (`sprint-lifecycle.md` "Workflows"): hard `workflow choice` gate, never defaulted in either gate mode, asked only here; a scope re-run keeps the frozen value. The answer seeds `{{WORKFLOW}}`; step 2's seeding records it in `gate_decisions` and one decisions-log line.
+    **Closure write** (`sprint-lifecycle.md` "PR phase"; the closing sprint is exempt from the one-active rule):
+    - `git mv` the closing sprint folder into `.asd/sprints/archived/`; a legacy folder already there is written in place (`sprint-lifecycle.md` "Sprint immutability");
+-   - in its `state.json` write `pr.state="merged"`, `pr.merge_commit` (`gh pr view <pr.number> --json mergeCommit`; a null `pr` takes `pr.number` from the head-branch lookup `asd-sprint` carries and writes it too), `phase="done"`, `updated_at`, `archived_at`, and append a `gate_decisions` entry `gate: sprint-closure`, `decision_actor: user`; append one entry to its `decisions-log.md`;
++   - in its `state.json` write `pr.state="merged"`, `pr.merge_commit` (`gh pr view <pr.number> --json mergeCommit`; a null `pr` takes `pr.number` from the confirmed number `asd-sprint` carries and writes it too), `phase="done"`, `updated_at`, `archived_at`, and append a `gate_decisions` entry `gate: sprint-closure`, `decision_actor: user`; append one entry to its `decisions-log.md`;
+    - commit those paths as the new branch's first commit;
+    - `self_hosting: enabled`: then tag `v<asd_version>` on `pr.merge_commit`, `asd_version` read by `git show <merge_commit>:.asd/release-manifest.json`, skipped when that tag exists, and create the release, per `git-strategy.md` "Versioning & Changelog (self-hosting only)".
+ 2. Refine scope into `sprint.md` with stable `AC-N` ids; ask the user only for ambiguity that prevents a concrete scope. Verify every retrospective-derived criterion against current `HEAD` — one asserting host behaviour also against the host docs or a live dispatch — before writing it, and record that verification in `decisions-log.md` per `sprint-lifecycle.md` "Orchestration and adaptive gates". Seed state and decisions log.
+diff --git a/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md b/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md
+index fadc87d..0f90efa 100644
+--- a/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md
++++ b/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md
+@@ -247,6 +247,13 @@ longer span on the target: sprint 021 entry 5's new closure-write field `pr.numb
+ older `` `gh pr view <pr.number>` ``, so reverting the fix stayed green. Compare code span to span
+ (`spans(site).includes(token)`) for a field the fix adds.
+ 
++A fix that makes one site produce the value another site gates on ("commit `phase=pr` so Step 1's `phase="pr"`
++gate matches base") is pinned by deriving the gate's value from the gating site's code span and requiring the
++producer to write it (quotes ignored). Mutating only the gate proves the derivation (sprint 021 entry 6, M-AG).
++A fix that *removes* a narrowing condition has no positive substance: require its clause to lack the condition's
++one word (`null`), keep the positive assert on the clause itself so deletion cannot pass vacuously, and record
++both ceilings (a synonym passes; "whether or not null" reddens).
++
+ ## Fixtures whose bytes are the input
+ 
+ Never commit one whose distinguishing bytes cannot survive checkout. Sprint 009 shipped
+diff --git a/tests/run.js b/tests/run.js
+index df3be49..b355fad 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -6860,7 +6860,7 @@ test('sprint-021 AC-1/AC-2 (D1): pr ends at await-merge or await-closure and asd
+   assert.deepStrictEqual(tokens.filter((token) => !scopeStep.includes(token) && !scopeStep.includes(token.replace(/ /g, '-'))), [], 'AC-2: asd-phase-scope.md step 1 performs the closure write "PR phase" defines, so it must name each of its tokens (a gate name as its gate_decisions value, spaces hyphenated) - one dropped is a field the closing sprint never gets');
+ });
+ 
+-test('sprint-021 AC-2 (iter-03 external #1): a phase="pr" sprint without pr.number is looked up by head branch - asd-sprint Step 1 runs the lookup "PR phase" "Merged-unclosed" defines and carries a MERGED hit\'s number to the closure write, and pr open mode runs it before opening a PR, so it never opens a second one', () => {
++test('sprint-021 AC-2 (iter-03 external #1): a phase="pr" sprint without pr.number is looked up by head branch - asd-sprint Step 1 runs the lookup "PR phase" "Merged-unclosed" defines and carries a MERGED hit\'s number to the closure write, and pr open mode runs it before opening a PR, so it never opens a second one, after committing the phase Step 1 gates on so every PR head carries it', () => {
+   const home = sectionOf('.asd/rules/sprint-lifecycle.md', 'PR phase').split('**Merged-unclosed**')[1];
+   assert.ok(home, 'sanity: sprint-lifecycle.md "PR phase" must keep its **Merged-unclosed** paragraph, the lookup\'s home');
+   const spans = (text) => [...text.matchAll(/`([^`]+)`/g)].map(([, span]) => span);
+@@ -6875,8 +6875,11 @@ test('sprint-021 AC-2 (iter-03 external #1): a phase="pr" sprint without pr.numb
+   const sprintSkill = canonText('.asd/skills/asd-sprint/SKILL.md');
+   const detect = sprintSkill.split('### Step 1:')[1].split('\n### ')[0].split('\n').find((line) => spans(line).includes(lookup));
+   assert.ok(detect && /merged-unclosed/i.test(detect), `AC-2: asd-sprint Step 1 must run the lookup "Merged-unclosed" defines, the same command, and read its MERGED hit as merged-unclosed - ${lost}`);
+-  const approve = stepOf(sprintSkill.split('### Step 1A')[1].split('\n### ')[0], 2).replace(/`[^`]*`/g, '');
++  const approveStep = stepOf(sprintSkill.split('### Step 1A')[1].split('\n### ')[0], 2);
++  const approve = approveStep.replace(/`[^`]*`/g, '');
+   assert.ok(/\bnumber\b/i.test(approve), `AC-2: asd-sprint Step 1A must carry the head-branch lookup's PR number with the closure approval - scope's closure write has no other source for it when pr is null`);
++  const carry = clauses(approveStep).filter((clause) => /\bnumber\b/i.test(clause.replace(/`[^`]*`/g, '')));
++  assert.deepStrictEqual(carry.filter((clause) => /\bnull\b/.test(clause)), [], "AC-2: asd-sprint Step 1A must carry the confirmed PR number whenever detection found one, not only when the detected copy's pr is null - a sprint-branch copy holding pr.number over a base copy with pr=null reaches scope's closure write, which reads the base copy, with no number (impl-review wave-1/iter-04 #1)");
+   const scopeSpans = spans(stepOf(canonText('.asd/workflows/asd-phase-scope.md').split('\n## ')[0], 1));
+   assert.ok(scopeSpans.includes('pr.number'), 'AC-2: asd-phase-scope.md step 1\'s closure write must write pr.number as a field of its own, not only inside the gh pr view command - a closing sprint with pr=null is archived with no PR number and no way to read its merge commit');
+   const openSteps = sectionOf('.asd/workflows/asd-phase-pr.md', 'Open mode').split(/\n(?=\d+[a-z]?\. )/);
+@@ -6886,6 +6889,16 @@ test('sprint-021 AC-2 (iter-03 external #1): a phase="pr" sprint without pr.numb
+   assert.ok(beforeCreate.includes('"Merged-unclosed"'), `AC-2: pr open mode must run the head-branch lookup ("PR phase" "Merged-unclosed") before opening a PR - ${lost}`);
+   assert.ok(clauses(beforeCreate).some((clause) => clause.includes('`MERGED`') && clause.includes('`NEXT: await-closure`')), `AC-2: pr open mode must emit NEXT: await-closure on a MERGED head-branch hit, opening nothing - ${lost}`);
+   assert.ok(clauses(beforeCreate).some((clause) => clause.includes('`OPEN`') && /merge mode/.test(clause)), `AC-2: pr open mode must adopt an OPEN head-branch hit into merge mode instead of opening a second PR - ${lost}`);
++  const gate = spans(sprintSkill.split('### Step 1:')[1].split('\n### ')[0]).map((span) => /^phase="([^"]+)"$/.exec(span)).find(Boolean);
++  assert.ok(gate, 'sanity: asd-sprint Step 1 must gate merged-unclosed detection on a `phase="…"` value');
++  const unguarded = `the PR head is base's copy after a squash merge, so a phase="${gate[1]}" write left uncommitted at the push leaves base at retro's phase with pr=null: asd-sprint Step 1 never runs the lookup and its resume flow re-runs retro on git.base_branch (impl-review wave-1/iter-04 #1)`;
++  const openPaths = clauses(beforeCreate).filter((clause) => !clause.includes('`MERGED`'));
++  const adoptAt = openPaths.findIndex((clause) => clause.includes('`OPEN`') && /merge mode/.test(clause));
++  const gateWrites = openPaths.map((clause, at) => ({ clause, at })).filter(({ clause }) => spans(clause).some((span) => span.replace(/"/g, '') === `phase=${gate[1]}`));
++  assert.ok(gateWrites.length > 0, `AC-2: pr open mode must write the phase="${gate[1]}" asd-sprint Step 1 gates detection on, before opening a PR - ${unguarded}`);
++  assert.deepStrictEqual(gateWrites.filter(({ clause }) => !/\bcommit/i.test(clause.replace(/`[^`]*`/g, ''))).map(({ clause }) => clause.trim()), [], `AC-2: every pr open mode clause writing phase="${gate[1]}" must commit it on the sprint branch, before step 3's PR-creation push - ${unguarded}`);
++  assert.ok(gateWrites.some(({ at }) => at <= adoptAt), `AC-2: pr open mode must commit phase="${gate[1]}" before adopting an OPEN hit into merge mode, so the adopted PR's head carries it too - ${unguarded}`);
++  assert.ok(openPaths.slice(0, adoptAt + 1).some((clause) => /self-hosting/i.test(clause) && /\bversion\b/i.test(clause)), 'AC-2: pr open mode must bump the self-hosting version before adopting an OPEN hit into merge mode - an adopted PR merged without it releases under the previous version (impl-review wave-1/iter-04 #1, folded medium)');
+ });
+ 
+ test('sprint-021 F-4/F-5: each review template\'s empty findings row and Severity values parse through reviewFindings, the parser persist-review runs on them - a template row the runtime rejects is a verdict no reviewer can persist', () => {

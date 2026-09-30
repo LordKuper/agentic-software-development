@@ -1,1 +1,2 @@
 - [Codex agent config docs](reference_codex-agent-config-docs.md) — docs moved to learn.chatgpt.com; agent TOML accepts config keys; web_search modes, default cached
+- [Host agent liveness](reference_host-agent-liveness.md) — Claude transcript jsonl growth, Monitor/Cron/TaskStop limits, Codex wait_agent hang bug

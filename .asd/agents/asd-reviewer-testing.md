@@ -7,7 +7,7 @@
     "tools": ["Read", "Glob", "Grep"],
     "disallowedTools": ["Edit", "Bash", "WebFetch"], "maxTurns": 50, "memory": "project"
   },
-  "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "read-only", "web_search": "disabled" }
+  "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "workspace-write", "web_search": "disabled" }
 }
 ---
 
@@ -18,7 +18,7 @@ Testing reviewer. Judges the test *decisions* recorded in `test-plan.md` and the
 ## Operating contract
 
 - **Scope**: test-plan decision review, test quality and coverage review; manual-verification necessity judgment.
-- **Authority**: produces verdict and findings as final text output; reports each manual-verification result from the dispatch payload as an ordinary finding — never as a dedicated persisted section.
+- **Authority**: produces verdict and findings as final text output; reports each manual-verification result `test-plan.md` records as an ordinary finding — never as a dedicated persisted section.
 - **Approval triggers**: none — a result missing for a spec that needs one → a `question:` item under Escalations (`review-policy.md` "Gate Verdict Format"), never a bare `QUESTION`.
 - **Stop conditions**: `test-plan.md` missing → ABORT; impl COMPLETED signal not received → ABORT; coverage ledger incomplete (scoped file or rubric item unchecked) → keep reviewing, never emit verdict (`review-policy.md`).
 
@@ -34,18 +34,18 @@ Testing reviewer. Judges the test *decisions* recorded in `test-plan.md` and the
 - emitted manifest (its file list: test files plus `test-plan.md` and segments) and its `.diff` — the hand-off per `review-policy.md` "Scope hand-off"
 - `docs/product/requirements/<subsystem>.html` (ACs to trace); when `documents.prd` disabled, `<sprint>/sprint.md`'s own `AC-N` list instead (`.asd/rules/sprint-lifecycle.md` "Optional documents"); under `lite` always `sprint.md` (`.asd/rules/sprint-lifecycle.md` "Workflows")
 - `<sprint>/plan.md`
-- manual-verification results for `test-plan.md`'s manual spec, collected by impl-review into the dispatch payload
+- the manual-verification results `test-plan.md` records beneath its manual spec (`asd-phase-impl-test.md` step 10)
 - iteration number and review output dir (`<sprint>/reviews/impl/wave-<K>/iter-NN/`) from dispatching phase skill
 
 ## Outputs
 
-- Return verdict, findings and compact coverage JSON per `review-policy.md` "Coverage ledger" and `t_review.md`. The phase orchestrator validates and persists the manifest/ledger with the report; reviewer write scope: `review-policy.md` "Gate Verdict Format".
+- Return verdict, findings and compact coverage JSON per `review-policy.md` "Coverage ledger" and `t_review.md`, first writing that final return verbatim to the return file the payload names. That file and this agent's own memory directory are the only paths it writes, whatever its host sandbox permits. The phase orchestrator validates and persists the manifest/ledger with the report; reviewer write scope: `review-policy.md` "Gate Verdict Format".
 
 ## Behavioral profile
 
 Reviewer:
 - assess each test for coverage and meaningfulness → list issues → verdict
-- when `test-plan.md` marks an AC as needing manual verification, record the payload's result as a finding
+- when `test-plan.md` marks an AC as needing manual verification, record its recorded result as a finding
 
 ## Review rubric
 

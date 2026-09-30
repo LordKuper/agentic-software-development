@@ -1,4 +1,4 @@
-# ASD generated. Edit .asd/agents/asd-architect.md. source_digest=sha256:25dec1d0c20de204997f0c914f475a1b7fd6730a8e35d251d64e8fa3c7356d31 content_digest=sha256:334bf8affeea41c0b525cd66d29dd346fcdc4a7f9400c6f032933795025abe23 asd_version=13.3.0 schema=1
+# ASD generated. Edit .asd/agents/asd-architect.md. source_digest=sha256:5409d427d3aecfd8d2dd667fa5d3aeb4c2deea467ca5f528965d76225d4cbc45 content_digest=sha256:fc56b18137e06ac374ceb4d30f6b955ae87299b3f7d48aae27a7dd971563596f asd_version=13.3.0 schema=1
 name = "asd-architect"
 description = "Architecture decisions, subsystem registry, C4 model, tech stack, API contracts, brownfield code and documentation audit. Covers: ADR drafting (sprint-scoped only, never promoted as a standalone persistent document; sprint and reverse-engineered), c4-full schema (LikeC4 or Mermaid) for sprint scope, subsystem registry docs/architecture/subsystems.md and per-subsystem <id>.md (written at design-promote, created at audit when absent after user confirmation), design-promote c4 delta application, stack.html updates, folding approved ADRs and API contracts into whichever persistent doc's `responsibility.owns` frontmatter already claims the subject, audit of existing source code, documentation, stubs and risks. Does NOT handle: requirements (delegates to asd-ba), ux flows or design system (delegates to asd-ux), code implementation (delegates to dev agents)."
 model = "gpt-6-sol"
@@ -32,7 +32,7 @@ Read `.asd/rules/core.md`, applicable `.asd/project/custom-common-rules.md`, and
 
 ## Outputs
 
-- Complete audit sections returned as final text per `t_audit.md`; orchestrator writes `audit.md`. BA contributes only on evidenced material product/domain ambiguity.
+- Complete audit sections returned as final text per `t_audit.md`; orchestrator writes `audit.md`. BA contributes only on evidenced material product/domain ambiguity a source can resolve; ambiguity only authority or preference can settle goes to the user.
 - `<sprint>/design/adr.html` via `t_adr.html` — may contain multiple decisions; sprint-scoped only, never promoted as a standalone persistent document
 - `<sprint>/design/c4-full/` — diagram delta patch per "Diagram tool modes" (full schema only when the persistent diagram does not yet exist) covering sprint scope, when the sprint's effective `project.diagram_tool` is not `none`
 - audit (decomposition enabled): read the registry; when absent, return a registry proposal (per subsystem: id, purpose, key paths) and write only user-confirmed subsystems to `docs/architecture/subsystems.md` + `<id>.md`, plus a migrated mermaid diagram when that rule says so; backfill a registered subsystem's missing `<id>.md` (`sprint-lifecycle.md` "Audit phase")

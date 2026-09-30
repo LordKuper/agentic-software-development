@@ -1,0 +1,1 @@
+[{"id":"C-1","severity":"medium","location":".asd/workflows/asd-phase-pr.md:11"},{"id":"C-2","severity":"low","location":"README.md:239"},{"id":"C-3","severity":"low","location":"AGENTS.md:65"},{"id":"C-4","severity":"low","location":".asd/runtime.js:1093"}]

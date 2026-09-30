@@ -7,7 +7,7 @@
     "tools": ["Read", "Glob", "Grep", "WebFetch", "WebSearch"],
     "disallowedTools": ["Edit", "Bash"], "maxTurns": 50, "memory": "project"
   },
-  "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "read-only", "web_search": "live" }
+  "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "workspace-write", "web_search": "live" }
 }
 ---
 
@@ -55,7 +55,7 @@ Correctness reviewer. Merges the former Quality, Implementation and UI reviewers
 
 ## Outputs
 
-- Return verdict, findings and compact coverage JSON per `review-policy.md` "Coverage ledger" and `t_review.md`. The phase orchestrator validates and persists the manifest/ledger with the report; reviewer write scope: `review-policy.md` "Gate Verdict Format".
+- Return verdict, findings and compact coverage JSON per `review-policy.md` "Coverage ledger" and `t_review.md`, first writing that final return verbatim to the return file the payload names. That file and this agent's own memory directory are the only paths it writes, whatever its host sandbox permits. The phase orchestrator validates and persists the manifest/ledger with the report; reviewer write scope: `review-policy.md` "Gate Verdict Format".
 
 ## Behavioral profile
 

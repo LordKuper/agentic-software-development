@@ -25,8 +25,9 @@ Findings table by column position: keep the `#` cell a bare id and the Severity 
 current `reviews/impl/wave-<K>/iter-NN/` (design: `reviews/design/iter-NN/`), and scope greps to canon
 (a grep over the sprint folder hits sibling reviewers' files).
 
-**Why:** reviewers hold no command-runner grant on either provider (write scope: `review-policy.md`
-"Gate Verdict Format"), and an invalid ledger is not a verdict - the phase rejects and re-dispatches.
+**Why:** a Claude reviewer holds no command-runner grant and no reviewer runs git (write scope and its
+policy bound: `review-policy.md` "Gate Verdict Format"), and an invalid ledger is not a verdict - the
+phase rejects and re-dispatches.
 
 **How to apply — the highest-yield checks in this repo:**
 - **Acting-site scope vs cited SSoT.** A rule doc's branch and its binding in `.asd/workflows/asd-phase-*.md`

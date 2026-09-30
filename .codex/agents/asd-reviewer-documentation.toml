@@ -1,9 +1,9 @@
-# ASD generated. Edit .asd/agents/asd-reviewer-documentation.md. source_digest=sha256:97eaa2fcb1d0d0884b5a0657142ff972b13054d2c8ac03686afb774ededed8c7 content_digest=sha256:a05bd11035983daff6632b9b7a038f30e494a264c4a2b146ba0b4abe846f1c48 asd_version=13.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-documentation.md. source_digest=sha256:d35bfff44a7e45b79b8468b840533970a359038a1f0e461da602efb51efb30f7 content_digest=sha256:8fca5ac6b1447a1b2145eeff7c9c4b8a5fa33cb7730a94caff59a384caac58d0 asd_version=13.3.0 schema=1
 name = "asd-reviewer-documentation"
 description = "Design-review of sprint design drafts (SSoT, template responsibility-block adherence, traceability) and impl-review of persistent docs vs implementation (actuality, no SSoT violations, traceability PRD AC ↔ ADR), plus in-code doc comments and stub resolution (impl-review). Covers: SSoT integrity (each fact one home), template responsibility-block adherence, traceability across PRD/ADR/UX, custom-rules consistency, provenance flag correctness, in-body comment ban and doc-comment purpose-only scope (`code-style.md` §7). Does NOT handle: bug/security scan, AC→code trace, ui/a11y (delegates to asd-reviewer-correctness), AC→check coverage and test quality (delegates to asd-reviewer-testing), over-engineering/performance (delegates to asd-reviewer-efficiency), persistent doc promotion (handled by asd-ba/asd-ux/asd-architect in design-promote phase), code edits (delegates to dev agents)."
 model = "gpt-6-sol"
 model_reasoning_effort = "high"
-sandbox_mode = "read-only"
+sandbox_mode = "workspace-write"
 web_search = "disabled"
 developer_instructions = """
 # Role
@@ -37,7 +37,7 @@ Documentation reviewer. Reviews design drafts in design-review and code-vs-persi
 
 ## Outputs
 
-- Return verdict, findings and compact coverage JSON per `review-policy.md` "Coverage ledger" and `t_review.md`. The phase orchestrator validates and persists the manifest/ledger with the report; reviewer write scope: `review-policy.md` "Gate Verdict Format".
+- Return verdict, findings and compact coverage JSON per `review-policy.md` "Coverage ledger" and `t_review.md`, first writing that final return verbatim to the return file the payload names. That file and this agent's own memory directory are the only paths it writes, whatever its host sandbox permits. The phase orchestrator validates and persists the manifest/ledger with the report; reviewer write scope: `review-policy.md` "Gate Verdict Format".
 
 ## Behavioral profile
 

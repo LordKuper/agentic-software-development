@@ -36,12 +36,15 @@ grow (sprint 010 EFF-2), since appending is always cheaper than merging.
 
 ## Mutate, run, restore — one bash call
 
-Back the file up with `cp` to the scratchpad, then run mutate → suite → restore inside ONE bash call,
+Helper files (backups, mutation scripts, run logs) go in `.asd/tmp/` (`node .asd/runtime.js scratch-dir`,
+`artifact-layout.md` "Scratch directory"), never OS temp or the host scratchpad; no test globs it and it
+ignores itself. Back the file up there, then run mutate → suite → restore inside ONE bash call,
 restoring in the same call that reads the failure. Never restore with `git checkout --`, and never
 park the backup inside a tree a test globs — a stray `.md` under `.asd/rules/` breaks the rule-doc
-bijection check itself. For many mutations, a Node script written to the temp dir (not a heredoc)
+bijection check itself. For many mutations, a Node script in `.asd/tmp/` (not a heredoc)
 that loops `[id, file, from, to]`, checks the anchor hits exactly once, and restores the in-memory
-buffer in `finally` with a byte compare worked cleanly (sprint 011, 23 runs in two calls). A "revert the fix
+buffer in `finally` with a byte compare worked cleanly (sprint 011, 23 runs in two calls; sprint 021, 40 runs
+in the background, ~20 s each). A "revert the fix
 commit" mutation built from `execSync('git show <sha>^:<path>')` is a silent no-op on this Windows host:
 `execSync` runs through cmd.exe, which eats `^`, so it reads the CURRENT blob. Use `<sha>~1`. Writing regex source into `tests/run.js` from a script: a plain JS string turns `\b` into a backspace byte (invisible in Read, suite goes red) and a global `split('\\`')` strip hits every existing escaped-backtick row in `test-plan.md` — use `String.raw` in a scratch file, or the Edit tool (sprint 014 iter-02). The tell is a
 run with zero FAIL lines, not even the hash-ledger noise every real canon mutation produces — unless the script
@@ -170,6 +173,11 @@ Rule prose here routinely narrates the alternative it just rejected inside the s
 absence check (`!/parallel/i`) therefore goes red against unmutated HEAD. Assert the absence of the
 specific *removed instruction phrases*, never of a topic word.
 
+A defect the manual leftover check found (no runner line) still owes a §17 regression proof: append its
+fix commit's exact removed phrase to the sprint's leftover-sweep list, then restore the `<sha>~1` blob to
+prove it (sprint 021 D-4). Widening an actor rule ("a sentence naming `--apply` must deny it") to all memory
+instead false-hits factual mentions of the command.
+
 Same family, for locating a sentence: key the locator to the sentence's **citation**, never its
 ordinal or adverb. `sprint-lifecycle.md`'s latch-clearing route was renamed "A THIRD" → "A further"
 mid-sprint; a `find` on the citation (`` `review-policy.md` "Late duplicate return" ``) survives
@@ -214,7 +222,9 @@ across `canonMarkdownFiles()`, resolve base name → repo root → `.asd/templat
 and `audit.md` resolve with no hardcoded pair), and accept the target as a `## heading` **or** a
 `**bold label**` — 10 of canon's 185 citations name a bold label, `sprint-lifecycle.md` "Impl-review
 clean-worktree precondition" among them, so a heading-only check reddens on correct edits. Match
-headings prefix-anchored: `## Related open stubs (optional)` is cited without its parenthetical. It found
+headings prefix-anchored: `## Related open stubs (optional)` is cited without its parenthetical. A
+two-label citation (`` `x.md` "PR phase" "Merged-unclosed" ``) is resolved on its first label only; do
+not claim the sweep covers the second (sprint 021 entry 3). It found
 two dangling pointers (`checkpoints.md` "Re-running a phase", `external-review.md` "Iteration-aware
 diff"), both from PR #25 renames whose two sibling citations sprint 006's documentation reviewer fixed by
 hand; the class is recurrent and human review catches it only partly. Both were fixed at `ac3073a` and the
@@ -231,6 +241,20 @@ literal on one of them. Sprint 009 iter-02 — `checkpoints.md` counts fix round
 from the workflow and asserts it *ends with* the tail read out of `checkpoints.md`, so either side
 may be reworded freely as long as the counter still selects the emitter. String equality between the
 two would have gone red on the correct fix, exactly as it did.
+
+A substring token relation (`site.includes(token)`) goes vacuous when the token already sits inside a
+longer span on the target: sprint 021 entry 5's new closure-write field `pr.number` was "named" by scope's
+older `` `gh pr view <pr.number>` ``, so reverting the fix stayed green. Compare code span to span
+(`spans(site).includes(token)`) for a field the fix adds.
+
+A fix that makes one site produce the value another site gates on ("commit `phase=pr` so Step 1's `phase="pr"`
+gate matches base") is pinned by deriving the gate's value from the gating site's code span and requiring the
+producer to write it (quotes ignored). Mutating only the gate proves the derivation (sprint 021 entry 6, M-AG). A "first matching span in the section"
+derivation re-sources silently: when canon removed that gate and added the same token elsewhere in the section, the
+test stayed green on the wrong site (entry 7). Key the derivation to the clause that states the relation.
+A fix that *removes* a narrowing condition has no positive substance: require its clause to lack the condition's
+one word (`null`), keep the positive assert on the clause itself so deletion cannot pass vacuously, and record
+both ceilings (a synonym passes; "whether or not null" reddens).
 
 ## Fixtures whose bytes are the input
 

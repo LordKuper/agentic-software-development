@@ -1031,13 +1031,15 @@ test('`node .asd/sync.js --check` reports every item current (no drift), includi
 // the day it joins a roster.
 // ===========================================================================
 
-test('read-only agents (every workflow reviewer + asd-advisor): no Write/Edit tool, codex sandbox_mode read-only', () => {
+test('read-only agents (every workflow reviewer + asd-advisor): no Write/Edit tool on Claude, and the Codex sandbox providers.md "Agent tier matrix" states - workspace-write for the internal reviewers only with a policy line bounding it to the return file and own memory (sprint-021 D6)', () => {
   const agentsDir = path.join(REPO_ROOT, '.asd', 'agents');
   const files = fs.readdirSync(agentsDir).filter((f) => f.endsWith('.md'));
   const readOnlyNames = files
     .map((f) => f.slice(0, -3))
     .filter((name) => name === 'asd-external-review' || name === 'asd-advisor' || name.startsWith('asd-reviewer-'));
   assert.deepStrictEqual(readOnlyNames.sort(), [...workflowReviewerAgents(), 'asd-advisor'].sort(), 'the read-only set is every reviewer a workflow definition dispatches plus asd-advisor - a reviewer agent no roster names is dead canon, and a roster key whose agent is missing here escapes the read-only check');
+  const matrixRows = sectionOf('.asd/rules/providers.md', 'Model family resolution').split('### Agent tier matrix')[1].split('\n').filter((line) => line.startsWith('| asd-')).map((line) => line.split('|').slice(1, -1).map((cell) => cell.trim()));
+  assert.ok(matrixRows.length >= 5, 'sanity: providers.md "Agent tier matrix" rows must be found, or no sandbox claim below is compared');
   for (const name of readOnlyNames) {
     const raw = sync.readNormalized(path.join(agentsDir, `${name}.md`));
     const { meta } = sync.parseCanonicalFrontmatter(raw);
@@ -1055,7 +1057,14 @@ test('read-only agents (every workflow reviewer + asd-advisor): no Write/Edit to
     if (name !== 'asd-external-review') {
       assert.ok(!claudeTools.includes('Bash'), `${name}: claude.tools must not include "Bash"`);
     }
-    assert.strictEqual(meta.codex && meta.codex.sandbox_mode, 'read-only', `${name}: codex.sandbox_mode must be "read-only"`);
+    const row = matrixRows.find(([agents]) => agents.split(',').some((pattern) => name.startsWith(pattern.trim().replace(/[\s*(].*$/, ''))));
+    assert.ok(row, `${name}: providers.md "Agent tier matrix" must carry a row for every read-only-set agent`);
+    const claimed = row[3].split(/\s/)[0];
+    assert.strictEqual(meta.codex && meta.codex.sandbox_mode, claimed, `${name}: codex.sandbox_mode must be the "${claimed}" providers.md "Agent tier matrix" states for it`);
+    if (claimed === 'read-only') continue;
+    assert.ok(name.startsWith('asd-reviewer-'), `${name}: sprint-021 D6 widens the Codex sandbox for the internal reviewers alone - External Review and asd-advisor stay read-only`);
+    const bound = sectionOf(`.asd/agents/${name}.md`, 'Outputs').split('\n').find((line) => /return file/.test(line) && /own memory/.test(line));
+    assert.ok(bound, `${name}: Codex cannot scope workspace-write to a path, so the Outputs policy line naming the return file and the agent's own memory is the only bound on its writes (plan.md Risks, D6)`);
   }
 });
 
@@ -2230,21 +2239,31 @@ test('sprint-017 (COR-6): outside a review phase, SessionStart prefers the impl-
   assert.ok(afterWaveIterated.includes('Last review verdict: yellow'), `COR-6: once any wave has iterated, an impl-phase summary must prefer the impl wave node over design's - comparing counters directly would compare wave 2's iteration 1 to design's iteration 2 and wrongly pick design's green, got: ${afterWaveIterated}`);
 });
 
-test('AC-21: SessionStart reports "Next phase: await-user-closure" when pr.state is closure-pending', () => {
-  const tempRoot = mkTempDir();
-  installHook(tempRoot);
-  writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({
-    sprint_id: '999-fixture',
-    phase: 'pr',
-    branch: 'sprint/999-fixture',
-    pr: { state: 'closure-pending' },
-  }));
-  const out = execFileSync('node', [path.join(tempRoot, '.asd/hooks/session-start.js'), '--provider', 'claude'], {
-    cwd: tempRoot,
-    encoding: 'utf8',
-  });
-  const text = JSON.parse(out).hookSpecificOutput.additionalContext;
-  assert.ok(text.includes('Next phase: await-user-closure'), `expected the mandatory closure gate to report await-user-closure, got: ${text}`);
+test('sprint-021 AC-3 (D3): SessionStart reports "Next phase: await-closure" for a merged-unclosed sprint read offline - phase pr, a PR number, and a checked-out branch other than the sprint\'s - legacy closure-pending included, and degrades to await-merge on the sprint branch, a detached HEAD or a worktree .git file', () => {
+  const sprintBranch = 'sprint/999-fixture';
+  const nextFor = (pr, git) => {
+    const tempRoot = mkTempDir();
+    installHook(tempRoot);
+    writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({ sprint_id: '999-fixture', phase: 'pr', branch: sprintBranch, pr }));
+    if (git.head !== undefined) writeFile(tempRoot, '.git/HEAD', git.head);
+    if (git.file !== undefined) writeFile(tempRoot, '.git', git.file);
+    const out = execFileSync('node', [path.join(tempRoot, '.asd/hooks/session-start.js'), '--provider', 'claude'], { cwd: tempRoot, encoding: 'utf8' });
+    return (/Next phase: (\S+)/.exec(JSON.parse(out).hookSpecificOutput.additionalContext) || [])[1];
+  };
+  const onBase = { head: 'ref: refs/heads/main\n' };
+  const cases = [
+    ['merged, back on the base branch', { number: 7, state: 'open' }, onBase, 'await-closure'],
+    ['legacy closure-pending with a PR number (D2)', { number: 7, state: 'closure-pending' }, onBase, 'await-closure'],
+    ['PR open, still on the sprint branch', { number: 7, state: 'open' }, { head: `ref: refs/heads/${sprintBranch}\n` }, 'await-merge'],
+    ['no PR number yet', { state: 'open' }, onBase, 'await-merge'],
+    ['detached HEAD', { number: 7, state: 'open' }, { head: `${'a'.repeat(40)}\n` }, 'await-merge'],
+    ['worktree .git file', { number: 7, state: 'open' }, { file: 'gitdir: /elsewhere/.git/worktrees/x\n' }, 'await-merge'],
+  ];
+  for (const [label, pr, git, expected] of cases) {
+    let next;
+    assert.doesNotThrow(() => { next = nextFor(pr, git); }, `${label}: the hook must exit 0 on any .git shape - it fails silently by design`);
+    assert.strictEqual(next, expected, `${label}: merged-unclosed is phase pr + pr.number + a readable current branch other than state.branch (sprint-lifecycle.md "PR phase"); any shape the hook cannot read offline degrades to await-merge, never a false closure prompt`);
+  }
 });
 
 test('AC-21: SessionStart reports "Next phase: await-merge" for an ordinary pr phase without pr.state', () => {
@@ -2425,7 +2444,7 @@ test('AC-10/11: routing is monotonic and only verified deterministic work is a c
   assert.deepStrictEqual(runtime.routeTask({ ...base, kind: 'mechanical', checks: ['deterministic-check', 'exhaustive-match-validation'], risks: ['auth'] }), { tier: 'critical', execution: 'agent', reason: 'risk:auth' }, 'any named risk must escalate to critical regardless of otherwise-mechanical evidence');
 });
 
-test('AC-3/4/5: preflight permits only fixed local probes and negative cache is bounded and expires', () => {
+test('AC-3/4/5, sprint-021 AC-11: preflight permits only fixed local probes and negative cache is bounded - a provider reset capped at one hour, one hour by default - and expires', () => {
   const root = mkTempDir();
   const cachePath = path.join(root, 'external-cache.json');
   const command = process.platform === 'win32' ? path.join(root, 'ready.cmd') : path.join(root, 'ready');
@@ -2435,9 +2454,18 @@ test('AC-3/4/5: preflight permits only fixed local probes and negative cache is 
   assert.throws(() => runtime.externalPreflight({ ...input, provider: 'unknown' }), /provider/);
   assert.throws(() => runtime.externalPreflight({ ...input, authArgs: ['exec', 'paid prompt'] }), /authArgs/);
   const fingerprint = 'a'.repeat(64);
-  for (const retryAfter of [1000, Infinity, 1000 + 3600001]) {
-    assert.throws(() => runtime.recordExternalFailure({ fingerprint, status: 'quota', cachePath, now: 1000, retryAfter }), /bounded future/);
+  for (const retryAfter of [1000, Infinity, NaN]) {
+    assert.throws(() => runtime.recordExternalFailure({ fingerprint, status: 'quota', cachePath, now: 1000, retryAfter }), /bounded future/, `retryAfter ${retryAfter}: a reset at or before now, or no finite reset, is refused`);
   }
+  const hourMs = 3600000;
+  const stored = (retryAfter) => {
+    const clampPath = path.join(root, 'clamp-cache.json');
+    runtime.recordExternalFailure({ fingerprint, status: 'quota', cachePath: clampPath, now: 1000, ...(retryAfter === undefined ? {} : { retryAfter }) });
+    return JSON.parse(fs.readFileSync(clampPath, 'utf8')).entries[fingerprint].retry_after;
+  };
+  assert.strictEqual(stored(1000 + hourMs * 5), 1000 + hourMs, 'sprint-021 AC-11: a provider-reported reset past one hour is capped at one hour, never refused - a refusal left the quota failure unrecorded and the next preflight re-dispatched into it');
+  assert.strictEqual(stored(undefined), 1000 + hourMs, 'sprint-021 AC-11: with no provider-reported reset the retry-after is one hour, never the 5-minute default that re-hit a quota minutes after it tripped');
+  assert.strictEqual(stored(1000 + 90000), 1000 + 90000, 'sprint-021 AC-11: a reported reset inside the hour is kept as reported');
   const ready = runtime.externalPreflight(input);
   assert.strictEqual(ready.status, 'local-ready');
   const externalRows = canonText('.asd/rules/external-review.md').split(/\r?\n/);
@@ -3461,24 +3489,20 @@ test('AC-13a: artifact-layout.md "Agent memory" is the one owner of agent memory
   }
 });
 
-test('T-2: AGENTS.md is sole SSoT for the --apply <generated-view-path...> explanatory parenthetical; asd-dev.md, asd-update/SKILL.md, asd-phase-impl.md, custom-coding-rules.md and README.md cite providers.md instead of restating it', () => {
-  const fullParenthetical = 'pass generated view paths, never `.asd/` canon: `.claude/agents/<name>.md`, `.codex/agents/<name>.toml`, `.claude/skills/<name>/SKILL.md`, `.agents/skills/<name>/SKILL.md`';
+test('T-2, sprint-021 AC-11: providers.md "Canonical path -> per-provider path" is the one home of the generated view path shapes - no canon, README or AGENTS.md line restates them - and every site naming the --apply target form cites it; custom-coding-rules.md and AGENTS.md keep only the orchestrator-syncs rule', () => {
   const citation = 'Canonical path -> per-provider path';
-  const agents = fs.readFileSync(path.join(REPO_ROOT, 'AGENTS.md'), 'utf8');
-  assert.ok(agents.includes(fullParenthetical), 'AGENTS.md must carry the full --apply explanatory parenthetical - the sole owner');
+  const viewShape = '`.codex/agents/<name>.toml`';
+  const holders = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/project/custom-coding-rules.md'].filter((rel) => canonText(rel).includes(viewShape));
+  assert.deepStrictEqual(holders, ['.asd/rules/providers.md'], `the generated view path shapes live in providers.md's path table alone - the explanatory parenthetical AGENTS.md used to own is gone since sprint 021 (devs never run --apply), so a restatement anywhere is a second copy. Found in: ${holders.join(', ')}`);
+  assert.ok(sectionOf('.asd/rules/providers.md', citation).includes(viewShape), `providers.md "${citation}" must hold the path table the sites below cite`);
 
-  const otherSites = [
-    '.asd/agents/asd-dev.md',
-    '.asd/skills/asd-update/SKILL.md',
-    '.asd/workflows/asd-phase-impl.md',
-    '.asd/project/custom-coding-rules.md',
-    'README.md',
-  ];
-  for (const rel of otherSites) {
-    const content = fs.readFileSync(path.join(REPO_ROOT, rel), 'utf8');
-    assert.ok(!content.includes(fullParenthetical), `${rel} must not restate the full --apply explanatory parenthetical - AGENTS.md is the sole SSoT`);
-    assert.ok(content.includes(citation), `${rel} must cite providers.md "${citation}" instead of restating the parenthetical`);
+  const agents = canonText('AGENTS.md');
+  assert.ok(agents.includes('node "$(git rev-parse --show-toplevel)/.asd/sync.js" --apply <generated-view-path...>') && agents.includes('`sprint-lifecycle.md` "Self-hosting"'), 'AGENTS.md keeps the self-locating --apply command form and cites the rule that says who runs it');
+  for (const rel of ['.asd/agents/asd-dev.md', '.asd/skills/asd-update/SKILL.md', '.asd/workflows/asd-phase-impl.md', 'README.md']) {
+    assert.ok(canonText(rel).includes(citation), `${rel} must cite providers.md "${citation}" for the generated view paths instead of restating them`);
   }
+  const coding = canonText('.asd/project/custom-coding-rules.md');
+  assert.ok(!coding.includes('--apply <generated-view-path...>') && coding.includes('`.asd/rules/sprint-lifecycle.md` "Self-hosting"'), 'custom-coding-rules.md no longer names an --apply target form - a dev never runs it - so it cites the Self-hosting rule for who syncs instead of providers.md for the path shapes');
 });
 
 test('T-2/AC-3/sprint-017 AC-6: artifact-layout.md names every review-file variant - per-wave impl dirs, the waves.json division and the legacy read - and the sprint-folder-purity statement alongside the Agent-memory carve-out; README.md and t_review.md carry the matching mirrors', () => {
@@ -3580,7 +3604,7 @@ test('AC-15/sprint-019 AC-14: review-policy.md is sole SSoT for the reviewer wri
     assert.ok(meta.claude.memory === 'project' && !(meta.claude.disallowedTools || []).includes('Write'), `sprint-019 AC-14: ${name}: providers.md says \`memory: project\` serves every reviewer Write because no reviewer's disallowedTools names it - the frontmatter must keep both halves true, or the prose states a grant the host no longer serves`);
   }
 
-  assert.ok(providers.includes('Reviewer agents carry no artifact-write grant on either host'), 'providers.md must state the artifact-level grant fact it owns (tool config), distinct from the reconciliation review-policy.md owns');
+  assert.ok(providers.split(/(?<=\.)\s/).some((sentence) => sentence.includes('`sandbox_mode: "workspace-write"`') && sentence.includes('`review-policy.md` "Coverage ledger"') && /\bpolicy\b/.test(sentence.replace(/`[^`]*`/g, '')) && /read-only/.test(sentence.replace(/`[^`]*`/g, ''))), 'sprint-021 D6: providers.md owns the artifact-level grant fact, so it must state the Codex reviewers\' workspace-write trade-off in one sentence - the config value, the return file it exists for (pointed at "Coverage ledger"), the host read-only guarantee given up, and policy as the only bound (plan.md Risks)');
   assert.ok(providers.includes('Gate Verdict Format'), 'providers.md must cite review-policy.md "Gate Verdict Format" for what the read-only claim covers and excludes, rather than restating the reconciliation independently');
   assert.ok(!providers.includes('MEMORY-FIX'), 'providers.md owns tool grants only; the memory-fix return contract lives in review-policy.md "Autofix vs escalation" and a second copy here is the duplication the citation exists to prevent');
   assert.ok(!policy.includes('Sole statement of this claim'), 'the unscoped sole-statement claim was false the moment it was written (iter-03 DOC-1b): both review workflows and a rule doc also state that the reviewer itself performs no write, so an owning-side claim that every other site merely links contradicted them and invited a cut at whichever site was read next. Scope limit: this guards the literal from coming back, never the truth of a reworded ownership claim - over this corpus no derivable proxy separates a true declaration from a false one (test-plan.md, entry 5). The two assertions above are what keep it from going vacuous: they require the scoped statement to still be here');
@@ -3619,7 +3643,6 @@ test('AC-15: .asd/sync.js and .asd/skills/asd-update/update.js carry no non-Lati
 
 test('AC-15/iter-05: providers.md names External Review as the sole Bash carve-out among read-only reviewers, and that claim matches actual frontmatter grants', () => {
   const providers = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/providers.md'), 'utf8');
-  assert.ok(providers.includes('Reviewer agents carry no artifact-write grant on either host, with one carve-out.'), 'providers.md must state the carve-out, not the unqualified universal it replaced');
   assert.ok(providers.includes('Config-enforced for the four internal reviewers'), 'providers.md must scope the config-enforced guarantee to the four internal reviewers, not all reviewer agents');
   assert.ok(providers.includes('External Review is the carve-out'), 'providers.md must name External Review as the exception, not leave the carve-out unattributed');
   assert.ok(providers.includes('needs `Bash` to invoke the wrapped CLI'), 'providers.md must state why the carve-out needs Bash');
@@ -4467,10 +4490,12 @@ test("sprint-012 AC-12: emit-manifest derives rule and section ids from a review
   const uiHolders = (files) => holders(emitReal('correctness', 'impl-review', files, {}), predicates.uiSurface);
   const uiIds = uiHolders(['README.md', '.asd/runtime.js']);
   assert.strictEqual(uiIds.length, 1, 'with no UI surface in scope exactly the one UI conformance entry is n/a - diff-scoped fan-out is always on, with no flag to pass (sprint-013 AC-17)');
-  for (const surface of ['.asd/templates/t_prd.html', 'docs/site/index.html', 'app/theme.scss', 'src/components/button.ts', 'src/App.tsx']) {
-    assert.deepStrictEqual(uiHolders(['README.md', surface]), [], `${surface} is a UI surface, so it must keep UI conformance reviewed - framework .asd/templates/*.html included, the whole subject of the correctness reviewer's self-hosting carve-out`);
+  for (const surface of ['.asd/templates/t_prd.html', 'docs/site/index.html', 'app/theme.scss', 'src/components/button.ts', 'src/App.tsx', 'Assets/Menu.uxml', 'Assets/Menu.USS', 'Assets/Theme.tss', 'Assets/Scripts/UI/HudPresenter.cs', 'src/Components/Button.cs']) {
+    assert.deepStrictEqual(uiHolders(['README.md', surface]), [], `${surface} is a UI surface, so it must keep UI conformance reviewed - framework .asd/templates/*.html included, the whole subject of the correctness reviewer's self-hosting carve-out; sprint-021 AC-12: Unity UI Toolkit files (.uxml/.uss/.tss) and a UI path segment in any case too`);
   }
-  assert.strictEqual(uiHolders(['README.md', '.asd/rules/notes.html']).length, 1, 'an .html under .asd/ outside .asd/templates/ is framework infrastructure, not a UI surface');
+  for (const framework of ['.asd/rules/notes.html', '.ASD/rules/notes.html']) {
+    assert.strictEqual(uiHolders(['README.md', framework]).length, 1, `${framework}: an .html under .asd/ outside .asd/templates/ is framework infrastructure, not a UI surface - the .asd/ exception is matched case-insensitively like the rest of the classifier (impl-review wave-1/iter-01 external #2)`);
+  }
 
   const htmlHolders = (manifest) => holders(manifest, predicates.noHtml);
   const htmlIds = htmlHolders(emitReal('documentation', 'impl-review', ['README.md', '.asd/runtime.js'], {}));
@@ -4552,13 +4577,16 @@ test("runtime.js CLI: emit-manifest writes one stamped manifest per reviewer und
     const onDisk = read(entry);
     assert.strictEqual(onDisk.digest, entry.digest, `${label}: the digest printed must be the digest written`);
     assert.strictEqual(onDisk.digest, runtime.coverageManifestDigest(onDisk), `${label}: a written manifest must carry its own digest, since validate-ledger recomputes it from the file`);
-    assert.deepStrictEqual(Object.keys(onDisk).filter((key) => !content.includes(key) && key !== 'digest').sort(), Object.keys(published).sort(), `sprint-012 AC-1: ${label} must stamp exactly the published constants this test knows - one stamped without landing here would move every digest while the per-constant checks below never saw it`);
+    assert.deepStrictEqual(Object.keys(onDisk).filter((key) => !content.includes(key) && key !== 'digest' && key !== 'ledger').sort(), Object.keys(published).sort(), `sprint-012 AC-1: ${label} must stamp exactly the published constants this test knows - one stamped without landing here would move every digest while the per-constant checks below never saw it`);
+    const skeletonRows = (ids) => ids.map((i) => ({ i }));
+    assert.deepStrictEqual(onDisk.ledger, { manifest_digest: onDisk.digest, findings: [], files: skeletonRows(onDisk.files), rules: skeletonRows(onDisk.rules), sections: skeletonRows(onDisk.sections) }, `sprint-021 AC-10: ${label} must carry the full ledger skeleton - the digest pre-filled, no findings, one row per manifest id in manifest order with only its status left to fill - so a reviewer never re-types a digest or an id`);
     for (const [field, constant] of Object.entries(published)) {
       assert.deepStrictEqual(onDisk[field], constant, `AC-6b/sprint-012 AC-1: ${label} must publish \`${field}\` from the validator's own constant, so the reviewer reads statuses, row shape and n_a shape off its own input instead of recalling rule prose`);
     }
     const withoutDigest = Object.assign({}, onDisk);
     delete withoutDigest.digest;
-    assert.strictEqual(onDisk.digest, runtime.fingerprint(withoutDigest), `AC-6b: ${label}'s digest must be the hash of every field it carries but \`digest\`, published constants included - a field outside the identity could be edited on disk after stamping while every ledger citing that digest still validates. Expressed through the untouched \`fingerprint\` primitive so a change to the digester cannot move this expectation with it`);
+    delete withoutDigest.ledger;
+    assert.strictEqual(onDisk.digest, runtime.fingerprint(withoutDigest), `AC-6b/sprint-021 AC-10: ${label}'s digest must be the hash of every field it carries but \`digest\` and the \`ledger\` skeleton, which holds the digest and so cannot sit inside it - published constants included; a field outside the identity could be edited on disk after stamping while every ledger citing that digest still validates. Expressed through the untouched \`fingerprint\` primitive so a change to the digester cannot move this expectation with it`);
   }
   assert.strictEqual(runtimeCli(['manifest-digest', '--manifest', small.manifest]).trim(), small.digest, 'review-policy.md "Coverage ledger": `manifest-digest --manifest <path>` verifies what emit-manifest stamped, so the two must agree on every emitted file');
 
@@ -4594,10 +4622,10 @@ test("runtime.js CLI: emit-manifest writes one stamped manifest per reviewer und
   const manifest = JSON.parse(fs.readFileSync(small.manifest, 'utf8'));
   const vocabulary = runtime.LEDGER_VOCABULARY;
   const ledger = {
-    manifest_digest: manifest.digest, findings: [],
-    files: manifest.files.map((i) => ({ i, s: vocabulary.files[0] })),
-    rules: manifest.rules.map((i) => (manifest.n_a.rules[i] ? { i, s: vocabulary.p, p: manifest.n_a.rules[i][0] } : { i, s: vocabulary.rules[0] })),
-    sections: manifest.sections.map((i) => ({ i, s: vocabulary.sections[0] })),
+    ...manifest.ledger,
+    files: manifest.ledger.files.map(({ i }) => ({ i, s: vocabulary.files[0] })),
+    rules: manifest.ledger.rules.map(({ i }) => (manifest.n_a.rules[i] ? { i, s: vocabulary.p, p: manifest.n_a.rules[i][0] } : { i, s: vocabulary.rules[0] })),
+    sections: manifest.ledger.sections.map(({ i }) => ({ i, s: vocabulary.sections[0] })),
   };
   const findingsPath = path.join(root, 'findings.json');
   fs.writeFileSync(findingsPath, '[]', 'utf8');
@@ -5255,10 +5283,10 @@ test('sprint-013 AC-19: the 9.0.0 migration leaves a config it cannot read line 
 
 test('sprint-015 AC-2/AC-3: the impl-review Testing reviewer receives only the isTest scope files plus the --test-plan paths, every other reviewer the whole scope, and review-policy.md "Reviewer responsibility" gives each of the five reviewers both phases', () => {
   assert.deepStrictEqual(runtime.INTERNAL_REVIEWERS.slice().sort(), internalReviewers().sort(), 'INTERNAL_REVIEWERS drives the per-reviewer manifests and the surface-check dispatch count, so it must name exactly the asd-reviewer-* agents');
-  const testFiles = ['tests/run.js', 'test/a.js', 'src/__tests__/a.js', 'spec/a.rb', 'pkg/specs/a.rb', 'src/a.test.ts', 'src/a.spec.js', 'src/test_a.py', 'src/a_test.go', 'src/ATest.java', 'src/ATests.cs', 'Assets/Tests/EditMode/Fixture.cs'];
+  const testFiles = ['tests/run.js', 'test/a.js', 'src/__tests__/a.js', 'spec/a.rb', 'pkg/specs/a.rb', 'src/a.test.ts', 'src/a.spec.js', 'src/test_a.py', 'src/a_test.go', 'src/ATest.java', 'src/ATests.cs', 'Assets/Tests/EditMode/Fixture.cs', 'Core.Tests/Fixture.cs', 'src/Game.Tests.Unit/Fixture.cs', 'lib/Api.Specs/helper.rb'];
   const plan = ['.asd/sprints/015-x/test-plan.md', '.asd/sprints/015-x/test-plan.entry-01.md'];
-  const otherFiles = ['src/contest.js', 'src/latest/a.js', 'src/testing.js', 'docs/protests.md', 'README.md', ...plan];
-  assert.deepStrictEqual(testFiles.filter((file) => !runtime.isTest(file)), [], 'each path-segment and basename convention the plan names must classify as a test file, or Testing never receives it');
+  const otherFiles = ['src/contest.js', 'src/latest/a.js', 'src/testing.js', 'docs/protests.md', 'README.md', 'src/Contest.Data/a.cs', 'src/latest.config/a.js', ...plan];
+  assert.deepStrictEqual(testFiles.filter((file) => !runtime.isTest(file)), [], 'each path-segment and basename convention the plan names must classify as a test file, or Testing never receives it - a dotted test directory (Core.Tests/, Game.Tests.Unit/) included, sprint-021 AC-12');
   assert.deepStrictEqual(otherFiles.filter(runtime.isTest), [], 'a name merely containing "test" is not a test file - misclassified, Testing reviews code it does not own; test-plan.md reaches Testing only through --test-plan');
   const scope = [...otherFiles.slice(0, -plan.length), ...testFiles];
   assert.deepStrictEqual(runtime.reviewerFiles('impl-review', 'testing', scope, plan), [...testFiles, ...plan], 'impl-review Testing receives the scope test files in scope order, then the --test-plan paths the scope pathspec excludes');
@@ -5961,7 +5989,7 @@ test('sprint-018 AC-4/AC-5/AC-7: only the main orchestrator prompts the user - c
   assert.deepStrictEqual(dispatchers.filter((rel) => !canonText(rel).includes(citation)), [], 'AC-7: every workflow dispatching a role that can return QUESTION must cite the QUESTION protocol, or that question has no handling path in the phase');
 });
 
-test('sprint-018 AC-4/AC-5/AC-7: a reviewer\'s question and External Review\'s stalemate ride the verdict-bearing report - one carrier form across template, rule, agents and both review workflows - and impl-review collects manual-verification results before dispatching the testing reviewer', () => {
+test('sprint-018 AC-4/AC-5/AC-7: a reviewer\'s question and External Review\'s stalemate ride the verdict-bearing report - one carrier form across template, rule, agents and both review workflows - and impl-test\'s green exit runs the manual-verification smoke check its one reviewing reader takes from test-plan.md (sprint-021 AC-10)', () => {
   const reviewers = canonAgents().filter((a) => /^asd-(reviewer-|external-review)/.test(a.name));
   assert.deepStrictEqual(reviewers.map((a) => a.name).sort(), workflowReviewerAgents(), 'sanity: exactly the reviewers the workflow definitions dispatch');
   for (const r of reviewers) {
@@ -6023,12 +6051,14 @@ test('sprint-018 AC-4/AC-5/AC-7: a reviewer\'s question and External Review\'s s
     assert.ok(flow[q].split(/(?<=[;.])\s|, and /).some((clause) => /\bwrite\b/.test(clause) && /reviewer's file/.test(clause)), `AC-4: ${rel} must write each answer into that reviewer's file, where the fixer reads it - an answer only in decisions-log never reaches the fix`);
   }
 
-  const collect = sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Workflow').split('\n').find((line) => line.includes('`asd-reviewer-testing`') && /Manual verification/.test(line));
-  assert.ok(collect && /request user decision/.test(collect) && /\bpayload\b/.test(collect) && /decisions-log/.test(collect), 'AC-7: impl-review collects the manual-verification results from the user, logs them and passes them in the testing reviewer\'s payload');
+  const smoke = stepOf(sectionOf('.asd/workflows/asd-phase-impl-test.md', 'Workflow'), 10);
+  assert.ok(smoke.includes('`Manual verification`') && /requests? (?:a )?user decision/.test(smoke) && smoke.includes('`test-plan.md`') && /decisions-log/.test(smoke), 'AC-7/sprint-021 AC-10: impl-test\'s green exit (step 10) runs the smoke check - a user decision per `Manual verification` row, recorded in test-plan.md and logged - before impl-review, so a failed manual check routes before any reviewer runs');
+  assert.ok(!sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Workflow').split('\n').some((line) => /Manual verification/i.test(line) && /request user decision/.test(line)), 'sprint-021 AC-10: impl-review no longer collects manual-verification results - a second collection asks the user twice');
   for (const { name, reviewers: roster } of readWorkflowDefinitions()) {
-    const recipient = roster.impl.find((key) => collect.includes(`\`asd-reviewer-${key}\``));
-    assert.ok(recipient, `sprint-020 AC-4: the manual-verification results must reach a reviewer of every workflow - ${name}'s impl-review roster (${roster.impl.join(', ')}) has none named on the collection line`);
-    assert.ok(sectionOf(`.asd/agents/asd-reviewer-${recipient}.md`, 'Inputs').split('\n').some((line) => /manual-verification results/.test(line) && /\bpayload\b/.test(line)), `AC-7/sprint-020 AC-4: asd-reviewer-${recipient} receives the results in ${name}, so its Inputs must read them from its payload - the consuming end of the collection above`);
+    const readers = roster.impl.filter((key) => key !== runtime.EXTERNAL_REVIEWER && sectionOf(`.asd/agents/asd-reviewer-${key}.md`, 'Inputs').split('\n').some((line) => /manual-verification results/.test(line)));
+    assert.strictEqual(readers.length, 1, `sprint-020 AC-4: the manual-verification results must reach exactly one reviewer of every workflow - ${name}'s impl-review roster (${roster.impl.join(', ')}) has ${readers.length} whose Inputs read them`);
+    const line = sectionOf(`.asd/agents/asd-reviewer-${readers[0]}.md`, 'Inputs').split('\n').find((candidate) => /manual-verification results/.test(candidate));
+    assert.ok(line.includes('`test-plan.md`') && !/\bpayload\b/.test(line), `sprint-021 AC-10: asd-reviewer-${readers[0]} reads the results where impl-test records them, test-plan.md, never from a payload no step fills any more`);
   }
 
   const declared = sectionOf('.asd/rules/providers.md', 'Role-scoped context').split('\n').find((line) => line.startsWith('**Declared tool policy**'));
@@ -6678,6 +6708,305 @@ test('sprint-020 AC-1: no canon, README, AGENTS.md or agent-memory line still na
   const removed = /\bPHASE_CHAIN\b|rollback[- ]reset table/i;
   const hits = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/hooks/session-start.js', '.asd/runtime.js', ...memoryFiles].flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => (removed.test(line) ? [`${rel}:${index + 1}`] : [])));
   assert.deepStrictEqual(hits, [], `sprint 020 moved the chain into .asd/workflows/<name>.json and the reset phases into each definition's rollback_reset, so a line still naming PHASE_CHAIN or the rollback-reset table points a reader at something that no longer exists (CHANGELOG.md and .asd/project/decisions-log.md are history and stay out of the sweep). Found: ${hits.join(', ')}`);
+});
+
+test('sprint-021 AC-12: surface-check never counts a generated provider view or a pure rename - the views it drops are exactly the provider-tree targets sync.js regenerates wholesale, the JSON-merge hook registrations still count, both review pathspecs agree on each, and --base/--head drops only a rename git reports with identical content', () => {
+  const plan = sync.buildSyncPlan(REPO_ROOT);
+  const relOf = (item) => path.relative(REPO_ROOT, item.targetPath).split(path.sep).join('/');
+  const targets = [...new Set(plan.map(relOf))];
+  const jsonMerge = [...new Set(plan.filter((item) => item.class === 'json-merge').map(relOf))];
+  const views = targets.filter((rel) => rel.includes('/') && !jsonMerge.includes(rel));
+  const rootTargets = targets.filter((rel) => !rel.includes('/'));
+  assert.ok(views.length > 0 && rootTargets.includes('AGENTS.md') && jsonMerge.length > 0, `sanity: the sync plan must yield provider-tree views, the root managed-block targets and the JSON-merge hook registrations, got ${targets.join(', ')}`);
+  assert.strictEqual(runtime.surfaceCheck(views).files, 0, 'every provider-tree file sync.js regenerates wholesale from canon is never reviewable change surface, so none may count against the cap');
+  const handEdited = [...rootTargets, ...jsonMerge, '.claude/agent-memory/asd-dev/MEMORY.md', '.claude/settings.local.json', 'src/a.js'];
+  assert.strictEqual(runtime.surfaceCheck(handEdited).files, handEdited.length, 'root managed-block targets carry hand-edited tails, the JSON-merge hook registrations (ASD owns only its hook entry) can hold user content, agent memory is hand-authored and settings.local.json is no sync target - each still counts (impl-review wave-1/iter-01 external #1)');
+
+  const expand = (spans) => [...spans.matchAll(/`([^`]+)`/g)].flatMap(([, glob]) => {
+    const brace = /\{([^}]+)\}/.exec(glob);
+    return brace ? brace[1].split(',').map((part) => glob.replace(brace[0], part)) : [glob];
+  });
+  const consumerRow = sectionOf('.asd/rules/external-review.md', 'Phase-scoped payload').split('\n').find((line) => line.startsWith('| impl-review, `self_hosting: disabled`')) || '';
+  const selfHosting = /the generated provider views \(([^;)]*)/.exec(sectionOf('.asd/rules/sprint-lifecycle.md', 'Self-hosting'));
+  assert.ok(selfHosting, 'sanity: sprint-lifecycle.md "Self-hosting" must still list the generated provider views its change surface drops');
+  for (const [site, spans] of [['external-review.md "Phase-scoped payload" consumer impl-review row', consumerRow.split('|')[3] || ''], ['sprint-lifecycle.md "Self-hosting" framework change surface', selfHosting[1]]]) {
+    const globs = expand(spans);
+    const excluded = (rel) => globs.some((glob) => (glob.endsWith('/**') ? rel.startsWith(glob.slice(0, -2)) : rel === glob));
+    assert.deepStrictEqual(views.filter((rel) => !excluded(rel)), [], `${site}: the pathspec must exclude every generated provider view, or a review ships regenerated output to every reviewer`);
+    assert.deepStrictEqual(jsonMerge.filter(excluded), [], `${site}: the pathspec must keep the JSON-merge hook registrations in, as surfaceCheck does - they can hold user content, and a hand edit there would escape review (impl-review wave-1/iter-01 external #1)`);
+  }
+
+  const { repo, env, git } = sandboxGitRepo();
+  const body = Array.from({ length: 20 }, (_, index) => `line ${index + 1}`).join('\n');
+  for (const name of ['moved.txt', 'edited.txt']) fs.writeFileSync(path.join(repo, name), `${name}\n${body}\n`, 'utf8');
+  git('add', '.');
+  git('commit', '-q', '-m', 'base');
+  const base = git('rev-parse', 'HEAD').trim();
+  fs.mkdirSync(path.join(repo, 'dir'));
+  git('mv', 'moved.txt', 'dir/moved.txt');
+  git('mv', 'edited.txt', 'dir/edited.txt');
+  fs.appendFileSync(path.join(repo, 'dir/edited.txt'), 'one more line\n', 'utf8');
+  fs.writeFileSync(path.join(repo, 'new.txt'), 'new\n', 'utf8');
+  git('add', '-A');
+  git('commit', '-q', '-m', 'head');
+  const list = path.join(repo, 'surface.txt');
+  fs.writeFileSync(list, 'dir/moved.txt\ndir/edited.txt\nnew.txt\n', 'utf8');
+  const measure = (extra) => JSON.parse(runtimeCli(['surface-check', '--files', list, ...extra], { cwd: repo, env, stdio: 'pipe' })).files;
+  assert.strictEqual(measure([]), 3, 'without a range every listed path counts');
+  assert.strictEqual(measure(['--base', base, '--head', 'HEAD']), 2, 'with --base/--head the pure rename drops out, while the edited rename and the new file still count - a move with a content change is reviewable surface');
+});
+
+test('sprint-021 AC-7 (D7): agentLiveness turns a subagent transcript into running, done or a stall with its reason, and agent-liveness prints one STALL line per stalled agent and fails when it finds no transcript', () => {
+  const minute = (n) => Date.UTC(2026, 8, 29, 12, n);
+  const entry = (type, at, content, stopReason) => JSON.stringify({ type, timestamp: new Date(minute(at)).toISOString(), message: { role: type, content, ...(stopReason === undefined ? {} : { stop_reason: stopReason }) } });
+  const toolUse = (id) => ({ type: 'tool_use', id, name: 'Bash', input: {} });
+  const transcript = (...lines) => {
+    const text = `${lines.join('\n')}\n`;
+    return { text, size: Buffer.byteLength(text), mtimeMs: 5 };
+  };
+  const unchanged = ({ size, mtimeMs }) => ({ size, mtimeMs });
+  const opening = [entry('user', 0, [{ type: 'text', text: 'task' }]), entry('assistant', 1, [toolUse('t1')], 'tool_use'), entry('user', 2, [{ type: 'tool_result', tool_use_id: 't1', content: 'ok' }])];
+  const idle = transcript(...opening);
+  const openCall = transcript(...opening, entry('assistant', 3, [toolUse('t2')], 'tool_use'));
+  const done = transcript(...opening, entry('assistant', 4, [{ type: 'text', text: 'COMPLETED' }], 'end_turn'));
+  const torn = transcript(...opening, '{"type":"assistant","timest');
+  const ceilingMs = 600000;
+  const budgetMs = 30 * 60000;
+  const running = { status: 'running' };
+  const stalled = (reason) => ({ status: 'stalled', reason });
+  const cases = [
+    ['first check', undefined, idle, minute(5), undefined, running],
+    ['transcript grew since the last check', { size: idle.size - 1, mtimeMs: 5 }, idle, minute(5), undefined, running],
+    ['transcript mtime moved', { size: idle.size, mtimeMs: 4 }, idle, minute(5), undefined, running],
+    ['no progress and no open tool call', unchanged(idle), idle, minute(5), undefined, stalled('no-progress')],
+    ['a half-written last line is skipped, not read as progress', unchanged(torn), torn, minute(5), undefined, stalled('no-progress')],
+    ['open tool call inside the host command ceiling', unchanged(openCall), openCall, minute(3) + ceilingMs - 1, undefined, running],
+    ['open tool call at the host command ceiling', unchanged(openCall), openCall, minute(3) + ceilingMs, undefined, stalled('tool-call-overrun')],
+    ['growing but past the elapsed budget', undefined, idle, minute(0) + budgetMs + 1, budgetMs, stalled('over-budget')],
+    ['growing at exactly the elapsed budget', undefined, idle, minute(0) + budgetMs, budgetMs, running],
+    ['final answer, unchanged and over budget', unchanged(done), done, minute(0) + budgetMs * 2, budgetMs, { status: 'done' }],
+    ['transcript missing on the first check', undefined, null, minute(1), undefined, running],
+    ['transcript missing on two checks in a row', null, null, minute(1), undefined, { status: 'unobservable' }],
+  ];
+  for (const [label, previous, current, now, budget, expected] of cases) {
+    assert.deepStrictEqual(runtime.agentLiveness(previous, current, now, budget), expected, `${label}: sprint-lifecycle.md "Agent liveness" - a stall is no transcript advance since the last check with no tool call open inside the host's 10-minute command ceiling, or the elapsed budget passed; a just-dispatched agent gets one check to write its transcript`);
+  }
+
+  const configDir = mkTempDir();
+  const subagents = path.join(configDir, 'projects', 'project', 'session', 'subagents');
+  fs.mkdirSync(subagents, { recursive: true });
+  fs.writeFileSync(path.join(subagents, 'agent-a1.jsonl'), idle.text, 'utf8');
+  fs.writeFileSync(path.join(subagents, 'agent-b2.jsonl'), done.text, 'utf8');
+  const env = { ...process.env, CLAUDE_CONFIG_DIR: configDir };
+  const watch = (agents) => {
+    try {
+      return { status: 0, stdout: runtimeCli(['agent-liveness', '--agents', agents, '--interval', '1'], { env, stdio: 'pipe' }) };
+    } catch (error) {
+      return { status: error.status, stderr: String(error.stderr) };
+    }
+  };
+  assert.deepStrictEqual(watch('a1,b2'), { status: 0, stdout: 'STALL a1 no-progress\n' }, 'the command resolves each transcript under $CLAUDE_CONFIG_DIR/projects/<project>/<session>/subagents/, drops a finished agent silently, prints one STALL line for an agent whose transcript did not move between two checks, and returns once none is left running');
+  const missing = watch('zz9');
+  assert.ok(missing.status === 2 && /no transcript/.test(missing.stderr), `a transcript missing on two checks fails the command instead of printing a stall - a host whose transcripts it cannot find never gets a healthy agent stopped (providers.md "Agent liveness per host"); got ${JSON.stringify(missing)}`);
+});
+
+test('sprint-021 AC-10/AC-11 (D5): scratch-dir creates .asd/tmp/ beside the runtime on first use, prints its absolute path wherever it is run from, and the directory ignores itself so nothing written there is ever committed', () => {
+  const { repo, env, git } = sandboxGitRepo();
+  fs.mkdirSync(path.join(repo, '.asd'));
+  fs.copyFileSync(path.join(REPO_ROOT, '.asd/runtime.js'), path.join(repo, '.asd/runtime.js'));
+  git('add', '.');
+  git('commit', '-q', '-m', 'base');
+  const scratch = () => execFileSync(process.execPath, [path.join(repo, '.asd/runtime.js'), 'scratch-dir'], { cwd: mkTempDir(), env, encoding: 'utf8' }).trim();
+  const printed = scratch();
+  assert.strictEqual(printed, path.join(repo, '.asd', 'tmp'), 'artifact-layout.md "Scratch directory": the path is the runtime\'s own .asd/tmp/, independent of the caller\'s cwd');
+  fs.writeFileSync(path.join(printed, 'reviewer.return.md'), 'x\n', 'utf8');
+  assert.strictEqual(scratch(), printed, 'a second call on an existing directory prints the same path');
+  assert.strictEqual(git('status', '--porcelain', '--untracked-files=all'), '', 'the directory and its own .gitignore must be ignored with no root .gitignore entry - a consumer needs no migration, and a helper or return file never reaches a commit or a review');
+});
+
+test('sprint-021 AC-1/AC-2 (D1): pr ends at await-merge or await-closure and asd-sprint takes each chain exit; pr open mode commits and pushes its state.json.pr write before await-merge, pr merge mode republishes it if the PR head lacks it before merging and performs no part of the closure write, and scope step 1 carries every token of it', () => {
+  const definitions = readWorkflowDefinitions();
+  const exits = [...new Set(definitions.flatMap(({ phases, next }) => Object.values(next).flat().filter((target) => !phases.includes(target))))].sort();
+  assert.deepStrictEqual(exits, ['await-closure', 'await-merge'], 'AC-1: the chain ends at pr\'s two exits - the PR opened, then merged and awaiting closure; no definition ends at done any more, since pr never writes the terminal state');
+  const sprintSkill = canonText('.asd/skills/asd-sprint/SKILL.md');
+  const skillExits = /^SPRINT: .*\bNEXT:\s*<([^>]+)>/m.exec(sprintSkill);
+  assert.ok(skillExits && exits.every((exit) => skillExits[1].split('|').includes(exit)), 'asd-sprint must offer every chain exit in its return contract - an exit it cannot relay halts the sprint with no route');
+  assert.ok(sprintSkill.split('\n').some((line) => line.includes('`NEXT: await-closure`') && line.includes('Step 1A')), 'AC-2: asd-sprint routes pr\'s `NEXT: await-closure` to its closure request (Step 1A)');
+
+  const closure = sectionOf('.asd/rules/sprint-lifecycle.md', 'PR phase').split('**Closure write**')[1].split('\n\n')[0];
+  const tokens = [...new Set([...closure.matchAll(/`([^`]+)`/g)].map((match) => match[1]).filter((token) => !token.endsWith('.md')))];
+  const writes = ['git mv', 'phase="done"', 'archived_at'];
+  assert.deepStrictEqual(writes.filter((token) => !tokens.includes(token)), [], 'sanity: sprint-lifecycle.md "PR phase" "Closure write" must name the archive move and the terminal fields this test holds pr merge mode free of');
+  const merge = sectionOf('.asd/workflows/asd-phase-pr.md', 'Merge mode');
+  assert.ok(merge.includes('`NEXT: await-closure`'), 'AC-1: pr merge mode returns `NEXT: await-closure` once the merge is confirmed');
+  assert.deepStrictEqual(writes.filter((token) => merge.includes(token)), [], 'AC-1: pr merge mode makes no write on git.base_branch - the archive move and terminal state belong to the next sprint\'s scope');
+  const openSteps = sectionOf('.asd/workflows/asd-phase-pr.md', 'Open mode').split(/\n(?=\d+[a-z]?\. )/);
+  const writeAt = openSteps.findIndex((step) => step.includes('`state.json.pr`'));
+  const nextAt = openSteps.findIndex((step) => step.includes('`NEXT: await-merge`'));
+  assert.ok(writeAt >= 0 && writeAt < nextAt, 'sanity: pr open mode must write `state.json.pr` in a step before the one emitting `NEXT: await-merge`');
+  const publish = openSteps.slice(writeAt, nextAt).join('\n').split('`state.json.pr`').slice(1).join('').replace(/`[^`]*`/g, '');
+  const unpublished = 'merge mode writes nothing, so pr.number reaches git.base_branch only through the squash merge; unpublished, base keeps pr=null and the merged sprint is found only by the head-branch fallback lookup (sprint-lifecycle.md "PR phase" "Merged-unclosed", impl-review wave-1/iter-01 C-1)';
+  assert.ok(/\bcommit/i.test(publish), `AC-2: pr open mode must commit its state.json.pr write before NEXT: await-merge - ${unpublished}`);
+  assert.ok(/\bpush/i.test(publish), `AC-2: pr open mode must push the sprint branch carrying its state.json.pr write before NEXT: await-merge - ${unpublished}`);
+  const mergeCall = merge.indexOf('"Merging a PR"');
+  assert.ok(mergeCall >= 0, 'sanity: pr merge mode must merge through git-strategy.md "Merging a PR", the site the checks below must precede');
+  const beforeMerge = merge.slice(0, mergeCall);
+  const unconfirmed = 'an open-mode push that failed or never ran leaves the PR head without pr.number, and the squash merge then lands pr=null on base, so the merged sprint is found only by the head-branch fallback lookup (impl-review wave-1/iter-02 external #1)';
+  assert.ok([...beforeMerge.matchAll(/`([^`]+)`/g)].some(([, span]) => span.includes('origin/') && span.includes('state.json')), `AC-2: pr merge mode must read state.json from the remote sprint branch before merging - ${unconfirmed}`);
+  const republish = beforeMerge.split(/[;.]\s/).filter((clause) => !clause.includes('`FAILED`')).join(' ').replace(/`[^`]*`/g, '');
+  assert.ok(/\bcommit/i.test(republish), `AC-2: pr merge mode must commit a local state.json.pr write the remote branch lacks before merging - ${unconfirmed}`);
+  assert.ok(/\bpush/i.test(republish), `AC-2: pr merge mode must push the sprint branch when the remote lacks pr.number, before merging - ${unconfirmed}`);
+  const scopeStep = stepOf(canonText('.asd/workflows/asd-phase-scope.md').split('\n## ')[0], 1);
+  assert.deepStrictEqual(tokens.filter((token) => !scopeStep.includes(token) && !scopeStep.includes(token.replace(/ /g, '-'))), [], 'AC-2: asd-phase-scope.md step 1 performs the closure write "PR phase" defines, so it must name each of its tokens (a gate name as its gate_decisions value, spaces hyphenated) - one dropped is a field the closing sprint never gets');
+});
+
+test('sprint-021 AC-2 (iter-03 external #1), AC-14: a sprint without pr.number is looked up by head branch at any phase - asd-sprint Step 1 runs the lookup "PR phase" "Merged-unclosed" defines with no phase gate, reads a MERGED hit as merged-unclosed and carries its number to the closure write, and adopts an OPEN hit only at phase="pr"; pr open mode runs the lookup before opening a PR, so it never opens a second one, after committing the phase "Merged-unclosed" says base carries', () => {
+  const home = sectionOf('.asd/rules/sprint-lifecycle.md', 'PR phase').split('**Merged-unclosed**')[1];
+  assert.ok(home, 'sanity: sprint-lifecycle.md "PR phase" must keep its **Merged-unclosed** paragraph, the lookup\'s home');
+  const spans = (text) => [...text.matchAll(/`([^`]+)`/g)].map(([, span]) => span);
+  const clauses = (text) => text.split(/[;.]\s/);
+  const lookup = spans(home.split('\n\n')[0]).find((span) => span.startsWith('gh pr list --head <state.branch>'));
+  const lost = 'a PR merged before open mode\'s state.json.pr write reached the sprint branch leaves base at pr=null, so without the head-branch lookup asd-sprint never requests closure and a pr re-run opens a second PR (impl-review wave-1/iter-03 external #1)';
+  assert.ok(lookup, `AC-2: "Merged-unclosed" must define the head-branch lookup for a sprint without pr.number - ${lost}`);
+  assert.ok(/--state all\b/.test(lookup), `AC-2: the head-branch lookup must list every PR state - gh pr list defaults to open PRs only and would never report the MERGED one - ${lost}`);
+  const outcomes = clauses(home.slice(home.indexOf(lookup)));
+  const mergedHit = outcomes.find((clause) => clause.includes('`MERGED`') && /merged-unclosed/i.test(clause));
+  const openHit = outcomes.find((clause) => clause.includes('`OPEN`') && /merge mode/.test(clause));
+  assert.ok(mergedHit, `AC-2: "Merged-unclosed" must read a MERGED head-branch hit as merged-unclosed - ${lost}`);
+  assert.ok(openHit, `AC-2: "Merged-unclosed" must resume merge mode on an OPEN head-branch hit - ${lost}`);
+  const phaseGated = (text) => spans(text).some((span) => /^phase\s*!?=/.test(span));
+  const anyPhase = 'a PR opened and merged by hand before the pr phase, or an open-mode MERGED hit whose closure was refused, leaves the sprint at an earlier phase with pr=null; a phase-gated lookup never runs for it and the sprint resumes that phase on git.base_branch instead of requesting closure';
+  const definition = clauses(home.split('\n\n')[0])[0];
+  assert.ok(definition.includes('`MERGED`'), 'sanity: "Merged-unclosed" must open by defining the state as a sprint PR gh reports MERGED');
+  assert.deepStrictEqual([definition, clauses(home).find((clause) => spans(clause).includes(lookup)), mergedHit].filter(phaseGated).map((clause) => clause.trim()), [], `AC-14: "Merged-unclosed"'s definition, its head-branch lookup and its MERGED outcome must name no phase="…" condition - ${anyPhase}`);
+  assert.ok(spans(openHit).includes('phase="pr"'), 'AC-14: "Merged-unclosed" must adopt an OPEN head-branch hit into merge mode only at phase="pr" - at an earlier phase the sprint has phases left to run, and merge mode would skip them');
+  const sprintSkill = canonText('.asd/skills/asd-sprint/SKILL.md');
+  const stepOne = sprintSkill.split('### Step 1:')[1].split('\n### ')[0].split('\n');
+  const detect = stepOne.find((line) => spans(line).includes(lookup));
+  assert.ok(detect && /merged-unclosed/i.test(detect), `AC-2: asd-sprint Step 1 must run the lookup "Merged-unclosed" defines, the same command, and read its MERGED hit as merged-unclosed - ${lost}`);
+  assert.ok(!phaseGated(detect), `AC-14: asd-sprint Step 1's merged-unclosed detection must run for every active sprint, with no phase="…" condition - ${anyPhase}`);
+  const openLine = stepOne.find((line) => line !== detect && spans(line).includes('OPEN'));
+  assert.ok(openLine && spans(openLine).includes('phase="pr"'), 'AC-14: asd-sprint Step 1 must say an OPEN head-branch hit is adopted into merge mode only at phase="pr" - detection now runs at every phase, and without the restriction an earlier-phase sprint with an open PR reads as ready to merge');
+  const approveStep = stepOf(sprintSkill.split('### Step 1A')[1].split('\n### ')[0], 2);
+  const approve = approveStep.replace(/`[^`]*`/g, '');
+  assert.ok(/\bnumber\b/i.test(approve), `AC-2: asd-sprint Step 1A must carry the head-branch lookup's PR number with the closure approval - scope's closure write has no other source for it when pr is null`);
+  const carry = clauses(approveStep).filter((clause) => /\bnumber\b/i.test(clause.replace(/`[^`]*`/g, '')));
+  assert.deepStrictEqual(carry.filter((clause) => /\bnull\b/.test(clause)), [], "AC-2: asd-sprint Step 1A must carry the confirmed PR number whenever detection found one, not only when the detected copy's pr is null - a sprint-branch copy holding pr.number over a base copy with pr=null reaches scope's closure write, which reads the base copy, with no number (impl-review wave-1/iter-04 #1)");
+  const scopeSpans = spans(stepOf(canonText('.asd/workflows/asd-phase-scope.md').split('\n## ')[0], 1));
+  assert.ok(scopeSpans.includes('pr.number'), 'AC-2: asd-phase-scope.md step 1\'s closure write must write pr.number as a field of its own, not only inside the gh pr view command - a closing sprint with pr=null is archived with no PR number and no way to read its merge commit');
+  const openSteps = sectionOf('.asd/workflows/asd-phase-pr.md', 'Open mode').split(/\n(?=\d+[a-z]?\. )/);
+  const createAt = openSteps.findIndex((step) => step.includes('"PR creation"'));
+  assert.ok(createAt > 0, 'sanity: pr open mode must open the PR through git-strategy.md "PR creation", in a step after its first, the site the lookup must precede');
+  const beforeCreate = openSteps.slice(0, createAt).join('\n');
+  assert.ok(beforeCreate.includes('"Merged-unclosed"'), `AC-2: pr open mode must run the head-branch lookup ("PR phase" "Merged-unclosed") before opening a PR - ${lost}`);
+  assert.ok(clauses(beforeCreate).some((clause) => clause.includes('`MERGED`') && clause.includes('`NEXT: await-closure`')), `AC-2: pr open mode must emit NEXT: await-closure on a MERGED head-branch hit, opening nothing - ${lost}`);
+  assert.ok(clauses(beforeCreate).some((clause) => clause.includes('`OPEN`') && /merge mode/.test(clause)), `AC-2: pr open mode must adopt an OPEN head-branch hit into merge mode instead of opening a second PR - ${lost}`);
+  const gate = clauses(home.split('\n\n')[0]).map(spans).filter((clauseSpans) => clauseSpans.includes('pr.number')).flat().map((span) => /^phase="([^"]+)"$/.exec(span)).find(Boolean);
+  assert.ok(gate, 'sanity: "Merged-unclosed" must name the `phase="…"` a PR carrying pr.number brings to base');
+  const unguarded = `"Merged-unclosed" says a PR pr open mode opened carries phase="${gate[1]}" to base because open mode commits that write before any push; the PR head is base's copy after a squash merge, so a write left uncommitted at the push leaves base at retro's phase and makes that statement false (impl-review wave-1/iter-04 #1)`;
+  const openPaths = clauses(beforeCreate).filter((clause) => !clause.includes('`MERGED`'));
+  const adoptAt = openPaths.findIndex((clause) => clause.includes('`OPEN`') && /merge mode/.test(clause));
+  const gateWrites = openPaths.map((clause, at) => ({ clause, at })).filter(({ clause }) => spans(clause).some((span) => span.replace(/"/g, '') === `phase=${gate[1]}`));
+  assert.ok(gateWrites.length > 0, `AC-2: pr open mode must write the phase="${gate[1]}" "Merged-unclosed" says base carries, before opening a PR - ${unguarded}`);
+  assert.deepStrictEqual(gateWrites.filter(({ clause }) => !/\bcommit/i.test(clause.replace(/`[^`]*`/g, ''))).map(({ clause }) => clause.trim()), [], `AC-2: every pr open mode clause writing phase="${gate[1]}" must commit it on the sprint branch, before step 3's PR-creation push - ${unguarded}`);
+  assert.ok(gateWrites.some(({ at }) => at <= adoptAt), `AC-2: pr open mode must commit phase="${gate[1]}" before adopting an OPEN hit into merge mode, so the adopted PR's head carries it too - ${unguarded}`);
+  assert.ok(openPaths.slice(0, adoptAt + 1).some((clause) => /self-hosting/i.test(clause) && /\bversion\b/i.test(clause)), 'AC-2: pr open mode must bump the self-hosting version before adopting an OPEN hit into merge mode - an adopted PR merged without it releases under the previous version (impl-review wave-1/iter-04 #1, folded medium)');
+});
+
+test('sprint-021 F-4/F-5: each review template\'s empty findings row and Severity values parse through reviewFindings, the parser persist-review runs on them - a template row the runtime rejects is a verdict no reviewer can persist', () => {
+  for (const [rel, heading] of [['.asd/templates/t_review.md', 'Findings'], ['.asd/templates/external-review/t_review-report.md', 'Kept findings']]) {
+    const lines = sectionOf(rel, heading).split('\n');
+    const table = lines.filter((line) => line.startsWith('|'));
+    assert.ok(table.length >= 3, `sanity: ${rel} "${heading}" must ship a header, a separator and a sample row`);
+    const empty = lines.map((line) => /^<!--\s*(\|.*\|)\s*-->$/.exec(line)).find(Boolean);
+    assert.ok(empty, `${rel} "${heading}" must show the row a reviewer leaves when there are no findings - F-5: the external report showed none, External Review wrote \`-\` and persist-review rejected it`);
+    let parsed;
+    try {
+      parsed = runtime.reviewFindings([table[0], table[1], empty[1]].join('\n'));
+    } catch (error) {
+      parsed = `rejected: ${error.message}`;
+    }
+    assert.deepStrictEqual(parsed, [], `${rel} "${heading}": the empty row the template shows must parse to no findings through runtime.reviewFindings - F-5`);
+    const severities = /\{\{([a-z/]+)\}\}/.exec(table[2].split('|')[2]);
+    assert.ok(severities, `sanity: ${rel} "${heading}" sample row must list the Severity values as {{a/b/...}}`);
+    const stated = lines.map((line) => /^<!--.*\bone of ([a-z|]+)/.exec(line)).filter(Boolean).flatMap((match) => match[1].split('|'));
+    for (const severity of [...new Set([...severities[1].split('/'), ...stated])]) {
+      let found;
+      try {
+        found = runtime.reviewFindings([table[0], table[1], `| 1 | ${severity} | a.md | d | f |`].join('\n')).map((finding) => finding.severity);
+      } catch (error) {
+        found = `rejected: ${error.message}`;
+      }
+      assert.deepStrictEqual(found, [severity], `${rel} "${heading}": Severity value "${severity}" the template offers must be one runtime.reviewFindings accepts - F-4`);
+    }
+  }
+});
+
+test('sprint-021 AC-13: no canon, README, AGENTS.md, runtime, hook, workflow definition or agent-memory line keeps a sentence or term the sprint removed - the companion finalize PR, the closure-pending record, await-user-closure, the temp file outside the repo, a dev running --apply, NEGATIVE_TTL_MS - except the legacy-recovery lines D2 keeps', () => {
+  const removed = [
+    'await-user-closure',
+    'companion PR',
+    'companion closure PR',
+    'companion branch',
+    'Finalize after closure',
+    'approve-before-finalize',
+    'creates `chore/finalize-sprint-',
+    'records `pr.state="closure-pending"`',
+    'Set `pr.state="closure-pending"`',
+    "state.pr.state === 'closure-pending'",
+    'temp file outside the repo',
+    'in the same task before marking it done',
+    'after any canonical edit, run `node .asd/sync.js --apply',
+    'for a dev to fix via `sync-apply`',
+    'the explanatory parenthetical naming the four view path shapes lives only in `AGENTS.md`',
+    'const NEGATIVE_TTL_MS',
+    'now + NEGATIVE_TTL_MS',
+    "CHAIN_EXITS = ['await-merge', 'done']",
+    '"pr": ["await-merge", "done"]',
+  ];
+  const memoryFiles = fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT), { recursive: true }).map((entry) => `${AGENT_MEMORY_ROOT}/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
+  assert.ok(memoryFiles.some((rel) => rel.startsWith(`${AGENT_MEMORY_ROOT}/asd-pm/`)), 'sanity: the sweep must reach every memory directory, those of retired agents included (artifact-layout.md "Leftover-term check")');
+  const swept = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/project/custom-coding-rules.md', '.asd/hooks/session-start.js', '.asd/runtime.js', '.asd/workflows/standard.json', '.asd/workflows/lite.json', ...memoryFiles];
+  const hits = swept.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => removed.filter((phrase) => line.includes(phrase)).map((phrase) => ({ at: `${rel}:${index + 1}`, rel, phrase, legacy: /\blegacy\b/i.test(line) }))));
+  assert.deepStrictEqual(hits.filter((hit) => !hit.legacy).map((hit) => `${hit.at} ${hit.phrase}`), [], 'each phrase is a line this sprint deleted (git diff main...HEAD) - one surviving elsewhere restates the companion finalize flow, the closure-pending record, the per-task dev sync or the 5-minute retry default the sprint removed. CHANGELOG.md and sprint folders are history and stay out of the sweep');
+  assert.deepStrictEqual(hits.filter((hit) => hit.legacy).map((hit) => `${hit.rel} ${hit.phrase}`), ['.asd/skills/asd-sprint/SKILL.md companion PR'], 'the exemption is exactly D2\'s legacy-recovery sentence in asd-sprint Step 1 (a legacy finalize PR found by gh pr list) - a new line may not escape the sweep by calling itself legacy');
+});
+
+test('sprint-021 AC-11: no dev memory, nor README\'s self-hosting answer, has a dev run sync.js --apply - sprint-lifecycle.md "Self-hosting" gives the view sync to the orchestrator, once per wave or fix round, and a dev\'s --apply rewrites the hash ledgers repo-wide under a sibling\'s commits', () => {
+  const selfHosting = sectionOf('.asd/rules/sprint-lifecycle.md', 'Self-hosting');
+  assert.ok(selfHosting.split(/(?<=\.)\s/).some((sentence) => /\bDev\b/.test(sentence) && /\bnever\b/.test(sentence) && sentence.includes('`sync.js --apply`') && /orchestrator/.test(sentence)), 'sanity: sprint-lifecycle.md "Self-hosting" must still say a dev never runs `sync.js --apply` and the orchestrator does, or the sweep below guards a rule that no longer exists');
+  const files = rosterMemoryFiles().filter((rel) => rel.startsWith(`${AGENT_MEMORY_ROOT}/asd-dev`));
+  assert.ok(files.some((rel) => rel.startsWith(`${AGENT_MEMORY_ROOT}/asd-dev/`)) && files.some((rel) => rel.startsWith(`${AGENT_MEMORY_ROOT}/asd-dev-critical/`)), 'sanity: the sweep must reach both dispatched dev memories');
+  const instructions = files.flatMap((rel) => {
+    const paragraph = canonText(rel).split(/\*\*How to apply:?\*\*:?/)[1];
+    return paragraph === undefined ? [] : paragraph.split(/\n\s*\n/)[0].split(/(?<=\.)\s/).map((sentence) => ({ rel, sentence }));
+  });
+  const readmeSelfHosting = canonText('README.md').split('\n').filter((line) => line.includes('`self_hosting: enabled`')).flatMap((line) => line.split(/(?<=\.)\s/).map((sentence) => ({ rel: 'README.md', sentence })));
+  const offending = [...instructions, ...readmeSelfHosting].filter(({ sentence }) => sentence.includes('--apply') && !/\b(?:never|not|no)\b|orchestrator/i.test(sentence)).map(({ rel }) => rel);
+  assert.deepStrictEqual(offending, [], `a memory's How-to-apply is the instruction a dev acts on, and README's self-hosting answer tells a reader who resyncs the views, so a sentence there naming --apply must deny it to the dev or give it to the orchestrator - D-1/D-2/D-3 (test-plan.md): ${offending.join(', ')}`);
+});
+
+test('sprint-021 AC-7/AC-10/AC-11: each literal the sprint states at two sites agrees - the reviewer return-file path at its home, README and both review workflows, the wrapped-CLI timeout floor at rule and wrapper, the stall decisions-log line at rule and template, and the liveness cadence at rule and host mapping', () => {
+  const returnFile = /`(\.asd\/tmp\/[^`]*\.return\.md)`/;
+  const home = (returnFile.exec(sectionOf('.asd/rules/review-policy.md', 'Coverage ledger')) || [])[1];
+  assert.strictEqual(home, '.asd/tmp/<sprint>-<phase>-<iteration id>-<reviewer>.return.md', 'review-policy.md "Coverage ledger" Persistence is the home of the internal reviewer\'s return-file path');
+  assert.ok(canonText('README.md').includes(`\`${home}\``), 'README.md must name the return file exactly as its home does');
+  for (const rel of ['.asd/workflows/asd-phase-design-review.md', '.asd/workflows/asd-phase-impl-review.md']) {
+    const flow = canonText(rel);
+    const phase = (/persist-review --phase ([a-z]+)/.exec(flow) || [])[1];
+    const named = (returnFile.exec(flow) || [])[1] || '';
+    assert.ok(phase && new RegExp(`^\\.asd/tmp/<NNN-slug>-${phase}-.+-<reviewer>\\.return\\.md$`).test(named), `${rel}: the payload names the return file persist-review --in reads, so it must instantiate the home's <sprint>-<phase>-<iteration id>-<reviewer> with this workflow's own --phase (${phase}) - a reviewer writing one name while the orchestrator reads another loses every return as an interrupted dispatch; got ${named}`);
+  }
+
+  const floor = (rel) => Number((/at least (\d+) minutes/.exec(canonText(rel)) || [])[1]);
+  assert.ok(floor('.asd/rules/external-review.md') >= 10 && floor('.asd/agents/asd-external-review.md') === floor('.asd/rules/external-review.md'), 'AC-11: the wrapped CLI\'s shell-timeout floor (at least 10 minutes) must be the same number in external-review.md "Outcome contract" and the wrapper\'s Tool policy, which acts on it');
+
+  const liveness = sectionOf('.asd/rules/sprint-lifecycle.md', 'Agent liveness');
+  const stallLine = (/`(- YYYY-MM-DD — stall: [^`]+)`/.exec(liveness) || [])[1];
+  assert.ok(stallLine && canonText('.asd/templates/t_decisions-log.md').split('\n').includes(stallLine), 'AC-7: a second stall of a dispatch is counted from its decisions-log lines, so t_decisions-log.md must ship the stall line in the exact form "Agent liveness" writes');
+  const cadenceMinutes = Number((/at least every (\d+) minutes/.exec(liveness) || [])[1]);
+  const intervalSeconds = Number((/agent-liveness --interval (\d+)/.exec(canonText('.asd/rules/providers.md')) || [])[1]);
+  assert.ok(cadenceMinutes > 0 && intervalSeconds === cadenceMinutes * 60, `AC-7: providers.md "Agent liveness per host" must run agent-liveness at the cadence "Agent liveness" sets - ${cadenceMinutes} min vs --interval ${intervalSeconds} s`);
 });
 
 // ===========================================================================

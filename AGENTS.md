@@ -46,7 +46,7 @@ When subsystem decomposition is enabled (`project.subsystem_decomposition`), per
 
 - Never modify workflow infrastructure (`.asd/rules/`, `.asd/templates/`, generated agent/skill/hook trees). Only `/asd-init`/`$asd-init` edits settings — run by the user, or by `impl` for a plan-declared settings change — or by a release migration `/asd-update`/`$asd-update` runs, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent.
 - All project work flows through `/asd-sprint`/`$asd-sprint`. No ad-hoc edits to project code outside a sprint.
-- One active sprint at a time. New sprint blocked until active one archived.
+- One active sprint at a time. New sprint blocked until active one archived, except a merged sprint whose closure the user approves as the new sprint starts.
 <!-- asd:end -->
 
 ## This repo (framework source) — deltas from the block above
@@ -61,7 +61,7 @@ This repo **IS the ASD (Agentic Software Development) framework** — its source
 
 ### Override: infrastructure is the work, not read-only
 
-The block's "never modify workflow infrastructure" hard rule is **lifted** for exactly the canonical paths named in `.asd/rules/sprint-lifecycle.md` "Self-hosting" — editing them IS the work here. Unchanged: generated `.claude/`, `.codex/`, `.agents/skills/` (and any full-file target's ownership-marker comment) stay read-only always. Never hand-edit a generated file — edit its `.asd/` canonical source, then run `node "$(git rev-parse --show-toplevel)/.asd/sync.js" --apply <generated-view-path...>` (pass generated view paths, never `.asd/` canon: `.claude/agents/<name>.md`, `.codex/agents/<name>.toml`, `.claude/skills/<name>/SKILL.md`, `.agents/skills/<name>/SKILL.md`) — the absolute form is self-locating, a bare relative path only resolves from the repo root. Canon changes ripple across the framework and across both provider views, so make them deliberately and check every mirror in "Cross-file consistency" below.
+The block's "never modify workflow infrastructure" hard rule is **lifted** for exactly the canonical paths named in `.asd/rules/sprint-lifecycle.md` "Self-hosting" — editing them IS the work here. Unchanged: generated `.claude/`, `.codex/`, `.agents/skills/` (and any full-file target's ownership-marker comment) stay read-only always. Never hand-edit a generated file — edit its `.asd/` canonical source, dev agents stop there and never run `sync.js --apply`; the orchestrator syncs once per wave or fix round, passing generated view paths (never `.asd/` canon) in the absolute self-locating form `node "$(git rev-parse --show-toplevel)/.asd/sync.js" --apply <generated-view-path...>` (`sprint-lifecycle.md` "Self-hosting"). Canon changes ripple across the framework and across both provider views, so make them deliberately and check every mirror in "Cross-file consistency" below.
 
 Root `AGENTS.md`'s managed block is generated from `t_AGENTS.md` exactly as in any consumer project; this repo's own prose lives below `<!-- asd:end -->`, where sync never reaches it.
 
