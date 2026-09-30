@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:dd93fc548477ff6fe73b40470675079fb3a961479ed4022031eb4bc465dc8b2f content_digest=sha256:04528e95150ba4676393b29b38c8fdadac2c96a8ebca7234bcf0c2a110ec2c38 asd_version=13.4.0 schema=1
+# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:4cb94e6d7f2a9e1d960308df0075be86a930cf24be86e347b22e8daaeb2d9128 content_digest=sha256:20f88d680cf22b53bbae738111ca94512df7e1e5dbd58d39b8af20f01466437a asd_version=13.4.0 schema=1
 name: asd-sprint
 description: "Starts a new ASD sprint or resumes the active one, dispatching the matching asd-phase-* skill and routing phase signals back to the user. Use when the user runs $asd-sprint or asks to start, continue, resume, or work on an ASD sprint."
 ---
@@ -14,8 +14,8 @@ Operation mapping: see `.asd/rules/providers.md`.
 
 ## Operations used
 - Read files / search repo — detect active sprint; read state.json, its frozen workflow definition `.asd/workflows/<workflow>.json` (`sprint-lifecycle.md` "Workflows"), config.yaml, custom-common-rules.md
-- Run command — `git status`, `git branch --show-current`; `gh pr view`/`gh pr list` (merged-unclosed detection), `git fetch`/`git show`/`git ls-remote --tags origin`/`gh release view` (release retry check), `gh pr merge` (a legacy finalize PR only); decisions-log rotation (rename, copy template, commit those paths)
-- Request user decision — new-sprint confirm, resume/abort choice (never free-form scope text)
+- Run command — `git status`, `git branch --show-current`; `gh pr view`/`gh pr list` (merged-unclosed detection), `git fetch`/`git show`/`git log`/`git ls-remote --tags origin`/`gh release view` (release retry check), `gh pr merge` (a legacy finalize PR only); decisions-log rotation (rename, copy template, commit those paths)
+- Request user decision — new-sprint confirm, resume/abort choice, release retry or continue (never free-form scope text)
 - Delegate to skill — phase skills, plus `asd-init` per "Skills dispatched"
 - No other writes — phase skills and their inline orchestrator own writes
 
@@ -28,7 +28,7 @@ Before a phase-skill delegation below, rotate the decisions log when `.asd/rules
 - Each, whatever its `phase`: `gh pr view <pr.number> --json state,mergeCommit` reporting `MERGED` — or, with no `pr.number`, a `MERGED` hit of `gh pr list --head <state.branch> --state all --json number,state,mergeCommit` (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"), its number carried to the closure write — makes it **merged-unclosed**, whatever `pr.state` records (legacy `closure-pending` included) — unless `gh pr list --head chore/finalize-sprint-<NNN-slug> --state all` finds a legacy companion PR: an `OPEN` one is merged per `git-strategy.md` "Merging a PR"; an `OPEN` or `MERGED` one closes the sprint on `git.base_branch`, so it is no longer active and gets no closure write.
 - A `CLOSED` head-branch hit counts as no hit. A head-branch lookup that cannot reach `gh` outside `phase="pr"` warns and resumes the sprint ("Merged-unclosed"); any other `gh` failure is FAILED naming the fix for its cause (`git-strategy.md` "PR creation").
 - 0 active → new-sprint flow
-- 1 active, merged-unclosed, `self_hosting: enabled`, its `v<asd_version>` tag or release missing → release retry ("Merged-unclosed"): dispatch `asd-phase-pr` with the confirmed PR number; its merge mode, the PR already `MERGED`, runs only the release
+- 1 active, merged-unclosed, `self_hosting: enabled`, its release commit, `v<asd_version>` tag or release missing → release retry ("Merged-unclosed"): request user decision, each time — retry dispatches `asd-phase-pr` with the confirmed PR number, its merge mode running only the release; continue takes the route below, carrying that choice
 - 1 active, merged-unclosed otherwise → new-sprint flow (Step 2A), carrying its path and the merged PR's number detection confirmed, whichever copy or lookup it came from
 - 1 active otherwise → resume flow; an `OPEN` head-branch hit changes nothing here, pr open mode adopting it at `phase="pr"` only ("Merged-unclosed")
 - >1 → emit FAILED "multiple active sprints found, manual cleanup needed"
