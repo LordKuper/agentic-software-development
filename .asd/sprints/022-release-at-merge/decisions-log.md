@@ -38,3 +38,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-30 — design-promote skipped: frozen prd/ux_spec/adr/c4 all false (lite empty scope)
 - 2026-09-30 — retro: retrospective.html written; 2 entries analysed (both covered by existing rules, 0 new actions), 3 systemic proposals (turn budget vs file count, bounded fail-first mutation runs, single-home tier tables); non-empty-log branch
 - 2026-09-30 — pr open mode: DoD verified (plan ticked, iter-03 all APPROVE, full suite 264/264 at 8c40552 with no code/test diff since, build+lint clean, retrospective present, no sprint stubs); asd_version 13.4.0 → 13.5.0 (feat highest, no breaking marker), CHANGELOG v13.5.0 added
+- 2026-09-30 — pr open mode: PR #58 opened after the user confirmed publication; state.json.pr written and pushed; NEXT await-merge
