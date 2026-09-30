@@ -1,4 +1,4 @@
-// ASD generated. Edit .asd/hooks/session-start.js. source_digest=sha256:18676c347015cb54c446b8ff78256910613d38c1bb313848d64e76c4bbd8377b content_digest=sha256:18676c347015cb54c446b8ff78256910613d38c1bb313848d64e76c4bbd8377b asd_version=13.3.0 schema=1
+// ASD generated. Edit .asd/hooks/session-start.js. source_digest=sha256:f0ebc50ed2cbe3557dd5100064feb4499091bdb14ffc2385c74ac2cd3b95eb23 content_digest=sha256:f0ebc50ed2cbe3557dd5100064feb4499091bdb14ffc2385c74ac2cd3b95eb23 asd_version=13.4.0 schema=1
 // ASD SessionStart hook (canonical, provider-agnostic).
 // No shebang: this file is never executed directly (`./session-start.js`),
 // always invoked as `node <path> --provider ...`, and every generated
@@ -219,7 +219,7 @@ function summary(active, provider, repoRoot) {
   const branch = state.branch || 'unknown';
   const verdict = lastReviewVerdict(reviewNode);
   const phases = phasesForState(repoRoot, state);
-  const next = phase === 'pr' ? (mergedUnclosed ? 'await-closure' : 'await-merge')
+  const next = phase === 'pr' ? (mergedUnclosed ? 'done' : 'await-merge')
     : !phases ? null
     : (phase === 'audit' && phases.includes('design') && isDesignCollapsed(state.documents)) ? 'plan'
     : nextPhase(phases, phase);
