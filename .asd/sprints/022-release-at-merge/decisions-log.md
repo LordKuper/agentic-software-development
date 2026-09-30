@@ -93,3 +93,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-09-30 — route impl-test entry 5: critical, dispatch HEAD 08e03ca
 - 2026-09-30 — impl-test: impacted set green (264/264), 0/0 tests added/removed (entry 5: two asserts added to an existing test, one review-fix removal carried); no manual-verification rows
 - 2026-09-30 — impl-review wave-1/iter-03: combined APPROVE, external APPROVE (gpt-6.1-sol ran normally); both latched. Reviewer DoD met on wave 1 of 1; terminal full-suite gate next
+- 2026-09-30 — impl-review DoD met: wave 1/1 iter-03 all APPROVE, terminal full suite green (264/264, e502bb1); green handoff approved adaptively; NEXT design-promote
