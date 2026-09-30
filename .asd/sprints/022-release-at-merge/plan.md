@@ -98,10 +98,10 @@ Settings change: user_gates=adaptive
 
 ### Task 8: opus/haiku → sonnet tiers (AC-8, scope amendment)
 Material risk: change: public contract
-- [ ] `.asd/agents/asd-ba.md`, `asd-ux.md`: `claude.model` sonnet, `effort` high
-- [ ] `.asd/agents/asd-architect.md`, `asd-reviewer-{correctness,efficiency,testing,documentation,combined}.md`: sonnet / xhigh
-- [ ] `.asd/agents/asd-dev.md`, `asd-tester.md` variants: mechanical `{"model":"sonnet","effort":"low"}`, critical `{"model":"sonnet","effort":"xhigh"}`; Codex sides unchanged
-- [ ] `.asd/rules/providers.md` "Agent tier matrix" rows and the "Task-class variants and routing" variants sentence; README model-tier table (both-provider columns); `model_families` untouched
+- [x] `.asd/agents/asd-ba.md`, `asd-ux.md`: `claude.model` sonnet, `effort` high
+- [x] `.asd/agents/asd-architect.md`, `asd-reviewer-{correctness,efficiency,testing,documentation,combined}.md`: sonnet / xhigh
+- [x] `.asd/agents/asd-dev.md`, `asd-tester.md` variants: mechanical `{"model":"sonnet","effort":"low"}`, critical `{"model":"sonnet","effort":"xhigh"}`; Codex sides unchanged
+- [x] `.asd/rules/providers.md` "Agent tier matrix" rows and the "Task-class variants and routing" variants sentence; README model-tier table (both-provider columns); `model_families` untouched
 
 ## Orchestrator lines (not dev Tasks)
 - After each wave: tick the wave's checkboxes (D5); `sync.js --apply` on changed views, or `--apply AGENTS.md`; `--check`; commit.

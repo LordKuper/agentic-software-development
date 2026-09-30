@@ -63,3 +63,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: Hard scope gate decided by the user. Host behaviour was verified before the AC per 019#P-1: the code.claude.com sub-agents doc lists `effort` values `low|medium|high|xhigh|max`; the model-config doc says Sonnet 5.5 supports all five and falls back downward; the field needs Claude Code ≥ v2.1.242. `sync.js` already accepts `xhigh`.
 - **Affected docs**: [sprint.md](sprint.md), [plan.md](plan.md)
 - 2026-09-30 — route Task 8: critical, dispatch HEAD 8950b32
+- 2026-09-30 — wave 4 (Task 8, 8730e31) landed and synced; flagged choices accepted (matrix row split, README intro, Claude column only); halted before impl-test entry 3 at the user's request
