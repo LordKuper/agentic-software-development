@@ -147,3 +147,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-02 — impl-review wave-1/iter-02: combined CONCERNS (F1 low: t_plan.md lines 19-20 "same placement" contradicts the order the rule home fixes), external APPROVE; every iteration-1 finding verified resolved by both; routed to impl review-fix mode (review_fixes_pending wave-1/iter-02). The turn plan applied (17 files above LARGE_WAVE_FILES 12) and the combined reviewer finished inside its 100-turn cap.
 
 - 2026-10-01 — route review-fix wave-1/iter-02: critical, dispatch HEAD 42b9d67
+
+- 2026-10-02 — impl fix for wave-1/iter-02: findings resolved (combined.md F1 by commit 51ea24e: t_plan.md placement phrases); hash ledgers refreshed
