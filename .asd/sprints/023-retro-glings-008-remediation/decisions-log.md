@@ -121,3 +121,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: wave-1/iter-01: combined CONCERNS (F1 medium, F2-F4 low; one interrupted attempt, turn cap) and external CONCERNS (F1 medium, F2 low). The reviewer's question on F1 was put to the user, who chose to lower the two thresholds and raise `maxTurns` of every agent below 100 to 100. That is added as AC-11 with Tasks 9 and 10 in a new last wave 5 (D11); combined F1 is recorded resolved by that decision. The amendment is accepted after the division point, so `floor_base=wave-1/1` and wave 1's `latched` is cleared (it held nothing). The remaining findings (combined F2-F4, external F1-F2) route to impl review-fix mode.
 - **Rationale**: Hard `new or changed scope` gate (`checkpoints.md` "Gate policy") and the reviewer-question protocol (`review-policy.md` "Gate Verdict Format"), decided by the user; amended AC-11 counts from iteration 1 for its own floor.
 - **Affected docs**: [sprint.md](sprint.md), [plan.md](plan.md)
+
+- 2026-10-01 — route review-fix wave-1/iter-01: critical, dispatch HEAD 73fd70e

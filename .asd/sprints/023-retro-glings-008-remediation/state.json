@@ -1,7 +1,7 @@
 {
   "sprint_id": "023-retro-glings-008-remediation",
   "branch": "sprint/023-retro-glings-008-remediation",
-  "phase": "impl-review",
+  "phase": "impl",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -156,6 +156,12 @@
       "execution": "agent",
       "reason": "normal",
       "resolved_model": "sonnet"
+    },
+    "review-fix wave-1/iter-01": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "sonnet"
     }
   },
   "skipped_phases": [],
@@ -191,7 +197,7 @@
     }
   },
   "created_at": "2026-10-01T18:51:33.169Z",
-  "updated_at": "2026-10-01T22:39:32.734Z",
+  "updated_at": "2026-10-01T22:40:00.356Z",
   "review_fixes_pending": "wave-1/iter-01",
   "test_defects_pending": null,
   "pr": null,
