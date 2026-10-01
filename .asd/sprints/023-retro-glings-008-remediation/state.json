@@ -1,7 +1,7 @@
 {
   "sprint_id": "023-retro-glings-008-remediation",
   "branch": "sprint/023-retro-glings-008-remediation",
-  "phase": "impl-test",
+  "phase": "impl-review",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -215,10 +215,10 @@
       "latched": {}
     },
     "impl": {
-      "wave": 1,
+      "wave": 2,
       "waves": [
         {
-          "iteration": 2,
+          "iteration": 3,
           "verdicts": {
             "iter-01": {
               "combined": "CONCERNS",
@@ -227,13 +227,21 @@
             "iter-02": {
               "combined": "CONCERNS",
               "external": "APPROVE"
+            },
+            "iter-03": {
+              "combined": "APPROVE",
+              "external": "APPROVE"
             }
           },
           "iteration_heads": {
             "iter-01": "ecadbcaaabf3bca25a14e02d154696683411ad00",
-            "iter-02": "5c3aead46d5d72538620566e7781bf857cc6d641"
+            "iter-02": "5c3aead46d5d72538620566e7781bf857cc6d641",
+            "iter-03": "e42a6bae21f2b3436b85d1a78c4dd47f2793135f"
           },
-          "latched": {}
+          "latched": {
+            "combined": 3,
+            "external": 3
+          }
         },
         {
           "iteration": 0,
@@ -245,7 +253,7 @@
     }
   },
   "created_at": "2026-10-01T18:51:33.169Z",
-  "updated_at": "2026-10-01T23:37:53.211Z",
+  "updated_at": "2026-10-01T23:41:06.395Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

@@ -153,3 +153,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-01 — route impl-test entry 6: critical, dispatch HEAD 4d69469
 
 - 2026-10-02 — impl-test: impacted set green (272/272), 0 added/0 removed (one existing test extended) tests (entry 6, HEAD analysed 24dd0d0); no defects, no manual-verification row
+
+- 2026-10-02 — impl-review wave-1/iter-03: combined APPROVE (no findings at floor medium), external inherited APPROVE (latched from iter-02); wave 1 roster met → wave 2
