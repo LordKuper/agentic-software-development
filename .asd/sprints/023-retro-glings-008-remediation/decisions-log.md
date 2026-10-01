@@ -71,3 +71,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-01 — route Task 4, Task 5: critical, dispatch HEAD 4148bf9
 
 - 2026-10-01 — route Task 6: standard, dispatch HEAD 3a3d147
+
+## 2026-10-01 — impl assessment (initial mode) accepted adaptively
+
+- **Decision**: Tasks 1-6 done in 3 waves (1: runtime.js, rule docs, git/layout/external/style; 2: workflows and skills, agents and templates; 3: README plus one phrase in sprint-lifecycle.md), a memory-fix by the `asd-external-review` owner after wave 2's sync (`memory-check` clean), per-wave `sync.js --apply`; build, lint and sync clean at 1f3bb74; every round path authorised. Flagged choices dispositions, no earlier decision reversed (searched the log): Task 1's `thresholds` replacing `threshold` in `waves.json` (readers use `waves` and `head` only; Task 2 text matches), case-folded `wave`/`iter`/`iteration` patterns, `_` as a word break in file names, extra git flags with an exit-2 guard, `line: null` for name hits — accepted; Task 2's `Test-only` placement, D9 "none declared → standard" carried literally, turn plan scoped to impl-review — accepted; its open items closed (Task 5 orders `Test-only` after `Material risk` and before `Reachability` in `t_plan.md`; Task 6 reads the "Impl phase" wave rule as covering the Task's agent); Task 3's three citations-only choices, Task 4's step 6 "dev reads as that agent", dropped ", not restated here" at scope step 2a, impl-review steps 8-9 reusing impl-test step 1a for routing, Task 5's `; runs: <n>` in both proof forms — accepted. `tests/run.js` repoints and new asserts are left to impl-test (audit "Risks").
+- **Rationale**: Adaptive impl assessment gate (`checkpoints.md`): all dev signals COMPLETED, no unresolved material alternative, evidence recorded.
+- **Affected docs**: [plan.md](plan.md)

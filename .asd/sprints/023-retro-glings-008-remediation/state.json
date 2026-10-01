@@ -60,6 +60,13 @@
       "reason": "designs D1-D9 follow audit recommendations and the user-settled contradictions; every audit site assigned; surface 21/100",
       "evidence": "plan.md; audit.md Gaps; surface-check files=21 breach=false",
       "artifact_revision": "plan.md@plan"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "Tasks 1-6 done, build+lint clean, sync clean, memory-check clean, flagged choices resolved, authorised paths only, plan fully ticked",
+      "evidence": "1f3bb74",
+      "artifact_revision": "HEAD 1f3bb74"
     }
   ],
   "task_routing": {
@@ -120,7 +127,7 @@
     }
   },
   "created_at": "2026-10-01T18:51:33.169Z",
-  "updated_at": "2026-10-01T19:53:12.055Z",
+  "updated_at": "2026-10-01T19:54:59.095Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
