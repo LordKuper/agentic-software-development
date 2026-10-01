@@ -53,3 +53,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: The user accepted sprint.md AC-1…AC-9 as written and declined the offered split of AC-7 (tier-table generation) into its own sprint. Retro intake, 5 candidates, all included: 022#P-1 → AC-1 (merged with Glings 008 A-4 and P-3), 022#P-2 → AC-6, 022#P-3 → AC-7, 021#A-1 → AC-8, 021#P-1 → AC-9. Glings 008 A-1, A-6, A-8 and P-2 became AC-2, AC-4, AC-3 and AC-5. Criterion cost of each included row: 0 iterations charged, 0 fix rounds charged. Documents frozen: audit true; prd, ux_spec, adr, c4 false (config).
 - **Rationale**: Hard scope and retro-intake gates (`checkpoints.md` "Gate policy"), decided by the user.
 - **Affected docs**: [sprint.md](sprint.md), [.asd/project/retro-backlog.md](../../project/retro-backlog.md)
+
+## 2026-10-01 — Audit contradictions settled; AC-2, AC-4 and AC-7 amended
+
+- **Decision**: The user settled three audit contradictions. AC-2 narrowed to "rules, workflows and phase skills read after Step 0", with the skill's own text and the session-start files stated as the pre-fetch copy and an unreachable remote warning and continuing. AC-4 keeps its runtime check at the orchestrator's memory commit; the false "no hook" premise is dropped and a dev's or tester's self-commit is not gated by it. AC-7 narrowed: remove `providers.md` "Agent tier matrix" (home becomes agent frontmatter plus manifest `model_families`), the README tier table stays as the one mirror, no generator. Audit accepted by the orchestrator (adaptive): every section present, all nine criteria deliverable.
+- **Rationale**: Hard audit-contradiction and scope-change gates (`checkpoints.md` "Gate policy"), decided by the user; the AC-7 amendment is pre-division, so no `floor_base`.
+- **Affected docs**: [sprint.md](sprint.md), [audit.md](audit.md)
