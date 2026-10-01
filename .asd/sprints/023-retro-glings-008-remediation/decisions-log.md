@@ -105,3 +105,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-02 — impl fix for impl-test defects: impl test-fix: defects D-1 resolved
 
 - 2026-10-01 — route impl-test entry 3: standard, dispatch HEAD c0d2125
+
+- 2026-10-02 — impl-test: impacted set green (272/272), 0 added/0 removed tests (entry 3, HEAD analysed 53e7ffe); no defects, no manual-verification row (the Codex-host manifest read stays a post-merge orchestrator check)
