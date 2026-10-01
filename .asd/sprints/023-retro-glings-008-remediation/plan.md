@@ -63,25 +63,25 @@ Sprint-specific: every site `audit.md` "Touched areas" lists for an AC is update
 ### Task 1: runtime.js — wave division, memory-check, upstream rows
 Material risk: change: workflow gate
 Reachability: `review-waves` writes `waves.json` with the added `lines/files/bytes/thresholds` fields at the division point; `wave-files` and impl-review read only `waves` and `head`; interrupted after the write, the file holds the added fields and every reader still works
-- [ ] AC-1 (D1): add `WAVE_THRESHOLD_FILES`, `WAVE_THRESHOLD_BYTES`, `LARGE_WAVE_FILES` (after `SURFACE_CAP_FILES` and `MAX_REVIEW_WAVES`), extend `reviewWaveCount`, measure bytes and report the new fields in `reviewWavesCommand`, extend `waves.json`, update the `review-waves` usage and the exports
-- [ ] AC-4 (D4): add the `memory-check` subcommand with its patterns and exit codes, dispatch it from `main()`, add it to the usage string and exports
-- [ ] AC-8 (D8): `retroCandidates` keeps `asd` rows outside self-hosting tagged `upstream: true`; update its doc comment
+- [x] AC-1 (D1): add `WAVE_THRESHOLD_FILES`, `WAVE_THRESHOLD_BYTES`, `LARGE_WAVE_FILES` (after `SURFACE_CAP_FILES` and `MAX_REVIEW_WAVES`), extend `reviewWaveCount`, measure bytes and report the new fields in `reviewWavesCommand`, extend `waves.json`, update the `review-waves` usage and the exports
+- [x] AC-4 (D4): add the `memory-check` subcommand with its patterns and exit codes, dispatch it from `main()`, add it to the usage string and exports
+- [x] AC-8 (D8): `retroCandidates` keeps `asd` rows outside self-hosting tagged `upstream: true`; update its doc comment
 
 ### Task 2: sprint-lifecycle.md and providers.md — division, plan shape, retro intake, routing, matrix
 Material risk: change: workflow gate
-- [ ] AC-1 (D1): `sprint-lifecycle.md` "Review iteration counters" Division point and Division (files and bytes, cite the `runtime.js` symbols, `waves.json` fields); `providers.md` "Dispatch payload header" (the turn plan inside the `Turn budget:` line, "maxTurns is not the lever" wording kept consistent)
-- [ ] AC-5 (D5): `sprint-lifecycle.md` "Plan file format" (the `Test-only` declaration beside Material risk, Reachability and Settings change, Wave declaration and Decomposition rules), "Phases" (L40 and the cycle bullets), phase-table rows L131-132, "Impl phase" L244, "Impl-test phase" entry-1 handover L258-266; `providers.md` role-context row for `asd-tester` (L120)
-- [ ] AC-7 (D7): `providers.md` delete "Agent tier matrix", rehome any matrix fact with no frontmatter source, repoint every citation of the matrix found by repo grep (L42 and any other)
-- [ ] AC-8 (D8): `sprint-lifecycle.md` "Retro intake", "Retro phase" Home line, phase-table scope row
-- [ ] AC-9 (D9): `providers.md` "Task-class variants and routing" (L134 re-entry sentence, L140 `priorTier` sentence, the scope rule)
+- [x] AC-1 (D1): `sprint-lifecycle.md` "Review iteration counters" Division point and Division (files and bytes, cite the `runtime.js` symbols, `waves.json` fields); `providers.md` "Dispatch payload header" (the turn plan inside the `Turn budget:` line, "maxTurns is not the lever" wording kept consistent)
+- [x] AC-5 (D5): `sprint-lifecycle.md` "Plan file format" (the `Test-only` declaration beside Material risk, Reachability and Settings change, Wave declaration and Decomposition rules), "Phases" (L40 and the cycle bullets), phase-table rows L131-132, "Impl phase" L244, "Impl-test phase" entry-1 handover L258-266; `providers.md` role-context row for `asd-tester` (L120)
+- [x] AC-7 (D7): `providers.md` delete "Agent tier matrix", rehome any matrix fact with no frontmatter source, repoint every citation of the matrix found by repo grep (L42 and any other)
+- [x] AC-8 (D8): `sprint-lifecycle.md` "Retro intake", "Retro phase" Home line, phase-table scope row
+- [x] AC-9 (D9): `providers.md` "Task-class variants and routing" (L134 re-entry sentence, L140 `priorTier` sentence, the scope rule)
 
 ### Task 3: git-strategy, artifact-layout, external-review, code-style
 Material risk: change: workflow gate
-- [ ] AC-2 (D2): `git-strategy.md` "Branch" states the Step 0 mechanics (two cases, refusal halts, offline warns)
-- [ ] AC-4 (D4): `artifact-layout.md` "Agent memory" content rule; `git-strategy.md` "Commit before review" runs `memory-check` at the orchestrator's memory commit
-- [ ] AC-3 (D3): `external-review.md` "OS-specific invocation" (L13, L21-23, keep the `<<'EOF'` and `@'` tokens), "Phase-scoped payload" (L53, L65): the manifest by path, the wrapper writes nothing
-- [ ] AC-5 (D5): `code-style.md` §17 L113 the test-only carve-out sentence
-- [ ] AC-6 (D6): `code-style.md` §17 the bounded-proof sentence at the content-contract bullet
+- [x] AC-2 (D2): `git-strategy.md` "Branch" states the Step 0 mechanics (two cases, refusal halts, offline warns)
+- [x] AC-4 (D4): `artifact-layout.md` "Agent memory" content rule; `git-strategy.md` "Commit before review" runs `memory-check` at the orchestrator's memory commit
+- [x] AC-3 (D3): `external-review.md` "OS-specific invocation" (L13, L21-23, keep the `<<'EOF'` and `@'` tokens), "Phase-scoped payload" (L53, L65): the manifest by path, the wrapper writes nothing
+- [x] AC-5 (D5): `code-style.md` §17 L113 the test-only carve-out sentence
+- [x] AC-6 (D6): `code-style.md` §17 the bounded-proof sentence at the content-contract bullet
 
 ### Task 4: workflows and skills
 Material risk: change: workflow gate
@@ -96,6 +96,7 @@ Reachability: `asd-sprint` Step 0 writes the local base ref when `/asd-sprint` i
 Material risk: change: workflow gate
 - [ ] AC-3 (D3): `asd-external-review.md` description L4, the Codex-block `wraps_invoke_args` `-p` string (keep `--effort xhigh`), L47, L58, L65, L68, L74, L76, L77, L79, L107; `t_prompt-external-impl.md` and `t_prompt-external-design.md` L12-16 and L20 (path slot)
 - [ ] AC-5 (D5): `asd-tester.md` description L4, Role L20, Operating contract L24-26 (a plan-declared test-only Task); `t_plan.md` format-rule line L16 and L22 plus one `Test-only:` example Task block
+- [ ] AC-3 (D3): `providers.md` "External review symmetry" (~L91) says "stdin-piped prompt+diff": reword to the prompt alone on stdin with the scope manifest and diff by path (added after wave 1 from Task 3's consumer search; `providers.md` is otherwise untouched in wave 2)
 - [ ] AC-6 (D6): `t_test-plan.md` "Added tests" `Regression proof` cell format (L45-47)
 
 ### Task 6: README.md mirror
