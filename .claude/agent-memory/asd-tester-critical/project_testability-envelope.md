@@ -118,6 +118,11 @@ with the finding ids in the assert message (a subset filter, not a `deepStrictEq
 load-bearing by emptying it, and hand its deletion to the next `impl-test` entry. That entry (019 entry 3)
 proves the deletion by appending a refuted line to a formerly exempted file: the sweep must now redden.
 
+At a plain `impl-test` entry there is no such round: ship the new phrase red and file a `D-N` against that memory
+file. The test-fix route and the owner's memory-fix dispatch land before the next entry, so no exemption list is needed.
+A sweep already red at baseline cannot be proven by a count: parse the `+ actual` hit list from its FAIL block and
+require the mutation's own `<file>:<line> <phrase>` in it, and a reword control to leave that list unchanged.
+
 Review-fix tester rows sit in the live tables when the next entry starts, with no `Entry log` row of their
 own. Rotate them with the previous entry's rows into its segment (`artifact-layout.md` "Test plan"
 Rotation), after carrying each review-fix removal row forward as a live `Removed tests` row that step 5
@@ -445,6 +450,13 @@ out-of-scope removal gate. Sprint 012 met this with the sprint-008 split test, w
 seam and recorded as `keep (rewritten in place)`, one duplicate assert dropped with its reason in the row.
 Same move for a test carrying a local copy of a derivation the runtime now owns (the documentation-economy
 test's rubric parser): point it at the runtime, don't keep two parsers.
+
+A test whose WHOLE subject the sprint retired is another case. Once an earlier entry's own commits put `tests/run.js`
+in the sprint's overall surface (`git diff <base>...HEAD --stat -- tests/run.js` lists it), deleting it is in-scope: say
+so with that evidence and flag the reading. Before deleting, read each assert for a property of a KEPT helper it pinned
+by accident: a retired CLI test was the only one feeding the shared list reader a CRLF list with a trailing blank line.
+Move that fixture into a surviving test (the list writer, and compare names, not the length) and mutate the reader.
+`split('\n')` alone is an equivalent mutant, because `trim()` already strips the `\r`; drop both.
 
 ## Authoring `tests/run.js`
 
