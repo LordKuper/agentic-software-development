@@ -107,12 +107,12 @@ Material risk: artifact: mirror doc
 
 ### Task 7: runtime.js — remove the surface cap
 Material risk: change: workflow gate
-- [ ] AC-10 (D10): delete `SURFACE_CAP_FILES`, the `surface-check` subcommand (CLI branch, usage entry, export) and the `surfaceCheck` helper with every function only it uses; keep any helper another command calls; set `WAVE_THRESHOLD_FILES` to the literal 34 with a purpose-only doc comment; update the exports and every doc comment that names the cap
+- [x] AC-10 (D10): delete `SURFACE_CAP_FILES`, the `surface-check` subcommand (CLI branch, usage entry, export) and the `surfaceCheck` helper with every function only it uses; keep any helper another command calls; set `WAVE_THRESHOLD_FILES` to the literal 34 with a purpose-only doc comment; update the exports and every doc comment that names the cap
 
 ### Task 8: rules, workflows, template and README — remove the surface cap
 Material risk: change: workflow gate
-- [ ] AC-10 (D10): `sprint-lifecycle.md` remove "Change surface declaration" and every `Change surface:`/override mention in "Plan file format" and the decomposition rules, and Scope amendment step 4; `checkpoints.md` remove the hard-list clause and the `change-surface cap override` inventory row; `asd-phase-impl-review.md` remove the division-point cap check bullet (and its "Preconditions" mentions); `asd-phase-plan.md` remove the measurement step; `t_plan.md` remove the `Change surface:` format-rule line and the Overview line; `README.md` remove the `surface-check` and cap mentions (runtime.js description, gates paragraph) and confirm accurate; grep every site named in D10 and list each in the completion signal
-- [ ] Keep the review and test "change surface" diff concept (`review-policy.md` "Change-surface rule", impl-test step 2, the framework generated-view exclusions in "Self-hosting") exactly as is
+- [x] AC-10 (D10): `sprint-lifecycle.md` remove "Change surface declaration" and every `Change surface:`/override mention in "Plan file format" and the decomposition rules, and Scope amendment step 4; `checkpoints.md` remove the hard-list clause and the `change-surface cap override` inventory row; `asd-phase-impl-review.md` remove the division-point cap check bullet (and its "Preconditions" mentions); `asd-phase-plan.md` remove the measurement step; `t_plan.md` remove the `Change surface:` format-rule line and the Overview line; `README.md` remove the `surface-check` and cap mentions (runtime.js description, gates paragraph) and confirm accurate; grep every site named in D10 and list each in the completion signal
+- [x] Keep the review and test "change surface" diff concept (`review-policy.md` "Change-surface rule", impl-test step 2, the framework generated-view exclusions in "Self-hosting") exactly as is
 
 ## Risks (optional)
 - AC-3 may not fully cure the heredoc failure: the fixed prompt (about 4.3 KB) stays in the heredoc and the Bash length cliff is only a memory note; the Codex-host path read is unverified in this repo (manual live check after merge).
