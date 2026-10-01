@@ -45,6 +45,7 @@ The AC source is `sprint.md` AC-1…AC-9 (lite). The inputs are `audit.md` ("Tou
   - The README model-tier table stays, the one mirror, under its existing pin test.
 - **D8 (AC-8), upstream rows.** In consumer mode `retroCandidates` stops dropping the latest retro's `asd` rows, tags each `upstream: true`, still drops `covered by:` rows; self-hosting output is unchanged and the `deferred` branch keeps its filter. "Retro intake" says a row with `upstream: true` is shown inside the scope gate as an upstream proposal for the framework repo (row id, guardrail, home), no question, never an `AC-N`, written to no backlog. The empty-array sentence keeps its words (`no question`, `no backlog write`, `decisions-log`) for a list with nothing to disposition.
 - **D9 (AC-9), per-delta routing.** `providers.md` "Task-class variants and routing" states: `priorTier` is the tier recorded under the same `task_routing` key, a re-dispatch of that id. An `impl-test entry N`, `review-fix <id>` or `impl-review <id> suite` id is new each time and carries no `priorTier`; its tier comes from the declared `Material risk` lines of the plan Tasks whose paths its delta touches (entry 1 and the first terminal run use every Task; none declared → standard). `routeTask` is unchanged. The sites restating the clamp cite it.
+- **D10 (AC-10, amendment), cap removal.** Remove the cap mechanism and nothing else: the `SURFACE_CAP_FILES` constant, the `surface-check` subcommand (CLI branch, usage entry, export) and the helpers only it uses, the plan's `Change surface: <n> files` line and its declaration rule, the override gate and its `gate_decisions` shape, the impl-review division-point cap check, the `asd-phase-plan.md` measurement step, and every README, template and checkpoints mention. A helper another command uses (for example the generated-view and pure-rename filters `review-waves` or `emit-manifest` call) stays, renamed only if its doc comment names the cap. `WAVE_THRESHOLD_FILES` becomes the literal `34` with its own purpose comment. The review/test "change surface" diff concept stays untouched. A repo grep for `surface-check`, `SURFACE_CAP`, `Change surface:`, `change-surface cap` and `cap override` lists every site; each is assigned to Task 7 (`runtime.js`) or Task 8 (the rest). This sprint's own `Change surface: 21 files` line stays as a record.
 
 **New homes cited across parallel Tasks** (exact file and heading):
 - `.asd/runtime.js` symbols `WAVE_THRESHOLD_FILES`, `WAVE_THRESHOLD_BYTES`, `LARGE_WAVE_FILES`, subcommand `memory-check` and the `upstream` field (Task 1), cited by Tasks 2, 3.
@@ -104,6 +105,15 @@ Material risk: artifact: mirror doc
 - [x] AC-5 (D5): `sprint-lifecycle.md` "Impl phase" (~L242, the wave-of-several-Tasks rule that says devs leave `plan.md` and a shared `MEMORY.md` untouched): read "devs" as the Task's agent, so a `Test-only` tester is covered (added after wave 2 from Tasks 4 and 5; `sprint-lifecycle.md` is otherwise untouched in wave 3)
 - [x] Confirm and update every README site the other Tasks affect: wave division and the `review-waves` description (L190, L327), the `memory-check` and `retro-candidates` descriptions (L327), the retro intake wording (L182), test-only Tasks (L178, L188, L229), and any citation of the removed matrix; the tier table stays. Record "README confirmed accurate" for each AC in the completion signal
 
+### Task 7: runtime.js — remove the surface cap
+Material risk: change: workflow gate
+- [ ] AC-10 (D10): delete `SURFACE_CAP_FILES`, the `surface-check` subcommand (CLI branch, usage entry, export) and the `surfaceCheck` helper with every function only it uses; keep any helper another command calls; set `WAVE_THRESHOLD_FILES` to the literal 34 with a purpose-only doc comment; update the exports and every doc comment that names the cap
+
+### Task 8: rules, workflows, template and README — remove the surface cap
+Material risk: change: workflow gate
+- [ ] AC-10 (D10): `sprint-lifecycle.md` remove "Change surface declaration" and every `Change surface:`/override mention in "Plan file format" and the decomposition rules, and Scope amendment step 4; `checkpoints.md` remove the hard-list clause and the `change-surface cap override` inventory row; `asd-phase-impl-review.md` remove the division-point cap check bullet (and its "Preconditions" mentions); `asd-phase-plan.md` remove the measurement step; `t_plan.md` remove the `Change surface:` format-rule line and the Overview line; `README.md` remove the `surface-check` and cap mentions (runtime.js description, gates paragraph) and confirm accurate; grep every site named in D10 and list each in the completion signal
+- [ ] Keep the review and test "change surface" diff concept (`review-policy.md` "Change-surface rule", impl-test step 2, the framework generated-view exclusions in "Self-hosting") exactly as is
+
 ## Risks (optional)
 - AC-3 may not fully cure the heredoc failure: the fixed prompt (about 4.3 KB) stays in the heredoc and the Bash length cliff is only a memory note; the Codex-host path read is unverified in this repo (manual live check after merge).
 - `asd-external-review`'s three transport memory files describe the old transport and cite sprint ordinals. Only the owner edits them, through a memory-fix dispatch.
@@ -117,10 +127,12 @@ Material risk: artifact: mirror doc
 | 1 | Task 1, Task 2, Task 3 |
 | 2 | Task 4, Task 5 |
 | 3 | Task 6 |
+| 4 | Task 7, Task 8 |
 
 - Task 4 depends on Tasks 1–3: it cites the `runtime.js` symbols, `Retro intake`, `Plan file format`, "Branch" and "Commit before review".
 - Task 5 depends on Tasks 2 and 3: it cites `Plan file format` (`Test-only`), `code-style.md` §17 and `external-review.md`.
 - Task 6 depends on Tasks 1–5: it mirrors every other edit.
+- Task 7 and Task 8 (scope amendment AC-10, new last wave) depend on Tasks 1–6: Task 8 edits files earlier Tasks edited and Task 7 changes a constant Task 1 derived from the cap.
 
 Orchestrator-only (outside every Task):
 - After each wave, once: `node "$(git rev-parse --show-toplevel)/.asd/sync.js" --apply <generated-view-path...>` for the generated views of the canon that wave edited (`asd-sprint`, `asd-phase-impl`, `asd-tester`, `asd-external-review`), then `sync.js --check`.

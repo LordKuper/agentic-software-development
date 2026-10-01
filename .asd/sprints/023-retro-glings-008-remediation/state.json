@@ -67,6 +67,13 @@
       "reason": "Tasks 1-6 done, build+lint clean, sync clean, memory-check clean, flagged choices resolved, authorised paths only, plan fully ticked",
       "evidence": "1f3bb74",
       "artifact_revision": "HEAD 1f3bb74"
+    },
+    {
+      "gate": "new or changed scope",
+      "decision_actor": "user",
+      "reason": "AC-10 remove the change-surface cap from ASD (never produced a real decision, always overridden)",
+      "evidence": "chat request 2026-10-01; decisions-log.md 2026-10-01 scope amendment AC-10; before impl-review division point, no floor_base",
+      "artifact_revision": "sprint.md@impl-test"
     }
   ],
   "task_routing": {
@@ -133,7 +140,7 @@
     }
   },
   "created_at": "2026-10-01T18:51:33.169Z",
-  "updated_at": "2026-10-01T19:55:13.877Z",
+  "updated_at": "2026-10-01T19:58:10.538Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

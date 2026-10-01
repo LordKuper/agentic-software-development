@@ -79,3 +79,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: [plan.md](plan.md)
 
 - 2026-10-01 — route impl-test entry 1: critical, dispatch HEAD e585822
+
+## 2026-10-01 — Scope amendment: AC-10 removes the change-surface cap
+
+- **Decision**: The user asked in chat to remove the change-surface cap from ASD entirely: it never led to a real decision, is always overridden and is a gate with no value. AC-10 is added to sprint.md. Tasks 7 (`runtime.js`) and 8 (rules, workflows, template, README) form a new last wave 4 in plan.md; D10 fixes the boundary: the cap mechanism goes, the review/test "change surface" diff concept and wave division stay, `WAVE_THRESHOLD_FILES` becomes the literal 34 because it was derived from the cap. Amendment accepted before impl-review's division point, so no `floor_base`. The audit boolean stays true. The running impl-test entry 1 is not interrupted; its pins on the cap tests are retired in the next impl-test entry, after wave 4.
+- **Rationale**: Hard `new or changed scope` gate (`checkpoints.md` "Gate policy"), decided by the user in chat. In this repo's archived sprints no `change-surface-cap-override` record exists; the user's stated experience (overrides in consumer projects) is taken as the evidence of purpose.
+- **Affected docs**: [sprint.md](sprint.md), [plan.md](plan.md)
