@@ -1,0 +1,1 @@
+[{"id":"F1","severity":"medium","location":"AC-1; `.asd/runtime.js:30`, `.asd/runtime.js:32`, `.asd/rules/providers.md:52`"},{"id":"F2","severity":"low","location":".asd/runtime.js:1135"},{"id":"F3","severity":"low","location":"`.asd/rules/sprint-lifecycle.md:378`, `.asd/rules/sprint-lifecycle.md:384`"},{"id":"F4","severity":"low","location":".asd/rules/sprint-lifecycle.md:9"}]

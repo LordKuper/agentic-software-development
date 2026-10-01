@@ -107,3 +107,17 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-01 — route impl-test entry 3: standard, dispatch HEAD c0d2125
 
 - 2026-10-02 — impl-test: impacted set green (272/272), 0 added/0 removed tests (entry 3, HEAD analysed 53e7ffe); no defects, no manual-verification row (the Codex-host manifest read stays a post-merge orchestrator check)
+
+## 2026-10-02 — impl-review division: 2 waves
+
+- **Decision**: First impl-review entry measured 1084 lines, 30 files, 315074 bytes against thresholds 3000 lines, 34 files, 300000 bytes (the new AC-1 axes: the byte axis fires) → n = 2. Wave 1 "engine and rules" (16 files): `.asd/runtime.js`, `tests/run.js`, `.asd/release-manifest.json`, the seven rule docs and the six agent-memory files. Wave 2 "workflows, skills, agents, templates, README" (14 files).
+- **Rationale**: `sprint-lifecycle.md` "Review iteration counters" Division; waves grouped by cohesion, neither above `LARGE_WAVE_FILES`.
+- **Affected docs**: [reviews/impl/waves.json](reviews/impl/waves.json)
+
+- 2026-10-02 — combined interrupted attempt 1 in wave-1/iter-01 (50-turn cap; partial output, no verdict token)
+
+## 2026-10-02 — impl-review wave-1/iter-01 verdicts; scope amendment AC-11
+
+- **Decision**: wave-1/iter-01: combined CONCERNS (F1 medium, F2-F4 low; one interrupted attempt, turn cap) and external CONCERNS (F1 medium, F2 low). The reviewer's question on F1 was put to the user, who chose to lower the two thresholds and raise `maxTurns` of every agent below 100 to 100. That is added as AC-11 with Tasks 9 and 10 in a new last wave 5 (D11); combined F1 is recorded resolved by that decision. The amendment is accepted after the division point, so `floor_base=wave-1/1` and wave 1's `latched` is cleared (it held nothing). The remaining findings (combined F2-F4, external F1-F2) route to impl review-fix mode.
+- **Rationale**: Hard `new or changed scope` gate (`checkpoints.md` "Gate policy") and the reviewer-question protocol (`review-policy.md` "Gate Verdict Format"), decided by the user; amended AC-11 counts from iteration 1 for its own floor.
+- **Affected docs**: [sprint.md](sprint.md), [plan.md](plan.md)
