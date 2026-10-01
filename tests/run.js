@@ -7477,6 +7477,9 @@ test('sprint-023 AC-2: asd-sprint runs Step 0 ahead of Step 1 and keeps Step 2B,
   assert.ok(stepZero.includes('`git-strategy.md` "Branch"') && !/--ff-only|git fetch/.test(stepZero), 'Step 0 must point at git-strategy.md "Branch", the one home of the fast-forward mechanics - restated here, the two homes drift');
 
   const forward = sectionOf('.asd/rules/git-strategy.md', 'Branch').split('\n').find((line) => line.startsWith('**Fast-forward**')) || '';
+  for (const [site, text] of [['Step 0', stepZero], ['git-strategy.md "Branch"', forward]]) {
+    assert.ok(/\bhalts?\b/.test(text) && /unreachable/i.test(text) && /\bwarns?\b/.test(text) && /local state/.test(text), `${site} must state both failure routes - a refusal halts and asks the user, an unreachable remote warns and continues on local state - or an offline Codex sandbox leaves the orchestrator no rule for a fetch that cannot run`);
+  }
   const commands = spans(forward).filter((span) => span.startsWith('git '));
   const refSpec = commands.find((span) => span.includes(':<base_branch>'));
   const fetchAll = commands.find((span) => span === 'git fetch origin');
