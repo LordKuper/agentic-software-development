@@ -101,8 +101,8 @@ Material risk: change: workflow gate
 
 ### Task 6: README.md mirror
 Material risk: artifact: mirror doc
-- [ ] AC-5 (D5): `sprint-lifecycle.md` "Impl phase" (~L242, the wave-of-several-Tasks rule that says devs leave `plan.md` and a shared `MEMORY.md` untouched): read "devs" as the Task's agent, so a `Test-only` tester is covered (added after wave 2 from Tasks 4 and 5; `sprint-lifecycle.md` is otherwise untouched in wave 3)
-- [ ] Confirm and update every README site the other Tasks affect: wave division and the `review-waves` description (L190, L327), the `memory-check` and `retro-candidates` descriptions (L327), the retro intake wording (L182), test-only Tasks (L178, L188, L229), and any citation of the removed matrix; the tier table stays. Record "README confirmed accurate" for each AC in the completion signal
+- [x] AC-5 (D5): `sprint-lifecycle.md` "Impl phase" (~L242, the wave-of-several-Tasks rule that says devs leave `plan.md` and a shared `MEMORY.md` untouched): read "devs" as the Task's agent, so a `Test-only` tester is covered (added after wave 2 from Tasks 4 and 5; `sprint-lifecycle.md` is otherwise untouched in wave 3)
+- [x] Confirm and update every README site the other Tasks affect: wave division and the `review-waves` description (L190, L327), the `memory-check` and `retro-candidates` descriptions (L327), the retro intake wording (L182), test-only Tasks (L178, L188, L229), and any citation of the removed matrix; the tier table stays. Record "README confirmed accurate" for each AC in the completion signal
 
 ## Risks (optional)
 - AC-3 may not fully cure the heredoc failure: the fixed prompt (about 4.3 KB) stays in the heredoc and the Bash length cliff is only a memory note; the Codex-host path read is unverified in this repo (manual live check after merge).
