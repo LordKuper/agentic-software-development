@@ -130,3 +130,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-01 — route impl-test entry 4: critical, dispatch HEAD b6059a0
 
 - 2026-10-02 — impl-test: impacted set green (272/272), 0 added/0 removed (two existing tests extended) tests (entry 4, HEAD analysed d498f12); no defects, no manual-verification row
+
+- 2026-10-01 — route Task 9: critical, dispatch HEAD 92816a5
+- 2026-10-01 — route Task 10: mechanical, dispatch HEAD 92816a5
