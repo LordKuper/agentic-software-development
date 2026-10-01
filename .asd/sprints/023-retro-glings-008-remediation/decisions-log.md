@@ -141,3 +141,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: [plan.md](plan.md)
 
 - 2026-10-01 — route impl-test entry 5: critical, dispatch HEAD d0af6d4
+
+- 2026-10-02 — impl-test: impacted set green (272/272), 0 added/0 removed (one stale fixture input repointed) tests (entry 5, HEAD analysed b115cbb); no defects, no manual-verification row
