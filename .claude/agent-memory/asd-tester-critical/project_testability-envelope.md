@@ -140,7 +140,9 @@ is actually derivable — measure that before claiming it is not. Coverage did n
 smaller and the exemption became a real assertion. That is the outcome to report plainly rather than
 dressing the round up with a new test.
 
-A scope amendment can land while an entry runs (read `git log -3` before each commit). When it retires a mechanism, add no
+A scope amendment can land while an entry runs (before each commit, run the permitted diff command from the entry's
+`HEAD analysed` to current; paths changed beyond the entry's own files mean one landed — or ask the orchestrator through
+the payload). When it retires a mechanism, add no
 new pin on it (drop the row that reads the retired constant), and list the existing pins it will break, by test name, in
 `test-plan.md` for the next entry instead of editing them: the orchestrator ruled the running entry is not interrupted.
 
@@ -436,8 +438,9 @@ is a real result, not a no-op: assertions added to existing tests never move it.
 **Why:** a reader comparing two identical counts concludes the gate proved nothing, when what it
 proved is that the entry's own commit is green — which nothing else in the sprint ever checks.
 
-**How to apply:** at gate time diff the recorded HEAD against current (`git log <recorded>..HEAD`),
-name the commits the earlier record could not cover, and state whether the count moved and why. Note
+**How to apply:** at gate time diff the recorded HEAD against current (`git diff --name-status <recorded>..HEAD`),
+name the paths the earlier record could not cover (commit subjects come from the orchestrator through the payload),
+and state whether the count moved and why. Note
 also that no test reads this repo's live `.asd/sprints/**` — every sprint reference in `tests/run.js`
 is a temp-root fixture — so editing `test-plan.md` cannot change the suite result and needs no re-run.
 
