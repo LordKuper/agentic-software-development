@@ -20,14 +20,12 @@ const LEDGER_ROW_EXAMPLE = { i: '<manifest id>', s: LEDGER_VOCABULARY.p, p: '<al
 const ROW_TYPES = Object.keys(LEDGER_VOCABULARY).filter((key) => Array.isArray(LEDGER_VOCABULARY[key]));
 /** The `n_a` shape: row type, then manifest id, then its allowed predicate list. Published beside the vocabulary under its own key, because `n_a` itself carries per-dispatch content. */
 const LEDGER_NA_SHAPE = Object.fromEntries(ROW_TYPES.map((type) => [type, { [LEDGER_ROW_EXAMPLE.i]: [LEDGER_ROW_EXAMPLE.p] }]));
-/** A reviewable change surface above this many files blocks plan acceptance and impl-review entry until the user splits the sprint or approves an override bound. */
-const SURFACE_CAP_FILES = 100;
 /** Changed lines (added plus deleted) one impl-review wave carries; a larger scope divides into more waves, so no review turn holds an oversized diff. */
 const WAVE_THRESHOLD_LINES = 3000;
 /** Most review waves one scope divides into, so an oversized scope still ends in a bounded number of sequential reviews. */
 const MAX_REVIEW_WAVES = 3;
-/** Files one impl-review wave carries: the surface cap spread over the most waves, so a many-file scope divides even when its diff is small. */
-const WAVE_THRESHOLD_FILES = Math.ceil(SURFACE_CAP_FILES / MAX_REVIEW_WAVES);
+/** Files one impl-review wave carries, so a many-file scope divides into waves even when its diff is small. */
+const WAVE_THRESHOLD_FILES = 34;
 /** Diff bytes one impl-review wave carries; a larger scope divides into more waves, so no review turn reads an oversized patch. */
 const WAVE_THRESHOLD_BYTES = 300000;
 /** Files above which one review wave gets a turn plan in its reviewer payload. */
@@ -686,28 +684,6 @@ function draftSnapshot(files, out, previous) {
   return changed;
 }
 
-/** A generated provider view: sync output regenerated from canon, so it is never reviewable change surface. The JSON-merge hook registrations (`.claude/settings.json`, `.codex/hooks.json`) can hold user content, so they count. */
-function isGeneratedView(file) {
-  return /^(\.claude\/(agents|skills|hooks)\/|\.codex\/(agents|hooks)\/|\.agents\/skills\/)/.test(file);
-}
-
-/** Measures a file list, generated provider views excluded, against SURFACE_CAP_FILES, or against the user-approved override bound when one is recorded. */
-function surfaceCheck(files, bound) {
-  if (bound !== undefined && !(Number.isInteger(bound) && bound > 0)) fail('--bound must be a positive integer');
-  const cap = bound === undefined ? SURFACE_CAP_FILES : bound;
-  const count = new Set(files.filter((file) => !isGeneratedView(file))).size;
-  return { files: count, cap, breach: count > cap };
-}
-
-/** A surface-check file list: `--files`, minus each path the `--base...--head` range renames with identical content and mode when that range is given, so a pure move never counts as change surface. */
-function surfaceFiles(flags) {
-  if (typeof flags.files !== 'string') fail('--files <path> required');
-  const files = readFileList(flags.files);
-  if (flags.base === undefined && flags.head === undefined) return files;
-  const renames = rangeRenames(gitRef(flags.base, '--base'), gitRef(flags.head, '--head'));
-  return files.filter((file) => !(renames.has(file) && renames.get(file).pure));
-}
-
 /** Added lines of a zero-context unified diff as `{file, line, text}`, each at its line number in the new file. */
 function addedLines(diff) {
   const added = [];
@@ -1121,11 +1097,6 @@ async function main(argv) {
     process.stdout.write(JSON.stringify(defectStalemate(fs.readFileSync(flags.plan, 'utf8'))) + '\n');
     return 0;
   }
-  if (command === 'surface-check') {
-    const result = surfaceCheck(surfaceFiles(flags), flags.bound === undefined ? undefined : Number(flags.bound));
-    process.stdout.write(JSON.stringify(result) + '\n');
-    return result.breach ? 1 : 0;
-  }
   if (command === 'memory-check') {
     const violations = memoryCheck(flags);
     process.stdout.write(JSON.stringify(violations) + '\n');
@@ -1154,11 +1125,11 @@ async function main(argv) {
     return 0;
   }
   if (command === 'agent-liveness') return agentLivenessCommand(flags);
-  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, surface-check, memory-check, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, or agent-liveness');
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, or agent-liveness');
 }
 
 if (require.main === module) {
   main(process.argv).then((code) => { process.exitCode = code; }, (error) => { process.stderr.write(`${error.message}\n`); process.exitCode = 2; });
 }
 
-module.exports = { AUDIT_BATCH_THRESHOLD_FILES, COMBINED_REVIEWER, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LARGE_WAVE_FILES, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, SURFACE_CAP_FILES, WAVE_THRESHOLD_BYTES, WAVE_THRESHOLD_FILES, WAVE_THRESHOLD_LINES, agentLiveness, backlogRows, buildInvocation, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, isDocumentation, isTest, loadWorkflow, memoryCheck, memoryViolations, numstatLines, persistReview, recordExternalFailure, retroCandidates, retroRows, reviewFindings, reviewWaveCount, reviewerFiles, reviewerKeys, routeTask, surfaceCheck, validateCoverageLedger, validateWaveDivision, waveFiles, fingerprint };
+module.exports = { AUDIT_BATCH_THRESHOLD_FILES, COMBINED_REVIEWER, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LARGE_WAVE_FILES, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, WAVE_THRESHOLD_BYTES, WAVE_THRESHOLD_FILES, WAVE_THRESHOLD_LINES, agentLiveness, backlogRows, buildInvocation, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, isDocumentation, isTest, loadWorkflow, memoryCheck, memoryViolations, numstatLines, persistReview, recordExternalFailure, retroCandidates, retroRows, reviewFindings, reviewWaveCount, reviewerFiles, reviewerKeys, routeTask, validateCoverageLedger, validateWaveDivision, waveFiles, fingerprint };
