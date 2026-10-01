@@ -139,3 +139,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Tasks 9 and 10 done: `LARGE_WAVE_FILES` 20 → 12, `WAVE_THRESHOLD_BYTES` 300000 → 180000 (no prose stated the old numbers), `claude.maxTurns` 100 in the nine agents below it (advisor 30, ba, ux, external-review and the five reviewers 50), architect, dev and tester untouched; the nine Claude views synced, Codex views unchanged. Build, lint and sync clean at d7c46eb, no flagged choices, every round path authorised, plan fully ticked. README confirmed accurate for AC-11 (no maxTurns or threshold literal in README).
 - **Rationale**: Adaptive impl assessment gate (`checkpoints.md`).
 - **Affected docs**: [plan.md](plan.md)
+
+- 2026-10-01 — route impl-test entry 5: critical, dispatch HEAD d0af6d4
