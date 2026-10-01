@@ -239,7 +239,7 @@ If `subsystem_decomposition: disabled`: drafts merge into flat project-level doc
 
 Devs implement plan tasks. A human-only operational action is registered as `MS-N`; the main orchestrator validates necessity and presents validated pending entries. On resume the dev verifies and completes them.
 
-After a wave's last signal the orchestrator ticks its `plan.md` checkboxes, appends the `MEMORY.md` index lines its devs returned and commits; devs never edit `plan.md`, and in a wave of more than one Task leave a shared `MEMORY.md` untouched, returning their index line in `COMPLETED`.
+After a wave's last signal the orchestrator ticks its `plan.md` checkboxes, appends the `MEMORY.md` index lines its Task agents returned and commits; devs and testers never edit `plan.md`, and in a wave of more than one Task leave a shared `MEMORY.md` untouched, returning their index line in `COMPLETED`.
 
 Devs write **production code only** — no tests, no test runs, except self-verification: a dev may run the impacted set (`Impacted test set` above) to self-check work in progress, but never authors, modifies, or prunes a test, and this run never substitutes for or satisfies the `impl-test`/`impl-review` gates. All test work belongs to `impl-test`, except a `Test-only` Task, which `asd-tester` runs in this phase ("Plan file format").
 
