@@ -135,6 +135,10 @@ is actually derivable — measure that before claiming it is not. Coverage did n
 smaller and the exemption became a real assertion. That is the outcome to report plainly rather than
 dressing the round up with a new test.
 
+A scope amendment can land while an entry runs (read `git log -3` before each commit). When it retires a mechanism, add no
+new pin on it (drop the row that reads the retired constant), and list the existing pins it will break, by test name, in
+`test-plan.md` for the next entry instead of editing them: the orchestrator ruled the running entry is not interrupted.
+
 Related, when the dispatching message hands you a commit range: check it contains the changes it
 names. Entry 4 (cont.) was pointed at `11bf405..dd47159`, which held only sprint bookkeeping — the
 dev chain was `5add9f5..2ae44c6`, an ancestor of the entry's own test commit, so the suite run
