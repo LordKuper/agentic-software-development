@@ -194,6 +194,12 @@ When a fix adds a parameter with a default, the old and new formulas usually agr
 (sprint 015 EXT-4: only at multiples of 25). Compute both at each sampled point before writing
 "the default is unchanged", and pin tightness at exactly those points (mutation: loosen only there).
 
+A reword that mentions a pinned literal a second time in the same sentence de-pins its first mention: `sentence.includes(token)`
+stays green with the original mention deleted. After any dev reword of a pinned sentence, run the old literal-drop mutation
+against the UNCHANGED tests; a green run is the evidence, and the fix keys the assert to the trigger's position (the text
+before a later pinned token), never to the whole sentence. A guard written `block === -1 || order holds` is vacuous when no
+fixture block carries both items: confirm one does before crediting it as the pin on an order.
+
 ## Assert removed phrases, not topic words
 
 Rule prose here routinely narrates the alternative it just rejected inside the same bullet
@@ -280,6 +286,13 @@ literal on one of them. Sprint 009 iter-02 — `checkpoints.md` counts fix round
 from the workflow and asserts it *ends with* the tail read out of `checkpoints.md`, so either side
 may be reworded freely as long as the counter still selects the emitter. String equality between the
 two would have gone red on the correct fix, exactly as it did.
+
+A placement order stated at several sites (the home rule, a template format rule, the sibling declarations) is a relation of
+code spans: each site names the neighbour it is ordered against, one site lists the whole order and is compared as a list, and a
+direction word is checked on the connector text between the previous span and the neighbour with a negative vocabulary
+(`under|below|after|behind`). Record the ceiling: a reversal by a synonym outside that vocabulary passes. A stop-condition list is
+sliced per `;` clause, one assert per property: the clause that gates on a signal names the phase it binds, and the carve-out has
+its own clause carrying the signal and the pointer to the rule that owns it.
 
 A substring token relation (`site.includes(token)`) goes vacuous when the token already sits inside a
 longer span on the target: sprint 021 entry 5's new closure-write field `pr.number` was "named" by scope's

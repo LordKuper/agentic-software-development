@@ -6274,8 +6274,10 @@ test('sprint-019 AC-1/AC-3/AC-4/AC-5/AC-6, sprint-023 AC-8: scope step 2a runs r
   const tag = proposal && Object.keys(proposal).find((key) => !['row', 'acts_on', 'guardrail', 'home'].includes(key));
   assert.ok(tag, 'sprint-023 AC-8: sanity - outside self-hosting retroCandidates must return an asd row with a marker field beside row, acts_on, guardrail and home, or the rule and workflow cannot be compared with the tag it emits');
   const literal = `\`${tag}: true\``;
-  assert.ok(empty.includes(literal), `sprint-023 AC-8: a list of only ${literal} rows has no candidate to decide, so the empty-array no-op must cover it - otherwise a consumer project whose latest retro holds only asd rows is asked about proposals it cannot dispose`);
+  assert.ok(empty.slice(0, empty.indexOf('decisions-log')).includes(literal), `sprint-023 AC-8: a list of only ${literal} rows has no candidate to decide, so the empty-array no-op must cover it, named before the no-op's outcome - otherwise a consumer project whose latest retro holds only asd rows is asked about proposals it cannot dispose (a later mention of the tag in the same sentence is not the trigger)`);
   const shown = sentences.find((sentence) => sentence.includes(literal) && /\bAC-N\b/.test(sentence)) || '';
+  const noOp = intake.slice(intake.indexOf(empty), intake.indexOf(shown));
+  assert.ok(/\bgate\b/.test(noOp) && !/\b(?:not|never)\b/.test(noOp), `sprint-023 review-fix F4: the no-op sentence must say the ${literal} rows are still shown at the gate - "no-op" alone reads as "show nothing", against scope step 4, which shows them`);
   assert.ok(/no question/.test(shown) && /\bbacklog\b/.test(shown), `sprint-023 AC-8: the sentence on a ${literal} row must say it is shown with no question, is never an AC-N and reaches no backlog - disposed like a candidate, it is either lost to the framework repo it addresses or re-asked at every scope`);
   assert.ok(step.includes(literal) && accept.includes(literal), `sprint-023 AC-8: scope steps 2a and 4 must name the ${literal} tag the runtime emits - step 2a exempts it from verification and step 4 shows it at the gate`);
 });
@@ -7505,6 +7507,22 @@ test('sprint-023 AC-5: the Test-only declaration is defined once in sprint-lifec
     assert.ok(new RegExp(`^(?:Material risk:[^\\n]*\\n)+${label}`, 'm').test(block) && !new RegExp(`^- \\[.\\] ${label}`, 'm').test(block) && (reachability === -1 || block.search(linePattern) < reachability), `the example's ${label} line must sit directly under the Material risk line(s), ahead of any Reachability line, and never be a checkbox - the placement the rule defines`);
   }
 
+  const planFormat = sectionOf('.asd/rules/sprint-lifecycle.md', 'Plan file format');
+  const declarationOf = (name) => planFormat.split('\n').find((line) => line.startsWith(`**${name} declaration**`)) || '';
+  const placement = (line) => spans(line.slice(0, line.indexOf('):'))).filter((span) => !span.startsWith('### '));
+  const connector = (line) => {
+    const head = line.slice(0, line.indexOf('`Reachability`'));
+    return head.slice(head.lastIndexOf('`') + 1);
+  };
+  const lineName = label.replace(/:$/, '');
+  const order = ['Material risk', lineName, 'Reachability'];
+  for (const [site, line] of [['sprint-lifecycle.md "Plan file format"', declaration], ['t_plan.md\'s format rule', template.split('\n').find((candidate) => candidate.includes(shape[1])) || '']]) {
+    assert.ok(line.includes('`Reachability`'), `${site} must name the Reachability line the ${lineName} line sits ahead of - both are plain-text lines under the Material risk lines, so a rule that states no order between them lets a plan put either first`);
+    assert.ok(!/\b(?:under|below|after|behind|beneath|following)\b/.test(connector(line)), `${site} must put the ${lineName} line ahead of the Reachability line, not behind it - the reverse order contradicts the Reachability and Settings change declarations, which both place their line under ${lineName}`);
+  }
+  assert.ok(placement(declarationOf('Reachability')).includes(lineName), `the Reachability declaration must name the ${lineName} line it sits under, or the order between the two is stated at one site only`);
+  assert.deepStrictEqual(placement(declarationOf('Settings change')).filter((span) => order.includes(span)), order, `the Settings change declaration must list the lines it sits under in the order the plan carries them (${order.join(' < ')}) - a list in another order contradicts the ${lineName} and Reachability declarations`);
+
   const flow = sectionOf('.asd/workflows/asd-phase-impl.md', 'Workflow');
   assert.ok(stepOf(flow, '5a').includes(`\`${label}\``) && stepOf(flow, '5a').includes('`asd-tester`'), `asd-phase-impl.md step 5a must name the ${label} line and the asd-tester it routes such a Task to - a dev dispatched for a Task whose paths are tests is the case the sprint closes`);
   const delegate = stepOf(flow, '6').split('\n').find((line) => /\bdelegate\b/.test(line) && line.includes('`asd-dev`')) || '';
@@ -7514,6 +7532,10 @@ test('sprint-023 AC-5: the Test-only declaration is defined once in sprint-lifec
   assert.ok(declaration.includes(`${trailer[1]}: Task N`) && stepOf(sectionOf('.asd/workflows/asd-phase-impl-test.md', 'Workflow'), '2').includes(`${trailer[1]}: Task N`), `the declaration and impl-test step 2 must both name the ${trailer[1]}: Task N trailer a Test-only Task's commits carry - a trailer the tester does not write is one entry 1 cannot recognise`);
   const contract = sectionOf('.asd/agents/asd-tester.md', 'Operating contract').split('\n').find((line) => line.includes(`\`${label}\``)) || '';
   assert.ok(contract.includes('`plan.md`') && contract.includes('`test-plan.md`') && contract.includes('"Plan file format"'), 'asd-tester.md Operating contract must carry the Test-only Task bullet: it cites the declaration and leaves plan.md and test-plan.md untouched, the files its wave and impl-test own');
+  const stops = (canonText('.asd/agents/asd-tester.md').split('\n').find((line) => line.startsWith('- **Stop conditions**')) || '').split(';');
+  assert.ok((stops.find((clause) => /\bimpl COMPLETED\b/.test(clause)) || '').includes('`impl-test`'), `asd-tester.md Stop conditions: the clause that aborts on a missing impl COMPLETED signal must name the \`impl-test\` dispatch it binds - the tester also runs a ${lineName} Task inside an impl wave, before impl can complete, so an unscoped abort refuses every such dispatch`);
+  const testOnlyStop = stops.find((clause) => clause.includes(lineName)) || '';
+  assert.ok(testOnlyStop.includes('ABORT') && testOnlyStop.includes('"Plan file format"'), `asd-tester.md Stop conditions must give a ${lineName} Task dispatch its own ABORT clause citing the plan rule - scoping the impl-test clause alone leaves that dispatch with no stop condition`);
 
   const noTests = /production code only|writes? \*\*no tests\*\*|no test-authoring|no tests written|never in `impl`/i;
   const sites = [...canonMarkdownFiles(), 'README.md'].filter((rel) => rel !== '.asd/agents/asd-dev.md').flatMap((rel) => canonText(rel).split('\n').filter((line) => noTests.test(line)).map((line) => [rel, line]));
