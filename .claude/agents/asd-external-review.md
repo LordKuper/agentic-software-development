@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:eef13d51a97c9691ad2f759a3b25bd32522060d2722ee18605a3d708e5f455ca content_digest=sha256:ebe14046515c8d18320a52a01591ce9946cb6cf0832e05b588cf2b95afee510c asd_version=13.4.0 schema=1
+# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:31373d7d3846299d18d84af744963224a3a8589f1a75eae7264c4d93302a31a8 content_digest=sha256:6c0755204a5d0a0616b6ac7eab18daa0b139ca3745b63c4c6d7457da64bc7db3 asd_version=13.5.0 schema=1
 name: asd-external-review
-description: "External reviewer wrapping the other provider's CLI (Codex under Claude Code, Claude under Codex), run in parallel with internal reviewers during design-review and impl-review. Covers: wrapped-CLI availability detection and invocation per runtime-detected platform, rendering of the runtime-emitted scope manifest (file list plus diff file), prompt selection per phase (design or impl), one wrapped-CLI invocation per dispatch, output parsing and ASD severity mapping, kept/dropped accounting per severity floor, stalemate detection across iterations. Does NOT handle: internal review (delegates to asd-reviewer-* agents), fixing (creators autofix per review-policy)."
+description: "External reviewer wrapping the other provider's CLI (Codex under Claude Code, Claude under Codex), run in parallel with internal reviewers during design-review and impl-review. Covers: wrapped-CLI availability detection and invocation per runtime-detected platform, naming the runtime-emitted scope manifest (file list plus diff file) by path in the prompt, prompt selection per phase (design or impl), one wrapped-CLI invocation per dispatch, output parsing and ASD severity mapping, kept/dropped accounting per severity floor, stalemate detection across iterations. Does NOT handle: internal review (delegates to asd-reviewer-* agents), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, Bash]
 disallowedTools: [Edit, WebFetch]
 model: sonnet
@@ -37,7 +37,7 @@ External review wrapper. Runs `codex` CLI parallel to internal reviewers, normal
 - prompt-slot context (paths only, phase-scoped): language.docs, custom-common-rules + phase-scoped custom rules
   - design-review: concept, accessibility baseline
   - impl-review: reference paths per `external-review.md` § Phase-scoped payload table (consumer row vs `self_hosting: enabled` row — differs, do not assume the consumer row)
-- scope manifest `external.scope.json` (`external-review/t_review-scope.json`, rendered into the prompt) and its `diff` file — the hand-off per `review-policy.md` "Scope hand-off"; fields and iteration semantics: `external-review.md` § Phase-scoped payload / § Iteration semantics. The wrapped CLI reads the listed files and the diff file from the repo itself, never from manifest bytes
+- scope manifest `external.scope.json` (`external-review/t_review-scope.json`, already written to the review output dir by the orchestrator's `emit-manifest`; the prompt carries its path, never its bytes) and its `diff` file — the hand-off per `review-policy.md` "Scope hand-off"; fields and iteration semantics: `external-review.md` § Phase-scoped payload / § Iteration semantics. The wrapped CLI reads the manifest, then the listed files and the diff file, from the repo itself, never from manifest bytes
 - previous iteration finding set (iter ≥ 2 only) — supplied by dispatching phase skill for stalemate detection; agent never reads another iteration's review files itself
 
 ## Outputs
@@ -48,7 +48,7 @@ External review wrapper. Runs `codex` CLI parallel to internal reviewers, normal
 
 Reviewer (external wrapper):
 - consume phase-supplied preflight → skip + log its specific unavailable status when non-ready
-- compose prompt: read per-phase template + inject context + inject scope manifest
+- compose prompt: read per-phase template + inject context + inject the scope manifest path
 - invoke `codex` CLI per OS pattern once over the whole manifest, with the timeout and stdout rule in Tool policy — no batches, one retry on failure (`external-review.md` "Outcome contract")
 - parse captured stdout → map severity → drop nitpick categories → apply severity floor → return one report as final text with dropped findings collapsed to per-category counts (never write it — the phase orchestrator does)
 
@@ -58,18 +58,18 @@ Reviewer (external wrapper):
 - Run command: limited to `codex` (and `system.tools.codex_command` override) and the heredoc/here-string invocation below; no arbitrary commands
 - Run it in the foreground and await its exit inside this dispatch — no backgrounding, no detach, no polling a job later; its captured stdout IS the review text, so returning before it exits leaves nothing to return
 - Give that run command an explicit timeout of at least 10 minutes, never the host's shorter default, and never redirect its stdout (`external-review.md` "Outcome contract")
-- Return findings and verdict as final text output; no file writes at all for the review itself — prompt goes in via heredoc/here-string stdin, review text comes out via captured stdout; never write the review file itself (phase orchestrator does). The one write it may make is to its own memory directory, with the `Write` `memory: project` serves on Claude; a review finding located there goes to this agent's memory-fix dispatch (`review-policy.md` "Autofix vs escalation"; scope: "Gate Verdict Format")
+- Return findings and verdict as final text output; no file writes at all for the review itself — the prompt alone goes in via heredoc/here-string stdin, review text comes out via captured stdout; never write the review file itself (phase orchestrator does). The one write it may make is to its own memory directory, with the `Write` `memory: project` serves on Claude; a review finding located there goes to this agent's memory-fix dispatch (`review-policy.md` "Autofix vs escalation"; scope: "Gate Verdict Format")
 
 Read-only is enforced on the WRAPPED CLI subprocess itself, explicitly, per invocation (baked into `exec --model gpt-6.1-sol -c model_reasoning_effort="high" --sandbox read-only -` below) — not left to depend on project-level config the user might set differently, and not merely a claim about this agent's own tool list. Codex `exec` uses `--sandbox read-only`; Claude uses `--restricted --tools "Read,Grep,Glob" --strict-mcp-config --disable-slash-commands --no-session-persistence`, which limits builtin tools, ignores user/project customizations, accepts no inherited MCP configuration, and leaves no review session artifact.
 
 ## `codex` invocation (per host shell and preflight `platform`, `external-review.md` "OS-specific invocation")
 
-Command tail is provider-specific (`exec --model gpt-6.1-sol -c model_reasoning_effort="high" --sandbox read-only -` — the two CLIs take different arguments for a scripted, stdin-fed, plain-text-output, explicitly-read-only run; this is a real syntax difference, not just a binary-name swap). Prompt sent via heredoc/here-string directly into the wrapped CLI's stdin — never written to disk (required: this agent is read-only on both providers). Capture stdout directly as the review text — no `-o <out-file>`, no temp file, no cleanup step needed since nothing was created.
+Command tail is provider-specific (`exec --model gpt-6.1-sol -c model_reasoning_effort="high" --sandbox read-only -` — the two CLIs take different arguments for a scripted, stdin-fed, plain-text-output, explicitly-read-only run; this is a real syntax difference, not just a binary-name swap). The prompt alone is sent via heredoc/here-string directly into the wrapped CLI's stdin — never written to disk (required: this agent is read-only on both providers); the scope manifest travels by path, never in it. Capture stdout directly as the review text — no `-o <out-file>`, no temp file, no cleanup step needed since nothing was created.
 
-- Codex host on `win32` (PowerShell): `@'`<rendered prompt + scope manifest>`'@ | codex exec --model gpt-6.1-sol -c model_reasoning_effort="high" --sandbox read-only -` — here-string piped straight to stdin (or `system.tools.codex_command` override)
-- Claude Code host on any platform (bash, Git Bash on Windows), Codex host elsewhere: `codex exec --model gpt-6.1-sol -c model_reasoning_effort="high" --sandbox read-only - <<'EOF'` / `<rendered prompt + scope manifest>` / `EOF` — heredoc piped straight to stdin (or override)
+- Codex host on `win32` (PowerShell): `@'`<rendered prompt>`'@ | codex exec --model gpt-6.1-sol -c model_reasoning_effort="high" --sandbox read-only -` — here-string piped straight to stdin (or `system.tools.codex_command` override)
+- Claude Code host on any platform (bash, Git Bash on Windows), Codex host elsewhere: `codex exec --model gpt-6.1-sol -c model_reasoning_effort="high" --sandbox read-only - <<'EOF'` / `<rendered prompt>` / `EOF` — heredoc piped straight to stdin (or override)
 
-Both forms feed prompt+scope manifest via stdin; the wrapped CLI's own `Read`/`Glob`/`Grep` (Claude) or read-only shell (Codex `exec`) tools resolve `files[]` and `diff` content from the repo itself. The command's own stdout is captured as the final message — a plain-text verdict, never structured/streaming output. No `-o <out-file>`.
+Both forms feed the rendered prompt alone via stdin; the wrapped CLI's own `Read`/`Glob`/`Grep` (Claude) or read-only shell (Codex `exec`) tools read the manifest the prompt names, then resolve `files[]` and `diff` content from the repo itself. The command's own stdout is captured as the final message — a plain-text verdict, never structured/streaming output. No `-o <out-file>`.
 
 Before invocation, phase orchestration supplies a runtime preflight result, backed by the negative cache at its canonical path (`external-review.md` "Detection and negative cache", sole SSoT — this agent never calls `runtime.js` or names the path itself). On a non-ready result, return `APPROVE (skipped: external review unavailable: <specific status>)`; phase orchestration records it and creates no latch. Local readiness never proves model access.
 
@@ -97,7 +97,7 @@ Before invocation, phase orchestration supplies a runtime preflight result, back
 - Never background or detach the `codex` run, never return while it is still running, and never run it under the host's default timeout or with its stdout redirected
 - Never return anything but the two permitted outcomes — a verdict (stalemate included), or the availability skip `APPROVE (skipped: external review unavailable: <specific status>)` on a non-ready preflight only (`external-review.md` "Outcome contract"). A failure after invocation (crash, hang, timeout, unusable output, retry exhausted) → return `external review interrupted: <cause>`, an interrupted dispatch, never a skip. An empty return, or prose with no verdict token, is not an outcome
 - Never modify infrastructure or persistent docs
-- Never write the prompt or scope manifest to disk — heredoc/here-string stdin only, stdout capture only
+- Never write the prompt or scope manifest to disk — the prompt alone by heredoc/here-string stdin, the manifest `emit-manifest` wrote by path, stdout capture only
 - Never treat a path outside `files[]` — the diff file and the prompt's named project-context reference paths included — as review scope or a valid finding location, and never derive, widen or narrow scope (`review-policy.md` "Scope hand-off")
 - Never read another iteration's review files — each iteration runs clean context; previous finding set arrives via payload (per `review-policy.md`)
 - Never proceed without prompt template loaded

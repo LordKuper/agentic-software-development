@@ -86,21 +86,22 @@ Material risk: change: workflow gate
 ### Task 4: workflows and skills
 Material risk: change: workflow gate
 Reachability: `asd-sprint` Step 0 writes the local base ref when `/asd-sprint` is invoked; `asd-phase-scope.md` step 1 reads the local base to create the branch; interrupted at the fetch (offline or a refusal), the local base holds its prior value and the user is told
-- [ ] AC-2 (D2): `.asd/skills/asd-sprint/SKILL.md` Step 0 (Preconditions L13-15, Operations L19, the pre-fetch limit sentence); `asd-phase-scope.md` step 1 cites "Branch"
-- [ ] AC-8 (D8): `asd-phase-scope.md` step 2a and step 4: show `upstream: true` rows as upstream proposals, no disposition
-- [ ] AC-1 (D1): `asd-phase-impl-review.md` step 1c (the n>1 decisions-log entry names `lines`, `files`, `bytes`)
-- [ ] AC-9 (D9): `asd-phase-impl-test.md` step 1a, `asd-phase-impl.md` step 5a, `asd-phase-impl-review.md` step 8 (tester test-fix) and step 9 (terminal run): cite the routing scope rule
-- [ ] AC-5 (D5): `asd-phase-impl.md` L16, L24, L61, L65, L76, L127, L139-140 (dispatch to "the Task's agent", the `Test-only` Task); `asd-phase-impl-test.md` L38-43, L46-48, L75-76 (entry-1 handover); `asd-phase-plan.md` L31, L38, L42, L43 (the carve-out and the `Test-only` rule); `.asd/skills/asd-phase-impl/SKILL.md` description L4
+- [x] AC-2 (D2): `.asd/skills/asd-sprint/SKILL.md` Step 0 (Preconditions L13-15, Operations L19, the pre-fetch limit sentence); `asd-phase-scope.md` step 1 cites "Branch"
+- [x] AC-8 (D8): `asd-phase-scope.md` step 2a and step 4: show `upstream: true` rows as upstream proposals, no disposition
+- [x] AC-1 (D1): `asd-phase-impl-review.md` step 1c (the n>1 decisions-log entry names `lines`, `files`, `bytes`)
+- [x] AC-9 (D9): `asd-phase-impl-test.md` step 1a, `asd-phase-impl.md` step 5a, `asd-phase-impl-review.md` step 8 (tester test-fix) and step 9 (terminal run): cite the routing scope rule
+- [x] AC-5 (D5): `asd-phase-impl.md` L16, L24, L61, L65, L76, L127, L139-140 (dispatch to "the Task's agent", the `Test-only` Task); `asd-phase-impl-test.md` L38-43, L46-48, L75-76 (entry-1 handover); `asd-phase-plan.md` L31, L38, L42, L43 (the carve-out and the `Test-only` rule); `.asd/skills/asd-phase-impl/SKILL.md` description L4
 
 ### Task 5: agents and templates
 Material risk: change: workflow gate
-- [ ] AC-3 (D3): `asd-external-review.md` description L4, the Codex-block `wraps_invoke_args` `-p` string (keep `--effort xhigh`), L47, L58, L65, L68, L74, L76, L77, L79, L107; `t_prompt-external-impl.md` and `t_prompt-external-design.md` L12-16 and L20 (path slot)
-- [ ] AC-5 (D5): `asd-tester.md` description L4, Role L20, Operating contract L24-26 (a plan-declared test-only Task); `t_plan.md` format-rule line L16 and L22 plus one `Test-only:` example Task block
-- [ ] AC-3 (D3): `providers.md` "External review symmetry" (~L91) says "stdin-piped prompt+diff": reword to the prompt alone on stdin with the scope manifest and diff by path (added after wave 1 from Task 3's consumer search; `providers.md` is otherwise untouched in wave 2)
-- [ ] AC-6 (D6): `t_test-plan.md` "Added tests" `Regression proof` cell format (L45-47)
+- [x] AC-3 (D3): `asd-external-review.md` description L4, the Codex-block `wraps_invoke_args` `-p` string (keep `--effort xhigh`), L47, L58, L65, L68, L74, L76, L77, L79, L107; `t_prompt-external-impl.md` and `t_prompt-external-design.md` L12-16 and L20 (path slot)
+- [x] AC-5 (D5): `asd-tester.md` description L4, Role L20, Operating contract L24-26 (a plan-declared test-only Task); `t_plan.md` format-rule line L16 and L22 plus one `Test-only:` example Task block
+- [x] AC-3 (D3): `providers.md` "External review symmetry" (~L91) says "stdin-piped prompt+diff": reword to the prompt alone on stdin with the scope manifest and diff by path (added after wave 1 from Task 3's consumer search; `providers.md` is otherwise untouched in wave 2)
+- [x] AC-6 (D6): `t_test-plan.md` "Added tests" `Regression proof` cell format (L45-47)
 
 ### Task 6: README.md mirror
 Material risk: artifact: mirror doc
+- [ ] AC-5 (D5): `sprint-lifecycle.md` "Impl phase" (~L242, the wave-of-several-Tasks rule that says devs leave `plan.md` and a shared `MEMORY.md` untouched): read "devs" as the Task's agent, so a `Test-only` tester is covered (added after wave 2 from Tasks 4 and 5; `sprint-lifecycle.md` is otherwise untouched in wave 3)
 - [ ] Confirm and update every README site the other Tasks affect: wave division and the `review-waves` description (L190, L327), the `memory-check` and `retro-candidates` descriptions (L327), the retro intake wording (L182), test-only Tasks (L178, L188, L229), and any citation of the removed matrix; the tier table stays. Record "README confirmed accurate" for each AC in the completion signal
 
 ## Risks (optional)
