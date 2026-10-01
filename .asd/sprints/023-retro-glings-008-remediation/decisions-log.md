@@ -159,3 +159,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-02 — impl-review wave-2/iter-01: combined CONCERNS (F1 low: providers.md routing home names three ids; test-fix and impl-review in-place test fix have none), external CONCERNS (F1 medium: step 9 red-test-defect re-run reuses the terminal-suite routing id); both are the same AC-9 gap; routed to impl review-fix mode (review_fixes_pending wave-2/iter-01). The turn plan applied (14 files above LARGE_WAVE_FILES 12); no interrupted attempt.
 
 - 2026-10-01 — route review-fix wave-2/iter-01: critical, dispatch HEAD 1d3e49e
+
+- 2026-10-02 — impl fix for wave-2/iter-01: findings resolved (combined.md F1, external.md F1 by commit bf36941: fresh routing ids for test-fix, in-place test fix and each terminal-suite run); hash ledgers refreshed
