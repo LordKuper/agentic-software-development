@@ -88,7 +88,7 @@ An agent's tier — family, effort, Codex sandbox — is declared only in its ca
 External Review always wraps the CLI of the *other* provider, never its own host's CLI:
 
 - Running under Claude Code -> wraps **Codex CLI** (`codex exec`, per `.asd/rules/external-review.md`).
-- Running under Codex -> wraps **Claude CLI** the same way (probe, stdin-piped prompt+diff, text-verdict output, severity mapping, stalemate detection — mirror the Claude-under-Codex case symmetrically against `.asd/rules/external-review.md`'s Codex-under-Claude contract).
+- Running under Codex -> wraps **Claude CLI** the same way (probe, the prompt alone on stdin with the scope manifest and diff by path, text-verdict output, severity mapping, stalemate detection — mirror the Claude-under-Codex case symmetrically against `.asd/rules/external-review.md`'s Codex-under-Claude contract).
 
 Which CLI to wrap is resolved per-provider at generation time: `asd-external-review.md`'s canonical frontmatter sets `claude.wraps_cli: "codex"` / `codex.wraps_cli: "claude"`, plus the wrapped provider's family alias (`sol` / `sonnet`) and a matching `wraps_config_key` naming the runtime config override. `.asd/sync.js` resolves `{{wraps_model}}` through the release manifest for the wrapped provider; canonical invocation text never pins a concrete model ID. Phase orchestration performs the bounded runtime preflight before the wrapper and records a specific availability skip when it is non-ready.
 
