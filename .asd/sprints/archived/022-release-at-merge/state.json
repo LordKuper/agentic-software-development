@@ -1,7 +1,7 @@
 {
   "sprint_id": "022-release-at-merge",
   "branch": "sprint/022-release-at-merge",
-  "phase": "pr",
+  "phase": "done",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -116,6 +116,13 @@
       "reason": "user confirmed push and PR open",
       "evidence": "chat confirmation 2026-09-30",
       "artifact_revision": "HEAD b0b2653"
+    },
+    {
+      "gate": "sprint-closure",
+      "decision_actor": "orchestrator",
+      "reason": "sprint PR 58 merged; closure write at next sprint scope",
+      "evidence": "merge commit f106867ba9547e6621d3e67df530d1ef4775b4ec",
+      "artifact_revision": "HEAD f106867"
     }
   ],
   "task_routing": {
@@ -252,13 +259,14 @@
     }
   },
   "created_at": "2026-09-30T07:52:07.411Z",
-  "updated_at": "2026-09-30T12:34:31.541Z",
+  "updated_at": "2026-10-01T18:44:47.591Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": {
     "number": 58,
     "url": "https://github.com/LordKuper/agentic-software-development/pull/58",
-    "state": "open"
+    "state": "merged",
+    "merge_commit": "f106867ba9547e6621d3e67df530d1ef4775b4ec"
   },
-  "archived_at": null
+  "archived_at": "2026-10-01T18:44:47.591Z"
 }
