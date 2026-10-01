@@ -59,3 +59,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: The user settled three audit contradictions. AC-2 narrowed to "rules, workflows and phase skills read after Step 0", with the skill's own text and the session-start files stated as the pre-fetch copy and an unreachable remote warning and continuing. AC-4 keeps its runtime check at the orchestrator's memory commit; the false "no hook" premise is dropped and a dev's or tester's self-commit is not gated by it. AC-7 narrowed: remove `providers.md` "Agent tier matrix" (home becomes agent frontmatter plus manifest `model_families`), the README tier table stays as the one mirror, no generator. Audit accepted by the orchestrator (adaptive): every section present, all nine criteria deliverable.
 - **Rationale**: Hard audit-contradiction and scope-change gates (`checkpoints.md` "Gate policy"), decided by the user; the AC-7 amendment is pre-division, so no `floor_base`.
 - **Affected docs**: [sprint.md](sprint.md), [audit.md](audit.md)
+
+## 2026-10-01 — plan.md accepted (adaptive)
+
+- **Decision**: `plan.md` accepted: 6 Tasks in 3 waves (wave 1 Tasks 1-3: runtime.js; sprint-lifecycle.md + providers.md; git-strategy/artifact-layout/external-review/code-style. Wave 2 Tasks 4-5: workflows and skills; agents and templates. Wave 3 Task 6: README). Designs D1-D9 follow the audit's recommendations as settled with the user. Change surface 21 files (`surface-check`, cap 100). `.asd/project/stubs.md` holds no open stub. Orchestrator-only lines: per-wave `sync.js --apply`, a memory-fix dispatch to the `asd-external-review` owner after wave 2, `tests/run.js` repoints owned by impl-test.
+- **Rationale**: Adaptive plan gate (`checkpoints.md`): no new authority, preference or material tradeoff beyond the user's audit decisions; evidence is the audit-to-plan site mapping and the surface measurement.
+- **Affected docs**: [plan.md](plan.md)
