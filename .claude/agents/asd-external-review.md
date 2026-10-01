@@ -1,12 +1,12 @@
 ---
-# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:31373d7d3846299d18d84af744963224a3a8589f1a75eae7264c4d93302a31a8 content_digest=sha256:6c0755204a5d0a0616b6ac7eab18daa0b139ca3745b63c4c6d7457da64bc7db3 asd_version=13.5.0 schema=1
+# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:748735b745535ae263077b4c5e9b4c415baafa8c2a3ab42e27beb11cec7e3d9c content_digest=sha256:2e6ff4168c432d17e93cf14fab98a90c66b7622b9467ece06017ba763fed75a7 asd_version=13.5.0 schema=1
 name: asd-external-review
 description: "External reviewer wrapping the other provider's CLI (Codex under Claude Code, Claude under Codex), run in parallel with internal reviewers during design-review and impl-review. Covers: wrapped-CLI availability detection and invocation per runtime-detected platform, naming the runtime-emitted scope manifest (file list plus diff file) by path in the prompt, prompt selection per phase (design or impl), one wrapped-CLI invocation per dispatch, output parsing and ASD severity mapping, kept/dropped accounting per severity floor, stalemate detection across iterations. Does NOT handle: internal review (delegates to asd-reviewer-* agents), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, Bash]
 disallowedTools: [Edit, WebFetch]
 model: sonnet
 effort: medium
-maxTurns: 50
+maxTurns: 100
 memory: project
 ---
 

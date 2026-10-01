@@ -117,11 +117,11 @@ Material risk: change: workflow gate
 
 ### Task 9: runtime.js — recalibrated review thresholds
 Material risk: change: workflow gate
-- [ ] AC-11 (D11): `.asd/runtime.js`: `LARGE_WAVE_FILES` 20 → 12 and `WAVE_THRESHOLD_BYTES` 300000 → 180000, doc comments kept purpose-only; grep `.asd/rules`, `.asd/workflows`, `.asd/templates`, `README.md` and agent files for any prose stating the old numbers (20 files, 300000, 300 KB) and update it — list each site in the completion signal
+- [x] AC-11 (D11): `.asd/runtime.js`: `LARGE_WAVE_FILES` 20 → 12 and `WAVE_THRESHOLD_BYTES` 300000 → 180000, doc comments kept purpose-only; grep `.asd/rules`, `.asd/workflows`, `.asd/templates`, `README.md` and agent files for any prose stating the old numbers (20 files, 300000, 300 KB) and update it — list each site in the completion signal
 
 ### Task 10: agent frontmatter — maxTurns 100
 Material risk: artifact: agent frontmatter turn caps
-- [ ] AC-11 (D11): set `claude.maxTurns` to 100 in `.asd/agents/asd-advisor.md`, `asd-ba.md`, `asd-ux.md`, `asd-external-review.md`, `asd-reviewer-combined.md`, `asd-reviewer-correctness.md`, `asd-reviewer-documentation.md`, `asd-reviewer-efficiency.md`, `asd-reviewer-testing.md` (frontmatter value only, JSON stays valid); leave `asd-architect`, `asd-dev` and `asd-tester` untouched; grep agent bodies, rules and README for prose naming the old caps (30 or 50 turns) and update it — list each site
+- [x] AC-11 (D11): set `claude.maxTurns` to 100 in `.asd/agents/asd-advisor.md`, `asd-ba.md`, `asd-ux.md`, `asd-external-review.md`, `asd-reviewer-combined.md`, `asd-reviewer-correctness.md`, `asd-reviewer-documentation.md`, `asd-reviewer-efficiency.md`, `asd-reviewer-testing.md` (frontmatter value only, JSON stays valid); leave `asd-architect`, `asd-dev` and `asd-tester` untouched; grep agent bodies, rules and README for prose naming the old caps (30 or 50 turns) and update it — list each site
 
 ## Risks (optional)
 - AC-3 may not fully cure the heredoc failure: the fixed prompt (about 4.3 KB) stays in the heredoc and the Bash length cliff is only a memory note; the Codex-host path read is unverified in this repo (manual live check after merge).

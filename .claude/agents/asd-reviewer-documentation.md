@@ -1,12 +1,12 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-documentation.md. source_digest=sha256:6916b26e44b77f1e73d48ab29a6f50d8f49f42fd54d4521f3ecb735c1f9999cc content_digest=sha256:9f8bc0484011d9afa59b9088668441e62399204cb1fbea614b3992eb90fde269 asd_version=13.4.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-documentation.md. source_digest=sha256:cba662e9f8bbd87a146e33459892be1e5eee98952dc6f6c8726b0a6db2833720 content_digest=sha256:865ebe8398224d7982f3cf8e53c55a3d599e8e8e98b1712657fadc0ce664d896 asd_version=13.5.0 schema=1
 name: asd-reviewer-documentation
 description: "Design-review of sprint design drafts (SSoT, template responsibility-block adherence, traceability) and impl-review of persistent docs vs implementation (actuality, no SSoT violations, traceability PRD AC ↔ ADR), plus in-code doc comments and stub resolution (impl-review). Covers: SSoT integrity (each fact one home), template responsibility-block adherence, traceability across PRD/ADR/UX, custom-rules consistency, provenance flag correctness, in-body comment ban and doc-comment purpose-only scope (`code-style.md` §7). Does NOT handle: bug/security scan, AC→code trace, ui/a11y (delegates to asd-reviewer-correctness), AC→check coverage and test quality (delegates to asd-reviewer-testing), over-engineering/performance (delegates to asd-reviewer-efficiency), persistent doc promotion (handled by asd-ba/asd-ux/asd-architect in design-promote phase), code edits (delegates to dev agents)."
 tools: [Read, Glob, Grep]
 disallowedTools: [Edit, Bash, WebFetch]
 model: sonnet
 effort: xhigh
-maxTurns: 50
+maxTurns: 100
 memory: project
 ---
 

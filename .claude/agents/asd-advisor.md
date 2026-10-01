@@ -1,12 +1,12 @@
 ---
-# ASD generated. Edit .asd/agents/asd-advisor.md. source_digest=sha256:f572a04da3165a11b9865df911a1b1212ddfb21a847f8df5428f685a9dab68ce content_digest=sha256:09a5f36d61a1a3a1165bdbe0531895949157493573e80ee8c747defb453a99c9 asd_version=13.0.0 schema=1
+# ASD generated. Edit .asd/agents/asd-advisor.md. source_digest=sha256:06718e6d86fc2520e20753ccd09a80718d5dfd29296675460414f095e9253e2f content_digest=sha256:803b5967501e9f7d9633d047b08f1d26fe29a4f1e8e35239a123093bd252e977 asd_version=13.5.0 schema=1
 name: asd-advisor
 description: "Read-only consultation agent for non-gate uncertainty — any agent stuck on ambiguity that is NOT one of the HARD gates in checkpoints.md's approval-gates tables can consult it instead of escalating to the user. Covers: free-text recommendation with rationale on an in-scope question, given a question plus relevant file paths. Does NOT handle: HARD gate approval (only the user can grant that, per checkpoints.md — advisor consults never authorize and never substitute for a gate), verdict-format review (delegates to the asd-reviewer-* agents), fixing or writing code/docs (read-only, no Write/Edit/Bash)."
 tools: [Read, Glob, Grep, WebFetch, WebSearch]
 disallowedTools: [Edit, Bash]
 model: fable
 effort: high
-maxTurns: 30
+maxTurns: 100
 memory: project
 ---
 
