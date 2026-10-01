@@ -65,3 +65,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: `plan.md` accepted: 6 Tasks in 3 waves (wave 1 Tasks 1-3: runtime.js; sprint-lifecycle.md + providers.md; git-strategy/artifact-layout/external-review/code-style. Wave 2 Tasks 4-5: workflows and skills; agents and templates. Wave 3 Task 6: README). Designs D1-D9 follow the audit's recommendations as settled with the user. Change surface 21 files (`surface-check`, cap 100). `.asd/project/stubs.md` holds no open stub. Orchestrator-only lines: per-wave `sync.js --apply`, a memory-fix dispatch to the `asd-external-review` owner after wave 2, `tests/run.js` repoints owned by impl-test.
 - **Rationale**: Adaptive plan gate (`checkpoints.md`): no new authority, preference or material tradeoff beyond the user's audit decisions; evidence is the audit-to-plan site mapping and the surface measurement.
 - **Affected docs**: [plan.md](plan.md)
+
+- 2026-10-01 — route Task 1, Task 2, Task 3: critical, dispatch HEAD 86e7706
