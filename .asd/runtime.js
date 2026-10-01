@@ -27,9 +27,9 @@ const MAX_REVIEW_WAVES = 3;
 /** Files one impl-review wave carries, so a many-file scope divides into waves even when its diff is small. */
 const WAVE_THRESHOLD_FILES = 34;
 /** Diff bytes one impl-review wave carries; a larger scope divides into more waves, so no review turn reads an oversized patch. */
-const WAVE_THRESHOLD_BYTES = 300000;
+const WAVE_THRESHOLD_BYTES = 180000;
 /** Files above which one review wave gets a turn plan in its reviewer payload. */
-const LARGE_WAVE_FILES = 20;
+const LARGE_WAVE_FILES = 12;
 /** An audit whose touched areas track more than this many files gets a batched-read plan in the architect payload. */
 const AUDIT_BATCH_THRESHOLD_FILES = 200;
 /** Internal reviewers, named as `emit-manifest --reviewer` takes them. */
