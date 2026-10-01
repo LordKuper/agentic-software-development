@@ -290,7 +290,10 @@ two would have gone red on the correct fix, exactly as it did.
 A placement order stated at several sites (the home rule, a template format rule, the sibling declarations) is a relation of
 code spans: each site names the neighbour it is ordered against, one site lists the whole order and is compared as a list, and a
 direction word is checked on the connector text between the previous span and the neighbour with a negative vocabulary
-(`under|below|after|behind`). Record the ceiling: a reversal by a synonym outside that vocabulary passes. A stop-condition list is
+(`under|below|after|behind`). Record the ceiling: a reversal by a synonym outside that vocabulary passes. A mirror line that says
+"same placement" names no span, so no per-line check reads it and a chain of them computes the reverse order: pin every sibling
+mirror in the same pass, its spans before the first `;` (minus its own declaration span) against the home's list read from the
+home, because an unread mirror recorded as a ceiling is the defect a later review finds. A stop-condition list is
 sliced per `;` clause, one assert per property: the clause that gates on a signal names the phase it binds, and the carve-out has
 its own clause carrying the signal and the pointer to the rule that owns it.
 

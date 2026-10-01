@@ -7522,6 +7522,11 @@ test('sprint-023 AC-5: the Test-only declaration is defined once in sprint-lifec
   }
   assert.ok(placement(declarationOf('Reachability')).includes(lineName), `the Reachability declaration must name the ${lineName} line it sits under, or the order between the two is stated at one site only`);
   assert.deepStrictEqual(placement(declarationOf('Settings change')).filter((span) => order.includes(span)), order, `the Settings change declaration must list the lines it sits under in the order the plan carries them (${order.join(' < ')}) - a list in another order contradicts the ${lineName} and Reachability declarations`);
+  for (const name of ['Reachability', 'Settings change']) {
+    const mirror = template.split('\n').find((candidate) => candidate.startsWith('- ') && candidate.includes(`\`${name}:`)) || '';
+    assert.ok(mirror, `t_plan.md's parser-critical format rules must carry a rule for the ${name} line - the template is the text a plan author reads`);
+    assert.deepStrictEqual(spans(mirror.split(';')[0]).filter((span) => !span.startsWith(`${name}:`)), placement(declarationOf(name)), `t_plan.md's ${name} rule must place the line under the same lines, in the same order, as sprint-lifecycle.md "Plan file format" - "same placement" chains from the rule above it and can order the line ahead of one the home puts before it; the asserts above read only the ${lineName} rule`);
+  }
 
   const flow = sectionOf('.asd/workflows/asd-phase-impl.md', 'Workflow');
   assert.ok(stepOf(flow, '5a').includes(`\`${label}\``) && stepOf(flow, '5a').includes('`asd-tester`'), `asd-phase-impl.md step 5a must name the ${label} line and the asd-tester it routes such a Task to - a dev dispatched for a Task whose paths are tests is the case the sprint closes`);
