@@ -123,3 +123,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: [sprint.md](sprint.md), [plan.md](plan.md)
 
 - 2026-10-01 — route review-fix wave-1/iter-01: critical, dispatch HEAD 73fd70e
+
+- 2026-10-02 — memory-fix: asd-tester-critical owner reworded two `git log` instructions in project_testability-envelope.md (external.md F2), orchestrator committed 2ae8374 after memory-check clean
+- 2026-10-02 — impl fix for wave-1/iter-01: findings resolved (combined.md F2, F3, F4, external.md F1 by commit c4f5385; external.md F2 by memory-fix 2ae8374; combined.md F1 by the user decision, AC-11); asd-tester views synced
