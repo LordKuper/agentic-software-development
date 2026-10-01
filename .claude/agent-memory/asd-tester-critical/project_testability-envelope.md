@@ -52,6 +52,13 @@ reads only stdout: `runAll` writes `FAIL -` and the stack to **stderr**, `ok -` 
 `spawnSync` loop must parse both or it shows a dropped count with no FAIL lines. For the extra FAIL lines a tracked file's mutation produces:
 [[mutation-runs-trip-the-hash-ledger]].
 
+A runner that writes the pre-image to a pending file before each mutation, and restores a leftover pending file at its own
+start, makes a killed session recoverable. Classify each run's FAIL lines into ledger noise (`upstream_hashes`,
+`canon_hashes`, generated-view `--check`) and your own test, and report only the latter. README sits outside
+`upstream_hashes`, so a README mutation shows no ledger line and its green control exits 0; a canon skill or agent trips
+`--check` too, so its green control still exits non-zero on noise alone. A suite run is about 20 s: run 60 or more
+mutations in the background and poll the log with an until-loop, because a foreground sleep is blocked.
+
 **Why** — the two failure modes this replaces:
 
 - `git checkout -- <file>` re-materialises canon as LF: these files still sit CRLF in the worktree
@@ -141,6 +148,10 @@ An assertion late in a multi-fixture test is only proven by a mutation that leav
 fixtures passing. Changing *which* key/branch the code touches (e.g. top-level `delete` → recursive
 strip) reaches it; a wholesale pre-fix restore does not.
 
+A wiring-level mutation can be pre-empted by an earlier scenario of the same test when both share the mutated input
+(fixing the file count to one reddened the byte-axis scenario first, so the file-axis assertion was never reached). Aim at
+the function the earlier scenario does not depend on, and read the first failing message before crediting it.
+
 An "at least one example without X" assertion (template conditionality) is only proven by a mutation
 that adds X to **every** remaining block — a single-site edit leaves the claim true and the mutation
 uncaught.
@@ -187,6 +198,13 @@ instead false-hits factual mentions of the command.
 A removed-phrase sweep outlives its sprint, so a later sprint can legitimately re-adopt a banned literal. Sprint 021
 banned the `done` pr exits and sprint 022 made `done` the exit. Delete those entries and cite the audit
 Contradictions ruling as the reason. Do not exempt them: an exemption keeps a ban on text that is now canon.
+
+Build the phrase list from the removed lines of the pre-sprint diff, then validate every entry with a scratch script: it
+must occur at the pre-sprint revision (`git grep -nF -e <phrase> <rev> -- <paths>`) and nowhere in the worktree now. A
+phrase that fails the first half was never removed, one that fails the second is a live leftover to route. A mutation that
+restores old text also trips this sweep, so prove a relation test with a differently spelled token (misspell the carve-out
+word) and keep the old-text restore for the sweep's own proof. A per-line co-occurrence check ("every no-tests line names
+the carve-out") is satisfied by any occurrence on a long paragraph line; record that ceiling or scope it per sentence.
 
 Same family, for locating a sentence: key the locator to the sentence's **citation**, never its
 ordinal or adverb. `sprint-lifecycle.md`'s latch-clearing route was renamed "A THIRD" → "A further"
@@ -266,12 +284,14 @@ A fix that *removes* a narrowing condition has no positive substance: require it
 one word (`null`), keep the positive assert on the clause itself so deletion cannot pass vacuously, and record
 both ceilings (a synonym passes; "whether or not null" reddens).
 
-A **value mirror** (one tier stated in agent frontmatter, `providers.md` "Agent tier matrix", README tables and two prose
-sentences) is a relation, not a literal. Take the effective value from `sync.buildSyncPlan` metas (`variantMeta` already drops
-a variant's unset effort; do not re-derive it), compare structured cells exactly, and compare prose as the whole-word
-vocabulary set (families plus efforts) of the one sentence that states it, so a reword stays green (sprint 022 entry 3, 27
-mutations). Record the ceiling: pairings inside a sentence are not compared. Find that sentence after dropping table and
-heading lines: a matrix table has no full stop, so it reads as one sentence and the locator hits twice.
+A **value mirror** (one tier stated in agent frontmatter, README tables and two prose sentences) is a relation, not a
+literal. Take the effective value from `sync.buildSyncPlan` metas (`variantMeta` already drops a variant's unset effort; do
+not re-derive it), compare structured cells exactly, and compare prose as the whole-word vocabulary set (families plus
+efforts) of the one sentence that states it, so a reword stays green. Record the ceiling: pairings inside a sentence are not
+compared. Find that sentence after dropping table and heading lines: a table has no full stop, so it reads as one sentence
+and the locator hits twice. When the rule doc's own tier table is deleted, the frontmatter becomes the only home and the
+mirror test shrinks to README against frontmatter: delete the table read and every assert message that names it, and keep
+the sandbox expectation for the read-only agents as a literal rule checked against frontmatter.
 
 A **concrete-id bump** (sprint 022 entry 4, `sol` to `gpt-6.1-sol`) lands in four kinds of pin. A byte-for-byte fixture's
 `content_digest` covers the id line: recompute it with `node:crypto` over the edited body and check it equals the runner's,
@@ -376,6 +396,17 @@ run also proves the two sites agree. The fixture has to contain every commit sha
 about. With one `src/` commit and one trailer, a pathspec re-added to the command, or trailers joined onto one line,
 stayed green. Entry 2 added a `.asd/sprints/**`-only commit and a two-trailer commit, and both
 mutations turned red.
+
+A rule that gives a fast-forward as two commands by case (base checked out versus not) is testable the same way with a temp
+origin and clone: the refspec fetch moves the ref alone on a dirty sprint branch, is refused into a checked-out branch, the
+plain fetch plus `--ff-only` merge moves the worktree, and both refuse a diverged base. Locate the merge span by its
+leading `git merge`, not by `--ff-only`, so a mutation that drops the flag reaches the refusal assertion instead of the
+locator. Run `execFileSync` with `stdio: 'pipe'` or a refusal's stderr leaks into the suite output.
+
+A runtime check on the staged diff (a memory content check) is one sandbox repo walked in order: placeholders pass,
+an unstaged violation is ignored, a legacy line kept or deleted is ignored, a violation outside the tree is ignored, then
+the hits with their line numbers, the same run from a subdirectory, the bad-input exit, and a fresh repo for the file-name
+hit. One mutation per branch of the scanner is what the walk proves.
 
 ## `routeTask` has no plan-file parser
 
