@@ -88,6 +88,13 @@
       "reason": "AC-11 lower LARGE_WAVE_FILES to 12 and WAVE_THRESHOLD_BYTES to 180000, raise claude.maxTurns of agents below 100 to 100",
       "evidence": "floor_base=wave-1/1; decisions-log.md 2026-10-02 scope amendment AC-11",
       "artifact_revision": "sprint.md@impl-review"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "Tasks 9-10 (AC-11) done, build+lint clean, sync clean, no flagged choices, authorised paths only, plan fully ticked",
+      "evidence": "d7c46eb",
+      "artifact_revision": "HEAD d7c46eb"
     }
   ],
   "task_routing": {
@@ -215,7 +222,7 @@
     }
   },
   "created_at": "2026-10-01T18:51:33.169Z",
-  "updated_at": "2026-10-01T23:05:10.986Z",
+  "updated_at": "2026-10-01T23:08:23.508Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
