@@ -1,7 +1,7 @@
 {
   "sprint_id": "023-retro-glings-008-remediation",
   "branch": "sprint/023-retro-glings-008-remediation",
-  "phase": "impl-test",
+  "phase": "impl",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -165,7 +165,7 @@
     }
   },
   "created_at": "2026-10-01T18:51:33.169Z",
-  "updated_at": "2026-10-01T21:20:45.958Z",
+  "updated_at": "2026-10-01T21:21:03.462Z",
   "review_fixes_pending": null,
   "test_defects_pending": true,
   "pr": null,
