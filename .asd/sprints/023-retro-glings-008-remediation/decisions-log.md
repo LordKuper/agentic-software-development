@@ -103,3 +103,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 - 2026-10-02 — memory-fix: asd-reviewer-documentation owner rewrote feedback_no-shell-doc-review-method.md (D-1: removed surface-cap examples, legacy ordinals made method-only), orchestrator committed 887bbb1 after memory-check clean; D-1 fixed
 - 2026-10-02 — impl fix for impl-test defects: impl test-fix: defects D-1 resolved
+
+- 2026-10-01 — route impl-test entry 3: standard, dispatch HEAD c0d2125
