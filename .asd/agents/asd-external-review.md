@@ -5,7 +5,7 @@
   "claude": {
     "model": "sonnet", "effort": "medium",
     "tools": ["Read", "Glob", "Grep", "Bash"],
-    "disallowedTools": ["Edit", "WebFetch"], "maxTurns": 50, "memory": "project",
+    "disallowedTools": ["Edit", "WebFetch"], "maxTurns": 100, "memory": "project",
     "wraps_cli": "codex", "wraps_config_key": "system.tools.codex_command", "wraps_model": "sol",
     "wraps_invoke_args": "exec --model {{wraps_model}} -c model_reasoning_effort=\"high\" --sandbox read-only -"
   },
