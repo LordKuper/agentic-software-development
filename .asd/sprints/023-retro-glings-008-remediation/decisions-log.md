@@ -145,3 +145,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-02 — impl-test: impacted set green (272/272), 0 added/0 removed (one stale fixture input repointed) tests (entry 5, HEAD analysed b115cbb); no defects, no manual-verification row
 
 - 2026-10-02 — impl-review wave-1/iter-02: combined CONCERNS (F1 low: t_plan.md lines 19-20 "same placement" contradicts the order the rule home fixes), external APPROVE; every iteration-1 finding verified resolved by both; routed to impl review-fix mode (review_fixes_pending wave-1/iter-02). The turn plan applied (17 files above LARGE_WAVE_FILES 12) and the combined reviewer finished inside its 100-turn cap.
+
+- 2026-10-01 — route review-fix wave-1/iter-02: critical, dispatch HEAD 42b9d67
