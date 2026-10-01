@@ -88,3 +88,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 - 2026-10-01 — impl-test: impacted set green (273/273), 9 added/0 removed tests (entry 1, HEAD analysed 24141f5); no defects, no manual-verification row
 - 2026-10-01 — impl-test entry 1 flagged choices accepted (Codex-host manifest read stays a post-merge orchestrator check; extra git, ledger-turn and standard-tier pins; sandbox pin literal against frontmatter); the wave-4 scope amendment AC-10 re-enters impl before impl-review (new Tasks 7 and 8 sit in a wave not yet dispatched)
+
+- 2026-10-01 — route Task 7, Task 8: critical, dispatch HEAD ef99e3f
