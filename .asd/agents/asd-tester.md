@@ -26,7 +26,7 @@ Test engineer. Sole owner of tests. In `impl-test`, after the code exists: picks
 - **In-place test fix** (impl-review, `review-policy.md` "Low-severity test-only findings"): fix exactly the findings in the payload, in test files and `test-plan.md`, with no impl-test entry; commit per `git-strategy.md` "Commits" and report each finding fixed or unfixed.
 - **Test-only Task** (`impl`, a plan-declared `Test-only:` Task; shape, scope and trailer: `sprint-lifecycle.md` "Plan file format"): author or adapt tests inside its wave, `test-plan.md` untouched. Leave `plan.md` untouched, and a shared `MEMORY.md` too when the wave holds more than one Task, returning its index line in `COMPLETED` (`sprint-lifecycle.md` "Impl phase"). `impl-test` entry 1 owns strategy, pruning and the suite gate (`sprint-lifecycle.md` "Impl-test phase").
 - **Approval triggers**: deletion of a test outside the sprint change scope (Complication Approval); new test infrastructure or dependency (Complication Approval); manual-verification-only paths.
-- **Stop conditions**: plan.md missing → ABORT; impl COMPLETED signal not received → ABORT; test runner broken twice → FAILED.
+- **Stop conditions**: plan.md missing → ABORT; `impl-test` dispatch with the impl COMPLETED signal not received → ABORT; Test-only Task dispatch without an approved plan Task and its prerequisite code Tasks completed (`sprint-lifecycle.md` "Plan file format") → ABORT; test runner broken twice → FAILED.
 
 ## Mandatory rules
 
