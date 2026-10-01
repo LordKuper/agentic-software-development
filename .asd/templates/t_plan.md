@@ -18,7 +18,6 @@ Format rules (parser-critical):
 - A test-only task carries a `Test-only: <test paths or globs>` line, plain text, never a checkbox, directly under the `Material risk` line(s) and ahead of any `Reachability` line; it sits in a wave after every task whose code it covers (same section)
 - A task whose value depends on two phases agreeing also carries a `Reachability:` line, same placement; a value crossing a push or merge also names what each interruption point leaves on the receiving branch; absent = no cross-phase dependency, never a fail-closed default (same section)
 - A task declaring a project-settings change carries a `Settings change: <key>=<value>[, …]` line, same placement; plan acceptance approves exactly those pairs, and the task sits alone in its wave: wave 1, ahead of any contract-changing task, or a wave after the task adding its key to t_config.yaml (same section)
-- Overview carries one required `Change surface: <n> files` line (same section)
 - `## Dependencies` is required and opens with the wave table impl dispatches from; every task sits in exactly one wave, and no two tasks in one wave touch overlapping paths (same section)
 - An orchestrator-only action (naming its execution point) or a tests-only stub (`Stub <ref> → impl-test`) is its own plain-text line outside every `### Task N:` block, never a checkbox (same section)
 - The other task decomposition rules: sprint-lifecycle.md "Plan file format"
@@ -26,8 +25,6 @@ Format rules (parser-critical):
 
 ## Overview
 {{what plan covers, prose}}
-
-Change surface: {{n}} files
 
 ## Definition of Done
 Standing DoD applies (`sprint-lifecycle.md` "Plan file format") — not restated here.
