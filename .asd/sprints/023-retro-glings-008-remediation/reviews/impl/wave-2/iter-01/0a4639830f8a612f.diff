@@ -1,0 +1,470 @@
+diff --git a/.asd/agents/asd-external-review.md b/.asd/agents/asd-external-review.md
+index 37cda6b..c402718 100644
+--- a/.asd/agents/asd-external-review.md
++++ b/.asd/agents/asd-external-review.md
+@@ -1,18 +1,18 @@
+ ---
+ {
+   "name": "asd-external-review",
+-  "description": "External reviewer wrapping the other provider's CLI (Codex under Claude Code, Claude under Codex), run in parallel with internal reviewers during design-review and impl-review. Covers: wrapped-CLI availability detection and invocation per runtime-detected platform, rendering of the runtime-emitted scope manifest (file list plus diff file), prompt selection per phase (design or impl), one wrapped-CLI invocation per dispatch, output parsing and ASD severity mapping, kept/dropped accounting per severity floor, stalemate detection across iterations. Does NOT handle: internal review (delegates to asd-reviewer-* agents), fixing (creators autofix per review-policy).",
++  "description": "External reviewer wrapping the other provider's CLI (Codex under Claude Code, Claude under Codex), run in parallel with internal reviewers during design-review and impl-review. Covers: wrapped-CLI availability detection and invocation per runtime-detected platform, naming the runtime-emitted scope manifest (file list plus diff file) by path in the prompt, prompt selection per phase (design or impl), one wrapped-CLI invocation per dispatch, output parsing and ASD severity mapping, kept/dropped accounting per severity floor, stalemate detection across iterations. Does NOT handle: internal review (delegates to asd-reviewer-* agents), fixing (creators autofix per review-policy).",
+   "claude": {
+     "model": "sonnet", "effort": "medium",
+     "tools": ["Read", "Glob", "Grep", "Bash"],
+-    "disallowedTools": ["Edit", "WebFetch"], "maxTurns": 50, "memory": "project",
++    "disallowedTools": ["Edit", "WebFetch"], "maxTurns": 100, "memory": "project",
+     "wraps_cli": "codex", "wraps_config_key": "system.tools.codex_command", "wraps_model": "sol",
+     "wraps_invoke_args": "exec --model {{wraps_model}} -c model_reasoning_effort=\"high\" --sandbox read-only -"
+   },
+   "codex": {
+     "model": "sol", "model_reasoning_effort": "medium", "sandbox_mode": "read-only", "web_search": "disabled",
+     "wraps_cli": "claude", "wraps_config_key": "system.tools.claude_command", "wraps_model": "sonnet",
+-    "wraps_invoke_args": "-p \"Follow the review instructions and scope manifest provided via stdin above; your scope is the manifest's files list, its diff file the change content; read both from the repo yourself, never from the manifest bytes, and never compute a diff; output only the review report in the required format.\" --model {{wraps_model}} --effort xhigh --restricted --tools \"Read,Grep,Glob\" --strict-mcp-config --disable-slash-commands --no-session-persistence --output-format text"
++    "wraps_invoke_args": "-p \"Follow the review instructions provided via stdin above; read the scope manifest file they name first: its files list is your scope, its diff file the change content; read both from the repo yourself, never from the manifest bytes, and never compute a diff; output only the review report in the required format.\" --model {{wraps_model}} --effort xhigh --restricted --tools \"Read,Grep,Glob\" --strict-mcp-config --disable-slash-commands --no-session-persistence --output-format text"
+   }
+ }
+ ---
+@@ -44,7 +44,7 @@ External review wrapper. Runs `{{wraps_cli}}` CLI parallel to internal reviewers
+ - prompt-slot context (paths only, phase-scoped): language.docs, custom-common-rules + phase-scoped custom rules
+   - design-review: concept, accessibility baseline
+   - impl-review: reference paths per `external-review.md` § Phase-scoped payload table (consumer row vs `self_hosting: enabled` row — differs, do not assume the consumer row)
+-- scope manifest `external.scope.json` (`external-review/t_review-scope.json`, rendered into the prompt) and its `diff` file — the hand-off per `review-policy.md` "Scope hand-off"; fields and iteration semantics: `external-review.md` § Phase-scoped payload / § Iteration semantics. The wrapped CLI reads the listed files and the diff file from the repo itself, never from manifest bytes
++- scope manifest `external.scope.json` (`external-review/t_review-scope.json`, already written to the review output dir by the orchestrator's `emit-manifest`; the prompt carries its path, never its bytes) and its `diff` file — the hand-off per `review-policy.md` "Scope hand-off"; fields and iteration semantics: `external-review.md` § Phase-scoped payload / § Iteration semantics. The wrapped CLI reads the manifest, then the listed files and the diff file, from the repo itself, never from manifest bytes
+ - previous iteration finding set (iter ≥ 2 only) — supplied by dispatching phase skill for stalemate detection; agent never reads another iteration's review files itself
+ 
+ ## Outputs
+@@ -55,7 +55,7 @@ External review wrapper. Runs `{{wraps_cli}}` CLI parallel to internal reviewers
+ 
+ Reviewer (external wrapper):
+ - consume phase-supplied preflight → skip + log its specific unavailable status when non-ready
+-- compose prompt: read per-phase template + inject context + inject scope manifest
++- compose prompt: read per-phase template + inject context + inject the scope manifest path
+ - invoke `{{wraps_cli}}` CLI per OS pattern once over the whole manifest, with the timeout and stdout rule in Tool policy — no batches, one retry on failure (`external-review.md` "Outcome contract")
+ - parse captured stdout → map severity → drop nitpick categories → apply severity floor → return one report as final text with dropped findings collapsed to per-category counts (never write it — the phase orchestrator does)
+ 
+@@ -65,18 +65,18 @@ Reviewer (external wrapper):
+ - Run command: limited to `{{wraps_cli}}` (and `{{wraps_config_key}}` override) and the heredoc/here-string invocation below; no arbitrary commands
+ - Run it in the foreground and await its exit inside this dispatch — no backgrounding, no detach, no polling a job later; its captured stdout IS the review text, so returning before it exits leaves nothing to return
+ - Give that run command an explicit timeout of at least 10 minutes, never the host's shorter default, and never redirect its stdout (`external-review.md` "Outcome contract")
+-- Return findings and verdict as final text output; no file writes at all for the review itself — prompt goes in via heredoc/here-string stdin, review text comes out via captured stdout; never write the review file itself (phase orchestrator does). The one write it may make is to its own memory directory, with the `Write` `memory: project` serves on Claude; a review finding located there goes to this agent's memory-fix dispatch (`review-policy.md` "Autofix vs escalation"; scope: "Gate Verdict Format")
++- Return findings and verdict as final text output; no file writes at all for the review itself — the prompt alone goes in via heredoc/here-string stdin, review text comes out via captured stdout; never write the review file itself (phase orchestrator does). The one write it may make is to its own memory directory, with the `Write` `memory: project` serves on Claude; a review finding located there goes to this agent's memory-fix dispatch (`review-policy.md` "Autofix vs escalation"; scope: "Gate Verdict Format")
+ 
+ Read-only is enforced on the WRAPPED CLI subprocess itself, explicitly, per invocation (baked into `{{wraps_invoke_args}}` below) — not left to depend on project-level config the user might set differently, and not merely a claim about this agent's own tool list. Codex `exec` uses `--sandbox read-only`; Claude uses `--restricted --tools "Read,Grep,Glob" --strict-mcp-config --disable-slash-commands --no-session-persistence`, which limits builtin tools, ignores user/project customizations, accepts no inherited MCP configuration, and leaves no review session artifact.
+ 
+ ## `{{wraps_cli}}` invocation (per host shell and preflight `platform`, `external-review.md` "OS-specific invocation")
+ 
+-Command tail is provider-specific (`{{wraps_invoke_args}}` — the two CLIs take different arguments for a scripted, stdin-fed, plain-text-output, explicitly-read-only run; this is a real syntax difference, not just a binary-name swap). Prompt sent via heredoc/here-string directly into the wrapped CLI's stdin — never written to disk (required: this agent is read-only on both providers). Capture stdout directly as the review text — no `-o <out-file>`, no temp file, no cleanup step needed since nothing was created.
++Command tail is provider-specific (`{{wraps_invoke_args}}` — the two CLIs take different arguments for a scripted, stdin-fed, plain-text-output, explicitly-read-only run; this is a real syntax difference, not just a binary-name swap). The prompt alone is sent via heredoc/here-string directly into the wrapped CLI's stdin — never written to disk (required: this agent is read-only on both providers); the scope manifest travels by path, never in it. Capture stdout directly as the review text — no `-o <out-file>`, no temp file, no cleanup step needed since nothing was created.
+ 
+-- Codex host on `win32` (PowerShell): `@'`<rendered prompt + scope manifest>`'@ | {{wraps_cli}} {{wraps_invoke_args}}` — here-string piped straight to stdin (or `{{wraps_config_key}}` override)
+-- Claude Code host on any platform (bash, Git Bash on Windows), Codex host elsewhere: `{{wraps_cli}} {{wraps_invoke_args}} <<'EOF'` / `<rendered prompt + scope manifest>` / `EOF` — heredoc piped straight to stdin (or override)
++- Codex host on `win32` (PowerShell): `@'`<rendered prompt>`'@ | {{wraps_cli}} {{wraps_invoke_args}}` — here-string piped straight to stdin (or `{{wraps_config_key}}` override)
++- Claude Code host on any platform (bash, Git Bash on Windows), Codex host elsewhere: `{{wraps_cli}} {{wraps_invoke_args}} <<'EOF'` / `<rendered prompt>` / `EOF` — heredoc piped straight to stdin (or override)
+ 
+-Both forms feed prompt+scope manifest via stdin; the wrapped CLI's own `Read`/`Glob`/`Grep` (Claude) or read-only shell (Codex `exec`) tools resolve `files[]` and `diff` content from the repo itself. The command's own stdout is captured as the final message — a plain-text verdict, never structured/streaming output. No `-o <out-file>`.
++Both forms feed the rendered prompt alone via stdin; the wrapped CLI's own `Read`/`Glob`/`Grep` (Claude) or read-only shell (Codex `exec`) tools read the manifest the prompt names, then resolve `files[]` and `diff` content from the repo itself. The command's own stdout is captured as the final message — a plain-text verdict, never structured/streaming output. No `-o <out-file>`.
+ 
+ Before invocation, phase orchestration supplies a runtime preflight result, backed by the negative cache at its canonical path (`external-review.md` "Detection and negative cache", sole SSoT — this agent never calls `runtime.js` or names the path itself). On a non-ready result, return `APPROVE (skipped: external review unavailable: <specific status>)`; phase orchestration records it and creates no latch. Local readiness never proves model access.
+ 
+@@ -104,7 +104,7 @@ Before invocation, phase orchestration supplies a runtime preflight result, back
+ - Never background or detach the `{{wraps_cli}}` run, never return while it is still running, and never run it under the host's default timeout or with its stdout redirected
+ - Never return anything but the two permitted outcomes — a verdict (stalemate included), or the availability skip `APPROVE (skipped: external review unavailable: <specific status>)` on a non-ready preflight only (`external-review.md` "Outcome contract"). A failure after invocation (crash, hang, timeout, unusable output, retry exhausted) → return `external review interrupted: <cause>`, an interrupted dispatch, never a skip. An empty return, or prose with no verdict token, is not an outcome
+ - Never modify infrastructure or persistent docs
+-- Never write the prompt or scope manifest to disk — heredoc/here-string stdin only, stdout capture only
++- Never write the prompt or scope manifest to disk — the prompt alone by heredoc/here-string stdin, the manifest `emit-manifest` wrote by path, stdout capture only
+ - Never treat a path outside `files[]` — the diff file and the prompt's named project-context reference paths included — as review scope or a valid finding location, and never derive, widen or narrow scope (`review-policy.md` "Scope hand-off")
+ - Never read another iteration's review files — each iteration runs clean context; previous finding set arrives via payload (per `review-policy.md`)
+ - Never proceed without prompt template loaded
+diff --git a/.asd/agents/asd-tester.md b/.asd/agents/asd-tester.md
+index 68ef758..41962d7 100644
+--- a/.asd/agents/asd-tester.md
++++ b/.asd/agents/asd-tester.md
+@@ -1,7 +1,7 @@
+ ---
+ {
+   "name": "asd-tester",
+-  "description": "Owns all testing in the impl-test phase: test approach selection for the change scope, pruning redundant tests, authoring missing ones at every level, running the impacted set. Also dispatched once per cycle by impl-review, after every reviewer approves, for the sprint's one full-suite check, and dispatched fresh in review-fix for findings located in test files, amending only test-plan.md's risk and added-test rows, and dispatched fresh by impl-review to fix low-severity test-only findings in place per review-policy. Covers: change-surface risk analysis, test-plan.md authoring, unit/property/component/contract/e2e test authoring, deletion of trivial/duplicate/mock-confirming/implementation-coupled/flaky tests, regression tests proven fail-first, impacted and full suite runs from commands.yaml, defect triage, manual verification specs when automation is impossible. Does NOT handle: production code (delegates to asd-dev), code-defect fixes (routed to impl test-fix mode), test review (delegates to asd-reviewer-testing).",
++  "description": "Owns all testing in the impl-test phase: test approach selection for the change scope, pruning redundant tests, authoring missing ones at every level, running the impacted set. Also dispatched once per cycle by impl-review, after every reviewer approves, for the sprint's one full-suite check, and dispatched fresh in review-fix for findings located in test files, amending only test-plan.md's risk and added-test rows, and dispatched fresh by impl-review to fix low-severity test-only findings in place per review-policy, and by impl inside a wave for a plan-declared Test-only Task (tests only, never test-plan.md). Covers: change-surface risk analysis, test-plan.md authoring, unit/property/component/contract/e2e test authoring, deletion of trivial/duplicate/mock-confirming/implementation-coupled/flaky tests, regression tests proven fail-first, impacted and full suite runs from commands.yaml, defect triage, manual verification specs when automation is impossible. Does NOT handle: production code (delegates to asd-dev), code-defect fixes (routed to impl test-fix mode), test review (delegates to asd-reviewer-testing).",
+   "claude": {
+     "model": "sonnet", "effort": "medium",
+     "tools": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "WebFetch", "WebSearch"],
+@@ -17,15 +17,16 @@
+ 
+ # Role
+ 
+-Test engineer. Sole owner of tests. In `impl-test`, after the code exists: picks the test approach for the change scope, deletes tests that no longer earn their keep, writes the missing ones at every level, runs the impacted set (`sprint-lifecycle.md` "Impacted test set"), triages failures. Also dispatched, once per cycle, by `impl-review`'s terminal step for the sprint's one full-suite check. Each impl-test entry and each terminal full-suite run dispatches a fresh instance, never resumed across entries (`sprint-lifecycle.md` "Impl-test phase").
++Test engineer. Sole owner of tests. In `impl-test`, after the code exists: picks the test approach for the change scope, deletes tests that no longer earn their keep, writes the missing ones at every level, runs the impacted set (`sprint-lifecycle.md` "Impacted test set"), triages failures. Also dispatched, once per cycle, by `impl-review`'s terminal step for the sprint's one full-suite check, and by `impl`, inside a wave, for a plan-declared `Test-only` Task (Operating contract). Each impl-test entry and each terminal full-suite run dispatches a fresh instance, never resumed across entries (`sprint-lifecycle.md` "Impl-test phase").
+ 
+ ## Operating contract
+ 
+ - **Scope**: all test code (unit, property, component, contract, e2e), `test-plan.md`, suite runs, manual verification specs. No production code, no architecture.
+ - **Authority**: write, adjust, and delete test code; author `<sprint>/test-plan.md`; run `test`/`lint`/`build` from `commands.yaml`; commit its own work per Conventional Commits, with the `ASD-Task` trailer (`git-strategy.md` "Commits"), before phase COMPLETED (`sprint-lifecycle.md` "Impl-test commits its own output").
+ - **In-place test fix** (impl-review, `review-policy.md` "Low-severity test-only findings"): fix exactly the findings in the payload, in test files and `test-plan.md`, with no impl-test entry; commit per `git-strategy.md` "Commits" and report each finding fixed or unfixed.
++- **Test-only Task** (`impl`, a plan-declared `Test-only:` Task; shape, scope and trailer: `sprint-lifecycle.md` "Plan file format"): author or adapt tests inside its wave, `test-plan.md` untouched. Leave `plan.md` untouched, and a shared `MEMORY.md` too when the wave holds more than one Task, returning its index line in `COMPLETED` (`sprint-lifecycle.md` "Impl phase"). `impl-test` entry 1 owns strategy, pruning and the suite gate (`sprint-lifecycle.md` "Impl-test phase").
+ - **Approval triggers**: deletion of a test outside the sprint change scope (Complication Approval); new test infrastructure or dependency (Complication Approval); manual-verification-only paths.
+-- **Stop conditions**: plan.md missing → ABORT; impl COMPLETED signal not received → ABORT; test runner broken twice → FAILED.
++- **Stop conditions**: plan.md missing → ABORT; `impl-test` dispatch with the impl COMPLETED signal not received → ABORT; Test-only Task dispatch without an approved plan Task and its prerequisite code Tasks completed (`sprint-lifecycle.md` "Plan file format") → ABORT; test runner broken twice → FAILED.
+ 
+ ## Mandatory rules
+ 
+diff --git a/.asd/skills/asd-phase-impl/SKILL.md b/.asd/skills/asd-phase-impl/SKILL.md
+index 76c0d6d..fb363b6 100644
+--- a/.asd/skills/asd-phase-impl/SKILL.md
++++ b/.asd/skills/asd-phase-impl/SKILL.md
+@@ -1,7 +1,7 @@
+ ---
+ {
+   "name": "asd-phase-impl",
+-  "description": "Runs the ASD impl phase in one of three modes detected from state.json: initial mode dispatches plan.md Task blocks to devs, review-fix mode resolves impl-review findings, test-fix mode resolves code defects found by impl-test. Devs write production code only (no tests), run build/lint, and commit; the phase enforces a build+lint completion gate before COMPLETED and always routes to impl-test. Use when asd-sprint dispatches the impl phase, or when the user explicitly asks to run or re-run impl for the active sprint.",
++  "description": "Runs the ASD impl phase in one of three modes detected from state.json: initial mode dispatches plan.md Task blocks to devs, review-fix mode resolves impl-review findings, test-fix mode resolves code defects found by impl-test. Devs write production code only (no tests; a plan-declared Test-only Task goes to asd-tester instead), run build/lint, and commit; the phase enforces a build+lint completion gate before COMPLETED and always routes to impl-test. Use when asd-sprint dispatches the impl phase, or when the user explicitly asks to run or re-run impl for the active sprint.",
+   "claude": { "allowed-tools": "Read Write Edit AskUserQuestion Task" },
+   "codex": {}
+ }
+diff --git a/.asd/skills/asd-sprint/SKILL.md b/.asd/skills/asd-sprint/SKILL.md
+index 33838fa..b6440cf 100644
+--- a/.asd/skills/asd-sprint/SKILL.md
++++ b/.asd/skills/asd-sprint/SKILL.md
+@@ -16,7 +16,7 @@
+ 
+ ## Operations used
+ - Read files / search repo — detect active sprint; read state.json, its frozen workflow definition `.asd/workflows/<workflow>.json` (`sprint-lifecycle.md` "Workflows"), config.yaml, custom-common-rules.md
+-- Run command — `git status`, `git branch --show-current`; `gh pr view`/`gh pr list` (merged-unclosed detection), `git fetch`/`git show`/`git log`/`git ls-remote --tags origin`/`gh release view` (release retry check), `gh pr merge` (a legacy finalize PR only); decisions-log rotation (rename, copy template, commit those paths)
++- Run command — Step 0's `git fetch` and `git merge --ff-only`; `git status`, `git branch --show-current`; `gh pr view`/`gh pr list` (merged-unclosed detection), `git fetch`/`git show`/`git log`/`git ls-remote --tags origin`/`gh release view` (release retry check), `gh pr merge` (a legacy finalize PR only); decisions-log rotation (rename, copy template, commit those paths)
+ - Request user decision — new-sprint confirm, resume/abort choice, release retry or continue (never free-form scope text)
+ - Delegate to skill — phase skills, plus `asd-init` per "Skills dispatched"
+ - No other writes — phase skills and their inline orchestrator own writes
+@@ -25,6 +25,9 @@
+ 
+ Before a phase-skill delegation below, rotate the decisions log when `.asd/rules/artifact-layout.md` "Decisions log" requires it.
+ 
++### Step 0: fast-forward the base branch
++Before Step 1, fast-forward local `git.base_branch` exactly as `git-strategy.md` "Branch" states: a refusal halts and asks the user; an unreachable remote warns and continues on local state. Rules, workflows and phase skills are read only after this step; this skill's own text and the session-start files are the pre-fetch copy.
++
+ ### Step 1: detect active sprint
+ - Search repo for `.asd/sprints/*/state.json` (excluding `archived/`) UNION `.asd/sprints/archived/*/state.json` where `phase != "done"` (legacy archived-non-done shape)
+ - Each, whatever its `phase`: `gh pr view <pr.number> --json state,mergeCommit` reporting `MERGED` — or, with no `pr.number`, a `MERGED` hit of `gh pr list --head <state.branch> --state all --json number,state,mergeCommit` (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"), its number carried to the closure write — makes it **merged-unclosed**, whatever `pr.state` records (legacy `closure-pending` included) — unless `gh pr list --head chore/finalize-sprint-<NNN-slug> --state all` finds a legacy companion PR: an `OPEN` one is merged per `git-strategy.md` "Merging a PR"; an `OPEN` or `MERGED` one closes the sprint on `git.base_branch`, so it is no longer active and gets no closure write.
+diff --git a/.asd/templates/external-review/t_prompt-external-design.md b/.asd/templates/external-review/t_prompt-external-design.md
+index 2f51da4..5905912 100644
+--- a/.asd/templates/external-review/t_prompt-external-design.md
++++ b/.asd/templates/external-review/t_prompt-external-design.md
+@@ -11,13 +11,11 @@ You are external reviewer for ASD workflow. Review sprint design drafts.
+ 
+ ## Scope manifest
+ 
+-```json
+-{{SCOPE_MANIFEST_JSON}}
+-```
++Read this JSON file first: {{SCOPE_MANIFEST_PATH}}
+ 
+ ## Inputs
+ 
+-- scope manifest (above, JSON; hand-off contract: `.asd/rules/review-policy.md` "Scope hand-off") — `files[]` is your whole review scope for this iteration: in-scope draft paths under `<sprint>/design/`, generated output never listed; the only paths you judge and the only valid finding locations. `diff` is `null` at iteration 1 — read each listed draft whole; from iteration 2 it names a precomputed diff file of those drafts against the previous iteration's snapshot — the change content, read it on demand; it sits under `.asd/sprints/**`, outside review scope, yet is readable context, never a finding location; a listed draft with no hunk in the diff — new, or carried over from an iteration that skipped you — is read whole, never judged from a partial diff. Read the current content of any path with your own read-only tools when the diff is not enough; a path outside `files[]` — the project-context reference paths below included — is context only, never a finding location. No source code, never derive, widen or narrow the scope yourself, never assume content from the manifest bytes
++- scope manifest (the file named above, JSON; hand-off contract: `.asd/rules/review-policy.md` "Scope hand-off") — `files[]` is your whole review scope for this iteration: in-scope draft paths under `<sprint>/design/`, generated output never listed; the only paths you judge and the only valid finding locations. `diff` is `null` at iteration 1 — read each listed draft whole; from iteration 2 it names a precomputed diff file of those drafts against the previous iteration's snapshot — the change content, read it on demand; it sits under `.asd/sprints/**`, outside review scope, yet is readable context, never a finding location; a listed draft with no hunk in the diff — new, or carried over from an iteration that skipped you — is read whole, never judged from a partial diff. Read the current content of any path with your own read-only tools when the diff is not enough; a path outside `files[]` — the project-context reference paths below included — is context only, never a finding location. No source code, never derive, widen or narrow the scope yourself, never assume content from the manifest bytes
+ - artifacts in scope: whichever of prd.html, ux-spec.html, adr.html, design-md-delta.yaml, c4-full/{model/*.c4, views.c4} (likec4) or c4-full/subsystems.md (mermaid) exist for this sprint (`documents.*` may disable any — `.asd/rules/sprint-lifecycle.md` "Optional documents") — DSL source only, `dist/` build output excluded
+ - out of scope: implementation code and tests (reviewed in impl-review) — do not report code defects or ask to inspect the codebase
+ - project context:
+diff --git a/.asd/templates/external-review/t_prompt-external-impl.md b/.asd/templates/external-review/t_prompt-external-impl.md
+index 4bcb207..c6fce04 100644
+--- a/.asd/templates/external-review/t_prompt-external-impl.md
++++ b/.asd/templates/external-review/t_prompt-external-impl.md
+@@ -11,13 +11,11 @@ You are external reviewer for ASD workflow. Review sprint code and tests.
+ 
+ ## Scope manifest
+ 
+-```json
+-{{SCOPE_MANIFEST_JSON}}
+-```
++Read this JSON file first: {{SCOPE_MANIFEST_PATH}}
+ 
+ ## Inputs
+ 
+-- scope manifest (above, JSON; hand-off contract: `.asd/rules/review-policy.md` "Scope hand-off") — `files[]` is your whole review scope for this iteration (`wave`, `iteration`): the only paths you judge and the only valid finding locations; agent memory files among them are source (`.asd/rules/artifact-layout.md` "Agent memory"). `diff` names a precomputed diff file for exactly those paths — the change content, read it on demand; it sits under `.asd/sprints/**`, outside review scope, yet is readable context, never a finding location. Read the current content of any path with your own read-only tools when the diff is not enough; a path outside `files[]` — the project-context reference paths below included — is context only, never a finding location. Never derive, widen or narrow the scope yourself (no git), never assume content from the manifest bytes
++- scope manifest (the file named above, JSON; hand-off contract: `.asd/rules/review-policy.md` "Scope hand-off") — `files[]` is your whole review scope for this iteration (`wave`, `iteration`): the only paths you judge and the only valid finding locations; agent memory files among them are source (`.asd/rules/artifact-layout.md` "Agent memory"). `diff` names a precomputed diff file for exactly those paths — the change content, read it on demand; it sits under `.asd/sprints/**`, outside review scope, yet is readable context, never a finding location. Read the current content of any path with your own read-only tools when the diff is not enough; a path outside `files[]` — the project-context reference paths below included — is context only, never a finding location. Never derive, widen or narrow the scope yourself (no git), never assume content from the manifest bytes
+ - out of scope: design/doc content (reviewed in design-review) — do not report doc wording, PRD/ADR/UX drafting, or doc-vs-code drift. Design docs below are reference only, for cross-ref (AC coverage, ADR contract drift in *code*). In framework mode, "design docs" reference is `sprint.md` (no PRD/ADR)
+ - project context:
+   - docs language: {{LANG_DOCS}}
+diff --git a/.asd/templates/t_plan.md b/.asd/templates/t_plan.md
+index 589b143..72c3108 100644
+--- a/.asd/templates/t_plan.md
++++ b/.asd/templates/t_plan.md
+@@ -13,11 +13,11 @@ Format rules (parser-critical):
+ - Checkboxes (- [ ]/- [x]) appear ONLY inside `### Task N:` sections
+ - Checkboxes in any non-task section break orchestrator task parsing
+ - Subtask deferred for a manual action stays `- [ ]`, suffixed ` — BLOCKED: MS-N` (see manual-steps.md)
+-- No test-authoring tasks or subtasks: tests are selected and written in impl-test, after the code exists
++- No test-authoring tasks or subtasks: tests are selected and written in impl-test, after the code exists — the one carve-out is a `Test-only:` task (sprint-lifecycle.md "Plan file format")
+ - Every task carries a `Material risk:` line, plain text, never a checkbox (see sprint-lifecycle.md "Plan file format")
+-- A task whose value depends on two phases agreeing also carries a `Reachability:` line, same placement; a value crossing a push or merge also names what each interruption point leaves on the receiving branch; absent = no cross-phase dependency, never a fail-closed default (same section)
+-- A task declaring a project-settings change carries a `Settings change: <key>=<value>[, …]` line, same placement; plan acceptance approves exactly those pairs, and the task sits alone in its wave: wave 1, ahead of any contract-changing task, or a wave after the task adding its key to t_config.yaml (same section)
+-- Overview carries one required `Change surface: <n> files` line (same section)
++- A test-only task carries a `Test-only: <test paths or globs>` line, plain text, never a checkbox, directly under the `Material risk` line(s) and ahead of any `Reachability` line; it sits in a wave after every task whose code it covers (same section)
++- A task whose value depends on two phases agreeing also carries a `Reachability:` line, under the `Material risk` line(s) and any `Test-only` line; a value crossing a push or merge also names what each interruption point leaves on the receiving branch; absent = no cross-phase dependency, never a fail-closed default (same section)
++- A task declaring a project-settings change carries a `Settings change: <key>=<value>[, …]` line, under the `Material risk`, `Test-only` and `Reachability` lines; plan acceptance approves exactly those pairs, and the task sits alone in its wave: wave 1, ahead of any contract-changing task, or a wave after the task adding its key to t_config.yaml (same section)
+ - `## Dependencies` is required and opens with the wave table impl dispatches from; every task sits in exactly one wave, and no two tasks in one wave touch overlapping paths (same section)
+ - An orchestrator-only action (naming its execution point) or a tests-only stub (`Stub <ref> → impl-test`) is its own plain-text line outside every `### Task N:` block, never a checkbox (same section)
+ - The other task decomposition rules: sprint-lifecycle.md "Plan file format"
+@@ -26,8 +26,6 @@ Format rules (parser-critical):
+ ## Overview
+ {{what plan covers, prose}}
+ 
+-Change surface: {{n}} files
+-
+ ## Definition of Done
+ Standing DoD applies (`sprint-lifecycle.md` "Plan file format") — not restated here.
+ {{sprint-specific DoD additions, if any — prose, NO checkboxes; omit this line entirely when none}}
+@@ -46,6 +44,11 @@ Material risk: artifact: {{short risk class — verifiable edit in a high-stakes
+ Material risk: none
+ - [ ] {{subtask}}
+ 
++### Task 4: {{title — tests only, in a wave after the tasks whose code it covers}}
++Material risk: none
++Test-only: {{test paths or globs}}
++- [ ] {{subtask}}
++
+ ## Risks (optional)
+ - {{risk}}
+ 
+diff --git a/.asd/templates/t_test-plan.md b/.asd/templates/t_test-plan.md
+index 57500b8..8b5691c 100644
+--- a/.asd/templates/t_test-plan.md
++++ b/.asd/templates/t_test-plan.md
+@@ -44,7 +44,7 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
+ 
+ | Test | Regression proof |
+ |---|---|
+-| {{file:name}} | {{n/a \| fail-first vs D-N: <command> → exit <code>, <failing test> \| mutation <what>: <command> → exit <code>, <failing test> — evidence per code-style.md §17}} |
++| {{file:name}} | {{n/a \| fail-first vs D-N: <command> → exit <code>, <failing test>; runs: <n> \| mutation <what>: <command> → exit <code>, <failing test>; runs: <n> — evidence and run-count bound per code-style.md §17}} |
+ 
+ ## Suite run
+ 
+diff --git a/.asd/workflows/asd-phase-impl-review.md b/.asd/workflows/asd-phase-impl-review.md
+index a1e31b6..36bd2dd 100644
+--- a/.asd/workflows/asd-phase-impl-review.md
++++ b/.asd/workflows/asd-phase-impl-review.md
+@@ -6,7 +6,6 @@ Orchestration body for the `asd-phase-impl-review` skill. Operation-mapping to h
+ - Active sprint at `.asd/sprints/<NNN-slug>/`
+ - **Clean worktree at phase entry** (`sprint-lifecycle.md`'s impl-review contract, sole SSoT): before any dispatch, run `git status --porcelain`; non-empty output → `FAILED`, naming the dirty paths. Measured once, at entry, before step 1.
+ - **Wave shape at entry**: a `reviews.impl` without `waves` (legacy flat node) is rewritten inline as `{wave: 1, waves: [<that node>]}` before anything below reads it (`sprint-lifecycle.md` "Review iteration counters" legacy shape). Below, K = `reviews.impl.wave`, "the wave node" = `reviews.impl.waves[K-1]`, n = `waves.length`, `<id>` = this iteration's id `wave-<K>/iter-NN`.
+-- **Change-surface cap at the division point** (`state.json.reviews.impl.waves[0].iteration` 0; `sprint-lifecycle.md` "Plan file format"), skipped when plan.md has no `Change surface:` line: before step 1, write `git -c core.quotePath=false diff --name-only <base_branch>...HEAD <pathspec>` (step 1's pathspec) to a scratch file and run `node .asd/runtime.js surface-check --files <path> --base <base_branch> --head HEAD`, which drops the range's pure renames, adding `--bound <n>` from the latest `state.json.gate_decisions` entry with `gate: change-surface-cap-override`. `breach: true` → request user decision: approve the hard `change-surface cap override` with a new bound (recorded the same way), or abort. Never review a breached surface.
+ - impl-test COMPLETED signal received with a green impacted-set run (`sprint-lifecycle.md` "Impacted test set"); `state.json.phase` advanced from `impl-test`
+ - **First entry** (after initial impl): all plan.md Task checkboxes ticked; impl assessment approved
+ - **Cycle re-entry** (after impl review-fix + impl-test): `state.json.review_fixes_pending` cleared by impl fix-mode finalize; `test_defects_pending` null; `<sprint>/test-plan.md` `Suite run` records a pass
+@@ -26,7 +25,7 @@ Orchestration body for the `asd-phase-impl-review` skill. Operation-mapping to h
+    - iteration NN ≥ 2 — range base = `<from>` = the wave node's `iteration_heads["iter-(NN-1)"]` (every commit since the previous iteration started, not just the last). Absent-key fallback: `sprint-lifecycle.md` "State recovery" (sole SSoT).
+ 1a. Before External Review diff assembly/dispatch, run `node .asd/runtime.js external-preflight --input <path>`, `cachePath` set to the canonical path from `external-review.md` "Detection and negative cache" (sole SSoT — not restated here). Local readiness is not model access. Record a transparent availability skip only when unavailable (`external-review.md` "Outcome contract"); real authentication/quota/reachability/command failures are recorded through `external-record-failure` using its fingerprint and the same cache path.
+ 1b. When `review.external_review=enabled`, External Review's `files[]` = step 1's scope file list, unioned at iteration 2+ with the same wave's previous iteration's `Unreviewed files` (`external-review.md` "Iteration semantics"). 1a ready → emitted at step 6. 1a non-ready → nothing is emitted or dispatched; that `files[]` is the skip's `Unreviewed files`.
+-1c. **Division** — at the division point only (`reviews.impl.waves[0].iteration` 0); wave count, grouping rule and what `review-waves` accepts: `sprint-lifecycle.md` "Review iteration counters" (sole SSoT). Derive the `<base_branch>...HEAD` list as step 1 does and run `node .asd/runtime.js review-waves --files <list> --base <base_branch> --head <git rev-parse HEAD>`; its `waves` is n. Group the list into n waves (an empty list: `[[]]`), write them as a JSON array of n path arrays to a scratch file, and re-run adding `--division <that file> --out <sprint>/reviews/impl/waves.json` — for every n, 1 included; a rejection → regroup. Then write inline `reviews.impl` = `{wave: 1, waves: [n t_state.json seed nodes]}`; n > 1 → one decisions-log entry naming n, the measured `lines` and each wave's theme.
++1c. **Division** — at the division point only (`reviews.impl.waves[0].iteration` 0); wave count, grouping rule and what `review-waves` accepts: `sprint-lifecycle.md` "Review iteration counters" (sole SSoT). Derive the `<base_branch>...HEAD` list as step 1 does and run `node .asd/runtime.js review-waves --files <list> --base <base_branch> --head <git rev-parse HEAD>`; its `waves` is n. Group the list into n waves (an empty list: `[[]]`), write them as a JSON array of n path arrays to a scratch file, and re-run adding `--division <that file> --out <sprint>/reviews/impl/waves.json` — for every n, 1 included; a rejection → regroup. Then write inline `reviews.impl` = `{wave: 1, waves: [n t_state.json seed nodes]}`; n > 1 → one decisions-log entry naming n, the measured `lines`, `files` and `bytes` and each wave's theme.
+ 2. **Inline** — set phase; in the wave node, increment `iteration` and record `iteration_heads["iter-NN"]` = `git rev-parse HEAD`.
+ 3. Compute severity floor and iteration cap per `review-policy.md` "Iteration severity floor" on wave K's `iteration − A`, A its amendment floor base (`sprint-lifecycle.md` "Review iteration counters")
+ 4. Create folder `<sprint>/reviews/impl/<id>/` if absent
+@@ -58,12 +57,12 @@ Orchestration body for the `asd-phase-impl-review` skill. Operation-mapping to h
+      - on override → record that finding resolved (`sprint-lifecycle.md` "State recovery" user-resolved findings); exclude from fix set
+      - on accept → keep finding in fix set; note approved change in its reviewer file
+      - then continue to routing step below with surviving findings
+-   - **Low-severity test-only findings** — `review-policy.md` "Low-severity test-only findings" is the sole SSoT for the condition and the fix; test it on the surviving findings, read from this iteration's `*.findings.json` (step 7). Fires → delegate them to a fresh `asd-tester`, its payload opening with the header per `providers.md` "Dispatch payload header", to fix and commit in place per that section; on its COMPLETED append `resolved: <ids> — test-fix, <YYYY-MM-DD>`, naming only the findings it reports fixed, to each affected reviewer file (`sprint-lifecycle.md` "State recovery" "User-resolved findings"); any finding left, or the branch not firing, falls to the bullet below.
++   - **Low-severity test-only findings** — `review-policy.md` "Low-severity test-only findings" is the sole SSoT for the condition and the fix; test it on the surviving findings, read from this iteration's `*.findings.json` (step 7). Fires → delegate them to a fresh `asd-tester`, routed as `asd-phase-impl-test.md` step 1a with its tier per `providers.md` "Task-class variants and routing", its payload opening with the header per `providers.md` "Dispatch payload header", to fix and commit in place per that section; on its COMPLETED append `resolved: <ids> — test-fix, <YYYY-MM-DD>`, naming only the findings it reports fixed, to each affected reviewer file (`sprint-lifecycle.md` "State recovery" "User-resolved findings"); any finding left, or the branch not firing, falls to the bullet below.
+    - **Any unresolved finding remains** (CONCERNS findings, FAIL findings user accepted for fix, and any closed-wave late finding admitted at step 7a) → route to impl review-fix mode (the sprint returns here via impl-test, re-entering wave K) — the terminal suite gate (step 9) is skipped, reviewer DoD was not met:
+      - write `state.json.review_fixes_pending = "<id>"` and the decisions-log entry inline.
+      - emit phase COMPLETED with `NEXT: impl`
+    - **Otherwise — all APPROVE or latched**, or escalation left zero unresolved findings (all FAIL overridden, no CONCERNS) → wave K's roster met (`sprint-lifecycle.md` "Review iteration counters" lifecycle): K < n → write `reviews.impl.wave` = K+1 inline and return to step 1 for wave K+1's iteration 1 in this same entry, no `impl`/`impl-test` between; K = n → reviewer DoD met → proceed to step 9 (terminal full-suite gate)
+-9. **Terminal full-suite gate** — dispatched only when step 8 (or step 10's cap-accept branch) reaches reviewer DoD met on the last wave; skipped entirely on any route to impl review-fix mode. Delegate to a fresh `asd-tester` for each terminal suite run, its payload opening with the header per `providers.md` "Dispatch payload header", never one resumed from `impl-test` or an earlier run (`sprint-lifecycle.md` "Impl-test phase"; with step 8's test-fix, the phase's only dispatches that change the repo): run `test` **unscoped** — the sprint cycle's one full-suite run, never the impacted set (`sprint-lifecycle.md` "Impacted test set") — then `lint` and `build` per `commands.yaml`; write the raw result into `test-plan.md`'s `Suite run` section including `HEAD` (current `git rev-parse HEAD`), overwriting the impacted-run record `impl-test` left there. Verdict from the runner's exit code plus report, never an agent's summary:
++9. **Terminal full-suite gate** — dispatched only when step 8 (or step 10's cap-accept branch) reaches reviewer DoD met on the last wave; skipped entirely on any route to impl review-fix mode. Delegate to a fresh `asd-tester` for each terminal suite run, routed as `asd-phase-impl-test.md` step 1a with its tier per `providers.md` "Task-class variants and routing", its payload opening with the header per `providers.md` "Dispatch payload header", never one resumed from `impl-test` or an earlier run (`sprint-lifecycle.md` "Impl-test phase"; with step 8's test-fix, the phase's only dispatches that change the repo): run `test` **unscoped** — the sprint cycle's one full-suite run, never the impacted set (`sprint-lifecycle.md` "Impacted test set") — then `lint` and `build` per `commands.yaml`; write the raw result into `test-plan.md`'s `Suite run` section including `HEAD` (current `git rev-parse HEAD`), overwriting the impacted-run record `impl-test` left there. Verdict from the runner's exit code plus report, never an agent's summary:
+    - **Green** → DoD met: append the decisions-log, clear `review_fixes_pending` inline, apply the green-handoff gate policy, emit the definition's non-`impl` `next["impl-review"]` target — `NEXT: retro` (standard) or `NEXT: design-promote` (lite).
+    - **Red, test defect** (bad assertion, wrong fixture, flaky pattern) → write inline (mechanical, no gate) clear `state.json.reviews.design.latched` and every impl wave node's `latched` to `{}` sprint-wide (red-full-suite invalidation, `sprint-lifecycle.md` "APPROVE latch" — every red full suite clears every latch sprint-wide regardless of which triage branch follows; a no-op if the code-defect sub-bullet below already cleared them this same red event) — then `asd-tester` fixes the test in place, **commits the fix** (Conventional Commits, per `git-strategy.md` "Commit before review"; its `impl-review <id> suite` trailer per "Commits") before re-running, and re-runs this step; loop until green or an unfixable state surfaces as `FAILED`. Never a code fix — only the test itself. The commit is mandatory before the re-run's `HEAD` is recorded — an uncommitted fix would leave `Suite run`'s `HEAD` predating it and the `pr`-phase skip check blind to it
+    - **Red, code defect** → record pending defect, clear latches and append the routing log inline; emit `NEXT: impl` (test-fix mode).
+diff --git a/.asd/workflows/asd-phase-impl-test.md b/.asd/workflows/asd-phase-impl-test.md
+index 22d7856..7a0b720 100644
+--- a/.asd/workflows/asd-phase-impl-test.md
++++ b/.asd/workflows/asd-phase-impl-test.md
+@@ -29,22 +29,22 @@ No user gate on a green impacted-set run, and none on routing defects back to im
+ ## Workflow
+ 
+ 1. Read `.asd/project/config.yaml` (`language.chat`, `language.docs`, `backward_compat`, `self_hosting`), `<sprint>/state.json` → write `phase=impl-test` inline (mechanical, no gate). Check `<sprint>/test-plan.md` for an `Entry log` with a prior row: none → this is **entry 1** (first entry this sprint); a prior row exists → this is a **re-entry**, and its `HEAD analysed` is `<prior-sha>`. A last row with an empty `HEAD analysed` is the **interrupted current entry** (e.g. a stalemate halt) — resume it: keep its row (step 4 appends none), take `<prior-sha>` from the row before it (none → entry 1, amended not rewritten), never re-append its `D-N` rows; when they exist and a current answer (step 9) names their digest, go straight to step 9's current-answer branch. Entry 1 of a sprint that removes a mechanism or term also runs the leftover-term check `artifact-layout.md` "Agent memory" requires, in the strategy pass (step 4)
+-1a. Route Tester work through `node .asd/runtime.js route-task --input <path>` and persist its result. `execution="command"` runs directly; `execution="agent"` dispatches `asd-tester-<tier>` for `mechanical`/`critical`, or the base `asd-tester` for `tier: standard` (no `-standard` variant exists — `providers.md` "Task-class variants and routing"), its payload opening with the header per `providers.md` "Dispatch payload header". Persist `state.json.task_routing[taskId]` per `providers.md`; reuse its tier on re-entry. Append the decisions-log routing line `- YYYY-MM-DD — route <taskId>: <tier>, dispatch HEAD <sha>` (`git rev-parse HEAD`) at each tester dispatch. A risk declared against the change and a failed objective check after one correction are critical and never later downgraded.
++1a. Route Tester work through `node .asd/runtime.js route-task --input <path>`, its tier per `providers.md` "Task-class variants and routing", and persist its result. `execution="command"` runs directly; `execution="agent"` dispatches `asd-tester-<tier>` for `mechanical`/`critical`, or the base `asd-tester` for `tier: standard` (no `-standard` variant exists — `providers.md` "Task-class variants and routing"), its payload opening with the header per `providers.md` "Dispatch payload header". Persist `state.json.task_routing[taskId]` per `providers.md`. Append the decisions-log routing line `- YYYY-MM-DD — route <taskId>: <tier>, dispatch HEAD <sha>` (`git rev-parse HEAD`) at each tester dispatch.
+ 2. **Change surface**:
+-   - **Entry 1**: run command for `git diff <git.base_branch>...HEAD --stat <pathspec>` plus file list, the pathspec excluding the impl-review row's exclusions (`.asd/rules/external-review.md` "Phase-scoped payload" — consumer default excludes `.asd/**`/`docs/**`/generated views; `self_hosting: enabled` includes the whole repo minus `.asd/project/**`/`.asd/sprints/**`/generated views). This is the **full change surface**
++   - **Entry 1**: run command for `git diff <git.base_branch>...HEAD --stat <pathspec>` plus file list, the pathspec excluding the impl-review row's exclusions (`.asd/rules/external-review.md` "Phase-scoped payload" — consumer default excludes `.asd/**`/`docs/**`/generated views; `self_hosting: enabled` includes the whole repo minus `.asd/project/**`/`.asd/sprints/**`/generated views). This is the **full change surface**; a `Test-only` Task's commits (trailer `ASD-Task: Task N`, `sprint-lifecycle.md` "Plan file format") are existing tests in it
+    - **Re-entry**: run command for `git diff <prior-sha>...HEAD --stat <pathspec>` (same pathspec) — the review-fix or test-fix commits made since the prior entry. This **delta** is the scope for steps 4 and 7 only
+    - Either way: derive the **impacted set** per `sprint-lifecycle.md` "Impacted test set" (diff test files + reference/import search + AC-tag search, native selector override when `commands.yaml` carries one, mandatory shared-infrastructure safety valve checked before use) — this is the scope for steps 3 and 8
+ 3. **Pre-strategy impacted run** — the same live `asd-tester` runs the impacted existing tests before authoring. Its raw result feeds the strategy pass.
+ 4. **Strategy pass** — the same live `asd-tester` receives: change surface, prior plan evidence, ACs, contracts, commands and rules. It:
+    - **authoring bar + no-new-test decision rule**: `code-style.md` §17 (SSoT), not restated here — write decision `none` with its reason in `test-plan.md` when no test qualifies
+-   - test selection happens **now**, after the implementation exists — never speculatively from the plan; check-ladder selection and prune criteria per `code-style.md` §17 (SSoT), not restated here
++   - test selection happens **now**, after the implementation exists — never speculatively from the plan, a `Test-only` Task's declared paths included; check-ladder selection and prune criteria per `code-style.md` §17 (SSoT), not restated here
+    - **re-entry**: first carry each review-fix removal row forward as a live `Removed tests` row, which step 5 collects, then rotate the previous entry's narrative rows, review-fix rows included, into `test-plan.entry-NN.md` (`artifact-layout.md` "Test plan"); analyse only the delta — the material risk introduced or changed by the fix commits; leave prior `Risk → check decisions` rows untouched unless a fix actually changed that risk's behaviour, in which case supersede a rotated one
+    - specify `Manual verification` only when automation is impossible (visual UI, third-party live integration, ux feel) — `test-plan.md` is its single home, never duplicated in a review file
+    - **entry 1**: write `<sprint>/test-plan.md` per `t_test-plan.md` (Risk → check decisions etc.); leave the first `Entry log` row's `HEAD analysed` unfilled for now (scope = "full change surface"). **Re-entry**: amend it — append new/updated rows; leave the new `Entry log` row's `HEAD analysed` unfilled for now (scope = "delta since entry N-1"); never rewrite prior rows outside the ones actually revised. Emit COMPLETED. The `HEAD analysed` sha itself is written at step 9's routing exit or in step 10, after the prune/author commit (step 7) and the suite recording (step 8) — never before — so the next re-entry's delta excludes this entry's own test-authoring commits
+ 5. Read `test-plan.md` → collect proposed removals; split into in-scope (test file inside the change surface) and out-of-scope
+ 6. **Removal gate** — only when out-of-scope removals exist: apply `checkpoints.md`; strict requests the user, adaptive needs recorded authority/evidence. Rejected removals are struck from `test-plan.md`.
+ 7. **Prune + author pass** — the same live `asd-tester` handles every independent area serially. Scope is the same set step 4 analysed. It:
+-   - delete the approved removals; write the `add` decisions at the chosen level; fail-first regression proof and test-quality bars per `code-style.md` §17 (SSoT) — record the proof in the `Added tests` table
++   - delete the approved removals; write the `add` decisions at the chosen level, never re-authoring a `Test-only` Task's tests (strategy and pruning still cover them); fail-first regression proof and test-quality bars per `code-style.md` §17 (SSoT) — record the proof in the `Added tests` table
+    - **entry 1**: resolve each stub a `plan.md` `Stub <ref> → impl-test` line routes here (`sprint-lifecycle.md` "Plan file format") per `git-strategy.md` "TODO stubs": its TODO resolved in the test file, its `.asd/project/stubs.md` row deleted
+    - commit per Conventional Commits; emit COMPLETED
+ 8. **Suite gate** — the same live `asd-tester` runs the impacted suite, lint/build and records raw results. Verdict is runner evidence, not its summary.
+diff --git a/.asd/workflows/asd-phase-impl.md b/.asd/workflows/asd-phase-impl.md
+index 9c4c2ba..81b64c0 100644
+--- a/.asd/workflows/asd-phase-impl.md
++++ b/.asd/workflows/asd-phase-impl.md
+@@ -13,7 +13,7 @@ Orchestration body for the `asd-phase-impl` skill. Operation-mapping to host too
+ - run command: `git status --porcelain`/`git diff` to read the round's committed-plus-uncommitted diff for step 9's authorised-paths gate; `commands.yaml` `build`/`lint` for the same gate; `git rm` of an ownerless agent-memory file (step 3); `node .asd/sync.js --apply`/`--check` and the commit of the regenerated views (step 7, `self_hosting: enabled`); the commit of step 7's plan ticks and index lines
+ - write a file: `state.json` inline, for the mechanical non-gate writes at steps 4, 11 (`sprint-lifecycle.md` "State recovery"); `plan.md` checkboxes and devs' returned `MEMORY.md` index lines (step 7); a memory-fix dispatch's returned text, verbatim, and a memory `D-N`'s `Status` in `test-plan.md` (step 3)
+ - request user decision: escalation only (see Execution mode)
+-- delegate to agent: `asd-dev` per task / finding group / defect group (test-file findings to `asd-tester`, memory findings to their owner — step 3); the main orchestrator owns manual-step validation, gates and decisions-log inline
++- delegate to agent: `asd-dev` per task / finding group / defect group (a `Test-only` Task and test-file findings to `asd-tester`, `sprint-lifecycle.md` "Plan file format"; memory findings to their owner — step 3); the main orchestrator owns manual-step validation, gates and decisions-log inline
+ - dispatch a skill: `asd-init` sprint-mediated mode, for a declared settings change, as its Task's wave opens (step 6)
+ - append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log"
+ 
+@@ -21,7 +21,7 @@ Orchestration body for the `asd-phase-impl` skill. Operation-mapping to host too
+ 
+ Mode set and semantics: `sprint-lifecycle.md` "Impl phase" Modes (sole SSoT, not restated here). Detection is step 2; per-mode preconditions are above; the entered mode's flag is cleared at step 11.
+ 
+-Fix modes **skip the impl assessment gate**. Impl completion gate (step 9) applies in **all** modes and runs no test — this is a scoping rule, not a new gate: a dev may run the impacted set (`sprint-lifecycle.md` "Impacted test set") to self-check work in progress, in any mode, but never authors, modifies, or prunes a test, and that run neither satisfies nor substitutes for this gate. Test authoring, pruning, and running belong to `impl-test`.
++Fix modes **skip the impl assessment gate**. Impl completion gate (step 9) applies in **all** modes and runs no test — this is a scoping rule, not a new gate: a dev may run the impacted set (`sprint-lifecycle.md` "Impacted test set") to self-check work in progress, in any mode, but never authors, modifies, or prunes a test, and that run neither satisfies nor substitutes for this gate. Test authoring, pruning, and running belong to `impl-test`, except a `Test-only` Task (`sprint-lifecycle.md` "Plan file format").
+ 
+ ## Execution mode
+ 
+@@ -58,11 +58,11 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
+ 5. **Build execution graph**:
+    - initial — the plan's wave table is the graph (`sprint-lifecycle.md` "Plan file format"): waves ascending, tasks within one wave parallelisable, never re-derived from the dependency lines. A plan predating that rule carries no table: fall back to a topological sort over its dependency lines
+    - fix modes (review-fix and test-fix alike) — one ordered chain, never a concurrent set: every fix task depends on its predecessor by construction, so exactly one is in flight at a time (order: colliding tasks adjacent, else by finding/defect id). The chain is dispatched to ONE agent that works it in order, never a fresh instance per task — tier per 5a; test-file findings still route to `asd-tester` as their own chain, dispatched only after the dev chain completes and carrying its outcome (fixes already committed — `git-strategy.md` "Commit before review"), never alongside it, so exactly one agent is in flight across the whole round. That tester chain edits only the `test-plan.md` rows `artifact-layout.md` "Test plan" grants the review-fix tester. Memory-fix dispatches (step 3) run last, one at a time, in the order `review-policy.md` "Autofix vs escalation" sets.
+-5a. Before each task dispatch, run `node .asd/runtime.js route-task --input <path>` with kind, objective inputs/checks, the task's `Material risk` lines as typed `risks` entries (`sprint-lifecycle.md` "Plan file format"), correction attempts and prior tier. A result with `execution="command"` runs directly; `execution="agent"` dispatches `asd-dev-<tier>` for `mechanical`/`critical`, or the base `asd-dev` for `tier: standard` (no `-standard` variant exists — `providers.md` "Task-class variants and routing"). Persist the record in `state.json.task_routing[taskId]` per `providers.md`, supplying its tier as `priorTier` on re-entry, and append the decisions-log routing line `- YYYY-MM-DD — route <taskIds>: <tier>, dispatch HEAD <sha>` (`git rev-parse HEAD`, one per dispatch). Invalid routing blocks; tier never lowers. In a fix mode, route every task of the chain first and persist each record, then dispatch the whole chain to a single agent at the highest tier returned — one agent holding every fix in the round is what keeps a later fix from contradicting an earlier one it never saw.
++5a. Before each task dispatch, run `node .asd/runtime.js route-task --input <path>` with kind, objective inputs/checks, the task's `Material risk` lines as typed `risks` entries (`sprint-lifecycle.md` "Plan file format"; a fix round's `risks`: `providers.md` "Task-class variants and routing"), correction attempts and `priorTier`. A result with `execution="command"` runs directly; `execution="agent"` dispatches the Task's agent — `asd-dev`, or `asd-tester` for a Task carrying a `Test-only:` line — as `<agent>-<tier>` for `mechanical`/`critical`, or the base agent for `tier: standard` (no `-standard` variant exists — `providers.md` "Task-class variants and routing"). Persist the record in `state.json.task_routing[taskId]` per `providers.md`, supplying its tier as `priorTier` only on a re-dispatch of the same id, and append the decisions-log routing line `- YYYY-MM-DD — route <taskIds>: <tier>, dispatch HEAD <sha>` (`git rev-parse HEAD`, one per dispatch). Invalid routing blocks. In a fix mode, route every task of the chain first and persist each record, then dispatch the whole chain to a single agent at the highest tier returned — one agent holding every fix in the round is what keeps a later fix from contradicting an earlier one it never saw.
+ 6. **Dispatch tasks** per execution graph:
+    - **Declared settings change** (initial mode) — as the wave holding a Task's `Settings change:` line (`sprint-lifecycle.md` "Plan file format") opens, before any of that wave's dispatch, the line is applied, never an `MS-N` and never handed to a dev: the main orchestrator dispatches `asd-init` sprint-mediated mode with exactly the declared pairs — validated against the working-tree `t_config.yaml`, so a key an earlier wave added counts — and commits `.asd/project/config.yaml` itself; on `FAILED`, halt as a blocker before any of that wave's dispatch; else that Task's other subtasks, if any, then dispatch in that wave
+    - per step 5's wave table, sequential where dependent; parallel where independent: waves ascending, every task of a wave dispatched concurrently (caller schedules concurrent delegations), the next wave opening only once all their signals are in — initial mode only; in a fix mode step 5's single ordered chain governs, dev chain before tester chain
+-   - per task, or once per chain in a fix mode (5a): delegate to `asd-dev` (`asd-tester` only for review findings in test files, a memory finding's owner per step 3) with payload opening with the header per `providers.md` "Dispatch payload header":
++   - per task, or once per chain in a fix mode (5a): delegate to the Task's agent (`dev` below reads as that agent) — `asd-dev`; `asd-tester` for a `Test-only` Task and for review findings in test files; a memory finding's owner per step 3 — with payload opening with the header per `providers.md` "Dispatch payload header":
+      - initial — Task block excerpt (title + subtasks + dependencies); review-fix — grouped finding list (each finding's id per `git-strategy.md` "Commits", severity, location, description; plus user-approved change note for accepted FAIL findings); test-fix — grouped defect list (`D-N`, location, symptom, failing test) plus the guidance of a stalemate continue answer logged for it in the live `decisions-log.md` (`artifact-layout.md` "Decisions log" rotation), if any
+      - relevant context paths (PRD AC-N referenced, ADRs, ux-spec, DESIGN.md, accessibility, stack, commands.yaml, tech-reference/, custom-common-rules.md, custom-coding-rules.md; review-fix also: reviewer files in `reviews/impl/<id>/`; test-fix also: `test-plan.md`)
+      - `language.chat`, `language.docs`
+@@ -73,7 +73,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
+        - work autonomously within plan + persistent docs scope; do NOT pause user for routine approach choices — make the reasonable call and proceed
+        - escalate only on a blocker (see Execution mode): emit `QUESTION` for unresolvable requirement ambiguity, `FAILED` for missing tech-reference / unrecoverable failure, or return a Complication Approval `QUESTION` **only** when a Simplicity Default trigger fires (new abstraction / dependency / config flag / generalization)
+        - manual-steps handling: see `sprint-lifecycle.md` "Impl phase" — do not restate here
+-       - write production code only — **no tests, no authoring, no modifying, no pruning**; the impacted set (`sprint-lifecycle.md` "Impacted test set") may be run for self-verification only, never as a substitute for `impl-test`'s gate; test selection, authoring, pruning, and running belong to `impl-test`
++       - write production code only — **no tests, no authoring, no modifying, no pruning**; the impacted set (`sprint-lifecycle.md` "Impacted test set") may be run for self-verification only, never as a substitute for `impl-test`'s gate; test selection, authoring, pruning, and running belong to `impl-test` — except a `Test-only` Task, whose `asd-tester` edits only that Task's test paths, never `test-plan.md` (`sprint-lifecycle.md` "Plan file format")
+        - review-fix — `review-policy.md` "Verify before applying" — do not restate here; a fix changing a rule other files consume runs the consumer search of its "Autofix vs escalation"; a finding about a rule's reach is fixed per its "Reach findings"; test-fix — fix the root cause behind the failing test (never weaken or delete the test), then set the defect row `Status` to `fixed` with the fixing commit sha in `<sprint>/test-plan.md`
+        - run `build` and `lint` per `commands.yaml`; do not advance with failures or warnings unreported
+        - stub handling: see `git-strategy.md` "TODO stubs" — do not restate here
+@@ -124,7 +124,7 @@ On `ADVICE_NEEDED` from any dispatched agent → relay per `sprint-lifecycle.md`
+ Impl completion gate (step 9) and, initial mode only, impl assessment gate (step 10) are the post-work gates. Fix modes have no user-facing assessment gate.
+ 
+ ## Artefacts produced
+-- Production source code in repo (no tests — see `impl-test`)
++- Production source code in repo (no tests — see `impl-test`, a `Test-only` Task's excepted)
+ - Updated `.asd/project/stubs.md` (project-global; open stubs only, deleted on resolution)
+ - `<sprint>/manual-steps.md` when a manual action arose (per-sprint, append-only)
+ - Updated `<sprint>/plan.md` checkboxes and devs' returned `MEMORY.md` index lines, written by the orchestrator (initial mode, step 7)
+@@ -136,8 +136,8 @@ Impl completion gate (step 9) and, initial mode only, impl assessment gate (step
+ 
+ ## Agents delegated to
+ - The main orchestrator (manual-step validation, completion/assessment gates and decisions-log); no orchestration agent is dispatched.
+-- `asd-dev` (per Task, finding group, or defect group)
+-- `asd-tester` (review-fix mode only, for findings located in test files)
++- `asd-dev` (per Task other than a `Test-only` one, finding group, or defect group)
++- `asd-tester` (a `Test-only` Task, initial mode; for findings located in test files, review-fix mode)
+ - a memory finding's owner (review-fix and test-fix modes, Claude only; step 3)
+ 
+ ## Return contract (single line)
+diff --git a/.asd/workflows/asd-phase-plan.md b/.asd/workflows/asd-phase-plan.md
+index 54c0688..ff416bc 100644
+--- a/.asd/workflows/asd-phase-plan.md
++++ b/.asd/workflows/asd-phase-plan.md
+@@ -39,9 +39,8 @@ Orchestration body for the `asd-phase-plan` skill. Operation-mapping to host too
+        - a subtask adds a helper, guard or export only with a named caller or reachable failure
+        - list the external APIs each Task needs; extend the tech reference (`artifact-layout.md` "Tech reference docs") where one is missing
+        - subtasks as checkboxes inside `### Task N:` block only (parser-critical)
+-       - no test-authoring Tasks or subtasks — tests are selected and written in `impl-test`, after the code exists; note per Task only the **material risk** the change carries, as input for impl-test
+-       - assign every Task to a wave and write the wave table into `## Dependencies`, a settings-change Task alone in its wave (wave 1, or a wave after every Task adding one of its keys to `t_config.yaml`), each Task that changes the dispatch or commit contract isolated ahead of the Tasks dispatched under it, per `sprint-lifecycle.md` "Plan file format"; no two Tasks in one wave touch overlapping paths; list non-trivial dependencies under the table
+-       - write the Tasks' touched paths, one per line, to a file in the directory `node .asd/runtime.js scratch-dir` prints (`artifact-layout.md` "Scratch directory"); run `node .asd/runtime.js surface-check --files <path>` and declare its `files` as `Change surface: <n> files` in `## Overview`. `breach: true` blocks acceptance until a split or an approved `change-surface cap override` bound (`sprint-lifecycle.md` "Plan file format")
++       - no test-authoring Tasks or subtasks, except a `Test-only` Task (shape: `sprint-lifecycle.md` "Plan file format") — tests are selected and written in `impl-test`, after the code exists; note per Task only the **material risk** the change carries, as input for impl-test
++       - assign every Task to a wave and write the wave table into `## Dependencies`, a settings-change Task alone in its wave (wave 1, or a wave after every Task adding one of its keys to `t_config.yaml`), each Task that changes the dispatch or commit contract isolated ahead of the Tasks dispatched under it, a `Test-only` Task in a wave after every Task whose code it covers, per `sprint-lifecycle.md` "Plan file format"; no two Tasks in one wave touch overlapping paths, a `Test-only` Task's included; list non-trivial dependencies under the table
+      - **Definition of Done**: reference the standing DoD (`sprint-lifecycle.md` "Plan file format") instead of restating it; author only sprint-specific additions, if any
+      - translate skeleton + full draft to `language.docs`, write `<sprint>/plan.md`; gate mechanic (approve-before-write vs write-then-review-accept) and strict-vs-adaptive evidence requirement per `checkpoints.md` — deferred to step 5, not fixed here
+      - on gate satisfied: append decisions-log entry ("`<sprint>/plan.md` accepted")
+diff --git a/.asd/workflows/asd-phase-scope.md b/.asd/workflows/asd-phase-scope.md
+index 5efee1b..760420b 100644
+--- a/.asd/workflows/asd-phase-scope.md
++++ b/.asd/workflows/asd-phase-scope.md
+@@ -2,16 +2,16 @@
+ 
+ The main orchestrator owns this phase inline.
+ 
+-1. Read config and existing active/legacy archived sprints. Obtain raw scope when absent, as a plain chat message, fast-forward the base branch, require a clean tree, create the sprint branch, run the closure write below when `asd-sprint` passed a merged-unclosed sprint, then create the sprint folder. Request user decision on the sprint workflow, `standard` or `lite` (`sprint-lifecycle.md` "Workflows"): hard `workflow choice` gate, never defaulted in either gate mode, asked only here; a scope re-run keeps the frozen value. The answer seeds `{{WORKFLOW}}`; step 2's seeding records it in `gate_decisions` and one decisions-log line.
++1. Read config and existing active/legacy archived sprints. Obtain raw scope when absent, as a plain chat message, fast-forward the base branch (`git-strategy.md` "Branch"), require a clean tree, create the sprint branch, run the closure write below when `asd-sprint` passed a merged-unclosed sprint, then create the sprint folder. Request user decision on the sprint workflow, `standard` or `lite` (`sprint-lifecycle.md` "Workflows"): hard `workflow choice` gate, never defaulted in either gate mode, asked only here; a scope re-run keeps the frozen value. The answer seeds `{{WORKFLOW}}`; step 2's seeding records it in `gate_decisions` and one decisions-log line.
+    **Closure write** (`sprint-lifecycle.md` "PR phase"; the closing sprint is exempt from the one-active rule):
+    - `git mv` the closing sprint folder into `.asd/sprints/archived/`; a legacy folder already there is written in place (`sprint-lifecycle.md` "Sprint immutability");
+    - in its `state.json` write `pr.state="merged"`, `pr.merge_commit` (`gh pr view <pr.number> --json mergeCommit`; a null `pr` takes `pr.number` from the confirmed number `asd-sprint` carries and writes it too), `phase="done"`, `updated_at`, `archived_at`, and append a `gate_decisions` entry `gate: sprint-closure`, `decision_actor: orchestrator`, its evidence the merge commit; append one entry to its `decisions-log.md`, naming a continue choice `asd-sprint` carries (`decision_actor: user`, "Merged-unclosed");
+    - commit those paths as the new branch's first commit.
+ 2. Refine scope into `sprint.md` with stable `AC-N` ids; ask the user only for ambiguity that prevents a concrete scope. Verify every retrospective-derived criterion against current `HEAD` — one asserting host behaviour also against the host docs or a live dispatch — before writing it, and record that verification in `decisions-log.md` per `sprint-lifecycle.md` "Orchestration and adaptive gates". Seed state and decisions log.
+-2a. **Retro intake** per `sprint-lifecycle.md` "Retro intake" (sole SSoT, not restated here): run `node .asd/runtime.js retro-candidates --sprints .asd/sprints --backlog .asd/project/retro-backlog.md`, adding `--self-hosting` when `self_hosting: enabled`; verify each candidate at `HEAD`; the unresolved rest ride the step 4 gate, and an included one becomes an `AC-N` in `sprint.md`.
++2a. **Retro intake** per `sprint-lifecycle.md` "Retro intake" (sole SSoT): run `node .asd/runtime.js retro-candidates --sprints .asd/sprints --backlog .asd/project/retro-backlog.md`, adding `--self-hosting` when `self_hosting: enabled`; verify each candidate at `HEAD`, a row tagged `upstream: true` excepted — it is no candidate, only shown at the step 4 gate; the unresolved rest ride that gate, and an included one becomes an `AC-N` in `sprint.md`.
+ 3. Read `documents.audit`: accept only `auto|always|off`, any other value blocks (`sprint-lifecycle.md` "Orchestration and adaptive gates"); `auto` skips only a complete mechanical scope with no behaviour, contract, migration or gate impact. Freeze the effective boolean into `state.json.documents.audit` (no separate reason field — the rule is deterministic, per `sprint-lifecycle.md`). Reevaluate after an accepted scope expansion.
+ 3a. Seed the remaining state placeholders: `{{USER_GATES}}` from `config.user_gates` (accept only `adaptive|strict`; absent -> `strict`); `{{DOC_PRD}}`/`{{DOC_UX_SPEC}}`/`{{DOC_ADR}}` from normalized `documents.*` (absent group -> all enabled); `{{DOC_C4}}` as the effective diagram (`sprint-lifecycle.md` "Optional documents"). No placeholder literal may survive the write. At the scope gate (step 4) the user may skip an enabled optional document (`prd`/`ux_spec`/`adr`/`c4`) for this sprint only — hard, narrow-only: overwrite its frozen value with `false` and log one decisions-log line "<doc> skipped this sprint by user" (`sprint-lifecycle.md` "Optional documents").
+-4. The initial scope is hard until it is explicitly accepted, because it establishes authority for the adaptive policy. That gate offers to split unrelated strands, or `AC-N`s changing independent contracts, into consecutive sprints; a split-off part goes to `sprint.md` Out of scope plus one decisions-log line. Afterwards record the accepted user decision and write step 2a's dispositions to `.asd/project/retro-backlog.md` (created from `t_retro-backlog.md` at the first write). A fully specified already-authorized outcome is recorded without inventing another decision.
++4. The initial scope is hard until it is explicitly accepted, because it establishes authority for the adaptive policy. That gate offers to split unrelated strands, or `AC-N`s changing independent contracts, into consecutive sprints; a split-off part goes to `sprint.md` Out of scope plus one decisions-log line. It also shows each `upstream: true` row of step 2a as an upstream proposal for the framework repo — row id, guardrail, home — with no question; such a row is never an `AC-N`, takes no disposition and is written to no backlog. Afterwards record the accepted user decision and write step 2a's dispositions to `.asd/project/retro-backlog.md` (created from `t_retro-backlog.md` at the first write). A fully specified already-authorized outcome is recorded without inventing another decision.
+ 5. Emit `NEXT: audit`.
+ 
+ Append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log".
+diff --git a/README.md b/README.md
+index c044af9..5b9007d 100644
+--- a/README.md
++++ b/README.md
+@@ -175,23 +175,23 @@ flowchart TD
+     class pr done;
+ ```
+ 
+-`impl`, `impl-test`, and `impl-review` form one cycle. `impl` writes production code only — its gate is build + lint. `impl-test` then picks the test approach for the whole change scope (after the code exists), prunes tests that no longer earn their keep, writes the missing ones, and runs the **impacted set** (tests touched by the change surface, not the whole repo): code defects route back to `impl` (test-fix mode), a green impacted run advances to `impl-review`. Review findings route back to `impl` (review-fix mode) and return through `impl-test`. Once every required reviewer is APPROVE (or already latched from an earlier iteration), `impl-review` runs the sprint's **one full-suite check** before advancing to `retro` — a red run there fixes test defects in place and re-runs, or, for code defects, exits to `impl` (test-fix mode) and clears every reviewer's APPROVE latch. The `impl⇄impl-test` loop is uncapped — it ends on a green impacted run, an escalated blocker, or a stalemate: two consecutive impl-test entries routing the same defect set (compared by `node .asd/runtime.js defect-stalemate`) escalate `FAILED: stalemate` to you; `impl-review` keeps its iteration cap.
++`impl`, `impl-test`, and `impl-review` form one cycle. `impl` writes production code only (a plan-declared `Test-only` Task, run by `asd-tester`, excepted) — its gate is build + lint. `impl-test` then picks the test approach for the whole change scope (after the code exists), prunes tests that no longer earn their keep, writes the missing ones, and runs the **impacted set** (tests touched by the change surface, not the whole repo): code defects route back to `impl` (test-fix mode), a green impacted run advances to `impl-review`. Review findings route back to `impl` (review-fix mode) and return through `impl-test`. Once every required reviewer is APPROVE (or already latched from an earlier iteration), `impl-review` runs the sprint's **one full-suite check** before advancing to `retro` — a red run there fixes test defects in place and re-runs, or, for code defects, exits to `impl` (test-fix mode) and clears every reviewer's APPROVE latch. The `impl⇄impl-test` loop is uncapped — it ends on a green impacted run, an escalated blocker, or a stalemate: two consecutive impl-test entries routing the same defect set (compared by `node .asd/runtime.js defect-stalemate`) escalate `FAILED: stalemate` to you; `impl-review` keeps its iteration cap.
+ 
+ | Phase | What happens |
+ |---|---|
+-| **scope** | Orchestrator refines your raw idea into a coherent sprint goal; runs retro intake, offering open retro findings from the last archived sprint for you to include/defer/reject; creates the sprint branch and folder |
++| **scope** | Orchestrator refines your raw idea into a coherent sprint goal; runs retro intake, offering open retro findings from the last archived sprint for you to include/defer/reject (framework-upstream rows are shown, not dispositioned); creates the sprint branch and folder |
+ | **audit** | Architect reads every existing doc bearing on the touched areas, plus the code; BA joins only for material domain ambiguity; a canonical ASD doc wins a contradiction, an unsettled one is your hard decision; identify gaps, risks, stubs to resolve |
+ | **design** | BA writes PRD, UX writes UX-spec and UI mockups, Architect writes ADRs and C4 schema |
+ | **design-review** | 3 internal reviewers (Correctness, Efficiency, Documentation) plus External Review iterate to APPROVE |
+ | **design-promote** | Approved sprint drafts get decomposed per subsystem and promoted to persistent `docs/` |
+ | **plan** | Orchestrator decomposes work into Tasks with checkbox subtasks, traces each to PRD acceptance criteria, assigns each to a dispatch wave |
+-| **impl** | Dev implements Tasks — or fixes impl-review findings (review-fix mode) or impl-test defects (test-fix mode); no tests written here; run build/lint, commit per Conventional Commits |
++| **impl** | Dev implements Tasks — or fixes impl-review findings (review-fix mode) or impl-test defects (test-fix mode); no tests written here, except a plan-declared `Test-only` Task, dispatched to `asd-tester`; run build/lint, commit per Conventional Commits |
+ | **impl-test** | Tester picks the risk-based test approach for the change scope, deletes redundant/flaky/implementation-coupled tests, writes the missing ones, runs the impacted set; records everything in `test-plan.md`, each regression proof with its failing command, non-zero exit code and test name; code defects route back to `impl` |
+ | **impl-review** | 4 internal reviewers (Correctness, Efficiency, Testing, Documentation) plus External Review; a large scope is reviewed as up to 3 sequential review waves, each with its own iteration counter; routes findings back to `impl` review-fix mode; once every wave's reviewers approve, runs the sprint's one full-suite check — green advances to `retro`, red exits to `impl` test-fix mode and clears every APPROVE latch |
+ | **retro** | Orchestrator reads the sprint's friction log and writes `retrospective.html` in two classes: remediation traced to `F-N` entries, and systemic proposals for a cheaper next sprint (derived from how the sprint ran, not bounded by the entries); findings sharing a root cause merge first, one an existing rule already covers is dropped citing it, and each survivor gets a one-line `Guardrail`, its `Home`, and a stable row id (`A-N` for Actions, `P-N` for Systemic proposals, `N` the table's 1-based row ordinal) — every row marked as acting on the consumer project or the ASD framework, never applied by retro; an entry-free log skips remediation only, proposals still ship; closes with a chat summary |
+ | **pr** | DoD verification + `gh pr create`, then ASD merges the PR itself through `gh` (a `gh` failure is `FAILED` naming the fix); one PR per sprint. Exit tokens are `await-merge` (PR opened) and `done` (merge confirmed). A merged PR completes the sprint with no user gate; under self-hosting the merge step also publishes the tag and release on the commit carrying the sprint's version bump (idempotent; while it is missing, each `/asd-sprint` asks to retry it or continue without it). Nothing is written on the base branch: the next sprint's scope archives the merged sprint (archive move, terminal state) as its first commit |
+ 
+-You can resume an interrupted sprint at any time: `/asd-sprint` reads `state.json`, detects the current phase, and dispatches the matching phase skill.
++You can resume an interrupted sprint at any time: `/asd-sprint` first fast-forwards the base branch from `origin` (Step 0), reads `state.json`, detects the current phase, and dispatches the matching phase skill.
+ 
+ ---
+ 
+@@ -227,7 +227,7 @@ Only the main orchestrator (and a skill it runs inline) ever prompts you for a d
+ | `asd-ux` | sonnet/high | sol/high | UX flows, UI mockups, DESIGN.md tokens, design-system.html |
+ | `asd-architect` | sonnet/xhigh | sol/high | Complete docs/code audit; ADRs, subsystem registry, C4, stack, API contracts, tech references |
+ | `asd-dev` | sonnet/medium | sol/medium | Server/CLI/library code and UI code (no tests; consumes DESIGN.md tokens where UI work applies) |
+-| `asd-tester` | sonnet/medium | sol/medium | All tests: risk-based selection, pruning, authoring at every level, suite runs, manual verification specs |
++| `asd-tester` | sonnet/medium | sol/medium | All tests: risk-based selection, pruning, authoring at every level, suite runs, manual verification specs; a plan-declared `Test-only` Task in `impl` |
+ 
+ The main orchestrator owns scope, plan, state, decisions, manual-step validation, Git and release/archival sequencing; no PM agent is spawned. Dev/Tester task variants share each canonical role body and permissions: `-mechanical` uses Haiku (no effort)/Luna low, `-critical` Sonnet xhigh/Sol high; tier `standard` has no variant and dispatches the base agent (Sonnet/Sol medium). Deterministic bookkeeping uses commands. Routing uses objective eligibility, escalates on a risk declared against the change or a failed check — a risk declared against the artifact alone does not — and never changes the main model. Experimental cheap outputs retain strong independent review.
+ 
+@@ -266,7 +266,7 @@ Read-only, consulted by any agent on non-gate uncertainty — an open question a
+ 
+ ## User gates
+ 
+-`adaptive` lets the main orchestrator pass routine audit/plan/assessment/review and already-authorized document decisions with recorded authority, evidence and artifact revision. `strict` retains explicit pauses. Material new scope/product/UX/stack/architecture/contract decisions, quality waivers, review-cap overrides and change-surface cap overrides (a reviewable change surface above `SURFACE_CAP_FILES`, checked at plan acceptance and again at impl-review entry) retain hard gates. PR publication, expenses, external commitments, sensitive irreversible actions and out-of-scope test deletion are not categorical ASD hard gates; applicable permissions, authority and quality checks still apply. All modes retain build/lint/tests/review coverage and confirmed-merge requirements.
++`adaptive` lets the main orchestrator pass routine audit/plan/assessment/review and already-authorized document decisions with recorded authority, evidence and artifact revision. `strict` retains explicit pauses. Material new scope/product/UX/stack/architecture/contract decisions, quality waivers and review-cap overrides retain hard gates. PR publication, expenses, external commitments, sensitive irreversible actions and out-of-scope test deletion are not categorical ASD hard gates; applicable permissions, authority and quality checks still apply. All modes retain build/lint/tests/review coverage and confirmed-merge requirements.
+ 
+ ## Configuration
+ 
+@@ -324,7 +324,7 @@ your-project/
+ │   ├── release-manifest.json        # schema/asd version, managed-path list, model-family table; drives /asd-update + sync.js
+ │   ├── sync-state.json              # last-written digests for managed-block / JSON-merge targets (committed)
+ │   ├── sync.js                      # generator: canon -> .claude/ + .codex/ + .agents/skills/ (--check / --apply)
+-│   ├── runtime.js                   # deterministic helper: task-cost routing, external-review preflight, per-reviewer coverage-manifest emission (`--base/--head` writes the manifest's `.diff` patch, one file per distinct list and range, and authorizes compact `pureRename` rows on renames with identical content and mode; `--test-plan` narrows Testing's impl-review list; `--full-files <path> --full-base <sha>` adds External Review's carried-over files, diffed over that base — in design-review, without `--full-base`, left out of the snapshot diff and read whole; `--reviewer external` emits External Review's scope manifest plus its own `.diff`, no rubric or ledger; `--reviewer combined` composes `lite`'s single-pass reviewer manifest from the Correctness/Efficiency/Documentation rubrics), coverage-ledger validation, manifest digests, impl-test defect-stalemate comparison (multi-`## Defects`-section fail-closed), change-surface cap check (`surface-check`, `--files` or a `--base/--head` range, a pure rename not counting), review-wave measurement and division (`review-waves`) and a wave's iteration-1 list at current paths (`wave-files`), design-review iteration draft snapshots (`draft-snapshot`, copying draft content under the iteration dir; `--snapshot <prev iter dir>` diffs against it from iteration 2), retro candidate discovery (`retro-candidates`), every reviewer/External return persisted to its review file plus findings JSON (`persist-review`), the scratch directory (`scratch-dir`, creates and prints `.asd/tmp/`) and subagent stall detection (`agent-liveness --agents <id,…> --interval 300 [--budget-min <n>]`)
++│   ├── runtime.js                   # deterministic helper: task-cost routing, external-review preflight, per-reviewer coverage-manifest emission (`--base/--head` writes the manifest's `.diff` patch, one file per distinct list and range, and authorizes compact `pureRename` rows on renames with identical content and mode; `--test-plan` narrows Testing's impl-review list; `--full-files <path> --full-base <sha>` adds External Review's carried-over files, diffed over that base — in design-review, without `--full-base`, left out of the snapshot diff and read whole; `--reviewer external` emits External Review's scope manifest plus its own `.diff`, no rubric or ledger; `--reviewer combined` composes `lite`'s single-pass reviewer manifest from the Correctness/Efficiency/Documentation rubrics), coverage-ledger validation, manifest digests, impl-test defect-stalemate comparison (multi-`## Defects`-section fail-closed), review-wave measurement and division (`review-waves`: lines, files and diff bytes against thresholds, recorded in `waves.json`) and a wave's iteration-1 list at current paths (`wave-files`), agent-memory content check on the staged diff (`memory-check`), design-review iteration draft snapshots (`draft-snapshot`, copying draft content under the iteration dir; `--snapshot <prev iter dir>` diffs against it from iteration 2), retro candidate discovery (`retro-candidates`, consumer `asd` rows tagged `upstream`), every reviewer/External return persisted to its review file plus findings JSON (`persist-review`), the scratch directory (`scratch-dir`, creates and prints `.asd/tmp/`) and subagent stall detection (`agent-liveness --agents <id,…> --interval 300 [--budget-min <n>]`)
+ │   ├── tmp/                         # scratch directory (`runtime.js scratch-dir`), self-ignoring via its own `.gitignore`; helper files and reviewer return files
+ │   ├── rules/                       # workflow rules (role/phase-scoped reads), incl. providers.md
+ │   ├── templates/                   # artifact templates (t_*.html / .md / .yaml / .c4), incl. t_AGENTS.md / t_CLAUDE.md

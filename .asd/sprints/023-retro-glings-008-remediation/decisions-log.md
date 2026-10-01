@@ -155,3 +155,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-02 — impl-test: impacted set green (272/272), 0 added/0 removed (one existing test extended) tests (entry 6, HEAD analysed 24dd0d0); no defects, no manual-verification row
 
 - 2026-10-02 — impl-review wave-1/iter-03: combined APPROVE (no findings at floor medium), external inherited APPROVE (latched from iter-02); wave 1 roster met → wave 2
+
+- 2026-10-02 — impl-review wave-2/iter-01: combined CONCERNS (F1 low: providers.md routing home names three ids; test-fix and impl-review in-place test fix have none), external CONCERNS (F1 medium: step 9 red-test-defect re-run reuses the terminal-suite routing id); both are the same AC-9 gap; routed to impl review-fix mode (review_fixes_pending wave-2/iter-01). The turn plan applied (14 files above LARGE_WAVE_FILES 12); no interrupted attempt.

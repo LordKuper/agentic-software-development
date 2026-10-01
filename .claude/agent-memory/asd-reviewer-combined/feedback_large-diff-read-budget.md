@@ -16,6 +16,11 @@ reading the whole diff first and probing afterwards finished in under 20 turns.
   fact (a caller, a helper's signature, a constant's current line number).
 - Verify a cross-file claim with one `Grep` using `-o -n` and a narrow pattern, not a file read. A brace list in the
   `glob` parameter silently returns no match; use `path` per file or a single glob.
+- Scope a repo-wide `Grep` to the canon subdirectories (rules, workflows, agents, skills, templates), one call each. A
+  `glob` negation on the whole `.asd` tree still scans the archived sprint folders and floods the result with their
+  copies of old text.
+- A one-line paragraph can exceed the Grep line display ("Omitted long matching line"): `Read` with `offset` and
+  `limit: 1` returns it whole.
 - The coverage ledger has one row per manifest id and is the cost-free part: build it from the manifest ids as soon as the
   findings are known, and write the return file before the final message so a cap stop still leaves a verdict.
 - A threshold or calibration observation that the data now contradicts is a finding with a `question:` escalation, not a
