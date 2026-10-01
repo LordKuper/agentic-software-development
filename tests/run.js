@@ -3318,7 +3318,7 @@ test('sprint-017 AC-1 (D1/D2), sprint-023 AC-1: review-waves counts the most of 
   ]) {
     assert.strictEqual(runtime.reviewWaveCount(lines, files, bytes), expected, `${lines} lines, ${files} files, ${bytes} diff bytes: the wave count is the most of one per ${threshold} lines, ${filesLimit} files and ${bytesLimit} bytes begun, never their sum, at most min(${cap}, files)`);
   }
-  for (const bytes of [-1, 1.5, Number.NaN, '300000']) {
+  for (const bytes of [-1, 1.5, Number.NaN, String(bytesLimit)]) {
     assert.throws(() => runtime.reviewWaveCount(10, 10, bytes), /bytes must be a non-negative integer/, `${JSON.stringify(bytes)}: an unusable byte measurement must fail closed like lines and files, never be read as 0 and collapse the scope into one wave`);
   }
 

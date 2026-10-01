@@ -378,6 +378,14 @@ provider-scoped literal. `demo-agent.md` carries `"model"` in both its `claude` 
 `!canon.includes('"model": "opus"')` is the assertion meant. Run the suite once after adding a guard,
 before recording anything about the assertion it protects.
 
+A fixture sized to a limit that later moves can stay green while its stated purpose stops being true: a numeric string equal
+to the old byte limit coerced to a count of exactly one, the silent collapse its message names, and at the new limit it
+coerces to two. Derive such inputs from the exported symbol, then grep the suite for the old number as a leftover. For a
+retuned single-home value (a threshold, a turn cap) measure before writing `none`: revert the value alone against the
+unchanged suite and read the own-FAIL list. Empty means no test pins the value, the intended state for a tunable
+(`code-style.md` §12) and a ceiling to state. A canon-only revert of a cap that a generated view mirrors reddens just the
+render mirror and `--check`.
+
 ## Sweep guards: row set and exemption set both
 
 A **reach** claim ("this rule reaches every role that authors X") is not agent-runtime judgement — it
