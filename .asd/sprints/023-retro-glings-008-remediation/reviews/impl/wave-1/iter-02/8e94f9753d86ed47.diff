@@ -1,0 +1,437 @@
+diff --git a/.asd/agents/asd-advisor.md b/.asd/agents/asd-advisor.md
+index f0676f4..4f13c1d 100644
+--- a/.asd/agents/asd-advisor.md
++++ b/.asd/agents/asd-advisor.md
+@@ -5,7 +5,7 @@
+   "claude": {
+     "model": "fable", "effort": "high",
+     "tools": ["Read", "Glob", "Grep", "WebFetch", "WebSearch"],
+-    "disallowedTools": ["Edit", "Bash"], "maxTurns": 30, "memory": "project"
++    "disallowedTools": ["Edit", "Bash"], "maxTurns": 100, "memory": "project"
+   },
+   "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "read-only", "web_search": "live" }
+ }
+diff --git a/.asd/agents/asd-ba.md b/.asd/agents/asd-ba.md
+index 4d3db3b..6e0ec2f 100644
+--- a/.asd/agents/asd-ba.md
++++ b/.asd/agents/asd-ba.md
+@@ -5,7 +5,7 @@
+   "claude": {
+     "model": "sonnet", "effort": "high",
+     "tools": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "WebFetch", "WebSearch"],
+-    "disallowedTools": [], "maxTurns": 50, "memory": "project"
++    "disallowedTools": [], "maxTurns": 100, "memory": "project"
+   },
+   "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "workspace-write", "web_search": "live" }
+ }
+diff --git a/.asd/agents/asd-external-review.md b/.asd/agents/asd-external-review.md
+index 8de60c2..c402718 100644
+--- a/.asd/agents/asd-external-review.md
++++ b/.asd/agents/asd-external-review.md
+@@ -5,7 +5,7 @@
+   "claude": {
+     "model": "sonnet", "effort": "medium",
+     "tools": ["Read", "Glob", "Grep", "Bash"],
+-    "disallowedTools": ["Edit", "WebFetch"], "maxTurns": 50, "memory": "project",
++    "disallowedTools": ["Edit", "WebFetch"], "maxTurns": 100, "memory": "project",
+     "wraps_cli": "codex", "wraps_config_key": "system.tools.codex_command", "wraps_model": "sol",
+     "wraps_invoke_args": "exec --model {{wraps_model}} -c model_reasoning_effort=\"high\" --sandbox read-only -"
+   },
+diff --git a/.asd/agents/asd-reviewer-combined.md b/.asd/agents/asd-reviewer-combined.md
+index 082cea5..9c7793f 100644
+--- a/.asd/agents/asd-reviewer-combined.md
++++ b/.asd/agents/asd-reviewer-combined.md
+@@ -5,7 +5,7 @@
+   "claude": {
+     "model": "sonnet", "effort": "xhigh",
+     "tools": ["Read", "Glob", "Grep", "WebFetch", "WebSearch"],
+-    "disallowedTools": ["Edit", "Bash"], "maxTurns": 50, "memory": "project"
++    "disallowedTools": ["Edit", "Bash"], "maxTurns": 100, "memory": "project"
+   },
+   "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "workspace-write", "web_search": "live" }
+ }
+diff --git a/.asd/agents/asd-reviewer-correctness.md b/.asd/agents/asd-reviewer-correctness.md
+index 306a8ca..44b8230 100644
+--- a/.asd/agents/asd-reviewer-correctness.md
++++ b/.asd/agents/asd-reviewer-correctness.md
+@@ -5,7 +5,7 @@
+   "claude": {
+     "model": "sonnet", "effort": "xhigh",
+     "tools": ["Read", "Glob", "Grep", "WebFetch", "WebSearch"],
+-    "disallowedTools": ["Edit", "Bash"], "maxTurns": 50, "memory": "project"
++    "disallowedTools": ["Edit", "Bash"], "maxTurns": 100, "memory": "project"
+   },
+   "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "workspace-write", "web_search": "live" }
+ }
+diff --git a/.asd/agents/asd-reviewer-documentation.md b/.asd/agents/asd-reviewer-documentation.md
+index 54c24fa..a17c270 100644
+--- a/.asd/agents/asd-reviewer-documentation.md
++++ b/.asd/agents/asd-reviewer-documentation.md
+@@ -5,7 +5,7 @@
+   "claude": {
+     "model": "sonnet", "effort": "xhigh",
+     "tools": ["Read", "Glob", "Grep"],
+-    "disallowedTools": ["Edit", "Bash", "WebFetch"], "maxTurns": 50, "memory": "project"
++    "disallowedTools": ["Edit", "Bash", "WebFetch"], "maxTurns": 100, "memory": "project"
+   },
+   "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "workspace-write", "web_search": "disabled" }
+ }
+diff --git a/.asd/agents/asd-reviewer-efficiency.md b/.asd/agents/asd-reviewer-efficiency.md
+index b718c4a..a7f6e6c 100644
+--- a/.asd/agents/asd-reviewer-efficiency.md
++++ b/.asd/agents/asd-reviewer-efficiency.md
+@@ -5,7 +5,7 @@
+   "claude": {
+     "model": "sonnet", "effort": "xhigh",
+     "tools": ["Read", "Glob", "Grep"],
+-    "disallowedTools": ["Edit", "Bash", "WebFetch"], "maxTurns": 50, "memory": "project"
++    "disallowedTools": ["Edit", "Bash", "WebFetch"], "maxTurns": 100, "memory": "project"
+   },
+   "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "workspace-write", "web_search": "disabled" }
+ }
+diff --git a/.asd/agents/asd-reviewer-testing.md b/.asd/agents/asd-reviewer-testing.md
+index d5406e5..2d27a8e 100644
+--- a/.asd/agents/asd-reviewer-testing.md
++++ b/.asd/agents/asd-reviewer-testing.md
+@@ -5,7 +5,7 @@
+   "claude": {
+     "model": "sonnet", "effort": "xhigh",
+     "tools": ["Read", "Glob", "Grep"],
+-    "disallowedTools": ["Edit", "Bash", "WebFetch"], "maxTurns": 50, "memory": "project"
++    "disallowedTools": ["Edit", "Bash", "WebFetch"], "maxTurns": 100, "memory": "project"
+   },
+   "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "workspace-write", "web_search": "disabled" }
+ }
+diff --git a/.asd/agents/asd-tester.md b/.asd/agents/asd-tester.md
+index db21992..41962d7 100644
+--- a/.asd/agents/asd-tester.md
++++ b/.asd/agents/asd-tester.md
+@@ -26,7 +26,7 @@ Test engineer. Sole owner of tests. In `impl-test`, after the code exists: picks
+ - **In-place test fix** (impl-review, `review-policy.md` "Low-severity test-only findings"): fix exactly the findings in the payload, in test files and `test-plan.md`, with no impl-test entry; commit per `git-strategy.md` "Commits" and report each finding fixed or unfixed.
+ - **Test-only Task** (`impl`, a plan-declared `Test-only:` Task; shape, scope and trailer: `sprint-lifecycle.md` "Plan file format"): author or adapt tests inside its wave, `test-plan.md` untouched. Leave `plan.md` untouched, and a shared `MEMORY.md` too when the wave holds more than one Task, returning its index line in `COMPLETED` (`sprint-lifecycle.md` "Impl phase"). `impl-test` entry 1 owns strategy, pruning and the suite gate (`sprint-lifecycle.md` "Impl-test phase").
+ - **Approval triggers**: deletion of a test outside the sprint change scope (Complication Approval); new test infrastructure or dependency (Complication Approval); manual-verification-only paths.
+-- **Stop conditions**: plan.md missing → ABORT; impl COMPLETED signal not received → ABORT; test runner broken twice → FAILED.
++- **Stop conditions**: plan.md missing → ABORT; `impl-test` dispatch with the impl COMPLETED signal not received → ABORT; Test-only Task dispatch without an approved plan Task and its prerequisite code Tasks completed (`sprint-lifecycle.md` "Plan file format") → ABORT; test runner broken twice → FAILED.
+ 
+ ## Mandatory rules
+ 
+diff --git a/.asd/agents/asd-ux.md b/.asd/agents/asd-ux.md
+index 5825d44..6c30394 100644
+--- a/.asd/agents/asd-ux.md
++++ b/.asd/agents/asd-ux.md
+@@ -5,7 +5,7 @@
+   "claude": {
+     "model": "sonnet", "effort": "high",
+     "tools": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "WebFetch", "WebSearch"],
+-    "disallowedTools": [], "maxTurns": 50, "memory": "project"
++    "disallowedTools": [], "maxTurns": 100, "memory": "project"
+   },
+   "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "workspace-write", "web_search": "live" }
+ }
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index f3e29be..c13e03a 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -29,10 +29,10 @@
+   },
+   "canon_hashes": {
+     "agents/asd-architect.md": "sha256:fbe178e31b76dbe8011bd707200b365ce4da5c0e0dd3c31f768ffd1f7772d8c7",
+-    "agents/asd-ba.md": "sha256:8f087c3299b09c170b3461a3e8d3c75b786946c6fec41996a873ec8772d84bbd",
+-    "agents/asd-external-review.md": "sha256:31373d7d3846299d18d84af744963224a3a8589f1a75eae7264c4d93302a31a8",
+-    "agents/asd-reviewer-documentation.md": "sha256:6916b26e44b77f1e73d48ab29a6f50d8f49f42fd54d4521f3ecb735c1f9999cc",
+-    "agents/asd-reviewer-testing.md": "sha256:5e238db6d027d71879359601fb9c57f00d583999af92b45e7b01dcb431a166f4",
++    "agents/asd-ba.md": "sha256:e59ea26015ed8f105bdf4967491afee1ef2b893afb3c11ae910e0464759516f5",
++    "agents/asd-external-review.md": "sha256:748735b745535ae263077b4c5e9b4c415baafa8c2a3ab42e27beb11cec7e3d9c",
++    "agents/asd-reviewer-documentation.md": "sha256:cba662e9f8bbd87a146e33459892be1e5eee98952dc6f6c8726b0a6db2833720",
++    "agents/asd-reviewer-testing.md": "sha256:a72b299c10315f8e728f8724ac9eac2928a44a61f025934db77d630695afe0ae",
+     "skills/asd-concept/SKILL.md": "sha256:9a3cb2331b3aceb4a670d8d0ac94de3808771406036f9ba11dce3239e21cee42",
+     "skills/asd-design-system/SKILL.md": "sha256:9f8153a0f278a1234202771df5118f2228dd4edfd99594c1eeb0536d8d22d07f",
+     "skills/asd-init/SKILL.md": "sha256:79413ccde0b404e63f8e1bedcf3e467311a3dd83021d7a5d50385b91c0f7d4e0",
+@@ -50,21 +50,21 @@
+     "skills/asd-phase-impl-test/SKILL.md": "sha256:2ab69e3e919b66863b95c2097bba108cc2f49dfc04b2c2926a37bc96c38ec6c2",
+     "skills/asd-phase-impl-review/SKILL.md": "sha256:adf1550463ceb2f5db4f80c4078aba072304545d1aab72a9f53d2e50f4d2c480",
+     "skills/asd-phase-pr/SKILL.md": "sha256:e82f127971031309e4d5d59621222a8c759e7b22b96b3231e57fe8acb32a1d2e",
+-    "agents/asd-advisor.md": "sha256:f572a04da3165a11b9865df911a1b1212ddfb21a847f8df5428f685a9dab68ce",
+-    "agents/asd-reviewer-correctness.md": "sha256:fdc52fd07949bdf3d401155f309afb07251bf1c15cf201a34cda90ba78cf68f6",
+-    "agents/asd-reviewer-efficiency.md": "sha256:86ba3f85ee181c4b586bc2fa5caab3e720759f1cab9b7e052673b9ea6c8c0d3a",
++    "agents/asd-advisor.md": "sha256:06718e6d86fc2520e20753ccd09a80718d5dfd29296675460414f095e9253e2f",
++    "agents/asd-reviewer-correctness.md": "sha256:fd452400e86fed0fd9c9381729c4d839372a6037f79fc6f77d9d568ea87e7278",
++    "agents/asd-reviewer-efficiency.md": "sha256:74bcb8277c555d9f3517a6c486c47750b33951dcb85884dbe99740cefc7542e9",
+     "agents/asd-dev.md": "sha256:6b23c5feb65e489161a16c0788c4431a82f957c2db8f69040e00b763bab9b997",
+-    "agents/asd-tester.md": "sha256:267b2a1ad35076563de2bc829ff25d0e5e5d4b2345f8dffac341c6b096fef40a",
+-    "agents/asd-ux.md": "sha256:bc892ff669388e251e07a317d62b87ad3031d6785c998c09b3f2d606fed5578f",
++    "agents/asd-tester.md": "sha256:c4a39b654fd8dc7c13d9018007a6a8979bcddb80988f6f581aa2bb59d6010e96",
++    "agents/asd-ux.md": "sha256:78f575c61872ae5ffac651ef24e025245df8e07cbd083227aa78878924fe2189",
+     "skills/asd-phase-retro/SKILL.md": "sha256:d40dea69c3415c91b8043f4fff9bbda9dbf5750f76ebd2ff762942ab56fb4bef",
+-    "agents/asd-reviewer-combined.md": "sha256:4465f519d7360af8ed263d298fbfb868a75ed72524b8336abe93782ab55c09d2"
++    "agents/asd-reviewer-combined.md": "sha256:765c8e0fc5fa0b02f73809c818b1fb69edd7f1ea7154be6699b056e5da8539ff"
+   },
+   "upstream_hashes": {
+     ".asd/agents/asd-architect.md": "fbe178e31b76dbe8011bd707200b365ce4da5c0e0dd3c31f768ffd1f7772d8c7",
+-    ".asd/agents/asd-ba.md": "8f087c3299b09c170b3461a3e8d3c75b786946c6fec41996a873ec8772d84bbd",
+-    ".asd/agents/asd-external-review.md": "31373d7d3846299d18d84af744963224a3a8589f1a75eae7264c4d93302a31a8",
+-    ".asd/agents/asd-reviewer-documentation.md": "6916b26e44b77f1e73d48ab29a6f50d8f49f42fd54d4521f3ecb735c1f9999cc",
+-    ".asd/agents/asd-reviewer-testing.md": "5e238db6d027d71879359601fb9c57f00d583999af92b45e7b01dcb431a166f4",
++    ".asd/agents/asd-ba.md": "e59ea26015ed8f105bdf4967491afee1ef2b893afb3c11ae910e0464759516f5",
++    ".asd/agents/asd-external-review.md": "748735b745535ae263077b4c5e9b4c415baafa8c2a3ab42e27beb11cec7e3d9c",
++    ".asd/agents/asd-reviewer-documentation.md": "cba662e9f8bbd87a146e33459892be1e5eee98952dc6f6c8726b0a6db2833720",
++    ".asd/agents/asd-reviewer-testing.md": "a72b299c10315f8e728f8724ac9eac2928a44a61f025934db77d630695afe0ae",
+     ".asd/hooks/session-start.js": "f0ebc50ed2cbe3557dd5100064feb4499091bdb14ffc2385c74ac2cd3b95eb23",
+     ".asd/rules/artifact-layout.md": "2a3930603905f7936bfca9437cf0051c9402216750fce67432cc22951b7cfcdf",
+     ".asd/rules/checkpoints.md": "cb43bfa312d38eab6b8a2599b9db8f1a624b090a4bc2709600ddcbdec526ffc9",
+@@ -77,7 +77,7 @@
+     ".asd/rules/language-policy.md": "e9b488a4cff5ed193208a52324601bede1a41e2512f2a6f06d0660576940f322",
+     ".asd/rules/providers.md": "a3b311714ebeafb9ddf19e0657c6aaea94536b26f781cdd58e91a1690204b7b7",
+     ".asd/rules/review-policy.md": "698a07a3db488109eb854b7f728138555f94096aa9058fbe550f86dc2eec35d1",
+-    ".asd/rules/sprint-lifecycle.md": "7f91207e9cee3a0d9a14ca331a6f67a3e6e8fd5c572e64da599e3cbdcc24c58c",
++    ".asd/rules/sprint-lifecycle.md": "beae936757f72e11ef5478c4b4cd457b7499095d94d518dcda0973937cbbe0e8",
+     ".asd/rules/ux-principles.md": "9f2af8c90d969c73654812b80e523e33b4c5696f506acf49e4bacb4c0dc6750c",
+     ".asd/skills/asd-concept/SKILL.md": "9a3cb2331b3aceb4a670d8d0ac94de3808771406036f9ba11dce3239e21cee42",
+     ".asd/skills/asd-design-system/SKILL.md": "9f8153a0f278a1234202771df5118f2228dd4edfd99594c1eeb0536d8d22d07f",
+@@ -140,16 +140,16 @@
+     ".asd/workflows/asd-phase-plan.md": "bdf638bbeeba311a18972e4d03e35c740f2583eab1a4c68b1f58d9e1de84ba38",
+     ".asd/workflows/asd-phase-pr.md": "9d15645564ef52ebd12571d14c51488d94e3fae3d9f4c28785c48c73a3eabb58",
+     ".asd/workflows/asd-phase-scope.md": "eed83644fb56aaebfdaaa4fc1a1ac00c0550cd5b2b8804bead0728a644c38478",
+-    ".asd/agents/asd-advisor.md": "f572a04da3165a11b9865df911a1b1212ddfb21a847f8df5428f685a9dab68ce",
+-    ".asd/agents/asd-reviewer-correctness.md": "fdc52fd07949bdf3d401155f309afb07251bf1c15cf201a34cda90ba78cf68f6",
+-    ".asd/agents/asd-reviewer-efficiency.md": "86ba3f85ee181c4b586bc2fa5caab3e720759f1cab9b7e052673b9ea6c8c0d3a",
++    ".asd/agents/asd-advisor.md": "06718e6d86fc2520e20753ccd09a80718d5dfd29296675460414f095e9253e2f",
++    ".asd/agents/asd-reviewer-correctness.md": "fd452400e86fed0fd9c9381729c4d839372a6037f79fc6f77d9d568ea87e7278",
++    ".asd/agents/asd-reviewer-efficiency.md": "74bcb8277c555d9f3517a6c486c47750b33951dcb85884dbe99740cefc7542e9",
+     ".asd/agents/asd-dev.md": "6b23c5feb65e489161a16c0788c4431a82f957c2db8f69040e00b763bab9b997",
+-    ".asd/agents/asd-tester.md": "267b2a1ad35076563de2bc829ff25d0e5e5d4b2345f8dffac341c6b096fef40a",
+-    ".asd/agents/asd-ux.md": "bc892ff669388e251e07a317d62b87ad3031d6785c998c09b3f2d606fed5578f",
++    ".asd/agents/asd-tester.md": "c4a39b654fd8dc7c13d9018007a6a8979bcddb80988f6f581aa2bb59d6010e96",
++    ".asd/agents/asd-ux.md": "78f575c61872ae5ffac651ef24e025245df8e07cbd083227aa78878924fe2189",
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
+     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
+-    ".asd/runtime.js": "4cfe31f3905d695346809d5ecf9f4821f8f7927d9511339f3ac61c3a979f41d5",
++    ".asd/runtime.js": "df9df696b489dfd1087fa9bd3dbeee74db73c477b63224435ccdb88bef157269",
+     ".asd/templates/external-review/t_review-scope.json": "a17ee84e64cc6a693aaa30dacaef660c841b23a92331abf217ff64c8fc2d4951",
+     ".asd/templates/t_friction-log.md": "8ceae936077b1c0b869fe439965e859059b6dab971b79a89126f8074e379ce33",
+     ".asd/templates/t_retrospective.html": "7df5586afa9ee7eebf2a878544dbe5336b90efadf9fbb1a7dec6f1957b8e53d0",
+@@ -159,7 +159,7 @@
+     ".asd/templates/t_subsystems.md": "54b1e273e9e74a57e08b43d1b671f880b7f682d9ec1bc4afb95a55d98b2531dd",
+     ".asd/migrations/9.0.0.js": "1a1da6ebd2576d92ed44ccde308969856f3aeaa7be152438137e94b43cd015b1",
+     ".asd/templates/t_retro-backlog.md": "0fd817d2ba64894dd8e5a4c01ca57309e7c51b0f2a270f94175ddf71b933f3d9",
+-    ".asd/agents/asd-reviewer-combined.md": "4465f519d7360af8ed263d298fbfb868a75ed72524b8336abe93782ab55c09d2",
++    ".asd/agents/asd-reviewer-combined.md": "765c8e0fc5fa0b02f73809c818b1fb69edd7f1ea7154be6699b056e5da8539ff",
+     ".asd/workflows/lite.json": "2fc12fc41cac51a22b19d67ff5d47c9765c105fec1ad67e8eb5d765b882622ea",
+     ".asd/workflows/standard.json": "7a7c04da7a13ec9dab9bb782d8a9981b703d34859d55614cd9354808b1721fb2"
+   }
+diff --git a/.asd/rules/sprint-lifecycle.md b/.asd/rules/sprint-lifecycle.md
+index c8b8d37..d57f894 100644
+--- a/.asd/rules/sprint-lifecycle.md
++++ b/.asd/rules/sprint-lifecycle.md
+@@ -6,7 +6,7 @@ The main orchestrator owns scope and plan writing, phase/state transitions, deci
+ 
+ **Retrospective-derived criteria are re-verified at scope.** A retrospective is sprint-scoped and never promoted ("Retro phase" below), so its rows state what was true at the HEAD that produced them. Before such a row becomes an `AC-N` in `sprint.md`, the orchestrator checks it against current `HEAD` and carries only what is still unresolved — an already-satisfied row is closed, a partly delivered one narrowed to its remaining half. Recording home is `decisions-log.md` alone: one entry naming the verified HEAD sha, each row's outcome and the evidence for it. `sprint.md` gains no section for this. A row asserting host behaviour (a provider tool, CLI or runtime) is verified against that host's docs or a live dispatch — never against the row itself or memory — and the doc URL or dispatch is its evidence.
+ 
+-**Retro intake.** At scope, after the decisions log is seeded and before the scope gate (`asd-phase-scope.md` step 2a), the orchestrator offers open retro rows. Candidates: `node .asd/runtime.js retro-candidates --sprints <dir> --backlog <path> [--self-hosting]` (`--self-hosting` iff `self_hosting: enabled`) — the retro rows ("Retro phase" row id) of the most recent `archived/` sprint with `phase=done` and a `retrospective.html`, minus rows the retro backlog (`artifact-layout.md` "Retro backlog") already disposes, plus its `deferred` rows; `covered by:` rows are dropped. Output: a JSON array of `{row, acts_on, guardrail, home}`; outside `--self-hosting` the latest retro's `asd` rows stay in it, tagged `upstream: true`. A non-zero exit blocks intake: its stderr goes to the user as a scope-gate decision — fix the backlog or retro and re-run, or skip intake this sprint with one decisions-log line. An empty array, or one of only `upstream: true` rows, is a no-op: one decisions-log line, no question, no backlog write. A row tagged `upstream: true` is no candidate for disposition: the scope gate shows it as an upstream proposal for the framework repo — row id, guardrail, home — with no question; it is never an `AC-N` and is written to no backlog. Each other candidate is re-verified per the rule above; a resolved one is written `closed` without asking. The rest go to the user inside the hard scope gate (`checkpoints.md` "Gate policy"), a recommendation each; the user decides all or some: include → an `AC-N`, reject → never offered again, undecided → `deferred`. Dispositions are written to the backlog on scope acceptance and land with the sprint PR; an aborted sprint loses them, so they are offered again.
++**Retro intake.** At scope, after the decisions log is seeded and before the scope gate (`asd-phase-scope.md` step 2a), the orchestrator offers open retro rows. Candidates: `node .asd/runtime.js retro-candidates --sprints <dir> --backlog <path> [--self-hosting]` (`--self-hosting` iff `self_hosting: enabled`) — the retro rows ("Retro phase" row id) of the most recent `archived/` sprint with `phase=done` and a `retrospective.html`, minus rows the retro backlog (`artifact-layout.md` "Retro backlog") already disposes, plus its `deferred` rows; `covered by:` rows are dropped. Output: a JSON array of `{row, acts_on, guardrail, home}`; outside `--self-hosting` the latest retro's `asd` rows stay in it, tagged `upstream: true`. A non-zero exit blocks intake: its stderr goes to the user as a scope-gate decision — fix the backlog or retro and re-run, or skip intake this sprint with one decisions-log line. An empty array, or one of only `upstream: true` rows, is a no-op for dispositions: one decisions-log line, no question, no backlog write; its `upstream: true` rows are still shown at the gate. A row tagged `upstream: true` is no candidate for disposition: the scope gate shows it as an upstream proposal for the framework repo — row id, guardrail, home — with no question; it is never an `AC-N` and is written to no backlog. Each other candidate is re-verified per the rule above; a resolved one is written `closed` without asking. The rest go to the user inside the hard scope gate (`checkpoints.md` "Gate policy"), a recommendation each; the user decides all or some: include → an `AC-N`, reject → never offered again, undecided → `deferred`. Dispositions are written to the backlog on scope acceptance and land with the sprint PR; an aborted sprint loses them, so they are offered again.
+ 
+ At scope, accept only `documents.audit: auto|always|off`; any other value, legacy `enabled`/`disabled` included, blocks (`checkpoints.md` "Gate policy" invalid-policy rule). Freeze the effective audit boolean in state (`documents.audit`) — the rule below is deterministic, so no separate reason field is stored. `auto` skips only a complete, verifiably mechanical scope with no behaviour, contract, migration or gate impact; unknown/risky scope audits. An accepted scope expansion ("Scope amendment") reevaluates it. Architect owns audit. An ambiguity only authority or preference can settle goes straight to the user; BA is dispatched only for evidenced material product/domain ambiguity its sources can resolve.
+ 
+@@ -375,13 +375,13 @@ See `t_plan.md` for canonical structure.
+ 
+ The main orchestrator passes these lines as `route-task`'s `risks` input, one entry per line, typed by its kind (`providers.md` "Task-class variants and routing", which owns the routing semantics). When in doubt between the two kinds, declare `change`. A Task block with no conforming line — absent, or off-grammar (prose, or inside a subtask checkbox) — reads `change: unclassified` and routes `critical` until the plan is updated; missing is never `none`.
+ 
+-**Reachability declaration** (conditional, at most one per `### Task N:` block, its own plain-text line directly under the `Material risk` line(s), never a checkbox): a task whose value depends on two phases agreeing carries `Reachability: <phase> writes <value> at <point>; <phase> reads it at <point>`. A value crossing a push or merge also names, per interruption point between write and read, the value the receiving branch then holds: `; interrupted at <point>, <branch> holds <value>`. Accepting the plan means checking that those two points observe the same value, and that the reader handles each named interrupted value — a purpose unreachable by construction is rewritten or dropped at plan approval, never planned and then closed finding by finding.
++**Reachability declaration** (conditional, at most one per `### Task N:` block, its own plain-text line under the `Material risk` line(s) and any `Test-only` line, never a checkbox): a task whose value depends on two phases agreeing carries `Reachability: <phase> writes <value> at <point>; <phase> reads it at <point>`. A value crossing a push or merge also names, per interruption point between write and read, the value the receiving branch then holds: `; interrupted at <point>, <branch> holds <value>`. Accepting the plan means checking that those two points observe the same value, and that the reader handles each named interrupted value — a purpose unreachable by construction is rewritten or dropped at plan approval, never planned and then closed finding by finding.
+ 
+ Its absence semantics are deliberately not `Material risk`'s, and the two are never conflated: an absent `Reachability` line asserts the task has no cross-phase dependency — never `unclassified`, never `critical`, and never input to `route-task`, which reads `Material risk` lines only. An off-grammar `Reachability` line is a plan defect fixed before approval, not a fail-closed default.
+ 
+-**Settings change declaration** (conditional, at most one per `### Task N:` block, plain-text line under the `Material risk`/`Reachability` lines, never a checkbox): `Settings change: <key>=<value>[, <key>=<value>…]`, `<key>` a dotted `.asd/project/config.yaml` path `t_config.yaml` carries — already, or once an earlier-wave Task of this sprint adds it. Plan acceptance is the approval of record for exactly those pairs: `impl` applies them through `asd-init` sprint-mediated mode as the carrying Task's wave opens, validated against the working-tree `t_config.yaml` then (`asd-phase-impl.md` step 6), never as an `MS-N`, and no other setting. A Task carrying the line is alone in its wave: wave 1 when `t_config.yaml` already carries every key, a Task changing the dispatch or commit contract (below) then following alone in wave 2; otherwise a wave after every Task adding one of its keys, the contract rule below then applying unchanged. The change never rewrites the running sprint's frozen `state.json` snapshot ("Optional documents" above): a frozen setting binds from the next sprint, a live-read one from its next read.
++**Settings change declaration** (conditional, at most one per `### Task N:` block, plain-text line under the `Material risk`/`Test-only`/`Reachability` lines, never a checkbox): `Settings change: <key>=<value>[, <key>=<value>…]`, `<key>` a dotted `.asd/project/config.yaml` path `t_config.yaml` carries — already, or once an earlier-wave Task of this sprint adds it. Plan acceptance is the approval of record for exactly those pairs: `impl` applies them through `asd-init` sprint-mediated mode as the carrying Task's wave opens, validated against the working-tree `t_config.yaml` then (`asd-phase-impl.md` step 6), never as an `MS-N`, and no other setting. A Task carrying the line is alone in its wave: wave 1 when `t_config.yaml` already carries every key, a Task changing the dispatch or commit contract (below) then following alone in wave 2; otherwise a wave after every Task adding one of its keys, the contract rule below then applying unchanged. The change never rewrites the running sprint's frozen `state.json` snapshot ("Optional documents" above): a frozen setting binds from the next sprint, a live-read one from its next read.
+ 
+-**Test-only declaration** (conditional, at most one per `### Task N:` block, its own plain-text line directly under the `Material risk` line(s), never a checkbox): `Test-only: <test paths or globs>`. `impl` dispatches the Task to `asd-tester` (`asd-tester-<tier>` through `route-task`), never a dev. It touches only test files, never `test-plan.md`; it adapts existing tests to the code change and adds a test only where `code-style.md` §17 qualifies one; its commits carry `ASD-Task: Task N`.
++**Test-only declaration** (conditional, at most one per `### Task N:` block, its own plain-text line directly under the `Material risk` line(s), ahead of any `Reachability` line, never a checkbox): `Test-only: <test paths or globs>`. `impl` dispatches the Task to `asd-tester` (`asd-tester-<tier>` through `route-task`), never a dev. It touches only test files, never `test-plan.md`; it adapts existing tests to the code change and adds a test only where `code-style.md` §17 qualifies one; its commits carry `ASD-Task: Task N`.
+ 
+ **Wave declaration** (plan-level, one table in the required `## Dependencies` section, never a per-Task line): rows in ascending wave order, first column the wave number, second the ids of the Tasks dispatched in that wave. Every Task appears in exactly one wave. A Task changing the dispatch or commit contract other Tasks are dispatched under is ordered ahead of them and is alone in its wave. A `Test-only` Task sits in a wave after every Task whose code it covers. `impl` schedules from this table alone (`asd-phase-impl.md` steps 5-6); the dependency lines under it explain the grouping and never override it. A missing table, or a Task in none or in two waves, is a plan defect fixed before approval — except in a plan authored before this rule, which falls back to a topological sort over its dependency lines.
+ 
+diff --git a/.asd/runtime.js b/.asd/runtime.js
+index 335aed1..e5815d1 100644
+--- a/.asd/runtime.js
++++ b/.asd/runtime.js
+@@ -27,9 +27,9 @@ const MAX_REVIEW_WAVES = 3;
+ /** Files one impl-review wave carries, so a many-file scope divides into waves even when its diff is small. */
+ const WAVE_THRESHOLD_FILES = 34;
+ /** Diff bytes one impl-review wave carries; a larger scope divides into more waves, so no review turn reads an oversized patch. */
+-const WAVE_THRESHOLD_BYTES = 300000;
++const WAVE_THRESHOLD_BYTES = 180000;
+ /** Files above which one review wave gets a turn plan in its reviewer payload. */
+-const LARGE_WAVE_FILES = 20;
++const LARGE_WAVE_FILES = 12;
+ /** An audit whose touched areas track more than this many files gets a batched-read plan in the architect payload. */
+ const AUDIT_BATCH_THRESHOLD_FILES = 200;
+ /** Internal reviewers, named as `emit-manifest --reviewer` takes them. */
+@@ -1132,4 +1132,4 @@ if (require.main === module) {
+   main(process.argv).then((code) => { process.exitCode = code; }, (error) => { process.stderr.write(`${error.message}\n`); process.exitCode = 2; });
+ }
+ 
+-module.exports = { AUDIT_BATCH_THRESHOLD_FILES, COMBINED_REVIEWER, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LARGE_WAVE_FILES, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, WAVE_THRESHOLD_BYTES, WAVE_THRESHOLD_FILES, WAVE_THRESHOLD_LINES, agentLiveness, backlogRows, buildInvocation, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, isDocumentation, isTest, loadWorkflow, memoryCheck, memoryViolations, numstatLines, persistReview, recordExternalFailure, retroCandidates, retroRows, reviewFindings, reviewWaveCount, reviewerFiles, reviewerKeys, routeTask, validateCoverageLedger, validateWaveDivision, waveFiles, fingerprint };
++module.exports = { AUDIT_BATCH_THRESHOLD_FILES, COMBINED_REVIEWER, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LARGE_WAVE_FILES, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, WAVE_THRESHOLD_BYTES, WAVE_THRESHOLD_FILES, WAVE_THRESHOLD_LINES, agentLiveness, backlogRows, buildInvocation, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, isDocumentation, isTest, loadWorkflow, numstatLines, persistReview, recordExternalFailure, retroCandidates, retroRows, reviewFindings, reviewWaveCount, reviewerFiles, reviewerKeys, routeTask, validateCoverageLedger, validateWaveDivision, waveFiles, fingerprint };
+diff --git a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+index 783aca4..3f46929 100644
+--- a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
++++ b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+@@ -1 +1,2 @@
+ - [Live subagent transcripts](reference_live-subagent-transcripts.md) — check transcript-shape claims against this session's own subagents/*.jsonl; final line stop_reason end_turn, others null
++- [Large-diff read budget](feedback_large-diff-read-budget.md) — read a 200 KB+ diff in ~330-line chunks, probe with Grep -o -n, write the return file before the final message
+diff --git a/.claude/agent-memory/asd-reviewer-combined/feedback_large-diff-read-budget.md b/.claude/agent-memory/asd-reviewer-combined/feedback_large-diff-read-budget.md
+new file mode 100644
+index 0000000..34e981a
+--- /dev/null
++++ b/.claude/agent-memory/asd-reviewer-combined/feedback_large-diff-read-budget.md
+@@ -0,0 +1,22 @@
++---
++name: large-diff-read-budget
++description: how to finish a combined impl-review of a many-file, 200 KB-plus diff inside the turn cap - chunk size for the Read tool, cheap cross-file probes, write order
++metadata:
++  type: feedback
++---
++
++The Read tool refuses a result over about 25k tokens, so a 200+ KB diff cannot go in one call: read it in chunks of
++300-330 lines (about 7 calls for a 1700-line diff), several chunks in one message when they are independent.
++
++**Why:** an earlier attempt on a 16-file, 227 KB wave ran out of turns reading in small pieces and returned no verdict;
++reading the whole diff first and probing afterwards finished in under 20 turns.
++
++**How to apply:**
++- Read the manifest, the acceptance list and the diff first; read a whole source file only when a hunk cannot show the
++  fact (a caller, a helper's signature, a constant's current line number).
++- Verify a cross-file claim with one `Grep` using `-o -n` and a narrow pattern, not a file read. A brace list in the
++  `glob` parameter silently returns no match; use `path` per file or a single glob.
++- The coverage ledger has one row per manifest id and is the cost-free part: build it from the manifest ids as soon as the
++  findings are known, and write the return file before the final message so a cap stop still leaves a verdict.
++- A threshold or calibration observation that the data now contradicts is a finding with a `question:` escalation, not a
++  silent pass.
+diff --git a/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md b/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md
+index 87b7eb3..053850b 100644
+--- a/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md
++++ b/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md
+@@ -140,7 +140,9 @@ is actually derivable — measure that before claiming it is not. Coverage did n
+ smaller and the exemption became a real assertion. That is the outcome to report plainly rather than
+ dressing the round up with a new test.
+ 
+-A scope amendment can land while an entry runs (read `git log -3` before each commit). When it retires a mechanism, add no
++A scope amendment can land while an entry runs (before each commit, run the permitted diff command from the entry's
++`HEAD analysed` to current; paths changed beyond the entry's own files mean one landed — or ask the orchestrator through
++the payload). When it retires a mechanism, add no
+ new pin on it (drop the row that reads the retired constant), and list the existing pins it will break, by test name, in
+ `test-plan.md` for the next entry instead of editing them: the orchestrator ruled the running entry is not interrupted.
+ 
+@@ -192,6 +194,12 @@ When a fix adds a parameter with a default, the old and new formulas usually agr
+ (sprint 015 EXT-4: only at multiples of 25). Compute both at each sampled point before writing
+ "the default is unchanged", and pin tightness at exactly those points (mutation: loosen only there).
+ 
++A reword that mentions a pinned literal a second time in the same sentence de-pins its first mention: `sentence.includes(token)`
++stays green with the original mention deleted. After any dev reword of a pinned sentence, run the old literal-drop mutation
++against the UNCHANGED tests; a green run is the evidence, and the fix keys the assert to the trigger's position (the text
++before a later pinned token), never to the whole sentence. A guard written `block === -1 || order holds` is vacuous when no
++fixture block carries both items: confirm one does before crediting it as the pin on an order.
++
+ ## Assert removed phrases, not topic words
+ 
+ Rule prose here routinely narrates the alternative it just rejected inside the same bullet
+@@ -279,6 +287,13 @@ from the workflow and asserts it *ends with* the tail read out of `checkpoints.m
+ may be reworded freely as long as the counter still selects the emitter. String equality between the
+ two would have gone red on the correct fix, exactly as it did.
+ 
++A placement order stated at several sites (the home rule, a template format rule, the sibling declarations) is a relation of
++code spans: each site names the neighbour it is ordered against, one site lists the whole order and is compared as a list, and a
++direction word is checked on the connector text between the previous span and the neighbour with a negative vocabulary
++(`under|below|after|behind`). Record the ceiling: a reversal by a synonym outside that vocabulary passes. A stop-condition list is
++sliced per `;` clause, one assert per property: the clause that gates on a signal names the phase it binds, and the carve-out has
++its own clause carrying the signal and the pointer to the rule that owns it.
++
+ A substring token relation (`site.includes(token)`) goes vacuous when the token already sits inside a
+ longer span on the target: sprint 021 entry 5's new closure-write field `pr.number` was "named" by scope's
+ older `` `gh pr view <pr.number>` ``, so reverting the fix stayed green. Compare code span to span
+@@ -363,6 +378,14 @@ provider-scoped literal. `demo-agent.md` carries `"model"` in both its `claude`
+ `!canon.includes('"model": "opus"')` is the assertion meant. Run the suite once after adding a guard,
+ before recording anything about the assertion it protects.
+ 
++A fixture sized to a limit that later moves can stay green while its stated purpose stops being true: a numeric string equal
++to the old byte limit coerced to a count of exactly one, the silent collapse its message names, and at the new limit it
++coerces to two. Derive such inputs from the exported symbol, then grep the suite for the old number as a leftover. For a
++retuned single-home value (a threshold, a turn cap) measure before writing `none`: revert the value alone against the
++unchanged suite and read the own-FAIL list. Empty means no test pins the value, the intended state for a tunable
++(`code-style.md` §12) and a ceiling to state. A canon-only revert of a cap that a generated view mirrors reddens just the
++render mirror and `--check`.
++
+ ## Sweep guards: row set and exemption set both
+ 
+ A **reach** claim ("this rule reaches every role that authors X") is not agent-runtime judgement — it
+@@ -436,8 +459,9 @@ is a real result, not a no-op: assertions added to existing tests never move it.
+ **Why:** a reader comparing two identical counts concludes the gate proved nothing, when what it
+ proved is that the entry's own commit is green — which nothing else in the sprint ever checks.
+ 
+-**How to apply:** at gate time diff the recorded HEAD against current (`git log <recorded>..HEAD`),
+-name the commits the earlier record could not cover, and state whether the count moved and why. Note
++**How to apply:** at gate time diff the recorded HEAD against current (`git diff --name-status <recorded>..HEAD`),
++name the paths the earlier record could not cover (commit subjects come from the orchestrator through the payload),
++and state whether the count moved and why. Note
+ also that no test reads this repo's live `.asd/sprints/**` — every sprint reference in `tests/run.js`
+ is a temp-root fixture — so editing `test-plan.md` cannot change the suite result and needs no re-run.
+ 
+diff --git a/tests/run.js b/tests/run.js
+index 27ed515..367e0b0 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -3318,7 +3318,7 @@ test('sprint-017 AC-1 (D1/D2), sprint-023 AC-1: review-waves counts the most of
+   ]) {
+     assert.strictEqual(runtime.reviewWaveCount(lines, files, bytes), expected, `${lines} lines, ${files} files, ${bytes} diff bytes: the wave count is the most of one per ${threshold} lines, ${filesLimit} files and ${bytesLimit} bytes begun, never their sum, at most min(${cap}, files)`);
+   }
+-  for (const bytes of [-1, 1.5, Number.NaN, '300000']) {
++  for (const bytes of [-1, 1.5, Number.NaN, String(bytesLimit)]) {
+     assert.throws(() => runtime.reviewWaveCount(10, 10, bytes), /bytes must be a non-negative integer/, `${JSON.stringify(bytes)}: an unusable byte measurement must fail closed like lines and files, never be read as 0 and collapse the scope into one wave`);
+   }
+ 
+@@ -6274,8 +6274,10 @@ test('sprint-019 AC-1/AC-3/AC-4/AC-5/AC-6, sprint-023 AC-8: scope step 2a runs r
+   const tag = proposal && Object.keys(proposal).find((key) => !['row', 'acts_on', 'guardrail', 'home'].includes(key));
+   assert.ok(tag, 'sprint-023 AC-8: sanity - outside self-hosting retroCandidates must return an asd row with a marker field beside row, acts_on, guardrail and home, or the rule and workflow cannot be compared with the tag it emits');
+   const literal = `\`${tag}: true\``;
+-  assert.ok(empty.includes(literal), `sprint-023 AC-8: a list of only ${literal} rows has no candidate to decide, so the empty-array no-op must cover it - otherwise a consumer project whose latest retro holds only asd rows is asked about proposals it cannot dispose`);
++  assert.ok(empty.slice(0, empty.indexOf('decisions-log')).includes(literal), `sprint-023 AC-8: a list of only ${literal} rows has no candidate to decide, so the empty-array no-op must cover it, named before the no-op's outcome - otherwise a consumer project whose latest retro holds only asd rows is asked about proposals it cannot dispose (a later mention of the tag in the same sentence is not the trigger)`);
+   const shown = sentences.find((sentence) => sentence.includes(literal) && /\bAC-N\b/.test(sentence)) || '';
++  const noOp = intake.slice(intake.indexOf(empty), intake.indexOf(shown));
++  assert.ok(/\bgate\b/.test(noOp) && !/\b(?:not|never)\b/.test(noOp), `sprint-023 review-fix F4: the no-op sentence must say the ${literal} rows are still shown at the gate - "no-op" alone reads as "show nothing", against scope step 4, which shows them`);
+   assert.ok(/no question/.test(shown) && /\bbacklog\b/.test(shown), `sprint-023 AC-8: the sentence on a ${literal} row must say it is shown with no question, is never an AC-N and reaches no backlog - disposed like a candidate, it is either lost to the framework repo it addresses or re-asked at every scope`);
+   assert.ok(step.includes(literal) && accept.includes(literal), `sprint-023 AC-8: scope steps 2a and 4 must name the ${literal} tag the runtime emits - step 2a exempts it from verification and step 4 shows it at the gate`);
+ });
+@@ -7505,6 +7507,22 @@ test('sprint-023 AC-5: the Test-only declaration is defined once in sprint-lifec
+     assert.ok(new RegExp(`^(?:Material risk:[^\\n]*\\n)+${label}`, 'm').test(block) && !new RegExp(`^- \\[.\\] ${label}`, 'm').test(block) && (reachability === -1 || block.search(linePattern) < reachability), `the example's ${label} line must sit directly under the Material risk line(s), ahead of any Reachability line, and never be a checkbox - the placement the rule defines`);
+   }
+ 
++  const planFormat = sectionOf('.asd/rules/sprint-lifecycle.md', 'Plan file format');
++  const declarationOf = (name) => planFormat.split('\n').find((line) => line.startsWith(`**${name} declaration**`)) || '';
++  const placement = (line) => spans(line.slice(0, line.indexOf('):'))).filter((span) => !span.startsWith('### '));
++  const connector = (line) => {
++    const head = line.slice(0, line.indexOf('`Reachability`'));
++    return head.slice(head.lastIndexOf('`') + 1);
++  };
++  const lineName = label.replace(/:$/, '');
++  const order = ['Material risk', lineName, 'Reachability'];
++  for (const [site, line] of [['sprint-lifecycle.md "Plan file format"', declaration], ['t_plan.md\'s format rule', template.split('\n').find((candidate) => candidate.includes(shape[1])) || '']]) {
++    assert.ok(line.includes('`Reachability`'), `${site} must name the Reachability line the ${lineName} line sits ahead of - both are plain-text lines under the Material risk lines, so a rule that states no order between them lets a plan put either first`);
++    assert.ok(!/\b(?:under|below|after|behind|beneath|following)\b/.test(connector(line)), `${site} must put the ${lineName} line ahead of the Reachability line, not behind it - the reverse order contradicts the Reachability and Settings change declarations, which both place their line under ${lineName}`);
++  }
++  assert.ok(placement(declarationOf('Reachability')).includes(lineName), `the Reachability declaration must name the ${lineName} line it sits under, or the order between the two is stated at one site only`);
++  assert.deepStrictEqual(placement(declarationOf('Settings change')).filter((span) => order.includes(span)), order, `the Settings change declaration must list the lines it sits under in the order the plan carries them (${order.join(' < ')}) - a list in another order contradicts the ${lineName} and Reachability declarations`);
++
+   const flow = sectionOf('.asd/workflows/asd-phase-impl.md', 'Workflow');
+   assert.ok(stepOf(flow, '5a').includes(`\`${label}\``) && stepOf(flow, '5a').includes('`asd-tester`'), `asd-phase-impl.md step 5a must name the ${label} line and the asd-tester it routes such a Task to - a dev dispatched for a Task whose paths are tests is the case the sprint closes`);
+   const delegate = stepOf(flow, '6').split('\n').find((line) => /\bdelegate\b/.test(line) && line.includes('`asd-dev`')) || '';
+@@ -7514,6 +7532,10 @@ test('sprint-023 AC-5: the Test-only declaration is defined once in sprint-lifec
+   assert.ok(declaration.includes(`${trailer[1]}: Task N`) && stepOf(sectionOf('.asd/workflows/asd-phase-impl-test.md', 'Workflow'), '2').includes(`${trailer[1]}: Task N`), `the declaration and impl-test step 2 must both name the ${trailer[1]}: Task N trailer a Test-only Task's commits carry - a trailer the tester does not write is one entry 1 cannot recognise`);
+   const contract = sectionOf('.asd/agents/asd-tester.md', 'Operating contract').split('\n').find((line) => line.includes(`\`${label}\``)) || '';
+   assert.ok(contract.includes('`plan.md`') && contract.includes('`test-plan.md`') && contract.includes('"Plan file format"'), 'asd-tester.md Operating contract must carry the Test-only Task bullet: it cites the declaration and leaves plan.md and test-plan.md untouched, the files its wave and impl-test own');
++  const stops = (canonText('.asd/agents/asd-tester.md').split('\n').find((line) => line.startsWith('- **Stop conditions**')) || '').split(';');
++  assert.ok((stops.find((clause) => /\bimpl COMPLETED\b/.test(clause)) || '').includes('`impl-test`'), `asd-tester.md Stop conditions: the clause that aborts on a missing impl COMPLETED signal must name the \`impl-test\` dispatch it binds - the tester also runs a ${lineName} Task inside an impl wave, before impl can complete, so an unscoped abort refuses every such dispatch`);
++  const testOnlyStop = stops.find((clause) => clause.includes(lineName)) || '';
++  assert.ok(testOnlyStop.includes('ABORT') && testOnlyStop.includes('"Plan file format"'), `asd-tester.md Stop conditions must give a ${lineName} Task dispatch its own ABORT clause citing the plan rule - scoping the impl-test clause alone leaves that dispatch with no stop condition`);
+ 
+   const noTests = /production code only|writes? \*\*no tests\*\*|no test-authoring|no tests written|never in `impl`/i;
+   const sites = [...canonMarkdownFiles(), 'README.md'].filter((rel) => rel !== '.asd/agents/asd-dev.md').flatMap((rel) => canonText(rel).split('\n').filter((line) => noTests.test(line)).map((line) => [rel, line]));
