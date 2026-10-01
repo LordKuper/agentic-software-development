@@ -7276,6 +7276,11 @@ test('sprint-022 AC-8/AC-9, sprint-023 AC-7: the model family and effort each ag
     codex: tierOf(wrapper.codex.wraps_model, wrappedEffort(wrapper.codex.wraps_invoke_args, '--effort')),
   };
 
+  const suffixes = [...new Set([...tiers.keys()].filter((name) => !baseNames.includes(name)).map((name) => name.split('-').pop()))].sort();
+  assert.deepStrictEqual(suffixes, ['critical', 'mechanical'], 'sprint-023 AC-7: tier standard has no variant and dispatches the base agent - the fact the deleted matrix repeated on its variant rows - so no canon agent may declare a standard variant, which sync.js would otherwise render');
+  const standardNote = sectionOf('.asd/rules/providers.md', 'Task-class variants and routing').split(/(?<=\.)\s/).find((sentence) => spans(sentence).includes('standard') && /\bvariant/.test(sentence) && /\bno\b/.test(sentence) && /\bbase\b/.test(sentence));
+  assert.ok(standardNote, 'sprint-023 AC-7: providers.md "Task-class variants and routing" is now the only prose home of "tier standard has no variant, it dispatches the base agent" - the matrix that repeated it is gone');
+
   const agentsSection = sectionOf('README.md', 'Agents');
   const readmeRows = [...agentsSection.matchAll(/^\| `(asd-[a-z-]+)` \| ([^|]+) \| ([^|]+) \|/gm)].map(([, name, claude, codex]) => [name, claude.trim(), codex.trim()]);
   assert.deepStrictEqual(readmeRows.map(([name]) => name).sort(), [...baseNames].sort(), 'README\'s agent tables list each canonical agent once - variants are described in prose, not rows');
