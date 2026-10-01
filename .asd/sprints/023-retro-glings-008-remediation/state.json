@@ -74,6 +74,13 @@
       "reason": "AC-10 remove the change-surface cap from ASD (never produced a real decision, always overridden)",
       "evidence": "chat request 2026-10-01; decisions-log.md 2026-10-01 scope amendment AC-10; before impl-review division point, no floor_base",
       "artifact_revision": "sprint.md@impl-test"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "Tasks 7-8 (AC-10) done, build+lint clean, sync clean, no flagged choices, authorised paths only, plan fully ticked",
+      "evidence": "3857b0d",
+      "artifact_revision": "HEAD 3857b0d"
     }
   ],
   "task_routing": {
@@ -152,7 +159,7 @@
     }
   },
   "created_at": "2026-10-01T18:51:33.169Z",
-  "updated_at": "2026-10-01T20:59:01.019Z",
+  "updated_at": "2026-10-01T21:01:46.233Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

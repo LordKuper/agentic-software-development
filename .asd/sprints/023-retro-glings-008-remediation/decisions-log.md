@@ -90,3 +90,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-01 — impl-test entry 1 flagged choices accepted (Codex-host manifest read stays a post-merge orchestrator check; extra git, ledger-turn and standard-tier pins; sandbox pin literal against frontmatter); the wave-4 scope amendment AC-10 re-enters impl before impl-review (new Tasks 7 and 8 sit in a wave not yet dispatched)
 
 - 2026-10-01 — route Task 7, Task 8: critical, dispatch HEAD ef99e3f
+
+## 2026-10-02 — impl assessment (wave 4, AC-10) accepted adaptively
+
+- **Decision**: Tasks 7 and 8 done (runtime.js: `SURFACE_CAP_FILES`, `surface-check`, `surfaceCheck` and the helpers only they used removed, `WAVE_THRESHOLD_FILES` the literal 34; rule docs, workflows, template and README: cap, declaration, override gate and amendment step removed, the review/test "change surface" diff concept untouched). Build, lint and sync clean at 3857b0d, no flagged choices, every round path authorised, plan fully ticked. Five `tests/run.js` pins on the removed mechanism are red by design and go to impl-test entry 2 with the citations Task 8 listed.
+- **Rationale**: Adaptive impl assessment gate (`checkpoints.md`): all dev signals COMPLETED, nothing unresolved.
+- **Affected docs**: [plan.md](plan.md)
