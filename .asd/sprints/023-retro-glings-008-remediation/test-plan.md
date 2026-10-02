@@ -70,11 +70,11 @@ record, by the time `pr` runs. Each per-entry record measures only the tree that
 analysed, not any tree produced later
 (`.asd/rules/sprint-lifecycle.md` "Impacted test set").
 
-- Command: `node tests/run.js` (the safety valve degrades the impacted set to the whole suite: the delta touches `providers.md`, a framework-wide rule doc read by most content tests, `asd-phase-impl-review.md`, `release-manifest.json`, the `upstream_hashes` ledger itself, and agent memory read by the sweeps)
-- Scope: impacted, degraded to full by the safety valve
-- Result: pass — 272/272 (exit 0; 272 `ok -` lines, 0 `FAIL -`, no failing names), run on the worktree after this entry's test and memory edits. Net 272 → 272: 0 tests added, 0 removed; one list extended, one constant lifted and two asserts added to one existing test
-- Lint / build: pass — `node .asd/sync.js --check` exit 0, `ok: true`; `git diff --check` over this entry's paths exit 0 and `git diff --cached --check` exit 0 with only this entry's own files staged; `node .asd/runtime.js memory-check` on the staged memory diff `[]`
-- HEAD: 6913eb1 — the commit the delta was measured at (the pre-strategy run and the strategy are at the same commit). The run covers 6913eb1 plus this entry's uncommitted `tests/run.js`, memory and `test-plan` files, which the entry's commit follows, so it is the first run at a tree holding that edit; no test reads a live sprint file
+- Command: `node tests/run.js` (the `test` of `commands.yaml`, unscoped), run in the terminal full-suite gate on a worktree whose `git status --porcelain` was empty before and after
+- Scope: full
+- Result: pass — 272/272 (exit 0; 272 `ok -` lines, 0 `FAIL -`, no failing names; stdout ends `272/272 passed`). The one stderr line that is not a git CRLF warning, `ledger findings invalid`, is the thrown message of a negative-path `assert.throws` in the coverage-ledger test, not a failure
+- Lint / build: pass — build `node .asd/sync.js --check` exit 0, `ok: true`, every generated target `current`; lint `git diff --cached --check` exit 0 over this record's own staged path, `.asd/sprints/023-retro-glings-008-remediation/test-plan.md`
+- HEAD: 8e11b605eeb2ae41469fd899ca563f72598121c8 — `git rev-parse HEAD` at the time of the run, unchanged after it. This is the first run at a tree holding entry 7's committed test edit: the per-entry record ran at `6913eb1` plus that entry's then-uncommitted `tests/run.js`, and the paths added since (`git diff --name-status 6913eb1..HEAD`) are the test commit `f66e235` (`tests/run.js`), two agent-memory files and the `test-plan` files, and the wave-2 iteration-2 review files and sprint bookkeeping, with no rule, workflow, template or release-manifest change. The count did not move (272 before and after) because entry 7 added asserts to an existing test; no test reads a live sprint file, so this record's edit needs no re-run
 
 ## Defects
 
