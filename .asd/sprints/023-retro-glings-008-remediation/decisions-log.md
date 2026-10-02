@@ -165,3 +165,7 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-01 — route impl-test entry 7: critical, dispatch HEAD 89bbbc5
 
 - 2026-10-02 — impl-test: impacted set green (272/272), 0 added/0 removed (one existing test extended) tests (entry 7, HEAD analysed f66e235); no defects, no manual-verification row
+- 2026-10-02 — external interrupted attempt 1 in wave-2/iter-02 (return lacked the report's findings table; persist-review exit 2)
+- 2026-10-02 — combined return rejected in wave-2/iter-02 (no findings table; persist-review exit 2), re-dispatched fresh
+
+- 2026-10-02 — impl-review wave-2/iter-02: combined APPROVE, external APPROVE (each needed one re-dispatch for a missing findings table); iteration-1 findings verified resolved; wave 2 roster met, last wave → terminal full-suite gate (step 9)
