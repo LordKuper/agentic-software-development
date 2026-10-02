@@ -187,3 +187,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: [retrospective.html](retrospective.html), [friction-log.md](friction-log.md)
 
 - 2026-10-02 — pr open mode: DoD verified (plan ticked, both review waves APPROVE at wave-1/iter-03 and wave-2/iter-02, full suite 272/272 at 8e11b60 with no code/test diff since, build+lint clean, retrospective present, no sprint stubs, no existing PR for the branch); asd_version 13.5.0 → 13.6.0 (feat highest, no breaking marker), CHANGELOG v13.6.0 added
+
+- 2026-10-02 — pr open mode: PR #59 opened after the user confirmed publication; state.json.pr written and pushed; NEXT await-merge
