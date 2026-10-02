@@ -185,3 +185,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: `retrospective.html` written; 4 entries analysed (F-1…F-4), 2 framework actions open and 2 covered by existing rules, 3 systemic proposals (per-delta risk for review-fix re-entries, a tighter fail-first mutation bound, amendment floor rebase limited to amended code); non-empty-log branch. Nothing applied or promoted.
 - **Rationale**: `sprint-lifecycle.md` "Retro phase".
 - **Affected docs**: [retrospective.html](retrospective.html), [friction-log.md](friction-log.md)
+
+- 2026-10-02 — pr open mode: DoD verified (plan ticked, both review waves APPROVE at wave-1/iter-03 and wave-2/iter-02, full suite 272/272 at 8e11b60 with no code/test diff since, build+lint clean, retrospective present, no sprint stubs, no existing PR for the branch); asd_version 13.5.0 → 13.6.0 (feat highest, no breaking marker), CHANGELOG v13.6.0 added
