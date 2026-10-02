@@ -1,12 +1,12 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-correctness.md. source_digest=sha256:fdc52fd07949bdf3d401155f309afb07251bf1c15cf201a34cda90ba78cf68f6 content_digest=sha256:e22526a16e526ca6d8915086fa1f4759c4c9a77cc74d8ecaa81c597382d0fcdf asd_version=13.4.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-correctness.md. source_digest=sha256:fd452400e86fed0fd9c9381729c4d839372a6037f79fc6f77d9d568ea87e7278 content_digest=sha256:cc8e45e1b748b70c6c508d452f2b6dde10fe4a39d6bd85d9c092eb16c29e1ab1 asd_version=13.5.0 schema=1
 name: asd-reviewer-correctness
 description: "Design-review of draft correctness (AC completeness, contract and ADR decision soundness) and UI drafts (UI section n/a without a ux-spec/design-system draft), and impl-review of code, tests and UI for bugs, security, best-practice/contract drift, the AC→code trace, and UI/accessibility conformance. Covers: bug patterns (off-by-one, null paths, race conditions, resource leaks), security holes (secrets, injection, auth bypass, crypto misuse, input validation), language/framework best practices, contract violations vs ADR, AC→code trace against PRD/`sprint.md` AC-N, ux-spec compliance check, UI implementation match to ux-spec mockups, design-system token/component usage, accessibility baseline compliance. Does NOT handle: over-engineering, structure/cohesion, or performance (delegates to asd-reviewer-efficiency), test-plan/test-quality review and AC→check coverage (delegates to asd-reviewer-testing), design-review testability (unowned by design), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy)."
 tools: [Read, Glob, Grep, WebFetch, WebSearch]
 disallowedTools: [Edit, Bash]
 model: sonnet
 effort: xhigh
-maxTurns: 50
+maxTurns: 100
 memory: project
 ---
 

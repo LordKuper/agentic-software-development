@@ -20,12 +20,16 @@ const LEDGER_ROW_EXAMPLE = { i: '<manifest id>', s: LEDGER_VOCABULARY.p, p: '<al
 const ROW_TYPES = Object.keys(LEDGER_VOCABULARY).filter((key) => Array.isArray(LEDGER_VOCABULARY[key]));
 /** The `n_a` shape: row type, then manifest id, then its allowed predicate list. Published beside the vocabulary under its own key, because `n_a` itself carries per-dispatch content. */
 const LEDGER_NA_SHAPE = Object.fromEntries(ROW_TYPES.map((type) => [type, { [LEDGER_ROW_EXAMPLE.i]: [LEDGER_ROW_EXAMPLE.p] }]));
-/** A reviewable change surface above this many files blocks plan acceptance and impl-review entry until the user splits the sprint or approves an override bound. */
-const SURFACE_CAP_FILES = 100;
 /** Changed lines (added plus deleted) one impl-review wave carries; a larger scope divides into more waves, so no review turn holds an oversized diff. */
 const WAVE_THRESHOLD_LINES = 3000;
 /** Most review waves one scope divides into, so an oversized scope still ends in a bounded number of sequential reviews. */
 const MAX_REVIEW_WAVES = 3;
+/** Files one impl-review wave carries, so a many-file scope divides into waves even when its diff is small. */
+const WAVE_THRESHOLD_FILES = 34;
+/** Diff bytes one impl-review wave carries; a larger scope divides into more waves, so no review turn reads an oversized patch. */
+const WAVE_THRESHOLD_BYTES = 180000;
+/** Files above which one review wave gets a turn plan in its reviewer payload. */
+const LARGE_WAVE_FILES = 12;
 /** An audit whose touched areas track more than this many files gets a batched-read plan in the architect payload. */
 const AUDIT_BATCH_THRESHOLD_FILES = 200;
 /** Internal reviewers, named as `emit-manifest --reviewer` takes them. */
@@ -78,6 +82,18 @@ const RETRO_TABLES = [
 const BACKLOG_HEADER = ['Row', 'Acts on', 'Disposition', 'Decided in', 'Guardrail'];
 /** Retro backlog dispositions; `closed` is a row verified already resolved at HEAD. */
 const BACKLOG_DISPOSITIONS = ['deferred', 'included', 'rejected', 'closed'];
+/** The agent-memory tree as a git top-relative pathspec, so a check run from any directory scans the same files. */
+const AGENT_MEMORY_PATHSPEC = ':/.claude/agent-memory';
+/** Concrete work-history ordinals agent memory must not record: a sprint id, a Task, wave or iteration number, or a recorded review verdict. A placeholder such as `iter-NN` or `Task <N>` carries no digits and passes; a bare verdict word is not scanned. */
+const MEMORY_HISTORY_PATTERNS = [
+  /\b\d{3}-[a-z][a-z0-9]*(-[a-z0-9]+)+\b/i,
+  /\bsprint[ -]?\d+\b/i,
+  /\bTask \d+\b/,
+  /\bwave[- ]\d+\b/i,
+  /\biter-\d+\b/i,
+  /\biteration \d+\b/i,
+  /\[REVIEW-(design|impl)-[a-z]+\]: *(APPROVE|CONCERNS|FAIL)/,
+];
 
 function stable(value) {
   if (Array.isArray(value)) return '[' + value.map(stable).join(',') + ']';
@@ -627,17 +643,19 @@ function latestRetroSprint(archived) {
   return sprints.find((sprint) => fs.existsSync(path.join(archived, sprint, 'retrospective.html')) && sprintPhase(path.join(archived, sprint)) === 'done') || null;
 }
 
-/** Retro intake candidates as `{row, acts_on, guardrail, home}`: the latest closed retrospective's rows the backlog does not dispose, then the backlog's deferred rows as their retrospective states them (the backlog's Acts on/Guardrail are human-readable copies); `covered by:` rows drop, and `asd` rows outside a self-hosting project. An absent backlog reads as empty. */
+/** Retro intake candidates as `{row, acts_on, guardrail, home}`: the latest closed retrospective's rows the backlog does not dispose, then the backlog's deferred rows as their retrospective states them (the backlog's Acts on/Guardrail are human-readable copies); `covered by:` rows drop. Outside a self-hosting project the latest retrospective's `asd` rows stay tagged `upstream: true`, proposals for the framework that are never dispositioned, while a deferred `asd` row drops. An absent backlog reads as empty. */
 function retroCandidates(sprintsDir, backlogPath, selfHosting) {
   if (!fs.statSync(sprintsDir).isDirectory()) fail(`--sprints is not a directory: ${sprintsDir}`);
   const archived = path.join(sprintsDir, 'archived');
   const backlog = fs.existsSync(backlogPath) ? backlogRows(fs.readFileSync(backlogPath, 'utf8')) : [];
   const disposed = new Set(backlog.map((entry) => entry.row));
   const rowsOf = (sprint) => retroRows(fs.readFileSync(path.join(archived, sprint, 'retrospective.html'), 'utf8')).map((row) => ({ row: `${sprint}#${row.id}`, acts_on: row.acts_on, guardrail: row.guardrail, home: row.home }));
+  const isOpen = (candidate) => !/^covered by:/i.test(candidate.guardrail);
+  const isOwn = (candidate) => selfHosting || candidate.acts_on === 'consumer';
   const latest = latestRetroSprint(archived);
-  const fresh = latest === null ? [] : rowsOf(latest).filter((candidate) => !disposed.has(candidate.row));
+  const fresh = (latest === null ? [] : rowsOf(latest).filter((candidate) => !disposed.has(candidate.row) && isOpen(candidate))).map((candidate) => (isOwn(candidate) ? candidate : { ...candidate, upstream: true }));
   const deferred = backlog.filter((entry) => entry.disposition === 'deferred').map((entry) => rowsOf(entry.row.split('#')[0]).find((candidate) => candidate.row === entry.row) || fail(`retro backlog row not in its retrospective: ${entry.row}`));
-  return fresh.concat(deferred).filter((candidate) => !/^covered by:/i.test(candidate.guardrail) && (selfHosting || candidate.acts_on === 'consumer'));
+  return fresh.concat(deferred.filter((candidate) => isOpen(candidate) && isOwn(candidate)));
 }
 
 function readFileList(file) {
@@ -666,26 +684,38 @@ function draftSnapshot(files, out, previous) {
   return changed;
 }
 
-/** A generated provider view: sync output regenerated from canon, so it is never reviewable change surface. The JSON-merge hook registrations (`.claude/settings.json`, `.codex/hooks.json`) can hold user content, so they count. */
-function isGeneratedView(file) {
-  return /^(\.claude\/(agents|skills|hooks)\/|\.codex\/(agents|hooks)\/|\.agents\/skills\/)/.test(file);
+/** Added lines of a zero-context unified diff as `{file, line, text}`, each at its line number in the new file. */
+function addedLines(diff) {
+  const added = [];
+  let file = null;
+  let line = 0;
+  let inHunk = false;
+  diff.split('\n').forEach((text) => {
+    if (text.startsWith('diff --git ')) inHunk = false;
+    else if (!inHunk && text.startsWith('+++ ')) file = text.slice(4).replace(/\t.*$/, '');
+    else if (text.startsWith('@@')) {
+      inHunk = true;
+      line = Number(/\+(\d+)/.exec(text)[1]);
+    } else if (inHunk && text.startsWith('+')) {
+      added.push({ file, line, text: text.slice(1) });
+      line += 1;
+    }
+  });
+  return added;
 }
 
-/** Measures a file list, generated provider views excluded, against SURFACE_CAP_FILES, or against the user-approved override bound when one is recorded. */
-function surfaceCheck(files, bound) {
-  if (bound !== undefined && !(Number.isInteger(bound) && bound > 0)) fail('--bound must be a positive integer');
-  const cap = bound === undefined ? SURFACE_CAP_FILES : bound;
-  const count = new Set(files.filter((file) => !isGeneratedView(file))).size;
-  return { files: count, cap, breach: count > cap };
+/** Work-history violations among the added lines of a staged agent-memory diff and the names of its newly added files, as `{path, line, token}`; `line` is null for a file name, whose `_` separators count as word breaks so `project_<ordinal>-topic.md` is caught. */
+function memoryViolations(diff, names) {
+  const scanned = names.map((name) => ({ file: name, line: null, text: name.replace(/_/g, ' ') })).concat(addedLines(diff));
+  return scanned.flatMap(({ file, line, text }) => MEMORY_HISTORY_PATTERNS.map((pattern) => pattern.exec(text)).filter(Boolean).map((match) => ({ path: file, line, token: match[0] })));
 }
 
-/** A surface-check file list: `--files`, minus each path the `--base...--head` range renames with identical content and mode when that range is given, so a pure move never counts as change surface. */
-function surfaceFiles(flags) {
-  if (typeof flags.files !== 'string') fail('--files <path> required');
-  const files = readFileList(flags.files);
-  if (flags.base === undefined && flags.head === undefined) return files;
-  const renames = rangeRenames(gitRef(flags.base, '--base'), gitRef(flags.head, '--head'));
-  return files.filter((file) => !(renames.has(file) && renames.get(file).pure));
+/** Runs the work-history check over the staged agent-memory changes. */
+function memoryCheck(flags) {
+  if (Object.keys(flags).length > 0) fail('memory-check takes no flags');
+  const diff = runGit(['diff', '--cached', '-U0', '--no-color', '--no-ext-diff', '--no-prefix', '--', AGENT_MEMORY_PATHSPEC]);
+  const names = runGit(['diff', '--cached', '--name-only', '-z', '--diff-filter=ACR', '--', AGENT_MEMORY_PATHSPEC]).split('\0').filter(Boolean);
+  return memoryViolations(diff, names);
 }
 
 /** Sums added plus deleted lines of `git diff --numstat -z -M` output over the listed paths, a rename counted at its destination; a binary file (`-`) and a pure rename (0 and 0) add nothing. */
@@ -705,11 +735,13 @@ function numstatLines(output, files) {
   return lines;
 }
 
-/** Review waves a scope of `files` files and `lines` changed lines needs: one per WAVE_THRESHOLD_LINES begun, at least one, at most MAX_REVIEW_WAVES and never more than `files`, so every wave can hold a file. */
-function reviewWaveCount(lines, files) {
+/** Review waves a scope of `files` files, `lines` changed lines and `bytes` of diff needs: the most of one per WAVE_THRESHOLD_LINES, WAVE_THRESHOLD_FILES and WAVE_THRESHOLD_BYTES begun, at least one, at most MAX_REVIEW_WAVES and never more than `files`, so every wave can hold a file. */
+function reviewWaveCount(lines, files, bytes = 0) {
   if (!Number.isInteger(lines) || lines < 0) fail('lines must be a non-negative integer');
   if (!Number.isInteger(files) || files < 0) fail('files must be a non-negative integer');
-  return Math.min(MAX_REVIEW_WAVES, Math.max(1, files), Math.max(1, Math.ceil(lines / WAVE_THRESHOLD_LINES)));
+  if (!Number.isInteger(bytes) || bytes < 0) fail('bytes must be a non-negative integer');
+  const needed = Math.max(Math.ceil(lines / WAVE_THRESHOLD_LINES), Math.ceil(files / WAVE_THRESHOLD_FILES), Math.ceil(bytes / WAVE_THRESHOLD_BYTES));
+  return Math.min(MAX_REVIEW_WAVES, Math.max(1, files), Math.max(1, needed));
 }
 
 /** Accepts a review-wave division only as exactly `count` file lists, disjoint and together equal to the scope, so every scope file is reviewed in exactly one wave; a list may be empty only when the scope is, as the one wave `[[]]`. */
@@ -890,18 +922,27 @@ function emitManifestCommand(flags) {
   return flags.reviewer === EXTERNAL_REVIEWER ? emitExternalScope(flags, files, ranges, snapshot) : emitInternalManifest(flags, files, ranges, snapshot);
 }
 
+/** Bytes of the patch a reviewer reads for `files` over `base...head`, a rename paired with its source so a move is not counted as an add; zero for no files. */
+function patchBytes(base, head, files) {
+  const ranges = { scope: { base, head, renames: rangeRenames(base, head) }, full: null, fullFiles: new Set() };
+  return rangePatchInvocations(ranges, files).reduce((total, invocation) => total + Buffer.byteLength(runGit(invocation.args)), 0);
+}
+
 function reviewWavesCommand(flags) {
   if (typeof flags.files !== 'string') fail('--files <path> required');
   if ((flags.division === undefined) !== (flags.out === undefined)) fail('--division <json path> and --out <path> go together');
   const base = gitRef(flags.base, '--base');
   const head = gitRef(flags.head, '--head');
   const scope = readFileList(flags.files);
+  const files = new Set(scope).size;
   const lines = numstatLines(runGit(['diff', '--numstat', '-z', '-M', `${base}...${head}`]), scope);
-  const measured = { lines, threshold: WAVE_THRESHOLD_LINES, waves: reviewWaveCount(lines, new Set(scope).size) };
+  const bytes = patchBytes(base, head, scope);
+  const thresholds = { lines: WAVE_THRESHOLD_LINES, files: WAVE_THRESHOLD_FILES, bytes: WAVE_THRESHOLD_BYTES };
+  const measured = { lines, files, bytes, thresholds, waves: reviewWaveCount(lines, files, bytes) };
   if (flags.division === undefined) return measured;
   const waves = validateWaveDivision(JSON.parse(fs.readFileSync(flags.division, 'utf8')), scope, measured.waves);
   fs.mkdirSync(path.dirname(flags.out), { recursive: true });
-  fs.writeFileSync(flags.out, JSON.stringify({ base, head, lines, threshold: WAVE_THRESHOLD_LINES, waves }) + '\n', 'utf8');
+  fs.writeFileSync(flags.out, JSON.stringify({ base, head, lines, files, bytes, thresholds, waves }) + '\n', 'utf8');
   return measured;
 }
 
@@ -1056,10 +1097,10 @@ async function main(argv) {
     process.stdout.write(JSON.stringify(defectStalemate(fs.readFileSync(flags.plan, 'utf8'))) + '\n');
     return 0;
   }
-  if (command === 'surface-check') {
-    const result = surfaceCheck(surfaceFiles(flags), flags.bound === undefined ? undefined : Number(flags.bound));
-    process.stdout.write(JSON.stringify(result) + '\n');
-    return result.breach ? 1 : 0;
+  if (command === 'memory-check') {
+    const violations = memoryCheck(flags);
+    process.stdout.write(JSON.stringify(violations) + '\n');
+    return violations.length === 0 ? 0 : 1;
   }
   if (command === 'draft-snapshot') {
     if (typeof flags.files !== 'string' || typeof flags.out !== 'string') fail('--files <path> and --out <iteration dir> required');
@@ -1084,11 +1125,11 @@ async function main(argv) {
     return 0;
   }
   if (command === 'agent-liveness') return agentLivenessCommand(flags);
-  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, surface-check, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, or agent-liveness');
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, or agent-liveness');
 }
 
 if (require.main === module) {
   main(process.argv).then((code) => { process.exitCode = code; }, (error) => { process.stderr.write(`${error.message}\n`); process.exitCode = 2; });
 }
 
-module.exports = { AUDIT_BATCH_THRESHOLD_FILES, COMBINED_REVIEWER, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, SURFACE_CAP_FILES, WAVE_THRESHOLD_LINES, agentLiveness, backlogRows, buildInvocation, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, isDocumentation, isTest, loadWorkflow, numstatLines, persistReview, recordExternalFailure, retroCandidates, retroRows, reviewFindings, reviewWaveCount, reviewerFiles, reviewerKeys, routeTask, surfaceCheck, validateCoverageLedger, validateWaveDivision, waveFiles, fingerprint };
+module.exports = { AUDIT_BATCH_THRESHOLD_FILES, COMBINED_REVIEWER, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LARGE_WAVE_FILES, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, WAVE_THRESHOLD_BYTES, WAVE_THRESHOLD_FILES, WAVE_THRESHOLD_LINES, agentLiveness, backlogRows, buildInvocation, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, isDocumentation, isTest, loadWorkflow, numstatLines, persistReview, recordExternalFailure, retroCandidates, retroRows, reviewFindings, reviewWaveCount, reviewerFiles, reviewerKeys, routeTask, validateCoverageLedger, validateWaveDivision, waveFiles, fingerprint };

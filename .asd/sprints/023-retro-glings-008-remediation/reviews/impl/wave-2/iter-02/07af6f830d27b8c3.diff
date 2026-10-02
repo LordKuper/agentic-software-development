@@ -1,0 +1,145 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 084cdee..80c2567 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -75,7 +75,7 @@
+     ".asd/rules/external-review.md": "92f1d45d869c152e7b8444ac5a413daed42b033034802c402454227498d03c03",
+     ".asd/rules/git-strategy.md": "3f1db1a7c528c91798f2facd003959ac5fefd2c956f256383cba2cf4e0552709",
+     ".asd/rules/language-policy.md": "e9b488a4cff5ed193208a52324601bede1a41e2512f2a6f06d0660576940f322",
+-    ".asd/rules/providers.md": "a3b311714ebeafb9ddf19e0657c6aaea94536b26f781cdd58e91a1690204b7b7",
++    ".asd/rules/providers.md": "46f81dfe8ba4103671df0a8a9d167c17fc6e40466ef6362a07872c129514b99f",
+     ".asd/rules/review-policy.md": "698a07a3db488109eb854b7f728138555f94096aa9058fbe550f86dc2eec35d1",
+     ".asd/rules/sprint-lifecycle.md": "beae936757f72e11ef5478c4b4cd457b7499095d94d518dcda0973937cbbe0e8",
+     ".asd/rules/ux-principles.md": "9f2af8c90d969c73654812b80e523e33b4c5696f506acf49e4bacb4c0dc6750c",
+@@ -134,7 +134,7 @@
+     ".asd/workflows/asd-phase-design-promote.md": "b24bc895c3cceb0e36cdd7794c9ae409e8ec1faf3492849b868d555eee68fb1f",
+     ".asd/workflows/asd-phase-design-review.md": "c86e34b32ada8706bf55739e5aad88c31bff59f12fb5f5a3a93e117976f8340e",
+     ".asd/workflows/asd-phase-design.md": "f4686880b9e40261dbb16e2818c6c657247fc7d48aee5ead3fe8a909ac328014",
+-    ".asd/workflows/asd-phase-impl-review.md": "4e351fda6ac9355f49e55b07dbc985a2bd2ee6626ee3c0507ebb96f6fc70b7b0",
++    ".asd/workflows/asd-phase-impl-review.md": "688f82886e0948025e92f4113ddbdb50aca6612e590a95f8890e57327baf0015",
+     ".asd/workflows/asd-phase-impl-test.md": "cccf898646c453116812c4464bc7b29798059e137ca078ff27ade2b8ad0153b7",
+     ".asd/workflows/asd-phase-impl.md": "74b1b04f13d17f780625c4b6454deb2ea8535ecde73caca3649e26f46291032c",
+     ".asd/workflows/asd-phase-plan.md": "bdf638bbeeba311a18972e4d03e35c740f2583eab1a4c68b1f58d9e1de84ba38",
+diff --git a/.asd/rules/providers.md b/.asd/rules/providers.md
+index da5e4d9..8871c54 100644
+--- a/.asd/rules/providers.md
++++ b/.asd/rules/providers.md
+@@ -120,7 +120,7 @@ Section scope inside a granted file: `artifact-layout.md` "HTML shell wrapping (
+ 
+ An agent may declare `variants` in its canonical JSON frontmatter. Each fixed suffix is `mechanical` or `critical`; it changes only Claude `model`/optional `effort` and Codex `model`/`model_reasoning_effort`. `.asd/sync.js` emits `<base>-<suffix>` from the base body and permissions, rejects malformed metadata and name collisions. No dispatcher mutates generated configuration. Tier `standard` has no variant — it dispatches the **base** agent id (`asd-dev`, `asd-tester`) directly, since a `standard` variant would only re-declare the base's own model/effort.
+ 
+-Only `asd-dev` and `asd-tester` declare variants: mechanical uses haiku without an effort override or luna/low; critical uses sonnet/xhigh or sol/high. Reviewers remain strong and fresh. The main orchestrator calls `node .asd/runtime.js route-task --input <json>` before dispatch and persists `{execution,tier,reason,resolved_model}` under `state.json.task_routing[taskId]`; `resolved_model` is not returned by `route-task` — the main orchestrator derives it from `.asd/release-manifest.json`'s `model_families` for the dispatched agent/tier before persisting. `priorTier` is the tier recorded under the same `task_routing` key — a re-dispatch of that id. An `impl-test entry N`, `review-fix <id>` or `impl-review <id> suite` id is new each time and carries no `priorTier`; its `risks` are the `Material risk` lines of the plan Tasks whose paths its delta touches (entry 1 and the first terminal run: every Task's), none declared → `standard`. `execution` is the selector of record for how the executor was chosen — `route-task` returns no separate `selector` field; `execution` plus `tier` and `reason` fully determine and evidence the dispatch choice.
++Only `asd-dev` and `asd-tester` declare variants: mechanical uses haiku without an effort override or luna/low; critical uses sonnet/xhigh or sol/high. Reviewers remain strong and fresh. The main orchestrator calls `node .asd/runtime.js route-task --input <json>` before dispatch and persists `{execution,tier,reason,resolved_model}` under `state.json.task_routing[taskId]`; `resolved_model` is not returned by `route-task` — the main orchestrator derives it from `.asd/release-manifest.json`'s `model_families` for the dispatched agent/tier before persisting. `priorTier` is the tier recorded under the same `task_routing` key — a re-dispatch of that id. An `impl-test entry N`, `review-fix <id>`, `test-fix <D-ids>`, `impl-review <id> test-fix` (the in-place low-severity test fix) or `impl-review <id> suite` id is new each time and carries no `priorTier`; its `risks` are the `Material risk` lines of the plan Tasks whose paths its delta touches (entry 1 and the first terminal run: every Task's), none declared → `standard`. Every terminal-suite run, a re-run after a test-defect fix included, takes its own id — `impl-review <id> suite`, then `impl-review <id> suite <n>` for run n ≥ 2 — so each is routed from its own delta. `execution` is the selector of record for how the executor was chosen — `route-task` returns no separate `selector` field; `execution` plus `tier` and `reason` fully determine and evidence the dispatch choice.
+ 
+ Routing input requires objective evidence. A deterministic zero-judgment command with `deterministic-state` returns `execution: command`; mechanical agent work requires `deterministic-check` and `exhaustive-match-validation`.
+ 
+diff --git a/.asd/workflows/asd-phase-impl-review.md b/.asd/workflows/asd-phase-impl-review.md
+index 36bd2dd..549dcb0 100644
+--- a/.asd/workflows/asd-phase-impl-review.md
++++ b/.asd/workflows/asd-phase-impl-review.md
+@@ -64,7 +64,7 @@ Orchestration body for the `asd-phase-impl-review` skill. Operation-mapping to h
+    - **Otherwise — all APPROVE or latched**, or escalation left zero unresolved findings (all FAIL overridden, no CONCERNS) → wave K's roster met (`sprint-lifecycle.md` "Review iteration counters" lifecycle): K < n → write `reviews.impl.wave` = K+1 inline and return to step 1 for wave K+1's iteration 1 in this same entry, no `impl`/`impl-test` between; K = n → reviewer DoD met → proceed to step 9 (terminal full-suite gate)
+ 9. **Terminal full-suite gate** — dispatched only when step 8 (or step 10's cap-accept branch) reaches reviewer DoD met on the last wave; skipped entirely on any route to impl review-fix mode. Delegate to a fresh `asd-tester` for each terminal suite run, routed as `asd-phase-impl-test.md` step 1a with its tier per `providers.md` "Task-class variants and routing", its payload opening with the header per `providers.md` "Dispatch payload header", never one resumed from `impl-test` or an earlier run (`sprint-lifecycle.md` "Impl-test phase"; with step 8's test-fix, the phase's only dispatches that change the repo): run `test` **unscoped** — the sprint cycle's one full-suite run, never the impacted set (`sprint-lifecycle.md` "Impacted test set") — then `lint` and `build` per `commands.yaml`; write the raw result into `test-plan.md`'s `Suite run` section including `HEAD` (current `git rev-parse HEAD`), overwriting the impacted-run record `impl-test` left there. Verdict from the runner's exit code plus report, never an agent's summary:
+    - **Green** → DoD met: append the decisions-log, clear `review_fixes_pending` inline, apply the green-handoff gate policy, emit the definition's non-`impl` `next["impl-review"]` target — `NEXT: retro` (standard) or `NEXT: design-promote` (lite).
+-   - **Red, test defect** (bad assertion, wrong fixture, flaky pattern) → write inline (mechanical, no gate) clear `state.json.reviews.design.latched` and every impl wave node's `latched` to `{}` sprint-wide (red-full-suite invalidation, `sprint-lifecycle.md` "APPROVE latch" — every red full suite clears every latch sprint-wide regardless of which triage branch follows; a no-op if the code-defect sub-bullet below already cleared them this same red event) — then `asd-tester` fixes the test in place, **commits the fix** (Conventional Commits, per `git-strategy.md` "Commit before review"; its `impl-review <id> suite` trailer per "Commits") before re-running, and re-runs this step; loop until green or an unfixable state surfaces as `FAILED`. Never a code fix — only the test itself. The commit is mandatory before the re-run's `HEAD` is recorded — an uncommitted fix would leave `Suite run`'s `HEAD` predating it and the `pr`-phase skip check blind to it
++   - **Red, test defect** (bad assertion, wrong fixture, flaky pattern) → write inline (mechanical, no gate) clear `state.json.reviews.design.latched` and every impl wave node's `latched` to `{}` sprint-wide (red-full-suite invalidation, `sprint-lifecycle.md` "APPROVE latch" — every red full suite clears every latch sprint-wide regardless of which triage branch follows; a no-op if the code-defect sub-bullet below already cleared them this same red event) — then `asd-tester` fixes the test in place, **commits the fix** (Conventional Commits, per `git-strategy.md` "Commit before review"; its `impl-review <id> suite` trailer per "Commits") before re-running, and re-runs this step as a new terminal run, routed with its own id per `providers.md` "Task-class variants and routing"; loop until green or an unfixable state surfaces as `FAILED`. Never a code fix — only the test itself. The commit is mandatory before the re-run's `HEAD` is recorded — an uncommitted fix would leave `Suite run`'s `HEAD` predating it and the `pr`-phase skip check blind to it
+    - **Red, code defect** → record pending defect, clear latches and append the routing log inline; emit `NEXT: impl` (test-fix mode).
+    - both kinds present → fix the test defects first (sub-bullet above), re-run, then route the remaining code defects back per the code-defect sub-bullet
+ 10. Iteration cap reached (step 3's cap: wave K's next `iteration − A` would exceed all severity-tier budgets per `review-policy.md`; the cap is per wave) — checked when step 8 would route to impl review-fix mode:
+diff --git a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+index 8731dec..3ed7aad 100644
+--- a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
++++ b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+@@ -1,3 +1,4 @@
+ - [Live subagent transcripts](reference_live-subagent-transcripts.md) — check transcript-shape claims against this session's own subagents/*.jsonl; final line stop_reason end_turn, others null
+-- [Large-diff read budget](feedback_large-diff-read-budget.md) — read a 200 KB+ diff in ~330-line chunks, probe with Grep -o -n, write the return file before the final message
++- [Large-diff read budget](feedback_large-diff-read-budget.md) — read a 200 KB+ diff in ~330-line chunks, probe with Grep -o -n, scope Grep to canon subdirs, write the return file before the final message
+ - [Re-review mirror pointers](feedback_re-review-mirror-pointers.md) — after a rule-order fix, resolve the mirrors' "same placement" pointer chains and read the tester's recorded ceilings
++- [Pinned clauses vs economy](feedback_doc-economy-pinned-clauses.md) — read the suite pin and plan decision before flagging a pointer-plus-outcome clause; prefer pointer-coverage gaps
+diff --git a/.claude/agent-memory/asd-reviewer-combined/feedback_doc-economy-pinned-clauses.md b/.claude/agent-memory/asd-reviewer-combined/feedback_doc-economy-pinned-clauses.md
+new file mode 100644
+index 0000000..cfc160e
+--- /dev/null
++++ b/.claude/agent-memory/asd-reviewer-combined/feedback_doc-economy-pinned-clauses.md
+@@ -0,0 +1,21 @@
++---
++name: doc-economy-pinned-clauses
++description: before raising a Documentation-economy restatement finding on a pointer-plus-outcome clause, read the suite assertion and the plan decision that name it; a pinned clause is deliberate
++metadata:
++  type: feedback
++---
++
++A skill or workflow step that points at a rule home and also restates that home's failure outcomes looks like a
++"fact whose home is another file" cut. It may be required on purpose: a suite assertion can demand the outcomes in the
++step so an offline or sandboxed run has a rule when the pointed-to fetch cannot run.
++
++**Why:** a restatement flagged on sight would have cost a full fix round for a clause the tests deliberately pin, and the
++assertion's own message states the failure it prevents.
++
++**How to apply:**
++- Before a restatement finding, Grep `tests/run.js` for the step's heading or a distinctive phrase and read the assertion
++  message; if it names a failure the clause prevents, keep the clause and say so in the review basis.
++- Check the plan's design decision for the site: "cites the home" and "restates the outcomes" are different decisions.
++- A finding that survives both checks is a real economy violation; name the pin the fix must also update.
++- A pointer that names a rule home for a case the home does not cover (an id list, a mode list) is a better finding than
++  a restatement: grep the home for each case the pointing site claims.
+diff --git a/.claude/agent-memory/asd-reviewer-combined/feedback_large-diff-read-budget.md b/.claude/agent-memory/asd-reviewer-combined/feedback_large-diff-read-budget.md
+index 34e981a..eb78709 100644
+--- a/.claude/agent-memory/asd-reviewer-combined/feedback_large-diff-read-budget.md
++++ b/.claude/agent-memory/asd-reviewer-combined/feedback_large-diff-read-budget.md
+@@ -16,6 +16,11 @@ reading the whole diff first and probing afterwards finished in under 20 turns.
+   fact (a caller, a helper's signature, a constant's current line number).
+ - Verify a cross-file claim with one `Grep` using `-o -n` and a narrow pattern, not a file read. A brace list in the
+   `glob` parameter silently returns no match; use `path` per file or a single glob.
++- Scope a repo-wide `Grep` to the canon subdirectories (rules, workflows, agents, skills, templates), one call each. A
++  `glob` negation on the whole `.asd` tree still scans the archived sprint folders and floods the result with their
++  copies of old text.
++- A one-line paragraph can exceed the Grep line display ("Omitted long matching line"): `Read` with `offset` and
++  `limit: 1` returns it whole.
+ - The coverage ledger has one row per manifest id and is the cost-free part: build it from the manifest ids as soon as the
+   findings are known, and write the return file before the final message so a cap stop still leaves a verdict.
+ - A threshold or calibration observation that the data now contradicts is a finding with a `question:` escalation, not a
+diff --git a/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md b/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md
+index 88b3250..52a82e1 100644
+--- a/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md
++++ b/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md
+@@ -249,7 +249,9 @@ hold the rule. The general form is a repo-wide link checker — new infrastructu
+ but that argument only rules out the general form. The specific one is a derivation: scan the target's
+ candidate sections for the rule, assert exactly one holds it, then assert the citing line names *that*
+ heading. Reword either side freely; it goes red only when the rule moves without its citation. Do not
+-record `none` here on "it would be a link checker".
++record `none` here on "it would be a link checker". A citation check scoped to a whole workflow step is already satisfied by a
++sibling bullet that cites the same home: when a fix adds the pointer inside one sub-bullet, locate that bullet by its bold label,
++assert on its own line, and take the pre-fix bullet as the mutation; measure first that the step-wide check stays green on it.
+ 
+ A **"not restated here" declaration** is checkable as a pair at each site: assert the bullet still
+ spells the mechanic out (the restatement is load-bearing at the acting step), AND assert the denial is
+diff --git a/tests/run.js b/tests/run.js
+index 3007d0d..f80fd8a 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -7559,16 +7559,21 @@ test('sprint-023 AC-6: code-style.md §17 bounds the fail-first proof of a conte
+   assert.ok(bullet.includes(`\`${column.trim()}\``) && bullet.includes('"Added tests"') && /\bmutation\b/.test(bullet) && /\breword/.test(bullet) && /\bruns?\b/.test(bullet), `code-style.md §17's content-contract bullet must bound the proof (a mutation per relation, a reword control) and name the "Added tests" ${column.trim()} cell that records the run count - unbounded, a proof run is open-ended and unrecorded`);
+ });
+ 
+-test('sprint-023 AC-9: providers.md "Task-class variants and routing" gives priorTier only to a re-dispatch of the same task_routing key and routes an impl-test entry, review-fix or terminal-suite id from the Material risk of the Tasks its delta touches, and each acting workflow routes through that rule', () => {
++test('sprint-023 AC-9: providers.md "Task-class variants and routing" gives priorTier only to a re-dispatch of the same task_routing key and routes an impl-test entry, review-fix, test-fix, in-place test-fix or terminal-suite id (each terminal run its own) from the Material risk of the Tasks its delta touches, and each acting workflow, the red-test-defect re-run included, routes through that rule', () => {
+   const sentences = sectionOf('.asd/rules/providers.md', 'Task-class variants and routing').split(/(?<=\.)\s/);
+   assert.ok(sentences.some((sentence) => spans(sentence).includes('priorTier') && spans(sentence).includes('task_routing')), 'the rule must tie priorTier to the tier recorded under the same task_routing key - a re-dispatch of that id - or a later entry inherits the first one\'s tier');
+-  const ids = ['impl-test entry N', 'review-fix <id>', 'impl-review <id> suite'];
++  const suite = 'impl-review <id> suite';
++  const ids = ['impl-test entry N', 'review-fix <id>', 'test-fix <D-ids>', 'impl-review <id> test-fix', suite];
+   const fresh = sentences.find((sentence) => ids.every((id) => spans(sentence).includes(id))) || '';
+-  assert.ok(fresh && spans(fresh).includes('priorTier') && spans(fresh).includes('Material risk') && spans(fresh).includes('standard'), `the rule must name the ids ${ids.join(', ')} as new each time - no priorTier - and route them from the Material risk lines of the Tasks their delta touches, none declared meaning standard; unnamed, a prose-only delta is clamped to critical by the first entry's tier`);
++  assert.ok(fresh && spans(fresh).includes('priorTier') && spans(fresh).includes('Material risk') && spans(fresh).includes('standard'), `the rule must name the ids ${ids.join(', ')} as new each time - no priorTier - and route them from the Material risk lines of the Tasks their delta touches, none declared meaning standard; unnamed, a prose-only delta is clamped to critical by the first entry's tier, a test-fix round or the in-place test fix has no risks source, and the in-place one shares a task_routing record with its iteration's dev review-fix round, which then reads the tester's tier as priorTier`);
++  const perRun = sentences.find((sentence) => spans(sentence).includes(suite) && spans(sentence).some((span) => span.startsWith(`${suite} `))) || '';
++  assert.ok(perRun, `the rule must give a later terminal-suite run an id of its own - ${suite} plus a run suffix; without it a re-run after a test-defect fix reuses the first run's task_routing key and a later test-only delta inherits that run's tier as priorTier`);
+   const variantNote = /\(no `-standard` variant exists[^)]*\)/;
+   for (const [rel, step] of [['.asd/workflows/asd-phase-impl-test.md', '1a'], ['.asd/workflows/asd-phase-impl.md', '5a'], ['.asd/workflows/asd-phase-impl-review.md', 8], ['.asd/workflows/asd-phase-impl-review.md', 9]]) {
+     assert.ok(stepOf(sectionOf(rel, 'Workflow'), step).replace(variantNote, '').includes('`providers.md` "Task-class variants and routing"'), `${rel} step ${step} must cite the routing rule for its tier and risks beyond the no-standard-variant note - restating the clamp or citing nothing is how the first entry's tier kept clamping later deltas`);
+   }
++  const redTest = stepOf(sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Workflow'), 9).split('\n').find((line) => line.includes('**Red, test defect**')) || '';
++  assert.ok(redTest.includes('`providers.md` "Task-class variants and routing"'), `.asd/workflows/asd-phase-impl-review.md step 9 must keep a **Red, test defect** bullet that cites the routing rule for the re-run's own id - the step's dispatch sentence cites it for the first run only, and a re-run left to that one is routed under the first run's id and clamped to its tier`);
+ });
+ 
+ test('sprint-023 AC-4: artifact-layout.md "Agent memory" states the content rule for each kind of work history memory-check catches, and git-strategy.md "Commit before review" runs the check where the orchestrator commits memory writes and sends a violating one to its owner', () => {

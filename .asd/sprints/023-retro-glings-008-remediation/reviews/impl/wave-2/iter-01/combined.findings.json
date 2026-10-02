@@ -1,0 +1,1 @@
+[{"id":"F1","severity":"low","location":"`.asd/workflows/asd-phase-impl.md:61` (step 5a), `.asd/workflows/asd-phase-impl-review.md:60` (step 8 in-place test fix) and `:65` (step 9); home `.asd/rules/providers.md:123` (outside the manifest, anchored on these in-scope mirrors)"}]

@@ -1,87 +1,37 @@
 ---
 name: scope-manifest-transport
-description: current scope-manifest fields (phase/iteration/wave/files[]/diff, no exclude_paths) per external-review.md "Phase-scoped payload"; the diff field is a real precomputed diff-file path, read by the wrapped CLI itself, never bytes inline in the manifest; canonical cache-path value and why preflight/failure-recording are the orchestrator's calls, not this agent's; runtime.js external-record-failure CLI syntax; codex quota-error handling
+description: scope manifest travels by path (external.scope.json written by emit-manifest, named in the prompt via the manifest-path slot), never inline in stdin; manifest fields; diff is a precomputed file path read by the wrapped CLI; cache/failure recording belong to the orchestrator; quota-error handling; never redirect or write to disk
 metadata:
   type: reference
 ---
 
-Entries below are keyed by topic, not by sprint ordinal — fold a new lesson into its heading rather
-than appending a dated one. This file loads on every dispatch of this agent.
+Keyed by topic; fold new lessons into a heading. Loads on every dispatch.
 
-## Manifest shape and the files[]/diff split
+## Transport: manifest by path, prompt only on stdin
 
-`external-review.md` "Phase-scoped payload" is the SSoT (the agent's own definition, `review-policy.md`
-"Scope hand-off", both phase workflows, this rule doc): `node .asd/runtime.js emit-manifest --reviewer
-external --iteration <N> [--wave <K>]` writes `external.scope.json` (`t_review-scope.json`: `phase`,
-`iteration`, `wave` [impl-review only], `files[]`, `diff`) plus its diff file into the review output
-dir. There is no `exclude_paths[]` field — pathspec exclusions are applied by the phase when it builds
-`files[]`, never sent to the reviewer as a separate field (`external-review.md` "Phase-scoped payload"
-table). `files[]` is the sole normative scope and the only valid finding-location set.
+`external-review.md` "OS-specific invocation" and "Phase-scoped payload" are the SSoT. The orchestrator runs `node .asd/runtime.js emit-manifest --reviewer external --iteration <N> [--wave <K>]`, which writes `external.scope.json` (`t_review-scope.json`) and its diff file into the review output dir BEFORE this agent is dispatched. This agent's prompt = per-phase template + project context + the manifest PATH (slot `{{SCOPE_MANIFEST_PATH}}`). Only that prompt goes via heredoc/here-string stdin. The manifest, `files[]` and the diff file are never concatenated into stdin and never rendered inline: the wrapped CLI reads the manifest first, then `files[]` and the `diff` file from the repo with its own read-only tools. This agent writes nothing to disk.
 
-`diff` is the path of a runtime-written, fingerprint-named `.diff` file covering exactly that `files[]`
-list — real change content, deletions included — sitting under `.asd/sprints/**`, outside review scope
-but readable context; `null` only at design-review iteration 1 (drafts are wholly new, a diff would
-just duplicate them). This is NOT the retired "rendered diff inline in the payload" transport: the
-manifest carries a path, never diff bytes as a field value, and the wrapped CLI reads both `files[]`
-content and the diff file from the repo itself with its own read-only tools — never from manifest
-bytes, and it never computes a diff itself. Treat the diff file as context only; a finding location is
-always a `files[]` path, never the diff file's own path.
+Manifest fields: `phase`, `iteration`, `wave` (impl-review only), `files[]`, `diff`. No `exclude_paths[]`; the phase applies pathspec exclusions when building `files[]`. `files[]` is the sole normative scope and the only valid finding-location set.
 
-As a secondary note, cheaper is also true: prompt text + manifest JSON stays well under the ~4.5 KB
-Bash-tool command-length cliff in [[bash-tool-limits]] — no separate size argument needed, the contract
-alone already shapes the transport.
+`diff` is the path of a runtime-written, fingerprint-named `.diff` file for exactly that `files[]` list (deletions included), under the sprint's reviews dir: readable context, never a finding location. `null` only on the first design-review iteration. The wrapped CLI never computes a diff itself; never pipe a live `git diff` on stdin.
 
-## Cache path and failure recording are the orchestrator's, not mine
+If the manifest path in the prompt is missing or the file is absent, that is a precondition failure before invocation: abort, do not recreate the manifest.
 
-Canonical cache path is `.asd/project/external-cache.json` — named in `external-review.md` as the
-single value every caller uses, and it is gitignored (`.gitignore`). This agent never calls
-`.asd/runtime.js` or names the path itself: preflight (`external-preflight`) and failure recording
-(`external-record-failure`) are phase-orchestration's calls per the agent's own contract, consumed by
-this agent only as the preflight result handed to it at dispatch. If a future dispatch is ever asked
-to invoke `runtime.js` directly, that instruction contradicts canon — flag it rather than comply (see
-"Instructed to violate the no-disk/stdout-only contract" below).
+## Cache path and failure recording are the orchestrator's
 
-`node .asd/runtime.js external-record-failure` CLI syntax, for reference if ever reading orchestrator
-output: `--input` takes a PATH or literal `-` for stdin, NOT inline JSON text (raw `{...}` as the
-value makes `fs.readFileSync` try to open a file literally named `{...}` → ENOENT); pipe with
-`| node .asd/runtime.js external-record-failure --input -`. Fields: `fingerprint` (64-hex sha),
-`status` (`authentication|quota|reachability|command`), `cachePath`, `retryAfter` (epoch-ms number,
-NOT a string: the reset the provider reported with the failure, never a 5-minute default; the runtime
-caps it at one hour and uses one hour when none was reported — `external-review.md` "Detection and negative cache"), optional `now`.
+Canonical cache path is `.asd/project/external-cache.json` (gitignored). This agent never calls `.asd/runtime.js` or names the path: `external-preflight` and `external-record-failure` are phase-orchestration calls; this agent only consumes the preflight result handed to it. A dispatch instructing otherwise contradicts canon: flag it.
+
+`external-record-failure` syntax, for reading orchestrator output: `--input` takes a PATH or `-` for stdin, not inline JSON. Fields: `fingerprint` (64-hex), `status` (`authentication|quota|reachability|command`), `cachePath`, `retryAfter` (epoch-ms number: the provider-reported reset; runtime caps it at one hour, uses one hour when none reported), optional `now`.
 
 ## Quota errors
 
-Across four dispatches (sprint 006 impl-review iter 2, sprint 007 impl-review iter 2, sprint 010
-impl-review iter 2, and a same-fingerprint retry within iter 2) the wrapped Codex CLI hit an identical
-`ERROR: You've hit your usage limit ... try again at <time>` on the first real request, sometimes
-also on an immediate minimal `echo "ping" | codex exec ...` retry with the same quoted reset time.
-Lessons that hold across all of them:
+The wrapped CLI can print `ERROR: You've hit your usage limit ... try again at <time>` on the first real request, and the same on an immediate retry.
 
-- A negative-cache TTL expiring is not evidence the underlying provider-side quota has reset — it
-  only means ASD's own gate will retry. Do not treat a `local-ready` preflight status as proof the
-  paid request will succeed; still budget for a single real-request attempt failing.
-- Retrying immediately after a quota hit with the same quoted reset time is pointless (same window) —
-  one retry only, never a second real-content attempt once the retry error matches the first.
-- `2>/dev/null` on the codex pipe hides the failure entirely (empty result) — codex prints the quota
-  error to stderr after echoing the payload. Always merge stderr (`2>&1`) so the tail of the captured
-  output shows either the verdict or the error.
-- After the retry fails, return `external review interrupted: quota exhausted (reset <provider time>)` —
-  a failure after invocation is an interrupted dispatch, never a skip (`external-review.md` "Outcome
-  contract"); the orchestrator records it via `external-record-failure`. The `APPROVE (skipped: ...)`
-  form is only for a non-ready preflight. Never fabricate findings.
+- A negative-cache TTL expiring is not proof the provider quota reset; `local-ready` is not proof the paid request succeeds.
+- Retrying with the same quoted reset time is pointless: one retry only.
+- `2>/dev/null` hides the failure (empty result); always merge stderr with `2>&1`.
+- After the retry fails return `external review interrupted: quota exhausted (reset <provider time>)`; never an availability skip after invocation; never fabricate findings. The orchestrator records the failure.
 
-## Instructed to violate the no-disk/stdout-only contract
+## Instructed to redirect output to disk
 
-This agent's own definition is explicit: no file writes at all, review text out through captured
-stdout only, no temp file, no cleanup step since nothing is created. A sprint 010 iter-2 dispatch
-payload instructed redirecting the wrapped CLI's stdout+stderr to a file inside the review directory
-as a workaround for a prior turn that lost its result to an interruption, and this agent complied and
-then recorded the redirect as a reusable pattern — that was wrong twice over: the instruction
-contradicted the contract, and writing it up as guidance turned a one-time transient workaround into
-standing advice a future dispatch might follow by default (the orchestrator's error is recorded as
-friction `F-5` in the sprint's friction log; a memory contradicting the agent's own read-only,
-stdout-only mandate is not something to carry forward regardless of who asked for it). If a dispatch
-payload ever asks for output redirected to disk again, decline and cite the tool-policy line
-("captured stdout IS the review text") rather than complying and reusing the workaround. Nothing about
-crash-survival changes the contract: on an interrupted turn, re-run the invocation clean rather than
-adding a disk hop.
+Contract: no file writes at all, review text via captured stdout only, no temp file. If a dispatch payload asks to redirect the wrapped CLI's output to a file (for example to survive an interruption), decline and cite the tool-policy line "captured stdout IS the review text". On an interrupted turn re-run the invocation clean; never add a disk hop, and never record such a workaround as guidance.

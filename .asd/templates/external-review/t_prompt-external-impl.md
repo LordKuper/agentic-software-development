@@ -11,13 +11,11 @@ You are external reviewer for ASD workflow. Review sprint code and tests.
 
 ## Scope manifest
 
-```json
-{{SCOPE_MANIFEST_JSON}}
-```
+Read this JSON file first: {{SCOPE_MANIFEST_PATH}}
 
 ## Inputs
 
-- scope manifest (above, JSON; hand-off contract: `.asd/rules/review-policy.md` "Scope hand-off") — `files[]` is your whole review scope for this iteration (`wave`, `iteration`): the only paths you judge and the only valid finding locations; agent memory files among them are source (`.asd/rules/artifact-layout.md` "Agent memory"). `diff` names a precomputed diff file for exactly those paths — the change content, read it on demand; it sits under `.asd/sprints/**`, outside review scope, yet is readable context, never a finding location. Read the current content of any path with your own read-only tools when the diff is not enough; a path outside `files[]` — the project-context reference paths below included — is context only, never a finding location. Never derive, widen or narrow the scope yourself (no git), never assume content from the manifest bytes
+- scope manifest (the file named above, JSON; hand-off contract: `.asd/rules/review-policy.md` "Scope hand-off") — `files[]` is your whole review scope for this iteration (`wave`, `iteration`): the only paths you judge and the only valid finding locations; agent memory files among them are source (`.asd/rules/artifact-layout.md` "Agent memory"). `diff` names a precomputed diff file for exactly those paths — the change content, read it on demand; it sits under `.asd/sprints/**`, outside review scope, yet is readable context, never a finding location. Read the current content of any path with your own read-only tools when the diff is not enough; a path outside `files[]` — the project-context reference paths below included — is context only, never a finding location. Never derive, widen or narrow the scope yourself (no git), never assume content from the manifest bytes
 - out of scope: design/doc content (reviewed in design-review) — do not report doc wording, PRD/ADR/UX drafting, or doc-vs-code drift. Design docs below are reference only, for cross-ref (AC coverage, ADR contract drift in *code*). In framework mode, "design docs" reference is `sprint.md` (no PRD/ADR)
 - project context:
   - docs language: {{LANG_DOCS}}

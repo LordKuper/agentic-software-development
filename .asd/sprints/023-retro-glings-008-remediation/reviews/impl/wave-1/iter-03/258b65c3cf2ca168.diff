@@ -1,0 +1,94 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index c13e03a..084cdee 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -119,7 +119,7 @@
+     ".asd/templates/t_design-system.html": "8112456b9f50eb212de1117dfcecc9eb4f23bcfdcdb5d27de21b29f7574cf392",
+     ".asd/templates/t_html-shell.html": "26fea46a6396e1648da8c2fd82153475588662ce0ba460c8ede4fed30d1e209d",
+     ".asd/templates/t_manual-steps.md": "e4ac5dac421917b5ae2e007e837e7aca51df8e94c614b835bc3c7e4db0f4d30e",
+-    ".asd/templates/t_plan.md": "b847cc6715c9845f8f5c2db7c9f9266b66e5da69870a82d57e2c8ecea9cd1b56",
++    ".asd/templates/t_plan.md": "9c1397ca08e0a8c8971498540260542ff531ed419741b41b643b3837ad871514",
+     ".asd/templates/t_pr-description.md": "d2cc0895f66869ea29f9ee36e4c19c7e5d1a866a94b5a315e37ec3ed92bf9d79",
+     ".asd/templates/t_prd.html": "9da3c60c58331574e0e2bedfb235751ca8570d414fb2fd81ed2d5cd568a6c6c7",
+     ".asd/templates/t_review.md": "66407ecb28b4e5e69965766a48e1e4b5f0a3a4af7d6e42747020a421a0c9e7c3",
+diff --git a/.asd/templates/t_plan.md b/.asd/templates/t_plan.md
+index fcf6125..72c3108 100644
+--- a/.asd/templates/t_plan.md
++++ b/.asd/templates/t_plan.md
+@@ -16,8 +16,8 @@ Format rules (parser-critical):
+ - No test-authoring tasks or subtasks: tests are selected and written in impl-test, after the code exists — the one carve-out is a `Test-only:` task (sprint-lifecycle.md "Plan file format")
+ - Every task carries a `Material risk:` line, plain text, never a checkbox (see sprint-lifecycle.md "Plan file format")
+ - A test-only task carries a `Test-only: <test paths or globs>` line, plain text, never a checkbox, directly under the `Material risk` line(s) and ahead of any `Reachability` line; it sits in a wave after every task whose code it covers (same section)
+-- A task whose value depends on two phases agreeing also carries a `Reachability:` line, same placement; a value crossing a push or merge also names what each interruption point leaves on the receiving branch; absent = no cross-phase dependency, never a fail-closed default (same section)
+-- A task declaring a project-settings change carries a `Settings change: <key>=<value>[, …]` line, same placement; plan acceptance approves exactly those pairs, and the task sits alone in its wave: wave 1, ahead of any contract-changing task, or a wave after the task adding its key to t_config.yaml (same section)
++- A task whose value depends on two phases agreeing also carries a `Reachability:` line, under the `Material risk` line(s) and any `Test-only` line; a value crossing a push or merge also names what each interruption point leaves on the receiving branch; absent = no cross-phase dependency, never a fail-closed default (same section)
++- A task declaring a project-settings change carries a `Settings change: <key>=<value>[, …]` line, under the `Material risk`, `Test-only` and `Reachability` lines; plan acceptance approves exactly those pairs, and the task sits alone in its wave: wave 1, ahead of any contract-changing task, or a wave after the task adding its key to t_config.yaml (same section)
+ - `## Dependencies` is required and opens with the wave table impl dispatches from; every task sits in exactly one wave, and no two tasks in one wave touch overlapping paths (same section)
+ - An orchestrator-only action (naming its execution point) or a tests-only stub (`Stub <ref> → impl-test`) is its own plain-text line outside every `### Task N:` block, never a checkbox (same section)
+ - The other task decomposition rules: sprint-lifecycle.md "Plan file format"
+diff --git a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+index 3f46929..8731dec 100644
+--- a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
++++ b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+@@ -1,2 +1,3 @@
+ - [Live subagent transcripts](reference_live-subagent-transcripts.md) — check transcript-shape claims against this session's own subagents/*.jsonl; final line stop_reason end_turn, others null
+ - [Large-diff read budget](feedback_large-diff-read-budget.md) — read a 200 KB+ diff in ~330-line chunks, probe with Grep -o -n, write the return file before the final message
++- [Re-review mirror pointers](feedback_re-review-mirror-pointers.md) — after a rule-order fix, resolve the mirrors' "same placement" pointer chains and read the tester's recorded ceilings
+diff --git a/.claude/agent-memory/asd-reviewer-combined/feedback_re-review-mirror-pointers.md b/.claude/agent-memory/asd-reviewer-combined/feedback_re-review-mirror-pointers.md
+new file mode 100644
+index 0000000..5cd2062
+--- /dev/null
++++ b/.claude/agent-memory/asd-reviewer-combined/feedback_re-review-mirror-pointers.md
+@@ -0,0 +1,20 @@
++---
++name: re-review-mirror-pointers
++description: when re-reviewing a fix that rewords a placement or order rule, check the mirrors' pointer phrases and the tester's recorded ceilings, not only the pinned sites
++metadata:
++  type: feedback
++---
++
++A fix that makes a rule's order explicit leaves its mirrors (templates, format-rule bullets) carrying pointer phrases such as
++"same placement" or "as above". A chain of such pointers inherits the changed rule and can compute an order the home forbids,
++for example the third item reading "ahead of" the second when the home puts it after.
++
++**Why:** the pins the tester adds read the sites they name; a pointer line next to them is read by no assert, and the
++test plan records it only as a ceiling.
++
++**How to apply:**
++- After a rule-wording fix, grep the mirrors for the reworded span, then read each sibling bullet that points back with
++  "same" or "likewise" and resolve the chain against the home.
++- Read the "Ceilings" text of the test-plan entry files: a ceiling the tester names as a template or canon edit outside its
++  grant is a reviewer finding to raise, not a note to pass.
++- A finding on a file outside the manifest is anchored on the in-scope rule whose mirror it is; say so in the row.
+diff --git a/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md b/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md
+index 053850b..88b3250 100644
+--- a/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md
++++ b/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md
+@@ -290,7 +290,10 @@ two would have gone red on the correct fix, exactly as it did.
+ A placement order stated at several sites (the home rule, a template format rule, the sibling declarations) is a relation of
+ code spans: each site names the neighbour it is ordered against, one site lists the whole order and is compared as a list, and a
+ direction word is checked on the connector text between the previous span and the neighbour with a negative vocabulary
+-(`under|below|after|behind`). Record the ceiling: a reversal by a synonym outside that vocabulary passes. A stop-condition list is
++(`under|below|after|behind`). Record the ceiling: a reversal by a synonym outside that vocabulary passes. A mirror line that says
++"same placement" names no span, so no per-line check reads it and a chain of them computes the reverse order: pin every sibling
++mirror in the same pass, its spans before the first `;` (minus its own declaration span) against the home's list read from the
++home, because an unread mirror recorded as a ceiling is the defect a later review finds. A stop-condition list is
+ sliced per `;` clause, one assert per property: the clause that gates on a signal names the phase it binds, and the carve-out has
+ its own clause carrying the signal and the pointer to the rule that owns it.
+ 
+diff --git a/tests/run.js b/tests/run.js
+index 367e0b0..3007d0d 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -7522,6 +7522,11 @@ test('sprint-023 AC-5: the Test-only declaration is defined once in sprint-lifec
+   }
+   assert.ok(placement(declarationOf('Reachability')).includes(lineName), `the Reachability declaration must name the ${lineName} line it sits under, or the order between the two is stated at one site only`);
+   assert.deepStrictEqual(placement(declarationOf('Settings change')).filter((span) => order.includes(span)), order, `the Settings change declaration must list the lines it sits under in the order the plan carries them (${order.join(' < ')}) - a list in another order contradicts the ${lineName} and Reachability declarations`);
++  for (const name of ['Reachability', 'Settings change']) {
++    const mirror = template.split('\n').find((candidate) => candidate.startsWith('- ') && candidate.includes(`\`${name}:`)) || '';
++    assert.ok(mirror, `t_plan.md's parser-critical format rules must carry a rule for the ${name} line - the template is the text a plan author reads`);
++    assert.deepStrictEqual(spans(mirror.split(';')[0]).filter((span) => !span.startsWith(`${name}:`)), placement(declarationOf(name)), `t_plan.md's ${name} rule must place the line under the same lines, in the same order, as sprint-lifecycle.md "Plan file format" - "same placement" chains from the rule above it and can order the line ahead of one the home puts before it; the asserts above read only the ${lineName} rule`);
++  }
+ 
+   const flow = sectionOf('.asd/workflows/asd-phase-impl.md', 'Workflow');
+   assert.ok(stepOf(flow, '5a').includes(`\`${label}\``) && stepOf(flow, '5a').includes('`asd-tester`'), `asd-phase-impl.md step 5a must name the ${label} line and the asd-tester it routes such a Task to - a dev dispatched for a Task whose paths are tests is the case the sprint closes`);

@@ -5,7 +5,7 @@
   "claude": {
     "model": "sonnet", "effort": "xhigh",
     "tools": ["Read", "Glob", "Grep", "WebFetch", "WebSearch"],
-    "disallowedTools": ["Edit", "Bash"], "maxTurns": 50, "memory": "project"
+    "disallowedTools": ["Edit", "Bash"], "maxTurns": 100, "memory": "project"
   },
   "codex": { "model": "sol", "model_reasoning_effort": "high", "sandbox_mode": "workspace-write", "web_search": "live" }
 }

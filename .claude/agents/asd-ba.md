@@ -1,11 +1,11 @@
 ---
-# ASD generated. Edit .asd/agents/asd-ba.md. source_digest=sha256:8f087c3299b09c170b3461a3e8d3c75b786946c6fec41996a873ec8772d84bbd content_digest=sha256:c1b35a905779ab4db6e6d100f0b3e6e2bbe70e0aa8480d09b3dcfd8fba336329 asd_version=13.4.0 schema=1
+# ASD generated. Edit .asd/agents/asd-ba.md. source_digest=sha256:e59ea26015ed8f105bdf4967491afee1ef2b893afb3c11ae910e0464759516f5 content_digest=sha256:31366cc1ad17ded259a12ed5d5998d17d9385043c21de2437a3838c05ecfead8 asd_version=13.5.0 schema=1
 name: asd-ba
 description: "Product requirements: user stories, acceptance criteria, conditional product/domain audit support, PRD drafts. Covers: PRD authoring (sprint draft plus reverse-engineered/migrated), product/domain clarification during audit when requested by the orchestrator, user story decomposition, acceptance criteria formulation, ambiguity resolution via clarifying questions. Does NOT handle: ux flows or ui mockups (delegates to asd-ux), architecture decisions (delegates to asd-architect), code (delegates to dev agents), code audit (delegates to asd-architect)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, WebSearch]
 model: sonnet
 effort: high
-maxTurns: 50
+maxTurns: 100
 memory: project
 ---
 

@@ -10,7 +10,7 @@ Controlled by `review.external_review` in config (`enabled` | `disabled`). If `d
 
 OS read from the `external-preflight` output's `platform` (`process.platform`). Stdin syntax follows the shell that runs the command, not `platform` alone: Claude Code's run-command shell is POSIX bash on every OS (Git Bash on Windows); Codex's is PowerShell on `win32`.
 
-Prompt passed via **heredoc/here-string straight into the wrapped CLI's stdin — never written to disk**. This agent runs read-only on both providers, so no step in the invocation may touch the filesystem. The wrapped CLI's own stdout is captured directly as its final message (the text verdict) — no `-o <out-file>`, no temp file, no cleanup step, because nothing was ever created on disk.
+The rendered prompt alone is passed via **heredoc/here-string straight into the wrapped CLI's stdin — never written to disk**; the scope manifest travels by path, never in it — the prompt names the review output dir's `external.scope.json`, which `emit-manifest` already wrote ("Phase-scoped payload"). This agent runs read-only on both providers and the wrapper writes nothing, so no step in the invocation may touch the filesystem. The wrapped CLI's own stdout is captured directly as its final message (the text verdict) — no `-o <out-file>`, no temp file, no cleanup step, because nothing was ever created on disk.
 
 The command TAIL differs per wrapped CLI — this is a real syntax difference. Canonical tail per CLI, including explicit model, effort, and read-only boundary, lives once in the agent file's `wraps_invoke_args` (`asd-external-review.md` frontmatter) — not restated here.
 
@@ -18,9 +18,9 @@ The command TAIL differs per wrapped CLI — this is a real syntax difference. C
 
 | Host, `platform` | Preflight | Review command |
 |---|---|---|
-| Codex, `win32` | runtime helper with direct arguments or its fixed PowerShell shim | `@'<rendered prompt + scope manifest>'@ \| <resolved-command> <wraps_invoke_args>` (here-string piped to stdin) |
-| Claude Code, any; Codex, any other (`linux`, `darwin`) | runtime helper with direct arguments (fixed PowerShell shim allowed on `win32`) | `<resolved-command> <wraps_invoke_args> <<'EOF'` / `<rendered prompt + scope manifest>` / `EOF` (heredoc piped to stdin) |
-Both forms read prompt+scope manifest from stdin; the wrapped CLI's own read-only filesystem tools resolve `files[]` and `diff` content from the repo (never from the manifest bytes) — the command's own stdout is the final message text verdict. No `-o <out-file>` for either CLI.
+| Codex, `win32` | runtime helper with direct arguments or its fixed PowerShell shim | `@'<rendered prompt>'@ \| <resolved-command> <wraps_invoke_args>` (here-string piped to stdin) |
+| Claude Code, any; Codex, any other (`linux`, `darwin`) | runtime helper with direct arguments (fixed PowerShell shim allowed on `win32`) | `<resolved-command> <wraps_invoke_args> <<'EOF'` / `<rendered prompt>` / `EOF` (heredoc piped to stdin) |
+Both forms read the rendered prompt from stdin; the wrapped CLI's own read-only filesystem tools read `external.scope.json` first, then resolve `files[]` and `diff` content from the repo (never from the manifest bytes) — the command's own stdout is the final message text verdict. No `-o <out-file>` for either CLI.
 
 `<wrapped-cli>` is `codex` under Claude Code / `claude` under Codex — command name on every OS (each ships a shell shim plus OS-specific wrappers on Windows; no compiled `.exe`). `<resolved-command>` is that default unless the config override (`system.tools.codex_command` under Claude, `system.tools.claude_command` under Codex) is non-empty, in which case it replaces the lookup path for both probe and review.
 
@@ -50,7 +50,7 @@ An empty return, or prose carrying no outcome, is not permitted and is not a ver
 
 ## Phase-scoped payload
 
-External Review gets the hand-off every reviewer gets — list, diff file, whole files as context (`review-policy.md` "Scope hand-off", not restated here); this section holds only its External-specific form. The wrapper's dispatch payload opens with the `Repo root:` and `Turn budget:` header lines (`providers.md` "Dispatch payload header"). `node .asd/runtime.js emit-manifest --reviewer external --iteration <N> [--wave <K>]` (impl-review: `--wave` and a range required) writes `external.scope.json` per `external-review/t_review-scope.json` plus its diff file into the review output dir — no rubric, no ledger. The scope manifest is rendered into the prompt; the wrapped CLI reads `files[]` and the `diff` file from the repo with its own read-only tools, never content from the manifest bytes, and never computes a diff itself.
+External Review gets the hand-off every reviewer gets — list, diff file, whole files as context (`review-policy.md` "Scope hand-off", not restated here); this section holds only its External-specific form. The wrapper's dispatch payload opens with the `Repo root:` and `Turn budget:` header lines (`providers.md` "Dispatch payload header"). `node .asd/runtime.js emit-manifest --reviewer external --iteration <N> [--wave <K>]` (impl-review: `--wave` and a range required) writes `external.scope.json` per `external-review/t_review-scope.json` plus its diff file into the review output dir — no rubric, no ledger. The prompt names the manifest by path; the wrapped CLI reads it first, then `files[]` and the `diff` file from the repo with its own read-only tools, never content from the manifest bytes, and never computes a diff itself.
 
 Manifest fields: `phase`; `iteration`; `wave` (impl-review only); `files[]`; `diff` — the diff file's path, `null` at design-review iteration 1. The diff file sits under `<sprint>/reviews/`, outside every scope below, so the prompt names it as readable context — never a finding location.
 

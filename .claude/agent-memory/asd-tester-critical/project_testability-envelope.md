@@ -52,6 +52,13 @@ reads only stdout: `runAll` writes `FAIL -` and the stack to **stderr**, `ok -` 
 `spawnSync` loop must parse both or it shows a dropped count with no FAIL lines. For the extra FAIL lines a tracked file's mutation produces:
 [[mutation-runs-trip-the-hash-ledger]].
 
+A runner that writes the pre-image to a pending file before each mutation, and restores a leftover pending file at its own
+start, makes a killed session recoverable. Classify each run's FAIL lines into ledger noise (`upstream_hashes`,
+`canon_hashes`, generated-view `--check`) and your own test, and report only the latter. README sits outside
+`upstream_hashes`, so a README mutation shows no ledger line and its green control exits 0; a canon skill or agent trips
+`--check` too, so its green control still exits non-zero on noise alone. A suite run is about 20 s: run 60 or more
+mutations in the background and poll the log with an until-loop, because a foreground sleep is blocked.
+
 **Why** — the two failure modes this replaces:
 
 - `git checkout -- <file>` re-materialises canon as LF: these files still sit CRLF in the worktree
@@ -111,6 +118,11 @@ with the finding ids in the assert message (a subset filter, not a `deepStrictEq
 load-bearing by emptying it, and hand its deletion to the next `impl-test` entry. That entry (019 entry 3)
 proves the deletion by appending a refuted line to a formerly exempted file: the sweep must now redden.
 
+At a plain `impl-test` entry there is no such round: ship the new phrase red and file a `D-N` against that memory
+file. The test-fix route and the owner's memory-fix dispatch land before the next entry, so no exemption list is needed.
+A sweep already red at baseline cannot be proven by a count: parse the `+ actual` hit list from its FAIL block and
+require the mutation's own `<file>:<line> <phrase>` in it, and a reword control to leave that list unchanged.
+
 Review-fix tester rows sit in the live tables when the next entry starts, with no `Entry log` row of their
 own. Rotate them with the previous entry's rows into its segment (`artifact-layout.md` "Test plan"
 Rotation), after carrying each review-fix removal row forward as a live `Removed tests` row that step 5
@@ -128,6 +140,12 @@ is actually derivable — measure that before claiming it is not. Coverage did n
 smaller and the exemption became a real assertion. That is the outcome to report plainly rather than
 dressing the round up with a new test.
 
+A scope amendment can land while an entry runs (before each commit, run the permitted diff command from the entry's
+`HEAD analysed` to current; paths changed beyond the entry's own files mean one landed — or ask the orchestrator through
+the payload). When it retires a mechanism, add no
+new pin on it (drop the row that reads the retired constant), and list the existing pins it will break, by test name, in
+`test-plan.md` for the next entry instead of editing them: the orchestrator ruled the running entry is not interrupted.
+
 Related, when the dispatching message hands you a commit range: check it contains the changes it
 names. Entry 4 (cont.) was pointed at `11bf405..dd47159`, which held only sprint bookkeeping — the
 dev chain was `5add9f5..2ae44c6`, an ancestor of the entry's own test commit, so the suite run
@@ -140,6 +158,10 @@ the same trap: "61 lines already changed in tests/run.js" (entry 3) was entry 2'
 An assertion late in a multi-fixture test is only proven by a mutation that leaves the earlier
 fixtures passing. Changing *which* key/branch the code touches (e.g. top-level `delete` → recursive
 strip) reaches it; a wholesale pre-fix restore does not.
+
+A wiring-level mutation can be pre-empted by an earlier scenario of the same test when both share the mutated input
+(fixing the file count to one reddened the byte-axis scenario first, so the file-axis assertion was never reached). Aim at
+the function the earlier scenario does not depend on, and read the first failing message before crediting it.
 
 An "at least one example without X" assertion (template conditionality) is only proven by a mutation
 that adds X to **every** remaining block — a single-site edit leaves the claim true and the mutation
@@ -172,6 +194,12 @@ When a fix adds a parameter with a default, the old and new formulas usually agr
 (sprint 015 EXT-4: only at multiples of 25). Compute both at each sampled point before writing
 "the default is unchanged", and pin tightness at exactly those points (mutation: loosen only there).
 
+A reword that mentions a pinned literal a second time in the same sentence de-pins its first mention: `sentence.includes(token)`
+stays green with the original mention deleted. After any dev reword of a pinned sentence, run the old literal-drop mutation
+against the UNCHANGED tests; a green run is the evidence, and the fix keys the assert to the trigger's position (the text
+before a later pinned token), never to the whole sentence. A guard written `block === -1 || order holds` is vacuous when no
+fixture block carries both items: confirm one does before crediting it as the pin on an order.
+
 ## Assert removed phrases, not topic words
 
 Rule prose here routinely narrates the alternative it just rejected inside the same bullet
@@ -187,6 +215,13 @@ instead false-hits factual mentions of the command.
 A removed-phrase sweep outlives its sprint, so a later sprint can legitimately re-adopt a banned literal. Sprint 021
 banned the `done` pr exits and sprint 022 made `done` the exit. Delete those entries and cite the audit
 Contradictions ruling as the reason. Do not exempt them: an exemption keeps a ban on text that is now canon.
+
+Build the phrase list from the removed lines of the pre-sprint diff, then validate every entry with a scratch script: it
+must occur at the pre-sprint revision (`git grep -nF -e <phrase> <rev> -- <paths>`) and nowhere in the worktree now. A
+phrase that fails the first half was never removed, one that fails the second is a live leftover to route. A mutation that
+restores old text also trips this sweep, so prove a relation test with a differently spelled token (misspell the carve-out
+word) and keep the old-text restore for the sweep's own proof. A per-line co-occurrence check ("every no-tests line names
+the carve-out") is satisfied by any occurrence on a long paragraph line; record that ceiling or scope it per sentence.
 
 Same family, for locating a sentence: key the locator to the sentence's **citation**, never its
 ordinal or adverb. `sprint-lifecycle.md`'s latch-clearing route was renamed "A THIRD" → "A further"
@@ -214,7 +249,9 @@ hold the rule. The general form is a repo-wide link checker — new infrastructu
 but that argument only rules out the general form. The specific one is a derivation: scan the target's
 candidate sections for the rule, assert exactly one holds it, then assert the citing line names *that*
 heading. Reword either side freely; it goes red only when the rule moves without its citation. Do not
-record `none` here on "it would be a link checker".
+record `none` here on "it would be a link checker". A citation check scoped to a whole workflow step is already satisfied by a
+sibling bullet that cites the same home: when a fix adds the pointer inside one sub-bullet, locate that bullet by its bold label,
+assert on its own line, and take the pre-fix bullet as the mutation; measure first that the step-wide check stays green on it.
 
 A **"not restated here" declaration** is checkable as a pair at each site: assert the bullet still
 spells the mechanic out (the restatement is load-bearing at the acting step), AND assert the denial is
@@ -252,6 +289,16 @@ from the workflow and asserts it *ends with* the tail read out of `checkpoints.m
 may be reworded freely as long as the counter still selects the emitter. String equality between the
 two would have gone red on the correct fix, exactly as it did.
 
+A placement order stated at several sites (the home rule, a template format rule, the sibling declarations) is a relation of
+code spans: each site names the neighbour it is ordered against, one site lists the whole order and is compared as a list, and a
+direction word is checked on the connector text between the previous span and the neighbour with a negative vocabulary
+(`under|below|after|behind`). Record the ceiling: a reversal by a synonym outside that vocabulary passes. A mirror line that says
+"same placement" names no span, so no per-line check reads it and a chain of them computes the reverse order: pin every sibling
+mirror in the same pass, its spans before the first `;` (minus its own declaration span) against the home's list read from the
+home, because an unread mirror recorded as a ceiling is the defect a later review finds. A stop-condition list is
+sliced per `;` clause, one assert per property: the clause that gates on a signal names the phase it binds, and the carve-out has
+its own clause carrying the signal and the pointer to the rule that owns it.
+
 A substring token relation (`site.includes(token)`) goes vacuous when the token already sits inside a
 longer span on the target: sprint 021 entry 5's new closure-write field `pr.number` was "named" by scope's
 older `` `gh pr view <pr.number>` ``, so reverting the fix stayed green. Compare code span to span
@@ -266,12 +313,14 @@ A fix that *removes* a narrowing condition has no positive substance: require it
 one word (`null`), keep the positive assert on the clause itself so deletion cannot pass vacuously, and record
 both ceilings (a synonym passes; "whether or not null" reddens).
 
-A **value mirror** (one tier stated in agent frontmatter, `providers.md` "Agent tier matrix", README tables and two prose
-sentences) is a relation, not a literal. Take the effective value from `sync.buildSyncPlan` metas (`variantMeta` already drops
-a variant's unset effort; do not re-derive it), compare structured cells exactly, and compare prose as the whole-word
-vocabulary set (families plus efforts) of the one sentence that states it, so a reword stays green (sprint 022 entry 3, 27
-mutations). Record the ceiling: pairings inside a sentence are not compared. Find that sentence after dropping table and
-heading lines: a matrix table has no full stop, so it reads as one sentence and the locator hits twice.
+A **value mirror** (one tier stated in agent frontmatter, README tables and two prose sentences) is a relation, not a
+literal. Take the effective value from `sync.buildSyncPlan` metas (`variantMeta` already drops a variant's unset effort; do
+not re-derive it), compare structured cells exactly, and compare prose as the whole-word vocabulary set (families plus
+efforts) of the one sentence that states it, so a reword stays green. Record the ceiling: pairings inside a sentence are not
+compared. Find that sentence after dropping table and heading lines: a table has no full stop, so it reads as one sentence
+and the locator hits twice. When the rule doc's own tier table is deleted, the frontmatter becomes the only home and the
+mirror test shrinks to README against frontmatter: delete the table read and every assert message that names it, and keep
+the sandbox expectation for the read-only agents as a literal rule checked against frontmatter.
 
 A **concrete-id bump** (sprint 022 entry 4, `sol` to `gpt-6.1-sol`) lands in four kinds of pin. A byte-for-byte fixture's
 `content_digest` covers the id line: recompute it with `node:crypto` over the edited body and check it equals the runner's,
@@ -334,6 +383,14 @@ provider-scoped literal. `demo-agent.md` carries `"model"` in both its `claude` 
 `!canon.includes('"model": "opus"')` is the assertion meant. Run the suite once after adding a guard,
 before recording anything about the assertion it protects.
 
+A fixture sized to a limit that later moves can stay green while its stated purpose stops being true: a numeric string equal
+to the old byte limit coerced to a count of exactly one, the silent collapse its message names, and at the new limit it
+coerces to two. Derive such inputs from the exported symbol, then grep the suite for the old number as a leftover. For a
+retuned single-home value (a threshold, a turn cap) measure before writing `none`: revert the value alone against the
+unchanged suite and read the own-FAIL list. Empty means no test pins the value, the intended state for a tunable
+(`code-style.md` §12) and a ceiling to state. A canon-only revert of a cap that a generated view mirrors reddens just the
+render mirror and `--check`.
+
 ## Sweep guards: row set and exemption set both
 
 A **reach** claim ("this rule reaches every role that authors X") is not agent-runtime judgement — it
@@ -377,6 +434,17 @@ about. With one `src/` commit and one trailer, a pathspec re-added to the comman
 stayed green. Entry 2 added a `.asd/sprints/**`-only commit and a two-trailer commit, and both
 mutations turned red.
 
+A rule that gives a fast-forward as two commands by case (base checked out versus not) is testable the same way with a temp
+origin and clone: the refspec fetch moves the ref alone on a dirty sprint branch, is refused into a checked-out branch, the
+plain fetch plus `--ff-only` merge moves the worktree, and both refuse a diverged base. Locate the merge span by its
+leading `git merge`, not by `--ff-only`, so a mutation that drops the flag reaches the refusal assertion instead of the
+locator. Run `execFileSync` with `stdio: 'pipe'` or a refusal's stderr leaks into the suite output.
+
+A runtime check on the staged diff (a memory content check) is one sandbox repo walked in order: placeholders pass,
+an unstaged violation is ignored, a legacy line kept or deleted is ignored, a violation outside the tree is ignored, then
+the hits with their line numbers, the same run from a subdirectory, the bad-input exit, and a fresh repo for the file-name
+hit. One mutation per branch of the scanner is what the walk proves.
+
 ## `routeTask` has no plan-file parser
 
 `runtime.js` `routeTask` takes a structured input object; the `Material risk` extraction is the
@@ -396,8 +464,9 @@ is a real result, not a no-op: assertions added to existing tests never move it.
 **Why:** a reader comparing two identical counts concludes the gate proved nothing, when what it
 proved is that the entry's own commit is green — which nothing else in the sprint ever checks.
 
-**How to apply:** at gate time diff the recorded HEAD against current (`git log <recorded>..HEAD`),
-name the commits the earlier record could not cover, and state whether the count moved and why. Note
+**How to apply:** at gate time diff the recorded HEAD against current (`git diff --name-status <recorded>..HEAD`),
+name the paths the earlier record could not cover (commit subjects come from the orchestrator through the payload),
+and state whether the count moved and why. Note
 also that no test reads this repo's live `.asd/sprints/**` — every sprint reference in `tests/run.js`
 is a temp-root fixture — so editing `test-plan.md` cannot change the suite result and needs no re-run.
 
@@ -410,6 +479,13 @@ out-of-scope removal gate. Sprint 012 met this with the sprint-008 split test, w
 seam and recorded as `keep (rewritten in place)`, one duplicate assert dropped with its reason in the row.
 Same move for a test carrying a local copy of a derivation the runtime now owns (the documentation-economy
 test's rubric parser): point it at the runtime, don't keep two parsers.
+
+A test whose WHOLE subject the sprint retired is another case. Once an earlier entry's own commits put `tests/run.js`
+in the sprint's overall surface (`git diff <base>...HEAD --stat -- tests/run.js` lists it), deleting it is in-scope: say
+so with that evidence and flag the reading. Before deleting, read each assert for a property of a KEPT helper it pinned
+by accident: a retired CLI test was the only one feeding the shared list reader a CRLF list with a trailing blank line.
+Move that fixture into a surviving test (the list writer, and compare names, not the length) and mutate the reader.
+`split('\n')` alone is an equivalent mutant, because `trim()` already strips the `\r`; drop both.
 
 ## Authoring `tests/run.js`
 

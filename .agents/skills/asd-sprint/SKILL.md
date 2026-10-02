@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:4cb94e6d7f2a9e1d960308df0075be86a930cf24be86e347b22e8daaeb2d9128 content_digest=sha256:20f88d680cf22b53bbae738111ca94512df7e1e5dbd58d39b8af20f01466437a asd_version=13.4.0 schema=1
+# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:4ad5db219df88083e6144b7310f825f5c0aee9650b856ce638ad4844aa7bdf02 content_digest=sha256:256de7c4f49a0e5238efd7c5ea92d1bfe8b7e65abdbb1640b742b34b3da9bada asd_version=13.5.0 schema=1
 name: asd-sprint
 description: "Starts a new ASD sprint or resumes the active one, dispatching the matching asd-phase-* skill and routing phase signals back to the user. Use when the user runs $asd-sprint or asks to start, continue, resume, or work on an ASD sprint."
 ---
@@ -14,7 +14,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 
 ## Operations used
 - Read files / search repo — detect active sprint; read state.json, its frozen workflow definition `.asd/workflows/<workflow>.json` (`sprint-lifecycle.md` "Workflows"), config.yaml, custom-common-rules.md
-- Run command — `git status`, `git branch --show-current`; `gh pr view`/`gh pr list` (merged-unclosed detection), `git fetch`/`git show`/`git log`/`git ls-remote --tags origin`/`gh release view` (release retry check), `gh pr merge` (a legacy finalize PR only); decisions-log rotation (rename, copy template, commit those paths)
+- Run command — Step 0's `git fetch` and `git merge --ff-only`; `git status`, `git branch --show-current`; `gh pr view`/`gh pr list` (merged-unclosed detection), `git fetch`/`git show`/`git log`/`git ls-remote --tags origin`/`gh release view` (release retry check), `gh pr merge` (a legacy finalize PR only); decisions-log rotation (rename, copy template, commit those paths)
 - Request user decision — new-sprint confirm, resume/abort choice, release retry or continue (never free-form scope text)
 - Delegate to skill — phase skills, plus `asd-init` per "Skills dispatched"
 - No other writes — phase skills and their inline orchestrator own writes
@@ -22,6 +22,9 @@ Operation mapping: see `.asd/rules/providers.md`.
 ## Workflow
 
 Before a phase-skill delegation below, rotate the decisions log when `.asd/rules/artifact-layout.md` "Decisions log" requires it.
+
+### Step 0: fast-forward the base branch
+Before Step 1, fast-forward local `git.base_branch` exactly as `git-strategy.md` "Branch" states: a refusal halts and asks the user; an unreachable remote warns and continues on local state. Rules, workflows and phase skills are read only after this step; this skill's own text and the session-start files are the pre-fetch copy.
 
 ### Step 1: detect active sprint
 - Search repo for `.asd/sprints/*/state.json` (excluding `archived/`) UNION `.asd/sprints/archived/*/state.json` where `phase != "done"` (legacy archived-non-done shape)

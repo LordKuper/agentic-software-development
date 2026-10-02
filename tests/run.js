@@ -1034,15 +1034,13 @@ test('`node .asd/sync.js --check` reports every item current (no drift), includi
 // the day it joins a roster.
 // ===========================================================================
 
-test('read-only agents (every workflow reviewer + asd-advisor): no Write/Edit tool on Claude, and the Codex sandbox providers.md "Agent tier matrix" states - workspace-write for the internal reviewers only with a policy line bounding it to the return file and own memory (sprint-021 D6)', () => {
+test('read-only agents (every workflow reviewer + asd-advisor): no Write/Edit tool on Claude, and the Codex sandbox is workspace-write for the internal reviewers only with a policy line bounding it to the return file and own memory, read-only for External Review and the advisor (sprint-021 D6, sprint-023 AC-7: the frontmatter is the one home of the tier)', () => {
   const agentsDir = path.join(REPO_ROOT, '.asd', 'agents');
   const files = fs.readdirSync(agentsDir).filter((f) => f.endsWith('.md'));
   const readOnlyNames = files
     .map((f) => f.slice(0, -3))
     .filter((name) => name === 'asd-external-review' || name === 'asd-advisor' || name.startsWith('asd-reviewer-'));
   assert.deepStrictEqual(readOnlyNames.sort(), [...workflowReviewerAgents(), 'asd-advisor'].sort(), 'the read-only set is every reviewer a workflow definition dispatches plus asd-advisor - a reviewer agent no roster names is dead canon, and a roster key whose agent is missing here escapes the read-only check');
-  const matrixRows = sectionOf('.asd/rules/providers.md', 'Model family resolution').split('### Agent tier matrix')[1].split('\n').filter((line) => line.startsWith('| asd-')).map((line) => line.split('|').slice(1, -1).map((cell) => cell.trim()));
-  assert.ok(matrixRows.length >= 5, 'sanity: providers.md "Agent tier matrix" rows must be found, or no sandbox claim below is compared');
   for (const name of readOnlyNames) {
     const raw = sync.readNormalized(path.join(agentsDir, `${name}.md`));
     const { meta } = sync.parseCanonicalFrontmatter(raw);
@@ -1060,12 +1058,9 @@ test('read-only agents (every workflow reviewer + asd-advisor): no Write/Edit to
     if (name !== 'asd-external-review') {
       assert.ok(!claudeTools.includes('Bash'), `${name}: claude.tools must not include "Bash"`);
     }
-    const row = matrixRows.find(([agents]) => agents.split(',').some((pattern) => name.startsWith(pattern.trim().replace(/[\s*(].*$/, ''))));
-    assert.ok(row, `${name}: providers.md "Agent tier matrix" must carry a row for every read-only-set agent`);
-    const claimed = row[3].split(/\s/)[0];
-    assert.strictEqual(meta.codex && meta.codex.sandbox_mode, claimed, `${name}: codex.sandbox_mode must be the "${claimed}" providers.md "Agent tier matrix" states for it`);
+    const claimed = name.startsWith('asd-reviewer-') ? 'workspace-write' : 'read-only';
+    assert.strictEqual(meta.codex && meta.codex.sandbox_mode, claimed, `${name}: codex.sandbox_mode must be "${claimed}" - sprint-021 D6 widens the Codex sandbox for the internal reviewers alone (they write their return file), External Review and asd-advisor stay read-only`);
     if (claimed === 'read-only') continue;
-    assert.ok(name.startsWith('asd-reviewer-'), `${name}: sprint-021 D6 widens the Codex sandbox for the internal reviewers alone - External Review and asd-advisor stay read-only`);
     const bound = sectionOf(`.asd/agents/${name}.md`, 'Outputs').split('\n').find((line) => /return file/.test(line) && /own memory/.test(line));
     assert.ok(bound, `${name}: Codex cannot scope workspace-write to a path, so the Outputs policy line naming the return file and the agent's own memory is the only bound on its writes (plan.md Risks, D6)`);
   }
@@ -3297,7 +3292,7 @@ test('AC-4/AC-5/AC-7/AC-10: t_retrospective.html classifies every section for th
 
 const SECTIONED_RUBRIC = '# Reviewer\n\n## Review rubric\n\n### Alpha\n\n- **Nested label**: never an id of its own\n\n### Beta\n\n## Signals emitted\n\n### Not a rubric entry\n';
 
-test('sprint-017 AC-1 (D1/D2): review-waves counts one wave per WAVE_THRESHOLD_LINES begun, at least one and at most min(MAX_REVIEW_WAVES, files); numstat lines count listed files only, a binary file and a pure rename 0; a division is accepted only as exactly n non-empty disjoint lists covering the scope, an empty list only when the scope itself is empty', () => {
+test('sprint-017 AC-1 (D1/D2), sprint-023 AC-1: review-waves counts the most of one wave per WAVE_THRESHOLD_LINES, WAVE_THRESHOLD_FILES and WAVE_THRESHOLD_BYTES begun, at least one and at most min(MAX_REVIEW_WAVES, files); numstat lines count listed files only, a binary file and a pure rename 0; a division is accepted only as exactly n non-empty disjoint lists covering the scope, an empty list only when the scope itself is empty', () => {
   const threshold = runtime.WAVE_THRESHOLD_LINES;
   const cap = runtime.MAX_REVIEW_WAVES;
   assert.ok(cap >= 2, 'sanity: a cap below 2 leaves nothing to divide');
@@ -3312,6 +3307,19 @@ test('sprint-017 AC-1 (D1/D2): review-waves counts one wave per WAVE_THRESHOLD_L
   }
   for (const [lines, files] of [[-1, 10], [1.5, 10], [Number.NaN, 10], ['3001', 10], [10, -1], [10, 1.5], [10, Number.NaN]]) {
     assert.throws(() => runtime.reviewWaveCount(lines, files), /non-negative integer/, `${JSON.stringify([lines, files])}: an unusable measurement must fail closed, never size the waves from a guess`);
+  }
+  const filesLimit = runtime.WAVE_THRESHOLD_FILES;
+  const bytesLimit = runtime.WAVE_THRESHOLD_BYTES;
+  for (const [lines, files, bytes, expected] of [
+    [1, filesLimit, 0, 1], [1, filesLimit + 1, 0, 2], [1, 2 * filesLimit + 1, 0, Math.min(3, cap)], [1, 100 * filesLimit, 0, cap],
+    [1, 10, bytesLimit, 1], [1, 10, bytesLimit + 1, 2], [1, 10, 2 * bytesLimit + 1, Math.min(3, cap)], [1, 10, 100 * bytesLimit, cap],
+    [threshold + 1, filesLimit + 1, 0, 2], [threshold + 1, 10, 2 * bytesLimit + 1, Math.min(3, cap)], [1, filesLimit + 1, 2 * bytesLimit + 1, Math.min(3, cap)],
+    [1, 1, 100 * bytesLimit, 1],
+  ]) {
+    assert.strictEqual(runtime.reviewWaveCount(lines, files, bytes), expected, `${lines} lines, ${files} files, ${bytes} diff bytes: the wave count is the most of one per ${threshold} lines, ${filesLimit} files and ${bytesLimit} bytes begun, never their sum, at most min(${cap}, files)`);
+  }
+  for (const bytes of [-1, 1.5, Number.NaN, String(bytesLimit)]) {
+    assert.throws(() => runtime.reviewWaveCount(10, 10, bytes), /bytes must be a non-negative integer/, `${JSON.stringify(bytes)}: an unusable byte measurement must fail closed like lines and files, never be read as 0 and collapse the scope into one wave`);
   }
 
   const numstat = ['12\t3\tsrc/a.js', '-\t-\tassets/logo.png', '0\t0\t', 'src/old.js', 'lib/moved.js', '4\t1\t', 'src/was.js', 'lib/edited.js', '7\t0\tsrc/unlisted.js', ''].join('\0');
@@ -4194,7 +4202,7 @@ test('sprint-010 AC-9 (C-10): a Claude reasoning effort outside its vocabulary f
   assert.doesNotThrow(check(withClaudeEffort('xhigh')), 'the vocabulary must admit every value the host accepts - a check narrower than the host silently forbids a legitimate retier');
   assert.doesNotThrow(check(GOOD_AGENT_CANON.replace('"effort": "high",\n', '')), 'effort is optional (the haiku tier declares none), so an absent field must stay valid - a required-field check would reject every mechanical variant');
   assert.doesNotThrow(check(GOOD_AGENT_CANON.replace('"model_reasoning_effort": "high"', '"model_reasoning_effort": "ultra"')), 'the two vocabularies differ by exactly this member: `ultra` is valid on a non-luna Codex model, so a Claude check copied onto the Codex side (or vice versa) breaks one of them');
-  assert.throws(check(withClaudeEffort('ultra')), /invalid effort/, 'C-10: `ultra` is a Codex-only value. Emitted for Claude it is silently ignored by the host, so the agent runs at the host default while canon, README and the tier matrix all claim otherwise - the failure mode is invisible in every artefact anyone reads');
+  assert.throws(check(withClaudeEffort('ultra')), /invalid effort/, 'C-10: `ultra` is a Codex-only value. Emitted for Claude it is silently ignored by the host, so the agent runs at the host default while canon and README both claim otherwise - the failure mode is invisible in every artefact anyone reads');
   assert.throws(check(withClaudeEffort('very-high')), /invalid effort/, 'a typo in the effort field must fail the render, exactly as an unknown model family already does - the Codex side has validated this since it shipped and the Claude side is the asymmetry C-10 recorded');
 
   const effortWithoutModel = GOOD_AGENT_CANON.replace('"model": "opus",\n    "effort": "high"', '"effort": "bogus"');
@@ -4571,22 +4579,24 @@ test("runtime.js CLI: emit-manifest writes one stamped manifest per reviewer und
     assert.ok(flow.split('\n').some((line) => line.includes('self_hosting: enabled') && line.includes(`\`${selfHostingFlag}\``) && line.includes('emit-manifest')), `TST-2-1: ${rel} must add review-policy.md's \`${selfHostingFlag}\` to its emit-manifest step when self_hosting: enabled - dropped, a self-hosting review n/a's Documentation's Framework mode and validate-ledger accepts it`);
     assert.ok(flow.includes(`\`${manifestName}\``), `${rel} must name the manifest file it dispatches from exactly as emit-manifest writes it, or the orchestrator looks for a path that never appears`);
   }
+  const scopeNames = (count) => Array.from({ length: count }, (_, index) => `src/file-${index + 1}.md`);
   const emit = (count, dir, extra = [], name = reviewer) => {
     fs.mkdirSync(dir, { recursive: true });
     const scopePath = path.join(dir, 'scope.txt');
-    fs.writeFileSync(scopePath, `${Array.from({ length: count }, (_, index) => `src/file-${index + 1}.md`).join('\n')}\n\n`, 'utf8');
+    fs.writeFileSync(scopePath, `${scopeNames(count).join('\r\n')}\r\n\r\n`, 'utf8');
     return JSON.parse(runtimeCli(['emit-manifest', '--reviewer', name, '--phase', 'impl-review', ...extra, '--files', scopePath, '--out', dir], { stdio: 'pipe' }));
   };
   const read = (entry) => JSON.parse(fs.readFileSync(entry.manifest, 'utf8'));
 
   const small = emit(1, path.join(root, 'small'));
-  const large = emit(runtime.SURFACE_CAP_FILES, path.join(root, 'large'));
+  const largeScope = runtime.WAVE_THRESHOLD_FILES * runtime.MAX_REVIEW_WAVES;
+  const large = emit(largeScope, path.join(root, 'large'));
   for (const entry of [small, large]) {
     assert.deepStrictEqual(Object.keys(entry).sort(), ['digest', 'manifest'], 'without a range the CLI reports one manifest and its digest, as a single object - no .diff to name');
     assert.strictEqual(path.basename(entry.manifest), manifestName.replace('<reviewer>', reviewer), 'sprint-017 AC-5 (D7): a scope of any size is one manifest file - review waves bound its size, never a split into parts');
     assert.deepStrictEqual(fs.readdirSync(path.dirname(entry.manifest)).sort(), ['correctness.manifest.json', 'scope.txt'], 'sprint-017 AC-5: nothing but the one manifest is written beside the scope list');
   }
-  assert.strictEqual(read(large).files.length, runtime.SURFACE_CAP_FILES, 'the manifest carries the whole scope list, nothing dropped');
+  assert.deepStrictEqual(read(large).files, scopeNames(largeScope), 'the manifest carries the whole scope list, nothing dropped - here MAX_REVIEW_WAVES waves of WAVE_THRESHOLD_FILES files - and every path arrives clean from a CRLF list with a trailing blank line, as a Windows git diff --name-only writes it');
 
   const published = { vocabulary: runtime.LEDGER_VOCABULARY, row_example: runtime.LEDGER_ROW_EXAMPLE, n_a_shape: runtime.LEDGER_NA_SHAPE };
   const content = ['reviewer', 'phase', 'n_a', ...Object.keys(runtime.LEDGER_NA_SHAPE)];
@@ -4683,11 +4693,10 @@ test('sprint-012 AC-3/AC-12: every `.asd/runtime.js` symbol canon cites is decla
   assert.deepStrictEqual([...citers.keys()].filter((symbol) => !declared.has(symbol)), [], 'canon hands member lists and predicate text to named runtime.js symbols instead of restating them, so a cited symbol must exist - renamed on one side only, the prose points at nothing and the next editor restates the list');
   assert.deepStrictEqual(invoked.filter((entry) => !subcommands.has(entry.split(': ')[1])), [], 'every subcommand canon tells an orchestrator to run must be one main() dispatches - anything else exits on the usage error at the moment a review gate needs it');
   assert.deepStrictEqual(quoted.filter((entry) => !authorizable.has(entry.slice(entry.indexOf(': ') + 2))), [], 'a reviewer copies a quoted `n/a: <predicate>` into its ledger row, and validate-ledger accepts only a predicate the emitted manifest authorizes - a literal outside NA_PREDICATES teaches a row the blocking gate rejects');
-  for (const [symbol, rel] of [['WAVE_THRESHOLD_LINES', '.asd/rules/sprint-lifecycle.md'], ['AUDIT_BATCH_THRESHOLD_FILES', '.asd/workflows/asd-phase-audit.md'], ['reviewerFiles', '.asd/rules/review-policy.md']]) {
-    assert.ok((citers.get(symbol) || []).includes(rel), `sprint-015 AC-2/AC-9/sprint-017 AC-1: ${rel} must cite \`${symbol}\` by its runtime symbol rather than restate the value or selector it holds`);
+  for (const [symbol, rel] of [['WAVE_THRESHOLD_LINES', '.asd/rules/sprint-lifecycle.md'], ['WAVE_THRESHOLD_FILES', '.asd/rules/sprint-lifecycle.md'], ['WAVE_THRESHOLD_BYTES', '.asd/rules/sprint-lifecycle.md'], ['LARGE_WAVE_FILES', '.asd/rules/providers.md'], ['AUDIT_BATCH_THRESHOLD_FILES', '.asd/workflows/asd-phase-audit.md'], ['reviewerFiles', '.asd/rules/review-policy.md']]) {
+    assert.ok((citers.get(symbol) || []).includes(rel), `sprint-015 AC-2/AC-9/sprint-017 AC-1/sprint-023 AC-1: ${rel} must cite \`${symbol}\` by its runtime symbol rather than restate the value or selector it holds`);
   }
   assert.ok(invoked.some((entry) => entry === '.asd/workflows/asd-phase-impl-review.md: review-waves'), 'sprint-017 AC-1: the wave count is a runtime check, so impl-review must run `review-waves` rather than judge the division size itself');
-  assert.ok((citers.get('SURFACE_CAP_FILES') || []).includes('.asd/rules/sprint-lifecycle.md'), 'sprint-014 AC-5: the change-surface cap is one runtime constant, so sprint-lifecycle.md "Plan file format" must cite it by symbol rather than restate a number that drifts from the one surface-check applies');
 });
 
 test('sprint-012 AC-2/AC-4/AC-12: both review workflows emit manifests through emit-manifest and never stamp one by hand, keep a dispatched manifest immutable per review-policy.md "Coverage ledger", carry the interrupted-attempt record the "Clean-context review iteration" payload list admits, and persist External Review\'s availability skip through persist-review (sprint-020 AC-9)', () => {
@@ -4824,7 +4833,7 @@ test("sprint-012 AC-13: the settings-change line sprint-lifecycle.md \"Plan file
   const applying = flow.split(/\n(?=\d+[a-z]?\. )/).filter((block) => block.includes(`\`${token}\``) && block.includes(dispatchInit));
   assert.strictEqual(applying.length, 1, `exactly one asd-phase-impl.md step must apply the declared line through asd-init ${mode} mode instead of registering a manual step (011 P3)`);
   const applyStep = /^(\d+[a-z]?)\. /.exec(applying[0])[1];
-  assert.ok(flow.indexOf(dispatchInit) < flow.indexOf('delegate to `asd-dev`'), `COR-2-2/DOC-2-1: a wave's bullets run in order, so the settings change (step ${applyStep}) must be applied ahead of that wave's dev delegation - applied after it, the settings Task reaches a dev before asd-init writes config.yaml`);
+  assert.ok(flow.indexOf(dispatchInit) < flow.indexOf("delegate to the Task's agent"), `COR-2-2/DOC-2-1: a wave's bullets run in order, so the settings change (step ${applyStep}) must be applied ahead of that wave's dev delegation - applied after it, the settings Task reaches a dev before asd-init writes config.yaml`);
   const applyLine = applying[0].split('\n').find((line) => line.includes(`\`${token}\``) && line.includes(dispatchInit));
   assert.ok(/\bwave\b/.test(applyLine) && !/\bwave 1\b/.test(applyLine), `COR-2: step ${applyStep} must apply the settings change as its own Task's wave opens, never keyed to wave 1 - the grammar lets that Task follow the one adding its key, and applied at wave 1 the key is not in t_config.yaml yet`);
   assert.ok(applyLine.includes('`FAILED`'), `DOC-1: step ${applyStep} must say what the wave does when asd-init ${mode} mode returns \`FAILED\` - the mode writes nothing then, and dispatching the wave anyway runs its Tasks against a setting that never landed`);
@@ -5050,52 +5059,6 @@ test('sprint-014 AC-3: defect-stalemate fails closed on a second ## Defects sect
   assert.match(rejection(extraCell), new RegExp(`^line ${lineOf(extraCell, (line) => line.endsWith('extra |'))}: .*malformed`), 'a malformed row must name its own line, not only its cells');
 });
 
-test('sprint-014 AC-5: surface-check counts distinct paths against SURFACE_CAP_FILES or a positive override bound, exits 1 with the result on breach and 2 on unusable input, and the plan declaration and override gate it measures read the same literals at plan and at impl-review entry', () => {
-  const cap = runtime.SURFACE_CAP_FILES;
-  const paths = (count) => Array.from({ length: count }, (_, index) => `src/file-${index + 1}.md`);
-  const result = (files, bound, breach) => ({ files, cap: bound, breach });
-  assert.deepStrictEqual(runtime.surfaceCheck(paths(cap)), result(cap, cap, false), 'a surface at the cap is within it');
-  assert.deepStrictEqual(runtime.surfaceCheck(paths(cap + 1)), result(cap + 1, cap, true), 'one file over the cap is a breach');
-  assert.strictEqual(runtime.surfaceCheck(paths(cap).concat('src/file-1.md')).breach, false, 'a path listed twice is one file of change surface - counting it twice escalates a sprint that is within its cap');
-  assert.deepStrictEqual(runtime.surfaceCheck(paths(cap + 1), cap + 1), result(cap + 1, cap + 1, false), 'an approved override bound replaces the cap');
-  for (const bound of [0, -1, 1.5, Number.NaN]) {
-    assert.throws(() => runtime.surfaceCheck(paths(1), bound), /bound/, `bound ${bound}: an unusable override must fail closed, never silently fall back to a bound that admits the surface`);
-  }
-
-  const root = mkTempDir();
-  const run = (args) => {
-    try {
-      return { status: 0, stdout: runtimeCli(['surface-check', ...args], { stdio: 'pipe' }) };
-    } catch (error) {
-      return { status: error.status, stdout: String(error.stdout) };
-    }
-  };
-  const list = (name, count) => {
-    const file = path.join(root, name);
-    fs.writeFileSync(file, `${paths(count).join('\r\n')}\r\n\r\n`, 'utf8');
-    return file;
-  };
-  assert.deepStrictEqual(run(['--files', list('within.txt', cap)]), { status: 0, stdout: `${JSON.stringify(result(cap, cap, false))}\n` }, 'a CRLF git diff --name-only list with a trailing blank line at the cap exits 0 and prints the result');
-  assert.deepStrictEqual(run(['--files', list('over.txt', cap + 1)]), { status: 1, stdout: `${JSON.stringify(result(cap + 1, cap, true))}\n` }, 'a breach exits 1 and still prints the result both gates read');
-  assert.deepStrictEqual(run(['--files', list('bounded.txt', cap + 1), '--bound', String(cap + 1)]), { status: 0, stdout: `${JSON.stringify(result(cap + 1, cap + 1, false))}\n` }, '--bound carries the recorded override into the CLI');
-  for (const [label, args] of [['missing --files', []], ['non-numeric --bound', ['--files', list('any.txt', 1), '--bound', 'many']]]) {
-    assert.deepStrictEqual(run(args), { status: 2, stdout: '' }, `${label}: no result may be read from input the check could not use`);
-  }
-
-  const declaration = sectionOf('.asd/rules/sprint-lifecycle.md', 'Plan file format').split('\n').find((line) => line.startsWith('**Change surface declaration**'));
-  const declared = declaration && /`(Change surface: <n> files)`/.exec(declaration);
-  const gate = declaration && /`gate: ([a-z-]+)`, `evidence: (bound=<n>)`/.exec(declaration);
-  assert.ok(declared && gate, 'sprint-lifecycle.md "Plan file format" must define the plan declaration line and the override record as literals');
-  assert.ok(!/\bdispatches\b/.test(declaration), 'sprint-017 AC-5 (D7): without parts a wave-iteration dispatches at most the fixed roster, so the cap-override request must no longer quote a dispatch count surface-check stopped computing');
-  assert.ok(sectionOf('.asd/templates/t_plan.md', 'Overview').includes(declared[1].replace('<n>', '{{n}}')), 't_plan.md Overview must slot the declaration sprint-lifecycle.md defines, or plans stop carrying it and impl-review grandfathers every sprint');
-  assert.ok(canonText('.asd/workflows/asd-phase-plan.md').includes(declared[1]), 'asd-phase-plan.md must write the declaration in its defined form');
-  const gateName = /hard `([^`]+)` gate \(`checkpoints\.md`\)/.exec(declaration);
-  const checkpoints = canonText('.asd/rules/checkpoints.md').split('\n');
-  assert.ok(gateName && checkpoints.some((line) => line.startsWith('Hard in both modes:') && line.includes(gateName[1])) && checkpoints.some((line) => line.startsWith(`| ${gateName[1]} `) && line.includes('| hard')), 'the override sprint-lifecycle.md sends to checkpoints.md must be in its hard-in-both-modes list and hard in the gate inventory - listed nowhere, an adaptive orchestrator may approve its own cap override');
-  const entryCheck = canonText('.asd/workflows/asd-phase-impl-review.md').split('\n').find((line) => line.includes('surface-check --files'));
-  assert.ok(entryCheck && entryCheck.includes(`\`${declared[1].split('<n>')[0].trim()}\``) && entryCheck.includes(`gate: ${gate[1]}`) && entryCheck.includes('--bound <n>'), `plan Reachability: impl-review entry must detect the plan's declaration by its prefix and read the override bound from the \`gate: ${gate[1]}\` record plan writes - a renamed gate on either side leaves every approved override unread and the entry check escalates again`);
-});
-
 test('sprint-014 AC-2: a failed creator or tester dispatch is reconstructed from the ASD-Task trailer git-strategy.md defines, anchored on the dispatch HEAD both dispatching workflows log, and the git log command State recovery runs reports that trailer', () => {
   const commits = sectionOf('.asd/rules/git-strategy.md', 'Commits');
   const trailer = /`(ASD-Task): <id>`/.exec(commits);
@@ -5299,7 +5262,7 @@ test('sprint-013 AC-19: the 9.0.0 migration leaves a config it cannot read line 
 });
 
 test('sprint-015 AC-2/AC-3: the impl-review Testing reviewer receives only the isTest scope files plus the --test-plan paths, every other reviewer the whole scope, and review-policy.md "Reviewer responsibility" gives each of the five reviewers both phases', () => {
-  assert.deepStrictEqual(runtime.INTERNAL_REVIEWERS.slice().sort(), internalReviewers().sort(), 'INTERNAL_REVIEWERS drives the per-reviewer manifests and the surface-check dispatch count, so it must name exactly the asd-reviewer-* agents');
+  assert.deepStrictEqual(runtime.INTERNAL_REVIEWERS.slice().sort(), internalReviewers().sort(), 'INTERNAL_REVIEWERS drives the per-reviewer manifests, so it must name exactly the asd-reviewer-* agents');
   const testFiles = ['tests/run.js', 'test/a.js', 'src/__tests__/a.js', 'spec/a.rb', 'pkg/specs/a.rb', 'src/a.test.ts', 'src/a.spec.js', 'src/test_a.py', 'src/a_test.go', 'src/ATest.java', 'src/ATests.cs', 'Assets/Tests/EditMode/Fixture.cs', 'Core.Tests/Fixture.cs', 'src/Game.Tests.Unit/Fixture.cs', 'lib/Api.Specs/helper.rb'];
   const plan = ['.asd/sprints/015-x/test-plan.md', '.asd/sprints/015-x/test-plan.entry-01.md'];
   const otherFiles = ['src/contest.js', 'src/latest/a.js', 'src/testing.js', 'docs/protests.md', 'README.md', 'src/Contest.Data/a.cs', 'src/latest.config/a.js', ...plan];
@@ -5515,10 +5478,11 @@ test('sprint-017 AC-4/AC-8 (D6/D9a-c): emit-manifest --full-files/--full-base jo
   }
 });
 
-test('sprint-017 AC-1 (D1/D2): review-waves measures a real git range over the scope list - binary files and pure renames 0, an edited rename at its destination - and writes waves.json only for a division it accepts', () => {
+test('sprint-017 AC-1 (D1/D2), sprint-023 AC-1: review-waves measures a real git range over the scope list - binary files and pure renames 0 lines, an edited rename at its destination, the patch a reviewer reads as bytes - reports the file count, bytes and thresholds it applied, and writes waves.json only for a division it accepts', () => {
   const { repo, env, git } = sandboxGitRepo();
   const lines = (tag, count) => Array.from({ length: count }, (_, index) => `${tag} line ${index + 1}`).join('\n') + '\n';
   const threshold = runtime.WAVE_THRESHOLD_LINES;
+  const thresholds = { lines: threshold, files: runtime.WAVE_THRESHOLD_FILES, bytes: runtime.WAVE_THRESHOLD_BYTES };
   writeFile(repo, 'src/pure.js', lines('pure', 20));
   writeFile(repo, 'src/edited.js', lines('edited', 20));
   fs.mkdirSync(path.join(repo, 'assets'));
@@ -5548,16 +5512,24 @@ test('sprint-017 AC-1 (D1/D2): review-waves measures a real git range over the s
   const scopeFile = write('scope.txt', `${scope.join('\n')}\n`);
   const range = ['--files', scopeFile, '--base', base, '--head', head];
 
+  const patchBytes = (listed) => Buffer.byteLength(git('diff', '-M', '--no-color', `${base}...${head}`, '--', ...listed, 'src/pure.js', 'src/edited.js'));
   const measured = run(range);
-  assert.deepStrictEqual(measured, { status: 0, result: { lines: threshold + 2, threshold, waves: 2 } }, `D1: ${threshold} added lines plus the edited rename's one changed line (1 added, 1 deleted) - the pure rename and the binary file count 0 and src/unlisted.js is outside the list - so the scope is one line past the threshold and needs 2 waves`);
-  const onlySmall = run(['--files', write('small.txt', 'lib/pure.js\nlib/edited.js\nassets/logo.bin\n'), '--base', base, '--head', head]);
-  assert.deepStrictEqual(onlySmall.result, { lines: 2, threshold, waves: 1 }, 'a scope at or below the threshold is one wave, today\'s single review');
+  assert.deepStrictEqual(measured, { status: 0, result: { lines: threshold + 2, files: scope.length, bytes: patchBytes(scope), thresholds, waves: 2 } }, `D1: ${threshold} added lines plus the edited rename's one changed line (1 added, 1 deleted) - the pure rename and the binary file count 0 and src/unlisted.js is outside the list - so the scope is one line past the threshold and needs 2 waves; bytes is the size of the rename-paired patch git prints for the listed files, never of src/unlisted.js`);
+  const smallScope = ['lib/pure.js', 'lib/edited.js', 'assets/logo.bin'];
+  const onlySmall = run(['--files', write('small.txt', `${smallScope.join('\n')}\n`), '--base', base, '--head', head]);
+  assert.deepStrictEqual(onlySmall.result, { lines: 2, files: smallScope.length, bytes: patchBytes(smallScope), thresholds, waves: 1 }, 'a scope at or below every threshold is one wave, today\'s single review');
 
   const out = path.join(work, 'reviews/impl/waves.json');
   const division = [['src/big.js'], ['lib/pure.js', 'lib/edited.js', 'assets/logo.bin']];
   const accepted = run([...range, '--division', write('division.json', JSON.stringify(division)), '--out', out]);
   assert.deepStrictEqual(accepted, measured, 'the division run reports the same measurement it validated against');
-  assert.deepStrictEqual(JSON.parse(fs.readFileSync(out, 'utf8')), { base, head, lines: threshold + 2, threshold, waves: division }, 'D2: waves.json records the range, the measurement and the accepted division verbatim - the file lists live there, never in state.json');
+  assert.deepStrictEqual(JSON.parse(fs.readFileSync(out, 'utf8')), { base, head, lines: threshold + 2, files: scope.length, bytes: measured.result.bytes, thresholds, waves: division }, 'D2: waves.json records the range, the measurement (lines, files, bytes) with the thresholds applied and the accepted division verbatim - the file lists live there, never in state.json');
+  const divisionRule = sectionOf('.asd/rules/sprint-lifecycle.md', 'Review iteration counters').split('\n').find((line) => line.startsWith('- **Division**')) || '';
+  const written = Object.keys(JSON.parse(fs.readFileSync(out, 'utf8'))).filter((key) => key !== 'waves');
+  assert.deepStrictEqual(written.filter((key) => !spans(divisionRule).includes(key)), [], 'sprint-023 AC-1: sprint-lifecycle.md "Review iteration counters" Division names, as code spans, every waves.json field review-waves writes besides the division itself - a field renamed on the writing side only (threshold to thresholds) leaves the rule describing a file nobody writes');
+  const measuredKeys = Object.entries(measured.result).filter(([key, value]) => key !== 'waves' && typeof value === 'number').map(([key]) => key);
+  const divisionStep = stepOf(sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Workflow'), '1c');
+  assert.deepStrictEqual(measuredKeys.filter((key) => !spans(divisionStep).includes(key)), [], 'sprint-023 AC-1: impl-review step 1c\'s decisions-log entry names every quantity review-waves measures - an entry naming lines alone hides that files or bytes forced the division');
 
   for (const [label, args, pattern] of [
     ['a one-wave division of a two-wave scope', [...range, '--division', write('one.json', JSON.stringify([scope])), '--out', path.join(work, 'one/waves.json')], /exactly 2 waves/],
@@ -5769,7 +5741,7 @@ test('sprint-015 AC-1/AC-6/AC-7/AC-8/AC-10/AC-12: no canon tells anyone to clear
 /** Terms naming a review mechanism sprint 017's review waves replaced (AC-5); shared by the canon sweep and the agent-memory sweep. */
 const REPLACED_REVIEW_MECHANISMS = [/\.part-|part-N|--halve|outOfPart|out-of-part|SPLIT_THRESHOLD|split trigger|union property|part merge|split dispatch|DISPATCH_CEILING|dispatch ceiling|sub-wave|APPROVE \(partial:|--test-plan-files/i, /\b(?:base_ref|head_ref|exclude_paths)\b/];
 
-test('sprint-017 AC-5/AC-7: no live canon, README, runtime or hook keeps a mechanism review waves replaced - split parts, --halve, the out-of-part predicate, the split threshold, the Dispatch ceiling, External batches and their partial outcome, surface-check dispatches, or a self-diff ref pair - except a line naming it as legacy', () => {
+test('sprint-017 AC-5/AC-7: no live canon, README, runtime or hook keeps a mechanism review waves replaced - split parts, --halve, the out-of-part predicate, the split threshold, the Dispatch ceiling, External batches and their partial outcome, or a self-diff ref pair - except a line naming it as legacy', () => {
   const needles = REPLACED_REVIEW_MECHANISMS;
   const hooks = fs.readdirSync(path.join(REPO_ROOT, '.asd/hooks')).filter((file) => file.endsWith('.js')).map((file) => `.asd/hooks/${file}`);
   const files = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/runtime.js', '.asd/templates/external-review/t_review-scope.json', '.asd/templates/t_state.json', ...hooks];
@@ -6219,7 +6191,7 @@ test('sprint-019 AC-4: backlogRows parses the one backlog table t_retro-backlog.
   }
 });
 
-test('sprint-019 AC-1/AC-2/AC-5: retroCandidates offers the latest done retro\'s undisposed rows plus every deferred backlog row, drops covered-by rows and - outside self-hosting - asd rows, is [] with no prior retro, and fails closed on unreadable input; the CLI prints exactly that', () => {
+test('sprint-019 AC-1/AC-2/AC-5, sprint-023 AC-8: retroCandidates offers the latest done retro\'s undisposed rows plus every deferred backlog row, drops covered-by rows and - outside self-hosting - the deferred asd rows, keeps the latest retro\'s undisposed asd rows there tagged `upstream: true`, is [] with no prior retro, and fails closed on unreadable input; the CLI prints exactly that', () => {
   const fixture = retroIntakeFixture(INTAKE_SPRINTS, INTAKE_BACKLOG);
   const selfHosting = [
     { row: '016-a#A-1', acts_on: 'consumer', guardrail: 'Deferred consumer action', home: 'h016A1' },
@@ -6229,9 +6201,11 @@ test('sprint-019 AC-1/AC-2/AC-5: retroCandidates offers the latest done retro\'s
     { row: '017-b#P-2', acts_on: 'asd', guardrail: 'Fresh asd proposal', home: 'h017P2' },
   ];
   assert.deepStrictEqual(fixture.candidates(true), selfHosting, 'AC-1: 017-b is the latest archived sprint that is done AND has a retro (018-c has none, 019-d is not done); its included/rejected/closed rows and its covered-by row are not offered, its deferred row is offered once as its retrospective states it - Acts on and guardrail read from the retro, never from the backlog\'s human-readable copies, which this fixture words differently (Acts on consumer, extra text) so reading either from the backlog shows - and older deferred rows come back with their own retro\'s home');
-  assert.deepStrictEqual(fixture.candidates(false), selfHosting.filter((candidate) => candidate.acts_on === 'consumer'), 'AC-2: a consumer project gets only consumer rows, deferred ones included - filtered on the retro\'s Acts on, so 017-b#A-4 (asd in its retro, consumer in the backlog copy) stays out');
+  const upstreamProposal = { ...selfHosting[4], upstream: true };
+  assert.deepStrictEqual(fixture.candidates(false), [...selfHosting.filter((candidate) => candidate.acts_on === 'consumer'), upstreamProposal], 'AC-2/sprint-023 AC-8: a consumer project gets its own rows, deferred ones included, plus the latest retro\'s undisposed asd row 017-b#P-2 tagged upstream: true - filtered on the retro\'s Acts on, so 017-b#A-4 (asd in its retro, consumer in the backlog copy, disposed) and the deferred asd row 016-a#P-2 stay out, and so does the covered-by asd row 017-b#A-2');
   fs.rmSync(fixture.backlogPath);
   assert.deepStrictEqual(fixture.candidates(true).map((candidate) => candidate.row), ['017-b#A-1', '017-b#A-3', '017-b#A-4', '017-b#P-1', '017-b#P-2', '017-b#P-3'], 'an absent backlog reads as empty - the first intake of a project offers every non-covered row of its latest retro');
+  assert.deepStrictEqual(fixture.candidates(false).map((candidate) => [candidate.row, candidate.upstream === true]), [['017-b#A-1', true], ['017-b#A-3', false], ['017-b#A-4', true], ['017-b#P-1', true], ['017-b#P-2', true], ['017-b#P-3', false]], 'sprint-023 AC-8: outside self-hosting the first intake keeps the latest retro\'s asd rows as upstream proposals - tagged exactly the asd rows, never a consumer row');
 
   assert.deepStrictEqual(retroIntakeFixture({}, INTAKE_BACKLOG.filter(([, , disposition]) => disposition !== 'deferred')).candidates(true), [], 'AC-5: no archived sprint and nothing deferred is the silent no-op');
   assert.deepStrictEqual(retroIntakeFixture({ '019-d': INTAKE_SPRINTS['019-d'] }).candidates(true), [], 'AC-5: a retro whose sprint never reached done is not a prior retrospective');
@@ -6248,12 +6222,14 @@ test('sprint-019 AC-1/AC-2/AC-5: retroCandidates offers the latest done retro\'s
   const cli = runtimeCliResult(['retro-candidates', '--self-hosting', '--sprints', fixture.sprintsDir, '--backlog', path.join(fixture.root, 'absent.md')]);
   assert.deepStrictEqual(cli, { status: 0, result: runtime.retroCandidates(fixture.sprintsDir, path.join(fixture.root, 'absent.md'), true) }, 'the CLI scope runs must print what the function returns, --self-hosting read as a boolean even before another flag');
   const consumerCli = runtimeCliResult(['retro-candidates', '--sprints', fixture.sprintsDir, '--backlog', path.join(fixture.root, 'absent.md')]).result;
-  assert.ok(consumerCli.length > 0 && consumerCli.length < cli.result.length && consumerCli.every((candidate) => candidate.acts_on === 'consumer'), `without --self-hosting the CLI applies the consumer filter: ${JSON.stringify(consumerCli)}`);
+  assert.deepStrictEqual(consumerCli, runtime.retroCandidates(fixture.sprintsDir, path.join(fixture.root, 'absent.md'), false), 'without --self-hosting the CLI prints the consumer-mode result');
+  assert.ok(consumerCli.some((candidate) => candidate.acts_on === 'asd') && consumerCli.every((candidate) => (candidate.acts_on === 'asd') === (candidate.upstream === true)), `sprint-023 AC-8: without --self-hosting the CLI keeps the asd rows and tags exactly those upstream: true: ${JSON.stringify(consumerCli)}`);
+  assert.ok(cli.result.every((candidate) => !('upstream' in candidate)), 'sprint-023 AC-8: with --self-hosting a row is a candidate of this project, so none carries the upstream tag');
   const missing = runtimeCliResult(['retro-candidates', '--sprints', fixture.sprintsDir]);
   assert.ok(missing.status === 2 && /--backlog <path> required/.test(missing.stderr), `a missing --backlog must exit 2, never read a default path: ${JSON.stringify(missing)}`);
 });
 
-test('sprint-019 AC-1/AC-3/AC-4/AC-5/AC-6: scope step 2a runs retro intake by the command sprint-lifecycle.md "Retro intake" names - run as written from a project root it prints the candidates, and [] with no prior retro - and the home\'s failure, empty, resolved and disposition clauses and scope step 4\'s backlog write each hold', () => {
+test('sprint-019 AC-1/AC-3/AC-4/AC-5/AC-6, sprint-023 AC-8: scope step 2a runs retro intake by the command sprint-lifecycle.md "Retro intake" names - run as written from a project root it prints the candidates, and [] with no prior retro - and the home\'s failure, empty, resolved, disposition and upstream-row clauses and scope step 4\'s backlog write and upstream display each hold', () => {
   const step = stepOf(canonText('.asd/workflows/asd-phase-scope.md'), '2a');
   assert.ok(step.includes('`sprint-lifecycle.md` "Retro intake"'), 'step 2a must cite the intake home rather than restate it');
   const command = /`(node \.asd\/runtime\.js retro-candidates [^`]+)`/.exec(step);
@@ -6293,6 +6269,17 @@ test('sprint-019 AC-1/AC-3/AC-4/AC-5/AC-6: scope step 2a runs retro intake by th
   const accept = stepOf(canonText('.asd/workflows/asd-phase-scope.md'), 4);
   const backlog = /--backlog (\S+)/.exec(command[1]);
   assert.ok(backlog && accept.includes(`\`${backlog[1]}\``) && /step 2a/.test(accept) && /dispositions/.test(accept), 'sprint-019 TST-1-1/AC-4: scope step 4 writes step 2a\'s dispositions to the backlog path step 2a reads - dropped, included and rejected rows come back at every scope; written elsewhere, the next intake never sees them');
+
+  const proposal = runtime.retroCandidates(fixture.sprintsDir, fixture.backlogPath, false).find((candidate) => candidate.acts_on === 'asd');
+  const tag = proposal && Object.keys(proposal).find((key) => !['row', 'acts_on', 'guardrail', 'home'].includes(key));
+  assert.ok(tag, 'sprint-023 AC-8: sanity - outside self-hosting retroCandidates must return an asd row with a marker field beside row, acts_on, guardrail and home, or the rule and workflow cannot be compared with the tag it emits');
+  const literal = `\`${tag}: true\``;
+  assert.ok(empty.slice(0, empty.indexOf('decisions-log')).includes(literal), `sprint-023 AC-8: a list of only ${literal} rows has no candidate to decide, so the empty-array no-op must cover it, named before the no-op's outcome - otherwise a consumer project whose latest retro holds only asd rows is asked about proposals it cannot dispose (a later mention of the tag in the same sentence is not the trigger)`);
+  const shown = sentences.find((sentence) => sentence.includes(literal) && /\bAC-N\b/.test(sentence)) || '';
+  const noOp = intake.slice(intake.indexOf(empty), intake.indexOf(shown));
+  assert.ok(/\bgate\b/.test(noOp) && !/\b(?:not|never)\b/.test(noOp), `sprint-023 review-fix F4: the no-op sentence must say the ${literal} rows are still shown at the gate - "no-op" alone reads as "show nothing", against scope step 4, which shows them`);
+  assert.ok(/no question/.test(shown) && /\bbacklog\b/.test(shown), `sprint-023 AC-8: the sentence on a ${literal} row must say it is shown with no question, is never an AC-N and reaches no backlog - disposed like a candidate, it is either lost to the framework repo it addresses or re-asked at every scope`);
+  assert.ok(step.includes(literal) && accept.includes(literal), `sprint-023 AC-8: scope steps 2a and 4 must name the ${literal} tag the runtime emits - step 2a exempts it from verification and step 4 shows it at the gate`);
 });
 
 test('sprint-019 AC-4: the live retro backlog parses, each row resolves to its archived retro row with the same Acts on and text, the 019 triage seed stands until a later sprint re-decides a row, /asd-update never manages the file, and live intake re-offers every deferred row and no disposed one', () => {
@@ -6364,7 +6351,7 @@ test('sprint-019 AC-8: the one-command commit form git-strategy.md "Commit befor
   assert.strictEqual(git('diff', '--cached', '--name-only').trim(), 'sibling.txt', 'AC-8: after the reset the failed path is unstaged - left staged, the next sibling commit would sweep it under the wrong ASD-Task trailer (018 F-1)');
 });
 
-test('sprint-019 AC-9/AC-10: the dispatch payload header providers.md defines is admitted by both exhaustive reviewer payload lists and cited by both review workflows, and every agent handed a turn budget declares a maxTurns that leaves a report turn', () => {
+test('sprint-019 AC-9/AC-10, sprint-023 AC-1: the dispatch payload header providers.md defines is admitted by both exhaustive reviewer payload lists and cited by both review workflows, and every agent handed a turn budget declares a maxTurns that leaves a report turn and the turn plan\'s earlier ledger turn', () => {
   const header = canonText('.asd/rules/providers.md').split('\n### Dispatch payload header\n')[1];
   assert.ok(header, 'providers.md must keep its "Dispatch payload header" section');
   const rule = header.split('\n#')[0];
@@ -6386,9 +6373,14 @@ test('sprint-019 AC-9/AC-10: the dispatch payload header providers.md defines is
 
   const reserve = /report by turn <maxTurns − (\d+)>/.exec(rule);
   assert.ok(reserve, 'the Turn budget line must state the turn the report is due by, relative to maxTurns');
+  const turnPlan = rule.split(/(?<=\.)\s/).find((sentence) => spans(sentence).includes('LARGE_WAVE_FILES')) || '';
+  const ledgerTurns = [...turnPlan.matchAll(/<maxTurns − (\d+)>/g)].map((match) => Number(match[1]));
+  assert.strictEqual(ledgerTurns.length, 1, 'sprint-023 AC-1: the sentence naming LARGE_WAVE_FILES is the turn plan, and it must give the one turn the coverage ledger is due by, relative to maxTurns');
+  assert.ok(ledgerTurns[0] > Number(reserve[1]), `sprint-023 AC-1: the ledger is due by turn maxTurns - ${ledgerTurns[0]}, which must come before the report turn maxTurns - ${reserve[1]} - a ledger due after the report is a plan no reviewer can follow`);
   for (const name of [...internalReviewers().map((reviewer) => `asd-reviewer-${reviewer}`), 'asd-external-review', 'asd-advisor']) {
     const cap = sync.parseCanonicalFrontmatter(sync.readNormalized(path.join(REPO_ROOT, '.asd/agents', `${name}.md`))).meta.claude.maxTurns;
     assert.ok(Number.isInteger(cap) && cap > Number(reserve[1]), `${name}: the Turn budget line is filled from canon maxTurns and reports by turn maxTurns - ${reserve[1]}, so the cap must be an integer above ${reserve[1]} (got ${cap})`);
+    assert.ok(cap > ledgerTurns[0], `sprint-023 AC-1: ${name}: the turn plan puts the ledger at turn maxTurns - ${ledgerTurns[0]}, so the cap must exceed ${ledgerTurns[0]} (got ${cap})`);
   }
 });
 
@@ -6727,17 +6719,13 @@ test('sprint-020 AC-1: no canon, README, AGENTS.md or agent-memory line still na
   assert.deepStrictEqual(hits, [], `sprint 020 moved the chain into .asd/workflows/<name>.json and the reset phases into each definition's rollback_reset, so a line still naming PHASE_CHAIN or the rollback-reset table points a reader at something that no longer exists (CHANGELOG.md and .asd/project/decisions-log.md are history and stay out of the sweep). Found: ${hits.join(', ')}`);
 });
 
-test('sprint-021 AC-12: surface-check never counts a generated provider view or a pure rename - the views it drops are exactly the provider-tree targets sync.js regenerates wholesale, the JSON-merge hook registrations still count, both review pathspecs agree on each, and --base/--head drops only a rename git reports with identical content', () => {
+test('sprint-021 AC-12: the generated provider views sync.js regenerates wholesale are never reviewable change surface - both review pathspecs exclude every provider-tree target and keep the JSON-merge hook registrations in', () => {
   const plan = sync.buildSyncPlan(REPO_ROOT);
   const relOf = (item) => path.relative(REPO_ROOT, item.targetPath).split(path.sep).join('/');
   const targets = [...new Set(plan.map(relOf))];
   const jsonMerge = [...new Set(plan.filter((item) => item.class === 'json-merge').map(relOf))];
   const views = targets.filter((rel) => rel.includes('/') && !jsonMerge.includes(rel));
-  const rootTargets = targets.filter((rel) => !rel.includes('/'));
-  assert.ok(views.length > 0 && rootTargets.includes('AGENTS.md') && jsonMerge.length > 0, `sanity: the sync plan must yield provider-tree views, the root managed-block targets and the JSON-merge hook registrations, got ${targets.join(', ')}`);
-  assert.strictEqual(runtime.surfaceCheck(views).files, 0, 'every provider-tree file sync.js regenerates wholesale from canon is never reviewable change surface, so none may count against the cap');
-  const handEdited = [...rootTargets, ...jsonMerge, '.claude/agent-memory/asd-dev/MEMORY.md', '.claude/settings.local.json', 'src/a.js'];
-  assert.strictEqual(runtime.surfaceCheck(handEdited).files, handEdited.length, 'root managed-block targets carry hand-edited tails, the JSON-merge hook registrations (ASD owns only its hook entry) can hold user content, agent memory is hand-authored and settings.local.json is no sync target - each still counts (impl-review wave-1/iter-01 external #1)');
+  assert.ok(views.length > 0 && jsonMerge.length > 0, `sanity: the sync plan must yield provider-tree views and the JSON-merge hook registrations, got ${targets.join(', ')}`);
 
   const expand = (text) => spans(text).flatMap((glob) => {
     const brace = /\{([^}]+)\}/.exec(glob);
@@ -6750,27 +6738,8 @@ test('sprint-021 AC-12: surface-check never counts a generated provider view or 
     const globs = expand(cell);
     const excluded = (rel) => globs.some((glob) => (glob.endsWith('/**') ? rel.startsWith(glob.slice(0, -2)) : rel === glob));
     assert.deepStrictEqual(views.filter((rel) => !excluded(rel)), [], `${site}: the pathspec must exclude every generated provider view, or a review ships regenerated output to every reviewer`);
-    assert.deepStrictEqual(jsonMerge.filter(excluded), [], `${site}: the pathspec must keep the JSON-merge hook registrations in, as surfaceCheck does - they can hold user content, and a hand edit there would escape review (impl-review wave-1/iter-01 external #1)`);
+    assert.deepStrictEqual(jsonMerge.filter(excluded), [], `${site}: the pathspec must keep the JSON-merge hook registrations in - they can hold user content, and a hand edit there would escape review (impl-review wave-1/iter-01 external #1)`);
   }
-
-  const { repo, env, git } = sandboxGitRepo();
-  const body = Array.from({ length: 20 }, (_, index) => `line ${index + 1}`).join('\n');
-  for (const name of ['moved.txt', 'edited.txt']) fs.writeFileSync(path.join(repo, name), `${name}\n${body}\n`, 'utf8');
-  git('add', '.');
-  git('commit', '-q', '-m', 'base');
-  const base = git('rev-parse', 'HEAD').trim();
-  fs.mkdirSync(path.join(repo, 'dir'));
-  git('mv', 'moved.txt', 'dir/moved.txt');
-  git('mv', 'edited.txt', 'dir/edited.txt');
-  fs.appendFileSync(path.join(repo, 'dir/edited.txt'), 'one more line\n', 'utf8');
-  fs.writeFileSync(path.join(repo, 'new.txt'), 'new\n', 'utf8');
-  git('add', '-A');
-  git('commit', '-q', '-m', 'head');
-  const list = path.join(repo, 'surface.txt');
-  fs.writeFileSync(list, 'dir/moved.txt\ndir/edited.txt\nnew.txt\n', 'utf8');
-  const measure = (extra) => JSON.parse(runtimeCli(['surface-check', '--files', list, ...extra], { cwd: repo, env, stdio: 'pipe' })).files;
-  assert.strictEqual(measure([]), 3, 'without a range every listed path counts');
-  assert.strictEqual(measure(['--base', base, '--head', 'HEAD']), 2, 'with --base/--head the pure rename drops out, while the edited rename and the new file still count - a move with a content change is reviewable surface');
 });
 
 test('sprint-021 AC-7 (D7): agentLiveness turns a subagent transcript into running, done or a stall with its reason, and agent-liveness prints one STALL line per stalled agent and fails when it finds no transcript', () => {
@@ -7222,7 +7191,7 @@ test('sprint-022 AC-2/AC-3/AC-5 leftover-term check: no canon, README, AGENTS.md
   assert.deepStrictEqual(hits, [], 'each phrase is from a line this sprint deleted (git diff main...HEAD) - one surviving restates the closure gate, its approval, the await-closure exit, the release at the closure write or dev plan ticking. CHANGELOG.md and sprint folders are history and stay out of the sweep');
 });
 
-test('sprint-022 AC-8/AC-9: the model family and effort each agent renders - both providers, mechanical and critical variants, the wrapped reviewer - is the tier providers.md "Agent tier matrix" and README state, the variant-tier prose names the same families and efforts, and README names no family no agent renders', () => {
+test('sprint-022 AC-8/AC-9, sprint-023 AC-7: the model family and effort each agent renders - both providers, mechanical and critical variants - is the tier README states (the agent frontmatter, resolved through the release manifest, is the one home: providers.md keeps no tier table), the variant-tier prose names the same families and efforts, and README names no family no agent renders', () => {
   const manifest = loadManifest();
   const tierOf = (family, effort) => `${family}/${effort || 'none'}`;
   const plan = sync.buildSyncPlan(REPO_ROOT).filter((item) => item.kind === 'agent-claude');
@@ -7241,29 +7210,10 @@ test('sprint-022 AC-8/AC-9: the model family and effort each agent renders - bot
     codex: tierOf(wrapper.codex.wraps_model, wrappedEffort(wrapper.codex.wraps_invoke_args, '--effort')),
   };
 
-  const matrix = sectionOf('.asd/rules/providers.md', 'Model family resolution').split('### Agent tier matrix')[1].split('\n').filter((line) => line.startsWith('| asd-')).map((line) => line.split('|').slice(1, -1).map((cell) => cell.trim().replace(/ \/ /g, '/')));
-  const cellFor = (cell, variant) => {
-    const part = cell.split(';').map((piece) => piece.trim()).find((piece) => piece.startsWith(`${variant}:`));
-    return part ? part.slice(variant.length + 1).replace(/\(.*$/, '').trim() : cell;
-  };
-  const claimed = [];
-  for (const [agents, claudeCell, codexCell] of matrix) {
-    for (const stem of agents.split(',').map((part) => part.trim().replace(/ \([^)]*\)$/, ''))) {
-      const isWrapped = stem === 'asd-external-review wrapped reviewer';
-      const label = isWrapped || stem === 'asd-external-review wrapper' ? 'asd-external-review' : stem;
-      const prefix = label.endsWith('*') ? label.slice(0, -1) : null;
-      const names = prefix === null ? [label].filter((name) => tiers.has(name)) : [...tiers.keys()].filter((name) => name.startsWith(prefix));
-      assert.ok(names.length > 0, `providers.md "Agent tier matrix" row "${stem}" names no agent canon renders - a stale or misspelled row`);
-      for (const name of names) {
-        const expected = isWrapped ? wrapped : tiers.get(name);
-        const variant = prefix === null ? '' : name.slice(prefix.length);
-        assert.strictEqual(cellFor(claudeCell, variant), expected.claude, `providers.md "Agent tier matrix" row "${stem}": ${name}'s Claude cell must be the model/effort canon renders for it (AC-8/AC-9 moved 11 agents across three mirrors)`);
-        assert.strictEqual(cellFor(codexCell, variant), expected.codex, `providers.md "Agent tier matrix" row "${stem}": ${name}'s Codex cell must be the model/effort canon renders for it`);
-        if (!isWrapped) claimed.push(name);
-      }
-    }
-  }
-  assert.deepStrictEqual(claimed.sort(), [...tiers.keys()].sort(), 'each agent canon renders, variants included, appears in exactly one matrix row - the diff shows the name a row is missing or repeats');
+  const suffixes = [...new Set([...tiers.keys()].filter((name) => !baseNames.includes(name)).map((name) => name.split('-').pop()))].sort();
+  assert.deepStrictEqual(suffixes, ['critical', 'mechanical'], 'sprint-023 AC-7: tier standard has no variant and dispatches the base agent - the fact the deleted matrix repeated on its variant rows - so no canon agent may declare a standard variant, which sync.js would otherwise render');
+  const standardNote = sectionOf('.asd/rules/providers.md', 'Task-class variants and routing').split(/(?<=\.)\s/).find((sentence) => spans(sentence).includes('standard') && /\bvariant/.test(sentence) && /\bno\b/.test(sentence) && /\bbase\b/.test(sentence));
+  assert.ok(standardNote, 'sprint-023 AC-7: providers.md "Task-class variants and routing" is now the only prose home of "tier standard has no variant, it dispatches the base agent" - the matrix that repeated it is gone');
 
   const agentsSection = sectionOf('README.md', 'Agents');
   const readmeRows = [...agentsSection.matchAll(/^\| `(asd-[a-z-]+)` \| ([^|]+) \| ([^|]+) \|/gm)].map(([, name, claude, codex]) => [name, claude.trim(), codex.trim()]);
@@ -7317,6 +7267,320 @@ test('sprint-022 AC-10: providers.md "Model family resolution" table is release-
   }
   const named = [...canonText('README.md').matchAll(new RegExp(`gpt-\\d+(?:\\.\\d+)?-(?:${Object.keys(codex).join('|')})\\b`, 'g'))].map(([id]) => id);
   assert.deepStrictEqual([...new Set(named)].sort(), Object.values(codex).sort(), 'README names the concrete Codex ids the manifest maps the families to (AGENTS.md: a change to the family map updates README in the same change) - none retired, none missing');
+});
+
+// ===========================================================================
+// 29. Sprint 023: wave limits by files and bytes, the agent-memory content
+// check, upstream retro rows, the Step 0 fast-forward, the scope manifest by
+// path, test-only Tasks, the bounded fail-first proof, no tier matrix and
+// per-delta routing.
+// ===========================================================================
+
+test('sprint-023 leftover-term check: no canon, README, AGENTS.md, template, runtime, hook, workflow definition or agent-memory line keeps a sentence or term the sprint removed - the tier matrix heading, the inline scope manifest, the clamped priorTier and its re-entry wording, the line-only wave division and its waves.json shape, the dropped asd intake rows, the unconditional branch fast-forward, the unqualified "impl writes no tests" and the change-surface cap - its constant, subcommand, plan line and override gate', () => {
+  const removed = [
+    'Agent tier matrix',
+    'Re-entry passes its prior `tier` as `priorTier`',
+    '`priorTier` prevents a task from being downgraded',
+    'reuse its tier on re-entry',
+    'supplying its tier as `priorTier` on re-entry',
+    'correction attempts and prior tier',
+    'critical and never later downgraded',
+    'tier never lowers',
+    'fresh `asd-tester`, its payload opening with the header',
+    'wave division, never resume, is the lever',
+    'one per `.asd/runtime.js` `WAVE_THRESHOLD_LINES` begun',
+    'one per WAVE_THRESHOLD_LINES begun, at least one',
+    '`lines`, `threshold`',
+    'the measured `lines` and each wave',
+    '`covered by:` rows are dropped, and so are `asd` rows unless `--self-hosting`',
+    'and `asd` rows outside a self-hosting project',
+    'never applied) when it is not',
+    'retro intake candidates ("Retro intake" above) |',
+    'sole SSoT, not restated here): run',
+    'verify each candidate at `HEAD`; the unresolved rest',
+    'include/defer/reject; creates the sprint branch',
+    'Before creating: `git fetch origin`, fast-forward local',
+    'fast-forward the base branch, require a clean tree',
+    '`/asd-sprint` reads `state.json`, detects',
+    'SCOPE_MANIFEST_JSON',
+    'scope manifest (above, JSON',
+    '<rendered prompt + scope manifest>',
+    'prompt+scope manifest',
+    'stdin-piped prompt+diff',
+    'scope manifest provided via stdin above',
+    'The scope manifest is rendered into the prompt',
+    '`external-review/t_review-scope.json`, rendered into the prompt',
+    'rendering of the runtime-emitted scope manifest',
+    'inject scope manifest',
+    'prompt goes in via heredoc/here-string stdin',
+    'heredoc/here-string stdin only',
+    'impl writes **no tests** — its gate is build + lint',
+    'All test work belongs to `impl-test`.',
+    'Production source code in repo (no tests — see `impl-test`)',
+    'no test-authoring Tasks or subtasks —',
+    'no tests written here; run build/lint',
+    '`impl` writes production code only — its gate is build + lint',
+    'Written and run in `impl-test`, never in `impl`. Selection',
+    'one full-suite check. Each impl-test entry',
+    'PRD ACs, existing tests |',
+    '| impl | Dev | `plan.md`',
+    'index lines its devs returned',
+    'delegate to `asd-dev` (`asd-tester` only for review findings',
+    'dispatches `asd-dev-<tier>` for `mechanical`/`critical`, or the base `asd-dev` for `tier: standard`',
+    'SURFACE_CAP_FILES',
+    'surface-check',
+    'surfaceCheck',
+    'Change surface: <n> files',
+    'Change surface: {{n}} files',
+    'Change surface declaration',
+    'change-surface cap override',
+    'change-surface-cap-override',
+  ];
+  const memoryFiles = fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT), { recursive: true }).map((entry) => `${AGENT_MEMORY_ROOT}/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
+  assert.ok(memoryFiles.some((rel) => rel.startsWith(`${AGENT_MEMORY_ROOT}/asd-tester-critical/`)), 'sanity: the sweep must reach every memory directory (artifact-layout.md "Agent memory" leftover-term check)');
+  const swept = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/templates/t_config.yaml', '.asd/hooks/session-start.js', '.asd/runtime.js', '.asd/workflows/standard.json', '.asd/workflows/lite.json', ...memoryFiles];
+  const hits = swept.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => removed.filter((phrase) => line.includes(phrase)).map((phrase) => `${rel}:${index + 1} ${phrase}`)));
+  assert.deepStrictEqual(hits, [], 'each phrase is from a line this sprint deleted (git diff 86e7706 HEAD), taken exactly - one surviving restates the tier table, the manifest in the prompt, the re-entry tier clamp, the change-surface cap or a removed shape as current. A later sprint that re-adopts a phrase deletes its entry here. CHANGELOG.md and sprint folders are history and stay out of the sweep');
+});
+
+test('sprint-023 AC-1: review-waves divides a scope that is small in changed lines but large in files or in diff bytes - the file count and the patch bytes drive the wave count beside the lines', () => {
+  const { repo, env, git } = sandboxGitRepo();
+  git('commit', '-q', '--allow-empty', '-m', 'base');
+  const base = git('rev-parse', 'HEAD').trim();
+  const bulk = ['bulk/a.txt', 'bulk/b.txt'];
+  bulk.forEach((file) => writeFile(repo, file, `${'x'.repeat(Math.ceil(runtime.WAVE_THRESHOLD_BYTES / 2))}\n`));
+  const many = Array.from({ length: runtime.WAVE_THRESHOLD_FILES + 1 }, (_, index) => `many/f${index}.txt`);
+  many.forEach((file) => writeFile(repo, file, 'one\n'));
+  git('add', '-A');
+  git('commit', '-q', '-m', 'head');
+  const head = git('rev-parse', 'HEAD').trim();
+  const work = mkTempDir();
+  const measure = (scope) => {
+    const list = path.join(work, 'scope.txt');
+    fs.writeFileSync(list, `${scope.join('\n')}\n`, 'utf8');
+    return runtimeCliResult(['review-waves', '--files', list, '--base', base, '--head', head], { cwd: repo, env });
+  };
+
+  const byBytes = measure(bulk);
+  assert.deepStrictEqual([byBytes.status, byBytes.result.lines, byBytes.result.files, byBytes.result.waves], [0, bulk.length, bulk.length, 2], `${bulk.length} files of one huge line each are ${bulk.length} changed lines and ${bulk.length} files - far under the line and file thresholds - yet their patch is over ${runtime.WAVE_THRESHOLD_BYTES} bytes, so the byte axis alone must divide them: ${JSON.stringify(byBytes)}`);
+  assert.ok(byBytes.result.bytes > runtime.WAVE_THRESHOLD_BYTES, `the reported bytes must be the patch size that forced the division, got ${byBytes.result.bytes}`);
+  const byFiles = measure(many);
+  assert.deepStrictEqual([byFiles.status, byFiles.result.lines, byFiles.result.files, byFiles.result.waves], [0, many.length, many.length, 2], `${many.length} one-line files are one file over WAVE_THRESHOLD_FILES with ${many.length} changed lines and a tiny patch, so the file axis alone must divide them: ${JSON.stringify(byFiles)}`);
+  assert.ok(byFiles.result.bytes < runtime.WAVE_THRESHOLD_BYTES, 'sanity: the many-file scope must be under the byte threshold, or it is not the file axis that divided it');
+});
+
+test('sprint-023 AC-4: memory-check rejects a staged agent-memory write that records a sprint id, Task, wave, iteration or review verdict, passes placeholders and bare verdict words, and reads only the added lines of staged files under .claude/agent-memory - exit 1 with the hits, 0 clean, 2 on bad input', () => {
+  const memory = '.claude/agent-memory/asd-x';
+  const fresh = () => {
+    const sandbox = sandboxGitRepo();
+    writeFile(sandbox.repo, `${memory}/legacy.md`, 'recorded in sprint 019\nalso wave 7 noted\nkept line\n');
+    writeFile(sandbox.repo, 'docs/notes.md', 'plain\n');
+    sandbox.git('add', '-A');
+    sandbox.git('commit', '-q', '-m', 'base');
+    const check = (args = [], cwd = sandbox.repo) => {
+      try {
+        return { status: 0, hits: JSON.parse(runtimeCli(['memory-check', ...args], { cwd, env: sandbox.env, stdio: 'pipe' })) };
+      } catch (error) {
+        return { status: error.status, hits: error.stdout ? JSON.parse(error.stdout) : null };
+      }
+    };
+    return { ...sandbox, check };
+  };
+  const { repo, git, check } = fresh();
+  writeFile(repo, `${memory}/method.md`, 'placeholders: iter-NN, Task <N>, wave <K>, sprint <NNN-slug>\nbare verdict words: APPROVE, CONCERNS, FAIL\nformat: [REVIEW-<phase>-<reviewer>]: APPROVE|CONCERNS|FAIL\n');
+  git('add', '--', `${memory}/method.md`);
+  assert.deepStrictEqual(check(), { status: 0, hits: [] }, 'placeholders carry no digits and a bare verdict word is no recorded verdict - both must pass, or the check rejects the method notes the rule asks for');
+  fs.appendFileSync(path.join(repo, memory, 'method.md'), 'unstaged: Task 9\n');
+  assert.deepStrictEqual(check(), { status: 0, hits: [] }, 'only the staged diff is read - the orchestrator commits what it staged, and an unstaged edit is no part of that commit');
+  git('checkout', '--', `${memory}/method.md`);
+  writeFile(repo, `${memory}/legacy.md`, 'also wave 7 noted\nkept line\nmethod only\n');
+  writeFile(repo, 'docs/notes.md', 'plain\nrecorded in sprint 023\n');
+  git('add', '--', `${memory}/legacy.md`, 'docs/notes.md');
+  assert.deepStrictEqual(check(), { status: 0, hits: [] }, 'a violation on a line this commit does not add - a legacy line it keeps, one it deletes - is not the write being checked, and a violation outside the memory tree is not memory');
+
+  const violations = [
+    ['sprint 023', 'seen in sprint 023 once'], ['023-retro-glings-008-remediation', 'the 023-retro-glings-008-remediation work'], ['Task 3', 'fixed under Task 3'],
+    ['wave 2', 'during wave 2'], ['iter-02', 'at iter-02'], ['iteration 4', 'iteration 4 returned'], ['[REVIEW-impl-testing]: APPROVE', '[REVIEW-impl-testing]: APPROVE'],
+  ];
+  writeFile(repo, `${memory}/bad.md`, `neutral\n${violations.map(([, line]) => line).join('\n')}\n`);
+  git('add', '--', `${memory}/bad.md`);
+  const expected = violations.map(([token], index) => ({ path: `${memory}/bad.md`, line: index + 2, token }));
+  assert.deepStrictEqual(check(), { status: 1, hits: expected }, 'each concrete ordinal form is a hit at its line of the added file - the sprint id in both spellings, Task, wave, iteration in both spellings, a recorded verdict token - and the exit is 1 with the JSON still printed');
+  assert.deepStrictEqual(check([], path.join(repo, 'docs')), { status: 1, hits: expected }, 'the memory tree is addressed from the repo top, so a check run from any directory scans the same files - a relative pathspec would pass a violating write from a subdirectory');
+  assert.deepStrictEqual(check(['--files', 'x']), { status: 2, hits: null }, 'bad input exits 2 with no hit list, never 0');
+
+  const named = fresh();
+  writeFile(named.repo, `${memory}/project_023-memory-note.md`, 'method only\n');
+  named.git('add', '--', `${memory}/project_023-memory-note.md`);
+  assert.deepStrictEqual(named.check(), { status: 1, hits: [{ path: `${memory}/project_023-memory-note.md`, line: null, token: '023-memory-note' }] }, 'a newly added file whose name carries a sprint id is a hit with a null line - the underscore after the prefix is a word break, or project_<id>-topic.md slips through');
+});
+
+test('sprint-023 AC-2: asd-sprint runs Step 0 ahead of Step 1 and keeps Step 2B, the step cites git-strategy.md "Branch" for the mechanics instead of restating them, and the commands "Branch" gives bring a base branch up to origin - the ref alone when it is not checked out, the worktree when it is - and refuse a diverged one', () => {
+  const skill = canonText('.asd/skills/asd-sprint/SKILL.md');
+  const headings = [...skill.matchAll(/^### (Step [0-9A-Z]+)/gm)].map((match) => match[1]);
+  assert.deepStrictEqual(headings.slice(0, 2), ['Step 0', 'Step 1'], 'Step 0 must be the first step, ahead of the detection of the active sprint - a sprint merged on origin after the last pull is invisible to a detection that runs on the stale base');
+  assert.ok(headings.includes('Step 2B'), 'adding Step 0 must keep the resume flow Step 2B, which other tests and workflows locate by that heading');
+  const stepZero = skill.split('### Step 0')[1].split('\n### ')[0];
+  assert.ok(stepZero.includes('`git-strategy.md` "Branch"') && !/--ff-only|git fetch/.test(stepZero), 'Step 0 must point at git-strategy.md "Branch", the one home of the fast-forward mechanics - restated here, the two homes drift');
+
+  const forward = sectionOf('.asd/rules/git-strategy.md', 'Branch').split('\n').find((line) => line.startsWith('**Fast-forward**')) || '';
+  for (const [site, text] of [['Step 0', stepZero], ['git-strategy.md "Branch"', forward]]) {
+    assert.ok(/\bhalts?\b/.test(text) && /unreachable/i.test(text) && /\bwarns?\b/.test(text) && /local state/.test(text), `${site} must state both failure routes - a refusal halts and asks the user, an unreachable remote warns and continues on local state - or an offline Codex sandbox leaves the orchestrator no rule for a fetch that cannot run`);
+  }
+  const commands = spans(forward).filter((span) => span.startsWith('git '));
+  const refSpec = commands.find((span) => span.includes(':<base_branch>'));
+  const fetchAll = commands.find((span) => span === 'git fetch origin');
+  const merge = commands.find((span) => span.startsWith('git merge'));
+  assert.ok(refSpec && fetchAll && merge, `"Branch" must give the three commands the fast-forward runs - the refspec fetch, the plain fetch and the merge - as code spans (found ${JSON.stringify(commands)})`);
+  const { repo: origin, env, git: gitOrigin } = sandboxGitRepo();
+  gitOrigin('symbolic-ref', 'HEAD', 'refs/heads/main');
+  const commitOrigin = (file) => {
+    writeFile(origin, file, `${file}\n`);
+    gitOrigin('add', '-A');
+    gitOrigin('commit', '-q', '-m', file);
+    return gitOrigin('rev-parse', 'HEAD').trim();
+  };
+  commitOrigin('first.txt');
+  const clone = mkTempDir();
+  execFileSync('git', ['clone', '-q', origin, clone], { env, stdio: 'pipe' });
+  const inClone = (...args) => execFileSync('git', ['-c', 'user.name=asd-test', '-c', 'user.email=asd-test@example.invalid', '-c', 'commit.gpgsign=false', '-c', 'core.autocrlf=false', ...args], { cwd: clone, env, encoding: 'utf8', stdio: 'pipe' });
+  const run = (command) => inClone(...command.replace(/<base_branch>/g, 'main').split(' ').slice(1));
+
+  inClone('checkout', '-q', '-b', 'sprint/x');
+  writeFile(clone, 'first.txt', 'dirty\n');
+  const second = commitOrigin('second.txt');
+  run(refSpec);
+  assert.strictEqual(inClone('rev-parse', 'main').trim(), second, 'base not checked out: the refspec fetch must bring the local base to origin\'s');
+  assert.ok(inClone('rev-parse', '--abbrev-ref', 'HEAD').trim() === 'sprint/x' && fs.readFileSync(path.join(clone, 'first.txt'), 'utf8') === 'dirty\n', 'base not checked out: the refspec fetch moves the ref alone - the sprint branch stays checked out and its dirty tree untouched');
+
+  inClone('checkout', '-q', '--', 'first.txt');
+  inClone('checkout', '-q', 'main');
+  const third = commitOrigin('third.txt');
+  assert.throws(() => run(refSpec), Error, 'base checked out: git refuses the refspec form into the checked-out branch, which is why "Branch" gives a second command for that case');
+  assert.strictEqual(inClone('rev-parse', 'main').trim(), second, 'a refused fetch moves nothing');
+  run(fetchAll);
+  run(merge);
+  assert.ok(inClone('rev-parse', 'HEAD').trim() === third && fs.existsSync(path.join(clone, 'third.txt')), 'base checked out: the fetch and the --ff-only merge bring the worktree to origin\'s');
+
+  writeFile(clone, 'local.txt', 'local\n');
+  inClone('add', '-A');
+  inClone('commit', '-q', '-m', 'local');
+  const local = inClone('rev-parse', 'HEAD').trim();
+  commitOrigin('fourth.txt');
+  run(fetchAll);
+  assert.throws(() => run(merge), Error, 'base checked out and diverged: the --ff-only merge must refuse, so the orchestrator halts and asks instead of merging origin into the base');
+  assert.strictEqual(inClone('rev-parse', 'HEAD').trim(), local, 'a refused merge leaves the base where it was');
+  inClone('checkout', '-q', 'sprint/x');
+  assert.throws(() => run(refSpec), Error, 'base not checked out and diverged: the refspec fetch must refuse a non-fast-forward');
+  assert.strictEqual(inClone('rev-parse', 'main').trim(), local, 'a refused fetch leaves the base where it was');
+});
+
+test('sprint-023 AC-3: both external-review prompt templates hand the wrapped CLI the scope manifest by path through one slot, the same in both and outside any code fence', () => {
+  const slotsOf = (rel) => [...canonText(rel).matchAll(/\{\{(SCOPE_MANIFEST[A-Z_]*)\}\}/g)].map((match) => match[1]);
+  const impl = '.asd/templates/external-review/t_prompt-external-impl.md';
+  const design = '.asd/templates/external-review/t_prompt-external-design.md';
+  assert.deepStrictEqual(slotsOf(impl), ['SCOPE_MANIFEST_PATH'], `${impl} must carry exactly one scope-manifest slot, the path - an inline-manifest slot puts the whole JSON into the heredoc the Bash length cliff rejects`);
+  assert.deepStrictEqual(slotsOf(design), slotsOf(impl), `${design} must name the same slot as the impl prompt - the one agent procedure fills both, and a slot it does not know reaches the wrapped CLI as literal braces`);
+  for (const rel of [impl, design]) {
+    const text = canonText(rel);
+    const fencesBefore = text.slice(0, text.indexOf('{{SCOPE_MANIFEST')).match(/^```/gm) || [];
+    assert.strictEqual(fencesBefore.length % 2, 0, `${rel}: the manifest slot must sit outside any code fence - a path in a fenced JSON block is the inline-manifest layout the sprint replaced`);
+  }
+});
+
+test('sprint-023 AC-5: the Test-only declaration is defined once in sprint-lifecycle.md "Plan file format", t_plan.md mirrors its shape in a conditional example Task, impl routes such a Task to asd-tester, impl-test recognises its commits by the ASD-Task trailer, and every canon site that says impl writes no tests names the carve-out', () => {
+  const declaration = sectionOf('.asd/rules/sprint-lifecycle.md', 'Plan file format').split('\n').find((line) => line.startsWith('**Test-only declaration**')) || '';
+  const shape = /`(Test-only: <[^`]+>)`/.exec(declaration);
+  assert.ok(shape, 'sprint-lifecycle.md "Plan file format" must define the Test-only declaration as a code-span literal `Test-only: <...>`');
+  const label = shape[1].split('<')[0].trim();
+  const homes = canonMarkdownFiles().filter((rel) => !rel.startsWith('.asd/templates/') && canonText(rel).includes(shape[1]));
+  assert.deepStrictEqual(homes, ['.asd/rules/sprint-lifecycle.md'], 'the declaration shape is defined once - every other site cites "Plan file format" instead of restating it, so a changed shape is one edit');
+
+  const template = canonText('.asd/templates/t_plan.md');
+  assert.ok(template.includes(shape[1]), 't_plan.md must mirror the declaration shape in its parser-critical format rules, or plan authors never see the line');
+  const linePattern = new RegExp(`^${label}`, 'm');
+  const blocks = template.split(/^### Task /m).slice(1);
+  const declaring = blocks.filter((block) => linePattern.test(block));
+  assert.ok(declaring.length > 0 && blocks.some((block) => !linePattern.test(block)), 't_plan.md must ship an example Task with the line and one without - the line is conditional, and a copy on every block teaches it as mandatory');
+  for (const block of declaring) {
+    const reachability = block.search(/^Reachability:/m);
+    assert.ok(new RegExp(`^(?:Material risk:[^\\n]*\\n)+${label}`, 'm').test(block) && !new RegExp(`^- \\[.\\] ${label}`, 'm').test(block) && (reachability === -1 || block.search(linePattern) < reachability), `the example's ${label} line must sit directly under the Material risk line(s), ahead of any Reachability line, and never be a checkbox - the placement the rule defines`);
+  }
+
+  const planFormat = sectionOf('.asd/rules/sprint-lifecycle.md', 'Plan file format');
+  const declarationOf = (name) => planFormat.split('\n').find((line) => line.startsWith(`**${name} declaration**`)) || '';
+  const placement = (line) => spans(line.slice(0, line.indexOf('):'))).filter((span) => !span.startsWith('### '));
+  const connector = (line) => {
+    const head = line.slice(0, line.indexOf('`Reachability`'));
+    return head.slice(head.lastIndexOf('`') + 1);
+  };
+  const lineName = label.replace(/:$/, '');
+  const order = ['Material risk', lineName, 'Reachability'];
+  for (const [site, line] of [['sprint-lifecycle.md "Plan file format"', declaration], ['t_plan.md\'s format rule', template.split('\n').find((candidate) => candidate.includes(shape[1])) || '']]) {
+    assert.ok(line.includes('`Reachability`'), `${site} must name the Reachability line the ${lineName} line sits ahead of - both are plain-text lines under the Material risk lines, so a rule that states no order between them lets a plan put either first`);
+    assert.ok(!/\b(?:under|below|after|behind|beneath|following)\b/.test(connector(line)), `${site} must put the ${lineName} line ahead of the Reachability line, not behind it - the reverse order contradicts the Reachability and Settings change declarations, which both place their line under ${lineName}`);
+  }
+  assert.ok(placement(declarationOf('Reachability')).includes(lineName), `the Reachability declaration must name the ${lineName} line it sits under, or the order between the two is stated at one site only`);
+  assert.deepStrictEqual(placement(declarationOf('Settings change')).filter((span) => order.includes(span)), order, `the Settings change declaration must list the lines it sits under in the order the plan carries them (${order.join(' < ')}) - a list in another order contradicts the ${lineName} and Reachability declarations`);
+  for (const name of ['Reachability', 'Settings change']) {
+    const mirror = template.split('\n').find((candidate) => candidate.startsWith('- ') && candidate.includes(`\`${name}:`)) || '';
+    assert.ok(mirror, `t_plan.md's parser-critical format rules must carry a rule for the ${name} line - the template is the text a plan author reads`);
+    assert.deepStrictEqual(spans(mirror.split(';')[0]).filter((span) => !span.startsWith(`${name}:`)), placement(declarationOf(name)), `t_plan.md's ${name} rule must place the line under the same lines, in the same order, as sprint-lifecycle.md "Plan file format" - "same placement" chains from the rule above it and can order the line ahead of one the home puts before it; the asserts above read only the ${lineName} rule`);
+  }
+
+  const flow = sectionOf('.asd/workflows/asd-phase-impl.md', 'Workflow');
+  assert.ok(stepOf(flow, '5a').includes(`\`${label}\``) && stepOf(flow, '5a').includes('`asd-tester`'), `asd-phase-impl.md step 5a must name the ${label} line and the asd-tester it routes such a Task to - a dev dispatched for a Task whose paths are tests is the case the sprint closes`);
+  const delegate = stepOf(flow, '6').split('\n').find((line) => /\bdelegate\b/.test(line) && line.includes('`asd-dev`')) || '';
+  assert.ok(/test-only/i.test(delegate) && delegate.includes('`asd-tester`'), 'asd-phase-impl.md step 6 must dispatch a Test-only Task to asd-tester on its delegation line');
+  const trailer = /`(ASD-Task): <id>`/.exec(sectionOf('.asd/rules/git-strategy.md', 'Commits'));
+  assert.ok(trailer, 'sanity: git-strategy.md "Commits" must define the ASD-Task trailer, the key impl-test reads a Test-only Task\'s commits by');
+  assert.ok(declaration.includes(`${trailer[1]}: Task N`) && stepOf(sectionOf('.asd/workflows/asd-phase-impl-test.md', 'Workflow'), '2').includes(`${trailer[1]}: Task N`), `the declaration and impl-test step 2 must both name the ${trailer[1]}: Task N trailer a Test-only Task's commits carry - a trailer the tester does not write is one entry 1 cannot recognise`);
+  const contract = sectionOf('.asd/agents/asd-tester.md', 'Operating contract').split('\n').find((line) => line.includes(`\`${label}\``)) || '';
+  assert.ok(contract.includes('`plan.md`') && contract.includes('`test-plan.md`') && contract.includes('"Plan file format"'), 'asd-tester.md Operating contract must carry the Test-only Task bullet: it cites the declaration and leaves plan.md and test-plan.md untouched, the files its wave and impl-test own');
+  const stops = (canonText('.asd/agents/asd-tester.md').split('\n').find((line) => line.startsWith('- **Stop conditions**')) || '').split(';');
+  assert.ok((stops.find((clause) => /\bimpl COMPLETED\b/.test(clause)) || '').includes('`impl-test`'), `asd-tester.md Stop conditions: the clause that aborts on a missing impl COMPLETED signal must name the \`impl-test\` dispatch it binds - the tester also runs a ${lineName} Task inside an impl wave, before impl can complete, so an unscoped abort refuses every such dispatch`);
+  const testOnlyStop = stops.find((clause) => clause.includes(lineName)) || '';
+  assert.ok(testOnlyStop.includes('ABORT') && testOnlyStop.includes('"Plan file format"'), `asd-tester.md Stop conditions must give a ${lineName} Task dispatch its own ABORT clause citing the plan rule - scoping the impl-test clause alone leaves that dispatch with no stop condition`);
+
+  const noTests = /production code only|writes? \*\*no tests\*\*|no test-authoring|no tests written|never in `impl`/i;
+  const sites = [...canonMarkdownFiles(), 'README.md'].filter((rel) => rel !== '.asd/agents/asd-dev.md').flatMap((rel) => canonText(rel).split('\n').filter((line) => noTests.test(line)).map((line) => [rel, line]));
+  assert.ok(['.asd/rules/sprint-lifecycle.md', 'README.md'].every((rel) => sites.some(([site]) => site === rel)), 'sanity: the sweep must reach the rule\'s home and README, or every line check below passes over nothing');
+  assert.deepStrictEqual(sites.filter(([, line]) => !/test-only/i.test(line)).map(([rel, line]) => `${rel}: ${line.slice(0, 100)}`), [], 'every canon line that says impl writes no tests or the plan has no test-authoring Tasks must name the Test-only carve-out - a site that does not tells a reader a Test-only Task is forbidden (asd-dev.md is the dev\'s own contract and stays unconditional)');
+});
+
+test('sprint-023 AC-6: code-style.md §17 bounds the fail-first proof of a content-contract test to one mutation per relation plus a reword control and has the run count recorded in the Added tests cell, which t_test-plan.md gives a count for', () => {
+  const added = sectionOf('.asd/templates/t_test-plan.md', 'Added tests');
+  const column = (/^\| Test \| ([^|]+) \|$/m.exec(added) || [])[1];
+  assert.ok(column, 't_test-plan.md "Added tests" must keep its two-column table with the proof column header');
+  const proof = added.split('\n').find((line) => line.startsWith('| {{file:name}}')) || '';
+  const forms = proof.split('\\|').slice(1);
+  assert.ok(forms.length > 0 && forms.every((form) => form.includes('runs: <n>')), `the ${column.trim()} cell must give every form of proof a "runs: <n>" count - a proof without it cannot be checked against the bound`);
+  const bullet = sectionOf('.asd/rules/code-style.md', '17. Tests').split('\n').find((line) => line.startsWith('- A content-contract test pins')) || '';
+  assert.ok(bullet.includes(`\`${column.trim()}\``) && bullet.includes('"Added tests"') && /\bmutation\b/.test(bullet) && /\breword/.test(bullet) && /\bruns?\b/.test(bullet), `code-style.md §17's content-contract bullet must bound the proof (a mutation per relation, a reword control) and name the "Added tests" ${column.trim()} cell that records the run count - unbounded, a proof run is open-ended and unrecorded`);
+});
+
+test('sprint-023 AC-9: providers.md "Task-class variants and routing" gives priorTier only to a re-dispatch of the same task_routing key and routes an impl-test entry, review-fix, test-fix, in-place test-fix or terminal-suite id (each terminal run its own) from the Material risk of the Tasks its delta touches, and each acting workflow, the red-test-defect re-run included, routes through that rule', () => {
+  const sentences = sectionOf('.asd/rules/providers.md', 'Task-class variants and routing').split(/(?<=\.)\s/);
+  assert.ok(sentences.some((sentence) => spans(sentence).includes('priorTier') && spans(sentence).includes('task_routing')), 'the rule must tie priorTier to the tier recorded under the same task_routing key - a re-dispatch of that id - or a later entry inherits the first one\'s tier');
+  const suite = 'impl-review <id> suite';
+  const ids = ['impl-test entry N', 'review-fix <id>', 'test-fix <D-ids>', 'impl-review <id> test-fix', suite];
+  const fresh = sentences.find((sentence) => ids.every((id) => spans(sentence).includes(id))) || '';
+  assert.ok(fresh && spans(fresh).includes('priorTier') && spans(fresh).includes('Material risk') && spans(fresh).includes('standard'), `the rule must name the ids ${ids.join(', ')} as new each time - no priorTier - and route them from the Material risk lines of the Tasks their delta touches, none declared meaning standard; unnamed, a prose-only delta is clamped to critical by the first entry's tier, a test-fix round or the in-place test fix has no risks source, and the in-place one shares a task_routing record with its iteration's dev review-fix round, which then reads the tester's tier as priorTier`);
+  const perRun = sentences.find((sentence) => spans(sentence).includes(suite) && spans(sentence).some((span) => span.startsWith(`${suite} `))) || '';
+  assert.ok(perRun, `the rule must give a later terminal-suite run an id of its own - ${suite} plus a run suffix; without it a re-run after a test-defect fix reuses the first run's task_routing key and a later test-only delta inherits that run's tier as priorTier`);
+  const variantNote = /\(no `-standard` variant exists[^)]*\)/;
+  for (const [rel, step] of [['.asd/workflows/asd-phase-impl-test.md', '1a'], ['.asd/workflows/asd-phase-impl.md', '5a'], ['.asd/workflows/asd-phase-impl-review.md', 8], ['.asd/workflows/asd-phase-impl-review.md', 9]]) {
+    assert.ok(stepOf(sectionOf(rel, 'Workflow'), step).replace(variantNote, '').includes('`providers.md` "Task-class variants and routing"'), `${rel} step ${step} must cite the routing rule for its tier and risks beyond the no-standard-variant note - restating the clamp or citing nothing is how the first entry's tier kept clamping later deltas`);
+  }
+  const redTest = stepOf(sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Workflow'), 9).split('\n').find((line) => line.includes('**Red, test defect**')) || '';
+  assert.ok(redTest.includes('`providers.md` "Task-class variants and routing"'), `.asd/workflows/asd-phase-impl-review.md step 9 must keep a **Red, test defect** bullet that cites the routing rule for the re-run's own id - the step's dispatch sentence cites it for the first run only, and a re-run left to that one is routed under the first run's id and clamped to its tier`);
+});
+
+test('sprint-023 AC-4: artifact-layout.md "Agent memory" states the content rule for each kind of work history memory-check catches, and git-strategy.md "Commit before review" runs the check where the orchestrator commits memory writes and sends a violating one to its owner', () => {
+  const content = sectionOf('.asd/rules/artifact-layout.md', 'Agent memory').split('\n').find((line) => line.startsWith('**Content**')) || '';
+  assert.deepStrictEqual(['sprint', 'Task', 'wave', 'iteration', 'verdict'].filter((kind) => !new RegExp(`\\b${kind}`, 'i').test(content)), [], 'the **Content** rule must name every kind of work history the check scans for - a kind the rule never names is rejected at the commit with no rule to cite');
+  const acting = sectionOf('.asd/rules/git-strategy.md', 'Commit before review').split('\n').find((line) => line.includes('`node .asd/runtime.js memory-check`')) || '';
+  assert.ok(acting && acting.includes('`review-policy.md` "Memory-fix dispatch"') && acting.includes('`artifact-layout.md` "Agent memory"'), 'git-strategy.md "Commit before review" must run memory-check at the orchestrator\'s memory commit, cite the content rule it enforces, and route a violating write to its owner\'s memory-fix dispatch - run nowhere, the rule has no acting site');
 });
 
 // ===========================================================================

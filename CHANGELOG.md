@@ -2,6 +2,30 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v13.6.0
+
+Cheaper, steadier reviews and a few rules that were hand-held before. Wave division now counts files and diff bytes, reviewers get a turn plan and more room, `/asd-sprint` refreshes the base branch before it looks for work, and the change-surface cap is gone. External Review reads the scope manifest by path.
+
+### Added
+- **Test-only plan Tasks** (`sprint-lifecycle.md` "Plan file format"). A plan may carry a `Test-only: <paths>` line under a Task's `Material risk` line; `impl` dispatches that Task to `asd-tester` inside its wave, and `impl-test` treats its commits as existing tests.
+- **Agent-memory content rule and check** (`artifact-layout.md` "Agent memory"). Memory holds method only: no sprint id, Task, wave, iteration or verdict. `node .asd/runtime.js memory-check` scans the staged memory diff at the orchestrator's memory commit and sends a violating write back to its owner.
+- **Upstream proposals at scope.** In a consumer project, scope's retro intake shows the latest retro's framework (`asd`) rows to you as proposals for the ASD repo. They get no disposition and never become acceptance criteria.
+
+### Changed
+- **Review waves** are divided by lines, files and diff bytes (`WAVE_THRESHOLD_LINES`, `WAVE_THRESHOLD_FILES`, `WAVE_THRESHOLD_BYTES` in `.asd/runtime.js`); `waves.json` records `lines`, `files`, `bytes` and `thresholds`. A reviewer payload for a wave above `LARGE_WAVE_FILES` files carries a turn plan inside its `Turn budget:` line.
+- **Agent turn caps.** On Claude, `maxTurns` is 100 for `asd-advisor`, `asd-ba`, `asd-ux`, `asd-external-review` and the five reviewers (30 to 50 before); `asd-architect` (150) and the dev and tester families (1000) are unchanged. Codex renders no `maxTurns`.
+- **`/asd-sprint` Step 0** fetches and fast-forwards the base branch before it detects the active sprint (`git-strategy.md` "Branch"); an unreachable remote warns and continues on local state.
+- **External Review** hands the wrapped CLI the scope manifest by path in the prompt instead of rendering it into the heredoc.
+- **Routing** of each `impl-test` re-entry, review-fix, test-fix and terminal-suite run follows its own delta's risk; the first entry's tier no longer clamps a later prose-only or test-only delta (`providers.md` "Task-class variants and routing").
+- **Fail-first proof** of a static content-contract assert is bounded to one mutation per asserted relation plus one reword control, and `test-plan.md` records `; runs: <n>` (`code-style.md` §17).
+- **`providers.md`** no longer carries an "Agent tier matrix": the agent frontmatter and `release-manifest.json` `model_families` are the home of a tier fact; the README model-tier table stays as the one mirror.
+
+### Removed
+- **The change-surface cap.** `SURFACE_CAP_FILES`, the `surface-check` subcommand, the plan's required `Change surface: <n> files` line, the `change-surface cap override` gate and the impl-review entry check are removed. Review and test scope (the diff a phase covers) is unchanged.
+
+### Migration
+- No migration script. Plans that still carry a `Change surface:` line and state files that carry a `change-surface-cap-override` entry stay valid: nothing reads them. A custom script calling `node .asd/runtime.js surface-check` must drop the call.
+
 ## v13.5.0
 
 The release now publishes the moment the sprint PR merges, and closing a sprint no longer asks you anything. A merged PR completes the sprint; the next sprint's scope archives it mechanically. Claude-side agents move to Sonnet tiers and the Codex `sol` family resolves to `gpt-6.1-sol`.

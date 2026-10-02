@@ -110,7 +110,7 @@ Implementation-level rules for code-writing agents (Dev, Tester). Binding during
 
 ## 17. Tests
 
-Written and run in `impl-test`, never in `impl`. Selection happens **after** the implementation is accepted, against the real change surface.
+Written and run in `impl-test`, never in `impl` — one carve-out: a plan-declared `Test-only` Task is dispatched to `asd-tester` (shape: `sprint-lifecycle.md` "Plan file format"). Selection happens **after** the implementation is accepted, against the real change surface.
 
 - Risk-based and change-scoped: pick the cheapest reliable check per material risk — static/architecture check → focused unit or property test for logic → component or contract test at boundaries → only essential e2e journeys.
 - Every acceptance criterion is covered by a check at some level; the level is chosen by risk, not by rule.
@@ -123,7 +123,7 @@ Written and run in `impl-test`, never in `impl`. Selection happens **after** the
 - Isolated: no real external APIs, databases, or file I/O; use dependency injection.
 - No hardcoded test data: build fixtures from named constants or factories (exception: boundary-value tests where the literal is the point).
 - A test or rule that names the members of a set derives that set from its source wherever a source exists, rather than enumerating members by hand. A hardcoded enumeration drifts silently as the source changes.
-- A content-contract test pins a token that cannot be reworded without changing the contract — a heading, a command, a field name, a parsed literal — never the surrounding prose.
+- A content-contract test pins a token that cannot be reworded without changing the contract — a heading, a command, a field name, a parsed literal — never the surrounding prose. Its fail-first proof is bounded per added test: one mutation per asserted relation plus one reword control (the same relation reworded must stay green); the `test-plan.md` "Added tests" row's `Regression proof` cell records the run count.
 - Test files named `<system>_<feature>_test.<ext>`; test functions `test_<scenario>_<expected>`.
 - A test mutating global/static state saves and restores it in setup/teardown.
 - Structure each test as Arrange — Act — Assert.

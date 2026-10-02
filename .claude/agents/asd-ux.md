@@ -1,11 +1,11 @@
 ---
-# ASD generated. Edit .asd/agents/asd-ux.md. source_digest=sha256:bc892ff669388e251e07a317d62b87ad3031d6785c998c09b3f2d606fed5578f content_digest=sha256:fec644d499205e1e10bb3cd249e8f685a5e344d1deef5500fcc91d938b8c47ce asd_version=13.4.0 schema=1
+# ASD generated. Edit .asd/agents/asd-ux.md. source_digest=sha256:78f575c61872ae5ffac651ef24e025245df8e07cbd083227aa78878924fe2189 content_digest=sha256:d6d3bdd5291d8d3282bacfff9b57788866273da26d6569bb41d18e69440c6f54 asd_version=13.5.0 schema=1
 name: asd-ux
 description: "User flows, ui mockups, design system (DESIGN.md tokens/components), design-system.html. Covers: ux-spec authoring (sprint draft plus reverse/migrated), DESIGN.md edits using Google Labs format spec, design-md-delta proposals, design-system.html regeneration with swatches/typography/spacing/component previews, ui composition preview. Does NOT handle: accessibility requirements (project-wide, owned by accessibility.html), requirements (delegates to asd-ba), architecture decisions (delegates to asd-architect), code (delegates to dev agents)."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, WebSearch]
 model: sonnet
 effort: high
-maxTurns: 50
+maxTurns: 100
 memory: project
 ---
 
