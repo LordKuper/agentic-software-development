@@ -179,3 +179,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: [test-plan.md](test-plan.md)
 
 - 2026-10-02 — design-promote skipped: frozen prd/ux_spec/adr/c4 all false (lite empty scope)
+
+## 2026-10-02 — retro: retrospective.html written
+
+- **Decision**: `retrospective.html` written; 4 entries analysed (F-1…F-4), 2 framework actions open and 2 covered by existing rules, 3 systemic proposals (per-delta risk for review-fix re-entries, a tighter fail-first mutation bound, amendment floor rebase limited to amended code); non-empty-log branch. Nothing applied or promoted.
+- **Rationale**: `sprint-lifecycle.md` "Retro phase".
+- **Affected docs**: [retrospective.html](retrospective.html), [friction-log.md](friction-log.md)
