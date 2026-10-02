@@ -169,3 +169,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-02 — combined return rejected in wave-2/iter-02 (no findings table; persist-review exit 2), re-dispatched fresh
 
 - 2026-10-02 — impl-review wave-2/iter-02: combined APPROVE, external APPROVE (each needed one re-dispatch for a missing findings table); iteration-1 findings verified resolved; wave 2 roster met, last wave → terminal full-suite gate (step 9)
+
+- 2026-10-01 — route impl-review wave-2/iter-02 suite: critical, dispatch HEAD 229f2f9
