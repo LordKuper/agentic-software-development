@@ -177,3 +177,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Both review waves met their roster (wave 1: combined APPROVE and external APPROVE at iter-03 after three iterations; wave 2: both APPROVE at iter-02) and the terminal full suite ran green (`node tests/run.js` exit 0, 272/272 at 8e11b60; build and lint clean). Green handoff recorded adaptively; next phase design-promote (lite, all documents disabled → no-op).
 - **Rationale**: `sprint-lifecycle.md` "Review iteration counters" and "Impacted test set": every wave's reviewers APPROVE/latched in order and the terminal full suite green.
 - **Affected docs**: [test-plan.md](test-plan.md)
+
+- 2026-10-02 — design-promote skipped: frozen prd/ux_spec/adr/c4 all false (lite empty scope)
