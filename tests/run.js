@@ -7559,16 +7559,21 @@ test('sprint-023 AC-6: code-style.md §17 bounds the fail-first proof of a conte
   assert.ok(bullet.includes(`\`${column.trim()}\``) && bullet.includes('"Added tests"') && /\bmutation\b/.test(bullet) && /\breword/.test(bullet) && /\bruns?\b/.test(bullet), `code-style.md §17's content-contract bullet must bound the proof (a mutation per relation, a reword control) and name the "Added tests" ${column.trim()} cell that records the run count - unbounded, a proof run is open-ended and unrecorded`);
 });
 
-test('sprint-023 AC-9: providers.md "Task-class variants and routing" gives priorTier only to a re-dispatch of the same task_routing key and routes an impl-test entry, review-fix or terminal-suite id from the Material risk of the Tasks its delta touches, and each acting workflow routes through that rule', () => {
+test('sprint-023 AC-9: providers.md "Task-class variants and routing" gives priorTier only to a re-dispatch of the same task_routing key and routes an impl-test entry, review-fix, test-fix, in-place test-fix or terminal-suite id (each terminal run its own) from the Material risk of the Tasks its delta touches, and each acting workflow, the red-test-defect re-run included, routes through that rule', () => {
   const sentences = sectionOf('.asd/rules/providers.md', 'Task-class variants and routing').split(/(?<=\.)\s/);
   assert.ok(sentences.some((sentence) => spans(sentence).includes('priorTier') && spans(sentence).includes('task_routing')), 'the rule must tie priorTier to the tier recorded under the same task_routing key - a re-dispatch of that id - or a later entry inherits the first one\'s tier');
-  const ids = ['impl-test entry N', 'review-fix <id>', 'impl-review <id> suite'];
+  const suite = 'impl-review <id> suite';
+  const ids = ['impl-test entry N', 'review-fix <id>', 'test-fix <D-ids>', 'impl-review <id> test-fix', suite];
   const fresh = sentences.find((sentence) => ids.every((id) => spans(sentence).includes(id))) || '';
-  assert.ok(fresh && spans(fresh).includes('priorTier') && spans(fresh).includes('Material risk') && spans(fresh).includes('standard'), `the rule must name the ids ${ids.join(', ')} as new each time - no priorTier - and route them from the Material risk lines of the Tasks their delta touches, none declared meaning standard; unnamed, a prose-only delta is clamped to critical by the first entry's tier`);
+  assert.ok(fresh && spans(fresh).includes('priorTier') && spans(fresh).includes('Material risk') && spans(fresh).includes('standard'), `the rule must name the ids ${ids.join(', ')} as new each time - no priorTier - and route them from the Material risk lines of the Tasks their delta touches, none declared meaning standard; unnamed, a prose-only delta is clamped to critical by the first entry's tier, a test-fix round or the in-place test fix has no risks source, and the in-place one shares a task_routing record with its iteration's dev review-fix round, which then reads the tester's tier as priorTier`);
+  const perRun = sentences.find((sentence) => spans(sentence).includes(suite) && spans(sentence).some((span) => span.startsWith(`${suite} `))) || '';
+  assert.ok(perRun, `the rule must give a later terminal-suite run an id of its own - ${suite} plus a run suffix; without it a re-run after a test-defect fix reuses the first run's task_routing key and a later test-only delta inherits that run's tier as priorTier`);
   const variantNote = /\(no `-standard` variant exists[^)]*\)/;
   for (const [rel, step] of [['.asd/workflows/asd-phase-impl-test.md', '1a'], ['.asd/workflows/asd-phase-impl.md', '5a'], ['.asd/workflows/asd-phase-impl-review.md', 8], ['.asd/workflows/asd-phase-impl-review.md', 9]]) {
     assert.ok(stepOf(sectionOf(rel, 'Workflow'), step).replace(variantNote, '').includes('`providers.md` "Task-class variants and routing"'), `${rel} step ${step} must cite the routing rule for its tier and risks beyond the no-standard-variant note - restating the clamp or citing nothing is how the first entry's tier kept clamping later deltas`);
   }
+  const redTest = stepOf(sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Workflow'), 9).split('\n').find((line) => line.includes('**Red, test defect**')) || '';
+  assert.ok(redTest.includes('`providers.md` "Task-class variants and routing"'), `.asd/workflows/asd-phase-impl-review.md step 9 must keep a **Red, test defect** bullet that cites the routing rule for the re-run's own id - the step's dispatch sentence cites it for the first run only, and a re-run left to that one is routed under the first run's id and clamped to its tier`);
 });
 
 test('sprint-023 AC-4: artifact-layout.md "Agent memory" states the content rule for each kind of work history memory-check catches, and git-strategy.md "Commit before review" runs the check where the orchestrator commits memory writes and sends a violating one to its owner', () => {

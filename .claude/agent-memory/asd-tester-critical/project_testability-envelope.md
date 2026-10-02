@@ -249,7 +249,9 @@ hold the rule. The general form is a repo-wide link checker — new infrastructu
 but that argument only rules out the general form. The specific one is a derivation: scan the target's
 candidate sections for the rule, assert exactly one holds it, then assert the citing line names *that*
 heading. Reword either side freely; it goes red only when the rule moves without its citation. Do not
-record `none` here on "it would be a link checker".
+record `none` here on "it would be a link checker". A citation check scoped to a whole workflow step is already satisfied by a
+sibling bullet that cites the same home: when a fix adds the pointer inside one sub-bullet, locate that bullet by its bold label,
+assert on its own line, and take the pre-fix bullet as the mutation; measure first that the step-wide check stays green on it.
 
 A **"not restated here" declaration** is checkable as a pair at each site: assert the bullet still
 spells the mechanic out (the restatement is load-bearing at the acting step), AND assert the denial is
