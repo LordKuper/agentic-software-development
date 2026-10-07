@@ -1,7 +1,7 @@
 {
   "sprint_id": "023-retro-glings-008-remediation",
   "branch": "sprint/023-retro-glings-008-remediation",
-  "phase": "pr",
+  "phase": "done",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -109,6 +109,13 @@
       "reason": "user confirmed push and PR open",
       "evidence": "chat confirmation 2026-10-02",
       "artifact_revision": "HEAD aaae599"
+    },
+    {
+      "gate": "sprint-closure",
+      "decision_actor": "orchestrator",
+      "reason": "PR 59 merged; release v13.6.0 published",
+      "evidence": "merge commit c6c780b4da0fce133bdb3ad8a0f81fac80254e55",
+      "artifact_revision": "state.json@closure"
     }
   ],
   "task_routing": {
@@ -302,13 +309,14 @@
     }
   },
   "created_at": "2026-10-01T18:51:33.169Z",
-  "updated_at": "2026-10-02T06:34:53.453Z",
+  "updated_at": "2026-10-07T06:55:34.590Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": {
     "number": 59,
     "url": "https://github.com/LordKuper/agentic-software-development/pull/59",
-    "state": "open"
+    "state": "merged",
+    "merge_commit": "c6c780b4da0fce133bdb3ad8a0f81fac80254e55"
   },
-  "archived_at": null
+  "archived_at": "2026-10-07T06:55:34.590Z"
 }
