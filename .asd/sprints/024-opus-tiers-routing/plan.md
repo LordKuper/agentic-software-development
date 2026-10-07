@@ -135,11 +135,11 @@ Material risk: artifact: mirror doc
 - [x] AC-2..AC-7: confirm every README mention of routing, retro intake, scope amendment, lint and fail-first is accurate, and edit only stale text. List each section checked.
 ### Task 8: checkpoints.md — flagged choice meets the plan decision
 Material risk: artifact: rule wording
-- [ ] AC-8 (D8): add the sentence to `checkpoints.md` "Gate policy" as D8 states; keep the `public contract` hard-gate category and every other sentence verbatim. Verification: `node tests/run.js` (impl-test pins it).
+- [x] AC-8 (D8): add the sentence to `checkpoints.md` "Gate policy" as D8 states; keep the `public contract` hard-gate category and every other sentence verbatim. Verification: `node tests/run.js` (impl-test pins it).
 
 ### Task 9: code-style.md — representative mutation for a changed rule
 Material risk: artifact: rule wording
-- [ ] AC-9 (D9): extend the §17 fail-first bound (L126) as D9 states, keeping its pinned tokens. Verification: `node tests/run.js`.
+- [x] AC-9 (D9): extend the §17 fail-first bound (L126) as D9 states, keeping its pinned tokens. Verification: `node tests/run.js`.
 
 ## Risks (optional)
 - The tier pin test (`tests/run.js` ≈L7194-7256) checks exact word sets in the `providers.md` and README variant sentences. Task 1 and Task 7 wording must be mutually consistent, and impl-test repoints the test.
