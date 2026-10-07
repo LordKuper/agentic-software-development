@@ -13,7 +13,7 @@ responsibility:
 |---|---|---|
 | 1 | 64c1898 | full change surface (`git diff main...HEAD`, sprint/project/generated paths excluded) |
 | 2 | 888bdf3 | delta since entry 1 |
-| 3 |  | delta since entry 2 |
+| 3 | 4f3ce96 | delta since entry 2 |
 
 ## Risk → check decisions
 
