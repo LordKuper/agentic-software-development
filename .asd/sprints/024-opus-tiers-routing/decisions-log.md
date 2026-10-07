@@ -36,3 +36,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 <!-- entries appended below this line -->
 - 2026-10-07 — pr open mode: DoD verified (plan ticked, wave-1 combined+external APPROVE at iter-02, full suite 273/273 at 3d9c1be with no code/test diff since, lint+sync clean, retrospective present, no sprint stubs, no existing PR for the branch); asd_version 13.6.0 → 13.7.0 (feat highest, no breaking marker; max migration 9.0.0 ≤ 13.7.0), CHANGELOG v13.7.0 added
+- 2026-10-07 — pr open mode: PR #60 opened after the user confirmed publication; state.json.pr written and pushed; NEXT await-merge
