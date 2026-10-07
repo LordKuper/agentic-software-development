@@ -35,3 +35,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+- 2026-10-07 — retro re-run after amendment: retrospective.html updated (empty-log branch). P-1 and P-2 are marked `covered by:` the AC-8 (`checkpoints.md` "Gate policy") and AC-9 (`code-style.md` §17) rules, so later intake drops them. No new proposals: the iter-03 findings are covered by `code-style.md` §17 "never the surrounding prose" and ordinary review.
