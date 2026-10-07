@@ -1,0 +1,105 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 0dde9b9..46d3690 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -1,7 +1,7 @@
+ {
+   "$comment": "ASD sync engine release manifest. Field map — schema_version: fail-closed version gate; model_families: canon model alias -> provider model id (mirrors the model-family table in .asd/rules/providers.md); canon_hashes: render-source digests for .asd/agents/*.md and .asd/skills/*/SKILL.md; repo/branch: upstream fetch source for .asd/skills/asd-update/update.js; managed_paths: every .asd/ tree/file update.js tracks (trees walked recursively); upstream_hashes: update.js's per-managed-path sha256 ledger (hex, no prefix) as of THIS release — a consumer clones it as the 'old release' baseline its next update diffs against, so an untouched file is never misclassified as conflict-foreign. Rationale for reusing upstream_hashes as that ledger: update.js header comment.",
+   "schema_version": 1,
+-  "asd_version": "13.6.0",
++  "asd_version": "13.7.0",
+   "repo": "https://github.com/LordKuper/agentic-software-development",
+   "branch": "main",
+   "managed_paths": [
+@@ -67,8 +67,8 @@
+     ".asd/agents/asd-reviewer-testing.md": "a72b299c10315f8e728f8724ac9eac2928a44a61f025934db77d630695afe0ae",
+     ".asd/hooks/session-start.js": "f0ebc50ed2cbe3557dd5100064feb4499091bdb14ffc2385c74ac2cd3b95eb23",
+     ".asd/rules/artifact-layout.md": "2a3930603905f7936bfca9437cf0051c9402216750fce67432cc22951b7cfcdf",
+-    ".asd/rules/checkpoints.md": "cb43bfa312d38eab6b8a2599b9db8f1a624b090a4bc2709600ddcbdec526ffc9",
+-    ".asd/rules/code-style.md": "032349aa6c36237ced7a9ebcb90ccf080695772be4be30bca56280d90e4c2d1c",
++    ".asd/rules/checkpoints.md": "19675483c842de573e3de2838cda1fd38356005eb9a83e9cb96a000796e8e86f",
++    ".asd/rules/code-style.md": "20765462066a271fb95f5046407ab1a416e8ac6cf2e7f54ce9a93ef7f5e5402c",
+     ".asd/rules/core.md": "ebcb6f0965dd3078aa755486f6702816198af4f72566594f25dbbfbdf525ce3a",
+     ".asd/rules/design-principles.md": "0bf73cc3eed6e723821c39f008b63c5fa04eea1e829567290a3365a9a912b938",
+     ".asd/rules/design-system.md": "c583c8ba2c08b26685b0a30dea665bb9ac19cc714e8df3622e582f33d1c95371",
+diff --git a/.asd/rules/checkpoints.md b/.asd/rules/checkpoints.md
+index 23386e5..d8e85ef 100644
+--- a/.asd/rules/checkpoints.md
++++ b/.asd/rules/checkpoints.md
+@@ -2,7 +2,7 @@
+ 
+ ## Gate policy
+ 
+-`config.yaml`'s top-level `user_gates` is the source; `state.json.user_gates` is the frozen per-sprint copy, seeded at scope from config (`asd-phase-scope.md`) — a later config edit never changes an active sprint. Value is `strict` or `adaptive`; absent legacy value means `strict`. Invalid or unreadable policy blocks. A standalone skill with no active sprint (`/asd-concept`, `/asd-stack`, `/asd-design-system`) reads `config.user_gates` directly, default `strict`. `strict` uses the gate classes below with explicit approval. In `adaptive`, the main orchestrator may advance a routine gate only when exact user authority and documented constraints cover the choice, effects/resources are understood, applicable checks pass, and no unresolved material alternative remains. It records `{gate, decision_actor:"orchestrator", reason, evidence, artifact_revision}` in `state.json.gate_decisions` (short refs only, `artifact-layout.md` "State file") and the decisions log (narrative). Confidence alone is insufficient. Missing facts require investigation; missing authority, preference or material trade-off requires the user. A semantic revision makes its prior decision stale. Exact existing user authorization may be reused.
++`config.yaml`'s top-level `user_gates` is the source; `state.json.user_gates` is the frozen per-sprint copy, seeded at scope from config (`asd-phase-scope.md`) — a later config edit never changes an active sprint. Value is `strict` or `adaptive`; absent legacy value means `strict`. Invalid or unreadable policy blocks. A standalone skill with no active sprint (`/asd-concept`, `/asd-stack`, `/asd-design-system`) reads `config.user_gates` directly, default `strict`. `strict` uses the gate classes below with explicit approval. In `adaptive`, the main orchestrator may advance a routine gate only when exact user authority and documented constraints cover the choice, effects/resources are understood, applicable checks pass, and no unresolved material alternative remains. A flagged choice reporting that a plan decision cannot be met within its Task's files is resolved by meeting the decision, widening the fix to the files it needs; dropping the decision's requirement is a `new or changed scope` decision, never an adaptive acceptance. It records `{gate, decision_actor:"orchestrator", reason, evidence, artifact_revision}` in `state.json.gate_decisions` (short refs only, `artifact-layout.md` "State file") and the decisions log (narrative). Confidence alone is insufficient. Missing facts require investigation; missing authority, preference or material trade-off requires the user. A semantic revision makes its prior decision stale. Exact existing user authorization may be reused.
+ 
+ Hard in both modes: new or changed scope, acceptance criteria or user value not already explicitly authorized (mid-sprint procedure: `sprint-lifecycle.md` "Scope amendment"); initial/material UX, brand, accessibility or stack direction not already authorized; a new subsystem boundary; deletion of project files during migration; an audit contradiction precedence cannot settle (`sprint-lifecycle.md` "Audit phase"); material architecture, public contract or compatibility change; debt or any reviewer/coverage/quality waiver; review-cap override (per review wave in impl-review); a per-sprint document skip (`sprint-lifecycle.md` "Optional documents"); retro intake dispositions, decided inside the scope gate (`sprint-lifecycle.md` "Retro intake"); the sprint's workflow choice (`sprint-lifecycle.md` "Workflows"); and abort. Machine checks never become approvals.
+ 
+diff --git a/.asd/rules/code-style.md b/.asd/rules/code-style.md
+index 8c676e1..c7a027a 100644
+--- a/.asd/rules/code-style.md
++++ b/.asd/rules/code-style.md
+@@ -123,7 +123,7 @@ Written and run in `impl-test`, never in `impl` — one carve-out: a plan-declar
+ - Isolated: no real external APIs, databases, or file I/O; use dependency injection.
+ - No hardcoded test data: build fixtures from named constants or factories (exception: boundary-value tests where the literal is the point).
+ - A test or rule that names the members of a set derives that set from its source wherever a source exists, rather than enumerating members by hand. A hardcoded enumeration drifts silently as the source changes.
+-- A content-contract test pins a token that cannot be reworded without changing the contract — a heading, a command, a field name, a parsed literal — never the surrounding prose. Its fail-first proof is bounded per entry: one representative mutation per added assert plus one reword control for the entry (the same assert reworded must stay green); the `test-plan.md` "Added tests" row's `Regression proof` cell records the row's mutation runs as `runs: <n>`, the entry's single control counted in its first content-contract row.
++- A content-contract test pins a token that cannot be reworded without changing the contract — a heading, a command, a field name, a parsed literal — never the surrounding prose. Its fail-first proof is bounded per entry: one representative mutation per added assert plus one reword control for the entry (the same assert reworded must stay green); for a pin of a changed rule the representative mutation restores the superseded rule text, or removes the new clause while keeping its citation, never a token rename the old rule would also satisfy; the `test-plan.md` "Added tests" row's `Regression proof` cell records the row's mutation runs as `runs: <n>`, the entry's single control counted in its first content-contract row.
+ - Test files named `<system>_<feature>_test.<ext>`; test functions `test_<scenario>_<expected>`.
+ - A test mutating global/static state saves and restores it in setup/teardown.
+ - Structure each test as Arrange — Act — Assert.
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 922a0af..003aedc 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -2,6 +2,22 @@
+ 
+ All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
+ 
++## v13.7.0
++
++The agents whose mistakes cost the most now run on Opus, and routing stops sending nearly every task to the critical tier. Risk classes have concrete criteria, and derived dispatches route on their own declared risk.
++
++### Changed
++- **Opus tiers (Claude).** `asd-architect` is `opus/xhigh`. `asd-reviewer-correctness`, `asd-reviewer-combined` and the `asd-dev-critical` variant are `opus/high`. `asd-tester-critical` stays `sonnet/xhigh`, and every Codex tier is unchanged.
++- **Material risk criteria** (`sprint-lifecycle.md` "Plan file format"). `change` now means the edit's correctness is genuinely uncertain. A decided deletion, a constant swap, or a mechanical prose or mirror edit that a named test, grep or `sync.js --check` verifies is `artifact` (high-stakes file) or `none`. Each reserved class (`workflow gate`, `public contract`, `migration`, `security`, `authentication`) has a definition. "When in doubt" means an uncertainty the author can name. The reserved-typing ban is unchanged.
++- **Derived-id routing** (`providers.md` "Task-class variants and routing"). An impl-test entry, review-fix, test-fix, in-place test fix or terminal-suite run routes on the orchestrator's own `Material risk` declaration for its delta, not on the plan Tasks' risks. A terminal-suite run declares `none` and never routes critical. The routing decisions-log line of a derived id ends `; risk <declaration>`, with `via <check>` after a `none` or `artifact` value.
++- **Retro intake** (`sprint-lifecycle.md` "Retro intake"). Before asking for a row's disposition, the scope gate shows its root cause, the proposed edits, and the consequences of including or deferring it.
++- **Scope amendment during a review-fix round.** An amendment accepted while `review_fixes_pending` is set waits for the fix round. `impl` then continues in initial mode over the plan's unticked Tasks before one `NEXT: impl-test`. Initial mode skips fully ticked waves.
++- **Fail-first proof** of content-contract tests is bounded per entry: one representative mutation per added assert plus one reword control (`code-style.md` §17).
++- **Staged lint** must not flag generated review diff files (`.asd/sprints/**/reviews/**/*.diff`), for example via a `-whitespace` gitattribute (`code-style.md` §19).
++
++### Migration
++- No migration script. Existing plans and state files stay valid. A consumer whose `lint` runs `git diff --cached --check` over review commits can add `.asd/sprints/**/reviews/**/*.diff -whitespace` to its `.gitattributes`.
++
+ ## v13.6.0
+ 
+ Cheaper, steadier reviews and a few rules that were hand-held before. Wave division now counts files and diff bytes, reviewers get a turn plan and more room, `/asd-sprint` refreshes the base branch before it looks for work, and the change-surface cap is gone. External Review reads the scope manifest by path.
+diff --git a/tests/run.js b/tests/run.js
+index fe5b253..a66ebee 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -7576,7 +7576,7 @@ test('sprint-023 AC-9: providers.md "Task-class variants and routing" gives prio
+   assert.ok(redTest.includes('`providers.md` "Task-class variants and routing"'), `.asd/workflows/asd-phase-impl-review.md step 9 must keep a **Red, test defect** bullet that cites the routing rule for the re-run's own id - the step's dispatch sentence cites it for the first run only, and a re-run left to that one is routed under the first run's id and clamped to its tier`);
+ });
+ 
+-test('sprint-024 AC-2/AC-3/AC-4/AC-5/AC-6: every reserved risk class has a definition in "Plan file format", the routing rule and plan step cite it and a suite run never routes critical, retro intake presents each row before its disposition and scope step 4 cites it, review diffs are exempt from the whitespace lint in .gitattributes and code-style.md §19, and "Scope amendment" and impl cite each other for the review-fix then initial order', () => {
++test('sprint-024 AC-2/AC-3/AC-4/AC-5/AC-6/AC-8/AC-9: every reserved risk class has a definition in "Plan file format", the routing rule and plan step cite it and a suite run never routes critical, retro intake presents each row before its disposition and scope step 4 cites it, review diffs are exempt from the whitespace lint in .gitattributes and code-style.md §19, "Scope amendment" and impl cite each other for the review-fix then initial order, an unmeetable plan decision is met by widening the fix and dropping it is a new-or-changed-scope decision, and the fail-first mutation of a changed-rule pin restores the superseded text', () => {
+   const lifecycle = '.asd/rules/sprint-lifecycle.md';
+   const declaration = canonText(lifecycle).split('\n').filter((line) => line.startsWith('**Material risk declaration**') || line.startsWith('A reserved class')).join('\n');
+   const reserved = [...(/const RESERVED_CHANGE_RISKS = \[([^\]]+)\]/.exec(readRepoFile('.asd/runtime.js')) || [, ''])[1].matchAll(/'([^']+)'/g)].map(([, name]) => name);
+@@ -7607,6 +7607,14 @@ test('sprint-024 AC-2/AC-3/AC-4/AC-5/AC-6: every reserved risk class has a defin
+   const resume = canonText('.asd/workflows/asd-phase-impl.md').split('\n').find((line) => line.includes('- review-fix: clear')) || '';
+   assert.ok(/wave whose Tasks are all ticked is skipped/.test(stepOf(impl, 5)) && /continue in initial mode.*before step 12/.test(resume), 'AC-6: impl step 5 must skip fully ticked waves and step 11 must continue into initial mode before step 12');
+   assert.ok(stepOf(impl, 5).includes('"Scope amendment"') && canonText('.asd/workflows/asd-phase-impl.md').split('\n').find((line) => line.includes('- review-fix: clear')).includes('"Scope amendment"'), 'AC-6: impl must cite "Scope amendment" where it detects the mode and where review-fix finalizes');
++
++  const gate = sectionOf('.asd/rules/checkpoints.md', 'Gate policy');
++  const unmet = gate.split(/(?<=\.)\s/).find((sentence) => sentence.startsWith('A flagged choice')) || '';
++  const scopeClass = 'new or changed scope';
++  assert.ok(unmet.includes('meeting the decision') && unmet.includes(`\`${scopeClass}\``) && unmet.includes('never an adaptive acceptance'), `AC-8: "Gate policy" must resolve a flagged choice that a plan decision cannot be met by meeting the decision, and make dropping it a ${scopeClass} decision, never an adaptive acceptance`);
++  assert.ok(gate.includes(`Hard in both modes: ${scopeClass}`), `AC-8: the ${scopeClass} class the flagged-choice sentence names must be the hard class "Gate policy" lists`);
++  const mutation = sectionOf('.asd/rules/code-style.md', '17. Tests').split('\n').find((line) => line.startsWith('- A content-contract test pins')) || '';
++  assert.ok(mutation.includes('restores the superseded rule text') && mutation.includes('keeping its citation'), 'AC-9: code-style.md §17 must bound the representative mutation of a changed-rule pin mutation to restoring the superseded rule text or removing the new clause while keeping its citation');
+ });
+ 
+ test('sprint-023 AC-4: artifact-layout.md "Agent memory" states the content rule for each kind of work history memory-check catches, and git-strategy.md "Commit before review" runs the check where the orchestrator commits memory writes and sends a violating one to its owner', () => {

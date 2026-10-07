@@ -1,7 +1,7 @@
 {
   "sprint_id": "024-opus-tiers-routing",
   "branch": "sprint/024-opus-tiers-routing",
-  "phase": "impl-test",
+  "phase": "impl-review",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -188,7 +188,7 @@
       "wave": 1,
       "waves": [
         {
-          "iteration": 2,
+          "iteration": 3,
           "verdicts": {
             "iter-01": {
               "combined": "CONCERNS",
@@ -197,11 +197,16 @@
             "iter-02": {
               "combined": "APPROVE",
               "external": "APPROVE"
+            },
+            "iter-03": {
+              "combined": "CONCERNS",
+              "external": "CONCERNS"
             }
           },
           "iteration_heads": {
             "iter-01": "65853933583a56737af8f812dcf17e8b99307fd8",
-            "iter-02": "34f5b0c9ca409abdb93ec68f151eab98595c1bad"
+            "iter-02": "34f5b0c9ca409abdb93ec68f151eab98595c1bad",
+            "iter-03": "cf164bd7cf2121c5b0ccac84072aa8190b4ed759"
           },
           "latched": {}
         }
@@ -209,8 +214,8 @@
     }
   },
   "created_at": "2026-10-07T06:56:22.509Z",
-  "updated_at": "2026-10-07T08:50:14.715Z",
-  "review_fixes_pending": null,
+  "updated_at": "2026-10-07T08:58:57.162Z",
+  "review_fixes_pending": "wave-1/iter-03",
   "test_defects_pending": null,
   "pr": {
     "number": 60,
