@@ -58,3 +58,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: combined CONCERNS (F1 low, `tests/run.js` hardcoded reserved-class list) and external CONCERNS (F1 medium `providers.md:123` derived-id declaration not durably recorded; F2 high, F3 high: the AC-3 and AC-6 tests do not reject the old rule / missing sequencing). Low-severity test-only branch not fired (external medium/high), so `review_fixes_pending=wave-1/iter-01`.
 - **Rationale**: `asd-phase-impl-review.md` step 8; `review-policy.md` "Low-severity test-only findings" condition unmet.
 - **Affected docs**: [reviews/impl/wave-1/iter-01/](reviews/impl/wave-1/iter-01/)
+- 2026-10-07 — route review-fix wave-1/iter-01 external.md F1: critical, dispatch HEAD b29d2ad
+- 2026-10-07 — route review-fix wave-1/iter-01 tests (external.md F2, F3; combined.md F1): standard, dispatch HEAD b29d2ad
