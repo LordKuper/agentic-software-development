@@ -3,3 +3,4 @@
 - [Re-review mirror pointers](feedback_re-review-mirror-pointers.md) — after a rule-order fix, resolve the mirrors' "same placement" pointer chains and read the tester's recorded ceilings
 - [Pinned clauses vs economy](feedback_doc-economy-pinned-clauses.md) — read the suite pin and plan decision before flagging a pointer-plus-outcome clause; prefer pointer-coverage gaps
 - [Re-review without a shell](feedback_rereview-no-shell-checks.md) — back hash, suite and pin claims from canon text and the tester's record; say what was not recomputed
+- [Plan deviation vs flagged choices](feedback_plan-deviation-flagged-choices.md) — grep decisions-log "flagged choices accepted" before raising a deviation from a plan D-N

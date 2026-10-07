@@ -1,2 +1,4 @@
 # force LF line endings for all tracked files (repo-only, not templated into consumer projects)
 * text=auto eol=lf
+# generated review diffs carry intentional trailing whitespace from context lines
+.asd/sprints/**/reviews/**/*.diff -whitespace

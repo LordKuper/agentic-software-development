@@ -1,0 +1,415 @@
+diff --git a/.asd/agents/asd-architect.md b/.asd/agents/asd-architect.md
+index bb01c5e..bf87ec2 100644
+--- a/.asd/agents/asd-architect.md
++++ b/.asd/agents/asd-architect.md
+@@ -3,7 +3,7 @@
+   "name": "asd-architect",
+   "description": "Architecture decisions, subsystem registry, C4 model, tech stack, API contracts, brownfield code and documentation audit. Covers: ADR drafting (sprint-scoped only, never promoted as a standalone persistent document; sprint and reverse-engineered), c4-full schema (LikeC4 or Mermaid) for sprint scope, subsystem registry docs/architecture/subsystems.md and per-subsystem <id>.md (written at design-promote, created at audit when absent after user confirmation), design-promote c4 delta application, stack.html updates, folding approved ADRs and API contracts into whichever persistent doc's `responsibility.owns` frontmatter already claims the subject, audit of existing source code, documentation, stubs and risks. Does NOT handle: requirements (delegates to asd-ba), ux flows or design system (delegates to asd-ux), code implementation (delegates to dev agents).",
+   "claude": {
+-    "model": "sonnet", "effort": "xhigh",
++    "model": "opus", "effort": "xhigh",
+     "tools": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "WebFetch", "WebSearch"],
+     "disallowedTools": [], "maxTurns": 150, "memory": "project"
+   },
+diff --git a/.asd/agents/asd-dev.md b/.asd/agents/asd-dev.md
+index 57c18ff..2c7e3ee 100644
+--- a/.asd/agents/asd-dev.md
++++ b/.asd/agents/asd-dev.md
+@@ -10,7 +10,7 @@
+   "codex": { "model": "sol", "model_reasoning_effort": "medium", "sandbox_mode": "workspace-write", "web_search": "live" },
+   "variants": {
+     "mechanical": { "claude": { "model": "haiku" }, "codex": { "model": "luna", "model_reasoning_effort": "low" } },
+-    "critical": { "claude": { "model": "sonnet", "effort": "xhigh" }, "codex": { "model": "sol", "model_reasoning_effort": "high" } }
++    "critical": { "claude": { "model": "opus", "effort": "high" }, "codex": { "model": "sol", "model_reasoning_effort": "high" } }
+   }
+ }
+ ---
+diff --git a/.asd/agents/asd-reviewer-combined.md b/.asd/agents/asd-reviewer-combined.md
+index 9c7793f..a9fd588 100644
+--- a/.asd/agents/asd-reviewer-combined.md
++++ b/.asd/agents/asd-reviewer-combined.md
+@@ -3,7 +3,7 @@
+   "name": "asd-reviewer-combined",
+   "description": "Impl-review single-pass internal reviewer for workflows whose `reviewers.impl` names `combined` (lite): applies the Correctness and Efficiency rubrics to every change, the Documentation rubric when a documentation file is in scope, and gives an overall quality assessment of every change. Covers: bugs, security, contracts, best practices, AC→code trace against `sprint.md` AC-N, UI/accessibility conformance, over-engineering and structure/cohesion checklists, complexity-vs-value, performance; conditionally SSoT, template adherence, persistent-doc actuality, in-code doc comments, stub resolution, Framework mode, documentation economy; overall quality. Does NOT handle: design-review (lite has none; standard dispatches asd-reviewer-correctness/efficiency/documentation), test-plan/test-quality review and AC→check coverage (no Testing review in lite; `test-plan.md` is context only, the manual-verification decision is the orchestrator's), standard's impl-review (asd-reviewer-correctness/efficiency/testing/documentation), fixing (creators autofix per review-policy).",
+   "claude": {
+-    "model": "sonnet", "effort": "xhigh",
++    "model": "opus", "effort": "high",
+     "tools": ["Read", "Glob", "Grep", "WebFetch", "WebSearch"],
+     "disallowedTools": ["Edit", "Bash"], "maxTurns": 100, "memory": "project"
+   },
+diff --git a/.asd/agents/asd-reviewer-correctness.md b/.asd/agents/asd-reviewer-correctness.md
+index 44b8230..aea2d00 100644
+--- a/.asd/agents/asd-reviewer-correctness.md
++++ b/.asd/agents/asd-reviewer-correctness.md
+@@ -3,7 +3,7 @@
+   "name": "asd-reviewer-correctness",
+   "description": "Design-review of draft correctness (AC completeness, contract and ADR decision soundness) and UI drafts (UI section n/a without a ux-spec/design-system draft), and impl-review of code, tests and UI for bugs, security, best-practice/contract drift, the AC→code trace, and UI/accessibility conformance. Covers: bug patterns (off-by-one, null paths, race conditions, resource leaks), security holes (secrets, injection, auth bypass, crypto misuse, input validation), language/framework best practices, contract violations vs ADR, AC→code trace against PRD/`sprint.md` AC-N, ux-spec compliance check, UI implementation match to ux-spec mockups, design-system token/component usage, accessibility baseline compliance. Does NOT handle: over-engineering, structure/cohesion, or performance (delegates to asd-reviewer-efficiency), test-plan/test-quality review and AC→check coverage (delegates to asd-reviewer-testing), design-review testability (unowned by design), documentation/SSoT sync (delegates to asd-reviewer-documentation), fixing (creators autofix per review-policy).",
+   "claude": {
+-    "model": "sonnet", "effort": "xhigh",
++    "model": "opus", "effort": "high",
+     "tools": ["Read", "Glob", "Grep", "WebFetch", "WebSearch"],
+     "disallowedTools": ["Edit", "Bash"], "maxTurns": 100, "memory": "project"
+   },
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 2df9146..d471933 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -28,7 +28,7 @@
+     }
+   },
+   "canon_hashes": {
+-    "agents/asd-architect.md": "sha256:fbe178e31b76dbe8011bd707200b365ce4da5c0e0dd3c31f768ffd1f7772d8c7",
++    "agents/asd-architect.md": "sha256:25a961be124d8298312b38d56732363606a7afa8719e18091374fa92f22f9bcc",
+     "agents/asd-ba.md": "sha256:e59ea26015ed8f105bdf4967491afee1ef2b893afb3c11ae910e0464759516f5",
+     "agents/asd-external-review.md": "sha256:748735b745535ae263077b4c5e9b4c415baafa8c2a3ab42e27beb11cec7e3d9c",
+     "agents/asd-reviewer-documentation.md": "sha256:cba662e9f8bbd87a146e33459892be1e5eee98952dc6f6c8726b0a6db2833720",
+@@ -51,16 +51,16 @@
+     "skills/asd-phase-impl-review/SKILL.md": "sha256:adf1550463ceb2f5db4f80c4078aba072304545d1aab72a9f53d2e50f4d2c480",
+     "skills/asd-phase-pr/SKILL.md": "sha256:e82f127971031309e4d5d59621222a8c759e7b22b96b3231e57fe8acb32a1d2e",
+     "agents/asd-advisor.md": "sha256:06718e6d86fc2520e20753ccd09a80718d5dfd29296675460414f095e9253e2f",
+-    "agents/asd-reviewer-correctness.md": "sha256:fd452400e86fed0fd9c9381729c4d839372a6037f79fc6f77d9d568ea87e7278",
++    "agents/asd-reviewer-correctness.md": "sha256:042abc00599ff1b5877ffb7db9ef8731bdd7c91dc11126c33ee57cf505c7434e",
+     "agents/asd-reviewer-efficiency.md": "sha256:74bcb8277c555d9f3517a6c486c47750b33951dcb85884dbe99740cefc7542e9",
+-    "agents/asd-dev.md": "sha256:6b23c5feb65e489161a16c0788c4431a82f957c2db8f69040e00b763bab9b997",
++    "agents/asd-dev.md": "sha256:87427691a2e33a427713096a8510d6801535e420c09f351b51abedbf26d62640",
+     "agents/asd-tester.md": "sha256:c4a39b654fd8dc7c13d9018007a6a8979bcddb80988f6f581aa2bb59d6010e96",
+     "agents/asd-ux.md": "sha256:78f575c61872ae5ffac651ef24e025245df8e07cbd083227aa78878924fe2189",
+     "skills/asd-phase-retro/SKILL.md": "sha256:d40dea69c3415c91b8043f4fff9bbda9dbf5750f76ebd2ff762942ab56fb4bef",
+-    "agents/asd-reviewer-combined.md": "sha256:765c8e0fc5fa0b02f73809c818b1fb69edd7f1ea7154be6699b056e5da8539ff"
++    "agents/asd-reviewer-combined.md": "sha256:b514a54e217e86f38d0ec6cae2fbbbb75ed089e878898c0112503b887de54595"
+   },
+   "upstream_hashes": {
+-    ".asd/agents/asd-architect.md": "fbe178e31b76dbe8011bd707200b365ce4da5c0e0dd3c31f768ffd1f7772d8c7",
++    ".asd/agents/asd-architect.md": "25a961be124d8298312b38d56732363606a7afa8719e18091374fa92f22f9bcc",
+     ".asd/agents/asd-ba.md": "e59ea26015ed8f105bdf4967491afee1ef2b893afb3c11ae910e0464759516f5",
+     ".asd/agents/asd-external-review.md": "748735b745535ae263077b4c5e9b4c415baafa8c2a3ab42e27beb11cec7e3d9c",
+     ".asd/agents/asd-reviewer-documentation.md": "cba662e9f8bbd87a146e33459892be1e5eee98952dc6f6c8726b0a6db2833720",
+@@ -68,16 +68,16 @@
+     ".asd/hooks/session-start.js": "f0ebc50ed2cbe3557dd5100064feb4499091bdb14ffc2385c74ac2cd3b95eb23",
+     ".asd/rules/artifact-layout.md": "2a3930603905f7936bfca9437cf0051c9402216750fce67432cc22951b7cfcdf",
+     ".asd/rules/checkpoints.md": "cb43bfa312d38eab6b8a2599b9db8f1a624b090a4bc2709600ddcbdec526ffc9",
+-    ".asd/rules/code-style.md": "f8b953a757ea63ed61cbc4e342a5138255e2d45e2600e6dd1c9fea35c0f91bce",
++    ".asd/rules/code-style.md": "032349aa6c36237ced7a9ebcb90ccf080695772be4be30bca56280d90e4c2d1c",
+     ".asd/rules/core.md": "ebcb6f0965dd3078aa755486f6702816198af4f72566594f25dbbfbdf525ce3a",
+     ".asd/rules/design-principles.md": "0bf73cc3eed6e723821c39f008b63c5fa04eea1e829567290a3365a9a912b938",
+     ".asd/rules/design-system.md": "c583c8ba2c08b26685b0a30dea665bb9ac19cc714e8df3622e582f33d1c95371",
+     ".asd/rules/external-review.md": "92f1d45d869c152e7b8444ac5a413daed42b033034802c402454227498d03c03",
+     ".asd/rules/git-strategy.md": "3f1db1a7c528c91798f2facd003959ac5fefd2c956f256383cba2cf4e0552709",
+     ".asd/rules/language-policy.md": "e9b488a4cff5ed193208a52324601bede1a41e2512f2a6f06d0660576940f322",
+-    ".asd/rules/providers.md": "46f81dfe8ba4103671df0a8a9d167c17fc6e40466ef6362a07872c129514b99f",
++    ".asd/rules/providers.md": "fcd13c24452d7c10d60ae519376221a5a959ef6c4ef50229a78a0b473b9efe81",
+     ".asd/rules/review-policy.md": "698a07a3db488109eb854b7f728138555f94096aa9058fbe550f86dc2eec35d1",
+-    ".asd/rules/sprint-lifecycle.md": "beae936757f72e11ef5478c4b4cd457b7499095d94d518dcda0973937cbbe0e8",
++    ".asd/rules/sprint-lifecycle.md": "6367906e7f9a54394567566e9860d11d19a949b2924ef70b289e98375cf10d35",
+     ".asd/rules/ux-principles.md": "9f2af8c90d969c73654812b80e523e33b4c5696f506acf49e4bacb4c0dc6750c",
+     ".asd/skills/asd-concept/SKILL.md": "9a3cb2331b3aceb4a670d8d0ac94de3808771406036f9ba11dce3239e21cee42",
+     ".asd/skills/asd-design-system/SKILL.md": "9f8153a0f278a1234202771df5118f2228dd4edfd99594c1eeb0536d8d22d07f",
+@@ -119,7 +119,7 @@
+     ".asd/templates/t_design-system.html": "8112456b9f50eb212de1117dfcecc9eb4f23bcfdcdb5d27de21b29f7574cf392",
+     ".asd/templates/t_html-shell.html": "26fea46a6396e1648da8c2fd82153475588662ce0ba460c8ede4fed30d1e209d",
+     ".asd/templates/t_manual-steps.md": "e4ac5dac421917b5ae2e007e837e7aca51df8e94c614b835bc3c7e4db0f4d30e",
+-    ".asd/templates/t_plan.md": "9c1397ca08e0a8c8971498540260542ff531ed419741b41b643b3837ad871514",
++    ".asd/templates/t_plan.md": "318bb64c0be3457362791863244d27ac2e39235f292d90612a640f517bf944f7",
+     ".asd/templates/t_pr-description.md": "d2cc0895f66869ea29f9ee36e4c19c7e5d1a866a94b5a315e37ec3ed92bf9d79",
+     ".asd/templates/t_prd.html": "9da3c60c58331574e0e2bedfb235751ca8570d414fb2fd81ed2d5cd568a6c6c7",
+     ".asd/templates/t_review.md": "66407ecb28b4e5e69965766a48e1e4b5f0a3a4af7d6e42747020a421a0c9e7c3",
+@@ -136,14 +136,14 @@
+     ".asd/workflows/asd-phase-design.md": "f4686880b9e40261dbb16e2818c6c657247fc7d48aee5ead3fe8a909ac328014",
+     ".asd/workflows/asd-phase-impl-review.md": "688f82886e0948025e92f4113ddbdb50aca6612e590a95f8890e57327baf0015",
+     ".asd/workflows/asd-phase-impl-test.md": "cccf898646c453116812c4464bc7b29798059e137ca078ff27ade2b8ad0153b7",
+-    ".asd/workflows/asd-phase-impl.md": "74b1b04f13d17f780625c4b6454deb2ea8535ecde73caca3649e26f46291032c",
+-    ".asd/workflows/asd-phase-plan.md": "bdf638bbeeba311a18972e4d03e35c740f2583eab1a4c68b1f58d9e1de84ba38",
++    ".asd/workflows/asd-phase-impl.md": "530a8280995a0c798b69351a72a36fe8493d0911c4012e2c56a8503963cfea8c",
++    ".asd/workflows/asd-phase-plan.md": "4040459f7e1c901a18fa13005410931adde398d50c13b8a65da852898e3585ba",
+     ".asd/workflows/asd-phase-pr.md": "9d15645564ef52ebd12571d14c51488d94e3fae3d9f4c28785c48c73a3eabb58",
+-    ".asd/workflows/asd-phase-scope.md": "eed83644fb56aaebfdaaa4fc1a1ac00c0550cd5b2b8804bead0728a644c38478",
++    ".asd/workflows/asd-phase-scope.md": "936f7c7419ba979c2bef07e3a9976ae1d4896611ccf8687546372016530829d0",
+     ".asd/agents/asd-advisor.md": "06718e6d86fc2520e20753ccd09a80718d5dfd29296675460414f095e9253e2f",
+-    ".asd/agents/asd-reviewer-correctness.md": "fd452400e86fed0fd9c9381729c4d839372a6037f79fc6f77d9d568ea87e7278",
++    ".asd/agents/asd-reviewer-correctness.md": "042abc00599ff1b5877ffb7db9ef8731bdd7c91dc11126c33ee57cf505c7434e",
+     ".asd/agents/asd-reviewer-efficiency.md": "74bcb8277c555d9f3517a6c486c47750b33951dcb85884dbe99740cefc7542e9",
+-    ".asd/agents/asd-dev.md": "6b23c5feb65e489161a16c0788c4431a82f957c2db8f69040e00b763bab9b997",
++    ".asd/agents/asd-dev.md": "87427691a2e33a427713096a8510d6801535e420c09f351b51abedbf26d62640",
+     ".asd/agents/asd-tester.md": "c4a39b654fd8dc7c13d9018007a6a8979bcddb80988f6f581aa2bb59d6010e96",
+     ".asd/agents/asd-ux.md": "78f575c61872ae5ffac651ef24e025245df8e07cbd083227aa78878924fe2189",
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+@@ -159,7 +159,7 @@
+     ".asd/templates/t_subsystems.md": "54b1e273e9e74a57e08b43d1b671f880b7f682d9ec1bc4afb95a55d98b2531dd",
+     ".asd/migrations/9.0.0.js": "1a1da6ebd2576d92ed44ccde308969856f3aeaa7be152438137e94b43cd015b1",
+     ".asd/templates/t_retro-backlog.md": "0fd817d2ba64894dd8e5a4c01ca57309e7c51b0f2a270f94175ddf71b933f3d9",
+-    ".asd/agents/asd-reviewer-combined.md": "765c8e0fc5fa0b02f73809c818b1fb69edd7f1ea7154be6699b056e5da8539ff",
++    ".asd/agents/asd-reviewer-combined.md": "b514a54e217e86f38d0ec6cae2fbbbb75ed089e878898c0112503b887de54595",
+     ".asd/workflows/lite.json": "2fc12fc41cac51a22b19d67ff5d47c9765c105fec1ad67e8eb5d765b882622ea",
+     ".asd/workflows/standard.json": "7a7c04da7a13ec9dab9bb782d8a9981b703d34859d55614cd9354808b1721fb2"
+   }
+diff --git a/.asd/rules/code-style.md b/.asd/rules/code-style.md
+index 80329ae..8c676e1 100644
+--- a/.asd/rules/code-style.md
++++ b/.asd/rules/code-style.md
+@@ -123,7 +123,7 @@ Written and run in `impl-test`, never in `impl` — one carve-out: a plan-declar
+ - Isolated: no real external APIs, databases, or file I/O; use dependency injection.
+ - No hardcoded test data: build fixtures from named constants or factories (exception: boundary-value tests where the literal is the point).
+ - A test or rule that names the members of a set derives that set from its source wherever a source exists, rather than enumerating members by hand. A hardcoded enumeration drifts silently as the source changes.
+-- A content-contract test pins a token that cannot be reworded without changing the contract — a heading, a command, a field name, a parsed literal — never the surrounding prose. Its fail-first proof is bounded per added test: one mutation per asserted relation plus one reword control (the same relation reworded must stay green); the `test-plan.md` "Added tests" row's `Regression proof` cell records the run count.
++- A content-contract test pins a token that cannot be reworded without changing the contract — a heading, a command, a field name, a parsed literal — never the surrounding prose. Its fail-first proof is bounded per entry: one representative mutation per added assert plus one reword control for the entry (the same assert reworded must stay green); the `test-plan.md` "Added tests" row's `Regression proof` cell records the row's mutation runs as `runs: <n>`, the entry's single control counted in its first content-contract row.
+ - Test files named `<system>_<feature>_test.<ext>`; test functions `test_<scenario>_<expected>`.
+ - A test mutating global/static state saves and restores it in setup/teardown.
+ - Structure each test as Arrange — Act — Assert.
+@@ -140,7 +140,7 @@ Written and run in `impl-test`, never in `impl` — one carve-out: a plan-declar
+ - Style consistent within a file.
+ - Preserve a file's existing line endings. A scripted or regex edit anchors on the file's actual EOL, never an assumed `\n` — assuming the wrong one strips or orphans the `\r` on every line it rewrites. Symptom: a whole-file diff for a small edit. Prefer an editing tool that keeps EOL; verify the diff is the size of the change before staging.
+ - Build and lint must pass before any commit; the impacted test set (`sprint-lifecycle.md` "Impacted test set") gates `impl-test`, not each commit — the full suite runs once, at the end of `impl-review`.
+-- Run the pre-commit lint against staged content: `git diff --check` inspects unstaged changes only and exits 0 once the damage is staged, so a stage → lint → commit sequence passes blind. Use `git diff --cached --check`. `git diff --check HEAD` is a superset, not an equivalent — it compares worktree against HEAD, so it also flags unstaged content nobody is committing (in a shared worktree, a sibling's edits); acceptable only when the tree holds nothing but the staged change, and a project's configured `lint` command must be the staged form.
++- Run the pre-commit lint against staged content: `git diff --check` inspects unstaged changes only and exits 0 once the damage is staged, so a stage → lint → commit sequence passes blind. Use `git diff --cached --check`. `git diff --check HEAD` is a superset, not an equivalent — it compares worktree against HEAD, so it also flags unstaged content nobody is committing (in a shared worktree, a sibling's edits); acceptable only when the tree holds nothing but the staged change, and a project's configured `lint` command must be the staged form and must not flag generated review diff files (`.asd/sprints/**/reviews/**/*.diff`), e.g. via a `-whitespace` gitattribute.
+ 
+ ## 20. Per-Language Rules
+ 
+diff --git a/.asd/rules/providers.md b/.asd/rules/providers.md
+index 8871c54..b90b483 100644
+--- a/.asd/rules/providers.md
++++ b/.asd/rules/providers.md
+@@ -120,10 +120,10 @@ Section scope inside a granted file: `artifact-layout.md` "HTML shell wrapping (
+ 
+ An agent may declare `variants` in its canonical JSON frontmatter. Each fixed suffix is `mechanical` or `critical`; it changes only Claude `model`/optional `effort` and Codex `model`/`model_reasoning_effort`. `.asd/sync.js` emits `<base>-<suffix>` from the base body and permissions, rejects malformed metadata and name collisions. No dispatcher mutates generated configuration. Tier `standard` has no variant — it dispatches the **base** agent id (`asd-dev`, `asd-tester`) directly, since a `standard` variant would only re-declare the base's own model/effort.
+ 
+-Only `asd-dev` and `asd-tester` declare variants: mechanical uses haiku without an effort override or luna/low; critical uses sonnet/xhigh or sol/high. Reviewers remain strong and fresh. The main orchestrator calls `node .asd/runtime.js route-task --input <json>` before dispatch and persists `{execution,tier,reason,resolved_model}` under `state.json.task_routing[taskId]`; `resolved_model` is not returned by `route-task` — the main orchestrator derives it from `.asd/release-manifest.json`'s `model_families` for the dispatched agent/tier before persisting. `priorTier` is the tier recorded under the same `task_routing` key — a re-dispatch of that id. An `impl-test entry N`, `review-fix <id>`, `test-fix <D-ids>`, `impl-review <id> test-fix` (the in-place low-severity test fix) or `impl-review <id> suite` id is new each time and carries no `priorTier`; its `risks` are the `Material risk` lines of the plan Tasks whose paths its delta touches (entry 1 and the first terminal run: every Task's), none declared → `standard`. Every terminal-suite run, a re-run after a test-defect fix included, takes its own id — `impl-review <id> suite`, then `impl-review <id> suite <n>` for run n ≥ 2 — so each is routed from its own delta. `execution` is the selector of record for how the executor was chosen — `route-task` returns no separate `selector` field; `execution` plus `tier` and `reason` fully determine and evidence the dispatch choice.
++Only `asd-dev` and `asd-tester` declare variants: mechanical uses haiku without an effort override or luna/low; critical uses opus/high for `asd-dev` and sonnet/xhigh for `asd-tester`, sol/high for both on Codex. Reviewers remain strong and fresh. The main orchestrator calls `node .asd/runtime.js route-task --input <json>` before dispatch and persists `{execution,tier,reason,resolved_model}` under `state.json.task_routing[taskId]`; `resolved_model` is not returned by `route-task` — the main orchestrator derives it from `.asd/release-manifest.json`'s `model_families` for the dispatched agent/tier before persisting. `priorTier` is the tier recorded under the same `task_routing` key — a re-dispatch of that id. An `impl-test entry N`, `review-fix <id>`, `test-fix <D-ids>`, `impl-review <id> test-fix` (the in-place low-severity test fix) or `impl-review <id> suite` id is new each time and carries no `priorTier`; its `risks` are the orchestrator's own `Material risk` declaration for that dispatch's delta, in the grammar and by the criteria of `sprint-lifecycle.md` "Plan file format" Material risk declaration, none declared → `standard`. A prose- or test-only delta meeting the `artifact`/`none` criteria routes `standard`; a non-mechanical rewording of rule text is `change`. `task_routing[id].reason` records the declaration's outcome. Every terminal-suite run, a re-run after a test-defect fix included, takes its own id — `impl-review <id> suite`, then `impl-review <id> suite <n>` for run n ≥ 2 — and declares `none` with no failed-check input, so it never routes critical. `execution` is the selector of record for how the executor was chosen — `route-task` returns no separate `selector` field; `execution` plus `tier` and `reason` fully determine and evidence the dispatch choice.
+ 
+ Routing input requires objective evidence. A deterministic zero-judgment command with `deterministic-state` returns `execution: command`; mechanical agent work requires `deterministic-check` and `exhaustive-match-validation`.
+ 
+ Each `risks` entry is either a bare name (`"migration"`) or a typed object `{name, target}` with `target` exactly `change` or `artifact` — the two kinds the plan's `Material risk` line declares (`sprint-lifecycle.md` "Plan file format"). A bare name is read as `target: change`, so a consumer still emitting the untyped array keeps today's behaviour unchanged. Any other entry fails closed; a malformed typed entry is never the cheap path.
+ 
+-Security, authentication, migration, public contract, workflow gate, unfamiliar cross-domain work, ambiguous judgment, broad repository reasoning, and any other risk declared against the change return `execution: agent, tier: critical` — those classes lose nothing. A risk declared against the artifact (the edit is objectively verifiable, only its target is high-stakes) does not force `critical` by itself and routes on the task's own evidence, with `reason: artifact-risk:<name>` recording that a risk was seen and deliberately not escalated. Security, authentication, migration, public contract and workflow gate are reserved (`runtime.js`'s `RESERVED_CHANGE_RISKS`): typing one `artifact` is invalid input, rejected by `route-task`, so a mistyped declaration never costs a class its critical routing. Any declared risk of either kind still forces `execution: agent`, so a task carrying a risk never auto-executes as a bare command. One failed objective check after its correction attempt also becomes critical. Invalid evidence or an unknown class fails closed. A `priorTier` set as above prevents a re-dispatched task from being downgraded. `reason` names one cause, highest precedence first: change risk, failed objective check, `priorTier` clamp, artifact risk, deterministic command, objective mechanical, normal — so a clamped task records `no-downgrade`, not `artifact-risk:<name>`, and the plan's `Material risk` line stays the durable record of what was declared. A cheap creator never determines reviewer tier; reviewer scope and risks are classified independently.
++Security, authentication, migration, public contract, workflow gate, unfamiliar cross-domain work, ambiguous judgment, broad repository reasoning, and any other risk declared against the change return `execution: agent, tier: critical` — those classes lose nothing; `sprint-lifecycle.md` "Plan file format" Material risk declaration defines what each class means and when an edit carries it. A risk declared against the artifact (the edit is objectively verifiable, only its target is high-stakes) does not force `critical` by itself and routes on the task's own evidence, with `reason: artifact-risk:<name>` recording that a risk was seen and deliberately not escalated. Security, authentication, migration, public contract and workflow gate are reserved (`runtime.js`'s `RESERVED_CHANGE_RISKS`): typing one `artifact` is invalid input, rejected by `route-task`, so a mistyped declaration never costs a class its critical routing. Any declared risk of either kind still forces `execution: agent`, so a task carrying a risk never auto-executes as a bare command. One failed objective check after its correction attempt also becomes critical. Invalid evidence or an unknown class fails closed. A `priorTier` set as above prevents a re-dispatched task from being downgraded. `reason` names one cause, highest precedence first: change risk, failed objective check, `priorTier` clamp, artifact risk, deterministic command, objective mechanical, normal — so a clamped task records `no-downgrade`, not `artifact-risk:<name>`, and the plan's `Material risk` line stays the durable record of what was declared. A cheap creator never determines reviewer tier; reviewer scope and risks are classified independently.
+diff --git a/.asd/rules/sprint-lifecycle.md b/.asd/rules/sprint-lifecycle.md
+index d57f894..f506185 100644
+--- a/.asd/rules/sprint-lifecycle.md
++++ b/.asd/rules/sprint-lifecycle.md
+@@ -6,7 +6,7 @@ The main orchestrator owns scope and plan writing, phase/state transitions, deci
+ 
+ **Retrospective-derived criteria are re-verified at scope.** A retrospective is sprint-scoped and never promoted ("Retro phase" below), so its rows state what was true at the HEAD that produced them. Before such a row becomes an `AC-N` in `sprint.md`, the orchestrator checks it against current `HEAD` and carries only what is still unresolved — an already-satisfied row is closed, a partly delivered one narrowed to its remaining half. Recording home is `decisions-log.md` alone: one entry naming the verified HEAD sha, each row's outcome and the evidence for it. `sprint.md` gains no section for this. A row asserting host behaviour (a provider tool, CLI or runtime) is verified against that host's docs or a live dispatch — never against the row itself or memory — and the doc URL or dispatch is its evidence.
+ 
+-**Retro intake.** At scope, after the decisions log is seeded and before the scope gate (`asd-phase-scope.md` step 2a), the orchestrator offers open retro rows. Candidates: `node .asd/runtime.js retro-candidates --sprints <dir> --backlog <path> [--self-hosting]` (`--self-hosting` iff `self_hosting: enabled`) — the retro rows ("Retro phase" row id) of the most recent `archived/` sprint with `phase=done` and a `retrospective.html`, minus rows the retro backlog (`artifact-layout.md` "Retro backlog") already disposes, plus its `deferred` rows; `covered by:` rows are dropped. Output: a JSON array of `{row, acts_on, guardrail, home}`; outside `--self-hosting` the latest retro's `asd` rows stay in it, tagged `upstream: true`. A non-zero exit blocks intake: its stderr goes to the user as a scope-gate decision — fix the backlog or retro and re-run, or skip intake this sprint with one decisions-log line. An empty array, or one of only `upstream: true` rows, is a no-op for dispositions: one decisions-log line, no question, no backlog write; its `upstream: true` rows are still shown at the gate. A row tagged `upstream: true` is no candidate for disposition: the scope gate shows it as an upstream proposal for the framework repo — row id, guardrail, home — with no question; it is never an `AC-N` and is written to no backlog. Each other candidate is re-verified per the rule above; a resolved one is written `closed` without asking. The rest go to the user inside the hard scope gate (`checkpoints.md` "Gate policy"), a recommendation each; the user decides all or some: include → an `AC-N`, reject → never offered again, undecided → `deferred`. Dispositions are written to the backlog on scope acceptance and land with the sprint PR; an aborted sprint loses them, so they are offered again.
++**Retro intake.** At scope, after the decisions log is seeded and before the scope gate (`asd-phase-scope.md` step 2a), the orchestrator offers open retro rows. Candidates: `node .asd/runtime.js retro-candidates --sprints <dir> --backlog <path> [--self-hosting]` (`--self-hosting` iff `self_hosting: enabled`) — the retro rows ("Retro phase" row id) of the most recent `archived/` sprint with `phase=done` and a `retrospective.html`, minus rows the retro backlog (`artifact-layout.md` "Retro backlog") already disposes, plus its `deferred` rows; `covered by:` rows are dropped. Output: a JSON array of `{row, acts_on, guardrail, home}`; outside `--self-hosting` the latest retro's `asd` rows stay in it, tagged `upstream: true`. A non-zero exit blocks intake: its stderr goes to the user as a scope-gate decision — fix the backlog or retro and re-run, or skip intake this sprint with one decisions-log line. An empty array, or one of only `upstream: true` rows, is a no-op for dispositions: one decisions-log line, no question, no backlog write; its `upstream: true` rows are still shown at the gate. A row tagged `upstream: true` is no candidate for disposition: the scope gate shows it as an upstream proposal for the framework repo — row id, guardrail, home — with no question; it is never an `AC-N` and is written to no backlog. Each other candidate is re-verified per the rule above; a resolved one is written `closed` without asking. The rest go to the user inside the hard scope gate (`checkpoints.md` "Gate policy"), a recommendation each; the user decides all or some: include → an `AC-N`, reject → never offered again, undecided → `deferred`. Each row put to the user, an `upstream: true` or `closed` one excepted, is shown at that gate before its disposition is asked, with its root cause, its proposed edits (files and change, from the `HEAD` re-verification), and the consequences of including it (cost per `checkpoints.md` "Criterion cost surfacing", risk, saving) and of deferring it, since a bare row id and guardrail is no basis for the decision. An `A-N` row's root cause is that of its `Addresses` F-N in the source retro's Analysis plus the source friction entry's Impact; a `P-N` row has no root-cause field, so the gate states its `Expected saving` and says so, never inventing a cause. Dispositions are written to the backlog on scope acceptance and land with the sprint PR; an aborted sprint loses them, so they are offered again.
+ 
+ At scope, accept only `documents.audit: auto|always|off`; any other value, legacy `enabled`/`disabled` included, blocks (`checkpoints.md` "Gate policy" invalid-policy rule). Freeze the effective audit boolean in state (`documents.audit`) — the rule below is deterministic, so no separate reason field is stored. `auto` skips only a complete, verifiably mechanical scope with no behaviour, contract, migration or gate impact; unknown/risky scope audits. An accepted scope expansion ("Scope amendment") reevaluates it. Architect owns audit. An ambiguity only authority or preference can settle goes straight to the user; BA is dispatched only for evidenced material product/domain ambiguity its sources can resolve.
+ 
+@@ -249,7 +249,7 @@ Devs write **production code only** — no tests, no test runs, except self-veri
+ - **Review-fix** (`review_fixes_pending` = `wave-<K>/iter-NN`) — entered when impl-review routed back. Devs read findings in `<sprint>/reviews/impl/wave-<K>/iter-NN/`, resolve every CONCERNS finding plus every user-approved FAIL finding. Clears `review_fixes_pending` on completion.
+ - **Test-fix** (`test_defects_pending` = `true`) — entered when impl-test found code defects. Devs resolve every open defect in the `Defects` section of `<sprint>/test-plan.md`, marking each `fixed` with the fixing commit. Clears `test_defects_pending` on completion.
+ 
+-Only one fix flag is ever set: each fix mode clears its own before routing on. Fix modes skip the impl assessment gate; blockers escalate as in initial mode. All modes return `NEXT: impl-test`.
++Only one fix flag is ever set: each fix mode clears its own before routing on, save that an amendment accepted during a review-fix round continues into initial mode first ("Scope amendment"). Fix modes skip the impl assessment gate; blockers escalate as in initial mode. All modes return `NEXT: impl-test`.
+ 
+ **Completion gate** (all modes) — impl MUST NOT emit `COMPLETED` until, verified via `commands.yaml`: `build` and `lint` ran with no errors and no warnings. The gate itself never runs tests — the optional self-verification run above is not part of it. On failure: devs fix and re-run; unrecoverable failure escalates as `FAILED`. Automatic verification, not a user pause.
+ 
+@@ -370,10 +370,12 @@ A scope aborted before its branch exists writes nothing; the next `asd-sprint` d
+ See `t_plan.md` for canonical structure.
+ 
+ **Material risk declaration** (one required line per `### Task N:` block, never a checkbox — a checkbox outside a subtask breaks task parsing): `Material risk: none`, or one `Material risk: change: <short risk class>` / `Material risk: artifact: <short risk class>` line per declared risk. The two kinds are distinct and are not interchangeable:
+-- **change** — the edit's own correctness is uncertain: unfamiliar domain, ambiguous judgment, a contract whose right wording is not yet known, security/authentication/migration/public-contract/workflow-gate work. Routes `critical`. Reserved-class rule: `providers.md` "Task-class variants and routing".
+-- **artifact** — the edit is small and objectively verifiable, but lands in a high-stakes file. Routes on the task's own evidence, so a mechanical edit to a critical artifact is no longer critical by that fact alone.
++- **change** — the edit's own correctness is genuinely uncertain, meaning at least one holds: the right wording or shape of a rule, gate, contract or schema is not yet decided; the effect has an ordering, failure or parser edge that no named test or grep can establish; it changes trust, identity or persisted-data handling. Routes `critical`.
++- **artifact** (`none` when the file is not high-stakes) — all three hold: the target text or value is already decided, in the plan or a gate record; the edit is a deletion of a named surface, a literal or constant swap, or a mechanical prose, citation or mirror edit; a test, grep or `sync.js --check` the Task names verifies the result, whichever of those edit kinds it is. Routes on the task's own evidence, so a mechanical edit to a critical artifact is no longer critical by that fact alone.
+ 
+-The main orchestrator passes these lines as `route-task`'s `risks` input, one entry per line, typed by its kind (`providers.md` "Task-class variants and routing", which owns the routing semantics). When in doubt between the two kinds, declare `change`. A Task block with no conforming line — absent, or off-grammar (prose, or inside a subtask checkbox) — reads `change: unclassified` and routes `critical` until the plan is updated; missing is never `none`.
++A reserved class (`providers.md` "Task-class variants and routing") is named only when its definition holds, never for the file touched: `workflow gate` — adds, removes or reorders a gate, verdict or phase transition, or changes its enforcement, the new behaviour not yet fixed; `public contract` — changes a signature, field, command or format another phase or a consumer reads, its shape not yet decided; `migration` — rewrites persisted data or config across a version; `security` — changes trust handling; `authentication` — changes identity handling. An edit meeting no class definition is declared under a non-reserved name or `none`; a reserved name is never typed `artifact`.
++
++The main orchestrator passes these lines as `route-task`'s `risks` input, one entry per line, typed by its kind (`providers.md` "Task-class variants and routing", which owns the routing semantics). "In doubt" means an uncertainty the author can name in the short risk class itself: declare `change` then, and a Task whose author cannot name one is not `change`. A Task block with no conforming line — absent, or off-grammar (prose, or inside a subtask checkbox) — reads `change: unclassified` and routes `critical` until the plan is updated; missing is never `none`.
+ 
+ **Reachability declaration** (conditional, at most one per `### Task N:` block, its own plain-text line under the `Material risk` line(s) and any `Test-only` line, never a checkbox): a task whose value depends on two phases agreeing carries `Reachability: <phase> writes <value> at <point>; <phase> reads it at <point>`. A value crossing a push or merge also names, per interruption point between write and read, the value the receiving branch then holds: `; interrupted at <point>, <branch> holds <value>`. Accepting the plan means checking that those two points observe the same value, and that the reader handles each named interrupted value — a purpose unreachable by construction is rewritten or dropped at plan approval, never planned and then closed finding by finding.
+ 
+@@ -406,6 +408,8 @@ A criterion added, changed or retired after scope acceptance needs the hard `new
+ 
+ The audit boolean is then reevaluated ("Orchestration and adaptive gates").
+ 
++An amendment accepted while `review_fixes_pending` is set waits for that fix round: `impl` runs review-fix mode first, and once its finalize clears the flag the same `impl` entry continues in initial mode over the plan's unticked Tasks only, never a ticked one again. The impl assessment gate runs once, after that pass, then the entry returns one `NEXT: impl-test`. This is the one case where an `impl` entry runs two modes ("Impl phase" Modes).
++
+ ## Sprint immutability
+ 
+ A sprint folder under `.asd/sprints/archived/<NNN-slug>/` is read-only. The archive move and the terminal write happen together, in the closure write ("PR phase") — the one write that lands in an archived folder, in place for a legacy sprint archived before closure. Once `phase=done`, truly immutable — follow-up work creates a new sprint.
+diff --git a/.asd/templates/t_plan.md b/.asd/templates/t_plan.md
+index 72c3108..825f5f3 100644
+--- a/.asd/templates/t_plan.md
++++ b/.asd/templates/t_plan.md
+@@ -31,13 +31,13 @@ Standing DoD applies (`sprint-lifecycle.md` "Plan file format") — not restated
+ {{sprint-specific DoD additions, if any — prose, NO checkboxes; omit this line entirely when none}}
+ 
+ ### Task 1: {{title}}
+-Material risk: change: {{short risk class — the edit's own correctness is uncertain}}
++Material risk: change: {{short risk class — a nameable uncertainty: undecided wording/shape, an untestable edge, trust or persisted data}}
+ Reachability: {{which two phases must agree, on what value, and the point in each where it is written and read; a value crossing a push or merge adds `; interrupted at <point>, <branch> holds <value>` per interruption point — omit this line entirely when the task has no cross-phase dependency}}
+ - [ ] {{subtask}}
+ - [ ] {{subtask}}
+ 
+ ### Task 2: {{title}}
+-Material risk: artifact: {{short risk class — verifiable edit in a high-stakes file}}
++Material risk: artifact: {{short risk class — decided, verifiable edit (named test/grep) in a high-stakes file}}
+ - [ ] {{subtask}}
+ 
+ ### Task 3: {{title}}
+diff --git a/.asd/workflows/asd-phase-impl.md b/.asd/workflows/asd-phase-impl.md
+index 81b64c0..ac6745c 100644
+--- a/.asd/workflows/asd-phase-impl.md
++++ b/.asd/workflows/asd-phase-impl.md
+@@ -56,7 +56,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
+    - **test-fix** — read `<sprint>/test-plan.md` `Defects` section; collect every `D-N` with status `pending`; group into fix tasks, one dev task per independent group; a `D-N` located in `.claude/agent-memory/<owner>/` routes to `<owner>` exactly as a review-fix memory finding does, the orchestrator then setting that row's `Status` to `fixed` (`review-policy.md` "Autofix vs escalation" memory-fix dispatch)
+ 4. Write `state.json` (phase=impl) inline (mechanical, no gate)
+ 5. **Build execution graph**:
+-   - initial — the plan's wave table is the graph (`sprint-lifecycle.md` "Plan file format"): waves ascending, tasks within one wave parallelisable, never re-derived from the dependency lines. A plan predating that rule carries no table: fall back to a topological sort over its dependency lines
++   - initial — the plan's wave table is the graph (`sprint-lifecycle.md` "Plan file format"): waves ascending, tasks within one wave parallelisable, never re-derived from the dependency lines. A plan predating that rule carries no table: fall back to a topological sort over its dependency lines. Ticked work is never re-dispatched: the graph is built from the waves holding an unticked Task, and a wave whose Tasks are all ticked is skipped (`sprint-lifecycle.md` "Scope amendment")
+    - fix modes (review-fix and test-fix alike) — one ordered chain, never a concurrent set: every fix task depends on its predecessor by construction, so exactly one is in flight at a time (order: colliding tasks adjacent, else by finding/defect id). The chain is dispatched to ONE agent that works it in order, never a fresh instance per task — tier per 5a; test-file findings still route to `asd-tester` as their own chain, dispatched only after the dev chain completes and carrying its outcome (fixes already committed — `git-strategy.md` "Commit before review"), never alongside it, so exactly one agent is in flight across the whole round. That tester chain edits only the `test-plan.md` rows `artifact-layout.md` "Test plan" grants the review-fix tester. Memory-fix dispatches (step 3) run last, one at a time, in the order `review-policy.md` "Autofix vs escalation" sets.
+ 5a. Before each task dispatch, run `node .asd/runtime.js route-task --input <path>` with kind, objective inputs/checks, the task's `Material risk` lines as typed `risks` entries (`sprint-lifecycle.md` "Plan file format"; a fix round's `risks`: `providers.md` "Task-class variants and routing"), correction attempts and `priorTier`. A result with `execution="command"` runs directly; `execution="agent"` dispatches the Task's agent — `asd-dev`, or `asd-tester` for a Task carrying a `Test-only:` line — as `<agent>-<tier>` for `mechanical`/`critical`, or the base agent for `tier: standard` (no `-standard` variant exists — `providers.md` "Task-class variants and routing"). Persist the record in `state.json.task_routing[taskId]` per `providers.md`, supplying its tier as `priorTier` only on a re-dispatch of the same id, and append the decisions-log routing line `- YYYY-MM-DD — route <taskIds>: <tier>, dispatch HEAD <sha>` (`git rev-parse HEAD`, one per dispatch). Invalid routing blocks. In a fix mode, route every task of the chain first and persist each record, then dispatch the whole chain to a single agent at the highest tier returned — one agent holding every fix in the round is what keeps a later fix from contradicting an earlier one it never saw.
+ 6. **Dispatch tasks** per execution graph:
+@@ -111,7 +111,7 @@ Fix modes are unbounded by design: impl-test may route defects back any number o
+    - on request changes: relay specific feedback to relevant dev(s); loop step 7
+    - on abort: emit ABORT
+ 11. **Fix-mode finalize** — fix modes only — write inline (mechanical, no gate), after resolving or routing back any non-`none` `Flagged choices:` as step 10 does:
+-   - review-fix: clear `state.json.review_fixes_pending` (set null), append decisions-log entry "impl fix for <id>: findings resolved"
++   - review-fix: clear `state.json.review_fixes_pending` (set null), append decisions-log entry "impl fix for <id>: findings resolved"; when `plan.md` still holds an unticked Task (an amendment accepted while the flag was set), continue in initial mode, steps 3 to 10, before step 12 (`sprint-lifecycle.md` "Scope amendment")
+    - test-fix: clear `state.json.test_defects_pending` (set null), append decisions-log entry "impl test-fix: defects <D-N list> resolved"
+ 12. Emit phase COMPLETED with return contract (`NEXT: impl-test` in all modes)
+ 
+diff --git a/.asd/workflows/asd-phase-plan.md b/.asd/workflows/asd-phase-plan.md
+index ff416bc..aac4915 100644
+--- a/.asd/workflows/asd-phase-plan.md
++++ b/.asd/workflows/asd-phase-plan.md
+@@ -39,7 +39,7 @@ Orchestration body for the `asd-phase-plan` skill. Operation-mapping to host too
+        - a subtask adds a helper, guard or export only with a named caller or reachable failure
+        - list the external APIs each Task needs; extend the tech reference (`artifact-layout.md` "Tech reference docs") where one is missing
+        - subtasks as checkboxes inside `### Task N:` block only (parser-critical)
+-       - no test-authoring Tasks or subtasks, except a `Test-only` Task (shape: `sprint-lifecycle.md` "Plan file format") — tests are selected and written in `impl-test`, after the code exists; note per Task only the **material risk** the change carries, as input for impl-test
++       - no test-authoring Tasks or subtasks, except a `Test-only` Task (shape: `sprint-lifecycle.md` "Plan file format") — tests are selected and written in `impl-test`, after the code exists; note per Task only the **material risk** the change carries (`sprint-lifecycle.md` "Plan file format" Material risk declaration), as input for impl-test
+        - assign every Task to a wave and write the wave table into `## Dependencies`, a settings-change Task alone in its wave (wave 1, or a wave after every Task adding one of its keys to `t_config.yaml`), each Task that changes the dispatch or commit contract isolated ahead of the Tasks dispatched under it, a `Test-only` Task in a wave after every Task whose code it covers, per `sprint-lifecycle.md` "Plan file format"; no two Tasks in one wave touch overlapping paths, a `Test-only` Task's included; list non-trivial dependencies under the table
+      - **Definition of Done**: reference the standing DoD (`sprint-lifecycle.md` "Plan file format") instead of restating it; author only sprint-specific additions, if any
+      - translate skeleton + full draft to `language.docs`, write `<sprint>/plan.md`; gate mechanic (approve-before-write vs write-then-review-accept) and strict-vs-adaptive evidence requirement per `checkpoints.md` — deferred to step 5, not fixed here
+diff --git a/.asd/workflows/asd-phase-scope.md b/.asd/workflows/asd-phase-scope.md
+index 760420b..926d361 100644
+--- a/.asd/workflows/asd-phase-scope.md
++++ b/.asd/workflows/asd-phase-scope.md
+@@ -11,7 +11,7 @@ The main orchestrator owns this phase inline.
+ 2a. **Retro intake** per `sprint-lifecycle.md` "Retro intake" (sole SSoT): run `node .asd/runtime.js retro-candidates --sprints .asd/sprints --backlog .asd/project/retro-backlog.md`, adding `--self-hosting` when `self_hosting: enabled`; verify each candidate at `HEAD`, a row tagged `upstream: true` excepted — it is no candidate, only shown at the step 4 gate; the unresolved rest ride that gate, and an included one becomes an `AC-N` in `sprint.md`.
+ 3. Read `documents.audit`: accept only `auto|always|off`, any other value blocks (`sprint-lifecycle.md` "Orchestration and adaptive gates"); `auto` skips only a complete mechanical scope with no behaviour, contract, migration or gate impact. Freeze the effective boolean into `state.json.documents.audit` (no separate reason field — the rule is deterministic, per `sprint-lifecycle.md`). Reevaluate after an accepted scope expansion.
+ 3a. Seed the remaining state placeholders: `{{USER_GATES}}` from `config.user_gates` (accept only `adaptive|strict`; absent -> `strict`); `{{DOC_PRD}}`/`{{DOC_UX_SPEC}}`/`{{DOC_ADR}}` from normalized `documents.*` (absent group -> all enabled); `{{DOC_C4}}` as the effective diagram (`sprint-lifecycle.md` "Optional documents"). No placeholder literal may survive the write. At the scope gate (step 4) the user may skip an enabled optional document (`prd`/`ux_spec`/`adr`/`c4`) for this sprint only — hard, narrow-only: overwrite its frozen value with `false` and log one decisions-log line "<doc> skipped this sprint by user" (`sprint-lifecycle.md` "Optional documents").
+-4. The initial scope is hard until it is explicitly accepted, because it establishes authority for the adaptive policy. That gate offers to split unrelated strands, or `AC-N`s changing independent contracts, into consecutive sprints; a split-off part goes to `sprint.md` Out of scope plus one decisions-log line. It also shows each `upstream: true` row of step 2a as an upstream proposal for the framework repo — row id, guardrail, home — with no question; such a row is never an `AC-N`, takes no disposition and is written to no backlog. Afterwards record the accepted user decision and write step 2a's dispositions to `.asd/project/retro-backlog.md` (created from `t_retro-backlog.md` at the first write). A fully specified already-authorized outcome is recorded without inventing another decision.
++4. The initial scope is hard until it is explicitly accepted, because it establishes authority for the adaptive policy. That gate offers to split unrelated strands, or `AC-N`s changing independent contracts, into consecutive sprints; a split-off part goes to `sprint.md` Out of scope plus one decisions-log line. It also shows each `upstream: true` row of step 2a as an upstream proposal for the framework repo — row id, guardrail, home — with no question; such a row is never an `AC-N`, takes no disposition and is written to no backlog. Every other row is presented before its disposition is asked, as `sprint-lifecycle.md` "Retro intake" requires. Afterwards record the accepted user decision and write step 2a's dispositions to `.asd/project/retro-backlog.md` (created from `t_retro-backlog.md` at the first write). A fully specified already-authorized outcome is recorded without inventing another decision.
+ 5. Emit `NEXT: audit`.
+ 
+ Append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log".
+diff --git a/.gitattributes b/.gitattributes
+index 94c49bd..97da085 100644
+--- a/.gitattributes
++++ b/.gitattributes
+@@ -1,2 +1,4 @@
+ # force LF line endings for all tracked files (repo-only, not templated into consumer projects)
+ * text=auto eol=lf
++# generated review diffs carry intentional trailing whitespace from context lines
++.asd/sprints/**/reviews/**/*.diff -whitespace
+diff --git a/README.md b/README.md
+index 5b9007d..53382ed 100644
+--- a/README.md
++++ b/README.md
+@@ -215,7 +215,7 @@ Phase skills (`asd-phase-*`) are dispatched internally by `/asd-sprint`/`$asd-sp
+ 
+ ## Agents
+ 
+-Twelve specialized agents are canonically defined in `.asd/agents/` and generated per provider: `.claude/agents/*.md` for Claude Code, `.codex/agents/*.toml` for Codex. Each declares a model family alias per provider (Claude: fable/sonnet/haiku; Codex: sol/luna) plus supported reasoning effort (omitted for Haiku); `.asd/sync.js` resolves aliases to concrete model ids via `.asd/release-manifest.json`'s `model_families` table (mirrored in [`.asd/rules/providers.md`](.asd/rules/providers.md)). Effort is shown as `model/effort`.
++Twelve specialized agents are canonically defined in `.asd/agents/` and generated per provider: `.claude/agents/*.md` for Claude Code, `.codex/agents/*.toml` for Codex. Each declares a model family alias per provider (Claude: fable/opus/sonnet/haiku; Codex: sol/luna) plus supported reasoning effort (omitted for Haiku); `.asd/sync.js` resolves aliases to concrete model ids via `.asd/release-manifest.json`'s `model_families` table (mirrored in [`.asd/rules/providers.md`](.asd/rules/providers.md)). Effort is shown as `model/effort`.
+ 
+ Only the main orchestrator (and a skill it runs inline) ever prompts you for a discrete decision (`AskUserQuestion` on Claude Code, chat-and-block on Codex — `.asd/rules/providers.md` "Semantic operations -> host convention"). No creator, reviewer, or advisor agent carries that grant on either host: a dispatched agent facing a hard or unresolved decision returns `QUESTION` (creators) or its `Escalations`/`Stalemate` carrier (reviewers/External) to the orchestrator instead (`.asd/rules/sprint-lifecycle.md` "`QUESTION` protocol", `.asd/rules/review-policy.md` "Gate Verdict Format").
+ 
+@@ -225,11 +225,11 @@ Only the main orchestrator (and a skill it runs inline) ever prompts you for a d
+ |---|---|---|---|
+ | `asd-ba` | sonnet/high | sol/high | Business analyst: PRD, acceptance criteria; conditional domain audit support |
+ | `asd-ux` | sonnet/high | sol/high | UX flows, UI mockups, DESIGN.md tokens, design-system.html |
+-| `asd-architect` | sonnet/xhigh | sol/high | Complete docs/code audit; ADRs, subsystem registry, C4, stack, API contracts, tech references |
++| `asd-architect` | opus/xhigh | sol/high | Complete docs/code audit; ADRs, subsystem registry, C4, stack, API contracts, tech references |
+ | `asd-dev` | sonnet/medium | sol/medium | Server/CLI/library code and UI code (no tests; consumes DESIGN.md tokens where UI work applies) |
+ | `asd-tester` | sonnet/medium | sol/medium | All tests: risk-based selection, pruning, authoring at every level, suite runs, manual verification specs; a plan-declared `Test-only` Task in `impl` |
+ 
+-The main orchestrator owns scope, plan, state, decisions, manual-step validation, Git and release/archival sequencing; no PM agent is spawned. Dev/Tester task variants share each canonical role body and permissions: `-mechanical` uses Haiku (no effort)/Luna low, `-critical` Sonnet xhigh/Sol high; tier `standard` has no variant and dispatches the base agent (Sonnet/Sol medium). Deterministic bookkeeping uses commands. Routing uses objective eligibility, escalates on a risk declared against the change or a failed check — a risk declared against the artifact alone does not — and never changes the main model. Experimental cheap outputs retain strong independent review.
++The main orchestrator owns scope, plan, state, decisions, manual-step validation, Git and release/archival sequencing; no PM agent is spawned. Dev/Tester task variants share each canonical role body and permissions: `-mechanical` uses Haiku (no effort)/Luna low, `-critical` Opus high (`asd-dev`) or Sonnet xhigh (`asd-tester`), Sol high on Codex; tier `standard` has no variant and dispatches the base agent (Sonnet/Sol medium). Deterministic bookkeeping uses commands. Routing uses objective eligibility, escalates on a risk declared against the change or a failed check — a risk declared against the artifact alone does not — and never changes the main model. Experimental cheap outputs retain strong independent review.
+ 
+ All five creators carry `WebFetch`/`WebSearch` (Codex `web_search: "live"`), each scoped by its own Tool policy. BA, UX, and Architect also carry `Bash`, each bounded to its own run-command policy: BA to read-only git inspection (`git log`/`git show`/`git diff`); UX to the `designmd-lint`/`-diff`/`-export` `commands.yaml` aliases (`designmd-install` is the orchestrator's, run before dispatching UX); Architect to the `likec4` CLI (lint/validate only, never `build` inside a sprint draft) — none of the three writes an artifact via shell or holds a commit tool (`.asd/rules/git-strategy.md` "Commit before review"). Dev and Tester carry `Bash` limited by their run-command policy (`commands.yaml` commands plus `git add`/`git commit` for their own work; Dev never runs `test`) and are the only two agents holding a commit tool.
+ 
+@@ -241,11 +241,11 @@ Web grants split per reviewer: Correctness and the `lite`-only combined reviewer
+ 
+ | Agent | Claude | Codex | Phase(s) | Scope |
+ |---|---|---|---|---|
+-| `asd-reviewer-correctness` | sonnet/xhigh | sol/high | design-review (draft correctness + UI section) + impl-review | Bugs, security, best-practice, contract drift; PRD/AC-N coverage trace; UX-spec compliance, design-system tokens, a11y — UI conformance section n/a-able (see below); design-review also judges draft correctness (AC completeness, contract/ADR soundness). Receives every file in scope. |
++| `asd-reviewer-correctness` | opus/high | sol/high | design-review (draft correctness + UI section) + impl-review | Bugs, security, best-practice, contract drift; PRD/AC-N coverage trace; UX-spec compliance, design-system tokens, a11y — UI conformance section n/a-able (see below); design-review also judges draft correctness (AC completeness, contract/ADR soundness). Receives every file in scope. |
+ | `asd-reviewer-efficiency` | sonnet/xhigh | sol/high | design-review + impl-review | Over-engineering (13-item checklist) + structure/cohesion (god/sprawling type) detection; impl-review-only perf budgets, regression, anti-patterns — perf sections n/a-able (see below). Receives every file in scope. |
+ | `asd-reviewer-testing` | sonnet/xhigh | sol/high | impl-review | `test-plan.md` decisions (risk fit, justified removals and no-test calls, fail-first proof), test quality, manual verification capture. Receives only the `isTest` scope files plus `test-plan.md` and its segments — the one narrowed reviewer list. |
+ | `asd-reviewer-documentation` | sonnet/xhigh | sol/high | design-review + impl-review | SSoT integrity, documentation economy, template adherence, traceability, in-code doc comments and stub resolution (impl-review). Receives every file in scope. |
+-| `asd-reviewer-combined` | sonnet/xhigh | sol/high | impl-review (`lite` only) | Single-pass reviewer for `lite`'s impl-review: applies the Correctness, Efficiency, and (when a documentation file is in scope) Documentation rubrics, plus its own overall-quality entry. Receives every file in scope. |
++| `asd-reviewer-combined` | opus/high | sol/high | impl-review (`lite` only) | Single-pass reviewer for `lite`'s impl-review: applies the Correctness, Efficiency, and (when a documentation file is in scope) Documentation rubrics, plus its own overall-quality entry. Receives every file in scope. |
+ | `asd-external-review` | sonnet/medium | sol/medium | both | Wraps the *other* provider's CLI (Codex CLI under Claude Code, Claude CLI under Codex), reads its own content from a structured scope manifest — file list plus a `.diff` file, per `.asd/rules/review-policy.md` § Scope hand-off (`.asd/rules/external-review.md` § Phase-scoped payload) — parses output, applies severity floor |
+ 
+ Reviewers emit a machine-parseable first-line verdict token: `[REVIEW-<phase>-<reviewer>]: APPROVE|CONCERNS|FAIL`, where `<phase>` is `design` or `impl` and `<reviewer>` is `correctness | efficiency | testing | documentation | combined | external`. External Review's first line may also be the skip form, per `.asd/rules/external-review.md` § Outcome contract.
+diff --git a/tests/run.js b/tests/run.js
+index f80fd8a..afd6a60 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -7548,7 +7548,7 @@ test('sprint-023 AC-5: the Test-only declaration is defined once in sprint-lifec
+   assert.deepStrictEqual(sites.filter(([, line]) => !/test-only/i.test(line)).map(([rel, line]) => `${rel}: ${line.slice(0, 100)}`), [], 'every canon line that says impl writes no tests or the plan has no test-authoring Tasks must name the Test-only carve-out - a site that does not tells a reader a Test-only Task is forbidden (asd-dev.md is the dev\'s own contract and stays unconditional)');
+ });
+ 
+-test('sprint-023 AC-6: code-style.md §17 bounds the fail-first proof of a content-contract test to one mutation per relation plus a reword control and has the run count recorded in the Added tests cell, which t_test-plan.md gives a count for', () => {
++test('sprint-023 AC-6, sprint-024 AC-7: code-style.md §17 bounds the fail-first proof of a content-contract test per entry - a mutation per added assert plus one reword control - and has the run count recorded as runs: <n> in the Added tests cell, which t_test-plan.md gives a count for', () => {
+   const added = sectionOf('.asd/templates/t_test-plan.md', 'Added tests');
+   const column = (/^\| Test \| ([^|]+) \|$/m.exec(added) || [])[1];
+   assert.ok(column, 't_test-plan.md "Added tests" must keep its two-column table with the proof column header');
+@@ -7556,16 +7556,16 @@ test('sprint-023 AC-6: code-style.md §17 bounds the fail-first proof of a conte
+   const forms = proof.split('\\|').slice(1);
+   assert.ok(forms.length > 0 && forms.every((form) => form.includes('runs: <n>')), `the ${column.trim()} cell must give every form of proof a "runs: <n>" count - a proof without it cannot be checked against the bound`);
+   const bullet = sectionOf('.asd/rules/code-style.md', '17. Tests').split('\n').find((line) => line.startsWith('- A content-contract test pins')) || '';
+-  assert.ok(bullet.includes(`\`${column.trim()}\``) && bullet.includes('"Added tests"') && /\bmutation\b/.test(bullet) && /\breword/.test(bullet) && /\bruns?\b/.test(bullet), `code-style.md §17's content-contract bullet must bound the proof (a mutation per relation, a reword control) and name the "Added tests" ${column.trim()} cell that records the run count - unbounded, a proof run is open-ended and unrecorded`);
++  assert.ok(bullet.includes(`\`${column.trim()}\``) && bullet.includes('"Added tests"') && /\bmutation\b/.test(bullet) && /\breword/.test(bullet) && bullet.includes('runs: <n>'), `code-style.md §17's content-contract bullet must bound the proof (a mutation per added assert, a reword control per entry) and name the "Added tests" ${column.trim()} cell that records the run count - unbounded, a proof run is open-ended and unrecorded`);
+ });
+ 
+-test('sprint-023 AC-9: providers.md "Task-class variants and routing" gives priorTier only to a re-dispatch of the same task_routing key and routes an impl-test entry, review-fix, test-fix, in-place test-fix or terminal-suite id (each terminal run its own) from the Material risk of the Tasks its delta touches, and each acting workflow, the red-test-defect re-run included, routes through that rule', () => {
++test('sprint-023 AC-9: providers.md "Task-class variants and routing" gives priorTier only to a re-dispatch of the same task_routing key and routes an impl-test entry, review-fix, test-fix, in-place test-fix or terminal-suite id (each terminal run its own) from its own Material risk declaration, and each acting workflow, the red-test-defect re-run included, routes through that rule', () => {
+   const sentences = sectionOf('.asd/rules/providers.md', 'Task-class variants and routing').split(/(?<=\.)\s/);
+   assert.ok(sentences.some((sentence) => spans(sentence).includes('priorTier') && spans(sentence).includes('task_routing')), 'the rule must tie priorTier to the tier recorded under the same task_routing key - a re-dispatch of that id - or a later entry inherits the first one\'s tier');
+   const suite = 'impl-review <id> suite';
+   const ids = ['impl-test entry N', 'review-fix <id>', 'test-fix <D-ids>', 'impl-review <id> test-fix', suite];
+   const fresh = sentences.find((sentence) => ids.every((id) => spans(sentence).includes(id))) || '';
+-  assert.ok(fresh && spans(fresh).includes('priorTier') && spans(fresh).includes('Material risk') && spans(fresh).includes('standard'), `the rule must name the ids ${ids.join(', ')} as new each time - no priorTier - and route them from the Material risk lines of the Tasks their delta touches, none declared meaning standard; unnamed, a prose-only delta is clamped to critical by the first entry's tier, a test-fix round or the in-place test fix has no risks source, and the in-place one shares a task_routing record with its iteration's dev review-fix round, which then reads the tester's tier as priorTier`);
++  assert.ok(fresh && spans(fresh).includes('priorTier') && spans(fresh).includes('Material risk') && spans(fresh).includes('standard'), `the rule must name the ids ${ids.join(', ')} as new each time - no priorTier - and route them from the orchestrator's own Material risk declaration for that dispatch's delta, none declared meaning standard; unnamed, a prose-only delta inherits the risk of every Task whose paths it touches, a test-fix round or the in-place test fix has no risks source, and the in-place one shares a task_routing record with its iteration's dev review-fix round, which then reads the tester's tier as priorTier`);
+   const perRun = sentences.find((sentence) => spans(sentence).includes(suite) && spans(sentence).some((span) => span.startsWith(`${suite} `))) || '';
+   assert.ok(perRun, `the rule must give a later terminal-suite run an id of its own - ${suite} plus a run suffix; without it a re-run after a test-defect fix reuses the first run's task_routing key and a later test-only delta inherits that run's tier as priorTier`);
+   const variantNote = /\(no `-standard` variant exists[^)]*\)/;
+@@ -7576,6 +7576,33 @@ test('sprint-023 AC-9: providers.md "Task-class variants and routing" gives prio
+   assert.ok(redTest.includes('`providers.md` "Task-class variants and routing"'), `.asd/workflows/asd-phase-impl-review.md step 9 must keep a **Red, test defect** bullet that cites the routing rule for the re-run's own id - the step's dispatch sentence cites it for the first run only, and a re-run left to that one is routed under the first run's id and clamped to its tier`);
+ });
+ 
++test('sprint-024 AC-2/AC-3/AC-4/AC-5/AC-6: every reserved risk class has a definition in "Plan file format", the routing rule and plan step cite it and a suite run never routes critical, retro intake presents each row before its disposition and scope step 4 cites it, review diffs are exempt from the whitespace lint in .gitattributes and code-style.md §19, and "Scope amendment" and impl cite each other for the review-fix then initial order', () => {
++  const lifecycle = '.asd/rules/sprint-lifecycle.md';
++  const declaration = canonText(lifecycle).split('\n').filter((line) => line.startsWith('**Material risk declaration**') || line.startsWith('A reserved class')).join('\n');
++  const reserved = ['security', 'authentication', 'migration', 'public contract', 'workflow gate'];
++  assert.deepStrictEqual(reserved.filter((name) => !declaration.includes(`\`${name}\` — `)), [], 'AC-2: "Plan file format" must define each reserved class (`name` — definition), or the class stays reserved by the file touched');
++  const providers = sectionOf('.asd/rules/providers.md', 'Task-class variants and routing');
++  const cite = 'Material risk declaration';
++  assert.ok([providers, canonText('.asd/workflows/asd-phase-plan.md')].every((text) => text.includes(`"Plan file format" ${cite}`)),`AC-2: providers.md and asd-phase-plan.md must cite "Plan file format" ${cite} for the criteria`);
++  const suiteRule = providers.split(/(?<=\.)\s/).find((sentence) => spans(sentence).some((span) => span.startsWith('impl-review <id> suite <n>'))) || '';
++  assert.ok(/never routes critical/.test(suiteRule) && /\bnone\b/.test(suiteRule), 'AC-3: a terminal-suite run declares none and never routes critical');
++
++  const intake = canonText(lifecycle).split('\n').find((line) => line.startsWith('**Retro intake.**')) || '';
++  assert.ok(['root cause', 'proposed edits', 'consequences', 'Expected saving'].every((token) => intake.includes(token)), 'AC-4: "Retro intake" must state what each row shows before its disposition - root cause, proposed edits, consequences, and a P-N row\'s Expected saving');
++  assert.ok(stepOf(canonText('.asd/workflows/asd-phase-scope.md'), 4).includes('`sprint-lifecycle.md` "Retro intake"'), 'AC-4: scope step 4 cites "Retro intake" for the per-row presentation');
++
++  const pattern = '.asd/sprints/**/reviews/**/*.diff';
++  assert.ok(readRepoFile('.gitattributes').split('\n').some((line) => line.startsWith(`${pattern} `) && /\s-whitespace\s*$/.test(line)), `AC-5: .gitattributes must mark ${pattern} -whitespace`);
++  const attr = execFileSync('git', ['check-attr', 'whitespace', '--', '.asd/sprints/s/reviews/impl/wave-1/iter-01/x.diff', 'README.md'], { cwd: REPO_ROOT, encoding: 'utf8' }).trim().split('\n');
++  assert.deepStrictEqual(attr.map((line) => line.split(': ').pop()), ['unset', 'unspecified'], 'AC-5: git check-attr must report whitespace unset for a review diff and unspecified for any other file, so `git diff --cached --check` skips only the review diffs');
++  assert.ok(sectionOf('.asd/rules/code-style.md', '19. Formatting').includes(`\`${pattern}\``),'AC-5: code-style.md must state the same exemption for a consumer project\'s configured lint');
++
++  const amendment = sectionOf(lifecycle, 'Scope amendment');
++  assert.ok(amendment.includes('review_fixes_pending'), 'AC-6: "Scope amendment" must define the amendment accepted while review_fixes_pending is set');
++  const impl = sectionOf('.asd/workflows/asd-phase-impl.md', 'Workflow');
++  assert.ok(stepOf(impl, 5).includes('"Scope amendment"') && canonText('.asd/workflows/asd-phase-impl.md').split('\n').find((line) => line.includes('- review-fix: clear')).includes('"Scope amendment"'), 'AC-6: impl must cite "Scope amendment" where it detects the mode and where review-fix finalizes');
++});
++
+ test('sprint-023 AC-4: artifact-layout.md "Agent memory" states the content rule for each kind of work history memory-check catches, and git-strategy.md "Commit before review" runs the check where the orchestrator commits memory writes and sends a violating one to its owner', () => {
+   const content = sectionOf('.asd/rules/artifact-layout.md', 'Agent memory').split('\n').find((line) => line.startsWith('**Content**')) || '';
+   assert.deepStrictEqual(['sprint', 'Task', 'wave', 'iteration', 'verdict'].filter((kind) => !new RegExp(`\\b${kind}`, 'i').test(content)), [], 'the **Content** rule must name every kind of work history the check scans for - a kind the rule never names is rejected at the commit with no rule to cite');
