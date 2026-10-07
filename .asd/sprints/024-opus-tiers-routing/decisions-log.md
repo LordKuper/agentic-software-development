@@ -51,3 +51,10 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: [plan.md](plan.md)
 - 2026-10-07 — route impl-test entry 1: standard, dispatch HEAD 6d3b882
 - 2026-10-07 — impl-test: impacted set green (273/273), 1/0 tests added/removed, 2 adjusted (entry 1, HEAD analysed 64c1898); no defects, no manual-verification row
+- 2026-10-07 — impl-review division: 1 wave (119 lines, 15 files, 70465 bytes; under every threshold)
+
+## 2026-10-07 — impl-review wave-1/iter-01 → impl review-fix
+
+- **Decision**: combined CONCERNS (F1 low, `tests/run.js` hardcoded reserved-class list) and external CONCERNS (F1 medium `providers.md:123` derived-id declaration not durably recorded; F2 high, F3 high: the AC-3 and AC-6 tests do not reject the old rule / missing sequencing). Low-severity test-only branch not fired (external medium/high), so `review_fixes_pending=wave-1/iter-01`.
+- **Rationale**: `asd-phase-impl-review.md` step 8; `review-policy.md` "Low-severity test-only findings" condition unmet.
+- **Affected docs**: [reviews/impl/wave-1/iter-01/](reviews/impl/wave-1/iter-01/)
