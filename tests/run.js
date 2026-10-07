@@ -7576,7 +7576,7 @@ test('sprint-023 AC-9: providers.md "Task-class variants and routing" gives prio
   assert.ok(redTest.includes('`providers.md` "Task-class variants and routing"'), `.asd/workflows/asd-phase-impl-review.md step 9 must keep a **Red, test defect** bullet that cites the routing rule for the re-run's own id - the step's dispatch sentence cites it for the first run only, and a re-run left to that one is routed under the first run's id and clamped to its tier`);
 });
 
-test('sprint-024 AC-2/AC-3/AC-4/AC-5/AC-6: every reserved risk class has a definition in "Plan file format", the routing rule and plan step cite it and a suite run never routes critical, retro intake presents each row before its disposition and scope step 4 cites it, review diffs are exempt from the whitespace lint in .gitattributes and code-style.md §19, and "Scope amendment" and impl cite each other for the review-fix then initial order', () => {
+test('sprint-024 AC-2/AC-3/AC-4/AC-5/AC-6/AC-8/AC-9: every reserved risk class has a definition in "Plan file format", the routing rule and plan step cite it and a suite run never routes critical, retro intake presents each row before its disposition and scope step 4 cites it, review diffs are exempt from the whitespace lint in .gitattributes and code-style.md §19, "Scope amendment" and impl cite each other for the review-fix then initial order, an unmeetable plan decision is met by widening the fix and dropping it is a new-or-changed-scope decision, and the fail-first mutation of a changed-rule pin restores the superseded text', () => {
   const lifecycle = '.asd/rules/sprint-lifecycle.md';
   const declaration = canonText(lifecycle).split('\n').filter((line) => line.startsWith('**Material risk declaration**') || line.startsWith('A reserved class')).join('\n');
   const reserved = [...(/const RESERVED_CHANGE_RISKS = \[([^\]]+)\]/.exec(readRepoFile('.asd/runtime.js')) || [, ''])[1].matchAll(/'([^']+)'/g)].map(([, name]) => name);
@@ -7607,6 +7607,14 @@ test('sprint-024 AC-2/AC-3/AC-4/AC-5/AC-6: every reserved risk class has a defin
   const resume = canonText('.asd/workflows/asd-phase-impl.md').split('\n').find((line) => line.includes('- review-fix: clear')) || '';
   assert.ok(/wave whose Tasks are all ticked is skipped/.test(stepOf(impl, 5)) && /continue in initial mode.*before step 12/.test(resume), 'AC-6: impl step 5 must skip fully ticked waves and step 11 must continue into initial mode before step 12');
   assert.ok(stepOf(impl, 5).includes('"Scope amendment"') && canonText('.asd/workflows/asd-phase-impl.md').split('\n').find((line) => line.includes('- review-fix: clear')).includes('"Scope amendment"'), 'AC-6: impl must cite "Scope amendment" where it detects the mode and where review-fix finalizes');
+
+  const gate = sectionOf('.asd/rules/checkpoints.md', 'Gate policy');
+  const unmet = gate.split(/(?<=\.)\s/).find((sentence) => sentence.startsWith('A flagged choice')) || '';
+  const scopeClass = 'new or changed scope';
+  assert.ok(unmet.includes('meeting the decision') && unmet.includes(`\`${scopeClass}\``) && unmet.includes('never an adaptive acceptance'), `AC-8: "Gate policy" must resolve a flagged choice that a plan decision cannot be met by meeting the decision, and make dropping it a ${scopeClass} decision, never an adaptive acceptance`);
+  assert.ok(gate.includes(`Hard in both modes: ${scopeClass}`), `AC-8: the ${scopeClass} class the flagged-choice sentence names must be the hard class "Gate policy" lists`);
+  const mutation = sectionOf('.asd/rules/code-style.md', '17. Tests').split('\n').find((line) => line.startsWith('- A content-contract test pins')) || '';
+  assert.ok(mutation.includes('restores the superseded rule text') && mutation.includes('keeping its citation'), 'AC-9: code-style.md §17 must bound the representative mutation of a changed-rule pin mutation to restoring the superseded rule text or removing the new clause while keeping its citation');
 });
 
 test('sprint-023 AC-4: artifact-layout.md "Agent memory" states the content rule for each kind of work history memory-check catches, and git-strategy.md "Commit before review" runs the check where the orchestrator commits memory writes and sends a violating one to its owner', () => {
