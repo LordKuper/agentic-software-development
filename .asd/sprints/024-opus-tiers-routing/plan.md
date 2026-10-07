@@ -91,27 +91,27 @@ Sprint-specific:
 
 ### Task 1: providers.md — critical variant tiers, risk-class citation, own-risk derived ids
 Material risk: change: workflow gate
-- [ ] AC-1 (D1): rewrite the variant-tier clause in "Task-class variants and routing" (L123) to name dev critical opus/high and tester critical sonnet/xhigh, both sol/high on Codex. Keep exactly one sentence pairing bare "mechanical" and "critical".
-- [ ] AC-3 (D3): in the same paragraph, replace the derived-id inheritance clause with the own-declaration rule. Delete "(entry 1 and the first terminal run: every Task's)". State that a suite run declares `none` and never routes critical. Keep the `priorTier` and fresh-id sentences.
-- [ ] AC-2 (D2): in L127-129, cite `sprint-lifecycle.md` "Plan file format" Material risk declaration for what each class means. Keep the reserved-typing rule, `RESERVED_CHANGE_RISKS` and the escalation semantics verbatim.
-- [ ] grep `providers.md` for any other restatement of the inheritance rule or of "sonnet/xhigh" for the critical variant, and update each hit.
+- [x] AC-1 (D1): rewrite the variant-tier clause in "Task-class variants and routing" (L123) to name dev critical opus/high and tester critical sonnet/xhigh, both sol/high on Codex. Keep exactly one sentence pairing bare "mechanical" and "critical".
+- [x] AC-3 (D3): in the same paragraph, replace the derived-id inheritance clause with the own-declaration rule. Delete "(entry 1 and the first terminal run: every Task's)". State that a suite run declares `none` and never routes critical. Keep the `priorTier` and fresh-id sentences.
+- [x] AC-2 (D2): in L127-129, cite `sprint-lifecycle.md` "Plan file format" Material risk declaration for what each class means. Keep the reserved-typing rule, `RESERVED_CHANGE_RISKS` and the escalation semantics verbatim.
+- [x] grep `providers.md` for any other restatement of the inheritance rule or of "sonnet/xhigh" for the critical variant, and update each hit.
 
 ### Task 2: sprint-lifecycle.md — risk-class criteria, retro row presentation, amendment ordering
 Material risk: change: workflow gate
-- [ ] AC-2 (D2): rewrite the Material risk declaration bullets (L372-376): the `change` and `artifact`/`none` criteria, one definition sentence per reserved class, and the doubt bound. Keep the `unclassified` rule and the line grammar unchanged.
-- [ ] AC-4 (D4): add the presentation contract to "Retro intake" (L9), at most two sentences, placed so the regex-picked sentences (`audit.md` Risks L6232-6271) keep matching.
-- [ ] AC-6 (D6): add the paragraph after "Scope amendment" step 3. Do not renumber steps 1-3. Make "Impl phase" Modes' exclusivity sentence cite it only if a citation is needed for consistency.
-- [ ] grep the file for other sites stating the old doubt rule, inheritance or mode exclusivity, and align or cite each.
+- [x] AC-2 (D2): rewrite the Material risk declaration bullets (L372-376): the `change` and `artifact`/`none` criteria, one definition sentence per reserved class, and the doubt bound. Keep the `unclassified` rule and the line grammar unchanged.
+- [x] AC-4 (D4): add the presentation contract to "Retro intake" (L9), at most two sentences, placed so the regex-picked sentences (`audit.md` Risks L6232-6271) keep matching.
+- [x] AC-6 (D6): add the paragraph after "Scope amendment" step 3. Do not renumber steps 1-3. Make "Impl phase" Modes' exclusivity sentence cite it only if a citation is needed for consistency.
+- [x] grep the file for other sites stating the old doubt rule, inheritance or mode exclusivity, and align or cite each.
 
 ### Task 3: code-style.md and .gitattributes — review diff whitespace, fail-first bound
 Material risk: artifact: rule wording
-- [ ] AC-5 (D5): append `.asd/sprints/**/reviews/**/*.diff -whitespace` with a one-line comment to `.gitattributes`, keeping the existing lines byte-identical. Verify with `git check-attr whitespace -- .asd/sprints/x/reviews/impl/a.diff` (expect `unset`).
-- [ ] AC-5 (D5): add the consumer clause to `code-style.md` §19 (L143), keeping "a project's configured `lint` command must be the staged form".
-- [ ] AC-7 (D7): replace the §17 (L126) bound per D7, keeping the pinned tokens.
+- [x] AC-5 (D5): append `.asd/sprints/**/reviews/**/*.diff -whitespace` with a one-line comment to `.gitattributes`, keeping the existing lines byte-identical. Verify with `git check-attr whitespace -- .asd/sprints/x/reviews/impl/a.diff` (expect `unset`).
+- [x] AC-5 (D5): add the consumer clause to `code-style.md` §19 (L143), keeping "a project's configured `lint` command must be the staged form".
+- [x] AC-7 (D7): replace the §17 (L126) bound per D7, keeping the pinned tokens.
 
 ### Task 4: agent frontmatter — opus tiers
 Material risk: artifact: agent frontmatter tiers
-- [ ] AC-1 (D1): set `claude.model`/`effort` in `.asd/agents/asd-architect.md` (opus/xhigh), `asd-reviewer-correctness.md` (opus/high), `asd-reviewer-combined.md` (opus/high), and `variants.critical.claude` in `asd-dev.md` (opus/high). Edit frontmatter values only, the JSON stays valid. Touch no `codex` block and no other agent. Verify the result with `node .asd/sync.js --check` (expect only these four generated views stale, before the orchestrator's apply).
+- [x] AC-1 (D1): set `claude.model`/`effort` in `.asd/agents/asd-architect.md` (opus/xhigh), `asd-reviewer-correctness.md` (opus/high), `asd-reviewer-combined.md` (opus/high), and `variants.critical.claude` in `asd-dev.md` (opus/high). Edit frontmatter values only, the JSON stays valid. Touch no `codex` block and no other agent. Verify the result with `node .asd/sync.js --check` (expect only these four generated views stale, before the orchestrator's apply).
 
 ### Task 5: asd-phase-impl.md — skip ticked waves, amendment continues after review-fix
 Material risk: change: workflow gate
