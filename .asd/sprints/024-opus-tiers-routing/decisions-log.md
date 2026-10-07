@@ -37,3 +37,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 <!-- entries appended below this line -->
 - 2026-10-07 — pr open mode: DoD verified (plan ticked, wave-1 combined+external APPROVE at iter-02, full suite 273/273 at 3d9c1be with no code/test diff since, lint+sync clean, retrospective present, no sprint stubs, no existing PR for the branch); asd_version 13.6.0 → 13.7.0 (feat highest, no breaking marker; max migration 9.0.0 ≤ 13.7.0), CHANGELOG v13.7.0 added
 - 2026-10-07 — pr open mode: PR #60 opened after the user confirmed publication; state.json.pr written and pushed; NEXT await-merge
+
+## 2026-10-07 — scope amendment AC-8, AC-9
+
+- **Decision**: The user amended retro proposals 024#P-1 and 024#P-2 into sprint 024 instead of opening a sprint 025. AC-8 is carried by Task 8 (`checkpoints.md`) and AC-9 by Task 9 (`code-style.md` §17), both in new wave 3. The amendment was accepted after the division point, so `floor_base=wave-1/2` and wave 1's `latched` are cleared. `phase` returns from `pr` to `impl` (not earlier than `impl`, so no rollback reset). PR #60 stays open and is updated on the next push. The audit boolean stays true.
+- **Rationale**: `sprint-lifecycle.md` "Scope amendment"; the user's explicit request in chat.
+- **Affected docs**: [sprint.md](sprint.md), [plan.md](plan.md)

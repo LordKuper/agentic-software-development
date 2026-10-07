@@ -75,6 +75,9 @@ The AC source is `sprint.md` AC-1…AC-7 (lite). The inputs are `audit.md`: "Tou
   - Pinned tokens stay: `- A content-contract test pins`, `Regression proof`, "Added tests", mutation, reword, run.
   - `t_test-plan.md` already defers its cell to §17 and is unchanged.
 
+- **D8 (AC-8, amendment), flagged choice vs plan decision.** One sentence in `checkpoints.md` "Gate policy", after the adaptive paragraph's "no unresolved material alternative remains" clause: a flagged choice reporting that a plan decision cannot be met within its Task's files is resolved by meeting the decision, widening the fix to the files it needs; dropping the decision's requirement is a `new or changed scope` decision, never an adaptive acceptance. `asd-phase-impl.md` step 10 already cites "Gate policy" for flagged choices and is not edited.
+- **D9 (AC-9, amendment), representative mutation.** `code-style.md` §17 (L126) adds to the fail-first bound: for a pin of a changed rule, the representative mutation restores the superseded rule text, or removes the new clause while keeping its citation, never a token rename the old rule would also satisfy. Pinned tokens of L126 stay.
+
 **New homes cited across Tasks** (exact file and heading):
 - `sprint-lifecycle.md` "Plan file format" Material risk declaration (D2), "Retro intake" (D4) and "Scope amendment" (D6), all in Task 2. Cited by Task 1 (`providers.md`), Task 5 (`asd-phase-impl.md`) and Task 6 (`asd-phase-plan.md`, `asd-phase-scope.md`, `t_plan.md`).
 - `providers.md` "Task-class variants and routing" (D1, D3), in Task 1. Cited by Task 7 (README).
@@ -130,6 +133,13 @@ Material risk: artifact: citation wording
 Material risk: artifact: mirror doc
 - [x] AC-1 (D1): update the family list (L218) to fable/opus/sonnet/haiku, the `asd-architect` (opus/xhigh), `asd-reviewer-correctness` and `asd-reviewer-combined` (opus/high) rows, and the variant sentence (L232): dev critical Opus high, tester critical Sonnet xhigh, Sol high on Codex.
 - [x] AC-2..AC-7: confirm every README mention of routing, retro intake, scope amendment, lint and fail-first is accurate, and edit only stale text. List each section checked.
+### Task 8: checkpoints.md — flagged choice meets the plan decision
+Material risk: artifact: rule wording
+- [ ] AC-8 (D8): add the sentence to `checkpoints.md` "Gate policy" as D8 states; keep the `public contract` hard-gate category and every other sentence verbatim. Verification: `node tests/run.js` (impl-test pins it).
+
+### Task 9: code-style.md — representative mutation for a changed rule
+Material risk: artifact: rule wording
+- [ ] AC-9 (D9): extend the §17 fail-first bound (L126) as D9 states, keeping its pinned tokens. Verification: `node tests/run.js`.
 
 ## Risks (optional)
 - The tier pin test (`tests/run.js` ≈L7194-7256) checks exact word sets in the `providers.md` and README variant sentences. Task 1 and Task 7 wording must be mutually consistent, and impl-test repoints the test.
@@ -142,10 +152,12 @@ Material risk: artifact: mirror doc
 |---|---|
 | 1 | Task 1, Task 2, Task 3, Task 4 |
 | 2 | Task 5, Task 6, Task 7 |
+| 3 | Task 8, Task 9 |
 
 - Task 5 depends on Task 2 (cites "Scope amendment") and Task 1 (cites "Task-class variants and routing").
 - Task 6 depends on Task 2 (cites "Plan file format" and "Retro intake").
 - Task 7 depends on Tasks 1, 2, 3 and 4: it mirrors their edits.
+- Tasks 8 and 9 (scope amendment AC-8, AC-9, new last wave) depend on Tasks 1-7: Task 9 edits the §17 sentence Task 3 rewrote.
 
 Orchestrator-only (outside every Task):
 - After each wave, once: `node "$(git rev-parse --show-toplevel)/.asd/sync.js" --apply <generated-view-path...>` for the generated views of the canon that wave edited. Wave 1: `.claude/agents/asd-architect.md`, `asd-reviewer-correctness.md`, `asd-reviewer-combined.md`, `asd-dev-critical.md`, plus the `.codex`/`.agents` views `sync.js --check` reports. Wave 2: the `asd-phase-impl`, `asd-phase-plan` and `asd-phase-scope` skill views it reports. Then `sync.js --check`, which also refreshes `release-manifest.json` hashes.
