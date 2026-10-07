@@ -35,3 +35,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-10-07 — audit accepted (adaptive)
+
+- **Decision**: `audit.md` accepted by the orchestrator: every section is present, no contradiction is left unsettled, and all seven ACs are deliverable as stated. Every amended canon site resolves to the later user-accepted scope. Open plan inputs: AC-2's verification qualifier binds all three edit kinds; AC-6 does not extend to `test_defects_pending` (outside the written AC); AC-3 fixes impl-test entries and the in-place test fix to own-risk, `standard` by default.
+- **Rationale**: `checkpoints.md` routine audit acceptance in adaptive mode, with valid evidence.
+- **Affected docs**: [audit.md](audit.md)
