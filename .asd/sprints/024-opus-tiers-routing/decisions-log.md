@@ -49,3 +49,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-07 — impl-test: impacted set green (273/273), 0/0 tests added/removed (entry 4, HEAD analysed 6d57b320); no defects
 - 2026-10-07 — impl-review wave-1/iter-04 (floor medium): combined APPROVE, external APPROVE; iter-03 findings verified resolved. External's below-floor residual (prose anchors in AC-8/AC-9 pins) is accepted as calibrated low, not overruled. Wave 1 roster met → terminal full-suite gate
 - 2026-10-07 — route impl-review wave-1/iter-04 suite: standard, dispatch HEAD a3f16153; risk none via node tests/run.js
+- 2026-10-07 — impl-review DoD met (adaptive green handoff): wave 1 APPROVE at iter-04, terminal full suite 273/273 at d32f70a (8df080a), lint and sync clean; next design-promote (lite no-op)
