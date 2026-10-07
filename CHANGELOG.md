@@ -2,6 +2,22 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v13.7.0
+
+The agents whose mistakes cost the most now run on Opus, and routing stops sending nearly every task to the critical tier. Risk classes have concrete criteria, and derived dispatches route on their own declared risk.
+
+### Changed
+- **Opus tiers (Claude).** `asd-architect` is `opus/xhigh`. `asd-reviewer-correctness`, `asd-reviewer-combined` and the `asd-dev-critical` variant are `opus/high`. `asd-tester-critical` stays `sonnet/xhigh`, and every Codex tier is unchanged.
+- **Material risk criteria** (`sprint-lifecycle.md` "Plan file format"). `change` now means the edit's correctness is genuinely uncertain. A decided deletion, a constant swap, or a mechanical prose or mirror edit that a named test, grep or `sync.js --check` verifies is `artifact` (high-stakes file) or `none`. Each reserved class (`workflow gate`, `public contract`, `migration`, `security`, `authentication`) has a definition. "When in doubt" means an uncertainty the author can name. The reserved-typing ban is unchanged.
+- **Derived-id routing** (`providers.md` "Task-class variants and routing"). An impl-test entry, review-fix, test-fix, in-place test fix or terminal-suite run routes on the orchestrator's own `Material risk` declaration for its delta, not on the plan Tasks' risks. A terminal-suite run declares `none` and never routes critical. The routing decisions-log line of a derived id ends `; risk <declaration>`, with `via <check>` after a `none` or `artifact` value.
+- **Retro intake** (`sprint-lifecycle.md` "Retro intake"). Before asking for a row's disposition, the scope gate shows its root cause, the proposed edits, and the consequences of including or deferring it.
+- **Scope amendment during a review-fix round.** An amendment accepted while `review_fixes_pending` is set waits for the fix round. `impl` then continues in initial mode over the plan's unticked Tasks before one `NEXT: impl-test`. Initial mode skips fully ticked waves.
+- **Fail-first proof** of content-contract tests is bounded per entry: one representative mutation per added assert plus one reword control (`code-style.md` §17).
+- **Staged lint** must not flag generated review diff files (`.asd/sprints/**/reviews/**/*.diff`), for example via a `-whitespace` gitattribute (`code-style.md` §19).
+
+### Migration
+- No migration script. Existing plans and state files stay valid. A consumer whose `lint` runs `git diff --cached --check` over review commits can add `.asd/sprints/**/reviews/**/*.diff -whitespace` to its `.gitattributes`.
+
 ## v13.6.0
 
 Cheaper, steadier reviews and a few rules that were hand-held before. Wave division now counts files and diff bytes, reviewers get a turn plan and more room, `/asd-sprint` refreshes the base branch before it looks for work, and the change-surface cap is gone. External Review reads the scope manifest by path.
