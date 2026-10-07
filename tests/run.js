@@ -7565,7 +7565,7 @@ test('sprint-023 AC-9: providers.md "Task-class variants and routing" gives prio
   const suite = 'impl-review <id> suite';
   const ids = ['impl-test entry N', 'review-fix <id>', 'test-fix <D-ids>', 'impl-review <id> test-fix', suite];
   const fresh = sentences.find((sentence) => ids.every((id) => spans(sentence).includes(id))) || '';
-  assert.ok(fresh && spans(fresh).includes('priorTier') && spans(fresh).includes('Material risk') && spans(fresh).includes('standard'), `the rule must name the ids ${ids.join(', ')} as new each time - no priorTier - and route them from the orchestrator's own Material risk declaration for that dispatch's delta, none declared meaning standard; unnamed, a prose-only delta inherits the risk of every Task whose paths it touches, a test-fix round or the in-place test fix has no risks source, and the in-place one shares a task_routing record with its iteration's dev review-fix round, which then reads the tester's tier as priorTier`);
+  assert.ok(fresh && spans(fresh).includes('priorTier') && /its `risks` are the orchestrator's own `Material risk` declaration/.test(fresh) && !/Material risk lines of the plan Tasks|Tasks whose paths/.test(fresh) && spans(fresh).includes('standard'), `the rule must name the ids ${ids.join(', ')} as new each time - no priorTier - and route them from the orchestrator's own Material risk declaration for that dispatch's delta, none declared meaning standard; unnamed, a prose-only delta inherits the risk of every Task whose paths it touches, a test-fix round or the in-place test fix has no risks source, and the in-place one shares a task_routing record with its iteration's dev review-fix round, which then reads the tester's tier as priorTier`);
   const perRun = sentences.find((sentence) => spans(sentence).includes(suite) && spans(sentence).some((span) => span.startsWith(`${suite} `))) || '';
   assert.ok(perRun, `the rule must give a later terminal-suite run an id of its own - ${suite} plus a run suffix; without it a re-run after a test-defect fix reuses the first run's task_routing key and a later test-only delta inherits that run's tier as priorTier`);
   const variantNote = /\(no `-standard` variant exists[^)]*\)/;
@@ -7579,11 +7579,14 @@ test('sprint-023 AC-9: providers.md "Task-class variants and routing" gives prio
 test('sprint-024 AC-2/AC-3/AC-4/AC-5/AC-6: every reserved risk class has a definition in "Plan file format", the routing rule and plan step cite it and a suite run never routes critical, retro intake presents each row before its disposition and scope step 4 cites it, review diffs are exempt from the whitespace lint in .gitattributes and code-style.md §19, and "Scope amendment" and impl cite each other for the review-fix then initial order', () => {
   const lifecycle = '.asd/rules/sprint-lifecycle.md';
   const declaration = canonText(lifecycle).split('\n').filter((line) => line.startsWith('**Material risk declaration**') || line.startsWith('A reserved class')).join('\n');
-  const reserved = ['security', 'authentication', 'migration', 'public contract', 'workflow gate'];
+  const reserved = [...(/const RESERVED_CHANGE_RISKS = \[([^\]]+)\]/.exec(readRepoFile('.asd/runtime.js')) || [, ''])[1].matchAll(/'([^']+)'/g)].map(([, name]) => name);
+  assert.ok(reserved.length > 0, 'AC-2: the reserved classes must be derived from runtime.js RESERVED_CHANGE_RISKS, the set the router enforces');
   assert.deepStrictEqual(reserved.filter((name) => !declaration.includes(`\`${name}\` — `)), [], 'AC-2: "Plan file format" must define each reserved class (`name` — definition), or the class stays reserved by the file touched');
   const providers = sectionOf('.asd/rules/providers.md', 'Task-class variants and routing');
   const cite = 'Material risk declaration';
   assert.ok([providers, canonText('.asd/workflows/asd-phase-plan.md')].every((text) => text.includes(`"Plan file format" ${cite}`)),`AC-2: providers.md and asd-phase-plan.md must cite "Plan file format" ${cite} for the criteria`);
+  const logLine = providers.split(/(?<=\.)\s/).find((sentence) => sentence.includes('decisions-log routing line')) || '';
+  assert.ok(logLine.includes('ends `; risk <declaration>`') && logLine.includes('via <check>'), 'AC-3: the decisions-log routing line must end `; risk <declaration>` with `via <check>` after a none/artifact value');
   const suiteRule = providers.split(/(?<=\.)\s/).find((sentence) => spans(sentence).some((span) => span.startsWith('impl-review <id> suite <n>'))) || '';
   assert.ok(/never routes critical/.test(suiteRule) && /\bnone\b/.test(suiteRule), 'AC-3: a terminal-suite run declares none and never routes critical');
 
@@ -7599,7 +7602,10 @@ test('sprint-024 AC-2/AC-3/AC-4/AC-5/AC-6: every reserved risk class has a defin
 
   const amendment = sectionOf(lifecycle, 'Scope amendment');
   assert.ok(amendment.includes('review_fixes_pending'), 'AC-6: "Scope amendment" must define the amendment accepted while review_fixes_pending is set');
+  assert.ok(/review-fix mode first.*initial mode over the plan's unticked Tasks only.*one `NEXT: impl-test`/.test(amendment), 'AC-6: "Scope amendment" must run review-fix first, then initial mode over unticked Tasks only (never a ticked one again), before one NEXT: impl-test');
   const impl = sectionOf('.asd/workflows/asd-phase-impl.md', 'Workflow');
+  const resume = canonText('.asd/workflows/asd-phase-impl.md').split('\n').find((line) => line.includes('- review-fix: clear')) || '';
+  assert.ok(/wave whose Tasks are all ticked is skipped/.test(stepOf(impl, 5)) && /continue in initial mode.*before step 12/.test(resume), 'AC-6: impl step 5 must skip fully ticked waves and step 11 must continue into initial mode before step 12');
   assert.ok(stepOf(impl, 5).includes('"Scope amendment"') && canonText('.asd/workflows/asd-phase-impl.md').split('\n').find((line) => line.includes('- review-fix: clear')).includes('"Scope amendment"'), 'AC-6: impl must cite "Scope amendment" where it detects the mode and where review-fix finalizes');
 });
 
