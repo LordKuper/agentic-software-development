@@ -38,13 +38,12 @@ responsibility:
 
 ## Suite run
 
-- Command: `node tests/run.js` (`commands.yaml` `test`)
-- Scope: full, unscoped (`node tests/run.js` is the whole suite; entry 4 pre-run and gate)
-- Pre-run (step 3, before authoring): green — 273 passed, 0 failed (exit 0)
-- Result: green — 273 passed, 0 failed, 0 skipped (exit 0); no test authored, so the pre-run is the gate run
-- Lint: `git diff --cached --check` (`commands.yaml` `lint`) runs on the staged paths in the commit command, exit 0
-- Build: `node .asd/sync.js --check` (`commands.yaml` `build`) exit 0, `ok: true`, every target `current`
-- HEAD: b78ffea279bc581910d98c662fb03cb9a0fa271b
+- Terminal full-suite gate, `impl-review wave-1/iter-04 suite`; supersedes the impacted-run record
+- Test: `node tests/run.js` (`commands.yaml` `test`), unscoped, exit 0 — 273 passed, 0 failed, 0 skipped
+- Lint: `git diff --cached --check` (`commands.yaml` `lint`), exit 0
+- Build: `node .asd/sync.js --check` (`commands.yaml` `build`), exit 0, `ok: true`, every target `current`
+- Verdict: green
+- HEAD: d32f70a9a7b7de4b558ed213141703f07cda549f
 
 ## Defects
 
