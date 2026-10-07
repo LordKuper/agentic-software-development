@@ -66,3 +66,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-07 — impl-test: impacted set green (273/273), 0/0 tests added/removed (entry 2, HEAD analysed 888bdf3); no defects, no manual-verification row
 - 2026-10-07 — impl-review wave-1/iter-02: combined APPROVE, external APPROVE; iteration-1 findings verified resolved; wave 1 (last) roster met → terminal full-suite gate
 - 2026-10-07 — route impl-review wave-1/iter-02 suite: standard, dispatch HEAD 34f5b0c; risk none via node tests/run.js
+
+## 2026-10-07 — impl-review DoD met
+
+- **Decision**: Wave 1 of 1 met its roster at iter-02, with combined and external both APPROVE after one review-fix round. The terminal full suite ran green: `node tests/run.js` exit 0, 273/273 at 3d9c1be, recorded in 6b095ca. Lint and `sync.js --check` are clean. The green handoff is recorded adaptively. Next is design-promote (lite, all documents disabled, so it is a no-op).
+- **Rationale**: `sprint-lifecycle.md` "Review iteration counters" and "Impacted test set".
+- **Affected docs**: [test-plan.md](test-plan.md)
