@@ -35,3 +35,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-10-07 — `plan.md` accepted (adaptive)
+
+- **Decision**: `plan.md` accepted. It has seven Tasks in two waves. Wave 1 holds providers.md, sprint-lifecycle.md, code-style.md with `.gitattributes`, and the agent frontmatter. Wave 2 holds asd-phase-impl.md, the plan and scope workflow and template citations, and README. Designs D1-D7 follow `audit.md` Gaps.
+- **Rationale**: every AC is covered and every audit site is assigned. The tier and routing contract changes land in wave 1, so later dispatches run under them. No stubs (audit "Related open stubs" absent).
+- **Affected docs**: [plan.md](plan.md)
