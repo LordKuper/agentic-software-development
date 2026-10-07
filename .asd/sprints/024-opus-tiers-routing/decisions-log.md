@@ -39,3 +39,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-07 — wave 3 done: Task 8 (b119ba2), Task 9 (974964f); manifest upstream_hashes recomputed via --apply AGENTS.md, sync --check clean
 - 2026-10-07 — correction: the 024#P-1/P-2 retro-backlog rows written with the amendment were removed (sprint-019 AC-4 contract: a backlog row must address an archived retro). The re-run retro records both as `covered by:`, so intake drops them
 - 2026-10-07 — impl assessment approved (adaptive): amendment Tasks 8-9 ticked, lint and sync clean, suite self-check 273/273, no flagged choices, authorised paths only
+- 2026-10-07 — route impl-test entry 3: standard, dispatch HEAD 26b3b9e; risk artifact: content-contract pins via node tests/run.js
