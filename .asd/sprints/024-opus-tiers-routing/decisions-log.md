@@ -64,3 +64,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-07 — impl fix for wave-1/iter-01: findings resolved (external.md F1 by 56b6d84; external.md F2, F3 and combined.md F1 by 63ee0c8); manifest upstream_hashes recomputed, sync --check clean, suite self-check 273/273, lint clean, authorised paths only
 - 2026-10-07 — route impl-test entry 2: standard, dispatch HEAD e7f8eca; risk artifact: content-contract pins via node tests/run.js
 - 2026-10-07 — impl-test: impacted set green (273/273), 0/0 tests added/removed (entry 2, HEAD analysed 888bdf3); no defects, no manual-verification row
+- 2026-10-07 — impl-review wave-1/iter-02: combined APPROVE, external APPROVE; iteration-1 findings verified resolved; wave 1 (last) roster met → terminal full-suite gate
+- 2026-10-07 — route impl-review wave-1/iter-02 suite: standard, dispatch HEAD 34f5b0c; risk none via node tests/run.js
