@@ -35,3 +35,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+- 2026-10-07 — route Task 1, Task 2: critical, dispatch HEAD 11f92e0
+- 2026-10-07 — route Task 3: standard, dispatch HEAD 11f92e0
+- 2026-10-07 — route Task 4: mechanical, dispatch HEAD 11f92e0
