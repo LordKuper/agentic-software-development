@@ -35,3 +35,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-10-07 — retro: retrospective.html written
+
+- **Decision**: `retrospective.html` written on the empty-log branch: no friction log, 0 entries. It holds 2 systemic proposals: P-1, resolve a flagged choice by meeting the plan decision, not deleting it; P-2, a rule-change pin's fail-first mutation restores the superseded rule text. Nothing applied or promoted. Routing outcome this sprint: 4 of 12 `task_routing` entries critical (Tasks 1, 2, 5 and the review-fix of external F1), against 18 of 21 in 023.
+- **Rationale**: `sprint-lifecycle.md` "Retro phase".
+- **Affected docs**: [retrospective.html](retrospective.html)
