@@ -1,7 +1,7 @@
 {
   "sprint_id": "024-opus-tiers-routing",
   "branch": "sprint/024-opus-tiers-routing",
-  "phase": "design-promote",
+  "phase": "retro",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -253,7 +253,7 @@
     }
   },
   "created_at": "2026-10-07T06:56:22.509Z",
-  "updated_at": "2026-10-07T09:13:22.860Z",
+  "updated_at": "2026-10-07T09:13:41.507Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": {
