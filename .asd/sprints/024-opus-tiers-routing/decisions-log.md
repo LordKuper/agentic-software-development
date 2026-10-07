@@ -49,3 +49,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Initial impl is complete. All seven Tasks are ticked, build and lint are clean, `sync.js --check` is clean, and the self-check `node tests/run.js` passes 272/272. The round touched only authorised paths. There are no sprint stubs, and every flagged choice is resolved (wave 1 entry above).
 - **Rationale**: `checkpoints.md` routine initial impl assessment in adaptive mode, with valid evidence.
 - **Affected docs**: [plan.md](plan.md)
+- 2026-10-07 — route impl-test entry 1: standard, dispatch HEAD 6d3b882
