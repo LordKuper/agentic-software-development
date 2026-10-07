@@ -45,3 +45,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-07 — route review-fix wave-1/iter-03 combined.md F1: standard, dispatch HEAD ee0facb8; risk artifact: rule wording via node tests/run.js
 - 2026-10-07 — route review-fix wave-1/iter-03 external.md F1: standard, dispatch HEAD ee0facb8; risk artifact: content-contract pins via node tests/run.js
 - 2026-10-07 — impl fix for wave-1/iter-03: findings resolved (combined.md F1 by 9bceee2, external.md F1 by 9674110); manifest upstream_hashes recomputed, sync --check clean, suite self-check 273/273, authorised paths only
+- 2026-10-07 — route impl-test entry 4: standard, dispatch HEAD 5f173a13; risk artifact: content-contract pins via node tests/run.js
