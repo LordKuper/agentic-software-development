@@ -7548,7 +7548,7 @@ test('sprint-023 AC-5: the Test-only declaration is defined once in sprint-lifec
   assert.deepStrictEqual(sites.filter(([, line]) => !/test-only/i.test(line)).map(([rel, line]) => `${rel}: ${line.slice(0, 100)}`), [], 'every canon line that says impl writes no tests or the plan has no test-authoring Tasks must name the Test-only carve-out - a site that does not tells a reader a Test-only Task is forbidden (asd-dev.md is the dev\'s own contract and stays unconditional)');
 });
 
-test('sprint-023 AC-6: code-style.md §17 bounds the fail-first proof of a content-contract test to one mutation per relation plus a reword control and has the run count recorded in the Added tests cell, which t_test-plan.md gives a count for', () => {
+test('sprint-023 AC-6, sprint-024 AC-7: code-style.md §17 bounds the fail-first proof of a content-contract test per entry - a mutation per added assert plus one reword control - and has the run count recorded as runs: <n> in the Added tests cell, which t_test-plan.md gives a count for', () => {
   const added = sectionOf('.asd/templates/t_test-plan.md', 'Added tests');
   const column = (/^\| Test \| ([^|]+) \|$/m.exec(added) || [])[1];
   assert.ok(column, 't_test-plan.md "Added tests" must keep its two-column table with the proof column header');
@@ -7556,16 +7556,16 @@ test('sprint-023 AC-6: code-style.md §17 bounds the fail-first proof of a conte
   const forms = proof.split('\\|').slice(1);
   assert.ok(forms.length > 0 && forms.every((form) => form.includes('runs: <n>')), `the ${column.trim()} cell must give every form of proof a "runs: <n>" count - a proof without it cannot be checked against the bound`);
   const bullet = sectionOf('.asd/rules/code-style.md', '17. Tests').split('\n').find((line) => line.startsWith('- A content-contract test pins')) || '';
-  assert.ok(bullet.includes(`\`${column.trim()}\``) && bullet.includes('"Added tests"') && /\bmutation\b/.test(bullet) && /\breword/.test(bullet) && /\bruns?\b/.test(bullet), `code-style.md §17's content-contract bullet must bound the proof (a mutation per relation, a reword control) and name the "Added tests" ${column.trim()} cell that records the run count - unbounded, a proof run is open-ended and unrecorded`);
+  assert.ok(bullet.includes(`\`${column.trim()}\``) && bullet.includes('"Added tests"') && /\bmutation\b/.test(bullet) && /\breword/.test(bullet) && bullet.includes('runs: <n>'), `code-style.md §17's content-contract bullet must bound the proof (a mutation per added assert, a reword control per entry) and name the "Added tests" ${column.trim()} cell that records the run count - unbounded, a proof run is open-ended and unrecorded`);
 });
 
-test('sprint-023 AC-9: providers.md "Task-class variants and routing" gives priorTier only to a re-dispatch of the same task_routing key and routes an impl-test entry, review-fix, test-fix, in-place test-fix or terminal-suite id (each terminal run its own) from the Material risk of the Tasks its delta touches, and each acting workflow, the red-test-defect re-run included, routes through that rule', () => {
+test('sprint-023 AC-9: providers.md "Task-class variants and routing" gives priorTier only to a re-dispatch of the same task_routing key and routes an impl-test entry, review-fix, test-fix, in-place test-fix or terminal-suite id (each terminal run its own) from its own Material risk declaration, and each acting workflow, the red-test-defect re-run included, routes through that rule', () => {
   const sentences = sectionOf('.asd/rules/providers.md', 'Task-class variants and routing').split(/(?<=\.)\s/);
   assert.ok(sentences.some((sentence) => spans(sentence).includes('priorTier') && spans(sentence).includes('task_routing')), 'the rule must tie priorTier to the tier recorded under the same task_routing key - a re-dispatch of that id - or a later entry inherits the first one\'s tier');
   const suite = 'impl-review <id> suite';
   const ids = ['impl-test entry N', 'review-fix <id>', 'test-fix <D-ids>', 'impl-review <id> test-fix', suite];
   const fresh = sentences.find((sentence) => ids.every((id) => spans(sentence).includes(id))) || '';
-  assert.ok(fresh && spans(fresh).includes('priorTier') && spans(fresh).includes('Material risk') && spans(fresh).includes('standard'), `the rule must name the ids ${ids.join(', ')} as new each time - no priorTier - and route them from the Material risk lines of the Tasks their delta touches, none declared meaning standard; unnamed, a prose-only delta is clamped to critical by the first entry's tier, a test-fix round or the in-place test fix has no risks source, and the in-place one shares a task_routing record with its iteration's dev review-fix round, which then reads the tester's tier as priorTier`);
+  assert.ok(fresh && spans(fresh).includes('priorTier') && spans(fresh).includes('Material risk') && spans(fresh).includes('standard'), `the rule must name the ids ${ids.join(', ')} as new each time - no priorTier - and route them from the orchestrator's own Material risk declaration for that dispatch's delta, none declared meaning standard; unnamed, a prose-only delta inherits the risk of every Task whose paths it touches, a test-fix round or the in-place test fix has no risks source, and the in-place one shares a task_routing record with its iteration's dev review-fix round, which then reads the tester's tier as priorTier`);
   const perRun = sentences.find((sentence) => spans(sentence).includes(suite) && spans(sentence).some((span) => span.startsWith(`${suite} `))) || '';
   assert.ok(perRun, `the rule must give a later terminal-suite run an id of its own - ${suite} plus a run suffix; without it a re-run after a test-defect fix reuses the first run's task_routing key and a later test-only delta inherits that run's tier as priorTier`);
   const variantNote = /\(no `-standard` variant exists[^)]*\)/;
@@ -7574,6 +7574,33 @@ test('sprint-023 AC-9: providers.md "Task-class variants and routing" gives prio
   }
   const redTest = stepOf(sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Workflow'), 9).split('\n').find((line) => line.includes('**Red, test defect**')) || '';
   assert.ok(redTest.includes('`providers.md` "Task-class variants and routing"'), `.asd/workflows/asd-phase-impl-review.md step 9 must keep a **Red, test defect** bullet that cites the routing rule for the re-run's own id - the step's dispatch sentence cites it for the first run only, and a re-run left to that one is routed under the first run's id and clamped to its tier`);
+});
+
+test('sprint-024 AC-2/AC-3/AC-4/AC-5/AC-6: every reserved risk class has a definition in "Plan file format", the routing rule and plan step cite it and a suite run never routes critical, retro intake presents each row before its disposition and scope step 4 cites it, review diffs are exempt from the whitespace lint in .gitattributes and code-style.md §19, and "Scope amendment" and impl cite each other for the review-fix then initial order', () => {
+  const lifecycle = '.asd/rules/sprint-lifecycle.md';
+  const declaration = canonText(lifecycle).split('\n').filter((line) => line.startsWith('**Material risk declaration**') || line.startsWith('A reserved class')).join('\n');
+  const reserved = ['security', 'authentication', 'migration', 'public contract', 'workflow gate'];
+  assert.deepStrictEqual(reserved.filter((name) => !declaration.includes(`\`${name}\` — `)), [], 'AC-2: "Plan file format" must define each reserved class (`name` — definition), or the class stays reserved by the file touched');
+  const providers = sectionOf('.asd/rules/providers.md', 'Task-class variants and routing');
+  const cite = 'Material risk declaration';
+  assert.ok([providers, canonText('.asd/workflows/asd-phase-plan.md')].every((text) => text.includes(`"Plan file format" ${cite}`)),`AC-2: providers.md and asd-phase-plan.md must cite "Plan file format" ${cite} for the criteria`);
+  const suiteRule = providers.split(/(?<=\.)\s/).find((sentence) => spans(sentence).some((span) => span.startsWith('impl-review <id> suite <n>'))) || '';
+  assert.ok(/never routes critical/.test(suiteRule) && /\bnone\b/.test(suiteRule), 'AC-3: a terminal-suite run declares none and never routes critical');
+
+  const intake = canonText(lifecycle).split('\n').find((line) => line.startsWith('**Retro intake.**')) || '';
+  assert.ok(['root cause', 'proposed edits', 'consequences', 'Expected saving'].every((token) => intake.includes(token)), 'AC-4: "Retro intake" must state what each row shows before its disposition - root cause, proposed edits, consequences, and a P-N row\'s Expected saving');
+  assert.ok(stepOf(canonText('.asd/workflows/asd-phase-scope.md'), 4).includes('`sprint-lifecycle.md` "Retro intake"'), 'AC-4: scope step 4 cites "Retro intake" for the per-row presentation');
+
+  const pattern = '.asd/sprints/**/reviews/**/*.diff';
+  assert.ok(readRepoFile('.gitattributes').split('\n').some((line) => line.startsWith(`${pattern} `) && /\s-whitespace\s*$/.test(line)), `AC-5: .gitattributes must mark ${pattern} -whitespace`);
+  const attr = execFileSync('git', ['check-attr', 'whitespace', '--', '.asd/sprints/s/reviews/impl/wave-1/iter-01/x.diff', 'README.md'], { cwd: REPO_ROOT, encoding: 'utf8' }).trim().split('\n');
+  assert.deepStrictEqual(attr.map((line) => line.split(': ').pop()), ['unset', 'unspecified'], 'AC-5: git check-attr must report whitespace unset for a review diff and unspecified for any other file, so `git diff --cached --check` skips only the review diffs');
+  assert.ok(sectionOf('.asd/rules/code-style.md', '19. Formatting').includes(`\`${pattern}\``),'AC-5: code-style.md must state the same exemption for a consumer project\'s configured lint');
+
+  const amendment = sectionOf(lifecycle, 'Scope amendment');
+  assert.ok(amendment.includes('review_fixes_pending'), 'AC-6: "Scope amendment" must define the amendment accepted while review_fixes_pending is set');
+  const impl = sectionOf('.asd/workflows/asd-phase-impl.md', 'Workflow');
+  assert.ok(stepOf(impl, 5).includes('"Scope amendment"') && canonText('.asd/workflows/asd-phase-impl.md').split('\n').find((line) => line.includes('- review-fix: clear')).includes('"Scope amendment"'), 'AC-6: impl must cite "Scope amendment" where it detects the mode and where review-fix finalizes');
 });
 
 test('sprint-023 AC-4: artifact-layout.md "Agent memory" states the content rule for each kind of work history memory-check catches, and git-strategy.md "Commit before review" runs the check where the orchestrator commits memory writes and sends a violating one to its owner', () => {
