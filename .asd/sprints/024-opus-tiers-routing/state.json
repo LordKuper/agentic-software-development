@@ -1,7 +1,7 @@
 {
   "sprint_id": "024-opus-tiers-routing",
   "branch": "sprint/024-opus-tiers-routing",
-  "phase": "impl",
+  "phase": "impl-test",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -115,6 +115,12 @@
       "execution": "agent",
       "reason": "artifact-risk:content-contract pins",
       "resolved_model": "sonnet"
+    },
+    "impl-test entry 2": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:content-contract pins",
+      "resolved_model": "sonnet"
     }
   },
   "skipped_phases": [],
@@ -144,7 +150,7 @@
     }
   },
   "created_at": "2026-10-07T06:56:22.509Z",
-  "updated_at": "2026-10-07T08:11:52.653Z",
+  "updated_at": "2026-10-07T08:12:01.360Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
