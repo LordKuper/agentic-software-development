@@ -1,7 +1,7 @@
 {
   "sprint_id": "024-opus-tiers-routing",
   "branch": "sprint/024-opus-tiers-routing",
-  "phase": "scope",
+  "phase": "audit",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -32,6 +32,13 @@
       "reason": "4 included, 0 deferred, 1 rejected",
       "evidence": "retro-backlog.md 023 rows",
       "artifact_revision": "retro-backlog.md@scope"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "all sections present, no unsettled contradiction, all 7 AC deliverable; amended canon sites listed per AC",
+      "evidence": "audit.md",
+      "artifact_revision": "audit.md@audit"
     }
   ],
   "task_routing": {},
@@ -55,7 +62,7 @@
     }
   },
   "created_at": "2026-10-07T06:56:22.509Z",
-  "updated_at": "2026-10-07T07:05:26.962Z",
+  "updated_at": "2026-10-07T07:22:39.356Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
