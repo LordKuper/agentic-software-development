@@ -40,3 +40,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-07 — route Task 4: mechanical, dispatch HEAD 11f92e0
 - 2026-10-07 — wave 1 done: Task 1 (8e82efb, f0eb735), Task 2 (377b7de), Task 3 (bdf64d8), Task 4 (1d2a90e); views synced (4 Claude agent views, manifest hashes), sync --check clean
 - 2026-10-07 — flagged choices accepted: Task 1 extra L123 sentence on prose/test-only deltas (asked by D3); Task 1 log-line claim replaced by `task_routing[id].reason` (f0eb735, log format unchanged); Task 2 D6 paragraph after the audit-reevaluation sentence, the `change` bullet relying on the doubt bound for "ambiguous judgment" (consistent with providers.md L129 class names), Modes clause citing "Scope amendment"
+- 2026-10-07 — route Task 5: critical, dispatch HEAD 44bcf76
+- 2026-10-07 — route Task 6, Task 7: standard, dispatch HEAD 44bcf76
