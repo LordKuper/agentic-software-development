@@ -11,7 +11,7 @@ responsibility:
 
 | Entry | HEAD analysed | Scope |
 |---|---|---|
-| 1 | | full change surface (`git diff main...HEAD`, sprint/project/generated paths excluded) |
+| 1 | 64c1898 | full change surface (`git diff main...HEAD`, sprint/project/generated paths excluded) |
 
 ## Risk → check decisions
 

@@ -50,3 +50,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: `checkpoints.md` routine initial impl assessment in adaptive mode, with valid evidence.
 - **Affected docs**: [plan.md](plan.md)
 - 2026-10-07 — route impl-test entry 1: standard, dispatch HEAD 6d3b882
+- 2026-10-07 — impl-test: impacted set green (273/273), 1/0 tests added/removed, 2 adjusted (entry 1, HEAD analysed 64c1898); no defects, no manual-verification row
