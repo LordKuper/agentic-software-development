@@ -42,3 +42,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-07 — route impl-test entry 3: standard, dispatch HEAD 26b3b9e; risk artifact: content-contract pins via node tests/run.js
 - 2026-10-07 — impl-test: impacted set green (273/273), 0/0 tests added/removed, 1 extended with 3 asserts (entry 3, HEAD analysed 4f3ce96); no defects, no manual-verification row
 - 2026-10-07 — impl-review wave-1/iter-03 (floor low, floor_base=wave-1/2): combined CONCERNS (F1 low, `checkpoints.md:5` "It records" has an ambiguous referent after the AC-8 insert), external CONCERNS (F1 medium, AC-8/AC-9 pins match rewordable prose); low-severity test-only branch not fired (combined F1 is not in a test, external F1 is medium) → review_fixes_pending=wave-1/iter-03
+- 2026-10-07 — route review-fix wave-1/iter-03 combined.md F1: standard, dispatch HEAD ee0facb8; risk artifact: rule wording via node tests/run.js
+- 2026-10-07 — route review-fix wave-1/iter-03 external.md F1: standard, dispatch HEAD ee0facb8; risk artifact: content-contract pins via node tests/run.js
