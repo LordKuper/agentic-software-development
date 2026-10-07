@@ -46,6 +46,13 @@
       "reason": "designs D1-D7 follow audit Gaps; every audit touched site assigned; tasks cut by file, no path overlap per wave; tier and routing contract changes in wave 1",
       "evidence": "plan.md; audit.md Touched areas, Gaps",
       "artifact_revision": "plan.md@plan"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "Tasks 1-7 done, plan fully ticked, build+lint clean, sync clean, full suite 272/272, flagged choices resolved, authorised paths only, no sprint stubs",
+      "evidence": "91b1d00",
+      "artifact_revision": "HEAD 91b1d00"
     }
   ],
   "task_routing": {
@@ -112,7 +119,7 @@
     }
   },
   "created_at": "2026-10-07T06:56:22.509Z",
-  "updated_at": "2026-10-07T07:31:39.418Z",
+  "updated_at": "2026-10-07T07:35:09.224Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

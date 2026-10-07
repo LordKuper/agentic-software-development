@@ -42,3 +42,10 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-07 — flagged choices accepted: Task 1 extra L123 sentence on prose/test-only deltas (asked by D3); Task 1 log-line claim replaced by `task_routing[id].reason` (f0eb735, log format unchanged); Task 2 D6 paragraph after the audit-reevaluation sentence, the `change` bullet relying on the doubt bound for "ambiguous judgment" (consistent with providers.md L129 class names), Modes clause citing "Scope amendment"
 - 2026-10-07 — route Task 5: critical, dispatch HEAD 44bcf76
 - 2026-10-07 — route Task 6, Task 7: standard, dispatch HEAD 44bcf76
+- 2026-10-07 — wave 2 done: Task 5 (91b1d00), Task 6 (a8485d5), Task 7 (b3d8875); no generated view changed, manifest upstream_hashes recomputed via --apply AGENTS.md, sync --check clean
+
+## 2026-10-07 — impl assessment approved (adaptive)
+
+- **Decision**: Initial impl is complete. All seven Tasks are ticked, build and lint are clean, `sync.js --check` is clean, and the self-check `node tests/run.js` passes 272/272. The round touched only authorised paths. There are no sprint stubs, and every flagged choice is resolved (wave 1 entry above).
+- **Rationale**: `checkpoints.md` routine initial impl assessment in adaptive mode, with valid evidence.
+- **Affected docs**: [plan.md](plan.md)

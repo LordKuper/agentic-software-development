@@ -115,21 +115,21 @@ Material risk: artifact: agent frontmatter tiers
 
 ### Task 5: asd-phase-impl.md — skip ticked waves, amendment continues after review-fix
 Material risk: change: workflow gate
-- [ ] AC-6 (D6): in step 5 initial, build the graph from waves holding an unticked Task and skip fully ticked waves.
-- [ ] AC-6 (D6): in step 11, cite `sprint-lifecycle.md` "Scope amendment" for the continue-into-initial pass before step 12. Step 12 still emits one `NEXT: impl-test`.
-- [ ] AC-3 (D3): re-check step 5a against `providers.md` "Task-class variants and routing". Cite only, and remove any restated inheritance.
+- [x] AC-6 (D6): in step 5 initial, build the graph from waves holding an unticked Task and skip fully ticked waves.
+- [x] AC-6 (D6): in step 11, cite `sprint-lifecycle.md` "Scope amendment" for the continue-into-initial pass before step 12. Step 12 still emits one `NEXT: impl-test`.
+- [x] AC-3 (D3): re-check step 5a against `providers.md` "Task-class variants and routing". Cite only, and remove any restated inheritance.
 
 ### Task 6: plan and scope workflows, plan template — citations
 Material risk: artifact: citation wording
-- [ ] AC-2 (D2): in `.asd/workflows/asd-phase-plan.md` step 4, cite `sprint-lifecycle.md` "Plan file format" Material risk declaration at "note per Task only the material risk".
-- [ ] AC-2 (D2): in `.asd/templates/t_plan.md` L34/L40, make the `change`/`artifact` placeholders carry the D2 gist in one phrase each.
-- [ ] AC-4 (D4): in `.asd/workflows/asd-phase-scope.md` step 4, cite `sprint-lifecycle.md` "Retro intake" for the per-row presentation before the disposition question. Cite only, do not restate.
-- [ ] AC-3 (D3): grep `.asd/workflows/asd-phase-impl-test.md` 1a and `asd-phase-impl-review.md` steps 8-9 for restated inheritance or "every Task's". Cite only, and record the result.
+- [x] AC-2 (D2): in `.asd/workflows/asd-phase-plan.md` step 4, cite `sprint-lifecycle.md` "Plan file format" Material risk declaration at "note per Task only the material risk".
+- [x] AC-2 (D2): in `.asd/templates/t_plan.md` L34/L40, make the `change`/`artifact` placeholders carry the D2 gist in one phrase each.
+- [x] AC-4 (D4): in `.asd/workflows/asd-phase-scope.md` step 4, cite `sprint-lifecycle.md` "Retro intake" for the per-row presentation before the disposition question. Cite only, do not restate.
+- [x] AC-3 (D3): grep `.asd/workflows/asd-phase-impl-test.md` 1a and `asd-phase-impl-review.md` steps 8-9 for restated inheritance or "every Task's". Cite only, and record the result.
 
 ### Task 7: README.md mirror
 Material risk: artifact: mirror doc
-- [ ] AC-1 (D1): update the family list (L218) to fable/opus/sonnet/haiku, the `asd-architect` (opus/xhigh), `asd-reviewer-correctness` and `asd-reviewer-combined` (opus/high) rows, and the variant sentence (L232): dev critical Opus high, tester critical Sonnet xhigh, Sol high on Codex.
-- [ ] AC-2..AC-7: confirm every README mention of routing, retro intake, scope amendment, lint and fail-first is accurate, and edit only stale text. List each section checked.
+- [x] AC-1 (D1): update the family list (L218) to fable/opus/sonnet/haiku, the `asd-architect` (opus/xhigh), `asd-reviewer-correctness` and `asd-reviewer-combined` (opus/high) rows, and the variant sentence (L232): dev critical Opus high, tester critical Sonnet xhigh, Sol high on Codex.
+- [x] AC-2..AC-7: confirm every README mention of routing, retro intake, scope amendment, lint and fail-first is accurate, and edit only stale text. List each section checked.
 
 ## Risks (optional)
 - The tier pin test (`tests/run.js` ≈L7194-7256) checks exact word sets in the `providers.md` and README variant sentences. Task 1 and Task 7 wording must be mutually consistent, and impl-test repoints the test.
