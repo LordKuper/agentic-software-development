@@ -37,11 +37,12 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
 
 ## Suite run
 
-- Command: `node tests/run.js`
-- Scope: impacted (the whole runner; every content contract of this repo lives in it)
-- Result: pass — 273 passed, 0 failed, 0 skipped (exit 0; pre-run 273/273, no additions)
-- Lint / build: pass — `node .asd/sync.js --check` exit 0; `git diff --cached --check` run in the commit
-- HEAD: 081d3ba
+- Command: `node tests/run.js` (`commands.yaml` `test`)
+- Scope: full, unscoped (terminal gate, `impl-review wave-1/iter-02 suite`)
+- Result: green — 273 passed, 0 failed, 0 skipped (exit 0)
+- Lint: `git diff --cached --check` (`commands.yaml` `lint`) runs on the staged paths in the commit command, exit 0
+- Build: `node .asd/sync.js --check` (`commands.yaml` `build`) exit 0, `ok: true`, every target `current`
+- HEAD: 3d9c1be379534ae630413617587dd0a37c9e2ff4
 
 ## Defects
 
