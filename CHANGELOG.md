@@ -2,6 +2,22 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v13.8.0
+
+Sprints now record how long their operations take, and the retrospective shows where the time went and what to change. `/asd-sprint` also offers to update ASD when a newer version is out.
+
+### Added
+- **Timing ledger** (`sprint-lifecycle.md` "Operation timing"). Each sprint keeps `<sprint>/timing.jsonl`, written only through `node .asd/runtime.js timing`. It records phases, agent dispatches (agent, tier, model), review iterations, test-suite runs, External Review calls and user waits, and user-wait time is kept apart from machine time. Recording never blocks a phase: a failed write warns and continues. On resume, `timing-recover` closes operations a lost session left open as `interrupted`. The orchestrator commits the ledger before every clean-tree check (`git-strategy.md` "Commit before review"). pr merge mode is not recorded.
+- **`timing-summary`** reports wall, machine, user-wait and unaccounted time; totals by phase, kind and agent/tier/model; rework; and medians from archived sprints that have a ledger. It also lists the slow set (the 5 longest leaf machine operations plus every one over 30 minutes, user-wait overlap subtracted), every user wait, and ledger gaps.
+- **Retrospective duration section.** Retro reads the summary. Each slow operation becomes a systemic candidate with its cause, the proposed change and the expected saving. Each user wait is checked for an avoidable escalation. Each row says whether it acts on the project or on ASD. `retrospective.html` gains a Duration section on both branches, so an empty-log retrospective now shows a table of contents.
+- **ASD version check at new-sprint start.** In a consumer project, `/asd-sprint` compares the local `asd_version` with the configured ASD repo (`update.js --check-version`, which reads only the remote manifest with a 5 s deadline). When a newer version exists, you choose: update now or continue. On *update*, scope runs `/asd-update` in its new sprint-mediated mode on the sprint branch, syncs the views, commits, and asks you to restart the session and run `/asd-sprint` again. The check is skipped on resume and in the framework repo, and an unreachable remote only warns. The choice is a hard gate (`checkpoints.md`).
+
+### Fixed
+- **`/asd-update` downloads** no longer crash on a network error. Requests time out and follow at most 5 redirects.
+
+### Migration
+- No migration script. Sprints started before 13.8.0 have no ledger, so their retrospective reads "No timing data".
+
 ## v13.7.0
 
 The agents whose mistakes cost the most now run on Opus, and routing stops sending nearly every task to the critical tier. Risk classes have concrete criteria, and derived dispatches route on their own declared risk.

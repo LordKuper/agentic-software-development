@@ -1,7 +1,7 @@
 {
   "sprint_id": "025-operation-timing",
   "branch": "sprint/025-operation-timing",
-  "phase": "retro",
+  "phase": "pr",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -173,7 +173,7 @@
     }
   },
   "created_at": "2026-10-08T09:40:31.177Z",
-  "updated_at": "2026-10-08T12:20:52.235Z",
+  "updated_at": "2026-10-08T12:22:13.243Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

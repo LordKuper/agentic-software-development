@@ -35,3 +35,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+- 2026-10-08 — pr open mode: DoD verified (plan ticked, wave 1 APPROVE at iter-02, full suite 281/281 at cb7b3ee with no code/test diff since but CHANGELOG/version, lint and sync clean, retrospective present, no sprint stubs, no existing PR for the branch); asd_version 13.7.0 → 13.8.0 (feat highest, no breaking marker), CHANGELOG v13.8.0 added; retrospective trailing whitespace stripped
