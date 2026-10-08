@@ -56,3 +56,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-08 — impl-test: impacted set green (281/281, full suite via safety valve), 1/0 tests (1 adapted)
 - 2026-10-08 — impl-review wave-1/iter-02: combined APPROVE, external APPROVE (both latched); wave 1 of 1 roster met, terminal full suite next
 - 2026-10-08 — route impl-review wave-1/iter-02 suite: standard, dispatch HEAD a9d47225; risk none
+
+## 2026-10-08 — impl-review DoD met (adaptive green handoff)
+
+- **Decision**: Wave 1 of 1 met at iter-02 (combined and external APPROVE, latched); terminal full suite green 281/281 at cb7b3ee, lint and `sync.js --check` clean. NEXT design-promote (lite).
+- **Rationale**: `checkpoints.md` routine green review handoff with valid evidence.
+- **Affected docs**: [test-plan.md](test-plan.md)
