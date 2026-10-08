@@ -12,7 +12,7 @@ responsibility:
 | Entry | HEAD analysed | Scope |
 |---|---|---|
 | 1 | 1f7a5c9ba688fe33f16c66b5be22da27c061faff | full change surface |
-| 2 |  | delta since entry 1 |
+| 2 | 957ae941e19571d31bd0573ca3bb0eba125d30e6 | delta since entry 1 |
 
 ## Risk → check decisions
 
