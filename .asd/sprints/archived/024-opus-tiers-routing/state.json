@@ -1,7 +1,7 @@
 {
   "sprint_id": "024-opus-tiers-routing",
   "branch": "sprint/024-opus-tiers-routing",
-  "phase": "pr",
+  "phase": "done",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -88,6 +88,13 @@
       "reason": "wave 1 all APPROVE/latched at iter-04 after amendment AC-8/AC-9, terminal full suite green 273/273, lint and sync clean",
       "evidence": "test-plan.md Suite run; reviews/impl/wave-1/iter-04",
       "artifact_revision": "HEAD 8df080a"
+    },
+    {
+      "gate": "sprint-closure",
+      "decision_actor": "orchestrator",
+      "reason": "PR 60 merged; release v13.7.0 published",
+      "evidence": "merge commit f7dd9a2f1b1b8dd997a893c188ab08369ba6b23f",
+      "artifact_revision": "state.json@closure"
     }
   ],
   "task_routing": {
@@ -253,13 +260,14 @@
     }
   },
   "created_at": "2026-10-07T06:56:22.509Z",
-  "updated_at": "2026-10-07T09:14:29.899Z",
+  "updated_at": "2026-10-08T09:39:18.611Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": {
     "number": 60,
     "url": "https://github.com/LordKuper/agentic-software-development/pull/60",
-    "state": "open"
+    "state": "merged",
+    "merge_commit": "f7dd9a2f1b1b8dd997a893c188ab08369ba6b23f"
   },
-  "archived_at": null
+  "archived_at": "2026-10-08T09:39:18.611Z"
 }

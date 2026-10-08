@@ -3269,10 +3269,14 @@ test('AC-4/AC-5/AC-7/AC-10: t_retrospective.html classifies every section for th
     kept.some((title) => /systemic/i.test(title)),
     'the systemic-proposals class ships on the empty-log branch too - an entry-free friction log is not an empty retrospective'
   );
+  assert.ok(
+    kept.some((title) => /duration/i.test(title)),
+    'sprint-025 D9: the duration section ships on both branches - an entry-free friction log still has a timing ledger to read'
+  );
   const threshold = readTocH2Threshold();
   assert.ok(
-    kept.length < threshold,
-    `the empty-log branch keeps ${kept.length} h2 sections; at ${threshold} or more the manual AC-5 check must expect a TOC nav on this branch as well`
+    kept.length >= threshold,
+    `the empty-log branch keeps ${kept.length} h2 sections; below ${threshold} the shell omits the nav, yet the empty-log comment says the TOC is filled`
   );
   assert.ok(
     sections.length >= threshold,
@@ -7622,6 +7626,227 @@ test('sprint-023 AC-4: artifact-layout.md "Agent memory" states the content rule
   assert.deepStrictEqual(['sprint', 'Task', 'wave', 'iteration', 'verdict'].filter((kind) => !new RegExp(`\\b${kind}`, 'i').test(content)), [], 'the **Content** rule must name every kind of work history the check scans for - a kind the rule never names is rejected at the commit with no rule to cite');
   const acting = sectionOf('.asd/rules/git-strategy.md', 'Commit before review').split('\n').find((line) => line.includes('`node .asd/runtime.js memory-check`')) || '';
   assert.ok(acting && acting.includes('`review-policy.md` "Memory-fix dispatch"') && acting.includes('`artifact-layout.md` "Agent memory"'), 'git-strategy.md "Commit before review" must run memory-check at the orchestrator\'s memory commit, cite the content rule it enforces, and route a violating write to its owner\'s memory-fix dispatch - run nowhere, the rule has no acting site');
+});
+
+// ===========================================================================
+// 20. Sprint 025: operation timing (AC-1..AC-5, AC-7) and the ASD version check
+// (AC-8). Pure cores run on fixed ledgers with an injected clock; the CLI
+// tests assert shape and pairing, never clock values.
+// ===========================================================================
+
+const ISO_UTC = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+const TIMING_EPOCH_MS = Date.UTC(2026, 0, 1);
+
+/** ISO timestamp `minutes` after the fixed fixture epoch. */
+function minuteAt(minutes) {
+  return new Date(TIMING_EPOCH_MS + minutes * 60000).toISOString();
+}
+
+function ledgerLines(text) {
+  return text.split('\n').filter((line) => line !== '').map((line) => JSON.parse(line));
+}
+
+/** The open and close lines of one op spanning `[from, to]` minutes. */
+function opLines(id, kind, parent, from, to, attrs = {}, outcome = 'done') {
+  const base = { id, kind, parent, start: minuteAt(from), attrs };
+  return [{ op: 'open', ...base }, { op: 'close', ...base, end: minuteAt(to), outcome }].map((line) => JSON.stringify(line) + '\n').join('');
+}
+
+test('sprint-025 AC-1/AC-4 (D2, D4): timingAppend closes before it opens, numbers a phase by entry, parents an op on the open phase, records an unmatched close, skips a duplicate open, and starts a fresh line after a half-written tail', () => {
+  const scope = runtime.timingAppend('', { open: 'scope', kind: 'phase' }, minuteAt(0));
+  assert.deepStrictEqual(ledgerLines(scope.text), [{ op: 'open', id: 'scope#1', kind: 'phase', parent: null, start: minuteAt(0), attrs: {} }]);
+
+  const dispatch = runtime.timingAppend(scope.text, { open: 'asd-tester impl-test#1', kind: 'dispatch', attrs: 'agent=asd-tester;tier=mechanical' }, minuteAt(5));
+  assert.deepStrictEqual(ledgerLines(dispatch.text), [{ op: 'open', id: 'asd-tester impl-test#1', kind: 'dispatch', parent: 'scope#1', start: minuteAt(5), attrs: { agent: 'asd-tester', tier: 'mechanical' } }]);
+
+  const handover = runtime.timingAppend(scope.text + dispatch.text, { close: 'scope', open: 'plan', kind: 'phase' }, minuteAt(10));
+  assert.deepStrictEqual(ledgerLines(handover.text).map((line) => [line.op, line.id]), [['close', 'scope#1'], ['open', 'plan#1']], 'a close is written before the open of the same call');
+  assert.deepStrictEqual(ledgerLines(handover.text)[0], { op: 'close', id: 'scope#1', kind: 'phase', parent: null, start: minuteAt(0), end: minuteAt(10), outcome: 'done', attrs: {} }, 'a close carries the full entry of the op it ends');
+
+  const reentry = runtime.timingAppend(scope.text + handover.text, { close: 'plan', open: 'scope', kind: 'phase' }, minuteAt(20));
+  assert.deepStrictEqual(ledgerLines(reentry.text).map((line) => line.id), ['plan#1', 'scope#2'], 'a phase opened again is a separate entry');
+
+  const stray = runtime.timingAppend(scope.text, { close: 'ghost', outcome: 'interrupted' }, minuteAt(30));
+  assert.deepStrictEqual(ledgerLines(stray.text).map((line) => [line.op, line.id, line.outcome]), [['close', 'ghost', 'interrupted']], 'an unmatched close is still recorded so the summary can report it');
+  assert.ok(stray.warnings.some((warning) => warning.includes('ghost')));
+
+  const duplicate = runtime.timingAppend(scope.text + dispatch.text, { open: 'asd-tester impl-test#1', kind: 'dispatch' }, minuteAt(40));
+  assert.strictEqual(duplicate.text, '', 'an open of an id already open writes nothing');
+  assert.strictEqual(duplicate.warnings.length, 1);
+
+  const torn = runtime.timingAppend(scope.text + '{"op":"op', { close: 'scope' }, minuteAt(50));
+  assert.deepStrictEqual(ledgerLines(torn.text).map((line) => line.id), ['scope#1'], 'a half-written tail is ignored and the append starts a new line');
+  assert.ok(torn.text.startsWith('\n'));
+});
+
+test('sprint-025 AC-2 (D2): every kind sprint-lifecycle.md "Operation timing" lists is accepted by the runtime and no other kind is', () => {
+  const kindsLine = sectionOf('.asd/rules/sprint-lifecycle.md', 'Operation timing').split('\n').find((line) => line.startsWith('Kinds (attrs):')) || '';
+  const kinds = kindsLine.split(';').map((entry) => /^(?:Kinds \(attrs\):)?\s*`([a-z-]+)`/.exec(entry)).filter(Boolean).map((match) => match[1]);
+  assert.ok(kinds.length > 0, '"Operation timing" must keep its "Kinds (attrs):" line');
+  for (const kind of kinds) {
+    assert.doesNotThrow(() => runtime.timingAppend('', { open: 'probe', kind }, minuteAt(0)), `the rule lists kind ${kind}, so the runtime must record it`);
+  }
+  assert.throws(() => runtime.timingAppend('', { open: 'probe', kind: 'bogus' }, minuteAt(0)), /--kind/);
+  assert.throws(() => runtime.timingAppend('', { open: 'probe' }, minuteAt(0)), /--kind/);
+});
+
+test('sprint-025 AC-4 (D4): timingRecover closes every open op as interrupted at the latest of its start, the ledger\'s last timestamp and the HEAD commit date, and leaves a closed ledger alone', () => {
+  const ledger = opLines('wait', 'user-wait', 'impl#1', 2, 3)
+    + JSON.stringify({ op: 'open', id: 'impl#1', kind: 'phase', parent: null, start: minuteAt(0), attrs: {} }) + '\n'
+    + JSON.stringify({ op: 'open', id: 'dev', kind: 'dispatch', parent: 'impl#1', start: minuteAt(5), attrs: {} }) + '\n';
+
+  const afterHead = ledgerLines(runtime.timingRecover(ledger, minuteAt(20)).text);
+  assert.deepStrictEqual(afterHead.map((line) => [line.op, line.id, line.outcome, line.end]), [['close', 'impl#1', 'interrupted', minuteAt(20)], ['close', 'dev', 'interrupted', minuteAt(20)]]);
+
+  const beforeHead = ledgerLines(runtime.timingRecover(ledger, minuteAt(1)).text);
+  assert.ok(beforeHead.every((line) => line.end === minuteAt(5)), 'a HEAD date older than the ledger\'s last timestamp never moves an end before recorded activity');
+
+  assert.strictEqual(runtime.timingRecover(opLines('impl#1', 'phase', null, 0, 9), minuteAt(30)).text, '');
+  assert.throws(() => runtime.timingRecover(ledger, 'not a date'), /HEAD commit date/);
+});
+
+test('sprint-025 AC-5 (D5, D6): timingSummary reports totals, wall/machine/user-wait/unaccounted time, the slow set with its excess, every user wait, rework, the archived median and the gaps - deterministically, and {"timing": null} without a ledger', () => {
+  const step = runtime.SLOW_MINUTES + runtime.SLOW_TOP_N + 5;
+  const slowMinutes = Array.from({ length: runtime.SLOW_TOP_N + 1 }, (unused, index) => runtime.SLOW_MINUTES + 1 + index);
+  const waitMinutes = runtime.SLOW_MINUTES + 15;
+  const phaseEnd = (slowMinutes.length + 1) * step + waitMinutes;
+  const reentryStart = phaseEnd + 20;
+  const reentryEnd = reentryStart + 20;
+  const outsidePhase = phaseEnd + 5;
+  const ledger = opLines('impl#1', 'phase', null, 0, phaseEnd)
+    + slowMinutes.map((minutes, index) => opLines(`dev-${index}`, 'dispatch', 'impl#1', index * step, index * step + minutes, index < 2 ? { agent: 'asd-dev', tier: 'standard', model: 'm1' } : {})).join('')
+    + opLines('quick', 'dispatch', 'impl#1', slowMinutes.length * step, slowMinutes.length * step + 2, {}, 'interrupted')
+    + opLines('wait', 'user-wait', 'impl#1', slowMinutes.length * step + 3, slowMinutes.length * step + 3 + waitMinutes, { gate: 'approve' })
+    + opLines('review iter-02', 'review-iteration', 'impl#1', 3, 4, { wave: '1', iteration: '2' })
+    + opLines('outside', 'dispatch', null, outsidePhase, outsidePhase + 1)
+    + opLines('impl#2', 'phase', null, reentryStart, reentryEnd)
+    + JSON.stringify({ op: 'close', id: 'ghost', kind: null, parent: null, start: null, end: null, outcome: 'done', attrs: {} }) + '\n'
+    + JSON.stringify({ op: 'open', id: 'late', kind: 'dispatch', parent: 'impl#2', start: minuteAt(reentryStart + 1), attrs: {} }) + '\n';
+
+  const { timing } = runtime.timingSummary(ledger, []);
+  const kindMedian = [1, 2, ...slowMinutes].sort((a, b) => a - b);
+  const median = (kindMedian[kindMedian.length / 2 - 1] + kindMedian[kindMedian.length / 2]) / 2;
+  assert.deepStrictEqual(
+    [timing.wall_seconds, timing.machine_seconds, timing.user_wait_seconds, timing.unaccounted_seconds],
+    [reentryEnd * 60, (phaseEnd + 20) * 60 - waitMinutes * 60, waitMinutes * 60, (reentryEnd - phaseEnd - 20) * 60],
+    'wall, machine (phase union minus waits), user-wait and unaccounted (wall outside every phase) time'
+  );
+  assert.deepStrictEqual(timing.by_phase, { impl: { count: 2, seconds: (phaseEnd + 20) * 60 } });
+  assert.strictEqual(timing.by_kind['user-wait'].count, 1);
+  assert.deepStrictEqual(timing.by_model.find((row) => row.agent === 'asd-dev'), { agent: 'asd-dev', tier: 'standard', model: 'm1', count: 2, seconds: (slowMinutes[0] + slowMinutes[1]) * 60 });
+
+  const slowest = timing.slow.map((op) => op.id);
+  assert.deepStrictEqual(slowest, slowMinutes.map((unused, index) => `dev-${index}`).reverse(), `the top ${runtime.SLOW_TOP_N} leaf ops plus every one over ${runtime.SLOW_MINUTES} minutes, longest first; a short op, a review iteration and a user wait never`);
+  assert.strictEqual(timing.slow[0].excess_seconds, Math.round((slowMinutes[slowMinutes.length - 1] - median) * 60), 'excess is the op\'s time over the median of its kind in this sprint');
+
+  assert.deepStrictEqual(timing.user_waits.map((wait) => [wait.gate, wait.seconds]), [['approve', waitMinutes * 60]], 'a user wait is listed whatever its length');
+  assert.deepStrictEqual([timing.rework.reentries.ids, timing.rework.iterations.ids, timing.rework.interrupted.ids], [['impl#2'], ['review iter-02'], ['quick']]);
+  assert.deepStrictEqual([timing.gaps.close_without_open, timing.gaps.outside_phase, timing.gaps.open.map((entry) => entry.id)], [['ghost'], ['outside'], ['late']]);
+  assert.strictEqual(timing.baseline, null);
+
+  const shortMinutes = Array.from({ length: runtime.SLOW_TOP_N + 2 }, (unused, index) => index + 1);
+  const shortLedger = shortMinutes.map((minutes) => opLines(`d${minutes}`, 'dispatch', null, 0, minutes)).join('');
+  assert.deepStrictEqual(
+    runtime.timingSummary(shortLedger, []).timing.slow.map((op) => op.id),
+    shortMinutes.slice(-runtime.SLOW_TOP_N).reverse().map((minutes) => `d${minutes}`),
+    'with nothing over the minutes limit the slow set is still the top-N longest'
+  );
+
+  const archived = [opLines('impl#1', 'phase', null, 0, 10), opLines('impl#1', 'phase', null, 0, 30)];
+  assert.deepStrictEqual(runtime.timingSummary(ledger, archived).timing.baseline.by_phase, { impl: { median_seconds: 20 * 60, sprints: 2 } });
+  assert.strictEqual(runtime.timingSummary(ledger, archived).timing.baseline.ledgers, 2);
+  assert.deepStrictEqual(runtime.timingSummary(ledger, []), runtime.timingSummary(ledger, []), 'no clock is read');
+  assert.deepStrictEqual(runtime.timingSummary(null, []), { timing: null });
+});
+
+test('sprint-025 AC-5 (D5, D6): the slow set ranks machine time with user-wait overlap subtracted, skips an op another machine op names as its parent, and keeps parallel siblings eligible; a duplicate phase open is skipped', () => {
+  const slow = (ledger) => runtime.timingSummary(ledger, []).timing.slow;
+  const filler = Array.from({ length: runtime.SLOW_TOP_N + 1 }, (unused, index) => opLines(`f${index}`, 'dispatch', null, 100, 110 + index)).join('');
+
+  const waited = slow(filler + opLines('waited', 'dispatch', null, 0, runtime.SLOW_MINUTES + 10) + opLines('w', 'user-wait', null, 0, runtime.SLOW_MINUTES + 5));
+  assert.ok(!waited.some((op) => op.id === 'waited'), 'a dispatch long only for the user wait over it is neither over the limit nor in the top-N');
+  const [partial] = slow(opLines('p', 'dispatch', null, 0, 20) + opLines('w', 'user-wait', null, 10, 30));
+  assert.deepStrictEqual([partial.seconds, partial.excess_seconds], [600, 0], 'only the overlap is subtracted from the duration');
+
+  const nested = slow(opLines('outer', 'dispatch', 'impl#1', 0, 50) + opLines('inner', 'suite', 'outer', 5, 10) + opLines('x', 'dispatch', 'impl#1', 60, 70) + opLines('y', 'dispatch', 'impl#1', 62, 72));
+  assert.deepStrictEqual(nested.map((op) => op.id).sort(), ['inner', 'x', 'y'], 'a dispatch with a child op is not ranked; parallel siblings under one phase both are');
+
+  const phase = JSON.stringify({ op: 'open', id: 'impl#1', kind: 'phase', parent: null, start: minuteAt(0), attrs: {} }) + '\n';
+  const again = runtime.timingAppend(phase, { open: 'impl', kind: 'phase' }, minuteAt(5));
+  assert.strictEqual(again.text, '', 'a phase whose bare name is already open is not opened again');
+  assert.strictEqual(again.warnings.length, 1);
+});
+
+test('sprint-025 AC-1/AC-4/AC-5 (D4): the timing commands write ISO-stamped, paired lines, are a no-op without --create, never fail the caller, and timing-summary reads the ledger and archived sprints', () => {
+  const { spawnSync } = require('node:child_process');
+  const root = mkTempDir();
+  const ledger = path.join(root, 'timing.jsonl');
+  const run = (...args) => spawnSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'runtime.js'), ...args], { cwd: REPO_ROOT, encoding: 'utf8' });
+
+  assert.strictEqual(run('timing', '--ledger', ledger, '--open', 'scope', '--kind', 'phase').status, 0);
+  assert.ok(!fs.existsSync(ledger), 'without --create a missing ledger is a no-op');
+
+  assert.strictEqual(run('timing', '--ledger', ledger, '--create', '--open', 'scope', '--kind', 'phase').status, 0);
+  assert.strictEqual(run('timing', '--ledger', ledger, '--open', 'asd-tester impl-test#1', '--kind', 'dispatch', '--attrs', 'agent=asd-tester').status, 0);
+  const unchanged = fs.readFileSync(ledger, 'utf8');
+  const bad = run('timing', '--ledger', ledger, '--open', 'x', '--kind', 'bogus');
+  assert.strictEqual(bad.status, 0, 'a recording failure never fails the caller');
+  assert.ok(bad.stderr.includes('warning'));
+  assert.strictEqual(fs.readFileSync(ledger, 'utf8'), unchanged, 'a rejected call writes nothing');
+
+  assert.strictEqual(run('timing', '--ledger', ledger, '--close', 'asd-tester impl-test#1').status, 0);
+  assert.strictEqual(run('timing-recover', '--ledger', ledger).status, 0);
+  const lines = ledgerLines(fs.readFileSync(ledger, 'utf8'));
+  assert.ok(lines.every((line) => ISO_UTC.test(line.op === 'open' ? line.start : line.end)), 'every stamp is runtime-written ISO 8601 UTC');
+  assert.deepStrictEqual(lines.map((line) => `${line.op} ${line.id}`), ['open scope#1', 'open asd-tester impl-test#1', 'close asd-tester impl-test#1', 'close scope#1']);
+  assert.deepStrictEqual(lines.map((line) => line.outcome), [undefined, undefined, 'done', 'interrupted'], 'recovery closes what is still open as interrupted and leaves a closed op alone');
+
+  const archive = path.join(root, 'archived');
+  fs.mkdirSync(path.join(archive, '001-old'), { recursive: true });
+  const older = opLines('impl#1', 'phase', null, 0, 10);
+  fs.writeFileSync(path.join(archive, '001-old', 'timing.jsonl'), older);
+  fs.mkdirSync(path.join(archive, '002-none'));
+  const summary = run('timing-summary', '--ledger', ledger, '--archive', archive);
+  assert.deepStrictEqual(JSON.parse(summary.stdout), runtime.timingSummary(fs.readFileSync(ledger, 'utf8'), [older]), 'the CLI prints what timingSummary returns; a sprint without a ledger is skipped');
+  assert.deepStrictEqual(JSON.parse(run('timing-summary', '--ledger', path.join(root, 'none.jsonl'), '--archive', archive).stdout), { timing: null });
+  const usage = run('no-such-command');
+  assert.ok(['timing', 'timing-recover', 'timing-summary'].every((command) => usage.stderr.includes(command)), 'the usage line names the new commands');
+});
+
+test('sprint-025 AC-8 (D8): compareManifestVersions orders versions numerically, ignores every remote field but asd_version, and rejects a malformed or non-numeric version', () => {
+  const manifest = (version, extra = {}) => JSON.stringify({ asd_version: version, ...extra });
+  assert.deepStrictEqual(update.compareManifestVersions(manifest('1.2.0'), manifest('1.10.0')), { local: '1.2.0', remote: '1.10.0', newer: true }, 'dotted versions compare per component, not as text');
+  assert.strictEqual(update.compareManifestVersions(manifest('1.2.0'), manifest('1.2.0')).newer, false);
+  assert.strictEqual(update.compareManifestVersions(manifest('2.0'), manifest('1.9.9')).newer, false);
+  assert.deepStrictEqual(Object.keys(update.compareManifestVersions(manifest('1.0'), manifest('1.1', { repo: 'https://evil.example/x', branch: 'y' }))), ['local', 'remote', 'newer'], 'the remote text is untrusted data');
+  for (const remote of ['{not json', manifest('1.1; rm -rf /'), manifest(2), '{}']) {
+    assert.throws(() => update.compareManifestVersions(manifest('1.0'), remote), /remote release-manifest\.json/, `remote ${remote}`);
+  }
+  assert.throws(() => update.compareManifestVersions('{}', manifest('1.1')), /local release-manifest\.json/);
+});
+
+test('sprint-025 AC-3/AC-7/AC-8: every phase workflow states its timing ops, every phase skill pre-approves the runtime it runs them with, and the commands, ledger, update choice and Sprint-mediated mode keep their homes', () => {
+  const phases = fs.readdirSync(path.join(REPO_ROOT, '.asd/workflows')).filter((file) => /^asd-phase-.*\.md$/.test(file));
+  assert.ok(phases.length > 0);
+  for (const file of phases) {
+    const text = canonText(`.asd/workflows/${file}`);
+    const token = file === 'asd-phase-retro.md' ? 'timing-summary' : '"Operation timing"';
+    assert.ok(text.includes(token), `${file} must carry its timing binding (${token})`);
+  }
+  for (const name of fs.readdirSync(path.join(REPO_ROOT, '.asd/skills')).filter((skill) => /^asd-phase-/.test(skill))) {
+    const tools = sync.parseCanonicalFrontmatter(canonText(`.asd/skills/${name}/SKILL.md`)).meta.claude['allowed-tools'];
+    assert.ok(/(^|\s)Bash(\s|$)/.test(tools) || tools.includes('Bash(node .asd/runtime.js:*)'), `${name} runs runtime.js timing commands, so its allowed-tools must pre-approve them`);
+  }
+  const readme = canonText('README.md');
+  for (const token of ['timing-recover', 'timing-summary', 'timing.jsonl']) {
+    assert.ok(readme.includes(token), `README.md must mirror ${token}`);
+  }
+  assert.ok(canonText('.asd/rules/artifact-layout.md').includes('timing.jsonl'), 'artifact-layout.md names the ledger path');
+  assert.ok(sectionOf('.asd/rules/checkpoints.md', 'Gate policy').split('\n').some((line) => line.startsWith('Hard in both modes:') && line.includes('ASD update')), 'the update choice joins the hard list');
+  assert.ok(/ASD update choice[^|]*\|\s*hard approve-before-write/.test(canonText('.asd/rules/checkpoints.md')), 'the gate inventory carries the update choice row');
+  assert.ok(canonText('.asd/skills/asd-sprint/SKILL.md').includes('update.js --check-version'), 'asd-sprint runs the version check');
+  assert.ok(canonText('.asd/skills/asd-update/SKILL.md').includes('## Sprint-mediated mode'), 'asd-update keeps its Sprint-mediated mode section');
+  assert.ok(canonText('.asd/workflows/asd-phase-scope.md').includes('--create'), 'scope step 1 creates the ledger');
 });
 
 // ===========================================================================

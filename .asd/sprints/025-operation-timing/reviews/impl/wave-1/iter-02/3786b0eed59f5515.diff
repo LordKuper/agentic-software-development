@@ -1,0 +1,241 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index c9cdbf3f..e6d53bb0 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -36,7 +36,7 @@
+     "skills/asd-concept/SKILL.md": "sha256:9a3cb2331b3aceb4a670d8d0ac94de3808771406036f9ba11dce3239e21cee42",
+     "skills/asd-design-system/SKILL.md": "sha256:9f8153a0f278a1234202771df5118f2228dd4edfd99594c1eeb0536d8d22d07f",
+     "skills/asd-init/SKILL.md": "sha256:79413ccde0b404e63f8e1bedcf3e467311a3dd83021d7a5d50385b91c0f7d4e0",
+-    "skills/asd-sprint/SKILL.md": "sha256:13b8e3c7406034df5d926c0df7f225f1e113e0cd08cb3445437a0bed91ab425d",
++    "skills/asd-sprint/SKILL.md": "sha256:05d8de22b992992190527e522f9a698333d02c05cbfed5f8d7a59c86d3d1095a",
+     "skills/asd-stack/SKILL.md": "sha256:1afe58b6e4c6611adf468e9dfee361d017412dad8465f52423afdd1ae5ac9354",
+     "skills/asd-sync/SKILL.md": "sha256:f198477e9f35ba73c0b4088a690373e504ea0dd731d5fb501af54e477f3d7baa",
+     "skills/asd-update/SKILL.md": "sha256:6cf765b826c48fa4db7766b78b6f82a1d29d56946f94ac9dd8a2e663c1fef592",
+@@ -77,7 +77,7 @@
+     ".asd/rules/language-policy.md": "e9b488a4cff5ed193208a52324601bede1a41e2512f2a6f06d0660576940f322",
+     ".asd/rules/providers.md": "315bcdf29f642e0a1a5cfe77ff041a36962c74c89fd702e32c21f6a1176d865d",
+     ".asd/rules/review-policy.md": "698a07a3db488109eb854b7f728138555f94096aa9058fbe550f86dc2eec35d1",
+-    ".asd/rules/sprint-lifecycle.md": "fc0af76baabb7a3c792e87b059206b7503f837fdc5c53064c1c25ea7e314b14d",
++    ".asd/rules/sprint-lifecycle.md": "2132c6dc32940de5d524d9a0c20607cbf72d4a2da011a1ecf5ef5e272b042204",
+     ".asd/rules/ux-principles.md": "9f2af8c90d969c73654812b80e523e33b4c5696f506acf49e4bacb4c0dc6750c",
+     ".asd/skills/asd-concept/SKILL.md": "9a3cb2331b3aceb4a670d8d0ac94de3808771406036f9ba11dce3239e21cee42",
+     ".asd/skills/asd-design-system/SKILL.md": "9f8153a0f278a1234202771df5118f2228dd4edfd99594c1eeb0536d8d22d07f",
+@@ -92,7 +92,7 @@
+     ".asd/skills/asd-phase-plan/SKILL.md": "5a47823a92d59a85b5b8747f5c6ade2eb9e1ca7c56b662f3d98434d7783a0b6b",
+     ".asd/skills/asd-phase-pr/SKILL.md": "84bc3ecfb735abcfe74501642b2f30fa966539894507daef54631772c2a80639",
+     ".asd/skills/asd-phase-scope/SKILL.md": "a21d695d2ddb947e45b55519c54e3654eb42b5db7d8d1a9bc6be01586b62eaa7",
+-    ".asd/skills/asd-sprint/SKILL.md": "13b8e3c7406034df5d926c0df7f225f1e113e0cd08cb3445437a0bed91ab425d",
++    ".asd/skills/asd-sprint/SKILL.md": "05d8de22b992992190527e522f9a698333d02c05cbfed5f8d7a59c86d3d1095a",
+     ".asd/skills/asd-stack/SKILL.md": "1afe58b6e4c6611adf468e9dfee361d017412dad8465f52423afdd1ae5ac9354",
+     ".asd/skills/asd-sync/SKILL.md": "f198477e9f35ba73c0b4088a690373e504ea0dd731d5fb501af54e477f3d7baa",
+     ".asd/skills/asd-update/SKILL.md": "6cf765b826c48fa4db7766b78b6f82a1d29d56946f94ac9dd8a2e663c1fef592",
+@@ -134,11 +134,11 @@
+     ".asd/workflows/asd-phase-design-promote.md": "357c735b16a42411231e9d70659a11a7eab5271463851e233a3d4f75fa079c21",
+     ".asd/workflows/asd-phase-design-review.md": "048b0fcc37e719a532b8cccac34ae4c568fe6b9f981ce21a6ef33d0540700a8f",
+     ".asd/workflows/asd-phase-design.md": "ba3a3342e49d5a2334e51ae593c45e8a9e185776ca879e5b869a256a8e999af3",
+-    ".asd/workflows/asd-phase-impl-review.md": "a245c9fe2f97f5a7640e02103bfb2077359fa81d27532bb9815e1f8cacc6023c",
+-    ".asd/workflows/asd-phase-impl-test.md": "c4a8556587321d06f79986b2025c585ef0e9f9cd3e7e34c45e7a7582a022aa2a",
++    ".asd/workflows/asd-phase-impl-review.md": "00f9b1c77714d536d8125bb7f3706b2e51240b98f5713297a990ae4e24de8d1c",
++    ".asd/workflows/asd-phase-impl-test.md": "90a2f1048cffa0936b76d1ba44e9302db96d730b45e0f65f1a041d92e8a6ec33",
+     ".asd/workflows/asd-phase-impl.md": "f68138bcc81744e35c662121f9a8e8e8f7cdeb375a29f42cd4e681ae6fa5cef4",
+     ".asd/workflows/asd-phase-plan.md": "d51082399c22b4713040180bcdbdc467160fbd9803837d204f2b5697e695e909",
+-    ".asd/workflows/asd-phase-pr.md": "9eaa7646def03dbc519aca299256b76ffe6e75f6ffb80dd2a9b31a007a4637a7",
++    ".asd/workflows/asd-phase-pr.md": "0e2bcb53a7bb1c35e2e33ba25a331ae4cc15349fe22bb188d6ea08f4403b1637",
+     ".asd/workflows/asd-phase-scope.md": "17ef2aa2f0e228c0f50ee6a41f35a8ed859f2fb05e13e72bb8e3f513cdf2809b",
+     ".asd/agents/asd-advisor.md": "06718e6d86fc2520e20753ccd09a80718d5dfd29296675460414f095e9253e2f",
+     ".asd/agents/asd-reviewer-correctness.md": "042abc00599ff1b5877ffb7db9ef8731bdd7c91dc11126c33ee57cf505c7434e",
+@@ -149,7 +149,7 @@
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
+     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
+-    ".asd/runtime.js": "cea70f49d983f9cfa28e4625db46688985c8af1e566aa3faeb35c0d197d3e77c",
++    ".asd/runtime.js": "b108d0fb0e37421599b3b3440686c8698b772dd90a576837ccebe7d1ad9026f5",
+     ".asd/templates/external-review/t_review-scope.json": "a17ee84e64cc6a693aaa30dacaef660c841b23a92331abf217ff64c8fc2d4951",
+     ".asd/templates/t_friction-log.md": "8ceae936077b1c0b869fe439965e859059b6dab971b79a89126f8074e379ce33",
+     ".asd/templates/t_retrospective.html": "76a92ead47ad10e90d8f875d70a11fb09404834fad7248d20777d3b85c5c7771",
+diff --git a/.asd/rules/sprint-lifecycle.md b/.asd/rules/sprint-lifecycle.md
+index 739f2674..fc3078bd 100644
+--- a/.asd/rules/sprint-lifecycle.md
++++ b/.asd/rules/sprint-lifecycle.md
+@@ -297,15 +297,15 @@ One problem that is both a code defect and a workflow malfunction (routine under
+ 
+ ## Operation timing
+ 
+-The **timing ledger** `<sprint>/timing.jsonl` (never a bare "ledger") is written only through `node .asd/runtime.js timing --ledger <path> [--create] [--close <id,…> [--outcome done|interrupted]] [--open <id,…> --kind <kind> [--parent <id>] [--attrs <k=v;…>]]`: closes before opens, one append, runtime-stamped. It never gates: a failure warns and exits 0; a missing ledger is a no-op, only scope step 1 creating it (`--create`). One call per boundary; quote ids with spaces; no `&&`.
++The **timing ledger** `<sprint>/timing.jsonl` (never a bare "ledger") is written only through `node .asd/runtime.js timing --ledger <path> [--create] [--close <id,…> [--outcome done|interrupted]] [--open <id,…> --kind <kind> [--parent <id>] [--attrs <k=v;…>]]`: closes before opens, one append, runtime-stamped. It never gates: a failure warns and exits 0; a missing ledger is a no-op, only scope step 1 creating it (`--create`). One call per boundary; quote ids with spaces and the whole `--attrs` value (`;` separates shell commands); no `&&`.
+ 
+-Kinds (attrs): `phase`; `dispatch` (`agent`, `tier`, `model` — `state.json.task_routing`'s when routed); `review-iteration` (`wave`, `iteration`); `suite` (`scope`: `impacted`|`full`); `external-review` (`model`: the wrapped CLI's); `user-wait` (`gate`: gate name or short question label). Unique ids: a routed dispatch's `task_routing` id; `<reviewer key> wave-<K>/iter-NN`; else `<agent> <phase>#<n>`. A phase op opens and closes by bare phase name (the runtime numbers entries `#<n>`); an op without `--parent` takes the open phase.
++Kinds (attrs): `phase`; `dispatch` (`agent`, `tier`, `model` — `state.json.task_routing`'s when routed); `review-iteration` (`wave`, `iteration`: plain integers); `suite` (`scope`: `impacted`|`full`); `external-review` (`model`: the wrapped CLI's); `user-wait` (`gate`: gate name or short question label). Unique ids: a routed dispatch's `task_routing` id (an unrouted one takes `tier`/`model` from the agent's frontmatter); a reviewer dispatch `<reviewer key> [wave-<K>/]iter-NN`; else `<agent> <phase>#<n>`; `review-iteration` `<phase> [wave-<K>/]iter-NN`; `suite` `suite <phase>#<n>`; `user-wait` `wait <gate>`. A phase op opens and closes by bare phase name (the runtime numbers entries `#<n>`); an op nested in another (a tester's `suite` in its `dispatch`) passes `--parent <that id>`, otherwise it takes the open phase.
+ 
+ Writers: `asd-sprint` opens a phase op before each phase-skill delegation and closes it on return — `done` on `COMPLETED`, `interrupted` on `FAILED`/`ABORT`; a `QUESTION` halt leaves it open. Scope opens its own at folder creation; pr open mode closes its own before its final commit and push. Each phase workflow's timing line names its other sites; `asd-tester` brackets its suite runs. A `user-wait` opens right before every request user decision, gate prompt or free-text question (`QUESTION` protocol step 2 included) and closes once the answer is processed. Not recorded: pr merge mode, the release retry, time before the ledger exists (scope collection, the ASD version check and its answer).
+ 
+ Recovery: a dispatch found failed or stalled closes `interrupted` at detection; on resume `timing-recover --ledger <path>` closes every still-open op `interrupted`.
+ 
+-Commits: the orchestrator commits a dirty timing ledger with its phase-exit bookkeeping, and alone (`git commit --only -- <ledger>`, subject `chore(sprint): <NNN> timing`) before every clean-tree check or diff-reading gate (`git-strategy.md` "Commit before review"). Dispatched agents never stage it.
++Commits: `git-strategy.md` "Commit before review".
+ 
+ ## Retro phase
+ 
+diff --git a/.asd/runtime.js b/.asd/runtime.js
+index 901df760..6f5a4b15 100644
+--- a/.asd/runtime.js
++++ b/.asd/runtime.js
+@@ -1130,7 +1130,7 @@ function timingRequest(flags) {
+   return { close, outcome, open, kind: flags.kind, parent: flags.parent, attrs: timingAttrs(flags.attrs) };
+ }
+ 
+-/** One `timing` call against a ledger holding `text`, as `{text, warnings}`: the text to append, closes before opens, each stamped `now` (ISO 8601 UTC). A close naming no open op is still recorded, unpaired, so the summary reports it; an open of an id already open is skipped. Both warn. A phase opens as `<name>#<n>`, n its entry ordinal; an open without `parent` takes the open phase. */
++/** One `timing` call against a ledger holding `text`, as `{text, warnings}`: the text to append, closes before opens, each stamped `now` (ISO 8601 UTC). A close naming no open op is still recorded, unpaired, so the summary reports it; an open of an id already open, or of a phase whose bare name is already open, is skipped. Both warn. A phase opens as `<name>#<n>`, n its entry ordinal; an open without `parent` takes the open phase. */
+ function timingAppend(text, flags, now) {
+   const request = timingRequest(flags);
+   const entries = timingEntries(text);
+@@ -1146,8 +1146,8 @@ function timingAppend(text, flags, now) {
+   const phaseOpens = entries.filter((entry) => entry.op === 'open' && entry.kind === 'phase').map((entry) => phaseName(entry.id));
+   for (const name of request.open) {
+     const id = request.kind === 'phase' ? `${name}#${phaseOpens.filter((opened) => opened === name).length + 1}` : name;
+-    if (open.has(id)) {
+-      warnings.push(`open of ${id} skipped: already open`);
++    if (open.has(id) || (request.kind === 'phase' && [...open.values()].some((entry) => entry.kind === 'phase' && phaseName(entry.id) === name))) {
++      warnings.push(`open of ${request.kind === 'phase' ? name : id} skipped: already open`);
+       continue;
+     }
+     const entry = { op: 'open', id, kind: request.kind, parent: openParent(open, request), start: now, attrs: request.attrs };
+@@ -1250,9 +1250,14 @@ function modelTotals(ops) {
+   });
+ }
+ 
+-/** The slow set: the SLOW_TOP_N longest leaf machine ops plus every one over SLOW_MINUTES, longest first, each with its excess over its kind's median in this sprint. */
++/** The slow set: the SLOW_TOP_N longest leaf machine ops (no other machine op names them as `parent`) plus every one over SLOW_MINUTES, longest first. Durations are machine time, overlapping user-wait ops subtracted; each op carries its excess over its kind's median in this sprint. */
+ function slowOps(ops) {
+-  const leaves = ops.filter((op) => LEAF_MACHINE_KINDS.includes(op.kind));
++  const waits = ops.filter((op) => op.kind === 'user-wait');
++  const machine = ops.filter((op) => LEAF_MACHINE_KINDS.includes(op.kind)).map((op) => ({
++    ...op, ms: op.ms - unionMs(waits.map((wait) => ({ start: Math.max(wait.start, op.start), end: Math.min(wait.end, op.end) }))),
++  }));
++  const parents = new Set(machine.map((op) => op.parent));
++  const leaves = machine.filter((op) => !parents.has(op.id));
+   const kindMedian = (kind) => median(leaves.filter((op) => op.kind === kind).map((op) => op.ms));
+   return leaves.slice().sort((a, b) => b.ms - a.ms).filter((op, rank) => rank < SLOW_TOP_N || op.ms > SLOW_MINUTES * 60000).map((op) => ({
+     id: op.id, kind: op.kind, parent: op.parent, seconds: seconds(op.ms), excess_seconds: seconds(op.ms - kindMedian(op.kind)), outcome: op.outcome, attrs: op.attrs,
+diff --git a/.asd/skills/asd-sprint/SKILL.md b/.asd/skills/asd-sprint/SKILL.md
+index 03815d9b..89404345 100644
+--- a/.asd/skills/asd-sprint/SKILL.md
++++ b/.asd/skills/asd-sprint/SKILL.md
+@@ -25,7 +25,7 @@
+ 
+ Before a phase-skill delegation below, rotate the decisions log when `.asd/rules/artifact-layout.md` "Decisions log" requires it.
+ 
+-Phase ops (`sprint-lifecycle.md` "Operation timing"): before each phase-skill delegation run `node .asd/runtime.js timing --ledger <sprint>/timing.jsonl --open <phase> --kind phase`, Step 3 closing the returned phase in the same call (`--close <phase>`); on return close it `done` on `COMPLETED`, `--outcome interrupted` on `FAILED`/`ABORT`; a `QUESTION` halt leaves it open. None for new-sprint scope (its step 1 opens its own), on pr open mode's return (it closed its own), for merge mode (resume at `phase="pr"`, `pr.state="open"`) or the release retry.
++Phase ops (`sprint-lifecycle.md` "Operation timing"): before each phase-skill delegation run `node .asd/runtime.js timing --ledger <sprint>/timing.jsonl --open <phase> --kind phase`, Step 3 closing the returned phase in the same call (`--close <phase>`); on return close it `done` on `COMPLETED`, `--outcome interrupted` on `FAILED`/`ABORT`; a `QUESTION` halt leaves it open: the relayed question opens a `user-wait` (`gate`: short question label) closed once the answer is processed, and the re-delegation reuses the open phase op (a repeat open is skipped). None for new-sprint scope (its step 1 opens its own), on pr open mode's return (it closed its own), for merge mode (resume at `phase="pr"`, `pr.state="open"`) or the release retry.
+ 
+ ### Step 0: fast-forward the base branch
+ Before Step 1, fast-forward local `git.base_branch` exactly as `git-strategy.md` "Branch" states: a refusal halts and asks the user; an unreachable remote warns and continues on local state. Rules, workflows and phase skills are read only after this step; this skill's own text and the session-start files are the pre-fetch copy.
+diff --git a/.asd/workflows/asd-phase-impl-review.md b/.asd/workflows/asd-phase-impl-review.md
+index c730b9a3..d2aaf58a 100644
+--- a/.asd/workflows/asd-phase-impl-review.md
++++ b/.asd/workflows/asd-phase-impl-review.md
+@@ -17,7 +17,7 @@ Orchestration body for the `asd-phase-impl-review` skill. Operation-mapping to h
+ - request user decision: reviewer questions, escalation on FAIL or iteration cap
+ - delegate to agent in parallel: reviewers; the orchestrator writes state, routing and decisions inline; `asd-tester` runs step 8's test-fix and the terminal full-suite gate.
+ - append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log"
+-- timing: per `sprint-lifecycle.md` "Operation timing" — a `review-iteration` op from step 2 to step 8's resolution (or step 10's); `dispatch` ops (`<reviewer key> <id>`; `external-review` kind for External Review) around step 6's reviewers and step 8's tester; step 9's tester payload carries `<sprint>/timing.jsonl` and brackets each run with a `suite` op (`scope=full`); commit a dirty ledger before the entry check
++- timing: per `sprint-lifecycle.md` "Operation timing" — a `review-iteration` op from step 2 to step 8's resolution (or step 10's); `dispatch` ops (`<reviewer key> <id>`; `external-review` kind for External Review) around step 6's reviewers and step 8's and step 9's tester dispatches (re-runs included, routing attrs carried); step 9's tester payload carries `<sprint>/timing.jsonl` and its dispatch id (the `suite` ops' `--parent`) and brackets each run with a `suite` op (`scope=full`); commit a dirty ledger before the entry check
+ 
+ ## Workflow
+ 
+diff --git a/.asd/workflows/asd-phase-impl-test.md b/.asd/workflows/asd-phase-impl-test.md
+index 2e64fbe7..34903392 100644
+--- a/.asd/workflows/asd-phase-impl-test.md
++++ b/.asd/workflows/asd-phase-impl-test.md
+@@ -14,7 +14,7 @@ Orchestration body for the `asd-phase-impl-test` skill. Operation-mapping to hos
+ - request user decision: out-of-scope test removal gate; the manual-verification smoke check (step 10); escalation
+ - delegate one fresh `asd-tester` instance per entry, live across that entry's steps (pre-strategy run, strategy, prune/author and suite run) and never resumed into a later entry — `test-plan.md` is the only hand-off (`sprint-lifecycle.md` "Impl-test phase"); recover from on-disk evidence only after session loss
+ - append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log"
+-- timing: per `sprint-lifecycle.md` "Operation timing" — `dispatch` ops around step 1a's tester dispatches; the tester payload carries `<sprint>/timing.jsonl` and the tester brackets each suite run (steps 3 and 8) with a `suite` op; commit a dirty ledger before step 10's porcelain check
++- timing: per `sprint-lifecycle.md` "Operation timing" — `dispatch` ops around step 1a's tester dispatches; the tester payload carries `<sprint>/timing.jsonl` and its dispatch id (the `suite` ops' `--parent`) and the tester brackets each suite run (steps 3 and 8) with a `suite` op; commit a dirty ledger before step 10's porcelain check
+ 
+ ## Execution mode
+ 
+diff --git a/.asd/workflows/asd-phase-pr.md b/.asd/workflows/asd-phase-pr.md
+index ba8d5d7f..64a2207b 100644
+--- a/.asd/workflows/asd-phase-pr.md
++++ b/.asd/workflows/asd-phase-pr.md
+@@ -4,7 +4,7 @@ The main orchestrator owns this workflow and delegates no orchestration role.
+ 
+ Append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log".
+ 
+-Timing: per `sprint-lifecycle.md` "Operation timing" — open mode closes the pr phase op before step 3's final bookkeeping commit and push; merge mode records nothing.
++Timing: per `sprint-lifecycle.md` "Operation timing" — open mode closes the pr phase op before step 3's final bookkeeping commit and push, or before step 2's hand-over to merge mode (ledger committed with step 2's commit, alone when it writes none); merge mode records nothing.
+ 
+ ## Open mode
+ 
+diff --git a/README.md b/README.md
+index c0b084ad..cb3052cb 100644
+--- a/README.md
++++ b/README.md
+@@ -326,7 +326,7 @@ your-project/
+ │   ├── release-manifest.json        # schema/asd version, managed-path list, model-family table; drives /asd-update + sync.js
+ │   ├── sync-state.json              # last-written digests for managed-block / JSON-merge targets (committed)
+ │   ├── sync.js                      # generator: canon -> .claude/ + .codex/ + .agents/skills/ (--check / --apply)
+-│   ├── runtime.js                   # deterministic helper: task-cost routing, external-review preflight, per-reviewer coverage-manifest emission (`--base/--head` writes the manifest's `.diff` patch, one file per distinct list and range, and authorizes compact `pureRename` rows on renames with identical content and mode; `--test-plan` narrows Testing's impl-review list; `--full-files <path> --full-base <sha>` adds External Review's carried-over files, diffed over that base — in design-review, without `--full-base`, left out of the snapshot diff and read whole; `--reviewer external` emits External Review's scope manifest plus its own `.diff`, no rubric or ledger; `--reviewer combined` composes `lite`'s single-pass reviewer manifest from the Correctness/Efficiency/Documentation rubrics), coverage-ledger validation, manifest digests, impl-test defect-stalemate comparison (multi-`## Defects`-section fail-closed), review-wave measurement and division (`review-waves`: lines, files and diff bytes against thresholds, recorded in `waves.json`) and a wave's iteration-1 list at current paths (`wave-files`), agent-memory content check on the staged diff (`memory-check`), design-review iteration draft snapshots (`draft-snapshot`, copying draft content under the iteration dir; `--snapshot <prev iter dir>` diffs against it from iteration 2), retro candidate discovery (`retro-candidates`, consumer `asd` rows tagged `upstream`), every reviewer/External return persisted to its review file plus findings JSON (`persist-review`), the scratch directory (`scratch-dir`, creates and prints `.asd/tmp/`) subagent stall detection (`agent-liveness --agents <id,…> --interval 300 [--budget-min <n>]`) and the operation-timing ledger (`timing` appends a start/end/point record, never gating and warning on stderr on a write failure; `timing-recover` closes stale open records after an interruption; `timing-summary` prints the per-kind totals, the slow set and the user waits for retro)
++│   ├── runtime.js                   # deterministic helper: task-cost routing, external-review preflight, per-reviewer coverage-manifest emission (`--base/--head` writes the manifest's `.diff` patch, one file per distinct list and range, and authorizes compact `pureRename` rows on renames with identical content and mode; `--test-plan` narrows Testing's impl-review list; `--full-files <path> --full-base <sha>` adds External Review's carried-over files, diffed over that base — in design-review, without `--full-base`, left out of the snapshot diff and read whole; `--reviewer external` emits External Review's scope manifest plus its own `.diff`, no rubric or ledger; `--reviewer combined` composes `lite`'s single-pass reviewer manifest from the Correctness/Efficiency/Documentation rubrics), coverage-ledger validation, manifest digests, impl-test defect-stalemate comparison (multi-`## Defects`-section fail-closed), review-wave measurement and division (`review-waves`: lines, files and diff bytes against thresholds, recorded in `waves.json`) and a wave's iteration-1 list at current paths (`wave-files`), agent-memory content check on the staged diff (`memory-check`), design-review iteration draft snapshots (`draft-snapshot`, copying draft content under the iteration dir; `--snapshot <prev iter dir>` diffs against it from iteration 2), retro candidate discovery (`retro-candidates`, consumer `asd` rows tagged `upstream`), every reviewer/External return persisted to its review file plus findings JSON (`persist-review`), the scratch directory (`scratch-dir`, creates and prints `.asd/tmp/`), subagent stall detection (`agent-liveness --agents <id,…> --interval 300 [--budget-min <n>]`) and the operation-timing ledger (`timing` appends open/close records, never gating and warning on stderr on a write failure; `timing-recover` closes stale open records after an interruption; `timing-summary` prints the per-kind totals, the slow set and the user waits for retro)
+ │   ├── tmp/                         # scratch directory (`runtime.js scratch-dir`), self-ignoring via its own `.gitignore`; helper files and reviewer return files
+ │   ├── rules/                       # workflow rules (role/phase-scoped reads), incl. providers.md
+ │   ├── templates/                   # artifact templates (t_*.html / .md / .yaml / .c4), incl. t_AGENTS.md / t_CLAUDE.md
+@@ -344,7 +344,7 @@ your-project/
+ │   │   ├── stubs.md                 # project-global TODO registry
+ │   │   └── retro-backlog.md         # lazy; cross-sprint disposition of open retro rows; /asd-update never touches it
+ │   └── sprints/
+-│       ├── <NNN-slug>/              # active sprint (one at a time); decisions-log.md, test-plan.md and `timing.jsonl` (the append-only operation-timing ledger, committed with phase bookkeeping) created here; the first two rotate into into numbered `decisions-log.NNN.md` / `test-plan.entry-NN.md` segments so neither grows unbounded (`artifact-layout.md`); archived with the sprint
++│       ├── <NNN-slug>/              # active sprint (one at a time); decisions-log.md, test-plan.md and `timing.jsonl` (the append-only operation-timing ledger, committed with phase bookkeeping) created here; the first two rotate into numbered `decisions-log.NNN.md` / `test-plan.entry-NN.md` segments so neither grows unbounded (`artifact-layout.md`); archived with the sprint
+ │       └── archived/<NNN-slug>/     # moved here by the next sprint's closure write, by the next sprint's scope, with no user gate; completed sprints immutable
+ ├── .claude/                         # generated Claude Code view
+ │   ├── agents/                      # 16 agent definitions: 12 roles + 4 tier variants (*.md)
+diff --git a/tests/run.js b/tests/run.js
+index c08e96ff..eb2c05a8 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -7708,15 +7708,15 @@ test('sprint-025 AC-4 (D4): timingRecover closes every open op as interrupted at
+ test('sprint-025 AC-5 (D5, D6): timingSummary reports totals, wall/machine/user-wait/unaccounted time, the slow set with its excess, every user wait, rework, the archived median and the gaps - deterministically, and {"timing": null} without a ledger', () => {
+   const step = runtime.SLOW_MINUTES + runtime.SLOW_TOP_N + 5;
+   const slowMinutes = Array.from({ length: runtime.SLOW_TOP_N + 1 }, (unused, index) => runtime.SLOW_MINUTES + 1 + index);
+-  const phaseEnd = (slowMinutes.length + 1) * step;
++  const waitMinutes = runtime.SLOW_MINUTES + 15;
++  const phaseEnd = (slowMinutes.length + 1) * step + waitMinutes;
+   const reentryStart = phaseEnd + 20;
+   const reentryEnd = reentryStart + 20;
+-  const waitMinutes = runtime.SLOW_MINUTES + 15;
+   const outsidePhase = phaseEnd + 5;
+   const ledger = opLines('impl#1', 'phase', null, 0, phaseEnd)
+     + slowMinutes.map((minutes, index) => opLines(`dev-${index}`, 'dispatch', 'impl#1', index * step, index * step + minutes, index < 2 ? { agent: 'asd-dev', tier: 'standard', model: 'm1' } : {})).join('')
+     + opLines('quick', 'dispatch', 'impl#1', slowMinutes.length * step, slowMinutes.length * step + 2, {}, 'interrupted')
+-    + opLines('wait', 'user-wait', 'impl#1', 1, 1 + waitMinutes, { gate: 'approve' })
++    + opLines('wait', 'user-wait', 'impl#1', slowMinutes.length * step + 3, slowMinutes.length * step + 3 + waitMinutes, { gate: 'approve' })
+     + opLines('review iter-02', 'review-iteration', 'impl#1', 3, 4, { wave: '1', iteration: '2' })
+     + opLines('outside', 'dispatch', null, outsidePhase, outsidePhase + 1)
+     + opLines('impl#2', 'phase', null, reentryStart, reentryEnd)
+@@ -7759,6 +7759,24 @@ test('sprint-025 AC-5 (D5, D6): timingSummary reports totals, wall/machine/user-
+   assert.deepStrictEqual(runtime.timingSummary(null, []), { timing: null });
+ });
+ 
++test('sprint-025 AC-5 (D5, D6): the slow set ranks machine time with user-wait overlap subtracted, skips an op another machine op names as its parent, and keeps parallel siblings eligible; a duplicate phase open is skipped', () => {
++  const slow = (ledger) => runtime.timingSummary(ledger, []).timing.slow;
++  const filler = Array.from({ length: runtime.SLOW_TOP_N + 1 }, (unused, index) => opLines(`f${index}`, 'dispatch', null, 100, 110 + index)).join('');
++
++  const waited = slow(filler + opLines('waited', 'dispatch', null, 0, runtime.SLOW_MINUTES + 10) + opLines('w', 'user-wait', null, 0, runtime.SLOW_MINUTES + 5));
++  assert.ok(!waited.some((op) => op.id === 'waited'), 'a dispatch long only for the user wait over it is neither over the limit nor in the top-N');
++  const [partial] = slow(opLines('p', 'dispatch', null, 0, 20) + opLines('w', 'user-wait', null, 10, 30));
++  assert.deepStrictEqual([partial.seconds, partial.excess_seconds], [600, 0], 'only the overlap is subtracted from the duration');
++
++  const nested = slow(opLines('outer', 'dispatch', 'impl#1', 0, 50) + opLines('inner', 'suite', 'outer', 5, 10) + opLines('x', 'dispatch', 'impl#1', 60, 70) + opLines('y', 'dispatch', 'impl#1', 62, 72));
++  assert.deepStrictEqual(nested.map((op) => op.id).sort(), ['inner', 'x', 'y'], 'a dispatch with a child op is not ranked; parallel siblings under one phase both are');
++
++  const phase = JSON.stringify({ op: 'open', id: 'impl#1', kind: 'phase', parent: null, start: minuteAt(0), attrs: {} }) + '\n';
++  const again = runtime.timingAppend(phase, { open: 'impl', kind: 'phase' }, minuteAt(5));
++  assert.strictEqual(again.text, '', 'a phase whose bare name is already open is not opened again');
++  assert.strictEqual(again.warnings.length, 1);
++});
++
+ test('sprint-025 AC-1/AC-4/AC-5 (D4): the timing commands write ISO-stamped, paired lines, are a no-op without --create, never fail the caller, and timing-summary reads the ledger and archived sprints', () => {
+   const { spawnSync } = require('node:child_process');
+   const root = mkTempDir();
