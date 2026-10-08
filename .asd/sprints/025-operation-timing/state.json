@@ -1,7 +1,7 @@
 {
   "sprint_id": "025-operation-timing",
   "branch": "sprint/025-operation-timing",
-  "phase": "scope",
+  "phase": "audit",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -25,6 +25,20 @@
       "reason": "sprint.md AC-1..AC-7 accepted after AC-6 Home-split revision, no split; retro intake empty",
       "evidence": "decisions-log.md 2026-10-08 scope gate",
       "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "new or changed scope",
+      "decision_actor": "user",
+      "reason": "AC-8 (ASD version check at new-sprint start) amended into sprint 025 during audit, before plan; user chose 025 over a split",
+      "evidence": "decisions-log.md 2026-10-08 scope amendment AC-8",
+      "artifact_revision": "sprint.md@audit"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "all sections present, 7 contradictions settled by canonical precedence, AC-1..AC-8 deliverable; preference items carried as open plan inputs",
+      "evidence": "audit.md",
+      "artifact_revision": "audit.md@audit"
     }
   ],
   "task_routing": {},
@@ -48,7 +62,7 @@
     }
   },
   "created_at": "2026-10-08T09:40:31.177Z",
-  "updated_at": "2026-10-08T09:44:44.572Z",
+  "updated_at": "2026-10-08T10:10:02.777Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
