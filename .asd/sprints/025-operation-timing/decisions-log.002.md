@@ -35,3 +35,15 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-10-08 — scope amendment AC-8: ASD version check at new-sprint start
+
+- **Decision**: The user added AC-8 during audit: a new sprint start in a consumer project checks the configured ASD repo for a newer `asd_version` and offers `/asd-update` or continue; skipped under self-hosting and on resume; never updates unasked. No plan exists yet, so the Task and its wave are assigned by the plan phase; no review has run, so no `floor_base`.
+- **Rationale**: User request mid-audit; the user chose to keep it in 025 rather than split it to 026. Audit stays `true` and is extended to cover AC-8.
+- **Affected docs**: [sprint.md](sprint.md)
+
+## 2026-10-08 — audit accepted (adaptive)
+
+- **Decision**: `audit.md` accepted by the orchestrator: every section is present, all seven contradictions are settled by canonical precedence (none needs the user), and AC-1..AC-8 are deliverable as stated. Capture mechanism: orchestrator-run `runtime.js` `timing-*` commands writing `<sprint>/timing.jsonl`, not host hooks. Preference items (slow-flag constants, user-wait flagging, Codex post-update halt, hard-list entry) go to the plan gate as open plan inputs.
+- **Rationale**: `checkpoints.md` routine audit acceptance in adaptive mode, with valid evidence; host-hook capability verified against the Claude Code and Codex docs cited in `audit.md`.
+- **Affected docs**: [audit.md](audit.md)
