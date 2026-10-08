@@ -17,7 +17,7 @@ Orchestration body for the `asd-phase-impl-review` skill. Operation-mapping to h
 - request user decision: reviewer questions, escalation on FAIL or iteration cap
 - delegate to agent in parallel: reviewers; the orchestrator writes state, routing and decisions inline; `asd-tester` runs step 8's test-fix and the terminal full-suite gate.
 - append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log"
-- timing: per `sprint-lifecycle.md` "Operation timing" — a `review-iteration` op from step 2 to step 8's resolution (or step 10's); `dispatch` ops (`<reviewer key> <id>`; `external-review` kind for External Review) around step 6's reviewers and step 8's tester; step 9's tester payload carries `<sprint>/timing.jsonl` and brackets each run with a `suite` op (`scope=full`); commit a dirty ledger before the entry check
+- timing: per `sprint-lifecycle.md` "Operation timing" — a `review-iteration` op from step 2 to step 8's resolution (or step 10's); `dispatch` ops (`<reviewer key> <id>`; `external-review` kind for External Review) around step 6's reviewers and step 8's and step 9's tester dispatches (re-runs included, routing attrs carried); step 9's tester payload carries `<sprint>/timing.jsonl` and brackets each run with a `suite` op (`scope=full`); commit a dirty ledger before the entry check
 
 ## Workflow
 

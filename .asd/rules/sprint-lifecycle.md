@@ -297,15 +297,15 @@ One problem that is both a code defect and a workflow malfunction (routine under
 
 ## Operation timing
 
-The **timing ledger** `<sprint>/timing.jsonl` (never a bare "ledger") is written only through `node .asd/runtime.js timing --ledger <path> [--create] [--close <id,…> [--outcome done|interrupted]] [--open <id,…> --kind <kind> [--parent <id>] [--attrs <k=v;…>]]`: closes before opens, one append, runtime-stamped. It never gates: a failure warns and exits 0; a missing ledger is a no-op, only scope step 1 creating it (`--create`). One call per boundary; quote ids with spaces; no `&&`.
+The **timing ledger** `<sprint>/timing.jsonl` (never a bare "ledger") is written only through `node .asd/runtime.js timing --ledger <path> [--create] [--close <id,…> [--outcome done|interrupted]] [--open <id,…> --kind <kind> [--parent <id>] [--attrs <k=v;…>]]`: closes before opens, one append, runtime-stamped. It never gates: a failure warns and exits 0; a missing ledger is a no-op, only scope step 1 creating it (`--create`). One call per boundary; quote ids with spaces and the whole `--attrs` value (`;` separates shell commands); no `&&`.
 
-Kinds (attrs): `phase`; `dispatch` (`agent`, `tier`, `model` — `state.json.task_routing`'s when routed); `review-iteration` (`wave`, `iteration`); `suite` (`scope`: `impacted`|`full`); `external-review` (`model`: the wrapped CLI's); `user-wait` (`gate`: gate name or short question label). Unique ids: a routed dispatch's `task_routing` id; `<reviewer key> wave-<K>/iter-NN`; else `<agent> <phase>#<n>`. A phase op opens and closes by bare phase name (the runtime numbers entries `#<n>`); an op without `--parent` takes the open phase.
+Kinds (attrs): `phase`; `dispatch` (`agent`, `tier`, `model` — `state.json.task_routing`'s when routed); `review-iteration` (`wave`, `iteration`: plain integers); `suite` (`scope`: `impacted`|`full`); `external-review` (`model`: the wrapped CLI's); `user-wait` (`gate`: gate name or short question label). Unique ids: a routed dispatch's `task_routing` id (an unrouted one takes `tier`/`model` from the agent's frontmatter); a reviewer dispatch `<reviewer key> [wave-<K>/]iter-NN`; else `<agent> <phase>#<n>`; `review-iteration` `<phase> [wave-<K>/]iter-NN`; `suite` `suite <phase>#<n>`; `user-wait` `wait <gate>`. A phase op opens and closes by bare phase name (the runtime numbers entries `#<n>`); an op without `--parent` takes the open phase.
 
 Writers: `asd-sprint` opens a phase op before each phase-skill delegation and closes it on return — `done` on `COMPLETED`, `interrupted` on `FAILED`/`ABORT`; a `QUESTION` halt leaves it open. Scope opens its own at folder creation; pr open mode closes its own before its final commit and push. Each phase workflow's timing line names its other sites; `asd-tester` brackets its suite runs. A `user-wait` opens right before every request user decision, gate prompt or free-text question (`QUESTION` protocol step 2 included) and closes once the answer is processed. Not recorded: pr merge mode, the release retry, time before the ledger exists (scope collection, the ASD version check and its answer).
 
 Recovery: a dispatch found failed or stalled closes `interrupted` at detection; on resume `timing-recover --ledger <path>` closes every still-open op `interrupted`.
 
-Commits: the orchestrator commits a dirty timing ledger with its phase-exit bookkeeping, and alone (`git commit --only -- <ledger>`, subject `chore(sprint): <NNN> timing`) before every clean-tree check or diff-reading gate (`git-strategy.md` "Commit before review"). Dispatched agents never stage it.
+Commits: `git-strategy.md` "Commit before review".
 
 ## Retro phase
 

@@ -1130,7 +1130,7 @@ function timingRequest(flags) {
   return { close, outcome, open, kind: flags.kind, parent: flags.parent, attrs: timingAttrs(flags.attrs) };
 }
 
-/** One `timing` call against a ledger holding `text`, as `{text, warnings}`: the text to append, closes before opens, each stamped `now` (ISO 8601 UTC). A close naming no open op is still recorded, unpaired, so the summary reports it; an open of an id already open is skipped. Both warn. A phase opens as `<name>#<n>`, n its entry ordinal; an open without `parent` takes the open phase. */
+/** One `timing` call against a ledger holding `text`, as `{text, warnings}`: the text to append, closes before opens, each stamped `now` (ISO 8601 UTC). A close naming no open op is still recorded, unpaired, so the summary reports it; an open of an id already open, or of a phase whose bare name is already open, is skipped. Both warn. A phase opens as `<name>#<n>`, n its entry ordinal; an open without `parent` takes the open phase. */
 function timingAppend(text, flags, now) {
   const request = timingRequest(flags);
   const entries = timingEntries(text);
@@ -1146,8 +1146,8 @@ function timingAppend(text, flags, now) {
   const phaseOpens = entries.filter((entry) => entry.op === 'open' && entry.kind === 'phase').map((entry) => phaseName(entry.id));
   for (const name of request.open) {
     const id = request.kind === 'phase' ? `${name}#${phaseOpens.filter((opened) => opened === name).length + 1}` : name;
-    if (open.has(id)) {
-      warnings.push(`open of ${id} skipped: already open`);
+    if (open.has(id) || (request.kind === 'phase' && [...open.values()].some((entry) => entry.kind === 'phase' && phaseName(entry.id) === name))) {
+      warnings.push(`open of ${request.kind === 'phase' ? name : id} skipped: already open`);
       continue;
     }
     const entry = { op: 'open', id, kind: request.kind, parent: openParent(open, request), start: now, attrs: request.attrs };
@@ -1250,9 +1250,13 @@ function modelTotals(ops) {
   });
 }
 
-/** The slow set: the SLOW_TOP_N longest leaf machine ops plus every one over SLOW_MINUTES, longest first, each with its excess over its kind's median in this sprint. */
+/** The slow set: the SLOW_TOP_N longest leaf machine ops (no shorter machine op inside their interval) plus every one over SLOW_MINUTES, longest first. Durations are machine time, overlapping user-wait ops subtracted; each op carries its excess over its kind's median in this sprint. */
 function slowOps(ops) {
-  const leaves = ops.filter((op) => LEAF_MACHINE_KINDS.includes(op.kind));
+  const waits = ops.filter((op) => op.kind === 'user-wait');
+  const machine = ops.filter((op) => LEAF_MACHINE_KINDS.includes(op.kind)).map((op) => ({
+    ...op, ms: op.ms - unionMs(waits.map((wait) => ({ start: Math.max(wait.start, op.start), end: Math.min(wait.end, op.end) }))),
+  }));
+  const leaves = machine.filter((op) => !machine.some((other) => other.id !== op.id && other.start >= op.start && other.end <= op.end && other.ms < op.ms));
   const kindMedian = (kind) => median(leaves.filter((op) => op.kind === kind).map((op) => op.ms));
   return leaves.slice().sort((a, b) => b.ms - a.ms).filter((op, rank) => rank < SLOW_TOP_N || op.ms > SLOW_MINUTES * 60000).map((op) => ({
     id: op.id, kind: op.kind, parent: op.parent, seconds: seconds(op.ms), excess_seconds: seconds(op.ms - kindMedian(op.kind)), outcome: op.outcome, attrs: op.attrs,

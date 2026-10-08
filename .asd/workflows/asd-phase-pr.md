@@ -4,7 +4,7 @@ The main orchestrator owns this workflow and delegates no orchestration role.
 
 Append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log".
 
-Timing: per `sprint-lifecycle.md` "Operation timing" — open mode closes the pr phase op before step 3's final bookkeeping commit and push; merge mode records nothing.
+Timing: per `sprint-lifecycle.md` "Operation timing" — open mode closes the pr phase op before step 3's final bookkeeping commit and push, or before step 2's hand-over to merge mode (ledger committed with step 2's commit, alone when it writes none); merge mode records nothing.
 
 ## Open mode
 
