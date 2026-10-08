@@ -35,3 +35,18 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-10-08 — sprint opened, workflow lite
+
+- **Decision**: Sprint 025 opened on `sprint/025-operation-timing` from `main` f7dd9a2; workflow `lite` chosen by the user; sprint 024 archived by the closure write (099d44e).
+- **Rationale**: Design documents are disabled in this repo, so `standard` would differ only by the four-reviewer impl-review; the user took the recommended `lite`.
+- **Affected docs**: [state.json](state.json)
+
+- 2026-10-08 — audit frozen true: `documents.audit: auto` and the scope adds behaviour and a new artefact contract (not mechanical)
+- 2026-10-08 — retro intake: `retro-candidates --self-hosting` returned `[]` at HEAD 099d44e (sprint 024 rows already disposed); no dispositions, no backlog write
+
+## 2026-10-08 — scope gate: AC-1..AC-7 accepted
+
+- **Decision**: The user accepted `sprint.md` AC-1..AC-7 with no split, after one revision: AC-6 now splits each duration proposal's `Home` into a consumer-project and an ASD-framework action, like every other retro finding. Token/cost accounting, backfill, dashboards, auto-applied proposals and blocking time budgets are out of scope.
+- **Rationale**: Capture without retro analysis would deliver nothing checkable, so both strands stay in one sprint; the user asked for the two-level split explicitly.
+- **Affected docs**: [sprint.md](sprint.md)
