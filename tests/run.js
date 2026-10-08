@@ -7708,15 +7708,15 @@ test('sprint-025 AC-4 (D4): timingRecover closes every open op as interrupted at
 test('sprint-025 AC-5 (D5, D6): timingSummary reports totals, wall/machine/user-wait/unaccounted time, the slow set with its excess, every user wait, rework, the archived median and the gaps - deterministically, and {"timing": null} without a ledger', () => {
   const step = runtime.SLOW_MINUTES + runtime.SLOW_TOP_N + 5;
   const slowMinutes = Array.from({ length: runtime.SLOW_TOP_N + 1 }, (unused, index) => runtime.SLOW_MINUTES + 1 + index);
-  const phaseEnd = (slowMinutes.length + 1) * step;
+  const waitMinutes = runtime.SLOW_MINUTES + 15;
+  const phaseEnd = (slowMinutes.length + 1) * step + waitMinutes;
   const reentryStart = phaseEnd + 20;
   const reentryEnd = reentryStart + 20;
-  const waitMinutes = runtime.SLOW_MINUTES + 15;
   const outsidePhase = phaseEnd + 5;
   const ledger = opLines('impl#1', 'phase', null, 0, phaseEnd)
     + slowMinutes.map((minutes, index) => opLines(`dev-${index}`, 'dispatch', 'impl#1', index * step, index * step + minutes, index < 2 ? { agent: 'asd-dev', tier: 'standard', model: 'm1' } : {})).join('')
     + opLines('quick', 'dispatch', 'impl#1', slowMinutes.length * step, slowMinutes.length * step + 2, {}, 'interrupted')
-    + opLines('wait', 'user-wait', 'impl#1', 1, 1 + waitMinutes, { gate: 'approve' })
+    + opLines('wait', 'user-wait', 'impl#1', slowMinutes.length * step + 3, slowMinutes.length * step + 3 + waitMinutes, { gate: 'approve' })
     + opLines('review iter-02', 'review-iteration', 'impl#1', 3, 4, { wave: '1', iteration: '2' })
     + opLines('outside', 'dispatch', null, outsidePhase, outsidePhase + 1)
     + opLines('impl#2', 'phase', null, reentryStart, reentryEnd)
@@ -7757,6 +7757,24 @@ test('sprint-025 AC-5 (D5, D6): timingSummary reports totals, wall/machine/user-
   assert.strictEqual(runtime.timingSummary(ledger, archived).timing.baseline.ledgers, 2);
   assert.deepStrictEqual(runtime.timingSummary(ledger, []), runtime.timingSummary(ledger, []), 'no clock is read');
   assert.deepStrictEqual(runtime.timingSummary(null, []), { timing: null });
+});
+
+test('sprint-025 AC-5 (D5, D6): the slow set ranks machine time with user-wait overlap subtracted, skips an op another machine op names as its parent, and keeps parallel siblings eligible; a duplicate phase open is skipped', () => {
+  const slow = (ledger) => runtime.timingSummary(ledger, []).timing.slow;
+  const filler = Array.from({ length: runtime.SLOW_TOP_N + 1 }, (unused, index) => opLines(`f${index}`, 'dispatch', null, 100, 110 + index)).join('');
+
+  const waited = slow(filler + opLines('waited', 'dispatch', null, 0, runtime.SLOW_MINUTES + 10) + opLines('w', 'user-wait', null, 0, runtime.SLOW_MINUTES + 5));
+  assert.ok(!waited.some((op) => op.id === 'waited'), 'a dispatch long only for the user wait over it is neither over the limit nor in the top-N');
+  const [partial] = slow(opLines('p', 'dispatch', null, 0, 20) + opLines('w', 'user-wait', null, 10, 30));
+  assert.deepStrictEqual([partial.seconds, partial.excess_seconds], [600, 0], 'only the overlap is subtracted from the duration');
+
+  const nested = slow(opLines('outer', 'dispatch', 'impl#1', 0, 50) + opLines('inner', 'suite', 'outer', 5, 10) + opLines('x', 'dispatch', 'impl#1', 60, 70) + opLines('y', 'dispatch', 'impl#1', 62, 72));
+  assert.deepStrictEqual(nested.map((op) => op.id).sort(), ['inner', 'x', 'y'], 'a dispatch with a child op is not ranked; parallel siblings under one phase both are');
+
+  const phase = JSON.stringify({ op: 'open', id: 'impl#1', kind: 'phase', parent: null, start: minuteAt(0), attrs: {} }) + '\n';
+  const again = runtime.timingAppend(phase, { open: 'impl', kind: 'phase' }, minuteAt(5));
+  assert.strictEqual(again.text, '', 'a phase whose bare name is already open is not opened again');
+  assert.strictEqual(again.warnings.length, 1);
 });
 
 test('sprint-025 AC-1/AC-4/AC-5 (D4): the timing commands write ISO-stamped, paired lines, are a no-op without --create, never fail the caller, and timing-summary reads the ledger and archived sprints', () => {

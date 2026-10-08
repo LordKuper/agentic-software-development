@@ -12,23 +12,17 @@ responsibility:
 | Entry | HEAD analysed | Scope |
 |---|---|---|
 | 1 | 1f7a5c9ba688fe33f16c66b5be22da27c061faff | full change surface |
+| 2 |  | delta since entry 1 |
 
 ## Risk → check decisions
 
-Pre-strategy run: change surface touches `.asd/runtime.js`, `release-manifest.json` and rule docs (shared framework files), so the safety valve degraded the impacted set to the full suite: `node tests/run.js` → 272/273, the one failure the §18 empty-log pin (test defect, below). No `test_affected` in `commands.yaml`.
+Entry 2 pre-strategy run: delta (`2f15dbb`, `b65766a`) touches `.asd/runtime.js`, `release-manifest.json`, rule docs and workflows (shared framework files), so the safety valve degraded the impacted set to the full suite: `node tests/run.js` → 279/280, the one failure the known-red `sprint-025 AC-5 (D5, D6): timingSummary …` pin.
 
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
-| `runtime.js` `timingAppend` (AC-1, AC-4, D2/D4) | wrong pairing, ordinal, parent or close-before-open order corrupts every duration; duplicate open or torn tail corrupts the ledger | unit (pure core, fixed fixture, injected `now`) | add | pure function, cheapest reliable check, no clock |
-| `runtime.js` kinds vs `sprint-lifecycle.md` "Operation timing" (AC-2) | rule lists a kind the runtime rejects (or the reverse) and a mark is silently lost | contract (kinds derived from the rule, run through the core) | add | derives the set from its source, no hand enumeration |
-| `runtime.js` `timingRecover` (AC-4, D4) | interrupted op closed before recorded activity, or a closed ledger rewritten | unit | add | pure core, fixed dates |
-| `runtime.js` `timingSummary` (AC-5, D5, D6) | wrong wall/machine/user-wait/unaccounted maths, slow set missing the top-N or the over-limit rule, user wait flagged slow, gaps and baseline wrong | unit on fixed ledgers built from `SLOW_TOP_N`/`SLOW_MINUTES` | add | deterministic, no clock read |
-| `runtime.js` `timing*` CLI wrappers (AC-1, AC-4, Windows quoting) | no-op rule, exit 0 on any failure, ISO stamps, pairing, archive scan, usage line | component (spawn, shape and pairing only) | add | real argv path including an id with spaces; asserts shape, never values |
-| `update.js` `compareManifestVersions` (AC-8, D8) | lexical compare, trusting remote fields, accepting a non-numeric version | unit | add | pure helper; the `get` fix (timeout, redirect cap, body cap) needs a live or TLS server, so `none` (no network call in tests; new infrastructure would need Complication Approval) |
-| `update.js` `--check-version` / `get` | offline crash, hang, redirect loop | none | none | only reachable over the network; covered indirectly by the pure helper; recorded as a residual risk, not a defect |
-| Rule/workflow/skill/README/template text (AC-3, AC-7, AC-8) | a phase workflow loses its timing binding, a phase skill loses the runtime pre-approval, a mirror drops a command, the update choice leaves the hard list | contract (derives workflow and skill sets from disk) | add | AC-7 names these pins |
-| `t_retrospective.html` duration section (D9, AC-6) | empty-log branch loses Duration or the TOC comment contradicts the h2 count | contract | keep (adapted) | the §18 pin asserted the superseded `< threshold`; now asserts Duration is kept and the count reaches the TOC threshold |
-| `release-manifest.json`, generated views, other rule prose | hash ledger drift | existing integrity/sync pins | none | already covered by existing hash and sync checks; green |
+| `runtime.js` `slowOps`: machine time (user-wait overlap subtracted), parent-based leaf (external 1, 2; supersedes the entry-1 `timingSummary` slow-set pin's fixture) | a long user wait inflates a dispatch's rank or excess; a dispatch with a child suite is ranked next to its own child; parallel siblings dropped | unit on fixed ledgers (new test plus the adapted `timingSummary` pin) | add + keep (adapted) | the old pin's wait overlapped `dev-0`, so the fix correctly dropped it: a test defect, not a code defect; the wait moved to a window with no dispatch |
+| `runtime.js` `timingAppend` phase reopen guard (C1) | a second `--open <phase>` while the bare name is open writes a second open and double-counts the phase | unit | add | pure function, fixed ledger |
+| `sprint-lifecycle.md` "Operation timing" wording, workflow timing lines, asd-sprint "Phase ops", README (C2-C7) | prose reworded; no parsed token, heading, command or field name changed beyond what the entry-1 binding pin already holds | none | none | §17 forbids pinning surrounding prose; the entry-1 contract pins (kinds line derived from the rule, every workflow's `"Operation timing"` binding, README commands) stay green |
 
 ## Removed tests
 
@@ -36,26 +30,22 @@ None.
 
 ## Added tests
 
+Level and AC/risk covered are visible in the test file itself (name, path) — not restated here.
+
 | Test | Regression proof |
 |---|---|
-| `tests/run.js`: sprint-025 AC-1/AC-4 (D2, D4) timingAppend … | mutation parent dropped in `timingAppend`: `node tests/run.js` → exit 1, `sprint-025 AC-1/AC-4 (D2, D4): timingAppend closes before it opens …`; runs: 1 |
-| `tests/run.js`: sprint-025 AC-2 (D2) every kind the rule lists … | mutation `external-review` removed from `TIMING_KINDS`: exit 1, `sprint-025 AC-2 (D2): every kind sprint-lifecycle.md "Operation timing" lists …`; runs: 1 |
-| `tests/run.js`: sprint-025 AC-4 (D4) timingRecover … | mutation ledger timestamps ignored in the end computation: exit 1, `sprint-025 AC-4 (D4): timingRecover closes every open op …`; runs: 1 |
-| `tests/run.js`: sprint-025 AC-5 (D5, D6) timingSummary … | mutations top-N rank cut to 1 and minutes limit removed: each exit 1, `sprint-025 AC-5 (D5, D6): timingSummary reports totals …`; runs: 3 (the first top-N run passed, the fixture could not distinguish top-N from the limit; a short-ops ledger was added and the mutation rerun failed) |
-| `tests/run.js`: sprint-025 AC-1/AC-4/AC-5 (D4) timing commands CLI … | mutation catch returns 1 in `timingCommand`: exit 1, `sprint-025 AC-1/AC-4/AC-5 (D4): the timing commands write ISO-stamped, paired lines …`; runs: 1 |
-| `tests/run.js`: sprint-025 AC-8 (D8) compareManifestVersions … | mutation lexical `remote > local` in place of `compareVersions`: exit 1, `sprint-025 AC-8 (D8): compareManifestVersions orders versions numerically …`; runs: 1 |
-| `tests/run.js`: sprint-025 AC-3/AC-7/AC-8 bindings, approvals and homes | mutations `"Operation timing"` renamed in `asd-phase-audit.md` and runtime approval removed from `asd-phase-plan/SKILL.md`: each exit 1, `sprint-025 AC-3/AC-7/AC-8: every phase workflow states its timing ops …`; reword control (`agent dispatches` → `agent calls` in the same workflow): no content-contract failure; runs: 3 (the entry's single control counted here) |
-| `tests/run.js`: AC-4/AC-5/AC-7/AC-10 `t_retrospective.html` empty-log pin (adapted, new Duration assert) | superseded template restored (`<section id="duration">` removed and the comment's Duration dropped): exit 1, `AC-4/AC-5/AC-7/AC-10: t_retrospective.html classifies every section for the empty-log branch …`; runs: 1 |
+| `tests/run.js`: sprint-025 AC-5 (D5, D6) the slow set ranks machine time … (new) | mutations: wait subtraction zeroed in `slowOps`; leaf filter removed (`leaves = machine`); phase reopen guard removed in `timingAppend`: each `node tests/run.js` → exit 1, `sprint-025 AC-5 (D5, D6): the slow set ranks machine time with user-wait overlap subtracted …`; runs: 3 |
+| `tests/run.js`: sprint-025 AC-5 (D5, D6) timingSummary … (adapted fixture) | pre-adapt run against the fixed `slowOps`: exit 1, `sprint-025 AC-5 (D5, D6): timingSummary reports totals …` (dev-0 correctly dropped); adapted pin green; runs: 1 |
 
-Every canon-file mutation also trips the existing `upstream_hashes`/`canon_hashes` integrity pins; the named test above is the one that proves the new assert. Every mutation was restored in the same command; `git status` shows only the committed test file.
+Parallel-sibling eligibility is asserted in the new test (`x`, `y` both listed) and is not separately mutated. Every mutation was restored in the same command; `git status` shows only the committed files.
 
 ## Suite run
 
 - Command: `node tests/run.js`
-- Scope: full (safety valve: shared framework files in the change surface)
-- Result: pass — 280 passed, 0 failed, 0 skipped
-- Lint / build: pass — `git diff --cached --check`, `node .asd/sync.js --check` (exit 0)
-- HEAD: e0f319ca
+- Scope: full (safety valve: shared framework files in the delta)
+- Result: pass — 281 passed, 0 failed, 0 skipped
+- Lint / build: pass — `git diff --cached --check`, `node .asd/sync.js --check`
+- HEAD: 81a071ae (plus this entry's test commit)
 
 ## Defects
 
