@@ -4,3 +4,4 @@
 - [Pinned clauses vs economy](feedback_doc-economy-pinned-clauses.md) — read the suite pin and plan decision before flagging a pointer-plus-outcome clause; prefer pointer-coverage gaps
 - [Re-review without a shell](feedback_rereview-no-shell-checks.md) — back hash, suite and pin claims from canon text and the tester's record; say what was not recomputed
 - [Plan deviation vs flagged choices](feedback_plan-deviation-flagged-choices.md) — grep decisions-log "flagged choices accepted" before raising a deviation from a plan D-N
+- [Return findings-table shape](feedback_return-findings-table-shape.md) — Findings must be the first pipe table; first cell = finding id used by ledger f; no bare | in cells

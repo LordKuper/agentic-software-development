@@ -48,3 +48,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: [plan.md](plan.md)
 - 2026-10-08 — route impl-test entry 1: standard, dispatch HEAD c8740b8a; risk artifact: content-contract pins
 - 2026-10-08 — impl-test: impacted set green (280/280, full suite via safety valve), 7/0 tests (1 adapted)
+- 2026-10-08 — impl-review wave-1/iter-01: combined CONCERNS (C1-C7), external CONCERNS (1-3); no FAIL, no low-severity test-only branch; route to impl review-fix (review_fixes_pending=wave-1/iter-01)
