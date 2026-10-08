@@ -35,3 +35,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-10-08 — retrospective written
+
+- **Decision**: `retrospective.html` written on the analysed branch: 2 friction entries (F-1, F-2), 3 framework actions (A-1, A-2 covered by `git-strategy.md` "Commit before review", A-3), 1 systemic proposal (P-1), 0 consumer actions; duration section reads "No timing data" (`timing-summary` → `{"timing": null}`).
+- **Rationale**: `sprint-lifecycle.md` "Retro phase".
+- **Affected docs**: [retrospective.html](retrospective.html), [friction-log.md](friction-log.md)
