@@ -35,3 +35,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+- 2026-10-08 — design-promote skipped: frozen prd, ux_spec, adr and c4 all false (lite no-op)
