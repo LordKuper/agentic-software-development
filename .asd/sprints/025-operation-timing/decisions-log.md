@@ -35,3 +35,15 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-10-08 — plan inputs settled by the user
+
+- **Decision**: Timing ledger stays in the sprint folder; the orchestrator commits it before every clean-tree check and with phase-exit bookkeeping (D3). Slow set = top 5 longest leaf machine operations plus every one over 30 minutes (D5). Every user wait is recorded; retro proposes removing avoidable escalations (D6). After an AC-8 update: commit, then halt on both hosts (D8).
+- **Rationale**: User answers at plan time to `audit.md` Open plan inputs 1, 2, 9 and the ledger-location trade-off (audit Risks, clean-tree checks).
+- **Affected docs**: [plan.md](plan.md)
+
+## 2026-10-08 — `plan.md` accepted
+
+- **Decision**: The user accepted `plan.md`: D1-D9, Tasks 1-8, wave 1 = Tasks 1-2, wave 2 = Tasks 3-8. pr merge mode and the release retry are not recorded (D7). No open stubs (audit.md has no "Related open stubs").
+- **Rationale**: `checkpoints.md` plan gate, write-then-review-accept; explicit `accept`.
+- **Affected docs**: [plan.md](plan.md)
