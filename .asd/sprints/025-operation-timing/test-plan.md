@@ -42,10 +42,10 @@ Parallel-sibling eligibility is asserted in the new test (`x`, `y` both listed) 
 ## Suite run
 
 - Command: `node tests/run.js`
-- Scope: full (safety valve: shared framework files in the delta)
-- Result: pass — 281 passed, 0 failed, 0 skipped
-- Lint / build: pass — `git diff --cached --check`, `node .asd/sync.js --check`
-- HEAD: 81a071ae (plus this entry's test commit)
+- Scope: full (terminal suite, impl-review wave-1/iter-02)
+- Result: pass — exit 0; 281 passed, 0 failed, 0 skipped
+- Lint / build: pass — `git diff --cached --check` exit 0, `node .asd/sync.js --check` exit 0 (all targets current)
+- HEAD: cb7b3eeafe10cb43a02f60c0246859538b3e53a3
 
 ## Defects
 
