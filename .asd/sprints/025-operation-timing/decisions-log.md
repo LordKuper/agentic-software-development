@@ -46,3 +46,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Initial impl accepted at b38ded98: Tasks 1-8 complete, plan fully ticked, `sync.js --check` and lint clean, every touched path authorised, no stubs introduced. AC coverage: AC-1/2/4/5 Task 1+5, AC-3 Tasks 3/4/7, AC-6 Tasks 1/4/6, AC-7 Tasks 5/8 + syncs, AC-8 Tasks 2/3/5/8. Suite 272/273: the one red pin (§18 empty-log TOC threshold) is the expected D9 consequence, left to impl-test.
 - **Rationale**: `checkpoints.md` routine initial impl assessment, adaptive evidence; every flagged choice resolved above.
 - **Affected docs**: [plan.md](plan.md)
+- 2026-10-08 — route impl-test entry 1: standard, dispatch HEAD c8740b8a; risk artifact: content-contract pins
+- 2026-10-08 — impl-test: impacted set green (280/280, full suite via safety valve), 7/0 tests (1 adapted)

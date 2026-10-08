@@ -1,7 +1,7 @@
 {
   "sprint_id": "025-operation-timing",
   "branch": "sprint/025-operation-timing",
-  "phase": "impl",
+  "phase": "impl-test",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -103,6 +103,12 @@
       "execution": "agent",
       "reason": "artifact-risk:mirror doc",
       "resolved_model": "sonnet"
+    },
+    "impl-test entry 1": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:content-contract pins",
+      "resolved_model": "sonnet"
     }
   },
   "skipped_phases": [],
@@ -125,7 +131,7 @@
     }
   },
   "created_at": "2026-10-08T09:40:31.177Z",
-  "updated_at": "2026-10-08T11:37:26.057Z",
+  "updated_at": "2026-10-08T11:37:39.152Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
