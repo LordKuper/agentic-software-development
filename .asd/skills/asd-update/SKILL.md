@@ -41,7 +41,7 @@ Run by `.asd/workflows/asd-phase-scope.md` step 1 when the user chose to update 
 - No commit here: the orchestrator commits the result. Report a failed migration or a declined conflict as a partial update; the orchestrator owns what follows.
 - Self-hosting guard unchanged: `asd-sprint` never runs the check when `self_hosting: enabled`.
 
-Version check: `node "$(git rev-parse --show-toplevel)/.asd/skills/asd-update/update.js" --check-version` is read-only. It fetches only the remote `.asd/release-manifest.json` (raw GitHub URL from the local manifest's `repo`/`branch`), reads only its `asd_version` (must match `^\d+(\.\d+)*$`; every other field is untrusted and ignored), prints one JSON line on stdout (e.g. `{"local":"13.7.0","remote":"13.8.0","newer":true}`) and exits 0. Any network, parse or repo error, or the 5 s timeout, prints one warning line on stderr and `remote: null, newer: false`.
+Version check: `node "$(git rev-parse --show-toplevel)/.asd/skills/asd-update/update.js" --check-version` is read-only. It fetches only the remote `.asd/release-manifest.json` (raw GitHub URL from the local manifest's `repo`/`branch`), reads only its `asd_version` (must match `^\d+(\.\d+)*$`; every other field is untrusted and ignored), prints one JSON line on stdout (e.g. `{"local":"13.7.0","remote":"13.8.0","newer":true}`) and exits 0. Any network, parse or repo error, a body over 1 MiB, or the 5 s total timeout, prints one warning line on stderr and `remote: null, newer: false`.
 
 ## After
 

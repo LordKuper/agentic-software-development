@@ -436,9 +436,11 @@ function parseRepo(url) {
   return { owner: m[1], name: m[2] };
 }
 
-// Socket-idle timeouts: a dead network or proxy fails fast instead of hanging
-// the sprint start (version check) or the update (tarball).
+// A dead network or proxy fails fast instead of hanging the sprint start: the
+// version check has a total deadline and a body cap (its response is
+// untrusted), the tarball a socket-idle timeout.
 const VERSION_CHECK_TIMEOUT_MS = 5000;
+const VERSION_CHECK_MAX_BYTES = 1024 * 1024;
 const TARBALL_IDLE_TIMEOUT_MS = 30000;
 const MAX_REDIRECTS = 5;
 const VERSION_RE = /^\d+(?:\.\d+)*$/;
@@ -447,9 +449,9 @@ function upstreamRef(manifest) {
   return Object.assign(parseRepo(manifest.repo), { branch: manifest.branch || 'main' });
 }
 
-function request(url, timeoutMs) {
+function request(url, timeoutMs, signal) {
   return new Promise((resolve, reject) => {
-    const req = https.get(url, { headers: { 'User-Agent': 'asd-update' }, timeout: timeoutMs }, resolve);
+    const req = https.get(url, { headers: { 'User-Agent': 'asd-update' }, timeout: timeoutMs, signal }, resolve);
     req.on('timeout', () => req.destroy(new Error(`timed out after ${timeoutMs} ms`)));
     req.on('error', (e) => reject(new Error(`network error fetching ${url}: ${e.message}`)));
   });
@@ -457,10 +459,10 @@ function request(url, timeoutMs) {
 
 // Resolves with a 200 response only, following at most MAX_REDIRECTS hops;
 // every failure rejects, so no caller can crash on an unhandled network error.
-async function get(url, timeoutMs) {
+async function get(url, timeoutMs, signal) {
   let target = url;
   for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
-    const res = await request(target, timeoutMs);
+    const res = await request(target, timeoutMs, signal);
     const isRedirect = res.statusCode >= 300 && res.statusCode < 400 && res.headers.location;
     if (!isRedirect && res.statusCode === 200) return res;
     res.resume();
@@ -474,12 +476,23 @@ async function download(url, dest) {
   await pipeline(await get(url, TARBALL_IDLE_TIMEOUT_MS), fs.createWriteStream(dest));
 }
 
-async function fetchText(url, timeoutMs) {
-  const res = await get(url, timeoutMs);
-  res.setEncoding('utf8');
-  let text = '';
-  for await (const chunk of res) text += chunk;
-  return text;
+async function fetchManifestText(url) {
+  const deadline = new AbortController();
+  const timer = setTimeout(() => deadline.abort(), VERSION_CHECK_TIMEOUT_MS);
+  try {
+    const chunks = [];
+    let bytes = 0;
+    for await (const chunk of await get(url, VERSION_CHECK_TIMEOUT_MS, deadline.signal)) {
+      bytes += chunk.length;
+      if (bytes > VERSION_CHECK_MAX_BYTES) throw new Error(`response over ${VERSION_CHECK_MAX_BYTES} bytes fetching ${url}`);
+      chunks.push(chunk);
+    }
+    return Buffer.concat(chunks).toString('utf8');
+  } catch (e) {
+    throw deadline.signal.aborted ? new Error(`timed out after ${VERSION_CHECK_TIMEOUT_MS} ms fetching ${url}`) : e;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 function readManifestVersion(manifestText, origin) {
@@ -518,7 +531,7 @@ async function checkVersion() {
     const localText = sync.readNormalized(path.join(sync.findRepoRoot(process.cwd()), '.asd', 'release-manifest.json'));
     local = readManifestVersion(localText, 'local');
     const { owner, name, branch } = upstreamRef(JSON.parse(localText));
-    const remoteText = await fetchText(`https://raw.githubusercontent.com/${owner}/${name}/${branch}/.asd/release-manifest.json`, VERSION_CHECK_TIMEOUT_MS);
+    const remoteText = await fetchManifestText(`https://raw.githubusercontent.com/${owner}/${name}/${branch}/.asd/release-manifest.json`);
     log(JSON.stringify(compareManifestVersions(localText, remoteText)));
   } catch (e) {
     process.stderr.write(`asd-update: version check skipped: ${e.message.replace(/\s+/g, ' ')}\n`);
