@@ -1,7 +1,7 @@
 {
   "sprint_id": "025-operation-timing",
   "branch": "sprint/025-operation-timing",
-  "phase": "plan",
+  "phase": "impl",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -48,7 +48,20 @@
       "artifact_revision": "plan.md@plan"
     }
   ],
-  "task_routing": {},
+  "task_routing": {
+    "Task 1": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:public contract",
+      "resolved_model": "opus"
+    },
+    "Task 2": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:public contract",
+      "resolved_model": "opus"
+    }
+  },
   "skipped_phases": [],
   "reviews": {
     "design": {
@@ -69,7 +82,7 @@
     }
   },
   "created_at": "2026-10-08T09:40:31.177Z",
-  "updated_at": "2026-10-08T11:17:38.372Z",
+  "updated_at": "2026-10-08T11:17:52.383Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
