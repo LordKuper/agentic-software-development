@@ -36,3 +36,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 <!-- entries appended below this line -->
 - 2026-10-07 — pr open mode (re-entry after amendment): DoD verified (plan ticked, wave 1 APPROVE at iter-04, full suite 273/273 at d32f70a with no code/test diff since but CHANGELOG, lint and sync clean, retrospective present, no sprint stubs); the sprint branch already carries the 13.7.0 bump; CHANGELOG v13.7.0 gains the AC-8/AC-9 lines; PR #60 (open) is updated by push
+
+- 2026-10-08 — sprint closure: PR 60 merged (f7dd9a2), release v13.7.0 published; archived by sprint 025 scope
