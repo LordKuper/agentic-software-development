@@ -1,7 +1,7 @@
 {
   "sprint_id": "025-operation-timing",
   "branch": "sprint/025-operation-timing",
-  "phase": "impl-test",
+  "phase": "impl-review",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -134,7 +134,7 @@
       "wave": 1,
       "waves": [
         {
-          "iteration": 1,
+          "iteration": 2,
           "verdicts": {
             "iter-01": {
               "combined": "CONCERNS",
@@ -142,7 +142,8 @@
             }
           },
           "iteration_heads": {
-            "iter-01": "dabdf119660ae63c395ab06b8535a8bf3dc64479"
+            "iter-01": "dabdf119660ae63c395ab06b8535a8bf3dc64479",
+            "iter-02": "8ce0f23715af0313457224d1256c9914306dc555"
           },
           "latched": {}
         }
@@ -150,7 +151,7 @@
     }
   },
   "created_at": "2026-10-08T09:40:31.177Z",
-  "updated_at": "2026-10-08T12:08:43.286Z",
+  "updated_at": "2026-10-08T12:15:34.926Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
