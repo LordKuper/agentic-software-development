@@ -69,35 +69,35 @@ Material risk: change: public contract
 ### Task 3: asd-sprint and scope flow (phase boundaries, recovery, AC-8)
 Material risk: change: workflow gate
 Reachability: asd-sprint writes the AC-8 choice at Step 2A; scope reads it at step 1; interrupted at the post-update halt, the sprint branch holds `state.json` phase=scope, `sprint.md` Goal and the update commit, and the resume re-enters scope at step 2
-- [ ] `.asd/skills/asd-sprint/SKILL.md`: in Step 2A, after the dirty check, add the version check and its decision per D8, with the skip on `self_hosting: enabled` and warn-and-continue. Add the phase op open and close around every phase-skill delegation (D7, citing `sprint-lifecycle.md` "Operation timing"). Merge mode and the release retry are not recorded. Step 2B runs `timing-recover` before the resume menu. Add the update choice to "Operations used"/"Request user decision", and add `asd-update` sprint-mediated mode to "Skills dispatched".
-- [ ] `.asd/workflows/asd-phase-scope.md` step 1: create the ledger and open the scope phase op at folder creation (`--create`). Add the D8 update sub-step: seed state, write the Goal, run `asd-update` sprint-mediated, `sync.js --apply`, make one commit, halt. Re-entry skips completed sub-steps. Step 2 records the AC-8 choice (`gate: asd update`, `decision_actor: user`) when one was carried.
+- [x] `.asd/skills/asd-sprint/SKILL.md`: in Step 2A, after the dirty check, add the version check and its decision per D8, with the skip on `self_hosting: enabled` and warn-and-continue. Add the phase op open and close around every phase-skill delegation (D7, citing `sprint-lifecycle.md` "Operation timing"). Merge mode and the release retry are not recorded. Step 2B runs `timing-recover` before the resume menu. Add the update choice to "Operations used"/"Request user decision", and add `asd-update` sprint-mediated mode to "Skills dispatched".
+- [x] `.asd/workflows/asd-phase-scope.md` step 1: create the ledger and open the scope phase op at folder creation (`--create`). Add the D8 update sub-step: seed state, write the Goal, run `asd-update` sprint-mediated, `sync.js --apply`, make one commit, halt. Re-entry skips completed sub-steps. Step 2 records the AC-8 choice (`gate: asd update`, `decision_actor: user`) when one was carried.
 
 ### Task 4: Phase workflow timing bindings
 Material risk: artifact: workflow binding lines
-- [ ] One binding line in each of `asd-phase-audit.md`, `asd-phase-design.md`, `asd-phase-design-review.md`, `asd-phase-design-promote.md`, `asd-phase-plan.md`, `asd-phase-impl.md`, `asd-phase-impl-test.md`, `asd-phase-impl-review.md`, `asd-phase-retro.md`, `asd-phase-pr.md`. Each names the steps where that workflow opens and closes its `dispatch`, `review-iteration`, `suite`, `external-review` and `user-wait` ops per `sprint-lifecycle.md` "Operation timing". Mirror the existing "Append friction" line form.
-- [ ] `asd-phase-impl-test.md` and `asd-phase-impl-review.md`: the tester payload carries the ledger path, and the tester brackets each suite run with a `suite` op. Before the step-10 porcelain check (impl-test) and the entry clean-worktree check (impl-review), commit the ledger per `git-strategy.md` "Commit before review".
-- [ ] `asd-phase-impl.md`: add `<sprint>/timing.jsonl` to the authorised-path gate's allowed paths.
-- [ ] `asd-phase-retro.md`: add a `timing-summary` call to the read list. Steps 4 and 6 derive the D5/D6 candidates and fill the duration section (D9).
-- [ ] `asd-phase-pr.md` open mode: close the pr phase op before the final bookkeeping commit and push. Merge mode records nothing.
+- [x] One binding line in each of `asd-phase-audit.md`, `asd-phase-design.md`, `asd-phase-design-review.md`, `asd-phase-design-promote.md`, `asd-phase-plan.md`, `asd-phase-impl.md`, `asd-phase-impl-test.md`, `asd-phase-impl-review.md`, `asd-phase-retro.md`, `asd-phase-pr.md`. Each names the steps where that workflow opens and closes its `dispatch`, `review-iteration`, `suite`, `external-review` and `user-wait` ops per `sprint-lifecycle.md` "Operation timing". Mirror the existing "Append friction" line form.
+- [x] `asd-phase-impl-test.md` and `asd-phase-impl-review.md`: the tester payload carries the ledger path, and the tester brackets each suite run with a `suite` op. Before the step-10 porcelain check (impl-test) and the entry clean-worktree check (impl-review), commit the ledger per `git-strategy.md` "Commit before review".
+- [x] `asd-phase-impl.md`: add `<sprint>/timing.jsonl` to the authorised-path gate's allowed paths.
+- [x] `asd-phase-retro.md`: add a `timing-summary` call to the read list. Steps 4 and 6 derive the D5/D6 candidates and fill the duration section (D9).
+- [x] `asd-phase-pr.md` open mode: close the pr phase op before the final bookkeeping commit and push. Merge mode records nothing.
 
 ### Task 5: Cross-cutting rule homes
 Material risk: artifact: rule wording
-- [ ] `.asd/rules/artifact-layout.md`: add a sprint path-map line for `timing.jsonl` (owner: main orchestrator, written only through `runtime.js` `timing*`, archived with the sprint), in at most two sentences.
-- [ ] `.asd/rules/git-strategy.md` "Commit before review": add the timing ledger to the orchestrator bookkeeping list, plus the D3 rule (commit it alone before any clean-tree check or diff-reading gate; agents never stage it).
-- [ ] `.asd/rules/checkpoints.md` "Gate policy": add the ASD update choice to the hard list, and a gate-inventory row (hard approve-before-write).
-- [ ] `.asd/rules/core.md` "Invariants": add the read-only-infrastructure exception for `/asd-update` sprint-mediated mode at a new sprint's scope.
+- [x] `.asd/rules/artifact-layout.md`: add a sprint path-map line for `timing.jsonl` (owner: main orchestrator, written only through `runtime.js` `timing*`, archived with the sprint), in at most two sentences.
+- [x] `.asd/rules/git-strategy.md` "Commit before review": add the timing ledger to the orchestrator bookkeeping list, plus the D3 rule (commit it alone before any clean-tree check or diff-reading gate; agents never stage it).
+- [x] `.asd/rules/checkpoints.md` "Gate policy": add the ASD update choice to the hard list, and a gate-inventory row (hard approve-before-write).
+- [x] `.asd/rules/core.md` "Invariants": add the read-only-infrastructure exception for `/asd-update` sprint-mediated mode at a new sprint's scope.
 
 ### Task 6: Retrospective duration section
 Material risk: artifact: template section
-- [ ] `.asd/templates/t_retrospective.html`: add `<section id="duration">` per D9 (summary table, slow set, user waits, links to rows, "No timing data" fallback) with its placeholder-fill guidance. The empty-log comment now names three h2 sections.
+- [x] `.asd/templates/t_retrospective.html`: add `<section id="duration">` per D9 (summary table, slow set, user waits, links to rows, "No timing data" fallback) with its placeholder-fill guidance. The empty-log comment now names three h2 sections.
 
 ### Task 7: Phase skills pre-approve the runtime
 Material risk: none
-- [ ] Add `Bash(node .asd/runtime.js:*)` to `claude.allowed-tools` of the phase skills lacking `Bash`: `asd-phase-audit`, `asd-phase-design`, `asd-phase-design-review`, `asd-phase-design-promote`, `asd-phase-impl`, `asd-phase-plan`, `asd-phase-pr`, `asd-phase-retro` (`.asd/skills/<name>/SKILL.md`).
+- [x] Add `Bash(node .asd/runtime.js:*)` to `claude.allowed-tools` of the phase skills lacking `Bash`: `asd-phase-audit`, `asd-phase-design`, `asd-phase-design-review`, `asd-phase-design-promote`, `asd-phase-impl`, `asd-phase-plan`, `asd-phase-pr`, `asd-phase-retro` (`.asd/skills/<name>/SKILL.md`).
 
 ### Task 8: README mirrors
 Material risk: artifact: mirror doc
-- [ ] `README.md`: update the retro row (duration section, slow set, avoidable user waits); the `runtime.js` description (`timing`, `timing-recover`, `timing-summary`); the sprint folder map (`timing.jsonl`); the `/asd-sprint` behaviour and "Updating ASD" section (version check at new-sprint start, update-then-restart, skipped when self-hosting); and the `/asd-update` command row (sprint-mediated mode).
+- [x] `README.md`: update the retro row (duration section, slow set, avoidable user waits); the `runtime.js` description (`timing`, `timing-recover`, `timing-summary`); the sprint folder map (`timing.jsonl`); the `/asd-sprint` behaviour and "Updating ASD" section (version check at new-sprint start, update-then-restart, skipped when self-hosting); and the `/asd-update` command row (sprint-mediated mode).
 
 Orchestrator: after wave 1 and again after wave 2, run `node "$(git rev-parse --show-toplevel)/.asd/sync.js" --apply` over the generated views of edited canon (recomputing `canon_hashes`), and commit.
 Orchestrator: CHANGELOG v13.8.0 at pr open mode ("No migration script"; sprints started before 13.8.0 show "No timing data").
