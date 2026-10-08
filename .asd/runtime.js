@@ -1250,13 +1250,14 @@ function modelTotals(ops) {
   });
 }
 
-/** The slow set: the SLOW_TOP_N longest leaf machine ops (no shorter machine op inside their interval) plus every one over SLOW_MINUTES, longest first. Durations are machine time, overlapping user-wait ops subtracted; each op carries its excess over its kind's median in this sprint. */
+/** The slow set: the SLOW_TOP_N longest leaf machine ops (no other machine op names them as `parent`) plus every one over SLOW_MINUTES, longest first. Durations are machine time, overlapping user-wait ops subtracted; each op carries its excess over its kind's median in this sprint. */
 function slowOps(ops) {
   const waits = ops.filter((op) => op.kind === 'user-wait');
   const machine = ops.filter((op) => LEAF_MACHINE_KINDS.includes(op.kind)).map((op) => ({
     ...op, ms: op.ms - unionMs(waits.map((wait) => ({ start: Math.max(wait.start, op.start), end: Math.min(wait.end, op.end) }))),
   }));
-  const leaves = machine.filter((op) => !machine.some((other) => other.id !== op.id && other.start >= op.start && other.end <= op.end && other.ms < op.ms));
+  const parents = new Set(machine.map((op) => op.parent));
+  const leaves = machine.filter((op) => !parents.has(op.id));
   const kindMedian = (kind) => median(leaves.filter((op) => op.kind === kind).map((op) => op.ms));
   return leaves.slice().sort((a, b) => b.ms - a.ms).filter((op, rank) => rank < SLOW_TOP_N || op.ms > SLOW_MINUTES * 60000).map((op) => ({
     id: op.id, kind: op.kind, parent: op.parent, seconds: seconds(op.ms), excess_seconds: seconds(op.ms - kindMedian(op.kind)), outcome: op.outcome, attrs: op.attrs,

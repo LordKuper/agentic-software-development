@@ -14,7 +14,7 @@ Orchestration body for the `asd-phase-impl-test` skill. Operation-mapping to hos
 - request user decision: out-of-scope test removal gate; the manual-verification smoke check (step 10); escalation
 - delegate one fresh `asd-tester` instance per entry, live across that entry's steps (pre-strategy run, strategy, prune/author and suite run) and never resumed into a later entry — `test-plan.md` is the only hand-off (`sprint-lifecycle.md` "Impl-test phase"); recover from on-disk evidence only after session loss
 - append friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log"
-- timing: per `sprint-lifecycle.md` "Operation timing" — `dispatch` ops around step 1a's tester dispatches; the tester payload carries `<sprint>/timing.jsonl` and the tester brackets each suite run (steps 3 and 8) with a `suite` op; commit a dirty ledger before step 10's porcelain check
+- timing: per `sprint-lifecycle.md` "Operation timing" — `dispatch` ops around step 1a's tester dispatches; the tester payload carries `<sprint>/timing.jsonl` and its dispatch id (the `suite` ops' `--parent`) and the tester brackets each suite run (steps 3 and 8) with a `suite` op; commit a dirty ledger before step 10's porcelain check
 
 ## Execution mode
 
