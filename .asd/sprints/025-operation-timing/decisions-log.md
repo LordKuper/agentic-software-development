@@ -50,3 +50,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-08 — impl-test: impacted set green (280/280, full suite via safety valve), 7/0 tests (1 adapted)
 - 2026-10-08 — impl-review wave-1/iter-01: combined CONCERNS (C1-C7), external CONCERNS (1-3); no FAIL, no low-severity test-only branch; route to impl review-fix (review_fixes_pending=wave-1/iter-01)
 - 2026-10-08 — route review-fix wave-1/iter-01: standard, dispatch HEAD 48d6cb86; risk artifact: timing summary logic
+- 2026-10-08 — review-fix flagged choices: C2 quote-the-value accepted; interval-nesting leaf rule rejected (parallel dispatches would drop long siblings from the slow set), fixed parent-based in b65766a
+- 2026-10-08 — impl fix for wave-1/iter-01: findings resolved (external 1-3, combined C1-C7; external 3 = C3), commits 2f15dbb, b65766a; build and lint clean; suite 279/280, the sprint-025 AC-5 timingSummary pin left to impl-test
