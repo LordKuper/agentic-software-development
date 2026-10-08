@@ -54,3 +54,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-08 — impl fix for wave-1/iter-01: findings resolved (external 1-3, combined C1-C7; external 3 = C3), commits 2f15dbb, b65766a; build and lint clean; suite 279/280, the sprint-025 AC-5 timingSummary pin left to impl-test
 - 2026-10-08 — route impl-test entry 2: standard, dispatch HEAD ea969089; risk artifact: content-contract pins
 - 2026-10-08 — impl-test: impacted set green (281/281, full suite via safety valve), 1/0 tests (1 adapted)
+- 2026-10-08 — impl-review wave-1/iter-02: combined APPROVE, external APPROVE (both latched); wave 1 of 1 roster met, terminal full suite next
+- 2026-10-08 — route impl-review wave-1/iter-02 suite: standard, dispatch HEAD a9d47225; risk none
