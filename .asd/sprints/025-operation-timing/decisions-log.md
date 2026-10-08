@@ -37,3 +37,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 <!-- entries appended below this line -->
 
 - 2026-10-08 — route Task 1, Task 2: critical, dispatch HEAD 8f9bff04
+- 2026-10-08 — wave 1 flagged choices: Task 1 items 1-8 accepted (defaults and gaps reporting within D2-D7; gaps F-N and the retro summary command line handed to Task 4); Task 2 idle timeout and unbounded body sent back to meet D8 (fixed in 468af83c: 5 s total deadline, 1 MiB body cap), local-version warning accepted
+- 2026-10-08 — route Task 3: critical; Task 4, Task 5, Task 6, Task 8: standard; Task 7: mechanical, dispatch HEAD 8561011a
