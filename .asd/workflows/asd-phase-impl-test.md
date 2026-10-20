@@ -1,10 +1,10 @@
 # ASD Workflow: Impl Test
 
-Owner: inline orchestrator (state and decisions-log writes); dispatches one fresh `asd-tester` per entry, no reviewers (test quality is judged in impl-review by `asd-reviewer-testing`).
+Owner: inline orchestrator; dispatches one fresh `asd-tester` per entry.
 
 ## Entry
 ```json
-{"requires": ["active sprint at .asd/sprints/<NNN-slug>/", "impl COMPLETED received (build + lint green); state.json.phase advanced from impl", "state.json.review_fixes_pending and test_defects_pending both cleared by the impl fix-mode finalize"], "modes": {"entry-1": "test-plan.md has no Entry log row (first entry this sprint)", "re-entry": "a prior Entry log row exists; its HEAD analysed is <prior-sha>", "resume": "the last Entry log row has an empty HEAD analysed (interrupted current entry, e.g. a stalemate halt)"}, "ops": ["run command: change-surface diff; commands.yaml test/lint/build, impacted-scoped (sprint-lifecycle.md 'Impacted test set') for the pre-strategy run and the suite gate alike", "write a file: state.json and decisions-log inline for mechanical phase work; the smoke-check results in test-plan.md (step 10); on an accept-as-debt answer (step 9), test-plan.md Defects status edits and .asd/project/stubs.md registrations", "request user decision: removal gate (step 6), stalemate (step 9), manual-verification smoke check (step 10), tester blockers (## Signals)", "delegate to agent: ## Dispatch", "append friction: F-N to <sprint>/friction-log.md per sprint-lifecycle.md 'Friction log'", "timing: sprint-lifecycle.md 'Operation timing'; dispatch ops around step 1a's tester dispatches; the tester payload carries <sprint>/timing.jsonl and its dispatch id (the suite ops' --parent); commit a dirty ledger before step 10's porcelain check"]}
+{"requires": ["active sprint at .asd/sprints/<NNN-slug>/", "impl COMPLETED received (build + lint green); state.json.phase advanced from impl", "state.json.review_fixes_pending and test_defects_pending both cleared by the impl fix-mode finalize"], "modes": {"entry-1": "test-plan.md has no Entry log row (first entry this sprint)", "re-entry": "a prior Entry log row exists; its HEAD analysed is <prior-sha>", "resume": "the last Entry log row has an empty HEAD analysed (interrupted current entry, e.g. a stalemate halt)"}, "ops": ["context: node .asd/runtime.js context --phase impl-test --role orchestrator at entry, read it; --role <agent> before each agent delegation in ## Dispatch, passed as inputs.context; --out in node .asd/runtime.js scratch-dir's directory per agent-protocol.md 'Dispatch payload'", "append friction: F-N to <sprint>/friction-log.md per sprint-lifecycle.md 'Friction log'", "timing: a dispatch op around each tester dispatch, whose payload timing key carries <sprint>/timing.jsonl and that dispatch id, the suite ops' --parent (sprint-lifecycle.md 'Operation timing')"]}
 ```
 
 ## Inputs
@@ -19,7 +19,7 @@ Autonomous: no user gate on a green impacted-set run, none on routing defects ba
 1. Read `.asd/project/config.yaml` (`language.chat`, `language.docs`, `backward_compat`, `self_hosting`), `<sprint>/state.json` → write `phase=impl-test` inline (mechanical, no gate). Detect the mode per `## Entry` `modes` from `<sprint>/test-plan.md`'s `Entry log`. **Resume**: keep its row (step 4 appends none), take `<prior-sha>` from the row before it (none → entry 1, amended not rewritten), never re-append its `D-N` rows; when they exist and a current answer (step 9) names their digest, go straight to step 9's current-answer branch. Entry 1 of a sprint that removes a mechanism or term also runs the leftover-term check `artifact-layout.md` "Agent memory" requires, in the strategy pass (step 4)
 1a. Route Tester work through `node .asd/runtime.js route-task --input <path>`, its tier per `providers.md` "Task-class variants and routing", and persist its result. `execution="command"` runs directly; `execution="agent"` dispatches `asd-tester-<tier>` for `mechanical`/`critical`, or the base `asd-tester` for `tier: standard` (no `-standard` variant exists — `providers.md` "Task-class variants and routing"), payload per `agent-protocol.md` "Dispatch payload" with `## Dispatch`'s role keys. Persist `state.json.task_routing[taskId]` per `providers.md`. Append the decisions-log routing line `- YYYY-MM-DD — route <taskId>: <tier>, dispatch HEAD <sha>; risk <declaration>` (`git rev-parse HEAD`; the declaration per `providers.md` "Task-class variants and routing") at each tester dispatch.
 2. **Change surface**:
-   - **Entry 1**: run command for `git diff <git.base_branch>...HEAD --stat <pathspec>` plus file list, the pathspec excluding the impl-review row's exclusions (`.asd/rules/external-review.md` "Phase-scoped payload" — consumer default excludes `.asd/**`/`docs/**`/generated views; `self_hosting: enabled` includes the whole repo minus `.asd/project/**`/`.asd/sprints/**`/generated views). This is the **full change surface**; a `Test-only` Task's commits (trailer `ASD-Task: Task N`, `sprint-lifecycle.md` "Plan file format") are existing tests in it
+   - **Entry 1**: run command for `git diff <git.base_branch>...HEAD --stat <pathspec>` plus file list, the pathspec excluding the impl-review row's exclusions (`.asd/rules/external-review.md` "Phase-scoped payload"). This is the **full change surface**; a `Test-only` Task's commits (trailer `ASD-Task: Task N`, `sprint-lifecycle.md` "Plan file format") are existing tests in it
    - **Re-entry**: run command for `git diff <prior-sha>...HEAD --stat <pathspec>` (same pathspec) — the review-fix or test-fix commits made since the prior entry. This **delta** is the scope for steps 4 and 7 only
    - Either way: derive the **impacted set** per `sprint-lifecycle.md` "Impacted test set" (diff test files + reference/import search + AC-tag search, native selector override when `commands.yaml` carries one, mandatory shared-infrastructure safety valve checked before use) — the scope for steps 3 and 8
 3. **Pre-strategy impacted run** — the tester runs the impacted existing tests before authoring; its raw result feeds the strategy pass.
@@ -42,23 +42,22 @@ Autonomous: no user gate on a green impacted-set run, none on routing defects ba
      - otherwise, or on continue, **route**: fill this entry's `Entry log` `HEAD analysed` with `git rev-parse HEAD`; write `state.json.test_defects_pending = true` inline and append decisions-log "impl-test: defects <D-N list> → impl test-fix (digest <digest>)" (mechanical, no gate); commit these bookkeeping writes (`sprint-lifecycle.md` "Impl-test commits its own output"); emit COMPLETED with `NEXT: impl`
    - both kinds present → fix the test defects first, re-run, then route the remaining code defects back
    - no iteration cap: loop until the impacted set passes; an unfixable state surfaces as a dev/tester `FAILED`, never a silent exit
-10. **Green impacted run** — first, the smoke check (`artifact-layout.md` "Test plan" Manual verification): each `Manual verification` row gets it once, at the first entry whose suite gate is green after the row is written — request a user decision (pass / fail, with notes) for each row still lacking a result, record each as `result: <pass|fail> — <notes>` beneath its row (impl-review reads it there), and append one decisions-log line. Then write inline (mechanical, no gate): fill this entry's `Entry log` row `HEAD analysed` with current `git rev-parse HEAD` (now that step 7's commit and step 8's recording have both landed); append decisions-log "impl-test: impacted set green (<counts>), <added>/<removed> tests"; confirm `test_defects_pending` null; commit these bookkeeping writes (`sprint-lifecycle.md` "Impl-test commits its own output") and the timing ledger — `git status --porcelain` MUST be empty before this step's COMPLETED, since `impl-review` refuses a dirty worktree; emit COMPLETED with `NEXT: impl-review`
+10. **Green impacted run** — first, the smoke check (`artifact-layout.md` "Test plan" Manual verification): each `Manual verification` row gets it once, at the first entry whose suite gate is green after the row is written — request a user decision (pass / fail, with notes) for each row still lacking a result, record each as `result: <pass|fail> — <notes>` beneath its row (impl-review reads it there), and append one decisions-log line. Then write inline (mechanical, no gate): fill this entry's `Entry log` row `HEAD analysed` with current `git rev-parse HEAD`; append decisions-log "impl-test: impacted set green (<counts>), <added>/<removed> tests"; confirm `test_defects_pending` null; commit these bookkeeping writes (`sprint-lifecycle.md` "Impl-test commits its own output") and the timing ledger — `git status --porcelain` MUST be empty before this step's COMPLETED; emit COMPLETED with `NEXT: impl-review`
 11. tester `QUESTION` → `agent-protocol.md` "Relay"; FAILED / ABORT → relay, halt; no signal → `sprint-lifecycle.md` "State recovery" failed dispatch before re-dispatch
 12. On `ADVICE_NEEDED` from the tester → relay per `agent-protocol.md` "Relay"; execution resumes, no halt.
 
 ## Rules
 - must: select the test approach only after the implementation exists, against the real change surface — never speculatively from the plan, a `Test-only` Task's declared paths included; authoring bar, check-ladder selection, prune criteria, no-new-test decision rule (decision `none` with its reason in `test-plan.md` when no test qualifies) and fail-first regression proof: `code-style.md` §17 (SSoT), binding here.
 - must: run the existing impacted tests before selecting anything new (step 3), so the strategy observes actual post-impl behaviour and catches an `impl` regression before any new test is authored. A `Test-only` Task's commits are existing tests in entry 1's change surface: the pre-strategy run covers them, entry 1 never re-authors them.
-- must: re-entry — scope strategy and prune to the delta since the prior entry (`Entry log`), not the whole change surface; amend `test-plan.md`, never rewrite it, after rotating the prior entry's narrative rows (`artifact-layout.md` "Test plan"). `Entry log` and segment rotation are impl-test's alone (a review-fix tester's rows: `artifact-layout.md` "Test plan").
+- must: re-entry — scope strategy and prune to the delta since the prior entry (`Entry log`), not the whole change surface; amend `test-plan.md`, never rewrite it, after rotating the prior entry's narrative rows (`artifact-layout.md` "Test plan").
 - must: `Defects` rows persist across entries — a resolved row stays `fixed` for the record; a reappearing defect gets a new `D-N` row, never a reopened one.
-- must: specify `Manual verification` only when automation is impossible (visual UI, third-party live integration, ux feel) — `test-plan.md` is its single home, never duplicated in a review file.
 - must: record a reason for each in-scope removal; a removal outside the sprint's overall change surface waits for step 6.
 - must: suite gate — re-run on every entry, scoped to the impacted set (`sprint-lifecycle.md` "Impacted test set", subject to its safety valve, never the whole repo — the full suite runs only once, at the end of `impl-review`); verdict from the runner's exit code plus report, never an agent's claim; bracket each suite run (steps 3, 8) with a `suite` op. Bounded risk: a defect a fix introduces outside the impacted set's reach is not caught here — impl-review's terminal full suite is the backstop.
 - must: triage a failure as a test defect (fix it, re-run) or a code defect (a `D-N` row, never a production-code fix).
 
 ## Dispatch
 ```json
-[{"agent": "asd-tester", "when": "one fresh instance per entry, live across steps 3-8 (and step 9's re-dispatches); after session loss re-dispatch from disk evidence", "payload": ["mode", "task", "inputs", "write_scope", "language", "timing"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}]
+[{"agent": "asd-tester", "when": "one fresh instance per entry, steps 3-9", "payload": ["mode", "task", "inputs.context", "inputs", "write_scope", "language", "timing"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}]
 ```
 
 ## Signals
@@ -68,7 +67,7 @@ Autonomous: no user gate on a green impacted-set run, none on routing defects ba
 
 ## Exit
 ```json
-{"writes": ["<sprint>/test-plan.md (risk→check decisions, removals, added tests, suite run, defects, optional manual verification spec), plus test-plan.entry-NN.md on re-entry", "tests added, adjusted and deleted in repo", ".asd/project/stubs.md (accepted-debt) rows on an accept-as-debt answer", "state.json phase=impl-test; test_defects_pending set when routing back", "git commits per Conventional Commits", "decisions-log entry on green impacted run or defect routing"], "next": [{"if": "impacted set green", "next": "impl-review"}, {"if": "code defects route to impl test-fix mode", "next": "impl"}]}
+{"writes": ["<sprint>/test-plan.md, test-plan.entry-NN.md (re-entry)", "tests in repo", ".asd/project/stubs.md (accept-as-debt)", "state.json", "commits", "decisions-log.md"], "next": [{"if": "impacted set green", "next": "impl-review"}, {"if": "code defects route to impl test-fix mode", "next": "impl"}]}
 ```
 
 ## Return
@@ -77,11 +76,11 @@ PHASE: impl-test | SPRINT: <NNN-slug> | STATUS: <complete|blocked|aborted> | NEX
 ```
 
 ## References
-- `.asd/rules/agent-protocol.md` (payload, return, relay)
-- `.asd/rules/sprint-lifecycle.md` (impl⇄impl-test cycle, impacted test set)
-- `.asd/rules/code-style.md` §17 (test rubric)
-- `.asd/rules/checkpoints.md` (removal gate, precondition chain)
-- `.asd/rules/artifact-layout.md` (test-plan ownership)
-- `.asd/rules/git-strategy.md` (commits)
+- `.asd/rules/agent-protocol.md`
+- `.asd/rules/sprint-lifecycle.md`
+- `.asd/rules/code-style.md` §17
+- `.asd/rules/checkpoints.md`
+- `.asd/rules/artifact-layout.md`
+- `.asd/rules/git-strategy.md`
 - `.asd/rules/language-policy.md`
 - Templates: `t_test-plan.md`

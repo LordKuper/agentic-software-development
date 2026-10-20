@@ -1,10 +1,10 @@
 # ASD Workflow: Impl
 
-Owner: inline orchestrator (manual-step validation, gates, decisions-log); dispatches `asd-dev`, `asd-tester`, a memory finding's owner, skill `asd-init`.
+Owner: inline orchestrator; dispatches `asd-dev`, `asd-tester`, a memory finding's owner, skill `asd-init`.
 
 ## Entry
 ```json
-{"requires": ["active sprint at .asd/sprints/<NNN-slug>/"], "modes": {"initial": "review_fixes_pending and test_defects_pending both null; plan.md approved (checkpoints precondition chain); state.json.phase advanced from plan", "review-fix": "review_fixes_pending = <id> (wave-<K>/iter-NN; a legacy bare iter-NN reads as wave 1, its dir the legacy one, sprint-lifecycle.md 'Review iteration counters'); <sprint>/reviews/impl/<id>/ reviewer files exist", "test-fix": "test_defects_pending = true; <sprint>/test-plan.md has pending Defects rows"}, "ops": ["run command: git status --porcelain / git diff for step 9's round diff; commands.yaml build/lint (step 9); git rm of an ownerless agent-memory file (step 3); self_hosting: node .asd/sync.js --apply/--check and the commit of the regenerated views (step 7); the commit of step 7's plan ticks and index lines", "write a file: state.json inline at steps 4, 11 (sprint-lifecycle.md 'State recovery'); plan.md checkboxes and returned MEMORY.md index lines (step 7); a memory-fix dispatch's returned text verbatim, and a memory D-N's Status in test-plan.md (step 3)", "request user decision: blockers (## Signals), the manual-steps gate (step 8), the impl assessment gate (step 10)", "delegate to agent: ## Dispatch", "dispatch a skill: asd-init sprint-mediated mode (step 6)", "append friction: F-N to <sprint>/friction-log.md per sprint-lifecycle.md 'Friction log'", "timing: sprint-lifecycle.md 'Operation timing'; dispatch ops (id: the task_routing id) around step 6's dispatches, step 8's re-dispatches and step 3's memory-fix dispatches"]}
+{"requires": ["active sprint at .asd/sprints/<NNN-slug>/"], "modes": {"initial": "review_fixes_pending and test_defects_pending both null; plan.md approved (checkpoints precondition chain); state.json.phase advanced from plan", "review-fix": "review_fixes_pending = <id> (wave-<K>/iter-NN; a legacy bare iter-NN reads as wave 1, its dir the legacy one, sprint-lifecycle.md 'Review iteration counters'); <sprint>/reviews/impl/<id>/ reviewer files exist", "test-fix": "test_defects_pending = true; <sprint>/test-plan.md has pending Defects rows"}, "ops": ["context: node .asd/runtime.js context --phase impl --role orchestrator at entry, read it; --role <agent> before each agent delegation in ## Dispatch, passed as inputs.context; --out in node .asd/runtime.js scratch-dir's directory per agent-protocol.md 'Dispatch payload'", "run command: git status --porcelain / git diff for step 9's round diff", "dispatch a skill: asd-init sprint-mediated mode (step 6)", "append friction: F-N to <sprint>/friction-log.md per sprint-lifecycle.md 'Friction log'", "timing: a dispatch op around each agent delegation in ## Dispatch (sprint-lifecycle.md 'Operation timing')"]}
 ```
 
 ## Inputs
@@ -75,7 +75,7 @@ Autonomous in all modes: once work is dispatched, no user contact until (a) all 
 
 ## Dispatch
 ```json
-[{"agent": "asd-dev", "when": "each Task without a Test-only line (initial); the fix chain (review-fix, test-fix)", "payload": ["mode", "task", "work", "inputs", "write_scope", "language"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "BLOCKED_MANUAL", "FAILED", "ABORT"]}, {"agent": "asd-tester", "when": "a Test-only Task (initial); the test-file findings chain, after the dev chain (review-fix)", "payload": ["mode", "task", "work", "inputs", "write_scope", "language"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "BLOCKED_MANUAL", "FAILED", "ABORT"]}, {"agent": "<owner> of .claude/agent-memory/<owner>/", "when": "a memory finding or D-N (fix modes, Claude only), step 3; a refused write returns `MEMORY-FIX <path>` text", "payload": ["mode", "task", "work", "write_scope"], "signals": ["COMPLETED", "FAILED"]}, {"agent": "asd-init (skill, sprint-mediated mode)", "when": "a wave holding a Settings change: line opens (initial), step 6", "payload": ["the declared pairs"], "signals": ["COMPLETED", "FAILED"]}]
+[{"agent": "asd-dev", "when": "each Task without a Test-only line (initial); the fix chain (review-fix, test-fix)", "payload": ["mode", "task", "work", "inputs.context", "inputs", "write_scope", "language"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "BLOCKED_MANUAL", "FAILED", "ABORT"]}, {"agent": "asd-tester", "when": "a Test-only Task (initial); the test-file findings chain, after the dev chain (review-fix)", "payload": ["mode", "task", "work", "inputs.context", "inputs", "write_scope", "language"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "BLOCKED_MANUAL", "FAILED", "ABORT"]}, {"agent": "<owner> of .claude/agent-memory/<owner>/", "when": "a memory finding or D-N (fix modes, Claude only), step 3", "payload": ["mode", "task", "work", "inputs.context", "write_scope"], "signals": ["COMPLETED", "FAILED"]}, {"agent": "asd-init (skill, sprint-mediated mode)", "when": "a wave holding a Settings change: line opens (initial), step 6", "payload": ["the declared pairs"], "signals": ["COMPLETED", "FAILED"]}]
 ```
 
 ## Signals
@@ -85,7 +85,7 @@ Autonomous in all modes: once work is dispatched, no user contact until (a) all 
 
 ## Exit
 ```json
-{"writes": ["production source code in repo (no tests; a Test-only Task's excepted)", ".asd/project/stubs.md (project-global; open stubs only, deleted on resolution)", "<sprint>/manual-steps.md when a manual action arose (append-only)", "<sprint>/plan.md checkboxes and returned MEMORY.md index lines (initial, step 7)", "reviewer files in <sprint>/reviews/impl/<id>/ with user-approved change notes (review-fix)", "<sprint>/test-plan.md defect rows flipped to fixed (test-fix)", "state.json phase=impl; the entered mode's fix flag cleared at step 11", "git commits per Conventional Commits", "decisions-log entry on impl assessment approval (initial) or fix-mode finalize"], "next": [{"if": "every mode", "next": "impl-test"}]}
+{"writes": ["production source code (no tests; a Test-only Task's excepted)", ".asd/project/stubs.md", "<sprint>/manual-steps.md", "<sprint>/plan.md checkboxes and MEMORY.md index lines (step 7)", "reviewer files in <sprint>/reviews/impl/<id>/ with user-approved change notes (review-fix)", "<sprint>/test-plan.md defect Status (test-fix)", "state.json", "commits", "decisions-log.md"], "next": [{"if": "every mode", "next": "impl-test"}]}
 ```
 
 ## Return
@@ -94,11 +94,11 @@ PHASE: impl | SPRINT: <NNN-slug> | STATUS: <complete|blocked|aborted> | NEXT: im
 ```
 
 ## References
-- `.asd/rules/agent-protocol.md` (payload, return, relay)
-- `.asd/rules/sprint-lifecycle.md` (impl⇄impl-test⇄impl-review cycle, impacted test set, plan file format, input sources)
-- `.asd/rules/checkpoints.md` (impl assessment gate, fix-mode preconditions)
-- `.asd/rules/review-policy.md` (severity, finding format consumed in review-fix mode)
-- `.asd/rules/git-strategy.md` (commits, project-global stubs, dirty tree)
-- `.asd/rules/artifact-layout.md` (tech-reference refuse-to-implement rule, project stubs path)
+- `.asd/rules/agent-protocol.md`
+- `.asd/rules/sprint-lifecycle.md`
+- `.asd/rules/checkpoints.md`
+- `.asd/rules/review-policy.md`
+- `.asd/rules/git-strategy.md`
+- `.asd/rules/artifact-layout.md`
 - `.asd/rules/language-policy.md`
-- Templates: `t_plan.md` (Task parsing reference), `t_review.md` (reviewer finding format, review-fix mode), `t_test-plan.md` (defect format, test-fix mode), `t_stubs.md`, `t_manual-steps.md`
+- Templates: `t_plan.md`, `t_review.md`, `t_test-plan.md`, `t_stubs.md`, `t_manual-steps.md`

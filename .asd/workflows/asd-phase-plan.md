@@ -1,11 +1,11 @@
 # ASD Workflow: Plan
 
-Owner: inline orchestrator (authors, gates and logs `plan.md`); dispatches none.
+Owner: inline orchestrator; dispatches none.
 
 ## Entry
 
 ```json
-{"requires": ["active sprint at .asd/sprints/<NNN-slug>/", "predecessor done per the frozen workflow (sprint-lifecycle.md 'Workflows'): standard — design-promote done (persistent docs reflect approved sprint design) or the collapse test holds (sprint-lifecycle.md 'Design/design-review/design-promote collapse'); lite — audit done or skipped", "state.json phase advanced from design-promote (standard) or audit (lite)"], "ops": ["read: config.yaml, state.json, sprint.md, persistent docs touched by sprint", "write a file: state.json inline, the mechanical non-gate phase-field write at step 4 (sprint-lifecycle.md 'State recovery')", "request user decision: plan gate, stub dispositions, phase-level escalation", "append friction: F-N entries to <sprint>/friction-log.md (sprint-lifecycle.md 'Friction log')", "timing: no dispatch ops; only the user-wait rule applies (sprint-lifecycle.md 'Operation timing')"]}
+{"requires": ["active sprint at .asd/sprints/<NNN-slug>/", "predecessor done per the frozen workflow (sprint-lifecycle.md 'Workflows'): standard — design-promote done (persistent docs reflect approved sprint design) or the collapse test holds (sprint-lifecycle.md 'Design/design-review/design-promote collapse'); lite — audit done or skipped", "state.json phase advanced from design-promote (standard) or audit (lite)"], "ops": ["context: node .asd/runtime.js context --phase plan --role orchestrator at entry, read it; --out in node .asd/runtime.js scratch-dir's directory per agent-protocol.md 'Dispatch payload'", "append friction: F-N to <sprint>/friction-log.md per sprint-lifecycle.md 'Friction log'", "timing: user-wait ops only (sprint-lifecycle.md 'Operation timing')"]}
 ```
 
 ## Inputs
@@ -31,7 +31,7 @@ Owner: inline orchestrator (authors, gates and logs `plan.md`); dispatches none.
    - **Task decomposition** per `sprint-lifecycle.md` "Plan file format" (declarations, Wave declaration, Decomposition rules), plus:
      - one Task per coherent unit of work; each Task cites in its body the AC-N it satisfies
      - subtasks as checkboxes inside `### Task N:` block only (parser-critical)
-     - no test-authoring Tasks or subtasks, except a `Test-only` Task — tests are selected and written in `impl-test`, after the code exists; note per Task only its `Material risk` declaration, as input for impl-test
+     - no test-authoring Tasks or subtasks, except a `Test-only` Task; note per Task only its `Material risk` declaration, as input for impl-test
      - write the wave table into `## Dependencies`; list non-trivial dependencies under the table
    - **Definition of Done**: reference the standing DoD (`sprint-lifecycle.md` "Plan file format") instead of restating it; author only sprint-specific additions, if any
    - translate skeleton + full draft to `language.docs`, write `<sprint>/plan.md`
@@ -52,7 +52,7 @@ PHASE: plan | SPRINT: <NNN-slug> | STATUS: <complete|blocked|aborted> | NEXT: im
 ## References
 
 - `.asd/rules/sprint-lifecycle.md`
-- `.asd/rules/checkpoints.md` (plan approval gate)
+- `.asd/rules/checkpoints.md`
 - `.asd/rules/language-policy.md` ("Write-then-review-accept: chat-language self-sufficiency")
 - `.asd/rules/artifact-layout.md`
-- Templates: `t_plan.md` (canonical plan structure)
+- Templates: `t_plan.md`
