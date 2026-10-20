@@ -141,3 +141,11 @@
 {"op":"close","id":"impl-test entry 7","kind":"dispatch","parent":"impl-test#7","start":"2026-10-20T21:50:45.675Z","end":"2026-10-20T21:52:04.309Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sonnet"}}
 {"op":"close","id":"impl-test#7","kind":"phase","parent":null,"start":"2026-10-20T21:50:45.187Z","end":"2026-10-20T21:52:04.456Z","outcome":"done","attrs":{}}
 {"op":"open","id":"impl-review#5","kind":"phase","parent":null,"start":"2026-10-20T21:52:04.456Z","attrs":{}}
+{"op":"open","id":"impl-review wave-3/iter-03","kind":"review-iteration","parent":"impl-review#5","start":"2026-10-20T21:52:05.361Z","attrs":{"wave":"3","iteration":"3"}}
+{"op":"open","id":"combined wave-3/iter-03","kind":"dispatch","parent":"impl-review wave-3/iter-03","start":"2026-10-20T21:52:05.413Z","attrs":{"agent":"asd-reviewer-combined","tier":"standard","model":"opus"}}
+{"op":"open","id":"external wave-3/iter-03","kind":"external-review","parent":"impl-review wave-3/iter-03","start":"2026-10-20T21:52:05.464Z","attrs":{"model":"gpt-6.1-sol"}}
+{"op":"close","id":"external wave-3/iter-03","kind":"external-review","parent":"impl-review wave-3/iter-03","start":"2026-10-20T21:52:05.464Z","end":"2026-10-20T21:55:34.313Z","outcome":"done","attrs":{"model":"gpt-6.1-sol"}}
+{"op":"close","id":"combined wave-3/iter-03","kind":"dispatch","parent":"impl-review wave-3/iter-03","start":"2026-10-20T21:52:05.413Z","end":"2026-10-20T22:01:57.678Z","outcome":"done","attrs":{"agent":"asd-reviewer-combined","tier":"standard","model":"opus"}}
+{"op":"close","id":"impl-review wave-3/iter-03","kind":"review-iteration","parent":"impl-review#5","start":"2026-10-20T21:52:05.361Z","end":"2026-10-20T22:01:57.678Z","outcome":"done","attrs":{"wave":"3","iteration":"3"}}
+{"op":"close","id":"impl-review#5","kind":"phase","parent":null,"start":"2026-10-20T21:52:04.456Z","end":"2026-10-20T22:01:57.829Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl#8","kind":"phase","parent":null,"start":"2026-10-20T22:01:57.829Z","attrs":{}}

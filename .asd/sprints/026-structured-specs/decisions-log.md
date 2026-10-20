@@ -127,3 +127,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-21 — impl test-fix: defect D-3 resolved (memory-fix by owner; 51f9a640)
 - 2026-10-21 — route impl-test entry 7: standard, dispatch HEAD 2508739f; risk none via node tests/run.js
 - 2026-10-21 — impl-test: impacted set green (296/296), entry 7 0/0 tests
+- 2026-10-21 — impl-review wave-3/iter-03: combined CONCERNS (1-3 medium, 4-8 low), external CONCERNS (1 medium, fence tracking) → impl review-fix (review_fixes_pending wave-3/iter-03)
