@@ -8,7 +8,7 @@ responsibility:
 # Retro backlog
 
 <!--
-Intake, ownership and lifecycle: .asd/rules/sprint-lifecycle.md "Retro intake" — not restated here.
+Intake, ownership and lifecycle: .asd/workflows/asd-phase-scope.md step 2a — not restated here.
 One line per retro row, updated in place. Row: <NNN-slug>#A-N | <NNN-slug>#P-N. Row, Acts on and Disposition are English literals.
 Disposition: deferred | included | rejected | closed (closed = verified already resolved at HEAD).
 Decided in: the sprint that last decided the row. Guardrail: the row's text; escape | as \|.
@@ -55,3 +55,6 @@ Decided in: the sprint that last decided the row. Guardrail: the row's text; esc
 | 023-retro-glings-008-remediation#P-1 | asd | included | 024-opus-tiers-routing | A re-entry whose delta is a review-fix edit to prose or a test declares its own risk instead of inheriting the `change` risk of every Task whose path it touches, so a one-sentence fix routes to the standard tier. |
 | 023-retro-glings-008-remediation#P-2 | asd | included | 024-opus-tiers-routing | Bound a content-contract entry’s fail-first proof to one representative mutation per added assert and one control per entry, not one per asserted relation. |
 | 023-retro-glings-008-remediation#P-3 | asd | rejected | 024-opus-tiers-routing | A scope amendment rebases the severity floor only for the code it adds, not for every file of the wave it lands in. |
+| 025-operation-timing#A-1 | asd | included | 026-structured-specs | Name the closure write's gate entry `sprint-closure` in `sprint-lifecycle.md` "PR phase", the key `asd-phase-scope.md` step 1 writes. |
+| 025-operation-timing#A-3 | asd | included | 026-structured-specs | A dispatched agent never moves HEAD in the shared worktree (`reset`, `commit --amend`, `rebase`); it corrects a wrong commit with a follow-up commit of its own paths. |
+| 025-operation-timing#P-1 | asd | included | 026-structured-specs | A plan decision that defines a computed metric or a bounded fetch states its edge semantics before plan acceptance: interval overlap, nesting versus concurrency, re-entry of an open operation, and a total versus idle deadline. |

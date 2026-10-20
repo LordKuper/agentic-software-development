@@ -11,3 +11,4 @@
 - [Codex agent TOML probe](reference_codex-agent-toml-probe.md) — local no-auth check of agent TOML keys via `codex exec --strict-config` (prompt-input skips agents)
 - [Heredoc backslash collapse](project_heredoc-backslash-collapse.md) — quoted heredoc still halves double backslashes here; write backslash scripts via the write tool
 - [git commit --only option order](project_git-commit-only-option-order.md) — options incl. `-F -` go before `--`; after it they are read as pathspecs
+- [Rubric manifest baseline check](reference_rubric-manifest-baseline-check.md) — compare emit-manifest HEAD vs edit by copying runtime.js + HEAD agents into scratch .asd/

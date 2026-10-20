@@ -1,7 +1,7 @@
 {
   "sprint_id": "025-operation-timing",
   "branch": "sprint/025-operation-timing",
-  "phase": "pr",
+  "phase": "done",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -67,6 +67,13 @@
       "reason": "user confirmed push and PR open",
       "evidence": "chat confirmation 2026-10-08",
       "artifact_revision": "HEAD 6372118c"
+    },
+    {
+      "gate": "sprint-closure",
+      "decision_actor": "orchestrator",
+      "reason": "PR 61 merged; release v13.8.0 published",
+      "evidence": "merge commit 9ab56b043210280384a92ed58f2c77f925a48b14",
+      "artifact_revision": "state.json@closure"
     }
   ],
   "task_routing": {
@@ -180,13 +187,14 @@
     }
   },
   "created_at": "2026-10-08T09:40:31.177Z",
-  "updated_at": "2026-10-08T12:23:52.967Z",
+  "updated_at": "2026-10-20T09:13:21.183Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": {
     "number": 61,
     "url": "https://github.com/LordKuper/agentic-software-development/pull/61",
-    "state": "open"
+    "state": "merged",
+    "merge_commit": "9ab56b043210280384a92ed58f2c77f925a48b14"
   },
-  "archived_at": null
+  "archived_at": "2026-10-20T09:13:21.183Z"
 }

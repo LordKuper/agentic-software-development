@@ -1,0 +1,48 @@
+[REVIEW-impl-combined]: CONCERNS
+
+## Findings
+
+| id | severity | location / AC-N | description | fix |
+|---|---|---|---|---|
+| F1 | low | `.asd/agents/asd-reviewer-combined.md:43`, `.asd/agents/asd-reviewer-testing.md:37` (AC-13) | Both reviewers run in impl-review only (combined.md:33 "never dispatched in design-review"; testing Role "impl-review only"). Their new scope rule still says "(design-review: from iteration 2)". The baseline Inputs of these two agents never had that clause. It was copied from the dual-phase reviewers, so each body now names a design-review case that contradicts its own phase rule. | In both lines, delete "(design-review: from iteration 2)". Keep it in correctness, efficiency and documentation, which do run in design-review. |
+| F2 | low | `.asd/agents/asd-ba.md:52` (AC-13) | Baseline BA mapped two cases to two signals: "missing audit input → ABORT" (Stop conditions) and "FAILED — input missing or unrecoverable contradiction" (Signals emitted). The new Escalation maps "missing audit input or other required input" to `ABORT`, so a generic missing input changed from FAILED to ABORT. AC-13 allows signal changes only under AC-6, and this one is not among them. It also breaks the parallel with the other agents, which still map missing input to `FAILED`: dev:58, every reviewer's Escalation. | Split the entry into `{"when": "missing audit input", "signal": "ABORT"}` and `{"when": "other required input missing, or unrecoverable contradiction", "signal": "FAILED"}`. Or, if the change is intended, record it as a flagged choice in decisions-log. |
+
+## Section-coverage ledger
+
+```json
+{"manifest_digest":"6fc2a662c711e9dd727f2ef0b3baf75af29a66684dd5b86e7849e3ad9e833031","findings":["F1","F2"],"files":[{"i":".asd/agents/asd-advisor.md","s":"checked"},{"i":".asd/agents/asd-architect.md","s":"checked"},{"i":".asd/agents/asd-ba.md","s":"checked"},{"i":".asd/agents/asd-dev.md","s":"checked"},{"i":".asd/agents/asd-external-review.md","s":"checked"},{"i":".asd/agents/asd-reviewer-combined.md","s":"checked"},{"i":".asd/agents/asd-reviewer-correctness.md","s":"checked"},{"i":".asd/agents/asd-reviewer-documentation.md","s":"checked"},{"i":".asd/agents/asd-reviewer-efficiency.md","s":"checked"},{"i":".asd/agents/asd-reviewer-testing.md","s":"checked"},{"i":".asd/agents/asd-tester.md","s":"checked"},{"i":".asd/agents/asd-ux.md","s":"checked"},{"i":".claude/agent-memory/asd-dev-critical/MEMORY.md","s":"checked"},{"i":".claude/agent-memory/asd-dev-critical/reference_rubric-manifest-baseline-check.md","s":"checked"},{"i":".claude/agent-memory/asd-reviewer-correctness/MEMORY.md","s":"checked"},{"i":".claude/agent-memory/asd-reviewer-correctness/project_operations-block-run-command-convention.md","s":"checked"},{"i":".claude/agent-memory/asd-tester-critical/project_testability-envelope.md","s":"checked"}],"rules":[{"i":"Draft correctness [design-review]","s":"n/a","p":"outside phase gate"},{"i":"Bugs [impl-review]","s":"pass"},{"i":"Security [impl-review]","s":"pass"},{"i":"Contracts [impl-review]","s":"finding","f":"F2"},{"i":"Best practices [impl-review]","s":"pass"},{"i":"AC coverage trace [impl-review]","s":"pass"},{"i":"UI conformance [design-review — `n/a: outside phase gate` without a ux-spec/design-system draft; impl-review — conditional on a UI surface in scope]","s":"n/a","p":"no UI surface in scope"},{"i":"Over-engineering checklist [design-review, impl-review] — critical, undroppable","s":"pass"},{"i":"Structure / cohesion checklist [design-review, impl-review] — critical, undroppable","s":"pass"},{"i":"Complexity-vs-value tradeoff [design-review, impl-review]","s":"pass"},{"i":"Perf budget compliance [impl-review]","s":"n/a","p":"no perf budgets section and no executable file in scope"},{"i":"Perf anti-patterns [impl-review]","s":"n/a","p":"no perf budgets section and no executable file in scope"},{"i":"Algorithmic complexity [impl-review]","s":"n/a","p":"no perf budgets section and no executable file in scope"},{"i":"Regression detection [impl-review]","s":"n/a","p":"no perf budgets section and no executable file in scope"},{"i":"Hot path identification [impl-review]","s":"n/a","p":"no perf budgets section and no executable file in scope"},{"i":"SSoT","s":"pass"},{"i":"Template adherence","s":"n/a","p":"no templated artefact in scope"},{"i":"HTML shell wrapping","s":"n/a","p":"no HTML file in scope"},{"i":"Provenance","s":"n/a","p":"no HTML file in scope"},{"i":"Traceability","s":"n/a","p":"no HTML file in scope"},{"i":"Persistent actuality (impl-review)","s":"pass"},{"i":"In-code doc comments (impl-review, `code-style.md` §7)","s":"pass"},{"i":"Stub-resolution verification (impl-review)","s":"pass"},{"i":"Framework mode (`self_hosting: enabled`, impl-review only)","s":"pass"},{"i":"Documentation economy","s":"pass"},{"i":"Custom rules consistency","s":"pass"},{"i":"Overall quality","s":"finding","f":"F1"},{"i":".asd/project/custom-common-rules.md","s":"pass"},{"i":".asd/project/custom-coding-rules.md","s":"pass"}],"sections":[{"i":"Draft correctness [design-review]","s":"n/a","p":"outside phase gate"},{"i":"Bugs [impl-review]","s":"reviewed"},{"i":"Security [impl-review]","s":"reviewed"},{"i":"Contracts [impl-review]","s":"reviewed"},{"i":"Best practices [impl-review]","s":"reviewed"},{"i":"AC coverage trace [impl-review]","s":"reviewed"},{"i":"UI conformance [design-review — `n/a: outside phase gate` without a ux-spec/design-system draft; impl-review — conditional on a UI surface in scope]","s":"n/a","p":"no UI surface in scope"},{"i":"Over-engineering checklist [design-review, impl-review] — critical, undroppable","s":"reviewed"},{"i":"Structure / cohesion checklist [design-review, impl-review] — critical, undroppable","s":"reviewed"},{"i":"Complexity-vs-value tradeoff [design-review, impl-review]","s":"reviewed"},{"i":"Perf budget compliance [impl-review]","s":"n/a","p":"no perf budgets section and no executable file in scope"},{"i":"Perf anti-patterns [impl-review]","s":"n/a","p":"no perf budgets section and no executable file in scope"},{"i":"Algorithmic complexity [impl-review]","s":"n/a","p":"no perf budgets section and no executable file in scope"},{"i":"Regression detection [impl-review]","s":"n/a","p":"no perf budgets section and no executable file in scope"},{"i":"Hot path identification [impl-review]","s":"n/a","p":"no perf budgets section and no executable file in scope"},{"i":"Overall quality","s":"reviewed"}]}
+```
+
+AC trace (wave scope):
+
+- AC-1:
+  - All 12 agent bodies follow the D2 order and use no other headings: `# Role`, then Inputs, Outputs, Rules, Tools, Escalation, Signals, then the closed-list domain sections. Domain sections appear in D2 order (External Review: Gate Verdict Format, Severity mapping, Invocation; tester: Test selection rubric, Failure triage, Manual steps, Evidence routing, Tech reference).
+  - Descriptions follow the D3 shape. The longest base description (dev) counts about 295 chars by hand.
+  - `asd-tester` keeps its review-fix/test-files clause.
+- AC-6 (C-4): `ADVICE_NEEDED` is in the `## Signals` of BA, UX, Architect, Dev and Tester. It is absent from the advisor, all five reviewers and External Review.
+- AC-7: requirement, decision, contract, UX and audit inputs are `payload.inputs.<key>`. No `documents.*` or `under lite` input conditionals remain in any agent body.
+  - Dev's no-baseline carve-out now cites "Input sources" `ux` (sprint-lifecycle.md:168).
+  - Correctness's framework-templates carve-out stays as a rubric-owned mode, keyed to the impl-review step-5 predicate. It explicitly replaces `payload.inputs.ux`, so it does not conflict with the table.
+- AC-13: compared hunk by hunk against the diff's `-` lines. Every relocated phase-rule citation resolves in its new home:
+  - `asd-phase-impl.md` "Rules": manual steps l.66, the Test-only/MEMORY.md index line l.73, plan.md untouched l.73.
+  - `asd-phase-impl-test.md` "Rules": Re-entry, Entry log and rotation l.52. "Dispatch": fresh instance per entry l.61.
+  - `asd-phase-impl-review.md` "Rules": fresh terminal run l.74.
+  - State keys `review_fixes_pending` and `test_defects_pending` and the payload task forms `impl-review <id> suite` / `test-fix` (providers.md:123) exist.
+  - Only F1 and F2 depart from baseline meaning. Dev's narrowing of "commit or plan notes" to "commit message" agrees with impl Rules l.73 (never edit plan.md), so it is not a finding.
+- D1: the only backslashes in `.asd/agents/*.md` are in External Review's frontmatter `wraps_invoke_args` (l.10, l.15), not in a body. Each JSON block was brace- and quote-checked by eye. I did not re-run `JSON.parse` (no shell). The suite record shows 287/287 green.
+- Rubric text: every reviewer hunk touches only text outside `## Review rubric` (Role through Signals, and the removed Do's/Don'ts/Signals emitted/Output format after the ledger section). Rubric `###` headings and bold labels are byte-unchanged, and this manifest composes the same ids.
+- Memory files: the hand-authored carve-out (custom-coding-rules.md l.17) applies.
+  - The correctness memory's claim that `## Entry` `ops` never declares runtime.js, except inside the scratch-dir `write a file` op, matches asd-phase-impl-review.md:7.
+  - The dev-critical memory's `path.join(__dirname, 'agents', ...)` claim matches runtime.js.
+
+## Verdict
+
+CONCERNS: two low findings, both meaning-preservation slips (AC-13) in single lines. Every scope file, rule and section is resolved.
+
+## Next action
+
+Route F1 and F2 to impl review-fix (asd-dev). Each fix is a one-line canon edit followed by an orchestrator sync.
+
+## Escalations
+
+none

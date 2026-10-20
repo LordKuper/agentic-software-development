@@ -5,3 +5,7 @@
 - [Re-review without a shell](feedback_rereview-no-shell-checks.md) — back hash, suite and pin claims from canon text and the tester's record; say what was not recomputed
 - [Plan deviation vs flagged choices](feedback_plan-deviation-flagged-choices.md) — grep decisions-log "flagged choices accepted" before raising a deviation from a plan D-N
 - [Return findings-table shape](feedback_return-findings-table-shape.md) — Findings must be the first pipe table; first cell = finding id used by ledger f; no bare | in cells
+- [Relocation review method](feedback_relocation-review-method.md) — per removed hunk grep phrases in the new home; check new path tables against both artifact-layout path maps
+- [Dispatch payload vs required](feedback_dispatch-payload-vs-required.md) — check every Dispatch row (fix rows, standard promote rows, External Review twins) against agent Inputs required/modes
+- [Grant-table migration review](feedback_grant-table-migration-review.md) — prose-to-ref grant rewrites: dropped preamble grants, conditional-grant acting sites, reading-rule scope carve-out
+- [In-body comment sweep](feedback_in-body-comment-sweep.md) — grep added `//` lines in JS diffs; an in-body comment is a high Documentation finding, move its WHY to JSDoc

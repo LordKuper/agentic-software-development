@@ -244,7 +244,7 @@ archived-sprint filter that no test caught.
 
 Two classes that look like unassertable prose and are not.
 
-A **cross-file citation** (`` `asd-advisor.md` Don'ts ``) names a section that either does or does not
+A **cross-file citation** (`` `asd-advisor.md` "Rules" ``) names a section that either does or does not
 hold the rule. The general form is a repo-wide link checker — new infrastructure, correctly declined —
 but that argument only rules out the general form. The specific one is a derivation: scan the target's
 candidate sections for the rule, assert exactly one holds it, then assert the citing line names *that*
@@ -394,18 +394,23 @@ render mirror and `--check`.
 ## Sweep guards: row set and exemption set both
 
 A **reach** claim ("this rule reaches every role that authors X") is not agent-runtime judgement — it
-is a sweep of `providers.md` "Role-scoped context". Each row's Additional-context cell is a fixed grant
-list, so a rule's home being granted is a literal check; the one row that grants "files named by the
-consulting question" (`asd-advisor`) is a derivable exemption, not a hardcoded one. Guard the loop with
-a row-count assert: a regex that stops matching the table makes every grant assertion pass vacuously.
+is a sweep of `providers.md` "Role-scoped context". The grants are one fenced JSON array of
+`{role, phase, refs}` rows (a ref is `file#Heading`, or a bare path for the whole file), so a rule's home
+being granted is a literal check: `JSON.parse` the section's fenced block, filter rows by role and by
+phase equal to the current one or `*`, and match the ref's file and heading. The section also carries a
+prose "Conditional grants" list the table cannot express (refs the orchestrator names in `inputs`, and
+the advisor's question-named files); those exemptions are derivable from that list, not hardcoded.
+Guard the loop with a row-count assert on the parsed array: a fence regex that stops matching, or a
+section slice that lands on the wrong heading, leaves an empty array and every grant assertion passes
+vacuously.
 
-The row-count assert protects only the row set; the exemption set needs its own comparison. That reach
-sweep skipped any row matching the advisor's wording, so any number of rows adopting that wording would
-have dropped out green while `test-plan.md` asserted the exemption was singular (sprint 010 T-3).
-Compare the derived exemption list to the expected one exactly, then loop the remainder.
+The row-count assert protects only the row set; the exemption set needs its own comparison. A sweep that
+skips whatever the Conditional-grants list names lets any number of added exemptions drop out green
+while `test-plan.md` asserts the exemption set is exactly the expected one. Compare the derived
+exemption list to the expected one exactly, then loop the remainder.
 
 Converse trap: one `deepStrictEqual` against an expected list absorbs *two* failure modes and reports
-whichever fires under a single message. A guard written `deepStrictEqual(holders, ["Don'ts"])` covers
+whichever fires under a single message. A guard written `deepStrictEqual(holders, ["Rules"])` covers
 both "stated in more than one section" and "stated in the wrong one", so the second arrives labelled as
 the first and the reader deletes the wrong assertion. Split it: a `length === 1` guard with the
 uniqueness message, then the identity check with its own. The mutation is what surfaces this — a

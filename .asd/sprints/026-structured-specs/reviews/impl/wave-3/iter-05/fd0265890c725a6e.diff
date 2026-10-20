@@ -1,0 +1,58 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index a10abc6d..545fdded 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -149,7 +149,7 @@
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
+     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
+-    ".asd/runtime.js": "4a03d261a47d4df5c5753f93ff43300e1f9aeecb85bfc9138594fb7e918b7346",
++    ".asd/runtime.js": "83ea9b49236d9887929a703d257fb6e434b8bddc44702fe34e4c503ce6ce150b",
+     ".asd/templates/external-review/t_review-scope.json": "a17ee84e64cc6a693aaa30dacaef660c841b23a92331abf217ff64c8fc2d4951",
+     ".asd/templates/t_friction-log.md": "98c1ee13ba45291945be2ebabcbd7fc4c59a7069685341f64fc0c26bae31af67",
+     ".asd/templates/t_retrospective.html": "73a850121b1988c3a84e895683a5ad7fb79cd962b2952ed9a14b59251e5c4a0d",
+diff --git a/.asd/runtime.js b/.asd/runtime.js
+index e4729457..cf7e050f 100644
+--- a/.asd/runtime.js
++++ b/.asd/runtime.js
+@@ -1373,13 +1373,12 @@ function refFile(ref) {
+   return cut === -1 ? ref : ref.slice(0, cut);
+ }
+ 
+-/** The refs the grant table in `tableText` (providers.md) gives `role` in `phase`: every row of the role — a tier variant reads as its base agent — whose phase is `phase` or `*`, in table order, a repeated ref keeping its first occurrence. */
++/** The refs the grant table in `tableText` (providers.md) gives `role` in `phase`: every row of the role — a tier variant reads as its base agent — whose phase is `phase` or `*`, in table order, a repeated ref keeping its first occurrence. Tier-variant suffixes are owned by sync.js, required lazily so role-free commands never load it. */
+ function contextRefs(tableText, role, phase) {
+   const blocks = [...markdownSection(tableText, CONTEXT_SECTION).matchAll(/^```json\n([\s\S]*?)\n```$/gm)];
+   if (blocks.length !== 1) fail(`"${CONTEXT_SECTION}" must hold one json block, found ${blocks.length}`);
+   const rows = JSON.parse(blocks[0][1]);
+   if (!Array.isArray(rows) || rows.some((row) => !row || typeof row.role !== 'string' || typeof row.phase !== 'string')) fail('grant rows must be {role, phase, refs}');
+-  // sync.js owns the tier-variant suffixes; required here, not at load, so commands that resolve no role run without it.
+   const { VARIANT_SUFFIXES } = require('./sync.js');
+   const base = role.replace(new RegExp(`-(${VARIANT_SUFFIXES.join('|')})$`), '');
+   const matched = rows.filter((row) => row.role === base && (row.phase === '*' || row.phase === phase));
+diff --git a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+index 484a5204..ccb51329 100644
+--- a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
++++ b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+@@ -8,3 +8,4 @@
+ - [Relocation review method](feedback_relocation-review-method.md) — per removed hunk grep phrases in the new home; check new path tables against both artifact-layout path maps
+ - [Dispatch payload vs required](feedback_dispatch-payload-vs-required.md) — check every Dispatch row (fix rows, standard promote rows, External Review twins) against agent Inputs required/modes
+ - [Grant-table migration review](feedback_grant-table-migration-review.md) — prose-to-ref grant rewrites: dropped preamble grants, conditional-grant acting sites, reading-rule scope carve-out
++- [In-body comment sweep](feedback_in-body-comment-sweep.md) — grep added `//` lines in JS diffs; an in-body comment is a high Documentation finding, move its WHY to JSDoc
+diff --git a/.claude/agent-memory/asd-reviewer-combined/feedback_in-body-comment-sweep.md b/.claude/agent-memory/asd-reviewer-combined/feedback_in-body-comment-sweep.md
+new file mode 100644
+index 00000000..04b4edd1
+--- /dev/null
++++ b/.claude/agent-memory/asd-reviewer-combined/feedback_in-body-comment-sweep.md
+@@ -0,0 +1,11 @@
++---
++name: in-body-comment-sweep
++description: Sweep every added JS line for a // comment inside a function body; the Documentation rubric rates it high, not a nitpick
++metadata:
++  type: feedback
++---
++
++On every diff that touches Node source (`.asd/*.js`, migrations, hooks, `tests/run.js`), check each added `//` line and decide whether it sits inside a function body. Any in-body comment except a `// TODO(sprint-<slug>): <reason>` marker is a finding. The Documentation rubric entry "In-code doc comments" rates it `high`, so it survives a high floor.
++
++**Why:** a review-fix that adds a rationale comment (for example, explaining a lazy `require`) slips past a reviewer who treats comments as style. The fix is to move the reason into the member's JSDoc, where a WHY clause is allowed.
++**How to apply:** use Grep `-n` on the diff for `^\+\s+//`, then open each hit's function. Comment banners and JSDoc at top level are fine. Related: [[feedback_doc-economy-pinned-clauses]].
