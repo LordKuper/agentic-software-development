@@ -187,3 +187,5 @@
 {"op":"open","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-10-20T22:32:35.567Z","attrs":{}}
 {"op":"close","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-10-20T22:32:35.567Z","end":"2026-10-20T22:32:46.175Z","outcome":"done","attrs":{}}
 {"op":"open","id":"retro#1","kind":"phase","parent":null,"start":"2026-10-20T22:32:46.175Z","attrs":{}}
+{"op":"close","id":"retro#1","kind":"phase","parent":null,"start":"2026-10-20T22:32:46.175Z","end":"2026-10-20T22:35:17.306Z","outcome":"done","attrs":{}}
+{"op":"open","id":"pr#1","kind":"phase","parent":null,"start":"2026-10-20T22:35:17.306Z","attrs":{}}
