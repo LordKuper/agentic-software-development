@@ -43,7 +43,9 @@ No cap on `impl⇄impl-test` rounds: loop until the impacted set is green, a dev
 
 **Impl-review clean-worktree precondition** (home statement; mechanic in `asd-phase-impl-review.md` "Entry"): `impl-review` refuses to start while `git status --porcelain` is non-empty, measured at phase entry before any dispatch — the iteration diff is computed from commits, so uncommitted work (including pre-existing sprint bookkeeping files) is invisible to every reviewer. The orchestrator commits a dirty timing ledger alone just before the check ("Operation timing"). The phase's own later writes (review files, `state.json`, `decisions-log.md`, `test-plan.md`) are produced after this gate and are not subject to it. `design-review` has no matching precondition — it builds its manifest from on-disk drafts, so the git-invisibility blind spot does not exist there.
 
-**Impl-test commits its own output** (home statement; mechanic in `asd-phase-impl-test.md`): `impl-test` commits its authored/pruned tests and `test-plan.md` changes, Conventional Commits, before signalling COMPLETED — it runs immediately before the clean-worktree precondition above, and always writes tests plus `test-plan.md`, so the two rules only compose if `impl-test` leaves a clean worktree behind it (`git-strategy.md` "Commit before review").
+### Impl-test commits its own output
+
+Home statement; mechanic in `asd-phase-impl-test.md`. `impl-test` commits its authored/pruned tests and `test-plan.md` changes, Conventional Commits, before signalling COMPLETED — it runs immediately before the clean-worktree precondition above, and always writes tests plus `test-plan.md`, so the two rules only compose if `impl-test` leaves a clean worktree behind it (`git-strategy.md` "Commit before review").
 
 
 ## Review iteration counters
@@ -158,7 +160,9 @@ Framework impl-review/External Review change surface: the whole repo diff (every
 
 Never optional: `sprint.md`, `state.json`, `plan.md`, `test-plan.md`, impl-review reports, `manual-steps.md` (already lazy), `friction-log.md` (already lazy), `retrospective.html`, `<sprint>/decisions-log.md`, `stubs.md`. A disabled document is never written as an empty stub — skip recorded in `state.json` plus one decisions-log line.
 
-**Input sources**: the orchestrator resolves each key below into the dispatch payload's `inputs` (`agent-protocol.md` "Dispatch payload"); agents and workflows cite the key and never restate its condition. Every phase citing AC-N (plan, impl, impl-test, impl-review, pr) reads `requirements`.
+### Input sources
+
+The orchestrator resolves each key below into the dispatch payload's `inputs` (`agent-protocol.md` "Dispatch payload"); agents and workflows cite the key and never restate its condition. Every phase citing AC-N (plan, impl, impl-test, impl-review, pr) reads `requirements`.
 
 | Key | Resolves to | Condition |
 |---|---|---|
@@ -168,14 +172,18 @@ Never optional: `sprint.md`, `state.json`, `plan.md`, `test-plan.md`, impl-revie
 | `ux` | ux-spec (`<sprint>/design/ux-spec.html` before design-promote, `docs/ux/<subsystem>.html` after, flat `ux-spec.html` with decomposition disabled), `docs/ux/DESIGN.md`, `docs/ux/design-system.html`, `docs/ux/accessibility.html` | each present, and the task touches UI; `self_hosting` with no design-system/ux-spec for the touched surface: `stack.html` conventions and the existing `t_*.html` templates (e.g. `t_html-shell.html`) instead |
 | `audit` | `<sprint>/audit.md` | audit ran (frozen `documents.audit` true) |
 
-**Independent design docs** (replaces the old hard PRD→UX→ADR chain):
+### Independent design docs
+
+Replaces the old hard PRD→UX→ADR chain:
 - PRD (`prd`) reads `sprint.md` + `audit.md` (if `audit` enabled).
 - UX-spec (`ux_spec`) reads PRD if enabled, else `sprint.md`; audit optional. Disabling `ux_spec` also disables the design-system gate, `design-md-delta.yaml`, and UX promotion.
 - ADR (`adr`) reads whichever of PRD/UX-spec exist, else `sprint.md`; audit optional. ADRs are sprint-scoped only (`<sprint>/design/adr.html`, sprint-local `ADR-1`, `ADR-2`, … numbering) and are never promoted as a standalone persistent document — see "Design-promote phase" fold rule.
 - C4 (effective `c4`) reads whichever design drafts exist, current stack, the subsystem registry, `sprint.md`; ADR not required.
 - Audit disabled → creators scan the repo themselves for context; the plan workflow greps touched files and reads `.asd/project/stubs.md` directly instead of `audit.md`'s "Related open stubs" section.
 
-**No-op phase rule**: a phase whose entire applicable-artifact set is empty skips dispatch, records its skip inline and returns `COMPLETED`. It has no artifact gate.
+### No-op phase rule
+
+A phase whose entire applicable-artifact set is empty skips dispatch, records its skip inline and returns `COMPLETED`. It has no artifact gate.
 
 | Phase | No-op when |
 |---|---|
@@ -186,7 +194,9 @@ Never optional: `sprint.md`, `state.json`, `plan.md`, `test-plan.md`, impl-revie
 
 `plan`, `impl`, `impl-test`, `impl-review`, `retro`, `pr` are never no-op.
 
-**Design/design-review/design-promote collapse**: `standard` only ("Workflows"). One deterministic no-op write at the audit exit — design is never dispatched either; the design workflow repeats it only as a defensive fallback for a direct re-dispatch. Design-review and design-promote are not dispatched. Collapse test, on frozen state and never on the historical `skipped_phases`: `documents.prd`/`ux_spec`/`adr`/`c4` are all `false`. A legacy `state.json.skip_design_phases` is ignored: the scope that froze it `true` froze those documents `false`. Under it no design draft is produced or promoted, so `phase="design-promote"` is the collapse write: resume dispatches `plan`, and `plan` needs no promotion.
+### Design/design-review/design-promote collapse
+
+`standard` only ("Workflows"). One deterministic no-op write at the audit exit — design is never dispatched either; the design workflow repeats it only as a defensive fallback for a direct re-dispatch. Design-review and design-promote are not dispatched. Collapse test, on frozen state and never on the historical `skipped_phases`: `documents.prd`/`ux_spec`/`adr`/`c4` are all `false`. A legacy `state.json.skip_design_phases` is ignored: the scope that froze it `true` froze those documents `false`. Under it no design draft is produced or promoted, so `phase="design-promote"` is the collapse write: resume dispatches `plan`, and `plan` needs no promotion.
 
 ## Design-promote phase
 

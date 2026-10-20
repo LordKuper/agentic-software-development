@@ -21,10 +21,11 @@ Returns outside the tokens: External Review's `APPROVE (skipped: …)` and `exte
 Every `delegate to agent` payload opens with one fenced JSON object; the orchestrator first returns the shell to the repo root.
 
 ```json
-{"repo_root": "<absolute path>", "sprint": "<NNN-slug>", "phase": "<phase>", "mode": "<mode|null>", "task": ["<Task N|finding id|D-N>"], "inputs": {"<key>": "<path|[paths]>"}, "write_scope": ["<glob>"], "turn_budget": null, "answers": [], "advice": null, "consults_left": null}
+{"repo_root": "<absolute path>", "sprint": "<NNN-slug>", "phase": "<phase>", "mode": "<mode|null>", "task": ["<Task N|finding id|D-N>"], "inputs": {"context": "<path>", "<key>": "<path|[paths]>"}, "write_scope": ["<glob>"], "turn_budget": null, "answers": [], "advice": null, "consults_left": null}
 ```
 
-- `inputs`: `sprint-lifecycle.md` "Input sources" keys, resolved by the orchestrator, plus phase-specific keys (rule references, context paths).
+- `inputs`: `sprint-lifecycle.md` "Input sources" keys, resolved by the orchestrator, plus phase-specific keys. `context`, required on every agent dispatch: the bundle `node .asd/runtime.js context --role <agent> --phase <phase> --out <scratch-dir>/<NNN-slug>-<dispatch id, "/" and spaces as "-">.context.md` writes (`providers.md` "Role-scoped context"); a failed build blocks the dispatch.
+- Reading: an agent reads its own definition, `inputs.context` and the payload's other inputs, and opens a rule or workflow file only at a section the payload names — never whole. The orchestrator builds its own bundle at each phase entry (`--role orchestrator --phase <phase>`) and reads the workflow it executes whole; any other section it cites it reads with `node .asd/runtime.js section --file <path> --heading <text>`, never the file whole.
 - `turn_budget`: reviewer, External Review and advisor only, else `null` — `{"max": <maxTurns>, "report_by": <maxTurns − 5>, "plan": null}`, `max` from that agent's canon frontmatter. `plan` is `{"ledger_by": <maxTurns − 10>}` for an internal reviewer on an impl-review wave listing more than `.asd/runtime.js` `LARGE_WAVE_FILES` files; under it: coverage ledger due by turn `ledger_by`; read the diff file in few large reads sized to the per-call token limit; batch independent reads in one turn; a short complete return beats a thorough unfinished one — short means shallower analysis per file, never fewer ledger rows (`review-policy.md` "Coverage ledger"). Host enforcement: `providers.md` "Dispatch payload header".
 - `answers` (`[{"question", "answer"}]`), `advice`, `consults_left`: set on a relay re-dispatch ("Relay").
 - Role keys a workflow's dispatch names join the same object. Reviewer: `manifest` (its emitted manifest path), `diff` (its `.diff` path, or `null`), `floor` (severity floor), `iteration`, `interrupted` (its own interrupted-attempt record for this iteration, `{"count", "cause"}`, or `null`) — scope per `review-policy.md` "Clean-context review iteration".
@@ -54,7 +55,7 @@ Main orchestrator only.
 
 **`ADVICE_NEEDED`** (every relay branch in an `asd-phase-*.md` is this exact sequence):
 1. Dispatching phase workflow catches `ADVICE_NEEDED` from a dispatched creator, mid-task.
-2. Dispatches `asd-advisor` with the question plus the context paths as given by the consulting agent — no other context injected.
+2. Dispatches `asd-advisor` with the question plus the context paths as given by the consulting agent and its own `inputs.context` — no other context injected.
 3. On the advisor's returned recommendation → re-dispatch the consulting agent (`delegate to agent X`, `providers.md`) with its original task context plus the answer in `advice`; no other context injected except `consults_left` (step 6). Not a same-turn resume (no host tool suspends and resumes a dispatched agent mid-execution — `providers.md` has no such operation); it is a fresh dispatch carrying forward the same task.
 4. On `asd-advisor` `FAILED` (question turned out to be a HARD gate) → relay that finding to the consulting agent unchanged; the consulting agent then treats it as gate uncertainty per `core.md` "Autonomy and escalation" and returns `QUESTION`.
 5. No halt, no user contact, no logged trail — the round-trip is autonomous and intra-phase (consults are not logged, `asd-advisor.md`).
