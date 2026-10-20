@@ -51,3 +51,11 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: scope accepted as sprint.md AC-1..AC-13, one sprint. Form: specs stay Markdown with a fixed section set per category (agent, phase workflow, standalone skill), JSON structures inside sections for declarative facts; protocol in a new `.asd/rules/agent-protocol.md` loaded by every role. O1-O4 and retro rows 025#A-1, 025#A-3, 025#P-1 included.
 - **Rationale**: user revised the form twice (JSON where feasible, then Markdown with JSON inside sections) and asked whether agents see the signal vocabulary; they do not at baseline (role-scoped context grants agents only their phase section of sprint-lifecycle.md), so the protocol gets its own universally loaded home. Exact keys and types are settled in plan.
 - **Affected docs**: sprint.md, .asd/project/retro-backlog.md
+
+## 2026-10-20 — audit contradictions settled
+
+- **Decision**: C-1 phase form gains `## Rules` for agent-facing phase rules; C-2 sprint-lifecycle split by readership (cross-phase sections stay); C-3 AC-13 means meaning not carriage, agent-protocol.md and AC-7 home join the measured total; C-4 reviewers never emit ADVICE_NEEDED, creators list it, relay branches made consistent. sprint.md Form, AC-6, AC-8, AC-13 reworded to match.
+- **Rationale**: user chose the recommended option on each hard contradiction gate (audit.md Contradictions).
+- **Affected docs**: audit.md, sprint.md
+
+- 2026-10-20 — audit gate (adaptive, orchestrator): all t_audit.md sections present; 2 contradictions settled by canonical precedence, 4 by user; AC-1..AC-13 deliverable per Gaps; NEXT plan (lite)
