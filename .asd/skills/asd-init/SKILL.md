@@ -17,7 +17,7 @@ Initialize the ASD workflow (fresh), edit its settings in diff mode (re-init), o
 ## Preconditions
 
 ```json
-{"requires": ["repo at project root", "infra present: .asd/rules/, .asd/templates/, .claude/"], "else": "ABORT — precondition not met: <artefact>", "ops": ["read files / search repo", "run command: gh, OS and tool probes (Fresh 4-5), git symbolic-ref, node .asd/sync.js --check", "request user decision / input: User decisions", "write files: Outputs"]}
+{"requires": ["repo at project root", "infra present: .asd/rules/, .asd/templates/, .claude/"], "ops": ["read files / search repo", "run command: gh, OS and tool probes (Fresh 4-5), git symbolic-ref, node .asd/sync.js --check", "request user decision / input: User decisions", "write files: Outputs"]}
 ```
 
 ## Modes

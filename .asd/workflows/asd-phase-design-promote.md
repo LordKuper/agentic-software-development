@@ -25,7 +25,7 @@ Owner: inline orchestrator (decomposition, state, gates); dispatches `asd-archit
 ## Dispatch
 
 ```json
-[{"agent": "asd-architect", "when": "step 3, approved new or changed subsystem", "payload": ["inputs.subsystems (approved decomposition)"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}, {"agent": "asd-ba, asd-architect, asd-ux", "when": "step 4, each for its enabled domain docs", "payload": ["mode", "inputs.drafts (standard)", "inputs.requirements, inputs.plan, inputs.diff, inputs.audit (lite)", "inputs.ux (asd-ux)"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}]
+[{"agent": "asd-architect", "when": "step 3, approved new or changed subsystem", "payload": ["inputs.requirements", "inputs.subsystems (approved decomposition)"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}, {"agent": "asd-ba, asd-architect, asd-ux", "when": "step 4, each for its enabled domain docs", "payload": ["mode", "inputs.requirements", "inputs.drafts (standard)", "inputs.plan, inputs.diff, inputs.audit (lite)", "inputs.ux (asd-ux)"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}]
 ```
 
 ## Exit

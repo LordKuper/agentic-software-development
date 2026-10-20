@@ -41,7 +41,7 @@ Pull latest ASD framework files into this consumer project: overwrite **framewor
 
 Run by `.asd/workflows/asd-phase-scope.md` step 1 when the user chose to update at `asd-sprint`'s new-sprint version check.
 
-- That choice is the confirmation: skip step 1; steps 2-6 apply unchanged.
+- That choice is the confirmation: skip step 1; steps 2-7 apply unchanged.
 - Conflicts and `--force` still go to the user — never force without asking.
 - No commit here: the orchestrator commits the result. Report a failed migration or a declined conflict as a partial update; the orchestrator owns what follows.
 - Self-hosting rule (Rules) unchanged: `asd-sprint` never runs the check when `self_hosting: enabled`.

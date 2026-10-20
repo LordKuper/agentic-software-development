@@ -14,7 +14,7 @@ Reconcile generated provider views with canonical `.asd/` sources.
 ## Preconditions
 
 ```json
-{"requires": [".asd/sync.js in this git repo"], "else": "ABORT — precondition not met: .asd/sync.js", "ops": ["run command: node $SYNC --check, --apply [--force]", "read files: target and canon source (show diff)", "request user decision: User decisions"]}
+{"requires": [".asd/sync.js in this git repo"], "ops": ["run command: node $SYNC --check, --apply [--force]", "read files: target and canon source (show diff)", "request user decision: User decisions"]}
 ```
 
 ## Steps
