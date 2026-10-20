@@ -110,7 +110,7 @@ Agent memory lives at the provider-view root — `.claude/agent-memory/<agent>/`
 
 When decomposition enabled, `docs/architecture/subsystems.md` (`t_subsystems.md`) is the sole subsystem registry — which subsystems exist and their ids — whatever `project.diagram_tool`. Each entry links `docs/architecture/<id>.md` (`t_subsystem.md`: purpose, key paths), and every registered subsystem has one. Reserved, never a subsystem id (they collide in flat `docs/architecture/`): `subsystems`, `stack`, `c4`, `tech-reference`.
 
-`/asd-init` seeds the registry empty; only Architect fills it. A subsystem is added at `design-promote` (`sprint-lifecycle.md` "Design-promote phase"), or at `audit` when the registry is absent (`sprint-lifecycle.md` "Audit phase") — each addition with explicit user approval (hard gate).
+`/asd-init` seeds the registry empty; only Architect fills it. A subsystem is added at `design-promote` (`sprint-lifecycle.md` "Design-promote phase"), or at `audit` when the registry is absent (`asd-phase-audit.md` "Rules", step 3a) — each addition with explicit user approval (hard gate).
 
 Diagram per `project.diagram_tool`; with `none`, no diagram is written and `docs/architecture/c4/` is never created:
 
@@ -207,11 +207,11 @@ SSoT for two things invisible in the diff: **why** a test was removed, and **why
 
 ## Retrospective
 
-`<sprint>/retrospective.html` per `t_retrospective.html`. User-facing HTML, shell-wrapped like every other. **Derived analysis, never a rendering of the log** — references `F-N` ids, never a second copy of the entries. Owner: `retro` phase; semantics in `sprint-lifecycle.md` "Retro phase".
+`<sprint>/retrospective.html` per `t_retrospective.html`. User-facing HTML, shell-wrapped like every other. **Derived analysis, never a rendering of the log** — references `F-N` ids, never a second copy of the entries. Owner: `retro` phase; semantics in `asd-phase-retro.md`.
 
 ## Retro backlog
 
-`.asd/project/retro-backlog.md` per `t_retro-backlog.md`: the cross-sprint disposition of each retro row, one line per row, updated in place. Owner: main orchestrator. Created lazily at the first retro-intake write — `asd-init` seeds none, no migration creates it, `/asd-update` never touches it. Semantics: `sprint-lifecycle.md` "Retro intake".
+`.asd/project/retro-backlog.md` per `t_retro-backlog.md`: the cross-sprint disposition of each retro row, one line per row, updated in place. Owner: main orchestrator. Created lazily at the first retro-intake write — `asd-init` seeds none, no migration creates it, `/asd-update` never touches it. Semantics: `asd-phase-scope.md` step 2a.
 
 ## Single Source of Truth (iron rule)
 
