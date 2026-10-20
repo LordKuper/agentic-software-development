@@ -1373,13 +1373,12 @@ function refFile(ref) {
   return cut === -1 ? ref : ref.slice(0, cut);
 }
 
-/** The refs the grant table in `tableText` (providers.md) gives `role` in `phase`: every row of the role — a tier variant reads as its base agent — whose phase is `phase` or `*`, in table order, a repeated ref keeping its first occurrence. */
+/** The refs the grant table in `tableText` (providers.md) gives `role` in `phase`: every row of the role — a tier variant reads as its base agent — whose phase is `phase` or `*`, in table order, a repeated ref keeping its first occurrence. Tier-variant suffixes are owned by sync.js, required lazily so role-free commands never load it. */
 function contextRefs(tableText, role, phase) {
   const blocks = [...markdownSection(tableText, CONTEXT_SECTION).matchAll(/^```json\n([\s\S]*?)\n```$/gm)];
   if (blocks.length !== 1) fail(`"${CONTEXT_SECTION}" must hold one json block, found ${blocks.length}`);
   const rows = JSON.parse(blocks[0][1]);
   if (!Array.isArray(rows) || rows.some((row) => !row || typeof row.role !== 'string' || typeof row.phase !== 'string')) fail('grant rows must be {role, phase, refs}');
-  // sync.js owns the tier-variant suffixes; required here, not at load, so commands that resolve no role run without it.
   const { VARIANT_SUFFIXES } = require('./sync.js');
   const base = role.replace(new RegExp(`-(${VARIANT_SUFFIXES.join('|')})$`), '');
   const matched = rows.filter((row) => row.role === base && (row.phase === '*' || row.phase === phase));
