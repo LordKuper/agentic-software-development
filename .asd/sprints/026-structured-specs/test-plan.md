@@ -17,7 +17,7 @@ responsibility:
 | 4 | 842537733e50459b01537a5fa0e05889d0823f16 | delta since entry 3 |
 | 5 | 3e609b704f300ea1f3df8040a2bcdeaa8f11273d | delta since entry 4 |
 | 6 | fc5d22097ec13c354662829d77821e6c28ec8066 | delta since entry 5 |
-| 7 |  | delta since entry 6 |
+| 7 | e62af1475be8363f44ffab4079e0258a7a9abc71 | delta since entry 6 |
 
 ## Risk → check decisions
 
