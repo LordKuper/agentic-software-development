@@ -29,3 +29,5 @@
 {"op":"close","id":"Task 8","kind":"dispatch","parent":"impl#1","start":"2026-10-20T11:12:58.690Z","end":"2026-10-20T12:41:47.240Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sonnet"}}
 {"op":"open","id":"impl assessment fix-1","kind":"dispatch","parent":"impl#1","start":"2026-10-20T12:41:55.103Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
 {"op":"close","id":"impl assessment fix-1","kind":"dispatch","parent":"impl#1","start":"2026-10-20T12:41:55.103Z","end":"2026-10-20T12:45:21.388Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"impl#1","kind":"phase","parent":null,"start":"2026-10-20T10:46:29.343Z","end":"2026-10-20T12:46:22.916Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-test#1","kind":"phase","parent":null,"start":"2026-10-20T12:46:22.916Z","attrs":{}}

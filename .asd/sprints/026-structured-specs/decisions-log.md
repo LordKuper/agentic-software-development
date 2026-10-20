@@ -71,3 +71,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-20 — route Task 7: critical, dispatch HEAD 15dee4f8; risk change: rule relocation
 - 2026-10-20 — route Task 8: standard, dispatch HEAD 3f96033e; risk artifact: content-contract pins via node tests/run.js
 - 2026-10-20 — route impl assessment fix-1: standard, dispatch HEAD 78e80d1c; risk artifact: citation repair via node tests/run.js
+
+## 2026-10-20 — impl assessment
+
+- **Decision**: initial impl accepted adaptively: Tasks 1-8 done and ticked, fix-1 restored the reviewer "Scope hand-off" citation and the tester fresh-instance citation; build (sync --check) and lint clean; authorised paths only; suite 286/286 at 941b9075; D10 measured 376,476 → 360,274 B (−16,202 B). Flagged choices accepted: single-quoted section names inside JSON (D1 backslash ban); extra workflow role payload keys (admitted by review-policy.md and agent-protocol.md "Dispatch payload"); self-assigned `[GATE …]` labels are labels only, checkpoints.md stays the class SSoT; contradictory baseline signals resolved to ABORT for missing preconditions (BA input missing, UX spec unreachable); asd-init return MODE→REPO plus STATUS/NEXT; core.md untrusted-data boundary adds .asd/workflows/; BA scope grant dropped (scope dispatches no agent); consumer retro-backlog comment unmigratable (audit Gaps). No earlier decisions-log disposition departed from. No sprint stubs.
+- **Rationale**: checkpoints.md adaptive evidence complete; standalone skills grew +7.7 KB (JSON sections) but the D10 total still drops.
+- **Affected docs**: plan.md, state.json
