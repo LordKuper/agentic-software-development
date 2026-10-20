@@ -109,9 +109,6 @@ const SLOW_MINUTES = 30;
 /** The `providers.md` section holding the role grant table `context` reads. */
 const CONTEXT_SECTION = 'Role-scoped context';
 
-/** A generated tier variant's name suffix (`sync.js` variants); `context` reads the variant as its base agent. */
-const TIER_SUFFIX = /-(mechanical|critical)$/;
-
 function stable(value) {
   if (Array.isArray(value)) return '[' + value.map(stable).join(',') + ']';
   if (value && typeof value === 'object') return '{' + Object.keys(value).sort().map((key) => JSON.stringify(key) + ':' + stable(value[key])).join(',') + '}';
@@ -1340,13 +1337,21 @@ function timingSummaryCommand(flags) {
   return timingSummary(fs.existsSync(flags.ledger) ? fs.readFileSync(flags.ledger, 'utf8') : null, archived);
 }
 
-/** Every Markdown heading outside fenced code blocks: its line index, level and exact text. */
+/** Every Markdown heading outside fenced code blocks: its line index, level and exact text. A fence closes only on its opener's character, at least the opener's length, with nothing but whitespace after (CommonMark). */
 function markdownHeadings(lines) {
   const headings = [];
-  let fenced = false;
+  let fence = null;
   lines.forEach((line, index) => {
-    if (/^ {0,3}(```|~~~)/.test(line)) fenced = !fenced;
-    const match = !fenced && line.match(/^(#{1,6})[ \t]+(.*?)[ \t]*$/);
+    const marker = line.match(/^ {0,3}(`{3,}|~{3,})(.*)$/);
+    if (fence) {
+      if (marker && marker[1][0] === fence[0] && marker[1].length >= fence.length && /^[ \t]*$/.test(marker[2])) fence = null;
+      return;
+    }
+    if (marker && !(marker[1][0] === '`' && marker[2].includes('`'))) {
+      fence = marker[1];
+      return;
+    }
+    const match = line.match(/^(#{1,6})[ \t]+(.*?)[ \t]*$/);
     if (match) headings.push({ index, level: match[1].length, text: match[2] });
   });
   return headings;
@@ -1374,7 +1379,9 @@ function contextRefs(tableText, role, phase) {
   if (blocks.length !== 1) fail(`"${CONTEXT_SECTION}" must hold one json block, found ${blocks.length}`);
   const rows = JSON.parse(blocks[0][1]);
   if (!Array.isArray(rows) || rows.some((row) => !row || typeof row.role !== 'string' || typeof row.phase !== 'string')) fail('grant rows must be {role, phase, refs}');
-  const base = role.replace(TIER_SUFFIX, '');
+  // sync.js owns the tier-variant suffixes; required here, not at load, so commands that resolve no role run without it.
+  const { VARIANT_SUFFIXES } = require('./sync.js');
+  const base = role.replace(new RegExp(`-(${VARIANT_SUFFIXES.join('|')})$`), '');
   const matched = rows.filter((row) => row.role === base && (row.phase === '*' || row.phase === phase));
   if (matched.length === 0) fail(`no grant row for role "${role}" in phase "${phase}"`);
   return [...new Set(matched.flatMap((row) => stringArray(row.refs, `refs of ${row.role} ${row.phase}`)))];

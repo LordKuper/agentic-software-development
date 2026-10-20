@@ -5,7 +5,7 @@ Owner: inline orchestrator; dispatches `asd-ba`, `asd-ux`, `asd-architect`, skil
 ## Entry
 
 ```json
-{"requires": ["active sprint at .asd/sprints/<NNN-slug>/", "audit.md approved, or (frozen documents.audit false) the audit phase COMPLETED signal alone (checkpoints.md precondition chain)", "state.json phase advanced from audit"], "ops": ["context: node .asd/runtime.js context --phase design --role orchestrator at entry, read it; --role <agent> before each agent delegation in ## Dispatch, passed as inputs.context; --out in node .asd/runtime.js scratch-dir's directory per agent-protocol.md 'Dispatch payload'", "append friction: F-N to <sprint>/friction-log.md per sprint-lifecycle.md 'Friction log'", "timing: a dispatch op around each ## Dispatch delegation (sprint-lifecycle.md 'Operation timing')"]}
+{"requires": ["active sprint at .asd/sprints/<NNN-slug>/", "audit.md approved, or (frozen documents.audit false) the audit phase COMPLETED signal alone (checkpoints.md precondition chain)", "state.json phase advanced from audit"], "ops": ["context: node .asd/runtime.js context --phase design --role orchestrator at entry, read it; --role <agent> before each agent delegation in ## Dispatch, passed as inputs.context, each Conditional grant whose condition holds named in inputs; --out per agent-protocol.md 'Dispatch payload'", "append friction: F-N to <sprint>/friction-log.md per sprint-lifecycle.md 'Friction log'", "timing: a dispatch op around each ## Dispatch delegation (sprint-lifecycle.md 'Operation timing')"]}
 ```
 
 ## Inputs

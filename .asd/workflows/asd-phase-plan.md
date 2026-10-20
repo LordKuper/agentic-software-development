@@ -5,7 +5,7 @@ Owner: inline orchestrator; dispatches none.
 ## Entry
 
 ```json
-{"requires": ["active sprint at .asd/sprints/<NNN-slug>/", "predecessor done per the frozen workflow (sprint-lifecycle.md 'Workflows'): standard — design-promote done (persistent docs reflect approved sprint design) or the collapse test holds (sprint-lifecycle.md 'Design/design-review/design-promote collapse'); lite — audit done or skipped", "state.json phase advanced from design-promote (standard) or audit (lite)"], "ops": ["context: node .asd/runtime.js context --phase plan --role orchestrator at entry, read it; --out in node .asd/runtime.js scratch-dir's directory per agent-protocol.md 'Dispatch payload'", "append friction: F-N to <sprint>/friction-log.md per sprint-lifecycle.md 'Friction log'", "timing: user-wait ops only (sprint-lifecycle.md 'Operation timing')"]}
+{"requires": ["active sprint at .asd/sprints/<NNN-slug>/", "predecessor done per the frozen workflow (sprint-lifecycle.md 'Workflows'): standard — design-promote done (persistent docs reflect approved sprint design) or the collapse test holds (sprint-lifecycle.md 'Design/design-review/design-promote collapse'); lite — audit done or skipped", "state.json phase advanced from design-promote (standard) or audit (lite)"], "ops": ["context: node .asd/runtime.js context --phase plan --role orchestrator at entry, read it; --out per agent-protocol.md 'Dispatch payload'", "append friction: F-N to <sprint>/friction-log.md per sprint-lifecycle.md 'Friction log'", "timing: user-wait ops only (sprint-lifecycle.md 'Operation timing')"]}
 ```
 
 ## Inputs
