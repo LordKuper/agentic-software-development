@@ -18,35 +18,35 @@ responsibility:
 | 5 | 3e609b704f300ea1f3df8040a2bcdeaa8f11273d | delta since entry 4 |
 | 6 | fc5d22097ec13c354662829d77821e6c28ec8066 | delta since entry 5 |
 | 7 | e62af1475be8363f44ffab4079e0258a7a9abc71 | delta since entry 6 |
+| 8 |  | delta since entry 7 |
 
 ## Risk → check decisions
 
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
-| D-3 memory fix 51f9a640 (`.claude/agent-memory/asd-tester-critical/project_testability-envelope.md` "Sweep guards") | leftover removed prose-table terms in agent memory | leftover-term grep over `.claude/agent-memory/**` (removed terms: "Additional-context cell", "files named by the consulting question", `## Operations used`, `asd-advisor.md` Don'ts) | none | zero hits; memory is not a test surface and the sweep test (Task 13 §27) already pins the grant table; a memory-text pin is a hypothetical risk (`code-style.md` §17) |
-| review-fix wave-3/iter-03 external 1: `markdownSection` edge table (`tests/run.js` §27 SECTION_CASES) - shorter fence inside longer, other-char fence, backtick info string | `markdownHeadings` fence rules (runtime.js) | table cases | added | a mis-closed or mis-opened fence hides or invents a heading and silently changes a section ref's content |
-| review-fix wave-3/iter-03 combined 8 (`tests/run.js` banner order) | the `// Runner` banner sat above §27 | none (structure only) | none | moved the §27 block above the banner; no behaviour change, suite 296/296 |
+| `sync.js` exports `VARIANT_SUFFIXES`; `runtime.js` `contextRefs` lazily requires it (2236c70c) | a broken export or require makes every variant role fail to resolve its base grant row | existing `contextRefs` test (§27 GRANT_CASES `asd-dev-critical`) and the real-table sweep over every role-phase pair | none | a missing export makes `new RegExp` throw on `undefined.join`, failing the variant case; mutation not re-run, the failure is a thrown TypeError on a covered path. The added `standard` suffix has no agent file, so an assert on it is a hypothetical risk (`code-style.md` §17) |
+| `markdownHeadings` CommonMark fence tracking (2236c70c) | a mis-closed or mis-opened fence hides or invents a heading | existing §27 SECTION_CASES (3 edge cases from the review-fix tester) | none | carried rows rotated to entry 07 pin the three edges with recorded mutations; no new behaviour in the delta |
+| Grant table, checkpoints, scope `new` bundle path, core.md trust clause, artifact-layout pointer, D12 reading rule (prose) | prose drift; unresolved ref in a role-phase pair | existing sweep, AC-15 byte caps, AC-16 load test, sync check | none | the sweep resolves every pair of the real table and fails on an unresolved ref; caps and load pins still pass at 296/296 |
 
 ## Removed tests
 
 | Test | Reason | In change scope |
 |---|---|---|
-| none | entry 7 delta removes no test | n/a |
+| none | entry 8 delta removes no test | n/a |
 
 ## Added tests
 
 | Test | Regression proof |
 |---|---|
-| `sprint-026 AC-14 (D11): markdownSection ...` cases `a shorter fence inside a longer one does not close it`, `a fence of the other character does not close it`, `a backtick info string with a backtick opens no fence...` (external 1) | mutation of runtime.js `markdownHeadings`, restored by `git checkout -- .asd/runtime.js`; runs: 3. Drop the length clause: `node tests/run.js` exit 1, `AssertionError: a shorter fence inside a longer one does not close it`. Drop the char clause: exit 1, `AssertionError: a fence of the other character does not close it`. Opener accepts a backtick info string: exit 1, `Error: heading "D": 0 matches` in the same test. Control (restored): 296/296, exit 0 |
-| `sprint-012 AC-5/AC-6: providers.md ...` pin narrowed to `providers.md` "Declared tool policy" only (combined 5) | one mutation: `artifact-layout.md` "Agent memory" re-pointed to `providers.md` "Role-scoped context", restored by `git checkout`; runs: 1. `node tests/run.js` exit 1, `AssertionError: .asd/rules/artifact-layout.md "Agent memory" must point at the declared tool policy`. Control (restored): 296/296, exit 0 |
+| none | no new test this entry (see Risk → check decisions) | n/a |
 
 ## Suite run
 
 - Command: `node tests/run.js` (one zero-dependency runner covering every content contract; the changed files are referenced across the whole suite, so the shared-infrastructure safety valve applies and the impacted set is the whole runner)
 - Scope: impacted (= whole runner via safety valve)
-- Result: pass — 296/296 passed, 0 failed, 0 skipped (entry 7; runner exit 0, no test added)
+- Result: pass — 296/296 passed, 0 failed, 0 skipped (entry 8; runner exit 0, no test added)
 - Lint / build: pass — `git diff --check` exit 0, `node .asd/sync.js --check` exit 0 (`ok: true`)
-- HEAD: c3e29146 (tree analysed by entry 7)
+- HEAD: dca4d8af (tree analysed by entry 8)
 
 ## Defects
 
