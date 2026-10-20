@@ -19,34 +19,33 @@ responsibility:
 | 6 | fc5d22097ec13c354662829d77821e6c28ec8066 | delta since entry 5 |
 | 7 | e62af1475be8363f44ffab4079e0258a7a9abc71 | delta since entry 6 |
 | 8 | 7c60eb2b84f4d39944b9cbb4c0aba4f92d488490 | delta since entry 7 |
+| 9 | ee731ab434c738b7d5f7c3ec4b8246dbc3247a62 | delta since entry 8 |
 
 ## Risk → check decisions
 
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
-| `sync.js` exports `VARIANT_SUFFIXES`; `runtime.js` `contextRefs` lazily requires it (2236c70c) | a broken export or require makes every variant role fail to resolve its base grant row | existing `contextRefs` test (§27 GRANT_CASES `asd-dev-critical`) and the real-table sweep over every role-phase pair | none | a missing export makes `new RegExp` throw on `undefined.join`, failing the variant case; mutation not re-run, the failure is a thrown TypeError on a covered path. The added `standard` suffix has no agent file, so an assert on it is a hypothetical risk (`code-style.md` §17) |
-| `markdownHeadings` CommonMark fence tracking (2236c70c) | a mis-closed or mis-opened fence hides or invents a heading | existing §27 SECTION_CASES (3 edge cases from the review-fix tester) | none | carried rows rotated to entry 07 pin the three edges with recorded mutations; no new behaviour in the delta |
-| Grant table, checkpoints, scope `new` bundle path, core.md trust clause, artifact-layout pointer, D12 reading rule (prose) | prose drift; unresolved ref in a role-phase pair | existing sweep, AC-15 byte caps, AC-16 load test, sync check | none | the sweep resolves every pair of the real table and fails on an unresolved ref; caps and load pins still pass at 296/296 |
+| `runtime.js` `contextRefs` in-body comment moved into its JSDoc (57569248) | behaviour change from the comment move | existing §27 `contextRefs` cases and the real-table sweep | none | comment-only edit, no behaviour change; a test would be a hypothetical risk (`code-style.md` §17) |
 
 ## Removed tests
 
 | Test | Reason | In change scope |
 |---|---|---|
-| none | entry 8 delta removes no test | n/a |
+| none | entry 9 delta removes no test | n/a |
 
 ## Added tests
 
 | Test | Regression proof |
 |---|---|
-| none | no new test this entry (see Risk → check decisions) | n/a |
+| none | no new test this entry (see Risk → check decisions) |
 
 ## Suite run
 
 - Command: `node tests/run.js` (one zero-dependency runner covering every content contract; the changed files are referenced across the whole suite, so the shared-infrastructure safety valve applies and the impacted set is the whole runner)
 - Scope: impacted (= whole runner via safety valve)
-- Result: pass — 296/296 passed, 0 failed, 0 skipped (entry 8; runner exit 0, no test added)
+- Result: pass — 296/296 passed, 0 failed, 0 skipped (entry 9; runner exit 0, no test added)
 - Lint / build: pass — `git diff --check` exit 0, `node .asd/sync.js --check` exit 0 (`ok: true`)
-- HEAD: dca4d8af (tree analysed by entry 8)
+- HEAD: ee731ab4 (tree analysed by entry 9)
 
 ## Defects
 
