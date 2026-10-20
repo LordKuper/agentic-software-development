@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:ecb1a33acf8e48fee91761ce406109df3f423777b05cf653d85e63a1924d3374 content_digest=sha256:c58d00484c8dfd75dfaae252dd605c0942476e560fc82c942f7db530c2d767f9 asd_version=13.8.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:d752ca9d61a7778b43830d87da7be67c441dccbcdc4c6ba1e9bc2aaf58d860a0 content_digest=sha256:fbf2c721846a9cb199fce80f81010f56136f734cbff2a285f18635eac217ab96 asd_version=13.8.0 schema=1
 name: asd-init
 description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode, or applies a plan-declared settings change for the active sprint's impl phase. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs $asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 ---
@@ -15,7 +15,7 @@ Initialize the ASD workflow (fresh), edit its settings in diff mode (re-init), o
 ## Preconditions
 
 ```json
-{"requires": ["repo at project root", "infra present: .asd/rules/, .asd/templates/, .claude/"], "else": "ABORT — precondition not met: <artefact>", "ops": ["read files / search repo", "run command: gh, OS and tool probes (Fresh 4-5), git symbolic-ref, node .asd/sync.js --check", "request user decision / input: User decisions", "write files: Outputs"]}
+{"requires": ["repo at project root", "infra present: .asd/rules/, .asd/templates/, .claude/"], "ops": ["read files / search repo", "run command: gh, OS and tool probes (Fresh 4-5), git symbolic-ref, node .asd/sync.js --check", "request user decision / input: User decisions", "write files: Outputs"]}
 ```
 
 ## Modes

@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-sync/SKILL.md. source_digest=sha256:a5644c18e2961eb08f43af9afedaf471347f7958e689158d5b4d9a9ffefa6083 content_digest=sha256:d36fa6fdd1e81f2484bdf5a3a015eab6a48d9965b683f5b25700ce6f8accd9c2 asd_version=13.8.0 schema=1
+# ASD generated. Edit .asd/skills/asd-sync/SKILL.md. source_digest=sha256:ebb024235282cd8d2482ab1b09c76917e546613886fba20ea1b90424f703dac2 content_digest=sha256:502468afbbb6ff80682af1bb9522c2b4dd51a764cf4dd3189fd3f06b3d342d87 asd_version=13.8.0 schema=1
 name: asd-sync
 description: "Reconciles this project's generated provider views (.claude/, .codex/, .agents/skills/) with the canonical ASD sources (.asd/agents, .asd/skills, .asd/hooks) via .asd/sync.js's check/apply flow, asking per-file whether to overwrite, keep, or diff before writing anything. Use when the user runs $asd-sync or asks to sync, regenerate, or reconcile the Claude/Codex agent and skill files after editing canonical ASD sources."
 ---
@@ -15,7 +15,7 @@ Reconcile generated provider views with canonical `.asd/` sources.
 ## Preconditions
 
 ```json
-{"requires": [".asd/sync.js in this git repo"], "else": "ABORT — precondition not met: .asd/sync.js", "ops": ["run command: node $SYNC --check, --apply [--force]", "read files: target and canon source (show diff)", "request user decision: User decisions"]}
+{"requires": [".asd/sync.js in this git repo"], "ops": ["run command: node $SYNC --check, --apply [--force]", "read files: target and canon source (show diff)", "request user decision: User decisions"]}
 ```
 
 ## Steps

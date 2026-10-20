@@ -97,3 +97,5 @@
 {"op":"close","id":"impl-review wave-3/iter-01","kind":"review-iteration","parent":"impl-review#3","start":"2026-10-20T13:58:33.461Z","end":"2026-10-20T14:07:08.967Z","outcome":"done","attrs":{"wave":"3","iteration":"1"}}
 {"op":"close","id":"impl-review#3","kind":"phase","parent":null,"start":"2026-10-20T13:55:36.946Z","end":"2026-10-20T14:07:08.967Z","outcome":"done","attrs":{}}
 {"op":"open","id":"impl#5","kind":"phase","parent":null,"start":"2026-10-20T14:07:08.967Z","attrs":{}}
+{"op":"open","id":"review-fix wave-3/iter-01","kind":"dispatch","parent":"impl#5","start":"2026-10-20T14:07:09.529Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"review-fix wave-3/iter-01","kind":"dispatch","parent":"impl#5","start":"2026-10-20T14:07:09.529Z","end":"2026-10-20T14:11:24.716Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}

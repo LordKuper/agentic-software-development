@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-update/SKILL.md. source_digest=sha256:91f08f39cebecf3feda57fad0e65d40b839cc5515774a241d8498da5bb1e5b39 content_digest=sha256:d75758dd8565cbf1dd7a539107d4fe67c082af4f14b4459a7c3793a19f6c513b asd_version=13.8.0 schema=1
+# ASD generated. Edit .asd/skills/asd-update/SKILL.md. source_digest=sha256:8b20f1d83a1628669a506dd6eb3ed06d333630dbd7758e26a3a596894b61cc94 content_digest=sha256:96d517a73bc8f42558774654dfd68726bdec8d6986b058dcfd2e49a7ccf872a9 asd_version=13.8.0 schema=1
 name: asd-update
 description: "Updates the ASD framework infrastructure (.asd/rules, .asd/templates, ASD agents/skills/hooks, .asd/migrations) in a consumer project to the latest version by fetching them from the configured ASD repo's main branch, replacing only framework-managed paths, running any pending `.asd/migrations/<version>.js` scripts in ascending order, and never touching consumer-owned config (beyond a migration's release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent), sprints, persistent docs, or custom skills/agents/hooks. Use when the user runs $asd-update or asks to update, upgrade, or pull the latest ASD framework / workflow version."
 ---
@@ -42,7 +42,7 @@ Pull latest ASD framework files into this consumer project: overwrite **framewor
 
 Run by `.asd/workflows/asd-phase-scope.md` step 1 when the user chose to update at `asd-sprint`'s new-sprint version check.
 
-- That choice is the confirmation: skip step 1; steps 2-6 apply unchanged.
+- That choice is the confirmation: skip step 1; steps 2-7 apply unchanged.
 - Conflicts and `--force` still go to the user — never force without asking.
 - No commit here: the orchestrator commits the result. Report a failed migration or a declined conflict as a partial update; the orchestrator owns what follows.
 - Self-hosting rule (Rules) unchanged: `asd-sprint` never runs the check when `self_hosting: enabled`.
