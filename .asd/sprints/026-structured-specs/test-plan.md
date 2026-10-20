@@ -46,6 +46,7 @@ responsibility:
 - Result: pass — 296/296 passed, 0 failed, 0 skipped (entry 9; runner exit 0, no test added)
 - Lint / build: pass — `git diff --check` exit 0, `node .asd/sync.js --check` exit 0 (`ok: true`)
 - HEAD: ee731ab4 (tree analysed by entry 9)
+- Terminal full-suite run (impl-review wave-3/iter-05): `node tests/run.js` exit 0, 296/296 passed, 0 failed; `git diff --check` exit 0; `node .asd/sync.js --check` exit 0 (`ok: true`). Scope full, HEAD 10cd6409.
 
 ## Defects
 
