@@ -17,7 +17,7 @@ Form or edit the project concept document via `asd-ba`: create, edit or reverse-
 ## Preconditions
 
 ```json
-{"requires": [".asd/project/config.yaml exists", "no active sprint required (concept is project-lifetime artefact)"], "else": "run /asd-init first", "ops": []}
+{"requires": [".asd/project/config.yaml exists", "no active sprint required (concept is project-lifetime artefact)"], "else": "run /asd-init first"}
 ```
 
 ## Modes
@@ -111,12 +111,6 @@ Phase 1 brownfield candidates auto-suggest D as default; user may override.
 
 - never: mix the multi-field and options request shapes in one request.
 - must: before each `asd-ba` delegation, build `inputs.context`: `node .asd/runtime.js context --role asd-ba --phase concept --out <scratch-dir>/concept-<dispatch id>.context.md` (`agent-protocol.md` "Dispatch payload").
-
-## User decisions
-
-```json
-[]
-```
 
 ## Delegates
 

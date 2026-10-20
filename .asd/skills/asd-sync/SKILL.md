@@ -14,7 +14,7 @@ Reconcile generated provider views with canonical `.asd/` sources.
 ## Preconditions
 
 ```json
-{"requires": [".asd/sync.js in this git repo"], "ops": []}
+{"requires": [".asd/sync.js in this git repo"]}
 ```
 
 ## Steps
@@ -32,12 +32,6 @@ Reconcile generated provider views with canonical `.asd/` sources.
 ## Rules
 
 - never: overwrite a file without a per-file decision.
-
-## User decisions
-
-```json
-[]
-```
 
 ## Delegates
 

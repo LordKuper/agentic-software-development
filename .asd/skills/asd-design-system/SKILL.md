@@ -17,7 +17,7 @@ Form or edit the project design system (`docs/ux/DESIGN.md`, `design-system.html
 ## Preconditions
 
 ```json
-{"requires": [".asd/project/config.yaml exists", "docs/product/concept.html exists", "docs/architecture/stack.html exists", "no active sprint required"], "else": "no config: run /asd-init first; no concept: run /asd-concept first; no stack: run /asd-stack first", "ops": []}
+{"requires": [".asd/project/config.yaml exists", "docs/product/concept.html exists", "docs/architecture/stack.html exists", "no active sprint required"], "else": "no config: run /asd-init first; no concept: run /asd-concept first; no stack: run /asd-stack first"}
 ```
 
 ## Modes
@@ -145,12 +145,6 @@ After all DESIGN.md sections approved:
 - must: give every component listed in DESIGN.md a live preview in design-system.html
 - never: mix the multi-field and options request shapes in one request.
 - must: before each `asd-ux` delegation, build `inputs.context`: `node .asd/runtime.js context --role asd-ux --phase design-system --out <scratch-dir>/design-system-<dispatch id>.context.md` (`agent-protocol.md` "Dispatch payload").
-
-## User decisions
-
-```json
-[]
-```
 
 ## Delegates
 

@@ -63,12 +63,6 @@ After any phase skill returns:
 - must: re-detect state on every invocation; the user may interrupt anytime.
 - never: delegate to a skill outside `## Delegates`.
 
-## User decisions
-
-```json
-[]
-```
-
 ## Delegates
 
 ```json

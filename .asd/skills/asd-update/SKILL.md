@@ -14,7 +14,7 @@ Pull latest ASD framework files into this consumer project: overwrite **framewor
 ## Preconditions
 
 ```json
-{"requires": ["self_hosting not enabled (Rules)", "tar on PATH (ships with Win10 1803+/macOS/Linux)", "Node >= 16.7"], "else": "self_hosting enabled: one-line message, stop; else ABORT — precondition not met: <artefact>", "ops": []}
+{"requires": ["self_hosting not enabled (Rules)", "tar on PATH (ships with Win10 1803+/macOS/Linux)", "Node >= 16.7"], "else": "self_hosting enabled: one-line message, stop; else ABORT — precondition not met: <artefact>"}
 ```
 
 ## Modes
@@ -51,12 +51,6 @@ Run by `.asd/workflows/asd-phase-scope.md` step 1 when the user chose to update 
 - must: read `self_hosting` from `.asd/project/config.yaml` first; missing, unreadable, or a duplicated key → treat as `disabled` (fail closed). If `enabled`: print a one-line message ("asd-update is for consumer projects; this repo develops ASD directly — use a self-hosting sprint instead") and stop. No mutation, no fetch.
 - never: touch `.asd/project/**` (except `config.yaml`, which a release migration may rewrite as a sanctioned settings writer, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent), `.asd/sprints/**`, `docs/**`, `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json`, any non-ASD skill/agent/hook, anything outside `managed_paths`.
 - never: write a diverged (**conflict**) file without explicit confirmation.
-
-## User decisions
-
-```json
-[]
-```
 
 ## Delegates
 

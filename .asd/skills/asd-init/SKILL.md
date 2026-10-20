@@ -17,7 +17,7 @@ Initialize the ASD workflow (fresh), edit its settings in diff mode (re-init), o
 ## Preconditions
 
 ```json
-{"requires": ["repo at project root", "infra present: .asd/rules/, .asd/templates/, .claude/"], "ops": []}
+{"requires": ["repo at project root", "infra present: .asd/rules/, .asd/templates/, .claude/"]}
 ```
 
 ## Modes
@@ -110,12 +110,6 @@ Plan acceptance is the approval of record: no config dump, no section prompt, no
 
 - never: dispatch an agent. Init runs solo; fresh and re-init have no sprint context, sprint-mediated reads none beyond its declared pairs.
 - never: produce concept, stack or design system; owned by `/asd-concept`, `/asd-stack`, `/asd-design-system` respectively.
-
-## User decisions
-
-```json
-[]
-```
 
 ## Delegates
 

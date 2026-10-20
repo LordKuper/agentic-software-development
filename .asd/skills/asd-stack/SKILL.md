@@ -17,7 +17,7 @@ Form or edit the project tech stack document `docs/architecture/stack.html` and 
 ## Preconditions
 
 ```json
-{"requires": [".asd/project/config.yaml exists", "docs/product/concept.html exists", "no active sprint required"], "else": "no config: run /asd-init first; no concept: run /asd-concept first", "ops": []}
+{"requires": [".asd/project/config.yaml exists", "docs/product/concept.html exists", "no active sprint required"], "else": "no config: run /asd-init first; no concept: run /asd-concept first"}
 ```
 
 ## Modes
@@ -134,12 +134,6 @@ Per technology in approved stack:
 - must: give every tech in stack a matching tech-reference doc before COMPLETED
 - never: mix the multi-field and options request shapes in one request.
 - must: before each `asd-architect` delegation, build `inputs.context`: `node .asd/runtime.js context --role asd-architect --phase stack --out <scratch-dir>/stack-<dispatch id>.context.md` (`agent-protocol.md` "Dispatch payload").
-
-## User decisions
-
-```json
-[]
-```
 
 ## Delegates
 
