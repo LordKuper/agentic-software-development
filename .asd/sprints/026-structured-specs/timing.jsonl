@@ -179,3 +179,9 @@
 {"op":"open","id":"combined wave-3/iter-05","kind":"dispatch","parent":"impl-review wave-3/iter-05","start":"2026-10-20T22:29:29.540Z","attrs":{"agent":"asd-reviewer-combined","tier":"standard","model":"opus"}}
 {"op":"close","id":"combined wave-3/iter-05","kind":"dispatch","parent":"impl-review wave-3/iter-05","start":"2026-10-20T22:29:29.540Z","end":"2026-10-20T22:30:51.327Z","outcome":"done","attrs":{"agent":"asd-reviewer-combined","tier":"standard","model":"opus"}}
 {"op":"close","id":"impl-review wave-3/iter-05","kind":"review-iteration","parent":"impl-review#7","start":"2026-10-20T22:29:29.489Z","end":"2026-10-20T22:30:51.327Z","outcome":"done","attrs":{"wave":"3","iteration":"5"}}
+{"op":"open","id":"impl-review wave-3/iter-05 suite","kind":"dispatch","parent":"impl-review#7","start":"2026-10-20T22:30:51.851Z","attrs":{"agent":"asd-tester","tier":"standard","model":"sonnet"}}
+{"op":"open","id":"suite impl-review#1","kind":"suite","parent":"impl-review wave-3/iter-05 suite","start":"2026-10-20T22:31:47.207Z","attrs":{"scope":"full"}}
+{"op":"close","id":"suite impl-review#1","kind":"suite","parent":"impl-review wave-3/iter-05 suite","start":"2026-10-20T22:31:47.207Z","end":"2026-10-20T22:32:10.715Z","outcome":"done","attrs":{"scope":"full"}}
+{"op":"close","id":"impl-review wave-3/iter-05 suite","kind":"dispatch","parent":"impl-review#7","start":"2026-10-20T22:30:51.851Z","end":"2026-10-20T22:32:33.630Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"impl-review#7","kind":"phase","parent":null,"start":"2026-10-20T22:29:28.830Z","end":"2026-10-20T22:32:35.567Z","outcome":"done","attrs":{}}
+{"op":"open","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-10-20T22:32:35.567Z","attrs":{}}

@@ -67,6 +67,13 @@
       "reason": "amendment Tasks 9-13 + fix-2 done, build/lint clean, suite 296/296, D13 all ≤0.70, AC-15 caps met",
       "evidence": "decisions-log.md 2026-10-21 impl assessment (amendment)",
       "artifact_revision": "HEAD 4d76b073"
+    },
+    {
+      "gate": "impl-review green handoff",
+      "decision_actor": "orchestrator",
+      "reason": "waves 1-3 all APPROVE/latched (wave 3 at iter-05), terminal full suite green 296/296, lint and sync --check clean",
+      "evidence": "test-plan.md Suite run; reviews/impl/wave-3/iter-05",
+      "artifact_revision": "HEAD 19316bde"
     }
   ],
   "task_routing": {
@@ -373,7 +380,7 @@
     }
   },
   "created_at": "2026-10-20T09:16:39.780Z",
-  "updated_at": "2026-10-20T22:30:51.450Z",
+  "updated_at": "2026-10-20T22:32:35.518Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
