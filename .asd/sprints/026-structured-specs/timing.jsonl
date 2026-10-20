@@ -5,3 +5,7 @@
 {"op":"close","id":"asd-architect audit#1","kind":"dispatch","parent":"audit#1","start":"2026-10-20T09:40:47.913Z","end":"2026-10-20T09:58:38.621Z","outcome":"done","attrs":{"agent":"asd-architect","tier":"standard","model":"opus"}}
 {"op":"open","id":"wait audit contradictions","kind":"user-wait","parent":"audit#1","start":"2026-10-20T09:59:59.592Z","attrs":{"gate":"audit contradictions"}}
 {"op":"close","id":"wait audit contradictions","kind":"user-wait","parent":"audit#1","start":"2026-10-20T09:59:59.592Z","end":"2026-10-20T10:15:10.132Z","outcome":"done","attrs":{"gate":"audit contradictions"}}
+{"op":"close","id":"audit#1","kind":"phase","parent":null,"start":"2026-10-20T09:40:31.863Z","end":"2026-10-20T10:15:26.871Z","outcome":"done","attrs":{}}
+{"op":"open","id":"plan#1","kind":"phase","parent":null,"start":"2026-10-20T10:15:26.871Z","attrs":{}}
+{"op":"open","id":"wait plan","kind":"user-wait","parent":"plan#1","start":"2026-10-20T10:19:08.335Z","attrs":{"gate":"plan"}}
+{"op":"close","id":"wait plan","kind":"user-wait","parent":"plan#1","start":"2026-10-20T10:19:08.335Z","end":"2026-10-20T10:46:28.946Z","outcome":"done","attrs":{"gate":"plan"}}

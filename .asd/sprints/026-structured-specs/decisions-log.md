@@ -59,3 +59,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: audit.md, sprint.md
 
 - 2026-10-20 — audit gate (adaptive, orchestrator): all t_audit.md sections present; 2 contradictions settled by canonical precedence, 4 by user; AC-1..AC-13 deliverable per Gaps; NEXT plan (lite)
+
+## 2026-10-20 — plan accepted
+
+- **Decision**: `plan.md` accepted: D1-D10, Tasks 1-8 in 4 waves (wave 1 protocol/contract alone, wave 2 five parallel restructure Tasks, wave 3 lifecycle split and mirrors, wave 4 test-only). No stubs touch scope (audit has no Related open stubs).
+- **Rationale**: user `accept` at the plan gate.
+- **Affected docs**: plan.md
