@@ -18,7 +18,7 @@ Documentation reviewer: design drafts in design-review, code-vs-persistent-docs 
 ## Inputs
 
 ```json
-{"rules": ["core.md", "agent-protocol.md (agent sections)", "providers.md 'Role-scoped context' row asd-reviewer-documentation", "asd-phase-<design|impl>-review.md 'Rules'"],
+{"rules": ["payload.inputs.context"],
  "required": ["payload.manifest", "payload.iteration", "payload.floor", "return file the payload names"],
  "optional": ["payload.diff (design-review: from iteration 2)", "payload.interrupted", "design-review: payload.inputs.audit (migration plan)"],
  "modes": {

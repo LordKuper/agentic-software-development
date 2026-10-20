@@ -18,13 +18,13 @@ Correctness reviewer, dispatched in design-review and impl-review. Goal: one ver
 ## Inputs
 
 ```json
-{"rules": ["core.md", "agent-protocol.md (agent sections)", "providers.md 'Role-scoped context' row asd-reviewer-correctness", "asd-phase-<design|impl>-review.md 'Rules'"],
+{"rules": ["payload.inputs.context"],
  "required": ["payload.manifest (its n_a is this phase's section gate)", "payload.iteration", "payload.floor", "return file the payload names"],
  "optional": ["payload.diff (design-review: from iteration 2)", "payload.interrupted", "impl-review: payload.inputs.decisions (contract checks)", "impl-review: payload.inputs.contracts (stack constraints)", "impl-review: payload.inputs.ux (no promoted ux-spec: Rules)"],
  "modes": {
   "design-review": {"when": "payload.phase is design-review", "required": ["the listed drafts", "payload.inputs.requirements", "payload.inputs.ux, only when the manifest does not gate UI conformance out"]},
-  "impl-review": {"when": "payload.phase is impl-review", "required": [".asd/project/custom-coding-rules.md (forbidden patterns, security policy)", "payload.inputs.requirements", "<sprint>/plan.md (task-to-AC mapping)"]},
-  "self-hosting framework-templates carve-out": {"when": "impl-review, self_hosting enabled and every UI surface in scope is a .asd/templates/*.html file (asd-phase-impl-review.md step 5 UI-surface predicate); replaces payload.inputs.ux, no docs/ux input exists or applies", "required": [".asd/rules/design-system.md", ".asd/rules/ux-principles.md", "WCAG AA thresholds", "the diffed .asd/templates/t_*.html and t_html-shell.html files"]}}}
+  "impl-review": {"when": "payload.phase is impl-review", "required": ["custom-coding-rules.md forbidden patterns and security policy, in payload.inputs.context", "payload.inputs.requirements", "<sprint>/plan.md (task-to-AC mapping)"]},
+  "self-hosting framework-templates carve-out": {"when": "impl-review, self_hosting enabled and every UI surface in scope is a .asd/templates/*.html file (asd-phase-impl-review.md step 5 UI-surface predicate); replaces payload.inputs.ux, no docs/ux input exists or applies", "required": ["design-system.md and ux-principles.md, named in payload.inputs (providers.md 'Role-scoped context' conditional grants)", "WCAG AA thresholds", "the diffed .asd/templates/t_*.html and t_html-shell.html files"]}}}
 ```
 
 ## Outputs

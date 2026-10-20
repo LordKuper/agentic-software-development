@@ -18,7 +18,7 @@ Combined reviewer: the one internal reviewer of an impl-review whose workflow ro
 ## Inputs
 
 ```json
-{"rules": ["core.md", "agent-protocol.md (agent sections)", "providers.md 'Role-scoped context' row asd-reviewer-combined", "asd-phase-impl-review.md 'Rules'"],
+{"rules": ["payload.inputs.context"],
  "required": ["payload.manifest (its n_a is the section gate)", "payload.diff", "payload.iteration", "payload.floor", "return file the payload names", "payload.inputs.requirements (sprint.md AC-N)", "<sprint>/plan.md (task-to-AC mapping)", "the '## Review rubric' of .asd/agents/asd-reviewer-correctness.md, asd-reviewer-efficiency.md, asd-reviewer-documentation.md"],
  "optional": ["payload.interrupted", "<sprint>/test-plan.md (context, not scope) and the manual-verification results it records beneath its manual spec (asd-phase-impl-test.md step 10)", "per entry not n/a'd: the impl-review inputs its home agent file lists for it"]}
 ```

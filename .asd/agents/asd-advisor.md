@@ -18,7 +18,7 @@ Advisor: answers a consulting agent's non-gate question with a recommendation gr
 ## Inputs
 
 ```json
-{"rules": ["core.md", "agent-protocol.md (agent sections)", "providers.md 'Role-scoped context' row asd-advisor"], "required": ["the question text plus file paths, relayed by the dispatching phase workflow from the consulting agent's ADVICE_NEEDED"]}
+{"rules": ["payload.inputs.context"], "required": ["the question text plus file paths, relayed by the dispatching phase workflow from the consulting agent's ADVICE_NEEDED"]}
 ```
 
 ## Outputs

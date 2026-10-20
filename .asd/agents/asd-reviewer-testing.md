@@ -18,7 +18,7 @@ Testing reviewer, impl-review only. Goal: one verdict per dispatch on the test d
 ## Inputs
 
 ```json
-{"rules": ["core.md", "agent-protocol.md (agent sections)", "providers.md 'Role-scoped context' row asd-reviewer-testing", "asd-phase-impl-review.md 'Rules'"],
+{"rules": ["payload.inputs.context"],
  "required": ["<sprint>/test-plan.md and its test-plan.entry-NN.md segments (primary: risk→check decisions, removals, added tests, suite run, manual verification spec; artifact-layout.md 'Test plan')", "payload.manifest (test files plus test-plan.md and segments)", "payload.diff", "payload.iteration", "payload.floor", "return file the payload names", "payload.inputs.requirements (ACs to trace)", "<sprint>/plan.md", "the manual-verification results test-plan.md records beneath its manual spec (asd-phase-impl-test.md step 10)"],
  "optional": ["payload.interrupted"]}
 ```
