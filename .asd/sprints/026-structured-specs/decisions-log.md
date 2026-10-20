@@ -65,3 +65,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: `plan.md` accepted: D1-D10, Tasks 1-8 in 4 waves (wave 1 protocol/contract alone, wave 2 five parallel restructure Tasks, wave 3 lifecycle split and mirrors, wave 4 test-only). No stubs touch scope (audit has no Related open stubs).
 - **Rationale**: user `accept` at the plan gate.
 - **Affected docs**: plan.md
+
+- 2026-10-20 — route Task 1: critical, dispatch HEAD f35eaeef; risk change: public contract
