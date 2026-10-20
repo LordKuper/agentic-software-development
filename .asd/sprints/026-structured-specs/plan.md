@@ -61,30 +61,30 @@ Material risk: change: public contract
 
 ### Task 2: Phase workflows — scope, audit, design, design-review, design-promote, plan, retro, pr
 Material risk: change: meaning-preserving restructure
-- [ ] Rewrite `.asd/workflows/asd-phase-{scope,audit,design,design-review,design-promote,plan,retro,pr}.md` to the D4 form; step numbers kept; return line per D6; dispatch payloads named by `agent-protocol.md` keys; requirement inputs cite `sprint-lifecycle.md` "Input sources".
-- [ ] Copy in moved sprint-lifecycle text per D9: Audit phase → audit, Design phase → design, Retro phase minus row-id grammar → retro, Retro intake paragraph → scope, PR open-mode DoD → pr, review-phase agent rules → design-review `## Rules`; do not edit `sprint-lifecycle.md` (Task 7).
-- [ ] ADVICE_NEEDED (C-4): plan drops its dead relay step; audit and design-promote gain the relay branch citing `agent-protocol.md` "Relay"; design-review relays only from non-reviewer agents.
+- [x] Rewrite `.asd/workflows/asd-phase-{scope,audit,design,design-review,design-promote,plan,retro,pr}.md` to the D4 form; step numbers kept; return line per D6; dispatch payloads named by `agent-protocol.md` keys; requirement inputs cite `sprint-lifecycle.md` "Input sources".
+- [x] Copy in moved sprint-lifecycle text per D9: Audit phase → audit, Design phase → design, Retro phase minus row-id grammar → retro, Retro intake paragraph → scope, PR open-mode DoD → pr, review-phase agent rules → design-review `## Rules`; do not edit `sprint-lifecycle.md` (Task 7).
+- [x] ADVICE_NEEDED (C-4): plan drops its dead relay step; audit and design-promote gain the relay branch citing `agent-protocol.md` "Relay"; design-review relays only from non-reviewer agents.
 
 ### Task 3: Phase workflows — impl, impl-test, impl-review
 Material risk: change: meaning-preserving restructure
-- [ ] Rewrite `.asd/workflows/asd-phase-{impl,impl-test,impl-review}.md` to the D4 form; step numbers kept; return line per D6; payloads per `agent-protocol.md` (impl step 6, impl-test step 1a, impl-review steps 6 and 9 cite "Dispatch payload" instead of `providers.md` "Dispatch payload header").
-- [ ] Copy in moved text per D9: Impl phase → impl, Impl-test phase → impl-test, review-phase agent rules → impl-review `## Rules` (incl. the tester's impl-review terminal-suite rules); do not edit `sprint-lifecycle.md`.
-- [ ] ADVICE_NEEDED (C-4): impl-review relays only from non-reviewer agents (tester).
+- [x] Rewrite `.asd/workflows/asd-phase-{impl,impl-test,impl-review}.md` to the D4 form; step numbers kept; return line per D6; payloads per `agent-protocol.md` (impl step 6, impl-test step 1a, impl-review steps 6 and 9 cite "Dispatch payload" instead of `providers.md` "Dispatch payload header").
+- [x] Copy in moved text per D9: Impl phase → impl, Impl-test phase → impl-test, review-phase agent rules → impl-review `## Rules` (incl. the tester's impl-review terminal-suite rules); do not edit `sprint-lifecycle.md`.
+- [x] ADVICE_NEEDED (C-4): impl-review relays only from non-reviewer agents (tester).
 
 ### Task 4: Creator and advisor agents
 Material risk: change: meaning-preserving restructure
-- [ ] Rewrite `.asd/agents/asd-{ba,ux,architect,dev,tester,advisor}.md` to the D2 form; descriptions per D3; conditional input prose (audit Gaps AC-7 lines) replaced by `payload.inputs.<key>`; `ADVICE_NEEDED` listed in each creator's `## Signals` (not advisor); returns cite `agent-protocol.md` "Return".
-- [ ] Phase-rule citations repointed to the D9 homes (`asd-phase-<p>.md` "Rules") where the cited section moves; ones staying in `sprint-lifecycle.md` unchanged.
+- [x] Rewrite `.asd/agents/asd-{ba,ux,architect,dev,tester,advisor}.md` to the D2 form; descriptions per D3; conditional input prose (audit Gaps AC-7 lines) replaced by `payload.inputs.<key>`; `ADVICE_NEEDED` listed in each creator's `## Signals` (not advisor); returns cite `agent-protocol.md` "Return".
+- [x] Phase-rule citations repointed to the D9 homes (`asd-phase-<p>.md` "Rules") where the cited section moves; ones staying in `sprint-lifecycle.md` unchanged.
 
 ### Task 5: Reviewer and External Review agents
 Material risk: change: meaning-preserving restructure
-- [ ] Rewrite `.asd/agents/asd-reviewer-{combined,correctness,documentation,efficiency,testing}.md` and `asd-external-review.md` to the D2 form; descriptions per D3; `## Review rubric` text, `###` headings and bold labels byte-identical (runtime.js `rubricIds`, `NA_TARGETS`); `## Gate Verdict Format` and the verdict first line unchanged; no `ADVICE_NEEDED` in any reviewer's `## Signals`.
-- [ ] External Review: `## Invocation`, `## Severity mapping` headings normalized; `{{wraps_*}}` placeholders untouched.
+- [x] Rewrite `.asd/agents/asd-reviewer-{combined,correctness,documentation,efficiency,testing}.md` and `asd-external-review.md` to the D2 form; descriptions per D3; `## Review rubric` text, `###` headings and bold labels byte-identical (runtime.js `rubricIds`, `NA_TARGETS`); `## Gate Verdict Format` and the verdict first line unchanged; no `ADVICE_NEEDED` in any reviewer's `## Signals`.
+- [x] External Review: `## Invocation`, `## Severity mapping` headings normalized; `{{wraps_*}}` placeholders untouched.
 
 ### Task 6: Standalone skills
 Material risk: change: meaning-preserving restructure
-- [ ] Rewrite `.asd/skills/{asd-sprint,asd-init,asd-concept,asd-design-system,asd-stack,asd-sync,asd-update}/SKILL.md` to the D5 form; return lines per D6; cited subheads keep names; asd-sprint Step 3 reads `NEXT:` unchanged.
-- [ ] asd-sprint relays `QUESTION` per `agent-protocol.md` "Relay"; grep every consumer of each changed return line (tests excluded — Task 8) and keep it consistent.
+- [x] Rewrite `.asd/skills/{asd-sprint,asd-init,asd-concept,asd-design-system,asd-stack,asd-sync,asd-update}/SKILL.md` to the D5 form; return lines per D6; cited subheads keep names; asd-sprint Step 3 reads `NEXT:` unchanged.
+- [x] asd-sprint relays `QUESTION` per `agent-protocol.md` "Relay"; grep every consumer of each changed return line (tests excluded — Task 8) and keep it consistent.
 
 ### Task 7: sprint-lifecycle split, Input sources, retro rows, mirrors
 Material risk: change: rule relocation

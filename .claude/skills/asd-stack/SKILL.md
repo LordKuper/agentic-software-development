@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-stack/SKILL.md. source_digest=sha256:1afe58b6e4c6611adf468e9dfee361d017412dad8465f52423afdd1ae5ac9354 content_digest=sha256:4f078c30911a02e1d5d6792c70e3169f676ff1bda66db2b6d35315f5d3bd2b9d asd_version=13.0.0 schema=1
+# ASD generated. Edit .asd/skills/asd-stack/SKILL.md. source_digest=sha256:de414598724bfa582c09acac3f08ed3b7c89519ea87a28ecf582b29ee7037dab content_digest=sha256:4b70b8536ecabf060ee267624b40c1bb789d58c8d934ff605222c7c225a6937a asd_version=13.8.0 schema=1
 name: asd-stack
 description: "Forms or edits the project tech stack document at docs/architecture/stack.html via asd-architect, branching by silent detection into one of four flows (clean slate / constraints / clear stack / brownfield extraction). Verifies versions via WebFetch, runs knowledge-gap analysis, and maintains a tech-reference doc per chosen tech. Use when the user runs /asd-stack, when asd-init or asd-concept detects a missing stack.html and suggests this skill, or when the user asks to define, draft, refine, edit, upgrade, or reverse-engineer the project technology stack."
 allowed-tools: "Read Glob Grep AskUserQuestion Task"
@@ -9,18 +9,25 @@ Operation mapping: see `.asd/rules/providers.md`.
 
 # ASD Stack
 
+## Purpose
+
+Form or edit the project tech stack document `docs/architecture/stack.html` and its tech-reference docs via `asd-architect`.
+
 ## Preconditions
-- `.asd/project/config.yaml` exists (run `/asd-init` first)
-- `docs/product/concept.html` exists (run `/asd-concept` first; concept is mandatory input)
-- No active sprint required
 
-## Operations used
-- Read files — `.asd/project/config.yaml`, concept.html, existing stack.html, manifests, source files
-- Search repo — silent scan for brownfield signals (manifests, lockfiles, Dockerfile, CI configs)
-- Request user decision/input — variant choice, constraints, section approvals, lock-in/revise loop
-- Delegate to agents — `asd-architect` (author, fetch external doc to verify versions, create tech-references)
+```json
+{"requires": [".asd/project/config.yaml exists", "docs/product/concept.html exists (concept is mandatory input)", "no active sprint required"], "else": "no config: run /asd-init first; no concept: run /asd-concept first", "ops": ["read files: .asd/project/config.yaml, concept.html, existing stack.html, manifests, source files", "search repo: silent scan for brownfield signals (manifests, lockfiles, Dockerfile, CI configs)", "request user decision/input: User decisions", "delegate to agent: asd-architect (author, fetch external doc to verify versions, create tech-references)"]}
+```
 
-## Phase 1 — silent detection (NO asking)
+## Modes
+
+```json
+{"edit": "docs/architecture/stack.html exists, non-empty (Phase 1)", "fresh": "no stack.html; variant A|B|C chosen (Phase 2)", "reverse-engineered": "no stack.html; variant D chosen (Phase 2), the default on manifests/lockfiles/Dockerfile/CI configs"}
+```
+
+## Steps
+
+### Phase 1 — silent detection (NO asking)
 
 Scan in order:
 1. `docs/architecture/stack.html` exists, non-empty → mode = **edit**, skip to Edit-mode flow
@@ -28,7 +35,7 @@ Scan in order:
 3. No code, no manifests → greenfield candidate (no default)
 4. Continue to Phase 2
 
-## Phase 2 — variant choice (only if Phase 1 did not route to edit)
+### Phase 2 — variant choice (only if Phase 1 did not route to edit)
 
 Request user decision (4 options):
 - **A** — Clean slate, architect proposes from concept
@@ -38,7 +45,7 @@ Request user decision (4 options):
 
 Phase 1 brownfield candidates auto-suggest D as default.
 
-## Phase 3 — flow per variant (each delegates to `asd-architect`)
+### Phase 3 — flow per variant (each delegates to `asd-architect`)
 
 **Variant A — clean slate**
 - Delegate to agent `asd-architect` with payload: concept.html, language settings, target = `t_stack.html`
@@ -70,7 +77,7 @@ Phase 1 brownfield candidates auto-suggest D as default.
 - Draft sets `provenance: reverse-engineered` + `source: <primary manifest>` in frontmatter
 - Proceed to Phase 4
 
-## Phase 4 — convergence (universal across variants)
+### Phase 4 — convergence (universal across variants)
 
 - Create mode only (target file does not yet exist): before the first section, write skeleton `docs/architecture/stack.html` per `t_stack.html`, with placeholder sections. Edit mode (target file already exists) skips this write and enters the per-section loop directly against the existing file.
 - Section-by-section:
@@ -83,7 +90,7 @@ Phase 1 brownfield candidates auto-suggest D as default.
   - repeat until A
   - next section per `t_stack.html` order
 
-## Phase 5 — knowledge gap analysis
+### Phase 5 — knowledge gap analysis
 
 Per technology entry in approved stack:
 - Architect compares chosen version against LLM training cutoff
@@ -93,61 +100,65 @@ Per technology entry in approved stack:
   - **HIGH** — version released after cutoff; may have breaking changes LLM does not know
 - MEDIUM/HIGH: architect fetches official changelog / release notes (external doc); records breaking changes and deprecations in tech-reference doc
 
-## Phase 6 — tech-reference creation/update
+### Phase 6 — tech-reference creation/update
 
 Per technology in approved stack:
 - Architect creates or updates `docs/architecture/tech-reference/<tech>-<version>.md` per `t_tech-reference.md`
 - Includes canonical source URL, API surface used, version-specific notes, deprecations, project conventions, "Last verified" ISO date
 - Request user decision before each persistent write
 
-## Phase 7 — final artifact-level gate: stack.html
+### Phase 7 — final artifact-level gate: stack.html
 
 - `docs/architecture/stack.html` already reflects every locked-in section from Phase 4 (content write is not deferred — only this gate's `accept` is)
 - write-then-review-accept per `checkpoints.md` mechanic (delta summary includes risk summary): post the path + a combined delta summary in chat; user replies `accept` (advance) or feedback (revise in place, re-post) — feedback naming a specific section may re-enter Phase 4 for that section before rewriting
 - if feedback changes a tech entry or its version (not just prose in an already-chosen section): after Phase 4's re-entry, also re-run Phases 5-6 for the affected tech entries (including the per-tech approve-before-write micro-gate) before the delta summary is re-posted and before COMPLETED can be emitted
 - emit COMPLETED
 
-## Phase 8 — handoff
+### Phase 8 — handoff
 
 - Print handoff suggestion: "Next: run `/asd-sprint` to start the first sprint"
 - NO auto-dispatch
 
-## Edit mode (Phase 1 routed here)
+### Edit mode (Phase 1 routed here)
 
 - Show existing stack summary + risk re-assessment (versions may have aged since last write)
 - Request user decision: multi-select which sections to edit; OR "refresh — re-verify all versions"
 - per chosen section: enter Phase 4 loop
 - Phase 5-8 as usual
 
-## User-input request shapes
+## Rules
 
-- Multi-field one-shot (constraints) → request as a single multi-field input
-- Single-choice branching (A/B/C/D, lock-in/revise) → request as an options choice
-- Never mix the two shapes in one request
+- never: guess a version — always verify via fetching external doc (architect handles)
+- never: add tech to stack speculatively — only when actively integrated; speculative additions belong in stack.html's own `#considered` section (`t_stack.html` "Considered / not adopted") or `.asd/project/stubs.md`, not the main stack list (ADRs are sprint-scoped and lost at archival — not a durable home)
+- must: give every tech in stack a matching tech-reference doc before COMPLETED
+- never: mix the multi-field and options request shapes in one request.
 
-## Hard rules
+## User decisions
 
-- NEVER guess a version — always verify via fetching external doc (architect handles)
-- Only add tech to stack when actively integrated, not speculatively
-- Speculative additions belong in stack.html's own `#considered` section (`t_stack.html` "Considered / not adopted") or `.asd/project/stubs.md`, not the main stack list (ADRs are sprint-scoped and lost at archival — not a durable home)
-- Every tech in stack MUST have a matching tech-reference doc before COMPLETED
-
-## Artefacts produced
-- `docs/architecture/stack.html` (created, edited, or reverse-engineered)
-- `docs/architecture/tech-reference/<tech>-<version>.md` for every chosen tech
-
-## Agents dispatched
-- `asd-architect` (author / scanner / version verifier / tech-reference creator)
-
-## Skills dispatched
-None.
-
-## Return contract (single line)
+```json
+[{"step": "Phase 2", "gate": "variant", "class": "options", "options": ["A", "B", "C", "D"]}, {"step": "Phase 3 A", "gate": "combination", "class": "options", "options": ["pick", "alternatives"]}, {"step": "Phase 3 B", "gate": "constraints", "class": "multi-field"}, {"step": "Phase 3 C", "gate": "own description", "class": "free-form"}, {"step": "Phase 4", "gate": "section (checkpoints.md)", "class": "options", "options": ["Lock in", "Revise", "Skip"]}, {"step": "Phase 6", "gate": "tech-reference write (approve-before-write)", "class": "options", "options": ["approve", "revise"]}, {"step": "Phase 7", "gate": "stack (write-then-review-accept)", "class": "free-form", "options": ["accept", "feedback"]}, {"step": "Edit mode", "gate": "sections or refresh", "class": "multi-select"}]
 ```
-STACK: <fresh|edit|reverse-engineered> | VARIANT: <A|B|C|D|edit> | TECHS: <count> | RISK: <low|medium|high> | STATUS: <complete|aborted> | NEXT: <suggested-skill-or-sprint>
+
+## Delegates
+
+```json
+{"agents": ["asd-architect (author / scanner / version verifier / tech-reference creator)"], "skills": []}
+```
+
+## Outputs
+
+```json
+["docs/architecture/stack.html (created, edited, or reverse-engineered)", "docs/architecture/tech-reference/<tech>-<version>.md for every chosen tech"]
+```
+
+## Return
+
+```
+SKILL: asd-stack | MODE: <fresh|edit|reverse-engineered> | VARIANT: <A|B|C|D|edit> | TECHS: <count> | RISK: <low|medium|high> | STATUS: <complete|aborted> | NEXT: <suggested-skill-or-sprint>
 ```
 
 ## References
+
 - `.asd/templates/t_stack.html` (required vs optional sections — SSoT)
 - `.asd/templates/t_tech-reference.md`
 - `.asd/rules/core.md`

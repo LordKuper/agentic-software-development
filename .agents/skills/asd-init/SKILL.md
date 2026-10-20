@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:79413ccde0b404e63f8e1bedcf3e467311a3dd83021d7a5d50385b91c0f7d4e0 content_digest=sha256:e359589dd09cb66c467a94e6a7721f9f5fe36e388bb28a1d9874c1a60a6743e1 asd_version=13.4.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:ecb1a33acf8e48fee91761ce406109df3f423777b05cf653d85e63a1924d3374 content_digest=sha256:c58d00484c8dfd75dfaae252dd605c0942476e560fc82c942f7db530c2d767f9 asd_version=13.8.0 schema=1
 name: asd-init
 description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode, or applies a plan-declared settings change for the active sprint's impl phase. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs $asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 ---
@@ -8,22 +8,33 @@ Operation mapping: see `.asd/rules/providers.md`.
 
 # ASD Init
 
+## Purpose
+
+Initialize the ASD workflow (fresh), edit its settings in diff mode (re-init), or apply a plan-declared settings change (sprint-mediated).
+
 ## Preconditions
-- Repo at project root
-- Infra present: `.asd/rules/`, `.asd/templates/`, `.claude/`
+
+```json
+{"requires": ["repo at project root", "infra present: .asd/rules/, .asd/templates/, .claude/"], "else": "ABORT — precondition not met: <artefact>", "ops": ["read files / search repo", "run command: gh, OS and tool probes (Fresh 4-5), git symbolic-ref, node .asd/sync.js --check", "request user decision / input: User decisions", "write files: Outputs"]}
+```
 
 ## Modes
-- **Fresh**: no `.asd/project/config.yaml` → full setup
-- **Re-init**: config exists → diff editor
-- **Sprint-mediated**: invoked by `asd-phase-impl.md` step 6 with an accepted plan's `Settings change:` pairs (`sprint-lifecycle.md` "Plan file format") → applies those pairs only
 
-## Always first (fresh and re-init)
+```json
+{"fresh": "no .asd/project/config.yaml: full setup", "re-init": "config exists: diff editor", "sprint-mediated": "invoked by asd-phase-impl.md step 6 with an accepted plan's Settings change: pairs (sprint-lifecycle.md Plan file format): applies those pairs only"}
+```
+
+## Steps
+
+### Always first
+
+Fresh and re-init only.
 
 0. **Determine self-hosting mode** (`self_hosting` field in `.asd/project/config.yaml`; missing, unreadable, or duplicated key → `disabled`, fail closed).
 0a. **Sync `AGENTS.md`/`CLAUDE.md` managed blocks** (see "AGENTS.md sync"). Runs every fresh or re-init invocation, regardless of subsequent user choices or aborts, in both self-hosting and consumer mode — the managed block always generates from `t_AGENTS.md`/`t_CLAUDE.md` (`providers.md` ownership table). Sprint-mediated mode skips it: `config.yaml` is its only write.
 0b. **Require `gh`**: run `gh --version`, then `gh auth status`. Either fails → stop before any further step, naming the fix: install gh (https://cli.github.com), or run `gh auth login`. `pr` opens and merges every sprint PR through it (`git-strategy.md` "PR creation").
 
-## Workflow (fresh)
+### Fresh
 
 1. Detect greenfield vs brownfield via repo search on source files
 2. Request user input, batch: chat/docs language, decomposition, compatibility, external review, self-hosting, `user_gates` (`strict` default or `adaptive`), and document settings. `documents.audit` is `auto|always|off` (`auto` default); other document flags keep their existing values. For self-hosting recommend audit `auto`, other documents disabled and `diagram_tool: none`.
@@ -69,9 +80,9 @@ Operation mapping: see `.asd/rules/providers.md`.
 16. Brownfield: prompt user to start sprint with audit-only scope (optional)
 17. **Run sync** — invoke the sync engine (`.asd/sync.js --check`) to confirm the bundled provider-view trees (`.claude/agents`, `.claude/skills`, `.claude/hooks`, `.agents/skills`, `.codex/agents`, `.codex/hooks`) are `current` against the shipped canon. Report any `stale`/`modified-foreign` finding to the user — do not silently apply.
 18. **Codex trust warning** — unconditional (every project gets a generated `.codex/hooks.json`, regardless of which provider is primary or whether external review is enabled): warn the user that Codex requires explicitly trusting this project's `.codex/hooks.json` before its hooks run (Codex refuses untrusted project-level hooks by design). Point to Codex's own trust-approval step; do not attempt to bypass it.
-19. Print summary + return contract
+19. Print summary + Return
 
-## Workflow (re-init)
+### Re-init
 
 1. Read current `.asd/project/config.yaml`
 2. **Dump full current config to chat** in `language.chat` before any edit prompt. Render every field as structured block. User MUST see complete current state before being asked what to change. Do NOT skip or summarise — full values verbatim.
@@ -82,7 +93,7 @@ Operation mapping: see `.asd/rules/providers.md`.
 6. Apply diff; write config
 7. If `review.external_review=enabled`, resolve and probe the wrapped CLI from the final config exactly as fresh init does; report the resolved command and availability. An unavailable probe leaves the setting intact but is surfaced as the explicit runtime availability-skip reason (`external-review.md` "Detection and negative cache").
 
-## Workflow (sprint-mediated)
+### Sprint-mediated
 
 Plan acceptance is the approval of record: no config dump, no section prompt, no `accept-all`.
 
@@ -93,7 +104,32 @@ Plan acceptance is the approval of record: no config dump, no section prompt, no
 5. Post the diff in `language.chat`: one `<key>: <old|absent> → <new>` line per pair
 6. Re-init step 7 applies when a pair touches `review.external_review` or `system.tools`
 
-## AGENTS.md sync
+## Rules
+
+- never: dispatch an agent. Init runs solo; fresh and re-init have no sprint context, sprint-mediated reads none beyond its declared pairs.
+- never: produce concept, stack or design system; owned by `$asd-concept`, `$asd-stack`, `$asd-design-system` respectively.
+
+## User decisions
+
+```json
+[{"step": "Fresh 2", "gate": "settings batch", "class": "multi-field"}, {"step": "Fresh 3", "gate": "diagram_tool", "class": "options", "options": ["none", "likec4", "mermaid"]}, {"step": "Fresh 8a, Re-init 5", "gate": "consolidated proposal/diff", "class": "options", "options": ["accept-all", "edit-section", "abort"]}, {"step": "Fresh 10", "gate": "custom rules per scope", "class": "free-form"}, {"step": "Fresh 16", "gate": "brownfield audit-only sprint (optional)", "class": "options", "options": ["start", "skip"]}, {"step": "Re-init 3", "gate": "sections to edit", "class": "multi-select"}, {"step": "AGENTS.md sync 5", "gate": "modified-foreign block", "class": "options", "options": ["overwrite", "keep-local", "abort"]}]
+```
+
+## Delegates
+
+```json
+{"agents": [], "skills": []}
+```
+
+## Outputs
+
+```json
+[".asd/project/config.yaml (incl. self_hosting, user_gates, documents.*, project.diagram_tool)", "AGENTS.md, CLAUDE.md: managed block synced from t_AGENTS.md/t_CLAUDE.md in both consumer and self-hosting mode", ".asd/project/custom-common-rules.md, custom-design-rules.md, custom-coding-rules.md, stubs.md", ".asd/project/commands.yaml", "docs/architecture/subsystems.md, empty (decomp only)", "docs/architecture/c4/ likec4 seed (decomp + likec4 only)", ".gitignore entry for likec4 build output (same condition; append-only, existing entries preserved)"]
+```
+
+## Reference
+
+### AGENTS.md sync
 
 Idempotent, ownership-class **managed block** (`.asd/rules/providers.md` ownership table). Uses the sync engine's managed-block functions (`.asd/sync.js`: `findManagedBlock`, `statusManagedBlock`, `applyManagedBlock`) — do not hand-roll marker parsing.
 
@@ -112,7 +148,7 @@ Rules:
 - Never touch content outside the block markers.
 - Record the applied block's digest in `.asd/sync-state.json` after every write (this is what lets step 1 detect a later hand-edit).
 
-## OS-specific commands written to .asd/project/commands.yaml
+### OS-specific commands written to .asd/project/commands.yaml
 
 Four custom commands emitted only when `documents.ux_spec: enabled` (else omitted entirely — no design-system gate to serve them). Linter always invoked via `designmd-lint`; `designmd-install` is session-scoped prerequisite on Windows (no-op elsewhere).
 
@@ -128,29 +164,13 @@ Four custom commands emitted only when `documents.ux_spec: enabled` (else omitte
 - `designmd-diff: "npx @google/design.md diff"`
 - `designmd-export: "npx @google/design.md export --format json-tailwind docs/ux/DESIGN.md"`
 
-## Artefacts produced
-
-- `.asd/project/config.yaml` (incl. `self_hosting`, `user_gates`, `documents.*`, `project.diagram_tool`)
-- `AGENTS.md`, `CLAUDE.md` — managed block synced from `t_AGENTS.md`/`t_CLAUDE.md` in both consumer and self-hosting mode
-- `.asd/project/custom-common-rules.md`, `custom-design-rules.md`, `custom-coding-rules.md`, `stubs.md`
-- `.asd/project/commands.yaml`
-- `docs/architecture/subsystems.md`, empty (decomp only)
-- `docs/architecture/c4/` likec4 seed (decomp + likec4 only)
-- `.gitignore` entry for likec4 build output (same condition; append-only, existing entries preserved)
-
-Concept, stack, design system NOT produced here; owned by `$asd-concept`, `$asd-stack`, `$asd-design-system` respectively.
-
-## Agents dispatched
-
-None. Init runs solo; fresh and re-init have no sprint context, sprint-mediated reads none beyond its declared pairs.
-
-## Return contract (single line)
+## Return
 
 ```
-INIT: <fresh|re-init|sprint-mediated> | MODE: <greenfield|brownfield|n/a> | DECOMP: <enabled|disabled> | DIAGRAM: <none|likec4|mermaid|n/a> | TOOLS: likec4=<ok|missing|skip|n/a> node=<ok|missing|skip|n/a> external_review_wrapped_cli=<ok|missing|skip|n/a>
+SKILL: asd-init | MODE: <fresh|re-init|sprint-mediated> | REPO: <greenfield|brownfield|n/a> | DECOMP: <enabled|disabled> | DIAGRAM: <none|likec4|mermaid|n/a> | TOOLS: likec4=<ok|missing|skip|n/a> node=<ok|missing|skip|n/a> external_review_wrapped_cli=<ok|missing|skip|n/a> | STATUS: <complete|aborted> | NEXT: <asd-concept|asd-stack|asd-design-system|asd-sprint|none>
 ```
 
-Sprint-mediated: `MODE` and every `TOOLS` entry its step 6 did not probe are `n/a`; `DECOMP`/`DIAGRAM` are read from the written config.
+Sprint-mediated: `REPO` and every `TOOLS` entry its step 6 did not probe are `n/a`; `DECOMP`/`DIAGRAM` are read from the written config. `NEXT`: the first step-15 suggestion, else `asd-sprint`; sprint-mediated `none`.
 
 Followed by file-creation summary.
 
