@@ -122,3 +122,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: checkpoints.md adaptive evidence complete.
 - **Affected docs**: plan.md, state.json
 - 2026-10-21 — route impl-test entry 6: standard, dispatch HEAD 33253547; risk artifact: content-contract pins via node tests/run.js
+- 2026-10-21 — impl-test: defect D-3 → impl test-fix (entry 6; suite 296/296)
+- 2026-10-21 — route test-fix D-3: memory-fix to owner asd-tester-critical, dispatch HEAD fc5d2209; risk artifact: memory leftover term via grep
