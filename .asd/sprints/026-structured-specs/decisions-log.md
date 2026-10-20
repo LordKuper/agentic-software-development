@@ -82,3 +82,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-20 — route test-fix D-1, test-fix D-2: memory-fix to owners asd-reviewer-correctness, asd-tester-critical, dispatch HEAD b421aacf; risk artifact: memory leftover term via grep
 - 2026-10-20 — impl test-fix: defects D-1, D-2 resolved (memory-fix by owners; da0f6e68, a5e0000e)
 - 2026-10-20 — route impl-test entry 2: standard, dispatch HEAD 5abc40b7; risk none via node tests/run.js
+- 2026-10-20 — impl-test: impacted set green (287/287), entry 2 0/0 tests (entry 1: 1 added, 0 removed)
