@@ -95,8 +95,8 @@ Material risk: change: rule relocation
 ### Task 8: Tests for the new forms
 Material risk: artifact: content-contract pins
 Test-only: tests/run.js
-- [ ] Adapt every pin broken by Tasks 1-7 (audit Risks: ~54 section pins, `sectionOf`/`stepOf`, return-line regexes, payload-header patterns) to the new homes and headings, keeping each pin's asserted relation.
-- [ ] Add form checks (AC-12): per category the exact section set and order (D2, D4, D5); every ```` ```json ```` block in those files parses and carries its D2/D4/D5/D8 keys; base agent `description` ≤ 300 chars (D3); no backslash in agent bodies (D1); `agent-protocol.md` lists every token of D8 and no `PLAN_DRAFT`/`PLAN_READY`; return lines match D6.
+- [x] Adapt every pin broken by Tasks 1-7 (audit Risks: ~54 section pins, `sectionOf`/`stepOf`, return-line regexes, payload-header patterns) to the new homes and headings, keeping each pin's asserted relation.
+- [x] Add form checks (AC-12): per category the exact section set and order (D2, D4, D5); every ```` ```json ```` block in those files parses and carries its D2/D4/D5/D8 keys; base agent `description` ≤ 300 chars (D3); no backslash in agent bodies (D1); `agent-protocol.md` lists every token of D8 and no `PLAN_DRAFT`/`PLAN_READY`; return lines match D6.
 
 ## Risks (optional)
 - The sprint changes its own dispatch contract: Task 1 runs alone in wave 1, then the orchestrator syncs and dispatches waves 2-4 with the D8 JSON payload.
