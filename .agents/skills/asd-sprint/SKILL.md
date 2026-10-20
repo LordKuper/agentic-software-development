@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:2f91e15c0d2bd587cc046f89669b37d6af3cfd62d8b86cf3f45271cb77f346a5 content_digest=sha256:cc9749b436058cb28cbf562937b9ebcf9afbd556048d3a7b3e45a8ce1f484705 asd_version=13.8.0 schema=1
+# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:98c9bc217ccdef857afd1b51a2b62f565958b977e888ee74590512f6b2829401 content_digest=sha256:86366bf18410bdfac24b1e6f655b7523b19c7ec205c37b06833b89daf1d4adab asd_version=13.8.0 schema=1
 name: asd-sprint
 description: "Starts a new ASD sprint or resumes the active one, dispatching the matching asd-phase-* skill and routing phase signals back to the user. Use when the user runs $asd-sprint or asks to start, continue, resume, or work on an ASD sprint."
 ---
@@ -60,12 +60,6 @@ After any phase skill returns:
 - must: phase ops (`sprint-lifecycle.md` "Operation timing"): before each phase-skill delegation run `node .asd/runtime.js timing --ledger <sprint>/timing.jsonl --open <phase> --kind phase`, Step 3 closing the returned phase in the same call (`--close <phase>`); on return close it `done` on `COMPLETED`, `--outcome interrupted` on `FAILED`/`ABORT`; a `QUESTION` halt leaves it open: the relayed question opens a `user-wait` (`gate`: short question label) closed once the answer is processed, and the re-delegation reuses the open phase op (a repeat open is skipped). None for new-sprint scope (its step 1 opens its own), on pr open mode's return (it closed its own), for merge mode (resume at `phase="pr"`, `pr.state="open"`) or the release retry.
 - must: re-detect state on every invocation; the user may interrupt anytime.
 - never: delegate to a skill outside `## Delegates`.
-
-## User decisions
-
-```json
-[]
-```
 
 ## Delegates
 

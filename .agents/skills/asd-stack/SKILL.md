@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-stack/SKILL.md. source_digest=sha256:915b1b65cc3683b97316f838918e778b68144e0fbda387bad832792d7e5b3af7 content_digest=sha256:b3ff4d9172d0f27fc085101a13f38b1b285fb1998a8df60aa12134c0d6fa0820 asd_version=13.8.0 schema=1
+# ASD generated. Edit .asd/skills/asd-stack/SKILL.md. source_digest=sha256:bc7c87de8e0ff25ce461617be325c89a4d6a660365674ae31395519275950e70 content_digest=sha256:a15ad3b47131d41d03df430638a82e8052ff44595746d07659cbe611f9cfab69 asd_version=13.8.0 schema=1
 name: asd-stack
 description: "Forms or edits the project tech stack document at docs/architecture/stack.html via asd-architect, branching by silent detection into one of four flows (clean slate / constraints / clear stack / brownfield extraction). Verifies versions via WebFetch, runs knowledge-gap analysis, and maintains a tech-reference doc per chosen tech. Use when the user runs $asd-stack, when asd-init or asd-concept detects a missing stack.html and suggests this skill, or when the user asks to define, draft, refine, edit, upgrade, or reverse-engineer the project technology stack."
 ---
@@ -15,7 +15,7 @@ Form or edit the project tech stack document `docs/architecture/stack.html` and 
 ## Preconditions
 
 ```json
-{"requires": [".asd/project/config.yaml exists", "docs/product/concept.html exists", "no active sprint required"], "else": "no config: run $asd-init first; no concept: run $asd-concept first", "ops": []}
+{"requires": [".asd/project/config.yaml exists", "docs/product/concept.html exists", "no active sprint required"], "else": "no config: run $asd-init first; no concept: run $asd-concept first"}
 ```
 
 ## Modes
@@ -132,12 +132,6 @@ Per technology in approved stack:
 - must: give every tech in stack a matching tech-reference doc before COMPLETED
 - never: mix the multi-field and options request shapes in one request.
 - must: before each `asd-architect` delegation, build `inputs.context`: `node .asd/runtime.js context --role asd-architect --phase stack --out <scratch-dir>/stack-<dispatch id>.context.md` (`agent-protocol.md` "Dispatch payload").
-
-## User decisions
-
-```json
-[]
-```
 
 ## Delegates
 

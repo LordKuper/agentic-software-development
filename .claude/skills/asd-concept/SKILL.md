@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-concept/SKILL.md. source_digest=sha256:22f4329785f4459f7d209808f4818cb3f23e161e409c33658f2b119c43cd52fe content_digest=sha256:43171b1181c9f695e0fde1611931916604fb21fd7b757777458bdbe2fa3cb506 asd_version=13.8.0 schema=1
+# ASD generated. Edit .asd/skills/asd-concept/SKILL.md. source_digest=sha256:e86bbce4c80c089de3a640a3d838c87f295492d9e792d3aa52d289302c942c1c content_digest=sha256:0c1d2165ef9a6426ecd03cc7d556adf249e1a89f20adc1bd4940bc8769d30e62 asd_version=13.8.0 schema=1
 name: asd-concept
 description: "Forms or edits the project concept document via asd-ba, branching by silent detection into one of four flows (no idea / vague idea / clear vision / brownfield extraction) and converging through a per-section lock-in loop. Use when the user runs /asd-concept, when asd-init detects a missing concept.html and suggests this skill, or when the user asks to define, draft, refine, edit, rewrite, or reverse-engineer the project concept, vision, target users, or value proposition."
 allowed-tools: "Read Glob Grep AskUserQuestion Task Bash(node .asd/runtime.js:*)"
@@ -16,7 +16,7 @@ Form or edit the project concept document via `asd-ba`: create, edit or reverse-
 ## Preconditions
 
 ```json
-{"requires": [".asd/project/config.yaml exists", "no active sprint required (concept is project-lifetime artefact)"], "else": "run /asd-init first", "ops": []}
+{"requires": [".asd/project/config.yaml exists", "no active sprint required (concept is project-lifetime artefact)"], "else": "run /asd-init first"}
 ```
 
 ## Modes
@@ -110,12 +110,6 @@ Phase 1 brownfield candidates auto-suggest D as default; user may override.
 
 - never: mix the multi-field and options request shapes in one request.
 - must: before each `asd-ba` delegation, build `inputs.context`: `node .asd/runtime.js context --role asd-ba --phase concept --out <scratch-dir>/concept-<dispatch id>.context.md` (`agent-protocol.md` "Dispatch payload").
-
-## User decisions
-
-```json
-[]
-```
 
 ## Delegates
 

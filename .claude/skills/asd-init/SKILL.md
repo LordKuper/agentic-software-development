@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:4bcc2210378c6f127f441a15cf6b50f6c04bf2e32546ab26ccdb4c30a9206b0d content_digest=sha256:350900b48d0174badfff1802c6e80c2fcd90f45b0a3618fd92bd86166af0d05d asd_version=13.8.0 schema=1
+# ASD generated. Edit .asd/skills/asd-init/SKILL.md. source_digest=sha256:8af912f925431b9f28d95cb529964cdcbe10e47024a803d0f631f890342594e0 content_digest=sha256:30166a6758937dbb1072182dbc759057864d5ff751318f324ea95d62ad9bfa60 asd_version=13.8.0 schema=1
 name: asd-init
 description: "Initializes the ASD (Agentic Software Development) workflow in a project, or edits existing ASD settings in diff mode, or applies a plan-declared settings change for the active sprint's impl phase. Auto-detects build commands and external tools, collects config via request user decision, generates .asd/project/config.yaml and seeds infrastructure-only persistent docs; concept, stack, and design system are owned by dedicated skills. Use when the user runs /asd-init or asks to set up, initialize, configure, or change ASD workflow settings."
 allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
@@ -16,7 +16,7 @@ Initialize the ASD workflow (fresh), edit its settings in diff mode (re-init), o
 ## Preconditions
 
 ```json
-{"requires": ["repo at project root", "infra present: .asd/rules/, .asd/templates/, .claude/"], "ops": []}
+{"requires": ["repo at project root", "infra present: .asd/rules/, .asd/templates/, .claude/"]}
 ```
 
 ## Modes
@@ -109,12 +109,6 @@ Plan acceptance is the approval of record: no config dump, no section prompt, no
 
 - never: dispatch an agent. Init runs solo; fresh and re-init have no sprint context, sprint-mediated reads none beyond its declared pairs.
 - never: produce concept, stack or design system; owned by `/asd-concept`, `/asd-stack`, `/asd-design-system` respectively.
-
-## User decisions
-
-```json
-[]
-```
 
 ## Delegates
 

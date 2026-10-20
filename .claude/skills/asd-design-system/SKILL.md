@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-design-system/SKILL.md. source_digest=sha256:6869dab1e123762e99faa55ecaa8977fc9b94cba29950fb4a31dd42c8748850c content_digest=sha256:999be6354bf361093668ec4f410c8ea244f4f4ece27d04884c6e3ab2fb3c904c asd_version=13.8.0 schema=1
+# ASD generated. Edit .asd/skills/asd-design-system/SKILL.md. source_digest=sha256:349b475eb3ced8bdee0a625d6e857819e0562336d6d558656fccafe5006944b5 content_digest=sha256:4f23118c5cb19b353f0ebbf35ab2521cbf86838761c6b1255b5a8250e5a270af asd_version=13.8.0 schema=1
 name: asd-design-system
 description: "Forms or edits the project design system (docs/ux/DESIGN.md, design-system.html, accessibility.html) via asd-ux, branching by silent detection into one of three flows (greenfield / constraints / brownfield extraction). Fetches the Google Labs DESIGN.md spec, lints tokens, regenerates design-system.html previews, and authors the accessibility baseline. Use when the user runs /asd-design-system, when asd-init or asd-phase-design detects missing DESIGN.md/design-system.html/accessibility.html and suggests this skill, or when the user asks to define, draft, refine, edit, augment, or reverse-engineer the project design system, design tokens, or accessibility baseline."
 allowed-tools: "Read Glob Grep AskUserQuestion Task Bash(node .asd/runtime.js:*)"
@@ -16,7 +16,7 @@ Form or edit the project design system (`docs/ux/DESIGN.md`, `design-system.html
 ## Preconditions
 
 ```json
-{"requires": [".asd/project/config.yaml exists", "docs/product/concept.html exists", "docs/architecture/stack.html exists", "no active sprint required"], "else": "no config: run /asd-init first; no concept: run /asd-concept first; no stack: run /asd-stack first", "ops": []}
+{"requires": [".asd/project/config.yaml exists", "docs/product/concept.html exists", "docs/architecture/stack.html exists", "no active sprint required"], "else": "no config: run /asd-init first; no concept: run /asd-concept first; no stack: run /asd-stack first"}
 ```
 
 ## Modes
@@ -144,12 +144,6 @@ After all DESIGN.md sections approved:
 - must: give every component listed in DESIGN.md a live preview in design-system.html
 - never: mix the multi-field and options request shapes in one request.
 - must: before each `asd-ux` delegation, build `inputs.context`: `node .asd/runtime.js context --role asd-ux --phase design-system --out <scratch-dir>/design-system-<dispatch id>.context.md` (`agent-protocol.md` "Dispatch payload").
-
-## User decisions
-
-```json
-[]
-```
 
 ## Delegates
 

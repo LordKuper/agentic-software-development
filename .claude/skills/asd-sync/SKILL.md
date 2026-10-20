@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-sync/SKILL.md. source_digest=sha256:8413dd46af6d1e9e646f655cebafc8fe15303fb76a2992c9bee41953a25593c8 content_digest=sha256:f3938c8929e317e07b95e26ecc890ca83cd860637fabc13ba9bcf2ab76d07c3f asd_version=13.8.0 schema=1
+# ASD generated. Edit .asd/skills/asd-sync/SKILL.md. source_digest=sha256:60b453795d0dd9f21fe200fa44a5c372e225f28ba82f800e6b01fb2efb42a1a2 content_digest=sha256:bad026d34a375b57717d45adf4b9d2b2b8b2c79b4c6c8dd46b5b345e2f9cbaef asd_version=13.8.0 schema=1
 name: asd-sync
 description: "Reconciles this project's generated provider views (.claude/, .codex/, .agents/skills/) with the canonical ASD sources (.asd/agents, .asd/skills, .asd/hooks) via .asd/sync.js's check/apply flow, asking per-file whether to overwrite, keep, or diff before writing anything. Use when the user runs /asd-sync or asks to sync, regenerate, or reconcile the Claude/Codex agent and skill files after editing canonical ASD sources."
 ---
@@ -15,7 +15,7 @@ Reconcile generated provider views with canonical `.asd/` sources.
 ## Preconditions
 
 ```json
-{"requires": [".asd/sync.js in this git repo"], "ops": []}
+{"requires": [".asd/sync.js in this git repo"]}
 ```
 
 ## Steps
@@ -33,12 +33,6 @@ Reconcile generated provider views with canonical `.asd/` sources.
 ## Rules
 
 - never: overwrite a file without a per-file decision.
-
-## User decisions
-
-```json
-[]
-```
 
 ## Delegates
 

@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-stack/SKILL.md. source_digest=sha256:915b1b65cc3683b97316f838918e778b68144e0fbda387bad832792d7e5b3af7 content_digest=sha256:7cd0aaa9689dd2cc80e580cbd440c9bf3fa742915dac0f20f016752ab3791c2f asd_version=13.8.0 schema=1
+# ASD generated. Edit .asd/skills/asd-stack/SKILL.md. source_digest=sha256:bc7c87de8e0ff25ce461617be325c89a4d6a660365674ae31395519275950e70 content_digest=sha256:2a93718f57cfa5d1211c14722d4d9a6ced179bbf03bb2074e40a02495fe600ba asd_version=13.8.0 schema=1
 name: asd-stack
 description: "Forms or edits the project tech stack document at docs/architecture/stack.html via asd-architect, branching by silent detection into one of four flows (clean slate / constraints / clear stack / brownfield extraction). Verifies versions via WebFetch, runs knowledge-gap analysis, and maintains a tech-reference doc per chosen tech. Use when the user runs /asd-stack, when asd-init or asd-concept detects a missing stack.html and suggests this skill, or when the user asks to define, draft, refine, edit, upgrade, or reverse-engineer the project technology stack."
 allowed-tools: "Read Glob Grep AskUserQuestion Task Bash(node .asd/runtime.js:*)"
@@ -16,7 +16,7 @@ Form or edit the project tech stack document `docs/architecture/stack.html` and 
 ## Preconditions
 
 ```json
-{"requires": [".asd/project/config.yaml exists", "docs/product/concept.html exists", "no active sprint required"], "else": "no config: run /asd-init first; no concept: run /asd-concept first", "ops": []}
+{"requires": [".asd/project/config.yaml exists", "docs/product/concept.html exists", "no active sprint required"], "else": "no config: run /asd-init first; no concept: run /asd-concept first"}
 ```
 
 ## Modes
@@ -133,12 +133,6 @@ Per technology in approved stack:
 - must: give every tech in stack a matching tech-reference doc before COMPLETED
 - never: mix the multi-field and options request shapes in one request.
 - must: before each `asd-architect` delegation, build `inputs.context`: `node .asd/runtime.js context --role asd-architect --phase stack --out <scratch-dir>/stack-<dispatch id>.context.md` (`agent-protocol.md` "Dispatch payload").
-
-## User decisions
-
-```json
-[]
-```
 
 ## Delegates
 

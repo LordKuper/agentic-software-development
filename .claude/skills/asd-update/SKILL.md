@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-update/SKILL.md. source_digest=sha256:9bbaa2bb843e2514e9fc28dbdbef944c364ec75e4c493cad0f07b26ec5d786f1 content_digest=sha256:a0d46d386c764bf3f42d451a5cf7753f8e487351ab18b0b597af044e72d7f05a asd_version=13.8.0 schema=1
+# ASD generated. Edit .asd/skills/asd-update/SKILL.md. source_digest=sha256:244ce95817565cb06fa6bc68c2fa55136cc168e8ad16631cb128f2f43f1db435 content_digest=sha256:af2032fb3ae3b0888b108e3e7ebfcbf067201531b531464b274cde0203720794 asd_version=13.8.0 schema=1
 name: asd-update
 description: "Updates the ASD framework infrastructure (.asd/rules, .asd/templates, ASD agents/skills/hooks, .asd/migrations) in a consumer project to the latest version by fetching them from the configured ASD repo's main branch, replacing only framework-managed paths, running any pending `.asd/migrations/<version>.js` scripts in ascending order, and never touching consumer-owned config (beyond a migration's release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent), sprints, persistent docs, or custom skills/agents/hooks. Use when the user runs /asd-update or asks to update, upgrade, or pull the latest ASD framework / workflow version."
 ---
@@ -15,7 +15,7 @@ Pull latest ASD framework files into this consumer project: overwrite **framewor
 ## Preconditions
 
 ```json
-{"requires": ["self_hosting not enabled (Rules)", "tar on PATH (ships with Win10 1803+/macOS/Linux)", "Node >= 16.7"], "else": "self_hosting enabled: one-line message, stop; else ABORT — precondition not met: <artefact>", "ops": []}
+{"requires": ["self_hosting not enabled (Rules)", "tar on PATH (ships with Win10 1803+/macOS/Linux)", "Node >= 16.7"], "else": "self_hosting enabled: one-line message, stop; else ABORT — precondition not met: <artefact>"}
 ```
 
 ## Modes
@@ -52,12 +52,6 @@ Run by `.asd/workflows/asd-phase-scope.md` step 1 when the user chose to update 
 - must: read `self_hosting` from `.asd/project/config.yaml` first; missing, unreadable, or a duplicated key → treat as `disabled` (fail closed). If `enabled`: print a one-line message ("asd-update is for consumer projects; this repo develops ASD directly — use a self-hosting sprint instead") and stop. No mutation, no fetch.
 - never: touch `.asd/project/**` (except `config.yaml`, which a release migration may rewrite as a sanctioned settings writer, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent), `.asd/sprints/**`, `docs/**`, `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json`, any non-ASD skill/agent/hook, anything outside `managed_paths`.
 - never: write a diverged (**conflict**) file without explicit confirmation.
-
-## User decisions
-
-```json
-[]
-```
 
 ## Delegates
 
