@@ -103,3 +103,7 @@
 {"op":"close","id":"review-fix wave-3/iter-01 tests","kind":"dispatch","parent":"impl#5","start":"2026-10-20T14:11:57.220Z","end":"2026-10-20T14:24:42.455Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sonnet"}}
 {"op":"close","id":"impl#5","kind":"phase","parent":null,"start":"2026-10-20T14:07:08.967Z","end":"2026-10-20T14:24:42.557Z","outcome":"done","attrs":{}}
 {"op":"open","id":"impl-test#5","kind":"phase","parent":null,"start":"2026-10-20T14:24:42.557Z","attrs":{}}
+{"op":"open","id":"impl-test entry 5","kind":"dispatch","parent":"impl-test#5","start":"2026-10-20T14:24:42.901Z","attrs":{"agent":"asd-tester","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"impl-test entry 5","kind":"dispatch","parent":"impl-test#5","start":"2026-10-20T14:24:42.901Z","end":"2026-10-20T14:26:43.872Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"impl-test#5","kind":"phase","parent":null,"start":"2026-10-20T14:24:42.557Z","end":"2026-10-20T14:26:44.016Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-review#4","kind":"phase","parent":null,"start":"2026-10-20T14:26:44.016Z","attrs":{}}
