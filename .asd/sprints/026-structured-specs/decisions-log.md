@@ -113,3 +113,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-20 — Task 9 accepted: D13 ratios dev 0.423, tester 0.447, reviewer-combined 0.525, orchestrator 0.650 (all ≤ 0.70); flagged items assigned: core.md untrusted-data boundary → Task 10, README runtime line → Task 11 (plan amended, waves unchanged)
 - 2026-10-21 — route Task 10, Task 11, Task 12: critical, dispatch HEAD c963b99f; risk change: reading contract / dispatch procedure / meaning-preserving trim
 - 2026-10-21 — wave 6 accepted: workflows 125,489 B (≤125,501), skills 61,010 B (≤61,051); D14 added (empty JSON sections omitted); fix-2 routed for the tester impl-test manual-steps grant, empty skill sections and the orchestrator bundle out path
+- 2026-10-21 — route impl assessment fix-2: standard, dispatch HEAD 10a43faa; risk artifact: grant and empty sections via node .asd/runtime.js context + node tests/run.js
