@@ -67,3 +67,11 @@
 {"op":"close","id":"combined wave-1/iter-02","kind":"dispatch","parent":"impl-review wave-1/iter-02","start":"2026-10-20T13:19:51.385Z","end":"2026-10-20T13:21:24.835Z","outcome":"done","attrs":{"agent":"asd-reviewer-combined","tier":"standard","model":"opus"}}
 {"op":"close","id":"external wave-1/iter-02","kind":"external-review","parent":"impl-review wave-1/iter-02","start":"2026-10-20T13:19:51.457Z","end":"2026-10-20T13:22:06.421Z","outcome":"done","attrs":{"model":"gpt-6.1-sol"}}
 {"op":"close","id":"impl-review wave-1/iter-02","kind":"review-iteration","parent":"impl-review#2","start":"2026-10-20T13:19:51.310Z","end":"2026-10-20T13:22:24.492Z","outcome":"done","attrs":{"wave":"1","iteration":"2"}}
+{"op":"open","id":"impl-review wave-2/iter-01","kind":"review-iteration","parent":"impl-review#2","start":"2026-10-20T13:22:38.060Z","attrs":{"wave":"2","iteration":"1"}}
+{"op":"open","id":"combined wave-2/iter-01","kind":"dispatch","parent":"impl-review wave-2/iter-01","start":"2026-10-20T13:22:38.146Z","attrs":{"agent":"asd-reviewer-combined","tier":"standard","model":"opus"}}
+{"op":"open","id":"external wave-2/iter-01","kind":"external-review","parent":"impl-review wave-2/iter-01","start":"2026-10-20T13:22:38.235Z","attrs":{"model":"gpt-6.1-sol"}}
+{"op":"close","id":"combined wave-2/iter-01","kind":"dispatch","parent":"impl-review wave-2/iter-01","start":"2026-10-20T13:22:38.146Z","end":"2026-10-20T13:27:49.884Z","outcome":"done","attrs":{"agent":"asd-reviewer-combined","tier":"standard","model":"opus"}}
+{"op":"close","id":"external wave-2/iter-01","kind":"external-review","parent":"impl-review wave-2/iter-01","start":"2026-10-20T13:22:38.235Z","end":"2026-10-20T13:28:53.021Z","outcome":"done","attrs":{"model":"gpt-6.1-sol"}}
+{"op":"close","id":"impl-review wave-2/iter-01","kind":"review-iteration","parent":"impl-review#2","start":"2026-10-20T13:22:38.060Z","end":"2026-10-20T13:28:53.362Z","outcome":"done","attrs":{"wave":"2","iteration":"1"}}
+{"op":"close","id":"impl-review#2","kind":"phase","parent":null,"start":"2026-10-20T13:19:40.098Z","end":"2026-10-20T13:28:53.362Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl#4","kind":"phase","parent":null,"start":"2026-10-20T13:28:53.362Z","attrs":{}}
