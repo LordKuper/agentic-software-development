@@ -78,3 +78,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: checkpoints.md adaptive evidence complete; standalone skills grew +7.7 KB (JSON sections) but the D10 total still drops.
 - **Affected docs**: plan.md, state.json
 - 2026-10-20 — route impl-test entry 1: standard, dispatch HEAD 2fe18dcb; risk artifact: content-contract pins via node tests/run.js
+- 2026-10-20 — impl-test: defects D-1, D-2 → impl test-fix (digest bfbd526cde1e94a5508416c8218b0203d37e75f43971147c5ac770a7593a4f4b); suite 287/287, entry 1 added 1 test, removed 0
