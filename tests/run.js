@@ -8033,6 +8033,9 @@ test('sprint-026 AC-4/AC-9/AC-10/AC-11/D9: each rule the sprint added or relocat
   assert.ok(sectionOf('.asd/rules/sprint-lifecycle.md', 'Plan file format').includes('states its edge semantics'), 'AC-11: "Plan file format" Decomposition rules keep the edge-semantics clause for a plan decision defining a computed metric or a bounded fetch');
   const load = sectionOf('.asd/rules/providers.md', 'Role-scoped context').split('\n').find((line) => line.startsWith('Every role loads')) || '';
   assert.deepStrictEqual(['`agent-protocol.md`', '"Signals"', '"Dispatch payload"', '"Return"'].filter((token) => !load.includes(token)), [], 'AC-4: providers.md "Role-scoped context" loads agent-protocol.md for every role, an agent reading only Signals, Dispatch payload and Return');
+  const inputRows = sectionOf('.asd/rules/sprint-lifecycle.md', 'Optional documents').split('\n');
+  const flat = [['`requirements`', '`requirements.html`'], ['`ux`', '`ux-spec.html`']].filter(([key, file]) => !(inputRows.find((line) => line.startsWith(`| ${key}`)) || '').includes(file));
+  assert.deepStrictEqual(flat, [], 'AC-7: "Input sources" requirements and ux rows name the flat persistent path used with decomposition disabled - without it an agent resolving the input in a non-decomposed project has no path');
   const moved = ['Audit phase', 'Design phase', 'Impl phase', 'Impl-test phase', 'Retro phase', 'Signal vocabulary'];
   const present = canonText('.asd/rules/sprint-lifecycle.md').split('\n').filter((line) => /^## /.test(line)).map((line) => line.slice(3));
   assert.deepStrictEqual(moved.filter((name) => present.includes(name)), [], 'D9: sections moved into the phase workflows and agent-protocol.md stay out of sprint-lifecycle.md - text left in both is two homes that drift');
