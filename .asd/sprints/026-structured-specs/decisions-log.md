@@ -100,3 +100,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-20 — impl-review wave-3/iter-01: combined CONCERNS (F1 high, F2-F6 low), external APPROVE (latched) → impl review-fix (review_fixes_pending wave-3/iter-01); F1 covers the open design-promote requirements item
 - 2026-10-20 — route review-fix wave-3/iter-01: standard, dispatch HEAD 32dafff2; risk artifact: payload keys and consistency via node tests/run.js; tester chain F6: standard; risk artifact: content-contract pins via node tests/run.js
 - 2026-10-20 — impl fix for wave-3/iter-01: findings resolved (F1-F5 558722d8, F6 6cc4c42b); reviewer-question gate marked in both review workflows
+- 2026-10-20 — route impl-test entry 5: standard, dispatch HEAD 118b98ea; risk none via node tests/run.js
