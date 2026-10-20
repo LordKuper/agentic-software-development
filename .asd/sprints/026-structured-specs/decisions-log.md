@@ -83,3 +83,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-20 — impl test-fix: defects D-1, D-2 resolved (memory-fix by owners; da0f6e68, a5e0000e)
 - 2026-10-20 — route impl-test entry 2: standard, dispatch HEAD 5abc40b7; risk none via node tests/run.js
 - 2026-10-20 — impl-test: impacted set green (287/287), entry 2 0/0 tests (entry 1: 1 added, 0 removed)
+
+- 2026-10-20 — impl-review division: 3 waves (3,911 lines, 54 files, 777,777 bytes vs thresholds 3,000/34/180,000): wave 1 rules, templates and mirrors (18 files); wave 2 agents and agent memory (17); wave 3 phase workflows, standalone skills and tests/run.js (19)
+- 2026-10-20 — impl-review wave-1/iter-01: combined CONCERNS (F-1 medium), external CONCERNS (1 high), same defect: "Input sources" requirements/ux rows lack decomposition-disabled flat paths → impl review-fix (review_fixes_pending wave-1/iter-01)
