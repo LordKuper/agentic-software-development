@@ -96,3 +96,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-20 — impl fix for wave-2/iter-01: findings resolved (F1, F2, E1, E2, E3; b2e4608e). Open item for the wave-3 fix round: asd-phase-design-promote.md standard Architect/UX dispatches omit inputs.requirements although both agents require it (flagged by the fix dev)
 - 2026-10-20 — route impl-test entry 4: standard, dispatch HEAD b3cfe286; risk none via node tests/run.js
 - 2026-10-20 — impl-test: impacted set green (288/288), entry 4 1/0 tests
+- 2026-10-20 — impl-review wave-2/iter-02: combined APPROVE, external APPROVE; wave 2 roster met → wave 3
