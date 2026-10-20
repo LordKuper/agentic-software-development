@@ -70,3 +70,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-20 — route Task 2, Task 3, Task 4, Task 5, Task 6: critical, dispatch HEAD d9462a7e; risk change: meaning-preserving restructure
 - 2026-10-20 — route Task 7: critical, dispatch HEAD 15dee4f8; risk change: rule relocation
 - 2026-10-20 — route Task 8: standard, dispatch HEAD 3f96033e; risk artifact: content-contract pins via node tests/run.js
+- 2026-10-20 — route impl assessment fix-1: standard, dispatch HEAD 78e80d1c; risk artifact: citation repair via node tests/run.js
