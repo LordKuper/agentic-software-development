@@ -80,3 +80,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-20 — route impl-test entry 1: standard, dispatch HEAD 2fe18dcb; risk artifact: content-contract pins via node tests/run.js
 - 2026-10-20 — impl-test: defects D-1, D-2 → impl test-fix (digest bfbd526cde1e94a5508416c8218b0203d37e75f43971147c5ac770a7593a4f4b); suite 287/287, entry 1 added 1 test, removed 0
 - 2026-10-20 — route test-fix D-1, test-fix D-2: memory-fix to owners asd-reviewer-correctness, asd-tester-critical, dispatch HEAD b421aacf; risk artifact: memory leftover term via grep
+- 2026-10-20 — impl test-fix: defects D-1, D-2 resolved (memory-fix by owners; da0f6e68, a5e0000e)
