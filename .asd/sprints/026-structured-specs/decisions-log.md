@@ -142,3 +142,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-21 — impl-review DoD met: terminal full suite green 296/296 at 10cd6409 (19316bde); D10 total 376,476 → 345569 B; green handoff (adaptive) → NEXT design-promote (lite)
 - 2026-10-21 — design-promote skipped: lite, no enabled document (prd/ux_spec/adr/c4 false)
 - 2026-10-21 — retro: retrospective.html written (2 entries, 2 framework actions, 4 systemic proposals, analysed branch)
+- 2026-10-21 — pr open mode: DoD verified (plan ticked, waves 1-3 APPROVE, full suite 296/296 at 10cd6409 with no code/test diff since, lint and sync clean, retrospective present, no sprint stubs, no existing PR for the branch); asd_version 13.8.0 → 13.9.0 (feat highest, no breaking marker), CHANGELOG v13.9.0 added

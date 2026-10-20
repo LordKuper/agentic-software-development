@@ -2,6 +2,28 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v13.9.0
+
+Agents, phase workflows and skills now share one fixed structure per category, orchestrator↔agent messages follow one protocol, and each agent dispatch reads a prebuilt bundle of only the rule sections its role needs — 35–55% less rule text per dispatch than v13.8.0.
+
+### Added
+- **Agent protocol** (`.asd/rules/agent-protocol.md`). Signal vocabulary, the JSON dispatch payload, a fixed JSON return object per signal, and the QUESTION / ADVICE_NEEDED relay, in one home every role loads. `ABORT` joins the vocabulary. Reviewer verdicts and External Review outcomes are unchanged.
+- **Context bundles.** `providers.md` "Role-scoped context" is a JSON grant table (role, phase → `file#Section`). `node .asd/runtime.js context --role <agent|orchestrator> --phase <phase> --out <file>` writes exactly those sections to one scratch file, and every dispatch passes it as `inputs.context`; agents no longer open rule or workflow files whole. `node .asd/runtime.js section --file <path> --heading <text>` prints one section. An unresolved ref blocks the dispatch.
+- **Input sources** (`sprint-lifecycle.md`). One table resolves requirements, decisions, contracts, UX and audit inputs by `documents.*`, workflow, decomposition and `self_hosting`; the orchestrator passes the resolved paths, agents never re-derive them.
+
+### Changed
+- **Fixed forms.** Every agent body is Role → Inputs → Outputs → Rules → Tools → Escalation → Signals, then a closed list of domain sections. Every phase workflow is Owner → Entry → Inputs → Steps → Rules → Dispatch → Signals → Exit → Return → References. Every standalone skill is Purpose → Preconditions → Modes → Steps → Rules → Delegates → Outputs → Return → References. Declarative facts sit in JSON blocks inside those sections; `tests/run.js` checks each form.
+- **Agent descriptions** are one routing line of at most 300 characters (was up to 1,158), about 6.6 KB less in every session's agent list.
+- **`sprint-lifecycle.md` split.** Sections read by one phase moved into that phase's workflow (agent-facing rules under `## Rules`); cross-phase sections stay. Return lines share one format: `PHASE: … | SPRINT: … | … | STATUS | NEXT` for phases, `SKILL: <name> | … | STATUS | NEXT` for skills.
+- **Reviewers never emit `ADVICE_NEEDED`;** their questions ride the verdict `question:` carrier. Every phase that dispatches a creator has the relay branch.
+- **Closure gate entry** is named `sprint-closure` everywhere. A dispatched agent never moves HEAD in the shared worktree (`git-strategy.md` "Forbidden"). A plan decision defining a computed metric or a bounded fetch states its edge semantics before acceptance (`sprint-lifecycle.md` "Plan file format").
+
+### Removed
+- `PLAN_DRAFT` and `PLAN_READY` signals (no emitter or handler).
+
+### Migration
+- No migration script. Context bundles include `.asd/project/custom-common-rules.md`, `custom-design-rules.md` and `custom-coding-rules.md` whole; a project missing one blocks dispatch with a named ref — run `/asd-init` (re-init) or create the file empty.
+
 ## v13.8.0
 
 Sprints now record how long their operations take, and the retrospective shows where the time went and what to change. `/asd-sprint` also offers to update ASD when a newer version is out.
