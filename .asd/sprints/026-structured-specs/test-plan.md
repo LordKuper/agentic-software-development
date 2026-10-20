@@ -40,7 +40,7 @@ responsibility:
 
 - Command: `node tests/run.js` (one zero-dependency runner covering every content contract; the changed files are referenced across the whole suite, so the shared-infrastructure safety valve applies and the impacted set is the whole runner)
 - Scope: impacted (= whole runner via safety valve)
-- Result: pass — 288/288 passed, 0 failed, 0 skipped (entry 4; runner exit 0, after the added test; pre-strategy run 287/287)
+- Result: pass — 288/288 passed, 0 failed, 0 skipped (entry 4; runner exit 0, after the added test)
 - Lint / build: pass — `git diff --check` exit 0, `node .asd/sync.js --check` exit 0 (`ok: true`)
 - HEAD: 8a185759 plus this entry's tests/run.js change
 
