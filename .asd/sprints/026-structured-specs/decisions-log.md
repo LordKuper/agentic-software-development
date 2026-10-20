@@ -97,3 +97,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-20 — route impl-test entry 4: standard, dispatch HEAD b3cfe286; risk none via node tests/run.js
 - 2026-10-20 — impl-test: impacted set green (288/288), entry 4 1/0 tests
 - 2026-10-20 — impl-review wave-2/iter-02: combined APPROVE, external APPROVE; wave 2 roster met → wave 3
+- 2026-10-20 — impl-review wave-3/iter-01: combined CONCERNS (F1 high, F2-F6 low), external APPROVE (latched) → impl review-fix (review_fixes_pending wave-3/iter-01); F1 covers the open design-promote requirements item
