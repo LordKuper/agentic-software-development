@@ -125,3 +125,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-21 — impl-test: defect D-3 → impl test-fix (entry 6; suite 296/296)
 - 2026-10-21 — route test-fix D-3: memory-fix to owner asd-tester-critical, dispatch HEAD fc5d2209; risk artifact: memory leftover term via grep
 - 2026-10-21 — impl test-fix: defect D-3 resolved (memory-fix by owner; 51f9a640)
+- 2026-10-21 — route impl-test entry 7: standard, dispatch HEAD 2508739f; risk none via node tests/run.js
