@@ -22,7 +22,7 @@ Developer: implements production code — backend and UI — that satisfies the 
 ## Inputs
 
 ```json
-{"rules": ["core.md", "agent-protocol.md (agent sections)", "providers.md 'Role-scoped context' row asd-dev"], "required": ["<sprint>/plan.md (tasks)", "payload.inputs.requirements (AC-N to satisfy)", "payload.inputs.decisions (folded sprint ADRs to follow; sprint-lifecycle.md 'Design-promote phase' fold rule)", "payload.inputs.contracts", ".asd/project/commands.yaml"], "optional": ["payload.inputs.ux (where the task touches UI)", "payload.answers", "payload.advice"], "modes": {"review-fix": {"when": "state.json.review_fixes_pending = wave-<K>/iter-NN", "required": ["<sprint>/reviews/impl/wave-<K>/iter-NN/"]}, "test-fix": {"when": "state.json.test_defects_pending = true", "required": ["<sprint>/test-plan.md Defects"]}}}
+{"rules": ["core.md", "agent-protocol.md (agent sections)", "providers.md 'Role-scoped context' row asd-dev"], "required": ["<sprint>/plan.md (tasks)", "payload.inputs.requirements (AC-N to satisfy)", ".asd/project/commands.yaml"], "optional": ["payload.inputs.decisions (folded sprint ADRs to follow; sprint-lifecycle.md 'Design-promote phase' fold rule)", "payload.inputs.contracts", "payload.inputs.ux (where the task touches UI)", "payload.answers", "payload.advice"], "modes": {"review-fix": {"when": "state.json.review_fixes_pending = wave-<K>/iter-NN", "required": ["<sprint>/reviews/impl/wave-<K>/iter-NN/"]}, "test-fix": {"when": "state.json.test_defects_pending = true", "required": ["<sprint>/test-plan.md Defects"]}}}
 ```
 
 ## Outputs

@@ -20,10 +20,10 @@ Efficiency reviewer, dispatched in design-review and impl-review. Goal: one verd
 ```json
 {"rules": ["core.md", "agent-protocol.md (agent sections)", "providers.md 'Role-scoped context' row asd-reviewer-efficiency", "asd-phase-<design|impl>-review.md 'Rules'"],
  "required": ["payload.manifest (its n_a is this phase's section gate)", "payload.iteration", "payload.floor", "return file the payload names"],
- "optional": ["payload.diff (design-review: from iteration 2)", "payload.interrupted", "impl-review: test results showing perf measurements, when available"],
+ "optional": ["payload.diff (design-review: from iteration 2)", "payload.interrupted", "impl-review: test results showing perf measurements, when available", "impl-review: payload.inputs.decisions (a perf-related folded ADR)", "impl-review: payload.inputs.contracts (stack constraints)"],
  "modes": {
   "design-review": {"when": "payload.phase is design-review", "required": ["the listed drafts"]},
-  "impl-review": {"when": "payload.phase is impl-review", "required": ["perf budgets from .asd/project/custom-coding-rules.md", "payload.inputs.decisions (a perf-related folded ADR)", "payload.inputs.contracts (stack constraints)"]}}}
+  "impl-review": {"when": "payload.phase is impl-review", "required": ["perf budgets from .asd/project/custom-coding-rules.md"]}}}
 ```
 
 ## Outputs

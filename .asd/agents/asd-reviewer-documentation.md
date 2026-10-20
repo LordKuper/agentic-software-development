@@ -20,9 +20,9 @@ Documentation reviewer: design drafts in design-review, code-vs-persistent-docs 
 ```json
 {"rules": ["core.md", "agent-protocol.md (agent sections)", "providers.md 'Role-scoped context' row asd-reviewer-documentation", "asd-phase-<design|impl>-review.md 'Rules'"],
  "required": ["payload.manifest", "payload.iteration", "payload.floor", "return file the payload names"],
- "optional": ["payload.diff (design-review: from iteration 2)", "payload.interrupted"],
+ "optional": ["payload.diff (design-review: from iteration 2)", "payload.interrupted", "design-review: payload.inputs.audit (migration plan)"],
  "modes": {
-  "design-review": {"when": "payload.phase is design-review", "required": ["the listed drafts", "payload.inputs.audit (migration plan)", "existing docs/ for SSoT cross-check"]},
+  "design-review": {"when": "payload.phase is design-review", "required": ["the listed drafts", "existing docs/ for SSoT cross-check"]},
   "impl-review": {"when": "payload.phase is impl-review", "required": [".asd/project/stubs.md (stub resolution)", "persistent docs/ to check actuality against implementation"]}}}
 ```
 
