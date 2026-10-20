@@ -32,7 +32,7 @@ responsibility:
 
 | Test | Regression proof |
 |---|---|
-| tests/run.js: sprint-026 AC-4/AC-9/AC-10/AC-11/D9 test, one added assert (AC-7 flat paths) | mutation flat (drop the ` (flat \`requirements.html\` with decomposition disabled)` clause from the `requirements` row): `node tests/run.js` → exit 1, `sprint-026 AC-4/AC-9/AC-10/AC-11/D9` (plus the `release-manifest.json upstream_hashes` pin, by design); control (reword the clause to `(the non-decomposed form is \`requirements.html\`)`, token kept): added assert stays green, only the manifest pin fails; runs: 1. Canon restored by `git checkout` in the same command, worktree verified clean |
+| tests/run.js: sprint-026 AC-4/AC-9/AC-10/AC-11/D9 test, one added assert (AC-7 flat paths) | mutation flat (drop the ` (flat `requirements.html` with decomposition disabled)` clause from the `requirements` row): `node tests/run.js` → exit 1, `sprint-026 AC-4/AC-9/AC-10/AC-11/D9` (plus the `release-manifest.json upstream_hashes` pin, by design); control (reword the clause to `(the non-decomposed form is `requirements.html`)`, token kept): added assert stays green, only the manifest pin fails; runs: 1. Canon restored by `git checkout` in the same command, worktree verified clean |
 
 ## Suite run
 
