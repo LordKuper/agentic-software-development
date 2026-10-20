@@ -110,3 +110,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: measurement showed total spec bytes −4% but per-dispatch reads up (dev +6%, tester +12%, reviewer-combined +9%) because agents now open the protocol, a workflow and still `sprint-lifecycle.md` whole; skills +12%, workflows +7%. User chose to extend 026 over a follow-up sprint.
 - **Affected docs**: sprint.md, plan.md, state.json
 - 2026-10-20 — route Task 9: critical, dispatch HEAD 35264ddf; risk change: public contract
+- 2026-10-20 — Task 9 accepted: D13 ratios dev 0.423, tester 0.447, reviewer-combined 0.525, orchestrator 0.650 (all ≤ 0.70); flagged items assigned: core.md untrusted-data boundary → Task 10, README runtime line → Task 11 (plan amended, waves unchanged)

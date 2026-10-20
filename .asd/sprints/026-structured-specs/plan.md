@@ -106,18 +106,20 @@ Test-only: tests/run.js
 
 ### Task 9: Context command, grant table, payload key
 Material risk: change: public contract
-- [ ] `.asd/runtime.js`: add `section` and `context` per D11 (pure cores + CLI wrappers + usage string + exports).
-- [ ] `.asd/rules/providers.md` "Role-scoped context": replace the prose role table with the D11 JSON grant table, same grants (current rows, incl. the `asd-phase-<p>.md` "Rules" grants and section scopes), plus an `orchestrator` row; turn every bold label a ref needs into a `###` heading in its home file (e.g. `sprint-lifecycle.md` "Input sources") and repoint citations of those labels.
-- [ ] `.asd/rules/agent-protocol.md` "Dispatch payload": `inputs.context` required, the D12 reading rule; README mirror if it restates the role table.
+- [x] `.asd/runtime.js`: add `section` and `context` per D11 (pure cores + CLI wrappers + usage string + exports).
+- [x] `.asd/rules/providers.md` "Role-scoped context": replace the prose role table with the D11 JSON grant table, same grants (current rows, incl. the `asd-phase-<p>.md` "Rules" grants and section scopes), plus an `orchestrator` row; turn every bold label a ref needs into a `###` heading in its home file (e.g. `sprint-lifecycle.md` "Input sources") and repoint citations of those labels.
+- [x] `.asd/rules/agent-protocol.md` "Dispatch payload": `inputs.context` required, the D12 reading rule; README mirror if it restates the role table.
 
 ### Task 10: Agents read the context bundle
 Material risk: change: reading contract
 - [ ] `.asd/agents/*.md` `## Inputs` `rules` → `["payload.inputs.context"]` (+ role extras as section refs only); no whole-file reading instruction left in any body (citations as references stay); D1 (no backslash) holds.
+- [ ] `.asd/rules/core.md` "Untrusted-data boundary": the `inputs.context` bundle the orchestrator builds from trusted rule files counts as instructions, like its sources (flagged by Task 9).
 
 ### Task 11: Workflows build context and drop duplicate JSON
 Material risk: change: dispatch procedure
 - [ ] `.asd/workflows/asd-phase-*.md`: every agent dispatch step runs `runtime.js context` for that agent and phase and passes `inputs.context`; every `## Dispatch` payload list names `context`; `## Entry` `ops` adds the orchestrator's phase-context build (D12).
 - [ ] AC-15: delete `ops` entries and JSON values that restate a step; total phase-workflow bytes ≤ 125,501.
+- [ ] `README.md`: the runtime.js folder-map line names the `section`/`context` commands (flagged by Task 9).
 
 ### Task 12: Skills drop duplicate JSON
 Material risk: change: meaning-preserving trim
