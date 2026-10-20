@@ -131,3 +131,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-21 — route review-fix wave-3/iter-03: critical, dispatch HEAD 6d0ff426; risk change: grant coverage and reading rule; tester chain: standard; risk artifact: content-contract pins via node tests/run.js
 - 2026-10-21 — impl fix for wave-3/iter-03: findings resolved (combined 1-7 + external 1: 2236c70c; combined 8 + regressions: 66681e08); D13 after fix: dev 0.447, tester 0.497, combined 0.527, orchestrator 0.651
 - 2026-10-21 — route impl-test entry 8: standard, dispatch HEAD 22531244; risk none via node tests/run.js
+- 2026-10-21 — impl-test: impacted set green (296/296), entry 8 0/0 tests
