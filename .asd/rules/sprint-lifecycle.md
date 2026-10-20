@@ -357,27 +357,7 @@ A scope aborted before its branch exists writes nothing; the next `asd-sprint` d
 
 ## Signal vocabulary
 
-- `COMPLETED` — phase work done, ready for next
-- `FAILED` — cannot proceed, reason in body
-- `REVIEW_DONE` — reviewer finished, verdict in body
-- `QUESTION` — needs user input, body has the question and options; emitter: any dispatched agent except a reviewer, whose question rides its verdict report (`review-policy.md` "Gate Verdict Format"). Handled per the `QUESTION` protocol below.
-- `PLAN_DRAFT` — plan written, not approved
-- `PLAN_READY` — plan approved
-- `BLOCKED_MANUAL` — task needs a human-performed manual action; entry registered in `manual-steps.md`
-- `ADVICE_NEEDED` — emitter: any dispatched agent other than `asd-advisor`, on non-gate uncertainty only (analysis/judgment question, never a HARD-gate approval decision — see `core.md`'s autonomy/escalation rule for the gate-vs-non-gate distinction). Payload: the question plus relevant context paths. Relay obligation: the dispatching phase workflow catches the signal, dispatches `asd-advisor`, then re-dispatches the consulting agent with its answer appended — the per-workflow relay branch is implemented in each `asd-phase-*.md`.
-
-**`ADVICE_NEEDED` protocol** (every `asd-phase-*.md`'s relay branch is this exact sequence, invoked as "relay per `sprint-lifecycle.md`'s `ADVICE_NEEDED` protocol"):
-1. Dispatching phase workflow catches `ADVICE_NEEDED` from a dispatched agent other than `asd-advisor`, mid-task.
-2. Dispatches `asd-advisor` with the question plus the context paths as given by the consulting agent — no other context injected.
-3. On the advisor's returned recommendation → re-dispatch the consulting agent (`delegate to agent X`, `providers.md`) with its original task context plus the advisor's answer appended; no other context injected except the running consult count/remaining budget (step 6). Not a same-turn resume (no host tool suspends and resumes a dispatched agent mid-execution — `providers.md` has no such operation); it is a fresh dispatch carrying forward the same task.
-4. On `asd-advisor` `FAILED` (question turned out to be a HARD gate) → relay that finding to the consulting agent unchanged; the consulting agent then treats it as gate uncertainty per `core.md`'s Autonomy and escalation rule and returns `QUESTION` — a reviewer, its question carrier per `review-policy.md` "Gate Verdict Format".
-5. No halt, no user contact, no logged trail — the round-trip is autonomous and intra-phase (`asd-advisor.md` Don'ts: consults are not logged).
-6. Capped at 3 consults per consulting-agent **task** — the dispatching phase workflow owns this counter (the consulting agent does not; each re-dispatch in step 3 is a fresh dispatch and would otherwise reset a self-held count), increments it once per completed advisor round-trip, and does not reset it across the task's re-dispatches. At the cap, the workflow stops relaying further `ADVICE_NEEDED` signals for that task; the agent proceeds on its own judgment or re-classifies the question as gate uncertainty and returns `QUESTION` per `core.md`'s Autonomy and escalation rule — a reviewer, its question carrier (step 4).
-
-**`QUESTION` protocol** (cited as "per `sprint-lifecycle.md`'s `QUESTION` protocol"):
-1. The dispatching workflow catches `QUESTION` — the question plus options (`core.md` "User-decision presentation format") — from a dispatched agent.
-2. The main orchestrator asks the user via request user decision (free-form input as a plain chat message) and records the answer in `decisions-log.md` before any further work (`core.md` "Context hygiene").
-3. Re-dispatches the agent fresh with its original task context plus the answer appended — not a resume, for the reason in `ADVICE_NEEDED` step 3.
+Moved to `agent-protocol.md` ("Signals", "Relay").
 
 ## Plan file format
 

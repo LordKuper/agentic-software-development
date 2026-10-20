@@ -49,7 +49,7 @@ Reviewer agents carry no artifact-write grant on Claude, with one carve-out, and
 
 ### Dispatch payload header
 
-Before every `delegate to agent` the orchestrator returns the shell to the repo root; the payload opens with `Repo root: <absolute path>`. A reviewer, External Review or advisor payload also carries `Turn budget: <maxTurns>; report by turn <maxTurns − 5>`, `<maxTurns>` from that agent's canon frontmatter. For an internal reviewer on an impl-review wave listing more than `.asd/runtime.js` `LARGE_WAVE_FILES` files, that line adds the turn plan: coverage ledger due by turn `<maxTurns − 10>`; read the diff file in few large reads sized to the per-call token limit; batch independent reads in one turn; a short complete return beats a thorough unfinished one — short means shallower analysis per file, never fewer ledger rows (`review-policy.md` "Coverage ledger"). Host-scoped: Claude enforces `maxTurns` — a cap stop is an interrupted dispatch (`review-policy.md` "Interrupted dispatch"); wave division by lines, files and bytes ("Review iteration counters" in `sprint-lifecycle.md`), never resume, is the lever, and the only one for the wrapped CLI, whose turns ASD does not cap. Codex renders no `maxTurns`; there the budget and the turn plan are advisory.
+Payload keys and the turn budget: `agent-protocol.md` "Dispatch payload". Host-scoped: Claude enforces `maxTurns` — a cap stop is an interrupted dispatch (`review-policy.md` "Interrupted dispatch"); wave division by lines, files and bytes ("Review iteration counters" in `sprint-lifecycle.md`), never resume, is the lever, and the only one for the wrapped CLI, whose turns ASD does not cap. Codex renders no `maxTurns`; there the budget and the turn plan are advisory.
 
 ### Emitted agent frontmatter: verified vs trusted
 
@@ -94,7 +94,7 @@ Which CLI to wrap is resolved per-provider at generation time: `asd-external-rev
 
 ## Role-scoped context
 
-Every role loads `core.md` and `custom-common-rules.md` when it exists. It then reads only the row for its current responsibility and phase; a gate proposal additionally reads `checkpoints.md`. Inputs named by the phase payload remain mandatory.
+Every role loads `core.md`, `agent-protocol.md` (an agent: "Signals", "Dispatch payload", "Return"; the main orchestrator: all) and `custom-common-rules.md` when it exists. It then reads only the row for its current responsibility and phase; a gate proposal additionally reads `checkpoints.md`. Inputs named by the phase payload remain mandatory.
 
 Section scope inside a granted file: `artifact-layout.md` "HTML shell wrapping (mandatory)" is 25% of that file and actionable only on a user-facing HTML artifact, so a row granting `artifact-layout.md` reaches that section only when the role is authoring one (`asd-ba`, `asd-ux`, `asd-architect`) or one is in its change surface; otherwise the section is skipped, not read.
 
