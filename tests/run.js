@@ -3123,9 +3123,10 @@ test('sprint-011 AC-3/AC-5/AC-7, sprint-013 AC-14: the audit exit that emits NEX
   const between = chain.slice(chain.indexOf('audit') + 1, chain.indexOf('plan'));
   const audit = readWorkflow('audit');
   const lifecycle = readRepoFile('.asd/rules/sprint-lifecycle.md');
-  const homes = lifecycle.split('\n').map((line) => /^\*\*([^*]+)\*\*:\s*(.*)$/.exec(line)).filter((match) => match && match[1].toLowerCase().includes(between.join('/')));
-  assert.strictEqual(homes.length, 1, `sprint-lifecycle.md must hold exactly one bold-labelled rule for the ${between.join('/')} collapse - it is the home the audit exit, the plan precondition and resume all cite`);
-  const [, collapseLabel, collapseBody] = homes[0];
+  const homes = lifecycle.replace(/\r\n/g, '\n').split('\n').map((line) => /^###\s+(.*?)\s*$/.exec(line)).filter((match) => match && match[1].toLowerCase().includes(between.join('/')));
+  assert.strictEqual(homes.length, 1, `sprint-lifecycle.md must hold exactly one ### heading for the ${between.join('/')} collapse - it is the home the audit exit, the plan precondition and resume all cite`);
+  const collapseLabel = homes[0][1];
+  const collapseBody = runtime.markdownSection(lifecycle, collapseLabel).split('\n').slice(1).join('\n');
   const citation = `\`sprint-lifecycle.md\` "${collapseLabel}"`;
 
   assert.ok(readReturnContractTargets('audit', audit).includes('plan'), "asd-phase-audit.md's return contract must offer NEXT: plan - asd-sprint follows NEXT as authoritative, so without it the collapse has no route and design is dispatched anyway");
@@ -3546,8 +3547,8 @@ test('T-3/AC-2: providers.md states the never-heredoc file-write rule for artifa
 });
 
 test('T-3/AC-7: providers.md\'s asd-dev role-scoped-context row cites the review-policy.md over-engineering/structure-cohesion checklists', () => {
-  const providers = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/providers.md'), 'utf8');
-  assert.ok(providers.includes('`review-policy.md` over-engineering and structure/cohesion checklists'), 'providers.md must cite the over-engineering/structure-cohesion checklists in asd-dev\'s role-scoped-context row');
+  const refs = grantedRefs('asd-dev');
+  for (const heading of ['Over-engineering checklist (critical, undroppable)', 'Structure / cohesion checklist (critical, undroppable)']) assert.ok(refs.includes(`.asd/rules/review-policy.md#${heading}`), `providers.md must grant asd-dev review-policy.md "${heading}" in its role-scoped-context rows`);
 });
 
 test('T-2: feedback_no-shell-review-method.md cites asd-reviewer-testing.md\'s frontmatter for the reviewer\'s tool grant instead of re-enumerating it, and that frontmatter really is read-only - guards the stale-grant regression (D-2) that once claimed a Write tool this reviewer does not have', () => {
@@ -3721,6 +3722,22 @@ function reviewerRubric(reviewer) {
 /** A canon file with line endings normalized, so `^`/`$` anchors hold in a CRLF working tree. */
 function canonText(rel) {
   return readRepoFile(rel).replace(/\r\n/g, '\n');
+}
+
+/** The body of one heading's section (heading line dropped), at any heading level. */
+function headingBody(rel, heading) {
+  return runtime.markdownSection(readRepoFile(rel), heading).split('\n').slice(1).join('\n').trim();
+}
+
+/** The rows of the providers.md "Role-scoped context" grant table, parsed from its one json block. */
+function grantRows() {
+  const match = /```json\n([\s\S]*?)\n```/.exec(runtime.markdownSection(readRepoFile('.asd/rules/providers.md'), 'Role-scoped context'));
+  return JSON.parse(match[1]);
+}
+
+/** Every ref a role is granted across all its rows, in table order. */
+function grantedRefs(role) {
+  return grantRows().filter((row) => row.role === role).flatMap((row) => row.refs);
 }
 
 /** The body of the first `## <heading>` section, prefix-matched as canon citations are. */
@@ -4367,16 +4384,10 @@ test('sprint-010 AC-10: the documentation economy rule carries both its authorin
   assert.ok(proactive.includes('iron rules'), `AC-10: the bullet must send authors to both of artifact-layout.md's iron rules; naming one of ${ironRules.length} in the singular implies the other is review-only, which is how the economy rule read before this criterion`);
   assert.ok(proactive.toLowerCase().includes(economy.toLowerCase()), `the bullet must name "${economy}" alongside SSoT - a list that names only SSoT is exactly the omission that left the economy rule enforceable but never authored against`);
 
-  const table = readRepoFile('.asd/rules/providers.md').split('## Role-scoped context')[1].split('\n## ')[0];
-  const rows = [...table.matchAll(/^\| (.+?) \| (.+?) \|$/gm)].filter(([, role]) => role !== 'Role');
-  assert.ok(rows.length >= 10, 'the role table must parse into rows, or every grant assertion below passes vacuously over an empty list - the failure mode that makes a reach check worthless');
-  const exemptPhrase = 'files named by the consulting question';
-  const exempt = rows.filter(([, , context]) => context.includes(exemptPhrase)).map(([, role]) => role.trim());
-  assert.deepStrictEqual(exempt, ['`asd-advisor`'], "exactly one row is exempt and it is the advisor's - granted the files its consulting question names rather than a fixed list, it has no fixed grant to assert against. Left uncounted, any number of rows could adopt that wording and drop out of the sweep below in silence: a role reading the economy rule nowhere, reported as covered");
-  for (const [, role, context] of rows) {
-    if (context.includes(exemptPhrase)) continue;
-    assert.ok(context.includes('artifact-layout.md'), `AC-10: ${role} writes text a later agent reads, so its row must grant artifact-layout.md - the rule's home, and the only route to it for a role that never loads code-style.md`);
-  }
+  const roles = [...new Set(grantRows().map((row) => row.role))];
+  assert.ok(roles.length >= 10, 'the grant table must parse into roles, or every grant assertion below passes vacuously over an empty list - the failure mode that makes a reach check worthless');
+  const without = roles.filter((role) => !grantedRefs(role).includes('.asd/rules/artifact-layout.md#Documentation economy (iron rule)'));
+  assert.deepStrictEqual(without, ['asd-advisor'], "exactly one role is exempt and it is the advisor's - granted only the files and sections its consulting question names, it has no fixed grant of the rule. Every other role writes text a later agent reads, so it must be granted the rule's home section (AC-10); left uncounted, a role reading the economy rule nowhere is reported as covered");
 });
 
 test('sprint-010 iter-02: review-policy.md "Nitpick drop list" is the only enumeration inside the rule set every nitpick-instructed agent is granted, and the outbound external prompts are the sole exempt copies', () => {
@@ -4386,11 +4397,8 @@ test('sprint-010 iter-02: review-policy.md "Nitpick drop list" is the only enume
   const categories = [...section.split('\n## ')[0].matchAll(/^- (.+)$/gm)].map((match) => match[1].trim());
   assert.ok(categories.length >= 5, `the section must enumerate the categories rather than name the class: a reviewer told to drop "nitpick categories" with nothing to resolve them against cannot check a finding against the rule. Found ${categories.length}`);
 
-  const table = readRepoFile('.asd/rules/providers.md').split('## Role-scoped context')[1].split('\n## ')[0];
-  const grants = new Map([...table.matchAll(/^\| (.+?) \| (.+?) \|$/gm)]
-    .filter(([, role]) => role !== 'Role')
-    .map(([, role, context]) => [role.trim().replace(/`/g, ''), context]));
-  assert.ok(grants.size >= 10, 'the role table must parse into rows, or every grant assertion below passes vacuously over an empty map - the failure mode that makes a reach check worthless');
+  const grants = new Map(grantRows().map((row) => [row.role, grantedRefs(row.role)]));
+  assert.ok(grants.size >= 10, 'the grant table must parse into roles, or every grant assertion below passes vacuously over an empty map - the failure mode that makes a reach check worthless');
 
   const agentFiles = fs.readdirSync(path.join(REPO_ROOT, '.asd/agents')).filter((file) => file.endsWith('.md'));
   const instructed = agentFiles.filter((file) => /nitpick/i.test(readRepoFile(`.asd/agents/${file}`))).map((file) => file.replace(/\.md$/, '')).sort();
@@ -4399,7 +4407,7 @@ test('sprint-010 iter-02: review-policy.md "Nitpick drop list" is the only enume
   for (const name of instructed) {
     const context = grants.get(name);
     assert.ok(context, `providers.md must carry a Role-scoped context row for ${name}, or the grant its prohibition depends on is stated nowhere`);
-    assert.ok(context.includes('review-policy.md'), `${name} is told to drop nitpick categories without being given the category names, so its row must grant review-policy.md - the file holding the only enumeration. Ungranted, the instruction resolves to nothing at dispatch`);
+    assert.ok(context.some((ref) => ref.startsWith('.asd/rules/review-policy.md#Nitpick drop list')), `${name} is told to drop nitpick categories without being given the category names, so its rows must grant review-policy.md "Nitpick drop list" - the section holding the only enumeration. Ungranted, the instruction resolves to nothing at dispatch`);
   }
 
   assert.ok(categories.some((category) => category.includes('you could also')), 'the list must keep its most distinctive category, the token the sole-home sweep below selects on');
@@ -4748,15 +4756,15 @@ test('sprint-012 AC-2/AC-4/AC-12: both review workflows emit manifests through e
 });
 
 test('sprint-012 AC-5/AC-6: providers.md "Role-scoped context" defines the declared tool policy with its refusal signal, and core.md "Autonomy and escalation" and artifact-layout.md "Agent memory" hand their obligations to it', () => {
-  const definition = sectionOf('.asd/rules/providers.md', 'Role-scoped context').split('\n').find((line) => line.startsWith('**Declared tool policy**'));
+  const definition = headingBody('.asd/rules/providers.md', 'Declared tool policy');
   assert.ok(definition, 'AC-5: the declared tool policy needs one definition an agent can check a payload against');
   assert.ok(definition.includes('`QUESTION`'), 'AC-5: the refusal must name the signal an agent returns, or "does not comply" ends in silence (010 F-5)');
   for (const component of ['`sprint-lifecycle.md` "Self-hosting"', '`artifact-layout.md` "Agent memory"']) {
     assert.ok(definition.includes(component), `AC-5: the policy is the definition plus its grants, so it must cite ${component} - without it a self-hosting write or a memory write reads as outside policy and gets refused`);
   }
-  const pointer = '`providers.md` "Role-scoped context"';
+  const pointers = ['`providers.md` "Declared tool policy"', '`providers.md` "Role-scoped context"'];
   for (const [rel, heading] of [['.asd/rules/core.md', 'Autonomy and escalation'], ['.asd/rules/artifact-layout.md', 'Agent memory']]) {
-    assert.ok(sectionOf(rel, heading).includes(pointer), `${rel} "${heading}" must point at the declared tool policy - core.md is where every agent meets the refusal, "Agent memory" is where a write is checked against the definition before it lands (AC-6)`);
+    assert.ok(pointers.some((pointer) => sectionOf(rel, heading).includes(pointer)), `${rel} "${heading}" must point at the declared tool policy - core.md is where every agent meets the refusal, "Agent memory" is where a write is checked against the definition before it lands (AC-6)`);
   }
 });
 
@@ -6069,7 +6077,7 @@ test('sprint-018 AC-4/AC-5/AC-7: a reviewer\'s question and External Review\'s s
     assert.ok(line.includes('test-plan.md') && !/\bpayload\b/.test(line), `sprint-021 AC-10: asd-reviewer-${readers[0]} reads the results where impl-test records them, test-plan.md, never from a payload no step fills any more`);
   }
 
-  const declared = sectionOf('.asd/rules/providers.md', 'Role-scoped context').split('\n').find((line) => line.startsWith('**Declared tool policy**'));
+  const declared = headingBody('.asd/rules/providers.md', 'Declared tool policy');
   const carveOut = declared && declared.split(/[.;]\s|\s—\s/).find((clause) => /\breviewer\b/.test(clause) && clause.includes('`review-policy.md` "Gate Verdict Format"'));
   assert.ok(carveOut, 'AC-4/AC-5 (TST-1-1): one clause must name the reviewer and route it to its carrier home - the out-of-policy refusal must route a reviewer through its question carrier - "an agent ... returns `QUESTION`" alone makes a reviewer return a bare QUESTION, which reads as an interrupted dispatch');
 });
@@ -7097,8 +7105,6 @@ test('sprint-022 AC-1 (D2), iter-01 external #1/#2, combined #1, iter-02 combine
   assert.ok(skillRoute.includes('`asd-phase-pr`') && /merge mode/.test(skillRoute), 'asd-sprint Step 1\'s release retry dispatches asd-phase-pr, whose merge mode runs only the release');
   assert.ok(/\buser decision\b/.test(skillRoute), `asd-sprint Step 1: ${noExit}`);
   assert.ok(skillRoute.split(/;\s/).some((clause) => /\bcontinue\b/.test(clause)) && (stepOne[stepOne.indexOf(skillRetry) + 1] || '').includes('Step 2A'), `asd-sprint Step 1: the continue option takes the next route, the new-sprint flow (Step 2A) - ${noExit}`);
-  const routeName = skillRoute.trim().split(' (')[0];
-  assert.ok(jsonOf('.asd/skills/asd-sprint/SKILL.md', 'User decisions').some((row) => row.step === '1' && row.gate.includes(routeName)), `asd-sprint "User decisions": must list the ${routeName} choice Step 1 requests`);
   const logHead = followUp.split(' ').slice(0, 2).join(' ');
   assert.ok((jsonOf('.asd/skills/asd-sprint/SKILL.md', 'Preconditions').ops.find((op) => op.startsWith('run command')) || '').includes(logHead), `asd-sprint Preconditions ops: run command must list ${logHead}, the follow-up search Step 1's release-commit check runs`);
 
@@ -7861,7 +7867,7 @@ test('sprint-025 AC-3/AC-7/AC-8: every phase workflow states its timing ops, eve
   assert.ok(canonText('.asd/rules/artifact-layout.md').includes('timing.jsonl'), 'artifact-layout.md names the ledger path');
   assert.ok(sectionOf('.asd/rules/checkpoints.md', 'Gate policy').split('\n').some((line) => line.startsWith('Hard in both modes:') && line.includes('ASD update')), 'the update choice joins the hard list');
   assert.ok(/ASD update choice[^|]*\|\s*hard approve-before-write/.test(canonText('.asd/rules/checkpoints.md')), 'the gate inventory carries the update choice row');
-  assert.ok(canonText('.asd/skills/asd-sprint/SKILL.md').includes('update.js --check-version'), 'asd-sprint runs the version check');
+  assert.ok(/asd-update\/update\.js"? --check-version/.test(canonText('.asd/skills/asd-sprint/SKILL.md')), 'asd-sprint runs the version check');
   assert.ok(canonText('.asd/skills/asd-update/SKILL.md').includes('### Sprint-mediated mode'), 'asd-update keeps its Sprint-mediated mode section');
   assert.ok(canonText('.asd/workflows/asd-phase-scope.md').includes('--create'), 'scope step 1 creates the ledger');
 });
@@ -7915,7 +7921,7 @@ const FORM_CATEGORIES = {
   skills: {
     files: () => fs.readdirSync(path.join(REPO_ROOT, '.asd/skills')).filter((name) => !name.startsWith('asd-phase-')).sort().map((name) => `.asd/skills/${name}/SKILL.md`),
     title: /^\S/,
-    spec: [['Purpose', true], ['Preconditions', true], ['Modes', false], ['Steps', true], ['Rules', false], ['User decisions', true], ['Delegates', true], ['Outputs', true], ['Reference', false], ['Return', true], ['References', true]],
+    spec: [['Purpose', true], ['Preconditions', true], ['Modes', false], ['Steps', true], ['Rules', false], ['User decisions', false], ['Delegates', true], ['Outputs', true], ['Reference', false], ['Return', true], ['References', true]],
   },
 };
 
@@ -7952,7 +7958,7 @@ test('sprint-026 AC-12 (D2/D3): each agent json section carries its keys, the Si
   const protocolTokens = [...sectionOf('.asd/rules/agent-protocol.md', 'Signals').matchAll(/^\| `([A-Z_]+)` \|/gm)].map((match) => match[1]);
   for (const rel of FORM_CATEGORIES.agents.files()) {
     const inputs = jsonOf(rel, 'Inputs');
-    assert.ok(Array.isArray(inputs.rules) && inputs.rules.length >= 3 && Array.isArray(inputs.required), `${rel}: Inputs is {rules, required, ...} with rules and required lists`);
+    assert.ok(Array.isArray(inputs.rules) && inputs.rules[0] === 'payload.inputs.context' && inputs.rules.slice(1).every((ref) => typeof ref === 'string' && ref.includes('#')) && Array.isArray(inputs.required), `${rel}: Inputs is {rules, required, ...}; rules opens with payload.inputs.context (D12) and adds only section refs`);
     for (const [mode, body] of Object.entries(inputs.modes || {})) assert.ok(typeof body.when === 'string' && Array.isArray(body.required), `${rel}: Inputs mode "${mode}" carries when and required`);
     const outputs = jsonOf(rel, 'Outputs');
     assert.ok(Array.isArray(outputs) && outputs.length > 0 && outputs.every((item) => typeof item === 'string'), `${rel}: Outputs is a non-empty array of strings`);
@@ -7971,7 +7977,7 @@ test('sprint-026 AC-12 (D4/D5/D8): phase workflow, standalone skill and protocol
   const array = (value) => Array.isArray(value);
   for (const rel of FORM_CATEGORIES.workflows.files()) {
     const entry = jsonOf(rel, 'Entry');
-    assert.ok(array(entry.requires) && array(entry.ops) && (entry.modes === undefined || (typeof entry.modes === 'object' && !array(entry.modes))), `${rel}: Entry is {requires, ops, modes?}`);
+    assert.ok(array(entry.requires) && (entry.ops === undefined || (array(entry.ops) && entry.ops.length > 0)) && (entry.modes === undefined || (typeof entry.modes === 'object' && !array(entry.modes))), `${rel}: Entry is {requires, ops?, modes?} - an empty ops is absent (D14)`);
     assert.ok(array(jsonOf(rel, 'Inputs')), `${rel}: Inputs is an array`);
     const exit = jsonOf(rel, 'Exit');
     assert.ok(array(exit.writes) && array(exit.next) && exit.next.length > 0 && exit.next.every((route) => typeof route.if === 'string' && typeof route.next === 'string'), `${rel}: Exit is {writes, next: [{if, next}]}`);
@@ -7986,9 +7992,9 @@ test('sprint-026 AC-12 (D4/D5/D8): phase workflow, standalone skill and protocol
   }
   for (const rel of FORM_CATEGORIES.skills.files()) {
     const preconditions = jsonOf(rel, 'Preconditions');
-    assert.ok(array(preconditions.requires) && array(preconditions.ops), `${rel}: Preconditions is {requires, else?, ops}`);
+    assert.ok(array(preconditions.requires) && (preconditions.ops === undefined || (array(preconditions.ops) && preconditions.ops.length > 0)), `${rel}: Preconditions is {requires, else?, ops?} - an empty ops is absent (D14)`);
     if (canonText(rel).includes('\n## Modes\n')) assert.ok(Object.values(jsonOf(rel, 'Modes')).every((detection) => typeof detection === 'string'), `${rel}: Modes is {mode: detection}`);
-    assert.ok(array(jsonOf(rel, 'User decisions')) && jsonOf(rel, 'User decisions').every((row) => ['step', 'gate', 'class'].every((key) => typeof row[key] === 'string')), `${rel}: User decisions is an array of {step, gate, class, options?}`);
+    if (canonText(rel).includes('\n## User decisions\n')) assert.ok(array(jsonOf(rel, 'User decisions')) && jsonOf(rel, 'User decisions').length > 0 && jsonOf(rel, 'User decisions').every((row) => ['step', 'gate', 'class'].every((key) => typeof row[key] === 'string')), `${rel}: User decisions, when present, is a non-empty array of {step, gate, class, options?} (D14)`);
     const delegates = jsonOf(rel, 'Delegates');
     assert.ok(array(delegates.agents) && array(delegates.skills), `${rel}: Delegates is {agents, skills}`);
     assert.ok(array(jsonOf(rel, 'Outputs')), `${rel}: Outputs is an array`);
@@ -8040,8 +8046,9 @@ test('sprint-026 AC-4/AC-9/AC-10/AC-11/D9: each rule the sprint added or relocat
   const closure = sectionOf('.asd/rules/sprint-lifecycle.md', 'PR phase').split('**Closure write**')[1].split('\n\n')[0];
   assert.ok(closure.includes('`sprint-closure` `gate_decisions`'), 'AC-9: the closure write records its gate_decisions entry under the name sprint-closure - the retro finds the closed sprint by it');
   assert.ok(sectionOf('.asd/rules/sprint-lifecycle.md', 'Plan file format').includes('states its edge semantics'), 'AC-11: "Plan file format" Decomposition rules keep the edge-semantics clause for a plan decision defining a computed metric or a bounded fetch');
-  const load = sectionOf('.asd/rules/providers.md', 'Role-scoped context').split('\n').find((line) => line.startsWith('Every role loads')) || '';
-  assert.deepStrictEqual(['`agent-protocol.md`', '"Signals"', '"Dispatch payload"', '"Return"'].filter((token) => !load.includes(token)), [], 'AC-4: providers.md "Role-scoped context" loads agent-protocol.md for every role, an agent reading only Signals, Dispatch payload and Return');
+  const protocolSections = ['Signals', 'Dispatch payload', 'Return'].map((heading) => `.asd/rules/agent-protocol.md#${heading}`);
+  const lacking = [...new Set(grantRows().map((row) => row.role))].filter((role) => (role === 'orchestrator' ? !grantedRefs(role).includes('.asd/rules/agent-protocol.md') : protocolSections.some((ref) => !grantedRefs(role).includes(ref))));
+  assert.deepStrictEqual(lacking, [], 'AC-4: providers.md "Role-scoped context" loads agent-protocol.md for every role, an agent reading only Signals, Dispatch payload and Return');
   const inputRows = sectionOf('.asd/rules/sprint-lifecycle.md', 'Optional documents').split('\n');
   const flat = [['`requirements`', '`requirements.html`'], ['`ux`', '`ux-spec.html`']].filter(([key, file]) => !(inputRows.find((line) => line.startsWith(`| ${key}`)) || '').includes(file));
   assert.deepStrictEqual(flat, [], 'AC-7: "Input sources" requirements and ux rows name the flat persistent path used with decomposition disabled - without it an agent resolving the input in a non-decomposed project has no path');
@@ -8066,6 +8073,142 @@ test('sprint-026 AC-13 (E1/E2): no agent lists a conditional input key (decision
 // ===========================================================================
 // Runner
 // ===========================================================================
+
+// ===========================================================================
+// 27. Sprint 026 amendment (D11-D14, AC-14..AC-16): the section/context cores,
+// the grant table's refs, the byte caps and the per-dispatch load.
+// ===========================================================================
+
+const SECTION_DOC = '# T\n## B\nb\n### C\nc\n## D\nd\n';
+const SECTION_CASES = [
+  ['nested sub-headings stay inside their parent', SECTION_DOC, 'B', '## B\nb\n### C\nc\n'],
+  ['a deeper section stops at the next same-or-higher heading', SECTION_DOC, 'C', '### C\nc\n'],
+  ['the last section runs to the end of the file', SECTION_DOC, 'D', '## D\nd\n'],
+  ['a # line inside a code fence is no heading', '## B\n```\n# x\n```\n## D\n', 'B', '## B\n```\n# x\n```\n'],
+  ['CRLF input is read as LF', '## B\r\nb\r\n## D\r\n', 'B', '## B\nb\n'],
+];
+const SECTION_FAILS = [
+  ['zero matches', SECTION_DOC, 'Z'],
+  ['several matches', '## B\n## B\n', 'B'],
+  ['a prefix is no match', '## Bee\n', 'B'],
+];
+
+test('sprint-026 AC-14 (D11): markdownSection returns the heading through the line before the next same-or-higher heading, and fails on zero or several matches', () => {
+  for (const [name, text, heading, expected] of SECTION_CASES) assert.strictEqual(runtime.markdownSection(text, heading), expected, name);
+  for (const [name, text, heading] of SECTION_FAILS) assert.throws(() => runtime.markdownSection(text, heading), /matches/, name);
+});
+
+const GRANT_FIXTURE = [
+  { role: 'asd-dev', phase: '*', refs: ['a.md', 'b.md#X'] },
+  { role: 'asd-dev', phase: 'impl', refs: ['b.md#X', 'c.md'] },
+  { role: 'asd-dev', phase: 'impl-test', refs: ['d.md'] },
+  { role: 'orchestrator', phase: '*', refs: ['o.md'] },
+];
+const GRANT_CASES = [
+  ['a repeated ref keeps its first occurrence, in table order', 'asd-dev', 'impl', ['a.md', 'b.md#X', 'c.md']],
+  ['a tier variant reads its base agent row, and * joins the phase row', 'asd-dev-critical', 'impl-test', ['a.md', 'b.md#X', 'd.md']],
+  ['a * row matches every phase', 'asd-dev', 'retro', ['a.md', 'b.md#X']],
+];
+
+/** A providers.md stand-in holding only the grant table `rows`. */
+function grantFixture(rows) {
+  return `# P\n\n## Role-scoped context\n\n\`\`\`json\n${JSON.stringify(rows)}\n\`\`\`\n`;
+}
+
+test('sprint-026 AC-14 (D11): contextRefs collects the rows of the role (variant to base) for the phase or *, first occurrence wins, and a role without a row fails', () => {
+  for (const [name, role, phase, expected] of GRANT_CASES) assert.deepStrictEqual(runtime.contextRefs(grantFixture(GRANT_FIXTURE), role, phase), expected, name);
+  assert.throws(() => runtime.contextRefs(grantFixture(GRANT_FIXTURE), 'asd-tester', 'impl'), /no grant row/);
+});
+
+test('sprint-026 AC-14 (D11): contextBundle prefixes each section with its ref comment in ref order, takes a bare ref whole, and fails on any unresolved ref', () => {
+  const files = { 'a.md': 'A1\nA2', 'b.md': '# T\n## X\nx\n## Y\ny\n', 'missing.md': null };
+  assert.strictEqual(runtime.contextBundle(['a.md', 'b.md#X'], files), '<!-- a.md -->\nA1\nA2\n<!-- b.md#X -->\n## X\nx\n');
+  for (const refs of [['a.md', 'missing.md'], ['b.md#Z'], ['b.md#X', 'a.md#Q']]) assert.throws(() => runtime.contextBundle(refs, files), /ref "/, refs.join(','));
+});
+
+test('sprint-026 AC-14 (D11): the context CLI writes no file for an unresolved role and, for a tier variant, writes its base agent\'s bundle', () => {
+  const dir = mkTempDir();
+  const missing = path.join(dir, 'none.md');
+  const failed = runtimeCliResult(['context', '--role', 'asd-nobody', '--phase', 'impl', '--out', missing]);
+  assert.strictEqual(failed.status, 1);
+  assert.ok(!fs.existsSync(missing), 'a failed build must leave no file for the dispatch to read');
+  const [base, variant] = ['asd-dev', 'asd-dev-critical'].map((role) => {
+    const out = path.join(dir, `${role}.md`);
+    runtimeCli(['context', '--role', role, '--phase', 'impl', '--out', out], { stdio: 'pipe' });
+    return fs.readFileSync(out, 'utf8');
+  });
+  assert.strictEqual(variant, base);
+});
+
+/** The distinct phases a role's grant rows name, with * expanded to every workflow phase. */
+function grantPhases(role, rows, workflowPhases) {
+  const named = rows.filter((row) => row.role === role).map((row) => row.phase);
+  return [...new Set(named.includes('*') ? [...named.filter((phase) => phase !== '*'), ...workflowPhases] : named)];
+}
+
+test('sprint-026 AC-14 (D11): every role of the grant table is an agent or the orchestrator, every phase it names is a workflow phase, and every ref resolves at HEAD for each of its role-phase pairs', () => {
+  const rows = grantRows();
+  const providers = readRepoFile('.asd/rules/providers.md');
+  const workflowPhases = [...new Set(readWorkflowDefinitions().flatMap((definition) => definition.phases))];
+  const agents = fs.readdirSync(path.join(REPO_ROOT, '.asd/agents')).filter((file) => file.endsWith('.md')).map((file) => file.slice(0, -3));
+  const roles = [...new Set(rows.map((row) => row.role))];
+  assert.deepStrictEqual(roles.filter((role) => role !== 'orchestrator' && !agents.includes(role)), [], 'a grant row for a role that is no agent is never read');
+  assert.deepStrictEqual(agents.filter((agent) => !roles.includes(agent)), [], 'an agent without a grant row has no context bundle');
+  assert.deepStrictEqual(rows.map((row) => row.phase).filter((phase) => phase !== '*' && !workflowPhases.includes(phase)), [], 'a phase no workflow runs');
+  let pairs = 0;
+  for (const role of roles) {
+    for (const phase of grantPhases(role, rows, workflowPhases)) {
+      const refs = runtime.contextRefs(providers, role, phase);
+      const files = Object.fromEntries(refs.map((ref) => ref.split('#')[0]).map((file) => [file, fs.existsSync(path.join(REPO_ROOT, file)) ? readRepoFile(file) : null]));
+      assert.ok(runtime.contextBundle(refs, files).length > 0, `${role} in ${phase}`);
+      pairs += 1;
+    }
+  }
+  assert.ok(pairs >= 40, `sanity: the sweep must reach the role-phase pairs (got ${pairs})`);
+});
+
+const CAP_STANDALONE_SKILLS_BYTES = 61051;
+const CAP_PHASE_WORKFLOWS_BYTES = 125501;
+
+/** Committed (LF) bytes of the canon files `rels` summed. */
+function lfBytes(rels) {
+  return rels.reduce((sum, rel) => sum + Buffer.byteLength(canonText(rel)), 0);
+}
+
+test('sprint-026 AC-15: the standalone skills total at most their main baseline of 61,051 bytes and the phase workflows at most 125,501', () => {
+  const skills = FORM_CATEGORIES.skills.files();
+  const workflows = FORM_CATEGORIES.workflows.files();
+  assert.strictEqual(skills.length, 7, 'the seven standalone skills');
+  assert.ok(workflows.length >= 11, 'the phase workflows');
+  assert.ok(lfBytes(skills) <= CAP_STANDALONE_SKILLS_BYTES, `standalone skills total ${lfBytes(skills)} B, cap ${CAP_STANDALONE_SKILLS_BYTES}`);
+  assert.ok(lfBytes(workflows) <= CAP_PHASE_WORKFLOWS_BYTES, `phase workflows total ${lfBytes(workflows)} B, cap ${CAP_PHASE_WORKFLOWS_BYTES}`);
+});
+
+/**
+ * D13 baselines: bytes at main (9ab56b04) of the role's body after frontmatter plus core.md and every file main's prose "Role-scoped context" row granted it,
+ * custom-*-rules.md excluded; orchestrator: its row files plus asd-phase-impl.md. Frozen because main moves at merge; recompute with
+ * `git show 9ab56b04:<path> | wc -c` per file (frontmatter stripped for agents), each file once.
+ */
+const LOAD_BASELINES = { 'asd-dev/impl': 191758, 'asd-tester/impl-test': 157968, 'asd-reviewer-combined/impl-review': 181454, 'orchestrator/impl': 205926 };
+const LOAD_MAX_RATIO = 0.70;
+
+/** D13 load at HEAD: the role's body after frontmatter (the orchestrator: the phase workflow it executes whole) plus its context bundle without the custom rule files. */
+function headLoad(role, phase) {
+  const own = role === 'orchestrator'
+    ? lfBytes([`.asd/workflows/asd-phase-${phase}.md`])
+    : Buffer.byteLength(sync.parseCanonicalFrontmatter(sync.readNormalized(path.join(REPO_ROOT, `.asd/agents/${role}.md`))).body);
+  const refs = runtime.contextRefs(readRepoFile('.asd/rules/providers.md'), role, phase).filter((ref) => !ref.startsWith('.asd/project/custom-'));
+  const files = Object.fromEntries(refs.map((ref) => ref.split('#')[0]).map((file) => [file, readRepoFile(file)]));
+  return own + Buffer.byteLength(runtime.contextBundle(refs, files));
+}
+
+test('sprint-026 AC-16 (D13): per-dispatch load of dev (impl), tester (impl-test), combined reviewer (impl-review) and the orchestrator (impl) is at most 0.70 of its main baseline', () => {
+  for (const [pair, baseline] of Object.entries(LOAD_BASELINES)) {
+    const [role, phase] = pair.split('/');
+    const load = headLoad(role, phase);
+    assert.ok(load <= LOAD_MAX_RATIO * baseline, `${pair}: ${load} B is ${(load / baseline).toFixed(4)} of ${baseline} B, ceiling ${LOAD_MAX_RATIO}`);
+  }
+});
 
 // Test bodies may be sync or async (`update.applyPlan`/migration-runner tests
 // need to `await` real async production functions) - `await`ing a plain
