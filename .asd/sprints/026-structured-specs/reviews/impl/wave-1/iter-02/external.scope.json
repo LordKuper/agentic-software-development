@@ -1,0 +1,1 @@
+{"phase":"impl-review","iteration":2,"wave":1,"files":[".asd/release-manifest.json",".asd/rules/sprint-lifecycle.md",".claude/agent-memory/asd-reviewer-combined/MEMORY.md",".claude/agent-memory/asd-reviewer-combined/feedback_relocation-review-method.md","tests/run.js"],"diff":".asd\\sprints\\026-structured-specs\\reviews\\impl\\wave-1\\iter-02\\43ffce4932c9858a.diff"}

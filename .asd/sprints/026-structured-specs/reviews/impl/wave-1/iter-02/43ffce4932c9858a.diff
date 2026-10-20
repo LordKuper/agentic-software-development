@@ -1,0 +1,79 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 4e38d871..0b523e30 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -77,7 +77,7 @@
+     ".asd/rules/language-policy.md": "7f77042d5ce46d5df0ee48c3f75263d6393c77a20e8a7068e7913c22650a8539",
+     ".asd/rules/providers.md": "13e82fc46bf6d5b86d4c5a7b2420947b68bb82d625fa9bd8a6a33a90be1cfdd6",
+     ".asd/rules/review-policy.md": "d9bfe9db783e5f9aadcae060286b463ab488a54c4339bc1156470a9487ff2daa",
+-    ".asd/rules/sprint-lifecycle.md": "b95664f34b2db8361cbf6399f21bc6dc25bddbaec610e58788a7b8d851c403f0",
++    ".asd/rules/sprint-lifecycle.md": "ea2022490339876b868eeb79e5cc0b8bac6eea6740c44858af6f9b2431961e76",
+     ".asd/rules/ux-principles.md": "9f2af8c90d969c73654812b80e523e33b4c5696f506acf49e4bacb4c0dc6750c",
+     ".asd/skills/asd-concept/SKILL.md": "63c007e56aa563d1293bf9ad40536a786a625ebb3c2a5e684115a24f9386b116",
+     ".asd/skills/asd-design-system/SKILL.md": "ec5f259e1a1bffa8a765988f2cee2b3eae84ffe21ed1db915c76ca9a4a883422",
+diff --git a/.asd/rules/sprint-lifecycle.md b/.asd/rules/sprint-lifecycle.md
+index eb8f0c13..3027c31b 100644
+--- a/.asd/rules/sprint-lifecycle.md
++++ b/.asd/rules/sprint-lifecycle.md
+@@ -162,10 +162,10 @@ Never optional: `sprint.md`, `state.json`, `plan.md`, `test-plan.md`, impl-revie
+ 
+ | Key | Resolves to | Condition |
+ |---|---|---|
+-| `requirements` | PRD AC-N: `<sprint>/design/prd.html` before design-promote, `docs/product/requirements/<subsystem>.html` after | `documents.prd` enabled under `standard`; else, and always under `lite` ("Workflows"), `sprint.md`'s Goal and `AC-N` list (`t_sprint.md`) |
++| `requirements` | PRD AC-N: `<sprint>/design/prd.html` before design-promote, `docs/product/requirements/<subsystem>.html` after (flat `requirements.html` with decomposition disabled) | `documents.prd` enabled under `standard`; else, and always under `lite` ("Workflows"), `sprint.md`'s Goal and `AC-N` list (`t_sprint.md`) |
+ | `decisions` | whichever persistent doc folded a relevant sprint ADR ("Design-promote phase" fold rule) | one bears on the task |
+ | `contracts` | `docs/architecture/stack.html` plus whichever persistent doc holds the touched subsystem's folded API contracts | present |
+-| `ux` | ux-spec (`<sprint>/design/ux-spec.html` before design-promote, `docs/ux/<subsystem>.html` after), `docs/ux/DESIGN.md`, `docs/ux/design-system.html`, `docs/ux/accessibility.html` | each present, and the task touches UI; `self_hosting` with no design-system/ux-spec for the touched surface: `stack.html` conventions and the existing `t_*.html` templates (e.g. `t_html-shell.html`) instead |
++| `ux` | ux-spec (`<sprint>/design/ux-spec.html` before design-promote, `docs/ux/<subsystem>.html` after, flat `ux-spec.html` with decomposition disabled), `docs/ux/DESIGN.md`, `docs/ux/design-system.html`, `docs/ux/accessibility.html` | each present, and the task touches UI; `self_hosting` with no design-system/ux-spec for the touched surface: `stack.html` conventions and the existing `t_*.html` templates (e.g. `t_html-shell.html`) instead |
+ | `audit` | `<sprint>/audit.md` | audit ran (frozen `documents.audit` true) |
+ 
+ **Independent design docs** (replaces the old hard PRD→UX→ADR chain):
+diff --git a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+index 4bf3f925..a981f8fb 100644
+--- a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
++++ b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+@@ -5,3 +5,4 @@
+ - [Re-review without a shell](feedback_rereview-no-shell-checks.md) — back hash, suite and pin claims from canon text and the tester's record; say what was not recomputed
+ - [Plan deviation vs flagged choices](feedback_plan-deviation-flagged-choices.md) — grep decisions-log "flagged choices accepted" before raising a deviation from a plan D-N
+ - [Return findings-table shape](feedback_return-findings-table-shape.md) — Findings must be the first pipe table; first cell = finding id used by ledger f; no bare | in cells
++- [Relocation review method](feedback_relocation-review-method.md) — per removed hunk grep phrases in the new home; check new path tables against both artifact-layout path maps
+diff --git a/.claude/agent-memory/asd-reviewer-combined/feedback_relocation-review-method.md b/.claude/agent-memory/asd-reviewer-combined/feedback_relocation-review-method.md
+new file mode 100644
+index 00000000..c9d6006d
+--- /dev/null
++++ b/.claude/agent-memory/asd-reviewer-combined/feedback_relocation-review-method.md
+@@ -0,0 +1,20 @@
++---
++name: relocation-review-method
++description: how to check a rule-relocation wave (sections moved out of a rule doc into workflows) without a shell, and the path-map check a new resolution table needs
++metadata:
++  type: feedback
++---
++
++A meaning-preserving relocation wave is checked removed-hunk by removed-hunk: Grep one distinctive phrase per removed
++paragraph in its claimed new home at HEAD, not a full read of every home.
++
++**Why:** with no shell, `main` versions of files outside the wave's diff cannot be read; the diff's `-` lines are the
++only baseline, and the audit's Gaps/occurrence lists are the only record of out-of-wave baseline prose.
++
++**How to apply:**
++- Per removed section, Grep 3-6 distinctive phrases (`-o`, alternation) in the target workflow; read only the hits
++  that come back missing (a phrase can be reworded, e.g. "user-approved FAIL" became "FAIL findings the user accepted").
++- A new single-home table that hardcodes persistent paths (an inputs/resolution table) is checked against
++  `artifact-layout.md` both path maps, decomposition enabled AND "Paths (decomposition disabled)"; the flat variant is the
++  usual omission.
++- Related: [[large-diff-read-budget]], [[rereview-no-shell-checks]].
+diff --git a/tests/run.js b/tests/run.js
+index 15aab1ac..d5d2b3de 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -8033,6 +8033,9 @@ test('sprint-026 AC-4/AC-9/AC-10/AC-11/D9: each rule the sprint added or relocat
+   assert.ok(sectionOf('.asd/rules/sprint-lifecycle.md', 'Plan file format').includes('states its edge semantics'), 'AC-11: "Plan file format" Decomposition rules keep the edge-semantics clause for a plan decision defining a computed metric or a bounded fetch');
+   const load = sectionOf('.asd/rules/providers.md', 'Role-scoped context').split('\n').find((line) => line.startsWith('Every role loads')) || '';
+   assert.deepStrictEqual(['`agent-protocol.md`', '"Signals"', '"Dispatch payload"', '"Return"'].filter((token) => !load.includes(token)), [], 'AC-4: providers.md "Role-scoped context" loads agent-protocol.md for every role, an agent reading only Signals, Dispatch payload and Return');
++  const inputRows = sectionOf('.asd/rules/sprint-lifecycle.md', 'Optional documents').split('\n');
++  const flat = [['`requirements`', '`requirements.html`'], ['`ux`', '`ux-spec.html`']].filter(([key, file]) => !(inputRows.find((line) => line.startsWith(`| ${key}`)) || '').includes(file));
++  assert.deepStrictEqual(flat, [], 'AC-7: "Input sources" requirements and ux rows name the flat persistent path used with decomposition disabled - without it an agent resolving the input in a non-decomposed project has no path');
+   const moved = ['Audit phase', 'Design phase', 'Impl phase', 'Impl-test phase', 'Retro phase', 'Signal vocabulary'];
+   const present = canonText('.asd/rules/sprint-lifecycle.md').split('\n').filter((line) => /^## /.test(line)).map((line) => line.slice(3));
+   assert.deepStrictEqual(moved.filter((name) => present.includes(name)), [], 'D9: sections moved into the phase workflows and agent-protocol.md stay out of sprint-lifecycle.md - text left in both is two homes that drift');

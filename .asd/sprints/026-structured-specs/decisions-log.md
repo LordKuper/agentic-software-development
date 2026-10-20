@@ -90,3 +90,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-20 — impl fix for wave-1/iter-01: findings resolved (F-1, 1; 93160397)
 - 2026-10-20 — route impl-test entry 3: standard, dispatch HEAD 18122b93; risk none via node tests/run.js
 - 2026-10-20 — impl-test: impacted set green (287/287), entry 3 1/0 tests
+- 2026-10-20 — impl-review wave-1/iter-02: combined APPROVE (one transcription, F-2), external APPROVE; wave 1 roster met → wave 2
