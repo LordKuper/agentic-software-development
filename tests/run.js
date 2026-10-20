@@ -4762,9 +4762,9 @@ test('sprint-012 AC-5/AC-6: providers.md "Role-scoped context" defines the decla
   for (const component of ['`sprint-lifecycle.md` "Self-hosting"', '`artifact-layout.md` "Agent memory"']) {
     assert.ok(definition.includes(component), `AC-5: the policy is the definition plus its grants, so it must cite ${component} - without it a self-hosting write or a memory write reads as outside policy and gets refused`);
   }
-  const pointers = ['`providers.md` "Declared tool policy"', '`providers.md` "Role-scoped context"'];
+  const pointer = '`providers.md` "Declared tool policy"';
   for (const [rel, heading] of [['.asd/rules/core.md', 'Autonomy and escalation'], ['.asd/rules/artifact-layout.md', 'Agent memory']]) {
-    assert.ok(pointers.some((pointer) => sectionOf(rel, heading).includes(pointer)), `${rel} "${heading}" must point at the declared tool policy - core.md is where every agent meets the refusal, "Agent memory" is where a write is checked against the definition before it lands (AC-6)`);
+    assert.ok(sectionOf(rel, heading).includes(pointer), `${rel} "${heading}" must point at the declared tool policy - core.md is where every agent meets the refusal, "Agent memory" is where a write is checked against the definition before it lands (AC-6)`);
   }
 });
 
@@ -8071,10 +8071,6 @@ test('sprint-026 AC-13 (E1/E2): no agent lists a conditional input key (decision
 });
 
 // ===========================================================================
-// Runner
-// ===========================================================================
-
-// ===========================================================================
 // 27. Sprint 026 amendment (D11-D14, AC-14..AC-16): the section/context cores,
 // the grant table's refs, the byte caps and the per-dispatch load.
 // ===========================================================================
@@ -8086,6 +8082,9 @@ const SECTION_CASES = [
   ['the last section runs to the end of the file', SECTION_DOC, 'D', '## D\nd\n'],
   ['a # line inside a code fence is no heading', '## B\n```\n# x\n```\n## D\n', 'B', '## B\n```\n# x\n```\n'],
   ['CRLF input is read as LF', '## B\r\nb\r\n## D\r\n', 'B', '## B\nb\n'],
+  ['a shorter fence inside a longer one does not close it', '## B\n````\n```\n# x\n````\n## D\n', 'B', '## B\n````\n```\n# x\n````\n'],
+  ['a fence of the other character does not close it', '## B\n```\n~~~\n# x\n```\n## D\n', 'B', '## B\n```\n~~~\n# x\n```\n'],
+  ['a backtick info string with a backtick opens no fence, so the heading after it counts', '## B\n``` a`b\n## D\nd\n', 'D', '## D\nd\n'],
 ];
 const SECTION_FAILS = [
   ['zero matches', SECTION_DOC, 'Z'],
@@ -8209,6 +8208,10 @@ test('sprint-026 AC-16 (D13): per-dispatch load of dev (impl), tester (impl-test
     assert.ok(load <= LOAD_MAX_RATIO * baseline, `${pair}: ${load} B is ${(load / baseline).toFixed(4)} of ${baseline} B, ceiling ${LOAD_MAX_RATIO}`);
   }
 });
+
+// ===========================================================================
+// Runner
+// ===========================================================================
 
 // Test bodies may be sync or async (`update.applyPlan`/migration-runner tests
 // need to `await` real async production functions) - `await`ing a plain
