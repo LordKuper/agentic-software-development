@@ -111,3 +111,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: sprint.md, plan.md, state.json
 - 2026-10-20 — route Task 9: critical, dispatch HEAD 35264ddf; risk change: public contract
 - 2026-10-20 — Task 9 accepted: D13 ratios dev 0.423, tester 0.447, reviewer-combined 0.525, orchestrator 0.650 (all ≤ 0.70); flagged items assigned: core.md untrusted-data boundary → Task 10, README runtime line → Task 11 (plan amended, waves unchanged)
+- 2026-10-21 — route Task 10, Task 11, Task 12: critical, dispatch HEAD c963b99f; risk change: reading contract / dispatch procedure / meaning-preserving trim
