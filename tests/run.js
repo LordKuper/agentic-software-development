@@ -5735,8 +5735,8 @@ test('sprint-015 AC-1/AC-6/AC-7/AC-8/AC-10/AC-12: no canon tells anyone to clear
     assert.ok(tools.deny.some((item) => /\bgit writes\b/.test(item)), `AC-6/sprint-018 AC-8: ${name}'s Tools deny must forbid git writes - holding Bash, its renames and deletions still route through the orchestrator`);
     assert.ok(tools.deny.some((item) => /\borchestrator\b/.test(item) && /\brenames?\b/.test(item)), `AC-6/sprint-018 AC-8: ${name}'s Tools deny must route renames/deletes to the orchestrator`);
     assert.ok(tools.run.length > 0, `sprint-018 AC-8 (TST-1-2): ${name}'s Tools run list must name the commands it may run - a deny-list alone leaves every other command open`);
-    const neverRun = tools.deny.filter((item) => item.startsWith('designmd-install')).map(() => 'designmd-install');
-    assert.deepStrictEqual(tools.run.filter((grant) => neverRun.some((command) => grant.includes(command))), [], `sprint-018 AC-8: ${name}'s Tools run allowlist must not reach a command its own deny list refuses (\`designmd-install\` writes package.json/lockfile)`);
+    const neverRun = tools.deny.map((item) => /^([\w-]+) \(/.exec(item)?.[1]).filter(Boolean); // a deny item opening "<command> (reason)" names the command; prose items name none
+    assert.deepStrictEqual(tools.run.filter((grant) => neverRun.some((command) => grant.includes(command))), [], `sprint-018 AC-8: ${name}'s Tools run allowlist must not reach a command its own deny list refuses (leading token of each deny item)`);
     assert.ok(text.split('\n').some((line) => line.startsWith('- never:') && /\brename\b/.test(line) && /\bpropos/.test(line)), `AC-6 (P2-2): ${name} proposes a doc rename or deletion in its final text instead of performing it, or design-promote never receives the proposal`);
   }
 
@@ -8019,6 +8019,15 @@ test('sprint-026 AC-12 (D6/D8, C-4): return lines follow one format, agent-proto
   for (const rel of FORM_CATEGORIES.agents.files()) {
     const name = path.basename(rel, '.md');
     assert.strictEqual(jsonOf(rel, 'Signals').includes('ADVICE_NEEDED'), creators.includes(name), `${rel}: ADVICE_NEEDED is listed by every creator and by no reviewer or the advisor (C-4)`);
+  }
+});
+
+test('sprint-026 AC-6 (C-4): every phase workflow whose Dispatch lists ADVICE_NEEDED relays it through agent-protocol.md "Relay"; a workflow that lists none (plan) carries no relay branch', () => {
+  for (const rel of FORM_CATEGORIES.workflows.files()) {
+    const text = canonText(rel);
+    const listed = text.includes('\n## Dispatch') && jsonOf(rel, 'Dispatch').some((row) => (row.signals || []).includes('ADVICE_NEEDED'));
+    const relays = text.split('\n').some((line) => line.includes('ADVICE_NEEDED') && /["']Relay["']/.test(line) && line.includes('agent-protocol.md'));
+    assert.strictEqual(relays, listed, `${rel}: a Dispatch signals row lists ADVICE_NEEDED exactly when the file relays it per agent-protocol.md "Relay" (C-4) - a listed signal with no relay branch is dropped, a relay branch with no sender is dead`);
   }
 });
 
