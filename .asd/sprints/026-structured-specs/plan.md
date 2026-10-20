@@ -130,7 +130,7 @@ Material risk: change: meaning-preserving trim
 ### Task 13: Tests for context, caps and load
 Material risk: artifact: content-contract pins
 Test-only: tests/run.js
-- [ ] Unit tests for the `section`/`context` cores (D11 edges: nested headings, duplicate refs, missing ref, variant→base role, `*` phase); every grant-table ref resolves at HEAD; AC-15 byte caps; AC-16 load test per D13; adapt pins broken by Tasks 9-12.
+- [x] Unit tests for the `section`/`context` cores (D11 edges: nested headings, duplicate refs, missing ref, variant→base role, `*` phase); every grant-table ref resolves at HEAD; AC-15 byte caps; AC-16 load test per D13; adapt pins broken by Tasks 9-12.
 
 ## Risks (optional)
 - The sprint changes its own dispatch contract: Task 1 runs alone in wave 1, then the orchestrator syncs and dispatches waves 2-4 with the D8 JSON payload.

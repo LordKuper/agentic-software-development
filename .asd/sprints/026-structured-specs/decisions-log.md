@@ -115,3 +115,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-21 — wave 6 accepted: workflows 125,489 B (≤125,501), skills 61,010 B (≤61,051); D14 added (empty JSON sections omitted); fix-2 routed for the tester impl-test manual-steps grant, empty skill sections and the orchestrator bundle out path
 - 2026-10-21 — route impl assessment fix-2: standard, dispatch HEAD 10a43faa; risk artifact: grant and empty sections via node .asd/runtime.js context + node tests/run.js
 - 2026-10-21 — route Task 13: standard, dispatch HEAD 85f8c09f; risk artifact: content-contract pins via node tests/run.js
+
+## 2026-10-21 — impl assessment (amendment)
+
+- **Decision**: amendment impl accepted adaptively: Tasks 9-13 + fix-2 done and ticked; build (sync --check) and lint clean; authorised paths only; suite 296/296 at 4d76b073. AC-16 (D13) ratios: dev 0.425, tester 0.470, reviewer-combined 0.526, orchestrator 0.646 (all ≤ 0.70). AC-15: skills 60,699 B (≤ 61,051), workflows 125,489 B (≤ 125,501). D10 total 376,476 → 345,427 B (−8.2%). Flagged choices accepted: Bash(node .asd/runtime.js:*) pre-approval in concept/stack/design-system skills (asd-phase-* precedent); standalone skill dispatches use the role's * rows; D13 baselines frozen at main 9ab56b04 in the test (main moves at merge). Pre-existing gap noted, not fixed: core.md trusted list omits .asd/project/ (custom-*-rules).
+- **Rationale**: checkpoints.md adaptive evidence complete.
+- **Affected docs**: plan.md, state.json

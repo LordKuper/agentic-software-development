@@ -1,7 +1,7 @@
 {
   "sprint_id": "026-structured-specs",
   "branch": "sprint/026-structured-specs",
-  "phase": "impl",
+  "phase": "impl-test",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -60,6 +60,13 @@
       "reason": "AC-14..AC-16 (section-scoped context bundle, JSON dedupe caps, per-dispatch load ≥30% below main) amended into 026 after the user judged the restructure heavier per dispatch; Tasks 9-13 in waves 5-7",
       "evidence": "decisions-log.md 2026-10-20 scope amendment AC-14..AC-16; floor_base=wave-3/2",
       "artifact_revision": "sprint.md@impl-review"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "amendment Tasks 9-13 + fix-2 done, build/lint clean, suite 296/296, D13 all ≤0.70, AC-15 caps met",
+      "evidence": "decisions-log.md 2026-10-21 impl assessment (amendment)",
+      "artifact_revision": "HEAD 4d76b073"
     }
   ],
   "task_routing": {
@@ -218,6 +225,12 @@
       "execution": "agent",
       "reason": "artifact-risk:content-contract pins",
       "resolved_model": "sonnet"
+    },
+    "impl-test entry 6": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:content-contract pins",
+      "resolved_model": "sonnet"
     }
   },
   "skipped_phases": [],
@@ -294,7 +307,7 @@
     }
   },
   "created_at": "2026-10-20T09:16:39.780Z",
-  "updated_at": "2026-10-20T21:32:10.131Z",
+  "updated_at": "2026-10-20T21:47:27.644Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
