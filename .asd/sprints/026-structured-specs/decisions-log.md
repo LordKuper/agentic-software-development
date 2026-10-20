@@ -133,3 +133,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-21 — route impl-test entry 8: standard, dispatch HEAD 22531244; risk none via node tests/run.js
 - 2026-10-21 — impl-test: impacted set green (296/296), entry 8 0/0 tests
 - 2026-10-21 — impl-review wave-3/iter-04: combined CONCERNS (F-1 high: in-body comment runtime.js contextRefs), external APPROVE (latched) → impl review-fix (wave-3/iter-04)
+- 2026-10-21 — route review-fix wave-3/iter-04: standard, dispatch HEAD b7182472; risk artifact: comment removal via node tests/run.js
