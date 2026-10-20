@@ -8022,6 +8022,22 @@ test('sprint-026 AC-12 (D6/D8, C-4): return lines follow one format, agent-proto
   }
 });
 
+test('sprint-026 AC-4/AC-9/AC-10/AC-11/D9: each rule the sprint added or relocated keeps its one home - the HEAD-moving ban with the orchestrator-only squash, the closure-write gate name, the edge-semantics decomposition rule, the protocol load line, and no moved phase section left in sprint-lifecycle.md', () => {
+  const gitStrategy = '.asd/rules/git-strategy.md';
+  const ban = sectionOf(gitStrategy, 'Forbidden').split('\n').find((line) => line.includes('never moves HEAD')) || '';
+  assert.deepStrictEqual(['`commit --amend`', '`rebase`', '`--hard`', '`git reset -q -- <paths>`'].filter((token) => !ban.includes(token)), [], 'AC-10: git-strategy.md "Forbidden" bans a dispatched agent from moving HEAD (reset, amend, rebase) and keeps the index-only reset allowed - a shared worktree has one HEAD, and a sibling agent\'s commit is lost if another moves it');
+  const squash = sectionOf(gitStrategy, 'Commits').split('\n').find((line) => line.includes('squash')) || '';
+  assert.ok(squash.includes('main orchestrator'), 'AC-10: the "Commits" squash bullet names the main orchestrator as its only actor - the squash is a HEAD move the "Forbidden" ban denies every dispatched agent');
+  const closure = sectionOf('.asd/rules/sprint-lifecycle.md', 'PR phase').split('**Closure write**')[1].split('\n\n')[0];
+  assert.ok(closure.includes('`sprint-closure` `gate_decisions`'), 'AC-9: the closure write records its gate_decisions entry under the name sprint-closure - the retro finds the closed sprint by it');
+  assert.ok(sectionOf('.asd/rules/sprint-lifecycle.md', 'Plan file format').includes('states its edge semantics'), 'AC-11: "Plan file format" Decomposition rules keep the edge-semantics clause for a plan decision defining a computed metric or a bounded fetch');
+  const load = sectionOf('.asd/rules/providers.md', 'Role-scoped context').split('\n').find((line) => line.startsWith('Every role loads')) || '';
+  assert.deepStrictEqual(['`agent-protocol.md`', '"Signals"', '"Dispatch payload"', '"Return"'].filter((token) => !load.includes(token)), [], 'AC-4: providers.md "Role-scoped context" loads agent-protocol.md for every role, an agent reading only Signals, Dispatch payload and Return');
+  const moved = ['Audit phase', 'Design phase', 'Impl phase', 'Impl-test phase', 'Retro phase', 'Signal vocabulary'];
+  const present = canonText('.asd/rules/sprint-lifecycle.md').split('\n').filter((line) => /^## /.test(line)).map((line) => line.slice(3));
+  assert.deepStrictEqual(moved.filter((name) => present.includes(name)), [], 'D9: sections moved into the phase workflows and agent-protocol.md stay out of sprint-lifecycle.md - text left in both is two homes that drift');
+});
+
 // ===========================================================================
 // Runner
 // ===========================================================================
