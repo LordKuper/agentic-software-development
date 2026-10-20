@@ -244,7 +244,7 @@ archived-sprint filter that no test caught.
 
 Two classes that look like unassertable prose and are not.
 
-A **cross-file citation** (`` `asd-advisor.md` Don'ts ``) names a section that either does or does not
+A **cross-file citation** (`` `asd-advisor.md` "Rules" ``) names a section that either does or does not
 hold the rule. The general form is a repo-wide link checker — new infrastructure, correctly declined —
 but that argument only rules out the general form. The specific one is a derivation: scan the target's
 candidate sections for the rule, assert exactly one holds it, then assert the citing line names *that*
@@ -405,7 +405,7 @@ have dropped out green while `test-plan.md` asserted the exemption was singular 
 Compare the derived exemption list to the expected one exactly, then loop the remainder.
 
 Converse trap: one `deepStrictEqual` against an expected list absorbs *two* failure modes and reports
-whichever fires under a single message. A guard written `deepStrictEqual(holders, ["Don'ts"])` covers
+whichever fires under a single message. A guard written `deepStrictEqual(holders, ["Rules"])` covers
 both "stated in more than one section" and "stated in the wrong one", so the second arrives labelled as
 the first and the reader deletes the wrong assertion. Split it: a `length === 1` guard with the
 uniqueness message, then the identity check with its own. The mutation is what surfaces this — a
