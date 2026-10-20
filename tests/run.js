@@ -1061,8 +1061,9 @@ test('read-only agents (every workflow reviewer + asd-advisor): no Write/Edit to
     const claimed = name.startsWith('asd-reviewer-') ? 'workspace-write' : 'read-only';
     assert.strictEqual(meta.codex && meta.codex.sandbox_mode, claimed, `${name}: codex.sandbox_mode must be "${claimed}" - sprint-021 D6 widens the Codex sandbox for the internal reviewers alone (they write their return file), External Review and asd-advisor stay read-only`);
     if (claimed === 'read-only') continue;
-    const bound = sectionOf(`.asd/agents/${name}.md`, 'Outputs').split('\n').find((line) => /return file/.test(line) && /own memory/.test(line));
-    assert.ok(bound, `${name}: Codex cannot scope workspace-write to a path, so the Outputs policy line naming the return file and the agent's own memory is the only bound on its writes (plan.md Risks, D6)`);
+    const tools = jsonOf(`.asd/agents/${name}.md`, 'Tools');
+    const bound = (tools.write || []).some((item) => /return file/.test(item)) && (tools.write || []).some((item) => /own memory/.test(item)) && (tools.deny || []).length > 0;
+    assert.ok(bound, `${name}: Codex cannot scope workspace-write to a path, so the Tools write list naming the return file and the agent's own memory, with a deny for any other write, is the only bound on its writes (plan.md Risks, D6)`);
   }
 });
 
@@ -2076,8 +2077,8 @@ test('AC-2/4/6/7: review workflow contracts retain Correctness and incremental d
   const prompt = fs.readFileSync(path.join(REPO_ROOT, '.asd/templates/external-review/t_prompt-external-impl.md'), 'utf8');
   const designPrompt = fs.readFileSync(path.join(REPO_ROOT, '.asd/templates/external-review/t_prompt-external-design.md'), 'utf8');
   const implReview = fs.readFileSync(path.join(REPO_ROOT, '.asd/workflows/asd-phase-impl-review.md'), 'utf8');
-  assert.ok(workflow.includes('Every internal reviewer is dispatched when not latch-skipped'));
-  assert.ok(workflow.includes('reviewer still dispatches and is counted toward DoD'));
+  assert.ok(/Every internal reviewer[^.]*is dispatched when not latch-skipped[^.]*counted toward DoD/.test(workflow));
+  assert.ok(sectionOf('.asd/workflows/asd-phase-design-review.md', 'Rules').includes('with no ux-spec/design-system draft in scope, its UI section is `n/a: outside phase gate`'));
   for (const [name, text] of [['impl', prompt], ['design', designPrompt]]) {
     assert.ok(text.includes('files[]') && text.includes('`diff`') && text.includes('`.asd/rules/review-policy.md` "Scope hand-off"'), `sprint-017 AC-8: t_prompt-external-${name}.md must hand the wrapped CLI the list and the precomputed diff file, linking the one hand-off home`);
     assert.ok(/never derive, widen or narrow the scope yourself/i.test(text), `sprint-017 AC-8: t_prompt-external-${name}.md must forbid the wrapped CLI deriving its own scope`);
@@ -2874,7 +2875,7 @@ const PHASE_COUNT_WORDS = [
   'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven',
   'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen',
 ];
-const FRICTION_APPEND_REF = 'friction: `F-N` entries to `<sprint>/friction-log.md` per `sprint-lifecycle.md` "Friction log"';
+const FRICTION_APPEND_REF = /append friction: F-N (?:entries )?to <sprint>\/friction-log\.md (?:\(|per )sprint-lifecycle\.md 'Friction log'/;
 
 function readTocH2Threshold() {
   const layout = fs.readFileSync(path.join(REPO_ROOT, '.asd/rules/artifact-layout.md'), 'utf8');
@@ -2956,7 +2957,7 @@ test("AC-2/AC-3/AC-6/AC-8, sprint-020 AC-1/AC-6: every phase workflow offers exa
   for (const phase of new Set(definitions.flatMap((definition) => definition.phases))) {
     const src = readWorkflow(phase);
     assert.ok(
-      src.includes(FRICTION_APPEND_REF),
+      FRICTION_APPEND_REF.test(src),
       `asd-phase-${phase}.md must carry the friction-append reference line verbatim: the orchestrator running a phase with no such line records no friction at all, the retro phase then analyses a log that is silently partial, and every other assertion stays green (sprint-lifecycle.md "Friction log" states the mechanism once and every phase workflow references it)`
     );
     const offered = readReturnContractTargets(phase, src).filter((target) => target !== 'halted');
@@ -3013,8 +3014,10 @@ test('AC-8/G-11, sprint-020 AC-7: the ordered chain mirrors match their definiti
       assert.ok(/\bNo-op\b/.test(promote) && designDocs.every((doc) => promote.includes(`\`${doc}\``)), `sprint-020 AC-5: ${name} promotes after impl-review, so its "Workflows" design-promote bullet must state the no-op over every frozen design document (${designDocs.join(', ')}) - a dropped one runs creators for a document the sprint disabled, or skips one it enabled`);
       const inputsOf = (text) => [...text.slice(0, text.indexOf('in place of drafts')).replace(/`[^`]+\.md` "[^"]+"/g, '').matchAll(/`([^`]+\.md)`/g)].map((match) => path.posix.basename(match[1])).sort();
       const promoteInputs = inputsOf(promote);
-      const inputSites = canonMarkdownFiles().filter((rel) => rel !== '.asd/rules/sprint-lifecycle.md').flatMap((rel) => canonText(rel).split('\n').filter((line) => line.includes('in place of drafts')).map((line) => [rel, inputsOf(line.slice(line.lastIndexOf('lite', line.indexOf('in place of drafts'))))]));
-      assert.ok(promoteInputs.length > 0 && inputSites.some(([rel]) => rel === '.asd/workflows/asd-phase-design-promote.md'), `sanity: the "Workflows" design-promote bullet and asd-phase-design-promote.md must each name the files read "in place of drafts", or the input comparison below compares nothing`);
+      const inputSites = canonMarkdownFiles().filter((rel) => rel !== '.asd/rules/sprint-lifecycle.md' && rel !== '.asd/workflows/asd-phase-design-promote.md').flatMap((rel) => canonText(rel).split('\n').filter((line) => line.includes('in place of drafts')).map((line) => [rel, inputsOf(line.slice(line.lastIndexOf('lite', line.indexOf('in place of drafts'))))]));
+      assert.ok(promoteInputs.length > 0, `sanity: the "Workflows" design-promote bullet must name the files read "in place of drafts", or the input comparison below compares nothing`);
+      const promoteItem = jsonOf('.asd/workflows/asd-phase-design-promote.md', 'Inputs').find((item) => item.startsWith(`${name}:`)) || '';
+      inputSites.push(['.asd/workflows/asd-phase-design-promote.md Inputs', [...promoteItem.matchAll(/([\w-]+\.md)/g)].map((match) => match[1]).sort()]);
       assert.deepStrictEqual(inputSites.filter(([, inputs]) => inputs.join() !== promoteInputs.join()), [], `documentation.md F-3 (wave-1/iter-01): every site stating what ${name}'s design-promote reads in place of drafts must name the same files as its "Workflows" home (${promoteInputs.join(', ')}) - a wider acting site reads what its cited rule never grants, a narrower one promotes without it`);
     }
     const deltas = precondition.split('\n').find((line) => line.includes(`In \`${name}\``));
@@ -3025,7 +3028,7 @@ test('AC-8/G-11, sprint-020 AC-7: the ordered chain mirrors match their definiti
       if (predecessor === standardPredecessor) return;
       const clause = new RegExp(`\`${phase}\` requires ([^,;]+)`).exec(deltas);
       assert.ok(clause && new RegExp(`^${predecessor}\\b`).test(clause[1]), `checkpoints.md: in ${name}, ${phase} follows ${predecessor}, not standard's ${standardPredecessor} - its "In \`${name}\`" line must say \`${phase}\` requires ${predecessor}, or the precondition check aborts a valid sprint (got: ${clause ? clause[1] : 'no clause'})`);
-      const acting = new RegExp(`advanced from [^;\\n]*?\`${predecessor}\` \\(\`${name}\`\\)|\`${name}\`:[^;\\n]*?advanced from \`${predecessor}\``);
+      const acting = new RegExp(`advanced from [^;\\n]*?\`${predecessor}\` \\(\`${name}\`\\)|\`${name}\`:[^;\\n]*?advanced from \`${predecessor}\`|advanced from [^;"\\n]*?\\b${predecessor} \\(${name}\\)|\\b${name}: [^"]*?advanced from ${predecessor}\\b`);
       assert.ok(acting.test(readWorkflow(phase)), `asd-phase-${phase}.md emits the ABORT for a missing predecessor, so its state.json.phase check must bind ${name} to ${predecessor} - as "advanced from ... \`${predecessor}\` (\`${name}\`)" or in a "\`${name}\`: ..." clause - or a lite sprint aborts at a valid transition while checkpoints.md stays right`);
     });
   }
@@ -3126,8 +3129,10 @@ test('sprint-011 AC-3/AC-5/AC-7, sprint-013 AC-14: the audit exit that emits NEX
   const citation = `\`sprint-lifecycle.md\` "${collapseLabel}"`;
 
   assert.ok(readReturnContractTargets('audit', audit).includes('plan'), "asd-phase-audit.md's return contract must offer NEXT: plan - asd-sprint follows NEXT as authoritative, so without it the collapse has no route and design is dispatched anyway");
-  const exits = audit.split('\n').filter((line) => /^\d+\.\s/.test(line) && line.includes('NEXT: plan'));
-  assert.strictEqual(exits.length, 1, 'exactly one numbered audit step must emit NEXT: plan - it is the single site of the design-block skip write');
+  const auditNext = jsonOf('.asd/workflows/asd-phase-audit.md', 'Exit').next;
+  assert.ok(auditNext.some((route) => /collapse/.test(route.if) && route.next === 'plan'), 'the audit Exit must route the design-block collapse to plan');
+  const exits = audit.split('\n').filter((line) => /^\d+\.\s/.test(line) && line.includes('skipped_phases') && line.includes('phase="design-promote"'));
+  assert.strictEqual(exits.length, 1, 'exactly one numbered audit step must carry the design-block skip write - it is its single site');
   const [exit] = exits;
   assert.ok(exit.includes(citation), `the audit step emitting NEXT: plan must be conditioned on the collapse test cited as ${citation} - an unconditioned route skips design for every sprint`);
   const landed = /phase="([a-z-]+)"/.exec(exit);
@@ -3145,12 +3150,12 @@ test('sprint-011 AC-3/AC-5/AC-7, sprint-013 AC-14: the audit exit that emits NEX
   assert.ok(!/phase=|skipped_phases|record it\b/.test(auditOff), 'the audit step reading `documents.audit` must not write state of its own (no phase=, no skipped_phases, no "record it") - with the setting on, an audit-skip write followed by the exit write is two non-atomic writes, and an interruption between them leaves phase="audit" for resume to re-enter design (EXT-1)');
   const auditRecord = exit.indexOf('`"audit"`');
   assert.ok(auditRecord !== -1 && auditRecord < appended.index, "the exit write must carry a skipped audit's \"audit\" record ahead of the design-block names it appends - it is the one write for both skips, so the audit record cannot land on its own (EXT-1, sprint-lifecycle.md \"Multi-phase skip\")");
-  const auditOnly = exit.split(/\.\s+/).find((sentence) => sentence.includes(`NEXT: ${chain[chain.indexOf('audit') + 1]}`));
-  assert.ok(auditOnly && auditOnly.includes('phase="audit"'), 'the exit branch emitting NEXT: design must set phase="audit" - with step 1 carrying no write, it is the only write that advances phase past a skipped audit, and a skip recorded without that advance is the state "Skip record" forbids');
+  const auditOnly = exit.split(/\.\s+/).find((sentence) => sentence.includes('phase="audit"'));
+  assert.ok(auditOnly && auditNext.some((route) => route.if === 'otherwise' && route.next === chain[chain.indexOf('audit') + 1]), 'the exit branch routing to design (Exit "otherwise") must set phase="audit" - with step 1 carrying no write, it is the only write that advances phase past a skipped audit, and a skip recorded without that advance is the state "Skip record" forbids');
   const skipSentence = exit.split(/\.\s+/).find((sentence) => sentence.includes(citation));
   for (const { name, phases, next } of definitions) {
     assert.strictEqual(skipSentence.includes(`\`${name}\``), phases.includes('design'), `sprint-020 AC-3: sprint-lifecycle.md "Workflows" derives the collapse from phases, so the audit skip write must name exactly the workflows whose chain holds design - ${name} ${phases.includes('design') ? 'holds' : 'has no'} design`);
-    if (!phases.includes('design')) assert.ok(auditOnly.includes(`\`${name}\``) && next.audit.every((target) => auditOnly.includes(`NEXT: ${target}`)), `sprint-020 AC-3: ${name} has no design block and never takes the collapse write, so the other exit branch must route it to its next.audit (${next.audit.join(', ')})`);
+    if (!phases.includes('design')) assert.ok(next.audit.every((target) => auditNext.some((route) => route.if === name && route.next === target)), `sprint-020 AC-3: ${name} has no design block and never takes the collapse write, so the Exit must route it to its next.audit (${next.audit.join(', ')})`);
   }
 
   const designRow = /^\| Phase \| No-op when \|[\s\S]*?^\| design \| (.*?) \|\s*$/m.exec(lifecycle);
@@ -3162,9 +3167,7 @@ test('sprint-011 AC-3/AC-5/AC-7, sprint-013 AC-14: the audit exit that emits NEX
   assert.ok(!condition.includes('skipped_phases'), `the collapse test's condition in ${citation} must not read skipped_phases - that array is a historical record, so a stale entry left by a rollback would pass a real, interrupted promotion as collapsed (COR-2)`);
   assert.ok(!condition.includes('skip_design_phases'), `sprint-013 AC-14: the collapse test's condition in ${citation} is documents-only - the removed setting may survive only as a legacy state field the rule ignores`);
 
-  const planPreconditions = /## Preconditions([\s\S]*?)\n## /.exec(readWorkflow('plan'));
-  assert.ok(planPreconditions, 'asd-phase-plan.md must keep its "## Preconditions" section');
-  const promoted = planPreconditions[1].split('\n').find((line) => line.includes(citation));
+  const promoted = jsonOf('.asd/workflows/asd-phase-plan.md', 'Entry').requires.find((item) => item.includes(`sprint-lifecycle.md '${collapseLabel}'`));
   assert.ok(promoted, `asd-phase-plan.md preconditions must accept the collapse test by citing ${citation} - the collapse promotes nothing, so without it plan ABORTs on the state audit just wrote`);
   assert.ok(!promoted.includes('skipped_phases'), 'asd-phase-plan.md must not accept a design-promote recorded in skipped_phases - a stale skip entry left by a rollback would let plan run on unpromoted docs (COR-2)');
   const planRequires = /`plan` requires ([^;]+);/.exec(readRepoFile('.asd/rules/checkpoints.md'));
@@ -3206,7 +3209,7 @@ test('sprint-013 AC-13..AC-18/AC-20: no config key the 9.0.0 migration removes s
   assert.deepStrictEqual(offenders, [], `removed config keys [${needles.join(', ')}] must have no reader left - an agent told to read one acts on a setting nothing writes. Allowed only: a state field t_state.json still carries, and a line that states legacy handling`);
   assert.deepStrictEqual(legacyLines.sort(), ['.asd/rules/sprint-lifecycle.md: scoped_fan_out', '.asd/rules/sprint-lifecycle.md: skip_design_phases'], 'a line mentioning "legacy" is exempt as a whole, so every exempted hit is pinned - the collapse paragraph ignoring a legacy skip_design_phases state field and the legacy skipped-verdict note on scoped_fan_out. A new hit may be a reader hidden in a legacy paragraph; review it and re-pin');
   assert.deepStrictEqual(frozenReaders.sort(), [
-    ...Array(4).fill('.asd/rules/sprint-lifecycle.md: documents.c4'),
+    ...Array(2).fill('.asd/rules/sprint-lifecycle.md: documents.c4'),
     '.asd/workflows/asd-phase-design-promote.md: documents.c4',
     ...Array(5).fill('.asd/workflows/asd-phase-design.md: documents.c4'),
   ], 'documents.c4 survives only as the state.json field scope freezes, so its reader lines are pinned - a new line may read the removed config key; confirm it reads state.json and re-pin');
@@ -3667,8 +3670,8 @@ test('AC-15/iter-05: providers.md names External Review as the sole Bash carve-o
   const { meta: externalMeta, body: externalBody } = sync.parseCanonicalFrontmatter(externalRaw);
   assert.ok(externalMeta.claude.tools.includes('Bash'), 'the agent providers.md names as the carve-out must actually carry the Bash grant the prose claims');
 
-  const writeBan = externalBody.split('\n').find((line) => line.includes('no file writes at all')) || '';
-  assert.ok(/own memory/.test(writeBan) && writeBan.includes('`Write`') && writeBan.includes('memory-fix dispatch') && writeBan.includes('"Autofix vs escalation"'), 'sprint-019 AC-14 (iter-01 answer b): External Review\'s write ban is blanket for the review itself, yet `memory: project` serves it `Write` for its own memory - the same bullet must name that one exception and route a finding in that memory through the memory-fix dispatch, pointed at its home, as the other reviewers are routed');
+  const writeBan = (jsonOf('.asd/agents/asd-external-review.md', 'Tools').write || []).find((item) => /own memory/.test(item)) || '';
+  assert.ok(/own memory/.test(writeBan) && writeBan.includes('Write') && writeBan.includes('memory-fix dispatch') && writeBan.includes("'Autofix vs escalation'"), 'sprint-019 AC-14 (iter-01 answer b): External Review\'s write ban is blanket for the review itself, yet `memory: project` serves it `Write` for its own memory - the same bullet must name that one exception and route a finding in that memory through the memory-fix dispatch, pointed at its home, as the other reviewers are routed');
   assert.strictEqual(externalMeta.claude.memory, 'project', 'the bullet cites `memory: project` as what loads this agent\'s memory; if the frontmatter stops granting it, the body points at a channel that does not exist - the config-side twin of a dangling citation');
 
   for (const name of ['asd-reviewer-correctness', 'asd-reviewer-documentation', 'asd-reviewer-efficiency', 'asd-reviewer-testing']) {
@@ -3705,13 +3708,13 @@ function internalReviewers() {
   return fs.readdirSync(path.join(REPO_ROOT, '.asd/agents')).map((file) => /^asd-reviewer-([a-z]+)\.md$/.exec(file)).filter(Boolean).map((match) => match[1]);
 }
 
-/** A reviewer's rubric as `emitCoverageManifest` takes it: its agent file, or for the combined reviewer the `{reviewer: markdown}` map of the rubrics its "Composed rubric" line names, in order, its own last. */
+/** A reviewer's rubric as `emitCoverageManifest` takes it: its agent file, or for the combined reviewer the `{reviewer: markdown}` map of the rubrics its "compose the rubric" Rules line names, in order, its own last. */
 function reviewerRubric(reviewer) {
   const own = readRepoFile(`.asd/agents/asd-reviewer-${reviewer}.md`);
   if (reviewer !== runtime.COMBINED_REVIEWER) return own;
-  const composed = own.split('\n').find((line) => line.includes('**Composed rubric**')) || '';
+  const composed = own.split('\n').find((line) => line.startsWith('- must: compose the rubric')) || '';
   const parts = [...composed.matchAll(/`asd-reviewer-([a-z]+)\.md`/g)].map((match) => match[1]);
-  assert.ok(parts.length > 0, 'asd-reviewer-combined.md must name the rubrics it composes on its "Composed rubric" line');
+  assert.ok(parts.length > 0, 'asd-reviewer-combined.md must name the rubrics it composes on its "compose the rubric" Rules line');
   return Object.fromEntries([...parts, reviewer].map((name) => [name, readRepoFile(`.asd/agents/asd-reviewer-${name}.md`)]));
 }
 
@@ -3725,6 +3728,28 @@ function sectionOf(rel, heading) {
   const body = canonText(rel).split(`\n## ${heading}`)[1];
   assert.ok(body !== undefined, `${rel} must keep its "${heading}" section`);
   return body.split('\n## ')[0];
+}
+
+/** The parsed JSON block of the first `## <heading>` section (form D1: the section's whole content). */
+function jsonOf(rel, heading) {
+  const match = /```json\n([\s\S]*?)\n```/.exec(sectionOf(rel, heading));
+  assert.ok(match, `${rel} "${heading}" must carry a json block`);
+  return JSON.parse(match[1]);
+}
+
+/** Every string leaf of the JSON block in a section's text (arrays, objects, nested), in order. */
+function jsonText(section) {
+  const leaves = [];
+  const walk = (node) => (typeof node === 'string' ? leaves.push(node) : node && typeof node === 'object' ? Object.values(node).forEach(walk) : undefined);
+  walk(JSON.parse(/```json\n([\s\S]*?)\n```/.exec(section)[1]));
+  return leaves;
+}
+
+/** The body of the first `### <heading>` subhead inside a section's text, prefix-matched. */
+function subOf(text, heading) {
+  const body = text.split(`\n### ${heading}`)[1];
+  assert.ok(body !== undefined, `the "${heading}" subhead must still exist`);
+  return body.split('\n### ')[0];
 }
 
 /** One numbered step of a workflow section, sub-bullets included. */
@@ -3926,14 +3951,14 @@ test('AC-1/AC-2: git-strategy.md "Commit before review" is the sole home of the 
     assert.ok(!readRepoFile(rel).includes(prohibition), `${rel} must not restate the broad-stage prohibition - git-strategy.md "Commit before review" is its sole home and every other site cites it`);
   }
 
-  const dev = sync.readNormalized(path.join(REPO_ROOT, '.asd/agents/asd-dev.md'));
-  assert.ok(dev.includes('`git add`/`git commit` for its own work'), 'asd-dev.md must grant the commands the new rule obliges it to run, or the rule is unfollowable by the agent it governs');
-  assert.ok(dev.includes('never push, never `--no-verify`'), 'the grant must carry the same bounds asd-tester.md already states');
-  assert.ok(dev.includes('git-strategy.md'), 'the grant must cite the rule rather than restate its ownership contract');
+  const devTools = jsonOf('.asd/agents/asd-dev.md', 'Tools');
+  assert.ok(devTools.run.some((item) => item.includes('git add/git commit of its own work')), 'asd-dev.md must grant the commands the new rule obliges it to run, or the rule is unfollowable by the agent it governs');
+  assert.ok(devTools.deny.includes('push') && devTools.deny.some((item) => item.startsWith('--no-verify')), 'the grant must carry the same bounds asd-tester.md already states');
+  assert.ok(devTools.run.some((item) => item.includes('git-strategy.md')), 'the grant must cite the rule rather than restate its ownership contract');
 
-  const workflow = readRepoFile('.asd/workflows/asd-phase-impl.md');
-  assert.ok(workflow.includes('concurrently dispatched tasks share one worktree'), 'AC-2: the dispatch payload must tell a dev why staging discipline matters before a collision teaches it');
-  assert.ok(workflow.includes('`git-strategy.md` "Commit before review" — do not restate here'), 'the workflow must cite the rule, not restate it');
+  const workflow = sectionOf('.asd/workflows/asd-phase-impl.md', 'Rules');
+  assert.ok(workflow.includes('concurrently dispatched tasks share one worktree'), 'AC-2: the phase rules must tell a dev why staging discipline matters before a collision teaches it');
+  assert.ok(workflow.includes('per `git-strategy.md` "Commit before review"') && !workflow.includes('git add -A'), 'the workflow must cite the rule, not restate it');
 
   const wholeTreeClause = gitStrategy.split('never a whole-tree command — ')[1];
   assert.ok(wholeTreeClause, 'sprint 010 AC-2: git-strategy.md must name the whole-tree commands as a class, since the ban now covers forms (`--renormalize`, `stash`) that no path-scoped equivalent replaces');
@@ -3967,9 +3992,9 @@ test('AC-13b/sprint-010 AC-3/sprint-019 AC-14: git-strategy.md "Commit before re
   assert.ok(/concurrent co-author holds[^\n]*the same rule assigns it/.test(reachability), 'sprint-010 AC-3: "Diff reachability" is where the ownerless-file class is enumerated, so the co-author case belongs in that enumeration as a pointer - a class named only in git-strategy.md is invisible where reviewers and workflows read the reachability rule');
 
   for (const rel of ['.asd/workflows/asd-phase-impl-review.md', '.asd/workflows/asd-phase-design-review.md']) {
-    const writeStep = readRepoFile(rel).split('\n').find((line) => line.includes('the reviewer itself performs no write'));
+    const writeStep = readRepoFile(rel).split('\n').find((line) => line.includes('the commit carrying it also carries any agent memory that reviewer authored'));
     assert.ok(writeStep, `${rel} must still carry the review-file write step`);
-    const carried = writeStep.slice(writeStep.indexOf('the reviewer itself performs no write'));
+    const carried = writeStep.slice(writeStep.indexOf('the commit carrying it'));
     assert.ok(/agent memory/.test(carried) && carried.includes('`git-strategy.md` "Commit before review"'), `sprint-019 AC-14 (iter-01 answer b): ${rel}: on Claude \`memory: project\` serves a reviewer Write, so memory it writes while reviewing is committed with its review file - the write step must say its commit carries that memory and point at the bookkeeping rule, or the write reaches no reviewed diff`);
   }
 
@@ -4006,7 +4031,7 @@ test('AC-4/AC-11/AC-14: review-policy.md carries the correlated-interruption bra
     const lateLine = reviewFlow.split('\n').find((line) => line.includes('per `review-policy.md` "Late duplicate return" (sole SSoT'));
     assert.ok(lateLine, `${rel} must bind the branch at the step that records verdicts and cite the rule as its sole home: review-policy.md names the phase workflow, never the returning agent, as the actor, so a workflow that never mentions it is an obligation with no acting site`);
     assert.ok(lateLine.includes('External Review included'), `${rel}: the acting bullet must state review-policy.md's reach carve-out on the same line as its citation. Reach is delegated to each branch and never inherited from the enclosing step header, and the section default behind that delegation is the 4 internal reviewers, so a bullet silent on reach discards precisely the late External Review the branch exists to admit (iteration 3 finding: at that point the header itself claimed "internal reviewers only" and the silent bullet inherited it outright). Line-scoped on purpose: a carve-out parked elsewhere in the file satisfies a file-level check while the acting site stays narrow`);
-    const artefacts = reviewFlow.split('## Artefacts produced')[1];
+    const artefacts = jsonOf(rel, 'Exit').writes.join('\n');
     assert.ok(artefacts && artefacts.includes(`<sprint>/reviews/${dir}/<reviewer>.late.md`), `${rel} must name the late-return file in its Artefacts produced list - that list is what the orchestrator writes from, and an artefact a rule mandates but no workflow declares is one nobody ever produces`);
     const interruptedLine = reviewFlow.split('\n').find((line) => line.trimStart().startsWith('- Interrupted dispatch'));
     assert.ok(interruptedLine, `${rel}: the interrupted branch must be written out as its own bullet at the acting step - review-policy.md delegates reach to each branch, so a branch that is not written out at the acting step has its reach stated nowhere the orchestrator reads`);
@@ -4024,10 +4049,10 @@ test('AC-4/AC-11/AC-14: review-policy.md carries the correlated-interruption bra
   assert.ok(policy.includes('**Verify before applying.**'), 'AC-11: a reviewer\'s proposed fix must be verified against source before it is applied');
   assert.ok(policy.includes('An equivalent correct fix stays permitted'), 'verification must not narrow the existing autofix latitude');
   const workflow = readRepoFile('.asd/workflows/asd-phase-impl.md');
-  assert.ok(workflow.includes('`review-policy.md` "Verify before applying" — do not restate here'), 'the impl side of AC-11 must cite the rule at the point the dev reads its fix instruction; a rule no dispatched agent reads is the failure mode this sprint exists to fix');
+  assert.ok(sectionOf('.asd/workflows/asd-phase-impl.md', 'Rules').includes('applying `review-policy.md` "Verify before applying"'), 'the impl side of AC-11 must cite the rule at the point the dev reads its fix instruction; a rule no dispatched agent reads is the failure mode this sprint exists to fix');
   const verify = sectionOf('.asd/rules/review-policy.md', 'Autofix vs escalation').split('\n').find((line) => line.startsWith('**Verify before applying.**'));
   assert.ok(verify && /non-binding/.test(verify),'sprint-012 AC-8: the suggested fix must be non-binding at its home, so a creator may resolve the finding another way without every dispatch payload having to grant that');
-  const reviewFixPayload = workflow.split('\n').find((line) => line.includes('review-fix — grouped finding list'));
+  const reviewFixPayload = workflow.split('\n').find((line) => line.includes('review-fix: grouped finding list'));
   assert.ok(reviewFixPayload && !reviewFixPayload.includes('suggested fix'), 'sprint-012 AC-8: the review-fix payload must no longer hand the dev a suggested fix as a payload field - carried there, it reads as the instruction the rule just made non-binding');
   assert.ok(!readRepoFile('.asd/workflows/asd-phase-design-review.md').includes('(no escalation needed)'), 'sprint-012 AC-8: the design-review autofix bullet must cite "Autofix vs escalation" instead of restating a latitude the rule now owns');
 });
@@ -4042,7 +4067,7 @@ test('AC-8/sprint-010 AC-4/sprint-014 AC-1/sprint-017 AC-5: external-review.md "
 
   const skipBullet = external.split('\n').find((line) => line.includes('APPROVE (skipped: external review unavailable: <specific status>)`; the dispatching workflow persists'));
   assert.ok(skipBullet, 'external-review.md must state what the workflow does with an availability skip on the same bullet that defines the skip');
-  assert.ok(/friction entry/.test(skipBullet) && skipBullet.includes(FRICTION_APPEND_REF.split(' per ')[1]), 'sprint-010 AC-4: a skipped External Review is a review that did not happen, so it must reach the friction log as well as the decisions log - recorded nowhere durable, the retro cannot see that a required reviewer never ran. Keyed to the same `sprint-lifecycle.md` "Friction log" citation every phase workflow carries, so the writer mechanism stays stated once');
+  assert.ok(/friction entry/.test(skipBullet) && skipBullet.includes('`sprint-lifecycle.md` "Friction log"'), 'sprint-010 AC-4: a skipped External Review is a review that did not happen, so it must reach the friction log as well as the decisions log - recorded nowhere durable, the retro cannot see that a required reviewer never ran. Keyed to the same `sprint-lifecycle.md` "Friction log" citation every phase workflow carries, so the writer mechanism stays stated once');
 
   const contract = sectionOf('.asd/rules/external-review.md', 'Outcome contract');
   const outcomes = contract.split('\n').filter((line) => /^- \*\*[a-z ]+\*\* — /.test(line)).map((line) => /^- \*\*([a-z ]+)\*\*/.exec(line)[1]);
@@ -4065,15 +4090,17 @@ test('AC-8/sprint-010 AC-4/sprint-014 AC-1/sprint-017 AC-5: external-review.md "
   }
 
   const agent = sync.readNormalized(path.join(REPO_ROOT, '.asd/agents/asd-external-review.md'));
-  assert.ok(agent.includes('Never background or detach the `{{wraps_cli}}` run'), 'the never-background Don\'t must be stated on the placeholder token both views render');
-  const outcomeDont = agent.split('\n').find((line) => line.startsWith('- Never return anything but') && line.includes('`external-review.md` "Outcome contract"'));
-  assert.ok(outcomeDont, 'the agent must carry the outcome contract as a Don\'t citing its home, not only the rule doc it may not read');
-  for (const literal of ['APPROVE (skipped: external review unavailable: <specific status>)', interrupted[1]]) {
-    assert.ok(outcomeDont.includes(literal), `the agent's outcome Don't must carry \`${literal}\` exactly as external-review.md defines it, or that return parses as prose`);
-  }
-  const abortSignal = agent.split('\n').find((line) => line.includes('ABORT — precondition not met: <artefact>'));
-  assert.ok(abortSignal && abortSignal.includes('only before any `{{wraps_cli}}` invocation'), 'the acting half of the rule\'s carve-out: the agent\'s ABORT must be scoped to the pre-invocation window, or the agent emits an outcome the contract forbids');
-  assert.ok(abortSignal && abortSignal.includes(interrupted[1]) && abortSignal.includes('`external-review.md` "Outcome contract"') && !abortSignal.includes('returns the availability skip'), 'sprint-014 AC-1: the post-invocation half must stay on the signal line, return the interrupted form rather than the availability skip, and cite the contract as its home');
+  const agentTools = jsonOf('.asd/agents/asd-external-review.md', 'Tools');
+  assert.ok(agentTools.run.some((item) => item.includes('{{wraps_cli}}') && item.includes('in the foreground, awaited inside this dispatch')) && agentTools.deny.some((item) => item.startsWith('backgrounding, detaching or polling the run, or returning while it still runs')), 'the never-background ban must be stated on the placeholder token both views render');
+  const agentEscalation = jsonOf('.asd/agents/asd-external-review.md', 'Escalation');
+  const outcomeDont = sectionOf('.asd/agents/asd-external-review.md', 'Rules').split('\n').find((line) => line.startsWith('- never: return anything but') && line.includes('`external-review.md` "Outcome contract"'));
+  assert.ok(outcomeDont, 'the agent must carry the outcome contract as a never rule citing its home, not only the rule doc it may not read');
+  assert.ok(outcomeDont.includes(interrupted[1]), `the agent's outcome rule must carry \`${interrupted[1]}\` exactly as external-review.md defines it, or that return parses as prose`);
+  assert.ok(agentEscalation.some((row) => row.signal === 'APPROVE (skipped: external review unavailable: <specific status>)'), 'the agent\'s Escalation must carry the availability skip literal exactly as external-review.md defines it, or that return parses as prose');
+  const abortSignal = agentEscalation.find((row) => row.signal === 'ABORT');
+  assert.ok(abortSignal && abortSignal.when.includes('before any invocation'), 'the acting half of the rule\'s carve-out: the agent\'s ABORT must be scoped to the pre-invocation window, or the agent emits an outcome the contract forbids');
+  const interruptedRow = agentEscalation.find((row) => row.signal === interrupted[1]);
+  assert.ok(interruptedRow && interruptedRow.note.includes('external-review.md \'Outcome contract\'') && interruptedRow.when.includes('after its one retry'), 'sprint-014 AC-1: the post-invocation half must stay an Escalation row, return the interrupted form rather than the availability skip, and cite the contract as its home');
 
   const partialToken = 'APPROVE (partial:';
   const partialSites = [...canonMarkdownFiles(), 'README.md'].flatMap((rel) => canonText(rel).split('\n').filter((line) => line.includes(partialToken)).map((line) => `${rel}: ${line}`));
@@ -4190,9 +4217,9 @@ test('AC-10: asd-phase-impl.md builds fix modes as one ordered chain with no par
   assert.ok(fixModes.includes('dispatched only after the dev chain completes'), 'one ordered chain per half is not enough: the two halves must also be ordered against each other, or a tester chain runs while the dev chain is still editing the shared worktree and tests a tree nobody committed');
   assert.ok(fixModes.includes('exactly one agent is in flight across the whole round'), 'the round-level invariant is the reviewable claim; without it "one ordered chain" reads as scoped to each chain separately, which is exactly the reading sprint 009 iter-01 ran on');
 
-  const dispatchLine = lines.find((line) => line.includes('sequential where dependent; parallel where independent'));
+  const dispatchLine = lines.find((line) => line.includes('initial mode: waves ascending, every task of a wave dispatched concurrently'));
   assert.ok(dispatchLine, 'the dispatch step\'s own parallelism, shared with initial mode, must survive - AC-10 narrows fix modes only, and losing this line would serialize the whole phase');
-  assert.ok(dispatchLine.includes('initial mode only'), 'the surviving parallelism must be scoped where it is stated: unscoped, the dispatch step reads as authorizing in a fix mode precisely what step 5 forbids, and a reader reaching step 6 first follows it');
+  assert.ok(dispatchLine.includes("a fix mode: step 5's single ordered chain"), 'the surviving parallelism must be scoped where it is stated: unscoped, the dispatch step reads as authorizing in a fix mode precisely what step 5 forbids, and a reader reaching step 6 first follows it');
 });
 
 test('sprint-010 AC-9 (C-10): a Claude reasoning effort outside its vocabulary fails the render closed wherever the field is emitted, symmetrically with the Codex check - `ultra` being a Codex-only value', () => {
@@ -4287,7 +4314,7 @@ test('sprint-010 AC-1: the wave declaration is defined once in sprint-lifecycle.
   assert.ok(declaration.includes('`asd-phase-impl.md` steps 5-6'), 'the definition must name its consumer, since the rule binds only where impl actually schedules');
 
   const planWorkflow = readRepoFile('.asd/workflows/asd-phase-plan.md');
-  assert.ok(planWorkflow.includes('assign every Task to a wave and write the wave table into `## Dependencies`'), 'AC-1/G-1: the plan phase had no step that computed any ordering, so the criterion had nothing to attach to. The waves must be assigned where the plan is authored - impl cannot invent an ordering the plan never declared');
+  assert.ok(planWorkflow.includes('Wave declaration') && planWorkflow.includes('write the wave table into `## Dependencies`'), 'AC-1/G-1: the plan phase had no step that computed any ordering, so the criterion had nothing to attach to. The waves must be assigned where the plan is authored - impl cannot invent an ordering the plan never declared');
   assert.ok(planWorkflow.includes('`sprint-lifecycle.md` "Plan file format"'), 'the plan step must cite the definition rather than restate the isolation rule');
 
   const implLines = readRepoFile('.asd/workflows/asd-phase-impl.md').split('\n');
@@ -4316,9 +4343,8 @@ test('sprint-010 AC-5a/AC-5b: the authorised-paths diff read is a condition of a
   assert.ok(gate.includes('Distinct from `code-style.md` §19'), 'the two checks share a tool and differ in question: §19 lints staged CONTENT, this gate asks which PATHS moved. Unmarked, one gets deleted as a duplicate of the other');
   assert.strictEqual(readRepoFile('.asd/workflows/asd-phase-impl.md').split(condition).length - 1, 1, 'the condition must live in exactly one step. Copied into the fix-mode step as well, the two drift; moved there instead, initial mode loses the gate entirely');
 
-  const operations = readRepoFile('.asd/workflows/asd-phase-impl.md').split('\n## Operations used')[1].split('\n## ')[0];
-  const runGrant = operations.split('\n').find((line) => line.startsWith('- run command:'));
-  assert.ok(runGrant && runGrant.includes('git diff'), 'AC-5b: the gate asks which paths moved across committed AND uncommitted work, which only git answers, so `## Operations used` must declare that operation. Stated at the acting site with no tool declared behind it, the gate is an obligation the phase cannot discharge');
+  const runGrant = jsonOf('.asd/workflows/asd-phase-impl.md', 'Entry').ops.find((op) => op.startsWith('run command:'));
+  assert.ok(runGrant && runGrant.includes('git diff'), 'AC-5b: the gate asks which paths moved across committed AND uncommitted work, which only git answers, so the `## Entry` ops must declare that operation. Stated at the acting site with no tool declared behind it, the gate is an obligation the phase cannot discharge');
 
   const tests17 = readRepoFile('.asd/rules/code-style.md').split('\n## 17. Tests')[1].split('\n## ')[0];
   assert.ok(/restored before the agent's next tool call/.test(tests17), 'AC-5a: §17 is the sole home of the fail-first restore obligation and no file mirrors it, so nothing but this assertion stands between the bullet and an economy pass reading it as procedural detail. Deleted, a mutation left on disk stops being a defect anyone can cite');
@@ -4422,17 +4448,12 @@ test('sprint-010 iter-02: each latch non-restatement declaration denies only wha
 
 test("sprint-010 iter-02: sprint-lifecycle.md's ADVICE_NEEDED step cites the asd-advisor.md section that actually carries the no-log rule, derived from the agent rather than restated", () => {
   const advisor = readRepoFile('.asd/agents/asd-advisor.md');
-  const sections = ["Do's", "Don'ts"].map((heading) => {
-    const body = advisor.split(`## ${heading}`)[1];
-    assert.ok(body, `asd-advisor.md must keep its ${heading} section - the lifecycle citation selects one of the two by name`);
-    return { heading, holdsRule: /Never log the consult/.test(body.split('\n## ')[0]) };
-  });
-  const holders = sections.filter((section) => section.holdsRule).map((section) => section.heading);
-  assert.strictEqual(holders.length, 1, `the no-log rule must live in exactly one of the advisor's two instruction sections; stated in both, or in neither, the citation below has no single correct target to be checked against. Holders: ${JSON.stringify(holders)}`);
+  assert.ok(/log the consult/.test(sectionOf('.asd/agents/asd-advisor.md', 'Rules')), 'asd-advisor.md "Rules" must carry the no-log rule - the one section the agent form leaves for it');
+  assert.ok(!/^## (Do's|Don'ts)/m.test(advisor), "asd-advisor.md must not regrow the Do's/Don'ts split: the protocol step cites the agent file, and two instruction sections leave the rule without one correct target");
 
-  const step = readRepoFile('.asd/rules/sprint-lifecycle.md').split('\n').find((line) => line.includes('No halt, no user contact, no logged trail'));
-  assert.ok(step, "sprint-lifecycle.md must keep the ADVICE_NEEDED round-trip's no-log step - it is the only place the protocol states that the consult leaves no artefact");
-  assert.ok(step.includes(`\`asd-advisor.md\` ${holders[0]}`), `the step must cite the advisor section that holds the rule (${holders[0]}), derived here from the agent file itself: this citation pointed at Do's until 2ae44c6, and an agent that follows a citation into a section holding nothing of the kind proceeds unguided while the sprint reads as documented`);
+  const step = readRepoFile('.asd/rules/agent-protocol.md').split('\n').find((line) => line.includes('No halt, no user contact, no logged trail'));
+  assert.ok(step, 'agent-protocol.md "Relay" must keep the ADVICE_NEEDED round-trip\'s no-log step - it is the only place the protocol states that the consult leaves no artefact');
+  assert.ok(step.includes('`asd-advisor.md`') && !/asd-advisor\.md`? (Do's|Don'ts)/.test(step), 'the step must cite the advisor file, not a section the agent form no longer has: an agent that follows a citation into a section holding nothing of the kind proceeds unguided while the sprint reads as documented');
 });
 
 test('sprint-010 iter-03: the clean-worktree precondition is a reciprocal pair - sprint-lifecycle.md owns the rule and names the workflow section that performs it, and that section keeps the command and the failure signal while no longer denying that it restates anything', () => {
@@ -4444,10 +4465,10 @@ test('sprint-010 iter-03: the clean-worktree precondition is a reciprocal pair -
   const workflow = readRepoFile('.asd/workflows/asd-phase-impl-review.md');
   const parts = workflow.split(`\n## ${delegated[1]}`);
   assert.strictEqual(parts.length, 2, `asd-phase-impl-review.md must carry exactly one "## ${delegated[1]}" section: its home delegates the mechanic to that heading by name, and a rename on one side only sends every reader to a section that does not exist`);
-  const precondition = parts[1].split('\n## ')[0].split('\n').find((line) => line.includes('Clean worktree at phase entry'));
+  const precondition = jsonOf('.asd/workflows/asd-phase-impl-review.md', delegated[1]).requires.find((item) => item.startsWith('clean worktree at phase entry'));
   assert.ok(precondition, `the clean-worktree gate must live inside "${delegated[1]}", the section its home names as the mechanic site`);
-  assert.ok(precondition.includes('`git status --porcelain`'), 'the acting site must name the command it runs. Its home states the same trigger and timing, so this line reads as a restatement and is a standing deletion candidate for an economy pass - but it is the only executable instruction either file carries, and the home delegates it here on purpose');
-  assert.ok(precondition.includes('`FAILED`'), 'the acting site must name the signal a dirty worktree raises: without it the gate states a trigger and no consequence, and the phase proceeds into a diff computed from commits that no reviewer can see the uncommitted half of');
+  assert.ok(precondition.includes('git status --porcelain'), 'the acting site must name the command it runs. Its home states the same trigger and timing, so this line reads as a restatement and is a standing deletion candidate for an economy pass - but it is the only executable instruction either file carries, and the home delegates it here on purpose');
+  assert.ok(precondition.includes('FAILED'), 'the acting site must name the signal a dirty worktree raises: without it the gate states a trigger and no consequence, and the phase proceeds into a diff computed from commits that no reviewer can see the uncommitted half of');
   assert.ok(precondition.includes('sole SSoT'), 'the precondition must keep citing its home rather than growing into a second rule statement - that citation is what makes the split above readable as a split instead of as two rules');
   assert.ok(!precondition.includes('not restated here'), 'this bullet restates the home trigger and timing in the same breath, so its citation may claim sole SSoT and nothing more. The denial was false when written (iter-03 DOC-1a), and a false denial reads as licence to delete the home copy - the one a reader who never opens this workflow depends on');
 });
@@ -4697,7 +4718,7 @@ test('sprint-012 AC-3/AC-12: every `.asd/runtime.js` symbol canon cites is decla
   assert.deepStrictEqual([...citers.keys()].filter((symbol) => !declared.has(symbol)), [], 'canon hands member lists and predicate text to named runtime.js symbols instead of restating them, so a cited symbol must exist - renamed on one side only, the prose points at nothing and the next editor restates the list');
   assert.deepStrictEqual(invoked.filter((entry) => !subcommands.has(entry.split(': ')[1])), [], 'every subcommand canon tells an orchestrator to run must be one main() dispatches - anything else exits on the usage error at the moment a review gate needs it');
   assert.deepStrictEqual(quoted.filter((entry) => !authorizable.has(entry.slice(entry.indexOf(': ') + 2))), [], 'a reviewer copies a quoted `n/a: <predicate>` into its ledger row, and validate-ledger accepts only a predicate the emitted manifest authorizes - a literal outside NA_PREDICATES teaches a row the blocking gate rejects');
-  for (const [symbol, rel] of [['WAVE_THRESHOLD_LINES', '.asd/rules/sprint-lifecycle.md'], ['WAVE_THRESHOLD_FILES', '.asd/rules/sprint-lifecycle.md'], ['WAVE_THRESHOLD_BYTES', '.asd/rules/sprint-lifecycle.md'], ['LARGE_WAVE_FILES', '.asd/rules/providers.md'], ['AUDIT_BATCH_THRESHOLD_FILES', '.asd/workflows/asd-phase-audit.md'], ['reviewerFiles', '.asd/rules/review-policy.md']]) {
+  for (const [symbol, rel] of [['WAVE_THRESHOLD_LINES', '.asd/rules/sprint-lifecycle.md'], ['WAVE_THRESHOLD_FILES', '.asd/rules/sprint-lifecycle.md'], ['WAVE_THRESHOLD_BYTES', '.asd/rules/sprint-lifecycle.md'], ['LARGE_WAVE_FILES', '.asd/rules/agent-protocol.md'], ['AUDIT_BATCH_THRESHOLD_FILES', '.asd/workflows/asd-phase-audit.md'], ['reviewerFiles', '.asd/rules/review-policy.md']]) {
     assert.ok((citers.get(symbol) || []).includes(rel), `sprint-015 AC-2/AC-9/sprint-017 AC-1/sprint-023 AC-1: ${rel} must cite \`${symbol}\` by its runtime symbol rather than restate the value or selector it holds`);
   }
   assert.ok(invoked.some((entry) => entry === '.asd/workflows/asd-phase-impl-review.md: review-waves'), 'sprint-017 AC-1: the wave count is a runtime check, so impl-review must run `review-waves` rather than judge the division size itself');
@@ -4707,9 +4728,9 @@ test('sprint-012 AC-2/AC-4/AC-12: both review workflows emit manifests through e
   const policy = '.asd/rules/review-policy.md';
   assert.ok(/\*\*Immutability\*\*[^\n]*orchestrator[^\n]*re-stamp/.test(sectionOf(policy, 'Coverage ledger')), 'AC-2: "Coverage ledger" must make a dispatched manifest immutable to the orchestrator as well as the reviewer, and send a correction through a fresh dispatch rather than a re-stamp (010 F-2)');
   const payloadRule = sectionOf(policy, 'Clean-context review iteration').split('\n').find((line) => line.startsWith('- Reviewer payload carries only'));
-  assert.ok(payloadRule && /interrupted-attempt record/.test(payloadRule), 'AC-4: the exhaustive reviewer payload list must admit the interrupted-attempt record, or a workflow adding it breaks the clean-context rule it cites');
+  assert.ok(payloadRule && /`interrupted` set only on a re-dispatch/.test(payloadRule) && /interrupted-attempt record/.test(readRepoFile('.asd/rules/agent-protocol.md')), 'AC-4: the exhaustive reviewer payload list must admit the interrupted-attempt record, or a workflow adding it breaks the clean-context rule it cites');
   for (const [rel, phase] of [['.asd/workflows/asd-phase-impl-review.md', 'impl-review'], ['.asd/workflows/asd-phase-design-review.md', 'design-review']]) {
-    const flow = sectionOf(rel, 'Workflow');
+    const flow = sectionOf(rel, 'Steps');
     assert.ok(flow.includes(`node .asd/runtime.js emit-manifest --reviewer <name> --phase ${phase}`), `${rel}: AC-12 - manifests must come from emit-manifest for this workflow's own phase`);
     assert.ok(!canonText(rel).includes('manifest-digest --manifest <path> --write'), `${rel}: the hand-stamping instruction the emitter replaced must be gone, or a split half is still assembled and stamped by hand beside the emitted parts`);
     const validateStep = flow.split('\n').find((line) => line.includes(`node .asd/runtime.js persist-review --phase ${phase.replace(/-review$/, '')} `));
@@ -4717,8 +4738,8 @@ test('sprint-012 AC-2/AC-4/AC-12: both review workflows emit manifests through e
     assert.ok(/never re-authored by hand/.test(validateStep) && validateStep.includes('`review-policy.md` "Coverage ledger" Persistence'), `${rel}: sprint-020 AC-9 - the persist-review run is the sole write of a review file for this phase's own --phase node, so the step must say no review file is re-authored by hand and cite the Persistence rule`);
     const skipRecord = flow.split('\n').find((line) => line.includes('`"APPROVE (skipped: <reason>)"`')) || '';
     assert.ok(/`persist-review`/.test(skipRecord) && skipRecord.includes('`review-policy.md` "Coverage ledger" Persistence'), `${rel}: sprint-020 AC-9 - the step recording External Review's availability skip must persist its external.md through persist-review, citing the Persistence rule - the skip has no dispatch, so a hand-written external.md leaves no external.findings.json for the low-severity test-only route to read`);
-    const payload = flow.split('\n').find((line) => line.includes('payload to each internal reviewer'));
-    assert.ok(payload && /interrupted-attempt record/.test(payload) && payload.includes('`review-policy.md` "Clean-context review iteration"'), `${rel}: AC-4 - a re-dispatched reviewer's payload must carry its own interrupted-attempt record, citing the list that admits it`);
+    const payload = flow.split('\n').find((line) => line.startsWith('   - payloads per'));
+    assert.ok(payload && /`interrupted`[^.]*record/.test(payload) && payload.includes('`review-policy.md` "Clean-context review iteration"'), `${rel}: AC-4 - a re-dispatched reviewer's payload must carry its own interrupted-attempt record, citing the list that admits it`);
   }
   const persistence = sectionOf(policy, 'Coverage ledger').split('\n').find((line) => line.startsWith('**Persistence**')) || '';
   assert.ok(persistence.split(/(?<=\.)\s+/).some((sentence) => /availability skip/.test(sentence) && sentence.includes('`external-review.md` "Detection and negative cache"')), 'sprint-020 AC-9: "Coverage ledger" Persistence must bring External Review\'s availability skip - the one outcome with no returned text - under the persist-review command, pointing at the rule that defines the skip');
@@ -4749,11 +4770,12 @@ test('sprint-012 AC-9/AC-10: code-style.md §17 obliges a set-naming test or rul
 });
 
 test('sprint-012 AC-11: the report field asd-dev.md COMPLETED carries is the literal asd-phase-impl.md collects at step 6, gates the adaptive pass on at step 10 under checkpoints.md "Gate policy", and resolves before the fix-mode finalize at step 11', () => {
-  const signal = sectionOf('.asd/agents/asd-dev.md', 'Signals emitted').split('\n').find((line) => line.startsWith('- `COMPLETED`'));
-  const field = signal && (/`([^`]+:)`/.exec(signal) || [])[1];
-  assert.ok(field, 'asd-dev.md COMPLETED must name the report field a dev flags choices in');
-  const flow = sectionOf('.asd/workflows/asd-phase-impl.md', 'Workflow');
-  for (const step of ['6', '10', '11']) {
+  const signal = sectionOf('.asd/rules/agent-protocol.md', 'Return').split('\n').find((line) => line.startsWith('| `COMPLETED`'));
+  const field = signal && (/"(flagged)"/.exec(signal) || [])[1];
+  assert.ok(field, 'agent-protocol.md "Return" COMPLETED must name the report field a dev flags choices in');
+  assert.ok(sectionOf('.asd/workflows/asd-phase-impl.md', 'Rules').split('\n').some((line) => line.startsWith('- must: COMPLETED') && line.includes(`\`${field}\``)), `asd-phase-impl.md "Rules" must tell the dev to emit the literal \`${field}\` the protocol defines`);
+  const flow = sectionOf('.asd/workflows/asd-phase-impl.md', 'Steps');
+  for (const step of ['10', '11']) {
     assert.ok(stepOf(flow, step).includes(`\`${field}\``), `asd-phase-impl.md step ${step} must read the literal \`${field}\` the dev emits - renamed on one side, a flagged choice passes the assessment unseen (011 P1)`);
   }
   const gateLine = stepOf(flow, '10').split('\n').find((line) => line.includes(`\`${field}\``));
@@ -4768,19 +4790,21 @@ test("sprint-012 AC-13: the settings-change line sprint-lifecycle.md \"Plan file
   const templateLine = canonText('.asd/templates/t_plan.md').split('\n').find((line) => line.includes(`\`${token} <key>=<value>`));
   assert.ok(templateLine, "t_plan.md's parser-critical format comment must mirror the line a planner writes");
   assert.ok(!grammar.includes('never one a same-sprint task adds'), 'COR-2: the grammar must admit a key an earlier-wave Task of the same sprint adds to t_config.yaml - excluding it strands 011 P3, the add-then-enable case AC-13 exists for, on an MS-N halt');
-  const planLine = sectionOf('.asd/workflows/asd-phase-plan.md', 'Workflow').split('\n').find((line) => /settings-change Task/.test(line));
-  for (const [site, line] of [['t_plan.md', templateLine], ['asd-phase-plan.md', planLine]]) {
+  const planLine = sectionOf('.asd/workflows/asd-phase-plan.md', 'Steps').split('\n').find((line) => line.includes('**Task decomposition** per `sprint-lifecycle.md` "Plan file format" (declarations'));
+  assert.ok(planLine && planLine.includes('Wave declaration'), 'asd-phase-plan.md must send the planner to the declarations and the Wave declaration, where the settings-change placement lives');
+  for (const [site, line] of [['t_plan.md', templateLine], ['sprint-lifecycle.md "Plan file format" (cited by asd-phase-plan.md)', grammar]]) {
     assert.ok(line && line.includes('t_config.yaml'), `COR-2: ${site} must place the settings-change Task by whether t_config.yaml already carries its keys - a wave-1-only placement puts it ahead of the Task adding its key, and asd-init then fails the pair`);
   }
 
   const init = '.asd/skills/asd-init/SKILL.md';
-  const modes = [...sectionOf(init, 'Modes').matchAll(/^- \*\*([A-Za-z-]+)\*\*/gm)].map((match) => match[1].toLowerCase());
-  const contract = /INIT: <([^>]+)>/.exec(sectionOf(init, 'Return contract'));
+  const modeMap = jsonOf(init, 'Modes');
+  const modes = Object.keys(modeMap);
+  const contract = /MODE: <([^>]+)>/.exec(sectionOf(init, 'Return'));
   assert.deepStrictEqual(contract && contract[1].split('|'), modes, "asd-init's return contract must enumerate exactly the modes it declares");
-  const reader = sectionOf(init, 'Modes').split('\n').find((line) => line.includes(`\`${token}\``));
-  assert.ok(reader, `one asd-init mode must take the declared \`${token}\` pairs as its input`);
-  const mode = /^- \*\*([A-Za-z-]+)\*\*/.exec(reader)[1].toLowerCase();
-  const mediatedSteps = sectionOf(init, `Workflow (${mode})`).split(/\n(?=\d+\. )/);
+  const mode = modes.find((name) => modeMap[name].includes(token));
+  assert.ok(mode, `one asd-init mode must take the declared \`${token}\` pairs as its input`);
+  const modeHeading = `### ${mode[0].toUpperCase()}${mode.slice(1)}`;
+  const mediatedSteps = subOf(sectionOf(init, 'Steps'), modeHeading.slice(4)).split(/\n(?=\d+\. )/);
   const stepNumber = (predicate) => mediatedSteps.findIndex(predicate);
   const validates = stepNumber((block) => block.includes('`.asd/templates/t_config.yaml`') && block.includes('`FAILED`'));
   const sets = stepNumber((block) => block.includes('`<key>=<value>`'));
@@ -4832,29 +4856,29 @@ test("sprint-012 AC-13: the settings-change line sprint-lifecycle.md \"Plan file
   }
 
   const impl = '.asd/workflows/asd-phase-impl.md';
-  const flow = sectionOf(impl, 'Workflow');
+  const flow = sectionOf(impl, 'Steps');
   const dispatchInit = `\`asd-init\` ${mode} mode`;
   const applying = flow.split(/\n(?=\d+[a-z]?\. )/).filter((block) => block.includes(`\`${token}\``) && block.includes(dispatchInit));
   assert.strictEqual(applying.length, 1, `exactly one asd-phase-impl.md step must apply the declared line through asd-init ${mode} mode instead of registering a manual step (011 P3)`);
   const applyStep = /^(\d+[a-z]?)\. /.exec(applying[0])[1];
-  assert.ok(flow.indexOf(dispatchInit) < flow.indexOf("delegate to the Task's agent"), `COR-2-2/DOC-2-1: a wave's bullets run in order, so the settings change (step ${applyStep}) must be applied ahead of that wave's dev delegation - applied after it, the settings Task reaches a dev before asd-init writes config.yaml`);
+  assert.ok(flow.indexOf(dispatchInit) < flow.indexOf('delegate to the agent `## Dispatch` names'), `COR-2-2/DOC-2-1: a wave's bullets run in order, so the settings change (step ${applyStep}) must be applied ahead of that wave's dev delegation - applied after it, the settings Task reaches a dev before asd-init writes config.yaml`);
   const applyLine = applying[0].split('\n').find((line) => line.includes(`\`${token}\``) && line.includes(dispatchInit));
   assert.ok(/\bwave\b/.test(applyLine) && !/\bwave 1\b/.test(applyLine), `COR-2: step ${applyStep} must apply the settings change as its own Task's wave opens, never keyed to wave 1 - the grammar lets that Task follow the one adding its key, and applied at wave 1 the key is not in t_config.yaml yet`);
   assert.ok(applyLine.includes('`FAILED`'), `DOC-1: step ${applyStep} must say what the wave does when asd-init ${mode} mode returns \`FAILED\` - the mode writes nothing then, and dispatching the wave anyway runs its Tasks against a setting that never landed`);
   const failedClause = applyLine.slice(applyLine.indexOf('`FAILED`')).split(';')[0];
   assert.ok(/\b(?:halt|stop|abort)/i.test(failedClause) && /\bblocker\b/.test(failedClause) && /\bbefore\b[^;]*\bdispatch/.test(failedClause), `external iter-04 #1: step ${applyStep}'s \`FAILED\` clause ("${failedClause}") must halt as a blocker before any of that wave's dispatch - naming \`FAILED\` alone lets "on \`FAILED\`, continue dispatching" pass, and Execution mode halts only on a blocker`);
-  const blockers = /^A blocker is exactly one of:\n((?:- .*\n?)+)/m.exec(sectionOf(impl, 'Execution mode'));
-  assert.ok(blockers && blockers[1].split('\n').some((line) => line.includes('`asd-init`') && line.includes('`FAILED`') && line.includes(`step ${applyStep}`)), `DOC-1: impl's closed blocker list must admit asd-init's \`FAILED\` at step ${applyStep} - "exactly one of" leaves any other signal no halt path, so the autonomous phase has no rule to stop on`);
-  const citation = `\`asd-phase-impl.md\` step ${applyStep}`;
-  const sprintSkills = sectionOf('.asd/skills/asd-sprint/SKILL.md', 'Skills dispatched');
-  for (const [site, text] of [['asd-init "Modes"', reader], ['asd-sprint "Skills dispatched"', sprintSkills], ['sprint-lifecycle.md "Plan file format"', grammar]]) {
-    assert.ok(text.includes(citation), `${site} must cite the step that applies the settings change (${citation}) - a stale step number sends the reader to a step that no longer does it`);
+  const failedSignal = jsonOf(impl, 'Signals').FAILED || '';
+  assert.ok(failedSignal.includes('asd-init') && failedSignal.includes(`step ${applyStep}`) && /blocker/.test(failedSignal), `DOC-1: impl's Signals must admit asd-init's \`FAILED\` at step ${applyStep} as a blocker - without it any other signal has no halt path, so the autonomous phase has no rule to stop on`);
+  const citation = new RegExp(`asd-phase-impl\\.md\`? step ${applyStep}\\b`);
+  const sprintSkills = jsonOf('.asd/skills/asd-sprint/SKILL.md', 'Delegates').skills.join('\n');
+  for (const [site, text] of [['asd-init "Modes"', modeMap[mode]], ['asd-sprint "Delegates"', sprintSkills], ['sprint-lifecycle.md "Plan file format"', grammar]]) {
+    assert.ok(citation.test(text), `${site} must cite the step that applies the settings change (asd-phase-impl.md step ${applyStep}) - a stale step number sends the reader to a step that no longer does it`);
   }
-  assert.ok(sectionOf(impl, 'Operations used').split('\n').some((line) => line.includes(dispatchInit) && line.includes(`step ${applyStep}`)), `asd-phase-impl.md "Operations used" must name step ${applyStep} for the asd-init dispatch`);
+  assert.ok(jsonOf(impl, 'Entry').ops.some((op) => op.includes('asd-init sprint-mediated mode') && op.includes(`step ${applyStep}`)), `asd-phase-impl.md Entry ops must name step ${applyStep} for the asd-init dispatch`);
   const gateLine = stepOf(flow, '9').split('\n').find((line) => line.includes('`.asd/project/config.yaml`'));
   assert.ok(gateLine && gateLine.includes(`step ${applyStep}`), `the completion gate must count config.yaml as authorised when step ${applyStep} wrote it, or the settings change fails the gate that follows it`);
-  assert.ok(sprintSkills.includes(dispatchInit), 'asd-sprint "Skills dispatched" must admit asd-init in that mode - it otherwise forbids every skill but the phase skills');
-  assert.ok(!canonText(init).includes('## Always first (both modes)') && new RegExp(`${mode} mode skips`, 'i').test(sectionOf(init, 'Always first')), `the managed-block sync writes AGENTS.md/CLAUDE.md, paths step 9 does not authorise, so "Always first" must exempt ${mode} mode`);
+  assert.ok(sprintSkills.includes('asd-init sprint-mediated mode'), 'asd-sprint "Delegates" must admit asd-init in that mode - it otherwise forbids every skill but the phase skills');
+  assert.ok(!canonText(init).includes('## Always first (both modes)') && new RegExp(`${mode} mode skips`, 'i').test(subOf(sectionOf(init, 'Steps'), 'Always first')), `the managed-block sync writes AGENTS.md/CLAUDE.md, paths step 9 does not authorise, so "Always first" must exempt ${mode} mode`);
   assert.ok(sectionOf('.asd/rules/core.md', 'Invariants').includes('`sprint-lifecycle.md` "Plan file format"'), 'core.md "Invariants" names /asd-init the only settings writer, so its sprint-mediated exception must point at the grammar');
   const hardRule = canonText('.asd/templates/t_AGENTS.md').split('\n').find((line) => line.includes('edits settings'));
   assert.ok(hardRule && hardRule.includes('`impl`'), "t_AGENTS.md's hard rule, synced into every consumer's AGENTS.md, must name impl as the settings writer's second caller");
@@ -4868,18 +4892,18 @@ test("sprint-012 AC-14..AC-18: docs/architecture/subsystems.md is the one subsys
 
   const sites = [
     ['core.md Glossary "Subsystem"', sectionOf('.asd/rules/core.md', 'Glossary').split('\n').find((line) => line.startsWith('- **Subsystem**'))],
-    ['sprint-lifecycle.md "Audit phase"', sectionOf('.asd/rules/sprint-lifecycle.md', 'Audit phase')],
+    ['asd-phase-audit.md', canonText('.asd/workflows/asd-phase-audit.md')],
     ['sprint-lifecycle.md "Design-promote phase"', sectionOf('.asd/rules/sprint-lifecycle.md', 'Design-promote phase')],
-    ['asd-phase-plan.md step 3', stepOf(sectionOf('.asd/workflows/asd-phase-plan.md', 'Workflow'), '3')],
+    ['asd-phase-plan.md Inputs', jsonOf('.asd/workflows/asd-phase-plan.md', 'Inputs').join('\n')],
     ['asd-phase-design-promote.md', canonText('.asd/workflows/asd-phase-design-promote.md')],
     ['t_audit.md "Subsystems map"', sectionOf('.asd/templates/t_audit.md', 'Subsystems map')],
-    ['asd-init fresh step 13', stepOf(sectionOf('.asd/skills/asd-init/SKILL.md', 'Workflow (fresh)'), '13')],
+    ['asd-init fresh step 13', stepOf(subOf(sectionOf('.asd/skills/asd-init/SKILL.md', 'Steps'), 'Fresh'), '13')],
   ];
   for (const [site, text] of sites) {
     assert.ok(text && text.includes(registry), `AC-14/AC-17: ${site} must name ${registry} - a site still naming the old registry leaves two homes for which subsystems exist`);
   }
-  const grant = canonText('.asd/agents/asd-architect.md').split('\n').find((line) => line.startsWith('- Write access restricted to:'));
-  assert.ok(grant && grant.includes(`\`${registry}\``) && grant.includes(`\`${subsystemFile}\``), 'AC-17: audit and design-promote dispatch asd-architect to write the registry and each subsystem file, so its own write grant must cover both - otherwise the dispatch sits outside its declared tool policy and must be refused (AC-5)');
+  const grant = jsonOf('.asd/agents/asd-architect.md', 'Tools').write.find((item) => item.includes(registry));
+  assert.ok(grant && grant.includes(subsystemFile), 'AC-17: audit and design-promote dispatch asd-architect to write the registry and each subsystem file, so its own write grant must cover both - otherwise the dispatch sits outside its declared tool policy and must be refused (AC-5)');
 
   const reservedClause = registrySection.split(/Reserved[^:]*:/)[1];
   const reserved = reservedClause ? [...reservedClause.split(/\.(?:\s|$)/)[0].matchAll(/`([^`]+)`/g)].map((match) => match[1]) : [];
@@ -4917,17 +4941,18 @@ test("sprint-012 AC-14..AC-18: docs/architecture/subsystems.md is the one subsys
   assert.ok(!fs.existsSync(path.join(REPO_ROOT, '.asd/templates/t_subsystems.yaml')), 'AC-16: t_subsystems.yaml must be deleted, not merely unreferenced');
   const docTypes = canonText(layout).split('\n').find((line) => line.startsWith('| `{{DOC_TYPE}}`'));
   assert.ok(docTypes && !docTypes.includes('`Architecture`'), 'AC-16: no architecture.html is written any more, so its DOC_TYPE value goes with it');
-  const lifecycle = '.asd/rules/sprint-lifecycle.md';
+  const lifecycle = '.asd/workflows/asd-phase-audit.md';
   const legacyMentions = (text) => text.split('subsystems.yaml').length - 1;
   assert.deepStrictEqual(surfaces.filter((rel) => legacyMentions(canonText(rel)) > 0), [lifecycle], 'AC-16/AC-17: subsystems.yaml may survive only where audit migrates a pre-registry project from it');
-  assert.strictEqual(legacyMentions(sectionOf(lifecycle, 'Audit phase')), legacyMentions(canonText(lifecycle)), 'every remaining subsystems.yaml mention must sit in "Audit phase", the migration source');
+  assert.strictEqual(legacyMentions(sectionOf(lifecycle, 'Rules')), legacyMentions(canonText(lifecycle)), 'every remaining subsystems.yaml mention must sit in the audit workflow\'s "Rules", the migration source');
 
   const hard = sectionOf('.asd/rules/checkpoints.md', 'Gate policy').split('\n').find((line) => line.startsWith('Hard in both modes:'));
   assert.ok(hard && /deletion[^;]*migration/.test(hard), 'deleting a legacy c4/ at audit removes project files, so checkpoints.md "Gate policy" - the one home of hard gates - must list migration deletion');
-  assert.ok(sectionOf(lifecycle, 'Audit phase').includes('`checkpoints.md` "Gate policy"'), '"Audit phase" must send its confirmation and deletion gates to that hard list');
+  assert.ok(canonText(lifecycle).includes('[GATE hard: new subsystem]') && canonText(lifecycle).includes('[GATE hard: migration deletion]') && sectionOf(lifecycle, 'References').includes('`.asd/rules/checkpoints.md`'), 'the audit workflow must mark its confirmation and deletion gates hard and send them to checkpoints.md');
 
-  const seed = stepOf(sectionOf('.asd/skills/asd-init/SKILL.md', 'Workflow (fresh)'), '13');
-  const gitignore = stepOf(sectionOf('.asd/skills/asd-init/SKILL.md', 'Workflow (fresh)'), '14');
+  const freshSteps = subOf(sectionOf('.asd/skills/asd-init/SKILL.md', 'Steps'), 'Fresh');
+  const seed = stepOf(freshSteps, '13');
+  const gitignore = stepOf(freshSteps, '14');
   const diagramCondition = seed.indexOf('`diagram_tool`');
   assert.ok(seed.indexOf(registry) !== -1 && seed.indexOf(registry) < diagramCondition && diagramCondition < seed.indexOf('c4/model'), 'AC-16/AC-18, sprint-013 AC-13: asd-init must seed c4/ only under the diagram_tool condition, while the registry seed precedes it unconditionally');
   assert.ok(gitignore.includes('likec4'), 'sprint-013 AC-13: the .gitignore entry for c4 build output must carry the same likec4 condition as the seed that creates c4/');
@@ -5079,7 +5104,7 @@ test('sprint-014 AC-2: a failed creator or tester dispatch is reconstructed from
   assert.ok(canonText('.asd/templates/t_decisions-log.md').includes(reconstruction[1]), 't_decisions-log.md carries the normative one-line forms, so it must carry the reconstruction line State recovery appends');
   const testerException = failed.split(/(?<=\.) /).find((sentence) => sentence.includes(`\`${testerId}\``));
   assert.ok(testerException && /\bnever\b[^.:]*landed/.test(testerException) && testerException.includes('(`asd-phase-impl-test.md` step 1)'), `COR-2: reconstruction must never read \`${testerId}\` as landed and must resume via asd-phase-impl-test.md step 1 - dropped as landed after the test commit, the entry's suite gate never runs`);
-  assert.ok(canonText('.asd/workflows/asd-phase-impl-test.md').split('\n').some((line) => line.startsWith('1. ') && line.includes('interrupted current entry')), 'COR-2: asd-phase-impl-test.md step 1, which reconstruction resumes through, must handle the interrupted current entry');
+  assert.ok(jsonOf('.asd/workflows/asd-phase-impl-test.md', 'Entry').modes.resume.includes('interrupted current entry') && stepOf(sectionOf('.asd/workflows/asd-phase-impl-test.md', 'Steps'), '1').includes('**Resume**'), 'COR-2: asd-phase-impl-test.md step 1, which reconstruction resumes through, must handle the interrupted current entry');
   const defectId = ids.find((id) => id.startsWith('D-'));
   const fixedStatus = /`Status` to `([^`]+)`/.exec(canonText('.asd/workflows/asd-phase-impl.md'));
   assert.ok(defectId && fixedStatus, `COR-1: git-strategy.md "Commits" must list the D-N id and asd-phase-impl.md test-fix must name the Status it sets. Got: ${JSON.stringify(ids)}`);
@@ -5091,7 +5116,7 @@ test('sprint-014 AC-2: a failed creator or tester dispatch is reconstructed from
   assert.ok(ledgerKey && ids.includes(ledgerKey[1]), `DOC-1: git-strategy.md "Commits" must define a review finding id as its id in the reviewer's ledger \`${ledgerKey && ledgerKey[1]}\` - undefined, a dev writes a trailer reconstruction cannot match. Got: ${JSON.stringify(ids)}`);
   assert.ok(ids.some((id) => /^[a-z-]+\.md [A-Z]+-\d+$/.test(id)), `DOC-1: git-strategy.md "Commits" must show a review finding id prefixed by its <reviewer>.md review file - each reviewer numbers its own findings, so a bare shared id reads another reviewer's fix as landed. Got: ${JSON.stringify(ids)}`);
   assert.ok(ids.includes('impl-review wave-<K>/iter-NN suite'), `sprint-017 D4: the impl-review suite trailer carries the iteration id, or two waves' iteration-NN suite fixes share one trailer. Got: ${JSON.stringify(ids)}`);
-  const reviewFixPayload = (canonText('.asd/workflows/asd-phase-impl.md').split('\n').find((line) => line.trimStart().startsWith('- initial —') && line.includes('review-fix —')) || '').split(/;\s*test-fix\b/)[0].split('review-fix —')[1] || '';
+  const reviewFixPayload = (canonText('.asd/workflows/asd-phase-impl.md').split('\n').find((line) => line.includes('review-fix: grouped finding list')) || '').split(/;\s*test-fix\b/)[0].split('review-fix:')[1] || '';
   assert.ok(/\bid\b[^;]*`git-strategy\.md` "Commits"/.test(reviewFixPayload), 'DOC-1: the review-fix payload must carry each finding\'s id per git-strategy.md "Commits" - without it the dev has no id for its ASD-Task trailer');
   const leftovers = failed.split(/(?<=\.) /).find((sentence) => /\buncommitted\b/i.test(sentence));
   const [payload = '', orchestrator = ''] = leftovers ? leftovers.split(/;\s*/) : [];
@@ -5173,13 +5198,12 @@ test('sprint-014 AC-7: decisions-log.md and test-plan.md rotate into the segment
     ['.asd/skills/asd-sprint/SKILL.md', 'Decisions log'],
     ['.asd/workflows/asd-phase-impl.md', 'Decisions log'],
     ['.asd/workflows/asd-phase-retro.md', 'Decisions log'],
-    ['.asd/rules/sprint-lifecycle.md', 'Test plan'],
     ['.asd/workflows/asd-phase-impl-test.md', 'Test plan'],
     ['.asd/workflows/asd-phase-pr.md', 'Test plan'],
     ['.asd/agents/asd-reviewer-testing.md', 'Test plan'],
     ['.asd/agents/asd-tester.md', 'Test plan'],
   ]) {
-    assert.ok(canonText(rel).includes(`artifact-layout.md\` "${heading}"`), `${rel} writes or reads across rotated ${heading === 'Test plan' ? 'test-plan' : 'decisions-log'} segments, so it must point at artifact-layout.md "${heading}" - without the pointer it reads the live file alone and misses every rotated entry`);
+    assert.ok(canonText(rel).includes(`artifact-layout.md\` "${heading}"`) || canonText(rel).includes(`artifact-layout.md '${heading}'`), `${rel} writes or reads across rotated ${heading === 'Test plan' ? 'test-plan' : 'decisions-log'} segments, so it must point at artifact-layout.md "${heading}" - without the pointer it reads the live file alone and misses every rotated entry`);
   }
 });
 
@@ -5291,7 +5315,7 @@ test('sprint-015 AC-2/AC-3: the impl-review Testing reviewer receives only the i
 
   for (const reviewer of internalReviewers()) {
     const inputs = sectionOf(`.asd/agents/asd-reviewer-${reviewer}.md`, 'Inputs');
-    assert.ok(inputs.includes('`.diff`') && !/\bgit (diff|log|show)\b|diff payload/.test(inputs), `AC-4: asd-reviewer-${reviewer} has no shell, so its Inputs must read the manifest's .diff and never a git command or a diff payload`);
+    assert.ok(inputs.includes('payload.diff') && !/\bgit (diff|log|show)\b|diff payload/.test(inputs), `AC-4: asd-reviewer-${reviewer} has no shell, so its Inputs must read the manifest's .diff and never a git command or a diff payload`);
   }
   const source = canonText('.asd/runtime.js');
   for (const rel of ['.asd/workflows/asd-phase-impl-review.md', '.asd/workflows/asd-phase-design-review.md']) {
@@ -5532,7 +5556,7 @@ test('sprint-017 AC-1 (D1/D2), sprint-023 AC-1: review-waves measures a real git
   const written = Object.keys(JSON.parse(fs.readFileSync(out, 'utf8'))).filter((key) => key !== 'waves');
   assert.deepStrictEqual(written.filter((key) => !spans(divisionRule).includes(key)), [], 'sprint-023 AC-1: sprint-lifecycle.md "Review iteration counters" Division names, as code spans, every waves.json field review-waves writes besides the division itself - a field renamed on the writing side only (threshold to thresholds) leaves the rule describing a file nobody writes');
   const measuredKeys = Object.entries(measured.result).filter(([key, value]) => key !== 'waves' && typeof value === 'number').map(([key]) => key);
-  const divisionStep = stepOf(sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Workflow'), '1c');
+  const divisionStep = stepOf(sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Steps'), '1c');
   assert.deepStrictEqual(measuredKeys.filter((key) => !spans(divisionStep).includes(key)), [], 'sprint-023 AC-1: impl-review step 1c\'s decisions-log entry names every quantity review-waves measures - an entry naming lines alone hides that files or bytes forced the division');
 
   for (const [label, args, pattern] of [
@@ -5696,7 +5720,7 @@ test('sprint-015 AC-1/AC-6/AC-7/AC-8/AC-10/AC-12: no canon tells anyone to clear
 
   const freeForm = sectionOf('.asd/rules/core.md', 'Request user decision');
   assert.ok(freeForm.split(/(?<=[.;])\s/).some((clause) => /free-form/i.test(clause) && /\bnever\b/.test(clause)), 'AC-7: "Request user decision" must never be used for free-form input');
-  assert.ok(canonText('.asd/skills/asd-sprint/SKILL.md').split('\n').some((line) => /^\d\. Collect scope as a plain chat message/.test(line)) && canonText('.asd/workflows/asd-phase-scope.md').split('\n').some((line) => line.startsWith('1. ') && line.includes('plain chat message')), 'AC-7: asd-sprint and the scope workflow collect raw scope as a plain chat message');
+  assert.ok(canonText('.asd/skills/asd-sprint/SKILL.md').split('\n').some((line) => /^\d\. Collect scope as a plain chat message/.test(line)) && jsonOf('.asd/workflows/asd-phase-scope.md', 'Inputs').some((item) => item.includes('plain chat message')), 'AC-7: asd-sprint and the scope workflow collect raw scope as a plain chat message');
 
   const promote = stepOf(canonText('.asd/workflows/asd-phase-design-promote.md'), 4);
   assert.ok(/\borchestrator\b[^.]*`git mv`[^.]*`git rm`/.test(promote), 'AC-6: design-promote routes a BA/UX doc rename or deletion to the main orchestrator');
@@ -5706,17 +5730,14 @@ test('sprint-015 AC-1/AC-6/AC-7/AC-8/AC-10/AC-12: no canon tells anyone to clear
     const text = canonText(`.asd/agents/${name}.md`);
     const claude = JSON.parse(text.split('---\n')[1]).claude;
     assert.ok(claude.tools.includes('Bash') && !claude.disallowedTools.includes('Bash'), `sprint-018 AC-1: ${name} carries a shell on Claude - granted in tools, not disallowed`);
-    const runCommand = (sectionOf(`.asd/agents/${name}.md`, 'Tool policy').split('\n').find((line) => line.startsWith('- Run command:')) || '').split(/(?<=[;.])\s/);
-    assert.ok(runCommand.some((clause) => /\bnever\b/.test(clause) && /\bartifact\b/.test(clause)), `sprint-018 AC-8: ${name}'s shell is bounded by its Run command policy line, which must forbid writing an artifact through it (providers.md write-a-file rule)`);
-    assert.ok(runCommand.some((clause) => /\bnever\b/.test(clause) && /\bgit write\b/.test(clause)), `AC-6/sprint-018 AC-8: ${name}'s Run command line must forbid git writes - holding Bash, its renames and deletions still route through the orchestrator`);
-    assert.ok(runCommand.some((clause) => /\borchestrator\b/.test(clause) && /\brenames?\b/.test(clause)), `AC-6/sprint-018 AC-8: ${name}'s Run command line must route renames/deletes to the orchestrator`);
-    const allowClauses = runCommand.filter((clause) => /\bonly\b/.test(clause) && !/\bnever\b/.test(clause));
-    const allowed = allowClauses.flatMap((clause) => [...clause.matchAll(/`([^`]+)`/g)].map((match) => match[1]));
-    assert.ok(allowed.length > 0, `sprint-018 AC-8 (TST-1-2): ${name}'s Run command line must name the commands it may run under an "only" scope - a never-list alone leaves every other command open`);
-    const neverRun = [...text.matchAll(/Never run `([^`]+)`/g)].map((match) => match[1]);
-    const covers = (grant, command) => (grant.endsWith('*') ? command.startsWith(grant.slice(0, -1)) : command === grant);
-    assert.deepStrictEqual(allowed.filter((grant) => neverRun.some((command) => covers(grant, command))), [], `sprint-018 AC-8: ${name}'s Run command allowlist must not reach a command its own body says never to run (\`designmd-install\` writes package.json/lockfile)`);
-    assert.ok(text.split('\n').some((line) => line.startsWith('- Never') && /\brename\b/.test(line) && /\bpropos/.test(line)), `AC-6 (P2-2): ${name} proposes a doc rename or deletion in its final text instead of performing it, or design-promote never receives the proposal`);
+    const tools = jsonOf(`.asd/agents/${name}.md`, 'Tools');
+    assert.ok(tools.deny.some((item) => /\bartifact\b/.test(item)), `sprint-018 AC-8: ${name}'s shell is bounded by its Tools run/deny lists, which must forbid writing an artifact through it (providers.md write-a-file rule)`);
+    assert.ok(tools.deny.some((item) => /\bgit writes\b/.test(item)), `AC-6/sprint-018 AC-8: ${name}'s Tools deny must forbid git writes - holding Bash, its renames and deletions still route through the orchestrator`);
+    assert.ok(tools.deny.some((item) => /\borchestrator\b/.test(item) && /\brenames?\b/.test(item)), `AC-6/sprint-018 AC-8: ${name}'s Tools deny must route renames/deletes to the orchestrator`);
+    assert.ok(tools.run.length > 0, `sprint-018 AC-8 (TST-1-2): ${name}'s Tools run list must name the commands it may run - a deny-list alone leaves every other command open`);
+    const neverRun = tools.deny.filter((item) => item.startsWith('designmd-install')).map(() => 'designmd-install');
+    assert.deepStrictEqual(tools.run.filter((grant) => neverRun.some((command) => grant.includes(command))), [], `sprint-018 AC-8: ${name}'s Tools run allowlist must not reach a command its own deny list refuses (\`designmd-install\` writes package.json/lockfile)`);
+    assert.ok(text.split('\n').some((line) => line.startsWith('- never:') && /\brename\b/.test(line) && /\bpropos/.test(line)), `AC-6 (P2-2): ${name} proposes a doc rename or deletion in its final text instead of performing it, or design-promote never receives the proposal`);
   }
 
   const checkpoints = canonText('.asd/rules/checkpoints.md').split('\n');
@@ -5801,20 +5822,20 @@ test('sprint-017 AC-1/AC-6 (D3/D4): the review wave and the impl-review iteratio
   const idLine = counters.split('\n').find((line) => line.startsWith('- **Iteration id**'));
   assert.ok(idLine && idLine.includes('`wave-<K>/iter-NN`') && idLine.includes('Design-review ids stay `iter-NN`'), 'D4: the impl-review iteration id must be defined once, in the id form every impl-review literal cites, with design-review unchanged');
   const implReview = canonText('.asd/workflows/asd-phase-impl-review.md');
-  assert.ok(implReview.includes('`<id>` = this iteration\'s id `wave-<K>/iter-NN`') && implReview.includes('`state.json.review_fixes_pending = "<id>"`'), 'D4 Reachability: impl-review must write review_fixes_pending as the wave-qualified id, or impl review-fix looks for findings in a dir that is not there');
-  assert.ok(canonText('.asd/workflows/asd-phase-impl.md').split('\n').some((line) => line.includes('review_fixes_pending') && line.includes('`wave-<K>/iter-NN`') && /legacy bare `iter-NN` reads as wave 1/.test(line)), 'D4/AC-6: impl review-fix mode must read the id form, and a legacy bare iter-NN as wave 1');
+  assert.ok(implReview.includes('<id> = this iteration\'s wave-<K>/iter-NN') && implReview.includes('`state.json.review_fixes_pending = "<id>"`'), 'D4 Reachability: impl-review must write review_fixes_pending as the wave-qualified id, or impl review-fix looks for findings in a dir that is not there');
+  assert.ok([jsonOf('.asd/workflows/asd-phase-impl.md', 'Entry').modes['review-fix']].some((line) => line.includes('review_fixes_pending') && line.includes('wave-<K>/iter-NN') && /legacy bare iter-NN reads as wave 1/.test(line)), 'D4/AC-6: impl review-fix mode must read the id form, and a legacy bare iter-NN as wave 1');
   const staleImplDirs = [...canonMarkdownFiles(), 'README.md'].flatMap((rel) => canonText(rel).split('\n').filter((line) => /reviews\/impl\/iter-NN/.test(line) && !/\blegacy\b/i.test(line)).map((line) => `${rel}: ${line.slice(0, 80)}`));
   assert.deepStrictEqual(staleImplDirs, [], 'D4: impl-review files live under reviews/impl/wave-<K>/iter-NN/; the flat dir may be named only as the legacy read');
 
   assert.ok(canonText('.asd/skills/asd-sprint/SKILL.md').includes('`wave <K>/<n>`'), 'D10/AC-6: the asd-sprint resume display must show the wave and that wave\'s counter');
-  assert.ok(stepOf(canonText('.asd/workflows/asd-phase-pr.md'), 1).includes('every impl-review wave'), 'D10/AC-6: the pr DoD must read reviews-green over every wave, never only the current node');
+  assert.ok(stepOf(subOf(sectionOf('.asd/workflows/asd-phase-pr.md', 'Steps'), 'Open mode'), 1).includes('equals the wave count') && stepOf(subOf(sectionOf('.asd/workflows/asd-phase-pr.md', 'Steps'), 'Open mode'), 1).includes('every wave node'), 'D10/AC-6: the pr DoD must read reviews-green over every wave, never only the current node');
   const reset = counters.split('\n').find((line) => line.includes('**Rollback reset.**'));
   assert.ok(reset && reset.includes('`reviews.impl` to its `t_state.json` seed') && reset.includes('re-divides'), 'D3: a rollback reset must drop every wave and re-divide at the next entry, not keep a stale division');
 
   const floor = sectionOf('.asd/rules/review-policy.md', 'Iteration severity floor');
   assert.ok(/or in impl-review the current review wave's counter/.test(floor) && /\(`sprint-lifecycle\.md` "Review iteration counters"\)/.test(floor), 'TST-2: the severity-floor reader must key impl-review\'s N on the current wave\'s counter, citing this definition rather than a phase-flat one');
   assert.ok(/User may override the cap \(per wave in impl-review\)/.test(floor), 'TST-2: the iteration cap the floor reads is per wave, not a single phase-wide cap');
-  const reviewsGreen = canonText('.asd/rules/sprint-lifecycle.md').split('\n').find((line) => line.includes('**Reviews-green source**'));
+  const reviewsGreen = canonText('.asd/workflows/asd-phase-pr.md').split('\n').find((line) => line.includes('**Reviews-green source**'));
   assert.ok(reviewsGreen && reviewsGreen.includes('state.json.reviews.impl.wave') && reviewsGreen.includes('waves.length'), 'TST-2: the State-recovery reviews-green reader must compare the current wave against the wave count, not a flat iteration');
   assert.ok(/reads only `verdicts\["iter-NN"\]` for the relevant review node \(impl-review: the current wave's, legacy shape included\)/.test(readRepoFile('.asd/rules/sprint-lifecycle.md')), 'TST-2: the hook\'s display-only State-recovery reader must also read the current wave\'s node, legacy shape included');
 });
@@ -5824,11 +5845,11 @@ test('sprint-017 TST-1 (AC-2/AC-3): impl-review step 8 sends K<n straight to wav
   assert.ok(/K < n .*wave K\+1.*same entry, no `impl`\/`impl-test` between/.test(step8), 'AC-2/AC-3: an unmet wave under n must advance straight to the next wave\'s iteration 1 in the same entry - cycling through impl/impl-test between waves would silently re-run test-fix machinery no finding asked for');
   assert.ok(/K = n .*reviewer DoD met.*proceed to step 9/.test(step8), 'AC-2/AC-3: only the roster-met last wave may reach the terminal full-suite gate');
 
-  const returnContract = sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Return contract (single line)');
+  const returnContract = sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Return');
   assert.ok(returnContract.includes('WAVE: <K>'), 'AC-3: the return contract must carry the wave the entry ended on, or a resumed session cannot tell which wave is live');
 
-  const artefacts = sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Artefacts produced');
-  assert.ok(artefacts.split('\n').some((line) => /decisions-log entry on a division into n > 1 waves/.test(line)), 'AC-1: a division into more than one wave must leave a decisions-log artefact naming it, or a resumed session cannot tell whether the scope was ever divided');
+  const artefacts = jsonOf('.asd/workflows/asd-phase-impl-review.md', 'Exit').writes;
+  assert.ok(artefacts.some((line) => /decisions-log entry on a division into n > 1 waves/.test(line)), 'AC-1: a division into more than one wave must leave a decisions-log artefact naming it, or a resumed session cannot tell whether the scope was ever divided');
 });
 
 test('sprint-017 (COR-2/DOC-1): a closed wave\'s late-admitted finding lands in the CURRENT iteration\'s dir (never the closed wave\'s), joins step 8\'s unresolved set, step 8 checks for it before the roster-met "Otherwise" branch, and the Artefacts produced line defers that location to review-policy.md instead of restating one', () => {
@@ -5838,8 +5859,8 @@ test('sprint-017 (COR-2/DOC-1): a closed wave\'s late-admitted finding lands in 
   assert.ok(closedWaveLine, 'COR-2: step 7a must state a closed-wave branch for a late duplicate return - otherwise a late admission after the wave advanced has nowhere defined to land');
   assert.ok(/its `\.late\.md` goes to this iteration's `<sprint>\/reviews\/impl\/<id>\/` instead/.test(closedWaveLine), 'COR-2: a closed wave\'s late.md must land in the CURRENT iteration\'s dir, not the closed wave\'s own dir - the closed wave is never reopened or re-dispatched');
   assert.ok(/its finding joins step 8's unresolved set/.test(closedWaveLine), 'COR-2: the closed-wave finding must reach step 8\'s routing, or an admitted FAIL/CONCERNS from a closed wave is silently dropped');
-  const lateArtefact = sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Artefacts produced').split('\n').find((line) => line.includes('<reviewer>.late.md'));
-  assert.ok(lateArtefact && lateArtefact.includes('per `review-policy.md` "Late duplicate return"') && !/iteration dir/.test(lateArtefact), `DOC-1: the Artefacts produced .late.md line must cite review-policy.md "Late duplicate return" for which iteration's dir it lands in, never restate one - a single restated location contradicts step 7a's closed-wave branch, and an orchestrator writing from the list puts the file where review-fix never reads it. Got: ${lateArtefact}`);
+  const lateArtefact = jsonOf('.asd/workflows/asd-phase-impl-review.md', 'Exit').writes.find((line) => line.includes('<reviewer>.late.md'));
+  assert.ok(lateArtefact && lateArtefact.includes("per review-policy.md 'Late duplicate return'") && !/iteration dir/.test(lateArtefact), `DOC-1: the Exit writes .late.md line must cite review-policy.md "Late duplicate return" for which iteration's dir it lands in, never restate one - a single restated location contradicts step 7a's closed-wave branch, and an orchestrator writing from the list puts the file where review-fix never reads it. Got: ${lateArtefact}`);
 
   const step8 = stepOf(reviewFlow, 8);
   const unresolvedBullet = step8.split('\n').find((line) => line.includes('Any unresolved finding remains'));
@@ -5887,39 +5908,32 @@ test('sprint-018 AC-1/AC-2/AC-4/AC-8/AC-9: no agent grants AskUserQuestion, web 
     else assert.ok(denied.includes('WebFetch'), `AC-2: ${a.name} keeps WebFetch in disallowedTools`);
   }
 
-  for (const a of agents.filter(hasWeb)) {
-    assert.ok(sectionOf(a.rel, 'Tool policy').split('\n').some((line) => line.startsWith('- ') && /\bweb\b|\bURL\b/i.test(line)), `AC-9: ${a.name} carries web tools, so its Tool policy must scope what it may look up`);
+  for (const a of agents) {
+    const web = jsonOf(a.rel, 'Tools').web;
+    if (hasWeb(a)) assert.ok(typeof web === 'string' && web.length > 0, `AC-9: ${a.name} carries web tools, so its Tools "web" must scope what it may look up - one grant covers fetch and search alike`);
+    else assert.strictEqual(web, undefined, `AC-9: ${a.name} withholds web, so its Tools must carry no "web" scope`);
   }
   const boundary = sectionOf('.asd/rules/core.md', 'Untrusted-data boundary');
   assert.ok(boundary.includes('search results'), 'AC-9: the untrusted-data rule must cover web search results, not only fetched pages');
   assert.ok(!/WebFetch|WebSearch|web_search/.test(boundary), 'AC-9: the untrusted-data rule applies on both hosts, so it names no host tool (providers.md maps them)');
-  const devWeb = sectionOf('.asd/agents/asd-dev.md', 'Tool policy').split('\n').filter((line) => /\bweb\b/.test(line)).map((line) => /^- (.+?) only for /.exec(line)).find(Boolean);
-  assert.ok(devWeb, 'AC-9: asd-dev must carry its scoped web policy line');
-  const ops = devWeb[1].split(' / ').map((op) => op[0].toLowerCase() + op.slice(1));
-  assert.ok(ops.length === 2, `sanity: the web policy line names fetch and search - got ${JSON.stringify(ops)}`);
   const providers = canonText('.asd/rules/providers.md').split('\n');
-  for (const op of ops) {
-    assert.ok(providers.some((line) => line.startsWith(`| ${op} |`)), `AC-9: agent bodies name the semantic op "${op}", so providers.md must map it to both hosts`);
+  for (const op of ['fetch external doc by URL', 'search the web']) {
+    assert.ok(providers.some((line) => line.startsWith(`| ${op} |`)), `AC-9: the web grant covers the semantic op "${op}", so providers.md must map it to both hosts`);
   }
-  const fetchLines = agents.filter(hasWeb).flatMap((a) => sectionOf(a.rel, 'Tool policy').split('\n').filter((line) => line.toLowerCase().startsWith(`- ${ops[0].toLowerCase()}`)).map((line) => [a.name, line]));
-  assert.ok(fetchLines.length >= 5, `sanity: the web-granted agents whose policy names the fetch op must be found - got ${fetchLines.length}`);
-  for (const [name, line] of fetchLines) {
-    const scoped = /^- (.+?) only for /.exec(line);
-    assert.deepStrictEqual(scoped && scoped[1].split(' / ').map((op) => op[0].toLowerCase() + op.slice(1)), ops, `AC-9 (TST-2-3): ${name} holds both web tools, so its scoped policy line must bound search as well as fetch ("<fetch> / <search> only for") - a fetch-only scope leaves web search unbounded`);
-  }
-  const uxInstall = sectionOf('.asd/agents/asd-ux.md', "Do's").split('\n').find((line) => line.includes('Never run `designmd-install`'));
-  const installSites = uxInstall ? [...uxInstall.matchAll(/`(asd-[a-z-]+)(\.md)?`(?: step (\d+))?/g)] : [];
+  assert.ok(agents.filter(hasWeb).length >= 5, 'sanity: the web-granted agents must be found');
+  const uxInstall = jsonOf('.asd/agents/asd-ux.md', 'Tools').deny.find((item) => item.startsWith('designmd-install'));
+  const installSites = uxInstall ? [...uxInstall.matchAll(/(asd-[a-z-]+)(\.md)?(?: step (\d+))?/g)] : [];
   assert.ok(installSites.length >= 3, 'AC-8: asd-ux may not run designmd-install, so it must name the orchestrator sites that run it instead');
   for (const [, name, isWorkflow, step] of installSites) {
     const rel = isWorkflow ? `.asd/workflows/${name}.md` : `.asd/skills/${name}/SKILL.md`;
-    const source = canonText(rel).includes('\n## Workflow') ? sectionOf(rel, 'Workflow') : canonText(rel);
+    const source = isWorkflow ? sectionOf(rel, 'Steps') : canonText(rel);
     assert.ok(/run command `designmd-install`/i.test(step ? stepOf(source, step) : source), `AC-8: asd-ux cites ${rel}${step ? ` step ${step}` : ''} as where the orchestrator runs designmd-install - that site must run it, or DESIGN.md lint fails on Windows with nobody allowed to install`);
   }
 
   const shells = agents.filter((a) => a.meta.claude.tools.includes('Bash'));
-  const runLine = (a) => sectionOf(a.rel, 'Tool policy').split('\n').find((line) => line.startsWith('- Run command:'));
-  assert.deepStrictEqual(shells.filter((a) => !runLine(a)).map((a) => a.name), [], 'AC-8: every Bash grant is bounded by a Run command policy line');
-  const holders = shells.filter((a) => runLine(a).includes('`git commit`')).map((a) => a.name);
+  const runLine = (a) => (jsonOf(a.rel, 'Tools').run || []).join('\n');
+  assert.deepStrictEqual(shells.filter((a) => !runLine(a)).map((a) => a.name), [], 'AC-8: every Bash grant is bounded by a Tools run list');
+  const holders = shells.filter((a) => runLine(a).includes('git commit')).map((a) => a.name);
   const policy = canonText('.asd/rules/git-strategy.md');
   const start = policy.indexOf('Holding a commit tool');
   assert.ok(start >= 0 && policy.indexOf('hold one', start) > start, 'AC-8: git-strategy.md must define who holds a commit tool by role policy');
@@ -5930,25 +5944,24 @@ test('sprint-018 AC-1/AC-2/AC-4/AC-8/AC-9: no agent grants AskUserQuestion, web 
 test('sprint-018 AC-4/AC-5/AC-7: only the main orchestrator prompts the user - core.md says so, the QUESTION protocol carries every dispatched question, every creator/dev/tester-dispatching workflow cites it, and no agent body, skill or design step hands user contact to a dispatched agent', () => {
   const request = sectionOf('.asd/rules/core.md', 'Request user decision');
   assert.ok(request.split(/(?<=[.;—])\s/).some((clause) => /\bonly\b/i.test(clause) && /main orchestrator/.test(clause)), 'AC-5: core.md must reserve request user decision to the main orchestrator');
-  assert.ok(request.includes("`sprint-lifecycle.md`'s `QUESTION` protocol"), 'AC-5: core.md must hand a dispatched agent\'s question to the QUESTION protocol');
+  assert.ok(request.includes('`agent-protocol.md` "Relay"'), 'AC-5: core.md must hand a dispatched agent\'s question to the QUESTION protocol');
   assert.ok(!request.includes('Every agent can do this'), 'AC-5: the retired "every agent can prompt" claim must stay gone');
   assert.ok(canonText('.asd/rules/providers.md').split('\n').some((line) => line.startsWith('| request user decision') && line.includes('`core.md` "Request user decision"')), 'AC-5: the providers.md host mapping must point at the orchestrator-only rule');
   for (const [rel, retired] of [['.asd/rules/sprint-lifecycle.md', 'escalates to the user normally'], ['.asd/rules/sprint-lifecycle.md', "escalates per `core.md`'s Autonomy"], ['.asd/rules/design-principles.md', 'request user decision for final choice'], ['.asd/rules/external-review.md', 'escalates to user with options']]) {
     assert.ok(!canonText(rel).includes(retired), `AC-5: ${rel} must not tell a dispatched agent to reach the user itself ("${retired}")`);
   }
 
-  const vocabulary = sectionOf('.asd/rules/sprint-lifecycle.md', 'Signal vocabulary');
-  const signal = vocabulary.split('\n').find((line) => line.startsWith('- `QUESTION`'));
-  assert.ok(signal && /\breviewer\b/.test(signal) && signal.includes('`review-policy.md` "Gate Verdict Format"') && signal.includes('`QUESTION` protocol'), 'AC-4/AC-7: the QUESTION signal must exclude reviewers (pointing at their carrier) and point at its protocol');
-  const protocol = vocabulary.split('**`QUESTION` protocol**')[1];
-  assert.ok(protocol, 'AC-7: sprint-lifecycle.md must carry the QUESTION protocol');
+  const signal = sectionOf('.asd/rules/agent-protocol.md', 'Signals').split('\n').find((line) => line.startsWith('| `QUESTION`'));
+  const protocol = sectionOf('.asd/rules/agent-protocol.md', 'Relay').split('**`QUESTION`**:')[1];
+  assert.ok(signal && /\breviewer\b/.test(signal) && signal.includes('`review-policy.md` "Gate Verdict Format"') && signal.includes('"Relay" `QUESTION`'), 'AC-4/AC-7: the QUESTION signal must exclude reviewers (pointing at their carrier) and point at its protocol');
+  assert.ok(protocol, 'AC-7: agent-protocol.md "Relay" must carry the QUESTION protocol');
   const steps = protocol.split('\n\n')[0].split('\n').filter((line) => /^\d\. /.test(line));
   assert.ok(steps.length === 3 && /dispatched agent/.test(steps[0]), 'AC-7: step 1 catches QUESTION from a dispatched agent');
   assert.ok(/main orchestrator/.test(steps[1]) && /request user decision/.test(steps[1]), 'AC-7: step 2 - the main orchestrator asks, via request user decision');
   assert.ok(steps[1].includes('`decisions-log.md`') && /before any further work/.test(steps[1]), 'AC-7: step 2 - the answer is on disk before any further work, or a lost session loses it');
   assert.ok(/\bfresh\b/.test(steps[2]) && /original task/.test(steps[2]) && /\banswer\b/.test(steps[2]), 'AC-7: step 3 - a fresh re-dispatch carrying the original task plus the answer; no host resumes a dispatched agent');
 
-  const citation = "`sprint-lifecycle.md`'s `QUESTION` protocol";
+  const cites = (text) => text.includes('`agent-protocol.md` "Relay"') || text.includes("agent-protocol.md 'Relay'");
   const creators = canonAgents().map((a) => a.name).filter((name) => !/^asd-(reviewer-|external-review|advisor)/.test(name));
   assert.deepStrictEqual(creators, ['asd-architect', 'asd-ba', 'asd-dev', 'asd-tester', 'asd-ux'], 'sanity: the QUESTION-emitting roles, derived from the agents directory');
   const workflows = fs.readdirSync(path.join(REPO_ROOT, '.asd/workflows')).filter((file) => file.endsWith('.md')).map((file) => `.asd/workflows/${file}`);
@@ -5956,15 +5969,15 @@ test('sprint-018 AC-4/AC-5/AC-7: only the main orchestrator prompts the user - c
   assert.ok(dispatchers.length >= 6, `sanity: the creator/dev/tester-dispatching workflows must be found - got ${dispatchers.join(', ')}`);
   const branches = workflows.flatMap((rel) => canonText(rel).split(/;|\n/).filter((clause) => /QUESTION[^→]*→/.test(clause)).map((clause) => `${rel}: ${clause.trim()}`));
   assert.ok(branches.length >= 3, 'sanity: the QUESTION → branch sweep must reach the workflows');
-  assert.deepStrictEqual(branches.filter((clause) => !clause.includes(citation)), [], 'AC-7: a QUESTION branch routes through the protocol, never "relay, halt"');
+  assert.deepStrictEqual(branches.filter((clause) => !cites(clause)), [], 'AC-7: a QUESTION branch routes through the protocol, never "relay, halt"');
 
   const selfPrompt = /\brequests? (?:for )?(?:a )?user (?:decision|approval)|\brequests? the user\b/i;
-  const offenders = canonAgents().flatMap((a) => a.body.split(/(?<=[.;])\s|\n/).filter((clause) => selfPrompt.test(clause) && !/\bnever\b/.test(clause)).map((clause) => `${a.name}: ${clause.trim()}`));
+  const offenders = canonAgents().flatMap((a) => a.body.split('\n').filter((line) => !line.startsWith('- never:')).flatMap((line) => line.split(/(?<=[.;])\s/)).filter((clause) => selfPrompt.test(clause) && !/\bnever\b/.test(clause)).map((clause) => `${a.name}: ${clause.trim()}`));
   assert.deepStrictEqual(offenders, [], 'AC-4: no agent body may instruct the agent itself to request a user decision - it returns QUESTION (or its reviewer carrier) instead');
   const delegatedAsk = [...canonMarkdownFiles()].flatMap((rel) => canonText(rel).split('\n').filter((line) => /delegate to agent\b[^.]*\bto ask (?:the )?user/i.test(line)).map((line) => `${rel}: ${line}`));
   assert.deepStrictEqual(delegatedAsk, [], 'AC-7: a skill or workflow collects user input inline before delegating - never delegates the asking');
 
-  const design = sectionOf('.asd/workflows/asd-phase-design.md', 'Workflow');
+  const design = sectionOf('.asd/workflows/asd-phase-design.md', 'Steps');
   for (const n of [6, 8, 9]) {
     const step = stepOf(design, n);
     const instruction = step.split('\n').find((line) => line.trim().startsWith('- instruction:'));
@@ -5977,18 +5990,18 @@ test('sprint-018 AC-4/AC-5/AC-7: only the main orchestrator prompts the user - c
   const loop = stepOf(design, 6).split('\n').find((line) => /accept loop/.test(line));
   assert.ok(/\borchestrator\b/.test(loop) && /re-dispatch/.test(loop) && loop.includes('explicit `accept`'), 'AC-7: the accept loop is the orchestrator\'s - it discusses with the user and re-dispatches the creator until an explicit accept');
   const tokenGate = stepOf(design, 8).split('\n').find((line) => /token gate/.test(line));
-  assert.ok(tokenGate && /\borchestrator\b/.test(tokenGate) && tokenGate.includes(citation), 'AC-7: UX\'s token approval is an orchestrator gate over UX\'s QUESTION');
+  assert.ok(tokenGate && /\borchestrator\b/.test(tokenGate) && cites(tokenGate), 'AC-7: UX\'s token approval is an orchestrator gate over UX\'s QUESTION');
 
-  assert.deepStrictEqual(dispatchers.filter((rel) => !canonText(rel).includes(citation)), [], 'AC-7: every workflow dispatching a role that can return QUESTION must cite the QUESTION protocol, or that question has no handling path in the phase');
+  assert.deepStrictEqual(dispatchers.filter((rel) => !cites(canonText(rel))), [], 'AC-7: every workflow dispatching a role that can return QUESTION must cite the QUESTION protocol, or that question has no handling path in the phase');
 });
 
 test('sprint-018 AC-4/AC-5/AC-7: a reviewer\'s question and External Review\'s stalemate ride the verdict-bearing report - one carrier form across template, rule, agents and both review workflows - and impl-test\'s green exit runs the manual-verification smoke check its one reviewing reader takes from test-plan.md (sprint-021 AC-10)', () => {
   const reviewers = canonAgents().filter((a) => /^asd-(reviewer-|external-review)/.test(a.name));
   assert.deepStrictEqual(reviewers.map((a) => a.name).sort(), workflowReviewerAgents(), 'sanity: exactly the reviewers the workflow definitions dispatch');
   for (const r of reviewers) {
-    assert.ok(!sectionOf(r.rel, 'Signals emitted').includes('`QUESTION`'), `AC-4: ${r.name} never returns a bare QUESTION - without its verdict token it reads as an interrupted dispatch and the question is lost`);
-    for (const line of r.body.split('\n').filter((l) => l.includes('`question:`'))) {
-      assert.ok(line.includes('`review-policy.md` "Gate Verdict Format"'), `AC-4: ${r.name} routes a question through the carrier and must cite its home: ${line}`);
+    assert.ok(!jsonOf(r.rel, 'Signals').includes('QUESTION'), `AC-4: ${r.name} never returns a bare QUESTION - without its verdict token it reads as an interrupted dispatch and the question is lost`);
+    for (const line of r.body.split('\n').filter((l) => /\bquestion: (?:item|`)/.test(l))) {
+      assert.ok(line.includes('`review-policy.md` "Gate Verdict Format"') || line.includes("review-policy.md 'Gate Verdict Format'"), `AC-4: ${r.name} routes a question through the carrier and must cite its home: ${line}`);
     }
   }
 
@@ -6006,20 +6019,21 @@ test('sprint-018 AC-4/AC-5/AC-7: a reviewer\'s question and External Review\'s s
   const answerForm = /`(\s*answer: [^`]+)`/.exec(carrier);
   assert.ok(answerItem && answerForm, 'AC-4: the carrier must state where the user\'s answer is written, and t_review.md must ship that line under the question item');
   assert.strictEqual(shape(answerForm[1]), shape(answerItem), 'AC-4: review-policy.md and t_review.md must agree on the answer line form');
-  const reviewFix = stepOf(sectionOf('.asd/workflows/asd-phase-impl.md', 'Workflow'), 3).split('\n').find((line) => line.includes('**review-fix**'));
+  const reviewFix = stepOf(sectionOf('.asd/workflows/asd-phase-impl.md', 'Steps'), 3).split('\n').find((line) => line.includes('**review-fix**'));
   assert.ok(reviewFix && reviewFix.includes('`answer:`') && reviewFix.includes('`review-policy.md` "Gate Verdict Format"'), 'AC-4: impl review-fix must collect the answer lines with the findings, citing the carrier - otherwise the answer sits in decisions-log and the fixer never reads it');
   const routesToQuestion = /\b(?:returns?|via|as) `QUESTION`/;
   const questionRoutes = fs.readdirSync(path.join(REPO_ROOT, '.asd/rules')).flatMap((file) => canonText(`.asd/rules/${file}`).split('\n').filter((line) => routesToQuestion.test(line)).map((line) => ({ file, line })));
   assert.deepStrictEqual(questionRoutes.filter(({ line }) => !/\bagent\b/.test(line)).map(({ file }) => file), ['design-principles.md'], 'TST-2-1: a QUESTION route whose line names no agent is creator-scoped and exempt; the exempt set is compared exactly, so a generic route cannot drop out of the sweep by rewording its subject');
   const genericReturns = questionRoutes.filter(({ line }) => /\bagent\b/.test(line)).map(({ file, line }) => `${file}: ${line}`);
   assert.ok(genericReturns.length >= 5, 'sanity: the rule-doc lines routing any agent to QUESTION must be found');
-  assert.deepStrictEqual(genericReturns.filter((line) => !(/\breviewer\b/.test(line) && /\bcarrier\b/.test(line))), [], 'AC-4/AC-5: a rule line telling any agent to return QUESTION reaches reviewers too, so it must carve them out to their carrier on the same line (D-1, then ADVICE_NEEDED steps 4/6 - the class recurs)');
+  assert.ok(sectionOf('.asd/rules/agent-protocol.md', 'Signals').split('\n').some((row) => row.startsWith('| `ADVICE_NEEDED`') && row.includes('Never a reviewer')), 'C-4: the consulting agent of a Relay ADVICE_NEEDED step is a creator because the Signals table bars reviewers from the signal - that bar is what lets those steps skip the reviewer carve-out');
+  assert.deepStrictEqual(genericReturns.filter((line) => !(/\breviewer\b/.test(line) && /\bcarrier\b/.test(line)) && !(line.startsWith('agent-protocol.md: ') && /\bconsulting agent\b/.test(line))), [], 'AC-4/AC-5: a rule line telling any agent to return QUESTION reaches reviewers too, so it must carve them out to their carrier on the same line (D-1, then ADVICE_NEEDED steps 4/6 - the class recurs)');
 
   const external = sectionOf('.asd/rules/external-review.md', 'Stalemate detection');
   const token = /first line `(\[REVIEW-<phase>-external\]: FAIL)`/.exec(external);
   const label = /`(Stalemate:)[^`]*`/.exec(external);
   assert.ok(token && label, 'AC-4: a stalemate returns the FAIL verdict token plus a Stalemate block - a verdict, inside the two-outcome contract');
-  const trigger = canonText('.asd/agents/asd-external-review.md').split('\n').find((line) => line.startsWith('- **Approval triggers**'));
+  const trigger = canonText('.asd/agents/asd-external-review.md').split('\n').find((line) => line.startsWith('- must: on stalemate'));
   assert.ok(trigger && trigger.includes(token[1]) && trigger.includes(`\`${label[1]}`), 'AC-4: External Review\'s stalemate trigger must return the same token and block external-review.md defines');
   const options = [...external.matchAll(/^- \*\*([a-z ]+)\*\* — \S/gm)].map((match) => match[1]);
   assert.strictEqual(options.length, 3, `AC-4: "Stalemate detection" is the one home of the stalemate options, each with its effect - got ${JSON.stringify(options)}`);
@@ -6030,7 +6044,7 @@ test('sprint-018 AC-4/AC-5/AC-7: a reviewer\'s question and External Review\'s s
   assert.deepStrictEqual(optionList(trigger), options, 'AC-4: External Review\'s stalemate trigger must offer exactly the options external-review.md defines');
 
   for (const rel of ['.asd/workflows/asd-phase-design-review.md', '.asd/workflows/asd-phase-impl-review.md']) {
-    const flow = sectionOf(rel, 'Workflow').split('\n');
+    const flow = sectionOf(rel, 'Steps').split('\n');
     const q = flow.findIndex((line) => line.includes('`question:`'));
     const fail = flow.findIndex((line) => line.includes('**Any FAIL**'));
     assert.ok(q >= 0 && q < fail, `AC-4: ${rel} must handle reviewer questions before routing the iteration`);
@@ -6044,14 +6058,15 @@ test('sprint-018 AC-4/AC-5/AC-7: a reviewer\'s question and External Review\'s s
     assert.ok(flow[q].split(/(?<=[;.])\s|, and /).some((clause) => /\bwrite\b/.test(clause) && /reviewer's file/.test(clause)), `AC-4: ${rel} must write each answer into that reviewer's file, where the fixer reads it - an answer only in decisions-log never reaches the fix`);
   }
 
-  const smoke = stepOf(sectionOf('.asd/workflows/asd-phase-impl-test.md', 'Workflow'), 10);
-  assert.ok(smoke.includes('`Manual verification`') && /requests? (?:a )?user decision/.test(smoke) && smoke.includes('`test-plan.md`') && /decisions-log/.test(smoke), 'AC-7/sprint-021 AC-10: impl-test\'s green exit (step 10) runs the smoke check - a user decision per `Manual verification` row, recorded in test-plan.md and logged - before impl-review, so a failed manual check routes before any reviewer runs');
-  assert.ok(!sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Workflow').split('\n').some((line) => /Manual verification/i.test(line) && /request user decision/.test(line)), 'sprint-021 AC-10: impl-review no longer collects manual-verification results - a second collection asks the user twice');
+  const smoke = stepOf(sectionOf('.asd/workflows/asd-phase-impl-test.md', 'Steps'), 10);
+  assert.ok(smoke.includes('`Manual verification`') && /request(?:s)? (?:a )?user decision/.test(smoke) && smoke.includes('"Test plan" Manual verification') && /decisions-log/.test(smoke), 'AC-7/sprint-021 AC-10: impl-test\'s green exit (step 10) runs the smoke check - a user decision per `Manual verification` row, recorded in test-plan.md and logged - before impl-review, so a failed manual check routes before any reviewer runs');
+  assert.ok(!sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Steps').split('\n').some((line) => /Manual verification/i.test(line) && /request user decision/.test(line)), 'sprint-021 AC-10: impl-review no longer collects manual-verification results - a second collection asks the user twice');
   for (const { name, reviewers: roster } of readWorkflowDefinitions()) {
-    const readers = roster.impl.filter((key) => key !== runtime.EXTERNAL_REVIEWER && sectionOf(`.asd/agents/asd-reviewer-${key}.md`, 'Inputs').split('\n').some((line) => /manual-verification results/.test(line)));
+    const inputItems = (key) => Object.values(jsonOf(`.asd/agents/asd-reviewer-${key}.md`, 'Inputs')).flat().filter((item) => typeof item === 'string');
+    const readers = roster.impl.filter((key) => key !== runtime.EXTERNAL_REVIEWER && inputItems(key).some((item) => /manual-verification results/.test(item)));
     assert.strictEqual(readers.length, 1, `sprint-020 AC-4: the manual-verification results must reach exactly one reviewer of every workflow - ${name}'s impl-review roster (${roster.impl.join(', ')}) has ${readers.length} whose Inputs read them`);
-    const line = sectionOf(`.asd/agents/asd-reviewer-${readers[0]}.md`, 'Inputs').split('\n').find((candidate) => /manual-verification results/.test(candidate));
-    assert.ok(line.includes('`test-plan.md`') && !/\bpayload\b/.test(line), `sprint-021 AC-10: asd-reviewer-${readers[0]} reads the results where impl-test records them, test-plan.md, never from a payload no step fills any more`);
+    const line = inputItems(readers[0]).find((candidate) => /manual-verification results/.test(candidate));
+    assert.ok(line.includes('test-plan.md') && !/\bpayload\b/.test(line), `sprint-021 AC-10: asd-reviewer-${readers[0]} reads the results where impl-test records them, test-plan.md, never from a payload no step fills any more`);
   }
 
   const declared = sectionOf('.asd/rules/providers.md', 'Role-scoped context').split('\n').find((line) => line.startsWith('**Declared tool policy**'));
@@ -6081,14 +6096,14 @@ test('sprint-018 AC-4: a finding the user resolves without a fix is recorded by 
     assert.ok(lines.some((line) => line.includes('`cap-accept`') && /\bresolved\b/.test(line)), `${rel}: an iteration-cap accept must record the open findings resolved`);
   }
   const prefix = form[1].split(' ')[0];
-  const reviewFix = stepOf(sectionOf('.asd/workflows/asd-phase-impl.md', 'Workflow'), 3).split('\n').find((line) => line.includes('**review-fix**'));
+  const reviewFix = stepOf(sectionOf('.asd/workflows/asd-phase-impl.md', 'Steps'), 3).split('\n').find((line) => line.includes('**review-fix**'));
   assert.ok(reviewFix && reviewFix.includes(`\`${prefix}\``) && reviewFix.includes(citation), 'impl review-fix must skip each finding a resolved: line names, citing the home - the collector is the consuming end of the record');
 
   const verdictOnly = [...canonMarkdownFiles(), 'README.md'].flatMap((rel) => canonText(rel).split('\n').filter((line) => line.includes('`verdicts["iter-NN"]` alone')).map((line) => ({ rel, line })));
   assert.ok(verdictOnly.length >= 2, 'sanity: the aggregation steps that read verdicts must be found');
   const dodHeader = sectionOf('.asd/rules/review-policy.md', 'DoD per review phase').split('\n').find((line) => line.startsWith('| Phase |'));
   assert.ok(dodHeader && dodHeader.includes('`sprint-lifecycle.md` "State recovery"') && /user-resolved/.test(dodHeader), 'AC-4: the DoD table says what counts as met, so it must admit a user-resolved verdict with its home');
-  assert.ok(/satisfied per its "State recovery"/.test(stepOf(canonText('.asd/workflows/asd-phase-pr.md'), 1)), 'AC-4: the pr gate, the other gating consumer, must judge satisfied-vs-blocking per State recovery, where the user-resolved rule lives');
+  assert.ok(/Satisfied-vs-blocking semantics[^.]*`sprint-lifecycle\.md` "State recovery"/.test(stepOf(subOf(sectionOf('.asd/workflows/asd-phase-pr.md', 'Steps'), 'Open mode'), 1)), 'AC-4: the pr gate, the other gating consumer, must judge satisfied-vs-blocking per State recovery, where the user-resolved rule lives');
   assert.deepStrictEqual(verdictOnly.filter(({ line }) => !line.includes('"User-resolved findings"')).map(({ rel, line }) => `${rel}: …${line.slice(Math.max(0, line.indexOf('alone') - 80), line.indexOf('alone') + 40)}…`), [], 'AC-4 (104feda): a line saying a consumer reads verdicts["iter-NN"] alone must carry the user-resolved exception - read literally, it blocks a user-resolved CONCERNS/FAIL forever');
 });
 
@@ -6234,13 +6249,12 @@ test('sprint-019 AC-1/AC-2/AC-5, sprint-023 AC-8: retroCandidates offers the lat
 });
 
 test('sprint-019 AC-1/AC-3/AC-4/AC-5/AC-6, sprint-023 AC-8: scope step 2a runs retro intake by the command sprint-lifecycle.md "Retro intake" names - run as written from a project root it prints the candidates, and [] with no prior retro - and the home\'s failure, empty, resolved, disposition and upstream-row clauses and scope step 4\'s backlog write and upstream display each hold', () => {
-  const step = stepOf(canonText('.asd/workflows/asd-phase-scope.md'), '2a');
-  assert.ok(step.includes('`sprint-lifecycle.md` "Retro intake"'), 'step 2a must cite the intake home rather than restate it');
+  const step = stepOf(sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps'), '2a');
+  assert.ok(step.startsWith('2a. **Retro intake**') && !canonText('.asd/rules/sprint-lifecycle.md').includes('**Retro intake.**'), 'step 2a is the one home of retro intake since the Retro intake paragraph moved out of sprint-lifecycle.md (D9) - a second statement in the rule doc would be a second home');
   const command = /`(node \.asd\/runtime\.js retro-candidates [^`]+)`/.exec(step);
   assert.ok(command && step.includes('`--self-hosting`'), 'step 2a must name the literal command it runs and when it adds --self-hosting');
-  const rule = /`node \.asd\/runtime\.js retro-candidates ([^`]+)`/.exec(canonText('.asd/rules/sprint-lifecycle.md'));
   const flags = (text) => [...text.matchAll(/--[a-z-]+/g)].map((match) => match[0]).sort();
-  assert.deepStrictEqual(flags(`${command[1]} --self-hosting`), flags(rule ? rule[1] : ''), 'the acting command and its rule must name the same flags');
+  assert.deepStrictEqual(flags(`${command[1]} --self-hosting`), ['--backlog', '--self-hosting', '--sprints'], 'the intake command must name the flags the runtime CLI reads: the sprints dir, the backlog path and the self-hosting switch');
 
   const run = (root) => {
     const [, script, ...args] = `${command[1]} --self-hosting`.split(/\s+/);
@@ -6249,14 +6263,14 @@ test('sprint-019 AC-1/AC-3/AC-4/AC-5/AC-6, sprint-023 AC-8: scope step 2a runs r
   const fixture = retroIntakeFixture(INTAKE_SPRINTS, INTAKE_BACKLOG);
   const offered = JSON.parse(run(fixture.root));
   assert.deepStrictEqual(offered, runtime.retroCandidates(fixture.sprintsDir, fixture.backlogPath, true), 'the command as the workflow writes it, run from the project root, must reach the sprints and the backlog it names');
-  const rowId = canonText('.asd/rules/sprint-lifecycle.md').split('\n').find((line) => line.startsWith('**Retro row id**')) || '';
+  const rowId = sectionOf('.asd/rules/sprint-lifecycle.md', 'Retro row ids');
   const prefix = (/`([^`]+:)`[^.]*\bEnglish\b/.exec(rowId.split(/(?<=\.)\s/).find((sentence) => /\bEnglish\b/.test(sentence)) || '') || [])[1];
   const covered = RETRO_017.actions.findIndex(([text]) => prefix && text.startsWith(prefix));
   assert.ok(covered >= 0 && !offered.some((candidate) => candidate.row === `017-b#A-${covered + 1}`), `sprint-019 74a25b1: "Retro row id" must name the covered-by prefix among its English literals, and it must be the one intake drops - a translated prefix offers covered rows as candidates (got ${JSON.stringify(prefix)})`);
   assert.strictEqual(run(retroIntakeFixture({}).root).trim(), '[]', 'AC-5: a project with no archived sprint and no backlog yet gets [] - the silent no-op');
 
-  const intake = canonText('.asd/rules/sprint-lifecycle.md').split('\n').find((line) => line.startsWith('**Retro intake.**')) || '';
-  const sentences = intake.split(/(?<=\.)\s/);
+  const intake = step;
+  const sentences = intake.split(/(?<=\.)\s+|\n\s*- /);
   const sentenceWith = (pattern) => sentences.find((sentence) => pattern.test(sentence)) || '';
   const failed = sentenceWith(/non-zero exit/);
   assert.ok(/\bblocks\b/.test(failed) && /stderr/.test(failed) && /re-run/.test(failed) && /\bskip\b/.test(failed) && /decisions-log/.test(failed), 'sprint-019 TST-1-1: a failed retro-candidates run blocks intake and hands its stderr to the user - fix and re-run, or skip with one decisions-log line; unstated, the orchestrator reads a crash as [] and the rows are never offered');
@@ -6270,7 +6284,7 @@ test('sprint-019 AC-1/AC-3/AC-4/AC-5/AC-6, sprint-023 AC-8: scope step 2a runs r
   assert.ok(decision('inclu').includes('`AC-N`'), 'sprint-019 TST-1-1/AC-3: an included row becomes an AC-N of this sprint');
   assert.ok(/never offered again/.test(decision('reject')), 'sprint-019 TST-1-1/AC-3: a rejected row is never offered again');
 
-  const accept = stepOf(canonText('.asd/workflows/asd-phase-scope.md'), 4);
+  const accept = stepOf(sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps'), 4);
   const backlog = /--backlog (\S+)/.exec(command[1]);
   assert.ok(backlog && accept.includes(`\`${backlog[1]}\``) && /step 2a/.test(accept) && /dispositions/.test(accept), 'sprint-019 TST-1-1/AC-4: scope step 4 writes step 2a\'s dispositions to the backlog path step 2a reads - dropped, included and rejected rows come back at every scope; written elsewhere, the next intake never sees them');
 
@@ -6281,7 +6295,7 @@ test('sprint-019 AC-1/AC-3/AC-4/AC-5/AC-6, sprint-023 AC-8: scope step 2a runs r
   assert.ok(empty.slice(0, empty.indexOf('decisions-log')).includes(literal), `sprint-023 AC-8: a list of only ${literal} rows has no candidate to decide, so the empty-array no-op must cover it, named before the no-op's outcome - otherwise a consumer project whose latest retro holds only asd rows is asked about proposals it cannot dispose (a later mention of the tag in the same sentence is not the trigger)`);
   const shown = sentences.find((sentence) => sentence.includes(literal) && /\bAC-N\b/.test(sentence)) || '';
   const noOp = intake.slice(intake.indexOf(empty), intake.indexOf(shown));
-  assert.ok(/\bgate\b/.test(noOp) && !/\b(?:not|never)\b/.test(noOp), `sprint-023 review-fix F4: the no-op sentence must say the ${literal} rows are still shown at the gate - "no-op" alone reads as "show nothing", against scope step 4, which shows them`);
+  assert.ok(/\bfor dispositions\b/.test(noOp) && !/\b(?:not|never)\b/.test(noOp), `sprint-023 review-fix F4: the no-op sentence must say it is a no-op for dispositions only - "no-op" alone reads as "show nothing" for the ${literal} rows, against scope step 4, which shows them`);
   assert.ok(/no question/.test(shown) && /\bbacklog\b/.test(shown), `sprint-023 AC-8: the sentence on a ${literal} row must say it is shown with no question, is never an AC-N and reaches no backlog - disposed like a candidate, it is either lost to the framework repo it addresses or re-asked at every scope`);
   assert.ok(step.includes(literal) && accept.includes(literal), `sprint-023 AC-8: scope steps 2a and 4 must name the ${literal} tag the runtime emits - step 2a exempts it from verification and step 4 shows it at the gate`);
 });
@@ -6356,27 +6370,26 @@ test('sprint-019 AC-8: the one-command commit form git-strategy.md "Commit befor
 });
 
 test('sprint-019 AC-9/AC-10, sprint-023 AC-1: the dispatch payload header providers.md defines is admitted by both exhaustive reviewer payload lists and cited by both review workflows, and every agent handed a turn budget declares a maxTurns that leaves a report turn and the turn plan\'s earlier ledger turn', () => {
-  const header = canonText('.asd/rules/providers.md').split('\n### Dispatch payload header\n')[1];
-  assert.ok(header, 'providers.md must keep its "Dispatch payload header" section');
-  const rule = header.split('\n#')[0];
-  const keys = [...rule.matchAll(/`([A-Z][a-z]+(?: [a-z]+)*:) /g)].map((match) => match[1]);
-  assert.ok(keys.includes('Repo root:') && keys.includes('Turn budget:'), `AC-9/AC-10: the header must define the Repo root and Turn budget lines, got ${JSON.stringify(keys)}`);
+  const rule = sectionOf('.asd/rules/agent-protocol.md', 'Dispatch payload');
+  const keys = Object.keys(jsonOf('.asd/rules/agent-protocol.md', 'Dispatch payload'));
+  assert.ok(keys.includes('repo_root') && keys.includes('turn_budget'), `AC-9/AC-10: the payload object must define the repo_root and turn_budget keys, got ${JSON.stringify(keys)}`);
 
-  const reviewerPayload = canonText('.asd/rules/review-policy.md').split('\n').find((line) => line.startsWith('- Reviewer payload carries only:')) || '';
+  const reviewerPayload = canonText('.asd/rules/review-policy.md').split('\n').find((line) => line.startsWith('- Reviewer payload carries only')) || '';
   const externalPayload = sectionOf('.asd/rules/external-review.md', 'Phase-scoped payload');
-  for (const key of keys) {
-    assert.ok(reviewerPayload.includes(`\`${key}`), `review-policy.md's reviewer payload list is exhaustive ("carries only"), so it must admit the \`${key}\` header line or every dispatch breaks its own contract`);
-    assert.ok(externalPayload.includes(`\`${key}`), `external-review.md "Phase-scoped payload" must admit the \`${key}\` header line the wrapper's payload opens with`);
+  for (const key of ['repo_root', 'turn_budget']) {
+    assert.ok(reviewerPayload.includes('`agent-protocol.md` "Dispatch payload"') && reviewerPayload.includes(`\`${key}\``), `review-policy.md's reviewer payload list is exhaustive ("carries only"), so it must admit the \`${key}\` payload key or every dispatch breaks its own contract`);
   }
+  assert.ok(externalPayload.includes('reviewer payload object'), 'external-review.md "Phase-scoped payload" must admit the payload object the wrapper is dispatched with, repo_root and turn_budget included');
   for (const [rel, step] of [['.asd/workflows/asd-phase-design-review.md', 7], ['.asd/workflows/asd-phase-impl-review.md', 6]]) {
-    assert.ok(stepOf(canonText(rel), step).includes('`providers.md` "Dispatch payload header"'), `${rel} step ${step} builds every reviewer payload, so it must open them with the header by citing its home`);
+    assert.ok(stepOf(sectionOf(rel, 'Steps'), step).includes('`agent-protocol.md` "Dispatch payload"'), `${rel} step ${step} builds every reviewer payload, so it must open them with the payload object by citing its home`);
   }
   for (const [rel, step] of [['.asd/workflows/asd-phase-impl.md', 6], ['.asd/workflows/asd-phase-impl-test.md', '1a'], ['.asd/workflows/asd-phase-impl-review.md', 9]]) {
-    assert.ok(stepOf(canonText(rel), step).split('\n').some((line) => /\bdelegate|\bdispatch/i.test(line) && /asd-(?:dev|tester)/.test(line) && line.includes('`providers.md` "Dispatch payload header"')), `sprint-019 COR-6: ${rel} step ${step} dispatches a dev or tester, the case 018 F-2 evidenced, so its dispatch line must open the payload with the header by citing its home`);
+    assert.ok(jsonOf(rel, 'Dispatch').some((row) => /asd-(?:dev|tester)/.test(row.agent)), `sprint-019 COR-6: ${rel} must declare the dev or tester it dispatches`);
+    assert.ok(stepOf(sectionOf(rel, 'Steps'), step).split('\n').some((line) => /\bdelegate|\bdispatch/i.test(line) && line.includes('`agent-protocol.md` "Dispatch payload"')), `sprint-019 COR-6: ${rel} step ${step} dispatches a dev or tester, the case 018 F-2 evidenced, so its dispatch line must open the payload with the object by citing its home`);
   }
 
-  const reserve = /report by turn <maxTurns − (\d+)>/.exec(rule);
-  assert.ok(reserve, 'the Turn budget line must state the turn the report is due by, relative to maxTurns');
+  const reserve = /"report_by": <maxTurns − (\d+)>/.exec(rule);
+  assert.ok(reserve, 'the turn_budget key must state the turn the report is due by, relative to maxTurns');
   const turnPlan = rule.split(/(?<=\.)\s/).find((sentence) => spans(sentence).includes('LARGE_WAVE_FILES')) || '';
   const ledgerTurns = [...turnPlan.matchAll(/<maxTurns − (\d+)>/g)].map((match) => Number(match[1]));
   assert.strictEqual(ledgerTurns.length, 1, 'sprint-023 AC-1: the sentence naming LARGE_WAVE_FILES is the turn plan, and it must give the one turn the coverage ledger is due by, relative to maxTurns');
@@ -6391,8 +6404,8 @@ test('sprint-019 AC-9/AC-10, sprint-023 AC-1: the dispatch payload header provid
 test('sprint-019 AC-11/AC-12/AC-13/AC-15/AC-16: each review-fix, rotation and tester-lifecycle rule keeps its single home and every acting site points at it', () => {
   const consumerSearch = sectionOf('.asd/rules/review-policy.md', 'Autofix vs escalation').split('\n').find((line) => line.startsWith('**Consumer search.**')) || '';
   assert.ok(/every consumer/.test(consumerSearch) && /same commit/.test(consumerSearch) && /completion signal/.test(consumerSearch), 'AC-11: the consumer search must name its three duties - find every consumer, update them in the same commit, list them in the completion signal');
-  const dispatch = stepOf(canonText('.asd/workflows/asd-phase-impl.md'), 6).split('\n');
-  assert.ok(dispatch.some((line) => line.includes('consumer search') && line.includes('"Autofix vs escalation"')) && dispatch.some((line) => line.includes('emit COMPLETED') && line.includes('consumers')), 'AC-11: impl step 6 hands the consumer search to the review-fix dev and asks for the updated consumers in its COMPLETED summary');
+  const dispatch = sectionOf('.asd/workflows/asd-phase-impl.md', 'Rules').split('\n');
+  assert.ok(dispatch.some((line) => line.includes('consumer search') && line.includes('"Autofix vs escalation"')) && dispatch.some((line) => line.includes('COMPLETED') && line.includes('consumers')), 'AC-11: impl "Rules" hand the consumer search to the review-fix dev and ask for the updated consumers in its COMPLETED report');
 
   const rotation = sectionOf('.asd/rules/artifact-layout.md', 'Decisions log').split('\n').find((line) => line.startsWith('**Rotation**')) || '';
   const cycle = /\{([^}]+)\}/.exec(rotation);
@@ -6403,11 +6416,14 @@ test('sprint-019 AC-11/AC-12/AC-13/AC-15/AC-16: each review-fix, rotation and te
   const anchor = sectionOf('.asd/rules/sprint-lifecycle.md', 'State recovery').split(/(?<=\.)\s/).find((sentence) => sentence.startsWith('Anchor:')) || '';
   assert.ok(/\blatest\b/.test(anchor) && anchor.includes('routing line'), 'AC-12: with no rotation inside the cycle the live log holds every routing line of the cycle, so the failed-dispatch anchor must be the latest one naming the ids');
 
-  const owner = sectionOf('.asd/rules/sprint-lifecycle.md', 'Impl-test phase').split('\n').find((line) => line.startsWith('Owner: Tester')) || '';
-  assert.ok(/\bfresh\b/.test(owner) && /never resumed/.test(owner) && /only hand-off/.test(owner), 'AC-13: the Impl-test phase owner line is the home of the fresh-tester lifecycle - fresh per entry and per terminal run, never resumed, test-plan.md the only hand-off');
-  for (const rel of ['.asd/workflows/asd-phase-impl-test.md', '.asd/workflows/asd-phase-impl-review.md', '.asd/agents/asd-tester.md']) {
-    assert.ok(canonText(rel).split('\n').some((line) => /\bfresh\b/.test(line) && line.includes('`sprint-lifecycle.md` "Impl-test phase"')), `AC-13: ${rel} dispatches or is the tester, so its fresh-instance line must point at the lifecycle home`);
+  const implTest = canonText('.asd/workflows/asd-phase-impl-test.md');
+  const owner = implTest.split('\n').find((line) => line.startsWith('Owner:')) || '';
+  const stepsIntro = sectionOf('.asd/workflows/asd-phase-impl-test.md', 'Steps').split('\n').find((line) => /^Autonomous:/.test(line)) || '';
+  assert.ok(/\bone fresh `asd-tester` per entry\b/.test(owner) && /never resumed/.test(stepsIntro) && /only hand-off/.test(stepsIntro), 'AC-13: the impl-test owner line and Steps preamble are the home of the fresh-tester lifecycle (the Impl-test phase section moved there, D9) - fresh per entry, never resumed, test-plan.md the only hand-off');
+  for (const rel of ['.asd/workflows/asd-phase-impl-review.md', '.asd/agents/asd-tester.md']) {
+    assert.ok(canonText(rel).split('\n').some((line) => /\bfresh\b/.test(line) && /never resumed/.test(line)), `AC-13: ${rel} dispatches or is the tester, so it must state the fresh, never-resumed instance`);
   }
+  assert.ok(canonText('.asd/agents/asd-tester.md').includes('`asd-phase-impl-test.md`'), 'AC-13: asd-tester.md must point the fresh-instance line at the impl-test workflow that now owns the lifecycle');
 
   const templateHeadings = canonText('.asd/templates/t_test-plan.md').split('\n').filter((line) => line.startsWith('## ')).map((line) => line.slice(3));
   const grant = sectionOf('.asd/rules/artifact-layout.md', 'Test plan').split(/(?<=\.)\s/).find((sentence) => sentence.includes('review-fix tester')) || '';
@@ -6422,11 +6438,11 @@ test('sprint-019 AC-11/AC-12/AC-13/AC-15/AC-16: each review-fix, rotation and te
   assert.ok(canonText('.asd/agents/asd-tester.md').split('\n').some((line) => /^In review-fix\b/.test(line) && /\bdelet/.test(line) && /\bno test\b|\bnever\b/.test(line)), 'sprint-019 COR-4: the tester body bounds its review-fix pass, so it must say that pass deletes no test');
   const testPlanRotation = sectionOf('.asd/rules/artifact-layout.md', 'Test plan').split('\n').find((line) => line.startsWith('**Rotation**')) || '';
   assert.ok(testPlanRotation.split(/(?<=\.)\s/).some((sentence) => /\bmoves\b/.test(sentence) && /review-fix/.test(sentence) && sentence.includes('`test-plan.entry-NN.md`')), 'sprint-019 DOC-2-1: review-fix tester rows have no Entry log row of their own, so Rotation must name the segment they move into');
-  const reEntry = stepOf(sectionOf('.asd/workflows/asd-phase-impl-test.md', 'Workflow'), 4).split('\n').find((line) => line.includes('**re-entry**')) || '';
+  const reEntry = stepOf(sectionOf('.asd/workflows/asd-phase-impl-test.md', 'Steps'), 4).split('\n').find((line) => line.includes('**re-entry**')) || '';
   const beforeRotation = reEntry.split('`test-plan.entry-NN.md`')[0];
   assert.ok(/review-fix/.test(beforeRotation) && beforeRotation.includes('`Removed tests`') && /\bstep 5\b/.test(reEntry),'sprint-019 DOC-2-1: impl-test step 4 rotates the live tables empty before step 5 reads removals, so a review-fix removal row must reach live Removed tests first, for step 5 to collect - rotated first, the removal is never performed');
   const testerDescription = sync.parseCanonicalFrontmatter(sync.readNormalized(path.join(REPO_ROOT, '.asd/agents/asd-tester.md'))).meta.description;
-  assert.ok(testerDescription.split(/[.,]\s/).some((clause) => /review-fix/.test(clause) && /test files/.test(clause)) && stepOf(canonText('.asd/workflows/asd-phase-impl.md'), 3).includes('findings located in test files route to `asd-tester`'), "sprint-019 DOC-5: impl step 3 dispatches the tester in review-fix for findings located in test files, so the tester's description must name that purpose in its review-fix clause - the row limit only bounds what it touches");
+  assert.ok(testerDescription.split(/[.,]\s/).some((clause) => /review-fix/.test(clause) && /test files/.test(clause)) && stepOf(canonText('.asd/workflows/asd-phase-impl.md'), 3).includes('findings in test files route to `asd-tester`'), "sprint-019 DOC-5: impl step 3 dispatches the tester in review-fix for findings located in test files, so the tester's description must name that purpose in its review-fix clause - the row limit only bounds what it touches");
 
   const leftover = sectionOf('.asd/rules/artifact-layout.md', 'Agent memory').split('\n').find((line) => line.startsWith('**Leftover-term check**')) || '';
   assert.ok(leftover.includes('`.claude/agent-memory/**`') && /\bfirst\b/.test(leftover) && leftover.includes('`impl-test`') && /no longer existing agents/.test(leftover), 'AC-16: the leftover-term check covers all agent memory, orphan directories included, at the first impl-test entry');
@@ -6634,8 +6650,8 @@ test("sprint-020 AC-4: emit-manifest --reviewer combined composes the rubrics it
   const carves = canonText('.asd/agents/asd-reviewer-combined.md').split('\n').filter((line) => /`asd-phase-design-promote\.md` step \d+/.test(line));
   assert.strictEqual(carves.length, reviewsBeforePromote ? 1 : 0, 'external.md 2 (wave-1/iter-01): a workflow that runs combined in impl-review before its design-promote writes the persistent docs needs exactly one asd-reviewer-combined.md bullet scoping the inherited actuality entry to the diff, citing the design-promote step that writes those docs - without it every lite sprint FAILs on docs not yet promoted');
   if (reviewsBeforePromote) {
-    const label = (/^- \*\*([^*]+)\*\*/.exec(carves[0]) || [])[1] || '';
-    assert.ok(idsOf('documentation').some((id) => label.startsWith(id.replace(/\s*\(.*\)$/, ''))), `the carve-out "${label}" must name the Documentation rubric entry it narrows, so a rename of that entry cannot leave it pointing at nothing`);
+    const label = carves[0].slice(0, 80);
+    assert.ok(idsOf('documentation').some((id) => carves[0].toLowerCase().includes(id.replace(/\s*\(.*\)$/, '').toLowerCase())), `the carve-out "${label}" must name the Documentation rubric entry it narrows, so a rename of that entry cannot leave it pointing at nothing`);
     assert.ok(carves[0].includes('`sprint-lifecycle.md` "Workflows"'), 'the carve-out must cite sprint-lifecycle.md "Workflows", the rule ordering impl-review before design-promote');
     const step = /`asd-phase-design-promote\.md` step (\d+)/.exec(carves[0])[1];
     const promoteStep = canonText('.asd/workflows/asd-phase-design-promote.md').split('\n').find((line) => line.startsWith(`${step}. `)) || '';
@@ -6647,9 +6663,9 @@ test('sprint-020 AC-6: the workflow is a hard, never-defaulted choice asked only
   const definitions = readWorkflowDefinitions();
   const names = definitions.map((definition) => definition.name);
   assert.strictEqual(JSON.parse(readRepoFile('.asd/templates/t_state.json')).workflow, '{{WORKFLOW}}', 't_state.json must seed the frozen workflow, since artifact-layout.md reads state keys only from the template');
-  const ask = canonText('.asd/workflows/asd-phase-scope.md').split('\n').find((line) => /^1\. /.test(line)) || '';
+  const ask = stepOf(sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps'), '1');
   assert.ok(/request user decision/i.test(ask) && ask.includes('{{WORKFLOW}}') && names.every((name) => ask.includes(`\`${name}\``)), `asd-phase-scope.md step 1 must ask the user to choose among every workflow (${names.join(', ')}) and seed {{WORKFLOW}} from the answer`);
-  assert.ok(/never defaulted/.test(ask) && ask.includes('`workflow choice`') && ask.includes('`sprint-lifecycle.md` "Workflows"'), 'scope step 1 is the single home of the ask: it must name the hard gate, forbid a default and cite the rule');
+  assert.ok(/never defaulted/.test(ask) && ask.includes('[GATE hard: workflow choice]') && ask.includes('`sprint-lifecycle.md` "Workflows"'), 'scope step 1 is the single home of the ask: it must name the hard gate, forbid a default and cite the rule');
   const selection = sectionOf('.asd/rules/sprint-lifecycle.md', 'Workflows').split('\n').find((line) => line.startsWith('**Selection**')) || '';
   assert.ok(/never defaulted/.test(selection) && /absent field reads `standard`/.test(selection), 'sprint-lifecycle.md "Workflows" Selection: no default at sprint start, while a state.json without the field reads standard - the one rule that keeps an in-flight sprint running');
   const gatePolicy = sectionOf('.asd/rules/checkpoints.md', 'Gate policy');
@@ -6677,13 +6693,14 @@ test('sprint-020 AC-6: the workflow is a hard, never-defaulted choice asked only
 });
 
 test('sprint-020 AC-3: every agent reading acceptance criteria from docs/product/requirements/ cites sprint-lifecycle.md "Workflows" on that input - under lite the promoted requirements are last sprint\'s until design-promote, so the AC source is always sprint.md', () => {
-  const readers = fs.readdirSync(path.join(REPO_ROOT, '.asd/agents')).filter((file) => file.endsWith('.md')).flatMap((file) => {
-    const inputs = (canonText(`.asd/agents/${file}`).split('\n## Inputs')[1] || '').split('\n## ')[0];
-    return inputs.split('\n').filter((line) => line.includes('`docs/product/requirements/')).map((line) => [file, line]);
-  });
-  assert.ok(readers.length > 0, 'sanity: some agent Inputs must still read docs/product/requirements/, or the citation check below compares nothing');
-  const uncited = readers.filter(([, line]) => !line.includes('`.asd/rules/sprint-lifecycle.md` "Workflows"')).map(([file]) => file);
-  assert.deepStrictEqual(uncited, [], `sprint-lifecycle.md "Workflows" makes sprint.md the lite AC source, so every Inputs line reading ACs from docs/product/requirements/ must cite it - an agent without the clause checks a lite sprint against the previous sprint's requirements. Uncited: ${uncited.join(', ')}`);
+  const inputRow = sectionOf('.asd/rules/sprint-lifecycle.md', 'Optional documents').split('\n').find((line) => line.startsWith('| `requirements`')) || '';
+  assert.ok(/always under `lite` \("Workflows"\)/.test(inputRow) && inputRow.includes('`sprint.md`'), 'sprint-lifecycle.md "Input sources" must resolve `requirements` to sprint.md under lite and cite "Workflows" - the one place the lite AC source is stated');
+  const agentFiles = fs.readdirSync(path.join(REPO_ROOT, '.asd/agents')).filter((file) => file.endsWith('.md'));
+  const keyReaders = agentFiles.filter((file) => sectionOf(`.asd/agents/${file}`, 'Inputs').includes('payload.inputs.requirements'));
+  assert.ok(keyReaders.length >= 4, 'sanity: the agents checking work against AC-N must read the payload.inputs.requirements key, or the check below compares nothing');
+  const direct = agentFiles.flatMap((file) => jsonText(sectionOf(`.asd/agents/${file}`, 'Inputs')).filter((item) => item.includes('docs/product/requirements/')).map((item) => [file, item]));
+  const uncited = direct.filter(([, item]) => !item.includes("sprint-lifecycle.md 'Workflows'") && !item.includes("'Input sources'")).map(([file]) => file);
+  assert.deepStrictEqual(uncited, [], `sprint-lifecycle.md "Workflows" makes sprint.md the lite AC source, so an Inputs item reading ACs straight from docs/product/requirements/ must cite it - an agent without the clause checks a lite sprint against the previous sprint's requirements; agents take the AC-N through payload.inputs.requirements instead. Uncited: ${uncited.join(', ')}`);
 });
 
 test('sprint-020 AC-8: review-policy.md "Low-severity test-only findings" states its whole trigger and fix once, every resolved: kind canon writes is one "State recovery" admits, and each acting site cites the home', () => {
@@ -6708,7 +6725,7 @@ test('sprint-020 AC-8: review-policy.md "Low-severity test-only findings" states
   assert.deepStrictEqual(written.filter((entry) => !admitted.includes(entry.slice(entry.lastIndexOf(': ') + 2))), [], 'every resolved: kind canon tells the orchestrator to write must be one "User-resolved findings" admits - any other leaves the verdict blocking with its findings fixed');
 
   const citation = '`review-policy.md` "Low-severity test-only findings"';
-  const acting = stepOf(sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Workflow'), 8).split('\n').find((line) => line.includes(citation)) || '';
+  const acting = stepOf(sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Steps'), 8).split('\n').find((line) => line.includes(citation)) || '';
   assert.ok(acting.includes('`asd-tester`') && /test-fix/.test(acting), 'asd-phase-impl-review.md step 8 is where the route fires, so it must cite the home, dispatch asd-tester and write the test-fix resolution');
   for (const rel of ['.asd/rules/git-strategy.md', '.asd/agents/asd-tester.md', '.asd/rules/sprint-lifecycle.md']) {
     assert.ok(canonText(rel).includes(citation), `${rel} acts on the in-place tester fix (commit trailer, tester contract, the cycle's review-fix exception), so it must cite the home rather than restate it`);
@@ -6822,7 +6839,7 @@ test('sprint-021 AC-1/AC-2 (D1), sprint-022 AC-1/AC-2/AC-3: pr ends at await-mer
   assert.ok(chainExits, 'sanity: .asd/runtime.js must declare CHAIN_EXITS as a one-line array literal');
   assert.deepStrictEqual(JSON.parse(chainExits[1].replace(/'/g, '"')).sort(), exits, 'sprint-022 AC-3: runtime.js CHAIN_EXITS must be exactly the exits the definitions route pr to - loadWorkflow accepts any CHAIN_EXITS member as a target, so a stale extra token stays loadable and routable');
   const sprintSkill = canonText('.asd/skills/asd-sprint/SKILL.md');
-  const skillExits = /^SPRINT: .*\bNEXT:\s*<([^>]+)>/m.exec(sprintSkill);
+  const skillExits = /^SKILL: asd-sprint \| .*\bNEXT:\s*<([^>]+)>/m.exec(sprintSkill);
   assert.ok(skillExits && exits.every((exit) => skillExits[1].split('|').includes(exit)), 'asd-sprint must offer every chain exit in its return contract - an exit it cannot relay halts the sprint with no route');
   const doneRoute = (sprintSkill.split('\n').find((line) => line.includes('`NEXT: done`')) || '').split('`NEXT: done`')[1];
   assert.ok(doneRoute && /\bhalt\b/.test(doneRoute.split(';')[0]), 'sprint-022 AC-2/AC-3: asd-sprint Step 3 must halt on pr\'s `NEXT: done` - no closure request follows the merge, the next sprint\'s scope archives it');
@@ -6838,7 +6855,7 @@ test('sprint-021 AC-1/AC-2 (D1), sprint-022 AC-1/AC-2/AC-3: pr ends at await-mer
   assert.deepStrictEqual(writes.filter((token) => !tokens.includes(token)), [], 'sanity: sprint-lifecycle.md "PR phase" "Closure write" must name the archive move and the terminal fields this test holds pr merge mode free of');
   assert.ok(tokens.includes('decision_actor: orchestrator'), 'sprint-022 AC-2 (D3): the closure write records its gate_decisions entry with decision_actor: orchestrator - no user gate precedes it, so a user actor would claim an approval nobody gave');
   assert.ok(!/\b(?:tag|release)\b/i.test(closure), 'sprint-022 AC-1: the closure write no longer tags or releases - pr merge mode publishes the self-hosting release right after the merge');
-  const merge = sectionOf('.asd/workflows/asd-phase-pr.md', 'Merge mode');
+  const merge = subOf(sectionOf('.asd/workflows/asd-phase-pr.md', 'Steps'), 'Merge mode');
   assert.ok(merge.includes('`NEXT: done`'), 'sprint-022 AC-3: pr merge mode returns `NEXT: done` once the merge is confirmed');
   const release = stepOf(merge, 2);
   const [fetchAt, releaseAt, doneAt] = ['`git fetch origin <git.base_branch>`', '"Versioning & Changelog (self-hosting only)"', '`NEXT: done`'].map((token) => release.indexOf(token));
@@ -6852,14 +6869,14 @@ test('sprint-021 AC-1/AC-2 (D1), sprint-022 AC-1/AC-2/AC-3: pr ends at await-mer
   const modes = sectionOf('.asd/rules/sprint-lifecycle.md', 'PR phase').split('\n\n')[1] || '';
   const override = modes.split(/(?<=\.)\s/).find((sentence) => sentence.includes('`MERGED`') && /merge mode/.test(sentence)) || '';
   assert.ok(override.includes('`pr`') && /\bDoD\b/.test(override), `${mergedSkip} - "PR phase" Modes: a dispatch carrying a confirmed MERGED number enters merge mode whatever pr holds, skipping open mode's DoD gate, which a hand-merged sprint with pr=null could fail; got: ${override}`);
-  const openMode = sectionOf('.asd/workflows/asd-phase-pr.md', 'Open mode');
+  const openMode = subOf(sectionOf('.asd/workflows/asd-phase-pr.md', 'Steps'), 'Open mode');
   const gateAt = openMode.search(/\bDoD\b/);
   assert.ok(gateAt >= 0 && gateAt < openMode.indexOf('`MERGED` hit'), 'sanity: pr open mode runs its DoD gate (step 1) before the head-branch lookup that finds a MERGED hit (step 2), so a hit found there has passed the gate');
   const skipClause = override.split(/;\s/).find((clause) => /\bDoD\b/.test(clause)) || '';
   const skippers = skipClause.split('merge mode')[0];
   assert.ok(!/open[- ]mode(?:'s)?\s+(?:own\s+)?`MERGED`/i.test(skippers), `${mergedSkip} - "PR phase" Modes: open mode finds its MERGED hit after its DoD gate has run, so it skips nothing and the dispatches the DoD-skip clause lists may not include it, only asd-sprint's release retry (impl-review wave-1/iter-02 combined #1); got: ${skipClause}`);
   assert.deepStrictEqual(writes.filter((token) => merge.includes(token)), [], 'AC-1: pr merge mode makes no write on git.base_branch - the archive move and terminal state belong to the next sprint\'s scope');
-  const openSteps = sectionOf('.asd/workflows/asd-phase-pr.md', 'Open mode').split(/\n(?=\d+[a-z]?\. )/);
+  const openSteps = openMode.split(/\n(?=\d+[a-z]?\. )/);
   const writeAt = openSteps.findIndex((step) => step.includes('`state.json.pr`'));
   const nextAt = openSteps.findIndex((step) => step.includes('`NEXT: await-merge`'));
   assert.ok(writeAt >= 0 && writeAt < nextAt, 'sanity: pr open mode must write `state.json.pr` in a step before the one emitting `NEXT: await-merge`');
@@ -6875,7 +6892,7 @@ test('sprint-021 AC-1/AC-2 (D1), sprint-022 AC-1/AC-2/AC-3: pr ends at await-mer
   const republish = beforeMerge.split(/[;.]\s/).filter((clause) => !clause.includes('`FAILED`')).join(' ').replace(/`[^`]*`/g, '');
   assert.ok(/\bcommit/i.test(republish), `AC-2: pr merge mode must commit a local state.json.pr write the remote branch lacks before merging - ${unconfirmed}`);
   assert.ok(/\bpush/i.test(republish), `AC-2: pr merge mode must push the sprint branch when the remote lacks pr.number, before merging - ${unconfirmed}`);
-  const scopeStep = stepOf(canonText('.asd/workflows/asd-phase-scope.md').split('\n## ')[0], 1);
+  const scopeStep = stepOf(sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps'), 1);
   assert.deepStrictEqual(tokens.filter((token) => !scopeStep.includes(token) && !scopeStep.includes(token.replace(/ /g, '-'))), [], 'AC-2: asd-phase-scope.md step 1 performs the closure write "PR phase" defines, so it must name each of its tokens (a gate name as its gate_decisions value, spaces hyphenated) - one dropped is a field the closing sprint never gets');
   assert.ok(!/\b(?:tag|release)\b/i.test(scopeStep), 'sprint-022 AC-1: asd-phase-scope.md step 1 no longer tags or releases - the release moved to pr merge mode');
 });
@@ -6913,9 +6930,9 @@ test('sprint-021 AC-2 (iter-03 external #1), AC-14, sprint-022 AC-2: a sprint wi
   assert.deepStrictEqual(carry.filter((clause) => /\bnull\b/.test(clause)), [], "AC-2: asd-sprint Step 1 must carry the confirmed PR number whenever detection found one, not only when the detected copy's pr is null - a sprint-branch copy holding pr.number over a base copy with pr=null reaches scope's closure write, which reads the base copy, with no number (impl-review wave-1/iter-04 #1)");
   const handOff = stepOf(sprintSkill.split('### Step 2A')[1].split('\n### ')[0], 4);
   assert.ok(handOff.includes('`asd-phase-scope`') && /merged-unclosed/i.test(handOff), 'sprint-022 AC-2 (D3): asd-sprint Step 2A.4 must pass the merged-unclosed sprint Step 1 carries to asd-phase-scope, whose step 1 runs the closure write');
-  const scopeSpans = spans(stepOf(canonText('.asd/workflows/asd-phase-scope.md').split('\n## ')[0], 1));
+  const scopeSpans = spans(stepOf(sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps'), 1));
   assert.ok(scopeSpans.includes('pr.number'), 'AC-2: asd-phase-scope.md step 1\'s closure write must write pr.number as a field of its own, not only inside the gh pr view command - a closing sprint with pr=null is archived with no PR number and no way to read its merge commit');
-  const openSteps = sectionOf('.asd/workflows/asd-phase-pr.md', 'Open mode').split(/\n(?=\d+[a-z]?\. )/);
+  const openSteps = subOf(sectionOf('.asd/workflows/asd-phase-pr.md', 'Steps'), 'Open mode').split(/\n(?=\d+[a-z]?\. )/);
   const createAt = openSteps.findIndex((step) => step.includes('"PR creation"'));
   assert.ok(createAt > 0, 'sanity: pr open mode must open the PR through git-strategy.md "PR creation", in a step after its first, the site the lookup must precede');
   const beforeCreate = openSteps.slice(0, createAt).join('\n');
@@ -7068,7 +7085,7 @@ test('sprint-022 AC-1 (D2), iter-01 external #1/#2, combined #1, iter-02 combine
   const homeSentences = home.split(/(?<=\.)\s/);
   const afterRetry = homeSentences[homeSentences.indexOf(homeRetry) + 1] || '';
   assert.ok(/\bcontinue\b/.test(afterRetry) && /new-sprint flow/.test(afterRetry), `"Merged-unclosed": a continue choice enters the new-sprint flow - ${noExit}`);
-  const scopeStep = stepOf(canonText('.asd/workflows/asd-phase-scope.md').split('\n## ')[0], 1);
+  const scopeStep = stepOf(sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps'), 1);
   const logClause = scopeStep.split(/;\s/).find((clause) => clause.includes('`decisions-log.md`')) || '';
   assert.ok(spans(logClause).includes(actor), `asd-phase-scope.md step 1: the closure write's decisions-log entry names a continue choice asd-sprint carries (${actor}) - ${noExit}`);
   const sprintSkill = canonText('.asd/skills/asd-sprint/SKILL.md');
@@ -7081,10 +7098,9 @@ test('sprint-022 AC-1 (D2), iter-01 external #1/#2, combined #1, iter-02 combine
   assert.ok(/\buser decision\b/.test(skillRoute), `asd-sprint Step 1: ${noExit}`);
   assert.ok(skillRoute.split(/;\s/).some((clause) => /\bcontinue\b/.test(clause)) && (stepOne[stepOne.indexOf(skillRetry) + 1] || '').includes('Step 2A'), `asd-sprint Step 1: the continue option takes the next route, the new-sprint flow (Step 2A) - ${noExit}`);
   const routeName = skillRoute.trim().split(' (')[0];
-  const operations = sprintSkill.split('\n');
-  assert.ok((operations.find((line) => line.startsWith('- Request user decision')) || '').includes(routeName), `asd-sprint "Operations used": Request user decision must list the ${routeName} choice Step 1 requests`);
+  assert.ok(jsonOf('.asd/skills/asd-sprint/SKILL.md', 'User decisions').some((row) => row.step === '1' && row.gate.includes(routeName)), `asd-sprint "User decisions": must list the ${routeName} choice Step 1 requests`);
   const logHead = followUp.split(' ').slice(0, 2).join(' ');
-  assert.ok(spans(operations.find((line) => line.startsWith('- Run command')) || '').includes(logHead), `asd-sprint "Operations used": Run command must list ${logHead}, the follow-up search Step 1's release-commit check runs`);
+  assert.ok((jsonOf('.asd/skills/asd-sprint/SKILL.md', 'Preconditions').ops.find((op) => op.startsWith('run command')) || '').includes(logHead), `asd-sprint Preconditions ops: run command must list ${logHead}, the follow-up search Step 1's release-commit check runs`);
 
   const opening = sectionOf('.asd/rules/sprint-lifecycle.md', 'PR phase').split('\n\n')[1] || '';
   const note = opening.split(/(?<=\.)\s/).find((sentence) => sentence.startsWith('`NEXT: done`')) || '';
@@ -7122,15 +7138,14 @@ test('sprint-022 AC-4: a CLOSED head-branch hit counts as no hit, a lookup that 
 });
 
 test('sprint-022 AC-5 (D5): the orchestrator ticks a wave\'s plan.md checkboxes after its last signal and devs never edit plan.md, at the home and in asd-phase-impl steps 7 and 8', () => {
-  const home = sectionOf('.asd/rules/sprint-lifecycle.md', 'Impl phase').split(/(?<=\.)\s/).find((sentence) => sentence.includes('`plan.md`') && sentence.includes('`MEMORY.md`')) || '';
+  const home = sectionOf('.asd/workflows/asd-phase-impl.md', 'Rules').split('\n').find((line) => line.includes('`<sprint>/plan.md`') && line.includes('`MEMORY.md`')) || '';
   const clauses = home.split(/;\s/);
-  assert.ok(clauses.some((clause) => /\borchestrator\b/.test(clause) && /\bticks\b/.test(clause) && clause.includes('`plan.md`')), 'AC-5: "Impl phase" - the orchestrator ticks the wave\'s plan.md checkboxes after its last signal');
-  assert.ok(clauses.some((clause) => /\bdevs\b/.test(clause) && /\bnever\b/.test(clause) && clause.includes('`plan.md`')), 'AC-5: "Impl phase" - devs never edit plan.md, so concurrent Tasks never race on one file (021 A-3)');
-  assert.ok(clauses.some((clause) => /more than one Task/.test(clause) && clause.includes('`MEMORY.md`') && clause.includes('`COMPLETED`')), 'AC-5: in a wave of more than one Task, devs leave a shared MEMORY.md untouched and return their index line in COMPLETED');
-  const impl = sectionOf('.asd/workflows/asd-phase-impl.md', 'Workflow');
-  const tickedBy = (step) => stepOf(impl, step).split(/(?<=\.)\s|;\s/).filter((clause) => clause.includes('`plan.md`') && /\bticks\b/.test(clause));
-  assert.ok(tickedBy(7).some((clause) => /\borchestrator\b/.test(clause) && /last signal/.test(clause)), 'AC-5: asd-phase-impl step 7 - the orchestrator ticks after the wave\'s last signal');
-  assert.ok(tickedBy(8).length > 0 && tickedBy(8).every((clause) => /\borchestrator\b/.test(clause)), 'AC-5: asd-phase-impl step 8 - a resumed manual-blocked task\'s checkboxes are ticked by the orchestrator, not the dev');
+  assert.ok(clauses.some((clause) => /\bnever\b/.test(clause) && clause.includes('`<sprint>/plan.md`') && /step 7 ticks it/.test(clause)), 'AC-5: impl "Rules" - devs never edit plan.md, step 7 (the orchestrator) ticks it, so concurrent Tasks never race on one file (021 A-3)');
+  assert.ok(clauses.some((clause) => /more than one Task/.test(clause) && clause.includes('`MEMORY.md`') && clause.includes('`memory_index`')), 'AC-5: in a wave of more than one Task, devs leave a shared MEMORY.md untouched and return their index line as memory_index in COMPLETED');
+  const impl = sectionOf('.asd/workflows/asd-phase-impl.md', 'Steps');
+  const tickedBy = (step) => stepOf(impl, step).split(/(?<=\.)\s|;\s/).filter((clause) => clause.includes('`plan.md`') && /\btick(?:s)?\b/.test(clause));
+  assert.ok(tickedBy(7).some((clause) => /last signal/.test(clause)), 'AC-5: asd-phase-impl step 7 - the orchestrator ticks after the wave\'s last signal');
+  assert.ok(tickedBy(8).length > 0 && tickedBy(8).every((clause) => /\bstep 7\b/.test(clause) || /\borchestrator\b/.test(clause)), 'AC-5: asd-phase-impl step 8 - a resumed manual-blocked task\'s checkboxes are ticked as step 7 does, by the orchestrator, not the dev');
   assert.ok(stepOf(impl, 9).includes('`<sprint>/plan.md`'), 'AC-5: asd-phase-impl step 9\'s authorised-paths gate must admit the plan.md step 7 writes - otherwise the orchestrator\'s own tick commit fails the gate as an unauthorised path');
 });
 
@@ -7159,7 +7174,7 @@ test('sprint-022 AC-7 (D4), iter-01 combined #2: an amendment accepted after the
 });
 
 test('sprint-022 D6: asd-init sprint-mediated mode writes each pair with the template\'s inline comment, and the project config carries the template\'s user_gates comment', () => {
-  const mediated = sectionOf('.asd/skills/asd-init/SKILL.md', 'Workflow (sprint-mediated)');
+  const mediated = subOf(sectionOf('.asd/skills/asd-init/SKILL.md', 'Steps'), 'Sprint-mediated');
   assert.ok(/inline comment/.test(stepOf(mediated, 3)) && /\btemplate\b/.test(stepOf(mediated, 3)), 'D6: sprint-mediated step 3 - a written pair\'s line takes the template\'s inline comment for its key, or a shipped comment rewrite never reaches an existing config');
   const comment = (rel) => (/^user_gates:[^#\n]*(#.*)$/m.exec(canonText(rel)) || [])[1];
   assert.ok(comment('.asd/templates/t_config.yaml'), 'sanity: t_config.yaml user_gates carries an inline comment');
@@ -7532,19 +7547,21 @@ test('sprint-023 AC-5: the Test-only declaration is defined once in sprint-lifec
     assert.deepStrictEqual(spans(mirror.split(';')[0]).filter((span) => !span.startsWith(`${name}:`)), placement(declarationOf(name)), `t_plan.md's ${name} rule must place the line under the same lines, in the same order, as sprint-lifecycle.md "Plan file format" - "same placement" chains from the rule above it and can order the line ahead of one the home puts before it; the asserts above read only the ${lineName} rule`);
   }
 
-  const flow = sectionOf('.asd/workflows/asd-phase-impl.md', 'Workflow');
+  const flow = sectionOf('.asd/workflows/asd-phase-impl.md', 'Steps');
   assert.ok(stepOf(flow, '5a').includes(`\`${label}\``) && stepOf(flow, '5a').includes('`asd-tester`'), `asd-phase-impl.md step 5a must name the ${label} line and the asd-tester it routes such a Task to - a dev dispatched for a Task whose paths are tests is the case the sprint closes`);
-  const delegate = stepOf(flow, '6').split('\n').find((line) => /\bdelegate\b/.test(line) && line.includes('`asd-dev`')) || '';
-  assert.ok(/test-only/i.test(delegate) && delegate.includes('`asd-tester`'), 'asd-phase-impl.md step 6 must dispatch a Test-only Task to asd-tester on its delegation line');
+  const dispatchRows = jsonOf('.asd/workflows/asd-phase-impl.md', 'Dispatch');
+  const devRow = dispatchRows.find((row) => row.agent === 'asd-dev') || {};
+  const testerRow = dispatchRows.find((row) => row.agent === 'asd-tester') || {};
+  assert.ok(/Test-only/.test(devRow.when || '') && /Test-only Task/.test(testerRow.when || '') && /delegate/i.test(stepOf(flow, '6')), 'asd-phase-impl.md "Dispatch" must send a Test-only Task to asd-tester and keep it off asd-dev, step 6 delegating per that table');
   const trailer = /`(ASD-Task): <id>`/.exec(sectionOf('.asd/rules/git-strategy.md', 'Commits'));
   assert.ok(trailer, 'sanity: git-strategy.md "Commits" must define the ASD-Task trailer, the key impl-test reads a Test-only Task\'s commits by');
-  assert.ok(declaration.includes(`${trailer[1]}: Task N`) && stepOf(sectionOf('.asd/workflows/asd-phase-impl-test.md', 'Workflow'), '2').includes(`${trailer[1]}: Task N`), `the declaration and impl-test step 2 must both name the ${trailer[1]}: Task N trailer a Test-only Task's commits carry - a trailer the tester does not write is one entry 1 cannot recognise`);
-  const contract = sectionOf('.asd/agents/asd-tester.md', 'Operating contract').split('\n').find((line) => line.includes(`\`${label}\``)) || '';
-  assert.ok(contract.includes('`plan.md`') && contract.includes('`test-plan.md`') && contract.includes('"Plan file format"'), 'asd-tester.md Operating contract must carry the Test-only Task bullet: it cites the declaration and leaves plan.md and test-plan.md untouched, the files its wave and impl-test own');
-  const stops = (canonText('.asd/agents/asd-tester.md').split('\n').find((line) => line.startsWith('- **Stop conditions**')) || '').split(';');
-  assert.ok((stops.find((clause) => /\bimpl COMPLETED\b/.test(clause)) || '').includes('`impl-test`'), `asd-tester.md Stop conditions: the clause that aborts on a missing impl COMPLETED signal must name the \`impl-test\` dispatch it binds - the tester also runs a ${lineName} Task inside an impl wave, before impl can complete, so an unscoped abort refuses every such dispatch`);
-  const testOnlyStop = stops.find((clause) => clause.includes(lineName)) || '';
-  assert.ok(testOnlyStop.includes('ABORT') && testOnlyStop.includes('"Plan file format"'), `asd-tester.md Stop conditions must give a ${lineName} Task dispatch its own ABORT clause citing the plan rule - scoping the impl-test clause alone leaves that dispatch with no stop condition`);
+  assert.ok(declaration.includes(`${trailer[1]}: Task N`) && stepOf(sectionOf('.asd/workflows/asd-phase-impl-test.md', 'Steps'), '2').includes(`${trailer[1]}: Task N`), `the declaration and impl-test step 2 must both name the ${trailer[1]}: Task N trailer a Test-only Task's commits carry - a trailer the tester does not write is one entry 1 cannot recognise`);
+  const contract = sectionOf('.asd/agents/asd-tester.md', 'Rules').split('\n').find((line) => line.includes(`${lineName} Task`)) || '';
+  assert.ok(contract.includes('`plan.md`') && contract.includes('`test-plan.md`') && contract.includes('"Plan file format"'), 'asd-tester.md Rules must carry the Test-only Task bullet: it cites the declaration and leaves plan.md and test-plan.md untouched, the files its wave and impl-test own');
+  const stops = jsonOf('.asd/agents/asd-tester.md', 'Escalation');
+  assert.ok((stops.find((row) => /\bimpl COMPLETED\b/.test(row.when)) || { when: '' }).when.includes('impl-test'), `asd-tester.md Escalation: the row that aborts on a missing impl COMPLETED signal must name the impl-test dispatch it binds - the tester also runs a ${lineName} Task inside an impl wave, before impl can complete, so an unscoped abort refuses every such dispatch`);
+  const testOnlyStop = stops.find((row) => row.when.includes(lineName)) || { when: '', signal: '' };
+  assert.ok(testOnlyStop.signal === 'ABORT' && testOnlyStop.when.includes('Plan file format'), `asd-tester.md Escalation must give a ${lineName} Task dispatch its own ABORT row citing the plan rule - scoping the impl-test row alone leaves that dispatch with no stop condition`);
 
   const noTests = /production code only|writes? \*\*no tests\*\*|no test-authoring|no tests written|never in `impl`/i;
   const sites = [...canonMarkdownFiles(), 'README.md'].filter((rel) => rel !== '.asd/agents/asd-dev.md').flatMap((rel) => canonText(rel).split('\n').filter((line) => noTests.test(line)).map((line) => [rel, line]));
@@ -7574,9 +7591,9 @@ test('sprint-023 AC-9: providers.md "Task-class variants and routing" gives prio
   assert.ok(perRun, `the rule must give a later terminal-suite run an id of its own - ${suite} plus a run suffix; without it a re-run after a test-defect fix reuses the first run's task_routing key and a later test-only delta inherits that run's tier as priorTier`);
   const variantNote = /\(no `-standard` variant exists[^)]*\)/;
   for (const [rel, step] of [['.asd/workflows/asd-phase-impl-test.md', '1a'], ['.asd/workflows/asd-phase-impl.md', '5a'], ['.asd/workflows/asd-phase-impl-review.md', 8], ['.asd/workflows/asd-phase-impl-review.md', 9]]) {
-    assert.ok(stepOf(sectionOf(rel, 'Workflow'), step).replace(variantNote, '').includes('`providers.md` "Task-class variants and routing"'), `${rel} step ${step} must cite the routing rule for its tier and risks beyond the no-standard-variant note - restating the clamp or citing nothing is how the first entry's tier kept clamping later deltas`);
+    assert.ok(stepOf(sectionOf(rel, 'Steps'), step).replace(variantNote, '').includes('`providers.md` "Task-class variants and routing"'), `${rel} step ${step} must cite the routing rule for its tier and risks beyond the no-standard-variant note - restating the clamp or citing nothing is how the first entry's tier kept clamping later deltas`);
   }
-  const redTest = stepOf(sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Workflow'), 9).split('\n').find((line) => line.includes('**Red, test defect**')) || '';
+  const redTest = stepOf(sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Steps'), 9).split('\n').find((line) => line.includes('**Red, test defect**')) || '';
   assert.ok(redTest.includes('`providers.md` "Task-class variants and routing"'), `.asd/workflows/asd-phase-impl-review.md step 9 must keep a **Red, test defect** bullet that cites the routing rule for the re-run's own id - the step's dispatch sentence cites it for the first run only, and a re-run left to that one is routed under the first run's id and clamped to its tier`);
 });
 
@@ -7588,15 +7605,15 @@ test('sprint-024 AC-2/AC-3/AC-4/AC-5/AC-6/AC-8/AC-9: every reserved risk class h
   assert.deepStrictEqual(reserved.filter((name) => !declaration.includes(`\`${name}\` — `)), [], 'AC-2: "Plan file format" must define each reserved class (`name` — definition), or the class stays reserved by the file touched');
   const providers = sectionOf('.asd/rules/providers.md', 'Task-class variants and routing');
   const cite = 'Material risk declaration';
-  assert.ok([providers, canonText('.asd/workflows/asd-phase-plan.md')].every((text) => text.includes(`"Plan file format" ${cite}`)),`AC-2: providers.md and asd-phase-plan.md must cite "Plan file format" ${cite} for the criteria`);
+  assert.ok(providers.includes(`"Plan file format" ${cite}`) && sectionOf('.asd/workflows/asd-phase-plan.md', 'Steps').includes('`sprint-lifecycle.md` "Plan file format" (declarations') && sectionOf('.asd/workflows/asd-phase-plan.md', 'Steps').includes('`Material risk` declaration'),`AC-2: providers.md must cite "Plan file format" ${cite} for the criteria, and asd-phase-plan.md must send the planner to the "Plan file format" declarations and note each Task's Material risk declaration`);
   const logLine = providers.split(/(?<=\.)\s/).find((sentence) => sentence.includes('decisions-log routing line')) || '';
   assert.ok(logLine.includes('ends `; risk <declaration>`') && logLine.includes('via <check>'), 'AC-3: the decisions-log routing line must end `; risk <declaration>` with `via <check>` after a none/artifact value');
   const suiteRule = providers.split(/(?<=\.)\s/).find((sentence) => spans(sentence).some((span) => span.startsWith('impl-review <id> suite <n>'))) || '';
   assert.ok(/never routes critical/.test(suiteRule) && /\bnone\b/.test(suiteRule), 'AC-3: a terminal-suite run declares none and never routes critical');
 
-  const intake = canonText(lifecycle).split('\n').find((line) => line.startsWith('**Retro intake.**')) || '';
-  assert.ok(['root cause', 'proposed edits', 'consequences', 'Expected saving'].every((token) => intake.includes(token)), 'AC-4: "Retro intake" must state what each row shows before its disposition - root cause, proposed edits, consequences, and a P-N row\'s Expected saving');
-  assert.ok(stepOf(canonText('.asd/workflows/asd-phase-scope.md'), 4).includes('`sprint-lifecycle.md` "Retro intake"'), 'AC-4: scope step 4 cites "Retro intake" for the per-row presentation');
+  const intake = stepOf(sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps'), '2a');
+  assert.ok(['root cause', 'proposed edits', 'consequences', 'Expected saving'].every((token) => intake.includes(token)), 'AC-4: scope step 2a (the retro intake home) must state what each row shows before its disposition - root cause, proposed edits, consequences, and a P-N row\'s Expected saving');
+  assert.ok(stepOf(sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps'), 4).includes('as step 2a requires'), 'AC-4: scope step 4 cites step 2a for the per-row presentation');
 
   const pattern = '.asd/sprints/**/reviews/**/*.diff';
   assert.ok(readRepoFile('.gitattributes').split('\n').some((line) => line.startsWith(`${pattern} `) && /\s-whitespace\s*$/.test(line)), `AC-5: .gitattributes must mark ${pattern} -whitespace`);
@@ -7607,7 +7624,7 @@ test('sprint-024 AC-2/AC-3/AC-4/AC-5/AC-6/AC-8/AC-9: every reserved risk class h
   const amendment = sectionOf(lifecycle, 'Scope amendment');
   assert.ok(amendment.includes('review_fixes_pending'), 'AC-6: "Scope amendment" must define the amendment accepted while review_fixes_pending is set');
   assert.ok(/review-fix mode first.*initial mode over the plan's unticked Tasks only.*one `NEXT: impl-test`/.test(amendment), 'AC-6: "Scope amendment" must run review-fix first, then initial mode over unticked Tasks only (never a ticked one again), before one NEXT: impl-test');
-  const impl = sectionOf('.asd/workflows/asd-phase-impl.md', 'Workflow');
+  const impl = sectionOf('.asd/workflows/asd-phase-impl.md', 'Steps');
   const resume = canonText('.asd/workflows/asd-phase-impl.md').split('\n').find((line) => line.includes('- review-fix: clear')) || '';
   assert.ok(/wave whose Tasks are all ticked is skipped/.test(stepOf(impl, 5)) && /continue in initial mode.*before step 12/.test(resume), 'AC-6: impl step 5 must skip fully ticked waves and step 11 must continue into initial mode before step 12');
   assert.ok(stepOf(impl, 5).includes('"Scope amendment"') && canonText('.asd/workflows/asd-phase-impl.md').split('\n').find((line) => line.includes('- review-fix: clear')).includes('"Scope amendment"'), 'AC-6: impl must cite "Scope amendment" where it detects the mode and where review-fix finalizes');
@@ -7830,8 +7847,8 @@ test('sprint-025 AC-3/AC-7/AC-8: every phase workflow states its timing ops, eve
   assert.ok(phases.length > 0);
   for (const file of phases) {
     const text = canonText(`.asd/workflows/${file}`);
-    const token = file === 'asd-phase-retro.md' ? 'timing-summary' : '"Operation timing"';
-    assert.ok(text.includes(token), `${file} must carry its timing binding (${token})`);
+    const token = file === 'asd-phase-retro.md' ? 'timing-summary' : "'Operation timing'";
+    assert.ok(text.includes(token) || text.includes(token.replace(/'/g, '"')), `${file} must carry its timing binding (${token})`);
   }
   for (const name of fs.readdirSync(path.join(REPO_ROOT, '.asd/skills')).filter((skill) => /^asd-phase-/.test(skill))) {
     const tools = sync.parseCanonicalFrontmatter(canonText(`.asd/skills/${name}/SKILL.md`)).meta.claude['allowed-tools'];
@@ -7845,8 +7862,164 @@ test('sprint-025 AC-3/AC-7/AC-8: every phase workflow states its timing ops, eve
   assert.ok(sectionOf('.asd/rules/checkpoints.md', 'Gate policy').split('\n').some((line) => line.startsWith('Hard in both modes:') && line.includes('ASD update')), 'the update choice joins the hard list');
   assert.ok(/ASD update choice[^|]*\|\s*hard approve-before-write/.test(canonText('.asd/rules/checkpoints.md')), 'the gate inventory carries the update choice row');
   assert.ok(canonText('.asd/skills/asd-sprint/SKILL.md').includes('update.js --check-version'), 'asd-sprint runs the version check');
-  assert.ok(canonText('.asd/skills/asd-update/SKILL.md').includes('## Sprint-mediated mode'), 'asd-update keeps its Sprint-mediated mode section');
+  assert.ok(canonText('.asd/skills/asd-update/SKILL.md').includes('### Sprint-mediated mode'), 'asd-update keeps its Sprint-mediated mode section');
   assert.ok(canonText('.asd/workflows/asd-phase-scope.md').includes('--create'), 'scope step 1 creates the ledger');
+});
+
+// ===========================================================================
+// 26. Sprint 026: the structured forms (plan.md D1-D8). Each spec file category
+// - agents, phase workflows, standalone skills, the protocol file - has one
+// section set and order, every json block in it parses and carries its keys,
+// and the protocol's signal and payload vocabulary is the one the agents and
+// workflows rely on. Data-driven: one helper per category, never per file.
+// ===========================================================================
+
+/** The `#`/`##` headings of a canon file outside code fences, as `[level, title]`. */
+function headingsOf(rel) {
+  let fenced = false;
+  const found = [];
+  for (const line of canonText(rel).split('\n')) {
+    if (/^```/.test(line)) fenced = !fenced;
+    const match = !fenced && /^(#{1,2}) (.+)$/.exec(line);
+    if (match) found.push([match[1].length, match[2]]);
+  }
+  return found;
+}
+
+/** Why `actual` is not an ordered selection of `spec` (`[name, required]`) holding every required entry, or null. */
+function specMismatch(actual, spec) {
+  let at = 0;
+  for (const name of actual) {
+    const hit = spec.findIndex(([candidate], index) => index >= at && candidate === name);
+    if (hit === -1) return `"${name}" is not allowed here (after "${spec[at - 1] ? spec[at - 1][0] : 'the title'}")`;
+    const skipped = spec.slice(at, hit).find(([, required]) => required);
+    if (skipped) return `required "${skipped[0]}" is missing or out of order before "${name}"`;
+    at = hit + 1;
+  }
+  const missing = spec.slice(at).find(([, required]) => required);
+  return missing ? `required "${missing[0]}" is missing` : null;
+}
+
+const FORM_DOMAIN_SECTIONS = ['Review rubric', 'Section coverage ledger', 'Gate Verdict Format', 'Severity mapping', 'Invocation', 'Test selection rubric', 'Failure triage', 'Manual steps', 'Evidence routing', 'Diagram modes', 'Token decisions', 'Tech reference'];
+const FORM_CATEGORIES = {
+  agents: {
+    files: () => fs.readdirSync(path.join(REPO_ROOT, '.asd/agents')).filter((file) => file.endsWith('.md')).map((file) => `.asd/agents/${file}`),
+    title: /^Role$/,
+    spec: [...['Inputs', 'Outputs', 'Rules', 'Tools', 'Escalation', 'Signals'].map((name) => [name, true]), ...FORM_DOMAIN_SECTIONS.map((name) => [name, false])],
+  },
+  workflows: {
+    files: () => fs.readdirSync(path.join(REPO_ROOT, '.asd/workflows')).filter((file) => /^asd-phase-.*\.md$/.test(file)).map((file) => `.asd/workflows/${file}`),
+    title: /^ASD Workflow: \S/,
+    spec: [['Entry', true], ['Inputs', true], ['Steps', true], ['Rules', false], ['Dispatch', false], ['Signals', false], ['Exit', true], ['Return', true], ['References', true]],
+  },
+  skills: {
+    files: () => fs.readdirSync(path.join(REPO_ROOT, '.asd/skills')).filter((name) => !name.startsWith('asd-phase-')).sort().map((name) => `.asd/skills/${name}/SKILL.md`),
+    title: /^\S/,
+    spec: [['Purpose', true], ['Preconditions', true], ['Modes', false], ['Steps', true], ['Rules', false], ['User decisions', true], ['Delegates', true], ['Outputs', true], ['Reference', false], ['Return', true], ['References', true]],
+  },
+};
+
+test('sprint-026 AC-12 (D2/D4/D5): every agent, phase workflow and standalone skill carries exactly its category\'s sections in the category\'s order - optional ones only where the form allows them', () => {
+  for (const [category, { files, title, spec }] of Object.entries(FORM_CATEGORIES)) {
+    assert.ok(files().length >= 7, `sanity: the ${category} sweep must reach its files (got ${files().length})`);
+    for (const rel of files()) {
+      const [first, ...rest] = headingsOf(rel);
+      assert.ok(first && first[0] === 1 && title.test(first[1]), `${rel}: the ${category} form opens with its level-1 title (got ${JSON.stringify(first)})`);
+      assert.deepStrictEqual(rest.filter(([level]) => level === 1), [], `${rel}: one level-1 title only`);
+      const mismatch = specMismatch(rest.map(([, name]) => name), spec);
+      assert.strictEqual(mismatch, null, `${rel}: ${category} form violated - ${mismatch}`);
+    }
+  }
+});
+
+test('sprint-026 AC-12 (D1): every json block of an agent, phase workflow, standalone skill and agent-protocol.md parses, and no agent body carries a backslash', () => {
+  const files = [...Object.values(FORM_CATEGORIES).flatMap(({ files }) => files()), '.asd/rules/agent-protocol.md'];
+  let blocks = 0;
+  for (const rel of files) {
+    for (const [, block] of canonText(rel).matchAll(/```json\n([\s\S]*?)\n```/g)) {
+      blocks++;
+      assert.doesNotThrow(() => JSON.parse(block), `${rel}: a json block must be valid JSON - ${block.slice(0, 60)}`);
+    }
+  }
+  assert.ok(blocks >= 100, `sanity: the json sweep must reach the blocks (got ${blocks})`);
+  for (const rel of FORM_CATEGORIES.agents.files()) {
+    const body = sync.parseCanonicalFrontmatter(sync.readNormalized(path.join(REPO_ROOT, rel))).body;
+    assert.ok(!body.includes('\\'), `${rel}: no backslash in an agent body - the Codex TOML writer escapes it and the rendered view drifts from canon`);
+  }
+});
+
+test('sprint-026 AC-12 (D2/D3): each agent json section carries its keys, the Signals tokens are the protocol\'s, and the base description fits the 300-char cap', () => {
+  const protocolTokens = [...sectionOf('.asd/rules/agent-protocol.md', 'Signals').matchAll(/^\| `([A-Z_]+)` \|/gm)].map((match) => match[1]);
+  for (const rel of FORM_CATEGORIES.agents.files()) {
+    const inputs = jsonOf(rel, 'Inputs');
+    assert.ok(Array.isArray(inputs.rules) && inputs.rules.length >= 3 && Array.isArray(inputs.required), `${rel}: Inputs is {rules, required, ...} with rules and required lists`);
+    for (const [mode, body] of Object.entries(inputs.modes || {})) assert.ok(typeof body.when === 'string' && Array.isArray(body.required), `${rel}: Inputs mode "${mode}" carries when and required`);
+    const outputs = jsonOf(rel, 'Outputs');
+    assert.ok(Array.isArray(outputs) && outputs.length > 0 && outputs.every((item) => typeof item === 'string'), `${rel}: Outputs is a non-empty array of strings`);
+    const tools = jsonOf(rel, 'Tools');
+    assert.ok(tools && !Array.isArray(tools) && Object.keys(tools).every((key) => ['run', 'deny', 'write', 'write_self_hosting', 'web'].includes(key)), `${rel}: Tools holds only run, deny, write, write_self_hosting, web (got ${Object.keys(tools)})`);
+    const escalation = jsonOf(rel, 'Escalation');
+    assert.ok(Array.isArray(escalation) && escalation.every((row) => typeof row.when === 'string' && typeof row.signal === 'string'), `${rel}: Escalation is an array of {when, signal}`);
+    const signals = jsonOf(rel, 'Signals');
+    assert.ok(Array.isArray(signals) && signals.length > 0 && signals.every((token) => protocolTokens.includes(token)), `${rel}: Signals lists tokens of agent-protocol.md "Signals" only (got ${JSON.stringify(signals)} against ${protocolTokens})`);
+    const { meta } = sync.parseCanonicalFrontmatter(sync.readNormalized(path.join(REPO_ROOT, rel)));
+    assert.ok(meta.description.length <= 300, `${rel}: the base description is at most 300 chars (got ${meta.description.length})`);
+  }
+});
+
+test('sprint-026 AC-12 (D4/D5/D8): phase workflow, standalone skill and protocol json blocks carry their keys', () => {
+  const array = (value) => Array.isArray(value);
+  for (const rel of FORM_CATEGORIES.workflows.files()) {
+    const entry = jsonOf(rel, 'Entry');
+    assert.ok(array(entry.requires) && array(entry.ops) && (entry.modes === undefined || (typeof entry.modes === 'object' && !array(entry.modes))), `${rel}: Entry is {requires, ops, modes?}`);
+    assert.ok(array(jsonOf(rel, 'Inputs')), `${rel}: Inputs is an array`);
+    const exit = jsonOf(rel, 'Exit');
+    assert.ok(array(exit.writes) && array(exit.next) && exit.next.length > 0 && exit.next.every((route) => typeof route.if === 'string' && typeof route.next === 'string'), `${rel}: Exit is {writes, next: [{if, next}]}`);
+    if (canonText(rel).includes('\n## Dispatch\n')) {
+      const dispatch = jsonOf(rel, 'Dispatch');
+      assert.ok(array(dispatch) && dispatch.every((row) => typeof row.agent === 'string' && typeof row.when === 'string' && array(row.payload) && array(row.signals)), `${rel}: Dispatch is an array of {agent, when, payload, signals}`);
+    }
+    if (canonText(rel).includes('\n## Signals\n')) {
+      const signals = jsonOf(rel, 'Signals');
+      assert.ok(!array(signals) && Object.values(signals).every((deviation) => typeof deviation === 'string'), `${rel}: Signals is {TOKEN: deviation}`);
+    }
+  }
+  for (const rel of FORM_CATEGORIES.skills.files()) {
+    const preconditions = jsonOf(rel, 'Preconditions');
+    assert.ok(array(preconditions.requires) && array(preconditions.ops), `${rel}: Preconditions is {requires, else?, ops}`);
+    if (canonText(rel).includes('\n## Modes\n')) assert.ok(Object.values(jsonOf(rel, 'Modes')).every((detection) => typeof detection === 'string'), `${rel}: Modes is {mode: detection}`);
+    assert.ok(array(jsonOf(rel, 'User decisions')) && jsonOf(rel, 'User decisions').every((row) => ['step', 'gate', 'class'].every((key) => typeof row[key] === 'string')), `${rel}: User decisions is an array of {step, gate, class, options?}`);
+    const delegates = jsonOf(rel, 'Delegates');
+    assert.ok(array(delegates.agents) && array(delegates.skills), `${rel}: Delegates is {agents, skills}`);
+    assert.ok(array(jsonOf(rel, 'Outputs')), `${rel}: Outputs is an array`);
+  }
+  const payload = jsonOf('.asd/rules/agent-protocol.md', 'Dispatch payload');
+  assert.deepStrictEqual(Object.keys(payload), ['repo_root', 'sprint', 'phase', 'mode', 'task', 'inputs', 'write_scope', 'turn_budget', 'answers', 'advice', 'consults_left'], 'agent-protocol.md "Dispatch payload" is the one object whose keys are exactly the D8 set, in order');
+  assert.deepStrictEqual(headingsOf('.asd/rules/agent-protocol.md').filter(([level]) => level === 2).map(([, name]) => name), ['Signals', 'Dispatch payload', 'Return', 'Relay'], 'agent-protocol.md holds Signals, Dispatch payload, Return, Relay in that order');
+});
+
+test('sprint-026 AC-12 (D6/D8, C-4): return lines follow one format, agent-protocol.md lists every signal token and no canon names a retired one, and ADVICE_NEEDED is a creator signal only', () => {
+  for (const rel of FORM_CATEGORIES.workflows.files()) {
+    const phase = /asd-phase-(.+)\.md$/.exec(rel)[1];
+    const line = (/## Return\n\n?```\n([\s\S]*?)\n```/.exec(canonText(rel)) || [])[1];
+    assert.ok(line && !line.includes('\n'), `${rel}: "Return" is one fenced line`);
+    assert.ok(new RegExp(`^PHASE: ${phase} \\| SPRINT: <NNN-slug> \\| (?:WAVE: <K> \\| )?(?:ITER: <N> \\| )?STATUS: \\S.* \\| NEXT: \\S.*$`).test(line), `${rel}: phase return line is "PHASE: ${phase} | SPRINT: <NNN-slug> | [WAVE: <K> | ][ITER: <N> | ]STATUS: <...> | NEXT: <...>" (got ${line})`);
+  }
+  for (const rel of FORM_CATEGORIES.skills.files()) {
+    const name = rel.split('/')[2];
+    const line = (/## Return\n\n?```\n([^\n]*)\n/.exec(canonText(rel)) || [])[1];
+    assert.ok(line, `${rel}: "Return" opens with one fenced line`);
+    assert.ok(new RegExp(`^SKILL: ${name} \\| .*STATUS: \\S.* \\| NEXT: \\S.*$`).test(line), `${rel}: skill return line is "SKILL: ${name} | [MODE: <m> | ]... STATUS: <...> | NEXT: <...>" (got ${line})`);
+  }
+  const protocolTokens = [...sectionOf('.asd/rules/agent-protocol.md', 'Signals').matchAll(/^\| `([A-Z_]+)` \|/gm)].map((match) => match[1]);
+  assert.deepStrictEqual(protocolTokens, ['COMPLETED', 'QUESTION', 'ADVICE_NEEDED', 'BLOCKED_MANUAL', 'FAILED', 'ABORT', 'REVIEW_DONE'], 'agent-protocol.md "Signals" lists the seven tokens of D8');
+  const retired = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md'].filter((rel) => /PLAN_DRAFT|PLAN_READY/.test(canonText(rel)));
+  assert.deepStrictEqual(retired, [], 'PLAN_DRAFT and PLAN_READY have no emitter or handler (O3) and must stay out of canon');
+  const creators = ['asd-ba', 'asd-ux', 'asd-architect', 'asd-dev', 'asd-tester'];
+  for (const rel of FORM_CATEGORIES.agents.files()) {
+    const name = path.basename(rel, '.md');
+    assert.strictEqual(jsonOf(rel, 'Signals').includes('ADVICE_NEEDED'), creators.includes(name), `${rel}: ADVICE_NEEDED is listed by every creator and by no reviewer or the advisor (C-4)`);
+  }
 });
 
 // ===========================================================================
