@@ -8041,6 +8041,19 @@ test('sprint-026 AC-4/AC-9/AC-10/AC-11/D9: each rule the sprint added or relocat
   assert.deepStrictEqual(moved.filter((name) => present.includes(name)), [], 'D9: sections moved into the phase workflows and agent-protocol.md stay out of sprint-lifecycle.md - text left in both is two homes that drift');
 });
 
+test('sprint-026 AC-13 (E1/E2): no agent lists a conditional input key (decisions, contracts, audit) as unconditionally required, and the three skill-dispatched creators keep their no-sprint standalone modes', () => {
+  for (const rel of FORM_CATEGORIES.agents.files()) {
+    const inputs = jsonOf(rel, 'Inputs');
+    const required = [...inputs.required, ...Object.values(inputs.modes || {}).flatMap((mode) => mode.required)];
+    const bare = required.filter((item) => /payload[.]inputs[.](?:decisions|contracts|audit)(?![-a-z])/.test(item) && !item.includes('when present'));
+    assert.deepStrictEqual(bare, [], `E1: ${rel} lists a key the orchestrator resolves only under a condition ("Input sources") as required - a dispatch without it would read as a missing required input; list it under optional or qualify it "when present"`);
+  }
+  for (const [agent, mode] of [['asd-ba', 'concept'], ['asd-architect', 'stack'], ['asd-ux', 'design-system']]) {
+    const body = jsonOf(`.asd/agents/${agent}.md`, 'Inputs').modes[mode];
+    assert.ok(body && body.when.includes('no sprint required'), `E2: ${agent} must keep the "${mode}" mode the standalone skill dispatches it in, flagged as needing no sprint - without it the skill dispatch hits the sprint-only top-level required inputs`);
+  }
+});
+
 // ===========================================================================
 // Runner
 // ===========================================================================
