@@ -92,3 +92,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-20 — impl-test: impacted set green (287/287), entry 3 1/0 tests
 - 2026-10-20 — impl-review wave-1/iter-02: combined APPROVE (one transcription, F-2), external APPROVE; wave 1 roster met → wave 2
 - 2026-10-20 — impl-review wave-2/iter-01: combined CONCERNS (F1, F2 low), external CONCERNS (E1, E2 high, E3 medium) → impl review-fix (review_fixes_pending wave-2/iter-01)
+- 2026-10-20 — route review-fix wave-2/iter-01: critical, dispatch HEAD 3bdb6edb; risk change: input requiredness and standalone mode
