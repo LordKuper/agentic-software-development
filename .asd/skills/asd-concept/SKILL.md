@@ -3,7 +3,7 @@
   "name": "asd-concept",
   "description": "Forms or edits the project concept document via asd-ba, branching by silent detection into one of four flows (no idea / vague idea / clear vision / brownfield extraction) and converging through a per-section lock-in loop. Use when the user runs /asd-concept, when asd-init detects a missing concept.html and suggests this skill, or when the user asks to define, draft, refine, edit, rewrite, or reverse-engineer the project concept, vision, target users, or value proposition.",
   "claude": {
-    "allowed-tools": "Read Glob Grep AskUserQuestion Task"
+    "allowed-tools": "Read Glob Grep AskUserQuestion Task Bash(node .asd/runtime.js:*)"
   }
 }
 ---
@@ -17,13 +17,13 @@ Form or edit the project concept document via `asd-ba`: create, edit or reverse-
 ## Preconditions
 
 ```json
-{"requires": [".asd/project/config.yaml exists", "no active sprint required (concept is project-lifetime artefact)"], "else": "run /asd-init first", "ops": ["read files: .asd/project/config.yaml, existing concept.html, candidate brownfield sources", "search repo: silent scan for brownfield signals + candidate content", "request user decision/input: User decisions", "delegate to agent: asd-ba (author)"]}
+{"requires": [".asd/project/config.yaml exists", "no active sprint required (concept is project-lifetime artefact)"], "else": "run /asd-init first", "ops": []}
 ```
 
 ## Modes
 
 ```json
-{"edit": "docs/product/concept.html exists, non-empty (Phase 1)", "fresh": "no concept.html; variant A|B|C chosen (Phase 2)", "reverse-engineered": "no concept.html; variant D chosen (Phase 2), the default on brownfield signals"}
+{"edit": "Phase 1 step 1", "fresh": "Phase 2 variant A|B|C", "reverse-engineered": "Phase 2 variant D"}
 ```
 
 ## Steps
@@ -110,17 +110,18 @@ Phase 1 brownfield candidates auto-suggest D as default; user may override.
 ## Rules
 
 - never: mix the multi-field and options request shapes in one request.
+- must: before each `asd-ba` delegation, build `inputs.context`: `node .asd/runtime.js context --role asd-ba --phase concept --out <scratch-dir>/concept-<dispatch id>.context.md` (`agent-protocol.md` "Dispatch payload").
 
 ## User decisions
 
 ```json
-[{"step": "Phase 2", "gate": "variant", "class": "options", "options": ["A", "B", "C", "D"]}, {"step": "Phase 3 A", "gate": "lens, horizon, maturity", "class": "multi-field"}, {"step": "Phase 3 A/B", "gate": "direction", "class": "options", "options": ["pick 1 of 3", "regenerate"]}, {"step": "Phase 3 C", "gate": "own description", "class": "free-form"}, {"step": "Phase 4", "gate": "section (checkpoints.md)", "class": "options", "options": ["Lock in", "Revise", "Skip"]}, {"step": "Phase 5", "gate": "concept (write-then-review-accept)", "class": "free-form", "options": ["accept", "feedback"]}, {"step": "Edit mode", "gate": "sections", "class": "multi-select"}]
+[]
 ```
 
 ## Delegates
 
 ```json
-{"agents": ["asd-ba (author / scanner / refiner)"], "skills": []}
+{"agents": ["asd-ba"], "skills": []}
 ```
 
 ## Outputs

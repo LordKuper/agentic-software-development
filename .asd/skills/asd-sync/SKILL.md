@@ -14,18 +14,18 @@ Reconcile generated provider views with canonical `.asd/` sources.
 ## Preconditions
 
 ```json
-{"requires": [".asd/sync.js in this git repo"], "ops": ["run command: node $SYNC --check, --apply [--force]", "read files: target and canon source (show diff)", "request user decision: User decisions"]}
+{"requires": [".asd/sync.js in this git repo"], "ops": []}
 ```
 
 ## Steps
 
-0. **Resolve the script path once, so this works from any directory in the repo** — `node .asd/sync.js` only resolves at a bare relative path from the repo root; a self-locating path removes that constraint entirely instead of relying on cwd discipline: `SYNC="$(git rev-parse --show-toplevel)/.asd/sync.js"`. Every command below is `node "$SYNC" ...`.
+0. **Resolve the script path once**, self-locating so it works from any repo directory: `SYNC="$(git rev-parse --show-toplevel)/.asd/sync.js"`. Every command below is `node "$SYNC" ...`.
 1. Run command `node "$SYNC" --check`. Parse its JSON report (`items[]`: `target`, `status` — `current | missing | stale | modified-foreign`).
 2. If every item is `current`, report that and stop — nothing to do.
 3. For each non-`current` item, request user decision: **overwrite** regenerates this target from canon (queued for apply); **keep as-is** skips this target this run; **show diff** reads the target and the canon source, presents the difference, then re-asks overwrite/keep for the same item. `modified-foreign` items (hand-edited outside ASD's ownership markers) get the same three options, but flag the risk explicitly: overwrite discards the hand edit.
-4. Apply exactly the targets marked overwrite in step 3, split by their step-1 status — the CLI only honors an overwrite of `modified-foreign` when `--force` is explicitly passed, precisely because that status means "hand-edited outside ownership markers":
-   - `missing`/`stale` targets marked overwrite: `node "$SYNC" --apply <file...>` (no `--force` — nothing to override, sync would write these anyway).
-   - `modified-foreign` targets marked overwrite: `node "$SYNC" --apply <file...> --force` (same command form, `--force` appended — this is the ONLY thing that actually makes a confirmed `modified-foreign` overwrite take effect; without it the CLI silently refuses and the file stays untouched).
+4. Apply exactly the targets marked overwrite in step 3, split by their step-1 status:
+   - `missing`/`stale`: `node "$SYNC" --apply <file...>` (no `--force`).
+   - `modified-foreign`: `node "$SYNC" --apply <file...> --force` — without `--force` the CLI silently refuses and the file stays untouched.
    Skip either call if its group is empty.
 5. Report per-file outcome (applied / kept / still stale) from the apply result(s) plus a final `node "$SYNC" --check` summary.
 
@@ -36,7 +36,7 @@ Reconcile generated provider views with canonical `.asd/` sources.
 ## User decisions
 
 ```json
-[{"step": "3", "gate": "per non-current item", "class": "options", "options": ["overwrite", "keep as-is", "show diff"]}]
+[]
 ```
 
 ## Delegates

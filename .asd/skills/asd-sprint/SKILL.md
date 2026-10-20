@@ -17,7 +17,7 @@ Start a new sprint or resume the active one: dispatch the matching phase skill, 
 ## Preconditions
 
 ```json
-{"requires": [".asd/project/config.yaml exists", "at most 1 active sprint (Step 1)"], "else": "no config: tell user /asd-init; more than 1 active: Step 1 FAILED", "ops": ["read files / search repo: detect active sprint; state.json, its frozen workflow definition .asd/workflows/<workflow>.json, config.yaml, custom-common-rules.md", "run command: Step 0 git fetch and git merge --ff-only; git status, git branch --show-current; gh pr view, gh pr list (merged-unclosed detection); git fetch, git show, git log, git ls-remote --tags origin, gh release view (release retry check); gh pr merge (a legacy finalize PR only); decisions-log rotation (rename, copy template, commit those paths); update.js --check-version; runtime.js timing, timing-recover", "request user decision: User decisions; never free-form scope text", "delegate to skill: Delegates", "no other writes: phase skills and their inline orchestrator own writes"]}
+{"requires": [".asd/project/config.yaml exists", "at most 1 active sprint (Step 1)"], "else": "no config: tell user /asd-init; more than 1 active: Step 1 FAILED", "ops": ["read files: custom-common-rules.md", "run command: git branch --show-current; git fetch, git show, git log, git ls-remote --tags origin, gh release view (release retry check)", "no other writes: phase skills and their inline orchestrator own writes"]}
 ```
 
 ## Steps
@@ -66,7 +66,7 @@ After any phase skill returns:
 ## User decisions
 
 ```json
-[{"step": "1", "gate": "release retry, each time", "class": "options", "options": ["retry", "continue"]}, {"step": "2A.2", "gate": "dirty worktree", "class": "options", "options": ["commit", "stash", "abort"]}, {"step": "2A.2a", "gate": "ASD update choice (hard)", "class": "options", "options": ["update now", "continue"]}, {"step": "2A.3", "gate": "sprint start", "class": "options", "options": ["start", "abort"]}, {"step": "2B.3", "gate": "resume menu", "class": "options", "options": ["resume", "re-run current phase", "re-run earlier phase", "abort sprint"]}]
+[]
 ```
 
 ## Delegates

@@ -3,7 +3,7 @@
   "name": "asd-stack",
   "description": "Forms or edits the project tech stack document at docs/architecture/stack.html via asd-architect, branching by silent detection into one of four flows (clean slate / constraints / clear stack / brownfield extraction). Verifies versions via WebFetch, runs knowledge-gap analysis, and maintains a tech-reference doc per chosen tech. Use when the user runs /asd-stack, when asd-init or asd-concept detects a missing stack.html and suggests this skill, or when the user asks to define, draft, refine, edit, upgrade, or reverse-engineer the project technology stack.",
   "claude": {
-    "allowed-tools": "Read Glob Grep AskUserQuestion Task"
+    "allowed-tools": "Read Glob Grep AskUserQuestion Task Bash(node .asd/runtime.js:*)"
   }
 }
 ---
@@ -17,13 +17,13 @@ Form or edit the project tech stack document `docs/architecture/stack.html` and 
 ## Preconditions
 
 ```json
-{"requires": [".asd/project/config.yaml exists", "docs/product/concept.html exists (concept is mandatory input)", "no active sprint required"], "else": "no config: run /asd-init first; no concept: run /asd-concept first", "ops": ["read files: .asd/project/config.yaml, concept.html, existing stack.html, manifests, source files", "search repo: silent scan for brownfield signals (manifests, lockfiles, Dockerfile, CI configs)", "request user decision/input: User decisions", "delegate to agent: asd-architect (author, fetch external doc to verify versions, create tech-references)"]}
+{"requires": [".asd/project/config.yaml exists", "docs/product/concept.html exists", "no active sprint required"], "else": "no config: run /asd-init first; no concept: run /asd-concept first", "ops": []}
 ```
 
 ## Modes
 
 ```json
-{"edit": "docs/architecture/stack.html exists, non-empty (Phase 1)", "fresh": "no stack.html; variant A|B|C chosen (Phase 2)", "reverse-engineered": "no stack.html; variant D chosen (Phase 2), the default on manifests/lockfiles/Dockerfile/CI configs"}
+{"edit": "Phase 1 step 1", "fresh": "Phase 2 variant A|B|C", "reverse-engineered": "Phase 2 variant D"}
 ```
 
 ## Steps
@@ -85,7 +85,7 @@ Phase 1 brownfield candidates auto-suggest D as default.
   - Per entry: verify current latest version via fetching external doc; flag if user's choice lags or is ahead
   - Architect drafts the section, translates to `language.docs`, writes it into `docs/architecture/stack.html` on disk
   - Post the file path + a short delta summary of what the section now says in `language.chat` (never the full section body) per `language-policy.md`
-  - Apply `checkpoints.md`: adaptive pass is allowed only for already-authorized factual/routine content; new or material stack direction remains a hard decision.
+  - Apply `checkpoints.md`: adaptive pass is allowed only for already-authorized factual/routine content; new or material stack direction remains a hard decision. Otherwise request **Lock in / Revise / Skip**.
   - on B: collect feedback, architect revises, rewrites the section in place, re-posts delta summary, re-ask
   - on C: remove that section (heading + placeholder content) from the on-disk file entirely, then continue
   - repeat until A
@@ -106,7 +106,7 @@ Per technology entry in approved stack:
 Per technology in approved stack:
 - Architect creates or updates `docs/architecture/tech-reference/<tech>-<version>.md` per `t_tech-reference.md`
 - Includes canonical source URL, API surface used, version-specific notes, deprecations, project conventions, "Last verified" ISO date
-- Request user decision before each persistent write
+- Request user decision before each persistent write: approve | revise
 
 ### Phase 7 — final artifact-level gate: stack.html
 
@@ -133,17 +133,18 @@ Per technology in approved stack:
 - never: add tech to stack speculatively — only when actively integrated; speculative additions belong in stack.html's own `#considered` section (`t_stack.html` "Considered / not adopted") or `.asd/project/stubs.md`, not the main stack list (ADRs are sprint-scoped and lost at archival — not a durable home)
 - must: give every tech in stack a matching tech-reference doc before COMPLETED
 - never: mix the multi-field and options request shapes in one request.
+- must: before each `asd-architect` delegation, build `inputs.context`: `node .asd/runtime.js context --role asd-architect --phase stack --out <scratch-dir>/stack-<dispatch id>.context.md` (`agent-protocol.md` "Dispatch payload").
 
 ## User decisions
 
 ```json
-[{"step": "Phase 2", "gate": "variant", "class": "options", "options": ["A", "B", "C", "D"]}, {"step": "Phase 3 A", "gate": "combination", "class": "options", "options": ["pick", "alternatives"]}, {"step": "Phase 3 B", "gate": "constraints", "class": "multi-field"}, {"step": "Phase 3 C", "gate": "own description", "class": "free-form"}, {"step": "Phase 4", "gate": "section (checkpoints.md)", "class": "options", "options": ["Lock in", "Revise", "Skip"]}, {"step": "Phase 6", "gate": "tech-reference write (approve-before-write)", "class": "options", "options": ["approve", "revise"]}, {"step": "Phase 7", "gate": "stack (write-then-review-accept)", "class": "free-form", "options": ["accept", "feedback"]}, {"step": "Edit mode", "gate": "sections or refresh", "class": "multi-select"}]
+[]
 ```
 
 ## Delegates
 
 ```json
-{"agents": ["asd-architect (author / scanner / version verifier / tech-reference creator)"], "skills": []}
+{"agents": ["asd-architect"], "skills": []}
 ```
 
 ## Outputs

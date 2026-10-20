@@ -14,19 +14,19 @@ Pull latest ASD framework files into this consumer project: overwrite **framewor
 ## Preconditions
 
 ```json
-{"requires": ["self_hosting not enabled (Rules)", "tar on PATH (ships with Win10 1803+/macOS/Linux)", "Node >= 16.7"], "else": "self_hosting enabled: one-line message, stop; else ABORT — precondition not met: <artefact>", "ops": ["read files: .asd/project/config.yaml self_hosting", "run command: update.js [--dry-run] [--force <relPath...>], update.js --check-version, node .asd/sync.js --check", "request user decision: User decisions"]}
+{"requires": ["self_hosting not enabled (Rules)", "tar on PATH (ships with Win10 1803+/macOS/Linux)", "Node >= 16.7"], "else": "self_hosting enabled: one-line message, stop; else ABORT — precondition not met: <artefact>", "ops": []}
 ```
 
 ## Modes
 
 ```json
-{"interactive": "user runs /asd-update", "sprint-mediated": "asd-phase-scope.md step 1 runs it when the user chose to update at asd-sprint's new-sprint version check"}
+{"interactive": "user runs /asd-update", "sprint-mediated": "Sprint-mediated mode"}
 ```
 
 ## Steps
 
 1. Confirm with user (it overwrites framework files): show what will update, offer dry run. Skipped in sprint-mediated mode (below).
-2. Run command `node "$(git rev-parse --show-toplevel)/.asd/skills/asd-update/update.js"` — self-locating, so this works from any directory in the repo (a bare relative path only resolves from the repo root).
+2. Run command `node "$(git rev-parse --show-toplevel)/.asd/skills/asd-update/update.js"` (self-locating: works from any repo directory).
    - Preview first: append `--dry-run` (reports the full classification — add/update/delete/conflict — mutates nothing).
 3. Updater flow: fetch tarball from `repo`@`branch` → compute the full classification for every `managed_paths` entry (fail-closed on an unfamiliar `schema_version`, unsafe path, or case-collision) → show every conflict and planned action → only THEN write (add/update/delete) → run pending migrations → rewrite `.asd/release-manifest.json` (`asd_version` + `upstream_hashes`).
    - Fetch/validation failure, or any conflict left unresolved = that file is skipped, everything else proceeds.
@@ -48,14 +48,14 @@ Run by `.asd/workflows/asd-phase-scope.md` step 1 when the user chose to update 
 
 ## Rules
 
-- must: read `self_hosting` from `.asd/project/config.yaml` first; missing, unreadable, or a duplicated key → treat as `disabled` (fail closed). If `enabled`: this command is for pulling framework files INTO a consumer project — this repo IS the framework. Print a one-line message ("asd-update is for consumer projects; this repo develops ASD directly — use a self-hosting sprint instead") and stop. No mutation, no fetch.
+- must: read `self_hosting` from `.asd/project/config.yaml` first; missing, unreadable, or a duplicated key → treat as `disabled` (fail closed). If `enabled`: print a one-line message ("asd-update is for consumer projects; this repo develops ASD directly — use a self-hosting sprint instead") and stop. No mutation, no fetch.
 - never: touch `.asd/project/**` (except `config.yaml`, which a release migration may rewrite as a sanctioned settings writer, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent), `.asd/sprints/**`, `docs/**`, `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json`, any non-ASD skill/agent/hook, anything outside `managed_paths`.
 - never: write a diverged (**conflict**) file without explicit confirmation.
 
 ## User decisions
 
 ```json
-[{"step": "1", "gate": "framework overwrite (interactive only)", "class": "options", "options": ["update", "dry run"]}, {"step": "3", "gate": "per conflict", "class": "options", "options": ["overwrite (--force)", "skip"]}]
+[]
 ```
 
 ## Delegates
