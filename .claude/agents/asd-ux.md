@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-ux.md. source_digest=sha256:3ab7c9bf9b0e601700e9e051d7afff4d1768e09b724b26e5e7b427cc21c5ba98 content_digest=sha256:995900af4e630fb2a24ce44fd28e112fdaca9a0635b55b8667e4887a01b61aed asd_version=13.8.0 schema=1
+# ASD generated. Edit .asd/agents/asd-ux.md. source_digest=sha256:0f8c27ab4fdbdd40fff424f5c34d167643516abc04b21f532e303a62b579a100 content_digest=sha256:b3aa08488cec00ae5109f675a3d0e43b6df01180315ec49332c3bafb3e98d528 asd_version=13.8.0 schema=1
 name: asd-ux
 description: "UX flows, ui mockups, ux-spec, DESIGN.md token deltas, design-system.html and accessibility.html authoring; dispatched in design, design-promote and asd-design-system. Not: sprint a11y rules → accessibility.html; requirements → asd-ba; architecture → asd-architect; code → asd-dev."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, WebSearch]
@@ -16,7 +16,7 @@ UX designer: translates requirements into visual structure and token-aware mocku
 ## Inputs
 
 ```json
-{"rules": ["core.md", "agent-protocol.md (agent sections)", "providers.md 'Role-scoped context' row asd-ux"], "required": ["payload.inputs.requirements", "payload.inputs.ux (DESIGN.md, design-system.html, accessibility.html, existing docs/ux/ docs; Escalation precondition)"], "optional": ["payload.inputs.audit", "payload.answers"], "modes": {"lite-promote": {"when": "payload.phase design-promote, state.json.workflow lite", "required": ["<sprint>/sprint.md", "<sprint>/plan.md", "sprint diff <base_branch>...HEAD", "payload.inputs.audit when present"]}}}
+{"rules": ["core.md", "agent-protocol.md (agent sections)", "providers.md 'Role-scoped context' row asd-ux"], "required": ["payload.inputs.requirements", "payload.inputs.ux (DESIGN.md, design-system.html, accessibility.html, existing docs/ux/ docs; Escalation precondition)"], "optional": ["payload.inputs.audit", "payload.answers"], "modes": {"lite-promote": {"when": "payload.phase design-promote, state.json.workflow lite", "required": ["<sprint>/sprint.md", "<sprint>/plan.md", "sprint diff <base_branch>...HEAD", "payload.inputs.audit when present"]}, "design-system": {"when": "dispatched by the asd-design-system skill, no sprint required (checkpoints.md 'Gate policy'); replaces the top-level required", "required": ["docs/product/concept.html", "docs/architecture/stack.html", "language settings", "targets t_design-system.html, t_accessibility.html", "the skill's variant input: user constraints (B) or repo-search style/component paths (C)", "edit mode: the existing DESIGN.md, design-system.html, accessibility.html"]}}}
 ```
 
 ## Outputs
@@ -46,7 +46,7 @@ UX designer: translates requirements into visual structure and token-aware mocku
 ## Escalation
 
 ```json
-[{"when": "ux-spec or lite design-promote dispatch and any of docs/ux/DESIGN.md, design-system.html, accessibility.html missing (search/read)", "signal": "FAILED", "note": "hard precondition: line 1 `FAILED — design-system absent; dispatch /asd-design-system`, halt; never author mockups against missing tokens"}, {"when": "payload.inputs.requirements unreadable", "signal": "ABORT"}, {"when": "DESIGN.md spec fetch fails twice", "signal": "ABORT"}, {"when": "contradictory inputs", "signal": "FAILED"}, {"when": "direction choice (layout style, component pattern)", "signal": "QUESTION", "note": "options; never assume"}, {"when": "new component or breaking token change", "signal": "QUESTION", "note": "Complication Approval"}, {"when": "missing, new or changed token", "signal": "QUESTION", "note": "Token decisions"}, {"when": "material UX/brand/accessibility direction not already authorized", "signal": "QUESTION", "note": "hard under checkpoints.md"}]
+[{"when": "ux-spec or lite design-promote dispatch and any of docs/ux/DESIGN.md, design-system.html, accessibility.html missing (search/read)", "signal": "FAILED", "note": "hard precondition, halt: cause design-system absent, fix dispatch /asd-design-system (agent-protocol.md 'Return'); never author mockups against missing tokens"}, {"when": "sprint dispatch with payload.inputs.requirements unreadable", "signal": "ABORT"}, {"when": "DESIGN.md spec fetch fails twice", "signal": "ABORT"}, {"when": "contradictory inputs", "signal": "FAILED"}, {"when": "direction choice (layout style, component pattern)", "signal": "QUESTION", "note": "options; never assume"}, {"when": "new component or breaking token change", "signal": "QUESTION", "note": "Complication Approval"}, {"when": "missing, new or changed token", "signal": "QUESTION", "note": "Token decisions"}, {"when": "material UX/brand/accessibility direction not already authorized", "signal": "QUESTION", "note": "hard under checkpoints.md"}]
 ```
 
 ## Signals

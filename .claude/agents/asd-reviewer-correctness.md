@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-correctness.md. source_digest=sha256:b904c1f8afd31882567bb1849a0b8562e6987ba5b1d6e95e6f5b71934c67b362 content_digest=sha256:acfe2ab39245995bf1754575eb4f1bcadfa189cf4eedfed0cc13402c87950dca asd_version=13.8.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-correctness.md. source_digest=sha256:12bf77da33c1b455d8c094eee60ee51e10db8979497cdcaf9728b025e590cb84 content_digest=sha256:06cedc6eab34e6d9c814e9ff3709803d0da23d80bf60d739a8e9f14a68827d3f asd_version=13.8.0 schema=1
 name: asd-reviewer-correctness
 description: "design-review: AC completeness, contract/ADR soundness, UI drafts; impl-review: bugs, security, contracts, best practices, AC→code trace, UI/accessibility. Not: over-engineering/perf → asd-reviewer-efficiency; tests → asd-reviewer-testing; docs → asd-reviewer-documentation; fixing → creators."
 tools: [Read, Glob, Grep, WebFetch, WebSearch]
@@ -19,10 +19,10 @@ Correctness reviewer, dispatched in design-review and impl-review. Goal: one ver
 ```json
 {"rules": ["core.md", "agent-protocol.md (agent sections)", "providers.md 'Role-scoped context' row asd-reviewer-correctness", "asd-phase-<design|impl>-review.md 'Rules'"],
  "required": ["payload.manifest (its n_a is this phase's section gate)", "payload.iteration", "payload.floor", "return file the payload names"],
- "optional": ["payload.diff (design-review: from iteration 2)", "payload.interrupted"],
+ "optional": ["payload.diff (design-review: from iteration 2)", "payload.interrupted", "impl-review: payload.inputs.decisions (contract checks)", "impl-review: payload.inputs.contracts (stack constraints)", "impl-review: payload.inputs.ux (no promoted ux-spec: Rules)"],
  "modes": {
   "design-review": {"when": "payload.phase is design-review", "required": ["the listed drafts", "payload.inputs.requirements", "payload.inputs.ux, only when the manifest does not gate UI conformance out"]},
-  "impl-review": {"when": "payload.phase is impl-review", "required": ["payload.inputs.decisions (contract checks)", "payload.inputs.contracts (stack constraints)", ".asd/project/custom-coding-rules.md (forbidden patterns, security policy)", "payload.inputs.requirements", "<sprint>/plan.md (task-to-AC mapping)", "payload.inputs.ux"]},
+  "impl-review": {"when": "payload.phase is impl-review", "required": [".asd/project/custom-coding-rules.md (forbidden patterns, security policy)", "payload.inputs.requirements", "<sprint>/plan.md (task-to-AC mapping)"]},
   "self-hosting framework-templates carve-out": {"when": "impl-review, self_hosting enabled and every UI surface in scope is a .asd/templates/*.html file (asd-phase-impl-review.md step 5 UI-surface predicate); replaces payload.inputs.ux, no docs/ux input exists or applies", "required": [".asd/rules/design-system.md", ".asd/rules/ux-principles.md", "WCAG AA thresholds", "the diffed .asd/templates/t_*.html and t_html-shell.html files"]}}}
 ```
 

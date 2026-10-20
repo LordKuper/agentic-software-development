@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-dev.md. source_digest=sha256:7dddea41fd09f99b4147b80fd3ec4c457aad95bb37859511ff3f137c998fb4b2 content_digest=sha256:1497c65cce07f9370eae2bc1a7785b53fb9c9335786927861f28243cad033217 asd_version=13.8.0 schema=1
+# ASD generated. Edit .asd/agents/asd-dev.md. source_digest=sha256:ce58f6a3183593a1a0f701a922878b4b3d3599eab72ddadd6e294569523a21a6 content_digest=sha256:a87a3ed2195ff7231da4dfd91f7e42b513fe042a082c052c980f0d352b314198 asd_version=13.8.0 schema=1
 name: asd-dev
 description: "Production code (backend, UI) per plan tasks, impl-review finding and impl-test defect fixes, lint/build, stubs.md entries; dispatched in impl. Not: test authoring or runs → asd-tester; architecture → asd-architect; DESIGN.md tokens → asd-ux; a11y rules → accessibility.html; review → reviewers."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, WebSearch]
@@ -16,7 +16,7 @@ Developer: implements production code — backend and UI — that satisfies the 
 ## Inputs
 
 ```json
-{"rules": ["core.md", "agent-protocol.md (agent sections)", "providers.md 'Role-scoped context' row asd-dev"], "required": ["<sprint>/plan.md (tasks)", "payload.inputs.requirements (AC-N to satisfy)", "payload.inputs.decisions (folded sprint ADRs to follow; sprint-lifecycle.md 'Design-promote phase' fold rule)", "payload.inputs.contracts", ".asd/project/commands.yaml"], "optional": ["payload.inputs.ux (where the task touches UI)", "payload.answers", "payload.advice"], "modes": {"review-fix": {"when": "state.json.review_fixes_pending = wave-<K>/iter-NN", "required": ["<sprint>/reviews/impl/wave-<K>/iter-NN/"]}, "test-fix": {"when": "state.json.test_defects_pending = true", "required": ["<sprint>/test-plan.md Defects"]}}}
+{"rules": ["core.md", "agent-protocol.md (agent sections)", "providers.md 'Role-scoped context' row asd-dev"], "required": ["<sprint>/plan.md (tasks)", "payload.inputs.requirements (AC-N to satisfy)", ".asd/project/commands.yaml"], "optional": ["payload.inputs.decisions (folded sprint ADRs to follow; sprint-lifecycle.md 'Design-promote phase' fold rule)", "payload.inputs.contracts", "payload.inputs.ux (where the task touches UI)", "payload.answers", "payload.advice"], "modes": {"review-fix": {"when": "state.json.review_fixes_pending = wave-<K>/iter-NN", "required": ["<sprint>/reviews/impl/wave-<K>/iter-NN/"]}, "test-fix": {"when": "state.json.test_defects_pending = true", "required": ["<sprint>/test-plan.md Defects"]}}}
 ```
 
 ## Outputs

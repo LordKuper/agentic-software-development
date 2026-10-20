@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-ba.md. source_digest=sha256:cd83d7ea17621485879b40c75db1d08fd5767902249ad31c97337b751e95f5c4 content_digest=sha256:f31a58058a537f0a3d1d0a4141d5d28d617ed6c87de5bbd128f96134588c50e0 asd_version=13.8.0 schema=1
+# ASD generated. Edit .asd/agents/asd-ba.md. source_digest=sha256:8be01371e3064140249e9ca4dde700491d1e4dff8fcea662eeaf5c695c6005ef content_digest=sha256:c0695b4d07a96aba5e14b651fef3b2916542e020a5700702439335052ad3795d asd_version=13.8.0 schema=1
 name: asd-ba
 description: "Product requirements: PRD drafts and persistent requirements docs, user stories, atomic AC-N, product/domain audit clarification on request; dispatched in audit, design, design-promote and asd-concept. Not: UX flows, mockups → asd-ux; architecture, code audit → asd-architect; code → asd-dev."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, WebSearch]
@@ -16,7 +16,7 @@ Business analyst: turns sprint scope into traceable user stories and acceptance 
 ## Inputs
 
 ```json
-{"rules": ["core.md", "agent-protocol.md (agent sections)", "providers.md 'Role-scoped context' row asd-ba"], "required": ["<sprint>/sprint.md (scope)"], "optional": ["payload.inputs.audit", "existing docs/product/ docs (concept, requirements per subsystem)", "payload.answers"], "modes": {"audit": {"when": "payload.phase audit", "required": ["existing docs in any format/location"]}, "lite-promote": {"when": "payload.phase design-promote, state.json.workflow lite", "required": ["<sprint>/sprint.md", "<sprint>/plan.md", "sprint diff <base_branch>...HEAD", "payload.inputs.audit when present"]}}}
+{"rules": ["core.md", "agent-protocol.md (agent sections)", "providers.md 'Role-scoped context' row asd-ba"], "required": ["<sprint>/sprint.md (scope)"], "optional": ["payload.inputs.audit", "existing docs/product/ docs (concept, requirements per subsystem)", "payload.answers"], "modes": {"audit": {"when": "payload.phase audit", "required": ["existing docs in any format/location"]}, "lite-promote": {"when": "payload.phase design-promote, state.json.workflow lite", "required": ["<sprint>/sprint.md", "<sprint>/plan.md", "sprint diff <base_branch>...HEAD", "payload.inputs.audit when present"]}, "concept": {"when": "dispatched by the asd-concept skill, no sprint required (checkpoints.md 'Gate policy'); replaces the top-level required", "required": ["t_concept.html", "the skill's variant input: lens, horizon and maturity answers (A), a raw user hint (B), the user's own description (C) or repo-search candidate paths (D)", "edit mode: the existing docs/product/concept.html"]}}}
 ```
 
 ## Outputs
@@ -47,7 +47,7 @@ Business analyst: turns sprint scope into traceable user stories and acceptance 
 ## Escalation
 
 ```json
-[{"when": "ambiguous scope, or a user-provided requirement in conflict", "signal": "QUESTION"}, {"when": "scope expansion proposal, or a new scope/AC/product choice not already authorized", "signal": "QUESTION", "note": "Complication Approval; hard under checkpoints.md"}, {"when": "missing audit input or other required input", "signal": "ABORT"}, {"when": "unrecoverable contradiction", "signal": "FAILED"}]
+[{"when": "ambiguous scope, or a user-provided requirement in conflict", "signal": "QUESTION"}, {"when": "scope expansion proposal, or a new scope/AC/product choice not already authorized", "signal": "QUESTION", "note": "Complication Approval; hard under checkpoints.md"}, {"when": "missing audit input", "signal": "ABORT"}, {"when": "other required input missing, or unrecoverable contradiction", "signal": "FAILED"}]
 ```
 
 ## Signals
