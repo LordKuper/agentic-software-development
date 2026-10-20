@@ -55,7 +55,7 @@ Code defects found by the suite. Resolved in `impl` test-fix mode. `Entry` throu
 |---|---|---|---|---|---|---|
 | D-1 | 1 | .claude/agent-memory/asd-reviewer-correctness/project_operations-block-run-command-convention.md | leftover term: names the removed workflow section `## Operations used` (now `## Entry` `ops`) | leftover-term check (artifact-layout.md "Agent memory") | fixed | da0f6e68 |
 | D-2 | 1 | .claude/agent-memory/asd-tester-critical/project_testability-envelope.md | leftover term: lines 247, 408 cite the removed agent section `asd-advisor.md` Don'ts (now `## Rules`) | leftover-term check (artifact-layout.md "Agent memory") | fixed | a5e0000e |
-| D-3 | 6 | .claude/agent-memory/asd-tester-critical/project_testability-envelope.md | leftover term: line 397 describes each providers.md "Role-scoped context" row's "Additional-context cell" and the advisor row's "files named by the consulting question"; the prose table was replaced by a JSON grant table of `{role, phase, refs}` | leftover-term check (artifact-layout.md "Agent memory") | pending |  |
+| D-3 | 6 | .claude/agent-memory/asd-tester-critical/project_testability-envelope.md | leftover term: line 397 describes each providers.md "Role-scoped context" row's "Additional-context cell" and the advisor row's "files named by the consulting question"; the prose table was replaced by a JSON grant table of `{role, phase, refs}` | leftover-term check (artifact-layout.md "Agent memory") | fixed | 51f9a640 |
 
 ## Manual verification (optional)
 
