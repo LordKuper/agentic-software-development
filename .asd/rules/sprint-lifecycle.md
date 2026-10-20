@@ -162,10 +162,10 @@ Never optional: `sprint.md`, `state.json`, `plan.md`, `test-plan.md`, impl-revie
 
 | Key | Resolves to | Condition |
 |---|---|---|
-| `requirements` | PRD AC-N: `<sprint>/design/prd.html` before design-promote, `docs/product/requirements/<subsystem>.html` after | `documents.prd` enabled under `standard`; else, and always under `lite` ("Workflows"), `sprint.md`'s Goal and `AC-N` list (`t_sprint.md`) |
+| `requirements` | PRD AC-N: `<sprint>/design/prd.html` before design-promote, `docs/product/requirements/<subsystem>.html` after (flat `requirements.html` with decomposition disabled) | `documents.prd` enabled under `standard`; else, and always under `lite` ("Workflows"), `sprint.md`'s Goal and `AC-N` list (`t_sprint.md`) |
 | `decisions` | whichever persistent doc folded a relevant sprint ADR ("Design-promote phase" fold rule) | one bears on the task |
 | `contracts` | `docs/architecture/stack.html` plus whichever persistent doc holds the touched subsystem's folded API contracts | present |
-| `ux` | ux-spec (`<sprint>/design/ux-spec.html` before design-promote, `docs/ux/<subsystem>.html` after), `docs/ux/DESIGN.md`, `docs/ux/design-system.html`, `docs/ux/accessibility.html` | each present, and the task touches UI; `self_hosting` with no design-system/ux-spec for the touched surface: `stack.html` conventions and the existing `t_*.html` templates (e.g. `t_html-shell.html`) instead |
+| `ux` | ux-spec (`<sprint>/design/ux-spec.html` before design-promote, `docs/ux/<subsystem>.html` after, flat `ux-spec.html` with decomposition disabled), `docs/ux/DESIGN.md`, `docs/ux/design-system.html`, `docs/ux/accessibility.html` | each present, and the task touches UI; `self_hosting` with no design-system/ux-spec for the touched surface: `stack.html` conventions and the existing `t_*.html` templates (e.g. `t_html-shell.html`) instead |
 | `audit` | `<sprint>/audit.md` | audit ran (frozen `documents.audit` true) |
 
 **Independent design docs** (replaces the old hard PRD→UX→ADR chain):
