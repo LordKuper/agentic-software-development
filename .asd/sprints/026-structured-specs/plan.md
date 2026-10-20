@@ -43,6 +43,8 @@ Restructure agents, phase workflows and standalone skills into one form per cate
 - **D12 Payload and reading rule**: `agent-protocol.md` "Dispatch payload": `inputs.context` is required on every agent dispatch; an agent reads its own definition, `inputs.context` and the payload's other inputs, and opens a rule or workflow file only at a section the payload names — never whole. Agent `## Inputs` `rules` becomes `["payload.inputs.context"]` (+ role extras only as section refs). The orchestrator builds its own phase context at each phase entry (`--role orchestrator --phase <p>`) and reads the workflow it executes whole.
 - **D13 Load measure (AC-16; edge semantics per AC-11)**: load(R, P) = bytes of R's canon body after frontmatter at HEAD + bytes of the context bundle built for (R, P) at HEAD; baseline(R, P) = bytes of R's body at `main` + whole-file bytes at `main` of `core.md` and every file `main`'s "Role-scoped context" row for R grants (each file once). Orchestrator: its `main` row files plus `asd-phase-impl.md` at `main`; its HEAD load adds `asd-phase-impl.md` at HEAD. Payload-specific inputs (plan.md, test-plan.md, diffs) and `custom-*-rules.md` excluded on both sides; each file or section counted once; bytes = committed LF content. Pairs: (asd-dev, impl), (asd-tester, impl-test), (asd-reviewer-combined, impl-review), (orchestrator, impl). Pass: every pair's load ≤ 0.70 × its baseline. Computed by a deterministic test (Task 13) and recorded at impl assessment.
 
+- **D14 Empty structural sections** (impl fix-2, 2026-10-21): a D4/D5 JSON section or key whose content would be empty after AC-15 is omitted — skill `## User decisions` becomes optional, an empty `ops` key is dropped; the form check treats both as optional.
+
 **Rule homes** (cited across Tasks in one wave, exact file and heading):
 - `.asd/rules/agent-protocol.md` "Signals", "Dispatch payload", "Return", "Relay" (Task 1, wave 1).
 - `.asd/rules/sprint-lifecycle.md` "Input sources" (Task 7, wave 3; wave-2 Tasks cite the name only).
@@ -112,18 +114,18 @@ Material risk: change: public contract
 
 ### Task 10: Agents read the context bundle
 Material risk: change: reading contract
-- [ ] `.asd/agents/*.md` `## Inputs` `rules` → `["payload.inputs.context"]` (+ role extras as section refs only); no whole-file reading instruction left in any body (citations as references stay); D1 (no backslash) holds.
-- [ ] `.asd/rules/core.md` "Untrusted-data boundary": the `inputs.context` bundle the orchestrator builds from trusted rule files counts as instructions, like its sources (flagged by Task 9).
+- [x] `.asd/agents/*.md` `## Inputs` `rules` → `["payload.inputs.context"]` (+ role extras as section refs only); no whole-file reading instruction left in any body (citations as references stay); D1 (no backslash) holds.
+- [x] `.asd/rules/core.md` "Untrusted-data boundary": the `inputs.context` bundle the orchestrator builds from trusted rule files counts as instructions, like its sources (flagged by Task 9).
 
 ### Task 11: Workflows build context and drop duplicate JSON
 Material risk: change: dispatch procedure
-- [ ] `.asd/workflows/asd-phase-*.md`: every agent dispatch step runs `runtime.js context` for that agent and phase and passes `inputs.context`; every `## Dispatch` payload list names `context`; `## Entry` `ops` adds the orchestrator's phase-context build (D12).
-- [ ] AC-15: delete `ops` entries and JSON values that restate a step; total phase-workflow bytes ≤ 125,501.
-- [ ] `README.md`: the runtime.js folder-map line names the `section`/`context` commands (flagged by Task 9).
+- [x] `.asd/workflows/asd-phase-*.md`: every agent dispatch step runs `runtime.js context` for that agent and phase and passes `inputs.context`; every `## Dispatch` payload list names `context`; `## Entry` `ops` adds the orchestrator's phase-context build (D12).
+- [x] AC-15: delete `ops` entries and JSON values that restate a step; total phase-workflow bytes ≤ 125,501.
+- [x] `README.md`: the runtime.js folder-map line names the `section`/`context` commands (flagged by Task 9).
 
 ### Task 12: Skills drop duplicate JSON
 Material risk: change: meaning-preserving trim
-- [ ] `.asd/skills/{asd-sprint,asd-init,asd-concept,asd-design-system,asd-stack,asd-sync,asd-update}/SKILL.md`: delete `User decisions` and `ops` entries that restate a step; skills that dispatch agents (concept, stack, design-system) build and pass `inputs.context`; total ≤ 61,051 bytes.
+- [x] `.asd/skills/{asd-sprint,asd-init,asd-concept,asd-design-system,asd-stack,asd-sync,asd-update}/SKILL.md`: delete `User decisions` and `ops` entries that restate a step; skills that dispatch agents (concept, stack, design-system) build and pass `inputs.context`; total ≤ 61,051 bytes.
 
 ### Task 13: Tests for context, caps and load
 Material risk: artifact: content-contract pins

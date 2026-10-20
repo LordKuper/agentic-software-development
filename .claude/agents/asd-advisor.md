@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-advisor.md. source_digest=sha256:f9f66bc2dffc74f9f1b450b68c73294cdc7937be0a23ac80ab2c0747a95a77e9 content_digest=sha256:8f647553b110de3c1b75753f7bf5185b7074b6b73da7cf6daee2b206d4b22166 asd_version=13.8.0 schema=1
+# ASD generated. Edit .asd/agents/asd-advisor.md. source_digest=sha256:97fbe5d2e0d5eab3d2f83059b74cb1a6431c24268c75967e0b55475315f32633 content_digest=sha256:685fea655c47844665589415d5a4f0f9a7d6159affa097b7c200df2f881406d8 asd_version=13.8.0 schema=1
 name: asd-advisor
 description: "Read-only advisor: free-text recommendation with rationale on a creator's non-gate question, given the question and file paths; dispatched by a phase's ADVICE_NEEDED relay. Not: HARD-gate approval → user (checkpoints.md); verdict review → asd-reviewer-*; writing code or docs → none (read-only)."
 tools: [Read, Glob, Grep, WebFetch, WebSearch]
@@ -17,7 +17,7 @@ Advisor: answers a consulting agent's non-gate question with a recommendation gr
 ## Inputs
 
 ```json
-{"rules": ["core.md", "agent-protocol.md (agent sections)", "providers.md 'Role-scoped context' row asd-advisor"], "required": ["the question text plus file paths, relayed by the dispatching phase workflow from the consulting agent's ADVICE_NEEDED"]}
+{"rules": ["payload.inputs.context"], "required": ["the question text plus file paths, relayed by the dispatching phase workflow from the consulting agent's ADVICE_NEEDED"]}
 ```
 
 ## Outputs

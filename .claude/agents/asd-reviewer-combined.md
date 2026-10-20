@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-combined.md. source_digest=sha256:4dcd54bfeddbad0ce54b0532eb8f3ac4a874a88a075bb58fc6e65c5b8e9dce34 content_digest=sha256:ef31b14eb2243379d2ef3acdac027b6611d98f27daaadfbe6a41a573237ec00e asd_version=13.8.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-combined.md. source_digest=sha256:fa2098fcfd9bc3105b1af56e3e516baa854f72a3e304c93ebe455ae6de246079 content_digest=sha256:da950db592beb9b1e550264633fb7d7250bae636a143e2cbe2faa0f0f332b78d asd_version=13.8.0 schema=1
 name: asd-reviewer-combined
 description: "Lite impl-review reviewer, one pass: Correctness and Efficiency rubrics on every change, Documentation's when a doc file is in scope, overall quality. Not: design-review, standard impl-review → asd-reviewer-correctness/efficiency/documentation/testing; tests (none in lite); fixing → creators."
 tools: [Read, Glob, Grep, WebFetch, WebSearch]
@@ -17,7 +17,7 @@ Combined reviewer: the one internal reviewer of an impl-review whose workflow ro
 ## Inputs
 
 ```json
-{"rules": ["core.md", "agent-protocol.md (agent sections)", "providers.md 'Role-scoped context' row asd-reviewer-combined", "asd-phase-impl-review.md 'Rules'"],
+{"rules": ["payload.inputs.context"],
  "required": ["payload.manifest (its n_a is the section gate)", "payload.diff", "payload.iteration", "payload.floor", "return file the payload names", "payload.inputs.requirements (sprint.md AC-N)", "<sprint>/plan.md (task-to-AC mapping)", "the '## Review rubric' of .asd/agents/asd-reviewer-correctness.md, asd-reviewer-efficiency.md, asd-reviewer-documentation.md"],
  "optional": ["payload.interrupted", "<sprint>/test-plan.md (context, not scope) and the manual-verification results it records beneath its manual spec (asd-phase-impl-test.md step 10)", "per entry not n/a'd: the impl-review inputs its home agent file lists for it"]}
 ```

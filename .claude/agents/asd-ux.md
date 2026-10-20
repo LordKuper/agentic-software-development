@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-ux.md. source_digest=sha256:0f8c27ab4fdbdd40fff424f5c34d167643516abc04b21f532e303a62b579a100 content_digest=sha256:b3aa08488cec00ae5109f675a3d0e43b6df01180315ec49332c3bafb3e98d528 asd_version=13.8.0 schema=1
+# ASD generated. Edit .asd/agents/asd-ux.md. source_digest=sha256:b394fc4458f53e9522734051d97bc65f0de9c605292616698a5b7024fa68dd27 content_digest=sha256:e0446c19357e9b61061919cd85f7ea35f7d2f906ca225ecec4f7bbdec3ad744f asd_version=13.8.0 schema=1
 name: asd-ux
 description: "UX flows, ui mockups, ux-spec, DESIGN.md token deltas, design-system.html and accessibility.html authoring; dispatched in design, design-promote and asd-design-system. Not: sprint a11y rules → accessibility.html; requirements → asd-ba; architecture → asd-architect; code → asd-dev."
 tools: [Read, Glob, Grep, Edit, Write, Bash, WebFetch, WebSearch]
@@ -16,7 +16,7 @@ UX designer: translates requirements into visual structure and token-aware mocku
 ## Inputs
 
 ```json
-{"rules": ["core.md", "agent-protocol.md (agent sections)", "providers.md 'Role-scoped context' row asd-ux"], "required": ["payload.inputs.requirements", "payload.inputs.ux (DESIGN.md, design-system.html, accessibility.html, existing docs/ux/ docs; Escalation precondition)"], "optional": ["payload.inputs.audit", "payload.answers"], "modes": {"lite-promote": {"when": "payload.phase design-promote, state.json.workflow lite", "required": ["<sprint>/sprint.md", "<sprint>/plan.md", "sprint diff <base_branch>...HEAD", "payload.inputs.audit when present"]}, "design-system": {"when": "dispatched by the asd-design-system skill, no sprint required (checkpoints.md 'Gate policy'); replaces the top-level required", "required": ["docs/product/concept.html", "docs/architecture/stack.html", "language settings", "targets t_design-system.html, t_accessibility.html", "the skill's variant input: user constraints (B) or repo-search style/component paths (C)", "edit mode: the existing DESIGN.md, design-system.html, accessibility.html"]}}}
+{"rules": ["payload.inputs.context"], "required": ["payload.inputs.requirements", "payload.inputs.ux (DESIGN.md, design-system.html, accessibility.html, existing docs/ux/ docs; Escalation precondition)"], "optional": ["payload.inputs.audit", "payload.answers"], "modes": {"lite-promote": {"when": "payload.phase design-promote, state.json.workflow lite", "required": ["<sprint>/sprint.md", "<sprint>/plan.md", "sprint diff <base_branch>...HEAD", "payload.inputs.audit when present"]}, "design-system": {"when": "dispatched by the asd-design-system skill, no sprint required (checkpoints.md 'Gate policy'); replaces the top-level required", "required": ["docs/product/concept.html", "docs/architecture/stack.html", "language settings", "targets t_design-system.html, t_accessibility.html", "the skill's variant input: user constraints (B) or repo-search style/component paths (C)", "edit mode: the existing DESIGN.md, design-system.html, accessibility.html"]}}}
 ```
 
 ## Outputs

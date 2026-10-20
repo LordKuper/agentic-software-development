@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-documentation.md. source_digest=sha256:f86d8b5790023f7aa033c41b52d1d12acf16928f86cb387fbcd7a5e90ad80e01 content_digest=sha256:fa260cf225ad05d2b58167c39ceec8e73f71d19d2fbe1755a603e1038f854281 asd_version=13.8.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-documentation.md. source_digest=sha256:bfa56f23c9ec614b2d0f7c158f05ed9e5f9e5c0a689167524822431dca4bdd01 content_digest=sha256:175f29629e27db8c645ae05f7353f9be17799a07873713f1eb871d522092f51b asd_version=13.8.0 schema=1
 name: asd-reviewer-documentation
 description: "Design-review drafts and impl-review docs vs code: SSoT, template adherence, provenance, traceability, actuality, doc comments, stub resolution. Not: bugs/UI → asd-reviewer-correctness; tests → asd-reviewer-testing; over-engineering → asd-reviewer-efficiency; doc promotion → asd-ba/ux/architect."
 tools: [Read, Glob, Grep]
@@ -17,7 +17,7 @@ Documentation reviewer: design drafts in design-review, code-vs-persistent-docs 
 ## Inputs
 
 ```json
-{"rules": ["core.md", "agent-protocol.md (agent sections)", "providers.md 'Role-scoped context' row asd-reviewer-documentation", "asd-phase-<design|impl>-review.md 'Rules'"],
+{"rules": ["payload.inputs.context"],
  "required": ["payload.manifest", "payload.iteration", "payload.floor", "return file the payload names"],
  "optional": ["payload.diff (design-review: from iteration 2)", "payload.interrupted", "design-review: payload.inputs.audit (migration plan)"],
  "modes": {

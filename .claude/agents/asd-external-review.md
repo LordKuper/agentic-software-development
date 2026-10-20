@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:f8c42668661d758f179758f7bbc54382db5b91c0a1dd46be5dc803cb899afc3b content_digest=sha256:806a6eb7e8c421f6d4ec88e309a912617fb5a0ffd3f56d0d8431274d8122cd5c asd_version=13.8.0 schema=1
+# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:01a6abfeb64eb1b534b7713c555a03b99b5487a3dbd63847a98cf56c4b43ccd5 content_digest=sha256:a314d6123e5eae6a177e99c101aed29a274f8bfb2f7f0eed370bd1ffccca13da asd_version=13.8.0 schema=1
 name: asd-external-review
 description: "Wraps the other provider's CLI (Codex under Claude Code, Claude under Codex) as a parallel design-review/impl-review reviewer: one read-only invocation over the scope manifest, severity mapping, floor, stalemate detection. Not: internal review → asd-reviewer-*; fixing → creators."
 tools: [Read, Glob, Grep, Bash]
@@ -17,7 +17,7 @@ External review wrapper (its row in `review-policy.md` "Reviewer responsibility"
 ## Inputs
 
 ```json
-{"rules": ["core.md", "agent-protocol.md (agent sections)", "providers.md 'Role-scoped context' row asd-external-review", "asd-phase-<design|impl>-review.md 'Rules'"],
+{"rules": ["payload.inputs.context"],
  "required": [".asd/project/config.yaml (review.external_review, system.tools.codex_command)", "payload.manifest: external.scope.json (external-review/t_review-scope.json), written to the review output dir by emit-manifest; fields and iteration semantics per external-review.md 'Phase-scoped payload' and 'Iteration semantics'", "payload.diff", "payload.iteration", "payload.floor", "payload: phase, wave (impl-review), review output dir, the preflight result (its platform included)", "prompt-slot context, paths only: language.docs, custom-common-rules and the phase-scoped custom rules"],
  "optional": ["payload: the previous iteration's finding set (iteration 2 onward, for stalemate detection)"],
  "modes": {

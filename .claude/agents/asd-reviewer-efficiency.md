@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:f0ac3cbbebf9e0bdf9188dd7a008e17ba1d82aac73e9aff000bfecddb2bf57db content_digest=sha256:69505755e80339b15dcbc19fbef0d6668e385b8f07469eb6f5c15675958b3d2c asd_version=13.8.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:ac8648369afee087e0096389553a40d96e0e3b44ea2561a5c57a50e736c76f69 content_digest=sha256:28aff22b3c7a8acee376682fbcf90aedf461748cde48576541ca85b31e387eb0 asd_version=13.8.0 schema=1
 name: asd-reviewer-efficiency
 description: "Efficiency reviewer, design-review and impl-review: over-engineering and structure/cohesion checklists, complexity-vs-value; impl-review also performance. Not: bugs/security/AC trace/UI → asd-reviewer-correctness; tests → asd-reviewer-testing; docs → asd-reviewer-documentation; fixing → creators."
 tools: [Read, Glob, Grep]
@@ -17,12 +17,12 @@ Efficiency reviewer, dispatched in design-review and impl-review. Goal: one verd
 ## Inputs
 
 ```json
-{"rules": ["core.md", "agent-protocol.md (agent sections)", "providers.md 'Role-scoped context' row asd-reviewer-efficiency", "asd-phase-<design|impl>-review.md 'Rules'"],
+{"rules": ["payload.inputs.context"],
  "required": ["payload.manifest (its n_a is this phase's section gate)", "payload.iteration", "payload.floor", "return file the payload names"],
  "optional": ["payload.diff (design-review: from iteration 2)", "payload.interrupted", "impl-review: test results showing perf measurements, when available", "impl-review: payload.inputs.decisions (a perf-related folded ADR)", "impl-review: payload.inputs.contracts (stack constraints)"],
  "modes": {
   "design-review": {"when": "payload.phase is design-review", "required": ["the listed drafts"]},
-  "impl-review": {"when": "payload.phase is impl-review", "required": ["perf budgets from .asd/project/custom-coding-rules.md"]}}}
+  "impl-review": {"when": "payload.phase is impl-review", "required": ["perf budgets from custom-coding-rules.md, in payload.inputs.context"]}}}
 ```
 
 ## Outputs

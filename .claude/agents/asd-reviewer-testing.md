@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:4c4f0ab0bb83513865cc65ad7218ce047adebe9f01cbf5f39979ffc258b63a79 content_digest=sha256:bb6ccd7953ca764fa97d0aec2b94c32db6ac877d8bc0990c07609204f74d08a6 asd_version=13.8.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-testing.md. source_digest=sha256:e64ee0717eeb8616428005154947c2361fb2fcf5f8148881800fa1f111228a30 content_digest=sha256:2ea3fe7f3cc67e55cdeb55503f6d364abd4094a100b1f72cd5cf662ed22006d4 asd_version=13.8.0 schema=1
 name: asd-reviewer-testing
 description: "Impl-review: test-plan decisions, AC→check coverage, edge cases, fail-first regressions, flaky/meaningless tests, manual-verification necessity. Not: bugs/security/UI → asd-reviewer-correctness; over-engineering/perf → asd-reviewer-efficiency; docs → asd-reviewer-documentation; fixing → creators."
 tools: [Read, Glob, Grep]
@@ -17,7 +17,7 @@ Testing reviewer, impl-review only. Goal: one verdict per dispatch on the test d
 ## Inputs
 
 ```json
-{"rules": ["core.md", "agent-protocol.md (agent sections)", "providers.md 'Role-scoped context' row asd-reviewer-testing", "asd-phase-impl-review.md 'Rules'"],
+{"rules": ["payload.inputs.context"],
  "required": ["<sprint>/test-plan.md and its test-plan.entry-NN.md segments (primary: risk→check decisions, removals, added tests, suite run, manual verification spec; artifact-layout.md 'Test plan')", "payload.manifest (test files plus test-plan.md and segments)", "payload.diff", "payload.iteration", "payload.floor", "return file the payload names", "payload.inputs.requirements (ACs to trace)", "<sprint>/plan.md", "the manual-verification results test-plan.md records beneath its manual spec (asd-phase-impl-test.md step 10)"],
  "optional": ["payload.interrupted"]}
 ```
