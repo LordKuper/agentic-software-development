@@ -94,3 +94,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-20 — impl-review wave-2/iter-01: combined CONCERNS (F1, F2 low), external CONCERNS (E1, E2 high, E3 medium) → impl review-fix (review_fixes_pending wave-2/iter-01)
 - 2026-10-20 — route review-fix wave-2/iter-01: critical, dispatch HEAD 3bdb6edb; risk change: input requiredness and standalone mode
 - 2026-10-20 — impl fix for wave-2/iter-01: findings resolved (F1, F2, E1, E2, E3; b2e4608e). Open item for the wave-3 fix round: asd-phase-design-promote.md standard Architect/UX dispatches omit inputs.requirements although both agents require it (flagged by the fix dev)
+- 2026-10-20 — route impl-test entry 4: standard, dispatch HEAD b3cfe286; risk none via node tests/run.js
