@@ -40,6 +40,7 @@ Combined reviewer: the one internal reviewer of an impl-review whose workflow ro
 - must: judge each manual-verification row `test-plan.md` records failing and raise it as an ordinary finding located at that row's AC-N.
 - must: categorise every over-engineering/structure finding `keep-as-is`, `simplify` or `escalate`; each is `critical` and undroppable (`review-policy.md`).
 - must: apply the iteration severity floor (`review-policy.md`); cite file:line per finding, AC-N per coverage finding, checklist item per over-engineering/structure finding, rule or token path per UI finding; suggest a concrete fix per finding.
+- must: take scope from the emitted manifest and its `.diff` (design-review: from iteration 2) — the hand-off per `review-policy.md` "Scope hand-off".
 - must: return per `t_review.md` — Findings table (severity, location/AC-N, description, fix), section-coverage ledger, Verdict, Next action, Escalations; the phase orchestrator validates and persists manifest and ledger with the report.
 - never: emit a verdict while the coverage ledger is incomplete (scoped file, rule item or rubric section unresolved) — keep reviewing (`review-policy.md`).
 - never: autofix, modify code or docs, or raise nitpick categories.

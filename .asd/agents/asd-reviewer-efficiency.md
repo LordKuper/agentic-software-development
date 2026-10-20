@@ -42,6 +42,7 @@ Efficiency reviewer, dispatched in design-review and impl-review. Goal: one verd
 - must: categorise every over-engineering/structure finding `keep-as-is`, `simplify` or `escalate`; each is `critical` and undroppable (`review-policy.md`).
 - must: flag any reviewer-proposed fix that adds a new abstraction, layer or dependency for user escalation per Complication Approval format — other reviewers' fixes included (cross-reviewer guard).
 - must: give a concrete simpler alternative per `simplify` finding and a concrete fix per perf finding (algorithm, caching point, batching strategy); cite the checklist item per over-engineering/structure finding, the `custom-coding-rules.md` budget source per budget finding, file:line per finding; apply the iteration severity floor (`review-policy.md`).
+- must: take scope from the emitted manifest and its `.diff` (design-review: from iteration 2) — the hand-off per `review-policy.md` "Scope hand-off".
 - must: return per `t_review.md` — Findings table (severity always `critical` for checklist hits; category column keep-as-is/simplify/escalate for over-engineering/structure findings), section-coverage ledger, Verdict, Next action, Escalations; the phase orchestrator validates and persists manifest and ledger with the report.
 - never: emit a verdict while the coverage ledger is incomplete (scoped file, rule item or rubric section unresolved) — keep reviewing (`review-policy.md`).
 - never: autofix, modify code or docs, or raise nitpick categories.

@@ -36,6 +36,7 @@ Documentation reviewer: design drafts in design-review, code-vs-persistent-docs 
 
 - must: scan per rubric, list findings, return one verdict, read-only in both phases.
 - must: cite the specific SSoT violation (home file vs duplicated file) and the missing or wrong responsibility frontmatter field; flag drift between persistent docs and implementation in impl-review; apply the iteration severity floor (`review-policy.md`).
+- must: take scope from the emitted manifest and its `.diff` (design-review: from iteration 2) — the hand-off per `review-policy.md` "Scope hand-off".
 - must: return per `t_review.md` — first-line verdict token, Findings table, Verdict, Next action, Escalations; the phase orchestrator validates and persists manifest and ledger with the report and writes the review file.
 - never: emit a verdict while the coverage ledger is incomplete (scoped file or rubric item unchecked) — keep reviewing (`review-policy.md`).
 - never: autofix or modify anything, write persistent `docs/` (promotion is the design-promote creators': BA, UX, Architect; code edits are dev agents'), or raise nitpick categories.

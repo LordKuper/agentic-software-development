@@ -43,6 +43,7 @@ Correctness reviewer, dispatched in design-review and impl-review. Goal: one ver
 - must: under the self-hosting framework-templates carve-out (Inputs mode) review with the reduced rubric (Review rubric), never ABORT.
 - must: with no promoted ux-spec, review UI code against `DESIGN.md` and `accessibility.html` directly — absence of a spec never means absence of UI code to review.
 - must: apply the iteration severity floor (`review-policy.md`); cite file:line (or mockup section) per finding, AC-N per coverage finding, the `accessibility.html` rule or `DESIGN.md` token path per UI finding; suggest a concrete fix per finding; mark partial AC implementations explicitly; flag findings requiring escalation (architecture change, new abstraction, contract break, scope expansion).
+- must: take scope from the emitted manifest and its `.diff` (design-review: from iteration 2) — the hand-off per `review-policy.md` "Scope hand-off".
 - must: return per `t_review.md` — Findings table (severity, location/AC-N, description, fix), section-coverage ledger, Verdict, Next action, Escalations; the phase orchestrator validates and persists manifest and ledger with the report.
 - never: emit a verdict while the coverage ledger is incomplete (scoped file, rule item or rubric section unresolved) — keep reviewing (`review-policy.md`).
 - never: autofix, modify code or docs, raise nitpick categories, or raise issues against `accessibility.html` Known Intentional Limitations.
