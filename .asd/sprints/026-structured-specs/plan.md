@@ -37,6 +37,12 @@ Restructure agents, phase workflows and standalone skills into one form per cate
 - **D9 sprint-lifecycle split (O4, AC-8, C-2)**: move — `## Audit phase` → `asd-phase-audit.md` (`## Rules`: scans, criterion check, subsystem registry; `## Steps`: contradictions gate); `## Design phase` → `asd-phase-design.md`; `## Impl phase` → `asd-phase-impl.md`; `## Impl-test phase` → `asd-phase-impl-test.md`; `## Retro phase` except the row-id grammar → `asd-phase-retro.md`; "Retro intake" paragraph → `asd-phase-scope.md`; "PR phase" open-mode DoD block → `asd-phase-pr.md`; agent-facing review-phase rules the `providers.md` rows call "review-phase section" (today unresolved headings, audit Gaps AC-8) → `## Rules` of `asd-phase-design-review.md` / `asd-phase-impl-review.md`, sourced from the review workflows' own steps. Stay: Orchestration (minus Retro intake), Workflows, Phases, Review iteration counters, APPROVE latch, Impacted test set, Phase table, Self-hosting, Optional documents (+ Input sources), Design-promote phase, PR phase (minus open DoD), Plan file format, Retro row-id grammar (as `## Retro row ids`), Friction log, Operation timing, Scope amendment, Sprint immutability, State recovery, Agent liveness. "Signal vocabulary" leaves for `agent-protocol.md` (D8). Wave 2 copies moved text into workflows; wave 3 deletes it from `sprint-lifecycle.md` and repoints every citation.
 - **D10 Byte measure (AC-13; edge semantics per AC-11)**: measured set = `.asd/agents/*.md` + `.asd/workflows/asd-phase-*.md` + the 7 standalone `SKILL.md` + `.asd/rules/sprint-lifecycle.md` + `.asd/rules/agent-protocol.md`; bytes = sum of `git show <rev>:<path> | wc -c` (LF, committed content); baseline 376,476 B at 9f4e8b5b (agent-protocol.md absent = 0). Measured once at impl assessment and once at impl-review green; result recorded in decisions-log. "Drop measurably" = after < baseline; no target figure.
 
+**Amendment decisions** (D11-D13; scope amendment 2026-10-20, AC-14..AC-16):
+
+- **D11 Context bundle**: `runtime.js section --file <path> --heading <text>` prints the heading line through the line before the next heading of the same or higher level; exact heading-text match; zero or several matches → stderr + exit 1. `runtime.js context --role <agent> --phase <phase> --out <file>` reads the one JSON block of `providers.md` "Role-scoped context" — an array of `{"role", "phase": "<phase>|*", "refs": ["<repo path>[#<heading>]"]}`, a ref without `#` meaning the whole file (only small always-read files, e.g. `core.md`) — collects the refs of every row matching the role (a tier variant maps to its base agent) and phase (`*` matches every phase), drops repeated refs (first occurrence wins), and writes each section prefixed by one `<!-- <ref> -->` line, in table order. Any unresolved ref → exit 1, no file written (the dispatch blocks). Pure cores exported, thin CLI wrappers. Roles: every agent plus `orchestrator`. Bold labels a ref must reach become `###` headings. Out path: `<scratch-dir>/<NNN-slug>-<dispatch id, "/" and spaces as "-">.context.md`.
+- **D12 Payload and reading rule**: `agent-protocol.md` "Dispatch payload": `inputs.context` is required on every agent dispatch; an agent reads its own definition, `inputs.context` and the payload's other inputs, and opens a rule or workflow file only at a section the payload names — never whole. Agent `## Inputs` `rules` becomes `["payload.inputs.context"]` (+ role extras only as section refs). The orchestrator builds its own phase context at each phase entry (`--role orchestrator --phase <p>`) and reads the workflow it executes whole.
+- **D13 Load measure (AC-16; edge semantics per AC-11)**: load(R, P) = bytes of R's canon body after frontmatter at HEAD + bytes of the context bundle built for (R, P) at HEAD; baseline(R, P) = bytes of R's body at `main` + whole-file bytes at `main` of `core.md` and every file `main`'s "Role-scoped context" row for R grants (each file once). Orchestrator: its `main` row files plus `asd-phase-impl.md` at `main`; its HEAD load adds `asd-phase-impl.md` at HEAD. Payload-specific inputs (plan.md, test-plan.md, diffs) and `custom-*-rules.md` excluded on both sides; each file or section counted once; bytes = committed LF content. Pairs: (asd-dev, impl), (asd-tester, impl-test), (asd-reviewer-combined, impl-review), (orchestrator, impl). Pass: every pair's load ≤ 0.70 × its baseline. Computed by a deterministic test (Task 13) and recorded at impl assessment.
+
 **Rule homes** (cited across Tasks in one wave, exact file and heading):
 - `.asd/rules/agent-protocol.md` "Signals", "Dispatch payload", "Return", "Relay" (Task 1, wave 1).
 - `.asd/rules/sprint-lifecycle.md` "Input sources" (Task 7, wave 3; wave-2 Tasks cite the name only).
@@ -98,6 +104,30 @@ Test-only: tests/run.js
 - [x] Adapt every pin broken by Tasks 1-7 (audit Risks: ~54 section pins, `sectionOf`/`stepOf`, return-line regexes, payload-header patterns) to the new homes and headings, keeping each pin's asserted relation.
 - [x] Add form checks (AC-12): per category the exact section set and order (D2, D4, D5); every ```` ```json ```` block in those files parses and carries its D2/D4/D5/D8 keys; base agent `description` ≤ 300 chars (D3); no backslash in agent bodies (D1); `agent-protocol.md` lists every token of D8 and no `PLAN_DRAFT`/`PLAN_READY`; return lines match D6.
 
+### Task 9: Context command, grant table, payload key
+Material risk: change: public contract
+- [ ] `.asd/runtime.js`: add `section` and `context` per D11 (pure cores + CLI wrappers + usage string + exports).
+- [ ] `.asd/rules/providers.md` "Role-scoped context": replace the prose role table with the D11 JSON grant table, same grants (current rows, incl. the `asd-phase-<p>.md` "Rules" grants and section scopes), plus an `orchestrator` row; turn every bold label a ref needs into a `###` heading in its home file (e.g. `sprint-lifecycle.md` "Input sources") and repoint citations of those labels.
+- [ ] `.asd/rules/agent-protocol.md` "Dispatch payload": `inputs.context` required, the D12 reading rule; README mirror if it restates the role table.
+
+### Task 10: Agents read the context bundle
+Material risk: change: reading contract
+- [ ] `.asd/agents/*.md` `## Inputs` `rules` → `["payload.inputs.context"]` (+ role extras as section refs only); no whole-file reading instruction left in any body (citations as references stay); D1 (no backslash) holds.
+
+### Task 11: Workflows build context and drop duplicate JSON
+Material risk: change: dispatch procedure
+- [ ] `.asd/workflows/asd-phase-*.md`: every agent dispatch step runs `runtime.js context` for that agent and phase and passes `inputs.context`; every `## Dispatch` payload list names `context`; `## Entry` `ops` adds the orchestrator's phase-context build (D12).
+- [ ] AC-15: delete `ops` entries and JSON values that restate a step; total phase-workflow bytes ≤ 125,501.
+
+### Task 12: Skills drop duplicate JSON
+Material risk: change: meaning-preserving trim
+- [ ] `.asd/skills/{asd-sprint,asd-init,asd-concept,asd-design-system,asd-stack,asd-sync,asd-update}/SKILL.md`: delete `User decisions` and `ops` entries that restate a step; skills that dispatch agents (concept, stack, design-system) build and pass `inputs.context`; total ≤ 61,051 bytes.
+
+### Task 13: Tests for context, caps and load
+Material risk: artifact: content-contract pins
+Test-only: tests/run.js
+- [ ] Unit tests for the `section`/`context` cores (D11 edges: nested headings, duplicate refs, missing ref, variant→base role, `*` phase); every grant-table ref resolves at HEAD; AC-15 byte caps; AC-16 load test per D13; adapt pins broken by Tasks 9-12.
+
 ## Risks (optional)
 - The sprint changes its own dispatch contract: Task 1 runs alone in wave 1, then the orchestrator syncs and dispatches waves 2-4 with the D8 JSON payload.
 - Meaning loss in restructure: every Task reports `moved:` lines; reviewers diff baseline vs new per file.
@@ -111,10 +141,14 @@ Test-only: tests/run.js
 | 2 | Task 2, Task 3, Task 4, Task 5, Task 6 |
 | 3 | Task 7 |
 | 4 | Task 8 |
+| 5 | Task 9 |
+| 6 | Task 10, Task 11, Task 12 |
+| 7 | Task 13 |
 
 - Task 1 is the dispatch/commit contract every later dispatch runs under (D8, AC-10).
 - Task 7 deletes what Tasks 2-3 copied and repoints what Tasks 4-6 cite, so it follows them.
 - Task 8 covers code of Tasks 1-7.
+- Task 9 (amendment) changes the dispatch contract Tasks 10-12 run under; Task 13 covers Tasks 9-12.
 
 ## Out of scope (optional)
 - Changing runtime.js rubric parsing, persist-review, or the reviewer findings format.
