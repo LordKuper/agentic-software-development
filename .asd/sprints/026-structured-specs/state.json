@@ -273,6 +273,12 @@
       "execution": "agent",
       "reason": "normal",
       "resolved_model": "sonnet"
+    },
+    "impl-review wave-3/iter-05 suite": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "normal",
+      "resolved_model": "sonnet"
     }
   },
   "skipped_phases": [],
@@ -345,23 +351,29 @@
             "iter-04": {
               "combined": "CONCERNS",
               "external": "APPROVE"
+            },
+            "iter-05": {
+              "combined": "APPROVE",
+              "external": "APPROVE"
             }
           },
           "iteration_heads": {
             "iter-01": "e504a88b7c0517db318115898da045b13fde4bf8",
             "iter-02": "bbacd3438663b3a86f249f76cb99c3337dac49a5",
             "iter-03": "0ebcc1329b8bff21a67389d96f674134b8a6c647",
-            "iter-04": "7295be1417913ab5f28b365755b048cbfd6ce5da"
+            "iter-04": "7295be1417913ab5f28b365755b048cbfd6ce5da",
+            "iter-05": "6b089ec6188788883d8db06471d8b55ba5444240"
           },
           "latched": {
-            "external": 4
+            "external": 4,
+            "combined": 5
           }
         }
       ]
     }
   },
   "created_at": "2026-10-20T09:16:39.780Z",
-  "updated_at": "2026-10-20T22:29:28.777Z",
+  "updated_at": "2026-10-20T22:30:51.450Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
