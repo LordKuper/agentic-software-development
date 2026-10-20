@@ -191,3 +191,4 @@
 {"op":"open","id":"pr#1","kind":"phase","parent":null,"start":"2026-10-20T22:35:17.306Z","attrs":{}}
 {"op":"open","id":"wait PR publication","kind":"user-wait","parent":"pr#1","start":"2026-10-20T22:36:37.267Z","attrs":{"gate":"PR publication"}}
 {"op":"close","id":"wait PR publication","kind":"user-wait","parent":"pr#1","start":"2026-10-20T22:36:37.267Z","end":"2026-10-20T22:57:00.898Z","outcome":"done","attrs":{"gate":"PR publication"}}
+{"op":"close","id":"pr#1","kind":"phase","parent":null,"start":"2026-10-20T22:35:17.306Z","end":"2026-10-20T22:57:17.966Z","outcome":"done","attrs":{}}
