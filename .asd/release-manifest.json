@@ -69,15 +69,15 @@
     ".asd/rules/artifact-layout.md": "289e49f77ec10e9169a155340c8b749023d10393eff7439401f6dd84c97a46cf",
     ".asd/rules/checkpoints.md": "f6ae31908c2be8eee9a9eb95ca5fafa45a8d9a65d8c83f9837b81ab32e40a53e",
     ".asd/rules/code-style.md": "20765462066a271fb95f5046407ab1a416e8ac6cf2e7f54ce9a93ef7f5e5402c",
-    ".asd/rules/core.md": "575b6b43c84955fea5a3d23ebf097fcdf2f8086a0c3a008d23e6805518e6d2f7",
+    ".asd/rules/core.md": "2a160ca44ea8b7bcbc4d7b4541f22608f6882719c0f67617c289f41220475d0b",
     ".asd/rules/design-principles.md": "0bf73cc3eed6e723821c39f008b63c5fa04eea1e829567290a3365a9a912b938",
     ".asd/rules/design-system.md": "c583c8ba2c08b26685b0a30dea665bb9ac19cc714e8df3622e582f33d1c95371",
-    ".asd/rules/external-review.md": "92f1d45d869c152e7b8444ac5a413daed42b033034802c402454227498d03c03",
-    ".asd/rules/git-strategy.md": "64554ae5b2421af3247baf898015d84540ca33c78373b6cea952af9ec97cd1fd",
-    ".asd/rules/language-policy.md": "e9b488a4cff5ed193208a52324601bede1a41e2512f2a6f06d0660576940f322",
-    ".asd/rules/providers.md": "315bcdf29f642e0a1a5cfe77ff041a36962c74c89fd702e32c21f6a1176d865d",
-    ".asd/rules/review-policy.md": "698a07a3db488109eb854b7f728138555f94096aa9058fbe550f86dc2eec35d1",
-    ".asd/rules/sprint-lifecycle.md": "2132c6dc32940de5d524d9a0c20607cbf72d4a2da011a1ecf5ef5e272b042204",
+    ".asd/rules/external-review.md": "38298e0b3d06c53a978e83f8e4f991bd69f295568c340015ca21187942a7e7ef",
+    ".asd/rules/git-strategy.md": "2b84cc5fcfd3a82ef469818d0decde1c57273c22ba39bd0b34c854d14deda446",
+    ".asd/rules/language-policy.md": "7f77042d5ce46d5df0ee48c3f75263d6393c77a20e8a7068e7913c22650a8539",
+    ".asd/rules/providers.md": "d9b569f855884a171e243bdad9de8801f0b6f5df33641b0e03f34a0fd7ab7728",
+    ".asd/rules/review-policy.md": "f7a0a31bbb2acf279127c5341962c155318070fa6e6b9dc4da170e3c41fda26a",
+    ".asd/rules/sprint-lifecycle.md": "1c6634ebd7b31062bb8aed53b09544ce0418b58426dcb67c9f0323c16efbfec2",
     ".asd/rules/ux-principles.md": "9f2af8c90d969c73654812b80e523e33b4c5696f506acf49e4bacb4c0dc6750c",
     ".asd/skills/asd-concept/SKILL.md": "9a3cb2331b3aceb4a670d8d0ac94de3808771406036f9ba11dce3239e21cee42",
     ".asd/skills/asd-design-system/SKILL.md": "9f8153a0f278a1234202771df5118f2228dd4edfd99594c1eeb0536d8d22d07f",
@@ -161,6 +161,7 @@
     ".asd/templates/t_retro-backlog.md": "0fd817d2ba64894dd8e5a4c01ca57309e7c51b0f2a270f94175ddf71b933f3d9",
     ".asd/agents/asd-reviewer-combined.md": "b514a54e217e86f38d0ec6cae2fbbbb75ed089e878898c0112503b887de54595",
     ".asd/workflows/lite.json": "2fc12fc41cac51a22b19d67ff5d47c9765c105fec1ad67e8eb5d765b882622ea",
-    ".asd/workflows/standard.json": "7a7c04da7a13ec9dab9bb782d8a9981b703d34859d55614cd9354808b1721fb2"
+    ".asd/workflows/standard.json": "7a7c04da7a13ec9dab9bb782d8a9981b703d34859d55614cd9354808b1721fb2",
+    ".asd/rules/agent-protocol.md": "21fbe144bf9e19bedfc7a2a89513a307363624d68326e7e793032dafd1f49377"
   }
 }
