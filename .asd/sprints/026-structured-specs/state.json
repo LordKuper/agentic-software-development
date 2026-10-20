@@ -84,6 +84,12 @@
       "execution": "agent",
       "reason": "risk:meaning-preserving restructure",
       "resolved_model": "opus"
+    },
+    "Task 7": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:rule relocation",
+      "resolved_model": "opus"
     }
   },
   "skipped_phases": [],
@@ -106,7 +112,7 @@
     }
   },
   "created_at": "2026-10-20T09:16:39.780Z",
-  "updated_at": "2026-10-20T10:51:48.506Z",
+  "updated_at": "2026-10-20T11:02:28.395Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
