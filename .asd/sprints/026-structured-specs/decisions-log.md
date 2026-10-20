@@ -109,3 +109,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: AC-14 (section-scoped context bundle via `runtime.js context` and a JSON grant table), AC-15 (remove JSON restating Steps; skills ≤ 61,051 B, workflows ≤ 125,501 B) and AC-16 (per-dispatch load ≥ 30% below `main`, plan D13) added to sprint 026; Task 9 in wave 5, Tasks 10-12 in wave 6, Task 13 in wave 7 (plan D11-D13). Accepted after the impl-review division point: floor_base=wave-3/2; wave 3 `latched` cleared.
 - **Rationale**: measurement showed total spec bytes −4% but per-dispatch reads up (dev +6%, tester +12%, reviewer-combined +9%) because agents now open the protocol, a workflow and still `sprint-lifecycle.md` whole; skills +12%, workflows +7%. User chose to extend 026 over a follow-up sprint.
 - **Affected docs**: sprint.md, plan.md, state.json
+- 2026-10-20 — route Task 9: critical, dispatch HEAD 35264ddf; risk change: public contract
