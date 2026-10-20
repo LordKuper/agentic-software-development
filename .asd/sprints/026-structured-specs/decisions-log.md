@@ -114,3 +114,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-21 — route Task 10, Task 11, Task 12: critical, dispatch HEAD c963b99f; risk change: reading contract / dispatch procedure / meaning-preserving trim
 - 2026-10-21 — wave 6 accepted: workflows 125,489 B (≤125,501), skills 61,010 B (≤61,051); D14 added (empty JSON sections omitted); fix-2 routed for the tester impl-test manual-steps grant, empty skill sections and the orchestrator bundle out path
 - 2026-10-21 — route impl assessment fix-2: standard, dispatch HEAD 10a43faa; risk artifact: grant and empty sections via node .asd/runtime.js context + node tests/run.js
+- 2026-10-21 — route Task 13: standard, dispatch HEAD 85f8c09f; risk artifact: content-contract pins via node tests/run.js
