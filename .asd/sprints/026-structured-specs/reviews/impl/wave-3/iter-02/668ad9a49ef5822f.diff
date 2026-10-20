@@ -1,0 +1,306 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 7604762f..310e7fa1 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -35,11 +35,11 @@
+     "agents/asd-reviewer-testing.md": "sha256:4c4f0ab0bb83513865cc65ad7218ce047adebe9f01cbf5f39979ffc258b63a79",
+     "skills/asd-concept/SKILL.md": "sha256:63c007e56aa563d1293bf9ad40536a786a625ebb3c2a5e684115a24f9386b116",
+     "skills/asd-design-system/SKILL.md": "sha256:ec5f259e1a1bffa8a765988f2cee2b3eae84ffe21ed1db915c76ca9a4a883422",
+-    "skills/asd-init/SKILL.md": "sha256:ecb1a33acf8e48fee91761ce406109df3f423777b05cf653d85e63a1924d3374",
++    "skills/asd-init/SKILL.md": "sha256:d752ca9d61a7778b43830d87da7be67c441dccbcdc4c6ba1e9bc2aaf58d860a0",
+     "skills/asd-sprint/SKILL.md": "sha256:fe14bce20d02095059543ce71c4e4faaae73ee312cadcf6318cb4f9f4341f551",
+     "skills/asd-stack/SKILL.md": "sha256:de414598724bfa582c09acac3f08ed3b7c89519ea87a28ecf582b29ee7037dab",
+-    "skills/asd-sync/SKILL.md": "sha256:a5644c18e2961eb08f43af9afedaf471347f7958e689158d5b4d9a9ffefa6083",
+-    "skills/asd-update/SKILL.md": "sha256:91f08f39cebecf3feda57fad0e65d40b839cc5515774a241d8498da5bb1e5b39",
++    "skills/asd-sync/SKILL.md": "sha256:ebb024235282cd8d2482ab1b09c76917e546613886fba20ea1b90424f703dac2",
++    "skills/asd-update/SKILL.md": "sha256:8b20f1d83a1628669a506dd6eb3ed06d333630dbd7758e26a3a596894b61cc94",
+     "skills/asd-phase-scope/SKILL.md": "sha256:a21d695d2ddb947e45b55519c54e3654eb42b5db7d8d1a9bc6be01586b62eaa7",
+     "skills/asd-phase-audit/SKILL.md": "sha256:3032b107b725ec235c031866831fe45c81a70562fbdf1af77ae50bf5dda4086c",
+     "skills/asd-phase-design/SKILL.md": "sha256:d95a0e07166562e771c91cde78e1e72bdcadf454341a9dc1761e267f67ccfee2",
+@@ -81,7 +81,7 @@
+     ".asd/rules/ux-principles.md": "9f2af8c90d969c73654812b80e523e33b4c5696f506acf49e4bacb4c0dc6750c",
+     ".asd/skills/asd-concept/SKILL.md": "63c007e56aa563d1293bf9ad40536a786a625ebb3c2a5e684115a24f9386b116",
+     ".asd/skills/asd-design-system/SKILL.md": "ec5f259e1a1bffa8a765988f2cee2b3eae84ffe21ed1db915c76ca9a4a883422",
+-    ".asd/skills/asd-init/SKILL.md": "ecb1a33acf8e48fee91761ce406109df3f423777b05cf653d85e63a1924d3374",
++    ".asd/skills/asd-init/SKILL.md": "d752ca9d61a7778b43830d87da7be67c441dccbcdc4c6ba1e9bc2aaf58d860a0",
+     ".asd/skills/asd-phase-audit/SKILL.md": "3032b107b725ec235c031866831fe45c81a70562fbdf1af77ae50bf5dda4086c",
+     ".asd/skills/asd-phase-design-promote/SKILL.md": "7850ecd38ceb9665f6bd8681f340a8519c43cc26ac28ee70173a15ae532293b4",
+     ".asd/skills/asd-phase-design-review/SKILL.md": "69c9fdad15b9a192b5eef8b1f77507eb3ea0209bf7ead243353bdbd9ea9732bc",
+@@ -94,8 +94,8 @@
+     ".asd/skills/asd-phase-scope/SKILL.md": "a21d695d2ddb947e45b55519c54e3654eb42b5db7d8d1a9bc6be01586b62eaa7",
+     ".asd/skills/asd-sprint/SKILL.md": "fe14bce20d02095059543ce71c4e4faaae73ee312cadcf6318cb4f9f4341f551",
+     ".asd/skills/asd-stack/SKILL.md": "de414598724bfa582c09acac3f08ed3b7c89519ea87a28ecf582b29ee7037dab",
+-    ".asd/skills/asd-sync/SKILL.md": "a5644c18e2961eb08f43af9afedaf471347f7958e689158d5b4d9a9ffefa6083",
+-    ".asd/skills/asd-update/SKILL.md": "91f08f39cebecf3feda57fad0e65d40b839cc5515774a241d8498da5bb1e5b39",
++    ".asd/skills/asd-sync/SKILL.md": "ebb024235282cd8d2482ab1b09c76917e546613886fba20ea1b90424f703dac2",
++    ".asd/skills/asd-update/SKILL.md": "8b20f1d83a1628669a506dd6eb3ed06d333630dbd7758e26a3a596894b61cc94",
+     ".asd/skills/asd-update/update.js": "0e8951b070ec06495910b59ef6b1c20af819fd67c74f53a8cd89579636dc8f65",
+     ".asd/sync.js": "6efdb1c49b572fe643cf6607f58bf6054b4ed811950833c8bf1fb286fa29074e",
+     ".asd/templates/external-review/t_prompt-external-design.md": "936684113943ee1273ac2f1605ad3159fcecd1ca933d86a04f67e8aaf2ba5725",
+@@ -131,12 +131,12 @@
+     ".asd/templates/t_test-plan.md": "1272c4183ac947ce6ef79afd5adace4e2ef1a53687557d709708e1f1e6bc3509",
+     ".asd/templates/t_ux-spec.html": "4740d0c9219ceaca240aa598aa95cce039d2e6629a63b7801a54769f98f900c5",
+     ".asd/workflows/asd-phase-audit.md": "9c574705edf0505fb700332b872a55bee29bdf4999dd5d63c88e87370f97034f",
+-    ".asd/workflows/asd-phase-design-promote.md": "545eef116d8528c69c79291d6bc966407248169a9413b87c4e28911e70e09cbc",
+-    ".asd/workflows/asd-phase-design-review.md": "3857014361cd4a553a2441832ff7104a979f4ad4de53cefbc1ad739d76b384fa",
++    ".asd/workflows/asd-phase-design-promote.md": "4a439c3b9c86d7554301ae967259ae56c731af2c8504f4551117d77e95b48de0",
++    ".asd/workflows/asd-phase-design-review.md": "53a8970334309dce4cdd74cb41e1cd354b47cb6d93fd2d073fe7bfe860c07562",
+     ".asd/workflows/asd-phase-design.md": "225ddfe38413b07ad78094507f39228e3d52e997e93709aa7ac1d72af6ce86f9",
+-    ".asd/workflows/asd-phase-impl-review.md": "be381213593dfb17c33b1944af5698db2645feb1b7e8158272c6aaad8791c8c1",
+-    ".asd/workflows/asd-phase-impl-test.md": "426fb4411e86293ed8f53728d9f6248355c1c0f98032554d4a900619fef96c2d",
+-    ".asd/workflows/asd-phase-impl.md": "ff429b5a88a71ef0dcdf1dfc69ee6ac18b14051372f2eb374f83c6f687000879",
++    ".asd/workflows/asd-phase-impl-review.md": "fbb4bc3119160e66f09cef0b77e3f0f056043125cb34dcf47dabbcf7f52065eb",
++    ".asd/workflows/asd-phase-impl-test.md": "43aa1bc0e494bd70f8c0470faff742ec970bc480211a2f09782a53e68558d928",
++    ".asd/workflows/asd-phase-impl.md": "8ddf421ed52e9cfa84b4a4373a757ac0a3f60894e6aaba8261405cd3e34a903d",
+     ".asd/workflows/asd-phase-plan.md": "b3440a5fea69721a6fb88ee1e270ae31d6ae19af73dbdd88bd8793e46144cbf0",
+     ".asd/workflows/asd-phase-pr.md": "3534dc39058cd683cf1e7fd0ab4c024a84ee600b55e0f1b0327058e73d72382a",
+     ".asd/workflows/asd-phase-scope.md": "dbdcd123e0b7090bb3874d9661f54f14d142fcc28cce2aff6ff82de4d58c4bfd",
+@@ -154,7 +154,7 @@
+     ".asd/templates/t_friction-log.md": "98c1ee13ba45291945be2ebabcbd7fc4c59a7069685341f64fc0c26bae31af67",
+     ".asd/templates/t_retrospective.html": "73a850121b1988c3a84e895683a5ad7fb79cd962b2952ed9a14b59251e5c4a0d",
+     ".asd/skills/asd-phase-retro/SKILL.md": "5508b3169ccd79d6dc65720264e2c4154305a5a335d1ab39a96d18f427dc092c",
+-    ".asd/workflows/asd-phase-retro.md": "f64aade6fede13159129434d6d2654cc1ea9bf90ea6b22a1a22e90ac830aac95",
++    ".asd/workflows/asd-phase-retro.md": "60afd8837193c856ef6932d4b20676641fa5b299a389ec964656f303e39ab9dc",
+     ".asd/templates/t_subsystem.md": "1365a20aeb5847a1da23ac88d7a3d0153ba3a8b6a3abbf06b883a689d9ee2f5d",
+     ".asd/templates/t_subsystems.md": "54b1e273e9e74a57e08b43d1b671f880b7f682d9ec1bc4afb95a55d98b2531dd",
+     ".asd/migrations/9.0.0.js": "1a1da6ebd2576d92ed44ccde308969856f3aeaa7be152438137e94b43cd015b1",
+diff --git a/.asd/skills/asd-init/SKILL.md b/.asd/skills/asd-init/SKILL.md
+index 9144fcbd..ffb335b6 100644
+--- a/.asd/skills/asd-init/SKILL.md
++++ b/.asd/skills/asd-init/SKILL.md
+@@ -17,7 +17,7 @@ Initialize the ASD workflow (fresh), edit its settings in diff mode (re-init), o
+ ## Preconditions
+ 
+ ```json
+-{"requires": ["repo at project root", "infra present: .asd/rules/, .asd/templates/, .claude/"], "else": "ABORT — precondition not met: <artefact>", "ops": ["read files / search repo", "run command: gh, OS and tool probes (Fresh 4-5), git symbolic-ref, node .asd/sync.js --check", "request user decision / input: User decisions", "write files: Outputs"]}
++{"requires": ["repo at project root", "infra present: .asd/rules/, .asd/templates/, .claude/"], "ops": ["read files / search repo", "run command: gh, OS and tool probes (Fresh 4-5), git symbolic-ref, node .asd/sync.js --check", "request user decision / input: User decisions", "write files: Outputs"]}
+ ```
+ 
+ ## Modes
+diff --git a/.asd/skills/asd-sync/SKILL.md b/.asd/skills/asd-sync/SKILL.md
+index 6776ea22..58e86fb0 100644
+--- a/.asd/skills/asd-sync/SKILL.md
++++ b/.asd/skills/asd-sync/SKILL.md
+@@ -14,7 +14,7 @@ Reconcile generated provider views with canonical `.asd/` sources.
+ ## Preconditions
+ 
+ ```json
+-{"requires": [".asd/sync.js in this git repo"], "else": "ABORT — precondition not met: .asd/sync.js", "ops": ["run command: node $SYNC --check, --apply [--force]", "read files: target and canon source (show diff)", "request user decision: User decisions"]}
++{"requires": [".asd/sync.js in this git repo"], "ops": ["run command: node $SYNC --check, --apply [--force]", "read files: target and canon source (show diff)", "request user decision: User decisions"]}
+ ```
+ 
+ ## Steps
+diff --git a/.asd/skills/asd-update/SKILL.md b/.asd/skills/asd-update/SKILL.md
+index a4e53fc8..95586ff2 100644
+--- a/.asd/skills/asd-update/SKILL.md
++++ b/.asd/skills/asd-update/SKILL.md
+@@ -41,7 +41,7 @@ Pull latest ASD framework files into this consumer project: overwrite **framewor
+ 
+ Run by `.asd/workflows/asd-phase-scope.md` step 1 when the user chose to update at `asd-sprint`'s new-sprint version check.
+ 
+-- That choice is the confirmation: skip step 1; steps 2-6 apply unchanged.
++- That choice is the confirmation: skip step 1; steps 2-7 apply unchanged.
+ - Conflicts and `--force` still go to the user — never force without asking.
+ - No commit here: the orchestrator commits the result. Report a failed migration or a declined conflict as a partial update; the orchestrator owns what follows.
+ - Self-hosting rule (Rules) unchanged: `asd-sprint` never runs the check when `self_hosting: enabled`.
+diff --git a/.asd/workflows/asd-phase-design-promote.md b/.asd/workflows/asd-phase-design-promote.md
+index b8fa3a34..a2c36038 100644
+--- a/.asd/workflows/asd-phase-design-promote.md
++++ b/.asd/workflows/asd-phase-design-promote.md
+@@ -25,7 +25,7 @@ Owner: inline orchestrator (decomposition, state, gates); dispatches `asd-archit
+ ## Dispatch
+ 
+ ```json
+-[{"agent": "asd-architect", "when": "step 3, approved new or changed subsystem", "payload": ["inputs.subsystems (approved decomposition)"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}, {"agent": "asd-ba, asd-architect, asd-ux", "when": "step 4, each for its enabled domain docs", "payload": ["mode", "inputs.drafts (standard)", "inputs.requirements, inputs.plan, inputs.diff, inputs.audit (lite)", "inputs.ux (asd-ux)"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}]
++[{"agent": "asd-architect", "when": "step 3, approved new or changed subsystem", "payload": ["inputs.requirements", "inputs.subsystems (approved decomposition)"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}, {"agent": "asd-ba, asd-architect, asd-ux", "when": "step 4, each for its enabled domain docs", "payload": ["mode", "inputs.requirements", "inputs.drafts (standard)", "inputs.plan, inputs.diff, inputs.audit (lite)", "inputs.ux (asd-ux)"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}]
+ ```
+ 
+ ## Exit
+diff --git a/.asd/workflows/asd-phase-design-review.md b/.asd/workflows/asd-phase-design-review.md
+index be5ec7d1..9b51d176 100644
+--- a/.asd/workflows/asd-phase-design-review.md
++++ b/.asd/workflows/asd-phase-design-review.md
+@@ -65,7 +65,7 @@ Owner: inline orchestrator; dispatches reviewers (documentation, efficiency, cor
+ ## Dispatch
+ 
+ ```json
+-[{"agent": "asd-reviewer-documentation, asd-reviewer-efficiency, asd-reviewer-correctness", "when": "step 7, each not latch-skipped", "payload": ["turn_budget", "manifest", "diff (iter 2+, else null)", "iteration", "floor", "interrupted (step 8a re-dispatch, else null)", "out_dir (<sprint>/reviews/design/iter-NN/)", "return_file", "language"], "signals": ["REVIEW_DONE", "FAILED", "ABORT"]}, {"agent": "asd-external-review", "when": "step 7, review.external_review=enabled and not latch-skipped", "payload": ["turn_budget", "manifest (external.scope.json)", "diff (iter 2+, else null)", "out_dir", "floor", "preflight (step 3a result, platform included)", "stalemate_findings (iter 2+, external-review.md 'Stalemate detection')", "language"], "signals": ["REVIEW_DONE"]}, {"agent": "asd-ba, asd-ux, asd-architect", "when": "step 9 fixes, the creator owning each finding", "payload": ["task (finding ids)", "inputs.findings (reviewer file, question answers included)", "inputs.draft", "language"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}]
++[{"agent": "asd-reviewer-documentation, asd-reviewer-efficiency, asd-reviewer-correctness", "when": "step 7, each not latch-skipped", "payload": ["turn_budget", "manifest", "diff (iter 2+, else null)", "iteration", "floor", "interrupted (step 8a re-dispatch, else null)", "out_dir (<sprint>/reviews/design/iter-NN/)", "return_file", "language"], "signals": ["REVIEW_DONE", "FAILED", "ABORT"]}, {"agent": "asd-external-review", "when": "step 7, review.external_review=enabled and not latch-skipped", "payload": ["turn_budget", "manifest (external.scope.json)", "diff (iter 2+, else null)", "iteration", "out_dir", "floor", "preflight (step 3a result, platform included)", "findings (stalemate set, iter 2+, external-review.md 'Stalemate detection')", "language"], "signals": ["REVIEW_DONE"]}, {"agent": "asd-ba, asd-ux, asd-architect", "when": "step 9 fixes, the creator owning each finding", "payload": ["task (finding ids)", "inputs.requirements", "inputs.ux (asd-ux)", "inputs.findings (reviewer file, question answers included)", "inputs.draft", "language"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}]
+ ```
+ 
+ ## Exit
+diff --git a/.asd/workflows/asd-phase-impl-review.md b/.asd/workflows/asd-phase-impl-review.md
+index d35135a5..e49af260 100644
+--- a/.asd/workflows/asd-phase-impl-review.md
++++ b/.asd/workflows/asd-phase-impl-review.md
+@@ -39,8 +39,8 @@ impl-review fixes no CODE finding itself — those route to impl review-fix mode
+    - Interrupted dispatch — reaches any dispatch, External Review included, per `external-review.md` "Outcome contract": takes the same reject-and-re-dispatch-fresh path as a failed validation above, never that step's transcription branch; a second consecutive interruption on the same manifest → request user decision per that section's Escalation (retry fresh / abort), never a split.
+    - Late duplicate return — reaches any replaced dispatch, External Review included, per `review-policy.md` "Late duplicate return" (sole SSoT for the admission test and every action it mandates). Phase bindings: a return delivering after step 8 recorded its replacement's verdict, once admitted, is persisted by step 7's `persist-review` plus `--late` to `<reviewer>.late.md` in the replaced dispatch's iteration dir (`<sprint>/reviews/impl/<id>/`), linked from `<reviewer>.md`, and carries that section's `verdicts["iter-NN"]`, `latched` and decisions-log writes even though step 8 already ran — for a closed wave, its `.late.md` goes to this iteration's `<sprint>/reviews/impl/<id>/` instead, `--manifest` naming the closed wave's manifest, and its finding joins step 8's unresolved set.
+ 8. Parse first-line verdict tokens from all written reviewer files; write the wave node's `verdicts["iter-NN"]` (keyed by `reviewers.impl`) and `latched` per `sprint-lifecycle.md` "APPROVE latch" — sole SSoT for the every-reviewer-gets-an-entry invariant, the inherited `APPROVE` a latch-skipped reviewer receives and the bare-`APPROVE`-only latch condition; not restated here. Phase bindings: an interrupted attempt contributes no entry, its attempts already logged at step 7a. External Review's availability skip is recorded as `"APPROVE (skipped: <reason>)"` when the phase-supplied preflight returns non-ready; its `external.md` (the `Unreviewed files` line from step 1b included) is persisted through step 7's `persist-review` per `review-policy.md` "Coverage ledger" Persistence, its other duties `external-review.md` "Detection and negative cache"'s, not this step's. Aggregate per `sprint-lifecycle.md` "State recovery" satisfied-vs-blocking semantics, reading `verdicts["iter-NN"]` alone, except per `sprint-lifecycle.md` "State recovery" "User-resolved findings". Fixes route to impl phase (fix mode):
+-   - **Reviewer questions first** — a report carrying `question:` items under `## Escalations` (`review-policy.md` "Gate Verdict Format" question carrier) is verdict-bearing, never interrupted (step 7a): request user decision per item, append the answers to decisions-log, and write each under its item in that reviewer's file per that carrier, so review-fix reads it with the findings
+-   - **Any FAIL** `[GATE hard: review FAIL escalation]` → impl-review owns review escalation:
++   - **Reviewer questions first** [GATE hard: reviewer question] — a report carrying `question:` items under `## Escalations` (`review-policy.md` "Gate Verdict Format" question carrier) is verdict-bearing, never interrupted (step 7a): request user decision per item, append the answers to decisions-log, and write each under its item in that reviewer's file per that carrier, so review-fix reads it with the findings
++   - **Any FAIL** [GATE hard: review FAIL escalation] → impl-review owns review escalation:
+      - parse FAIL findings; group by escalation cause (concept / requirement / contract change; new abstraction; scope expansion; complexity increase)
+      - request user decision in `language.chat`: present each FAIL using Complication Approval format from `core.md`; collect decisions
+      - External Review's stalemate FAIL (`Stalemate:` block, `external-review.md` "Stalemate detection") → request user decision; options and routing per that section, instead of the accept/override bullets below
+@@ -53,11 +53,11 @@ impl-review fixes no CODE finding itself — those route to impl review-fix mode
+      - emit phase COMPLETED with `NEXT: impl`
+    - **Otherwise — all APPROVE or latched**, or escalation left zero unresolved findings (all FAIL overridden, no CONCERNS) → wave K's roster met (`sprint-lifecycle.md` "Review iteration counters" lifecycle): K < n → write `reviews.impl.wave` = K+1 inline and return to step 1 for wave K+1's iteration 1 in this same entry, no `impl`/`impl-test` between; K = n → reviewer DoD met → proceed to step 9
+ 9. **Terminal full-suite gate** — dispatched only when step 8 (or step 10's cap-accept branch) reaches reviewer DoD met on the last wave; skipped entirely on any route to impl review-fix mode. Delegate to a fresh `asd-tester` for each terminal suite run, routed as `asd-phase-impl-test.md` step 1a with its tier per `providers.md` "Task-class variants and routing", payload per `agent-protocol.md` "Dispatch payload" — the phase's sole non-reviewer agent and only capability to run commands; with step 8's test-fix, the phase's only dispatches that change the repo. It runs the sprint cycle's one full-suite run per `## Rules`. Verdict from the runner's exit code plus report, never an agent's summary:
+-   - **Green** `[GATE adaptive: impl-review green handoff]` → DoD met: append the decisions-log, clear `review_fixes_pending` inline, apply the green-handoff gate policy, emit the definition's non-`impl` `next["impl-review"]` target — `NEXT: retro` (standard) or `NEXT: design-promote` (lite).
++   - **Green** [GATE adaptive: impl-review green handoff] → DoD met: append the decisions-log, clear `review_fixes_pending` inline, apply the green-handoff gate policy, emit the definition's non-`impl` `next["impl-review"]` target — `NEXT: retro` (standard) or `NEXT: design-promote` (lite).
+    - **Red, test defect** (bad assertion, wrong fixture, flaky pattern) → write inline (mechanical, no gate) clear `state.json.reviews.design.latched` and every impl wave node's `latched` to `{}` sprint-wide (red-full-suite invalidation, `sprint-lifecycle.md` "APPROVE latch" — every red full suite clears every latch sprint-wide regardless of which triage branch follows; a no-op if the code-defect sub-bullet below already cleared them this same red event) — then the tester fixes and commits the test (`## Rules`) and this step re-runs as a new terminal run, routed with its own id per `providers.md` "Task-class variants and routing"; loop until green or an unfixable state surfaces as `FAILED`
+    - **Red, code defect** → the pending `D-N` recorded (`## Rules`), write inline `state.json.test_defects_pending = true`, clear latches as above and append the routing log; emit `NEXT: impl` (test-fix mode).
+    - both kinds present → fix the test defects first (sub-bullet above), re-run, then route the remaining code defects back per the code-defect sub-bullet
+-10. Iteration cap reached `[GATE hard: review-cap override]` (step 3's cap: wave K's next `iteration − A` would exceed all severity-tier budgets per `review-policy.md`; the cap is per wave) — checked when step 8 would route to impl review-fix mode:
++10. Iteration cap reached [GATE hard: review-cap override] (step 3's cap: wave K's next `iteration − A` would exceed all severity-tier budgets per `review-policy.md`; the cap is per wave) — checked when step 8 would route to impl review-fix mode:
+     - request user decision: override cap and continue / accept current findings / abort sprint
+     - on override → route to impl review-fix mode; the orchestrator sets `review_fixes_pending` = `<id>` inline.
+     - on accept → record every open finding resolved (`cap-accept`, same home); wave K's roster met by cap-accept → as step 8's roster-met branch (next wave, or step 9 when K = n); the COMPLETED note folds in "iteration cap reached in wave K, user accepted"
+@@ -76,12 +76,12 @@ impl-review fixes no CODE finding itself — those route to impl review-fix mode
+ 
+ ## Dispatch
+ ```json
+-[{"agent": "asd-reviewer-<key>", "when": "each internal key of reviewers.impl (correctness, efficiency, testing, documentation, combined), not latched", "payload": ["manifest", "diff", "wave", "iteration", "out_dir", "return_file", "floor", "inputs", "language", "interrupted"], "signals": ["REVIEW_DONE", "FAILED", "ABORT"]}, {"agent": "asd-external-review", "when": "key external, review.external_review=enabled, step 1a ready, not latched", "payload": ["manifest", "diff", "wave", "iteration", "out_dir", "floor", "inputs", "preflight", "findings", "language", "interrupted"], "signals": ["REVIEW_DONE"]}, {"agent": "asd-tester", "when": "step 8 low-severity test-only fix; step 9 terminal suite run", "payload": ["mode", "task", "work", "inputs", "write_scope", "language", "timing"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}]
++[{"agent": "asd-reviewer-<key>", "when": "each internal key of reviewers.impl (correctness, efficiency, testing, documentation, combined), not latched", "payload": ["turn_budget", "manifest", "diff", "wave", "iteration", "out_dir", "return_file", "floor", "inputs", "language", "interrupted"], "signals": ["REVIEW_DONE", "FAILED", "ABORT"]}, {"agent": "asd-external-review", "when": "key external, review.external_review=enabled, step 1a ready, not latched", "payload": ["turn_budget", "manifest", "diff", "wave", "iteration", "out_dir", "floor", "inputs", "preflight", "findings", "language", "interrupted"], "signals": ["REVIEW_DONE"]}, {"agent": "asd-tester", "when": "step 8 low-severity test-only fix; step 9 terminal suite run", "payload": ["mode", "task", "work", "inputs", "write_scope", "language", "timing"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}]
+ ```
+ 
+ ## Exit
+ ```json
+-{"writes": ["<sprint>/reviews/impl/waves.json (step 1c, at the division point; overwritten at a re-division)", "<sprint>/reviews/impl/<id>/<reviewer>.md and <reviewer>.findings.json per dispatched reviewers.impl key (step 7; none for a latch-skipped key)", "<sprint>/reviews/impl/<id>/<reviewer>.manifest.json per dispatched internal reviewer, external.scope.json when External Review is dispatched, one <fingerprint>.diff per distinct list and range (step 6)", "<sprint>/reviews/impl/<id>/<reviewer>.late.md and .late.findings.json for an admitted late duplicate return (step 7a; its iteration and link per review-policy.md 'Late duplicate return')", "<sprint>/test-plan.md Suite run (step 9) and, on a code-defect red, a new Defects D-N row", "asd-tester test-fix commits and their resolved: … — test-fix lines in reviewer files (step 8)", "state.json: phase; reviews.impl.wave and each wave node's iteration, iteration_heads, verdicts, latched; review_fixes_pending; test_defects_pending on a step-9 code-defect red", "decisions-log entry on a division into n > 1 waves, reviewer-question answers, DoD met, route-to-impl-fix, override, or terminal-suite red"], "next": [{"if": "reviewer DoD met on the last wave and terminal full suite green (step 9)", "next": "retro (standard) | design-promote (lite)"}, {"if": "unresolved findings (step 8, step 10 override)", "next": "impl"}, {"if": "terminal full suite red with code defects (step 9)", "next": "impl"}]}
++{"writes": ["<sprint>/reviews/impl/waves.json (step 1c, at the division point; overwritten at a re-division)", "<sprint>/reviews/impl/<id>/<reviewer>.md and <reviewer>.findings.json per dispatched reviewers.impl key (step 7; none for a latch-skipped key)", "<sprint>/reviews/impl/<id>/<reviewer>.manifest.json per dispatched internal reviewer, external.scope.json when External Review is dispatched, one <fingerprint>.diff per distinct list and range (step 6)", "<sprint>/reviews/impl/<id>/<reviewer>.late.md and .late.findings.json for an admitted late duplicate return (step 7a; its iteration and link per review-policy.md 'Late duplicate return')", "<sprint>/test-plan.md Suite run (step 9) and, on a code-defect red, a new Defects D-N row", "asd-tester test-fix commits and their resolved: … — test-fix lines in reviewer files (step 8)", "state.json: phase; reviews.impl.wave and each wave node's iteration, iteration_heads, verdicts, latched; review_fixes_pending; test_defects_pending on a step-9 code-defect red", "decisions-log entry on a division into n > 1 waves, reviewer-question answers, DoD met, route-to-impl-fix, override, or terminal-suite red"], "next": [{"if": "reviewer DoD met on the last wave and terminal full suite green (step 9), standard", "next": "retro"}, {"if": "reviewer DoD met on the last wave and terminal full suite green (step 9), lite", "next": "design-promote"}, {"if": "unresolved findings (step 8, step 10 override)", "next": "impl"}, {"if": "terminal full suite red with code defects (step 9)", "next": "impl"}]}
+ ```
+ 
+ ## Return
+diff --git a/.asd/workflows/asd-phase-impl-test.md b/.asd/workflows/asd-phase-impl-test.md
+index 0bb02530..4e955308 100644
+--- a/.asd/workflows/asd-phase-impl-test.md
++++ b/.asd/workflows/asd-phase-impl-test.md
+@@ -27,7 +27,7 @@ Autonomous: no user gate on a green impacted-set run, none on routing defects ba
+    - **re-entry**: first carries each review-fix removal row forward as a live `Removed tests` row, which step 5 collects, then rotates the previous entry's narrative rows, review-fix rows included, into `test-plan.entry-NN.md` (`artifact-layout.md` "Test plan"); analyses only the delta — the material risk introduced or changed by the fix commits; leaves prior `Risk → check decisions` rows untouched unless a fix actually changed that risk's behaviour, in which case it supersedes a rotated one
+    - **entry 1**: writes `<sprint>/test-plan.md` per `t_test-plan.md` (Risk → check decisions etc.), the first `Entry log` row's `HEAD analysed` left unfilled (scope = "full change surface"). **Re-entry**: amends it — appends new/updated rows, the new `Entry log` row's `HEAD analysed` left unfilled (scope = "delta since entry N-1"); never rewrites prior rows outside the ones actually revised. Emits COMPLETED. The `HEAD analysed` sha is written at step 9's routing exit or in step 10, after the prune/author commit (step 7) and the suite recording (step 8) — never before — so the next re-entry's delta excludes this entry's own test-authoring commits
+ 5. Read `test-plan.md` → collect proposed removals; split into in-scope (test file inside the change surface) and out-of-scope — outside the sprint's **overall** change surface, not merely the current delta
+-6. **Removal gate** `[GATE adaptive: test removal]` — only when out-of-scope removals exist: apply `checkpoints.md`; strict requests the user's explicit approval, adaptive needs recorded authority/evidence. Rejected removals are struck from `test-plan.md`.
++6. **Removal gate** [GATE adaptive: test removal] — only when out-of-scope removals exist: apply `checkpoints.md`; strict requests the user's explicit approval, adaptive needs recorded authority/evidence. Rejected removals are struck from `test-plan.md`.
+ 7. **Prune + author pass** — the tester handles every independent area serially, scope the set step 4 analysed:
+    - deletes the approved removals; writes the `add` decisions at the chosen level, never re-authoring a `Test-only` Task's tests (strategy and pruning still cover them); fail-first regression proof and test-quality bars per `code-style.md` §17 (SSoT) — the proof recorded in the `Added tests` table
+    - **entry 1**: resolves each stub a `plan.md` `Stub <ref> → impl-test` line routes here (`sprint-lifecycle.md` "Plan file format") per `git-strategy.md` "TODO stubs": its TODO resolved in the test file, its `.asd/project/stubs.md` row deleted
+@@ -35,7 +35,7 @@ Autonomous: no user gate on a green impacted-set run, none on routing defects ba
+ 8. **Suite gate** — the tester runs the impacted suite, lint/build and records raw results; verdict per `## Rules` suite gate.
+ 9. **Triage** on any failure:
+    - **test defect** (bad assertion, wrong fixture, flaky pattern) → re-dispatch step 7 for the offending tests, then step 8 again
+-   - **code defect** → append a `D-N` row per `t_test-plan.md` `Defects` (`Entry` = this entry, status `pending`); run command `node .asd/runtime.js defect-stalemate --plan <sprint>/test-plan.md` (detection shape only from `external-review.md` "Stalemate detection"). **Stalemate** `[GATE hard: stalemate]`: two consecutive entries routed the same code-defect identity set — a green entry between them breaks the run; identity is the `Defects` file path, runner failure line and failing test, never `D-N`; `impl-review` rows never count; the command compares deterministically:
++   - **code defect** → append a `D-N` row per `t_test-plan.md` `Defects` (`Entry` = this entry, status `pending`); run command `node .asd/runtime.js defect-stalemate --plan <sprint>/test-plan.md` (detection shape only from `external-review.md` "Stalemate detection"). **Stalemate** [GATE hard: stalemate]: two consecutive entries routed the same code-defect identity set — a green entry between them breaks the run; identity is the `Defects` file path, runner failure line and failing test, never `D-N`; `impl-review` rows never count; the command compares deterministically:
+      - a **current answer** is a decisions-log stalemate answer naming this `digest` and appended after the log's last routing line naming it; an earlier answer is spent — it covers only the next routing of that set, and the same set repeating after it escalates again
+      - `stalemate: true` and no current answer → emit `FAILED: stalemate <digest>` instead of routing and request a hard user decision (`checkpoints.md`): continue test-fix with guidance, accept as debt, or abort; append the answer with the digest to decisions-log, then apply it
+      - `stalemate: true` and a current answer → apply it without re-asking: continue → route below, its guidance riding the test-fix payload; accept as debt → set those rows `accepted-debt`, register each failing test in `.asd/project/stubs.md` with an `(accepted-debt)` Reason, re-dispatch step 7 to skip exactly those tests, then step 8 again; abort → ABORT
+diff --git a/.asd/workflows/asd-phase-impl.md b/.asd/workflows/asd-phase-impl.md
+index 29176dcf..43cc97e6 100644
+--- a/.asd/workflows/asd-phase-impl.md
++++ b/.asd/workflows/asd-phase-impl.md
+@@ -36,7 +36,7 @@ Autonomous in all modes: once work is dispatched, no user contact until (a) all
+    - initial mode: waves ascending, every task of a wave dispatched concurrently (caller schedules concurrent delegations), the next wave opening only once all their signals are in; a fix mode: step 5's single ordered chain, dev chain before tester chain
+    - per task, or once per chain in a fix mode (5a): delegate to the agent `## Dispatch` names (`dev` in `## Rules` reads as that agent); payload per `agent-protocol.md` "Dispatch payload" with `## Dispatch`'s role keys: `work` — initial: Task block excerpt (title + subtasks + dependencies); review-fix: grouped finding list (each finding's id per `git-strategy.md` "Commits", severity, location, description, plus the user-approved change note for accepted FAIL findings); test-fix: grouped defect list (`D-N`, location, symptom, failing test) plus the guidance of a stalemate continue answer logged for it in the live `decisions-log.md` (`artifact-layout.md` "Decisions log" rotation), if any; `inputs` — "Input sources" keys plus `commands`, `tech_reference`, `custom_rules`, review-fix `reviews` (`reviews/impl/<id>/`), test-fix `test_plan`; `language` — `language.chat`, `language.docs`; instruction: `## Rules`
+ 7. Wait all task signals (COMPLETED and/or BLOCKED_MANUAL); a dispatch returning none → `sprint-lifecycle.md` "State recovery" failed dispatch. Initial mode, after a wave's last signal and before the next wave opens: tick the `plan.md` checkboxes of the subtasks that wave's COMPLETED signals report done, append each returned `memory_index` line to its `MEMORY.md`, and commit. `self_hosting: enabled`: once a wave's (initial) or the round's (fix modes) last canon-editing dispatch has signalled, before the next wave opens or step 9 runs, run `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `providers.md` "Canonical path -> per-provider path") over every view whose canon changed — `--apply AGENTS.md` when canon changed but no view did, since any valid `--apply` recomputes `release-manifest.json`'s hash ledgers — then `node .asd/sync.js --check`, and commit the regenerated views
+-8. **Manual-steps validation + gate** `[GATE hard: manual steps]` — when any `BLOCKED_MANUAL` emitted:
++8. **Manual-steps validation + gate** [GATE hard: manual steps] — when any `BLOCKED_MANUAL` emitted:
+    - validate each new `MS-N` for necessity: keep only when the action genuinely cannot be done autonomously (needs access, secret, external account, or authority the agent lacks); reject any entry the agent could do with its own tools → re-dispatch its owning dev with feedback "implement autonomously, remove MS-N"; loop step 7
+    - once all remaining `MS-N` are validated and all unblocked tasks COMPLETED: append a decisions-log entry; add an `F-N` citing the blocking `MS-N` ids only when the halt itself was a malfunction — the step was unexpected, unworkable, or raised at the wrong point (`sprint-lifecycle.md` "Friction log"); a validated, genuinely necessary halt records no `F-N`; present `manual-steps.md` to the user (`checkpoints.md` "Gate mechanics"); wait for an explicit continue command
+    - on continue: re-dispatch each deferred task to its owning dev to verify its `MS-N` (`## Rules`); on COMPLETED tick its `plan.md` checkboxes as step 7 does; a repeated `BLOCKED_MANUAL` is relayed to the user
+@@ -46,7 +46,7 @@ Autonomous in all modes: once work is dispatched, no user contact until (a) all
+    - the round's diff — what its agents committed plus anything still uncommitted — read before committing or advancing: every path it touches is one those agents were authorised to touch, plus `.asd/project/config.yaml` when step 6 applied a declared settings change, plus each memory file the orchestrator applied from a memory-fix dispatch or deleted as ownerless, and `<sprint>/test-plan.md` when it set a memory `D-N`'s `Status` (step 3), plus each generated view step 7's sync regenerated, plus `<sprint>/plan.md` and each `MEMORY.md` step 7 wrote, plus `<sprint>/timing.jsonl`. Any other path fails the gate as a build error does — a file no dispatched task named, a generated view an agent edited, a scripted edit that rewrote more than its target. Distinct from `code-style.md` §19's staged-content lint: same tool, different question
+    - the gate never runs tests — a dev's impacted-set self-verification run is not part of it; the suite/impacted-set gates belong to `impl-test`/`impl-review`
+    - any condition fails → relay the specific failure to the owning dev(s) to fix and re-run; loop step 7. Unrecoverable failure escalates as a blocker (`FAILED`). Automatic verification — no user pause
+-10. **Impl assessment checkpoint** `[GATE adaptive: initial impl assessment]` — **initial mode only** (fix modes skip to step 11) — apply `checkpoints.md`, recording adaptive evidence or requesting the user:
++10. **Impl assessment checkpoint** [GATE adaptive: initial impl assessment] — **initial mode only** (fix modes skip to step 11) — apply `checkpoints.md`, recording adaptive evidence or requesting the user:
+    - read updated `<sprint>/plan.md` → verify all checkboxes ticked
+    - a non-empty `flagged` in any COMPLETED is an unresolved material alternative (`checkpoints.md` "Gate policy"): no adaptive pass until the orchestrator resolves it or routes it back to the dev (loop step 7). Before accepting a choice, search the decisions log, rotated parts included (`artifact-layout.md` "Decisions log"), for an earlier disposition of it; an acceptance reversing one appends a decisions-log line naming the earlier entry
+    - read `.asd/project/stubs.md` → list stubs introduced this sprint (filter Sprint=<NNN-slug>; all rows open by definition since delete-on-resolve)
+@@ -75,7 +75,7 @@ Autonomous in all modes: once work is dispatched, no user contact until (a) all
+ 
+ ## Dispatch
+ ```json
+-[{"agent": "asd-dev", "when": "each Task without a Test-only line (initial); the fix chain (review-fix, test-fix)", "payload": ["mode", "task", "work", "inputs", "write_scope", "language"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "BLOCKED_MANUAL", "FAILED", "ABORT"]}, {"agent": "asd-tester", "when": "a Test-only Task (initial); the test-file findings chain, after the dev chain (review-fix)", "payload": ["mode", "task", "work", "inputs", "write_scope", "language"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "BLOCKED_MANUAL", "FAILED", "ABORT"]}, {"agent": "<owner> of .claude/agent-memory/<owner>/", "when": "a memory finding or D-N (fix modes, Claude only), step 3", "payload": ["mode", "task", "work", "write_scope"], "signals": ["COMPLETED", "FAILED", "MEMORY-FIX <path> text"]}, {"agent": "asd-init (skill, sprint-mediated mode)", "when": "a wave holding a Settings change: line opens (initial), step 6", "payload": ["the declared pairs"], "signals": ["COMPLETED", "FAILED"]}]
++[{"agent": "asd-dev", "when": "each Task without a Test-only line (initial); the fix chain (review-fix, test-fix)", "payload": ["mode", "task", "work", "inputs", "write_scope", "language"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "BLOCKED_MANUAL", "FAILED", "ABORT"]}, {"agent": "asd-tester", "when": "a Test-only Task (initial); the test-file findings chain, after the dev chain (review-fix)", "payload": ["mode", "task", "work", "inputs", "write_scope", "language"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "BLOCKED_MANUAL", "FAILED", "ABORT"]}, {"agent": "<owner> of .claude/agent-memory/<owner>/", "when": "a memory finding or D-N (fix modes, Claude only), step 3; a refused write returns `MEMORY-FIX <path>` text", "payload": ["mode", "task", "work", "write_scope"], "signals": ["COMPLETED", "FAILED"]}, {"agent": "asd-init (skill, sprint-mediated mode)", "when": "a wave holding a Settings change: line opens (initial), step 6", "payload": ["the declared pairs"], "signals": ["COMPLETED", "FAILED"]}]
+ ```
+ 
+ ## Signals
+diff --git a/.asd/workflows/asd-phase-retro.md b/.asd/workflows/asd-phase-retro.md
+index 6d52bbe0..f22777e7 100644
+--- a/.asd/workflows/asd-phase-retro.md
++++ b/.asd/workflows/asd-phase-retro.md
+@@ -27,7 +27,7 @@ Owner: inline orchestrator (analyses, authors and logs; nothing delegated); disp
+    - **Findings, in order** (both classes; dedup before any drafting):
+      1. **Merge** — entries and proposals sharing one root cause become one finding citing every source `F-N`; a finding merged with any `F-N` is remediation.
+      2. **Coverage** — search the finding's candidate home (list below) for its subject, reading no other file; a finding an existing rule already covers is dropped, its row citing that rule in place of a guardrail.
+-     3. **Draft** — each surviving finding gets `Guardrail`, one imperative line stating the prohibition or requirement, and `Home`, finalizing the candidate (a changed home re-runs step 2): `custom-coding-rules.md`, `custom-design-rules.md`, `custom-common-rules.md`, `.claude/agent-memory/<agent>/` (Claude-only), a `.asd/rules/` doc when `self_hosting` is enabled, or "upstream ASD" (a framework proposal, never applied; shown at the next scope without a disposition, `asd-phase-scope.md` "Retro intake") when it is not.
++     3. **Draft** — each surviving finding gets `Guardrail`, one imperative line stating the prohibition or requirement, and `Home`, finalizing the candidate (a changed home re-runs Coverage (item 2 above)): `custom-coding-rules.md`, `custom-design-rules.md`, `custom-common-rules.md`, `.claude/agent-memory/<agent>/` (Claude-only), a `.asd/rules/` doc when `self_hosting` is enabled, or "upstream ASD" (a framework proposal, never applied; shown at the next scope without a disposition, `asd-phase-scope.md` "Retro intake") when it is not.
+ 5. **Empty-log branch** — an absent or entry-free log is a legitimate outcome: record "no friction recorded", skip step 3 and step 4's remediation class only; the systemic class is still derived and run through the findings order, so an entry-free log is never an empty retrospective. Never invent friction entries; never mutate sprint state to reach this branch. Fragment shape per `t_retrospective.html`'s empty-log comment.
+ 6. Write `<sprint>/retrospective.html` in `language.docs`: `t_retrospective.html` wrapped per `artifact-layout.md` "HTML shell wrapping", `{{DOC_TYPE}}`=`Retrospective`, `{{STATUS}}`=`final`, every other placeholder computed per its "Placeholder fill" table — derived analysis, sprint-scoped, archived with the sprint; nothing is promoted to a persistent doc, and the retro backlog holds only scope-time dispositions of its rows (`asd-phase-scope.md` "Retro intake"), never retro content. Every Actions and Systemic proposals `<tr>` carries its retro row id (`sprint-lifecycle.md` "Retro row ids"). The duration section, kept on both branches, holds the summary table, the slow set and the user waits, each slow op or avoidable wait naming its cause and linking its `P-N` or `A-N` row; "No timing data" without a ledger.
+ 7. Post the closing `language.chat` summary — problems observed, then systemic proposals, one line each.
+diff --git a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+index a981f8fb..4e0d82e1 100644
+--- a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
++++ b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+@@ -6,3 +6,4 @@
+ - [Plan deviation vs flagged choices](feedback_plan-deviation-flagged-choices.md) — grep decisions-log "flagged choices accepted" before raising a deviation from a plan D-N
+ - [Return findings-table shape](feedback_return-findings-table-shape.md) — Findings must be the first pipe table; first cell = finding id used by ledger f; no bare | in cells
+ - [Relocation review method](feedback_relocation-review-method.md) — per removed hunk grep phrases in the new home; check new path tables against both artifact-layout path maps
++- [Dispatch payload vs required](feedback_dispatch-payload-vs-required.md) — check every Dispatch row (fix rows, standard promote rows, External Review twins) against agent Inputs required/modes
+diff --git a/.claude/agent-memory/asd-reviewer-combined/feedback_dispatch-payload-vs-required.md b/.claude/agent-memory/asd-reviewer-combined/feedback_dispatch-payload-vs-required.md
+new file mode 100644
+index 00000000..b76fd6e8
+--- /dev/null
++++ b/.claude/agent-memory/asd-reviewer-combined/feedback_dispatch-payload-vs-required.md
+@@ -0,0 +1,19 @@
++---
++name: dispatch-payload-vs-required
++description: how to check a workflow ## Dispatch payload list against each agent's ## Inputs required/modes - where the gaps hide (fix rows, standard-mode promote rows, External Review keys)
++metadata:
++  type: feedback
++---
++
++Cross-check every `## Dispatch` row's `payload` against the dispatched agent's `## Inputs` JSON: top-level `required`
++applies unless the matching mode says "replaces the top-level required"; only `payload.*` items must be sent, file
++paths the agent reads itself need not be.
++
++**Why:** sprint 026 wave-3 found the gaps not in the main dispatch rows but in secondary ones: design-review's creator
++fix row, design-promote's standard-mode rows (only the lite row named `inputs.requirements`), and design-review's
++External Review row missing `iteration` that impl-review's twin sends.
++
++**How to apply:**
++- Grep `^\{"rules"` in `.asd/agents` and read each long line with `Read` offset/limit 1 (Grep omits it).
++- Compare twin rows across design-review and impl-review for key names and core keys (`turn_budget`, stalemate set key).
++- Related: [[large-diff-read-budget]], [[return-findings-table-shape]].
+diff --git a/tests/run.js b/tests/run.js
+index ddc8c7f1..76c47d1e 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -5735,8 +5735,8 @@ test('sprint-015 AC-1/AC-6/AC-7/AC-8/AC-10/AC-12: no canon tells anyone to clear
+     assert.ok(tools.deny.some((item) => /\bgit writes\b/.test(item)), `AC-6/sprint-018 AC-8: ${name}'s Tools deny must forbid git writes - holding Bash, its renames and deletions still route through the orchestrator`);
+     assert.ok(tools.deny.some((item) => /\borchestrator\b/.test(item) && /\brenames?\b/.test(item)), `AC-6/sprint-018 AC-8: ${name}'s Tools deny must route renames/deletes to the orchestrator`);
+     assert.ok(tools.run.length > 0, `sprint-018 AC-8 (TST-1-2): ${name}'s Tools run list must name the commands it may run - a deny-list alone leaves every other command open`);
+-    const neverRun = tools.deny.filter((item) => item.startsWith('designmd-install')).map(() => 'designmd-install');
+-    assert.deepStrictEqual(tools.run.filter((grant) => neverRun.some((command) => grant.includes(command))), [], `sprint-018 AC-8: ${name}'s Tools run allowlist must not reach a command its own deny list refuses (\`designmd-install\` writes package.json/lockfile)`);
++    const neverRun = tools.deny.map((item) => /^([\w-]+) \(/.exec(item)?.[1]).filter(Boolean); // a deny item opening "<command> (reason)" names the command; prose items name none
++    assert.deepStrictEqual(tools.run.filter((grant) => neverRun.some((command) => grant.includes(command))), [], `sprint-018 AC-8: ${name}'s Tools run allowlist must not reach a command its own deny list refuses (leading token of each deny item)`);
+     assert.ok(text.split('\n').some((line) => line.startsWith('- never:') && /\brename\b/.test(line) && /\bpropos/.test(line)), `AC-6 (P2-2): ${name} proposes a doc rename or deletion in its final text instead of performing it, or design-promote never receives the proposal`);
+   }
+ 
+@@ -8022,6 +8022,15 @@ test('sprint-026 AC-12 (D6/D8, C-4): return lines follow one format, agent-proto
+   }
+ });
+ 
++test('sprint-026 AC-6 (C-4): every phase workflow whose Dispatch lists ADVICE_NEEDED relays it through agent-protocol.md "Relay"; a workflow that lists none (plan) carries no relay branch', () => {
++  for (const rel of FORM_CATEGORIES.workflows.files()) {
++    const text = canonText(rel);
++    const listed = text.includes('\n## Dispatch') && jsonOf(rel, 'Dispatch').some((row) => (row.signals || []).includes('ADVICE_NEEDED'));
++    const relays = text.split('\n').some((line) => line.includes('ADVICE_NEEDED') && /["']Relay["']/.test(line) && line.includes('agent-protocol.md'));
++    assert.strictEqual(relays, listed, `${rel}: a Dispatch signals row lists ADVICE_NEEDED exactly when the file relays it per agent-protocol.md "Relay" (C-4) - a listed signal with no relay branch is dropped, a relay branch with no sender is dead`);
++  }
++});
++
+ test('sprint-026 AC-4/AC-9/AC-10/AC-11/D9: each rule the sprint added or relocated keeps its one home - the HEAD-moving ban with the orchestrator-only squash, the closure-write gate name, the edge-semantics decomposition rule, the protocol load line, and no moved phase section left in sprint-lifecycle.md', () => {
+   const gitStrategy = '.asd/rules/git-strategy.md';
+   const ban = sectionOf(gitStrategy, 'Forbidden').split('\n').find((line) => line.includes('never moves HEAD')) || '';

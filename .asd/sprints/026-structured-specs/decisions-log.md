@@ -102,3 +102,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-20 — impl fix for wave-3/iter-01: findings resolved (F1-F5 558722d8, F6 6cc4c42b); reviewer-question gate marked in both review workflows
 - 2026-10-20 — route impl-test entry 5: standard, dispatch HEAD 118b98ea; risk none via node tests/run.js
 - 2026-10-20 — impl-test: impacted set green (289/289), entry 5 0/0 tests
+- 2026-10-20 — impl-review wave-3/iter-02: combined APPROVE, external latched APPROVE; wave 3 (last) roster met → step 9 terminal full suite pending
