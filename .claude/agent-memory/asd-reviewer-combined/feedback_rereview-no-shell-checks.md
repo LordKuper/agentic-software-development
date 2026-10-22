@@ -21,5 +21,5 @@ to say which facts were derived and which were taken from a record.
 - A test pin that finds a sentence by code spans: read the helpers (`sectionOf`, `stepOf`, `spans`) once and confirm
   that the new lookup cannot be satisfied by a sibling sentence - the pin must go red on the mutation the test plan lists.
 - A gap that predates the fix and only clamps a tier upward is below a medium floor; note it in the basis, do not count it.
-- The return always carries the `## Findings` table of the review template, as a single `no findings` row when empty;
-  prose in its place is rejected by the persistence step and costs a re-dispatch.
+- The return always carries the `## Findings` table of the review template; an empty table is its header and separator
+  rows only, never a placeholder row; prose in its place is rejected by the persistence step and costs a re-dispatch.
