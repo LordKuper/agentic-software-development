@@ -58,3 +58,12 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: .asd/project/retro-backlog.md
 
 - 2026-10-22 — audit frozen true: documents.audit=auto and scope changes behaviour and gates
+
+## 2026-10-22 — audit contradiction C1 settled
+
+- **Decision**: A retro row verified resolved at HEAD is written `closed` without a question and shown at the scope gate with its evidence; the explicit three-way choice covers open rows only. AC-2 amended to "included, rejected or closed".
+- **Rationale**: User chose the recommended option; avoids one question per stale row each scope.
+- **Affected docs**: sprint.md, audit.md
+
+- 2026-10-22 — audit contradictions C2-C5 settled canonically/by accepted scope (audit.md "Contradictions")
+- 2026-10-22 — audit gate (adaptive): all sections present, C1 settled by user, C2-C5 resolved, AC-1..AC-10 deliverable; risks R1 (workflow byte cap, 106 B headroom) and R6/R7 carried to plan

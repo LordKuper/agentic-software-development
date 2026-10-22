@@ -13,7 +13,7 @@ responsibility:
 
 ## Acceptance
 - AC-1: Scope retro intake puts each non-upstream candidate row to the user as an explicit three-way choice — include in sprint / reject permanently / defer to next sprint; no row is disposed by default, and the scope gate is not accepted while a row put to the user has no choice.
-- AC-2: A `deferred` row is put to the user again at every later sprint's scope intake until it is included or rejected; a `rejected` row is never offered again.
+- AC-2: A `deferred` row is put to the user again at every later sprint's scope intake until it is included, rejected or closed (verified resolved at HEAD, shown at the scope gate with its evidence, no question); a `rejected` row is never offered again.
 - AC-3: The scope phase of both workflows (`standard`, `lite`) always runs staged solution design before the `AC-N` are fixed: (a) a requirements interview collecting functional requirements at a detail level sufficient to start design; (b) a web search for best practices of this solution class, with sources; (c) a refinement interview, based on that research, proposing recommended approaches for the user to choose. The main orchestrator conducts both interviews; `asd-ba` performs the web search.
 - AC-4: Stages (a)-(c) work at the level of conceptual approaches and functional requirements only; technical implementation details are left to the design phase (`standard`) or plan (`lite`, collapsed design).
 - AC-5: The research findings and their sources from stage (b), and the approaches chosen in stage (c), are recorded in a sprint artifact a later phase reads.

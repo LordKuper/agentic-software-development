@@ -1,7 +1,7 @@
 {
   "sprint_id": "027-staged-design-retro-intake",
   "branch": "sprint/027-staged-design-retro-intake",
-  "phase": "scope",
+  "phase": "audit",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -32,6 +32,20 @@
       "reason": "026#A-1 A-2 P-2 P-3 included; 026#P-1 P-4 rejected",
       "evidence": "decisions-log.md 2026-10-22 retro intake",
       "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "audit contradictions",
+      "decision_actor": "user",
+      "reason": "C1 settled: closed with evidence; C2-C5 canonical or accepted scope",
+      "evidence": "decisions-log.md 2026-10-22 audit contradiction C1 settled",
+      "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "all sections present, 5 contradictions settled (1 user, 4 canonical/scope), AC-1..AC-10 deliverable",
+      "evidence": "audit.md",
+      "artifact_revision": "audit.md@audit"
     }
   ],
   "task_routing": {},
@@ -55,7 +69,7 @@
     }
   },
   "created_at": "2026-10-22T09:20:33.682Z",
-  "updated_at": "2026-10-22T09:20:33.682Z",
+  "updated_at": "2026-10-22T09:37:41.390Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
