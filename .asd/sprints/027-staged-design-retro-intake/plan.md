@@ -47,19 +47,19 @@ Material risk: change: memory-fix in-phase rule wording
 ### Task 3: Scope workflow, BA scope mode, research readers
 Material risk: change: staged-design workflow steps and BA scope mode
 Reachability: scope writes `<sprint>/research.md` at step 2 stage (c); audit, design and plan read it at entry via the `research` input key
-- [ ] `asd-phase-scope.md`: owner line names `asd-ba`; Entry ops add `context --role asd-ba` and a timing dispatch op; step 2 runs stages (a)-(c) citing `sprint-lifecycle.md` "Staged solution design" and writes `research.md`; step 2a/4 per D1 (explicit three-way choice, consequences per option, gate blocked while a row lacks a choice, `closed` shown with evidence); Re-entry skip list keyed on on-disk evidence per stage; `## Dispatch` row for `asd-ba` with relay branches for `QUESTION`/`ADVICE_NEEDED` and `FAILED`/`ABORT` (D5); Inputs/Exit writes (AC-1..AC-5)
-- [ ] `.asd/skills/asd-phase-scope/SKILL.md` description names the staged design (AC-3)
-- [ ] `asd-ba.md`: `scope` mode (no audit input or `AC-N` required; "missing audit input → ABORT" not firing there), conceptual-only research rule with sources, options, pros/cons, recommendation, `FAILED` on no web access; Tools `web` widened to best-practice research; description reworded within 300 chars (AC-3, AC-4)
-- [ ] `t_retro-backlog.md` comment: dispositions as D1 states (AC-1)
-- [ ] `asd-phase-audit.md`, `asd-phase-design.md`, `asd-phase-plan.md` Inputs: `research` (D3, D4) (AC-4, AC-5)
+- [x] `asd-phase-scope.md`: owner line names `asd-ba`; Entry ops add `context --role asd-ba` and a timing dispatch op; step 2 runs stages (a)-(c) citing `sprint-lifecycle.md` "Staged solution design" and writes `research.md`; step 2a/4 per D1 (explicit three-way choice, consequences per option, gate blocked while a row lacks a choice, `closed` shown with evidence); Re-entry skip list keyed on on-disk evidence per stage; `## Dispatch` row for `asd-ba` with relay branches for `QUESTION`/`ADVICE_NEEDED` and `FAILED`/`ABORT` (D5); Inputs/Exit writes (AC-1..AC-5)
+- [x] `.asd/skills/asd-phase-scope/SKILL.md` description names the staged design (AC-3)
+- [x] `asd-ba.md`: `scope` mode (no audit input or `AC-N` required; "missing audit input → ABORT" not firing there), conceptual-only research rule with sources, options, pros/cons, recommendation, `FAILED` on no web access; Tools `web` widened to best-practice research; description reworded within 300 chars (AC-3, AC-4)
+- [x] `t_retro-backlog.md` comment: dispositions as D1 states (AC-1)
+- [x] `asd-phase-audit.md`, `asd-phase-design.md`, `asd-phase-plan.md` Inputs: `research` (D3, D4) (AC-4, AC-5)
 
 ### Task 4: Phase workflows — memory fixes stay in phase, routing citation
 Material risk: change: memory-fix routing inside impl-test and impl-review
-- [ ] `asd-phase-impl-test.md`: leftover-term and memory hits fixed by the owner's memory-fix dispatch in-entry before the suite gate; step 9 triage memory class; Owner line and Dispatch row (AC-10)
-- [ ] `asd-phase-impl-review.md`: line 17 exceptions; step 8 memory branch ahead of the low-severity test-only predicate; step 9 memory-caused red fixed in place then re-run; Dispatch row (AC-10)
-- [ ] `asd-phase-design-review.md`: memory finding fixed in place with a `resolved:` line (AC-10)
-- [ ] `asd-phase-impl.md`: delete the review-fix/test-fix memory routing (owner line clause, step 3 clauses, step 5 ordering, step 9 memory-path allowances, `<owner>` Dispatch row); step 5a cites `providers.md` "Task-class variants and routing" (AC-7, AC-10)
-- [ ] `asd-tester.md`: leftover-term check line and "Failure triage" route memory hits per D10; description untouched (AC-10)
+- [x] `asd-phase-impl-test.md`: leftover-term and memory hits fixed by the owner's memory-fix dispatch in-entry before the suite gate; step 9 triage memory class; Owner line and Dispatch row (AC-10)
+- [x] `asd-phase-impl-review.md`: line 17 exceptions; step 8 memory branch ahead of the low-severity test-only predicate; step 9 memory-caused red fixed in place then re-run; Dispatch row (AC-10)
+- [x] `asd-phase-design-review.md`: memory finding fixed in place with a `resolved:` line (AC-10)
+- [x] `asd-phase-impl.md`: delete the review-fix/test-fix memory routing (owner line clause, step 3 clauses, step 5 ordering, step 9 memory-path allowances, `<owner>` Dispatch row); step 5a cites `providers.md` "Task-class variants and routing" (AC-7, AC-10)
+- [x] `asd-tester.md`: leftover-term check line and "Failure triage" route memory hits per D10; description untouched (AC-10)
 
 ### Task 5: Test runner name filter and cap removal
 Material risk: artifact: runner filter edge semantics, verified by running the filter
