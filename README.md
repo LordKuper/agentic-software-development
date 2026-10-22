@@ -344,7 +344,7 @@ your-project/
 │   │   ├── stubs.md                 # project-global TODO registry
 │   │   └── retro-backlog.md         # lazy; cross-sprint disposition of open retro rows; /asd-update never touches it
 │   └── sprints/
-│       ├── <NNN-slug>/              # active sprint (one at a time); `research.md` (scope), decisions-log.md, test-plan.md and `timing.jsonl` (the append-only operation-timing ledger, committed with phase bookkeeping) created here; the first two rotate into numbered `decisions-log.NNN.md` / `test-plan.entry-NN.md` segments so neither grows unbounded (`artifact-layout.md`); archived with the sprint
+│       ├── <NNN-slug>/              # active sprint (one at a time); `research.md` (scope), decisions-log.md, test-plan.md and `timing.jsonl` (the append-only operation-timing ledger, committed with phase bookkeeping) created here; decisions-log.md and test-plan.md rotate into numbered `decisions-log.NNN.md` / `test-plan.entry-NN.md` segments so neither grows unbounded (`artifact-layout.md`); archived with the sprint
 │       └── archived/<NNN-slug>/     # moved here by the next sprint's closure write, by the next sprint's scope, with no user gate; completed sprints immutable
 ├── .claude/                         # generated Claude Code view
 │   ├── agents/                      # 16 agent definitions: 12 roles + 4 tier variants (*.md)
