@@ -1,7 +1,7 @@
 {
   "sprint_id": "027-staged-design-retro-intake",
   "branch": "sprint/027-staged-design-retro-intake",
-  "phase": "retro",
+  "phase": "pr",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -201,7 +201,7 @@
     }
   },
   "created_at": "2026-10-22T09:20:33.682Z",
-  "updated_at": "2026-10-22T11:09:38.863Z",
+  "updated_at": "2026-10-22T11:11:33.527Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
