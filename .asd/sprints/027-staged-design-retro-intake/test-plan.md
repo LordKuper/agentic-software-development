@@ -46,7 +46,7 @@ Not added: the decisions-log "names memory-fix" check for impl-review (folded in
 - Scope: full
 - Result: pass — 302/302 passed, exit 0
 - Lint / build: pass — `git diff --cached --check` clean; `node .asd/sync.js --check` `ok: true`
-- HEAD: 71ec63fc3efa81922129b5308afea1b0e09db1dd (plus this entry's test commit)
+- HEAD: f6b88906614be3fa704b5f0ead495b5dbb0c46be (impl-review wave-2/iter-02 terminal full run; exit 0)
 
 ## Defects
 
