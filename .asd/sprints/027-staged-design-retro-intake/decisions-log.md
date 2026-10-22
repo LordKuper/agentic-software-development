@@ -81,3 +81,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-22 — route Task 4: critical, dispatch HEAD 8222783b
 - 2026-10-22 — impl Task 4 flagged choice resolved: AC-10 covers impl, so a memory-check hit on step 7's MEMORY.md commit goes to the owner's memory-fix inside impl (d6bc4204)
 - 2026-10-22 — impl Task 3 flagged choices accepted: state/log seeded before stages; research.md Requirements written before BA dispatch; approach choice is its own hard gate `approach choice` at step 2 (departs from D2 fold under scope gate; rule homes aligned 87bf8b9b); inputs.research in audit/design payloads; BA scope behaviour self-contained in asd-ba.md (R12); asd-ba description reworded (294 chars)
+- 2026-10-22 — route Task 6: standard, dispatch HEAD 7b9edc1a
+- 2026-10-22 — memory-fix (orchestrator plan line): asd-reviewer-correctness 4be59c27, asd-reviewer-combined d0ca0c69, asd-tester-critical 57284955

@@ -69,7 +69,7 @@ Test-only: tests/run.js
 
 ### Task 6: README mirrors
 Material risk: artifact: README mirror rows, verified by `node tests/run.js` §16
-- [ ] README: flowchart scope node (Orchestrator · BA), scope row (staged design, explicit retro choice), impl-review row (memory fixes in phase), `asd-ba` roster role, creator web grants, folder map `research.md` (AC-6)
+- [x] README: flowchart scope node (Orchestrator · BA), scope row (staged design, explicit retro choice), impl-review row (memory fixes in phase), `asd-ba` roster role, creator web grants, folder map `research.md` (AC-6)
 
 ## Risks
 - R7: staged design is mandatory for every sprint, small ones included; cost is one BA dispatch and two interviews per sprint, accepted by the user at scope.

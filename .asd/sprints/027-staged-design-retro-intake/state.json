@@ -85,6 +85,12 @@
       "execution": "agent",
       "reason": "risk:memory-fix routing inside impl-test and impl-review",
       "resolved_model": "opus"
+    },
+    "Task 6": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:README mirror rows",
+      "resolved_model": "sonnet"
     }
   },
   "skipped_phases": [],
@@ -107,7 +113,7 @@
     }
   },
   "created_at": "2026-10-22T09:20:33.682Z",
-  "updated_at": "2026-10-22T10:02:30.268Z",
+  "updated_at": "2026-10-22T10:12:27.865Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
