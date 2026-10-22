@@ -13,7 +13,7 @@ responsibility:
 |---|---|---|
 | 1 | 9b27aa705f4ac6fa0facb6f7346e67befe48c5cc | full change surface (`git diff main...HEAD`, 43 files, Tasks 1-6) |
 | 2 | 81301a214b3b3519a8ce7f14259e7e2c68bc726e | delta `9b27aa70...HEAD` excluding `.asd/sprints` (review-fix wave-1/iter-01, 9 files) |
-| 3 | 7e51f3d6 | delta `81301a21...HEAD` excluding `.asd/sprints` (review-fix wave-2/iter-01, 7 files) |
+| 3 | 7e51f3d6333446ac734b0a380caa0b2fe7bd1584 | delta `81301a21...HEAD` excluding `.asd/sprints` (review-fix wave-2/iter-01, 7 files) |
 
 ## Risk → check decisions
 
