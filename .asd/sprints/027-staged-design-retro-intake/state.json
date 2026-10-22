@@ -1,7 +1,7 @@
 {
   "sprint_id": "027-staged-design-retro-intake",
   "branch": "sprint/027-staged-design-retro-intake",
-  "phase": "plan",
+  "phase": "impl",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -55,7 +55,26 @@
       "artifact_revision": "plan.md@plan"
     }
   ],
-  "task_routing": {},
+  "task_routing": {
+    "Task 1": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:staged-design rule shape and memory-fix phase boundary",
+      "resolved_model": "opus"
+    },
+    "Task 2": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:memory-fix in-phase rule wording",
+      "resolved_model": "opus"
+    },
+    "Task 5": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:runner filter edge semantics",
+      "resolved_model": "sonnet"
+    }
+  },
   "skipped_phases": [],
   "reviews": {
     "design": {
@@ -76,7 +95,7 @@
     }
   },
   "created_at": "2026-10-22T09:20:33.682Z",
-  "updated_at": "2026-10-22T09:54:56.337Z",
+  "updated_at": "2026-10-22T09:55:20.914Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

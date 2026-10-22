@@ -30,19 +30,19 @@ Standing DoD applies (`sprint-lifecycle.md` "Plan file format") — not restated
 
 ### Task 1: Rule docs — staged design, research artifact, memory-fix kind
 Material risk: change: staged-design rule shape and memory-fix phase boundary
-- [ ] `sprint-lifecycle.md`: new "Staged solution design" section holding D2-D5 (stages, roles, conceptual boundary, research scope, offline retry/skip/abort, approach choice under the scope gate); "Orchestration and adaptive gates" — delegation list adds research, the BA line scoped to audit, the retro-intake line states D1 (explicit three-way choice, `closed` with evidence); Phase table scope row (owner "Main orchestrator (BA research)", inputs, output `research.md`); "Input sources" `research` key; "User-resolved findings" `memory-fix` kind; "Phases" line and impl-review row exceptions per D10 (AC-1..AC-5, AC-10)
-- [ ] `artifact-layout.md`: path map entry and new "Research" section for `<sprint>/research.md`; "Agent memory" "Leftover-term check" and "Test plan" memory `D-N` clause per D10 (AC-5, AC-10)
-- [ ] `checkpoints.md`: scope gate inventory row names the stage (c) approach choice and the explicit retro dispositions (AC-1, AC-3)
-- [ ] `git-strategy.md` "Commit before review" "Memory content check": the memory-fix runs in the current phase (AC-10)
-- [ ] new `.asd/templates/t_research.md` per D4; confirm `.asd/release-manifest.json` `managed_paths` covers it (AC-5)
+- [x] `sprint-lifecycle.md`: new "Staged solution design" section holding D2-D5 (stages, roles, conceptual boundary, research scope, offline retry/skip/abort, approach choice under the scope gate); "Orchestration and adaptive gates" — delegation list adds research, the BA line scoped to audit, the retro-intake line states D1 (explicit three-way choice, `closed` with evidence); Phase table scope row (owner "Main orchestrator (BA research)", inputs, output `research.md`); "Input sources" `research` key; "User-resolved findings" `memory-fix` kind; "Phases" line and impl-review row exceptions per D10 (AC-1..AC-5, AC-10)
+- [x] `artifact-layout.md`: path map entry and new "Research" section for `<sprint>/research.md`; "Agent memory" "Leftover-term check" and "Test plan" memory `D-N` clause per D10 (AC-5, AC-10)
+- [x] `checkpoints.md`: scope gate inventory row names the stage (c) approach choice and the explicit retro dispositions (AC-1, AC-3)
+- [x] `git-strategy.md` "Commit before review" "Memory content check": the memory-fix runs in the current phase (AC-10)
+- [x] new `.asd/templates/t_research.md` per D4; confirm `.asd/release-manifest.json` `managed_paths` covers it (AC-5)
 
 ### Task 2: Rule docs — routing keys, empty findings table, fail-first filter, memory-fix home
 Material risk: change: memory-fix in-phase rule wording
-- [ ] `review-policy.md`: "Memory-fix dispatch" and "Where the fix happens" per D10; "Gate Verdict Format" "Findings table." per D8 (AC-8, AC-10)
-- [ ] `providers.md` "Task-class variants and routing" per D7 (AC-7)
-- [ ] `code-style.md` §17 content-contract bullet per D9 (AC-9)
-- [ ] `t_review.md` and `external-review/t_review-report.md`: drop the placeholder-row instruction per D8 (AC-8)
-- [ ] `runtime.js` `reviewFindings` JSDoc: the `—` row is legacy tolerance, not the empty-table form (AC-8)
+- [x] `review-policy.md`: "Memory-fix dispatch" and "Where the fix happens" per D10; "Gate Verdict Format" "Findings table." per D8 (AC-8, AC-10)
+- [x] `providers.md` "Task-class variants and routing" per D7 (AC-7)
+- [x] `code-style.md` §17 content-contract bullet per D9 (AC-9)
+- [x] `t_review.md` and `external-review/t_review-report.md`: drop the placeholder-row instruction per D8 (AC-8)
+- [x] `runtime.js` `reviewFindings` JSDoc: the `—` row is legacy tolerance, not the empty-table form (AC-8)
 
 ### Task 3: Scope workflow, BA scope mode, research readers
 Material risk: change: staged-design workflow steps and BA scope mode
@@ -64,8 +64,8 @@ Material risk: change: memory-fix routing inside impl-test and impl-review
 ### Task 5: Test runner name filter and cap removal
 Material risk: artifact: runner filter edge semantics, verified by running the filter
 Test-only: tests/run.js
-- [ ] `--filter <substring>` in `runAll` per D9 (fixed substring, matched count printed, zero matches exit non-zero) (AC-9)
-- [ ] remove the phase-workflow byte-cap assertion and `CAP_PHASE_WORKFLOWS_BYTES`; keep the standalone-skills cap (D6)
+- [x] `--filter <substring>` in `runAll` per D9 (fixed substring, matched count printed, zero matches exit non-zero) (AC-9)
+- [x] remove the phase-workflow byte-cap assertion and `CAP_PHASE_WORKFLOWS_BYTES`; keep the standalone-skills cap (D6)
 
 ### Task 6: README mirrors
 Material risk: artifact: README mirror rows, verified by `node tests/run.js` §16

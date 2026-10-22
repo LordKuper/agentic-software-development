@@ -74,3 +74,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: plan.md D1-D10, Tasks 1-6 in 3 waves accepted by the user (explicit `accept`). D6 removes the phase-workflow byte cap (sprint-026 AC-15 assert) by user decision; the skills cap and D13 ceilings stay. D5 adds a user-decided skip of stage (b) when web research is unavailable.
 - **Rationale**: User answers to R1 ("remove the cap entirely") and R6 ("also allow a skip by user decision").
 - **Affected docs**: plan.md
+- 2026-10-22 — route Task 1: critical, dispatch HEAD b9c6c03a
+- 2026-10-22 — route Task 2: critical, dispatch HEAD b9c6c03a
+- 2026-10-22 — route Task 5: standard, dispatch HEAD b9c6c03a
