@@ -6726,6 +6726,8 @@ test('sprint-020 AC-8: review-policy.md "Low-severity test-only findings" states
 
   const recovery = sectionOf('.asd/rules/sprint-lifecycle.md', 'State recovery').split('\n').find((line) => line.startsWith('**User-resolved findings**')) || '';
   const kinds = (/`resolved: [^`]*? — <([^>]+)>, <YYYY-MM-DD>`/.exec(recovery) || [])[1];
+  assert.ok(trigger.includes('no `FAIL` verdict short of satisfied') && trigger.includes('"User-resolved findings"'), 'AC-8 (mixed findings): a FAIL whose findings are all resolved is satisfied, so the trigger must not exclude it by verdict alone - a resolved FAIL beside test-only low findings would otherwise never reach the tester');
+  assert.ok(/\bFAIL\b[^.]*\bsatisfied\b/.test(recovery), 'AC-8 (mixed findings): User-resolved findings declares a fully resolved FAIL satisfied');
   assert.ok(kinds && kinds.split('|').map((kind) => kind.trim()).includes('test-fix'), 'sprint-lifecycle.md "State recovery" "User-resolved findings" must admit the test-fix kind, or a verdict whose findings the tester fixed never counts as satisfied');
   const admitted = kinds.split('|').map((kind) => kind.trim());
   const written = canonMarkdownFiles().flatMap((rel) => [...canonText(rel).matchAll(/`resolved: [^`]*? — ([a-z-]+), <YYYY-MM-DD>`/g)].map((match) => `${rel}: ${match[1]}`));
@@ -8259,6 +8261,14 @@ test('sprint-027 AC-10 (D10): every phase review-policy.md "Memory-fix dispatch"
   const phases = named[1].split(/, | or /);
   const citing = fs.readdirSync(path.join(REPO_ROOT, '.asd', 'workflows')).filter((file) => /^asd-phase-.+\.md$/.test(file)).filter((file) => canonText(`.asd/workflows/${file}`).includes('"Memory-fix dispatch"')).map((file) => file.replace(/^asd-phase-|\.md$/g, ''));
   assert.deepStrictEqual(citing.sort(), [...phases].sort(), 'AC-10: exactly the phases the home lists cite it - a phase left out silently leaves its memory hit with no owner, one added fixes a hit the rule says it must not');
+  assert.ok(home.includes('in a phase whose workflow names no step') && home.includes("at the commit where it arises, before that phase's COMPLETED"), 'AC-10: a phase whose workflow names no memory-fix step (scope, audit, design, design-promote) still meets a memory-check hit at its orchestrator memory commit - the home must say the fix happens there, before that phase COMPLETED, or the hit has no acting site');
+  const memoryCheck = headingBody('.asd/rules/git-strategy.md', 'Commit before review').split('\n').find((line) => line.startsWith('**Memory content check**')) || '';
+  assert.ok(memoryCheck.includes("before that phase's COMPLETED") && memoryCheck.includes('`review-policy.md` "Memory-fix dispatch"'), 'AC-10: the memory-check sentence must carry the same before-COMPLETED timing as its home, or the commit-site statement and the home disagree');
+  const implReviewWrites = jsonOf('.asd/workflows/asd-phase-impl-review.md', 'Exit').writes;
+  const memoryFixWrite = implReviewWrites.find((entry) => entry.includes('memory-fix commits')) || '';
+  assert.ok(memoryFixWrite.includes('by the owner or orchestrator') && !implReviewWrites.some((entry) => /asd-tester[^"]*and memory-fix/.test(entry)), 'CB-2: impl-review Exit writes attributes memory-fix commits to the owner or orchestrator, never to asd-tester');
+  assert.ok(implReviewWrites.some((entry) => entry.startsWith('decisions-log entry') && entry.includes('memory-fix')), 'CB-2: the memory-fix decisions-log line the home requires is listed in impl-review Exit writes');
+  assert.ok(jsonOf('.asd/workflows/asd-phase-design-review.md', 'Exit').writes.some((entry) => entry.includes('resolved: lines') && entry.includes('memory-fix commits')), 'CB-2: design-review Exit writes lists the memory-fix resolved: lines and commits its step 9 produces');
   for (const phase of phases) {
     const lines = canonText(`.asd/workflows/asd-phase-${phase}.md`).split('\n').filter((line) => line.includes('"Memory-fix dispatch"') && !line.startsWith('Owner:') && !line.startsWith('impl-review fixes no CODE'));
     assert.ok(lines.length > 0, `AC-10: asd-phase-${phase}.md must act on the dispatch at a step, not only in its header`);

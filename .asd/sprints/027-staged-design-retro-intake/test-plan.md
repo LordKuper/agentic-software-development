@@ -13,13 +13,14 @@ responsibility:
 |---|---|---|
 | 1 | 9b27aa705f4ac6fa0facb6f7346e67befe48c5cc | full change surface (`git diff main...HEAD`, 43 files, Tasks 1-6) |
 | 2 | 81301a214b3b3519a8ce7f14259e7e2c68bc726e | delta `9b27aa70...HEAD` excluding `.asd/sprints` (review-fix wave-1/iter-01, 9 files) |
+| 3 |  | delta `81301a21...HEAD` excluding `.asd/sprints` (review-fix wave-2/iter-01, 7 files) |
 
 ## Risk → check decisions
 
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
-| Review-fix wave-1/iter-01 (CB-1..CB-5, F1, F2): scope step 2 stage-by-stage persistence, placeholder-free re-entry evidence, `t_research.md` `Raw scope` line, design step 10 `inputs.research` | a session lost between stages re-enters with a stale or placeholder-filled `research.md` and skips or redoes a stage; step 10 architect redoes the research; the raw scope has no written home | static contract | extend | four asserts added to the two existing sprint-027 AC-5 tests: re-entry line names the `{{` placeholder rule, step (b) writes Findings and Approaches at `COMPLETED`, every design Dispatch entry derived from the JSON carries `inputs.research`, template `Raw scope` line with its scope writer |
-| `sprint-lifecycle.md` / `t_retro-backlog.md` / README trims (CB-3, CB-4, CB-5), reviewer memory file | restatement removed, pointer kept | none | none | wording only; the intake pin (sprint-019) and README mirror checks stay green; leftover-term sweep over the removed sentences found no remaining hit in canon, README, templates or agent memory (one regex in `tests/run.js:6290` is a live assertion, not a leftover) |
+| Review-fix wave-2/iter-01 (CB-1, CB-2, external 1): memory-fix timing in a phase with no step, Exit `writes` attribution, `FAIL` verdict in the low-severity trigger | a `memory-check` hit in scope/audit/design/design-promote has no acting site; Exit `writes` credits `asd-tester` with a memory-fix commit or omits the decisions-log/resolved: lines; a fully resolved `FAIL` plus test-only low findings never reaches the tester | static contract | extend | asserts added to the sprint-027 AC-10 test (home clause, `git-strategy.md` timing, both Exit `writes` lists) and the sprint-020 AC-8 test (trigger token, resolved-`FAIL`-is-satisfied declaration). "Admits `memory-fix`" is already covered by that test's `resolved:` kind sweep, so no new assert |
+| Reviewer memory file (`asd-reviewer-combined`) | n/a | none | none | agent memory is not tested; leftover-term sweep over the lines the delta removed found no remaining hit outside the review return scratch file |
 
 ## Removed tests
 
@@ -31,20 +32,21 @@ responsibility:
 
 | Test | Regression proof |
 |---|---|
-| tests/run.js: sprint-027 AC-3/AC-4/AC-5 (D2-D4) re-entry placeholder rule | mutation (scope step 2 re-entry loses "each counting only with content and no `{{` placeholder"): `node tests/run.js --filter "sprint-027 AC-3/AC-4/AC-5"` → exit 1, FAIL "sprint-027 AC-3/AC-4/AC-5 (D2-D4)", matched 1/302; control (step (b) "at once" → "immediately", tokens kept): same filter and `--filter "sprint-027 AC-5 (D4/D5)"` → exit 0, matched 1/302 each; runs: 2 |
-| tests/run.js: sprint-027 AC-3/AC-4/AC-5 (D2-D4) stage (b) persists at COMPLETED | mutation (step (b) loses its `COMPLETED` → write Findings and Approaches clause): same filter → exit 1, FAIL "sprint-027 AC-3/AC-4/AC-5 (D2-D4)", matched 1/302; runs: 1 |
-| tests/run.js: sprint-027 AC-3/AC-4/AC-5 (D2-D4) design Dispatch `inputs.research` | mutation (step 10 payload loses `inputs.research`): same filter → exit 1, FAIL "sprint-027 AC-3/AC-4/AC-5 (D2-D4)", matched 1/302; runs: 1 |
-| tests/run.js: sprint-027 AC-5 (D4/D5) `Raw scope` line | mutation (`- Raw scope:` line removed from t_research.md): `--filter "sprint-027 AC-5 (D4/D5)"` → exit 1, FAIL "sprint-027 AC-5 (D4/D5)", matched 1/302; runs: 1 |
+| tests/run.js: sprint-027 AC-10 home no-step clause and `git-strategy.md` timing | mutation 1 (home loses the no-step clause, superseded text restored): `node tests/run.js --filter "sprint-027 AC-10"` → exit 1, FAIL "sprint-027 AC-10 (D10)…", matched 1/302; mutation 2 (`Memory content check` loses "before that phase's COMPLETED", citation kept): same → exit 1; control (home "such as" → "for example", tokens kept): same → exit 0, matched 1/302; runs: 3 |
+| tests/run.js: sprint-027 AC-10 impl-review Exit `writes` attribution and decisions-log entry | mutation (entry back to "asd-tester test-fix and memory-fix commits"): same filter → exit 1, matched 1/302; runs: 1 |
+| tests/run.js: sprint-027 AC-10 design-review Exit `writes` memory-fix entry | mutation (entry removed): same filter → exit 1, matched 1/302; runs: 1 |
+| tests/run.js: sprint-020 AC-8 trigger `FAIL` verdict short of satisfied | mutation (trigger back to "no `FAIL` verdict", citation dropped): `--filter "sprint-020 AC-8"` → exit 1, FAIL "sprint-020 AC-8: …", matched 1/302; control ("Both workflows," → "Both workflows;", tokens kept): exit 0, matched 1/302; runs: 2 |
+| tests/run.js: sprint-020 AC-8 `User-resolved findings` declares a resolved `FAIL` satisfied | mutation (`"FAIL"` removed from the bare-verdict sentence): same filter → exit 1, matched 1/302; runs: 1 |
 
-All mutations ran through the filter only and were restored in the same command; `git status` showed only `tests/run.js` modified afterwards.
+Not added: the decisions-log "names memory-fix" check for impl-review (folded into the AC-10 row). All mutations ran through `--filter` only via a script that restores the file in a `finally`; `git status` afterwards showed only `tests/run.js` modified.
 
 ## Suite run
 
-- Command: `node tests/run.js` (full suite: `tests/run.js` is the shared-infrastructure file, so the safety valve degrades the impacted set to everything)
+- Command: `node tests/run.js` (full suite: `tests/run.js` is shared infrastructure)
 - Scope: full
 - Result: pass — 302/302 passed, exit 0
-- Lint / build: pass — `git diff --cached --check` clean; `node .asd/sync.js --check` exit 0, `ok: true`
-- HEAD: a5e8dca35dd86b704b15487f99a8681f658b2608 (plus this entry's test commit)
+- Lint / build: pass — `git diff --cached --check` clean; `node .asd/sync.js --check` `ok: true`
+- HEAD: 71ec63fc3efa81922129b5308afea1b0e09db1dd (plus this entry's test commit)
 
 ## Defects
 
