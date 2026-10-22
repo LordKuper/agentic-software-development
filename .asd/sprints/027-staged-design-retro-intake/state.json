@@ -1,7 +1,7 @@
 {
   "sprint_id": "027-staged-design-retro-intake",
   "branch": "sprint/027-staged-design-retro-intake",
-  "phase": "impl-test",
+  "phase": "impl-review",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -117,6 +117,19 @@
       "wave": 1,
       "waves": [
         {
+          "iteration": 1,
+          "verdicts": {
+            "iter-01": {
+              "combined": "CONCERNS",
+              "external": "CONCERNS"
+            }
+          },
+          "iteration_heads": {
+            "iter-01": "e4627b2f283d0b801c16ada033014ab00611e67b"
+          },
+          "latched": {}
+        },
+        {
           "iteration": 0,
           "verdicts": {},
           "iteration_heads": {},
@@ -126,8 +139,8 @@
     }
   },
   "created_at": "2026-10-22T09:20:33.682Z",
-  "updated_at": "2026-10-22T10:33:41.824Z",
-  "review_fixes_pending": null,
+  "updated_at": "2026-10-22T10:40:51.815Z",
+  "review_fixes_pending": "wave-1/iter-01",
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null

@@ -87,3 +87,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-22 — route impl-test entry 1: standard, dispatch HEAD 83783226; risk artifact: content-contract pins via node tests/run.js
 - 2026-10-22 — impl-test step 7a: memory hits fixed in entry 1 by owner memory-fix (asd-reviewer-correctness 4fd7a2d7, asd-reviewer-documentation 9b27aa70); suite gate re-run green 302/302
 - 2026-10-22 — impl-test: impacted set green (302/302), 6/0 tests
+- 2026-10-22 — impl-review divided into 2 waves (lines 534, files 34, bytes 211476): wave 1 staged design + retro intake (scope/BA/research, README); wave 2 memory-fix in phase, route-task keys, empty findings table, runner filter
+- 2026-10-22 — impl-review wave-1/iter-01: combined CONCERNS (CB-1 high, CB-2..CB-4 medium, CB-5 low), external CONCERNS (F1, F2 medium) → impl review-fix (wave-1/iter-01)
