@@ -95,3 +95,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-22 — impl-test: impacted set green (302/302), entry 2 4 asserts added/0 removed
 - 2026-10-22 — impl-review wave-1/iter-02: combined APPROVE, external APPROVE (transcribed: placeholder row removed, F-1) → wave 1 roster met; wave 2 opens
 - 2026-10-22 — impl-review wave-2/iter-01: combined CONCERNS (CB-1 medium, CB-2 low), external CONCERNS (1 medium) → impl review-fix (wave-2/iter-01)
+- 2026-10-22 — route review-fix wave-2/iter-01: critical, dispatch HEAD 401611b7; risk change: memory-fix phase coverage
+- 2026-10-22 — impl fix for wave-2/iter-01: findings resolved (CB-1 76783e27, 1 d188249e, CB-2 054c56d8); test pins left to impl-test entry 3

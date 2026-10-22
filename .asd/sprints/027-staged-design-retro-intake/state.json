@@ -116,6 +116,18 @@
       "execution": "agent",
       "reason": "artifact-risk:content-contract pins",
       "resolved_model": "sonnet"
+    },
+    "review-fix wave-2/iter-01": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:memory-fix phase coverage",
+      "resolved_model": "opus"
+    },
+    "impl-test entry 3": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:content-contract pins",
+      "resolved_model": "sonnet"
     }
   },
   "skipped_phases": [],
@@ -166,8 +178,8 @@
     }
   },
   "created_at": "2026-10-22T09:20:33.682Z",
-  "updated_at": "2026-10-22T10:57:33.091Z",
-  "review_fixes_pending": "wave-2/iter-01",
+  "updated_at": "2026-10-22T11:00:48.426Z",
+  "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null
