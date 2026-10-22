@@ -103,3 +103,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-22 — route impl-review wave-2/iter-02 suite: standard, dispatch HEAD f6b88906; risk none via node tests/run.js
 - 2026-10-22 — impl-review DoD met: terminal full suite green 302/302 at f6b88906; green handoff (adaptive) → NEXT design-promote (lite)
 - 2026-10-22 — design-promote skipped: lite, no enabled document (prd/ux_spec/adr/c4 false)
+- 2026-10-22 — retro: retrospective.html written (2 entries, 1 framework action + 1 covered, 2 systemic proposals, analysed branch)

@@ -90,3 +90,4 @@
 {"op":"open","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-10-22T11:09:28.625Z","attrs":{}}
 {"op":"close","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-10-22T11:09:28.625Z","end":"2026-10-22T11:09:34.534Z","outcome":"done","attrs":{}}
 {"op":"open","id":"retro#1","kind":"phase","parent":null,"start":"2026-10-22T11:09:34.534Z","attrs":{}}
+{"op":"close","id":"retro#1","kind":"phase","parent":null,"start":"2026-10-22T11:09:34.534Z","end":"2026-10-22T11:10:45.965Z","outcome":"done","attrs":{}}
