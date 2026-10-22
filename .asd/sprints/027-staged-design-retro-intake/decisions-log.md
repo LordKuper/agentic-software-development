@@ -1,0 +1,60 @@
+---
+responsibility:
+  owns: approved decisions for THIS sprint
+  excludes: cross-sprint/durable decisions, sprint state, review notes
+  delegates_to: docs/** + adr fold targets (durable design decisions), CHANGELOG.md (releases), .asd/project/stubs.md (standing open defects), .asd/project/retro-backlog.md (retro row dispositions), state.json (state), reviews/ (verdicts)
+---
+
+# Decisions Log
+
+Per-sprint, append-only. Never edited or removed. Created at `scope`, rotated at phase entry (`.asd/rules/artifact-layout.md` "Decisions log"), archived with the sprint.
+
+## Entry format
+
+```markdown
+## YYYY-MM-DD — <one-line summary>
+
+- **Decision**: <what was decided> (≤3 sentences)
+- **Rationale**: <why> (≤3 sentences)
+- **Affected docs**: <links> (unrestricted)
+```
+
+A no-op skip, other zero-content decision, dispatch routing line or failed-dispatch reconstruction uses the one-line form instead:
+
+```markdown
+- YYYY-MM-DD — <phase> skipped: <reason>
+- YYYY-MM-DD — route <taskIds>: <tier>, dispatch HEAD <sha>[; risk <declaration>]
+- YYYY-MM-DD — reconstruction: landed <ids>; re-dispatched <ids>
+- YYYY-MM-DD — stall: <agent> <dispatch ids>
+```
+
+## Durability rule
+
+A decision whose value must survive this sprint's archival is ALSO written into an existing persistent home — a `docs/` fold target, `CHANGELOG.md`, `.asd/project/stubs.md`, or `.asd/project/retro-backlog.md` (retro row dispositions). Never invent a new document type for this. This log records that the decision was made; the persistent home is what a later sprint can still read.
+
+## Entries
+
+<!-- entries appended below this line -->
+
+## 2026-10-22 — sprint opened
+
+- **Decision**: Sprint 027 opened on workflow `lite` (user answer in chat); 026-structured-specs closed by this branch's first commit (PR #62 merged at d352100f, release v13.9.0 published, no retry).
+- **Rationale**: Rule-doc edits only; the design block would collapse under `standard` anyway (prd/ux_spec/adr disabled).
+- **Affected docs**: sprint.md, state.json
+
+- 2026-10-22 — retro intake verified at HEAD 8d5f2137: 026#A-1 open (providers.md names none of route-task's input keys); 026#A-2 open (no empty-findings-table rule in review-policy.md); 026#P-1 open (no per-dispatch load rule); 026#P-2 open (artifact-layout.md "Leftover-term check" defines no in-entry memory fix); 026#P-3 open (code-style.md bounds mutation count, not the runner scope); 026#P-4 open (in-place fix limited to low-severity test-only findings)
+- 2026-10-22 — staged design (AC-3) verified absent at HEAD 8d5f2137: no interview or research step in asd-phase-scope/audit/design/plan.md
+
+## 2026-10-22 — scope gate
+
+- **Decision**: sprint.md AC-1..AC-10 accepted as one sprint (no split). Staged design lives in scope for both workflows, is always mandatory and stays at concept/functional level; the orchestrator conducts both interviews, `asd-ba` performs the web search. Retro 026#P-2 included generalised: any agent-memory edit stays in the current phase.
+- **Rationale**: Both strands edit the scope phase; the user directed placement, mandatoriness, roles and the P-2 generalisation.
+- **Affected docs**: sprint.md
+
+## 2026-10-22 — retro intake
+
+- **Decision**: 026#A-1, A-2, P-3 included (AC-7..AC-9); 026#P-2 included generalised (AC-10); 026#P-1 and 026#P-4 rejected.
+- **Rationale**: User decision per row after cause, edits and consequences were shown.
+- **Affected docs**: .asd/project/retro-backlog.md
+
+- 2026-10-22 — audit frozen true: documents.audit=auto and scope changes behaviour and gates
