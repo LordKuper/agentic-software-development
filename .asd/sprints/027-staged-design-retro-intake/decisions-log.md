@@ -97,3 +97,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-22 — impl-review wave-2/iter-01: combined CONCERNS (CB-1 medium, CB-2 low), external CONCERNS (1 medium) → impl review-fix (wave-2/iter-01)
 - 2026-10-22 — route review-fix wave-2/iter-01: critical, dispatch HEAD 401611b7; risk change: memory-fix phase coverage
 - 2026-10-22 — impl fix for wave-2/iter-01: findings resolved (CB-1 76783e27, 1 d188249e, CB-2 054c56d8); test pins left to impl-test entry 3
+- 2026-10-22 — route impl-test entry 3: standard, dispatch HEAD 71ec63fc; risk artifact: content-contract pins via node tests/run.js
+- 2026-10-22 — impl-test: impacted set green (302/302), entry 3 asserts added/0 removed
