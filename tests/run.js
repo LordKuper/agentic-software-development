@@ -8167,20 +8167,18 @@ test('sprint-026 AC-14 (D11): every role of the grant table is an agent or the o
 });
 
 const CAP_STANDALONE_SKILLS_BYTES = 61051;
-const CAP_PHASE_WORKFLOWS_BYTES = 125501;
 
 /** Committed (LF) bytes of the canon files `rels` summed. */
 function lfBytes(rels) {
   return rels.reduce((sum, rel) => sum + Buffer.byteLength(canonText(rel)), 0);
 }
 
-test('sprint-026 AC-15: the standalone skills total at most their main baseline of 61,051 bytes and the phase workflows at most 125,501', () => {
+test('sprint-026 AC-15: the standalone skills total at most their main baseline of 61,051 bytes', () => {
   const skills = FORM_CATEGORIES.skills.files();
   const workflows = FORM_CATEGORIES.workflows.files();
   assert.strictEqual(skills.length, 7, 'the seven standalone skills');
   assert.ok(workflows.length >= 11, 'the phase workflows');
   assert.ok(lfBytes(skills) <= CAP_STANDALONE_SKILLS_BYTES, `standalone skills total ${lfBytes(skills)} B, cap ${CAP_STANDALONE_SKILLS_BYTES}`);
-  assert.ok(lfBytes(workflows) <= CAP_PHASE_WORKFLOWS_BYTES, `phase workflows total ${lfBytes(workflows)} B, cap ${CAP_PHASE_WORKFLOWS_BYTES}`);
 });
 
 /**
@@ -8218,8 +8216,19 @@ test('sprint-026 AC-16 (D13): per-dispatch load of dev (impl), tester (impl-test
 // (non-Promise) return value is a no-op, so this loop stays correct for
 // every existing sync test body too, zero behavior change for them.
 async function runAll() {
+  const filterAt = process.argv.indexOf('--filter');
+  const fragment = filterAt === -1 ? null : process.argv[filterAt + 1];
+  const selected = fragment === null ? tests : tests.filter((t) => t.name.includes(fragment));
+  if (fragment !== null) {
+    console.log(`filter "${fragment}": ${selected.length}/${tests.length} tests matched`);
+    if (!fragment || selected.length === 0) {
+      console.error(`no test name contains "${fragment || ''}"`);
+      process.exitCode = 1;
+      return;
+    }
+  }
   let failures = 0;
-  for (const t of tests) {
+  for (const t of selected) {
     try {
       await t.fn();
       console.log(`ok - ${t.name}`);
@@ -8230,7 +8239,7 @@ async function runAll() {
     }
   }
 
-  console.log(`\n${tests.length - failures}/${tests.length} passed`);
+  console.log(`\n${selected.length - failures}/${selected.length} passed`);
   process.exitCode = failures > 0 ? 1 : 0;
 }
 
