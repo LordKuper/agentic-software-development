@@ -8190,6 +8190,12 @@ test('sprint-027 AC-3/AC-4/AC-5 (D2-D4): staged solution design has one home, sc
   for (const evidence of ['Requirements', 'Findings', 'Chosen']) {
     assert.ok(reentry.includes(evidence) && template.includes(evidence), `AC-5: the scope re-entry skips a stage only by its ${evidence} evidence in research.md, so t_research.md must carry it`);
   }
+  assert.ok(reentry.includes('`{{` placeholder'), 'AC-5: re-entry counts a stage done only when its section holds no template placeholder, or a freshly seeded research.md skips every stage');
+  const stageB = step.split('\n').find((line) => line.includes('(b) Dispatch')) || '';
+  assert.ok(/`COMPLETED`[^`]*write[^`]*Findings and Approaches/.test(stageB), 'AC-5: the BA return body is written at its COMPLETED, so a session lost before stage (c) re-enters with Findings evidence');
+  for (const entry of jsonOf('.asd/workflows/asd-phase-design.md', 'Dispatch')) {
+    assert.ok(entry.payload.includes('inputs.research'), `AC-5: the design dispatch at ${entry.when} must pass inputs.research, or that creator redoes the stage (b) research`);
+  }
 });
 
 test('sprint-027 AC-5 (D4/D5): t_research.md keeps the sections the scope workflow writes and later phases read, each finding carries a source, the offline skip line is the one the home states, and artifact-layout.md maps and describes research.md', () => {
@@ -8199,6 +8205,7 @@ test('sprint-027 AC-5 (D4/D5): t_research.md keeps the sections the scope workfl
   assert.ok(/^responsibility:\n  owns:/.test(template.replace(/^---\n/, '')), 'AC-5: t_research.md opens with the responsibility frontmatter every template carries');
   assert.ok(/^- \{\{finding\}\} — source: \{\{URL\}\}$/m.test(template), 'AC-5: a finding row carries its source URL');
   assert.ok(/^- Recommended: /m.test(template) && /^- Chosen: /m.test(template), 'AC-5: Approaches records the recommendation and the user\'s choice separately');
+  assert.ok(/^- Raw scope: /m.test(template) && canonText('.asd/workflows/asd-phase-scope.md').includes('write the raw scope'), 'AC-5: the raw scope the covers-strands-only boundary refers to has a template line and a scope writer');
   const home = headingBody('.asd/rules/sprint-lifecycle.md', 'Staged solution design');
   assert.ok(home.includes('`no web research: <cause>`'), 'D5: the offline skip line is stated at the home');
   assert.ok(canonText('.asd/workflows/asd-phase-scope.md').includes('`no web research: <cause>`'), 'D5: scope step 2 writes the same skip line the home states');
