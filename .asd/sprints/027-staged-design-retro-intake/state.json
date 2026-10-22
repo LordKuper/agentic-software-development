@@ -1,7 +1,7 @@
 {
   "sprint_id": "027-staged-design-retro-intake",
   "branch": "sprint/027-staged-design-retro-intake",
-  "phase": "impl",
+  "phase": "impl-test",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -110,6 +110,12 @@
       "execution": "agent",
       "reason": "risk:staged-design re-entry evidence",
       "resolved_model": "opus"
+    },
+    "impl-test entry 2": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:content-contract pins",
+      "resolved_model": "sonnet"
     }
   },
   "skipped_phases": [],
@@ -145,7 +151,7 @@
     }
   },
   "created_at": "2026-10-22T09:20:33.682Z",
-  "updated_at": "2026-10-22T10:44:06.910Z",
+  "updated_at": "2026-10-22T10:44:18.163Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

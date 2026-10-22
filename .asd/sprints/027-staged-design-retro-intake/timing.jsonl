@@ -48,3 +48,9 @@
 {"op":"open","id":"impl#2","kind":"phase","parent":null,"start":"2026-10-22T10:40:51.938Z","attrs":{}}
 {"op":"open","id":"review-fix wave-1/iter-01","kind":"dispatch","parent":"impl#2","start":"2026-10-22T10:41:01.554Z","attrs":{"agent":"asd-dev-critical"}}
 {"op":"close","id":"review-fix wave-1/iter-01","kind":"dispatch","parent":"impl#2","start":"2026-10-22T10:41:01.554Z","end":"2026-10-22T10:44:06.688Z","outcome":"done","attrs":{"agent":"asd-dev-critical"}}
+{"op":"close","id":"impl#2","kind":"phase","parent":null,"start":"2026-10-22T10:40:51.938Z","end":"2026-10-22T10:44:07.153Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-test#2","kind":"phase","parent":null,"start":"2026-10-22T10:44:07.153Z","attrs":{}}
+{"op":"open","id":"impl-test entry 2","kind":"dispatch","parent":"impl-test#2","start":"2026-10-22T10:44:18.325Z","attrs":{"agent":"asd-tester"}}
+{"op":"close","id":"impl-test entry 2","kind":"dispatch","parent":"impl-test#2","start":"2026-10-22T10:44:18.325Z","end":"2026-10-22T10:47:31.293Z","outcome":"done","attrs":{"agent":"asd-tester"}}
+{"op":"close","id":"impl-test#2","kind":"phase","parent":null,"start":"2026-10-22T10:44:07.153Z","end":"2026-10-22T10:47:31.460Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-review#2","kind":"phase","parent":null,"start":"2026-10-22T10:47:31.460Z","attrs":{}}
