@@ -1,7 +1,7 @@
 {
   "sprint_id": "027-staged-design-retro-intake",
   "branch": "sprint/027-staged-design-retro-intake",
-  "phase": "impl-review",
+  "phase": "design-promote",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -143,7 +143,9 @@
       "resolved_model": "sonnet"
     }
   },
-  "skipped_phases": [],
+  "skipped_phases": [
+    "design-promote"
+  ],
   "reviews": {
     "design": {
       "iteration": 0,
@@ -199,7 +201,7 @@
     }
   },
   "created_at": "2026-10-22T09:20:33.682Z",
-  "updated_at": "2026-10-22T11:09:28.564Z",
+  "updated_at": "2026-10-22T11:09:34.474Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
