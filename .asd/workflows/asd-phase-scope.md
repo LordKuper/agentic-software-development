@@ -26,11 +26,11 @@ Owner: inline orchestrator; dispatches `asd-ba`.
 
    **Re-entry**: skip each sub-step already done — fast-forward, clean tree, branch, closure write, folder and ledger, workflow choice, state seed, Goal (it stands as the raw scope) — then continue at step 2.
 2. Seed state and decisions log; a carried ASD update choice takes a `gate_decisions` entry `gate: asd update`, `decision_actor: user`, and one decisions-log line. Then run staged solution design (`sprint-lifecycle.md` "Staged solution design") before any `AC-N` is written:
-   - (a) Interview the user in chat; write the answers to `<sprint>/research.md` Requirements (`t_research.md`).
-   - (b) Dispatch `asd-ba` in `scope` mode (`## Dispatch`). Its `FAILED` → request user decision: retry, skip (one decisions-log line; Findings reads `no web research: <cause>`) or abort [GATE hard: abort]; its `ABORT` → relay, halt.
-   - (c) Refinement interview, then request user decision on the approach [GATE hard: approach choice]; write the return body's findings and approaches, the refined requirements and the chosen approach to `research.md`, plus one decisions-log line.
+   - (a) Interview the user in chat; write the raw scope and the answers to `<sprint>/research.md` Requirements (`t_research.md`), that section only.
+   - (b) Dispatch `asd-ba` in `scope` mode (`## Dispatch`). Its `COMPLETED` → write the return body's Findings and Approaches to `research.md` at once. Its `FAILED` → request user decision: retry, skip (write Findings `no web research: <cause>` then, plus one decisions-log line) or abort [GATE hard: abort]; its `ABORT` → relay, halt.
+   - (c) Refinement interview, then request user decision on the approach [GATE hard: approach choice]; write the refined requirements and the `Chosen` line to `research.md`, plus one decisions-log line.
    - BA `QUESTION` → `agent-protocol.md` "Relay" `QUESTION`; BA `ADVICE_NEEDED` → "Relay" `ADVICE_NEEDED`.
-   - **Re-entry**: skip the seed once `state.json` exists, and each stage `research.md` already evidences — (a) Requirements, (b) Findings, (c) a `Chosen` line.
+   - **Re-entry**: skip the seed once `state.json` exists, and each stage `research.md` already evidences — (a) Requirements, (b) Findings, (c) a `Chosen` line — each counting only with content and no `{{` placeholder.
 
    Then refine scope into `sprint.md` with stable `AC-N` ids from `research.md`; ask the user only for ambiguity that prevents a concrete scope. Verify every retrospective-derived criterion against current `HEAD` — one asserting host behaviour also against the host docs or a live dispatch — before writing it, and record that verification in `decisions-log.md` per `sprint-lifecycle.md` "Orchestration and adaptive gates".
 2a. **Retro intake** — offer open retro rows:

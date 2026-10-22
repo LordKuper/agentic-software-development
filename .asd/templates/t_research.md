@@ -10,7 +10,8 @@ responsibility:
 <!-- Stages, conceptual boundary, no-web-research Findings line: .asd/rules/sprint-lifecycle.md "Staged solution design" — not restated here. -->
 
 ## Requirements
-Stage (a) answers, refined at stage (c).
+Raw scope and stage (a) answers; stage (c) refines the answers.
+- Raw scope: {{raw scope}}
 - Problem: {{problem}}
 - Actors: {{actors}}
 - Functional requirements: {{requirement}}

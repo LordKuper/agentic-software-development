@@ -17,7 +17,7 @@ Scope step 2 (`asd-phase-scope.md`), every sprint of both workflows, after the r
 - (b) **Research** — `asd-ba`, dispatched in `scope` mode, searches the web for best practices of the solution class and returns findings, each with its source URL, plus 2-3 conceptual approaches with pros/cons and a recommendation. It covers the raw scope's strands only, never a retro row taken in at step 2a. A BA that cannot search (offline session, host web tool unavailable) returns `FAILED` naming the cause; the user chooses retry, skip or abort. Skip is logged in `decisions-log.md`, and `research.md` Findings then reads `no web research: <cause>`.
 - (c) **Refinement interview** — the orchestrator refines the requirements in chat from that research, then puts the approach choice as a request user decision (`core.md` "Request user decision"), the hard gate `approach choice` (`checkpoints.md` "Gate inventory"), before any `AC-N` is written.
 
-The orchestrator writes `<sprint>/research.md` (`artifact-layout.md` "Research") from the stage (a) answers, the BA return body and the stage (c) answer.
+The orchestrator writes `<sprint>/research.md` (`artifact-layout.md` "Research") stage by stage — the raw scope and stage (a) answers, the BA return body, the stage (c) refinement and choice (`asd-phase-scope.md` step 2).
 
 **Conceptual boundary**: stages (a)-(c) stay at functional requirements and conceptual approaches. Technical detail belongs to design when it runs, else to plan; design creators and plan read `research.md` first ("Input sources" `research`) and research only the technical delta (`design-principles.md` §11).
 
