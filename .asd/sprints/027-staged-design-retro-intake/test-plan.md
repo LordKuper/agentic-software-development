@@ -11,7 +11,7 @@ responsibility:
 
 | Entry | HEAD analysed | Scope |
 |---|---|---|
-| 1 |  | full change surface (`git diff main...HEAD`, 43 files, Tasks 1-6) |
+| 1 | 9b27aa705f4ac6fa0facb6f7346e67befe48c5cc | full change surface (`git diff main...HEAD`, 43 files, Tasks 1-6) |
 
 ## Risk → check decisions
 

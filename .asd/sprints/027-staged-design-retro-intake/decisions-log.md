@@ -84,3 +84,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-22 — route Task 6: standard, dispatch HEAD 7b9edc1a
 - 2026-10-22 — memory-fix (orchestrator plan line): asd-reviewer-correctness 4be59c27, asd-reviewer-combined d0ca0c69, asd-tester-critical 57284955
 - 2026-10-22 — impl assessment (adaptive): Tasks 1-6 ticked, memory-fix line done, flagged choices resolved (decisions-log), build (sync --check) and lint clean, round diff within authorised paths, no sprint stubs; suite 291/296 with 5 content-contract pins on replaced wording for impl-test; HEAD 23d34bb4
+- 2026-10-22 — route impl-test entry 1: standard, dispatch HEAD 83783226; risk artifact: content-contract pins via node tests/run.js
+- 2026-10-22 — impl-test step 7a: memory hits fixed in entry 1 by owner memory-fix (asd-reviewer-correctness 4fd7a2d7, asd-reviewer-documentation 9b27aa70); suite gate re-run green 302/302
+- 2026-10-22 — impl-test: impacted set green (302/302), 6/0 tests
