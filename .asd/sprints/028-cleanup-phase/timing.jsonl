@@ -1,0 +1,11 @@
+{"op":"open","id":"scope#1","kind":"phase","parent":null,"start":"2026-10-22T14:54:46.888Z","attrs":{}}
+{"op":"open","id":"wait workflow choice","kind":"user-wait","parent":"scope#1","start":"2026-10-22T14:54:46.955Z","attrs":{"gate":"workflow choice"}}
+{"op":"close","id":"wait workflow choice","kind":"user-wait","parent":"scope#1","start":"2026-10-22T14:54:46.955Z","end":"2026-10-22T14:59:27.664Z","outcome":"done","attrs":{"gate":"workflow choice"}}
+{"op":"open","id":"wait requirements interview","kind":"user-wait","parent":"scope#1","start":"2026-10-22T14:59:53.305Z","attrs":{"gate":"requirements interview"}}
+{"op":"close","id":"wait requirements interview","kind":"user-wait","parent":"scope#1","start":"2026-10-22T14:59:53.305Z","end":"2026-10-22T15:05:16.763Z","outcome":"done","attrs":{"gate":"requirements interview"}}
+{"op":"open","id":"asd-ba scope#1","kind":"dispatch","parent":"scope#1","start":"2026-10-22T15:05:21.724Z","attrs":{"agent":"asd-ba","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"asd-ba scope#1","kind":"dispatch","parent":"scope#1","start":"2026-10-22T15:05:21.724Z","end":"2026-10-22T15:06:49.342Z","outcome":"done","attrs":{"agent":"asd-ba","tier":"standard","model":"sonnet"}}
+{"op":"open","id":"wait approach choice","kind":"user-wait","parent":"scope#1","start":"2026-10-22T15:07:06.113Z","attrs":{"gate":"approach choice"}}
+{"op":"close","id":"wait approach choice","kind":"user-wait","parent":"scope#1","start":"2026-10-22T15:07:06.113Z","end":"2026-10-22T15:10:03.835Z","outcome":"done","attrs":{"gate":"approach choice"}}
+{"op":"open","id":"wait scope","kind":"user-wait","parent":"scope#1","start":"2026-10-22T15:10:58.020Z","attrs":{"gate":"scope"}}
+{"op":"close","id":"wait scope","kind":"user-wait","parent":"scope#1","start":"2026-10-22T15:10:58.020Z","end":"2026-10-22T18:53:19.522Z","outcome":"done","attrs":{"gate":"scope"}}
