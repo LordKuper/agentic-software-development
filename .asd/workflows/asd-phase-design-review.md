@@ -72,7 +72,7 @@ Owner: inline orchestrator; dispatches reviewers (documentation, efficiency, cor
 ## Exit
 
 ```json
-{"writes": ["<sprint>/reviews/design/iter-NN/: <reviewer>.md and <reviewer>.findings.json (step 8), snapshot/, <reviewer>.manifest.json, external.scope.json, <fingerprint>.diff (step 7)", "<sprint>/reviews/design/iter-NN/<reviewer>.late.md (step 8a)", "<sprint>/design/ drafts (step 9 fixes)", "state.json phase, reviews.design", "decisions-log.md"], "next": [{"if": "DoD met or cap accepted", "next": "design-promote"}]}
+{"writes": ["<sprint>/reviews/design/iter-NN/: <reviewer>.md and <reviewer>.findings.json (step 8), snapshot/, <reviewer>.manifest.json, external.scope.json, <fingerprint>.diff (step 7)", "<sprint>/reviews/design/iter-NN/<reviewer>.late.md (step 8a)", "<sprint>/design/ drafts (step 9 fixes)", "resolved: lines in reviewer files and memory-fix commits by the owner or orchestrator (step 9)", "state.json phase, reviews.design", "decisions-log.md"], "next": [{"if": "DoD met or cap accepted", "next": "design-promote"}]}
 ```
 
 ## Return
