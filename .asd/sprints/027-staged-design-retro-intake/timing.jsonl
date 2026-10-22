@@ -3,3 +3,7 @@
 {"op":"open","id":"audit#1","kind":"phase","parent":null,"start":"2026-10-22T09:20:53.991Z","attrs":{}}
 {"op":"open","id":"asd-architect audit","kind":"dispatch","parent":"audit#1","start":"2026-10-22T09:21:24.472Z","attrs":{"agent":"asd-architect,tier=standard,model=opus"}}
 {"op":"close","id":"asd-architect audit","kind":"dispatch","parent":"audit#1","start":"2026-10-22T09:21:24.472Z","end":"2026-10-22T09:34:44.909Z","outcome":"done","attrs":{"agent":"asd-architect,tier=standard,model=opus"}}
+{"op":"close","id":"audit#1","kind":"phase","parent":null,"start":"2026-10-22T09:20:53.991Z","end":"2026-10-22T09:37:41.596Z","outcome":"done","attrs":{}}
+{"op":"open","id":"plan#1","kind":"phase","parent":null,"start":"2026-10-22T09:37:41.596Z","attrs":{}}
+{"op":"open","id":"plan gate","kind":"user-wait","parent":"plan#1","start":"2026-10-22T09:51:42.815Z","attrs":{"gate":"plan"}}
+{"op":"close","id":"plan gate","kind":"user-wait","parent":"plan#1","start":"2026-10-22T09:51:42.815Z","end":"2026-10-22T09:54:56.262Z","outcome":"done","attrs":{"gate":"plan"}}

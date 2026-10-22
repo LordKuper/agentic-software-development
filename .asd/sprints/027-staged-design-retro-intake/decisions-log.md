@@ -67,3 +67,10 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 - 2026-10-22 — audit contradictions C2-C5 settled canonically/by accepted scope (audit.md "Contradictions")
 - 2026-10-22 — audit gate (adaptive): all sections present, C1 settled by user, C2-C5 resolved, AC-1..AC-10 deliverable; risks R1 (workflow byte cap, 106 B headroom) and R6/R7 carried to plan
+- 2026-10-22 — plan: no related open stubs (audit.md; stubs.md has none)
+
+## 2026-10-22 — `<sprint>/plan.md` accepted
+
+- **Decision**: plan.md D1-D10, Tasks 1-6 in 3 waves accepted by the user (explicit `accept`). D6 removes the phase-workflow byte cap (sprint-026 AC-15 assert) by user decision; the skills cap and D13 ceilings stay. D5 adds a user-decided skip of stage (b) when web research is unavailable.
+- **Rationale**: User answers to R1 ("remove the cap entirely") and R6 ("also allow a skip by user decision").
+- **Affected docs**: plan.md
