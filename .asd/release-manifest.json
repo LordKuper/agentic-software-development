@@ -77,7 +77,7 @@
     ".asd/rules/language-policy.md": "7f77042d5ce46d5df0ee48c3f75263d6393c77a20e8a7068e7913c22650a8539",
     ".asd/rules/providers.md": "67f5cd45ab1b20ab7c9d67c7f5dc9abbeca7359da8501099773dc54dbf03e5b1",
     ".asd/rules/review-policy.md": "56daa75345608965c067a8ba1f7381f2f2a1c2e246cca279d100e2ed0b304da6",
-    ".asd/rules/sprint-lifecycle.md": "71db1a324ac157fb0f44318084812613461671f7dc6f32fc84a29bcfd7d7774a",
+    ".asd/rules/sprint-lifecycle.md": "18a00bedb645b71c27a699b0daf8bb08b71e4cebaf6e63df22ff8559297636e9",
     ".asd/rules/ux-principles.md": "9f2af8c90d969c73654812b80e523e33b4c5696f506acf49e4bacb4c0dc6750c",
     ".asd/skills/asd-concept/SKILL.md": "e86bbce4c80c089de3a640a3d838c87f295492d9e792d3aa52d289302c942c1c",
     ".asd/skills/asd-design-system/SKILL.md": "349b475eb3ced8bdee0a625d6e857819e0562336d6d558656fccafe5006944b5",
@@ -133,13 +133,13 @@
     ".asd/workflows/asd-phase-audit.md": "b73a8618fedda0ec0050782f39e1999b6b4c702e5edbedc0d32fca77d9c61d3a",
     ".asd/workflows/asd-phase-design-promote.md": "e29f1d0009c85534117b206e30ad2ed76fcbdbc2dcd32f77958846c66568bf7a",
     ".asd/workflows/asd-phase-design-review.md": "324b6c41298c913579a5d629c1a2d784e89a2012dcaa705a7df4b361b1210a99",
-    ".asd/workflows/asd-phase-design.md": "b6603e8a7e8c1d0c4fa62d154f5f6a09b5492034e6b9d7cc84d843b711c50d04",
+    ".asd/workflows/asd-phase-design.md": "8d8b27117e641db35007570617d81109e9adf21bd1f5e8efea80c320f86f03d8",
     ".asd/workflows/asd-phase-impl-review.md": "d6d99faf957446ef1c53f7b587e20884d8e27422e51da4790c5ac2665cf768c5",
     ".asd/workflows/asd-phase-impl-test.md": "1aa0e6b5afc415d9dc5af7a1e1688a372020f960568128eec66c1f804563f312",
     ".asd/workflows/asd-phase-impl.md": "edf3a2684c0f1764164d02e4d42790f1f8a494e8151092fa00762149a5ecec67",
     ".asd/workflows/asd-phase-plan.md": "2bee7820d27b32d3470eb66973541f3f481125b390b854434ce21b6bb98a20db",
     ".asd/workflows/asd-phase-pr.md": "217bc1afbf9666f94f47e5e7a0c41582fe0421d59b8dd8c356201208f78ab208",
-    ".asd/workflows/asd-phase-scope.md": "d737b2c5c1c5582b8a98584089ac08d702c5f29d3e338a70829157cde3b01d02",
+    ".asd/workflows/asd-phase-scope.md": "b8452abadfe3e7765f86280ac0f7632ba70cfb3ae96299c69ff84bb2e27791fd",
     ".asd/agents/asd-advisor.md": "97fbe5d2e0d5eab3d2f83059b74cb1a6431c24268c75967e0b55475315f32633",
     ".asd/agents/asd-reviewer-correctness.md": "447dcba94731f0550b10eef50cd2d04df02894d516be693f3b374d6406b13a5e",
     ".asd/agents/asd-reviewer-efficiency.md": "ac8648369afee087e0096389553a40d96e0e3b44ea2561a5c57a50e736c76f69",
@@ -158,11 +158,11 @@
     ".asd/templates/t_subsystem.md": "1365a20aeb5847a1da23ac88d7a3d0153ba3a8b6a3abbf06b883a689d9ee2f5d",
     ".asd/templates/t_subsystems.md": "54b1e273e9e74a57e08b43d1b671f880b7f682d9ec1bc4afb95a55d98b2531dd",
     ".asd/migrations/9.0.0.js": "1a1da6ebd2576d92ed44ccde308969856f3aeaa7be152438137e94b43cd015b1",
-    ".asd/templates/t_retro-backlog.md": "8999cf01686d0a92c47bf1bdfb33a2bf7db326d0e52c74f6e7d0774b6dcd2f74",
+    ".asd/templates/t_retro-backlog.md": "7d2fcf058f0b84065aaadf7554254e0db0ab52c08631ef1081d851e0d8c2cd18",
     ".asd/agents/asd-reviewer-combined.md": "fa2098fcfd9bc3105b1af56e3e516baa854f72a3e304c93ebe455ae6de246079",
     ".asd/workflows/lite.json": "2fc12fc41cac51a22b19d67ff5d47c9765c105fec1ad67e8eb5d765b882622ea",
     ".asd/workflows/standard.json": "7a7c04da7a13ec9dab9bb782d8a9981b703d34859d55614cd9354808b1721fb2",
     ".asd/rules/agent-protocol.md": "4d4607c62753eea088362ba504d19216cadbabf69d9ca215ac9f038094830721",
-    ".asd/templates/t_research.md": "29123597ffd2469460fd1db7f67d4963e11e5154aeb650230ab3714ae0ded73f"
+    ".asd/templates/t_research.md": "d722d841e93cd77463cd1c1a4d6a585d87e31963545415143b7795b3a92c78b4"
   }
 }

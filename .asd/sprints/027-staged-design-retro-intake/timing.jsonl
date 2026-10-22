@@ -46,3 +46,5 @@
 {"op":"close","id":"impl-review wave-1/iter-01","kind":"review-iteration","parent":"impl-review#1","start":"2026-10-22T10:34:57.593Z","end":"2026-10-22T10:40:51.876Z","outcome":"done","attrs":{}}
 {"op":"close","id":"impl-review#1","kind":"phase","parent":null,"start":"2026-10-22T10:33:41.886Z","end":"2026-10-22T10:40:51.938Z","outcome":"done","attrs":{}}
 {"op":"open","id":"impl#2","kind":"phase","parent":null,"start":"2026-10-22T10:40:51.938Z","attrs":{}}
+{"op":"open","id":"review-fix wave-1/iter-01","kind":"dispatch","parent":"impl#2","start":"2026-10-22T10:41:01.554Z","attrs":{"agent":"asd-dev-critical"}}
+{"op":"close","id":"review-fix wave-1/iter-01","kind":"dispatch","parent":"impl#2","start":"2026-10-22T10:41:01.554Z","end":"2026-10-22T10:44:06.688Z","outcome":"done","attrs":{"agent":"asd-dev-critical"}}

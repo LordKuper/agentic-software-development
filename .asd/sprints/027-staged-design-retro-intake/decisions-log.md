@@ -89,3 +89,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-22 — impl-test: impacted set green (302/302), 6/0 tests
 - 2026-10-22 — impl-review divided into 2 waves (lines 534, files 34, bytes 211476): wave 1 staged design + retro intake (scope/BA/research, README); wave 2 memory-fix in phase, route-task keys, empty findings table, runner filter
 - 2026-10-22 — impl-review wave-1/iter-01: combined CONCERNS (CB-1 high, CB-2..CB-4 medium, CB-5 low), external CONCERNS (F1, F2 medium) → impl review-fix (wave-1/iter-01)
+- 2026-10-22 — route review-fix wave-1/iter-01: critical, dispatch HEAD b2ec92b5; risk change: staged-design re-entry evidence
+- 2026-10-22 — impl fix for wave-1/iter-01: findings resolved (CB-1+F2+CB-2 25e29a7b, CB-4 616358ef, CB-5 7479e611, CB-3 cc85b716, F1 454e90ad)
