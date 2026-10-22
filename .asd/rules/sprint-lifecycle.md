@@ -15,7 +15,7 @@ Use `checkpoints.md` for every user-gate decision. A merged sprint PR completes 
 Scope step 2 (`asd-phase-scope.md`), every sprint of both workflows, after the raw scope and before any `AC-N` is written:
 - (a) **Requirements interview** — the orchestrator asks the user in chat for the problem, actors, functional requirements, constraints and success criteria, at the detail needed to start design.
 - (b) **Research** — `asd-ba`, dispatched in `scope` mode, searches the web for best practices of the solution class and returns findings, each with its source URL, plus 2-3 conceptual approaches with pros/cons and a recommendation. It covers the raw scope's strands only, never a retro row taken in at step 2a. A BA that cannot search (offline session, host web tool unavailable) returns `FAILED` naming the cause; the user chooses retry, skip or abort. Skip is logged in `decisions-log.md`, and `research.md` Findings then reads `no web research: <cause>`.
-- (c) **Refinement interview** — the orchestrator refines the requirements in chat from that research, then puts the approach choice as a request user decision (`core.md` "Request user decision") under the hard scope gate (`checkpoints.md` "Gate inventory").
+- (c) **Refinement interview** — the orchestrator refines the requirements in chat from that research, then puts the approach choice as a request user decision (`core.md` "Request user decision"), the hard gate `approach choice` (`checkpoints.md` "Gate inventory"), before any `AC-N` is written.
 
 The orchestrator writes `<sprint>/research.md` (`artifact-layout.md` "Research") from the stage (a) answers, the BA return body and the stage (c) answer.
 
