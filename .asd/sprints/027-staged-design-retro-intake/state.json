@@ -53,6 +53,13 @@
       "reason": "plan.md accepted: D1-D10, Tasks 1-6 in 3 waves",
       "evidence": "decisions-log.md 2026-10-22 plan accepted",
       "artifact_revision": "plan.md@plan"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "Tasks 1-6 + memory-fix line done, plan ticked, build/lint clean, authorised paths only, flagged choices resolved",
+      "evidence": "decisions-log.md 2026-10-22 impl assessment",
+      "artifact_revision": "HEAD 23d34bb4"
     }
   ],
   "task_routing": {
@@ -113,7 +120,7 @@
     }
   },
   "created_at": "2026-10-22T09:20:33.682Z",
-  "updated_at": "2026-10-22T10:12:27.865Z",
+  "updated_at": "2026-10-22T10:15:02.647Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
