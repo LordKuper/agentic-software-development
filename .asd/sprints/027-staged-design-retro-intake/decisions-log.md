@@ -94,3 +94,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-22 — route impl-test entry 2: standard, dispatch HEAD a5e8dca3; risk artifact: content-contract pins via node tests/run.js
 - 2026-10-22 — impl-test: impacted set green (302/302), entry 2 4 asserts added/0 removed
 - 2026-10-22 — impl-review wave-1/iter-02: combined APPROVE, external APPROVE (transcribed: placeholder row removed, F-1) → wave 1 roster met; wave 2 opens
+- 2026-10-22 — impl-review wave-2/iter-01: combined CONCERNS (CB-1 medium, CB-2 low), external CONCERNS (1 medium) → impl review-fix (wave-2/iter-01)

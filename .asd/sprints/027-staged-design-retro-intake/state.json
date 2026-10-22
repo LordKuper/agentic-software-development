@@ -150,17 +150,24 @@
           }
         },
         {
-          "iteration": 0,
-          "verdicts": {},
-          "iteration_heads": {},
+          "iteration": 1,
+          "verdicts": {
+            "iter-01": {
+              "combined": "CONCERNS",
+              "external": "CONCERNS"
+            }
+          },
+          "iteration_heads": {
+            "iter-01": "eba145f003f41f2257ed865a5440c74e6b2d12f4"
+          },
           "latched": {}
         }
       ]
     }
   },
   "created_at": "2026-10-22T09:20:33.682Z",
-  "updated_at": "2026-10-22T10:51:07.322Z",
-  "review_fixes_pending": null,
+  "updated_at": "2026-10-22T10:57:33.091Z",
+  "review_fixes_pending": "wave-2/iter-01",
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null

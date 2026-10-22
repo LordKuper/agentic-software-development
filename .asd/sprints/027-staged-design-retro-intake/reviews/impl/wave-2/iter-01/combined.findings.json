@@ -1,0 +1,1 @@
+[{"id":"CB-1","severity":"medium","location":"`.asd/rules/review-policy.md:95` (also `.asd/rules/git-strategy.md:48`, `tests/run.js:8255`); AC-10"},{"id":"CB-2","severity":"low","location":"`.asd/workflows/asd-phase-impl-review.md:86` `## Exit` writes; `.asd/workflows/asd-phase-design-review.md:75` `## Exit` writes"}]
