@@ -12,7 +12,7 @@ responsibility:
 | Entry | HEAD analysed | Scope |
 |---|---|---|
 | 1 | 9b27aa705f4ac6fa0facb6f7346e67befe48c5cc | full change surface (`git diff main...HEAD`, 43 files, Tasks 1-6) |
-| 2 | | delta `9b27aa70...HEAD` excluding `.asd/sprints` (review-fix wave-1/iter-01, 9 files) |
+| 2 | 81301a214b3b3519a8ce7f14259e7e2c68bc726e | delta `9b27aa70...HEAD` excluding `.asd/sprints` (review-fix wave-1/iter-01, 9 files) |
 
 ## Risk → check decisions
 
