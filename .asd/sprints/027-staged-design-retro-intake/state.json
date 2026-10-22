@@ -67,6 +67,13 @@
       "reason": "waves 1-2 all APPROVE/latched (iter-02 each), terminal full suite green 302/302, lint and sync --check clean",
       "evidence": "test-plan.md Suite run; reviews/impl/wave-2/iter-02",
       "artifact_revision": "HEAD f6b88906"
+    },
+    {
+      "gate": "PR publication",
+      "decision_actor": "user",
+      "reason": "user confirmed push and PR open",
+      "evidence": "chat confirmation 2026-10-22",
+      "artifact_revision": "HEAD 86df894e"
     }
   ],
   "task_routing": {
@@ -201,9 +208,13 @@
     }
   },
   "created_at": "2026-10-22T09:20:33.682Z",
-  "updated_at": "2026-10-22T11:11:33.527Z",
+  "updated_at": "2026-10-22T11:13:06.618Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
-  "pr": null,
+  "pr": {
+    "number": 63,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/63",
+    "state": "open"
+  },
   "archived_at": null
 }

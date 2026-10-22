@@ -105,3 +105,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-22 — design-promote skipped: lite, no enabled document (prd/ux_spec/adr/c4 false)
 - 2026-10-22 — retro: retrospective.html written (2 entries, 1 framework action + 1 covered, 2 systemic proposals, analysed branch)
 - 2026-10-22 — pr open mode: DoD verified (plan ticked, waves 1-2 APPROVE, full suite 302/302 at f6b88906 with no code/test diff since, lint and sync clean, retrospective present, no sprint stubs, no existing PR for the branch); asd_version 13.9.0 → 13.10.0 (feat highest, no breaking marker), CHANGELOG v13.10.0 added
+- 2026-10-22 — pr open mode: PR #63 opened after the user confirmed publication; state.json.pr written and pushed; NEXT await-merge
