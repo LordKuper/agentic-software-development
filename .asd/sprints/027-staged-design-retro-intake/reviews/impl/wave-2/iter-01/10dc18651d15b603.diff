@@ -1,0 +1,771 @@
+diff --git a/.asd/agents/asd-tester.md b/.asd/agents/asd-tester.md
+index f47cde37..901bb181 100644
+--- a/.asd/agents/asd-tester.md
++++ b/.asd/agents/asd-tester.md
+@@ -40,7 +40,7 @@ Test engineer, sole owner of tests: once the code exists, chooses the checks the
+ - must: Test-only Task (shape, scope and trailer: `sprint-lifecycle.md` "Plan file format"): author or adapt tests inside its wave with `test-plan.md`, `plan.md` and — when the wave holds more than one Task — a shared `MEMORY.md` untouched, returning the index line in `COMPLETED` (`asd-phase-impl.md` "Rules"); impl-test entry 1 owns strategy, pruning and the suite gate.
+ - must: cite the AC-N or risk each test covers in the test name or a comment; cover edge cases where they carry real risk (empty, single, many, boundary, invalid, concurrent); flag and refactor flaky patterns rather than retrying them.
+ - must: specify manual verification only when no automation can verify (visual UI, third-party live integration, ux feel), as the `test-plan.md` `Manual verification` table (AC-N, steps, expected observation) — its single home, consumed and never re-authored by asd-reviewer-testing.
+-- must: on the first impl-test entry of a sprint that removes a mechanism or term, run the whole leftover-term check `artifact-layout.md` "Agent memory" requires, agent memory included.
++- must: on the first impl-test entry of a sprint that removes a mechanism or term, run the whole leftover-term check `artifact-layout.md` "Agent memory" requires, agent memory included; report each memory hit, never editing it (`review-policy.md` "Memory-fix dispatch").
+ - must: register every skipped test in `stubs.md` with its reason — never skip silently.
+ - never: production code or architecture; fix a code defect yourself (Failure triage).
+ - never: sleep-based waits — use deterministic synchronisation; assert implementation details — assert observable behaviour; add a test whose only value is a coverage number.
+@@ -76,6 +76,7 @@ In review-fix and the in-place test fix, this agent deletes no test and amends `
+ 
+ - **test defect** (bad assertion, wrong fixture, flaky pattern) → fix it here, rerun.
+ - **code defect** → append a `D-N` row to `test-plan.md` `Defects` (location, symptom, failing test, status `pending`) and report it; the fix belongs to a dev in impl test-fix mode. Never fix production code, never weaken the test to make it pass.
++- **memory defect** (the failure traces to text in `.claude/agent-memory/<owner>/`) → report it with its path, never a `D-N`; its owner fixes it (`review-policy.md` "Memory-fix dispatch").
+ 
+ ## Manual steps
+ 
+diff --git a/.asd/rules/code-style.md b/.asd/rules/code-style.md
+index c7a027a1..2995fcec 100644
+--- a/.asd/rules/code-style.md
++++ b/.asd/rules/code-style.md
+@@ -123,7 +123,7 @@ Written and run in `impl-test`, never in `impl` — one carve-out: a plan-declar
+ - Isolated: no real external APIs, databases, or file I/O; use dependency injection.
+ - No hardcoded test data: build fixtures from named constants or factories (exception: boundary-value tests where the literal is the point).
+ - A test or rule that names the members of a set derives that set from its source wherever a source exists, rather than enumerating members by hand. A hardcoded enumeration drifts silently as the source changes.
+-- A content-contract test pins a token that cannot be reworded without changing the contract — a heading, a command, a field name, a parsed literal — never the surrounding prose. Its fail-first proof is bounded per entry: one representative mutation per added assert plus one reword control for the entry (the same assert reworded must stay green); for a pin of a changed rule the representative mutation restores the superseded rule text, or removes the new clause while keeping its citation, never a token rename the old rule would also satisfy; the `test-plan.md` "Added tests" row's `Regression proof` cell records the row's mutation runs as `runs: <n>`, the entry's single control counted in its first content-contract row.
++- A content-contract test pins a token that cannot be reworded without changing the contract — a heading, a command, a field name, a parsed literal — never the surrounding prose. Its fail-first proof is bounded per entry: one representative mutation per added assert plus one reword control for the entry (the same assert reworded must stay green); for a pin of a changed rule the representative mutation restores the superseded rule text, or removes the new clause while keeping its citation, never a token rename the old rule would also satisfy; each mutation and control run executes only the asserting test, through the runner's test-name filter (ASD's own `tests/run.js`: `--filter <substring>`), never the whole suite, its record adding the matched test count; the `test-plan.md` "Added tests" row's `Regression proof` cell records the row's mutation runs as `runs: <n>`, the entry's single control counted in its first content-contract row.
+ - Test files named `<system>_<feature>_test.<ext>`; test functions `test_<scenario>_<expected>`.
+ - A test mutating global/static state saves and restores it in setup/teardown.
+ - Structure each test as Arrange — Act — Assert.
+diff --git a/.asd/rules/git-strategy.md b/.asd/rules/git-strategy.md
+index 6c352bec..e7c0999c 100644
+--- a/.asd/rules/git-strategy.md
++++ b/.asd/rules/git-strategy.md
+@@ -45,7 +45,7 @@ The main orchestrator commits its own bookkeeping — `state.json`, `decisions-l
+ 
+ **Timing ledger**: a dirty `timing.jsonl` is committed by the orchestrator alone (`git commit --only -- <ledger>`, subject `chore(sprint): <NNN> timing`) before any clean-tree check or diff-reading gate, so those never see it; an agent never stages it (`sprint-lifecycle.md` "Operation timing").
+ 
+-**Memory content check**: at the commit of agent-memory writes it holds (the clause above), the orchestrator stages them and runs `node .asd/runtime.js memory-check` first; it reads the staged diff, prints a JSON array of `{path, line, token}` hits and exits 1 on a hit (rule: `artifact-layout.md` "Agent memory"). A violating write is unstaged and not committed; it returns to its owner's memory-fix dispatch (`review-policy.md` "Memory-fix dispatch"). A dev's or tester's own memory commit is not gated; legacy memory text is not swept.
++**Memory content check**: at the commit of agent-memory writes it holds (the clause above), the orchestrator stages them and runs `node .asd/runtime.js memory-check` first; it reads the staged diff, prints a JSON array of `{path, line, token}` hits and exits 1 on a hit (rule: `artifact-layout.md` "Agent memory"). A violating write is unstaged and not committed; it returns to its owner's memory-fix dispatch in the current phase (`review-policy.md` "Memory-fix dispatch"). A dev's or tester's own memory commit is not gated; legacy memory text is not swept.
+ 
+ ## PR self-review checklist
+ 
+diff --git a/.asd/rules/providers.md b/.asd/rules/providers.md
+index f07bef74..5b4fae06 100644
+--- a/.asd/rules/providers.md
++++ b/.asd/rules/providers.md
+@@ -160,7 +160,7 @@ An agent's declared tool policy is its own definition, plus the write allowlist
+ 
+ An agent may declare `variants` in its canonical JSON frontmatter. Each fixed suffix is `mechanical` or `critical`; it changes only Claude `model`/optional `effort` and Codex `model`/`model_reasoning_effort`. `.asd/sync.js` emits `<base>-<suffix>` from the base body and permissions, rejects malformed metadata and name collisions. No dispatcher mutates generated configuration. Tier `standard` has no variant — it dispatches the **base** agent id (`asd-dev`, `asd-tester`) directly, since a `standard` variant would only re-declare the base's own model/effort.
+ 
+-Only `asd-dev` and `asd-tester` declare variants: mechanical uses haiku without an effort override or luna/low; critical uses opus/high for `asd-dev` and sonnet/xhigh for `asd-tester`, sol/high for both on Codex. Reviewers remain strong and fresh. The main orchestrator calls `node .asd/runtime.js route-task --input <json>` before dispatch and persists `{execution,tier,reason,resolved_model}` under `state.json.task_routing[taskId]`; `resolved_model` is not returned by `route-task` — the main orchestrator derives it from `.asd/release-manifest.json`'s `model_families` for the dispatched agent/tier before persisting. `priorTier` is the tier recorded under the same `task_routing` key — a re-dispatch of that id. An `impl-test entry N`, `review-fix <id>`, `test-fix <D-ids>`, `impl-review <id> test-fix` (the in-place low-severity test fix) or `impl-review <id> suite` id is new each time and carries no `priorTier`; its `risks` are the orchestrator's own `Material risk` declaration for that dispatch's delta, in the grammar and by the criteria of `sprint-lifecycle.md` "Plan file format" Material risk declaration, none declared → `standard`. A prose- or test-only delta meeting the `artifact`/`none` criteria routes `standard`; a non-mechanical rewording of rule text is `change`. Its decisions-log routing line records the declaration, since `reason` names one cause and loses both `none` and the check: it ends `; risk <declaration>` — each declared value (`none`, `change: <class>`, `artifact: <class>`) joined by `, `, a `none` or `artifact` value followed by `via <check>` naming the test, grep or `sync.js --check` that verifies it, prefixed by the id when the line names several. Every terminal-suite run, a re-run after a test-defect fix included, takes its own id — `impl-review <id> suite`, then `impl-review <id> suite <n>` for run n ≥ 2 — and declares `none` with no failed-check input, so it never routes critical. `execution` is the selector of record for how the executor was chosen — `route-task` returns no separate `selector` field; `execution` plus `tier` and `reason` fully determine and evidence the dispatch choice.
++Only `asd-dev` and `asd-tester` declare variants: mechanical uses haiku without an effort override or luna/low; critical uses opus/high for `asd-dev` and sonnet/xhigh for `asd-tester`, sol/high for both on Codex. Reviewers remain strong and fresh. The main orchestrator calls `node .asd/runtime.js route-task --input <path|->` (a JSON file, or `-` for stdin; never inline JSON) before dispatch. Input keys: `kind` (`command`|`mechanical`|`standard`), `objectiveInputs` and `failedObjectiveCheck` (booleans), `checks` (string array), `correctionAttempts` (integer ≥ 0), `risks` (array, entries below), optional `priorTier` (`mechanical`|`standard`|`critical`). It persists `{execution,tier,reason,resolved_model}` under `state.json.task_routing[taskId]`; `resolved_model` is not returned by `route-task` — the main orchestrator derives it from `.asd/release-manifest.json`'s `model_families` for the dispatched agent/tier before persisting. `priorTier` is the tier recorded under the same `task_routing` key — a re-dispatch of that id. An `impl-test entry N`, `review-fix <id>`, `test-fix <D-ids>`, `impl-review <id> test-fix` (the in-place low-severity test fix) or `impl-review <id> suite` id is new each time and carries no `priorTier`; its `risks` are the orchestrator's own `Material risk` declaration for that dispatch's delta, in the grammar and by the criteria of `sprint-lifecycle.md` "Plan file format" Material risk declaration, none declared → `standard`. A prose- or test-only delta meeting the `artifact`/`none` criteria routes `standard`; a non-mechanical rewording of rule text is `change`. Its decisions-log routing line records the declaration, since `reason` names one cause and loses both `none` and the check: it ends `; risk <declaration>` — each declared value (`none`, `change: <class>`, `artifact: <class>`) joined by `, `, a `none` or `artifact` value followed by `via <check>` naming the test, grep or `sync.js --check` that verifies it, prefixed by the id when the line names several. Every terminal-suite run, a re-run after a test-defect fix included, takes its own id — `impl-review <id> suite`, then `impl-review <id> suite <n>` for run n ≥ 2 — and declares `none` with no failed-check input, so it never routes critical. `execution` is the selector of record for how the executor was chosen — `route-task` returns no separate `selector` field; `execution` plus `tier` and `reason` fully determine and evidence the dispatch choice.
+ 
+ Routing input requires objective evidence. A deterministic zero-judgment command with `deterministic-state` returns `execution: command`; mechanical agent work requires `deterministic-check` and `exhaustive-match-validation`.
+ 
+diff --git a/.asd/rules/review-policy.md b/.asd/rules/review-policy.md
+index 9466b8b0..abe2bf45 100644
+--- a/.asd/rules/review-policy.md
++++ b/.asd/rules/review-policy.md
+@@ -92,11 +92,11 @@ Default: the responsible creator autofixes any reviewer issue without user promp
+ 
+ **Reach findings.** A finding about a rule's reach is fixed in one pass at every branch of its site: each branch states its own reach, never inheriting it from a section or step header.
+ 
+-**Memory-fix dispatch** (Claude only; Codex renders no `memory`). A review finding or test-fix `D-N` located in `.claude/agent-memory/<owner>/` routes to `<owner>`; a non-owner never authors memory text. Each distinct owner gets one fresh memory-fix dispatch carrying all its findings; the dispatches run one at a time, after the round's dev and tester chains, ordered by each owner's lowest finding or `D-N` id. The owner fixes the file with its own write tool (`providers.md`); its return carries no verdict token, it is not a review. The orchestrator commits the fix when the owner holds no commit tool (`git-strategy.md` "Commit before review") and appends one decisions-log line. An owner whose definition withholds a write tool (e.g. `Write` in its `disallowedTools`) returns only a `MEMORY-FIX <path>` block holding the replacement text, no verdict token; the orchestrator applies it verbatim, commits it and appends the same decisions-log line. For a test-fix `D-N`, once its fix is committed, the orchestrator sets that row's `Status` to `fixed` with the fix commit sha in `<sprint>/test-plan.md`. A finding located in the memory directory of an agent that no longer exists has no owner: the orchestrator deletes the stale file, or the whole directory, commits the deletion and appends one decisions-log line — no memory text is authored.
++**Memory-fix dispatch** (Claude only; Codex renders no `memory`). A review finding, leftover-term hit (`artifact-layout.md` "Agent memory") or `memory-check` hit (`git-strategy.md` "Commit before review") located in `.claude/agent-memory/<owner>/` routes to `<owner>`; a non-owner never authors memory text. It is fixed inside the phase that found it — design-review, impl, impl-test or impl-review, at the step its workflow names — never through a test-fix `D-N`, a review-fix route, a phase transition or an extra review iteration. Each distinct owner gets one fresh memory-fix dispatch carrying all its findings and hits; the dispatches run one at a time, ordered by each owner's lowest finding id, then owners holding only hits by name. The owner fixes the file with its own write tool (`providers.md`); its return carries no verdict token, it is not a review. An owner whose definition withholds a write tool (e.g. `Write` in its `disallowedTools`) returns only a `MEMORY-FIX <path>` block holding the replacement text, no verdict token; the orchestrator applies it verbatim. The orchestrator commits the fix when the owner holds no commit tool (`git-strategy.md` "Commit before review"); either way it appends one decisions-log line and `resolved: <finding id, …> — memory-fix, <YYYY-MM-DD>` to each affected reviewer's review file (`sprint-lifecycle.md` "State recovery" "User-resolved findings"). A finding located in the memory directory of an agent that no longer exists has no owner: the orchestrator deletes the stale file, or the whole directory, commits the deletion and appends one decisions-log line — no memory text is authored.
+ 
+ **Where the fix happens:**
+-- **design-review** — the creator (asd-ba / asd-ux / asd-architect) autofixes within the loop; iteration advances.
+-- **impl-review** — fixes NOT applied inside the review phase, save "Low-severity test-only findings" (below). impl-review routes the sprint back to `impl` (review-fix mode); the responsible dev resolves findings; sprint re-enters impl-review via `impl-test`.
++- **design-review** — the creator (asd-ba / asd-ux / asd-architect) autofixes within the loop; iteration advances. A memory finding: "Memory-fix dispatch".
++- **impl-review** — fixes NOT applied inside the review phase, save "Low-severity test-only findings" (below) and "Memory-fix dispatch". impl-review routes the sprint back to `impl` (review-fix mode); the responsible dev resolves findings; sprint re-enters impl-review via `impl-test`.
+ 
+ **Escalation required** (the main orchestrator asks the user before fix — `core.md` "Request user decision"), format = Complication Approval (`core.md`):
+ 
+@@ -165,7 +165,7 @@ Reviewers write no review artifact, code or doc — that is why the phase workfl
+ 
+ Examples: `[REVIEW-impl-correctness]: APPROVE` · `[REVIEW-design-documentation]: FAIL` · `[REVIEW-impl-external]: CONCERNS`
+ 
+-**Findings table.** The report's Findings table takes `t_review.md`'s column shape; a literal `|` inside a cell, code spans included, is written `\|`, since `persist-review` splits cells on every unescaped `|`.
++**Findings table.** The report's Findings table takes `t_review.md`'s column shape; a literal `|` inside a cell, code spans included, is written `\|`, since `persist-review` splits cells on every unescaped `|`. An empty table is its header and separator rows only, never a placeholder row.
+ 
+ **Reviewer question carrier.** A reviewer never returns a bare `QUESTION` — without the verdict token it reads as an interrupted dispatch ("Interrupted dispatch"). A question needing the user stays in the verdict-bearing report, listed under `t_review.md`'s `## Escalations` as `question: <finding id> — <text>; options: <a> / <b> …`; the review workflow asks the user before routing that iteration and writes each answer into that reviewer's review file directly under its item, as `  answer: <text>` — the fixer reads it as part of that reviewer's finding set. A reviewer holding an open question returns at least `CONCERNS`, never `APPROVE`, so the answer rides with its findings into the fix route and no latch drops it. Every question qualifies one finding of the same report, named by its id — no finding, no question — so an answer always has a finding to ride with. A reviewer refusing an out-of-policy instruction (`providers.md` "Declared tool policy") records the refusal as a finding located at the dispatch payload, and its question names that finding.
+ 
+diff --git a/.asd/runtime.js b/.asd/runtime.js
+index cf7e050f..35a0605d 100644
+--- a/.asd/runtime.js
++++ b/.asd/runtime.js
+@@ -516,7 +516,7 @@ function tableCells(line) {
+   return line.trim().replace(/^\||\|$/g, '').split(/(?<!\\)\|/).map((cell) => cell.trim().replace(/\\\|/g, '|').replace(/^`([^`]*)`$/, '$1'));
+ }
+ 
+-/** A review's findings as `{id, severity, location}`, read by column position from its first table: `t_review.md`'s Findings or the external report's Kept findings, whose column order the templates fix while headings follow the docs language. A `—` id row is the empty table's placeholder. */
++/** A review's findings as `{id, severity, location}`, read by column position from its first table: `t_review.md`'s Findings or the external report's Kept findings, whose column order the templates fix while headings follow the docs language. An empty table is header and separator only; a `—` id row is skipped as legacy tolerance. */
+ function reviewFindings(text) {
+   const lines = text.split(/\r?\n/).map((line) => line.trim());
+   const start = lines.findIndex((line) => line.startsWith('|'));
+diff --git a/.asd/templates/external-review/t_review-report.md b/.asd/templates/external-review/t_review-report.md
+index cc7b8d3d..3aa2a1eb 100644
+--- a/.asd/templates/external-review/t_review-report.md
++++ b/.asd/templates/external-review/t_review-report.md
+@@ -21,8 +21,6 @@ responsibility:
+ | 1 | {{low/medium/high/critical}} | {{location}} | {{description}} | {{fix}} |
+ 
+ <!-- Severity cell: exactly one of low|medium|high|critical, nothing else (no CLI label) -->
+-<!-- when no findings, leave one row: -->
+-<!-- | — | — | — | no findings | — | -->
+ 
+ ## Dropped findings (counts only)
+ 
+diff --git a/.asd/templates/t_review.md b/.asd/templates/t_review.md
+index b0fa0d02..35dd8b01 100644
+--- a/.asd/templates/t_review.md
++++ b/.asd/templates/t_review.md
+@@ -21,8 +21,6 @@ Interrupted attempts: {{count}} ({{cause}})
+ |---|---|---|---|---|
+ | 1 | {{low/medium/high/critical}} | {{file:line or doc section}} | {{what}} | {{how}} |
+ 
+-<!-- when no findings, leave one row: -->
+-<!-- | — | — | — | no findings | — | -->
+ <!-- a literal | inside a cell, code spans included, is written \| (`review-policy.md` "Gate Verdict Format") -->
+ 
+ ## Coverage (internal reviewers only)
+diff --git a/.asd/workflows/asd-phase-design-review.md b/.asd/workflows/asd-phase-design-review.md
+index d071028e..20b82dd4 100644
+--- a/.asd/workflows/asd-phase-design-review.md
++++ b/.asd/workflows/asd-phase-design-review.md
+@@ -1,6 +1,6 @@
+ # ASD Workflow: Design Review
+ 
+-Owner: inline orchestrator; dispatches reviewers (documentation, efficiency, correctness, External Review), creators (BA, UX, Architect) for fixes.
++Owner: inline orchestrator; dispatches reviewers (documentation, efficiency, correctness, External Review), creators (BA, UX, Architect) for fixes, a memory-fix owner.
+ 
+ ## Entry
+ 
+@@ -36,6 +36,7 @@ Owner: inline orchestrator; dispatches reviewers (documentation, efficiency, cor
+    - Late duplicate return — reaches any replaced dispatch, External Review included, per `review-policy.md` "Late duplicate return" (sole SSoT for the admission test and every action it mandates). Phase bindings: a return delivering after step 9 recorded its replacement's verdict, once admitted, is persisted by step 8's `persist-review` plus `--late` to `<sprint>/reviews/design/iter-NN/<reviewer>.late.md`, linked from `<reviewer>.md`, and carries that section's `verdicts["iter-NN"]`, `latched` and decisions-log writes even though step 9 already ran.
+ 9. Parse first-line tokens from all written reviewer files; write `state.json` `reviews.design.verdicts["iter-NN"]` (keyed `correctness`/`efficiency`/`documentation`/`external`) and `reviews.design.latched` per `sprint-lifecycle.md` "APPROVE latch" — sole SSoT for the every-reviewer-gets-an-entry invariant, the inherited `APPROVE` a latch-skipped reviewer receives and the bare-`APPROVE`-only latch condition; not restated here. Phase bindings: an interrupted attempt contributes no entry, its attempts already logged at step 8a. External Review's availability skip is recorded as `"APPROVE (skipped: <reason>)"` when the phase-supplied preflight returns non-ready; its `external.md` (the skip's `Unreviewed files` line, the `files[]` step 7's scope manifest would carry, included) is persisted through step 8's `persist-review` per `review-policy.md` "Coverage ledger" Persistence, its other duties `external-review.md` "Detection and negative cache"'s, not this step's. Aggregate per `sprint-lifecycle.md` "State recovery" satisfied-vs-blocking semantics, reading `verdicts["iter-NN"]` alone, except per `sprint-lifecycle.md` "State recovery" "User-resolved findings":
+    - **Reviewer questions first** [GATE hard: reviewer question] — a report carrying `question:` items under `## Escalations` (`review-policy.md` "Gate Verdict Format" question carrier) is verdict-bearing, never interrupted (step 8a): request user decision per item, append the answers to decisions-log, and write each under its item in that reviewer's file per that carrier, passing it with that reviewer's findings to the creator fix dispatch (such a report is at least CONCERNS, per that carrier)
++   - **Memory findings** — each finding located in `.claude/agent-memory/<owner>/`, plus each `memory-check` hit of step 8's commit, goes to its owner's memory-fix dispatch per `review-policy.md` "Memory-fix dispatch", its `resolved: <ids> — memory-fix, <YYYY-MM-DD>` lines included — never a creator fix or an extra iteration
+    - **All APPROVE, latched or user-resolved** (`sprint-lifecycle.md` "State recovery" user-resolved findings) → DoD met; apply the adaptive gate policy [GATE adaptive: design-review green handoff] and append the decision inline; emit phase COMPLETED
+    - **Any FAIL** → escalation [GATE hard: FAIL escalation]:
+      - parse FAIL findings; group by escalation cause (concept change / new abstraction / scope expansion / contract change)
+@@ -51,7 +52,7 @@ Owner: inline orchestrator; dispatches reviewers (documentation, efficiency, cor
+    - on override → loop step 4 (`reviews.design.iteration` keeps incrementing — not reset; severity floor pinned at `critical`)
+    - on accept → record every open finding resolved (`cap-accept`, same home); COMPLETED note "iteration cap reached, user accepted"
+    - on abort → emit ABORT
+-11. Any reviewer or creator FAILED / ABORT → relay, halt; creator `QUESTION` → `agent-protocol.md` "Relay" `QUESTION`.
++11. Any reviewer, creator or memory-fix owner FAILED / ABORT → relay, halt; creator `QUESTION` → `agent-protocol.md` "Relay" `QUESTION`.
+ 12. Creator `ADVICE_NEEDED` → `agent-protocol.md` "Relay" `ADVICE_NEEDED`; reviewers never emit it.
+ 
+ ## Rules
+@@ -65,7 +66,7 @@ Owner: inline orchestrator; dispatches reviewers (documentation, efficiency, cor
+ ## Dispatch
+ 
+ ```json
+-[{"agent": "asd-reviewer-documentation, asd-reviewer-efficiency, asd-reviewer-correctness", "when": "step 7", "payload": ["turn_budget", "inputs.context", "manifest", "diff (iter 2+, else null)", "iteration", "floor", "interrupted (step 8a re-dispatch, else null)", "out_dir (<sprint>/reviews/design/iter-NN/)", "return_file", "language"], "signals": ["REVIEW_DONE", "FAILED", "ABORT"]}, {"agent": "asd-external-review", "when": "step 7", "payload": ["turn_budget", "inputs.context", "manifest (external.scope.json)", "diff (iter 2+, else null)", "iteration", "out_dir", "floor", "preflight (step 3a result, platform included)", "findings (stalemate set, iter 2+, external-review.md 'Stalemate detection')", "language"], "signals": ["REVIEW_DONE"]}, {"agent": "asd-ba, asd-ux, asd-architect", "when": "step 9 fixes, the creator owning each finding, one creator at a time", "payload": ["task (finding ids)", "inputs.context", "inputs.requirements", "inputs.ux (asd-ux)", "inputs.findings (reviewer file, question answers included)", "inputs.draft", "language"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}]
++[{"agent": "asd-reviewer-documentation, asd-reviewer-efficiency, asd-reviewer-correctness", "when": "step 7", "payload": ["turn_budget", "inputs.context", "manifest", "diff (iter 2+, else null)", "iteration", "floor", "interrupted (step 8a re-dispatch, else null)", "out_dir (<sprint>/reviews/design/iter-NN/)", "return_file", "language"], "signals": ["REVIEW_DONE", "FAILED", "ABORT"]}, {"agent": "asd-external-review", "when": "step 7", "payload": ["turn_budget", "inputs.context", "manifest (external.scope.json)", "diff (iter 2+, else null)", "iteration", "out_dir", "floor", "preflight (step 3a result, platform included)", "findings (stalemate set, iter 2+, external-review.md 'Stalemate detection')", "language"], "signals": ["REVIEW_DONE"]}, {"agent": "asd-ba, asd-ux, asd-architect", "when": "step 9 fixes, the creator owning each finding, one creator at a time", "payload": ["task (finding ids)", "inputs.context", "inputs.requirements", "inputs.ux (asd-ux)", "inputs.findings (reviewer file, question answers included)", "inputs.draft", "language"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}, {"agent": "<owner> of .claude/agent-memory/<owner>/", "when": "step 9 memory finding or memory-check hit (Claude only)", "payload": ["mode", "task", "work", "inputs.context", "write_scope"], "signals": ["COMPLETED", "FAILED"]}]
+ ```
+ 
+ ## Exit
+diff --git a/.asd/workflows/asd-phase-impl-review.md b/.asd/workflows/asd-phase-impl-review.md
+index ae69f758..f8688b09 100644
+--- a/.asd/workflows/asd-phase-impl-review.md
++++ b/.asd/workflows/asd-phase-impl-review.md
+@@ -1,6 +1,6 @@
+ # ASD Workflow: Impl Review
+ 
+-Owner: inline orchestrator; dispatches the internal reviewers of the frozen workflow's `reviewers.impl`, External Review, `asd-tester`.
++Owner: inline orchestrator; dispatches the internal reviewers of the frozen workflow's `reviewers.impl`, External Review, `asd-tester`, a memory-fix owner.
+ 
+ ## Entry
+ ```json
+@@ -14,7 +14,7 @@ Owner: inline orchestrator; dispatches the internal reviewers of the frozen work
+ 
+ ## Steps
+ 
+-impl-review fixes no CODE finding itself — those route to impl review-fix mode, followed by impl-test. Two exceptions, both `asd-tester` fixing tests in place: step 8's low-severity test-only findings, and a test defect step 9 surfaces, re-run after; a code defect always exits the phase to `impl` test-fix mode.
++impl-review fixes no CODE finding itself — those route to impl review-fix mode, followed by impl-test. Exceptions, fixed in place: step 8's low-severity test-only findings and a test defect step 9 surfaces, both by `asd-tester`; an agent-memory finding (step 8) or memory-caused step 9 red, by its owner's memory-fix (`review-policy.md` "Memory-fix dispatch"); step 9 re-runs after a red fix; a code defect always exits the phase to `impl` test-fix mode.
+ 
+ 1. Read `.asd/project/config.yaml` (`review.external_review`, `review.iterations_low/medium/high/critical`, `backward_compat`, `self_hosting`, `language.chat`, `language.docs`); read `<sprint>/state.json` frozen `documents.prd` and `workflow`, and that workflow's definition `.asd/workflows/<workflow>.json` (`sprint-lifecycle.md` "Workflows"). Diff pathspec and payload scope: consumer mode per `external-review.md`'s consumer row; `self_hosting: enabled` per its self-hosting row (the whole repo, excluding `.asd/project/**`/`.asd/sprints/**`/generated views), and adds `--self-hosting` to step 6's `emit-manifest`. At the division point, step 1c runs first. Scope of wave K's iteration NN (the wave node's `iteration` + 1): `sprint-lifecycle.md` "Review iteration counters" "Scope per iteration" (sole SSoT). Diff source (run command): `git diff <from>...HEAD <pathspec>`, `<from>` per bullet; each list is derived by running the diff above as `git -c core.quotePath=false diff --name-only`, one unquoted path per line, so a non-ASCII path still matches as a literal pathspec, and written to a scratch file — the single source of step 6's `emit-manifest` inputs, External Review's included:
+    - iteration 1 — the files `<from>...HEAD` changes, `<from>` = wave K−1's last `iteration_heads` sha (wave 1: none), then `node .asd/runtime.js wave-files --waves <sprint>/reviews/impl/waves.json --wave <K> --head <git rev-parse HEAD> [--files <those files>] --out <scratch file>` writes the one list: wave K's list at its current paths, unioned with them; **range base** `<base_branch>`, so the whole list is diffed over `<base_branch>...HEAD`;
+@@ -47,22 +47,24 @@ impl-review fixes no CODE finding itself — those route to impl review-fix mode
+      - on override → record that finding resolved (`sprint-lifecycle.md` "State recovery" user-resolved findings); exclude from fix set
+      - on accept → keep finding in fix set; note approved change in its reviewer file
+      - then continue to routing below with surviving findings
++   - **Memory findings** — each surviving finding located in `.claude/agent-memory/<owner>/`, plus each `memory-check` hit of step 7's commit, goes to its owner's memory-fix dispatch per `review-policy.md` "Memory-fix dispatch", its `resolved: <ids> — memory-fix, <YYYY-MM-DD>` lines included, before the bullet below tests its predicate, so it never blocks it.
+    - **Low-severity test-only findings** — `review-policy.md` "Low-severity test-only findings" is the sole SSoT for the condition and the fix; test it on the surviving findings, read from this iteration's `*.findings.json` (step 7). Fires → delegate them to a fresh `asd-tester`, routed as `asd-phase-impl-test.md` step 1a with its tier per `providers.md` "Task-class variants and routing", payload per `agent-protocol.md` "Dispatch payload", to fix and commit in place (`## Rules`); on its COMPLETED append `resolved: <ids> — test-fix, <YYYY-MM-DD>`, naming only the findings it reports fixed, to each affected reviewer file (`sprint-lifecycle.md` "State recovery" "User-resolved findings"); any finding left, or the branch not firing, falls to the bullet below.
+    - **Any unresolved finding remains** (CONCERNS findings, FAIL findings user accepted for fix, and any closed-wave late finding admitted at step 7a) → route to impl review-fix mode (the sprint returns here via impl-test, re-entering wave K) — step 9 is skipped, reviewer DoD was not met:
+      - write `state.json.review_fixes_pending = "<id>"` and the decisions-log entry inline.
+      - emit phase COMPLETED with `NEXT: impl`
+    - **Otherwise — all APPROVE or latched**, or escalation left zero unresolved findings (all FAIL overridden, no CONCERNS) → wave K's roster met (`sprint-lifecycle.md` "Review iteration counters" lifecycle): K < n → write `reviews.impl.wave` = K+1 inline and return to step 1 for wave K+1's iteration 1 in this same entry, no `impl`/`impl-test` between; K = n → reviewer DoD met → proceed to step 9
+-9. **Terminal full-suite gate** — dispatched only when step 8 (or step 10's cap-accept branch) reaches reviewer DoD met on the last wave; skipped entirely on any route to impl review-fix mode. Delegate to a fresh `asd-tester` for each terminal suite run, routed as `asd-phase-impl-test.md` step 1a with its tier per `providers.md` "Task-class variants and routing", payload per `agent-protocol.md` "Dispatch payload" — the phase's sole non-reviewer agent and only capability to run commands; with step 8's test-fix, the phase's only dispatches that change the repo. It runs the sprint cycle's one full-suite run per `## Rules`. Verdict from the runner's exit code plus report, never an agent's summary:
++9. **Terminal full-suite gate** — dispatched only when step 8 (or step 10's cap-accept branch) reaches reviewer DoD met on the last wave; skipped entirely on any route to impl review-fix mode. Delegate to a fresh `asd-tester` for each terminal suite run, routed as `asd-phase-impl-test.md` step 1a with its tier per `providers.md` "Task-class variants and routing", payload per `agent-protocol.md` "Dispatch payload" — the phase's only suite runner; with step 8's test-fix and the memory-fix dispatches (steps 8, 9), the phase's only dispatches that change the repo. It runs the sprint cycle's one full-suite run per `## Rules`. Verdict from the runner's exit code plus report, never an agent's summary:
+    - **Green** [GATE adaptive: impl-review green handoff] → DoD met: append the decisions-log, clear `review_fixes_pending` inline, apply the green-handoff gate policy, emit the definition's non-`impl` `next["impl-review"]` target — `NEXT: retro` (standard) or `NEXT: design-promote` (lite).
+    - **Red, test defect** (bad assertion, wrong fixture, flaky pattern) → write inline (mechanical, no gate) clear `state.json.reviews.design.latched` and every impl wave node's `latched` to `{}` sprint-wide (`sprint-lifecycle.md` "APPROVE latch" red-full-suite invalidation; a no-op if already cleared this red event) — then the tester fixes and commits the test (`## Rules`) and this step re-runs as a new terminal run, routed with its own id per `providers.md` "Task-class variants and routing"; loop until green or an unfixable state surfaces as `FAILED`
++   - **Red, memory-caused** (the failure traces to text in `.claude/agent-memory/<owner>/`) → clear latches as above, then its owner's memory-fix per `review-policy.md` "Memory-fix dispatch", never a `D-N`, and this step re-runs as a new terminal run, routed as the test-defect re-run is
+    - **Red, code defect** → the pending `D-N` recorded (`## Rules`), write inline `state.json.test_defects_pending = true`, clear latches as above and append the routing log; emit `NEXT: impl` (test-fix mode).
+-   - both kinds present → fix the test defects first (sub-bullet above), re-run, then route the remaining code defects back per the code-defect sub-bullet
++   - several kinds present → fix the test and memory defects first (sub-bullets above), re-run, then route the remaining code defects back per the code-defect sub-bullet
+ 10. Iteration cap reached [GATE hard: review-cap override] (step 3's cap: wave K's next `iteration − A` would exceed all severity-tier budgets per `review-policy.md`; the cap is per wave) — checked when step 8 would route to impl review-fix mode:
+     - request user decision: override cap and continue / accept current findings / abort sprint
+     - on override → route to impl review-fix mode; the orchestrator sets `review_fixes_pending` = `<id>` inline.
+     - on accept → record every open finding resolved (`cap-accept`, same home); wave K's roster met by cap-accept → as step 8's roster-met branch (next wave, or step 9 when K = n); the COMPLETED note folds in "iteration cap reached in wave K, user accepted"
+     - on abort → emit ABORT
+-11. Any reviewer or `asd-tester` FAILED / ABORT → relay, halt; `asd-tester` `QUESTION` → `agent-protocol.md` "Relay"; a reviewer never returns a bare `QUESTION` (step 8)
++11. Any reviewer, `asd-tester` or memory-fix owner FAILED / ABORT → relay, halt; `asd-tester` `QUESTION` → `agent-protocol.md` "Relay"; a reviewer never returns a bare `QUESTION` (step 8)
+ 12. On `ADVICE_NEEDED` from `asd-tester` → relay per `agent-protocol.md` "Relay"; execution resumes, no halt. A reviewer never emits it.
+ 
+ ## Rules
+@@ -72,16 +74,16 @@ impl-review fixes no CODE finding itself — those route to impl review-fix mode
+ - must (reviewer): `correctness` and `combined` trace AC-N against the `requirements` input (`sprint-lifecycle.md` "Input sources"); `testing` reads `<sprint>/test-plan.md` as its primary input; `combined` reads it as context, not a manifest file, in one pass over the rubrics its manifest composes, step 5's predicates included.
+ - must (tester, step 8 test-fix): fix and commit in place per `review-policy.md` "Low-severity test-only findings", reporting each finding fixed or unfixed.
+ - must (tester, step 9): fresh for each terminal run, never resumed from `impl-test` or an earlier run; run `test` **unscoped** — the sprint cycle's one full-suite run, never the impacted set (`sprint-lifecycle.md` "Impacted test set") — then `lint` and `build` per `commands.yaml`; write the raw result into `test-plan.md`'s `Suite run` section including `HEAD` (current `git rev-parse HEAD`), overwriting the impacted-run record `impl-test` left there; bracket each run with a `suite` op (`scope=full`, `--parent` its dispatch id).
+-- must (tester, step 9 red): a test defect → fix only the test, never code, and **commit the fix** (Conventional Commits, `git-strategy.md` "Commit before review"; its `impl-review <id> suite` trailer per "Commits") before the re-run — an uncommitted fix would leave `Suite run`'s `HEAD` predating it and the `pr`-phase skip check blind to it; a code defect → a pending `D-N` row in `test-plan.md` `Defects`; an unfixable state → `FAILED`.
++- must (tester, step 9 red): a test defect → fix only the test, never code, and **commit the fix** (Conventional Commits, `git-strategy.md` "Commit before review"; its `impl-review <id> suite` trailer per "Commits") before the re-run — an uncommitted fix would leave `Suite run`'s `HEAD` predating it and the `pr`-phase skip check blind to it; a memory-caused failure → reported with its path, never a `D-N`; a code defect → a pending `D-N` row in `test-plan.md` `Defects`; an unfixable state → `FAILED`.
+ 
+ ## Dispatch
+ ```json
+-[{"agent": "asd-reviewer-<key>", "when": "each internal key of reviewers.impl, step 6", "payload": ["turn_budget", "manifest", "diff", "wave", "iteration", "out_dir", "return_file", "floor", "inputs.context", "inputs", "language", "interrupted"], "signals": ["REVIEW_DONE", "FAILED", "ABORT"]}, {"agent": "asd-external-review", "when": "key external, step 6", "payload": ["turn_budget", "manifest", "diff", "wave", "iteration", "out_dir", "floor", "inputs.context", "inputs", "preflight", "findings", "language", "interrupted"], "signals": ["REVIEW_DONE"]}, {"agent": "asd-tester", "when": "step 8 low-severity test-only fix; step 9 terminal suite run", "payload": ["mode", "task", "work", "inputs.context", "inputs", "write_scope", "language", "timing"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}]
++[{"agent": "asd-reviewer-<key>", "when": "each internal key of reviewers.impl, step 6", "payload": ["turn_budget", "manifest", "diff", "wave", "iteration", "out_dir", "return_file", "floor", "inputs.context", "inputs", "language", "interrupted"], "signals": ["REVIEW_DONE", "FAILED", "ABORT"]}, {"agent": "asd-external-review", "when": "key external, step 6", "payload": ["turn_budget", "manifest", "diff", "wave", "iteration", "out_dir", "floor", "inputs.context", "inputs", "preflight", "findings", "language", "interrupted"], "signals": ["REVIEW_DONE"]}, {"agent": "asd-tester", "when": "step 8 low-severity test-only fix; step 9 terminal suite run", "payload": ["mode", "task", "work", "inputs.context", "inputs", "write_scope", "language", "timing"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}, {"agent": "<owner> of .claude/agent-memory/<owner>/", "when": "a memory finding or memory-check hit (step 8), a memory-caused suite red (step 9); Claude only", "payload": ["mode", "task", "work", "inputs.context", "write_scope"], "signals": ["COMPLETED", "FAILED"]}]
+ ```
+ 
+ ## Exit
+ ```json
+-{"writes": ["<sprint>/reviews/impl/waves.json (step 1c)", "<sprint>/reviews/impl/<id>/: <reviewer>.md and <reviewer>.findings.json (step 7), <reviewer>.manifest.json, external.scope.json, <fingerprint>.diff (step 6)", "<sprint>/reviews/impl/<id>/<reviewer>.late.md and .late.findings.json (step 7a; its iteration and link per review-policy.md 'Late duplicate return')", "<sprint>/test-plan.md Suite run and Defects (step 9)", "asd-tester test-fix commits and resolved: lines in reviewer files (step 8)", "state.json: phase, reviews.impl, review_fixes_pending, test_defects_pending", "decisions-log entry on a division into n > 1 waves, reviewer-question answers, DoD met, route-to-impl-fix, override, or terminal-suite red"], "next": [{"if": "reviewer DoD met on the last wave and terminal full suite green (step 9), standard", "next": "retro"}, {"if": "reviewer DoD met on the last wave and terminal full suite green (step 9), lite", "next": "design-promote"}, {"if": "unresolved findings (step 8, step 10 override)", "next": "impl"}, {"if": "terminal full suite red with code defects (step 9)", "next": "impl"}]}
++{"writes": ["<sprint>/reviews/impl/waves.json (step 1c)", "<sprint>/reviews/impl/<id>/: <reviewer>.md and <reviewer>.findings.json (step 7), <reviewer>.manifest.json, external.scope.json, <fingerprint>.diff (step 6)", "<sprint>/reviews/impl/<id>/<reviewer>.late.md and .late.findings.json (step 7a; its iteration and link per review-policy.md 'Late duplicate return')", "<sprint>/test-plan.md Suite run and Defects (step 9)", "asd-tester test-fix and memory-fix commits (steps 8, 9), resolved: lines in reviewer files (step 8)", "state.json: phase, reviews.impl, review_fixes_pending, test_defects_pending", "decisions-log entry on a division into n > 1 waves, reviewer-question answers, DoD met, route-to-impl-fix, override, or terminal-suite red"], "next": [{"if": "reviewer DoD met on the last wave and terminal full suite green (step 9), standard", "next": "retro"}, {"if": "reviewer DoD met on the last wave and terminal full suite green (step 9), lite", "next": "design-promote"}, {"if": "unresolved findings (step 8, step 10 override)", "next": "impl"}, {"if": "terminal full suite red with code defects (step 9)", "next": "impl"}]}
+ ```
+ 
+ ## Return
+diff --git a/.asd/workflows/asd-phase-impl-test.md b/.asd/workflows/asd-phase-impl-test.md
+index e72765aa..e8f93447 100644
+--- a/.asd/workflows/asd-phase-impl-test.md
++++ b/.asd/workflows/asd-phase-impl-test.md
+@@ -1,6 +1,6 @@
+ # ASD Workflow: Impl Test
+ 
+-Owner: inline orchestrator; dispatches one fresh `asd-tester` per entry.
++Owner: inline orchestrator; dispatches one fresh `asd-tester` per entry, plus a memory hit's owner (step 7a).
+ 
+ ## Entry
+ ```json
+@@ -16,7 +16,7 @@ Owner: inline orchestrator; dispatches one fresh `asd-tester` per entry.
+ 
+ Autonomous: no user gate on a green impacted-set run, none on routing defects back to impl short of a stalemate. The one live `asd-tester` of an entry runs steps 3, 4, 7 and 8 and is never resumed into a later entry — `test-plan.md` is the only hand-off; recover from on-disk evidence only after session loss.
+ 
+-1. Read `.asd/project/config.yaml` (`language.chat`, `language.docs`, `backward_compat`, `self_hosting`), `<sprint>/state.json` → write `phase=impl-test` inline (mechanical, no gate). Detect the mode per `## Entry` `modes` from `<sprint>/test-plan.md`'s `Entry log`. **Resume**: keep its row (step 4 appends none), take `<prior-sha>` from the row before it (none → entry 1, amended not rewritten), never re-append its `D-N` rows; when they exist and a current answer (step 9) names their digest, go straight to step 9's current-answer branch. Entry 1 of a sprint that removes a mechanism or term also runs the leftover-term check `artifact-layout.md` "Agent memory" requires, in the strategy pass (step 4)
++1. Read `.asd/project/config.yaml` (`language.chat`, `language.docs`, `backward_compat`, `self_hosting`), `<sprint>/state.json` → write `phase=impl-test` inline (mechanical, no gate). Detect the mode per `## Entry` `modes` from `<sprint>/test-plan.md`'s `Entry log`. **Resume**: keep its row (step 4 appends none), take `<prior-sha>` from the row before it (none → entry 1, amended not rewritten), never re-append its `D-N` rows; when they exist and a current answer (step 9) names their digest, go straight to step 9's current-answer branch. Entry 1 of a sprint that removes a mechanism or term also runs the leftover-term check `artifact-layout.md` "Agent memory" requires, in the strategy pass (step 4), its memory hits fixed at step 7a
+ 1a. Route Tester work through `node .asd/runtime.js route-task --input <path>`, its tier per `providers.md` "Task-class variants and routing", and persist its result. `execution="command"` runs directly; `execution="agent"` dispatches `asd-tester-<tier>` for `mechanical`/`critical`, or the base `asd-tester` for `tier: standard` (no `-standard` variant exists — `providers.md` "Task-class variants and routing"), payload per `agent-protocol.md` "Dispatch payload" with `## Dispatch`'s role keys. Persist `state.json.task_routing[taskId]` per `providers.md`. Append the decisions-log routing line `- YYYY-MM-DD — route <taskId>: <tier>, dispatch HEAD <sha>; risk <declaration>` (`git rev-parse HEAD`; the declaration per `providers.md` "Task-class variants and routing") at each tester dispatch.
+ 2. **Change surface**:
+    - **Entry 1**: run command for `git diff <git.base_branch>...HEAD --stat <pathspec>` plus file list, the pathspec excluding the impl-review row's exclusions (`.asd/rules/external-review.md` "Phase-scoped payload"). This is the **full change surface**; a `Test-only` Task's commits (trailer `ASD-Task: Task N`, `sprint-lifecycle.md` "Plan file format") are existing tests in it
+@@ -32,6 +32,7 @@ Autonomous: no user gate on a green impacted-set run, none on routing defects ba
+    - deletes the approved removals; writes the `add` decisions at the chosen level, never re-authoring a `Test-only` Task's tests (strategy and pruning still cover them); fail-first regression proof and test-quality bars per `code-style.md` §17 (SSoT) — the proof recorded in the `Added tests` table
+    - **entry 1**: resolves each stub a `plan.md` `Stub <ref> → impl-test` line routes here (`sprint-lifecycle.md` "Plan file format") per `git-strategy.md` "TODO stubs": its TODO resolved in the test file, its `.asd/project/stubs.md` row deleted
+    - commits per Conventional Commits; emits COMPLETED
++7a. **Memory fix** — before step 8, each hit in `.claude/agent-memory/<owner>/` the tester reports (step 4's leftover-term check, step 9's memory class) goes to its owner's memory-fix dispatch in this entry (`review-policy.md` "Memory-fix dispatch"), never a `D-N`.
+ 8. **Suite gate** — the tester runs the impacted suite, lint/build and records raw results; verdict per `## Rules` suite gate.
+ 9. **Triage** on any failure:
+    - **test defect** (bad assertion, wrong fixture, flaky pattern) → re-dispatch step 7 for the offending tests, then step 8 again
+@@ -40,7 +41,8 @@ Autonomous: no user gate on a green impacted-set run, none on routing defects ba
+      - `stalemate: true` and no current answer → emit `FAILED: stalemate <digest>` instead of routing and request a hard user decision (`checkpoints.md`): continue test-fix with guidance, accept as debt, or abort; append the answer with the digest to decisions-log, then apply it
+      - `stalemate: true` and a current answer → apply it without re-asking: continue → route below, its guidance riding the test-fix payload; accept as debt → set those rows `accepted-debt`, register each failing test in `.asd/project/stubs.md` with an `(accepted-debt)` Reason, re-dispatch step 7 to skip exactly those tests, then step 8 again; abort → ABORT
+      - otherwise, or on continue, **route**: fill this entry's `Entry log` `HEAD analysed` with `git rev-parse HEAD`; write `state.json.test_defects_pending = true` inline and append decisions-log "impl-test: defects <D-N list> → impl test-fix (digest <digest>)" (mechanical, no gate); commit these bookkeeping writes (`sprint-lifecycle.md` "Impl-test commits its own output"); emit COMPLETED with `NEXT: impl`
+-   - both kinds present → fix the test defects first, re-run, then route the remaining code defects back
++   - **memory defect** (the failure traces to text in `.claude/agent-memory/<owner>/`) → step 7a, then step 8 again
++   - several kinds present → fix the test and memory defects first, re-run, then route the remaining code defects back
+    - no iteration cap: loop until the impacted set passes; an unfixable state surfaces as a dev/tester `FAILED`, never a silent exit
+ 10. **Green impacted run** — first, the smoke check (`artifact-layout.md` "Test plan" Manual verification): each `Manual verification` row gets it once, at the first entry whose suite gate is green after the row is written — request a user decision (pass / fail, with notes) for each row still lacking a result, record each as `result: <pass|fail> — <notes>` beneath its row (impl-review reads it there), and append one decisions-log line. Then write inline (mechanical, no gate): fill this entry's `Entry log` row `HEAD analysed` with current `git rev-parse HEAD`; append decisions-log "impl-test: impacted set green (<counts>), <added>/<removed> tests"; confirm `test_defects_pending` null; commit these bookkeeping writes (`sprint-lifecycle.md` "Impl-test commits its own output") and the timing ledger — `git status --porcelain` MUST be empty before this step's COMPLETED; emit COMPLETED with `NEXT: impl-review`
+ 11. tester `QUESTION` → `agent-protocol.md` "Relay"; FAILED / ABORT → relay, halt; no signal → `sprint-lifecycle.md` "State recovery" failed dispatch before re-dispatch
+@@ -53,11 +55,11 @@ Autonomous: no user gate on a green impacted-set run, none on routing defects ba
+ - must: `Defects` rows persist across entries — a resolved row stays `fixed` for the record; a reappearing defect gets a new `D-N` row, never a reopened one.
+ - must: record a reason for each in-scope removal; a removal outside the sprint's overall change surface waits for step 6.
+ - must: suite gate — re-run on every entry, scoped to the impacted set (`sprint-lifecycle.md` "Impacted test set", subject to its safety valve, never the whole repo — the full suite runs only once, at the end of `impl-review`); verdict from the runner's exit code plus report, never an agent's claim; bracket each suite run (steps 3, 8) with a `suite` op. Bounded risk: a defect a fix introduces outside the impacted set's reach is not caught here — impl-review's terminal full suite is the backstop.
+-- must: triage a failure as a test defect (fix it, re-run) or a code defect (a `D-N` row, never a production-code fix).
++- must: triage a failure as a test defect (fix it, re-run), a memory defect (report it, step 7a) or a code defect (a `D-N` row, never a production-code fix).
+ 
+ ## Dispatch
+ ```json
+-[{"agent": "asd-tester", "when": "one fresh instance per entry, steps 3-9", "payload": ["mode", "task", "inputs.context", "inputs", "write_scope", "language", "timing"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}]
++[{"agent": "asd-tester", "when": "one fresh instance per entry, steps 3-9", "payload": ["mode", "task", "inputs.context", "inputs", "write_scope", "language", "timing"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}, {"agent": "<owner> of .claude/agent-memory/<owner>/", "when": "a memory hit (Claude only), step 7a", "payload": ["mode", "task", "work", "inputs.context", "write_scope"], "signals": ["COMPLETED", "FAILED"]}]
+ ```
+ 
+ ## Signals
+diff --git a/.asd/workflows/asd-phase-impl.md b/.asd/workflows/asd-phase-impl.md
+index 26fa3d8e..21445e67 100644
+--- a/.asd/workflows/asd-phase-impl.md
++++ b/.asd/workflows/asd-phase-impl.md
+@@ -1,6 +1,6 @@
+ # ASD Workflow: Impl
+ 
+-Owner: inline orchestrator; dispatches `asd-dev`, `asd-tester`, a memory finding's owner, skill `asd-init`.
++Owner: inline orchestrator; dispatches `asd-dev`, `asd-tester`, a memory-fix owner, skill `asd-init`.
+ 
+ ## Entry
+ ```json
+@@ -24,18 +24,18 @@ Autonomous in all modes: once work is dispatched, no user contact until (a) all
+    - only one fix flag is ever set: each fix mode clears its own before routing on, save an amendment accepted during a review-fix round, which continues into initial mode first (step 11, `sprint-lifecycle.md` "Scope amendment")
+ 3. **Build work set** per mode:
+    - **initial** — read `<sprint>/plan.md` → parse Task blocks (title, subtask checkboxes) plus the `## Dependencies` wave table and dependency lines
+-   - **review-fix** — read every reviewer file in `<sprint>/reviews/impl/<id>/`, `<reviewer>.late.md` included; collect all CONCERNS findings, every admitted late finding, plus all FAIL findings the user accepted for fix or kept by a stalemate **continue fixing**, skipping each finding a `resolved:` line names (`sprint-lifecycle.md` "State recovery" user-resolved findings), plus every `answer:` line under a `question:` item (`review-policy.md` "Gate Verdict Format"), part of that reviewer's finding set; deduplicate across reviewers (`review-policy.md` "Autofix vs escalation" "Deduplication"), then group into fix tasks, one dev task per independent group; findings in test files route to `asd-tester`; findings in `.claude/agent-memory/<owner>/` route to `<owner>`'s fresh memory-fix dispatch (Claude only, `review-policy.md` "Autofix vs escalation"): the owner fixes the file itself, the orchestrator committing it when the owner holds no commit tool; an owner whose definition withholds a write tool returns `MEMORY-FIX <path>` text the orchestrator applies verbatim, commits and logs in one decisions-log line; a finding in the directory of an agent that no longer exists is deleted by the orchestrator per the same rule
+-   - **test-fix** — read `<sprint>/test-plan.md` `Defects`; collect every `D-N` with status `pending`; group into fix tasks, one dev task per independent group; a `D-N` in `.claude/agent-memory/<owner>/` routes to `<owner>` exactly as a review-fix memory finding does, the orchestrator then setting that row's `Status` to `fixed`
++   - **review-fix** — read every reviewer file in `<sprint>/reviews/impl/<id>/`, `<reviewer>.late.md` included; collect all CONCERNS findings, every admitted late finding, plus all FAIL findings the user accepted for fix or kept by a stalemate **continue fixing**, skipping each finding a `resolved:` line names (`sprint-lifecycle.md` "State recovery" user-resolved findings), plus every `answer:` line under a `question:` item (`review-policy.md` "Gate Verdict Format"), part of that reviewer's finding set; deduplicate across reviewers (`review-policy.md` "Autofix vs escalation" "Deduplication"), then group into fix tasks, one dev task per independent group; findings in test files route to `asd-tester`
++   - **test-fix** — read `<sprint>/test-plan.md` `Defects`; collect every `D-N` with status `pending`; group into fix tasks, one dev task per independent group
+ 4. Write `state.json` (phase=impl) inline (mechanical, no gate)
+ 5. **Build execution graph**:
+    - initial — the plan's wave table is the graph (`sprint-lifecycle.md` "Plan file format"): waves ascending, tasks within one wave parallelisable, never re-derived from the dependency lines. A plan predating that rule carries no table: fall back to a topological sort over its dependency lines. Ticked work is never re-dispatched: the graph is built from the waves holding an unticked Task, and a wave whose Tasks are all ticked is skipped (`sprint-lifecycle.md` "Scope amendment")
+-   - fix modes — one ordered chain, never a concurrent set: every fix task depends on its predecessor by construction, so exactly one is in flight at a time (order: colliding tasks adjacent, else by finding/defect id). The chain is dispatched to ONE agent that works it in order, never a fresh instance per task — tier per 5a; test-file findings route to `asd-tester` as their own chain, dispatched only after the dev chain completes and carrying its outcome (fixes already committed — `git-strategy.md` "Commit before review"), never alongside it, so exactly one agent is in flight across the whole round. That tester chain edits only the `test-plan.md` rows `artifact-layout.md` "Test plan" grants the review-fix tester. Memory-fix dispatches (step 3) run last, one at a time, in the order `review-policy.md` "Autofix vs escalation" sets.
+-5a. Before each task dispatch, run `node .asd/runtime.js route-task --input <path>` with kind, objective inputs/checks, the task's `Material risk` lines as typed `risks` entries (`sprint-lifecycle.md` "Plan file format"; a fix round's `risks`: `providers.md` "Task-class variants and routing"), correction attempts and `priorTier`. `execution="command"` runs directly; `execution="agent"` dispatches the Task's agent — `asd-dev`, or `asd-tester` for a Task carrying a `Test-only:` line — as `<agent>-<tier>` for `mechanical`/`critical`, or the base agent for `tier: standard` (no `-standard` variant exists — `providers.md` "Task-class variants and routing"). Persist the record in `state.json.task_routing[taskId]` per `providers.md`, supplying its tier as `priorTier` only on a re-dispatch of the same id, and append the decisions-log routing line `- YYYY-MM-DD — route <taskIds>: <tier>, dispatch HEAD <sha>[; risk <declaration>]` (`git rev-parse HEAD`, one per dispatch; the `risk` suffix for a fix round's ids per `providers.md` "Task-class variants and routing"). Invalid routing blocks. In a fix mode, route every task of the chain first and persist each record, then dispatch the whole chain to a single agent at the highest tier returned — one agent holding every fix in the round is what keeps a later fix from contradicting an earlier one it never saw.
++   - fix modes — one ordered chain, never a concurrent set: every fix task depends on its predecessor by construction, so exactly one is in flight at a time (order: colliding tasks adjacent, else by finding/defect id). The chain is dispatched to ONE agent that works it in order, never a fresh instance per task — tier per 5a; test-file findings route to `asd-tester` as their own chain, dispatched only after the dev chain completes and carrying its outcome (fixes already committed — `git-strategy.md` "Commit before review"), never alongside it, so exactly one agent is in flight across the whole round. That tester chain edits only the `test-plan.md` rows `artifact-layout.md` "Test plan" grants the review-fix tester.
++5a. Before each task dispatch, run `node .asd/runtime.js route-task --input <path|->`, its input keys per `providers.md` "Task-class variants and routing", `risks` the task's `Material risk` lines as typed entries (`sprint-lifecycle.md` "Plan file format"; a fix round's: same section). `execution="command"` runs directly; `execution="agent"` dispatches the Task's agent — `asd-dev`, or `asd-tester` for a Task carrying a `Test-only:` line — as `<agent>-<tier>` for `mechanical`/`critical`, or the base agent for `tier: standard` (no `-standard` variant exists — `providers.md` "Task-class variants and routing"). Persist the record in `state.json.task_routing[taskId]` per `providers.md`, supplying its tier as `priorTier` only on a re-dispatch of the same id, and append the decisions-log routing line `- YYYY-MM-DD — route <taskIds>: <tier>, dispatch HEAD <sha>[; risk <declaration>]` (`git rev-parse HEAD`, one per dispatch; the `risk` suffix for a fix round's ids per `providers.md` "Task-class variants and routing"). Invalid routing blocks. In a fix mode, route every task of the chain first and persist each record, then dispatch the whole chain to a single agent at the highest tier returned — one agent holding every fix in the round is what keeps a later fix from contradicting an earlier one it never saw.
+ 6. **Dispatch tasks** per execution graph:
+    - **Declared settings change** (initial mode) — as the wave holding a Task's `Settings change:` line (`sprint-lifecycle.md` "Plan file format") opens, before any of that wave's dispatch, the line is applied, never an `MS-N` and never handed to a dev: the main orchestrator dispatches `asd-init` sprint-mediated mode with exactly the declared pairs — validated against the working-tree `t_config.yaml`, so a key an earlier wave added counts — and commits `.asd/project/config.yaml` itself; on `FAILED`, halt as a blocker before any of that wave's dispatch; else that Task's other subtasks, if any, then dispatch in that wave
+    - initial mode: waves ascending, every task of a wave dispatched concurrently (caller schedules concurrent delegations), the next wave opening only once all their signals are in; a fix mode: step 5's single ordered chain, dev chain before tester chain
+    - per task, or once per chain in a fix mode (5a): delegate to the agent `## Dispatch` names (`dev` in `## Rules` reads as that agent); payload per `agent-protocol.md` "Dispatch payload" with `## Dispatch`'s role keys: `work` — initial: Task block excerpt (title + subtasks + dependencies); review-fix: grouped finding list (each finding's id per `git-strategy.md` "Commits", severity, location, description, plus the user-approved change note for accepted FAIL findings); test-fix: grouped defect list (`D-N`, location, symptom, failing test) plus the guidance of a stalemate continue answer logged for it in the live `decisions-log.md` (`artifact-layout.md` "Decisions log" rotation), if any; `inputs` — "Input sources" keys plus `commands`, `tech_reference`, `custom_rules`, review-fix `reviews` (`reviews/impl/<id>/`), test-fix `test_plan`; `language` — `language.chat`, `language.docs`; instruction: `## Rules`
+-7. Wait all task signals (COMPLETED and/or BLOCKED_MANUAL); a dispatch returning none → `sprint-lifecycle.md` "State recovery" failed dispatch. Initial mode, after a wave's last signal and before the next wave opens: tick the `plan.md` checkboxes of the subtasks that wave's COMPLETED signals report done, append each returned `memory_index` line to its `MEMORY.md`, and commit. `self_hosting: enabled`: once a wave's (initial) or the round's (fix modes) last canon-editing dispatch has signalled, before the next wave opens or step 9 runs, run `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `providers.md` "Canonical path -> per-provider path") over every view whose canon changed — `--apply AGENTS.md` when canon changed but no view did, since any valid `--apply` recomputes `release-manifest.json`'s hash ledgers — then `node .asd/sync.js --check`, and commit the regenerated views
++7. Wait all task signals (COMPLETED and/or BLOCKED_MANUAL); a dispatch returning none → `sprint-lifecycle.md` "State recovery" failed dispatch. Initial mode, after a wave's last signal and before the next wave opens: tick the `plan.md` checkboxes of the subtasks that wave's COMPLETED signals report done, append each returned `memory_index` line to its `MEMORY.md`, and commit; a `memory-check` hit on that commit goes to its owner's memory-fix dispatch here (`review-policy.md` "Memory-fix dispatch"). `self_hosting: enabled`: once a wave's (initial) or the round's (fix modes) last canon-editing dispatch has signalled, before the next wave opens or step 9 runs, run `node .asd/sync.js --apply <generated-view-path...>` (generated view paths only, per `providers.md` "Canonical path -> per-provider path") over every view whose canon changed — `--apply AGENTS.md` when canon changed but no view did, since any valid `--apply` recomputes `release-manifest.json`'s hash ledgers — then `node .asd/sync.js --check`, and commit the regenerated views
+ 8. **Manual-steps validation + gate** [GATE hard: manual steps] — when any `BLOCKED_MANUAL` emitted:
+    - validate each new `MS-N` for necessity: keep only when the action genuinely cannot be done autonomously (needs access, secret, external account, or authority the agent lacks); reject any entry the agent could do with its own tools → re-dispatch its owning dev with feedback "implement autonomously, remove MS-N"; loop step 7
+    - once all remaining `MS-N` are validated and all unblocked tasks COMPLETED: append a decisions-log entry; add an `F-N` citing the blocking `MS-N` ids only when the halt itself was a malfunction — the step was unexpected, unworkable, or raised at the wrong point (`sprint-lifecycle.md` "Friction log"); a validated, genuinely necessary halt records no `F-N`; present `manual-steps.md` to the user (`checkpoints.md` "Gate mechanics"); wait for an explicit continue command
+@@ -43,7 +43,7 @@ Autonomous in all modes: once work is dispatched, no user contact until (a) all
+    - loop until every `MS-N` is `done` and every deferred task COMPLETED
+ 9. **Impl completion gate** (all modes) — phase MUST NOT emit COMPLETED until the orchestrator verifies, via `commands.yaml`:
+    - `build` and `lint` each executed and finished with no errors and no warnings
+-   - the round's diff — what its agents committed plus anything still uncommitted — read before committing or advancing: every path it touches is one those agents were authorised to touch, plus `.asd/project/config.yaml` when step 6 applied a declared settings change, plus each memory file the orchestrator applied from a memory-fix dispatch or deleted as ownerless, and `<sprint>/test-plan.md` when it set a memory `D-N`'s `Status` (step 3), plus each generated view step 7's sync regenerated, plus `<sprint>/plan.md` and each `MEMORY.md` step 7 wrote, plus `<sprint>/timing.jsonl`. Any other path fails the gate as a build error does — a file no dispatched task named, a generated view an agent edited, a scripted edit that rewrote more than its target. Distinct from `code-style.md` §19's staged-content lint: same tool, different question
++   - the round's diff — what its agents committed plus anything still uncommitted — read before committing or advancing: every path it touches is one those agents were authorised to touch, plus `.asd/project/config.yaml` when step 6 applied a declared settings change, plus each generated view step 7's sync regenerated, plus `<sprint>/plan.md` and each `MEMORY.md` step 7 wrote, plus each memory file the orchestrator applied from step 7's memory-fix dispatch, plus `<sprint>/timing.jsonl`. Any other path fails the gate as a build error does — a file no dispatched task named, a generated view an agent edited, a scripted edit that rewrote more than its target. Distinct from `code-style.md` §19's staged-content lint: same tool, different question
+    - the gate never runs tests — a dev's impacted-set self-verification run is not part of it; the suite/impacted-set gates belong to `impl-test`/`impl-review`
+    - any condition fails → relay the specific failure to the owning dev(s) to fix and re-run; loop step 7. Unrecoverable failure escalates as a blocker (`FAILED`). Automatic verification — no user pause
+ 10. **Impl assessment checkpoint** [GATE adaptive: initial impl assessment] — **initial mode only** (fix modes skip to step 11) — apply `checkpoints.md`, recording adaptive evidence or requesting the user:
+@@ -75,7 +75,7 @@ Autonomous in all modes: once work is dispatched, no user contact until (a) all
+ 
+ ## Dispatch
+ ```json
+-[{"agent": "asd-dev", "when": "each Task without a Test-only line (initial); the fix chain (review-fix, test-fix)", "payload": ["mode", "task", "work", "inputs.context", "inputs", "write_scope", "language"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "BLOCKED_MANUAL", "FAILED", "ABORT"]}, {"agent": "asd-tester", "when": "a Test-only Task (initial); the test-file findings chain, after the dev chain (review-fix)", "payload": ["mode", "task", "work", "inputs.context", "inputs", "write_scope", "language"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "BLOCKED_MANUAL", "FAILED", "ABORT"]}, {"agent": "<owner> of .claude/agent-memory/<owner>/", "when": "a memory finding or D-N (fix modes, Claude only), step 3", "payload": ["mode", "task", "work", "inputs.context", "write_scope"], "signals": ["COMPLETED", "FAILED"]}, {"agent": "asd-init (skill, sprint-mediated mode)", "when": "a wave holding a Settings change: line opens (initial), step 6", "payload": ["the declared pairs"], "signals": ["COMPLETED", "FAILED"]}]
++[{"agent": "asd-dev", "when": "each Task without a Test-only line (initial); the fix chain (review-fix, test-fix)", "payload": ["mode", "task", "work", "inputs.context", "inputs", "write_scope", "language"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "BLOCKED_MANUAL", "FAILED", "ABORT"]}, {"agent": "asd-tester", "when": "a Test-only Task (initial); the test-file findings chain, after the dev chain (review-fix)", "payload": ["mode", "task", "work", "inputs.context", "inputs", "write_scope", "language"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "BLOCKED_MANUAL", "FAILED", "ABORT"]}, {"agent": "<owner> of .claude/agent-memory/<owner>/", "when": "a memory-check hit on step 7's MEMORY.md commit (Claude only)", "payload": ["mode", "task", "work", "inputs.context", "write_scope"], "signals": ["COMPLETED", "FAILED"]}, {"agent": "asd-init (skill, sprint-mediated mode)", "when": "a wave holding a Settings change: line opens (initial), step 6", "payload": ["the declared pairs"], "signals": ["COMPLETED", "FAILED"]}]
+ ```
+ 
+ ## Signals
+diff --git a/.claude/agent-memory/asd-reviewer-combined/feedback_rereview-no-shell-checks.md b/.claude/agent-memory/asd-reviewer-combined/feedback_rereview-no-shell-checks.md
+index a69be680..74c774b3 100644
+--- a/.claude/agent-memory/asd-reviewer-combined/feedback_rereview-no-shell-checks.md
++++ b/.claude/agent-memory/asd-reviewer-combined/feedback_rereview-no-shell-checks.md
+@@ -21,5 +21,5 @@ to say which facts were derived and which were taken from a record.
+ - A test pin that finds a sentence by code spans: read the helpers (`sectionOf`, `stepOf`, `spans`) once and confirm
+   that the new lookup cannot be satisfied by a sibling sentence - the pin must go red on the mutation the test plan lists.
+ - A gap that predates the fix and only clamps a tier upward is below a medium floor; note it in the basis, do not count it.
+-- The return always carries the `## Findings` table of the review template, as a single `no findings` row when empty;
+-  prose in its place is rejected by the persistence step and costs a re-dispatch.
++- The return always carries the `## Findings` table of the review template; an empty table is its header and separator
++  rows only, never a placeholder row; prose in its place is rejected by the persistence step and costs a re-dispatch.
+diff --git a/.claude/agent-memory/asd-reviewer-correctness/MEMORY.md b/.claude/agent-memory/asd-reviewer-correctness/MEMORY.md
+index a26d278d..ea155c57 100644
+--- a/.claude/agent-memory/asd-reviewer-correctness/MEMORY.md
++++ b/.claude/agent-memory/asd-reviewer-correctness/MEMORY.md
+@@ -6,4 +6,4 @@
+ - [OS is not shell](project_os-is-not-shell.md) — Claude Code runs commands via POSIX `Bash` even on win32; OS-keyed shell syntax is wrong for one provider
+ - [Check host claims against own dispatch](feedback_check-host-claims-against-own-dispatch.md) — host-capability canon claims: compare with your own tool list + host docs, not just the retro row
+ - [Read deferred gaps in sprint logs](feedback_read-deferred-gaps-in-sprint-logs.md) — grep decisions-log/friction-log for gaps "left for impl-review" before the verdict
+-- [persist-review return shape](reference_persist-review-return-shape.md) — write return verbatim to payload's `.asd/tmp/` file; first table parsed by column; bare APPROVE keeps only `—` row
++- [persist-review return shape](reference_persist-review-return-shape.md) — write return verbatim to payload's `.asd/tmp/` file; first table parsed by column; bare APPROVE: header+separator only
+diff --git a/.claude/agent-memory/asd-reviewer-correctness/feedback_read-deferred-gaps-in-sprint-logs.md b/.claude/agent-memory/asd-reviewer-correctness/feedback_read-deferred-gaps-in-sprint-logs.md
+index 48df70dc..5123f207 100644
+--- a/.claude/agent-memory/asd-reviewer-correctness/feedback_read-deferred-gaps-in-sprint-logs.md
++++ b/.claude/agent-memory/asd-reviewer-correctness/feedback_read-deferred-gaps-in-sprint-logs.md
+@@ -7,6 +7,6 @@ metadata:
+ 
+ Before emitting an impl-review verdict, grep `<sprint>/decisions-log.md` and `<sprint>/friction-log.md` for "left for impl-review", "flagged", and open friction rows touching the rules in the diff. Then check whether the current canon closes each one.
+ 
+-**Why:** sprint 019. The orchestrator logged "who flips a memory-fix `D-N` Status to fixed" as left for impl-review (friction F-2). iter-01 missed it because the review only read the diff. iter-02 caught it only by reading the logs. The gap was real: a memory `D-N` stays `pending` and gets re-collected every test-fix round.
++**Why:** the orchestrator once logged a lifecycle gap as left for impl-review: no rule said who closes a deferred item's status. A diff-only review missed it. A later review caught it only by reading the logs. The gap was real: the item stayed open and got re-collected every fix round.
+ 
+ **How to apply:** do this in every impl-review iteration, after the diff pass. A logged gap that the current diff's rules still leave open is in-surface when the diff touches its rule. Pairs with [[review-method-no-shell]].
+diff --git a/.claude/agent-memory/asd-reviewer-correctness/reference_persist-review-return-shape.md b/.claude/agent-memory/asd-reviewer-correctness/reference_persist-review-return-shape.md
+index 96ec9364..5fe47a54 100644
+--- a/.claude/agent-memory/asd-reviewer-correctness/reference_persist-review-return-shape.md
++++ b/.claude/agent-memory/asd-reviewer-correctness/reference_persist-review-return-shape.md
+@@ -1,6 +1,6 @@
+ ---
+ name: persist-review-return-shape
+-description: I write my final return verbatim to the payload's `.asd/tmp/` return file; persist-review --in parses it - first table by column position, bare APPROVE must carry only the `—` placeholder row
++description: I write my final return verbatim to the payload's `.asd/tmp/` return file; persist-review --in parses it - first table by column position, a bare APPROVE with no findings leaves the Findings table as header and separator only
+ metadata:
+   type: reference
+ ---
+@@ -8,7 +8,7 @@ metadata:
+ I write my final return verbatim to the return file the payload names (`.asd/tmp/<sprint>-<phase>-<iteration id>-<reviewer>.return.md`); the orchestrator never re-types it and runs `node .asd/runtime.js persist-review --in <that file>` (`runtime.js` `reviewFindings`/`persistReview`). No return file = interrupted dispatch. The ledger to fill is the manifest's `ledger` skeleton (digest-excluded). It reads the FIRST markdown table in the text by column position: id, severity, location.
+ 
+ - `#` cell: a bare id; Severity cell exactly `low|medium|high|critical`.
+-- A bare `APPROVE` with any real findings row is rejected; with no findings, leave the single `| — | — | — | no findings | — |` row.
++- A bare `APPROVE` with any real findings row is rejected; a bare APPROVE with no findings leaves the Findings table as header and separator only.
+ - CONCERNS/FAIL with no findings row is rejected.
+ - Do not put any other table before the Findings table.
+ - Files rows in the ledger stay `checked`/`n/a` (never `finding`); finding ids go on rules rows as `f`.
+diff --git a/.claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md b/.claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md
+index c37214a8..42ed333f 100644
+--- a/.claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md
++++ b/.claude/agent-memory/asd-reviewer-documentation/feedback_no-shell-doc-review-method.md
+@@ -70,8 +70,8 @@ phase rejects and re-dispatches.
+   that style alone is not a §7 finding.
+ - **Agent-memory files are reviewable source** (`artifact-layout.md` "Agent memory"): verify durable claims
+   against HEAD AND against the writer's own definition. A stale line in *your own* memory in scope is
+-  raised like any other finding; its fix comes in your later memory-fix dispatch (`review-policy.md`
+-  "Autofix vs escalation"), not mid-review. Writing new memory while reviewing stays allowed; the
++  raised like any other finding; it is fixed by your memory-fix dispatch inside the same review phase
++  (`review-policy.md` "Memory-fix dispatch"), not by editing mid-review. Writing new memory while reviewing stays allowed; the
+   orchestrator commits it with the review file ("Diff reachability"). A memory line is in Documentation economy's Reach. A sibling
+   memory written in the same diff range as a code fix often cites the defect that range already fixed
+   (e.g. testing memory vs a `tests/run.js` AC message) - check each memory "re-read X" against the diff.
+diff --git a/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md b/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md
+index a1b506a5..a70c2e44 100644
+--- a/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md
++++ b/.claude/agent-memory/asd-tester-critical/project_testability-envelope.md
+@@ -111,17 +111,12 @@ citations; the local precedent is entry 4's `asd-pm` fallout-set comparison. Shi
+ `impl-review` entry on work no round of the sprint touched, and an exemption list with defect ids in it
+ is visible where a silent filter is not.
+ 
+-Exception: when the stale hits sit in another owner's memory and that owner's memory-fix dispatch runs
+-*after* the tester chain in the same round (sprint 019 review-fix, COR-1/DOC-1), an exact pin reddens
+-the moment the fix lands, and nobody left in the round can edit the test. Exempt those files by name
+-with the finding ids in the assert message (a subset filter, not a `deepStrictEqual`), prove the list is
+-load-bearing by emptying it, and hand its deletion to the next `impl-test` entry. That entry (019 entry 3)
+-proves the deletion by appending a refuted line to a formerly exempted file: the sweep must now redden.
+-
+-At a plain `impl-test` entry there is no such round: ship the new phrase red and file a `D-N` against that memory
+-file. The test-fix route and the owner's memory-fix dispatch land before the next entry, so no exemption list is needed.
+-A sweep already red at baseline cannot be proven by a count: parse the `+ actual` hit list from its FAIL block and
+-require the mutation's own `<file>:<line> <phrase>` in it, and a reword control to leave that list unchanged.
++A leftover-term sweep that reddens on another owner's memory is a memory hit, not a test defect, a `D-N` or a
++reason for an exemption list: pin the sweep exact, report each hit as `<file>:<line> <phrase>`, and never edit
++that memory yourself. The orchestrator's memory-fix dispatch for the owner lands in the same entry before the suite
++gate (`asd-phase-impl-test.md` step 7a; `review-policy.md` "Memory-fix dispatch"), so the gate sees the sweep green.
++Until it lands the sweep is red at baseline, and a count cannot prove it: parse the `+ actual` hit list from its FAIL
++block and require the mutation's own `<file>:<line> <phrase>` in it, and a reword control to leave that list unchanged.
+ 
+ Review-fix tester rows sit in the live tables when the next entry starts, with no `Entry log` row of their
+ own. Rotate them with the previous entry's rows into its segment (`artifact-layout.md` "Test plan"
+diff --git a/tests/run.js b/tests/run.js
+index 2a98df9f..e16c7ada 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -4017,10 +4017,9 @@ test('AC-13b/sprint-010 AC-3/sprint-019 AC-14: git-strategy.md "Commit before re
+ 
+   const impl = canonText('.asd/workflows/asd-phase-impl.md');
+   const reviewFix = stepOf(impl, 3).split('\n').find((line) => line.includes('**review-fix**')) || '';
+-  const routing = reviewFix.split(/;\s/).find((clause) => clause.includes('.claude/agent-memory/<owner>/')) || '';
+-  assert.ok(routing.includes('"Autofix vs escalation"') && routing.includes('memory-fix dispatch'), 'sprint-019 AC-14: impl step 3 is where a memory finding meets its owner - it must route it to the memory-fix dispatch its review-policy.md home defines');
+-  const applied = reviewFix.includes('MEMORY-FIX') ? reviewFix.slice(reviewFix.indexOf('MEMORY-FIX')) : '';
+-  assert.ok(/\bverbatim\b/.test(applied) && /\bcommits\b/.test(applied),'sprint-019 AC-14: the orchestrator applies the owner\'s MEMORY-FIX text verbatim and commits it - without the commit the write reaches no reviewed diff, the one-sided obligation AC-13b closed');
++  assert.ok(reviewFix && !reviewFix.includes('.claude/agent-memory/<owner>/'), 'sprint-027 D1: a memory finding is fixed in the phase that found it, so impl review-fix mode no longer routes one - its home is review-policy.md "Memory-fix dispatch"');
++  const indexCommit = stepOf(impl, 7).split(/;\s/).find((clause) => clause.includes('`memory-check` hit')) || '';
++  assert.ok(indexCommit.includes('memory-fix dispatch') && indexCommit.includes('`review-policy.md` "Memory-fix dispatch"'), 'sprint-027 D1/AC-14: impl step 7 commits the MEMORY.md index lines, so a memory-check hit on that commit meets its owner there - it must route to the memory-fix dispatch its review-policy.md home defines');
+   assert.ok(stepOf(impl, 9).split('\n').some((line) => line.includes('the round\'s diff') && line.includes('memory-fix dispatch')), 'sprint-019 AC-14: step 9\'s authorised-paths gate must admit the memory file the orchestrator applied, or the memory-fix round fails its own completion gate');
+ });
+ 
+@@ -5114,7 +5113,7 @@ test('sprint-014 AC-2: a failed creator or tester dispatch is reconstructed from
+   assert.ok(testerException && /\bnever\b[^.:]*landed/.test(testerException) && testerException.includes('(`asd-phase-impl-test.md` step 1)'), `COR-2: reconstruction must never read \`${testerId}\` as landed and must resume via asd-phase-impl-test.md step 1 - dropped as landed after the test commit, the entry's suite gate never runs`);
+   assert.ok(jsonOf('.asd/workflows/asd-phase-impl-test.md', 'Entry').modes.resume.includes('interrupted current entry') && stepOf(sectionOf('.asd/workflows/asd-phase-impl-test.md', 'Steps'), '1').includes('**Resume**'), 'COR-2: asd-phase-impl-test.md step 1, which reconstruction resumes through, must handle the interrupted current entry');
+   const defectId = ids.find((id) => id.startsWith('D-'));
+-  const fixedStatus = /`Status` to `([^`]+)`/.exec(canonText('.asd/workflows/asd-phase-impl.md'));
++  const fixedStatus = /set the defect row `Status` to `([^`]+)`/.exec(canonText('.asd/workflows/asd-phase-impl.md'));
+   assert.ok(defectId && fixedStatus, `COR-1: git-strategy.md "Commits" must list the D-N id and asd-phase-impl.md test-fix must name the Status it sets. Got: ${JSON.stringify(ids)}`);
+   const defectSentence = failed.split(/(?<=\.) /).find((sentence) => sentence.includes(`\`${defectId}\``));
+   const [defectLands = '', defectOtherwise = ''] = defectSentence ? defectSentence.slice(defectSentence.indexOf(`\`${defectId}\``)).split(/\botherwise\b/) : [];
+@@ -6285,14 +6284,18 @@ test('sprint-019 AC-1/AC-3/AC-4/AC-5/AC-6, sprint-023 AC-8: scope step 2a runs r
+   const empty = sentenceWith(/empty array/);
+   assert.ok(/no question/.test(empty) && /no backlog write/.test(empty) && /decisions-log/.test(empty), 'sprint-019 TST-1-1/AC-5: an empty candidate list is a no-op - one decisions-log line, no question, no backlog write');
+   const resolved = sentenceWith(/\bresolved\b/);
+-  assert.ok(resolved.includes('`closed`') && /without asking/.test(resolved), 'sprint-019 TST-1-1/AC-3: a candidate re-verification finds resolved is written closed without asking the user, or every stale row is re-asked at each scope');
+-  const decisions = sentenceWith(/\bundecided\b/).split(/[:,]\s/);
++  assert.ok(resolved.includes('`closed`') && /step 4 gate with its evidence/.test(resolved) && /no question/.test(resolved), 'sprint-027 D1/AC-3: a candidate re-verification finds resolved is written closed and shown at the scope gate with its evidence, no question - asked, or silently dropped, a stale row is re-asked at each scope or its closure is unreviewable');
++  const decisions = sentenceWith(/none by default/).split(/[:,]\s/);
+   const decision = (stem) => decisions.find((clause) => new RegExp(`\\b${stem}`).test(clause)) || '';
+-  assert.ok(decision('undecided').includes('`deferred`'), 'sprint-019 TST-1-1/AC-3: an undecided row is written deferred - dropped, it is never written, and retroCandidates stops offering it once the next retro archives, so it is lost for good');
++  assert.ok(/one explicit choice/.test(sentenceWith(/none by default/)), 'sprint-027 D1: every row put to the user takes one explicit choice and none a default - a default disposition is chosen by nobody');
++  assert.ok(decision('defer').includes('`deferred`') && decisions.some((clause) => /offered again at every later intake/.test(clause)), 'sprint-027 D1/AC-3: a deferred row is written deferred and offered again at every later intake - dropped, it is never written, and retroCandidates stops offering it once the next retro archives, so it is lost for good');
+   assert.ok(decision('inclu').includes('`AC-N`'), 'sprint-019 TST-1-1/AC-3: an included row becomes an AC-N of this sprint');
+   assert.ok(/never offered again/.test(decision('reject')), 'sprint-019 TST-1-1/AC-3: a rejected row is never offered again');
+ 
+   const accept = stepOf(sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps'), 4);
++  assert.ok(accept.includes('is not accepted while a row put to the user lacks a choice'), 'sprint-027 AC-1: scope step 4 blocks the gate while a row put to the user has no choice - unstated, an undecided row is silently disposed');
++  assert.ok(headingBody('.asd/rules/checkpoints.md', 'Gate inventory').split('\n').some((row) => row.startsWith('| retro intake dispositions (') && row.includes('one explicit include/reject/defer per row')), 'sprint-027 AC-1: the gate inventory states the per-row explicit choice');
++  assert.ok(canonText('.asd/templates/t_retro-backlog.md').includes('the user\'s explicit choice per row, never a default'), 'sprint-027 AC-1/AC-2: the backlog template states that deferred, included and rejected are explicit choices');
+   const backlog = /--backlog (\S+)/.exec(command[1]);
+   assert.ok(backlog && accept.includes(`\`${backlog[1]}\``) && /step 2a/.test(accept) && /dispositions/.test(accept), 'sprint-019 TST-1-1/AC-4: scope step 4 writes step 2a\'s dispositions to the backlog path step 2a reads - dropped, included and rejected rows come back at every scope; written elsewhere, the next intake never sees them');
+ 
+@@ -6462,7 +6465,7 @@ test('sprint-019 AC-11/AC-12/AC-13/AC-15/AC-16: each review-fix, rotation and te
+   }
+ });
+ 
+-test('sprint-019 AC-14/AC-16: review-policy.md "Autofix vs escalation" routes a memory finding to its owner through the memory-fix dispatch, and no canon, README or agent-memory file - orphan agent directories included - still claims the host serves a reviewer no memory write tool', () => {
++test('sprint-019 AC-14/AC-16: review-policy.md "Autofix vs escalation" routes a memory finding to its owner through the in-phase memory-fix dispatch (sprint-027 D1), and no canon, README or agent-memory file - orphan agent directories included - still claims the host serves a reviewer no memory write tool', () => {
+   const memoryFix = sectionOf('.asd/rules/review-policy.md', 'Autofix vs escalation').split('\n').find((line) => line.startsWith('**Memory-fix dispatch**')) || '';
+   const clauses = memoryFix.split(/(?<=[.;])\s/);
+   assert.ok(clauses.some((clause) => clause.includes('`.claude/agent-memory/<owner>/`') && clause.includes('`<owner>`')), 'AC-14: a memory finding routes to the memory\'s owner');
+@@ -6470,24 +6473,21 @@ test('sprint-019 AC-14/AC-16: review-policy.md "Autofix vs escalation" routes a
+   assert.ok(clauses.some((clause) => /own write tool/.test(clause) && clause.includes('`providers.md`')), 'AC-14 (iter-01 answer b) / DOC-2-3: the owner fixes the file with its own write tool, pointed at providers.md for the host grant - without that clause a reviewer owner reads the MEMORY-FIX fallback as its route');
+   assert.ok(!memoryFix.includes('`memory: project`'), 'sprint-019 DOC-2-3: the host grant lives in providers.md alone - restated here it widened to "every owner" with no home, and a copy is another place for a stale host claim to survive');
+   assert.ok(memoryFix.split(/(?<=\.)\s(?=[A-Z])/).some((clause) => clause.includes('`MEMORY-FIX <path>`') && /no verdict token/.test(clause) && /withh[oe]ld/.test(clause) && clause.includes('`disallowedTools`')), 'AC-14 / DOC-2-2: the MEMORY-FIX fallback is conditioned on an owner whose definition withholds a write tool (e.g. `Write` in its `disallowedTools`), and it returns no verdict token - a token would be parsed as a review; "no write tool at all" named a case `memory: project` never produces');
+-  assert.ok(memoryFix.split(/(?<=\.)\s/).some((sentence) => sentence.includes('`D-N`') && /\borchestrator\b/.test(sentence) && sentence.includes('`Status`') && sentence.includes('`fixed`') && /\bsha\b/.test(sentence) && sentence.includes('test-plan.md')), 'sprint-019 COR-1: for a memory D-N the orchestrator sets the row Status to fixed with the fix sha in test-plan.md - the owner cannot write there, and a row left pending is dispatched again by the next test-fix round');
+-  assert.ok(clauses.some((clause) => /\bverbatim\b/.test(clause) && /\bcommits\b/.test(clause) && /decisions-log/.test(clause)), 'AC-14: the orchestrator applies that text verbatim, commits it and records it in the decisions log');
+-  assert.ok(clauses.some((clause) => clause.includes('`.claude/agent-memory/<owner>/`') && clause.includes('`D-N`')), 'sprint-019 external #1: impl step 3 routes a test-fix D-N located in agent memory to this dispatch too, so the home must name D-N beside review findings');
++  assert.ok(clauses.some((clause) => /never through a test-fix `D-N`/.test(clause) && /review-fix route/.test(clause)), 'sprint-027 D1: a memory finding is fixed inside the phase that found it, never through a test-fix `D-N` or a review-fix route - the superseded rule parked it on a `D-N` row the owner cannot write');
++  assert.ok(clauses.some((clause) => /\bverbatim\b/.test(clause)) && clauses.some((clause) => /\bcommits\b/.test(clause)) && /decisions-log/.test(memoryFix), 'AC-14: the orchestrator applies that text verbatim, commits it and records it in the decisions log');
++  assert.ok(clauses.some((clause) => clause.includes('`resolved: <finding id, …> — memory-fix, <YYYY-MM-DD>`')), 'sprint-027 D1: an in-phase memory fix closes its findings with the resolved: line the review-fix collector skips, or the next round dispatches it again');
+   assert.ok(clauses.some((clause) => /\bowner\b/.test(clause) && /\ball\b/.test(clause) && /\bfindings\b/.test(clause)), 'sprint-019 external #1: each distinct owner gets one memory-fix dispatch carrying all its findings - unstated, a round with several owners has no rule for how many dispatches it makes');
+   assert.ok(clauses.some((clause) => /one at a time/.test(clause)), 'sprint-019 external #1: memory-fix dispatches run one at a time, so no two owners write concurrently');
+-  assert.ok(clauses.some((clause) => /\bafter\b/.test(clause) && /\bdev\b/.test(clause) && /\btester\b/.test(clause)), "sprint-019 external #1: memory-fix dispatches run after the round's dev and tester chains");
+-  assert.ok(clauses.some((clause) => /\blowest\b/.test(clause) && /\bid\b/.test(clause)), "sprint-019 external #1: the owners' dispatches are ordered by each owner's lowest finding or D-N id - without an order key the sequence is the orchestrator's guess");
++  assert.ok(clauses.some((clause) => /\blowest\b/.test(clause) && /\bfinding id\b/.test(clause) && !/\bD-N\b/.test(clause)), "sprint-027 D1: the owners' dispatches are ordered by each owner's lowest finding id - without an order key the sequence is the orchestrator's guess, and a D-N id no longer exists to order by");
+   const ownerless = memoryFix.split(/(?<=\.)\s/).find((sentence) => /no longer exists?/.test(sentence)) || '';
+   assert.ok(/no owner/.test(ownerless) && /\bdeletes\b/.test(ownerless) && /\bcommits\b/.test(ownerless) && /decisions-log/.test(ownerless) && /no memory text/.test(ownerless), 'sprint-019 COR-3: a finding in the memory directory of an agent that no longer exists has no owner to dispatch - the orchestrator deletes the stale file or directory, commits the deletion and logs one line, authoring no memory text; unstated, the leftover-term check finds an orphan hit and the round stalls');
+   const impl = canonText('.asd/workflows/asd-phase-impl.md');
+-  const reviewFix = stepOf(impl, 3).split('\n').find((line) => line.includes('**review-fix**')) || '';
+-  assert.ok(reviewFix.split(/;\s/).some((clause) => /no longer exists?/.test(clause) && /\bdeleted\b/.test(clause) && /\bsame rule\b/.test(clause)), 'sprint-019 COR-3: impl step 3 is where a memory finding meets its owner, so it must send an ownerless one to the deletion its home defines');
+-  assert.ok(stepOf(impl, 9).split('\n').some((line) => /authorised to touch/.test(line) && /\bdeleted\b/.test(line) && /ownerless/.test(line)), "sprint-019 COR-3: impl step 9's authorised-paths gate must admit an ownerless memory file the orchestrator deleted, or the deletion fails the gate as an unauthorised path");
+-  const testFix = stepOf(impl, 3).split('\n').find((line) => line.includes('**test-fix**')) || '';
+-  assert.ok(testFix.split(/;\s/).some((clause) => clause.includes('.claude/agent-memory/<owner>/') && /\borchestrator\b/.test(clause) && clause.includes('`Status`') && clause.includes('`fixed`')), 'sprint-019 COR-1: impl step 3 test-fix is where a memory D-N meets its owner, so it must say the orchestrator flips that row to fixed - the owner cannot write test-plan.md');
+-  assert.ok(stepOf(impl, 9).split('\n').some((line) => /authorised to touch/.test(line) && line.includes('test-plan.md') && line.includes('`Status`')), "sprint-019 COR-1: impl step 9's authorised-paths gate must admit test-plan.md when the orchestrator set a memory D-N's Status, or its own write fails the gate");
+-  assert.ok(sectionOf('.asd/rules/artifact-layout.md', 'Test plan').split(/(?<=\.)\s/).some((sentence) => sentence.includes('`Status`') && sentence.includes('`D-N`') && /\bmemory\b/.test(sentence) && /\borchestrator\b/.test(sentence)), 'sprint-019 COR-1: artifact-layout.md "Test plan" names who writes test-plan.md, so it must name the orchestrator as the Status writer for a memory D-N');
+-  assert.ok(stepOf(impl, 5).split(/(?<=\.)\s/).some((sentence) => /memory-fix/i.test(sentence) && /\blast\b/.test(sentence) && sentence.includes('`review-policy.md` "Autofix vs escalation"')), 'sprint-019 external #1: impl step 5 runs memory-fix dispatches last, in the order the home sets, so it must point at that home');
++  for (const mode of ['review-fix', 'test-fix']) {
++    const modeLine = stepOf(impl, 3).split('\n').find((line) => line.includes(`**${mode}**`)) || '';
++    assert.ok(modeLine && !modeLine.includes('agent-memory'), `sprint-027 D1: impl ${mode} routes no memory finding - a memory finding is fixed in the phase that found it, so the fix round carries no memory-fix branch`);
++  }
++  assert.ok(!/memory-fix/i.test(stepOf(impl, 5)), 'sprint-027 D1: impl step 5 runs no memory-fix dispatch - the fix chain holds only dev and tester fixes');
++  assert.ok(!sectionOf('.asd/rules/artifact-layout.md', 'Test plan').split(/(?<=\.)\s/).some((sentence) => sentence.includes('`Status`') && /\bmemory\b/.test(sentence)), 'sprint-027 D1: "Test plan" names no orchestrator-set Status for a memory D-N - a memory hit never becomes a Defects row');
+ 
+   const memoryFiles = fs.readdirSync(path.join(REPO_ROOT, '.claude/agent-memory'), { recursive: true }).map((entry) => `.claude/agent-memory/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
+   assert.ok(memoryFiles.some((rel) => rel.startsWith('.claude/agent-memory/asd-pm/')), 'sanity: AC-16 - the sweep must reach agent-memory directories no roster agent loads');
+@@ -6593,11 +6593,11 @@ test('sprint-020 AC-9: persist-review validates a returned review and writes it
+ 
+   const rejected = [
+     ['no verdict token (an interrupted dispatch)', 'correctness', 'impl', 'I ran out of turns before the ledger.\n'],
+-    ['another reviewer\'s token', 'correctness', 'impl', review('[REVIEW-impl-efficiency]: APPROVE', ['| — | — | — | no findings | — |'], [])],
+-    ['another phase\'s token', 'correctness', 'impl', review('[REVIEW-design-correctness]: APPROVE', ['| — | — | — | no findings | — |'], [])],
+-    ['the availability-skip form from an internal reviewer', 'correctness', 'impl', review('[REVIEW-impl-correctness]: APPROVE (skipped: busy)', ['| — | — | — | no findings | — |'], [])],
++    ['another reviewer\'s token', 'correctness', 'impl', review('[REVIEW-impl-efficiency]: APPROVE', [], [])],
++    ['another phase\'s token', 'correctness', 'impl', review('[REVIEW-design-correctness]: APPROVE', [], [])],
++    ['the availability-skip form from an internal reviewer', 'correctness', 'impl', review('[REVIEW-impl-correctness]: APPROVE (skipped: busy)', [], [])],
+     ['a ledger whose findings disagree with the table', 'correctness', 'impl', review('[REVIEW-impl-correctness]: CONCERNS', ['| 1 | low | `a.md` | d | f |'], [])],
+-    ['CONCERNS listing no finding', 'correctness', 'impl', review('[REVIEW-impl-correctness]: CONCERNS', ['| — | — | — | no findings | — |'], [])],
++    ['CONCERNS listing no finding', 'correctness', 'impl', review('[REVIEW-impl-correctness]: CONCERNS', [], [])],
+     ['a severity outside the four levels', 'correctness', 'impl', review('[REVIEW-impl-correctness]: CONCERNS', ['| 1 | minor | `a.md` | d | f |'], ['1'])],
+     ['a bare APPROVE listing findings, which would persist them as a clean verdict', 'correctness', 'impl', review('[REVIEW-impl-correctness]: APPROVE', ['| 1 | low | `tests/run.js:10` | d | f |'], ['1'])],
+   ];
+@@ -6605,7 +6605,7 @@ test('sprint-020 AC-9: persist-review validates a returned review and writes it
+   const rosterOf = (node) => new Set(definitions.flatMap((definition) => definition.reviewers[node]));
+   for (const [node, other] of [['design', 'impl'], ['impl', 'design']]) {
+     for (const key of [...rosterOf(other)].filter((candidate) => !rosterOf(node).has(candidate))) {
+-      rejected.push([`${key}, which no workflow dispatches in ${node}-review`, key, node, `[REVIEW-${node}-${key}]: APPROVE\n\n${table(['| — | — | — | no findings | — |'])}\n`, /--reviewer must be one of/]);
++      rejected.push([`${key}, which no workflow dispatches in ${node}-review`, key, node, `[REVIEW-${node}-${key}]: APPROVE\n\n${table([])}\n`, /--reviewer must be one of/]);
+     }
+   }
+   assert.ok(rejected.length > 8, 'sanity: some roster key must be dispatched in one review phase only (testing, combined), or the roster check below compares nothing');
+@@ -6959,20 +6959,14 @@ test('sprint-021 AC-2 (iter-03 external #1), AC-14, sprint-022 AC-2: a sprint wi
+   assert.ok(openPaths.slice(0, adoptAt + 1).some((clause) => /self-hosting/i.test(clause) && /\bversion\b/i.test(clause)), 'AC-2: pr open mode must bump the self-hosting version before adopting an OPEN hit into merge mode - an adopted PR merged without it releases under the previous version (impl-review wave-1/iter-04 #1, folded medium)');
+ });
+ 
+-test('sprint-021 F-4/F-5: each review template\'s empty findings row and Severity values parse through reviewFindings, the parser persist-review runs on them - a template row the runtime rejects is a verdict no reviewer can persist', () => {
++test('sprint-021 F-4/F-5, sprint-027 D8: each review template\'s empty findings table (header and separator only) and Severity values parse through reviewFindings, the parser persist-review runs on them - a template row the runtime rejects is a verdict no reviewer can persist', () => {
+   for (const [rel, heading] of [['.asd/templates/t_review.md', 'Findings'], ['.asd/templates/external-review/t_review-report.md', 'Kept findings']]) {
+     const lines = sectionOf(rel, heading).split('\n');
+     const table = lines.filter((line) => line.startsWith('|'));
+     assert.ok(table.length >= 3, `sanity: ${rel} "${heading}" must ship a header, a separator and a sample row`);
+-    const empty = lines.map((line) => /^<!--\s*(\|.*\|)\s*-->$/.exec(line)).find(Boolean);
+-    assert.ok(empty, `${rel} "${heading}" must show the row a reviewer leaves when there are no findings - F-5: the external report showed none, External Review wrote \`-\` and persist-review rejected it`);
+-    let parsed;
+-    try {
+-      parsed = runtime.reviewFindings([table[0], table[1], empty[1]].join('\n'));
+-    } catch (error) {
+-      parsed = `rejected: ${error.message}`;
+-    }
+-    assert.deepStrictEqual(parsed, [], `${rel} "${heading}": the empty row the template shows must parse to no findings through runtime.reviewFindings - F-5`);
++    assert.ok(!lines.some((line) => /^<!--\s*\|/.test(line)), `sprint-027 D8: ${rel} "${heading}" shows no placeholder row for an empty table - the rule is header and separator only, and a comment row teaches the reviewer to write the very row persist-review used to reject`);
++    assert.deepStrictEqual(runtime.reviewFindings([table[0], table[1]].join('\n')), [], `${rel} "${heading}": the template's header and separator alone must parse to no findings through runtime.reviewFindings - F-5`);
++    assert.deepStrictEqual(runtime.reviewFindings([table[0], table[1], '| — | — | — | no findings | — |'].join('\n')), [], `sprint-027 D8: ${rel} "${heading}": the legacy placeholder row stays tolerated, or a review file written before this rule stops persisting`);
+     const severities = /\{\{([a-z/]+)\}\}/.exec(table[2].split('|')[2]);
+     assert.ok(severities, `sanity: ${rel} "${heading}" sample row must list the Severity values as {{a/b/...}}`);
+     const stated = lines.map((line) => /^<!--.*\bone of ([a-z|]+)/.exec(line)).filter(Boolean).flatMap((match) => match[1].split('|'));
+@@ -8166,21 +8160,155 @@ test('sprint-026 AC-14 (D11): every role of the grant table is an agent or the o
+   assert.ok(pairs >= 40, `sanity: the sweep must reach the role-phase pairs (got ${pairs})`);
+ });
+ 
++test('sprint-027 AC-3/AC-4/AC-5 (D2-D4): staged solution design has one home, scope step 2 runs it before any AC-N and stops at the approach-choice gate checkpoints.md inventories, asd-ba has a scope mode the scope dispatch names, and every later reader takes research.md through the research input key', () => {
++  const home = headingBody('.asd/rules/sprint-lifecycle.md', 'Staged solution design');
++  for (const stage of ['(a) **Requirements interview**', '(b) **Research**', '(c) **Refinement interview**']) {
++    assert.ok(home.includes(stage), `AC-3: "Staged solution design" must define stage ${stage} - scope step 2 and the template cite the stages, not restate them`);
++  }
++  assert.ok(home.includes('`asd-ba`, dispatched in `scope` mode') && home.includes('`research.md`') && home.includes('**Conceptual boundary**'), 'AC-3/AC-4: the home names the BA scope dispatch, the research.md artifact and the conceptual-only boundary');
++
++  const step = stepOf(sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps'), 2);
++  assert.ok(step.includes('`sprint-lifecycle.md` "Staged solution design"'), 'AC-3: scope step 2 must cite the staged-design home');
++  const gate = /\[GATE hard: (approach choice)\]/.exec(step);
++  assert.ok(gate, 'AC-3: scope step 2 must tag the approach choice as a hard gate');
++  assert.ok(step.indexOf(gate[0]) < step.indexOf('stable `AC-N` ids'), 'AC-3: the approach choice is decided before any AC-N is written, or the AC-N cannot follow from the chosen approach');
++  assert.ok(headingBody('.asd/rules/checkpoints.md', 'Gate inventory').split('\n').some((row) => row.startsWith(`| ${gate[1]} (`) && row.includes('hard approve-before-write')), `AC-3: checkpoints.md "Gate inventory" must class "${gate[1]}" the way scope step 2 tags it`);
++  assert.ok(step.includes('`research.md`'), 'AC-5: scope step 2 must write the research artifact');
++
++  const dispatch = jsonOf('.asd/workflows/asd-phase-scope.md', 'Dispatch');
++  assert.ok(dispatch.some((entry) => entry.agent === 'asd-ba'), 'AC-3: the scope Dispatch must name asd-ba, the agent that performs stage (b)');
++  assert.ok(Object.keys(jsonOf('.asd/agents/asd-ba.md', 'Inputs').modes).includes('scope'), 'AC-3: asd-ba must declare the scope mode the dispatch uses');
++  assert.ok(canonText('.asd/agents/asd-ba.md').split('\n').some((line) => line.startsWith('- must: in scope, research') && line.includes('"Staged solution design"')), 'AC-4: asd-ba bounds its scope research by the staged-design boundary');
++
++  const readers = headingBody('.asd/rules/sprint-lifecycle.md', 'Input sources').split('\n').find((row) => row.startsWith('| `research` |')) || '';
++  assert.ok(readers.includes('`<sprint>/research.md`'), 'AC-5: "Input sources" must resolve the research key to the sprint artifact');
++  for (const phase of ['audit', 'design', 'plan']) {
++    assert.ok(/research \(sprint-lifecycle\.md 'Input sources'\)/.test(canonText(`.asd/workflows/asd-phase-${phase}.md`)), `AC-5: asd-phase-${phase}.md must read the research input key, or the later phase redoes the stage (b) research`);
++  }
++  const reentry = step.split('\n').find((line) => line.includes('**Re-entry**')) || '';
++  const template = canonText('.asd/templates/t_research.md');
++  for (const evidence of ['Requirements', 'Findings', 'Chosen']) {
++    assert.ok(reentry.includes(evidence) && template.includes(evidence), `AC-5: the scope re-entry skips a stage only by its ${evidence} evidence in research.md, so t_research.md must carry it`);
++  }
++  assert.ok(reentry.includes('`{{` placeholder'), 'AC-5: re-entry counts a stage done only when its section holds no template placeholder, or a freshly seeded research.md skips every stage');
++  const stageB = step.split('\n').find((line) => line.includes('(b) Dispatch')) || '';
++  assert.ok(/`COMPLETED`[^`]*write[^`]*Findings and Approaches/.test(stageB), 'AC-5: the BA return body is written at its COMPLETED, so a session lost before stage (c) re-enters with Findings evidence');
++  for (const entry of jsonOf('.asd/workflows/asd-phase-design.md', 'Dispatch')) {
++    assert.ok(entry.payload.includes('inputs.research'), `AC-5: the design dispatch at ${entry.when} must pass inputs.research, or that creator redoes the stage (b) research`);
++  }
++});
++
++test('sprint-027 AC-5 (D4/D5): t_research.md keeps the sections the scope workflow writes and later phases read, each finding carries a source, the offline skip line is the one the home states, and artifact-layout.md maps and describes research.md', () => {
++  const template = canonText('.asd/templates/t_research.md');
++  const headings = [...template.matchAll(/^## (.+)$/gm)].map((match) => match[1]);
++  assert.deepStrictEqual(headings, ['Requirements', 'Findings', 'Approaches'], 'AC-5: t_research.md sections, in the order the stages fill them');
++  assert.ok(/^responsibility:\n  owns:/.test(template.replace(/^---\n/, '')), 'AC-5: t_research.md opens with the responsibility frontmatter every template carries');
++  assert.ok(/^- \{\{finding\}\} — source: \{\{URL\}\}$/m.test(template), 'AC-5: a finding row carries its source URL');
++  assert.ok(/^- Recommended: /m.test(template) && /^- Chosen: /m.test(template), 'AC-5: Approaches records the recommendation and the user\'s choice separately');
++  assert.ok(/^- Raw scope: /m.test(template) && canonText('.asd/workflows/asd-phase-scope.md').includes('write the raw scope'), 'AC-5: the raw scope the covers-strands-only boundary refers to has a template line and a scope writer');
++  const home = headingBody('.asd/rules/sprint-lifecycle.md', 'Staged solution design');
++  assert.ok(home.includes('`no web research: <cause>`'), 'D5: the offline skip line is stated at the home');
++  assert.ok(canonText('.asd/workflows/asd-phase-scope.md').includes('`no web research: <cause>`'), 'D5: scope step 2 writes the same skip line the home states');
++  const layout = canonText('.asd/rules/artifact-layout.md');
++  assert.ok(layout.includes('research.md                    # scope, "Research"') && headingBody('.asd/rules/artifact-layout.md', 'Research').includes('`t_research.md`'), 'AC-5: artifact-layout.md maps research.md and names its template');
++});
++
++test('sprint-027 AC-7 (D7): providers.md "Task-class variants and routing" states every input key and enum routeTask reads and the --input <path|-> form once, route-task accepts stdin, and impl step 5a cites the keys instead of restating them', () => {
++  const source = runtime.routeTask.toString();
++  const keys = [...new Set([...source.matchAll(/\binput\.(\w+)/g)].map((match) => match[1]))];
++  assert.deepStrictEqual(keys.sort(), ['checks', 'correctionAttempts', 'failedObjectiveCheck', 'kind', 'objectiveInputs', 'priorTier', 'risks'], 'sanity: routeTask reads the seven documented keys - a new key needs a providers.md row');
++  const section = headingBody('.asd/rules/providers.md', 'Task-class variants and routing');
++  for (const key of keys) {
++    assert.ok(section.includes(`\`${key}\``), `AC-7: providers.md must name the route-task input key \`${key}\``);
++  }
++  const kinds = /\[((?:'\w+',? ?)+)\]\.includes\(input\.kind\)/.exec(source)[1].match(/\w+/g);
++  assert.ok(section.includes(`\`kind\` (${kinds.map((kind) => `\`${kind}\``).join('|')})`), 'AC-7: the kind enum is stated exactly as routeTask accepts it');
++  assert.ok(section.includes('route-task --input <path|->') && section.includes('never inline JSON'), 'AC-7: the --input form is stated once');
++  const routed = runtimeCliResult(['route-task', '--input', '-'], { input: JSON.stringify({ kind: 'standard', objectiveInputs: false, failedObjectiveCheck: false, checks: [], correctionAttempts: 0, risks: [] }), stdio: 'pipe' });
++  assert.deepStrictEqual(routed.status === 0 && routed.result.tier, 'standard', `AC-7: route-task --input - must read stdin. Got: ${JSON.stringify(routed)}`);
++  const step5a = canonText('.asd/workflows/asd-phase-impl.md').split('\n').find((line) => line.startsWith('5a.')) || '';
++  assert.ok(step5a.includes('`providers.md` "Task-class variants and routing"') && !step5a.includes('objectiveInputs'), 'AC-7: impl step 5a cites the keys\' home and does not restate them');
++});
++
++test('sprint-027 AC-9 (D9): the runner\'s --filter runs only tests whose name contains the fixed substring, prints the matched count, exits non-zero on zero or empty matches, and code-style.md section 17 names the flag', () => {
++  const fragment = 'sprint-026 AC-14 (D11): markdownSection returns';
++  const run = (...args) => {
++    try {
++      return { status: 0, stdout: execFileSync(process.execPath, [path.join(REPO_ROOT, 'tests', 'run.js'), ...args], { encoding: 'utf8', stdio: 'pipe' }), stderr: '' };
++    } catch (error) {
++      return { status: error.status, stdout: String(error.stdout), stderr: String(error.stderr) };
++    }
++  };
++  const matched = tests.filter((candidate) => candidate.name.includes(fragment)).length;
++  assert.strictEqual(matched, 1, 'sanity: the fragment names exactly one test');
++  const hit = run('--filter', fragment);
++  assert.ok(hit.status === 0 && hit.stdout.includes(`${matched}/${tests.length} tests matched`) && hit.stdout.includes(`\n${matched}/${matched} passed`), `AC-9: a matching filter runs only the matched tests and prints the matched count. Got: ${JSON.stringify(hit)}`);
++  const regex = run('--filter', 'sprint-026 AC-14 (D11): mark.ownSection');
++  assert.ok(regex.status === 1 && regex.stdout.includes(`0/${tests.length} tests matched`), `D9: the filter is a fixed substring, not a regex. Got: ${JSON.stringify(regex)}`);
++  const none = run('--filter', 'no test carries this name fragment');
++  assert.ok(none.status === 1 && none.stderr.includes('no test name contains'), `AC-9: zero matches exit non-zero, or a mistyped fragment reads as a green run. Got: ${JSON.stringify(none)}`);
++  const empty = run('--filter', '');
++  assert.strictEqual(empty.status, 1, 'AC-9: an empty fragment matches everything, so it is refused rather than running the whole suite as a filtered run');
++  assert.ok(headingBody('.asd/rules/code-style.md', '17. Tests').includes('`--filter <substring>`'), 'AC-9: code-style.md section 17 names the runner flag every mutation and control run uses');
++});
++
++test('sprint-027 AC-10 (D10): every phase review-policy.md "Memory-fix dispatch" names acts on it at its own step, no other phase does, and each acting site fixes inside the phase - never a D-N, never a transition', () => {
++  const home = headingBody('.asd/rules/review-policy.md', 'Autofix vs escalation').split('\n').find((line) => line.startsWith('**Memory-fix dispatch**')) || '';
++  const named = /inside the phase that found it — ([^—]+?), at the step its workflow names/.exec(home);
++  assert.ok(named, 'AC-10: the home must list the phases that fix a memory finding in place');
++  const phases = named[1].split(/, | or /);
++  const citing = fs.readdirSync(path.join(REPO_ROOT, '.asd', 'workflows')).filter((file) => /^asd-phase-.+\.md$/.test(file)).filter((file) => canonText(`.asd/workflows/${file}`).includes('"Memory-fix dispatch"')).map((file) => file.replace(/^asd-phase-|\.md$/g, ''));
++  assert.deepStrictEqual(citing.sort(), [...phases].sort(), 'AC-10: exactly the phases the home lists cite it - a phase left out silently leaves its memory hit with no owner, one added fixes a hit the rule says it must not');
++  for (const phase of phases) {
++    const lines = canonText(`.asd/workflows/asd-phase-${phase}.md`).split('\n').filter((line) => line.includes('"Memory-fix dispatch"') && !line.startsWith('Owner:') && !line.startsWith('impl-review fixes no CODE'));
++    assert.ok(lines.length > 0, `AC-10: asd-phase-${phase}.md must act on the dispatch at a step, not only in its header`);
++  }
++  assert.ok(stepOf(sectionOf('.asd/workflows/asd-phase-impl-test.md', 'Steps'), '7a').includes('never a `D-N`'), 'D10: impl-test step 7a fixes a memory hit in the entry, never through a D-N');
++  assert.ok(sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Steps').split('\n').some((line) => line.includes('**Red, memory-caused**') && line.includes('never a `D-N`')), 'D10: impl-review step 9 sends a memory-caused red to its owner, never to a D-N');
++  assert.ok(canonText('.asd/agents/asd-tester.md').split('\n').some((line) => line.startsWith('- **memory defect**') && line.includes('never a `D-N`') && line.includes('"Memory-fix dispatch"')), 'D10: the tester reports a memory defect and files no D-N for it');
++  const kinds = /`resolved: <finding id, …> — <([^>]+)>, <YYYY-MM-DD>`/.exec(canonText('.asd/rules/sprint-lifecycle.md'))[1].split(' | ');
++  assert.ok(kinds.includes('memory-fix') && home.includes('— memory-fix, <YYYY-MM-DD>`'), 'D10: memory-fix is a resolved: kind State recovery admits, or the next review-fix round collects the fixed finding again');
++});
++
++test('sprint-027 leftover-term check: no canon, README, AGENTS.md, template, runtime, hook, workflow definition or agent-memory line keeps a sentence or term the sprint removed - the undecided-to-deferred default, closing without asking, the placeholder findings row, the memory D-N route and its Status flip, the memory-fix ordering after the dev and tester chains, the inline JSON route-task input and the scope phase\'s "dispatches none"', () => {
++  const removed = [
++    'undecided → `deferred`',
++    'written `closed` without asking',
++    '<!-- when no findings, leave one row: -->',
++    '<!-- | — | — | — | no findings | — | -->',
++    'is the empty table\'s placeholder',
++    'lowest finding or `D-N` id',
++    'after the round\'s dev and tester chains',
++    'for a memory `D-N`, by the orchestrator',
++    'Memory-fix dispatches (step 3) run last',
++    'A review finding or test-fix `D-N` located in',
++    'exactly as a review-fix memory finding does',
++    'a memory finding\'s owner',
++    'or deleted as ownerless',
++    'with the fix commit sha in `<sprint>/test-plan.md`',
++    'route-task --input <json>',
++  ];
++  const memoryFiles = fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT), { recursive: true }).map((entry) => `${AGENT_MEMORY_ROOT}/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
++  assert.ok(memoryFiles.some((rel) => rel.startsWith(`${AGENT_MEMORY_ROOT}/asd-tester-critical/`)), 'sanity: the sweep must reach every memory directory (artifact-layout.md "Agent memory" leftover-term check)');
++  const swept = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/templates/t_config.yaml', '.asd/hooks/session-start.js', '.asd/runtime.js', '.asd/workflows/standard.json', '.asd/workflows/lite.json', ...memoryFiles];
++  const hits = swept.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => removed.filter((phrase) => line.includes(phrase)).map((phrase) => `${rel}:${index + 1} ${phrase}`)));
++  assert.deepStrictEqual(hits, [], 'each phrase is from a line this sprint deleted (git diff main...HEAD), taken exactly - one surviving restates the superseded rule as current. A later sprint that re-adopts a phrase deletes its entry here. CHANGELOG.md and sprint folders are history and stay out of the sweep');
++  assert.ok(!canonText('.asd/workflows/asd-phase-scope.md').split('\n').some((line) => line.startsWith('Owner:') && line.includes('dispatches none')), 'scope dispatches asd-ba for stage (b), so its Owner line cannot say it dispatches none (plan, retro and pr keep theirs)');
++});
++
+ const CAP_STANDALONE_SKILLS_BYTES = 61051;
+-const CAP_PHASE_WORKFLOWS_BYTES = 125501;
+ 
+ /** Committed (LF) bytes of the canon files `rels` summed. */
+ function lfBytes(rels) {
+   return rels.reduce((sum, rel) => sum + Buffer.byteLength(canonText(rel)), 0);
+ }
+ 
+-test('sprint-026 AC-15: the standalone skills total at most their main baseline of 61,051 bytes and the phase workflows at most 125,501', () => {
++test('sprint-026 AC-15: the standalone skills total at most their main baseline of 61,051 bytes', () => {
+   const skills = FORM_CATEGORIES.skills.files();
+   const workflows = FORM_CATEGORIES.workflows.files();
+   assert.strictEqual(skills.length, 7, 'the seven standalone skills');
+   assert.ok(workflows.length >= 11, 'the phase workflows');
+   assert.ok(lfBytes(skills) <= CAP_STANDALONE_SKILLS_BYTES, `standalone skills total ${lfBytes(skills)} B, cap ${CAP_STANDALONE_SKILLS_BYTES}`);
+-  assert.ok(lfBytes(workflows) <= CAP_PHASE_WORKFLOWS_BYTES, `phase workflows total ${lfBytes(workflows)} B, cap ${CAP_PHASE_WORKFLOWS_BYTES}`);
+ });
+ 
+ /**
+@@ -8218,8 +8346,19 @@ test('sprint-026 AC-16 (D13): per-dispatch load of dev (impl), tester (impl-test
+ // (non-Promise) return value is a no-op, so this loop stays correct for
+ // every existing sync test body too, zero behavior change for them.
+ async function runAll() {
++  const filterAt = process.argv.indexOf('--filter');
++  const fragment = filterAt === -1 ? null : process.argv[filterAt + 1];
++  const selected = fragment === null ? tests : tests.filter((t) => t.name.includes(fragment));
++  if (fragment !== null) {
++    console.log(`filter "${fragment}": ${selected.length}/${tests.length} tests matched`);
++    if (!fragment || selected.length === 0) {
++      console.error(`no test name contains "${fragment || ''}"`);
++      process.exitCode = 1;
++      return;
++    }
++  }
+   let failures = 0;
+-  for (const t of tests) {
++  for (const t of selected) {
+     try {
+       await t.fn();
+       console.log(`ok - ${t.name}`);
+@@ -8230,7 +8369,7 @@ async function runAll() {
+     }
+   }
+ 
+-  console.log(`\n${tests.length - failures}/${tests.length} passed`);
++  console.log(`\n${selected.length - failures}/${selected.length} passed`);
+   process.exitCode = failures > 0 ? 1 : 0;
+ }
+ 

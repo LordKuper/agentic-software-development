@@ -2,6 +2,24 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v13.10.0
+
+Scope now runs staged solution design before acceptance criteria are written, retro intake asks for an explicit decision on every open finding, and agent-memory fixes no longer cost a phase transition or a review iteration.
+
+### Added
+- **Staged solution design** (`sprint-lifecycle.md` "Staged solution design", scope step 2, both workflows, always on). (a) The orchestrator interviews you for functional requirements at the detail needed to start design; (b) `asd-ba` in its new `scope` mode researches best practices for the solution class on the web and returns findings with sources plus 2-3 conceptual approaches with a recommendation; (c) a refinement interview ends in the hard `approach choice` gate, before any `AC-N`. Stages stay conceptual; technical detail is left to design (when it runs) or plan. When web research is unavailable you choose retry, skip (recorded) or abort.
+- **`research.md`** sprint artifact (`t_research.md`): raw scope and requirements, findings with sources, approaches and the chosen one, written stage by stage so a lost session resumes at the right stage. Audit, design creators and plan read it as the `research` input.
+- **`node tests/run.js --filter <substring>`** runs only tests whose name contains the substring, prints the matched count, and exits non-zero on zero matches. Content-contract fail-first mutation and control runs use it instead of the whole suite (`code-style.md` §17).
+
+### Changed
+- **Retro intake** puts every open retro row to you as one explicit choice — include, reject permanently or defer — each with its consequence; none is disposed by default and the scope gate is not accepted while a row lacks a choice. A deferred row returns at every later intake; a row verified resolved at HEAD is closed and shown with its evidence, no question.
+- **Agent-memory fixes stay in phase** (`review-policy.md` "Memory-fix dispatch"). A memory finding, leftover-term hit or `memory-check` hit is fixed by the owner's memory-fix dispatch inside the phase that found it (design-review, impl, impl-test, impl-review, or at the commit where it arises), recorded as `resolved: … — memory-fix`; never a test-fix `D-N`, a phase transition or an extra review iteration. A fully resolved FAIL no longer blocks the low-severity test-only branch.
+- **Empty findings table** is its header and separator rows only (`review-policy.md` "Gate Verdict Format"); review templates no longer carry a placeholder row (the parser still tolerates a legacy `—` row).
+- **`route-task`** input keys, types and enums are stated once in `providers.md` "Task-class variants and routing"; `--input` takes a JSON file path or `-` for stdin.
+
+### Removed
+- The phase-workflow byte cap test (sprint-026 AC-15); the standalone-skills cap and per-dispatch load ceilings remain.
+
 ## v13.9.0
 
 Agents, phase workflows and skills now share one fixed structure per category, orchestrator↔agent messages follow one protocol, and each agent dispatch reads a prebuilt bundle of only the rule sections its role needs — 35–55% less rule text per dispatch than v13.8.0.

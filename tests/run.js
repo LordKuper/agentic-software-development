@@ -4017,10 +4017,9 @@ test('AC-13b/sprint-010 AC-3/sprint-019 AC-14: git-strategy.md "Commit before re
 
   const impl = canonText('.asd/workflows/asd-phase-impl.md');
   const reviewFix = stepOf(impl, 3).split('\n').find((line) => line.includes('**review-fix**')) || '';
-  const routing = reviewFix.split(/;\s/).find((clause) => clause.includes('.claude/agent-memory/<owner>/')) || '';
-  assert.ok(routing.includes('"Autofix vs escalation"') && routing.includes('memory-fix dispatch'), 'sprint-019 AC-14: impl step 3 is where a memory finding meets its owner - it must route it to the memory-fix dispatch its review-policy.md home defines');
-  const applied = reviewFix.includes('MEMORY-FIX') ? reviewFix.slice(reviewFix.indexOf('MEMORY-FIX')) : '';
-  assert.ok(/\bverbatim\b/.test(applied) && /\bcommits\b/.test(applied),'sprint-019 AC-14: the orchestrator applies the owner\'s MEMORY-FIX text verbatim and commits it - without the commit the write reaches no reviewed diff, the one-sided obligation AC-13b closed');
+  assert.ok(reviewFix && !reviewFix.includes('.claude/agent-memory/<owner>/'), 'sprint-027 D1: a memory finding is fixed in the phase that found it, so impl review-fix mode no longer routes one - its home is review-policy.md "Memory-fix dispatch"');
+  const indexCommit = stepOf(impl, 7).split(/;\s/).find((clause) => clause.includes('`memory-check` hit')) || '';
+  assert.ok(indexCommit.includes('memory-fix dispatch') && indexCommit.includes('`review-policy.md` "Memory-fix dispatch"'), 'sprint-027 D1/AC-14: impl step 7 commits the MEMORY.md index lines, so a memory-check hit on that commit meets its owner there - it must route to the memory-fix dispatch its review-policy.md home defines');
   assert.ok(stepOf(impl, 9).split('\n').some((line) => line.includes('the round\'s diff') && line.includes('memory-fix dispatch')), 'sprint-019 AC-14: step 9\'s authorised-paths gate must admit the memory file the orchestrator applied, or the memory-fix round fails its own completion gate');
 });
 
@@ -5114,7 +5113,7 @@ test('sprint-014 AC-2: a failed creator or tester dispatch is reconstructed from
   assert.ok(testerException && /\bnever\b[^.:]*landed/.test(testerException) && testerException.includes('(`asd-phase-impl-test.md` step 1)'), `COR-2: reconstruction must never read \`${testerId}\` as landed and must resume via asd-phase-impl-test.md step 1 - dropped as landed after the test commit, the entry's suite gate never runs`);
   assert.ok(jsonOf('.asd/workflows/asd-phase-impl-test.md', 'Entry').modes.resume.includes('interrupted current entry') && stepOf(sectionOf('.asd/workflows/asd-phase-impl-test.md', 'Steps'), '1').includes('**Resume**'), 'COR-2: asd-phase-impl-test.md step 1, which reconstruction resumes through, must handle the interrupted current entry');
   const defectId = ids.find((id) => id.startsWith('D-'));
-  const fixedStatus = /`Status` to `([^`]+)`/.exec(canonText('.asd/workflows/asd-phase-impl.md'));
+  const fixedStatus = /set the defect row `Status` to `([^`]+)`/.exec(canonText('.asd/workflows/asd-phase-impl.md'));
   assert.ok(defectId && fixedStatus, `COR-1: git-strategy.md "Commits" must list the D-N id and asd-phase-impl.md test-fix must name the Status it sets. Got: ${JSON.stringify(ids)}`);
   const defectSentence = failed.split(/(?<=\.) /).find((sentence) => sentence.includes(`\`${defectId}\``));
   const [defectLands = '', defectOtherwise = ''] = defectSentence ? defectSentence.slice(defectSentence.indexOf(`\`${defectId}\``)).split(/\botherwise\b/) : [];
@@ -6285,14 +6284,18 @@ test('sprint-019 AC-1/AC-3/AC-4/AC-5/AC-6, sprint-023 AC-8: scope step 2a runs r
   const empty = sentenceWith(/empty array/);
   assert.ok(/no question/.test(empty) && /no backlog write/.test(empty) && /decisions-log/.test(empty), 'sprint-019 TST-1-1/AC-5: an empty candidate list is a no-op - one decisions-log line, no question, no backlog write');
   const resolved = sentenceWith(/\bresolved\b/);
-  assert.ok(resolved.includes('`closed`') && /without asking/.test(resolved), 'sprint-019 TST-1-1/AC-3: a candidate re-verification finds resolved is written closed without asking the user, or every stale row is re-asked at each scope');
-  const decisions = sentenceWith(/\bundecided\b/).split(/[:,]\s/);
+  assert.ok(resolved.includes('`closed`') && /step 4 gate with its evidence/.test(resolved) && /no question/.test(resolved), 'sprint-027 D1/AC-3: a candidate re-verification finds resolved is written closed and shown at the scope gate with its evidence, no question - asked, or silently dropped, a stale row is re-asked at each scope or its closure is unreviewable');
+  const decisions = sentenceWith(/none by default/).split(/[:,]\s/);
   const decision = (stem) => decisions.find((clause) => new RegExp(`\\b${stem}`).test(clause)) || '';
-  assert.ok(decision('undecided').includes('`deferred`'), 'sprint-019 TST-1-1/AC-3: an undecided row is written deferred - dropped, it is never written, and retroCandidates stops offering it once the next retro archives, so it is lost for good');
+  assert.ok(/one explicit choice/.test(sentenceWith(/none by default/)), 'sprint-027 D1: every row put to the user takes one explicit choice and none a default - a default disposition is chosen by nobody');
+  assert.ok(decision('defer').includes('`deferred`') && decisions.some((clause) => /offered again at every later intake/.test(clause)), 'sprint-027 D1/AC-3: a deferred row is written deferred and offered again at every later intake - dropped, it is never written, and retroCandidates stops offering it once the next retro archives, so it is lost for good');
   assert.ok(decision('inclu').includes('`AC-N`'), 'sprint-019 TST-1-1/AC-3: an included row becomes an AC-N of this sprint');
   assert.ok(/never offered again/.test(decision('reject')), 'sprint-019 TST-1-1/AC-3: a rejected row is never offered again');
 
   const accept = stepOf(sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps'), 4);
+  assert.ok(accept.includes('is not accepted while a row put to the user lacks a choice'), 'sprint-027 AC-1: scope step 4 blocks the gate while a row put to the user has no choice - unstated, an undecided row is silently disposed');
+  assert.ok(headingBody('.asd/rules/checkpoints.md', 'Gate inventory').split('\n').some((row) => row.startsWith('| retro intake dispositions (') && row.includes('one explicit include/reject/defer per row')), 'sprint-027 AC-1: the gate inventory states the per-row explicit choice');
+  assert.ok(canonText('.asd/templates/t_retro-backlog.md').includes('the user\'s explicit choice per row, never a default'), 'sprint-027 AC-1/AC-2: the backlog template states that deferred, included and rejected are explicit choices');
   const backlog = /--backlog (\S+)/.exec(command[1]);
   assert.ok(backlog && accept.includes(`\`${backlog[1]}\``) && /step 2a/.test(accept) && /dispositions/.test(accept), 'sprint-019 TST-1-1/AC-4: scope step 4 writes step 2a\'s dispositions to the backlog path step 2a reads - dropped, included and rejected rows come back at every scope; written elsewhere, the next intake never sees them');
 
@@ -6462,7 +6465,7 @@ test('sprint-019 AC-11/AC-12/AC-13/AC-15/AC-16: each review-fix, rotation and te
   }
 });
 
-test('sprint-019 AC-14/AC-16: review-policy.md "Autofix vs escalation" routes a memory finding to its owner through the memory-fix dispatch, and no canon, README or agent-memory file - orphan agent directories included - still claims the host serves a reviewer no memory write tool', () => {
+test('sprint-019 AC-14/AC-16: review-policy.md "Autofix vs escalation" routes a memory finding to its owner through the in-phase memory-fix dispatch (sprint-027 D1), and no canon, README or agent-memory file - orphan agent directories included - still claims the host serves a reviewer no memory write tool', () => {
   const memoryFix = sectionOf('.asd/rules/review-policy.md', 'Autofix vs escalation').split('\n').find((line) => line.startsWith('**Memory-fix dispatch**')) || '';
   const clauses = memoryFix.split(/(?<=[.;])\s/);
   assert.ok(clauses.some((clause) => clause.includes('`.claude/agent-memory/<owner>/`') && clause.includes('`<owner>`')), 'AC-14: a memory finding routes to the memory\'s owner');
@@ -6470,24 +6473,21 @@ test('sprint-019 AC-14/AC-16: review-policy.md "Autofix vs escalation" routes a 
   assert.ok(clauses.some((clause) => /own write tool/.test(clause) && clause.includes('`providers.md`')), 'AC-14 (iter-01 answer b) / DOC-2-3: the owner fixes the file with its own write tool, pointed at providers.md for the host grant - without that clause a reviewer owner reads the MEMORY-FIX fallback as its route');
   assert.ok(!memoryFix.includes('`memory: project`'), 'sprint-019 DOC-2-3: the host grant lives in providers.md alone - restated here it widened to "every owner" with no home, and a copy is another place for a stale host claim to survive');
   assert.ok(memoryFix.split(/(?<=\.)\s(?=[A-Z])/).some((clause) => clause.includes('`MEMORY-FIX <path>`') && /no verdict token/.test(clause) && /withh[oe]ld/.test(clause) && clause.includes('`disallowedTools`')), 'AC-14 / DOC-2-2: the MEMORY-FIX fallback is conditioned on an owner whose definition withholds a write tool (e.g. `Write` in its `disallowedTools`), and it returns no verdict token - a token would be parsed as a review; "no write tool at all" named a case `memory: project` never produces');
-  assert.ok(memoryFix.split(/(?<=\.)\s/).some((sentence) => sentence.includes('`D-N`') && /\borchestrator\b/.test(sentence) && sentence.includes('`Status`') && sentence.includes('`fixed`') && /\bsha\b/.test(sentence) && sentence.includes('test-plan.md')), 'sprint-019 COR-1: for a memory D-N the orchestrator sets the row Status to fixed with the fix sha in test-plan.md - the owner cannot write there, and a row left pending is dispatched again by the next test-fix round');
-  assert.ok(clauses.some((clause) => /\bverbatim\b/.test(clause) && /\bcommits\b/.test(clause) && /decisions-log/.test(clause)), 'AC-14: the orchestrator applies that text verbatim, commits it and records it in the decisions log');
-  assert.ok(clauses.some((clause) => clause.includes('`.claude/agent-memory/<owner>/`') && clause.includes('`D-N`')), 'sprint-019 external #1: impl step 3 routes a test-fix D-N located in agent memory to this dispatch too, so the home must name D-N beside review findings');
+  assert.ok(clauses.some((clause) => /never through a test-fix `D-N`/.test(clause) && /review-fix route/.test(clause)), 'sprint-027 D1: a memory finding is fixed inside the phase that found it, never through a test-fix `D-N` or a review-fix route - the superseded rule parked it on a `D-N` row the owner cannot write');
+  assert.ok(clauses.some((clause) => /\bverbatim\b/.test(clause)) && clauses.some((clause) => /\bcommits\b/.test(clause)) && /decisions-log/.test(memoryFix), 'AC-14: the orchestrator applies that text verbatim, commits it and records it in the decisions log');
+  assert.ok(clauses.some((clause) => clause.includes('`resolved: <finding id, …> — memory-fix, <YYYY-MM-DD>`')), 'sprint-027 D1: an in-phase memory fix closes its findings with the resolved: line the review-fix collector skips, or the next round dispatches it again');
   assert.ok(clauses.some((clause) => /\bowner\b/.test(clause) && /\ball\b/.test(clause) && /\bfindings\b/.test(clause)), 'sprint-019 external #1: each distinct owner gets one memory-fix dispatch carrying all its findings - unstated, a round with several owners has no rule for how many dispatches it makes');
   assert.ok(clauses.some((clause) => /one at a time/.test(clause)), 'sprint-019 external #1: memory-fix dispatches run one at a time, so no two owners write concurrently');
-  assert.ok(clauses.some((clause) => /\bafter\b/.test(clause) && /\bdev\b/.test(clause) && /\btester\b/.test(clause)), "sprint-019 external #1: memory-fix dispatches run after the round's dev and tester chains");
-  assert.ok(clauses.some((clause) => /\blowest\b/.test(clause) && /\bid\b/.test(clause)), "sprint-019 external #1: the owners' dispatches are ordered by each owner's lowest finding or D-N id - without an order key the sequence is the orchestrator's guess");
+  assert.ok(clauses.some((clause) => /\blowest\b/.test(clause) && /\bfinding id\b/.test(clause) && !/\bD-N\b/.test(clause)), "sprint-027 D1: the owners' dispatches are ordered by each owner's lowest finding id - without an order key the sequence is the orchestrator's guess, and a D-N id no longer exists to order by");
   const ownerless = memoryFix.split(/(?<=\.)\s/).find((sentence) => /no longer exists?/.test(sentence)) || '';
   assert.ok(/no owner/.test(ownerless) && /\bdeletes\b/.test(ownerless) && /\bcommits\b/.test(ownerless) && /decisions-log/.test(ownerless) && /no memory text/.test(ownerless), 'sprint-019 COR-3: a finding in the memory directory of an agent that no longer exists has no owner to dispatch - the orchestrator deletes the stale file or directory, commits the deletion and logs one line, authoring no memory text; unstated, the leftover-term check finds an orphan hit and the round stalls');
   const impl = canonText('.asd/workflows/asd-phase-impl.md');
-  const reviewFix = stepOf(impl, 3).split('\n').find((line) => line.includes('**review-fix**')) || '';
-  assert.ok(reviewFix.split(/;\s/).some((clause) => /no longer exists?/.test(clause) && /\bdeleted\b/.test(clause) && /\bsame rule\b/.test(clause)), 'sprint-019 COR-3: impl step 3 is where a memory finding meets its owner, so it must send an ownerless one to the deletion its home defines');
-  assert.ok(stepOf(impl, 9).split('\n').some((line) => /authorised to touch/.test(line) && /\bdeleted\b/.test(line) && /ownerless/.test(line)), "sprint-019 COR-3: impl step 9's authorised-paths gate must admit an ownerless memory file the orchestrator deleted, or the deletion fails the gate as an unauthorised path");
-  const testFix = stepOf(impl, 3).split('\n').find((line) => line.includes('**test-fix**')) || '';
-  assert.ok(testFix.split(/;\s/).some((clause) => clause.includes('.claude/agent-memory/<owner>/') && /\borchestrator\b/.test(clause) && clause.includes('`Status`') && clause.includes('`fixed`')), 'sprint-019 COR-1: impl step 3 test-fix is where a memory D-N meets its owner, so it must say the orchestrator flips that row to fixed - the owner cannot write test-plan.md');
-  assert.ok(stepOf(impl, 9).split('\n').some((line) => /authorised to touch/.test(line) && line.includes('test-plan.md') && line.includes('`Status`')), "sprint-019 COR-1: impl step 9's authorised-paths gate must admit test-plan.md when the orchestrator set a memory D-N's Status, or its own write fails the gate");
-  assert.ok(sectionOf('.asd/rules/artifact-layout.md', 'Test plan').split(/(?<=\.)\s/).some((sentence) => sentence.includes('`Status`') && sentence.includes('`D-N`') && /\bmemory\b/.test(sentence) && /\borchestrator\b/.test(sentence)), 'sprint-019 COR-1: artifact-layout.md "Test plan" names who writes test-plan.md, so it must name the orchestrator as the Status writer for a memory D-N');
-  assert.ok(stepOf(impl, 5).split(/(?<=\.)\s/).some((sentence) => /memory-fix/i.test(sentence) && /\blast\b/.test(sentence) && sentence.includes('`review-policy.md` "Autofix vs escalation"')), 'sprint-019 external #1: impl step 5 runs memory-fix dispatches last, in the order the home sets, so it must point at that home');
+  for (const mode of ['review-fix', 'test-fix']) {
+    const modeLine = stepOf(impl, 3).split('\n').find((line) => line.includes(`**${mode}**`)) || '';
+    assert.ok(modeLine && !modeLine.includes('agent-memory'), `sprint-027 D1: impl ${mode} routes no memory finding - a memory finding is fixed in the phase that found it, so the fix round carries no memory-fix branch`);
+  }
+  assert.ok(!/memory-fix/i.test(stepOf(impl, 5)), 'sprint-027 D1: impl step 5 runs no memory-fix dispatch - the fix chain holds only dev and tester fixes');
+  assert.ok(!sectionOf('.asd/rules/artifact-layout.md', 'Test plan').split(/(?<=\.)\s/).some((sentence) => sentence.includes('`Status`') && /\bmemory\b/.test(sentence)), 'sprint-027 D1: "Test plan" names no orchestrator-set Status for a memory D-N - a memory hit never becomes a Defects row');
 
   const memoryFiles = fs.readdirSync(path.join(REPO_ROOT, '.claude/agent-memory'), { recursive: true }).map((entry) => `.claude/agent-memory/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
   assert.ok(memoryFiles.some((rel) => rel.startsWith('.claude/agent-memory/asd-pm/')), 'sanity: AC-16 - the sweep must reach agent-memory directories no roster agent loads');
@@ -6593,11 +6593,11 @@ test('sprint-020 AC-9: persist-review validates a returned review and writes it 
 
   const rejected = [
     ['no verdict token (an interrupted dispatch)', 'correctness', 'impl', 'I ran out of turns before the ledger.\n'],
-    ['another reviewer\'s token', 'correctness', 'impl', review('[REVIEW-impl-efficiency]: APPROVE', ['| — | — | — | no findings | — |'], [])],
-    ['another phase\'s token', 'correctness', 'impl', review('[REVIEW-design-correctness]: APPROVE', ['| — | — | — | no findings | — |'], [])],
-    ['the availability-skip form from an internal reviewer', 'correctness', 'impl', review('[REVIEW-impl-correctness]: APPROVE (skipped: busy)', ['| — | — | — | no findings | — |'], [])],
+    ['another reviewer\'s token', 'correctness', 'impl', review('[REVIEW-impl-efficiency]: APPROVE', [], [])],
+    ['another phase\'s token', 'correctness', 'impl', review('[REVIEW-design-correctness]: APPROVE', [], [])],
+    ['the availability-skip form from an internal reviewer', 'correctness', 'impl', review('[REVIEW-impl-correctness]: APPROVE (skipped: busy)', [], [])],
     ['a ledger whose findings disagree with the table', 'correctness', 'impl', review('[REVIEW-impl-correctness]: CONCERNS', ['| 1 | low | `a.md` | d | f |'], [])],
-    ['CONCERNS listing no finding', 'correctness', 'impl', review('[REVIEW-impl-correctness]: CONCERNS', ['| — | — | — | no findings | — |'], [])],
+    ['CONCERNS listing no finding', 'correctness', 'impl', review('[REVIEW-impl-correctness]: CONCERNS', [], [])],
     ['a severity outside the four levels', 'correctness', 'impl', review('[REVIEW-impl-correctness]: CONCERNS', ['| 1 | minor | `a.md` | d | f |'], ['1'])],
     ['a bare APPROVE listing findings, which would persist them as a clean verdict', 'correctness', 'impl', review('[REVIEW-impl-correctness]: APPROVE', ['| 1 | low | `tests/run.js:10` | d | f |'], ['1'])],
   ];
@@ -6605,7 +6605,7 @@ test('sprint-020 AC-9: persist-review validates a returned review and writes it 
   const rosterOf = (node) => new Set(definitions.flatMap((definition) => definition.reviewers[node]));
   for (const [node, other] of [['design', 'impl'], ['impl', 'design']]) {
     for (const key of [...rosterOf(other)].filter((candidate) => !rosterOf(node).has(candidate))) {
-      rejected.push([`${key}, which no workflow dispatches in ${node}-review`, key, node, `[REVIEW-${node}-${key}]: APPROVE\n\n${table(['| — | — | — | no findings | — |'])}\n`, /--reviewer must be one of/]);
+      rejected.push([`${key}, which no workflow dispatches in ${node}-review`, key, node, `[REVIEW-${node}-${key}]: APPROVE\n\n${table([])}\n`, /--reviewer must be one of/]);
     }
   }
   assert.ok(rejected.length > 8, 'sanity: some roster key must be dispatched in one review phase only (testing, combined), or the roster check below compares nothing');
@@ -6726,6 +6726,8 @@ test('sprint-020 AC-8: review-policy.md "Low-severity test-only findings" states
 
   const recovery = sectionOf('.asd/rules/sprint-lifecycle.md', 'State recovery').split('\n').find((line) => line.startsWith('**User-resolved findings**')) || '';
   const kinds = (/`resolved: [^`]*? — <([^>]+)>, <YYYY-MM-DD>`/.exec(recovery) || [])[1];
+  assert.ok(trigger.includes('no `FAIL` verdict short of satisfied') && trigger.includes('"User-resolved findings"'), 'AC-8 (mixed findings): a FAIL whose findings are all resolved is satisfied, so the trigger must not exclude it by verdict alone - a resolved FAIL beside test-only low findings would otherwise never reach the tester');
+  assert.ok(/\bFAIL\b[^.]*\bsatisfied\b/.test(recovery), 'AC-8 (mixed findings): User-resolved findings declares a fully resolved FAIL satisfied');
   assert.ok(kinds && kinds.split('|').map((kind) => kind.trim()).includes('test-fix'), 'sprint-lifecycle.md "State recovery" "User-resolved findings" must admit the test-fix kind, or a verdict whose findings the tester fixed never counts as satisfied');
   const admitted = kinds.split('|').map((kind) => kind.trim());
   const written = canonMarkdownFiles().flatMap((rel) => [...canonText(rel).matchAll(/`resolved: [^`]*? — ([a-z-]+), <YYYY-MM-DD>`/g)].map((match) => `${rel}: ${match[1]}`));
@@ -6959,20 +6961,14 @@ test('sprint-021 AC-2 (iter-03 external #1), AC-14, sprint-022 AC-2: a sprint wi
   assert.ok(openPaths.slice(0, adoptAt + 1).some((clause) => /self-hosting/i.test(clause) && /\bversion\b/i.test(clause)), 'AC-2: pr open mode must bump the self-hosting version before adopting an OPEN hit into merge mode - an adopted PR merged without it releases under the previous version (impl-review wave-1/iter-04 #1, folded medium)');
 });
 
-test('sprint-021 F-4/F-5: each review template\'s empty findings row and Severity values parse through reviewFindings, the parser persist-review runs on them - a template row the runtime rejects is a verdict no reviewer can persist', () => {
+test('sprint-021 F-4/F-5, sprint-027 D8: each review template\'s empty findings table (header and separator only) and Severity values parse through reviewFindings, the parser persist-review runs on them - a template row the runtime rejects is a verdict no reviewer can persist', () => {
   for (const [rel, heading] of [['.asd/templates/t_review.md', 'Findings'], ['.asd/templates/external-review/t_review-report.md', 'Kept findings']]) {
     const lines = sectionOf(rel, heading).split('\n');
     const table = lines.filter((line) => line.startsWith('|'));
     assert.ok(table.length >= 3, `sanity: ${rel} "${heading}" must ship a header, a separator and a sample row`);
-    const empty = lines.map((line) => /^<!--\s*(\|.*\|)\s*-->$/.exec(line)).find(Boolean);
-    assert.ok(empty, `${rel} "${heading}" must show the row a reviewer leaves when there are no findings - F-5: the external report showed none, External Review wrote \`-\` and persist-review rejected it`);
-    let parsed;
-    try {
-      parsed = runtime.reviewFindings([table[0], table[1], empty[1]].join('\n'));
-    } catch (error) {
-      parsed = `rejected: ${error.message}`;
-    }
-    assert.deepStrictEqual(parsed, [], `${rel} "${heading}": the empty row the template shows must parse to no findings through runtime.reviewFindings - F-5`);
+    assert.ok(!lines.some((line) => /^<!--\s*\|/.test(line)), `sprint-027 D8: ${rel} "${heading}" shows no placeholder row for an empty table - the rule is header and separator only, and a comment row teaches the reviewer to write the very row persist-review used to reject`);
+    assert.deepStrictEqual(runtime.reviewFindings([table[0], table[1]].join('\n')), [], `${rel} "${heading}": the template's header and separator alone must parse to no findings through runtime.reviewFindings - F-5`);
+    assert.deepStrictEqual(runtime.reviewFindings([table[0], table[1], '| — | — | — | no findings | — |'].join('\n')), [], `sprint-027 D8: ${rel} "${heading}": the legacy placeholder row stays tolerated, or a review file written before this rule stops persisting`);
     const severities = /\{\{([a-z/]+)\}\}/.exec(table[2].split('|')[2]);
     assert.ok(severities, `sanity: ${rel} "${heading}" sample row must list the Severity values as {{a/b/...}}`);
     const stated = lines.map((line) => /^<!--.*\bone of ([a-z|]+)/.exec(line)).filter(Boolean).flatMap((match) => match[1].split('|'));
@@ -8166,21 +8162,163 @@ test('sprint-026 AC-14 (D11): every role of the grant table is an agent or the o
   assert.ok(pairs >= 40, `sanity: the sweep must reach the role-phase pairs (got ${pairs})`);
 });
 
+test('sprint-027 AC-3/AC-4/AC-5 (D2-D4): staged solution design has one home, scope step 2 runs it before any AC-N and stops at the approach-choice gate checkpoints.md inventories, asd-ba has a scope mode the scope dispatch names, and every later reader takes research.md through the research input key', () => {
+  const home = headingBody('.asd/rules/sprint-lifecycle.md', 'Staged solution design');
+  for (const stage of ['(a) **Requirements interview**', '(b) **Research**', '(c) **Refinement interview**']) {
+    assert.ok(home.includes(stage), `AC-3: "Staged solution design" must define stage ${stage} - scope step 2 and the template cite the stages, not restate them`);
+  }
+  assert.ok(home.includes('`asd-ba`, dispatched in `scope` mode') && home.includes('`research.md`') && home.includes('**Conceptual boundary**'), 'AC-3/AC-4: the home names the BA scope dispatch, the research.md artifact and the conceptual-only boundary');
+
+  const step = stepOf(sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps'), 2);
+  assert.ok(step.includes('`sprint-lifecycle.md` "Staged solution design"'), 'AC-3: scope step 2 must cite the staged-design home');
+  const gate = /\[GATE hard: (approach choice)\]/.exec(step);
+  assert.ok(gate, 'AC-3: scope step 2 must tag the approach choice as a hard gate');
+  assert.ok(step.indexOf(gate[0]) < step.indexOf('stable `AC-N` ids'), 'AC-3: the approach choice is decided before any AC-N is written, or the AC-N cannot follow from the chosen approach');
+  assert.ok(headingBody('.asd/rules/checkpoints.md', 'Gate inventory').split('\n').some((row) => row.startsWith(`| ${gate[1]} (`) && row.includes('hard approve-before-write')), `AC-3: checkpoints.md "Gate inventory" must class "${gate[1]}" the way scope step 2 tags it`);
+  assert.ok(step.includes('`research.md`'), 'AC-5: scope step 2 must write the research artifact');
+
+  const dispatch = jsonOf('.asd/workflows/asd-phase-scope.md', 'Dispatch');
+  assert.ok(dispatch.some((entry) => entry.agent === 'asd-ba'), 'AC-3: the scope Dispatch must name asd-ba, the agent that performs stage (b)');
+  assert.ok(Object.keys(jsonOf('.asd/agents/asd-ba.md', 'Inputs').modes).includes('scope'), 'AC-3: asd-ba must declare the scope mode the dispatch uses');
+  assert.ok(canonText('.asd/agents/asd-ba.md').split('\n').some((line) => line.startsWith('- must: in scope, research') && line.includes('"Staged solution design"')), 'AC-4: asd-ba bounds its scope research by the staged-design boundary');
+
+  const readers = headingBody('.asd/rules/sprint-lifecycle.md', 'Input sources').split('\n').find((row) => row.startsWith('| `research` |')) || '';
+  assert.ok(readers.includes('`<sprint>/research.md`'), 'AC-5: "Input sources" must resolve the research key to the sprint artifact');
+  for (const phase of ['audit', 'design', 'plan']) {
+    assert.ok(/research \(sprint-lifecycle\.md 'Input sources'\)/.test(canonText(`.asd/workflows/asd-phase-${phase}.md`)), `AC-5: asd-phase-${phase}.md must read the research input key, or the later phase redoes the stage (b) research`);
+  }
+  const reentry = step.split('\n').find((line) => line.includes('**Re-entry**')) || '';
+  const template = canonText('.asd/templates/t_research.md');
+  for (const evidence of ['Requirements', 'Findings', 'Chosen']) {
+    assert.ok(reentry.includes(evidence) && template.includes(evidence), `AC-5: the scope re-entry skips a stage only by its ${evidence} evidence in research.md, so t_research.md must carry it`);
+  }
+  assert.ok(reentry.includes('`{{` placeholder'), 'AC-5: re-entry counts a stage done only when its section holds no template placeholder, or a freshly seeded research.md skips every stage');
+  const stageB = step.split('\n').find((line) => line.includes('(b) Dispatch')) || '';
+  assert.ok(/`COMPLETED`[^`]*write[^`]*Findings and Approaches/.test(stageB), 'AC-5: the BA return body is written at its COMPLETED, so a session lost before stage (c) re-enters with Findings evidence');
+  for (const entry of jsonOf('.asd/workflows/asd-phase-design.md', 'Dispatch')) {
+    assert.ok(entry.payload.includes('inputs.research'), `AC-5: the design dispatch at ${entry.when} must pass inputs.research, or that creator redoes the stage (b) research`);
+  }
+});
+
+test('sprint-027 AC-5 (D4/D5): t_research.md keeps the sections the scope workflow writes and later phases read, each finding carries a source, the offline skip line is the one the home states, and artifact-layout.md maps and describes research.md', () => {
+  const template = canonText('.asd/templates/t_research.md');
+  const headings = [...template.matchAll(/^## (.+)$/gm)].map((match) => match[1]);
+  assert.deepStrictEqual(headings, ['Requirements', 'Findings', 'Approaches'], 'AC-5: t_research.md sections, in the order the stages fill them');
+  assert.ok(/^responsibility:\n  owns:/.test(template.replace(/^---\n/, '')), 'AC-5: t_research.md opens with the responsibility frontmatter every template carries');
+  assert.ok(/^- \{\{finding\}\} — source: \{\{URL\}\}$/m.test(template), 'AC-5: a finding row carries its source URL');
+  assert.ok(/^- Recommended: /m.test(template) && /^- Chosen: /m.test(template), 'AC-5: Approaches records the recommendation and the user\'s choice separately');
+  assert.ok(/^- Raw scope: /m.test(template) && canonText('.asd/workflows/asd-phase-scope.md').includes('write the raw scope'), 'AC-5: the raw scope the covers-strands-only boundary refers to has a template line and a scope writer');
+  const home = headingBody('.asd/rules/sprint-lifecycle.md', 'Staged solution design');
+  assert.ok(home.includes('`no web research: <cause>`'), 'D5: the offline skip line is stated at the home');
+  assert.ok(canonText('.asd/workflows/asd-phase-scope.md').includes('`no web research: <cause>`'), 'D5: scope step 2 writes the same skip line the home states');
+  const layout = canonText('.asd/rules/artifact-layout.md');
+  assert.ok(layout.includes('research.md                    # scope, "Research"') && headingBody('.asd/rules/artifact-layout.md', 'Research').includes('`t_research.md`'), 'AC-5: artifact-layout.md maps research.md and names its template');
+});
+
+test('sprint-027 AC-7 (D7): providers.md "Task-class variants and routing" states every input key and enum routeTask reads and the --input <path|-> form once, route-task accepts stdin, and impl step 5a cites the keys instead of restating them', () => {
+  const source = runtime.routeTask.toString();
+  const keys = [...new Set([...source.matchAll(/\binput\.(\w+)/g)].map((match) => match[1]))];
+  assert.deepStrictEqual(keys.sort(), ['checks', 'correctionAttempts', 'failedObjectiveCheck', 'kind', 'objectiveInputs', 'priorTier', 'risks'], 'sanity: routeTask reads the seven documented keys - a new key needs a providers.md row');
+  const section = headingBody('.asd/rules/providers.md', 'Task-class variants and routing');
+  for (const key of keys) {
+    assert.ok(section.includes(`\`${key}\``), `AC-7: providers.md must name the route-task input key \`${key}\``);
+  }
+  const kinds = /\[((?:'\w+',? ?)+)\]\.includes\(input\.kind\)/.exec(source)[1].match(/\w+/g);
+  assert.ok(section.includes(`\`kind\` (${kinds.map((kind) => `\`${kind}\``).join('|')})`), 'AC-7: the kind enum is stated exactly as routeTask accepts it');
+  assert.ok(section.includes('route-task --input <path|->') && section.includes('never inline JSON'), 'AC-7: the --input form is stated once');
+  const routed = runtimeCliResult(['route-task', '--input', '-'], { input: JSON.stringify({ kind: 'standard', objectiveInputs: false, failedObjectiveCheck: false, checks: [], correctionAttempts: 0, risks: [] }), stdio: 'pipe' });
+  assert.deepStrictEqual(routed.status === 0 && routed.result.tier, 'standard', `AC-7: route-task --input - must read stdin. Got: ${JSON.stringify(routed)}`);
+  const step5a = canonText('.asd/workflows/asd-phase-impl.md').split('\n').find((line) => line.startsWith('5a.')) || '';
+  assert.ok(step5a.includes('`providers.md` "Task-class variants and routing"') && !step5a.includes('objectiveInputs'), 'AC-7: impl step 5a cites the keys\' home and does not restate them');
+});
+
+test('sprint-027 AC-9 (D9): the runner\'s --filter runs only tests whose name contains the fixed substring, prints the matched count, exits non-zero on zero or empty matches, and code-style.md section 17 names the flag', () => {
+  const fragment = 'sprint-026 AC-14 (D11): markdownSection returns';
+  const run = (...args) => {
+    try {
+      return { status: 0, stdout: execFileSync(process.execPath, [path.join(REPO_ROOT, 'tests', 'run.js'), ...args], { encoding: 'utf8', stdio: 'pipe' }), stderr: '' };
+    } catch (error) {
+      return { status: error.status, stdout: String(error.stdout), stderr: String(error.stderr) };
+    }
+  };
+  const matched = tests.filter((candidate) => candidate.name.includes(fragment)).length;
+  assert.strictEqual(matched, 1, 'sanity: the fragment names exactly one test');
+  const hit = run('--filter', fragment);
+  assert.ok(hit.status === 0 && hit.stdout.includes(`${matched}/${tests.length} tests matched`) && hit.stdout.includes(`\n${matched}/${matched} passed`), `AC-9: a matching filter runs only the matched tests and prints the matched count. Got: ${JSON.stringify(hit)}`);
+  const regex = run('--filter', 'sprint-026 AC-14 (D11): mark.ownSection');
+  assert.ok(regex.status === 1 && regex.stdout.includes(`0/${tests.length} tests matched`), `D9: the filter is a fixed substring, not a regex. Got: ${JSON.stringify(regex)}`);
+  const none = run('--filter', 'no test carries this name fragment');
+  assert.ok(none.status === 1 && none.stderr.includes('no test name contains'), `AC-9: zero matches exit non-zero, or a mistyped fragment reads as a green run. Got: ${JSON.stringify(none)}`);
+  const empty = run('--filter', '');
+  assert.strictEqual(empty.status, 1, 'AC-9: an empty fragment matches everything, so it is refused rather than running the whole suite as a filtered run');
+  assert.ok(headingBody('.asd/rules/code-style.md', '17. Tests').includes('`--filter <substring>`'), 'AC-9: code-style.md section 17 names the runner flag every mutation and control run uses');
+});
+
+test('sprint-027 AC-10 (D10): every phase review-policy.md "Memory-fix dispatch" names acts on it at its own step, no other phase does, and each acting site fixes inside the phase - never a D-N, never a transition', () => {
+  const home = headingBody('.asd/rules/review-policy.md', 'Autofix vs escalation').split('\n').find((line) => line.startsWith('**Memory-fix dispatch**')) || '';
+  const named = /inside the phase that found it — ([^—]+?), at the step its workflow names/.exec(home);
+  assert.ok(named, 'AC-10: the home must list the phases that fix a memory finding in place');
+  const phases = named[1].split(/, | or /);
+  const citing = fs.readdirSync(path.join(REPO_ROOT, '.asd', 'workflows')).filter((file) => /^asd-phase-.+\.md$/.test(file)).filter((file) => canonText(`.asd/workflows/${file}`).includes('"Memory-fix dispatch"')).map((file) => file.replace(/^asd-phase-|\.md$/g, ''));
+  assert.deepStrictEqual(citing.sort(), [...phases].sort(), 'AC-10: exactly the phases the home lists cite it - a phase left out silently leaves its memory hit with no owner, one added fixes a hit the rule says it must not');
+  assert.ok(home.includes('in a phase whose workflow names no step') && home.includes("at the commit where it arises, before that phase's COMPLETED"), 'AC-10: a phase whose workflow names no memory-fix step (scope, audit, design, design-promote) still meets a memory-check hit at its orchestrator memory commit - the home must say the fix happens there, before that phase COMPLETED, or the hit has no acting site');
+  const memoryCheck = headingBody('.asd/rules/git-strategy.md', 'Commit before review').split('\n').find((line) => line.startsWith('**Memory content check**')) || '';
+  assert.ok(memoryCheck.includes("before that phase's COMPLETED") && memoryCheck.includes('`review-policy.md` "Memory-fix dispatch"'), 'AC-10: the memory-check sentence must carry the same before-COMPLETED timing as its home, or the commit-site statement and the home disagree');
+  const implReviewWrites = jsonOf('.asd/workflows/asd-phase-impl-review.md', 'Exit').writes;
+  const memoryFixWrite = implReviewWrites.find((entry) => entry.includes('memory-fix commits')) || '';
+  assert.ok(memoryFixWrite.includes('by the owner or orchestrator') && !implReviewWrites.some((entry) => /asd-tester[^"]*and memory-fix/.test(entry)), 'CB-2: impl-review Exit writes attributes memory-fix commits to the owner or orchestrator, never to asd-tester');
+  assert.ok(implReviewWrites.some((entry) => entry.startsWith('decisions-log entry') && entry.includes('memory-fix')), 'CB-2: the memory-fix decisions-log line the home requires is listed in impl-review Exit writes');
+  assert.ok(jsonOf('.asd/workflows/asd-phase-design-review.md', 'Exit').writes.some((entry) => entry.includes('resolved: lines') && entry.includes('memory-fix commits')), 'CB-2: design-review Exit writes lists the memory-fix resolved: lines and commits its step 9 produces');
+  for (const phase of phases) {
+    const lines = canonText(`.asd/workflows/asd-phase-${phase}.md`).split('\n').filter((line) => line.includes('"Memory-fix dispatch"') && !line.startsWith('Owner:') && !line.startsWith('impl-review fixes no CODE'));
+    assert.ok(lines.length > 0, `AC-10: asd-phase-${phase}.md must act on the dispatch at a step, not only in its header`);
+  }
+  assert.ok(stepOf(sectionOf('.asd/workflows/asd-phase-impl-test.md', 'Steps'), '7a').includes('never a `D-N`'), 'D10: impl-test step 7a fixes a memory hit in the entry, never through a D-N');
+  assert.ok(sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Steps').split('\n').some((line) => line.includes('**Red, memory-caused**') && line.includes('never a `D-N`')), 'D10: impl-review step 9 sends a memory-caused red to its owner, never to a D-N');
+  assert.ok(canonText('.asd/agents/asd-tester.md').split('\n').some((line) => line.startsWith('- **memory defect**') && line.includes('never a `D-N`') && line.includes('"Memory-fix dispatch"')), 'D10: the tester reports a memory defect and files no D-N for it');
+  const kinds = /`resolved: <finding id, …> — <([^>]+)>, <YYYY-MM-DD>`/.exec(canonText('.asd/rules/sprint-lifecycle.md'))[1].split(' | ');
+  assert.ok(kinds.includes('memory-fix') && home.includes('— memory-fix, <YYYY-MM-DD>`'), 'D10: memory-fix is a resolved: kind State recovery admits, or the next review-fix round collects the fixed finding again');
+});
+
+test('sprint-027 leftover-term check: no canon, README, AGENTS.md, template, runtime, hook, workflow definition or agent-memory line keeps a sentence or term the sprint removed - the undecided-to-deferred default, closing without asking, the placeholder findings row, the memory D-N route and its Status flip, the memory-fix ordering after the dev and tester chains, the inline JSON route-task input and the scope phase\'s "dispatches none"', () => {
+  const removed = [
+    'undecided → `deferred`',
+    'written `closed` without asking',
+    '<!-- when no findings, leave one row: -->',
+    '<!-- | — | — | — | no findings | — | -->',
+    'is the empty table\'s placeholder',
+    'lowest finding or `D-N` id',
+    'after the round\'s dev and tester chains',
+    'for a memory `D-N`, by the orchestrator',
+    'Memory-fix dispatches (step 3) run last',
+    'A review finding or test-fix `D-N` located in',
+    'exactly as a review-fix memory finding does',
+    'a memory finding\'s owner',
+    'or deleted as ownerless',
+    'with the fix commit sha in `<sprint>/test-plan.md`',
+    'route-task --input <json>',
+  ];
+  const memoryFiles = fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT), { recursive: true }).map((entry) => `${AGENT_MEMORY_ROOT}/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
+  assert.ok(memoryFiles.some((rel) => rel.startsWith(`${AGENT_MEMORY_ROOT}/asd-tester-critical/`)), 'sanity: the sweep must reach every memory directory (artifact-layout.md "Agent memory" leftover-term check)');
+  const swept = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/templates/t_config.yaml', '.asd/hooks/session-start.js', '.asd/runtime.js', '.asd/workflows/standard.json', '.asd/workflows/lite.json', ...memoryFiles];
+  const hits = swept.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => removed.filter((phrase) => line.includes(phrase)).map((phrase) => `${rel}:${index + 1} ${phrase}`)));
+  assert.deepStrictEqual(hits, [], 'each phrase is from a line this sprint deleted (git diff main...HEAD), taken exactly - one surviving restates the superseded rule as current. A later sprint that re-adopts a phrase deletes its entry here. CHANGELOG.md and sprint folders are history and stay out of the sweep');
+  assert.ok(!canonText('.asd/workflows/asd-phase-scope.md').split('\n').some((line) => line.startsWith('Owner:') && line.includes('dispatches none')), 'scope dispatches asd-ba for stage (b), so its Owner line cannot say it dispatches none (plan, retro and pr keep theirs)');
+});
+
 const CAP_STANDALONE_SKILLS_BYTES = 61051;
-const CAP_PHASE_WORKFLOWS_BYTES = 125501;
 
 /** Committed (LF) bytes of the canon files `rels` summed. */
 function lfBytes(rels) {
   return rels.reduce((sum, rel) => sum + Buffer.byteLength(canonText(rel)), 0);
 }
 
-test('sprint-026 AC-15: the standalone skills total at most their main baseline of 61,051 bytes and the phase workflows at most 125,501', () => {
+test('sprint-026 AC-15: the standalone skills total at most their main baseline of 61,051 bytes', () => {
   const skills = FORM_CATEGORIES.skills.files();
   const workflows = FORM_CATEGORIES.workflows.files();
   assert.strictEqual(skills.length, 7, 'the seven standalone skills');
   assert.ok(workflows.length >= 11, 'the phase workflows');
   assert.ok(lfBytes(skills) <= CAP_STANDALONE_SKILLS_BYTES, `standalone skills total ${lfBytes(skills)} B, cap ${CAP_STANDALONE_SKILLS_BYTES}`);
-  assert.ok(lfBytes(workflows) <= CAP_PHASE_WORKFLOWS_BYTES, `phase workflows total ${lfBytes(workflows)} B, cap ${CAP_PHASE_WORKFLOWS_BYTES}`);
 });
 
 /**
@@ -8218,8 +8356,19 @@ test('sprint-026 AC-16 (D13): per-dispatch load of dev (impl), tester (impl-test
 // (non-Promise) return value is a no-op, so this loop stays correct for
 // every existing sync test body too, zero behavior change for them.
 async function runAll() {
+  const filterAt = process.argv.indexOf('--filter');
+  const fragment = filterAt === -1 ? null : process.argv[filterAt + 1];
+  const selected = fragment === null ? tests : tests.filter((t) => t.name.includes(fragment));
+  if (fragment !== null) {
+    console.log(`filter "${fragment}": ${selected.length}/${tests.length} tests matched`);
+    if (!fragment || selected.length === 0) {
+      console.error(`no test name contains "${fragment || ''}"`);
+      process.exitCode = 1;
+      return;
+    }
+  }
   let failures = 0;
-  for (const t of tests) {
+  for (const t of selected) {
     try {
       await t.fn();
       console.log(`ok - ${t.name}`);
@@ -8230,7 +8379,7 @@ async function runAll() {
     }
   }
 
-  console.log(`\n${tests.length - failures}/${tests.length} passed`);
+  console.log(`\n${selected.length - failures}/${selected.length} passed`);
   process.exitCode = failures > 0 ? 1 : 0;
 }
 

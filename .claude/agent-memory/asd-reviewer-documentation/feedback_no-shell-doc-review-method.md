@@ -70,8 +70,8 @@ phase rejects and re-dispatches.
   that style alone is not a §7 finding.
 - **Agent-memory files are reviewable source** (`artifact-layout.md` "Agent memory"): verify durable claims
   against HEAD AND against the writer's own definition. A stale line in *your own* memory in scope is
-  raised like any other finding; its fix comes in your later memory-fix dispatch (`review-policy.md`
-  "Autofix vs escalation"), not mid-review. Writing new memory while reviewing stays allowed; the
+  raised like any other finding; it is fixed by your memory-fix dispatch inside the same review phase
+  (`review-policy.md` "Memory-fix dispatch"), not by editing mid-review. Writing new memory while reviewing stays allowed; the
   orchestrator commits it with the review file ("Diff reachability"). A memory line is in Documentation economy's Reach. A sibling
   memory written in the same diff range as a code fix often cites the defect that range already fixed
   (e.g. testing memory vs a `tests/run.js` AC message) - check each memory "re-read X" against the diff.

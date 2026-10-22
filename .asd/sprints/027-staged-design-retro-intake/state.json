@@ -1,0 +1,220 @@
+{
+  "sprint_id": "027-staged-design-retro-intake",
+  "branch": "sprint/027-staged-design-retro-intake",
+  "phase": "pr",
+  "workflow": "lite",
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "adr": false,
+    "c4": false
+  },
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "workflow choice",
+      "decision_actor": "user",
+      "reason": "user answer in chat: lite",
+      "evidence": "decisions-log.md 2026-10-22 sprint opened",
+      "artifact_revision": "state.json@scope"
+    },
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "sprint.md AC-1..AC-10 accepted as one sprint; staged design in scope for both workflows, always mandatory, conceptual only; orchestrator interviews, asd-ba researches; retro 026#A-1/A-2/P-3/P-2 included, P-1/P-4 rejected",
+      "evidence": "decisions-log.md 2026-10-22 scope gate",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "retro intake dispositions",
+      "decision_actor": "user",
+      "reason": "026#A-1 A-2 P-2 P-3 included; 026#P-1 P-4 rejected",
+      "evidence": "decisions-log.md 2026-10-22 retro intake",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "audit contradictions",
+      "decision_actor": "user",
+      "reason": "C1 settled: closed with evidence; C2-C5 canonical or accepted scope",
+      "evidence": "decisions-log.md 2026-10-22 audit contradiction C1 settled",
+      "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "all sections present, 5 contradictions settled (1 user, 4 canonical/scope), AC-1..AC-10 deliverable",
+      "evidence": "audit.md",
+      "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "user",
+      "reason": "plan.md accepted: D1-D10, Tasks 1-6 in 3 waves",
+      "evidence": "decisions-log.md 2026-10-22 plan accepted",
+      "artifact_revision": "plan.md@plan"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "Tasks 1-6 + memory-fix line done, plan ticked, build/lint clean, authorised paths only, flagged choices resolved",
+      "evidence": "decisions-log.md 2026-10-22 impl assessment",
+      "artifact_revision": "HEAD 23d34bb4"
+    },
+    {
+      "gate": "impl-review green handoff",
+      "decision_actor": "orchestrator",
+      "reason": "waves 1-2 all APPROVE/latched (iter-02 each), terminal full suite green 302/302, lint and sync --check clean",
+      "evidence": "test-plan.md Suite run; reviews/impl/wave-2/iter-02",
+      "artifact_revision": "HEAD f6b88906"
+    },
+    {
+      "gate": "PR publication",
+      "decision_actor": "user",
+      "reason": "user confirmed push and PR open",
+      "evidence": "chat confirmation 2026-10-22",
+      "artifact_revision": "HEAD 86df894e"
+    }
+  ],
+  "task_routing": {
+    "Task 1": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:staged-design rule shape and memory-fix phase boundary",
+      "resolved_model": "opus"
+    },
+    "Task 2": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:memory-fix in-phase rule wording",
+      "resolved_model": "opus"
+    },
+    "Task 5": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:runner filter edge semantics",
+      "resolved_model": "sonnet"
+    },
+    "Task 3": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:staged-design workflow steps and BA scope mode",
+      "resolved_model": "opus"
+    },
+    "Task 4": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:memory-fix routing inside impl-test and impl-review",
+      "resolved_model": "opus"
+    },
+    "Task 6": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:README mirror rows",
+      "resolved_model": "sonnet"
+    },
+    "impl-test entry 1": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:content-contract pins",
+      "resolved_model": "sonnet"
+    },
+    "review-fix wave-1/iter-01": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:staged-design re-entry evidence",
+      "resolved_model": "opus"
+    },
+    "impl-test entry 2": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:content-contract pins",
+      "resolved_model": "sonnet"
+    },
+    "review-fix wave-2/iter-01": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:memory-fix phase coverage",
+      "resolved_model": "opus"
+    },
+    "impl-test entry 3": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:content-contract pins",
+      "resolved_model": "sonnet"
+    },
+    "impl-review wave-2/iter-02 suite": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "normal",
+      "resolved_model": "sonnet"
+    }
+  },
+  "skipped_phases": [
+    "design-promote"
+  ],
+  "reviews": {
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "wave": 2,
+      "waves": [
+        {
+          "iteration": 2,
+          "verdicts": {
+            "iter-01": {
+              "combined": "CONCERNS",
+              "external": "CONCERNS"
+            },
+            "iter-02": {
+              "combined": "APPROVE",
+              "external": "APPROVE"
+            }
+          },
+          "iteration_heads": {
+            "iter-01": "e4627b2f283d0b801c16ada033014ab00611e67b",
+            "iter-02": "791f1dff89caf05713fd808afaeaaff7a11b2a1b"
+          },
+          "latched": {
+            "combined": 2,
+            "external": 2
+          }
+        },
+        {
+          "iteration": 2,
+          "verdicts": {
+            "iter-01": {
+              "combined": "CONCERNS",
+              "external": "CONCERNS"
+            },
+            "iter-02": {
+              "combined": "APPROVE",
+              "external": "APPROVE"
+            }
+          },
+          "iteration_heads": {
+            "iter-01": "eba145f003f41f2257ed865a5440c74e6b2d12f4",
+            "iter-02": "3e60eeca6277ebf26ed8f0f6fc860dc1ba3a311f"
+          },
+          "latched": {
+            "combined": 2,
+            "external": 2
+          }
+        }
+      ]
+    }
+  },
+  "created_at": "2026-10-22T09:20:33.682Z",
+  "updated_at": "2026-10-22T11:13:06.618Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": {
+    "number": 63,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/63",
+    "state": "open"
+  },
+  "archived_at": null
+}

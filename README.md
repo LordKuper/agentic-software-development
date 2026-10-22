@@ -156,7 +156,7 @@ Each sprint running `standard` runs through eleven mandatory phases in order:
 
 ```mermaid
 flowchart TD
-    scope["scope<br/><i>Orchestrator</i>"] --> audit["audit<br/><i>Architect (BA conditional)</i>"]
+    scope["scope<br/><i>Orchestrator · BA</i>"] --> audit["audit<br/><i>Architect (BA conditional)</i>"]
     audit --> design["design<br/><i>BA · UX · Architect</i>"]
     design --> dreview["design-review<br/><i>Correctness · Efficiency · Documentation · External</i>"]
     dreview -->|CONCERNS — autofix & re-iterate| design
@@ -181,7 +181,7 @@ flowchart TD
 
 | Phase | What happens |
 |---|---|
-| **scope** | Orchestrator refines your raw idea into a coherent sprint goal; runs retro intake, offering open retro findings from the last archived sprint for you to include/defer/reject (framework-upstream rows are shown, not dispositioned); creates the sprint branch and folder |
+| **scope** | Orchestrator refines your raw idea into a coherent sprint goal by staged solution design: requirements interview, `asd-ba` best-practice web research, refinement interview, then the `approach choice` hard gate before any `AC-N`, recorded in `research.md`; runs retro intake, putting each open retro finding from the last archived sprint to you for an explicit include/reject/defer (framework-upstream rows are shown, not dispositioned); creates the sprint branch and folder |
 | **audit** | Architect reads every existing doc bearing on the touched areas, plus the code; BA joins only for material domain ambiguity; a canonical ASD doc wins a contradiction, an unsettled one is your hard decision; identify gaps, risks, stubs to resolve |
 | **design** | BA writes PRD, UX writes UX-spec and UI mockups, Architect writes ADRs and C4 schema |
 | **design-review** | 3 internal reviewers (Correctness, Efficiency, Documentation) plus External Review iterate to APPROVE |
@@ -189,7 +189,7 @@ flowchart TD
 | **plan** | Orchestrator decomposes work into Tasks with checkbox subtasks, traces each to PRD acceptance criteria, assigns each to a dispatch wave |
 | **impl** | Dev implements Tasks — or fixes impl-review findings (review-fix mode) or impl-test defects (test-fix mode); no tests written here, except a plan-declared `Test-only` Task, dispatched to `asd-tester`; run build/lint, commit per Conventional Commits |
 | **impl-test** | Tester picks the risk-based test approach for the change scope, deletes redundant/flaky/implementation-coupled tests, writes the missing ones, runs the impacted set; records everything in `test-plan.md`, each regression proof with its failing command, non-zero exit code and test name; code defects route back to `impl` |
-| **impl-review** | 4 internal reviewers (Correctness, Efficiency, Testing, Documentation) plus External Review; a large scope is reviewed as up to 3 sequential review waves, each with its own iteration counter; routes findings back to `impl` review-fix mode; once every wave's reviewers approve, runs the sprint's one full-suite check — green advances to `retro`, red exits to `impl` test-fix mode and clears every APPROVE latch |
+| **impl-review** | 4 internal reviewers (Correctness, Efficiency, Testing, Documentation) plus External Review; a large scope is reviewed as up to 3 sequential review waves, each with its own iteration counter; routes findings back to `impl` review-fix mode; once every wave's reviewers approve, runs the sprint's one full-suite check — green advances to `retro`, red exits to `impl` test-fix mode and clears every APPROVE latch; an agent-memory finding is fixed in place by its owner's memory-fix dispatch in the phase that finds it, never a `D-N` or phase transition |
 | **retro** | Orchestrator reads the sprint's friction log and writes `retrospective.html` in two classes: remediation traced to `F-N` entries, and systemic proposals for a cheaper next sprint (derived from how the sprint ran, not bounded by the entries); findings sharing a root cause merge first, one an existing rule already covers is dropped citing it, and each survivor gets a one-line `Guardrail`, its `Home`, and a stable row id (`A-N` for Actions, `P-N` for Systemic proposals, `N` the table's 1-based row ordinal) — every row marked as acting on the consumer project or the ASD framework, never applied by retro; an entry-free log skips remediation only, proposals still ship; a duration section summarises the sprint's timing ledger (summary table, the top 5 longest plus every over-30-minute machine operation, and every user wait checked for an avoidable escalation; "No timing data" without a ledger); closes with a chat summary |
 | **pr** | DoD verification + `gh pr create`, then ASD merges the PR itself through `gh` (a `gh` failure is `FAILED` naming the fix); one PR per sprint. Exit tokens are `await-merge` (PR opened) and `done` (merge confirmed). A merged PR completes the sprint with no user gate; under self-hosting the merge step also publishes the tag and release on the commit carrying the sprint's version bump (idempotent; while it is missing, each `/asd-sprint` asks to retry it or continue without it). Nothing is written on the base branch: the next sprint's scope archives the merged sprint (archive move, terminal state) as its first commit |
 
@@ -225,7 +225,7 @@ Only the main orchestrator (and a skill it runs inline) ever prompts you for a d
 
 | Agent | Claude | Codex | Role |
 |---|---|---|---|
-| `asd-ba` | sonnet/high | sol/high | Business analyst: PRD, acceptance criteria; conditional domain audit support |
+| `asd-ba` | sonnet/high | sol/high | Business analyst: PRD, acceptance criteria; scope best-practice research; conditional domain audit support |
 | `asd-ux` | sonnet/high | sol/high | UX flows, UI mockups, DESIGN.md tokens, design-system.html |
 | `asd-architect` | opus/xhigh | sol/high | Complete docs/code audit; ADRs, subsystem registry, C4, stack, API contracts, tech references |
 | `asd-dev` | sonnet/medium | sol/medium | Server/CLI/library code and UI code (no tests; consumes DESIGN.md tokens where UI work applies) |
@@ -233,7 +233,7 @@ Only the main orchestrator (and a skill it runs inline) ever prompts you for a d
 
 The main orchestrator owns scope, plan, state, decisions, manual-step validation, Git and release/archival sequencing; no PM agent is spawned. Dev/Tester task variants share each canonical role body and permissions: `-mechanical` uses Haiku (no effort)/Luna low, `-critical` Opus high (`asd-dev`) or Sonnet xhigh (`asd-tester`), Sol high on Codex; tier `standard` has no variant and dispatches the base agent (Sonnet/Sol medium). Deterministic bookkeeping uses commands. Routing uses objective eligibility, escalates on a risk declared against the change or a failed check — a risk declared against the artifact alone does not — and never changes the main model. Experimental cheap outputs retain strong independent review.
 
-All five creators carry `WebFetch`/`WebSearch` (Codex `web_search: "live"`), each scoped by its own `## Tools`. BA, UX, and Architect also carry `Bash`, each bounded to its own run-command policy: BA to read-only git inspection (`git log`/`git show`/`git diff`); UX to the `designmd-lint`/`-diff`/`-export` `commands.yaml` aliases (`designmd-install` is the orchestrator's, run before dispatching UX); Architect to the `likec4` CLI (lint/validate only, never `build` inside a sprint draft) — none of the three writes an artifact via shell or holds a commit tool (`.asd/rules/git-strategy.md` "Commit before review"). Dev and Tester carry `Bash` limited by their run-command policy (`commands.yaml` commands plus `git add`/`git commit` for their own work; Dev never runs `test`) and are the only two agents holding a commit tool.
+All five creators carry `WebFetch`/`WebSearch` (Codex `web_search: "live"`), each scoped by its own `## Tools` (BA: scope best-practice research). BA, UX, and Architect also carry `Bash`, each bounded to its own run-command policy: BA to read-only git inspection (`git log`/`git show`/`git diff`); UX to the `designmd-lint`/`-diff`/`-export` `commands.yaml` aliases (`designmd-install` is the orchestrator's, run before dispatching UX); Architect to the `likec4` CLI (lint/validate only, never `build` inside a sprint draft) — none of the three writes an artifact via shell or holds a commit tool (`.asd/rules/git-strategy.md` "Commit before review"). Dev and Tester carry `Bash` limited by their run-command policy (`commands.yaml` commands plus `git add`/`git commit` for their own work; Dev never runs `test`) and are the only two agents holding a commit tool.
 
 ### Reviewers (5 internal + 1 external)
 
@@ -344,7 +344,7 @@ your-project/
 │   │   ├── stubs.md                 # project-global TODO registry
 │   │   └── retro-backlog.md         # lazy; cross-sprint disposition of open retro rows; /asd-update never touches it
 │   └── sprints/
-│       ├── <NNN-slug>/              # active sprint (one at a time); decisions-log.md, test-plan.md and `timing.jsonl` (the append-only operation-timing ledger, committed with phase bookkeeping) created here; the first two rotate into numbered `decisions-log.NNN.md` / `test-plan.entry-NN.md` segments so neither grows unbounded (`artifact-layout.md`); archived with the sprint
+│       ├── <NNN-slug>/              # active sprint (one at a time); `research.md` (scope), decisions-log.md, test-plan.md and `timing.jsonl` (the append-only operation-timing ledger, committed with phase bookkeeping) created here; decisions-log.md and test-plan.md rotate into numbered `decisions-log.NNN.md` / `test-plan.entry-NN.md` segments so neither grows unbounded (`artifact-layout.md`); archived with the sprint
 │       └── archived/<NNN-slug>/     # moved here by the next sprint's closure write, by the next sprint's scope, with no user gate; completed sprints immutable
 ├── .claude/                         # generated Claude Code view
 │   ├── agents/                      # 16 agent definitions: 12 roles + 4 tier variants (*.md)

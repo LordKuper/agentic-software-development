@@ -1,0 +1,198 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index d3550149..918abd4e 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -77,7 +77,7 @@
+     ".asd/rules/language-policy.md": "7f77042d5ce46d5df0ee48c3f75263d6393c77a20e8a7068e7913c22650a8539",
+     ".asd/rules/providers.md": "67f5cd45ab1b20ab7c9d67c7f5dc9abbeca7359da8501099773dc54dbf03e5b1",
+     ".asd/rules/review-policy.md": "56daa75345608965c067a8ba1f7381f2f2a1c2e246cca279d100e2ed0b304da6",
+-    ".asd/rules/sprint-lifecycle.md": "71db1a324ac157fb0f44318084812613461671f7dc6f32fc84a29bcfd7d7774a",
++    ".asd/rules/sprint-lifecycle.md": "18a00bedb645b71c27a699b0daf8bb08b71e4cebaf6e63df22ff8559297636e9",
+     ".asd/rules/ux-principles.md": "9f2af8c90d969c73654812b80e523e33b4c5696f506acf49e4bacb4c0dc6750c",
+     ".asd/skills/asd-concept/SKILL.md": "e86bbce4c80c089de3a640a3d838c87f295492d9e792d3aa52d289302c942c1c",
+     ".asd/skills/asd-design-system/SKILL.md": "349b475eb3ced8bdee0a625d6e857819e0562336d6d558656fccafe5006944b5",
+@@ -133,13 +133,13 @@
+     ".asd/workflows/asd-phase-audit.md": "b73a8618fedda0ec0050782f39e1999b6b4c702e5edbedc0d32fca77d9c61d3a",
+     ".asd/workflows/asd-phase-design-promote.md": "e29f1d0009c85534117b206e30ad2ed76fcbdbc2dcd32f77958846c66568bf7a",
+     ".asd/workflows/asd-phase-design-review.md": "324b6c41298c913579a5d629c1a2d784e89a2012dcaa705a7df4b361b1210a99",
+-    ".asd/workflows/asd-phase-design.md": "b6603e8a7e8c1d0c4fa62d154f5f6a09b5492034e6b9d7cc84d843b711c50d04",
++    ".asd/workflows/asd-phase-design.md": "8d8b27117e641db35007570617d81109e9adf21bd1f5e8efea80c320f86f03d8",
+     ".asd/workflows/asd-phase-impl-review.md": "d6d99faf957446ef1c53f7b587e20884d8e27422e51da4790c5ac2665cf768c5",
+     ".asd/workflows/asd-phase-impl-test.md": "1aa0e6b5afc415d9dc5af7a1e1688a372020f960568128eec66c1f804563f312",
+     ".asd/workflows/asd-phase-impl.md": "edf3a2684c0f1764164d02e4d42790f1f8a494e8151092fa00762149a5ecec67",
+     ".asd/workflows/asd-phase-plan.md": "2bee7820d27b32d3470eb66973541f3f481125b390b854434ce21b6bb98a20db",
+     ".asd/workflows/asd-phase-pr.md": "217bc1afbf9666f94f47e5e7a0c41582fe0421d59b8dd8c356201208f78ab208",
+-    ".asd/workflows/asd-phase-scope.md": "d737b2c5c1c5582b8a98584089ac08d702c5f29d3e338a70829157cde3b01d02",
++    ".asd/workflows/asd-phase-scope.md": "b8452abadfe3e7765f86280ac0f7632ba70cfb3ae96299c69ff84bb2e27791fd",
+     ".asd/agents/asd-advisor.md": "97fbe5d2e0d5eab3d2f83059b74cb1a6431c24268c75967e0b55475315f32633",
+     ".asd/agents/asd-reviewer-correctness.md": "447dcba94731f0550b10eef50cd2d04df02894d516be693f3b374d6406b13a5e",
+     ".asd/agents/asd-reviewer-efficiency.md": "ac8648369afee087e0096389553a40d96e0e3b44ea2561a5c57a50e736c76f69",
+@@ -158,11 +158,11 @@
+     ".asd/templates/t_subsystem.md": "1365a20aeb5847a1da23ac88d7a3d0153ba3a8b6a3abbf06b883a689d9ee2f5d",
+     ".asd/templates/t_subsystems.md": "54b1e273e9e74a57e08b43d1b671f880b7f682d9ec1bc4afb95a55d98b2531dd",
+     ".asd/migrations/9.0.0.js": "1a1da6ebd2576d92ed44ccde308969856f3aeaa7be152438137e94b43cd015b1",
+-    ".asd/templates/t_retro-backlog.md": "8999cf01686d0a92c47bf1bdfb33a2bf7db326d0e52c74f6e7d0774b6dcd2f74",
++    ".asd/templates/t_retro-backlog.md": "7d2fcf058f0b84065aaadf7554254e0db0ab52c08631ef1081d851e0d8c2cd18",
+     ".asd/agents/asd-reviewer-combined.md": "fa2098fcfd9bc3105b1af56e3e516baa854f72a3e304c93ebe455ae6de246079",
+     ".asd/workflows/lite.json": "2fc12fc41cac51a22b19d67ff5d47c9765c105fec1ad67e8eb5d765b882622ea",
+     ".asd/workflows/standard.json": "7a7c04da7a13ec9dab9bb782d8a9981b703d34859d55614cd9354808b1721fb2",
+     ".asd/rules/agent-protocol.md": "4d4607c62753eea088362ba504d19216cadbabf69d9ca215ac9f038094830721",
+-    ".asd/templates/t_research.md": "29123597ffd2469460fd1db7f67d4963e11e5154aeb650230ab3714ae0ded73f"
++    ".asd/templates/t_research.md": "d722d841e93cd77463cd1c1a4d6a585d87e31963545415143b7795b3a92c78b4"
+   }
+ }
+diff --git a/.asd/rules/sprint-lifecycle.md b/.asd/rules/sprint-lifecycle.md
+index 94dd3aec..2782ef43 100644
+--- a/.asd/rules/sprint-lifecycle.md
++++ b/.asd/rules/sprint-lifecycle.md
+@@ -4,7 +4,7 @@
+ 
+ The main orchestrator owns scope and plan writing, phase/state transitions, decision logging, manual-step validation, Git/PR, archival, merge recovery and self-hosting release. It delegates only artefact creation, research, testing, review or advice.
+ 
+-**Retrospective-derived criteria are re-verified at scope.** A retrospective is sprint-scoped and never promoted (`asd-phase-retro.md` step 6), so its rows state what was true at the HEAD that produced them. Before such a row becomes an `AC-N` in `sprint.md`, the orchestrator checks it against current `HEAD` and carries only what is still unresolved — a row verified resolved is written `closed` and shown at the scope gate with its evidence, no question; a partly delivered one is narrowed to its remaining half. Every other row put to the user takes one explicit choice — include (an `AC-N`), reject (never offered again) or defer (offered again at every later intake) — each option shown with its consequence; no row is disposed by default, and the scope gate is not accepted while a row lacks a choice. Recording home is `decisions-log.md` alone: one entry naming the verified HEAD sha, each row's outcome and the evidence for it. `sprint.md` gains no section for this. A row asserting host behaviour (a provider tool, CLI or runtime) is verified against that host's docs or a live dispatch — never against the row itself or memory — and the doc URL or dispatch is its evidence.
++**Retrospective-derived criteria are re-verified at scope.** A retrospective is sprint-scoped and never promoted (`asd-phase-retro.md` step 6), so its rows state what was true at the HEAD that produced them. Before such a row becomes an `AC-N` in `sprint.md`, the orchestrator checks it against current `HEAD` and carries only what is still unresolved — a row verified resolved is written `closed` and shown at the scope gate with its evidence, no question; a partly delivered one is narrowed to its remaining half. Every other row takes the user's explicit disposition (`asd-phase-scope.md` step 2a). Recording home is `decisions-log.md` alone: one entry naming the verified HEAD sha, each row's outcome and the evidence for it. `sprint.md` gains no section for this. A row asserting host behaviour (a provider tool, CLI or runtime) is verified against that host's docs or a live dispatch — never against the row itself or memory — and the doc URL or dispatch is its evidence.
+ 
+ At scope, accept only `documents.audit: auto|always|off`; any other value, legacy `enabled`/`disabled` included, blocks (`checkpoints.md` "Gate policy" invalid-policy rule). Freeze the effective audit boolean in state (`documents.audit`) — the rule below is deterministic, so no separate reason field is stored. `auto` skips only a complete, verifiably mechanical scope with no behaviour, contract, migration or gate impact; unknown/risky scope audits. An accepted scope expansion ("Scope amendment") reevaluates it. Architect owns audit. An ambiguity only authority or preference can settle goes straight to the user; at audit, BA is dispatched only for evidenced material product/domain ambiguity its sources can resolve.
+ 
+@@ -17,7 +17,7 @@ Scope step 2 (`asd-phase-scope.md`), every sprint of both workflows, after the r
+ - (b) **Research** — `asd-ba`, dispatched in `scope` mode, searches the web for best practices of the solution class and returns findings, each with its source URL, plus 2-3 conceptual approaches with pros/cons and a recommendation. It covers the raw scope's strands only, never a retro row taken in at step 2a. A BA that cannot search (offline session, host web tool unavailable) returns `FAILED` naming the cause; the user chooses retry, skip or abort. Skip is logged in `decisions-log.md`, and `research.md` Findings then reads `no web research: <cause>`.
+ - (c) **Refinement interview** — the orchestrator refines the requirements in chat from that research, then puts the approach choice as a request user decision (`core.md` "Request user decision"), the hard gate `approach choice` (`checkpoints.md` "Gate inventory"), before any `AC-N` is written.
+ 
+-The orchestrator writes `<sprint>/research.md` (`artifact-layout.md` "Research") from the stage (a) answers, the BA return body and the stage (c) answer.
++The orchestrator writes `<sprint>/research.md` (`artifact-layout.md` "Research") stage by stage — the raw scope and stage (a) answers, the BA return body, the stage (c) refinement and choice (`asd-phase-scope.md` step 2).
+ 
+ **Conceptual boundary**: stages (a)-(c) stay at functional requirements and conceptual approaches. Technical detail belongs to design when it runs, else to plan; design creators and plan read `research.md` first ("Input sources" `research`) and research only the technical delta (`design-principles.md` §11).
+ 
+diff --git a/.asd/templates/t_research.md b/.asd/templates/t_research.md
+index de87850d..6984f6ff 100644
+--- a/.asd/templates/t_research.md
++++ b/.asd/templates/t_research.md
+@@ -10,7 +10,8 @@ responsibility:
+ <!-- Stages, conceptual boundary, no-web-research Findings line: .asd/rules/sprint-lifecycle.md "Staged solution design" — not restated here. -->
+ 
+ ## Requirements
+-Stage (a) answers, refined at stage (c).
++Raw scope and stage (a) answers; stage (c) refines the answers.
++- Raw scope: {{raw scope}}
+ - Problem: {{problem}}
+ - Actors: {{actors}}
+ - Functional requirements: {{requirement}}
+diff --git a/.asd/templates/t_retro-backlog.md b/.asd/templates/t_retro-backlog.md
+index 8461f42e..a824d940 100644
+--- a/.asd/templates/t_retro-backlog.md
++++ b/.asd/templates/t_retro-backlog.md
+@@ -10,7 +10,7 @@ responsibility:
+ <!--
+ Intake, ownership and lifecycle: .asd/workflows/asd-phase-scope.md step 2a — not restated here.
+ One line per retro row, updated in place. Row: <NNN-slug>#A-N | <NNN-slug>#P-N. Row, Acts on and Disposition are English literals.
+-Disposition: deferred | included | rejected | closed. The first three are the user's explicit choice per row, never a default; deferred = offered again at every later intake. closed = verified already resolved at HEAD, set with no question.
++Disposition: deferred | included | rejected | closed. The first three are the user's explicit choice per row, never a default. closed = verified already resolved at HEAD.
+ Decided in: the sprint that last decided the row. Guardrail: the row's text; escape | as \|.
+ -->
+ 
+diff --git a/.asd/workflows/asd-phase-design.md b/.asd/workflows/asd-phase-design.md
+index 8ff36319..330a0a23 100644
+--- a/.asd/workflows/asd-phase-design.md
++++ b/.asd/workflows/asd-phase-design.md
+@@ -56,7 +56,7 @@ Owner: inline orchestrator; dispatches `asd-ba`, `asd-ux`, `asd-architect`, skil
+ ## Dispatch
+ 
+ ```json
+-[{"agent": "asd-ba", "when": "step 6", "payload": ["inputs.context", "inputs.requirements (sprint.md)", "inputs.audit", "inputs.research", "inputs.draft (existing prd draft)", "inputs.template (t_prd.html)", "language"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}, {"agent": "asd-ux", "when": "step 8", "payload": ["inputs.context", "inputs.requirements", "inputs.audit", "inputs.research", "inputs.draft (existing ux-spec draft)", "inputs.ux", "inputs.template (t_ux-spec.html, t_design-md-delta.yaml)", "answers (approved token)", "language"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}, {"agent": "asd-architect", "when": "step 9", "payload": ["inputs.context", "inputs.requirements (whichever of prd.html/ux-spec.html exist, else sprint.md)", "inputs.audit", "inputs.research", "inputs.draft (existing adr draft)", "inputs.contracts", "inputs.fold_targets (persistent docs/ by responsibility.owns, tech-reference/)", "inputs.template (t_adr.html)", "language"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}, {"agent": "asd-architect", "when": "step 10", "payload": ["inputs.context", "inputs.drafts (whichever exist; ADR not required)", "inputs.contracts", "inputs.registry (docs/architecture/subsystems.md)", "inputs.diagram (persistent diagram: likec4 docs/architecture/c4/, mermaid the registry's diagram block)", "inputs.requirements (sprint.md)", "inputs.template (per diagram_tool)"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}]
++[{"agent": "asd-ba", "when": "step 6", "payload": ["inputs.context", "inputs.requirements (sprint.md)", "inputs.audit", "inputs.research", "inputs.draft (existing prd draft)", "inputs.template (t_prd.html)", "language"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}, {"agent": "asd-ux", "when": "step 8", "payload": ["inputs.context", "inputs.requirements", "inputs.audit", "inputs.research", "inputs.draft (existing ux-spec draft)", "inputs.ux", "inputs.template (t_ux-spec.html, t_design-md-delta.yaml)", "answers (approved token)", "language"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}, {"agent": "asd-architect", "when": "step 9", "payload": ["inputs.context", "inputs.requirements (whichever of prd.html/ux-spec.html exist, else sprint.md)", "inputs.audit", "inputs.research", "inputs.draft (existing adr draft)", "inputs.contracts", "inputs.fold_targets (persistent docs/ by responsibility.owns, tech-reference/)", "inputs.template (t_adr.html)", "language"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}, {"agent": "asd-architect", "when": "step 10", "payload": ["inputs.context", "inputs.drafts (whichever exist; ADR not required)", "inputs.contracts", "inputs.registry (docs/architecture/subsystems.md)", "inputs.diagram (persistent diagram: likec4 docs/architecture/c4/, mermaid the registry's diagram block)", "inputs.requirements (sprint.md)", "inputs.research", "inputs.template (per diagram_tool)"], "signals": ["COMPLETED", "QUESTION", "ADVICE_NEEDED", "FAILED", "ABORT"]}]
+ ```
+ 
+ ## Exit
+diff --git a/.asd/workflows/asd-phase-scope.md b/.asd/workflows/asd-phase-scope.md
+index 2a202254..bbb692ad 100644
+--- a/.asd/workflows/asd-phase-scope.md
++++ b/.asd/workflows/asd-phase-scope.md
+@@ -26,11 +26,11 @@ Owner: inline orchestrator; dispatches `asd-ba`.
+ 
+    **Re-entry**: skip each sub-step already done — fast-forward, clean tree, branch, closure write, folder and ledger, workflow choice, state seed, Goal (it stands as the raw scope) — then continue at step 2.
+ 2. Seed state and decisions log; a carried ASD update choice takes a `gate_decisions` entry `gate: asd update`, `decision_actor: user`, and one decisions-log line. Then run staged solution design (`sprint-lifecycle.md` "Staged solution design") before any `AC-N` is written:
+-   - (a) Interview the user in chat; write the answers to `<sprint>/research.md` Requirements (`t_research.md`).
+-   - (b) Dispatch `asd-ba` in `scope` mode (`## Dispatch`). Its `FAILED` → request user decision: retry, skip (one decisions-log line; Findings reads `no web research: <cause>`) or abort [GATE hard: abort]; its `ABORT` → relay, halt.
+-   - (c) Refinement interview, then request user decision on the approach [GATE hard: approach choice]; write the return body's findings and approaches, the refined requirements and the chosen approach to `research.md`, plus one decisions-log line.
++   - (a) Interview the user in chat; write the raw scope and the answers to `<sprint>/research.md` Requirements (`t_research.md`), that section only.
++   - (b) Dispatch `asd-ba` in `scope` mode (`## Dispatch`). Its `COMPLETED` → write the return body's Findings and Approaches to `research.md` at once. Its `FAILED` → request user decision: retry, skip (write Findings `no web research: <cause>` then, plus one decisions-log line) or abort [GATE hard: abort]; its `ABORT` → relay, halt.
++   - (c) Refinement interview, then request user decision on the approach [GATE hard: approach choice]; write the refined requirements and the `Chosen` line to `research.md`, plus one decisions-log line.
+    - BA `QUESTION` → `agent-protocol.md` "Relay" `QUESTION`; BA `ADVICE_NEEDED` → "Relay" `ADVICE_NEEDED`.
+-   - **Re-entry**: skip the seed once `state.json` exists, and each stage `research.md` already evidences — (a) Requirements, (b) Findings, (c) a `Chosen` line.
++   - **Re-entry**: skip the seed once `state.json` exists, and each stage `research.md` already evidences — (a) Requirements, (b) Findings, (c) a `Chosen` line — each counting only with content and no `{{` placeholder.
+ 
+    Then refine scope into `sprint.md` with stable `AC-N` ids from `research.md`; ask the user only for ambiguity that prevents a concrete scope. Verify every retrospective-derived criterion against current `HEAD` — one asserting host behaviour also against the host docs or a live dispatch — before writing it, and record that verification in `decisions-log.md` per `sprint-lifecycle.md` "Orchestration and adaptive gates".
+ 2a. **Retro intake** — offer open retro rows:
+diff --git a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+index ccb51329..e8a80307 100644
+--- a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
++++ b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+@@ -9,3 +9,4 @@
+ - [Dispatch payload vs required](feedback_dispatch-payload-vs-required.md) — check every Dispatch row (fix rows, standard promote rows, External Review twins) against agent Inputs required/modes
+ - [Grant-table migration review](feedback_grant-table-migration-review.md) — prose-to-ref grant rewrites: dropped preamble grants, conditional-grant acting sites, reading-rule scope carve-out
+ - [In-body comment sweep](feedback_in-body-comment-sweep.md) — grep added `//` lines in JS diffs; an in-body comment is a high Documentation finding, move its WHY to JSDoc
++- [Re-entry evidence check](feedback_reentry-evidence-check.md) — per Re-entry skip key: which stage writes it, and can a template placeholder fake it
+diff --git a/.claude/agent-memory/asd-reviewer-combined/feedback_reentry-evidence-check.md b/.claude/agent-memory/asd-reviewer-combined/feedback_reentry-evidence-check.md
+new file mode 100644
+index 00000000..d6fa0b11
+--- /dev/null
++++ b/.claude/agent-memory/asd-reviewer-combined/feedback_reentry-evidence-check.md
+@@ -0,0 +1,20 @@
++---
++name: reentry-evidence-check
++description: reviewing a workflow step whose Re-entry skips sub-stages by on-disk evidence - check each stage writes its evidence at that stage and that a template placeholder cannot fake it
++metadata:
++  type: feedback
++---
++
++When a workflow step lists "Re-entry: skip each stage <artifact> already evidences — <section/line>", trace where each
++evidence key is written. A defect has shown up in two forms:
++- a stage's output is written only by a later stage, so its key never holds alone, and a lost session discards that
++  output (it also breaks `core.md` "Context hygiene" 1, disk is the memory);
++- the artifact is created from a template that already contains the evidence heading or a literal line (`- Chosen:`),
++  so the placeholder alone satisfies the key and a hard gate is skipped.
++
++**Why:** both forms pass the content-contract pins, which only check that the key words appear in the step and the
++template.
++
++**How to apply:** for every Re-entry key, name the stage that writes it and ask whether the template already has that
++text. Fix: each stage writes its own output when it finishes, and a key counts only as filled, placeholder-free
++content. Related: [[return-findings-table-shape]].
+diff --git a/README.md b/README.md
+index 05452c21..64284f6d 100644
+--- a/README.md
++++ b/README.md
+@@ -344,7 +344,7 @@ your-project/
+ │   │   ├── stubs.md                 # project-global TODO registry
+ │   │   └── retro-backlog.md         # lazy; cross-sprint disposition of open retro rows; /asd-update never touches it
+ │   └── sprints/
+-│       ├── <NNN-slug>/              # active sprint (one at a time); `research.md` (scope), decisions-log.md, test-plan.md and `timing.jsonl` (the append-only operation-timing ledger, committed with phase bookkeeping) created here; the first two rotate into numbered `decisions-log.NNN.md` / `test-plan.entry-NN.md` segments so neither grows unbounded (`artifact-layout.md`); archived with the sprint
++│       ├── <NNN-slug>/              # active sprint (one at a time); `research.md` (scope), decisions-log.md, test-plan.md and `timing.jsonl` (the append-only operation-timing ledger, committed with phase bookkeeping) created here; decisions-log.md and test-plan.md rotate into numbered `decisions-log.NNN.md` / `test-plan.entry-NN.md` segments so neither grows unbounded (`artifact-layout.md`); archived with the sprint
+ │       └── archived/<NNN-slug>/     # moved here by the next sprint's closure write, by the next sprint's scope, with no user gate; completed sprints immutable
+ ├── .claude/                         # generated Claude Code view
+ │   ├── agents/                      # 16 agent definitions: 12 roles + 4 tier variants (*.md)
+diff --git a/tests/run.js b/tests/run.js
+index 4bf7d8aa..e16c7ada 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -8190,6 +8190,12 @@ test('sprint-027 AC-3/AC-4/AC-5 (D2-D4): staged solution design has one home, sc
+   for (const evidence of ['Requirements', 'Findings', 'Chosen']) {
+     assert.ok(reentry.includes(evidence) && template.includes(evidence), `AC-5: the scope re-entry skips a stage only by its ${evidence} evidence in research.md, so t_research.md must carry it`);
+   }
++  assert.ok(reentry.includes('`{{` placeholder'), 'AC-5: re-entry counts a stage done only when its section holds no template placeholder, or a freshly seeded research.md skips every stage');
++  const stageB = step.split('\n').find((line) => line.includes('(b) Dispatch')) || '';
++  assert.ok(/`COMPLETED`[^`]*write[^`]*Findings and Approaches/.test(stageB), 'AC-5: the BA return body is written at its COMPLETED, so a session lost before stage (c) re-enters with Findings evidence');
++  for (const entry of jsonOf('.asd/workflows/asd-phase-design.md', 'Dispatch')) {
++    assert.ok(entry.payload.includes('inputs.research'), `AC-5: the design dispatch at ${entry.when} must pass inputs.research, or that creator redoes the stage (b) research`);
++  }
+ });
+ 
+ test('sprint-027 AC-5 (D4/D5): t_research.md keeps the sections the scope workflow writes and later phases read, each finding carries a source, the offline skip line is the one the home states, and artifact-layout.md maps and describes research.md', () => {
+@@ -8199,6 +8205,7 @@ test('sprint-027 AC-5 (D4/D5): t_research.md keeps the sections the scope workfl
+   assert.ok(/^responsibility:\n  owns:/.test(template.replace(/^---\n/, '')), 'AC-5: t_research.md opens with the responsibility frontmatter every template carries');
+   assert.ok(/^- \{\{finding\}\} — source: \{\{URL\}\}$/m.test(template), 'AC-5: a finding row carries its source URL');
+   assert.ok(/^- Recommended: /m.test(template) && /^- Chosen: /m.test(template), 'AC-5: Approaches records the recommendation and the user\'s choice separately');
++  assert.ok(/^- Raw scope: /m.test(template) && canonText('.asd/workflows/asd-phase-scope.md').includes('write the raw scope'), 'AC-5: the raw scope the covers-strands-only boundary refers to has a template line and a scope writer');
+   const home = headingBody('.asd/rules/sprint-lifecycle.md', 'Staged solution design');
+   assert.ok(home.includes('`no web research: <cause>`'), 'D5: the offline skip line is stated at the home');
+   assert.ok(canonText('.asd/workflows/asd-phase-scope.md').includes('`no web research: <cause>`'), 'D5: scope step 2 writes the same skip line the home states');
