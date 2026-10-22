@@ -111,17 +111,12 @@ citations; the local precedent is entry 4's `asd-pm` fallout-set comparison. Shi
 `impl-review` entry on work no round of the sprint touched, and an exemption list with defect ids in it
 is visible where a silent filter is not.
 
-Exception: when the stale hits sit in another owner's memory and that owner's memory-fix dispatch runs
-*after* the tester chain in the same round (sprint 019 review-fix, COR-1/DOC-1), an exact pin reddens
-the moment the fix lands, and nobody left in the round can edit the test. Exempt those files by name
-with the finding ids in the assert message (a subset filter, not a `deepStrictEqual`), prove the list is
-load-bearing by emptying it, and hand its deletion to the next `impl-test` entry. That entry (019 entry 3)
-proves the deletion by appending a refuted line to a formerly exempted file: the sweep must now redden.
-
-At a plain `impl-test` entry there is no such round: ship the new phrase red and file a `D-N` against that memory
-file. The test-fix route and the owner's memory-fix dispatch land before the next entry, so no exemption list is needed.
-A sweep already red at baseline cannot be proven by a count: parse the `+ actual` hit list from its FAIL block and
-require the mutation's own `<file>:<line> <phrase>` in it, and a reword control to leave that list unchanged.
+A leftover-term sweep that reddens on another owner's memory is a memory hit, not a test defect, a `D-N` or a
+reason for an exemption list: pin the sweep exact, report each hit as `<file>:<line> <phrase>`, and never edit
+that memory yourself. The orchestrator's memory-fix dispatch for the owner lands in the same entry before the suite
+gate (`asd-phase-impl-test.md` step 7a; `review-policy.md` "Memory-fix dispatch"), so the gate sees the sweep green.
+Until it lands the sweep is red at baseline, and a count cannot prove it: parse the `+ actual` hit list from its FAIL
+block and require the mutation's own `<file>:<line> <phrase>` in it, and a reword control to leave that list unchanged.
 
 Review-fix tester rows sit in the live tables when the next entry starts, with no `Entry log` row of their
 own. Rotate them with the previous entry's rows into its segment (`artifact-layout.md` "Test plan"
