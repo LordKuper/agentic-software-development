@@ -75,3 +75,5 @@
 {"op":"open","id":"suite impl-test#2","kind":"suite","parent":"asd-tester impl-test#2","start":"2026-10-26T09:43:26.115Z","attrs":{"scope":"full"}}
 {"op":"close","id":"suite impl-test#2","kind":"suite","parent":"asd-tester impl-test#2","start":"2026-10-26T09:43:26.115Z","end":"2026-10-26T09:43:55.885Z","outcome":"done","attrs":{"scope":"full"}}
 {"op":"close","id":"asd-tester impl-test#2","kind":"dispatch","parent":"impl-test#2","start":"2026-10-26T09:40:48.329Z","end":"2026-10-26T09:44:27.169Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"impl-test#2","kind":"phase","parent":null,"start":"2026-10-26T09:40:47.899Z","end":"2026-10-26T09:44:49.816Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-review#1","kind":"phase","parent":null,"start":"2026-10-26T09:44:49.816Z","attrs":{}}
