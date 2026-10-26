@@ -153,7 +153,6 @@ function mostSevereToken(values) {
 
 /** The `quality` verdict for one iteration, or null when it holds no legacy verdict or lacks one its node's roster required (a lost dispatch, blocking until re-dispatched). */
 function mergedVerdict(iterationVerdicts, reviewDir, roster) {
-  if (!LEGACY_REVIEWERS.some((key) => key in iterationVerdicts)) return null;
   if (!roster.every((key) => key in iterationVerdicts)) return null;
   const unsatisfied = roster
     .filter((key) => !isSkipOrApprove(iterationVerdicts[key]) && !isResolvedBare(reviewDir, key))
