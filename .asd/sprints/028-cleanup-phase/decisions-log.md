@@ -87,3 +87,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-26 — route Task 13: standard, dispatch HEAD cd3f63e2; risk none via node tests/run.js
 - 2026-10-26 — impl wave 7: Task 14 COMPLETED (cd3f63e2) after Task 13 re-dispatch fixed --single parsing (7e413ea6); impl assessment approved (adaptive): plan fully ticked, sync --check 60 current, diff --check clean, suite 313/313 → NEXT impl-test
 - 2026-10-26 — route impl-test entry 5: standard, dispatch HEAD 7e413ea6
+- 2026-10-26 — impl-test: impacted set green (313/313, full suite), entry 5 0 added/0 removed
