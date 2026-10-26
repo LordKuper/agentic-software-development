@@ -55,3 +55,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Initial impl accepted: Tasks 1-12 plus wave-3 and wave-5 follow-ups COMPLETED, every plan checkbox ticked, AC-1..AC-20 traced to Tasks, build (`sync.js --check`: 60 current) and lint (`git diff --check main..HEAD`) clean, diff within authorised paths, no sprint stubs; NEXT impl-test.
 - **Rationale**: Every flagged choice resolved or routed to a follow-up dispatch; no unresolved material alternative; the dev-run full suite 304/304 is self-verification only, impl-test owns the gate.
 - **Affected docs**: plan.md
+- 2026-10-26 — route impl-test entry 1: standard, dispatch HEAD 5b98726f
+- 2026-10-26 — impl-test entry 1 step 7a: asd-reviewer-combined memory-fix for 3 leftover-term hits (enumerated-reach, in-body-comment-sweep, dispatch-payload), committed 8359218a
+- 2026-10-26 — impl-test: defects D-1 → impl test-fix (digest bea4fd1ed8c4eb4af0b829c113a782311fa5c07a79dbeeaf90b2fa88caf37dbd); orchestrator re-run after step 7a 312/313, only D-1 red
