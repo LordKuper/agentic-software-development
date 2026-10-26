@@ -1,7 +1,7 @@
 {
   "sprint_id": "028-cleanup-phase",
   "branch": "sprint/028-cleanup-phase",
-  "phase": "scope",
+  "phase": "audit",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -39,6 +39,20 @@
       "reason": "027#A-1 P-1 P-2 included (AC-8..AC-10)",
       "evidence": "decisions-log.md 2026-10-22 retro intake",
       "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "audit contradiction",
+      "decision_actor": "user",
+      "reason": "C1 canonical (test files out of reach); C2 absent cleanup snapshot reads enabled",
+      "evidence": "decisions-log.md 2026-10-26 audit contradiction C2 settled",
+      "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "new or changed scope",
+      "decision_actor": "user",
+      "reason": "AC-11..AC-19 added: agent roster cut, inline creator work, quality/efficiency/combined reviewers, advisor on escalation",
+      "evidence": "decisions-log.md 2026-10-26 scope amendment",
+      "artifact_revision": "sprint.md@audit"
     }
   ],
   "task_routing": {},
@@ -62,7 +76,7 @@
     }
   },
   "created_at": "2026-10-22T14:59:41.183Z",
-  "updated_at": "2026-10-22T18:53:19.460Z",
+  "updated_at": "2026-10-26T07:40:50.644Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
