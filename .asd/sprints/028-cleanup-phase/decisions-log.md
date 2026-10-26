@@ -35,25 +35,3 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
-
-## 2026-10-26 — audit contradiction C2 settled
-
-- **Decision**: An absent `state.json.cleanup` snapshot reads `enabled` (in-flight and upgraded sprints, 028 included, run the cleanup phase); C1 settled canonically — test files stay out of cleanup reach under the test-removal gate.
-- **Rationale**: User choice over the recommended `disabled`; C1 has a canonical side (`checkpoints.md`).
-- **Affected docs**: audit.md
-
-## 2026-10-26 — scope amendment: agent roster reduction
-
-- **Decision**: AC-11..AC-19 added to sprint 028 (no plan yet, so no Task or wave): seven agent specs remain, BA/UX/Architect work moves inline to the orchestrator, reviewers become three separate specs `quality`/`efficiency`/`combined` (standard runs quality + efficiency, lite combined), routing drops `critical`, advisor recommendation precedes every non-gate user escalation, consumer migration, MAJOR release.
-- **Rationale**: User request and edits: three separate reviewer specs over one spec with variants; models per AC-15 with `asd-dev-mechanical` high and `asd-reviewer-efficiency` opus/high; iterations 0, fix rounds 0 for every new criterion.
-- **Affected docs**: sprint.md
-
-- 2026-10-26 — audit reevaluated: stays true; supplemental audit dispatched for AC-11..AC-19
-
-## 2026-10-26 — amendment audit decisions
-
-- **Decision**: AC-17 narrowed to failure/question escalations (agent QUESTION, FAILED, repeated stall or interruption, stalemate, review-cap override, reviewer FAIL); memory of removed agents is deleted as ownerless, not re-authored; documents the orchestrator now authors use per-section lock-in (core.md "Incremental writing"). AC-20 added: sprint-level UX specs switch off independently of the project-wide design system.
-- **Rationale**: User answers to the supplemental audit's open points plus a user-requested criterion; C3 settled canonically (artifact-layout.md placeholder table); AC-18 makes the release MAJOR with a 14.0.0 migration, superseding audit.md's earlier "Migration: none required".
-- **Affected docs**: sprint.md, audit.md
-
-- 2026-10-26 — audit gate (adaptive): audit.md complete for AC-1..AC-20, every contradiction settled, every criterion deliverable per its Gaps entry → NEXT plan (lite)
