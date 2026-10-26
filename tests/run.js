@@ -17,6 +17,7 @@ const migration400 = require('../.asd/migrations/4.0.0.js');
 const migration500 = require('../.asd/migrations/5.0.0.js');
 const migration600 = require('../.asd/migrations/6.0.0.js');
 const migration900 = require('../.asd/migrations/9.0.0.js');
+const migration1400 = require('../.asd/migrations/14.0.0.js');
 const runtime = require('../.asd/runtime.js');
 
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -8370,6 +8371,252 @@ test('sprint-026 AC-16 (D13): per-dispatch load of dev (impl), tester (impl-test
     const load = headLoad(role, phase);
     assert.ok(load <= LOAD_MAX_RATIO * baseline, `${pair}: ${load} B is ${(load / baseline).toFixed(4)} of ${baseline} B, ceiling ${LOAD_MAX_RATIO}`);
   }
+});
+
+// ===========================================================================
+// sprint 028: .asd/migrations/14.0.0.js, the design-block collapse of the
+// design_system flag, and the content contracts of the cleanup phase, the
+// retro-row clauses and the escalation consult.
+// ===========================================================================
+
+/** The nine retired agent names, read from the migration's own constant so the test and the deleter cannot disagree. */
+function retiredAgentNames1400() {
+  return [...(/const RETIRED_AGENTS = \[([\s\S]*?)\];/.exec(canonText('.asd/migrations/14.0.0.js'))[1]).matchAll(/'([a-z-]+)'/g)].map((match) => match[1]);
+}
+
+/** The legacy reviewer keys the merged `quality` verdict replaces, read from the migration's own constant. */
+function legacyReviewerKeys1400() {
+  return [...(/const LEGACY_REVIEWERS = \[([^\]]*)\];/.exec(canonText('.asd/migrations/14.0.0.js'))[1]).matchAll(/'([a-z]+)'/g)].map((match) => match[1]);
+}
+
+/** Runs the 14.0.0 migration with stdout captured, so its warnings are asserted instead of printed. */
+async function runMigration1400(root) {
+  const captured = [];
+  const realWrite = process.stdout.write;
+  process.stdout.write = (chunk) => {
+    captured.push(String(chunk));
+    return true;
+  };
+  try {
+    const report = await migration1400({ repoRoot: root });
+    return { report, output: captured.join('') };
+  } finally {
+    process.stdout.write = realWrite;
+  }
+}
+
+test('sprint-028 AC-18 (D13): the 14.0.0 migration deletes the ASD-marked generated views of exactly its nine retired agents - none a live canonical agent - keeps an unmarked consumer file of a retired name and every live sibling, and a re-run is a no-op', async () => {
+  const retired = retiredAgentNames1400();
+  const liveAgents = fs.readdirSync(path.join(REPO_ROOT, '.asd/agents')).map((file) => file.replace(/\.md$/, ''));
+  assert.strictEqual(retired.length, 9, 'AC-11 retires nine agent names, and the migration must delete the views of each');
+  assert.deepStrictEqual(retired.filter((name) => liveAgents.includes(name)), [], 'a retired name that is a live canonical agent would have its regenerated view deleted by every consumer update');
+
+  const root = makeMigrationFixtureRepo();
+  const manifest = loadManifest();
+  const [unmarkedName, ...markedNames] = retired;
+  const claudeView = (name) => `.claude/agents/${name}.md`;
+  const codexView = (name) => `.codex/agents/${name}.toml`;
+  for (const name of markedNames) {
+    writeFile(root, claudeView(name), markedFileContent('md', manifest));
+    writeFile(root, codexView(name), markedFileContent('toml', manifest));
+  }
+  const handAuthored = '# a consumer agent that happens to share a retired name\n';
+  writeFile(root, claudeView(unmarkedName), handAuthored);
+  const sibling = '.claude/agents/asd-dev.md';
+  writeFile(root, sibling, '# a live agent in the same generated tree\n');
+
+  const { report, output } = await runMigration1400(root);
+  assert.deepStrictEqual(report.deleted.slice().sort(), markedNames.flatMap((name) => [claudeView(name), codexView(name)]).sort(), 'every marked view of a retired agent, on both providers, and nothing else');
+  assert.deepStrictEqual(report.skippedUnmarked, [claudeView(unmarkedName)]);
+  assert.ok(report.missing.includes(codexView(unmarkedName)), 'an absent view is success, never an error');
+  assert.ok(output.includes(claudeView(unmarkedName)), 'a kept unmarked file must be named in a warning - silence reads as a clean migration');
+  assert.strictEqual(fs.readFileSync(path.join(root, claudeView(unmarkedName)), 'utf8'), handAuthored, 'a consumer-owned file survives byte for byte');
+  assert.ok(markedNames.every((name) => !fs.existsSync(path.join(root, claudeView(name))) && !fs.existsSync(path.join(root, codexView(name)))));
+  assert.ok(fs.existsSync(path.join(root, sibling)), 'a live sibling in the same tree is never touched');
+
+  const rerun = (await runMigration1400(root)).report;
+  assert.deepStrictEqual(rerun.deleted, [], 'an applied migration re-runs as a no-op');
+});
+
+/** A pre-14.0.0 review node tree: every combination of legacy verdicts the merged `quality` verdict must classify, reviews on disk laid out as the migration reads them. */
+function legacyReviewsFixture(sprintRoot) {
+  const reviewFile = (dir, reviewer, ids, resolved) => {
+    writeFile(sprintRoot, `${dir}/${reviewer}.findings.json`, JSON.stringify(ids.map((id) => ({ id, severity: 'high', location: 'a.js:1' }))));
+    writeFile(sprintRoot, `${dir}/${reviewer}.md`, `[REVIEW-x-${reviewer}]: CONCERNS\n${resolved.length ? `resolved: ${resolved.join(', ')} — review-fix, 2026-10-01\n` : ''}`);
+  };
+  reviewFile('reviews/design/iter-03', 'correctness', ['F-1', 'F-2'], ['F-1', 'F-2']);
+  reviewFile('reviews/design/iter-04', 'correctness', ['F-1', 'F-2'], ['F-1']);
+  reviewFile('reviews/impl/wave-2/iter-01', 'testing', ['F-1'], ['F-1']);
+  const legacy = (correctness, testing, documentation) => ({ correctness, testing, documentation, efficiency: 'APPROVE' });
+  return {
+    design: {
+      iteration: 6,
+      verdicts: {
+        'iter-01': legacy('CONCERNS', 'FAIL', 'APPROVE'),
+        'iter-02': legacy('APPROVE', 'APPROVE (skipped: no tests)', 'APPROVE'),
+        'iter-03': legacy('CONCERNS', 'skipped: no tests in scope', 'APPROVE'),
+        'iter-04': legacy('CONCERNS', 'APPROVE', 'APPROVE'),
+        'iter-05': { ...legacy('APPROVE', 'APPROVE', 'APPROVE'), quality: 'CONCERNS' },
+        'iter-06': { efficiency: 'APPROVE' },
+      },
+      latched: { correctness: 1, testing: 2, documentation: 3, efficiency: 1 },
+    },
+    impl: {
+      wave: 2,
+      waves: [
+        { iteration: 1, verdicts: { 'iter-01': legacy('APPROVE', 'APPROVE', 'APPROVE') }, iteration_heads: {}, latched: { correctness: 1, testing: 1, documentation: 2 } },
+        { iteration: 1, verdicts: { 'iter-01': { correctness: 'APPROVE', testing: 'CONCERNS' } }, iteration_heads: {}, latched: { correctness: 1, testing: 1 } },
+      ],
+    },
+  };
+}
+
+test('sprint-028 AC-18 (D13): the 14.0.0 migration gives every review iteration of an active sprint a quality verdict - APPROVE only when each legacy verdict present is satisfied (an approval, a skip, or a bare finding verdict whose review file resolves every finding id, read from that wave\'s own directory), else the most severe token - latches quality only when all three legacy reviewers latched, keeps the legacy keys, and folds the critical task tier into standard', async () => {
+  const root = makeMigrationFixtureRepo();
+  const sprintRoot = path.join(root, '.asd/sprints/001-live');
+  const reviews = legacyReviewsFixture(sprintRoot);
+  const routing = { 'Task 1': { tier: 'critical', execution: 'agent', reason: 'risk:x' }, 'Task 2': { tier: 'standard', execution: 'agent', reason: 'normal' }, 'Task 3': { tier: 'mechanical', execution: 'command', reason: 'deterministic-command' } };
+  writeFile(root, '.asd/sprints/001-live/state.json', `${JSON.stringify({ sprint_id: '001-live', phase: 'impl-review', reviews, task_routing: routing }, null, 2)}\n`);
+  assert.deepStrictEqual(legacyReviewerKeys1400(), ['correctness', 'testing', 'documentation'], 'sanity: the fixture is built for the three legacy keys AC-14 merges');
+
+  const { report } = await runMigration1400(root);
+
+  const expected = structuredClone(reviews);
+  const quality = { 'iter-01': 'FAIL', 'iter-02': 'APPROVE', 'iter-03': 'APPROVE', 'iter-04': 'CONCERNS' };
+  for (const [iteration, token] of Object.entries(quality)) expected.design.verdicts[iteration].quality = token;
+  expected.design.latched.quality = 3;
+  expected.impl.waves[0].verdicts['iter-01'].quality = 'APPROVE';
+  expected.impl.waves[0].latched.quality = 2;
+  expected.impl.waves[1].verdicts['iter-01'].quality = 'APPROVE';
+  const after = JSON.parse(fs.readFileSync(path.join(sprintRoot, 'state.json'), 'utf8'));
+  assert.deepStrictEqual(after.reviews, expected, 'quality is the worst unsatisfied legacy token, resolved findings and skips count as satisfied, wave K reads wave-K\'s directory, an existing quality verdict and an efficiency-only iteration are left alone, and only a full legacy latch becomes a quality latch');
+  assert.deepStrictEqual(after.task_routing, { ...routing, 'Task 1': { ...routing['Task 1'], tier: 'standard' } }, 'only the retired critical tier changes');
+  assert.deepStrictEqual(report.rewritten, ['.asd/sprints/001-live/state.json']);
+});
+
+test('sprint-028 AC-18 (D13): the 14.0.0 migration rewrites an active state file atomically with its own line endings, leaves a finished, archived, unparsable or already-migrated one byte for byte (naming the unparsable one), and re-runs as a no-op', async () => {
+  const root = makeMigrationFixtureRepo();
+  const criticalRouting = { 'Task 1': { tier: 'critical', execution: 'agent', reason: 'risk:x' } };
+  const live = { sprint_id: '001-live', phase: 'impl', task_routing: criticalRouting };
+  const liveCrlf = `${JSON.stringify(live, null, 2).split('\n').join('\r\n')}\r\n`;
+  const migrated = `${JSON.stringify({ sprint_id: '002-migrated', phase: 'impl', task_routing: { 'Task 1': { tier: 'standard' } } }, null, 2)}\n`;
+  const finished = `${JSON.stringify({ sprint_id: '003-finished', phase: 'done', task_routing: criticalRouting }, null, 2)}\n`;
+  const broken = '{\n  "sprint_id": "004-broken",\n  "task_routing": {\n';
+  const archived = `${JSON.stringify({ sprint_id: '005-archived', phase: 'impl', task_routing: criticalRouting }, null, 2)}\n`;
+  const files = { '001-live': liveCrlf, '002-migrated': migrated, '003-finished': finished, '004-broken': broken };
+  for (const [name, text] of Object.entries(files)) writeFile(root, `.asd/sprints/${name}/state.json`, text);
+  writeFile(root, '.asd/sprints/archived/005-archived/state.json', archived);
+  fs.mkdirSync(path.join(root, '.asd/sprints/006-no-state'), { recursive: true });
+  const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
+
+  const { report, output } = await runMigration1400(root);
+
+  const expectedLive = `${JSON.stringify({ ...live, task_routing: { 'Task 1': { tier: 'standard', execution: 'agent', reason: 'risk:x' } } }, null, 2).split('\n').join('\r\n')}\r\n`;
+  assert.strictEqual(read('.asd/sprints/001-live/state.json'), expectedLive, 'CRLF and the trailing newline survive the rewrite');
+  assert.deepStrictEqual([report.rewritten, report.unchanged, report.skipped.slice().sort()], [['.asd/sprints/001-live/state.json'], ['.asd/sprints/002-migrated/state.json'], ['.asd/sprints/003-finished/state.json', '.asd/sprints/004-broken/state.json']]);
+  assert.ok(/004-broken\/state\.json[^\n]*by hand/.test(output), 'an unparsable state is left alone and says so');
+  assert.strictEqual(read('.asd/sprints/002-migrated/state.json'), migrated);
+  assert.strictEqual(read('.asd/sprints/003-finished/state.json'), finished, 'a finished sprint is history');
+  assert.strictEqual(read('.asd/sprints/004-broken/state.json'), broken);
+  assert.strictEqual(read('.asd/sprints/archived/005-archived/state.json'), archived, 'the archive subtree is never entered');
+  assert.deepStrictEqual(fs.readdirSync(path.join(root, '.asd/sprints/001-live')), ['state.json'], 'the atomic rewrite leaves no temporary file behind');
+
+  const rerun = (await runMigration1400(root)).report;
+  assert.deepStrictEqual([rerun.rewritten, rerun.unchanged.includes('.asd/sprints/001-live/state.json')], [[], true], 'an applied migration re-runs as a no-op');
+  assert.strictEqual(read('.asd/sprints/001-live/state.json'), expectedLive);
+});
+
+test('sprint-028 AC-20 (D14): SessionStart reads an absent documents.design_system as the ux_spec value - a group frozen before the key existed collapses and expands the design block exactly as before - and an explicit design_system always counts', () => {
+  const allOff = { prd: false, ux_spec: false, adr: false, c4: false };
+  const cases = [
+    ['absent design_system, every other document off', allOff, 'plan'],
+    ['absent design_system, ux_spec on', { ...allOff, ux_spec: true }, 'design'],
+    ['absent design_system, ux_spec absent', { prd: false, adr: false, c4: false }, 'design'],
+    ['explicit design_system on, every other document off', { ...allOff, design_system: true }, 'design'],
+    ['explicit design_system off, every document off', { ...allOff, design_system: false }, 'plan'],
+    ['explicit design_system off, ux_spec on', { ...allOff, ux_spec: true, design_system: false }, 'design'],
+  ];
+  const observed = cases.map(([label, documents]) => {
+    const tempRoot = mkTempDir();
+    installHook(tempRoot);
+    writeFile(tempRoot, '.asd/sprints/999-fixture/state.json', JSON.stringify({ sprint_id: '999-fixture', phase: 'audit', branch: 'sprint/999-fixture', documents }));
+    const out = execFileSync('node', [path.join(tempRoot, '.asd/hooks/session-start.js'), '--provider', 'claude'], { cwd: tempRoot, encoding: 'utf8' });
+    const next = /Next phase: (\S+)/.exec(JSON.parse(out).hookSpecificOutput.additionalContext);
+    return `${label} -> ${next ? next[1] : '<no Next phase line>'}`;
+  });
+  assert.deepStrictEqual(observed, cases.map(([label, , next]) => `${label} -> ${next}`), 'the hook must agree with the audit exit: plan only when every frozen design document is a bare false, design_system falling back to ux_spec only while it is absent');
+});
+
+test('sprint-028 AC-2/AC-4 (D3/D4/D7): the cleanup workflow runs inline and dispatches only the advisor, and its decisions-log checkpoint and record lines and its removal commit subject are the forms the rule home, t_decisions-log.md and git-strategy.md state - the evidence its re-entry reads', () => {
+  const workflow = canonText('.asd/workflows/asd-phase-cleanup.md');
+  const owner = workflow.split('\n').find((line) => line.startsWith('Owner:')) || '';
+  const agents = fs.readdirSync(path.join(REPO_ROOT, '.asd/agents')).map((file) => file.replace(/\.md$/, ''));
+  assert.ok(owner.includes('inline orchestrator') && !workflow.includes('\n## Dispatch'), 'AC-2: cleanup runs in the orchestrator itself - no Dispatch section');
+  assert.deepStrictEqual(agents.filter((agent) => owner.includes(`\`${agent}\``)), ['asd-advisor'], 'AC-2: the Owner line names no agent but the escalation-consult advisor');
+  const home = runtime.markdownSection(canonText('.asd/rules/sprint-lifecycle.md'), 'Cleanup phase');
+  for (const [label, text] of [['sprint-lifecycle.md "Cleanup phase"', home], ['asd-phase-cleanup.md', workflow], ['t_decisions-log.md', canonText('.asd/templates/t_decisions-log.md')]]) {
+    assert.ok(text.includes('— cleanup checkpoint <'), `AC-4/D7: ${label} must state the checkpoint line re-entry looks for`);
+    assert.ok(text.includes('— cleanup: removed <'), `AC-4/D7: ${label} must state the record line that marks the phase done`);
+  }
+  for (const [label, text] of [['sprint-lifecycle.md "Cleanup phase"', home], ['asd-phase-cleanup.md', workflow], ['git-strategy.md', canonText('.asd/rules/git-strategy.md')]]) {
+    assert.ok(text.includes('chore(cleanup):'), `AC-4: ${label} must name the removal commit subject form`);
+  }
+});
+
+test('sprint-028 AC-6/AC-20 (D6/D14): the frozen cleanup and design_system flags are seeded end to end - scope step 3a fills the placeholders t_state.json carries, the cleanup no-op appends the skipped_phases entry the no-op table row keys on', () => {
+  const seed = stepOf(sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps'), '3a');
+  const state = readRepoFile('.asd/templates/t_state.json');
+  for (const key of ['cleanup', 'design_system']) {
+    const placeholder = new RegExp(`"${key}":\\s*"(\\{\\{[A-Z_]+\\}\\})"`).exec(state);
+    assert.ok(placeholder, `t_state.json must freeze ${key} as a placeholder`);
+    assert.ok(seed.includes(placeholder[1]), `scope step 3a must fill ${placeholder[1]}, or the literal survives into state.json and reads as an enabled ${key} whatever the config says`);
+  }
+  const noOp = stepOf(sectionOf('.asd/workflows/asd-phase-cleanup.md', 'Steps'), '2');
+  assert.ok(noOp.includes('skipped_phases') && noOp.includes('"cleanup"'), 'the disabled no-op must append "cleanup" to skipped_phases');
+  const row = runtime.markdownSection(canonText('.asd/rules/sprint-lifecycle.md'), 'No-op phase rule').split('\n').find((line) => line.startsWith('| cleanup |'));
+  assert.ok(row && row.includes('`cleanup`') && row.includes('`false`'), 'the no-op phase table must key the cleanup row on the frozen flag being false');
+});
+
+test('sprint-028 AC-8/AC-9/AC-10: asd-external-review.md states an empty Kept findings table is its header and separator rows only, and "Plan file format" Decomposition rules carry the multi-stage write-point and the universal-reach trigger-site clauses', () => {
+  const kept = canonText('.asd/agents/asd-external-review.md').split('\n').find((line) => line.includes('Kept findings table'));
+  assert.ok(kept && kept.includes('header and separator rows only') && kept.includes('never a placeholder row'), 'AC-8: the agent\'s own return-format rule must state the empty table shape');
+  const rules = sectionOf('.asd/rules/sprint-lifecycle.md', 'Plan file format').split('**Decomposition rules**')[1].split('\n\n')[0].split('\n').filter((line) => line.startsWith('- '));
+  const multiStage = rules.find((line) => line.includes('multi-stage'));
+  const universal = rules.find((line) => line.includes('universal reach'));
+  assert.ok(multiStage && multiStage.includes('write point') && multiStage.includes('re-entry evidence'), 'AC-9: a multi-stage interactive step states each stage\'s on-disk write point and re-entry evidence');
+  assert.ok(universal && universal.includes('triggering site') && universal.includes('repo grep'), 'AC-10: a criterion claiming universal reach lists every site a repo grep finds');
+});
+
+test('sprint-028 AC-17 (D10): every workflow step holding a failure- or question-class hard gate - reviewer question, FAIL escalation, review-cap override, stalemate - takes the escalation consult before it asks the user', () => {
+  const escalationGate = /\[GATE hard: [^\]]*(?:FAIL escalation|review-cap override|reviewer question|stalemate)[^\]]*\]/;
+  const workflows = fs.readdirSync(path.join(REPO_ROOT, '.asd/workflows')).filter((file) => /^asd-phase-.*\.md$/.test(file));
+  const gated = workflows.flatMap((file) => sectionOf(`.asd/workflows/${file}`, 'Steps').split(/\n(?=\d+[a-z]?\. )/).filter((block) => escalationGate.test(block)).map((block) => ({ file, step: block.split('. ')[0], consulted: /escalation consult/i.test(block) })));
+  assert.ok(gated.length >= 5 && new Set(gated.map(({ file }) => file)).size >= 3, `sanity: the gate scan must reach the steps of at least three workflows (found ${JSON.stringify(gated)})`);
+  assert.deepStrictEqual(gated.filter(({ consulted }) => !consulted).map(({ file, step }) => `${file} step ${step}`), [], 'AC-17: a user escalation caused by a question or failure is preceded by an advisor recommendation (agent-protocol.md "Relay" Escalation consult); a step that asks the user without it leaves the sprint\'s recommendation-before-escalation contract unmet at that site');
+});
+
+test('sprint-028 leftover-term check: no canon, README, AGENTS.md, template, runtime, hook, workflow definition or agent-memory line keeps a name or sentence the sprint removed - the nine retired agents, their reviewer verdict tokens, the critical routing tier phrases, the no-PM-agent sentence and the memory claims about creators that no longer exist', () => {
+  const retiredAgents = [...retiredAgentNames1400(), 'asd-pm'];
+  const verdictTokens = ['design', 'impl'].flatMap((phase) => legacyReviewerKeys1400().map((key) => `[REVIEW-${phase}-${key}]`));
+  const removed = [
+    ...retiredAgents,
+    ...verdictTokens,
+    'tier: critical',
+    'asd-tester-<tier>',
+    '`-critical`',
+    '`mechanical` or `critical`',
+    'critical: 2',
+    'no PM agent is spawned',
+    'Correctness\'s UI conformance',
+    '(BA/UX/Architect/advisor)',
+    'The Documentation rubric entry "In-code doc comments"',
+    'design-review\'s creator',
+  ];
+  const memoryFiles = fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT), { recursive: true }).map((entry) => `${AGENT_MEMORY_ROOT}/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
+  assertSweepReachesMemory(memoryFiles);
+  const swept = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/templates/t_config.yaml', '.asd/templates/t_state.json', '.asd/hooks/session-start.js', '.asd/runtime.js', '.asd/workflows/standard.json', '.asd/workflows/lite.json', ...memoryFiles];
+  const hits = swept.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => removed.filter((phrase) => line.includes(phrase)).map((phrase) => `${rel}:${index + 1} ${phrase}`)));
+  assert.deepStrictEqual(hits, [], 'each phrase is a name or line this sprint removed (git diff main...HEAD) or a memory claim about a role it removed, taken exactly - one surviving restates the superseded roster as current. CHANGELOG.md, migrations, tests and sprint folders are history and stay out of the sweep; README.md\'s "no BA, UX, Architect or PM agent" negation is not a listed phrase');
 });
 
 // ===========================================================================
