@@ -72,3 +72,10 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-26 — route review-fix wave-1/iter-02: standard, dispatch HEAD acf62fd5
 - 2026-10-26 — impl fix for wave-1/iter-02: findings resolved (F-1 1d4d10ac, tester chain)
 - 2026-10-26 — route impl-test entry 4: standard, dispatch HEAD 1d4d10ac
+
+## 2026-10-26 — scope amendment AC-21: lite impl-review in one wave
+
+- **Decision**: AC-21 added (user request): under `lite` impl-review reviews the whole scope as one wave, `standard` keeps size-based division. Carried by plan Task 13 (wave 6, rule + workflow + runtime + mirrors) and Task 14 (wave 7, Test-only). Accepted after the division point: floor_base=wave-1/2, wave 1 `latched` cleared. Sprint 028's own 3-wave division stays (made at its division point under the prior rule).
+- **Rationale**: User's explicit request; iterations 0, fix rounds 0 for AC-21; rule homes per audit "Touched areas" grep for review waves.
+- **Affected docs**: sprint.md, plan.md
+- 2026-10-26 — impl-test: impacted set green (313/313, full suite), entry 4 0 added/0 removed; NEXT impl (initial mode over unticked amendment Tasks 13-14, sprint-lifecycle.md "Scope amendment") instead of impl-review

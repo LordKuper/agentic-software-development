@@ -31,6 +31,7 @@ Add a `cleanup` phase before retro. It removes everything superfluous born durin
 - AC-18 (amendment): An upgrading consumer is migrated: generated views of removed agents are removed as orphans, and an in-flight sprint keyed on removed reviewer or tier names resumes; the release is MAJOR.
 - AC-19 (amendment): README.md and every cross-file mirror reflect AC-11..AC-18 and AC-20; `node tests/run.js` is green and `sync.js --check` is clean.
 - AC-20 (amendment): A config setting turns off sprint-level UX specs (`<sprint>/design/ux-spec.html` and the persistent ux-spec docs) independently of the project-wide design system: with UX specs off, `DESIGN.md`, `design-system.html`, `accessibility.html`, the design-system gate and `DESIGN.md` token deltas stay active.
+- AC-21 (amendment): In `lite`, impl-review never divides its scope into review waves: the whole change scope is reviewed as one wave, whatever its size; `standard` keeps size-based division. README and every mirror reflect it; `node tests/run.js` stays green.
 
 ## Out of scope (optional)
 - A dead-code detector dependency (rejected approach, `research.md`).

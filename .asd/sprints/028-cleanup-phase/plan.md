@@ -125,6 +125,17 @@ Material risk: artifact: test fixtures and pins, verified by `node tests/run.js`
 Test-only: tests/run.js
 - [x] Update pins and fixtures listed in audit "Tests" (amendment) and "Risks" (removed agents, reviewer keys, routing `critical`, memory files, `Seven`, scope Owner pin, 4.0.0 fixture name) to the code of Tasks 1-11 (AC-7, AC-19)
 
+### Task 13: Lite impl-review reviews one wave
+Material risk: change: division rule split per workflow
+- [ ] `sprint-lifecycle.md` "Review iteration counters" Division/Division point: under `lite` the division is always one wave holding the whole scope, whatever `review-waves` measures; `standard` unchanged (AC-21)
+- [ ] `asd-phase-impl-review.md` step 1c: lite writes the single-wave division; `.asd/runtime.js` `review-waves` accepts that one-wave division for lite (e.g. a flag the step passes), its measured fields still recorded (AC-21)
+- [ ] Mirrors: `review-policy.md` / `core.md` "Review wave" wording if it states size-only division, `asd-phase-impl-review/SKILL.md` description, `README.md` (:15, :194, :255, :455 and any other site a grep finds) (AC-21)
+
+### Task 14: Tests for the lite single-wave rule
+Material risk: artifact: test pins, verified by `node tests/run.js`
+Test-only: tests/run.js
+- [ ] Adapt or add asserts so `review-waves` accepts a one-wave division for lite over an above-threshold scope and still rejects it for standard; pins on the division prose follow Task 13 (AC-21)
+
 ## Risks
 - The orchestrator/impl D13 cap has 8,930 B headroom and standalone skills 352 B: Tasks 3, 4, 10 check loads with `node tests/run.js --filter` before committing.
 - Untrusted web content now enters the orchestrator (stage-(b) research, tech-reference and DESIGN.md fetches); `core.md` "Untrusted-data boundary" applies unchanged.
@@ -139,6 +150,8 @@ Test-only: tests/run.js
 | 3 | 8, 9, 10 |
 | 4 | 11 |
 | 5 | 12 |
+| 6 | 13 |
+| 7 | 14 |
 
 - Task 1 changes the dispatch contract (agent roster, routing tiers) every later wave is dispatched under, so it is alone in wave 1.
 - Tasks 2-7 write the rule homes Tasks 8-10 cite; Task 11 mirrors the finished canon; Task 12 adapts tests to all of it.
