@@ -17,3 +17,5 @@
 {"op":"open","id":"plan#1","kind":"phase","parent":null,"start":"2026-10-26T13:43:47.353Z","attrs":{}}
 {"op":"open","id":"wait plan gate","kind":"user-wait","parent":"plan#1","start":"2026-10-26T13:46:41.745Z","attrs":{"gate":"plan"}}
 {"op":"close","id":"wait plan gate","kind":"user-wait","parent":"plan#1","start":"2026-10-26T13:46:41.745Z","end":"2026-10-26T13:49:21.740Z","outcome":"done","attrs":{"gate":"plan"}}
+{"op":"close","id":"plan#1","kind":"phase","parent":null,"start":"2026-10-26T13:43:47.353Z","end":"2026-10-26T13:49:22.236Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl#1","kind":"phase","parent":null,"start":"2026-10-26T13:49:22.236Z","attrs":{}}
