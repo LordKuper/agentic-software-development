@@ -37,4 +37,3 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
-- 2026-10-26 — design-promote: skipped (lite, no enabled persistent document: prd/ux_spec/design_system/adr/c4 false) → cleanup

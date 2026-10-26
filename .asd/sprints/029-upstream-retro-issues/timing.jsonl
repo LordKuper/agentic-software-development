@@ -104,3 +104,4 @@
 {"op":"close","id":"impl-review#3","kind":"phase","parent":null,"start":"2026-10-26T14:46:28.857Z","end":"2026-10-26T14:52:25.759Z","outcome":"done","attrs":{}}
 {"op":"open","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-10-26T14:52:25.759Z","attrs":{}}
 {"op":"close","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-10-26T14:52:25.759Z","end":"2026-10-26T14:52:42.223Z","outcome":"done","attrs":{}}
+{"op":"open","id":"cleanup#1","kind":"phase","parent":null,"start":"2026-10-26T14:52:42.616Z","attrs":{}}
