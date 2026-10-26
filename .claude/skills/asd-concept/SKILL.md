@@ -1,8 +1,8 @@
 ---
-# ASD generated. Edit .asd/skills/asd-concept/SKILL.md. source_digest=sha256:9b13894504e14719ac9d974902af8d2f4d0cef0f730b0e0dea65efb4edd12104 content_digest=sha256:08d7049b22dd7433b41ec25d527d735a94f0eda9c17da2ac3267972817f6ad19 asd_version=13.10.0 schema=1
+# ASD generated. Edit .asd/skills/asd-concept/SKILL.md. source_digest=sha256:3e48f9d41636b72bc1159c02ef558c6a0f64ab2bde3bee4e9124536357b4cabe content_digest=sha256:3dcda97e80d4f9ccc076719ec72d84012d63dff781abc1420e3f1afaad5299b7 asd_version=13.10.0 schema=1
 name: asd-concept
 description: "Forms or edits the project concept document inline, branching by silent detection into one of four flows (no idea / vague idea / clear vision / brownfield extraction) and converging through a per-section lock-in loop. Use when the user runs /asd-concept, when asd-init detects a missing concept.html and suggests this skill, or when the user asks to define, draft, refine, edit, rewrite, or reverse-engineer the project concept, vision, target users, or value proposition."
-allowed-tools: "Read Write Edit Glob Grep AskUserQuestion Bash(node .asd/runtime.js:*)"
+allowed-tools: "Read Write Edit Glob Grep Bash AskUserQuestion"
 ---
 
 Operation mapping: see `.asd/rules/providers.md`.

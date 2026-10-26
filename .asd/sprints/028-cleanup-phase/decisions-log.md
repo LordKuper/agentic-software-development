@@ -103,3 +103,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-26 — impl-test: impacted set green (315/315, full suite), entry 6 3 asserts added (sweep extension, AC-4/AC-5, AC-12)/0 removed
 - 2026-10-26 — impl-review wave-1/iter-04: combined CONCERNS (F1 medium: allowed-tools none-row claims coverage the suite lacks; asd-phase-audit SKILL also lacks Grep/Bash for its inline audit), external APPROVE (latched) → impl review-fix (wave-1/iter-04): dev chain fixes asd-phase-audit allowed-tools (same AC-12 class), tester chain adds the derived allowed-tools pin
 - 2026-10-26 — route review-fix wave-1/iter-04: standard, dispatch HEAD caaed24f; risk none via node tests/run.js
+- 2026-10-26 — review-fix wave-1/iter-04 dev chain: b56279ad (allowed-tools for 10 skills incl. audit, plan, pr, scope write tools); sync --apply regenerated views; tester chain next
