@@ -8586,6 +8586,22 @@ test('sprint-028 AC-6/AC-20 (D6/D14): the frozen cleanup and design_system flags
   assert.ok(row && row.includes('`cleanup`') && row.includes('`false`'), 'the no-op phase table must key the cleanup row on the frozen flag being false');
 });
 
+test('sprint-028 AC-4/AC-5 (review-fix): cleanup verification runs the configured lint beside build and tests, and a re-entry discards uncommitted paths against HEAD, never the checkpoint sha that would undo committed removals', () => {
+  const workflow = sectionOf('.asd/workflows/asd-phase-cleanup.md', 'Steps');
+  const home = runtime.markdownSection(canonText('.asd/rules/sprint-lifecycle.md'), 'Cleanup phase');
+  const verification = home.split('\n').find((line) => line.startsWith('3. Verification:')) || '';
+  for (const [label, text] of [['asd-phase-cleanup.md step 5', stepOf(workflow, '5')], ['sprint-lifecycle.md "Cleanup phase" Verification', verification]]) {
+    assert.ok(text.includes('`commands.yaml`') && text.includes('`lint`'), `AC-5: ${label} must run the project's configured lint - a verification of build and tests alone lets a lint-red removal commit`);
+  }
+  const reentry = stepOf(workflow, '3');
+  assert.ok(reentry.includes('git restore --source=HEAD --staged --worktree') && !reentry.includes('--source=<sha>'), 'AC-4: a checkpoint line without a record line discards uncommitted paths against HEAD - restoring from the checkpoint sha would revert the committed removals the re-entry keeps');
+});
+
+test('sprint-028 AC-12 (review-fix): the design Authoring loop appends a per-section lock line on Lock in, the evidence a re-entry reads to tell a locked section from a drafted one', () => {
+  const authoring = canonText('.asd/workflows/asd-phase-design.md').split('\n').find((line) => line.startsWith('- **Authoring**')) || '';
+  assert.ok(authoring.includes('§ `<section>` locked'), 'a section holding content but no lock line is a pending Lock in; without the lock line shape a re-entry silently skips a section the user never locked or re-asks one they did');
+});
+
 test('sprint-028 AC-8/AC-9/AC-10: asd-external-review.md states an empty Kept findings table is its header and separator rows only, and "Plan file format" Decomposition rules carry the multi-stage write-point and the universal-reach trigger-site clauses', () => {
   const kept = canonText('.asd/agents/asd-external-review.md').split('\n').find((line) => line.includes('Kept findings table'));
   assert.ok(kept && kept.includes('header and separator rows only') && kept.includes('never a placeholder row'), 'AC-8: the agent\'s own return-format rule must state the empty table shape');
@@ -8604,7 +8620,7 @@ test('sprint-028 AC-17 (D10): every workflow step holding a failure- or question
   assert.deepStrictEqual(gated.filter(({ consulted }) => !consulted).map(({ file, step }) => `${file} step ${step}`), [], 'AC-17: a user escalation caused by a question or failure is preceded by an advisor recommendation (agent-protocol.md "Relay" Escalation consult); a step that asks the user without it leaves the sprint\'s recommendation-before-escalation contract unmet at that site');
 });
 
-test('sprint-028 leftover-term check: no canon, README, AGENTS.md, template, runtime, hook, workflow definition or agent-memory line keeps a name or sentence the sprint removed - the nine retired agents, their reviewer verdict tokens, the critical routing tier phrases, the no-PM-agent sentence and the memory claims about creators that no longer exist', () => {
+test('sprint-028 leftover-term check: no canon, README, AGENTS.md, template, runtime, hook, workflow definition or agent-memory line keeps a name or sentence the sprint removed - the nine retired agents, their reviewer verdict tokens, the critical routing tier phrases, the retired testing review file name and critical-tier prose, the no-PM-agent sentence and the memory claims about creators that no longer exist', () => {
   const retiredAgents = [...retiredAgentNames1400(), 'asd-pm'];
   const verdictTokens = ['design', 'impl'].flatMap((phase) => legacyReviewerKeys1400().map((key) => `[REVIEW-${phase}-${key}]`));
   const removed = [
@@ -8620,6 +8636,10 @@ test('sprint-028 leftover-term check: no canon, README, AGENTS.md, template, run
     '(BA/UX/Architect/advisor)',
     'The Documentation rubric entry "In-code doc comments"',
     'design-review\'s creator',
+    'iter-NN/testing.md',
+    '(reviews `testing.md`)',
+    'no longer critical by that fact alone',
+    'never `critical`',
   ];
   const memoryFiles = fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT), { recursive: true }).map((entry) => `${AGENT_MEMORY_ROOT}/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
   assertSweepReachesMemory(memoryFiles);
