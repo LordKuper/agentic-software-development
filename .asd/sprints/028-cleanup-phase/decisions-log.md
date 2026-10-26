@@ -49,3 +49,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-26 — impl wave 5: Task 12 COMPLETED (55d162dc), full suite 304/304; flagged accepted: reviewer-memory tests sweep live reviewers, dev-critical CRLF pin dropped with its file, transient fail-first mutations restored
 - 2026-10-26 — route wave-5 follow-up: standard, dispatch HEAD 55d162dc; risk artifact: leftover role names via grep
 - 2026-10-26 — wave-5 follow-up COMPLETED (e8212cb6): leftover roster mentions fixed in artifact-layout.md, git-strategy.md, providers.md; sync --apply AGENTS.md refreshed manifest ledgers
+
+## 2026-10-26 — impl assessment approved (adaptive)
+
+- **Decision**: Initial impl accepted: Tasks 1-12 plus wave-3 and wave-5 follow-ups COMPLETED, every plan checkbox ticked, AC-1..AC-20 traced to Tasks, build (`sync.js --check`: 60 current) and lint (`git diff --check main..HEAD`) clean, diff within authorised paths, no sprint stubs; NEXT impl-test.
+- **Rationale**: Every flagged choice resolved or routed to a follow-up dispatch; no unresolved material alternative; the dev-run full suite 304/304 is self-verification only, impl-test owns the gate.
+- **Affected docs**: plan.md
