@@ -66,3 +66,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-26 — impl fix for wave-1/iter-02: findings resolved (X-1, C-1; 14729c84, 2d5a951c; hashes refreshed)
 - 2026-10-26 — route impl-test entry 3: standard, dispatch HEAD f4935baa
 - 2026-10-26 — impl-test: impacted set green (318/318, full suite via safety valve), 2 asserts added/0 removed (entry 3)
+- 2026-10-26 — impl-review wave-1/iter-03: combined APPROVE, external APPROVE → reviewer DoD met (1/1 wave); terminal full suite next
