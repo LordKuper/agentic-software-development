@@ -16,4 +16,5 @@
 - [Repurposed fixture coverage](feedback_repurposed-fixture-coverage.md) — a changed/dropped fixture expectation: what did that case alone reach; an unread fixture write is the tell
 - [Role removal, work inline](feedback_role-removal-inline-work.md) — retired agents' tools vs receiving skills' allowed-tools; grep every name form (`<key>.md`, tier prose), not the sweep's list
 - [None-row coverage claims](feedback_none-row-coverage-claims.md) — a `none` row citing existing suite checks: grep the exact token the fix added; would a revert go red?
-- [New command vs skill grant](feedback_new-command-vs-skill-grant.md) — a workflow step adding gh/git commands: check the skill's claude allowed-tools (retro/stack grant only runtime.js)
+- [New command vs skill grant](feedback_new-command-vs-skill-grant.md) — a workflow step adding gh/git commands: check the skill's claude allowed-tools (some grant only narrow Bash(prefix:*))
+- [Shell-quoting claims](feedback_shell-quoting-claims.md) — a "safe in bash and PowerShell" strip list: PowerShell reads typographic quotes “ ” „ as "

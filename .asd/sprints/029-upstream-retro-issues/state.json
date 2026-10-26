@@ -1,7 +1,7 @@
 {
   "sprint_id": "029-upstream-retro-issues",
   "branch": "sprint/029-upstream-retro-issues",
-  "phase": "impl-test",
+  "phase": "impl-review",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -132,15 +132,20 @@
       "wave": 1,
       "waves": [
         {
-          "iteration": 1,
+          "iteration": 2,
           "verdicts": {
             "iter-01": {
+              "combined": "CONCERNS",
+              "external": "CONCERNS"
+            },
+            "iter-02": {
               "combined": "CONCERNS",
               "external": "CONCERNS"
             }
           },
           "iteration_heads": {
-            "iter-01": "f78d678ad388b48e5ab1e3b4e10ca783c5dbdb24"
+            "iter-01": "f78d678ad388b48e5ab1e3b4e10ca783c5dbdb24",
+            "iter-02": "99c9b431d4b0fd07c1d903c4dfd681ad08eca44f"
           },
           "latched": {}
         }
@@ -149,7 +154,7 @@
   },
   "created_at": "2026-10-26T11:59:26.556Z",
   "updated_at": "2026-10-26T13:57:21.178Z",
-  "review_fixes_pending": null,
+  "review_fixes_pending": "wave-1/iter-02",
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null
