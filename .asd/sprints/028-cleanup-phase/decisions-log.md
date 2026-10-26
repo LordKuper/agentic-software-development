@@ -39,3 +39,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 <!-- entries appended below this line -->
 
 - 2026-10-26 — design-promote skipped: lite, no enabled document (prd/ux_spec/adr/c4 false; design_system absent → ux_spec false)
+- 2026-10-26 — cleanup checkpoint 661d9aeb857e81b658bcbe0b3f01b3155c789b8d
+- 2026-10-26 — cleanup: removed .asd/migrations/14.0.0.js mergedVerdict LEGACY_REVIEWERS.some guard (dead after the per-node roster guard); reverted none; verified build, lint, tests @ade5eb15 (sync --check 60 current, 316/316)
