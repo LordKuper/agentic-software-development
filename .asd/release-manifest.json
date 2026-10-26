@@ -155,7 +155,7 @@
     ".asd/rules/agent-protocol.md": "f85ac7376f7bb2d1c4ff3dfa667d5bf3b421aa75818221485ffd154a6f6cdbab",
     ".asd/templates/t_research.md": "d722d841e93cd77463cd1c1a4d6a585d87e31963545415143b7795b3a92c78b4",
     ".asd/agents/asd-reviewer-quality.md": "b082b6d82834c1b023b50a341ed29a07ceeadff9db999d955f9065e4228b774f",
-    ".asd/migrations/14.0.0.js": "c758bdc17748d67ba73c303d1f819f06f7c3bc89d6855b4a3bd960157a8e64eb",
+    ".asd/migrations/14.0.0.js": "5c0ad4a19f5ed993b37938cba305425e6078e4abad5c3cdc11235602b0c6958c",
     ".asd/skills/asd-phase-cleanup/SKILL.md": "67d91216fcb5ed04e6ef7bc5b4276c057d36628a8185516b38dd4e2c7a88e365",
     ".asd/workflows/asd-phase-cleanup.md": "7bba173810910297fd7a9f663e3aa6f7bbd6bfde5b4fb8ef13e4c249d9b48423"
   }
