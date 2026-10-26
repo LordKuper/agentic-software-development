@@ -133,7 +133,7 @@ function nextPhase(phases, current) {
 
 // Design-block collapse test (sprint-lifecycle.md): every frozen design document is false.
 function isDesignCollapsed(documents) {
-  return Boolean(documents) && typeof documents === 'object' && ['prd', 'ux_spec', 'adr', 'c4'].every(name => documents[name] === false);
+  return Boolean(documents) && typeof documents === 'object' && ['prd', 'ux_spec', 'design_system', 'adr', 'c4'].every(name => documents[name] === false);
 }
 
 // reviews.impl is either wave-aware ({wave, waves: [node, ...]}) or the
