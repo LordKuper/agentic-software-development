@@ -946,6 +946,7 @@ function patchBytes(base, head, files) {
   return rangePatchInvocations(ranges, files).reduce((total, invocation) => total + Buffer.byteLength(runGit(invocation.args)), 0);
 }
 
+/** Measures the scope and, with `--division`, records it; `--single` fixes the wave count at 1 whatever the measure says, so a one-wave division over a scope above a threshold is accepted and the reported and recorded `waves` is 1. Without it the measured count rules. */
 function reviewWavesCommand(flags) {
   if (typeof flags.files !== 'string') fail('--files <path> required');
   if ((flags.division === undefined) !== (flags.out === undefined)) fail('--division <json path> and --out <path> go together');
@@ -956,7 +957,7 @@ function reviewWavesCommand(flags) {
   const lines = numstatLines(runGit(['diff', '--numstat', '-z', '-M', `${base}...${head}`]), scope);
   const bytes = patchBytes(base, head, scope);
   const thresholds = { lines: WAVE_THRESHOLD_LINES, files: WAVE_THRESHOLD_FILES, bytes: WAVE_THRESHOLD_BYTES };
-  const measured = { lines, files, bytes, thresholds, waves: reviewWaveCount(lines, files, bytes) };
+  const measured = { lines, files, bytes, thresholds, waves: flags.single === true ? 1 : reviewWaveCount(lines, files, bytes) };
   if (flags.division === undefined) return measured;
   const waves = validateWaveDivision(JSON.parse(fs.readFileSync(flags.division, 'utf8')), scope, measured.waves);
   fs.mkdirSync(path.dirname(flags.out), { recursive: true });
