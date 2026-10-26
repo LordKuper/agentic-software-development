@@ -41,11 +41,11 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
 
 ## Suite run
 
-- Command: `node tests/run.js` (shared infrastructure touched: `runtime.js`, `.asd/migrations/`, `tests/run.js` — the impacted set is the full suite)
+- Command: `node tests/run.js` (terminal impl-review full-suite run, wave-1/iter-05, unscoped)
 - Scope: full
 - Result: pass — 316/316 passed, exit 0
-- Lint / build: pass — `git diff --cached --check` exit 0 at commit, `node .asd/sync.js --check` exit 0
-- HEAD: 9bb37b86a8ae065bbcfa4c9fa55bee100a69683d
+- Lint / build: pass — `git diff --cached --check` exit 0, `node .asd/sync.js --check` exit 0
+- HEAD: b89a637921dbe3b23313585c42a95722ab3bafde
 
 ## Defects
 
