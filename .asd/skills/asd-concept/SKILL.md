@@ -3,7 +3,7 @@
   "name": "asd-concept",
   "description": "Forms or edits the project concept document inline, branching by silent detection into one of four flows (no idea / vague idea / clear vision / brownfield extraction) and converging through a per-section lock-in loop. Use when the user runs /asd-concept, when asd-init detects a missing concept.html and suggests this skill, or when the user asks to define, draft, refine, edit, rewrite, or reverse-engineer the project concept, vision, target users, or value proposition.",
   "claude": {
-    "allowed-tools": "Read Write Edit Glob Grep AskUserQuestion Bash(node .asd/runtime.js:*)"
+    "allowed-tools": "Read Write Edit Glob Grep Bash AskUserQuestion"
   }
 }
 ---
