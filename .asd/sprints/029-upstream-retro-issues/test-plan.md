@@ -12,18 +12,14 @@ responsibility:
 | Entry | HEAD analysed | Scope |
 |---|---|---|
 | 1 | 78ab90ca72a6f8c02682ca2fcfd0534a1a77a63a | full change surface |
+| 2 | | delta since entry 1 |
 
 ## Risk → check decisions
 
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
-| Pre-strategy run: 3 pins red (scope step 4 and gate inventory wording, artifact-layout in-place tester citation, review-policy heading) | Pins of superseded wording read as regressions | content contract | keep, retarget | All three are intended 029 changes (AC-5 adds issues to the per-row choice, AC-10 renames the heading and widens severity to low\|medium). The asd-tester.md line still states the in-place tester's reach and artifact-layout.md "Test plan" still cites the route under its new name, so no code defect. Pins retargeted to the new tokens: "row or issue put to the user lacks a choice", the gate-inventory "per retro row or `asd-retro` issue put to the user", `### Minor test-only findings`, `` `low` or `medium` `` |
-| retro step 7 ↔ scope step 2a issue shape (AC-1, AC-2, AC-4, AC-5) | Writer and reader drift on the marker comment or `[asd-retro] ` title prefix: every published issue reads non-standard, or none does | content contract | add | One parsed literal pair across two phases; no other check ties them |
-| scope labels ensured vs applied; `(issue #N)` write vs pr/git-strategy read; `Refs #N` without a closing keyword (AC-4, AC-6, AC-7) | `--add-label` fails on a label never created; included issues never closed after release, or closed by the merge before it | content contract | add | Cross-phase literal agreement; the plan's Reachability declaration (scope writes, pr reads) has no other check. Label list is derived from the step text, not enumerated |
-| `upstream_issues` key (AC-8) | Key dropped from template, asd-init, retro gate or README | content contract | add | Presence only (in the same test); value enumeration and README mirror already covered by the existing t_config.yaml leaf sweep |
-| Rename of review-policy.md "Low-severity test-only findings" and AGENTS.md "No build / lint" statement (AC-9, AC-10) | A surviving mention points at a section that no longer exists (providers.md context ref, agent memory, doc comments) | static sweep | add | Leftover-term check required on the first entry of a sprint removing a term; sweep includes agent memory. Memory hits: none |
-| AC-3 (gh missing or create failure skips), AC-11 (flagged-choice check), AC-12 (grep forms) | Prose behaviour of the orchestrator | none | none | Orchestrator prose with no deterministic assert that is not prose pinning; the retro step 7 wording is covered by review, not a pin |
-| Doc comment in `.asd/runtime.js`, README/AGENTS.md mirrors | No behaviour added | none | none | README and schema mirrors covered by existing sweeps; leftover sweep above covers the doc comment |
+| Review-fix canon edits F-1..F-7, X-1, X-2 (`-R` on every gh issue call, backlog-duplicate `-r duplicate`, closed comparison list, "missing release and issue-close steps" wording, impl step 10 pointer, retro title sanitising in gh-2.90.md) | Reworded or added text drifts from its pin, or a gh call regains a missing `-R` | content contract | none | Already pinned by the review-fix tester commit (e20bd5bc: per-assert proofs for F-2, F-3, F-5; renamed wording in sprint-021/022 pins); nothing left uncovered. gh-2.90.md sanitising rule and impl step 10 pointer are prose with no parsed literal |
+| asd-phase-retro SKILL `allowed-tools` gains `Bash(gh auth status:*)` and `Bash(gh issue create:*)` (F-1) | A gh call retro step 7 runs is not pre-approved, so the inline step stalls on a permission prompt before any issue is published; the grant list and the step text are two files nothing ties | content contract | add | Review finding evidences the failure mode; the grant set is derived from the `gh <a> <b>` calls in step 7, not enumerated |
 
 ## Removed tests
 
@@ -35,18 +31,15 @@ responsibility:
 
 | Test | Regression proof |
 |---|---|
-| tests/run.js: sprint-029 AC-1/AC-2/AC-3/AC-4/AC-5/AC-6/AC-7/AC-8 contract test (extended after review: step 7.2 consumer check, AC-3 skip-and-complete, backlog-duplicate `-r duplicate`, closed list, `-R` on every `gh issue` call) | One mutation per assert, each `node tests/run.js --filter "sprint-029 AC-1/AC-2"` → exit 1, FAIL sprint-029 AC-1/AC-2/AC-3/AC-4/AC-5/AC-6/AC-7/AC-8 (1 test matched), the named assert message the one reported: marker `v1`→`v2` (retro.md); step 7.2 check text → "Glance at the body"; `A failing create skips that row` → `blocks the retro`; scope `exact [asd-retro] title prefixes` → `title prefixes`; retro `upstream_issues is not disabled` → `is disabled`; scope `self_hosting: enabled only` → `any only`; `Ensure labels` → `Make labels`; `--add-label wontfix` → `unwanted`; ensure list drops `duplicate`; `ends (issue #N)` → `(#N)`; git-strategy `each (issue #N) in the merged` → `each issue number`; asd-phase-pr.md `Refs #` → `See #`; git-strategy `Refs #N` → `Refs #N Closes #N`; t_config `upstream_issues: enabled` → `on`; asd-init SKILL `upstream_issues` → `upstream_flag`; scope `-r duplicate -c <link to the row at HEAD>` → `--duplicate-of <original>` (superseded F-2 text); scope closed-list clause removed (F-3); git-strategy post-release `gh issue close <n> -R <repo>` → no `-R` (F-5). Control (retro `Takes no gate` → `Needs no gate`, tokens kept): same command → exit 0, 1 test matched; runs: 19 (18 mutations + 1 control) |
-| tests/run.js: sprint-029 AC-10 leftover-term check | mutation review-policy.md re-adds `"Low-severity test-only findings"`: `node tests/run.js --filter "sprint-029 AC-10"` → exit 1, sprint-029 AC-10 leftover-term check (1 test matched); runs: 1 |
-
-Retargeted (existing tests, no new row): sprint-019 AC-1/AC-3/AC-4/AC-5/AC-6 (scope step 4 and gate inventory pins), sprint-019 AC-11/AC-12/AC-13/AC-15/AC-16 (in-place tester grant citation), sprint-020 AC-8 (heading, severity tokens). Mutations restored before the next command; none left on disk.
+| tests/run.js: sprint-029 AC-1/AC-2/AC-3/AC-4/AC-5/AC-6/AC-7/AC-8 contract test, new assert (every gh call in retro step 7 has a `Bash(gh <call>:*)` grant in the retro SKILL) | Mutation: SKILL grant `Bash(gh issue create:*)` removed: `node tests/run.js --filter "sprint-029 AC-1/AC-2"` → exit 1, FAIL sprint-029 AC-1/AC-2/AC-3/AC-4/AC-5/AC-6/AC-7/AC-8 (1 test matched), the AC-1 grants assert reported. Control (grant order swapped, set unchanged): same command → exit 0, 1 test matched. Mutation restored before the next command; runs: 2 (1 mutation + 1 control) |
 
 ## Suite run
 
 - Command: `node tests/run.js`
 - Scope: full (change surface touches framework-wide files: safety valve degrades the impacted set to the full suite)
-- Result: pass — 318 passed, 0 failed, 0 skipped (pre-strategy 313/316; exit 1 on the 3 retargeted pins)
+- Result: pass — 318 passed, 0 failed, 0 skipped, exit 0 (pre-strategy 318/318 exit 0 before the new assert; the new assert adds no test, so the count is unchanged)
 - Lint / build: pass — `git diff --cached --check` clean at commit, `node .asd/sync.js --check` ok
-- HEAD: 78ab90ca72a6f8c02682ca2fcfd0534a1a77a63a
+- HEAD: 5224682a06322a1ef3dcc06608ef240ddb2262a4 (tree analysed, plus this entry's own test commit)
 
 ## Defects
 

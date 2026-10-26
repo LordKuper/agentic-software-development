@@ -8681,6 +8681,11 @@ test('sprint-029 AC-1/AC-2/AC-3/AC-4/AC-5/AC-6/AC-7/AC-8: the consumer retro wri
   assert.ok(issueCalls.some((call) => call.startsWith('gh issue view')) && issueCalls.some((call) => call.startsWith('gh issue close')), 'sanity: the release and triage issue calls must still be found');
   assert.deepStrictEqual(issueCalls.filter((call) => !call.includes(' -R ')), [], 'AC-7: every gh issue call must name the framework repo with -R - the checkout of a consumer or a forked remote is not the repo the issues live in');
 
+  const retroGrants = sync.parseCanonicalFrontmatter(canonText('.asd/skills/asd-phase-retro/SKILL.md')).meta.claude['allowed-tools'];
+  const retroGhCalls = [...new Set([...published.matchAll(/\bgh ([a-z]+ [a-z]+)/g)].map((match) => match[1]))];
+  assert.ok(retroGhCalls.includes('issue create') && retroGhCalls.includes('auth status'), 'sanity: retro step 7 must still name its gh calls');
+  assert.deepStrictEqual(retroGhCalls.filter((call) => !retroGrants.includes(`Bash(gh ${call}:*)`)), [], 'AC-1: every gh call retro step 7 runs must be pre-approved in asd-phase-retro allowed-tools, or the inline step stalls on a permission prompt before any issue is published');
+
   const ensured = (/Ensure labels ([^;]*?) \(`gh label create/.exec(triage) || [])[1];
   assert.ok(ensured, 'sanity: scope step 2a must name the labels it ensures');
   const ensuredLabels = spans(ensured);
