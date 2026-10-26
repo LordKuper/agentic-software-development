@@ -1,0 +1,401 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 268b7c1c..576d6838 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -36,11 +36,11 @@
+     "skills/asd-stack/SKILL.md": "sha256:e192b82fadeeee69d2b4a7d78a08cbec714e72c78033344366559f6eacddc3be",
+     "skills/asd-sync/SKILL.md": "sha256:60b453795d0dd9f21fe200fa44a5c372e225f28ba82f800e6b01fb2efb42a1a2",
+     "skills/asd-update/SKILL.md": "sha256:244ce95817565cb06fa6bc68c2fa55136cc168e8ad16631cb128f2f43f1db435",
+-    "skills/asd-phase-scope/SKILL.md": "sha256:3cc9b87ea63c0e35ed34a327eb8058fe11a21a9945ddeb7bf1f9cb74764e9847",
++    "skills/asd-phase-scope/SKILL.md": "sha256:ce19e4f1dae938950d26de21ce495dc15a516216caa484b192a60decb7357f85",
+     "skills/asd-phase-audit/SKILL.md": "sha256:0ee2ef71d4625cbbf95b1799f6c7bf54dd8be488814676a05eac491c9cbd454b",
+-    "skills/asd-phase-design/SKILL.md": "sha256:bb47025cf3c99aed393cc6692c208f29c73f2f15f59a5ad2b2ebf654a6ab588d",
++    "skills/asd-phase-design/SKILL.md": "sha256:90f721e0a22e6e82c8d34b9196d5efa23fa93fd59ab8c214e49955d5ea689d1e",
+     "skills/asd-phase-design-review/SKILL.md": "sha256:317e0201fd7f3c61c47472cc61dd836264ca626f82727af243c699442037e353",
+-    "skills/asd-phase-design-promote/SKILL.md": "sha256:4bf2fa7042334fc5358e6287eebb3d4b2a441bd211e781921c386d2c8983e291",
++    "skills/asd-phase-design-promote/SKILL.md": "sha256:f8309017880561ad20a68357923342a9aa184fabd80a87ab0166e9931724eacf",
+     "skills/asd-phase-plan/SKILL.md": "sha256:5a47823a92d59a85b5b8747f5c6ade2eb9e1ca7c56b662f3d98434d7783a0b6b",
+     "skills/asd-phase-impl/SKILL.md": "sha256:90f96c8ed3267ef92f709dcd6cceb255210bccbe4126d0963e576081f8f2d2f3",
+     "skills/asd-phase-impl-test/SKILL.md": "sha256:2ab69e3e919b66863b95c2097bba108cc2f49dfc04b2c2926a37bc96c38ec6c2",
+@@ -58,32 +58,32 @@
+   "upstream_hashes": {
+     ".asd/agents/asd-external-review.md": "95230cd43eca374610697691583d7cf2618731a08f0d6e80442c70993039db7a",
+     ".asd/hooks/session-start.js": "553745d4ca9c651687d524730b61cb94eead940a31c31696579fc05a16d1fcb3",
+-    ".asd/rules/artifact-layout.md": "b9d9b3282e57176e0a0ec0d5ebafdb4e7b719780f73f0a81f21b3cf10ff8f0d3",
++    ".asd/rules/artifact-layout.md": "61fdcf27940f046eea1a75b5371cb2ae586e596463576616f821b4a8fc421ce9",
+     ".asd/rules/checkpoints.md": "63d50621e18544b7b6f741c0fd16ddf99e77b25f8f8c0e6eaf33776810dc0561",
+     ".asd/rules/code-style.md": "672ea6d374408364e420c4126c00d9111aa1f0be751520d2716fd8e480989992",
+-    ".asd/rules/core.md": "62668cda4887b220b1386787bd59a6becdfd426efd87e1731fba055ecbf2b9cd",
++    ".asd/rules/core.md": "dd2cf1a726daeed5f0aeccb2c923acbf762a82951144c7381dfd6719b1fbfc90",
+     ".asd/rules/design-principles.md": "0bf73cc3eed6e723821c39f008b63c5fa04eea1e829567290a3365a9a912b938",
+     ".asd/rules/design-system.md": "821effe80aa8676d13dc814bd73c285ffd0ce40e7795958d99614c98e4604f12",
+     ".asd/rules/external-review.md": "5e9029eccadca596af4c714df0c054ddb1722489a53814abc4ffc65205410396",
+-    ".asd/rules/git-strategy.md": "f028d4a5c3289839ebca20790ac2ee2b27d41891a193ad78147af08e955ed3f2",
++    ".asd/rules/git-strategy.md": "84e9f5adba9ff42d1e7b7e5262069b1cf715bd7ce6531dbec3adf161d98b4065",
+     ".asd/rules/language-policy.md": "7f77042d5ce46d5df0ee48c3f75263d6393c77a20e8a7068e7913c22650a8539",
+     ".asd/rules/providers.md": "44538d6639cc00e4779a2b2853d6b99ac1a00520424151a0e1d4bd057759b7a8",
+     ".asd/rules/review-policy.md": "7a223469cd57bee837ccb5cc82784822733c158f1c83df6f75cec8361a3a49f5",
+-    ".asd/rules/sprint-lifecycle.md": "018e79f767b6a863578b347adb837328c54a1f4e07df36045d43d681aec0e7a5",
++    ".asd/rules/sprint-lifecycle.md": "f6a4a9f563837659fcb86791d99594c1a411974be239c145399af6c792113ca2",
+     ".asd/rules/ux-principles.md": "c96151abdfa74445c344c1c440d3e189879f5c7fd13b78010186f351ef6d5e79",
+     ".asd/skills/asd-concept/SKILL.md": "9b13894504e14719ac9d974902af8d2f4d0cef0f730b0e0dea65efb4edd12104",
+     ".asd/skills/asd-design-system/SKILL.md": "bdc26d872d8e68d3b9ad08ae8321ddf44af9bbf90db4d37ab681798befe274c1",
+     ".asd/skills/asd-init/SKILL.md": "1c1c6ddd5dcf42bed62b8eb9bfff603931415c1b2fb961524495022ee48ad48e",
+     ".asd/skills/asd-phase-audit/SKILL.md": "0ee2ef71d4625cbbf95b1799f6c7bf54dd8be488814676a05eac491c9cbd454b",
+-    ".asd/skills/asd-phase-design-promote/SKILL.md": "4bf2fa7042334fc5358e6287eebb3d4b2a441bd211e781921c386d2c8983e291",
++    ".asd/skills/asd-phase-design-promote/SKILL.md": "f8309017880561ad20a68357923342a9aa184fabd80a87ab0166e9931724eacf",
+     ".asd/skills/asd-phase-design-review/SKILL.md": "317e0201fd7f3c61c47472cc61dd836264ca626f82727af243c699442037e353",
+-    ".asd/skills/asd-phase-design/SKILL.md": "bb47025cf3c99aed393cc6692c208f29c73f2f15f59a5ad2b2ebf654a6ab588d",
++    ".asd/skills/asd-phase-design/SKILL.md": "90f721e0a22e6e82c8d34b9196d5efa23fa93fd59ab8c214e49955d5ea689d1e",
+     ".asd/skills/asd-phase-impl-review/SKILL.md": "0adbbe064499362dffde5941d280c0abe87f2a23cdd56182c3e91c5c19ae45b3",
+     ".asd/skills/asd-phase-impl-test/SKILL.md": "2ab69e3e919b66863b95c2097bba108cc2f49dfc04b2c2926a37bc96c38ec6c2",
+     ".asd/skills/asd-phase-impl/SKILL.md": "90f96c8ed3267ef92f709dcd6cceb255210bccbe4126d0963e576081f8f2d2f3",
+     ".asd/skills/asd-phase-plan/SKILL.md": "5a47823a92d59a85b5b8747f5c6ade2eb9e1ca7c56b662f3d98434d7783a0b6b",
+     ".asd/skills/asd-phase-pr/SKILL.md": "84bc3ecfb735abcfe74501642b2f30fa966539894507daef54631772c2a80639",
+-    ".asd/skills/asd-phase-scope/SKILL.md": "3cc9b87ea63c0e35ed34a327eb8058fe11a21a9945ddeb7bf1f9cb74764e9847",
++    ".asd/skills/asd-phase-scope/SKILL.md": "ce19e4f1dae938950d26de21ce495dc15a516216caa484b192a60decb7357f85",
+     ".asd/skills/asd-sprint/SKILL.md": "a653b32813b3581cef4c27d6d4433bfd091f8c6cfcab9bcfa4b30a66d4777e79",
+     ".asd/skills/asd-stack/SKILL.md": "e192b82fadeeee69d2b4a7d78a08cbec714e72c78033344366559f6eacddc3be",
+     ".asd/skills/asd-sync/SKILL.md": "60b453795d0dd9f21fe200fa44a5c372e225f28ba82f800e6b01fb2efb42a1a2",
+@@ -124,8 +124,8 @@
+     ".asd/templates/t_ux-spec.html": "4740d0c9219ceaca240aa598aa95cce039d2e6629a63b7801a54769f98f900c5",
+     ".asd/workflows/asd-phase-audit.md": "eac805f2ce08f0f094ab4ff9f9334ce773bf59957bcec6551505c486e36a3ff2",
+     ".asd/workflows/asd-phase-design-promote.md": "b2f8b4864fe3f7e63fa6b7280ca5ae3b001411120090ef108a55bcf6bad522c9",
+-    ".asd/workflows/asd-phase-design-review.md": "d464bb653e7f490ccac94bf74b2c8b452fa68f3e40a1129b4b216570d90a12a2",
+-    ".asd/workflows/asd-phase-design.md": "3e748d1e3bb9461731bba868fae3b41ba2aca08cc234abe344570c87ab619276",
++    ".asd/workflows/asd-phase-design-review.md": "dc8a50786e4a0e86f06b621ab31c6af4e126127d1e494520bb61b199f244b79d",
++    ".asd/workflows/asd-phase-design.md": "9c5242ba0c50ac1cb0b4d3323971a28ac4b4d813ad7f50c9130d33ba6be4e510",
+     ".asd/workflows/asd-phase-impl-review.md": "4f7fe1ba03f21a52dc60a6c0260fec02e728267a82ccad46c21403897be14c26",
+     ".asd/workflows/asd-phase-impl-test.md": "3c860ffedb6c588187d2adf2484b4459dca85abb74eac0c2ca8b3b97b563d9b3",
+     ".asd/workflows/asd-phase-impl.md": "0e96b16ebd49f3e7222eae8089bbcd68699e66019797a8e9d0c493ed5ace8285",
+@@ -157,6 +157,6 @@
+     ".asd/agents/asd-reviewer-quality.md": "b082b6d82834c1b023b50a341ed29a07ceeadff9db999d955f9065e4228b774f",
+     ".asd/migrations/14.0.0.js": "c758bdc17748d67ba73c303d1f819f06f7c3bc89d6855b4a3bd960157a8e64eb",
+     ".asd/skills/asd-phase-cleanup/SKILL.md": "67d91216fcb5ed04e6ef7bc5b4276c057d36628a8185516b38dd4e2c7a88e365",
+-    ".asd/workflows/asd-phase-cleanup.md": "db9387d7f9d4983efa3eb646205433e2c6488eb6c52ccfd82e45fdafd38bb569"
++    ".asd/workflows/asd-phase-cleanup.md": "7bba173810910297fd7a9f663e3aa6f7bbd6bfde5b4fb8ef13e4c249d9b48423"
+   }
+ }
+diff --git a/.asd/rules/artifact-layout.md b/.asd/rules/artifact-layout.md
+index fbdb596c..e03bf7e1 100644
+--- a/.asd/rules/artifact-layout.md
++++ b/.asd/rules/artifact-layout.md
+@@ -184,7 +184,7 @@ The verdict-token line in `t_review.md`/`t_review-report.md` (`[REVIEW-{{REVIEW_
+ 
+ `<sprint>/manual-steps.md` per `t_manual-steps.md`. Per-sprint, created lazily. Owners: dev agents (append entries); main orchestrator (validates necessity).
+ 
+-Manual step = operational action a human must perform for the plan to complete (provision a secret, create a cloud resource, hand-run a migration, set an env var, register a third-party account). NOT a code stub (`stubs.md`) nor manual QA verification (reviews `testing.md`).
++Manual step = operational action a human must perform for the plan to complete (provision a secret, create a cloud resource, hand-run a migration, set an env var, register a third-party account). NOT a code stub (`stubs.md`) nor manual QA verification (reviews `quality.md`).
+ 
+ - When a subtask cannot proceed without a human-only operational action, the dev appends an `MS-N` entry (full step-by-step instructions + a `Verification` field) and marks the subtask `BLOCKED: MS-N` in `plan.md`.
+ - `Verification` mandatory: states how the workflow confirms the action was done (a `commands.yaml` check, observable state, or explicit user confirmation).
+@@ -198,7 +198,7 @@ Manual step = operational action a human must perform for the plan to complete (
+ 
+ **Rotation**: at a re-entry's strategy pass, before any new row and never when resuming an interrupted current entry (`asd-phase-impl-test.md` step 1), the Tester moves the `Risk → check decisions`, `Removed tests` and `Added tests` rows of the previous `Entry log` entry N, if any, plus the review-fix and impl-review in-place tester rows added since (they have no `Entry log` row of their own), into `test-plan.entry-NN.md` (same section headings, N zero-padded to 2) when that file is absent, leaving those tables empty in the live file. Live `test-plan.md` keeps the `Entry log`, `Suite run`, `Defects` and `Manual verification`. A segment is never edited: a fix that changes a rotated row's risk gets a superseding row in the live file. Readers: "Decisions log" below.
+ 
+-SSoT for two things invisible in the diff: **why** a test was removed, and **why** a change needed no new test. Also the handoff channel for code defects to `impl` test-fix mode (`Defects` section). Not a task list (that is `plan.md`) and not a review verdict (that is `reviews/impl/wave-<K>/iter-NN/testing.md`).
++SSoT for two things invisible in the diff: **why** a test was removed, and **why** a change needed no new test. Also the handoff channel for code defects to `impl` test-fix mode (`Defects` section). Not a task list (that is `plan.md`) and not a review verdict (that is `reviews/impl/wave-<K>/iter-NN/quality.md`).
+ 
+ **Manual verification — single home.** The optional `Manual verification` table (AC, steps, expected observation) is authored only here, by the Tester, when automation is impossible (visual UI, third-party live integration, ux feel). The user smoke check of its rows runs at `impl-test`'s first green entry (`asd-phase-impl-test.md`), and its result is recorded in this file, where reviewers read it. No review file duplicates or re-authors this spec; `asd-reviewer-quality` (composed into `asd-reviewer-combined` in lite) judges whether the spec is justified and reports any result as an ordinary finding, never as a persisted section of its own.
+ 
+diff --git a/.asd/rules/core.md b/.asd/rules/core.md
+index 7face594..c37640af 100644
+--- a/.asd/rules/core.md
++++ b/.asd/rules/core.md
+@@ -17,7 +17,7 @@ All project work goes through `/asd-sprint`.
+ - **Iteration** — one pass of the review loop in a `*-review` phase. Each dispatches every reviewer fresh with clean context (`review-policy.md`).
+ - **Review wave** — one of the sequential slices a large `standard` impl-review scope divides into (`lite`: always one), each with its own iterations (`sprint-lifecycle.md` "Review iteration counters").
+ - **Creator agent** — produces code or tests (Dev, Tester); every other artifact is the orchestrator's.
+-- **Main orchestrator** — the role (not a spawned agent) that dispatches phase skills/agents and performs all sprint work itself — scope research, audit, design drafts and fixes, design-promote, plan, cleanup, retro, Git/PR — delegating only production code, tests, review, advice and memory-fix dispatches (`sprint-lifecycle.md` "Orchestration and adaptive gates"). Owns state, decisions-log, gates, manual-step validation and release/archival sequencing. Role-scoped context: `providers.md` "Role-scoped context" table. Role-scoped context: `providers.md` "Role-scoped context" table.
++- **Main orchestrator** — the role (not a spawned agent) that dispatches phase skills/agents and performs all sprint work itself — scope research, audit, design drafts and fixes, design-promote, plan, cleanup, retro, Git/PR — delegating only production code, tests, review, advice and memory-fix dispatches (`sprint-lifecycle.md` "Orchestration and adaptive gates"). Owns state, decisions-log, gates, manual-step validation and release/archival sequencing. Role-scoped context: `providers.md` "Role-scoped context" table.
+ - **Reviewer agent** — evaluates artifacts (Quality, Efficiency, Combined, External Review); a review phase dispatches its workflow's `reviewers` roster.
+ - **Advisor agent** (`asd-advisor.md`) — read-only; consulted by a creator on non-gate uncertainty (`ADVICE_NEEDED`) and by the orchestrator before an escalation to the user, never agent-to-agent (`agent-protocol.md` "Relay"). Always returns a free-text recommendation, never binding; on a hard gate it names the gate and never authorizes it or substitutes for user approval.
+ - **Artifact** — file produced by an agent. User-facing (PRD, ADR, plan, …) or machine-readable (state.json, config.yaml).
+diff --git a/.asd/rules/git-strategy.md b/.asd/rules/git-strategy.md
+index 9599b703..3550c51e 100644
+--- a/.asd/rules/git-strategy.md
++++ b/.asd/rules/git-strategy.md
+@@ -41,7 +41,7 @@ On resolution: row **deleted** from stubs.md (no status column; deletion = resol
+ 
+ `impl-review` itself also commits: when it dispatches `asd-tester` to fix a test in place, that fix must land as a commit before the phase's `Suite run` records its `HEAD` and before `pr` open-mode's `git diff --quiet` skip check runs — an uncommitted in-place fix is invisible to both.
+ 
+-The main orchestrator commits its own bookkeeping — `state.json`, `decisions-log.md`, review files, `friction-log.md`, the timing ledger `timing.jsonl`, and any agent-memory writes whose author cannot commit them (a reviewer holds no commit tool; a concurrent co-author holds the file mid-edit, so neither author may stage it, per `artifact-layout.md` "Agent memory"; `review-policy.md` "Change-surface rule") — at phase exit, same precedent as `impl-test` above. It likewise commits the drafts of a dispatched creator holding no commit tool. "Holding a commit tool" is role policy, not tool grant: `asd-dev` and `asd-tester` hold one; reviewers and `asd-advisor` do not, whatever shell they hold. Ownership is symmetric for a dispatched agent holding a commit tool: it stages only the paths it authored (never a whole-tree command — `git add -A`/`-u`, `git add --renormalize`, `commit -a`, `git stash` — even where it is the only form that answers the question, since concurrently dispatched tasks share one worktree: a whole-tree stage sweeps a sibling's in-progress edit into the wrong commit, a whole-tree stash takes it off disk), commits every path it authored before signalling completion (an authored file no one commits reaches neither the reviewed diff nor `HEAD`), and never commits orchestrator-owned files it did not author, even to leave a clean tree for the next gate. It stages and commits in one compound command, so no path stays staged between commands: `git add -- <paths> && git diff --cached --check -- <paths> && git commit --only -- <paths>`, one `<paths>` list covering never-tracked paths and both paths of a rename; if it fails, `git reset -q -- <paths>`. Such an agent's own agent-memory writes are paths it authored, so it commits them; the orchestrator clause above covers only a write whose author cannot. That whole-tree ban is unconditional for a dispatched agent, which cannot observe whether a sibling dispatch is in flight; the main orchestrator can, and runs such a command only when none is.
++The main orchestrator commits its own bookkeeping — `state.json`, `decisions-log.md`, review files, `friction-log.md`, the timing ledger `timing.jsonl`, and any agent-memory writes whose author cannot commit them (a reviewer holds no commit tool; a concurrent co-author holds the file mid-edit, so neither author may stage it, per `artifact-layout.md` "Agent memory"; `review-policy.md` "Change-surface rule") — at phase exit, same precedent as `impl-test` above. "Holding a commit tool" is role policy, not tool grant: `asd-dev` and `asd-tester` hold one; reviewers and `asd-advisor` do not, whatever shell they hold. Ownership is symmetric for a dispatched agent holding a commit tool: it stages only the paths it authored (never a whole-tree command — `git add -A`/`-u`, `git add --renormalize`, `commit -a`, `git stash` — even where it is the only form that answers the question, since concurrently dispatched tasks share one worktree: a whole-tree stage sweeps a sibling's in-progress edit into the wrong commit, a whole-tree stash takes it off disk), commits every path it authored before signalling completion (an authored file no one commits reaches neither the reviewed diff nor `HEAD`), and never commits orchestrator-owned files it did not author, even to leave a clean tree for the next gate. It stages and commits in one compound command, so no path stays staged between commands: `git add -- <paths> && git diff --cached --check -- <paths> && git commit --only -- <paths>`, one `<paths>` list covering never-tracked paths and both paths of a rename; if it fails, `git reset -q -- <paths>`. Such an agent's own agent-memory writes are paths it authored, so it commits them; the orchestrator clause above covers only a write whose author cannot. That whole-tree ban is unconditional for a dispatched agent, which cannot observe whether a sibling dispatch is in flight; the main orchestrator can, and runs such a command only when none is.
+ 
+ **Timing ledger**: a dirty `timing.jsonl` is committed by the orchestrator alone (`git commit --only -- <ledger>`, subject `chore(sprint): <NNN> timing`) before any clean-tree check or diff-reading gate, so those never see it; an agent never stages it (`sprint-lifecycle.md` "Operation timing").
+ 
+@@ -56,7 +56,7 @@ The main orchestrator confirms before opening PR:
+ - PR scoped to requested feature; no unrelated improvements
+ - Commit messages describe why, not what
+ - Full test suite green, once, at the end of `impl-review` (per `test-plan.md` `Suite run`; `sprint-lifecycle.md` "Impacted test set")
+-- `asd-reviewer-quality` verdict = APPROVE
++- Every reviewer `review-policy.md` "DoD per review phase" requires for the frozen workflow = APPROVE
+ 
+ ## PR creation
+ 
+diff --git a/.asd/rules/sprint-lifecycle.md b/.asd/rules/sprint-lifecycle.md
+index 9ebc7712..6981a8aa 100644
+--- a/.asd/rules/sprint-lifecycle.md
++++ b/.asd/rules/sprint-lifecycle.md
+@@ -136,10 +136,10 @@ The main orchestrator performs it inline — no dispatch, no review, no user gat
+ **Write points** (re-entry reads them in order):
+ 1. Entry: commit a dirty `timing.jsonl` alone, then the orchestrator's own bookkeeping; any other dirty path is `FAILED` naming it, never committed or discarded. Before the first removal append `- YYYY-MM-DD — cleanup checkpoint <sha>` to `decisions-log.md`.
+ 2. Each removal commits over its named paths per `git-strategy.md` "Commit before review", subject `chore(cleanup): <what>`, no `ASD-Task` trailer; a removed TODO marker deletes its `stubs.md` row in the same commit.
+-3. Verification: build (`commands.yaml` `build`; under `self_hosting` `sync.js --check` judged by its report items, `--apply` over stale views first), lint inside each commit's one-command form, then the impacted tests ("Impacted test set" — this repo's is the full `node tests/run.js`). A red check is diagnosed: fix only what cleanup's own removals broke, or revert the offending removal to the checkpoint; if reverting every removal leaves it red the cause is not cleanup's → `FAILED` naming it.
++3. Verification: build (`commands.yaml` `build`; under `self_hosting` `sync.js --check` judged by its report items, `--apply` over stale views first), `commands.yaml` `lint` (beside the staged check in each commit's one-command form), then the impacted tests ("Impacted test set" — this repo's is the full `node tests/run.js`). A red build, lint or test is diagnosed: fix only what cleanup's own removals broke, or revert the offending removal to the checkpoint; if reverting every removal leaves it red the cause is not cleanup's → `FAILED` naming it.
+ 4. Record: append `- YYYY-MM-DD — cleanup: removed <paths/symbols|none>; reverted <ids|none>; verified <build, lint, tests @sha>` (`t_decisions-log.md`) — the run's only record; `test-plan.md` is untouched.
+ 
+-**Re-entry**: no checkpoint line → start; checkpoint line without record line → uncommitted paths are the phase's own and are restored from the checkpoint, committed removals stand, verification re-runs; record line → done.
++**Re-entry**: no checkpoint line → start; checkpoint line without record line → uncommitted paths are the phase's own and are discarded against `HEAD`, committed removals stand, verification re-runs; record line → done.
+ 
+ ## Phase table
+ 
+@@ -308,7 +308,7 @@ See `t_plan.md` for canonical structure.
+ 
+ **Material risk declaration** (one required line per `### Task N:` block, never a checkbox — a checkbox outside a subtask breaks task parsing): `Material risk: none`, or one `Material risk: change: <short risk class>` / `Material risk: artifact: <short risk class>` line per declared risk. The two kinds are distinct and are not interchangeable:
+ - **change** — the edit's own correctness is genuinely uncertain, meaning at least one holds: the right wording or shape of a rule, gate, contract or schema is not yet decided; the effect has an ordering, failure or parser edge that no named test or grep can establish; it changes trust, identity or persisted-data handling. Forbids routing `mechanical`.
+-- **artifact** (`none` when the file is not high-stakes) — all three hold: the target text or value is already decided, in the plan or a gate record; the edit is a deletion of a named surface, a literal or constant swap, or a mechanical prose, citation or mirror edit; a test, grep or `sync.js --check` the Task names verifies the result, whichever of those edit kinds it is. Routes on the task's own evidence, so a mechanical edit to a critical artifact is no longer critical by that fact alone.
++- **artifact** (`none` when the file is not high-stakes) — all three hold: the target text or value is already decided, in the plan or a gate record; the edit is a deletion of a named surface, a literal or constant swap, or a mechanical prose, citation or mirror edit; a test, grep or `sync.js --check` the Task names verifies the result, whichever of those edit kinds it is. Routes on the task's own evidence, so artifact risk alone does not forbid `mechanical` for an edit meeting all three.
+ 
+ A reserved class (`providers.md` "Task-class variants and routing") is named only when its definition holds, never for the file touched: `workflow gate` — adds, removes or reorders a gate, verdict or phase transition, or changes its enforcement, the new behaviour not yet fixed; `public contract` — changes a signature, field, command or format another phase or a consumer reads, its shape not yet decided; `migration` — rewrites persisted data or config across a version; `security` — changes trust handling; `authentication` — changes identity handling. An edit meeting no class definition is declared under a non-reserved name or `none`; a reserved name is never typed `artifact`.
+ 
+@@ -316,7 +316,7 @@ The main orchestrator passes these lines as `route-task`'s `risks` input, one en
+ 
+ **Reachability declaration** (conditional, at most one per `### Task N:` block, its own plain-text line under the `Material risk` line(s) and any `Test-only` line, never a checkbox): a task whose value depends on two phases agreeing carries `Reachability: <phase> writes <value> at <point>; <phase> reads it at <point>`. A value crossing a push or merge also names, per interruption point between write and read, the value the receiving branch then holds: `; interrupted at <point>, <branch> holds <value>`. Accepting the plan means checking that those two points observe the same value, and that the reader handles each named interrupted value — a purpose unreachable by construction is rewritten or dropped at plan approval, never planned and then closed finding by finding.
+ 
+-Its absence semantics are deliberately not `Material risk`'s, and the two are never conflated: an absent `Reachability` line asserts the task has no cross-phase dependency — never `unclassified`, never `critical`, and never input to `route-task`, which reads `Material risk` lines only. An off-grammar `Reachability` line is a plan defect fixed before approval, not a fail-closed default.
++Its absence semantics are deliberately not `Material risk`'s, and the two are never conflated: an absent `Reachability` line asserts the task has no cross-phase dependency — never `unclassified`, never a `change` risk, and never input to `route-task`, which reads `Material risk` lines only. An off-grammar `Reachability` line is a plan defect fixed before approval, not a fail-closed default.
+ 
+ **Settings change declaration** (conditional, at most one per `### Task N:` block, plain-text line under the `Material risk`/`Test-only`/`Reachability` lines, never a checkbox): `Settings change: <key>=<value>[, <key>=<value>…]`, `<key>` a dotted `.asd/project/config.yaml` path `t_config.yaml` carries — already, or once an earlier-wave Task of this sprint adds it. Plan acceptance is the approval of record for exactly those pairs: `impl` applies them through `asd-init` sprint-mediated mode as the carrying Task's wave opens, validated against the working-tree `t_config.yaml` then (`asd-phase-impl.md` step 6), never as an `MS-N`, and no other setting. A Task carrying the line is alone in its wave: wave 1 when `t_config.yaml` already carries every key, a Task changing the dispatch or commit contract (below) then following alone in wave 2; otherwise a wave after every Task adding one of its keys, the contract rule below then applying unchanged. The change never rewrites the running sprint's frozen `state.json` snapshot ("Optional documents" above): a frozen setting binds from the next sprint, a live-read one from its next read.
+ 
+diff --git a/.asd/skills/asd-phase-design-promote/SKILL.md b/.asd/skills/asd-phase-design-promote/SKILL.md
+index 4709c86f..b7ede65c 100644
+--- a/.asd/skills/asd-phase-design-promote/SKILL.md
++++ b/.asd/skills/asd-phase-design-promote/SKILL.md
+@@ -2,7 +2,7 @@
+ {
+   "name": "asd-phase-design-promote",
+   "description": "Runs the ASD design-promote phase: the main orchestrator handles decomposition and gates and promotes persistent docs itself — from approved drafts after design-review (standard workflow), or from the accepted implementation after impl-review with no draft and no review (lite workflow), where it runs before cleanup. Standard continues to plan. Use when asd-sprint dispatches design-promote, or when the user explicitly asks to run or re-run design-promote for the active sprint.",
+-  "claude": { "allowed-tools": "Read Write Edit AskUserQuestion Task Bash(node .asd/runtime.js:*)" },
++  "claude": { "allowed-tools": "Read Write Edit Glob Grep Bash WebSearch WebFetch AskUserQuestion Task" },
+   "codex": {}
+ }
+ ---
+diff --git a/.asd/skills/asd-phase-design/SKILL.md b/.asd/skills/asd-phase-design/SKILL.md
+index ea65f127..d49a5665 100644
+--- a/.asd/skills/asd-phase-design/SKILL.md
++++ b/.asd/skills/asd-phase-design/SKILL.md
+@@ -2,7 +2,7 @@
+ {
+   "name": "asd-phase-design",
+   "description": "Runs the ASD design phase for the active sprint (standard workflow only; lite has no design phase): the main orchestrator drafts inline, section by section with lock-in, each document independently enabled via documents.* (prd.html, ux-spec.html if ux_spec enabled, adr.html, c4-full/) and runs the design-system gate only if design_system is enabled — when every document is disabled, one deterministic check collapses design/design-review/design-promote into a single no-op write (phase=design-promote, NEXT=plan), and neither of the other two phases is dispatched separately. Use when asd-sprint dispatches the design phase, or when the user explicitly asks to run or re-run design for the active sprint.",
+-  "claude": { "allowed-tools": "Read Write Edit Glob AskUserQuestion Task Skill Bash(node .asd/runtime.js:*)" },
++  "claude": { "allowed-tools": "Read Write Edit Glob Grep Bash WebSearch WebFetch AskUserQuestion Task Skill" },
+   "codex": {}
+ }
+ ---
+diff --git a/.asd/skills/asd-phase-scope/SKILL.md b/.asd/skills/asd-phase-scope/SKILL.md
+index d4f71bde..026ed422 100644
+--- a/.asd/skills/asd-phase-scope/SKILL.md
++++ b/.asd/skills/asd-phase-scope/SKILL.md
+@@ -2,7 +2,7 @@
+ {
+   "name": "asd-phase-scope",
+   "description": "Runs the ASD scope phase of a sprint: the main orchestrator asks the user to choose the sprint workflow (standard or lite, frozen into state.json), creates the sprint folder, state.json and branch, runs staged solution design (requirements interview, its own best-practice research, approach choice into research.md), and refines scope under the active gate policy. Use when asd-sprint dispatches the scope phase for a new sprint, or when the user explicitly asks to run or re-run the scope phase for the active sprint.",
+-  "claude": { "allowed-tools": "Read Glob Bash AskUserQuestion Task" },
++  "claude": { "allowed-tools": "Read Glob Bash WebSearch WebFetch AskUserQuestion Task" },
+   "codex": {}
+ }
+ ---
+diff --git a/.asd/sprints/028-cleanup-phase/test-plan.entry-05.md b/.asd/sprints/028-cleanup-phase/test-plan.entry-05.md
+new file mode 100644
+index 00000000..cb68b1b8
+--- /dev/null
++++ b/.asd/sprints/028-cleanup-phase/test-plan.entry-05.md
+@@ -0,0 +1,22 @@
++# Test plan — sprint 028-cleanup-phase, entry 5 (rotated)
++
++## Risk → check decisions
++
++| Change | Material risk | Chosen check | Decision | Reason |
++|---|---|---|---|---|
++| `.asd/runtime.js` `review-waves --single` (boolean flag registered in `main`) and impl-review step 1c / `sprint-lifecycle.md` "Review iteration counters" (lite = one wave), amendment AC-21 | `--single` rejected as a value-less flag (`flags require values`, exit 2), or a one-wave division over an above-threshold scope refused under lite, or still accepted without the flag for standard | unit (CLI path, sandbox git repo) | keep | Task 14's test (`cd3f63e2`: `sprint-017 AC-1 ... sprint-028 AC-21` review-waves test) pins step 1c naming `--single`, the one-wave division accepted with `waves: 1` and the measured fields kept, and the same division still refused unflagged (standard); its fail-first is in its commit and return, and it exposed the parse defect, fixed in `7e413ea6` before this entry (never reached impl-test, so no `D-N`); not re-authored |
++| `core.md` glossary, `asd-phase-impl-review/SKILL.md`, `README.md`, `.asd/release-manifest.json`, regenerated views (AC-21 prose mirrors) | prose drift between mirrors of the lite one-wave rule | none | none | prose with no stable token beyond `--single` (pinned above); existing phase-chain, README, release-manifest integrity checks and `sync.js --check` (exit 0) cover the mirrors; quality review judges the wording |
++
++## Removed tests
++
++| Test | Reason | In change scope |
++|---|---|---|
++| none | no test became obsolete by the delta | yes |
++
++## Added tests
++
++Level and AC/risk covered are visible in the test file itself (name, path) — not restated here.
++
++| Test | Regression proof |
++|---|---|
++| none | n/a: Task 14's test is existing, its fail-first proof is in its commit `cd3f63e2`; no test authored this entry |
+diff --git a/.asd/sprints/028-cleanup-phase/test-plan.md b/.asd/sprints/028-cleanup-phase/test-plan.md
+index 74d5ad9c..5987a0fa 100644
+--- a/.asd/sprints/028-cleanup-phase/test-plan.md
++++ b/.asd/sprints/028-cleanup-phase/test-plan.md
+@@ -16,13 +16,16 @@ responsibility:
+ | 3 | 9cf1e1f2 | delta since entry 2 (review-fix wave-1/iter-01) |
+ | 4 | de11b54e | delta since entry 3 (review-fix wave-1/iter-02) |
+ | 5 | 7e38ed1e | delta since entry 4 (amendment AC-21, plan Tasks 13-14) |
++| 6 | 22f6738e | delta since entry 5 (review-fix wave-1/iter-03, commit 14c8639e, plus the combined memory-fix 5d73b2e5) |
+ 
+ ## Risk → check decisions
+ 
+ | Change | Material risk | Chosen check | Decision | Reason |
+ |---|---|---|---|---|
+-| `.asd/runtime.js` `review-waves --single` (boolean flag registered in `main`) and impl-review step 1c / `sprint-lifecycle.md` "Review iteration counters" (lite = one wave), amendment AC-21 | `--single` rejected as a value-less flag (`flags require values`, exit 2), or a one-wave division over an above-threshold scope refused under lite, or still accepted without the flag for standard | unit (CLI path, sandbox git repo) | keep | Task 14's test (`cd3f63e2`: `sprint-017 AC-1 ... sprint-028 AC-21` review-waves test) pins step 1c naming `--single`, the one-wave division accepted with `waves: 1` and the measured fields kept, and the same division still refused unflagged (standard); its fail-first is in its commit and return, and it exposed the parse defect, fixed in `7e413ea6` before this entry (never reached impl-test, so no `D-N`); not re-authored |
+-| `core.md` glossary, `asd-phase-impl-review/SKILL.md`, `README.md`, `.asd/release-manifest.json`, regenerated views (AC-21 prose mirrors) | prose drift between mirrors of the lite one-wave rule | none | none | prose with no stable token beyond `--single` (pinned above); existing phase-chain, README, release-manifest integrity checks and `sync.js --check` (exit 0) cover the mirrors; quality review judges the wording |
++| cleanup workflow step 5 / `sprint-lifecycle.md` "Cleanup phase" step 3 verification gain `commands.yaml` `lint`, and step 3 re-entry restores uncommitted paths against `HEAD`, amendments AC-4/AC-5 (review-fix iter-03) | verification skipping the configured lint lets a lint-red removal commit; a re-entry restoring against the checkpoint sha instead of `HEAD` reverts the committed removals it is meant to keep | content-contract (token pin) | add | both are decisions-log-free rule literals a re-entry or verification executes (`commands.yaml` `lint`, `git restore --source=HEAD --staged --worktree`) that no existing pin reached (the AC-4/D7 test pins only the checkpoint/record line and commit subject forms); one test pins the lint token at both homes and the restore command, rejecting `--source=<sha>` |
++| design `Authoring` bullet: per-section lock line `"<draft path>" § "<section>" locked` appended on `Lock in`, re-entry treats a section as locked only with that line, amendment AC-12 (review-fix iter-03) | a re-entry that cannot tell a locked section from a drafted one silently skips an unreviewed section or re-asks a locked one | content-contract (token pin) | add | the line shape is the on-disk evidence the re-entry reads, a literal that cannot be reworded without changing the contract; one assert on `§ `<section>` locked` in the Authoring bullet; the surrounding re-entry prose stays unpinned |
++| leftover phrases the iter-03 fix removed: `iter-NN/testing.md`, `(reviews `testing.md`)`, `no longer critical by that fact alone`, `never `critical``, the memory-fix of `asd-reviewer-combined` memory (5d73b2e5) | a surviving form of a retired review file name or critical-tier sentence restates the superseded roster as current | existing `sprint-028 leftover-term check` sweep, extended | add | the four exact phrases taken from the diff's removed lines join `removed`; the sweep already reaches agent memory, so the memory fix is covered by the same assert and the run reports no memory hit |
++| `core.md` duplicated glossary clause, `git-strategy.md` drafts-clause and `asd-reviewer-quality` PR-gate line, `artifact-layout.md` `testing.md`→`quality.md`, `sprint-lifecycle.md` tier prose, scope/design/design-promote SKILL `allowed-tools`, design-review dispatch row passing `inputs` | prose or pre-approval drift with no stable token of its own | none | none | existing checks cover the reachable parts (skill allowed-tools and dispatch-payload contracts in the suite, `sync.js --check` exit 0 over the regenerated views); deletions of duplicated prose carry no behaviour; quality review judges the wording |
+ 
+ ## Removed tests
+ 
+@@ -36,15 +39,17 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
+ 
+ | Test | Regression proof |
+ |---|---|
+-| none | n/a: Task 14's test is existing, its fail-first proof is in its commit `cd3f63e2`; no test authored this entry |
++| `sprint-028 AC-12 (review-fix): the design Authoring loop appends a per-section lock line on Lock in, the evidence a re-entry reads to tell a locked section from a drafted one` | mutation M4 (removed the `on `Lock in` appending ...` clause, keeping the re-entry citation): `node tests/run.js --filter "sprint-028 AC-12 (review-fix)"` exit 1, FAIL of that test, 1/315 matched; control (re-entry prose reworded `counts as locked in solely by its lock line`): same command exit 0, 1/315 matched; runs: 2 |
++| `sprint-028 AC-4/AC-5 (review-fix): cleanup verification runs the configured lint beside build and tests, and a re-entry discards uncommitted paths against HEAD, never the checkpoint sha that would undo committed removals` | mutation M2 (superseded rule restored: `--source=HEAD` → `--source=<sha>` in step 3): `node tests/run.js --filter "sprint-028 AC-4/AC-5 (review-fix)"` exit 1, FAIL of that test, 1/315 matched; mutation M3 (step 5 `build and lint per ... `lint`` → `build per `commands.yaml` `build``): same command exit 1, same test, 1/315 matched; runs: 2 |
++| `sprint-028 leftover-term check` (existing sweep, four phrases added) | mutation M1 (re-inserted `iter-NN/testing.md` in `artifact-layout.md` "Test plan"): `node tests/run.js --filter "sprint-028 leftover-term"` exit 1, FAIL of that test, 1/315 matched; restored in the same command; runs: 1 |
+ 
+ ## Suite run
+ 
+ - Command: `node tests/run.js` (shared infrastructure touched: `runtime.js`, `.asd/migrations/`, `tests/run.js` — the impacted set is the full suite)
+ - Scope: full
+-- Result: pass — 313/313 passed, exit 0
+-- Lint / build: pass — `git diff --cached --check` exit 0, `node .asd/sync.js --check` exit 0
+-- HEAD: 221beddc880a9d2f81458d36a525c8995e61415f
++- Result: pass — 315/315 passed, exit 0
++- Lint / build: pass — `git diff --cached --check` exit 0 at commit, `node .asd/sync.js --check` exit 0 (every item `current`)
++- HEAD: 5d73b2e5d6c9ef218aabc4eacddd649e004b18a2
+ 
+ ## Defects
+ 
+diff --git a/.asd/workflows/asd-phase-cleanup.md b/.asd/workflows/asd-phase-cleanup.md
+index 0f860648..d296777d 100644
+--- a/.asd/workflows/asd-phase-cleanup.md
++++ b/.asd/workflows/asd-phase-cleanup.md
+@@ -20,9 +20,9 @@ The rule home is `sprint-lifecycle.md` "Cleanup phase" (reach, evidence bar, wri
+ 
+ 1. Read `<sprint>/state.json`, config and `commands.yaml`; write `state.json` (phase=cleanup) inline.
+ 2. Frozen `cleanup` `false` (an absent snapshot reads `true`, `sprint-lifecycle.md` "Optional documents") is a mechanical no-op: one inline write appends `"cleanup"` to `skipped_phases`, with the line `- YYYY-MM-DD — cleanup skipped: cleanup disabled`; go to step 7.
+-3. Re-entry decides first, from `decisions-log.md`: a record line → step 7; a checkpoint line without one → restore every uncommitted path outside the bookkeeping files to the checkpoint sha (`git restore --source=<sha> --staged --worktree -- <paths>`), keep the committed removals, go to step 5. Otherwise start: commit a dirty `timing.jsonl` alone (`git-strategy.md` "Commit before review" Timing ledger), then `state.json`, `decisions-log.md` and any other bookkeeping of the orchestrator. `git status --porcelain` then lists any other dirty path → `FAILED` naming it, never committed or discarded. Append `- YYYY-MM-DD — cleanup checkpoint <git rev-parse HEAD>`.
++3. Re-entry decides first, from `decisions-log.md`: a record line → step 7; a checkpoint line without one → discard every uncommitted path outside the bookkeeping files against current `HEAD` (`git restore --source=HEAD --staged --worktree -- <paths>`), keeping the committed removals, go to step 5. Otherwise start: commit a dirty `timing.jsonl` alone (`git-strategy.md` "Commit before review" Timing ledger), then `state.json`, `decisions-log.md` and any other bookkeeping of the orchestrator. `git status --porcelain` then lists any other dirty path → `FAILED` naming it, never committed or discarded. Append `- YYYY-MM-DD — cleanup checkpoint <git rev-parse HEAD>`.
+ 4. Find removal candidates in the sprint diff and the code it left superfluous, within the reach and evidence bar of "Cleanup phase", in its order. Per removal, preserving the file's EOL (`code-style.md` §19): edit, then commit over the named paths in the one-command form — `git add -- <paths> && git diff --cached --check -- <paths> && git commit --only -- <paths>`, subject `chore(cleanup): <what>`, no `ASD-Task` trailer; a lint failure → `git reset -q -- <paths>` and correct. A removed TODO marker deletes its `stubs.md` row in the same commit. No candidate → go to step 6.
+-5. Verify after the removals: build per `commands.yaml` `build`; `self_hosting: enabled` first runs `node "$(git rev-parse --show-toplevel)/.asd/sync.js" --apply <generated-view-path...>` over the views a canon removal made stale, commits them with the manifest ledgers as `chore(cleanup): regenerate views`, then judges `--check` by its report items (every item `current`, `AGENTS.md` `modified-foreign` excepted), never its exit code. Then the impacted tests, the safety valve of `sprint-lifecycle.md` "Impacted test set" applied first. Red: diagnose; fix only what a cleanup removal broke, or restore the offending removal's paths from the checkpoint sha and commit that as `chore(cleanup): revert <what>`; still red with every removal reverted → consult `asd-advisor` (`agent-protocol.md` "Relay" Escalation consult), then `FAILED` naming the check.
++5. Verify after the removals: build and lint per `commands.yaml` `build` and `lint`; `self_hosting: enabled` first runs `node "$(git rev-parse --show-toplevel)/.asd/sync.js" --apply <generated-view-path...>` over the views a canon removal made stale, commits them with the manifest ledgers as `chore(cleanup): regenerate views`, then judges `--check` by its report items (every item `current`, `AGENTS.md` `modified-foreign` excepted), never its exit code. Then the impacted tests, the safety valve of `sprint-lifecycle.md` "Impacted test set" applied first. Red (build, lint or tests): diagnose; fix only what a cleanup removal broke, or restore the offending removal's paths from the checkpoint sha and commit that as `chore(cleanup): revert <what>`; still red with every removal reverted → consult `asd-advisor` (`agent-protocol.md` "Relay" Escalation consult), then `FAILED` naming the check.
+ 6. Append the record `- YYYY-MM-DD — cleanup: removed <paths/symbols|none>; reverted <ids|none>; verified <build, lint, tests @sha|n/a: no removals>`.
+ 7. Exit per `## Exit`; its bookkeeping commit is `git-strategy.md` "Commit before review"'s.
+ 
+diff --git a/.asd/workflows/asd-phase-design-review.md b/.asd/workflows/asd-phase-design-review.md
+index df3a1f6f..52b62057 100644
+--- a/.asd/workflows/asd-phase-design-review.md
++++ b/.asd/workflows/asd-phase-design-review.md
+@@ -64,7 +64,7 @@ Owner: inline orchestrator; dispatches reviewers (quality, efficiency, External
+ ## Dispatch
+ 
+ ```json
+-[{"agent": "asd-reviewer-quality, asd-reviewer-efficiency", "when": "step 7", "payload": ["turn_budget", "inputs.context", "manifest", "diff (iter 2+, else null)", "iteration", "floor", "interrupted (step 8a re-dispatch, else null)", "out_dir (<sprint>/reviews/design/iter-NN/)", "return_file", "language"], "signals": ["REVIEW_DONE", "FAILED", "ABORT"]}, {"agent": "asd-external-review", "when": "step 7", "payload": ["turn_budget", "inputs.context", "manifest (external.scope.json)", "diff (iter 2+, else null)", "iteration", "out_dir", "floor", "preflight (step 3a result, platform included)", "findings (stalemate set, iter 2+, external-review.md 'Stalemate detection')", "language"], "signals": ["REVIEW_DONE"]}, {"agent": "asd-advisor", "when": "escalation consult before a user escalation (agent-protocol.md 'Relay')", "payload": ["turn_budget", "inputs.context", "question, options, context paths"], "signals": []}, {"agent": "<owner> of .claude/agent-memory/<owner>/", "when": "step 9 memory finding or memory-check hit (Claude only)", "payload": ["mode", "task", "work", "inputs.context", "write_scope"], "signals": ["COMPLETED", "FAILED"]}]
++[{"agent": "asd-reviewer-quality, asd-reviewer-efficiency", "when": "step 7", "payload": ["turn_budget", "inputs.context", "inputs", "manifest", "diff (iter 2+, else null)", "iteration", "floor", "interrupted (step 8a re-dispatch, else null)", "out_dir (<sprint>/reviews/design/iter-NN/)", "return_file", "language"], "signals": ["REVIEW_DONE", "FAILED", "ABORT"]}, {"agent": "asd-external-review", "when": "step 7", "payload": ["turn_budget", "inputs.context", "manifest (external.scope.json)", "diff (iter 2+, else null)", "iteration", "out_dir", "floor", "preflight (step 3a result, platform included)", "findings (stalemate set, iter 2+, external-review.md 'Stalemate detection')", "language"], "signals": ["REVIEW_DONE"]}, {"agent": "asd-advisor", "when": "escalation consult before a user escalation (agent-protocol.md 'Relay')", "payload": ["turn_budget", "inputs.context", "question, options, context paths"], "signals": []}, {"agent": "<owner> of .claude/agent-memory/<owner>/", "when": "step 9 memory finding or memory-check hit (Claude only)", "payload": ["mode", "task", "work", "inputs.context", "write_scope"], "signals": ["COMPLETED", "FAILED"]}]
+ ```
+ 
+ ## Exit
+diff --git a/.asd/workflows/asd-phase-design.md b/.asd/workflows/asd-phase-design.md
+index f7f08815..9be05252 100644
+--- a/.asd/workflows/asd-phase-design.md
++++ b/.asd/workflows/asd-phase-design.md
+@@ -42,7 +42,7 @@ Owner: inline orchestrator; runs skill `asd-design-system`; dispatches `asd-advi
+ - Order: PRD, design-system gate (blocks UX-spec), UX-spec, ADR, c4-full — each only when enabled.
+ - Read `research.md` first and research only the technical delta it leaves (`design-principles.md` §11).
+ - Integrate an existing draft, preserving `provenance` + `source` when present, and write the draft in `language.docs`.
+-- **Authoring** (`core.md` "Incremental writing"; steps 6, 8, 9): write the template's skeleton to the draft path, then per section draft → write → delta summary in `language.chat` (`language-policy.md` "Write-then-review-accept: chat-language self-sufficiency") → `Lock in` or `Revise this section`; after the last section, one artifact-level `accept`, on which append a decisions-log entry ("`<draft path>` accepted") and a `gate_decisions` entry (`gate: <document> accept`, `decision_actor: user`). Re-entry: a section holding content and no `{{` placeholder is locked in, never re-asked; a draft with every section locked in and no `gate_decisions` entry resumes at the accept.
++- **Authoring** (`core.md` "Incremental writing"; steps 6, 8, 9): write the template's skeleton to the draft path, then per section draft → write → delta summary in `language.chat` (`language-policy.md` "Write-then-review-accept: chat-language self-sufficiency") → `Lock in` or `Revise this section`, on `Lock in` appending the decisions-log line "`<draft path>` § `<section>` locked"; after the last section, one artifact-level `accept`, on which append a decisions-log entry ("`<draft path>` accepted") and a `gate_decisions` entry (`gate: <document> accept`, `decision_actor: user`). Re-entry: a section is locked in only with its lock line, never re-asked; a section holding content and no `{{` placeholder but no lock line resumes at its pending `Lock in` or `Revise this section`; a draft with every section locked in and no `gate_decisions` entry resumes at the accept.
+ - Acceptance criteria are atomic, one assertion each; every story cross-references its ACs and every AC its story, none without a story. A requirement dropped, or two sources in conflict, is a user decision before the draft carries either.
+ - `design-md-delta.yaml` holds proposed DESIGN.md token changes, each approved at the step 7 token gate.
+ 
+diff --git a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+index 43f66465..6ea7c558 100644
+--- a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
++++ b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+@@ -14,3 +14,4 @@
+ - [State-key merge migrations](feedback_state-key-merge-migrations.md) — merging reviewer keys: per-node legacy roster, absent key = blocking, fixtures with keys a node never held
+ - [Predicates vs appended files](feedback_predicates-vs-appended-files.md) — reviewerFiles appending test-plan paths can kill a "no X in scope" n/a predicate; trace the CLI path
+ - [Repurposed fixture coverage](feedback_repurposed-fixture-coverage.md) — a changed/dropped fixture expectation: what did that case alone reach; an unread fixture write is the tell
++- [Role removal, work inline](feedback_role-removal-inline-work.md) — retired agents' tools vs receiving skills' allowed-tools; grep every name form (`<key>.md`, tier prose), not the sweep's list
+diff --git a/.claude/agent-memory/asd-reviewer-combined/feedback_role-removal-inline-work.md b/.claude/agent-memory/asd-reviewer-combined/feedback_role-removal-inline-work.md
+new file mode 100644
+index 00000000..d699702f
+--- /dev/null
++++ b/.claude/agent-memory/asd-reviewer-combined/feedback_role-removal-inline-work.md
+@@ -0,0 +1,15 @@
++---
++name: role-removal-inline-work
++description: reviewing a change that retires agents and moves their work inline into orchestrator skills - check the skills' tool pre-approvals and the leftover sweep's phrase forms
++metadata:
++  type: feedback
++---
++
++When an agent's work moves into an inline phase or standalone skill, compare the removed agent's `tools` (web, Bash patterns, Write) with each receiving skill's Claude `allowed-tools`. Then grep the live canon for every form of each removed name, not only the forms the sprint's leftover test lists.
++
++**Why:** a roster cut gave web tools to two standalone skills but not to the phase skills that now ran the same inline research and fetches. Its leftover sweep pinned a removed reviewer's verdict token but not its `<key>.md` file name, or prose naming the severity tier that reviewer's findings used to carry, so both kinds survived in the rule docs.
++
++**How to apply:**
++- For each retired agent, list the phase steps its work moved to. Check each step's skill frontmatter for the tools that step now needs.
++- Grep `.asd/rules`, `workflows`, `agents`, `skills` and `templates` (one call each) for the verdict token, `<key>.md`, the role's prose name and the retired tier word.
++- Related: [[enumerated-reach-vs-trigger-sites]], [[dispatch-payload-vs-required]].
+diff --git a/tests/run.js b/tests/run.js
+index a84e0f5f..91859975 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -8586,6 +8586,22 @@ test('sprint-028 AC-6/AC-20 (D6/D14): the frozen cleanup and design_system flags
+   assert.ok(row && row.includes('`cleanup`') && row.includes('`false`'), 'the no-op phase table must key the cleanup row on the frozen flag being false');
+ });
+ 
++test('sprint-028 AC-4/AC-5 (review-fix): cleanup verification runs the configured lint beside build and tests, and a re-entry discards uncommitted paths against HEAD, never the checkpoint sha that would undo committed removals', () => {
++  const workflow = sectionOf('.asd/workflows/asd-phase-cleanup.md', 'Steps');
++  const home = runtime.markdownSection(canonText('.asd/rules/sprint-lifecycle.md'), 'Cleanup phase');
++  const verification = home.split('\n').find((line) => line.startsWith('3. Verification:')) || '';
++  for (const [label, text] of [['asd-phase-cleanup.md step 5', stepOf(workflow, '5')], ['sprint-lifecycle.md "Cleanup phase" Verification', verification]]) {
++    assert.ok(text.includes('`commands.yaml`') && text.includes('`lint`'), `AC-5: ${label} must run the project's configured lint - a verification of build and tests alone lets a lint-red removal commit`);
++  }
++  const reentry = stepOf(workflow, '3');
++  assert.ok(reentry.includes('git restore --source=HEAD --staged --worktree') && !reentry.includes('--source=<sha>'), 'AC-4: a checkpoint line without a record line discards uncommitted paths against HEAD - restoring from the checkpoint sha would revert the committed removals the re-entry keeps');
++});
++
++test('sprint-028 AC-12 (review-fix): the design Authoring loop appends a per-section lock line on Lock in, the evidence a re-entry reads to tell a locked section from a drafted one', () => {
++  const authoring = canonText('.asd/workflows/asd-phase-design.md').split('\n').find((line) => line.startsWith('- **Authoring**')) || '';
++  assert.ok(authoring.includes('§ `<section>` locked'), 'a section holding content but no lock line is a pending Lock in; without the lock line shape a re-entry silently skips a section the user never locked or re-asks one they did');
++});
++
+ test('sprint-028 AC-8/AC-9/AC-10: asd-external-review.md states an empty Kept findings table is its header and separator rows only, and "Plan file format" Decomposition rules carry the multi-stage write-point and the universal-reach trigger-site clauses', () => {
+   const kept = canonText('.asd/agents/asd-external-review.md').split('\n').find((line) => line.includes('Kept findings table'));
+   assert.ok(kept && kept.includes('header and separator rows only') && kept.includes('never a placeholder row'), 'AC-8: the agent\'s own return-format rule must state the empty table shape');
+@@ -8604,7 +8620,7 @@ test('sprint-028 AC-17 (D10): every workflow step holding a failure- or question
+   assert.deepStrictEqual(gated.filter(({ consulted }) => !consulted).map(({ file, step }) => `${file} step ${step}`), [], 'AC-17: a user escalation caused by a question or failure is preceded by an advisor recommendation (agent-protocol.md "Relay" Escalation consult); a step that asks the user without it leaves the sprint\'s recommendation-before-escalation contract unmet at that site');
+ });
+ 
+-test('sprint-028 leftover-term check: no canon, README, AGENTS.md, template, runtime, hook, workflow definition or agent-memory line keeps a name or sentence the sprint removed - the nine retired agents, their reviewer verdict tokens, the critical routing tier phrases, the no-PM-agent sentence and the memory claims about creators that no longer exist', () => {
++test('sprint-028 leftover-term check: no canon, README, AGENTS.md, template, runtime, hook, workflow definition or agent-memory line keeps a name or sentence the sprint removed - the nine retired agents, their reviewer verdict tokens, the critical routing tier phrases, the retired testing review file name and critical-tier prose, the no-PM-agent sentence and the memory claims about creators that no longer exist', () => {
+   const retiredAgents = [...retiredAgentNames1400(), 'asd-pm'];
+   const verdictTokens = ['design', 'impl'].flatMap((phase) => legacyReviewerKeys1400().map((key) => `[REVIEW-${phase}-${key}]`));
+   const removed = [
+@@ -8620,6 +8636,10 @@ test('sprint-028 leftover-term check: no canon, README, AGENTS.md, template, run
+     '(BA/UX/Architect/advisor)',
+     'The Documentation rubric entry "In-code doc comments"',
+     'design-review\'s creator',
++    'iter-NN/testing.md',
++    '(reviews `testing.md`)',
++    'no longer critical by that fact alone',
++    'never `critical`',
+   ];
+   const memoryFiles = fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT), { recursive: true }).map((entry) => `${AGENT_MEMORY_ROOT}/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
+   assertSweepReachesMemory(memoryFiles);

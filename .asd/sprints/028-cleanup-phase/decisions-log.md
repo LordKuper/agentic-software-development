@@ -101,3 +101,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-26 — route impl-test entry 6: standard, dispatch HEAD 14c8639e
 - 2026-10-26 — impl-test entry 6 step 7a: asd-reviewer-combined memory-fix (feedback_role-removal-inline-work.md retired literals), committed 5d73b2e5
 - 2026-10-26 — impl-test: impacted set green (315/315, full suite), entry 6 3 asserts added (sweep extension, AC-4/AC-5, AC-12)/0 removed
+- 2026-10-26 — impl-review wave-1/iter-04: combined CONCERNS (F1 medium: allowed-tools none-row claims coverage the suite lacks; asd-phase-audit SKILL also lacks Grep/Bash for its inline audit), external APPROVE (latched) → impl review-fix (wave-1/iter-04): dev chain fixes asd-phase-audit allowed-tools (same AC-12 class), tester chain adds the derived allowed-tools pin
+- 2026-10-26 — route review-fix wave-1/iter-04: standard, dispatch HEAD caaed24f; risk none via node tests/run.js

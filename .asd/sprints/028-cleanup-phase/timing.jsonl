@@ -149,3 +149,11 @@
 {"op":"close","id":"asd-tester impl-test#6","kind":"dispatch","parent":"impl-test#6","start":"2026-10-26T10:42:14.183Z","end":"2026-10-26T10:47:57.255Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sonnet"}}
 {"op":"close","id":"impl-test#6","kind":"phase","parent":null,"start":"2026-10-26T10:41:01.746Z","end":"2026-10-26T10:47:57.458Z","outcome":"done","attrs":{}}
 {"op":"open","id":"impl-review#4","kind":"phase","parent":null,"start":"2026-10-26T10:47:57.458Z","attrs":{}}
+{"op":"open","id":"impl-review wave-1/iter-04","kind":"review-iteration","parent":"impl-review#4","start":"2026-10-26T10:48:10.577Z","attrs":{"wave":"1","iteration":"4"}}
+{"op":"open","id":"combined wave-1/iter-04","kind":"dispatch","parent":"impl-review wave-1/iter-04","start":"2026-10-26T10:48:10.647Z","attrs":{"agent":"reviewers","tier":"standard","model":"opus"}}
+{"op":"open","id":"external wave-1/iter-04","kind":"dispatch","parent":"impl-review wave-1/iter-04","start":"2026-10-26T10:48:10.647Z","attrs":{"agent":"reviewers","tier":"standard","model":"opus"}}
+{"op":"close","id":"combined wave-1/iter-04","kind":"dispatch","parent":"impl-review wave-1/iter-04","start":"2026-10-26T10:48:10.647Z","end":"2026-10-26T10:54:13.326Z","outcome":"done","attrs":{"agent":"reviewers","tier":"standard","model":"opus"}}
+{"op":"close","id":"external wave-1/iter-04","kind":"dispatch","parent":"impl-review wave-1/iter-04","start":"2026-10-26T10:48:10.647Z","end":"2026-10-26T10:54:13.326Z","outcome":"done","attrs":{"agent":"reviewers","tier":"standard","model":"opus"}}
+{"op":"close","id":"impl-review wave-1/iter-04","kind":"review-iteration","parent":"impl-review#4","start":"2026-10-26T10:48:10.577Z","end":"2026-10-26T10:54:13.521Z","outcome":"done","attrs":{"wave":"1","iteration":"4"}}
+{"op":"close","id":"impl-review#4","kind":"phase","parent":null,"start":"2026-10-26T10:47:57.458Z","end":"2026-10-26T10:54:13.585Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl#7","kind":"phase","parent":null,"start":"2026-10-26T10:54:13.585Z","attrs":{}}
