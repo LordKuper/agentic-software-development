@@ -68,3 +68,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-26 — impl fix for wave-1/iter-01: findings resolved (F-1, F-2 f396b4dd; F-3 2d222460; F-4 8fe2f48e); flagged accepted: only the docs predicate reads the scope list, templated/html/ui/perf still see test-plan paths (reverses the wave-1 docs-scope acceptance per F-3); sync --apply regenerated efficiency views
 - 2026-10-26 — route impl-test entry 3: standard, dispatch HEAD 8fe2f48e
 - 2026-10-26 — impl-test: impacted set green (313/313, full suite), entry 3 2 asserts added/adapted/0 removed
+- 2026-10-26 — impl-review wave-1/iter-02: combined CONCERNS (F-1 medium, test-only: AC-18 fixture lost the wave-K directory case), external latched APPROVE → impl review-fix (wave-1/iter-02), test-file chain to asd-tester
+- 2026-10-26 — route review-fix wave-1/iter-02: standard, dispatch HEAD acf62fd5

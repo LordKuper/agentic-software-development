@@ -1,7 +1,7 @@
 {
   "sprint_id": "028-cleanup-phase",
   "branch": "sprint/028-cleanup-phase",
-  "phase": "impl-review",
+  "phase": "impl",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -193,15 +193,20 @@
       "wave": 1,
       "waves": [
         {
-          "iteration": 1,
+          "iteration": 2,
           "verdicts": {
             "iter-01": {
+              "combined": "CONCERNS",
+              "external": "APPROVE"
+            },
+            "iter-02": {
               "combined": "CONCERNS",
               "external": "APPROVE"
             }
           },
           "iteration_heads": {
-            "iter-01": "e1f71d90cda637184328bb6d0518a78b44239968"
+            "iter-01": "e1f71d90cda637184328bb6d0518a78b44239968",
+            "iter-02": "acf62fd55a0ae5b68ba7cf3cfe9e92bc471b1084"
           },
           "latched": {
             "external": 1
@@ -223,8 +228,8 @@
     }
   },
   "created_at": "2026-10-22T14:59:41.183Z",
-  "updated_at": "2026-10-26T10:02:57.609Z",
-  "review_fixes_pending": null,
+  "updated_at": "2026-10-26T10:09:33.423Z",
+  "review_fixes_pending": "wave-1/iter-02",
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null
