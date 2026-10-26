@@ -15,7 +15,8 @@ responsibility:
 - `gh auth status`: non-zero exit when no host is authenticated; gate before any issue write.
 - `gh issue create -R <owner/repo> -t <title> -F <body-file>`: publish one retro-finding issue; prints the issue URL.
 - `gh issue list -R <owner/repo> -s open -S <query> -L <n> --json number,title,body,labels,author,createdAt,url`: sweep open issues; `-L` defaults to 30.
-- `gh issue close <n> -R <owner/repo> -r {completed|"not planned"|duplicate} -c <comment>`; `--duplicate-of <n>` marks a duplicate.
+- `gh issue list -R <owner/repo> -s closed -l <label> -L <n> --json number,title,body,url`: closed issues carrying a label; the comparison set for duplicate triage.
+- `gh issue close <n> -R <owner/repo> -r {completed|"not planned"|duplicate} -c <comment>`; `--duplicate-of <n|url>` marks a duplicate of an issue; `-r duplicate -c <comment>` alone closes a duplicate with no issue original.
 - `gh issue edit <n> -R <owner/repo> --add-label <name>[,<name>]`.
 - `gh label create <name> -R <owner/repo> -d <description> -f`: `-f` updates an existing label instead of failing, so the call is idempotent.
 - `gh release view v<version> --json url`: release link for the post-release close comment.
