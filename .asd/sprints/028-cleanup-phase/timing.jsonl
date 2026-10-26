@@ -49,3 +49,7 @@
 {"op":"open","id":"wave-3 follow-up","kind":"dispatch","parent":"impl#1","start":"2026-10-26T08:43:07.145Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
 {"op":"close","id":"Task 11","kind":"dispatch","parent":"impl#1","start":"2026-10-26T08:43:07.145Z","end":"2026-10-26T08:49:06.530Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
 {"op":"close","id":"wave-3 follow-up","kind":"dispatch","parent":"impl#1","start":"2026-10-26T08:43:07.145Z","end":"2026-10-26T08:49:06.530Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"open","id":"Task 12","kind":"dispatch","parent":"impl#1","start":"2026-10-26T08:49:14.625Z","attrs":{"agent":"asd-tester","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"Task 12","kind":"dispatch","parent":"impl#1","start":"2026-10-26T08:49:14.625Z","end":"2026-10-26T09:16:16.082Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sonnet"}}
+{"op":"open","id":"wave-5 follow-up","kind":"dispatch","parent":"impl#1","start":"2026-10-26T09:16:45.523Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"wave-5 follow-up","kind":"dispatch","parent":"impl#1","start":"2026-10-26T09:16:45.523Z","end":"2026-10-26T09:20:07.797Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}

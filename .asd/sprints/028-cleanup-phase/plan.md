@@ -123,7 +123,7 @@ Material risk: artifact: mirror counts and tables, verified by `node tests/run.j
 ### Task 12: Adapt tests to the new roster and chain
 Material risk: artifact: test fixtures and pins, verified by `node tests/run.js`
 Test-only: tests/run.js
-- [ ] Update pins and fixtures listed in audit "Tests" (amendment) and "Risks" (removed agents, reviewer keys, routing `critical`, memory files, `Seven`, scope Owner pin, 4.0.0 fixture name) to the code of Tasks 1-11 (AC-7, AC-19)
+- [x] Update pins and fixtures listed in audit "Tests" (amendment) and "Risks" (removed agents, reviewer keys, routing `critical`, memory files, `Seven`, scope Owner pin, 4.0.0 fixture name) to the code of Tasks 1-11 (AC-7, AC-19)
 
 ## Risks
 - The orchestrator/impl D13 cap has 8,930 B headroom and standalone skills 352 B: Tasks 3, 4, 10 check loads with `node tests/run.js --filter` before committing.
