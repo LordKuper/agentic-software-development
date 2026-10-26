@@ -18,10 +18,12 @@
  *      an explicit hardcoded name list, never a generic scan of the generated trees.
  *   2. Rewrite every active sprint's `state.json` (atomic, whole-file) so it resumes on the new
  *      roster: each review node and iteration carrying a legacy `correctness`/`testing`/
- *      `documentation` verdict gains a `quality` verdict - `APPROVE` when every legacy verdict
- *      present is satisfied (an `APPROVE` token, a `skipped:` skip, or a bare `CONCERNS`/`FAIL`
- *      whose review file names every finding in `resolved:` lines), else the most severe legacy
- *      token - and a `quality` latch only when all three legacy reviewers were latched.
+ *      `documentation` verdict gains a `quality` verdict - `APPROVE` when every verdict of the
+ *      node's legacy roster (design: correctness, documentation; impl: all three) is satisfied (an
+ *      `APPROVE` token, a `skipped:` skip, or a bare `CONCERNS`/`FAIL` whose review file names
+ *      every finding in `resolved:` lines), else the most severe legacy token; an iteration
+ *      missing a rostered key gets none (a lost dispatch stays blocking) - and a `quality` latch
+ *      only when every rostered reviewer was latched.
  *      `efficiency` is unchanged and the legacy keys stay as history. Every `task_routing` tier
  *      `critical` becomes `standard`.
  * Archived and finished sprints keep their state - closed sprints are immutable history. Never
@@ -44,6 +46,8 @@ const RETIRED_AGENTS = [
   'asd-tester-mechanical',
 ];
 const LEGACY_REVIEWERS = ['correctness', 'testing', 'documentation'];
+const DESIGN_ROSTER = ['correctness', 'documentation'];
+const IMPL_ROSTER = LEGACY_REVIEWERS;
 const MERGED_REVIEWER = 'quality';
 const SEVERITY_ORDER = ['FAIL', 'CONCERNS'];
 const RETIRED_TIER = 'critical';
@@ -147,30 +151,30 @@ function mostSevereToken(values) {
   return SEVERITY_ORDER.find((token) => tokens.includes(token)) || tokens[0];
 }
 
-/** The `quality` verdict for one iteration, or null when it holds no legacy verdict. */
-function mergedVerdict(iterationVerdicts, reviewDir) {
-  const present = LEGACY_REVIEWERS.filter((key) => key in iterationVerdicts);
-  if (present.length === 0) return null;
-  const unsatisfied = present
+/** The `quality` verdict for one iteration, or null when it holds no legacy verdict or lacks one its node's roster required (a lost dispatch, blocking until re-dispatched). */
+function mergedVerdict(iterationVerdicts, reviewDir, roster) {
+  if (!LEGACY_REVIEWERS.some((key) => key in iterationVerdicts)) return null;
+  if (!roster.every((key) => key in iterationVerdicts)) return null;
+  const unsatisfied = roster
     .filter((key) => !isSkipOrApprove(iterationVerdicts[key]) && !isResolvedBare(reviewDir, key))
     .map((key) => iterationVerdicts[key]);
   return unsatisfied.length === 0 ? 'APPROVE' : mostSevereToken(unsatisfied);
 }
 
-/** Adds `quality` verdicts and a `quality` latch to one review node; returns whether the node changed. */
-function migrateReviewNode(node, reviewDirOf) {
+/** Adds `quality` verdicts and a `quality` latch to one review node whose legacy roster is `roster`; returns whether the node changed. */
+function migrateReviewNode(node, reviewDirOf, roster) {
   if (!node || typeof node.verdicts !== 'object' || node.verdicts === null) return false;
   let changed = false;
   for (const [iteration, verdicts] of Object.entries(node.verdicts)) {
     if (!verdicts || MERGED_REVIEWER in verdicts) continue;
-    const merged = mergedVerdict(verdicts, reviewDirOf(iteration));
+    const merged = mergedVerdict(verdicts, reviewDirOf(iteration), roster);
     if (merged === null) continue;
     verdicts[MERGED_REVIEWER] = merged;
     changed = true;
   }
   const latched = node.latched;
-  if (latched && !(MERGED_REVIEWER in latched) && LEGACY_REVIEWERS.every((key) => key in latched)) {
-    latched[MERGED_REVIEWER] = Math.max(...LEGACY_REVIEWERS.map((key) => latched[key]));
+  if (latched && !(MERGED_REVIEWER in latched) && roster.every((key) => key in latched)) {
+    latched[MERGED_REVIEWER] = Math.max(...roster.map((key) => latched[key]));
     changed = true;
   }
   return changed;
@@ -179,15 +183,15 @@ function migrateReviewNode(node, reviewDirOf) {
 function migrateReviews(reviews, sprintDir) {
   if (!reviews) return false;
   const designDir = (iteration) => path.join(sprintDir, 'reviews', 'design', iteration);
-  let changed = migrateReviewNode(reviews.design, designDir);
+  let changed = migrateReviewNode(reviews.design, designDir, DESIGN_ROSTER);
   const impl = reviews.impl;
   if (!impl) return changed;
   if (!Array.isArray(impl.waves)) {
-    return migrateReviewNode(impl, (iteration) => path.join(sprintDir, 'reviews', 'impl', iteration)) || changed;
+    return migrateReviewNode(impl, (iteration) => path.join(sprintDir, 'reviews', 'impl', iteration), IMPL_ROSTER) || changed;
   }
   impl.waves.forEach((wave, index) => {
     const waveDir = (iteration) => path.join(sprintDir, 'reviews', 'impl', `wave-${index + 1}`, iteration);
-    if (migrateReviewNode(wave, waveDir)) changed = true;
+    if (migrateReviewNode(wave, waveDir, IMPL_ROSTER)) changed = true;
   });
   return changed;
 }
