@@ -16,7 +16,7 @@ responsibility:
 | 3 | 9cf1e1f2 | delta since entry 2 (review-fix wave-1/iter-01) |
 | 4 | de11b54e | delta since entry 3 (review-fix wave-1/iter-02) |
 | 5 | 7e38ed1e | delta since entry 4 (amendment AC-21, plan Tasks 13-14) |
-| 6 |  | delta since entry 5 (review-fix wave-1/iter-03, commit 14c8639e, plus the combined memory-fix 5d73b2e5) |
+| 6 | 22f6738e | delta since entry 5 (review-fix wave-1/iter-03, commit 14c8639e, plus the combined memory-fix 5d73b2e5) |
 
 ## Risk → check decisions
 

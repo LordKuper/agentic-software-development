@@ -99,3 +99,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-26 — route review-fix wave-1/iter-03: standard, dispatch HEAD f3f07c15; risk change: cleanup re-entry and lint wording
 - 2026-10-26 — impl fix for wave-1/iter-03: findings resolved (combined F-1..F-6, external 1..3 in 14c8639e); sync --apply regenerated stale views; open: combined memory leftover hit (feedback_role-removal-inline-work.md) → impl-test step 7a
 - 2026-10-26 — route impl-test entry 6: standard, dispatch HEAD 14c8639e
+- 2026-10-26 — impl-test entry 6 step 7a: asd-reviewer-combined memory-fix (feedback_role-removal-inline-work.md retired literals), committed 5d73b2e5
+- 2026-10-26 — impl-test: impacted set green (315/315, full suite), entry 6 3 asserts added (sweep extension, AC-4/AC-5, AC-12)/0 removed
