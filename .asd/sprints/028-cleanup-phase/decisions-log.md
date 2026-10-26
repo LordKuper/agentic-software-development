@@ -83,3 +83,7 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-26 — user: sprint 028 itself reviews in one wave (AC-21 applies now): after Task 13 lands, waves.json is rewritten as one wave over the full scope, reviews.impl keeps wave 1 node only, next iteration wave-1/iter-03 takes an iteration-1 scope (full list over main...HEAD) since waves 2-3 files were never reviewed; floor via floor_base=wave-1/2
 - 2026-10-26 — impl wave 6: Task 13 COMPLETED (be8aedb1; `review-waves --single`); sync --apply regenerated impl-review skill views
 - 2026-10-26 — route Task 14: standard, dispatch HEAD be8aedb1
+- 2026-10-26 — Task 14 tester FAILED: test committed cd3f63e2 red on a Task 13 defect (runtime.js main parseFlagArgs boolean list lacks 'single', so --single exits 2); no user escalation — re-dispatch Task 13 to fix (failed objective check)
+- 2026-10-26 — route Task 13: standard, dispatch HEAD cd3f63e2; risk none via node tests/run.js
+- 2026-10-26 — impl wave 7: Task 14 COMPLETED (cd3f63e2) after Task 13 re-dispatch fixed --single parsing (7e413ea6); impl assessment approved (adaptive): plan fully ticked, sync --check 60 current, diff --check clean, suite 313/313 → NEXT impl-test
+- 2026-10-26 — route impl-test entry 5: standard, dispatch HEAD 7e413ea6

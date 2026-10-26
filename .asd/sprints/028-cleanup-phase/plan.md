@@ -134,7 +134,7 @@ Material risk: change: division rule split per workflow
 ### Task 14: Tests for the lite single-wave rule
 Material risk: artifact: test pins, verified by `node tests/run.js`
 Test-only: tests/run.js
-- [ ] Adapt or add asserts so `review-waves` accepts a one-wave division for lite over an above-threshold scope and still rejects it for standard; pins on the division prose follow Task 13 (AC-21)
+- [x] Adapt or add asserts so `review-waves` accepts a one-wave division for lite over an above-threshold scope and still rejects it for standard; pins on the division prose follow Task 13 (AC-21)
 
 ## Risks
 - The orchestrator/impl D13 cap has 8,930 B headroom and standalone skills 352 B: Tasks 3, 4, 10 check loads with `node tests/run.js --filter` before committing.
