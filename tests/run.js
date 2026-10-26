@@ -5544,7 +5544,7 @@ test('sprint-017 AC-4/AC-8 (D6/D9a-c): emit-manifest --full-files/--full-base jo
   }
 });
 
-test('sprint-017 AC-1 (D1/D2), sprint-023 AC-1: review-waves measures a real git range over the scope list - binary files and pure renames 0 lines, an edited rename at its destination, the patch a reviewer reads as bytes - reports the file count, bytes and thresholds it applied, and writes waves.json only for a division it accepts', () => {
+test('sprint-017 AC-1 (D1/D2), sprint-023 AC-1, sprint-028 AC-21: review-waves measures a real git range over the scope list - binary files and pure renames 0 lines, an edited rename at its destination, the patch a reviewer reads as bytes - reports the file count, bytes and thresholds it applied, and writes waves.json only for a division it accepts', () => {
   const { repo, env, git } = sandboxGitRepo();
   const lines = (tag, count) => Array.from({ length: count }, (_, index) => `${tag} line ${index + 1}`).join('\n') + '\n';
   const threshold = runtime.WAVE_THRESHOLD_LINES;
@@ -5607,6 +5607,12 @@ test('sprint-017 AC-1 (D1/D2), sprint-023 AC-1: review-waves measures a real git
     assert.ok(refused.status === 2 && pattern.test(refused.stderr), `${label}: must exit 2. Got: ${JSON.stringify(refused)}`);
   }
   assert.ok(!fs.existsSync(path.join(work, 'one')) && !fs.existsSync(path.join(work, 'short')), 'a rejected division writes no waves.json, so the orchestrator regroups instead of dispatching an invalid split');
+
+  assert.ok(spans(divisionStep).includes('--single'), 'sprint-028 AC-21: impl-review step 1c names the `--single` flag lite adds to both review-waves runs');
+  const singleOut = path.join(work, 'single/waves.json');
+  const single = run([...range, '--single', '--division', write('single.json', JSON.stringify([scope])), '--out', singleOut]);
+  assert.deepStrictEqual(single, { status: 0, result: { ...measured.result, waves: 1 } }, 'sprint-028 AC-21: --single fixes waves at 1 over the same above-threshold scope the unflagged one-wave division above is refused for, keeping the measured lines, files and bytes');
+  assert.deepStrictEqual(JSON.parse(fs.readFileSync(singleOut, 'utf8')), { base, head, lines: threshold + 2, files: scope.length, bytes: measured.result.bytes, thresholds, waves: [scope] }, 'sprint-028 AC-21: waves.json under --single holds the one-wave division with the measured fields');
 });
 
 test('sprint-017 AC-1/AC-4 (COR-5): wave-files reads wave K\'s list at its current paths - a later rename mapped to its destination - unions it with the iteration\'s own file list once, and rejects a wave past the division', () => {
