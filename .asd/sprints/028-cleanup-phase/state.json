@@ -237,6 +237,10 @@
             "iter-04": {
               "combined": "CONCERNS",
               "external": "APPROVE"
+            },
+            "iter-05": {
+              "combined": "APPROVE",
+              "external": "APPROVE"
             }
           },
           "iteration_heads": {
@@ -247,14 +251,15 @@
             "iter-05": "f2b9f8dcf8565d8078d1d052549cb2b3283622f2"
           },
           "latched": {
-            "external": 4
+            "external": 4,
+            "combined": 5
           }
         }
       ]
     }
   },
   "created_at": "2026-10-22T14:59:41.183Z",
-  "updated_at": "2026-10-26T11:02:15.305Z",
+  "updated_at": "2026-10-26T11:05:34.140Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

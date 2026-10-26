@@ -1,0 +1,346 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 576d6838..ffaaa461 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -29,28 +29,28 @@
+   },
+   "canon_hashes": {
+     "agents/asd-external-review.md": "sha256:95230cd43eca374610697691583d7cf2618731a08f0d6e80442c70993039db7a",
+-    "skills/asd-concept/SKILL.md": "sha256:9b13894504e14719ac9d974902af8d2f4d0cef0f730b0e0dea65efb4edd12104",
++    "skills/asd-concept/SKILL.md": "sha256:3e48f9d41636b72bc1159c02ef558c6a0f64ab2bde3bee4e9124536357b4cabe",
+     "skills/asd-design-system/SKILL.md": "sha256:bdc26d872d8e68d3b9ad08ae8321ddf44af9bbf90db4d37ab681798befe274c1",
+     "skills/asd-init/SKILL.md": "sha256:1c1c6ddd5dcf42bed62b8eb9bfff603931415c1b2fb961524495022ee48ad48e",
+     "skills/asd-sprint/SKILL.md": "sha256:a653b32813b3581cef4c27d6d4433bfd091f8c6cfcab9bcfa4b30a66d4777e79",
+     "skills/asd-stack/SKILL.md": "sha256:e192b82fadeeee69d2b4a7d78a08cbec714e72c78033344366559f6eacddc3be",
+     "skills/asd-sync/SKILL.md": "sha256:60b453795d0dd9f21fe200fa44a5c372e225f28ba82f800e6b01fb2efb42a1a2",
+     "skills/asd-update/SKILL.md": "sha256:244ce95817565cb06fa6bc68c2fa55136cc168e8ad16631cb128f2f43f1db435",
+-    "skills/asd-phase-scope/SKILL.md": "sha256:ce19e4f1dae938950d26de21ce495dc15a516216caa484b192a60decb7357f85",
+-    "skills/asd-phase-audit/SKILL.md": "sha256:0ee2ef71d4625cbbf95b1799f6c7bf54dd8be488814676a05eac491c9cbd454b",
++    "skills/asd-phase-scope/SKILL.md": "sha256:358d59fde810b3e6ae47d807c12cd00d1ebc3e2ca74b4d88d3d31a0d7010b2d8",
++    "skills/asd-phase-audit/SKILL.md": "sha256:08b90a7f313596b771d1414b378fc24e91b9c7146cdc2b4b02577d2709524600",
+     "skills/asd-phase-design/SKILL.md": "sha256:90f721e0a22e6e82c8d34b9196d5efa23fa93fd59ab8c214e49955d5ea689d1e",
+-    "skills/asd-phase-design-review/SKILL.md": "sha256:317e0201fd7f3c61c47472cc61dd836264ca626f82727af243c699442037e353",
++    "skills/asd-phase-design-review/SKILL.md": "sha256:8dea38d633c07f1c467a80a2f3a55a7c63c8dc878c64425f55852ac6e97efdda",
+     "skills/asd-phase-design-promote/SKILL.md": "sha256:f8309017880561ad20a68357923342a9aa184fabd80a87ab0166e9931724eacf",
+-    "skills/asd-phase-plan/SKILL.md": "sha256:5a47823a92d59a85b5b8747f5c6ade2eb9e1ca7c56b662f3d98434d7783a0b6b",
+-    "skills/asd-phase-impl/SKILL.md": "sha256:90f96c8ed3267ef92f709dcd6cceb255210bccbe4126d0963e576081f8f2d2f3",
+-    "skills/asd-phase-impl-test/SKILL.md": "sha256:2ab69e3e919b66863b95c2097bba108cc2f49dfc04b2c2926a37bc96c38ec6c2",
+-    "skills/asd-phase-impl-review/SKILL.md": "sha256:0adbbe064499362dffde5941d280c0abe87f2a23cdd56182c3e91c5c19ae45b3",
+-    "skills/asd-phase-pr/SKILL.md": "sha256:84bc3ecfb735abcfe74501642b2f30fa966539894507daef54631772c2a80639",
++    "skills/asd-phase-plan/SKILL.md": "sha256:40f01dc26b5454d7e34a3589b4c75aeb5d86451cef95b283262115a0e20a0d39",
++    "skills/asd-phase-impl/SKILL.md": "sha256:d3910cb0d81e097ab68f255bfb94b84c5ebfd1db3b3db3a695613737f93a4f4d",
++    "skills/asd-phase-impl-test/SKILL.md": "sha256:4398e7b5033df617a984f8adc30b3aafc565930436ee986506f10a036a4301f3",
++    "skills/asd-phase-impl-review/SKILL.md": "sha256:b2b00a12d2a5e6cbac2b1a3ee58f7a1e6e8462df00af6ef7299a750b11e9a5c4",
++    "skills/asd-phase-pr/SKILL.md": "sha256:08ff0724ff4c42180f06ef58b402694d8aaeee282ee6831b4853f5125b7ac954",
+     "agents/asd-advisor.md": "sha256:5dc55d3ce3265876408920c83873b7e38651894c013ee3556ebf2cb39cae51df",
+     "agents/asd-reviewer-efficiency.md": "sha256:c6f5da561615e89b02bc78a499bf3779a842740d4c59e257d5120d2138439210",
+     "agents/asd-dev.md": "sha256:b3e5715c255653f6ae8d066c8b22d332d46ede72b2dadd81b41e497e013e6741",
+     "agents/asd-tester.md": "sha256:8f3afd49819f62bb96ab4d86a152ac8b2397d2ac54aac37a029df7b23504b557",
+-    "skills/asd-phase-retro/SKILL.md": "sha256:5508b3169ccd79d6dc65720264e2c4154305a5a335d1ab39a96d18f427dc092c",
++    "skills/asd-phase-retro/SKILL.md": "sha256:5c90a068c58d4b4984e1f99c03f8b730d578aa8a33eaaa56fba44f2d84ccc5fe",
+     "agents/asd-reviewer-combined.md": "sha256:9f182d50685fec7ec396611504e6288d499822d843130c38d90cc120be6933a8",
+     "agents/asd-reviewer-quality.md": "sha256:b082b6d82834c1b023b50a341ed29a07ceeadff9db999d955f9065e4228b774f",
+     "skills/asd-phase-cleanup/SKILL.md": "sha256:67d91216fcb5ed04e6ef7bc5b4276c057d36628a8185516b38dd4e2c7a88e365"
+@@ -71,19 +71,19 @@
+     ".asd/rules/review-policy.md": "7a223469cd57bee837ccb5cc82784822733c158f1c83df6f75cec8361a3a49f5",
+     ".asd/rules/sprint-lifecycle.md": "f6a4a9f563837659fcb86791d99594c1a411974be239c145399af6c792113ca2",
+     ".asd/rules/ux-principles.md": "c96151abdfa74445c344c1c440d3e189879f5c7fd13b78010186f351ef6d5e79",
+-    ".asd/skills/asd-concept/SKILL.md": "9b13894504e14719ac9d974902af8d2f4d0cef0f730b0e0dea65efb4edd12104",
++    ".asd/skills/asd-concept/SKILL.md": "3e48f9d41636b72bc1159c02ef558c6a0f64ab2bde3bee4e9124536357b4cabe",
+     ".asd/skills/asd-design-system/SKILL.md": "bdc26d872d8e68d3b9ad08ae8321ddf44af9bbf90db4d37ab681798befe274c1",
+     ".asd/skills/asd-init/SKILL.md": "1c1c6ddd5dcf42bed62b8eb9bfff603931415c1b2fb961524495022ee48ad48e",
+-    ".asd/skills/asd-phase-audit/SKILL.md": "0ee2ef71d4625cbbf95b1799f6c7bf54dd8be488814676a05eac491c9cbd454b",
++    ".asd/skills/asd-phase-audit/SKILL.md": "08b90a7f313596b771d1414b378fc24e91b9c7146cdc2b4b02577d2709524600",
+     ".asd/skills/asd-phase-design-promote/SKILL.md": "f8309017880561ad20a68357923342a9aa184fabd80a87ab0166e9931724eacf",
+-    ".asd/skills/asd-phase-design-review/SKILL.md": "317e0201fd7f3c61c47472cc61dd836264ca626f82727af243c699442037e353",
++    ".asd/skills/asd-phase-design-review/SKILL.md": "8dea38d633c07f1c467a80a2f3a55a7c63c8dc878c64425f55852ac6e97efdda",
+     ".asd/skills/asd-phase-design/SKILL.md": "90f721e0a22e6e82c8d34b9196d5efa23fa93fd59ab8c214e49955d5ea689d1e",
+-    ".asd/skills/asd-phase-impl-review/SKILL.md": "0adbbe064499362dffde5941d280c0abe87f2a23cdd56182c3e91c5c19ae45b3",
+-    ".asd/skills/asd-phase-impl-test/SKILL.md": "2ab69e3e919b66863b95c2097bba108cc2f49dfc04b2c2926a37bc96c38ec6c2",
+-    ".asd/skills/asd-phase-impl/SKILL.md": "90f96c8ed3267ef92f709dcd6cceb255210bccbe4126d0963e576081f8f2d2f3",
+-    ".asd/skills/asd-phase-plan/SKILL.md": "5a47823a92d59a85b5b8747f5c6ade2eb9e1ca7c56b662f3d98434d7783a0b6b",
+-    ".asd/skills/asd-phase-pr/SKILL.md": "84bc3ecfb735abcfe74501642b2f30fa966539894507daef54631772c2a80639",
+-    ".asd/skills/asd-phase-scope/SKILL.md": "ce19e4f1dae938950d26de21ce495dc15a516216caa484b192a60decb7357f85",
++    ".asd/skills/asd-phase-impl-review/SKILL.md": "b2b00a12d2a5e6cbac2b1a3ee58f7a1e6e8462df00af6ef7299a750b11e9a5c4",
++    ".asd/skills/asd-phase-impl-test/SKILL.md": "4398e7b5033df617a984f8adc30b3aafc565930436ee986506f10a036a4301f3",
++    ".asd/skills/asd-phase-impl/SKILL.md": "d3910cb0d81e097ab68f255bfb94b84c5ebfd1db3b3db3a695613737f93a4f4d",
++    ".asd/skills/asd-phase-plan/SKILL.md": "40f01dc26b5454d7e34a3589b4c75aeb5d86451cef95b283262115a0e20a0d39",
++    ".asd/skills/asd-phase-pr/SKILL.md": "08ff0724ff4c42180f06ef58b402694d8aaeee282ee6831b4853f5125b7ac954",
++    ".asd/skills/asd-phase-scope/SKILL.md": "358d59fde810b3e6ae47d807c12cd00d1ebc3e2ca74b4d88d3d31a0d7010b2d8",
+     ".asd/skills/asd-sprint/SKILL.md": "a653b32813b3581cef4c27d6d4433bfd091f8c6cfcab9bcfa4b30a66d4777e79",
+     ".asd/skills/asd-stack/SKILL.md": "e192b82fadeeee69d2b4a7d78a08cbec714e72c78033344366559f6eacddc3be",
+     ".asd/skills/asd-sync/SKILL.md": "60b453795d0dd9f21fe200fa44a5c372e225f28ba82f800e6b01fb2efb42a1a2",
+@@ -143,7 +143,7 @@
+     ".asd/templates/external-review/t_review-scope.json": "a17ee84e64cc6a693aaa30dacaef660c841b23a92331abf217ff64c8fc2d4951",
+     ".asd/templates/t_friction-log.md": "98c1ee13ba45291945be2ebabcbd7fc4c59a7069685341f64fc0c26bae31af67",
+     ".asd/templates/t_retrospective.html": "73a850121b1988c3a84e895683a5ad7fb79cd962b2952ed9a14b59251e5c4a0d",
+-    ".asd/skills/asd-phase-retro/SKILL.md": "5508b3169ccd79d6dc65720264e2c4154305a5a335d1ab39a96d18f427dc092c",
++    ".asd/skills/asd-phase-retro/SKILL.md": "5c90a068c58d4b4984e1f99c03f8b730d578aa8a33eaaa56fba44f2d84ccc5fe",
+     ".asd/workflows/asd-phase-retro.md": "edeb719c7376b5ce08e3112110cd0faf4889c51f6fb7e7b2c7cbf823975c1bc8",
+     ".asd/templates/t_subsystem.md": "1365a20aeb5847a1da23ac88d7a3d0153ba3a8b6a3abbf06b883a689d9ee2f5d",
+     ".asd/templates/t_subsystems.md": "54b1e273e9e74a57e08b43d1b671f880b7f682d9ec1bc4afb95a55d98b2531dd",
+diff --git a/.asd/skills/asd-concept/SKILL.md b/.asd/skills/asd-concept/SKILL.md
+index 47faaafe..07cc6e9f 100644
+--- a/.asd/skills/asd-concept/SKILL.md
++++ b/.asd/skills/asd-concept/SKILL.md
+@@ -3,7 +3,7 @@
+   "name": "asd-concept",
+   "description": "Forms or edits the project concept document inline, branching by silent detection into one of four flows (no idea / vague idea / clear vision / brownfield extraction) and converging through a per-section lock-in loop. Use when the user runs /asd-concept, when asd-init detects a missing concept.html and suggests this skill, or when the user asks to define, draft, refine, edit, rewrite, or reverse-engineer the project concept, vision, target users, or value proposition.",
+   "claude": {
+-    "allowed-tools": "Read Write Edit Glob Grep AskUserQuestion Bash(node .asd/runtime.js:*)"
++    "allowed-tools": "Read Write Edit Glob Grep Bash AskUserQuestion"
+   }
+ }
+ ---
+diff --git a/.asd/skills/asd-phase-audit/SKILL.md b/.asd/skills/asd-phase-audit/SKILL.md
+index 30835455..8a319659 100644
+--- a/.asd/skills/asd-phase-audit/SKILL.md
++++ b/.asd/skills/asd-phase-audit/SKILL.md
+@@ -2,7 +2,7 @@
+ {
+   "name": "asd-phase-audit",
+   "description": "Runs the ASD audit phase for the active sprint: the main orchestrator scans code and documentation itself and resolves product/domain ambiguity its sources can settle, then gates audit.md. Use when asd-sprint dispatches the audit phase, or when the user explicitly asks to run or re-run audit for the active sprint.",
+-  "claude": { "allowed-tools": "Read Write Edit AskUserQuestion Task Bash(node .asd/runtime.js:*)" },
++  "claude": { "allowed-tools": "Read Write Edit Glob Grep Bash WebSearch WebFetch AskUserQuestion Task" },
+   "codex": {}
+ }
+ ---
+diff --git a/.asd/skills/asd-phase-design-review/SKILL.md b/.asd/skills/asd-phase-design-review/SKILL.md
+index d2a08267..bfef0040 100644
+--- a/.asd/skills/asd-phase-design-review/SKILL.md
++++ b/.asd/skills/asd-phase-design-review/SKILL.md
+@@ -2,7 +2,7 @@
+ {
+   "name": "asd-phase-design-review",
+   "description": "Runs the ASD design-review phase iteratively until DoD met, scoped to whichever drafts documents.* actually enabled this sprint: always dispatches asd-reviewer-quality + asd-reviewer-efficiency for any non-empty draft set (and asd-external-review when enabled) — quality's UI section is n/a unless a ux-spec/design-system draft is in scope, never an agent-level skip — aggregates verdicts, fixes CONCERNS inline, and escalates FAIL to the user after an advisor consult. Never dispatched after a design-block collapse (every design documents.* disabled, effective c4 included); this phase's own no-op path is only a defensive fallback for a direct/explicit re-dispatch. Use when asd-sprint dispatches design-review, or when the user explicitly asks to run or re-run design-review for the active sprint.",
+-  "claude": { "allowed-tools": "Read Write Edit AskUserQuestion Task Bash(node .asd/runtime.js:*)" },
++  "claude": { "allowed-tools": "Read Write Edit Glob Grep Bash AskUserQuestion Task" },
+   "codex": {}
+ }
+ ---
+diff --git a/.asd/skills/asd-phase-impl-review/SKILL.md b/.asd/skills/asd-phase-impl-review/SKILL.md
+index 028b763a..e512a3a7 100644
+--- a/.asd/skills/asd-phase-impl-review/SKILL.md
++++ b/.asd/skills/asd-phase-impl-review/SKILL.md
+@@ -2,7 +2,7 @@
+ {
+   "name": "asd-phase-impl-review",
+   "description": "Runs the ASD impl-review phase iteratively until DoD met: always dispatches the frozen workflow's impl roster in parallel (standard: quality, efficiency; lite: one combined reviewer; plus asd-external-review when enabled) against the sprint's code and tests, degrading a diff-derived rubric section to n/a rather than skipping an agent, reviews a large scope as up to 3 sequential review waves with a counter each (lite: one wave), aggregates verdicts, fixes low-severity test-only findings in place via asd-tester, and on other unresolved findings sets state.json.review_fixes_pending and routes back to impl review-fix mode. Once the last wave's reviewers are all APPROVE/latched, dispatches asd-tester for the cycle's one full-suite run; green completes to cleanup (standard) or design-promote (lite), red exits to impl (test-fix mode) and clears every APPROVE latch. Use when asd-sprint dispatches impl-review, or when the user explicitly asks to run or re-run impl-review for the active sprint.",
+-  "claude": { "allowed-tools": "Read Write Edit Bash AskUserQuestion Task" },
++  "claude": { "allowed-tools": "Read Write Edit Glob Grep Bash AskUserQuestion Task" },
+   "codex": {}
+ }
+ ---
+diff --git a/.asd/skills/asd-phase-impl-test/SKILL.md b/.asd/skills/asd-phase-impl-test/SKILL.md
+index 74d5c79d..4dd9f96d 100644
+--- a/.asd/skills/asd-phase-impl-test/SKILL.md
++++ b/.asd/skills/asd-phase-impl-test/SKILL.md
+@@ -2,7 +2,7 @@
+ {
+   "name": "asd-phase-impl-test",
+   "description": "Runs the ASD impl-test phase: dispatches asd-tester to run the existing impacted tests first, pick the test approach for the whole change scope after the code exists, prune redundant tests, author missing ones, and run the impacted set (never the full suite, which runs once at the end of impl-review) as its suite gate. Green routes to impl-review; code defects are recorded in test-plan.md and route back to impl test-fix mode. Use when asd-sprint dispatches the impl-test phase, or when the user explicitly asks to run or re-run impl-test for the active sprint.",
+-  "claude": { "allowed-tools": "Read Write Edit Bash AskUserQuestion Task" },
++  "claude": { "allowed-tools": "Read Write Edit Glob Grep Bash AskUserQuestion Task" },
+   "codex": {}
+ }
+ ---
+diff --git a/.asd/skills/asd-phase-impl/SKILL.md b/.asd/skills/asd-phase-impl/SKILL.md
+index b66e4449..a33832b4 100644
+--- a/.asd/skills/asd-phase-impl/SKILL.md
++++ b/.asd/skills/asd-phase-impl/SKILL.md
+@@ -2,7 +2,7 @@
+ {
+   "name": "asd-phase-impl",
+   "description": "Runs the ASD impl phase in one of three modes detected from state.json: initial mode dispatches plan.md Task blocks to devs, review-fix mode resolves impl-review findings, test-fix mode resolves code defects found by impl-test. Devs write production code only (no tests; a plan-declared Test-only Task goes to asd-tester instead), run build/lint, and commit; the phase enforces a build+lint completion gate before COMPLETED and always routes to impl-test. Use when asd-sprint dispatches the impl phase, or when the user explicitly asks to run or re-run impl for the active sprint.",
+-  "claude": { "allowed-tools": "Read Write Edit AskUserQuestion Task Bash(node .asd/runtime.js:*)" },
++  "claude": { "allowed-tools": "Read Write Edit Glob Grep Bash AskUserQuestion Task" },
+   "codex": {}
+ }
+ ---
+diff --git a/.asd/skills/asd-phase-plan/SKILL.md b/.asd/skills/asd-phase-plan/SKILL.md
+index 57aca97c..30646204 100644
+--- a/.asd/skills/asd-phase-plan/SKILL.md
++++ b/.asd/skills/asd-phase-plan/SKILL.md
+@@ -2,7 +2,7 @@
+ {
+   "name": "asd-phase-plan",
+   "description": "Runs the ASD plan phase: the phase orchestrator authors plan.md from the promoted sprint design docs (standard workflow) or from sprint.md plus audit.md (lite workflow), decomposing work into Task N sections with checkbox subtasks traced to acceptance criteria. Always runs, never no-op. Use when asd-sprint dispatches the plan phase, or when the user explicitly asks to run or re-run plan for the active sprint.",
+-  "claude": { "allowed-tools": "Read Write Edit AskUserQuestion Task Bash(node .asd/runtime.js:*)" },
++  "claude": { "allowed-tools": "Read Write Edit Glob Grep Bash WebSearch WebFetch AskUserQuestion Task" },
+   "codex": {}
+ }
+ ---
+diff --git a/.asd/skills/asd-phase-pr/SKILL.md b/.asd/skills/asd-phase-pr/SKILL.md
+index ad86c356..5d00cf71 100644
+--- a/.asd/skills/asd-phase-pr/SKILL.md
++++ b/.asd/skills/asd-phase-pr/SKILL.md
+@@ -2,7 +2,7 @@
+ {
+   "name": "asd-phase-pr",
+   "description": "Runs the final ASD pr phase: the phase orchestrator verifies DoD, opens the sprint PR and later merges it, publishing the self-hosting release after the merge; it never archives or marks the sprint done, which the next sprint's scope does. Use when asd-sprint dispatches the pr phase, or when the user explicitly asks to run or re-run the pr phase for the active sprint.",
+-  "claude": { "allowed-tools": "Read Glob Grep AskUserQuestion Task Bash(node .asd/runtime.js:*)" },
++  "claude": { "allowed-tools": "Read Write Edit Glob Grep Bash AskUserQuestion Task" },
+   "codex": {}
+ }
+ ---
+diff --git a/.asd/skills/asd-phase-retro/SKILL.md b/.asd/skills/asd-phase-retro/SKILL.md
+index 308f7ddd..7ea19e23 100644
+--- a/.asd/skills/asd-phase-retro/SKILL.md
++++ b/.asd/skills/asd-phase-retro/SKILL.md
+@@ -2,7 +2,7 @@
+ {
+   "name": "asd-phase-retro",
+   "description": "Runs the ASD retro phase: the phase orchestrator reads the sprint friction log, derives remediation traced to F-N entries plus systemic proposals from how the sprint actually ran, merges findings sharing one root cause, drops any an existing rule in its home already covers, gives each survivor a one-line Guardrail and its Home split into consumer-project and ASD-framework actions (proposed, never applied), writes retrospective.html and posts a short chat summary. An absent or entry-free log takes the empty-log branch — remediation skipped, systemic proposals still produced — and still completes to pr. Use when asd-sprint dispatches the retro phase, or when the user explicitly asks to run or re-run retro for the active sprint.",
+-  "claude": { "allowed-tools": "Read Write Edit Bash(node .asd/runtime.js:*)" },
++  "claude": { "allowed-tools": "Read Write Edit Glob Grep Bash(node .asd/runtime.js:*)" },
+   "codex": {}
+ }
+ ---
+diff --git a/.asd/skills/asd-phase-scope/SKILL.md b/.asd/skills/asd-phase-scope/SKILL.md
+index 026ed422..c9776077 100644
+--- a/.asd/skills/asd-phase-scope/SKILL.md
++++ b/.asd/skills/asd-phase-scope/SKILL.md
+@@ -2,7 +2,7 @@
+ {
+   "name": "asd-phase-scope",
+   "description": "Runs the ASD scope phase of a sprint: the main orchestrator asks the user to choose the sprint workflow (standard or lite, frozen into state.json), creates the sprint folder, state.json and branch, runs staged solution design (requirements interview, its own best-practice research, approach choice into research.md), and refines scope under the active gate policy. Use when asd-sprint dispatches the scope phase for a new sprint, or when the user explicitly asks to run or re-run the scope phase for the active sprint.",
+-  "claude": { "allowed-tools": "Read Glob Bash WebSearch WebFetch AskUserQuestion Task" },
++  "claude": { "allowed-tools": "Read Write Edit Glob Grep Bash WebSearch WebFetch AskUserQuestion Task" },
+   "codex": {}
+ }
+ ---
+diff --git a/.asd/sprints/028-cleanup-phase/test-plan.entry-06.md b/.asd/sprints/028-cleanup-phase/test-plan.entry-06.md
+new file mode 100644
+index 00000000..5c03cb37
+--- /dev/null
++++ b/.asd/sprints/028-cleanup-phase/test-plan.entry-06.md
+@@ -0,0 +1,28 @@
++# Test plan — sprint 028-cleanup-phase, entry 6 (rotated)
++
++## Risk → check decisions
++
++| Change | Material risk | Chosen check | Decision | Reason |
++|---|---|---|---|---|
++| cleanup workflow step 5 / `sprint-lifecycle.md` "Cleanup phase" step 3 verification gain `commands.yaml` `lint`, and step 3 re-entry restores uncommitted paths against `HEAD`, amendments AC-4/AC-5 (review-fix iter-03) | verification skipping the configured lint lets a lint-red removal commit; a re-entry restoring against the checkpoint sha instead of `HEAD` reverts the committed removals it is meant to keep | content-contract (token pin) | add | both are decisions-log-free rule literals a re-entry or verification executes (`commands.yaml` `lint`, `git restore --source=HEAD --staged --worktree`) that no existing pin reached (the AC-4/D7 test pins only the checkpoint/record line and commit subject forms); one test pins the lint token at both homes and the restore command, rejecting `--source=<sha>` |
++| design `Authoring` bullet: per-section lock line `"<draft path>" § "<section>" locked` appended on `Lock in`, re-entry treats a section as locked only with that line, amendment AC-12 (review-fix iter-03) | a re-entry that cannot tell a locked section from a drafted one silently skips an unreviewed section or re-asks a locked one | content-contract (token pin) | add | the line shape is the on-disk evidence the re-entry reads, a literal that cannot be reworded without changing the contract; one assert on `§ `<section>` locked` in the Authoring bullet; the surrounding re-entry prose stays unpinned |
++| leftover phrases the iter-03 fix removed: `iter-NN/testing.md`, `(reviews `testing.md`)`, `no longer critical by that fact alone`, `never `critical``, the memory-fix of `asd-reviewer-combined` memory (5d73b2e5) | a surviving form of a retired review file name or critical-tier sentence restates the superseded roster as current | existing `sprint-028 leftover-term check` sweep, extended | add | the four exact phrases taken from the diff's removed lines join `removed`; the sweep already reaches agent memory, so the memory fix is covered by the same assert and the run reports no memory hit |
++| `core.md` duplicated glossary clause, `git-strategy.md` drafts-clause and `asd-reviewer-quality` PR-gate line, `artifact-layout.md` `testing.md`→`quality.md`, `sprint-lifecycle.md` tier prose, design-review dispatch row passing `inputs` | prose or pre-approval drift with no stable token of its own | none | none | existing checks cover the reachable parts (dispatch-payload contracts in the suite, `sync.js --check` exit 0 over the regenerated views); deletions of duplicated prose carry no behaviour; quality review judges the wording |
++| scope/design/design-promote (and audit, plan) SKILL `allowed-tools` gain `Grep`, `WebSearch`, `WebFetch` | a phase skill missing a tool its workflow's inline steps use stalls on a permission prompt; no existing check reads a skill's tools beyond `Bash` (the sprint-025 timing pin) | content-contract test: every `asd-phase-*` skill's Claude `allowed-tools` holds `Grep`; the five inline-research phases (fixed list - no workflow token marks web research) hold `WebSearch` and `WebFetch` | add | the tool names are the contract and cannot be reworded; closes review finding F1 |
++
++## Removed tests
++
++| Test | Reason | In change scope |
++|---|---|---|
++| none | no test became obsolete by the delta | yes |
++
++## Added tests
++
++Level and AC/risk covered are visible in the test file itself (name, path) — not restated here.
++
++| Test | Regression proof |
++|---|---|
++| `sprint-028 AC-12 (review-fix): the design Authoring loop appends a per-section lock line on Lock in, the evidence a re-entry reads to tell a locked section from a drafted one` | mutation M4 (removed the `on `Lock in` appending ...` clause, keeping the re-entry citation): `node tests/run.js --filter "sprint-028 AC-12 (review-fix)"` exit 1, FAIL of that test, 1/315 matched; control (re-entry prose reworded `counts as locked in solely by its lock line`): same command exit 0, 1/315 matched; runs: 2 |
++| `sprint-028 AC-4/AC-5 (review-fix): cleanup verification runs the configured lint beside build and tests, and a re-entry discards uncommitted paths against HEAD, never the checkpoint sha that would undo committed removals` | mutation M2 (superseded rule restored: `--source=HEAD` → `--source=<sha>` in step 3): `node tests/run.js --filter "sprint-028 AC-4/AC-5 (review-fix)"` exit 1, FAIL of that test, 1/315 matched; mutation M3 (step 5 `build and lint per ... `lint`` → `build per `commands.yaml` `build``): same command exit 1, same test, 1/315 matched; runs: 2 |
++| `sprint-028 leftover-term check` (existing sweep, four phrases added) | mutation M1 (re-inserted `iter-NN/testing.md` in `artifact-layout.md` "Test plan"): `node tests/run.js --filter "sprint-028 leftover-term"` exit 1, FAIL of that test, 1/315 matched; restored in the same command; runs: 1 |
++| `sprint-028 AC-12 (review-fix): every phase skill pre-approves Grep and the inline-research phases pre-approve WebSearch and WebFetch, so their inline steps never stall on a permission prompt` | mutation (dropped `WebFetch` from `asd-phase-design-promote/SKILL.md`): `node tests/run.js --filter "sprint-028 AC-12 (review-fix): every phase skill"` exit 1, FAIL of that test (`asd-phase-design-promote: its inline research and fetch steps need WebFetch pre-approved`), 1/316 matched; control (`WebSearch WebFetch` reordered to `WebFetch WebSearch`): same command exit 0, 1/316 matched; skill restored in the same command; runs: 1 |
+diff --git a/.asd/sprints/028-cleanup-phase/test-plan.md b/.asd/sprints/028-cleanup-phase/test-plan.md
+index 5987a0fa..9d29a707 100644
+--- a/.asd/sprints/028-cleanup-phase/test-plan.md
++++ b/.asd/sprints/028-cleanup-phase/test-plan.md
+@@ -17,15 +17,13 @@ responsibility:
+ | 4 | de11b54e | delta since entry 3 (review-fix wave-1/iter-02) |
+ | 5 | 7e38ed1e | delta since entry 4 (amendment AC-21, plan Tasks 13-14) |
+ | 6 | 22f6738e | delta since entry 5 (review-fix wave-1/iter-03, commit 14c8639e, plus the combined memory-fix 5d73b2e5) |
++| 7 | 8a2fca08 | delta since entry 6 (review-fix wave-1/iter-04: skill allowed-tools b56279ad, views 3678f2fe, pin fba933f9) |
+ 
+ ## Risk → check decisions
+ 
+ | Change | Material risk | Chosen check | Decision | Reason |
+ |---|---|---|---|---|
+-| cleanup workflow step 5 / `sprint-lifecycle.md` "Cleanup phase" step 3 verification gain `commands.yaml` `lint`, and step 3 re-entry restores uncommitted paths against `HEAD`, amendments AC-4/AC-5 (review-fix iter-03) | verification skipping the configured lint lets a lint-red removal commit; a re-entry restoring against the checkpoint sha instead of `HEAD` reverts the committed removals it is meant to keep | content-contract (token pin) | add | both are decisions-log-free rule literals a re-entry or verification executes (`commands.yaml` `lint`, `git restore --source=HEAD --staged --worktree`) that no existing pin reached (the AC-4/D7 test pins only the checkpoint/record line and commit subject forms); one test pins the lint token at both homes and the restore command, rejecting `--source=<sha>` |
+-| design `Authoring` bullet: per-section lock line `"<draft path>" § "<section>" locked` appended on `Lock in`, re-entry treats a section as locked only with that line, amendment AC-12 (review-fix iter-03) | a re-entry that cannot tell a locked section from a drafted one silently skips an unreviewed section or re-asks a locked one | content-contract (token pin) | add | the line shape is the on-disk evidence the re-entry reads, a literal that cannot be reworded without changing the contract; one assert on `§ `<section>` locked` in the Authoring bullet; the surrounding re-entry prose stays unpinned |
+-| leftover phrases the iter-03 fix removed: `iter-NN/testing.md`, `(reviews `testing.md`)`, `no longer critical by that fact alone`, `never `critical``, the memory-fix of `asd-reviewer-combined` memory (5d73b2e5) | a surviving form of a retired review file name or critical-tier sentence restates the superseded roster as current | existing `sprint-028 leftover-term check` sweep, extended | add | the four exact phrases taken from the diff's removed lines join `removed`; the sweep already reaches agent memory, so the memory fix is covered by the same assert and the run reports no memory hit |
+-| `core.md` duplicated glossary clause, `git-strategy.md` drafts-clause and `asd-reviewer-quality` PR-gate line, `artifact-layout.md` `testing.md`→`quality.md`, `sprint-lifecycle.md` tier prose, scope/design/design-promote SKILL `allowed-tools`, design-review dispatch row passing `inputs` | prose or pre-approval drift with no stable token of its own | none | none | existing checks cover the reachable parts (skill allowed-tools and dispatch-payload contracts in the suite, `sync.js --check` exit 0 over the regenerated views); deletions of duplicated prose carry no behaviour; quality review judges the wording |
++| ten skills' Claude `allowed-tools` gain `Glob`, `Grep`, `Bash`, `WebSearch`, `WebFetch` (`b56279ad`, views `3678f2fe`, review-fix iter-04 F1) | a phase skill missing a tool its workflow's inline steps use stalls on a permission prompt | content-contract (token pin) | keep | the review-fix tester's pin (`fba933f9`, `sprint-028 AC-12 (review-fix): every phase skill pre-approves Grep ...`) reads every `asd-phase-*` skill's `allowed-tools` and fails on a missing `Grep`, `WebSearch` or `WebFetch`; its fail-first proof is recorded in `test-plan.entry-06.md` and it passes against the new tool lists; the other added tools (`Glob`, `Bash` forms) have no stable per-skill contract beyond the sprint-025 `Bash` pin, which accepts the new `Bash` form; manifest ledger hashes and view parity are covered by existing release-manifest checks and `sync.js --check` (exit 0) |
+ 
+ ## Removed tests
+ 
+@@ -39,17 +37,15 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
+ 
+ | Test | Regression proof |
+ |---|---|
+-| `sprint-028 AC-12 (review-fix): the design Authoring loop appends a per-section lock line on Lock in, the evidence a re-entry reads to tell a locked section from a drafted one` | mutation M4 (removed the `on `Lock in` appending ...` clause, keeping the re-entry citation): `node tests/run.js --filter "sprint-028 AC-12 (review-fix)"` exit 1, FAIL of that test, 1/315 matched; control (re-entry prose reworded `counts as locked in solely by its lock line`): same command exit 0, 1/315 matched; runs: 2 |
+-| `sprint-028 AC-4/AC-5 (review-fix): cleanup verification runs the configured lint beside build and tests, and a re-entry discards uncommitted paths against HEAD, never the checkpoint sha that would undo committed removals` | mutation M2 (superseded rule restored: `--source=HEAD` → `--source=<sha>` in step 3): `node tests/run.js --filter "sprint-028 AC-4/AC-5 (review-fix)"` exit 1, FAIL of that test, 1/315 matched; mutation M3 (step 5 `build and lint per ... `lint`` → `build per `commands.yaml` `build``): same command exit 1, same test, 1/315 matched; runs: 2 |
+-| `sprint-028 leftover-term check` (existing sweep, four phrases added) | mutation M1 (re-inserted `iter-NN/testing.md` in `artifact-layout.md` "Test plan"): `node tests/run.js --filter "sprint-028 leftover-term"` exit 1, FAIL of that test, 1/315 matched; restored in the same command; runs: 1 |
++| none | n/a: the delta's pin is existing (`fba933f9`), its fail-first proof is recorded in `test-plan.entry-06.md`; no test authored this entry |
+ 
+ ## Suite run
+ 
+ - Command: `node tests/run.js` (shared infrastructure touched: `runtime.js`, `.asd/migrations/`, `tests/run.js` — the impacted set is the full suite)
+ - Scope: full
+-- Result: pass — 315/315 passed, exit 0
+-- Lint / build: pass — `git diff --cached --check` exit 0 at commit, `node .asd/sync.js --check` exit 0 (every item `current`)
+-- HEAD: 5d73b2e5d6c9ef218aabc4eacddd649e004b18a2
++- Result: pass — 316/316 passed, exit 0
++- Lint / build: pass — `git diff --cached --check` exit 0 at commit, `node .asd/sync.js --check` exit 0
++- HEAD: 9bb37b86a8ae065bbcfa4c9fa55bee100a69683d
+ 
+ ## Defects
+ 
+diff --git a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+index 6ea7c558..44b3f88e 100644
+--- a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
++++ b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+@@ -15,3 +15,4 @@
+ - [Predicates vs appended files](feedback_predicates-vs-appended-files.md) — reviewerFiles appending test-plan paths can kill a "no X in scope" n/a predicate; trace the CLI path
+ - [Repurposed fixture coverage](feedback_repurposed-fixture-coverage.md) — a changed/dropped fixture expectation: what did that case alone reach; an unread fixture write is the tell
+ - [Role removal, work inline](feedback_role-removal-inline-work.md) — retired agents' tools vs receiving skills' allowed-tools; grep every name form (`<key>.md`, tier prose), not the sweep's list
++- [None-row coverage claims](feedback_none-row-coverage-claims.md) — a `none` row citing existing suite checks: grep the exact token the fix added; would a revert go red?
+diff --git a/.claude/agent-memory/asd-reviewer-combined/feedback_none-row-coverage-claims.md b/.claude/agent-memory/asd-reviewer-combined/feedback_none-row-coverage-claims.md
+new file mode 100644
+index 00000000..2f48c13f
+--- /dev/null
++++ b/.claude/agent-memory/asd-reviewer-combined/feedback_none-row-coverage-claims.md
+@@ -0,0 +1,15 @@
++---
++name: none-row-coverage-claims
++description: a test-plan `none` row citing "existing suite checks cover it" - grep tests/run.js for the exact token the fix added before accepting the claim
++metadata:
++  type: feedback
++---
++
++When a `Risk → check decisions` row decides `none` because existing suite contracts already cover a fix, grep `tests/run.js` for the exact token the fix added, such as a tool name in a skill's `allowed-tools`. Then ask whether reverting the fix would turn any assert red.
++
++**Why:** a review-fix row claimed the suite covered skill `allowed-tools`. The only assert on that field checked an unrelated tool (`Bash` for timing), and the web-tool asserts read agent `tools`, not skill frontmatter. Reverting the fix would have stayed green.
++
++**How to apply:**
++- For each cited "existing check", find the assert line and confirm it reads the same file field and token the fix changed.
++- A derived-set pin, built from the workflows that need the capability, can also expose sibling sites the fix missed. Name them in the fix text when they are outside the manifest.
++- Related: [[repurposed-fixture-coverage]], [[rereview-no-shell-checks]].
+diff --git a/tests/run.js b/tests/run.js
+index 91859975..9829ac62 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -8602,6 +8602,22 @@ test('sprint-028 AC-12 (review-fix): the design Authoring loop appends a per-sec
+   assert.ok(authoring.includes('§ `<section>` locked'), 'a section holding content but no lock line is a pending Lock in; without the lock line shape a re-entry silently skips a section the user never locked or re-asks one they did');
+ });
+ 
++test('sprint-028 AC-12 (review-fix): every phase skill pre-approves Grep and the inline-research phases pre-approve WebSearch and WebFetch, so their inline steps never stall on a permission prompt', () => {
++  const INLINE_RESEARCH_PHASES = ['audit', 'plan', 'scope', 'design', 'design-promote'];
++  const toolsOf = (name) => sync.parseCanonicalFrontmatter(canonText(`.asd/skills/${name}/SKILL.md`)).meta.claude['allowed-tools'].split(/\s+/);
++  const phaseSkills = fs.readdirSync(path.join(REPO_ROOT, '.asd/skills')).filter((skill) => /^asd-phase-/.test(skill));
++  assert.ok(INLINE_RESEARCH_PHASES.every((phase) => phaseSkills.includes(`asd-phase-${phase}`)), 'the research phase list names only existing phase skills');
++  for (const name of phaseSkills) {
++    const tools = toolsOf(name);
++    assert.ok(tools.includes('Grep'), `${name}: allowed-tools must hold Grep`);
++    if (INLINE_RESEARCH_PHASES.includes(name.slice('asd-phase-'.length))) {
++      for (const tool of ['WebSearch', 'WebFetch']) {
++        assert.ok(tools.includes(tool), `${name}: its inline research and fetch steps need ${tool} pre-approved`);
++      }
++    }
++  }
++});
++
+ test('sprint-028 AC-8/AC-9/AC-10: asd-external-review.md states an empty Kept findings table is its header and separator rows only, and "Plan file format" Decomposition rules carry the multi-stage write-point and the universal-reach trigger-site clauses', () => {
+   const kept = canonText('.asd/agents/asd-external-review.md').split('\n').find((line) => line.includes('Kept findings table'));
+   assert.ok(kept && kept.includes('header and separator rows only') && kept.includes('never a placeholder row'), 'AC-8: the agent\'s own return-format rule must state the empty table shape');

@@ -108,3 +108,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-26 — impl fix for wave-1/iter-04: findings resolved (F1: dev b56279ad, tester fba933f9)
 - 2026-10-26 — route impl-test entry 7: standard, dispatch HEAD fba933f9
 - 2026-10-26 — impl-test: impacted set green (316/316, full suite), entry 7 0 added/0 removed
+- 2026-10-26 — impl-review wave-1/iter-05: combined APPROVE, external APPROVE (latched); last wave roster met → terminal full suite
+- 2026-10-26 — route impl-review wave-1/iter-05 suite: standard, dispatch HEAD 1ef0b793
