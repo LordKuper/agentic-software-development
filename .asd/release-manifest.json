@@ -57,7 +57,7 @@
   },
   "upstream_hashes": {
     ".asd/agents/asd-external-review.md": "95230cd43eca374610697691583d7cf2618731a08f0d6e80442c70993039db7a",
-    ".asd/hooks/session-start.js": "55f71c504c3d588fe224789a46b74ae5ea0c3a074ce5a1ad5ae4f3edd33087c8",
+    ".asd/hooks/session-start.js": "553745d4ca9c651687d524730b61cb94eead940a31c31696579fc05a16d1fcb3",
     ".asd/rules/artifact-layout.md": "1aeb868f9a313d3e8904cc4ec52aeeb1d0a96e523d093137459a76ddeabbfa96",
     ".asd/rules/checkpoints.md": "63d50621e18544b7b6f741c0fd16ddf99e77b25f8f8c0e6eaf33776810dc0561",
     ".asd/rules/code-style.md": "672ea6d374408364e420c4126c00d9111aa1f0be751520d2716fd8e480989992",
@@ -67,7 +67,7 @@
     ".asd/rules/external-review.md": "5e9029eccadca596af4c714df0c054ddb1722489a53814abc4ffc65205410396",
     ".asd/rules/git-strategy.md": "c3bc641d7f74c061533405dc8fa8eacfd52a1dc25548b786b702b353bb9c5c94",
     ".asd/rules/language-policy.md": "7f77042d5ce46d5df0ee48c3f75263d6393c77a20e8a7068e7913c22650a8539",
-    ".asd/rules/providers.md": "d789c8d13d6f40d2e1c77127690a99a9fbc932e39e4df153bedc318404abc9ba",
+    ".asd/rules/providers.md": "5faa305eb0eac59651ffce0a34a79cfa0d05a5fc0ca24471a79fdba55d7f475c",
     ".asd/rules/review-policy.md": "7a223469cd57bee837ccb5cc82784822733c158f1c83df6f75cec8361a3a49f5",
     ".asd/rules/sprint-lifecycle.md": "8808443a6f782992ffa1db77eb6c22e02f24056eaa04e6c66b6d4a36373e85f1",
     ".asd/rules/ux-principles.md": "c96151abdfa74445c344c1c440d3e189879f5c7fd13b78010186f351ef6d5e79",

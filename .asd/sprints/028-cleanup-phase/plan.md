@@ -117,8 +117,8 @@ Material risk: change: standalone skills authored inline within the byte cap
 
 ### Task 11: README.md and AGENTS.md
 Material risk: artifact: mirror counts and tables, verified by `node tests/run.js` §16 and the README tier-table tests
-- [ ] `README.md`: phase counts/flowchart/tables with cleanup, roster/model table (both providers), reviewer table/tokens, config schema (`cleanup`, `documents.design_system`), folder map counts, FAQ per audit sites (AC-7, AC-19)
-- [ ] `AGENTS.md` tail: phase counts, skill count, agent roster sentence (AC-7, AC-19)
+- [x] `README.md`: phase counts/flowchart/tables with cleanup, roster/model table (both providers), reviewer table/tokens, config schema (`cleanup`, `documents.design_system`), folder map counts, FAQ per audit sites (AC-7, AC-19)
+- [x] `AGENTS.md` tail: phase counts, skill count, agent roster sentence (AC-7, AC-19)
 
 ### Task 12: Adapt tests to the new roster and chain
 Material risk: artifact: test fixtures and pins, verified by `node tests/run.js`
