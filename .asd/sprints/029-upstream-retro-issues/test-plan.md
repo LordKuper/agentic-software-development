@@ -12,7 +12,7 @@ responsibility:
 | Entry | HEAD analysed | Scope |
 |---|---|---|
 | 1 | 78ab90ca72a6f8c02682ca2fcfd0534a1a77a63a | full change surface |
-| 2 | | delta since entry 1 |
+| 2 | adffa79cb39b086699bee06e83ff584c60584e16 | delta since entry 1 |
 
 ## Risk → check decisions
 
@@ -39,7 +39,7 @@ responsibility:
 - Scope: full (change surface touches framework-wide files: safety valve degrades the impacted set to the full suite)
 - Result: pass — 318 passed, 0 failed, 0 skipped, exit 0 (pre-strategy 318/318 exit 0 before the new assert; the new assert adds no test, so the count is unchanged)
 - Lint / build: pass — `git diff --cached --check` clean at commit, `node .asd/sync.js --check` ok
-- HEAD: 5224682a06322a1ef3dcc06608ef240ddb2262a4 (tree analysed, plus this entry's own test commit)
+- HEAD: adffa79cb39b086699bee06e83ff584c60584e16
 
 ## Defects
 

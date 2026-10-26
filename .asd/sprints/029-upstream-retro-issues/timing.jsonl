@@ -61,3 +61,11 @@
 {"op":"open","id":"suite full","kind":"suite","parent":"asd-tester review-fix wave-1/iter-01","start":"2026-10-26T14:26:14.139Z","attrs":{}}
 {"op":"close","id":"suite full","kind":"suite","parent":"asd-tester review-fix wave-1/iter-01","start":"2026-10-26T14:26:14.139Z","end":"2026-10-26T14:26:51.818Z","outcome":"done","attrs":{}}
 {"op":"close","id":"asd-tester review-fix wave-1/iter-01","kind":"dispatch","parent":"impl#2","start":"2026-10-26T14:22:26.210Z","end":"2026-10-26T14:27:57.112Z","outcome":"done","attrs":{}}
+{"op":"close","id":"impl#2","kind":"phase","parent":null,"start":"2026-10-26T14:13:58.564Z","end":"2026-10-26T14:28:05.426Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-test#2","kind":"phase","parent":null,"start":"2026-10-26T14:28:05.426Z","attrs":{}}
+{"op":"open","id":"asd-tester impl-test entry 2","kind":"dispatch","parent":"impl-test#2","start":"2026-10-26T14:28:05.766Z","attrs":{}}
+{"op":"open","id":"asd-tester impl-test entry 2 pre","kind":"suite","parent":"asd-tester impl-test entry 2","start":"2026-10-26T14:28:40.034Z","attrs":{}}
+{"op":"close","id":"asd-tester impl-test entry 2 pre","kind":"suite","parent":"asd-tester impl-test entry 2","start":"2026-10-26T14:28:40.034Z","end":"2026-10-26T14:29:19.847Z","outcome":"done","attrs":{}}
+{"op":"open","id":"asd-tester impl-test entry 2 gate","kind":"suite","parent":"asd-tester impl-test entry 2","start":"2026-10-26T14:30:46.568Z","attrs":{}}
+{"op":"close","id":"asd-tester impl-test entry 2 gate","kind":"suite","parent":"asd-tester impl-test entry 2","start":"2026-10-26T14:30:46.568Z","end":"2026-10-26T14:31:24.844Z","outcome":"done","attrs":{}}
+{"op":"close","id":"asd-tester impl-test entry 2","kind":"dispatch","parent":"impl-test#2","start":"2026-10-26T14:28:05.766Z","end":"2026-10-26T14:32:58.263Z","outcome":"done","attrs":{}}
