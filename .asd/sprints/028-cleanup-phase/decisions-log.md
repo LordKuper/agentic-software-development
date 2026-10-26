@@ -97,3 +97,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: Advisor recommended accept for both (two trivial edits riding a mandatory fix round; override would log two iron-rule waivers; F-5 via a link to "DoD per review phase").
 - **Affected docs**: reviews/impl/wave-1/iter-03/combined.md
 - 2026-10-26 — route review-fix wave-1/iter-03: standard, dispatch HEAD f3f07c15; risk change: cleanup re-entry and lint wording
+- 2026-10-26 — impl fix for wave-1/iter-03: findings resolved (combined F-1..F-6, external 1..3 in 14c8639e); sync --apply regenerated stale views; open: combined memory leftover hit (feedback_role-removal-inline-work.md) → impl-test step 7a
+- 2026-10-26 — route impl-test entry 6: standard, dispatch HEAD 14c8639e
