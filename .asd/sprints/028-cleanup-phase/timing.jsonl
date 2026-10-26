@@ -178,3 +178,6 @@
 {"op":"close","id":"suite impl-review#1","kind":"suite","parent":"impl-review wave-1/iter-05 suite","start":"2026-10-26T11:05:43.112Z","end":"2026-10-26T11:06:23.927Z","outcome":"done","attrs":{"scope":"full"}}
 {"op":"close","id":"impl-review wave-1/iter-05 suite","kind":"dispatch","parent":"impl-review#5","start":"2026-10-26T11:05:34.971Z","end":"2026-10-26T11:33:24.338Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sonnet"}}
 {"op":"close","id":"impl-review#5","kind":"phase","parent":null,"start":"2026-10-26T11:02:15.249Z","end":"2026-10-26T11:33:24.467Z","outcome":"done","attrs":{}}
+{"op":"open","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-10-26T11:33:24.899Z","attrs":{}}
+{"op":"close","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-10-26T11:33:24.899Z","end":"2026-10-26T11:33:33.310Z","outcome":"done","attrs":{}}
+{"op":"open","id":"cleanup#1","kind":"phase","parent":null,"start":"2026-10-26T11:33:33.310Z","attrs":{}}
