@@ -56,3 +56,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-26 — route impl-test entry 1: standard, dispatch HEAD 41464a07
 - 2026-10-26 — impl-test: impacted set green (318/318, full suite via safety valve), 2/0 tests; 3 pins retargeted
 - 2026-10-26 — impl-review wave-1/iter-01: combined CONCERNS (F-1..F-9), external CONCERNS (1..3); minor test-only branch not fired (canon findings present) → impl review-fix (review_fixes_pending=wave-1/iter-01)
+- 2026-10-26 — route review-fix wave-1/iter-01: standard, dispatch HEAD 5e6ba097; risk change: workflow gate
+- 2026-10-26 — route F-8, F-9, X-3: standard, dispatch HEAD 9c588a00
+- 2026-10-26 — impl fix for wave-1/iter-01: findings resolved (F-1..F-9, X-1..X-3; dev 4ac90793..a5dd2dbe, views 9c588a00, tests e20bd5bc)
