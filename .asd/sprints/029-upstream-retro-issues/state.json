@@ -1,0 +1,193 @@
+{
+  "sprint_id": "029-upstream-retro-issues",
+  "branch": "sprint/029-upstream-retro-issues",
+  "phase": "pr",
+  "workflow": "lite",
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "design_system": false,
+    "adr": false,
+    "c4": false
+  },
+  "cleanup": true,
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "workflow choice",
+      "decision_actor": "user",
+      "reason": "user answer: lite",
+      "evidence": "decisions-log.md 2026-10-26 sprint opened",
+      "artifact_revision": "state.json@scope"
+    },
+    {
+      "gate": "approach choice",
+      "decision_actor": "user",
+      "reason": "A: one issue per asd retro row, marker-identified",
+      "evidence": "research.md Approaches Chosen",
+      "artifact_revision": "research.md@scope"
+    },
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "sprint.md AC-1..AC-13 accepted as one sprint, no split; AC-8 opt-out key added",
+      "evidence": "decisions-log.md 2026-10-26 scope gate",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "retro intake dispositions",
+      "decision_actor": "user",
+      "reason": "028#A-2 (fix in AGENTS.md) P-1 P-2 P-3 included (AC-9..AC-12)",
+      "evidence": "decisions-log.md 2026-10-26 retro intake",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "audit contradiction",
+      "decision_actor": "user",
+      "reason": "C1: AC wins; retro-finding issue actions ungated in both modes, checkpoints.md exception",
+      "evidence": "decisions-log.md 2026-10-26 audit contradiction C1",
+      "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "all t_audit.md sections for AC-1..AC-13; C1 settled by user; AC-2 home and P-row cause settled from source",
+      "evidence": "audit.md",
+      "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "user",
+      "reason": "plan.md accepted: D1-D10, Tasks 1-7 in 2 waves",
+      "evidence": "decisions-log.md 2026-10-26 plan accepted",
+      "artifact_revision": "plan.md@plan"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "Tasks 1-7 + 2 route-backs done, plan ticked, build/lint clean, paths authorised, flagged choices resolved",
+      "evidence": "decisions-log.md 2026-10-26 impl assessment",
+      "artifact_revision": "plan.md@impl"
+    },
+    {
+      "gate": "impl-review green handoff",
+      "decision_actor": "orchestrator",
+      "reason": "wave 1/1 combined+external APPROVE at iter-03; terminal full suite 318/318 exit 0; sync check ok",
+      "evidence": "decisions-log.md 2026-10-26 impl-review DoD met; test-plan.md Suite run @ a45798e2",
+      "artifact_revision": "HEAD@9cefd5c6"
+    },
+    {
+      "gate": "PR publication",
+      "decision_actor": "user",
+      "reason": "user approved push and PR open",
+      "evidence": "chat 2026-10-26: Да, пушь ветку и открывай PR",
+      "artifact_revision": "HEAD@059b7357"
+    }
+  ],
+  "task_routing": {
+    "Task 1": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "sonnet"
+    },
+    "Task 2": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:release-retry trigger extension",
+      "resolved_model": "sonnet"
+    },
+    "Task 3": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:security",
+      "resolved_model": "sonnet"
+    },
+    "Task 4": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "sonnet"
+    },
+    "Task 5": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:release sequence extension",
+      "resolved_model": "sonnet"
+    },
+    "Task 6": {
+      "tier": "mechanical",
+      "execution": "agent",
+      "reason": "artifact-risk:decided rename and citation",
+      "resolved_model": "haiku"
+    },
+    "Task 7": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:mirror text",
+      "resolved_model": "sonnet"
+    },
+    "review-fix wave-1/iter-01": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:workflow gate",
+      "resolved_model": "sonnet"
+    },
+    "review-fix wave-1/iter-02": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:security",
+      "resolved_model": "sonnet"
+    }
+  },
+  "skipped_phases": [],
+  "reviews": {
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "wave": 1,
+      "waves": [
+        {
+          "iteration": 3,
+          "verdicts": {
+            "iter-01": {
+              "combined": "CONCERNS",
+              "external": "CONCERNS"
+            },
+            "iter-02": {
+              "combined": "CONCERNS",
+              "external": "CONCERNS"
+            },
+            "iter-03": {
+              "combined": "APPROVE",
+              "external": "APPROVE"
+            }
+          },
+          "iteration_heads": {
+            "iter-01": "f78d678ad388b48e5ab1e3b4e10ca783c5dbdb24",
+            "iter-02": "99c9b431d4b0fd07c1d903c4dfd681ad08eca44f",
+            "iter-03": "707e36153629c797fe9fa74d5fb2a164121e9609"
+          },
+          "latched": {
+            "combined": 3,
+            "external": 3
+          }
+        }
+      ]
+    }
+  },
+  "created_at": "2026-10-26T11:59:26.556Z",
+  "updated_at": "2026-10-26T13:57:21.178Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": {
+    "number": 66,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/66",
+    "state": "open"
+  },
+  "archived_at": null
+}

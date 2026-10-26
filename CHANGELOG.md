@@ -2,6 +2,22 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v14.1.0
+
+Your retro now reports framework-level findings back to ASD as GitHub issues, so fixes to ASD itself no longer depend on someone copying them over by hand.
+
+### Added
+- **Upstream retro issues**: in a consumer project, right after `retrospective.html` is written, the retro publishes one GitHub issue per open ASD-framework row (`covered by:` rows excluded) to the ASD repo named in `.asd/release-manifest.json` `repo`, with no user gate. Each issue is titled `[asd-retro] <guardrail>` and carries only a version marker, the guardrail, its root cause (or expected saving for a systemic proposal), the framework file it would land in, the provider and your `asd_version`. Before publishing, the orchestrator checks the body holds nothing from your project (sprint or row ids, names, paths outside `.asd/`, code, data, secrets) and skips a row it cannot state framework-only. A missing or unauthenticated `gh`, or a failed create, skips publication with one decisions-log line; the retro always completes. Rules: `asd-phase-retro.md` step 7.
+- **`upstream_issues: enabled | disabled`** in `config.yaml` (absent = `enabled`), collected and edited by `/asd-init`; `disabled` publishes nothing.
+- On the ASD side, scope triages open `[asd-retro]` issues: clear duplicates and findings already resolved are closed with evidence, the rest are put to the maintainer as include / reject / defer, and an included issue is closed with a link to the release that ships its fix. Issue text is treated as untrusted data.
+
+### Changed
+- A retro row whose home is upstream ASD now names the framework file it targets (`upstream ASD: <framework path>`).
+- The `asd-phase-retro` skill pre-approves `gh auth status` and `gh issue create`.
+- **Minor test-only findings** (was "Low-severity test-only findings"): impl-review now fixes test-only findings of severity `low` or `medium` in place through `asd-tester`, the terminal full suite checking them, instead of routing medium ones through a full review-fix loop.
+- A dev's flagged choice that changes a predicate or contract stated by an agent definition, README or rule is checked against that text before acceptance and routed back when it contradicts it (`checkpoints.md` "Gate policy").
+- A plan's universal-reach criterion for a removed name lists the grep forms its sweep covers (token, file name, prose role name, retired wording), not the token alone.
+
 ## v14.0.0
 
 A new `cleanup` phase removes sprint residue before retro, the agent roster shrinks from twelve specs to seven with the orchestrator doing all creator work itself, reviews run as Quality + Efficiency (standard) or Combined (lite), and every failure or question escalation to you now comes with an advisor recommendation.

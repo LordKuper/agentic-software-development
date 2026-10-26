@@ -38,6 +38,8 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 <!-- entries appended below this line -->
 
-- 2026-10-26 — retro: retrospective.html written (3 entries, 1 consumer action + 2 covered, 3 systemic proposals, analysed branch)
-- 2026-10-26 — pr open mode: DoD verified (plan ticked, wave-1 combined + external APPROVE at iter-05, full suite re-run 316/316 after cleanup commit, lint and sync clean, retrospective present, no sprint stubs, no existing PR for the branch); asd_version 13.10.0 → 14.0.0 (breaking markers), CHANGELOG v14.0.0 added
-- 2026-10-26 — pr open mode: PR #64 opened after the user confirmed publication; state.json.pr written and pushed; NEXT await-merge
+## 2026-10-26 — plan accepted
+
+- **Decision**: `<sprint>/plan.md` accepted by the user (`accept`): D1-D10, Tasks 1-7 in 2 waves (wave 1 Tasks 1-6, wave 2 Task 7); tech reference `docs/architecture/tech-reference/gh-2.90.md` written before acceptance.
+- **Rationale**: Explicit user acceptance of the write-then-review-accept gate; no open stubs touch the scope.
+- **Affected docs**: plan.md, docs/architecture/tech-reference/gh-2.90.md

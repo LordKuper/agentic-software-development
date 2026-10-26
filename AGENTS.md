@@ -65,9 +65,9 @@ The block's "never modify workflow infrastructure" hard rule is **lifted** for e
 
 Root `AGENTS.md`'s managed block is generated from `t_AGENTS.md` exactly as in any consumer project; this repo's own prose lives below `<!-- asd:end -->`, where sync never reaches it.
 
-### No build / lint; one test suite
+### Build and lint are sync checks; one test suite
 
-Ships as Markdown, YAML, JSON, HTML, Node hook scripts. No package.json, compiler, or build step. `tests/run.js` is a real zero-dependency test runner covering both the Node sources (`.asd/sync.js`, `update.js`, `.asd/migrations/**`, hooks) and content contracts in rule docs, README, templates, skills and workflows (phase-chain mirrors, template section shapes, file sets). "Verification" of a change:
+Ships as Markdown, YAML, JSON, HTML, Node hook scripts. No package.json or compiler. Per `.asd/project/commands.yaml`, build is `node .asd/sync.js --check` and lint is `git diff --cached --check`; a dev runs both before reporting COMPLETED. `tests/run.js` is a real zero-dependency test runner covering both the Node sources (`.asd/sync.js`, `update.js`, `.asd/migrations/**`, hooks) and content contracts in rule docs, README, templates, skills and workflows (phase-chain mirrors, template section shapes, file sets). "Verification" of a change:
 
 - `node tests/run.js` stays green for any canonical edit — Node source, rule doc, README, template, skill, workflow, hook.
 - Hooks run clean: exit 0, never throw (designed to fail silently).
