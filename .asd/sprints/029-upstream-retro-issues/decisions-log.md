@@ -55,3 +55,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: plan.md, friction-log.md
 - 2026-10-26 — route impl-test entry 1: standard, dispatch HEAD 41464a07
 - 2026-10-26 — impl-test: impacted set green (318/318, full suite via safety valve), 2/0 tests; 3 pins retargeted
+- 2026-10-26 — impl-review wave-1/iter-01: combined CONCERNS (F-1..F-9), external CONCERNS (1..3); minor test-only branch not fired (canon findings present) → impl review-fix (review_fixes_pending=wave-1/iter-01)
