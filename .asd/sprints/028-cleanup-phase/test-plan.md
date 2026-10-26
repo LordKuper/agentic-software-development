@@ -15,12 +15,14 @@ responsibility:
 | 2 | e1fd93a4 | delta since entry 1 |
 | 3 | 9cf1e1f2 | delta since entry 2 (review-fix wave-1/iter-01) |
 | 4 | de11b54e | delta since entry 3 (review-fix wave-1/iter-02) |
+| 5 |  | delta since entry 4 (amendment AC-21, plan Tasks 13-14) |
 
 ## Risk → check decisions
 
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
-| `tests/run.js` `sprint-028 AC-18` fixture, delta of review-fix wave-1/iter-02: wave 2 split into iter-01 (full roster, resolved `testing: CONCERNS` read from `reviews/impl/wave-2/iter-01`) and iter-02 (lost dispatch, no `documentation`) | a fixture whose only wave-K case was the lost dispatch left the wave-K directory read (`wave-${index + 1}`) unpinned | unit (fixture repo) | keep | the adapted test already covers both cases and carries its fail-first proof (mutation 3, Added tests); no production code changed, no new test |
+| `.asd/runtime.js` `review-waves --single` (boolean flag registered in `main`) and impl-review step 1c / `sprint-lifecycle.md` "Review iteration counters" (lite = one wave), amendment AC-21 | `--single` rejected as a value-less flag (`flags require values`, exit 2), or a one-wave division over an above-threshold scope refused under lite, or still accepted without the flag for standard | unit (CLI path, sandbox git repo) | keep | Task 14's test (`cd3f63e2`: `sprint-017 AC-1 ... sprint-028 AC-21` review-waves test) pins step 1c naming `--single`, the one-wave division accepted with `waves: 1` and the measured fields kept, and the same division still refused unflagged (standard); its fail-first is in its commit and return, and it exposed the parse defect, fixed in `7e413ea6` before this entry (never reached impl-test, so no `D-N`); not re-authored |
+| `core.md` glossary, `asd-phase-impl-review/SKILL.md`, `README.md`, `.asd/release-manifest.json`, regenerated views (AC-21 prose mirrors) | prose drift between mirrors of the lite one-wave rule | none | none | prose with no stable token beyond `--single` (pinned above); existing phase-chain, README, release-manifest integrity checks and `sync.js --check` (exit 0) cover the mirrors; quality review judges the wording |
 
 ## Removed tests
 
@@ -34,15 +36,15 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
 
 | Test | Regression proof |
 |---|---|
-| none | n/a: the delta adapts the `sprint-028 AC-18` fixture; its fail-first run (mutation 3) is recorded in `test-plan.entry-03.md` |
+| none | n/a: Task 14's test is existing, its fail-first proof is in its commit `cd3f63e2`; no test authored this entry |
 
 ## Suite run
 
 - Command: `node tests/run.js` (shared infrastructure touched: `runtime.js`, `.asd/migrations/`, `tests/run.js` — the impacted set is the full suite)
 - Scope: full
-- Result: pass — 313 passed / 0 failed / 0 skipped of 313, exit 0
+- Result: pass — 313/313 passed, exit 0
 - Lint / build: pass — `git diff --cached --check` exit 0, `node .asd/sync.js --check` exit 0
-- HEAD: cae193ddbe4bbc502d2c60b2cd8822efb12f7f6a
+- HEAD: 221beddc880a9d2f81458d36a525c8995e61415f
 
 ## Defects
 
