@@ -101,3 +101,5 @@
 {"op":"open","id":"suite-full-1","kind":"suite","parent":"asd-tester terminal suite 1","start":"2026-10-26T14:49:37.029Z","attrs":{}}
 {"op":"close","id":"suite-full-1","kind":"suite","parent":"asd-tester terminal suite 1","start":"2026-10-26T14:49:37.029Z","end":"2026-10-26T14:50:23.154Z","outcome":"done","attrs":{}}
 {"op":"close","id":"asd-tester terminal suite 1","kind":"dispatch","parent":"impl-review#3","start":"2026-10-26T14:49:19.185Z","end":"2026-10-26T14:52:10.456Z","outcome":"done","attrs":{}}
+{"op":"close","id":"impl-review#3","kind":"phase","parent":null,"start":"2026-10-26T14:46:28.857Z","end":"2026-10-26T14:52:25.759Z","outcome":"done","attrs":{}}
+{"op":"open","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-10-26T14:52:25.759Z","attrs":{}}
