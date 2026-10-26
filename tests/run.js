@@ -6647,12 +6647,12 @@ test('sprint-020 AC-9: persist-review validates a returned review and writes it 
 test("sprint-020 AC-4: emit-manifest --reviewer combined composes the rubrics its agent names, in order, its own entries last, n/a's every Documentation entry - and only those - when no documentation file is in scope, and is refused outside impl-review", () => {
   const root = mkTempDir();
   let runs = 0;
-  const emit = (reviewer, phase, files) => {
+  const emit = (reviewer, phase, files, extraFlags = []) => {
     runs += 1;
     const dir = path.join(root, `run-${runs}`);
     fs.mkdirSync(dir);
     fs.writeFileSync(path.join(dir, 'scope.txt'), `${files.join('\n')}\n`, 'utf8');
-    const result = runtimeCliResult(['emit-manifest', '--reviewer', reviewer, '--phase', phase, '--files', path.join(dir, 'scope.txt'), '--out', dir]);
+    const result = runtimeCliResult(['emit-manifest', '--reviewer', reviewer, '--phase', phase, '--files', path.join(dir, 'scope.txt'), '--out', dir, ...extraFlags]);
     return result.status === 0 ? JSON.parse(fs.readFileSync(result.result.manifest, 'utf8')) : result;
   };
   const noDocs = runtime.NA_PREDICATES.noDocs;
@@ -6671,6 +6671,7 @@ test("sprint-020 AC-4: emit-manifest --reviewer combined composes the rubrics it
   assert.ok(code.rules.some(isDocumentationEntry) && code.rules.some((id) => !isDocumentationEntry(id)), 'sanity: the composed rubric must hold both documentation and non-documentation entries, or the predicate check below compares one side with nothing');
   assert.deepStrictEqual(holders(code), code.rules.filter(isDocumentationEntry), `with no documentation file in scope every documentation entry of the composed Quality and Efficiency rubrics - and nothing else - must carry "n/a: ${noDocs}": a rubric entry the predicate misses is reviewed against nothing, one it over-reaches is a code concern silently skipped`);
   assert.deepStrictEqual(holders(emit(runtime.COMBINED_REVIEWER, 'impl-review', ['src/a.js', 'README.md'])), [], 'one documentation file in scope keeps the whole Documentation rubric reviewed (AC-4)');
+  assert.deepStrictEqual(holders(emit(runtime.COMBINED_REVIEWER, 'impl-review', ['src/a.js'], ['--test-plan', '.asd/sprints/001-x/test-plan.md'])), holders(code), 'sprint-028 wave-1/iter-01 F-3: the test-plan path the CLI appends to the combined file list is not diff scope - judged by the docs predicate it would void the n/a of every lite code-only review');
   for (const reviewer of parts) assert.deepStrictEqual(holders(emit(reviewer, 'impl-review', ['src/a.js'])), [], `the predicate reaches only the combined manifest - standard's ${reviewer} reviewer is dispatched for its rubric and never n/a's its documentation entries wholesale`);
   const design = emit(runtime.COMBINED_REVIEWER, 'design-review', ['s/design/prd.md']);
   assert.ok(design.status === 2 && /one of/.test(design.stderr), `no workflow dispatches combined in design-review, so emit-manifest must refuse it there (got: ${JSON.stringify(design)})`);
@@ -8448,18 +8449,20 @@ function legacyReviewsFixture(sprintRoot) {
   reviewFile('reviews/design/iter-04', 'correctness', ['F-1', 'F-2'], ['F-1']);
   reviewFile('reviews/impl/wave-2/iter-01', 'testing', ['F-1'], ['F-1']);
   const legacy = (correctness, testing, documentation) => ({ correctness, testing, documentation, efficiency: 'APPROVE' });
+  const legacyDesign = (correctness, documentation) => ({ correctness, documentation, efficiency: 'APPROVE' });
   return {
     design: {
-      iteration: 6,
+      iteration: 7,
       verdicts: {
-        'iter-01': legacy('CONCERNS', 'FAIL', 'APPROVE'),
-        'iter-02': legacy('APPROVE', 'APPROVE (skipped: no tests)', 'APPROVE'),
-        'iter-03': legacy('CONCERNS', 'skipped: no tests in scope', 'APPROVE'),
-        'iter-04': legacy('CONCERNS', 'APPROVE', 'APPROVE'),
-        'iter-05': { ...legacy('APPROVE', 'APPROVE', 'APPROVE'), quality: 'CONCERNS' },
+        'iter-01': legacyDesign('FAIL', 'APPROVE'),
+        'iter-02': legacyDesign('APPROVE', 'APPROVE (skipped: no docs)'),
+        'iter-03': legacyDesign('CONCERNS', 'skipped: no docs in scope'),
+        'iter-04': legacyDesign('CONCERNS', 'APPROVE'),
+        'iter-05': { ...legacyDesign('APPROVE', 'APPROVE'), quality: 'CONCERNS' },
         'iter-06': { efficiency: 'APPROVE' },
+        'iter-07': { correctness: 'APPROVE', efficiency: 'APPROVE' },
       },
-      latched: { correctness: 1, testing: 2, documentation: 3, efficiency: 1 },
+      latched: { correctness: 1, documentation: 3, efficiency: 1 },
     },
     impl: {
       wave: 2,
@@ -8471,7 +8474,7 @@ function legacyReviewsFixture(sprintRoot) {
   };
 }
 
-test('sprint-028 AC-18 (D13): the 14.0.0 migration gives every review iteration of an active sprint a quality verdict - APPROVE only when each legacy verdict present is satisfied (an approval, a skip, or a bare finding verdict whose review file resolves every finding id, read from that wave\'s own directory), else the most severe token - latches quality only when all three legacy reviewers latched, keeps the legacy keys, and folds the critical task tier into standard', async () => {
+test('sprint-028 AC-18 (D13): the 14.0.0 migration gives every review iteration of an active sprint a quality verdict - APPROVE only when each legacy verdict present is satisfied (an approval, a skip, or a bare finding verdict whose review file resolves every finding id, read from that wave\'s own directory), else the most severe token, and none when a reviewer its node roster requires is absent - latches quality only when every reviewer of its node roster latched (design: correctness and documentation), keeps the legacy keys, and folds the critical task tier into standard', async () => {
   const root = makeMigrationFixtureRepo();
   const sprintRoot = path.join(root, '.asd/sprints/001-live');
   const reviews = legacyReviewsFixture(sprintRoot);
@@ -8487,9 +8490,8 @@ test('sprint-028 AC-18 (D13): the 14.0.0 migration gives every review iteration 
   expected.design.latched.quality = 3;
   expected.impl.waves[0].verdicts['iter-01'].quality = 'APPROVE';
   expected.impl.waves[0].latched.quality = 2;
-  expected.impl.waves[1].verdicts['iter-01'].quality = 'APPROVE';
   const after = JSON.parse(fs.readFileSync(path.join(sprintRoot, 'state.json'), 'utf8'));
-  assert.deepStrictEqual(after.reviews, expected, 'quality is the worst unsatisfied legacy token, resolved findings and skips count as satisfied, wave K reads wave-K\'s directory, an existing quality verdict and an efficiency-only iteration are left alone, and only a full legacy latch becomes a quality latch');
+  assert.deepStrictEqual(after.reviews, expected, 'quality is the worst unsatisfied legacy token, resolved findings and skips count as satisfied, wave K reads wave-K\'s directory, an existing quality verdict and an efficiency-only iteration are left alone, an iteration lacking a reviewer its node\'s roster required (a lost dispatch) gets no quality key, and only a full roster latch becomes a quality latch');
   assert.deepStrictEqual(after.task_routing, { ...routing, 'Task 1': { ...routing['Task 1'], tier: 'standard' } }, 'only the retired critical tier changes');
   assert.deepStrictEqual(report.rewritten, ['.asd/sprints/001-live/state.json']);
 });
