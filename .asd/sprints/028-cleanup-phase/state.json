@@ -1,0 +1,287 @@
+{
+  "sprint_id": "028-cleanup-phase",
+  "branch": "sprint/028-cleanup-phase",
+  "phase": "pr",
+  "workflow": "lite",
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "adr": false,
+    "c4": false
+  },
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "workflow choice",
+      "decision_actor": "user",
+      "reason": "user answer: lite",
+      "evidence": "decisions-log.md 2026-10-22 sprint opened",
+      "artifact_revision": "state.json@scope"
+    },
+    {
+      "gate": "approach choice",
+      "decision_actor": "user",
+      "reason": "diff-scoped sweep with checkpoint; impacted tests in verification",
+      "evidence": "research.md Approaches Chosen",
+      "artifact_revision": "research.md@scope"
+    },
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "sprint.md AC-1..AC-10 accepted as one sprint, no split",
+      "evidence": "decisions-log.md 2026-10-22 scope gate",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "retro intake dispositions",
+      "decision_actor": "user",
+      "reason": "027#A-1 P-1 P-2 included (AC-8..AC-10)",
+      "evidence": "decisions-log.md 2026-10-22 retro intake",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "audit contradiction",
+      "decision_actor": "user",
+      "reason": "C1 canonical (test files out of reach); C2 absent cleanup snapshot reads enabled",
+      "evidence": "decisions-log.md 2026-10-26 audit contradiction C2 settled",
+      "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "new or changed scope",
+      "decision_actor": "user",
+      "reason": "AC-11..AC-19 added: agent roster cut, inline creator work, quality/efficiency/combined reviewers, advisor on escalation",
+      "evidence": "decisions-log.md 2026-10-26 scope amendment",
+      "artifact_revision": "sprint.md@audit"
+    },
+    {
+      "gate": "audit contradiction",
+      "decision_actor": "user",
+      "reason": "AC-17 reach failures/questions only; C3 canonical",
+      "evidence": "decisions-log.md 2026-10-26 amendment audit decisions",
+      "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "new or changed scope",
+      "decision_actor": "user",
+      "reason": "AC-17 narrowed; AC-20 added (UX specs off independently of design system); AC-19 covers AC-20",
+      "evidence": "decisions-log.md 2026-10-26 amendment audit decisions",
+      "artifact_revision": "sprint.md@audit"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "all sections present for AC-1..AC-20; C1, C3 canonical, C2 and AC-17 reach settled by user",
+      "evidence": "audit.md",
+      "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "user",
+      "reason": "plan.md accepted: D1-D16, Tasks 1-12 in 5 waves, D14 documents.design_system",
+      "evidence": "decisions-log.md 2026-10-26 plan accepted",
+      "artifact_revision": "plan.md@plan"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "Tasks 1-12 + 2 follow-ups done, plan ticked, build/lint clean, authorised paths only, flagged choices resolved, suite 304/304",
+      "evidence": "decisions-log.md 2026-10-26 impl assessment",
+      "artifact_revision": "plan.md@impl"
+    },
+    {
+      "gate": "new or changed scope",
+      "decision_actor": "user",
+      "reason": "AC-21 added: lite impl-review never divides into waves; Task 13 (wave 6), Task 14 test-only (wave 7)",
+      "evidence": "decisions-log.md 2026-10-26 scope amendment AC-21; floor_base=wave-1/2",
+      "artifact_revision": "sprint.md@impl-test"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "amendment Tasks 13-14 done, plan ticked, build/lint clean, paths authorised, suite 313/313",
+      "evidence": "decisions-log.md 2026-10-26 impl assessment (AC-21)",
+      "artifact_revision": "plan.md@impl"
+    },
+    {
+      "gate": "review FAIL escalation",
+      "decision_actor": "user",
+      "reason": "F-1, F-5 accepted for fix",
+      "evidence": "decisions-log.md 2026-10-26 FAIL escalation wave-1/iter-03",
+      "artifact_revision": "reviews/impl/wave-1/iter-03/combined.md"
+    },
+    {
+      "gate": "impl-review green handoff",
+      "decision_actor": "orchestrator",
+      "reason": "wave 1 roster met (combined, external APPROVE), terminal full suite 316/316 green at b89a6379",
+      "evidence": "test-plan.md Suite run; reviews/impl/wave-1/iter-05",
+      "artifact_revision": "b229702d"
+    },
+    {
+      "gate": "PR publication",
+      "decision_actor": "user",
+      "reason": "user confirmed opening PR #64",
+      "evidence": "decisions-log.md 2026-10-26 pr open mode",
+      "artifact_revision": "10007d6e"
+    }
+  ],
+  "task_routing": {
+    "Task 1": {
+      "tier": "critical",
+      "execution": "agent",
+      "reason": "risk:reviewer rubric split and routing tier removal",
+      "resolved_model": "opus"
+    },
+    "Task 2": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:cleanup phase rule shape and delegation rule rewrite",
+      "resolved_model": "sonnet"
+    },
+    "Task 3": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:advisor escalation contract",
+      "resolved_model": "sonnet"
+    },
+    "Task 4": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:role-scoped context rows within D13 caps",
+      "resolved_model": "sonnet"
+    },
+    "Task 5": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:reviewer responsibility table rewrite",
+      "resolved_model": "sonnet"
+    },
+    "Task 6": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:config/state template keys",
+      "resolved_model": "sonnet"
+    },
+    "Task 7": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:migration",
+      "resolved_model": "sonnet"
+    },
+    "Task 8": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:cleanup workflow steps and routing into retro",
+      "resolved_model": "sonnet"
+    },
+    "Task 9": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:inline creator steps and advisor consult sites",
+      "resolved_model": "sonnet"
+    },
+    "Task 10": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:standalone skills authored inline within the byte cap",
+      "resolved_model": "sonnet"
+    },
+    "Task 11": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:mirror counts and tables",
+      "resolved_model": "sonnet"
+    },
+    "wave-3 follow-up": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:routing prose and hook fallback",
+      "resolved_model": "sonnet"
+    },
+    "wave-5 follow-up": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "artifact-risk:leftover role names",
+      "resolved_model": "sonnet"
+    },
+    "test-fix D-1": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:advisor consult sites in impl-review",
+      "resolved_model": "sonnet"
+    },
+    "review-fix wave-1/iter-01": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:migration",
+      "resolved_model": "sonnet"
+    },
+    "Task 13": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:division rule split per workflow",
+      "resolved_model": "sonnet"
+    }
+  },
+  "skipped_phases": [
+    "design-promote"
+  ],
+  "reviews": {
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "wave": 1,
+      "waves": [
+        {
+          "iteration": 5,
+          "verdicts": {
+            "iter-01": {
+              "combined": "CONCERNS",
+              "external": "APPROVE"
+            },
+            "iter-02": {
+              "combined": "CONCERNS",
+              "external": "APPROVE"
+            },
+            "iter-03": {
+              "combined": "FAIL",
+              "external": "CONCERNS"
+            },
+            "iter-04": {
+              "combined": "CONCERNS",
+              "external": "APPROVE"
+            },
+            "iter-05": {
+              "combined": "APPROVE",
+              "external": "APPROVE"
+            }
+          },
+          "iteration_heads": {
+            "iter-01": "e1f71d90cda637184328bb6d0518a78b44239968",
+            "iter-02": "acf62fd55a0ae5b68ba7cf3cfe9e92bc471b1084",
+            "iter-03": "9531b607f2e8f8bc3ed6e5eb0a3629bcb8940b73",
+            "iter-04": "05aacabd8125aaacfb642f612cdbb132748c8f97",
+            "iter-05": "f2b9f8dcf8565d8078d1d052549cb2b3283622f2"
+          },
+          "latched": {
+            "external": 4,
+            "combined": 5
+          }
+        }
+      ]
+    }
+  },
+  "created_at": "2026-10-22T14:59:41.183Z",
+  "updated_at": "2026-10-26T11:41:05.059Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": {
+    "number": 64,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/64",
+    "state": "open"
+  },
+  "archived_at": null
+}

@@ -1,0 +1,370 @@
+diff --git a/.asd/agents/asd-reviewer-efficiency.md b/.asd/agents/asd-reviewer-efficiency.md
+index edc20f98..a5d1f416 100644
+--- a/.asd/agents/asd-reviewer-efficiency.md
++++ b/.asd/agents/asd-reviewer-efficiency.md
+@@ -20,10 +20,10 @@ Efficiency reviewer, dispatched in design-review and impl-review. Goal: one verd
+ ```json
+ {"rules": ["payload.inputs.context"],
+  "required": ["payload.manifest (its n_a is this phase's section gate)", "payload.iteration", "payload.floor", "return file the payload names"],
+- "optional": ["payload.diff (design-review: from iteration 2)", "payload.interrupted", "impl-review: test results showing perf measurements, when available", "impl-review: payload.inputs.decisions (a perf-related folded ADR)", "impl-review: payload.inputs.contracts (stack constraints)"],
++ "optional": ["payload.diff (design-review: from iteration 2)", "payload.interrupted", "impl-review: test results showing perf measurements, when available", "impl-review: payload.inputs.decisions (a perf-related folded ADR)", "impl-review: payload.inputs.contracts (stack constraints)", "impl-review: <sprint>/test-plan.md (Test-suite cost: recorded reasons for tests)"],
+  "modes": {
+-  "design-review": {"when": "payload.phase is design-review", "required": ["the listed drafts"]},
+-  "impl-review": {"when": "payload.phase is impl-review", "required": ["perf budgets from custom-coding-rules.md, in payload.inputs.context"]}}}
++  "design-review": {"when": "payload.phase is design-review", "required": ["the listed drafts", "payload.inputs.requirements (Change-size proportionality: AC-N)"]},
++  "impl-review": {"when": "payload.phase is impl-review", "required": ["perf budgets from custom-coding-rules.md, in payload.inputs.context", "payload.inputs.requirements and <sprint>/plan.md (Change-size proportionality: AC-N and plan Task)"]}}}
+ ```
+ 
+ ## Outputs
+diff --git a/.asd/migrations/14.0.0.js b/.asd/migrations/14.0.0.js
+index 70d0a870..1ce01c3a 100644
+--- a/.asd/migrations/14.0.0.js
++++ b/.asd/migrations/14.0.0.js
+@@ -18,10 +18,12 @@
+  *      an explicit hardcoded name list, never a generic scan of the generated trees.
+  *   2. Rewrite every active sprint's `state.json` (atomic, whole-file) so it resumes on the new
+  *      roster: each review node and iteration carrying a legacy `correctness`/`testing`/
+- *      `documentation` verdict gains a `quality` verdict - `APPROVE` when every legacy verdict
+- *      present is satisfied (an `APPROVE` token, a `skipped:` skip, or a bare `CONCERNS`/`FAIL`
+- *      whose review file names every finding in `resolved:` lines), else the most severe legacy
+- *      token - and a `quality` latch only when all three legacy reviewers were latched.
++ *      `documentation` verdict gains a `quality` verdict - `APPROVE` when every verdict of the
++ *      node's legacy roster (design: correctness, documentation; impl: all three) is satisfied (an
++ *      `APPROVE` token, a `skipped:` skip, or a bare `CONCERNS`/`FAIL` whose review file names
++ *      every finding in `resolved:` lines), else the most severe legacy token; an iteration
++ *      missing a rostered key gets none (a lost dispatch stays blocking) - and a `quality` latch
++ *      only when every rostered reviewer was latched.
+  *      `efficiency` is unchanged and the legacy keys stay as history. Every `task_routing` tier
+  *      `critical` becomes `standard`.
+  * Archived and finished sprints keep their state - closed sprints are immutable history. Never
+@@ -44,6 +46,8 @@ const RETIRED_AGENTS = [
+   'asd-tester-mechanical',
+ ];
+ const LEGACY_REVIEWERS = ['correctness', 'testing', 'documentation'];
++const DESIGN_ROSTER = ['correctness', 'documentation'];
++const IMPL_ROSTER = LEGACY_REVIEWERS;
+ const MERGED_REVIEWER = 'quality';
+ const SEVERITY_ORDER = ['FAIL', 'CONCERNS'];
+ const RETIRED_TIER = 'critical';
+@@ -147,30 +151,30 @@ function mostSevereToken(values) {
+   return SEVERITY_ORDER.find((token) => tokens.includes(token)) || tokens[0];
+ }
+ 
+-/** The `quality` verdict for one iteration, or null when it holds no legacy verdict. */
+-function mergedVerdict(iterationVerdicts, reviewDir) {
+-  const present = LEGACY_REVIEWERS.filter((key) => key in iterationVerdicts);
+-  if (present.length === 0) return null;
+-  const unsatisfied = present
++/** The `quality` verdict for one iteration, or null when it holds no legacy verdict or lacks one its node's roster required (a lost dispatch, blocking until re-dispatched). */
++function mergedVerdict(iterationVerdicts, reviewDir, roster) {
++  if (!LEGACY_REVIEWERS.some((key) => key in iterationVerdicts)) return null;
++  if (!roster.every((key) => key in iterationVerdicts)) return null;
++  const unsatisfied = roster
+     .filter((key) => !isSkipOrApprove(iterationVerdicts[key]) && !isResolvedBare(reviewDir, key))
+     .map((key) => iterationVerdicts[key]);
+   return unsatisfied.length === 0 ? 'APPROVE' : mostSevereToken(unsatisfied);
+ }
+ 
+-/** Adds `quality` verdicts and a `quality` latch to one review node; returns whether the node changed. */
+-function migrateReviewNode(node, reviewDirOf) {
++/** Adds `quality` verdicts and a `quality` latch to one review node whose legacy roster is `roster`; returns whether the node changed. */
++function migrateReviewNode(node, reviewDirOf, roster) {
+   if (!node || typeof node.verdicts !== 'object' || node.verdicts === null) return false;
+   let changed = false;
+   for (const [iteration, verdicts] of Object.entries(node.verdicts)) {
+     if (!verdicts || MERGED_REVIEWER in verdicts) continue;
+-    const merged = mergedVerdict(verdicts, reviewDirOf(iteration));
++    const merged = mergedVerdict(verdicts, reviewDirOf(iteration), roster);
+     if (merged === null) continue;
+     verdicts[MERGED_REVIEWER] = merged;
+     changed = true;
+   }
+   const latched = node.latched;
+-  if (latched && !(MERGED_REVIEWER in latched) && LEGACY_REVIEWERS.every((key) => key in latched)) {
+-    latched[MERGED_REVIEWER] = Math.max(...LEGACY_REVIEWERS.map((key) => latched[key]));
++  if (latched && !(MERGED_REVIEWER in latched) && roster.every((key) => key in latched)) {
++    latched[MERGED_REVIEWER] = Math.max(...roster.map((key) => latched[key]));
+     changed = true;
+   }
+   return changed;
+@@ -179,15 +183,15 @@ function migrateReviewNode(node, reviewDirOf) {
+ function migrateReviews(reviews, sprintDir) {
+   if (!reviews) return false;
+   const designDir = (iteration) => path.join(sprintDir, 'reviews', 'design', iteration);
+-  let changed = migrateReviewNode(reviews.design, designDir);
++  let changed = migrateReviewNode(reviews.design, designDir, DESIGN_ROSTER);
+   const impl = reviews.impl;
+   if (!impl) return changed;
+   if (!Array.isArray(impl.waves)) {
+-    return migrateReviewNode(impl, (iteration) => path.join(sprintDir, 'reviews', 'impl', iteration)) || changed;
++    return migrateReviewNode(impl, (iteration) => path.join(sprintDir, 'reviews', 'impl', iteration), IMPL_ROSTER) || changed;
+   }
+   impl.waves.forEach((wave, index) => {
+     const waveDir = (iteration) => path.join(sprintDir, 'reviews', 'impl', `wave-${index + 1}`, iteration);
+-    if (migrateReviewNode(wave, waveDir)) changed = true;
++    if (migrateReviewNode(wave, waveDir, IMPL_ROSTER)) changed = true;
+   });
+   return changed;
+ }
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 211a5fb3..9df12af0 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -47,7 +47,7 @@
+     "skills/asd-phase-impl-review/SKILL.md": "sha256:5a7ff3b6275e5a5c9810e14d7a4019c62fcd16aee6e3906747eb16beb5e0023d",
+     "skills/asd-phase-pr/SKILL.md": "sha256:84bc3ecfb735abcfe74501642b2f30fa966539894507daef54631772c2a80639",
+     "agents/asd-advisor.md": "sha256:5dc55d3ce3265876408920c83873b7e38651894c013ee3556ebf2cb39cae51df",
+-    "agents/asd-reviewer-efficiency.md": "sha256:9306c2a3375cd279c1171c9a09164dfcef1d3666436d63312dd20266a2cd4ca7",
++    "agents/asd-reviewer-efficiency.md": "sha256:c6f5da561615e89b02bc78a499bf3779a842740d4c59e257d5120d2138439210",
+     "agents/asd-dev.md": "sha256:b3e5715c255653f6ae8d066c8b22d332d46ede72b2dadd81b41e497e013e6741",
+     "agents/asd-tester.md": "sha256:8f3afd49819f62bb96ab4d86a152ac8b2397d2ac54aac37a029df7b23504b557",
+     "skills/asd-phase-retro/SKILL.md": "sha256:5508b3169ccd79d6dc65720264e2c4154305a5a335d1ab39a96d18f427dc092c",
+@@ -133,13 +133,13 @@
+     ".asd/workflows/asd-phase-pr.md": "455e1bfa38b415a8a209b9ab8801ef321701fd38f5bffcef8cd0eea2b64a3193",
+     ".asd/workflows/asd-phase-scope.md": "ea5e41fc817ea8e190de23635b8725d8a3bad6ee968507fdb6e9ea5b383f65f7",
+     ".asd/agents/asd-advisor.md": "5dc55d3ce3265876408920c83873b7e38651894c013ee3556ebf2cb39cae51df",
+-    ".asd/agents/asd-reviewer-efficiency.md": "9306c2a3375cd279c1171c9a09164dfcef1d3666436d63312dd20266a2cd4ca7",
++    ".asd/agents/asd-reviewer-efficiency.md": "c6f5da561615e89b02bc78a499bf3779a842740d4c59e257d5120d2138439210",
+     ".asd/agents/asd-dev.md": "b3e5715c255653f6ae8d066c8b22d332d46ede72b2dadd81b41e497e013e6741",
+     ".asd/agents/asd-tester.md": "8f3afd49819f62bb96ab4d86a152ac8b2397d2ac54aac37a029df7b23504b557",
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
+     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
+-    ".asd/runtime.js": "d1505fa5bcbbe12ffc238b4e50c532bdd6d7689d423c644feae7e99742b3a99f",
++    ".asd/runtime.js": "a7ed69bbf6706d729dba22a5c5059e69a2df07b7d70559671afa620c674b1999",
+     ".asd/templates/external-review/t_review-scope.json": "a17ee84e64cc6a693aaa30dacaef660c841b23a92331abf217ff64c8fc2d4951",
+     ".asd/templates/t_friction-log.md": "98c1ee13ba45291945be2ebabcbd7fc4c59a7069685341f64fc0c26bae31af67",
+     ".asd/templates/t_retrospective.html": "73a850121b1988c3a84e895683a5ad7fb79cd962b2952ed9a14b59251e5c4a0d",
+@@ -155,7 +155,7 @@
+     ".asd/rules/agent-protocol.md": "f85ac7376f7bb2d1c4ff3dfa667d5bf3b421aa75818221485ffd154a6f6cdbab",
+     ".asd/templates/t_research.md": "d722d841e93cd77463cd1c1a4d6a585d87e31963545415143b7795b3a92c78b4",
+     ".asd/agents/asd-reviewer-quality.md": "b082b6d82834c1b023b50a341ed29a07ceeadff9db999d955f9065e4228b774f",
+-    ".asd/migrations/14.0.0.js": "701c8bcf973bc890a1c2fc9a0d3e7ecfdad6146f8314fdba676d20e64a803c96",
++    ".asd/migrations/14.0.0.js": "c758bdc17748d67ba73c303d1f819f06f7c3bc89d6855b4a3bd960157a8e64eb",
+     ".asd/skills/asd-phase-cleanup/SKILL.md": "67d91216fcb5ed04e6ef7bc5b4276c057d36628a8185516b38dd4e2c7a88e365",
+     ".asd/workflows/asd-phase-cleanup.md": "db9387d7f9d4983efa3eb646205433e2c6488eb6c52ccfd82e45fdafd38bb569"
+   }
+diff --git a/.asd/runtime.js b/.asd/runtime.js
+index a139b333..b939b097 100644
+--- a/.asd/runtime.js
++++ b/.asd/runtime.js
+@@ -455,7 +455,7 @@ function standingPredicates(input, parts, ids, customRules, templates) {
+   if (!input.files.some((file) => /\.html?$/i.test(file))) grant('html', NA_PREDICATES.noHtml);
+   if (input.selfHosting !== true) grant('selfHosting', NA_PREDICATES.noSelfHosting);
+   if (!input.files.some((file) => isTemplated(file, templates))) grant('templated', NA_PREDICATES.noTemplated);
+-  if (rubrics.includes(COMBINED_REVIEWER) && !input.files.some((file) => isDocumentation(file, templates))) grant('docs', NA_PREDICATES.noDocs);
++  if (rubrics.includes(COMBINED_REVIEWER) && !(input.scopeFiles || input.files).some((file) => isDocumentation(file, templates))) grant('docs', NA_PREDICATES.noDocs);
+   if (input.phase === 'design-review') {
+     if (!input.files.some((file) => /(^|\/)(ux-spec\.html|design-md-delta\.yaml)$/.test(file))) grant('ui', NA_PREDICATES.phaseGate);
+     return granted;
+@@ -466,7 +466,7 @@ function standingPredicates(input, parts, ids, customRules, templates) {
+   return granted;
+ }
+ 
+-/** Emits one reviewer's stamped coverage manifest over its whole file list; `rubric` is its agent markdown, or a combined reviewer's `{reviewer: markdown}` map whose rubrics compose in order. */
++/** Emits one reviewer's stamped coverage manifest over its whole file list; `scopeFiles` (default `files`) is the diff scope the docs predicate judges, so appended test-plan paths never void it; `rubric` is its agent markdown, or a combined reviewer's `{reviewer: markdown}` map whose rubrics compose in order. */
+ function emitCoverageManifest(input) {
+   if (!input || typeof input !== 'object') fail('emit input required');
+   if (!PHASES.includes(input.phase)) fail('phase must be design-review or impl-review');
+@@ -916,6 +916,7 @@ function emitInternalManifest(flags, files, ranges, snapshot) {
+     phase: flags.phase,
+     rubric: flags.reviewer === COMBINED_REVIEWER ? Object.fromEntries(COMBINED_RUBRICS.concat(COMBINED_REVIEWER).map((reviewer) => [reviewer, rubricOf(reviewer)])) : rubricOf(flags.reviewer),
+     files: reviewed,
++    scopeFiles: files,
+     customRules: Object.fromEntries(customPaths.map((file) => [file, fs.readFileSync(file, 'utf8')])),
+     selfHosting: flags['self-hosting'] === true,
+     templates: templateNames(path.join(__dirname, 'templates')),
+diff --git a/.asd/sprints/028-cleanup-phase/test-plan.entry-02.md b/.asd/sprints/028-cleanup-phase/test-plan.entry-02.md
+new file mode 100644
+index 00000000..dbde8fbf
+--- /dev/null
++++ b/.asd/sprints/028-cleanup-phase/test-plan.entry-02.md
+@@ -0,0 +1,21 @@
++# Test plan — sprint 028-cleanup-phase, entry 2 (rotated)
++
++## Risk → check decisions
++
++| Change | Material risk | Chosen check | Decision | Reason |
++|---|---|---|---|---|
++| AC-17 escalation consult, delta: `asd-phase-impl-review.md` steps 8, 10 (gate-marked) and 7a, 11 (no gate marker), Owner line, Dispatch row (supersedes the entry 1 AC-17 row) | a user escalation asked at a step without the advisor consult | contract | keep | `sprint-028 AC-17` scans every workflow step holding a failure- or question-class `[GATE hard: …]` marker: steps 8 and 10 were the D-1 sites and now pass (313/313 pre-strategy); no new test |
++| AC-17 sites without a gate marker: impl-review step 7a second interruption and step 11 FAILED/QUESTION relay | the consult missing at a site no scan reaches | none | none | the sites carry no stable token to derive them from (only prose: "second consecutive interruption", "FAILED → relay"); a pin would lock wording or a hand list, which §17 forbids; the same relay lines in `asd-phase-impl-test.md` 11, `asd-phase-design.md` 13 and `asd-phase-design-review.md` 11 carry it by the same one-clause edit, quality review judges the prose |
++| `.asd/release-manifest.json` hash for the edited workflow | stale `upstream_hashes` entry | contract | keep | the existing release-manifest integrity test (hashes match the files) is green after D-1's refresh |
++
++## Removed tests
++
++| Test | Reason | In change scope |
++|---|---|---|
++| none | no test became obsolete by the delta | yes |
++
++## Added tests
++
++| Test | Regression proof |
++|---|---|
++| none | n/a: D-1's regression is pinned by `sprint-028 AC-17`, whose fail-first run is recorded in `test-plan.entry-01.md` |
+diff --git a/.asd/sprints/028-cleanup-phase/test-plan.md b/.asd/sprints/028-cleanup-phase/test-plan.md
+index 0e6e3d42..21e6ecfe 100644
+--- a/.asd/sprints/028-cleanup-phase/test-plan.md
++++ b/.asd/sprints/028-cleanup-phase/test-plan.md
+@@ -13,14 +13,17 @@ responsibility:
+ |---|---|---|
+ | 1 | 8359218a | full change surface |
+ | 2 | e1fd93a4 | delta since entry 1 |
++| 3 | 9cf1e1f2 | delta since entry 2 (review-fix wave-1/iter-01) |
+ 
+ ## Risk → check decisions
+ 
+ | Change | Material risk | Chosen check | Decision | Reason |
+ |---|---|---|---|---|
+-| AC-17 escalation consult, delta: `asd-phase-impl-review.md` steps 8, 10 (gate-marked) and 7a, 11 (no gate marker), Owner line, Dispatch row (supersedes the entry 1 AC-17 row) | a user escalation asked at a step without the advisor consult | contract | keep | `sprint-028 AC-17` scans every workflow step holding a failure- or question-class `[GATE hard: …]` marker: steps 8 and 10 were the D-1 sites and now pass (313/313 pre-strategy); no new test |
+-| AC-17 sites without a gate marker: impl-review step 7a second interruption and step 11 FAILED/QUESTION relay | the consult missing at a site no scan reaches | none | none | the sites carry no stable token to derive them from (only prose: "second consecutive interruption", "FAILED → relay"); a pin would lock wording or a hand list, which §17 forbids; the same relay lines in `asd-phase-impl-test.md` 11, `asd-phase-design.md` 13 and `asd-phase-design-review.md` 11 carry it by the same one-clause edit, quality review judges the prose |
+-| `.asd/release-manifest.json` hash for the edited workflow | stale `upstream_hashes` entry | contract | keep | the existing release-manifest integrity test (hashes match the files) is green after D-1's refresh |
++| `14.0.0.js` `mergedVerdict`: per-node legacy roster (review-fix F-1) | an iteration lacking a roster-required reviewer (lost dispatch) upgraded as `quality: APPROVE`, so the lost review counts as passed | unit (fixture repo) | adapt | `sprint-028 AC-18` state-rewrite test: wave 2 (no `documentation`) now expects no `quality` key; design iter-07 (no `documentation`) added to the fixture |
++| `14.0.0.js` `migrateReviewNode`: roster-based latch (F-2) | a design node never latches `quality` because `testing` never ran in design-review | unit (fixture repo) | adapt | same test: the design node drops the `testing` verdicts and latch no real design node held, and now expects `quality` latched at the larger of the correctness and documentation latches; impl wave 2 (partial latch) still expects none |
++| `runtime.js` docs predicate over `scopeFiles` (F-3) | the `--test-plan` path the CLI appends to combined's file list is a `.md`, voiding `no documentation file in scope` for every lite code-only review | unit (CLI path) | add | one assert in `sprint-020 AC-4`'s combined-manifest test: `emit-manifest --test-plan` over a code-only scope has the same `n/a` holders as without it; the test's `emit` helper takes extra flags |
++| `asd-reviewer-efficiency.md` declared inputs (F-4) | inputs undeclared | none | none | prose list in an agent definition; no stable token to pin, and the dispatch passes `inputs` whole; quality review judges it |
++| `.asd/release-manifest.json` hashes, regenerated views | stale hash or view | contract | keep | existing release-manifest integrity and `sync.js --check` (exit 0) green |
+ 
+ ## Removed tests
+ 
+@@ -34,15 +37,16 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
+ 
+ | Test | Regression proof |
+ |---|---|
+-| none | n/a: D-1's regression is pinned by `sprint-028 AC-17`, whose fail-first run is recorded in `test-plan.entry-01.md` |
++| `sprint-020 AC-4` combined-manifest test, F-3 assert (extended) | mutation `input.scopeFiles || input.files` → `input.files` in `.asd/runtime.js` standingPredicates: `node tests/run.js --filter "sprint-020 AC-4"` exit 1, 1/313 matched, runner-reported failing test `sprint-020 AC-4: emit-manifest --reviewer combined composes the rubrics its agent names…`; restored |
++| `sprint-028 AC-18` state-rewrite test, F-1 and F-2 (adapted fixture) | mutation 1: delete the roster-completeness guard in `mergedVerdict`; mutation 2: latch test `roster.every` → `LEGACY_REVIEWERS.every`. Each: `node tests/run.js --filter "sprint-028 AC-18"` exit 1, 3/313 matched, 2/3 passed, runner-reported failing test `sprint-028 AC-18 (D13): the 14.0.0 migration gives every review iteration of an active sprint a quality verdict…`; both restored |
+ 
+ ## Suite run
+ 
+-- Command: `node tests/run.js` (shared infrastructure touched: canon rules, `runtime.js`, `sync.js`, `tests/run.js` — the impacted set is the full suite)
++- Command: `node tests/run.js` (shared infrastructure touched: `runtime.js`, `.asd/migrations/`, `tests/run.js` — the impacted set is the full suite)
+ - Scope: full
+-- Result: pass — 313 passed / 0 failed / 0 skipped of 313, exit 0 (pre-strategy run and gate run identical)
++- Result: pass — 313 passed / 0 failed / 0 skipped of 313, exit 0
+ - Lint / build: pass — `git diff --cached --check` exit 0, `node .asd/sync.js --check` exit 0
+-- HEAD: c2783777f0efd7465b1f14e15f0cc75d8d8edf04
++- HEAD: c68467d8676d2963af868ed3a7db9716a2c635b9
+ 
+ ## Defects
+ 
+diff --git a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+index 9f0058d5..c1549ee0 100644
+--- a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
++++ b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+@@ -11,3 +11,5 @@
+ - [In-body comment sweep](feedback_in-body-comment-sweep.md) — grep added `//` lines in JS diffs; an in-body comment is a high Quality finding, move its WHY to JSDoc
+ - [Re-entry evidence check](feedback_reentry-evidence-check.md) — per Re-entry skip key: which stage writes it, and can a template placeholder fake it
+ - [Enumerated reach vs trigger sites](feedback_enumerated-reach-vs-trigger-sites.md) — a home closing reach to a phase list: list every phase the trigger fires in (commit-tool roles) and diff
++- [State-key merge migrations](feedback_state-key-merge-migrations.md) — merging reviewer keys: per-node legacy roster, absent key = blocking, fixtures with keys a node never held
++- [Predicates vs appended files](feedback_predicates-vs-appended-files.md) — reviewerFiles appending test-plan paths can kill a "no X in scope" n/a predicate; trace the CLI path
+diff --git a/.claude/agent-memory/asd-reviewer-combined/feedback_predicates-vs-appended-files.md b/.claude/agent-memory/asd-reviewer-combined/feedback_predicates-vs-appended-files.md
+new file mode 100644
+index 00000000..8a52d3ce
+--- /dev/null
++++ b/.claude/agent-memory/asd-reviewer-combined/feedback_predicates-vs-appended-files.md
+@@ -0,0 +1,12 @@
++---
++name: predicates-vs-appended-files
++description: an emit-manifest n/a predicate evaluated over the reviewer file list can be silently disabled when reviewerFiles appends always-present paths such as test-plan.md
++metadata:
++  type: feedback
++---
++
++When `runtime.js` `reviewerFiles` changes which paths a reviewer's list gets, re-check every `standingPredicates` condition that scans `input.files`. Ask whether an appended path that is always there (test-plan.md is `.md` under `.asd/sprints/`, so it counts as documentation and as templated) makes a "no X in scope" predicate impossible.
++
++**Why:** a combined reviewer's `no documentation file in scope` became dead once test-plan paths joined its list. Unit tests that call `emitCoverageManifest` with a hand-built file list skip the CLI step that appends those paths, so they stay green.
++
++**How to apply:** trace the CLI path (`emit-manifest` → `reviewerFiles` → `emitCoverageManifest`) with the flags the impl-review workflow always passes, then evaluate each predicate on that list.
+diff --git a/.claude/agent-memory/asd-reviewer-combined/feedback_state-key-merge-migrations.md b/.claude/agent-memory/asd-reviewer-combined/feedback_state-key-merge-migrations.md
+new file mode 100644
+index 00000000..40cc12c7
+--- /dev/null
++++ b/.claude/agent-memory/asd-reviewer-combined/feedback_state-key-merge-migrations.md
+@@ -0,0 +1,12 @@
++---
++name: state-key-merge-migrations
++description: reviewing a migration that merges state.json reviewer keys - check each review node's own legacy roster and the absent-key-is-blocking rule, and fixtures holding keys a node never had
++metadata:
++  type: feedback
++---
++
++When a migration folds several legacy reviewer verdict/latch keys into one, judge it per review node, not against one global key list.
++
++**Why:** design-review and impl-review had different legacy rosters, so an "all legacy keys latched" test against the union never holds for the smaller node. Also, "State recovery" defines an absent required key as a lost dispatch that is always blocking, so merging only the keys present can turn a blocking iteration into APPROVE. The suite fixture had legacy keys on a node that never held them, which made the bug invisible.
++
++**How to apply:** read each deleted reviewer's "dispatched in" line to rebuild the per-node roster. Then check (a) the latch condition per node, (b) what an iteration missing one required key becomes, and (c) whether the test fixture's nodes carry only realistic keys.
+diff --git a/tests/run.js b/tests/run.js
+index 6ac2f033..8d81fd88 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -6647,12 +6647,12 @@ test('sprint-020 AC-9: persist-review validates a returned review and writes it
+ test("sprint-020 AC-4: emit-manifest --reviewer combined composes the rubrics its agent names, in order, its own entries last, n/a's every Documentation entry - and only those - when no documentation file is in scope, and is refused outside impl-review", () => {
+   const root = mkTempDir();
+   let runs = 0;
+-  const emit = (reviewer, phase, files) => {
++  const emit = (reviewer, phase, files, extraFlags = []) => {
+     runs += 1;
+     const dir = path.join(root, `run-${runs}`);
+     fs.mkdirSync(dir);
+     fs.writeFileSync(path.join(dir, 'scope.txt'), `${files.join('\n')}\n`, 'utf8');
+-    const result = runtimeCliResult(['emit-manifest', '--reviewer', reviewer, '--phase', phase, '--files', path.join(dir, 'scope.txt'), '--out', dir]);
++    const result = runtimeCliResult(['emit-manifest', '--reviewer', reviewer, '--phase', phase, '--files', path.join(dir, 'scope.txt'), '--out', dir, ...extraFlags]);
+     return result.status === 0 ? JSON.parse(fs.readFileSync(result.result.manifest, 'utf8')) : result;
+   };
+   const noDocs = runtime.NA_PREDICATES.noDocs;
+@@ -6671,6 +6671,7 @@ test("sprint-020 AC-4: emit-manifest --reviewer combined composes the rubrics it
+   assert.ok(code.rules.some(isDocumentationEntry) && code.rules.some((id) => !isDocumentationEntry(id)), 'sanity: the composed rubric must hold both documentation and non-documentation entries, or the predicate check below compares one side with nothing');
+   assert.deepStrictEqual(holders(code), code.rules.filter(isDocumentationEntry), `with no documentation file in scope every documentation entry of the composed Quality and Efficiency rubrics - and nothing else - must carry "n/a: ${noDocs}": a rubric entry the predicate misses is reviewed against nothing, one it over-reaches is a code concern silently skipped`);
+   assert.deepStrictEqual(holders(emit(runtime.COMBINED_REVIEWER, 'impl-review', ['src/a.js', 'README.md'])), [], 'one documentation file in scope keeps the whole Documentation rubric reviewed (AC-4)');
++  assert.deepStrictEqual(holders(emit(runtime.COMBINED_REVIEWER, 'impl-review', ['src/a.js'], ['--test-plan', '.asd/sprints/001-x/test-plan.md'])), holders(code), 'sprint-028 wave-1/iter-01 F-3: the test-plan path the CLI appends to the combined file list is not diff scope - judged by the docs predicate it would void the n/a of every lite code-only review');
+   for (const reviewer of parts) assert.deepStrictEqual(holders(emit(reviewer, 'impl-review', ['src/a.js'])), [], `the predicate reaches only the combined manifest - standard's ${reviewer} reviewer is dispatched for its rubric and never n/a's its documentation entries wholesale`);
+   const design = emit(runtime.COMBINED_REVIEWER, 'design-review', ['s/design/prd.md']);
+   assert.ok(design.status === 2 && /one of/.test(design.stderr), `no workflow dispatches combined in design-review, so emit-manifest must refuse it there (got: ${JSON.stringify(design)})`);
+@@ -8448,18 +8449,20 @@ function legacyReviewsFixture(sprintRoot) {
+   reviewFile('reviews/design/iter-04', 'correctness', ['F-1', 'F-2'], ['F-1']);
+   reviewFile('reviews/impl/wave-2/iter-01', 'testing', ['F-1'], ['F-1']);
+   const legacy = (correctness, testing, documentation) => ({ correctness, testing, documentation, efficiency: 'APPROVE' });
++  const legacyDesign = (correctness, documentation) => ({ correctness, documentation, efficiency: 'APPROVE' });
+   return {
+     design: {
+-      iteration: 6,
++      iteration: 7,
+       verdicts: {
+-        'iter-01': legacy('CONCERNS', 'FAIL', 'APPROVE'),
+-        'iter-02': legacy('APPROVE', 'APPROVE (skipped: no tests)', 'APPROVE'),
+-        'iter-03': legacy('CONCERNS', 'skipped: no tests in scope', 'APPROVE'),
+-        'iter-04': legacy('CONCERNS', 'APPROVE', 'APPROVE'),
+-        'iter-05': { ...legacy('APPROVE', 'APPROVE', 'APPROVE'), quality: 'CONCERNS' },
++        'iter-01': legacyDesign('FAIL', 'APPROVE'),
++        'iter-02': legacyDesign('APPROVE', 'APPROVE (skipped: no docs)'),
++        'iter-03': legacyDesign('CONCERNS', 'skipped: no docs in scope'),
++        'iter-04': legacyDesign('CONCERNS', 'APPROVE'),
++        'iter-05': { ...legacyDesign('APPROVE', 'APPROVE'), quality: 'CONCERNS' },
+         'iter-06': { efficiency: 'APPROVE' },
++        'iter-07': { correctness: 'APPROVE', efficiency: 'APPROVE' },
+       },
+-      latched: { correctness: 1, testing: 2, documentation: 3, efficiency: 1 },
++      latched: { correctness: 1, documentation: 3, efficiency: 1 },
+     },
+     impl: {
+       wave: 2,
+@@ -8471,7 +8474,7 @@ function legacyReviewsFixture(sprintRoot) {
+   };
+ }
+ 
+-test('sprint-028 AC-18 (D13): the 14.0.0 migration gives every review iteration of an active sprint a quality verdict - APPROVE only when each legacy verdict present is satisfied (an approval, a skip, or a bare finding verdict whose review file resolves every finding id, read from that wave\'s own directory), else the most severe token - latches quality only when all three legacy reviewers latched, keeps the legacy keys, and folds the critical task tier into standard', async () => {
++test('sprint-028 AC-18 (D13): the 14.0.0 migration gives every review iteration of an active sprint a quality verdict - APPROVE only when each legacy verdict present is satisfied (an approval, a skip, or a bare finding verdict whose review file resolves every finding id, read from that wave\'s own directory), else the most severe token, and none when a reviewer its node roster requires is absent - latches quality only when every reviewer of its node roster latched (design: correctness and documentation), keeps the legacy keys, and folds the critical task tier into standard', async () => {
+   const root = makeMigrationFixtureRepo();
+   const sprintRoot = path.join(root, '.asd/sprints/001-live');
+   const reviews = legacyReviewsFixture(sprintRoot);
+@@ -8487,9 +8490,8 @@ test('sprint-028 AC-18 (D13): the 14.0.0 migration gives every review iteration
+   expected.design.latched.quality = 3;
+   expected.impl.waves[0].verdicts['iter-01'].quality = 'APPROVE';
+   expected.impl.waves[0].latched.quality = 2;
+-  expected.impl.waves[1].verdicts['iter-01'].quality = 'APPROVE';
+   const after = JSON.parse(fs.readFileSync(path.join(sprintRoot, 'state.json'), 'utf8'));
+-  assert.deepStrictEqual(after.reviews, expected, 'quality is the worst unsatisfied legacy token, resolved findings and skips count as satisfied, wave K reads wave-K\'s directory, an existing quality verdict and an efficiency-only iteration are left alone, and only a full legacy latch becomes a quality latch');
++  assert.deepStrictEqual(after.reviews, expected, 'quality is the worst unsatisfied legacy token, resolved findings and skips count as satisfied, wave K reads wave-K\'s directory, an existing quality verdict and an efficiency-only iteration are left alone, an iteration lacking a reviewer its node\'s roster required (a lost dispatch) gets no quality key, and only a full roster latch becomes a quality latch');
+   assert.deepStrictEqual(after.task_routing, { ...routing, 'Task 1': { ...routing['Task 1'], tier: 'standard' } }, 'only the retired critical tier changes');
+   assert.deepStrictEqual(report.rewritten, ['.asd/sprints/001-live/state.json']);
+ });

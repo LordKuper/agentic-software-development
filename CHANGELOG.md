@@ -2,6 +2,30 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v14.0.0
+
+A new `cleanup` phase removes sprint residue before retro, the agent roster shrinks from twelve specs to seven with the orchestrator doing all creator work itself, reviews run as Quality + Efficiency (standard) or Combined (lite), and every failure or question escalation to you now comes with an advisor recommendation.
+
+### Added
+- **`cleanup` phase** before `retro` in both workflows (`standard`: impl-review → cleanup → retro; `lite`: design-promote → cleanup → retro). The orchestrator removes, on clear evidence only, what the sprint left behind — debug output, commented-out code, scratch files, fixtures and test data no test reads, and code the sprint made dead — from a committed checkpoint, in `chore(cleanup): …` commits, with no review and no user gate. It then runs build, lint and the impacted tests, fixing or reverting a removal that breaks them, and records one decisions-log line. Test files, sprint/project bookkeeping, agent memory, generated views and persistent `docs/` are never touched. Rules: `sprint-lifecycle.md` "Cleanup phase"; workflow `asd-phase-cleanup.md`; skill `asd-phase-cleanup`.
+- **`cleanup: enabled | disabled`** in `config.yaml` (absent = `enabled`), frozen per sprint; `disabled` makes the phase a recorded no-op. A sprint already in flight when you upgrade (no frozen value) runs the phase.
+- **`documents.design_system`** (`enabled | disabled`): the project-wide design system (`DESIGN.md`, `design-system.html`, `accessibility.html`, the design-system gate, `DESIGN.md` token deltas, the Node/`designmd-*` commands) is now toggled separately from sprint-level UX specs (`documents.ux_spec`). Absent, it takes the `ux_spec` value, so existing configs behave as before.
+- **`asd-reviewer-quality`**: completeness against every AC and plan Task, requirement conformance, correctness, security, contracts, test adequacy, documentation accuracy (SSoT, actuality, stubs), UI/accessibility.
+- **Advisor before escalations**: before putting a failure or a question to you (an agent `QUESTION`, a `FAILED`, a repeated stall or interruption, a stalemate, a review-cap override, a reviewer FAIL), the orchestrator gets an `asd-advisor` recommendation and shows it beside the options. Phase-transition gates and skill preference menus are unchanged.
+- **`review-waves --single`** records a one-wave division whatever the scope size.
+
+### Changed
+- **The orchestrator does all creator work inline**: scope best-practice research, audit, design drafts and their review fixes, design-promote, and the `/asd-concept`, `/asd-stack`, `/asd-design-system` skills. It delegates only code (`asd-dev`), tests (`asd-tester`), review and advice. Documents it authors are agreed section by section (Lock in / Revise), each lock recorded in the decisions log, then one accept.
+- **Reviewers**: `standard` design-review and impl-review dispatch `quality` and `efficiency` (plus External Review); `lite` dispatches `combined` (Quality + Efficiency rubrics in one pass). Verdict tokens are `[REVIEW-<phase>-quality|efficiency|combined|external]`. `efficiency` gains duplication/reuse, documentation economy (its iron-rule FAIL owner), runtime token cost, change-size proportionality and test-suite cost; SSoT FAILs belong to `quality`.
+- **`lite` impl-review never splits into review waves**: the whole change scope is one wave whatever its size. `standard` keeps size-based division.
+- **Models**: `asd-dev` sonnet/high (Codex sol/high), `asd-dev-mechanical` haiku/high (luna/high), `asd-tester` sonnet/high (sol/high), `asd-reviewer-quality`, `-efficiency` and `-combined` opus/high (sol/high).
+- **Routing**: `route-task` tiers are `command`, `mechanical`, `standard`; a change risk only forbids `mechanical`; a legacy `priorTier: critical` reads `standard`. `asd-tester` is no longer routed.
+- **Phase skills pre-approve the tools their inline steps use** (`Grep` everywhere; `WebSearch`/`WebFetch` in scope, audit, plan, design, design-promote; write tools in scope and pr).
+- External Review's empty Kept findings table is its header and separator rows only; plans state the on-disk write point and re-entry evidence of every multi-stage interactive step, and list every site a universal-reach criterion triggers by repo grep.
+
+### Removed
+- **BREAKING**: agents `asd-ba`, `asd-ux`, `asd-architect`, `asd-reviewer-correctness`, `asd-reviewer-testing`, `asd-reviewer-documentation`, the `asd-dev-critical` variant and both `asd-tester` variants. Migration `14.0.0` deletes their ownership-marked generated views, rewrites an active sprint's review state to the new `quality` key (an iteration missing a legacy reviewer's verdict stays blocking) and maps `task_routing` tier `critical` to `standard`. Automation keyed on the old reviewer names, the eleven/nine-phase chains or the `critical` tier must be updated. Memory directories of removed agents under `.claude/agent-memory/` are not migrated — delete them, and check that no pre-4.0.0 `asd-reviewer-quality/` memory is left over before the new reviewer loads it.
+
 ## v13.10.0
 
 Scope now runs staged solution design before acceptance criteria are written, retro intake asks for an explicit decision on every open finding, and agent-memory fixes no longer cost a phase transition or a review iteration.

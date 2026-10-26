@@ -1,0 +1,1 @@
+[{"id":"F-1","severity":"medium","location":".asd/migrations/14.0.0.js:151"},{"id":"F-2","severity":"medium","location":".asd/migrations/14.0.0.js:172"},{"id":"F-3","severity":"medium","location":".asd/runtime.js:458"},{"id":"F-4","severity":"low","location":".asd/agents/asd-reviewer-efficiency.md:103"}]
