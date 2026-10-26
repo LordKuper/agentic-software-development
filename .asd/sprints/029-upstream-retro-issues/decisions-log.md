@@ -67,3 +67,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-26 — route impl-test entry 3: standard, dispatch HEAD f4935baa
 - 2026-10-26 — impl-test: impacted set green (318/318, full suite via safety valve), 2 asserts added/0 removed (entry 3)
 - 2026-10-26 — impl-review wave-1/iter-03: combined APPROVE, external APPROVE → reviewer DoD met (1/1 wave); terminal full suite next
+- 2026-10-26 — route impl-review terminal suite 1: standard, dispatch HEAD a45798e2
+- 2026-10-26 — impl-review: DoD met — wave 1/1 roster APPROVE at iter-03, terminal full suite green (318/318 @ a45798e2, 9cefd5c6); green handoff adaptive: evidence = both reviewers APPROVE + suite exit 0 + sync check ok → design-promote

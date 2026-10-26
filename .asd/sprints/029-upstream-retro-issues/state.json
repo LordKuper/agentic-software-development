@@ -69,6 +69,13 @@
       "reason": "Tasks 1-7 + 2 route-backs done, plan ticked, build/lint clean, paths authorised, flagged choices resolved",
       "evidence": "decisions-log.md 2026-10-26 impl assessment",
       "artifact_revision": "plan.md@impl"
+    },
+    {
+      "gate": "impl-review green handoff",
+      "decision_actor": "orchestrator",
+      "reason": "wave 1/1 combined+external APPROVE at iter-03; terminal full suite 318/318 exit 0; sync check ok",
+      "evidence": "decisions-log.md 2026-10-26 impl-review DoD met; test-plan.md Suite run @ a45798e2",
+      "artifact_revision": "HEAD@9cefd5c6"
     }
   ],
   "task_routing": {
