@@ -76,6 +76,13 @@
       "reason": "wave 1/1 combined+external APPROVE at iter-03; terminal full suite 318/318 exit 0; sync check ok",
       "evidence": "decisions-log.md 2026-10-26 impl-review DoD met; test-plan.md Suite run @ a45798e2",
       "artifact_revision": "HEAD@9cefd5c6"
+    },
+    {
+      "gate": "PR publication",
+      "decision_actor": "user",
+      "reason": "user approved push and PR open",
+      "evidence": "chat 2026-10-26: Да, пушь ветку и открывай PR",
+      "artifact_revision": "HEAD@059b7357"
     }
   ],
   "task_routing": {
