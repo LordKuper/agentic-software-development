@@ -8468,7 +8468,7 @@ function legacyReviewsFixture(sprintRoot) {
       wave: 2,
       waves: [
         { iteration: 1, verdicts: { 'iter-01': legacy('APPROVE', 'APPROVE', 'APPROVE') }, iteration_heads: {}, latched: { correctness: 1, testing: 1, documentation: 2 } },
-        { iteration: 1, verdicts: { 'iter-01': { correctness: 'APPROVE', testing: 'CONCERNS' } }, iteration_heads: {}, latched: { correctness: 1, testing: 1 } },
+        { iteration: 2, verdicts: { 'iter-01': { correctness: 'APPROVE', testing: 'CONCERNS', documentation: 'APPROVE' }, 'iter-02': { correctness: 'APPROVE', testing: 'APPROVE' } }, iteration_heads: {}, latched: { correctness: 1, testing: 1 } },
       ],
     },
   };
@@ -8490,6 +8490,7 @@ test('sprint-028 AC-18 (D13): the 14.0.0 migration gives every review iteration 
   expected.design.latched.quality = 3;
   expected.impl.waves[0].verdicts['iter-01'].quality = 'APPROVE';
   expected.impl.waves[0].latched.quality = 2;
+  expected.impl.waves[1].verdicts['iter-01'].quality = 'APPROVE';
   const after = JSON.parse(fs.readFileSync(path.join(sprintRoot, 'state.json'), 'utf8'));
   assert.deepStrictEqual(after.reviews, expected, 'quality is the worst unsatisfied legacy token, resolved findings and skips count as satisfied, wave K reads wave-K\'s directory, an existing quality verdict and an efficiency-only iteration are left alone, an iteration lacking a reviewer its node\'s roster required (a lost dispatch) gets no quality key, and only a full roster latch becomes a quality latch');
   assert.deepStrictEqual(after.task_routing, { ...routing, 'Task 1': { ...routing['Task 1'], tier: 'standard' } }, 'only the retired critical tier changes');
