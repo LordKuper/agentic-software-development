@@ -70,3 +70,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-26 — impl-test: impacted set green (313/313, full suite), entry 3 2 asserts added/adapted/0 removed
 - 2026-10-26 — impl-review wave-1/iter-02: combined CONCERNS (F-1 medium, test-only: AC-18 fixture lost the wave-K directory case), external latched APPROVE → impl review-fix (wave-1/iter-02), test-file chain to asd-tester
 - 2026-10-26 — route review-fix wave-1/iter-02: standard, dispatch HEAD acf62fd5
+- 2026-10-26 — impl fix for wave-1/iter-02: findings resolved (F-1 1d4d10ac, tester chain)
+- 2026-10-26 — route impl-test entry 4: standard, dispatch HEAD 1d4d10ac
