@@ -14,3 +14,4 @@
 - [State-key merge migrations](feedback_state-key-merge-migrations.md) — merging reviewer keys: per-node legacy roster, absent key = blocking, fixtures with keys a node never held
 - [Predicates vs appended files](feedback_predicates-vs-appended-files.md) — reviewerFiles appending test-plan paths can kill a "no X in scope" n/a predicate; trace the CLI path
 - [Repurposed fixture coverage](feedback_repurposed-fixture-coverage.md) — a changed/dropped fixture expectation: what did that case alone reach; an unread fixture write is the tell
+- [Role removal, work inline](feedback_role-removal-inline-work.md) — retired agents' tools vs receiving skills' allowed-tools; grep every name form (`<key>.md`, tier prose), not the sweep's list
