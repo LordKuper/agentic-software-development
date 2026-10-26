@@ -61,3 +61,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-26 — route test-fix D-1: standard, dispatch HEAD 402db21f; risk change: advisor consult sites in impl-review
 - 2026-10-26 — impl test-fix: defects D-1 resolved (043e4301, row 111c8d13); flagged accepted: dev refreshed the one upstream_hashes entry its edit staled (orchestrator sync output, same as sync --apply AGENTS.md); gate: sync --check 60 current, diff --check clean, paths authorised
 - 2026-10-26 — route impl-test entry 2: standard, dispatch HEAD 111c8d13
+- 2026-10-26 — impl-test: impacted set green (313/313, full suite via safety valve), entry 2 0 added/0 removed tests; no Manual verification rows
