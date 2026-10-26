@@ -13,13 +13,14 @@ responsibility:
 |---|---|---|
 | 1 | 78ab90ca72a6f8c02682ca2fcfd0534a1a77a63a | full change surface |
 | 2 | adffa79cb39b086699bee06e83ff584c60584e16 | delta since entry 1 |
+| 3 | | delta since entry 2 |
 
 ## Risk → check decisions
 
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
-| Review-fix canon edits F-1..F-7, X-1, X-2 (`-R` on every gh issue call, backlog-duplicate `-r duplicate`, closed comparison list, "missing release and issue-close steps" wording, impl step 10 pointer, retro title sanitising in gh-2.90.md) | Reworded or added text drifts from its pin, or a gh call regains a missing `-R` | content contract | none | Already pinned by the review-fix tester commit (e20bd5bc: per-assert proofs for F-2, F-3, F-5; renamed wording in sprint-021/022 pins); nothing left uncovered. gh-2.90.md sanitising rule and impl step 10 pointer are prose with no parsed literal |
-| asd-phase-retro SKILL `allowed-tools` gains `Bash(gh auth status:*)` and `Bash(gh issue create:*)` (F-1) | A gh call retro step 7 runs is not pre-approved, so the inline step stalls on a permission prompt before any issue is published; the grant list and the step text are two files nothing ties | content contract | add | Review finding evidences the failure mode; the grant set is derived from the `gh <a> <b>` calls in step 7, not enumerated |
+| Retro step 7.3 states the title strip set inline (backtick, `$`, `\`, `"`, `“`, `”`, `„`) and drops the unshipped `docs/architecture/tech-reference/gh-2.90.md` citation (X-1); gh-2.90.md points at step 7.3 | A strip-set member dropped or reworded away leaves a consumer-derived title expanding or closing the quote in the shell (command injection, evidenced by the review finding); a `docs/` path back in the consumer-run step points at a file consumers do not have | content contract | add | The set is a fixed literal list and step 7.3 is its only shipped home; nothing else ties it. The `docs/` assert is the cheap derived form of X-1: it covers the class (retro step 7 cites no `docs/` path), not the one file. scope step 2a also cites gh-2.90.md but runs under `self_hosting: enabled` only, where the file exists, so no repo-wide ban on `tech-reference/` citations is warranted |
+| release-manifest hash refresh, gh-2.90.md wording | Mechanical | none | none | Hash refresh is checked by the existing manifest and sync checks; gh-2.90.md is reference prose with no parsed literal |
 
 ## Removed tests
 
@@ -31,15 +32,15 @@ responsibility:
 
 | Test | Regression proof |
 |---|---|
-| tests/run.js: sprint-029 AC-1/AC-2/AC-3/AC-4/AC-5/AC-6/AC-7/AC-8 contract test, new assert (every gh call in retro step 7 has a `Bash(gh <call>:*)` grant in the retro SKILL) | Mutation: SKILL grant `Bash(gh issue create:*)` removed: `node tests/run.js --filter "sprint-029 AC-1/AC-2"` → exit 1, FAIL sprint-029 AC-1/AC-2/AC-3/AC-4/AC-5/AC-6/AC-7/AC-8 (1 test matched), the AC-1 grants assert reported. Control (grant order swapped, set unchanged): same command → exit 0, 1 test matched. Mutation restored before the next command; runs: 2 (1 mutation + 1 control) |
+| tests/run.js: sprint-029 AC-1/AC-2/AC-3/AC-4/AC-5/AC-6/AC-7/AC-8 contract test, new asserts (step 7.3 strip set; no `docs/` path in retro step 7) | Each `node tests/run.js --filter "sprint-029 AC-1/AC-2"` → exit 1, FAIL sprint-029 AC-1/AC-2/AC-3/AC-4/AC-5/AC-6/AC-7/AC-8 (1 test matched), the named assert the one reported: `”` removed from the step 7.3 strip list (AC-1 strip-set assert); `docs/architecture/tech-reference/gh-2.90.md` citation restored in step 7.3 (AC-1 `docs/` assert). Control (parenthetical reworded, set unchanged): same command → exit 0, 1 test matched. Mutations restored before the next command; runs: 3 (2 mutations + 1 control) |
 
 ## Suite run
 
 - Command: `node tests/run.js`
 - Scope: full (change surface touches framework-wide files: safety valve degrades the impacted set to the full suite)
-- Result: pass — 318 passed, 0 failed, 0 skipped, exit 0 (pre-strategy 318/318 exit 0 before the new assert; the new assert adds no test, so the count is unchanged)
+- Result: pass — 318 passed, 0 failed, 0 skipped, exit 0 (pre-strategy 318/318 exit 0 before the new asserts; they extend an existing test, so the count is unchanged)
 - Lint / build: pass — `git diff --cached --check` clean at commit, `node .asd/sync.js --check` ok
-- HEAD: adffa79cb39b086699bee06e83ff584c60584e16
+- HEAD: pending (filled at the entry exit)
 
 ## Defects
 
