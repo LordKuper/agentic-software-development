@@ -1443,7 +1443,7 @@ function inputJson(flags) {
 async function main(argv) {
   const command = argv[2];
   if (command === 'timing' || command === 'timing-recover') return timingCommand(command, argv.slice(3));
-  const flags = parseFlagArgs(argv.slice(3), ['self-hosting', 'late']);
+  const flags = parseFlagArgs(argv.slice(3), ['self-hosting', 'late', 'single']);
   if (command === 'manifest-digest') {
     process.stdout.write(coverageManifestDigest(JSON.parse(fs.readFileSync(flags.manifest, 'utf8'))) + '\n');
     return 0;
