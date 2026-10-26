@@ -49,3 +49,11 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: sprint.md
 
 - 2026-10-26 — audit reevaluated: stays true; supplemental audit dispatched for AC-11..AC-19
+
+## 2026-10-26 — amendment audit decisions
+
+- **Decision**: AC-17 narrowed to failure/question escalations (agent QUESTION, FAILED, repeated stall or interruption, stalemate, review-cap override, reviewer FAIL); memory of removed agents is deleted as ownerless, not re-authored; documents the orchestrator now authors use per-section lock-in (core.md "Incremental writing"). AC-20 added: sprint-level UX specs switch off independently of the project-wide design system.
+- **Rationale**: User answers to the supplemental audit's open points plus a user-requested criterion; C3 settled canonically (artifact-layout.md placeholder table); AC-18 makes the release MAJOR with a 14.0.0 migration, superseding audit.md's earlier "Migration: none required".
+- **Affected docs**: sprint.md, audit.md
+
+- 2026-10-26 — audit gate (adaptive): audit.md complete for AC-1..AC-20, every contradiction settled, every criterion deliverable per its Gaps entry → NEXT plan (lite)

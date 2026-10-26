@@ -15,3 +15,7 @@
 {"op":"close","id":"asd-architect audit#1","kind":"dispatch","parent":"audit#1","start":"2026-10-22T18:53:55.366Z","end":"2026-10-22T19:11:47.091Z","outcome":"done","attrs":{"agent":"asd-architect","tier":"standard","model":"opus"}}
 {"op":"open","id":"wait audit contradiction","kind":"user-wait","parent":"audit#1","start":"2026-10-22T19:12:52.171Z","attrs":{"gate":"audit contradiction"}}
 {"op":"close","id":"wait audit contradiction","kind":"user-wait","parent":"audit#1","start":"2026-10-22T19:12:52.171Z","end":"2026-10-26T06:36:44.492Z","outcome":"done","attrs":{"gate":"audit contradiction"}}
+{"op":"open","id":"asd-architect audit#2","kind":"dispatch","parent":"audit#1","start":"2026-10-26T07:40:56.150Z","attrs":{"agent":"asd-architect","tier":"standard","model":"opus"}}
+{"op":"close","id":"asd-architect audit#2","kind":"dispatch","parent":"audit#1","start":"2026-10-26T07:40:56.150Z","end":"2026-10-26T08:01:26.836Z","outcome":"done","attrs":{"agent":"asd-architect","tier":"standard","model":"opus"}}
+{"op":"open","id":"wait audit amendment decisions","kind":"user-wait","parent":"audit#1","start":"2026-10-26T08:03:30.270Z","attrs":{"gate":"audit contradiction"}}
+{"op":"close","id":"wait audit amendment decisions","kind":"user-wait","parent":"audit#1","start":"2026-10-26T08:03:30.270Z","end":"2026-10-26T08:10:35.307Z","outcome":"done","attrs":{"gate":"audit contradiction"}}

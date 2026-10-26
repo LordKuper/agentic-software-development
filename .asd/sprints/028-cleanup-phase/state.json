@@ -53,6 +53,27 @@
       "reason": "AC-11..AC-19 added: agent roster cut, inline creator work, quality/efficiency/combined reviewers, advisor on escalation",
       "evidence": "decisions-log.md 2026-10-26 scope amendment",
       "artifact_revision": "sprint.md@audit"
+    },
+    {
+      "gate": "audit contradiction",
+      "decision_actor": "user",
+      "reason": "AC-17 reach failures/questions only; C3 canonical",
+      "evidence": "decisions-log.md 2026-10-26 amendment audit decisions",
+      "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "new or changed scope",
+      "decision_actor": "user",
+      "reason": "AC-17 narrowed; AC-20 added (UX specs off independently of design system); AC-19 covers AC-20",
+      "evidence": "decisions-log.md 2026-10-26 amendment audit decisions",
+      "artifact_revision": "sprint.md@audit"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "all sections present for AC-1..AC-20; C1, C3 canonical, C2 and AC-17 reach settled by user",
+      "evidence": "audit.md",
+      "artifact_revision": "audit.md@audit"
     }
   ],
   "task_routing": {},
@@ -76,7 +97,7 @@
     }
   },
   "created_at": "2026-10-22T14:59:41.183Z",
-  "updated_at": "2026-10-26T07:40:50.644Z",
+  "updated_at": "2026-10-26T08:10:35.372Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

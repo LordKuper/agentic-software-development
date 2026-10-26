@@ -125,3 +125,93 @@ No `docs/` (decomposition disabled); under `self_hosting` the canonical docs are
 
 ## Documentation migration plan
 None: no external documentation bears on the touched areas.
+
+## Touched areas (amendment AC-11..AC-19)
+Repo-grep site lists (AC-10); generated views, `.asd/sprints/**`, `CHANGELOG.md`, `plans/`, `.asd/project/decisions-log.md`/`retro-backlog.md` excluded. Removed names = `asd-ba|ux|architect`, `asd-reviewer-correctness|testing|documentation`, `asd-dev-critical`, `asd-tester-critical|mechanical`; reviewer keys `correctness|testing|documentation`; routing tier `critical` (never finding severity).
+
+- **Agents**: delete `asd-ba.md`, `asd-ux.md`, `asd-architect.md`, `asd-reviewer-correctness.md`, `asd-reviewer-testing.md`, `asd-reviewer-documentation.md`; add `asd-reviewer-quality.md` (opus/high, sol/high, web). `asd-dev.md`: drop `critical`, base → sonnet/high, mechanical gains `effort: high` and luna/high (`variantMeta` drops effort unless the variant declares it, sync.js:967). `asd-tester.md`: drop both variants, base → sonnet/high. `asd-reviewer-efficiency.md`: → opus/high plus new rubric entries. `asd-reviewer-combined.md`: composes quality + efficiency. `asd-advisor.md`: contract change (AC-17). `asd-external-review.md`: unchanged.
+- **Workflows**: `standard.json` `reviewers.design`/`impl` = `["quality","efficiency","external"]`; `lite.json` unchanged. `asd-phase-scope.md` :3, :30, :32, :51; `asd-phase-audit.md` :3, :20 (`read_plan`/`AUDIT_BATCH_THRESHOLD_FILES` recipient), :21, :22, :24, :30, :42; `asd-phase-design.md` :3, :24, :31, :36, :40, :46, :52-53, :59; `asd-phase-design-review.md` :3, :37, :46-49 (creator fixes), :55, :56, :62, :69 (explicit reviewer names); `asd-phase-design-promote.md` :3, :21-23, :28; `asd-phase-impl-review.md` :29 (UI predicate owner), :51, :56 (tester routing), :74 (`correctness`/`testing` input rule); `asd-phase-impl-test.md` :20; `asd-phase-impl.md` :32, :33 (`<agent>-<tier>`).
+- **Skills**: `asd-concept`, `asd-stack`, `asd-design-system` — delegation becomes inline steps (`## Delegates`, `context --role` lines); descriptions of `asd-phase-scope|audit|design|design-review|design-promote|impl-review` SKILL.md :4; `asd-init:74` ("Architect fills it").
+- **Rules**: `providers.md` — Role-scoped context (remove 14 creator rows and 9 removed-reviewer rows, add quality rows, augment orchestrator scope/audit/design/design-review/design-promote rows, add concept/stack/design-system rows), "Conditional grants" :151-152, "Task-class variants and routing" :161, :163, :169. `review-policy.md` :85, :98, :163, :166, :194-198, :205-209, :215, :217 (:57, :75 Efficiency stay). `sprint-lifecycle.md` :5 (AC-2 + AC-12), :9, :17, :20, :36, :136-140, :144, :194, :215-225, :302, :306, :342. `core.md` :20-22, :49. `agent-protocol.md` :11, :13, "Relay". `artifact-layout.md` :114, :140, :179, :181, :223, :227 (SSoT FAIL → quality, economy FAIL → efficiency). `git-strategy.md` :17, :59. `design-system.md` :3, :83; `ux-principles.md` :3. `external-review.md` :99.
+- **Runtime/generator**: `runtime.js` :36 `INTERNAL_REVIEWERS`, :41 `COMBINED_RUBRICS`, :66-71 `NA_TARGETS`, :455 noDocs, :491, :497-500 `reviewerFiles`, :311-321 `routeTask`, :33-34 `AUDIT_BATCH_THRESHOLD_FILES`; `sync.js:972` `VARIANT_SUFFIXES`. Hook: no change.
+- **Templates**: `t_audit.md:12`, `t_c4-model.c4:2`, `t_c4-views.c4:2`, `t_custom-design-rules.md:10`, `t_test-plan.md:5,:75`, `t_manual-steps.md:4`, `t_review.md:5`, `external-review/t_prompt-external-design.md:71`.
+- **Migration/manifest**: new `.asd/migrations/14.0.0.js` (AC-18); manifest hashes via `sync.js --apply`, `asd_version` → 14.0.0 at pr; `model_families` unchanged; `4.0.0.js:37` lists `asd-reviewer-quality` as retired (Risks).
+- **Generated views**: `.claude/agents/`, `.codex/agents/` 16 → 8 each (9 removed per provider); CI `sync-check.yml` fails until deleted.
+- **Agent memory** (tracked): asd-architect 3, asd-dev-critical 16, asd-reviewer-correctness 10, -documentation 4, -testing 8, asd-tester-critical 4; asd-pm 4 already ownerless; live files naming removed agents in correctness, documentation, testing, combined, asd-tester/MEMORY.md, dev-critical.
+- **Mirrors**: `README.md` :5, :17, :159-168, :184-192, :220, :228-236, :238, :242, :246-253, :255, :333, :350, :356, :433, :436; `AGENTS.md:83`; `CHANGELOG.md` (MAJOR); `.asd/project/custom-design-rules.md:10` project-owned, outside the Dev allowlist.
+- **Tests** (`tests/run.js`): 165, 1043, 1091 (`Seven` missing in `WORD_TO_NUMBER`); 2437-2443, 3364-3429 (routeTask critical); 3554-3700; 4321; 4536-4670, 5307-5509, 5667-5695, 6559-6662 (fixtures); 4912, 5736, 5911, 5931-5937, 5973, 8020, 8063; 7019, 7361, 8302; 7215-7275; 7308, 7350, 7602-7614; 8104, 8130, 8165-8183, 8306 (scope Owner "dispatches none" pin inverts); 1517-1623, 1814 (`asd-reviewer-quality` retired-orphan fixture name).
+
+## Existing docs found (amendment AC-11..AC-19)
+- `providers.md`: Role-scoped context (runtime-read; variant reads as base via `VARIANT_SUFFIXES`); Orphan detection (`--apply` deletes a marked orphan only when named); Task-class variants and routing (`critical`, `priorTier` clamp, suite-run ids); Model family resolution; Emitted agent frontmatter.
+- `review-policy.md`: Over-engineering/Structure checklists; Autofix vs escalation (memory-fix, ownerless memory deleted); Low-severity test-only findings (location-based `isTest`, fixer `asd-tester`); Gate Verdict Format; Reviewer responsibility; DoD per review phase.
+- `sprint-lifecycle.md`: Workflows (read live → roster changes for in-flight sprints); APPROVE latch (keys = verdict keys); State recovery (absent required key blocks impl-review and pr step 1; failed dispatch anchored on routing line); Staged solution design (BA scope rules, offline FAILED path); Design-promote phase; Agent liveness.
+- `agent-protocol.md` "Relay": ADVICE_NEEDED creator-only, unlogged, cap 3; advisor `FAILED` on a HARD gate.
+- `core.md` Autonomy and escalation, Incremental writing; `checkpoints.md` Gate policy/Gate inventory (review-cap override, stalemate, FAIL waiver, abort hard but not inventory rows).
+- `artifact-layout.md`: Agent memory, Tech reference docs, HTML shell placeholder table, SSoT and economy iron rules.
+- `asd-phase-audit.md` "Rules" holds nearly all architect audit rules; `t_adr.html:15,:27-39`, `t_tech-reference.md:12` already carry ADR consequences/alternatives, subsystem chip, `Last verified`.
+- Migrations `4.0.0.js` (retired-view deletion, marker-gated), `6.0.0.js` (active-sprint `state.json` rewrite); `update.js` propagates canon deletion; afterwards only `sync.js --check` runs. `asd-sync` SKILL has no orphan branch.
+- Host docs: Claude Code subagent `effort` depends on model (https://code.claude.com/docs/en/sub-agents); `haiku` = Haiku 5.5 with effort on the Anthropic API only, Haiku 4.5 (no effort) on Bedrock/Vertex/Foundry (https://code.claude.com/docs/en/model-config). `gpt-6-luna` `high` confirmed only by secondary sources (https://pi.dev/models/openai-codex/gpt-6-luna?name=pi, https://codersera.com/blog/gpt-6-luna-complete-guide-2026/); sync.js:178 rejects only `ultra` on luna. Codex top-level `web_search` defaults to `cached`.
+
+## Contradictions (amendment AC-11..AC-19)
+- **AC-17 reach** — settled by user: failures and questions only (sprint.md AC-17 reworded).
+- **C3** — `asd-architect.md` Rules ADR doc-level `SUBSYSTEM` (shared id/`N/A`/`project`) vs `artifact-layout.md` "HTML shell wrapping" (`sprint` for sprint-scoped artifacts). Winner: `artifact-layout.md` (canonical), no gate; per-ADR `subsystem:` chip keeps id or `N/A`.
+
+## Existing implementation found (amendment AC-11..AC-19)
+- Rosters data-driven: `reviewerKeys(node)` = union of definitions' `reviewers[node]`, validated by `persist-review`/`emit-manifest`; impl-review dispatches `asd-reviewer-<key>`; test 165 requires an agent per key; `COMBINED_RUBRICS` composition reusable for quality + efficiency.
+- Name-independent: severity floors, waves, counters, `iteration_heads`, review-fix collection, test-file finding routing to `asd-tester`, low-severity in-place fix.
+- `rubricIds` (runtime.js:404-412): `###` headings win; bullets count only with no `###`.
+- sync.js accepts haiku+effort and luna/high; `contextRefs` maps variants to base and accepts any phase string.
+- Orphan/migration precedents (4.0.0, 6.0.0), update.js `delete`, leftover-term check, ownerless-memory deletion.
+- Measured loads (LF bytes, D13 method): orchestrator/impl 135,218 / cap 144,148 (headroom 8,930); dev/impl 87,111 / 134,230; tester/impl-test 79,423 / 110,577; combined/impl-review 96,853 / 127,017; standalone skills 60,699 / 61,051 (352). Uncapped orchestrator loads: scope 98.3 KB, audit 90.8, design 91.8, design-review 159.2, design-promote 89.1. Creator-only refs the orchestrator row lacks: scope +15.5 KB, audit +31.2, design +23.5, design-review +23.9, design-promote +29.2, concept +15.5, stack +24.0, design-system +18.4.
+
+## Gaps (amendment AC-11..AC-19)
+- **Criterion check**:
+  - AC-11 deliverable; tester has no `variants`; folder map "8 agent definitions: 7 roles + 1 tier variant".
+  - AC-12 deliverable: the sprint-lifecycle.md:5 rewrite carries AC-2's cleanup exception and admits memory-fix dispatches to surviving owners; standalone skills must net-shrink (352 B headroom); moved rules go to rule/workflow sections granted by orchestrator rows, never skill bodies; new orchestrator rows for concept/stack/design-system.
+  - AC-13 deliverable; design-review needs explicit name edits.
+  - AC-14 deliverable only if (a) each former testing/documentation bullet becomes its own `###` in quality, (b) `NA_TARGETS` rekeyed and noDocs retargeted, (c) `reviewerFiles` gives quality and combined scope plus `--test-plan` (lite combined gains test-plan review).
+  - AC-15 deliverable; haiku effort only where `haiku` resolves to Haiku 5.5; luna/high accepted by sync, secondary-source only.
+  - AC-16 deliverable only with: a tester dispatch anchor line replacing the routing line Failed dispatch depends on; legacy `priorTier: critical` read as `standard` or migrated; Material-risk prose reworded; tester `execution: command` path gone.
+  - AC-17 deliverable only by changing the advisor contract (always recommend, name the hard gate, never authorize; Relay step 4 → advice naming a hard gate makes the agent return `QUESTION`). Reach wording ambiguous (inventory rows like new subsystem, test removal, PR publication are not phase transitions; "and the like" is open-ended) → user decision. Escalation sites outside the inventory: audit migration deletion/contradiction; design-promote doc rename; design-review reviewer question, FAIL escalation, review-cap; design token; impl-review reviewer question, FAIL escalation, review-cap; impl-test stalemate; impl manual steps; plan stub disposition; scope abort ×2; Relay `QUESTION`; FAILED relays; External Review stalemate; second interruption; second stall; scope stage-(b) failure and ambiguity; audit 3c; design-system lint exclusion; tech-reference-missing; asd-sprint menus (dirty tree, update, release retry, resume, fast-forward refusal); Complication Approval. Also needed: orchestrator-only consult branch in agent-protocol.md "Relay"; an Advisor line in core.md "User-decision presentation format"; advice recorded with the answer; one consult per request; advisor-unavailable fallback; advice never turns an escalation into an adaptive pass.
+  - AC-18 deliverable via 14.0.0.js: (a) delete marked views of the 9 retired names; (b) rewrite active `state.json` verdicts and `latched` — `quality` satisfied when every legacy key present is satisfied, else the most severe token, `latched.quality` only when all three latched, old keys kept; (c) `task_routing[*].tier: critical` → `standard` unless runtime tolerance. Without (b) a standard sprint past impl-review blocks at pr step 1. Lite unaffected. CHANGELOG warns about leftover consumer memory (pre-4.0.0 `asd-reviewer-quality/`). Supersedes the earlier Gaps line "Migration: none required … MAJOR vs minor decided at pr".
+  - AC-19 deliverable; add `Seven` to `WORD_TO_NUMBER`; README tier sentence drops `-critical`.
+  - Consistency: AC-12 and AC-2 edit the same rule; AC-17 covers AC-5's cleanup `FAILED` bound; AC-11 memory deletion breaks tests pinning those files; AC-16 and AC-11 agree.
+- **Rule survival (AC-12)** — no other home once bodies are deleted: Architect — likec4 lint/validate and mermaid fallback after one failed retry; subsystem ids identical across registry, c4, PRD/ux-spec/code; no secrets in stack docs, fetch canonical docs by URL with `Last verified`; ADR set completes before one accept. BA — atomic ACs (one assertion), story↔AC cross-reference, no AC without a story; quote the source when reverse-engineering; dropped requirement/conflict → user decision. UX — mockup states (empty/loading/error), no a11y rules in sprint scope; Token decisions (all proposals in one decision, delta before use, lite token gate); DESIGN.md spec fetch fails twice → halt; design-system.html regeneration owner.
+- **Cadence**: inline authoring states whether per-section lock-in (core.md "Incremental writing") or whole-artifact accept applies; "never invent extra mandatory pauses" favours the latter.
+- **AC-14 mapping** (⚑ = check AC-14's wording does not name; the plan names it in a rubric heading):
+
+| Check (source) | Home |
+|---|---|
+| Correctness: draft correctness (AC completeness, contract soundness, ADR decision soundness ⚑) | quality |
+| Correctness: bugs; security; contracts (drift, reversible migration, backward_compat) | quality |
+| Correctness: best practices ⚑ | quality (web) |
+| Correctness: AC coverage trace | quality |
+| Correctness: UI conformance and self-hosting carve-out | quality |
+| Testing: check-ladder risk fit | quality = adequacy; efficiency = cost (over-leveled, redundant, hypothetical-risk tests) |
+| Testing: removal validity ⚑, `none` honesty ⚑, fail-first, meaningfulness, determinism, coverage, edge cases, manual verification | quality |
+| Documentation: SSoT, traceability, persistent actuality, stub resolution, framework mode ⚑ | quality (SSoT FAIL → quality) |
+| Documentation: template adherence ⚑, HTML shell wrapping ⚑, provenance ⚑, custom rules consistency ⚑ | quality |
+| Documentation: in-code doc comments ⚑ | quality (efficiency keeps "comment that restates code") |
+| Documentation: documentation economy | efficiency (economy FAIL → efficiency) |
+| Efficiency: over-engineering, structure/cohesion, complexity-vs-value, performance, cross-reviewer guard | efficiency |
+| New: duplication/reuse, runtime token cost, change-size proportionality, test-suite cost | efficiency |
+| Combined: overall quality, lite actuality carve-out, manual-verification rows | combined / quality |
+
+- **Other missing pieces**: a site where the orchestrator writes a missing tech reference (`artifact-layout.md:181`); `t_custom-design-rules.md` reader line; rename the 4.0.0 test fixture; optional asd-sync orphan branch.
+
+## Risks (amendment AC-11..AC-19)
+- Untrusted web content (stage-(b) research, tech-reference and DESIGN.md-spec fetches) now enters the privileged orchestrator context (`core.md` "Untrusted-data boundary").
+- Inline quality depends on the session model; Codex main-session `web_search` defaults to `cached` (creators had `live`).
+- Context bloat: full audit and drafts accumulate; compaction can hit mid-artifact → disk-first writing.
+- Lost tool-policy bounds (no git writes, no infra edits, `likec4 build`, `designmd-install`, write allowlists) must become rule text.
+- Quality overload: one dispatch carries ~22 rubric entries; turn budget and interruptions rise on large waves (`LARGE_WAVE_FILES`/`WAVE_THRESHOLD_FILES` tuned for narrower reviewers).
+- Cost/latency: efficiency sonnet → opus; advisor (fable/high) consults precede escalations.
+- D13 headroom: orchestrator/impl 8,930 B; AC-17 text in whole-file `core.md` charges every role; AC-16's routing shrink frees bytes.
+- Dogfooding: 028 is `lite` — combined's rubric follows live agent files; a task routed `critical` before the runtime change fails `priorTier` afterwards.
+- Memory deletion loses method content (asd-dev-critical CRLF/heredoc/sync-ledger gotchas; reviewer methods).
+- Name reuse: `asd-reviewer-quality` retired in 4.0.0.js:37 — stale pre-4.0.0 consumer memory loads into the new reviewer.
+- CI `sync-check` fails on marked orphans unless view deletions land with the canon removal.
+- Design-review fixes applied by the drafts' own author (reviewer independence remains).
+
+## Touched areas (amendment AC-20)
+Orchestrator grep for `ux_spec` (audit addendum, user-added criterion): `sprint-lifecycle.md` :36 (lite promote), :162, :164, :191 ("Disabling `ux_spec` also disables the design-system gate, `design-md-delta.yaml`, and UX promotion" — the coupling to split), :203, :211; `asd-phase-design.md` :14, :19, :28 (design-system gate "only if `ux_spec` enabled"), :31, :65; `asd-phase-design-review.md` :19; `asd-phase-design-promote.md` :22; `asd-phase-audit.md` :26; `asd-phase-scope.md` :44; `asd-init/SKILL.md` :47, :68, :73, :149 (Node and `designmd-*` commands gated on `ux_spec`); `asd-phase-design/SKILL.md` :4; `t_config.yaml` :15; `t_state.json` :6; `session-start.js` :136 (collapse test); `README.md` :285, :466; `review-policy.md` :217.
