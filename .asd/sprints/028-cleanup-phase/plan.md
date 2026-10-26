@@ -93,27 +93,27 @@ Material risk: migration: rewrites active sprint state.json and deletes retired 
 ### Task 8: Phase chain, cleanup workflow and creator-free phase workflows (cleanup side)
 Material risk: change: cleanup workflow steps and routing into retro
 Reachability: impl-review (standard) / design-promote (lite) writes `NEXT: cleanup` at exit; asd-sprint reads it against `next[<phase>]` from the live definition at Step 3
-- [ ] `.asd/workflows/standard.json`, `lite.json` per D1 and D9 (AC-1, AC-13)
-- [ ] New `.asd/workflows/asd-phase-cleanup.md` (owner inline orchestrator, dispatches `asd-advisor` only on escalation; steps per D3-D7; lite binding "advanced from … design-promote (lite)") and `.asd/skills/asd-phase-cleanup/SKILL.md` (AC-1..AC-6)
-- [ ] `asd-phase-impl-review.md`: exit, return, UI predicate owner, tester routing, reviewer input rule per D1/D8/D9 (AC-1, AC-13, AC-16)
-- [ ] `asd-phase-design-promote.md`: exit/return per D1, promotion inline per D2/D11, design-system promotion per D14 (AC-1, AC-12, AC-20)
-- [ ] `asd-phase-retro.md` entry, `asd-phase-pr.md` precondition note per D1 (AC-1)
-- [ ] `.asd/hooks/session-start.js` design-block collapse test adds `design_system` per D14 (AC-20)
+- [x] `.asd/workflows/standard.json`, `lite.json` per D1 and D9 (AC-1, AC-13)
+- [x] New `.asd/workflows/asd-phase-cleanup.md` (owner inline orchestrator, dispatches `asd-advisor` only on escalation; steps per D3-D7; lite binding "advanced from … design-promote (lite)") and `.asd/skills/asd-phase-cleanup/SKILL.md` (AC-1..AC-6)
+- [x] `asd-phase-impl-review.md`: exit, return, UI predicate owner, tester routing, reviewer input rule per D1/D8/D9 (AC-1, AC-13, AC-16)
+- [x] `asd-phase-design-promote.md`: exit/return per D1, promotion inline per D2/D11, design-system promotion per D14 (AC-1, AC-12, AC-20)
+- [x] `asd-phase-retro.md` entry, `asd-phase-pr.md` precondition note per D1 (AC-1)
+- [x] `.asd/hooks/session-start.js` design-block collapse test adds `design_system` per D14 (AC-20)
 
 ### Task 9: Creator-free phase workflows (design side, routing)
 Material risk: change: inline creator steps and advisor consult sites
-- [ ] `asd-phase-scope.md`: stage (b) research inline, Owner line, Dispatch, `{{CLEANUP}}`/`design_system` seeding (sentence without the word "ask") per D2/D6/D14 (AC-6, AC-12, AC-20)
-- [ ] `asd-phase-audit.md`: inline audit, batched-read plan for the orchestrator, Dispatch per D2 (AC-12)
-- [ ] `asd-phase-design.md`: inline drafts with per-section lock-in per D12, design-system gate under `design_system`, rule survival "Rules" per D11/D14 (AC-12, AC-20)
-- [ ] `asd-phase-design-review.md`: roster `quality`/`efficiency`, inline fixes, advisor consults per D9/D10 (AC-12, AC-13, AC-17)
-- [ ] `asd-phase-impl.md`, `asd-phase-impl-test.md`: routing per D8, advisor consults at FAILED/stalemate relays per D10 (AC-16, AC-17)
+- [x] `asd-phase-scope.md`: stage (b) research inline, Owner line, Dispatch, `{{CLEANUP}}`/`design_system` seeding (sentence without the word "ask") per D2/D6/D14 (AC-6, AC-12, AC-20)
+- [x] `asd-phase-audit.md`: inline audit, batched-read plan for the orchestrator, Dispatch per D2 (AC-12)
+- [x] `asd-phase-design.md`: inline drafts with per-section lock-in per D12, design-system gate under `design_system`, rule survival "Rules" per D11/D14 (AC-12, AC-20)
+- [x] `asd-phase-design-review.md`: roster `quality`/`efficiency`, inline fixes, advisor consults per D9/D10 (AC-12, AC-13, AC-17)
+- [x] `asd-phase-impl.md`, `asd-phase-impl-test.md`: routing per D8, advisor consults at FAILED/stalemate relays per D10 (AC-16, AC-17)
 
 ### Task 10: Skills
 Material risk: change: standalone skills authored inline within the byte cap
-- [ ] `asd-concept`, `asd-stack`, `asd-design-system` SKILL.md: delegation → inline steps, per-section lock-in per D12, net-shrink per D11 (AC-12)
-- [ ] `asd-sprint` SKILL.md: Step 3 `cleanup` returns `NEXT: retro`; advisor consult on relayed `QUESTION`/`FAILED` per D10 (AC-1, AC-17)
-- [ ] `asd-init` SKILL.md: `cleanup` and `documents.design_system` in fresh step 2 / 8a; Node/`designmd-*` keyed on `design_system`; :74 owner (AC-6, AC-12, AC-20)
-- [ ] Phase SKILL.md descriptions naming removed agents or `retro` as successor (scope, audit, design, design-review, design-promote, impl-review) (AC-1, AC-12)
+- [x] `asd-concept`, `asd-stack`, `asd-design-system` SKILL.md: delegation → inline steps, per-section lock-in per D12, net-shrink per D11 (AC-12)
+- [x] `asd-sprint` SKILL.md: Step 3 `cleanup` returns `NEXT: retro`; advisor consult on relayed `QUESTION`/`FAILED` per D10 (AC-1, AC-17)
+- [x] `asd-init` SKILL.md: `cleanup` and `documents.design_system` in fresh step 2 / 8a; Node/`designmd-*` keyed on `design_system`; :74 owner (AC-6, AC-12, AC-20)
+- [x] Phase SKILL.md descriptions naming removed agents or `retro` as successor (scope, audit, design, design-review, design-promote, impl-review) (AC-1, AC-12)
 
 ### Task 11: README.md and AGENTS.md
 Material risk: artifact: mirror counts and tables, verified by `node tests/run.js` §16 and the README tier-table tests

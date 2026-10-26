@@ -1,7 +1,7 @@
 ---
-# ASD generated. Edit .asd/skills/asd-phase-design-promote/SKILL.md. source_digest=sha256:7850ecd38ceb9665f6bd8681f340a8519c43cc26ac28ee70173a15ae532293b4 content_digest=sha256:53eb649b7d73954d7b428488506ab6261ee3cf2970ee07d1d8feab8b2030c047 asd_version=13.7.0 schema=1
+# ASD generated. Edit .asd/skills/asd-phase-design-promote/SKILL.md. source_digest=sha256:4bf2fa7042334fc5358e6287eebb3d4b2a441bd211e781921c386d2c8983e291 content_digest=sha256:38ae7df9eb9ce6990293443b4a6d13803d40c5b7ea302a60453626835c31388e asd_version=13.10.0 schema=1
 name: asd-phase-design-promote
-description: "Runs the ASD design-promote phase: the phase orchestrator handles decomposition and gates, then in-scope domain creators promote persistent docs — from approved drafts after design-review (standard workflow), or from the accepted implementation after impl-review with no draft and no review (lite workflow), where it runs before retro. Use when asd-sprint dispatches design-promote, or when the user explicitly asks to run or re-run design-promote for the active sprint."
+description: "Runs the ASD design-promote phase: the main orchestrator handles decomposition and gates and promotes persistent docs itself — from approved drafts after design-review (standard workflow), or from the accepted implementation after impl-review with no draft and no review (lite workflow), where it runs before cleanup. Standard continues to plan. Use when asd-sprint dispatches design-promote, or when the user explicitly asks to run or re-run design-promote for the active sprint."
 allowed-tools: "Read Write Edit AskUserQuestion Task Bash(node .asd/runtime.js:*)"
 ---
 
