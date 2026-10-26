@@ -8602,6 +8602,22 @@ test('sprint-028 AC-12 (review-fix): the design Authoring loop appends a per-sec
   assert.ok(authoring.includes('§ `<section>` locked'), 'a section holding content but no lock line is a pending Lock in; without the lock line shape a re-entry silently skips a section the user never locked or re-asks one they did');
 });
 
+test('sprint-028 AC-12 (review-fix): every phase skill pre-approves Grep and the inline-research phases pre-approve WebSearch and WebFetch, so their inline steps never stall on a permission prompt', () => {
+  const INLINE_RESEARCH_PHASES = ['audit', 'plan', 'scope', 'design', 'design-promote'];
+  const toolsOf = (name) => sync.parseCanonicalFrontmatter(canonText(`.asd/skills/${name}/SKILL.md`)).meta.claude['allowed-tools'].split(/\s+/);
+  const phaseSkills = fs.readdirSync(path.join(REPO_ROOT, '.asd/skills')).filter((skill) => /^asd-phase-/.test(skill));
+  assert.ok(INLINE_RESEARCH_PHASES.every((phase) => phaseSkills.includes(`asd-phase-${phase}`)), 'the research phase list names only existing phase skills');
+  for (const name of phaseSkills) {
+    const tools = toolsOf(name);
+    assert.ok(tools.includes('Grep'), `${name}: allowed-tools must hold Grep`);
+    if (INLINE_RESEARCH_PHASES.includes(name.slice('asd-phase-'.length))) {
+      for (const tool of ['WebSearch', 'WebFetch']) {
+        assert.ok(tools.includes(tool), `${name}: its inline research and fetch steps need ${tool} pre-approved`);
+      }
+    }
+  }
+});
+
 test('sprint-028 AC-8/AC-9/AC-10: asd-external-review.md states an empty Kept findings table is its header and separator rows only, and "Plan file format" Decomposition rules carry the multi-stage write-point and the universal-reach trigger-site clauses', () => {
   const kept = canonText('.asd/agents/asd-external-review.md').split('\n').find((line) => line.includes('Kept findings table'));
   assert.ok(kept && kept.includes('header and separator rows only') && kept.includes('never a placeholder row'), 'AC-8: the agent\'s own return-format rule must state the empty table shape');
