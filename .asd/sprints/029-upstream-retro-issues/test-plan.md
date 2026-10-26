@@ -11,7 +11,7 @@ responsibility:
 
 | Entry | HEAD analysed | Scope |
 |---|---|---|
-| 1 | | full change surface |
+| 1 | 78ab90ca72a6f8c02682ca2fcfd0534a1a77a63a | full change surface |
 
 ## Risk → check decisions
 
@@ -46,7 +46,7 @@ Retargeted (existing tests, no new row): sprint-019 AC-1/AC-3/AC-4/AC-5/AC-6 (sc
 - Scope: full (change surface touches framework-wide files: safety valve degrades the impacted set to the full suite)
 - Result: pass — 318 passed, 0 failed, 0 skipped (pre-strategy 313/316; exit 1 on the 3 retargeted pins)
 - Lint / build: pass — `git diff --cached --check` clean at commit, `node .asd/sync.js --check` ok
-- HEAD: filled by the orchestrator
+- HEAD: 78ab90ca72a6f8c02682ca2fcfd0534a1a77a63a
 
 ## Defects
 
