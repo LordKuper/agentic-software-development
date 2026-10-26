@@ -15,7 +15,7 @@ Before creating: fast-forward local `git.base_branch` to `origin/<base_branch>` 
 - Body describes WHY, not WHAT
 - One commit per task when possible; phase-grouped acceptable for small tasks
 - A dispatched agent commits in the one-command form of "Commit before review"
-- A dispatched `asd-dev`/`asd-tester` commit carries one trailer line `ASD-Task: <id>` per id it covers — `Task N`, a review finding id (its id in the reviewer's ledger `findings`, prefixed by its review file when another file of the iteration reuses it: `testing.md F-1`), `D-N`, `impl-test entry N` for impl-test's own commits, or `impl-review wave-<K>/iter-NN suite` (its iteration id, `sprint-lifecycle.md` "Review iteration counters") for impl-review step 9's in-place test fix; impl-review's in-place fix of low-severity test-only findings (`review-policy.md` "Low-severity test-only findings") uses the review finding id form
+- A dispatched `asd-dev`/`asd-tester` commit carries one trailer line `ASD-Task: <id>` per id it covers — `Task N`, a review finding id (its id in the reviewer's ledger `findings`, prefixed by its review file when another file of the iteration reuses it: `quality.md F-1`), `D-N`, `impl-test entry N` for impl-test's own commits, or `impl-review wave-<K>/iter-NN suite` (its iteration id, `sprint-lifecycle.md` "Review iteration counters") for impl-review step 9's in-place test fix; impl-review's in-place fix of low-severity test-only findings (`review-policy.md` "Low-severity test-only findings") uses the review finding id form; the orchestrator's cleanup removals (`sprint-lifecycle.md` "Cleanup phase") commit in that one-command form over named paths as `chore(cleanup): <what>`, with no `ASD-Task` trailer
 - Before push, the main orchestrator alone squashes local WIP/fixup commits into task-level commits (`git reset --soft` + recommit, or non-interactive rebase). Applies to unpushed commits only — published history stays untouched (see Forbidden)
 
 ## Forbidden
@@ -31,7 +31,7 @@ Before creating: fast-forward local `git.base_branch` to `origin/<base_branch>` 
 
 In-code TODO created during a sprint must be marked `// TODO(sprint-NNN): <reason>` and registered in **project-global** `.asd/project/stubs.md` (open stubs only) with: sprint of origin (NNN-slug), file path and line, reason (prefix `(accepted-debt)` for known debt that should not block PR), owner agent.
 
-On resolution: row **deleted** from stubs.md (no status column; deletion = resolution). On migration: deleted, new row created under the receiving sprint.
+On resolution: row **deleted** from stubs.md (no status column; deletion = resolution); a cleanup removal of a TODO marker deletes its row in the same commit. On migration: deleted, new row created under the receiving sprint.
 
 `pr` phase blocks if any stub has `Sprint = <current-NNN-slug>` and Reason does NOT start with `(accepted-debt)`. Devs must resolve, migrate, or mark accepted-debt before PR.
 
@@ -56,7 +56,7 @@ The main orchestrator confirms before opening PR:
 - PR scoped to requested feature; no unrelated improvements
 - Commit messages describe why, not what
 - Full test suite green, once, at the end of `impl-review` (per `test-plan.md` `Suite run`; `sprint-lifecycle.md` "Impacted test set")
-- Documentation reviewer verdict = APPROVE
+- `asd-reviewer-quality` verdict = APPROVE
 
 ## PR creation
 

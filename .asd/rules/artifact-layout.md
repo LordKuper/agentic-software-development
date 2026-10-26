@@ -111,11 +111,11 @@ Agent memory lives at the provider-view root — `.claude/agent-memory/<agent>/`
 
 When decomposition enabled, `docs/architecture/subsystems.md` (`t_subsystems.md`) is the sole subsystem registry — which subsystems exist and their ids — whatever `project.diagram_tool`. Each entry links `docs/architecture/<id>.md` (`t_subsystem.md`: purpose, key paths), and every registered subsystem has one. Reserved, never a subsystem id (they collide in flat `docs/architecture/`): `subsystems`, `stack`, `c4`, `tech-reference`.
 
-`/asd-init` seeds the registry empty; only Architect fills it. A subsystem is added at `design-promote` (`sprint-lifecycle.md` "Design-promote phase"), or at `audit` when the registry is absent (`asd-phase-audit.md` "Rules", step 3a) — each addition with explicit user approval (hard gate).
+`/asd-init` seeds the registry empty; only the main orchestrator fills it. Subsystem ids are identical across the registry, `c4`, PRD, ux-spec and code. A subsystem is added at `design-promote` (`sprint-lifecycle.md` "Design-promote phase"), or at `audit` when the registry is absent (`asd-phase-audit.md` "Rules", step 3a) — each addition with explicit user approval (hard gate).
 
 Diagram per `project.diagram_tool`; with `none`, no diagram is written and `docs/architecture/c4/` is never created:
 
-- **likec4**: `c4/model/*.c4`, `views.c4` (LikeC4 DSL) — diagram source only; container/component ids match registry ids. `likec4 build` produces `dist/` interactive HTML — build output, gitignored, never committed; run the `commands.yaml` `c4-build` command to render.
+- **likec4**: `c4/model/*.c4`, `views.c4` (LikeC4 DSL) — diagram source only; container/component ids match registry ids. `likec4 build` produces `dist/` interactive HTML — build output, gitignored, never committed; run the `commands.yaml` `c4-build` command to render. A draft runs `likec4` lint/validate and, when the retry fails once more, falls back to a Mermaid C4 block; a draft never runs `likec4 build`.
 - **mermaid**: a Mermaid C4 block inline in `subsystems.md`. No `c4/` folder, no build output.
 
 ## Document provenance
@@ -126,7 +126,7 @@ User-facing artifacts may carry a `provenance` frontmatter field:
 - `reverse-engineered` — built from existing code without source docs
 - `migrated` — translated from an external doc in another format/location
 
-When `provenance != original`, set `source: <path or URL>`. HTML shows a provenance badge. Reviewers apply lighter checks on absent alternatives for non-original docs.
+When `provenance != original`, set `source: <path or URL>`. HTML shows a provenance badge. Reviewers apply lighter checks on absent alternatives for non-original docs. A `reverse-engineered` or `migrated` doc quotes its source for every requirement it records.
 
 ## Document representation rule
 
@@ -137,7 +137,7 @@ User-facing artifacts are HTML only. No parallel Markdown source. Exceptions:
 - LikeC4 `.c4` files — DSL source
 - `docs/architecture/subsystems.md`, `<subsystem>.md` — agent-facing registry, read by `audit` and `plan` to locate subsystem code
 
-`design-system.html` generated from DESIGN.md by the Documentation agent: all tokens/rules with live examples (color swatches with hex, typography samples, spacing scale, component previews). Regenerated when DESIGN.md changes.
+`design-system.html` generated from DESIGN.md by the main orchestrator: all tokens/rules with live examples (color swatches with hex, typography samples, spacing scale, component previews). Regenerated when DESIGN.md changes.
 
 ## HTML shell wrapping (mandatory)
 
@@ -176,9 +176,9 @@ The verdict-token line in `t_review.md`/`t_review-report.md` (`[REVIEW-{{REVIEW_
 
 ## Tech reference docs (mandatory for every chosen tech)
 
-`docs/architecture/tech-reference/<tech>-<version>.md` per `t_tech-reference.md`. Owner: Architect. Created for every chosen library, framework, runtime, external service. Includes canonical source URL, API surface used, version specifics, deprecations, project conventions.
+`docs/architecture/tech-reference/<tech>-<version>.md` per `t_tech-reference.md`. Owner: main orchestrator. Created for every chosen library, framework, runtime, external service. Includes canonical source URL (fetched, never recalled) with `Last verified` date, API surface used, version specifics, deprecations, project conventions. Never a secret.
 
-**Refuse-to-implement rule**: Dev, Tester MUST verify `tech-reference/<tech>-<version>.md` exists before implementing with a tech. If missing → emit `FAILED — tech-reference missing for <tech>@<version>` and request it from Architect. No implementation without verified reference.
+**Refuse-to-implement rule**: Dev, Tester MUST verify `tech-reference/<tech>-<version>.md` exists before implementing with a tech. If missing → emit `FAILED — tech-reference missing for <tech>@<version>` and the main orchestrator writes it. No implementation without verified reference.
 
 ## Manual steps
 
@@ -220,11 +220,11 @@ SSoT for two things invisible in the diff: **why** a test was removed, and **why
 
 ## Single Source of Truth (iron rule)
 
-Each fact has exactly one home file. Other files link to it, never copy. Violation = `FAIL` from Documentation reviewer.
+Each fact has exactly one home file. Other files link to it, never copy. Violation = `FAIL` from `asd-reviewer-quality`.
 
 ## Documentation economy (iron rule)
 
-A line of agent-facing text is re-paid on every dispatch that loads it, so it earns its place only by changing what a reading agent does; one that does not is deleted, not shortened. Reach: framework canon (rules, agents, skills, workflows, templates) and every artifact a later agent reads (`audit.md`, `plan.md`, `test-plan.md`, decisions-log entries, review files, retrospectives) — through the templates, in every consumer project too. **removal** decides and is necessary: cut only when no agent acts differently without the line. **provenance** — traces to no recorded defect, friction entry or decision — and **enforcement** — a tool grant, validator or suite assertion already imposes it, so the prose only restates it — corroborate a cut removal already allows; neither authorises one alone, and removal false = keep whatever the other two say. The tests bind while authoring: every agent that writes such text applies them before the line lands, not only when it is reviewed. Violation = `FAIL` from Documentation reviewer.
+A line of agent-facing text is re-paid on every dispatch that loads it, so it earns its place only by changing what a reading agent does; one that does not is deleted, not shortened. Reach: framework canon (rules, agents, skills, workflows, templates) and every artifact a later agent reads (`audit.md`, `plan.md`, `test-plan.md`, decisions-log entries, review files, retrospectives) — through the templates, in every consumer project too. **removal** decides and is necessary: cut only when no agent acts differently without the line. **provenance** — traces to no recorded defect, friction entry or decision — and **enforcement** — a tool grant, validator or suite assertion already imposes it, so the prose only restates it — corroborate a cut removal already allows; neither authorises one alone, and removal false = keep whatever the other two say. The tests bind while authoring: every agent that writes such text applies them before the line lands, not only when it is reviewed. Violation = `FAIL` from `asd-reviewer-efficiency`.
 
 Cut on sight: prose stating no rule; rationale for a rule already stated; an example disambiguating nothing; a prohibition that only negates a positive rule already stated beside it; emphasis so frequent it marks nothing; a fact whose home is another file (SSoT above).
 
