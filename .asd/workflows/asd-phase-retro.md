@@ -11,7 +11,7 @@ Owner: inline orchestrator; dispatches none.
 ## Inputs
 
 ```json
-[".asd/project/config.yaml (language.chat, language.docs, self_hosting, upstream_issues), ".asd/release-manifest.json (asd_version, repo; step 7)", "<sprint>/friction-log.md", "run record as systemic-class evidence: state.json, plan.md, decisions-log.md with its segments (artifact-layout.md 'Decisions log'), node .asd/runtime.js timing-summary --ledger <sprint>/timing.jsonl --archive .asd/sprints/archived", "the file behind a cited id (manual-steps.md, reviews/<phase>/[wave-<K>/]iter-NN/<reviewer>) only when an F-N cites it"]
+[".asd/project/config.yaml (language.chat, language.docs, self_hosting, upstream_issues)", ".asd/release-manifest.json (asd_version, repo; step 7)", "<sprint>/friction-log.md", "run record as systemic-class evidence: state.json, plan.md, decisions-log.md with its segments (artifact-layout.md 'Decisions log'), node .asd/runtime.js timing-summary --ledger <sprint>/timing.jsonl --archive .asd/sprints/archived", "the file behind a cited id (manual-steps.md, reviews/<phase>/[wave-<K>/]iter-NN/<reviewer>) only when an F-N cites it"]
 ```
 
 ## Steps
