@@ -1,7 +1,7 @@
 {
   "sprint_id": "029-upstream-retro-issues",
   "branch": "sprint/029-upstream-retro-issues",
-  "phase": "audit",
+  "phase": "plan",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -55,6 +55,13 @@
       "reason": "all t_audit.md sections for AC-1..AC-13; C1 settled by user; AC-2 home and P-row cause settled from source",
       "evidence": "audit.md",
       "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "user",
+      "reason": "plan.md accepted: D1-D10, Tasks 1-7 in 2 waves",
+      "evidence": "decisions-log.md 2026-10-26 plan accepted",
+      "artifact_revision": "plan.md@plan"
     }
   ],
   "task_routing": {},
@@ -78,7 +85,7 @@
     }
   },
   "created_at": "2026-10-26T11:59:26.556Z",
-  "updated_at": "2026-10-26T13:43:42.004Z",
+  "updated_at": "2026-10-26T13:49:21.818Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

@@ -37,3 +37,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-10-26 — plan accepted
+
+- **Decision**: `<sprint>/plan.md` accepted by the user (`accept`): D1-D10, Tasks 1-7 in 2 waves (wave 1 Tasks 1-6, wave 2 Task 7); tech reference `docs/architecture/tech-reference/gh-2.90.md` written before acceptance.
+- **Rationale**: Explicit user acceptance of the write-then-review-accept gate; no open stubs touch the scope.
+- **Affected docs**: plan.md, docs/architecture/tech-reference/gh-2.90.md
