@@ -37,15 +37,3 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
-
-## 2026-10-26 — audit contradiction C1
-
-- **Decision**: AC-1/AC-4/AC-7 win over the `checkpoints.md` external-action row: publishing, auto-closing and post-release closing of retro-finding issues take no gate in either `user_gates` mode; `checkpoints.md` gains an explicit exception, as `cleanup` removals have one.
-- **Rationale**: User choice; the user asked for automatic publication, and a strict consumer opts out through the AC-8 config key.
-- **Affected docs**: audit.md, sprint.md AC-1, AC-4, AC-7
-
-## 2026-10-26 — audit accepted (adaptive)
-
-- **Decision**: audit.md passes the audit gate adaptively: every section written for AC-1..AC-13, C1 settled by the user, the AC-2 issue home (target framework path) and a `P-N` issue's cause field (`Expected saving`) settled from `asd-phase-retro.md` step 4 and `asd-phase-scope.md` step 2a.
-- **Rationale**: No unresolved material alternative remains; the scope gate authorised AC-1..AC-13; no document is enabled, so lite continues to plan.
-- **Affected docs**: audit.md
