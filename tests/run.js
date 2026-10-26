@@ -6606,7 +6606,7 @@ test('sprint-020 AC-9: persist-review validates a returned review and writes it 
   assert.deepStrictEqual(persist(iter, 'quality', 'impl', concerns), { status: 0, result: { token: 'CONCERNS', findings: [finding] } }, 'review-policy.md "Coverage ledger" Persistence: a valid return prints its token and its findings as {id, severity, location}, the location read from the Findings table');
   const written = fs.readFileSync(path.join(iter, 'quality.md'), 'utf8');
   assert.ok(written.startsWith('[REVIEW-impl-quality]: CONCERNS\n'), `the review file is the return from its token line on - a preamble before it would make the first line no verdict token for every later parser (got: ${JSON.stringify(written.slice(0, 60))})`);
-  assert.deepStrictEqual(JSON.parse(fs.readFileSync(path.join(iter, 'quality.findings.json'), 'utf8')), [finding], 'the findings JSON beside the review is what the low-severity test-only route reads (review-policy.md "Low-severity test-only findings"), so it must carry what was printed');
+  assert.deepStrictEqual(JSON.parse(fs.readFileSync(path.join(iter, 'quality.findings.json'), 'utf8')), [finding], 'the findings JSON beside the review is what the minor test-only route reads (review-policy.md "Minor test-only findings"), so it must carry what was printed');
 
   const resolved = 'resolved: 1 — test-fix, 2026-09-28\n';
   fs.appendFileSync(path.join(iter, 'quality.md'), resolved, 'utf8');
@@ -6647,7 +6647,7 @@ test('sprint-020 AC-9: persist-review validates a returned review and writes it 
   assert.deepStrictEqual(persist(externalDir, 'external', 'impl', '[REVIEW-impl-external]: APPROVE (skipped: external review unavailable: not installed)\n'), { status: 0, result: { token: 'APPROVE (skipped: external review unavailable: not installed)', findings: [] } }, 'External Review\'s availability skip is its one tableless return, and carries no ledger to validate');
   const kept = `[REVIEW-impl-external]: CONCERNS\n\n## Kept findings\n\n${table(['| 1 | low | `tests/run.js:3` | d | f |'])}\n`;
   const externalLate = persist(externalDir, 'external', 'impl', kept, ['--late']);
-  assert.deepStrictEqual(externalLate, { status: 0, result: { token: 'CONCERNS', findings: [{ id: '1', severity: 'low', location: 'tests/run.js:3' }] } }, 'External Review\'s Kept findings table yields its findings too - the low-severity test-only route counts External Review\'s findings');
+  assert.deepStrictEqual(externalLate, { status: 0, result: { token: 'CONCERNS', findings: [{ id: '1', severity: 'low', location: 'tests/run.js:3' }] } }, 'External Review\'s Kept findings table yields its findings too - the minor test-only route counts External Review\'s findings');
 });
 
 test("sprint-020 AC-4: emit-manifest --reviewer combined composes the rubrics its agent names, in order, its own entries last, n/a's every Documentation entry - and only those - when no documentation file is in scope, and is refused outside impl-review", () => {
@@ -6869,7 +6869,7 @@ test('sprint-021 AC-10/AC-11 (D5): scratch-dir creates .asd/tmp/ beside the runt
   assert.strictEqual(git('status', '--porcelain', '--untracked-files=all'), '', 'the directory and its own .gitignore must be ignored with no root .gitignore entry - a consumer needs no migration, and a helper or return file never reaches a commit or a review');
 });
 
-test('sprint-021 AC-1/AC-2 (D1), sprint-022 AC-1/AC-2/AC-3: pr ends at await-merge or done, and runtime CHAIN_EXITS, asd-sprint and README agree; pr open mode commits and pushes its state.json.pr write before await-merge, pr merge mode, entered on any confirmed MERGED number (only the release retry skips open mode\'s DoD gate), skips the merge for a PR already MERGED, republishes it if the PR head lacks it before merging, fetches base before the self-hosting release and, in every project, performs no part of the closure write, which releases nothing and is the orchestrator\'s, and scope step 1 carries every token of it', () => {
+test('sprint-021 AC-1/AC-2 (D1), sprint-022 AC-1/AC-2/AC-3: pr ends at await-merge or done, and runtime CHAIN_EXITS, asd-sprint and README agree; pr open mode commits and pushes its state.json.pr write before await-merge, pr merge mode, entered on any confirmed MERGED number (only the retry of the missing release and issue-close steps skips open mode\'s DoD gate), skips the merge for a PR already MERGED, republishes it if the PR head lacks it before merging, fetches base before the self-hosting release and, in every project, performs no part of the closure write, which releases nothing and is the orchestrator\'s, and scope step 1 carries every token of it', () => {
   const definitions = readWorkflowDefinitions();
   const exits = [...new Set(definitions.flatMap(({ phases, next }) => Object.values(next).flat().filter((target) => !phases.includes(target))))].sort();
   assert.deepStrictEqual(exits, ['await-merge', 'done'], 'sprint-022 AC-3 (D1): the chain ends at pr\'s two exits - the PR opened, then merged; done names completion, not a write, since pr never writes the terminal state');
@@ -7126,7 +7126,7 @@ test('sprint-022 AC-1 (D2), iter-01 external #1/#2, combined #1, iter-02 combine
   const [skillCondition, skillRoute = ''] = skillRetry.split('→');
   assert.ok(/\btag\b/.test(skillCondition.replace(/`[^`]*`/g, '')) && /\brelease\b/.test(skillCondition.replace(/`[^`]*`/g, '')), `asd-sprint Step 1 routes a self-hosting merged-unclosed sprint to the release retry when its tag OR its release is missing; got: ${skillCondition}`);
   assert.ok(/\brelease commit\b/.test(skillCondition.replace(/`[^`]*`/g, '')), `asd-sprint Step 1: ${releaseCommit}`);
-  assert.ok(skillRoute.includes('`asd-phase-pr`') && /merge mode/.test(skillRoute), 'asd-sprint Step 1\'s release retry dispatches asd-phase-pr, whose merge mode runs only the release');
+  assert.ok(skillRoute.includes('`asd-phase-pr`') && /merge mode/.test(skillRoute), 'asd-sprint Step 1\'s release retry dispatches asd-phase-pr, whose merge mode runs only the missing release and issue-close steps');
   assert.ok(/\buser decision\b/.test(skillRoute), `asd-sprint Step 1: ${noExit}`);
   assert.ok(skillRoute.split(/;\s/).some((clause) => /\bcontinue\b/.test(clause)) && (stepOne[stepOne.indexOf(skillRetry) + 1] || '').includes('Step 2A'), `asd-sprint Step 1: the continue option takes the next route, the new-sprint flow (Step 2A) - ${noExit}`);
   const logHead = followUp.split(' ').slice(0, 2).join(' ');
@@ -8664,7 +8664,7 @@ test('sprint-028 leftover-term check: no canon, README, AGENTS.md, template, run
   assert.deepStrictEqual(hits, [], 'each phrase is a name or line this sprint removed (git diff main...HEAD) or a memory claim about a role it removed, taken exactly - one surviving restates the superseded roster as current. CHANGELOG.md, migrations, tests and sprint folders are history and stay out of the sweep; README.md\'s "no BA, UX, Architect or PM agent" negation is not a listed phrase');
 });
 
-test('sprint-029 AC-1/AC-2/AC-4/AC-5/AC-6/AC-7/AC-8: the consumer retro writes the issue shape the self-hosting scope reads, the labels scope applies are the labels it ensures, the `(issue #N)` scope writes is the one pr reads, no PR text carries a closing keyword, and upstream_issues is gated, collected and shipped', () => {
+test('sprint-029 AC-1/AC-2/AC-3/AC-4/AC-5/AC-6/AC-7/AC-8: the consumer retro writes the issue shape the self-hosting scope reads, the labels scope applies are the labels it ensures, the `(issue #N)` scope writes is the one pr reads, no PR text carries a closing keyword, and upstream_issues is gated, collected and shipped', () => {
   const published = stepOf(sectionOf('.asd/workflows/asd-phase-retro.md', 'Steps'), 7);
   const triage = stepOf(sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps'), '2a');
   const accept = stepOf(sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps'), 4);
@@ -8672,6 +8672,14 @@ test('sprint-029 AC-1/AC-2/AC-4/AC-5/AC-6/AC-7/AC-8: the consumer retro writes t
   assert.ok(triage.includes('exact `[asd-retro] ` title prefixes') && triage.includes('`asd-phase-retro.md` step 7 issue shape'), 'AC-4/AC-5: scope triage must filter on the title prefix retro writes and judge the shape by retro step 7, or every published issue reads non-standard or none does');
   assert.ok(/self_hosting` is not `enabled`/.test(published) && published.includes('`upstream_issues` is not `disabled`'), 'AC-1/AC-8: retro publishes only for a non-self-hosting project whose upstream_issues is not disabled');
   assert.ok(/`self_hosting: enabled` only/.test(triage), 'AC-4: issue triage runs under self-hosting only');
+  const consumerCheck = 'Check the body holds nothing from the consumer project';
+  assert.ok(published.includes(consumerCheck) && published.indexOf(consumerCheck) < published.indexOf('gh issue create'), 'AC-2: retro step 7 must check the body for consumer-project content before gh issue create - without it a published issue can leak the consumer project\'s ids, paths or code');
+  assert.ok(published.includes('`gh auth status` failing skips every row') && published.includes('A failing create skips that row; no retry') && published.includes('retro completes whatever is skipped'), 'AC-3: a failing gh auth or create must skip rows and let the retro complete, never block it');
+  assert.ok(triage.includes('--duplicate-of <original>') && triage.includes('`-r duplicate -c <link to the row at HEAD>`'), 'AC-4: an issue duplicating a backlog row has no issue number, so triage closes it with -r duplicate and a link instead of --duplicate-of');
+  assert.ok(triage.includes('gh issue list -R <repo> -s closed -l asd-retro'), 'AC-4: the duplicate comparison set must include closed asd-retro issues, or a re-filed closed duplicate stays open');
+  const issueCalls = [published, triage, accept, sectionOf('.asd/rules/git-strategy.md', 'Versioning & Changelog (self-hosting only)'), canonText('.asd/rules/sprint-lifecycle.md')].flatMap((text) => [...text.matchAll(/gh issue (?:view|close|edit|list|create) [^`]*/g)].map((match) => match[0]));
+  assert.ok(issueCalls.some((call) => call.startsWith('gh issue view')) && issueCalls.some((call) => call.startsWith('gh issue close')), 'sanity: the release and triage issue calls must still be found');
+  assert.deepStrictEqual(issueCalls.filter((call) => !call.includes(' -R ')), [], 'AC-7: every gh issue call must name the framework repo with -R - the checkout of a consumer or a forked remote is not the repo the issues live in');
 
   const ensured = (/Ensure labels ([^;]*?) \(`gh label create/.exec(triage) || [])[1];
   assert.ok(ensured, 'sanity: scope step 2a must name the labels it ensures');
