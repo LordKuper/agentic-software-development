@@ -4772,7 +4772,7 @@ test('sprint-012 AC-2/AC-4/AC-12: both review workflows emit manifests through e
     assert.ok(validateStep && /never re-stamped/.test(validateStep) && validateStep.includes('`review-policy.md` "Coverage ledger"'), `${rel}: AC-2 - the ledger-validation step, where a failing manifest tempts a fix, must forbid the re-stamp and cite the rule; since sprint 020 that step is the persist-review run, which validates the ledger before any write`);
     assert.ok(/never re-authored by hand/.test(validateStep) && validateStep.includes('`review-policy.md` "Coverage ledger" Persistence'), `${rel}: sprint-020 AC-9 - the persist-review run is the sole write of a review file for this phase's own --phase node, so the step must say no review file is re-authored by hand and cite the Persistence rule`);
     const skipRecord = flow.split('\n').find((line) => line.includes('`"APPROVE (skipped: <reason>)"`')) || '';
-    assert.ok(/`persist-review`/.test(skipRecord) && skipRecord.includes('`review-policy.md` "Coverage ledger" Persistence'), `${rel}: sprint-020 AC-9 - the step recording External Review's availability skip must persist its external.md through persist-review, citing the Persistence rule - the skip has no dispatch, so a hand-written external.md leaves no external.findings.json for the low-severity test-only route to read`);
+    assert.ok(/`persist-review`/.test(skipRecord) && skipRecord.includes('`review-policy.md` "Coverage ledger" Persistence'), `${rel}: sprint-020 AC-9 - the step recording External Review's availability skip must persist its external.md through persist-review, citing the Persistence rule - the skip has no dispatch, so a hand-written external.md leaves no external.findings.json for the minor test-only route to read`);
     const payload = flow.split('\n').find((line) => line.startsWith('   - payloads per'));
     assert.ok(payload && /`interrupted`[^.]*record/.test(payload) && payload.includes('`review-policy.md` "Clean-context review iteration"'), `${rel}: AC-4 - a re-dispatched reviewer's payload must carry its own interrupted-attempt record, citing the list that admits it`);
   }
@@ -6317,8 +6317,8 @@ test('sprint-019 AC-1/AC-3/AC-4/AC-5/AC-6, sprint-023 AC-8: scope step 2a runs r
   assert.ok(/never offered again/.test(decision('reject')), 'sprint-019 TST-1-1/AC-3: a rejected row is never offered again');
 
   const accept = stepOf(sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps'), 4);
-  assert.ok(accept.includes('is not accepted while a row put to the user lacks a choice'), 'sprint-027 AC-1: scope step 4 blocks the gate while a row put to the user has no choice - unstated, an undecided row is silently disposed');
-  assert.ok(headingBody('.asd/rules/checkpoints.md', 'Gate inventory').split('\n').some((row) => row.startsWith('| retro intake dispositions (') && row.includes('one explicit include/reject/defer per row')), 'sprint-027 AC-1: the gate inventory states the per-row explicit choice');
+  assert.ok(accept.includes('is not accepted while a row or issue put to the user lacks a choice'), 'sprint-027 AC-1/sprint-029 AC-5: scope step 4 blocks the gate while a row or issue put to the user has no choice - unstated, an undecided row is silently disposed');
+  assert.ok(headingBody('.asd/rules/checkpoints.md', 'Gate inventory').split('\n').some((row) => row.startsWith('| retro intake dispositions (') && row.includes('one explicit include/reject/defer per retro row or `asd-retro` issue put to the user')), 'sprint-027 AC-1/sprint-029 AC-5: the gate inventory states the per-row-or-issue explicit choice');
   assert.ok(canonText('.asd/templates/t_retro-backlog.md').includes('the user\'s explicit choice per row, never a default'), 'sprint-027 AC-1/AC-2: the backlog template states that deferred, included and rejected are explicit choices');
   const backlog = /--backlog (\S+)/.exec(command[1]);
   assert.ok(backlog && accept.includes(`\`${backlog[1]}\``) && /step 2a/.test(accept) && /dispositions/.test(accept), 'sprint-019 TST-1-1/AC-4: scope step 4 writes step 2a\'s dispositions to the backlog path step 2a reads - dropped, included and rejected rows come back at every scope; written elsewhere, the next intake never sees them');
@@ -6468,7 +6468,7 @@ test('sprint-019 AC-11/AC-12/AC-13/AC-15/AC-16: each review-fix, rotation and te
   for (const rel of ['.asd/workflows/asd-phase-impl.md', '.asd/agents/asd-tester.md']) {
     assert.ok(canonText(rel).split('\n').some((line) => /review-fix|tester chain/.test(line) && line.includes('`artifact-layout.md` "Test plan"')), `AC-15: ${rel} must bound the review-fix tester by pointing at the "Test plan" grant`);
   }
-  assert.ok(canonText('.asd/agents/asd-tester.md').split('\n').some((line) => /in-place/.test(line) && line.includes('`artifact-layout.md` "Test plan"')) && sectionOf('.asd/rules/artifact-layout.md', 'Test plan').split(/(?<=\.)\s/).some((sentence) => /in-place tester/.test(sentence) && sentence.includes('`review-policy.md` "Low-severity test-only findings"')), 'documentation.md F-2 (wave-1/iter-01): asd-tester.md bounds its in-place test fix by the "Test plan" grant alone, so that grant must state the in-place tester\'s reach, citing the route it serves');
+  assert.ok(canonText('.asd/agents/asd-tester.md').split('\n').some((line) => /in-place/.test(line) && line.includes('`artifact-layout.md` "Test plan"')) && sectionOf('.asd/rules/artifact-layout.md', 'Test plan').split(/(?<=\.)\s/).some((sentence) => /in-place tester/.test(sentence) && sentence.includes('`review-policy.md` "Minor test-only findings"')), 'documentation.md F-2 (wave-1/iter-01): asd-tester.md bounds its in-place test fix by the "Test plan" grant alone, so that grant must state the in-place tester\'s reach, citing the route it serves');
   assert.ok(sectionOf('.asd/rules/artifact-layout.md', 'Test plan').split(/(?<=\.)\s/).some((sentence) => sentence.includes('`Removed tests`') && /\bnever\b/.test(sentence) && /\bdelet/.test(sentence) && /\bnext\b/.test(sentence) && sentence.includes('`impl-test`')), 'sprint-019 COR-4: the review-fix tester may not touch Removed tests, the home of why a test went, so the grant must say it never deletes a test and that the next impl-test entry removes it and records the reason there');
   assert.ok(canonText('.asd/agents/asd-tester.md').split('\n').some((line) => /^In review-fix\b/.test(line) && /\bdelet/.test(line) && /\bno test\b|\bnever\b/.test(line)), 'sprint-019 COR-4: the tester body bounds its review-fix pass, so it must say that pass deletes no test');
   const testPlanRotation = sectionOf('.asd/rules/artifact-layout.md', 'Test plan').split('\n').find((line) => line.startsWith('**Rotation**')) || '';
@@ -6739,12 +6739,12 @@ test('sprint-020 AC-3: every agent reading acceptance criteria from docs/product
   assert.deepStrictEqual(uncited, [], `sprint-lifecycle.md "Workflows" makes sprint.md the lite AC source, so an Inputs item reading ACs straight from docs/product/requirements/ must cite it - an agent without the clause checks a lite sprint against the previous sprint's requirements; agents take the AC-N through payload.inputs.requirements instead. Uncited: ${uncited.join(', ')}`);
 });
 
-test('sprint-020 AC-8: review-policy.md "Low-severity test-only findings" states its whole trigger and fix once, every resolved: kind canon writes is one "State recovery" admits, and each acting site cites the home', () => {
-  const home = sectionOf('.asd/rules/review-policy.md', 'Autofix vs escalation').split('\n### Low-severity test-only findings')[1];
-  assert.ok(home, 'review-policy.md "Autofix vs escalation" must hold the "### Low-severity test-only findings" subsection - the one home of AC-8');
+test('sprint-020 AC-8: review-policy.md "Minor test-only findings" states its whole trigger and fix once, every resolved: kind canon writes is one "State recovery" admits, and each acting site cites the home', () => {
+  const home = sectionOf('.asd/rules/review-policy.md', 'Autofix vs escalation').split('\n### Minor test-only findings')[1];
+  assert.ok(home, 'review-policy.md "Autofix vs escalation" must hold the "### Minor test-only findings" subsection - the one home of AC-8');
   const sentences = home.split('\n### ')[0].split(/(?<=\.)\s+/);
   const trigger = sentences.find((sentence) => /\bFires when\b/.test(sentence)) || '';
-  for (const [property, token] of [['no FAIL verdict', '`FAIL`'], ['low severity only', '`low`'], ['test files by the runtime classifier', '`isTest`'], ['test-plan.md and its segments', '`test-plan.md`'], ["External Review's findings included", 'External Review'], ['read from the persisted findings JSON', 'findings JSON']]) {
+  for (const [property, token] of [['no FAIL verdict', '`FAIL`'], ['low or medium severity only', '`low` or `medium`'], ['test files by the runtime classifier', '`isTest`'], ['test-plan.md and its segments', '`test-plan.md`'], ["External Review's findings included", 'External Review'], ['read from the persisted findings JSON', 'findings JSON']]) {
     assert.ok(trigger.includes(token), `AC-8: the trigger sentence must state its condition "${property}" (${token}) - each clause dropped widens the route to findings a tester alone must not fix`);
   }
   assert.ok(sentences.some((sentence) => /no parseable path/.test(sentence) && /does not qualify/.test(sentence)), 'AC-8: an unparseable location must fall to review-fix, never to the tester');
@@ -6762,7 +6762,7 @@ test('sprint-020 AC-8: review-policy.md "Low-severity test-only findings" states
   assert.ok(written.some((entry) => entry.endsWith(': test-fix')), 'sanity: the resolved: line sweep must reach the test-fix writers');
   assert.deepStrictEqual(written.filter((entry) => !admitted.includes(entry.slice(entry.lastIndexOf(': ') + 2))), [], 'every resolved: kind canon tells the orchestrator to write must be one "User-resolved findings" admits - any other leaves the verdict blocking with its findings fixed');
 
-  const citation = '`review-policy.md` "Low-severity test-only findings"';
+  const citation = '`review-policy.md` "Minor test-only findings"';
   const acting = stepOf(sectionOf('.asd/workflows/asd-phase-impl-review.md', 'Steps'), 8).split('\n').find((line) => line.includes(citation)) || '';
   assert.ok(acting.includes('`asd-tester`') && /test-fix/.test(acting), 'asd-phase-impl-review.md step 8 is where the route fires, so it must cite the home, dispatch asd-tester and write the test-fix resolution');
   for (const rel of ['.asd/rules/git-strategy.md', '.asd/agents/asd-tester.md', '.asd/rules/sprint-lifecycle.md']) {
@@ -8662,6 +8662,47 @@ test('sprint-028 leftover-term check: no canon, README, AGENTS.md, template, run
   const swept = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/templates/t_config.yaml', '.asd/templates/t_state.json', '.asd/hooks/session-start.js', '.asd/runtime.js', '.asd/workflows/standard.json', '.asd/workflows/lite.json', ...memoryFiles];
   const hits = swept.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => removed.filter((phrase) => line.includes(phrase)).map((phrase) => `${rel}:${index + 1} ${phrase}`)));
   assert.deepStrictEqual(hits, [], 'each phrase is a name or line this sprint removed (git diff main...HEAD) or a memory claim about a role it removed, taken exactly - one surviving restates the superseded roster as current. CHANGELOG.md, migrations, tests and sprint folders are history and stay out of the sweep; README.md\'s "no BA, UX, Architect or PM agent" negation is not a listed phrase');
+});
+
+test('sprint-029 AC-1/AC-2/AC-4/AC-5/AC-6/AC-7/AC-8: the consumer retro writes the issue shape the self-hosting scope reads, the labels scope applies are the labels it ensures, the `(issue #N)` scope writes is the one pr reads, no PR text carries a closing keyword, and upstream_issues is gated, collected and shipped', () => {
+  const published = stepOf(sectionOf('.asd/workflows/asd-phase-retro.md', 'Steps'), 7);
+  const triage = stepOf(sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps'), '2a');
+  const accept = stepOf(sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps'), 4);
+  assert.ok(published.includes('`<!-- asd-retro-finding v1 -->`') && published.includes('-t "[asd-retro] '), 'AC-1/AC-2: retro step 7 must write the marker comment line and the [asd-retro] title prefix - scope triage classifies an issue standard by exactly these two literals');
+  assert.ok(triage.includes('exact `[asd-retro] ` title prefixes') && triage.includes('`asd-phase-retro.md` step 7 issue shape'), 'AC-4/AC-5: scope triage must filter on the title prefix retro writes and judge the shape by retro step 7, or every published issue reads non-standard or none does');
+  assert.ok(/self_hosting` is not `enabled`/.test(published) && published.includes('`upstream_issues` is not `disabled`'), 'AC-1/AC-8: retro publishes only for a non-self-hosting project whose upstream_issues is not disabled');
+  assert.ok(/`self_hosting: enabled` only/.test(triage), 'AC-4: issue triage runs under self-hosting only');
+
+  const ensured = (/Ensure labels ([^;]*?) \(`gh label create/.exec(triage) || [])[1];
+  assert.ok(ensured, 'sanity: scope step 2a must name the labels it ensures');
+  const ensuredLabels = spans(ensured);
+  const applied = [...(triage + accept).matchAll(/--add-label ([a-z,-]+)/g)].flatMap((match) => match[1].split(','));
+  assert.ok(applied.includes('wontfix') && applied.includes('deferred') && applied.includes('duplicate'), 'AC-4/AC-6: scope must apply the duplicate, wontfix and deferred labels');
+  assert.deepStrictEqual([...new Set(applied)].filter((label) => !ensuredLabels.includes(label)), [], 'AC-4/AC-6: every label scope applies must be one it first ensures exists, or `gh issue edit --add-label` fails on a fresh repo');
+
+  assert.ok(accept.includes('the `AC-N` text ends `(issue #N)`'), 'AC-6: scope step 4 writes an included issue into its AC-N as (issue #N)');
+  const release = sectionOf('.asd/rules/git-strategy.md', 'Versioning & Changelog (self-hosting only)');
+  assert.ok(release.includes('each `(issue #N)` in the merged `sprint.md`') && canonText('.asd/workflows/asd-phase-pr.md').includes('each `(issue #N)` in `sprint.md`'), 'AC-7: pr open and merge mode read the (issue #N) marker scope step 4 writes');
+  for (const rel of ['.asd/workflows/asd-phase-pr.md', '.asd/templates/t_pr-description.md', '.asd/rules/git-strategy.md']) {
+    const text = canonText(rel);
+    assert.ok(text.includes('Refs #'), `AC-7: ${rel} must reference an included issue as Refs #N`);
+    assert.deepStrictEqual(text.match(/\b(?:Closes|Fixes|Resolves) #(?:N|\{\{N\}\}|\d+)/gi) || [], [], `AC-7: ${rel} must never put a closing keyword before an issue number - the merge would close it before the release`);
+  }
+
+  const template = canonText('.asd/templates/t_config.yaml');
+  assert.ok(/^upstream_issues: enabled\b/m.test(template), 'AC-8: t_config.yaml ships upstream_issues enabled - absent reads enabled');
+  for (const rel of ['.asd/skills/asd-init/SKILL.md', '.asd/workflows/asd-phase-retro.md', 'README.md']) {
+    assert.ok(canonText(rel).includes('upstream_issues'), `AC-8: ${rel} must name the upstream_issues key`);
+  }
+});
+
+test('sprint-029 AC-10 leftover-term check: no canon, README, AGENTS.md, runtime, hook or agent-memory line keeps the superseded "Low-severity test-only findings" heading, its prose form, or AGENTS.md\'s "No build / lint" statement', () => {
+  const removed = ['Low-severity test-only', 'low-severity test-only', 'No build / lint', 'No package.json, compiler, or build step'];
+  const memoryFiles = fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT), { recursive: true }).map((entry) => `${AGENT_MEMORY_ROOT}/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
+  assertSweepReachesMemory(memoryFiles);
+  const swept = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/hooks/session-start.js', '.asd/runtime.js', ...memoryFiles];
+  const hits = swept.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => removed.filter((phrase) => line.includes(phrase)).map((phrase) => `${rel}:${index + 1} ${phrase}`)));
+  assert.deepStrictEqual(hits, [], 'each phrase is a heading or sentence this sprint renamed or removed (git diff main...HEAD), taken exactly - one surviving points a reader at a section that no longer exists. CHANGELOG.md, migrations, tests and sprint folders are history and stay out of the sweep');
 });
 
 // ===========================================================================
