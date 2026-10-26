@@ -90,3 +90,10 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-26 — impl-test: impacted set green (313/313, full suite), entry 5 0 added/0 removed
 - 2026-10-26 — impl-review re-division (user, AC-21 applied to 028): waves.json rewritten as 1 wave via review-waves --single (lines 4422, files 127, bytes 923276); reviews.impl keeps the wave-1 node, waves 2-3 nodes dropped (never started); wave-1/iter-03 takes an iteration-1 scope over main...HEAD; floor on iteration − A = 3 − 2 = 1 (low)
 - 2026-10-26 — impl-review wave-1/iter-03: combined FAIL (F-1 low doc economy, F-5 low SSoT — iron-rule FAILs; F-2, F-4 medium; F-3, F-6 low), external CONCERNS (1, 2 high; 3 medium) → FAIL escalation (advisor consult first)
+
+## 2026-10-26 — FAIL escalation wave-1/iter-03
+
+- **Decision**: User accepted F-1 (doc economy) and F-5 (SSoT) for fix; route impl review-fix (wave-1/iter-03) with combined F-1..F-6 and external 1..3.
+- **Rationale**: Advisor recommended accept for both (two trivial edits riding a mandatory fix round; override would log two iron-rule waivers; F-5 via a link to "DoD per review phase").
+- **Affected docs**: reviews/impl/wave-1/iter-03/combined.md
+- 2026-10-26 — route review-fix wave-1/iter-03: standard, dispatch HEAD f3f07c15; risk change: cleanup re-entry and lint wording

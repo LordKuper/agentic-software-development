@@ -41,3 +41,5 @@ The orchestrator puts F-1 and F-5 to the user: their iron rules (documentation e
 ## Escalations (optional)
 - finding #F-1: requires user approval (iron rule `artifact-layout.md` "Documentation economy": Violation = FAIL; the fix itself is a plain deletion)
 - finding #F-5: requires user approval (iron rule `artifact-layout.md` "Single Source of Truth": Violation = FAIL; the fix links the DoD table instead of copying it)
+
+approved change: F-1 and F-5 accepted for fix by the user (2026-10-26); F-5 fix links review-policy.md "DoD per review phase" instead of copying the roster (advisor recommendation)
