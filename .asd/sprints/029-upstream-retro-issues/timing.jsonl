@@ -69,3 +69,5 @@
 {"op":"open","id":"asd-tester impl-test entry 2 gate","kind":"suite","parent":"asd-tester impl-test entry 2","start":"2026-10-26T14:30:46.568Z","attrs":{}}
 {"op":"close","id":"asd-tester impl-test entry 2 gate","kind":"suite","parent":"asd-tester impl-test entry 2","start":"2026-10-26T14:30:46.568Z","end":"2026-10-26T14:31:24.844Z","outcome":"done","attrs":{}}
 {"op":"close","id":"asd-tester impl-test entry 2","kind":"dispatch","parent":"impl-test#2","start":"2026-10-26T14:28:05.766Z","end":"2026-10-26T14:32:58.263Z","outcome":"done","attrs":{}}
+{"op":"close","id":"impl-test#2","kind":"phase","parent":null,"start":"2026-10-26T14:28:05.426Z","end":"2026-10-26T14:32:58.665Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-review#2","kind":"phase","parent":null,"start":"2026-10-26T14:32:58.665Z","attrs":{}}
