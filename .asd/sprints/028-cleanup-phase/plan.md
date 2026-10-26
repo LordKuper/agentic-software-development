@@ -52,43 +52,43 @@ Material risk: change: reviewer rubric split and routing tier removal
 
 ### Task 2: sprint-lifecycle.md
 Material risk: change: cleanup phase rule shape and delegation rule rewrite
-- [ ] "Orchestration and adaptive gates" per D2; lite and standard chains, Phase table (cleanup row, scope/audit/design/design-promote owners, impl-review exit), "No-op phase rule" cleanup row (AC-1, AC-2, AC-12)
-- [ ] New "Cleanup phase" section per D3-D7; "Impacted test set" (cleanup joins impacted-only, safety valve binds the orchestrator, "final tree" sentence amended keeping `final tree`/`entry analysed`) (AC-3..AC-6)
-- [ ] "Self-hosting": the orchestrator may write canon in cleanup; sync point after its removals (AC-3)
-- [ ] "Optional documents": `cleanup` and `design_system` freeze, absent-snapshot rules, placeholder→boolean rule stated once, collapse test and per-sprint skip with `design_system`, "Independent design docs" split per D14 (AC-6, AC-20)
-- [ ] "Staged solution design", "Design-promote phase", lite design-promote, "Input sources": creator work inline per D2/D11 (AC-12)
-- [ ] "Task-class" citations, "Test-only declaration" (`asd-tester`, unrouted), "State recovery" failed-dispatch roster per D8 (AC-16)
-- [ ] "Plan file format" Decomposition rules: D16's two bullets (AC-9, AC-10)
+- [x] "Orchestration and adaptive gates" per D2; lite and standard chains, Phase table (cleanup row, scope/audit/design/design-promote owners, impl-review exit), "No-op phase rule" cleanup row (AC-1, AC-2, AC-12)
+- [x] New "Cleanup phase" section per D3-D7; "Impacted test set" (cleanup joins impacted-only, safety valve binds the orchestrator, "final tree" sentence amended keeping `final tree`/`entry analysed`) (AC-3..AC-6)
+- [x] "Self-hosting": the orchestrator may write canon in cleanup; sync point after its removals (AC-3)
+- [x] "Optional documents": `cleanup` and `design_system` freeze, absent-snapshot rules, placeholder→boolean rule stated once, collapse test and per-sprint skip with `design_system`, "Independent design docs" split per D14 (AC-6, AC-20)
+- [x] "Staged solution design", "Design-promote phase", lite design-promote, "Input sources": creator work inline per D2/D11 (AC-12)
+- [x] "Task-class" citations, "Test-only declaration" (`asd-tester`, unrouted), "State recovery" failed-dispatch roster per D8 (AC-16)
+- [x] "Plan file format" Decomposition rules: D16's two bullets (AC-9, AC-10)
 
 ### Task 3: checkpoints.md, core.md, agent-protocol.md
 Material risk: change: advisor escalation contract
-- [ ] `checkpoints.md`: precondition chain and lite line per D1; gate inventory notes per D6/D14 (AC-1, AC-6, AC-20)
-- [ ] `core.md`: glossary phase list, creator/reviewer/advisor/orchestrator entries per D2/D8; "Autonomy and escalation"; "User-decision presentation format" Advisor line per D10 (AC-1, AC-2, AC-12, AC-17)
-- [ ] `agent-protocol.md`: Signals emitters, advisor `FAILED` row retired, "Relay" escalation-consult branch per D10 (AC-17)
+- [x] `checkpoints.md`: precondition chain and lite line per D1; gate inventory notes per D6/D14 (AC-1, AC-6, AC-20)
+- [x] `core.md`: glossary phase list, creator/reviewer/advisor/orchestrator entries per D2/D8; "Autonomy and escalation"; "User-decision presentation format" Advisor line per D10 (AC-1, AC-2, AC-12, AC-17)
+- [x] `agent-protocol.md`: Signals emitters, advisor `FAILED` row retired, "Relay" escalation-consult branch per D10 (AC-17)
 
 ### Task 4: providers.md, artifact-layout.md, git-strategy.md
 Material risk: change: role-scoped context rows within D13 caps
-- [ ] `providers.md` "Role-scoped context": remove creator and removed-reviewer rows, add quality rows, orchestrator rows per D11 incl. `cleanup`, `concept`, `stack`, `design-system`; "Conditional grants"; "Task-class variants and routing" per D8 (AC-3, AC-11, AC-12, AC-16)
-- [ ] `artifact-layout.md`: owner lines (Architect, Documentation agent) → orchestrator; iron-rule FAIL owners per D9; rule survival per D11 ("Subsystem registry", "Tech reference docs", "Document provenance") (AC-12, AC-14)
-- [ ] `git-strategy.md`: cleanup commit form and stub-row deletion per D4; `testing.md F-1` example and "Documentation reviewer verdict" line per D9 (AC-4, AC-14)
+- [x] `providers.md` "Role-scoped context": remove creator and removed-reviewer rows, add quality rows, orchestrator rows per D11 incl. `cleanup`, `concept`, `stack`, `design-system`; "Conditional grants"; "Task-class variants and routing" per D8 (AC-3, AC-11, AC-12, AC-16)
+- [x] `artifact-layout.md`: owner lines (Architect, Documentation agent) → orchestrator; iron-rule FAIL owners per D9; rule survival per D11 ("Subsystem registry", "Tech reference docs", "Document provenance") (AC-12, AC-14)
+- [x] `git-strategy.md`: cleanup commit form and stub-row deletion per D4; `testing.md F-1` example and "Documentation reviewer verdict" line per D9 (AC-4, AC-14)
 
 ### Task 5: review-policy.md, external-review.md, design-system.md, ux-principles.md
 Material risk: change: reviewer responsibility table rewrite
-- [ ] `review-policy.md`: "Reviewer responsibility", DoD, fan-out, inputs, creator-fix wording per D2/D9 (AC-12..AC-14)
-- [ ] `external-review.md` creator-fix wording (AC-12)
-- [ ] `design-system.md`: owner lines, UX rule survival and token-decision rules per D11, design-system flow under `design_system` per D14 (AC-12, AC-20)
-- [ ] `ux-principles.md` owner lines (AC-12)
+- [x] `review-policy.md`: "Reviewer responsibility", DoD, fan-out, inputs, creator-fix wording per D2/D9 (AC-12..AC-14)
+- [x] `external-review.md` creator-fix wording (AC-12)
+- [x] `design-system.md`: owner lines, UX rule survival and token-decision rules per D11, design-system flow under `design_system` per D14 (AC-12, AC-20)
+- [x] `ux-principles.md` owner lines (AC-12)
 
 ### Task 6: Templates
 Material risk: artifact: config/state template keys, verified by `node tests/run.js`
-- [ ] `t_config.yaml`: `cleanup` per D6, `documents.design_system` per D14, `ux_spec` comment narrowed (AC-6, AC-20)
-- [ ] `t_state.json`: top-level `"cleanup": "{{CLEANUP}}"`, `documents.design_system` placeholder (AC-6, AC-20)
-- [ ] `t_decisions-log.md`: cleanup checkpoint and record one-line forms per D4 (AC-4)
-- [ ] `t_audit.md`, `t_c4-model.c4`, `t_c4-views.c4`, `t_custom-design-rules.md`, `t_test-plan.md`, `t_manual-steps.md`, `t_review.md`, `external-review/t_prompt-external-design.md`: removed role names per audit (AC-11, AC-12)
+- [x] `t_config.yaml`: `cleanup` per D6, `documents.design_system` per D14, `ux_spec` comment narrowed (AC-6, AC-20)
+- [x] `t_state.json`: top-level `"cleanup": "{{CLEANUP}}"`, `documents.design_system` placeholder (AC-6, AC-20)
+- [x] `t_decisions-log.md`: cleanup checkpoint and record one-line forms per D4 (AC-4)
+- [x] `t_audit.md`, `t_c4-model.c4`, `t_c4-views.c4`, `t_custom-design-rules.md`, `t_test-plan.md`, `t_manual-steps.md`, `t_review.md`, `external-review/t_prompt-external-design.md`: removed role names per audit (AC-11, AC-12)
 
 ### Task 7: Migration 14.0.0
 Material risk: migration: rewrites active sprint state.json and deletes retired generated views
-- [ ] New `.asd/migrations/14.0.0.js` per D13, header comment stating what it does and why (AC-18)
+- [x] New `.asd/migrations/14.0.0.js` per D13, header comment stating what it does and why (AC-18)
 
 ### Task 8: Phase chain, cleanup workflow and creator-free phase workflows (cleanup side)
 Material risk: change: cleanup workflow steps and routing into retro
@@ -98,6 +98,7 @@ Reachability: impl-review (standard) / design-promote (lite) writes `NEXT: clean
 - [ ] `asd-phase-impl-review.md`: exit, return, UI predicate owner, tester routing, reviewer input rule per D1/D8/D9 (AC-1, AC-13, AC-16)
 - [ ] `asd-phase-design-promote.md`: exit/return per D1, promotion inline per D2/D11, design-system promotion per D14 (AC-1, AC-12, AC-20)
 - [ ] `asd-phase-retro.md` entry, `asd-phase-pr.md` precondition note per D1 (AC-1)
+- [ ] `.asd/hooks/session-start.js` design-block collapse test adds `design_system` per D14 (AC-20)
 
 ### Task 9: Creator-free phase workflows (design side, routing)
 Material risk: change: inline creator steps and advisor consult sites
