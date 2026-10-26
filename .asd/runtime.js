@@ -455,7 +455,7 @@ function standingPredicates(input, parts, ids, customRules, templates) {
   if (!input.files.some((file) => /\.html?$/i.test(file))) grant('html', NA_PREDICATES.noHtml);
   if (input.selfHosting !== true) grant('selfHosting', NA_PREDICATES.noSelfHosting);
   if (!input.files.some((file) => isTemplated(file, templates))) grant('templated', NA_PREDICATES.noTemplated);
-  if (rubrics.includes(COMBINED_REVIEWER) && !input.files.some((file) => isDocumentation(file, templates))) grant('docs', NA_PREDICATES.noDocs);
+  if (rubrics.includes(COMBINED_REVIEWER) && !(input.scopeFiles || input.files).some((file) => isDocumentation(file, templates))) grant('docs', NA_PREDICATES.noDocs);
   if (input.phase === 'design-review') {
     if (!input.files.some((file) => /(^|\/)(ux-spec\.html|design-md-delta\.yaml)$/.test(file))) grant('ui', NA_PREDICATES.phaseGate);
     return granted;
@@ -466,7 +466,7 @@ function standingPredicates(input, parts, ids, customRules, templates) {
   return granted;
 }
 
-/** Emits one reviewer's stamped coverage manifest over its whole file list; `rubric` is its agent markdown, or a combined reviewer's `{reviewer: markdown}` map whose rubrics compose in order. */
+/** Emits one reviewer's stamped coverage manifest over its whole file list; `scopeFiles` (default `files`) is the diff scope the docs predicate judges, so appended test-plan paths never void it; `rubric` is its agent markdown, or a combined reviewer's `{reviewer: markdown}` map whose rubrics compose in order. */
 function emitCoverageManifest(input) {
   if (!input || typeof input !== 'object') fail('emit input required');
   if (!PHASES.includes(input.phase)) fail('phase must be design-review or impl-review');
@@ -916,6 +916,7 @@ function emitInternalManifest(flags, files, ranges, snapshot) {
     phase: flags.phase,
     rubric: flags.reviewer === COMBINED_REVIEWER ? Object.fromEntries(COMBINED_RUBRICS.concat(COMBINED_REVIEWER).map((reviewer) => [reviewer, rubricOf(reviewer)])) : rubricOf(flags.reviewer),
     files: reviewed,
+    scopeFiles: files,
     customRules: Object.fromEntries(customPaths.map((file) => [file, fs.readFileSync(file, 'utf8')])),
     selfHosting: flags['self-hosting'] === true,
     templates: templateNames(path.join(__dirname, 'templates')),
