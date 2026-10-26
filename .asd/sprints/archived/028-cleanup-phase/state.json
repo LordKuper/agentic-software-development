@@ -1,7 +1,7 @@
 {
   "sprint_id": "028-cleanup-phase",
   "branch": "sprint/028-cleanup-phase",
-  "phase": "pr",
+  "phase": "done",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -123,6 +123,13 @@
       "reason": "user confirmed opening PR #64",
       "evidence": "decisions-log.md 2026-10-26 pr open mode",
       "artifact_revision": "10007d6e"
+    },
+    {
+      "gate": "sprint-closure",
+      "decision_actor": "orchestrator",
+      "reason": "PR #64 merged; release v14.0.0 published",
+      "evidence": "merge commit a3cf2231e1f2a8c90d83b5b30670303e0bbc8d27",
+      "artifact_revision": "a3cf2231"
     }
   ],
   "task_routing": {
@@ -275,13 +282,14 @@
     }
   },
   "created_at": "2026-10-22T14:59:41.183Z",
-  "updated_at": "2026-10-26T11:41:05.059Z",
+  "updated_at": "2026-10-26T11:57:57.064Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": {
     "number": 64,
     "url": "https://github.com/LordKuper/agentic-software-development/pull/64",
-    "state": "open"
+    "state": "merged",
+    "merge_commit": "a3cf2231e1f2a8c90d83b5b30670303e0bbc8d27"
   },
-  "archived_at": null
+  "archived_at": "2026-10-26T11:57:57.064Z"
 }

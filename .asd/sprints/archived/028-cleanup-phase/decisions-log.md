@@ -41,3 +41,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-26 — retro: retrospective.html written (3 entries, 1 consumer action + 2 covered, 3 systemic proposals, analysed branch)
 - 2026-10-26 — pr open mode: DoD verified (plan ticked, wave-1 combined + external APPROVE at iter-05, full suite re-run 316/316 after cleanup commit, lint and sync clean, retrospective present, no sprint stubs, no existing PR for the branch); asd_version 13.10.0 → 14.0.0 (breaking markers), CHANGELOG v14.0.0 added
 - 2026-10-26 — pr open mode: PR #64 opened after the user confirmed publication; state.json.pr written and pushed; NEXT await-merge
+- 2026-10-26 — sprint closed: PR #64 merged at a3cf2231, release v14.0.0 published; archived by 029 scope
