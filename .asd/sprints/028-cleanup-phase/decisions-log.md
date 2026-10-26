@@ -110,3 +110,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-26 — impl-test: impacted set green (316/316, full suite), entry 7 0 added/0 removed
 - 2026-10-26 — impl-review wave-1/iter-05: combined APPROVE, external APPROVE (latched); last wave roster met → terminal full suite
 - 2026-10-26 — route impl-review wave-1/iter-05 suite: standard, dispatch HEAD 1ef0b793
+- 2026-10-26 — impl-review DoD met: terminal full suite green 316/316 at b89a6379; green handoff (adaptive) → NEXT design-promote (lite)

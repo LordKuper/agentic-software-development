@@ -109,6 +109,13 @@
       "reason": "F-1, F-5 accepted for fix",
       "evidence": "decisions-log.md 2026-10-26 FAIL escalation wave-1/iter-03",
       "artifact_revision": "reviews/impl/wave-1/iter-03/combined.md"
+    },
+    {
+      "gate": "impl-review green handoff",
+      "decision_actor": "orchestrator",
+      "reason": "wave 1 roster met (combined, external APPROVE), terminal full suite 316/316 green at b89a6379",
+      "evidence": "test-plan.md Suite run; reviews/impl/wave-1/iter-05",
+      "artifact_revision": "b229702d"
     }
   ],
   "task_routing": {
@@ -259,7 +266,7 @@
     }
   },
   "created_at": "2026-10-22T14:59:41.183Z",
-  "updated_at": "2026-10-26T11:05:34.140Z",
+  "updated_at": "2026-10-26T11:33:24.403Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
