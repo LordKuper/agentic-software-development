@@ -35,3 +35,7 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+- 2026-10-26 — route Task 1: critical, dispatch HEAD 67ee7529
+
+- 2026-10-26 — impl wave 1: Task 1 COMPLETED (96e2eb1e, 5fa6600f, be729735); flagged accepted: test-plan paths count toward combined's documentation scope, advisor Signals keep ABORT only, failed objective check routes standard (no critical tier), quality's test-plan.md-missing ABORT, manual-verification row rule homed in quality; sync --apply regenerated 16 views and removed 18 orphan views; ownerless memory of asd-architect, asd-dev-critical, asd-reviewer-correctness/-documentation/-testing, asd-tester-critical, asd-pm deleted (user decision)

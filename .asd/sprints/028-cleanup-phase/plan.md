@@ -40,15 +40,15 @@ Standing DoD applies (`sprint-lifecycle.md` "Plan file format") — not restated
 
 ### Task 1: Agent roster and its runtime/generator contract
 Material risk: change: reviewer rubric split and routing tier removal
-- [ ] Delete `.asd/agents/asd-ba.md`, `asd-ux.md`, `asd-architect.md`, `asd-reviewer-correctness.md`, `asd-reviewer-testing.md`, `asd-reviewer-documentation.md` (AC-11)
-- [ ] New `.asd/agents/asd-reviewer-quality.md` per D8/D9: frontmatter, description ≤300 chars, rubric `###` sections per the audit mapping table (AC-11, AC-14, AC-15)
-- [ ] `asd-reviewer-efficiency.md` (opus/high, new rubric sections per D9) and `asd-reviewer-combined.md` (composes quality + efficiency, own "Overall quality") (AC-14, AC-15)
-- [ ] `asd-dev.md`: drop `critical`, base sonnet/high + sol/high, `mechanical` haiku/high + luna/high; `asd-tester.md`: drop `variants`, base sonnet/high + sol/high (AC-11, AC-15, AC-16)
-- [ ] `asd-advisor.md`: always-recommend contract, names a hard gate, never authorizes, orchestrator escalation consults per D10 (AC-17)
-- [ ] `asd-external-review.md`: empty Kept findings table rule per D15 (AC-8)
-- [ ] Remaining agent bodies and descriptions: no delegation target names a removed agent (AC-11)
-- [ ] `.asd/runtime.js`: `INTERNAL_REVIEWERS`, `COMBINED_RUBRICS`, `NA_TARGETS`, noDocs, `reviewerFiles` per D9; `routeTask` per D8 (legacy `priorTier: critical` → `standard`); `AUDIT_BATCH_THRESHOLD_FILES` recipient comment (AC-13, AC-14, AC-16)
-- [ ] `.asd/sync.js` `VARIANT_SUFFIXES` drops `critical` (AC-16)
+- [x] Delete `.asd/agents/asd-ba.md`, `asd-ux.md`, `asd-architect.md`, `asd-reviewer-correctness.md`, `asd-reviewer-testing.md`, `asd-reviewer-documentation.md` (AC-11)
+- [x] New `.asd/agents/asd-reviewer-quality.md` per D8/D9: frontmatter, description ≤300 chars, rubric `###` sections per the audit mapping table (AC-11, AC-14, AC-15)
+- [x] `asd-reviewer-efficiency.md` (opus/high, new rubric sections per D9) and `asd-reviewer-combined.md` (composes quality + efficiency, own "Overall quality") (AC-14, AC-15)
+- [x] `asd-dev.md`: drop `critical`, base sonnet/high + sol/high, `mechanical` haiku/high + luna/high; `asd-tester.md`: drop `variants`, base sonnet/high + sol/high (AC-11, AC-15, AC-16)
+- [x] `asd-advisor.md`: always-recommend contract, names a hard gate, never authorizes, orchestrator escalation consults per D10 (AC-17)
+- [x] `asd-external-review.md`: empty Kept findings table rule per D15 (AC-8)
+- [x] Remaining agent bodies and descriptions: no delegation target names a removed agent (AC-11)
+- [x] `.asd/runtime.js`: `INTERNAL_REVIEWERS`, `COMBINED_RUBRICS`, `NA_TARGETS`, noDocs, `reviewerFiles` per D9; `routeTask` per D8 (legacy `priorTier: critical` → `standard`); `AUDIT_BATCH_THRESHOLD_FILES` recipient comment (AC-13, AC-14, AC-16)
+- [x] `.asd/sync.js` `VARIANT_SUFFIXES` drops `critical` (AC-16)
 
 ### Task 2: sprint-lifecycle.md
 Material risk: change: cleanup phase rule shape and delegation rule rewrite
