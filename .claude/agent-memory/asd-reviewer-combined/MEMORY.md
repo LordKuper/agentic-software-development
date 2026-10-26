@@ -11,3 +11,5 @@
 - [In-body comment sweep](feedback_in-body-comment-sweep.md) — grep added `//` lines in JS diffs; an in-body comment is a high Quality finding, move its WHY to JSDoc
 - [Re-entry evidence check](feedback_reentry-evidence-check.md) — per Re-entry skip key: which stage writes it, and can a template placeholder fake it
 - [Enumerated reach vs trigger sites](feedback_enumerated-reach-vs-trigger-sites.md) — a home closing reach to a phase list: list every phase the trigger fires in (commit-tool roles) and diff
+- [State-key merge migrations](feedback_state-key-merge-migrations.md) — merging reviewer keys: per-node legacy roster, absent key = blocking, fixtures with keys a node never held
+- [Predicates vs appended files](feedback_predicates-vs-appended-files.md) — reviewerFiles appending test-plan paths can kill a "no X in scope" n/a predicate; trace the CLI path
