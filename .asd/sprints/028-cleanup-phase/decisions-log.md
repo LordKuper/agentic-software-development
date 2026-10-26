@@ -58,3 +58,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-26 — route impl-test entry 1: standard, dispatch HEAD 5b98726f
 - 2026-10-26 — impl-test entry 1 step 7a: asd-reviewer-combined memory-fix for 3 leftover-term hits (enumerated-reach, in-body-comment-sweep, dispatch-payload), committed 8359218a
 - 2026-10-26 — impl-test: defects D-1 → impl test-fix (digest bea4fd1ed8c4eb4af0b829c113a782311fa5c07a79dbeeaf90b2fa88caf37dbd); orchestrator re-run after step 7a 312/313, only D-1 red
+- 2026-10-26 — route test-fix D-1: standard, dispatch HEAD 402db21f; risk change: advisor consult sites in impl-review
+- 2026-10-26 — impl test-fix: defects D-1 resolved (043e4301, row 111c8d13); flagged accepted: dev refreshed the one upstream_hashes entry its edit staled (orchestrator sync output, same as sync --apply AGENTS.md); gate: sync --check 60 current, diff --check clean, paths authorised
+- 2026-10-26 — route impl-test entry 2: standard, dispatch HEAD 111c8d13

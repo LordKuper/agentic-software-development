@@ -168,6 +168,12 @@
       "execution": "agent",
       "reason": "artifact-risk:leftover role names",
       "resolved_model": "sonnet"
+    },
+    "test-fix D-1": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:advisor consult sites in impl-review",
+      "resolved_model": "sonnet"
     }
   },
   "skipped_phases": [],
@@ -190,9 +196,9 @@
     }
   },
   "created_at": "2026-10-22T14:59:41.183Z",
-  "updated_at": "2026-10-26T09:37:01.791Z",
+  "updated_at": "2026-10-26T09:40:47.838Z",
   "review_fixes_pending": null,
-  "test_defects_pending": true,
+  "test_defects_pending": null,
   "pr": null,
   "archived_at": null
 }
