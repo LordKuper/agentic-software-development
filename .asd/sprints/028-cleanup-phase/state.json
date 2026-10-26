@@ -1,7 +1,7 @@
 {
   "sprint_id": "028-cleanup-phase",
   "branch": "sprint/028-cleanup-phase",
-  "phase": "impl-test",
+  "phase": "impl-review",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -220,7 +220,7 @@
       "wave": 1,
       "waves": [
         {
-          "iteration": 4,
+          "iteration": 5,
           "verdicts": {
             "iter-01": {
               "combined": "CONCERNS",
@@ -253,7 +253,7 @@
     }
   },
   "created_at": "2026-10-22T14:59:41.183Z",
-  "updated_at": "2026-10-26T11:00:09.980Z",
+  "updated_at": "2026-10-26T11:02:15.305Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
