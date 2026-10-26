@@ -127,9 +127,9 @@ Test-only: tests/run.js
 
 ### Task 13: Lite impl-review reviews one wave
 Material risk: change: division rule split per workflow
-- [ ] `sprint-lifecycle.md` "Review iteration counters" Division/Division point: under `lite` the division is always one wave holding the whole scope, whatever `review-waves` measures; `standard` unchanged (AC-21)
-- [ ] `asd-phase-impl-review.md` step 1c: lite writes the single-wave division; `.asd/runtime.js` `review-waves` accepts that one-wave division for lite (e.g. a flag the step passes), its measured fields still recorded (AC-21)
-- [ ] Mirrors: `review-policy.md` / `core.md` "Review wave" wording if it states size-only division, `asd-phase-impl-review/SKILL.md` description, `README.md` (:15, :194, :255, :455 and any other site a grep finds) (AC-21)
+- [x] `sprint-lifecycle.md` "Review iteration counters" Division/Division point: under `lite` the division is always one wave holding the whole scope, whatever `review-waves` measures; `standard` unchanged (AC-21)
+- [x] `asd-phase-impl-review.md` step 1c: lite writes the single-wave division; `.asd/runtime.js` `review-waves` accepts that one-wave division for lite (e.g. a flag the step passes), its measured fields still recorded (AC-21)
+- [x] Mirrors: `review-policy.md` / `core.md` "Review wave" wording if it states size-only division, `asd-phase-impl-review/SKILL.md` description, `README.md` (:15, :194, :255, :455 and any other site a grep finds) (AC-21)
 
 ### Task 14: Tests for the lite single-wave rule
 Material risk: artifact: test pins, verified by `node tests/run.js`

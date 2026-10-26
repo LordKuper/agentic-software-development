@@ -79,3 +79,7 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Rationale**: User's explicit request; iterations 0, fix rounds 0 for AC-21; rule homes per audit "Touched areas" grep for review waves.
 - **Affected docs**: sprint.md, plan.md
 - 2026-10-26 — impl-test: impacted set green (313/313, full suite), entry 4 0 added/0 removed; NEXT impl (initial mode over unticked amendment Tasks 13-14, sprint-lifecycle.md "Scope amendment") instead of impl-review
+- 2026-10-26 — route Task 13: standard, dispatch HEAD 1efd2685
+- 2026-10-26 — user: sprint 028 itself reviews in one wave (AC-21 applies now): after Task 13 lands, waves.json is rewritten as one wave over the full scope, reviews.impl keeps wave 1 node only, next iteration wave-1/iter-03 takes an iteration-1 scope (full list over main...HEAD) since waves 2-3 files were never reviewed; floor via floor_base=wave-1/2
+- 2026-10-26 — impl wave 6: Task 13 COMPLETED (be8aedb1; `review-waves --single`); sync --apply regenerated impl-review skill views
+- 2026-10-26 — route Task 14: standard, dispatch HEAD be8aedb1
