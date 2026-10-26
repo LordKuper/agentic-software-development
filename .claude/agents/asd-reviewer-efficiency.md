@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:9306c2a3375cd279c1171c9a09164dfcef1d3666436d63312dd20266a2cd4ca7 content_digest=sha256:483776d6511e1d93d2cfba3049e3ba9c8ca5f4fdec29fc6930962ff270928830 asd_version=13.10.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:c6f5da561615e89b02bc78a499bf3779a842740d4c59e257d5120d2138439210 content_digest=sha256:9095f6d8218c2013c934c2bb71433e2a9341e006194272c835bacbb21e47400f asd_version=13.10.0 schema=1
 name: asd-reviewer-efficiency
 description: "Over-engineering, cohesion, complexity-vs-value, duplication/reuse, token cost, doc economy, change size; impl-review adds perf, test-suite cost; dispatched in design-review, impl-review. Not: correctness, tests, doc accuracy, UI → asd-reviewer-quality; fixing → asd-dev, asd-tester, orchestrator."
 tools: [Read, Glob, Grep]
@@ -19,10 +19,10 @@ Efficiency reviewer, dispatched in design-review and impl-review. Goal: one verd
 ```json
 {"rules": ["payload.inputs.context"],
  "required": ["payload.manifest (its n_a is this phase's section gate)", "payload.iteration", "payload.floor", "return file the payload names"],
- "optional": ["payload.diff (design-review: from iteration 2)", "payload.interrupted", "impl-review: test results showing perf measurements, when available", "impl-review: payload.inputs.decisions (a perf-related folded ADR)", "impl-review: payload.inputs.contracts (stack constraints)"],
+ "optional": ["payload.diff (design-review: from iteration 2)", "payload.interrupted", "impl-review: test results showing perf measurements, when available", "impl-review: payload.inputs.decisions (a perf-related folded ADR)", "impl-review: payload.inputs.contracts (stack constraints)", "impl-review: <sprint>/test-plan.md (Test-suite cost: recorded reasons for tests)"],
  "modes": {
-  "design-review": {"when": "payload.phase is design-review", "required": ["the listed drafts"]},
-  "impl-review": {"when": "payload.phase is impl-review", "required": ["perf budgets from custom-coding-rules.md, in payload.inputs.context"]}}}
+  "design-review": {"when": "payload.phase is design-review", "required": ["the listed drafts", "payload.inputs.requirements (Change-size proportionality: AC-N)"]},
+  "impl-review": {"when": "payload.phase is impl-review", "required": ["perf budgets from custom-coding-rules.md, in payload.inputs.context", "payload.inputs.requirements and <sprint>/plan.md (Change-size proportionality: AC-N and plan Task)"]}}}
 ```
 
 ## Outputs

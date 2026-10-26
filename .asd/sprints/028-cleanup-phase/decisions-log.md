@@ -64,3 +64,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-26 — impl-test: impacted set green (313/313, full suite via safety valve), entry 2 0 added/0 removed tests; no Manual verification rows
 - 2026-10-26 — impl-review division: 3 waves (lines 4342, files 124, bytes 900604): wave 1 roster and runtime (agents, runtime.js, sync.js, migration, hook, manifest, deleted memory; 73 files), wave 2 rules and templates (23), wave 3 workflows, skills, README/AGENTS, tests (28)
 - 2026-10-26 — impl-review wave-1/iter-01: combined CONCERNS (F-1..F-3 medium, F-4 low), external APPROVE (latched) → impl review-fix (wave-1/iter-01); F-3 reverses the wave-1 flagged acceptance "test-plan paths count toward combined's documentation scope" (decisions-log.003 impl wave 1 line): the docs predicate must judge the scope list only
+- 2026-10-26 — route review-fix wave-1/iter-01: standard, dispatch HEAD ac4d1f1a; risk change: migration
+- 2026-10-26 — impl fix for wave-1/iter-01: findings resolved (F-1, F-2 f396b4dd; F-3 2d222460; F-4 8fe2f48e); flagged accepted: only the docs predicate reads the scope list, templated/html/ui/perf still see test-plan paths (reverses the wave-1 docs-scope acceptance per F-3); sync --apply regenerated efficiency views
+- 2026-10-26 — route impl-test entry 3: standard, dispatch HEAD 8fe2f48e
