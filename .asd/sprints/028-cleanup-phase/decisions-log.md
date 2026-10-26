@@ -35,9 +35,3 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
-
-## 2026-10-26 — plan accepted
-
-- **Decision**: `<sprint>/plan.md` accepted: D1-D16, Tasks 1-12 in 5 waves (Task 1 alone in wave 1 as the dispatch-contract change), release 14.0.0; D14 adds `documents.design_system`, absent taking the `ux_spec` value.
-- **Rationale**: User `accept`; no open stubs (stubs.md empty, audit lists none).
-- **Affected docs**: plan.md
