@@ -1,7 +1,7 @@
 {
   "sprint_id": "029-upstream-retro-issues",
   "branch": "sprint/029-upstream-retro-issues",
-  "phase": "scope",
+  "phase": "audit",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -41,6 +41,20 @@
       "reason": "028#A-2 (fix in AGENTS.md) P-1 P-2 P-3 included (AC-9..AC-12)",
       "evidence": "decisions-log.md 2026-10-26 retro intake",
       "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "audit contradiction",
+      "decision_actor": "user",
+      "reason": "C1: AC wins; retro-finding issue actions ungated in both modes, checkpoints.md exception",
+      "evidence": "decisions-log.md 2026-10-26 audit contradiction C1",
+      "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "all t_audit.md sections for AC-1..AC-13; C1 settled by user; AC-2 home and P-row cause settled from source",
+      "evidence": "audit.md",
+      "artifact_revision": "audit.md@audit"
     }
   ],
   "task_routing": {},
@@ -64,7 +78,7 @@
     }
   },
   "created_at": "2026-10-26T11:59:26.556Z",
-  "updated_at": "2026-10-26T13:39:12.982Z",
+  "updated_at": "2026-10-26T13:43:42.004Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
