@@ -37,3 +37,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+- 2026-10-26 — retro: retrospective.html written (3 entries, 1 consumer action + 2 covered, 3 systemic proposals, analysed branch)
