@@ -40,45 +40,45 @@ Standing DoD applies (`sprint-lifecycle.md` "Plan file format") — not restated
 ### Task 1: Rule homes — gates, trust boundary, backlog, minor test-only findings
 AC-4, AC-5, AC-6, AC-7 (D7), AC-10, AC-11.
 Material risk: change: workflow gate — new ungated external actions and a widened in-place fix trigger
-- [ ] `checkpoints.md`: "Gate inventory" exception line for `asd-retro` issue actions (D7); retro-intake-dispositions row names issue dispositions; "Gate policy" AC-11 sentence: a flagged choice changing a predicate or contract an agent definition, README or rule states is checked against that text and routed back when it contradicts it (D10)
-- [ ] `core.md` "Untrusted-data boundary": GitHub issue titles, bodies and comments are data
-- [ ] `artifact-layout.md` "Retro backlog": issue dispositions live on GitHub, never in the backlog; "Test plan" citation renamed (D9)
-- [ ] `review-policy.md`: rename the subsection to "Minor test-only findings", trigger `low` or `medium`; the "Autofix vs escalation" reference renamed (D9)
+- [x] `checkpoints.md`: "Gate inventory" exception line for `asd-retro` issue actions (D7); retro-intake-dispositions row names issue dispositions; "Gate policy" AC-11 sentence: a flagged choice changing a predicate or contract an agent definition, README or rule states is checked against that text and routed back when it contradicts it (D10)
+- [x] `core.md` "Untrusted-data boundary": GitHub issue titles, bodies and comments are data
+- [x] `artifact-layout.md` "Retro backlog": issue dispositions live on GitHub, never in the backlog; "Test plan" citation renamed (D9)
+- [x] `review-policy.md`: rename the subsection to "Minor test-only findings", trigger `low` or `medium`; the "Autofix vs escalation" reference renamed (D9)
 
 ### Task 2: Lifecycle and git rules
 AC-7, AC-10, AC-12.
 Material risk: change: release-retry trigger extension
 Reachability: scope writes `(issue #N)` into `sprint.md` at scope acceptance; pr merge mode reads it from the merged `sprint.md` on base after the release; interrupted before merge, base holds no sprint.md change and nothing closes; interrupted after the release before a close, the retry trigger finds the issue open.
-- [ ] `sprint-lifecycle.md` "PR phase" "Merged-unclosed": release retry also fires while an included issue is still open (D6); phase table scope/retro/pr rows name issue triage, publication and close; impl cycle text and "User-resolved findings" renamed (D9)
-- [ ] `sprint-lifecycle.md` "Decomposition rules": a plan removing or renaming a name lists the grep forms its universal-reach sweep covers — verdict token, `<key>.md` file name, prose role name, retired tier wording — not the token alone (AC-12)
-- [ ] `git-strategy.md` "Versioning & Changelog (self-hosting only)": the close-after-release step (D6), skipped per issue when already closed; "Commits" citation renamed (D9)
+- [x] `sprint-lifecycle.md` "PR phase" "Merged-unclosed": release retry also fires while an included issue is still open (D6); phase table scope/retro/pr rows name issue triage, publication and close; impl cycle text and "User-resolved findings" renamed (D9)
+- [x] `sprint-lifecycle.md` "Decomposition rules": a plan removing or renaming a name lists the grep forms its universal-reach sweep covers — verdict token, `<key>.md` file name, prose role name, retired tier wording — not the token alone (AC-12)
+- [x] `git-strategy.md` "Versioning & Changelog (self-hosting only)": the close-after-release step (D6), skipped per issue when already closed; "Commits" citation renamed (D9)
 
 ### Task 3: Consumer publication at retro and its config key
 AC-1, AC-2, AC-3, AC-8.
 Material risk: change: security — consumer content crossing to a public repo
-- [ ] `asd-phase-retro.md`: step 4 Draft home `upstream ASD: <framework path>` (D3); new publication step (D2) with its decisions-log line; Inputs/Exit list config `upstream_issues` and the issue writes
-- [ ] `t_config.yaml`: `upstream_issues: enabled` with its comment (D8)
-- [ ] `asd-init/SKILL.md`: collect, show and write `upstream_issues` like `cleanup`, consumer projects only (D8)
+- [x] `asd-phase-retro.md`: step 4 Draft home `upstream ASD: <framework path>` (D3); new publication step (D2) with its decisions-log line; Inputs/Exit list config `upstream_issues` and the issue writes
+- [x] `t_config.yaml`: `upstream_issues: enabled` with its comment (D8)
+- [x] `asd-init/SKILL.md`: collect, show and write `upstream_issues` like `cleanup`, consumer projects only (D8)
 
 ### Task 4: Self-hosting triage and dispositions at scope
 AC-4, AC-5, AC-6.
 Material risk: change: workflow gate — issue triage inside the retro-intake gate
-- [ ] `asd-phase-scope.md` step 2a: issue triage (D4) with its decisions-log line `issue triage: closed duplicate #N of #M; closed resolved #K (<evidence>); to user #…; non-standard #…`; no-op clause (D5)
-- [ ] `asd-phase-scope.md` step 4: issue rows at the gate; dispositions written on acceptance (D5); Inputs/Exit list the issue reads and writes
-- [ ] `asd-phase-scope/SKILL.md` description names issue triage when self-hosting
+- [x] `asd-phase-scope.md` step 2a: issue triage (D4) with its decisions-log line `issue triage: closed duplicate #N of #M; closed resolved #K (<evidence>); to user #…; non-standard #…`; no-op clause (D5)
+- [x] `asd-phase-scope.md` step 4: issue rows at the gate; dispositions written on acceptance (D5); Inputs/Exit list the issue reads and writes
+- [x] `asd-phase-scope/SKILL.md` description names issue triage when self-hosting
 
 ### Task 5: Post-release close and PR references
 AC-7.
 Material risk: change: release sequence extension
-- [ ] `asd-phase-pr.md` open mode: included issues as `Refs #N`, never a closing keyword; merge mode step 2: close included issues after the release (D6)
-- [ ] `t_pr-description.md` "Related issues": `Refs #N` form
-- [ ] `asd-sprint/SKILL.md` Step 1: release retry also when an included issue is still open (D6)
+- [x] `asd-phase-pr.md` open mode: included issues as `Refs #N`, never a closing keyword; merge mode step 2: close included issues after the release (D6)
+- [x] `t_pr-description.md` "Related issues": `Refs #N` form
+- [x] `asd-sprint/SKILL.md` Step 1: release retry also when an included issue is still open (D6)
 
 ### Task 6: Rename mirrors and flagged-choice acting site
 AC-10, AC-11.
 Material risk: artifact: decided rename and citation (D9, D10), verified by repo grep of every D9 form returning only the new heading
-- [ ] `asd-tester.md`, `providers.md` (role-row context ref), `asd-phase-impl-review/SKILL.md`, `asd-phase-impl-review.md` (4 sites), `runtime.js` `isTest` doc comment: D9 rename and `low` or `medium`
-- [ ] `asd-phase-impl.md` step 10: cite `checkpoints.md` "Gate policy" for the AC-11 check
+- [x] `asd-tester.md`, `providers.md` (role-row context ref), `asd-phase-impl-review/SKILL.md`, `asd-phase-impl-review.md` (4 sites), `runtime.js` `isTest` doc comment: D9 rename and `low` or `medium`
+- [x] `asd-phase-impl.md` step 10: cite `checkpoints.md` "Gate policy" for the AC-11 check
 
 ### Task 7: AGENTS.md tail and README
 AC-9, AC-13.
