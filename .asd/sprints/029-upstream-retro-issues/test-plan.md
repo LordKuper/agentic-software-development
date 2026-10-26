@@ -37,10 +37,10 @@ responsibility:
 ## Suite run
 
 - Command: `node tests/run.js`
-- Scope: full (change surface touches framework-wide files: safety valve degrades the impacted set to the full suite)
-- Result: pass — 318 passed, 0 failed, 0 skipped, exit 0 (pre-strategy 318/318 exit 0 before the new asserts; they extend an existing test, so the count is unchanged)
-- Lint / build: pass — `git diff --cached --check` clean at commit, `node .asd/sync.js --check` ok
-- HEAD: d05d6fc0a11fc96a8d868707fbf587c844429288
+- Scope: full (impl-review terminal run, unscoped)
+- Result: pass — 318 passed, 0 failed, 0 skipped, exit 0
+- Lint / build: pass — `git diff --cached --check` exit 0, `git diff --check` (worktree, bookkeeping files excluded) exit 0, `node .asd/sync.js --check` ok:true, exit 0
+- HEAD: a45798e2ab1d5ece711dbc1726106e006dca1510
 
 ## Defects
 
