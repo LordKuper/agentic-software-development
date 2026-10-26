@@ -83,8 +83,8 @@ Material risk: artifact: decided rename and citation (D9, D10), verified by repo
 ### Task 7: AGENTS.md tail and README
 AC-9, AC-13.
 Material risk: artifact: mirror text, verified by `node tests/run.js` and `sync.js --check`
-- [ ] root `AGENTS.md` tail: heading and text state build `node .asd/sync.js --check` and lint `git diff --cached --check` per `commands.yaml`, run before reporting COMPLETED (AC-9)
-- [ ] `README.md`: scope/retro/pr phase rows, config schema `upstream_issues`, FAQ or feature line for upstream issues, D9 rename where cited
+- [x] root `AGENTS.md` tail: heading and text state build `node .asd/sync.js --check` and lint `git diff --cached --check` per `commands.yaml`, run before reporting COMPLETED (AC-9)
+- [x] `README.md`: scope/retro/pr phase rows, config schema `upstream_issues`, FAQ or feature line for upstream issues, D9 rename where cited
 
 ## Risks
 - A false-positive duplicate close: comment links the original; the issue can be reopened.

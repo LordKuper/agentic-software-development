@@ -19,3 +19,21 @@
 {"op":"close","id":"wait plan gate","kind":"user-wait","parent":"plan#1","start":"2026-10-26T13:46:41.745Z","end":"2026-10-26T13:49:21.740Z","outcome":"done","attrs":{"gate":"plan"}}
 {"op":"close","id":"plan#1","kind":"phase","parent":null,"start":"2026-10-26T13:43:47.353Z","end":"2026-10-26T13:49:22.236Z","outcome":"done","attrs":{}}
 {"op":"open","id":"impl#1","kind":"phase","parent":null,"start":"2026-10-26T13:49:22.236Z","attrs":{}}
+{"op":"open","id":"Task 1","kind":"dispatch","parent":"impl#1","start":"2026-10-26T13:50:02.509Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"open","id":"Task 2","kind":"dispatch","parent":"impl#1","start":"2026-10-26T13:50:02.509Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"open","id":"Task 3","kind":"dispatch","parent":"impl#1","start":"2026-10-26T13:50:02.509Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"open","id":"Task 4","kind":"dispatch","parent":"impl#1","start":"2026-10-26T13:50:02.509Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"open","id":"Task 5","kind":"dispatch","parent":"impl#1","start":"2026-10-26T13:50:02.509Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"open","id":"Task 6","kind":"dispatch","parent":"impl#1","start":"2026-10-26T13:50:02.580Z","attrs":{"agent":"asd-dev-mechanical","tier":"mechanical","model":"haiku"}}
+{"op":"close","id":"Task 5","kind":"dispatch","parent":"impl#1","start":"2026-10-26T13:50:02.509Z","end":"2026-10-26T13:51:47.368Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"Task 1","kind":"dispatch","parent":"impl#1","start":"2026-10-26T13:50:02.509Z","end":"2026-10-26T13:51:57.930Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"Task 4","kind":"dispatch","parent":"impl#1","start":"2026-10-26T13:50:02.509Z","end":"2026-10-26T13:52:14.240Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"Task 3","kind":"dispatch","parent":"impl#1","start":"2026-10-26T13:50:02.509Z","end":"2026-10-26T13:52:23.073Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"Task 2","kind":"dispatch","parent":"impl#1","start":"2026-10-26T13:50:02.509Z","end":"2026-10-26T13:52:26.549Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"Task 6","kind":"dispatch","parent":"impl#1","start":"2026-10-26T13:50:02.580Z","end":"2026-10-26T13:52:42.857Z","outcome":"done","attrs":{"agent":"asd-dev-mechanical","tier":"mechanical","model":"haiku"}}
+{"op":"open","id":"Task 3","kind":"dispatch","parent":"impl#1","start":"2026-10-26T13:53:02.022Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"open","id":"Task 4","kind":"dispatch","parent":"impl#1","start":"2026-10-26T13:53:02.022Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"Task 3","kind":"dispatch","parent":"impl#1","start":"2026-10-26T13:53:02.022Z","end":"2026-10-26T13:53:32.785Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"Task 4","kind":"dispatch","parent":"impl#1","start":"2026-10-26T13:53:02.022Z","end":"2026-10-26T13:53:50.159Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"open","id":"Task 7","kind":"dispatch","parent":"impl#1","start":"2026-10-26T13:54:15.779Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"Task 7","kind":"dispatch","parent":"impl#1","start":"2026-10-26T13:54:15.779Z","end":"2026-10-26T13:56:38.941Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
