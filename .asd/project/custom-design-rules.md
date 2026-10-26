@@ -7,6 +7,6 @@ responsibility:
 
 # Custom Design Rules
 
-Project rules applying only to design artifacts (PRD, UX spec, ADR, C4). Read by `asd-ba`, `asd-ux`, `asd-architect`, design-review reviewers.
+Project rules applying only to design artifacts (PRD, UX spec, ADR, C4). Read by the main orchestrator and design-review reviewers.
 
 `documents.prd`/`ux_spec`/`adr` are disabled and `project.diagram_tool` is `none` for this repo (lean framework-dev profile) — this file stays empty until one is re-enabled for a specific sprint. ASD never overwrites this file.
