@@ -20,10 +20,10 @@ Efficiency reviewer, dispatched in design-review and impl-review. Goal: one verd
 ```json
 {"rules": ["payload.inputs.context"],
  "required": ["payload.manifest (its n_a is this phase's section gate)", "payload.iteration", "payload.floor", "return file the payload names"],
- "optional": ["payload.diff (design-review: from iteration 2)", "payload.interrupted", "impl-review: test results showing perf measurements, when available", "impl-review: payload.inputs.decisions (a perf-related folded ADR)", "impl-review: payload.inputs.contracts (stack constraints)"],
+ "optional": ["payload.diff (design-review: from iteration 2)", "payload.interrupted", "impl-review: test results showing perf measurements, when available", "impl-review: payload.inputs.decisions (a perf-related folded ADR)", "impl-review: payload.inputs.contracts (stack constraints)", "impl-review: <sprint>/test-plan.md (Test-suite cost: recorded reasons for tests)"],
  "modes": {
-  "design-review": {"when": "payload.phase is design-review", "required": ["the listed drafts"]},
-  "impl-review": {"when": "payload.phase is impl-review", "required": ["perf budgets from custom-coding-rules.md, in payload.inputs.context"]}}}
+  "design-review": {"when": "payload.phase is design-review", "required": ["the listed drafts", "payload.inputs.requirements (Change-size proportionality: AC-N)"]},
+  "impl-review": {"when": "payload.phase is impl-review", "required": ["perf budgets from custom-coding-rules.md, in payload.inputs.context", "payload.inputs.requirements and <sprint>/plan.md (Change-size proportionality: AC-N and plan Task)"]}}}
 ```
 
 ## Outputs
