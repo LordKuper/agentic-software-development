@@ -67,3 +67,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-30 — route impl-test#2: standard, dispatch HEAD 70b4d6814abcbe3e769f012ea9ac3e92a026001b
 - 2026-10-30 — impl-test: impacted set green (325/325, full scope via safety valve), 3 asserts added to existing tests/0 removed
 - 2026-10-30 — impl-review wave-1/iter-02: combined CONCERNS (F-1 critical: unreachable state.json guard in rotateDecisions — partly reverses iter-01 F-2's suggested callee guard, its caller carve-out stays; F-2 medium: no regression check for the fixture .asd/ marker), external APPROVE (latched at 2) → impl review-fix (review_fixes_pending wave-1/iter-02)
+- 2026-10-30 — route iter-02 combined.md F-1: standard, dispatch HEAD 45b79b343743d01c6630311831d30eab7e1377aa; risk change: rotation entry guard
+- 2026-10-30 — route iter-02 combined.md F-2 (+ F-1 unborn asserts): standard, dispatch HEAD 2a3cd4bb1022c158a77a73f8b0a67d2d81d2ef87
+- 2026-10-30 — impl fix for wave-1/iter-02: findings resolved (combined.md F-1, F-2); upstream_hashes for runtime.js recomputed by sync --apply AGENTS.md; build ok, lint clean
