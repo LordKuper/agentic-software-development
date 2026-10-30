@@ -9,3 +9,7 @@
 {"op":"close","id":"wait scope gate","kind":"user-wait","parent":"scope#1","start":"2026-10-30T13:41:59.675Z","end":"2026-10-30T15:02:49.137Z","outcome":"done","attrs":{"gate":"scope"}}
 {"op":"close","id":"scope#1","kind":"phase","parent":null,"start":"2026-10-30T13:15:39.920Z","end":"2026-10-30T15:03:14.875Z","outcome":"done","attrs":{}}
 {"op":"open","id":"audit#1","kind":"phase","parent":null,"start":"2026-10-30T15:03:14.875Z","attrs":{}}
+{"op":"close","id":"audit#1","kind":"phase","parent":null,"start":"2026-10-30T15:03:14.875Z","end":"2026-10-30T15:06:20.046Z","outcome":"done","attrs":{}}
+{"op":"open","id":"plan#1","kind":"phase","parent":null,"start":"2026-10-30T15:06:20.046Z","attrs":{}}
+{"op":"open","id":"wait plan gate","kind":"user-wait","parent":"plan#1","start":"2026-10-30T15:10:04.979Z","attrs":{"gate":"plan"}}
+{"op":"close","id":"wait plan gate","kind":"user-wait","parent":"plan#1","start":"2026-10-30T15:10:04.979Z","end":"2026-10-30T15:11:16.180Z","outcome":"done","attrs":{"gate":"plan"}}
