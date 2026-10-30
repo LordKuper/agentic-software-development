@@ -33,3 +33,17 @@
 {"op":"open","id":"suite impl#t7-1","kind":"suite","parent":"Task 7","start":"2026-10-30T15:21:55.445Z","attrs":{"scope":"full"}}
 {"op":"close","id":"suite impl#t7-1","kind":"suite","parent":"Task 7","start":"2026-10-30T15:21:55.445Z","end":"2026-10-30T15:22:31.850Z","outcome":"done","attrs":{"scope":"full"}}
 {"op":"close","id":"Task 7","kind":"dispatch","parent":"impl#1","start":"2026-10-30T15:19:21.062Z","end":"2026-10-30T15:22:54.949Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard"}}
+{"op":"close","id":"impl#1","kind":"phase","parent":null,"start":"2026-10-30T15:11:21.359Z","end":"2026-10-30T15:24:04.101Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-test#1","kind":"phase","parent":null,"start":"2026-10-30T15:24:04.101Z","attrs":{}}
+{"op":"open","id":"tester impl-test#1","kind":"dispatch","parent":"impl-test#1","start":"2026-10-30T15:24:25.621Z","attrs":{"agent":"asd-tester","tier":"standard"}}
+{"op":"open","id":"suite impl-test#1","kind":"suite","parent":"tester impl-test#1","start":"2026-10-30T15:25:14.280Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl-test#1","kind":"suite","parent":"tester impl-test#1","start":"2026-10-30T15:25:14.280Z","end":"2026-10-30T15:25:49.597Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"open","id":"suite impl-test#2","kind":"suite","parent":"tester impl-test#1","start":"2026-10-30T15:30:15.543Z","attrs":{"scope":"full"}}
+{"op":"close","id":"suite impl-test#2","kind":"suite","parent":"tester impl-test#1","start":"2026-10-30T15:30:15.543Z","end":"2026-10-30T15:30:54.142Z","outcome":"done","attrs":{"scope":"full"}}
+{"op":"close","id":"tester impl-test#1","kind":"dispatch","parent":"impl-test#1","start":"2026-10-30T15:24:25.621Z","end":"2026-10-30T15:31:51.272Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard"}}
+{"op":"open","id":"memory-fix asd-external-review","kind":"dispatch","parent":"impl-test#1","start":"2026-10-30T15:31:59.909Z","attrs":{"agent":"asd-external-review"}}
+{"op":"close","id":"memory-fix asd-external-review","kind":"dispatch","parent":"impl-test#1","start":"2026-10-30T15:31:59.909Z","end":"2026-10-30T15:32:27.860Z","outcome":"done","attrs":{"agent":"asd-external-review"}}
+{"op":"open","id":"tester impl-test#1","kind":"dispatch","parent":"impl-test#1","start":"2026-10-30T15:32:28.023Z","attrs":{"agent":"asd-tester","tier":"standard","resume":"step 8"}}
+{"op":"open","id":"suite impl-test#3","kind":"suite","parent":"tester impl-test#1","start":"2026-10-30T15:32:35.954Z","attrs":{"scope":"full"}}
+{"op":"close","id":"suite impl-test#3","kind":"suite","parent":"tester impl-test#1","start":"2026-10-30T15:32:35.954Z","end":"2026-10-30T15:33:14.919Z","outcome":"done","attrs":{"scope":"full"}}
+{"op":"close","id":"tester impl-test#1","kind":"dispatch","parent":"impl-test#1","start":"2026-10-30T15:32:28.023Z","end":"2026-10-30T15:33:33.390Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","resume":"step 8"}}

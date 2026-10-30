@@ -57,3 +57,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: initial impl accepted by the orchestrator under `user_gates: adaptive`; → impl-test.
 - **Rationale**: Tasks 1-7 COMPLETED, every `plan.md` checkbox ticked; AC-1..AC-10, AC-12 implemented (AC-11 pending impl-test asserts and the terminal suite); build `node .asd/sync.js --check` ok, lint clean, round diff touches only dispatched write scopes, synced views, `release-manifest.json` ledgers and sprint bookkeeping; no stub added; full suite 318/318 at Task 7. Task 7 flag accepted: `GIT_CEILING_DIRECTORIES` isolates git; `sync.js` `findRepoRoot` and the hook's `findUp` carry no ceiling, but every fixture reaching them holds its own `.asd/`, so the plan's isolation predicate holds — no earlier disposition in the decisions log.
 - **Affected docs**: none
+- 2026-10-30 — route impl-test#1: standard, dispatch HEAD 9e46a11f14d80fe2b02c4ddc741325a72abf50e9
+- 2026-10-30 — impl-test memory fix: asd-external-review reference_scope-manifest-transport.md:22 old cache path → cites external-review.md "Detection and negative cache" (c16ed30d)
+- 2026-10-30 — impl-test: impacted set green (325/325, full scope via safety valve), 7/0 tests
