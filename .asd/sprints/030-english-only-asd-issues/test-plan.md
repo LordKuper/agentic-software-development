@@ -13,7 +13,7 @@ responsibility:
 |---|---|---|
 | 1 | f334866b03b06470cadb74a21a92e1ba1692d024 | full change surface |
 | 2 | ef2247b8f9c37f1ee6913c095488e66c4a10de6e | delta since entry 1 |
-| 3 |  | delta since entry 2 |
+| 3 | d40581e25b1b80e0dc3d0c2fc1859ce86fb906ec | delta since entry 2 |
 
 ## Risk → check decisions
 

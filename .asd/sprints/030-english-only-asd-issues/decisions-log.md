@@ -70,3 +70,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-30 — route iter-02 combined.md F-1: standard, dispatch HEAD 45b79b343743d01c6630311831d30eab7e1377aa; risk change: rotation entry guard
 - 2026-10-30 — route iter-02 combined.md F-2 (+ F-1 unborn asserts): standard, dispatch HEAD 2a3cd4bb1022c158a77a73f8b0a67d2d81d2ef87
 - 2026-10-30 — impl fix for wave-1/iter-02: findings resolved (combined.md F-1, F-2); upstream_hashes for runtime.js recomputed by sync --apply AGENTS.md; build ok, lint clean
+- 2026-10-30 — route impl-test#3: standard, dispatch HEAD ebf25fea036f4c0e568aa79a902663d522cbae98
+- 2026-10-30 — impl-test: impacted set green (325/325, full scope via safety valve), 0/0 tests (delta covered by review-fix tests)
