@@ -18,3 +18,4 @@
 - [None-row coverage claims](feedback_none-row-coverage-claims.md) — a `none` row citing existing suite checks: grep the exact token the fix added; would a revert go red?
 - [New command vs skill grant](feedback_new-command-vs-skill-grant.md) — a workflow step adding gh/git commands: check the skill's claude allowed-tools (some grant only narrow Bash(prefix:*))
 - [Shell-quoting claims](feedback_shell-quoting-claims.md) — a "safe in bash and PowerShell" strip list: PowerShell reads typographic quotes “ ” „ as "
+- [Fixtures inside the repo](feedback_fixtures-inside-repo-walkups.md) — fixtures moved into .asd/tmp: GIT_CEILING guards git only; `.asd` walk-ups (findRepoRoot, findUp) reach the live repo

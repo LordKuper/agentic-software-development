@@ -60,3 +60,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-30 — route impl-test#1: standard, dispatch HEAD 9e46a11f14d80fe2b02c4ddc741325a72abf50e9
 - 2026-10-30 — impl-test memory fix: asd-external-review reference_scope-manifest-transport.md:22 old cache path → cites external-review.md "Detection and negative cache" (c16ed30d)
 - 2026-10-30 — impl-test: impacted set green (325/325, full scope via safety valve), 7/0 tests
+- 2026-10-30 — impl-review wave-1/iter-01: combined CONCERNS (F-1 high, F-2/F-3/F-4 medium, F-5/F-6 low), external CONCERNS (1 high, same root cause as F-2); minor test-only branch not met (F-1 high, non-test locations) → impl review-fix (review_fixes_pending wave-1/iter-01)
