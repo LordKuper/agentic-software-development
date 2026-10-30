@@ -995,10 +995,12 @@ function scratchDir() {
   return dir;
 }
 
-/** Moves the sprint's live decisions log to the next `decisions-log.NNN.md` segment and recreates it from the template, unless the phase does not change, both phases sit in the impl cycle, or the log holds no entry; reports what it did. */
+/** Moves the sprint's live decisions log to the next `decisions-log.NNN.md` segment and recreates it from the template, unless the sprint has no `state.json` yet, the phase does not change, both phases sit in the impl cycle, or the log holds no entry; reports what it did. */
 function rotateDecisions(flags) {
   if (typeof flags.sprint !== 'string' || typeof flags.to !== 'string') fail('--sprint <sprint dir> and --to <phase> required');
-  const from = JSON.parse(fs.readFileSync(path.join(flags.sprint, 'state.json'), 'utf8')).phase;
+  const statePath = path.join(flags.sprint, 'state.json');
+  if (!fs.existsSync(statePath)) return { rotated: false, from: null, to: flags.to, segment: null };
+  const from = JSON.parse(fs.readFileSync(statePath, 'utf8')).phase;
   const live = path.join(flags.sprint, 'decisions-log.md');
   const unchanged = { rotated: false, from, to: flags.to, segment: null };
   const withinCycle = IMPL_CYCLE.includes(from) && IMPL_CYCLE.includes(flags.to);
