@@ -97,3 +97,5 @@
 {"op":"open","id":"suite it3-gate","kind":"suite","parent":"tester impl-test#3","start":"2026-10-30T15:58:06.739Z","attrs":{"scope":"full"}}
 {"op":"close","id":"suite it3-gate","kind":"suite","parent":"tester impl-test#3","start":"2026-10-30T15:58:06.739Z","end":"2026-10-30T15:58:43.312Z","outcome":"done","attrs":{"scope":"full"}}
 {"op":"close","id":"tester impl-test#3","kind":"dispatch","parent":"impl-test#3","start":"2026-10-30T15:57:29.356Z","end":"2026-10-30T15:59:28.246Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard"}}
+{"op":"close","id":"impl-test#3","kind":"phase","parent":null,"start":"2026-10-30T15:57:24.181Z","end":"2026-10-30T15:59:28.882Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-review#3","kind":"phase","parent":null,"start":"2026-10-30T15:59:28.882Z","attrs":{}}
