@@ -2,6 +2,22 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v14.2.0
+
+Issues ASD files on the ASD repo are now always in English, ASD keeps its temporary files inside your project instead of on the system disk, and the external-review cache no longer shows up as an untracked file.
+
+### Added
+- **`node .asd/runtime.js rotate-decisions --sprint <sprint> --to <phase>`**: decides whether the decisions log rotates before a phase-skill delegation and performs the rename and re-creation; `/asd-sprint` runs it before every phase delegation except a new sprint's scope, instead of checking the condition by hand.
+- **Migration 14.2.0**: deletes the legacy `.asd/project/external-cache.json` (machine-local retry state; losing it costs at most one retry).
+
+### Changed
+- **English-only ASD-repo issues**: the titles, bodies and comments ASD writes to issues on the ASD repo are English whatever `language.chat` and `language.docs` (`language-policy.md` "Matrix"). A consumer retro renders each published `[asd-retro]` issue in English; `retrospective.html` stays in `language.docs`.
+- **Temporary files off the system disk**: every ASD script, test and agent writes its temporary files inside the project (`.asd/tmp/`, self-ignoring) and removes them after use, state meant to outlive its run excepted. `/asd-update` stages its upstream download under `.asd/tmp/` instead of the OS temp directory and removes it on failure too.
+- **External-review negative cache** moved to `external-cache.json` in the scratch directory (`.asd/tmp/`), so it never appears as an untracked file or breaks impl-review's clean-tree check.
+- **Tester owns suite timing**: `asd-tester` brackets every suite run it makes with a `suite` timing op, in impl-test and in impl-review's terminal run alike.
+- **Shared-infrastructure safety valve** in impl-test applies only at the step 8 suite gate; the pre-authoring run and the reruns after each authoring batch use the impacted set. Cleanup's verification keeps the valve.
+- Scope interview questions define, in one clause, every framework term they use.
+
 ## v14.1.0
 
 Your retro now reports framework-level findings back to ASD as GitHub issues, so fixes to ASD itself no longer depend on someone copying them over by hand.
