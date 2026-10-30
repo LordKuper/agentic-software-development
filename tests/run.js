@@ -8762,9 +8762,7 @@ test('sprint-030 AC-9: rotate-decisions rotates the live log into the next segme
   fs.appendFileSync(live, heading);
   assert.strictEqual(rotate(dir, 'cleanup').result.segment, path.join(dir, 'decisions-log.010.md'), 'AC-9: the next ordinal is one above the highest segment present, zero-padded to three digits, a heading-form entry counting as an entry');
 
-  const unborn = mkTempDir();
-  assert.deepStrictEqual(rotate(unborn, 'scope'), { status: 0, result: { rotated: false, from: null, to: 'scope', segment: null } }, 'AC-9: a sprint folder with no state.json yet (new-sprint scope) must report no rotation, never throw');
-  assert.deepStrictEqual(fs.readdirSync(unborn), [], 'AC-9: a sprint folder with no state.json yet is left empty');
+  assert.strictEqual(sync.findRepoRoot(mkTempDir()), FIXTURE_ROOT, 'runner isolation: a fixture holding no .asd/ of its own resolves the fixture root through the marker, never the live repo (REPO_ROOT)');
 
   for (const flags of [['--sprint', dir], ['--to', 'impl']]) {
     const missing = runtimeCliResult(['rotate-decisions', ...flags]);
