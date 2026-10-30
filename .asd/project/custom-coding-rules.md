@@ -15,5 +15,6 @@ Framework repo specifics (`self_hosting: enabled`):
 - No YAML parser dependency in `.asd/sync.js` or `.asd/skills/*/update.js` — stay zero-dependency Node (`fs`, `path`, `crypto` only); config field reads use minimal fail-closed line scanners, never a full YAML library.
 - A dev edits canonical `.asd/` sources only and never runs `node .asd/sync.js --apply`; the orchestrator regenerates the views once per wave or fix round (`.asd/rules/sprint-lifecycle.md` "Self-hosting").
 - Never hand-edit *generated* `.claude/`, `.codex/`, or `.agents/skills/` files — always edit the `.asd/` canonical source. Hand-authored agent memory is the carve-out: `artifact-layout.md` "Agent memory".
+- A Task adding an external command to a workflow step also widens the running skill's tool grant, passes the target repo explicitly, and cites only shipped `.asd/` paths from any step that runs in a consumer project.
 
 ASD never overwrites this file.

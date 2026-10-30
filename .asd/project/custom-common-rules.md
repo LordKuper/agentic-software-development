@@ -11,4 +11,6 @@ Universal project rules read by every ASD agent in every phase. Put here: domain
 
 Framework repo (`self_hosting: enabled`): "the project" means the ASD framework itself — no application users, no runtime deployment. Vocabulary: canonical source = `.asd/`; provider view = generated `.claude/`/`.codex/`/`.agents/skills/`; consumer = a project that installed ASD.
 
+Write file content with the file-edit operation, never inside a quoted shell or `node -e` argument.
+
 Phase-scoped rules go elsewhere — design constraints to `custom-design-rules.md`, code/test constraints to `custom-coding-rules.md`. ASD never overwrites this file.
