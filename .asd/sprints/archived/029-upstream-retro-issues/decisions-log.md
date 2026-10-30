@@ -39,3 +39,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 <!-- entries appended below this line -->
 - 2026-10-26 — pr: asd_version 14.0.0 → 14.1.0 (feat, MINOR; max migration 14.0.0 ≤ 14.1.0), CHANGELOG v14.1.0; Task 2 commit subject (53 chars, F-2) not reworded: a rewrite would orphan recorded shas (iteration_heads, test-plan Suite run HEAD); squash merge takes the PR title
 - 2026-10-26 — pr: opened #66 (https://github.com/LordKuper/agentic-software-development/pull/66), user-approved publication
+- 2026-10-30 — sprint closed: PR #66 merged at c642ce66, release v14.1.0 published; archived by 030 scope
