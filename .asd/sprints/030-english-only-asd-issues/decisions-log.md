@@ -37,3 +37,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-10-30 — PR publication
+
+- **Decision**: PR #73 opened (https://github.com/LordKuper/agentic-software-development/pull/73), title `feat(rules): English issues, temp off system disk`, body from `t_pr-description.md` with `Refs #68, #69, #70, #72`; `state.json.pr` written (state open).
+- **Rationale**: DoD met (Tasks 1-7, wave 1/1 APPROVE, terminal full suite 325/325 at 57021a03, retrospective present); publication gate answered by the user: "Да, открыть PR".
+- **Affected docs**: `state.json`
