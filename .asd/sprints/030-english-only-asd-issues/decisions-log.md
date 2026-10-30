@@ -43,3 +43,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: User added "minimise system-disk use" mid-impl, before wave 1's dispatch: AC-12 binds ASD canon (`artifact-layout.md` "Scratch directory", in Task 5 with AC-9's edit of the same doc), moves `update.js`'s download (Task 6, wave 1) and `tests/run.js` fixtures (Task 7, Test-only, new wave 2) off the OS temp directory, and deletes the 380 leftover `asd-sync-test-*` directories after wave 2.
 - **Rationale**: `tests/run.js` and `update.js` are the only `os.tmpdir()` writers; tests leave their fixtures behind. Criterion cost: AC-12 new, 0 iterations / 0 fix rounds.
 - **Affected docs**: `sprint.md`, `plan.md`
+- 2026-10-30 — route Task 1: standard, dispatch HEAD f04c9dbed3ba1ec6f9062b950d1e9b14ee40101a
+- 2026-10-30 — route Task 3: standard, dispatch HEAD f04c9dbed3ba1ec6f9062b950d1e9b14ee40101a
+- 2026-10-30 — route Task 4: standard, dispatch HEAD f04c9dbed3ba1ec6f9062b950d1e9b14ee40101a
+- 2026-10-30 — route Task 5: standard, dispatch HEAD f04c9dbed3ba1ec6f9062b950d1e9b14ee40101a
+- 2026-10-30 — route Task 6: standard, dispatch HEAD f04c9dbed3ba1ec6f9062b950d1e9b14ee40101a
+- 2026-10-30 — route Task 2: mechanical, dispatch HEAD f04c9dbed3ba1ec6f9062b950d1e9b14ee40101a

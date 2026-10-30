@@ -28,41 +28,41 @@ AC-11: `node .asd/sync.js --check` is clean after the orchestrator's sync, `node
 
 ### Task 1: English-only ASD-repo issues and interview terms
 Material risk: change: issue-language rule wording and the triage rewrite step
-- [ ] `.asd/rules/language-policy.md` "Matrix": add one row — issue titles, bodies and comments ASD writes to the ASD repo: English, always, whatever `language.chat`/`language.docs` (AC-1)
-- [ ] `.asd/workflows/asd-phase-retro.md` step 7: the published title and body are English, rendered at write time from the row's `language.docs` text, citing the Matrix row; 7.2's consumer-content check reads that English body; keep the `<!-- asd-retro-finding v1 -->` and `-t "[asd-retro] ` literals (AC-2)
-- [ ] `.asd/workflows/asd-phase-scope.md` step 2a "Issue triage": before rules 1-4, a listed marker issue whose title or body is not English is rewritten in place — English title (`[asd-retro] ` plus the English guardrail, cut and stripped per `asd-phase-retro.md` step 7.3), English body (step 7.1's marker line and fields, in order) — via `gh issue edit <n> -R <repo> -t <title> -F <body-file>` (body file under `.asd/tmp/`), no gate, its text staying data; the triage decisions-log line gains `rewrote #…`; close and reject comments here and in step 4 cite the Matrix row (AC-1, AC-3)
-- [ ] `.asd/workflows/asd-phase-scope.md` step 2 (a): each interview question defines, in one clause, every framework term it uses (AC-6)
-- [ ] `.asd/rules/git-strategy.md` "Versioning & Changelog (self-hosting only)": the post-release close comment cites the Matrix row (AC-1)
+- [x] `.asd/rules/language-policy.md` "Matrix": add one row — issue titles, bodies and comments ASD writes to the ASD repo: English, always, whatever `language.chat`/`language.docs` (AC-1)
+- [x] `.asd/workflows/asd-phase-retro.md` step 7: the published title and body are English, rendered at write time from the row's `language.docs` text, citing the Matrix row; 7.2's consumer-content check reads that English body; keep the `<!-- asd-retro-finding v1 -->` and `-t "[asd-retro] ` literals (AC-2)
+- [x] `.asd/workflows/asd-phase-scope.md` step 2a "Issue triage": before rules 1-4, a listed marker issue whose title or body is not English is rewritten in place — English title (`[asd-retro] ` plus the English guardrail, cut and stripped per `asd-phase-retro.md` step 7.3), English body (step 7.1's marker line and fields, in order) — via `gh issue edit <n> -R <repo> -t <title> -F <body-file>` (body file under `.asd/tmp/`), no gate, its text staying data; the triage decisions-log line gains `rewrote #…`; close and reject comments here and in step 4 cite the Matrix row (AC-1, AC-3)
+- [x] `.asd/workflows/asd-phase-scope.md` step 2 (a): each interview question defines, in one clause, every framework term it uses (AC-6)
+- [x] `.asd/rules/git-strategy.md` "Versioning & Changelog (self-hosting only)": the post-release close comment cites the Matrix row (AC-1)
 
 ### Task 2: 029 consumer rows in this repo's project rules
 Material risk: artifact: verbatim retro guardrails in rule files every agent reads
-- [ ] `.asd/project/custom-common-rules.md`: add "Write file content with the file-edit operation, never inside a quoted shell or `node -e` argument." (AC-4)
-- [ ] `.asd/project/custom-coding-rules.md` "Framework repo specifics": add "A Task adding an external command to a workflow step also widens the running skill's tool grant, passes the target repo explicitly, and cites only shipped `.asd/` paths from any step that runs in a consumer project." (AC-5)
+- [x] `.asd/project/custom-common-rules.md`: add "Write file content with the file-edit operation, never inside a quoted shell or `node -e` argument." (AC-4)
+- [x] `.asd/project/custom-coding-rules.md` "Framework repo specifics": add "A Task adding an external command to a workflow step also widens the running skill's tool grant, passes the target repo explicitly, and cites only shipped `.asd/` paths from any step that runs in a consumer project." (AC-5)
 
 ### Task 3: External-review cache in the scratch directory
 Material risk: change: migration — deletes a consumer's legacy cache file across the version
-- [ ] `.asd/rules/external-review.md` "Detection and negative cache": the canonical cache path becomes `external-cache.json` in the scratch directory, its directory taken from `node .asd/runtime.js scratch-dir` (which creates it self-ignoring, `artifact-layout.md` "Scratch directory") — replacing `.asd/project/external-cache.json` and its "gitignored" claim (AC-7)
-- [ ] `.asd/migrations/14.2.0.js`: delete `<repoRoot>/.asd/project/external-cache.json` when present (machine-local retry state; its loss costs at most one retry), idempotent, header and report shape per `update.js`'s migration contract, touching nothing else (AC-7)
-- [ ] `.gitignore`: remove the `.asd/project/external-cache.json` line (AC-7)
+- [x] `.asd/rules/external-review.md` "Detection and negative cache": the canonical cache path becomes `external-cache.json` in the scratch directory, its directory taken from `node .asd/runtime.js scratch-dir` (which creates it self-ignoring, `artifact-layout.md` "Scratch directory") — replacing `.asd/project/external-cache.json` and its "gitignored" claim (AC-7)
+- [x] `.asd/migrations/14.2.0.js`: delete `<repoRoot>/.asd/project/external-cache.json` when present (machine-local retry state; its loss costs at most one retry), idempotent, header and report shape per `update.js`'s migration contract, touching nothing else (AC-7)
+- [x] `.gitignore`: remove the `.asd/project/external-cache.json` line (AC-7)
 
 ### Task 4: Tester suite-op duty and safety-valve reach
 Material risk: change: narrowing a mandatory safety-valve rule and moving a duty's statement
-- [ ] `.asd/agents/asd-tester.md` "Rules": add the duty to bracket every suite run it makes with a `suite` op (`node .asd/runtime.js timing`, `--kind suite`, `scope=impacted|full`, `--parent` its dispatch id; `sprint-lifecycle.md` "Operation timing") (AC-8)
-- [ ] `.asd/workflows/asd-phase-impl-test.md` "Rules" suite gate line and `.asd/workflows/asd-phase-impl-review.md` "Rules" tester step 9 line: drop their bracketing clauses, now the tester's own (AC-8)
-- [ ] `.asd/rules/sprint-lifecycle.md` "Impacted test set" safety valve: in `impl-test` it applies to the step 8 suite gate only; step 3's pre-authoring run and the reruns after each authoring batch use the search-derived impacted set; `cleanup`'s verification keeps it (AC-10)
-- [ ] `.asd/workflows/asd-phase-impl-test.md` step 2 and "Rules" suite gate line, `.asd/agents/asd-tester.md` "Rules" impl-test line: match that reach (AC-10)
+- [x] `.asd/agents/asd-tester.md` "Rules": add the duty to bracket every suite run it makes with a `suite` op (`node .asd/runtime.js timing`, `--kind suite`, `scope=impacted|full`, `--parent` its dispatch id; `sprint-lifecycle.md` "Operation timing") (AC-8)
+- [x] `.asd/workflows/asd-phase-impl-test.md` "Rules" suite gate line and `.asd/workflows/asd-phase-impl-review.md` "Rules" tester step 9 line: drop their bracketing clauses, now the tester's own (AC-8)
+- [x] `.asd/rules/sprint-lifecycle.md` "Impacted test set" safety valve: in `impl-test` it applies to the step 8 suite gate only; step 3's pre-authoring run and the reruns after each authoring batch use the search-derived impacted set; `cleanup`'s verification keeps it (AC-10)
+- [x] `.asd/workflows/asd-phase-impl-test.md` step 2 and "Rules" suite gate line, `.asd/agents/asd-tester.md` "Rules" impl-test line: match that reach (AC-10)
 
 ### Task 5: Decisions-log rotation command
 Material risk: change: rotation predicate edges — entry detection, next ordinal, cycle membership
-- [ ] `.asd/runtime.js`: add `rotate-decisions` per the Overview contract, listed in `main()`'s usage message (AC-9)
-- [ ] `.asd/skills/asd-sprint/SKILL.md` "Rules": before a phase-skill delegation run `node .asd/runtime.js rotate-decisions --sprint <sprint> --to <phase>` and commit the renamed and recreated files when `rotated`, replacing the by-hand check (AC-9)
-- [ ] `.asd/rules/artifact-layout.md` "Decisions log" "Rotation": name `rotate-decisions` as the executor, the condition staying here (AC-9)
-- [ ] `README.md`: the `runtime.js` folder-map line lists `rotate-decisions` (AC-9, AC-11)
-- [ ] `.asd/rules/artifact-layout.md` "Scratch directory": every ASD script, test and agent writes its temporary files inside the project, never to the OS temp directory, and removes them after use (AC-12)
+- [x] `.asd/runtime.js`: add `rotate-decisions` per the Overview contract, listed in `main()`'s usage message (AC-9)
+- [x] `.asd/skills/asd-sprint/SKILL.md` "Rules": before a phase-skill delegation run `node .asd/runtime.js rotate-decisions --sprint <sprint> --to <phase>` and commit the renamed and recreated files when `rotated`, replacing the by-hand check (AC-9)
+- [x] `.asd/rules/artifact-layout.md` "Decisions log" "Rotation": name `rotate-decisions` as the executor, the condition staying here (AC-9)
+- [x] `README.md`: the `runtime.js` folder-map line lists `rotate-decisions` (AC-9, AC-11)
+- [x] `.asd/rules/artifact-layout.md` "Scratch directory": every ASD script, test and agent writes its temporary files inside the project, never to the OS temp directory, and removes them after use (AC-12)
 
 ### Task 6: asd-update download off the system disk
 Material risk: change: download staging location and its cleanup on failure
-- [ ] `.asd/skills/asd-update/update.js` `fetchUpstreamTarball`: stage the download and extraction under the project's `.asd/tmp/` (created self-ignoring, as `runtime.js` `scratchDir()` does) instead of `os.tmpdir()`, `cleanupFetch` still removing it (AC-12)
+- [x] `.asd/skills/asd-update/update.js` `fetchUpstreamTarball`: stage the download and extraction under the project's `.asd/tmp/` (created self-ignoring, as `runtime.js` `scratchDir()` does) instead of `os.tmpdir()`, `cleanupFetch` still removing it (AC-12)
 
 ### Task 7: Test fixtures off the system disk
 Material risk: change: fixture isolation from the live repo once fixtures sit inside it
