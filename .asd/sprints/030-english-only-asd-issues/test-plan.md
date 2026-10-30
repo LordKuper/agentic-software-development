@@ -38,10 +38,10 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
 ## Suite run
 
 - Command: `node tests/run.js`
-- Scope: full (the delta touches `.asd/runtime.js` and `tests/run.js`, shared infrastructure: safety valve at the step 8 gate); step 3 pre-authoring run `--filter "sprint-030"` (impacted set), 7/7 passed, exit 0
-- Result: pass — 325 passed, 0 failed, 0 skipped (exit 0)
+- Scope: full, unscoped terminal run (impl-review wave-1/iter-03, step 9)
+- Result: pass — 325/325 passed, 0 failed, 0 skipped (exit 0)
 - Lint / build: pass — `git diff --cached --check` exit 0, `node .asd/sync.js --check` exit 0, `ok: true`
-- HEAD: ebf25fea036f4c0e568aa79a902663d522cbae98
+- HEAD: 57021a03430707e129145a904821f78fb01d3d99
 
 ## Defects
 
