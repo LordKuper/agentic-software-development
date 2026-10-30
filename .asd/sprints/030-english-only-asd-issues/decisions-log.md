@@ -51,3 +51,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-30 — route Task 2: mechanical, dispatch HEAD f04c9dbed3ba1ec6f9062b950d1e9b14ee40101a
 - 2026-10-30 — route Task 7: standard, dispatch HEAD 184fe90d40628ebb54b7880feb700878d6fa4bd4
 - 2026-10-30 — AC-12: deleted 638 leftover test fixture dirs (asd-sync-test-*, asd & runtime-*; 6.0M) from the OS temp directory (user-approved amendment)
+
+## 2026-10-30 — impl assessment (adaptive)
+
+- **Decision**: initial impl accepted by the orchestrator under `user_gates: adaptive`; → impl-test.
+- **Rationale**: Tasks 1-7 COMPLETED, every `plan.md` checkbox ticked; AC-1..AC-10, AC-12 implemented (AC-11 pending impl-test asserts and the terminal suite); build `node .asd/sync.js --check` ok, lint clean, round diff touches only dispatched write scopes, synced views, `release-manifest.json` ledgers and sprint bookkeeping; no stub added; full suite 318/318 at Task 7. Task 7 flag accepted: `GIT_CEILING_DIRECTORIES` isolates git; `sync.js` `findRepoRoot` and the hook's `findUp` carry no ceiling, but every fixture reaching them holds its own `.asd/`, so the plan's isolation predicate holds — no earlier disposition in the decisions log.
+- **Affected docs**: none
