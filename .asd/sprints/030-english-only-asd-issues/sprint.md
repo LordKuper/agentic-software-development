@@ -22,6 +22,7 @@ Issues in the ASD repo are written in English only. A consumer retro publishes i
 - AC-9: a `runtime.js` command decides whether the decisions log rotates before a phase-skill delegation (`artifact-layout.md` "Decisions log") and performs the rotation; `asd-sprint` calls it before every phase-skill delegation instead of checking the condition by hand (issue #70).
 - AC-10: when the shared-infrastructure safety valve applies, impl-test's pre-authoring run (step 3) runs the impacted set and the full suite runs only at its step 8 suite gate (issue #72).
 - AC-11: README.md and every cross-file mirror reflect AC-1..AC-10; `node tests/run.js` is green and `node .asd/sync.js --check` is clean.
+- AC-12 (scope amendment): ASD keeps its temporary files off the system disk — `artifact-layout.md` "Scratch directory" states that every ASD script, test and agent writes temporary files inside the project, never to the OS temp directory, and removes them after use; `asd-update`'s `update.js` stages its upstream download under the project's `.asd/tmp/`; `tests/run.js` creates its fixtures inside the repo's `.asd/tmp/` and deletes them by the end of the run.
 
 ## Out of scope (optional)
 - Manually filed issues: no issue template, no CONTRIBUTING file.

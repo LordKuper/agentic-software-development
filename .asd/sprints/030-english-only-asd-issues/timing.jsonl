@@ -13,3 +13,7 @@
 {"op":"open","id":"plan#1","kind":"phase","parent":null,"start":"2026-10-30T15:06:20.046Z","attrs":{}}
 {"op":"open","id":"wait plan gate","kind":"user-wait","parent":"plan#1","start":"2026-10-30T15:10:04.979Z","attrs":{"gate":"plan"}}
 {"op":"close","id":"wait plan gate","kind":"user-wait","parent":"plan#1","start":"2026-10-30T15:10:04.979Z","end":"2026-10-30T15:11:16.180Z","outcome":"done","attrs":{"gate":"plan"}}
+{"op":"close","id":"plan#1","kind":"phase","parent":null,"start":"2026-10-30T15:06:20.046Z","end":"2026-10-30T15:11:21.359Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl#1","kind":"phase","parent":null,"start":"2026-10-30T15:11:21.359Z","attrs":{}}
+{"op":"open","id":"wait scope amendment","kind":"user-wait","parent":"impl#1","start":"2026-10-30T15:12:28.417Z","attrs":{"gate":"new or changed scope"}}
+{"op":"close","id":"wait scope amendment","kind":"user-wait","parent":"impl#1","start":"2026-10-30T15:12:28.417Z","end":"2026-10-30T15:14:48.093Z","outcome":"done","attrs":{"gate":"new or changed scope"}}

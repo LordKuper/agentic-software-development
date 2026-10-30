@@ -8,7 +8,7 @@ responsibility:
 # Plan
 
 ## Overview
-Five independent Tasks in one wave. Task 1 makes ASD-repo issue text English (AC-1..AC-3) and adds the interview term clause (AC-6, same file). Task 2 lands the two 029 consumer rows in this repo's project rules (AC-4, AC-5). Task 3 moves the external-review negative cache into the self-ignoring scratch directory, with a migration removing the legacy file (AC-7). Task 4 gives the tester its suite-op duty and narrows the safety valve to impl-test's suite gate (AC-8, AC-10). Task 5 adds the decisions-log rotation command (AC-9). AC-11 is met by Task 5's README edit, impl-test's content-contract asserts and the orchestrator's sync.
+Five independent Tasks in one wave. Task 1 makes ASD-repo issue text English (AC-1..AC-3) and adds the interview term clause (AC-6, same file). Task 2 lands the two 029 consumer rows in this repo's project rules (AC-4, AC-5). Task 3 moves the external-review negative cache into the self-ignoring scratch directory, with a migration removing the legacy file (AC-7). Task 4 gives the tester its suite-op duty and narrows the safety valve to impl-test's suite gate (AC-8, AC-10). Task 5 adds the decisions-log rotation command (AC-9) and the off-system-disk scratch rule (AC-12, same rule doc); Task 6 moves `update.js`'s download and Task 7, test-only in wave 2, the test fixtures off the OS temp directory (AC-12, scope amendment). AC-11 is met by Task 5's README edit, impl-test's content-contract asserts and the orchestrator's sync.
 
 New or changed rule homes, by exact file and section:
 - issue language: `.asd/rules/language-policy.md` "Matrix" (Task 1). Every issue-writing site, by `grep -rn "gh issue" .asd`: `asd-phase-retro.md` step 7 (create), `asd-phase-scope.md` step 2a "Issue triage" (duplicate and resolved closes, new rewrite) and step 4 (reject close), `git-strategy.md` "Versioning & Changelog (self-hosting only)" (post-release close) — all Task 1.
@@ -16,6 +16,7 @@ New or changed rule homes, by exact file and section:
 - tester suite-op duty: `.asd/agents/asd-tester.md` "Rules" (Task 4); restated today in `asd-phase-impl-test.md` "Rules" (suite gate line) and `asd-phase-impl-review.md` "Rules" (tester step 9 line), both cut to the tester's own statement; `sprint-lifecycle.md` "Operation timing" "Writers" stays the writer list.
 - safety valve reach: `.asd/rules/sprint-lifecycle.md` "Impacted test set" (Task 4); restated in `asd-phase-impl-test.md` step 2 and "Rules" suite gate line and `asd-tester.md` "Rules" impl-test line (Task 4); `asd-phase-cleanup.md` step 5 cites it and stays unchanged.
 - decisions-log rotation: `.asd/rules/artifact-layout.md` "Decisions log" keeps the condition and names the command; `.asd/skills/asd-sprint/SKILL.md` "Rules" calls it; README's `runtime.js` folder-map line lists it (Task 5).
+- temporary files off the system disk: `.asd/rules/artifact-layout.md` "Scratch directory" (Task 5); `grep -rn "tmpdir" .asd tests` finds the only OS-temp writers, `update.js` (Task 6) and `tests/run.js` (Task 7).
 
 External APIs: Task 1 uses `gh issue edit -t -F`, added to `docs/architecture/tech-reference/gh-2.90.md` at plan time; Tasks 2-5 none.
 
@@ -57,8 +58,20 @@ Material risk: change: rotation predicate edges — entry detection, next ordina
 - [ ] `.asd/skills/asd-sprint/SKILL.md` "Rules": before a phase-skill delegation run `node .asd/runtime.js rotate-decisions --sprint <sprint> --to <phase>` and commit the renamed and recreated files when `rotated`, replacing the by-hand check (AC-9)
 - [ ] `.asd/rules/artifact-layout.md` "Decisions log" "Rotation": name `rotate-decisions` as the executor, the condition staying here (AC-9)
 - [ ] `README.md`: the `runtime.js` folder-map line lists `rotate-decisions` (AC-9, AC-11)
+- [ ] `.asd/rules/artifact-layout.md` "Scratch directory": every ASD script, test and agent writes its temporary files inside the project, never to the OS temp directory, and removes them after use (AC-12)
+
+### Task 6: asd-update download off the system disk
+Material risk: change: download staging location and its cleanup on failure
+- [ ] `.asd/skills/asd-update/update.js` `fetchUpstreamTarball`: stage the download and extraction under the project's `.asd/tmp/` (created self-ignoring, as `runtime.js` `scratchDir()` does) instead of `os.tmpdir()`, `cleanupFetch` still removing it (AC-12)
+
+### Task 7: Test fixtures off the system disk
+Material risk: change: fixture isolation from the live repo once fixtures sit inside it
+Test-only: tests/run.js
+- [ ] `tests/run.js`: every `os.tmpdir()` fixture root (`mkTempDir` and the direct `mkdtempSync` sites) moves under the repo's `.asd/tmp/`, and every fixture root is removed by the end of the run; a fixture must still never resolve the live repo's `.asd/`, git root or active sprint (AC-12)
 
 Orchestrator, after wave 1's sync and before impl-test: delete this repo's local `.asd/project/external-cache.json` (self-hosting runs no migration, and Task 3 removes its ignore line).
+
+Orchestrator, after wave 2: delete the leftover `asd-sync-test-*` fixture directories in this machine's OS temp directory (user-approved, AC-12 amendment).
 
 ## Risks (optional)
 - `.asd/project/**` (Task 2) is outside the impl-review change surface; impl-test pins both lines with content-contract asserts.
@@ -68,6 +81,8 @@ Orchestrator, after wave 1's sync and before impl-test: delete this repo's local
 
 | Wave | Tasks |
 |---|---|
-| 1 | Task 1, Task 2, Task 3, Task 4, Task 5 |
+| 1 | Task 1, Task 2, Task 3, Task 4, Task 5, Task 6 |
+| 2 | Task 7 |
 
-- No Task cites another's new home; paths are disjoint across the five.
+- No Task cites another's new home; paths are disjoint across wave 1.
+- Task 7 runs after wave 1 so its self-check runs against settled canon; it edits only `tests/run.js`.
