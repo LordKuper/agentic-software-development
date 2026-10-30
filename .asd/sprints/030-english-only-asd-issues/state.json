@@ -1,7 +1,7 @@
 {
   "sprint_id": "030-english-only-asd-issues",
   "branch": "sprint/030-english-only-asd-issues",
-  "phase": "impl-review",
+  "phase": "impl",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -101,6 +101,36 @@
       "execution": "agent",
       "tier": "risk:download staging location and its cleanup on failure",
       "reason": "sonnet"
+    },
+    "combined.md F-1": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:triage rewrite reach",
+      "resolved_model": "sonnet"
+    },
+    "combined.md F-2": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:rotation entry guard",
+      "resolved_model": "sonnet"
+    },
+    "combined.md F-4": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:scratch rule cache carve-out",
+      "resolved_model": "sonnet"
+    },
+    "combined.md F-5": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:rotation condition wording",
+      "resolved_model": "sonnet"
+    },
+    "combined.md F-6": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:README issue-language mirror",
+      "resolved_model": "sonnet"
     }
   },
   "skipped_phases": [],
@@ -130,8 +160,8 @@
     }
   },
   "created_at": "2026-10-30T13:16:35.495Z",
-  "updated_at": "2026-10-30T15:42:46.153Z",
-  "review_fixes_pending": "wave-1/iter-01",
+  "updated_at": "2026-10-30T15:46:20.935Z",
+  "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null
