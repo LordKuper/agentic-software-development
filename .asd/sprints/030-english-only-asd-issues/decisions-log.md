@@ -66,3 +66,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-30 — impl fix for wave-1/iter-01: findings resolved (combined.md F-1..F-6, external.md 1); build ok, lint clean, diff within the round's write scopes plus synced views
 - 2026-10-30 — route impl-test#2: standard, dispatch HEAD 70b4d6814abcbe3e769f012ea9ac3e92a026001b
 - 2026-10-30 — impl-test: impacted set green (325/325, full scope via safety valve), 3 asserts added to existing tests/0 removed
+- 2026-10-30 — impl-review wave-1/iter-02: combined CONCERNS (F-1 critical: unreachable state.json guard in rotateDecisions — partly reverses iter-01 F-2's suggested callee guard, its caller carve-out stays; F-2 medium: no regression check for the fixture .asd/ marker), external APPROVE (latched at 2) → impl review-fix (review_fixes_pending wave-1/iter-02)

@@ -19,3 +19,4 @@
 - [New command vs skill grant](feedback_new-command-vs-skill-grant.md) — a workflow step adding gh/git commands: check the skill's claude allowed-tools (some grant only narrow Bash(prefix:*))
 - [Shell-quoting claims](feedback_shell-quoting-claims.md) — a "safe in bash and PowerShell" strip list: PowerShell reads typographic quotes “ ” „ as "
 - [Fixtures inside the repo](feedback_fixtures-inside-repo-walkups.md) — fixtures moved into .asd/tmp: GIT_CEILING guards git only; `.asd` walk-ups (findRepoRoot, findUp) reach the live repo
+- [Double fix: caller and callee](feedback_double-fix-caller-and-callee.md) — caller rule excludes case C and callee CLI also guards C: guard unreachable, turns ENOENT into a silent exit 0
