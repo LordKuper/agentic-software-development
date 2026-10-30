@@ -67,7 +67,7 @@ Material risk: change: download staging location and its cleanup on failure
 ### Task 7: Test fixtures off the system disk
 Material risk: change: fixture isolation from the live repo once fixtures sit inside it
 Test-only: tests/run.js
-- [ ] `tests/run.js`: every `os.tmpdir()` fixture root (`mkTempDir` and the direct `mkdtempSync` sites) moves under the repo's `.asd/tmp/`, and every fixture root is removed by the end of the run; a fixture must still never resolve the live repo's `.asd/`, git root or active sprint (AC-12)
+- [x] `tests/run.js`: every `os.tmpdir()` fixture root (`mkTempDir` and the direct `mkdtempSync` sites) moves under the repo's `.asd/tmp/`, and every fixture root is removed by the end of the run; a fixture must still never resolve the live repo's `.asd/`, git root or active sprint (AC-12)
 
 Orchestrator, after wave 1's sync and before impl-test: delete this repo's local `.asd/project/external-cache.json` (self-hosting runs no migration, and Task 3 removes its ignore line).
 

@@ -49,3 +49,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-30 — route Task 5: standard, dispatch HEAD f04c9dbed3ba1ec6f9062b950d1e9b14ee40101a
 - 2026-10-30 — route Task 6: standard, dispatch HEAD f04c9dbed3ba1ec6f9062b950d1e9b14ee40101a
 - 2026-10-30 — route Task 2: mechanical, dispatch HEAD f04c9dbed3ba1ec6f9062b950d1e9b14ee40101a
+- 2026-10-30 — route Task 7: standard, dispatch HEAD 184fe90d40628ebb54b7880feb700878d6fa4bd4
+- 2026-10-30 — AC-12: deleted 638 leftover test fixture dirs (asd-sync-test-*, asd & runtime-*; 6.0M) from the OS temp directory (user-approved amendment)
