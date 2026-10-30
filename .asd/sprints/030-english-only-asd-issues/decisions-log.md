@@ -73,3 +73,10 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-30 — route impl-test#3: standard, dispatch HEAD ebf25fea036f4c0e568aa79a902663d522cbae98
 - 2026-10-30 — impl-test: impacted set green (325/325, full scope via safety valve), 0/0 tests (delta covered by review-fix tests)
 - 2026-10-30 — impl-review wave-1/iter-03: combined APPROVE (latched at 3), external APPROVE (latched at 2, not dispatched); wave 1 of 1 roster met → terminal full suite
+- 2026-10-30 — route impl-review wave-1/iter-03 suite: standard, dispatch HEAD 57021a03430707e129145a904821f78fb01d3d99
+
+## 2026-10-30 — impl-review green handoff (adaptive)
+
+- **Decision**: impl-review DoD met; handoff accepted by the orchestrator under `user_gates: adaptive`; lite → design-promote.
+- **Rationale**: wave 1 of 1 met over three iterations (iter-01 7 findings, iter-02 2, iter-03 APPROVE; external latched at 2, combined at 3); terminal full suite green at 57021a03 (325/325), lint and build clean; no open finding, no waiver, no stub.
+- **Affected docs**: none
