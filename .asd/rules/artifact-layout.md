@@ -105,7 +105,7 @@ Agent memory lives at the provider-view root — `.claude/agent-memory/<agent>/`
 
 ## Scratch directory
 
-`.asd/tmp/` holds every helper file a workflow or agent writes that is no artifact — path lists, the review-wave division, release notes, the reviewer return file (`review-policy.md` "Coverage ledger") — never OS temp, never a sprint folder. Resolve it with `node .asd/runtime.js scratch-dir`, which creates it on first use and prints its absolute path. It ignores itself (its own `.gitignore` holds `*`), so nothing in it is committed or reviewed.
+`.asd/tmp/` holds every helper file a workflow or agent writes that is no artifact — path lists, the review-wave division, release notes, the reviewer return file (`review-policy.md` "Coverage ledger") — never OS temp, never a sprint folder: every ASD script, test and agent writes its temporary files inside the project and removes them after use. Resolve it with `node .asd/runtime.js scratch-dir`, which creates it on first use and prints its absolute path. It ignores itself (its own `.gitignore` holds `*`), so nothing in it is committed or reviewed.
 
 ## Subsystem registry
 
@@ -264,7 +264,7 @@ Archived path: `.asd/sprints/archived/<NNN-slug>/`. The archive move rides the n
 
 Every user or adaptive orchestrator decision appends one entry to `<sprint>/decisions-log.md`. Per-sprint file, created at `scope` from `t_decisions-log.md`, archived with the sprint. Owner: main orchestrator. Append-only, never edited or removed. Entry format and durability rule are normative in `t_decisions-log.md`.
 
-**Rotation**: before delegating a phase skill whose phase differs from `state.json.phase`, `asd-sprint` renames the live `decisions-log.md` to `decisions-log.NNN.md` (next ordinal, zero-padded to 3) when it holds an entry, recreates the live file from `t_decisions-log.md`, and commits both — unless both phases are in {`impl`, `impl-test`, `impl-review`}, so the cycle rotates once on entry (plan→impl, a rollback re-entry included) and once on exit (impl-review → its successor). A resume or re-run of the phase in `state.json.phase` never rotates, nor does a transition inside that cycle, so a within-cycle reader — the interrupted-attempt count (`review-policy.md` "Interrupted dispatch"), the failed-dispatch routing line (`sprint-lifecycle.md` "State recovery"), an impl-test stalemate answer — reads the live file alone.
+**Rotation**: before delegating a phase skill whose phase differs from `state.json.phase`, `asd-sprint` runs `node .asd/runtime.js rotate-decisions --sprint <sprint> --to <phase>`, which renames the live `decisions-log.md` to `decisions-log.NNN.md` (next ordinal, zero-padded to 3) when it holds an entry and recreates the live file from `t_decisions-log.md`; `asd-sprint` commits both when it reports `rotated` — unless both phases are in {`impl`, `impl-test`, `impl-review`}, so the cycle rotates once on entry (plan→impl, a rollback re-entry included) and once on exit (impl-review → its successor). A resume or re-run of the phase in `state.json.phase` never rotates, nor does a transition inside that cycle, so a within-cycle reader — the interrupted-attempt count (`review-policy.md` "Interrupted dispatch"), the failed-dispatch routing line (`sprint-lifecycle.md` "State recovery"), an impl-test stalemate answer — reads the live file alone.
 
 **Readers of both rotated files**: a current-fact reader reads the live file; a cross-span reader reads every segment in ordinal order, then the live file. No segment present = a legacy single file, read as is.
 
