@@ -1,7 +1,7 @@
 {
   "sprint_id": "029-upstream-retro-issues",
   "branch": "sprint/029-upstream-retro-issues",
-  "phase": "pr",
+  "phase": "done",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -83,6 +83,13 @@
       "reason": "user approved push and PR open",
       "evidence": "chat 2026-10-26: Да, пушь ветку и открывай PR",
       "artifact_revision": "HEAD@059b7357"
+    },
+    {
+      "gate": "sprint-closure",
+      "decision_actor": "orchestrator",
+      "reason": "PR #66 merged; release v14.1.0 published",
+      "evidence": "merge commit c642ce668817e36b89d86e1843a8e7a9678944a2",
+      "artifact_revision": "c642ce66"
     }
   ],
   "task_routing": {
@@ -181,13 +188,14 @@
     }
   },
   "created_at": "2026-10-26T11:59:26.556Z",
-  "updated_at": "2026-10-26T13:57:21.178Z",
+  "updated_at": "2026-10-30T13:15:35.419Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": {
     "number": 66,
     "url": "https://github.com/LordKuper/agentic-software-development/pull/66",
-    "state": "open"
+    "state": "merged",
+    "merge_commit": "c642ce668817e36b89d86e1843a8e7a9678944a2"
   },
-  "archived_at": null
+  "archived_at": "2026-10-30T13:15:35.419Z"
 }

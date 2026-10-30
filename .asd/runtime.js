@@ -72,6 +72,10 @@ const NA_TARGETS = {
   docs: { quality: ['SSoT', 'Template adherence', 'HTML shell wrapping', 'Provenance', 'Traceability', 'Persistent actuality', 'In-code doc comments', 'Stub resolution', 'Framework mode', 'Custom rules consistency'], efficiency: ['Documentation economy'] },
 };
 const PHASES = ['design-review', 'impl-review'];
+/** The phases whose mutual transitions never rotate the decisions log: the log is read live across the whole cycle. */
+const IMPL_CYCLE = ['impl', 'impl-test', 'impl-review'];
+/** A decisions-log entry line, heading or one-line form; the template's example lines carry placeholders, never digits. */
+const DECISION_ENTRY = /^(## |- )\d{4}-\d{2}-\d{2} /m;
 /** A retro row's acting side; like its row id, an English literal under any docs language, so intake can filter on it. */
 const ACTS_ON = ['consumer', 'asd'];
 /** The retro tables intake reads: row-id prefix and cell positions, fixed by the retrospective template because translated headers cannot locate them. Actions may be absent (empty friction log); systemic proposals never are. */
@@ -991,6 +995,21 @@ function scratchDir() {
   return dir;
 }
 
+/** Moves the sprint's live decisions log to the next `decisions-log.NNN.md` segment and recreates it from the template, unless the phase does not change, both phases sit in the impl cycle, or the log holds no entry; reports what it did. */
+function rotateDecisions(flags) {
+  if (typeof flags.sprint !== 'string' || typeof flags.to !== 'string') fail('--sprint <sprint dir> and --to <phase> required');
+  const from = JSON.parse(fs.readFileSync(path.join(flags.sprint, 'state.json'), 'utf8')).phase;
+  const live = path.join(flags.sprint, 'decisions-log.md');
+  const unchanged = { rotated: false, from, to: flags.to, segment: null };
+  const withinCycle = IMPL_CYCLE.includes(from) && IMPL_CYCLE.includes(flags.to);
+  if (from === flags.to || withinCycle || !DECISION_ENTRY.test(fs.readFileSync(live, 'utf8'))) return unchanged;
+  const ordinals = fs.readdirSync(flags.sprint).map((name) => /^decisions-log\.(\d+)\.md$/.exec(name)).filter(Boolean).map((match) => Number(match[1]));
+  const segment = path.join(flags.sprint, `decisions-log.${String(Math.max(0, ...ordinals) + 1).padStart(3, '0')}.md`);
+  fs.renameSync(live, segment);
+  fs.copyFileSync(path.join(__dirname, 'templates', 't_decisions-log.md'), live);
+  return { ...unchanged, rotated: true, segment };
+}
+
 /** What a liveness decision reads off a Claude subagent transcript (JSONL): when the agent started, when its newest still-unanswered tool call began (null when none is open), and whether its last message is a final assistant answer. An unparseable line, such as a half-written tail, is skipped. */
 function transcriptProgress(text) {
   const parse = (line) => {
@@ -1508,6 +1527,10 @@ async function main(argv) {
     process.stdout.write(`${scratchDir()}\n`);
     return 0;
   }
+  if (command === 'rotate-decisions') {
+    process.stdout.write(JSON.stringify(rotateDecisions(flags)) + '\n');
+    return 0;
+  }
   if (command === 'section' || command === 'context') {
     try {
       process.stdout.write(command === 'section' ? sectionCommand(flags) : JSON.stringify(contextCommand(flags)) + '\n');
@@ -1522,7 +1545,7 @@ async function main(argv) {
     process.stdout.write(JSON.stringify(timingSummaryCommand(flags)) + '\n');
     return 0;
   }
-  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, section, context, agent-liveness, timing, timing-recover, or timing-summary');
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, section, context, agent-liveness, timing, timing-recover, or timing-summary');
 }
 
 if (require.main === module) {

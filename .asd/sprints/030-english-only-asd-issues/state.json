@@ -1,0 +1,207 @@
+{
+  "sprint_id": "030-english-only-asd-issues",
+  "branch": "sprint/030-english-only-asd-issues",
+  "phase": "pr",
+  "workflow": "lite",
+  "documents": {
+    "audit": true,
+    "prd": false,
+    "ux_spec": false,
+    "design_system": false,
+    "adr": false,
+    "c4": false
+  },
+  "cleanup": true,
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "workflow choice",
+      "decision_actor": "user",
+      "reason": "user answer: lite",
+      "evidence": "decisions-log.md 2026-10-30 sprint opened",
+      "artifact_revision": "state.json@scope"
+    },
+    {
+      "gate": "approach choice",
+      "decision_actor": "user",
+      "reason": "A: language-policy rule, English at every ASD write site",
+      "evidence": "research.md Approaches Chosen",
+      "artifact_revision": "research.md@scope"
+    },
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "sprint.md AC-1..AC-11 accepted as one sprint, no split",
+      "evidence": "decisions-log.md 2026-10-30 scope gate",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "retro intake dispositions",
+      "decision_actor": "user",
+      "reason": "029#A-3 P-1 P-2 included (AC-4..AC-6); #68 #69 #70 #72 included (AC-7..AC-10); #67 #71 rejected",
+      "evidence": "decisions-log.md 2026-10-30 retro intake dispositions",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "all t_audit.md sections for AC-1..AC-11; no contradiction; no authority-only ambiguity",
+      "evidence": "audit.md",
+      "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "user",
+      "reason": "accept; AC-7 via scratch-dir cache relocation + 14.2.0 migration",
+      "evidence": "decisions-log.md 2026-10-30 plan accepted",
+      "artifact_revision": "plan.md@plan"
+    },
+    {
+      "gate": "new or changed scope",
+      "decision_actor": "user",
+      "reason": "AC-12 added: temp files off the system disk (ASD canon, update.js, tests, leftover cleanup)",
+      "evidence": "decisions-log.md 2026-10-30 scope amendment AC-12",
+      "artifact_revision": "sprint.md@impl"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "Tasks 1-7 done; build/lint ok; diff in scope; Task 7 isolation flag accepted",
+      "evidence": "decisions-log.md 2026-10-30 impl assessment (adaptive)",
+      "artifact_revision": "plan.md@impl"
+    },
+    {
+      "gate": "impl-review green handoff",
+      "decision_actor": "orchestrator",
+      "reason": "wave 1/1 roster met; terminal full suite 325/325 green",
+      "evidence": "decisions-log.md 2026-10-30 impl-review green handoff (adaptive)",
+      "artifact_revision": "test-plan.md@e17fb55f"
+    },
+    {
+      "gate": "PR publication",
+      "decision_actor": "user",
+      "reason": "user answer: \"Да, открыть PR\"",
+      "evidence": "decisions-log.md 2026-10-30 PR publication",
+      "artifact_revision": "e4c5e02a"
+    }
+  ],
+  "task_routing": {
+    "Task 1": {
+      "execution": "agent",
+      "tier": "risk:issue-language rule wording and the triage rewrite step",
+      "reason": "sonnet"
+    },
+    "Task 2": {
+      "execution": "agent",
+      "tier": "artifact-risk:verbatim retro guardrails in rule files every agent reads",
+      "reason": "haiku"
+    },
+    "Task 3": {
+      "execution": "agent",
+      "tier": "risk:migration",
+      "reason": "sonnet"
+    },
+    "Task 4": {
+      "execution": "agent",
+      "tier": "risk:narrowing a mandatory safety-valve rule and moving a duty statement",
+      "reason": "sonnet"
+    },
+    "Task 5": {
+      "execution": "agent",
+      "tier": "risk:rotation predicate edges",
+      "reason": "sonnet"
+    },
+    "Task 6": {
+      "execution": "agent",
+      "tier": "risk:download staging location and its cleanup on failure",
+      "reason": "sonnet"
+    },
+    "combined.md F-1": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:triage rewrite reach",
+      "resolved_model": "sonnet"
+    },
+    "combined.md F-2": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:rotation entry guard",
+      "resolved_model": "sonnet"
+    },
+    "combined.md F-4": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:scratch rule cache carve-out",
+      "resolved_model": "sonnet"
+    },
+    "combined.md F-5": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:rotation condition wording",
+      "resolved_model": "sonnet"
+    },
+    "combined.md F-6": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:README issue-language mirror",
+      "resolved_model": "sonnet"
+    },
+    "iter-02 combined.md F-1": {
+      "tier": "standard",
+      "execution": "agent",
+      "reason": "risk:rotation entry guard",
+      "resolved_model": "sonnet"
+    }
+  },
+  "skipped_phases": [
+    "design-promote"
+  ],
+  "reviews": {
+    "design": {
+      "iteration": 0,
+      "verdicts": {},
+      "latched": {}
+    },
+    "impl": {
+      "wave": 1,
+      "waves": [
+        {
+          "iteration": 3,
+          "verdicts": {
+            "iter-01": {
+              "combined": "CONCERNS",
+              "external": "CONCERNS"
+            },
+            "iter-02": {
+              "combined": "CONCERNS",
+              "external": "APPROVE"
+            },
+            "iter-03": {
+              "combined": "APPROVE",
+              "external": "APPROVE"
+            }
+          },
+          "iteration_heads": {
+            "iter-01": "cd0b36de1514a831cb97d7b966a33028247cee71",
+            "iter-02": "a498fb98ae214c6c94043c8472db7f2d2164a1ad",
+            "iter-03": "3cac80329b0587d51f40fe604dc0b199ca5028d1"
+          },
+          "latched": {
+            "external": 2,
+            "combined": 3
+          }
+        }
+      ]
+    }
+  },
+  "created_at": "2026-10-30T13:16:35.495Z",
+  "updated_at": "2026-10-30T16:15:58.380Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": {
+    "number": 73,
+    "url": "https://github.com/LordKuper/agentic-software-development/pull/73",
+    "state": "open"
+  },
+  "archived_at": null
+}

@@ -19,7 +19,7 @@ If the manifest path in the prompt is missing or the file is absent, that is a p
 
 ## Cache path and failure recording are the orchestrator's
 
-Canonical cache path is `.asd/project/external-cache.json` (gitignored). This agent never calls `.asd/runtime.js` or names the path: `external-preflight` and `external-record-failure` are phase-orchestration calls; this agent only consumes the preflight result handed to it. A dispatch instructing otherwise contradicts canon: flag it.
+The canonical cache path's home is `external-review.md` "Detection and negative cache". This agent never calls `.asd/runtime.js` or names the path: `external-preflight` and `external-record-failure` are phase-orchestration calls; this agent only consumes the preflight result handed to it. A dispatch instructing otherwise contradicts canon: flag it.
 
 `external-record-failure` syntax, for reading orchestrator output: `--input` takes a PATH or `-` for stdin, not inline JSON. Fields: `fingerprint` (64-hex), `status` (`authentication|quota|reachability|command`), `cachePath`, `retryAfter` (epoch-ms number: the provider-reported reset; runtime caps it at one hour, uses one hour when none reported), optional `now`.
 

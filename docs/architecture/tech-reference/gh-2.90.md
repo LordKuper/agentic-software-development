@@ -9,7 +9,7 @@ responsibility:
 
 ## Canonical source
 - Official docs: https://cli.github.com/manual ; REST behind `gh issue create`: https://docs.github.com/en/rest/issues/issues#create-an-issue
-- Last verified: 2026-10-26 (installed `gh version 2.90.0`, `--help` of each command below)
+- Last verified: 2026-10-30 (installed `gh version 2.90.0`, `--help` of each command below; `gh issue edit`: https://cli.github.com/manual/gh_issue_edit)
 
 ## API surface used in project
 - `gh auth status`: non-zero exit when no host is authenticated; gate before any issue write.
@@ -18,6 +18,7 @@ responsibility:
 - `gh issue list -R <owner/repo> -s closed -l <label> -L <n> --json number,title,body,url`: closed issues carrying a label; the comparison set for duplicate triage.
 - `gh issue close <n> -R <owner/repo> -r {completed|"not planned"|duplicate} -c <comment>`; `--duplicate-of <n|url>` marks a duplicate of an issue; `-r duplicate -c <comment>` alone closes a duplicate with no issue original.
 - `gh issue edit <n> -R <owner/repo> --add-label <name>[,<name>]`.
+- `gh issue edit <n> -R <owner/repo> -t <title> -F <body-file>`: rewrites the title and body in place; the number and links stay, the prior body stays in GitHub's edit history.
 - `gh label create <name> -R <owner/repo> -d <description> -f`: `-f` updates an existing label instead of failing, so the call is idempotent.
 - `gh release view v<version> --json url`: release link for the post-release close comment.
 

@@ -1,0 +1,157 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 77bafa1f..e796c1f6 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -139,7 +139,7 @@
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
+     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
+-    ".asd/runtime.js": "e0f103688ed7a8336ef44433aa6b9654ac731382dc077d44b21da1708251bd19",
++    ".asd/runtime.js": "9060d0c647db65e4f363ff7ab0ee081f3cf93b9fd8cee9c7a5e45ff0cda4d514",
+     ".asd/templates/external-review/t_review-scope.json": "a17ee84e64cc6a693aaa30dacaef660c841b23a92331abf217ff64c8fc2d4951",
+     ".asd/templates/t_friction-log.md": "98c1ee13ba45291945be2ebabcbd7fc4c59a7069685341f64fc0c26bae31af67",
+     ".asd/templates/t_retrospective.html": "73a850121b1988c3a84e895683a5ad7fb79cd962b2952ed9a14b59251e5c4a0d",
+diff --git a/.asd/runtime.js b/.asd/runtime.js
+index fa9113d8..a7cab1da 100644
+--- a/.asd/runtime.js
++++ b/.asd/runtime.js
+@@ -995,12 +995,10 @@ function scratchDir() {
+   return dir;
+ }
+ 
+-/** Moves the sprint's live decisions log to the next `decisions-log.NNN.md` segment and recreates it from the template, unless the sprint has no `state.json` yet, the phase does not change, both phases sit in the impl cycle, or the log holds no entry; reports what it did. */
++/** Moves the sprint's live decisions log to the next `decisions-log.NNN.md` segment and recreates it from the template, unless the phase does not change, both phases sit in the impl cycle, or the log holds no entry; reports what it did. */
+ function rotateDecisions(flags) {
+   if (typeof flags.sprint !== 'string' || typeof flags.to !== 'string') fail('--sprint <sprint dir> and --to <phase> required');
+-  const statePath = path.join(flags.sprint, 'state.json');
+-  if (!fs.existsSync(statePath)) return { rotated: false, from: null, to: flags.to, segment: null };
+-  const from = JSON.parse(fs.readFileSync(statePath, 'utf8')).phase;
++  const from = JSON.parse(fs.readFileSync(path.join(flags.sprint, 'state.json'), 'utf8')).phase;
+   const live = path.join(flags.sprint, 'decisions-log.md');
+   const unchanged = { rotated: false, from, to: flags.to, segment: null };
+   const withinCycle = IMPL_CYCLE.includes(from) && IMPL_CYCLE.includes(flags.to);
+diff --git a/.asd/sprints/030-english-only-asd-issues/test-plan.entry-02.md b/.asd/sprints/030-english-only-asd-issues/test-plan.entry-02.md
+new file mode 100644
+index 00000000..3c34f5cf
+--- /dev/null
++++ b/.asd/sprints/030-english-only-asd-issues/test-plan.entry-02.md
+@@ -0,0 +1,30 @@
++# Test plan — sprint 030-english-only-asd-issues, entry 2 segment
++
++## Risk → check decisions
++
++| Change | Material risk | Chosen check | Decision | Reason |
++|---|---|---|---|---|
++| `rotateDecisions` missing-`state.json` guard (superseded by iter-02 combined.md F-1: guard removed) | a no-contract path called with a bare slug or wrong-cwd path exits 0 `{"rotated": false}` and silently skips the rotation, where the unguarded read fails loudly | — | none | the guard is unreachable by contract (`asd-sprint` excludes new-sprint scope, a sprint is active only through its `state.json`); its three `unborn` asserts in the AC-9 rotate-decisions test are dropped with it, the test keeps every reachable-path assert |
++| scope step 2a rewrite restricted to a listed marker issue (F-1) | the restriction dropped: a hand-filed issue is rewritten into the marker shape before rule 1 can flag it, then auto-closable by rules 2-3 | content contract | add | review finding F-1 named the missing pin; one assert in the existing AC-3 test on the marker literal ahead of the `gh issue edit` command |
++| `artifact-layout.md` "Scratch directory" carve-out (F-4) | the remove-after-use rule contradicts the external-review cache that lives in the scratch directory | content contract | add | one assert in the existing AC-12 test on the cache citation; the existing `after use` assert still matches intent |
++| "Rotation" sentence reorder (F-5), `asd-sprint` "None for new-sprint scope" (F-2), README English-issue wording (F-6) | prose-only; behaviour is the runtime's, covered by the AC-9 tests | — | none | no token that cannot be reworded; the cycle exception's behaviour is already asserted by the AC-9 rotate-decisions test |
++| `tests/run.js` `.asd/` fixture marker (F-3; superseded by iter-02 combined.md F-2) | a fixture without its own `.asd/` makes `sync.js` `findRepoRoot` and `update.js` resolve live canon | unit (runner isolation) | add | the Task 7 row of entry 1 covers cleanup only, so the marker had no check; one assert in the existing AC-9 rotate-decisions test: `sync.findRepoRoot(mkTempDir())` equals `FIXTURE_ROOT` |
++| reviewer agent memory file | a false line in memory | — | none | memory content is gated by `memory-check` at the orchestrator's commit and swept by the leftover-term test |
++| leftover terms of the delta's removed lines (superseded rewrite sentence, rotation clause order) | a removed sentence survives in canon, README or agent memory | content contract (sweep) | none | repo grep of the exact removed sentences, agent memory included, returned no hit outside sprint folders and the scratch directory; the existing leftover-term test needs no new phrase (the sentences are rewordings, not a removed mechanism) |
++
++## Removed tests
++
++| Test | Reason | In change scope |
++|---|---|---|
++
++## Added tests
++
++Level and AC/risk covered are visible in the test file itself (name, path) — not restated here.
++
++| Test | Regression proof |
++|---|---|
++| tests/run.js: sprint-030 AC-9: rotate-decisions … (fixture-root walk-up assert) | mutation, the marker line `tests/run.js:33` (`fs.mkdirSync(path.join(FIXTURE_ROOT, '.asd'))`) removed: `node tests/run.js --filter "sprint-030 AC-9: rotate-decisions"` → exit 1, that test failing (`findRepoRoot` resolved `REPO_ROOT`, expected `FIXTURE_ROOT`), matched 1; runs: 1; restored: same filter exit 0, matched 1 of 325 |
++| tests/run.js: sprint-030 AC-1/AC-2/AC-3/AC-6 … (marker-restriction assert) | mutation, the rewrite sentence restored to the superseded "a listed issue whose title or body is not English": `node tests/run.js --filter "sprint-030 AC-1/AC-2/AC-3/AC-6"` → exit 1, that test failing, matched 1; runs: 1; control: "A non-marker issue keeps its text" reworded to "Any other issue keeps its text" keeps the test green, exit 0, matched 1 |
++| tests/run.js: sprint-030 AC-7/AC-8/AC-10/AC-12 … (scratch carve-out assert) | mutation, the carve-out clause removed from the scratch rule: `node tests/run.js --filter "sprint-030 AC-7/AC-8/AC-10/AC-12"` → exit 1, that test failing, matched 1; runs: 1 |
++
++All mutations were applied and restored inside one command each; the worktree held no source diff afterwards.
+diff --git a/.asd/sprints/030-english-only-asd-issues/test-plan.md b/.asd/sprints/030-english-only-asd-issues/test-plan.md
+index 7fa3cf72..f216e513 100644
+--- a/.asd/sprints/030-english-only-asd-issues/test-plan.md
++++ b/.asd/sprints/030-english-only-asd-issues/test-plan.md
+@@ -13,17 +13,15 @@ responsibility:
+ |---|---|---|
+ | 1 | f334866b03b06470cadb74a21a92e1ba1692d024 | full change surface |
+ | 2 | ef2247b8f9c37f1ee6913c095488e66c4a10de6e | delta since entry 1 |
++| 3 | d40581e25b1b80e0dc3d0c2fc1859ce86fb906ec | delta since entry 2 |
+ 
+ ## Risk → check decisions
+ 
+ | Change | Material risk | Chosen check | Decision | Reason |
+ |---|---|---|---|---|
+-| `rotateDecisions` missing-`state.json` branch (review-fix F-2; new-sprint scope has no sprint folder state yet) | the CLI throws on a sprint folder with no `state.json`, or writes into it, aborting new-sprint scope | unit (CLI behaviour, fixture dir) | add | new branch with observable output; amended into the existing AC-9 rotate-decisions test, no new test |
+-| scope step 2a rewrite restricted to a listed marker issue (F-1) | the restriction dropped: a hand-filed issue is rewritten into the marker shape before rule 1 can flag it, then auto-closable by rules 2-3 | content contract | add | review finding F-1 named the missing pin; one assert in the existing AC-3 test on the marker literal ahead of the `gh issue edit` command |
+-| `artifact-layout.md` "Scratch directory" carve-out (F-4) | the remove-after-use rule contradicts the external-review cache that lives in the scratch directory | content contract | add | one assert in the existing AC-12 test on the cache citation; the existing `after use` assert still matches intent |
+-| "Rotation" sentence reorder (F-5), `asd-sprint` "None for new-sprint scope" (F-2), README English-issue wording (F-6) | prose-only; behaviour is the runtime's, covered by the AC-9 tests | — | none | no token that cannot be reworded; the cycle exception's behaviour is already asserted by the AC-9 rotate-decisions test |
+-| `tests/run.js` `.asd/` fixture marker (F-3), reviewer agent memory file | fixtures resolving the live repo; a false line in memory | — | none | the marker is covered by the Task 7 row of entry 1 (runner isolation exercised on every run); memory content is gated by `memory-check` at the orchestrator's commit and swept by the leftover-term test |
+-| leftover terms of the delta's removed lines (superseded rewrite sentence, rotation clause order) | a removed sentence survives in canon, README or agent memory | content contract (sweep) | none | repo grep of the exact removed sentences, agent memory included, returned no hit outside sprint folders and the scratch directory; the existing leftover-term test needs no new phrase (the sentences are rewordings, not a removed mechanism) |
++| `rotateDecisions` guard removal (2a3cd4bb) and the `unborn` asserts dropped (63020cb0) | a missing `state.json` stops throwing, or the dropped asserts left the reachable rotation paths unpinned | — | none | the throw on a missing `state.json` is the unguarded read's own failure, no authored behaviour to pin; the test keeps every reachable-path assert (cycle, ordinal, template recreation, missing flags) and gained the fixture-root assert, whose fail-first proof is in the entry 2 segment |
++| `release-manifest.json` `upstream_hashes` for `runtime.js` (35105bf3) | a stale hash breaks `update.js` verification | — | none | the existing manifest-hash test already failed on the stale value (324/325 in review-fix) and passes now; the full gate run is 325/325 |
++| reviewer agent memory file (`feedback_double-fix-caller-and-callee.md`) | a false line, or a removed term surviving in memory | content contract (sweep) | none | repo grep of the delta's removed sentences (the `state.json` guard clause, `unborn`), agent memory included, returned no hit outside sprint folders and the scratch directory; no sprint id or verdict in the file; no removed mechanism, so the leftover-term test needs no new phrase |
+ 
+ ## Removed tests
+ 
+@@ -36,11 +34,6 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
+ 
+ | Test | Regression proof |
+ |---|---|
+-| tests/run.js: sprint-030 AC-9: rotate-decisions … (missing `state.json` assert) | mutation, the `existsSync` guard line removed from `rotateDecisions`: `node tests/run.js --filter "sprint-030 AC-9: rotate-decisions"` → exit 1, that test failing, matched 1; runs: 1 |
+-| tests/run.js: sprint-030 AC-1/AC-2/AC-3/AC-6 … (marker-restriction assert) | mutation, the rewrite sentence restored to the superseded "a listed issue whose title or body is not English": `node tests/run.js --filter "sprint-030 AC-1/AC-2/AC-3/AC-6"` → exit 1, that test failing, matched 1; runs: 1; control: "A non-marker issue keeps its text" reworded to "Any other issue keeps its text" keeps the test green, exit 0, matched 1 |
+-| tests/run.js: sprint-030 AC-7/AC-8/AC-10/AC-12 … (scratch carve-out assert) | mutation, the carve-out clause removed from the scratch rule: `node tests/run.js --filter "sprint-030 AC-7/AC-8/AC-10/AC-12"` → exit 1, that test failing, matched 1; runs: 1 |
+-
+-All mutations were applied and restored inside one command each; the worktree held no source diff afterwards.
+ 
+ ## Suite run
+ 
+@@ -48,7 +41,7 @@ All mutations were applied and restored inside one command each; the worktree he
+ - Scope: full (the delta touches `.asd/runtime.js` and `tests/run.js`, shared infrastructure: safety valve at the step 8 gate); step 3 pre-authoring run `--filter "sprint-030"` (impacted set), 7/7 passed, exit 0
+ - Result: pass — 325 passed, 0 failed, 0 skipped (exit 0)
+ - Lint / build: pass — `git diff --cached --check` exit 0, `node .asd/sync.js --check` exit 0, `ok: true`
+-- HEAD: 70b4d6814abcbe3e769f012ea9ac3e92a026001b
++- HEAD: ebf25fea036f4c0e568aa79a902663d522cbae98
+ 
+ ## Defects
+ 
+diff --git a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+index 9f7c2501..371ce914 100644
+--- a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
++++ b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+@@ -19,3 +19,4 @@
+ - [New command vs skill grant](feedback_new-command-vs-skill-grant.md) — a workflow step adding gh/git commands: check the skill's claude allowed-tools (some grant only narrow Bash(prefix:*))
+ - [Shell-quoting claims](feedback_shell-quoting-claims.md) — a "safe in bash and PowerShell" strip list: PowerShell reads typographic quotes “ ” „ as "
+ - [Fixtures inside the repo](feedback_fixtures-inside-repo-walkups.md) — fixtures moved into .asd/tmp: GIT_CEILING guards git only; `.asd` walk-ups (findRepoRoot, findUp) reach the live repo
++- [Double fix: caller and callee](feedback_double-fix-caller-and-callee.md) — caller rule excludes case C and callee CLI also guards C: guard unreachable, turns ENOENT into a silent exit 0
+diff --git a/.claude/agent-memory/asd-reviewer-combined/feedback_double-fix-caller-and-callee.md b/.claude/agent-memory/asd-reviewer-combined/feedback_double-fix-caller-and-callee.md
+new file mode 100644
+index 00000000..d771b2ec
+--- /dev/null
++++ b/.claude/agent-memory/asd-reviewer-combined/feedback_double-fix-caller-and-callee.md
+@@ -0,0 +1,12 @@
++---
++name: double-fix-caller-and-callee
++description: A review-fix that both excludes a case at the caller's rule and guards it in the callee CLI: the callee guard is often unreachable by contract and turns a loud failure into a silent no-op
++metadata:
++  type: feedback
++---
++
++When a fix for "command X breaks in case C" both adds a caller-side exclusion ("None for C") and a callee-side guard returning success for C, check whether any contract path still reaches C after the exclusion.
++
++**Why:** if no path reaches C, the guard is the over-engineering item "Defensive code for impossible-by-contract case". It also tends to swallow misuse: a guard keyed on a missing file (e.g. `existsSync(state.json)` returning `{changed: false}`) makes a wrong path argument exit 0 silently where it used to fail with ENOENT.
++
++**How to apply:** trace who calls the CLI (grep the command name across canon) and what precondition defines the case (e.g. sprint detection keyed on `state.json`). Keep the caller rule as the one contract, and recommend deleting the guard or making it `fail()` loudly. Also flag the test asserts pinning the unreachable case. Related: [[none-row-coverage-claims]].
+diff --git a/tests/run.js b/tests/run.js
+index 2560924a..668fc503 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -8762,9 +8762,7 @@ test('sprint-030 AC-9: rotate-decisions rotates the live log into the next segme
+   fs.appendFileSync(live, heading);
+   assert.strictEqual(rotate(dir, 'cleanup').result.segment, path.join(dir, 'decisions-log.010.md'), 'AC-9: the next ordinal is one above the highest segment present, zero-padded to three digits, a heading-form entry counting as an entry');
+ 
+-  const unborn = mkTempDir();
+-  assert.deepStrictEqual(rotate(unborn, 'scope'), { status: 0, result: { rotated: false, from: null, to: 'scope', segment: null } }, 'AC-9: a sprint folder with no state.json yet (new-sprint scope) must report no rotation, never throw');
+-  assert.deepStrictEqual(fs.readdirSync(unborn), [], 'AC-9: a sprint folder with no state.json yet is left empty');
++  assert.strictEqual(sync.findRepoRoot(mkTempDir()), FIXTURE_ROOT, 'runner isolation: a fixture holding no .asd/ of its own resolves the fixture root through the marker, never the live repo (REPO_ROOT)');
+ 
+   for (const flags of [['--sprint', dir], ['--to', 'impl']]) {
+     const missing = runtimeCliResult(['rotate-decisions', ...flags]);

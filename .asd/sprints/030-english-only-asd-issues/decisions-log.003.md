@@ -37,5 +37,10 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
-- 2026-10-26 — pr: asd_version 14.0.0 → 14.1.0 (feat, MINOR; max migration 14.0.0 ≤ 14.1.0), CHANGELOG v14.1.0; Task 2 commit subject (53 chars, F-2) not reworded: a rewrite would orphan recorded shas (iteration_heads, test-plan Suite run HEAD); squash merge takes the PR title
-- 2026-10-26 — pr: opened #66 (https://github.com/LordKuper/agentic-software-development/pull/66), user-approved publication
+
+## 2026-10-30 — `plan.md` accepted
+
+- **Decision**: `plan.md` accepted by the user: five Tasks in one wave; AC-7 relocates the external-review cache into the self-ignoring scratch directory with a 14.2.0 migration deleting the legacy `.asd/project/external-cache.json`, instead of the issue's `.gitignore` entry.
+- **Rationale**: No consumer `.gitignore` write and no init change; the cache cannot reach git; a lost cache costs at most one retry. `gh-2.90.md` gained `gh issue edit -t -F` before acceptance.
+- **Affected docs**: `plan.md`, `docs/architecture/tech-reference/gh-2.90.md`
+- 2026-10-30 — plan: no stub matches scope (`audit.md` has no "Related open stubs")

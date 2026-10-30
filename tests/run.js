@@ -7,7 +7,6 @@
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
-const os = require('node:os');
 
 const { execFileSync } = require('node:child_process');
 
@@ -28,8 +27,15 @@ function test(name, fn) {
   tests.push({ name, fn });
 }
 
+/** The one per-run directory every fixture lives in, under the repo's git-ignored scratch directory so no fixture sits on the system disk; removed on exit, pass or fail, leaving the scratch directory's other files alone. */
+const FIXTURE_ROOT = fs.mkdtempSync(path.join(execFileSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'runtime.js'), 'scratch-dir'], { encoding: 'utf8' }).trim(), 'asd-test-run-'));
+process.env.GIT_CEILING_DIRECTORIES = FIXTURE_ROOT;
+fs.mkdirSync(path.join(FIXTURE_ROOT, '.asd')); // empty marker: stops the `.asd` walk-ups (sync.js findRepoRoot, update.js, the session-start hook findUp)
+process.on('exit', () => fs.rmSync(FIXTURE_ROOT, { recursive: true, force: true }));
+
+/** A fresh fixture directory. Two guards keep a fixture that is no repo of its own from resolving the live repo: the git ceiling above stops git's upward search, and the empty `.asd/` marker in `FIXTURE_ROOT` stops every upward `.asd` search at the fixture root. */
 function mkTempDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'asd-sync-test-'));
+  return fs.mkdtempSync(path.join(FIXTURE_ROOT, 'asd-sync-test-'));
 }
 
 // ---------------------------------------------------------------------------
@@ -2560,7 +2566,7 @@ test('AC-4: Windows .cmd preflight executes a metacharacter-containing path lite
     console.log('  (skipped: end-to-end spawn proof for the .cmd/metacharacter PowerShell fallback branch - only runs on win32; buildInvocation tests above cover the branch shape on any host)');
     return;
   }
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'asd & runtime-'));
+  const root = fs.mkdtempSync(path.join(FIXTURE_ROOT, 'asd & runtime-'));
   const shim = path.join(root, 'external & shim.cmd');
   fs.writeFileSync(shim, '@echo off\r\nexit /b 0\r\n', 'utf8');
   const result = runtime.externalPreflight({ provider: 'codex', command: shim, model: 'gpt-6-sol', cachePath: path.join(root, 'cache.json') });
@@ -8720,6 +8726,130 @@ test('sprint-029 AC-10 leftover-term check: no canon, README, AGENTS.md, runtime
   const swept = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/hooks/session-start.js', '.asd/runtime.js', ...memoryFiles];
   const hits = swept.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => removed.filter((phrase) => line.includes(phrase)).map((phrase) => `${rel}:${index + 1} ${phrase}`)));
   assert.deepStrictEqual(hits, [], 'each phrase is a heading or sentence this sprint renamed or removed (git diff main...HEAD), taken exactly - one surviving points a reader at a section that no longer exists. CHANGELOG.md, migrations, tests and sprint folders are history and stay out of the sweep');
+});
+
+/** A sprint directory at `phase` whose live decisions log is the shipped template plus `entryLines` (none = a log with no entry). */
+function rotationSprint(phase, entryLines = '') {
+  const dir = mkTempDir();
+  writeFile(dir, 'state.json', JSON.stringify({ phase }));
+  writeFile(dir, 'decisions-log.md', `${fs.readFileSync(path.join(REPO_ROOT, '.asd/templates/t_decisions-log.md'), 'utf8')}\n${entryLines}`);
+  return dir;
+}
+
+test('sprint-030 AC-9: rotate-decisions rotates the live log into the next segment only when the phase changes outside the impl cycle and the log holds an entry - one-line or heading form - and recreates the live file from the template; it never rotates an unchanged phase, a transition inside the cycle or a log of template lines alone, and it fails without --sprint or --to', () => {
+  const oneLine = '- 2026-01-02 — plan skipped: fixture\n';
+  const heading = '## 2026-01-03 — fixture decision\n\n- **Decision**: x\n';
+  const template = fs.readFileSync(path.join(REPO_ROOT, '.asd/templates/t_decisions-log.md'), 'utf8');
+  const rotate = (dir, to) => runtimeCliResult(['rotate-decisions', '--sprint', dir, '--to', to]);
+  const segments = (dir) => fs.readdirSync(dir).filter((name) => /^decisions-log\.\d+\.md$/.test(name));
+  for (const [from, to, entries, why] of [['plan', 'plan', oneLine, 'an unchanged phase'], ['impl', 'impl-test', oneLine, 'a transition inside the cycle'], ['impl-review', 'impl', oneLine, 'a rollback inside the cycle'], ['plan', 'impl', '', 'a log whose only entry-shaped lines are the template\'s placeholders']]) {
+    const dir = rotationSprint(from, entries);
+    const before = fs.readFileSync(path.join(dir, 'decisions-log.md'), 'utf8');
+    assert.deepStrictEqual(rotate(dir, to), { status: 0, result: { rotated: false, from, to, segment: null } }, `AC-9: ${why} must not rotate`);
+    assert.strictEqual(fs.readFileSync(path.join(dir, 'decisions-log.md'), 'utf8'), before, `AC-9: ${why} leaves the live log untouched`);
+    assert.deepStrictEqual(segments(dir), [], `AC-9: ${why} writes no segment`);
+  }
+
+  const dir = rotationSprint('plan', oneLine);
+  const live = path.join(dir, 'decisions-log.md');
+  const first = fs.readFileSync(live, 'utf8');
+  assert.deepStrictEqual(rotate(dir, 'impl'), { status: 0, result: { rotated: true, from: 'plan', to: 'impl', segment: path.join(dir, 'decisions-log.001.md') } }, 'AC-9: the first rotation of a log with an entry takes ordinal 001');
+  assert.strictEqual(fs.readFileSync(path.join(dir, 'decisions-log.001.md'), 'utf8'), first, 'AC-9: the segment is the live log renamed, content intact');
+  assert.strictEqual(fs.readFileSync(live, 'utf8'), template, 'AC-9: the live file is recreated from the shipped template');
+
+  writeFile(dir, 'state.json', JSON.stringify({ phase: 'impl-review' }));
+  writeFile(dir, 'decisions-log.009.md', 'older segment\n');
+  fs.appendFileSync(live, heading);
+  assert.strictEqual(rotate(dir, 'cleanup').result.segment, path.join(dir, 'decisions-log.010.md'), 'AC-9: the next ordinal is one above the highest segment present, zero-padded to three digits, a heading-form entry counting as an entry');
+
+  assert.strictEqual(sync.findRepoRoot(mkTempDir()), FIXTURE_ROOT, 'runner isolation: a fixture holding no .asd/ of its own resolves the fixture root through the marker, never the live repo (REPO_ROOT)');
+
+  for (const flags of [['--sprint', dir], ['--to', 'impl']]) {
+    const missing = runtimeCliResult(['rotate-decisions', ...flags]);
+    assert.ok(missing.status !== 0 && /--sprint <sprint dir> and --to <phase> required/.test(missing.stderr), `AC-9: ${flags[0]} alone must fail naming both flags, got ${JSON.stringify(missing)}`);
+  }
+});
+
+test('sprint-030 AC-9/AC-11: the rotate-decisions command asd-sprint runs and artifact-layout.md names runs as written, asd-sprint commits on its `"rotated": true` result, and the usage message and README list the command', () => {
+  const command = 'node .asd/runtime.js rotate-decisions --sprint <sprint> --to <phase>';
+  const skillLine = sectionOf('.asd/skills/asd-sprint/SKILL.md', 'Rules').split('\n').find((line) => line.includes('rotate-decisions')) || '';
+  assert.ok(skillLine.includes(`\`${command}\``) && skillLine.includes('"rotated": true'), 'AC-9: asd-sprint Rules must call rotate-decisions before a phase-skill delegation and commit on its rotated result - the by-hand check it replaces left the condition to be re-derived on every delegation');
+  assert.ok(headingBody('.asd/rules/artifact-layout.md', 'Decisions log').includes(`\`${command}\``), 'AC-9: artifact-layout.md "Decisions log" must name the command as the executor of its rotation condition');
+  const dir = rotationSprint('plan');
+  const asWritten = command.split(' ').slice(2).map((arg) => ({ '<sprint>': dir, '<phase>': 'plan' })[arg] || arg);
+  assert.deepStrictEqual(runtimeCliResult(asWritten), { status: 0, result: { rotated: false, from: 'plan', to: 'plan', segment: null } }, 'AC-9: the documented command line must be accepted as written');
+  assert.ok(/rotate-decisions/.test(runtimeCliResult(['no-such-command']).stderr), 'AC-9: the runtime usage message must list rotate-decisions');
+  assert.ok(canonText('README.md').includes('`rotate-decisions --sprint'), 'AC-9/AC-11: README\'s runtime.js folder-map line must list rotate-decisions');
+});
+
+test('sprint-030 AC-7: the 14.2.0 migration deletes the legacy external-review cache file and nothing else, reports it, and a re-run is a no-op', () => {
+  const migration1420 = require('../.asd/migrations/14.2.0.js');
+  const root = mkTempDir();
+  const cache = '.asd/project/external-cache.json';
+  const neighbours = ['.asd/project/config.yaml', '.asd/project/retro-backlog.md', '.gitignore'];
+  writeFile(root, cache, '{"codex":{"retryAfter":1}}\n');
+  neighbours.forEach((rel) => writeFile(root, rel, `${rel}\n`));
+  assert.deepStrictEqual(migration1420({ repoRoot: root }), { deleted: [cache], missing: [] }, 'AC-7: the present legacy cache is deleted and reported');
+  assert.ok(!fs.existsSync(path.join(root, cache)), 'AC-7: the legacy cache file is gone');
+  assert.deepStrictEqual(neighbours.filter((rel) => fs.readFileSync(path.join(root, rel), 'utf8') !== `${rel}\n`), [], 'AC-7: the migration touches no neighbouring file, the consumer\'s .gitignore included');
+  assert.deepStrictEqual(migration1420({ repoRoot: root }), { deleted: [], missing: [cache] }, 'AC-7: a re-run finds nothing and reports it missing, never an error');
+});
+
+test('sprint-030 AC-1/AC-2/AC-3/AC-6: the Matrix holds the one ASD-repo issue-language row, every canon site writing issue text cites it, retro renders the published issue in English, scope rewrites a non-English marker issue in place before triage rules 1-4 and logs it, and an interview question defines its framework terms', () => {
+  const matrixRows = headingBody('.asd/rules/language-policy.md', 'Matrix').split('\n').filter((row) => row.startsWith('|') && /\bissues?\b/i.test(row.split('|')[1]));
+  assert.strictEqual(matrixRows.length, 1, 'AC-1: the Matrix must hold exactly one issue-language row - its one home');
+  assert.ok(/English, always/.test(matrixRows[0]) && matrixRows[0].includes('`language.chat`') && matrixRows[0].includes('`language.docs`'), 'AC-1: the row must state English whatever language.chat and language.docs say');
+  const cite = '`language-policy.md` "Matrix"';
+  const writers = canonMarkdownFiles().filter((rel) => !rel.startsWith('.asd/skills/') && /gh issue (?:create|close) /.test(canonText(rel)));
+  assert.ok(['.asd/workflows/asd-phase-retro.md', '.asd/workflows/asd-phase-scope.md', '.asd/rules/git-strategy.md'].every((rel) => writers.includes(rel)), `sanity: the retro, scope and release-close sites must be found among ${JSON.stringify(writers)}`);
+  assert.deepStrictEqual(writers.filter((rel) => !canonText(rel).includes(cite)), [], 'AC-1: every canon file that creates or closes an issue must cite the Matrix row, or its text is written in whatever language the session speaks');
+  const retro = stepOf(sectionOf('.asd/workflows/asd-phase-retro.md', 'Steps'), 7);
+  assert.ok(/in English[^.]*`language\.docs`/.test(retro), 'AC-2: retro step 7 must render the published title and body in English from the row\'s language.docs text');
+  const triage = stepOf(sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps'), '2a');
+  const edit = 'gh issue edit <n> -R <repo> -t <title> -F <body-file>';
+  assert.ok(triage.includes(edit) && triage.indexOf(edit) < triage.indexOf('Per issue, first match'), 'AC-3: scope step 2a must rewrite a non-English issue with gh issue edit -t -F before the first-match rules 1-4 read it');
+  assert.ok(triage.slice(0, triage.indexOf(edit)).includes('`<!-- asd-retro-finding v1 -->`'), 'AC-3: the in-place rewrite must be restricted to a listed marker issue (body\'s first line the marker) - the listing also returns hand-filed issues, which rule 1 flags and never auto-closes');
+  assert.ok(triage.includes('rewrote #…'),'AC-3: the triage decisions-log line must name the rewritten issues');
+  const interview = (sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps').split('\n').find((line) => line.includes('(a) Interview')) || '');
+  assert.ok(interview.includes('framework term'), 'AC-6: scope step 2 (a) must have each interview question define the framework terms it uses');
+});
+
+test('sprint-030 AC-4/AC-5: the 029 retro guardrails stand verbatim in this repo\'s project rules, which sit outside the impl-review change surface', () => {
+  const common = canonText('.asd/project/custom-common-rules.md');
+  assert.ok(common.includes('file-edit operation') && common.includes('`node -e`'), 'AC-4: custom-common-rules.md must tell every agent to write file content with the file-edit operation, never in a quoted shell or `node -e` argument');
+  const coding = canonText('.asd/project/custom-coding-rules.md');
+  assert.deepStrictEqual(['external command', 'tool grant', 'target repo explicitly', 'shipped `.asd/` paths'].filter((token) => !coding.includes(token)), [], 'AC-5: custom-coding-rules.md must carry the external-command Task rule - widened tool grant, explicit target repo, shipped paths only');
+});
+
+test('sprint-030 AC-7/AC-8/AC-10/AC-12: the external-review cache lives in the scratch directory, the tester definition is the one home of the suite-op duty, the safety valve reaches impl-test\'s step 8 gate only in all three places stating it, and the scratch rule keeps every ASD script off the OS temp directory', () => {
+  const cacheRule = headingBody('.asd/rules/external-review.md', 'Detection and negative cache');
+  assert.ok(cacheRule.includes('`external-cache.json` in the scratch directory') && cacheRule.includes('`node .asd/runtime.js scratch-dir`'), 'AC-7: the canonical cache path must be external-cache.json in the directory scratch-dir prints, a self-ignoring one - a tracked-folder path shows up untracked in a consumer and breaks the clean-tree check');
+  const tester = canonText('.asd/agents/asd-tester.md');
+  const duty = tester.split('\n').find((line) => line.startsWith('- must: bracket every suite run')) || '';
+  assert.ok(duty.includes('--kind suite') && duty.includes('scope=impacted|full') && duty.includes('--parent'), 'AC-8: the tester definition must state the duty with the kind, scope attribute and parent a suite op needs, so it reaches every tester dispatch');
+  assert.deepStrictEqual(canonMarkdownFiles().filter((rel) => canonText(rel).includes('--kind suite')), ['.asd/agents/asd-tester.md'], 'AC-8: the suite-op command form has one home, the tester definition - a workflow restating it drifts from it');
+  const valve = headingBody('.asd/rules/sprint-lifecycle.md', 'Impacted test set').split('\n').find((line) => line.startsWith('**Safety valve')) || '';
+  assert.ok(/step 8 suite gate/.test(valve) && /step 3 pre-authoring run[^.]*without the valve/.test(valve), 'AC-10: the safety valve home must reach impl-test through the step 8 suite gate and exempt the step 3 run and the reruns after an authoring batch');
+  assert.ok(/safety valve[^.;]*step 8/.test(tester.split('\n').find((line) => line.startsWith('- must: impl-test:')) || ''), 'AC-10: the tester\'s impl-test line must apply the valve to the step 8 suite gate only');
+  assert.ok(/safety valve[^)]*step 8/.test(stepOf(sectionOf('.asd/workflows/asd-phase-impl-test.md', 'Steps'), 2)), 'AC-10: impl-test step 2 must apply the valve to step 8 only');
+  assert.ok(/safety valve at this gate only/.test(sectionOf('.asd/workflows/asd-phase-impl-test.md', 'Rules')), 'AC-10: the impl-test suite-gate rule must apply the valve at that gate only');
+  const scratch = headingBody('.asd/rules/artifact-layout.md', 'Scratch directory');
+  assert.ok(scratch.includes('inside the project') && scratch.includes('after use'), 'AC-12: the scratch rule must put every script, test and agent temp file inside the project and remove it after use');
+  assert.ok(scratch.includes('`external-review.md` "Detection and negative cache"'), 'AC-12/AC-7: the remove-after-use rule must carve out the external-review cache it holds, or the rule orders the removal of state meant to outlive its run');
+  const walk = (rel) => fs.readdirSync(path.join(REPO_ROOT, rel), { withFileTypes: true }).flatMap((entry) => (entry.isDirectory() ? (['.asd/sprints', '.asd/tmp'].includes(`${rel}/${entry.name}`) ? [] : walk(`${rel}/${entry.name}`)) : [`${rel}/${entry.name}`]));
+  const scripts = [...walk('.asd'), ...walk('tests')].filter((rel) => rel.endsWith('.js'));
+  assert.ok(scripts.includes('.asd/runtime.js') && scripts.includes('.asd/skills/asd-update/update.js') && scripts.includes('tests/run.js'), 'sanity: the sweep must reach the runtime, update.js and this runner');
+  const osTemp = scripts.flatMap((rel) => canonText(rel).split('\n').map((line, index) => ({ rel, line, index })).filter(({ line }) => /\btmpdir\(/.test(line) && !/^\s*(?:\/\/|\*)/.test(line)).map(({ rel: file, index }) => `${file}:${index + 1}`));
+  assert.deepStrictEqual(osTemp, [], 'AC-12: no ASD script may call the OS temp directory - update.js stages under .asd/tmp and the runner keeps its fixtures there');
+});
+
+test('sprint-030 leftover-term check: no canon, README, AGENTS.md, .gitignore, runtime, hook or agent-memory line keeps the external-review cache\'s tracked-folder path, the restated suite-op bracketing clauses, the valve applying to every scoped run, or the by-hand decisions-log rotation check', () => {
+  const removed = ['.asd/project/external-cache.json', 'gitignored, machine-local retry/failure state', 'bracket each suite run (steps 3, 8)', 'bracket each run with a `suite` op', 'applying its shared-infrastructure safety valve before every scoped run', 'mandatory shared-infrastructure safety valve checked before use', 'subject to its safety valve, never the whole repo —', 'rotate the decisions log when'];
+  const memoryFiles = fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT), { recursive: true }).map((entry) => `${AGENT_MEMORY_ROOT}/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
+  assertSweepReachesMemory(memoryFiles);
+  const swept = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.gitignore', '.asd/hooks/session-start.js', '.asd/runtime.js', '.asd/skills/asd-update/update.js', ...memoryFiles];
+  const hits = swept.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => removed.filter((phrase) => line.includes(phrase)).map((phrase) => `${rel}:${index + 1} ${phrase}`)));
+  assert.deepStrictEqual(hits, [], 'each phrase is a path or sentence this sprint removed (git diff main...HEAD), taken exactly - one surviving points a reader at a cache path the runtime no longer uses or a duty its owner no longer states. CHANGELOG.md, migrations, tests and sprint folders are history and stay out of the sweep');
 });
 
 // ===========================================================================

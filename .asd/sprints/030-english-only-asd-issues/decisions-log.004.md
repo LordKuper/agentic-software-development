@@ -1,0 +1,82 @@
+---
+responsibility:
+  owns: approved decisions for THIS sprint
+  excludes: cross-sprint/durable decisions, sprint state, review notes
+  delegates_to: docs/** + adr fold targets (durable design decisions), CHANGELOG.md (releases), .asd/project/stubs.md (standing open defects), .asd/project/retro-backlog.md (retro row dispositions), state.json (state), reviews/ (verdicts)
+---
+
+# Decisions Log
+
+Per-sprint, append-only. Never edited or removed. Created at `scope`, rotated at phase entry (`.asd/rules/artifact-layout.md` "Decisions log"), archived with the sprint.
+
+## Entry format
+
+```markdown
+## YYYY-MM-DD — <one-line summary>
+
+- **Decision**: <what was decided> (≤3 sentences)
+- **Rationale**: <why> (≤3 sentences)
+- **Affected docs**: <links> (unrestricted)
+```
+
+A no-op skip, other zero-content decision, dispatch routing line or failed-dispatch reconstruction uses the one-line form instead:
+
+```markdown
+- YYYY-MM-DD — <phase> skipped: <reason>
+- YYYY-MM-DD — route <taskIds>: <tier>, dispatch HEAD <sha>[; risk <declaration>]
+- YYYY-MM-DD — reconstruction: landed <ids>; re-dispatched <ids>
+- YYYY-MM-DD — stall: <agent> <dispatch ids>
+- YYYY-MM-DD — cleanup checkpoint <sha>
+- YYYY-MM-DD — cleanup: removed <paths/symbols>; reverted <ids or none>; verified <build, lint, tests @sha>
+```
+
+## Durability rule
+
+A decision whose value must survive this sprint's archival is ALSO written into an existing persistent home — a `docs/` fold target, `CHANGELOG.md`, `.asd/project/stubs.md`, or `.asd/project/retro-backlog.md` (retro row dispositions). Never invent a new document type for this. This log records that the decision was made; the persistent home is what a later sprint can still read.
+
+## Entries
+
+<!-- entries appended below this line -->
+
+## 2026-10-30 — scope amendment AC-12
+
+- **Decision**: User added "minimise system-disk use" mid-impl, before wave 1's dispatch: AC-12 binds ASD canon (`artifact-layout.md` "Scratch directory", in Task 5 with AC-9's edit of the same doc), moves `update.js`'s download (Task 6, wave 1) and `tests/run.js` fixtures (Task 7, Test-only, new wave 2) off the OS temp directory, and deletes the 380 leftover `asd-sync-test-*` directories after wave 2.
+- **Rationale**: `tests/run.js` and `update.js` are the only `os.tmpdir()` writers; tests leave their fixtures behind. Criterion cost: AC-12 new, 0 iterations / 0 fix rounds.
+- **Affected docs**: `sprint.md`, `plan.md`
+- 2026-10-30 — route Task 1: standard, dispatch HEAD f04c9dbed3ba1ec6f9062b950d1e9b14ee40101a
+- 2026-10-30 — route Task 3: standard, dispatch HEAD f04c9dbed3ba1ec6f9062b950d1e9b14ee40101a
+- 2026-10-30 — route Task 4: standard, dispatch HEAD f04c9dbed3ba1ec6f9062b950d1e9b14ee40101a
+- 2026-10-30 — route Task 5: standard, dispatch HEAD f04c9dbed3ba1ec6f9062b950d1e9b14ee40101a
+- 2026-10-30 — route Task 6: standard, dispatch HEAD f04c9dbed3ba1ec6f9062b950d1e9b14ee40101a
+- 2026-10-30 — route Task 2: mechanical, dispatch HEAD f04c9dbed3ba1ec6f9062b950d1e9b14ee40101a
+- 2026-10-30 — route Task 7: standard, dispatch HEAD 184fe90d40628ebb54b7880feb700878d6fa4bd4
+- 2026-10-30 — AC-12: deleted 638 leftover test fixture dirs (asd-sync-test-*, asd & runtime-*; 6.0M) from the OS temp directory (user-approved amendment)
+
+## 2026-10-30 — impl assessment (adaptive)
+
+- **Decision**: initial impl accepted by the orchestrator under `user_gates: adaptive`; → impl-test.
+- **Rationale**: Tasks 1-7 COMPLETED, every `plan.md` checkbox ticked; AC-1..AC-10, AC-12 implemented (AC-11 pending impl-test asserts and the terminal suite); build `node .asd/sync.js --check` ok, lint clean, round diff touches only dispatched write scopes, synced views, `release-manifest.json` ledgers and sprint bookkeeping; no stub added; full suite 318/318 at Task 7. Task 7 flag accepted: `GIT_CEILING_DIRECTORIES` isolates git; `sync.js` `findRepoRoot` and the hook's `findUp` carry no ceiling, but every fixture reaching them holds its own `.asd/`, so the plan's isolation predicate holds — no earlier disposition in the decisions log.
+- **Affected docs**: none
+- 2026-10-30 — route impl-test#1: standard, dispatch HEAD 9e46a11f14d80fe2b02c4ddc741325a72abf50e9
+- 2026-10-30 — impl-test memory fix: asd-external-review reference_scope-manifest-transport.md:22 old cache path → cites external-review.md "Detection and negative cache" (c16ed30d)
+- 2026-10-30 — impl-test: impacted set green (325/325, full scope via safety valve), 7/0 tests
+- 2026-10-30 — impl-review wave-1/iter-01: combined CONCERNS (F-1 high, F-2/F-3/F-4 medium, F-5/F-6 low), external CONCERNS (1 high, same root cause as F-2); minor test-only branch not met (F-1 high, non-test locations) → impl review-fix (review_fixes_pending wave-1/iter-01)
+- 2026-10-30 — route F-1, F-2 (+ external.md 1), F-4, F-5, F-6: standard, dispatch HEAD 0249a2d3a47e1595f153f8dc3b52f5cba89bfc6d; risk change: triage rewrite reach, rotation entry guard, scratch rule cache carve-out, rotation condition wording, README issue-language mirror
+- 2026-10-30 — route combined.md F-3: standard, dispatch HEAD cdfa3e1b5c82c78c8dea89a9d9fd34d21552d08f
+- 2026-10-30 — impl fix for wave-1/iter-01: findings resolved (combined.md F-1..F-6, external.md 1); build ok, lint clean, diff within the round's write scopes plus synced views
+- 2026-10-30 — route impl-test#2: standard, dispatch HEAD 70b4d6814abcbe3e769f012ea9ac3e92a026001b
+- 2026-10-30 — impl-test: impacted set green (325/325, full scope via safety valve), 3 asserts added to existing tests/0 removed
+- 2026-10-30 — impl-review wave-1/iter-02: combined CONCERNS (F-1 critical: unreachable state.json guard in rotateDecisions — partly reverses iter-01 F-2's suggested callee guard, its caller carve-out stays; F-2 medium: no regression check for the fixture .asd/ marker), external APPROVE (latched at 2) → impl review-fix (review_fixes_pending wave-1/iter-02)
+- 2026-10-30 — route iter-02 combined.md F-1: standard, dispatch HEAD 45b79b343743d01c6630311831d30eab7e1377aa; risk change: rotation entry guard
+- 2026-10-30 — route iter-02 combined.md F-2 (+ F-1 unborn asserts): standard, dispatch HEAD 2a3cd4bb1022c158a77a73f8b0a67d2d81d2ef87
+- 2026-10-30 — impl fix for wave-1/iter-02: findings resolved (combined.md F-1, F-2); upstream_hashes for runtime.js recomputed by sync --apply AGENTS.md; build ok, lint clean
+- 2026-10-30 — route impl-test#3: standard, dispatch HEAD ebf25fea036f4c0e568aa79a902663d522cbae98
+- 2026-10-30 — impl-test: impacted set green (325/325, full scope via safety valve), 0/0 tests (delta covered by review-fix tests)
+- 2026-10-30 — impl-review wave-1/iter-03: combined APPROVE (latched at 3), external APPROVE (latched at 2, not dispatched); wave 1 of 1 roster met → terminal full suite
+- 2026-10-30 — route impl-review wave-1/iter-03 suite: standard, dispatch HEAD 57021a03430707e129145a904821f78fb01d3d99
+
+## 2026-10-30 — impl-review green handoff (adaptive)
+
+- **Decision**: impl-review DoD met; handoff accepted by the orchestrator under `user_gates: adaptive`; lite → design-promote.
+- **Rationale**: wave 1 of 1 met over three iterations (iter-01 7 findings, iter-02 2, iter-03 APPROVE; external latched at 2, combined at 3); terminal full suite green at 57021a03 (325/325), lint and build clean; no open finding, no waiver, no stub.
+- **Affected docs**: none
