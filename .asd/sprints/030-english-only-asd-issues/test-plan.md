@@ -12,26 +12,23 @@ responsibility:
 | Entry | HEAD analysed | Scope |
 |---|---|---|
 | 1 | f334866b03b06470cadb74a21a92e1ba1692d024 | full change surface |
+| 2 |  | delta since entry 1 |
 
 ## Risk → check decisions
 
 | Change | Material risk | Chosen check | Decision | Reason |
 |---|---|---|---|---|
-| `.asd/runtime.js` `rotate-decisions` (AC-9) | rotation predicate edges: unchanged phase, impl-cycle transition, template-only log, next ordinal, template recreation, missing flags | unit (CLI behaviour, fixture sprint dirs) | add | the only new executable logic with branches; a wrong edge loses or duplicates decisions-log history |
-| `.asd/migrations/14.2.0.js` (AC-7) | deletes a consumer file across a version; must touch nothing else and re-run clean | unit (fixture project root) | add | persisted-data handling; cheapest proof is the migration run against a fixture |
-| `.asd/skills/asd-update/update.js` `fetchUpstreamTarball` staging (AC-12) | download staged outside the project, or left behind on failure | — | none | staging and cleanup are reachable only through a live download from codeload.github.com (no injection seam); the off-OS-temp reach is pinned instead by the `tmpdir(` sweep below |
-| `tests/run.js` fixture root (Task 7, AC-12) | fixtures resolving the live repo, or surviving the run | — | none | Test-only Task, existing test change (never re-authored); the runner exercises its own isolation on every run and no `asd-test-run-*` directory remained after the gate run; two guards keep a fixture off the live repo: `GIT_CEILING_DIRECTORIES` stops git's upward search only, and an empty `.asd/` marker in the fixture root stops the `.asd` walk-ups (`sync.js` `findRepoRoot`, `update.js`, the session-start hook `findUp`) |
-| `language-policy.md` Matrix row, retro 7.1/7.2, scope 2a rewrite and step 2 (a), git-strategy close comment (AC-1/2/3/6) | an issue-writing site stops citing the row, the rewrite step loses its command or runs after rules 1-4, the decisions-log token drops | content contract | add | rule text is the behaviour; the writer set is derived from `gh issue create\|close` sites, never enumerated |
-| `custom-common-rules.md`, `custom-coding-rules.md` lines (AC-4/5) | rows outside impl-review's change surface silently dropped | content contract | add | plan Risks line routes the pin here |
-| `external-review.md` cache path (AC-7), tester suite-op duty and sole home (AC-8), safety-valve reach in three places (AC-10), scratch rule and no OS-temp call in any ASD script (AC-12) | superseded wording restored, a workflow restating the duty, a script re-adopting `os.tmpdir()` | content contract | add | one test per fact family; script set derived by walking `.asd` and `tests` |
-| `asd-sprint` SKILL, `artifact-layout.md` "Decisions log", README, runtime usage line (AC-9, AC-11) | docs name a command line the runtime does not parse | content contract + run as written | add | the documented command is executed against a fixture sprint |
-| leftover terms of the sprint's removed lines (AC-7/8/10/9) | a removed path or sentence survives in canon, README, `.gitignore` or agent memory | content contract (sweep) | add | `artifact-layout.md` "Leftover-term check"; one memory hit found, reported and fixed at step 7a |
+| `rotateDecisions` missing-`state.json` branch (review-fix F-2; new-sprint scope has no sprint folder state yet) | the CLI throws on a sprint folder with no `state.json`, or writes into it, aborting new-sprint scope | unit (CLI behaviour, fixture dir) | add | new branch with observable output; amended into the existing AC-9 rotate-decisions test, no new test |
+| scope step 2a rewrite restricted to a listed marker issue (F-1) | the restriction dropped: a hand-filed issue is rewritten into the marker shape before rule 1 can flag it, then auto-closable by rules 2-3 | content contract | add | review finding F-1 named the missing pin; one assert in the existing AC-3 test on the marker literal ahead of the `gh issue edit` command |
+| `artifact-layout.md` "Scratch directory" carve-out (F-4) | the remove-after-use rule contradicts the external-review cache that lives in the scratch directory | content contract | add | one assert in the existing AC-12 test on the cache citation; the existing `after use` assert still matches intent |
+| "Rotation" sentence reorder (F-5), `asd-sprint` "None for new-sprint scope" (F-2), README English-issue wording (F-6) | prose-only; behaviour is the runtime's, covered by the AC-9 tests | — | none | no token that cannot be reworded; the cycle exception's behaviour is already asserted by the AC-9 rotate-decisions test |
+| `tests/run.js` `.asd/` fixture marker (F-3), reviewer agent memory file | fixtures resolving the live repo; a false line in memory | — | none | the marker is covered by the Task 7 row of entry 1 (runner isolation exercised on every run); memory content is gated by `memory-check` at the orchestrator's commit and swept by the leftover-term test |
+| leftover terms of the delta's removed lines (superseded rewrite sentence, rotation clause order) | a removed sentence survives in canon, README or agent memory | content contract (sweep) | none | repo grep of the exact removed sentences, agent memory included, returned no hit outside sprint folders and the scratch directory; the existing leftover-term test needs no new phrase (the sentences are rewordings, not a removed mechanism) |
 
 ## Removed tests
 
 | Test | Reason | In change scope |
 |---|---|---|
-| none | no existing test duplicates or contradicts the sprint's changes; the sprint-029 literals Task 1 edited around still pass | yes |
 
 ## Added tests
 
@@ -39,23 +36,19 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
 
 | Test | Regression proof |
 |---|---|
-| tests/run.js: sprint-030 AC-1/AC-2/AC-3/AC-6 … | mutation per assert (Matrix row, row text, git-strategy citation, retro English render, scope `-F` form, `rewrote #…` token, term clause): `node tests/run.js --filter "sprint-030 AC-1/AC-2/AC-3/AC-6"` → exit 1, same test failing, matched 1; runs: 7; control: the term clause reworded keeps the assert green, exit 0, matched 1 |
-| tests/run.js: sprint-030 AC-9: rotate-decisions … | mutation, cycle guard removed from `rotateDecisions`: `node tests/run.js --filter "sprint-030 AC-9: rotate-decisions"` → exit 1, that test failing, matched 1; runs: 1 |
-| tests/run.js: sprint-030 AC-9/AC-11 … | mutation per assert (skill result token, layout command, dispatch renamed, usage line, README): `node tests/run.js --filter "sprint-030 AC-9/AC-11"` → exit 1, that test failing, matched 1; runs: 5 |
-| tests/run.js: sprint-030 AC-7: the 14.2.0 migration … | mutation, `fs.rmSync` removed from the migration: `node tests/run.js --filter "sprint-030 AC-7: the 14.2.0"` → exit 1, that test failing, matched 1; runs: 1 |
-| tests/run.js: sprint-030 AC-4/AC-5 … | mutation per assert (file-edit phrase, target-repo clause): `node tests/run.js --filter "sprint-030 AC-4/AC-5"` → exit 1, that test failing, matched 1; runs: 2 |
-| tests/run.js: sprint-030 AC-7/AC-8/AC-10/AC-12 … | mutation per assert (cache path, tester scope attr, `--kind suite` restated in impl-test, valve home exemption, tester valve, impl-test step 2 valve, impl-test Rules valve, scratch rule, `os` temp call added to `update.js`): `node tests/run.js --filter "sprint-030 AC-7/AC-8/AC-10/AC-12"` → exit 1, that test failing, matched 1; runs: 9 |
-| tests/run.js: sprint-030 leftover-term check … | mutation, a removed bracketing sentence restored in README: `node tests/run.js --filter "sprint-030 leftover-term"` → exit 1, that test failing, matched 1, hit list gains `README.md:1`; runs: 1 |
+| tests/run.js: sprint-030 AC-9: rotate-decisions … (missing `state.json` assert) | mutation, the `existsSync` guard line removed from `rotateDecisions`: `node tests/run.js --filter "sprint-030 AC-9: rotate-decisions"` → exit 1, that test failing, matched 1; runs: 1 |
+| tests/run.js: sprint-030 AC-1/AC-2/AC-3/AC-6 … (marker-restriction assert) | mutation, the rewrite sentence restored to the superseded "a listed issue whose title or body is not English": `node tests/run.js --filter "sprint-030 AC-1/AC-2/AC-3/AC-6"` → exit 1, that test failing, matched 1; runs: 1; control: "A non-marker issue keeps its text" reworded to "Any other issue keeps its text" keeps the test green, exit 0, matched 1 |
+| tests/run.js: sprint-030 AC-7/AC-8/AC-10/AC-12 … (scratch carve-out assert) | mutation, the carve-out clause removed from the scratch rule: `node tests/run.js --filter "sprint-030 AC-7/AC-8/AC-10/AC-12"` → exit 1, that test failing, matched 1; runs: 1 |
 
 All mutations were applied and restored inside one command each; the worktree held no source diff afterwards.
 
 ## Suite run
 
 - Command: `node tests/run.js`
-- Scope: full (the change surface touches `.asd/runtime.js` and `tests/run.js`, shared infrastructure: safety valve at the step 8 gate)
-- Result: pass — 325 passed, 0 failed, 0 skipped (exit 0); the first run of this entry failed 324/325 on one memory hit in `asd-external-review` memory, fixed at step 7a (c16ed30d)
+- Scope: full (the delta touches `.asd/runtime.js` and `tests/run.js`, shared infrastructure: safety valve at the step 8 gate); step 3 pre-authoring run `--filter "sprint-030"` (impacted set), 7/7 passed, exit 0
+- Result: pass — 325 passed, 0 failed, 0 skipped (exit 0)
 - Lint / build: pass — `git diff --cached --check` exit 0, `node .asd/sync.js --check` exit 0, `ok: true`
-- HEAD: c16ed30df947cbe7da637ee038a881cd79c89b28
+- HEAD: 70b4d6814abcbe3e769f012ea9ac3e92a026001b
 
 ## Defects
 

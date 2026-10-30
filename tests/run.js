@@ -8762,6 +8762,10 @@ test('sprint-030 AC-9: rotate-decisions rotates the live log into the next segme
   fs.appendFileSync(live, heading);
   assert.strictEqual(rotate(dir, 'cleanup').result.segment, path.join(dir, 'decisions-log.010.md'), 'AC-9: the next ordinal is one above the highest segment present, zero-padded to three digits, a heading-form entry counting as an entry');
 
+  const unborn = mkTempDir();
+  assert.deepStrictEqual(rotate(unborn, 'scope'), { status: 0, result: { rotated: false, from: null, to: 'scope', segment: null } }, 'AC-9: a sprint folder with no state.json yet (new-sprint scope) must report no rotation, never throw');
+  assert.deepStrictEqual(fs.readdirSync(unborn), [], 'AC-9: a sprint folder with no state.json yet is left empty');
+
   for (const flags of [['--sprint', dir], ['--to', 'impl']]) {
     const missing = runtimeCliResult(['rotate-decisions', ...flags]);
     assert.ok(missing.status !== 0 && /--sprint <sprint dir> and --to <phase> required/.test(missing.stderr), `AC-9: ${flags[0]} alone must fail naming both flags, got ${JSON.stringify(missing)}`);
@@ -8806,7 +8810,8 @@ test('sprint-030 AC-1/AC-2/AC-3/AC-6: the Matrix holds the one ASD-repo issue-la
   const triage = stepOf(sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps'), '2a');
   const edit = 'gh issue edit <n> -R <repo> -t <title> -F <body-file>';
   assert.ok(triage.includes(edit) && triage.indexOf(edit) < triage.indexOf('Per issue, first match'), 'AC-3: scope step 2a must rewrite a non-English issue with gh issue edit -t -F before the first-match rules 1-4 read it');
-  assert.ok(triage.includes('rewrote #…'), 'AC-3: the triage decisions-log line must name the rewritten issues');
+  assert.ok(triage.slice(0, triage.indexOf(edit)).includes('`<!-- asd-retro-finding v1 -->`'), 'AC-3: the in-place rewrite must be restricted to a listed marker issue (body\'s first line the marker) - the listing also returns hand-filed issues, which rule 1 flags and never auto-closes');
+  assert.ok(triage.includes('rewrote #…'),'AC-3: the triage decisions-log line must name the rewritten issues');
   const interview = (sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps').split('\n').find((line) => line.includes('(a) Interview')) || '');
   assert.ok(interview.includes('framework term'), 'AC-6: scope step 2 (a) must have each interview question define the framework terms it uses');
 });
@@ -8832,6 +8837,7 @@ test('sprint-030 AC-7/AC-8/AC-10/AC-12: the external-review cache lives in the s
   assert.ok(/safety valve at this gate only/.test(sectionOf('.asd/workflows/asd-phase-impl-test.md', 'Rules')), 'AC-10: the impl-test suite-gate rule must apply the valve at that gate only');
   const scratch = headingBody('.asd/rules/artifact-layout.md', 'Scratch directory');
   assert.ok(scratch.includes('inside the project') && scratch.includes('after use'), 'AC-12: the scratch rule must put every script, test and agent temp file inside the project and remove it after use');
+  assert.ok(scratch.includes('`external-review.md` "Detection and negative cache"'), 'AC-12/AC-7: the remove-after-use rule must carve out the external-review cache it holds, or the rule orders the removal of state meant to outlive its run');
   const walk = (rel) => fs.readdirSync(path.join(REPO_ROOT, rel), { withFileTypes: true }).flatMap((entry) => (entry.isDirectory() ? (['.asd/sprints', '.asd/tmp'].includes(`${rel}/${entry.name}`) ? [] : walk(`${rel}/${entry.name}`)) : [`${rel}/${entry.name}`]));
   const scripts = [...walk('.asd'), ...walk('tests')].filter((rel) => rel.endsWith('.js'));
   assert.ok(scripts.includes('.asd/runtime.js') && scripts.includes('.asd/skills/asd-update/update.js') && scripts.includes('tests/run.js'), 'sanity: the sweep must reach the runtime, update.js and this runner');
