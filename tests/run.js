@@ -30,9 +30,10 @@ function test(name, fn) {
 /** The one per-run directory every fixture lives in, under the repo's git-ignored scratch directory so no fixture sits on the system disk; removed on exit, pass or fail, leaving the scratch directory's other files alone. */
 const FIXTURE_ROOT = fs.mkdtempSync(path.join(execFileSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'runtime.js'), 'scratch-dir'], { encoding: 'utf8' }).trim(), 'asd-test-run-'));
 process.env.GIT_CEILING_DIRECTORIES = FIXTURE_ROOT;
+fs.mkdirSync(path.join(FIXTURE_ROOT, '.asd')); // empty marker: stops the `.asd` walk-ups (sync.js findRepoRoot, update.js, the session-start hook findUp)
 process.on('exit', () => fs.rmSync(FIXTURE_ROOT, { recursive: true, force: true }));
 
-/** A fresh fixture directory; git never searches above `FIXTURE_ROOT` (ceiling set above), so a fixture that is no repo of its own never resolves the live repo. */
+/** A fresh fixture directory. Two guards keep a fixture that is no repo of its own from resolving the live repo: the git ceiling above stops git's upward search, and the empty `.asd/` marker in `FIXTURE_ROOT` stops every upward `.asd` search at the fixture root. */
 function mkTempDir() {
   return fs.mkdtempSync(path.join(FIXTURE_ROOT, 'asd-sync-test-'));
 }
