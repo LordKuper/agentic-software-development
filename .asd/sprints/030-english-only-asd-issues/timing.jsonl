@@ -111,3 +111,7 @@
 {"op":"open","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-10-30T16:03:09.904Z","attrs":{}}
 {"op":"close","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-10-30T16:03:09.904Z","end":"2026-10-30T16:03:22.710Z","outcome":"done","attrs":{}}
 {"op":"open","id":"cleanup#1","kind":"phase","parent":null,"start":"2026-10-30T16:03:22.710Z","attrs":{}}
+{"op":"close","id":"cleanup#1","kind":"phase","parent":null,"start":"2026-10-30T16:03:22.710Z","end":"2026-10-30T16:03:56.459Z","outcome":"done","attrs":{}}
+{"op":"open","id":"retro#1","kind":"phase","parent":null,"start":"2026-10-30T16:03:56.459Z","attrs":{}}
+{"op":"close","id":"retro#1","kind":"phase","parent":null,"start":"2026-10-30T16:03:56.459Z","end":"2026-10-30T16:07:18.411Z","outcome":"done","attrs":{}}
+{"op":"open","id":"pr#1","kind":"phase","parent":null,"start":"2026-10-30T16:07:18.411Z","attrs":{}}
