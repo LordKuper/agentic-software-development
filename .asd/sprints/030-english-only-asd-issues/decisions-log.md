@@ -64,3 +64,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-30 — route F-1, F-2 (+ external.md 1), F-4, F-5, F-6: standard, dispatch HEAD 0249a2d3a47e1595f153f8dc3b52f5cba89bfc6d; risk change: triage rewrite reach, rotation entry guard, scratch rule cache carve-out, rotation condition wording, README issue-language mirror
 - 2026-10-30 — route combined.md F-3: standard, dispatch HEAD cdfa3e1b5c82c78c8dea89a9d9fd34d21552d08f
 - 2026-10-30 — impl fix for wave-1/iter-01: findings resolved (combined.md F-1..F-6, external.md 1); build ok, lint clean, diff within the round's write scopes plus synced views
+- 2026-10-30 — route impl-test#2: standard, dispatch HEAD 70b4d6814abcbe3e769f012ea9ac3e92a026001b
+- 2026-10-30 — impl-test: impacted set green (325/325, full scope via safety valve), 3 asserts added to existing tests/0 removed

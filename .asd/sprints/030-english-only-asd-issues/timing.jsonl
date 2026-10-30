@@ -63,3 +63,13 @@
 {"op":"open","id":"suite impl#f3","kind":"suite","parent":"tester review-fix wave-1/iter-01","start":"2026-10-30T15:45:33.025Z","attrs":{"scope":"full"}}
 {"op":"close","id":"suite impl#f3","kind":"suite","parent":"tester review-fix wave-1/iter-01","start":"2026-10-30T15:45:33.025Z","end":"2026-10-30T15:46:06.791Z","outcome":"done","attrs":{"scope":"full"}}
 {"op":"close","id":"tester review-fix wave-1/iter-01","kind":"dispatch","parent":"impl#2","start":"2026-10-30T15:44:57.964Z","end":"2026-10-30T15:46:20.699Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard"}}
+{"op":"close","id":"impl#2","kind":"phase","parent":null,"start":"2026-10-30T15:42:46.369Z","end":"2026-10-30T15:46:28.358Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-test#2","kind":"phase","parent":null,"start":"2026-10-30T15:46:28.358Z","attrs":{}}
+{"op":"open","id":"tester impl-test#2","kind":"dispatch","parent":"impl-test#2","start":"2026-10-30T15:46:28.695Z","attrs":{"agent":"asd-tester","tier":"standard"}}
+{"op":"open","id":"suite impl-test#3","kind":"suite","parent":"tester impl-test#2","start":"2026-10-30T15:47:20.139Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl-test#3","kind":"suite","parent":"tester impl-test#2","start":"2026-10-30T15:47:20.139Z","end":"2026-10-30T15:47:20.947Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"open","id":"suite impl-test#4","kind":"suite","parent":"tester impl-test#2","start":"2026-10-30T15:47:41.129Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl-test#4","kind":"suite","parent":"tester impl-test#2","start":"2026-10-30T15:47:41.129Z","end":"2026-10-30T15:47:42.112Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"open","id":"suite impl-test#5","kind":"suite","parent":"tester impl-test#2","start":"2026-10-30T15:48:03.508Z","attrs":{"scope":"full"}}
+{"op":"close","id":"suite impl-test#5","kind":"suite","parent":"tester impl-test#2","start":"2026-10-30T15:48:03.508Z","end":"2026-10-30T15:48:40.223Z","outcome":"done","attrs":{"scope":"full"}}
+{"op":"close","id":"tester impl-test#2","kind":"dispatch","parent":"impl-test#2","start":"2026-10-30T15:46:28.695Z","end":"2026-10-30T15:49:17.991Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard"}}
