@@ -25,7 +25,7 @@ responsibility:
 | `custom-common-rules.md`, `custom-coding-rules.md` lines (AC-4/5) | rows outside impl-review's change surface silently dropped | content contract | add | plan Risks line routes the pin here |
 | `external-review.md` cache path (AC-7), tester suite-op duty and sole home (AC-8), safety-valve reach in three places (AC-10), scratch rule and no OS-temp call in any ASD script (AC-12) | superseded wording restored, a workflow restating the duty, a script re-adopting `os.tmpdir()` | content contract | add | one test per fact family; script set derived by walking `.asd` and `tests` |
 | `asd-sprint` SKILL, `artifact-layout.md` "Decisions log", README, runtime usage line (AC-9, AC-11) | docs name a command line the runtime does not parse | content contract + run as written | add | the documented command is executed against a fixture sprint |
-| leftover terms of the sprint's removed lines (AC-7/8/10/9) | a removed path or sentence survives in canon, README, `.gitignore` or agent memory | content contract (sweep) | add | `artifact-layout.md` "Leftover-term check"; one memory hit found and reported, see Suite run |
+| leftover terms of the sprint's removed lines (AC-7/8/10/9) | a removed path or sentence survives in canon, README, `.gitignore` or agent memory | content contract (sweep) | add | `artifact-layout.md` "Leftover-term check"; one memory hit found, reported and fixed at step 7a |
 
 ## Removed tests
 
@@ -53,9 +53,9 @@ All mutations were applied and restored inside one command each; the worktree he
 
 - Command: `node tests/run.js`
 - Scope: full (the change surface touches `.asd/runtime.js` and `tests/run.js`, shared infrastructure: safety valve at the step 8 gate)
-- Result: fail — 324 passed, 1 failed, 0 skipped; the one failure is the new leftover-term check, on a memory hit: `.claude/agent-memory/asd-external-review/reference_scope-manifest-transport.md:22` still names `.asd/project/external-cache.json` as the canonical cache path (memory defect, owner `asd-external-review`, step 7a — not a `D-N`)
+- Result: pass — 325 passed, 0 failed, 0 skipped (exit 0); the first run of this entry failed 324/325 on one memory hit in `asd-external-review` memory, fixed at step 7a (c16ed30d)
 - Lint / build: pass — `git diff --cached --check` exit 0, `node .asd/sync.js --check` exit 0, `ok: true`
-- HEAD: cf177aeb89793cb856a1908a99c029d3c74479c0
+- HEAD: c16ed30df947cbe7da637ee038a881cd79c89b28
 
 ## Defects
 
