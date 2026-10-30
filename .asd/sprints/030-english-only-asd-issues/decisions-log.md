@@ -37,10 +37,3 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
-
-## 2026-10-30 — `plan.md` accepted
-
-- **Decision**: `plan.md` accepted by the user: five Tasks in one wave; AC-7 relocates the external-review cache into the self-ignoring scratch directory with a 14.2.0 migration deleting the legacy `.asd/project/external-cache.json`, instead of the issue's `.gitignore` entry.
-- **Rationale**: No consumer `.gitignore` write and no init change; the cache cannot reach git; a lost cache costs at most one retry. `gh-2.90.md` gained `gh issue edit -t -F` before acceptance.
-- **Affected docs**: `plan.md`, `docs/architecture/tech-reference/gh-2.90.md`
-- 2026-10-30 — plan: no stub matches scope (`audit.md` has no "Related open stubs")
