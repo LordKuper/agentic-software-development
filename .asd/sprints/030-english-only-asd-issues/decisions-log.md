@@ -37,3 +37,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-10-30 — audit gate (adaptive)
+
+- **Decision**: `audit.md` accepted by the orchestrator under `user_gates: adaptive`; lite → plan.
+- **Rationale**: Every `t_audit.md` section written for AC-1..AC-11 from the touched files at HEAD a97fbe96; criterion check found every AC deliverable and consistent, no contradiction, no ambiguity needing authority; no stub matches scope, no doc migration needed.
+- **Affected docs**: `audit.md`
