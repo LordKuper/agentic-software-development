@@ -1,7 +1,7 @@
 {
   "sprint_id": "030-english-only-asd-issues",
   "branch": "sprint/030-english-only-asd-issues",
-  "phase": "impl-test",
+  "phase": "impl-review",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -150,7 +150,7 @@
       "wave": 1,
       "waves": [
         {
-          "iteration": 2,
+          "iteration": 3,
           "verdicts": {
             "iter-01": {
               "combined": "CONCERNS",
@@ -159,21 +159,27 @@
             "iter-02": {
               "combined": "CONCERNS",
               "external": "APPROVE"
+            },
+            "iter-03": {
+              "combined": "APPROVE",
+              "external": "APPROVE"
             }
           },
           "iteration_heads": {
             "iter-01": "cd0b36de1514a831cb97d7b966a33028247cee71",
-            "iter-02": "a498fb98ae214c6c94043c8472db7f2d2164a1ad"
+            "iter-02": "a498fb98ae214c6c94043c8472db7f2d2164a1ad",
+            "iter-03": "3cac80329b0587d51f40fe604dc0b199ca5028d1"
           },
           "latched": {
-            "external": 2
+            "external": 2,
+            "combined": 3
           }
         }
       ]
     }
   },
   "created_at": "2026-10-30T13:16:35.495Z",
-  "updated_at": "2026-10-30T15:57:24.081Z",
+  "updated_at": "2026-10-30T16:01:47.450Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": null,

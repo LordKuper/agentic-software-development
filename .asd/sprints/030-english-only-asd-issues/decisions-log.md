@@ -72,3 +72,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-10-30 — impl fix for wave-1/iter-02: findings resolved (combined.md F-1, F-2); upstream_hashes for runtime.js recomputed by sync --apply AGENTS.md; build ok, lint clean
 - 2026-10-30 — route impl-test#3: standard, dispatch HEAD ebf25fea036f4c0e568aa79a902663d522cbae98
 - 2026-10-30 — impl-test: impacted set green (325/325, full scope via safety valve), 0/0 tests (delta covered by review-fix tests)
+- 2026-10-30 — impl-review wave-1/iter-03: combined APPROVE (latched at 3), external APPROVE (latched at 2, not dispatched); wave 1 of 1 roster met → terminal full suite
