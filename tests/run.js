@@ -7,7 +7,6 @@
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
-const os = require('node:os');
 
 const { execFileSync } = require('node:child_process');
 
@@ -28,8 +27,14 @@ function test(name, fn) {
   tests.push({ name, fn });
 }
 
+/** The one per-run directory every fixture lives in, under the repo's git-ignored scratch directory so no fixture sits on the system disk; removed on exit, pass or fail, leaving the scratch directory's other files alone. */
+const FIXTURE_ROOT = fs.mkdtempSync(path.join(execFileSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'runtime.js'), 'scratch-dir'], { encoding: 'utf8' }).trim(), 'asd-test-run-'));
+process.env.GIT_CEILING_DIRECTORIES = FIXTURE_ROOT;
+process.on('exit', () => fs.rmSync(FIXTURE_ROOT, { recursive: true, force: true }));
+
+/** A fresh fixture directory; git never searches above `FIXTURE_ROOT` (ceiling set above), so a fixture that is no repo of its own never resolves the live repo. */
 function mkTempDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'asd-sync-test-'));
+  return fs.mkdtempSync(path.join(FIXTURE_ROOT, 'asd-sync-test-'));
 }
 
 // ---------------------------------------------------------------------------
@@ -2560,7 +2565,7 @@ test('AC-4: Windows .cmd preflight executes a metacharacter-containing path lite
     console.log('  (skipped: end-to-end spawn proof for the .cmd/metacharacter PowerShell fallback branch - only runs on win32; buildInvocation tests above cover the branch shape on any host)');
     return;
   }
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'asd & runtime-'));
+  const root = fs.mkdtempSync(path.join(FIXTURE_ROOT, 'asd & runtime-'));
   const shim = path.join(root, 'external & shim.cmd');
   fs.writeFileSync(shim, '@echo off\r\nexit /b 0\r\n', 'utf8');
   const result = runtime.externalPreflight({ provider: 'codex', command: shim, model: 'gpt-6-sol', cachePath: path.join(root, 'cache.json') });
