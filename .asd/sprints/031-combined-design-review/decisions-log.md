@@ -37,3 +37,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-11-02 — audit accepted (adaptive)
+
+- **Decision**: `audit.md` accepted by the orchestrator under `user_gates: adaptive`; next phase `plan` (lite).
+- **Rationale**: Every `t_audit.md` section written for AC-1..AC-10; no contradiction (every touched rule doc is a restating site, none conflicts with an AC); no ambiguity needing authority; deliverability checked live — combined design-review manifest emits with impl-only entries gated out, `git diff` lacks `--pathspec-from-file` so AC-9 is chunking.
+- **Affected docs**: `audit.md`, `friction-log.md`

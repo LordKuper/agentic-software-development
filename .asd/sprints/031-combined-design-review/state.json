@@ -1,7 +1,7 @@
 {
   "sprint_id": "031-combined-design-review",
   "branch": "sprint/031-combined-design-review",
-  "phase": "scope",
+  "phase": "audit",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -34,6 +34,13 @@
       "reason": "030#A-1 A-2 A-4 P-2 included (AC-5..AC-8); #74 #78 included (AC-9, AC-10); 030#P-1 rejected; #75 #76 deferred",
       "evidence": "decisions-log.md 2026-11-02 retro intake dispositions",
       "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "all t_audit.md sections for AC-1..AC-10; no contradiction; no authority-only ambiguity",
+      "evidence": "audit.md",
+      "artifact_revision": "audit.md@audit"
     }
   ],
   "task_routing": {},
