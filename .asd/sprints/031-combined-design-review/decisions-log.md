@@ -65,3 +65,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: `reviews/impl/wave-1/iter-01/`
 - 2026-11-02 — route F1, F2, F3, F4, F6, F7, external.md 1: standard, dispatch HEAD 8223d59f; risk F3 change:combined category placement rule, F4 change:scope amendment contradiction check actor
 - 2026-11-02 — impl review-fix F5 (orchestrator, tech reference outside the dev allowlist): `git-2.55.md` MSYS bullet now states the fact and points to `custom-common-rules.md`; external.md 2 deduplicated into F2
+- 2026-11-02 — impl fix for wave-1/iter-01: findings resolved (8f18da47, F5 77ad98ca, views 648f0ae7; F6 in `artifact-layout.md` adds Combined beside the named agent instead of re-attributing, keeping the sprint-010 AC-10 pin)
