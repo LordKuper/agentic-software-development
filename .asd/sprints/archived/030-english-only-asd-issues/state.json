@@ -1,7 +1,7 @@
 {
   "sprint_id": "030-english-only-asd-issues",
   "branch": "sprint/030-english-only-asd-issues",
-  "phase": "pr",
+  "phase": "done",
   "workflow": "lite",
   "documents": {
     "audit": true,
@@ -83,6 +83,13 @@
       "reason": "user answer: \"Да, открыть PR\"",
       "evidence": "decisions-log.md 2026-10-30 PR publication",
       "artifact_revision": "e4c5e02a"
+    },
+    {
+      "gate": "sprint-closure",
+      "decision_actor": "orchestrator",
+      "reason": "PR #73 merged; release v14.2.0 published; issues #68 #69 #70 #72 closed",
+      "evidence": "merge commit c95fe2dc15e4a58ed07c49f2866d4c32ca0e3d12",
+      "artifact_revision": "c95fe2dc"
     }
   ],
   "task_routing": {
@@ -195,13 +202,14 @@
     }
   },
   "created_at": "2026-10-30T13:16:35.495Z",
-  "updated_at": "2026-10-30T16:15:58.380Z",
+  "updated_at": "2026-11-02T13:12:36.000Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
   "pr": {
     "number": 73,
     "url": "https://github.com/LordKuper/agentic-software-development/pull/73",
-    "state": "open"
+    "state": "merged",
+    "merge_commit": "c95fe2dc15e4a58ed07c49f2866d4c32ca0e3d12"
   },
-  "archived_at": null
+  "archived_at": "2026-11-02T13:12:36.000Z"
 }

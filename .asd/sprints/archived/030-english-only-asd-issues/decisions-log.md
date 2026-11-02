@@ -43,3 +43,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: PR #73 opened (https://github.com/LordKuper/agentic-software-development/pull/73), title `feat(rules): English issues, temp off system disk`, body from `t_pr-description.md` with `Refs #68, #69, #70, #72`; `state.json.pr` written (state open).
 - **Rationale**: DoD met (Tasks 1-7, wave 1/1 APPROVE, terminal full suite 325/325 at 57021a03, retrospective present); publication gate answered by the user: "Да, открыть PR".
 - **Affected docs**: `state.json`
+
+## 2026-11-02 — sprint closure
+
+- **Decision**: Sprint closed: PR #73 merged as c95fe2dc15e4a58ed07c49f2866d4c32ca0e3d12; folder archived, `phase=done`, `pr.state=merged`.
+- **Rationale**: Merged-unclosed detected at sprint 031 start; release v14.2.0 tagged on the merge commit and published, included issues #68 #69 #70 #72 closed, so no release retry.
+- **Affected docs**: `state.json`
