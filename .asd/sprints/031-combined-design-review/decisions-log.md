@@ -57,3 +57,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: `plan.md`
 - 2026-11-02 — route impl-test entry 1: standard, dispatch HEAD 9f4e4e4c
 - 2026-11-02 — impl-test: impacted set green (330/330, full suite via safety valve), 5/0 tests
+
+## 2026-11-02 — impl-review wave-1/iter-01 → impl review-fix
+
+- **Decision**: combined CONCERNS (F1-F7) and external CONCERNS (1-2) route to impl review-fix mode; `review_fixes_pending = wave-1/iter-01`. External's first return was rejected by `persist-review` (six-column header) and re-dispatched fresh (friction F-3).
+- **Rationale**: Every finding is above the iteration-1 floor (low) and none is a question, FAIL or test-only finding; external 2 and combined F2 name the same README paragraph.
+- **Affected docs**: `reviews/impl/wave-1/iter-01/`

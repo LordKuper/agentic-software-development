@@ -36,3 +36,11 @@ Consumed by the retro phase (.asd/workflows/asd-phase-retro.md).
 - **What happened**: a grep over `.asd/` returned hundreds of `.asd/tmp/*.context.md` hits from sprints 026-029; `.asd/tmp/` holds 452 files. No phase step removes a dispatch's context bundle or the orchestrator's after use.
 - **Impact**: noise in every repo-wide grep of `.asd/` during audit; disk growth per sprint.
 - **Refs**: —
+
+## F-3 — External Review return off the report template header
+
+- **Phase**: impl-review
+- **Surface**: agent — `asd-external-review.md` "Rules" (return per `t_review-report.md`); `runtime.js` `reviewFindings` (AC-10)
+- **What happened**: wave-1/iter-01's External Review returned its Kept findings as `| ID | Severity | Location | Description | Fix | Source |`, not the template's five columns led by `#`; `persist-review` rejected it (exit 2) under the AC-10 layout check, and the review was re-dispatched fresh.
+- **Impact**: one extra External Review run; before AC-10 the same return would have persisted with the CLI's extra column silently dropped.
+- **Refs**: `reviews/impl/wave-1/iter-01/`
