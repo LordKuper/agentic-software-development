@@ -33,3 +33,5 @@
 {"op":"open","id":"suite impl-test#2","kind":"suite","parent":"impl-test entry 1","start":"2026-11-02T14:57:12.781Z","attrs":{"scope":"full"}}
 {"op":"close","id":"suite impl-test#2","kind":"suite","parent":"impl-test entry 1","start":"2026-11-02T14:57:12.781Z","end":"2026-11-02T14:57:46.830Z","outcome":"done","attrs":{"scope":"full"}}
 {"op":"close","id":"impl-test entry 1","kind":"dispatch","parent":"impl-test#1","start":"2026-11-02T14:41:25.537Z","end":"2026-11-02T14:59:27.066Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard"}}
+{"op":"close","id":"impl-test#1","kind":"phase","parent":null,"start":"2026-11-02T14:40:55.953Z","end":"2026-11-02T14:59:32.605Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-review#1","kind":"phase","parent":null,"start":"2026-11-02T14:59:32.605Z","attrs":{}}
