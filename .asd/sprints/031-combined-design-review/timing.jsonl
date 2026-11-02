@@ -53,3 +53,5 @@
 {"op":"open","id":"suite impl-test#1","kind":"suite","parent":"impl-test entry 2","start":"2026-11-02T15:21:10.984Z","attrs":{"scope":"full"}}
 {"op":"close","id":"suite impl-test#1","kind":"suite","parent":"impl-test entry 2","start":"2026-11-02T15:21:10.984Z","end":"2026-11-02T15:21:53.022Z","outcome":"done","attrs":{"scope":"full"}}
 {"op":"close","id":"impl-test entry 2","kind":"dispatch","parent":"impl-test#2","start":"2026-11-02T15:19:37.764Z","end":"2026-11-02T15:25:31.907Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard"}}
+{"op":"close","id":"impl-test#2","kind":"phase","parent":null,"start":"2026-11-02T15:19:25.504Z","end":"2026-11-02T15:25:32.222Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-review#2","kind":"phase","parent":null,"start":"2026-11-02T15:25:32.222Z","attrs":{}}
