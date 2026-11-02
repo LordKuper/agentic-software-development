@@ -43,3 +43,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-02 — route Task 3: standard, dispatch HEAD bccf75ed
 - 2026-11-02 — route Task 4: standard, dispatch HEAD bccf75ed
 - 2026-11-02 — route Task 5: standard, dispatch HEAD bccf75ed
+
+## 2026-11-02 — AC-10 header check made language-neutral
+
+- **Decision**: `reviewFindings` checks the findings header by column count (five) and `#` id column, not by English cell text; efficiency's return rule moves the keep-as-is/simplify/escalate category into the Description cell. Plan Task 5's AC-10 line is reworded; Task 5 and the efficiency file are routed back to a dev at the initial impl assessment.
+- **Rationale**: `language-policy.md` Matrix puts reviews in `language.docs`, so a translated header must still persist; the exact-English check would reject every non-English consumer's review. Efficiency's "category column" instruction contradicts the five-column template and is the extra column issue #78 saw.
+- **Affected docs**: `.asd/runtime.js`, `.asd/agents/asd-reviewer-efficiency.md`, `plan.md` Task 5
