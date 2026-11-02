@@ -1,0 +1,9 @@
+{"op":"open","id":"scope#1","kind":"phase","parent":null,"start":"2026-11-02T13:13:04.112Z","attrs":{}}
+{"op":"open","id":"wait workflow choice","kind":"user-wait","parent":"scope#1","start":"2026-11-02T13:13:04.164Z","attrs":{"gate":"workflow choice"}}
+{"op":"close","id":"wait workflow choice","kind":"user-wait","parent":"scope#1","start":"2026-11-02T13:13:04.164Z","end":"2026-11-02T13:46:56.692Z","outcome":"done","attrs":{"gate":"workflow choice"}}
+{"op":"open","id":"wait requirements interview","kind":"user-wait","parent":"scope#1","start":"2026-11-02T13:47:31.176Z","attrs":{"gate":"requirements interview"}}
+{"op":"close","id":"wait requirements interview","kind":"user-wait","parent":"scope#1","start":"2026-11-02T13:47:31.176Z","end":"2026-11-02T13:57:56.739Z","outcome":"done","attrs":{"gate":"requirements interview"}}
+{"op":"open","id":"wait approach choice","kind":"user-wait","parent":"scope#1","start":"2026-11-02T13:58:53.485Z","attrs":{"gate":"approach choice"}}
+{"op":"close","id":"wait approach choice","kind":"user-wait","parent":"scope#1","start":"2026-11-02T13:58:53.485Z","end":"2026-11-02T13:59:33.427Z","outcome":"done","attrs":{"gate":"approach choice"}}
+{"op":"open","id":"wait scope gate","kind":"user-wait","parent":"scope#1","start":"2026-11-02T14:03:21.189Z","attrs":{"gate":"scope"}}
+{"op":"close","id":"wait scope gate","kind":"user-wait","parent":"scope#1","start":"2026-11-02T14:03:21.189Z","end":"2026-11-02T14:24:04.324Z","outcome":"done","attrs":{"gate":"scope"}}
