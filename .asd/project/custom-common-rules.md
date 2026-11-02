@@ -13,4 +13,6 @@ Framework repo (`self_hosting: enabled`): "the project" means the ASD framework 
 
 Write file content with the file-edit operation, never inside a quoted shell or `node -e` argument.
 
+On Git Bash, run `git show <ref>:<path>` with `MSYS_NO_PATHCONV=1` set.
+
 Phase-scoped rules go elsewhere — design constraints to `custom-design-rules.md`, code/test constraints to `custom-coding-rules.md`. ASD never overwrites this file.
