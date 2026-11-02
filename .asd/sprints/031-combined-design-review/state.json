@@ -1,7 +1,7 @@
 {
   "sprint_id": "031-combined-design-review",
   "branch": "sprint/031-combined-design-review",
-  "phase": "plan",
+  "phase": "impl",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -50,7 +50,13 @@
       "artifact_revision": "plan.md@plan"
     }
   ],
-  "task_routing": {},
+  "task_routing": {
+    "Task 1": { "execution": "agent", "tier": "standard", "reason": "risk:design-review dispatch and DoD wording", "resolved_model": "sonnet" },
+    "Task 2": { "execution": "agent", "tier": "standard", "reason": "risk:combined design-review input and verdict contract", "resolved_model": "sonnet" },
+    "Task 3": { "execution": "agent", "tier": "standard", "reason": "risk:rule wording for the fix-application hold, sync point and amendment check", "resolved_model": "sonnet" },
+    "Task 4": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:README roster mirror rows", "resolved_model": "sonnet" },
+    "Task 5": { "execution": "agent", "tier": "standard", "reason": "risk:command-line budget and rename-pair chunk edges", "resolved_model": "sonnet" }
+  },
   "skipped_phases": [],
   "reviews": {
     "design": { "iteration": 0, "verdicts": {}, "latched": {} },
