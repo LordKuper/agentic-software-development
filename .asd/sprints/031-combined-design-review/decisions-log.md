@@ -37,9 +37,3 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
-
-## 2026-11-02 — retro written
-
-- **Decision**: `retrospective.html` written on the analysed branch: 3 friction entries (F-1 covered by AC-7, F-2 and F-3 as framework actions A-2, A-3) and 2 systemic proposals (P-1, P-2); nothing applied or promoted.
-- **Rationale**: Upstream publication skipped (`self_hosting: enabled`); the rows reach the next sprint through the retro intake.
-- **Affected docs**: `retrospective.html`
