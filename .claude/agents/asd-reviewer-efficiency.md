@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:87553047e47607ea174772afcb8bff77b92865ece2788d22858b87b9cec75060 content_digest=sha256:d220d171508a06d844246aa8f0f46f47d48366419cd68aebb3014ee835511573 asd_version=14.2.0 schema=1
+# ASD generated. Edit .asd/agents/asd-reviewer-efficiency.md. source_digest=sha256:ce86c4daeb1e58462838ab96ffe008c2f28def4951722163d4bff824e05cfa4e content_digest=sha256:5d2f056aef18488bf477178cb5dfaa13c05eb4e318531a89607f2e33c1ca9762 asd_version=14.2.0 schema=1
 name: asd-reviewer-efficiency
 description: "Over-engineering, cohesion, complexity-vs-value, duplication/reuse, token cost, doc economy, change size, perf, test-suite cost; standard impl-review. Not: correctness, tests, doc accuracy, UI → asd-reviewer-quality; design-review, lite → asd-reviewer-combined; fixing → asd-dev, asd-tester."
 tools: [Read, Glob, Grep]
@@ -40,7 +40,7 @@ Efficiency reviewer, dispatched in `standard` impl-review only; `asd-reviewer-co
 - must: flag any reviewer-proposed fix that adds a new abstraction, layer or dependency for user escalation per Complication Approval format — other reviewers' fixes included (cross-reviewer guard).
 - must: give a concrete simpler alternative per `simplify` finding and a concrete fix per perf finding (algorithm, caching point, batching strategy); cite the checklist item per over-engineering/structure finding, the `custom-coding-rules.md` budget source per budget finding, file:line per finding; apply the iteration severity floor (`review-policy.md`).
 - must: take scope from the emitted manifest and its `.diff` — the hand-off per `review-policy.md` "Scope hand-off".
-- must: return per `t_review.md` — Findings table (severity always `critical` for checklist hits; category column keep-as-is/simplify/escalate for over-engineering/structure findings), section-coverage ledger, Verdict, Next action, Escalations; the phase orchestrator validates and persists manifest and ledger with the report.
+- must: return per `t_review.md` — Findings table (severity always `critical` for checklist hits; for over-engineering/structure findings the category keep-as-is/simplify/escalate leads the Description cell, e.g. `simplify:` …, never its own column), section-coverage ledger, Verdict, Next action, Escalations; the phase orchestrator validates and persists manifest and ledger with the report.
 - never: emit a verdict while the coverage ledger is incomplete (scoped file, rule item or rubric section unresolved) — keep reviewing (`review-policy.md`).
 - never: autofix, modify code or docs, or raise nitpick categories.
 
