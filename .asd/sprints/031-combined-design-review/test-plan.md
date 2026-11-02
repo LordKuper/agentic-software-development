@@ -11,7 +11,7 @@ responsibility:
 
 | Entry | HEAD analysed | Scope |
 |---|---|---|
-| 1 | | full change surface (`git diff main...HEAD`) |
+| 1 | ce7373c5 | full change surface (`git diff main...HEAD`) |
 
 ## Risk → check decisions
 

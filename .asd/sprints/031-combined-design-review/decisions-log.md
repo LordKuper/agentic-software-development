@@ -55,3 +55,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Wave 1 accepted: Tasks 1-5 committed (302d2fa1, 33e47706, 2750e5bc, 40ee080e, cea4b4a9, rework 8b8acd0e), views synced (3d422d18, e87213fb); AC-7 landed at bccf75ed.
 - **Rationale**: Every subtask ticked, every flagged note resolved (beyond-brief edits stay inside AC-3/AC-6 and the plan homes), no sprint stubs, build and lint clean, round diff inside the dispatched write scopes plus synced views and sprint files.
 - **Affected docs**: `plan.md`
+- 2026-11-02 — route impl-test entry 1: standard, dispatch HEAD 9f4e4e4c
+- 2026-11-02 — impl-test: impacted set green (330/330, full suite via safety valve), 5/0 tests
