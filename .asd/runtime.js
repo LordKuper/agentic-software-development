@@ -36,7 +36,7 @@ const AUDIT_BATCH_THRESHOLD_FILES = 200;
 const INTERNAL_REVIEWERS = ['quality', 'efficiency', 'combined'];
 /** The `emit-manifest --reviewer` name that emits External Review's scope manifest instead of a coverage manifest. */
 const EXTERNAL_REVIEWER = 'external';
-/** The lite internal reviewer: its manifest composes these reviewers' rubrics by reference, in order, then its own agent's rubric. */
+/** The single-pass internal reviewer: its manifest composes these reviewers' rubrics by reference, in order, then its own agent's rubric. */
 const COMBINED_REVIEWER = 'combined';
 const COMBINED_RUBRICS = ['quality', 'efficiency'];
 /** Sprint workflow definitions, one `<name>.json` each, beside the phase orchestration bodies. */

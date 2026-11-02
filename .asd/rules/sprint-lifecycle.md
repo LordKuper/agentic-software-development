@@ -342,12 +342,10 @@ Its absence semantics are deliberately not `Material risk`'s, and the two are ne
 
 ## Scope amendment
 
-A criterion added, changed or retired after scope acceptance needs the hard `new or changed scope` approval (`checkpoints.md` "Gate policy") and then, in one orchestrator write:
+A criterion added, changed or retired after scope acceptance needs the hard `new or changed scope` approval (`checkpoints.md` "Gate policy"), where the orchestrator presents any contradiction between its rule text and an accepted criterion's rule, and then, in one orchestrator write:
 1. `sprint.md`: the `AC-N` — a new id, never a reused one;
 2. `plan.md`: the Task carrying it, new or amended, in a wave not yet dispatched (a new last wave when none is left), per "Plan file format";
 3. the gate records: a `gate_decisions` entry and one decisions-log entry naming the AC, the Task and its wave. Accepted after impl-review's division point ("Review iteration counters"), the entry's evidence adds `floor_base=wave-<K>/<A>`, A being current review wave K's counter then, and the write clears wave K's `latched` ("APPROVE latch"). impl-review computes wave K's severity floor and iteration cap on `iteration − A`, A from the latest such record accepted since the current `waves.json` division (none → 0), so a rollback reset, which re-divides, retires every earlier one, and the amended code's first iteration `wave-<K>/iter-(A+1)` reviews at a first iteration's floor.
-
-Before the criterion joins the plan, its rule text is checked against every accepted criterion's rule for a contradiction.
 
 The audit boolean is then reevaluated ("Orchestration and adaptive gates").
 

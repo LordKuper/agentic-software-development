@@ -40,7 +40,7 @@ Combined reviewer: the one internal reviewer of a design-review or impl-review w
 - must: mark every entry whose predicate the manifest authorizes `n/a: <predicate>` — `no documentation file in scope` covers every documentation entry — never ABORT.
 - never: review an entry its manifest n/a's.
 - must: in impl-review, judge persistent actuality before promotion — impl-review precedes lite's design-promote (`sprint-lifecycle.md` "Workflows"), so for a doc design-promote writes (`asd-phase-design-promote.md` step 4) judge only a change this sprint's diff itself makes, never drift from the not-yet-promoted implementation; any other persistent doc per its home entry.
-- must: categorise every over-engineering/structure finding `keep-as-is`, `simplify` or `escalate`; each is `critical` and undroppable (`review-policy.md`).
+- must: categorise every over-engineering/structure finding `keep-as-is`, `simplify` or `escalate`, the category leading the Description cell (e.g. `simplify:` …), never its own column; each is `critical` and undroppable (`review-policy.md`).
 - must: apply the iteration severity floor (`review-policy.md`); cite file:line per finding, AC-N per coverage finding, checklist item per over-engineering/structure finding, rule or token path per UI finding; suggest a concrete fix per finding.
 - must: take scope from the emitted manifest and its `.diff` — the hand-off per `review-policy.md` "Scope hand-off".
 - must: return per `t_review.md` — Findings table (severity, location/AC-N, description, fix), section-coverage ledger, Verdict, Next action, Escalations; the phase orchestrator validates and persists manifest and ledger with the report.
