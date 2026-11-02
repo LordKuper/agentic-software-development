@@ -68,3 +68,10 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-02 — impl fix for wave-1/iter-01: findings resolved (8f18da47, F5 77ad98ca, views 648f0ae7; F6 in `artifact-layout.md` adds Combined beside the named agent instead of re-attributing, keeping the sprint-010 AC-10 pin)
 - 2026-11-02 — route impl-test entry 2: standard, dispatch HEAD d2384aea
 - 2026-11-02 — impl-test: impacted set green (330/330, full suite via safety valve), 0/0 tests (leftover-term sweep extended by 2 clauses)
+- 2026-11-02 — route impl-review suite 1: standard, dispatch HEAD a99cb214
+
+## 2026-11-02 — impl-review DoD met (adaptive green handoff)
+
+- **Decision**: Wave 1 of 1 met at `wave-1/iter-02` (combined, external APPROVE); terminal full suite green, 330/330 at a99cb214 (d10d887a). Advance to design-promote.
+- **Rationale**: Every reviewer verdict of the last iteration is APPROVE, no open finding, and the one full-suite run, lint and build are clean.
+- **Affected docs**: `reviews/impl/wave-1/iter-02/`, `test-plan.md` Suite run

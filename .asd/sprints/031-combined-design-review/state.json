@@ -55,6 +55,13 @@
       "reason": "Tasks 1-5 ticked; AC-1..AC-10 covered (AC-7 bccf75ed); AC-10 header check reworked language-neutral; no stubs; build, lint, path audit clean",
       "evidence": "decisions-log.md 2026-11-02 impl assessment approved (adaptive)",
       "artifact_revision": "e87213fb"
+    },
+    {
+      "gate": "impl-review green handoff",
+      "decision_actor": "orchestrator",
+      "reason": "wave-1/iter-02 combined and external APPROVE; terminal full suite 330/330, lint and build clean",
+      "evidence": "decisions-log.md 2026-11-02 impl-review DoD met (adaptive green handoff)",
+      "artifact_revision": "a99cb214"
     }
   ],
   "task_routing": {
