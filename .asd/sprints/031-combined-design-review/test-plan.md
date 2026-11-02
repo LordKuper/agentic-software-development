@@ -43,11 +43,11 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
 
 ## Suite run
 
-- Command: `node tests/run.js`
-- Scope: full — the delta touches `.asd/runtime.js` and rule docs, framework-wide files, so the safety valve degrades the impacted set to the whole suite
-- Result: pass — 330 passed, 0 failed, 0 skipped
-- Lint / build: pass — `git diff --cached --check` clean on the staged commit paths; `node .asd/sync.js --check` exit 0, `ok: true`
-- HEAD: c49b4a97 — the commit carrying the tests this run verified (test-plan.md and its segment only added after)
+- Command: `node tests/run.js` (impl-review step 9 terminal run, wave-1/iter-02 suite)
+- Scope: full, unscoped
+- Result: pass — exit 0, 330/330 passed, 0 failed, 0 skipped
+- Lint / build: pass — `git diff --cached --check` exit 0; `node .asd/sync.js --check` exit 0, `ok: true`
+- HEAD: a99cb214bc8309d292579df6d9c9f2bd51b1113a
 
 ## Defects
 
