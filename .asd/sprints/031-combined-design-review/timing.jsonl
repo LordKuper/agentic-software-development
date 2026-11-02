@@ -9,3 +9,5 @@
 {"op":"close","id":"wait scope gate","kind":"user-wait","parent":"scope#1","start":"2026-11-02T14:03:21.189Z","end":"2026-11-02T14:24:04.324Z","outcome":"done","attrs":{"gate":"scope"}}
 {"op":"close","id":"scope#1","kind":"phase","parent":null,"start":"2026-11-02T13:13:04.112Z","end":"2026-11-02T14:24:44.425Z","outcome":"done","attrs":{}}
 {"op":"open","id":"audit#1","kind":"phase","parent":null,"start":"2026-11-02T14:24:44.425Z","attrs":{}}
+{"op":"close","id":"audit#1","kind":"phase","parent":null,"start":"2026-11-02T14:24:44.425Z","end":"2026-11-02T14:28:38.956Z","outcome":"done","attrs":{}}
+{"op":"open","id":"plan#1","kind":"phase","parent":null,"start":"2026-11-02T14:28:38.956Z","attrs":{}}

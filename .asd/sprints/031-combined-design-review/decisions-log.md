@@ -37,3 +37,11 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+- 2026-11-02 — stub inclusion: none (`.asd/project/stubs.md` holds no open stub)
+
+## 2026-11-02 — `.asd/sprints/031-combined-design-review/plan.md` accepted (adaptive)
+
+- **Decision**: Plan accepted by the orchestrator under `user_gates: adaptive`: Tasks 1-5 in one wave on disjoint paths, AC-7 as an orchestrator line before the wave-1 dispatch, `docs/architecture/tech-reference/git-2.55.md` written for Task 5.
+- **Rationale**: Every AC-N maps to a Task or the orchestrator line; restating sites from the audit grep each sit in one Task; the AC-9 budget (Σ(2×len+3) ≤ 32,000 per invocation, rename pairs atomic) is a bounded technical choice under the documented 32,767-char cap; no user-only trade-off left open.
+- **Affected docs**: `plan.md`, `docs/architecture/tech-reference/git-2.55.md`

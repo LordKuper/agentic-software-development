@@ -1,7 +1,7 @@
 {
   "sprint_id": "031-combined-design-review",
   "branch": "sprint/031-combined-design-review",
-  "phase": "audit",
+  "phase": "plan",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -41,6 +41,13 @@
       "reason": "all t_audit.md sections for AC-1..AC-10; no contradiction; no authority-only ambiguity",
       "evidence": "audit.md",
       "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "orchestrator",
+      "reason": "AC-1..AC-10 traced to Tasks 1-5 and the AC-7 orchestrator line; decomposition rules met; no open material alternative",
+      "evidence": "decisions-log.md 2026-11-02 plan accepted (adaptive)",
+      "artifact_revision": "plan.md@plan"
     }
   ],
   "task_routing": {},
