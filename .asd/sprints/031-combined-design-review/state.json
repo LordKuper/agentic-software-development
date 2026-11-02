@@ -1,0 +1,99 @@
+{
+  "sprint_id": "031-combined-design-review",
+  "branch": "sprint/031-combined-design-review",
+  "phase": "pr",
+  "workflow": "lite",
+  "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
+  "cleanup": true,
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "workflow choice",
+      "decision_actor": "user",
+      "reason": "user answer: lite",
+      "evidence": "decisions-log.md 2026-11-02 sprint opened",
+      "artifact_revision": "state.json@scope"
+    },
+    {
+      "gate": "approach choice",
+      "decision_actor": "user",
+      "reason": "A: reuse asd-reviewer-combined in standard design-review",
+      "evidence": "research.md Approaches Chosen",
+      "artifact_revision": "research.md@scope"
+    },
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "sprint.md AC-1..AC-10 accepted as one sprint, no split",
+      "evidence": "decisions-log.md 2026-11-02 scope gate",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "retro intake dispositions",
+      "decision_actor": "user",
+      "reason": "030#A-1 A-2 A-4 P-2 included (AC-5..AC-8); #74 #78 included (AC-9, AC-10); 030#P-1 rejected; #75 #76 deferred",
+      "evidence": "decisions-log.md 2026-11-02 retro intake dispositions",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "audit",
+      "decision_actor": "orchestrator",
+      "reason": "all t_audit.md sections for AC-1..AC-10; no contradiction; no authority-only ambiguity",
+      "evidence": "audit.md",
+      "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "orchestrator",
+      "reason": "AC-1..AC-10 traced to Tasks 1-5 and the AC-7 orchestrator line; decomposition rules met; no open material alternative",
+      "evidence": "decisions-log.md 2026-11-02 plan accepted (adaptive)",
+      "artifact_revision": "plan.md@plan"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "Tasks 1-5 ticked; AC-1..AC-10 covered (AC-7 bccf75ed); AC-10 header check reworked language-neutral; no stubs; build, lint, path audit clean",
+      "evidence": "decisions-log.md 2026-11-02 impl assessment approved (adaptive)",
+      "artifact_revision": "e87213fb"
+    },
+    {
+      "gate": "impl-review green handoff",
+      "decision_actor": "orchestrator",
+      "reason": "wave-1/iter-02 combined and external APPROVE; terminal full suite 330/330, lint and build clean",
+      "evidence": "decisions-log.md 2026-11-02 impl-review DoD met (adaptive green handoff)",
+      "artifact_revision": "a99cb214"
+    },
+    {
+      "gate": "PR publication",
+      "decision_actor": "orchestrator",
+      "reason": "user-authorized scope AC-1..AC-10; DoD met (reviews green, suite 330/330, retrospective written); gh authenticated",
+      "evidence": "decisions-log.md 2026-11-02 PR #79 opened (adaptive)",
+      "artifact_revision": "PR #79"
+    }
+  ],
+  "task_routing": {
+    "Task 1": { "execution": "agent", "tier": "standard", "reason": "risk:design-review dispatch and DoD wording", "resolved_model": "sonnet" },
+    "Task 2": { "execution": "agent", "tier": "standard", "reason": "risk:combined design-review input and verdict contract", "resolved_model": "sonnet" },
+    "Task 3": { "execution": "agent", "tier": "standard", "reason": "risk:rule wording for the fix-application hold, sync point and amendment check", "resolved_model": "sonnet" },
+    "Task 4": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:README roster mirror rows", "resolved_model": "sonnet" },
+    "Task 5": { "execution": "agent", "tier": "standard", "reason": "risk:command-line budget and rename-pair chunk edges", "resolved_model": "sonnet" },
+    "F1": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:README roster scope cells", "resolved_model": "sonnet" },
+    "F2": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:README gating paragraph scope", "resolved_model": "sonnet" },
+    "F3": { "execution": "agent", "tier": "standard", "reason": "risk:combined category placement rule", "resolved_model": "sonnet" },
+    "F4": { "execution": "agent", "tier": "standard", "reason": "risk:scope amendment contradiction check actor", "resolved_model": "sonnet" },
+    "F6": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:SSoT and economy rubric attribution", "resolved_model": "sonnet" },
+    "F7": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:COMBINED_REVIEWER doc comment", "resolved_model": "sonnet" },
+    "external.md 1": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:Efficiency impl-review owner cell", "resolved_model": "sonnet" }
+  },
+  "skipped_phases": ["design-promote"],
+  "reviews": {
+    "design": { "iteration": 0, "verdicts": {}, "latched": {} },
+    "impl": { "wave": 1, "waves": [ { "iteration": 2, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "CONCERNS" }, "iter-02": { "combined": "APPROVE", "external": "APPROVE" } }, "iteration_heads": { "iter-01": "f1df727129a50e89c6b3032de4d42c2f47ac9767", "iter-02": "357e4910234756e1a37af7d006d4593e3d24cfa1" }, "latched": { "combined": 2, "external": 2 } } ] }
+  },
+  "created_at": "2026-11-02T13:14:00.000Z",
+  "updated_at": "2026-11-02T15:45:00.000Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": { "number": 79, "url": "https://github.com/LordKuper/agentic-software-development/pull/79", "state": "open" },
+  "archived_at": null
+}

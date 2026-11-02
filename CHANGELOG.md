@@ -2,6 +2,20 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v14.3.0
+
+`standard`'s design-review now reviews your drafts in one combined pass instead of two separate reviewers, large review scopes no longer fail on Windows, and a reviewer findings table with an extra column is rejected instead of being persisted with the wrong location.
+
+### Changed
+- **Combined design-review**: `standard`'s design-review dispatches `asd-reviewer-combined` (the Quality and Efficiency rubrics' design-review entries in one pass, UI conformance only with a ux-spec or design-system draft) plus External Review when enabled, instead of `asd-reviewer-quality` and `asd-reviewer-efficiency`. Its verdict files are `combined.md` and `external.md`. `standard`'s impl-review (Quality, Efficiency, External Review) and `lite` are unchanged; a sprint already in design-review is not migrated.
+- **Holding review fixes to the over-engineering checklist**: the fixer checks a reviewer's suggested fix against the over-engineering checklist before applying it, and adds no callee guard for a case its caller already excludes (`review-policy.md` "Verify before applying").
+- **Scope amendment contradiction check**: before a mid-sprint criterion joins the plan, the orchestrator checks its rule against every accepted criterion's rule and presents any contradiction in the scope approval.
+- An over-engineering finding's category (`keep-as-is`, `simplify`, `escalate`) leads its Description cell instead of taking a column of its own.
+
+### Fixed
+- **Large review scopes on Windows** (issue #74): `emit-manifest` and `review-waves` split each git diff path list into invocations that stay under the Windows command-line limit, a rename's source and destination kept together, instead of failing with `ENAMETOOLONG`.
+- **Findings table layout** (issue #78): `persist-review` requires the template's five-column findings table led by `#` (headings may follow `language.docs`) and rejects any other layout, instead of persisting an extra column as the finding's location.
+
 ## v14.2.0
 
 Issues ASD files on the ASD repo are now always in English, ASD keeps its temporary files inside your project instead of on the system disk, and the external-review cache no longer shows up as an untracked file.

@@ -38,8 +38,8 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 <!-- entries appended below this line -->
 
-## 2026-10-30 — PR publication
+## 2026-11-02 — PR #79 opened (adaptive)
 
-- **Decision**: PR #73 opened (https://github.com/LordKuper/agentic-software-development/pull/73), title `feat(rules): English issues, temp off system disk`, body from `t_pr-description.md` with `Refs #68, #69, #70, #72`; `state.json.pr` written (state open).
-- **Rationale**: DoD met (Tasks 1-7, wave 1/1 APPROVE, terminal full suite 325/325 at 57021a03, retrospective present); publication gate answered by the user: "Да, открыть PR".
-- **Affected docs**: `state.json`
+- **Decision**: Opened https://github.com/LordKuper/agentic-software-development/pull/79 from `sprint/031-combined-design-review` to `main`, `asd_version` 14.2.0 → 14.3.0 with its CHANGELOG section; `state.json.pr` recorded, sprint stays active awaiting merge.
+- **Rationale**: Scope AC-1..AC-10 was user-authorized, DoD holds (impl-review wave 1 APPROVE, full suite 330/330 re-run after the bump, retrospective written), and `gh` is authenticated, so publication qualifies adaptively.
+- **Affected docs**: `CHANGELOG.md`, `.asd/release-manifest.json`

@@ -36,7 +36,7 @@ const AUDIT_BATCH_THRESHOLD_FILES = 200;
 const INTERNAL_REVIEWERS = ['quality', 'efficiency', 'combined'];
 /** The `emit-manifest --reviewer` name that emits External Review's scope manifest instead of a coverage manifest. */
 const EXTERNAL_REVIEWER = 'external';
-/** The lite internal reviewer: its manifest composes these reviewers' rubrics by reference, in order, then its own agent's rubric. */
+/** The single-pass internal reviewer: its manifest composes these reviewers' rubrics by reference, in order, then its own agent's rubric. */
 const COMBINED_REVIEWER = 'combined';
 const COMBINED_RUBRICS = ['quality', 'efficiency'];
 /** Sprint workflow definitions, one `<name>.json` each, beside the phase orchestration bodies. */
@@ -49,6 +49,7 @@ const REVIEW_NODES = ['design', 'impl'];
 const CHAIN_EXITS = ['await-merge', 'done'];
 /** Severities a finding row may carry (`review-policy.md` "Severity levels"). */
 const SEVERITIES = ['low', 'medium', 'high', 'critical'];
+const FINDINGS_COLUMNS = ['#', 'Severity', 'Location', 'Description', 'Suggested fix'];
 /** The standing n/a predicates, each the exact text a ledger row records. The emitter authorizes one only where its condition holds; this is their sole home. */
 const NA_PREDICATES = {
   phaseGate: 'outside phase gate',
@@ -523,14 +524,15 @@ function tableCells(line) {
   return line.trim().replace(/^\||\|$/g, '').split(/(?<!\\)\|/).map((cell) => cell.trim().replace(/\\\|/g, '|').replace(/^`([^`]*)`$/, '$1'));
 }
 
-/** A review's findings as `{id, severity, location}`, read by column position from its first table: `t_review.md`'s Findings or the external report's Kept findings, whose column order the templates fix while headings follow the docs language. An empty table is header and separator only; a `—` id row is skipped as legacy tolerance. */
+/** A review's findings as `{id, severity, location}`, read by column position from its first table: `t_review.md`'s Findings or the external report's Kept findings, whose header must have `FINDINGS_COLUMNS.length` columns led by `#`, so an extra column is never read as another. Headings follow the docs language, so the check is the column count and the `#` id column, not the heading text (a reordered translated header is not detectable). An empty table is header and separator only; a `—` id row is skipped as legacy tolerance. */
 function reviewFindings(text) {
   const lines = text.split(/\r?\n/).map((line) => line.trim());
   const start = lines.findIndex((line) => line.startsWith('|'));
   if (start === -1) fail('review has no findings table');
   const end = lines.findIndex((line, i) => i > start && !line.startsWith('|'));
   const [header, separator, ...rows] = lines.slice(start, end === -1 ? lines.length : end).map(tableCells);
-  if (header.length < 3 || separator === undefined || separator.length !== header.length || !separator.every((cell) => /^:?-+:?$/.test(cell))) fail('findings table header or separator malformed');
+  if (header.length !== FINDINGS_COLUMNS.length || header[0] !== '#') fail(`findings table must have ${FINDINGS_COLUMNS.length} columns led by #, as ${FINDINGS_COLUMNS.join(' | ')} in the template layout: ${header.join(' | ')}`);
+  if (separator === undefined || separator.length !== header.length || !separator.every((cell) => /^:?-+:?$/.test(cell))) fail('findings table separator malformed');
   const seen = new Set();
   return rows.filter((cells) => cells[0] !== '—').map((cells) => {
     const [id, severity, location] = cells;
@@ -809,9 +811,12 @@ function rangeRenames(base, head) {
   return renames;
 }
 
-/** A patch pathspec for files one range diffs, each rename paired with its source so the patch shows a rename rather than an add. */
-function patchPaths(files, renames) {
-  return files.flatMap((file) => (renames.has(file) ? [renames.get(file).source, file] : [file]));
+/** Command-line budget of one git invocation: Windows caps it at 32,767 characters and Node's argument quoting can double one, so each argument counts `2 × length + 3`, kept under 32,000. */
+const GIT_ARGS_BUDGET = 32000;
+
+/** Patch pathspec units for files one range diffs, a rename paired with its source so the patch shows a rename rather than an add; a unit is never split across invocations. */
+function patchUnits(files, renames) {
+  return files.map((file) => (renames.has(file) ? [renames.get(file).source, file] : [file]));
 }
 
 /** An impl-review manifest's commit ranges: `--base...--head` for the scope, and `--full-base...--head` for `--full-files`, whose entries join the list and take that wider range even when also in the scope. Null without `--base/--head`. */
@@ -851,11 +856,24 @@ function pureRenames(ranges, files) {
   });
 }
 
-/** Git invocations writing one patch for `files`, each file's hunks over its own range. */
+/** Git invocations writing one patch for `files`, each file's hunks over its own range; a range's path units split, in list order, into consecutive invocations within `GIT_ARGS_BUDGET`, a single unit always fitting. */
 function rangePatchInvocations(ranges, files) {
+  const cost = (arg) => 2 * arg.length + 3;
   return [ranges.scope, ranges.full].filter((range) => range !== null).flatMap((range) => {
-    const paths = patchPaths(files.filter((file) => rangeOf(ranges, file) === range), range.renames);
-    return paths.length === 0 ? [] : [{ args: ['--literal-pathspecs', 'diff', '-M', '--no-color', '--no-ext-diff', '--no-textconv', `${range.base}...${range.head}`, '--', ...paths] }];
+    const fixed = ['--literal-pathspecs', 'diff', '-M', '--no-color', '--no-ext-diff', '--no-textconv', `${range.base}...${range.head}`, '--'];
+    const fixedCost = fixed.reduce((sum, arg) => sum + cost(arg), 0);
+    const chunks = [];
+    let used = Infinity;
+    patchUnits(files.filter((file) => rangeOf(ranges, file) === range), range.renames).forEach((unit) => {
+      const unitCost = unit.reduce((sum, arg) => sum + cost(arg), 0);
+      if (used + unitCost > GIT_ARGS_BUDGET) {
+        chunks.push([]);
+        used = fixedCost;
+      }
+      chunks[chunks.length - 1].push(...unit);
+      used += unitCost;
+    });
+    return chunks.map((paths) => ({ args: [...fixed, ...paths] }));
   });
 }
 
