@@ -25,7 +25,7 @@ responsibility:
 
 ## Project conventions
 - Git runs without a shell (`spawnSync('git', args)`, `.asd/runtime.js` `runGit`); several invocations stream in order into one output file (`writeGitOutput`), so a path list split across invocations yields the same concatenated patch.
-- Under Git Bash (MSYS), set `MSYS_NO_PATHCONV=1` before `git show <ref>:<path>`, or MSYS rewrites the argument as a path list.
+- Git Bash (MSYS) rewrites a `<ref>:<path>` argument as a path list; the project rule for it lives in `.asd/project/custom-common-rules.md`.
 
 ## Known issues and workarounds
 - A path list over the Windows cap fails with `spawnSync git ENAMETOOLONG` before git starts: split the list across invocations whose command line stays under the cap, a rename's source and destination in the same invocation.
