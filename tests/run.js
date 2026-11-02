@@ -9017,6 +9017,7 @@ test('sprint-031 leftover-term check: no canon, README, AGENTS.md, runtime, hook
     'impl-review (`lite` only)', "Quality's UI rubric section is `n/a: outside phase gate` when no ux-spec/design-system artifact is in scope", 'When design-review has no ux-spec/design-system draft, Quality still dispatches', 'always dispatches asd-reviewer-quality + asd-reviewer-efficiency',
     'Every internal reviewer — `asd-reviewer-quality`, `asd-reviewer-efficiency` — is dispatched', 'verified during design-review + impl-review by `asd-reviewer-quality`', 'Binding for the main orchestrator (author) and `asd-reviewer-quality` (verify, UI conformance section)',
     '"role":"asd-reviewer-quality","phase":"design-review"', '"role":"asd-reviewer-efficiency","phase":"design-review"', 'dispatches reviewers (quality, efficiency, External Review)', '(`quality` and `efficiency` in `standard`, `combined` in lite)', 'Quality and the `lite`-only combined reviewer carry', 'category column keep-as-is/simplify/escalate',
+    'design-review judges draft correctness (AC completeness, contract/ADR soundness)', 'impl-review adds test-suite cost and perf budgets',
   ];
   const memoryFiles = fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT), { recursive: true }).map((entry) => `${AGENT_MEMORY_ROOT}/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
   assertSweepReachesMemory(memoryFiles);
