@@ -49,3 +49,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: `reviewFindings` checks the findings header by column count (five) and `#` id column, not by English cell text; efficiency's return rule moves the keep-as-is/simplify/escalate category into the Description cell. Plan Task 5's AC-10 line is reworded; Task 5 and the efficiency file are routed back to a dev at the initial impl assessment.
 - **Rationale**: `language-policy.md` Matrix puts reviews in `language.docs`, so a translated header must still persist; the exact-English check would reject every non-English consumer's review. Efficiency's "category column" instruction contradicts the five-column template and is the extra column issue #78 saw.
 - **Affected docs**: `.asd/runtime.js`, `.asd/agents/asd-reviewer-efficiency.md`, `plan.md` Task 5
+
+## 2026-11-02 — impl assessment approved (adaptive)
+
+- **Decision**: Wave 1 accepted: Tasks 1-5 committed (302d2fa1, 33e47706, 2750e5bc, 40ee080e, cea4b4a9, rework 8b8acd0e), views synced (3d422d18, e87213fb); AC-7 landed at bccf75ed.
+- **Rationale**: Every subtask ticked, every flagged note resolved (beyond-brief edits stay inside AC-3/AC-6 and the plan homes), no sprint stubs, build and lint clean, round diff inside the dispatched write scopes plus synced views and sprint files.
+- **Affected docs**: `plan.md`

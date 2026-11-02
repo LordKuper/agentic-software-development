@@ -48,6 +48,13 @@
       "reason": "AC-1..AC-10 traced to Tasks 1-5 and the AC-7 orchestrator line; decomposition rules met; no open material alternative",
       "evidence": "decisions-log.md 2026-11-02 plan accepted (adaptive)",
       "artifact_revision": "plan.md@plan"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "Tasks 1-5 ticked; AC-1..AC-10 covered (AC-7 bccf75ed); AC-10 header check reworked language-neutral; no stubs; build, lint, path audit clean",
+      "evidence": "decisions-log.md 2026-11-02 impl assessment approved (adaptive)",
+      "artifact_revision": "e87213fb"
     }
   ],
   "task_routing": {
