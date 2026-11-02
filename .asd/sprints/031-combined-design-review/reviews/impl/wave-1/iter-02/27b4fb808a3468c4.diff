@@ -1,0 +1,367 @@
+diff --git a/.asd/agents/asd-reviewer-combined.md b/.asd/agents/asd-reviewer-combined.md
+index 986d548c..2bf991bf 100644
+--- a/.asd/agents/asd-reviewer-combined.md
++++ b/.asd/agents/asd-reviewer-combined.md
+@@ -40,7 +40,7 @@ Combined reviewer: the one internal reviewer of a design-review or impl-review w
+ - must: mark every entry whose predicate the manifest authorizes `n/a: <predicate>` — `no documentation file in scope` covers every documentation entry — never ABORT.
+ - never: review an entry its manifest n/a's.
+ - must: in impl-review, judge persistent actuality before promotion — impl-review precedes lite's design-promote (`sprint-lifecycle.md` "Workflows"), so for a doc design-promote writes (`asd-phase-design-promote.md` step 4) judge only a change this sprint's diff itself makes, never drift from the not-yet-promoted implementation; any other persistent doc per its home entry.
+-- must: categorise every over-engineering/structure finding `keep-as-is`, `simplify` or `escalate`; each is `critical` and undroppable (`review-policy.md`).
++- must: categorise every over-engineering/structure finding `keep-as-is`, `simplify` or `escalate`, the category leading the Description cell (e.g. `simplify:` …), never its own column; each is `critical` and undroppable (`review-policy.md`).
+ - must: apply the iteration severity floor (`review-policy.md`); cite file:line per finding, AC-N per coverage finding, checklist item per over-engineering/structure finding, rule or token path per UI finding; suggest a concrete fix per finding.
+ - must: take scope from the emitted manifest and its `.diff` — the hand-off per `review-policy.md` "Scope hand-off".
+ - must: return per `t_review.md` — Findings table (severity, location/AC-N, description, fix), section-coverage ledger, Verdict, Next action, Escalations; the phase orchestrator validates and persists manifest and ledger with the report.
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 49d32c8a..959657aa 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -51,14 +51,14 @@
+     "agents/asd-dev.md": "sha256:b3e5715c255653f6ae8d066c8b22d332d46ede72b2dadd81b41e497e013e6741",
+     "agents/asd-tester.md": "sha256:f8d9fdd97d5266f3ad9bf82ef4ee0f1460ecb53ff66df8db77936a406a9d7a68",
+     "skills/asd-phase-retro/SKILL.md": "sha256:e8e8b03349b6b05b6170fb2d81cf092237e0b9f4f067a739b80d2f57491d2bfc",
+-    "agents/asd-reviewer-combined.md": "sha256:a1903602d6456fc07b1b4a48cffb3186def7bb535198c9c3edeb8acfc3195750",
++    "agents/asd-reviewer-combined.md": "sha256:11af18f2926651bfa82a88b7514e8d5cdab99ffdc769c527cc79df40de6f89e6",
+     "agents/asd-reviewer-quality.md": "sha256:c1e25c28d87314c6931ee185b3b7ea9394fa585b4a840bfab9d62ad8350ac36f",
+     "skills/asd-phase-cleanup/SKILL.md": "sha256:67d91216fcb5ed04e6ef7bc5b4276c057d36628a8185516b38dd4e2c7a88e365"
+   },
+   "upstream_hashes": {
+     ".asd/agents/asd-external-review.md": "95230cd43eca374610697691583d7cf2618731a08f0d6e80442c70993039db7a",
+     ".asd/hooks/session-start.js": "553745d4ca9c651687d524730b61cb94eead940a31c31696579fc05a16d1fcb3",
+-    ".asd/rules/artifact-layout.md": "5c5b0fd969f4991294777050d272a270997628c059f23f397ce8c398bd80f47d",
++    ".asd/rules/artifact-layout.md": "7be5a2b205bb1f3fdcddcc01e1e908a9ed7a95bab7b24762a96d9f47e5012099",
+     ".asd/rules/checkpoints.md": "b51da7fe1c832826cf35e428b43f55fd5b238ee62a35d1c44d7c06544040192f",
+     ".asd/rules/code-style.md": "672ea6d374408364e420c4126c00d9111aa1f0be751520d2716fd8e480989992",
+     ".asd/rules/core.md": "c1ac52f8643446751c9e7f634e69991dc22a7c02401c26a6db16aefb2f701823",
+@@ -68,8 +68,8 @@
+     ".asd/rules/git-strategy.md": "ed0d6041984770db8a58d42b810812a7727112026e39b6ec508e2397a56351b5",
+     ".asd/rules/language-policy.md": "834a43edbf2cb11a6aee45392cfc8cbc1dc39427364fedc1be2f2e1266df9eae",
+     ".asd/rules/providers.md": "c3e6d7d9c75534eb49ef16ada19be6fd601d2ce196eb2b8735e4754d362d1f32",
+-    ".asd/rules/review-policy.md": "06ce7cd42b1c8b5b8e04bec89ce7e7ca6eb9586986c2406381842b46ea0ce2a7",
+-    ".asd/rules/sprint-lifecycle.md": "cd854e6ad80ab831efe4550f93a418cb428877d480baf38c38c226a92f1fdf6d",
++    ".asd/rules/review-policy.md": "a431af0c1de5151352778dd3e0b0f5a108aa38ab6c821bb07cd59258bce94354",
++    ".asd/rules/sprint-lifecycle.md": "4f6f72b7aacd2e2cacd9d190ea967e0e3567cc9bc55c43d372489b4f91bbdb77",
+     ".asd/rules/ux-principles.md": "cbdc2f22c3c6390750665c0057bfe4aaf94f41eaffe65705a89c27a934d154ab",
+     ".asd/skills/asd-concept/SKILL.md": "3e48f9d41636b72bc1159c02ef558c6a0f64ab2bde3bee4e9124536357b4cabe",
+     ".asd/skills/asd-design-system/SKILL.md": "bdc26d872d8e68d3b9ad08ae8321ddf44af9bbf90db4d37ab681798befe274c1",
+@@ -139,7 +139,7 @@
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
+     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
+-    ".asd/runtime.js": "3ff53dba7cd06d957f7630360711429d9212d5b4d50674612113ee524f7fab6f",
++    ".asd/runtime.js": "f423e52e62d6751feec7bfa0e1f9631a043de2d372954bc52cb3cc621467a23c",
+     ".asd/templates/external-review/t_review-scope.json": "a17ee84e64cc6a693aaa30dacaef660c841b23a92331abf217ff64c8fc2d4951",
+     ".asd/templates/t_friction-log.md": "98c1ee13ba45291945be2ebabcbd7fc4c59a7069685341f64fc0c26bae31af67",
+     ".asd/templates/t_retrospective.html": "73a850121b1988c3a84e895683a5ad7fb79cd962b2952ed9a14b59251e5c4a0d",
+@@ -149,7 +149,7 @@
+     ".asd/templates/t_subsystems.md": "54b1e273e9e74a57e08b43d1b671f880b7f682d9ec1bc4afb95a55d98b2531dd",
+     ".asd/migrations/9.0.0.js": "1a1da6ebd2576d92ed44ccde308969856f3aeaa7be152438137e94b43cd015b1",
+     ".asd/templates/t_retro-backlog.md": "7d2fcf058f0b84065aaadf7554254e0db0ab52c08631ef1081d851e0d8c2cd18",
+-    ".asd/agents/asd-reviewer-combined.md": "a1903602d6456fc07b1b4a48cffb3186def7bb535198c9c3edeb8acfc3195750",
++    ".asd/agents/asd-reviewer-combined.md": "11af18f2926651bfa82a88b7514e8d5cdab99ffdc769c527cc79df40de6f89e6",
+     ".asd/workflows/lite.json": "b56ab1c62e029a56c79d541c79515f79277be5453a954c8b33af0950263aca55",
+     ".asd/workflows/standard.json": "9bb5fdf7d04029214ef892b59a4ff1ea6670fd614709e833d737a4a52460314c",
+     ".asd/rules/agent-protocol.md": "f85ac7376f7bb2d1c4ff3dfa667d5bf3b421aa75818221485ffd154a6f6cdbab",
+diff --git a/.asd/rules/artifact-layout.md b/.asd/rules/artifact-layout.md
+index 61eb1487..6928c816 100644
+--- a/.asd/rules/artifact-layout.md
++++ b/.asd/rules/artifact-layout.md
+@@ -220,11 +220,11 @@ SSoT for two things invisible in the diff: **why** a test was removed, and **why
+ 
+ ## Single Source of Truth (iron rule)
+ 
+-Each fact has exactly one home file. Other files link to it, never copy. Violation = `FAIL` from `asd-reviewer-quality`.
++Each fact has exactly one home file. Other files link to it, never copy. Violation = `FAIL` from `asd-reviewer-quality`, or from `asd-reviewer-combined` applying the Quality rubric's SSoT entry.
+ 
+ ## Documentation economy (iron rule)
+ 
+-A line of agent-facing text is re-paid on every dispatch that loads it, so it earns its place only by changing what a reading agent does; one that does not is deleted, not shortened. Reach: framework canon (rules, agents, skills, workflows, templates) and every artifact a later agent reads (`audit.md`, `plan.md`, `test-plan.md`, decisions-log entries, review files, retrospectives) — through the templates, in every consumer project too. **removal** decides and is necessary: cut only when no agent acts differently without the line. **provenance** — traces to no recorded defect, friction entry or decision — and **enforcement** — a tool grant, validator or suite assertion already imposes it, so the prose only restates it — corroborate a cut removal already allows; neither authorises one alone, and removal false = keep whatever the other two say. The tests bind while authoring: every agent that writes such text applies them before the line lands, not only when it is reviewed. Violation = `FAIL` from `asd-reviewer-efficiency`.
++A line of agent-facing text is re-paid on every dispatch that loads it, so it earns its place only by changing what a reading agent does; one that does not is deleted, not shortened. Reach: framework canon (rules, agents, skills, workflows, templates) and every artifact a later agent reads (`audit.md`, `plan.md`, `test-plan.md`, decisions-log entries, review files, retrospectives) — through the templates, in every consumer project too. **removal** decides and is necessary: cut only when no agent acts differently without the line. **provenance** — traces to no recorded defect, friction entry or decision — and **enforcement** — a tool grant, validator or suite assertion already imposes it, so the prose only restates it — corroborate a cut removal already allows; neither authorises one alone, and removal false = keep whatever the other two say. The tests bind while authoring: every agent that writes such text applies them before the line lands, not only when it is reviewed. Violation = `FAIL` from `asd-reviewer-efficiency`, or from `asd-reviewer-combined` applying the Efficiency rubric's entry.
+ 
+ Cut on sight: prose stating no rule; rationale for a rule already stated; an example disambiguating nothing; a prohibition that only negates a positive rule already stated beside it; emphasis so frequent it marks nothing; a fact whose home is another file (SSoT above).
+ 
+diff --git a/.asd/rules/review-policy.md b/.asd/rules/review-policy.md
+index eb19a25d..a73ef254 100644
+--- a/.asd/rules/review-policy.md
++++ b/.asd/rules/review-policy.md
+@@ -192,7 +192,7 @@ Sole owner map: each concern below has exactly one reviewer per workflow roster
+ | Reviewer | design-review: judges · receives | impl-review: judges · receives |
+ |---|---|---|
+ | Quality | judged by Combined (`asd-reviewer-quality` is not dispatched) | bugs, security, contracts, best practices, AC→code trace, AC→check coverage, test adequacy and removal validity, fail-first proof, manual-verification necessity, documentation accuracy (persistent-doc actuality, in-code doc comments, stub resolution, Framework mode), UI conformance · every scope file plus `test-plan.md` and its segments (`--test-plan`) |
+-| Efficiency | judged by Combined (`asd-reviewer-efficiency` is not dispatched) | the same plus test-suite cost and performance · every scope file |
++| Efficiency | judged by Combined (`asd-reviewer-efficiency` is not dispatched) | over-engineering, structure/cohesion, complexity-vs-value, duplication/reuse, documentation economy, runtime token cost, change-size proportionality, test-suite cost, performance · every scope file |
+ | Combined | Quality's and Efficiency's design-review concerns (draft correctness, AC completeness, contract and ADR decision soundness, SSoT, template adherence, provenance, traceability, custom rules, UI conformance of ux-spec/design-system drafts; over-engineering, structure/cohesion, complexity-vs-value, duplication/reuse, documentation economy, runtime token cost, change-size proportionality), overall quality · every scoped draft | Quality's and Efficiency's impl-review concerns, their documentation entries when a documentation file is in scope, overall quality · every scope file plus `test-plan.md` and its segments |
+ | External Review | the wrapped CLI's own review · every scope file ("Scope hand-off") plus carried-over `Unreviewed files` (`external-review.md` "Iteration semantics") | same |
+ 
+diff --git a/.asd/rules/sprint-lifecycle.md b/.asd/rules/sprint-lifecycle.md
+index d3949d70..a9e6d227 100644
+--- a/.asd/rules/sprint-lifecycle.md
++++ b/.asd/rules/sprint-lifecycle.md
+@@ -342,13 +342,11 @@ Its absence semantics are deliberately not `Material risk`'s, and the two are ne
+ 
+ ## Scope amendment
+ 
+-A criterion added, changed or retired after scope acceptance needs the hard `new or changed scope` approval (`checkpoints.md` "Gate policy") and then, in one orchestrator write:
++A criterion added, changed or retired after scope acceptance needs the hard `new or changed scope` approval (`checkpoints.md` "Gate policy"), where the orchestrator presents any contradiction between its rule text and an accepted criterion's rule, and then, in one orchestrator write:
+ 1. `sprint.md`: the `AC-N` — a new id, never a reused one;
+ 2. `plan.md`: the Task carrying it, new or amended, in a wave not yet dispatched (a new last wave when none is left), per "Plan file format";
+ 3. the gate records: a `gate_decisions` entry and one decisions-log entry naming the AC, the Task and its wave. Accepted after impl-review's division point ("Review iteration counters"), the entry's evidence adds `floor_base=wave-<K>/<A>`, A being current review wave K's counter then, and the write clears wave K's `latched` ("APPROVE latch"). impl-review computes wave K's severity floor and iteration cap on `iteration − A`, A from the latest such record accepted since the current `waves.json` division (none → 0), so a rollback reset, which re-divides, retires every earlier one, and the amended code's first iteration `wave-<K>/iter-(A+1)` reviews at a first iteration's floor.
+ 
+-Before the criterion joins the plan, its rule text is checked against every accepted criterion's rule for a contradiction.
+-
+ The audit boolean is then reevaluated ("Orchestration and adaptive gates").
+ 
+ An amendment accepted while `review_fixes_pending` is set waits for that fix round: `impl` runs review-fix mode first, and once its finalize clears the flag the same `impl` entry continues in initial mode over the plan's unticked Tasks only, never a ticked one again. The impl assessment gate runs once, after that pass, then the entry returns one `NEXT: impl-test`. This is the one case where an `impl` entry runs two modes (`asd-phase-impl.md` steps 2, 11).
+diff --git a/.asd/runtime.js b/.asd/runtime.js
+index a9c6dd43..134724d8 100644
+--- a/.asd/runtime.js
++++ b/.asd/runtime.js
+@@ -36,7 +36,7 @@ const AUDIT_BATCH_THRESHOLD_FILES = 200;
+ const INTERNAL_REVIEWERS = ['quality', 'efficiency', 'combined'];
+ /** The `emit-manifest --reviewer` name that emits External Review's scope manifest instead of a coverage manifest. */
+ const EXTERNAL_REVIEWER = 'external';
+-/** The lite internal reviewer: its manifest composes these reviewers' rubrics by reference, in order, then its own agent's rubric. */
++/** The single-pass internal reviewer: its manifest composes these reviewers' rubrics by reference, in order, then its own agent's rubric. */
+ const COMBINED_REVIEWER = 'combined';
+ const COMBINED_RUBRICS = ['quality', 'efficiency'];
+ /** Sprint workflow definitions, one `<name>.json` each, beside the phase orchestration bodies. */
+diff --git a/.asd/sprints/031-combined-design-review/test-plan.entry-01.md b/.asd/sprints/031-combined-design-review/test-plan.entry-01.md
+new file mode 100644
+index 00000000..428f3e2f
+--- /dev/null
++++ b/.asd/sprints/031-combined-design-review/test-plan.entry-01.md
+@@ -0,0 +1,41 @@
++# Test plan entry 1 — sprint 031-combined-design-review
++
++Rotated from `test-plan.md` at entry 2; never edited.
++
++## Risk → check decisions
++
++Pre-strategy run (`node tests/run.js`, full): 320/325, five red, all test defects against the old roster; no code defect found.
++
++| Change | Material risk | Chosen check | Decision | Reason |
++|---|---|---|---|---|
++| `standard.json` `reviewers.design`; design-review workflow `## Dispatch`, step 9 keys and skill description (AC-1, AC-2) | a roster key, dispatched agent, verdict key or skill dispatch left on the old pair, so the phase dispatches an agent no roster names | content contract, derived from the roster and the workflow definitions | add | `sprint-031 AC-1/AC-2/AC-3` pins the roster literals, then derives the Dispatch agents, step 9 keys and skill-description agents from them; no existing check read these |
++| `asd-reviewer-{combined,quality,efficiency}.md` `## Inputs` and Gate Verdict Format (AC-3) | combined dispatched in design-review without design-review inputs, or quality/efficiency keeping an input block no dispatch reads | content contract, derived | add (Inputs), keep (verdict token) | the same test derives each reviewer's Inputs modes from the rosters; `sprint-020 AC-2/AC-4/AC-6` already derives each agent's `[REVIEW-<phase>-<key>]` token from the rosters and stayed green |
++| combined in design-review at runtime (AC-2, AC-3, plan DoD) | the manifest reviews code entries in a draft review, UI conformance stays gated when a ux-spec/design-system draft is in scope, or a `[REVIEW-design-combined]` return fails to persist | component/contract through the CLI | add | `sprint-031 AC-2/AC-3 (DoD)` emits the manifest and persists the return through `persist-review`, and asserts `quality`/`efficiency` refused by both; the plan DoD names it |
++| design-review tests written for `quality` | five tests asserted the old roster (`reviewerKeys('design')` now `combined`/`external`) | adapt | keep (adapted) | `review workflow contracts` (dispatch sentence and UI-entry wording), `sprint-015 AC-4/AC-5` and `sprint-017 AC-4/AC-8` (range and `--full-files` refusals through combined), `sprint-017 AC-8 (D9e)` (snapshot diffs through combined), `sprint-020 AC-4` (combined accepted, quality/efficiency refused), `sprint-012 AC-12` no-HTML phase-independence and UI phase-gate lift (combined); each keeps its original assertion on the retained surface |
++| `rangePatchInvocations` (AC-9, issue #74) | a scope above the Windows command-line cap fails the diff; a chunk edge parts a rename from its source; an empty list runs git; a scope below the budget changes its single invocation and `.diff` name | component, real git repo with a `child_process` spy preloaded into the runtime CLI | add | observes every git argv the runtime spawns, so the budget, list order, rename pairing, empty list and unchanged single invocation hold on any host, not only where the cap bites; `patchBytes` and `writeManifestDiff` consume the same list |
++| `reviewFindings` header check (AC-10, issue #78) | an extra category column read as the location; a header not led by `#`; a translated header rejected | unit | add | pure function with a real failure mode (silent mis-read); a translated header is the language-neutral counterpart the decisions log fixed |
++| efficiency return rule (AC-10) | the agent prose tells reviewers to add a category column | none beyond the leftover-term pin | none | the `category column keep-as-is/simplify/escalate` sentence is in the leftover-term check; the runtime now fails such a return before any row is read |
++| removed roster wording across canon, README, agent memory | a surviving sentence still sends standard design-review to Quality and Efficiency | content sweep (leftover-term check) | add | `sprint-031 leftover-term check` pins the exact sentences the diff removed, over canon, README, runtime, hook, standard.json and `.claude/agent-memory/**`; sweep ran clean, no memory hit |
++| rule docs and README roster mirrors (AC-4) | a mirror still states the old roster | none new | none | DoD rows are derived from the rosters by `sprint-020 AC-2/AC-4/AC-6`, README tables and flowchart by the phase-chain mirror tests, and removed wording by the leftover-term check above |
++| `review-policy.md` "Verify before applying" (AC-5) | fixer applies a suggested fix without the over-engineering check | none | none | judgement guidance a reviewer applies, no token, parser or gate to pin; the existing `Verify before applying` pins (heading, impl citation) stay green and cover the rule's home |
++| `asd-phase-impl.md` step 7 fix-round sync (AC-6) | sync runs after the tester chain | none | none | orchestrator ordering prose with no parsed token; the dev-before-tester chain ordering pin (`dispatched only after the dev chain completes`) stays green |
++| `custom-common-rules.md` Git Bash line (AC-7) | none | none | none | project-owned instruction line, no consumer in code; checked by reading the file |
++| `sprint-lifecycle.md` "Scope amendment" contradiction check (AC-8) | amendment accepted against a contradicting criterion | none | none | judgement duty of the orchestrator at a gate; the "Scope amendment" step pins stay green |
++
++Leftover-term check (first entry, `artifact-layout.md` "Agent memory"): the removed sentences taken from `git diff main...HEAD` were searched across the repo, `.claude/agent-memory/**` and the retired agents' directories included; no hit outside tests, sprint folders and rotated logs. The wider free-phrasing search (`design-review` near `quality`/`efficiency`) returns only current statements.
++
++## Removed tests
++
++| Test | Reason | In change scope |
++|---|---|---|
++| none | each red test still covers a retained surface; adapted, not removed | yes |
++
++## Added tests
++
++| Test | Regression proof |
++|---|---|
++| tests/run.js: sprint-031 AC-1/AC-2/AC-3 | mutation (scratch copy of `git archive HEAD`; repo tree untouched) restoring the superseded rule per assert: `standard.json` design roster → `quality, efficiency, external`; Dispatch agent → `asd-reviewer-quality, asd-reviewer-efficiency`; step 9 `(keyed ...)` → old keys; skill description → old pair; combined `design-review` Inputs block removed: `node tests/run.js --filter "sprint-031 AC-1/AC-2/AC-3"` → exit 1 each, `sprint-031 AC-1/AC-2/AC-3: ...`, 1/330 matched; reword control (step 9 opening clause reworded, tokens kept) → exit 0, 1/1; runs: 6 |
++| tests/run.js: sprint-031 AC-2/AC-3 (DoD) | mutation `standard.json` design roster → `quality, efficiency, external`: `node tests/run.js --filter "sprint-031 AC-2/AC-3 (DoD)"` → exit 1, `sprint-031 AC-2/AC-3 (DoD): ...`, 1/330 matched; runs: 1 |
++| tests/run.js: sprint-031 AC-9 (issue #74) | fail-first vs the pre-fix `.asd/runtime.js` (`git show main:.asd/runtime.js` in a scratch copy): `node tests/run.js --filter "sprint-031 AC-9"` → exit 1, `sprint-031 AC-9 (issue #74): ...` (the emit's git call exceeds the command-line cap); mutations of the chunker: per-path split, budget doubled, fixed args uncounted, empty list yields one invocation, `--no-textconv` dropped from the single invocation: each → exit 1, same test, 1/330 matched; runs: 6 |
++| tests/run.js: sprint-031 AC-10 (issue #78) | fail-first vs the pre-fix `.asd/runtime.js` (scratch copy): `node tests/run.js --filter "sprint-031 AC-10"` → exit 1, `sprint-031 AC-10 (issue #78): ...`; mutations: column-count check removed, `#` check removed → exit 1, same test, 1/330 matched; runs: 3 |
++| tests/run.js: sprint-031 leftover-term check | mutation reinserting a removed sentence (`Lite impl-review reviewer, one pass`) into `README.md`: `node tests/run.js --filter "sprint-031 leftover-term"` → exit 1, `sprint-031 leftover-term check: ...`, 1/330 matched; runs: 1 |
+diff --git a/.asd/sprints/031-combined-design-review/test-plan.md b/.asd/sprints/031-combined-design-review/test-plan.md
+index 8b320259..f181dc39 100644
+--- a/.asd/sprints/031-combined-design-review/test-plan.md
++++ b/.asd/sprints/031-combined-design-review/test-plan.md
+@@ -7,39 +7,31 @@ responsibility:
+ 
+ # Test plan — sprint 031-combined-design-review
+ 
++Entry 1 rows: `test-plan.entry-01.md`.
++
+ ## Entry log
+ 
+ | Entry | HEAD analysed | Scope |
+ |---|---|---|
+ | 1 | ce7373c5 | full change surface (`git diff main...HEAD`) |
++| 2 | caba7c4f | delta since entry 1 (`git diff ce7373c5...HEAD`): impl-review wave-1/iter-01 review-fix |
+ 
+ ## Risk → check decisions
+ 
+-Pre-strategy run (`node tests/run.js`, full): 320/325, five red, all test defects against the old roster; no code defect found.
+-
+ | Change | Material risk | Chosen check | Decision | Reason |
+ |---|---|---|---|---|
+-| `standard.json` `reviewers.design`; design-review workflow `## Dispatch`, step 9 keys and skill description (AC-1, AC-2) | a roster key, dispatched agent, verdict key or skill dispatch left on the old pair, so the phase dispatches an agent no roster names | content contract, derived from the roster and the workflow definitions | add | `sprint-031 AC-1/AC-2/AC-3` pins the roster literals, then derives the Dispatch agents, step 9 keys and skill-description agents from them; no existing check read these |
+-| `asd-reviewer-{combined,quality,efficiency}.md` `## Inputs` and Gate Verdict Format (AC-3) | combined dispatched in design-review without design-review inputs, or quality/efficiency keeping an input block no dispatch reads | content contract, derived | add (Inputs), keep (verdict token) | the same test derives each reviewer's Inputs modes from the rosters; `sprint-020 AC-2/AC-4/AC-6` already derives each agent's `[REVIEW-<phase>-<key>]` token from the rosters and stayed green |
+-| combined in design-review at runtime (AC-2, AC-3, plan DoD) | the manifest reviews code entries in a draft review, UI conformance stays gated when a ux-spec/design-system draft is in scope, or a `[REVIEW-design-combined]` return fails to persist | component/contract through the CLI | add | `sprint-031 AC-2/AC-3 (DoD)` emits the manifest and persists the return through `persist-review`, and asserts `quality`/`efficiency` refused by both; the plan DoD names it |
+-| design-review tests written for `quality` | five tests asserted the old roster (`reviewerKeys('design')` now `combined`/`external`) | adapt | keep (adapted) | `review workflow contracts` (dispatch sentence and UI-entry wording), `sprint-015 AC-4/AC-5` and `sprint-017 AC-4/AC-8` (range and `--full-files` refusals through combined), `sprint-017 AC-8 (D9e)` (snapshot diffs through combined), `sprint-020 AC-4` (combined accepted, quality/efficiency refused), `sprint-012 AC-12` no-HTML phase-independence and UI phase-gate lift (combined); each keeps its original assertion on the retained surface |
+-| `rangePatchInvocations` (AC-9, issue #74) | a scope above the Windows command-line cap fails the diff; a chunk edge parts a rename from its source; an empty list runs git; a scope below the budget changes its single invocation and `.diff` name | component, real git repo with a `child_process` spy preloaded into the runtime CLI | add | observes every git argv the runtime spawns, so the budget, list order, rename pairing, empty list and unchanged single invocation hold on any host, not only where the cap bites; `patchBytes` and `writeManifestDiff` consume the same list |
+-| `reviewFindings` header check (AC-10, issue #78) | an extra category column read as the location; a header not led by `#`; a translated header rejected | unit | add | pure function with a real failure mode (silent mis-read); a translated header is the language-neutral counterpart the decisions log fixed |
+-| efficiency return rule (AC-10) | the agent prose tells reviewers to add a category column | none beyond the leftover-term pin | none | the `category column keep-as-is/simplify/escalate` sentence is in the leftover-term check; the runtime now fails such a return before any row is read |
+-| removed roster wording across canon, README, agent memory | a surviving sentence still sends standard design-review to Quality and Efficiency | content sweep (leftover-term check) | add | `sprint-031 leftover-term check` pins the exact sentences the diff removed, over canon, README, runtime, hook, standard.json and `.claude/agent-memory/**`; sweep ran clean, no memory hit |
+-| rule docs and README roster mirrors (AC-4) | a mirror still states the old roster | none new | none | DoD rows are derived from the rosters by `sprint-020 AC-2/AC-4/AC-6`, README tables and flowchart by the phase-chain mirror tests, and removed wording by the leftover-term check above |
+-| `review-policy.md` "Verify before applying" (AC-5) | fixer applies a suggested fix without the over-engineering check | none | none | judgement guidance a reviewer applies, no token, parser or gate to pin; the existing `Verify before applying` pins (heading, impl citation) stay green and cover the rule's home |
+-| `asd-phase-impl.md` step 7 fix-round sync (AC-6) | sync runs after the tester chain | none | none | orchestrator ordering prose with no parsed token; the dev-before-tester chain ordering pin (`dispatched only after the dev chain completes`) stays green |
+-| `custom-common-rules.md` Git Bash line (AC-7) | none | none | none | project-owned instruction line, no consumer in code; checked by reading the file |
+-| `sprint-lifecycle.md` "Scope amendment" contradiction check (AC-8) | amendment accepted against a contradicting criterion | none | none | judgement duty of the orchestrator at a gate; the "Scope amendment" step pins stay green |
+-
+-Leftover-term check (first entry, `artifact-layout.md` "Agent memory"): the removed sentences taken from `git diff main...HEAD` were searched across the repo, `.claude/agent-memory/**` and the retired agents' directories included; no hit outside tests, sprint folders and rotated logs. The wider free-phrasing search (`design-review` near `quality`/`efficiency`) returns only current statements.
++| README roster Scope cells and gating paragraph (F1, F2) | a Scope cell or the gating paragraph still says Quality judges design-review drafts, or Efficiency's cell implies a design-review dispatch | content sweep (leftover-term check) | add (two phrases) | the two clauses F1 found were on `main` and removed by this sprint, yet the sweep missed them: its list is taken from removed lines and these were never listed; `design-review judges draft correctness (AC completeness, contract/ADR soundness)` and `impl-review adds test-suite cost and perf budgets` are pinned exactly, both absent from live canon today. F2's parenthetical was the sprint's own intermediate wording, never on `main`, so not pinned |
++| `asd-reviewer-combined.md` category-in-Description rule (F3) | a combined return with a category column | none | none | `reviewFindings` fails any six-column table before a row is read (`sprint-031 AC-10`), the enforcement the entry-1 efficiency-rule row already relies on; the prose adds a hint, no token to pin |
++| `sprint-lifecycle.md` "Scope amendment" contradiction check moved into the approval (F4) | the orchestrator skips the contradiction check | none | none | judgement duty at a hard gate; the "Scope amendment" pins read steps 1-3 and stay green |
++| `git-2.55.md` MSYS bullet to a pointer (F5) | two homes for one rule | none | none | SSoT of prose in a tech reference, no consumer in code |
++| `artifact-layout.md` SSoT/economy attribution, README SSoT line (F6) | an iron rule attributed to one agent only | none | none | attribution prose with no parsed token; `FAIL` from `asd-reviewer-quality`/`-efficiency` literals stay, additions only |
++| `review-policy.md` Efficiency impl-review cell, `runtime.js` `COMBINED_REVIEWER` JSDoc (F7), agent-memory note | none | none | none | a table cell restating the concerns already in the Efficiency rubric, and a comment; no behaviour change in `runtime.js`; leftover-term sweep over the delta (agent memory included) found no hit |
+ 
+ ## Removed tests
+ 
+ | Test | Reason | In change scope |
+ |---|---|---|
+-| none | each red test still covers a retained surface; adapted, not removed | yes |
++| none | no test is duplicated or trivial in the delta | yes |
+ 
+ ## Added tests
+ 
+@@ -47,19 +39,15 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
+ 
+ | Test | Regression proof |
+ |---|---|
+-| tests/run.js: sprint-031 AC-1/AC-2/AC-3 | mutation (scratch copy of `git archive HEAD`; repo tree untouched) restoring the superseded rule per assert: `standard.json` design roster → `quality, efficiency, external`; Dispatch agent → `asd-reviewer-quality, asd-reviewer-efficiency`; step 9 `(keyed ...)` → old keys; skill description → old pair; combined `design-review` Inputs block removed: `node tests/run.js --filter "sprint-031 AC-1/AC-2/AC-3"` → exit 1 each, `sprint-031 AC-1/AC-2/AC-3: ...`, 1/330 matched; reword control (step 9 opening clause reworded, tokens kept) → exit 0, 1/1; runs: 6 |
+-| tests/run.js: sprint-031 AC-2/AC-3 (DoD) | mutation `standard.json` design roster → `quality, efficiency, external`: `node tests/run.js --filter "sprint-031 AC-2/AC-3 (DoD)"` → exit 1, `sprint-031 AC-2/AC-3 (DoD): ...`, 1/330 matched; runs: 1 |
+-| tests/run.js: sprint-031 AC-9 (issue #74) | fail-first vs the pre-fix `.asd/runtime.js` (`git show main:.asd/runtime.js` in a scratch copy): `node tests/run.js --filter "sprint-031 AC-9"` → exit 1, `sprint-031 AC-9 (issue #74): ...` (the emit's git call exceeds the command-line cap); mutations of the chunker: per-path split, budget doubled, fixed args uncounted, empty list yields one invocation, `--no-textconv` dropped from the single invocation: each → exit 1, same test, 1/330 matched; runs: 6 |
+-| tests/run.js: sprint-031 AC-10 (issue #78) | fail-first vs the pre-fix `.asd/runtime.js` (scratch copy): `node tests/run.js --filter "sprint-031 AC-10"` → exit 1, `sprint-031 AC-10 (issue #78): ...`; mutations: column-count check removed, `#` check removed → exit 1, same test, 1/330 matched; runs: 3 |
+-| tests/run.js: sprint-031 leftover-term check | mutation reinserting a removed sentence (`Lite impl-review reviewer, one pass`) into `README.md`: `node tests/run.js --filter "sprint-031 leftover-term"` → exit 1, `sprint-031 leftover-term check: ...`, 1/330 matched; runs: 1 |
++| tests/run.js: sprint-031 leftover-term check (two phrases added, entry 2) | mutation (scratch copy of `git archive HEAD` plus the edited `tests/run.js`; repo tree untouched) appending each removed clause to `README.md`: `design-review judges draft correctness (AC completeness, contract/ADR soundness)` → `node tests/run.js --filter "sprint-031 leftover-term"` exit 1, `sprint-031 leftover-term check: ...`, 1/330 matched; `impl-review adds test-suite cost and perf budgets, regression` → exit 1, same test, 1/330 matched; reword control (both clauses reworded, tokens broken) → exit 0, 1/1; runs: 2 |
+ 
+ ## Suite run
+ 
+ - Command: `node tests/run.js`
+-- Scope: full — the change surface touches `.asd/runtime.js`, rule docs and workflow definitions, framework-wide files, so the safety valve degrades the impacted set to the whole suite
++- Scope: full — the delta touches `.asd/runtime.js` and rule docs, framework-wide files, so the safety valve degrades the impacted set to the whole suite
+ - Result: pass — 330 passed, 0 failed, 0 skipped
+ - Lint / build: pass — `git diff --cached --check` clean on the staged commit paths; `node .asd/sync.js --check` exit 0, `ok: true`
+-- HEAD: 827b0472 — the commit carrying the tests this run verified (test-plan.md only added after)
++- HEAD: c49b4a97 — the commit carrying the tests this run verified (test-plan.md and its segment only added after)
+ 
+ ## Defects
+ 
+diff --git a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+index 371ce914..cfddc6fd 100644
+--- a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
++++ b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+@@ -20,3 +20,4 @@
+ - [Shell-quoting claims](feedback_shell-quoting-claims.md) — a "safe in bash and PowerShell" strip list: PowerShell reads typographic quotes “ ” „ as "
+ - [Fixtures inside the repo](feedback_fixtures-inside-repo-walkups.md) — fixtures moved into .asd/tmp: GIT_CEILING guards git only; `.asd` walk-ups (findRepoRoot, findUp) reach the live repo
+ - [Double fix: caller and callee](feedback_double-fix-caller-and-callee.md) — caller rule excludes case C and callee CLI also guards C: guard unreachable, turns ENOENT into a silent exit 0
++- [Roster-move mirror sweep](feedback_roster-move-mirror-sweep.md) — reviewer changes phases: README Scope cells, one-phase gating paragraphs, "FAIL from <agent>" lines, combined's return rules
+diff --git a/.claude/agent-memory/asd-reviewer-combined/feedback_roster-move-mirror-sweep.md b/.claude/agent-memory/asd-reviewer-combined/feedback_roster-move-mirror-sweep.md
+new file mode 100644
+index 00000000..5819db53
+--- /dev/null
++++ b/.claude/agent-memory/asd-reviewer-combined/feedback_roster-move-mirror-sweep.md
+@@ -0,0 +1,18 @@
++---
++name: roster-move-mirror-sweep
++description: when a review roster moves between reviewers (who reviews which phase), the mirrors a removal sweep misses — README Scope cells, gating paragraphs, "Violation = FAIL from <agent>" attributions, return-format rules on one composed reviewer only
++metadata:
++  type: feedback
++---
++
++A roster-move diff updates the obvious roster literals (workflow JSON, Dispatch rows, DoD table, README Phase(s) column) and its leftover sweep pins only the sentences it removed. Missed sites hide in text the diff left untouched or half-edited:
++
++- README agent table: the **Scope** cell of a row whose Phase(s) cell changed (e.g. a reviewer no longer dispatched in a phase still "judges" in it; "Receives … test-plan.md" on a phase that has none).
++- A gating paragraph that gains the moved reviewer in a parenthetical while the gate it describes is limited to one phase (`asd-phase-impl-review.md` step 5 predicates; `runtime.js` `standingPredicates` returns before them in design-review).
++- Agent attributions of an iron rule (`artifact-layout.md` "Violation = FAIL from asd-reviewer-…", README "enforced by the Quality reviewer").
++- A return-format rule added to one composed reviewer (e.g. where the keep-as-is/simplify/escalate category goes) but not to `asd-reviewer-combined`, which composes that reviewer's entries.
++- Runtime JSDoc naming the moved reviewer's old workflow (`COMBINED_REVIEWER`).
++
++**Why:** the sweep and the suite only see removed text and roster literals; a Scope cell or attribution survives with no assertion touching it.
++
++**How to apply:** for each reviewer whose phase set changed, grep its name forms (agent id, `Quality`/`Combined` capitalised, `quality.md`) across README, rules and runtime, and read each hit's whole cell or sentence, not only the column the plan named. See [[relocation-review-method]].
+diff --git a/.claude/agent-memory/asd-tester/MEMORY.md b/.claude/agent-memory/asd-tester/MEMORY.md
+index 8fdf3050..ac0cd81a 100644
+--- a/.claude/agent-memory/asd-tester/MEMORY.md
++++ b/.claude/agent-memory/asd-tester/MEMORY.md
+@@ -3,3 +3,4 @@
+ - [ASD self-hosting test-plan conventions](project_asd-self-hosting-testing.md) — this repo IS the ASD framework; `tests/run.js` covers Node sources plus content contracts (rules, templates, skills, workflows, README, agent memory); sweep exemption shape.
+ - [Universal-reach sweeps](feedback_universal-reach-sweeps.md) — derive every site of an "every X does Y" rule from gate markers; migration fixtures need sync.js.
+ - [Observe spawned argv, short fixture paths](feedback_observe-spawned-argv-and-short-fixture-paths.md) — spy on spawnSync via --require to test host-only limits; irregular chunk fixtures; keep paths short on Windows.
++- [Review-found sweep gaps](feedback_review-found-sweep-gaps.md) — extend the leftover-term array with base-branch clauses a review found; skip the sprint's own intermediate wording.
+diff --git a/.claude/agent-memory/asd-tester/feedback_review-found-sweep-gaps.md b/.claude/agent-memory/asd-tester/feedback_review-found-sweep-gaps.md
+new file mode 100644
+index 00000000..157ec53d
+--- /dev/null
++++ b/.claude/agent-memory/asd-tester/feedback_review-found-sweep-gaps.md
+@@ -0,0 +1,12 @@
++---
++name: review-found-sweep-gaps
++description: when impl-review finds stale text a leftover-term sweep missed, pin the removed-from-main clauses, not the sprint's own intermediate wording
++metadata:
++  type: feedback
++---
++
++A leftover-term sweep lists sentences taken from the diff's removed lines, so a clause the roster move made false but the diff never touched survives. When a review finds such clauses, extend the existing sweep array with the ones that were on the base branch and are now absent from live canon; skip text the sprint itself wrote and then reworded in a fix round.
++
++**Why:** the first is a real recurring failure mode (the review found it); the second never existed on main and only pins a transient wording.
++
++**How to apply:** at a re-entry after a review-fix, grep each removed clause across the repo first (absent from live canon, present only in review diffs and archived sprints), add it to the sweep array rather than authoring a new test, and prove with one mutation per phrase plus a reword control through `--filter`.
+diff --git a/README.md b/README.md
+index 46a74834..f1463cd7 100644
+--- a/README.md
++++ b/README.md
+@@ -14,7 +14,7 @@ Both providers run from one canonical source under `.asd/` (agents, skills, hook
+ - **Documentation that stays alive.** Persistent docs (concept, stack, UX) update on every sprint instead of rotting; architecture decisions fold into whichever of them already owns the subject.
+ - **Reviews that converge.** Iteration severity floor stops reviewers from nitpicking the same low-severity issue forever, computed per review wave in impl-review. Each iteration dispatches reviewers with clean context, so verdicts aren't biased by the authoring that produced the artifact. Each internal reviewer must return a complete coverage ledger — every scoped file and every checklist rule accounted for — and the phase skill validates that full ledger before writing, rejecting and re-dispatching any reviewer whose ledger is incomplete, so no file or rule is skipped silently. The validated return is persisted as-is through `node .asd/runtime.js persist-review`, with a findings JSON beside it.
+ - **Brownfield-friendly.** The audit phase reads any existing docs and code (in any format and location) and reverse-engineers them into the workflow's structure.
+-- **One source of truth.** SSoT iron rule is enforced by the Quality reviewer, documentation economy by the Efficiency reviewer.
++- **One source of truth.** SSoT iron rule is enforced by the Quality rubric's SSoT entry, documentation economy by the Efficiency rubric's Documentation economy entry.
+ - **Subsystem-aware.** A subsystem registry (`docs/architecture/subsystems.md`) organises persistent docs per subsystem, with an optional LikeC4 or Mermaid C4 diagram.
+ 
+ ---
+@@ -243,14 +243,14 @@ Web grants split per reviewer: Quality and the combined reviewer carry `WebFetch
+ 
+ | Agent | Claude | Codex | Phase(s) | Scope |
+ |---|---|---|---|---|
+-| `asd-reviewer-quality` | opus/high | sol/high | `standard` impl-review | Bugs, security, contracts, best practices; AC-N→code→check trace; test adequacy, removal validity and fail-first proof; documentation accuracy (SSoT, template adherence, in-code doc comments, stub resolution); UI conformance (DESIGN.md tokens, a11y) n/a-able (see below); design-review judges draft correctness (AC completeness, contract/ADR soundness). Receives every file in scope, impl-review plus `test-plan.md` and its segments. |
+-| `asd-reviewer-efficiency` | opus/high | sol/high | `standard` impl-review | Over-engineering, structure/cohesion, complexity-vs-value, duplication/reuse, runtime token cost, documentation economy, change-size proportionality; impl-review adds test-suite cost and perf budgets, regression, anti-patterns — perf sections n/a-able (see below). Receives every file in scope. |
+-| `asd-reviewer-combined` | opus/high | sol/high | `standard` design-review, `lite` impl-review | Single-pass reviewer for `standard`'s design-review and `lite`'s impl-review: applies the Quality and Efficiency rubrics (their documentation entries only when a documentation file is in scope), plus its own overall-quality entry. Receives every file in scope plus `test-plan.md` and its segments. |
++| `asd-reviewer-quality` | opus/high | sol/high | `standard` impl-review | Bugs, security, contracts, best practices; AC-N→code→check trace; test adequacy, removal validity and fail-first proof; documentation accuracy (SSoT, template adherence, in-code doc comments, stub resolution); UI conformance (DESIGN.md tokens, a11y) n/a-able (see below). Receives every file in scope, impl-review plus `test-plan.md` and its segments. |
++| `asd-reviewer-efficiency` | opus/high | sol/high | `standard` impl-review | Over-engineering, structure/cohesion, complexity-vs-value, duplication/reuse, runtime token cost, documentation economy, change-size proportionality, test-suite cost, perf budgets, regression, anti-patterns — perf sections n/a-able (see below). Receives every file in scope. |
++| `asd-reviewer-combined` | opus/high | sol/high | `standard` design-review, `lite` impl-review | Single-pass reviewer for `standard`'s design-review and `lite`'s impl-review: applies the Quality and Efficiency rubrics (their documentation entries only when a documentation file is in scope), plus its own overall-quality entry. Receives every scoped draft (design-review), every file in scope plus `test-plan.md` and its segments (impl-review). |
+ | `asd-external-review` | sonnet/medium | sol/medium | both | Wraps the *other* provider's CLI (Codex CLI under Claude Code, Claude CLI under Codex), reads its own content from a structured scope manifest — file list plus a `.diff` file, per `.asd/rules/review-policy.md` § Scope hand-off (`.asd/rules/external-review.md` § Phase-scoped payload) — parses output, applies severity floor |
+ 
+ Reviewers emit a machine-parseable first-line verdict token: `[REVIEW-<phase>-<reviewer>]: APPROVE|CONCERNS|FAIL`, where `<phase>` is `design` or `impl` and `<reviewer>` is `quality | efficiency | combined | external`. External Review's first line may also be the skip form, per `.asd/rules/external-review.md` § Outcome contract.
+ 
+-**Diff-scoped rubric-section gating** (always on — SSoT: `.asd/workflows/asd-phase-impl-review.md` step 5): Quality and Efficiency (in `lite`'s impl-review and `standard`'s design-review, Combined) are always dispatched; two diff-derived predicates instead mark a rubric SECTION `n/a: <predicate>` inside that reviewer's own returned coverage ledger, so the agent never loads that domain's inputs for the n/a'd section. Quality's UI conformance section is n/a only when no file in the iteration's scope list is a UI surface; Efficiency's five performance sections are n/a only when both no perf-budgets section exists in `custom-coding-rules.md` and the scope list contains no executable file (conjunctive). Each n/a'd section re-enters automatically the moment a qualifying file re-enters the diff. `checkpoints.md`'s impl-review approval gate is unaffected (`review-policy.md` DoD table).
++**Diff-scoped rubric-section gating** (always on — SSoT: `.asd/workflows/asd-phase-impl-review.md` step 5): Quality and Efficiency (in `lite`, Combined) are always dispatched in impl-review (`standard`'s design-review gate: `asd-phase-design-review.md` `## Rules`); two diff-derived predicates instead mark a rubric SECTION `n/a: <predicate>` inside that reviewer's own returned coverage ledger, so the agent never loads that domain's inputs for the n/a'd section. Quality's UI conformance section is n/a only when no file in the iteration's scope list is a UI surface; Efficiency's five performance sections are n/a only when both no perf-budgets section exists in `custom-coding-rules.md` and the scope list contains no executable file (conjunctive). Each n/a'd section re-enters automatically the moment a qualifying file re-enters the diff. `checkpoints.md`'s impl-review approval gate is unaffected (`review-policy.md` DoD table).
+ 
+ An **APPROVE latch** persists per phase per reviewer key in `state.json` — in impl-review, per review wave: a reviewer that returned APPROVE on iteration N is not re-dispatched on N+1+ within the same wave, and counts as satisfied at that wave's DoD. A red full suite at the end of impl-review (see below) clears every latch sprint-wide.
+ 
+diff --git a/docs/architecture/tech-reference/git-2.55.md b/docs/architecture/tech-reference/git-2.55.md
+index 6164c04b..49819150 100644
+--- a/docs/architecture/tech-reference/git-2.55.md
++++ b/docs/architecture/tech-reference/git-2.55.md
+@@ -25,7 +25,7 @@ responsibility:
+ 
+ ## Project conventions
+ - Git runs without a shell (`spawnSync('git', args)`, `.asd/runtime.js` `runGit`); several invocations stream in order into one output file (`writeGitOutput`), so a path list split across invocations yields the same concatenated patch.
+-- Under Git Bash (MSYS), set `MSYS_NO_PATHCONV=1` before `git show <ref>:<path>`, or MSYS rewrites the argument as a path list.
++- Git Bash (MSYS) rewrites a `<ref>:<path>` argument as a path list; the project rule for it lives in `.asd/project/custom-common-rules.md`.
+ 
+ ## Known issues and workarounds
+ - A path list over the Windows cap fails with `spawnSync git ENAMETOOLONG` before git starts: split the list across invocations whose command line stays under the cap, a rename's source and destination in the same invocation.
+diff --git a/tests/run.js b/tests/run.js
+index 715f73ab..5935dd4c 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -9017,6 +9017,7 @@ test('sprint-031 leftover-term check: no canon, README, AGENTS.md, runtime, hook
+     'impl-review (`lite` only)', "Quality's UI rubric section is `n/a: outside phase gate` when no ux-spec/design-system artifact is in scope", 'When design-review has no ux-spec/design-system draft, Quality still dispatches', 'always dispatches asd-reviewer-quality + asd-reviewer-efficiency',
+     'Every internal reviewer — `asd-reviewer-quality`, `asd-reviewer-efficiency` — is dispatched', 'verified during design-review + impl-review by `asd-reviewer-quality`', 'Binding for the main orchestrator (author) and `asd-reviewer-quality` (verify, UI conformance section)',
+     '"role":"asd-reviewer-quality","phase":"design-review"', '"role":"asd-reviewer-efficiency","phase":"design-review"', 'dispatches reviewers (quality, efficiency, External Review)', '(`quality` and `efficiency` in `standard`, `combined` in lite)', 'Quality and the `lite`-only combined reviewer carry', 'category column keep-as-is/simplify/escalate',
++    'design-review judges draft correctness (AC completeness, contract/ADR soundness)', 'impl-review adds test-suite cost and perf budgets',
+   ];
+   const memoryFiles = fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT), { recursive: true }).map((entry) => `${AGENT_MEMORY_ROOT}/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
+   assertSweepReachesMemory(memoryFiles);
