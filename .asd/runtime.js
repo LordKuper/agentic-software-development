@@ -524,14 +524,14 @@ function tableCells(line) {
   return line.trim().replace(/^\||\|$/g, '').split(/(?<!\\)\|/).map((cell) => cell.trim().replace(/\\\|/g, '|').replace(/^`([^`]*)`$/, '$1'));
 }
 
-/** A review's findings as `{id, severity, location}`, read by column position from its first table: `t_review.md`'s Findings or the external report's Kept findings, whose header must equal `FINDINGS_COLUMNS` so an extra or reordered column is never read as another. An empty table is header and separator only; a `—` id row is skipped as legacy tolerance. */
+/** A review's findings as `{id, severity, location}`, read by column position from its first table: `t_review.md`'s Findings or the external report's Kept findings, whose header must have `FINDINGS_COLUMNS.length` columns led by `#`, so an extra column is never read as another. Headings follow the docs language, so the check is the column count and the `#` id column, not the heading text (a reordered translated header is not detectable). An empty table is header and separator only; a `—` id row is skipped as legacy tolerance. */
 function reviewFindings(text) {
   const lines = text.split(/\r?\n/).map((line) => line.trim());
   const start = lines.findIndex((line) => line.startsWith('|'));
   if (start === -1) fail('review has no findings table');
   const end = lines.findIndex((line, i) => i > start && !line.startsWith('|'));
   const [header, separator, ...rows] = lines.slice(start, end === -1 ? lines.length : end).map(tableCells);
-  if (header.join('|') !== FINDINGS_COLUMNS.join('|')) fail(`findings table header must be ${FINDINGS_COLUMNS.join(' | ')}: ${header.join(' | ')}`);
+  if (header.length !== FINDINGS_COLUMNS.length || header[0] !== '#') fail(`findings table must have ${FINDINGS_COLUMNS.length} columns led by #, as ${FINDINGS_COLUMNS.join(' | ')} in the template layout: ${header.join(' | ')}`);
   if (separator === undefined || separator.length !== header.length || !separator.every((cell) => /^:?-+:?$/.test(cell))) fail('findings table separator malformed');
   const seen = new Set();
   return rows.filter((cells) => cells[0] !== '—').map((cells) => {
