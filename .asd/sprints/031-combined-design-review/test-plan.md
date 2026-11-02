@@ -14,7 +14,7 @@ Entry 1 rows: `test-plan.entry-01.md`.
 | Entry | HEAD analysed | Scope |
 |---|---|---|
 | 1 | ce7373c5 | full change surface (`git diff main...HEAD`) |
-| 2 |  | delta since entry 1 (`git diff ce7373c5...HEAD`): impl-review wave-1/iter-01 review-fix |
+| 2 | caba7c4f | delta since entry 1 (`git diff ce7373c5...HEAD`): impl-review wave-1/iter-01 review-fix |
 
 ## Risk → check decisions
 
