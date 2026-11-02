@@ -1,7 +1,7 @@
 {
   "sprint_id": "031-combined-design-review",
   "branch": "sprint/031-combined-design-review",
-  "phase": "impl-review",
+  "phase": "impl",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -62,7 +62,14 @@
     "Task 2": { "execution": "agent", "tier": "standard", "reason": "risk:combined design-review input and verdict contract", "resolved_model": "sonnet" },
     "Task 3": { "execution": "agent", "tier": "standard", "reason": "risk:rule wording for the fix-application hold, sync point and amendment check", "resolved_model": "sonnet" },
     "Task 4": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:README roster mirror rows", "resolved_model": "sonnet" },
-    "Task 5": { "execution": "agent", "tier": "standard", "reason": "risk:command-line budget and rename-pair chunk edges", "resolved_model": "sonnet" }
+    "Task 5": { "execution": "agent", "tier": "standard", "reason": "risk:command-line budget and rename-pair chunk edges", "resolved_model": "sonnet" },
+    "F1": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:README roster scope cells", "resolved_model": "sonnet" },
+    "F2": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:README gating paragraph scope", "resolved_model": "sonnet" },
+    "F3": { "execution": "agent", "tier": "standard", "reason": "risk:combined category placement rule", "resolved_model": "sonnet" },
+    "F4": { "execution": "agent", "tier": "standard", "reason": "risk:scope amendment contradiction check actor", "resolved_model": "sonnet" },
+    "F6": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:SSoT and economy rubric attribution", "resolved_model": "sonnet" },
+    "F7": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:COMBINED_REVIEWER doc comment", "resolved_model": "sonnet" },
+    "external.md 1": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:Efficiency impl-review owner cell", "resolved_model": "sonnet" }
   },
   "skipped_phases": [],
   "reviews": {
