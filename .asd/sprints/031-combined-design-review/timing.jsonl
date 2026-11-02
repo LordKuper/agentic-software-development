@@ -65,3 +65,5 @@
 {"op":"open","id":"suite full","kind":"suite","parent":"impl-review suite 1","start":"2026-11-02T15:30:32.247Z","attrs":{"scope":"full"}}
 {"op":"close","id":"suite full","kind":"suite","parent":"impl-review suite 1","start":"2026-11-02T15:30:32.247Z","end":"2026-11-02T15:31:08.045Z","outcome":"done","attrs":{"scope":"full"}}
 {"op":"close","id":"impl-review suite 1","kind":"dispatch","parent":"impl-review#2","start":"2026-11-02T15:30:09.701Z","end":"2026-11-02T15:31:35.546Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard"}}
+{"op":"close","id":"impl-review#2","kind":"phase","parent":null,"start":"2026-11-02T15:25:32.222Z","end":"2026-11-02T15:31:39.615Z","outcome":"done","attrs":{}}
+{"op":"open","id":"design-promote#1","kind":"phase","parent":null,"start":"2026-11-02T15:31:39.615Z","attrs":{}}

@@ -1,7 +1,7 @@
 {
   "sprint_id": "031-combined-design-review",
   "branch": "sprint/031-combined-design-review",
-  "phase": "impl-review",
+  "phase": "design-promote",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -78,7 +78,7 @@
     "F7": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:COMBINED_REVIEWER doc comment", "resolved_model": "sonnet" },
     "external.md 1": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:Efficiency impl-review owner cell", "resolved_model": "sonnet" }
   },
-  "skipped_phases": [],
+  "skipped_phases": ["design-promote"],
   "reviews": {
     "design": { "iteration": 0, "verdicts": {}, "latched": {} },
     "impl": { "wave": 1, "waves": [ { "iteration": 2, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "CONCERNS" }, "iter-02": { "combined": "APPROVE", "external": "APPROVE" } }, "iteration_heads": { "iter-01": "f1df727129a50e89c6b3032de4d42c2f47ac9767", "iter-02": "357e4910234756e1a37af7d006d4593e3d24cfa1" }, "latched": { "combined": 2, "external": 2 } } ] }
