@@ -48,6 +48,13 @@
       "reason": "AC-1..AC-13 traced to Tasks 1-5 and the AC-8 plan-time line; decomposition rules met; checks-wait is the bounded choice the audit named; no open material alternative",
       "evidence": "decisions-log.md 2026-11-05 plan accepted (adaptive)",
       "artifact_revision": "plan.md@plan"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "Tasks 1-5 ticked; AC-1..AC-13 covered; flagged choices stay inside their AC; no stubs; build, lint, round diff clean",
+      "evidence": "decisions-log.md 2026-11-05 impl assessment approved (adaptive)",
+      "artifact_revision": "f9b8d2d3"
     }
   ],
   "task_routing": {

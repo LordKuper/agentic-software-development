@@ -39,3 +39,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 <!-- entries appended below this line -->
 
 - 2026-11-05 — route Task 1, Task 2, Task 3, Task 4, Task 5: standard, dispatch HEAD 79eba1f9
+
+## 2026-11-05 — impl assessment approved (adaptive)
+
+- **Decision**: Tasks 1-5 ticked; AC-1..AC-13 covered, AC-8 at plan; flagged choices accepted: `asd-sync` also leaves `foreign` alone; `checks-wait` reads a `[]` as `none` and caps each `gh` read at 60 s; an `OPEN` head-branch hit passes through the scratch step; a dev or tester fixes its own memory hit; README's `/asd-update` row gained `/asd-sync`.
+- **Rationale**: Each flagged choice stays inside its AC and changes no predicate the plan fixed. Build and lint clean, round diff within Task scopes plus the synced views; `tests/run.js` is 328/330, the two reds pinning the pr chain's old wording, which impl-test adapts. No stubs added.
+- **Affected docs**: `plan.md`
