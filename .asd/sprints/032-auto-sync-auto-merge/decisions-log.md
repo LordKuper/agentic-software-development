@@ -37,9 +37,3 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
-
-## 2026-11-05 — plan accepted (adaptive)
-
-- **Decision**: `plan.md` accepted: Tasks 1-5 in wave 1 on disjoint paths, AC-8 and the `gh` tech-reference entries written at plan. `asd-agent-*` definitions stay untouched for AC-12, `git-strategy.md` "Commit before review" being in the dev and tester bundles already. `asd-sync` applies a marked `orphan` with no question, AC-1 leaving only `modified-foreign` to ask about.
-- **Rationale**: Every AC traces to a Task or the plan-time line; each decomposition rule holds; the only new surface, `checks-wait`, is the bounded mechanism the chosen approach M1 needs and the audit named it.
-- **Affected docs**: `plan.md`, `.asd/project/custom-coding-rules.md`, `docs/architecture/tech-reference/gh-2.90.md`
