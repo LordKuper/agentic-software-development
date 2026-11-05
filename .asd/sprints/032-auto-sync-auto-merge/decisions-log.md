@@ -46,3 +46,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: `retrospective.html` written on the analysed branch: 2 entries, 2 actions, 2 systemic proposals, one of them a `covered by:` row. Step 7 skipped under `self_hosting: enabled`.
 - **Rationale**: Rows stay proposals; the next scope's retro intake takes their dispositions.
 - **Affected docs**: `retrospective.html`, `friction-log.md`
+
+## 2026-11-05 — PR opened
+
+- **Decision**: Version bumped to 14.4.0 with its CHANGELOG section; PR 87 opened for `sprint/032-auto-sync-auto-merge`, then merged in this run per `git-strategy.md` "Merging a PR".
+- **Rationale**: The scope gate named this sprint's own PR under the new rule; DoD checks pass. The first `gh pr create` failed with a GraphQL server error and made no PR, confirmed by a head-branch lookup; one retry opened it.
+- **Affected docs**: `CHANGELOG.md`, `.asd/release-manifest.json`
