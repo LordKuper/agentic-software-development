@@ -14,7 +14,7 @@ were scoped through; the next re-entry's delta is `git diff <this sha>...HEAD`.
 
 | Entry | HEAD analysed | Scope |
 |---|---|---|
-| 1 |  | full change surface (`git diff main...HEAD`, excluding `.asd/sprints/**`, `.asd/project/**` and generated views) |
+| 1 | 810b23cd | full change surface (`git diff main...HEAD`, excluding `.asd/sprints/**`, `.asd/project/**` and generated views) |
 
 ## Risk → check decisions
 
