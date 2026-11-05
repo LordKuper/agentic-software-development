@@ -1,0 +1,51 @@
+{
+  "sprint_id": "032-auto-sync-auto-merge",
+  "branch": "sprint/032-auto-sync-auto-merge",
+  "phase": "scope",
+  "workflow": "lite",
+  "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
+  "cleanup": true,
+  "user_gates": "adaptive",
+  "gate_decisions": [
+    {
+      "gate": "workflow choice",
+      "decision_actor": "user",
+      "reason": "user answer: lite",
+      "evidence": "decisions-log.md 2026-11-05 sprint opened",
+      "artifact_revision": "state.json@scope"
+    },
+    {
+      "gate": "approach choice",
+      "decision_actor": "user",
+      "reason": "M1 same-run merge with orchestrator wait; S1 one asd-sync behaviour; no config key",
+      "evidence": "research.md Approaches Chosen",
+      "artifact_revision": "research.md@scope"
+    },
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "sprint.md AC-1..AC-13 accepted as one sprint, no split; own PR merges under the new rule",
+      "evidence": "decisions-log.md 2026-11-05 scope gate",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "retro intake dispositions",
+      "decision_actor": "user",
+      "reason": "031#A-2 A-3 P-1 included (AC-6..AC-8); #80 #81 #82 #83 #84 #85 included (AC-7, AC-9..AC-13); 031#P-2 #75 #76 #86 deferred",
+      "evidence": "decisions-log.md 2026-11-05 retro intake dispositions",
+      "artifact_revision": "sprint.md@scope"
+    }
+  ],
+  "task_routing": {},
+  "skipped_phases": [],
+  "reviews": {
+    "design": { "iteration": 0, "verdicts": {}, "latched": {} },
+    "impl": { "wave": 1, "waves": [ { "iteration": 0, "verdicts": {}, "iteration_heads": {}, "latched": {} } ] }
+  },
+  "created_at": "2026-11-05T14:59:32.000Z",
+  "updated_at": "2026-11-05T14:59:32.000Z",
+  "review_fixes_pending": null,
+  "test_defects_pending": null,
+  "pr": null,
+  "archived_at": null
+}
