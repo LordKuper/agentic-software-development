@@ -45,7 +45,7 @@ const WORKFLOWS_DIR = path.join(__dirname, 'workflows');
 const WORKFLOW_KEYS = ['name', 'next', 'phases', 'reviewers', 'rollback_reset'];
 /** Review nodes a definition's `reviewers` and `rollback_reset` are keyed by, as `persist-review --phase` takes them. */
 const REVIEW_NODES = ['design', 'impl'];
-/** `NEXT:` targets that end the chain instead of naming a phase: `pr`'s open and merge exits; `done` names completion, the closure write follows at the next sprint's start. */
+/** `NEXT:` targets that end the chain instead of naming a phase: `pr` merge mode's blocked and merged exits; `done` names completion, the closure write follows at the next sprint's start. */
 const CHAIN_EXITS = ['await-merge', 'done'];
 /** Severities a finding row may carry (`review-policy.md` "Severity levels"). */
 const SEVERITIES = ['low', 'medium', 'high', 'critical'];
@@ -1469,17 +1469,19 @@ function contextCommand(flags) {
   return { out: flags.out, refs: refs.length, bytes: Buffer.byteLength(bundle) };
 }
 
-/** Reads one PR's check state as `pass`, `pending`, `fail` or `none`; any other `gh` failure throws. `gh` exits non-zero while checks are pending or failed yet still prints the JSON, so stdout is read whatever the status. */
+/** Reads one PR's check state as `pass`, `pending`, `fail` or `none`; any other `gh` failure, unparseable or non-array output included, throws. */
 function readChecks(pr) {
   const result = spawnSync('gh', ['pr', 'checks', String(pr), '--json', 'bucket'], { encoding: 'utf8', timeout: CHECKS_READ_TIMEOUT_MS, windowsHide: true });
   if (result.error) fail(`gh pr checks ${pr} failed: ${result.error.message}`);
+  if (/no checks reported/.test(result.stderr || '')) return 'none';
   let rows = null;
   try {
     rows = JSON.parse(result.stdout);
-  } catch {
-    if (!/no checks reported/.test(result.stderr || '')) fail(`gh pr checks ${pr} failed: ${(result.stderr || '').trim()}`);
+  } catch (error) {
+    fail(`gh pr checks ${pr} failed: ${error.message}; ${(result.stderr || '').trim()}`);
   }
-  if (!Array.isArray(rows) || rows.length === 0) return 'none';
+  if (!Array.isArray(rows)) fail(`gh pr checks ${pr} failed: output is not a check array`);
+  if (rows.length === 0) return 'none';
   const buckets = rows.map((row) => row.bucket);
   if (buckets.some((bucket) => CHECK_FAIL_BUCKETS.includes(bucket))) return 'fail';
   return buckets.includes('pending') ? 'pending' : 'pass';
