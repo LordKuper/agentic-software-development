@@ -1,7 +1,7 @@
 {
   "sprint_id": "032-auto-sync-auto-merge",
   "branch": "sprint/032-auto-sync-auto-merge",
-  "phase": "impl-review",
+  "phase": "cleanup",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -55,6 +55,13 @@
       "reason": "Tasks 1-5 ticked; AC-1..AC-13 covered; flagged choices stay inside their AC; no stubs; build, lint, round diff clean",
       "evidence": "decisions-log.md 2026-11-05 impl assessment approved (adaptive)",
       "artifact_revision": "f9b8d2d3"
+    },
+    {
+      "gate": "impl-review green handoff",
+      "decision_actor": "orchestrator",
+      "reason": "combined and external APPROVE at wave-1/iter-02; terminal full suite 343/343; lint and build clean; no open question",
+      "evidence": "reviews/impl/wave-1/iter-02/, test-plan.md Suite run",
+      "artifact_revision": "bacaf5e4"
     }
   ],
   "task_routing": {
@@ -65,7 +72,7 @@
     "Task 5": { "execution": "agent", "tier": "standard", "reason": "artifact-risk:README mirror rows", "resolved_model": "sonnet" },
     "review-fix wave-1/iter-01": { "execution": "agent", "tier": "standard", "reason": "risk:workflow gate", "resolved_model": "sonnet" }
   },
-  "skipped_phases": [],
+  "skipped_phases": ["design-promote"],
   "reviews": {
     "design": { "iteration": 0, "verdicts": {}, "latched": {} },
     "impl": { "wave": 1, "waves": [ { "iteration": 2, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "CONCERNS" }, "iter-02": { "combined": "APPROVE", "external": "APPROVE" } }, "iteration_heads": { "iter-01": "c96e142d26a3bf38768dc5a65f2c6e907b54fbd8", "iter-02": "4a6393a33bacc500ce655a81d1827d2b692a8781" }, "latched": { "combined": 2, "external": 2 } } ] }
