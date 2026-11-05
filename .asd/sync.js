@@ -1079,11 +1079,14 @@ function hasOwnershipMarker(absPath) {
   }
 }
 
-// Returns [{ target, marked }] for every file that sits inside one of the
-// four generated trees but has no matching entry in the current sync plan.
+// Returns [{ target, marked, edited }] for every file that sits inside one of
+// the four generated trees but has no matching entry in the current sync plan.
 // `marked` = the file carries the ASD ownership marker (apply may delete it);
 // unmarked = indistinguishable from a consumer's own hand-authored agent or
-// skill living in the same directory - reported, never touched.
+// skill living in the same directory - reported, never touched. `edited` = a
+// marked file whose body no longer matches the marker's content digest (no
+// expected digest exists for an orphan, so only the hand-edit branch of
+// statusFullFile can answer) - deleted only on a user-confirmed force.
 function findOrphans(repoRoot, plan) {
   const expected = expectedGeneratedTargets(plan);
   const orphans = [];
@@ -1095,9 +1098,11 @@ function findOrphans(repoRoot, plan) {
     for (const rel of relFiles) {
       const absPath = path.join(absDir, rel);
       if (expected.has(absPath)) continue;
+      const marked = hasOwnershipMarker(absPath);
       orphans.push({
         target: path.relative(repoRoot, absPath).replace(/\\/g, '/'),
-        marked: hasOwnershipMarker(absPath),
+        marked,
+        edited: marked && statusFullFile(absPath, null) === 'modified-foreign',
       });
     }
   }
@@ -1326,11 +1331,17 @@ function statusForPlanItem(item, repoRoot, manifest, syncState) {
   throw new Error(`unknown sync plan item class "${item.class}"`);
 }
 
+// Report status of one findOrphans entry.
+function orphanStatus(orphan) {
+  if (!orphan.marked) return 'orphan-unmarked';
+  return orphan.edited ? 'orphan-modified' : 'orphan';
+}
+
 // Every managed target's status, plus any orphaned generated view (a file
 // still on disk after its canonical source moved or was deleted). An
-// ownership-marked orphan reports as a real defect ('orphan'); an unmarked
-// one is informational only ('orphan-unmarked') - a consumer's own file, not
-// this tool's to flag.
+// ownership-marked orphan reports as a real defect ('orphan', or
+// 'orphan-modified' once hand-edited); an unmarked one is informational only
+// ('orphan-unmarked') - a consumer's own file, not this tool's to flag.
 function runCheck(repoRoot) {
   const manifest = loadReleaseManifest(repoRoot);
   const syncState = loadSyncState(repoRoot);
@@ -1341,7 +1352,7 @@ function runCheck(repoRoot) {
     report.push({ target: path.relative(repoRoot, item.targetPath).replace(/\\/g, '/'), status });
   }
   for (const orphan of findOrphans(repoRoot, plan)) {
-    report.push({ target: orphan.target, status: orphan.marked ? 'orphan' : 'orphan-unmarked' });
+    report.push({ target: orphan.target, status: orphanStatus(orphan) });
   }
   return report;
 }
@@ -1357,7 +1368,8 @@ function runCheck(repoRoot) {
 // generated view whose canonical source no longer exists, so it never
 // appears in buildSyncPlan's source-driven output. An orphan is deleted only
 // when it carries the ASD ownership marker (a consumer's own file of the
-// same name never does); a target matching neither the plan nor a detected
+// same name never does) and, if hand-edited, only under `options.force`; a
+// target matching neither the plan nor a detected
 // orphan aborts every write in the whole batch, so one bad target never
 // half-applies the rest.
 //
@@ -1420,15 +1432,13 @@ function runApply(repoRoot, requestedFiles, options) {
     if (!r.item) {
       if (!r.orphan) {
         results.push({ target: r.rel, status: 'not-found', applied: false });
-      } else if (r.orphan.marked && !hasInvalidTarget) {
+      } else if (r.orphan.marked && !hasInvalidTarget && (!r.orphan.edited || forceSet.has(r.rel))) {
         const absOrphan = path.join(repoRoot, r.rel);
         fs.unlinkSync(absOrphan);
         removeIfEmptyDir(path.dirname(absOrphan));
-        results.push({ target: r.rel, status: 'orphan', applied: true });
-      } else if (r.orphan.marked) {
-        results.push({ target: r.rel, status: 'orphan', applied: false });
+        results.push({ target: r.rel, status: orphanStatus(r.orphan), applied: true });
       } else {
-        results.push({ target: r.rel, status: 'orphan-unmarked', applied: false });
+        results.push({ target: r.rel, status: orphanStatus(r.orphan), applied: false });
       }
       continue;
     }
@@ -1453,8 +1463,8 @@ function runApply(repoRoot, requestedFiles, options) {
 }
 
 // CLI entry: `--check` reports every managed target's status, exiting
-// non-zero if any generated view is an ownership-marked orphan - an
-// unmarked orphan is informational only. `--apply <file...> [--force]`
+// non-zero if any generated view is an ownership-marked orphan, edited or
+// not - an unmarked orphan is informational only. `--apply <file...> [--force]`
 // writes only the requested targets, exiting non-zero if any of them
 // matched neither a plan entry nor a detected orphan, so a bogus target is
 // never silently treated as success; the hash-ledger recompute that follows
@@ -1467,7 +1477,7 @@ function main(argv) {
   const args = argv.slice(2);
   if (args[0] === '--check') {
     const report = runCheck(repoRoot);
-    const hasOrphans = report.some((r) => r.status === 'orphan');
+    const hasOrphans = report.some((r) => r.status === 'orphan' || r.status === 'orphan-modified');
     process.stdout.write(JSON.stringify({ ok: !hasOrphans, items: report }, null, 2) + '\n');
     return hasOrphans ? 1 : 0;
   }
