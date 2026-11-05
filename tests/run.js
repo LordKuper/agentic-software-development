@@ -3546,7 +3546,7 @@ test('T-2, sprint-021 AC-11: providers.md "Canonical path -> per-provider path" 
 
   const agents = canonText('AGENTS.md');
   assert.ok(agents.includes('node "$(git rev-parse --show-toplevel)/.asd/sync.js" --apply <generated-view-path...>') && agents.includes('`sprint-lifecycle.md` "Self-hosting"'), 'AGENTS.md keeps the self-locating --apply command form and cites the rule that says who runs it');
-  for (const rel of ['.asd/agents/asd-dev.md', '.asd/skills/asd-update/SKILL.md', '.asd/workflows/asd-phase-impl.md', 'README.md']) {
+  for (const rel of ['.asd/agents/asd-dev.md', '.asd/workflows/asd-phase-impl.md', 'README.md']) {
     assert.ok(canonText(rel).includes(citation), `${rel} must cite providers.md "${citation}" for the generated view paths instead of restating them`);
   }
   const coding = canonText('.asd/project/custom-coding-rules.md');
@@ -6879,7 +6879,7 @@ test('sprint-021 AC-10/AC-11 (D5): scratch-dir creates .asd/tmp/ beside the runt
   assert.strictEqual(git('status', '--porcelain', '--untracked-files=all'), '', 'the directory and its own .gitignore must be ignored with no root .gitignore entry - a consumer needs no migration, and a helper or return file never reaches a commit or a review');
 });
 
-test('sprint-021 AC-1/AC-2 (D1), sprint-022 AC-1/AC-2/AC-3: pr ends at await-merge or done, and runtime CHAIN_EXITS, asd-sprint and README agree; pr open mode commits and pushes its state.json.pr write before await-merge, pr merge mode, entered on any confirmed MERGED number (only the retry of the missing release and issue-close steps skips open mode\'s DoD gate), skips the merge for a PR already MERGED, republishes it if the PR head lacks it before merging, fetches base before the self-hosting release and, in every project, performs no part of the closure write, which releases nothing and is the orchestrator\'s, and scope step 1 carries every token of it', () => {
+test('sprint-021 AC-1/AC-2 (D1), sprint-022 AC-1/AC-2/AC-3: pr ends at await-merge or done, and runtime CHAIN_EXITS, asd-sprint and README agree; pr open mode commits and pushes its state.json.pr write before it continues into merge mode, pr merge mode, entered on any confirmed MERGED number (only the retry of the missing release and issue-close steps skips open mode\'s DoD gate), skips the merge for a PR already MERGED, republishes it if the PR head lacks it before merging, fetches base before the self-hosting release and, in every project, performs no part of the closure write, which releases nothing and is the orchestrator\'s, and scope step 1 carries every token of it', () => {
   const definitions = readWorkflowDefinitions();
   const exits = [...new Set(definitions.flatMap(({ phases, next }) => Object.values(next).flat().filter((target) => !phases.includes(target))))].sort();
   assert.deepStrictEqual(exits, ['await-merge', 'done'], 'sprint-022 AC-3 (D1): the chain ends at pr\'s two exits - the PR opened, then merged; done names completion, not a write, since pr never writes the terminal state');
@@ -6926,12 +6926,13 @@ test('sprint-021 AC-1/AC-2 (D1), sprint-022 AC-1/AC-2/AC-3: pr ends at await-mer
   assert.deepStrictEqual(writes.filter((token) => merge.includes(token)), [], 'AC-1: pr merge mode makes no write on git.base_branch - the archive move and terminal state belong to the next sprint\'s scope');
   const openSteps = openMode.split(/\n(?=\d+[a-z]?\. )/);
   const writeAt = openSteps.findIndex((step) => step.includes('`state.json.pr`'));
-  const nextAt = openSteps.findIndex((step) => step.includes('`NEXT: await-merge`'));
-  assert.ok(writeAt >= 0 && writeAt < nextAt, 'sanity: pr open mode must write `state.json.pr` in a step before the one emitting `NEXT: await-merge`');
+  const nextAt = openSteps.findIndex((step, index) => index > writeAt && /merge mode/.test(step));
+  assert.ok(writeAt >= 0 && writeAt < nextAt, 'sanity: pr open mode must write `state.json.pr` in a step before the one handing over to merge mode');
+  assert.ok(!openMode.includes('`NEXT: await-merge`'), 'sprint-032 AC-3: pr open mode emits no exit of its own - it continues into merge mode in the same run, and `NEXT: await-merge` is the blocked-merge exit of merge mode');
   const publish = openSteps.slice(writeAt, nextAt).join('\n').split('`state.json.pr`').slice(1).join('').replace(/`[^`]*`/g, '');
   const unpublished = 'merge mode writes nothing, so pr.number reaches git.base_branch only through the squash merge; unpublished, base keeps pr=null and the merged sprint is found only by the head-branch fallback lookup (sprint-lifecycle.md "PR phase" "Merged-unclosed", impl-review wave-1/iter-01 C-1)';
-  assert.ok(/\bcommit/i.test(publish), `AC-2: pr open mode must commit its state.json.pr write before NEXT: await-merge - ${unpublished}`);
-  assert.ok(/\bpush/i.test(publish), `AC-2: pr open mode must push the sprint branch carrying its state.json.pr write before NEXT: await-merge - ${unpublished}`);
+  assert.ok(/\bcommit/i.test(publish), `AC-2: pr open mode must commit its state.json.pr write before merge mode - ${unpublished}`);
+  assert.ok(/\bpush/i.test(publish), `AC-2: pr open mode must push the sprint branch carrying its state.json.pr write before merge mode - ${unpublished}`);
   const mergeCall = merge.indexOf('"Merging a PR"');
   assert.ok(mergeCall >= 0, 'sanity: pr merge mode must merge through git-strategy.md "Merging a PR", the site the checks below must precede');
   const beforeMerge = merge.slice(0, mergeCall);
@@ -9024,6 +9025,256 @@ test('sprint-031 leftover-term check: no canon, README, AGENTS.md, runtime, hook
   const swept = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/hooks/session-start.js', '.asd/runtime.js', '.asd/workflows/standard.json', ...memoryFiles];
   const hits = swept.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => removed.filter((phrase) => line.includes(phrase)).map((phrase) => `${rel}:${index + 1} ${phrase}`)));
   assert.deepStrictEqual(hits, [], 'each phrase is a sentence or term this sprint removed (git diff main...HEAD), taken exactly - one surviving still sends standard design-review to Quality and Efficiency or Combined away from drafts. CHANGELOG.md, migrations, tests and sprint folders are history and stay out of the sweep');
+});
+
+// ===========================================================================
+// Sprint 032: checks-wait (AC-4, AC-5), same-run merge (AC-3), asd-sync and
+// asd-update (AC-1, AC-2) and the carried retro and issue fixes (AC-6..AC-13).
+// Runtime behaviour runs on a fake clock and a canned `gh`; nothing really
+// waits and no real `gh` runs.
+// ===========================================================================
+
+/** Runs `waitForChecks` over scripted reads (the last repeats, an Error is thrown) on a fake clock only the injected sleep advances. */
+async function scriptedWait(reads) {
+  const queue = [...reads];
+  let clock = 0;
+  let polls = 0;
+  const read = () => {
+    const next = queue.length > 1 ? queue.shift() : queue[0];
+    if (next instanceof Error) throw next;
+    return next;
+  };
+  const sleep = async (ms) => {
+    clock += ms;
+    polls += 1;
+  };
+  const checks = await runtime.waitForChecks({ read, sleep, now: () => clock });
+  return { checks, elapsed: clock, polls };
+}
+
+/** A preload that answers every `gh` spawn from `answers` in order (the last repeats) and logs each argv, and turns sleeping into advancing a fake clock, so a child runs `runtime.js` with no real `gh` and no real wait. */
+function ghStub(answers) {
+  const work = mkTempDir();
+  const preload = path.join(work, 'gh-stub.js');
+  const log = path.join(work, 'calls.json');
+  fs.writeFileSync(preload, [
+    "const cp = require('child_process');",
+    "const fs = require('fs');",
+    'const answers = JSON.parse(process.env.GH_ANSWERS);',
+    'const calls = [];',
+    "const timers = require('timers/promises');",
+    'let clock = 0;',
+    'Date.now = () => clock;',
+    'timers.setTimeout = async (ms) => { clock += ms; };',
+    "cp.spawnSync = (file, argv) => { calls.push([file, ...argv]); return (answers.length > 1 ? answers.shift() : answers[0]) || { error: { message: 'no answer left' } }; };",
+    "process.on('exit', () => fs.writeFileSync(process.env.GH_CALLS, JSON.stringify(calls)));",
+  ].join('\n'), 'utf8');
+  const { spawnSync } = require('node:child_process');
+  return {
+    work,
+    run: (args, env = {}) => spawnSync(process.execPath, ['--require', preload, ...args], { encoding: 'utf8', env: { ...process.env, ...env, GH_ANSWERS: JSON.stringify(answers), GH_CALLS: log } }),
+    calls: () => JSON.parse(fs.readFileSync(log, 'utf8')),
+  };
+}
+
+const CHECKS_PR = '7';
+const RUNTIME_JS = path.join(REPO_ROOT, '.asd', 'runtime.js');
+
+test('sprint-032 AC-4/AC-5: waitForChecks returns pass and fail at once, polls none through the 60 s grace and pending through the 30 min limit, then gives up as none and timeout, and a failed read propagates', async () => {
+  const { CHECKS_GRACE_MS: grace, CHECKS_LIMIT_MS: limit, CHECKS_POLL_MS: poll } = runtime;
+  assert.strictEqual(grace, 60 * 1000, 'AC-4: up to 60 s for checks to register');
+  assert.strictEqual(limit, 30 * 60 * 1000, 'AC-4: up to 30 min for checks to finish');
+  assert.ok(grace % poll === 0 && limit % poll === 0, 'sanity: the poll divides both bounds, so the boundary cases below land on a read');
+
+  assert.deepStrictEqual(await scriptedWait(['pass']), { checks: 'pass', elapsed: 0, polls: 0 }, 'pass returns at once');
+  assert.deepStrictEqual(await scriptedWait(['fail']), { checks: 'fail', elapsed: 0, polls: 0 }, 'fail returns at once');
+  assert.deepStrictEqual(await scriptedWait(['pending', 'fail']), { checks: 'fail', elapsed: poll, polls: 1 }, 'a failing check ends the wait while others still run');
+  assert.deepStrictEqual(await scriptedWait(['none', 'none', 'pending', 'pass']), { checks: 'pass', elapsed: 3 * poll, polls: 3 }, 'none inside the grace polls on, pending then pass merges');
+
+  const registersLast = await scriptedWait([...Array(grace / poll - 1).fill('none'), 'pass']);
+  assert.strictEqual(registersLast.checks, 'pass', 'checks registering on the last poll inside the grace still count');
+  const none = await scriptedWait(['none']);
+  assert.strictEqual(none.checks, 'none', 'AC-4: no check after the grace is none, which merges');
+  assert.ok(none.elapsed >= grace && none.elapsed < grace + poll, `none must be returned right past the grace, got ${none.elapsed} ms`);
+
+  const finishesLast = await scriptedWait([...Array(limit / poll - 1).fill('pending'), 'pass']);
+  assert.strictEqual(finishesLast.checks, 'pass', 'checks finishing on the last poll inside the limit still pass');
+  const timeout = await scriptedWait(['pending']);
+  assert.strictEqual(timeout.checks, 'timeout', 'AC-5: pending past the limit is the exceeded wait');
+  assert.ok(timeout.elapsed >= limit && timeout.elapsed < limit + poll, `timeout must be returned right past the limit, got ${timeout.elapsed} ms`);
+
+  await assert.rejects(scriptedWait([new Error('gh pr checks 7 failed: boom')]), /boom/, 'an unexpected gh failure is never read as a check state');
+});
+
+test('sprint-032 AC-4: readChecks maps gh pr checks output - skipping is pass, any pending is pending, fail and cancel are fail, an empty list or the no-checks message is none - and any other gh failure throws', () => {
+  const rows = (...buckets) => JSON.stringify(buckets.map((bucket) => ({ bucket })));
+  const cases = [
+    [{ status: 0, stdout: rows('pass', 'skipping'), stderr: '' }, 'pass'],
+    [{ status: 8, stdout: rows('pass', 'pending'), stderr: '' }, 'pending'],
+    [{ status: 1, stdout: rows('pending', 'fail'), stderr: '' }, 'fail'],
+    [{ status: 1, stdout: rows('cancel'), stderr: '' }, 'fail'],
+    [{ status: 0, stdout: '[]', stderr: '' }, 'none'],
+    [{ status: 1, stdout: '', stderr: "no checks reported on the 'sprint/032' branch\n" }, 'none'],
+    [{ status: 1, stdout: '', stderr: 'HTTP 401: Bad credentials' }, `throws: gh pr checks ${CHECKS_PR} failed: HTTP 401: Bad credentials`],
+    [{ error: { message: 'spawn gh ENOENT' } }, `throws: gh pr checks ${CHECKS_PR} failed: spawn gh ENOENT`],
+  ];
+  const stub = ghStub(cases.map(([answer]) => answer));
+  const driver = path.join(stub.work, 'driver.js');
+  fs.writeFileSync(driver, [
+    'const runtime = require(process.env.RUNTIME_JS);',
+    'const out = [];',
+    'for (let index = 0; index < Number(process.env.CASES); index += 1) {',
+    `  try { out.push(runtime.readChecks(${CHECKS_PR})); } catch (error) { out.push('throws: ' + error.message); }`,
+    '}',
+    'console.log(JSON.stringify(out));',
+  ].join('\n'), 'utf8');
+  const result = stub.run([driver], { RUNTIME_JS, CASES: String(cases.length) });
+  assert.strictEqual(result.status, 0, result.stderr);
+  assert.deepStrictEqual(JSON.parse(result.stdout), cases.map(([, expected]) => expected));
+  assert.deepStrictEqual(stub.calls()[0], ['gh', 'pr', 'checks', CHECKS_PR, '--json', 'bucket'], 'one read is `gh pr checks <n> --json bucket`');
+  assert.strictEqual(stub.calls().length, cases.length, 'exactly one gh call per read');
+});
+
+test('sprint-032 AC-4/AC-5: checks-wait prints {"checks":...} and exits 0 on pass and none, 1 on fail and timeout and 2 on a gh failure, and rejects a missing, zero or non-numeric --pr with exit 2 before any gh call', () => {
+  const pass = ghStub([{ status: 0, stdout: '[{"bucket":"pass"}]', stderr: '' }]);
+  const passed = pass.run([RUNTIME_JS, 'checks-wait', '--pr', CHECKS_PR]);
+  assert.deepStrictEqual([passed.status, passed.stdout.trim()], [0, '{"checks":"pass"}']);
+  assert.deepStrictEqual(pass.calls(), [['gh', 'pr', 'checks', CHECKS_PR, '--json', 'bucket']]);
+
+  const noChecks = ghStub([{ status: 1, stdout: '', stderr: "no checks reported on the 'sprint/032' branch\n" }]).run([RUNTIME_JS, 'checks-wait', '--pr', CHECKS_PR]);
+  assert.deepStrictEqual([noChecks.status, noChecks.stdout.trim()], [0, '{"checks":"none"}'], 'AC-4: a PR with no checks after the grace merges, so none exits 0');
+  const stuck = ghStub([{ status: 8, stdout: '[{"bucket":"pending"}]', stderr: '' }]).run([RUNTIME_JS, 'checks-wait', '--pr', CHECKS_PR]);
+  assert.deepStrictEqual([stuck.status, stuck.stdout.trim()], [1, '{"checks":"timeout"}'], 'AC-5: checks still pending past the limit exit 1');
+
+  const failing = ghStub([{ status: 1, stdout: '[{"bucket":"fail"}]', stderr: '' }]).run([RUNTIME_JS, 'checks-wait', '--pr', CHECKS_PR]);
+  assert.deepStrictEqual([failing.status, failing.stdout.trim()], [1, '{"checks":"fail"}']);
+
+  const broken = ghStub([{ status: 1, stdout: '', stderr: 'HTTP 401: Bad credentials' }]).run([RUNTIME_JS, 'checks-wait', '--pr', CHECKS_PR]);
+  assert.strictEqual(broken.status, 2, 'a gh failure takes the existing fail path, exit 2');
+  assert.strictEqual(broken.stdout, '', 'a gh failure prints no checks value a caller could read as an outcome');
+  assert.ok(broken.stderr.includes(`gh pr checks ${CHECKS_PR} failed`), broken.stderr);
+
+  for (const flags of [['--pr', '0'], ['--pr', 'abc'], ['--pr', '1.5'], []]) {
+    const stub = ghStub([]);
+    const rejected = stub.run([RUNTIME_JS, 'checks-wait', ...flags]);
+    assert.strictEqual(rejected.status, 2, `checks-wait ${flags.join(' ')} must exit 2`);
+    assert.ok(rejected.stderr.includes('--pr'), rejected.stderr);
+    assert.deepStrictEqual(stub.calls(), [], `checks-wait ${flags.join(' ')} must reject before any gh call`);
+  }
+});
+
+test('sprint-032 AC-3/AC-4/AC-5: merge mode is the only producer of await-merge, "Merging a PR" waits through checks-wait for exactly the outcomes the runtime returns within the bounds it runs, README mirrors the bounds, and asd-sprint halts on both exits', async () => {
+  const workflow = '.asd/workflows/asd-phase-pr.md';
+  const steps = sectionOf(workflow, 'Steps');
+  assert.ok(stepOf(subOf(steps, 'Merge mode'), 1).includes('`NEXT: await-merge`'), 'AC-5: a blocked merge ends merge mode step 1 with `NEXT: await-merge`');
+  const toAwait = jsonOf(workflow, 'Exit').next.filter((entry) => entry.next === 'await-merge');
+  assert.ok(toAwait.length === 1 && /merge mode/.test(toAwait[0].if) && !/open mode/.test(toAwait[0].if), `AC-5: the Exit table routes await-merge from merge mode alone, got ${JSON.stringify(toAwait)}`);
+  const modesSentence = sectionOf('.asd/rules/sprint-lifecycle.md', 'PR phase').split('\n\n')[1].split(/(?<=\.)\s/).find((sentence) => sentence.includes('`pr=null`')) || '';
+  assert.ok(/merge mode/.test(modesSentence) && !modesSentence.includes('`NEXT: await-merge`'), `AC-3: "PR phase" Modes continues pr=null into merge mode instead of exiting at await-merge; got: ${modesSentence}`);
+
+  const rule = sectionOf('.asd/rules/git-strategy.md', 'Merging a PR');
+  const outcomes = [...new Set((await Promise.all([['pass'], ['none'], ['fail'], ['pending']].map(scriptedWait))).map(({ checks }) => checks))];
+  assert.strictEqual(outcomes.length, 4, 'sanity: the four scripted waits end in four distinct outcomes');
+  assert.deepStrictEqual(outcomes.filter((outcome) => !rule.includes(`\`${outcome}\``)), [], 'AC-4/AC-5: "Merging a PR" names every outcome checks-wait returns');
+  const mergeSentence = rule.split(/(?<=\.)\s/).find((sentence) => sentence.includes('`gh pr merge <n> --squash`')) || '';
+  assert.ok(mergeSentence.includes('`pass`') && mergeSentence.includes('`none`') && !mergeSentence.includes('`fail`'), `AC-4: the merge call is gated on pass or none; got: ${mergeSentence}`);
+  const blocked = rule.split('\n\n').find((paragraph) => paragraph.includes('`--admin`')) || '';
+  assert.ok(blocked.includes('`fail`') && blocked.includes('`timeout`') && blocked.includes('`NEXT: await-merge`'), `AC-5: the blocked-merge paragraph covers fail and timeout and exits at await-merge; got: ${blocked}`);
+
+  const bounds = [`${runtime.CHECKS_GRACE_MS / 1000} s`, `${runtime.CHECKS_LIMIT_MS / 60000} min`];
+  const readmePr = canonText('README.md').split('\n').find((line) => line.startsWith('| **pr** |') && line.includes('`gh pr create`')) || '';
+  for (const [site, text] of [['git-strategy.md "Merging a PR"', rule], ['README.md pr row', readmePr]]) {
+    assert.deepStrictEqual(bounds.filter((bound) => !text.includes(bound)), [], `AC-4: ${site} states the bounds checks-wait runs`);
+  }
+  const prRoute = canonText('.asd/skills/asd-sprint/SKILL.md').split('\n').flatMap((line) => line.split('The `pr` phase').slice(1)).join(' ');
+  for (const exit of ['done', 'await-merge']) {
+    assert.ok(/\bhalt\b/.test((prRoute.split(`\`NEXT: ${exit}\``)[1] || '').split(';')[0]), `AC-3/AC-5: asd-sprint Step 3 halts on pr's \`NEXT: ${exit}\``);
+  }
+});
+
+test('sprint-032 AC-6: pr open mode deletes the sprint scratch files by the prefix the dispatch payload writes them under, and artifact-layout.md "Scratch directory" says so', () => {
+  const glob = '<scratch-dir>/<NNN-slug>-*';
+  const written = (sectionOf('.asd/rules/agent-protocol.md', 'Dispatch payload').match(/<scratch-dir>\/[^`]*?\.context\.md/g) || []).filter((file) => !file.includes('orchestrator-scope'));
+  assert.ok(written.length >= 2 && written.every((file) => file.startsWith(glob.slice(0, -1))), `AC-6: every sprint context bundle path the payload writes must start with the prefix the cleanup glob deletes by; got: ${written.join(' | ')}`);
+  const open = subOf(sectionOf('.asd/workflows/asd-phase-pr.md', 'Steps'), 'Open mode').split(/\n(?=\d+[a-z]?\. )/);
+  const publishAt = open.findIndex((step) => step.includes('"PR creation"'));
+  const deleting = open.findIndex((step) => step.includes(`\`${glob}\``));
+  assert.ok(publishAt >= 0 && deleting > publishAt, 'AC-6: pr open mode deletes the sprint scratch files in a step after the PR is created and published');
+  assert.ok(sectionOf('.asd/rules/artifact-layout.md', 'Scratch directory').includes(`\`${glob}\``), 'AC-6: artifact-layout.md "Scratch directory" names the pr deletion');
+});
+
+test('sprint-032 AC-1/AC-2: asd-sync applies its unedited group without --force and only the confirmed modified-foreign group with it, asd-update delegates to asd-sync after a real run and leaves no sync step to the user, and the scope update step runs no sync of its own', () => {
+  const syncSkill = '.asd/skills/asd-sync/SKILL.md';
+  const applies = sectionOf(syncSkill, 'Steps').split('\n').filter((line) => line.includes('--apply <file...>'));
+  const unedited = applies.find((line) => !line.includes('--apply <file...> --force')) || '';
+  const forced = applies.find((line) => line.includes('--apply <file...> --force')) || '';
+  assert.strictEqual(applies.length, 2, 'AC-1: asd-sync applies in exactly two groups');
+  assert.ok(unedited.includes('`missing`') && unedited.includes('`stale`') && !unedited.includes('modified-foreign'), `AC-1: the group applied without --force is the unedited one; got: ${unedited}`);
+  assert.ok(forced.includes('`modified-foreign`') && !forced.includes('`missing`') && !forced.includes('`stale`'), `AC-1: --force reaches only the confirmed modified-foreign group; got: ${forced}`);
+  assert.ok(sectionOf(syncSkill, 'Rules').includes('`modified-foreign`'), 'AC-1: the never-rule narrows to modified-foreign, since an unedited file is regenerated with no question');
+
+  const updateSkill = '.asd/skills/asd-update/SKILL.md';
+  const delegation = stepOf(sectionOf(updateSkill, 'Steps'), 5);
+  assert.ok(delegation.includes('`asd-sync`') && delegation.includes('`--dry-run`'), 'AC-2: step 5 delegates to asd-sync and names --dry-run as the run that never delegates');
+  assert.ok(jsonOf(updateSkill, 'Delegates').skills.includes('asd-sync'), 'AC-2: asd-update lists asd-sync among the skills it delegates to');
+  assert.ok(sectionOf(updateSkill, 'Return').includes('NEXT: none'), 'AC-2: no next step is left to a manual /asd-sync');
+  assert.ok(!stepOf(sectionOf('.asd/workflows/asd-phase-scope.md', 'Steps'), 1).includes('sync.js'), 'AC-2: scope step 1 runs no sync of its own, asd-update covering it');
+});
+
+test('sprint-032 AC-7: asd-external-review takes its severity floor from the payload and keeps the Kept findings table to the template columns, the wrapped CLI id and source inside Description', () => {
+  const rules = sectionOf('.asd/agents/asd-external-review.md', 'Rules');
+  assert.ok(rules.includes('`payload.floor`'), 'AC-7: the floor comes from the payload, never one of the wrapper\'s own or the CLI\'s');
+  assert.ok(rules.includes('Description cell'), 'AC-7: the CLI finding id and source ride inside the Description cell, a sixth column failing the persist-review parse');
+});
+
+test('sprint-032 AC-9/AC-10: audit writes phase="audit" on every non-collapse exit, treats a criterion deliberately changing a canonical document as a planned change, and sends a step 3b answer changing a criterion through Scope amendment with a new id', () => {
+  const audit = '.asd/workflows/asd-phase-audit.md';
+  const exit = stepOf(sectionOf(audit, 'Steps'), 5);
+  const otherwise = exit.split('Otherwise it sets `phase="audit"`')[1];
+  assert.ok(otherwise !== undefined && !/\bonly when\b/.test(otherwise.split('.')[0]), 'AC-9: the non-collapse exit writes phase="audit" unconditionally, the run path as well as the skip path');
+  const contradictions = sectionOf(audit, 'Rules').split('\n').find((line) => line.includes('**Contradictions**')) || '';
+  assert.ok(contradictions.includes('planned change'), 'AC-10: Contradictions exempts a criterion that deliberately changes a canonical document');
+  const answer = stepOf(sectionOf(audit, 'Steps'), '3b');
+  assert.ok(answer.includes('"Scope amendment"') && answer.includes('new id'), `AC-10: step 3b routes a criterion-changing answer through Scope amendment with a new id; got: ${answer}`);
+  assert.ok(sectionOf('.asd/rules/sprint-lifecycle.md', 'Scope amendment').length > 0, 'sanity: the section step 3b cites exists');
+});
+
+test('sprint-032 AC-11: t_prd.html renders the story connectives as the placeholders {{story_as}}, {{story_i_want}} and {{story_so_that}} instead of literal English', () => {
+  const story = (canonText('.asd/templates/t_prd.html').split('\n').find((line) => line.includes('<li>') && line.includes('{{role}}')) || '');
+  assert.deepStrictEqual(['{{story_as}}', '{{story_i_want}}', '{{story_so_that}}'].filter((placeholder) => !story.includes(placeholder)), [], `AC-11: the story line carries all three connective placeholders; got: ${story}`);
+  assert.ok(!/<b>(?:as|I want|so that)<\/b>/.test(story), 'AC-11: no connective stays literal English');
+});
+
+test('sprint-032 AC-12/AC-13: a dev or tester runs memory-check on its own memory commit and loads the rule that says so, and a below-floor observation stays out of the findings table and ledger', () => {
+  const acting = sectionOf('.asd/rules/git-strategy.md', 'Commit before review').split('\n').find((line) => line.startsWith('**Memory content check**')) || '';
+  assert.ok(acting.includes("a dev's or tester's own") && !acting.includes('not gated'), `AC-12: the check covers a dev's or tester's own memory commit; got: ${acting}`);
+  for (const role of ['asd-dev', 'asd-tester']) {
+    assert.ok(grantedRefs(role).includes('.asd/rules/git-strategy.md#Commit before review'), `AC-12: ${role} is granted the rule that runs memory-check at its own memory commit`);
+  }
+  const floor = sectionOf('.asd/rules/review-policy.md', 'Iteration severity floor');
+  assert.ok(floor.includes("ledger's `findings`") && floor.includes('Findings table is empty'), 'AC-13: below-floor observations stay out of the findings table and the ledger, and an APPROVE report\'s table is empty');
+});
+
+test('sprint-032 AC-8: custom-coding-rules.md states that a runtime parser of a language.docs artifact checks structure - column count, id column, machine tokens - never translated heading text', () => {
+  const rule = canonText('.asd/project/custom-coding-rules.md').split('\n').find((line) => line.includes('`language.docs` artifact')) || '';
+  assert.deepStrictEqual(['column count', 'id column', 'machine tokens'].filter((token) => !rule.includes(token)), [], `AC-8: the runtime-parser line names the structure it checks; got: ${rule}`);
+});
+
+test('sprint-032 leftover-term check: no canon, README, AGENTS.md, runtime, hook, workflow definition or agent-memory line keeps a sentence or term this sprint removed - the manual sync step after an update, the open-mode await-merge exit, the ungated dev memory commit, the human-merge wording and the literal story connectives', () => {
+  const removed = [
+    'If update changed hook files or added skills, run sync next', 'report this, do not auto-apply', 'NEXT: <asd-sync|none>', 'asking per-file whether to overwrite, keep, or diff before writing anything',
+    '- never: overwrite a file without a per-file decision.', 'For each non-`current` item, request user decision', "A dev's or tester's own memory commit is not gated", "Checked at the orchestrator's memory commit",
+    'open mode returns `NEXT: await-merge`', 'a later resume re-enters `pr` in merge mode, which returns `NEXT: done`', '(open the PR, `NEXT: await-merge`', 'write before `NEXT: await-merge`',
+    'after checks pass and the PR is mergeable; it never waits for a human to click merge', '(only when step 1 skipped audit)', "on pr open mode's return (it closed its own)", 'Emit `NEXT: await-merge`; the active sprint remains',
+    '<b>as</b> {{role}}', '`--apply` over the views `--check` reports stale', '"if": "open mode, PR opened"', 'Automatically runs `node .asd/sync.js --check` afterward',
+    'it automatically runs `node .asd/sync.js --check` — canon files changed upstream', 'per-file overwrite/keep/diff confirmation, never a silent bulk overwrite', 'then ASD merges the PR itself through `gh` (a `gh` failure',
+    'Exit tokens are `await-merge` (PR opened)', 'A merge blocked by a failing check, a conflict or a branch-protection rule is reported, not forced',
+  ];
+  const memoryFiles = fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT), { recursive: true }).map((entry) => `${AGENT_MEMORY_ROOT}/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
+  assertSweepReachesMemory(memoryFiles);
+  const swept = [...canonMarkdownFiles(), 'README.md', 'AGENTS.md', '.asd/hooks/session-start.js', '.asd/runtime.js', '.asd/workflows/standard.json', '.asd/workflows/lite.json', ...memoryFiles];
+  const hits = swept.flatMap((rel) => canonText(rel).split('\n').flatMap((line, index) => removed.filter((phrase) => line.includes(phrase)).map((phrase) => `${rel}:${index + 1} ${phrase}`)));
+  assert.deepStrictEqual(hits, [], 'each phrase is a sentence or term this sprint removed (git diff main...HEAD), taken exactly - one surviving leaves a rule saying a user runs sync after an update, that pr open mode exits at await-merge, or that a dev memory commit is ungated. CHANGELOG.md and sprint folders are history.');
 });
 
 // ===========================================================================
