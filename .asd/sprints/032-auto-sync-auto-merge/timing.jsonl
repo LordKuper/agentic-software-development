@@ -5,3 +5,5 @@
 {"op":"open","id":"audit#1","kind":"phase","parent":null,"start":"2026-11-05T15:15:11.432Z","attrs":{}}
 {"op":"close","id":"audit#1","kind":"phase","parent":null,"start":"2026-11-05T15:15:11.432Z","end":"2026-11-05T15:17:27.615Z","outcome":"done","attrs":{}}
 {"op":"open","id":"plan#1","kind":"phase","parent":null,"start":"2026-11-05T15:17:27.615Z","attrs":{}}
+{"op":"close","id":"plan#1","kind":"phase","parent":null,"start":"2026-11-05T15:17:27.615Z","end":"2026-11-05T15:20:14.989Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl#1","kind":"phase","parent":null,"start":"2026-11-05T15:20:14.989Z","attrs":{}}
