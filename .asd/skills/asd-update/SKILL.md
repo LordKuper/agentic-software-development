@@ -33,7 +33,7 @@ Pull latest ASD framework files into this consumer project: overwrite **framewor
    - A conflict the user explicitly confirms overwriting is re-run with `--force <relPath...>` (one or more of the reported conflict paths) — this is the only way a `conflict`/`conflict-foreign` file is ever written; never force without asking first.
 4. Migrations (`.asd/migrations/<version>.js`): run AFTER the managed-path replacement above, in ascending version order, for every migration strictly newer than the consumer's current `release-manifest.json.asd_version` up to this release's target version. Each already-applied version is skipped (never re-run past its own target). The runner stops at the first failing migration and reports which one failed and what it had already done; the recorded `asd_version` afterward is the last migration that succeeded (never an unrecorded intermediate) — or the release's full target version if every pending migration succeeded, including when none were pending.
    - Script contract (also in each script's own header comment): filename (minus `.js`) is the exact target version it migrates a consumer TO, e.g. `.asd/migrations/3.2.0.js`; `module.exports = (ctx) => void | Promise<void>` with `ctx.repoRoot` = the consumer's project root; zero-dependency Node (may `require` `.asd/sync.js` from `ctx.repoRoot` for helpers); idempotent — re-running an already-applied migration is a no-op, never an error.
-5. After a real run (a partial update included, never after `--dry-run`), delegate to `asd-sync` — upstream canon changes leave the provider views (`.claude/`, `.codex/`, `.agents/`) stale. It regenerates unedited files with no question and asks only per hand-edited one.
+5. After a real run (a partial update included, never after `--dry-run`), delegate to `asd-sync` — upstream canon changes leave the provider views (`.claude/`, `.codex/`, `.agents/`) stale.
 6. Report version `old -> new` (or the version actually reached, if a migration failed) + counts from script output.
 7. Remind user: `.claude/settings.json` and `.codex/hooks.json` hold user permissions/hook registration; the user's own entries there are theirs, only `asd-sync` merges its owned entries.
 
@@ -49,7 +49,7 @@ Run by `.asd/workflows/asd-phase-scope.md` step 1 when the user chose to update 
 ## Rules
 
 - must: read `self_hosting` from `.asd/project/config.yaml` first; missing, unreadable, or a duplicated key → treat as `disabled` (fail closed). If `enabled`: print a one-line message ("asd-update is for consumer projects; this repo develops ASD directly — use a self-hosting sprint instead") and stop. No mutation, no fetch.
-- never: touch `.asd/project/**` (except `config.yaml`, which a release migration may rewrite as a sanctioned settings writer, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent), `.asd/sprints/**`, `docs/**`, `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json` (except `asd-sync`'s owned-entry merge), any non-ASD skill/agent/hook, anything outside `managed_paths`.
+- never: the update run touches `.asd/project/**` (except `config.yaml`, which a release migration may rewrite as a sanctioned settings writer, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent), `.asd/sprints/**`, `docs/**`, `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json`, any non-ASD skill/agent/hook, anything outside `managed_paths`; `asd-sync`'s writes excepted.
 - never: write a diverged (**conflict**) file without explicit confirmation.
 
 ## Delegates
@@ -61,7 +61,7 @@ Run by `.asd/workflows/asd-phase-scope.md` step 1 when the user chose to update 
 ## Outputs
 
 ```json
-["framework-managed paths in managed_paths (add/update/delete)", ".asd/release-manifest.json (asd_version, upstream_hashes)", ".asd/project/config.yaml: migration key renames/removals only", "asd-sync's writes: generated views (.claude/, .codex/, .agents/skills/) and its owned entries in .claude/settings.json, .codex/hooks.json"]
+["framework-managed paths in managed_paths (add/update/delete)", ".asd/release-manifest.json (asd_version, upstream_hashes)", ".asd/project/config.yaml: migration key renames/removals only", "asd-sync's writes: generated views (.claude/, .codex/, .agents/skills/), the managed blocks of AGENTS.md and CLAUDE.md, and its owned entries in .claude/settings.json, .codex/hooks.json"]
 ```
 
 ## Reference
