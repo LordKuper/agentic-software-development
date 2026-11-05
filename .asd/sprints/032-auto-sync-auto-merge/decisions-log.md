@@ -48,3 +48,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 - 2026-11-05 — route impl-test entry 1: standard, dispatch HEAD 49c75e13
 - 2026-11-05 — impl-test: impacted set green (342/342, full suite via the safety valve), 12/0 tests
+
+## 2026-11-05 — impl-review wave-1/iter-01 routed to review-fix
+
+- **Decision**: combined CONCERNS (F1-F6), external CONCERNS (1, 2); no FAIL, no question, no memory finding, no minor test-only branch; all route to impl review-fix; external 2 duplicates combined F2.
+- **Rationale**: Floor low at iteration 1, every finding counts. Next iteration 2 stays inside the wave's budget.
+- **Affected docs**: `reviews/impl/wave-1/iter-01/`
