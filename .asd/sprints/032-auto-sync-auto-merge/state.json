@@ -1,7 +1,7 @@
 {
   "sprint_id": "032-auto-sync-auto-merge",
   "branch": "sprint/032-auto-sync-auto-merge",
-  "phase": "impl-test",
+  "phase": "impl-review",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
