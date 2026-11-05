@@ -57,3 +57,5 @@
 {"op":"close","id":"asd-tester impl-review#2","kind":"dispatch","parent":"impl-review#2","start":"2026-11-05T16:08:45.123Z","end":"2026-11-05T16:10:26.013Z","outcome":"done","attrs":{"agent":"asd-tester","tier":"standard","model":"sonnet"}}
 {"op":"close","id":"impl-review#2","kind":"phase","parent":null,"start":"2026-11-05T16:03:10.440Z","end":"2026-11-05T16:10:26.133Z","outcome":"done","attrs":{}}
 {"op":"open","id":"cleanup#1","kind":"phase","parent":null,"start":"2026-11-05T16:10:26.133Z","attrs":{}}
+{"op":"close","id":"cleanup#1","kind":"phase","parent":null,"start":"2026-11-05T16:10:26.133Z","end":"2026-11-05T16:11:09.485Z","outcome":"done","attrs":{}}
+{"op":"open","id":"retro#1","kind":"phase","parent":null,"start":"2026-11-05T16:11:09.485Z","attrs":{}}
