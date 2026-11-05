@@ -1506,16 +1506,17 @@ test('update driver: planUpdate\'s pending-migration preview unions migrations f
 // literal first line. Uses the real buildFullFileMarker/sha256Hex so this
 // stays byte-compatible with whatever sync.js itself considers a valid
 // marker, instead of hand-rolling a regex-matching string that could drift.
-function markedFileContent(format, manifest) {
+function markedFileContent(format, manifest, { edited = false } = {}) {
+  const body = format === 'md' ? '---\nbody\n---\nrest of body\n' : 'body\n';
   const marker = sync.buildFullFileMarker({
     format,
     sourceRelPath: 'agents/retired-fixture-agent.md',
     sourceDigest: sync.sha256Hex('fixture-source'),
-    contentDigest: sync.sha256Hex('fixture-content'),
+    contentDigest: sync.sha256Hex(edited ? 'body-before-the-hand-edit' : body),
     asdVersion: manifest.asd_version,
   });
-  if (format === 'md') return '---\n' + marker + '\nbody\n---\nrest of body\n';
-  return marker + '\nbody\n';
+  if (format === 'md') return body.replace('---\n', '---\n' + marker + '\n');
+  return marker + '\n' + body;
 }
 
 test('sync.js orphan detection (AC-14): --check reports a marked orphan as "orphan" (fails) and an unmarked one as "orphan-unmarked" (informational, never a failure)', () => {
@@ -1650,6 +1651,32 @@ test('sync.js CLI: --check exits 1 when a marked orphan is present, 0 when only 
   const secondReport = JSON.parse(out);
   assert.strictEqual(secondReport.ok, true, 'an unmarked orphan alone must never fail --check');
   assert.ok(secondReport.items.some((i) => i.target === '.claude/agents/consumer-owned.md' && i.status === 'orphan-unmarked'), 'the unmarked file must still be reported as orphan-unmarked, just never as a failure');
+});
+
+test('sync.js CLI: a hand-edited marked orphan reports orphan-modified and fails --check, --apply leaves it alone without --force and deletes it with --force; providers.md states the status', () => {
+  const { spawnSync } = require('node:child_process');
+  const root = makeMiniRepo();
+  const manifest = loadManifest();
+  const rel = '.claude/agents/asd-reviewer-quality.md';
+  const abs = path.join(root, rel);
+  fs.mkdirSync(path.dirname(abs), { recursive: true });
+  fs.writeFileSync(abs, markedFileContent('md', manifest, { edited: true }), 'utf8');
+  const cli = (...args) => spawnSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), ...args], { cwd: root, encoding: 'utf8' });
+
+  const checked = cli('--check');
+  const status = JSON.parse(checked.stdout).items.find((i) => i.target === rel).status;
+  assert.strictEqual(status, 'orphan-modified');
+  assert.strictEqual(checked.status, 1, 'a hand-edited marked orphan fails --check like an unedited one');
+
+  const refused = JSON.parse(cli('--apply', rel).stdout).applied.find((r) => r.target === rel);
+  assert.deepStrictEqual([refused.status, refused.applied], ['orphan-modified', false]);
+  assert.strictEqual(fs.existsSync(abs), true, 'without --force the hand-edited orphan survives');
+
+  const forced = JSON.parse(cli('--apply', rel, '--force').stdout).applied.find((r) => r.target === rel);
+  assert.deepStrictEqual([forced.status, forced.applied], ['orphan-modified', true]);
+  assert.strictEqual(fs.existsSync(abs), false, 'with --force the confirmed orphan is deleted');
+
+  assert.ok(subOf(canonText('.asd/rules/providers.md'), 'Orphan detection').includes(`\`${status}\``), 'providers.md "Orphan detection" names the status --check reports for a hand-edited orphan');
 });
 
 test('sync.js CLI: --apply on a not-found target aborts the whole batch (exit 1) and skips the hash-ledger recompute - manifest and sync-state.json stay byte-for-byte untouched', () => {
@@ -6882,7 +6909,7 @@ test('sprint-021 AC-10/AC-11 (D5): scratch-dir creates .asd/tmp/ beside the runt
 test('sprint-021 AC-1/AC-2 (D1), sprint-022 AC-1/AC-2/AC-3: pr ends at await-merge or done, and runtime CHAIN_EXITS, asd-sprint and README agree; pr open mode commits and pushes its state.json.pr write before it continues into merge mode, pr merge mode, entered on any confirmed MERGED number (only the retry of the missing release and issue-close steps skips open mode\'s DoD gate), skips the merge for a PR already MERGED, republishes it if the PR head lacks it before merging, fetches base before the self-hosting release and, in every project, performs no part of the closure write, which releases nothing and is the orchestrator\'s, and scope step 1 carries every token of it', () => {
   const definitions = readWorkflowDefinitions();
   const exits = [...new Set(definitions.flatMap(({ phases, next }) => Object.values(next).flat().filter((target) => !phases.includes(target))))].sort();
-  assert.deepStrictEqual(exits, ['await-merge', 'done'], 'sprint-022 AC-3 (D1): the chain ends at pr\'s two exits - the PR opened, then merged; done names completion, not a write, since pr never writes the terminal state');
+  assert.deepStrictEqual(exits, ['await-merge', 'done'], 'sprint-022 AC-3 (D1): the chain ends at pr merge mode\'s two exits - await-merge (merge blocked) and done (merged); done names completion, not a write, since pr never writes the terminal state');
   const chainExits = /^const CHAIN_EXITS = (\[[^\]]*\]);/m.exec(canonText('.asd/runtime.js'));
   assert.ok(chainExits, 'sanity: .asd/runtime.js must declare CHAIN_EXITS as a one-line array literal');
   assert.deepStrictEqual(JSON.parse(chainExits[1].replace(/'/g, '"')).sort(), exits, 'sprint-022 AC-3: runtime.js CHAIN_EXITS must be exactly the exits the definitions route pr to - loadWorkflow accepts any CHAIN_EXITS member as a target, so a stale extra token stays loadable and routable');
@@ -9106,7 +9133,7 @@ test('sprint-032 AC-4/AC-5: waitForChecks returns pass and fail at once, polls n
   await assert.rejects(scriptedWait([new Error('gh pr checks 7 failed: boom')]), /boom/, 'an unexpected gh failure is never read as a check state');
 });
 
-test('sprint-032 AC-4: readChecks maps gh pr checks output - skipping is pass, any pending is pending, fail and cancel are fail, an empty list or the no-checks message is none - and any other gh failure throws', () => {
+test('sprint-032 AC-4: readChecks maps gh pr checks output - skipping is pass, any pending is pending, fail and cancel are fail, an empty list or the no-checks message is none whatever stdout holds - and any other gh failure, unparseable or non-array output included, throws and is never none', () => {
   const rows = (...buckets) => JSON.stringify(buckets.map((bucket) => ({ bucket })));
   const cases = [
     [{ status: 0, stdout: rows('pass', 'skipping'), stderr: '' }, 'pass'],
@@ -9115,7 +9142,10 @@ test('sprint-032 AC-4: readChecks maps gh pr checks output - skipping is pass, a
     [{ status: 1, stdout: rows('cancel'), stderr: '' }, 'fail'],
     [{ status: 0, stdout: '[]', stderr: '' }, 'none'],
     [{ status: 1, stdout: '', stderr: "no checks reported on the 'sprint/032' branch\n" }, 'none'],
-    [{ status: 1, stdout: '', stderr: 'HTTP 401: Bad credentials' }, `throws: gh pr checks ${CHECKS_PR} failed: HTTP 401: Bad credentials`],
+    [{ status: 1, stdout: rows('fail'), stderr: "no checks reported on the 'sprint/032' branch\n" }, 'none'],
+    [{ status: 1, stdout: '', stderr: 'HTTP 401: Bad credentials' }, new RegExp(`^throws: gh pr checks ${CHECKS_PR} failed: .*HTTP 401: Bad credentials`)],
+    [{ status: 0, stdout: 'not json', stderr: '' }, new RegExp(`^throws: gh pr checks ${CHECKS_PR} failed`)],
+    [{ status: 0, stdout: '{"bucket":"pass"}', stderr: '' }, new RegExp(`^throws: gh pr checks ${CHECKS_PR} failed: output is not a check array`)],
     [{ error: { message: 'spawn gh ENOENT' } }, `throws: gh pr checks ${CHECKS_PR} failed: spawn gh ENOENT`],
   ];
   const stub = ghStub(cases.map(([answer]) => answer));
@@ -9130,7 +9160,8 @@ test('sprint-032 AC-4: readChecks maps gh pr checks output - skipping is pass, a
   ].join('\n'), 'utf8');
   const result = stub.run([driver], { RUNTIME_JS, CASES: String(cases.length) });
   assert.strictEqual(result.status, 0, result.stderr);
-  assert.deepStrictEqual(JSON.parse(result.stdout), cases.map(([, expected]) => expected));
+  const actual = JSON.parse(result.stdout);
+  cases.forEach(([, expected], index) => (expected instanceof RegExp ? assert.match(actual[index], expected, `case ${index}`) : assert.strictEqual(actual[index], expected, `case ${index}`)));
   assert.deepStrictEqual(stub.calls()[0], ['gh', 'pr', 'checks', CHECKS_PR, '--json', 'bucket'], 'one read is `gh pr checks <n> --json bucket`');
   assert.strictEqual(stub.calls().length, cases.length, 'exactly one gh call per read');
 });
@@ -9153,6 +9184,8 @@ test('sprint-032 AC-4/AC-5: checks-wait prints {"checks":...} and exits 0 on pas
   assert.strictEqual(broken.status, 2, 'a gh failure takes the existing fail path, exit 2');
   assert.strictEqual(broken.stdout, '', 'a gh failure prints no checks value a caller could read as an outcome');
   assert.ok(broken.stderr.includes(`gh pr checks ${CHECKS_PR} failed`), broken.stderr);
+  const garbled = ghStub([{ status: 0, stdout: 'not json', stderr: '' }]).run([RUNTIME_JS, 'checks-wait', '--pr', CHECKS_PR]);
+  assert.deepStrictEqual([garbled.status, garbled.stdout], [2, ''], 'unparseable gh output is a gh failure, never the merge-permitting none');
 
   for (const flags of [['--pr', '0'], ['--pr', 'abc'], ['--pr', '1.5'], []]) {
     const stub = ghStub([]);
@@ -9180,6 +9213,10 @@ test('sprint-032 AC-3/AC-4/AC-5: merge mode is the only producer of await-merge,
   assert.ok(mergeSentence.includes('`pass`') && mergeSentence.includes('`none`') && !mergeSentence.includes('`fail`'), `AC-4: the merge call is gated on pass or none; got: ${mergeSentence}`);
   const blocked = rule.split('\n\n').find((paragraph) => paragraph.includes('`--admin`')) || '';
   assert.ok(blocked.includes('`fail`') && blocked.includes('`timeout`') && blocked.includes('`NEXT: await-merge`'), `AC-5: the blocked-merge paragraph covers fail and timeout and exits at await-merge; got: ${blocked}`);
+  assert.ok(blocked.includes('`MERGED`'), `AC-5: a merge the host accepted that did not land is found by confirming the PR \`MERGED\`; got: ${blocked}`);
+  const landing = stepOf(subOf(steps, 'Merge mode'), 1).split(/(?<=\.)\s/).find((sentence) => sentence.includes('`MERGED`') && sentence.includes('blocked merge')) || '';
+  const mergeStep = stepOf(subOf(steps, 'Merge mode'), 1);
+  assert.ok(landing !== '' && mergeStep.indexOf(landing) > mergeStep.indexOf('"Merging a PR"'), `AC-5: merge mode step 1 states the PR \`MERGED\` after the merge call, a merge that did not land being a blocked merge; got: ${landing}`);
 
   const bounds = [`${runtime.CHECKS_GRACE_MS / 1000} s`, `${runtime.CHECKS_LIMIT_MS / 60000} min`];
   const readmePr = canonText('README.md').split('\n').find((line) => line.startsWith('| **pr** |') && line.includes('`gh pr create`')) || '';
@@ -9200,6 +9237,8 @@ test('sprint-032 AC-6: pr open mode deletes the sprint scratch files by the pref
   const publishAt = open.findIndex((step) => step.includes('"PR creation"'));
   const deleting = open.findIndex((step) => step.includes(`\`${glob}\``));
   assert.ok(publishAt >= 0 && deleting > publishAt, 'AC-6: pr open mode deletes the sprint scratch files in a step after the PR is created and published');
+  const merged = open.find((step) => step.includes('Never open a second PR')).split(/(?<=\.)\s/).find((sentence) => sentence.includes('`MERGED`')) || '';
+  assert.ok(merged.includes(`step ${open[deleting].match(/\d+/)[0]}`), `AC-6: a MERGED hit continues at the scratch-deleting step, not past it; got: ${merged}`);
   assert.ok(sectionOf('.asd/rules/artifact-layout.md', 'Scratch directory').includes(`\`${glob}\``), 'AC-6: artifact-layout.md "Scratch directory" names the pr deletion');
 });
 
@@ -9209,9 +9248,14 @@ test('sprint-032 AC-1/AC-2: asd-sync applies its unedited group without --force 
   const unedited = applies.find((line) => !line.includes('--apply <file...> --force')) || '';
   const forced = applies.find((line) => line.includes('--apply <file...> --force')) || '';
   assert.strictEqual(applies.length, 2, 'AC-1: asd-sync applies in exactly two groups');
-  assert.ok(unedited.includes('`missing`') && unedited.includes('`stale`') && !unedited.includes('modified-foreign'), `AC-1: the group applied without --force is the unedited one; got: ${unedited}`);
-  assert.ok(forced.includes('`modified-foreign`') && !forced.includes('`missing`') && !forced.includes('`stale`'), `AC-1: --force reaches only the confirmed modified-foreign group; got: ${forced}`);
-  assert.ok(sectionOf(syncSkill, 'Rules').includes('`modified-foreign`'), 'AC-1: the never-rule narrows to modified-foreign, since an unedited file is regenerated with no question');
+  assert.ok(unedited.includes('`missing`') && unedited.includes('`stale`') && !unedited.includes('modified-foreign') && !unedited.includes('orphan-modified'),`AC-1: the group applied without --force is the unedited one; got: ${unedited}`);
+  assert.ok(forced.includes('`modified-foreign`') && forced.includes('`orphan-modified`') && !forced.includes('`missing`') && !forced.includes('`stale`'), `AC-1: --force reaches only the confirmed hand-edited groups, modified-foreign and orphan-modified; got: ${forced}`);
+  const syncRules = sectionOf(syncSkill, 'Rules');
+  assert.ok(syncRules.includes('`modified-foreign`') && syncRules.includes('`orphan-modified`'), 'AC-1: the never-rule narrows to the hand-edited statuses, since an unedited file is regenerated with no question');
+  const writes = (skill) => jsonText(sectionOf(skill, 'Outputs')).join(' ');
+  for (const skill of [syncSkill, '.asd/skills/asd-update/SKILL.md']) {
+    assert.deepStrictEqual(['AGENTS.md', 'CLAUDE.md'].filter((file) => !writes(skill).includes(file)), [], `AC-1/AC-2: ${skill} Outputs lists the managed blocks asd-sync writes, which the update run's never-rule must not contradict`);
+  }
 
   const updateSkill = '.asd/skills/asd-update/SKILL.md';
   const delegation = stepOf(sectionOf(updateSkill, 'Steps'), 5);
@@ -9268,7 +9312,7 @@ test('sprint-032 leftover-term check: no canon, README, AGENTS.md, runtime, hook
     'after checks pass and the PR is mergeable; it never waits for a human to click merge', '(only when step 1 skipped audit)', "on pr open mode's return (it closed its own)", 'Emit `NEXT: await-merge`; the active sprint remains',
     '<b>as</b> {{role}}', '`--apply` over the views `--check` reports stale', '"if": "open mode, PR opened"', 'Automatically runs `node .asd/sync.js --check` afterward',
     'it automatically runs `node .asd/sync.js --check` — canon files changed upstream', 'per-file overwrite/keep/diff confirmation, never a silent bulk overwrite', 'then ASD merges the PR itself through `gh` (a `gh` failure',
-    'Exit tokens are `await-merge` (PR opened)', 'A merge blocked by a failing check, a conflict or a branch-protection rule is reported, not forced',
+    'Exit tokens are `await-merge` (PR opened)', "`pr`'s open and merge exits",'A merge blocked by a failing check, a conflict or a branch-protection rule is reported, not forced',
   ];
   const memoryFiles = fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT), { recursive: true }).map((entry) => `${AGENT_MEMORY_ROOT}/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
   assertSweepReachesMemory(memoryFiles);
