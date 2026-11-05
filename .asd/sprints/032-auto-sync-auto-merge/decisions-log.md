@@ -54,3 +54,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: combined CONCERNS (F1-F6), external CONCERNS (1, 2); no FAIL, no question, no memory finding, no minor test-only branch; all route to impl review-fix; external 2 duplicates combined F2.
 - **Rationale**: Floor low at iteration 1, every finding counts. Next iteration 2 stays inside the wave's budget.
 - **Affected docs**: `reviews/impl/wave-1/iter-01/`
+
+- 2026-11-05 — route review-fix wave-1/iter-01: standard, dispatch HEAD daa7b7b5; risk change: merge-landed route and orphan deletion

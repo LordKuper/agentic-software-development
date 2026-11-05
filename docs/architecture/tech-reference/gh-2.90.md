@@ -22,7 +22,7 @@ responsibility:
 - `gh label create <name> -R <owner/repo> -d <description> -f`: `-f` updates an existing label instead of failing, so the call is idempotent.
 - `gh release view v<version> --json url`: release link for the post-release close comment.
 - `gh pr checks <n> --json bucket`: one read of a PR's checks; each `bucket` is `pass`, `fail`, `pending`, `skipping` or `cancel`.
-- `gh pr merge <n> --squash`: merges the PR, or fails with the host's reason when a required check, review, conflict or out-of-date base blocks it.
+- `gh pr merge <n> --squash`: merges the PR, or fails with the host's reason when a required check, review, conflict or out-of-date base blocks it. On a base branch with a merge queue it exits 0 having queued the PR or enabled auto-merge (https://cli.github.com/manual/gh_pr_merge), so exit 0 alone does not prove the merge landed.
 
 ## Version-specific notes
 - `gh issue close --duplicate-of` and `-r duplicate` are present in 2.90; an older `gh` lacking them falls back to `-r "not planned"` plus the `duplicate` label.
