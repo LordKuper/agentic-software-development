@@ -40,3 +40,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 - 2026-11-05 — cleanup checkpoint 77a8a757a77340c19e2d91a648ff870b00ebbd23
 - 2026-11-05 — cleanup: removed none; reverted none; verified n/a: no removals
+
+## 2026-11-05 — retro written
+
+- **Decision**: `retrospective.html` written on the analysed branch: 2 entries, 2 actions, 2 systemic proposals, one of them a `covered by:` row. Step 7 skipped under `self_hosting: enabled`.
+- **Rationale**: Rows stay proposals; the next scope's retro intake takes their dispositions.
+- **Affected docs**: `retrospective.html`, `friction-log.md`
