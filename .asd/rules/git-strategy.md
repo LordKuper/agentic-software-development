@@ -74,7 +74,7 @@ The merge completes the sprint; no user gate follows it. It writes nothing on `g
 
 Legacy recovery: an open `chore/finalize-sprint-<NNN-slug>` PR left by an earlier workflow version, found via `gh pr list --head chore/finalize-sprint-<NNN-slug>`, is merged as already approved (that flow opened it only after the user approved closing the sprint), and its closure write is skipped.
 
-A merge blocked by a failing check (`fail`), the exceeded wait (`timeout`), a conflict or a branch-protection rule is reported, not forced: never `--admin`, never a local merge pushed to `git.base_branch`. The PR stays open, the phase exits `NEXT: await-merge`, and a later `/asd-sprint` resumes merge mode. A `gh` failure stays `FAILED` ("PR creation"); a host refusal of the merge itself is a blocked merge.
+A merge blocked by a failing check (`fail`), the exceeded wait (`timeout`), a conflict or a branch-protection rule is reported, not forced; so is a merge the host accepted that did not land (`gh pr merge` exits 0 with the PR queued or auto-merge set, a merge queue's behaviour), found by confirming the PR `MERGED` after the call: never `--admin`, never a local merge pushed to `git.base_branch`. The PR stays open, the phase exits `NEXT: await-merge`, and a later `/asd-sprint` resumes merge mode. A `gh` failure stays `FAILED` ("PR creation"); a host refusal of the merge itself is a blocked merge.
 
 ## Pre-existing uncommitted changes
 
