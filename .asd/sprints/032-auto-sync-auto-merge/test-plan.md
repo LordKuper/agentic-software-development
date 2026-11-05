@@ -59,10 +59,10 @@ Level and AC/risk covered are visible in the test file itself (name, path) — n
 ## Suite run
 
 - Command: `node tests/run.js`
-- Scope: full (the delta touches `.asd/runtime.js` and `.asd/sync.js`, framework-wide files, so the shared-infrastructure safety valve degrades the impacted set to the whole suite; `tests/run.js` is also the repo's single test file)
-- Result: pass — 343/343 passed, 0 failed, 0 skipped (pre-strategy run: 337/342, the five reds triaged above)
-- Lint / build: pass — `git diff --cached --check` on the staged entry commit; `node .asd/sync.js --check` exit 0
-- HEAD: 87f170ae plus this entry's test commit (`tests/run.js` and this file with `test-plan.entry-01.md`). Timing ledger: one `suite impl-test#3` (full) op; the pre-strategy and in-progress runs were not bracketed
+- Scope: full, unscoped (impl-review terminal run; `tests/run.js` is the repo's single test file)
+- Result: pass — exit 0, 343/343 passed, 0 failed, 0 skipped (runner report: 0 `not ok` lines)
+- Lint / build: pass — `git diff --cached --check` exit 0; `node .asd/sync.js --check` exit 0 (`ok: true`, every target `current`)
+- HEAD: 76750768a3107abfb767630e460b412209addabe. Timing ledger: one `suite impl-review#1` (full) op under `asd-tester impl-review#2`
 
 ## Defects
 
