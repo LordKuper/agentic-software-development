@@ -1,0 +1,543 @@
+diff --git a/.asd/release-manifest.json b/.asd/release-manifest.json
+index 7d07b952..6adab66d 100644
+--- a/.asd/release-manifest.json
++++ b/.asd/release-manifest.json
+@@ -34,8 +34,8 @@
+     "skills/asd-init/SKILL.md": "sha256:721abd8c42ab2f104e95e7addeb2386bd129416a8c44668d8a102efef2991625",
+     "skills/asd-sprint/SKILL.md": "sha256:26dc3fbfb152e3ee8941c1c24482fdc8cec30ce382da2934573590b0c002b5d3",
+     "skills/asd-stack/SKILL.md": "sha256:e192b82fadeeee69d2b4a7d78a08cbec714e72c78033344366559f6eacddc3be",
+-    "skills/asd-sync/SKILL.md": "sha256:4b323bf154eb63a22ba2b3c332268ceb7e7219db7fcb96578defc17acd0623d5",
+-    "skills/asd-update/SKILL.md": "sha256:d887a16d2a0b9ff103105653e71a7cae9538df18ed8952872d9ba6b42a91a51c",
++    "skills/asd-sync/SKILL.md": "sha256:165a055eced48c9f264110d4e19504a1f2e9fcdb0d94cc22dccd9114bba33343",
++    "skills/asd-update/SKILL.md": "sha256:69eae18f67ef8e9edbab663730c2fba54f799d7700d78f1cdd00ee9904ef771f",
+     "skills/asd-phase-scope/SKILL.md": "sha256:dff87a5da486ba75f72008ced9587f71ad738e55b8df4ddef9b5091922ca2646",
+     "skills/asd-phase-audit/SKILL.md": "sha256:08b90a7f313596b771d1414b378fc24e91b9c7146cdc2b4b02577d2709524600",
+     "skills/asd-phase-design/SKILL.md": "sha256:90f721e0a22e6e82c8d34b9196d5efa23fa93fd59ab8c214e49955d5ea689d1e",
+@@ -65,9 +65,9 @@
+     ".asd/rules/design-principles.md": "0bf73cc3eed6e723821c39f008b63c5fa04eea1e829567290a3365a9a912b938",
+     ".asd/rules/design-system.md": "75a4a795ecee4f80114925b58712f052115f49566d108646747f52c46cfff34a",
+     ".asd/rules/external-review.md": "8ff9401993552c2bfd0b48efc0ac831582454dd946e33853d3289644c3832238",
+-    ".asd/rules/git-strategy.md": "27b0f828982e34999847a7e42a0dca273fc16d16a32965f9eac1afe5ce986ae7",
++    ".asd/rules/git-strategy.md": "42edda66b55eb46f61ac06074f1f321496ce43d9fa2e700869a4b37fb669f158",
+     ".asd/rules/language-policy.md": "834a43edbf2cb11a6aee45392cfc8cbc1dc39427364fedc1be2f2e1266df9eae",
+-    ".asd/rules/providers.md": "c3e6d7d9c75534eb49ef16ada19be6fd601d2ce196eb2b8735e4754d362d1f32",
++    ".asd/rules/providers.md": "dd07993a417f6b92ed26b4b64dd272488d89b3aeb6bab4540ae11baffe151414",
+     ".asd/rules/review-policy.md": "92f4c625659fa13544ef41e830f06ea081456cabbea1e58a3f25e7d9c3c46740",
+     ".asd/rules/sprint-lifecycle.md": "2d1fd9bdd0d6cbc21eb351dd26619c4b1d83ec88ad7f326fca9693cf415e2a13",
+     ".asd/rules/ux-principles.md": "cbdc2f22c3c6390750665c0057bfe4aaf94f41eaffe65705a89c27a934d154ab",
+@@ -86,10 +86,10 @@
+     ".asd/skills/asd-phase-scope/SKILL.md": "dff87a5da486ba75f72008ced9587f71ad738e55b8df4ddef9b5091922ca2646",
+     ".asd/skills/asd-sprint/SKILL.md": "26dc3fbfb152e3ee8941c1c24482fdc8cec30ce382da2934573590b0c002b5d3",
+     ".asd/skills/asd-stack/SKILL.md": "e192b82fadeeee69d2b4a7d78a08cbec714e72c78033344366559f6eacddc3be",
+-    ".asd/skills/asd-sync/SKILL.md": "4b323bf154eb63a22ba2b3c332268ceb7e7219db7fcb96578defc17acd0623d5",
+-    ".asd/skills/asd-update/SKILL.md": "d887a16d2a0b9ff103105653e71a7cae9538df18ed8952872d9ba6b42a91a51c",
++    ".asd/skills/asd-sync/SKILL.md": "165a055eced48c9f264110d4e19504a1f2e9fcdb0d94cc22dccd9114bba33343",
++    ".asd/skills/asd-update/SKILL.md": "69eae18f67ef8e9edbab663730c2fba54f799d7700d78f1cdd00ee9904ef771f",
+     ".asd/skills/asd-update/update.js": "96e7d76e504473bb31b7f21ea196ce08b7b9299fa95a5b5c7378837eca6d44ef",
+-    ".asd/sync.js": "597fa9257f746acd0025a987f6c895adacbc03a2a2707a6e2e84c510eab90848",
++    ".asd/sync.js": "8ee9d3e7e69c8aa611bfc83ea80b905c86777915107c2ed9bb0bf45ad58fed65",
+     ".asd/templates/external-review/t_prompt-external-design.md": "16d91b5f01fbdcda351c322ec40664d76f107b6bfb3418bc2601006a6bf94c69",
+     ".asd/templates/external-review/t_prompt-external-impl.md": "e092fbb555965d4cb935a4b9bd4d19e591fbfc49c6966f9c6e257db9d7942a23",
+     ".asd/templates/external-review/t_review-report.md": "8c144e8860d61764810f51cc006ab10648df2e7f3968aa395de4323c77f6722e",
+@@ -130,7 +130,7 @@
+     ".asd/workflows/asd-phase-impl-test.md": "a19ed6c160c619e314401edb8e70ed8cd6b95b501606d1462a512106db5670af",
+     ".asd/workflows/asd-phase-impl.md": "a1373d54291044166f42d0a7721144494b532a35d2ccb4cfec5dc0de60544474",
+     ".asd/workflows/asd-phase-plan.md": "2bee7820d27b32d3470eb66973541f3f481125b390b854434ce21b6bb98a20db",
+-    ".asd/workflows/asd-phase-pr.md": "e408c908944fbf13690ee6c1bbe712ef058751f7cc36bc51ba684a5483590212",
++    ".asd/workflows/asd-phase-pr.md": "a99d3f701fcce74fdb8f29bdd4eeb7af68ec199da94672f848be2c48b78a0847",
+     ".asd/workflows/asd-phase-scope.md": "5abab64176100dd4b287de836093ff576705ffd591cb2bc8809a19a625585aca",
+     ".asd/agents/asd-advisor.md": "5dc55d3ce3265876408920c83873b7e38651894c013ee3556ebf2cb39cae51df",
+     ".asd/agents/asd-reviewer-efficiency.md": "ce86c4daeb1e58462838ab96ffe008c2f28def4951722163d4bff824e05cfa4e",
+@@ -139,7 +139,7 @@
+     ".asd/migrations/4.0.0.js": "d8b2a9e2a034751856152e751961175284d2d2c1e4488aedcbbd513495b310cb",
+     ".asd/migrations/5.0.0.js": "3b45b584892f205f0cdd2d69d120fd1bdfb66a9520146753f55daccca4bcce91",
+     ".asd/migrations/6.0.0.js": "56735b9cb41fe73419e701c4e2cd075fa3812579b5cd124b1f58f221d88f14e9",
+-    ".asd/runtime.js": "4ea57ff562bc27daf00c371ed1477346a8fef6fe937a468fd2c2e68f64120f5c",
++    ".asd/runtime.js": "9fcd247c0db856fa4d499a6e62f67cbfe7ae12a17623e63ee6532bdacee76c16",
+     ".asd/templates/external-review/t_review-scope.json": "a17ee84e64cc6a693aaa30dacaef660c841b23a92331abf217ff64c8fc2d4951",
+     ".asd/templates/t_friction-log.md": "98c1ee13ba45291945be2ebabcbd7fc4c59a7069685341f64fc0c26bae31af67",
+     ".asd/templates/t_retrospective.html": "73a850121b1988c3a84e895683a5ad7fb79cd962b2952ed9a14b59251e5c4a0d",
+diff --git a/.asd/rules/git-strategy.md b/.asd/rules/git-strategy.md
+index 81356504..a13775bd 100644
+--- a/.asd/rules/git-strategy.md
++++ b/.asd/rules/git-strategy.md
+@@ -74,7 +74,7 @@ The merge completes the sprint; no user gate follows it. It writes nothing on `g
+ 
+ Legacy recovery: an open `chore/finalize-sprint-<NNN-slug>` PR left by an earlier workflow version, found via `gh pr list --head chore/finalize-sprint-<NNN-slug>`, is merged as already approved (that flow opened it only after the user approved closing the sprint), and its closure write is skipped.
+ 
+-A merge blocked by a failing check (`fail`), the exceeded wait (`timeout`), a conflict or a branch-protection rule is reported, not forced: never `--admin`, never a local merge pushed to `git.base_branch`. The PR stays open, the phase exits `NEXT: await-merge`, and a later `/asd-sprint` resumes merge mode. A `gh` failure stays `FAILED` ("PR creation"); a host refusal of the merge itself is a blocked merge.
++A merge blocked by a failing check (`fail`), the exceeded wait (`timeout`), a conflict or a branch-protection rule is reported, not forced; so is a merge the host accepted that did not land (`gh pr merge` exits 0 with the PR queued or auto-merge set, a merge queue's behaviour), found by confirming the PR `MERGED` after the call: never `--admin`, never a local merge pushed to `git.base_branch`. The PR stays open, the phase exits `NEXT: await-merge`, and a later `/asd-sprint` resumes merge mode. A `gh` failure stays `FAILED` ("PR creation"); a host refusal of the merge itself is a blocked merge.
+ 
+ ## Pre-existing uncommitted changes
+ 
+diff --git a/.asd/rules/providers.md b/.asd/rules/providers.md
+index 2c1cd6af..7a1f7f71 100644
+--- a/.asd/rules/providers.md
++++ b/.asd/rules/providers.md
+@@ -20,7 +20,7 @@ Codex has no project-level equivalent of `.claude/skills` — a separate `.agent
+ 
+ ### Orphan detection
+ 
+-`buildSyncPlan` is source-driven: a deleted or renamed canonical agent/skill simply stops appearing in the plan, so `.asd/sync.js` also diffs the actual contents of `.claude/agents/`, `.claude/skills/`, `.codex/agents/`, `.agents/skills/` against what the current plan expects there. A file present in one of those trees with no matching plan entry is an orphan. `--check` is what enumerates every orphan — reports each, exits non-zero; it is the only place a caller discovers them. `--apply` deletes an orphan only when BOTH conditions hold: (1) it carries the ASD ownership marker — an unmarked file is reported (`orphan-unmarked`) and never touched, it's a consumer's own agent or skill, indistinguishable from an orphan by path alone; and (2) it is explicitly named in the `--apply <file...>` target list — `runApply` only inspects the requested targets, never sweeps the whole orphan set on its own initiative. Deleting a marker-owned orphan this way also prunes its now-empty parent directory.
++`buildSyncPlan` is source-driven: a deleted or renamed canonical agent/skill simply stops appearing in the plan, so `.asd/sync.js` also diffs the actual contents of `.claude/agents/`, `.claude/skills/`, `.codex/agents/`, `.agents/skills/` against what the current plan expects there. A file present in one of those trees with no matching plan entry is an orphan. `--check` is what enumerates every orphan — reports each, exits non-zero; it is the only place a caller discovers them. `--apply` deletes an orphan only when BOTH conditions hold: (1) it carries the ASD ownership marker — an unmarked file is reported (`orphan-unmarked`) and never touched, it's a consumer's own agent or skill, indistinguishable from an orphan by path alone; and (2) it is explicitly named in the `--apply <file...>` target list — `runApply` only inspects the requested targets, never sweeps the whole orphan set on its own initiative. A marked orphan whose body no longer matches its marker digest is hand-edited: `--check` reports it `orphan-modified` (non-zero like `orphan`) and `--apply` deletes it only with `--force`. Deleting a marker-owned orphan this way also prunes its now-empty parent directory.
+ 
+ ## Semantic operations -> host convention
+ 
+diff --git a/.asd/runtime.js b/.asd/runtime.js
+index 3059bd5e..a6c4a0ad 100644
+--- a/.asd/runtime.js
++++ b/.asd/runtime.js
+@@ -45,7 +45,7 @@ const WORKFLOWS_DIR = path.join(__dirname, 'workflows');
+ const WORKFLOW_KEYS = ['name', 'next', 'phases', 'reviewers', 'rollback_reset'];
+ /** Review nodes a definition's `reviewers` and `rollback_reset` are keyed by, as `persist-review --phase` takes them. */
+ const REVIEW_NODES = ['design', 'impl'];
+-/** `NEXT:` targets that end the chain instead of naming a phase: `pr`'s open and merge exits; `done` names completion, the closure write follows at the next sprint's start. */
++/** `NEXT:` targets that end the chain instead of naming a phase: `pr` merge mode's blocked and merged exits; `done` names completion, the closure write follows at the next sprint's start. */
+ const CHAIN_EXITS = ['await-merge', 'done'];
+ /** Severities a finding row may carry (`review-policy.md` "Severity levels"). */
+ const SEVERITIES = ['low', 'medium', 'high', 'critical'];
+@@ -1469,17 +1469,19 @@ function contextCommand(flags) {
+   return { out: flags.out, refs: refs.length, bytes: Buffer.byteLength(bundle) };
+ }
+ 
+-/** Reads one PR's check state as `pass`, `pending`, `fail` or `none`; any other `gh` failure throws. `gh` exits non-zero while checks are pending or failed yet still prints the JSON, so stdout is read whatever the status. */
++/** Reads one PR's check state as `pass`, `pending`, `fail` or `none`; any other `gh` failure, unparseable or non-array output included, throws. */
+ function readChecks(pr) {
+   const result = spawnSync('gh', ['pr', 'checks', String(pr), '--json', 'bucket'], { encoding: 'utf8', timeout: CHECKS_READ_TIMEOUT_MS, windowsHide: true });
+   if (result.error) fail(`gh pr checks ${pr} failed: ${result.error.message}`);
++  if (/no checks reported/.test(result.stderr || '')) return 'none';
+   let rows = null;
+   try {
+     rows = JSON.parse(result.stdout);
+-  } catch {
+-    if (!/no checks reported/.test(result.stderr || '')) fail(`gh pr checks ${pr} failed: ${(result.stderr || '').trim()}`);
++  } catch (error) {
++    fail(`gh pr checks ${pr} failed: ${error.message}; ${(result.stderr || '').trim()}`);
+   }
+-  if (!Array.isArray(rows) || rows.length === 0) return 'none';
++  if (!Array.isArray(rows)) fail(`gh pr checks ${pr} failed: output is not a check array`);
++  if (rows.length === 0) return 'none';
+   const buckets = rows.map((row) => row.bucket);
+   if (buckets.some((bucket) => CHECK_FAIL_BUCKETS.includes(bucket))) return 'fail';
+   return buckets.includes('pending') ? 'pending' : 'pass';
+diff --git a/.asd/skills/asd-sync/SKILL.md b/.asd/skills/asd-sync/SKILL.md
+index 7cc90260..9ec68a8f 100644
+--- a/.asd/skills/asd-sync/SKILL.md
++++ b/.asd/skills/asd-sync/SKILL.md
+@@ -1,7 +1,7 @@
+ ---
+ {
+   "name": "asd-sync",
+-  "description": "Reconciles this project's generated provider views (.claude/, .codex/, .agents/skills/) with the canonical ASD sources (.asd/agents, .asd/skills, .asd/hooks) via .asd/sync.js's check/apply flow: unedited files regenerate with no question, only a hand-edited (modified-foreign) one is asked about (overwrite, keep, or diff). Use when the user runs /asd-sync, asks to sync, regenerate, or reconcile the Claude/Codex agent and skill files after editing canonical ASD sources, or when asd-update delegates after a real run."
++  "description": "Reconciles this project's generated provider views (.claude/, .codex/, .agents/skills/) with the canonical ASD sources (.asd/agents, .asd/skills, .asd/hooks) via .asd/sync.js's check/apply flow: unedited files regenerate with no question, only a hand-edited (modified-foreign or orphan-modified) one is asked about (overwrite or delete, keep, or diff). Use when the user runs /asd-sync, asks to sync, regenerate, or reconcile the Claude/Codex agent and skill files after editing canonical ASD sources, or when asd-update delegates after a real run."
+ }
+ ---
+ 
+@@ -20,17 +20,17 @@ Reconcile generated provider views with canonical `.asd/` sources.
+ ## Steps
+ 
+ 0. **Resolve the script path once**, self-locating so it works from any repo directory: `SYNC="$(git rev-parse --show-toplevel)/.asd/sync.js"`. Every command below is `node "$SYNC" ...`.
+-1. Run command `node "$SYNC" --check`. Parse its JSON report (`items[]`: `target`, `status` — `current | missing | stale | modified-foreign | foreign | orphan | orphan-unmarked`).
++1. Run command `node "$SYNC" --check`. Parse its JSON report (`items[]`: `target`, `status` — `current | missing | stale | modified-foreign | foreign | orphan | orphan-modified | orphan-unmarked`).
+ 2. If every item is `current`, report that and stop — nothing to do.
+-3. Queue `missing`, `stale` and `orphan` (ownership-marked; `sync.js` deletes it) for apply, no question. For each `modified-foreign` item (hand-edited outside ASD's ownership markers), request user decision: **overwrite** regenerates it from canon (queued), flagging the risk — it discards the hand edit; **keep as-is** skips it this run; **show diff** reads the target and the canon source, presents the difference, then re-asks overwrite/keep. `orphan-unmarked` and `foreign` (symlink) are not ASD's: leave alone, report.
++3. Queue `missing`, `stale` and `orphan` (ownership-marked, unedited; `sync.js` deletes it) for apply, no question. For each `modified-foreign` item (hand-edited outside ASD's ownership markers) and each `orphan-modified` item (marked orphan whose body was hand-edited), request user decision: **overwrite** (`orphan-modified`: **delete**) regenerates it from canon (deletes it), queued with `--force`, flagging the risk — it discards the hand edit; **keep as-is** skips it this run; **show diff** reads the target and its canon source (`orphan-modified`: just the target, no source exists), presents the difference, then re-asks overwrite/delete or keep. `orphan-unmarked` and `foreign` (symlink) are not ASD's: leave alone, report.
+ 4. Apply in two groups, skipping an empty one:
+    - Unedited (`missing`/`stale`/`orphan`): `node "$SYNC" --apply <file...>` (no `--force`).
+-   - Confirmed `modified-foreign`: `node "$SYNC" --apply <file...> --force` — without `--force` the CLI silently refuses and the file stays untouched.
++   - Confirmed `modified-foreign` and `orphan-modified`: `node "$SYNC" --apply <file...> --force` — without `--force` the CLI silently refuses and the file stays untouched.
+ 5. Report per-file outcome (applied / kept / still stale / left alone) from the apply result(s) plus a final `node "$SYNC" --check` summary.
+ 
+ ## Rules
+ 
+-- never: overwrite a `modified-foreign` file without a per-file decision.
++- never: overwrite a `modified-foreign` file or delete an `orphan-modified` one without a per-file decision.
+ 
+ ## Delegates
+ 
+@@ -41,7 +41,7 @@ Reconcile generated provider views with canonical `.asd/` sources.
+ ## Outputs
+ 
+ ```json
+-["regenerated or deleted generated views: .claude/, .codex/, .agents/skills/"]
++["regenerated or deleted generated views: .claude/, .codex/, .agents/skills/", "managed blocks of AGENTS.md and CLAUDE.md", "owned entries in .claude/settings.json, .codex/hooks.json"]
+ ```
+ 
+ ## Return
+diff --git a/.asd/skills/asd-update/SKILL.md b/.asd/skills/asd-update/SKILL.md
+index b2bc3aa5..d7457688 100644
+--- a/.asd/skills/asd-update/SKILL.md
++++ b/.asd/skills/asd-update/SKILL.md
+@@ -33,7 +33,7 @@ Pull latest ASD framework files into this consumer project: overwrite **framewor
+    - A conflict the user explicitly confirms overwriting is re-run with `--force <relPath...>` (one or more of the reported conflict paths) — this is the only way a `conflict`/`conflict-foreign` file is ever written; never force without asking first.
+ 4. Migrations (`.asd/migrations/<version>.js`): run AFTER the managed-path replacement above, in ascending version order, for every migration strictly newer than the consumer's current `release-manifest.json.asd_version` up to this release's target version. Each already-applied version is skipped (never re-run past its own target). The runner stops at the first failing migration and reports which one failed and what it had already done; the recorded `asd_version` afterward is the last migration that succeeded (never an unrecorded intermediate) — or the release's full target version if every pending migration succeeded, including when none were pending.
+    - Script contract (also in each script's own header comment): filename (minus `.js`) is the exact target version it migrates a consumer TO, e.g. `.asd/migrations/3.2.0.js`; `module.exports = (ctx) => void | Promise<void>` with `ctx.repoRoot` = the consumer's project root; zero-dependency Node (may `require` `.asd/sync.js` from `ctx.repoRoot` for helpers); idempotent — re-running an already-applied migration is a no-op, never an error.
+-5. After a real run (a partial update included, never after `--dry-run`), delegate to `asd-sync` — upstream canon changes leave the provider views (`.claude/`, `.codex/`, `.agents/`) stale. It regenerates unedited files with no question and asks only per hand-edited one.
++5. After a real run (a partial update included, never after `--dry-run`), delegate to `asd-sync` — upstream canon changes leave the provider views (`.claude/`, `.codex/`, `.agents/`) stale.
+ 6. Report version `old -> new` (or the version actually reached, if a migration failed) + counts from script output.
+ 7. Remind user: `.claude/settings.json` and `.codex/hooks.json` hold user permissions/hook registration; the user's own entries there are theirs, only `asd-sync` merges its owned entries.
+ 
+@@ -49,7 +49,7 @@ Run by `.asd/workflows/asd-phase-scope.md` step 1 when the user chose to update
+ ## Rules
+ 
+ - must: read `self_hosting` from `.asd/project/config.yaml` first; missing, unreadable, or a duplicated key → treat as `disabled` (fail closed). If `enabled`: print a one-line message ("asd-update is for consumer projects; this repo develops ASD directly — use a self-hosting sprint instead") and stop. No mutation, no fetch.
+-- never: touch `.asd/project/**` (except `config.yaml`, which a release migration may rewrite as a sanctioned settings writer, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent), `.asd/sprints/**`, `docs/**`, `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json` (except `asd-sync`'s owned-entry merge), any non-ASD skill/agent/hook, anything outside `managed_paths`.
++- never: the update run touches `.asd/project/**` (except `config.yaml`, which a release migration may rewrite as a sanctioned settings writer, limited to release-mandated key renames and removals, plus the value mappings, key insertions and shipped-comment rewrites that carry a renamed or removed key's or value's intent), `.asd/sprints/**`, `docs/**`, `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json`, any non-ASD skill/agent/hook, anything outside `managed_paths`; `asd-sync`'s writes excepted.
+ - never: write a diverged (**conflict**) file without explicit confirmation.
+ 
+ ## Delegates
+@@ -61,7 +61,7 @@ Run by `.asd/workflows/asd-phase-scope.md` step 1 when the user chose to update
+ ## Outputs
+ 
+ ```json
+-["framework-managed paths in managed_paths (add/update/delete)", ".asd/release-manifest.json (asd_version, upstream_hashes)", ".asd/project/config.yaml: migration key renames/removals only", "asd-sync's writes: generated views (.claude/, .codex/, .agents/skills/) and its owned entries in .claude/settings.json, .codex/hooks.json"]
++["framework-managed paths in managed_paths (add/update/delete)", ".asd/release-manifest.json (asd_version, upstream_hashes)", ".asd/project/config.yaml: migration key renames/removals only", "asd-sync's writes: generated views (.claude/, .codex/, .agents/skills/), the managed blocks of AGENTS.md and CLAUDE.md, and its owned entries in .claude/settings.json, .codex/hooks.json"]
+ ```
+ 
+ ## Reference
+diff --git a/.asd/sync.js b/.asd/sync.js
+index 8cc5aefd..1666eb09 100644
+--- a/.asd/sync.js
++++ b/.asd/sync.js
+@@ -1079,11 +1079,14 @@ function hasOwnershipMarker(absPath) {
+   }
+ }
+ 
+-// Returns [{ target, marked }] for every file that sits inside one of the
+-// four generated trees but has no matching entry in the current sync plan.
++// Returns [{ target, marked, edited }] for every file that sits inside one of
++// the four generated trees but has no matching entry in the current sync plan.
+ // `marked` = the file carries the ASD ownership marker (apply may delete it);
+ // unmarked = indistinguishable from a consumer's own hand-authored agent or
+-// skill living in the same directory - reported, never touched.
++// skill living in the same directory - reported, never touched. `edited` = a
++// marked file whose body no longer matches the marker's content digest (no
++// expected digest exists for an orphan, so only the hand-edit branch of
++// statusFullFile can answer) - deleted only on a user-confirmed force.
+ function findOrphans(repoRoot, plan) {
+   const expected = expectedGeneratedTargets(plan);
+   const orphans = [];
+@@ -1095,9 +1098,11 @@ function findOrphans(repoRoot, plan) {
+     for (const rel of relFiles) {
+       const absPath = path.join(absDir, rel);
+       if (expected.has(absPath)) continue;
++      const marked = hasOwnershipMarker(absPath);
+       orphans.push({
+         target: path.relative(repoRoot, absPath).replace(/\\/g, '/'),
+-        marked: hasOwnershipMarker(absPath),
++        marked,
++        edited: marked && statusFullFile(absPath, null) === 'modified-foreign',
+       });
+     }
+   }
+@@ -1326,11 +1331,17 @@ function statusForPlanItem(item, repoRoot, manifest, syncState) {
+   throw new Error(`unknown sync plan item class "${item.class}"`);
+ }
+ 
++// Report status of one findOrphans entry.
++function orphanStatus(orphan) {
++  if (!orphan.marked) return 'orphan-unmarked';
++  return orphan.edited ? 'orphan-modified' : 'orphan';
++}
++
+ // Every managed target's status, plus any orphaned generated view (a file
+ // still on disk after its canonical source moved or was deleted). An
+-// ownership-marked orphan reports as a real defect ('orphan'); an unmarked
+-// one is informational only ('orphan-unmarked') - a consumer's own file, not
+-// this tool's to flag.
++// ownership-marked orphan reports as a real defect ('orphan', or
++// 'orphan-modified' once hand-edited); an unmarked one is informational only
++// ('orphan-unmarked') - a consumer's own file, not this tool's to flag.
+ function runCheck(repoRoot) {
+   const manifest = loadReleaseManifest(repoRoot);
+   const syncState = loadSyncState(repoRoot);
+@@ -1341,7 +1352,7 @@ function runCheck(repoRoot) {
+     report.push({ target: path.relative(repoRoot, item.targetPath).replace(/\\/g, '/'), status });
+   }
+   for (const orphan of findOrphans(repoRoot, plan)) {
+-    report.push({ target: orphan.target, status: orphan.marked ? 'orphan' : 'orphan-unmarked' });
++    report.push({ target: orphan.target, status: orphanStatus(orphan) });
+   }
+   return report;
+ }
+@@ -1357,7 +1368,8 @@ function runCheck(repoRoot) {
+ // generated view whose canonical source no longer exists, so it never
+ // appears in buildSyncPlan's source-driven output. An orphan is deleted only
+ // when it carries the ASD ownership marker (a consumer's own file of the
+-// same name never does); a target matching neither the plan nor a detected
++// same name never does) and, if hand-edited, only under `options.force`; a
++// target matching neither the plan nor a detected
+ // orphan aborts every write in the whole batch, so one bad target never
+ // half-applies the rest.
+ //
+@@ -1420,15 +1432,13 @@ function runApply(repoRoot, requestedFiles, options) {
+     if (!r.item) {
+       if (!r.orphan) {
+         results.push({ target: r.rel, status: 'not-found', applied: false });
+-      } else if (r.orphan.marked && !hasInvalidTarget) {
++      } else if (r.orphan.marked && !hasInvalidTarget && (!r.orphan.edited || forceSet.has(r.rel))) {
+         const absOrphan = path.join(repoRoot, r.rel);
+         fs.unlinkSync(absOrphan);
+         removeIfEmptyDir(path.dirname(absOrphan));
+-        results.push({ target: r.rel, status: 'orphan', applied: true });
+-      } else if (r.orphan.marked) {
+-        results.push({ target: r.rel, status: 'orphan', applied: false });
++        results.push({ target: r.rel, status: orphanStatus(r.orphan), applied: true });
+       } else {
+-        results.push({ target: r.rel, status: 'orphan-unmarked', applied: false });
++        results.push({ target: r.rel, status: orphanStatus(r.orphan), applied: false });
+       }
+       continue;
+     }
+@@ -1453,8 +1463,8 @@ function runApply(repoRoot, requestedFiles, options) {
+ }
+ 
+ // CLI entry: `--check` reports every managed target's status, exiting
+-// non-zero if any generated view is an ownership-marked orphan - an
+-// unmarked orphan is informational only. `--apply <file...> [--force]`
++// non-zero if any generated view is an ownership-marked orphan, edited or
++// not - an unmarked orphan is informational only. `--apply <file...> [--force]`
+ // writes only the requested targets, exiting non-zero if any of them
+ // matched neither a plan entry nor a detected orphan, so a bogus target is
+ // never silently treated as success; the hash-ledger recompute that follows
+@@ -1467,7 +1477,7 @@ function main(argv) {
+   const args = argv.slice(2);
+   if (args[0] === '--check') {
+     const report = runCheck(repoRoot);
+-    const hasOrphans = report.some((r) => r.status === 'orphan');
++    const hasOrphans = report.some((r) => r.status === 'orphan' || r.status === 'orphan-modified');
+     process.stdout.write(JSON.stringify({ ok: !hasOrphans, items: report }, null, 2) + '\n');
+     return hasOrphans ? 1 : 0;
+   }
+diff --git a/.asd/workflows/asd-phase-pr.md b/.asd/workflows/asd-phase-pr.md
+index f71a9b23..961fd505 100644
+--- a/.asd/workflows/asd-phase-pr.md
++++ b/.asd/workflows/asd-phase-pr.md
+@@ -21,13 +21,13 @@ Owner: inline orchestrator; dispatches none.
+ 1. Read the `## Inputs`. Confirm every plan task, AC trace, required review verdict, full-suite record, lint/build record and stub rule; `<sprint>/retrospective.html` is a DoD input and its absence blocks. A failed or missing check blocks. These checks gate PR opening — internal verification, never a `checkpoints.md` gate or user-facing pause:
+    - **Tests/lint re-run**: content-scoped, never HEAD-sha equality (HEAD always moves past the recorded sha). Skipped when `git diff --quiet <recorded HEAD>...HEAD -- <code/test/stub pathspec, excluding .asd/sprints/** and .asd/project/**>` is empty, where `<recorded HEAD>` is the sha in test-plan.md's `Suite run` section — the commit impl-review's terminal full-suite step (`sprint-lifecycle.md` "Impacted test set") last verified the full suite at; anything landed since forces a re-run.
+    - **Reviews-green source**: `state.json.reviews.impl.wave` equals the wave count (`waves.length`), and every wave node's `verdicts["iter-NN"]` for its highest iteration is satisfied, read from state first; parse review files under `<sprint>/reviews/impl/wave-<K>/iter-NN/` only as an explicit fallback when `state.json` data is missing or stale, or for a user-resolved entry. Satisfied-vs-blocking semantics for each entry, External Review's skip form and legacy values included: `sprint-lifecycle.md` "State recovery".
+-2. Never open a second PR for `state.branch`: before any write, look its PR up by head branch (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"). A `MERGED` hit writes nothing and continues in merge mode with that number, which there runs only the missing release and issue-close steps. Otherwise, on an `OPEN` hit or none, write `phase=pr` (for self-hosting also bump version and changelog, unless the sprint branch already carries this sprint's bump) and commit it on the sprint branch before any push ("Merged-unclosed"). Then an `OPEN` hit is written as `state.json.pr` and continues at step 4, merge mode's step 1 then publishing it with those commits; no hit composes the PR title/body and continues below; each `(issue #N)` in `sprint.md` is listed under "Related issues" as `Refs #N` (`t_pr-description.md`), never a closing keyword.
++2. Never open a second PR for `state.branch`: before any write, look its PR up by head branch (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"). A `MERGED` hit writes nothing to the repo and continues at step 4, so the scratch deletion runs, then in merge mode with that number, which there runs only the missing release and issue-close steps. Otherwise, on an `OPEN` hit or none, write `phase=pr` (for self-hosting also bump version and changelog, unless the sprint branch already carries this sprint's bump) and commit it on the sprint branch before any push ("Merged-unclosed"). Then an `OPEN` hit is written as `state.json.pr` and continues at step 4, merge mode's step 1 then publishing it with those commits; no hit composes the PR title/body and continues below; each `(issue #N)` in `sprint.md` is listed under "Related issues" as `Refs #N` (`t_pr-description.md`), never a closing keyword.
+ 3. Apply the active policy to publication [GATE adaptive: PR publication]. Adaptive publication needs recorded scope authority, evidence and host permission; otherwise request the user. Open the PR per `git-strategy.md` "PR creation"; a `gh` failure is `FAILED` naming the fix given there. On successful PR creation, write `state.json.pr` and append the decision/log record, then commit both and push the sprint branch before step 4, so the squash merge carries `pr.number` to base (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"). Do not archive or mark done.
+ 4. Delete every `<scratch-dir>/<NNN-slug>-*` file the sprint wrote (`artifact-layout.md` "Scratch directory"), then continue in merge mode in this run; the active sprint remains at its normal path.
+ 
+ ### Merge mode
+ 
+-1. Re-enter from either active or legacy archived path. When `gh pr view <pr.number> --json state` (with `pr` null, the number open mode or `asd-sprint` carries) already reports `MERGED`, go to step 2. Otherwise first confirm the PR head carries open mode step 3's publication, since the squash merge is base's only source of `pr.number` (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"): `git fetch origin <state.branch>`, then `git show origin/<state.branch>:<sprint>/state.json` must hold this `pr.number`. If it does not, commit the local `state.json.pr` write if uncommitted, push the sprint branch and re-confirm; a push failure is `FAILED`. Then wait for checks and merge the sprint PR per `git-strategy.md` "Merging a PR"; a `gh` failure is `FAILED` naming the fix ("PR creation"). A blocked merge writes nothing: report its cause and emit `NEXT: await-merge`, the PR open and the sprint active. Confirm the merge landed before proceeding.
++1. Re-enter from either active or legacy archived path. When `gh pr view <pr.number> --json state` (with `pr` null, the number open mode or `asd-sprint` carries) already reports `MERGED`, go to step 2. Otherwise first confirm the PR head carries open mode step 3's publication, since the squash merge is base's only source of `pr.number` (`sprint-lifecycle.md` "PR phase" "Merged-unclosed"): `git fetch origin <state.branch>`, then `git show origin/<state.branch>:<sprint>/state.json` must hold this `pr.number`. If it does not, commit the local `state.json.pr` write if uncommitted, push the sprint branch and re-confirm; a push failure is `FAILED`. Then wait for checks and merge the sprint PR per `git-strategy.md` "Merging a PR"; a `gh` failure is `FAILED` naming the fix ("PR creation"). Confirm the PR is `MERGED` before proceeding; a merge that did not land is a blocked merge. A blocked merge writes nothing: report its cause and emit `NEXT: await-merge`, the PR open and the sprint active.
+ 2. `self_hosting: enabled`: `git fetch origin <git.base_branch>`, then publish the release per `git-strategy.md` "Versioning & Changelog (self-hosting only)", which first confirms a base commit carries this sprint's version bump and CHANGELOG section, and after the release closes the sprint's included `(issue #N)` issues. Then, every project: write no state, archive move or commit, on any branch; the self-hosting tag and release are a tag ref and a host object, not a branch write (`sprint-lifecycle.md` "PR phase"). Emit `NEXT: done`.
+ 
+ ## Exit
+diff --git a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+index 32dde0f5..13365ee9 100644
+--- a/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
++++ b/.claude/agent-memory/asd-reviewer-combined/MEMORY.md
+@@ -22,3 +22,4 @@
+ - [Double fix: caller and callee](feedback_double-fix-caller-and-callee.md) — caller rule excludes case C and callee CLI also guards C: guard unreachable, turns ENOENT into a silent exit 0
+ - [Roster-move mirror sweep](feedback_roster-move-mirror-sweep.md) — reviewer changes phases: README Scope cells, one-phase gating paragraphs, "FAIL from <agent>" lines, combined's return rules
+ - [Entry log HEAD postdates](feedback_entry-log-head-postdates.md) — Entry log "HEAD analysed" is set at impl-test route time, so it follows the entry's own commits; not a defect
++- [Delegation vs never-list](feedback_delegation-vs-never-list.md) — new delegation: compare the delegate's real write set with the caller's never-list; a dropped clause: which case did it route?
+diff --git a/.claude/agent-memory/asd-reviewer-combined/feedback_delegation-vs-never-list.md b/.claude/agent-memory/asd-reviewer-combined/feedback_delegation-vs-never-list.md
+new file mode 100644
+index 00000000..b6ea0337
+--- /dev/null
++++ b/.claude/agent-memory/asd-reviewer-combined/feedback_delegation-vs-never-list.md
+@@ -0,0 +1,16 @@
++---
++name: delegation-vs-never-list
++description: when a skill starts delegating to another, compare the delegate's real write set with the caller's never-list and Outputs; when a rewrite drops a clause, ask which case only it routed
++metadata:
++  type: feedback
++---
++
++A new delegation inherits the delegate's writes, so the caller's `never: touch` list can turn false. Take the write set from the delegate's code (`.asd/sync.js` `buildSyncPlan`, its three ownership classes), not from its `## Outputs` line, which can be narrower.
++
++**Why:** a plan-listed exception covered the JSON-merge targets only, while the delegate also wrote managed blocks and paths outside `managed_paths`; the suite stayed green because no pin reads a never-list.
++
++**How to apply:**
++- Per new delegation, list every target class the delegate writes and grep each in the caller's `## Rules` and `## Outputs`.
++- For a reworded workflow step, take each removed clause and name the case it routed. "Confirm X before proceeding" with its else-branch cut leaves that case with no exit; check the `## Exit` table for a row.
++- Check an external CLI's exit-0-without-effect cases in its manual, not only its failure cases.
++- Related: [[enumerated-reach-vs-trigger-sites]], [[new-command-vs-skill-grant]].
+diff --git a/README.md b/README.md
+index 01574ac2..9fae5394 100644
+--- a/README.md
++++ b/README.md
+@@ -109,7 +109,7 @@ After a successful update, `/asd-update` runs `/asd-sync` itself, because canon
+ 
+ > **After updating, reconcile `.claude/settings.json` and `.codex/hooks.json` yourself.** They hold your permission allowlist and hook registration; the updater and sync only ever merge in their own hook entries, never rewrite the rest of the file. If an update added a hook or skill, you may need to register it there manually.
+ 
+-This repo (the ASD framework source itself) runs `node .asd/sync.js --check` in CI on every push/PR to `main` (`.github/workflows/sync-check.yml`), failing the build if any generated provider-view file drifts from canon — including an **orphan**: a file under `.claude/agents/`, `.claude/skills/`, `.codex/agents/`, or `.agents/skills/` whose canonical source was deleted or renamed. `--check` reports every orphan and exits non-zero; `--apply` deletes an orphan only when it still carries the ASD ownership marker AND is explicitly named in the `--apply <file...>` target list — an unmarked file in those trees is always a consumer's own agent/skill, reported but never touched; deleting a marker-owned orphan also prunes its now-empty parent directory.
++This repo (the ASD framework source itself) runs `node .asd/sync.js --check` in CI on every push/PR to `main` (`.github/workflows/sync-check.yml`), failing the build if any generated provider-view file drifts from canon — including an **orphan**: a file under `.claude/agents/`, `.claude/skills/`, `.codex/agents/`, or `.agents/skills/` whose canonical source was deleted or renamed. `--check` reports every orphan and exits non-zero; `--apply` deletes an orphan only when it still carries the ASD ownership marker AND is explicitly named in the `--apply <file...>` target list, and a hand-edited one (`orphan-modified`) only with `--force` — an unmarked file in those trees is always a consumer's own agent/skill, reported but never touched; deleting a marker-owned orphan also prunes its now-empty parent directory.
+ 
+ ---
+ 
+diff --git a/docs/architecture/tech-reference/gh-2.90.md b/docs/architecture/tech-reference/gh-2.90.md
+index 6042a3fc..1e333f9f 100644
+--- a/docs/architecture/tech-reference/gh-2.90.md
++++ b/docs/architecture/tech-reference/gh-2.90.md
+@@ -22,7 +22,7 @@ responsibility:
+ - `gh label create <name> -R <owner/repo> -d <description> -f`: `-f` updates an existing label instead of failing, so the call is idempotent.
+ - `gh release view v<version> --json url`: release link for the post-release close comment.
+ - `gh pr checks <n> --json bucket`: one read of a PR's checks; each `bucket` is `pass`, `fail`, `pending`, `skipping` or `cancel`.
+-- `gh pr merge <n> --squash`: merges the PR, or fails with the host's reason when a required check, review, conflict or out-of-date base blocks it.
++- `gh pr merge <n> --squash`: merges the PR, or fails with the host's reason when a required check, review, conflict or out-of-date base blocks it. On a base branch with a merge queue it exits 0 having queued the PR or enabled auto-merge (https://cli.github.com/manual/gh_pr_merge), so exit 0 alone does not prove the merge landed.
+ 
+ ## Version-specific notes
+ - `gh issue close --duplicate-of` and `-r duplicate` are present in 2.90; an older `gh` lacking them falls back to `-r "not planned"` plus the `duplicate` label.
+diff --git a/tests/run.js b/tests/run.js
+index 2ff9a84f..9eebd993 100644
+--- a/tests/run.js
++++ b/tests/run.js
+@@ -1506,16 +1506,17 @@ test('update driver: planUpdate\'s pending-migration preview unions migrations f
+ // literal first line. Uses the real buildFullFileMarker/sha256Hex so this
+ // stays byte-compatible with whatever sync.js itself considers a valid
+ // marker, instead of hand-rolling a regex-matching string that could drift.
+-function markedFileContent(format, manifest) {
++function markedFileContent(format, manifest, { edited = false } = {}) {
++  const body = format === 'md' ? '---\nbody\n---\nrest of body\n' : 'body\n';
+   const marker = sync.buildFullFileMarker({
+     format,
+     sourceRelPath: 'agents/retired-fixture-agent.md',
+     sourceDigest: sync.sha256Hex('fixture-source'),
+-    contentDigest: sync.sha256Hex('fixture-content'),
++    contentDigest: sync.sha256Hex(edited ? 'body-before-the-hand-edit' : body),
+     asdVersion: manifest.asd_version,
+   });
+-  if (format === 'md') return '---\n' + marker + '\nbody\n---\nrest of body\n';
+-  return marker + '\nbody\n';
++  if (format === 'md') return body.replace('---\n', '---\n' + marker + '\n');
++  return marker + '\n' + body;
+ }
+ 
+ test('sync.js orphan detection (AC-14): --check reports a marked orphan as "orphan" (fails) and an unmarked one as "orphan-unmarked" (informational, never a failure)', () => {
+@@ -1652,6 +1653,32 @@ test('sync.js CLI: --check exits 1 when a marked orphan is present, 0 when only
+   assert.ok(secondReport.items.some((i) => i.target === '.claude/agents/consumer-owned.md' && i.status === 'orphan-unmarked'), 'the unmarked file must still be reported as orphan-unmarked, just never as a failure');
+ });
+ 
++test('sync.js CLI: a hand-edited marked orphan reports orphan-modified and fails --check, --apply leaves it alone without --force and deletes it with --force; providers.md states the status', () => {
++  const { spawnSync } = require('node:child_process');
++  const root = makeMiniRepo();
++  const manifest = loadManifest();
++  const rel = '.claude/agents/asd-reviewer-quality.md';
++  const abs = path.join(root, rel);
++  fs.mkdirSync(path.dirname(abs), { recursive: true });
++  fs.writeFileSync(abs, markedFileContent('md', manifest, { edited: true }), 'utf8');
++  const cli = (...args) => spawnSync(process.execPath, [path.join(REPO_ROOT, '.asd', 'sync.js'), ...args], { cwd: root, encoding: 'utf8' });
++
++  const checked = cli('--check');
++  const status = JSON.parse(checked.stdout).items.find((i) => i.target === rel).status;
++  assert.strictEqual(status, 'orphan-modified');
++  assert.strictEqual(checked.status, 1, 'a hand-edited marked orphan fails --check like an unedited one');
++
++  const refused = JSON.parse(cli('--apply', rel).stdout).applied.find((r) => r.target === rel);
++  assert.deepStrictEqual([refused.status, refused.applied], ['orphan-modified', false]);
++  assert.strictEqual(fs.existsSync(abs), true, 'without --force the hand-edited orphan survives');
++
++  const forced = JSON.parse(cli('--apply', rel, '--force').stdout).applied.find((r) => r.target === rel);
++  assert.deepStrictEqual([forced.status, forced.applied], ['orphan-modified', true]);
++  assert.strictEqual(fs.existsSync(abs), false, 'with --force the confirmed orphan is deleted');
++
++  assert.ok(subOf(canonText('.asd/rules/providers.md'), 'Orphan detection').includes(`\`${status}\``), 'providers.md "Orphan detection" names the status --check reports for a hand-edited orphan');
++});
++
+ test('sync.js CLI: --apply on a not-found target aborts the whole batch (exit 1) and skips the hash-ledger recompute - manifest and sync-state.json stay byte-for-byte untouched', () => {
+   const root = makeMiniRepo();
+   const manifestPath = path.join(root, '.asd', 'release-manifest.json');
+@@ -6882,7 +6909,7 @@ test('sprint-021 AC-10/AC-11 (D5): scratch-dir creates .asd/tmp/ beside the runt
+ test('sprint-021 AC-1/AC-2 (D1), sprint-022 AC-1/AC-2/AC-3: pr ends at await-merge or done, and runtime CHAIN_EXITS, asd-sprint and README agree; pr open mode commits and pushes its state.json.pr write before it continues into merge mode, pr merge mode, entered on any confirmed MERGED number (only the retry of the missing release and issue-close steps skips open mode\'s DoD gate), skips the merge for a PR already MERGED, republishes it if the PR head lacks it before merging, fetches base before the self-hosting release and, in every project, performs no part of the closure write, which releases nothing and is the orchestrator\'s, and scope step 1 carries every token of it', () => {
+   const definitions = readWorkflowDefinitions();
+   const exits = [...new Set(definitions.flatMap(({ phases, next }) => Object.values(next).flat().filter((target) => !phases.includes(target))))].sort();
+-  assert.deepStrictEqual(exits, ['await-merge', 'done'], 'sprint-022 AC-3 (D1): the chain ends at pr\'s two exits - the PR opened, then merged; done names completion, not a write, since pr never writes the terminal state');
++  assert.deepStrictEqual(exits, ['await-merge', 'done'], 'sprint-022 AC-3 (D1): the chain ends at pr merge mode\'s two exits - await-merge (merge blocked) and done (merged); done names completion, not a write, since pr never writes the terminal state');
+   const chainExits = /^const CHAIN_EXITS = (\[[^\]]*\]);/m.exec(canonText('.asd/runtime.js'));
+   assert.ok(chainExits, 'sanity: .asd/runtime.js must declare CHAIN_EXITS as a one-line array literal');
+   assert.deepStrictEqual(JSON.parse(chainExits[1].replace(/'/g, '"')).sort(), exits, 'sprint-022 AC-3: runtime.js CHAIN_EXITS must be exactly the exits the definitions route pr to - loadWorkflow accepts any CHAIN_EXITS member as a target, so a stale extra token stays loadable and routable');
+@@ -9106,7 +9133,7 @@ test('sprint-032 AC-4/AC-5: waitForChecks returns pass and fail at once, polls n
+   await assert.rejects(scriptedWait([new Error('gh pr checks 7 failed: boom')]), /boom/, 'an unexpected gh failure is never read as a check state');
+ });
+ 
+-test('sprint-032 AC-4: readChecks maps gh pr checks output - skipping is pass, any pending is pending, fail and cancel are fail, an empty list or the no-checks message is none - and any other gh failure throws', () => {
++test('sprint-032 AC-4: readChecks maps gh pr checks output - skipping is pass, any pending is pending, fail and cancel are fail, an empty list or the no-checks message is none whatever stdout holds - and any other gh failure, unparseable or non-array output included, throws and is never none', () => {
+   const rows = (...buckets) => JSON.stringify(buckets.map((bucket) => ({ bucket })));
+   const cases = [
+     [{ status: 0, stdout: rows('pass', 'skipping'), stderr: '' }, 'pass'],
+@@ -9115,7 +9142,10 @@ test('sprint-032 AC-4: readChecks maps gh pr checks output - skipping is pass, a
+     [{ status: 1, stdout: rows('cancel'), stderr: '' }, 'fail'],
+     [{ status: 0, stdout: '[]', stderr: '' }, 'none'],
+     [{ status: 1, stdout: '', stderr: "no checks reported on the 'sprint/032' branch\n" }, 'none'],
+-    [{ status: 1, stdout: '', stderr: 'HTTP 401: Bad credentials' }, `throws: gh pr checks ${CHECKS_PR} failed: HTTP 401: Bad credentials`],
++    [{ status: 1, stdout: rows('fail'), stderr: "no checks reported on the 'sprint/032' branch\n" }, 'none'],
++    [{ status: 1, stdout: '', stderr: 'HTTP 401: Bad credentials' }, new RegExp(`^throws: gh pr checks ${CHECKS_PR} failed: .*HTTP 401: Bad credentials`)],
++    [{ status: 0, stdout: 'not json', stderr: '' }, new RegExp(`^throws: gh pr checks ${CHECKS_PR} failed`)],
++    [{ status: 0, stdout: '{"bucket":"pass"}', stderr: '' }, new RegExp(`^throws: gh pr checks ${CHECKS_PR} failed: output is not a check array`)],
+     [{ error: { message: 'spawn gh ENOENT' } }, `throws: gh pr checks ${CHECKS_PR} failed: spawn gh ENOENT`],
+   ];
+   const stub = ghStub(cases.map(([answer]) => answer));
+@@ -9130,7 +9160,8 @@ test('sprint-032 AC-4: readChecks maps gh pr checks output - skipping is pass, a
+   ].join('\n'), 'utf8');
+   const result = stub.run([driver], { RUNTIME_JS, CASES: String(cases.length) });
+   assert.strictEqual(result.status, 0, result.stderr);
+-  assert.deepStrictEqual(JSON.parse(result.stdout), cases.map(([, expected]) => expected));
++  const actual = JSON.parse(result.stdout);
++  cases.forEach(([, expected], index) => (expected instanceof RegExp ? assert.match(actual[index], expected, `case ${index}`) : assert.strictEqual(actual[index], expected, `case ${index}`)));
+   assert.deepStrictEqual(stub.calls()[0], ['gh', 'pr', 'checks', CHECKS_PR, '--json', 'bucket'], 'one read is `gh pr checks <n> --json bucket`');
+   assert.strictEqual(stub.calls().length, cases.length, 'exactly one gh call per read');
+ });
+@@ -9153,6 +9184,8 @@ test('sprint-032 AC-4/AC-5: checks-wait prints {"checks":...} and exits 0 on pas
+   assert.strictEqual(broken.status, 2, 'a gh failure takes the existing fail path, exit 2');
+   assert.strictEqual(broken.stdout, '', 'a gh failure prints no checks value a caller could read as an outcome');
+   assert.ok(broken.stderr.includes(`gh pr checks ${CHECKS_PR} failed`), broken.stderr);
++  const garbled = ghStub([{ status: 0, stdout: 'not json', stderr: '' }]).run([RUNTIME_JS, 'checks-wait', '--pr', CHECKS_PR]);
++  assert.deepStrictEqual([garbled.status, garbled.stdout], [2, ''], 'unparseable gh output is a gh failure, never the merge-permitting none');
+ 
+   for (const flags of [['--pr', '0'], ['--pr', 'abc'], ['--pr', '1.5'], []]) {
+     const stub = ghStub([]);
+@@ -9180,6 +9213,10 @@ test('sprint-032 AC-3/AC-4/AC-5: merge mode is the only producer of await-merge,
+   assert.ok(mergeSentence.includes('`pass`') && mergeSentence.includes('`none`') && !mergeSentence.includes('`fail`'), `AC-4: the merge call is gated on pass or none; got: ${mergeSentence}`);
+   const blocked = rule.split('\n\n').find((paragraph) => paragraph.includes('`--admin`')) || '';
+   assert.ok(blocked.includes('`fail`') && blocked.includes('`timeout`') && blocked.includes('`NEXT: await-merge`'), `AC-5: the blocked-merge paragraph covers fail and timeout and exits at await-merge; got: ${blocked}`);
++  assert.ok(blocked.includes('`MERGED`'), `AC-5: a merge the host accepted that did not land is found by confirming the PR \`MERGED\`; got: ${blocked}`);
++  const landing = stepOf(subOf(steps, 'Merge mode'), 1).split(/(?<=\.)\s/).find((sentence) => sentence.includes('`MERGED`') && sentence.includes('blocked merge')) || '';
++  const mergeStep = stepOf(subOf(steps, 'Merge mode'), 1);
++  assert.ok(landing !== '' && mergeStep.indexOf(landing) > mergeStep.indexOf('"Merging a PR"'), `AC-5: merge mode step 1 states the PR \`MERGED\` after the merge call, a merge that did not land being a blocked merge; got: ${landing}`);
+ 
+   const bounds = [`${runtime.CHECKS_GRACE_MS / 1000} s`, `${runtime.CHECKS_LIMIT_MS / 60000} min`];
+   const readmePr = canonText('README.md').split('\n').find((line) => line.startsWith('| **pr** |') && line.includes('`gh pr create`')) || '';
+@@ -9200,6 +9237,8 @@ test('sprint-032 AC-6: pr open mode deletes the sprint scratch files by the pref
+   const publishAt = open.findIndex((step) => step.includes('"PR creation"'));
+   const deleting = open.findIndex((step) => step.includes(`\`${glob}\``));
+   assert.ok(publishAt >= 0 && deleting > publishAt, 'AC-6: pr open mode deletes the sprint scratch files in a step after the PR is created and published');
++  const merged = open.find((step) => step.includes('Never open a second PR')).split(/(?<=\.)\s/).find((sentence) => sentence.includes('`MERGED`')) || '';
++  assert.ok(merged.includes(`step ${open[deleting].match(/\d+/)[0]}`), `AC-6: a MERGED hit continues at the scratch-deleting step, not past it; got: ${merged}`);
+   assert.ok(sectionOf('.asd/rules/artifact-layout.md', 'Scratch directory').includes(`\`${glob}\``), 'AC-6: artifact-layout.md "Scratch directory" names the pr deletion');
+ });
+ 
+@@ -9209,9 +9248,14 @@ test('sprint-032 AC-1/AC-2: asd-sync applies its unedited group without --force
+   const unedited = applies.find((line) => !line.includes('--apply <file...> --force')) || '';
+   const forced = applies.find((line) => line.includes('--apply <file...> --force')) || '';
+   assert.strictEqual(applies.length, 2, 'AC-1: asd-sync applies in exactly two groups');
+-  assert.ok(unedited.includes('`missing`') && unedited.includes('`stale`') && !unedited.includes('modified-foreign'), `AC-1: the group applied without --force is the unedited one; got: ${unedited}`);
+-  assert.ok(forced.includes('`modified-foreign`') && !forced.includes('`missing`') && !forced.includes('`stale`'), `AC-1: --force reaches only the confirmed modified-foreign group; got: ${forced}`);
+-  assert.ok(sectionOf(syncSkill, 'Rules').includes('`modified-foreign`'), 'AC-1: the never-rule narrows to modified-foreign, since an unedited file is regenerated with no question');
++  assert.ok(unedited.includes('`missing`') && unedited.includes('`stale`') && !unedited.includes('modified-foreign') && !unedited.includes('orphan-modified'),`AC-1: the group applied without --force is the unedited one; got: ${unedited}`);
++  assert.ok(forced.includes('`modified-foreign`') && forced.includes('`orphan-modified`') && !forced.includes('`missing`') && !forced.includes('`stale`'), `AC-1: --force reaches only the confirmed hand-edited groups, modified-foreign and orphan-modified; got: ${forced}`);
++  const syncRules = sectionOf(syncSkill, 'Rules');
++  assert.ok(syncRules.includes('`modified-foreign`') && syncRules.includes('`orphan-modified`'), 'AC-1: the never-rule narrows to the hand-edited statuses, since an unedited file is regenerated with no question');
++  const writes = (skill) => jsonText(sectionOf(skill, 'Outputs')).join(' ');
++  for (const skill of [syncSkill, '.asd/skills/asd-update/SKILL.md']) {
++    assert.deepStrictEqual(['AGENTS.md', 'CLAUDE.md'].filter((file) => !writes(skill).includes(file)), [], `AC-1/AC-2: ${skill} Outputs lists the managed blocks asd-sync writes, which the update run's never-rule must not contradict`);
++  }
+ 
+   const updateSkill = '.asd/skills/asd-update/SKILL.md';
+   const delegation = stepOf(sectionOf(updateSkill, 'Steps'), 5);
+@@ -9268,7 +9312,7 @@ test('sprint-032 leftover-term check: no canon, README, AGENTS.md, runtime, hook
+     'after checks pass and the PR is mergeable; it never waits for a human to click merge', '(only when step 1 skipped audit)', "on pr open mode's return (it closed its own)", 'Emit `NEXT: await-merge`; the active sprint remains',
+     '<b>as</b> {{role}}', '`--apply` over the views `--check` reports stale', '"if": "open mode, PR opened"', 'Automatically runs `node .asd/sync.js --check` afterward',
+     'it automatically runs `node .asd/sync.js --check` — canon files changed upstream', 'per-file overwrite/keep/diff confirmation, never a silent bulk overwrite', 'then ASD merges the PR itself through `gh` (a `gh` failure',
+-    'Exit tokens are `await-merge` (PR opened)', 'A merge blocked by a failing check, a conflict or a branch-protection rule is reported, not forced',
++    'Exit tokens are `await-merge` (PR opened)', "`pr`'s open and merge exits",'A merge blocked by a failing check, a conflict or a branch-protection rule is reported, not forced',
+   ];
+   const memoryFiles = fs.readdirSync(path.join(REPO_ROOT, AGENT_MEMORY_ROOT), { recursive: true }).map((entry) => `${AGENT_MEMORY_ROOT}/${String(entry).split(path.sep).join('/')}`).filter((rel) => rel.endsWith('.md'));
+   assertSweepReachesMemory(memoryFiles);

@@ -68,7 +68,7 @@
   "skipped_phases": [],
   "reviews": {
     "design": { "iteration": 0, "verdicts": {}, "latched": {} },
-    "impl": { "wave": 1, "waves": [ { "iteration": 1, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "CONCERNS" } }, "iteration_heads": { "iter-01": "c96e142d26a3bf38768dc5a65f2c6e907b54fbd8" }, "latched": {} } ] }
+    "impl": { "wave": 1, "waves": [ { "iteration": 2, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "CONCERNS" }, "iter-02": { "combined": "APPROVE", "external": "APPROVE" } }, "iteration_heads": { "iter-01": "c96e142d26a3bf38768dc5a65f2c6e907b54fbd8", "iter-02": "4a6393a33bacc500ce655a81d1827d2b692a8781" }, "latched": { "combined": 2, "external": 2 } } ] }
   },
   "created_at": "2026-11-05T14:59:32.000Z",
   "updated_at": "2026-11-05T14:59:32.000Z",
