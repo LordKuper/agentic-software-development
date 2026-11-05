@@ -7,3 +7,15 @@
 {"op":"open","id":"plan#1","kind":"phase","parent":null,"start":"2026-11-05T15:17:27.615Z","attrs":{}}
 {"op":"close","id":"plan#1","kind":"phase","parent":null,"start":"2026-11-05T15:17:27.615Z","end":"2026-11-05T15:20:14.989Z","outcome":"done","attrs":{}}
 {"op":"open","id":"impl#1","kind":"phase","parent":null,"start":"2026-11-05T15:20:14.989Z","attrs":{}}
+{"op":"open","id":"Task 1","kind":"dispatch","parent":"impl#1","start":"2026-11-05T15:20:47.698Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"open","id":"Task 2","kind":"dispatch","parent":"impl#1","start":"2026-11-05T15:20:47.698Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"open","id":"Task 3","kind":"dispatch","parent":"impl#1","start":"2026-11-05T15:20:47.698Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"open","id":"Task 4","kind":"dispatch","parent":"impl#1","start":"2026-11-05T15:20:47.698Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"open","id":"Task 5","kind":"dispatch","parent":"impl#1","start":"2026-11-05T15:20:47.698Z","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"Task 1","kind":"dispatch","parent":"impl#1","start":"2026-11-05T15:20:47.698Z","end":"2026-11-05T15:21:45.517Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"Task 2","kind":"dispatch","parent":"impl#1","start":"2026-11-05T15:20:47.698Z","end":"2026-11-05T15:21:57.349Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"Task 4","kind":"dispatch","parent":"impl#1","start":"2026-11-05T15:20:47.698Z","end":"2026-11-05T15:22:25.666Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"Task 3","kind":"dispatch","parent":"impl#1","start":"2026-11-05T15:20:47.698Z","end":"2026-11-05T15:22:49.843Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"Task 5","kind":"dispatch","parent":"impl#1","start":"2026-11-05T15:20:47.698Z","end":"2026-11-05T15:23:02.147Z","outcome":"done","attrs":{"agent":"asd-dev","tier":"standard","model":"sonnet"}}
+{"op":"close","id":"impl#1","kind":"phase","parent":null,"start":"2026-11-05T15:20:14.989Z","end":"2026-11-05T15:24:36.154Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-test#1","kind":"phase","parent":null,"start":"2026-11-05T15:24:36.154Z","attrs":{}}
