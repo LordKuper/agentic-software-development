@@ -62,3 +62,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: All seven findings applied in 7d2817cd..4eaf16b8; `sync.js` gains status `orphan-modified`, deleted only with `--force`, and a merge the host accepted but that did not land is a blocked merge. F6's stale assertion message at `tests/run.js:6885` goes to impl-test with the orphan fixture.
 - **Rationale**: The user's rule for this sprint is that a hand-edited file asks, and a silent orphan delete broke it. No separate tester chain: impl-test edits the same test file next.
 - **Affected docs**: `gh-2.90.md`, `git-strategy.md`, `providers.md`
+
+- 2026-11-05 — route impl-test entry 2: standard, dispatch HEAD 87f170ae
+- 2026-11-05 — impl-test: impacted set green (343/343, full suite via the safety valve), 1/0 tests

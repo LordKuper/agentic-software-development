@@ -15,7 +15,7 @@ were scoped through; the next re-entry's delta is `git diff <this sha>...HEAD`.
 | Entry | HEAD analysed | Scope |
 |---|---|---|
 | 1 | 810b23cd | full change surface (`git diff main...HEAD`, excluding `.asd/sprints/**`, `.asd/project/**` and generated views) |
-| 2 |  | delta `git diff 810b23cd...HEAD` with the same exclusions: orphan-modified in `sync.js`, `asd-update` never-rule/Outputs, merge that did not land and MERGED scratch pass-through in `asd-phase-pr.md`, `readChecks` order and failure path |
+| 2 | f21db5e1 | delta `git diff 810b23cd...HEAD` with the same exclusions: orphan-modified in `sync.js`, `asd-update` never-rule/Outputs, merge that did not land and MERGED scratch pass-through in `asd-phase-pr.md`, `readChecks` order and failure path |
 
 Entry 1's decision, removal and added-test rows are rotated into `test-plan.entry-01.md`; a superseded row of it is named below.
 
