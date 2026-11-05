@@ -1,7 +1,7 @@
 {
   "sprint_id": "032-auto-sync-auto-merge",
   "branch": "sprint/032-auto-sync-auto-merge",
-  "phase": "audit",
+  "phase": "plan",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -41,6 +41,13 @@
       "reason": "all t_audit.md sections for AC-1..AC-13; canon changes are planned criteria, no contradiction; no authority-only ambiguity",
       "evidence": "audit.md",
       "artifact_revision": "audit.md@audit"
+    },
+    {
+      "gate": "plan",
+      "decision_actor": "orchestrator",
+      "reason": "AC-1..AC-13 traced to Tasks 1-5 and the AC-8 plan-time line; decomposition rules met; checks-wait is the bounded choice the audit named; no open material alternative",
+      "evidence": "decisions-log.md 2026-11-05 plan accepted (adaptive)",
+      "artifact_revision": "plan.md@plan"
     }
   ],
   "task_routing": {},
