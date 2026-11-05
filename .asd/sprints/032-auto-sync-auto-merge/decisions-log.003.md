@@ -38,8 +38,8 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 
 <!-- entries appended below this line -->
 
-## 2026-11-02 — PR #79 opened (adaptive)
+## 2026-11-05 — plan accepted (adaptive)
 
-- **Decision**: Opened https://github.com/LordKuper/agentic-software-development/pull/79 from `sprint/031-combined-design-review` to `main`, `asd_version` 14.2.0 → 14.3.0 with its CHANGELOG section; `state.json.pr` recorded, sprint stays active awaiting merge.
-- **Rationale**: Scope AC-1..AC-10 was user-authorized, DoD holds (impl-review wave 1 APPROVE, full suite 330/330 re-run after the bump, retrospective written), and `gh` is authenticated, so publication qualifies adaptively.
-- **Affected docs**: `CHANGELOG.md`, `.asd/release-manifest.json`
+- **Decision**: `plan.md` accepted: Tasks 1-5 in wave 1 on disjoint paths, AC-8 and the `gh` tech-reference entries written at plan. `asd-agent-*` definitions stay untouched for AC-12, `git-strategy.md` "Commit before review" being in the dev and tester bundles already. `asd-sync` applies a marked `orphan` with no question, AC-1 leaving only `modified-foreign` to ask about.
+- **Rationale**: Every AC traces to a Task or the plan-time line; each decomposition rule holds; the only new surface, `checks-wait`, is the bounded mechanism the chosen approach M1 needs and the audit named it.
+- **Affected docs**: `plan.md`, `.asd/project/custom-coding-rules.md`, `docs/architecture/tech-reference/gh-2.90.md`

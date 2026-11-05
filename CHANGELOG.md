@@ -2,6 +2,28 @@
 
 All notable consumer-facing changes to ASD. Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [SemVer](https://semver.org/). Newest first.
 
+## v14.4.0
+
+`/asd-update` now finishes the job itself by running `/asd-sync`, which asks only about hand-edited files, and a sprint's PR merges in the run that opened it, with no confirmation and no further `/asd-sprint`.
+
+### Added
+- **`node .asd/runtime.js checks-wait --pr <n>`**: waits for a PR's checks, 60 s for them to register and 30 min for them to finish, and prints `pass`, `none`, `fail` or `timeout`.
+- **`orphan-modified` sync status**: a hand-edited generated file whose canonical source is gone is reported apart from a plain `orphan`. `sync.js --apply` deletes it only with `--force`.
+
+### Changed
+- **`/asd-update` runs `/asd-sync`**: after a real update, a partial one included, it delegates with no question. A `--dry-run` does not sync. Running `update.js` directly still needs `/asd-sync` or `sync.js --apply`.
+- **One `/asd-sync` behaviour**: `missing`, `stale` and unedited `orphan` files are applied with no question. Only a `modified-foreign` or `orphan-modified` file gets a per-file decision: overwrite or delete, keep, or show diff.
+- **Same-run merge**: the `pr` phase waits for checks and merges in the run that opened the PR, with no gate and no config key. A failing check, an exceeded wait, a conflict, a branch-protection rule, or a merge the host accepted that did not land is reported, not forced: the PR stays open and a later `/asd-sprint` resumes the merge.
+- **Scratch files**: the `pr` phase deletes the sprint's own files from the scratch directory.
+- **Audit and planned changes** (issue #81): a sprint criterion that deliberately changes a canonical document is a planned change, not a contradiction, and an audit answer changing a criterion goes through a scope amendment.
+- **Agent-memory check** (issue #84): `memory-check` runs at every commit of agent-memory writes, a dev's or tester's own included.
+- **Severity floor** (issue #85): a below-floor observation stays out of the Findings table and the findings ledger, and an APPROVE report's Findings table is empty.
+
+### Fixed
+- **External Review report** (issue #83): the wrapper keeps the template's five-column findings table, citing the wrapped CLI's finding id inside the Description cell, and takes its severity floor from the dispatch payload.
+- **Audit phase write** (issue #80): `phase="audit"` is written on the run path as well as the skip path.
+- **PRD story wording** (issue #82): the story connectives in `t_prd.html` are placeholders filled in `language.docs`.
+
 ## v14.3.0
 
 `standard`'s design-review now reviews your drafts in one combined pass instead of two separate reviewers, large review scopes no longer fail on Windows, and a reviewer findings table with an extra column is rejected instead of being persisted with the wrong location.

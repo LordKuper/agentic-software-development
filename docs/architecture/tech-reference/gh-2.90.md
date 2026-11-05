@@ -9,7 +9,7 @@ responsibility:
 
 ## Canonical source
 - Official docs: https://cli.github.com/manual ; REST behind `gh issue create`: https://docs.github.com/en/rest/issues/issues#create-an-issue
-- Last verified: 2026-10-30 (installed `gh version 2.90.0`, `--help` of each command below; `gh issue edit`: https://cli.github.com/manual/gh_issue_edit)
+- Last verified: 2026-11-05 (installed `gh version 2.90.0`, `--help` of each command below; `gh issue edit`: https://cli.github.com/manual/gh_issue_edit; `gh pr checks`: https://cli.github.com/manual/gh_pr_checks)
 
 ## API surface used in project
 - `gh auth status`: non-zero exit when no host is authenticated; gate before any issue write.
@@ -21,9 +21,12 @@ responsibility:
 - `gh issue edit <n> -R <owner/repo> -t <title> -F <body-file>`: rewrites the title and body in place; the number and links stay, the prior body stays in GitHub's edit history.
 - `gh label create <name> -R <owner/repo> -d <description> -f`: `-f` updates an existing label instead of failing, so the call is idempotent.
 - `gh release view v<version> --json url`: release link for the post-release close comment.
+- `gh pr checks <n> --json bucket`: one read of a PR's checks; each `bucket` is `pass`, `fail`, `pending`, `skipping` or `cancel`.
+- `gh pr merge <n> --squash`: merges the PR, or fails with the host's reason when a required check, review, conflict or out-of-date base blocks it. On a base branch with a merge queue it exits 0 having queued the PR or enabled auto-merge (https://cli.github.com/manual/gh_pr_merge), so exit 0 alone does not prove the merge landed.
 
 ## Version-specific notes
 - `gh issue close --duplicate-of` and `-r duplicate` are present in 2.90; an older `gh` lacking them falls back to `-r "not planned"` plus the `duplicate` label.
+- `gh pr checks` on a PR with no checks prints `no checks reported on the '<branch>' branch` to stderr and exits 1, in the plain and the `--json` form alike (verified live on 2.90); a failed check also exits 1 in the plain form, so only the message tells them apart. The same message appears in the moments before a new PR's checks register.
 
 ## Deprecations and breaking changes from prior version
 - None relied on.

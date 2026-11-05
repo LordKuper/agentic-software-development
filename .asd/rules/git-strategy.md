@@ -45,7 +45,7 @@ The main orchestrator commits its own bookkeeping — `state.json`, `decisions-l
 
 **Timing ledger**: a dirty `timing.jsonl` is committed by the orchestrator alone (`git commit --only -- <ledger>`, subject `chore(sprint): <NNN> timing`) before any clean-tree check or diff-reading gate, so those never see it; an agent never stages it (`sprint-lifecycle.md` "Operation timing").
 
-**Memory content check**: at the commit of agent-memory writes it holds (the clause above), the orchestrator stages them and runs `node .asd/runtime.js memory-check` first; it reads the staged diff, prints a JSON array of `{path, line, token}` hits and exits 1 on a hit (rule: `artifact-layout.md` "Agent memory"). A violating write is unstaged and not committed; it returns to its owner's memory-fix dispatch in the current phase, before that phase's COMPLETED (`review-policy.md` "Memory-fix dispatch"). A dev's or tester's own memory commit is not gated; legacy memory text is not swept.
+**Memory content check**: at every commit of agent-memory writes, the orchestrator's (the clause above) and a dev's or tester's own, the committer stages them and runs `node .asd/runtime.js memory-check` first; it reads the staged diff, prints a JSON array of `{path, line, token}` hits and exits 1 on a hit (rule: `artifact-layout.md` "Agent memory"). A violating orchestrator-committed write is unstaged and not committed; it returns to its owner's memory-fix dispatch in the current phase, before that phase's COMPLETED (`review-policy.md` "Memory-fix dispatch"). A dev or tester fixes a hit in its own write before committing. Legacy memory text is not swept.
 
 ## PR self-review checklist
 
@@ -68,13 +68,13 @@ Triggered only after DoD met and the active `checkpoints.md` policy permits publ
 
 ## Merging a PR
 
-Sole statement of who merges. A sprint has exactly one PR; its closure never opens another. The main orchestrator merges the sprint PR itself — `gh pr merge --squash`, after checks pass and the PR is mergeable; it never waits for a human to click merge.
+Sole statement of who merges. A sprint has exactly one PR; its closure never opens another. The main orchestrator merges the sprint PR itself, in the run that opened it: no user gate, no further `/asd-sprint`. It runs `node .asd/runtime.js checks-wait --pr <n>` — a long-running command: host background, or a host timeout above its 30 min limit — then `gh pr merge <n> --squash` on `pass` or `none`. `checks-wait` allows 60 s for checks to register (`none` if none did) and 30 min for them to finish; a required check holds the merge at the host whatever the grace.
 
 The merge completes the sprint; no user gate follows it. It writes nothing on `git.base_branch`, so the sprint stays at its active path there, merged-unclosed, until the next sprint's scope archives it mechanically: terminal write and archive move as that branch's first commit (`sprint-lifecycle.md` "PR phase", "Closure write"). The self-hosting release follows the merge ("Versioning & Changelog (self-hosting only)").
 
 Legacy recovery: an open `chore/finalize-sprint-<NNN-slug>` PR left by an earlier workflow version, found via `gh pr list --head chore/finalize-sprint-<NNN-slug>`, is merged as already approved (that flow opened it only after the user approved closing the sprint), and its closure write is skipped.
 
-A merge blocked by a failing check, a conflict or a branch-protection rule is reported, not forced: never `--admin`, never a local merge pushed to `git.base_branch`.
+A merge blocked by a failing check (`fail`), the exceeded wait (`timeout`), a conflict or a branch-protection rule is reported, not forced; so is a merge the host accepted that did not land (`gh pr merge` exits 0 with the PR queued or auto-merge set, a merge queue's behaviour), found by confirming the PR `MERGED` after the call: never `--admin`, never a local merge pushed to `git.base_branch`. The PR stays open, the phase exits `NEXT: await-merge`, and a later `/asd-sprint` resumes merge mode. A `gh` failure stays `FAILED` ("PR creation"); a host refusal of the merge itself is a blocked merge.
 
 ## Pre-existing uncommitted changes
 

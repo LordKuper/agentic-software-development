@@ -1,7 +1,7 @@
 {
   "sprint_id": "031-combined-design-review",
   "branch": "sprint/031-combined-design-review",
-  "phase": "pr",
+  "phase": "done",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -69,6 +69,13 @@
       "reason": "user-authorized scope AC-1..AC-10; DoD met (reviews green, suite 330/330, retrospective written); gh authenticated",
       "evidence": "decisions-log.md 2026-11-02 PR #79 opened (adaptive)",
       "artifact_revision": "PR #79"
+    },
+    {
+      "gate": "sprint-closure",
+      "decision_actor": "orchestrator",
+      "reason": "PR #79 merged; release v14.3.0 published; issues #74 #78 closed",
+      "evidence": "merge commit 5dbd020c6053e8a677062d81e965e6de132e0a6a",
+      "artifact_revision": "5dbd020c"
     }
   ],
   "task_routing": {
@@ -91,9 +98,9 @@
     "impl": { "wave": 1, "waves": [ { "iteration": 2, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "CONCERNS" }, "iter-02": { "combined": "APPROVE", "external": "APPROVE" } }, "iteration_heads": { "iter-01": "f1df727129a50e89c6b3032de4d42c2f47ac9767", "iter-02": "357e4910234756e1a37af7d006d4593e3d24cfa1" }, "latched": { "combined": 2, "external": 2 } } ] }
   },
   "created_at": "2026-11-02T13:14:00.000Z",
-  "updated_at": "2026-11-02T15:45:00.000Z",
+  "updated_at": "2026-11-05T14:59:32.000Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
-  "pr": { "number": 79, "url": "https://github.com/LordKuper/agentic-software-development/pull/79", "state": "open" },
-  "archived_at": null
+  "pr": { "number": 79, "url": "https://github.com/LordKuper/agentic-software-development/pull/79", "state": "merged", "merge_commit": "5dbd020c6053e8a677062d81e965e6de132e0a6a" },
+  "archived_at": "2026-11-05T14:59:32.000Z"
 }

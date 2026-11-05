@@ -79,3 +79,7 @@ Decided in: the sprint that last decided the row. Guardrail: the row's text; esc
 | 030-english-only-asd-issues#A-4 | consumer | included | 031-combined-design-review | On Git Bash, run `git show <ref>:<path>` with `MSYS_NO_PATHCONV=1` set. |
 | 030-english-only-asd-issues#P-1 | asd | rejected | 031-combined-design-review | A plan that gives README.md to one Task lists every README row the sprint's changes touch (grep README for each changed phase, command and rule), so that Task edits them all. |
 | 030-english-only-asd-issues#P-2 | asd | included | 031-combined-design-review | Before a scope amendment's criterion joins the plan, check its rule text against every accepted criterion's rule for a contradiction. |
+| 031-combined-design-review#A-2 | asd | included | 032-auto-sync-auto-merge | At pr open mode, delete every `<scratch-dir>/<NNN-slug>-*` file the sprint wrote. |
+| 031-combined-design-review#A-3 | asd | included | 032-auto-sync-auto-merge | Render External Review's Kept findings with the template's five-column header verbatim, the CLI's id and source inside the Description cell. |
+| 031-combined-design-review#P-1 | asd | included | 032-auto-sync-auto-merge | A runtime parser of a `language.docs` artifact checks its structure (column count, id column, machine tokens), never the translated heading text. |
+| 031-combined-design-review#P-2 | asd | deferred | 032-auto-sync-auto-merge | A plan moving a responsibility between roles lists, per mirror file, each sentence attributing that responsibility to a role, beside the removal grep forms. |

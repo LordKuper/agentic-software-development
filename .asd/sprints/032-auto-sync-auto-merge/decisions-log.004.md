@@ -1,0 +1,76 @@
+---
+responsibility:
+  owns: approved decisions for THIS sprint
+  excludes: cross-sprint/durable decisions, sprint state, review notes
+  delegates_to: docs/** + adr fold targets (durable design decisions), CHANGELOG.md (releases), .asd/project/stubs.md (standing open defects), .asd/project/retro-backlog.md (retro row dispositions), state.json (state), reviews/ (verdicts)
+---
+
+# Decisions Log
+
+Per-sprint, append-only. Never edited or removed. Created at `scope`, rotated at phase entry (`.asd/rules/artifact-layout.md` "Decisions log"), archived with the sprint.
+
+## Entry format
+
+```markdown
+## YYYY-MM-DD — <one-line summary>
+
+- **Decision**: <what was decided> (≤3 sentences)
+- **Rationale**: <why> (≤3 sentences)
+- **Affected docs**: <links> (unrestricted)
+```
+
+A no-op skip, other zero-content decision, dispatch routing line or failed-dispatch reconstruction uses the one-line form instead:
+
+```markdown
+- YYYY-MM-DD — <phase> skipped: <reason>
+- YYYY-MM-DD — route <taskIds>: <tier>, dispatch HEAD <sha>[; risk <declaration>]
+- YYYY-MM-DD — reconstruction: landed <ids>; re-dispatched <ids>
+- YYYY-MM-DD — stall: <agent> <dispatch ids>
+- YYYY-MM-DD — cleanup checkpoint <sha>
+- YYYY-MM-DD — cleanup: removed <paths/symbols>; reverted <ids or none>; verified <build, lint, tests @sha>
+```
+
+## Durability rule
+
+A decision whose value must survive this sprint's archival is ALSO written into an existing persistent home — a `docs/` fold target, `CHANGELOG.md`, `.asd/project/stubs.md`, or `.asd/project/retro-backlog.md` (retro row dispositions). Never invent a new document type for this. This log records that the decision was made; the persistent home is what a later sprint can still read.
+
+## Entries
+
+<!-- entries appended below this line -->
+
+- 2026-11-05 — route Task 1, Task 2, Task 3, Task 4, Task 5: standard, dispatch HEAD 79eba1f9
+
+## 2026-11-05 — impl assessment approved (adaptive)
+
+- **Decision**: Tasks 1-5 ticked; AC-1..AC-13 covered, AC-8 at plan; flagged choices accepted: `asd-sync` also leaves `foreign` alone; `checks-wait` reads a `[]` as `none` and caps each `gh` read at 60 s; an `OPEN` head-branch hit passes through the scratch step; a dev or tester fixes its own memory hit; README's `/asd-update` row gained `/asd-sync`.
+- **Rationale**: Each flagged choice stays inside its AC and changes no predicate the plan fixed. Build and lint clean, round diff within Task scopes plus the synced views; `tests/run.js` is 328/330, the two reds pinning the pr chain's old wording, which impl-test adapts. No stubs added.
+- **Affected docs**: `plan.md`
+
+- 2026-11-05 — route impl-test entry 1: standard, dispatch HEAD 49c75e13
+- 2026-11-05 — impl-test: impacted set green (342/342, full suite via the safety valve), 12/0 tests
+
+## 2026-11-05 — impl-review wave-1/iter-01 routed to review-fix
+
+- **Decision**: combined CONCERNS (F1-F6), external CONCERNS (1, 2); no FAIL, no question, no memory finding, no minor test-only branch; all route to impl review-fix; external 2 duplicates combined F2.
+- **Rationale**: Floor low at iteration 1, every finding counts. Next iteration 2 stays inside the wave's budget.
+- **Affected docs**: `reviews/impl/wave-1/iter-01/`
+
+- 2026-11-05 — route review-fix wave-1/iter-01: standard, dispatch HEAD daa7b7b5; risk change: merge-landed route and orphan deletion
+
+## 2026-11-05 — impl fix for wave-1/iter-01: findings resolved
+
+- **Decision**: All seven findings applied in 7d2817cd..4eaf16b8; `sync.js` gains status `orphan-modified`, deleted only with `--force`, and a merge the host accepted but that did not land is a blocked merge. F6's stale assertion message at `tests/run.js:6885` goes to impl-test with the orphan fixture.
+- **Rationale**: The user's rule for this sprint is that a hand-edited file asks, and a silent orphan delete broke it. No separate tester chain: impl-test edits the same test file next.
+- **Affected docs**: `gh-2.90.md`, `git-strategy.md`, `providers.md`
+
+- 2026-11-05 — route impl-test entry 2: standard, dispatch HEAD 87f170ae
+- 2026-11-05 — impl-test: impacted set green (343/343, full suite via the safety valve), 1/0 tests
+- 2026-11-05 — route impl-review suite 1: standard, dispatch HEAD 76750768
+
+## 2026-11-05 — impl-review DoD met
+
+- **Decision**: Wave 1 of 1 closed at iter-02: combined and external APPROVE, both latched; terminal full suite 343/343 at 76750768, lint and build clean.
+- **Rationale**: No unresolved finding remains and `review_fixes_pending` is null.
+- **Affected docs**: `reviews/impl/wave-1/iter-02/`, `test-plan.md`
+
+- 2026-11-05 — design-promote skipped: lite with no enabled document
