@@ -37,3 +37,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+## 2026-11-05 — audit accepted (adaptive)
+
+- **Decision**: Audit accepted; `phase="audit"` written by hand, audit step 5 having no write on the run path (AC-9). `.asd/runtime.js` gains a bounded checks wait, `gh pr checks --watch` alone being unable to carry AC-4's bounds. NEXT: plan (`lite`).
+- **Rationale**: Every criterion is deliverable: gh 2.90 verified live, a no-checks PR exits 1 with "no checks reported"; canon statements AC-1, AC-3 and AC-12 revise are planned changes the user accepted, not contradictions; no authority-only ambiguity remains.
+- **Affected docs**: `audit.md`, `state.json`
