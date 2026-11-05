@@ -112,6 +112,17 @@ const SLOW_TOP_N = 5;
 /** Minutes past which a leaf machine operation is slow whatever its rank. */
 const SLOW_MINUTES = 30;
 
+/** How long a PR may report no check before it counts as having none. */
+const CHECKS_GRACE_MS = 60000;
+/** How long checks may stay pending before the wait gives up. */
+const CHECKS_LIMIT_MS = 1800000;
+/** Gap between two check reads. */
+const CHECKS_POLL_MS = 10000;
+/** Ceiling for one `gh pr checks` call. */
+const CHECKS_READ_TIMEOUT_MS = 60000;
+/** `gh` check buckets that fail a PR. */
+const CHECK_FAIL_BUCKETS = ['fail', 'cancel'];
+
 /** The `providers.md` section holding the role grant table `context` reads. */
 const CONTEXT_SECTION = 'Role-scoped context';
 
@@ -1458,6 +1469,35 @@ function contextCommand(flags) {
   return { out: flags.out, refs: refs.length, bytes: Buffer.byteLength(bundle) };
 }
 
+/** Reads one PR's check state as `pass`, `pending`, `fail` or `none`; any other `gh` failure throws. `gh` exits non-zero while checks are pending or failed yet still prints the JSON, so stdout is read whatever the status. */
+function readChecks(pr) {
+  const result = spawnSync('gh', ['pr', 'checks', String(pr), '--json', 'bucket'], { encoding: 'utf8', timeout: CHECKS_READ_TIMEOUT_MS, windowsHide: true });
+  if (result.error) fail(`gh pr checks ${pr} failed: ${result.error.message}`);
+  let rows = null;
+  try {
+    rows = JSON.parse(result.stdout);
+  } catch {
+    if (!/no checks reported/.test(result.stderr || '')) fail(`gh pr checks ${pr} failed: ${(result.stderr || '').trim()}`);
+  }
+  if (!Array.isArray(rows) || rows.length === 0) return 'none';
+  const buckets = rows.map((row) => row.bucket);
+  if (buckets.some((bucket) => CHECK_FAIL_BUCKETS.includes(bucket))) return 'fail';
+  return buckets.includes('pending') ? 'pending' : 'pass';
+}
+
+/** Polls `read` until checks settle: `fail` and `pass` return at once, `none` past the grace and `pending` past the limit give up. `read`, `sleep` and `now` are injected so the bounds stay deterministic. */
+async function waitForChecks({ read, sleep, now }) {
+  const start = now();
+  for (;;) {
+    const state = read();
+    const elapsed = now() - start;
+    if (state === 'fail' || state === 'pass') return state;
+    if (state === 'none' && elapsed >= CHECKS_GRACE_MS) return 'none';
+    if (state === 'pending' && elapsed >= CHECKS_LIMIT_MS) return 'timeout';
+    await sleep(CHECKS_POLL_MS);
+  }
+}
+
 function parseFlagArgs(argv, booleanFlags) {
   const bools = booleanFlags || [];
   const out = {};
@@ -1563,11 +1603,17 @@ async function main(argv) {
     process.stdout.write(JSON.stringify(timingSummaryCommand(flags)) + '\n');
     return 0;
   }
-  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, section, context, agent-liveness, timing, timing-recover, or timing-summary');
+  if (command === 'checks-wait') {
+    if (!/^[1-9]\d*$/.test(flags.pr)) fail('--pr <positive integer> required');
+    const checks = await waitForChecks({ read: () => readChecks(flags.pr), sleep: delay, now: Date.now });
+    process.stdout.write(JSON.stringify({ checks }) + '\n');
+    return checks === 'pass' || checks === 'none' ? 0 : 1;
+  }
+  fail('usage: emit-manifest, manifest-digest, validate-ledger, persist-review, external-preflight, external-record-failure, route-task, defect-stalemate, memory-check, draft-snapshot, review-waves, wave-files, retro-candidates, scratch-dir, rotate-decisions, section, context, agent-liveness, timing, timing-recover, timing-summary, or checks-wait');
 }
 
 if (require.main === module) {
   main(process.argv).then((code) => { process.exitCode = code; }, (error) => { process.stderr.write(`${error.message}\n`); process.exitCode = 2; });
 }
 
-module.exports = { AUDIT_BATCH_THRESHOLD_FILES, COMBINED_REVIEWER, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LARGE_WAVE_FILES, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, SLOW_MINUTES, SLOW_TOP_N, WAVE_THRESHOLD_BYTES, WAVE_THRESHOLD_FILES, WAVE_THRESHOLD_LINES, agentLiveness, backlogRows, buildInvocation, contextBundle, contextRefs, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, isDocumentation, isTest, loadWorkflow, markdownSection, numstatLines, persistReview, recordExternalFailure, retroCandidates, retroRows, reviewFindings, reviewWaveCount, reviewerFiles, reviewerKeys, routeTask, timingAppend, timingRecover, timingSummary, validateCoverageLedger, validateWaveDivision, waveFiles, fingerprint };
+module.exports = { AUDIT_BATCH_THRESHOLD_FILES, CHECKS_GRACE_MS, CHECKS_LIMIT_MS, CHECKS_POLL_MS, COMBINED_REVIEWER, EXTERNAL_REVIEWER, INTERNAL_REVIEWERS, LARGE_WAVE_FILES, LEDGER_NA_SHAPE, LEDGER_ROW_EXAMPLE, LEDGER_VOCABULARY, MAX_REVIEW_WAVES, NA_PREDICATES, SLOW_MINUTES, SLOW_TOP_N, WAVE_THRESHOLD_BYTES, WAVE_THRESHOLD_FILES, WAVE_THRESHOLD_LINES, agentLiveness, backlogRows, buildInvocation, contextBundle, contextRefs, coverageManifestDigest, defectStalemate, draftSnapshot, emitCoverageManifest, externalPreflight, isDocumentation, isTest, loadWorkflow, markdownSection, numstatLines, persistReview, recordExternalFailure, retroCandidates, readChecks, retroRows, reviewFindings, reviewWaveCount, reviewerFiles, reviewerKeys, routeTask, timingAppend, timingRecover, timingSummary, validateCoverageLedger, validateWaveDivision, waitForChecks, waveFiles, fingerprint };
