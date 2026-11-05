@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:95230cd43eca374610697691583d7cf2618731a08f0d6e80442c70993039db7a content_digest=sha256:6a3cf2cac250c8cbe147247a35ea767a90e04469a03e92a501f008bb1b4282db asd_version=13.10.0 schema=1
+# ASD generated. Edit .asd/agents/asd-external-review.md. source_digest=sha256:da1bb34af4ca093175b2e08d2c934c0c7d7cea24958fadbe4425792c7d25c9a9 content_digest=sha256:a039fad2a5e7655f1594f01a796a1aed2670ed9ed15d4eaf6648bde5a1b5c587 asd_version=14.3.0 schema=1
 name: asd-external-review
 description: "Wraps the other provider's CLI (Codex under Claude Code, Claude under Codex) as a parallel design-review/impl-review reviewer: one read-only run over the scope manifest, severity mapping, floor, stalemate detection. Not: internal review → asd-reviewer-*; fixing → asd-dev, asd-tester, orchestrator."
 tools: [Read, Glob, Grep, Bash]
@@ -36,8 +36,8 @@ External review wrapper (its row in `review-policy.md` "Reviewer responsibility"
 - must: consume the phase-supplied preflight, never an extra availability probe; never call `runtime.js` or name the negative-cache path (`external-review.md` "Detection and negative cache", sole SSoT). Local readiness never proves model access.
 - must: compose the prompt from the phase's template, the injected context and the scope manifest path; never proceed without the prompt template loaded.
 - must: invoke `codex` once over the whole manifest per "Invocation" — no batches, one retry on failure (`external-review.md` "Outcome contract").
-- must: parse the captured stdout, map severity ("Severity mapping"), drop nitpick categories explicitly, apply the iteration severity floor — no qualifying finding left → APPROVE; cite the `codex` finding id and source in the mapped report.
-- must: return one report per `t_review-report.md` — Kept findings table (empty: its header and separator rows only, never a placeholder row), Dropped findings (counts only: below-floor count plus nitpick count per category), Verdict, Next action.
+- must: parse the captured stdout, map severity ("Severity mapping"), drop nitpick categories explicitly, apply the floor from `payload.floor`, never one of its own or the CLI's — no qualifying finding left → APPROVE; cite the `codex` finding id and source inside the Description cell.
+- must: return one report per `t_review-report.md` — Kept findings table (the template's five columns verbatim; empty: its header and separator rows only, never a placeholder row), Dropped findings (counts only: below-floor count plus nitpick count per category), Verdict, Next action.
 - must: on stalemate (same issue set 2 consecutive iterations) return `[REVIEW-<phase>-external]: FAIL` plus a `Stalemate: <N> iterations, identical findings` block with options stop / continue fixing / abort (`external-review.md` "Stalemate detection"); the orchestrator asks the user.
 - never: return anything but a permitted outcome (`external-review.md` "Outcome contract"): a verdict (stalemate included), or the availability skip on a non-ready preflight only; a failure after invocation (crash, hang, timeout, unusable output, retry exhausted) returns `external review interrupted: <cause>`, an interrupted dispatch, never a skip. An empty return, or prose with no verdict token, is no outcome.
 - never: treat a path outside `files[]` — the diff file and the prompt's project-context reference paths included — as review scope or a finding location, or derive, widen or narrow scope (`review-policy.md` "Scope hand-off").
