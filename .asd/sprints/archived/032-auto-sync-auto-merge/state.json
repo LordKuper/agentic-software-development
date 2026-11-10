@@ -1,7 +1,7 @@
 {
   "sprint_id": "032-auto-sync-auto-merge",
   "branch": "sprint/032-auto-sync-auto-merge",
-  "phase": "pr",
+  "phase": "done",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -69,6 +69,13 @@
       "reason": "user accepted scope with this sprint's PR merging under the new rule; DoD checks pass; gh authenticated",
       "evidence": "state.json gate_decisions scope; test-plan.md Suite run; decisions-log.md 2026-11-05 PR opened",
       "artifact_revision": "f290c542"
+    },
+    {
+      "gate": "sprint-closure",
+      "decision_actor": "orchestrator",
+      "reason": "PR #87 merged; release v14.4.0 published; issues #80-#85 closed",
+      "evidence": "merge commit 5f3dd335c5dbbbc668f7c1c10528e33eae18f5ab",
+      "artifact_revision": "5f3dd335"
     }
   ],
   "task_routing": {
@@ -85,9 +92,9 @@
     "impl": { "wave": 1, "waves": [ { "iteration": 2, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "CONCERNS" }, "iter-02": { "combined": "APPROVE", "external": "APPROVE" } }, "iteration_heads": { "iter-01": "c96e142d26a3bf38768dc5a65f2c6e907b54fbd8", "iter-02": "4a6393a33bacc500ce655a81d1827d2b692a8781" }, "latched": { "combined": 2, "external": 2 } } ] }
   },
   "created_at": "2026-11-05T14:59:32.000Z",
-  "updated_at": "2026-11-05T14:59:32.000Z",
+  "updated_at": "2026-11-10T21:00:27.000Z",
   "review_fixes_pending": null,
   "test_defects_pending": null,
-  "pr": { "number": 87, "url": "https://github.com/LordKuper/agentic-software-development/pull/87", "state": "open" },
-  "archived_at": null
+  "pr": { "number": 87, "url": "https://github.com/LordKuper/agentic-software-development/pull/87", "state": "merged", "merge_commit": "5f3dd335c5dbbbc668f7c1c10528e33eae18f5ab" },
+  "archived_at": "2026-11-10T21:00:27.000Z"
 }

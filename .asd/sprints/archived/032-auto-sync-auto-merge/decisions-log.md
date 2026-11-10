@@ -52,3 +52,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Version bumped to 14.4.0 with its CHANGELOG section; PR 87 opened for `sprint/032-auto-sync-auto-merge`, then merged in this run per `git-strategy.md` "Merging a PR".
 - **Rationale**: The scope gate named this sprint's own PR under the new rule; DoD checks pass. The first `gh pr create` failed with a GraphQL server error and made no PR, confirmed by a head-branch lookup; one retry opened it.
 - **Affected docs**: `CHANGELOG.md`, `.asd/release-manifest.json`
+
+## 2026-11-11 — sprint closure
+
+- **Decision**: Sprint closed: PR #87 merged as 5f3dd335c5dbbbc668f7c1c10528e33eae18f5ab; folder archived, `phase=done`, `pr.state=merged`.
+- **Rationale**: Merged-unclosed detected at sprint 033 start; release v14.4.0 tagged on the merge commit and published, included issues #80-#85 closed, so no release retry.
+- **Affected docs**: `state.json`
