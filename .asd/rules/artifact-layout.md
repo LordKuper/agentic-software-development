@@ -35,6 +35,7 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │       │   ├── design/
 │       │   │   ├── prd.html
 │       │   │   ├── ux-spec.html
+│       │   │   ├── mockups/                     # ux_spec enabled only, `lite`: made at scope; promoted to docs/ux/mockups/. Claude Code with the Artifact tool: index.md + one subfolder per Design canvas (project/canvas.json, project/*.dc.html), published from it; otherwise one <screen>.html per screen or state (t_html-shell.html). Decomposition enabled: mockups/<subsystem>/
 │       │   │   ├── adr.html             # sprint-scoped only; never a standalone persistent document (folds at design-promote)
 │       │   │   ├── design-md-delta.yaml
 │       │   │   └── c4-full/                     # diagram_tool not none only; delta patch vs persistent diagram; full schema only when it is absent; never build dist/ here
@@ -70,6 +71,7 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │       ├── DESIGN.md
 │       ├── design-system.html
 │       ├── accessibility.html
+│       ├── mockups/<subsystem>/         # promoted from the sprint mockups/
 │       └── <subsystem>.html             # ux-spec per subsystem
 └── CLAUDE.md
 ```
@@ -86,7 +88,7 @@ docs/
 ├── architecture/
 │   ├── stack.html
 │   └── tech-reference/<tech>-<version>.md
-└── ux/{DESIGN.md, design-system.html, accessibility.html, ux-spec.html}
+└── ux/{DESIGN.md, design-system.html, accessibility.html, ux-spec.html, mockups/}
 ```
 
 No registry, no `<subsystem>.md`, no `c4/` directory. No subsystem subfolders.
@@ -96,6 +98,8 @@ No registry, no `<subsystem>.md`, no `c4/` directory. No subsystem subfolders.
 Agent memory lives at the provider-view root — `.claude/agent-memory/<agent>/` (`MEMORY.md` index + one file per memory) — always, whatever working directory a dispatch names. Never inside a sprint tree (path map above). One directory per dispatched agent name, tier variants included: distinct agents never share a memory file, so co-authorship arises only between concurrent dispatches of the same agent, which share that directory and its single `MEMORY.md`. Before a write lands, the writing agent checks it against its own definition (declared tool policy: `providers.md` "Declared tool policy"); a practice that contradicts the definition is never recorded.
 
 **Content**: memory holds method only; it never records a sprint id, a Task, a wave, an iteration or a review verdict — that history belongs in the sprint's artefacts. Checked at every memory commit: `git-strategy.md` "Commit before review".
+
+A release retiring an agent deletes its directory in its migration (`.asd/migrations/`), so no consumer keeps a memory no dispatch loads.
 
 **Carve-out to the read-only generated-view rule**: `agent-memory/` has no canonical source under `.asd/` and `sync.js` neither generates nor reconciles it (no row in `providers.md` "Canonical path -> per-provider path"), so the read-only rule does not reach it. Everything else under `.claude/`, `.codex/` and `.agents/skills/` stays read-only — edit canon, then sync.
 
@@ -168,7 +172,7 @@ The shell trims two blocks per document instead of always emitting them: the mer
 
 **Badge omission**: omit the provenance badge when `PROVENANCE == original` (do not emit the `<span class="provenance-original">` block).
 
-**Fragment invariants**: fragment files in `.asd/templates/` (`t_prd.html` etc.) must NOT include `<html>`, `<head>`, `<body>`, `<style>`, `<script>` — content-only, rely on shell for chrome/styling. Reviewers FAIL fragments that duplicate shell chrome.
+**Fragment invariants**: fragment files in `.asd/templates/` (`t_prd.html` etc.) must NOT include `<html>`, `<head>`, `<body>`, `<style>`, `<script>` — content-only, rely on shell for chrome/styling. Duplicating shell chrome is a reviewer finding.
 
 ## Review verdict placeholder namespace
 
@@ -194,9 +198,11 @@ Manual step = operational action a human must perform for the plan to complete (
 
 ## Test plan
 
-`<sprint>/test-plan.md` per `t_test-plan.md`. Per-sprint: entry 1 writes it fresh; every re-entry amends it (Defects section carried over with resolved entries kept for the record). Owner: the `impl-test` Tester — it alone appends the `Entry log` and rotates. A `Defects` row's `Status` is flipped by its test-fix fixer. A review-fix tester (`asd-phase-impl.md` step 5) amends only `Risk → check decisions` and `Added tests` rows. It never deletes a test: it records a removal finding as a `Risk → check decisions` row, and the next `impl-test` entry, which always follows `impl`, performs the removal and records its reason under `Removed tests`. An impl-review in-place tester (`review-policy.md` "Minor test-only findings") has the same reach and reports a finding outside it unfixed.
+`<sprint>/test-plan.md` per `t_test-plan.md`. Per-sprint: entry 1 writes it fresh; every re-entry amends it (Defects section carried over with resolved entries kept for the record). Owner: the `impl-test` Tester — it alone appends the `Entry log` and rotates. A `Defects` row's `Status` is flipped by its test-fix fixer. A review-fix tester (`asd-phase-impl.md` step 5) amends only `Risk → check decisions` and `Added tests` rows. It never deletes a test: it records a removal finding as a `Risk → check decisions` row, and the next `impl-test` entry, which always follows `impl`, performs the removal and records its reason under `Removed tests`, a redundancy removal naming the surviving test and the branch it exercises. An impl-review in-place tester (`review-policy.md` "Minor test-only findings") has the same reach and reports a finding outside it unfixed.
 
 **Rotation**: at a re-entry's strategy pass, before any new row and never when resuming an interrupted current entry (`asd-phase-impl-test.md` step 1), the Tester moves the `Risk → check decisions`, `Removed tests` and `Added tests` rows of the previous `Entry log` entry N, if any, plus the review-fix and impl-review in-place tester rows added since (they have no `Entry log` row of their own), into `test-plan.entry-NN.md` (same section headings, N zero-padded to 2) when that file is absent, leaving those tables empty in the live file. Live `test-plan.md` keeps the `Entry log`, `Suite run`, `Defects` and `Manual verification`. A segment is never edited: a fix that changes a rotated row's risk gets a superseding row in the live file. Readers: "Decisions log" below.
+
+An AC deviation found with no failing test is a `Defects` row all the same — `Failing test` = `none (AC-N)`, `Symptom` naming the AC and the deviation — and is never rated acceptable.
 
 SSoT for two things invisible in the diff: **why** a test was removed, and **why** a change needed no new test. Also the handoff channel for code defects to `impl` test-fix mode (`Defects` section). Not a task list (that is `plan.md`) and not a review verdict (that is `reviews/impl/wave-<K>/iter-NN/quality.md`).
 
@@ -220,11 +226,11 @@ SSoT for two things invisible in the diff: **why** a test was removed, and **why
 
 ## Single Source of Truth (iron rule)
 
-Each fact has exactly one home file. Other files link to it, never copy. Violation = `FAIL` from `asd-reviewer-quality`, or from `asd-reviewer-combined` applying the Quality rubric's SSoT entry.
+Each fact has exactly one home file. Other files link to it, never copy. Violation = a finding from `asd-reviewer-quality`, or from `asd-reviewer-combined` applying the Quality rubric's SSoT entry.
 
 ## Documentation economy (iron rule)
 
-A line of agent-facing text is re-paid on every dispatch that loads it, so it earns its place only by changing what a reading agent does; one that does not is deleted, not shortened. Reach: framework canon (rules, agents, skills, workflows, templates) and every artifact a later agent reads (`audit.md`, `plan.md`, `test-plan.md`, decisions-log entries, review files, retrospectives) — through the templates, in every consumer project too. **removal** decides and is necessary: cut only when no agent acts differently without the line. **provenance** — traces to no recorded defect, friction entry or decision — and **enforcement** — a tool grant, validator or suite assertion already imposes it, so the prose only restates it — corroborate a cut removal already allows; neither authorises one alone, and removal false = keep whatever the other two say. The tests bind while authoring: every agent that writes such text applies them before the line lands, not only when it is reviewed. Violation = `FAIL` from `asd-reviewer-efficiency`, or from `asd-reviewer-combined` applying the Efficiency rubric's entry.
+A line of agent-facing text is re-paid on every dispatch that loads it, so it earns its place only by changing what a reading agent does; one that does not is deleted, not shortened. Reach: framework canon (rules, agents, skills, workflows, templates) and every artifact a later agent reads (`audit.md`, `plan.md`, `test-plan.md`, decisions-log entries, review files, retrospectives) — through the templates, in every consumer project too. **removal** decides and is necessary: cut only when no agent acts differently without the line. **provenance** — traces to no recorded defect, friction entry or decision — and **enforcement** — a tool grant, validator or suite assertion already imposes it, so the prose only restates it — corroborate a cut removal already allows; neither authorises one alone, and removal false = keep whatever the other two say. The tests bind while authoring: every agent that writes such text applies them before the line lands, not only when it is reviewed. Violation = a finding from `asd-reviewer-efficiency`, or from `asd-reviewer-combined` applying the Efficiency rubric's entry.
 
 Cut on sight: prose stating no rule; rationale for a rule already stated; an example disambiguating nothing; a prohibition that only negates a positive rule already stated beside it; emphasis so frequent it marks nothing; a fact whose home is another file (SSoT above).
 
