@@ -103,7 +103,7 @@ Default: the responsible fixer autofixes any reviewer issue without user prompt 
 - Change to approved concept, PRD requirement, or API contract
 - New abstraction, layer, interface, or dependency
 - Scope expansion beyond `sprint.md`
-- Complexity increase (any over-engineering check trips)
+- Complexity increase (an over-engineering finding categorised `escalate`)
 
 ### Minor test-only findings
 
@@ -147,7 +147,7 @@ Every reviewer ends with exactly one:
 
 - `APPROVE` — no issues at or above floor severity
 - `CONCERNS: <list>` — every issue at or above floor not FAIL, whatever its severity
-- `FAIL: <list>` — only an issue whose fix needs a design decision that changes requirements or complicates the architecture: the "Escalation required" rows below — change to concept, PRD requirement or API contract, new abstraction/layer/interface/dependency, complexity increase (an over-engineering finding categorised `escalate`; `simplify` and `keep-as-is` are CONCERNS). Severity alone never makes a FAIL. External Review's stalemate FAIL is its own route (`external-review.md` "Stalemate detection"), not this boundary.
+- `FAIL: <list>` — only an issue whose fix needs a design decision that changes requirements or complicates the architecture: the four "Escalation required" rows above — change to concept, PRD requirement or API contract, new abstraction/layer/interface/dependency, scope expansion, complexity increase (`simplify` and `keep-as-is` are CONCERNS). Severity alone never makes a FAIL. External Review's stalemate FAIL is its own route (`external-review.md` "Stalemate detection"), not this boundary.
 
 Next action: APPROVE → reviewer done · CONCERNS → the orchestrator decides each finding's route, consulting `asd-advisor` on an ambiguous case (`agent-protocol.md` "Relay"); the responsible fixer autofixes, next iteration · FAIL → escalate to user.
 

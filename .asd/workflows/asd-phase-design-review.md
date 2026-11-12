@@ -39,12 +39,12 @@ Owner: inline orchestrator; dispatches reviewers (combined, External Review), a 
    - **Memory findings** — each finding located in `.claude/agent-memory/<owner>/`, plus each `memory-check` hit of step 8's commit, goes to its owner's memory-fix dispatch per `review-policy.md` "Memory-fix dispatch", its `resolved: <ids> — memory-fix, <YYYY-MM-DD>` lines included — never an inline fix or an extra iteration
    - **All APPROVE, latched or user-resolved** (`sprint-lifecycle.md` "State recovery" user-resolved findings) → DoD met; apply the adaptive gate policy [GATE adaptive: design-review green handoff] and append the decision inline; emit phase COMPLETED
    - **Any FAIL** → escalation [GATE hard: FAIL escalation]:
-     - parse FAIL findings; group by escalation cause (concept change / new abstraction / scope expansion / contract change); a FAIL finding fitting no cause is CONCERNS (`review-policy.md` "Gate Verdict Format")
+     - parse FAIL findings; group by escalation cause (concept / requirement / contract change; new abstraction; scope expansion; complexity increase); a FAIL finding fitting no cause is CONCERNS (`review-policy.md` "Verdict format")
      - escalation consult, then request user decision in `language.chat`: present each FAIL using Complication Approval format from `core.md`; collect decisions
      - External Review's stalemate FAIL (`Stalemate:` block, `external-review.md` "Stalemate detection") → escalation consult, then request user decision; options and routing per that section, instead of the accept/override bullets below
      - on override → record that finding resolved (`sprint-lifecycle.md` "State recovery" user-resolved findings), continue
      - on accept → apply exactly the approved changes to the drafts inline; loop step 4 (increment iteration)
-   - **Only CONCERNS** (no FAIL) → autofix loop; the route of an ambiguous finding is the orchestrator's, `asd-advisor` consulted (`review-policy.md` "Gate Verdict Format"):
+   - **Only CONCERNS** (no FAIL) → autofix loop; the route of an ambiguous finding is the orchestrator's, `asd-advisor` consulted (`review-policy.md` "Verdict format"):
      - fix every finding in the drafts inline per `review-policy.md` "Autofix vs escalation"
      - loop step 4
 10. Iteration cap reached (no severity tier has remaining budget for next iter) [GATE hard: review-cap override]:
