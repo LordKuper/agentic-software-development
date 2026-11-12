@@ -567,7 +567,7 @@ function reviewFindings(text) {
   });
 }
 
-/** Drops the findings-table rows below `floor` from a validated review body, appends `dropped: <n>`, and rewrites a CONCERNS or FAIL verdict to its kept count, or to APPROVE when no row is kept — a stalemate FAIL (a `Stalemate:` line) excepted, its sets being floored already. */
+/** Drops the findings-table rows below `floor` from a validated review body, appends `dropped: <n>`, and rewrites a CONCERNS or FAIL verdict to its kept count, or to APPROVE when no row is kept — a stalemate FAIL (a FAIL verdict with a `Stalemate: <N> iterations` line) excepted, its sets being floored already. */
 function applyFloor(body, floor) {
   const rank = SEVERITIES.indexOf(floor);
   const lines = body.split('\n');
@@ -578,7 +578,8 @@ function applyFloor(body, floor) {
   const kept = lines.filter((line, i) => i < start + 2 || i >= tableEnd || !isBelow(line));
   const dropped = lines.length - kept.length;
   const keptRows = tableEnd - start - 2 - dropped;
-  const approve = keptRows === 0 && !/^Stalemate: /m.test(body);
+  const isStalemate = /\]: FAIL\s*$/.test(lines[0]) && /^Stalemate: \d+ iterations/m.test(body);
+  const approve = keptRows === 0 && !isStalemate;
   const verdict = approve ? kept[0].replace(/\]: (?:CONCERNS|FAIL)(\s*)$/, ']: APPROVE$1') : kept[0];
   const text = [verdict, ...kept.slice(1)].map((line) => {
     const count = /^(CONCERNS|FAIL): \d+\s*$/.exec(line);
