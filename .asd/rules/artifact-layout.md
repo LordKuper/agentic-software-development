@@ -41,6 +41,7 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │       │   │   └── c4-full/                     # diagram_tool not none only; delta patch vs persistent diagram; full schema only when it is absent; never build dist/ here
 │       │   │       # likec4: model/*.c4, views.c4 · mermaid: subsystems.md
 │       │   ├── plan.md
+│       │   ├── <rename-map>.json              # optional, the file a plan's `Rename map:` line names, sprint-lifecycle.md "Plan file format"
 │       │   ├── test-plan.md
 │       │   ├── test-plan.entry-NN.md          # rotated narrative segments, "Test plan"
 │       │   ├── manual-steps.md
