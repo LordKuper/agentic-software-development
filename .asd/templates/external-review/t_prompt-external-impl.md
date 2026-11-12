@@ -103,3 +103,5 @@ CONCERNS: <count>
 FAIL: <count>
   - severity={{sev}}, location={{file:line}}, description={{what}}, fix={{how}}
 ```
+
+FAIL only for a finding whose fix needs a design decision that changes requirements or complicates the architecture; every other finding is CONCERNS, whatever its severity.

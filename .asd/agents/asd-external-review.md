@@ -3,7 +3,7 @@
   "name": "asd-external-review",
   "description": "Wraps the other provider's CLI (Codex under Claude Code, Claude under Codex) as a parallel design-review/impl-review reviewer: one read-only run over the scope manifest, severity mapping, floor, stalemate detection. Not: internal review → asd-reviewer-*; fixing → asd-dev, asd-tester, orchestrator.",
   "claude": {
-    "model": "sonnet", "effort": "medium",
+    "model": "haiku", "effort": "high",
     "tools": ["Read", "Glob", "Grep", "Bash"],
     "disallowedTools": ["Edit", "WebFetch"], "maxTurns": 100, "memory": "project",
     "wraps_cli": "codex", "wraps_config_key": "system.tools.codex_command", "wraps_model": "sol",
@@ -43,9 +43,9 @@ External review wrapper (its row in `review-policy.md` "Reviewer responsibility"
 - must: consume the phase-supplied preflight, never an extra availability probe; never call `runtime.js` or name the negative-cache path (`external-review.md` "Detection and negative cache", sole SSoT). Local readiness never proves model access.
 - must: compose the prompt from the phase's template, the injected context and the scope manifest path; never proceed without the prompt template loaded.
 - must: invoke `{{wraps_cli}}` once over the whole manifest per "Invocation" — no batches, one retry on failure (`external-review.md` "Outcome contract").
-- must: parse the captured stdout, map severity ("Severity mapping"), drop nitpick categories explicitly, apply the floor from `payload.floor`, never one of its own or the CLI's — no qualifying finding left → APPROVE; cite the `{{wraps_cli}}` finding id and source inside the Description cell.
-- must: return one report per `t_review-report.md` — Kept findings table (the template's five columns verbatim; empty: its header and separator rows only, never a placeholder row), Dropped findings (counts only: below-floor count plus nitpick count per category), Verdict, Next action.
-- must: on stalemate (same issue set 2 consecutive iterations) return `[REVIEW-<phase>-external]: FAIL` plus a `Stalemate: <N> iterations, identical findings` block with options stop / continue fixing / abort (`external-review.md` "Stalemate detection"); the orchestrator asks the user.
+- must: parse the captured stdout, map severity ("Severity mapping"), drop nitpick categories explicitly and keep every other finding at any severity — the floor is applied afterwards by `persist-review --floor` (`external-review.md` "Output mapping"), never by this agent, so its below-floor count is 0; no finding left → APPROVE; cite the `{{wraps_cli}}` finding id and source inside the Description cell.
+- must: return one report per `t_review-report.md` — Kept findings table (the template's five columns verbatim; empty: its header and separator rows only, never a placeholder row), Dropped findings (counts only: below-floor count plus nitpick count per category), Verdict (FAIL only per `review-policy.md` "Verdict format", the stalemate FAIL aside), Next action.
+- must: on stalemate (same issue set at or above `payload.floor` 2 consecutive iterations, compared with the supplied floored set) return `[REVIEW-<phase>-external]: FAIL` plus a `Stalemate: <N> iterations, identical findings` block with options stop / continue fixing / abort (`external-review.md` "Stalemate detection"); the orchestrator asks the user.
 - never: return anything but a permitted outcome (`external-review.md` "Outcome contract"): a verdict (stalemate included), or the availability skip on a non-ready preflight only; a failure after invocation (crash, hang, timeout, unusable output, retry exhausted) returns `external review interrupted: <cause>`, an interrupted dispatch, never a skip. An empty return, or prose with no verdict token, is no outcome.
 - never: treat a path outside `files[]` — the diff file and the prompt's project-context reference paths included — as review scope or a finding location, or derive, widen or narrow scope (`review-policy.md` "Scope hand-off").
 - never: read another iteration's review files — each iteration runs clean context; the previous finding set arrives via payload (`review-policy.md`).

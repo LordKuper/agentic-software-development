@@ -93,3 +93,4 @@ FAIL: <count>
 ```
 
 Map your severity to ASD scale (critical / high / medium / low). See review-policy.md.
+FAIL only for a finding whose fix needs a design decision that changes requirements or complicates the architecture; every other finding is CONCERNS, whatever its severity.
