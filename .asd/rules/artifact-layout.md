@@ -35,7 +35,7 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │       │   ├── design/
 │       │   │   ├── prd.html
 │       │   │   ├── ux-spec.html
-│       │   │   ├── mockups/                     # ux_spec enabled only, `lite`: made at scope; promoted to docs/ux/mockups/. Claude Code with the Artifact tool: index.md + one subfolder per Design canvas (project/canvas.json, project/*.dc.html), published from it; otherwise one <screen>.html per screen or state (t_html-shell.html). Decomposition enabled: mockups/<subsystem>/
+│       │   │   ├── mockups/                     # ux_spec enabled only; `lite`: made at scope; promoted to docs/ux/mockups/; shape: design-system.md "Mockups"
 │       │   │   ├── adr.html             # sprint-scoped only; never a standalone persistent document (folds at design-promote)
 │       │   │   ├── design-md-delta.yaml
 │       │   │   └── c4-full/                     # diagram_tool not none only; delta patch vs persistent diagram; full schema only when it is absent; never build dist/ here
@@ -46,7 +46,7 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 │       │   ├── test-plan.entry-NN.md          # rotated narrative segments, "Test plan"
 │       │   ├── manual-steps.md
 │       │   ├── friction-log.md
-│       │   ├── timing.jsonl                   # orchestrator-owned; written only via runtime.js timing*, sprint-lifecycle.md "Operation timing"; archived with the sprint
+│       │   ├── timing.jsonl                   # orchestrator-owned; written only via runtime.js timing*, sprint-lifecycle.md "Operation timing"
 │       │   ├── retrospective.html
 │       │   └── reviews/
 │       │       ├── design/iter-NN/<reviewer>.md, <reviewer>.late.md
@@ -77,7 +77,7 @@ Set by `project.subsystem_decomposition` in config (`enabled` | `disabled`). Lay
 └── CLAUDE.md
 ```
 
-A sprint folder holds **only** the artifacts named above, plus the per-reviewer coverage evidence `review-policy.md` "Coverage ledger" persists beside each `<reviewer>.md`. Nothing else is written under `.asd/sprints/<NNN-slug>/` — the tree is archived read-only at closure, so any stray file is frozen there and lost to whoever wrote it.
+A sprint folder holds **only** the artifacts named above, plus the per-reviewer coverage evidence `review-policy.md` "Coverage ledger" persists beside each `<reviewer>.md`. Nothing else is written under `.asd/sprints/<NNN-slug>/`: the tree is archived read-only at closure, freezing any stray file.
 
 ## Paths (decomposition disabled)
 
@@ -110,7 +110,7 @@ A release retiring an agent deletes its directory in its migration (`.asd/migrat
 
 ## Scratch directory
 
-`.asd/tmp/` holds every helper file a workflow or agent writes that is no artifact — path lists, the review-wave division, release notes, the reviewer return file (`review-policy.md` "Coverage ledger") — never OS temp, never a sprint folder: every ASD script, test and agent writes its temporary files inside the project and removes them after use, save state meant to outlive its run (the external-review negative cache, `external-review.md` "Detection and negative cache"). Resolve it with `node .asd/runtime.js scratch-dir`, which creates it on first use and prints its absolute path. It ignores itself (its own `.gitignore` holds `*`), so nothing in it is committed or reviewed. `pr` open mode deletes every `<scratch-dir>/<NNN-slug>-*` file the sprint wrote (`asd-phase-pr.md`).
+`.asd/tmp/` holds every helper file a workflow or agent writes that is no artifact — path lists, the review-wave division, release notes, the reviewer return file (`review-policy.md` "Coverage ledger") — never OS temp, never a sprint folder: every ASD script, test and agent writes its temporary files inside the project and removes them after use, save state meant to outlive its run (the external-review negative cache, `external-review.md` "Detection and negative cache"). Resolve it with `node .asd/runtime.js scratch-dir`, which creates it on first use and prints its absolute path. It ignores itself (`.gitignore` holds `*`): nothing in it is committed or reviewed. `pr` open mode deletes every `<scratch-dir>/<NNN-slug>-*` file the sprint wrote (`asd-phase-pr.md`).
 
 ## Subsystem registry
 
@@ -181,7 +181,7 @@ The verdict-token line in `t_review.md`/`t_review-report.md` (`[REVIEW-{{REVIEW_
 
 ## Tech reference docs (mandatory for every chosen tech)
 
-`docs/architecture/tech-reference/<tech>-<version>.md` per `t_tech-reference.md`. Owner: main orchestrator. Created for every chosen library, framework, runtime, external service. Includes canonical source URL (fetched, never recalled) with `Last verified` date, API surface used, version specifics, deprecations, project conventions. Never a secret.
+`docs/architecture/tech-reference/<tech>-<version>.md` per `t_tech-reference.md`. Owner: main orchestrator. Created for every chosen library, framework, runtime, external service. Holds the canonical source URL (fetched, never recalled) with `Last verified` date, API surface used, version specifics, deprecations, project conventions; never a secret.
 
 **Refuse-to-implement rule**: Dev, Tester MUST verify `tech-reference/<tech>-<version>.md` exists before implementing with a tech. If missing → emit `FAILED — tech-reference missing for <tech>@<version>` and the main orchestrator writes it. No implementation without verified reference.
 
@@ -193,9 +193,8 @@ Manual step = operational action a human must perform for the plan to complete (
 
 - When a subtask cannot proceed without a human-only operational action, the dev appends an `MS-N` entry (full step-by-step instructions + a `Verification` field) and marks the subtask `BLOCKED: MS-N` in `plan.md`.
 - `Verification` mandatory: states how the workflow confirms the action was done (a `commands.yaml` check, observable state, or explicit user confirmation).
-- The main orchestrator validates every new entry before the phase halts. Kept only when the action genuinely cannot be done autonomously (needs access, a secret, an external account, an authority the agent lacks). Else rejected, returned to the dev to implement directly.
-- Status `pending` → `done`. The registering dev flips to `done` only after running `Verification`.
-- Sprint-scoped; archived with the sprint.
+- The main orchestrator validates every new entry before the phase halts, keeping it only when the action genuinely cannot be done autonomously (needs access, a secret, an external account, an authority the agent lacks); else it is rejected and returned to the dev.
+- Status `pending` → `done`, flipped by the registering dev only after running `Verification`.
 
 ## Test plan
 
@@ -205,9 +204,9 @@ Manual step = operational action a human must perform for the plan to complete (
 
 An AC deviation found with no failing test is a `Defects` row all the same — `Failing test` = `none (AC-N)`, `Symptom` naming the AC and the deviation — and is never rated acceptable.
 
-SSoT for two things invisible in the diff: **why** a test was removed, and **why** a change needed no new test. Also the handoff channel for code defects to `impl` test-fix mode (`Defects` section). Not a task list (that is `plan.md`) and not a review verdict (that is `reviews/impl/wave-<K>/iter-NN/quality.md`).
+SSoT for two things invisible in the diff: **why** a test was removed, and **why** a change needed no new test; also the handoff channel for code defects to `impl` test-fix mode (`Defects`). Not a task list (`plan.md`) nor a review verdict (`reviews/impl/wave-<K>/iter-NN/quality.md`).
 
-**Manual verification — single home.** The optional `Manual verification` table (AC, steps, expected observation) is authored only here, by the Tester, when automation is impossible (visual UI, third-party live integration, ux feel). The user smoke check of its rows runs at `impl-test`'s first green entry (`asd-phase-impl-test.md`), and its result is recorded in this file, where reviewers read it. No review file duplicates or re-authors this spec; `asd-reviewer-quality` (composed into `asd-reviewer-combined` in lite) judges whether the spec is justified and reports any result as an ordinary finding, never as a persisted section of its own.
+**Manual verification — single home.** The optional `Manual verification` table (AC, steps, expected observation) is authored only here, by the Tester, when automation is impossible (visual UI, third-party live integration, ux feel). The user smoke check of its rows runs at `impl-test`'s first green entry (`asd-phase-impl-test.md`), and its result is recorded in this file, where reviewers read it. No review file duplicates this spec; `asd-reviewer-quality` (composed into `asd-reviewer-combined` in lite) judges it and reports any result as an ordinary finding.
 
 ## Friction log
 
