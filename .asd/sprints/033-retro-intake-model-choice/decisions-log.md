@@ -102,3 +102,4 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-12 — impl-review terminal full suite: reused green run at 373fa77e (`node tests/run.js` unfiltered, 362/362 — the whole suite; no code, test or stub path changed since); impl-review green, DoD met → design-promote
 - 2026-11-12 — design-promote (lite): no-op, every promotable document disabled (prd, ux_spec, design_system, adr, c4 false); skipped
 - 2026-11-12 — cleanup checkpoint c405758edac07a35233788dc472bb857820a2ae2
+- 2026-11-12 — cleanup: removed none; reverted none; verified n/a: no removals
