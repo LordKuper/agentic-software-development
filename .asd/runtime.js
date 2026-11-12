@@ -567,7 +567,7 @@ function reviewFindings(text) {
   });
 }
 
-/** Drops the findings-table rows below `floor` from a validated review body, appends `dropped: <n>`, and rewrites a CONCERNS verdict to its kept count, or to APPROVE when no row is kept. */
+/** Drops the findings-table rows below `floor` from a validated review body, appends `dropped: <n>`, and rewrites a CONCERNS or FAIL verdict to its kept count, or to APPROVE when no row is kept — a stalemate FAIL (a `Stalemate:` line) excepted, its sets being floored already. */
 function applyFloor(body, floor) {
   const rank = SEVERITIES.indexOf(floor);
   const lines = body.split('\n');
@@ -578,9 +578,14 @@ function applyFloor(body, floor) {
   const kept = lines.filter((line, i) => i < start + 2 || i >= tableEnd || !isBelow(line));
   const dropped = lines.length - kept.length;
   const keptRows = tableEnd - start - 2 - dropped;
-  const verdict = /^\[REVIEW-\w+-\w+\]: CONCERNS$/.test(kept[0].trimEnd()) && keptRows === 0 ? kept[0].replace('CONCERNS', 'APPROVE') : kept[0];
-  const text = [verdict, ...kept.slice(1)].map((line) => (/^CONCERNS: \d+\s*$/.test(line) ? (keptRows === 0 ? 'APPROVE' : `CONCERNS: ${keptRows}`) : line)).join('\n');
-  return { text: `${text.trimEnd()}\ndropped: ${dropped}\n`, dropped, keptRows };
+  const approve = keptRows === 0 && !/^Stalemate: /m.test(body);
+  const verdict = approve ? kept[0].replace(/\]: (?:CONCERNS|FAIL)(\s*)$/, ']: APPROVE$1') : kept[0];
+  const text = [verdict, ...kept.slice(1)].map((line) => {
+    const count = /^(CONCERNS|FAIL): \d+\s*$/.exec(line);
+    if (count === null) return line;
+    return approve ? 'APPROVE' : `${count[1]}: ${keptRows}`;
+  }).join('\n');
+  return { text: `${text.trimEnd()}\ndropped: ${dropped}\n`, dropped, approve };
 }
 
 /** Validates one reviewer's returned text and persists it, from its verdict token on, as `<reviewer>.md` (`<reviewer>.late.md` for a late return) plus `<stem>.findings.json`; an internal reviewer's ledger must first validate against its manifest (default `<outDir>/<reviewer>.manifest.json`). `floor` (External Review only) drops below-floor rows and records the count (`applyFloor`). A written review is never overwritten, so the orchestrator's later appends survive. */
@@ -614,7 +619,7 @@ function persistReview(input) {
   }
   const floored = applyFloor(body, input.floor);
   const flooredFindings = findings.filter((finding) => SEVERITIES.indexOf(finding.severity) >= SEVERITIES.indexOf(input.floor));
-  const flooredVerdict = verdict === 'CONCERNS' && floored.keptRows === 0 ? 'APPROVE' : verdict;
+  const flooredVerdict = floored.approve ? 'APPROVE' : verdict;
   fs.writeFileSync(`${stem}.findings.json`, JSON.stringify(flooredFindings) + '\n', 'utf8');
   fs.writeFileSync(`${stem}.md`, floored.text, 'utf8');
   return { token: flooredVerdict, findings: flooredFindings, dropped: floored.dropped };
@@ -1014,15 +1019,30 @@ function substitutedLines(hunk, substitute) {
   return isPure ? count : 0;
 }
 
-/** The path a patch section names: its rename target or `+++` path, else for a deletion the shared path of its `diff --git` line (a quoted pair stays quoted). */
-function sectionPath(head) {
-  const named = /^(?:rename to |\+\+\+ b\/)(.*?)\t?$/m.exec(head);
-  if (named !== null) return named[1];
-  const pair = head.split('\n', 1)[0].slice('diff --git '.length);
-  return pair.startsWith('"') ? pair : pair.slice(2, (pair.length - 1) / 2);
+const GIT_PATH_ESCAPES = { a: 7, b: 8, t: 9, n: 10, v: 11, f: 12, r: 13, '"': 34, '\\': 92 };
+
+/** A patch-header path decoded to the literal repo path numstat `-z` prints: a C-quoted one (`"b/\303\251.js"`) unescaped, octal escapes as UTF-8 bytes; a bare one as is. */
+function gitPath(text) {
+  if (!text.startsWith('"')) return text;
+  const bytes = [];
+  for (const [, escape, plain] of text.slice(1, -1).matchAll(/\\([0-7]{3}|.)|([^\\]+)/g)) {
+    if (plain !== undefined) bytes.push(...Buffer.from(plain, 'utf8'));
+    else bytes.push(escape.length === 3 ? parseInt(escape, 8) : GIT_PATH_ESCAPES[escape]);
+  }
+  return Buffer.from(bytes).toString('utf8');
 }
 
-/** Replaces each whole-file deletion in a git patch with `# collapsed: <path>: deleted, <N> lines`, and with a `substitute` each hunk only applying the rename map with one `# collapsed: <path>: <K> rename-map substitutions` line per file; `discounts` maps each such file to the numstat lines (added plus deleted) it no longer contributes. */
+/** The literal repo path a patch section names: its rename target or `+++` path, else for a deletion the `b/` half of its `diff --git` line. */
+function sectionPath(head) {
+  const renamed = /^rename to (.*)$/m.exec(head);
+  if (renamed !== null) return gitPath(renamed[1]);
+  const plus = /^\+\+\+ (.*?)\t?$/m.exec(head);
+  if (plus !== null && plus[1] !== '/dev/null') return gitPath(plus[1]).slice(2);
+  const pair = head.split('\n', 1)[0].slice('diff --git '.length);
+  return gitPath(pair.slice((pair.length + 1) / 2)).slice(2);
+}
+
+/** Replaces each whole-file deletion in a git patch with `# collapsed: <path>: deleted, <N> lines`, and with a `substitute` each hunk only applying the rename map with one `# collapsed: <path>: <K> rename-map substitutions` line per file (a fully collapsed file keeping its mode and rename header lines); `discounts` maps each such file to the numstat lines (added plus deleted) it no longer contributes. */
 function collapsePatch(patch, substitute) {
   const discounts = [];
   const text = patch.split(/^(?=diff --git )/m).map((section) => {
@@ -1038,7 +1058,10 @@ function collapsePatch(patch, substitute) {
     if (total === 0) return section;
     discounts.push([sectionPath(head), 2 * total]);
     const kept = hunks.filter((hunk, i) => counts[i] === 0);
-    return `${kept.length === 0 ? '' : head + kept.join('')}# collapsed: ${sectionPath(head)}: ${total} rename-map substitutions\n`;
+    // With every hunk collapsed, a mode change or rename still reaches the reviewer through its header lines.
+    const semantic = head.split('\n').filter((line) => /^(?:old mode|new mode|similarity index|rename from|rename to|copy from|copy to) /.test(line));
+    const header = kept.length > 0 ? head + kept.join('') : semantic.length > 0 ? `${[head.split('\n', 1)[0], ...semantic].join('\n')}\n` : '';
+    return `${header}# collapsed: ${sectionPath(head)}: ${total} rename-map substitutions\n`;
   }).join('');
   return { text, discounts };
 }

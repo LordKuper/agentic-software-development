@@ -87,7 +87,7 @@ Wrapped-CLI severity terms in the captured stdout mapped to ASD severity:
 | minor | medium |
 | info, suggestion | low |
 
-Findings rendered to the review output dir supplied by the dispatching phase skill (`reviews/design/iter-NN/external.md` or `reviews/impl/wave-<K>/iter-NN/external.md`), using verdict format from `review-policy.md`. The agent drops nitpicks and returns every other finding at any severity; the severity floor is applied by `persist-review --floor <payload floor>` ("Persistence", `review-policy.md`), which drops each below-floor row, records `dropped: <n>` and rewrites a CONCERNS whose rows all dropped to APPROVE. Dropped findings (below floor, nitpick) are never rendered as per-finding rows — only a count, per `t_review-report.md`; nothing downstream reads a dropped finding's detail.
+Findings rendered to the review output dir supplied by the dispatching phase skill (`reviews/design/iter-NN/external.md` or `reviews/impl/wave-<K>/iter-NN/external.md`), using verdict format from `review-policy.md`. The agent drops nitpicks and returns every other finding at any severity; the severity floor is applied by `persist-review --floor <payload floor>` ("Persistence", `review-policy.md`), which drops each below-floor row, records `dropped: <n>` and rewrites a CONCERNS or FAIL whose rows all dropped to APPROVE, a stalemate FAIL excepted. Dropped findings (below floor, nitpick) are never rendered as per-finding rows — only a count, per `t_review-report.md`; nothing downstream reads a dropped finding's detail.
 
 ## Stalemate detection
 
