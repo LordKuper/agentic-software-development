@@ -13,6 +13,27 @@
       "reason": "user answer: lite",
       "evidence": "decisions-log.md 2026-11-11 sprint opened",
       "artifact_revision": "state.json@scope"
+    },
+    {
+      "gate": "approach choice",
+      "decision_actor": "user",
+      "reason": "B full: tester/external haiku, opus tier, effort ladder, scout agent, README; Codex untouched",
+      "evidence": "research.md Approaches Chosen",
+      "artifact_revision": "research.md@scope"
+    },
+    {
+      "gate": "retro intake dispositions",
+      "decision_actor": "user",
+      "reason": "032#A-1 A-2 P-1, 031#P-2 included (AC-9..AC-11); all open asd-retro issues included (AC-12..AC-34), #104 modified; #89 closed resolved",
+      "evidence": "decisions-log.md 2026-11-12 scope gate and retro intake dispositions",
+      "artifact_revision": "sprint.md@scope"
+    },
+    {
+      "gate": "scope",
+      "decision_actor": "user",
+      "reason": "sprint.md AC-1..AC-34 accepted as one sprint, no split",
+      "evidence": "decisions-log.md 2026-11-12 scope gate and retro intake dispositions",
+      "artifact_revision": "sprint.md@scope"
     }
   ],
   "task_routing": {},
