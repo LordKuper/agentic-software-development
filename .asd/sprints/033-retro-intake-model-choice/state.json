@@ -1,7 +1,7 @@
 {
   "sprint_id": "033-retro-intake-model-choice",
   "branch": "sprint/033-retro-intake-model-choice",
-  "phase": "impl-test",
+  "phase": "impl-review",
   "workflow": "lite",
   "documents": { "audit": true, "prd": false, "ux_spec": false, "design_system": false, "adr": false, "c4": false },
   "cleanup": true,
@@ -92,11 +92,11 @@
   "skipped_phases": [],
   "reviews": {
     "design": { "iteration": 0, "verdicts": {}, "latched": {} },
-    "impl": { "wave": 1, "waves": [ { "iteration": 0, "verdicts": {}, "iteration_heads": {}, "latched": {} } ] }
+    "impl": { "wave": 1, "waves": [ { "iteration": 1, "verdicts": { "iter-01": { "combined": "CONCERNS", "external": "CONCERNS" } }, "iteration_heads": { "iter-01": "f2711de3113a4947a4f52f97028907c130a993e2" }, "latched": {} } ] }
   },
   "created_at": "2026-11-10T21:00:49.000Z",
   "updated_at": "2026-11-10T21:00:49.000Z",
-  "review_fixes_pending": null,
+  "review_fixes_pending": "wave-1/iter-01",
   "test_defects_pending": null,
   "pr": null,
   "archived_at": null

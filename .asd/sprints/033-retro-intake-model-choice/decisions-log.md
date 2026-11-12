@@ -75,3 +75,10 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-12 — impl test-fix: defects D-1, D-2, D-3, D-4 resolved (b5edbb1f, 6c66383c); orchestrator/impl load 0.6993 of baseline, 148 B under the 0.70 ceiling
 - 2026-11-12 — route impl-test entry 2: standard, dispatch HEAD f41b2995
 - 2026-11-12 — impl-test: impacted set green (361/361), 0/0 tests
+- 2026-11-12 — memory-fix: asd-tester feedback_edit-tool-for-regex-and-mutation-script.md keeps the mutation helper in .asd/tmp (external finding 8, wave-1/iter-01, 37142f68)
+
+## 2026-11-12 — impl-review wave-1/iter-01 routes to review-fix
+
+- **Decision**: combined F1-F10 and external 1-7 (all CONCERNS, no FAIL, no minor test-only finding) route to impl review-fix; external 8 resolved by memory-fix.
+- **Rationale**: Every finding is a canon fix inside the self-hosting dev allowlist needing no requirements or architecture decision; combined F5 and external 1 share `t_design-system.html`'s vars region, combined F2 and F8 share two workflow lines.
+- **Affected docs**: reviews/impl/wave-1/iter-01/combined.md, external.md

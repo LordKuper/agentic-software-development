@@ -60,3 +60,13 @@
 {"op":"close","id":"suite impl-test#2","kind":"suite","parent":"dispatch impl-test-e2","start":"2026-11-12T08:45:19.903Z","end":"2026-11-12T08:46:17.308Z","outcome":"done","attrs":{"scope":"impacted"}}
 {"op":"close","id":"dispatch impl-test-e2","kind":"dispatch","parent":"impl-test#2","start":"2026-11-12T08:44:51.615Z","end":"2026-11-12T08:47:55.057Z","outcome":"done","attrs":{"agent":"asd-tester"}}
 {"op":"close","id":"impl-test#2","kind":"phase","parent":null,"start":"2026-11-12T08:44:51.421Z","end":"2026-11-12T08:47:55.263Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-review#1","kind":"phase","parent":null,"start":"2026-11-12T08:48:29.417Z","attrs":{}}
+{"op":"open","id":"review impl wave-1/iter-01","kind":"review-iteration","parent":"impl-review#1","start":"2026-11-12T08:48:53.956Z","attrs":{}}
+{"op":"open","id":"dispatch combined iter-01","kind":"dispatch","parent":"impl-review#1","start":"2026-11-12T08:48:54.017Z","attrs":{"agent":"asd-reviewer-combined"}}
+{"op":"open","id":"dispatch external iter-01","kind":"external-review","parent":"impl-review#1","start":"2026-11-12T08:48:54.080Z","attrs":{"agent":"asd-external-review"}}
+{"op":"close","id":"dispatch external iter-01","kind":"external-review","parent":"impl-review#1","start":"2026-11-12T08:48:54.080Z","end":"2026-11-12T08:56:31.815Z","outcome":"done","attrs":{"agent":"asd-external-review"}}
+{"op":"close","id":"dispatch combined iter-01","kind":"dispatch","parent":"impl-review#1","start":"2026-11-12T08:48:54.017Z","end":"2026-11-12T08:58:40.517Z","outcome":"done","attrs":{"agent":"asd-reviewer-combined"}}
+{"op":"open","id":"dispatch memfix tester","kind":"dispatch","parent":"impl-review#1","start":"2026-11-12T08:58:54.200Z","attrs":{"agent":"asd-tester"}}
+{"op":"close","id":"dispatch memfix tester","kind":"dispatch","parent":"impl-review#1","start":"2026-11-12T08:58:54.200Z","end":"2026-11-12T08:59:17.593Z","outcome":"done","attrs":{"agent":"asd-tester"}}
+{"op":"close","id":"review impl wave-1/iter-01","kind":"review-iteration","parent":"impl-review#1","start":"2026-11-12T08:48:53.956Z","end":"2026-11-12T08:59:23.893Z","outcome":"done","attrs":{}}
+{"op":"close","id":"impl-review#1","kind":"phase","parent":null,"start":"2026-11-12T08:48:29.417Z","end":"2026-11-12T08:59:23.953Z","outcome":"done","attrs":{}}
