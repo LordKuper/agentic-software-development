@@ -25,3 +25,4 @@
 - [Delegation vs never-list](feedback_delegation-vs-never-list.md) — new delegation: compare the delegate's real write set with the caller's never-list; a dropped clause: which case did it route?
 - [Redefined boundary, local lists](feedback_redefined-boundary-local-lists.md) — boundary redefined: diff each workflow's cause list vs home; "fits no cause → downgrade" makes a gap a silent demotion
 - [Inserted dispatch reachability](feedback_inserted-dispatch-reachability.md) — new dispatch at a step: another single dispatch spanning it? caller Delegates, core invariant, t_AGENTS hard rule, callee Inputs
+- [Prose-marker guards](feedback_prose-marker-guards.md) — runtime guard on an agent-written line (^Stalemate: ): grep archived reports for informal forms; limit to its verdict
