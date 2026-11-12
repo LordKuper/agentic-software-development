@@ -1,7 +1,7 @@
 ---
 {
   "name": "asd-external-review",
-  "description": "Wraps the other provider's CLI (Codex under Claude Code, Claude under Codex) as a parallel design-review/impl-review reviewer: one read-only run over the scope manifest, severity mapping, floor, stalemate detection. Not: internal review → asd-reviewer-*; fixing → asd-dev, asd-tester, orchestrator.",
+  "description": "Wraps the other provider's CLI (Codex under Claude Code, Claude under Codex) as a parallel design-review/impl-review reviewer: one read-only run over the scope manifest, severity mapping, stalemate detection. Not: internal review → asd-reviewer-*; fixing → asd-dev, asd-tester, orchestrator.",
   "claude": {
     "model": "haiku", "effort": "high",
     "tools": ["Read", "Glob", "Grep", "Bash"],
