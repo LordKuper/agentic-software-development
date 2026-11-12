@@ -62,6 +62,13 @@
       "reason": "AC-1..AC-36 traced to Tasks 1-11 and the AC-7 line; decomposition rules met; names bounded by approach B",
       "evidence": "decisions-log.md 2026-11-12 plan accepted (adaptive)",
       "artifact_revision": "plan.md@plan"
+    },
+    {
+      "gate": "initial impl assessment",
+      "decision_actor": "orchestrator",
+      "reason": "all plan.md subtasks ticked; build and lint clean; round diff within write scopes; flagged departures accepted in decisions-log; no stubs",
+      "evidence": "decisions-log.md 2026-11-12 impl assessment approved (adaptive)",
+      "artifact_revision": "plan.md@impl"
     }
   ],
   "task_routing": {

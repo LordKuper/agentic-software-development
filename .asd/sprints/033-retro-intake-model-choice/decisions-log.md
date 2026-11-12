@@ -62,3 +62,9 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-12 — route Task 8: standard, dispatch HEAD 3d8f1ff4
 - 2026-11-12 — route Task 9: standard, dispatch HEAD 64379c28
 - 2026-11-12 — route Task 11: standard, dispatch HEAD 64379c28
+
+## 2026-11-12 — impl assessment approved (adaptive)
+
+- **Decision**: Impl complete: Tasks 1-11 ticked over four waves, AC-1..AC-36 (AC-22, AC-29 retired) mapped to commits, AC-7 dispositions written to audit.md "Gaps"; build (`sync.js --check`) and lint clean; no stubs, no manual steps.
+- **Rationale**: Flagged choices without a departure stay inside the Overview's names; the two departures (Task 5 commit form, Task 6a vars markers) and the Task 8 rename-map addition are logged above. Known impl-test inputs: tests/run.js pins on pre-sprint text, the `asd-scout` Codex `web_search` render check, and the orchestrator/impl context load (0.72 vs 0.70 ceiling).
+- **Affected docs**: plan.md, audit.md
