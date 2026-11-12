@@ -35,23 +35,23 @@ Standing DoD applies (`sprint-lifecycle.md` "Plan file format") — not restated
 ### Task 1: Routing tier, effort step, variants, scout agent
 Material risk: change: routing ladder edges (effort step vs tier climb, priorTier clamp)
 Material risk: change: public contract (route-task input/output fields, task_routing key)
-- [ ] `.asd/runtime.js` `routeTask`: add tier `escalated`, reserved classes `broad-reasoning`, `cross-domain`, `effortRaised` input, `raiseEffort` output, `reason: effort-step`; keep fail-closed and no-downgrade; legacy `critical` still reads `standard` (AC-3, AC-4).
-- [ ] `.asd/sync.js` `VARIANT_SUFFIXES` per Overview (AC-1, AC-3).
-- [ ] `.asd/agents/asd-dev.md`: `escalated` variant (AC-3, AC-8).
-- [ ] New `.asd/agents/asd-scout.md` per Overview, description in the `<what>; <purpose>. Not: …` form (AC-5, AC-8).
-- [ ] `.asd/templates/t_state.json`: document `raise_effort` in `task_routing` entries if the template carries an entry shape; else no change (AC-4).
+- [x] `.asd/runtime.js` `routeTask`: add tier `escalated`, reserved classes `broad-reasoning`, `cross-domain`, `effortRaised` input, `raiseEffort` output, `reason: effort-step`; keep fail-closed and no-downgrade; legacy `critical` still reads `standard` (AC-3, AC-4).
+- [x] `.asd/sync.js` `VARIANT_SUFFIXES` per Overview (AC-1, AC-3).
+- [x] `.asd/agents/asd-dev.md`: `escalated` variant (AC-3, AC-8).
+- [x] New `.asd/agents/asd-scout.md` per Overview, description in the `<what>; <purpose>. Not: …` form (AC-5, AC-8).
+- [x] `.asd/templates/t_state.json`: document `raise_effort` in `task_routing` entries if the template carries an entry shape; else no change (AC-4).
 
 ### Task 2: FAIL semantics, minor test-only path, external floor, wrapper model
 Material risk: change: workflow gate (FAIL vs CONCERNS escalation boundary)
-- [ ] `.asd/rules/review-policy.md`: FAIL only for a fix needing a design decision that changes requirements or complicates the architecture; map the escalation list's new-abstraction, API-contract and complexity rows onto it; every other finding CONCERNS, decided by the orchestrator, advisor consulted on an ambiguous case; stalemate FAIL kept as its own route (AC-28).
-- [ ] Same file: a checklist finding whose every location is a test file and which the orchestrator judges behaviour-neutral takes the minor test-only path whatever its severity (AC-20).
-- [ ] `.asd/agents/asd-reviewer-quality.md`, `asd-reviewer-efficiency.md`, `asd-reviewer-combined.md`, `.asd/templates/t_prompt-external-design.md`, `t_prompt-external-impl.md`: replace severity-driven "= FAIL" lines and FAIL format text with the new boundary (AC-28).
-- [ ] `.asd/rules/external-review.md`, `.asd/agents/asd-external-review.md`: floor applied by `persist-review --floor`, stalemate compares floored sets; wrapper Claude model haiku/high (AC-2, AC-25, AC-28).
+- [x] `.asd/rules/review-policy.md`: FAIL only for a fix needing a design decision that changes requirements or complicates the architecture; map the escalation list's new-abstraction, API-contract and complexity rows onto it; every other finding CONCERNS, decided by the orchestrator, advisor consulted on an ambiguous case; stalemate FAIL kept as its own route (AC-28).
+- [x] Same file: a checklist finding whose every location is a test file and which the orchestrator judges behaviour-neutral takes the minor test-only path whatever its severity (AC-20).
+- [x] `.asd/agents/asd-reviewer-quality.md`, `asd-reviewer-efficiency.md`, `asd-reviewer-combined.md`, `.asd/templates/t_prompt-external-design.md`, `t_prompt-external-impl.md`: replace severity-driven "= FAIL" lines and FAIL format text with the new boundary (AC-28).
+- [x] `.asd/rules/external-review.md`, `.asd/agents/asd-external-review.md`: floor applied by `persist-review --floor`, stalemate compares floored sets; wrapper Claude model haiku/high (AC-2, AC-25, AC-28).
 
 ### Task 3: Provider and core model text
 Material risk: artifact: mirror prose (verified by `sync.js --check` and tests/run.js tier-sentence checks)
-- [ ] `.asd/rules/providers.md`: grant row for `asd-scout`; variant paragraph names `mechanical`, `escalated`, `runner`; `asd-tester` routing sentence (base for authoring/triage, `runner` for runs); routing paragraphs for `escalated`, the effort step and the dispatch `effort` argument (Claude Code only) (AC-1, AC-3, AC-4, AC-5, AC-8).
-- [ ] `.asd/rules/core.md`: glossary "Main orchestrator" delegation list adds scout scans and orchestrator-applied review findings outside the dev allowlist (AC-5, AC-10).
+- [x] `.asd/rules/providers.md`: grant row for `asd-scout`; variant paragraph names `mechanical`, `escalated`, `runner`; `asd-tester` routing sentence (base for authoring/triage, `runner` for runs); routing paragraphs for `escalated`, the effort step and the dispatch `effort` argument (Claude Code only) (AC-1, AC-3, AC-4, AC-5, AC-8).
+- [x] `.asd/rules/core.md`: glossary "Main orchestrator" delegation list adds scout scans and orchestrator-applied review findings outside the dev allowlist (AC-5, AC-10).
 
 ### Task 4: Sprint lifecycle rules
 Material risk: change: workflow gate (suite-run reuse, review reset, scope-time settings change)
@@ -65,24 +65,24 @@ Material risk: change: workflow gate (suite-run reuse, review reset, scope-time 
 
 ### Task 5: Agent protocol, commits, tester
 Material risk: change: public contract (one-command commit form)
-- [ ] `.asd/rules/agent-protocol.md` "Return": stop every background process before any signal; name any not stopped in the body (AC-13).
-- [ ] `.asd/rules/git-strategy.md`: header limit ≤ 50 characters, one-command form per Overview with `commit-check` (AC-12, AC-21).
-- [ ] `.asd/skills/asd-sprint/SKILL.md`: rotate subject per Overview (AC-12).
-- [ ] `.asd/agents/asd-tester.md`: `runner` variant per Overview; an AC deviation without a failing test becomes a `D-N` row (`Failing test: none (AC-N)`, Symptom naming the AC and the deviation), never rated acceptable; a redundancy removal names the surviving test and branch; a repeat suite run opens a new timing id (AC-1, AC-15, AC-16, AC-18).
-- [ ] `.asd/templates/t_test-plan.md`: Defects row and removal reason shapes for AC-15, AC-16; Suite run records HEAD and scope (AC-15, AC-16, AC-23).
+- [x] `.asd/rules/agent-protocol.md` "Return": stop every background process before any signal; name any not stopped in the body (AC-13).
+- [x] `.asd/rules/git-strategy.md`: header limit ≤ 50 characters, one-command form per Overview with `commit-check` (AC-12, AC-21).
+- [x] `.asd/skills/asd-sprint/SKILL.md`: rotate subject per Overview (AC-12).
+- [x] `.asd/agents/asd-tester.md`: `runner` variant per Overview; an AC deviation without a failing test becomes a `D-N` row (`Failing test: none (AC-N)`, Symptom naming the AC and the deviation), never rated acceptable; a redundancy removal names the surviving test and branch; a repeat suite run opens a new timing id (AC-1, AC-15, AC-16, AC-18).
+- [x] `.asd/templates/t_test-plan.md`: Defects row and removal reason shapes for AC-15, AC-16; Suite run records HEAD and scope (AC-15, AC-16, AC-23).
 
 ### Task 6a: Design system, migration, init
 Material risk: change: migration (memory dirs, commands.yaml value)
-- [ ] `.asd/rules/design-system.md`: per-subsystem token prefix (AC-30); delta prose and runtime-token orphan exclusions (AC-31); generator use (AC-32); no-save install wording (AC-33); mockups home per Overview (AC-34); its "Violation = FAIL" lines per AC-28 (AC-28).
-- [ ] `.asd/templates/t_design-md-delta.yaml` prose section and prefix example; `t_design-system.html` regeneration markers and a `:root` vars block; `t_commands.yaml` no-save install (AC-30..AC-33).
-- [ ] `.asd/skills/asd-design-system/SKILL.md`: generator step and prefix guidance; `.asd/skills/asd-init/SKILL.md`: no-save install, scope as a sprint-mediated invoker (AC-30, AC-32, AC-33, AC-36).
-- [ ] `.asd/skills/asd-update/SKILL.md` migration contract: memory-dir removal and `commands.yaml` value rewrites allowed (AC-19, AC-33).
-- [ ] New `.asd/migrations/14.5.0.js` per Overview (AC-19, AC-33).
+- [x] `.asd/rules/design-system.md`: per-subsystem token prefix (AC-30); delta prose and runtime-token orphan exclusions (AC-31); generator use (AC-32); no-save install wording (AC-33); mockups home per Overview (AC-34); its "Violation = FAIL" lines per AC-28 (AC-28).
+- [x] `.asd/templates/t_design-md-delta.yaml` prose section and prefix example; `t_design-system.html` regeneration markers and a `:root` vars block; `t_commands.yaml` no-save install (AC-30..AC-33).
+- [x] `.asd/skills/asd-design-system/SKILL.md`: generator step and prefix guidance; `.asd/skills/asd-init/SKILL.md`: no-save install, scope as a sprint-mediated invoker (AC-30, AC-32, AC-33, AC-36).
+- [x] `.asd/skills/asd-update/SKILL.md` migration contract: memory-dir removal and `commands.yaml` value rewrites allowed (AC-19, AC-33).
+- [x] New `.asd/migrations/14.5.0.js` per Overview (AC-19, AC-33).
 
 ### Task 6b: Artifact layout
 Material risk: artifact: decided path and wording edits (verified by tests/run.js layout checks)
-- [ ] `.asd/rules/artifact-layout.md`: mockups paths in both path maps and the sprint tree; Agent memory: retiring release removes the dir; Test plan row shapes for AC-15/AC-16; its "Violation = FAIL" lines per AC-28 (AC-15, AC-16, AC-19, AC-28, AC-34).
-- [ ] `.asd/templates/t_ux-spec.html`: mockups referenced from the folder, not embedded (AC-34).
+- [x] `.asd/rules/artifact-layout.md`: mockups paths in both path maps and the sprint tree; Agent memory: retiring release removes the dir; Test plan row shapes for AC-15/AC-16; its "Violation = FAIL" lines per AC-28 (AC-15, AC-16, AC-19, AC-28, AC-34).
+- [x] `.asd/templates/t_ux-spec.html`: mockups referenced from the folder, not embedded (AC-34).
 
 ### Task 7: Runtime review pipeline
 Material risk: change: public contract (manifest diff shape, persist-review floor)

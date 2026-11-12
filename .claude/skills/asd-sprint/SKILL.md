@@ -1,5 +1,5 @@
 ---
-# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:26dc3fbfb152e3ee8941c1c24482fdc8cec30ce382da2934573590b0c002b5d3 content_digest=sha256:76c0fbd0d1acba81ffa7e24d033f92492b7ed0ea4fc941d90b3d2fd69215ca12 asd_version=14.3.0 schema=1
+# ASD generated. Edit .asd/skills/asd-sprint/SKILL.md. source_digest=sha256:a73c47d328636ec5600f74ccc2969a09219754f905cedde1bbb1dfb9d2bb0fa3 content_digest=sha256:1b1b940f1c620dba30acaa8a36d55d0f42bb7f758b47f98a91b46274f442ebb3 asd_version=14.4.0 schema=1
 name: asd-sprint
 description: "Starts a new ASD sprint or resumes the active one, dispatching the matching asd-phase-* skill and routing phase signals back to the user. Use when the user runs /asd-sprint or asks to start, continue, resume, or work on an ASD sprint."
 allowed-tools: "Read Glob Grep Bash AskUserQuestion Skill Task"
@@ -57,7 +57,7 @@ After any phase skill returns:
 
 ## Rules
 
-- must: before a phase-skill delegation run `node .asd/runtime.js rotate-decisions --sprint <sprint> --to <phase>` (condition: `.asd/rules/artifact-layout.md` "Decisions log"); when it prints `"rotated": true`, commit the renamed and recreated files as `chore(sprint): rotate decisions log for <phase>`. None for new-sprint scope (no sprint folder yet).
+- must: before a phase-skill delegation run `node .asd/runtime.js rotate-decisions --sprint <sprint> --to <phase>` (condition: `.asd/rules/artifact-layout.md` "Decisions log"); when it prints `"rotated": true`, commit the renamed and recreated files as `chore(sprint): rotate log for <phase>`. None for new-sprint scope (no sprint folder yet).
 - must: phase ops (`sprint-lifecycle.md` "Operation timing"): before each phase-skill delegation run `node .asd/runtime.js timing --ledger <sprint>/timing.jsonl --open <phase> --kind phase`, Step 3 closing the returned phase in the same call (`--close <phase>`); on return close it `done` on `COMPLETED`, `--outcome interrupted` on `FAILED`/`ABORT`; a `QUESTION` halt leaves it open: the relayed question opens a `user-wait` (`gate`: short question label) closed once the answer is processed, and the re-delegation reuses the open phase op (a repeat open is skipped). None for new-sprint scope (its step 1 opens its own), when pr open mode ran (it closed its own), for merge mode (resume at `phase="pr"`, `pr.state="open"`) or the release retry.
 - must: re-detect state on every invocation; the user may interrupt anytime.
 - never: delegate to a skill outside `## Delegates`.

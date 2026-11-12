@@ -37,3 +37,16 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 ## Entries
 
 <!-- entries appended below this line -->
+
+- 2026-11-12 — route Task 1: standard, dispatch HEAD ebeac333
+- 2026-11-12 — route Task 2: standard, dispatch HEAD ebeac333
+- 2026-11-12 — route Task 3: standard, dispatch HEAD ebeac333
+- 2026-11-12 — route Task 5: standard, dispatch HEAD ebeac333
+- 2026-11-12 — route Task 6a: standard, dispatch HEAD ebeac333
+- 2026-11-12 — route Task 6b: standard, dispatch HEAD ebeac333
+
+## 2026-11-12 — wave 1 flagged departures accepted
+
+- **Decision**: Accept Task 5's one-command form with `git diff --cached --check -- <paths>` before `commit-check` and `git commit --only … -- <paths>`; accept Task 6a's `asd:vars` markers wrapping the whole `:root { … }` block (Task 9 emits the full block); leave 8e4018f0's 54-char header unrewritten. `t_review-report.md` below-floor wording joins Task 7's write scope.
+- **Rationale**: The lint step and `--only` keep code-style.md §19 and the shared worktree safe; an HTML comment inside a CSS rule drops a declaration; rewriting a shared wave's history costs more than one over-long header.
+- **Affected docs**: .asd/rules/git-strategy.md, .asd/templates/t_design-system.html, plan.md Task 7, Task 9
