@@ -68,3 +68,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Decision**: Impl complete: Tasks 1-11 ticked over four waves, AC-1..AC-36 (AC-22, AC-29 retired) mapped to commits, AC-7 dispositions written to audit.md "Gaps"; build (`sync.js --check`) and lint clean; no stubs, no manual steps.
 - **Rationale**: Flagged choices without a departure stay inside the Overview's names; the two departures (Task 5 commit form, Task 6a vars markers) and the Task 8 rename-map addition are logged above. Known impl-test inputs: tests/run.js pins on pre-sprint text, the `asd-scout` Codex `web_search` render check, and the orchestrator/impl context load (0.72 vs 0.70 ceiling).
 - **Affected docs**: plan.md, audit.md
+- 2026-11-12 — route impl-test entry 1: standard, dispatch HEAD b1f5b5e8
+- 2026-11-12 — memory-fix: asd-reviewer-combined feedback_roster-move-mirror-sweep.md and MEMORY.md drop the removed "Violation = FAIL from" wording (leftover-term hit, impl-test entry 1)
+- 2026-11-12 — impl-test: defects D-1, D-2, D-3, D-4 → impl test-fix (digest 1b0eb42a)

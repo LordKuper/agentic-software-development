@@ -39,3 +39,14 @@
 {"op":"open","id":"dispatch T11","kind":"dispatch","parent":"impl#1","start":"2026-11-12T07:35:41.990Z","attrs":{"agent":"asd-dev"}}
 {"op":"close","id":"dispatch T9","kind":"dispatch","parent":"impl#1","start":"2026-11-12T07:35:41.990Z","end":"2026-11-12T07:40:51.854Z","outcome":"done","attrs":{"agent":"asd-dev"}}
 {"op":"close","id":"dispatch T11","kind":"dispatch","parent":"impl#1","start":"2026-11-12T07:35:41.990Z","end":"2026-11-12T07:40:51.854Z","outcome":"done","attrs":{"agent":"asd-dev"}}
+{"op":"close","id":"impl#1","kind":"phase","parent":null,"start":"2026-11-12T07:09:23.227Z","end":"2026-11-12T07:41:25.642Z","outcome":"done","attrs":{}}
+{"op":"open","id":"impl-test#1","kind":"phase","parent":null,"start":"2026-11-12T07:41:39.218Z","attrs":{}}
+{"op":"open","id":"dispatch impl-test-e1","kind":"dispatch","parent":"impl-test#1","start":"2026-11-12T07:41:39.587Z","attrs":{"agent":"asd-tester"}}
+{"op":"open","id":"suite impl-test-e1 impacted","kind":"suite","parent":"dispatch impl-test-e1","start":"2026-11-12T07:57:49.214Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl-test-e1 impacted","kind":"suite","parent":"dispatch impl-test-e1","start":"2026-11-12T07:57:49.214Z","end":"2026-11-12T07:58:44.612Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"open","id":"suite impl-test-e1 impacted 2","kind":"suite","parent":"dispatch impl-test-e1","start":"2026-11-12T08:00:04.355Z","attrs":{"scope":"impacted"}}
+{"op":"close","id":"suite impl-test-e1 impacted 2","kind":"suite","parent":"dispatch impl-test-e1","start":"2026-11-12T08:00:04.355Z","end":"2026-11-12T08:01:01.150Z","outcome":"done","attrs":{"scope":"impacted"}}
+{"op":"close","id":"dispatch impl-test-e1","kind":"dispatch","parent":"impl-test#1","start":"2026-11-12T07:41:39.587Z","end":"2026-11-12T08:02:38.806Z","outcome":"done","attrs":{"agent":"asd-tester"}}
+{"op":"open","id":"dispatch memfix combined","kind":"dispatch","parent":"impl-test#1","start":"2026-11-12T08:02:38.935Z","attrs":{"agent":"asd-reviewer-combined"}}
+{"op":"close","id":"dispatch memfix combined","kind":"dispatch","parent":"impl-test#1","start":"2026-11-12T08:02:38.935Z","end":"2026-11-12T08:03:28.844Z","outcome":"done","attrs":{"agent":"asd-reviewer-combined"}}
+{"op":"close","id":"impl-test#1","kind":"phase","parent":null,"start":"2026-11-12T07:41:39.218Z","end":"2026-11-12T08:03:42.665Z","outcome":"done","attrs":{}}
