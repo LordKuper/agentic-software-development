@@ -91,3 +91,6 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - **Affected docs**: reviews/impl/wave-1/iter-01/
 - 2026-11-12 — route impl-test entry 3: standard, dispatch HEAD 9ae24872
 - 2026-11-12 — impl-test: impacted set green (362/362), 3/0 tests
+- 2026-11-12 — route F3 (wave-1/iter-02): standard, dispatch HEAD ca1ea41f
+- 2026-11-12 — impl-review wave-1/iter-02 external 1 (asd-tester memory, pre-fix tree location) resolved by owner memory-fix 50c9f5de
+- 2026-11-12 — impl-review wave-1/iter-02: combined F3 resolved by minor test-only fix f830dbab; F1, F2 (runtime.js) route to impl review-fix

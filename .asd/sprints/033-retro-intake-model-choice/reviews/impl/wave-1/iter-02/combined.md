@@ -28,3 +28,5 @@ CONCERNS: 3
 F1 and F2 route to impl review-fix (runtime.js): drop the in-body comment, and narrow the stalemate guard to a FAIL verdict whose body has the template's `Stalemate: <N> iterations` line. F3 is test-only (tests/run.js): add the deleted non-ASCII file case to the AC-24 (review-fix) test, with a fail-first record. It can take the minor test-only path if it is not routed together with F2's new test case.
 
 ## Escalations (optional)
+
+resolved: F3 — test-fix, 2026-11-12

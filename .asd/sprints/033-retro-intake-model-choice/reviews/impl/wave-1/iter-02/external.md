@@ -20,3 +20,5 @@
 ## Verdict
 CONCERNS: 1
 dropped: 0
+
+resolved: 1 — memory-fix, 2026-11-12
