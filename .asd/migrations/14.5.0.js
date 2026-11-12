@@ -14,8 +14,8 @@
  * Scope, in order:
  *   1. Delete `.claude/agent-memory/<name>/` for every name in the retired lists of migrations 4.0.0,
  *      5.0.0 and 14.0.0 that is not a live canonical agent or tier variant (`asd-reviewer-quality` was
- *      retired in 4.0.0 and is live again). When the canonical agents directory is unreadable no
- *      directory is deleted: a live agent's memory is never guessed at.
+ *      retired in 4.0.0 and is live again). When the canonical agents directory is missing, or an agent's
+ *      frontmatter fails to parse, no directory is deleted: a live agent's memory is never guessed at.
  *   2. Rewrite `.asd/project/commands.yaml` `designmd-install` from exactly
  *      `npm install @google/design.md` to `npm install --no-save @google/design.md`; any other value,
  *      or an absent file or key, is left untouched.
@@ -57,30 +57,32 @@ function toRepoRel(parts) {
   return parts.join('/');
 }
 
-/** Names of every canonical agent and its tier variants, or null when the agents directory is unreadable. */
-function liveAgentNames(repoRoot, sync) {
+/** Names of every canonical agent and its tier variants, or null (warned) when the agents directory is missing or an agent's frontmatter fails to parse. */
+function liveAgentNames(repoRoot, sync, warn) {
   const agentsDir = path.join(repoRoot, ...AGENTS_PARTS);
-  if (!fs.existsSync(agentsDir)) return null;
+  if (!fs.existsSync(agentsDir)) {
+    warn(`${toRepoRel(AGENTS_PARTS)} is missing - retired agent memory directories left untouched.`);
+    return null;
+  }
   const names = new Set();
   for (const entry of fs.readdirSync(agentsDir).filter((file) => file.endsWith('.md'))) {
     const base = entry.slice(0, -'.md'.length);
     names.add(base);
+    let meta;
     try {
-      const { meta } = sync.parseCanonicalFrontmatter(sync.normalizeText(fs.readFileSync(path.join(agentsDir, entry), 'utf8')));
-      for (const suffix of Object.keys(meta.variants || {})) names.add(`${base}-${suffix}`);
-    } catch (_) {
-      names.add(base);
+      ({ meta } = sync.parseCanonicalFrontmatter(sync.normalizeText(fs.readFileSync(path.join(agentsDir, entry), 'utf8'))));
+    } catch (error) {
+      warn(`${toRepoRel(AGENTS_PARTS)}/${entry}: frontmatter unparsable (${error.message}) - its variants are unknown, so no retired agent memory directory is deleted.`);
+      return null;
     }
+    for (const suffix of Object.keys(meta.variants || {})) names.add(`${base}-${suffix}`);
   }
   return names;
 }
 
 function removeRetiredMemory(repoRoot, sync, report, warn) {
-  const live = liveAgentNames(repoRoot, sync);
-  if (live === null) {
-    warn(`${toRepoRel(AGENTS_PARTS)} is missing - retired agent memory directories left untouched.`);
-    return;
-  }
+  const live = liveAgentNames(repoRoot, sync, warn);
+  if (live === null) return;
   for (const name of RETIRED_AGENTS.filter((agent) => !live.has(agent))) {
     const rel = `${toRepoRel(MEMORY_PARTS)}/${name}`;
     const absPath = path.join(repoRoot, ...MEMORY_PARTS, name);
