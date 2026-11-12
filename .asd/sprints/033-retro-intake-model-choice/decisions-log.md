@@ -98,3 +98,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-12 — impl fix for wave-1/iter-02: findings resolved (F1 a5dbb6a9, F2 a2c3a591); flagged: AC-25 stalemate fixture uses off-grammar `Stalemate: D-1`, now fails — routed to impl-test with the new CONCERNS+`Stalemate: no` case
 - 2026-11-12 — route impl-test entry 4: standard, dispatch HEAD 5349e5dc
 - 2026-11-12 — impl-test: impacted set green (362/362), 2/0 tests
+- 2026-11-12 — impl-review wave-1/iter-03: combined APPROVE, external APPROVE (floor high); reviewer DoD met on wave 1 of 1
+- 2026-11-12 — impl-review terminal full suite: reused green run at 373fa77e (`node tests/run.js` unfiltered, 362/362 — the whole suite; no code, test or stub path changed since); impl-review green, DoD met → design-promote

@@ -26,3 +26,4 @@
 - [Redefined boundary, local lists](feedback_redefined-boundary-local-lists.md) — boundary redefined: diff each workflow's cause list vs home; "fits no cause → downgrade" makes a gap a silent demotion
 - [Inserted dispatch reachability](feedback_inserted-dispatch-reachability.md) — new dispatch at a step: another single dispatch spanning it? caller Delegates, core invariant, t_AGENTS hard rule, callee Inputs
 - [Prose-marker guards](feedback_prose-marker-guards.md) — runtime guard on an agent-written line (^Stalemate: ): grep archived reports for informal forms; limit to its verdict
+- [Conjunctive guard tests](feedback_conjunctive-guard-tests.md) — guard narrowed to A and B: does a revert of each conjunct alone turn some test red?
