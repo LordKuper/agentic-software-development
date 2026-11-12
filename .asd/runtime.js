@@ -483,7 +483,7 @@ function standingPredicates(input, parts, ids, customRules, templates) {
   if (!input.files.some((file) => isTemplated(file, templates))) grant('templated', NA_PREDICATES.noTemplated);
   if (rubrics.includes(COMBINED_REVIEWER) && !(input.scopeFiles || input.files).some((file) => isDocumentation(file, templates))) grant('docs', NA_PREDICATES.noDocs);
   if (input.phase === 'design-review') {
-    if (!input.files.some((file) => /(^|\/)(ux-spec\.html|design-md-delta\.yaml)$/.test(file))) grant('ui', NA_PREDICATES.phaseGate);
+    if (!input.files.some((file) => /(^|\/)(ux-spec\.html|design-md-delta\.yaml)$|(^|\/)design\/mockups\//.test(file))) grant('ui', NA_PREDICATES.phaseGate);
     return granted;
   }
   if (!input.files.some(isUiSurface)) grant('ui', NA_PREDICATES.uiSurface);
@@ -564,13 +564,30 @@ function reviewFindings(text) {
   });
 }
 
-/** Validates one reviewer's returned text and persists it, from its verdict token on, as `<reviewer>.md` (`<reviewer>.late.md` for a late return) plus `<stem>.findings.json`; an internal reviewer's ledger must first validate against its manifest (default `<outDir>/<reviewer>.manifest.json`). A written review is never overwritten, so the orchestrator's later appends survive. */
+/** Drops the findings-table rows below `floor` from a validated review body, appends `dropped: <n>`, and rewrites a CONCERNS verdict to its kept count, or to APPROVE when no row is kept. */
+function applyFloor(body, floor) {
+  const rank = SEVERITIES.indexOf(floor);
+  const lines = body.split('\n');
+  const start = lines.findIndex((line) => line.trim().startsWith('|'));
+  const end = lines.findIndex((line, i) => i > start && !line.trim().startsWith('|'));
+  const tableEnd = end === -1 ? lines.length : end;
+  const isBelow = (line) => tableCells(line)[0] !== '—' && SEVERITIES.indexOf(tableCells(line)[1]) < rank;
+  const kept = lines.filter((line, i) => i < start + 2 || i >= tableEnd || !isBelow(line));
+  const dropped = lines.length - kept.length;
+  const keptRows = tableEnd - start - 2 - dropped;
+  const verdict = /^\[REVIEW-\w+-\w+\]: CONCERNS$/.test(kept[0].trimEnd()) && keptRows === 0 ? kept[0].replace('CONCERNS', 'APPROVE') : kept[0];
+  const text = [verdict, ...kept.slice(1)].map((line) => (/^CONCERNS: \d+\s*$/.test(line) ? (keptRows === 0 ? 'APPROVE' : `CONCERNS: ${keptRows}`) : line)).join('\n');
+  return { text: `${text.trimEnd()}\ndropped: ${dropped}\n`, dropped, keptRows };
+}
+
+/** Validates one reviewer's returned text and persists it, from its verdict token on, as `<reviewer>.md` (`<reviewer>.late.md` for a late return) plus `<stem>.findings.json`; an internal reviewer's ledger must first validate against its manifest (default `<outDir>/<reviewer>.manifest.json`). `floor` (External Review only) drops below-floor rows and records the count (`applyFloor`). A written review is never overwritten, so the orchestrator's later appends survive. */
 function persistReview(input) {
   const { phase, reviewer, text, outDir } = input;
   if (!REVIEW_NODES.includes(phase)) fail(`--phase must be ${REVIEW_NODES.join(' or ')}`);
   const keys = reviewerKeys(phase);
   if (!keys.includes(reviewer)) fail(`--reviewer must be one of ${keys.join(', ')}`);
   if (typeof text !== 'string' || typeof outDir !== 'string') fail('review text and output dir required');
+  if (input.floor !== undefined && (reviewer !== EXTERNAL_REVIEWER || !SEVERITIES.includes(input.floor))) fail(`--floor <${SEVERITIES.join('|')}> applies to ${EXTERNAL_REVIEWER} only`);
   const start = /^[ \t]*\[REVIEW-/m.exec(text);
   if (start === null) fail('returned text carries no verdict token: an interrupted dispatch, not a verdict');
   const body = text.slice(start.index).trimStart();
@@ -587,9 +604,17 @@ function persistReview(input) {
   }
   const stem = path.join(outDir, input.late ? `${reviewer}.late` : reviewer);
   if (fs.existsSync(`${stem}.md`)) fail(`${stem}.md already persisted`);
-  fs.writeFileSync(`${stem}.findings.json`, JSON.stringify(findings) + '\n', 'utf8');
-  fs.writeFileSync(`${stem}.md`, body.endsWith('\n') ? body : `${body}\n`, 'utf8');
-  return { token: verdict, findings };
+  if (input.floor === undefined || verdict.startsWith('APPROVE (')) {
+    fs.writeFileSync(`${stem}.findings.json`, JSON.stringify(findings) + '\n', 'utf8');
+    fs.writeFileSync(`${stem}.md`, body.endsWith('\n') ? body : `${body}\n`, 'utf8');
+    return { token: verdict, findings };
+  }
+  const floored = applyFloor(body, input.floor);
+  const flooredFindings = findings.filter((finding) => SEVERITIES.indexOf(finding.severity) >= SEVERITIES.indexOf(input.floor));
+  const flooredVerdict = verdict === 'CONCERNS' && floored.keptRows === 0 ? 'APPROVE' : verdict;
+  fs.writeFileSync(`${stem}.findings.json`, JSON.stringify(flooredFindings) + '\n', 'utf8');
+  fs.writeFileSync(`${stem}.md`, floored.text, 'utf8');
+  return { token: flooredVerdict, findings: flooredFindings, dropped: floored.dropped };
 }
 
 /** Compares the code-defect identity sets (file path without line, runner failure line, failing test) of the last two impl-test entries that routed defects in a test plan's `Defects` table, a stalemate only when those entry numbers are consecutive; `D-N` ids and `impl-review` rows never take part. `digest` identifies the latest set, so a recorded answer can be keyed to it. */
@@ -762,8 +787,8 @@ function memoryCheck(flags) {
   return memoryViolations(diff, names);
 }
 
-/** Sums added plus deleted lines of `git diff --numstat -z -M` output over the listed paths, a rename counted at its destination; a binary file (`-`) and a pure rename (0 and 0) add nothing. */
-function numstatLines(output, files) {
+/** Sums added plus deleted lines of `git diff --numstat -z -M` output over the listed paths, a rename counted at its destination; a binary file (`-`) and a pure rename (0 and 0) add nothing, and a path in `discounts` (path to lines) counts only what its collapse leaves. */
+function numstatLines(output, files, discounts = new Map()) {
   const listed = new Set(stringArray(files, 'files'));
   const tokens = output.split('\0');
   let lines = 0;
@@ -773,7 +798,8 @@ function numstatLines(output, files) {
     if (!entry) fail(`numstat entry malformed: ${tokens[at]}`);
     const [, added, deleted, file] = entry;
     const isRename = file === '';
-    if (added !== '-' && listed.has(isRename ? tokens[at + 2] : file)) lines += Number(added) + Number(deleted);
+    const counted = isRename ? tokens[at + 2] : file;
+    if (added !== '-' && listed.has(counted)) lines += Number(added) + Number(deleted) - (discounts.get(counted) || 0);
     at += isRename ? 3 : 1;
   }
   return lines;
@@ -917,23 +943,98 @@ function writeGitOutput(file, invocations) {
 }
 
 /** Writes the diff of a manifest's file list into `dir` and returns its path: over the commit ranges in impl-review, against the previous snapshot in design-review, minus the drafts it leaves whole; null when there is nothing to diff against, as in design-review iteration 1. Named by the fingerprint of the git invocations producing it, so manifests sharing a list and range share one file; rewritten on every call, since those invocations name refs and paths rather than content and a reused directory may hold an older file under the same name, and renamed into place so it is never seen half-written. */
-function writeManifestDiff(dir, files, ranges, snapshot) {
+function writeManifestDiff(dir, files, ranges, snapshot, renameMap = null) {
   if (ranges === null && snapshot === null) return null;
   const invocations = ranges !== null ? rangePatchInvocations(ranges, files) : snapshotPatchInvocations(snapshot.dir, files.filter((file) => !snapshot.whole.has(file)));
-  const diff = path.join(dir, `${fingerprint(invocations).slice(0, 16)}.diff`);
+  const diff = path.join(dir, `${fingerprint(renameMap === null ? invocations : { invocations, renameMap }).slice(0, 16)}.diff`);
   const partial = `${diff}.${process.pid}.tmp`;
-  writeGitOutput(partial, invocations);
+  if (ranges === null) writeGitOutput(partial, invocations);
+  else fs.writeFileSync(partial, collapsedPatch(invocations, renameMap).text);
   fs.renameSync(partial, diff);
   return diff;
 }
 
+/** Reads a rename map: a JSON object of old text to new text, each key a non-empty literal substring a plan's rename replaced everywhere; null when no file is given. */
+function readRenameMap(file) {
+  if (file === undefined) return null;
+  const map = JSON.parse(fs.readFileSync(file, 'utf8'));
+  const isMap = map !== null && typeof map === 'object' && !Array.isArray(map) && Object.keys(map).length > 0;
+  if (!isMap || !Object.entries(map).every(([old, now]) => old !== '' && typeof now === 'string')) fail('--rename-map must be a JSON object of non-empty old text to new text strings');
+  return map;
+}
+
+/** A function applying every rename-map substitution to a line at once, longest key first, so one entry's output is never rewritten by another. */
+function substituter(map) {
+  const pattern = new RegExp(Object.keys(map).sort((a, b) => b.length - a.length).map((key) => key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'g');
+  return (line) => line.replace(pattern, (match) => map[match]);
+}
+
+/** Substituted line count of a hunk that only applies the substitutions, else 0: each run of changed lines between context lines must be its removed lines mapped equal to its added lines, with equal end-of-file markers, so a moved or edited line never qualifies. */
+function substitutedLines(hunk, substitute) {
+  let removed = [];
+  let added = [];
+  let markers = [0, 0];
+  let side = null;
+  let count = 0;
+  let isPure = true;
+  const flush = () => {
+    isPure = isPure && removed.length === added.length && markers[0] === markers[1] && removed.every((line, i) => substitute(line) === added[i]);
+    count += removed.filter((line) => substitute(line) !== line).length;
+    [removed, added, markers] = [[], [], [0, 0]];
+  };
+  hunk.split('\n').slice(1).forEach((line) => {
+    if (line.startsWith('-')) [side, removed] = [0, [...removed, line.slice(1)]];
+    else if (line.startsWith('+')) [side, added] = [1, [...added, line.slice(1)]];
+    else if (line.startsWith('\\')) markers[side === null ? 0 : side] += 1;
+    else flush();
+  });
+  flush();
+  return isPure ? count : 0;
+}
+
+/** The path a patch section names: its rename target or `+++` path, else for a deletion the shared path of its `diff --git` line (a quoted pair stays quoted). */
+function sectionPath(head) {
+  const named = /^(?:rename to |\+\+\+ b\/)(.*?)\t?$/m.exec(head);
+  if (named !== null) return named[1];
+  const pair = head.split('\n', 1)[0].slice('diff --git '.length);
+  return pair.startsWith('"') ? pair : pair.slice(2, (pair.length - 1) / 2);
+}
+
+/** Replaces each whole-file deletion in a git patch with `# collapsed: <path>: deleted, <N> lines`, and with a `substitute` each hunk only applying the rename map with one `# collapsed: <path>: <K> rename-map substitutions` line per file; `discounts` maps each such file to the numstat lines (added plus deleted) it no longer contributes. */
+function collapsePatch(patch, substitute) {
+  const discounts = [];
+  const text = patch.split(/^(?=diff --git )/m).map((section) => {
+    if (!section.startsWith('diff --git ')) return section;
+    const [head, ...hunks] = section.split(/^(?=@@ )/m);
+    const removedLines = (parts) => parts.join('').split('\n').filter((line) => line.startsWith('-')).length;
+    if (/^deleted file mode /m.test(head)) {
+      discounts.push([sectionPath(head), removedLines(hunks)]);
+      return `# collapsed: ${sectionPath(head)}: deleted, ${removedLines(hunks)} lines\n`;
+    }
+    const counts = substitute === null ? hunks.map(() => 0) : hunks.map((hunk) => substitutedLines(hunk, substitute));
+    const total = counts.reduce((sum, count) => sum + count, 0);
+    if (total === 0) return section;
+    discounts.push([sectionPath(head), 2 * total]);
+    const kept = hunks.filter((hunk, i) => counts[i] === 0);
+    return `${kept.length === 0 ? '' : head + kept.join('')}# collapsed: ${sectionPath(head)}: ${total} rename-map substitutions\n`;
+  }).join('');
+  return { text, discounts };
+}
+
+/** Runs each patch invocation and collapses its output (`collapsePatch`) under `renameMap`; `discounts` is a Map of collapsed file to the numstat lines it no longer contributes. */
+function collapsedPatch(invocations, renameMap) {
+  const substitute = renameMap === null ? null : substituter(renameMap);
+  const results = invocations.map((invocation) => collapsePatch(runGit(invocation.args), substitute));
+  return { text: results.map((result) => result.text).join(''), discounts: new Map(results.flatMap((result) => result.discounts)) };
+}
+
 function positiveInteger(value, name) {
-  if (typeof value !== 'string' || !/^[1-9]\d*$/.test(value)) fail(`${name} <n> must be a positive integer`);
+  if (typeof value !== 'string' || !/^0*[1-9]\d*$/.test(value)) fail(`${name} <n> must be a positive integer`);
   return Number(value);
 }
 
 /** Writes External Review's scope manifest and its diff: the same explicit list and precomputed change content an internal reviewer gets, with no rubric and no ledger. */
-function emitExternalScope(flags, files, ranges, snapshot) {
+function emitExternalScope(flags, files, ranges, snapshot, renameMap) {
   const isImplReview = flags.phase === 'impl-review';
   if (isImplReview && ranges === null) fail('--base/--head required for impl-review External Review');
   if (isImplReview !== (flags.wave !== undefined)) fail('--wave <k> is required for impl-review and applies to it only');
@@ -941,14 +1042,14 @@ function emitExternalScope(flags, files, ranges, snapshot) {
   const scope = Object.assign(
     { phase: flags.phase, iteration: positiveInteger(flags.iteration, '--iteration') },
     isImplReview ? { wave: positiveInteger(flags.wave, '--wave') } : {},
-    { files, diff: writeManifestDiff(flags.out, files, ranges, snapshot) },
+    { files, diff: writeManifestDiff(flags.out, files, ranges, snapshot, renameMap) },
   );
   fs.writeFileSync(`${stem}.scope.json`, JSON.stringify(scope) + '\n', 'utf8');
   return scope.diff === null ? { scope: `${stem}.scope.json` } : { scope: `${stem}.scope.json`, diff: scope.diff };
 }
 
 /** Writes one internal reviewer's coverage manifest and its diff. */
-function emitInternalManifest(flags, files, ranges, snapshot) {
+function emitInternalManifest(flags, files, ranges, snapshot, renameMap) {
   if (flags.iteration !== undefined || flags.wave !== undefined) fail(`--iteration/--wave apply to --reviewer ${EXTERNAL_REVIEWER} only`);
   const customPaths = typeof flags['custom-rules'] === 'string' ? flags['custom-rules'].split(',') : [];
   const testPlan = typeof flags['test-plan'] === 'string' ? flags['test-plan'].split(',') : [];
@@ -967,7 +1068,7 @@ function emitInternalManifest(flags, files, ranges, snapshot) {
   });
   const stem = path.join(flags.out, flags.reviewer);
   fs.writeFileSync(`${stem}.manifest.json`, JSON.stringify(manifest) + '\n', 'utf8');
-  const diff = writeManifestDiff(flags.out, manifest.files, ranges, snapshot);
+  const diff = writeManifestDiff(flags.out, manifest.files, ranges, snapshot, renameMap);
   return diff === null ? { manifest: `${stem}.manifest.json`, digest: manifest.digest } : { manifest: `${stem}.manifest.json`, digest: manifest.digest, diff };
 }
 
@@ -980,13 +1081,16 @@ function emitManifestCommand(flags) {
   const ranges = manifestRanges(flags);
   const whole = ranges !== null ? ranges.fullFiles : snapshot !== null ? snapshot.whole : new Set();
   const files = [...new Set(readFileList(flags.files).concat([...whole]))];
-  return flags.reviewer === EXTERNAL_REVIEWER ? emitExternalScope(flags, files, ranges, snapshot) : emitInternalManifest(flags, files, ranges, snapshot);
+  const renameMap = readRenameMap(flags['rename-map']);
+  if (renameMap !== null && ranges === null) fail('--rename-map applies to impl-review with --base/--head only');
+  return flags.reviewer === EXTERNAL_REVIEWER ? emitExternalScope(flags, files, ranges, snapshot, renameMap) : emitInternalManifest(flags, files, ranges, snapshot, renameMap);
 }
 
-/** Bytes of the patch a reviewer reads for `files` over `base...head`, a rename paired with its source so a move is not counted as an add; zero for no files. */
-function patchBytes(base, head, files) {
+/** Bytes of the collapsed patch a reviewer reads for `files` over `base...head`, a rename paired with its source so a move is not counted as an add, and the numstat lines each collapsed file no longer contributes; zero bytes for no files. */
+function measurePatch(base, head, files, renameMap) {
   const ranges = { scope: { base, head, renames: rangeRenames(base, head) }, full: null, fullFiles: new Set() };
-  return rangePatchInvocations(ranges, files).reduce((total, invocation) => total + Buffer.byteLength(runGit(invocation.args)), 0);
+  const { text, discounts } = collapsedPatch(rangePatchInvocations(ranges, files), renameMap);
+  return { bytes: Buffer.byteLength(text), discounts };
 }
 
 /** Measures the scope and, with `--division`, records it; `--single` fixes the wave count at 1 whatever the measure says, so a one-wave division over a scope above a threshold is accepted and the reported and recorded `waves` is 1. Without it the measured count rules. */
@@ -997,8 +1101,8 @@ function reviewWavesCommand(flags) {
   const head = gitRef(flags.head, '--head');
   const scope = readFileList(flags.files);
   const files = new Set(scope).size;
-  const lines = numstatLines(runGit(['diff', '--numstat', '-z', '-M', `${base}...${head}`]), scope);
-  const bytes = patchBytes(base, head, scope);
+  const { bytes, discounts } = measurePatch(base, head, scope, readRenameMap(flags['rename-map']));
+  const lines = numstatLines(runGit(['diff', '--numstat', '-z', '-M', `${base}...${head}`]), scope, discounts);
   const thresholds = { lines: WAVE_THRESHOLD_LINES, files: WAVE_THRESHOLD_FILES, bytes: WAVE_THRESHOLD_BYTES };
   const measured = { lines, files, bytes, thresholds, waves: flags.single === true ? 1 : reviewWaveCount(lines, files, bytes) };
   if (flags.division === undefined) return measured;
@@ -1548,7 +1652,7 @@ async function main(argv) {
   }
   if (command === 'persist-review') {
     if (typeof flags.in !== 'string' || typeof flags['out-dir'] !== 'string') fail('--in <path> and --out-dir <iteration dir> required');
-    const result = persistReview({ phase: flags.phase, reviewer: flags.reviewer, text: fs.readFileSync(flags.in, 'utf8'), outDir: flags['out-dir'], late: flags.late === true, manifest: flags.manifest });
+    const result = persistReview({ phase: flags.phase, reviewer: flags.reviewer, text: fs.readFileSync(flags.in, 'utf8'), outDir: flags['out-dir'], late: flags.late === true, manifest: flags.manifest, floor: flags.floor });
     process.stdout.write(JSON.stringify(result) + '\n');
     return 0;
   }

@@ -25,7 +25,7 @@ responsibility:
 
 ## Dropped findings (counts only)
 
-- Below severity floor (iter {{N}}, floor {{floor}}): {{count}}
+- Below severity floor (iter {{N}}, floor {{floor}}): the `dropped: <n>` line `persist-review --floor` appends (the wrapper keeps every finding, so it counts none)
 - Nitpick, by category: {{nitpick category}}: {{count}}{{, ...}}
 
 ## Stalemate
