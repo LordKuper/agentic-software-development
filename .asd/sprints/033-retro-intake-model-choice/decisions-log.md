@@ -94,3 +94,5 @@ A decision whose value must survive this sprint's archival is ALSO written into 
 - 2026-11-12 — route F3 (wave-1/iter-02): standard, dispatch HEAD ca1ea41f
 - 2026-11-12 — impl-review wave-1/iter-02 external 1 (asd-tester memory, pre-fix tree location) resolved by owner memory-fix 50c9f5de
 - 2026-11-12 — impl-review wave-1/iter-02: combined F3 resolved by minor test-only fix f830dbab; F1, F2 (runtime.js) route to impl review-fix
+- 2026-11-12 — route F1, F2 (wave-1/iter-02): standard, dispatch HEAD d93a7e2a
+- 2026-11-12 — impl fix for wave-1/iter-02: findings resolved (F1 a5dbb6a9, F2 a2c3a591); flagged: AC-25 stalemate fixture uses off-grammar `Stalemate: D-1`, now fails — routed to impl-test with the new CONCERNS+`Stalemate: no` case
